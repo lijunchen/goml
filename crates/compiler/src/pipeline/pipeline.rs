@@ -249,20 +249,20 @@ fn typecheck_packages_inner(
 ) -> Result<TypecheckPackagesResult, CompilationError> {
     let root = discovery_root_for_file(path);
     let external_deps = load_external_dependencies(&root)?;
-    let external_roots = external_deps.root_packages();
+    let external_imports = external_deps.external_imports();
     let mut graph = if single_file {
-        packages::discover_packages_single_file_with_external_roots(
+        packages::discover_packages_single_file_with_external_imports(
             &root,
             path,
             entry_ast,
-            &external_roots,
+            &external_imports,
         )?
     } else {
-        packages::discover_packages_with_external_roots(
+        packages::discover_packages_with_external_imports(
             &root,
             Some(path),
             Some(entry_ast),
-            &external_roots,
+            &external_imports,
         )?
     };
     external_deps
@@ -272,8 +272,8 @@ fn typecheck_packages_inner(
 
     let mut diagnostics = Diagnostics::new();
     let mut genv = builtins::builtin_env();
-    let external_interfaces = external_deps.root_interfaces();
-    let external_envs = external_deps.root_envs();
+    let external_interfaces = external_deps.package_interfaces();
+    let external_envs = external_deps.package_envs();
     for (name, module) in external_deps.modules.iter() {
         for (key, _) in module.interface.exports.trait_env.trait_impls.iter() {
             if genv.trait_env.trait_impls.contains_key(key) {
@@ -561,12 +561,12 @@ pub fn typecheck_with_packages_and_results(
         parse_ast_from_source_allow_parse_errors(path, src)?;
     let root = discovery_root_for_file(path);
     let external_deps = load_external_dependencies(&root)?;
-    let external_roots = external_deps.root_packages();
-    let mut graph = packages::discover_packages_with_external_roots(
+    let external_imports = external_deps.external_imports();
+    let mut graph = packages::discover_packages_with_external_imports(
         &root,
         Some(path),
         Some(entry_ast),
-        &external_roots,
+        &external_imports,
     )?;
     external_deps
         .augment_graph(&mut graph)
@@ -574,8 +574,8 @@ pub fn typecheck_with_packages_and_results(
     let order = packages::topo_sort_packages(&graph)?;
 
     let mut genv = builtins::builtin_env();
-    let external_interfaces = external_deps.root_interfaces();
-    let external_envs = external_deps.root_envs();
+    let external_interfaces = external_deps.package_interfaces();
+    let external_envs = external_deps.package_envs();
     for (name, module) in external_deps.modules.iter() {
         for (key, _) in module.interface.exports.trait_env.trait_impls.iter() {
             if genv.trait_env.trait_impls.contains_key(key) {

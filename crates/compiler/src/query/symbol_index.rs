@@ -1,5 +1,5 @@
 use std::{
-    collections::{HashMap, HashSet},
+    collections::HashMap,
     fs,
     path::{Path, PathBuf},
 };
@@ -491,12 +491,12 @@ fn discover_packages_for_query(
     let entry_ast = parse_ast_for_discovery(path, src)?;
     if let Ok((module_dir, config)) = crate::pipeline::packages::discover_project_from_file(path) {
         let external_deps = crate::external::resolve_project_dependencies(&module_dir, &config)?;
-        let external_roots = external_deps.root_packages();
-        let graph = crate::pipeline::packages::discover_packages_with_external_roots(
+        let external_imports = external_deps.external_imports();
+        let graph = crate::pipeline::packages::discover_packages_with_external_imports(
             &module_dir,
             Some(path),
             Some(entry_ast),
-            &external_roots,
+            &external_imports,
         )
         .map_err(|e| format!("{:?}", e))?;
         return Ok(graph);
@@ -506,11 +506,11 @@ fn discover_packages_for_query(
         .parent()
         .filter(|parent| !parent.as_os_str().is_empty())
         .unwrap_or_else(|| Path::new("."));
-    crate::pipeline::packages::discover_packages_with_external_roots(
+    crate::pipeline::packages::discover_packages_with_external_imports(
         root_dir,
         Some(path),
         Some(entry_ast),
-        &HashSet::new(),
+        &crate::package_imports::ExternalImports::default(),
     )
     .map_err(|e| format!("{:?}", e))
 }

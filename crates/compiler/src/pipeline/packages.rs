@@ -6,6 +6,7 @@ use ast::ast;
 
 use crate::config::GomlConfig;
 use crate::hir::SourceFileAst;
+use crate::package_imports::ExternalImports;
 use crate::package_names::ROOT_PACKAGE;
 use crate::pipeline::compile_error;
 use crate::pipeline::pipeline::{CompilationError, parse_ast_file};
@@ -60,16 +61,16 @@ fn package_dir_is_loadable(dir: &Path) -> bool {
     dir.is_dir()
 }
 
-fn collect_imports(files: &[SourceFileAst]) -> HashSet<String> {
+fn collect_imports(files: &[SourceFileAst], external_imports: &ExternalImports) -> HashSet<String> {
     files
         .iter()
         .flat_map(|file| {
             let from_imports = file.ast.imports.iter().map(|import| import.0.clone());
-            let from_use_traits = file
-                .ast
-                .use_traits
-                .iter()
-                .filter_map(|path| path.segments().first().map(|seg| seg.ident.0.clone()));
+            let from_use_traits = file.ast.use_traits.iter().filter_map(|path| {
+                external_imports
+                    .alias_for_use_path(path)
+                    .or_else(|| path.segments().first().map(|seg| seg.ident.0.clone()))
+            });
             from_imports.chain(from_use_traits)
         })
         .collect()
@@ -95,6 +96,7 @@ fn source_override_for_dir<'a>(
 fn load_package(
     package_dir: &Path,
     source_override: Option<(&Path, &ast::File)>,
+    external_imports: &ExternalImports,
 ) -> Result<PackageUnit, CompilationError> {
     let mut files = Vec::new();
     let mut package_name = None;
@@ -138,7 +140,7 @@ fn load_package(
         )));
     };
 
-    let imports = collect_imports(&files);
+    let imports = collect_imports(&files, external_imports);
     Ok(PackageUnit {
         name,
         files,
@@ -150,6 +152,7 @@ fn load_package_from_config(
     package_dir: &Path,
     config: &GomlConfig,
     source_override: Option<(&Path, &ast::File)>,
+    external_imports: &ExternalImports,
 ) -> Result<PackageUnit, CompilationError> {
     let mut files = Vec::new();
     let entry_file_path = package_dir.join(&config.package.entry);
@@ -233,7 +236,7 @@ fn load_package_from_config(
         }
     }
 
-    let imports = collect_imports(&files);
+    let imports = collect_imports(&files, external_imports);
     Ok(PackageUnit {
         name: expected_package_name.clone(),
         files,
@@ -241,12 +244,16 @@ fn load_package_from_config(
     })
 }
 
-fn load_single_file_package(path: &Path, ast: &ast::File) -> PackageUnit {
+fn load_single_file_package(
+    path: &Path,
+    ast: &ast::File,
+    external_imports: &ExternalImports,
+) -> PackageUnit {
     let files = vec![SourceFileAst {
         path: path.to_path_buf(),
         ast: ast.clone(),
     }];
-    let imports = collect_imports(&files);
+    let imports = collect_imports(&files, external_imports);
     PackageUnit {
         name: ast.package.0.clone(),
         files,
@@ -275,14 +282,19 @@ pub fn discover_packages(
     entry_path: Option<&Path>,
     entry_ast: Option<ast::File>,
 ) -> Result<PackageGraph, CompilationError> {
-    discover_packages_with_external_roots(root_dir, entry_path, entry_ast, &HashSet::new())
+    discover_packages_with_external_imports(
+        root_dir,
+        entry_path,
+        entry_ast,
+        &ExternalImports::default(),
+    )
 }
 
-pub fn discover_packages_with_external_roots(
+pub fn discover_packages_with_external_imports(
     root_dir: &Path,
     entry_path: Option<&Path>,
     entry_ast: Option<ast::File>,
-    external_root_packages: &HashSet<String>,
+    external_imports: &ExternalImports,
 ) -> Result<PackageGraph, CompilationError> {
     discover_packages_inner(
         root_dir,
@@ -290,7 +302,7 @@ pub fn discover_packages_with_external_roots(
         entry_ast,
         false,
         false,
-        external_root_packages,
+        external_imports,
     )
 }
 
@@ -299,19 +311,19 @@ pub fn discover_packages_single_file(
     entry_path: &Path,
     entry_ast: ast::File,
 ) -> Result<PackageGraph, CompilationError> {
-    discover_packages_single_file_with_external_roots(
+    discover_packages_single_file_with_external_imports(
         root_dir,
         entry_path,
         entry_ast,
-        &HashSet::new(),
+        &ExternalImports::default(),
     )
 }
 
-pub fn discover_packages_single_file_with_external_roots(
+pub fn discover_packages_single_file_with_external_imports(
     root_dir: &Path,
     entry_path: &Path,
     entry_ast: ast::File,
-    external_root_packages: &HashSet<String>,
+    external_imports: &ExternalImports,
 ) -> Result<PackageGraph, CompilationError> {
     discover_packages_inner(
         root_dir,
@@ -319,7 +331,7 @@ pub fn discover_packages_single_file_with_external_roots(
         Some(entry_ast),
         true,
         false,
-        external_root_packages,
+        external_imports,
     )
 }
 
@@ -327,13 +339,17 @@ pub fn discover_dependency_packages(
     module_dir: &Path,
     config: &GomlConfig,
 ) -> Result<PackageGraph, CompilationError> {
-    discover_dependency_packages_with_external_roots(module_dir, config, &HashSet::new())
+    discover_dependency_packages_with_external_imports(
+        module_dir,
+        config,
+        &ExternalImports::default(),
+    )
 }
 
-pub fn discover_dependency_packages_with_external_roots(
+pub fn discover_dependency_packages_with_external_imports(
     module_dir: &Path,
     config: &GomlConfig,
-    external_root_packages: &HashSet<String>,
+    external_imports: &ExternalImports,
 ) -> Result<PackageGraph, CompilationError> {
     discover_packages_from_config(
         module_dir,
@@ -342,7 +358,7 @@ pub fn discover_dependency_packages_with_external_roots(
         None,
         false,
         true,
-        external_root_packages,
+        external_imports,
     )
 }
 
@@ -352,7 +368,7 @@ fn discover_packages_inner(
     entry_ast: Option<ast::File>,
     single_file: bool,
     allow_non_main_module_root: bool,
-    external_root_packages: &HashSet<String>,
+    external_imports: &ExternalImports,
 ) -> Result<PackageGraph, CompilationError> {
     if let Some(config) = GomlConfig::find_package_config(root_dir) {
         return discover_packages_from_config(
@@ -362,7 +378,7 @@ fn discover_packages_inner(
             entry_ast,
             single_file,
             allow_non_main_module_root,
-            external_root_packages,
+            external_imports,
         );
     }
 
@@ -372,12 +388,20 @@ fn discover_packages_inner(
     };
     let entry_package = if single_file {
         if let Some((path, ast)) = source_override {
-            load_single_file_package(path, ast)
+            load_single_file_package(path, ast, external_imports)
         } else {
-            load_package(root_dir, source_override_for_dir(root_dir, source_override))?
+            load_package(
+                root_dir,
+                source_override_for_dir(root_dir, source_override),
+                external_imports,
+            )?
         }
     } else {
-        load_package(root_dir, source_override_for_dir(root_dir, source_override))?
+        load_package(
+            root_dir,
+            source_override_for_dir(root_dir, source_override),
+            external_imports,
+        )?
     };
     let entry_name = entry_package.name.clone();
 
@@ -396,7 +420,7 @@ fn discover_packages_inner(
         if loaded.contains(&package_name) {
             continue;
         }
-        if external_root_packages.contains(&package_name) {
+        if external_imports.contains_package(&package_name) {
             loaded.insert(package_name);
             continue;
         }
@@ -407,9 +431,9 @@ fn discover_packages_inner(
         }
         let package_override = source_override_for_dir(&package_dir, source_override);
         let package = if let Some(config) = GomlConfig::find_package_config(&package_dir) {
-            load_package_from_config(&package_dir, &config, package_override)?
+            load_package_from_config(&package_dir, &config, package_override, external_imports)?
         } else {
-            load_package(&package_dir, package_override)?
+            load_package(&package_dir, package_override, external_imports)?
         };
         let declared_name = package.name.clone();
         if package.name != package_name {
@@ -445,7 +469,7 @@ pub fn discover_packages_from_config(
     entry_ast: Option<ast::File>,
     single_file: bool,
     allow_non_main_module_root: bool,
-    external_root_packages: &HashSet<String>,
+    external_imports: &ExternalImports,
 ) -> Result<PackageGraph, CompilationError> {
     if config.is_module_root() && !allow_non_main_module_root && config.package.name != ROOT_PACKAGE
     {
@@ -462,12 +486,13 @@ pub fn discover_packages_from_config(
     };
     let entry_package = if single_file {
         if let Some((path, ast)) = source_override {
-            load_single_file_package(path, ast)
+            load_single_file_package(path, ast, external_imports)
         } else {
             load_package_from_config(
                 module_dir,
                 config,
                 source_override_for_dir(module_dir, source_override),
+                external_imports,
             )?
         }
     } else {
@@ -475,6 +500,7 @@ pub fn discover_packages_from_config(
             module_dir,
             config,
             source_override_for_dir(module_dir, source_override),
+            external_imports,
         )?
     };
     let entry_name = entry_package.name.clone();
@@ -494,7 +520,7 @@ pub fn discover_packages_from_config(
         if loaded.contains(&package_name) {
             continue;
         }
-        if external_root_packages.contains(&package_name) {
+        if external_imports.contains_package(&package_name) {
             loaded.insert(package_name);
             continue;
         }
@@ -505,9 +531,14 @@ pub fn discover_packages_from_config(
         }
         let package_override = source_override_for_dir(&package_dir, source_override);
         let package = if let Some(pkg_config) = GomlConfig::find_package_config(&package_dir) {
-            load_package_from_config(&package_dir, &pkg_config, package_override)?
+            load_package_from_config(
+                &package_dir,
+                &pkg_config,
+                package_override,
+                external_imports,
+            )?
         } else {
-            load_package(&package_dir, package_override)?
+            load_package(&package_dir, package_override, external_imports)?
         };
         let declared_name = package.name.clone();
         if package.name != package_name {

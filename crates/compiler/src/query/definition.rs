@@ -98,6 +98,9 @@ fn resolve_use_decl(
 
     let idx = token_segment_index(token, &ident_tokens)?;
     let lookup = segments[..=idx].join("::");
+    if let Some(location) = external_use_definition_location(path, &lookup) {
+        return Some(vec![location]);
+    }
     let Ok((_graph, index)) = build_symbol_index(path, src) else {
         if idx == 0 {
             let pkg = &segments[0];
@@ -557,6 +560,18 @@ fn package_definition_location(
 ) -> Option<DefinitionLocation> {
     index.find_package(package).map(|path| DefinitionLocation {
         path,
+        range: TextRange::new(text_size::TextSize::from(0), text_size::TextSize::from(0)),
+    })
+}
+
+fn external_use_definition_location(path: &Path, lookup: &str) -> Option<DefinitionLocation> {
+    let (module_dir, config) = crate::pipeline::packages::discover_project_from_file(path).ok()?;
+    let external_deps = crate::external::resolve_project_dependencies(&module_dir, &config).ok()?;
+    let alias = external_deps.import_paths().get(lookup)?.clone();
+    let package_dir = external_deps.package_dirs().get(&alias)?.clone();
+    let target = package_nav_target_in_dir(&package_dir)?;
+    Some(DefinitionLocation {
+        path: target,
         range: TextRange::new(text_size::TextSize::from(0), text_size::TextSize::from(0)),
     })
 }

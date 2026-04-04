@@ -14,6 +14,7 @@ pub mod interface;
 pub mod lift;
 pub mod mono;
 pub mod names;
+pub mod package_imports;
 pub mod package_names;
 pub mod pipeline;
 pub mod pprint;

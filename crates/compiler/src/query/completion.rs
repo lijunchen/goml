@@ -244,8 +244,11 @@ pub fn colon_colon_completions(
         .ok()
         .map(|(_graph, index)| index);
 
-    let mut items =
-        colon_colon_items_for_namespace(genv.as_ref(), symbol_index.as_ref(), &namespace);
+    let mut items = if use_decl_from_token(&token).is_some() {
+        use_colon_colon_items_for_namespace(path, genv.as_ref(), symbol_index.as_ref(), &namespace)
+    } else {
+        colon_colon_items_for_namespace(genv.as_ref(), symbol_index.as_ref(), &namespace)
+    };
     items.sort_by(|a, b| a.name.cmp(&b.name));
     items.dedup_by(|a, b| a.name == b.name && a.kind == b.kind && a.detail == b.detail);
     items.retain(|item| item.name.starts_with(&prefix));
@@ -324,7 +327,7 @@ fn use_root_completions(
         collect_local_package_names(&module_dir, current_package.as_deref(), &mut names);
         for dep in config.dependencies.keys() {
             if let Ok(coord) = ModuleCoord::parse(dep) {
-                names.insert(coord.module);
+                names.insert(format!("{}::{}", coord.owner, coord.module));
             }
         }
     } else {
@@ -436,6 +439,73 @@ fn local_package_name(dir: &Path) -> Option<String> {
 
 fn starts_with_use_keyword(text: &str) -> bool {
     text == "use" || text.starts_with("use ")
+}
+
+fn use_colon_colon_items_for_namespace(
+    path: &Path,
+    genv: Option<&GlobalTypeEnv>,
+    symbol_index: Option<&ProjectSymbolIndex>,
+    namespace: &str,
+) -> Vec<ColonColonCompletionItem> {
+    let mut items = Vec::new();
+
+    if let Ok((module_dir, config)) = crate::pipeline::packages::discover_project_from_file(path) {
+        let mut module_children = BTreeSet::new();
+        for dep in config.dependencies.keys() {
+            if let Ok(coord) = ModuleCoord::parse(dep)
+                && namespace == coord.owner
+            {
+                module_children.insert(coord.module);
+            }
+        }
+        items.extend(
+            module_children
+                .into_iter()
+                .map(|name| ColonColonCompletionItem {
+                    name,
+                    kind: ColonColonCompletionKind::Package,
+                    detail: Some("package".to_string()),
+                }),
+        );
+
+        if let Ok(external_deps) =
+            crate::external::resolve_project_dependencies(&module_dir, &config)
+        {
+            let import_paths = external_deps.import_paths();
+            let prefix = format!("{namespace}::");
+            let mut child_packages = BTreeSet::new();
+            for import_path in import_paths.keys() {
+                let Some(rest) = import_path.strip_prefix(&prefix) else {
+                    continue;
+                };
+                let Some(child) = rest.split("::").next() else {
+                    continue;
+                };
+                if !child.is_empty() {
+                    child_packages.insert(child.to_string());
+                }
+            }
+            items.extend(
+                child_packages
+                    .into_iter()
+                    .map(|name| ColonColonCompletionItem {
+                        name,
+                        kind: ColonColonCompletionKind::Package,
+                        detail: Some("package".to_string()),
+                    }),
+            );
+
+            if let Some(alias) = import_paths.get(namespace) {
+                items.extend(colon_colon_items_for_namespace(genv, symbol_index, alias));
+            }
+        }
+    }
+
+    if items.is_empty() {
+        return colon_colon_items_for_namespace(genv, symbol_index, namespace);
+    }
+
+    items
 }
 
 fn colon_colon_items_for_namespace(

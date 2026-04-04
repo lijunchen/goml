@@ -7,6 +7,9 @@ use crate::env;
 use crate::hir;
 use crate::hir::HirIdent;
 use crate::interface;
+use crate::package_imports::{
+    external_import_alias, is_exact_external_package_import, resolve_external_import_prefix,
+};
 use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package};
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::syntax::MySyntaxNodePtr;
@@ -201,26 +204,60 @@ impl ResolutionContext<'_> {
     }
 }
 
-fn use_path_root(path: &ast::Path) -> Option<String> {
-    path.segments()
-        .first()
-        .map(|segment| segment.ident.0.clone())
-}
-
 fn use_path_is_package_import(
     path: &ast::Path,
     deps: &HashMap<String, interface::PackageInterface>,
 ) -> bool {
-    if path.len() <= 1 {
-        return false;
+    is_exact_external_package_import(path, deps)
+}
+
+fn file_imports(
+    file: &ast::File,
+    deps: &HashMap<String, interface::PackageInterface>,
+) -> HashSet<String> {
+    let mut imports = file
+        .imports
+        .iter()
+        .map(|import| import.0.clone())
+        .collect::<HashSet<_>>();
+    for use_trait in file.use_traits.iter() {
+        if let Some(alias) = external_import_alias(use_trait, deps) {
+            imports.insert(alias);
+            continue;
+        }
+        if let Some(first) = use_trait.segments().first() {
+            imports.insert(first.ident.0.clone());
+        }
     }
-    let Some(root) = use_path_root(path) else {
-        return false;
-    };
-    let Some(dep) = deps.get(&root) else {
-        return false;
-    };
-    dep.packages.contains(&path.display())
+    imports
+}
+
+fn lowered_use_trait_path(
+    path: &ast::Path,
+    deps: &HashMap<String, interface::PackageInterface>,
+) -> hir::QualifiedPath {
+    if let Some((package, prefix_len)) = resolve_external_import_prefix(path, deps) {
+        let segments = path.segments()[prefix_len..]
+            .iter()
+            .map(|segment| hir::PathSegment::new(segment.ident.0.clone()))
+            .collect();
+        return hir::QualifiedPath {
+            package: Some(hir::PackageName(package)),
+            path: hir::Path::new(segments),
+        };
+    }
+    path.into()
+}
+
+fn external_import_path_for_alias(
+    alias: &str,
+    deps: &HashMap<String, interface::PackageInterface>,
+) -> Option<String> {
+    deps.get(alias)?
+        .packages
+        .iter()
+        .find(|path| path.as_str() != alias)
+        .cloned()
 }
 
 impl NameResolution {
@@ -362,17 +399,40 @@ impl NameResolution {
 
         for file in files.iter() {
             let package_name = file.ast.package.0.as_str();
-            let mut imports = file
-                .ast
-                .imports
-                .iter()
-                .map(|import| import.0.clone())
-                .collect::<HashSet<_>>();
-            for use_trait in file.ast.use_traits.iter() {
-                if let Some(first) = use_trait.segments().first() {
-                    imports.insert(first.ident.0.clone());
+            for import in file.ast.imports.iter() {
+                if let Some(full_path) = external_import_path_for_alias(&import.0, deps) {
+                    self.error(format!(
+                        "external dependency {} must be imported as {}",
+                        import.0, full_path
+                    ));
                 }
             }
+            for use_path in file.ast.use_traits.iter() {
+                let Some(first) = use_path.segments().first() else {
+                    continue;
+                };
+                let Some(full_path) = external_import_path_for_alias(&first.ident.0, deps) else {
+                    continue;
+                };
+                if external_import_alias(use_path, deps).is_none() {
+                    let suffix = use_path.segments()[1..]
+                        .iter()
+                        .map(|segment| segment.ident.0.clone())
+                        .collect::<Vec<_>>()
+                        .join("::");
+                    let suggested = if suffix.is_empty() {
+                        full_path
+                    } else {
+                        format!("{full_path}::{suffix}")
+                    };
+                    self.error(format!(
+                        "external dependency {} must be imported as {}",
+                        use_path.display(),
+                        suggested
+                    ));
+                }
+            }
+            let imports = file_imports(&file.ast, deps);
             let mut def_ids = Vec::new();
             for item in file.ast.toplevels.iter() {
                 let def_id = match item {
@@ -491,17 +551,7 @@ impl NameResolution {
 
         for (file_idx, file) in files.iter().enumerate() {
             let package_name = file.ast.package.0.as_str();
-            let mut imports = file
-                .ast
-                .imports
-                .iter()
-                .map(|import| import.0.clone())
-                .collect::<HashSet<_>>();
-            for use_trait in file.ast.use_traits.iter() {
-                if let Some(first) = use_trait.segments().first() {
-                    imports.insert(first.ident.0.clone());
-                }
-            }
+            let imports = file_imports(&file.ast, deps);
             let ctx = ResolutionContext {
                 builtin_names: &builtin_names,
                 def_names: &def_names,
@@ -598,17 +648,7 @@ impl NameResolution {
                 } else {
                     format!("{}/{}", package, file_name)
                 };
-                let mut imports: HashSet<String> = file
-                    .ast
-                    .imports
-                    .iter()
-                    .map(|import| import.0.clone())
-                    .collect();
-                for use_trait in file.ast.use_traits.iter() {
-                    if let Some(first) = use_trait.segments().first() {
-                        imports.insert(first.ident.0.clone());
-                    }
-                }
+                let imports = file_imports(&file.ast, deps);
                 let mut imports_vec = imports
                     .into_iter()
                     .map(hir::PackageName)
@@ -617,10 +657,16 @@ impl NameResolution {
 
                 let mut use_traits = Vec::new();
                 for use_trait in file.ast.use_traits.iter() {
+                    if let Some(first) = use_trait.segments().first()
+                        && external_import_path_for_alias(&first.ident.0, deps).is_some()
+                        && external_import_alias(use_trait, deps).is_none()
+                    {
+                        continue;
+                    }
                     if use_path_is_package_import(use_trait, deps) {
                         continue;
                     }
-                    let qualified: hir::QualifiedPath = use_trait.into();
+                    let qualified = lowered_use_trait_path(use_trait, deps);
                     let Some(package) = &qualified.package else {
                         self.ice("use trait is missing package");
                         continue;

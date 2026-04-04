@@ -14,6 +14,7 @@ use crate::env::{
 };
 use crate::hir;
 use crate::interface;
+use crate::package_imports::ExternalImports;
 use crate::pipeline::packages::{self, PackageGraph, PackageUnit};
 use crate::registry::{
     ModuleCoord, Registry, ResolvedModule, ResolvedModuleGraph, SemVer, cached_registry_dir,
@@ -24,6 +25,7 @@ use crate::tast::{self, TastIdent, Ty};
 #[derive(Debug, Clone)]
 pub struct ExternalPackageSource {
     pub logical_name: String,
+    pub import_path: String,
     pub dir: PathBuf,
     pub files: Vec<PathBuf>,
 }
@@ -34,6 +36,7 @@ pub struct ExternalModuleArtifact {
     pub version: SemVer,
     pub interface: InterfaceUnit,
     pub core: CoreUnit,
+    pub package_interfaces: BTreeMap<String, interface::PackageInterface>,
     pub sources: BTreeMap<String, ExternalPackageSource>,
 }
 
@@ -47,22 +50,46 @@ impl ExternalDependencyArtifacts {
         self.modules.is_empty()
     }
 
-    pub fn root_interfaces(&self) -> HashMap<String, interface::PackageInterface> {
+    pub fn package_interfaces(&self) -> HashMap<String, interface::PackageInterface> {
+        let mut interfaces = HashMap::new();
+        for module in self.modules.values() {
+            for (name, interface) in module.package_interfaces.iter() {
+                interfaces.insert(name.clone(), interface.clone());
+            }
+        }
+        interfaces
+    }
+
+    pub fn package_envs(&self) -> HashMap<String, GlobalTypeEnv> {
+        let mut envs = HashMap::new();
+        for module in self.modules.values() {
+            let env = module.interface.exports.to_genv();
+            for name in module.package_interfaces.keys() {
+                envs.insert(name.clone(), env.clone());
+            }
+        }
+        envs
+    }
+
+    pub fn package_names(&self) -> HashSet<String> {
         self.modules
-            .iter()
-            .map(|(name, module)| (name.clone(), module.interface.interface.clone()))
+            .values()
+            .flat_map(|module| module.sources.keys().cloned())
             .collect()
     }
 
-    pub fn root_envs(&self) -> HashMap<String, GlobalTypeEnv> {
-        self.modules
-            .iter()
-            .map(|(name, module)| (name.clone(), module.interface.exports.to_genv()))
-            .collect()
+    pub fn import_paths(&self) -> HashMap<String, String> {
+        let mut import_paths = HashMap::new();
+        for module in self.modules.values() {
+            for source in module.sources.values() {
+                import_paths.insert(source.import_path.clone(), source.logical_name.clone());
+            }
+        }
+        import_paths
     }
 
-    pub fn root_packages(&self) -> HashSet<String> {
-        self.modules.keys().cloned().collect()
+    pub fn external_imports(&self) -> ExternalImports {
+        ExternalImports::new(self.package_names(), self.import_paths())
     }
 
     pub fn package_dirs(&self) -> HashMap<String, PathBuf> {
@@ -86,16 +113,29 @@ impl ExternalDependencyArtifacts {
     }
 
     pub fn augment_graph(&self, graph: &mut PackageGraph) -> Result<(), String> {
-        for root in self.root_packages() {
-            if graph.packages.contains_key(&root) {
+        let mut seen = HashMap::new();
+        for module in self.modules.values() {
+            for source in module.sources.values() {
+                if let Some(existing) = seen.insert(
+                    source.logical_name.clone(),
+                    (source.import_path.clone(), source.dir.clone()),
+                ) {
+                    return Err(format!(
+                        "external package alias {} is ambiguous between {} and {}",
+                        source.logical_name, existing.0, source.import_path
+                    ));
+                }
+            }
+        }
+
+        for (package, (_, dir)) in seen {
+            if graph.packages.contains_key(&package) {
                 return Err(format!(
-                    "package name {} conflicts with external dependency module {}",
-                    root, root
+                    "package name {} conflicts with external dependency package {}",
+                    package, package
                 ));
             }
-            graph.add_external_root_package(root);
-        }
-        for (package, dir) in self.package_dirs() {
+            graph.add_external_root_package(package.clone());
             graph.add_external_package_dir(package, dir);
         }
         Ok(())
@@ -154,6 +194,7 @@ pub fn resolve_project_dependencies_with_registry(
             .cloned()
             .ok_or_else(|| format!("missing module root name for {}", coord.display()))?;
         let artifact = compile_external_module(module, &root_package, &compiled)?;
+        ensure_no_external_package_conflicts(&compiled, &artifact)?;
         compiled.insert(root_package, artifact);
     }
 
@@ -239,23 +280,23 @@ fn compile_external_module(
 ) -> Result<ExternalModuleArtifact, String> {
     validate_external_module_manifest(module, root_package)?;
 
-    let available_roots = compiled_roots.keys().cloned().collect::<HashSet<_>>();
-    let mut graph = packages::discover_dependency_packages_with_external_roots(
+    let available_imports = external_imports_from_modules(compiled_roots);
+    let mut graph = packages::discover_dependency_packages_with_external_imports(
         &module.root_dir,
         &module.config,
-        &available_roots,
+        &available_imports,
     )
     .map_err(err_text)?;
-    for root in available_roots.iter() {
-        if graph.packages.contains_key(root) {
+    for package in available_imports.package_names.iter() {
+        if graph.packages.contains_key(package) {
             return Err(format!(
-                "package name {} in {} conflicts with external dependency module {}",
-                root,
+                "package name {} in {} conflicts with external dependency package {}",
+                package,
                 module.root_dir.display(),
-                root
+                package
             ));
         }
-        graph.add_external_root_package(root.clone());
+        graph.add_external_root_package(package.clone());
     }
 
     let order = packages::topo_sort_packages(&graph).map_err(err_text)?;
@@ -276,13 +317,18 @@ fn compile_external_module(
     let logical_names = graph
         .packages
         .keys()
-        .map(|package| {
-            (
-                package.clone(),
-                logical_package_name(root_package, package, root_package),
-            )
-        })
+        .map(|package| (package.clone(), logical_package_name(root_package, package)))
         .collect::<HashMap<_, _>>();
+    let mut seen_logical_names = HashSet::new();
+    for logical_name in logical_names.values() {
+        if !seen_logical_names.insert(logical_name.clone()) {
+            return Err(format!(
+                "external dependency {} defines duplicate package alias {}",
+                module.coord.display(),
+                logical_name
+            ));
+        }
+    }
 
     let mut merged_exports = empty_exports();
     let mut merged_core = core::File {
@@ -351,15 +397,24 @@ fn compile_external_module(
             logical_name.clone(),
             ExternalPackageSource {
                 logical_name,
+                import_path: external_import_path(&module.coord.owner, root_package, &package_name),
                 dir: package_dir,
                 files,
             },
         );
     }
 
-    let mut package_interface =
-        interface::PackageInterface::from_exports(root_package, &merged_exports);
-    package_interface.packages = sources.keys().cloned().collect();
+    let mut package_interfaces = BTreeMap::new();
+    for source in sources.values() {
+        let mut package_interface =
+            interface::PackageInterface::from_exports(&source.logical_name, &merged_exports);
+        package_interface.packages = std::iter::once(source.import_path.clone()).collect();
+        package_interfaces.insert(source.logical_name.clone(), package_interface);
+    }
+    let package_interface = package_interfaces
+        .get(root_package)
+        .cloned()
+        .ok_or_else(|| format!("missing root package interface for {}", root_package))?;
 
     let interface = InterfaceUnit::new(
         root_package.to_string(),
@@ -382,6 +437,7 @@ fn compile_external_module(
         version: module.version.clone(),
         interface,
         core,
+        package_interfaces,
         sources,
     })
 }
@@ -446,9 +502,9 @@ fn compile_module_package(
             local.interface.exports.apply_to(&mut compile_env);
             continue;
         }
-        if let Some(external) = external_roots.get(&dep) {
+        if let Some((external, package_interface)) = find_external_package(external_roots, &dep) {
             deps_envs.insert(dep.clone(), external.interface.exports.to_genv());
-            deps_interfaces.insert(dep.clone(), external.interface.interface.clone());
+            deps_interfaces.insert(dep.clone(), package_interface.clone());
             dep_hashes.insert(dep.clone(), external.interface.interface_hash.clone());
             external.interface.exports.apply_to(&mut compile_env);
             continue;
@@ -510,12 +566,63 @@ fn compile_module_package(
     })
 }
 
-fn logical_package_name(root_package: &str, package: &str, module_name: &str) -> String {
-    if package == module_name {
+fn external_import_path(owner: &str, module: &str, package: &str) -> String {
+    if package == module {
+        format!("{owner}::{module}")
+    } else {
+        format!("{owner}::{module}::{package}")
+    }
+}
+
+fn logical_package_name(root_package: &str, package: &str) -> String {
+    if package == root_package {
         root_package.to_string()
     } else {
-        format!("{root_package}::{package}")
+        package.to_string()
     }
+}
+
+fn external_imports_from_modules(
+    modules: &BTreeMap<String, ExternalModuleArtifact>,
+) -> ExternalImports {
+    let mut package_names = HashSet::new();
+    let mut import_paths = HashMap::new();
+    for module in modules.values() {
+        for source in module.sources.values() {
+            package_names.insert(source.logical_name.clone());
+            import_paths.insert(source.import_path.clone(), source.logical_name.clone());
+        }
+    }
+    ExternalImports::new(package_names, import_paths)
+}
+
+fn ensure_no_external_package_conflicts(
+    compiled: &BTreeMap<String, ExternalModuleArtifact>,
+    candidate: &ExternalModuleArtifact,
+) -> Result<(), String> {
+    for existing in compiled.values() {
+        for source in existing.sources.values() {
+            if let Some(other) = candidate.sources.get(&source.logical_name) {
+                return Err(format!(
+                    "external package alias {} is ambiguous between {} and {}",
+                    source.logical_name, source.import_path, other.import_path
+                ));
+            }
+        }
+    }
+    Ok(())
+}
+
+fn find_external_package<'a>(
+    external_roots: &'a BTreeMap<String, ExternalModuleArtifact>,
+    package: &str,
+) -> Option<(&'a ExternalModuleArtifact, &'a interface::PackageInterface)> {
+    for module in external_roots.values() {
+        if let Some(package_interface) = module.package_interfaces.get(package) {
+            return Some((module, package_interface));
+        }
+    }
+    None
 }
 
 fn rename_package_key(name: &str, package_names: &HashMap<String, String>) -> String {
