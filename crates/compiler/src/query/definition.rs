@@ -97,31 +97,35 @@ fn resolve_use_decl(
     }
 
     let idx = token_segment_index(token, &ident_tokens)?;
-    if idx == 0 {
-        let pkg = &segments[0];
-        let pkg_dir = if let Ok((module_dir, _)) =
-            crate::pipeline::packages::discover_project_from_file(path)
-        {
-            module_dir.join(pkg)
-        } else {
-            path.parent()
-                .filter(|parent| !parent.as_os_str().is_empty())
-                .unwrap_or_else(|| Path::new("."))
-                .join(pkg)
-        };
-        if let Some(target) = package_nav_target_in_dir(&pkg_dir) {
-            return Some(vec![DefinitionLocation {
-                path: target,
-                range: TextRange::new(text_size::TextSize::from(0), text_size::TextSize::from(0)),
-            }]);
-        }
-        return None;
-    }
-
     let lookup = segments[..=idx].join("::");
     let Ok((_graph, index)) = build_symbol_index(path, src) else {
+        if idx == 0 {
+            let pkg = &segments[0];
+            let pkg_dir = if let Ok((module_dir, _)) =
+                crate::pipeline::packages::discover_project_from_file(path)
+            {
+                module_dir.join(pkg)
+            } else {
+                path.parent()
+                    .filter(|parent| !parent.as_os_str().is_empty())
+                    .unwrap_or_else(|| Path::new("."))
+                    .join(pkg)
+            };
+            if let Some(target) = package_nav_target_in_dir(&pkg_dir) {
+                return Some(vec![DefinitionLocation {
+                    path: target,
+                    range: TextRange::new(
+                        text_size::TextSize::from(0),
+                        text_size::TextSize::from(0),
+                    ),
+                }]);
+            }
+        }
         return None;
     };
+    if let Some(location) = package_definition_location(&index, &lookup) {
+        return Some(vec![location]);
+    }
     let mut out = index.find_type(&lookup);
     out.extend(index.find_value(&lookup));
     if out.is_empty() { None } else { Some(out) }
@@ -545,4 +549,14 @@ fn tast_ty_constr_candidates(ty: &tast::Ty) -> Vec<String> {
     }
 
     expanded
+}
+
+fn package_definition_location(
+    index: &ProjectSymbolIndex,
+    package: &str,
+) -> Option<DefinitionLocation> {
+    index.find_package(package).map(|path| DefinitionLocation {
+        path,
+        range: TextRange::new(text_size::TextSize::from(0), text_size::TextSize::from(0)),
+    })
 }

@@ -58,6 +58,17 @@ fn check_value_completions(src: &str, line: u32, col: u32, expected: Expect) {
     expected.assert_debug_eq(&result);
 }
 
+fn check_value_completions_with_path(
+    path: &Path,
+    src: &str,
+    line: u32,
+    col: u32,
+    expected: Expect,
+) {
+    let result = value_completions(path, src, line, col).unwrap_or_default();
+    expected.assert_debug_eq(&result);
+}
+
 fn check_signature_help(src: &str, line: u32, col: u32, expected: Expect) {
     let result = signature_help(Path::new("dummy"), src, line, col);
     expected.assert_debug_eq(&result);
@@ -147,6 +158,86 @@ fn tag() -> string {
 "#,
     )
     .unwrap();
+}
+
+#[test]
+#[rustfmt::skip]
+fn use_statement_package_completions() {
+    let dir = tempdir().unwrap();
+    let home = dir.path().join(".goml");
+    write_cached_registry(&home);
+
+    std::fs::create_dir_all(dir.path().join("util")).unwrap();
+    std::fs::write(
+        dir.path().join("util/goml.toml"),
+        r#"[package]
+name = "util"
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        dir.path().join("util/lib.gom"),
+        r#"package util;
+
+fn ping() -> string {
+    "pong"
+}
+"#,
+    )
+    .unwrap();
+
+    std::fs::write(
+        dir.path().join("goml.toml"),
+        r#"[module]
+name = "demo"
+
+[package]
+name = "main"
+entry = "main.gom"
+
+[dependencies]
+"alice/http" = "1.2.0"
+"#,
+    )
+    .unwrap();
+
+    let src = r#"package main;
+
+use 
+
+fn main() -> unit {
+    ()
+}
+"#;
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(&main_path, src).unwrap();
+
+    with_goml_home(&home, || {
+        check_value_completions_with_path(
+            &main_path,
+            src,
+            2,
+            4,
+            expect![[r#"
+                [
+                    ValueCompletionItem {
+                        name: "http",
+                        kind: Package,
+                        detail: Some(
+                            "package",
+                        ),
+                    },
+                    ValueCompletionItem {
+                        name: "util",
+                        kind: Package,
+                        detail: Some(
+                            "package",
+                        ),
+                    },
+                ]
+            "#]],
+        );
+    });
 }
 
 #[test]
@@ -1084,6 +1175,15 @@ use http;
 use http::client;
 
 fn main() -> unit {
+    let _ = http::;
+}
+"#;
+    let nested_namespace_src = r#"package main;
+
+use http;
+use http::client;
+
+fn main() -> unit {
     let _ = http::client::;
 }
 "#;
@@ -1115,6 +1215,31 @@ entry = "main.gom"
         check_colon_colon_completions_with_path(
             &main_path,
             namespace_src,
+            6,
+            18,
+            expect![[r#"
+                [
+                    ColonColonCompletionItem {
+                        name: "client",
+                        kind: Package,
+                        detail: Some(
+                            "package",
+                        ),
+                    },
+                    ColonColonCompletionItem {
+                        name: "make_client",
+                        kind: Value,
+                        detail: Some(
+                            "fn",
+                        ),
+                    },
+                ]
+            "#]],
+        );
+
+        check_colon_colon_completions_with_path(
+            &main_path,
+            nested_namespace_src,
             6,
             26,
             expect![[r#"

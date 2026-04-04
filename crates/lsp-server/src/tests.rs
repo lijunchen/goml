@@ -1,7 +1,9 @@
 use std::collections::BTreeSet;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use std::sync::{Mutex, OnceLock};
 
 use expect_test::{Expect, expect};
+use tempfile::tempdir;
 use tower_lsp::lsp_types::*;
 
 use crate::{Document, handlers};
@@ -11,6 +13,82 @@ fn test_module_dir() -> PathBuf {
         .parent()
         .unwrap()
         .join("compiler/src/tests/module")
+}
+
+fn env_lock() -> &'static Mutex<()> {
+    static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+    LOCK.get_or_init(|| Mutex::new(()))
+}
+
+fn with_goml_home<T>(home: &Path, f: impl FnOnce() -> T) -> T {
+    let _guard = env_lock().lock().unwrap();
+    let previous = std::env::var_os("GOML_HOME");
+    unsafe {
+        std::env::set_var("GOML_HOME", home);
+    }
+    let result = f();
+    match previous {
+        Some(value) => unsafe {
+            std::env::set_var("GOML_HOME", value);
+        },
+        None => unsafe {
+            std::env::remove_var("GOML_HOME");
+        },
+    }
+    result
+}
+
+fn write_cached_registry(home: &Path) {
+    let registry = home.join("cache/registry");
+    std::fs::create_dir_all(registry.join("alice/http/1.2.0/client")).unwrap();
+    std::fs::write(
+        registry.join("index.toml"),
+        r#"[modules."alice/http"]
+latest = "1.2.0"
+versions = ["1.2.0"]
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        registry.join("alice/http/1.2.0/goml.toml"),
+        r#"[package]
+name = "http"
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        registry.join("alice/http/1.2.0/lib.gom"),
+        r#"package http;
+
+use client;
+
+fn make_client() -> client::Client {
+    client::Client { name: "alice" }
+}
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        registry.join("alice/http/1.2.0/client/goml.toml"),
+        r#"[package]
+name = "client"
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        registry.join("alice/http/1.2.0/client/lib.gom"),
+        r#"package client;
+
+struct Client {
+    name: string,
+}
+
+fn tag() -> string {
+    "client"
+}
+"#,
+    )
+    .unwrap();
 }
 
 mod robustness_tests {
@@ -594,6 +672,39 @@ fn main() {
             "pipeline/lib.gom",
             expect!["no diagnostics"],
         );
+    }
+
+    #[test]
+    fn missing_package_reports_high_level_diagnostic() {
+        let dir = tempdir().unwrap();
+        let root = dir.path();
+        std::fs::write(
+            root.join("goml.toml"),
+            r#"[module]
+name = "demo"
+
+[package]
+name = "main"
+entry = "main.gom"
+"#,
+        )
+        .unwrap();
+        let src = r#"package main;
+
+use colors::Paint;
+
+fn main() -> unit {
+    ()
+}
+"#;
+        let path = root.join("main.gom");
+        std::fs::write(&path, src).unwrap();
+        let doc = Document::new(src.to_string());
+        let diagnostics = handlers::get_diagnostics(&path, src, &doc);
+        let formatted = format_diagnostics(&diagnostics);
+
+        assert!(formatted.contains("imports missing package colors"));
+        assert!(!formatted.contains("failed to read package directory"));
     }
 }
 
@@ -1419,6 +1530,27 @@ fn main() {
         expect.assert_eq(&format_goto_result(result));
     }
 
+    fn write_registry_project(test_name: &str, src: &str) -> PathBuf {
+        let root = temp_project_dir(test_name);
+        let _ = std::fs::remove_dir_all(&root);
+        write_file(
+            &root.join("goml.toml"),
+            r#"
+[module]
+name = "demo"
+
+[package]
+name = "main"
+entry = "main.gom"
+
+[dependencies]
+"alice/http" = "1.2.0"
+"#,
+        );
+        write_file(&root.join("main.gom"), src);
+        root
+    }
+
     #[test]
     fn goto_definition_use_package_to_goml_toml() {
         check_module_goto("project001", "main.gom", 1, 6, expect!["lib/goml.toml:0:0"]);
@@ -1892,6 +2024,79 @@ fn a() -> int32 { 0 }
             "Pkg",
             expect!["Pkg/a.gom:0:0"],
         );
+    }
+
+    #[test]
+    fn goto_definition_registry_packages() {
+        let dir = tempdir().unwrap();
+        let home = dir.path().join(".goml");
+        write_cached_registry(&home);
+        write_registry_project(
+            "registry_packages",
+            r#"
+package main;
+use http;
+use http::client;
+
+fn main() -> unit {
+    ()
+}
+"#,
+        );
+
+        with_goml_home(&home, || {
+            check_temp_module_goto_token(
+                "registry_packages",
+                "main.gom",
+                "use http;",
+                "http",
+                expect!["1.2.0/goml.toml:0:0"],
+            );
+            check_temp_module_goto_token(
+                "registry_packages",
+                "main.gom",
+                "use http::client;",
+                "client",
+                expect!["client/goml.toml:0:0"],
+            );
+        });
+    }
+
+    #[test]
+    fn goto_definition_registry_members() {
+        let dir = tempdir().unwrap();
+        let home = dir.path().join(".goml");
+        write_cached_registry(&home);
+        write_registry_project(
+            "registry_members",
+            r#"
+package main;
+use http;
+use http::client;
+
+fn main() -> unit {
+    let _ = http::make_client();
+    let _ = client::Client { name: "bob" };
+}
+"#,
+        );
+
+        with_goml_home(&home, || {
+            check_temp_module_goto_token(
+                "registry_members",
+                "main.gom",
+                "http::make_client",
+                "make_client",
+                expect!["1.2.0/lib.gom:4:3"],
+            );
+            check_temp_module_goto_token(
+                "registry_members",
+                "main.gom",
+                "client::Client",
+                "Client",
+                expect!["client/lib.gom:2:7"],
+            );
+        });
     }
 
     #[test]

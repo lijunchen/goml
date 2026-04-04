@@ -9,9 +9,7 @@ use parser::syntax::MySyntaxNode;
 use text_size::{TextRange, TextSize};
 
 use super::DefinitionLocation;
-use crate::{
-    package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package},
-};
+use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct MemberLookupKey {
@@ -123,6 +121,26 @@ impl ProjectSymbolIndex {
     pub(crate) fn find_package(&self, pkg: &str) -> Option<PathBuf> {
         self.packages.get(pkg).cloned()
     }
+
+    pub(crate) fn package_children(&self, namespace: &str) -> Vec<String> {
+        let prefix = format!("{}::", namespace);
+        let mut names = self
+            .packages
+            .keys()
+            .filter_map(|name| {
+                let rest = name.strip_prefix(&prefix)?;
+                let child = rest.split("::").next()?;
+                if child.is_empty() {
+                    None
+                } else {
+                    Some(child.to_string())
+                }
+            })
+            .collect::<Vec<_>>();
+        names.sort();
+        names.dedup();
+        names
+    }
 }
 
 pub(crate) struct SymbolLookup {
@@ -221,32 +239,22 @@ pub(crate) fn lookup_symbol_locations_for_path(
     let mut locations = Vec::new();
     let full_name = segments.join("::");
 
-    if segments[0] != BUILTIN_PACKAGE
-        && token_text == segments[0]
-        && graph
-            .and_then(|g| g.package_dirs.get(&segments[0]))
-            .is_some()
-        && let Some(loc) = index.find_package(&segments[0])
-    {
-        locations.push(DefinitionLocation {
-            path: loc,
-            range: TextRange::new(TextSize::from(0), TextSize::from(0)),
-        });
-        return locations;
-    }
-
-    if segments[0] != BUILTIN_PACKAGE
-        && token_text == segments[segments.len() - 1]
-        && graph
-            .and_then(|g| g.package_dirs.get(&full_name))
-            .is_some()
-        && let Some(loc) = index.find_package(&full_name)
-    {
-        locations.push(DefinitionLocation {
-            path: loc,
-            range: TextRange::new(TextSize::from(0), TextSize::from(0)),
-        });
-        return locations;
+    if segments[0] != BUILTIN_PACKAGE {
+        for idx in 0..segments.len() {
+            if token_text != segments[idx] {
+                continue;
+            }
+            let package = segments[..=idx].join("::");
+            if graph.and_then(|g| g.package_dirs.get(&package)).is_some()
+                && let Some(loc) = index.find_package(&package)
+            {
+                locations.push(DefinitionLocation {
+                    path: loc,
+                    range: TextRange::new(TextSize::from(0), TextSize::from(0)),
+                });
+                return locations;
+            }
+        }
     }
 
     if segments.len() >= 2 {
@@ -484,14 +492,13 @@ fn discover_packages_for_query(
     if let Ok((module_dir, config)) = crate::pipeline::packages::discover_project_from_file(path) {
         let external_deps = crate::external::resolve_project_dependencies(&module_dir, &config)?;
         let external_roots = external_deps.root_packages();
-        let graph =
-            crate::pipeline::packages::discover_packages_with_external_roots(
-                &module_dir,
-                Some(path),
-                Some(entry_ast),
-                &external_roots,
-            )
-            .map_err(|e| format!("{:?}", e))?;
+        let graph = crate::pipeline::packages::discover_packages_with_external_roots(
+            &module_dir,
+            Some(path),
+            Some(entry_ast),
+            &external_roots,
+        )
+        .map_err(|e| format!("{:?}", e))?;
         return Ok(graph);
     }
 
@@ -588,13 +595,12 @@ fn index_package_symbols_named(
             .packages
             .insert(package_name.to_string(), package_goml);
     } else {
-        let mut gom_files = package_files
-            .iter()
-            .cloned()
-            .collect::<Vec<_>>();
+        let mut gom_files = package_files.iter().cloned().collect::<Vec<_>>();
         gom_files.sort();
         if let Some(first) = gom_files.first() {
-            index.packages.insert(package_name.to_string(), first.clone());
+            index
+                .packages
+                .insert(package_name.to_string(), first.clone());
         }
     }
 

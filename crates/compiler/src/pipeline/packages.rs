@@ -56,6 +56,10 @@ fn read_gom_sources(dir: &Path) -> Result<Vec<PathBuf>, CompilationError> {
     Ok(files)
 }
 
+fn package_dir_is_loadable(dir: &Path) -> bool {
+    dir.is_dir()
+}
+
 fn collect_imports(files: &[SourceFileAst]) -> HashSet<String> {
     files
         .iter()
@@ -397,6 +401,10 @@ fn discover_packages_inner(
             continue;
         }
         let package_dir = root_dir.join(&package_name);
+        if !package_dir_is_loadable(&package_dir) {
+            loaded.insert(package_name);
+            continue;
+        }
         let package_override = source_override_for_dir(&package_dir, source_override);
         let package = if let Some(config) = GomlConfig::find_package_config(&package_dir) {
             load_package_from_config(&package_dir, &config, package_override)?
@@ -439,9 +447,7 @@ pub fn discover_packages_from_config(
     allow_non_main_module_root: bool,
     external_root_packages: &HashSet<String>,
 ) -> Result<PackageGraph, CompilationError> {
-    if config.is_module_root()
-        && !allow_non_main_module_root
-        && config.package.name != ROOT_PACKAGE
+    if config.is_module_root() && !allow_non_main_module_root && config.package.name != ROOT_PACKAGE
     {
         return Err(compile_error(format!(
             "module root package must be `main`, found `{}` in {}",
@@ -493,6 +499,10 @@ pub fn discover_packages_from_config(
             continue;
         }
         let package_dir = module_dir.join(&package_name);
+        if !package_dir_is_loadable(&package_dir) {
+            loaded.insert(package_name);
+            continue;
+        }
         let package_override = source_override_for_dir(&package_dir, source_override);
         let package = if let Some(pkg_config) = GomlConfig::find_package_config(&package_dir) {
             load_package_from_config(&package_dir, &pkg_config, package_override)?
