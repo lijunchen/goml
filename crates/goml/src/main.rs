@@ -12,8 +12,13 @@ use compiler::package_names::{ENTRY_FUNCTION, ROOT_PACKAGE};
 use compiler::pipeline::{
     pipeline::Compilation, pipeline::CompilationError, pipeline::compile_single_file,
 };
+use compiler::registry::{
+    ModuleCoord, ModuleRequirement, Registry, cached_registry_dir, default_registry_url,
+    load_or_create_user_config, user_config_path, validate_registry_consistency,
+};
 use parser::format_parser_diagnostics;
 use tempfile::tempdir;
+use toml_edit::{DocumentMut, Item, Table, value};
 
 const PRETTY_WIDTH: usize = 120;
 const PROJECT_GO_OUTPUT: &str = "target/goml/main.go";
@@ -34,8 +39,31 @@ enum Commands {
     New(NewArgs),
     Check(ProjectCommandArgs),
     Build(ProjectCommandArgs),
+    Update(RegistryCommandArgs),
+    Add(AddArgs),
+    Remove(RemoveArgs),
     Version,
     Compiler(CompilerArgs),
+}
+
+#[derive(Args, Debug)]
+struct RegistryCommandArgs {
+    #[arg(long = "local-registry")]
+    local_registry: Option<PathBuf>,
+}
+
+#[derive(Args, Debug)]
+struct AddArgs {
+    dependency: String,
+    #[arg(long = "local-registry")]
+    local_registry: Option<PathBuf>,
+}
+
+#[derive(Args, Debug)]
+struct RemoveArgs {
+    dependency: String,
+    #[arg(long = "local-registry")]
+    local_registry: Option<PathBuf>,
 }
 
 #[derive(Args, Debug, Clone, Copy)]
@@ -252,6 +280,9 @@ fn run_cli() -> anyhow::Result<()> {
         Commands::New(args) => execute_new(args),
         Commands::Check(args) => execute_project_check(args),
         Commands::Build(args) => execute_project_build(args),
+        Commands::Update(args) => execute_update(args),
+        Commands::Add(args) => execute_add(args),
+        Commands::Remove(args) => execute_remove(args),
         Commands::Version => execute_version(),
         Commands::Compiler(args) => execute_compiler_command(args.command),
     }
@@ -296,6 +327,82 @@ fn execute_new(args: NewArgs) -> anyhow::Result<()> {
     Ok(())
 }
 
+fn execute_update(args: RegistryCommandArgs) -> anyhow::Result<()> {
+    let source = registry_source(args.local_registry.as_deref())?;
+    let cache_dir = cached_registry_dir().map_err(anyhow::Error::msg)?;
+    if let Some(parent) = cache_dir.parent() {
+        fs::create_dir_all(parent)
+            .with_context(|| format!("failed to create directory {}", parent.display()))?;
+    }
+
+    if cache_dir.exists() {
+        let git_dir = cache_dir.join(".git");
+        if !git_dir.exists() {
+            bail!(
+                "cached registry path {} exists but is not a git repository",
+                cache_dir.display()
+            );
+        }
+        run_git_command([
+            "-C",
+            cache_dir.to_string_lossy().as_ref(),
+            "remote",
+            "set-url",
+            "origin",
+            source.as_str(),
+        ])?;
+        run_git_command([
+            "-C",
+            cache_dir.to_string_lossy().as_ref(),
+            "pull",
+            "--ff-only",
+        ])?;
+    } else {
+        run_git_command([
+            "clone",
+            source.as_str(),
+            cache_dir.to_string_lossy().as_ref(),
+        ])?;
+    }
+
+    let registry = Registry::load(&cache_dir).map_err(anyhow::Error::msg)?;
+    validate_registry_consistency(&registry).map_err(anyhow::Error::msg)?;
+    println!("updated registry cache at {}", cache_dir.display());
+    Ok(())
+}
+
+fn execute_add(args: AddArgs) -> anyhow::Result<()> {
+    let module_dir = locate_module_root_from_cwd()?;
+    let manifest_path = module_dir.join("goml.toml");
+    let registry = load_registry_for_command(args.local_registry.as_deref())?;
+    let (coord, requested_version) = parse_dependency_spec(&args.dependency)?;
+    let version = if let Some(version) = requested_version {
+        let requirement = ModuleRequirement {
+            coord: coord.clone(),
+            min_version: version,
+        };
+        registry
+            .select_minimum_version(&requirement)
+            .map_err(anyhow::Error::msg)?
+    } else {
+        registry
+            .latest_version(&coord)
+            .map_err(anyhow::Error::msg)?
+    };
+    upsert_dependency(&manifest_path, &coord, &version.display())?;
+    println!("added {} = {}", coord.display(), version.display());
+    Ok(())
+}
+
+fn execute_remove(args: RemoveArgs) -> anyhow::Result<()> {
+    let module_dir = locate_module_root_from_cwd()?;
+    let manifest_path = module_dir.join("goml.toml");
+    let coord = ModuleCoord::parse(args.dependency.trim()).map_err(anyhow::Error::msg)?;
+    remove_dependency(&manifest_path, &coord)?;
+    println!("removed {}", coord.display());
+    Ok(())
+}
+
 fn is_valid_identifier(name: &str) -> bool {
     let mut chars = name.chars();
     let Some(first) = chars.next() else {
@@ -305,6 +412,112 @@ fn is_valid_identifier(name: &str) -> bool {
         return false;
     }
     chars.all(|ch| ch == '_' || ch.is_ascii_alphanumeric())
+}
+
+fn parse_dependency_spec(
+    input: &str,
+) -> anyhow::Result<(ModuleCoord, Option<compiler::registry::SemVer>)> {
+    let trimmed = input.trim();
+    let (coord, version) = match trimmed.split_once('@') {
+        Some((coord, version)) => (coord, Some(version)),
+        None => (trimmed, None),
+    };
+    let coord = ModuleCoord::parse(coord).map_err(anyhow::Error::msg)?;
+    let version = version
+        .map(compiler::registry::SemVer::parse)
+        .transpose()
+        .map_err(anyhow::Error::msg)?;
+    Ok((coord, version))
+}
+
+fn registry_source(local_registry: Option<&Path>) -> anyhow::Result<String> {
+    if let Some(path) = local_registry {
+        return Ok(path.to_string_lossy().into_owned());
+    }
+    if !user_config_path().map_err(anyhow::Error::msg)?.exists() {
+        let _ = load_or_create_user_config().map_err(anyhow::Error::msg)?;
+    }
+    default_registry_url().map_err(anyhow::Error::msg)
+}
+
+fn load_registry_for_command(local_registry: Option<&Path>) -> anyhow::Result<Registry> {
+    if let Some(path) = local_registry {
+        let registry = Registry::load(path).map_err(anyhow::Error::msg)?;
+        validate_registry_consistency(&registry).map_err(anyhow::Error::msg)?;
+        return Ok(registry);
+    }
+
+    let cache_dir = cached_registry_dir().map_err(anyhow::Error::msg)?;
+    if !cache_dir.exists() {
+        bail!(
+            "registry cache not found at {}; run `goml update` or use --local-registry",
+            cache_dir.display()
+        );
+    }
+    let registry = Registry::load(&cache_dir).map_err(anyhow::Error::msg)?;
+    validate_registry_consistency(&registry).map_err(anyhow::Error::msg)?;
+    Ok(registry)
+}
+
+fn locate_module_root_from_cwd() -> anyhow::Result<PathBuf> {
+    let cwd = std::env::current_dir().context("failed to read current directory")?;
+    let Some((module_dir, _config)) = GomlConfig::find_module_root(&cwd) else {
+        bail!(
+            "no goml.toml with [module] section found in ancestors of {}",
+            cwd.display()
+        );
+    };
+    Ok(module_dir)
+}
+
+fn load_manifest_document(path: &Path) -> anyhow::Result<DocumentMut> {
+    let text =
+        fs::read_to_string(path).with_context(|| format!("failed to read {}", path.display()))?;
+    text.parse::<DocumentMut>()
+        .map_err(|err| anyhow!("failed to parse {}: {}", path.display(), err))
+}
+
+fn upsert_dependency(path: &Path, coord: &ModuleCoord, version: &str) -> anyhow::Result<()> {
+    let mut doc = load_manifest_document(path)?;
+    ensure_dependencies_table(&mut doc).insert(&coord.display(), value(version));
+    fs::write(path, doc.to_string()).with_context(|| format!("failed to write {}", path.display()))
+}
+
+fn remove_dependency(path: &Path, coord: &ModuleCoord) -> anyhow::Result<()> {
+    let mut doc = load_manifest_document(path)?;
+    let dependencies_item = &mut doc["dependencies"];
+    if let Some(table) = dependencies_item.as_table_like_mut() {
+        table.remove(coord.display().as_str());
+        if table.is_empty() {
+            *dependencies_item = Item::None;
+        }
+    }
+    fs::write(path, doc.to_string()).with_context(|| format!("failed to write {}", path.display()))
+}
+
+fn ensure_dependencies_table(doc: &mut DocumentMut) -> &mut Table {
+    if !doc.as_table().contains_key("dependencies") {
+        doc["dependencies"] = Item::Table(Table::new());
+    } else if !doc["dependencies"].is_table() {
+        doc["dependencies"] = Item::Table(Table::new());
+    }
+    doc["dependencies"]
+        .as_table_mut()
+        .expect("dependencies must be a table")
+}
+
+fn run_git_command<const N: usize>(args: [&str; N]) -> anyhow::Result<()> {
+    let status = Command::new("git")
+        .args(args)
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status()
+        .context("failed to execute git")?;
+    if !status.success() {
+        bail!("git command failed");
+    }
+    Ok(())
 }
 
 fn ensure_project_dir_ready(path: &Path) -> anyhow::Result<()> {

@@ -49,6 +49,18 @@ fn run_goml(args: &[&str], cwd: &Path) -> anyhow::Result<std::process::Output> {
         .output()?)
 }
 
+fn run_goml_with_home(
+    args: &[&str],
+    cwd: &Path,
+    home: &Path,
+) -> anyhow::Result<std::process::Output> {
+    Ok(Command::new(goml_bin())
+        .args(args)
+        .current_dir(cwd)
+        .env("HOME", home)
+        .output()?)
+}
+
 fn normalize_temp_prefix(text: &str, root: &Path) -> String {
     text.replace(root.to_string_lossy().as_ref(), "<TMP>")
 }
@@ -89,6 +101,131 @@ fn copy_module_fixture(project: &str) -> anyhow::Result<(TempDir, PathBuf)> {
     Ok((dir, fixture))
 }
 
+fn create_local_registry(root: &Path) -> anyhow::Result<PathBuf> {
+    let registry = root.join("registry");
+    fs::create_dir_all(registry.join("alice/http/1.0.0/client"))?;
+    fs::create_dir_all(registry.join("alice/http/1.2.0/client"))?;
+    fs::create_dir_all(registry.join("alice/net/0.1.0"))?;
+
+    fs::write(
+        registry.join("index.toml"),
+        r#"[modules."alice/http"]
+latest = "1.2.0"
+versions = ["1.0.0", "1.2.0"]
+
+[modules."alice/net"]
+latest = "0.1.0"
+versions = ["0.1.0"]
+"#,
+    )?;
+
+    fs::write(
+        registry.join("alice/http/1.0.0/goml.toml"),
+        r#"[package]
+name = "http"
+"#,
+    )?;
+    fs::write(
+        registry.join("alice/http/1.0.0/lib.gom"),
+        r#"package http;
+
+fn version() -> string {
+    "1.0.0"
+}
+"#,
+    )?;
+    fs::write(
+        registry.join("alice/http/1.0.0/client/goml.toml"),
+        r#"[package]
+name = "client"
+"#,
+    )?;
+    fs::write(
+        registry.join("alice/http/1.0.0/client/lib.gom"),
+        r#"package client;
+
+fn tag() -> string {
+    "client-1.0.0"
+}
+"#,
+    )?;
+
+    fs::write(
+        registry.join("alice/http/1.2.0/goml.toml"),
+        r#"[package]
+name = "http"
+
+[dependencies]
+"alice/net" = "0.1.0"
+"#,
+    )?;
+    fs::write(
+        registry.join("alice/http/1.2.0/lib.gom"),
+        r#"package http;
+
+use client;
+
+fn version() -> string {
+    client::tag()
+}
+"#,
+    )?;
+    fs::write(
+        registry.join("alice/http/1.2.0/client/goml.toml"),
+        r#"[package]
+name = "client"
+"#,
+    )?;
+    fs::write(
+        registry.join("alice/http/1.2.0/client/lib.gom"),
+        r#"package client;
+
+fn tag() -> string {
+    "client-1.2.0"
+}
+"#,
+    )?;
+
+    fs::write(
+        registry.join("alice/net/0.1.0/goml.toml"),
+        r#"[package]
+name = "net"
+"#,
+    )?;
+    fs::write(
+        registry.join("alice/net/0.1.0/lib.gom"),
+        r#"package net;
+
+fn version() -> string {
+    "0.1.0"
+}
+"#,
+    )?;
+
+    Command::new("git")
+        .args(["init", "--quiet"])
+        .current_dir(&registry)
+        .output()?;
+    Command::new("git")
+        .args(["config", "user.email", "goml@example.com"])
+        .current_dir(&registry)
+        .output()?;
+    Command::new("git")
+        .args(["config", "user.name", "goml"])
+        .current_dir(&registry)
+        .output()?;
+    Command::new("git")
+        .args(["add", "."])
+        .current_dir(&registry)
+        .output()?;
+    Command::new("git")
+        .args(["commit", "-m", "init", "--quiet"])
+        .current_dir(&registry)
+        .output()?;
+
+    Ok(registry)
+}
+
 #[test]
 fn compiler_run_single_executes_program() -> anyhow::Result<()> {
     let (_dir, path) = write_program(HELLO_PROGRAM)?;
@@ -104,6 +241,126 @@ fn compiler_run_single_executes_program() -> anyhow::Result<()> {
     assert!(output.status.success(), "stderr: {stderr}");
     expect!["hello\n"].assert_eq(&stdout);
     expect![""].assert_eq(&stderr);
+
+    Ok(())
+}
+
+#[test]
+fn update_clones_local_registry_into_cache() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let registry = create_local_registry(dir.path())?;
+    let home = dir.path().join("home");
+    fs::create_dir_all(&home)?;
+
+    let output = run_goml_with_home(
+        &[
+            "update",
+            "--local-registry",
+            registry.to_string_lossy().as_ref(),
+        ],
+        dir.path(),
+        &home,
+    )?;
+    let stdout = normalize_temp_prefix(&String::from_utf8_lossy(&output.stdout), dir.path());
+    let stderr = normalize_temp_prefix(&String::from_utf8_lossy(&output.stderr), dir.path());
+
+    assert!(output.status.success(), "stderr: {stderr}");
+    expect!["updated registry cache at <TMP>/home/.goml/cache/registry\n"].assert_eq(&stdout);
+    expect![""].assert_eq(&stderr);
+    assert!(home.join(".goml/cache/registry/index.toml").exists());
+
+    Ok(())
+}
+
+#[test]
+fn add_uses_latest_version_from_local_registry() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let registry = create_local_registry(dir.path())?;
+    let project_dir = dir.path().join("demo");
+    fs::create_dir_all(&project_dir)?;
+    write_project(&project_dir)?;
+
+    let output = run_goml(
+        &[
+            "add",
+            "alice/http",
+            "--local-registry",
+            registry.to_string_lossy().as_ref(),
+        ],
+        &project_dir,
+    )?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(output.status.success(), "stderr: {stderr}");
+    expect!["added alice/http = 1.2.0\n"].assert_eq(&stdout);
+    expect![""].assert_eq(&stderr);
+
+    let manifest = fs::read_to_string(project_dir.join("goml.toml"))?;
+    expect![[r#"
+        [module]
+        name = "demo"
+
+        [package]
+        name = "main"
+        entry = "main.gom"
+
+        [dependencies]
+        "alice/http" = "1.2.0"
+    "#]]
+    .assert_eq(&manifest);
+
+    Ok(())
+}
+
+#[test]
+fn add_with_explicit_version_and_remove_updates_manifest() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let registry = create_local_registry(dir.path())?;
+    let project_dir = dir.path().join("demo");
+    fs::create_dir_all(&project_dir)?;
+    write_project(&project_dir)?;
+
+    let add_output = run_goml(
+        &[
+            "add",
+            "alice/http@1.0.0",
+            "--local-registry",
+            registry.to_string_lossy().as_ref(),
+        ],
+        &project_dir,
+    )?;
+    assert!(
+        add_output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&add_output.stderr)
+    );
+
+    let remove_output = run_goml(
+        &[
+            "remove",
+            "alice/http",
+            "--local-registry",
+            registry.to_string_lossy().as_ref(),
+        ],
+        &project_dir,
+    )?;
+    let stdout = String::from_utf8_lossy(&remove_output.stdout);
+    let stderr = String::from_utf8_lossy(&remove_output.stderr);
+    assert!(remove_output.status.success(), "stderr: {stderr}");
+    expect!["removed alice/http\n"].assert_eq(&stdout);
+    expect![""].assert_eq(&stderr);
+
+    let manifest = fs::read_to_string(project_dir.join("goml.toml"))?;
+    expect![[r#"
+        [module]
+        name = "demo"
+
+        [package]
+        name = "main"
+        entry = "main.gom"
+    "#]]
+    .assert_eq(&manifest);
 
     Ok(())
 }

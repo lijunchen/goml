@@ -17,6 +17,7 @@ pub mod package_names;
 pub mod pipeline;
 pub mod pprint;
 pub mod query;
+pub mod registry;
 pub mod tast;
 pub mod typer;
 
