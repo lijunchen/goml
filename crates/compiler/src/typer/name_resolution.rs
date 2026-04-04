@@ -202,7 +202,9 @@ impl ResolutionContext<'_> {
 }
 
 fn use_path_root(path: &ast::Path) -> Option<String> {
-    path.segments().first().map(|segment| segment.ident.0.clone())
+    path.segments()
+        .first()
+        .map(|segment| segment.ident.0.clone())
 }
 
 fn use_path_is_package_import(

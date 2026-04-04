@@ -323,7 +323,10 @@ fn typecheck_packages_inner(
                 deps_interfaces.insert(dep.clone(), interface.clone());
                 continue;
             }
-            return Err(compile_error(format!("missing package artifact for {}", dep)));
+            return Err(compile_error(format!(
+                "missing package artifact for {}",
+                dep
+            )));
         }
 
         let artifact = typecheck_package(package_id, package, deps_envs, &deps_interfaces);
@@ -481,7 +484,10 @@ fn compile_inner(
                 module.interface.exports.apply_to(&mut env);
                 continue;
             }
-            return Err(compile_error(format!("missing package artifact for {}", dep)));
+            return Err(compile_error(format!(
+                "missing package artifact for {}",
+                dep
+            )));
         }
         artifact.interface.exports.apply_to(&mut env);
         let core = compile_match::compile_file(&env, &gensym, &mut diagnostics, &artifact.tast);
@@ -622,7 +628,10 @@ pub fn typecheck_with_packages_and_results(
                 deps_interfaces.insert(dep.clone(), interface.clone());
                 continue;
             }
-            return Err(compile_error(format!("missing package artifact for {}", dep)));
+            return Err(compile_error(format!(
+                "missing package artifact for {}",
+                dep
+            )));
         }
 
         let (hir, hir_table, mut hir_diagnostics) =
@@ -683,7 +692,9 @@ pub fn typecheck_with_packages_and_results(
     Ok((entry_hir_table, entry_results, genv, diagnostics))
 }
 
-fn load_external_dependencies(root: &Path) -> Result<ExternalDependencyArtifacts, CompilationError> {
+fn load_external_dependencies(
+    root: &Path,
+) -> Result<ExternalDependencyArtifacts, CompilationError> {
     let Some(config) = GomlConfig::find_package_config(root) else {
         return Ok(ExternalDependencyArtifacts::default());
     };

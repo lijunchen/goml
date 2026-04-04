@@ -262,10 +262,13 @@ fn compile_external_module(
     let mut compiled_packages = HashMap::<String, CompiledPackage>::new();
 
     for package_name in order {
-        let package = graph
-            .packages
-            .get(&package_name)
-            .ok_or_else(|| format!("missing package {} in {}", package_name, module.coord.display()))?;
+        let package = graph.packages.get(&package_name).ok_or_else(|| {
+            format!(
+                "missing package {} in {}",
+                package_name,
+                module.coord.display()
+            )
+        })?;
         let compiled = compile_module_package(package, &compiled_packages, compiled_roots)?;
         compiled_packages.insert(package_name, compiled);
     }
@@ -354,7 +357,8 @@ fn compile_external_module(
         );
     }
 
-    let mut package_interface = interface::PackageInterface::from_exports(root_package, &merged_exports);
+    let mut package_interface =
+        interface::PackageInterface::from_exports(root_package, &merged_exports);
     package_interface.packages = sources.keys().cloned().collect();
 
     let interface = InterfaceUnit::new(
@@ -382,7 +386,10 @@ fn compile_external_module(
     })
 }
 
-fn validate_external_module_manifest(module: &ResolvedModule, root_package: &str) -> Result<(), String> {
+fn validate_external_module_manifest(
+    module: &ResolvedModule,
+    root_package: &str,
+) -> Result<(), String> {
     if module.config.package.name != root_package {
         return Err(format!(
             "registry module {}@{} must declare package.name = {:?} in {}",
@@ -483,7 +490,8 @@ fn compile_module_package(
     exports.apply_to(&mut compile_env);
     let gensym = crate::env::Gensym::new();
     let mut compile_diagnostics = Diagnostics::new();
-    let core_ir = crate::compile_match::compile_file(&compile_env, &gensym, &mut compile_diagnostics, &tast);
+    let core_ir =
+        crate::compile_match::compile_file(&compile_env, &gensym, &mut compile_diagnostics, &tast);
     if compile_diagnostics.has_errors() {
         return Err(diagnostics_text(&compile_diagnostics));
     }
@@ -560,10 +568,7 @@ fn rename_ty(ty: &Ty, package_names: &HashMap<String, String>) -> Ty {
         Ty::TString => Ty::TString,
         Ty::TChar => Ty::TChar,
         Ty::TTuple { typs } => Ty::TTuple {
-            typs: typs
-                .iter()
-                .map(|ty| rename_ty(ty, package_names))
-                .collect(),
+            typs: typs.iter().map(|ty| rename_ty(ty, package_names)).collect(),
         },
         Ty::TEnum { name } => Ty::TEnum {
             name: rename_symbol_name(name, package_names),
@@ -643,7 +648,10 @@ fn rename_impl_def(def: &ImplDef, package_names: &HashMap<String, String>) -> Im
     }
 }
 
-fn rename_exports(exports: &PackageExports, package_names: &HashMap<String, String>) -> PackageExports {
+fn rename_exports(
+    exports: &PackageExports,
+    package_names: &HashMap<String, String>,
+) -> PackageExports {
     let enums = exports
         .type_env
         .enums
@@ -785,7 +793,10 @@ fn rename_exports(exports: &PackageExports, package_names: &HashMap<String, Stri
             trait_impls,
             inherent_impls,
         },
-        value_env: ValueEnv { funcs, extern_funcs },
+        value_env: ValueEnv {
+            funcs,
+            extern_funcs,
+        },
     }
 }
 
@@ -1063,13 +1074,17 @@ fn merge_exports(into: &mut PackageExports, from: &PackageExports) {
         into.trait_env.trait_impls.insert(key.clone(), def.clone());
     }
     for (key, def) in from.trait_env.inherent_impls.iter() {
-        into.trait_env.inherent_impls.insert(key.clone(), def.clone());
+        into.trait_env
+            .inherent_impls
+            .insert(key.clone(), def.clone());
     }
     for (name, scheme) in from.value_env.funcs.iter() {
         into.value_env.funcs.insert(name.clone(), scheme.clone());
     }
     for (name, func) in from.value_env.extern_funcs.iter() {
-        into.value_env.extern_funcs.insert(name.clone(), func.clone());
+        into.value_env
+            .extern_funcs
+            .insert(name.clone(), func.clone());
     }
 }
 

@@ -898,11 +898,7 @@ fn build_project_build_plan(project: &ProjectContext) -> anyhow::Result<ProjectC
         core_outputs.push(output_base.with_extension("core"));
     }
 
-    let mut external_cores = external
-        .core_outputs
-        .values()
-        .cloned()
-        .collect::<Vec<_>>();
+    let mut external_cores = external.core_outputs.values().cloned().collect::<Vec<_>>();
     external_cores.sort();
     core_outputs.splice(0..0, external_cores);
 
@@ -918,8 +914,9 @@ fn build_external_artifacts_plan(
     project: &ProjectContext,
     output_root: &str,
 ) -> anyhow::Result<ExternalArtifactsPlan> {
-    let artifacts = compiler::external::resolve_project_dependencies(&project.module_dir, &project.config)
-        .map_err(anyhow::Error::msg)?;
+    let artifacts =
+        compiler::external::resolve_project_dependencies(&project.module_dir, &project.config)
+            .map_err(anyhow::Error::msg)?;
     let mut interface_outputs = HashMap::new();
     let mut core_outputs = HashMap::new();
 
@@ -954,15 +951,20 @@ fn materialize_external_artifacts(
     include_core: bool,
 ) -> anyhow::Result<()> {
     for (root, module) in plan.artifacts.modules.iter() {
-        let interface_path = plan.interface_outputs.get(root).ok_or_else(|| {
-            anyhow!("missing external interface output for dependency {}", root)
-        })?;
-        write_json(interface_path, serde_json::to_string_pretty(&module.interface)?)?;
+        let interface_path = plan
+            .interface_outputs
+            .get(root)
+            .ok_or_else(|| anyhow!("missing external interface output for dependency {}", root))?;
+        write_json(
+            interface_path,
+            serde_json::to_string_pretty(&module.interface)?,
+        )?;
 
         if include_core {
-            let core_path = plan.core_outputs.get(root).ok_or_else(|| {
-                anyhow!("missing external core output for dependency {}", root)
-            })?;
+            let core_path = plan
+                .core_outputs
+                .get(root)
+                .ok_or_else(|| anyhow!("missing external core output for dependency {}", root))?;
             write_json(core_path, serde_json::to_string_pretty(&module.core)?)?;
         }
     }
