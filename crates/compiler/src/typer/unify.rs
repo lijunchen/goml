@@ -643,7 +643,7 @@ impl Typer {
                                             origin,
                                         });
                                     }
-                                    _ if crate::typer::check::contains_tvar(&self_ty) => {
+                                    _ if crate::typer::check::contains_tvar(self_ty) => {
                                         still_pending.push(Constraint::Overloaded {
                                             op,
                                             trait_name,
@@ -824,8 +824,7 @@ impl Typer {
                                     origin,
                                 );
                             }
-                        } else {
-                        }
+                        } 
                     }
                 }
             }

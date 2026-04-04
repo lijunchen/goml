@@ -25,6 +25,7 @@ pub struct PackageConfig {
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Default)]
 pub struct UserConfig {
     #[serde(default)]
     pub registry: UserRegistryConfig,
@@ -88,13 +89,6 @@ impl GomlConfig {
     }
 }
 
-impl Default for UserConfig {
-    fn default() -> Self {
-        Self {
-            registry: UserRegistryConfig::default(),
-        }
-    }
-}
 
 impl FromStr for UserConfig {
     type Err = toml::de::Error;

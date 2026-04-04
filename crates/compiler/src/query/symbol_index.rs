@@ -595,7 +595,7 @@ fn index_package_symbols_named(
             .packages
             .insert(package_name.to_string(), package_goml);
     } else {
-        let mut gom_files = package_files.iter().cloned().collect::<Vec<_>>();
+        let mut gom_files = package_files.to_vec();
         gom_files.sort();
         if let Some(first) = gom_files.first() {
             index
