@@ -7,6 +7,7 @@ pub mod config;
 pub mod core;
 pub mod derive;
 pub mod env;
+pub mod external;
 pub mod go;
 pub mod hir;
 pub mod interface;

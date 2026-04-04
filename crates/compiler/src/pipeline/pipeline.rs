@@ -7,6 +7,7 @@ use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::{self, syntax::MySyntaxNode};
 use rowan::GreenNode;
 
+use crate::config::GomlConfig;
 use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE};
 use crate::pipeline::builtin_inherent;
 use crate::pipeline::compile_error;
@@ -16,6 +17,7 @@ use crate::{
     artifact::PackageExports,
     builtins, compile_match, derive,
     env::{Gensym, GlobalTypeEnv},
+    external::ExternalDependencyArtifacts,
     go::{self, compile::GlobalGoEnv, goast},
     hir, interface,
     lift::{self, GlobalLiftEnv, LiftFile},
@@ -108,24 +110,6 @@ fn package_id_map(package_names: &[String]) -> HashMap<String, hir::PackageId> {
     ids
 }
 
-fn build_package<'a>(
-    gensym: &Gensym,
-    diagnostics: &mut Diagnostics,
-    package: &'a PackageArtifact,
-    deps: &[&PackageInterface],
-) -> (&'a PackageInterface, crate::core::File) {
-    let mut env = builtins::builtin_env();
-    for dep in deps {
-        dep.exports.apply_to(&mut env);
-    }
-    package.interface.exports.apply_to(&mut env);
-
-    (
-        &package.interface,
-        compile_match::compile_file(&env, gensym, diagnostics, &package.tast),
-    )
-}
-
 fn link_packages(packages: Vec<crate::core::File>) -> crate::core::File {
     let mut toplevels = Vec::new();
     for package in packages {
@@ -149,6 +133,7 @@ struct TypecheckPackagesResult {
     diagnostics: Diagnostics,
     graph: packages::PackageGraph,
     artifacts: HashMap<String, PackageArtifact>,
+    external_deps: ExternalDependencyArtifacts,
 }
 
 fn parse_ast_from_source(
@@ -263,15 +248,47 @@ fn typecheck_packages_inner(
     single_file: bool,
 ) -> Result<TypecheckPackagesResult, CompilationError> {
     let root = discovery_root_for_file(path);
-    let graph = if single_file {
-        packages::discover_packages_single_file(&root, path, entry_ast)?
+    let external_deps = load_external_dependencies(&root)?;
+    let external_roots = external_deps.root_packages();
+    let mut graph = if single_file {
+        packages::discover_packages_single_file_with_external_roots(
+            &root,
+            path,
+            entry_ast,
+            &external_roots,
+        )?
     } else {
-        packages::discover_packages(&root, Some(path), Some(entry_ast))?
+        packages::discover_packages_with_external_roots(
+            &root,
+            Some(path),
+            Some(entry_ast),
+            &external_roots,
+        )?
     };
+    external_deps
+        .augment_graph(&mut graph)
+        .map_err(compile_error)?;
     let order = packages::topo_sort_packages(&graph)?;
 
     let mut diagnostics = Diagnostics::new();
     let mut genv = builtins::builtin_env();
+    let external_interfaces = external_deps.root_interfaces();
+    let external_envs = external_deps.root_envs();
+    for (name, module) in external_deps.modules.iter() {
+        for (key, _) in module.interface.exports.trait_env.trait_impls.iter() {
+            if genv.trait_env.trait_impls.contains_key(key) {
+                diagnostics.push(Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!(
+                        "Trait {} implementation for {:?} is defined in multiple packages (including {})",
+                        key.0, key.1, name
+                    ),
+                ));
+            }
+        }
+        module.interface.exports.apply_to(&mut genv);
+    }
     let mut artifacts_by_name: HashMap<String, PackageArtifact> = HashMap::new();
     let mut package_names: Vec<String> = graph.packages.keys().cloned().collect();
     package_names.sort();
@@ -290,11 +307,23 @@ fn typecheck_packages_inner(
         deps.sort();
         let mut deps_interfaces = HashMap::new();
         for dep in deps.iter() {
-            let artifact = artifacts_by_name
-                .get(dep)
-                .ok_or_else(|| compile_error(format!("missing package artifact for {}", dep)))?;
-            deps_envs.insert(dep.clone(), artifact.interface.exports.to_genv());
-            deps_interfaces.insert(dep.clone(), artifact.interface.package_interface.clone());
+            if let Some(artifact) = artifacts_by_name.get(dep) {
+                deps_envs.insert(dep.clone(), artifact.interface.exports.to_genv());
+                deps_interfaces.insert(dep.clone(), artifact.interface.package_interface.clone());
+                continue;
+            }
+            if let Some(interface) = external_interfaces.get(dep) {
+                deps_envs.insert(
+                    dep.clone(),
+                    external_envs
+                        .get(dep)
+                        .cloned()
+                        .ok_or_else(|| compile_error(format!("missing package env for {}", dep)))?,
+                );
+                deps_interfaces.insert(dep.clone(), interface.clone());
+                continue;
+            }
+            return Err(compile_error(format!("missing package artifact for {}", dep)));
         }
 
         let artifact = typecheck_package(package_id, package, deps_envs, &deps_interfaces);
@@ -366,6 +395,7 @@ fn typecheck_packages_inner(
         diagnostics,
         graph,
         artifacts: artifacts_by_name,
+        external_deps,
     })
 }
 
@@ -397,6 +427,7 @@ fn compile_inner(
         mut diagnostics,
         graph,
         artifacts,
+        external_deps,
         ..
     } = typecheck;
     let mut all_files = Vec::new();
@@ -427,6 +458,9 @@ fn compile_inner(
         &builtins::builtin_print_tast(),
     );
     package_cores.push(builtin_print_core);
+    for module in external_deps.modules.values() {
+        package_cores.push(module.core.core_ir.clone());
+    }
     for name in graph.discovery_order.iter() {
         let package = graph
             .packages
@@ -435,17 +469,22 @@ fn compile_inner(
         let artifact = artifacts
             .get(name)
             .ok_or_else(|| compile_error(format!("missing package artifact for {}", name)))?;
+        let mut env = builtins::builtin_env();
         let mut deps: Vec<_> = package.imports.iter().cloned().collect();
         deps.sort();
-        let mut dep_interfaces = Vec::new();
         for dep in deps.iter() {
-            let dep_artifact = artifacts
-                .get(dep)
-                .ok_or_else(|| compile_error(format!("missing package artifact for {}", dep)))?;
-            dep_interfaces.push(&dep_artifact.interface);
+            if let Some(dep_artifact) = artifacts.get(dep) {
+                dep_artifact.interface.exports.apply_to(&mut env);
+                continue;
+            }
+            if let Some(module) = external_deps.modules.get(dep) {
+                module.interface.exports.apply_to(&mut env);
+                continue;
+            }
+            return Err(compile_error(format!("missing package artifact for {}", dep)));
         }
-        let (_interface, core) =
-            build_package(&gensym, &mut diagnostics, artifact, &dep_interfaces);
+        artifact.interface.exports.apply_to(&mut env);
+        let core = compile_match::compile_file(&env, &gensym, &mut diagnostics, &artifact.tast);
         package_cores.push(core);
     }
     let required_builtin_methods =
@@ -514,11 +553,38 @@ pub fn typecheck_with_packages_and_results(
 > {
     let (_green_node, _cst, entry_ast, mut diagnostics) =
         parse_ast_from_source_allow_parse_errors(path, src)?;
-    let graph =
-        packages::discover_packages(&discovery_root_for_file(path), Some(path), Some(entry_ast))?;
+    let root = discovery_root_for_file(path);
+    let external_deps = load_external_dependencies(&root)?;
+    let external_roots = external_deps.root_packages();
+    let mut graph = packages::discover_packages_with_external_roots(
+        &root,
+        Some(path),
+        Some(entry_ast),
+        &external_roots,
+    )?;
+    external_deps
+        .augment_graph(&mut graph)
+        .map_err(compile_error)?;
     let order = packages::topo_sort_packages(&graph)?;
 
     let mut genv = builtins::builtin_env();
+    let external_interfaces = external_deps.root_interfaces();
+    let external_envs = external_deps.root_envs();
+    for (name, module) in external_deps.modules.iter() {
+        for (key, _) in module.interface.exports.trait_env.trait_impls.iter() {
+            if genv.trait_env.trait_impls.contains_key(key) {
+                diagnostics.push(Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!(
+                        "Trait {} implementation for {:?} is defined in multiple packages (including {})",
+                        key.0, key.1, name
+                    ),
+                ));
+            }
+        }
+        module.interface.exports.apply_to(&mut genv);
+    }
     let mut artifacts_by_name: HashMap<String, PackageInterface> = HashMap::new();
     let mut package_names: Vec<String> = graph.packages.keys().cloned().collect();
     package_names.sort();
@@ -540,11 +606,23 @@ pub fn typecheck_with_packages_and_results(
         deps.sort();
         let mut deps_interfaces = HashMap::new();
         for dep in deps.iter() {
-            let interface = artifacts_by_name
-                .get(dep)
-                .ok_or_else(|| compile_error(format!("missing package artifact for {}", dep)))?;
-            deps_envs.insert(dep.clone(), interface.exports.to_genv());
-            deps_interfaces.insert(dep.clone(), interface.package_interface.clone());
+            if let Some(interface) = artifacts_by_name.get(dep) {
+                deps_envs.insert(dep.clone(), interface.exports.to_genv());
+                deps_interfaces.insert(dep.clone(), interface.package_interface.clone());
+                continue;
+            }
+            if let Some(interface) = external_interfaces.get(dep) {
+                deps_envs.insert(
+                    dep.clone(),
+                    external_envs
+                        .get(dep)
+                        .cloned()
+                        .ok_or_else(|| compile_error(format!("missing package env for {}", dep)))?,
+                );
+                deps_interfaces.insert(dep.clone(), interface.clone());
+                continue;
+            }
+            return Err(compile_error(format!("missing package artifact for {}", dep)));
         }
 
         let (hir, hir_table, mut hir_diagnostics) =
@@ -603,4 +681,14 @@ pub fn typecheck_with_packages_and_results(
     };
 
     Ok((entry_hir_table, entry_results, genv, diagnostics))
+}
+
+fn load_external_dependencies(root: &Path) -> Result<ExternalDependencyArtifacts, CompilationError> {
+    let Some(config) = GomlConfig::find_package_config(root) else {
+        return Ok(ExternalDependencyArtifacts::default());
+    };
+    if !config.is_module_root() || config.dependencies.is_empty() {
+        return Ok(ExternalDependencyArtifacts::default());
+    }
+    crate::external::resolve_project_dependencies(root, &config).map_err(compile_error)
 }

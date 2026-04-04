@@ -201,6 +201,26 @@ impl ResolutionContext<'_> {
     }
 }
 
+fn use_path_root(path: &ast::Path) -> Option<String> {
+    path.segments().first().map(|segment| segment.ident.0.clone())
+}
+
+fn use_path_is_package_import(
+    path: &ast::Path,
+    deps: &HashMap<String, interface::PackageInterface>,
+) -> bool {
+    if path.len() <= 1 {
+        return false;
+    }
+    let Some(root) = use_path_root(path) else {
+        return false;
+    };
+    let Some(dep) = deps.get(&root) else {
+        return false;
+    };
+    dep.packages.contains(&path.display())
+}
+
 impl NameResolution {
     fn error(&mut self, message: impl Into<String>) {
         self.diagnostics
@@ -239,41 +259,50 @@ impl NameResolution {
                     None
                 }
             }
-            2 => {
-                let enum_name = segments.first().map(|seg| &seg.ident.0)?;
-                let variant = segments.get(1).map(|seg| &seg.ident.0)?;
+            _ => {
+                let variant = &last.0;
+                let local_enum = segments[..segments.len() - 1]
+                    .iter()
+                    .map(|segment| segment.ident.0.clone())
+                    .collect::<Vec<_>>()
+                    .join("::");
                 if ctx
                     .constructor_index
-                    .enum_has_variant(ctx.current_package, enum_name, variant)
+                    .enum_has_variant(ctx.current_package, &local_enum, variant)
                 {
-                    Some(constructor_path(ctx.current_package, enum_name, variant))
-                } else if ctx.constructor_index.enum_has_variant(
-                    BUILTIN_PACKAGE,
-                    enum_name,
-                    variant,
-                ) {
-                    Some(constructor_path(BUILTIN_PACKAGE, enum_name, variant))
-                } else {
-                    None
+                    return Some(constructor_path(ctx.current_package, &local_enum, variant));
                 }
-            }
-            3 => {
-                let package = segments.first().map(|seg| &seg.ident.0)?;
-                let enum_name = segments.get(1).map(|seg| &seg.ident.0)?;
-                let variant = segments.get(2).map(|seg| &seg.ident.0)?;
-                let exists = ctx
+                if ctx
                     .constructor_index
-                    .enum_has_variant(package, enum_name, variant);
-                if exists && !ctx.package_allowed(package) {
-                    self.error(format!(
-                        "package {} not imported in package {}",
-                        package, ctx.current_package
-                    ));
-                    return None;
+                    .enum_has_variant(BUILTIN_PACKAGE, &local_enum, variant)
+                {
+                    return Some(constructor_path(BUILTIN_PACKAGE, &local_enum, variant));
                 }
-                exists.then(|| constructor_path(package, enum_name, variant))
+
+                if segments.len() >= 3 {
+                    let package = segments.first().map(|seg| &seg.ident.0)?;
+                    let enum_name = segments[1..segments.len() - 1]
+                        .iter()
+                        .map(|segment| segment.ident.0.clone())
+                        .collect::<Vec<_>>()
+                        .join("::");
+                    let exists = ctx
+                        .constructor_index
+                        .enum_has_variant(package, &enum_name, variant);
+                    if exists && !ctx.package_allowed(package) {
+                        self.error(format!(
+                            "package {} not imported in package {}",
+                            package, ctx.current_package
+                        ));
+                        return None;
+                    }
+                    if exists {
+                        return Some(constructor_path(package, &enum_name, variant));
+                    }
+                }
+
+                None
             }
-            _ => None,
         }
     }
 
@@ -586,6 +615,9 @@ impl NameResolution {
 
                 let mut use_traits = Vec::new();
                 for use_trait in file.ast.use_traits.iter() {
+                    if use_path_is_package_import(use_trait, deps) {
+                        continue;
+                    }
                     let qualified: hir::QualifiedPath = use_trait.into();
                     let Some(package) = &qualified.package else {
                         self.ice("use trait is missing package");

@@ -8,6 +8,7 @@ use anyhow::{Context, anyhow, bail};
 use clap::{Args, Parser, Subcommand};
 use compiler::config::GomlConfig;
 use compiler::env::{format_compile_diagnostics, format_typer_diagnostics};
+use compiler::external::ExternalDependencyArtifacts;
 use compiler::package_names::{ENTRY_FUNCTION, ROOT_PACKAGE};
 use compiler::pipeline::{
     pipeline::Compilation, pipeline::CompilationError, pipeline::compile_single_file,
@@ -194,6 +195,7 @@ struct LinkOptions {
 struct ProjectContext {
     module_dir: PathBuf,
     entry_path: PathBuf,
+    config: GomlConfig,
 }
 
 struct PackageCompilerCommand {
@@ -206,6 +208,17 @@ struct PackageCompilerCommand {
 struct LinkCompilerCommand {
     input_cores: Vec<PathBuf>,
     output: PathBuf,
+}
+
+struct ProjectCommandPlan {
+    commands: Vec<PlannedCompilerCommand>,
+    external: ExternalArtifactsPlan,
+}
+
+struct ExternalArtifactsPlan {
+    artifacts: ExternalDependencyArtifacts,
+    interface_outputs: HashMap<String, PathBuf>,
+    core_outputs: HashMap<String, PathBuf>,
 }
 
 enum PlannedCompilerCommand {
@@ -758,25 +771,36 @@ fn execute_compiler_link(options: LinkOptions) -> anyhow::Result<()> {
 
 fn execute_project_check(args: ProjectCommandArgs) -> anyhow::Result<()> {
     let project = load_project_from_cwd()?;
-    let commands = build_project_check_commands(&project)?;
-    execute_planned_commands(&project.module_dir, commands, args.dry_run)
+    let plan = build_project_check_plan(&project)?;
+    if !args.dry_run {
+        materialize_external_artifacts(&plan.external, false)?;
+    }
+    execute_planned_commands(&project.module_dir, plan.commands, args.dry_run)
 }
 
 fn execute_project_build(args: ProjectCommandArgs) -> anyhow::Result<()> {
     let project = load_project_from_cwd()?;
-    let commands = build_project_build_commands(&project)?;
-    execute_planned_commands(&project.module_dir, commands, args.dry_run)
+    let plan = build_project_build_plan(&project)?;
+    if !args.dry_run {
+        materialize_external_artifacts(&plan.external, true)?;
+    }
+    execute_planned_commands(&project.module_dir, plan.commands, args.dry_run)
 }
 
-fn build_project_check_commands(
-    project: &ProjectContext,
-) -> anyhow::Result<Vec<PlannedCompilerCommand>> {
-    let graph = compiler::pipeline::packages::discover_packages(
+fn build_project_check_plan(project: &ProjectContext) -> anyhow::Result<ProjectCommandPlan> {
+    let external = build_external_artifacts_plan(project, PROJECT_CHECK_OUTPUT_DIR)?;
+    let external_roots = external.artifacts.root_packages();
+    let mut graph = compiler::pipeline::packages::discover_packages_with_external_roots(
         &project.module_dir,
         Some(&project.entry_path),
         None,
+        &external_roots,
     )
     .map_err(|err| anyhow!("project check failed: {:?}", err))?;
+    external
+        .artifacts
+        .augment_graph(&mut graph)
+        .map_err(anyhow::Error::msg)?;
     let order = compiler::pipeline::packages::topo_sort_packages(&graph)
         .map_err(|err| anyhow!("project check failed: {:?}", err))?;
 
@@ -801,6 +825,7 @@ fn build_project_check_commands(
             package_name,
             &package.imports,
             &interface_outputs,
+            &external.interface_outputs,
             "project check",
         )?;
         commands.push(PlannedCompilerCommand::Check(PackageCompilerCommand {
@@ -815,18 +840,23 @@ fn build_project_check_commands(
         );
     }
 
-    Ok(commands)
+    Ok(ProjectCommandPlan { commands, external })
 }
 
-fn build_project_build_commands(
-    project: &ProjectContext,
-) -> anyhow::Result<Vec<PlannedCompilerCommand>> {
-    let graph = compiler::pipeline::packages::discover_packages(
+fn build_project_build_plan(project: &ProjectContext) -> anyhow::Result<ProjectCommandPlan> {
+    let external = build_external_artifacts_plan(project, PROJECT_BUILD_OUTPUT_DIR)?;
+    let external_roots = external.artifacts.root_packages();
+    let mut graph = compiler::pipeline::packages::discover_packages_with_external_roots(
         &project.module_dir,
         Some(&project.entry_path),
         None,
+        &external_roots,
     )
     .map_err(|err| anyhow!("project build failed: {:?}", err))?;
+    external
+        .artifacts
+        .augment_graph(&mut graph)
+        .map_err(anyhow::Error::msg)?;
     let order = compiler::pipeline::packages::topo_sort_packages(&graph)
         .map_err(|err| anyhow!("project build failed: {:?}", err))?;
 
@@ -852,6 +882,7 @@ fn build_project_build_commands(
             package_name,
             &package.imports,
             &interface_outputs,
+            &external.interface_outputs,
             "project build",
         )?;
         commands.push(PlannedCompilerCommand::Build(PackageCompilerCommand {
@@ -867,12 +898,84 @@ fn build_project_build_commands(
         core_outputs.push(output_base.with_extension("core"));
     }
 
+    let mut external_cores = external
+        .core_outputs
+        .values()
+        .cloned()
+        .collect::<Vec<_>>();
+    external_cores.sort();
+    core_outputs.splice(0..0, external_cores);
+
     commands.push(PlannedCompilerCommand::Link(LinkCompilerCommand {
         input_cores: core_outputs,
         output: PathBuf::from(PROJECT_GO_OUTPUT),
     }));
 
-    Ok(commands)
+    Ok(ProjectCommandPlan { commands, external })
+}
+
+fn build_external_artifacts_plan(
+    project: &ProjectContext,
+    output_root: &str,
+) -> anyhow::Result<ExternalArtifactsPlan> {
+    let artifacts = compiler::external::resolve_project_dependencies(&project.module_dir, &project.config)
+        .map_err(anyhow::Error::msg)?;
+    let mut interface_outputs = HashMap::new();
+    let mut core_outputs = HashMap::new();
+
+    for (root, module) in artifacts.modules.iter() {
+        let base = external_artifact_base(output_root, module, root);
+        interface_outputs.insert(root.clone(), base.with_extension("interface"));
+        core_outputs.insert(root.clone(), base.with_extension("core"));
+    }
+
+    Ok(ExternalArtifactsPlan {
+        artifacts,
+        interface_outputs,
+        core_outputs,
+    })
+}
+
+fn external_artifact_base(
+    output_root: &str,
+    module: &compiler::external::ExternalModuleArtifact,
+    root: &str,
+) -> PathBuf {
+    PathBuf::from(output_root)
+        .join("deps")
+        .join(&module.coord.owner)
+        .join(&module.coord.module)
+        .join(module.version.display())
+        .join(root)
+}
+
+fn materialize_external_artifacts(
+    plan: &ExternalArtifactsPlan,
+    include_core: bool,
+) -> anyhow::Result<()> {
+    for (root, module) in plan.artifacts.modules.iter() {
+        let interface_path = plan.interface_outputs.get(root).ok_or_else(|| {
+            anyhow!("missing external interface output for dependency {}", root)
+        })?;
+        write_json(interface_path, serde_json::to_string_pretty(&module.interface)?)?;
+
+        if include_core {
+            let core_path = plan.core_outputs.get(root).ok_or_else(|| {
+                anyhow!("missing external core output for dependency {}", root)
+            })?;
+            write_json(core_path, serde_json::to_string_pretty(&module.core)?)?;
+        }
+    }
+    Ok(())
+}
+
+fn write_json(path: &Path, json: String) -> anyhow::Result<()> {
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)
+            .with_context(|| format!("failed to create directory {}", parent.display()))?;
+    }
+    fs::write(path, json).with_context(|| format!("failed to write {}", path.display()))?;
+    Ok(())
 }
 
 fn package_artifact_outputs(
@@ -983,6 +1086,7 @@ fn package_interface_inputs(
     package_name: &str,
     imports: &HashSet<String>,
     interface_outputs: &HashMap<String, PathBuf>,
+    external_interfaces: &HashMap<String, PathBuf>,
     stage: &str,
 ) -> anyhow::Result<Vec<PathBuf>> {
     let mut deps: Vec<String> = imports.iter().cloned().collect();
@@ -994,18 +1098,31 @@ fn package_interface_inputs(
         if dep == compiler::package_names::BUILTIN_PACKAGE || dep == package_name {
             continue;
         }
-        if !graph.packages.contains_key(&dep) {
+        if let Some(dep_interface) = interface_outputs.get(&dep) {
+            outputs.push(dep_interface.clone());
             continue;
         }
-        let dep_interface = interface_outputs.get(&dep).ok_or_else(|| {
-            anyhow!(
-                "{} failed: missing interface artifact for dependency {} of package {}",
+        if let Some(dep_interface) = external_interfaces.get(&dep) {
+            outputs.push(dep_interface.clone());
+            continue;
+        }
+        if graph.external_root_packages.contains(&dep) {
+            return Err(anyhow!(
+                "{} failed: missing external interface artifact for dependency {} of package {}",
                 stage,
                 dep,
                 package_name
-            )
-        })?;
-        outputs.push(dep_interface.clone());
+            ));
+        }
+        if !graph.packages.contains_key(&dep) {
+            continue;
+        }
+        return Err(anyhow!(
+            "{} failed: missing interface artifact for dependency {} of package {}",
+            stage,
+            dep,
+            package_name
+        ));
     }
     Ok(outputs)
 }
@@ -1079,8 +1196,9 @@ fn load_project_from_cwd() -> anyhow::Result<ProjectContext> {
     };
 
     Ok(ProjectContext {
-        entry_path: module_dir.join(config.package.entry),
+        entry_path: module_dir.join(&config.package.entry),
         module_dir,
+        config,
     })
 }
 
@@ -1199,6 +1317,8 @@ fn execute_with_go_run(dir: &Path, file: &Path) -> anyhow::Result<String> {
         .arg(file)
         .current_dir(dir)
         .env("TZ", "UTC")
+        .env("GOWORK", "off")
+        .env("GO111MODULE", "off")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())

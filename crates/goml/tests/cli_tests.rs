@@ -106,6 +106,7 @@ fn create_local_registry(root: &Path) -> anyhow::Result<PathBuf> {
     fs::create_dir_all(registry.join("alice/http/1.0.0/client"))?;
     fs::create_dir_all(registry.join("alice/http/1.2.0/client"))?;
     fs::create_dir_all(registry.join("alice/net/0.1.0"))?;
+    fs::create_dir_all(registry.join("alice/appdep/0.1.0"))?;
 
     fs::write(
         registry.join("index.toml"),
@@ -114,6 +115,10 @@ latest = "1.2.0"
 versions = ["1.0.0", "1.2.0"]
 
 [modules."alice/net"]
+latest = "0.1.0"
+versions = ["0.1.0"]
+
+[modules."alice/appdep"]
 latest = "0.1.0"
 versions = ["0.1.0"]
 "#,
@@ -201,6 +206,24 @@ fn version() -> string {
 }
 "#,
     )?;
+    fs::write(
+        registry.join("alice/appdep/0.1.0/goml.toml"),
+        r#"[package]
+name = "appdep"
+
+[dependencies]
+"alice/http" = "1.2.0"
+"#,
+    )?;
+    fs::write(
+        registry.join("alice/appdep/0.1.0/lib.gom"),
+        r#"package appdep;
+
+fn marker() -> string {
+    "appdep"
+}
+"#,
+    )?;
 
     Command::new("git")
         .args(["init", "--quiet"])
@@ -224,6 +247,16 @@ fn version() -> string {
         .output()?;
 
     Ok(registry)
+}
+
+fn run_go_main(path: &Path, cwd: &Path) -> anyhow::Result<std::process::Output> {
+    Ok(Command::new("go")
+        .arg("run")
+        .arg(path)
+        .current_dir(cwd)
+        .env("GOWORK", "off")
+        .env("GO111MODULE", "off")
+        .output()?)
 }
 
 #[test]
@@ -361,6 +394,97 @@ fn add_with_explicit_version_and_remove_updates_manifest() -> anyhow::Result<()>
         entry = "main.gom"
     "#]]
     .assert_eq(&manifest);
+
+    Ok(())
+}
+
+#[test]
+fn project_build_with_cached_registry_dependencies_uses_external_modules() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let registry = create_local_registry(dir.path())?;
+    let home = dir.path().join("home");
+    fs::create_dir_all(&home)?;
+
+    let project_dir = dir.path().join("demo");
+    fs::create_dir_all(&project_dir)?;
+    fs::write(
+        project_dir.join("goml.toml"),
+        r#"[module]
+name = "demo"
+
+[package]
+name = "main"
+entry = "main.gom"
+
+[dependencies]
+"alice/http" = "1.0.0"
+"alice/appdep" = "0.1.0"
+"#,
+    )?;
+    fs::write(
+        project_dir.join("main.gom"),
+        r#"package main;
+
+use http;
+use http::client;
+use appdep;
+
+fn main() -> unit {
+    string_println(http::version() + ":" + http::client::tag() + ":" + appdep::marker())
+}
+"#,
+    )?;
+
+    let update_output = run_goml_with_home(
+        &[
+            "update",
+            "--local-registry",
+            registry.to_string_lossy().as_ref(),
+        ],
+        &project_dir,
+        &home,
+    )?;
+    assert!(
+        update_output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&update_output.stderr)
+    );
+
+    let check_output = run_goml_with_home(&["check"], &project_dir, &home)?;
+    assert!(
+        check_output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&check_output.stderr)
+    );
+
+    let build_output = run_goml_with_home(&["build"], &project_dir, &home)?;
+    assert!(
+        build_output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&build_output.stderr)
+    );
+
+    assert!(
+        project_dir
+            .join("target/goml/check/deps/alice/http/1.2.0/http.interface")
+            .exists()
+    );
+    assert!(
+        project_dir
+            .join("target/goml/build/deps/alice/http/1.2.0/http.core")
+            .exists()
+    );
+    assert!(
+        project_dir
+            .join("target/goml/build/deps/alice/appdep/0.1.0/appdep.core")
+            .exists()
+    );
+
+    let go_output = run_go_main(&project_dir.join("target/goml/main.go"), &project_dir)?;
+    let go_stdout = String::from_utf8_lossy(&go_output.stdout);
+    let go_stderr = String::from_utf8_lossy(&go_output.stderr);
+    assert!(go_output.status.success(), "stderr: {go_stderr}");
+    expect!["client-1.2.0:client-1.2.0:appdep\n"].assert_eq(&go_stdout);
 
     Ok(())
 }
@@ -539,11 +663,7 @@ fn project_build_writes_target_goml_main_go() -> anyhow::Result<()> {
     let go_file = dir.path().join("target/goml/main.go");
     assert!(go_file.exists());
 
-    let go_output = Command::new("go")
-        .arg("run")
-        .arg(&go_file)
-        .current_dir(dir.path())
-        .output()?;
+    let go_output = run_go_main(&go_file, dir.path())?;
 
     let go_stdout = String::from_utf8_lossy(&go_output.stdout);
     let go_stderr = String::from_utf8_lossy(&go_output.stderr);
@@ -683,11 +803,7 @@ fn new_project_can_check_and_build() -> anyhow::Result<()> {
             .exists()
     );
 
-    let go_output = Command::new("go")
-        .arg("run")
-        .arg(&go_file)
-        .current_dir(&project_dir)
-        .output()?;
+    let go_output = run_go_main(&go_file, &project_dir)?;
 
     let go_stdout = String::from_utf8_lossy(&go_output.stdout);
     let go_stderr = String::from_utf8_lossy(&go_output.stderr);
@@ -774,11 +890,7 @@ fn project_check_and_build_work_for_complex_dependency_fixtures() -> anyhow::Res
         let go_file = dir.path().join("target/goml/main.go");
         assert!(go_file.exists(), "project={project}");
 
-        let go_output = Command::new("go")
-            .arg("run")
-            .arg(&go_file)
-            .current_dir(dir.path())
-            .output()?;
+        let go_output = run_go_main(&go_file, dir.path())?;
         let go_stdout = String::from_utf8_lossy(&go_output.stdout);
         let go_stderr = String::from_utf8_lossy(&go_output.stderr);
         assert!(

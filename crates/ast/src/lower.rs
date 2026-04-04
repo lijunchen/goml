@@ -168,6 +168,12 @@ pub fn lower(node: cst::File) -> LowerResult {
             .collect::<Vec<_>>();
         let ast_path = ast::Path::from_idents(idents);
         match ast_path.len() {
+            0 => {
+                ctx.push_error(
+                    Some(path.syntax().text_range()),
+                    "use declaration missing path",
+                );
+            }
             1 => {
                 if let Some(name) = ast_path.last_ident() {
                     imports.push(name.clone());
@@ -178,14 +184,8 @@ pub fn lower(node: cst::File) -> LowerResult {
                     );
                 }
             }
-            2 => {
+            2.. => {
                 use_traits.push(ast_path);
-            }
-            _ => {
-                ctx.push_error(
-                    Some(path.syntax().text_range()),
-                    "use declaration must be `use Pkg` or `use Pkg::Trait`",
-                );
             }
         }
     }

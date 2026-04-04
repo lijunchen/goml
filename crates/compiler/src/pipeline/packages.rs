@@ -25,6 +25,7 @@ pub struct PackageGraph {
     pub packages: HashMap<String, PackageUnit>,
     pub discovery_order: Vec<String>,
     pub package_dirs: HashMap<String, PathBuf>,
+    pub external_root_packages: HashSet<String>,
 }
 
 fn read_gom_sources(dir: &Path) -> Result<Vec<PathBuf>, CompilationError> {
@@ -270,7 +271,23 @@ pub fn discover_packages(
     entry_path: Option<&Path>,
     entry_ast: Option<ast::File>,
 ) -> Result<PackageGraph, CompilationError> {
-    discover_packages_inner(root_dir, entry_path, entry_ast, false)
+    discover_packages_with_external_roots(root_dir, entry_path, entry_ast, &HashSet::new())
+}
+
+pub fn discover_packages_with_external_roots(
+    root_dir: &Path,
+    entry_path: Option<&Path>,
+    entry_ast: Option<ast::File>,
+    external_root_packages: &HashSet<String>,
+) -> Result<PackageGraph, CompilationError> {
+    discover_packages_inner(
+        root_dir,
+        entry_path,
+        entry_ast,
+        false,
+        false,
+        external_root_packages,
+    )
 }
 
 pub fn discover_packages_single_file(
@@ -278,7 +295,51 @@ pub fn discover_packages_single_file(
     entry_path: &Path,
     entry_ast: ast::File,
 ) -> Result<PackageGraph, CompilationError> {
-    discover_packages_inner(root_dir, Some(entry_path), Some(entry_ast), true)
+    discover_packages_single_file_with_external_roots(
+        root_dir,
+        entry_path,
+        entry_ast,
+        &HashSet::new(),
+    )
+}
+
+pub fn discover_packages_single_file_with_external_roots(
+    root_dir: &Path,
+    entry_path: &Path,
+    entry_ast: ast::File,
+    external_root_packages: &HashSet<String>,
+) -> Result<PackageGraph, CompilationError> {
+    discover_packages_inner(
+        root_dir,
+        Some(entry_path),
+        Some(entry_ast),
+        true,
+        false,
+        external_root_packages,
+    )
+}
+
+pub fn discover_dependency_packages(
+    module_dir: &Path,
+    config: &GomlConfig,
+) -> Result<PackageGraph, CompilationError> {
+    discover_dependency_packages_with_external_roots(module_dir, config, &HashSet::new())
+}
+
+pub fn discover_dependency_packages_with_external_roots(
+    module_dir: &Path,
+    config: &GomlConfig,
+    external_root_packages: &HashSet<String>,
+) -> Result<PackageGraph, CompilationError> {
+    discover_packages_from_config(
+        module_dir,
+        config,
+        None,
+        None,
+        false,
+        true,
+        external_root_packages,
+    )
 }
 
 fn discover_packages_inner(
@@ -286,6 +347,8 @@ fn discover_packages_inner(
     entry_path: Option<&Path>,
     entry_ast: Option<ast::File>,
     single_file: bool,
+    allow_non_main_module_root: bool,
+    external_root_packages: &HashSet<String>,
 ) -> Result<PackageGraph, CompilationError> {
     if let Some(config) = GomlConfig::find_package_config(root_dir) {
         return discover_packages_from_config(
@@ -294,6 +357,8 @@ fn discover_packages_inner(
             entry_path,
             entry_ast,
             single_file,
+            allow_non_main_module_root,
+            external_root_packages,
         );
     }
 
@@ -327,6 +392,10 @@ fn discover_packages_inner(
         if loaded.contains(&package_name) {
             continue;
         }
+        if external_root_packages.contains(&package_name) {
+            loaded.insert(package_name);
+            continue;
+        }
         let package_dir = root_dir.join(&package_name);
         let package_override = source_override_for_dir(&package_dir, source_override);
         let package = if let Some(config) = GomlConfig::find_package_config(&package_dir) {
@@ -357,6 +426,7 @@ fn discover_packages_inner(
         packages,
         discovery_order,
         package_dirs,
+        external_root_packages: HashSet::new(),
     })
 }
 
@@ -366,8 +436,13 @@ pub fn discover_packages_from_config(
     entry_path: Option<&Path>,
     entry_ast: Option<ast::File>,
     single_file: bool,
+    allow_non_main_module_root: bool,
+    external_root_packages: &HashSet<String>,
 ) -> Result<PackageGraph, CompilationError> {
-    if config.is_module_root() && config.package.name != ROOT_PACKAGE {
+    if config.is_module_root()
+        && !allow_non_main_module_root
+        && config.package.name != ROOT_PACKAGE
+    {
         return Err(compile_error(format!(
             "module root package must be `main`, found `{}` in {}",
             config.package.name,
@@ -413,6 +488,10 @@ pub fn discover_packages_from_config(
         if loaded.contains(&package_name) {
             continue;
         }
+        if external_root_packages.contains(&package_name) {
+            loaded.insert(package_name);
+            continue;
+        }
         let package_dir = module_dir.join(&package_name);
         let package_override = source_override_for_dir(&package_dir, source_override);
         let package = if let Some(pkg_config) = GomlConfig::find_package_config(&package_dir) {
@@ -443,6 +522,7 @@ pub fn discover_packages_from_config(
         packages,
         discovery_order,
         package_dirs,
+        external_root_packages: HashSet::new(),
     })
 }
 
@@ -513,13 +593,16 @@ fn visit_package(
     deps.sort();
 
     for dep in deps {
-        if !graph.packages.contains_key(&dep) {
+        if !graph.packages.contains_key(&dep) && !graph.external_root_packages.contains(&dep) {
             return Err(compile_error(format!(
                 "package {} imports missing package {} in {}",
                 name,
                 dep,
                 graph.module_dir.join(&dep).display()
             )));
+        }
+        if graph.external_root_packages.contains(&dep) {
+            continue;
         }
         visit_package(&dep, graph, temp, perm, stack, order)?;
     }
@@ -529,4 +612,14 @@ fn visit_package(
     perm.insert(name.to_string());
     order.push(name.to_string());
     Ok(())
+}
+
+impl PackageGraph {
+    pub fn add_external_root_package(&mut self, package: impl Into<String>) {
+        self.external_root_packages.insert(package.into());
+    }
+
+    pub fn add_external_package_dir(&mut self, package: impl Into<String>, dir: PathBuf) {
+        self.package_dirs.insert(package.into(), dir);
+    }
 }
