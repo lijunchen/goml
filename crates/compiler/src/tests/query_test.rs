@@ -1,5 +1,6 @@
 use expect_test::{Expect, expect};
 use std::path::Path;
+use std::sync::{Mutex, OnceLock};
 use tempfile::tempdir;
 
 use crate::query::{
@@ -57,6 +58,17 @@ fn check_value_completions(src: &str, line: u32, col: u32, expected: Expect) {
     expected.assert_debug_eq(&result);
 }
 
+fn check_value_completions_with_path(
+    path: &Path,
+    src: &str,
+    line: u32,
+    col: u32,
+    expected: Expect,
+) {
+    let result = value_completions(path, src, line, col).unwrap_or_default();
+    expected.assert_debug_eq(&result);
+}
+
 fn check_signature_help(src: &str, line: u32, col: u32, expected: Expect) {
     let result = signature_help(Path::new("dummy"), src, line, col);
     expected.assert_debug_eq(&result);
@@ -70,6 +82,162 @@ fn check_inlay_hints(src: &str, expected: Expect) {
 fn check_with_path(path: &Path, src: &str, line: u32, col: u32, expected: Expect) {
     let result = hover_type(path, src, line, col);
     expected.assert_debug_eq(&result.unwrap_or("<None>".to_string()));
+}
+
+fn env_lock() -> &'static Mutex<()> {
+    static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+    LOCK.get_or_init(|| Mutex::new(()))
+}
+
+fn with_goml_home<T>(home: &Path, f: impl FnOnce() -> T) -> T {
+    let _guard = env_lock().lock().unwrap();
+    let previous = std::env::var_os("GOML_HOME");
+    unsafe {
+        std::env::set_var("GOML_HOME", home);
+    }
+    let result = f();
+    match previous {
+        Some(value) => unsafe {
+            std::env::set_var("GOML_HOME", value);
+        },
+        None => unsafe {
+            std::env::remove_var("GOML_HOME");
+        },
+    }
+    result
+}
+
+fn write_cached_registry(home: &Path) {
+    let registry = home.join("cache/registry");
+    std::fs::create_dir_all(registry.join("alice/http/1.2.0/client")).unwrap();
+    std::fs::write(
+        registry.join("index.toml"),
+        r#"[modules."alice::http"]
+latest = "1.2.0"
+versions = ["1.2.0"]
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        registry.join("alice/http/1.2.0/goml.toml"),
+        r#"[package]
+name = "http"
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        registry.join("alice/http/1.2.0/lib.gom"),
+        r#"package http;
+
+use client;
+
+fn make_client() -> client::Client {
+    client::Client { name: "alice" }
+}
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        registry.join("alice/http/1.2.0/client/goml.toml"),
+        r#"[package]
+name = "client"
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        registry.join("alice/http/1.2.0/client/lib.gom"),
+        r#"package client;
+
+struct Client {
+    name: string,
+}
+
+fn tag() -> string {
+    "client"
+}
+"#,
+    )
+    .unwrap();
+}
+
+#[test]
+#[rustfmt::skip]
+fn use_statement_package_completions() {
+    let dir = tempdir().unwrap();
+    let home = dir.path().join(".goml");
+    write_cached_registry(&home);
+
+    std::fs::create_dir_all(dir.path().join("util")).unwrap();
+    std::fs::write(
+        dir.path().join("util/goml.toml"),
+        r#"[package]
+name = "util"
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        dir.path().join("util/lib.gom"),
+        r#"package util;
+
+fn ping() -> string {
+    "pong"
+}
+"#,
+    )
+    .unwrap();
+
+    std::fs::write(
+        dir.path().join("goml.toml"),
+        r#"[module]
+name = "demo"
+
+[package]
+name = "main"
+entry = "main.gom"
+
+[dependencies]
+"alice::http" = "1.2.0"
+"#,
+    )
+    .unwrap();
+
+    let src = r#"package main;
+
+use 
+
+fn main() -> unit {
+    ()
+}
+"#;
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(&main_path, src).unwrap();
+
+    with_goml_home(&home, || {
+        check_value_completions_with_path(
+            &main_path,
+            src,
+            2,
+            4,
+            expect![[r#"
+                [
+                    ValueCompletionItem {
+                        name: "alice::http",
+                        kind: Package,
+                        detail: Some(
+                            "package",
+                        ),
+                    },
+                    ValueCompletionItem {
+                        name: "util",
+                        kind: Package,
+                        detail: Some(
+                            "package",
+                        ),
+                    },
+                ]
+            "#]],
+        );
+    });
 }
 
 #[test]
@@ -981,4 +1149,143 @@ fn main() {
             ]
         "#]],
     );
+}
+
+#[test]
+#[rustfmt::skip]
+fn registry_dependency_hover_and_completion() {
+    let dir = tempdir().unwrap();
+    let home = dir.path().join(".goml");
+    write_cached_registry(&home);
+
+    let main_path = dir.path().join("main.gom");
+    let valid_src = r#"package main;
+
+use alice::http;
+use alice::http::client;
+
+fn main() -> unit {
+    let client = http::make_client();
+    let _ = client.name;
+}
+"#;
+    let namespace_src = r#"package main;
+
+use alice::http;
+use alice::http::client;
+
+fn main() -> unit {
+    let _ = http::;
+}
+"#;
+    let nested_namespace_src = r#"package main;
+
+use alice::http;
+use alice::http::client;
+
+fn main() -> unit {
+    let _ = client::;
+}
+"#;
+    let use_namespace_src = r#"package main;
+
+use alice::http::
+
+fn main() -> unit {
+    ()
+}
+"#;
+    std::fs::write(
+        dir.path().join("goml.toml"),
+        r#"[module]
+name = "demo"
+
+[package]
+name = "main"
+entry = "main.gom"
+
+[dependencies]
+"alice::http" = "1.2.0"
+"#,
+    )
+    .unwrap();
+    std::fs::write(&main_path, valid_src).unwrap();
+
+    with_goml_home(&home, || {
+        let (_hir_table, _results, genv, _diagnostics) =
+            crate::pipeline::pipeline::typecheck_with_packages_and_results(&main_path, valid_src)
+                .unwrap();
+        assert!(
+            genv.structs()
+                .contains_key(&crate::tast::TastIdent("client::Client".to_string()))
+        );
+
+        check_colon_colon_completions_with_path(
+            &main_path,
+            namespace_src,
+            6,
+            18,
+            expect![[r#"
+                [
+                    ColonColonCompletionItem {
+                        name: "make_client",
+                        kind: Value,
+                        detail: Some(
+                            "fn",
+                        ),
+                    },
+                ]
+            "#]],
+        );
+
+        check_colon_colon_completions_with_path(
+            &main_path,
+            nested_namespace_src,
+            6,
+            20,
+            expect![[r#"
+                [
+                    ColonColonCompletionItem {
+                        name: "Client",
+                        kind: Type,
+                        detail: Some(
+                            "struct",
+                        ),
+                    },
+                    ColonColonCompletionItem {
+                        name: "tag",
+                        kind: Value,
+                        detail: Some(
+                            "fn",
+                        ),
+                    },
+                ]
+            "#]],
+        );
+
+        check_colon_colon_completions_with_path(
+            &main_path,
+            use_namespace_src,
+            2,
+            17,
+            expect![[r#"
+                [
+                    ColonColonCompletionItem {
+                        name: "client",
+                        kind: Package,
+                        detail: Some(
+                            "package",
+                        ),
+                    },
+                    ColonColonCompletionItem {
+                        name: "make_client",
+                        kind: Value,
+                        detail: Some(
+                            "fn",
+                        ),
+                    },
+                ]
+            "#]],
+        );
+    });
 }

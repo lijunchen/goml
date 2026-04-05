@@ -26,5 +26,11 @@ vscode-ext:
     just install-lsp
     cd editors/vscode && npm install && npm run compile
 
+package-vscode-ext:
+    cd editors/vscode && npx @vscode/vsce package --allow-missing-repository --skip-license
+
+install-vscode-ext:
+    cd editors/vscode && npx @vscode/vsce package --allow-missing-repository --skip-license && code --install-extension *.vsix
+
 install:
     cargo install --path ./crates/goml --debug --offline --root ~/.goml --force --locked

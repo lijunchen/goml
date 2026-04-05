@@ -34,6 +34,7 @@ pub struct DotCompletionItem {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ColonColonCompletionKind {
+    Package,
     Type,
     Value,
     Trait,
@@ -50,6 +51,7 @@ pub struct ColonColonCompletionItem {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ValueCompletionKind {
+    Package,
     Function,
     Keyword,
 }

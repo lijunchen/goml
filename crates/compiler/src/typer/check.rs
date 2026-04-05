@@ -1410,6 +1410,7 @@ impl Typer {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn infer_constructor_expr(
         &mut self,
         genv: &PackageTypeEnv,
@@ -1598,6 +1599,7 @@ impl Typer {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn infer_struct_literal_expr(
         &mut self,
         genv: &PackageTypeEnv,
@@ -2678,6 +2680,7 @@ impl Typer {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn infer_call_expr(
         &mut self,
         genv: &PackageTypeEnv,
@@ -3021,7 +3024,6 @@ impl Typer {
                     &receiver_ty,
                     &tast::TastIdent(method_name_str.clone()),
                 );
-                let inherent_lookup = inherent_lookup;
                 if let Some(method_scheme) = inherent_lookup {
                     let inst_method_ty = self.inst_ty(&method_scheme.ty);
                     let method_params = match &inst_method_ty {

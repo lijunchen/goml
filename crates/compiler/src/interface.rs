@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use sha2::Digest;
 
@@ -9,6 +9,8 @@ use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct PackageInterface {
     pub package: String,
+    #[serde(default)]
+    pub packages: BTreeSet<String>,
     pub value_exports: BTreeMap<String, u32>,
     pub enum_variants: BTreeMap<String, Vec<String>>,
 }
@@ -37,7 +39,7 @@ impl PackageInterface {
             if !belongs_to_package(package, full) {
                 continue;
             }
-            let key = full.rsplit("::").next().unwrap_or(full).to_string();
+            let key = relative_export_name(package, full);
             let mut variants: Vec<String> = def.variants.iter().map(|(v, _)| v.0.clone()).collect();
             variants.sort();
             variants.dedup();
@@ -46,6 +48,7 @@ impl PackageInterface {
 
         Self {
             package: package.to_string(),
+            packages: std::iter::once(package.to_string()).collect(),
             value_exports,
             enum_variants,
         }
@@ -58,6 +61,14 @@ fn belongs_to_package(package: &str, name: &str) -> bool {
     } else {
         name.starts_with(&format!("{}::", package))
     }
+}
+
+fn relative_export_name(package: &str, name: &str) -> String {
+    if is_special_unqualified_package(package) {
+        return name.to_string();
+    }
+    let prefix = format!("{}::", package);
+    name.strip_prefix(&prefix).unwrap_or(name).to_string()
 }
 
 pub fn package_id_for_name(name: &str) -> hir::PackageId {

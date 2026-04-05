@@ -9,10 +9,7 @@ use parser::syntax::MySyntaxNode;
 use text_size::{TextRange, TextSize};
 
 use super::DefinitionLocation;
-use crate::{
-    hir,
-    package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package},
-};
+use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct MemberLookupKey {
@@ -124,6 +121,26 @@ impl ProjectSymbolIndex {
     pub(crate) fn find_package(&self, pkg: &str) -> Option<PathBuf> {
         self.packages.get(pkg).cloned()
     }
+
+    pub(crate) fn package_children(&self, namespace: &str) -> Vec<String> {
+        let prefix = format!("{}::", namespace);
+        let mut names = self
+            .packages
+            .keys()
+            .filter_map(|name| {
+                let rest = name.strip_prefix(&prefix)?;
+                let child = rest.split("::").next()?;
+                if child.is_empty() {
+                    None
+                } else {
+                    Some(child.to_string())
+                }
+            })
+            .collect::<Vec<_>>();
+        names.sort();
+        names.dedup();
+        names
+    }
 }
 
 pub(crate) struct SymbolLookup {
@@ -150,7 +167,7 @@ pub(crate) fn build_symbol_index(
     path: &Path,
     src: &str,
 ) -> Result<(crate::pipeline::packages::PackageGraph, ProjectSymbolIndex), String> {
-    let graph = discover_packages_for_query(path, src)?;
+    let mut graph = discover_packages_for_query(path, src)?;
     let mut index = ProjectSymbolIndex::default();
     let mut overrides = HashMap::new();
     overrides.insert(path.to_path_buf(), src.to_string());
@@ -159,7 +176,32 @@ pub(crate) fn build_symbol_index(
         let Some(pkg_dir) = graph.package_dirs.get(pkg_name) else {
             continue;
         };
-        index_package_symbols(&mut index, pkg_dir, &unit.files, &overrides)?;
+        let package_files = unit
+            .files
+            .iter()
+            .map(|file| file.path.clone())
+            .collect::<Vec<_>>();
+        index_package_symbols_named(&mut index, pkg_name, pkg_dir, &package_files, &overrides)?;
+    }
+
+    if let Ok((module_dir, config)) = crate::pipeline::packages::discover_project_from_file(path) {
+        let external_deps = crate::external::resolve_project_dependencies(&module_dir, &config)
+            .map_err(|err| err.to_string())?;
+        external_deps
+            .augment_graph(&mut graph)
+            .map_err(|err| err.to_string())?;
+        for (logical_name, files) in external_deps.package_sources() {
+            let Some(pkg_dir) = graph.package_dirs.get(&logical_name) else {
+                continue;
+            };
+            index_package_symbols_named(
+                &mut index,
+                &logical_name,
+                pkg_dir,
+                &files,
+                &HashMap::new(),
+            )?;
+        }
     }
 
     index_builtin_symbols(&mut index)?;
@@ -197,18 +239,22 @@ pub(crate) fn lookup_symbol_locations_for_path(
     let mut locations = Vec::new();
     let full_name = segments.join("::");
 
-    if segments[0] != BUILTIN_PACKAGE
-        && token_text == segments[0]
-        && graph
-            .and_then(|g| g.package_dirs.get(&segments[0]))
-            .is_some()
-        && let Some(loc) = index.find_package(&segments[0])
-    {
-        locations.push(DefinitionLocation {
-            path: loc,
-            range: TextRange::new(TextSize::from(0), TextSize::from(0)),
-        });
-        return locations;
+    if segments[0] != BUILTIN_PACKAGE {
+        for idx in 0..segments.len() {
+            if token_text != segments[idx] {
+                continue;
+            }
+            let package = segments[..=idx].join("::");
+            if graph.and_then(|g| g.package_dirs.get(&package)).is_some()
+                && let Some(loc) = index.find_package(&package)
+            {
+                locations.push(DefinitionLocation {
+                    path: loc,
+                    range: TextRange::new(TextSize::from(0), TextSize::from(0)),
+                });
+                return locations;
+            }
+        }
     }
 
     if segments.len() >= 2 {
@@ -443,10 +489,16 @@ fn discover_packages_for_query(
     src: &str,
 ) -> Result<crate::pipeline::packages::PackageGraph, String> {
     let entry_ast = parse_ast_for_discovery(path, src)?;
-    if let Ok((module_dir, _)) = crate::pipeline::packages::discover_project_from_file(path) {
-        let graph =
-            crate::pipeline::packages::discover_packages(&module_dir, Some(path), Some(entry_ast))
-                .map_err(|e| format!("{:?}", e))?;
+    if let Ok((module_dir, config)) = crate::pipeline::packages::discover_project_from_file(path) {
+        let external_deps = crate::external::resolve_project_dependencies(&module_dir, &config)?;
+        let external_imports = external_deps.external_imports();
+        let graph = crate::pipeline::packages::discover_packages_with_external_imports(
+            &module_dir,
+            Some(path),
+            Some(entry_ast),
+            &external_imports,
+        )
+        .map_err(|e| format!("{:?}", e))?;
         return Ok(graph);
     }
 
@@ -454,8 +506,13 @@ fn discover_packages_for_query(
         .parent()
         .filter(|parent| !parent.as_os_str().is_empty())
         .unwrap_or_else(|| Path::new("."));
-    crate::pipeline::packages::discover_packages(root_dir, Some(path), Some(entry_ast))
-        .map_err(|e| format!("{:?}", e))
+    crate::pipeline::packages::discover_packages_with_external_imports(
+        root_dir,
+        Some(path),
+        Some(entry_ast),
+        &crate::package_imports::ExternalImports::default(),
+    )
+    .map_err(|e| format!("{:?}", e))
 }
 
 fn ident_tokens_to_segments(path: &cst::nodes::Path) -> Vec<String> {
@@ -525,37 +582,36 @@ fn cst_type_path_name(ty: &cst::nodes::Type) -> Option<String> {
     }
 }
 
-fn index_package_symbols(
+fn index_package_symbols_named(
     index: &mut ProjectSymbolIndex,
+    package_name: &str,
     package_dir: &Path,
-    package_files: &[hir::SourceFileAst],
+    package_files: &[PathBuf],
     src_overrides: &HashMap<PathBuf, String>,
 ) -> Result<(), String> {
     let package_goml = package_dir.join("goml.toml");
     if package_goml.exists() {
-        if let Some(pkg_name) = package_dir.file_name().and_then(|s| s.to_str()) {
-            index.packages.insert(pkg_name.to_string(), package_goml);
-        }
-    } else if let Some(pkg_name) = package_dir.file_name().and_then(|s| s.to_str()) {
-        let mut gom_files = package_files
-            .iter()
-            .map(|file| file.path.clone())
-            .collect::<Vec<_>>();
+        index
+            .packages
+            .insert(package_name.to_string(), package_goml);
+    } else {
+        let mut gom_files = package_files.to_vec();
         gom_files.sort();
         if let Some(first) = gom_files.first() {
-            index.packages.insert(pkg_name.to_string(), first.clone());
+            index
+                .packages
+                .insert(package_name.to_string(), first.clone());
         }
     }
 
     for file in package_files {
-        let file_path = &file.path;
-        let src = if let Some(override_src) = src_overrides.get(file_path) {
+        let src = if let Some(override_src) = src_overrides.get(file) {
             override_src.clone()
         } else {
-            fs::read_to_string(file_path)
-                .map_err(|e| format!("failed to read {}: {}", file_path.display(), e))?
+            fs::read_to_string(file)
+                .map_err(|e| format!("failed to read {}: {}", file.display(), e))?
         };
-        index_source_file_symbols(index, file_path, &src)?;
+        index_source_file_symbols(index, file, &src)?;
     }
 
     Ok(())

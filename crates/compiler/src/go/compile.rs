@@ -835,7 +835,7 @@ fn tuple_elem_tys(ty: &tast::Ty) -> Option<&[tast::Ty]> {
     Some(typs.as_slice())
 }
 
-fn unwrap_tuple_elems<'a>(ty: &'a tast::Ty) -> Vec<&'a tast::Ty> {
+fn unwrap_tuple_elems(ty: &tast::Ty) -> Vec<&tast::Ty> {
     tuple_elem_tys(ty)
         .map(|tys| tys.iter().collect())
         .unwrap_or_else(|| vec![ty])
@@ -4557,20 +4557,19 @@ fn compile_call(
 
     if let tast::Ty::TStruct { name } = &func_tast_ty
         && is_closure_env_struct(name)
+        && let Some(apply) = find_closure_apply_fn(goenv, &func_tast_ty)
     {
-        if let Some(apply) = find_closure_apply_fn(goenv, &func_tast_ty) {
-            let apply_expr = goast::Expr::Var {
-                name: go_ident(&apply.name),
-                ty: tast_ty_to_go_type(&apply.ty),
-            };
-            let mut call_args = vec![compile_imm(goenv, func)];
-            call_args.extend(compiled_args);
-            return goast::Expr::Call {
-                func: Box::new(apply_expr),
-                args: call_args,
-                ty: tast_ty_to_go_type(&apply.ret_ty),
-            };
-        }
+        let apply_expr = goast::Expr::Var {
+            name: go_ident(&apply.name),
+            ty: tast_ty_to_go_type(&apply.ty),
+        };
+        let mut call_args = vec![compile_imm(goenv, func)];
+        call_args.extend(compiled_args);
+        return goast::Expr::Call {
+            func: Box::new(apply_expr),
+            args: call_args,
+            ty: tast_ty_to_go_type(&apply.ret_ty),
+        };
     }
 
     goast::Expr::Call {
@@ -5695,12 +5694,13 @@ fn compile_native_return_from_imm(
             }
             return stmts;
         }
-        match value {
-            anf::ValueExpr::Constr {
-                constructor: Constructor::Enum(enum_constructor),
-                args,
-                ..
-            } => match &native_ctx.mode {
+        if let anf::ValueExpr::Constr {
+            constructor: Constructor::Enum(enum_constructor),
+            args,
+            ..
+        } = value
+        {
+            match &native_ctx.mode {
                 NativeReturnMode::Result { ok_ty, err_ty } => {
                     if enum_constructor.index == 0 && args.len() == 1 {
                         return build_payload_success_return_stmts(
@@ -5730,8 +5730,7 @@ fn compile_native_return_from_imm(
                         return build_option_failure_stmts(some_ty);
                     }
                 }
-            },
-            _ => {}
+            }
         }
     }
 
@@ -6899,6 +6898,7 @@ fn compile_branch_to_native_return_ctx(
     stmts
 }
 
+#[allow(clippy::too_many_arguments)]
 fn compile_match_to_native_return_ctx(
     goenv: &GlobalGoEnv,
     scrut: &anf::ImmExpr,
@@ -7204,6 +7204,7 @@ fn compile_branch_to_join_ctx(
     stmts
 }
 
+#[allow(clippy::too_many_arguments)]
 fn compile_match_to_join_ctx(
     goenv: &GlobalGoEnv,
     scrut: &anf::ImmExpr,
@@ -7556,6 +7557,7 @@ fn compile_match_leaf_ctx(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn compile_enum_match_leaf_ctx(
     goenv: &GlobalGoEnv,
     scrut: &anf::ImmExpr,
@@ -7619,6 +7621,7 @@ fn compile_enum_match_leaf_ctx(
     }]
 }
 
+#[allow(clippy::too_many_arguments)]
 fn compile_switch_match_leaf_ctx(
     goenv: &GlobalGoEnv,
     scrut: &anf::ImmExpr,

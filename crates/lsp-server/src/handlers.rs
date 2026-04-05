@@ -177,6 +177,7 @@ fn colon_item_to_completion(item: ColonColonCompletionItem) -> CompletionItem {
     CompletionItem {
         label: item.name.clone(),
         kind: Some(match item.kind {
+            ColonColonCompletionKind::Package => CompletionItemKind::MODULE,
             ColonColonCompletionKind::Type => CompletionItemKind::CLASS,
             ColonColonCompletionKind::Value => CompletionItemKind::VALUE,
             ColonColonCompletionKind::Trait => CompletionItemKind::INTERFACE,
@@ -192,6 +193,7 @@ fn value_item_to_completion(item: ValueCompletionItem) -> CompletionItem {
     CompletionItem {
         label: item.name.clone(),
         kind: Some(match item.kind {
+            query::ValueCompletionKind::Package => CompletionItemKind::MODULE,
             query::ValueCompletionKind::Function => CompletionItemKind::FUNCTION,
             query::ValueCompletionKind::Keyword => CompletionItemKind::KEYWORD,
         }),
