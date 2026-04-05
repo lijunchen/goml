@@ -52,14 +52,14 @@ pub struct ModuleCoord {
 
 impl ModuleCoord {
     pub fn parse(input: &str) -> Result<Self, String> {
-        let Some((owner, module)) = input.split_once('/') else {
+        let Some((owner, module)) = input.split_once("::") else {
             return Err(format!(
-                "invalid module coordinate `{input}`: expected owner/module"
+                "invalid module coordinate `{input}`: expected owner::module"
             ));
         };
         if !is_valid_ident(owner) || !is_valid_ident(module) {
             return Err(format!(
-                "invalid module coordinate `{input}`: expected owner/module"
+                "invalid module coordinate `{input}`: expected owner::module"
             ));
         }
         Ok(Self {
@@ -69,7 +69,7 @@ impl ModuleCoord {
     }
 
     pub fn display(&self) -> String {
-        format!("{}/{}", self.owner, self.module)
+        format!("{}::{}", self.owner, self.module)
     }
 }
 
@@ -347,11 +347,11 @@ mod tests {
         std::fs::write(
             root.join("index.toml"),
             r#"
-[modules."alice/http"]
+[modules."alice::http"]
 latest = "1.2.0"
 versions = ["1.0.0", "1.2.0"]
 
-[modules."alice/net"]
+[modules."alice::net"]
 latest = "0.1.0"
 versions = ["0.1.0"]
 "#,
@@ -372,7 +372,7 @@ name = "http"
 name = "http"
 
 [dependencies]
-"alice/net" = "0.1.0"
+"alice::net" = "0.1.0"
 "#,
         )
         .unwrap();
@@ -406,25 +406,25 @@ name = "net"
         sample_registry(dir.path());
         let registry = Registry::load(dir.path()).unwrap();
         let mut deps = BTreeMap::new();
-        deps.insert("alice/http".to_string(), "1.0.0".to_string());
+        deps.insert("alice::http".to_string(), "1.0.0".to_string());
         let resolved = resolve_dependencies(&registry, &deps).unwrap();
         assert_eq!(resolved.modules.len(), 1);
         assert_eq!(
             resolved
                 .modules
-                .get(&ModuleCoord::parse("alice/http").unwrap())
+                .get(&ModuleCoord::parse("alice::http").unwrap())
                 .unwrap()
                 .version
                 .display(),
             "1.0.0"
         );
 
-        deps.insert("alice/http".to_string(), "1.2.0".to_string());
+        deps.insert("alice::http".to_string(), "1.2.0".to_string());
         let resolved = resolve_dependencies(&registry, &deps).unwrap();
         assert_eq!(
             resolved
                 .modules
-                .get(&ModuleCoord::parse("alice/http").unwrap())
+                .get(&ModuleCoord::parse("alice::http").unwrap())
                 .unwrap()
                 .version
                 .display(),
@@ -433,7 +433,7 @@ name = "net"
         assert!(
             resolved
                 .modules
-                .contains_key(&ModuleCoord::parse("alice/net").unwrap())
+                .contains_key(&ModuleCoord::parse("alice::net").unwrap())
         );
     }
 
@@ -443,5 +443,14 @@ name = "net"
         sample_registry(dir.path());
         let registry = Registry::load(dir.path()).unwrap();
         validate_registry_consistency(&registry).unwrap();
+    }
+
+    #[test]
+    fn module_coord_uses_colon_colon_syntax() {
+        let coord = ModuleCoord::parse("alice::http").unwrap();
+        assert_eq!(coord.owner, "alice");
+        assert_eq!(coord.module, "http");
+        assert_eq!(coord.display(), "alice::http");
+        assert!(ModuleCoord::parse("alice/http").is_err());
     }
 }

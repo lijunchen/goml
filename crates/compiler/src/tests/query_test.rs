@@ -112,7 +112,7 @@ fn write_cached_registry(home: &Path) {
     std::fs::create_dir_all(registry.join("alice/http/1.2.0/client")).unwrap();
     std::fs::write(
         registry.join("index.toml"),
-        r#"[modules."alice/http"]
+        r#"[modules."alice::http"]
 latest = "1.2.0"
 versions = ["1.2.0"]
 "#,
@@ -196,7 +196,7 @@ name = "main"
 entry = "main.gom"
 
 [dependencies]
-"alice/http" = "1.2.0"
+"alice::http" = "1.2.0"
 "#,
     )
     .unwrap();
@@ -1205,7 +1205,7 @@ name = "main"
 entry = "main.gom"
 
 [dependencies]
-"alice/http" = "1.2.0"
+"alice::http" = "1.2.0"
 "#,
     )
     .unwrap();

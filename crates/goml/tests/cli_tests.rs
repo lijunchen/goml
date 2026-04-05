@@ -110,15 +110,15 @@ fn create_local_registry(root: &Path) -> anyhow::Result<PathBuf> {
 
     fs::write(
         registry.join("index.toml"),
-        r#"[modules."alice/http"]
+        r#"[modules."alice::http"]
 latest = "1.2.0"
 versions = ["1.0.0", "1.2.0"]
 
-[modules."alice/net"]
+[modules."alice::net"]
 latest = "0.1.0"
 versions = ["0.1.0"]
 
-[modules."alice/appdep"]
+[modules."alice::appdep"]
 latest = "0.1.0"
 versions = ["0.1.0"]
 "#,
@@ -161,7 +161,7 @@ fn tag() -> string {
 name = "http"
 
 [dependencies]
-"alice/net" = "0.1.0"
+"alice::net" = "0.1.0"
 "#,
     )?;
     fs::write(
@@ -212,7 +212,7 @@ fn version() -> string {
 name = "appdep"
 
 [dependencies]
-"alice/http" = "1.2.0"
+"alice::http" = "1.2.0"
 "#,
     )?;
     fs::write(
@@ -316,7 +316,7 @@ fn add_uses_latest_version_from_local_registry() -> anyhow::Result<()> {
     let output = run_goml(
         &[
             "add",
-            "alice/http",
+            "alice::http",
             "--local-registry",
             registry.to_string_lossy().as_ref(),
         ],
@@ -326,7 +326,7 @@ fn add_uses_latest_version_from_local_registry() -> anyhow::Result<()> {
     let stderr = String::from_utf8_lossy(&output.stderr);
 
     assert!(output.status.success(), "stderr: {stderr}");
-    expect!["added alice/http = 1.2.0\n"].assert_eq(&stdout);
+    expect!["added alice::http = 1.2.0\n"].assert_eq(&stdout);
     expect![""].assert_eq(&stderr);
 
     let manifest = fs::read_to_string(project_dir.join("goml.toml"))?;
@@ -339,7 +339,7 @@ fn add_uses_latest_version_from_local_registry() -> anyhow::Result<()> {
         entry = "main.gom"
 
         [dependencies]
-        "alice/http" = "1.2.0"
+        "alice::http" = "1.2.0"
     "#]]
     .assert_eq(&manifest);
 
@@ -357,7 +357,7 @@ fn add_with_explicit_version_and_remove_updates_manifest() -> anyhow::Result<()>
     let add_output = run_goml(
         &[
             "add",
-            "alice/http@1.0.0",
+            "alice::http@1.0.0",
             "--local-registry",
             registry.to_string_lossy().as_ref(),
         ],
@@ -372,7 +372,7 @@ fn add_with_explicit_version_and_remove_updates_manifest() -> anyhow::Result<()>
     let remove_output = run_goml(
         &[
             "remove",
-            "alice/http",
+            "alice::http",
             "--local-registry",
             registry.to_string_lossy().as_ref(),
         ],
@@ -381,7 +381,7 @@ fn add_with_explicit_version_and_remove_updates_manifest() -> anyhow::Result<()>
     let stdout = String::from_utf8_lossy(&remove_output.stdout);
     let stderr = String::from_utf8_lossy(&remove_output.stderr);
     assert!(remove_output.status.success(), "stderr: {stderr}");
-    expect!["removed alice/http\n"].assert_eq(&stdout);
+    expect!["removed alice::http\n"].assert_eq(&stdout);
     expect![""].assert_eq(&stderr);
 
     let manifest = fs::read_to_string(project_dir.join("goml.toml"))?;
@@ -417,8 +417,8 @@ name = "main"
 entry = "main.gom"
 
 [dependencies]
-"alice/http" = "1.0.0"
-"alice/appdep" = "0.1.0"
+"alice::http" = "1.0.0"
+"alice::appdep" = "0.1.0"
 "#,
     )?;
     fs::write(

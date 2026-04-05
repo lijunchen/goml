@@ -188,16 +188,16 @@ name = "main"
 entry = "main.gom"
 
 [dependencies]
-"alice/http" = "1.2.3"
-"bob/json" = "0.4.0"
+"alice::http" = "1.2.3"
+"bob::json" = "0.4.0"
 "#;
         let config: GomlConfig = content.parse().unwrap();
         assert_eq!(
-            config.dependencies.get("alice/http"),
+            config.dependencies.get("alice::http"),
             Some(&"1.2.3".to_string())
         );
         assert_eq!(
-            config.dependencies.get("bob/json"),
+            config.dependencies.get("bob::json"),
             Some(&"0.4.0".to_string())
         );
     }
