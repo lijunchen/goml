@@ -386,6 +386,7 @@ pub fn colon_colon_completions(src: &str, line: u32, col: u32) -> String {
         let compiler::query::ColonColonCompletionItem { name, kind, detail } = item;
 
         let kind_str = match kind {
+            compiler::query::ColonColonCompletionKind::Package => "package",
             compiler::query::ColonColonCompletionKind::Type => "type",
             compiler::query::ColonColonCompletionKind::Value => "value",
             compiler::query::ColonColonCompletionKind::Trait => "trait",
@@ -423,6 +424,7 @@ pub fn value_completions(src: &str, line: u32, col: u32) -> String {
         let compiler::query::ValueCompletionItem { name, kind, detail } = item;
 
         let kind_str = match kind {
+            compiler::query::ValueCompletionKind::Package => "package",
             compiler::query::ValueCompletionKind::Function => "function",
             compiler::query::ValueCompletionKind::Keyword => "keyword",
         };

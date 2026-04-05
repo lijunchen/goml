@@ -10,6 +10,7 @@ use crate::hir;
 use crate::interface;
 use crate::lift::{self, GlobalLiftEnv, LiftFile};
 use crate::mono::{self, GlobalMonoEnv};
+use crate::package_names::is_special_unqualified_package;
 use crate::package_names::{BUILTIN_PACKAGE, ENTRY_FUNCTION, ROOT_PACKAGE, is_builtin_package};
 use crate::pipeline::builtin_inherent;
 use crate::pipeline::compile_error;
@@ -110,9 +111,23 @@ fn load_interface_for_package(
     package: &str,
     interface_files: &[PathBuf],
     units: &HashMap<String, (PathBuf, InterfaceUnit)>,
-) -> Result<InterfaceUnit, CompilationError> {
+) -> Result<(InterfaceUnit, interface::PackageInterface), CompilationError> {
     if let Some((_, unit)) = units.get(package) {
-        return Ok(unit.clone());
+        return Ok((unit.clone(), unit.interface.clone()));
+    }
+
+    for (_, unit) in units.values() {
+        let Some(root_import_path) = external_root_import_path(unit) else {
+            continue;
+        };
+        if !exports_contain_package(package, &unit.exports) {
+            continue;
+        }
+        let mut package_interface =
+            interface::PackageInterface::from_exports(package, &unit.exports);
+        package_interface.packages =
+            std::iter::once(format!("{root_import_path}::{package}")).collect();
+        return Ok((unit.clone(), package_interface));
     }
 
     Err(compile_error(format!(
@@ -133,6 +148,7 @@ fn load_interface_for_package(
 fn read_source_files(
     package: &str,
     input_files: &[PathBuf],
+    interface_units: &HashMap<String, (PathBuf, InterfaceUnit)>,
 ) -> Result<ReadSourceFilesResult, CompilationError> {
     if input_files.is_empty() {
         return Err(compile_error("no input files provided".to_string()));
@@ -162,6 +178,11 @@ fn read_source_files(
             imports.insert(import.0.clone());
         }
         for use_trait in ast.use_traits.iter() {
+            if let Some(package_import) = external_package_import_alias(use_trait, interface_units)
+            {
+                imports.insert(package_import);
+                continue;
+            }
             let Some(first) = use_trait.segments().first() else {
                 continue;
             };
@@ -175,6 +196,77 @@ fn read_source_files(
 }
 
 type ReadSourceFilesResult = (Vec<hir::SourceFileAst>, HashSet<String>, Vec<String>);
+
+fn external_root_import_path(unit: &InterfaceUnit) -> Option<&str> {
+    unit.interface.packages.iter().next().map(String::as_str)
+}
+
+fn exports_contain_package(package: &str, exports: &PackageExports) -> bool {
+    exports
+        .type_env
+        .enums
+        .keys()
+        .any(|name| export_belongs_to_package(package, &name.0))
+        || exports
+            .type_env
+            .structs
+            .keys()
+            .any(|name| export_belongs_to_package(package, &name.0))
+        || exports
+            .type_env
+            .extern_types
+            .keys()
+            .any(|name| export_belongs_to_package(package, name))
+        || exports
+            .trait_env
+            .trait_defs
+            .keys()
+            .any(|name| export_belongs_to_package(package, name))
+        || exports
+            .value_env
+            .funcs
+            .keys()
+            .any(|name| export_belongs_to_package(package, name))
+}
+
+fn export_belongs_to_package(package: &str, name: &str) -> bool {
+    if is_special_unqualified_package(package) {
+        !name.contains("::")
+    } else {
+        name.starts_with(&format!("{package}::"))
+    }
+}
+
+fn external_package_import_alias(
+    path: &ast::ast::Path,
+    interface_units: &HashMap<String, (PathBuf, InterfaceUnit)>,
+) -> Option<String> {
+    if path.len() < 2 {
+        return None;
+    }
+    let display = path.display();
+    let last = path.last_ident()?.0.clone();
+
+    for (_, unit) in interface_units.values() {
+        let Some(root_import_path) = external_root_import_path(unit) else {
+            continue;
+        };
+        if display == root_import_path {
+            return Some(unit.package.clone());
+        }
+        if !display.starts_with(root_import_path) {
+            continue;
+        }
+        if !display[root_import_path.len()..].starts_with("::") {
+            continue;
+        }
+        if exports_contain_package(&last, &unit.exports) {
+            return Some(last.clone());
+        }
+    }
+
+    None
+}
 
 fn typecheck_single_package(
     package: &str,
@@ -209,8 +301,9 @@ fn typecheck_single_package(
 }
 
 pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationError> {
-    let (files, imports, _sources) = read_source_files(&opts.package, &opts.input_files)?;
     let interface_units = load_interface_files(&opts.interface_files)?;
+    let (files, imports, _sources) =
+        read_source_files(&opts.package, &opts.input_files, &interface_units)?;
 
     let mut deps: Vec<String> = imports.into_iter().collect();
     deps.sort();
@@ -231,10 +324,11 @@ pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationEr
         if dep == BUILTIN_PACKAGE || dep == opts.package {
             continue;
         }
-        let unit = load_interface_for_package(&dep, &opts.interface_files, &interface_units)?;
+        let (unit, package_interface) =
+            load_interface_for_package(&dep, &opts.interface_files, &interface_units)?;
         deps_envs.insert(dep.clone(), unit.exports.to_genv());
-        deps_interfaces.insert(dep.clone(), unit.interface.clone());
-        dep_hashes.insert(dep, unit.interface_hash.clone());
+        deps_interfaces.insert(dep.clone(), package_interface);
+        dep_hashes.insert(unit.package.clone(), unit.interface_hash.clone());
     }
 
     let (tast, exports, pkg_interface, diagnostics) =
@@ -250,8 +344,9 @@ pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationEr
 }
 
 pub fn build_package(opts: PackageInputs) -> Result<CoreUnit, CompilationError> {
-    let (files, imports, sources) = read_source_files(&opts.package, &opts.input_files)?;
     let interface_units = load_interface_files(&opts.interface_files)?;
+    let (files, imports, sources) =
+        read_source_files(&opts.package, &opts.input_files, &interface_units)?;
 
     let mut deps: Vec<String> = imports.into_iter().collect();
     deps.sort();
@@ -273,10 +368,11 @@ pub fn build_package(opts: PackageInputs) -> Result<CoreUnit, CompilationError> 
         if dep == BUILTIN_PACKAGE || dep == opts.package {
             continue;
         }
-        let unit = load_interface_for_package(&dep, &opts.interface_files, &interface_units)?;
+        let (unit, package_interface) =
+            load_interface_for_package(&dep, &opts.interface_files, &interface_units)?;
         deps_envs.insert(dep.clone(), unit.exports.to_genv());
-        deps_interfaces.insert(dep.clone(), unit.interface.clone());
-        dep_hashes.insert(dep.clone(), unit.interface_hash.clone());
+        deps_interfaces.insert(dep.clone(), package_interface);
+        dep_hashes.insert(unit.package.clone(), unit.interface_hash.clone());
         dep_units.push(unit);
     }
 

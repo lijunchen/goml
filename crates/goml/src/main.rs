@@ -789,12 +789,12 @@ fn execute_project_build(args: ProjectCommandArgs) -> anyhow::Result<()> {
 
 fn build_project_check_plan(project: &ProjectContext) -> anyhow::Result<ProjectCommandPlan> {
     let external = build_external_artifacts_plan(project, PROJECT_CHECK_OUTPUT_DIR)?;
-    let external_roots = external.artifacts.root_packages();
-    let mut graph = compiler::pipeline::packages::discover_packages_with_external_roots(
+    let external_imports = external.artifacts.external_imports();
+    let mut graph = compiler::pipeline::packages::discover_packages_with_external_imports(
         &project.module_dir,
         Some(&project.entry_path),
         None,
-        &external_roots,
+        &external_imports,
     )
     .map_err(|err| anyhow!("project check failed: {:?}", err))?;
     external
@@ -845,12 +845,12 @@ fn build_project_check_plan(project: &ProjectContext) -> anyhow::Result<ProjectC
 
 fn build_project_build_plan(project: &ProjectContext) -> anyhow::Result<ProjectCommandPlan> {
     let external = build_external_artifacts_plan(project, PROJECT_BUILD_OUTPUT_DIR)?;
-    let external_roots = external.artifacts.root_packages();
-    let mut graph = compiler::pipeline::packages::discover_packages_with_external_roots(
+    let external_imports = external.artifacts.external_imports();
+    let mut graph = compiler::pipeline::packages::discover_packages_with_external_imports(
         &project.module_dir,
         Some(&project.entry_path),
         None,
-        &external_roots,
+        &external_imports,
     )
     .map_err(|err| anyhow!("project build failed: {:?}", err))?;
     external
@@ -922,7 +922,11 @@ fn build_external_artifacts_plan(
 
     for (root, module) in artifacts.modules.iter() {
         let base = external_artifact_base(output_root, module, root);
-        interface_outputs.insert(root.clone(), base.with_extension("interface"));
+        let interface_output = base.with_extension("interface");
+        interface_outputs.insert(root.clone(), interface_output.clone());
+        for source in module.sources.values() {
+            interface_outputs.insert(source.logical_name.clone(), interface_output.clone());
+        }
         core_outputs.insert(root.clone(), base.with_extension("core"));
     }
 
@@ -1096,16 +1100,21 @@ fn package_interface_inputs(
     deps.dedup();
 
     let mut outputs = Vec::new();
+    let mut seen = HashSet::new();
     for dep in deps {
         if dep == compiler::package_names::BUILTIN_PACKAGE || dep == package_name {
             continue;
         }
         if let Some(dep_interface) = interface_outputs.get(&dep) {
-            outputs.push(dep_interface.clone());
+            if seen.insert(dep_interface.clone()) {
+                outputs.push(dep_interface.clone());
+            }
             continue;
         }
         if let Some(dep_interface) = external_interfaces.get(&dep) {
-            outputs.push(dep_interface.clone());
+            if seen.insert(dep_interface.clone()) {
+                outputs.push(dep_interface.clone());
+            }
             continue;
         }
         if graph.external_root_packages.contains(&dep) {

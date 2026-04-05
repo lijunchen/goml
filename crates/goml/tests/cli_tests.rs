@@ -425,12 +425,12 @@ entry = "main.gom"
         project_dir.join("main.gom"),
         r#"package main;
 
-use http;
-use http::client;
-use appdep;
+use alice::http;
+use alice::http::client;
+use alice::appdep;
 
 fn main() -> unit {
-    string_println(http::version() + ":" + http::client::tag() + ":" + appdep::marker())
+    string_println(http::version() + ":" + client::tag() + ":" + appdep::marker())
 }
 "#,
     )?;
