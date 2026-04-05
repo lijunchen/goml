@@ -1,0 +1,30 @@
+package main
+file main.gom
+  fn tuple_case() -> int32 {
+        let _: (int32, int32) = (return 1i32, 2i32);
+        0i32
+    }
+    
+    fn array_case() -> int32 {
+        let _: [int32; 2] = [return 1i32, 2i32];
+        0i32
+    }
+    
+    fn proj_case() -> int32 {
+        let _: int32 = return 1i32.0;
+        0i32
+    }
+    
+    fn index_case() -> int32 {
+        let _: int32 = return 1i32[0i32];
+        0i32
+    }
+    
+    fn field_case() -> int32 {
+        let _: int32 = return 1i32.value;
+        0i32
+    }
+    
+    fn main() -> unit {
+        ()
+    }
