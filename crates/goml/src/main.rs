@@ -509,9 +509,7 @@ fn remove_dependency(path: &Path, coord: &ModuleCoord) -> anyhow::Result<()> {
 }
 
 fn ensure_dependencies_table(doc: &mut DocumentMut) -> &mut Table {
-    if !doc.as_table().contains_key("dependencies") {
-        doc["dependencies"] = Item::Table(Table::new());
-    } else if !doc["dependencies"].is_table() {
+    if !doc.as_table().contains_key("dependencies") || !doc["dependencies"].is_table() {
         doc["dependencies"] = Item::Table(Table::new());
     }
     doc["dependencies"]
