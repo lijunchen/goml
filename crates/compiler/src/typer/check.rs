@@ -2242,7 +2242,7 @@ impl Typer {
 
     fn expr_always_exits_loop_control(&self, expr_id: hir::ExprId) -> bool {
         match self.hir_table.expr(expr_id) {
-            hir::Expr::EBreak | hir::Expr::EContinue => true,
+            hir::Expr::EBreak | hir::Expr::EContinue | hir::Expr::EReturn { .. } => true,
             hir::Expr::EBlock { block } => self.block_always_exits_loop_control(block),
             hir::Expr::EIf {
                 then_branch,
@@ -2440,7 +2440,7 @@ impl Typer {
                 .map(|expr_id| Box::new(self.infer_expr(genv, local_env, diagnostics, expr_id)));
             return tast::Expr::EReturn {
                 expr,
-                ty: self.fresh_ty_var(),
+                ty: tast::Ty::TUnit,
             };
         };
 
@@ -2463,7 +2463,7 @@ impl Typer {
 
         tast::Expr::EReturn {
             expr,
-            ty: self.fresh_ty_var(),
+            ty: tast::Ty::TUnit,
         }
     }
 
