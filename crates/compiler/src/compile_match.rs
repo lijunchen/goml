@@ -70,6 +70,27 @@ fn block_always_exits_control_flow(block: &tast::Block) -> bool {
 fn expr_always_exits_control_flow(expr: &Expr) -> bool {
     match expr {
         EBreak { .. } | EContinue { .. } | EReturn { .. } => true,
+        EConstr { args, .. } => args.iter().any(expr_always_exits_control_flow),
+        ETuple { items, .. } | EArray { items, .. } => {
+            items.iter().any(expr_always_exits_control_flow)
+        }
+        EUnary { expr, .. } | EGo { expr, .. } | EField { expr, .. } => {
+            expr_always_exits_control_flow(expr)
+        }
+        ECall { func, args, .. } => {
+            expr_always_exits_control_flow(func) || args.iter().any(expr_always_exits_control_flow)
+        }
+        EProj { tuple, .. } => expr_always_exits_control_flow(tuple),
+        EIndex { base, index, .. } => {
+            expr_always_exits_control_flow(base) || expr_always_exits_control_flow(index)
+        }
+        EBinary { op, lhs, rhs, .. } => {
+            expr_always_exits_control_flow(lhs)
+                || match op {
+                    common_defs::BinaryOp::And | common_defs::BinaryOp::Or => false,
+                    _ => expr_always_exits_control_flow(rhs),
+                }
+        }
         EBlock { block, .. } => block_always_exits_control_flow(block),
         EIf {
             then_branch,
@@ -79,6 +100,7 @@ fn expr_always_exits_control_flow(expr: &Expr) -> bool {
             expr_always_exits_control_flow(then_branch)
                 && expr_always_exits_control_flow(else_branch)
         }
+        EWhile { cond, .. } => expr_always_exits_control_flow(cond),
         EMatch { arms, .. } => arms
             .iter()
             .all(|arm| expr_always_exits_control_flow(&arm.body)),
@@ -3611,6 +3633,9 @@ fn compile_expr(
             }
         }
         EProj { tuple, index, ty } => {
+            if expr_always_exits_control_flow(tuple) {
+                return compile_expr(tuple, genv, gensym, diagnostics);
+            }
             let tuple = compile_expr(tuple, genv, gensym, diagnostics);
             core::Expr::EProj {
                 tuple: Box::new(tuple),
@@ -3624,6 +3649,24 @@ fn compile_expr(
             ty,
             astptr,
         } => {
+            if expr_always_exits_control_flow(base) {
+                return compile_expr(base, genv, gensym, diagnostics);
+            }
+            if expr_always_exits_control_flow(index) {
+                let base_core = compile_expr(base, genv, gensym, diagnostics);
+                let index_core = compile_expr(index, genv, gensym, diagnostics);
+                return core::Expr::EBlock {
+                    block: Box::new(core::Block {
+                        stmts: vec![core::LetStmt {
+                            name: gensym.gensym("_wild"),
+                            value: base_core,
+                            ty: base.get_ty(),
+                        }],
+                        tail: Some(Box::new(index_core)),
+                    }),
+                    ty: ty.clone(),
+                };
+            }
             let base_core = compile_expr(base, genv, gensym, diagnostics);
             let index_core = compile_expr(index, genv, gensym, diagnostics);
             compile_index_read_core(
@@ -3641,6 +3684,9 @@ fn compile_expr(
             ty,
             astptr,
         } => {
+            if expr_always_exits_control_flow(expr) {
+                return compile_expr(expr, genv, gensym, diagnostics);
+            }
             let expr_core = compile_expr(expr, genv, gensym, diagnostics);
             compile_field_get_core(
                 genv,

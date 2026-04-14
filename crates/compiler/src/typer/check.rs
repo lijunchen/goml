@@ -2242,7 +2242,38 @@ impl Typer {
 
     fn expr_always_exits_loop_control(&self, expr_id: hir::ExprId) -> bool {
         match self.hir_table.expr(expr_id) {
-            hir::Expr::EBreak | hir::Expr::EContinue => true,
+            hir::Expr::EBreak | hir::Expr::EContinue | hir::Expr::EReturn { .. } => true,
+            hir::Expr::EConstr { args, .. } => args
+                .iter()
+                .any(|arg| self.expr_always_exits_loop_control(*arg)),
+            hir::Expr::EStructLiteral { fields, .. } => fields
+                .iter()
+                .any(|(_, expr)| self.expr_always_exits_loop_control(*expr)),
+            hir::Expr::ETuple { items } | hir::Expr::EArray { items } => items
+                .iter()
+                .any(|item| self.expr_always_exits_loop_control(*item)),
+            hir::Expr::ECall { func, args } => {
+                self.expr_always_exits_loop_control(*func)
+                    || args
+                        .iter()
+                        .any(|arg| self.expr_always_exits_loop_control(*arg))
+            }
+            hir::Expr::EUnary { expr, .. }
+            | hir::Expr::ETry { expr }
+            | hir::Expr::EGo { expr }
+            | hir::Expr::EField { expr, .. } => self.expr_always_exits_loop_control(*expr),
+            hir::Expr::EBinary { op, lhs, rhs } => {
+                self.expr_always_exits_loop_control(*lhs)
+                    || match op {
+                        common_defs::BinaryOp::And | common_defs::BinaryOp::Or => false,
+                        _ => self.expr_always_exits_loop_control(*rhs),
+                    }
+            }
+            hir::Expr::EProj { tuple, .. } => self.expr_always_exits_loop_control(*tuple),
+            hir::Expr::EIndex { base, index } => {
+                self.expr_always_exits_loop_control(*base)
+                    || self.expr_always_exits_loop_control(*index)
+            }
             hir::Expr::EBlock { block } => self.block_always_exits_loop_control(block),
             hir::Expr::EIf {
                 then_branch,
@@ -2264,6 +2295,7 @@ impl Typer {
                         .iter()
                         .all(|arm| self.expr_always_exits_loop_control(arm.body))
             }
+            hir::Expr::EWhile { cond, .. } => self.expr_always_exits_loop_control(*cond),
             _ => false,
         }
     }
@@ -2440,7 +2472,7 @@ impl Typer {
                 .map(|expr_id| Box::new(self.infer_expr(genv, local_env, diagnostics, expr_id)));
             return tast::Expr::EReturn {
                 expr,
-                ty: self.fresh_ty_var(),
+                ty: tast::Ty::TUnit,
             };
         };
 
@@ -2463,7 +2495,7 @@ impl Typer {
 
         tast::Expr::EReturn {
             expr,
-            ty: self.fresh_ty_var(),
+            ty: tast::Ty::TUnit,
         }
     }
 
@@ -2663,6 +2695,12 @@ impl Typer {
         expr: hir::ExprId,
     ) -> tast::Expr {
         let expr_tast = self.infer_expr(genv, local_env, diagnostics, expr);
+        if self.expr_always_exits_loop_control(expr) {
+            return tast::Expr::EGo {
+                expr: Box::new(expr_tast),
+                ty: tast::Ty::TUnit,
+            };
+        }
         // go expression expects a closure () -> unit
         let closure_ty = tast::Ty::TFunc {
             params: vec![],
@@ -3743,6 +3781,13 @@ impl Typer {
         index: usize,
     ) -> tast::Expr {
         let tuple_tast = self.infer_expr(genv, local_env, diagnostics, tuple);
+        if self.expr_always_exits_loop_control(tuple) {
+            return tast::Expr::EProj {
+                tuple: Box::new(tuple_tast),
+                index,
+                ty: tast::Ty::TUnit,
+            };
+        }
         let tuple_ty = tuple_tast.get_ty();
         let range = self.expr_range(proj_expr_id);
         match &tuple_ty {
@@ -3801,6 +3846,26 @@ impl Typer {
         index: hir::ExprId,
     ) -> tast::Expr {
         let base_tast = self.infer_expr(genv, local_env, diagnostics, base);
+        if self.expr_always_exits_loop_control(base) {
+            return tast::Expr::EIndex {
+                base: Box::new(base_tast),
+                index: Box::new(tast::Expr::EPrim {
+                    value: Prim::unit(),
+                    ty: tast::Ty::TUnit,
+                }),
+                ty: tast::Ty::TUnit,
+                astptr: self.hir_table.expr_ptr(index_expr_id),
+            };
+        }
+        if self.expr_always_exits_loop_control(index) {
+            let index_tast = self.infer_expr(genv, local_env, diagnostics, index);
+            return tast::Expr::EIndex {
+                base: Box::new(base_tast),
+                index: Box::new(index_tast),
+                ty: tast::Ty::TUnit,
+                astptr: self.hir_table.expr_ptr(index_expr_id),
+            };
+        }
         let base_ty = self.resolve_index_base_ty(diagnostics, base, &base_tast);
         let range = self.expr_range(index_expr_id);
         let (index_tast, result_ty) = match &base_ty {
@@ -4108,6 +4173,14 @@ impl Typer {
         astptr: Option<MySyntaxNodePtr>,
     ) -> tast::Expr {
         let base_tast = self.infer_expr(genv, local_env, diagnostics, expr);
+        if self.expr_always_exits_loop_control(expr) {
+            return tast::Expr::EField {
+                expr: Box::new(base_tast),
+                field_name: field.to_ident_name(),
+                ty: tast::Ty::TUnit,
+                astptr,
+            };
+        }
         let base_ty = base_tast.get_ty();
         let field_ident = tast::TastIdent(field.to_ident_name());
         let result_ty = if let Some(ty) = resolve_field_ty_eager(genv, &base_ty, &field_ident) {
