@@ -51,6 +51,7 @@ pub struct ColonColonCompletionItem {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ValueCompletionKind {
+    Variable,
     Package,
     Function,
     Keyword,

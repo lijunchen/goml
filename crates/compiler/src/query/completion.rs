@@ -1,11 +1,11 @@
 use std::{
-    collections::{BTreeMap, BTreeSet, HashSet},
+    collections::{BTreeMap, BTreeSet, HashMap, HashSet},
     fs,
     path::Path,
 };
 
 use cst::cst::CstNode;
-use cst::nodes::BinaryExpr;
+use cst::nodes::{BinaryExpr, Block, ClosureExpr, Fn, MatchArm, Pattern};
 use parser::syntax::{MySyntaxKind, MySyntaxNode, MySyntaxNodePtr};
 use text_size::TextSize;
 
@@ -14,11 +14,12 @@ use crate::{config::GomlConfig, env::GlobalTypeEnv, registry::ModuleCoord, tast}
 use super::{
     ColonColonCompletionItem, ColonColonCompletionKind, DotCompletionItem, DotCompletionKind,
     ValueCompletionItem, ValueCompletionKind,
-    hir_index::HirResultsIndex,
+    hir_index::{ClosureParamIndex, HirResultsIndex},
+    signature::{CallSignatureContext, call_signature_context_from_parts},
     symbol_index::{ProjectSymbolIndex, build_symbol_index},
     syntax::{
-        ancestor_path_from_token, ident_prefix_at_offset, token_at_offset_for_query,
-        use_decl_from_token,
+        ancestor_path_from_token, call_expr_and_active_parameter, ident_prefix_at_offset,
+        token_at_offset_for_query, use_decl_from_token,
     },
     typecheck::typecheck_for_query,
 };
@@ -30,6 +31,14 @@ const VALUE_COMPLETION_KEYWORDS: &[&str] = &[
     "package", "return", "string", "struct", "trait", "true", "type", "uint8", "uint16", "uint32",
     "uint64", "unit", "use", "while", "_",
 ];
+
+#[derive(Debug, Clone)]
+struct RankedValueItem {
+    item: ValueCompletionItem,
+    ty_text: Option<String>,
+    kind_rank: u8,
+    scope_rank: usize,
+}
 
 pub fn dot_completions(
     path: &Path,
@@ -115,9 +124,6 @@ pub fn value_completions(
     if let Some(items) = use_root_completions(path, src, offset, prefix_start, &prefix) {
         return Some(items);
     }
-    if prefix.is_empty() {
-        return Some(Vec::new());
-    }
 
     if prefix_start > TextSize::from(0)
         && src
@@ -137,26 +143,69 @@ pub fn value_completions(
         return None;
     }
 
-    let mut items = Vec::new();
-    if let Ok((_hir_table, _results, genv, _diagnostics)) = typecheck_for_query(path, src) {
-        items.extend(
+    if prefix.is_empty() {
+        return Some(Vec::new());
+    }
+
+    let parse = parser::parse(path, src);
+    let root = MySyntaxNode::new_root(parse.green_node);
+
+    let mut ranked_items = Vec::new();
+    let mut call_context = None;
+    if let Ok((hir_table, results, genv, _diagnostics)) = typecheck_for_query(path, src) {
+        let index = HirResultsIndex::new(&hir_table);
+        let closure_params = ClosureParamIndex::new(&hir_table);
+        call_context = call_expr_and_active_parameter(&root, offset).and_then(
+            |(call_expr, active_parameter)| {
+                call_signature_context_from_parts(
+                    path,
+                    src,
+                    &hir_table,
+                    &results,
+                    &call_expr,
+                    active_parameter,
+                )
+            },
+        );
+
+        ranked_items.extend(visible_local_items(
+            &root,
+            offset,
+            &index,
+            &closure_params,
+            &results,
+        ));
+        ranked_items.extend(
             genv.value_env
                 .funcs
                 .iter()
-                .filter(|(name, _)| !name.contains("::") && name.starts_with(&prefix))
-                .map(|(name, scheme)| ValueCompletionItem {
-                    name: name.clone(),
-                    kind: ValueCompletionKind::Function,
-                    detail: Some(scheme.ty.to_pretty(80)),
+                .filter(|(name, _)| !name.contains("::"))
+                .map(|(name, scheme)| RankedValueItem {
+                    item: ValueCompletionItem {
+                        name: name.clone(),
+                        kind: ValueCompletionKind::Function,
+                        detail: Some(scheme.ty.to_pretty(80)),
+                    },
+                    ty_text: Some(scheme.ty.to_pretty(80)),
+                    kind_rank: 1,
+                    scope_rank: usize::MAX - 1,
                 }),
         );
     }
-    items.extend(visible_use_namespace_items(path, src, &prefix));
 
-    let mut seen = items
-        .iter()
-        .map(|item| item.name.clone())
-        .collect::<HashSet<_>>();
+    ranked_items.extend(visible_use_namespace_items(path, src));
+
+    let mut seen = HashSet::new();
+    let mut items = Vec::new();
+    for ranked in ranked_items
+        .into_iter()
+        .filter(|item| item.item.name.starts_with(&prefix))
+    {
+        if seen.insert(ranked.item.name.clone()) {
+            items.push(ranked);
+        }
+    }
+
     for keyword in VALUE_COMPLETION_KEYWORDS {
         if !keyword.starts_with(&prefix) {
             continue;
@@ -164,16 +213,25 @@ pub fn value_completions(
         if !seen.insert((*keyword).to_string()) {
             continue;
         }
-        items.push(ValueCompletionItem {
-            name: (*keyword).to_string(),
-            kind: ValueCompletionKind::Keyword,
-            detail: None,
+        items.push(RankedValueItem {
+            item: ValueCompletionItem {
+                name: (*keyword).to_string(),
+                kind: ValueCompletionKind::Keyword,
+                detail: None,
+            },
+            ty_text: None,
+            kind_rank: 3,
+            scope_rank: usize::MAX,
         });
     }
 
-    items.sort_by(|a, b| a.name.cmp(&b.name));
-    items.truncate(50);
-    Some(items)
+    let expected_ty = call_context
+        .as_ref()
+        .and_then(CallSignatureContext::expected_param)
+        .map(|param| param.ty.to_pretty(80));
+
+    sort_value_items(&mut items, expected_ty.as_deref());
+    Some(items.into_iter().map(|item| item.item).take(50).collect())
 }
 
 pub fn colon_colon_completions(
@@ -352,14 +410,18 @@ fn use_root_completions(
     )
 }
 
-fn visible_use_namespace_items(path: &Path, src: &str, prefix: &str) -> Vec<ValueCompletionItem> {
+fn visible_use_namespace_items(path: &Path, src: &str) -> Vec<RankedValueItem> {
     visible_use_namespace_names(path, src)
         .into_iter()
-        .filter(|name| name.starts_with(prefix))
-        .map(|name| ValueCompletionItem {
-            name,
-            kind: ValueCompletionKind::Package,
-            detail: Some("package".to_string()),
+        .map(|name| RankedValueItem {
+            item: ValueCompletionItem {
+                name,
+                kind: ValueCompletionKind::Package,
+                detail: Some("package".to_string()),
+            },
+            ty_text: None,
+            kind_rank: 2,
+            scope_rank: usize::MAX - 2,
         })
         .collect()
 }
@@ -402,6 +464,240 @@ fn visible_use_namespace_names(path: &Path, src: &str) -> BTreeSet<String> {
             None
         })
         .collect()
+}
+
+fn visible_local_items(
+    root: &MySyntaxNode,
+    offset: TextSize,
+    index: &HirResultsIndex,
+    closure_params: &ClosureParamIndex,
+    results: &crate::typer::results::TypeckResults,
+) -> Vec<RankedValueItem> {
+    let token = token_at_offset_for_query(root, offset).or_else(|| {
+        offset
+            .checked_sub(TextSize::from(1))
+            .and_then(|prev| token_at_offset_for_query(root, prev))
+    });
+    let Some(token) = token else {
+        return Vec::new();
+    };
+    let Some(parent) = token.parent() else {
+        return Vec::new();
+    };
+
+    let path = parent.ancestors().collect::<Vec<_>>();
+    let mut items = Vec::new();
+    let mut seen = HashSet::new();
+
+    for (depth, node) in path.iter().enumerate() {
+        if let Some(function) = Fn::cast(node.clone()) {
+            add_fn_params(&function, depth, index, results, &mut seen, &mut items);
+        }
+        if let Some(closure) = ClosureExpr::cast(node.clone()) {
+            add_closure_params(
+                &closure,
+                depth,
+                closure_params,
+                results,
+                &mut seen,
+                &mut items,
+            );
+        }
+        if depth == 0 {
+            continue;
+        }
+        let child = &path[depth - 1];
+        if let Some(block) = Block::cast(node.clone()) {
+            add_block_locals(&block, child, depth, index, results, &mut seen, &mut items);
+        }
+        if let Some(match_arm) = MatchArm::cast(node.clone()) {
+            add_match_arm_bindings(
+                &match_arm, child, depth, index, results, &mut seen, &mut items,
+            );
+        }
+    }
+
+    items
+}
+
+fn add_fn_params(
+    function: &Fn,
+    depth: usize,
+    index: &HirResultsIndex,
+    results: &crate::typer::results::TypeckResults,
+    seen: &mut HashSet<String>,
+    items: &mut Vec<RankedValueItem>,
+) {
+    let Some(params) = function.param_list() else {
+        return;
+    };
+    for param in params.params() {
+        let Some(name) = param.lident().map(|ident| ident.to_string()) else {
+            continue;
+        };
+        if !seen.insert(name.clone()) {
+            continue;
+        }
+        let ptr = MySyntaxNodePtr::new(param.syntax());
+        let ty_text = index
+            .local_id(&ptr)
+            .and_then(|local_id| results.local_ty(local_id))
+            .map(|ty| ty.to_pretty(80))
+            .or_else(|| param.ty().map(|ty| ty.to_string()));
+        items.push(RankedValueItem {
+            item: ValueCompletionItem {
+                name,
+                kind: ValueCompletionKind::Variable,
+                detail: ty_text.clone(),
+            },
+            ty_text,
+            kind_rank: 0,
+            scope_rank: depth,
+        });
+    }
+}
+
+fn add_closure_params(
+    closure: &ClosureExpr,
+    depth: usize,
+    closure_params: &ClosureParamIndex,
+    results: &crate::typer::results::TypeckResults,
+    seen: &mut HashSet<String>,
+    items: &mut Vec<RankedValueItem>,
+) {
+    let Some(params) = closure.params() else {
+        return;
+    };
+    for param in params.params() {
+        let Some(name) = param.lident().map(|ident| ident.to_string()) else {
+            continue;
+        };
+        if !seen.insert(name.clone()) {
+            continue;
+        }
+        let ptr = MySyntaxNodePtr::new(param.syntax());
+        let ty_text = param.ty().map(|ty| ty.to_string()).or_else(|| {
+            closure_params
+                .local_id(&ptr)
+                .and_then(|local_id| results.local_ty(local_id))
+                .map(|ty| ty.to_pretty(80))
+        });
+        items.push(RankedValueItem {
+            item: ValueCompletionItem {
+                name,
+                kind: ValueCompletionKind::Variable,
+                detail: ty_text.clone(),
+            },
+            ty_text,
+            kind_rank: 0,
+            scope_rank: depth,
+        });
+    }
+}
+
+fn add_block_locals(
+    block: &Block,
+    child: &parser::syntax::MySyntaxNode,
+    depth: usize,
+    index: &HirResultsIndex,
+    results: &crate::typer::results::TypeckResults,
+    seen: &mut HashSet<String>,
+    items: &mut Vec<RankedValueItem>,
+) {
+    let child_start = child.text_range().start();
+    for stmt in block.stmts() {
+        if stmt.syntax().text_range().end() > child_start {
+            break;
+        }
+        if let cst::nodes::Stmt::LetStmt(let_stmt) = stmt
+            && let Some(pattern) = let_stmt.pattern()
+        {
+            add_pattern_bindings(&pattern, depth, index, results, seen, items);
+        }
+    }
+}
+
+fn add_match_arm_bindings(
+    match_arm: &MatchArm,
+    child: &parser::syntax::MySyntaxNode,
+    depth: usize,
+    index: &HirResultsIndex,
+    results: &crate::typer::results::TypeckResults,
+    seen: &mut HashSet<String>,
+    items: &mut Vec<RankedValueItem>,
+) {
+    if match_arm
+        .expr()
+        .is_some_and(|expr| expr.syntax().text_range() == child.text_range())
+        && let Some(pattern) = match_arm.pattern()
+    {
+        add_pattern_bindings(&pattern, depth, index, results, seen, items);
+    }
+}
+
+fn add_pattern_bindings(
+    pattern: &Pattern,
+    depth: usize,
+    index: &HirResultsIndex,
+    results: &crate::typer::results::TypeckResults,
+    seen: &mut HashSet<String>,
+    items: &mut Vec<RankedValueItem>,
+) {
+    let mut names = HashMap::new();
+    for node in pattern.syntax().descendants() {
+        let Some(var_pat) = cst::nodes::VarPat::cast(node) else {
+            continue;
+        };
+        let Some(name) = var_pat.lident().map(|ident| ident.to_string()) else {
+            continue;
+        };
+        names.entry(name).or_insert(var_pat);
+    }
+
+    for (name, var_pat) in names {
+        if !seen.insert(name.clone()) {
+            continue;
+        }
+        let ptr = MySyntaxNodePtr::new(var_pat.syntax());
+        let ty_text = index
+            .local_id(&ptr)
+            .and_then(|local_id| results.local_ty(local_id))
+            .map(|ty| ty.to_pretty(80))
+            .or_else(|| {
+                index
+                    .pat_id(&ptr)
+                    .and_then(|pat_id| results.pat_ty(pat_id))
+                    .map(|ty| ty.to_pretty(80))
+            });
+        items.push(RankedValueItem {
+            item: ValueCompletionItem {
+                name,
+                kind: ValueCompletionKind::Variable,
+                detail: ty_text.clone(),
+            },
+            ty_text,
+            kind_rank: 0,
+            scope_rank: depth,
+        });
+    }
+}
+
+fn sort_value_items(items: &mut [RankedValueItem], expected_ty: Option<&str>) {
+    items.sort_by(|a, b| {
+        value_item_match_rank(a, expected_ty)
+            .cmp(&value_item_match_rank(b, expected_ty))
+            .then(a.kind_rank.cmp(&b.kind_rank))
+            .then(a.scope_rank.cmp(&b.scope_rank))
+            .then(a.item.name.cmp(&b.item.name))
+    });
+}
+
+fn value_item_match_rank(item: &RankedValueItem, expected_ty: Option<&str>) -> u8 {
+    match expected_ty {
+        Some(expected_ty) if item.ty_text.as_deref() == Some(expected_ty) => 0,
+        Some(_) => 1,
+        None => 0,
+    }
 }
 
 fn is_use_root_completion_context(
