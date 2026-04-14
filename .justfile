@@ -34,3 +34,7 @@ install-vscode-ext:
 
 install:
     cargo install --path ./crates/goml --debug --offline --root ~/.goml --force --locked
+
+install-lsp-suite:
+    just install-lsp
+    just install-vscode-ext
