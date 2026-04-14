@@ -1,5 +1,5 @@
 use cst::cst::CstNode;
-use cst::nodes::{ArgList, CallExpr};
+use cst::nodes::{ArgList, CallExpr, PackageDecl};
 use parser::syntax::{MySyntaxKind, MySyntaxNode, MySyntaxToken};
 use text_size::TextSize;
 
@@ -191,6 +191,17 @@ pub(crate) fn use_decl_from_token(token: &MySyntaxToken) -> Option<cst::nodes::U
     while let Some(node) = current {
         if let Some(use_decl) = cst::nodes::UseDecl::cast(node.clone()) {
             return Some(use_decl);
+        }
+        current = node.parent();
+    }
+    None
+}
+
+pub(crate) fn package_decl_from_token(token: &MySyntaxToken) -> Option<PackageDecl> {
+    let mut current = token.parent();
+    while let Some(node) = current {
+        if let Some(package_decl) = PackageDecl::cast(node.clone()) {
+            return Some(package_decl);
         }
         current = node.parent();
     }

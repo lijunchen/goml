@@ -151,6 +151,7 @@ pub fn value_completions(
                 }),
         );
     }
+    items.extend(visible_use_namespace_items(path, src, &prefix));
 
     let mut seen = items
         .iter()
@@ -349,6 +350,58 @@ fn use_root_completions(
             })
             .collect(),
     )
+}
+
+fn visible_use_namespace_items(path: &Path, src: &str, prefix: &str) -> Vec<ValueCompletionItem> {
+    visible_use_namespace_names(path, src)
+        .into_iter()
+        .filter(|name| name.starts_with(prefix))
+        .map(|name| ValueCompletionItem {
+            name,
+            kind: ValueCompletionKind::Package,
+            detail: Some("package".to_string()),
+        })
+        .collect()
+}
+
+fn visible_use_namespace_names(path: &Path, src: &str) -> BTreeSet<String> {
+    let result = parser::parse(path, src);
+    let root = MySyntaxNode::new_root(result.green_node);
+    let Some(file) = cst::cst::File::cast(root) else {
+        return BTreeSet::new();
+    };
+
+    let external_import_paths = crate::pipeline::packages::discover_project_from_file(path)
+        .ok()
+        .and_then(|(module_dir, config)| {
+            crate::external::resolve_project_dependencies(&module_dir, &config).ok()
+        })
+        .map(|external_deps| external_deps.import_paths())
+        .unwrap_or_default();
+
+    file.use_decls()
+        .filter_map(|use_decl| use_decl.path())
+        .filter_map(|path| {
+            let segments = path
+                .ident_tokens()
+                .map(|token| token.to_string())
+                .collect::<Vec<_>>();
+            if segments.is_empty() {
+                return None;
+            }
+
+            let full_path = segments.join("::");
+            if let Some(logical_name) = external_import_paths.get(&full_path) {
+                return Some(logical_name.clone());
+            }
+
+            if segments.len() == 1 {
+                return segments.into_iter().next();
+            }
+
+            None
+        })
+        .collect()
 }
 
 fn is_use_root_completion_context(

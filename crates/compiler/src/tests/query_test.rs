@@ -242,6 +242,117 @@ fn main() -> unit {
 
 #[test]
 #[rustfmt::skip]
+fn imported_package_value_completions() {
+    let dir = tempdir().unwrap();
+    let home = dir.path().join(".goml");
+    write_cached_registry(&home);
+
+    std::fs::create_dir_all(dir.path().join("util")).unwrap();
+    std::fs::write(
+        dir.path().join("util/goml.toml"),
+        r#"[package]
+name = "util"
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        dir.path().join("util/lib.gom"),
+        r#"package util;
+
+fn ping() -> string {
+    "pong"
+}
+"#,
+    )
+    .unwrap();
+
+    std::fs::write(
+        dir.path().join("goml.toml"),
+        r#"[module]
+name = "demo"
+
+[package]
+name = "main"
+entry = "main.gom"
+
+[dependencies]
+"alice::http" = "1.2.0"
+"#,
+    )
+    .unwrap();
+
+    let src = r#"package main;
+
+use util;
+use alice::http;
+use alice::http::client;
+
+fn main() -> unit {
+    ut
+    ht
+    cl
+}
+"#;
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(&main_path, src).unwrap();
+
+    with_goml_home(&home, || {
+        check_value_completions_with_path(
+            &main_path,
+            src,
+            7,
+            6,
+            expect![[r#"
+                [
+                    ValueCompletionItem {
+                        name: "util",
+                        kind: Package,
+                        detail: Some(
+                            "package",
+                        ),
+                    },
+                ]
+            "#]],
+        );
+        check_value_completions_with_path(
+            &main_path,
+            src,
+            8,
+            6,
+            expect![[r#"
+                [
+                    ValueCompletionItem {
+                        name: "http",
+                        kind: Package,
+                        detail: Some(
+                            "package",
+                        ),
+                    },
+                ]
+            "#]],
+        );
+        check_value_completions_with_path(
+            &main_path,
+            src,
+            9,
+            6,
+            expect![[r#"
+                [
+                    ValueCompletionItem {
+                        name: "client",
+                        kind: Package,
+                        detail: Some(
+                            "package",
+                        ),
+                    },
+                ]
+            "#]],
+        );
+    });
+}
+
+#[test]
+#[rustfmt::skip]
 fn smoke_test() {
     let src = r#"enum Color { Red, Green, Blue }
 
@@ -291,6 +402,20 @@ fn main() {
     "#]]);
     check(src, 4, 12, expect![[r#"
         "string"
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn hover_on_package_name_returns_none() {
+    let src = r#"package main;
+
+fn main() {
+}
+"#;
+
+    check(src, 0, 9, expect![[r#"
+        "<None>"
     "#]]);
 }
 

@@ -755,6 +755,21 @@ fn main() {
     }
 
     #[test]
+    fn hover_on_package_name_returns_no_hover() {
+        check_hover(
+            r#"
+package main;
+
+fn main() {
+}
+"#,
+            1,
+            9,
+            expect!["no hover"],
+        );
+    }
+
+    #[test]
     fn hover_on_function_call() {
         check_hover(
             r#"
@@ -1047,6 +1062,63 @@ fn main() {
             15,
             expect!["helper"],
         );
+    }
+
+    #[test]
+    fn value_completion_suggests_imported_package_names() {
+        let dir = tempdir().unwrap();
+        let root = dir.path();
+
+        std::fs::write(
+            root.join("goml.toml"),
+            r#"[module]
+name = "demo"
+
+[package]
+name = "main"
+entry = "main.gom"
+"#,
+        )
+        .unwrap();
+        std::fs::create_dir_all(root.join("util")).unwrap();
+        std::fs::write(
+            root.join("util/goml.toml"),
+            r#"[package]
+name = "util"
+"#,
+        )
+        .unwrap();
+        std::fs::write(
+            root.join("util/lib.gom"),
+            r#"package util;
+
+fn ping() -> string {
+    "pong"
+}
+"#,
+        )
+        .unwrap();
+
+        let src = r#"
+package main;
+use util;
+
+fn main() {
+    ut
+}
+"#;
+        let path = root.join("main.gom");
+        std::fs::write(&path, src).unwrap();
+
+        let completion = handlers::completion(
+            &path,
+            src,
+            Position {
+                line: 5,
+                character: 6,
+            },
+        );
+        expect!["util"].assert_eq(&format_completion(completion));
     }
 
     #[test]
