@@ -424,6 +424,7 @@ pub fn value_completions(src: &str, line: u32, col: u32) -> String {
         let compiler::query::ValueCompletionItem { name, kind, detail } = item;
 
         let kind_str = match kind {
+            compiler::query::ValueCompletionKind::Variable => "variable",
             compiler::query::ValueCompletionKind::Package => "package",
             compiler::query::ValueCompletionKind::Function => "function",
             compiler::query::ValueCompletionKind::Keyword => "keyword",

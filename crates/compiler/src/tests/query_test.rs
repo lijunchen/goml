@@ -459,11 +459,6 @@ fn main() {
                 ),
             },
             ValueCompletionItem {
-                name: "string",
-                kind: Keyword,
-                detail: None,
-            },
-            ValueCompletionItem {
                 name: "string_get",
                 kind: Function,
                 detail: Some(
@@ -499,6 +494,11 @@ fn main() {
                 ),
             },
             ValueCompletionItem {
+                name: "string",
+                kind: Keyword,
+                detail: None,
+            },
+            ValueCompletionItem {
                 name: "struct",
                 kind: Keyword,
                 detail: None,
@@ -527,6 +527,78 @@ fn main() {
                 kind: Function,
                 detail: Some(
                     "() -> int32",
+                ),
+            },
+        ]
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn local_value_completions() {
+    let src = r#"
+fn main() {
+    let count = 1;
+    cou
+}
+"#;
+
+    check_value_completions(src, 3, 7, expect![[r#"
+        [
+            ValueCompletionItem {
+                name: "count",
+                kind: Variable,
+                detail: Some(
+                    "int32",
+                ),
+            },
+        ]
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn call_argument_value_completions_are_empty_without_prefix() {
+    let src = r#"
+fn takes(count: int32, label: string) -> unit {
+    ()
+}
+
+fn main() {
+    let count = 1;
+    let label = "ok";
+    takes(
+    )
+}
+"#;
+
+    check_value_completions(src, 8, 10, expect![[r#"
+        []
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn call_argument_value_completions_with_prefix() {
+    let src = r#"
+fn takes(count: int32, label: string) -> unit {
+    ()
+}
+
+fn main() {
+    let count = 1;
+    let label = "ok";
+    takes(count, la)
+}
+"#;
+
+    check_value_completions(src, 8, 19, expect![[r#"
+        [
+            ValueCompletionItem {
+                name: "label",
+                kind: Variable,
+                detail: Some(
+                    "string",
                 ),
             },
         ]
@@ -607,10 +679,10 @@ fn main() {
     check_signature_help(src, 6, 16, expect![[r#"
         Some(
             SignatureHelpItem {
-                label: "(int32, string) -> bool",
+                label: "(x: int32, y: string) -> bool",
                 parameters: [
-                    "int32",
-                    "string",
+                    "x: int32",
+                    "y: string",
                 ],
                 active_parameter: 0,
             },
@@ -620,10 +692,10 @@ fn main() {
     check_signature_help(src, 6, 18, expect![[r#"
         Some(
             SignatureHelpItem {
-                label: "(int32, string) -> bool",
+                label: "(x: int32, y: string) -> bool",
                 parameters: [
-                    "int32",
-                    "string",
+                    "x: int32",
+                    "y: string",
                 ],
                 active_parameter: 1,
             },
