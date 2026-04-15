@@ -16,6 +16,7 @@ use crate::{
 };
 
 mod builtin_functions_test;
+mod constructor_value_test;
 mod dyn_coercion_test;
 mod e2e;
 mod module;
