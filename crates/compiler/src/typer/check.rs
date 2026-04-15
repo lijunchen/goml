@@ -1903,7 +1903,10 @@ impl Typer {
 
         let body_ty = self.fresh_ty_var();
         self.return_ty_stack.push(body_ty.clone());
+        let saved_while_depth = self.while_depth;
+        self.while_depth = 0;
         let body_tast = self.infer_expr(genv, local_env, diagnostics, body);
+        self.while_depth = saved_while_depth;
         let _ = self.return_ty_stack.pop();
         self.push_constraint(Constraint::TypeEqual(
             body_tast.get_ty(),
@@ -1974,8 +1977,11 @@ impl Typer {
                 }
 
                 self.return_ty_stack.push(expected_ret.as_ref().clone());
+                let saved_while_depth = self.while_depth;
+                self.while_depth = 0;
                 let body_tast =
                     self.check_expr(genv, local_env, diagnostics, body, expected_ret.as_ref());
+                self.while_depth = saved_while_depth;
                 let _ = self.return_ty_stack.pop();
                 let body_ty = body_tast.get_ty();
                 let captures = local_env.end_closure(diagnostics, &self.hir_table);
