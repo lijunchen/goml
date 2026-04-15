@@ -47,3 +47,75 @@ fn main() -> unit {
     assert!(go.contains("dyn__Show__vtable__Wrap()"));
     assert!(go.contains("dyn__Show__vtable__int32()"));
 }
+
+#[test]
+fn implicit_dyn_coercion_from_generic_call_result_compiles() {
+    let src = r#"
+trait Show {
+    fn show(Self) -> string;
+}
+
+struct Wrap[T] {
+    value: T,
+}
+
+impl Show for Wrap[int32] {
+    fn show(self: Wrap[int32]) -> string {
+        self.value.to_string()
+    }
+}
+
+fn make_wrap[T](x: T) -> Wrap[T] {
+    Wrap { value: x }
+}
+
+fn render(x: dyn Show) -> string {
+    Show::show(x)
+}
+
+fn main() -> unit {
+    let _ = println(render(make_wrap(42i32)));
+}
+"#;
+
+    let go = compile_go(src, "implicit_dyn_coercion_from_generic_call_result.gom");
+
+    assert!(go.contains("dyn__Show__vtable__Wrap__int32()"));
+}
+
+#[test]
+fn implicit_dyn_coercion_from_generic_enum_call_result_compiles() {
+    let src = r#"
+trait Show {
+    fn show(Self) -> string;
+}
+
+enum Boxed[T] {
+    One(T),
+}
+
+impl Show for Boxed[int32] {
+    fn show(self: Boxed[int32]) -> string {
+        match self {
+            Boxed::One(x) => x.to_string(),
+        }
+    }
+}
+
+fn make_boxed[T](x: T) -> Boxed[T] {
+    Boxed::One(x)
+}
+
+fn render(x: dyn Show) -> string {
+    Show::show(x)
+}
+
+fn main() -> unit {
+    let _ = println(render(make_boxed(42i32)));
+}
+"#;
+
+    let go = compile_go(src, "implicit_dyn_coercion_from_generic_enum_call_result.gom");
+
+    assert!(go.contains("dyn__Show__vtable__Boxed__int32()"));
+}
