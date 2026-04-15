@@ -5279,9 +5279,26 @@ fn all_paths_reach_or_terminate_term(
 }
 
 fn compile_let_bind(goenv: &GlobalGoEnv, bind: &anf::LetBind) -> Vec<goast::Stmt> {
+    let discard = bind.id.0 == "_" || bind.id.0.starts_with("_wild");
+
+    if discard
+        && let anf::ValueExpr::Call { func, args, .. } = &bind.value
+        && let anf::ImmExpr::Var { id: func_id, .. } = func
+        && func_id.0 == "vec_push"
+        && let Some(anf::ImmExpr::Var { id: vec_id, .. }) = args.first()
+    {
+        let compiled = compile_value_expr(goenv, &bind.value);
+        let mut stmts = compiled.stmts;
+        stmts.push(goast::Stmt::Assignment {
+            name: go_ident(&vec_id.0),
+            value: compiled.expr,
+        });
+        return stmts;
+    }
+
     let compiled = compile_value_expr(goenv, &bind.value);
     let mut stmts = compiled.stmts;
-    if bind.id.0 == "_" {
+    if discard {
         if matches!(compiled.expr, goast::Expr::Call { .. }) {
             stmts.push(goast::Stmt::Expr(compiled.expr));
         }
