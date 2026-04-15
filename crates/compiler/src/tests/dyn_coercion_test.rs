@@ -45,5 +45,5 @@ fn main() -> unit {
     let go = compile_go(src, "mixed_dyn_vec_push.gom");
 
     assert!(go.contains("dyn__Show__vtable__Wrap()"));
-    assert!(go.contains("vec_push"));
+    assert!(go.contains("dyn__Show__vtable__int32()"));
 }

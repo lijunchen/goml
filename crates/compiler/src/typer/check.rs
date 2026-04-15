@@ -1,4 +1,7 @@
-use std::{collections::HashMap, num::IntErrorKind};
+use std::{
+    collections::{HashMap, HashSet},
+    num::IntErrorKind,
+};
 
 use diagnostics::{Severity, Stage};
 use parser::{Diagnostic, Diagnostics, syntax::MySyntaxNodePtr};
@@ -2850,6 +2853,7 @@ impl Typer {
                 let name = &hint;
                 if let Some(func_scheme) = lookup_function_scheme_by_hint(genv, name.as_str()) {
                     let inst_ty = self.inst_ty(&func_scheme.ty);
+                    let needs_early_call_site_unify = fn_ret_depends_on_params(&inst_ty);
                     if let (Some(hint), tast::Ty::TFunc { ret_ty: fn_ret, .. }) =
                         (hint_ret_ty, &inst_ty)
                     {
@@ -2907,6 +2911,9 @@ impl Typer {
                     ) {
                         return self.error_expr(astptr);
                     }
+                    if needs_early_call_site_unify {
+                        self.try_unify_silent(&inst_ty, &call_site_func_ty);
+                    }
                     self.push_constraint(Constraint::TypeEqual(
                         inst_ty.clone(),
                         call_site_func_ty.clone(),
@@ -2959,6 +2966,7 @@ impl Typer {
                     && let Some(func_scheme) = genv.get_function_scheme_unqualified(name.as_str())
                 {
                     let inst_ty = self.inst_ty(&func_scheme.ty);
+                    let needs_early_call_site_unify = fn_ret_depends_on_params(&inst_ty);
                     if let (Some(hint), tast::Ty::TFunc { ret_ty: fn_ret, .. }) =
                         (hint_ret_ty, &inst_ty)
                     {
@@ -3015,6 +3023,9 @@ impl Typer {
                         call_range,
                     ) {
                         return self.error_expr(astptr);
+                    }
+                    if needs_early_call_site_unify {
+                        self.try_unify_silent(&inst_ty, &call_site_func_ty);
                     }
                     self.push_constraint(Constraint::TypeEqual(
                         inst_ty.clone(),
@@ -5711,6 +5722,56 @@ pub(crate) fn contains_tvar(ty: &tast::Ty) -> bool {
         }
         _ => false,
     }
+}
+
+fn collect_tvars(ty: &tast::Ty, vars: &mut HashSet<tast::TypeVar>) {
+    match ty {
+        tast::Ty::TVar(var) => {
+            vars.insert(*var);
+        }
+        tast::Ty::TTuple { typs } => {
+            for ty in typs {
+                collect_tvars(ty, vars);
+            }
+        }
+        tast::Ty::TApp { ty, args } => {
+            collect_tvars(ty, vars);
+            for arg in args {
+                collect_tvars(arg, vars);
+            }
+        }
+        tast::Ty::TArray { elem, .. }
+        | tast::Ty::TSlice { elem }
+        | tast::Ty::TVec { elem }
+        | tast::Ty::TRef { elem } => collect_tvars(elem, vars),
+        tast::Ty::THashMap { key, value } => {
+            collect_tvars(key, vars);
+            collect_tvars(value, vars);
+        }
+        tast::Ty::TFunc { params, ret_ty } => {
+            for param in params {
+                collect_tvars(param, vars);
+            }
+            collect_tvars(ret_ty, vars);
+        }
+        _ => {}
+    }
+}
+
+fn fn_ret_depends_on_params(ty: &tast::Ty) -> bool {
+    let tast::Ty::TFunc { params, ret_ty } = ty else {
+        return false;
+    };
+    let mut param_vars = HashSet::new();
+    for param in params {
+        collect_tvars(param, &mut param_vars);
+    }
+    if param_vars.is_empty() {
+        return false;
+    }
+    let mut ret_vars = HashSet::new();
+    collect_tvars(ret_ty, &mut ret_vars);
+    ret_vars.iter().any(|var| param_vars.contains(var))
 }
 
 fn try_result_parts(ty: &tast::Ty) -> Option<(&str, &tast::Ty, &tast::Ty)> {

@@ -407,8 +407,7 @@ impl Typer {
                     origin,
                     ..
                 } => {
-                    if Self::ty_mentions_var(tuple_ty, var)
-                        || Self::ty_mentions_var(result_ty, var)
+                    if Self::ty_mentions_var(tuple_ty, var) || Self::ty_mentions_var(result_ty, var)
                     {
                         *origin
                     } else {
@@ -1057,6 +1056,20 @@ impl Typer {
                 tast::Ty::TFunc { params, ret_ty }
             }
             tast::Ty::TParam { name } => tast::Ty::TParam { name: name.clone() },
+        }
+    }
+
+    pub(crate) fn try_unify_silent(&mut self, l: &tast::Ty, r: &tast::Ty) -> bool {
+        let snapshot = self.uni.snapshot();
+        let array_wildcard_resolutions = self.array_wildcard_resolutions.clone();
+        let mut diagnostics = Diagnostics::new();
+        if self.unify(&mut diagnostics, l, r, None) {
+            self.uni.commit(snapshot);
+            true
+        } else {
+            self.uni.rollback_to(snapshot);
+            self.array_wildcard_resolutions = array_wildcard_resolutions;
+            false
         }
     }
 
