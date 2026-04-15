@@ -10,6 +10,42 @@ const HELLO_PROGRAM: &str = r#"fn main() -> unit {
 }
 "#;
 
+const GO_OPTION_LAST_TUPLE_PROGRAM: &str = r#"#[go_option_last]
+extern "go" "strings" "Cut" cut_pair(text: string, sep: string) -> Option[(string, string)]
+
+fn describe(text: string) -> string {
+    match cut_pair(text, ":") {
+        Option::Some((before, after)) => before + "|" + after,
+        Option::None => "missing",
+    }
+}
+
+fn main() {
+    string_println(describe("alpha:beta"));
+    string_println(describe("plain"));
+}
+"#;
+
+const GO_ERROR_LAST_TUPLE_PROGRAM: &str = r#"#[go_error_last]
+extern "go" "net" "SplitHostPort" split_host_port(text: string) -> Result[(string, string), GoError]
+
+fn render(text: string) -> Result[string, GoError] {
+    let (host, port) = split_host_port(text)?;
+    Result::Ok(host + "|" + port)
+}
+
+fn show(res: Result[string, GoError]) -> string {
+    match res {
+        Result::Ok(text) => text,
+        Result::Err(err) => err.to_string(),
+    }
+}
+
+fn main() {
+    string_println(show(render("example.com:443")));
+}
+"#;
+
 const PROJECT_CONFIG: &str = r#"[module]
 name = "demo"
 
@@ -273,6 +309,44 @@ fn compiler_run_single_executes_program() -> anyhow::Result<()> {
 
     assert!(output.status.success(), "stderr: {stderr}");
     expect!["hello\n"].assert_eq(&stdout);
+    expect![""].assert_eq(&stderr);
+
+    Ok(())
+}
+
+#[test]
+fn compiler_run_single_supports_go_option_last_tuple_payload() -> anyhow::Result<()> {
+    let (_dir, path) = write_program(GO_OPTION_LAST_TUPLE_PROGRAM)?;
+
+    let output = Command::new(goml_bin())
+        .arg("compiler")
+        .arg("run-single")
+        .arg(&path)
+        .output()?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(output.status.success(), "stderr: {stderr}");
+    expect!["alpha|beta\nmissing\n"].assert_eq(&stdout);
+    expect![""].assert_eq(&stderr);
+
+    Ok(())
+}
+
+#[test]
+fn compiler_run_single_supports_go_error_last_tuple_payload() -> anyhow::Result<()> {
+    let (_dir, path) = write_program(GO_ERROR_LAST_TUPLE_PROGRAM)?;
+
+    let output = Command::new(goml_bin())
+        .arg("compiler")
+        .arg("run-single")
+        .arg(&path)
+        .output()?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(output.status.success(), "stderr: {stderr}");
+    expect!["example.com|443\n"].assert_eq(&stdout);
     expect![""].assert_eq(&stderr);
 
     Ok(())
