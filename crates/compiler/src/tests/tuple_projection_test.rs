@@ -30,3 +30,25 @@ fn main() -> unit {
     assert!(go.contains("._0"));
     assert!(go.contains("._1"));
 }
+
+#[test]
+fn generic_function_value_tuple_return_can_be_projected_without_annotation() {
+    let src = r#"
+fn pair[A, B](a: A, b: B) -> (A, B) {
+    (a, b)
+}
+
+fn main() -> unit {
+    let mk: (int32, string) -> (int32, string) = pair;
+    let out = mk(1, "x");
+    println(out.0.to_string() + out.1);
+}
+"#;
+
+    let go = compile_go(src, "generic_function_value_tuple_return_projection.gom");
+
+    assert!(go.contains("pair__A_int32__B_string"));
+    assert!(go.contains("var out__"));
+    assert!(go.contains("._0"));
+    assert!(go.contains("._1"));
+}

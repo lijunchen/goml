@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::{
     env::{Constraint, PackageTypeEnv},
     tast::{self, TastIdent, TypeVar},
-    typer::Typer,
+    typer::{Typer, check::contains_tvar},
 };
 use diagnostics::{Severity, Stage};
 use parser::{Diagnostic, Diagnostics};
@@ -311,6 +311,7 @@ impl Typer {
             Constraint::Overloaded { origin, .. } => *origin,
             Constraint::Implements { origin, .. } => *origin,
             Constraint::StructFieldAccess { origin, .. } => *origin,
+            Constraint::TupleProjectionAccess { origin, .. } => *origin,
             Constraint::InherentMethodCall { origin, .. } => *origin,
         }
     }
@@ -394,6 +395,20 @@ impl Typer {
                     ..
                 } => {
                     if Self::ty_mentions_var(expr_ty, var) || Self::ty_mentions_var(result_ty, var)
+                    {
+                        *origin
+                    } else {
+                        None
+                    }
+                }
+                Constraint::TupleProjectionAccess {
+                    tuple_ty,
+                    result_ty,
+                    origin,
+                    ..
+                } => {
+                    if Self::ty_mentions_var(tuple_ty, var)
+                        || Self::ty_mentions_var(result_ty, var)
                     {
                         *origin
                     } else {
@@ -773,6 +788,58 @@ impl Typer {
                                 result_ty,
                                 origin,
                             });
+                        }
+                    }
+                    Constraint::TupleProjectionAccess {
+                        tuple_ty,
+                        index,
+                        result_ty,
+                        origin,
+                    } => {
+                        let norm_tuple_ty = self.norm(&tuple_ty);
+                        match &norm_tuple_ty {
+                            tast::Ty::TTuple { typs } => {
+                                let Some(field_ty) = typs.get(index) else {
+                                    diagnostics.push(
+                                        Diagnostic::new(
+                                            Stage::Typer,
+                                            Severity::Error,
+                                            format!(
+                                                "Tuple index {} out of bounds for type {}",
+                                                index,
+                                                super::util::format_ty_for_diag(&norm_tuple_ty)
+                                            ),
+                                        )
+                                        .with_range(origin),
+                                    );
+                                    continue;
+                                };
+                                if self.unify(diagnostics, &result_ty, field_ty, origin) {
+                                    changed = true;
+                                }
+                            }
+                            _ if contains_tvar(&norm_tuple_ty) => {
+                                still_pending.push(Constraint::TupleProjectionAccess {
+                                    tuple_ty: norm_tuple_ty,
+                                    index,
+                                    result_ty,
+                                    origin,
+                                });
+                            }
+                            _ => {
+                                diagnostics.push(
+                                    Diagnostic::new(
+                                        Stage::Typer,
+                                        Severity::Error,
+                                        format!(
+                                            "Cannot project field {} on non-tuple type {}",
+                                            index,
+                                            super::util::format_ty_for_diag(&norm_tuple_ty)
+                                        ),
+                                    )
+                                    .with_range(origin),
+                                );
+                            }
                         }
                     }
                     Constraint::InherentMethodCall {

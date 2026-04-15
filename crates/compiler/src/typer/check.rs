@@ -3831,6 +3831,20 @@ impl Typer {
                     ty: field_ty,
                 }
             }
+            _ if contains_tvar(&tuple_ty) => {
+                let result_ty = self.fresh_ty_var();
+                self.push_constraint(Constraint::TupleProjectionAccess {
+                    tuple_ty: tuple_ty.clone(),
+                    index,
+                    result_ty: result_ty.clone(),
+                    origin: range,
+                });
+                tast::Expr::EProj {
+                    tuple: Box::new(tuple_tast),
+                    index,
+                    ty: result_ty,
+                }
+            }
             _ => {
                 diagnostics.push(
                     Diagnostic::new(

@@ -95,6 +95,13 @@ pub enum Constraint {
         #[serde(skip)]
         origin: Option<text_size::TextRange>,
     },
+    TupleProjectionAccess {
+        tuple_ty: tast::Ty,
+        index: usize,
+        result_ty: tast::Ty,
+        #[serde(skip)]
+        origin: Option<text_size::TextRange>,
+    },
     InherentMethodCall {
         receiver_ty: tast::Ty,
         method: TastIdent,
