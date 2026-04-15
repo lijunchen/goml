@@ -185,3 +185,40 @@ fn bar() -> int32 {
 
     Ok(())
 }
+
+#[test]
+fn link_rejects_invalid_custom_result_for_go_error_wrapper() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(
+        &main_path,
+        r#"
+enum Result[T, E] {
+    Only,
+}
+
+#[go_error]
+extern "go" "os" "Chdir" chdir(path: string) -> Result[unit, GoError]
+
+fn main() -> unit {
+    let _ = chdir(".");
+}
+"#,
+    )?;
+
+    let unit = separate::build_package(separate::PackageInputs {
+        package: ROOT_PACKAGE.to_string(),
+        input_files: vec![main_path],
+        interface_files: vec![],
+    })
+    .map_err(|err| anyhow::anyhow!("build main failed: {:?}", err))?;
+
+    let err = separate::link_cores(vec![unit]).unwrap_err();
+    let msg = format!("{:?}", err);
+    assert!(
+        msg.contains("#[go_error]"),
+        "unexpected error message: {msg}"
+    );
+
+    Ok(())
+}
