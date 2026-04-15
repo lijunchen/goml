@@ -277,6 +277,57 @@ fn extract_result_tys(ty: &tast::Ty) -> Option<(&tast::Ty, &tast::Ty)> {
     Some((&args[0], &args[1]))
 }
 
+fn enum_def_for_native_name<'a>(
+    genv: &'a PackageTypeEnv,
+    ty: &tast::Ty,
+    enum_name: &str,
+) -> Option<&'a env::EnumDef> {
+    let tast::Ty::TApp { ty, .. } = ty else {
+        return None;
+    };
+    let tast::Ty::TEnum { name } = ty.as_ref() else {
+        return None;
+    };
+    if name != enum_name {
+        return None;
+    }
+
+    let ident = tast::TastIdent::new(enum_name);
+    genv.current()
+        .type_env
+        .enums
+        .get(&ident)
+        .or_else(|| genv.builtins().type_env.enums.get(&ident))
+}
+
+fn has_native_result_shape(genv: &PackageTypeEnv, ty: &tast::Ty) -> bool {
+    let Some(enum_def) = enum_def_for_native_name(genv, ty, "Result") else {
+        return false;
+    };
+    if enum_def.generics.len() != 2 || enum_def.variants.len() != 2 {
+        return false;
+    }
+
+    let ok_param = &enum_def.generics[0].0;
+    let err_param = &enum_def.generics[1].0;
+    let mut ok_seen = false;
+    let mut err_seen = false;
+
+    for (name, fields) in &enum_def.variants {
+        match name.0.as_str() {
+            "Ok" if fields.len() == 1 => {
+                ok_seen = matches!(&fields[0], tast::Ty::TParam { name } if name == ok_param);
+            }
+            "Err" if fields.len() == 1 => {
+                err_seen = matches!(&fields[0], tast::Ty::TParam { name } if name == err_param);
+            }
+            _ => return false,
+        }
+    }
+
+    ok_seen && err_seen
+}
+
 fn is_go_error_ty(ty: &tast::Ty) -> bool {
     matches!(ty, tast::Ty::TStruct { name } if name == "GoError")
 }
@@ -292,6 +343,33 @@ fn extract_option_ty(ty: &tast::Ty) -> Option<&tast::Ty> {
         return None;
     }
     Some(&args[0])
+}
+
+fn has_native_option_shape(genv: &PackageTypeEnv, ty: &tast::Ty) -> bool {
+    let Some(enum_def) = enum_def_for_native_name(genv, ty, "Option") else {
+        return false;
+    };
+    if enum_def.generics.len() != 1 || enum_def.variants.len() != 2 {
+        return false;
+    }
+
+    let some_param = &enum_def.generics[0].0;
+    let mut none_seen = false;
+    let mut some_seen = false;
+
+    for (name, fields) in &enum_def.variants {
+        match name.0.as_str() {
+            "None" if fields.is_empty() => {
+                none_seen = true;
+            }
+            "Some" if fields.len() == 1 => {
+                some_seen = matches!(&fields[0], tast::Ty::TParam { name } if name == some_param);
+            }
+            _ => return false,
+        }
+    }
+
+    none_seen && some_seen
 }
 
 fn is_go_method_symbol(name: &str) -> bool {
@@ -326,6 +404,7 @@ fn is_go_method_symbol(name: &str) -> bool {
 }
 
 fn validate_extern_return_mode(
+    genv: &PackageTypeEnv,
     diagnostics: &mut Diagnostics,
     extern_name: &str,
     return_mode: ExternReturnMode,
@@ -344,7 +423,10 @@ fn validate_extern_return_mode(
                 );
                 return;
             };
-            if !matches!(ok_ty, tast::Ty::TUnit) || !is_go_error_ty(err_ty) {
+            if !has_native_result_shape(genv, ret_ty)
+                || !matches!(ok_ty, tast::Ty::TUnit)
+                || !is_go_error_ty(err_ty)
+            {
                 super::util::push_error(
                     diagnostics,
                     format!(
@@ -365,7 +447,7 @@ fn validate_extern_return_mode(
                 );
                 return;
             };
-            if !is_go_error_ty(err_ty) {
+            if !has_native_result_shape(genv, ret_ty) || !is_go_error_ty(err_ty) {
                 super::util::push_error(
                     diagnostics,
                     format!(
@@ -376,7 +458,7 @@ fn validate_extern_return_mode(
             }
         }
         ExternReturnMode::OptionLast => {
-            if extract_option_ty(ret_ty).is_none() {
+            if extract_option_ty(ret_ty).is_none() || !has_native_option_shape(genv, ret_ty) {
                 super::util::push_error(
                     diagnostics,
                     format!(
@@ -1242,6 +1324,7 @@ fn define_extern_go(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, ext
         &ret,
     );
     validate_extern_return_mode(
+        env,
         diagnostics,
         &ext.goml_name.to_ident_name(),
         return_mode,

@@ -980,6 +980,44 @@ fn extract_result_tys(ty: &tast::Ty) -> Option<(&tast::Ty, &tast::Ty)> {
     Some((&args[0], &args[1]))
 }
 
+#[derive(Debug, Clone)]
+struct ResultVariantLayout {
+    ok_index: usize,
+    err_index: usize,
+    ok_ty: tast::Ty,
+    err_ty: tast::Ty,
+}
+
+fn result_variant_layout(goenv: &GlobalGoEnv, ty: &tast::Ty) -> Option<ResultVariantLayout> {
+    let enum_def = enum_def_for_ty(goenv, ty)?;
+    if enum_def.variants.len() != 2 {
+        return None;
+    }
+
+    let mut ok_layout = None;
+    let mut err_layout = None;
+    for (index, (name, fields)) in enum_def.variants.iter().enumerate() {
+        match name.0.as_str() {
+            "Ok" if fields.len() == 1 => {
+                ok_layout = Some((index, fields[0].clone()));
+            }
+            "Err" if fields.len() == 1 => {
+                err_layout = Some((index, fields[0].clone()));
+            }
+            _ => return None,
+        }
+    }
+
+    let (ok_index, ok_ty) = ok_layout?;
+    let (err_index, err_ty) = err_layout?;
+    Some(ResultVariantLayout {
+        ok_index,
+        err_index,
+        ok_ty,
+        err_ty,
+    })
+}
+
 fn extract_option_ty(ty: &tast::Ty) -> Option<&tast::Ty> {
     let tast::Ty::TApp { ty, args } = ty else {
         return None;
@@ -996,6 +1034,42 @@ fn extract_option_ty(ty: &tast::Ty) -> Option<&tast::Ty> {
         return None;
     }
     Some(&args[0])
+}
+
+#[derive(Debug, Clone)]
+struct OptionVariantLayout {
+    none_index: usize,
+    some_index: usize,
+    some_ty: tast::Ty,
+}
+
+fn option_variant_layout(goenv: &GlobalGoEnv, ty: &tast::Ty) -> Option<OptionVariantLayout> {
+    let enum_def = enum_def_for_ty(goenv, ty)?;
+    if enum_def.variants.len() != 2 {
+        return None;
+    }
+
+    let mut none_index = None;
+    let mut some_layout = None;
+    for (index, (name, fields)) in enum_def.variants.iter().enumerate() {
+        match name.0.as_str() {
+            "None" if fields.is_empty() => {
+                none_index = Some(index);
+            }
+            "Some" if fields.len() == 1 => {
+                some_layout = Some((index, fields[0].clone()));
+            }
+            _ => return None,
+        }
+    }
+
+    let some_index = some_layout.as_ref()?.0;
+    let some_ty = some_layout?.1;
+    Some(OptionVariantLayout {
+        none_index: none_index?,
+        some_index,
+        some_ty,
+    })
 }
 
 fn is_go_error_ty(ty: &tast::Ty) -> bool {
@@ -1368,46 +1442,18 @@ struct NativeFnCtx {
 type LetEnv = HashMap<anf::LocalId, anf::ValueExpr>;
 
 fn native_return_mode(goenv: &GlobalGoEnv, ret_ty: &tast::Ty) -> Option<NativeReturnMode> {
-    if let Some(enum_def) = enum_def_for_ty(goenv, ret_ty) {
-        match enum_def.variants.as_slice() {
-            [(ok_name, ok_fields), (err_name, err_fields)]
-                if ok_name.0 == "Ok"
-                    && err_name.0 == "Err"
-                    && ok_fields.len() == 1
-                    && err_fields.len() == 1
-                    && is_go_error_ty(&err_fields[0]) =>
-            {
-                return Some(NativeReturnMode::Result {
-                    ok_ty: ok_fields[0].clone(),
-                    err_ty: err_fields[0].clone(),
-                });
-            }
-            [(none_name, none_fields), (some_name, some_fields)]
-                if none_name.0 == "None"
-                    && none_fields.is_empty()
-                    && some_name.0 == "Some"
-                    && some_fields.len() == 1 =>
-            {
-                return Some(NativeReturnMode::Option {
-                    some_ty: some_fields[0].clone(),
-                });
-            }
-            _ => return None,
-        }
-    }
-
-    if let Some((ok_ty, err_ty)) = extract_result_tys(ret_ty)
-        && is_go_error_ty(err_ty)
+    if let Some(layout) = result_variant_layout(goenv, ret_ty)
+        && is_go_error_ty(&layout.err_ty)
     {
         return Some(NativeReturnMode::Result {
-            ok_ty: ok_ty.clone(),
-            err_ty: err_ty.clone(),
+            ok_ty: layout.ok_ty,
+            err_ty: layout.err_ty,
         });
     }
 
-    if let Some(some_ty) = extract_option_ty(ret_ty) {
+    if let Some(layout) = option_variant_layout(goenv, ret_ty) {
         return Some(NativeReturnMode::Option {
-            some_ty: some_ty.clone(),
+            some_ty: layout.some_ty,
         });
     }
 
@@ -1604,24 +1650,26 @@ fn gen_extern_wrapper_fn(
             }
         }
         ExternReturnMode::ErrorOnly | ExternReturnMode::ErrorLast => {
-            let Some((ok_ty, err_ty)) = extract_result_tys(&wrapper_ret_ty) else {
+            let Some(layout) = result_variant_layout(goenv, &wrapper_ret_ty) else {
                 panic!(
                     "extern function {} with return mode {:?} must return Result",
                     goml_name, extern_fn.return_mode
                 );
             };
+            let ok_ty = layout.ok_ty.clone();
+            let err_ty = layout.err_ty.clone();
 
-            let ok_go_tys = unwrap_tuple_go_tys(ok_ty);
+            let ok_go_tys = unwrap_tuple_go_tys(&ok_ty);
             let ok_names = ok_go_tys
                 .iter()
                 .enumerate()
                 .map(|(index, _)| format!("ffi_value_{}", index))
                 .collect::<Vec<_>>();
             let direct_call_ret_ty = match extern_fn.return_mode {
-                ExternReturnMode::ErrorOnly => tast_ty_to_go_type(err_ty),
+                ExternReturnMode::ErrorOnly => tast_ty_to_go_type(&err_ty),
                 ExternReturnMode::ErrorLast => {
                     let mut elems = ok_go_tys.clone();
-                    elems.push(tast_ty_to_go_type(err_ty));
+                    elems.push(tast_ty_to_go_type(&err_ty));
                     goty::GoType::TMulti { elems }
                 }
                 ExternReturnMode::Plain | ExternReturnMode::OptionLast => unreachable!(),
@@ -1630,11 +1678,11 @@ fn gen_extern_wrapper_fn(
                 compile_extern_call(goenv, extern_fn, params, call_args, direct_call_ret_ty);
 
             let err_name = "ffi_err".to_string();
-            let err_go_ty = tast_ty_to_go_type(err_ty);
+            let err_go_ty = tast_ty_to_go_type(&err_ty);
             let err_result_expr = enum_variant_expr(
                 goenv,
                 &wrapper_ret_ty,
-                1,
+                layout.err_index,
                 Some(goast::Expr::Var {
                     name: err_name.clone(),
                     ty: err_go_ty.clone(),
@@ -1645,9 +1693,10 @@ fn gen_extern_wrapper_fn(
                     ty: goty::GoType::TUnit,
                 }
             } else {
-                tuple_pack_expr(ok_ty, &ok_names)
+                tuple_pack_expr(&ok_ty, &ok_names)
             };
-            let ok_result_expr = enum_variant_expr(goenv, &wrapper_ret_ty, 0, Some(ok_payload));
+            let ok_result_expr =
+                enum_variant_expr(goenv, &wrapper_ret_ty, layout.ok_index, Some(ok_payload));
 
             let mut stmts = Vec::new();
             match extern_fn.return_mode {
@@ -1697,14 +1746,15 @@ fn gen_extern_wrapper_fn(
             }
         }
         ExternReturnMode::OptionLast => {
-            let Some(inner_ty) = extract_option_ty(&wrapper_ret_ty) else {
+            let Some(layout) = option_variant_layout(goenv, &wrapper_ret_ty) else {
                 panic!(
                     "extern function {} with return mode {:?} must return Option",
                     goml_name, extern_fn.return_mode
                 );
             };
+            let inner_ty = layout.some_ty.clone();
 
-            let some_go_tys = unwrap_tuple_go_tys(inner_ty);
+            let some_go_tys = unwrap_tuple_go_tys(&inner_ty);
             let value_names = some_go_tys
                 .iter()
                 .enumerate()
@@ -1735,15 +1785,20 @@ fn gen_extern_wrapper_fn(
                         expr: Some(enum_variant_expr(
                             goenv,
                             &wrapper_ret_ty,
-                            1,
-                            Some(tuple_pack_expr(inner_ty, &value_names)),
+                            layout.some_index,
+                            Some(tuple_pack_expr(&inner_ty, &value_names)),
                         )),
                     }],
                 },
                 else_: None,
             });
             stmts.push(goast::Stmt::Return {
-                expr: Some(enum_variant_expr(goenv, &wrapper_ret_ty, 0, None)),
+                expr: Some(enum_variant_expr(
+                    goenv,
+                    &wrapper_ret_ty,
+                    layout.none_index,
+                    None,
+                )),
             });
 
             goast::Fn {
