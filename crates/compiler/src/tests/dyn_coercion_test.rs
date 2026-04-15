@@ -115,7 +115,46 @@ fn main() -> unit {
 }
 "#;
 
-    let go = compile_go(src, "implicit_dyn_coercion_from_generic_enum_call_result.gom");
+    let go = compile_go(
+        src,
+        "implicit_dyn_coercion_from_generic_enum_call_result.gom",
+    );
+
+    assert!(go.contains("dyn__Show__vtable__Boxed__int32()"));
+}
+
+#[test]
+fn implicit_dyn_coercion_from_generic_enum_constructor_compiles() {
+    let src = r#"
+trait Show {
+    fn show(Self) -> string;
+}
+
+enum Boxed[T] {
+    One(T),
+}
+
+impl Show for Boxed[int32] {
+    fn show(self: Boxed[int32]) -> string {
+        match self {
+            Boxed::One(x) => x.to_string(),
+        }
+    }
+}
+
+fn render(x: dyn Show) -> string {
+    Show::show(x)
+}
+
+fn main() -> unit {
+    let _ = println(render(Boxed::One(42i32)));
+}
+"#;
+
+    let go = compile_go(
+        src,
+        "implicit_dyn_coercion_from_generic_enum_constructor.gom",
+    );
 
     assert!(go.contains("dyn__Show__vtable__Boxed__int32()"));
 }

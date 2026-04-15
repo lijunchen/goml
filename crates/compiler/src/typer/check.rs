@@ -627,11 +627,25 @@ impl Typer {
                 e,
                 &constructor,
                 &args,
-                Some(expected),
+                if matches!(expected, tast::Ty::TDyn { .. }) {
+                    None
+                } else {
+                    Some(expected)
+                },
             ),
-            hir::Expr::ECall { func, args } => {
-                self.infer_call_expr(genv, local_env, diagnostics, e, func, &args, Some(expected))
-            }
+            hir::Expr::ECall { func, args } => self.infer_call_expr(
+                genv,
+                local_env,
+                diagnostics,
+                e,
+                func,
+                &args,
+                if matches!(expected, tast::Ty::TDyn { .. }) {
+                    None
+                } else {
+                    Some(expected)
+                },
+            ),
             hir::Expr::EStructLiteral { name, fields }
                 if !matches!(expected, tast::Ty::TDyn { .. }) =>
             {
