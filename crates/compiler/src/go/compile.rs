@@ -281,7 +281,11 @@ fn enum_def_for_ty<'a>(goenv: &'a GlobalGoEnv, ty: &tast::Ty) -> Option<&'a Enum
         return Some(def);
     }
 
-    goenv.get_enum(&TastIdent::new(&base_name))
+    if let Some(def) = goenv.get_enum(&TastIdent::new(&base_name)) {
+        return Some(def);
+    }
+
+    goenv.genv.type_env.enums.get(&TastIdent::new(&base_name))
 }
 
 fn is_tag_only_enum_def(def: &EnumDef) -> bool {
@@ -994,6 +998,9 @@ fn result_variant_layout(goenv: &GlobalGoEnv, ty: &tast::Ty) -> Option<ResultVar
         return None;
     }
 
+    let concrete_tys =
+        extract_result_tys(ty).map(|(ok_ty, err_ty)| (ok_ty.clone(), err_ty.clone()));
+
     let mut ok_layout = None;
     let mut err_layout = None;
     for (index, (name, fields)) in enum_def.variants.iter().enumerate() {
@@ -1008,8 +1015,9 @@ fn result_variant_layout(goenv: &GlobalGoEnv, ty: &tast::Ty) -> Option<ResultVar
         }
     }
 
-    let (ok_index, ok_ty) = ok_layout?;
-    let (err_index, err_ty) = err_layout?;
+    let (ok_index, def_ok_ty) = ok_layout?;
+    let (err_index, def_err_ty) = err_layout?;
+    let (ok_ty, err_ty) = concrete_tys.unwrap_or((def_ok_ty, def_err_ty));
     Some(ResultVariantLayout {
         ok_index,
         err_index,
@@ -1049,6 +1057,8 @@ fn option_variant_layout(goenv: &GlobalGoEnv, ty: &tast::Ty) -> Option<OptionVar
         return None;
     }
 
+    let concrete_some_ty = extract_option_ty(ty).cloned();
+
     let mut none_index = None;
     let mut some_layout = None;
     for (index, (name, fields)) in enum_def.variants.iter().enumerate() {
@@ -1064,7 +1074,7 @@ fn option_variant_layout(goenv: &GlobalGoEnv, ty: &tast::Ty) -> Option<OptionVar
     }
 
     let some_index = some_layout.as_ref()?.0;
-    let some_ty = some_layout?.1;
+    let some_ty = concrete_some_ty.unwrap_or(some_layout?.1);
     Some(OptionVariantLayout {
         none_index: none_index?,
         some_index,

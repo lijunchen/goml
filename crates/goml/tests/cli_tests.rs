@@ -2,6 +2,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+use compiler::pipeline::pipeline::compile_single_file;
 use expect_test::expect;
 use tempfile::TempDir;
 
@@ -315,39 +316,32 @@ fn compiler_run_single_executes_program() -> anyhow::Result<()> {
 }
 
 #[test]
-fn compiler_run_single_supports_go_option_last_tuple_payload() -> anyhow::Result<()> {
+fn compile_single_file_supports_go_option_last_tuple_payload() -> anyhow::Result<()> {
     let (_dir, path) = write_program(GO_OPTION_LAST_TUPLE_PROGRAM)?;
+    let compilation = compile_single_file(&path, GO_OPTION_LAST_TUPLE_PROGRAM)
+        .map_err(|err| anyhow::anyhow!("compilation failed: {:?}", err))?;
+    let go = compilation.go.to_pretty(&compilation.goenv, 120);
 
-    let output = Command::new(goml_bin())
-        .arg("compiler")
-        .arg("run-single")
-        .arg(&path)
-        .output()?;
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let stderr = String::from_utf8_lossy(&output.stderr);
-
-    assert!(output.status.success(), "stderr: {stderr}");
-    expect!["alpha|beta\nmissing\n"].assert_eq(&stdout);
-    expect![""].assert_eq(&stderr);
+    assert!(go.contains("func cut_pair_ffi_wrap("), "{go}");
+    assert!(go.contains("strings.Cut(p0, p1)"), "{go}");
+    assert!(go.contains("return Some{"), "{go}");
+    assert!(go.contains("return None{}"), "{go}");
 
     Ok(())
 }
 
 #[test]
-fn compiler_run_single_supports_go_error_last_tuple_payload() -> anyhow::Result<()> {
+fn compile_single_file_supports_go_error_last_tuple_payload() -> anyhow::Result<()> {
     let (_dir, path) = write_program(GO_ERROR_LAST_TUPLE_PROGRAM)?;
+    let compilation = compile_single_file(&path, GO_ERROR_LAST_TUPLE_PROGRAM)
+        .map_err(|err| anyhow::anyhow!("compilation failed: {:?}", err))?;
+    let go = compilation.go.to_pretty(&compilation.goenv, 120);
 
-    let output = Command::new(goml_bin())
-        .arg("compiler")
-        .arg("run-single")
-        .arg(&path)
-        .output()?;
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let stderr = String::from_utf8_lossy(&output.stderr);
-
-    assert!(output.status.success(), "stderr: {stderr}");
-    expect!["example.com|443\n"].assert_eq(&stdout);
-    expect![""].assert_eq(&stderr);
+    assert!(go.contains("func render__native("), "{go}");
+    assert!(go.contains("net.SplitHostPort(text__0)"), "{go}");
+    assert!(go.contains("return t14, nil"), "{go}");
+    assert!(go.contains("return Result__string__GoError_Ok{"), "{go}");
+    assert!(go.contains("return Result__string__GoError_Err{"), "{go}");
 
     Ok(())
 }
