@@ -24,6 +24,7 @@ mod ref_type_test;
 mod separate_compile_test;
 mod struct_type_test;
 mod trait_impl_test;
+mod try_expr_test;
 
 #[test]
 fn test_cases() -> anyhow::Result<()> {

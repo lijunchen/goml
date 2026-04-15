@@ -261,6 +261,15 @@ fn variant_symbol_name(goenv: &GlobalGoEnv, enum_name: &str, variant_name: &str)
 }
 
 fn enum_def_for_ty<'a>(goenv: &'a GlobalGoEnv, ty: &tast::Ty) -> Option<&'a EnumDef> {
+    let base_name = match ty {
+        tast::Ty::TEnum { name } => Some(name.clone()),
+        tast::Ty::TApp { ty: base, .. } => match base.as_ref() {
+            tast::Ty::TEnum { name } => Some(name.clone()),
+            _ => None,
+        },
+        _ => None,
+    }?;
+
     let specialized_name = match tast_ty_to_go_type(ty) {
         goty::GoType::TName { name } => Some(name),
         _ => None,
@@ -272,7 +281,7 @@ fn enum_def_for_ty<'a>(goenv: &'a GlobalGoEnv, ty: &tast::Ty) -> Option<&'a Enum
         return Some(def);
     }
 
-    goenv.get_enum(&TastIdent::new(&ty.get_constr_name_unsafe()))
+    goenv.get_enum(&TastIdent::new(&base_name))
 }
 
 fn is_tag_only_enum_def(def: &EnumDef) -> bool {
@@ -1359,6 +1368,34 @@ struct NativeFnCtx {
 type LetEnv = HashMap<anf::LocalId, anf::ValueExpr>;
 
 fn native_return_mode(goenv: &GlobalGoEnv, ret_ty: &tast::Ty) -> Option<NativeReturnMode> {
+    if let Some(enum_def) = enum_def_for_ty(goenv, ret_ty) {
+        match enum_def.variants.as_slice() {
+            [(ok_name, ok_fields), (err_name, err_fields)]
+                if ok_name.0 == "Ok"
+                    && err_name.0 == "Err"
+                    && ok_fields.len() == 1
+                    && err_fields.len() == 1
+                    && is_go_error_ty(&err_fields[0]) =>
+            {
+                return Some(NativeReturnMode::Result {
+                    ok_ty: ok_fields[0].clone(),
+                    err_ty: err_fields[0].clone(),
+                });
+            }
+            [(none_name, none_fields), (some_name, some_fields)]
+                if none_name.0 == "None"
+                    && none_fields.is_empty()
+                    && some_name.0 == "Some"
+                    && some_fields.len() == 1 =>
+            {
+                return Some(NativeReturnMode::Option {
+                    some_ty: some_fields[0].clone(),
+                });
+            }
+            _ => return None,
+        }
+    }
+
     if let Some((ok_ty, err_ty)) = extract_result_tys(ret_ty)
         && is_go_error_ty(err_ty)
     {
@@ -1374,35 +1411,7 @@ fn native_return_mode(goenv: &GlobalGoEnv, ret_ty: &tast::Ty) -> Option<NativeRe
         });
     }
 
-    let tast::Ty::TEnum { name } = ret_ty else {
-        return None;
-    };
-    let enum_def = goenv.get_enum(&TastIdent::new(name))?;
-    match enum_def.variants.as_slice() {
-        [(ok_name, ok_fields), (err_name, err_fields)]
-            if ok_name.0 == "Ok"
-                && err_name.0 == "Err"
-                && ok_fields.len() == 1
-                && err_fields.len() == 1
-                && is_go_error_ty(&err_fields[0]) =>
-        {
-            Some(NativeReturnMode::Result {
-                ok_ty: ok_fields[0].clone(),
-                err_ty: err_fields[0].clone(),
-            })
-        }
-        [(none_name, none_fields), (some_name, some_fields)]
-            if none_name.0 == "None"
-                && none_fields.is_empty()
-                && some_name.0 == "Some"
-                && some_fields.len() == 1 =>
-        {
-            Some(NativeReturnMode::Option {
-                some_ty: some_fields[0].clone(),
-            })
-        }
-        _ => None,
-    }
+    None
 }
 
 fn native_helper_fn_name(goml_name: &str) -> String {

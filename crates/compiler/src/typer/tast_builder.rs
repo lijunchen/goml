@@ -694,7 +694,7 @@ fn build_try_expr(
             vec![
                 tast::Arm {
                     pat: tast::Pat::PConstr {
-                        constructor: enum_constructor(&inner_name, "Ok", 0),
+                        constructor: enum_constructor(&inner_name, "Ok", try_elab.success_index),
                         args: vec![tast::Pat::PVar {
                             name: value_name.clone(),
                             ty: ok_ty.clone(),
@@ -711,7 +711,7 @@ fn build_try_expr(
                 },
                 tast::Arm {
                     pat: tast::Pat::PConstr {
-                        constructor: enum_constructor(&inner_name, "Err", 1),
+                        constructor: enum_constructor(&inner_name, "Err", try_elab.residual_index),
                         args: vec![tast::Pat::PVar {
                             name: residual_name.clone(),
                             ty: err_ty.clone(),
@@ -722,7 +722,11 @@ fn build_try_expr(
                     },
                     body: tast::Expr::EReturn {
                         expr: Some(Box::new(tast::Expr::EConstr {
-                            constructor: enum_constructor(&outer_name, "Err", 1),
+                            constructor: enum_constructor(
+                                &outer_name,
+                                "Err",
+                                try_elab.residual_index,
+                            ),
                             args: vec![tast::Expr::EVar {
                                 name: residual_name,
                                 ty: err_ty,
@@ -753,7 +757,7 @@ fn build_try_expr(
             vec![
                 tast::Arm {
                     pat: tast::Pat::PConstr {
-                        constructor: enum_constructor(&inner_name, "Some", 1),
+                        constructor: enum_constructor(&inner_name, "Some", try_elab.success_index),
                         args: vec![tast::Pat::PVar {
                             name: value_name.clone(),
                             ty: ok_ty.clone(),
@@ -770,14 +774,18 @@ fn build_try_expr(
                 },
                 tast::Arm {
                     pat: tast::Pat::PConstr {
-                        constructor: enum_constructor(&inner_name, "None", 0),
+                        constructor: enum_constructor(&inner_name, "None", try_elab.residual_index),
                         args: vec![],
                         ty: inner_ty,
                         astptr: None,
                     },
                     body: tast::Expr::EReturn {
                         expr: Some(Box::new(tast::Expr::EConstr {
-                            constructor: enum_constructor(&outer_name, "None", 0),
+                            constructor: enum_constructor(
+                                &outer_name,
+                                "None",
+                                try_elab.residual_index,
+                            ),
                             args: vec![],
                             ty: outer_ret_ty,
                         })),

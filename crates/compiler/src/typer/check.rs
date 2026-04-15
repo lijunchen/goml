@@ -2532,7 +2532,7 @@ impl Typer {
         let outer_ret_ty = self.subst_ty_silent(&outer_ret_ty_raw);
         let range = self.expr_range(e);
 
-        let (kind, ok_ty) = match (
+        let (kind, ok_ty, container_name) = match (
             try_result_parts(&inner_ty),
             try_option_parts(&inner_ty),
             try_result_parts(&outer_ret_ty),
@@ -2566,7 +2566,7 @@ impl Typer {
                     result_ty(inner_name, outer_ok_ty, err_ty.clone()),
                     range,
                 ));
-                (TryKind::Result, ok_ty.clone())
+                (TryKind::Result, ok_ty.clone(), inner_name.to_string())
             }
             (Some((inner_name, ok_ty, err_ty)), _, _, _, _, true) => {
                 let outer_ok_ty = self.fresh_ty_var();
@@ -2575,7 +2575,7 @@ impl Typer {
                     result_ty(inner_name, outer_ok_ty, err_ty.clone()),
                     range,
                 ));
-                (TryKind::Result, ok_ty.clone())
+                (TryKind::Result, ok_ty.clone(), inner_name.to_string())
             }
             (_, Some((inner_name, ok_ty)), _, Some((outer_name, _)), _, _)
                 if inner_name == outer_name =>
@@ -2586,7 +2586,7 @@ impl Typer {
                     option_ty(inner_name, outer_ok_ty),
                     range,
                 ));
-                (TryKind::Option, ok_ty.clone())
+                (TryKind::Option, ok_ty.clone(), inner_name.to_string())
             }
             (_, Some((inner_name, ok_ty)), _, _, _, true) => {
                 let outer_ok_ty = self.fresh_ty_var();
@@ -2595,7 +2595,7 @@ impl Typer {
                     option_ty(inner_name, outer_ok_ty),
                     range,
                 ));
-                (TryKind::Option, ok_ty.clone())
+                (TryKind::Option, ok_ty.clone(), inner_name.to_string())
             }
             (_, _, Some((outer_name, _, err_ty)), _, true, _) => {
                 let ok_ty = self.fresh_ty_var();
@@ -2604,7 +2604,7 @@ impl Typer {
                     result_ty(outer_name, ok_ty.clone(), err_ty.clone()),
                     range,
                 ));
-                (TryKind::Result, ok_ty)
+                (TryKind::Result, ok_ty, outer_name.to_string())
             }
             (_, _, _, Some((outer_name, _)), true, _) => {
                 let ok_ty = self.fresh_ty_var();
@@ -2613,7 +2613,7 @@ impl Typer {
                     option_ty(outer_name, ok_ty.clone()),
                     range,
                 ));
-                (TryKind::Option, ok_ty)
+                (TryKind::Option, ok_ty, outer_name.to_string())
             }
             (Some((_, ok_ty, _)), _, _, _, _, _) => {
                 super::util::push_error_with_range(
@@ -2653,11 +2653,23 @@ impl Typer {
             }
         };
 
+        let Some((success_index, residual_index)) =
+            try_variant_indices(genv, &container_name, &kind, diagnostics, range)
+        else {
+            return tast::Expr::EVar {
+                name: "<try>".to_string(),
+                ty: ok_ty,
+                astptr: self.hir_table.expr_ptr(e),
+            };
+        };
+
         self.results.record_try_elab(
             e,
             TryElab {
                 kind,
                 outer_ret_ty: outer_ret_ty_raw,
+                success_index,
+                residual_index,
             },
         );
 
@@ -5717,6 +5729,58 @@ fn try_option_parts(ty: &tast::Ty) -> Option<(&str, &tast::Ty)> {
         return None;
     }
     Some((name.as_str(), &args[0]))
+}
+
+fn try_variant_indices(
+    genv: &PackageTypeEnv,
+    enum_name: &str,
+    kind: &TryKind,
+    diagnostics: &mut Diagnostics,
+    range: Option<TextRange>,
+) -> Option<(usize, usize)> {
+    let (success_name, success_arity, residual_name, residual_arity, message) = match kind {
+        TryKind::Result => (
+            "Ok",
+            1,
+            "Err",
+            1,
+            "`?` on Result[T, E] requires the enum to define `Ok(T)` and `Err(E)` variants",
+        ),
+        TryKind::Option => (
+            "Some",
+            1,
+            "None",
+            0,
+            "`?` on Option[T] requires the enum to define `Some(T)` and `None` variants",
+        ),
+    };
+
+    let (resolved, env) = super::util::resolve_type_name(genv, enum_name);
+    let ident = tast::TastIdent::new(&resolved);
+    let Some(enum_def) = env.enums().get(&ident) else {
+        super::util::push_ice(
+            diagnostics,
+            format!("enum {} not found when lowering `?`", enum_name),
+        );
+        return None;
+    };
+
+    let success_index = enum_def
+        .variants
+        .iter()
+        .position(|(name, fields)| name.0 == success_name && fields.len() == success_arity);
+    let residual_index = enum_def
+        .variants
+        .iter()
+        .position(|(name, fields)| name.0 == residual_name && fields.len() == residual_arity);
+
+    match (success_index, residual_index) {
+        (Some(success_index), Some(residual_index)) => Some((success_index, residual_index)),
+        _ => {
+            super::util::push_error_with_range(diagnostics, message, range);
+            None
+        }
+    }
 }
 
 fn result_ty(name: &str, ok_ty: tast::Ty, err_ty: tast::Ty) -> tast::Ty {
