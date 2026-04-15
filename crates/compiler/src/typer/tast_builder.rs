@@ -393,6 +393,37 @@ fn build_expr(
                 .map(|arg| build_expr(hir_table, results, arg))
                 .collect::<Vec<_>>();
             let ty = results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit);
+            if args.is_empty()
+                && let tast::Ty::TFunc { params, ret_ty } = &ty
+            {
+                let params = params
+                    .iter()
+                    .enumerate()
+                    .map(|(idx, param_ty)| tast::ClosureParam {
+                        name: format!("ctor_arg_{idx}"),
+                        ty: param_ty.clone(),
+                        astptr: None,
+                    })
+                    .collect::<Vec<_>>();
+                let args = params
+                    .iter()
+                    .map(|param| tast::Expr::EVar {
+                        name: param.name.clone(),
+                        ty: param.ty.clone(),
+                        astptr: None,
+                    })
+                    .collect::<Vec<_>>();
+                return tast::Expr::EClosure {
+                    params,
+                    body: Box::new(tast::Expr::EConstr {
+                        constructor,
+                        args,
+                        ty: (**ret_ty).clone(),
+                    }),
+                    ty,
+                    captures: Vec::new(),
+                };
+            }
             tast::Expr::EConstr {
                 constructor,
                 args,

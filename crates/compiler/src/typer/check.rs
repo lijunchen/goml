@@ -1513,7 +1513,56 @@ impl Typer {
             }
         };
 
+        let inst_constr_ty = self.inst_ty(&constr_ty);
+        let param_tys = match &inst_constr_ty {
+            tast::Ty::TFunc { params, .. } => params.clone(),
+            _ => Vec::new(),
+        };
+
+        let ret_ty = match &inst_constr_ty {
+            tast::Ty::TFunc { ret_ty, .. } => *ret_ty.clone(),
+            _ => inst_constr_ty.clone(),
+        };
+
         if expected_arity != args.len() {
+            if args.is_empty() && expected_arity > 0 {
+                if let Some(hint) = hint_ret_ty {
+                    self.unify(diagnostics, &inst_constr_ty, hint, self.expr_range(expr_id));
+                }
+
+                self.results
+                    .record_constructor_expr(expr_id, constructor.clone());
+
+                let params = param_tys
+                    .iter()
+                    .enumerate()
+                    .map(|(idx, ty)| tast::ClosureParam {
+                        name: format!("ctor_arg_{idx}"),
+                        ty: ty.clone(),
+                        astptr: None,
+                    })
+                    .collect::<Vec<_>>();
+                let args_tast = params
+                    .iter()
+                    .map(|param| tast::Expr::EVar {
+                        name: param.name.clone(),
+                        ty: param.ty.clone(),
+                        astptr: None,
+                    })
+                    .collect::<Vec<_>>();
+
+                return tast::Expr::EClosure {
+                    params,
+                    body: Box::new(tast::Expr::EConstr {
+                        constructor,
+                        args: args_tast,
+                        ty: ret_ty,
+                    }),
+                    ty: inst_constr_ty,
+                    captures: Vec::new(),
+                };
+            }
+
             super::util::push_error_with_range(
                 diagnostics,
                 format!(
@@ -1526,17 +1575,6 @@ impl Typer {
             );
             return self.error_expr(None);
         }
-
-        let inst_constr_ty = self.inst_ty(&constr_ty);
-        let param_tys = match &inst_constr_ty {
-            tast::Ty::TFunc { params, .. } => params.clone(),
-            _ => Vec::new(),
-        };
-
-        let ret_ty = match &inst_constr_ty {
-            tast::Ty::TFunc { ret_ty, .. } => *ret_ty.clone(),
-            _ => inst_constr_ty.clone(),
-        };
 
         if let Some(hint) = hint_ret_ty {
             self.unify(diagnostics, &ret_ty, hint, self.expr_range(expr_id));
