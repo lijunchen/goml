@@ -11,13 +11,22 @@ use super::{
         ClosureParamIndex, HirResultsIndex, find_mapped_expr_id_from_token,
         find_mapped_local_id_from_token, find_mapped_pat_id_from_token,
     },
-    syntax::{path_segments_at_offset, path_segments_at_range, path_segments_from_token},
+    syntax::{
+        package_decl_from_token, path_segments_at_offset, path_segments_at_range,
+        path_segments_from_token,
+    },
     typecheck::typecheck_for_query,
 };
 
 pub fn hover_type(path: &Path, src: &str, line: u32, col: u32) -> Result<String, String> {
     let context = QueryContext::from_position(path, src, line, col)?;
     let token = context.token_prefer_ident();
+    if token
+        .as_ref()
+        .is_some_and(|token| package_decl_from_token(token).is_some())
+    {
+        return Err("no type information found".to_string());
+    }
     let range = token.as_ref().map(|tok| tok.text_range());
     let offset = context.offset();
 

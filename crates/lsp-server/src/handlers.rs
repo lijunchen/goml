@@ -193,6 +193,7 @@ fn value_item_to_completion(item: ValueCompletionItem) -> CompletionItem {
     CompletionItem {
         label: item.name.clone(),
         kind: Some(match item.kind {
+            query::ValueCompletionKind::Variable => CompletionItemKind::VARIABLE,
             query::ValueCompletionKind::Package => CompletionItemKind::MODULE,
             query::ValueCompletionKind::Function => CompletionItemKind::FUNCTION,
             query::ValueCompletionKind::Keyword => CompletionItemKind::KEYWORD,

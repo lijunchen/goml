@@ -824,7 +824,7 @@ impl Typer {
                                     origin,
                                 );
                             }
-                        } 
+                        }
                     }
                 }
             }

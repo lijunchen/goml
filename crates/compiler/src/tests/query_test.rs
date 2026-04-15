@@ -242,6 +242,117 @@ fn main() -> unit {
 
 #[test]
 #[rustfmt::skip]
+fn imported_package_value_completions() {
+    let dir = tempdir().unwrap();
+    let home = dir.path().join(".goml");
+    write_cached_registry(&home);
+
+    std::fs::create_dir_all(dir.path().join("util")).unwrap();
+    std::fs::write(
+        dir.path().join("util/goml.toml"),
+        r#"[package]
+name = "util"
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        dir.path().join("util/lib.gom"),
+        r#"package util;
+
+fn ping() -> string {
+    "pong"
+}
+"#,
+    )
+    .unwrap();
+
+    std::fs::write(
+        dir.path().join("goml.toml"),
+        r#"[module]
+name = "demo"
+
+[package]
+name = "main"
+entry = "main.gom"
+
+[dependencies]
+"alice::http" = "1.2.0"
+"#,
+    )
+    .unwrap();
+
+    let src = r#"package main;
+
+use util;
+use alice::http;
+use alice::http::client;
+
+fn main() -> unit {
+    ut
+    ht
+    cl
+}
+"#;
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(&main_path, src).unwrap();
+
+    with_goml_home(&home, || {
+        check_value_completions_with_path(
+            &main_path,
+            src,
+            7,
+            6,
+            expect![[r#"
+                [
+                    ValueCompletionItem {
+                        name: "util",
+                        kind: Package,
+                        detail: Some(
+                            "package",
+                        ),
+                    },
+                ]
+            "#]],
+        );
+        check_value_completions_with_path(
+            &main_path,
+            src,
+            8,
+            6,
+            expect![[r#"
+                [
+                    ValueCompletionItem {
+                        name: "http",
+                        kind: Package,
+                        detail: Some(
+                            "package",
+                        ),
+                    },
+                ]
+            "#]],
+        );
+        check_value_completions_with_path(
+            &main_path,
+            src,
+            9,
+            6,
+            expect![[r#"
+                [
+                    ValueCompletionItem {
+                        name: "client",
+                        kind: Package,
+                        detail: Some(
+                            "package",
+                        ),
+                    },
+                ]
+            "#]],
+        );
+    });
+}
+
+#[test]
+#[rustfmt::skip]
 fn smoke_test() {
     let src = r#"enum Color { Red, Green, Blue }
 
@@ -296,6 +407,20 @@ fn main() {
 
 #[test]
 #[rustfmt::skip]
+fn hover_on_package_name_returns_none() {
+    let src = r#"package main;
+
+fn main() {
+}
+"#;
+
+    check(src, 0, 9, expect![[r#"
+        "<None>"
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
 fn builtin_value_completions() {
     let src = r#"
 fn main() {
@@ -334,11 +459,6 @@ fn main() {
                 ),
             },
             ValueCompletionItem {
-                name: "string",
-                kind: Keyword,
-                detail: None,
-            },
-            ValueCompletionItem {
                 name: "string_get",
                 kind: Function,
                 detail: Some(
@@ -374,6 +494,11 @@ fn main() {
                 ),
             },
             ValueCompletionItem {
+                name: "string",
+                kind: Keyword,
+                detail: None,
+            },
+            ValueCompletionItem {
                 name: "struct",
                 kind: Keyword,
                 detail: None,
@@ -402,6 +527,78 @@ fn main() {
                 kind: Function,
                 detail: Some(
                     "() -> int32",
+                ),
+            },
+        ]
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn local_value_completions() {
+    let src = r#"
+fn main() {
+    let count = 1;
+    cou
+}
+"#;
+
+    check_value_completions(src, 3, 7, expect![[r#"
+        [
+            ValueCompletionItem {
+                name: "count",
+                kind: Variable,
+                detail: Some(
+                    "int32",
+                ),
+            },
+        ]
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn call_argument_value_completions_are_empty_without_prefix() {
+    let src = r#"
+fn takes(count: int32, label: string) -> unit {
+    ()
+}
+
+fn main() {
+    let count = 1;
+    let label = "ok";
+    takes(
+    )
+}
+"#;
+
+    check_value_completions(src, 8, 10, expect![[r#"
+        []
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn call_argument_value_completions_with_prefix() {
+    let src = r#"
+fn takes(count: int32, label: string) -> unit {
+    ()
+}
+
+fn main() {
+    let count = 1;
+    let label = "ok";
+    takes(count, la)
+}
+"#;
+
+    check_value_completions(src, 8, 19, expect![[r#"
+        [
+            ValueCompletionItem {
+                name: "label",
+                kind: Variable,
+                detail: Some(
+                    "string",
                 ),
             },
         ]
@@ -482,10 +679,10 @@ fn main() {
     check_signature_help(src, 6, 16, expect![[r#"
         Some(
             SignatureHelpItem {
-                label: "(int32, string) -> bool",
+                label: "(x: int32, y: string) -> bool",
                 parameters: [
-                    "int32",
-                    "string",
+                    "x: int32",
+                    "y: string",
                 ],
                 active_parameter: 0,
             },
@@ -495,10 +692,10 @@ fn main() {
     check_signature_help(src, 6, 18, expect![[r#"
         Some(
             SignatureHelpItem {
-                label: "(int32, string) -> bool",
+                label: "(x: int32, y: string) -> bool",
                 parameters: [
-                    "int32",
-                    "string",
+                    "x: int32",
+                    "y: string",
                 ],
                 active_parameter: 1,
             },

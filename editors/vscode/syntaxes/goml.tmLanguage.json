@@ -22,6 +22,9 @@
             "include": "#types"
         },
         {
+            "include": "#namespaces"
+        },
+        {
             "include": "#functions"
         },
         {
@@ -76,7 +79,15 @@
             "patterns": [
                 {
                     "name": "constant.numeric.float.goml",
+                    "match": "\\b[0-9]+\\.[0-9]+([eE][+-]?[0-9]+)?(f32|f64)\\b"
+                },
+                {
+                    "name": "constant.numeric.float.goml",
                     "match": "\\b[0-9]+\\.[0-9]+([eE][+-]?[0-9]+)?\\b"
+                },
+                {
+                    "name": "constant.numeric.integer.goml",
+                    "match": "\\b[0-9]+(i8|i16|i32|i64|u8|u16|u32|u64)\\b"
                 },
                 {
                     "name": "constant.numeric.integer.goml",
@@ -121,6 +132,14 @@
                 {
                     "name": "entity.name.type.goml",
                     "match": "\\b[A-Z][a-zA-Z0-9_]*\\b"
+                }
+            ]
+        },
+        "namespaces": {
+            "patterns": [
+                {
+                    "name": "entity.name.namespace.goml",
+                    "match": "\\b[a-z_][a-zA-Z0-9_]*(?=::)"
                 }
             ]
         },

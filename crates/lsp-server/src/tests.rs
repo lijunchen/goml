@@ -755,6 +755,21 @@ fn main() {
     }
 
     #[test]
+    fn hover_on_package_name_returns_no_hover() {
+        check_hover(
+            r#"
+package main;
+
+fn main() {
+}
+"#,
+            1,
+            9,
+            expect!["no hover"],
+        );
+    }
+
+    #[test]
     fn hover_on_function_call() {
         check_hover(
             r#"
@@ -1050,6 +1065,148 @@ fn main() {
     }
 
     #[test]
+    fn value_completion_suggests_locals() {
+        let src = r#"
+package main;
+
+fn main() {
+    let count = 1;
+    cou
+}
+"#;
+        let path = PathBuf::from("test.gom");
+        let position = Position {
+            line: 5,
+            character: 7,
+        };
+        let completion = handlers::completion(&path, src, position);
+        let Some(CompletionResponse::Array(items)) = completion else {
+            panic!("expected completion items");
+        };
+        let Some(item) = items.into_iter().find(|item| item.label == "count") else {
+            panic!("expected count completion item");
+        };
+        assert_eq!(item.kind, Some(CompletionItemKind::VARIABLE));
+        assert_eq!(item.detail.as_deref(), Some("int32"));
+    }
+
+    #[test]
+    fn call_argument_completion_is_empty_without_prefix() {
+        let src = r#"
+package main;
+
+fn takes(count: int32, label: string) -> unit {
+    ()
+}
+
+fn main() {
+    let count = 1;
+    let label = "ok";
+    let _ = takes(count, );
+}
+"#;
+        let path = PathBuf::from("test.gom");
+        let position = Position {
+            line: 10,
+            character: 25,
+        };
+        let completion = handlers::completion(&path, src, position);
+        let Some(CompletionResponse::Array(items)) = completion else {
+            panic!("expected completion items");
+        };
+        assert!(items.is_empty());
+    }
+
+    #[test]
+    fn call_argument_completion_prefers_matching_locals_with_prefix() {
+        let src = r#"
+package main;
+
+fn takes(count: int32, label: string) -> unit {
+    ()
+}
+
+fn main() {
+    let count = 1;
+    let label = "ok";
+    let _ = takes(count, la);
+}
+"#;
+        let path = PathBuf::from("test.gom");
+        let position = Position {
+            line: 10,
+            character: 27,
+        };
+        let completion = handlers::completion(&path, src, position);
+        let Some(CompletionResponse::Array(items)) = completion else {
+            panic!("expected completion items");
+        };
+        let first = items
+            .first()
+            .expect("expected at least one completion item");
+        assert_eq!(first.label, "label");
+        assert_eq!(first.kind, Some(CompletionItemKind::VARIABLE));
+        assert_eq!(first.detail.as_deref(), Some("string"));
+    }
+
+    #[test]
+    fn value_completion_suggests_imported_package_names() {
+        let dir = tempdir().unwrap();
+        let root = dir.path();
+
+        std::fs::write(
+            root.join("goml.toml"),
+            r#"[module]
+name = "demo"
+
+[package]
+name = "main"
+entry = "main.gom"
+"#,
+        )
+        .unwrap();
+        std::fs::create_dir_all(root.join("util")).unwrap();
+        std::fs::write(
+            root.join("util/goml.toml"),
+            r#"[package]
+name = "util"
+"#,
+        )
+        .unwrap();
+        std::fs::write(
+            root.join("util/lib.gom"),
+            r#"package util;
+
+fn ping() -> string {
+    "pong"
+}
+"#,
+        )
+        .unwrap();
+
+        let src = r#"
+package main;
+use util;
+
+fn main() {
+    ut
+}
+"#;
+        let path = root.join("main.gom");
+        std::fs::write(&path, src).unwrap();
+
+        let completion = handlers::completion(
+            &path,
+            src,
+            Position {
+                line: 5,
+                character: 6,
+            },
+        );
+        expect!["util"].assert_eq(&format_completion(completion));
+    }
+
+    #[test]
     fn value_completion_suggests_keywords() {
         check_completion(
             r#"
@@ -1130,9 +1287,9 @@ fn main() {
             8,
             16,
             expect![[r#"
-                label: (int32, string) -> bool
+                label: (x: int32, y: string) -> bool
                 active_parameter: 0
-                parameters: int32, string"#]],
+                parameters: x: int32, y: string"#]],
         );
 
         check_signature_help(
@@ -1150,9 +1307,9 @@ fn main() {
             8,
             18,
             expect![[r#"
-                label: (int32, string) -> bool
+                label: (x: int32, y: string) -> bool
                 active_parameter: 1
-                parameters: int32, string"#]],
+                parameters: x: int32, y: string"#]],
         );
     }
 
