@@ -22,3 +22,15 @@ fn all_exit_match_while_condition_compiles_in_single_file_mode() {
     assert!(go.contains("func main()"), "{go}");
     assert!(go.contains("for {"), "{go}");
 }
+
+#[test]
+fn call_wrapped_all_exit_while_condition_compiles_in_single_file_mode() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/while_condition_non_bool_break_continue_arg/main.gom");
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("func main()"), "{go}");
+    assert!(go.contains("for {"), "{go}");
+    assert!(go.contains("if true {"), "{go}");
+}
