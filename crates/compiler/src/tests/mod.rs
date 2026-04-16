@@ -29,6 +29,7 @@ mod trait_impl_test;
 mod try_expr_test;
 mod tuple_projection_test;
 mod vec_effect_test;
+mod while_expr_test;
 
 #[test]
 fn test_cases() -> anyhow::Result<()> {

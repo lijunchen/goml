@@ -115,6 +115,17 @@ fn rows_body_ty(rows: &[Row]) -> Ty {
         .unwrap_or(Ty::TUnit)
 }
 
+fn match_result_ty(rows: &[Row], expected_ty: &Ty) -> Ty {
+    if rows
+        .iter()
+        .all(|row| expr_always_exits_control_flow(&row.body))
+    {
+        expected_ty.clone()
+    } else {
+        rows_body_ty(rows)
+    }
+}
+
 fn make_rows(name: &str, arms: &[Arm]) -> Vec<Row> {
     let mut result = Vec::new();
     for Arm { pat, body } in arms.iter() {
@@ -1011,7 +1022,7 @@ fn compile_enum_case(
         );
         return emissing(ty);
     };
-    let body_ty = rows_body_ty(&rows);
+    let body_ty = match_result_ty(&rows, ty);
 
     let type_args = decompose_enum_type(&bvar.ty)
         .map(|(_, args)| args)
@@ -1289,9 +1300,10 @@ fn compile_unit_case(
     diagnostics: &mut Diagnostics,
     rows: Vec<Row>,
     bvar: &Variable,
+    ty: &Ty,
     match_range: Option<TextRange>,
 ) -> core::Expr {
-    let body_ty = rows_body_ty(&rows);
+    let body_ty = match_result_ty(&rows, ty);
     let mut new_rows = vec![];
     for mut r in rows {
         #[allow(clippy::redundant_pattern_matching)]
@@ -1319,9 +1331,10 @@ fn compile_bool_case(
     diagnostics: &mut Diagnostics,
     rows: Vec<Row>,
     bvar: &Variable,
+    ty: &Ty,
     match_range: Option<TextRange>,
 ) -> core::Expr {
-    let body_ty = rows_body_ty(&rows);
+    let body_ty = match_result_ty(&rows, ty);
 
     let mut true_rows = vec![];
     let mut false_rows = vec![];
@@ -1580,7 +1593,7 @@ where
     Extract: Fn(&Prim) -> Option<T>,
     ToPrim: Fn(T) -> Prim,
 {
-    let body_ty = rows_body_ty(&rows);
+    let body_ty = match_result_ty(&rows, ty);
 
     let mut value_rows: IndexMap<T, Vec<Row>> = IndexMap::new();
     let mut fallback_rows: Vec<Row> = Vec::new();
@@ -1706,7 +1719,7 @@ fn compile_float_case(
     literal_ty: Ty,
     match_range: Option<TextRange>,
 ) -> core::Expr {
-    let body_ty = rows_body_ty(&rows);
+    let body_ty = match_result_ty(&rows, ty);
 
     let mut value_rows: IndexMap<u64, (Prim, Vec<Row>)> = IndexMap::new();
     let mut fallback_rows: Vec<Row> = Vec::new();
@@ -1830,7 +1843,7 @@ fn compile_string_case(
     ty: &Ty,
     match_range: Option<TextRange>,
 ) -> core::Expr {
-    let body_ty = rows_body_ty(&rows);
+    let body_ty = match_result_ty(&rows, ty);
 
     let mut value_rows: IndexMap<String, Vec<Row>> = IndexMap::new();
     let mut fallback_rows: Vec<Row> = Vec::new();
@@ -1956,8 +1969,8 @@ fn compile_rows(
             );
             emissing(ty)
         }
-        Ty::TUnit => compile_unit_case(genv, gensym, diagnostics, rows, &bvar, match_range),
-        Ty::TBool => compile_bool_case(genv, gensym, diagnostics, rows, &bvar, match_range),
+        Ty::TUnit => compile_unit_case(genv, gensym, diagnostics, rows, &bvar, ty, match_range),
+        Ty::TBool => compile_bool_case(genv, gensym, diagnostics, rows, &bvar, ty, match_range),
         Ty::TInt32 => compile_int_case(
             genv,
             gensym,
