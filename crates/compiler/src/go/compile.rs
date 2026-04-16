@@ -5108,17 +5108,7 @@ fn is_while_loop(join: &anf::JoinBind) -> Option<WhileLoop> {
     if !join.params.is_empty() {
         return None;
     }
-    let exit_id = loop_exit_target(&join.body, &join.id).or_else(|| {
-        join.body.binds.iter().find_map(|bind| match bind {
-            anf::Bind::Join(dispatch)
-                if all_paths_reach_or_terminate(&join.body, &dispatch.id)
-                    && loop_exit_target(&dispatch.body, &join.id).is_some() =>
-            {
-                loop_exit_target(&dispatch.body, &join.id)
-            }
-            _ => None,
-        })
-    })?;
+    let exit_id = find_while_exit_target(&join.body, &join.id)?;
     Some(WhileLoop {
         body: join.body.clone(),
         after: anf::Block {
@@ -5131,6 +5121,17 @@ fn is_while_loop(join: &anf::JoinBind) -> Option<WhileLoop> {
         },
         loop_id: join.id.clone(),
         exit_id,
+    })
+}
+
+fn find_while_exit_target(block: &anf::Block, loop_id: &anf::JoinId) -> Option<anf::JoinId> {
+    loop_exit_target(block, loop_id).or_else(|| {
+        block.binds.iter().find_map(|bind| match bind {
+            anf::Bind::Join(dispatch) if all_paths_reach_or_terminate(block, &dispatch.id) => {
+                find_while_exit_target(&dispatch.body, loop_id)
+            }
+            _ => None,
+        })
     })
 }
 

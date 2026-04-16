@@ -1,10 +1,20 @@
 use std::path::PathBuf;
 
-use crate::pipeline::pipeline::compile;
+use crate::pipeline::pipeline::{compile, compile_single_file};
 
 fn compile_go(src: &str, name: &str) -> String {
     let path = PathBuf::from(name);
     let compilation = compile(&path, src).unwrap_or_else(|err| {
+        panic!("compilation failed for {}: {:?}", path.display(), err);
+    });
+    compilation.go.to_pretty(&compilation.goenv, 120)
+}
+
+fn compile_single_file_go(path: PathBuf) -> String {
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
         panic!("compilation failed for {}: {:?}", path.display(), err);
     });
     compilation.go.to_pretty(&compilation.goenv, 120)
@@ -92,4 +102,16 @@ fn main() -> unit {
     assert!(go.contains("case None:"));
     assert!(go.contains("return Some{"));
     assert!(go.contains("return None{}"));
+}
+
+#[test]
+fn try_inside_match_while_condition_compiles_in_single_file_mode() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/while_condition_try_match/main.gom");
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("Loop_"), "{go}");
+    assert!(go.contains("step__native"), "{go}");
+    assert!(go.contains("if !mtmp1_ok"), "{go}");
 }
