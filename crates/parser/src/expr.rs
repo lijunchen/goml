@@ -439,7 +439,11 @@ fn looks_like_struct_literal(p: &mut Parser) -> bool {
 
     match p.nth(1) {
         T!['}'] => true,
-        T![ident] => matches!(p.nth(2), T![:] | T![,]),
+        T![ident] => match p.nth(2) {
+            T![:] | T![,] => true,
+            T!['}'] => !matches!(p.nth(3), T![else] | T!['{']),
+            _ => false,
+        },
         _ => false,
     }
 }
