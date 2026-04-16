@@ -1,0 +1,22 @@
+fn step(i: int32) -> Option[bool] {
+    match i {
+        0i32 => Option::Some(true),
+        1i32 => Option::Some(true),
+        2i32 => Option::Some(false),
+        _ => Option::None,
+    }
+}
+
+fn main() -> Option[unit] {
+    let i = ref(0i32);
+    while match step(ref_get(i))? {
+        true => {
+            ref_set(i, ref_get(i) + 1i32);
+            true
+        },
+        false => false,
+    } {
+        ()
+    };
+    Option::Some(())
+}
