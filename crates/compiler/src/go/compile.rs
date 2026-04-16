@@ -5143,22 +5143,82 @@ struct WhileLoop {
 }
 
 fn loop_exit_target(block: &anf::Block, loop_id: &anf::JoinId) -> Option<anf::JoinId> {
-    let anf::Term::If { then_, else_, .. } = &block.term else {
-        return None;
-    };
-    let then_reaches = any_path_reaches(then_, loop_id);
-    let else_reaches = any_path_reaches(else_, loop_id);
-    let break_block = if then_reaches && !else_reaches {
-        else_.as_ref()
-    } else if else_reaches && !then_reaches {
-        then_.as_ref()
-    } else {
-        return None;
-    };
-    match &break_block.term {
-        anf::Term::Jump { target, args, .. } if args.is_empty() => Some(target.clone()),
+    match &block.term {
+        anf::Term::If { then_, else_, .. } => {
+            let then_reaches = any_path_reaches(then_, loop_id);
+            let else_reaches = any_path_reaches(else_, loop_id);
+            let break_block = if then_reaches && !else_reaches {
+                else_
+            } else if else_reaches && !then_reaches {
+                then_
+            } else {
+                return None;
+            };
+            block_tail_empty_target(break_block).cloned()
+        }
+        anf::Term::Match { arms, default, .. } => {
+            let mut saw_continue = false;
+            let mut exit_target: Option<anf::JoinId> = None;
+            for branch in arms
+                .iter()
+                .map(|arm| &arm.body)
+                .chain(default.iter().map(|block| block.as_ref()))
+            {
+                if any_path_reaches(branch, loop_id) {
+                    saw_continue = true;
+                    continue;
+                }
+                let branch_target = block_tail_empty_target(branch)?.clone();
+                if let Some(existing) = &exit_target {
+                    if existing != &branch_target {
+                        return None;
+                    }
+                } else {
+                    exit_target = Some(branch_target);
+                }
+            }
+            if saw_continue { exit_target } else { None }
+        }
         _ => None,
     }
+}
+
+fn all_branches_empty_jump_to(term: &anf::Term) -> Option<&anf::JoinId> {
+    match term {
+        anf::Term::Jump { target, args, .. } if args.is_empty() => Some(target),
+        anf::Term::If { then_, else_, .. } => {
+            let then_target = block_tail_empty_target(then_)?;
+            let else_target = block_tail_empty_target(else_)?;
+            if then_target == else_target {
+                Some(then_target)
+            } else {
+                None
+            }
+        }
+        anf::Term::Match { arms, default, .. } => {
+            let mut target = None;
+            for branch_target in arms
+                .iter()
+                .map(|arm| block_tail_empty_target(&arm.body))
+                .chain(default.iter().map(|block| block_tail_empty_target(block)))
+            {
+                let branch_target = branch_target?;
+                if let Some(existing) = target {
+                    if existing != branch_target {
+                        return None;
+                    }
+                } else {
+                    target = Some(branch_target);
+                }
+            }
+            target
+        }
+        _ => None,
+    }
+}
+
+fn block_tail_empty_target(block: &anf::Block) -> Option<&anf::JoinId> {
+    all_branches_empty_jump_to(&block.term)
 }
 
 fn any_path_reaches(block: &anf::Block, target: &anf::JoinId) -> bool {
