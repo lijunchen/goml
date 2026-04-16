@@ -72,7 +72,13 @@ fn run_single_e2e_case(p: &Path) -> anyhow::Result<()> {
 
     let input = std::fs::read_to_string(p)?;
 
-    let output = match pipeline::pipeline::compile(p, &input) {
+    let compilation = pipeline::pipeline::compile(p, &input);
+    if compilation.is_ok() && !super::runtime_executor_available() {
+        println!("  skipping (no yaegi or go)");
+        return Ok(());
+    }
+
+    let output = match compilation {
         Ok(compilation) => {
             let go_source = compilation.go.to_pretty(&compilation.goenv, 120);
             match execute_go_source(&go_source, &p.to_string_lossy()) {

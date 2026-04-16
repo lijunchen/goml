@@ -1,6 +1,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::process::{Command, Output, Stdio};
+use std::sync::OnceLock;
 
 use compiler::pipeline::pipeline::compile_single_file;
 use expect_test::expect;
@@ -77,6 +78,34 @@ fn write_project(root: &Path) -> anyhow::Result<()> {
     fs::write(root.join("goml.toml"), PROJECT_CONFIG)?;
     fs::write(root.join("main.gom"), PROJECT_MAIN)?;
     Ok(())
+}
+
+fn go_available() -> bool {
+    static AVAILABLE: OnceLock<bool> = OnceLock::new();
+    *AVAILABLE.get_or_init(|| {
+        Command::new("go")
+            .arg("version")
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status()
+            .is_ok_and(|status| status.success())
+    })
+}
+
+fn yaegi_available() -> bool {
+    static AVAILABLE: OnceLock<bool> = OnceLock::new();
+    *AVAILABLE.get_or_init(|| {
+        Command::new("yaegi")
+            .arg("help")
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status()
+            .is_ok_and(|status| status.success())
+    })
+}
+
+fn runtime_executor_available() -> bool {
+    yaegi_available() || go_available()
 }
 
 fn run_goml(args: &[&str], cwd: &Path) -> anyhow::Result<std::process::Output> {
@@ -286,7 +315,15 @@ fn marker() -> string {
     Ok(registry)
 }
 
-fn run_go_main(path: &Path, cwd: &Path) -> anyhow::Result<std::process::Output> {
+fn run_go_main(path: &Path, cwd: &Path) -> anyhow::Result<Output> {
+    if yaegi_available() {
+        return Ok(Command::new("yaegi")
+            .arg("run")
+            .arg(path)
+            .current_dir(cwd)
+            .output()?);
+    }
+
     Ok(Command::new("go")
         .arg("run")
         .arg(path)
@@ -298,6 +335,10 @@ fn run_go_main(path: &Path, cwd: &Path) -> anyhow::Result<std::process::Output> 
 
 #[test]
 fn compiler_run_single_executes_program() -> anyhow::Result<()> {
+    if !runtime_executor_available() {
+        return Ok(());
+    }
+
     let (_dir, path) = write_program(HELLO_PROGRAM)?;
 
     let output = Command::new(goml_bin())
@@ -548,6 +589,9 @@ fn main() -> unit {
             .exists()
     );
 
+    if !runtime_executor_available() {
+        return Ok(());
+    }
     let go_output = run_go_main(&project_dir.join("target/goml/main.go"), &project_dir)?;
     let go_stdout = String::from_utf8_lossy(&go_output.stdout);
     let go_stderr = String::from_utf8_lossy(&go_output.stderr);
@@ -559,6 +603,10 @@ fn main() -> unit {
 
 #[test]
 fn compiler_run_single_dumps_requested_stages() -> anyhow::Result<()> {
+    if !runtime_executor_available() {
+        return Ok(());
+    }
+
     let (_dir, path) = write_program(HELLO_PROGRAM)?;
 
     let output = Command::new(goml_bin())
@@ -731,6 +779,9 @@ fn project_build_writes_target_goml_main_go() -> anyhow::Result<()> {
     let go_file = dir.path().join("target/goml/main.go");
     assert!(go_file.exists());
 
+    if !runtime_executor_available() {
+        return Ok(());
+    }
     let go_output = run_go_main(&go_file, dir.path())?;
 
     let go_stdout = String::from_utf8_lossy(&go_output.stdout);
@@ -871,6 +922,9 @@ fn new_project_can_check_and_build() -> anyhow::Result<()> {
             .exists()
     );
 
+    if !runtime_executor_available() {
+        return Ok(());
+    }
     let go_output = run_go_main(&go_file, &project_dir)?;
 
     let go_stdout = String::from_utf8_lossy(&go_output.stdout);
@@ -958,6 +1012,9 @@ fn project_check_and_build_work_for_complex_dependency_fixtures() -> anyhow::Res
         let go_file = dir.path().join("target/goml/main.go");
         assert!(go_file.exists(), "project={project}");
 
+        if !runtime_executor_available() {
+            continue;
+        }
         let go_output = run_go_main(&go_file, dir.path())?;
         let go_stdout = String::from_utf8_lossy(&go_output.stdout);
         let go_stderr = String::from_utf8_lossy(&go_output.stderr);

@@ -72,6 +72,13 @@ fn separate_build_link_matches_project_008() -> anyhow::Result<()> {
     let linked =
         separate::link_cores(cores).map_err(|err| anyhow::anyhow!("link failed: {:?}", err))?;
     let go_source = linked.go.to_pretty(&linked.goenv, 120);
+    if !super::runtime_executor_available() {
+        println!(
+            "Skipping separate compile runtime output: {}",
+            main_path.display()
+        );
+        return Ok(());
+    }
     let output = super::execute_go_source(&go_source, &main_path.to_string_lossy())?;
 
     let out_path = root.join("main.gom.out");

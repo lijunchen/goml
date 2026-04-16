@@ -90,6 +90,6 @@ fn main() -> unit {
 
     assert!(go.contains("case Some:"));
     assert!(go.contains("case None:"));
-    assert!(go.contains("Option__int32 = Some{"));
-    assert!(go.contains("retv11 = None{}"));
+    assert!(go.contains("return Some{"));
+    assert!(go.contains("return None{}"));
 }

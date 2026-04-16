@@ -1,4 +1,6 @@
 use std::path::{Path, PathBuf};
+use std::process::{Command, Stdio};
+use std::sync::OnceLock;
 
 use compiler::artifact::{CoreUnit, InterfaceUnit};
 use compiler::package_names::ROOT_PACKAGE;
@@ -23,7 +25,38 @@ fn read_json<T: serde::de::DeserializeOwned>(path: &Path) -> anyhow::Result<T> {
 }
 
 fn run_go(sh: &Shell, go_file: &Path) -> anyhow::Result<String> {
+    if yaegi_available() {
+        return Ok(cmd!(sh, "yaegi run {go_file}").read()?);
+    }
     Ok(cmd!(sh, "go run {go_file}").read()?)
+}
+
+fn go_available() -> bool {
+    static AVAILABLE: OnceLock<bool> = OnceLock::new();
+    *AVAILABLE.get_or_init(|| {
+        Command::new("go")
+            .arg("version")
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status()
+            .is_ok_and(|status| status.success())
+    })
+}
+
+fn yaegi_available() -> bool {
+    static AVAILABLE: OnceLock<bool> = OnceLock::new();
+    *AVAILABLE.get_or_init(|| {
+        Command::new("yaegi")
+            .arg("help")
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status()
+            .is_ok_and(|status| status.success())
+    })
+}
+
+fn runtime_executor_available() -> bool {
+    yaegi_available() || go_available()
 }
 
 fn expect_root() -> PathBuf {
@@ -113,6 +146,9 @@ fn main() -> unit {{
     )
     .run()?;
     assert_snapshot_file("single", "main.go", &go_file, root)?;
+    if !runtime_executor_available() {
+        return Ok(());
+    }
     let output = run_go(&sh, &go_file)?;
     {
         let expected = snapshot_path("single", "output.txt");
@@ -203,6 +239,9 @@ fn main() -> unit {{
     )
     .run()?;
     assert_snapshot_file("with_dep", "main.go", &go_file, root)?;
+    if !runtime_executor_available() {
+        return Ok(());
+    }
     let output = run_go(&sh, &go_file)?;
     {
         let expected = snapshot_path("with_dep", "output.txt");

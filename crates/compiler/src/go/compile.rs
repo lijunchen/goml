@@ -1098,13 +1098,13 @@ enum ExternFuncReturnMode {
 fn extern_func_return_mode(goenv: &GlobalGoEnv, ty: &tast::Ty) -> ExternFuncReturnMode {
     if let Some(mode) = native_return_mode(goenv, ty) {
         match mode {
-            NativeReturnMode::Result { ok_ty, err_ty } => {
+            NativeReturnMode::Result { ok_ty, err_ty, .. } => {
                 if matches!(ok_ty, tast::Ty::TUnit) {
                     return ExternFuncReturnMode::ErrorOnly { err_ty };
                 }
                 return ExternFuncReturnMode::ErrorLast { ok_ty, err_ty };
             }
-            NativeReturnMode::Option { some_ty } => {
+            NativeReturnMode::Option { some_ty, .. } => {
                 if matches!(some_ty, tast::Ty::TUnit) {
                     return ExternFuncReturnMode::OptionOnly;
                 }
@@ -1439,8 +1439,17 @@ fn build_extern_func_arg_body(
 
 #[derive(Debug, Clone)]
 enum NativeReturnMode {
-    Result { ok_ty: tast::Ty, err_ty: tast::Ty },
-    Option { some_ty: tast::Ty },
+    Result {
+        ok_index: usize,
+        err_index: usize,
+        ok_ty: tast::Ty,
+        err_ty: tast::Ty,
+    },
+    Option {
+        none_index: usize,
+        some_index: usize,
+        some_ty: tast::Ty,
+    },
 }
 
 #[derive(Debug, Clone)]
@@ -1456,6 +1465,8 @@ fn native_return_mode(goenv: &GlobalGoEnv, ret_ty: &tast::Ty) -> Option<NativeRe
         && is_go_error_ty(&layout.err_ty)
     {
         return Some(NativeReturnMode::Result {
+            ok_index: layout.ok_index,
+            err_index: layout.err_index,
             ok_ty: layout.ok_ty,
             err_ty: layout.err_ty,
         });
@@ -1463,6 +1474,8 @@ fn native_return_mode(goenv: &GlobalGoEnv, ret_ty: &tast::Ty) -> Option<NativeRe
 
     if let Some(layout) = option_variant_layout(goenv, ret_ty) {
         return Some(NativeReturnMode::Option {
+            none_index: layout.none_index,
+            some_index: layout.some_index,
             some_ty: layout.some_ty,
         });
     }
@@ -1476,12 +1489,12 @@ fn native_helper_fn_name(goml_name: &str) -> String {
 
 fn native_helper_ret_ty(mode: &NativeReturnMode) -> goty::GoType {
     match mode {
-        NativeReturnMode::Result { ok_ty, err_ty } => {
+        NativeReturnMode::Result { ok_ty, err_ty, .. } => {
             let mut elems = unwrap_tuple_go_tys(ok_ty);
             elems.push(tast_ty_to_go_type(err_ty));
             goty::GoType::TMulti { elems }
         }
-        NativeReturnMode::Option { some_ty } => {
+        NativeReturnMode::Option { some_ty, .. } => {
             let mut elems = unwrap_tuple_go_tys(some_ty);
             elems.push(goty::GoType::TBool);
             goty::GoType::TMulti { elems }
@@ -5696,7 +5709,7 @@ fn build_option_failure_stmts(some_ty: &tast::Ty) -> Vec<goast::Stmt> {
 fn native_mode_needs_success_value(mode: &NativeReturnMode) -> bool {
     match mode {
         NativeReturnMode::Result { ok_ty, .. } => !matches!(ok_ty, tast::Ty::TUnit),
-        NativeReturnMode::Option { some_ty } => !matches!(some_ty, tast::Ty::TUnit),
+        NativeReturnMode::Option { some_ty, .. } => !matches!(some_ty, tast::Ty::TUnit),
     }
 }
 
@@ -5708,10 +5721,25 @@ fn compile_native_return_from_imm(
 ) -> Vec<goast::Stmt> {
     if let anf::ImmExpr::Tag { index, .. } = imm {
         match (&native_ctx.mode, index) {
-            (NativeReturnMode::Option { some_ty }, 0) => {
+            (
+                NativeReturnMode::Option {
+                    none_index,
+                    some_ty,
+                    ..
+                },
+                idx,
+            ) if *idx == *none_index => {
                 return build_option_failure_stmts(some_ty);
             }
-            (NativeReturnMode::Result { ok_ty, err_ty }, 0) if matches!(ok_ty, tast::Ty::TUnit) => {
+            (
+                NativeReturnMode::Result {
+                    ok_index,
+                    ok_ty,
+                    err_ty,
+                    ..
+                },
+                idx,
+            ) if *idx == *ok_index && matches!(ok_ty, tast::Ty::TUnit) => {
                 return vec![goast::Stmt::ReturnMulti {
                     exprs: vec![
                         goast::Expr::Unit {
@@ -5741,7 +5769,7 @@ fn compile_native_return_from_imm(
                 NativeReturnMode::Result { ok_ty, .. } => goast::Expr::Unit {
                     ty: tast_ty_to_go_type(ok_ty),
                 },
-                NativeReturnMode::Option { some_ty } => goast::Expr::Unit {
+                NativeReturnMode::Option { some_ty, .. } => goast::Expr::Unit {
                     ty: tast_ty_to_go_type(some_ty),
                 },
             });
@@ -5754,7 +5782,7 @@ fn compile_native_return_from_imm(
                             NativeReturnMode::Result { ok_ty, .. },
                             NativeCallFailure::Result { err_expr },
                         ) => build_result_failure_stmts(ok_ty, err_expr),
-                        (NativeReturnMode::Option { some_ty }, NativeCallFailure::Option) => {
+                        (NativeReturnMode::Option { some_ty, .. }, NativeCallFailure::Option) => {
                             build_option_failure_stmts(some_ty)
                         }
                         _ => return vec![panic_stmt("mismatched native return failure mode")],
@@ -5763,7 +5791,7 @@ fn compile_native_return_from_imm(
                 else_: None,
             });
             match &native_ctx.mode {
-                NativeReturnMode::Result { ok_ty, err_ty } => {
+                NativeReturnMode::Result { ok_ty, err_ty, .. } => {
                     stmts.extend(build_payload_success_return_stmts(
                         ok_ty,
                         success_expr,
@@ -5772,7 +5800,7 @@ fn compile_native_return_from_imm(
                         }],
                     ));
                 }
-                NativeReturnMode::Option { some_ty } => {
+                NativeReturnMode::Option { some_ty, .. } => {
                     stmts.extend(build_payload_success_return_stmts(
                         some_ty,
                         success_expr,
@@ -5792,8 +5820,13 @@ fn compile_native_return_from_imm(
         } = value
         {
             match &native_ctx.mode {
-                NativeReturnMode::Result { ok_ty, err_ty } => {
-                    if enum_constructor.index == 0 && args.len() == 1 {
+                NativeReturnMode::Result {
+                    ok_index,
+                    err_index,
+                    ok_ty,
+                    err_ty,
+                } => {
+                    if enum_constructor.index == *ok_index && args.len() == 1 {
                         return build_payload_success_return_stmts(
                             ok_ty,
                             compile_imm(goenv, &args[0]),
@@ -5802,12 +5835,16 @@ fn compile_native_return_from_imm(
                             }],
                         );
                     }
-                    if enum_constructor.index == 1 && args.len() == 1 {
+                    if enum_constructor.index == *err_index && args.len() == 1 {
                         return build_result_failure_stmts(ok_ty, compile_imm(goenv, &args[0]));
                     }
                 }
-                NativeReturnMode::Option { some_ty } => {
-                    if enum_constructor.index == 1 && args.len() == 1 {
+                NativeReturnMode::Option {
+                    none_index,
+                    some_index,
+                    some_ty,
+                } => {
+                    if enum_constructor.index == *some_index && args.len() == 1 {
                         return build_payload_success_return_stmts(
                             some_ty,
                             compile_imm(goenv, &args[0]),
@@ -5817,7 +5854,7 @@ fn compile_native_return_from_imm(
                             }],
                         );
                     }
-                    if enum_constructor.index == 0 && args.is_empty() {
+                    if enum_constructor.index == *none_index && args.is_empty() {
                         return build_option_failure_stmts(some_ty);
                     }
                 }
@@ -5828,9 +5865,14 @@ fn compile_native_return_from_imm(
     let boxed_ty = imm_ty(imm);
     let boxed_expr = compile_imm(goenv, imm);
     match &native_ctx.mode {
-        NativeReturnMode::Result { ok_ty, err_ty } => {
-            let ok_variant_ty = variant_ty_by_index(goenv, &boxed_ty, 0);
-            let err_variant_ty = variant_ty_by_index(goenv, &boxed_ty, 1);
+        NativeReturnMode::Result {
+            ok_index,
+            err_index,
+            ok_ty,
+            err_ty,
+        } => {
+            let ok_variant_ty = variant_ty_by_index(goenv, &boxed_ty, *ok_index);
+            let err_variant_ty = variant_ty_by_index(goenv, &boxed_ty, *err_index);
             let err_go_ty = tast_ty_to_go_type(err_ty);
             vec![goast::Stmt::SwitchType {
                 bind: Some("ret_variant".to_string()),
@@ -5877,9 +5919,13 @@ fn compile_native_return_from_imm(
                 }),
             }]
         }
-        NativeReturnMode::Option { some_ty } => {
-            let none_variant_ty = variant_ty_by_index(goenv, &boxed_ty, 0);
-            let some_variant_ty = variant_ty_by_index(goenv, &boxed_ty, 1);
+        NativeReturnMode::Option {
+            none_index,
+            some_index,
+            some_ty,
+        } => {
+            let none_variant_ty = variant_ty_by_index(goenv, &boxed_ty, *none_index);
+            let some_variant_ty = variant_ty_by_index(goenv, &boxed_ty, *some_index);
             vec![goast::Stmt::SwitchType {
                 bind: Some("ret_variant".to_string()),
                 expr: boxed_expr,
@@ -6005,7 +6051,7 @@ fn build_native_call_plan(
                 })
             }
             (NativeReturnMode::Result { .. }, ExternReturnMode::ErrorLast) => {
-                let NativeReturnMode::Result { ok_ty, err_ty } = &callee_mode else {
+                let NativeReturnMode::Result { ok_ty, err_ty, .. } = &callee_mode else {
                     return None;
                 };
                 let ok_go_tys = unwrap_tuple_go_tys(ok_ty);
@@ -6075,7 +6121,7 @@ fn build_native_call_plan(
                 })
             }
             (NativeReturnMode::Option { .. }, ExternReturnMode::OptionLast) => {
-                let NativeReturnMode::Option { some_ty } = &callee_mode else {
+                let NativeReturnMode::Option { some_ty, .. } = &callee_mode else {
                     return None;
                 };
                 let some_go_tys = unwrap_tuple_go_tys(some_ty);
@@ -6147,7 +6193,7 @@ fn build_native_call_plan(
         let tast::Ty::THashMap { key, value } = &map_ty else {
             return None;
         };
-        let NativeReturnMode::Option { some_ty } = &callee_mode else {
+        let NativeReturnMode::Option { some_ty, .. } = &callee_mode else {
             return None;
         };
         let key_go_ty = tast_ty_to_go_type(key);
@@ -6304,6 +6350,7 @@ fn build_native_call_plan(
             NativeReturnMode::Option { .. },
             NativeReturnMode::Option {
                 some_ty: callee_some_ty,
+                ..
             },
         ) => {
             let some_go_tys = unwrap_tuple_go_tys(&callee_some_ty);
@@ -6417,12 +6464,21 @@ fn can_inline_native_return_bound_value(
             args,
             ..
         } => match &native_ctx.mode {
-            NativeReturnMode::Result { .. } => {
-                (enum_constructor.index == 0 || enum_constructor.index == 1) && args.len() == 1
+            NativeReturnMode::Result {
+                ok_index,
+                err_index,
+                ..
+            } => {
+                (enum_constructor.index == *ok_index || enum_constructor.index == *err_index)
+                    && args.len() == 1
             }
-            NativeReturnMode::Option { .. } => {
-                (enum_constructor.index == 0 && args.is_empty())
-                    || (enum_constructor.index == 1 && args.len() == 1)
+            NativeReturnMode::Option {
+                none_index,
+                some_index,
+                ..
+            } => {
+                (enum_constructor.index == *none_index && args.is_empty())
+                    || (enum_constructor.index == *some_index && args.len() == 1)
             }
         },
         _ => false,
@@ -6483,9 +6539,9 @@ fn matches_native_residual_arm(
     if matches!(
         (&native_ctx.mode, &args[0]),
         (
-            NativeReturnMode::Option { .. },
-            anf::ImmExpr::Tag { index: 0, .. }
-        )
+            NativeReturnMode::Option { none_index, .. },
+            anf::ImmExpr::Tag { index, .. }
+        ) if *index == *none_index
     ) {
         return true;
     }
@@ -6502,8 +6558,12 @@ fn matches_native_residual_arm(
     };
 
     match &native_ctx.mode {
-        NativeReturnMode::Result { .. } => enum_constructor.index == 1 && args.len() == 1,
-        NativeReturnMode::Option { .. } => enum_constructor.index == 0 && args.is_empty(),
+        NativeReturnMode::Result { err_index, .. } => {
+            enum_constructor.index == *err_index && args.len() == 1
+        }
+        NativeReturnMode::Option { none_index, .. } => {
+            enum_constructor.index == *none_index && args.is_empty()
+        }
     }
 }
 
@@ -6521,9 +6581,17 @@ fn compile_native_try_match(
     };
     let value = let_env.get(id)?;
 
-    let (success_index, residual_index) = match native_ctx.mode {
-        NativeReturnMode::Result { .. } => (0, 1),
-        NativeReturnMode::Option { .. } => (1, 0),
+    let (success_index, residual_index) = match &native_ctx.mode {
+        NativeReturnMode::Result {
+            ok_index,
+            err_index,
+            ..
+        } => (*ok_index, *err_index),
+        NativeReturnMode::Option {
+            none_index,
+            some_index,
+            ..
+        } => (*some_index, *none_index),
     };
 
     let success_arm = arms.iter().find(|arm| {
@@ -6563,7 +6631,7 @@ fn compile_native_try_match(
                     NativeReturnMode::Result { ok_ty, .. },
                     NativeCallFailure::Result { err_expr },
                 ) => build_result_failure_stmts(ok_ty, err_expr),
-                (NativeReturnMode::Option { some_ty }, NativeCallFailure::Option) => {
+                (NativeReturnMode::Option { some_ty, .. }, NativeCallFailure::Option) => {
                     build_option_failure_stmts(some_ty)
                 }
                 _ => return None,
@@ -7946,7 +8014,12 @@ fn compile_boxed_fn_from_native(
 
     let mut stmts = Vec::new();
     match &native_ctx.mode {
-        NativeReturnMode::Result { ok_ty, err_ty } => {
+        NativeReturnMode::Result {
+            ok_index,
+            err_index,
+            ok_ty,
+            err_ty,
+        } => {
             let ok_go_tys = unwrap_tuple_go_tys(ok_ty);
             let value_names = ok_go_tys
                 .iter()
@@ -7989,7 +8062,7 @@ fn compile_boxed_fn_from_native(
                         expr: Some(enum_variant_expr(
                             goenv,
                             &f.ret_ty,
-                            1,
+                            *err_index,
                             Some(goast::Expr::Var {
                                 name: "native_err".to_string(),
                                 ty: err_go_ty,
@@ -8003,12 +8076,16 @@ fn compile_boxed_fn_from_native(
                 expr: Some(enum_variant_expr(
                     goenv,
                     &f.ret_ty,
-                    0,
+                    *ok_index,
                     Some(tuple_pack_expr(ok_ty, &value_names)),
                 )),
             });
         }
-        NativeReturnMode::Option { some_ty } => {
+        NativeReturnMode::Option {
+            none_index,
+            some_index,
+            some_ty,
+        } => {
             let some_go_tys = unwrap_tuple_go_tys(some_ty);
             let value_names = some_go_tys
                 .iter()
@@ -8043,7 +8120,7 @@ fn compile_boxed_fn_from_native(
                         expr: Some(enum_variant_expr(
                             goenv,
                             &f.ret_ty,
-                            1,
+                            *some_index,
                             Some(tuple_pack_expr(some_ty, &value_names)),
                         )),
                     }],
@@ -8051,7 +8128,7 @@ fn compile_boxed_fn_from_native(
                 else_: None,
             });
             stmts.push(goast::Stmt::Return {
-                expr: Some(enum_variant_expr(goenv, &f.ret_ty, 0, None)),
+                expr: Some(enum_variant_expr(goenv, &f.ret_ty, *none_index, None)),
             });
         }
     }

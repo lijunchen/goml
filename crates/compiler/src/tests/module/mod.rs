@@ -125,6 +125,10 @@ fn run_project_inner(name: &str) -> anyhow::Result<()> {
     let compilation = pipeline::pipeline::compile(&main_path, &main_src)
         .map_err(|err| anyhow::anyhow!("compilation failed: {:?}", err))?;
     let go_source = compilation.go.to_pretty(&compilation.goenv, 120);
+    if !super::runtime_executor_available() {
+        println!("Skipping module runtime output: {}", main_path.display());
+        return Ok(());
+    }
     let output = super::execute_go_source(&go_source, &main_path.to_string_lossy())?;
     let out_path = root.join("main.gom.out");
     expect_file![out_path].assert_eq(&output);

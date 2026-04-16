@@ -42,6 +42,7 @@ fn test_cases() -> anyhow::Result<()> {
             cases_dir.display()
         );
         eprintln!("[test_cases] yaegi_available={}", yaegi_available());
+        eprintln!("[test_cases] go_available={}", go_available());
     }
 
     let result = run_test_cases(&cases_dir);
@@ -70,6 +71,22 @@ fn yaegi_available() -> bool {
             .status()
             .is_ok_and(|s| s.success())
     })
+}
+
+fn go_available() -> bool {
+    static AVAILABLE: OnceLock<bool> = OnceLock::new();
+    *AVAILABLE.get_or_init(|| {
+        Command::new("go")
+            .arg("version")
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status()
+            .is_ok_and(|s| s.success())
+    })
+}
+
+fn runtime_executor_available() -> bool {
+    yaegi_available() || go_available()
 }
 
 #[test]
@@ -102,6 +119,10 @@ fn test_e2e_cases() -> anyhow::Result<()> {
 
 #[test]
 fn reference_runtime_executes() -> anyhow::Result<()> {
+    if !runtime_executor_available() {
+        return Ok(());
+    }
+
     let src = r#"
 fn main() -> unit {
     let r = ref(3);
@@ -141,7 +162,7 @@ fn execute_with_go_run(label: &str, dir: &Path, file: &Path) -> anyhow::Result<S
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
-        .unwrap();
+        .with_context(|| format!("failed to execute go run for {}", label))?;
     if test_log_enabled() {
         eprintln!("[go_run] spawned label={} pid={}", label, child.id());
     }
@@ -232,6 +253,10 @@ fn execute_with_yaegi(label: &str, dir: &Path, file: &Path) -> anyhow::Result<St
 }
 
 fn execute_go_source(source: &str, label: &str) -> anyhow::Result<String> {
+    if !runtime_executor_available() {
+        bail!("no Go executor available for {}", label);
+    }
+
     let start = Instant::now();
     let dir = tempfile::tempdir().with_context(|| "Failed to create temporary directory")?;
 
@@ -260,6 +285,10 @@ fn execute_go_source(source: &str, label: &str) -> anyhow::Result<String> {
 
 #[test]
 fn go_run_failure_is_error() -> anyhow::Result<()> {
+    if !go_available() {
+        return Ok(());
+    }
+
     let dir = tempfile::tempdir()?;
     let main_go_file = dir.path().join("main.go");
     std::fs::write(
@@ -491,6 +520,10 @@ fn run_single_test_case(p: PathBuf) -> anyhow::Result<()> {
     }
 
     let t_exec = Instant::now();
+    if !runtime_executor_available() {
+        println!("Skipping runtime output: {}", p.display());
+        return Ok(());
+    }
     let go_output = execute_go_source(&go_source, &p.to_string_lossy())?;
     if test_log_enabled() {
         eprintln!("[case] execute ok elapsed={:?}", t_exec.elapsed());
