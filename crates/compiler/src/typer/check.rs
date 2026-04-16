@@ -28,6 +28,152 @@ enum ArrayAssignRoot {
 }
 
 impl Typer {
+    fn with_expr_ty(&self, expr: tast::Expr, ty: tast::Ty) -> tast::Expr {
+        match expr {
+            tast::Expr::EVar { name, astptr, .. } => tast::Expr::EVar { name, ty, astptr },
+            tast::Expr::EPrim { value, .. } => tast::Expr::EPrim { value, ty },
+            tast::Expr::EConstr {
+                constructor, args, ..
+            } => tast::Expr::EConstr {
+                constructor,
+                args,
+                ty,
+            },
+            tast::Expr::ETuple { items, .. } => tast::Expr::ETuple { items, ty },
+            tast::Expr::EArray { items, .. } => tast::Expr::EArray { items, ty },
+            tast::Expr::EClosure {
+                params,
+                body,
+                captures,
+                ..
+            } => tast::Expr::EClosure {
+                params,
+                body,
+                ty,
+                captures,
+            },
+            tast::Expr::EBlock { block, .. } => tast::Expr::EBlock { block, ty },
+            tast::Expr::EMatch {
+                expr, arms, astptr, ..
+            } => tast::Expr::EMatch {
+                expr,
+                arms,
+                ty,
+                astptr,
+            },
+            tast::Expr::EIf {
+                cond,
+                then_branch,
+                else_branch,
+                ..
+            } => tast::Expr::EIf {
+                cond,
+                then_branch,
+                else_branch,
+                ty,
+            },
+            tast::Expr::EWhile { cond, body, .. } => tast::Expr::EWhile { cond, body, ty },
+            tast::Expr::EBreak { .. } => tast::Expr::EBreak { ty },
+            tast::Expr::EContinue { .. } => tast::Expr::EContinue { ty },
+            tast::Expr::EReturn { expr, .. } => tast::Expr::EReturn { expr, ty },
+            tast::Expr::EGo { expr, .. } => tast::Expr::EGo { expr, ty },
+            tast::Expr::ECall { func, args, .. } => tast::Expr::ECall { func, args, ty },
+            tast::Expr::EUnary {
+                op,
+                expr,
+                resolution,
+                ..
+            } => tast::Expr::EUnary {
+                op,
+                expr,
+                ty,
+                resolution,
+            },
+            tast::Expr::EProj { tuple, index, .. } => tast::Expr::EProj { tuple, index, ty },
+            tast::Expr::EField {
+                expr,
+                field_name,
+                astptr,
+                ..
+            } => tast::Expr::EField {
+                expr,
+                field_name,
+                ty,
+                astptr,
+            },
+            tast::Expr::EIndex {
+                base,
+                index,
+                astptr,
+                ..
+            } => tast::Expr::EIndex {
+                base,
+                index,
+                ty,
+                astptr,
+            },
+            tast::Expr::EBinary {
+                op,
+                lhs,
+                rhs,
+                resolution,
+                ..
+            } => tast::Expr::EBinary {
+                op,
+                lhs,
+                rhs,
+                ty,
+                resolution,
+            },
+            tast::Expr::ETraitMethod {
+                trait_name,
+                method_name,
+                astptr,
+                ..
+            } => tast::Expr::ETraitMethod {
+                trait_name,
+                method_name,
+                ty,
+                astptr,
+            },
+            tast::Expr::EDynTraitMethod {
+                trait_name,
+                method_name,
+                astptr,
+                ..
+            } => tast::Expr::EDynTraitMethod {
+                trait_name,
+                method_name,
+                ty,
+                astptr,
+            },
+            tast::Expr::EInherentMethod {
+                receiver_ty,
+                method_name,
+                astptr,
+                ..
+            } => tast::Expr::EInherentMethod {
+                receiver_ty,
+                method_name,
+                ty,
+                astptr,
+            },
+            tast::Expr::EToDyn {
+                trait_name,
+                for_ty,
+                expr,
+                astptr,
+                ..
+            } => tast::Expr::EToDyn {
+                trait_name,
+                for_ty,
+                expr,
+                ty,
+                astptr,
+            },
+        }
+    }
+
     fn expr_range(&self, expr_id: hir::ExprId) -> Option<TextRange> {
         self.hir_table.expr_ptr(expr_id).map(|ptr| ptr.text_range())
     }
@@ -2465,11 +2611,15 @@ impl Typer {
         body: hir::ExprId,
     ) -> tast::Expr {
         self.while_depth += 1;
-        let cond_tast = self.infer_expr(genv, local_env, diagnostics, cond);
+        let cond_always_exits = self.expr_always_exits_loop_control(cond);
+        let mut cond_tast = self.infer_expr(genv, local_env, diagnostics, cond);
         let body_tast = self.infer_expr(genv, local_env, diagnostics, body);
         self.while_depth -= 1;
 
-        if !self.expr_always_exits_loop_control(cond) {
+        if cond_always_exits {
+            cond_tast = self.with_expr_ty(cond_tast, tast::Ty::TBool);
+            self.record_expr_result(cond, &cond_tast);
+        } else {
             self.push_constraint(Constraint::TypeEqual(
                 cond_tast.get_ty(),
                 tast::Ty::TBool,

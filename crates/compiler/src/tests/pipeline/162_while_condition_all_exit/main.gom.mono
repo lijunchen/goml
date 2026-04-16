@@ -1,0 +1,40 @@
+fn loop_break() -> unit {
+  let _wild1 = while if true {
+      {
+        break
+      }
+  } else {
+      {
+        continue
+      }
+  } {
+      {
+        let _wild0 = println__T_string("unreachable") in
+      }
+  } in
+}
+
+fn loop_return() -> int32 {
+  let _wild4 = while {
+    let mtmp2 = 0 in
+    return 5
+  } {
+      {
+        let _wild3 = println__T_string("unreachable") in
+      }
+  } in
+  0
+}
+
+fn main() -> unit {
+  let _wild5 = loop_break() in
+  let _wild6 = println__T_int32(loop_return()) in
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  string_println(int32_to_string(value/1))
+}

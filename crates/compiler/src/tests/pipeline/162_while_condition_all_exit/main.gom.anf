@@ -1,0 +1,71 @@
+fn loop_break() -> unit {
+  join ret7() -> unit {
+    ()
+  } in
+  join exit8() -> unit {
+    let _wild1 = () in
+    jump ret7()
+  } in
+  joinrec {
+    join loop9() -> unit {
+      join k10(jp11: bool) -> unit {
+        if jp11 {
+          let _wild0 = println__T_string("unreachable") in
+          jump loop9()
+        } else {
+          jump exit8()
+        }
+      } in
+      if true {
+        jump exit8()
+      } else {
+        jump loop9()
+      }
+    } in
+  } in
+  jump loop9()
+}
+
+fn loop_return() -> int32 {
+  join ret12(retv13: int32) -> int32 {
+    retv13
+  } in
+  join exit14() -> int32 {
+    let _wild4 = () in
+    jump ret12(0)
+  } in
+  joinrec {
+    join loop15() -> int32 {
+      let mtmp2 = 0 in
+      jump ret12(5)
+    } in
+  } in
+  jump loop15()
+}
+
+fn main() -> unit {
+  join ret16() -> unit {
+    ()
+  } in
+  let _wild5 = loop_break() in
+  let t17 = loop_return() in
+  let _wild6 = println__T_int32(t17) in
+  jump ret16()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret18() -> unit {
+    ()
+  } in
+  let t19 = string_println(value/1) in
+  jump ret18()
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  join ret20() -> unit {
+    ()
+  } in
+  let t21 = int32_to_string(value/1) in
+  let t22 = string_println(t21) in
+  jump ret20()
+}
