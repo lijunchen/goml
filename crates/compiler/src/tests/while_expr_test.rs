@@ -56,6 +56,43 @@ fn struct_wrapped_all_exit_match_while_condition_compiles_in_single_file_mode() 
 }
 
 #[test]
+fn field_wrapped_all_exit_match_while_condition_compiles_in_single_file_mode() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/while_condition_all_exit_match_wrapped_field_access/main.gom");
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("func main()"), "{go}");
+    assert!(go.contains("for {"), "{go}");
+    assert!(go.contains("switch"), "{go}");
+}
+
+#[test]
+fn tuple_projection_wrapped_all_exit_match_while_condition_compiles_in_single_file_mode() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(
+        "src/tests/crashers/while_condition_all_exit_match_wrapped_tuple_projection/main.gom",
+    );
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("func main()"), "{go}");
+    assert!(go.contains("for {"), "{go}");
+    assert!(go.contains("switch"), "{go}");
+}
+
+#[test]
+fn index_wrapped_all_exit_match_while_condition_compiles_in_single_file_mode() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/while_condition_all_exit_match_wrapped_index_base/main.gom");
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("func main()"), "{go}");
+    assert!(go.contains("for {"), "{go}");
+    assert!(go.contains("switch"), "{go}");
+}
+
+#[test]
 fn enum_wrapped_all_exit_match_while_condition_compiles_in_single_file_mode() {
     let go = compile_src_go(
         "while_condition_all_exit_match_wrapped_enum.gom",

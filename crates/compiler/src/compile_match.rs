@@ -245,6 +245,21 @@ fn emissing(ty: &Ty) -> core::Expr {
     }
 }
 
+fn exit_expr_as(expr: core::Expr, ty: &Ty, gensym: &Gensym) -> core::Expr {
+    let expr_ty = expr.get_ty();
+    core::Expr::EBlock {
+        block: Box::new(core::Block {
+            stmts: vec![core::LetStmt {
+                name: gensym.gensym("_wild"),
+                value: expr,
+                ty: expr_ty,
+            }],
+            tail: Some(Box::new(emissing(ty))),
+        }),
+        ty: ty.clone(),
+    }
+}
+
 fn push_compile_error(
     diagnostics: &mut Diagnostics,
     message: impl Into<String>,
@@ -3647,7 +3662,7 @@ fn compile_expr(
         }
         EProj { tuple, index, ty } => {
             if expr_always_exits_control_flow(tuple) {
-                return compile_expr(tuple, genv, gensym, diagnostics);
+                return exit_expr_as(compile_expr(tuple, genv, gensym, diagnostics), ty, gensym);
             }
             let tuple = compile_expr(tuple, genv, gensym, diagnostics);
             core::Expr::EProj {
@@ -3663,7 +3678,7 @@ fn compile_expr(
             astptr,
         } => {
             if expr_always_exits_control_flow(base) {
-                return compile_expr(base, genv, gensym, diagnostics);
+                return exit_expr_as(compile_expr(base, genv, gensym, diagnostics), ty, gensym);
             }
             if expr_always_exits_control_flow(index) {
                 let base_core = compile_expr(base, genv, gensym, diagnostics);
@@ -3675,7 +3690,7 @@ fn compile_expr(
                             value: base_core,
                             ty: base.get_ty(),
                         }],
-                        tail: Some(Box::new(index_core)),
+                        tail: Some(Box::new(exit_expr_as(index_core, ty, gensym))),
                     }),
                     ty: ty.clone(),
                 };
@@ -3698,7 +3713,7 @@ fn compile_expr(
             astptr,
         } => {
             if expr_always_exits_control_flow(expr) {
-                return compile_expr(expr, genv, gensym, diagnostics);
+                return exit_expr_as(compile_expr(expr, genv, gensym, diagnostics), ty, gensym);
             }
             let expr_core = compile_expr(expr, genv, gensym, diagnostics);
             compile_field_get_core(
