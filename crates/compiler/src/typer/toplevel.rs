@@ -1569,11 +1569,117 @@ fn ty_contains_inline_struct(
 ) -> bool {
     match ty {
         tast::Ty::TStruct { name, .. } => has_infinite_size(structs, name, visited),
+        tast::Ty::TApp { .. } => instantiated_struct_field_tys(structs, ty)
+            .into_iter()
+            .flatten()
+            .any(|field_ty| ty_contains_inline_struct(structs, &field_ty, visited)),
         tast::Ty::TTuple { typs } => typs
             .iter()
             .any(|t| ty_contains_inline_struct(structs, t, visited)),
         tast::Ty::TArray { elem, .. } => ty_contains_inline_struct(structs, elem, visited),
         _ => false,
+    }
+}
+
+fn instantiated_struct_field_tys(
+    structs: &IndexMap<tast::TastIdent, env::StructDef>,
+    ty: &tast::Ty,
+) -> Option<Vec<tast::Ty>> {
+    let (name, args) = decompose_struct_type_app(ty)?;
+    let struct_def = structs.get(&tast::TastIdent(name))?;
+    if struct_def.generics.len() != args.len() {
+        return None;
+    }
+
+    let mut subst = HashMap::new();
+    for (param, arg) in struct_def.generics.iter().zip(args.iter()) {
+        subst.insert(param.0.clone(), arg.clone());
+    }
+
+    Some(
+        struct_def
+            .fields
+            .iter()
+            .map(|(_, field_ty)| substitute_ty_params(field_ty, &subst))
+            .collect(),
+    )
+}
+
+fn decompose_struct_type_app(ty: &tast::Ty) -> Option<(String, Vec<tast::Ty>)> {
+    match ty {
+        tast::Ty::TStruct { name } => Some((name.clone(), Vec::new())),
+        tast::Ty::TApp { ty: base, args } => {
+            let (name, mut collected) = decompose_struct_type_app(base)?;
+            collected.extend(args.iter().cloned());
+            Some((name, collected))
+        }
+        _ => None,
+    }
+}
+
+fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tast::Ty {
+    match ty {
+        tast::Ty::TVar(_)
+        | tast::Ty::TUnit
+        | tast::Ty::TBool
+        | tast::Ty::TInt8
+        | tast::Ty::TInt16
+        | tast::Ty::TInt32
+        | tast::Ty::TInt64
+        | tast::Ty::TUint8
+        | tast::Ty::TUint16
+        | tast::Ty::TUint32
+        | tast::Ty::TUint64
+        | tast::Ty::TFloat32
+        | tast::Ty::TFloat64
+        | tast::Ty::TString
+        | tast::Ty::TChar => ty.clone(),
+        tast::Ty::TTuple { typs } => tast::Ty::TTuple {
+            typs: typs
+                .iter()
+                .map(|item| substitute_ty_params(item, subst))
+                .collect(),
+        },
+        tast::Ty::TEnum { name } => tast::Ty::TEnum { name: name.clone() },
+        tast::Ty::TStruct { name } => tast::Ty::TStruct { name: name.clone() },
+        tast::Ty::TDyn { trait_name } => tast::Ty::TDyn {
+            trait_name: trait_name.clone(),
+        },
+        tast::Ty::TApp { ty, args } => tast::Ty::TApp {
+            ty: Box::new(substitute_ty_params(ty, subst)),
+            args: args
+                .iter()
+                .map(|item| substitute_ty_params(item, subst))
+                .collect(),
+        },
+        tast::Ty::TArray { len, elem } => tast::Ty::TArray {
+            len: *len,
+            elem: Box::new(substitute_ty_params(elem, subst)),
+        },
+        tast::Ty::TSlice { elem } => tast::Ty::TSlice {
+            elem: Box::new(substitute_ty_params(elem, subst)),
+        },
+        tast::Ty::TVec { elem } => tast::Ty::TVec {
+            elem: Box::new(substitute_ty_params(elem, subst)),
+        },
+        tast::Ty::TRef { elem } => tast::Ty::TRef {
+            elem: Box::new(substitute_ty_params(elem, subst)),
+        },
+        tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
+            key: Box::new(substitute_ty_params(key, subst)),
+            value: Box::new(substitute_ty_params(value, subst)),
+        },
+        tast::Ty::TParam { name } => subst
+            .get(name)
+            .cloned()
+            .unwrap_or_else(|| tast::Ty::TParam { name: name.clone() }),
+        tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
+            params: params
+                .iter()
+                .map(|item| substitute_ty_params(item, subst))
+                .collect(),
+            ret_ty: Box::new(substitute_ty_params(ret_ty, subst)),
+        },
     }
 }
 
