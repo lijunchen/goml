@@ -1,0 +1,14 @@
+struct WrapBool {
+    value: bool,
+}
+
+fn main() -> unit {
+    while (WrapBool {
+        value: match 0i32 {
+            0i32 => break,
+            _ => continue,
+        },
+    }).value {
+        break;
+    };
+}
