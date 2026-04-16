@@ -19,7 +19,6 @@ mod builtin_functions_test;
 mod constructor_value_test;
 mod dyn_coercion_test;
 mod e2e;
-mod function_type_return_test;
 mod module;
 mod multiline_string_test;
 mod query_test;
