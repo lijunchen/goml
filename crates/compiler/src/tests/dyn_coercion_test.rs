@@ -249,3 +249,15 @@ fn dyn_trait_types_are_emitted_for_effect_only_hashmap_set_arguments() {
     assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
     assert!(go.contains("type dyn__Display struct"), "{go}");
 }
+
+#[test]
+fn dyn_trait_types_are_emitted_for_hashmap_method_set_arguments() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(
+        "src/tests/crashers/dyn_trait_type_emission_hashmap_method_set_return_subexpr/main.gom",
+    );
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
+    assert!(go.contains("type dyn__Display struct"), "{go}");
+}
