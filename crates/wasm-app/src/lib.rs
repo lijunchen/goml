@@ -164,7 +164,10 @@ pub fn compile_to_mono(src: &str) -> String {
             .collect::<Vec<_>>()
             .join("\n");
     }
-    let (mono, monoenv) = compiler::mono::mono(genv, core);
+    let (mono, monoenv) = match compiler::mono::mono(genv, core) {
+        Ok(result) => result,
+        Err(message) => return format!("error (compile): {}", message),
+    };
 
     let (lifted, liftenv) = compiler::lift::lambda_lift(monoenv, &gensym, mono);
     lifted.to_pretty(&liftenv, 120)
@@ -211,7 +214,10 @@ pub fn compile_to_anf(src: &str) -> String {
             .collect::<Vec<_>>()
             .join("\n");
     }
-    let (mono, monoenv) = compiler::mono::mono(genv, core);
+    let (mono, monoenv) = match compiler::mono::mono(genv, core) {
+        Ok(result) => result,
+        Err(message) => return format!("error (compile): {}", message),
+    };
 
     let (lifted, liftenv) = compiler::lift::lambda_lift(monoenv, &gensym, mono);
 
@@ -260,7 +266,10 @@ pub fn compile_to_go(src: &str) -> String {
             .collect::<Vec<_>>()
             .join("\n");
     }
-    let (mono, monoenv) = compiler::mono::mono(genv, core);
+    let (mono, monoenv) = match compiler::mono::mono(genv, core) {
+        Ok(result) => result,
+        Err(message) => return format!("error (compile): {}", message),
+    };
 
     let (lifted, liftenv) = compiler::lift::lambda_lift(monoenv, &gensym, mono);
 

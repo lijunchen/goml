@@ -534,7 +534,7 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
     if !builtin_collection_core.toplevels.is_empty() {
         linked.toplevels.extend(builtin_collection_core.toplevels);
     }
-    let (mono, monoenv) = mono::mono(genv.clone(), linked.clone());
+    let (mono, monoenv) = mono::mono(genv.clone(), linked.clone()).map_err(compile_error)?;
     let (lifted, liftenv) = lift::lambda_lift(monoenv.clone(), &gensym, mono.clone());
     let (anf, anfenv) = crate::anf::anf_file(liftenv.clone(), &gensym, lifted.clone());
     let (go, goenv) = go::compile::go_file(anfenv.clone(), &gensym, anf.clone());
