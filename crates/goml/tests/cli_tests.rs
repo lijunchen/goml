@@ -12,6 +12,23 @@ const HELLO_PROGRAM: &str = r#"fn main() -> unit {
 }
 "#;
 
+const FUNCTION_VECTOR_PROGRAM: &str = r#"fn inc(x: int32) -> int32 {
+    x + 1
+}
+
+fn dec(x: int32) -> int32 {
+    x - 1
+}
+
+fn main() -> unit {
+    let fs: Vec[(int32) -> int32] = vec_new();
+    let fs = vec_push(fs, inc);
+    let fs = vec_push(fs, dec);
+    let f = vec_get(fs, 0);
+    string_println(int32_to_string(f(10)));
+}
+"#;
+
 const GO_OPTION_LAST_TUPLE_PROGRAM: &str = r#"#[go_option_last]
 extern "go" "strings" "Cut" cut_pair(text: string, sep: string) -> Option[(string, string)]
 
@@ -351,6 +368,29 @@ fn compiler_run_single_executes_program() -> anyhow::Result<()> {
 
     assert!(output.status.success(), "stderr: {stderr}");
     expect!["hello\n"].assert_eq(&stdout);
+    expect![""].assert_eq(&stderr);
+
+    Ok(())
+}
+
+#[test]
+fn compiler_run_single_falls_back_when_yaegi_cannot_run_function_vectors() -> anyhow::Result<()> {
+    if !runtime_executor_available() {
+        return Ok(());
+    }
+
+    let (_dir, path) = write_program(FUNCTION_VECTOR_PROGRAM)?;
+
+    let output = Command::new(goml_bin())
+        .arg("compiler")
+        .arg("run-single")
+        .arg(&path)
+        .output()?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(output.status.success(), "stderr: {stderr}");
+    expect!["11\n"].assert_eq(&stdout);
     expect![""].assert_eq(&stderr);
 
     Ok(())
