@@ -2304,7 +2304,7 @@ fn dyn_wrap_go_name(trait_name: &str, for_ty: &tast::Ty, method_name: &str) -> S
     ))
 }
 
-fn collect_dyn_requirements(file: &anf::File) -> DynRequirements {
+fn collect_dyn_requirements(goenv: &GlobalGoEnv, file: &anf::File) -> DynRequirements {
     fn collect_ty(req: &mut DynRequirements, ty: &tast::Ty) {
         match ty {
             tast::Ty::TDyn { trait_name } => {
@@ -2498,12 +2498,37 @@ fn collect_dyn_requirements(file: &anf::File) -> DynRequirements {
     }
 
     let mut req = DynRequirements::default();
+    for (_, def) in goenv.structs() {
+        for (_, ty) in &def.fields {
+            collect_ty(&mut req, ty);
+        }
+    }
+    for (_, def) in goenv.enums() {
+        for (_, fields) in &def.variants {
+            for ty in fields {
+                collect_ty(&mut req, ty);
+            }
+        }
+    }
+    for extern_fn in goenv.genv.value_env.extern_funcs.values() {
+        collect_ty(&mut req, &extern_fn.ty);
+    }
     for f in &file.toplevels {
         for (_, ty) in &f.params {
             collect_ty(&mut req, ty);
         }
         collect_ty(&mut req, &f.ret_ty);
         collect_block(&mut req, &f.body);
+    }
+    let mut i = 0;
+    while let Some(trait_name) = req.traits.get_index(i).cloned() {
+        for (_, params, ret_ty) in trait_method_sigs(goenv, &trait_name) {
+            for param_ty in params {
+                collect_ty(&mut req, &param_ty);
+            }
+            collect_ty(&mut req, &ret_ty);
+        }
+        i += 1;
     }
     req
 }
@@ -8395,7 +8420,7 @@ pub fn go_file(
     }
 
     let file = anf::anf_renamer::rename(file);
-    let dyn_req = collect_dyn_requirements(&file);
+    let dyn_req = collect_dyn_requirements(&goenv, &file);
 
     let mut toplevels = gen_type_definition(&goenv);
     toplevels.extend(gen_dyn_type_definitions(&goenv, &dyn_req));

@@ -176,5 +176,39 @@ fn dyn_trait_types_are_emitted_for_early_return_subexpressions() {
 
     let go = compile_single_file_go(path);
 
-    assert!(go.contains("type dyn__Display interface"), "{go}");
+    assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
+    assert!(go.contains("type dyn__Display struct"), "{go}");
+}
+
+#[test]
+fn dyn_trait_types_are_emitted_for_enum_fields_in_early_return_subexpressions() {
+    let src = r#"
+trait Display {
+    fn show(Self) -> string;
+}
+
+impl Display for int32 {
+    fn show(self: int32) -> string {
+        self.to_string()
+    }
+}
+
+enum Boxed {
+    One(dyn Display),
+}
+
+fn build() -> int32 {
+    let _: Boxed = Boxed::One(return 9i32);
+    0i32
+}
+
+fn main() -> unit {
+    println(int32_to_string(build()))
+}
+"#;
+
+    let go = compile_go(src, "dyn_enum_return_subexpr.gom");
+
+    assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
+    assert!(go.contains("type dyn__Display struct"), "{go}");
 }
