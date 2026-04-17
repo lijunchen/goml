@@ -2017,7 +2017,28 @@ type RuntimeTypeSets = (
     IndexSet<tast::Ty>,
 );
 
-fn collect_runtime_types(file: &anf::File) -> RuntimeTypeSets {
+fn ty_contains_type_param(ty: &tast::Ty) -> bool {
+    match ty {
+        tast::Ty::TParam { .. } => true,
+        tast::Ty::TArray { elem, .. }
+        | tast::Ty::TSlice { elem }
+        | tast::Ty::TVec { elem }
+        | tast::Ty::TRef { elem } => ty_contains_type_param(elem),
+        tast::Ty::THashMap { key, value } => {
+            ty_contains_type_param(key) || ty_contains_type_param(value)
+        }
+        tast::Ty::TTuple { typs } => typs.iter().any(ty_contains_type_param),
+        tast::Ty::TApp { ty, args } => {
+            ty_contains_type_param(ty) || args.iter().any(ty_contains_type_param)
+        }
+        tast::Ty::TFunc { params, ret_ty } => {
+            params.iter().any(ty_contains_type_param) || ty_contains_type_param(ret_ty)
+        }
+        _ => false,
+    }
+}
+
+fn collect_runtime_types(goenv: &GlobalGoEnv, file: &anf::File) -> RuntimeTypeSets {
     struct Collector {
         tuples: IndexSet<tast::Ty>,
         arrays: IndexSet<tast::Ty>,
@@ -2028,10 +2049,11 @@ fn collect_runtime_types(file: &anf::File) -> RuntimeTypeSets {
     }
 
     impl Collector {
-        fn collect_file(mut self, file: &anf::File) -> RuntimeTypeSets {
+        fn collect_file(mut self, goenv: &GlobalGoEnv, file: &anf::File) -> RuntimeTypeSets {
             for item in &file.toplevels {
                 self.collect_fn(item);
             }
+            self.collect_go_types(goenv);
             (
                 self.tuples,
                 self.arrays,
@@ -2040,6 +2062,36 @@ fn collect_runtime_types(file: &anf::File) -> RuntimeTypeSets {
                 self.hashmaps,
                 self.missings,
             )
+        }
+
+        fn collect_go_types(&mut self, goenv: &GlobalGoEnv) {
+            for (name, def) in goenv.structs() {
+                if name.0.contains("TParam")
+                    || def.fields.iter().any(|(_, ty)| ty_contains_type_param(ty))
+                {
+                    continue;
+                }
+                for (_, ty) in &def.fields {
+                    self.collect_type(ty);
+                }
+            }
+
+            for (name, def) in goenv.enums() {
+                if name.0.contains("TParam")
+                    || def
+                        .variants
+                        .iter()
+                        .flat_map(|(_, fields)| fields.iter())
+                        .any(ty_contains_type_param)
+                {
+                    continue;
+                }
+                for (_, fields) in &def.variants {
+                    for ty in fields {
+                        self.collect_type(ty);
+                    }
+                }
+            }
         }
 
         fn collect_fn(&mut self, item: &anf::Fn) {
@@ -2264,7 +2316,7 @@ fn collect_runtime_types(file: &anf::File) -> RuntimeTypeSets {
         hashmaps: IndexSet::new(),
         missings: IndexSet::new(),
     }
-    .collect_file(file)
+    .collect_file(goenv, file)
 }
 
 #[derive(Default)]
@@ -8333,7 +8385,7 @@ pub fn go_file(
     let mut all = Vec::new();
 
     let (tuple_types, array_types, vec_types, ref_types, hashmap_types, missing_types) =
-        collect_runtime_types(&file);
+        collect_runtime_types(&goenv, &file);
 
     all.extend(runtime::make_runtime());
     all.extend(runtime::make_array_runtime(&array_types));
