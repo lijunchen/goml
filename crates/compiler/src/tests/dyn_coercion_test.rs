@@ -1,10 +1,20 @@
 use std::path::PathBuf;
 
-use crate::pipeline::pipeline::compile;
+use crate::pipeline::pipeline::{compile, compile_single_file};
 
 fn compile_go(src: &str, name: &str) -> String {
     let path = PathBuf::from(name);
     let compilation = compile(&path, src).unwrap_or_else(|err| {
+        panic!("compilation failed for {}: {:?}", path.display(), err);
+    });
+    compilation.go.to_pretty(&compilation.goenv, 120)
+}
+
+fn compile_single_file_go(path: PathBuf) -> String {
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
         panic!("compilation failed for {}: {:?}", path.display(), err);
     });
     compilation.go.to_pretty(&compilation.goenv, 120)
@@ -157,4 +167,14 @@ fn main() -> unit {
     );
 
     assert!(go.contains("dyn__Show__vtable__Boxed__int32()"));
+}
+
+#[test]
+fn dyn_trait_types_are_emitted_for_early_return_subexpressions() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/dyn_trait_type_emission_return_subexpr/main.gom");
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("type dyn__Display interface"), "{go}");
 }
