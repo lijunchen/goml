@@ -450,7 +450,6 @@ fn compile_inner(
             diagnostics: diagnostics.clone(),
         });
     }
-
     let gensym = Gensym::new();
 
     let mut package_cores = Vec::new();

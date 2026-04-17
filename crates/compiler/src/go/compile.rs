@@ -5288,6 +5288,7 @@ struct WhileLoop {
 }
 
 fn loop_exit_target(block: &anf::Block, loop_id: &anf::JoinId) -> Option<anf::JoinId> {
+    let joins = local_joins_in_block(block);
     match &block.term {
         anf::Term::If { then_, else_, .. } => {
             let then_reaches = any_path_reaches(then_, loop_id);
@@ -5299,7 +5300,7 @@ fn loop_exit_target(block: &anf::Block, loop_id: &anf::JoinId) -> Option<anf::Jo
             } else {
                 return None;
             };
-            block_tail_empty_target(break_block).cloned()
+            block_tail_target_through_joins(break_block, &joins, &mut HashSet::new())
         }
         anf::Term::Match { arms, default, .. } => {
             let mut saw_continue = false;
@@ -5313,7 +5314,8 @@ fn loop_exit_target(block: &anf::Block, loop_id: &anf::JoinId) -> Option<anf::Jo
                     saw_continue = true;
                     continue;
                 }
-                let branch_target = block_tail_empty_target(branch)?.clone();
+                let branch_target =
+                    block_tail_target_through_joins(branch, &joins, &mut HashSet::new())?;
                 if let Some(existing) = &exit_target {
                     if existing != &branch_target {
                         return None;
@@ -5328,12 +5330,68 @@ fn loop_exit_target(block: &anf::Block, loop_id: &anf::JoinId) -> Option<anf::Jo
     }
 }
 
-fn all_branches_empty_jump_to(term: &anf::Term) -> Option<&anf::JoinId> {
+fn local_joins_in_block<'a>(block: &'a anf::Block) -> HashMap<&'a anf::JoinId, &'a anf::JoinBind> {
+    let mut joins = HashMap::new();
+    for bind in &block.binds {
+        match bind {
+            anf::Bind::Join(join_bind) => {
+                joins.insert(&join_bind.id, join_bind);
+            }
+            anf::Bind::JoinRec(group) => {
+                for join_bind in group {
+                    joins.insert(&join_bind.id, join_bind);
+                }
+            }
+            anf::Bind::Let(_) => {}
+        }
+    }
+    joins
+}
+
+fn block_tail_target_through_joins(
+    block: &anf::Block,
+    parent_joins: &HashMap<&anf::JoinId, &anf::JoinBind>,
+    visited: &mut HashSet<anf::JoinId>,
+) -> Option<anf::JoinId> {
+    let mut local_joins = parent_joins.clone();
+    for bind in &block.binds {
+        match bind {
+            anf::Bind::Join(join_bind) => {
+                local_joins.insert(&join_bind.id, join_bind);
+            }
+            anf::Bind::JoinRec(group) => {
+                for join_bind in group {
+                    local_joins.insert(&join_bind.id, join_bind);
+                }
+            }
+            anf::Bind::Let(_) => {}
+        }
+    }
+    term_tail_target_through_joins(&block.term, &local_joins, visited)
+}
+
+fn term_tail_target_through_joins(
+    term: &anf::Term,
+    joins: &HashMap<&anf::JoinId, &anf::JoinBind>,
+    visited: &mut HashSet<anf::JoinId>,
+) -> Option<anf::JoinId> {
     match term {
-        anf::Term::Jump { target, args, .. } if args.is_empty() => Some(target),
+        anf::Term::Jump { target, args, .. } => {
+            if args.is_empty() {
+                return Some(target.clone());
+            }
+            if !visited.insert(target.clone()) {
+                return None;
+            }
+            let result = joins.get(target).and_then(|join_bind| {
+                block_tail_target_through_joins(&join_bind.body, joins, visited)
+            });
+            visited.remove(target);
+            result
+        }
         anf::Term::If { then_, else_, .. } => {
-            let then_target = block_tail_empty_target(then_)?;
-            let else_target = block_tail_empty_target(else_)?;
+            let then_target = block_tail_target_through_joins(then_, joins, visited)?;
+            let else_target = block_tail_target_through_joins(else_, joins, visited)?;
             if then_target == else_target {
                 Some(then_target)
             } else {
@@ -5342,14 +5400,20 @@ fn all_branches_empty_jump_to(term: &anf::Term) -> Option<&anf::JoinId> {
         }
         anf::Term::Match { arms, default, .. } => {
             let mut target = None;
-            for branch_target in arms
-                .iter()
-                .map(|arm| block_tail_empty_target(&arm.body))
-                .chain(default.iter().map(|block| block_tail_empty_target(block)))
-            {
-                let branch_target = branch_target?;
-                if let Some(existing) = target {
-                    if existing != branch_target {
+            for arm in arms {
+                let branch_target = block_tail_target_through_joins(&arm.body, joins, visited)?;
+                if let Some(existing) = &target {
+                    if existing != &branch_target {
+                        return None;
+                    }
+                } else {
+                    target = Some(branch_target);
+                }
+            }
+            if let Some(default) = default {
+                let branch_target = block_tail_target_through_joins(default, joins, visited)?;
+                if let Some(existing) = &target {
+                    if existing != &branch_target {
                         return None;
                     }
                 } else {
@@ -5360,10 +5424,6 @@ fn all_branches_empty_jump_to(term: &anf::Term) -> Option<&anf::JoinId> {
         }
         _ => None,
     }
-}
-
-fn block_tail_empty_target(block: &anf::Block) -> Option<&anf::JoinId> {
-    all_branches_empty_jump_to(&block.term)
 }
 
 fn any_path_reaches(block: &anf::Block, target: &anf::JoinId) -> bool {

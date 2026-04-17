@@ -316,6 +316,87 @@ fn reify_k<'a>(
     )
 }
 
+fn lift_expr_always_exits_control_flow(expr: &LiftExpr) -> bool {
+    match expr {
+        LiftExpr::EBreak { .. } | LiftExpr::EContinue { .. } | LiftExpr::EReturn { .. } => true,
+        LiftExpr::EConstr { args, .. } => args.iter().any(lift_expr_always_exits_control_flow),
+        LiftExpr::ETuple { items, .. } | LiftExpr::EArray { items, .. } => {
+            items.iter().any(lift_expr_always_exits_control_flow)
+        }
+        LiftExpr::ELet { value, body, .. } => {
+            lift_expr_always_exits_control_flow(value) || lift_expr_always_exits_control_flow(body)
+        }
+        LiftExpr::EIf {
+            cond: _,
+            then_branch,
+            else_branch,
+            ..
+        } => {
+            lift_expr_always_exits_control_flow(then_branch)
+                && lift_expr_always_exits_control_flow(else_branch)
+        }
+        LiftExpr::EMatch { arms, default, .. } => {
+            let has_catch_all = default.is_some()
+                || arms
+                    .iter()
+                    .any(|arm| matches!(arm.lhs, LiftExpr::EVar { .. }));
+            has_catch_all
+                && arms
+                    .iter()
+                    .all(|arm| lift_expr_always_exits_control_flow(&arm.body))
+                && default
+                    .as_deref()
+                    .is_none_or(lift_expr_always_exits_control_flow)
+        }
+        LiftExpr::EWhile { cond, .. } => lift_expr_always_exits_control_flow(cond),
+        LiftExpr::EGo { expr, .. }
+        | LiftExpr::EConstrGet { expr, .. }
+        | LiftExpr::EUnary { expr, .. }
+        | LiftExpr::EToDyn { expr, .. } => lift_expr_always_exits_control_flow(expr),
+        LiftExpr::EBinary { op, lhs, rhs, .. } => {
+            lift_expr_always_exits_control_flow(lhs)
+                || match op {
+                    common_defs::BinaryOp::And | common_defs::BinaryOp::Or => false,
+                    _ => lift_expr_always_exits_control_flow(rhs),
+                }
+        }
+        LiftExpr::EAssign { value, .. } => lift_expr_always_exits_control_flow(value),
+        LiftExpr::ECall { func, args, .. } => {
+            lift_expr_always_exits_control_flow(func)
+                || args.iter().any(lift_expr_always_exits_control_flow)
+        }
+        LiftExpr::EDynCall { receiver, args, .. } => {
+            lift_expr_always_exits_control_flow(receiver)
+                || args.iter().any(lift_expr_always_exits_control_flow)
+        }
+        LiftExpr::EProj { tuple, .. } => lift_expr_always_exits_control_flow(tuple),
+        LiftExpr::EVar { .. } | LiftExpr::EPrim { .. } => false,
+    }
+}
+
+fn reify_k_for_expr<'a>(
+    gensym: &'a Gensym,
+    expr: &LiftExpr,
+    k: Box<dyn FnOnce(ImmExpr) -> Block + 'a>,
+) -> (JoinBind, Ty) {
+    if expr.get_ty() == Ty::TUnit && lift_expr_always_exits_control_flow(expr) {
+        let id = join(gensym.gensym("k"));
+        return (
+            JoinBind {
+                id,
+                params: Vec::new(),
+                ret_ty: Ty::TUnit,
+                body: Block {
+                    binds: Vec::new(),
+                    term: Term::Unreachable { ty: Ty::TUnit },
+                },
+            },
+            Ty::TUnit,
+        );
+    }
+    reify_k(gensym, expr.get_ty(), k)
+}
+
 fn lower_arms<'a>(
     anfenv: &'a GlobalAnfEnv,
     gensym: &'a Gensym,
@@ -458,7 +539,13 @@ fn lower<'a>(
         } => {
             let then_branch = *then_branch;
             let else_branch = *else_branch;
-            let (join_bind, join_ret_ty) = reify_k(gensym, e_ty, k);
+            let expr = LiftExpr::EIf {
+                cond: cond.clone(),
+                then_branch: Box::new(then_branch.clone()),
+                else_branch: Box::new(else_branch.clone()),
+                ty: e_ty.clone(),
+            };
+            let (join_bind, join_ret_ty) = reify_k_for_expr(gensym, &expr, k);
             let join_id = join_bind.id.clone();
             let join_takes_arg = !join_bind.params.is_empty();
 
@@ -529,7 +616,13 @@ fn lower<'a>(
             default,
             ty: _,
         } => {
-            let (join_bind, join_ret_ty) = reify_k(gensym, e_ty, k);
+            let match_expr = LiftExpr::EMatch {
+                expr: expr.clone(),
+                arms: arms.clone(),
+                default: default.clone(),
+                ty: e_ty.clone(),
+            };
+            let (join_bind, join_ret_ty) = reify_k_for_expr(gensym, &match_expr, k);
             let join_id = join_bind.id.clone();
             let join_takes_arg = !join_bind.params.is_empty();
 

@@ -2535,15 +2535,18 @@ impl Typer {
         for arm in arms.iter() {
             local_env.push_scope();
             let arm_tast = self.check_pat(genv, local_env, diagnostics, arm.pat, &expr_ty);
-            let arm_body_tast = self.infer_expr(genv, local_env, diagnostics, arm.body);
+            let arm_exits = self.expr_always_exits_loop_control(arm.body);
+            let mut arm_body_tast = self.infer_expr(genv, local_env, diagnostics, arm.body);
             local_env.pop_scope(diagnostics);
-            if !self.expr_always_exits_loop_control(arm.body) {
+            if !arm_exits {
                 has_value_arm = true;
                 self.push_constraint(Constraint::TypeEqual(
                     arm_body_tast.get_ty(),
                     arm_ty.clone(),
                     self.expr_range(arm.body),
                 ));
+            } else {
+                arm_body_tast = self.with_expr_ty(arm_body_tast, arm_ty.clone());
             }
 
             arms_tast.push(tast::Arm {
@@ -2584,6 +2587,8 @@ impl Typer {
         let result_ty = self.fresh_ty_var();
         let then_exits = self.expr_always_exits_loop_control(then_branch);
         let else_exits = self.expr_always_exits_loop_control(else_branch);
+        let mut then_tast = then_tast;
+        let mut else_tast = else_tast;
 
         if !then_exits {
             self.push_constraint(Constraint::TypeEqual(
@@ -2591,6 +2596,8 @@ impl Typer {
                 result_ty.clone(),
                 self.expr_range(then_branch),
             ));
+        } else {
+            then_tast = self.with_expr_ty(then_tast, result_ty.clone());
         }
         if !else_exits {
             self.push_constraint(Constraint::TypeEqual(
@@ -2598,6 +2605,8 @@ impl Typer {
                 result_ty.clone(),
                 self.expr_range(else_branch),
             ));
+        } else {
+            else_tast = self.with_expr_ty(else_tast, result_ty.clone());
         }
 
         tast::Expr::EIf {

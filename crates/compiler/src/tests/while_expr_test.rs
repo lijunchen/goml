@@ -184,3 +184,28 @@ fn main() -> unit {
     assert!(go.contains("for {"), "{go}");
     assert!(go.contains("switch"), "{go}");
 }
+
+#[test]
+fn if_match_call_wrapped_all_exit_match_while_condition_compiles_in_single_file_mode() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/while_condition_wrapped_if_match_call_stack_overflow/main.gom");
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("func main()"), "{go}");
+    assert!(go.contains("for {"), "{go}");
+    assert!(go.contains("switch"), "{go}");
+    assert!(go.contains("id_bool"), "{go}");
+}
+
+#[test]
+fn nested_match_wrapped_all_exit_match_while_condition_compiles_in_single_file_mode() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/while_condition_nested_match_bool_join_mismatch/main.gom");
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("func main()"), "{go}");
+    assert!(go.contains("for {"), "{go}");
+    assert!(go.contains("switch"), "{go}");
+}
