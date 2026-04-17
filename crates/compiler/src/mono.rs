@@ -330,6 +330,37 @@ fn has_tparam(ty: &Ty) -> bool {
     }
 }
 
+fn mono_expr_always_exits_control_flow(expr: &MonoExpr) -> bool {
+    match expr {
+        MonoExpr::EBreak { .. } | MonoExpr::EContinue { .. } | MonoExpr::EReturn { .. } => true,
+        MonoExpr::EBlock { block, .. } => block
+            .tail
+            .as_deref()
+            .is_some_and(mono_expr_always_exits_control_flow),
+        MonoExpr::EIf {
+            then_branch,
+            else_branch,
+            ..
+        } => {
+            mono_expr_always_exits_control_flow(then_branch)
+                && mono_expr_always_exits_control_flow(else_branch)
+        }
+        MonoExpr::EMatch { arms, default, .. } => {
+            default
+                .as_deref()
+                .is_some_and(mono_expr_always_exits_control_flow)
+                && arms
+                    .iter()
+                    .all(|arm| mono_expr_always_exits_control_flow(&arm.body))
+        }
+        _ => false,
+    }
+}
+
+fn subst_is_fully_concrete(generics: &[String], subst: &Subst) -> bool {
+    generics.iter().all(|param| subst.contains_key(param)) && !subst.values().any(has_tparam)
+}
+
 fn format_ty_for_mono_diag(ty: &Ty) -> String {
     match ty {
         Ty::TVar(_) => "unknown".to_string(),
@@ -1090,8 +1121,15 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             // Derive concrete substitution for this call by unifying callee param/ret with arg/call types
             let mut call_subst: Subst = IndexMap::new();
             let callee_param_tys = callee.params.iter().map(|(_, t)| t).collect::<Vec<_>>();
-            for (pt, at) in callee_param_tys.iter().zip(arg_tys.iter()) {
+            for ((pt, at), arg) in callee_param_tys
+                .iter()
+                .zip(arg_tys.iter())
+                .zip(new_args.iter())
+            {
                 if let Err(e) = unify(pt, at, &mut call_subst) {
+                    if mono_expr_always_exits_control_flow(arg) {
+                        continue;
+                    }
                     panic!(
                         "monomorphization unification failed for {}: {}",
                         generic_func_name, e
@@ -1106,7 +1144,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             }
 
             // Ensure the substitution yields concrete types (no TParam in bindings)
-            if call_subst.values().any(has_tparam) {
+            if !subst_is_fully_concrete(&callee.generics, &call_subst) {
                 // If we cannot determine concrete types here, keep the call as-is.
                 // This should not happen for reachable instances from monomorphic roots.
                 return MonoExpr::ECall {
@@ -1299,7 +1337,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                         let _ = unify(pt, at, &mut call_subst);
                     }
                     let _ = unify(&callee.ret_ty, &new_ty, &mut call_subst);
-                    if !call_subst.values().any(has_tparam) {
+                    if subst_is_fully_concrete(&callee.generics, &call_subst) {
                         ctx.ensure_instance(&generic_name, call_subst)
                     } else {
                         func_name.clone()
