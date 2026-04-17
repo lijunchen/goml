@@ -237,3 +237,15 @@ fn dyn_trait_tuple_types_are_emitted_for_nested_enum_fields_in_early_return_sube
     assert!(go.contains("type dyn__Display struct"), "{go}");
     assert!(go.contains("type Tuple2_dyn__Display_int32 struct"), "{go}");
 }
+
+#[test]
+fn dyn_trait_types_are_emitted_for_effect_only_hashmap_set_arguments() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(
+        "src/tests/crashers/dyn_trait_type_emission_hashmap_set_return_subexpr/main.gom",
+    );
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
+    assert!(go.contains("type dyn__Display struct"), "{go}");
+}
