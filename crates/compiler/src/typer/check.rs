@@ -2928,13 +2928,6 @@ impl Typer {
         expr: hir::ExprId,
     ) -> tast::Expr {
         let expr_tast = self.infer_expr(genv, local_env, diagnostics, expr);
-        if self.expr_always_exits_loop_control(expr) {
-            return tast::Expr::EGo {
-                expr: Box::new(expr_tast),
-                ty: tast::Ty::TUnit,
-            };
-        }
-        // go expression expects a closure () -> unit
         let closure_ty = tast::Ty::TFunc {
             params: vec![],
             ret_ty: Box::new(tast::Ty::TUnit),
