@@ -533,6 +533,8 @@ impl SubstKey {
     }
 }
 
+type InstanceKey = (String, SubstKey);
+
 // Derive a specialized function name based on substitution
 fn spec_name_for(orig: &str, s: &Subst) -> String {
     if s.is_empty() {
@@ -650,8 +652,10 @@ fn unify(template: &Ty, actual: &Ty, subst: &mut Subst) -> Result<(), String> {
 struct Ctx {
     orig_fns: IndexMap<String, core::Fn>,
     // map (orig_name, subst_key) -> spec_name
-    instances: IndexMap<(String, SubstKey), String>,
-    queued: IndexSet<(String, SubstKey)>,
+    instances: IndexMap<InstanceKey, String>,
+    instance_substs: IndexMap<InstanceKey, Subst>,
+    instance_parents: IndexMap<InstanceKey, Option<InstanceKey>>,
+    queued: IndexSet<InstanceKey>,
     out: Vec<MonoFn>,
     work: VecDeque<(String, Subst, String)>,
     active_instances: Vec<(String, Subst)>,
@@ -693,6 +697,8 @@ impl Ctx {
         Self {
             orig_fns,
             instances: IndexMap::new(),
+            instance_substs: IndexMap::new(),
+            instance_parents: IndexMap::new(),
             queued: IndexSet::new(),
             out: Vec::new(),
             work: VecDeque::new(),
@@ -766,12 +772,29 @@ impl Ctx {
     }
 
     fn recursive_specialization_error(&self, name: &str, new_subst: &Subst) -> Option<String> {
-        let (_, active_subst) = self
+        let mut cursor = self
             .active_instances
-            .iter()
-            .rev()
-            .find(|(active_name, _)| active_name == name)?;
+            .last()
+            .map(|(active_name, active_subst)| (active_name.clone(), SubstKey::new(active_subst)));
+        while let Some(key) = cursor {
+            if key.0 == name
+                && let Some(active_subst) = self.instance_substs.get(&key)
+                && let Some(message) =
+                    self.specialization_growth_message(name, active_subst, new_subst)
+            {
+                return Some(message);
+            }
+            cursor = self.instance_parents.get(&key).cloned().flatten();
+        }
+        None
+    }
 
+    fn specialization_growth_message(
+        &self,
+        name: &str,
+        active_subst: &Subst,
+        new_subst: &Subst,
+    ) -> Option<String> {
         let active_fn = self.orig_fns.get(name)?;
         for param in active_fn.generics.iter() {
             let Some(old_ty) = active_subst.get(param) else {
@@ -816,6 +839,11 @@ impl Ctx {
             return n.clone();
         }
 
+        let parent = self
+            .active_instances
+            .last()
+            .map(|(active_name, active_subst)| (active_name.clone(), SubstKey::new(active_subst)));
+
         if self.error.is_none() {
             if let Some(message) = self.recursive_specialization_error(name, &s) {
                 self.error = Some(message);
@@ -830,6 +858,8 @@ impl Ctx {
         let spec = spec_name_for(name, &s);
         self.instances
             .insert((name.to_string(), key.clone()), spec.clone());
+        self.instance_substs.insert(k.clone(), s.clone());
+        self.instance_parents.insert(k.clone(), parent);
         if self.error.is_none() && !self.queued.contains(&(name.to_string(), key.clone())) {
             self.queued.insert((name.to_string(), key));
             self.work.push_back((name.to_string(), s, spec.clone()));
