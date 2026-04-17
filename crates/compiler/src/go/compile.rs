@@ -2377,6 +2377,10 @@ fn collect_dyn_requirements(goenv: &GlobalGoEnv, file: &anf::File) -> DynRequire
             tast::Ty::TSlice { elem } => collect_ty(req, elem),
             tast::Ty::TVec { elem } => collect_ty(req, elem),
             tast::Ty::TRef { elem } => collect_ty(req, elem),
+            tast::Ty::THashMap { key, value } => {
+                collect_ty(req, key);
+                collect_ty(req, value);
+            }
             tast::Ty::TFunc { params, ret_ty } => {
                 for p in params {
                     collect_ty(req, p);
