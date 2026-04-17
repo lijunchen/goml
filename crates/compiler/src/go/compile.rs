@@ -1848,6 +1848,70 @@ fn gen_extern_wrapper_fns(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
         .collect()
 }
 
+fn gen_extern_bridge_fn(goenv: &GlobalGoEnv, goml_name: &str, extern_fn: &ExternFunc) -> goast::Fn {
+    let tast::Ty::TFunc { params, ret_ty } = &extern_fn.ty else {
+        panic!(
+            "extern function {} does not have a function type",
+            goml_name
+        );
+    };
+    let bridge_ret_ty = ret_ty.as_ref().clone();
+    let go_params = params
+        .iter()
+        .enumerate()
+        .map(|(index, ty)| (format!("p{}", index), tast_ty_to_go_type(ty)))
+        .collect::<Vec<_>>();
+    let call_args = go_params
+        .iter()
+        .map(|(name, ty)| goast::Expr::Var {
+            name: name.clone(),
+            ty: ty.clone(),
+        })
+        .collect::<Vec<_>>();
+    let call = if extern_requires_wrapper(extern_fn) {
+        goast::Expr::Call {
+            func: Box::new(goast::Expr::Var {
+                name: extern_wrapper_fn_name(goml_name),
+                ty: goty::GoType::TFunc {
+                    params: params.iter().map(tast_ty_to_go_type).collect(),
+                    ret_ty: Box::new(tast_ty_to_go_type(&bridge_ret_ty)),
+                },
+            }),
+            args: call_args,
+            ty: tast_ty_to_go_type(&bridge_ret_ty),
+        }
+    } else {
+        compile_extern_call(
+            goenv,
+            extern_fn,
+            params,
+            call_args,
+            tast_ty_to_go_type(&bridge_ret_ty),
+        )
+    };
+
+    goast::Fn {
+        name: go_ident(goml_name),
+        params: go_params,
+        ret_ty: Some(tast_ty_to_go_type(&bridge_ret_ty)),
+        body: goast::Block {
+            stmts: vec![goast::Stmt::Return { expr: Some(call) }],
+        },
+    }
+}
+
+fn gen_extern_bridge_fns(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
+    goenv
+        .genv
+        .value_env
+        .extern_funcs
+        .iter()
+        .map(|(goml_name, extern_fn)| {
+            goast::Item::Fn(gen_extern_bridge_fn(goenv, goml_name, extern_fn))
+        })
+        .collect()
+}
+
 fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tast::Ty {
     match ty {
         tast::Ty::TVar(_)
@@ -8338,6 +8402,7 @@ pub fn go_file(
     let impl_name_map = build_trait_impl_name_map(&file.toplevels);
     toplevels.extend(gen_dyn_helper_fns(&goenv, &dyn_req, &impl_name_map));
     toplevels.extend(gen_extern_wrapper_fns(&goenv));
+    toplevels.extend(gen_extern_bridge_fns(&goenv));
     for item in file.toplevels {
         if let Some(native_ctx) = native_fn_ctx(&goenv, &item) {
             toplevels.push(goast::Item::Fn(compile_native_fn(
