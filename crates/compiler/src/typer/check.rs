@@ -743,7 +743,12 @@ impl Typer {
                 }
             }
             hir::Expr::EMatch { expr, arms } => {
-                let expr_tast = self.infer_expr(genv, local_env, diagnostics, expr);
+                let mut expr_tast = self.infer_expr(genv, local_env, diagnostics, expr);
+                if self.expr_always_exits_loop_control(expr) {
+                    let scrut_ty = self.fresh_ty_var();
+                    expr_tast = self.with_expr_ty(expr_tast, scrut_ty.clone());
+                    self.record_expr_result(expr, &expr_tast);
+                }
                 let expr_ty = expr_tast.get_ty();
 
                 let mut arms_tast = Vec::new();
@@ -2516,7 +2521,12 @@ impl Typer {
         arms: &[hir::Arm],
         astptr: Option<MySyntaxNodePtr>,
     ) -> tast::Expr {
-        let expr_tast = self.infer_expr(genv, local_env, diagnostics, expr);
+        let mut expr_tast = self.infer_expr(genv, local_env, diagnostics, expr);
+        if self.expr_always_exits_loop_control(expr) {
+            let scrut_ty = self.fresh_ty_var();
+            expr_tast = self.with_expr_ty(expr_tast, scrut_ty.clone());
+            self.record_expr_result(expr, &expr_tast);
+        }
         let expr_ty = expr_tast.get_ty();
 
         let mut arms_tast = Vec::new();
@@ -4484,8 +4494,8 @@ impl Typer {
             hir::Pat::PVar { name, astptr } => {
                 self.check_pat_var(local_env, diagnostics, name, Some(astptr), ty)
             }
-            hir::Pat::PUnit => self.check_pat_unit(astptr),
-            hir::Pat::PBool { value } => self.check_pat_bool(value, astptr),
+            hir::Pat::PUnit => self.check_pat_unit(ty, astptr),
+            hir::Pat::PBool { value } => self.check_pat_bool(value, ty, range, astptr),
             hir::Pat::PInt { value } => self.check_pat_int(diagnostics, &value, ty, range, astptr),
             hir::Pat::PInt8 { value } => {
                 self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt8, ty, range, astptr)
@@ -4567,7 +4577,8 @@ impl Typer {
         }
     }
 
-    fn check_pat_unit(&self, astptr: Option<MySyntaxNodePtr>) -> tast::Pat {
+    fn check_pat_unit(&mut self, ty: &tast::Ty, astptr: Option<MySyntaxNodePtr>) -> tast::Pat {
+        self.push_constraint(Constraint::TypeEqual(tast::Ty::TUnit, ty.clone(), None));
         tast::Pat::PPrim {
             value: Prim::Unit { value: () },
             ty: tast::Ty::TUnit,
@@ -4575,7 +4586,14 @@ impl Typer {
         }
     }
 
-    fn check_pat_bool(&self, value: bool, astptr: Option<MySyntaxNodePtr>) -> tast::Pat {
+    fn check_pat_bool(
+        &mut self,
+        value: bool,
+        ty: &tast::Ty,
+        range: Option<TextRange>,
+        astptr: Option<MySyntaxNodePtr>,
+    ) -> tast::Pat {
+        self.push_constraint(Constraint::TypeEqual(tast::Ty::TBool, ty.clone(), range));
         tast::Pat::PPrim {
             value: Prim::boolean(value),
             ty: tast::Ty::TBool,
