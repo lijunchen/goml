@@ -1,0 +1,13 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn main() -> unit {
+  let name/0 = "Alice" in
+  let p/1 = Person { name: name/0 } in
+  let _wild0 = string_println(Person.name(p/1)) in
+}

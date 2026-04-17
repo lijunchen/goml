@@ -1,0 +1,33 @@
+package main;
+fn loop_break() -> unit {
+    while if true {
+        {
+            break
+        }
+    } else {
+        {
+            continue
+        }
+    } {
+        {
+            println("unreachable");
+        }
+    };
+}
+
+fn loop_return() -> int32 {
+    while match 0i32 {
+        _ => return 5i32,
+    } {
+        {
+            println("unreachable");
+        }
+    };
+    0i32
+}
+
+fn main() -> unit {
+    loop_break();
+    println(loop_return());
+}
+

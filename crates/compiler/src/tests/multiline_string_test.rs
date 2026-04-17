@@ -5,6 +5,10 @@ use expect_test::expect;
 
 #[test]
 fn multiline_string_prints_lines() -> anyhow::Result<()> {
+    if !runtime_executor_available() {
+        return Ok(());
+    }
+
     let src = r#"
 fn main() -> unit {
     let s = \\first line

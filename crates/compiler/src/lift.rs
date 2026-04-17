@@ -696,7 +696,6 @@ fn rewrite_lift_expr_with_final_types(
 
             let func_ty = func_expr.get_ty();
             let call_ty = match &func_ty {
-                Ty::TFunc { ret_ty, .. } => *ret_ty.clone(),
                 Ty::TStruct { name } if is_closure_env_struct(name) => {
                     if let Some(apply_fn) = state.apply_fn_for_struct(name)
                         && let Some(apply_fn_ty) = state.liftenv.get_func(apply_fn)
@@ -704,10 +703,15 @@ fn rewrite_lift_expr_with_final_types(
                     {
                         *ret_ty.clone()
                     } else {
-                        ty
+                        ty.clone()
                     }
                 }
-                _ => ty,
+                Ty::TFunc { ret_ty, .. }
+                    if state.ty_contains_closure(ret_ty) || state.ty_contains_closure(&ty) =>
+                {
+                    *ret_ty.clone()
+                }
+                _ => ty.clone(),
             };
             LiftExpr::ECall {
                 func: Box::new(func_expr),

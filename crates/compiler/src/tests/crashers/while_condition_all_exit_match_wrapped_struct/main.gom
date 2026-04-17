@@ -1,0 +1,18 @@
+struct WrapBool {
+    value: bool,
+}
+
+fn read_wrap(w: WrapBool) -> bool {
+    w.value
+}
+
+fn main() -> unit {
+    while read_wrap(WrapBool {
+        value: match 0i32 {
+            0i32 => break,
+            _ => continue,
+        },
+    }) {
+        break;
+    };
+}

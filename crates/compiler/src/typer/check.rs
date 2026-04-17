@@ -1,4 +1,7 @@
-use std::{collections::HashMap, num::IntErrorKind};
+use std::{
+    collections::{HashMap, HashSet},
+    num::IntErrorKind,
+};
 
 use diagnostics::{Severity, Stage};
 use parser::{Diagnostic, Diagnostics, syntax::MySyntaxNodePtr};
@@ -25,6 +28,152 @@ enum ArrayAssignRoot {
 }
 
 impl Typer {
+    fn with_expr_ty(&self, expr: tast::Expr, ty: tast::Ty) -> tast::Expr {
+        match expr {
+            tast::Expr::EVar { name, astptr, .. } => tast::Expr::EVar { name, ty, astptr },
+            tast::Expr::EPrim { value, .. } => tast::Expr::EPrim { value, ty },
+            tast::Expr::EConstr {
+                constructor, args, ..
+            } => tast::Expr::EConstr {
+                constructor,
+                args,
+                ty,
+            },
+            tast::Expr::ETuple { items, .. } => tast::Expr::ETuple { items, ty },
+            tast::Expr::EArray { items, .. } => tast::Expr::EArray { items, ty },
+            tast::Expr::EClosure {
+                params,
+                body,
+                captures,
+                ..
+            } => tast::Expr::EClosure {
+                params,
+                body,
+                ty,
+                captures,
+            },
+            tast::Expr::EBlock { block, .. } => tast::Expr::EBlock { block, ty },
+            tast::Expr::EMatch {
+                expr, arms, astptr, ..
+            } => tast::Expr::EMatch {
+                expr,
+                arms,
+                ty,
+                astptr,
+            },
+            tast::Expr::EIf {
+                cond,
+                then_branch,
+                else_branch,
+                ..
+            } => tast::Expr::EIf {
+                cond,
+                then_branch,
+                else_branch,
+                ty,
+            },
+            tast::Expr::EWhile { cond, body, .. } => tast::Expr::EWhile { cond, body, ty },
+            tast::Expr::EBreak { .. } => tast::Expr::EBreak { ty },
+            tast::Expr::EContinue { .. } => tast::Expr::EContinue { ty },
+            tast::Expr::EReturn { expr, .. } => tast::Expr::EReturn { expr, ty },
+            tast::Expr::EGo { expr, .. } => tast::Expr::EGo { expr, ty },
+            tast::Expr::ECall { func, args, .. } => tast::Expr::ECall { func, args, ty },
+            tast::Expr::EUnary {
+                op,
+                expr,
+                resolution,
+                ..
+            } => tast::Expr::EUnary {
+                op,
+                expr,
+                ty,
+                resolution,
+            },
+            tast::Expr::EProj { tuple, index, .. } => tast::Expr::EProj { tuple, index, ty },
+            tast::Expr::EField {
+                expr,
+                field_name,
+                astptr,
+                ..
+            } => tast::Expr::EField {
+                expr,
+                field_name,
+                ty,
+                astptr,
+            },
+            tast::Expr::EIndex {
+                base,
+                index,
+                astptr,
+                ..
+            } => tast::Expr::EIndex {
+                base,
+                index,
+                ty,
+                astptr,
+            },
+            tast::Expr::EBinary {
+                op,
+                lhs,
+                rhs,
+                resolution,
+                ..
+            } => tast::Expr::EBinary {
+                op,
+                lhs,
+                rhs,
+                ty,
+                resolution,
+            },
+            tast::Expr::ETraitMethod {
+                trait_name,
+                method_name,
+                astptr,
+                ..
+            } => tast::Expr::ETraitMethod {
+                trait_name,
+                method_name,
+                ty,
+                astptr,
+            },
+            tast::Expr::EDynTraitMethod {
+                trait_name,
+                method_name,
+                astptr,
+                ..
+            } => tast::Expr::EDynTraitMethod {
+                trait_name,
+                method_name,
+                ty,
+                astptr,
+            },
+            tast::Expr::EInherentMethod {
+                receiver_ty,
+                method_name,
+                astptr,
+                ..
+            } => tast::Expr::EInherentMethod {
+                receiver_ty,
+                method_name,
+                ty,
+                astptr,
+            },
+            tast::Expr::EToDyn {
+                trait_name,
+                for_ty,
+                expr,
+                astptr,
+                ..
+            } => tast::Expr::EToDyn {
+                trait_name,
+                for_ty,
+                expr,
+                ty,
+                astptr,
+            },
+        }
+    }
+
     fn expr_range(&self, expr_id: hir::ExprId) -> Option<TextRange> {
         self.hir_table.expr_ptr(expr_id).map(|ptr| ptr.text_range())
     }
@@ -624,11 +773,25 @@ impl Typer {
                 e,
                 &constructor,
                 &args,
-                Some(expected),
+                if matches!(expected, tast::Ty::TDyn { .. }) {
+                    None
+                } else {
+                    Some(expected)
+                },
             ),
-            hir::Expr::ECall { func, args } => {
-                self.infer_call_expr(genv, local_env, diagnostics, e, func, &args, Some(expected))
-            }
+            hir::Expr::ECall { func, args } => self.infer_call_expr(
+                genv,
+                local_env,
+                diagnostics,
+                e,
+                func,
+                &args,
+                if matches!(expected, tast::Ty::TDyn { .. }) {
+                    None
+                } else {
+                    Some(expected)
+                },
+            ),
             hir::Expr::EStructLiteral { name, fields }
                 if !matches!(expected, tast::Ty::TDyn { .. }) =>
             {
@@ -1510,7 +1673,56 @@ impl Typer {
             }
         };
 
+        let inst_constr_ty = self.inst_ty(&constr_ty);
+        let param_tys = match &inst_constr_ty {
+            tast::Ty::TFunc { params, .. } => params.clone(),
+            _ => Vec::new(),
+        };
+
+        let ret_ty = match &inst_constr_ty {
+            tast::Ty::TFunc { ret_ty, .. } => *ret_ty.clone(),
+            _ => inst_constr_ty.clone(),
+        };
+
         if expected_arity != args.len() {
+            if args.is_empty() && expected_arity > 0 {
+                if let Some(hint) = hint_ret_ty {
+                    self.unify(diagnostics, &inst_constr_ty, hint, self.expr_range(expr_id));
+                }
+
+                self.results
+                    .record_constructor_expr(expr_id, constructor.clone());
+
+                let params = param_tys
+                    .iter()
+                    .enumerate()
+                    .map(|(idx, ty)| tast::ClosureParam {
+                        name: format!("ctor_arg_{idx}"),
+                        ty: ty.clone(),
+                        astptr: None,
+                    })
+                    .collect::<Vec<_>>();
+                let args_tast = params
+                    .iter()
+                    .map(|param| tast::Expr::EVar {
+                        name: param.name.clone(),
+                        ty: param.ty.clone(),
+                        astptr: None,
+                    })
+                    .collect::<Vec<_>>();
+
+                return tast::Expr::EClosure {
+                    params,
+                    body: Box::new(tast::Expr::EConstr {
+                        constructor,
+                        args: args_tast,
+                        ty: ret_ty,
+                    }),
+                    ty: inst_constr_ty,
+                    captures: Vec::new(),
+                };
+            }
+
             super::util::push_error_with_range(
                 diagnostics,
                 format!(
@@ -1523,17 +1735,6 @@ impl Typer {
             );
             return self.error_expr(None);
         }
-
-        let inst_constr_ty = self.inst_ty(&constr_ty);
-        let param_tys = match &inst_constr_ty {
-            tast::Ty::TFunc { params, .. } => params.clone(),
-            _ => Vec::new(),
-        };
-
-        let ret_ty = match &inst_constr_ty {
-            tast::Ty::TFunc { ret_ty, .. } => *ret_ty.clone(),
-            _ => inst_constr_ty.clone(),
-        };
 
         if let Some(hint) = hint_ret_ty {
             self.unify(diagnostics, &ret_ty, hint, self.expr_range(expr_id));
@@ -1903,7 +2104,10 @@ impl Typer {
 
         let body_ty = self.fresh_ty_var();
         self.return_ty_stack.push(body_ty.clone());
+        let saved_while_depth = self.while_depth;
+        self.while_depth = 0;
         let body_tast = self.infer_expr(genv, local_env, diagnostics, body);
+        self.while_depth = saved_while_depth;
         let _ = self.return_ty_stack.pop();
         self.push_constraint(Constraint::TypeEqual(
             body_tast.get_ty(),
@@ -1974,8 +2178,11 @@ impl Typer {
                 }
 
                 self.return_ty_stack.push(expected_ret.as_ref().clone());
+                let saved_while_depth = self.while_depth;
+                self.while_depth = 0;
                 let body_tast =
                     self.check_expr(genv, local_env, diagnostics, body, expected_ret.as_ref());
+                self.while_depth = saved_while_depth;
                 let _ = self.return_ty_stack.pop();
                 let body_ty = body_tast.get_ty();
                 let captures = local_env.end_closure(diagnostics, &self.hir_table);
@@ -2404,11 +2611,15 @@ impl Typer {
         body: hir::ExprId,
     ) -> tast::Expr {
         self.while_depth += 1;
-        let cond_tast = self.infer_expr(genv, local_env, diagnostics, cond);
+        let cond_always_exits = self.expr_always_exits_loop_control(cond);
+        let mut cond_tast = self.infer_expr(genv, local_env, diagnostics, cond);
         let body_tast = self.infer_expr(genv, local_env, diagnostics, body);
         self.while_depth -= 1;
 
-        if !self.expr_always_exits_loop_control(cond) {
+        if cond_always_exits {
+            cond_tast = self.with_expr_ty(cond_tast, tast::Ty::TBool);
+            self.record_expr_result(cond, &cond_tast);
+        } else {
             self.push_constraint(Constraint::TypeEqual(
                 cond_tast.get_ty(),
                 tast::Ty::TBool,
@@ -2526,7 +2737,7 @@ impl Typer {
         let outer_ret_ty = self.subst_ty_silent(&outer_ret_ty_raw);
         let range = self.expr_range(e);
 
-        let (kind, ok_ty) = match (
+        let (kind, ok_ty, container_name) = match (
             try_result_parts(&inner_ty),
             try_option_parts(&inner_ty),
             try_result_parts(&outer_ret_ty),
@@ -2560,7 +2771,7 @@ impl Typer {
                     result_ty(inner_name, outer_ok_ty, err_ty.clone()),
                     range,
                 ));
-                (TryKind::Result, ok_ty.clone())
+                (TryKind::Result, ok_ty.clone(), inner_name.to_string())
             }
             (Some((inner_name, ok_ty, err_ty)), _, _, _, _, true) => {
                 let outer_ok_ty = self.fresh_ty_var();
@@ -2569,7 +2780,7 @@ impl Typer {
                     result_ty(inner_name, outer_ok_ty, err_ty.clone()),
                     range,
                 ));
-                (TryKind::Result, ok_ty.clone())
+                (TryKind::Result, ok_ty.clone(), inner_name.to_string())
             }
             (_, Some((inner_name, ok_ty)), _, Some((outer_name, _)), _, _)
                 if inner_name == outer_name =>
@@ -2580,7 +2791,7 @@ impl Typer {
                     option_ty(inner_name, outer_ok_ty),
                     range,
                 ));
-                (TryKind::Option, ok_ty.clone())
+                (TryKind::Option, ok_ty.clone(), inner_name.to_string())
             }
             (_, Some((inner_name, ok_ty)), _, _, _, true) => {
                 let outer_ok_ty = self.fresh_ty_var();
@@ -2589,7 +2800,7 @@ impl Typer {
                     option_ty(inner_name, outer_ok_ty),
                     range,
                 ));
-                (TryKind::Option, ok_ty.clone())
+                (TryKind::Option, ok_ty.clone(), inner_name.to_string())
             }
             (_, _, Some((outer_name, _, err_ty)), _, true, _) => {
                 let ok_ty = self.fresh_ty_var();
@@ -2598,7 +2809,7 @@ impl Typer {
                     result_ty(outer_name, ok_ty.clone(), err_ty.clone()),
                     range,
                 ));
-                (TryKind::Result, ok_ty)
+                (TryKind::Result, ok_ty, outer_name.to_string())
             }
             (_, _, _, Some((outer_name, _)), true, _) => {
                 let ok_ty = self.fresh_ty_var();
@@ -2607,7 +2818,7 @@ impl Typer {
                     option_ty(outer_name, ok_ty.clone()),
                     range,
                 ));
-                (TryKind::Option, ok_ty)
+                (TryKind::Option, ok_ty, outer_name.to_string())
             }
             (Some((_, ok_ty, _)), _, _, _, _, _) => {
                 super::util::push_error_with_range(
@@ -2647,11 +2858,23 @@ impl Typer {
             }
         };
 
+        let Some((success_index, residual_index)) =
+            try_variant_indices(genv, &container_name, &kind, diagnostics, range)
+        else {
+            return tast::Expr::EVar {
+                name: "<try>".to_string(),
+                ty: ok_ty,
+                astptr: self.hir_table.expr_ptr(e),
+            };
+        };
+
         self.results.record_try_elab(
             e,
             TryElab {
                 kind,
                 outer_ret_ty: outer_ret_ty_raw,
+                success_index,
+                residual_index,
             },
         );
 
@@ -2832,6 +3055,7 @@ impl Typer {
                 let name = &hint;
                 if let Some(func_scheme) = lookup_function_scheme_by_hint(genv, name.as_str()) {
                     let inst_ty = self.inst_ty(&func_scheme.ty);
+                    let needs_early_call_site_unify = fn_ret_depends_on_params(&inst_ty);
                     if let (Some(hint), tast::Ty::TFunc { ret_ty: fn_ret, .. }) =
                         (hint_ret_ty, &inst_ty)
                     {
@@ -2889,6 +3113,9 @@ impl Typer {
                     ) {
                         return self.error_expr(astptr);
                     }
+                    if needs_early_call_site_unify {
+                        self.try_unify_silent(&inst_ty, &call_site_func_ty);
+                    }
                     self.push_constraint(Constraint::TypeEqual(
                         inst_ty.clone(),
                         call_site_func_ty.clone(),
@@ -2941,6 +3168,7 @@ impl Typer {
                     && let Some(func_scheme) = genv.get_function_scheme_unqualified(name.as_str())
                 {
                     let inst_ty = self.inst_ty(&func_scheme.ty);
+                    let needs_early_call_site_unify = fn_ret_depends_on_params(&inst_ty);
                     if let (Some(hint), tast::Ty::TFunc { ret_ty: fn_ret, .. }) =
                         (hint_ret_ty, &inst_ty)
                     {
@@ -2997,6 +3225,9 @@ impl Typer {
                         call_range,
                     ) {
                         return self.error_expr(astptr);
+                    }
+                    if needs_early_call_site_unify {
+                        self.try_unify_silent(&inst_ty, &call_site_func_ty);
                     }
                     self.push_constraint(Constraint::TypeEqual(
                         inst_ty.clone(),
@@ -3811,6 +4042,20 @@ impl Typer {
                     tuple: Box::new(tuple_tast),
                     index,
                     ty: field_ty,
+                }
+            }
+            _ if contains_tvar(&tuple_ty) => {
+                let result_ty = self.fresh_ty_var();
+                self.push_constraint(Constraint::TupleProjectionAccess {
+                    tuple_ty: tuple_ty.clone(),
+                    index,
+                    result_ty: result_ty.clone(),
+                    origin: range,
+                });
+                tast::Expr::EProj {
+                    tuple: Box::new(tuple_tast),
+                    index,
+                    ty: result_ty,
                 }
             }
             _ => {
@@ -5681,6 +5926,56 @@ pub(crate) fn contains_tvar(ty: &tast::Ty) -> bool {
     }
 }
 
+fn collect_tvars(ty: &tast::Ty, vars: &mut HashSet<tast::TypeVar>) {
+    match ty {
+        tast::Ty::TVar(var) => {
+            vars.insert(*var);
+        }
+        tast::Ty::TTuple { typs } => {
+            for ty in typs {
+                collect_tvars(ty, vars);
+            }
+        }
+        tast::Ty::TApp { ty, args } => {
+            collect_tvars(ty, vars);
+            for arg in args {
+                collect_tvars(arg, vars);
+            }
+        }
+        tast::Ty::TArray { elem, .. }
+        | tast::Ty::TSlice { elem }
+        | tast::Ty::TVec { elem }
+        | tast::Ty::TRef { elem } => collect_tvars(elem, vars),
+        tast::Ty::THashMap { key, value } => {
+            collect_tvars(key, vars);
+            collect_tvars(value, vars);
+        }
+        tast::Ty::TFunc { params, ret_ty } => {
+            for param in params {
+                collect_tvars(param, vars);
+            }
+            collect_tvars(ret_ty, vars);
+        }
+        _ => {}
+    }
+}
+
+fn fn_ret_depends_on_params(ty: &tast::Ty) -> bool {
+    let tast::Ty::TFunc { params, ret_ty } = ty else {
+        return false;
+    };
+    let mut param_vars = HashSet::new();
+    for param in params {
+        collect_tvars(param, &mut param_vars);
+    }
+    if param_vars.is_empty() {
+        return false;
+    }
+    let mut ret_vars = HashSet::new();
+    collect_tvars(ret_ty, &mut ret_vars);
+    ret_vars.iter().any(|var| param_vars.contains(var))
+}
+
 fn try_result_parts(ty: &tast::Ty) -> Option<(&str, &tast::Ty, &tast::Ty)> {
     let tast::Ty::TApp { ty, args } = ty else {
         return None;
@@ -5711,6 +6006,58 @@ fn try_option_parts(ty: &tast::Ty) -> Option<(&str, &tast::Ty)> {
         return None;
     }
     Some((name.as_str(), &args[0]))
+}
+
+fn try_variant_indices(
+    genv: &PackageTypeEnv,
+    enum_name: &str,
+    kind: &TryKind,
+    diagnostics: &mut Diagnostics,
+    range: Option<TextRange>,
+) -> Option<(usize, usize)> {
+    let (success_name, success_arity, residual_name, residual_arity, message) = match kind {
+        TryKind::Result => (
+            "Ok",
+            1,
+            "Err",
+            1,
+            "`?` on Result[T, E] requires the enum to define `Ok(T)` and `Err(E)` variants",
+        ),
+        TryKind::Option => (
+            "Some",
+            1,
+            "None",
+            0,
+            "`?` on Option[T] requires the enum to define `Some(T)` and `None` variants",
+        ),
+    };
+
+    let (resolved, env) = super::util::resolve_type_name(genv, enum_name);
+    let ident = tast::TastIdent::new(&resolved);
+    let Some(enum_def) = env.enums().get(&ident) else {
+        super::util::push_ice(
+            diagnostics,
+            format!("enum {} not found when lowering `?`", enum_name),
+        );
+        return None;
+    };
+
+    let success_index = enum_def
+        .variants
+        .iter()
+        .position(|(name, fields)| name.0 == success_name && fields.len() == success_arity);
+    let residual_index = enum_def
+        .variants
+        .iter()
+        .position(|(name, fields)| name.0 == residual_name && fields.len() == residual_arity);
+
+    match (success_index, residual_index) {
+        (Some(success_index), Some(residual_index)) => Some((success_index, residual_index)),
+        _ => {
+            super::util::push_error_with_range(diagnostics, message, range);
+            None
+        }
+    }
 }
 
 fn result_ty(name: &str, ok_ty: tast::Ty, err_ty: tast::Ty) -> tast::Ty {

@@ -72,6 +72,13 @@ fn separate_build_link_matches_project_008() -> anyhow::Result<()> {
     let linked =
         separate::link_cores(cores).map_err(|err| anyhow::anyhow!("link failed: {:?}", err))?;
     let go_source = linked.go.to_pretty(&linked.goenv, 120);
+    if !super::runtime_executor_available() {
+        println!(
+            "Skipping separate compile runtime output: {}",
+            main_path.display()
+        );
+        return Ok(());
+    }
     let output = super::execute_go_source(&go_source, &main_path.to_string_lossy())?;
 
     let out_path = root.join("main.gom.out");
@@ -182,6 +189,75 @@ fn bar() -> int32 {
     let err = separate::link_cores(vec![main_core, lib_core]).unwrap_err();
     let msg = format!("{:?}", err);
     assert!(msg.contains("expects interface_hash"));
+
+    Ok(())
+}
+
+#[test]
+fn link_rejects_invalid_custom_result_for_go_error_wrapper() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(
+        &main_path,
+        r#"
+enum Result[T, E] {
+    Only,
+}
+
+#[go_error]
+extern "go" "os" "Chdir" chdir(path: string) -> Result[unit, GoError]
+
+fn main() -> unit {
+    let _ = chdir(".");
+}
+"#,
+    )?;
+
+    let msg = match separate::build_package(separate::PackageInputs {
+        package: ROOT_PACKAGE.to_string(),
+        input_files: vec![main_path],
+        interface_files: vec![],
+    }) {
+        Ok(unit) => format!("{:?}", separate::link_cores(vec![unit]).unwrap_err()),
+        Err(err) => format!("{:?}", err),
+    };
+    assert!(
+        msg.contains("#[go_error]"),
+        "unexpected error message: {msg}"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn link_accepts_reversed_custom_result_for_go_error_wrapper() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(
+        &main_path,
+        r#"
+enum Result[T, E] {
+    Err(E),
+    Ok(T),
+}
+
+#[go_error]
+extern "go" "os" "Chdir" chdir(path: string) -> Result[unit, GoError]
+
+fn main() -> unit {
+    let _ = chdir(".");
+}
+"#,
+    )?;
+
+    let unit = separate::build_package(separate::PackageInputs {
+        package: ROOT_PACKAGE.to_string(),
+        input_files: vec![main_path],
+        interface_files: vec![],
+    })
+    .map_err(|err| anyhow::anyhow!("build main failed: {:?}", err))?;
+
+    separate::link_cores(vec![unit]).map_err(|err| anyhow::anyhow!("link failed: {:?}", err))?;
 
     Ok(())
 }

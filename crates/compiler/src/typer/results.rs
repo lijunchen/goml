@@ -216,6 +216,8 @@ pub enum TryKind {
 pub struct TryElab {
     pub kind: TryKind,
     pub outer_ret_ty: tast::Ty,
+    pub success_index: usize,
+    pub residual_index: usize,
 }
 
 pub struct TypeckResultsBuilder {

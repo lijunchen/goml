@@ -277,6 +277,57 @@ fn extract_result_tys(ty: &tast::Ty) -> Option<(&tast::Ty, &tast::Ty)> {
     Some((&args[0], &args[1]))
 }
 
+fn enum_def_for_native_name<'a>(
+    genv: &'a PackageTypeEnv,
+    ty: &tast::Ty,
+    enum_name: &str,
+) -> Option<&'a env::EnumDef> {
+    let tast::Ty::TApp { ty, .. } = ty else {
+        return None;
+    };
+    let tast::Ty::TEnum { name } = ty.as_ref() else {
+        return None;
+    };
+    if name != enum_name {
+        return None;
+    }
+
+    let ident = tast::TastIdent::new(enum_name);
+    genv.current()
+        .type_env
+        .enums
+        .get(&ident)
+        .or_else(|| genv.builtins().type_env.enums.get(&ident))
+}
+
+fn has_native_result_shape(genv: &PackageTypeEnv, ty: &tast::Ty) -> bool {
+    let Some(enum_def) = enum_def_for_native_name(genv, ty, "Result") else {
+        return false;
+    };
+    if enum_def.generics.len() != 2 || enum_def.variants.len() != 2 {
+        return false;
+    }
+
+    let ok_param = &enum_def.generics[0].0;
+    let err_param = &enum_def.generics[1].0;
+    let mut ok_seen = false;
+    let mut err_seen = false;
+
+    for (name, fields) in &enum_def.variants {
+        match name.0.as_str() {
+            "Ok" if fields.len() == 1 => {
+                ok_seen = matches!(&fields[0], tast::Ty::TParam { name } if name == ok_param);
+            }
+            "Err" if fields.len() == 1 => {
+                err_seen = matches!(&fields[0], tast::Ty::TParam { name } if name == err_param);
+            }
+            _ => return false,
+        }
+    }
+
+    ok_seen && err_seen
+}
+
 fn is_go_error_ty(ty: &tast::Ty) -> bool {
     matches!(ty, tast::Ty::TStruct { name } if name == "GoError")
 }
@@ -292,6 +343,33 @@ fn extract_option_ty(ty: &tast::Ty) -> Option<&tast::Ty> {
         return None;
     }
     Some(&args[0])
+}
+
+fn has_native_option_shape(genv: &PackageTypeEnv, ty: &tast::Ty) -> bool {
+    let Some(enum_def) = enum_def_for_native_name(genv, ty, "Option") else {
+        return false;
+    };
+    if enum_def.generics.len() != 1 || enum_def.variants.len() != 2 {
+        return false;
+    }
+
+    let some_param = &enum_def.generics[0].0;
+    let mut none_seen = false;
+    let mut some_seen = false;
+
+    for (name, fields) in &enum_def.variants {
+        match name.0.as_str() {
+            "None" if fields.is_empty() => {
+                none_seen = true;
+            }
+            "Some" if fields.len() == 1 => {
+                some_seen = matches!(&fields[0], tast::Ty::TParam { name } if name == some_param);
+            }
+            _ => return false,
+        }
+    }
+
+    none_seen && some_seen
 }
 
 fn is_go_method_symbol(name: &str) -> bool {
@@ -326,6 +404,7 @@ fn is_go_method_symbol(name: &str) -> bool {
 }
 
 fn validate_extern_return_mode(
+    genv: &PackageTypeEnv,
     diagnostics: &mut Diagnostics,
     extern_name: &str,
     return_mode: ExternReturnMode,
@@ -344,7 +423,10 @@ fn validate_extern_return_mode(
                 );
                 return;
             };
-            if !matches!(ok_ty, tast::Ty::TUnit) || !is_go_error_ty(err_ty) {
+            if !has_native_result_shape(genv, ret_ty)
+                || !matches!(ok_ty, tast::Ty::TUnit)
+                || !is_go_error_ty(err_ty)
+            {
                 super::util::push_error(
                     diagnostics,
                     format!(
@@ -365,7 +447,7 @@ fn validate_extern_return_mode(
                 );
                 return;
             };
-            if !is_go_error_ty(err_ty) {
+            if !has_native_result_shape(genv, ret_ty) || !is_go_error_ty(err_ty) {
                 super::util::push_error(
                     diagnostics,
                     format!(
@@ -376,7 +458,7 @@ fn validate_extern_return_mode(
             }
         }
         ExternReturnMode::OptionLast => {
-            if extract_option_ty(ret_ty).is_none() {
+            if extract_option_ty(ret_ty).is_none() || !has_native_option_shape(genv, ret_ty) {
                 super::util::push_error(
                     diagnostics,
                     format!(
@@ -1242,6 +1324,7 @@ fn define_extern_go(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, ext
         &ret,
     );
     validate_extern_return_mode(
+        env,
         diagnostics,
         &ext.goml_name.to_ident_name(),
         return_mode,
@@ -1486,11 +1569,117 @@ fn ty_contains_inline_struct(
 ) -> bool {
     match ty {
         tast::Ty::TStruct { name, .. } => has_infinite_size(structs, name, visited),
+        tast::Ty::TApp { .. } => instantiated_struct_field_tys(structs, ty)
+            .into_iter()
+            .flatten()
+            .any(|field_ty| ty_contains_inline_struct(structs, &field_ty, visited)),
         tast::Ty::TTuple { typs } => typs
             .iter()
             .any(|t| ty_contains_inline_struct(structs, t, visited)),
         tast::Ty::TArray { elem, .. } => ty_contains_inline_struct(structs, elem, visited),
         _ => false,
+    }
+}
+
+fn instantiated_struct_field_tys(
+    structs: &IndexMap<tast::TastIdent, env::StructDef>,
+    ty: &tast::Ty,
+) -> Option<Vec<tast::Ty>> {
+    let (name, args) = decompose_struct_type_app(ty)?;
+    let struct_def = structs.get(&tast::TastIdent(name))?;
+    if struct_def.generics.len() != args.len() {
+        return None;
+    }
+
+    let mut subst = HashMap::new();
+    for (param, arg) in struct_def.generics.iter().zip(args.iter()) {
+        subst.insert(param.0.clone(), arg.clone());
+    }
+
+    Some(
+        struct_def
+            .fields
+            .iter()
+            .map(|(_, field_ty)| substitute_ty_params(field_ty, &subst))
+            .collect(),
+    )
+}
+
+fn decompose_struct_type_app(ty: &tast::Ty) -> Option<(String, Vec<tast::Ty>)> {
+    match ty {
+        tast::Ty::TStruct { name } => Some((name.clone(), Vec::new())),
+        tast::Ty::TApp { ty: base, args } => {
+            let (name, mut collected) = decompose_struct_type_app(base)?;
+            collected.extend(args.iter().cloned());
+            Some((name, collected))
+        }
+        _ => None,
+    }
+}
+
+fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tast::Ty {
+    match ty {
+        tast::Ty::TVar(_)
+        | tast::Ty::TUnit
+        | tast::Ty::TBool
+        | tast::Ty::TInt8
+        | tast::Ty::TInt16
+        | tast::Ty::TInt32
+        | tast::Ty::TInt64
+        | tast::Ty::TUint8
+        | tast::Ty::TUint16
+        | tast::Ty::TUint32
+        | tast::Ty::TUint64
+        | tast::Ty::TFloat32
+        | tast::Ty::TFloat64
+        | tast::Ty::TString
+        | tast::Ty::TChar => ty.clone(),
+        tast::Ty::TTuple { typs } => tast::Ty::TTuple {
+            typs: typs
+                .iter()
+                .map(|item| substitute_ty_params(item, subst))
+                .collect(),
+        },
+        tast::Ty::TEnum { name } => tast::Ty::TEnum { name: name.clone() },
+        tast::Ty::TStruct { name } => tast::Ty::TStruct { name: name.clone() },
+        tast::Ty::TDyn { trait_name } => tast::Ty::TDyn {
+            trait_name: trait_name.clone(),
+        },
+        tast::Ty::TApp { ty, args } => tast::Ty::TApp {
+            ty: Box::new(substitute_ty_params(ty, subst)),
+            args: args
+                .iter()
+                .map(|item| substitute_ty_params(item, subst))
+                .collect(),
+        },
+        tast::Ty::TArray { len, elem } => tast::Ty::TArray {
+            len: *len,
+            elem: Box::new(substitute_ty_params(elem, subst)),
+        },
+        tast::Ty::TSlice { elem } => tast::Ty::TSlice {
+            elem: Box::new(substitute_ty_params(elem, subst)),
+        },
+        tast::Ty::TVec { elem } => tast::Ty::TVec {
+            elem: Box::new(substitute_ty_params(elem, subst)),
+        },
+        tast::Ty::TRef { elem } => tast::Ty::TRef {
+            elem: Box::new(substitute_ty_params(elem, subst)),
+        },
+        tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
+            key: Box::new(substitute_ty_params(key, subst)),
+            value: Box::new(substitute_ty_params(value, subst)),
+        },
+        tast::Ty::TParam { name } => subst
+            .get(name)
+            .cloned()
+            .unwrap_or_else(|| tast::Ty::TParam { name: name.clone() }),
+        tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
+            params: params
+                .iter()
+                .map(|item| substitute_ty_params(item, subst))
+                .collect(),
+            ret_ty: Box::new(substitute_ty_params(ret_ty, subst)),
+        },
     }
 }
 
