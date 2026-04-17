@@ -212,3 +212,28 @@ fn main() -> unit {
     assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
     assert!(go.contains("type dyn__Display struct"), "{go}");
 }
+
+#[test]
+fn dyn_trait_tuple_types_are_emitted_for_nested_struct_fields_in_early_return_subexpressions() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/dyn_trait_type_emission_nested_tuple_return_subexpr/main.gom");
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
+    assert!(go.contains("type dyn__Display struct"), "{go}");
+    assert!(go.contains("type Tuple2_dyn__Display_int32 struct"), "{go}");
+}
+
+#[test]
+fn dyn_trait_tuple_types_are_emitted_for_nested_enum_fields_in_early_return_subexpressions() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(
+        "src/tests/crashers/dyn_trait_type_emission_enum_nested_tuple_return_subexpr/main.gom",
+    );
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
+    assert!(go.contains("type dyn__Display struct"), "{go}");
+    assert!(go.contains("type Tuple2_dyn__Display_int32 struct"), "{go}");
+}
