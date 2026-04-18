@@ -18,7 +18,7 @@ use crate::typer::results::{
 use crate::{
     env::{Constraint, PackageTypeEnv},
     tast::{self},
-    typer::Typer,
+    typer::{LoopControlContext, Typer},
 };
 
 #[derive(Clone, Copy)]
@@ -2109,10 +2109,10 @@ impl Typer {
 
         let body_ty = self.fresh_ty_var();
         self.return_ty_stack.push(body_ty.clone());
-        let saved_while_depth = self.while_depth;
-        self.while_depth = 0;
+        let saved_loop_control_context = self.loop_control_context;
+        self.loop_control_context = LoopControlContext::Disallowed;
         let body_tast = self.infer_expr(genv, local_env, diagnostics, body);
-        self.while_depth = saved_while_depth;
+        self.loop_control_context = saved_loop_control_context;
         let _ = self.return_ty_stack.pop();
         self.push_constraint(Constraint::TypeEqual(
             body_tast.get_ty(),
@@ -2183,11 +2183,11 @@ impl Typer {
                 }
 
                 self.return_ty_stack.push(expected_ret.as_ref().clone());
-                let saved_while_depth = self.while_depth;
-                self.while_depth = 0;
+                let saved_loop_control_context = self.loop_control_context;
+                self.loop_control_context = LoopControlContext::Disallowed;
                 let body_tast =
                     self.check_expr(genv, local_env, diagnostics, body, expected_ret.as_ref());
-                self.while_depth = saved_while_depth;
+                self.loop_control_context = saved_loop_control_context;
                 let _ = self.return_ty_stack.pop();
                 let body_ty = body_tast.get_ty();
                 let captures = local_env.end_closure(diagnostics, &self.hir_table);
@@ -2629,11 +2629,13 @@ impl Typer {
         cond: hir::ExprId,
         body: hir::ExprId,
     ) -> tast::Expr {
-        self.while_depth += 1;
         let cond_always_exits = self.expr_always_exits_loop_control(cond);
+        let saved_loop_control_context = self.loop_control_context;
+        self.loop_control_context = LoopControlContext::WhileCondition;
         let mut cond_tast = self.infer_expr(genv, local_env, diagnostics, cond);
+        self.loop_control_context = LoopControlContext::Allowed;
         let body_tast = self.infer_expr(genv, local_env, diagnostics, body);
-        self.while_depth -= 1;
+        self.loop_control_context = saved_loop_control_context;
 
         if cond_always_exits {
             cond_tast = self.with_expr_ty(cond_tast, tast::Ty::TBool);
@@ -2659,12 +2661,22 @@ impl Typer {
     }
 
     fn infer_break_expr(&mut self, diagnostics: &mut Diagnostics, e: hir::ExprId) -> tast::Expr {
-        if self.while_depth == 0 {
-            super::util::push_error_with_range(
-                diagnostics,
-                "`break` outside of a while loop",
-                self.expr_range(e),
-            );
+        match self.loop_control_context {
+            LoopControlContext::Allowed => {}
+            LoopControlContext::WhileCondition => {
+                super::util::push_error_with_range(
+                    diagnostics,
+                    "`break` is not allowed in a while condition",
+                    self.expr_range(e),
+                );
+            }
+            LoopControlContext::Disallowed => {
+                super::util::push_error_with_range(
+                    diagnostics,
+                    "`break` outside of a while loop",
+                    self.expr_range(e),
+                );
+            }
         }
         tast::Expr::EBreak {
             ty: tast::Ty::TUnit,
@@ -2672,12 +2684,22 @@ impl Typer {
     }
 
     fn infer_continue_expr(&mut self, diagnostics: &mut Diagnostics, e: hir::ExprId) -> tast::Expr {
-        if self.while_depth == 0 {
-            super::util::push_error_with_range(
-                diagnostics,
-                "`continue` outside of a while loop",
-                self.expr_range(e),
-            );
+        match self.loop_control_context {
+            LoopControlContext::Allowed => {}
+            LoopControlContext::WhileCondition => {
+                super::util::push_error_with_range(
+                    diagnostics,
+                    "`continue` is not allowed in a while condition",
+                    self.expr_range(e),
+                );
+            }
+            LoopControlContext::Disallowed => {
+                super::util::push_error_with_range(
+                    diagnostics,
+                    "`continue` outside of a while loop",
+                    self.expr_range(e),
+                );
+            }
         }
         tast::Expr::EContinue {
             ty: tast::Ty::TUnit,
