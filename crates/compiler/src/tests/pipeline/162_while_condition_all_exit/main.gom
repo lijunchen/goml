@@ -1,5 +1,5 @@
-fn loop_break() -> unit {
-    while if true { break } else { continue } {
+fn loop_return_unit(flag: bool) -> unit {
+    while if flag { return } else { return } {
         println("unreachable");
     };
 }
@@ -14,6 +14,6 @@ fn loop_return() -> int32 {
 }
 
 fn main() -> unit {
-    loop_break();
+    loop_return_unit(true);
     println(loop_return());
 }
