@@ -5,7 +5,7 @@ file main.gom
         let local/1/1 = ref(0i32);
         while if ref_get(i/0) == 0i32 {
             ref_set(i/0, 1i32);
-            continue
+            true
         } else if ref_get(i/0) < 4i32 {
             true
         } else {
@@ -13,6 +13,12 @@ file main.gom
         } {
             {
                 ref_set(total/1, ref_get(total/1) + ref_get(i/0));
+                if ref_get(i/0) == 1i32 {
+                    ref_set(i/0, 2i32);
+                    continue
+                } else {
+                    ()
+                };
                 ref_set(i/0, ref_get(i/0) + 1i32);
             }
         };
@@ -28,10 +34,16 @@ file main.gom
                   ref_set(j/2, 2i32);
                   true
               },
-            _ => break,
+            2i32 => true,
+            _ => false,
         } {
             {
                 ref_set(total2/3, ref_get(total2/3) + ref_get(j/2));
+                if ref_get(j/2) == 2i32 {
+                    break;
+                } else {
+                    ()
+                };
             }
         };
         println(ref_get(total2/3));

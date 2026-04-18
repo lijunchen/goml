@@ -15,13 +15,12 @@ func string_println(s string) struct{} {
 
 type GoError = error
 
-func loop_break() struct{} {
-    Loop_loop9:
+func loop_return_unit(flag__0 bool) struct{} {
     for {
-        if true {
-            break Loop_loop9
+        if flag__0 {
+            return struct{}{}
         } else {
-            continue
+            return struct{}{}
         }
     }
     return struct{}{}
@@ -34,7 +33,7 @@ func loop_return() int32 {
 }
 
 func main0() struct{} {
-    loop_break()
+    loop_return_unit(true)
     var t17 int32 = loop_return()
     println__T_int32(t17)
     return struct{}{}

@@ -1,10 +1,10 @@
 package main
 file main.gom
-  fn loop_break() -> unit {
-        while if true {
-            break
+  fn loop_return_unit(local/1/0: bool) -> unit {
+        while if flag/0 {
+            return
         } else {
-            continue
+            return
         } {
             {
                 println("unreachable");
@@ -24,6 +24,6 @@ file main.gom
     }
     
     fn main() -> unit {
-        def/1/0();
+        def/1/0(true);
         println(def/1/1());
     }

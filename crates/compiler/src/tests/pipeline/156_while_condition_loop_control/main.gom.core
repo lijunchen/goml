@@ -9,10 +9,10 @@ fn println(value/1: T) -> unit {
 fn main() -> unit {
   let i/0 = ref(0) in
   let total/1 = ref(0) in
-  let _wild3 = while if (ref_get(i/0) == 0) {
+  let _wild5 = while if (ref_get(i/0) == 0) {
       {
         let _wild0 = ref_set(i/0, 1) in
-        continue
+        true
       }
   } else {
       if (ref_get(i/0) < 4) {
@@ -27,33 +27,55 @@ fn main() -> unit {
   } {
       {
         let _wild1 = ref_set(total/1, (ref_get(total/1) + ref_get(i/0))) in
-        let _wild2 = ref_set(i/0, (ref_get(i/0) + 1)) in
+        let _wild3 = if (ref_get(i/0) == 1) {
+            {
+              let _wild2 = ref_set(i/0, 2) in
+              continue
+            }
+        } else {
+            {
+              ()
+            }
+        } in
+        let _wild4 = ref_set(i/0, (ref_get(i/0) + 1)) in
       }
   } in
-  let _wild4 = println(ref_get(total/1)) in
+  let _wild6 = println(ref_get(total/1)) in
   let j/2 = ref(0) in
   let total2/3 = ref(0) in
-  let _wild9 = while {
-    let mtmp5 = ref_get(j/2) in
-    match mtmp5 {
+  let _wild13 = while {
+    let mtmp7 = ref_get(j/2) in
+    match mtmp7 {
       0 => {
         {
-          let _wild6 = ref_set(j/2, 1) in
+          let _wild8 = ref_set(j/2, 1) in
           true
         }
       },
       1 => {
         {
-          let _wild7 = ref_set(j/2, 2) in
+          let _wild9 = ref_set(j/2, 2) in
           true
         }
       },
-      _ => break,
+      2 => {
+        true
+      },
+      _ => false,
     }
   } {
       {
-        let _wild8 = ref_set(total2/3, (ref_get(total2/3) + ref_get(j/2))) in
+        let _wild10 = ref_set(total2/3, (ref_get(total2/3) + ref_get(j/2))) in
+        let _wild12 = if (ref_get(j/2) == 2) {
+            {
+              let _wild11 = break in
+            }
+        } else {
+            {
+              ()
+            }
+        } in
       }
   } in
-  let _wild10 = println(ref_get(total2/3)) in
+  let _wild14 = println(ref_get(total2/3)) in
 }

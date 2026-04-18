@@ -12,7 +12,7 @@ fn main() -> unit {
     while if (ref_get : (Ref[int32]) -> int32)((i/0 : Ref[int32])) == 0 {
         {
             (ref_set : (Ref[int32], int32) -> unit)((i/0 : Ref[int32]), 1);
-            continue
+            true
         }
     } else {
         if (ref_get : (Ref[int32]) -> int32)((i/0 : Ref[int32])) < 4 {
@@ -27,6 +27,16 @@ fn main() -> unit {
     } {
         {
             (ref_set : (Ref[int32], int32) -> unit)((total/1 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((total/1 : Ref[int32])) + (ref_get : (Ref[int32]) -> int32)((i/0 : Ref[int32])));
+            if (ref_get : (Ref[int32]) -> int32)((i/0 : Ref[int32])) == 1 {
+                {
+                    (ref_set : (Ref[int32], int32) -> unit)((i/0 : Ref[int32]), 2);
+                    continue
+                }
+            } else {
+                {
+                    ()
+                }
+            };
             (ref_set : (Ref[int32], int32) -> unit)((i/0 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/0 : Ref[int32])) + 1);
         }
     };
@@ -42,10 +52,20 @@ fn main() -> unit {
               (ref_set : (Ref[int32], int32) -> unit)((j/2 : Ref[int32]), 2);
               true
           },
-        _ : int32 => break,
+        2 => true,
+        _ : int32 => false,
     } {
         {
             (ref_set : (Ref[int32], int32) -> unit)((total2/3 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((total2/3 : Ref[int32])) + (ref_get : (Ref[int32]) -> int32)((j/2 : Ref[int32])));
+            if (ref_get : (Ref[int32]) -> int32)((j/2 : Ref[int32])) == 2 {
+                {
+                    break;
+                }
+            } else {
+                {
+                    ()
+                }
+            };
         }
     };
     (println : (int32) -> unit)((ref_get : (Ref[int32]) -> int32)((total2/3 : Ref[int32])));

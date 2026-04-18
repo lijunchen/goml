@@ -6,14 +6,14 @@ fn println(value/1: T) -> unit {
     (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
-fn loop_break() -> unit {
-    while if true {
+fn loop_return_unit(flag/0: bool) -> unit {
+    while if (flag/0 : bool) {
         {
-            break
+            return
         }
     } else {
         {
-            continue
+            return
         }
     } {
         {
@@ -34,6 +34,6 @@ fn loop_return() -> int32 {
 }
 
 fn main() -> unit {
-    (loop_break : () -> unit)();
+    (loop_return_unit : (bool) -> unit)(true);
     (println : (int32) -> unit)((loop_return : () -> int32)());
 }

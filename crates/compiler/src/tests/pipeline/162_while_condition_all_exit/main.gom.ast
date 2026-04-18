@@ -1,12 +1,12 @@
 package main;
-fn loop_break() -> unit {
-    while if true {
+fn loop_return_unit(flag: bool) -> unit {
+    while if flag {
         {
-            break
+            return
         }
     } else {
         {
-            continue
+            return
         }
     } {
         {
@@ -27,7 +27,7 @@ fn loop_return() -> int32 {
 }
 
 fn main() -> unit {
-    loop_break();
+    loop_return_unit(true);
     println(loop_return());
 }
 

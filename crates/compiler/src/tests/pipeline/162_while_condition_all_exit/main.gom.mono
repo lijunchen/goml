@@ -1,11 +1,11 @@
-fn loop_break() -> unit {
-  let _wild1 = while if true {
+fn loop_return_unit(flag/0: bool) -> unit {
+  let _wild1 = while if flag/0 {
       {
-        break
+        return
       }
   } else {
       {
-        continue
+        return
       }
   } {
       {
@@ -27,7 +27,7 @@ fn loop_return() -> int32 {
 }
 
 fn main() -> unit {
-  let _wild5 = loop_break() in
+  let _wild5 = loop_return_unit(true) in
   let _wild6 = println__T_int32(loop_return()) in
 }
 
