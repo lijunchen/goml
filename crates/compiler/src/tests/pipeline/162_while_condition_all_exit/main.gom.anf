@@ -1,4 +1,4 @@
-fn loop_break() -> unit {
+fn loop_return_unit(flag/0: bool) -> unit {
   join ret7() -> unit {
     ()
   } in
@@ -16,10 +16,10 @@ fn loop_break() -> unit {
           jump exit8()
         }
       } in
-      if true {
-        jump exit8()
+      if flag/0 {
+        jump ret7()
       } else {
-        jump loop9()
+        jump ret7()
       }
     } in
   } in
@@ -47,7 +47,7 @@ fn main() -> unit {
   join ret16() -> unit {
     ()
   } in
-  let _wild5 = loop_break() in
+  let _wild5 = loop_return_unit(true) in
   let t17 = loop_return() in
   let _wild6 = println__T_int32(t17) in
   jump ret16()

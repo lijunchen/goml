@@ -8,6 +8,8 @@ use crate::tast::{self, TastIdent};
 use indexmap::{IndexMap, IndexSet};
 use std::collections::VecDeque;
 
+const MONO_INSTANCE_LIMIT: usize = 4096;
+
 #[derive(Debug, Clone)]
 pub struct MonoFile {
     pub toplevels: Vec<MonoFn>,
@@ -328,6 +330,98 @@ fn has_tparam(ty: &Ty) -> bool {
     }
 }
 
+fn mono_expr_always_exits_control_flow(expr: &MonoExpr) -> bool {
+    match expr {
+        MonoExpr::EBreak { .. } | MonoExpr::EContinue { .. } | MonoExpr::EReturn { .. } => true,
+        MonoExpr::EBlock { block, .. } => block
+            .tail
+            .as_deref()
+            .is_some_and(mono_expr_always_exits_control_flow),
+        MonoExpr::EIf {
+            then_branch,
+            else_branch,
+            ..
+        } => {
+            mono_expr_always_exits_control_flow(then_branch)
+                && mono_expr_always_exits_control_flow(else_branch)
+        }
+        MonoExpr::EMatch { arms, default, .. } => {
+            default
+                .as_deref()
+                .is_some_and(mono_expr_always_exits_control_flow)
+                && arms
+                    .iter()
+                    .all(|arm| mono_expr_always_exits_control_flow(&arm.body))
+        }
+        _ => false,
+    }
+}
+
+fn subst_is_fully_concrete(generics: &[String], subst: &Subst) -> bool {
+    generics.iter().all(|param| subst.contains_key(param)) && !subst.values().any(has_tparam)
+}
+
+fn format_ty_for_mono_diag(ty: &Ty) -> String {
+    match ty {
+        Ty::TVar(_) => "unknown".to_string(),
+        Ty::TUnit => "unit".to_string(),
+        Ty::TBool => "bool".to_string(),
+        Ty::TInt8 => "int8".to_string(),
+        Ty::TInt16 => "int16".to_string(),
+        Ty::TInt32 => "int32".to_string(),
+        Ty::TInt64 => "int64".to_string(),
+        Ty::TUint8 => "uint8".to_string(),
+        Ty::TUint16 => "uint16".to_string(),
+        Ty::TUint32 => "uint32".to_string(),
+        Ty::TUint64 => "uint64".to_string(),
+        Ty::TFloat32 => "float32".to_string(),
+        Ty::TFloat64 => "float64".to_string(),
+        Ty::TString => "string".to_string(),
+        Ty::TChar => "char".to_string(),
+        Ty::TTuple { typs } => {
+            let items = typs
+                .iter()
+                .map(format_ty_for_mono_diag)
+                .collect::<Vec<_>>()
+                .join(", ");
+            format!("({})", items)
+        }
+        Ty::TEnum { name } | Ty::TStruct { name } => name.clone(),
+        Ty::TDyn { trait_name } => format!("dyn {}", trait_name),
+        Ty::TApp { ty, args } => {
+            let base = format_ty_for_mono_diag(ty.as_ref());
+            if args.is_empty() {
+                base
+            } else {
+                let args = args
+                    .iter()
+                    .map(format_ty_for_mono_diag)
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                format!("{}[{}]", base, args)
+            }
+        }
+        Ty::TArray { len, elem } => format!("[{}; {}]", format_ty_for_mono_diag(elem), len),
+        Ty::TSlice { elem } => format!("Slice[{}]", format_ty_for_mono_diag(elem)),
+        Ty::TVec { elem } => format!("Vec[{}]", format_ty_for_mono_diag(elem)),
+        Ty::TRef { elem } => format!("Ref[{}]", format_ty_for_mono_diag(elem)),
+        Ty::THashMap { key, value } => format!(
+            "HashMap[{}, {}]",
+            format_ty_for_mono_diag(key),
+            format_ty_for_mono_diag(value)
+        ),
+        Ty::TParam { name } => name.clone(),
+        Ty::TFunc { params, ret_ty } => {
+            let params = params
+                .iter()
+                .map(format_ty_for_mono_diag)
+                .collect::<Vec<_>>()
+                .join(", ");
+            format!("({}) -> {}", params, format_ty_for_mono_diag(ret_ty))
+        }
+    }
+}
+
 fn update_constructor_type(constructor: &Constructor, new_ty: &Ty) -> Constructor {
     match (constructor, new_ty) {
         (Constructor::Enum(enum_constructor), Ty::TEnum { name }) => {
@@ -438,6 +532,8 @@ impl SubstKey {
         Self(entries)
     }
 }
+
+type InstanceKey = (String, SubstKey);
 
 // Derive a specialized function name based on substitution
 fn spec_name_for(orig: &str, s: &Subst) -> String {
@@ -556,10 +652,14 @@ fn unify(template: &Ty, actual: &Ty, subst: &mut Subst) -> Result<(), String> {
 struct Ctx {
     orig_fns: IndexMap<String, core::Fn>,
     // map (orig_name, subst_key) -> spec_name
-    instances: IndexMap<(String, SubstKey), String>,
-    queued: IndexSet<(String, SubstKey)>,
+    instances: IndexMap<InstanceKey, String>,
+    instance_substs: IndexMap<InstanceKey, Subst>,
+    instance_parents: IndexMap<InstanceKey, Option<InstanceKey>>,
+    queued: IndexSet<InstanceKey>,
     out: Vec<MonoFn>,
     work: VecDeque<(String, Subst, String)>,
+    active_instances: Vec<(String, Subst)>,
+    error: Option<String>,
     // Index for inherent methods: (base_type, method_name) -> generic_func_name
     // Example: ("Point", "new") -> "impl_inherent_Point_TParam_U_TParam_V_new"
     inherent_method_index: IndexMap<(String, String), String>,
@@ -597,9 +697,13 @@ impl Ctx {
         Self {
             orig_fns,
             instances: IndexMap::new(),
+            instance_substs: IndexMap::new(),
+            instance_parents: IndexMap::new(),
             queued: IndexSet::new(),
             out: Vec::new(),
             work: VecDeque::new(),
+            active_instances: Vec::new(),
+            error: None,
             inherent_method_index,
             trait_impl_method_index,
         }
@@ -667,6 +771,66 @@ impl Ctx {
         None
     }
 
+    fn recursive_specialization_error(&self, name: &str, new_subst: &Subst) -> Option<String> {
+        let mut cursor = self
+            .active_instances
+            .last()
+            .map(|(active_name, active_subst)| (active_name.clone(), SubstKey::new(active_subst)));
+        while let Some(key) = cursor {
+            if key.0 == name
+                && let Some(active_subst) = self.instance_substs.get(&key)
+                && let Some(message) =
+                    self.specialization_growth_message(name, active_subst, new_subst)
+            {
+                return Some(message);
+            }
+            cursor = self.instance_parents.get(&key).cloned().flatten();
+        }
+        None
+    }
+
+    fn specialization_growth_message(
+        &self,
+        name: &str,
+        active_subst: &Subst,
+        new_subst: &Subst,
+    ) -> Option<String> {
+        let active_fn = self.orig_fns.get(name)?;
+        for param in active_fn.generics.iter() {
+            let Some(old_ty) = active_subst.get(param) else {
+                continue;
+            };
+            let Some(new_ty) = new_subst.get(param) else {
+                continue;
+            };
+            if ty_contains_proper_subterm(new_ty, old_ty) {
+                return Some(format!(
+                    "Infinite monomorphization detected for generic function {}: recursive specialization grows type parameter {} from {} to {}",
+                    name,
+                    param,
+                    format_ty_for_mono_diag(old_ty),
+                    format_ty_for_mono_diag(new_ty),
+                ));
+            }
+        }
+
+        for (param, new_ty) in new_subst.iter() {
+            for old_ty in active_subst.values() {
+                if ty_contains_proper_subterm(new_ty, old_ty) {
+                    return Some(format!(
+                        "Infinite monomorphization detected for generic function {}: recursive specialization grows type parameter {} from {} to {}",
+                        name,
+                        param,
+                        format_ty_for_mono_diag(old_ty),
+                        format_ty_for_mono_diag(new_ty),
+                    ));
+                }
+            }
+        }
+
+        None
+    }
+
     // Ensure an instance exists (or is queued) and return its specialized name
     fn ensure_instance(&mut self, name: &str, s: Subst) -> String {
         let key = SubstKey::new(&s);
@@ -674,14 +838,65 @@ impl Ctx {
         if let Some(n) = self.instances.get(&k) {
             return n.clone();
         }
+
+        let parent = self
+            .active_instances
+            .last()
+            .map(|(active_name, active_subst)| (active_name.clone(), SubstKey::new(active_subst)));
+
+        if self.error.is_none() {
+            if let Some(message) = self.recursive_specialization_error(name, &s) {
+                self.error = Some(message);
+            } else if self.instances.len() >= MONO_INSTANCE_LIMIT {
+                self.error = Some(format!(
+                    "Monomorphization generated more than {} specialized functions; possible infinite generic specialization involving {}",
+                    MONO_INSTANCE_LIMIT, name
+                ));
+            }
+        }
+
         let spec = spec_name_for(name, &s);
         self.instances
             .insert((name.to_string(), key.clone()), spec.clone());
-        if !self.queued.contains(&(name.to_string(), key.clone())) {
+        self.instance_substs.insert(k.clone(), s.clone());
+        self.instance_parents.insert(k.clone(), parent);
+        if self.error.is_none() && !self.queued.contains(&(name.to_string(), key.clone())) {
             self.queued.insert((name.to_string(), key));
             self.work.push_back((name.to_string(), s, spec.clone()));
         }
         spec
+    }
+}
+
+fn ty_contains_proper_subterm(ty: &Ty, needle: &Ty) -> bool {
+    match ty {
+        Ty::TTuple { typs } => typs
+            .iter()
+            .any(|item| item == needle || ty_contains_proper_subterm(item, needle)),
+        Ty::TApp { ty, args } => {
+            ty.as_ref() == needle
+                || ty_contains_proper_subterm(ty, needle)
+                || args
+                    .iter()
+                    .any(|arg| arg == needle || ty_contains_proper_subterm(arg, needle))
+        }
+        Ty::TArray { elem, .. } | Ty::TSlice { elem } | Ty::TVec { elem } | Ty::TRef { elem } => {
+            elem.as_ref() == needle || ty_contains_proper_subterm(elem, needle)
+        }
+        Ty::THashMap { key, value } => {
+            key.as_ref() == needle
+                || ty_contains_proper_subterm(key, needle)
+                || value.as_ref() == needle
+                || ty_contains_proper_subterm(value, needle)
+        }
+        Ty::TFunc { params, ret_ty } => {
+            params
+                .iter()
+                .any(|param| param == needle || ty_contains_proper_subterm(param, needle))
+                || ret_ty.as_ref() == needle
+                || ty_contains_proper_subterm(ret_ty, needle)
+        }
+        _ => false,
     }
 }
 
@@ -936,8 +1151,15 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             // Derive concrete substitution for this call by unifying callee param/ret with arg/call types
             let mut call_subst: Subst = IndexMap::new();
             let callee_param_tys = callee.params.iter().map(|(_, t)| t).collect::<Vec<_>>();
-            for (pt, at) in callee_param_tys.iter().zip(arg_tys.iter()) {
+            for ((pt, at), arg) in callee_param_tys
+                .iter()
+                .zip(arg_tys.iter())
+                .zip(new_args.iter())
+            {
                 if let Err(e) = unify(pt, at, &mut call_subst) {
+                    if mono_expr_always_exits_control_flow(arg) {
+                        continue;
+                    }
                     panic!(
                         "monomorphization unification failed for {}: {}",
                         generic_func_name, e
@@ -952,7 +1174,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             }
 
             // Ensure the substitution yields concrete types (no TParam in bindings)
-            if call_subst.values().any(has_tparam) {
+            if !subst_is_fully_concrete(&callee.generics, &call_subst) {
                 // If we cannot determine concrete types here, keep the call as-is.
                 // This should not happen for reachable instances from monomorphic roots.
                 return MonoExpr::ECall {
@@ -1145,7 +1367,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                         let _ = unify(pt, at, &mut call_subst);
                     }
                     let _ = unify(&callee.ret_ty, &new_ty, &mut call_subst);
-                    if !call_subst.values().any(has_tparam) {
+                    if subst_is_fully_concrete(&callee.generics, &call_subst) {
                         ctx.ensure_instance(&generic_name, call_subst)
                     } else {
                         func_name.clone()
@@ -1729,7 +1951,7 @@ fn rename_expr_refs(e: MonoExpr, renames: &IndexMap<String, String>) -> MonoExpr
 
 // Monomorphize Core IR by specializing generic functions per concrete call site.
 // Produces a file containing only monomorphic functions reachable from monomorphic roots.
-pub fn mono(genv: GlobalTypeEnv, file: core::File) -> (MonoFile, GlobalMonoEnv) {
+pub fn mono(genv: GlobalTypeEnv, file: core::File) -> Result<(MonoFile, GlobalMonoEnv), String> {
     let mut monoenv = GlobalMonoEnv::from_genv(genv);
     // Build original function map
     let mut orig_fns: IndexMap<String, core::Fn> = IndexMap::new();
@@ -1762,12 +1984,17 @@ pub fn mono(genv: GlobalTypeEnv, file: core::File) -> (MonoFile, GlobalMonoEnv) 
             (ofn.params.clone(), ofn.ret_ty.clone(), ofn.body.clone())
         };
 
+        ctx.active_instances.push((orig_name.clone(), s.clone()));
         let new_params = orig_params
             .iter()
             .map(|(n, t)| (n.clone(), subst_ty(t, &s)))
             .collect();
         let new_ret = subst_ty(&orig_ret, &s);
         let new_body = mono_block(&mut ctx, &orig_body, &s);
+        ctx.active_instances.pop();
+        if let Some(error) = ctx.error.take() {
+            return Err(error);
+        }
 
         ctx.out.push(MonoFn {
             name: spec_name,
@@ -1865,5 +2092,5 @@ pub fn mono(genv: GlobalTypeEnv, file: core::File) -> (MonoFile, GlobalMonoEnv) 
     }
 
     let result = MonoFile { toplevels: new_fns };
-    (result, monoenv)
+    Ok((result, monoenv))
 }

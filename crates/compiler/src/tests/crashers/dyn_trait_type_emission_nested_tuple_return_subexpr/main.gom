@@ -1,0 +1,24 @@
+trait Display {
+    fn show(Self) -> string;
+}
+
+impl Display for int32 {
+    fn show(self: int32) -> string {
+        self.to_string()
+    }
+}
+
+struct Holder[T] {
+    value: (T, int32),
+}
+
+fn build() -> int32 {
+    let _: Holder[dyn Display] = Holder {
+        value: (return 7i32, 0i32),
+    };
+    0i32
+}
+
+fn main() -> unit {
+    println(int32_to_string(build()))
+}

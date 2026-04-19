@@ -1312,8 +1312,7 @@ fn try_execute_with_yaegi(dir: &Path, file: &Path) -> anyhow::Result<Option<Stri
         .with_context(|| "failed to execute yaegi")?;
 
     if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        bail!("yaegi failed: {}", stderr.trim());
+        return Ok(None);
     }
 
     let stdout = String::from_utf8_lossy(&output.stdout);

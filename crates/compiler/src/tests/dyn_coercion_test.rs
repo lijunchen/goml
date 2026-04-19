@@ -1,10 +1,20 @@
 use std::path::PathBuf;
 
-use crate::pipeline::pipeline::compile;
+use crate::pipeline::pipeline::{compile, compile_single_file};
 
 fn compile_go(src: &str, name: &str) -> String {
     let path = PathBuf::from(name);
     let compilation = compile(&path, src).unwrap_or_else(|err| {
+        panic!("compilation failed for {}: {:?}", path.display(), err);
+    });
+    compilation.go.to_pretty(&compilation.goenv, 120)
+}
+
+fn compile_single_file_go(path: PathBuf) -> String {
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
         panic!("compilation failed for {}: {:?}", path.display(), err);
     });
     compilation.go.to_pretty(&compilation.goenv, 120)
@@ -157,4 +167,96 @@ fn main() -> unit {
     );
 
     assert!(go.contains("dyn__Show__vtable__Boxed__int32()"));
+}
+
+#[test]
+fn dyn_trait_types_are_emitted_for_early_return_subexpressions() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/dyn_trait_type_emission_return_subexpr/main.gom");
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
+    assert!(go.contains("type dyn__Display struct"), "{go}");
+}
+
+#[test]
+fn dyn_trait_types_are_emitted_for_enum_fields_in_early_return_subexpressions() {
+    let src = r#"
+trait Display {
+    fn show(Self) -> string;
+}
+
+impl Display for int32 {
+    fn show(self: int32) -> string {
+        self.to_string()
+    }
+}
+
+enum Boxed {
+    One(dyn Display),
+}
+
+fn build() -> int32 {
+    let _: Boxed = Boxed::One(return 9i32);
+    0i32
+}
+
+fn main() -> unit {
+    println(int32_to_string(build()))
+}
+"#;
+
+    let go = compile_go(src, "dyn_enum_return_subexpr.gom");
+
+    assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
+    assert!(go.contains("type dyn__Display struct"), "{go}");
+}
+
+#[test]
+fn dyn_trait_tuple_types_are_emitted_for_nested_struct_fields_in_early_return_subexpressions() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/dyn_trait_type_emission_nested_tuple_return_subexpr/main.gom");
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
+    assert!(go.contains("type dyn__Display struct"), "{go}");
+    assert!(go.contains("type Tuple2_dyn__Display_int32 struct"), "{go}");
+}
+
+#[test]
+fn dyn_trait_tuple_types_are_emitted_for_nested_enum_fields_in_early_return_subexpressions() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(
+        "src/tests/crashers/dyn_trait_type_emission_enum_nested_tuple_return_subexpr/main.gom",
+    );
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
+    assert!(go.contains("type dyn__Display struct"), "{go}");
+    assert!(go.contains("type Tuple2_dyn__Display_int32 struct"), "{go}");
+}
+
+#[test]
+fn dyn_trait_types_are_emitted_for_effect_only_hashmap_set_arguments() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/dyn_trait_type_emission_hashmap_set_return_subexpr/main.gom");
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
+    assert!(go.contains("type dyn__Display struct"), "{go}");
+}
+
+#[test]
+fn dyn_trait_types_are_emitted_for_hashmap_method_set_arguments() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(
+        "src/tests/crashers/dyn_trait_type_emission_hashmap_method_set_return_subexpr/main.gom",
+    );
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
+    assert!(go.contains("type dyn__Display struct"), "{go}");
 }

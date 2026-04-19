@@ -18,7 +18,7 @@ use crate::typer::results::{
 use crate::{
     env::{Constraint, PackageTypeEnv},
     tast::{self},
-    typer::Typer,
+    typer::{LoopControlContext, Typer},
 };
 
 #[derive(Clone, Copy)]
@@ -743,7 +743,12 @@ impl Typer {
                 }
             }
             hir::Expr::EMatch { expr, arms } => {
-                let expr_tast = self.infer_expr(genv, local_env, diagnostics, expr);
+                let mut expr_tast = self.infer_expr(genv, local_env, diagnostics, expr);
+                if self.expr_always_exits_loop_control(expr) {
+                    let scrut_ty = self.fresh_ty_var();
+                    expr_tast = self.with_expr_ty(expr_tast, scrut_ty.clone());
+                    self.record_expr_result(expr, &expr_tast);
+                }
                 let expr_ty = expr_tast.get_ty();
 
                 let mut arms_tast = Vec::new();
@@ -2104,10 +2109,10 @@ impl Typer {
 
         let body_ty = self.fresh_ty_var();
         self.return_ty_stack.push(body_ty.clone());
-        let saved_while_depth = self.while_depth;
-        self.while_depth = 0;
+        let saved_loop_control_context = self.loop_control_context;
+        self.loop_control_context = LoopControlContext::Disallowed;
         let body_tast = self.infer_expr(genv, local_env, diagnostics, body);
-        self.while_depth = saved_while_depth;
+        self.loop_control_context = saved_loop_control_context;
         let _ = self.return_ty_stack.pop();
         self.push_constraint(Constraint::TypeEqual(
             body_tast.get_ty(),
@@ -2178,11 +2183,11 @@ impl Typer {
                 }
 
                 self.return_ty_stack.push(expected_ret.as_ref().clone());
-                let saved_while_depth = self.while_depth;
-                self.while_depth = 0;
+                let saved_loop_control_context = self.loop_control_context;
+                self.loop_control_context = LoopControlContext::Disallowed;
                 let body_tast =
                     self.check_expr(genv, local_env, diagnostics, body, expected_ret.as_ref());
-                self.while_depth = saved_while_depth;
+                self.loop_control_context = saved_loop_control_context;
                 let _ = self.return_ty_stack.pop();
                 let body_ty = body_tast.get_ty();
                 let captures = local_env.end_closure(diagnostics, &self.hir_table);
@@ -2516,7 +2521,12 @@ impl Typer {
         arms: &[hir::Arm],
         astptr: Option<MySyntaxNodePtr>,
     ) -> tast::Expr {
-        let expr_tast = self.infer_expr(genv, local_env, diagnostics, expr);
+        let mut expr_tast = self.infer_expr(genv, local_env, diagnostics, expr);
+        if self.expr_always_exits_loop_control(expr) {
+            let scrut_ty = self.fresh_ty_var();
+            expr_tast = self.with_expr_ty(expr_tast, scrut_ty.clone());
+            self.record_expr_result(expr, &expr_tast);
+        }
         let expr_ty = expr_tast.get_ty();
 
         let mut arms_tast = Vec::new();
@@ -2525,15 +2535,18 @@ impl Typer {
         for arm in arms.iter() {
             local_env.push_scope();
             let arm_tast = self.check_pat(genv, local_env, diagnostics, arm.pat, &expr_ty);
-            let arm_body_tast = self.infer_expr(genv, local_env, diagnostics, arm.body);
+            let arm_exits = self.expr_always_exits_loop_control(arm.body);
+            let mut arm_body_tast = self.infer_expr(genv, local_env, diagnostics, arm.body);
             local_env.pop_scope(diagnostics);
-            if !self.expr_always_exits_loop_control(arm.body) {
+            if !arm_exits {
                 has_value_arm = true;
                 self.push_constraint(Constraint::TypeEqual(
                     arm_body_tast.get_ty(),
                     arm_ty.clone(),
                     self.expr_range(arm.body),
                 ));
+            } else {
+                arm_body_tast = self.with_expr_ty(arm_body_tast, arm_ty.clone());
             }
 
             arms_tast.push(tast::Arm {
@@ -2574,6 +2587,8 @@ impl Typer {
         let result_ty = self.fresh_ty_var();
         let then_exits = self.expr_always_exits_loop_control(then_branch);
         let else_exits = self.expr_always_exits_loop_control(else_branch);
+        let mut then_tast = then_tast;
+        let mut else_tast = else_tast;
 
         if !then_exits {
             self.push_constraint(Constraint::TypeEqual(
@@ -2581,6 +2596,8 @@ impl Typer {
                 result_ty.clone(),
                 self.expr_range(then_branch),
             ));
+        } else {
+            then_tast = self.with_expr_ty(then_tast, result_ty.clone());
         }
         if !else_exits {
             self.push_constraint(Constraint::TypeEqual(
@@ -2588,6 +2605,8 @@ impl Typer {
                 result_ty.clone(),
                 self.expr_range(else_branch),
             ));
+        } else {
+            else_tast = self.with_expr_ty(else_tast, result_ty.clone());
         }
 
         tast::Expr::EIf {
@@ -2610,11 +2629,13 @@ impl Typer {
         cond: hir::ExprId,
         body: hir::ExprId,
     ) -> tast::Expr {
-        self.while_depth += 1;
         let cond_always_exits = self.expr_always_exits_loop_control(cond);
+        let saved_loop_control_context = self.loop_control_context;
+        self.loop_control_context = LoopControlContext::WhileCondition;
         let mut cond_tast = self.infer_expr(genv, local_env, diagnostics, cond);
+        self.loop_control_context = LoopControlContext::Allowed;
         let body_tast = self.infer_expr(genv, local_env, diagnostics, body);
-        self.while_depth -= 1;
+        self.loop_control_context = saved_loop_control_context;
 
         if cond_always_exits {
             cond_tast = self.with_expr_ty(cond_tast, tast::Ty::TBool);
@@ -2640,12 +2661,22 @@ impl Typer {
     }
 
     fn infer_break_expr(&mut self, diagnostics: &mut Diagnostics, e: hir::ExprId) -> tast::Expr {
-        if self.while_depth == 0 {
-            super::util::push_error_with_range(
-                diagnostics,
-                "`break` outside of a while loop",
-                self.expr_range(e),
-            );
+        match self.loop_control_context {
+            LoopControlContext::Allowed => {}
+            LoopControlContext::WhileCondition => {
+                super::util::push_error_with_range(
+                    diagnostics,
+                    "`break` is not allowed in a while condition",
+                    self.expr_range(e),
+                );
+            }
+            LoopControlContext::Disallowed => {
+                super::util::push_error_with_range(
+                    diagnostics,
+                    "`break` outside of a while loop",
+                    self.expr_range(e),
+                );
+            }
         }
         tast::Expr::EBreak {
             ty: tast::Ty::TUnit,
@@ -2653,12 +2684,22 @@ impl Typer {
     }
 
     fn infer_continue_expr(&mut self, diagnostics: &mut Diagnostics, e: hir::ExprId) -> tast::Expr {
-        if self.while_depth == 0 {
-            super::util::push_error_with_range(
-                diagnostics,
-                "`continue` outside of a while loop",
-                self.expr_range(e),
-            );
+        match self.loop_control_context {
+            LoopControlContext::Allowed => {}
+            LoopControlContext::WhileCondition => {
+                super::util::push_error_with_range(
+                    diagnostics,
+                    "`continue` is not allowed in a while condition",
+                    self.expr_range(e),
+                );
+            }
+            LoopControlContext::Disallowed => {
+                super::util::push_error_with_range(
+                    diagnostics,
+                    "`continue` outside of a while loop",
+                    self.expr_range(e),
+                );
+            }
         }
         tast::Expr::EContinue {
             ty: tast::Ty::TUnit,
@@ -2918,13 +2959,6 @@ impl Typer {
         expr: hir::ExprId,
     ) -> tast::Expr {
         let expr_tast = self.infer_expr(genv, local_env, diagnostics, expr);
-        if self.expr_always_exits_loop_control(expr) {
-            return tast::Expr::EGo {
-                expr: Box::new(expr_tast),
-                ty: tast::Ty::TUnit,
-            };
-        }
-        // go expression expects a closure () -> unit
         let closure_ty = tast::Ty::TFunc {
             params: vec![],
             ret_ty: Box::new(tast::Ty::TUnit),
@@ -4484,8 +4518,8 @@ impl Typer {
             hir::Pat::PVar { name, astptr } => {
                 self.check_pat_var(local_env, diagnostics, name, Some(astptr), ty)
             }
-            hir::Pat::PUnit => self.check_pat_unit(astptr),
-            hir::Pat::PBool { value } => self.check_pat_bool(value, astptr),
+            hir::Pat::PUnit => self.check_pat_unit(ty, astptr),
+            hir::Pat::PBool { value } => self.check_pat_bool(value, ty, range, astptr),
             hir::Pat::PInt { value } => self.check_pat_int(diagnostics, &value, ty, range, astptr),
             hir::Pat::PInt8 { value } => {
                 self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt8, ty, range, astptr)
@@ -4567,7 +4601,8 @@ impl Typer {
         }
     }
 
-    fn check_pat_unit(&self, astptr: Option<MySyntaxNodePtr>) -> tast::Pat {
+    fn check_pat_unit(&mut self, ty: &tast::Ty, astptr: Option<MySyntaxNodePtr>) -> tast::Pat {
+        self.push_constraint(Constraint::TypeEqual(tast::Ty::TUnit, ty.clone(), None));
         tast::Pat::PPrim {
             value: Prim::Unit { value: () },
             ty: tast::Ty::TUnit,
@@ -4575,7 +4610,14 @@ impl Typer {
         }
     }
 
-    fn check_pat_bool(&self, value: bool, astptr: Option<MySyntaxNodePtr>) -> tast::Pat {
+    fn check_pat_bool(
+        &mut self,
+        value: bool,
+        ty: &tast::Ty,
+        range: Option<TextRange>,
+        astptr: Option<MySyntaxNodePtr>,
+    ) -> tast::Pat {
+        self.push_constraint(Constraint::TypeEqual(tast::Ty::TBool, ty.clone(), range));
         tast::Pat::PPrim {
             value: Prim::boolean(value),
             ty: tast::Ty::TBool,

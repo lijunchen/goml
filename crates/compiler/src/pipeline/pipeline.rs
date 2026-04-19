@@ -450,7 +450,6 @@ fn compile_inner(
             diagnostics: diagnostics.clone(),
         });
     }
-
     let gensym = Gensym::new();
 
     let mut package_cores = Vec::new();
@@ -507,7 +506,7 @@ fn compile_inner(
     if diagnostics.has_errors() {
         return Err(CompilationError::Compile { diagnostics });
     }
-    let (mono, monoenv) = mono::mono(genv.clone(), core.clone());
+    let (mono, monoenv) = mono::mono(genv.clone(), core.clone()).map_err(compile_error)?;
     let (lifted_core, liftenv) = lift::lambda_lift(monoenv.clone(), &gensym, mono.clone());
     let (anf, anfenv) = anf::anf_file(liftenv.clone(), &gensym, lifted_core.clone());
     let (go, goenv) = go::compile::go_file(anfenv.clone(), &gensym, anf.clone());

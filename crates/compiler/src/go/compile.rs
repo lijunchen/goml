@@ -1848,6 +1848,70 @@ fn gen_extern_wrapper_fns(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
         .collect()
 }
 
+fn gen_extern_bridge_fn(goenv: &GlobalGoEnv, goml_name: &str, extern_fn: &ExternFunc) -> goast::Fn {
+    let tast::Ty::TFunc { params, ret_ty } = &extern_fn.ty else {
+        panic!(
+            "extern function {} does not have a function type",
+            goml_name
+        );
+    };
+    let bridge_ret_ty = ret_ty.as_ref().clone();
+    let go_params = params
+        .iter()
+        .enumerate()
+        .map(|(index, ty)| (format!("p{}", index), tast_ty_to_go_type(ty)))
+        .collect::<Vec<_>>();
+    let call_args = go_params
+        .iter()
+        .map(|(name, ty)| goast::Expr::Var {
+            name: name.clone(),
+            ty: ty.clone(),
+        })
+        .collect::<Vec<_>>();
+    let call = if extern_requires_wrapper(extern_fn) {
+        goast::Expr::Call {
+            func: Box::new(goast::Expr::Var {
+                name: extern_wrapper_fn_name(goml_name),
+                ty: goty::GoType::TFunc {
+                    params: params.iter().map(tast_ty_to_go_type).collect(),
+                    ret_ty: Box::new(tast_ty_to_go_type(&bridge_ret_ty)),
+                },
+            }),
+            args: call_args,
+            ty: tast_ty_to_go_type(&bridge_ret_ty),
+        }
+    } else {
+        compile_extern_call(
+            goenv,
+            extern_fn,
+            params,
+            call_args,
+            tast_ty_to_go_type(&bridge_ret_ty),
+        )
+    };
+
+    goast::Fn {
+        name: go_ident(goml_name),
+        params: go_params,
+        ret_ty: Some(tast_ty_to_go_type(&bridge_ret_ty)),
+        body: goast::Block {
+            stmts: vec![goast::Stmt::Return { expr: Some(call) }],
+        },
+    }
+}
+
+fn gen_extern_bridge_fns(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
+    goenv
+        .genv
+        .value_env
+        .extern_funcs
+        .iter()
+        .map(|(goml_name, extern_fn)| {
+            goast::Item::Fn(gen_extern_bridge_fn(goenv, goml_name, extern_fn))
+        })
+        .collect()
+}
+
 fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tast::Ty {
     match ty {
         tast::Ty::TVar(_)
@@ -1953,7 +2017,28 @@ type RuntimeTypeSets = (
     IndexSet<tast::Ty>,
 );
 
-fn collect_runtime_types(file: &anf::File) -> RuntimeTypeSets {
+fn ty_contains_type_param(ty: &tast::Ty) -> bool {
+    match ty {
+        tast::Ty::TParam { .. } => true,
+        tast::Ty::TArray { elem, .. }
+        | tast::Ty::TSlice { elem }
+        | tast::Ty::TVec { elem }
+        | tast::Ty::TRef { elem } => ty_contains_type_param(elem),
+        tast::Ty::THashMap { key, value } => {
+            ty_contains_type_param(key) || ty_contains_type_param(value)
+        }
+        tast::Ty::TTuple { typs } => typs.iter().any(ty_contains_type_param),
+        tast::Ty::TApp { ty, args } => {
+            ty_contains_type_param(ty) || args.iter().any(ty_contains_type_param)
+        }
+        tast::Ty::TFunc { params, ret_ty } => {
+            params.iter().any(ty_contains_type_param) || ty_contains_type_param(ret_ty)
+        }
+        _ => false,
+    }
+}
+
+fn collect_runtime_types(goenv: &GlobalGoEnv, file: &anf::File) -> RuntimeTypeSets {
     struct Collector {
         tuples: IndexSet<tast::Ty>,
         arrays: IndexSet<tast::Ty>,
@@ -1964,10 +2049,11 @@ fn collect_runtime_types(file: &anf::File) -> RuntimeTypeSets {
     }
 
     impl Collector {
-        fn collect_file(mut self, file: &anf::File) -> RuntimeTypeSets {
+        fn collect_file(mut self, goenv: &GlobalGoEnv, file: &anf::File) -> RuntimeTypeSets {
             for item in &file.toplevels {
                 self.collect_fn(item);
             }
+            self.collect_go_types(goenv);
             (
                 self.tuples,
                 self.arrays,
@@ -1976,6 +2062,36 @@ fn collect_runtime_types(file: &anf::File) -> RuntimeTypeSets {
                 self.hashmaps,
                 self.missings,
             )
+        }
+
+        fn collect_go_types(&mut self, goenv: &GlobalGoEnv) {
+            for (name, def) in goenv.structs() {
+                if name.0.contains("TParam")
+                    || def.fields.iter().any(|(_, ty)| ty_contains_type_param(ty))
+                {
+                    continue;
+                }
+                for (_, ty) in &def.fields {
+                    self.collect_type(ty);
+                }
+            }
+
+            for (name, def) in goenv.enums() {
+                if name.0.contains("TParam")
+                    || def
+                        .variants
+                        .iter()
+                        .flat_map(|(_, fields)| fields.iter())
+                        .any(ty_contains_type_param)
+                {
+                    continue;
+                }
+                for (_, fields) in &def.variants {
+                    for ty in fields {
+                        self.collect_type(ty);
+                    }
+                }
+            }
         }
 
         fn collect_fn(&mut self, item: &anf::Fn) {
@@ -2200,7 +2316,7 @@ fn collect_runtime_types(file: &anf::File) -> RuntimeTypeSets {
         hashmaps: IndexSet::new(),
         missings: IndexSet::new(),
     }
-    .collect_file(file)
+    .collect_file(goenv, file)
 }
 
 #[derive(Default)]
@@ -2240,7 +2356,7 @@ fn dyn_wrap_go_name(trait_name: &str, for_ty: &tast::Ty, method_name: &str) -> S
     ))
 }
 
-fn collect_dyn_requirements(file: &anf::File) -> DynRequirements {
+fn collect_dyn_requirements(goenv: &GlobalGoEnv, file: &anf::File) -> DynRequirements {
     fn collect_ty(req: &mut DynRequirements, ty: &tast::Ty) {
         match ty {
             tast::Ty::TDyn { trait_name } => {
@@ -2261,6 +2377,10 @@ fn collect_dyn_requirements(file: &anf::File) -> DynRequirements {
             tast::Ty::TSlice { elem } => collect_ty(req, elem),
             tast::Ty::TVec { elem } => collect_ty(req, elem),
             tast::Ty::TRef { elem } => collect_ty(req, elem),
+            tast::Ty::THashMap { key, value } => {
+                collect_ty(req, key);
+                collect_ty(req, value);
+            }
             tast::Ty::TFunc { params, ret_ty } => {
                 for p in params {
                     collect_ty(req, p);
@@ -2434,12 +2554,37 @@ fn collect_dyn_requirements(file: &anf::File) -> DynRequirements {
     }
 
     let mut req = DynRequirements::default();
+    for (_, def) in goenv.structs() {
+        for (_, ty) in &def.fields {
+            collect_ty(&mut req, ty);
+        }
+    }
+    for (_, def) in goenv.enums() {
+        for (_, fields) in &def.variants {
+            for ty in fields {
+                collect_ty(&mut req, ty);
+            }
+        }
+    }
+    for extern_fn in goenv.genv.value_env.extern_funcs.values() {
+        collect_ty(&mut req, &extern_fn.ty);
+    }
     for f in &file.toplevels {
         for (_, ty) in &f.params {
             collect_ty(&mut req, ty);
         }
         collect_ty(&mut req, &f.ret_ty);
         collect_block(&mut req, &f.body);
+    }
+    let mut i = 0;
+    while let Some(trait_name) = req.traits.get_index(i).cloned() {
+        for (_, params, ret_ty) in trait_method_sigs(goenv, &trait_name) {
+            for param_ty in params {
+                collect_ty(&mut req, &param_ty);
+            }
+            collect_ty(&mut req, &ret_ty);
+        }
+        i += 1;
     }
     req
 }
@@ -5143,6 +5288,7 @@ struct WhileLoop {
 }
 
 fn loop_exit_target(block: &anf::Block, loop_id: &anf::JoinId) -> Option<anf::JoinId> {
+    let joins = local_joins_in_block(block);
     match &block.term {
         anf::Term::If { then_, else_, .. } => {
             let then_reaches = any_path_reaches(then_, loop_id);
@@ -5154,7 +5300,7 @@ fn loop_exit_target(block: &anf::Block, loop_id: &anf::JoinId) -> Option<anf::Jo
             } else {
                 return None;
             };
-            block_tail_empty_target(break_block).cloned()
+            block_tail_target_through_joins(break_block, &joins, &mut HashSet::new())
         }
         anf::Term::Match { arms, default, .. } => {
             let mut saw_continue = false;
@@ -5168,7 +5314,8 @@ fn loop_exit_target(block: &anf::Block, loop_id: &anf::JoinId) -> Option<anf::Jo
                     saw_continue = true;
                     continue;
                 }
-                let branch_target = block_tail_empty_target(branch)?.clone();
+                let branch_target =
+                    block_tail_target_through_joins(branch, &joins, &mut HashSet::new())?;
                 if let Some(existing) = &exit_target {
                     if existing != &branch_target {
                         return None;
@@ -5183,12 +5330,68 @@ fn loop_exit_target(block: &anf::Block, loop_id: &anf::JoinId) -> Option<anf::Jo
     }
 }
 
-fn all_branches_empty_jump_to(term: &anf::Term) -> Option<&anf::JoinId> {
+fn local_joins_in_block<'a>(block: &'a anf::Block) -> HashMap<&'a anf::JoinId, &'a anf::JoinBind> {
+    let mut joins = HashMap::new();
+    for bind in &block.binds {
+        match bind {
+            anf::Bind::Join(join_bind) => {
+                joins.insert(&join_bind.id, join_bind);
+            }
+            anf::Bind::JoinRec(group) => {
+                for join_bind in group {
+                    joins.insert(&join_bind.id, join_bind);
+                }
+            }
+            anf::Bind::Let(_) => {}
+        }
+    }
+    joins
+}
+
+fn block_tail_target_through_joins(
+    block: &anf::Block,
+    parent_joins: &HashMap<&anf::JoinId, &anf::JoinBind>,
+    visited: &mut HashSet<anf::JoinId>,
+) -> Option<anf::JoinId> {
+    let mut local_joins = parent_joins.clone();
+    for bind in &block.binds {
+        match bind {
+            anf::Bind::Join(join_bind) => {
+                local_joins.insert(&join_bind.id, join_bind);
+            }
+            anf::Bind::JoinRec(group) => {
+                for join_bind in group {
+                    local_joins.insert(&join_bind.id, join_bind);
+                }
+            }
+            anf::Bind::Let(_) => {}
+        }
+    }
+    term_tail_target_through_joins(&block.term, &local_joins, visited)
+}
+
+fn term_tail_target_through_joins(
+    term: &anf::Term,
+    joins: &HashMap<&anf::JoinId, &anf::JoinBind>,
+    visited: &mut HashSet<anf::JoinId>,
+) -> Option<anf::JoinId> {
     match term {
-        anf::Term::Jump { target, args, .. } if args.is_empty() => Some(target),
+        anf::Term::Jump { target, args, .. } => {
+            if args.is_empty() {
+                return Some(target.clone());
+            }
+            if !visited.insert(target.clone()) {
+                return None;
+            }
+            let result = joins.get(target).and_then(|join_bind| {
+                block_tail_target_through_joins(&join_bind.body, joins, visited)
+            });
+            visited.remove(target);
+            result
+        }
         anf::Term::If { then_, else_, .. } => {
-            let then_target = block_tail_empty_target(then_)?;
-            let else_target = block_tail_empty_target(else_)?;
+            let then_target = block_tail_target_through_joins(then_, joins, visited)?;
+            let else_target = block_tail_target_through_joins(else_, joins, visited)?;
             if then_target == else_target {
                 Some(then_target)
             } else {
@@ -5197,14 +5400,20 @@ fn all_branches_empty_jump_to(term: &anf::Term) -> Option<&anf::JoinId> {
         }
         anf::Term::Match { arms, default, .. } => {
             let mut target = None;
-            for branch_target in arms
-                .iter()
-                .map(|arm| block_tail_empty_target(&arm.body))
-                .chain(default.iter().map(|block| block_tail_empty_target(block)))
-            {
-                let branch_target = branch_target?;
-                if let Some(existing) = target {
-                    if existing != branch_target {
+            for arm in arms {
+                let branch_target = block_tail_target_through_joins(&arm.body, joins, visited)?;
+                if let Some(existing) = &target {
+                    if existing != &branch_target {
+                        return None;
+                    }
+                } else {
+                    target = Some(branch_target);
+                }
+            }
+            if let Some(default) = default {
+                let branch_target = block_tail_target_through_joins(default, joins, visited)?;
+                if let Some(existing) = &target {
+                    if existing != &branch_target {
                         return None;
                     }
                 } else {
@@ -5215,10 +5424,6 @@ fn all_branches_empty_jump_to(term: &anf::Term) -> Option<&anf::JoinId> {
         }
         _ => None,
     }
-}
-
-fn block_tail_empty_target(block: &anf::Block) -> Option<&anf::JoinId> {
-    all_branches_empty_jump_to(&block.term)
 }
 
 fn any_path_reaches(block: &anf::Block, target: &anf::JoinId) -> bool {
@@ -8244,7 +8449,7 @@ pub fn go_file(
     let mut all = Vec::new();
 
     let (tuple_types, array_types, vec_types, ref_types, hashmap_types, missing_types) =
-        collect_runtime_types(&file);
+        collect_runtime_types(&goenv, &file);
 
     all.extend(runtime::make_runtime());
     all.extend(runtime::make_array_runtime(&array_types));
@@ -8331,13 +8536,14 @@ pub fn go_file(
     }
 
     let file = anf::anf_renamer::rename(file);
-    let dyn_req = collect_dyn_requirements(&file);
+    let dyn_req = collect_dyn_requirements(&goenv, &file);
 
     let mut toplevels = gen_type_definition(&goenv);
     toplevels.extend(gen_dyn_type_definitions(&goenv, &dyn_req));
     let impl_name_map = build_trait_impl_name_map(&file.toplevels);
     toplevels.extend(gen_dyn_helper_fns(&goenv, &dyn_req, &impl_name_map));
     toplevels.extend(gen_extern_wrapper_fns(&goenv));
+    toplevels.extend(gen_extern_bridge_fns(&goenv));
     for item in file.toplevels {
         if let Some(native_ctx) = native_fn_ctx(&goenv, &item) {
             toplevels.push(goast::Item::Fn(compile_native_fn(

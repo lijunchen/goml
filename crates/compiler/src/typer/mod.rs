@@ -39,13 +39,20 @@ pub(crate) struct DeferredDynCoercion {
     pub origin: Option<text_size::TextRange>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum LoopControlContext {
+    Disallowed,
+    WhileCondition,
+    Allowed,
+}
+
 pub struct Typer {
     pub uni: InPlaceUnificationTable<TypeVar>,
     pub(crate) constraints: Vec<Constraint>,
     pub(crate) reported_unresolved_type_vars: HashSet<TypeVar>,
     pub hir_table: name_resolution::HirTable,
     pub results: TypeckResultsBuilder,
-    pub(crate) while_depth: u32,
+    pub(crate) loop_control_context: LoopControlContext,
     pub(crate) return_ty_stack: Vec<tast::Ty>,
     pub(crate) deferred_arithmetic_checks: Vec<DeferredArithmeticCheck>,
     pub(crate) tparam_trait_bounds: HashMap<String, Vec<String>>,
@@ -63,7 +70,7 @@ impl Typer {
             reported_unresolved_type_vars: HashSet::new(),
             hir_table,
             results,
-            while_depth: 0,
+            loop_control_context: LoopControlContext::Disallowed,
             return_ty_stack: Vec::new(),
             deferred_arithmetic_checks: Vec::new(),
             tparam_trait_bounds: HashMap::new(),

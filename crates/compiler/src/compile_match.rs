@@ -3360,6 +3360,15 @@ fn compile_expr(
             ty,
             astptr,
         } => match expr.as_ref() {
+            _ if arms.is_empty() => {
+                let match_range = astptr.as_ref().map(|ptr| ptr.text_range());
+                push_compile_error(
+                    diagnostics,
+                    "match expression must have at least one arm".to_string(),
+                    match_range,
+                );
+                emissing(ty)
+            }
             EVar {
                 name,
                 ty: _ty,
