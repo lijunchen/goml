@@ -1,0 +1,25 @@
+trait Callable {
+    fn call(Self, int32) -> int32;
+}
+
+impl Callable for (int32) -> int32 {
+    fn call(self: (int32) -> int32, x: int32) -> int32 {
+        self(x)
+    }
+}
+
+struct Holder[T] {
+    value: (T, int32),
+}
+
+fn build() -> (int32) -> int32 {
+    let _: Holder[dyn Callable] = Holder {
+        value: (return |x: int32| x + 1i32, 0i32),
+    };
+    |x: int32| x
+}
+
+fn main() -> unit {
+    let f = build();
+    println(f(41i32).to_string())
+}

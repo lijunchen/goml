@@ -260,3 +260,37 @@ fn dyn_trait_types_are_emitted_for_hashmap_method_set_arguments() {
     assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
     assert!(go.contains("type dyn__Display struct"), "{go}");
 }
+
+#[test]
+fn dyn_callable_types_are_emitted_for_early_return_subexpressions() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/dyn_callable_return_subexpr/main.gom");
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("type dyn__Callable_vtable struct"), "{go}");
+    assert!(go.contains("type dyn__Callable struct"), "{go}");
+}
+
+#[test]
+fn dyn_callable_tuple_types_are_emitted_for_nested_early_return_subexpressions() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/dyn_callable_nested_tuple_return_subexpr/main.gom");
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("type dyn__Callable_vtable struct"), "{go}");
+    assert!(go.contains("type dyn__Callable struct"), "{go}");
+    assert!(go.contains("type Tuple2_dyn__Callable_int32 struct"), "{go}");
+}
+
+#[test]
+fn dyn_callable_types_are_emitted_for_hashmap_set_early_return_subexpressions() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/dyn_callable_hashmap_set_return_subexpr/main.gom");
+
+    let go = compile_single_file_go(path);
+
+    assert!(go.contains("type dyn__Callable_vtable struct"), "{go}");
+    assert!(go.contains("type dyn__Callable struct"), "{go}");
+}

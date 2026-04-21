@@ -1,0 +1,20 @@
+trait Callable {
+    fn call(Self, int32) -> int32;
+}
+
+impl Callable for (int32) -> int32 {
+    fn call(self: (int32) -> int32, x: int32) -> int32 {
+        self(x)
+    }
+}
+
+fn build() -> (int32) -> int32 {
+    let m: HashMap[int32, dyn Callable] = HashMap::new();
+    hashmap_set(m, 1i32, return |x: int32| x + 1i32);
+    |x: int32| x
+}
+
+fn main() -> unit {
+    let f = build();
+    println(f(41i32).to_string())
+}
