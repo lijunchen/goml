@@ -2,7 +2,7 @@ use crate::{
     anf::{self, GlobalAnfEnv},
     common::{Constructor, Prim},
     env::{
-        EnumDef, ExternBindingMode, ExternFunc, ExternReturnMode, Gensym, GlobalTypeEnv,
+        EnumDef, ExternBindingMode, ExternFunc, ExternReturnMode, FnOrigin, Gensym, GlobalTypeEnv,
         InherentImplKey, StructDef,
     },
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
@@ -83,6 +83,20 @@ impl GlobalGoEnv {
     pub fn get_struct(&self, name: &TastIdent) -> Option<&StructDef> {
         self.liftenv.get_struct(name)
     }
+}
+
+fn runtime_builtin_available(goenv: &GlobalGoEnv, name: &str) -> bool {
+    if goenv.genv.value_env.extern_funcs.contains_key(name) || goenv.toplevel_funcs.contains(name) {
+        return false;
+    }
+
+    goenv
+        .genv
+        .value_env
+        .funcs
+        .get(name)
+        .map(|scheme| scheme.origin)
+        == Some(FnOrigin::Builtin)
 }
 
 fn go_literal_from_primitive(value: &Prim, ty: &tast::Ty) -> goast::Expr {
@@ -3242,6 +3256,7 @@ mod legacy_anf_codegen {
                 let func_ty = tast_ty_to_go_type(&func_tast_ty);
 
                 if let anf::ImmExpr::ImmVar { name, .. } = &func
+                    && runtime_builtin_available(goenv, name)
                     && *name == "missing"
                 {
                     let helper_name = runtime::missing_helper_fn_name(ty);
@@ -3257,6 +3272,7 @@ mod legacy_anf_codegen {
                         ty: tast_ty_to_go_type(ty),
                     }
                 } else if let anf::ImmExpr::ImmVar { name, .. } = &func
+                    && runtime_builtin_available(goenv, name)
                     && (*name == "array_get" || *name == "array_set")
                 {
                     let helper = runtime::array_helper_fn_name(name, &imm_ty(&args[0]));
@@ -3269,6 +3285,7 @@ mod legacy_anf_codegen {
                         ty: tast_ty_to_go_type(ty),
                     }
                 } else if let anf::ImmExpr::ImmVar { name, .. } = &func
+                    && runtime_builtin_available(goenv, name)
                     && (*name == "ref"
                         || *name == "ref_get"
                         || *name == "ref_set"
@@ -3333,6 +3350,7 @@ mod legacy_anf_codegen {
                         ty: tast_ty_to_go_type(ty),
                     }
                 } else if let anf::ImmExpr::ImmVar { name, .. } = &func
+                    && runtime_builtin_available(goenv, name)
                     && (*name == "hashmap_new"
                         || *name == "hashmap_get"
                         || *name == "hashmap_set"
@@ -3391,6 +3409,7 @@ mod legacy_anf_codegen {
                         ty: tast_ty_to_go_type(ty),
                     }
                 } else if let anf::ImmExpr::ImmVar { name, .. } = &func
+                    && runtime_builtin_available(goenv, name)
                     && (*name == "slice"
                         || *name == "slice_get"
                         || *name == "slice_len"
@@ -3447,6 +3466,7 @@ mod legacy_anf_codegen {
                         _ => unreachable!(),
                     }
                 } else if let anf::ImmExpr::ImmVar { name, .. } = &func
+                    && runtime_builtin_available(goenv, name)
                     && (*name == "vec_new"
                         || *name == "vec_push"
                         || *name == "vec_get"
@@ -4483,6 +4503,7 @@ fn compile_call(
     let func_ty = tast_ty_to_go_type(&func_tast_ty);
 
     if let anf::ImmExpr::Var { id, .. } = func
+        && runtime_builtin_available(goenv, &id.0)
         && id.0 == "missing"
     {
         let helper_name = runtime::missing_helper_fn_name(ty);
@@ -4500,6 +4521,7 @@ fn compile_call(
     }
 
     if let anf::ImmExpr::Var { id, .. } = func
+        && runtime_builtin_available(goenv, &id.0)
         && (id.0 == "array_get" || id.0 == "array_set")
     {
         let array_ty = imm_ty(&args[0]);
@@ -4515,6 +4537,7 @@ fn compile_call(
     }
 
     if let anf::ImmExpr::Var { id, .. } = func
+        && runtime_builtin_available(goenv, &id.0)
         && (id.0 == "ref" || id.0 == "ref_get" || id.0 == "ref_set" || id.0 == "ptr_eq")
     {
         let (helper, helper_ty) = if id.0 == "ref" {
@@ -4579,6 +4602,7 @@ fn compile_call(
     }
 
     if let anf::ImmExpr::Var { id, .. } = func
+        && runtime_builtin_available(goenv, &id.0)
         && (id.0 == "hashmap_new"
             || id.0 == "hashmap_get"
             || id.0 == "hashmap_set"
@@ -4639,6 +4663,7 @@ fn compile_call(
     }
 
     if let anf::ImmExpr::Var { id, .. } = func
+        && runtime_builtin_available(goenv, &id.0)
         && (id.0 == "slice" || id.0 == "slice_get" || id.0 == "slice_len" || id.0 == "slice_sub")
     {
         let arg0_ty = imm_ty(&args[0]);
@@ -4695,6 +4720,7 @@ fn compile_call(
     }
 
     if let anf::ImmExpr::Var { id, .. } = func
+        && runtime_builtin_available(goenv, &id.0)
         && (id.0 == "vec_new"
             || id.0 == "vec_push"
             || id.0 == "vec_get"
