@@ -196,3 +196,13 @@ fn nested_match_wrapped_all_exit_match_while_condition_reports_typer_error() {
 
     assert_reports_while_condition_error(&diagnostics);
 }
+
+#[test]
+fn deep_call_wrapped_all_exit_match_while_condition_reports_typer_error() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/while_condition_deep_call_nesting_stack_overflow/main.gom");
+
+    let diagnostics = compile_single_file_typer_diagnostics(path);
+
+    assert_reports_while_condition_error(&diagnostics);
+}
