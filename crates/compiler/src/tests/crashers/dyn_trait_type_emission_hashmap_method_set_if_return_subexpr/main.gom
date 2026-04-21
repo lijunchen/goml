@@ -1,0 +1,19 @@
+trait Display {
+    fn show(Self) -> string;
+}
+
+impl Display for int32 {
+    fn show(self: int32) -> string {
+        self.to_string()
+    }
+}
+
+fn build() -> int32 {
+    let m: HashMap[int32, dyn Display] = HashMap::new();
+    m.set(1i32, if true { return 7i32 } else { 1i32 });
+    0i32
+}
+
+fn main() -> unit {
+    println(build().to_string())
+}
