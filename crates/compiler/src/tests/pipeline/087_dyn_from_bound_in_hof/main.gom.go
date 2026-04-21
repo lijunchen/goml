@@ -46,14 +46,14 @@ func _goml_trait_impl_Display_int32_show(self__0 int32) string {
 }
 
 func main0() struct{} {
-    var f__3 closure_env_mk_renderer_T_int32_0 = mk_renderer__T_int32(42)
-    var t6 string = _goml_inherent_closure_env_mk_renderer_T_int32_0_closure_env_mk_renderer_T_int32_0_apply(f__3)
+    var f__3 func() string = mk_renderer__T_int32(42)
+    var t6 string = f__3()
     println__T_string(t6)
     return struct{}{}
 }
 
-func mk_renderer__T_int32(x__1 int32) closure_env_mk_renderer_T_int32_0 {
-    var retv8 closure_env_mk_renderer_T_int32_0
+func mk_renderer__T_int32(x__1 int32) func() string {
+    var retv8 func() string
     var d__2 dyn__Display = dyn__Display{
         data: int32(x__1),
         vtable: dyn__Display__vtable__int32(),
@@ -61,7 +61,9 @@ func mk_renderer__T_int32(x__1 int32) closure_env_mk_renderer_T_int32_0 {
     var t9 closure_env_mk_renderer_T_int32_0 = closure_env_mk_renderer_T_int32_0{
         d_0: d__2,
     }
-    retv8 = t9
+    retv8 = func() string {
+        return _goml_inherent_closure_env_mk_renderer_T_int32_0_closure_env_mk_renderer_T_int32_0_apply(t9)
+    }
     return retv8
 }
 

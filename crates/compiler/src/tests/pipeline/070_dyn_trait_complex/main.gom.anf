@@ -172,8 +172,8 @@ fn call_via_closure(x/24: dyn Display, tag/25: string) -> string {
   jump ret91(t93)
 }
 
-fn make_renderer(tag/29: string) -> closure_env_make_renderer_1 {
-  join ret94(retv95: closure_env_make_renderer_1) -> closure_env_make_renderer_1 {
+fn make_renderer(tag/29: string) -> (dyn Display) -> string {
+  join ret94(retv95: (dyn Display) -> string) -> (dyn Display) -> string {
     retv95
   } in
   let t96 = closure_env_make_renderer_1 { tag_0: tag/29 } in
@@ -212,9 +212,9 @@ fn main() -> unit {
   let render_angle/44 = make_renderer("<") in
   let s0/45 = show_dyn(dp2/39) in
   let s1/46 = call_via_closure(df2/41, "*") in
-  let t106 = inherent#closure_env_make_renderer_1#closure_env_make_renderer_1#apply(render_star/43, dp1/38) in
+  let t106 = render_star/43(dp1/38) in
   let t107 = (t106 + "|") in
-  let t108 = inherent#closure_env_make_renderer_1#closure_env_make_renderer_1#apply(render_angle/44, df1/40) in
+  let t108 = render_angle/44(df1/40) in
   let s2/47 = (t107 + t108) in
   let v/48 = vec_new() in
   let v/49 = vec_push(v/48, dp1/38) in

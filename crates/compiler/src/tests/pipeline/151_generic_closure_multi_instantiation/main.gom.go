@@ -24,30 +24,34 @@ type closure_env_make_pairer_T_string_1 struct {
 type GoError = error
 
 func main0() struct{} {
-    var int_pairer__2 closure_env_make_pairer_T_int32_0 = make_pairer__T_int32(7)
-    var string_pairer__3 closure_env_make_pairer_T_string_1 = make_pairer__T_string("ok")
-    var t5 string = _goml_inherent_closure_env_make_pairer_T_int32_0_closure_env_make_pairer_T_int32_0_apply(int_pairer__2, "a")
+    var int_pairer__2 func(string) string = make_pairer__T_int32(7)
+    var string_pairer__3 func(string) string = make_pairer__T_string("ok")
+    var t5 string = int_pairer__2("a")
     println__T_string(t5)
-    var t6 string = _goml_inherent_closure_env_make_pairer_T_string_1_closure_env_make_pairer_T_string_1_apply(string_pairer__3, "b")
+    var t6 string = string_pairer__3("b")
     println__T_string(t6)
     return struct{}{}
 }
 
-func make_pairer__T_int32(x__0 int32) closure_env_make_pairer_T_int32_0 {
-    var retv8 closure_env_make_pairer_T_int32_0
+func make_pairer__T_int32(x__0 int32) func(string) string {
+    var retv8 func(string) string
     var t9 closure_env_make_pairer_T_int32_0 = closure_env_make_pairer_T_int32_0{
         x_0: x__0,
     }
-    retv8 = t9
+    retv8 = func(p0 string) string {
+        return _goml_inherent_closure_env_make_pairer_T_int32_0_closure_env_make_pairer_T_int32_0_apply(t9, p0)
+    }
     return retv8
 }
 
-func make_pairer__T_string(x__0 string) closure_env_make_pairer_T_string_1 {
-    var retv11 closure_env_make_pairer_T_string_1
+func make_pairer__T_string(x__0 string) func(string) string {
+    var retv11 func(string) string
     var t12 closure_env_make_pairer_T_string_1 = closure_env_make_pairer_T_string_1{
         x_0: x__0,
     }
-    retv11 = t12
+    retv11 = func(p0 string) string {
+        return _goml_inherent_closure_env_make_pairer_T_string_1_closure_env_make_pairer_T_string_1_apply(t12, p0)
+    }
     return retv11
 }
 

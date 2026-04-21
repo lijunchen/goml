@@ -291,12 +291,14 @@ func call_via_closure(x__24 dyn__Display, tag__25 string) string {
     return retv92
 }
 
-func make_renderer(tag__29 string) closure_env_make_renderer_1 {
-    var retv95 closure_env_make_renderer_1
+func make_renderer(tag__29 string) func(dyn__Display) string {
+    var retv95 func(dyn__Display) string
     var t96 closure_env_make_renderer_1 = closure_env_make_renderer_1{
         tag_0: tag__29,
     }
-    retv95 = t96
+    retv95 = func(p0 dyn__Display) string {
+        return _goml_inherent_closure_env_make_renderer_1_closure_env_make_renderer_1_apply(t96, p0)
+    }
     return retv95
 }
 
@@ -351,13 +353,13 @@ func main0() struct{} {
         data: c__37,
         vtable: dyn__Display__vtable__Counter(),
     }
-    var render_star__43 closure_env_make_renderer_1 = make_renderer("*")
-    var render_angle__44 closure_env_make_renderer_1 = make_renderer("<")
+    var render_star__43 func(dyn__Display) string = make_renderer("*")
+    var render_angle__44 func(dyn__Display) string = make_renderer("<")
     var s0__45 string = show_dyn(dp2__39)
     var s1__46 string = call_via_closure(df2__41, "*")
-    var t106 string = _goml_inherent_closure_env_make_renderer_1_closure_env_make_renderer_1_apply(render_star__43, dp1__38)
+    var t106 string = render_star__43(dp1__38)
     var t107 string = t106 + "|"
-    var t108 string = _goml_inherent_closure_env_make_renderer_1_closure_env_make_renderer_1_apply(render_angle__44, df1__40)
+    var t108 string = render_angle__44(df1__40)
     var s2__47 string = t107 + t108
     var v__48 []dyn__Display = nil
     var v__49 []dyn__Display = append(v__48, dp1__38)
