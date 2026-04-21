@@ -225,6 +225,18 @@ fn compile_imm(goenv: &GlobalGoEnv, imm: &anf::ImmExpr) -> goast::Expr {
     }
 }
 
+fn compile_imm_for_target_ty(
+    goenv: &GlobalGoEnv,
+    imm: &anf::ImmExpr,
+    target_ty: &tast::Ty,
+) -> goast::Expr {
+    if needs_closure_to_func_wrap(&imm_ty(imm), target_ty) {
+        closure_to_func_lit(goenv, imm, target_ty)
+    } else {
+        compile_imm(goenv, imm)
+    }
+}
+
 fn imm_ty(imm: &anf::ImmExpr) -> tast::Ty {
     match imm {
         anf::ImmExpr::Var { ty, .. }
@@ -6121,14 +6133,17 @@ fn compile_native_return_from_imm(
                     if enum_constructor.index == *ok_index && args.len() == 1 {
                         return build_payload_success_return_stmts(
                             ok_ty,
-                            compile_imm(goenv, &args[0]),
+                            compile_imm_for_target_ty(goenv, &args[0], ok_ty),
                             vec![goast::Expr::Nil {
                                 ty: tast_ty_to_go_type(err_ty),
                             }],
                         );
                     }
                     if enum_constructor.index == *err_index && args.len() == 1 {
-                        return build_result_failure_stmts(ok_ty, compile_imm(goenv, &args[0]));
+                        return build_result_failure_stmts(
+                            ok_ty,
+                            compile_imm_for_target_ty(goenv, &args[0], err_ty),
+                        );
                     }
                 }
                 NativeReturnMode::Option {
@@ -6139,7 +6154,7 @@ fn compile_native_return_from_imm(
                     if enum_constructor.index == *some_index && args.len() == 1 {
                         return build_payload_success_return_stmts(
                             some_ty,
-                            compile_imm(goenv, &args[0]),
+                            compile_imm_for_target_ty(goenv, &args[0], some_ty),
                             vec![goast::Expr::Bool {
                                 value: true,
                                 ty: goty::GoType::TBool,
