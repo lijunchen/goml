@@ -3328,7 +3328,18 @@ impl Typer {
                     &tast::TastIdent(method_name_str.clone()),
                 );
                 if let Some(method_scheme) = inherent_lookup {
-                    let inst_method_ty = self.inst_ty(&method_scheme.ty);
+                    let mut inst_method_ty = self.inst_ty(&method_scheme.ty);
+                    if let tast::Ty::TFunc { params, .. } = &inst_method_ty
+                        && let Some(receiver_param_ty) = params.first()
+                    {
+                        self.unify(
+                            diagnostics,
+                            receiver_param_ty,
+                            &receiver_ty,
+                            self.expr_range(call_expr_id),
+                        );
+                        inst_method_ty = self.norm(&inst_method_ty);
+                    }
                     let method_params = match &inst_method_ty {
                         tast::Ty::TFunc { params, .. } => params.clone(),
                         _ => Vec::new(),
