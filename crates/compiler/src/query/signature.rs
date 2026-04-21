@@ -42,22 +42,24 @@ impl CallSignatureContext {
 }
 
 pub fn signature_help(path: &Path, src: &str, line: u32, col: u32) -> Option<SignatureHelpItem> {
-    let context = call_signature_context(path, src, line, col)?;
-    let parameters = context
-        .params
-        .iter()
-        .map(CallParamInfo::label)
-        .collect::<Vec<_>>();
-    let label = format!(
-        "({}) -> {}",
-        parameters.join(", "),
-        context.return_type.to_pretty(80)
-    );
+    crate::pipeline::with_compiler_stack(|| {
+        let context = call_signature_context(path, src, line, col)?;
+        let parameters = context
+            .params
+            .iter()
+            .map(CallParamInfo::label)
+            .collect::<Vec<_>>();
+        let label = format!(
+            "({}) -> {}",
+            parameters.join(", "),
+            context.return_type.to_pretty(80)
+        );
 
-    Some(SignatureHelpItem {
-        label,
-        parameters,
-        active_parameter: context.active_parameter,
+        Some(SignatureHelpItem {
+            label,
+            parameters,
+            active_parameter: context.active_parameter,
+        })
     })
 }
 

@@ -46,70 +46,73 @@ pub fn dot_completions(
     line: u32,
     col: u32,
 ) -> Option<Vec<DotCompletionItem>> {
-    let line_index = line_index::LineIndex::new(src);
-    let offset = line_index.offset(line_index::LineCol { line, col })?;
-    let (prefix_start, prefix) = ident_prefix_at_offset(src, offset)?;
-    let dot_offset = prefix_start.checked_sub(TextSize::from(1))?;
-    if src.as_bytes().get(u32::from(dot_offset) as usize) != Some(&b'.') {
-        return None;
-    }
+    crate::pipeline::with_compiler_stack(|| {
+        let line_index = line_index::LineIndex::new(src);
+        let offset = line_index.offset(line_index::LineCol { line, col })?;
+        let (prefix_start, prefix) = ident_prefix_at_offset(src, offset)?;
+        let dot_offset = prefix_start.checked_sub(TextSize::from(1))?;
+        if src.as_bytes().get(u32::from(dot_offset) as usize) != Some(&b'.') {
+            return None;
+        }
 
-    let parse_src = if prefix.is_empty() {
-        let mut fixed_src = src.to_string();
-        let insert_index = u32::from(offset) as usize;
-        fixed_src.insert_str(insert_index, COMPLETION_PLACEHOLDER);
-        fixed_src
-    } else {
-        src.to_string()
-    };
+        let parse_src = if prefix.is_empty() {
+            let mut fixed_src = src.to_string();
+            let insert_index = u32::from(offset) as usize;
+            fixed_src.insert_str(insert_index, COMPLETION_PLACEHOLDER);
+            fixed_src
+        } else {
+            src.to_string()
+        };
 
-    let result = parser::parse(path, &parse_src);
-    let root = MySyntaxNode::new_root(result.green_node);
-    let file = cst::cst::File::cast(root.clone())?;
-    let dot_token = match file.syntax().token_at_offset(dot_offset) {
-        rowan::TokenAtOffset::None => return None,
-        rowan::TokenAtOffset::Single(token) => token,
-        rowan::TokenAtOffset::Between(left, right) => {
-            if right.kind() == MySyntaxKind::Dot {
-                right
-            } else if left.kind() == MySyntaxKind::Dot {
-                left
-            } else {
-                return None;
+        let result = parser::parse(path, &parse_src);
+        let root = MySyntaxNode::new_root(result.green_node);
+        let file = cst::cst::File::cast(root.clone())?;
+        let dot_token = match file.syntax().token_at_offset(dot_offset) {
+            rowan::TokenAtOffset::None => return None,
+            rowan::TokenAtOffset::Single(token) => token,
+            rowan::TokenAtOffset::Between(left, right) => {
+                if right.kind() == MySyntaxKind::Dot {
+                    right
+                } else if left.kind() == MySyntaxKind::Dot {
+                    left
+                } else {
+                    return None;
+                }
             }
+        };
+
+        if dot_token.kind() != MySyntaxKind::Dot {
+            return None;
         }
-    };
 
-    if dot_token.kind() != MySyntaxKind::Dot {
-        return None;
-    }
-
-    let mut current = dot_token.parent();
-    let mut binary_node = None;
-    while let Some(node) = current {
-        if node.kind() == MySyntaxKind::EXPR_BINARY {
-            binary_node = Some(node);
-            break;
+        let mut current = dot_token.parent();
+        let mut binary_node = None;
+        while let Some(node) = current {
+            if node.kind() == MySyntaxKind::EXPR_BINARY {
+                binary_node = Some(node);
+                break;
+            }
+            current = node.parent();
         }
-        current = node.parent();
-    }
-    let binary_node = binary_node?;
-    let binary_expr = BinaryExpr::cast(binary_node)?;
-    binary_expr
-        .op()
-        .map(|token| token.kind())
-        .filter(|kind| *kind == MySyntaxKind::Dot)?;
+        let binary_node = binary_node?;
+        let binary_expr = BinaryExpr::cast(binary_node)?;
+        binary_expr
+            .op()
+            .map(|token| token.kind())
+            .filter(|kind| *kind == MySyntaxKind::Dot)?;
 
-    let mut exprs = binary_expr.exprs();
-    let lhs_expr = exprs.next()?;
-    let lhs_ptr = MySyntaxNodePtr::new(lhs_expr.syntax());
+        let mut exprs = binary_expr.exprs();
+        let lhs_expr = exprs.next()?;
+        let lhs_ptr = MySyntaxNodePtr::new(lhs_expr.syntax());
 
-    let (hir_table, results, genv, _diagnostics) = typecheck_for_query(path, &parse_src).ok()?;
-    let index = HirResultsIndex::new(&hir_table);
-    let expr_id = index.expr_id(&lhs_ptr)?;
-    let ty = normalize_completion_ty(results.expr_ty(expr_id)?.clone());
-    let items = completions_for_type(&genv, &ty);
-    Some(filter_dot_items(items, &prefix))
+        let (hir_table, results, genv, _diagnostics) =
+            typecheck_for_query(path, &parse_src).ok()?;
+        let index = HirResultsIndex::new(&hir_table);
+        let expr_id = index.expr_id(&lhs_ptr)?;
+        let ty = normalize_completion_ty(results.expr_ty(expr_id)?.clone());
+        let items = completions_for_type(&genv, &ty);
+        Some(filter_dot_items(items, &prefix))
+    })
 }
 
 pub fn value_completions(
@@ -118,120 +121,122 @@ pub fn value_completions(
     line: u32,
     col: u32,
 ) -> Option<Vec<ValueCompletionItem>> {
-    let line_index = line_index::LineIndex::new(src);
-    let offset = line_index.offset(line_index::LineCol { line, col })?;
-    let (prefix_start, prefix) = ident_prefix_at_offset(src, offset)?;
-    if let Some(items) = use_root_completions(path, src, offset, prefix_start, &prefix) {
-        return Some(items);
-    }
-
-    if prefix_start > TextSize::from(0)
-        && src
-            .as_bytes()
-            .get(u32::from(prefix_start.checked_sub(TextSize::from(1))?) as usize)
-            == Some(&b'.')
-    {
-        return None;
-    }
-
-    if prefix_start >= TextSize::from(2)
-        && src.as_bytes().get(
-            u32::from(prefix_start.checked_sub(TextSize::from(2))?) as usize
-                ..u32::from(prefix_start) as usize,
-        ) == Some(b"::")
-    {
-        return None;
-    }
-
-    if prefix.is_empty() {
-        return Some(Vec::new());
-    }
-
-    let parse = parser::parse(path, src);
-    let root = MySyntaxNode::new_root(parse.green_node);
-
-    let mut ranked_items = Vec::new();
-    let mut call_context = None;
-    if let Ok((hir_table, results, genv, _diagnostics)) = typecheck_for_query(path, src) {
-        let index = HirResultsIndex::new(&hir_table);
-        let closure_params = ClosureParamIndex::new(&hir_table);
-        call_context = call_expr_and_active_parameter(&root, offset).and_then(
-            |(call_expr, active_parameter)| {
-                call_signature_context_from_parts(
-                    path,
-                    src,
-                    &hir_table,
-                    &results,
-                    &call_expr,
-                    active_parameter,
-                )
-            },
-        );
-
-        ranked_items.extend(visible_local_items(
-            &root,
-            offset,
-            &index,
-            &closure_params,
-            &results,
-        ));
-        ranked_items.extend(
-            genv.value_env
-                .funcs
-                .iter()
-                .filter(|(name, _)| !name.contains("::"))
-                .map(|(name, scheme)| RankedValueItem {
-                    item: ValueCompletionItem {
-                        name: name.clone(),
-                        kind: ValueCompletionKind::Function,
-                        detail: Some(scheme.ty.to_pretty(80)),
-                    },
-                    ty_text: Some(scheme.ty.to_pretty(80)),
-                    kind_rank: 1,
-                    scope_rank: usize::MAX - 1,
-                }),
-        );
-    }
-
-    ranked_items.extend(visible_use_namespace_items(path, src));
-
-    let mut seen = HashSet::new();
-    let mut items = Vec::new();
-    for ranked in ranked_items
-        .into_iter()
-        .filter(|item| item.item.name.starts_with(&prefix))
-    {
-        if seen.insert(ranked.item.name.clone()) {
-            items.push(ranked);
+    crate::pipeline::with_compiler_stack(|| {
+        let line_index = line_index::LineIndex::new(src);
+        let offset = line_index.offset(line_index::LineCol { line, col })?;
+        let (prefix_start, prefix) = ident_prefix_at_offset(src, offset)?;
+        if let Some(items) = use_root_completions(path, src, offset, prefix_start, &prefix) {
+            return Some(items);
         }
-    }
 
-    for keyword in VALUE_COMPLETION_KEYWORDS {
-        if !keyword.starts_with(&prefix) {
-            continue;
+        if prefix_start > TextSize::from(0)
+            && src
+                .as_bytes()
+                .get(u32::from(prefix_start.checked_sub(TextSize::from(1))?) as usize)
+                == Some(&b'.')
+        {
+            return None;
         }
-        if !seen.insert((*keyword).to_string()) {
-            continue;
+
+        if prefix_start >= TextSize::from(2)
+            && src.as_bytes().get(
+                u32::from(prefix_start.checked_sub(TextSize::from(2))?) as usize
+                    ..u32::from(prefix_start) as usize,
+            ) == Some(b"::")
+        {
+            return None;
         }
-        items.push(RankedValueItem {
-            item: ValueCompletionItem {
-                name: (*keyword).to_string(),
-                kind: ValueCompletionKind::Keyword,
-                detail: None,
-            },
-            ty_text: None,
-            kind_rank: 3,
-            scope_rank: usize::MAX,
-        });
-    }
 
-    let expected_ty = call_context
-        .as_ref()
-        .and_then(CallSignatureContext::expected_param)
-        .map(|param| param.ty.to_pretty(80));
+        if prefix.is_empty() {
+            return Some(Vec::new());
+        }
 
-    sort_value_items(&mut items, expected_ty.as_deref());
-    Some(items.into_iter().map(|item| item.item).take(50).collect())
+        let parse = parser::parse(path, src);
+        let root = MySyntaxNode::new_root(parse.green_node);
+
+        let mut ranked_items = Vec::new();
+        let mut call_context = None;
+        if let Ok((hir_table, results, genv, _diagnostics)) = typecheck_for_query(path, src) {
+            let index = HirResultsIndex::new(&hir_table);
+            let closure_params = ClosureParamIndex::new(&hir_table);
+            call_context = call_expr_and_active_parameter(&root, offset).and_then(
+                |(call_expr, active_parameter)| {
+                    call_signature_context_from_parts(
+                        path,
+                        src,
+                        &hir_table,
+                        &results,
+                        &call_expr,
+                        active_parameter,
+                    )
+                },
+            );
+
+            ranked_items.extend(visible_local_items(
+                &root,
+                offset,
+                &index,
+                &closure_params,
+                &results,
+            ));
+            ranked_items.extend(
+                genv.value_env
+                    .funcs
+                    .iter()
+                    .filter(|(name, _)| !name.contains("::"))
+                    .map(|(name, scheme)| RankedValueItem {
+                        item: ValueCompletionItem {
+                            name: name.clone(),
+                            kind: ValueCompletionKind::Function,
+                            detail: Some(scheme.ty.to_pretty(80)),
+                        },
+                        ty_text: Some(scheme.ty.to_pretty(80)),
+                        kind_rank: 1,
+                        scope_rank: usize::MAX - 1,
+                    }),
+            );
+        }
+
+        ranked_items.extend(visible_use_namespace_items(path, src));
+
+        let mut seen = HashSet::new();
+        let mut items = Vec::new();
+        for ranked in ranked_items
+            .into_iter()
+            .filter(|item| item.item.name.starts_with(&prefix))
+        {
+            if seen.insert(ranked.item.name.clone()) {
+                items.push(ranked);
+            }
+        }
+
+        for keyword in VALUE_COMPLETION_KEYWORDS {
+            if !keyword.starts_with(&prefix) {
+                continue;
+            }
+            if !seen.insert((*keyword).to_string()) {
+                continue;
+            }
+            items.push(RankedValueItem {
+                item: ValueCompletionItem {
+                    name: (*keyword).to_string(),
+                    kind: ValueCompletionKind::Keyword,
+                    detail: None,
+                },
+                ty_text: None,
+                kind_rank: 3,
+                scope_rank: usize::MAX,
+            });
+        }
+
+        let expected_ty = call_context
+            .as_ref()
+            .and_then(CallSignatureContext::expected_param)
+            .map(|param| param.ty.to_pretty(80));
+
+        sort_value_items(&mut items, expected_ty.as_deref());
+        Some(items.into_iter().map(|item| item.item).take(50).collect())
+    })
 }
 
 pub fn colon_colon_completions(
@@ -240,78 +245,85 @@ pub fn colon_colon_completions(
     line: u32,
     col: u32,
 ) -> Option<Vec<ColonColonCompletionItem>> {
-    let line_index = line_index::LineIndex::new(src);
-    let offset = line_index.offset(line_index::LineCol { line, col })?;
-    let (prefix_start, prefix) = ident_prefix_at_offset(src, offset)?;
-    let colon_start = prefix_start.checked_sub(TextSize::from(2))?;
-    if src
-        .as_bytes()
-        .get(u32::from(colon_start) as usize..u32::from(prefix_start) as usize)
-        != Some(b"::")
-    {
-        return None;
-    }
-
-    let parse_src = if prefix.is_empty() {
-        let mut fixed_src = src.to_string();
-        let insert_index = u32::from(offset) as usize;
-        fixed_src.insert_str(insert_index, COMPLETION_PLACEHOLDER);
-        fixed_src
-    } else {
-        src.to_string()
-    };
-
-    let result = parser::parse(path, &parse_src);
-    let root = MySyntaxNode::new_root(result.green_node);
-    let file = cst::cst::File::cast(root.clone())?;
-
-    let focus_offset = if prefix.is_empty() {
-        offset
-    } else {
-        offset.checked_sub(TextSize::from(1))?
-    };
-
-    let token = match file.syntax().token_at_offset(focus_offset) {
-        rowan::TokenAtOffset::None => None,
-        rowan::TokenAtOffset::Single(token) => Some(token),
-        rowan::TokenAtOffset::Between(left, right) => {
-            if right.kind() == MySyntaxKind::Ident {
-                Some(right)
-            } else {
-                Some(left)
-            }
+    crate::pipeline::with_compiler_stack(|| {
+        let line_index = line_index::LineIndex::new(src);
+        let offset = line_index.offset(line_index::LineCol { line, col })?;
+        let (prefix_start, prefix) = ident_prefix_at_offset(src, offset)?;
+        let colon_start = prefix_start.checked_sub(TextSize::from(2))?;
+        if src
+            .as_bytes()
+            .get(u32::from(colon_start) as usize..u32::from(prefix_start) as usize)
+            != Some(b"::")
+        {
+            return None;
         }
-    }?;
 
-    let path_node = ancestor_path_from_token(&token)?;
-    let segments = path_node
-        .ident_tokens()
-        .map(|tok| tok.to_string())
-        .collect::<Vec<_>>();
-    if segments.is_empty() {
-        return None;
-    }
-    let namespace = segments[..segments.len().saturating_sub(1)].join("::");
-    if namespace.is_empty() {
-        return None;
-    }
+        let parse_src = if prefix.is_empty() {
+            let mut fixed_src = src.to_string();
+            let insert_index = u32::from(offset) as usize;
+            fixed_src.insert_str(insert_index, COMPLETION_PLACEHOLDER);
+            fixed_src
+        } else {
+            src.to_string()
+        };
 
-    let genv = typecheck_for_query(path, &parse_src)
-        .ok()
-        .map(|(_hir_table, _results, genv, _diagnostics)| genv);
-    let symbol_index = build_symbol_index(path, &parse_src)
-        .ok()
-        .map(|(_graph, index)| index);
+        let result = parser::parse(path, &parse_src);
+        let root = MySyntaxNode::new_root(result.green_node);
+        let file = cst::cst::File::cast(root.clone())?;
 
-    let mut items = if use_decl_from_token(&token).is_some() {
-        use_colon_colon_items_for_namespace(path, genv.as_ref(), symbol_index.as_ref(), &namespace)
-    } else {
-        colon_colon_items_for_namespace(genv.as_ref(), symbol_index.as_ref(), &namespace)
-    };
-    items.sort_by(|a, b| a.name.cmp(&b.name));
-    items.dedup_by(|a, b| a.name == b.name && a.kind == b.kind && a.detail == b.detail);
-    items.retain(|item| item.name.starts_with(&prefix));
-    Some(items)
+        let focus_offset = if prefix.is_empty() {
+            offset
+        } else {
+            offset.checked_sub(TextSize::from(1))?
+        };
+
+        let token = match file.syntax().token_at_offset(focus_offset) {
+            rowan::TokenAtOffset::None => None,
+            rowan::TokenAtOffset::Single(token) => Some(token),
+            rowan::TokenAtOffset::Between(left, right) => {
+                if right.kind() == MySyntaxKind::Ident {
+                    Some(right)
+                } else {
+                    Some(left)
+                }
+            }
+        }?;
+
+        let path_node = ancestor_path_from_token(&token)?;
+        let segments = path_node
+            .ident_tokens()
+            .map(|tok| tok.to_string())
+            .collect::<Vec<_>>();
+        if segments.is_empty() {
+            return None;
+        }
+        let namespace = segments[..segments.len().saturating_sub(1)].join("::");
+        if namespace.is_empty() {
+            return None;
+        }
+
+        let genv = typecheck_for_query(path, &parse_src)
+            .ok()
+            .map(|(_hir_table, _results, genv, _diagnostics)| genv);
+        let symbol_index = build_symbol_index(path, &parse_src)
+            .ok()
+            .map(|(_graph, index)| index);
+
+        let mut items = if use_decl_from_token(&token).is_some() {
+            use_colon_colon_items_for_namespace(
+                path,
+                genv.as_ref(),
+                symbol_index.as_ref(),
+                &namespace,
+            )
+        } else {
+            colon_colon_items_for_namespace(genv.as_ref(), symbol_index.as_ref(), &namespace)
+        };
+        items.sort_by(|a, b| a.name.cmp(&b.name));
+        items.dedup_by(|a, b| a.name == b.name && a.kind == b.kind && a.detail == b.detail);
+        items.retain(|item| item.name.starts_with(&prefix));
+        Some(items)
+    })
 }
 
 fn normalize_completion_ty(ty: tast::Ty) -> tast::Ty {

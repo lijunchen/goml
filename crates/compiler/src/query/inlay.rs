@@ -7,40 +7,42 @@ use crate::{hir, tast};
 use super::{InlayHintItem, InlayHintKind, typecheck::typecheck_for_query};
 
 pub fn inlay_hints(path: &Path, src: &str) -> Option<Vec<InlayHintItem>> {
-    let (hir_table, results, _genv, _diagnostics) = typecheck_for_query(path, src).ok()?;
+    crate::pipeline::with_compiler_stack(|| {
+        let (hir_table, results, _genv, _diagnostics) = typecheck_for_query(path, src).ok()?;
 
-    let mut hints = Vec::new();
-    for idx in 0..hir_table.def_count() {
-        let def_id = hir_table.def_id_at(idx);
-        match hir_table.def(def_id) {
-            hir::Def::Fn(func) => {
-                collect_hints_from_block(&hir_table, &results, &func.body, &mut hints);
-            }
-            hir::Def::ImplBlock(impl_block) => {
-                for method in &impl_block.methods {
-                    if let hir::Def::Fn(func) = hir_table.def(*method) {
-                        collect_hints_from_block(&hir_table, &results, &func.body, &mut hints);
+        let mut hints = Vec::new();
+        for idx in 0..hir_table.def_count() {
+            let def_id = hir_table.def_id_at(idx);
+            match hir_table.def(def_id) {
+                hir::Def::Fn(func) => {
+                    collect_hints_from_block(&hir_table, &results, &func.body, &mut hints);
+                }
+                hir::Def::ImplBlock(impl_block) => {
+                    for method in &impl_block.methods {
+                        if let hir::Def::Fn(func) = hir_table.def(*method) {
+                            collect_hints_from_block(&hir_table, &results, &func.body, &mut hints);
+                        }
                     }
                 }
+                hir::Def::EnumDef(_)
+                | hir::Def::StructDef(_)
+                | hir::Def::TraitDef(_)
+                | hir::Def::ExternGo(_)
+                | hir::Def::ExternType(_)
+                | hir::Def::ExternBuiltin(_) => {}
             }
-            hir::Def::EnumDef(_)
-            | hir::Def::StructDef(_)
-            | hir::Def::TraitDef(_)
-            | hir::Def::ExternGo(_)
-            | hir::Def::ExternType(_)
-            | hir::Def::ExternBuiltin(_) => {}
         }
-    }
 
-    hints.sort_by(|a, b| {
-        a.offset
-            .cmp(&b.offset)
-            .then(a.label.cmp(&b.label))
-            .then(a.kind.cmp(&b.kind))
-    });
-    hints.dedup_by(|a, b| a.offset == b.offset && a.label == b.label && a.kind == b.kind);
+        hints.sort_by(|a, b| {
+            a.offset
+                .cmp(&b.offset)
+                .then(a.label.cmp(&b.label))
+                .then(a.kind.cmp(&b.kind))
+        });
+        hints.dedup_by(|a, b| a.offset == b.offset && a.label == b.label && a.kind == b.kind);
 
-    Some(hints)
+        Some(hints)
+    })
 }
 
 fn collect_hints_from_block(

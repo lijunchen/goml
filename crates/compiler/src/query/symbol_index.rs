@@ -506,13 +506,23 @@ fn discover_packages_for_query(
         .parent()
         .filter(|parent| !parent.as_os_str().is_empty())
         .unwrap_or_else(|| Path::new("."));
-    crate::pipeline::packages::discover_packages_with_external_imports(
-        root_dir,
-        Some(path),
-        Some(entry_ast),
-        &crate::package_imports::ExternalImports::default(),
-    )
-    .map_err(|e| format!("{:?}", e))
+    if !path.exists() {
+        crate::pipeline::packages::discover_packages_single_file_with_external_imports(
+            root_dir,
+            path,
+            entry_ast,
+            &crate::package_imports::ExternalImports::default(),
+        )
+        .map_err(|e| format!("{:?}", e))
+    } else {
+        crate::pipeline::packages::discover_packages_with_external_imports(
+            root_dir,
+            Some(path),
+            Some(entry_ast),
+            &crate::package_imports::ExternalImports::default(),
+        )
+        .map_err(|e| format!("{:?}", e))
+    }
 }
 
 fn ident_tokens_to_segments(path: &cst::nodes::Path) -> Vec<String> {

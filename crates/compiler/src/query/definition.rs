@@ -26,15 +26,17 @@ pub fn goto_definition(
     line: u32,
     col: u32,
 ) -> Result<text_size::TextRange, String> {
-    let locations = goto_definition_locations(path, src, line, col)?;
-    let mut same_file = locations
-        .iter()
-        .filter(|loc| loc.path == path)
-        .collect::<Vec<_>>();
-    if same_file.len() == 1 {
-        return Ok(same_file.swap_remove(0).range);
-    }
-    Err("no definition found".to_string())
+    crate::pipeline::with_compiler_stack(|| {
+        let locations = goto_definition_locations(path, src, line, col)?;
+        let mut same_file = locations
+            .iter()
+            .filter(|loc| loc.path == path)
+            .collect::<Vec<_>>();
+        if same_file.len() == 1 {
+            return Ok(same_file.swap_remove(0).range);
+        }
+        Err("no definition found".to_string())
+    })
 }
 
 pub fn goto_definition_locations(
@@ -43,41 +45,43 @@ pub fn goto_definition_locations(
     line: u32,
     col: u32,
 ) -> Result<Vec<DefinitionLocation>, String> {
-    let context = QueryContext::from_position(path, src, line, col)?;
-    let token = context
-        .token_prefer_ident()
-        .ok_or_else(|| "no token at position".to_string())?;
+    crate::pipeline::with_compiler_stack(|| {
+        let context = QueryContext::from_position(path, src, line, col)?;
+        let token = context
+            .token_prefer_ident()
+            .ok_or_else(|| "no token at position".to_string())?;
 
-    if let Some(locations) = resolve_use_decl(path, src, &token) {
-        return Ok(locations);
-    }
+        if let Some(locations) = resolve_use_decl(path, src, &token) {
+            return Ok(locations);
+        }
 
-    if let Some(location) = self_definition_location(path, &token) {
-        return Ok(vec![location]);
-    }
+        if let Some(location) = self_definition_location(path, &token) {
+            return Ok(vec![location]);
+        }
 
-    let symbol_lookup = build_symbol_lookup(path, src);
+        let symbol_lookup = build_symbol_lookup(path, src);
 
-    if let Some(locations) = resolve_semantic_definition(path, src, &token, &symbol_lookup) {
-        return Ok(locations);
-    }
+        if let Some(locations) = resolve_semantic_definition(path, src, &token, &symbol_lookup) {
+            return Ok(locations);
+        }
 
-    if token.kind() == MySyntaxKind::Ident {
-        let segments = path_segments_from_token(&token).unwrap_or_default();
-        if !segments.is_empty() {
-            let out = lookup_symbol_locations_for_path(
-                symbol_lookup.graph.as_ref(),
-                &symbol_lookup.index,
-                &token.to_string(),
-                &segments,
-            );
-            if !out.is_empty() {
-                return Ok(out);
+        if token.kind() == MySyntaxKind::Ident {
+            let segments = path_segments_from_token(&token).unwrap_or_default();
+            if !segments.is_empty() {
+                let out = lookup_symbol_locations_for_path(
+                    symbol_lookup.graph.as_ref(),
+                    &symbol_lookup.index,
+                    &token.to_string(),
+                    &segments,
+                );
+                if !out.is_empty() {
+                    return Ok(out);
+                }
             }
         }
-    }
 
-    Err("no definition found".to_string())
+        Err("no definition found".to_string())
+    })
 }
 
 fn resolve_use_decl(

@@ -235,13 +235,6 @@ fn typecheck_package(
     }
 }
 
-fn typecheck_packages(
-    path: &Path,
-    entry_ast: ast::File,
-) -> Result<TypecheckPackagesResult, CompilationError> {
-    typecheck_packages_inner(path, entry_ast, false)
-}
-
 fn typecheck_packages_inner(
     path: &Path,
     entry_ast: ast::File,
@@ -412,8 +405,13 @@ fn discovery_root_for_file(path: &Path) -> PathBuf {
         .to_path_buf()
 }
 
+fn should_use_single_file_mode(path: &Path) -> bool {
+    !path.exists() && packages::discover_project_from_file(path).is_err()
+}
+
 pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> {
-    compile_inner(path, src, false)
+    let single_file = should_use_single_file_mode(path);
+    super::with_src_compiler_stack(src, || compile_inner(path, src, single_file))
 }
 
 fn compile_inner(
@@ -532,16 +530,19 @@ fn compile_inner(
 }
 
 pub fn compile_single_file(path: &Path, src: &str) -> Result<Compilation, CompilationError> {
-    compile_inner(path, src, true)
+    super::with_src_compiler_stack(src, || compile_inner(path, src, true))
 }
 
 pub fn typecheck_with_packages(
     path: &Path,
     src: &str,
 ) -> Result<(tast::File, GlobalTypeEnv, Diagnostics), CompilationError> {
-    let (_green_node, _cst, entry_ast) = parse_ast_from_source(path, src)?;
-    let result = typecheck_packages(path, entry_ast)?;
-    Ok((result.entry_tast, result.genv, result.diagnostics))
+    let single_file = should_use_single_file_mode(path);
+    super::with_src_compiler_stack(src, || {
+        let (_green_node, _cst, entry_ast) = parse_ast_from_source(path, src)?;
+        let result = typecheck_packages_inner(path, entry_ast, single_file)?;
+        Ok((result.entry_tast, result.genv, result.diagnostics))
+    })
 }
 
 pub fn typecheck_with_packages_and_results(
@@ -556,139 +557,153 @@ pub fn typecheck_with_packages_and_results(
     ),
     CompilationError,
 > {
-    let (_green_node, _cst, entry_ast, mut diagnostics) =
-        parse_ast_from_source_allow_parse_errors(path, src)?;
-    let root = discovery_root_for_file(path);
-    let external_deps = load_external_dependencies(&root)?;
-    let external_imports = external_deps.external_imports();
-    let mut graph = packages::discover_packages_with_external_imports(
-        &root,
-        Some(path),
-        Some(entry_ast),
-        &external_imports,
-    )?;
-    external_deps
-        .augment_graph(&mut graph)
-        .map_err(compile_error)?;
-    let order = packages::topo_sort_packages(&graph)?;
+    let single_file = should_use_single_file_mode(path);
+    super::with_src_compiler_stack(src, || {
+        let (_green_node, _cst, entry_ast, mut diagnostics) =
+            parse_ast_from_source_allow_parse_errors(path, src)?;
+        let root = discovery_root_for_file(path);
+        let external_deps = load_external_dependencies(&root)?;
+        let external_imports = external_deps.external_imports();
+        let mut graph = if single_file {
+            packages::discover_packages_single_file_with_external_imports(
+                &root,
+                path,
+                entry_ast,
+                &external_imports,
+            )?
+        } else {
+            packages::discover_packages_with_external_imports(
+                &root,
+                Some(path),
+                Some(entry_ast),
+                &external_imports,
+            )?
+        };
+        external_deps
+            .augment_graph(&mut graph)
+            .map_err(compile_error)?;
+        let order = packages::topo_sort_packages(&graph)?;
 
-    let mut genv = builtins::builtin_env();
-    let external_interfaces = external_deps.package_interfaces();
-    let external_envs = external_deps.package_envs();
-    for (name, module) in external_deps.modules.iter() {
-        for (key, _) in module.interface.exports.trait_env.trait_impls.iter() {
-            if genv.trait_env.trait_impls.contains_key(key) {
-                diagnostics.push(Diagnostic::new(
-                    Stage::Typer,
-                    Severity::Error,
-                    format!(
-                        "Trait {} implementation for {:?} is defined in multiple packages (including {})",
-                        key.0, key.1, name
-                    ),
-                ));
+        let mut genv = builtins::builtin_env();
+        let external_interfaces = external_deps.package_interfaces();
+        let external_envs = external_deps.package_envs();
+        for (name, module) in external_deps.modules.iter() {
+            for (key, _) in module.interface.exports.trait_env.trait_impls.iter() {
+                if genv.trait_env.trait_impls.contains_key(key) {
+                    diagnostics.push(Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!(
+                            "Trait {} implementation for {:?} is defined in multiple packages (including {})",
+                            key.0, key.1, name
+                        ),
+                    ));
+                }
             }
+            module.interface.exports.apply_to(&mut genv);
         }
-        module.interface.exports.apply_to(&mut genv);
-    }
-    let mut artifacts_by_name: HashMap<String, PackageInterface> = HashMap::new();
-    let mut package_names: Vec<String> = graph.packages.keys().cloned().collect();
-    package_names.sort();
-    let package_ids = package_id_map(&package_names);
+        let mut artifacts_by_name: HashMap<String, PackageInterface> = HashMap::new();
+        let mut package_names: Vec<String> = graph.packages.keys().cloned().collect();
+        package_names.sort();
+        let package_ids = package_id_map(&package_names);
 
-    let mut entry_hir_table = None;
-    let mut entry_results = None;
+        let mut entry_hir_table = None;
+        let mut entry_results = None;
 
-    for name in order.iter() {
-        let package = graph
-            .packages
-            .get(name)
-            .ok_or_else(|| compile_error(format!("package {} not found", name)))?;
-        let package_id = *package_ids
-            .get(name)
-            .unwrap_or_else(|| panic!("missing package id for {}", name));
-        let mut deps_envs = HashMap::new();
-        let mut deps: Vec<_> = package.imports.iter().cloned().collect();
-        deps.sort();
-        let mut deps_interfaces = HashMap::new();
-        for dep in deps.iter() {
-            if let Some(interface) = artifacts_by_name.get(dep) {
-                deps_envs.insert(dep.clone(), interface.exports.to_genv());
-                deps_interfaces.insert(dep.clone(), interface.package_interface.clone());
-                continue;
+        for name in order.iter() {
+            let package = graph
+                .packages
+                .get(name)
+                .ok_or_else(|| compile_error(format!("package {} not found", name)))?;
+            let package_id = *package_ids
+                .get(name)
+                .unwrap_or_else(|| panic!("missing package id for {}", name));
+            let mut deps_envs = HashMap::new();
+            let mut deps: Vec<_> = package.imports.iter().cloned().collect();
+            deps.sort();
+            let mut deps_interfaces = HashMap::new();
+            for dep in deps.iter() {
+                if let Some(interface) = artifacts_by_name.get(dep) {
+                    deps_envs.insert(dep.clone(), interface.exports.to_genv());
+                    deps_interfaces.insert(dep.clone(), interface.package_interface.clone());
+                    continue;
+                }
+                if let Some(interface) = external_interfaces.get(dep) {
+                    deps_envs.insert(
+                        dep.clone(),
+                        external_envs.get(dep).cloned().ok_or_else(|| {
+                            compile_error(format!("missing package env for {}", dep))
+                        })?,
+                    );
+                    deps_interfaces.insert(dep.clone(), interface.clone());
+                    continue;
+                }
+                return Err(compile_error(format!(
+                    "missing package artifact for {}",
+                    dep
+                )));
             }
-            if let Some(interface) = external_interfaces.get(dep) {
-                deps_envs.insert(
-                    dep.clone(),
-                    external_envs
-                        .get(dep)
-                        .cloned()
-                        .ok_or_else(|| compile_error(format!("missing package env for {}", dep)))?,
-                );
-                deps_interfaces.insert(dep.clone(), interface.clone());
-                continue;
-            }
-            return Err(compile_error(format!(
-                "missing package artifact for {}",
-                dep
-            )));
-        }
 
-        let (hir, hir_table, mut hir_diagnostics) =
-            hir::lower_to_hir_files_with_env(package_id, package.files.clone(), &deps_interfaces);
-        let (hir_table, results, package_genv, mut package_diagnostics) =
-            typer::check_file_with_env_and_results(
-                hir,
-                hir_table,
-                GlobalTypeEnv::new(),
-                builtins::builtin_env(),
-                &package.name,
-                deps_envs,
+            let (hir, hir_table, mut hir_diagnostics) = hir::lower_to_hir_files_with_env(
+                package_id,
+                package.files.clone(),
+                &deps_interfaces,
             );
-        package_diagnostics.append(&mut hir_diagnostics);
-        diagnostics.append(&mut package_diagnostics);
+            let (hir_table, results, package_genv, mut package_diagnostics) =
+                typer::check_file_with_env_and_results(
+                    hir,
+                    hir_table,
+                    GlobalTypeEnv::new(),
+                    builtins::builtin_env(),
+                    &package.name,
+                    deps_envs,
+                );
+            package_diagnostics.append(&mut hir_diagnostics);
+            diagnostics.append(&mut package_diagnostics);
 
-        for (key, _) in package_genv.trait_env.trait_impls.iter() {
-            if genv.trait_env.trait_impls.contains_key(key) {
-                diagnostics.push(Diagnostic::new(
-                    Stage::Typer,
-                    Severity::Error,
-                    format!(
-                        "Trait {} implementation for {:?} is defined in multiple packages (including {})",
-                        key.0, key.1, name
-                    ),
-                ));
+            for (key, _) in package_genv.trait_env.trait_impls.iter() {
+                if genv.trait_env.trait_impls.contains_key(key) {
+                    diagnostics.push(Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!(
+                            "Trait {} implementation for {:?} is defined in multiple packages (including {})",
+                            key.0, key.1, name
+                        ),
+                    ));
+                }
             }
+
+            let exports = PackageExports {
+                type_env: package_genv.type_env.clone(),
+                trait_env: package_genv.trait_env.clone(),
+                value_env: package_genv.value_env.clone(),
+            };
+            exports.apply_to(&mut genv);
+            let package_interface = interface::PackageInterface::from_exports(name, &exports);
+
+            let interface = PackageInterface {
+                exports,
+                package_interface,
+            };
+
+            if name == &graph.entry_package {
+                entry_hir_table = Some(hir_table);
+                entry_results = Some(results);
+            }
+
+            artifacts_by_name.insert(name.clone(), interface);
         }
 
-        let exports = PackageExports {
-            type_env: package_genv.type_env.clone(),
-            trait_env: package_genv.trait_env.clone(),
-            value_env: package_genv.value_env.clone(),
+        let Some(entry_hir_table) = entry_hir_table else {
+            return Err(compile_error("entry package not found".to_string()));
         };
-        exports.apply_to(&mut genv);
-        let package_interface = interface::PackageInterface::from_exports(name, &exports);
-
-        let interface = PackageInterface {
-            exports,
-            package_interface,
+        let Some(entry_results) = entry_results else {
+            return Err(compile_error("entry package not found".to_string()));
         };
 
-        if name == &graph.entry_package {
-            entry_hir_table = Some(hir_table);
-            entry_results = Some(results);
-        }
-
-        artifacts_by_name.insert(name.clone(), interface);
-    }
-
-    let Some(entry_hir_table) = entry_hir_table else {
-        return Err(compile_error("entry package not found".to_string()));
-    };
-    let Some(entry_results) = entry_results else {
-        return Err(compile_error("entry package not found".to_string()));
-    };
-
-    Ok((entry_hir_table, entry_results, genv, diagnostics))
+        Ok((entry_hir_table, entry_results, genv, diagnostics))
+    })
 }
 
 fn load_external_dependencies(
