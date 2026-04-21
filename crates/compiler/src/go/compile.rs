@@ -5121,6 +5121,7 @@ fn compile_value_expr(goenv: &GlobalGoEnv, expr: &anf::ValueExpr) -> CompiledVal
         }
         anf::ValueExpr::Call { func, args, ty } => {
             if let anf::ImmExpr::Var { id, .. } = func
+                && runtime_builtin_available(goenv, &id.0)
                 && (id.0 == "print" || id.0 == "println")
             {
                 let call_expr = goast::Expr::Call {
