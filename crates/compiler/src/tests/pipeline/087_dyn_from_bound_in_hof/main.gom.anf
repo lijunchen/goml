@@ -11,13 +11,13 @@ fn main() -> unit {
     ()
   } in
   let f/3 = mk_renderer__T_int32(42) in
-  let t6 = inherent#closure_env_mk_renderer_T_int32_0#closure_env_mk_renderer_T_int32_0#apply(f/3) in
+  let t6 = f/3() in
   let _wild0 = println__T_string(t6) in
   jump ret5()
 }
 
-fn mk_renderer__T_int32(x/1: int32) -> closure_env_mk_renderer_T_int32_0 {
-  join ret7(retv8: closure_env_mk_renderer_T_int32_0) -> closure_env_mk_renderer_T_int32_0 {
+fn mk_renderer__T_int32(x/1: int32) -> () -> string {
+  join ret7(retv8: () -> string) -> () -> string {
     retv8
   } in
   let d/2 = to_dyn[Display]{int32}(x/1) in

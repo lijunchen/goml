@@ -19,69 +19,71 @@ use super::{
 };
 
 pub fn hover_type(path: &Path, src: &str, line: u32, col: u32) -> Result<String, String> {
-    let context = QueryContext::from_position(path, src, line, col)?;
-    let token = context.token_prefer_ident();
-    if token
-        .as_ref()
-        .is_some_and(|token| package_decl_from_token(token).is_some())
-    {
-        return Err("no type information found".to_string());
-    }
-    let range = token.as_ref().map(|tok| tok.text_range());
-    let offset = context.offset();
+    crate::pipeline::with_compiler_stack(|| {
+        let context = QueryContext::from_position(path, src, line, col)?;
+        let token = context.token_prefer_ident();
+        if token
+            .as_ref()
+            .is_some_and(|token| package_decl_from_token(token).is_some())
+        {
+            return Err("no type information found".to_string());
+        }
+        let range = token.as_ref().map(|tok| tok.text_range());
+        let offset = context.offset();
 
-    let (hir_table, results, genv, _diagnostics) = typecheck_for_query(path, src)?;
-    let index = HirResultsIndex::new(&hir_table);
-    let closure_params = ClosureParamIndex::new(&hir_table);
+        let (hir_table, results, genv, _diagnostics) = typecheck_for_query(path, src)?;
+        let index = HirResultsIndex::new(&hir_table);
+        let closure_params = ClosureParamIndex::new(&hir_table);
 
-    if let Some(token) = token.as_ref() {
-        if let Some(ty) = param_type_from_token(token, &closure_params, &results) {
+        if let Some(token) = token.as_ref() {
+            if let Some(ty) = param_type_from_token(token, &closure_params, &results) {
+                return Ok(ty);
+            }
+
+            if let Some(pat_id) = find_mapped_pat_id_from_token(token, &index)
+                && let Some(ty) = results.pat_ty(pat_id)
+            {
+                return Ok(ty.to_pretty(80));
+            }
+
+            if let Some(expr_id) = find_mapped_expr_id_from_token(token, &index)
+                && let Some(ty) = results.expr_ty(expr_id)
+            {
+                return Ok(ty.to_pretty(80));
+            }
+
+            if let Some(local_id) = find_mapped_local_id_from_token(token, &index)
+                && let Some(ty) = results.local_ty(local_id)
+            {
+                return Ok(ty.to_pretty(80));
+            }
+        }
+
+        if let Some(token) = token.as_ref()
+            && let Some(segments) = path_segments_from_token(token)
+            && let Some(ty) = lookup_type_from_segments(&genv, &segments)
+        {
             return Ok(ty);
         }
 
-        if let Some(pat_id) = find_mapped_pat_id_from_token(token, &index)
-            && let Some(ty) = results.pat_ty(pat_id)
+        if let Some(segments) = path_segments_at_offset(src, offset)
+            && let Some(ty) = lookup_type_from_segments(&genv, &segments)
         {
-            return Ok(ty.to_pretty(80));
+            return Ok(ty);
         }
 
-        if let Some(expr_id) = find_mapped_expr_id_from_token(token, &index)
-            && let Some(ty) = results.expr_ty(expr_id)
+        if let Some(range) = range
+            && let Some(ty) = lookup_type_from_path_range(&genv, context.syntax(), &range)
         {
-            return Ok(ty.to_pretty(80));
+            return Ok(ty);
         }
 
-        if let Some(local_id) = find_mapped_local_id_from_token(token, &index)
-            && let Some(ty) = results.local_ty(local_id)
-        {
-            return Ok(ty.to_pretty(80));
+        if let Some(ty) = lookup_type_from_path_offset(&genv, src, offset) {
+            return Ok(ty);
         }
-    }
 
-    if let Some(token) = token.as_ref()
-        && let Some(segments) = path_segments_from_token(token)
-        && let Some(ty) = lookup_type_from_segments(&genv, &segments)
-    {
-        return Ok(ty);
-    }
-
-    if let Some(segments) = path_segments_at_offset(src, offset)
-        && let Some(ty) = lookup_type_from_segments(&genv, &segments)
-    {
-        return Ok(ty);
-    }
-
-    if let Some(range) = range
-        && let Some(ty) = lookup_type_from_path_range(&genv, context.syntax(), &range)
-    {
-        return Ok(ty);
-    }
-
-    if let Some(ty) = lookup_type_from_path_offset(&genv, src, offset) {
-        return Ok(ty);
-    }
-
-    Err("no type information found".to_string())
+        Err("no type information found".to_string())
+    })
 }
 
 fn param_type_from_token(

@@ -333,6 +333,10 @@ impl<'env> State<'env> {
     }
 }
 
+fn should_keep_declared_fn_ret_ty(state: &State<'_>, declared_ret_ty: &Ty, body_ty: &Ty) -> bool {
+    matches!(declared_ret_ty, Ty::TFunc { .. }) && state.closure_struct_for_ty(body_ty).is_some()
+}
+
 #[derive(Clone)]
 struct ScopeEntry {
     ty: Ty,
@@ -408,7 +412,9 @@ pub fn lambda_lift(
         scope.pop_layer();
 
         let body_ty = body.get_ty();
-        let ret_ty = if body_ty != f.ret_ty && state.ty_contains_closure(&body_ty) {
+        let ret_ty = if should_keep_declared_fn_ret_ty(&state, &f.ret_ty, &body_ty) {
+            f.ret_ty.clone()
+        } else if body_ty != f.ret_ty && state.ty_contains_closure(&body_ty) {
             body_ty
         } else {
             f.ret_ty.clone()
@@ -464,7 +470,9 @@ fn stabilize_lifted_calls(state: &mut State<'_>, mut toplevels: Vec<LiftFn>) -> 
             let body = rewrite_lift_expr_with_final_types(state, &mut scope, f.body);
             scope.pop_layer();
             let body_ty = body.get_ty();
-            let ret_ty = if body_ty != f.ret_ty && state.ty_contains_closure(&body_ty) {
+            let ret_ty = if should_keep_declared_fn_ret_ty(state, &f.ret_ty, &body_ty) {
+                f.ret_ty.clone()
+            } else if body_ty != f.ret_ty && state.ty_contains_closure(&body_ty) {
                 body_ty
             } else {
                 f.ret_ty.clone()

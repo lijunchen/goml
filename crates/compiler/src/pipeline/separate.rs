@@ -13,8 +13,8 @@ use crate::mono::{self, GlobalMonoEnv};
 use crate::package_names::is_special_unqualified_package;
 use crate::package_names::{BUILTIN_PACKAGE, ENTRY_FUNCTION, ROOT_PACKAGE, is_builtin_package};
 use crate::pipeline::builtin_inherent;
-use crate::pipeline::compile_error;
 use crate::pipeline::pipeline::{CompilationError, parse_ast_file};
+use crate::pipeline::{compile_error, with_compiler_stack};
 use diagnostics::Diagnostics;
 
 pub struct PackageInputs {
@@ -301,108 +301,114 @@ fn typecheck_single_package(
 }
 
 pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationError> {
-    let interface_units = load_interface_files(&opts.interface_files)?;
-    let (files, imports, _sources) =
-        read_source_files(&opts.package, &opts.input_files, &interface_units)?;
+    with_compiler_stack(|| {
+        let interface_units = load_interface_files(&opts.interface_files)?;
+        let (files, imports, _sources) =
+            read_source_files(&opts.package, &opts.input_files, &interface_units)?;
 
-    let mut deps: Vec<String> = imports.into_iter().collect();
-    deps.sort();
-    deps.dedup();
+        let mut deps: Vec<String> = imports.into_iter().collect();
+        deps.sort();
+        deps.dedup();
 
-    let mut deps_envs = HashMap::new();
-    let mut deps_interfaces = HashMap::new();
-    let mut dep_hashes = BTreeMap::new();
+        let mut deps_envs = HashMap::new();
+        let mut deps_interfaces = HashMap::new();
+        let mut dep_hashes = BTreeMap::new();
 
-    if opts.package != BUILTIN_PACKAGE {
-        dep_hashes.insert(
-            BUILTIN_PACKAGE.to_string(),
-            builtins::builtin_interface_hash(),
-        );
-    }
-
-    for dep in deps {
-        if dep == BUILTIN_PACKAGE || dep == opts.package {
-            continue;
+        if opts.package != BUILTIN_PACKAGE {
+            dep_hashes.insert(
+                BUILTIN_PACKAGE.to_string(),
+                builtins::builtin_interface_hash(),
+            );
         }
-        let (unit, package_interface) =
-            load_interface_for_package(&dep, &opts.interface_files, &interface_units)?;
-        deps_envs.insert(dep.clone(), unit.exports.to_genv());
-        deps_interfaces.insert(dep.clone(), package_interface);
-        dep_hashes.insert(unit.package.clone(), unit.interface_hash.clone());
-    }
 
-    let (tast, exports, pkg_interface, diagnostics) =
-        typecheck_single_package(&opts.package, files, &deps_interfaces, deps_envs);
-    drop(tast);
+        for dep in deps {
+            if dep == BUILTIN_PACKAGE || dep == opts.package {
+                continue;
+            }
+            let (unit, package_interface) =
+                load_interface_for_package(&dep, &opts.interface_files, &interface_units)?;
+            deps_envs.insert(dep.clone(), unit.exports.to_genv());
+            deps_interfaces.insert(dep.clone(), package_interface);
+            dep_hashes.insert(unit.package.clone(), unit.interface_hash.clone());
+        }
 
-    let interface = InterfaceUnit::new(opts.package.clone(), exports, pkg_interface, dep_hashes);
-    if diagnostics.has_errors() {
-        return Err(CompilationError::Typer { diagnostics });
-    }
+        let (tast, exports, pkg_interface, diagnostics) =
+            typecheck_single_package(&opts.package, files, &deps_interfaces, deps_envs);
+        drop(tast);
 
-    Ok(interface)
+        let interface =
+            InterfaceUnit::new(opts.package.clone(), exports, pkg_interface, dep_hashes);
+        if diagnostics.has_errors() {
+            return Err(CompilationError::Typer { diagnostics });
+        }
+
+        Ok(interface)
+    })
 }
 
 pub fn build_package(opts: PackageInputs) -> Result<CoreUnit, CompilationError> {
-    let interface_units = load_interface_files(&opts.interface_files)?;
-    let (files, imports, sources) =
-        read_source_files(&opts.package, &opts.input_files, &interface_units)?;
+    with_compiler_stack(|| {
+        let interface_units = load_interface_files(&opts.interface_files)?;
+        let (files, imports, sources) =
+            read_source_files(&opts.package, &opts.input_files, &interface_units)?;
 
-    let mut deps: Vec<String> = imports.into_iter().collect();
-    deps.sort();
-    deps.dedup();
+        let mut deps: Vec<String> = imports.into_iter().collect();
+        deps.sort();
+        deps.dedup();
 
-    let mut deps_envs = HashMap::new();
-    let mut deps_interfaces = HashMap::new();
-    let mut dep_hashes = BTreeMap::new();
-    let mut dep_units = Vec::new();
+        let mut deps_envs = HashMap::new();
+        let mut deps_interfaces = HashMap::new();
+        let mut dep_hashes = BTreeMap::new();
+        let mut dep_units = Vec::new();
 
-    if opts.package != BUILTIN_PACKAGE {
-        dep_hashes.insert(
-            BUILTIN_PACKAGE.to_string(),
-            builtins::builtin_interface_hash(),
-        );
-    }
-
-    for dep in deps {
-        if dep == BUILTIN_PACKAGE || dep == opts.package {
-            continue;
+        if opts.package != BUILTIN_PACKAGE {
+            dep_hashes.insert(
+                BUILTIN_PACKAGE.to_string(),
+                builtins::builtin_interface_hash(),
+            );
         }
-        let (unit, package_interface) =
-            load_interface_for_package(&dep, &opts.interface_files, &interface_units)?;
-        deps_envs.insert(dep.clone(), unit.exports.to_genv());
-        deps_interfaces.insert(dep.clone(), package_interface);
-        dep_hashes.insert(unit.package.clone(), unit.interface_hash.clone());
-        dep_units.push(unit);
-    }
 
-    let (tast, exports, pkg_interface, diagnostics) =
-        typecheck_single_package(&opts.package, files, &deps_interfaces, deps_envs);
-    if diagnostics.has_errors() {
-        return Err(CompilationError::Typer { diagnostics });
-    }
+        for dep in deps {
+            if dep == BUILTIN_PACKAGE || dep == opts.package {
+                continue;
+            }
+            let (unit, package_interface) =
+                load_interface_for_package(&dep, &opts.interface_files, &interface_units)?;
+            deps_envs.insert(dep.clone(), unit.exports.to_genv());
+            deps_interfaces.insert(dep.clone(), package_interface);
+            dep_hashes.insert(unit.package.clone(), unit.interface_hash.clone());
+            dep_units.push(unit);
+        }
 
-    let interface = InterfaceUnit::new(opts.package.clone(), exports, pkg_interface, dep_hashes);
+        let (tast, exports, pkg_interface, diagnostics) =
+            typecheck_single_package(&opts.package, files, &deps_interfaces, deps_envs);
+        if diagnostics.has_errors() {
+            return Err(CompilationError::Typer { diagnostics });
+        }
 
-    let gensym = Gensym::new();
-    let mut env = builtins::builtin_env();
-    for dep in dep_units.iter() {
-        dep.exports.apply_to(&mut env);
-    }
-    interface.exports.apply_to(&mut env);
-    let mut compile_diagnostics = Diagnostics::new();
-    let core_ir =
-        crate::compile_match::compile_file(&env, &gensym, &mut compile_diagnostics, &tast);
-    if compile_diagnostics.has_errors() {
-        return Err(CompilationError::Compile {
-            diagnostics: compile_diagnostics,
-        });
-    }
+        let interface =
+            InterfaceUnit::new(opts.package.clone(), exports, pkg_interface, dep_hashes);
 
-    let mut unit = CoreUnit::new(opts.package.clone(), interface, core_ir);
-    unit.sources = sources;
+        let gensym = Gensym::new();
+        let mut env = builtins::builtin_env();
+        for dep in dep_units.iter() {
+            dep.exports.apply_to(&mut env);
+        }
+        interface.exports.apply_to(&mut env);
+        let mut compile_diagnostics = Diagnostics::new();
+        let core_ir =
+            crate::compile_match::compile_file(&env, &gensym, &mut compile_diagnostics, &tast);
+        if compile_diagnostics.has_errors() {
+            return Err(CompilationError::Compile {
+                diagnostics: compile_diagnostics,
+            });
+        }
 
-    Ok(unit)
+        let mut unit = CoreUnit::new(opts.package.clone(), interface, core_ir);
+        unit.sources = sources;
+
+        Ok(unit)
+    })
 }
 
 pub fn read_core(path: &Path) -> Result<CoreUnit, CompilationError> {
@@ -420,136 +426,139 @@ pub fn read_core(path: &Path) -> Result<CoreUnit, CompilationError> {
 }
 
 pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> {
-    if cores.is_empty() {
-        return Err(compile_error("no core inputs provided".to_string()));
-    }
+    with_compiler_stack(|| {
+        if cores.is_empty() {
+            return Err(compile_error("no core inputs provided".to_string()));
+        }
 
-    let mut by_name = HashMap::new();
-    for core in cores {
-        if by_name.contains_key(&core.package) {
+        let mut by_name = HashMap::new();
+        for core in cores {
+            if by_name.contains_key(&core.package) {
+                return Err(compile_error(format!(
+                    "duplicate core provided for package {}",
+                    core.package
+                )));
+            }
+            by_name.insert(core.package.clone(), core);
+        }
+
+        let Some((main_package, main)) = by_name.get_key_value(ROOT_PACKAGE) else {
+            return Err(compile_error("missing main package core".to_string()));
+        };
+        if !main
+            .core_ir
+            .toplevels
+            .iter()
+            .any(|f| f.name == ENTRY_FUNCTION)
+        {
             return Err(compile_error(format!(
-                "duplicate core provided for package {}",
-                core.package
+                "{} package missing main function",
+                main_package
             )));
         }
-        by_name.insert(core.package.clone(), core);
-    }
 
-    let Some((main_package, main)) = by_name.get_key_value(ROOT_PACKAGE) else {
-        return Err(compile_error("missing main package core".to_string()));
-    };
-    if !main
-        .core_ir
-        .toplevels
-        .iter()
-        .any(|f| f.name == ENTRY_FUNCTION)
-    {
-        return Err(compile_error(format!(
-            "{} package missing main function",
-            main_package
-        )));
-    }
-
-    let builtin_hash = builtins::builtin_interface_hash();
-    for (pkg, unit) in by_name.iter() {
-        for (dep, expected_hash) in unit.deps.iter() {
-            if dep == BUILTIN_PACKAGE {
-                if expected_hash != &builtin_hash {
+        let builtin_hash = builtins::builtin_interface_hash();
+        for (pkg, unit) in by_name.iter() {
+            for (dep, expected_hash) in unit.deps.iter() {
+                if dep == BUILTIN_PACKAGE {
+                    if expected_hash != &builtin_hash {
+                        return Err(compile_error(format!(
+                            "package {} expects builtin interface_hash {}, but compiler has {} (rebuild {})",
+                            pkg, expected_hash, builtin_hash, pkg
+                        )));
+                    }
+                    continue;
+                }
+                let Some(dep_unit) = by_name.get(dep) else {
                     return Err(compile_error(format!(
-                        "package {} expects builtin interface_hash {}, but compiler has {} (rebuild {})",
-                        pkg, expected_hash, builtin_hash, pkg
+                        "package {} depends on missing package {}",
+                        pkg, dep
+                    )));
+                };
+                if &dep_unit.interface.interface_hash != expected_hash {
+                    return Err(compile_error(format!(
+                        "package {} expects interface_hash {} for {}, but got {} (rebuild {})",
+                        pkg, expected_hash, dep, dep_unit.interface.interface_hash, pkg
                     )));
                 }
-                continue;
-            }
-            let Some(dep_unit) = by_name.get(dep) else {
-                return Err(compile_error(format!(
-                    "package {} depends on missing package {}",
-                    pkg, dep
-                )));
-            };
-            if &dep_unit.interface.interface_hash != expected_hash {
-                return Err(compile_error(format!(
-                    "package {} expects interface_hash {} for {}, but got {} (rebuild {})",
-                    pkg, expected_hash, dep, dep_unit.interface.interface_hash, pkg
-                )));
             }
         }
-    }
 
-    let order = topo_sort(&by_name)?;
+        let order = topo_sort(&by_name)?;
 
-    let mut genv = builtins::builtin_env();
-    let mut diagnostics = Diagnostics::new();
-    for pkg in order.iter() {
-        let unit = by_name
-            .get(pkg)
-            .ok_or_else(|| compile_error(format!("missing core for package {}", pkg)))?;
-        for (key, _) in unit.interface.exports.trait_env.trait_impls.iter() {
-            if genv.trait_env.trait_impls.contains_key(key) {
-                diagnostics.push(diagnostics::Diagnostic::new(
-                    diagnostics::Stage::Typer,
-                    diagnostics::Severity::Error,
-                    format!(
-                        "Trait {} implementation for {:?} is defined in multiple packages (including {})",
-                        key.0, key.1, pkg
-                    ),
-                ));
+        let mut genv = builtins::builtin_env();
+        let mut diagnostics = Diagnostics::new();
+        for pkg in order.iter() {
+            let unit = by_name
+                .get(pkg)
+                .ok_or_else(|| compile_error(format!("missing core for package {}", pkg)))?;
+            for (key, _) in unit.interface.exports.trait_env.trait_impls.iter() {
+                if genv.trait_env.trait_impls.contains_key(key) {
+                    diagnostics.push(diagnostics::Diagnostic::new(
+                        diagnostics::Stage::Typer,
+                        diagnostics::Severity::Error,
+                        format!(
+                            "Trait {} implementation for {:?} is defined in multiple packages (including {})",
+                            key.0, key.1, pkg
+                        ),
+                    ));
+                }
             }
+            unit.interface.exports.apply_to(&mut genv);
         }
-        unit.interface.exports.apply_to(&mut genv);
-    }
-    if diagnostics.has_errors() {
-        return Err(CompilationError::Typer { diagnostics });
-    }
+        if diagnostics.has_errors() {
+            return Err(CompilationError::Typer { diagnostics });
+        }
 
-    let mut linked = crate::core::File {
-        toplevels: Vec::new(),
-    };
+        let mut linked = crate::core::File {
+            toplevels: Vec::new(),
+        };
 
-    let gensym = Gensym::new();
-    let mut compile_diagnostics = Diagnostics::new();
-    let builtin_print_core = crate::compile_match::compile_file(
-        &builtins::builtin_env(),
-        &gensym,
-        &mut compile_diagnostics,
-        &builtins::builtin_print_tast(),
-    );
-    linked.toplevels.extend(builtin_print_core.toplevels);
+        let gensym = Gensym::new();
+        let mut compile_diagnostics = Diagnostics::new();
+        let builtin_print_core = crate::compile_match::compile_file(
+            &builtins::builtin_env(),
+            &gensym,
+            &mut compile_diagnostics,
+            &builtins::builtin_print_tast(),
+        );
+        linked.toplevels.extend(builtin_print_core.toplevels);
 
-    for pkg in order {
-        let unit = by_name
-            .get(&pkg)
-            .ok_or_else(|| compile_error(format!("missing core for package {}", pkg)))?;
-        linked.toplevels.extend(unit.core_ir.toplevels.clone());
-    }
+        for pkg in order {
+            let unit = by_name
+                .get(&pkg)
+                .ok_or_else(|| compile_error(format!("missing core for package {}", pkg)))?;
+            linked.toplevels.extend(unit.core_ir.toplevels.clone());
+        }
 
-    let required_builtin_methods = builtin_inherent::collect_required_builtin_collection_methods(
-        std::slice::from_ref(&linked),
-    );
-    let builtin_collection_core = builtin_inherent::compile_builtin_collection_methods_checked(
-        &required_builtin_methods,
-        &gensym,
-    )?;
-    if !builtin_collection_core.toplevels.is_empty() {
-        linked.toplevels.extend(builtin_collection_core.toplevels);
-    }
-    let (mono, monoenv) = mono::mono(genv.clone(), linked.clone()).map_err(compile_error)?;
-    let (lifted, liftenv) = lift::lambda_lift(monoenv.clone(), &gensym, mono.clone());
-    let (anf, anfenv) = crate::anf::anf_file(liftenv.clone(), &gensym, lifted.clone());
-    let (go, goenv) = go::compile::go_file(anfenv.clone(), &gensym, anf.clone());
+        let required_builtin_methods =
+            builtin_inherent::collect_required_builtin_collection_methods(std::slice::from_ref(
+                &linked,
+            ));
+        let builtin_collection_core = builtin_inherent::compile_builtin_collection_methods_checked(
+            &required_builtin_methods,
+            &gensym,
+        )?;
+        if !builtin_collection_core.toplevels.is_empty() {
+            linked.toplevels.extend(builtin_collection_core.toplevels);
+        }
+        let (mono, monoenv) = mono::mono(genv.clone(), linked.clone()).map_err(compile_error)?;
+        let (lifted, liftenv) = lift::lambda_lift(monoenv.clone(), &gensym, mono.clone());
+        let (anf, anfenv) = crate::anf::anf_file(liftenv.clone(), &gensym, lifted.clone());
+        let (go, goenv) = go::compile::go_file(anfenv.clone(), &gensym, anf.clone());
 
-    Ok(LinkOutput {
-        go,
-        goenv,
-        core: linked,
-        genv,
-        mono,
-        monoenv,
-        lifted,
-        liftenv,
-        anf,
-        anfenv,
+        Ok(LinkOutput {
+            go,
+            goenv,
+            core: linked,
+            genv,
+            mono,
+            monoenv,
+            lifted,
+            liftenv,
+            anf,
+            anfenv,
+        })
     })
 }
 

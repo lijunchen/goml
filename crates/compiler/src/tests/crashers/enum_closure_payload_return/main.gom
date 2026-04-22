@@ -1,0 +1,19 @@
+enum MaybeFn {
+    Some((int32) -> int32),
+    None,
+}
+
+fn next(flag: bool) -> MaybeFn {
+    if flag {
+        MaybeFn::Some(|x| x + 1i32)
+    } else {
+        MaybeFn::None
+    }
+}
+
+fn main() -> unit {
+    match next(true) {
+        MaybeFn::Some(f) => println(f(41i32).to_string()),
+        MaybeFn::None => println("none"),
+    }
+}
