@@ -398,7 +398,6 @@ func is_int_text(text__2 string) bool {
                     var t177 int32 = ref_get__Ref_int32(i__4)
                     var t178 int32 = t177 + 1
                     ref_set__Ref_int32(i__4, t178)
-                    continue
                 } else {
                     var t181 bool = is_digit(ch__8)
                     if t181 {
@@ -410,8 +409,8 @@ func is_int_text(text__2 string) bool {
                     } else {
                         ref_set__Ref_bool(ok__6, false)
                     }
-                    continue
                 }
+                continue
             } else {
                 break Loop_loop166
             }
@@ -531,27 +530,11 @@ func lex_atom(source__18 string, start__19 int32) Tuple2_Token_int32 {
             _0: true,
         }
         jp224 = t227
-        var token__26 Token = jp224
-        var t225 int32 = ref_get__Ref_int32(i__22)
-        var t226 Tuple2_Token_int32 = Tuple2_Token_int32{
-            _0: token__26,
-            _1: t225,
-        }
-        retv221 = t226
-        return retv221
     case "false":
         var t228 Token = Token_Bool{
             _0: false,
         }
         jp224 = t228
-        var token__26 Token = jp224
-        var t225 int32 = ref_get__Ref_int32(i__22)
-        var t226 Tuple2_Token_int32 = Tuple2_Token_int32{
-            _0: token__26,
-            _1: t225,
-        }
-        retv221 = t226
-        return retv221
     default:
         var t231 bool = is_int_text(atom__25)
         var jp230 Token
@@ -568,15 +551,15 @@ func lex_atom(source__18 string, start__19 int32) Tuple2_Token_int32 {
             jp230 = t234
         }
         jp224 = jp230
-        var token__26 Token = jp224
-        var t225 int32 = ref_get__Ref_int32(i__22)
-        var t226 Tuple2_Token_int32 = Tuple2_Token_int32{
-            _0: token__26,
-            _1: t225,
-        }
-        retv221 = t226
-        return retv221
     }
+    var token__26 Token = jp224
+    var t225 int32 = ref_get__Ref_int32(i__22)
+    var t226 Tuple2_Token_int32 = Tuple2_Token_int32{
+        _0: token__26,
+        _1: t225,
+    }
+    retv221 = t226
+    return retv221
 }
 
 func lex(source__27 string) []Token {
@@ -600,7 +583,6 @@ func lex(source__27 string) []Token {
                 var t263 int32 = ref_get__Ref_int32(i__31)
                 var t264 int32 = t263 + 1
                 ref_set__Ref_int32(i__31, t264)
-                continue
             } else {
                 var t267 bool = ch__32 == 41
                 if t267 {
@@ -610,7 +592,6 @@ func lex(source__27 string) []Token {
                     var t270 int32 = ref_get__Ref_int32(i__31)
                     var t271 int32 = t270 + 1
                     ref_set__Ref_int32(i__31, t271)
-                    continue
                 } else {
                     var t274 bool = ch__32 == 32
                     if t274 {
@@ -629,9 +610,9 @@ func lex(source__27 string) []Token {
                         ref_set__Ref_Vec_Token(toks__30, t280)
                         ref_set__Ref_int32(i__31, next__34)
                     }
-                    continue
                 }
             }
+            continue
         } else {
             break Loop_loop255
         }
@@ -984,8 +965,6 @@ func eval_list(items__79 []SExpr, local__80 []Binding, global__81 *ref_vec_bindi
     var jp396 Value
     if t398 {
         jp396 = Nil{}
-        retv394 = jp396
-        return retv394
     } else {
         var head__82 SExpr = items__79[0]
         var jp400 Value
@@ -1014,9 +993,9 @@ func eval_list(items__79 []SExpr, local__80 []Binding, global__81 *ref_vec_bindi
             panic("non-exhaustive match")
         }
         jp396 = jp400
-        retv394 = jp396
-        return retv394
     }
+    retv394 = jp396
+    return retv394
 }
 
 func eval_list_sym(name__86 string, items__87 []SExpr, local__88 []Binding, global__89 *ref_vec_binding_x) Value {
@@ -1026,8 +1005,6 @@ func eval_list_sym(name__86 string, items__87 []SExpr, local__88 []Binding, glob
     case "begin":
         var t409 Value = eval_begin(items__87, 1, local__88, global__89)
         jp408 = t409
-        retv406 = jp408
-        return retv406
     case "define":
         var t412 int32 = int32(len(items__87))
         var t413 bool = t412 == 3
@@ -1059,15 +1036,10 @@ func eval_list_sym(name__86 string, items__87 []SExpr, local__88 []Binding, glob
                 panic("non-exhaustive match")
             }
             jp411 = jp415
-            jp408 = jp411
-            retv406 = jp408
-            return retv406
         } else {
             jp411 = Nil{}
-            jp408 = jp411
-            retv406 = jp408
-            return retv406
         }
+        jp408 = jp411
     case "if":
         var t420 int32 = int32(len(items__87))
         var t421 bool = t420 == 4
@@ -1087,15 +1059,10 @@ func eval_list_sym(name__86 string, items__87 []SExpr, local__88 []Binding, glob
                 jp424 = t429
             }
             jp419 = jp424
-            jp408 = jp419
-            retv406 = jp408
-            return retv406
         } else {
             jp419 = Nil{}
-            jp408 = jp419
-            retv406 = jp408
-            return retv406
         }
+        jp408 = jp419
     case "lambda":
         var t432 int32 = int32(len(items__87))
         var t433 bool = t432 == 3
@@ -1129,45 +1096,30 @@ func eval_list_sym(name__86 string, items__87 []SExpr, local__88 []Binding, glob
                 panic("non-exhaustive match")
             }
             jp431 = jp435
-            jp408 = jp431
-            retv406 = jp408
-            return retv406
         } else {
             jp431 = Nil{}
-            jp408 = jp431
-            retv406 = jp408
-            return retv406
         }
+        jp408 = jp431
     case "+":
         var t438 []Value = eval_args(items__87, 1, local__88, global__89)
         var t439 Value = apply_builtin("+", t438)
         jp408 = t439
-        retv406 = jp408
-        return retv406
     case "-":
         var t440 []Value = eval_args(items__87, 1, local__88, global__89)
         var t441 Value = apply_builtin("-", t440)
         jp408 = t441
-        retv406 = jp408
-        return retv406
     case "*":
         var t442 []Value = eval_args(items__87, 1, local__88, global__89)
         var t443 Value = apply_builtin("*", t442)
         jp408 = t443
-        retv406 = jp408
-        return retv406
     case "/":
         var t444 []Value = eval_args(items__87, 1, local__88, global__89)
         var t445 Value = apply_builtin("/", t444)
         jp408 = t445
-        retv406 = jp408
-        return retv406
     case "=":
         var t446 []Value = eval_args(items__87, 1, local__88, global__89)
         var t447 Value = apply_builtin("=", t446)
         jp408 = t447
-        retv406 = jp408
-        return retv406
     default:
         var t448 SExpr = SExpr_Sym{
             _0: name__86,
@@ -1176,9 +1128,9 @@ func eval_list_sym(name__86 string, items__87 []SExpr, local__88 []Binding, glob
         var args__99 []Value = eval_args(items__87, 1, local__88, global__89)
         var t449 Value = apply(f__98, args__99, global__89)
         jp408 = t449
-        retv406 = jp408
-        return retv406
     }
+    retv406 = jp408
+    return retv406
 }
 
 func eval_begin(items__100 []SExpr, start__101 int32, local__102 []Binding, global__103 *ref_vec_binding_x) Value {
@@ -1337,10 +1289,6 @@ func apply_builtin(name__120 string, args__121 []Value) Value {
                     panic("non-exhaustive match")
                 }
                 jp513 = jp515
-                jp507 = jp513
-                jp505 = jp507
-                retv503 = jp505
-                return retv503
             case Value_Bool:
                 var x98 bool = x96.(Value_Bool)._0
                 var jp522 Value
@@ -1373,40 +1321,29 @@ func apply_builtin(name__120 string, args__121 []Value) Value {
                     panic("non-exhaustive match")
                 }
                 jp513 = jp522
-                jp507 = jp513
-                jp505 = jp507
-                retv503 = jp505
-                return retv503
             case Func:
                 var t528 Value = Value_Bool{
                     _0: false,
                 }
                 jp513 = t528
-                jp507 = jp513
-                jp505 = jp507
-                retv503 = jp505
-                return retv503
             case Nil:
                 var t529 Value = Value_Bool{
                     _0: false,
                 }
                 jp513 = t529
-                jp507 = jp513
-                jp505 = jp507
-                retv503 = jp505
-                return retv503
             default:
                 panic("non-exhaustive match")
             }
+            jp507 = jp513
         } else {
             var t530 Value = Value_Bool{
                 _0: false,
             }
             jp507 = t530
-            jp505 = jp507
-            retv503 = jp505
-            return retv503
         }
+        jp505 = jp507
+        retv503 = jp505
+        return retv503
     case "+":
         var i__126 *ref_int32_x = ref__Ref_int32(0)
         var acc__127 *ref_int32_x = ref__Ref_int32(0)
@@ -1529,9 +1466,6 @@ func apply_builtin(name__120 string, args__121 []Value) Value {
                 panic("non-exhaustive match")
             }
             jp578 = jp580
-            jp505 = jp578
-            retv503 = jp505
-            return retv503
         case 2:
             var t583 Value = args__121[0]
             var t584 Value = args__121[1]
@@ -1566,37 +1500,22 @@ func apply_builtin(name__120 string, args__121 []Value) Value {
                     panic("non-exhaustive match")
                 }
                 jp586 = jp588
-                jp578 = jp586
-                jp505 = jp578
-                retv503 = jp505
-                return retv503
             case Value_Bool:
                 jp586 = Nil{}
-                jp578 = jp586
-                jp505 = jp578
-                retv503 = jp505
-                return retv503
             case Func:
                 jp586 = Nil{}
-                jp578 = jp586
-                jp505 = jp578
-                retv503 = jp505
-                return retv503
             case Nil:
                 jp586 = Nil{}
-                jp578 = jp586
-                jp505 = jp578
-                retv503 = jp505
-                return retv503
             default:
                 panic("non-exhaustive match")
             }
+            jp578 = jp586
         default:
             jp578 = Nil{}
-            jp505 = jp578
-            retv503 = jp505
-            return retv503
         }
+        jp505 = jp578
+        retv503 = jp505
+        return retv503
     case "/":
         var t593 int32 = int32(len(args__121))
         var t594 bool = t593 == 2
@@ -1635,37 +1554,22 @@ func apply_builtin(name__120 string, args__121 []Value) Value {
                     panic("non-exhaustive match")
                 }
                 jp598 = jp600
-                jp592 = jp598
-                jp505 = jp592
-                retv503 = jp505
-                return retv503
             case Value_Bool:
                 jp598 = Nil{}
-                jp592 = jp598
-                jp505 = jp592
-                retv503 = jp505
-                return retv503
             case Func:
                 jp598 = Nil{}
-                jp592 = jp598
-                jp505 = jp592
-                retv503 = jp505
-                return retv503
             case Nil:
                 jp598 = Nil{}
-                jp592 = jp598
-                jp505 = jp592
-                retv503 = jp505
-                return retv503
             default:
                 panic("non-exhaustive match")
             }
+            jp592 = jp598
         } else {
             jp592 = Nil{}
-            jp505 = jp592
-            retv503 = jp505
-            return retv503
         }
+        jp505 = jp592
+        retv503 = jp505
+        return retv503
     default:
         jp505 = Nil{}
         retv503 = jp505

@@ -58,8 +58,6 @@ func match_mixed_pair(pair__0 Tuple2_int32_string) int32 {
             jp23 = 4
         }
         jp21 = jp23
-        retv19 = jp21
-        return retv19
     case "one":
         var jp25 int32
         switch x0 {
@@ -71,8 +69,6 @@ func match_mixed_pair(pair__0 Tuple2_int32_string) int32 {
             jp25 = 5
         }
         jp21 = jp25
-        retv19 = jp21
-        return retv19
     default:
         var jp27 int32
         switch x0 {
@@ -82,9 +78,9 @@ func match_mixed_pair(pair__0 Tuple2_int32_string) int32 {
             jp27 = 5
         }
         jp21 = jp27
-        retv19 = jp21
-        return retv19
     }
+    retv19 = jp21
+    return retv19
 }
 
 func match_mixed_enum(value__1 Mixed) int32 {
@@ -101,8 +97,6 @@ func match_mixed_enum(value__1 Mixed) int32 {
             jp33 = 7
         }
         jp31 = jp33
-        retv29 = jp31
-        return retv29
     case OnlyStr:
         var x3 string = value__1.(OnlyStr)._0
         var jp35 int32
@@ -113,8 +107,6 @@ func match_mixed_enum(value__1 Mixed) int32 {
             jp35 = 9
         }
         jp31 = jp35
-        retv29 = jp31
-        return retv29
     case Both:
         var x4 int32 = value__1.(Both)._0
         var x5 string = value__1.(Both)._1
@@ -129,9 +121,6 @@ func match_mixed_enum(value__1 Mixed) int32 {
                 jp39 = 12
             }
             jp37 = jp39
-            jp31 = jp37
-            retv29 = jp31
-            return retv29
         default:
             var jp41 int32
             switch x4 {
@@ -141,13 +130,13 @@ func match_mixed_enum(value__1 Mixed) int32 {
                 jp41 = 13
             }
             jp37 = jp41
-            jp31 = jp37
-            retv29 = jp31
-            return retv29
         }
+        jp31 = jp37
     default:
         panic("non-exhaustive match")
     }
+    retv29 = jp31
+    return retv29
 }
 
 func main0() struct{} {

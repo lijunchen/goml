@@ -430,19 +430,15 @@ func typ_is_arrow(ty__15 Typ) bool {
             panic("non-exhaustive match")
         }
         jp253 = jp255
-        retv251 = jp253
-        return retv251
     case QVar:
         jp253 = false
-        retv251 = jp253
-        return retv251
     case TArrow:
         jp253 = true
-        retv251 = jp253
-        return retv251
     default:
         panic("non-exhaustive match")
     }
+    retv251 = jp253
+    return retv251
 }
 
 func typ_to_string(ty__18 Typ) string {
@@ -469,15 +465,11 @@ func typ_to_string(ty__18 Typ) string {
             panic("non-exhaustive match")
         }
         jp260 = jp262
-        retv258 = jp260
-        return retv258
     case QVar:
         var x15 string = ty__18.(QVar)._0
         var name__19 string = x15
         var t265 string = "'" + name__19
         jp260 = t265
-        retv258 = jp260
-        return retv258
     case TArrow:
         var x16 Typ = ty__18.(TArrow)._0
         var x17 Typ = ty__18.(TArrow)._1
@@ -499,11 +491,11 @@ func typ_to_string(ty__18 Typ) string {
         var t268 string = s1__25 + " -> "
         var t269 string = t268 + s2__26
         jp260 = t269
-        retv258 = jp260
-        return retv258
     default:
         panic("non-exhaustive match")
     }
+    retv258 = jp260
+    return retv258
 }
 
 func env_empty() []EnvEntry {
@@ -645,9 +637,6 @@ func occurs(st__40 CheckerState, tvr__41 *ref_tv_x, ty__42 Typ) Result__unit__st
                 _0: "occurs check",
             }
             jp326 = t328
-            jp324 = jp326
-            retv322 = jp324
-            return retv322
         } else {
             var mtmp30 Tv = ref_get__Ref_Tv(tvr2__43)
             var jp330 Result__unit__string
@@ -680,30 +669,22 @@ func occurs(st__40 CheckerState, tvr__41 *ref_tv_x, ty__42 Typ) Result__unit__st
                     _0: struct{}{},
                 }
                 jp330 = t334
-                jp326 = jp330
-                jp324 = jp326
-                retv322 = jp324
-                return retv322
             case Link:
                 var x33 Typ = mtmp30.(Link)._0
                 var inner__48 Typ = x33
                 var t336 Result__unit__string = occurs(st__40, tvr__41, inner__48)
                 jp330 = t336
-                jp326 = jp330
-                jp324 = jp326
-                retv322 = jp324
-                return retv322
             default:
                 panic("non-exhaustive match")
             }
+            jp326 = jp330
         }
+        jp324 = jp326
     case QVar:
         var t337 Result__unit__string = Result__unit__string_Ok{
             _0: struct{}{},
         }
         jp324 = t337
-        retv322 = jp324
-        return retv322
     case TArrow:
         var x28 Typ = ty__42.(TArrow)._0
         var x29 Typ = ty__42.(TArrow)._1
@@ -726,11 +707,11 @@ func occurs(st__40 CheckerState, tvr__41 *ref_tv_x, ty__42 Typ) Result__unit__st
             panic("non-exhaustive match")
         }
         jp324 = jp339
-        retv322 = jp324
-        return retv322
     default:
         panic("non-exhaustive match")
     }
+    retv322 = jp324
+    return retv322
 }
 
 func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
@@ -758,10 +739,6 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                     _0: struct{}{},
                 }
                 jp349 = t351
-                jp347 = jp349
-                jp345 = jp347
-                retv343 = jp345
-                return retv343
             } else {
                 var mtmp53 Tv = ref_get__Ref_Tv(r1__55)
                 var jp353 Result__unit__string
@@ -800,12 +777,6 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                             panic("non-exhaustive match")
                         }
                         jp355 = jp358
-                        jp353 = jp355
-                        jp349 = jp353
-                        jp347 = jp349
-                        jp345 = jp347
-                        retv343 = jp345
-                        return retv343
                     case Link:
                         var x60 Typ = mtmp57.(Link)._0
                         var inner__58 Typ = x60
@@ -814,15 +785,10 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                         }
                         var t364 Result__unit__string = unify(st__52, t363, inner__58)
                         jp355 = t364
-                        jp353 = jp355
-                        jp349 = jp353
-                        jp347 = jp349
-                        jp345 = jp347
-                        retv343 = jp345
-                        return retv343
                     default:
                         panic("non-exhaustive match")
                     }
+                    jp353 = jp355
                 case Link:
                     var x56 Typ = mtmp53.(Link)._0
                     var inner__57 Typ = x56
@@ -831,15 +797,12 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                     }
                     var t366 Result__unit__string = unify(st__52, inner__57, t365)
                     jp353 = t366
-                    jp349 = jp353
-                    jp347 = jp349
-                    jp345 = jp347
-                    retv343 = jp345
-                    return retv343
                 default:
                     panic("non-exhaustive match")
                 }
+                jp349 = jp353
             }
+            jp347 = jp349
         case QVar:
             var r2__65 *ref_tv_x = x45
             var other__64 Typ = x43
@@ -870,22 +833,15 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                     panic("non-exhaustive match")
                 }
                 jp368 = jp370
-                jp347 = jp368
-                jp345 = jp347
-                retv343 = jp345
-                return retv343
             case Link:
                 var x68 Typ = mtmp65.(Link)._0
                 var inner__66 Typ = x68
                 var t374 Result__unit__string = unify(st__52, other__64, inner__66)
                 jp368 = t374
-                jp347 = jp368
-                jp345 = jp347
-                retv343 = jp345
-                return retv343
             default:
                 panic("non-exhaustive match")
             }
+            jp347 = jp368
         case TArrow:
             var r2__65 *ref_tv_x = x45
             var other__64 Typ = x43
@@ -916,25 +872,19 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                     panic("non-exhaustive match")
                 }
                 jp376 = jp378
-                jp347 = jp376
-                jp345 = jp347
-                retv343 = jp345
-                return retv343
             case Link:
                 var x76 Typ = mtmp73.(Link)._0
                 var inner__66 Typ = x76
                 var t382 Result__unit__string = unify(st__52, other__64, inner__66)
                 jp376 = t382
-                jp347 = jp376
-                jp345 = jp347
-                retv343 = jp345
-                return retv343
             default:
                 panic("non-exhaustive match")
             }
+            jp347 = jp376
         default:
             panic("non-exhaustive match")
         }
+        jp345 = jp347
     case QVar:
         var jp384 Result__unit__string
         switch x43.(type) {
@@ -969,41 +919,29 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                     panic("non-exhaustive match")
                 }
                 jp386 = jp388
-                jp384 = jp386
-                jp345 = jp384
-                retv343 = jp345
-                return retv343
             case Link:
                 var x88 Typ = mtmp85.(Link)._0
                 var inner__62 Typ = x88
                 var t392 Result__unit__string = unify(st__52, inner__62, other__61)
                 jp386 = t392
-                jp384 = jp386
-                jp345 = jp384
-                retv343 = jp345
-                return retv343
             default:
                 panic("non-exhaustive match")
             }
+            jp384 = jp386
         case QVar:
             var t393 Result__unit__string = Result__unit__string_Err{
                 _0: "unify error",
             }
             jp384 = t393
-            jp345 = jp384
-            retv343 = jp345
-            return retv343
         case TArrow:
             var t394 Result__unit__string = Result__unit__string_Err{
                 _0: "unify error",
             }
             jp384 = t394
-            jp345 = jp384
-            retv343 = jp345
-            return retv343
         default:
             panic("non-exhaustive match")
         }
+        jp345 = jp384
     case TArrow:
         var x47 Typ = x44.(TArrow)._0
         var x48 Typ = x44.(TArrow)._1
@@ -1040,30 +978,20 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                     panic("non-exhaustive match")
                 }
                 jp398 = jp400
-                jp396 = jp398
-                jp345 = jp396
-                retv343 = jp345
-                return retv343
             case Link:
                 var x100 Typ = mtmp97.(Link)._0
                 var inner__62 Typ = x100
                 var t404 Result__unit__string = unify(st__52, inner__62, other__61)
                 jp398 = t404
-                jp396 = jp398
-                jp345 = jp396
-                retv343 = jp345
-                return retv343
             default:
                 panic("non-exhaustive match")
             }
+            jp396 = jp398
         case QVar:
             var t405 Result__unit__string = Result__unit__string_Err{
                 _0: "unify error",
             }
             jp396 = t405
-            jp345 = jp396
-            retv343 = jp345
-            return retv343
         case TArrow:
             var x95 Typ = x43.(TArrow)._0
             var x96 Typ = x43.(TArrow)._1
@@ -1088,15 +1016,15 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                 panic("non-exhaustive match")
             }
             jp396 = jp407
-            jp345 = jp396
-            retv343 = jp345
-            return retv343
         default:
             panic("non-exhaustive match")
         }
+        jp345 = jp396
     default:
         panic("non-exhaustive match")
     }
+    retv343 = jp345
+    return retv343
 }
 
 func gen(st__73 CheckerState, ty__74 Typ) Typ {
@@ -1130,25 +1058,18 @@ func gen(st__73 CheckerState, ty__74 Typ) Typ {
                 jp418 = t421
             }
             jp415 = jp418
-            jp413 = jp415
-            retv411 = jp413
-            return retv411
         case Link:
             var x115 Typ = mtmp112.(Link)._0
             var inner__79 Typ = x115
             var t422 Typ = gen(st__73, inner__79)
             jp415 = t422
-            jp413 = jp415
-            retv411 = jp413
-            return retv411
         default:
             panic("non-exhaustive match")
         }
+        jp413 = jp415
     case QVar:
         var other__82 Typ = ty__74
         jp413 = other__82
-        retv411 = jp413
-        return retv411
     case TArrow:
         var x110 Typ = ty__74.(TArrow)._0
         var x111 Typ = ty__74.(TArrow)._1
@@ -1161,11 +1082,11 @@ func gen(st__73 CheckerState, ty__74 Typ) Typ {
             _1: t424,
         }
         jp413 = t425
-        retv411 = jp413
-        return retv411
     default:
         panic("non-exhaustive match")
     }
+    retv411 = jp413
+    return retv411
 }
 
 func inst_loop(st__83 CheckerState, subst__84 []SubstEntry, ty__85 Typ) Tuple2_Typ_Vec_SubstEntry {
@@ -1196,8 +1117,6 @@ func inst_loop(st__83 CheckerState, subst__84 []SubstEntry, ty__85 Typ) Tuple2_T
             panic("non-exhaustive match")
         }
         jp429 = jp431
-        retv427 = jp429
-        return retv427
     case QVar:
         var x117 string = ty__85.(QVar)._0
         var name__86 string = x117
@@ -1228,8 +1147,6 @@ func inst_loop(st__83 CheckerState, subst__84 []SubstEntry, ty__85 Typ) Tuple2_T
             panic("non-exhaustive match")
         }
         jp429 = jp436
-        retv427 = jp429
-        return retv427
     case TArrow:
         var x118 Typ = ty__85.(TArrow)._0
         var x119 Typ = ty__85.(TArrow)._1
@@ -1254,11 +1171,11 @@ func inst_loop(st__83 CheckerState, subst__84 []SubstEntry, ty__85 Typ) Tuple2_T
             _1: subst2__97,
         }
         jp429 = t441
-        retv427 = jp429
-        return retv427
     default:
         panic("non-exhaustive match")
     }
+    retv427 = jp429
+    return retv427
 }
 
 func inst(st__98 CheckerState, ty__99 Typ) Typ {
@@ -1298,8 +1215,6 @@ func typeof(st__102 CheckerState, env__103 []EnvEntry, e__104 Exp) Result__Typ__
             panic("non-exhaustive match")
         }
         jp447 = jp449
-        retv445 = jp447
-        return retv445
     case App:
         var x136 Exp = e__104.(App)._0
         var x137 Exp = e__104.(App)._1
@@ -1341,10 +1256,6 @@ func typeof(st__102 CheckerState, env__103 []EnvEntry, e__104 Exp) Result__Typ__
                     panic("non-exhaustive match")
                 }
                 jp456 = jp458
-                jp454 = jp456
-                jp447 = jp454
-                retv445 = jp447
-                return retv445
             case Result__Typ__string_Err:
                 var x150 string = mtmp148.(Result__Typ__string_Err)._0
                 var e__117 string = x150
@@ -1352,13 +1263,10 @@ func typeof(st__102 CheckerState, env__103 []EnvEntry, e__104 Exp) Result__Typ__
                     _0: e__117,
                 }
                 jp456 = t461
-                jp454 = jp456
-                jp447 = jp454
-                retv445 = jp447
-                return retv445
             default:
                 panic("non-exhaustive match")
             }
+            jp454 = jp456
         case Result__Typ__string_Err:
             var x147 string = mtmp145.(Result__Typ__string_Err)._0
             var e__115 string = x147
@@ -1366,12 +1274,10 @@ func typeof(st__102 CheckerState, env__103 []EnvEntry, e__104 Exp) Result__Typ__
                 _0: e__115,
             }
             jp454 = t462
-            jp447 = jp454
-            retv445 = jp447
-            return retv445
         default:
             panic("non-exhaustive match")
         }
+        jp447 = jp454
     case Lam:
         var x138 string = e__104.(Lam)._0
         var x139 Exp = e__104.(Lam)._1
@@ -1408,8 +1314,6 @@ func typeof(st__102 CheckerState, env__103 []EnvEntry, e__104 Exp) Result__Typ__
             panic("non-exhaustive match")
         }
         jp447 = jp465
-        retv445 = jp447
-        return retv445
     case Let:
         var x140 string = e__104.(Let)._0
         var x141 Exp = e__104.(Let)._1
@@ -1444,11 +1348,11 @@ func typeof(st__102 CheckerState, env__103 []EnvEntry, e__104 Exp) Result__Typ__
             panic("non-exhaustive match")
         }
         jp447 = jp470
-        retv445 = jp447
-        return retv445
     default:
         panic("non-exhaustive match")
     }
+    retv445 = jp447
+    return retv445
 }
 
 func exp_var(name__129 string) Exp {

@@ -39,7 +39,6 @@ func main0() struct{} {
         default:
             panic("non-exhaustive match")
         }
-        return struct{}{}
     case false:
         switch x0 {
         case true:
@@ -51,10 +50,10 @@ func main0() struct{} {
         default:
             panic("non-exhaustive match")
         }
-        return struct{}{}
     default:
         panic("non-exhaustive match")
     }
+    return struct{}{}
 }
 
 func main() {

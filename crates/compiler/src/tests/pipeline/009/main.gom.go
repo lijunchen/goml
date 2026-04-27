@@ -35,7 +35,6 @@ func test(t__0 T) struct{} {
     case A:
         var t8 string = int32_to_string(1)
         string_print(t8)
-        return struct{}{}
     case B:
         var x0 bool = t__0.(B)._0
         var x1 bool = t__0.(B)._1
@@ -51,7 +50,6 @@ func test(t__0 T) struct{} {
             default:
                 panic("non-exhaustive match")
             }
-            return struct{}{}
         case false:
             switch x0 {
             case true:
@@ -63,13 +61,13 @@ func test(t__0 T) struct{} {
             default:
                 panic("non-exhaustive match")
             }
-            return struct{}{}
         default:
             panic("non-exhaustive match")
         }
     default:
         panic("non-exhaustive match")
     }
+    return struct{}{}
 }
 
 func main0() struct{} {

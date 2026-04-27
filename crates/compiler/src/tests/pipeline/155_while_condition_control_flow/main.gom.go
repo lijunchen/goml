@@ -76,32 +76,20 @@ func main0() struct{} {
                 jp41 = t45
             }
             jp32 = jp41
-            if jp32 {
-                var t33 int32 = ref_get__Ref_int32(total__2)
-                var t34 int32 = ref_get__Ref_int32(j__1)
-                var t35 int32 = t33 + t34
-                ref_set__Ref_int32(total__2, t35)
-                var t36 int32 = ref_get__Ref_int32(j__1)
-                var t37 int32 = t36 + 1
-                ref_set__Ref_int32(j__1, t37)
-                continue
-            } else {
-                break Loop_loop30
-            }
         } else {
             jp32 = false
-            if jp32 {
-                var t33 int32 = ref_get__Ref_int32(total__2)
-                var t34 int32 = ref_get__Ref_int32(j__1)
-                var t35 int32 = t33 + t34
-                ref_set__Ref_int32(total__2, t35)
-                var t36 int32 = ref_get__Ref_int32(j__1)
-                var t37 int32 = t36 + 1
-                ref_set__Ref_int32(j__1, t37)
-                continue
-            } else {
-                break Loop_loop30
-            }
+        }
+        if jp32 {
+            var t33 int32 = ref_get__Ref_int32(total__2)
+            var t34 int32 = ref_get__Ref_int32(j__1)
+            var t35 int32 = t33 + t34
+            ref_set__Ref_int32(total__2, t35)
+            var t36 int32 = ref_get__Ref_int32(j__1)
+            var t37 int32 = t36 + 1
+            ref_set__Ref_int32(j__1, t37)
+            continue
+        } else {
+            break Loop_loop30
         }
     }
     var t15 int32 = ref_get__Ref_int32(total__2)
@@ -115,18 +103,6 @@ func main0() struct{} {
         switch mtmp7 {
         case 0:
             jp20 = true
-            if jp20 {
-                var t21 int32 = ref_get__Ref_int32(sum__4)
-                var t22 int32 = ref_get__Ref_int32(k__3)
-                var t23 int32 = t21 + t22
-                ref_set__Ref_int32(sum__4, t23)
-                var t24 int32 = ref_get__Ref_int32(k__3)
-                var t25 int32 = t24 + 1
-                ref_set__Ref_int32(k__3, t25)
-                continue
-            } else {
-                break Loop_loop18
-            }
         case 1:
             var t28 int32 = ref_get__Ref_int32(sum__4)
             var t29 bool = t28 == 0
@@ -137,46 +113,22 @@ func main0() struct{} {
                 jp27 = false
             }
             jp20 = jp27
-            if jp20 {
-                var t21 int32 = ref_get__Ref_int32(sum__4)
-                var t22 int32 = ref_get__Ref_int32(k__3)
-                var t23 int32 = t21 + t22
-                ref_set__Ref_int32(sum__4, t23)
-                var t24 int32 = ref_get__Ref_int32(k__3)
-                var t25 int32 = t24 + 1
-                ref_set__Ref_int32(k__3, t25)
-                continue
-            } else {
-                break Loop_loop18
-            }
         case 2:
             jp20 = true
-            if jp20 {
-                var t21 int32 = ref_get__Ref_int32(sum__4)
-                var t22 int32 = ref_get__Ref_int32(k__3)
-                var t23 int32 = t21 + t22
-                ref_set__Ref_int32(sum__4, t23)
-                var t24 int32 = ref_get__Ref_int32(k__3)
-                var t25 int32 = t24 + 1
-                ref_set__Ref_int32(k__3, t25)
-                continue
-            } else {
-                break Loop_loop18
-            }
         default:
             jp20 = false
-            if jp20 {
-                var t21 int32 = ref_get__Ref_int32(sum__4)
-                var t22 int32 = ref_get__Ref_int32(k__3)
-                var t23 int32 = t21 + t22
-                ref_set__Ref_int32(sum__4, t23)
-                var t24 int32 = ref_get__Ref_int32(k__3)
-                var t25 int32 = t24 + 1
-                ref_set__Ref_int32(k__3, t25)
-                continue
-            } else {
-                break Loop_loop18
-            }
+        }
+        if jp20 {
+            var t21 int32 = ref_get__Ref_int32(sum__4)
+            var t22 int32 = ref_get__Ref_int32(k__3)
+            var t23 int32 = t21 + t22
+            ref_set__Ref_int32(sum__4, t23)
+            var t24 int32 = ref_get__Ref_int32(k__3)
+            var t25 int32 = t24 + 1
+            ref_set__Ref_int32(k__3, t25)
+            continue
+        } else {
+            break Loop_loop18
         }
     }
     var t17 int32 = ref_get__Ref_int32(sum__4)

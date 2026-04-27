@@ -104,13 +104,11 @@ func match_tuple(values__4 Tuple2_int8_int16) bool {
             jp26 = false
         }
         jp24 = jp26
-        retv22 = jp24
-        return retv22
     default:
         jp24 = false
-        retv22 = jp24
-        return retv22
     }
+    retv22 = jp24
+    return retv22
 }
 
 func match_struct(pair__5 PairData) bool {
@@ -128,17 +126,13 @@ func match_struct(pair__5 PairData) bool {
             jp32 = false
         }
         jp30 = jp32
-        retv28 = jp30
-        return retv28
     case 300:
         jp30 = true
-        retv28 = jp30
-        return retv28
     default:
         jp30 = false
-        retv28 = jp30
-        return retv28
     }
+    retv28 = jp30
+    return retv28
 }
 
 func report(label__6 string, value__7 bool) string {

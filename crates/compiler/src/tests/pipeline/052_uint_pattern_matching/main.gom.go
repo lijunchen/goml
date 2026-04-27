@@ -99,17 +99,13 @@ func match_struct(counter__4 Counter) bool {
             jp24 = false
         }
         jp22 = jp24
-        retv20 = jp22
-        return retv20
     case 600000000:
         jp22 = true
-        retv20 = jp22
-        return retv20
     default:
         jp22 = false
-        retv20 = jp22
-        return retv20
     }
+    retv20 = jp22
+    return retv20
 }
 
 func report(label__5 string, value__6 bool) string {

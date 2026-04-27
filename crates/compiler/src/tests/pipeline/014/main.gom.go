@@ -33,10 +33,8 @@ func test_nested_match(x__0 Tuple2_bool_bool, y__1 Tuple2_bool_bool) struct{} {
             default:
                 panic("non-exhaustive match")
             }
-            return struct{}{}
         case false:
             string_println("case4")
-            return struct{}{}
         default:
             panic("non-exhaustive match")
         }
@@ -55,10 +53,8 @@ func test_nested_match(x__0 Tuple2_bool_bool, y__1 Tuple2_bool_bool) struct{} {
                 default:
                     panic("non-exhaustive match")
                 }
-                return struct{}{}
             case false:
                 string_println("case2")
-                return struct{}{}
             default:
                 panic("non-exhaustive match")
             }
@@ -75,10 +71,8 @@ func test_nested_match(x__0 Tuple2_bool_bool, y__1 Tuple2_bool_bool) struct{} {
                 default:
                     panic("non-exhaustive match")
                 }
-                return struct{}{}
             case false:
                 string_println("case4")
-                return struct{}{}
             default:
                 panic("non-exhaustive match")
             }
@@ -88,6 +82,7 @@ func test_nested_match(x__0 Tuple2_bool_bool, y__1 Tuple2_bool_bool) struct{} {
     default:
         panic("non-exhaustive match")
     }
+    return struct{}{}
 }
 
 func main0() struct{} {

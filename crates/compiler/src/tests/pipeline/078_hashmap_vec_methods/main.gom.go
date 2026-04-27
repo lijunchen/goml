@@ -206,8 +206,6 @@ func _goml_trait_impl_Eq_Key_eq(self__0 Key, other__1 Key) bool {
             panic("non-exhaustive match")
         }
         jp23 = jp25
-        retv21 = jp23
-        return retv21
     case B:
         var x3 int32 = x2.(B)._0
         var jp27 bool
@@ -225,11 +223,11 @@ func _goml_trait_impl_Eq_Key_eq(self__0 Key, other__1 Key) bool {
             panic("non-exhaustive match")
         }
         jp23 = jp27
-        retv21 = jp23
-        return retv21
     default:
         panic("non-exhaustive match")
     }
+    retv21 = jp23
+    return retv21
 }
 
 func _goml_trait_impl_Hash_Key_hash(self__4 Key) uint64 {

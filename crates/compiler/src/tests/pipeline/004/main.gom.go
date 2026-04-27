@@ -55,8 +55,6 @@ func main0() bool {
             panic("non-exhaustive match")
         }
         jp6 = jp8
-        retv4 = jp6
-        return retv4
     case Green:
         var jp10 bool
         switch x0 {
@@ -70,8 +68,6 @@ func main0() bool {
             panic("non-exhaustive match")
         }
         jp6 = jp10
-        retv4 = jp6
-        return retv4
     case Blue:
         var jp12 bool
         switch x0 {
@@ -86,11 +82,11 @@ func main0() bool {
             panic("non-exhaustive match")
         }
         jp6 = jp12
-        retv4 = jp6
-        return retv4
     default:
         panic("non-exhaustive match")
     }
+    retv4 = jp6
+    return retv4
 }
 
 func print__T_bool(value__0 bool) struct{} {

@@ -79,15 +79,13 @@ func main0() int32 {
             panic("non-exhaustive match")
         }
         jp19 = jp22
-        retv17 = jp19
-        return retv17
     case none:
         jp19 = 0
-        retv17 = jp19
-        return retv17
     default:
         panic("non-exhaustive match")
     }
+    retv17 = jp19
+    return retv17
 }
 
 func main() {

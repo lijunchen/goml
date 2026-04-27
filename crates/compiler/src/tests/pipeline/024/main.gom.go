@@ -101,14 +101,8 @@ func point_type(p__8 Point) string {
         switch x8 {
         case 0:
             jp39 = "origin"
-            jp37 = jp39
-            retv35 = jp37
-            return retv35
         case 1:
             jp39 = "up"
-            jp37 = jp39
-            retv35 = jp37
-            return retv35
         default:
             var y__9 int32 = x8
             var mtmp9 bool = 0 < y__9
@@ -122,10 +116,8 @@ func point_type(p__8 Point) string {
                 panic("non-exhaustive match")
             }
             jp39 = jp41
-            jp37 = jp39
-            retv35 = jp37
-            return retv35
         }
+        jp37 = jp39
     case 1:
         var jp43 string
         switch x8 {
@@ -135,13 +127,11 @@ func point_type(p__8 Point) string {
             jp43 = "unknown"
         }
         jp37 = jp43
-        retv35 = jp37
-        return retv35
     default:
         jp37 = "unknown"
-        retv35 = jp37
-        return retv35
     }
+    retv35 = jp37
+    return retv35
 }
 
 func main0() struct{} {

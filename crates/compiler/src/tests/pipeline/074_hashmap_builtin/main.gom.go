@@ -464,8 +464,6 @@ func _goml_trait_impl_Eq_Key_eq(self__6 Key, other__7 Key) bool {
             panic("non-exhaustive match")
         }
         jp47 = jp49
-        retv45 = jp47
-        return retv45
     case B:
         var x3 int32 = x2.(B)._0
         var jp51 bool
@@ -485,8 +483,6 @@ func _goml_trait_impl_Eq_Key_eq(self__6 Key, other__7 Key) bool {
             panic("non-exhaustive match")
         }
         jp47 = jp51
-        retv45 = jp47
-        return retv45
     case P:
         var x4 Point = x2.(P)._0
         var jp55 bool
@@ -506,11 +502,11 @@ func _goml_trait_impl_Eq_Key_eq(self__6 Key, other__7 Key) bool {
             panic("non-exhaustive match")
         }
         jp47 = jp55
-        retv45 = jp47
-        return retv45
     default:
         panic("non-exhaustive match")
     }
+    retv45 = jp47
+    return retv45
 }
 
 func _goml_trait_impl_Hash_Key_hash(self__12 Key) uint64 {

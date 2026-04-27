@@ -81,19 +81,17 @@ func show(res__1 Result__unit__GoError) string {
         var jp18 string
         jp18 = "ok"
         jp16 = jp18
-        retv14 = jp16
-        return retv14
     case Result__unit__GoError_Err:
         var x5 GoError = res__1.(Result__unit__GoError_Err)._0
         var err__2 GoError = x5
         var t19 string = go_error_to_string(err__2)
         var t20 string = "err=" + t19
         jp16 = t20
-        retv14 = jp16
-        return retv14
     default:
         panic("non-exhaustive match")
     }
+    retv14 = jp16
+    return retv14
 }
 
 func main0() struct{} {

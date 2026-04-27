@@ -47,7 +47,6 @@ func main0() struct{} {
         default:
             panic("non-exhaustive match")
         }
-        return struct{}{}
     case Green:
         switch x0 {
         case Red:
@@ -59,7 +58,6 @@ func main0() struct{} {
         default:
             panic("non-exhaustive match")
         }
-        return struct{}{}
     case Blue:
         switch x0 {
         case Red:
@@ -71,10 +69,10 @@ func main0() struct{} {
         default:
             panic("non-exhaustive match")
         }
-        return struct{}{}
     default:
         panic("non-exhaustive match")
     }
+    return struct{}{}
 }
 
 func print__T_int32(value__0 int32) struct{} {

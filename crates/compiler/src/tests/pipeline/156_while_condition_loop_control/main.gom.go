@@ -45,25 +45,6 @@ func main0() struct{} {
         if t41 {
             ref_set__Ref_int32(i__0, 1)
             jp31 = true
-            if jp31 {
-                var t32 int32 = ref_get__Ref_int32(total__1)
-                var t33 int32 = ref_get__Ref_int32(i__0)
-                var t34 int32 = t32 + t33
-                ref_set__Ref_int32(total__1, t34)
-                var t38 int32 = ref_get__Ref_int32(i__0)
-                var t39 bool = t38 == 1
-                if t39 {
-                    ref_set__Ref_int32(i__0, 2)
-                    continue
-                } else {
-                    var t36 int32 = ref_get__Ref_int32(i__0)
-                    var t37 int32 = t36 + 1
-                    ref_set__Ref_int32(i__0, t37)
-                    continue
-                }
-            } else {
-                break Loop_loop29
-            }
         } else {
             var t44 int32 = ref_get__Ref_int32(i__0)
             var t45 bool = t44 < 4
@@ -74,25 +55,25 @@ func main0() struct{} {
                 jp43 = false
             }
             jp31 = jp43
-            if jp31 {
-                var t32 int32 = ref_get__Ref_int32(total__1)
-                var t33 int32 = ref_get__Ref_int32(i__0)
-                var t34 int32 = t32 + t33
-                ref_set__Ref_int32(total__1, t34)
-                var t38 int32 = ref_get__Ref_int32(i__0)
-                var t39 bool = t38 == 1
-                if t39 {
-                    ref_set__Ref_int32(i__0, 2)
-                    continue
-                } else {
-                    var t36 int32 = ref_get__Ref_int32(i__0)
-                    var t37 int32 = t36 + 1
-                    ref_set__Ref_int32(i__0, t37)
-                    continue
-                }
+        }
+        if jp31 {
+            var t32 int32 = ref_get__Ref_int32(total__1)
+            var t33 int32 = ref_get__Ref_int32(i__0)
+            var t34 int32 = t32 + t33
+            ref_set__Ref_int32(total__1, t34)
+            var t38 int32 = ref_get__Ref_int32(i__0)
+            var t39 bool = t38 == 1
+            if t39 {
+                ref_set__Ref_int32(i__0, 2)
+                continue
             } else {
-                break Loop_loop29
+                var t36 int32 = ref_get__Ref_int32(i__0)
+                var t37 int32 = t36 + 1
+                ref_set__Ref_int32(i__0, t37)
+                continue
             }
+        } else {
+            break Loop_loop29
         }
     }
     var t17 int32 = ref_get__Ref_int32(total__1)
