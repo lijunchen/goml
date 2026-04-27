@@ -1,0 +1,21 @@
+enum E {
+    A,
+    B,
+}
+
+fn f(e: E, b: bool) -> int32 {
+    match e {
+        E::A => if b { () } else { () },
+        E::B => (),
+    };
+    let i = ref(0i32);
+    while ref_get(i) < 2i32 {
+        ref_set(i, ref_get(i) + 1i32);
+    };
+    1i32
+}
+
+fn main() -> unit {
+    println(f(E::A, true));
+    println(f(E::B, false));
+}
