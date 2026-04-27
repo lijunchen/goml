@@ -775,11 +775,63 @@ fn variant_struct_name(goenv: &GlobalGoEnv, enum_name: &str, variant_name: &str)
     }
 }
 
+fn synthetic_option_variant_name(option_name: &str, variant_name: &str) -> String {
+    go_ident(&format!("{}_{}", option_name, variant_name))
+}
+
+fn make_synthetic_option_runtime(option_name: &str, value_go_ty: goty::GoType) -> Vec<goast::Item> {
+    let option_go_name = go_ident(option_name);
+    let type_identifier_method = format!("is{}", option_go_name);
+    let some_go_name = synthetic_option_variant_name(option_name, "Some");
+    let none_go_name = synthetic_option_variant_name(option_name, "None");
+
+    vec![
+        goast::Item::Interface(goast::Interface {
+            name: option_go_name,
+            methods: vec![goast::MethodElem {
+                name: type_identifier_method.clone(),
+                params: vec![],
+                ret: None,
+            }],
+        }),
+        goast::Item::Struct(goast::Struct {
+            name: some_go_name.clone(),
+            fields: vec![goast::Field {
+                name: "_0".to_string(),
+                ty: value_go_ty,
+            }],
+            methods: vec![goast::Method {
+                receiver: goast::Receiver {
+                    name: "_".to_string(),
+                    ty: goty::GoType::TName { name: some_go_name },
+                },
+                name: type_identifier_method.clone(),
+                params: vec![],
+                body: goast::Block { stmts: vec![] },
+            }],
+        }),
+        goast::Item::Struct(goast::Struct {
+            name: none_go_name.clone(),
+            fields: vec![],
+            methods: vec![goast::Method {
+                receiver: goast::Receiver {
+                    name: "_".to_string(),
+                    ty: goty::GoType::TName { name: none_go_name },
+                },
+                name: type_identifier_method,
+                params: vec![],
+                body: goast::Block { stmts: vec![] },
+            }],
+        }),
+    ]
+}
+
 pub fn make_hashmap_runtime(
     goenv: &GlobalGoEnv,
     hashmap_types: &IndexSet<tast::Ty>,
 ) -> Vec<goast::Item> {
     let mut items = Vec::new();
+    let mut synthetic_option_types = IndexSet::new();
     for ty in hashmap_types {
         let tast::Ty::THashMap { key, value } = ty else {
             continue;
@@ -1166,8 +1218,25 @@ pub fn make_hashmap_runtime(
             name: option_name.clone(),
         };
         let option_go_ty = goast::tast_ty_to_go_type(&option_tast_ty);
-        let option_some_go_name = variant_struct_name(goenv, &option_name, "Some");
-        let option_none_go_name = variant_struct_name(goenv, &option_name, "None");
+        let has_option_def = goenv
+            .get_enum(&tast::TastIdent::new(&option_name))
+            .is_some();
+        if !has_option_def && synthetic_option_types.insert(option_name.clone()) {
+            items.extend(make_synthetic_option_runtime(
+                &option_name,
+                value_go_ty.clone(),
+            ));
+        }
+        let option_some_go_name = if has_option_def {
+            variant_struct_name(goenv, &option_name, "Some")
+        } else {
+            synthetic_option_variant_name(&option_name, "Some")
+        };
+        let option_none_go_name = if has_option_def {
+            variant_struct_name(goenv, &option_name, "None")
+        } else {
+            synthetic_option_variant_name(&option_name, "None")
+        };
         let option_some_go_ty = goty::GoType::TName {
             name: option_some_go_name.clone(),
         };
