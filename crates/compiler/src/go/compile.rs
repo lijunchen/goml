@@ -6,7 +6,7 @@ use crate::{
         InherentImplKey, StructDef,
     },
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
-    go::mangle::{encode_ty, go_ident},
+    go::mangle::{encode_ty, go_ident, go_user_type_name},
     lift::{GlobalLiftEnv, is_closure_env_struct},
     names::{inherent_method_fn_name, parse_trait_impl_fn_name, trait_impl_fn_name, ty_compact},
     package_names::{ENTRY_FUNCTION, ENTRY_WRAPPER_FUNCTION},
@@ -280,7 +280,11 @@ fn variant_symbol_name(goenv: &GlobalGoEnv, enum_name: &str, variant_name: &str)
         }
     }
     if count > 1 {
-        format!("{}_{}", go_ident(enum_name), go_ident(variant_name))
+        format!(
+            "{}_{}",
+            go_user_type_name(enum_name),
+            go_ident(variant_name)
+        )
     } else {
         go_ident(variant_name)
     }
@@ -338,7 +342,7 @@ fn lookup_variant_symbol_name(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) 
 
     if let Some(def) = goenv.get_enum(&TastIdent::new(&base_name)) {
         let (vname, _fields) = &def.variants[index];
-        let enum_name = specialized_name.unwrap_or_else(|| go_ident(&base_name));
+        let enum_name = specialized_name.unwrap_or_else(|| go_user_type_name(&base_name));
         return variant_symbol_name(goenv, &enum_name, &vname.0);
     }
     if let Some(enum_name) = specialized_name.as_deref() {
@@ -8805,7 +8809,7 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
             })
             .collect();
         defs.push(goast::Item::Struct(goast::Struct {
-            name: go_ident(&name.0),
+            name: go_user_type_name(&name.0),
             fields,
             methods: vec![],
         }));
@@ -8823,7 +8827,7 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
         }
 
         if is_tag_only_enum_def(def) {
-            let enum_go_name = go_ident(&name.0);
+            let enum_go_name = go_user_type_name(&name.0);
             defs.push(goast::Item::TypeDef(goast::TypeDef {
                 name: enum_go_name.clone(),
                 ty: goty::GoType::TInt32,
@@ -8850,10 +8854,10 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
             continue;
         }
 
-        let type_identifier_method = format!("is{}", go_ident(&name.0));
+        let type_identifier_method = format!("is{}", go_user_type_name(&name.0));
 
         defs.push(goast::Item::Interface(goast::Interface {
-            name: go_ident(&name.0),
+            name: go_user_type_name(&name.0),
             methods: vec![goast::MethodElem {
                 name: type_identifier_method.clone(),
                 params: vec![],
@@ -8903,7 +8907,7 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
                 }
             };
             defs.push(goast::Item::TypeAlias(goast::TypeAlias {
-                name: go_ident(name),
+                name: go_user_type_name(name),
                 ty: go_ty,
             }));
         }

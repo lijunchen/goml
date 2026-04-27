@@ -77,6 +77,36 @@ pub fn go_ident(name: &str) -> String {
     out
 }
 
+pub fn go_user_type_name(name: &str) -> String {
+    let ident = go_ident(name);
+    if is_generated_go_type_name(&ident) {
+        format!("_goml_user_{}", ident)
+    } else {
+        ident
+    }
+}
+
+fn is_generated_go_type_name(name: &str) -> bool {
+    has_len_prefixed_type_name(name, "Tuple")
+        || has_len_prefixed_type_name(name, "Array")
+        || name.starts_with("Slice_")
+        || name.starts_with("Vec_")
+        || name.starts_with("Ptr_")
+        || name.starts_with("HashMap_")
+        || name.starts_with("TFunc")
+}
+
+fn has_len_prefixed_type_name(name: &str, prefix: &str) -> bool {
+    let Some(rest) = name.strip_prefix(prefix) else {
+        return false;
+    };
+    let digit_count = rest.chars().take_while(|ch| ch.is_ascii_digit()).count();
+    if digit_count == 0 {
+        return false;
+    }
+    rest[digit_count..].is_empty() || rest[digit_count..].starts_with('_')
+}
+
 fn is_valid_go_ident(s: &str) -> bool {
     let bytes = s.as_bytes();
     let Some((&first, rest)) = bytes.split_first() else {
