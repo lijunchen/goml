@@ -22,6 +22,7 @@ mod dyn_coercion_test;
 mod e2e;
 mod module;
 mod multiline_string_test;
+mod name_collision_test;
 mod query_test;
 mod ref_type_test;
 mod separate_compile_test;

@@ -550,6 +550,21 @@ fn spec_name_for(orig: &str, s: &Subst) -> String {
     format!("{}__{}", orig, suffix)
 }
 
+fn unique_generated_name(base: String, used_names: &mut IndexSet<String>) -> String {
+    if used_names.insert(base.clone()) {
+        return base;
+    }
+
+    let mut index = 1usize;
+    loop {
+        let candidate = format!("{}__mono{}", base, index);
+        if used_names.insert(candidate.clone()) {
+            return candidate;
+        }
+        index += 1;
+    }
+}
+
 // Unify template type (may contain TParam) with actual type (concrete), filling `subst`.
 fn unify(template: &Ty, actual: &Ty, subst: &mut Subst) -> Result<(), String> {
     match (template, actual) {
@@ -661,6 +676,7 @@ struct Ctx {
     work: VecDeque<(String, Subst, String)>,
     active_instances: Vec<(String, Subst)>,
     error: Option<String>,
+    used_names: IndexSet<String>,
     // Index for inherent methods: (base_type, method_name) -> generic_func_name
     // Example: ("Point", "new") -> "impl_inherent_Point_TParam_U_TParam_V_new"
     inherent_method_index: IndexMap<(String, String), String>,
@@ -669,7 +685,7 @@ struct Ctx {
 }
 
 impl Ctx {
-    fn new(orig_fns: IndexMap<String, core::Fn>) -> Self {
+    fn new(orig_fns: IndexMap<String, core::Fn>, used_names: IndexSet<String>) -> Self {
         let mut inherent_method_index = IndexMap::new();
         let mut trait_impl_method_index: IndexMap<(String, String), Vec<String>> = IndexMap::new();
 
@@ -706,6 +722,7 @@ impl Ctx {
             work: VecDeque::new(),
             active_instances: Vec::new(),
             error: None,
+            used_names,
             inherent_method_index,
             trait_impl_method_index,
         }
@@ -857,7 +874,11 @@ impl Ctx {
             }
         }
 
-        let spec = spec_name_for(name, &s);
+        let spec = if s.is_empty() {
+            spec_name_for(name, &s)
+        } else {
+            unique_generated_name(spec_name_for(name, &s), &mut self.used_names)
+        };
         self.instances
             .insert((name.to_string(), key.clone()), spec.clone());
         self.instance_orig_names
@@ -1667,10 +1688,11 @@ struct TypeMono<'a> {
     fn_renames: IndexMap<String, String>,
     active_instances: Vec<(String, Vec<Ty>)>,
     error: Option<String>,
+    used_names: IndexSet<String>,
 }
 
 impl<'a> TypeMono<'a> {
-    fn new(monoenv: &'a mut GlobalMonoEnv) -> Self {
+    fn new(monoenv: &'a mut GlobalMonoEnv, used_names: IndexSet<String>) -> Self {
         let enum_base = monoenv.enums_cloned();
         let struct_base = monoenv.structs_cloned();
         Self {
@@ -1681,6 +1703,7 @@ impl<'a> TypeMono<'a> {
             fn_renames: IndexMap::new(),
             active_instances: Vec::new(),
             error: None,
+            used_names,
         }
     }
 
@@ -1712,7 +1735,14 @@ impl<'a> TypeMono<'a> {
                     .join("__")
             )
         };
-        let new_name = TastIdent::new(&format!("{}{}", name, suffix));
+        let new_name = if collapsed_args.is_empty() {
+            TastIdent::new(&format!("{}{}", name, suffix))
+        } else {
+            TastIdent::new(&unique_generated_name(
+                format!("{}{}", name, suffix),
+                &mut self.used_names,
+            ))
+        };
         self.map.insert(key.clone(), new_name.clone());
 
         let ident = TastIdent::new(name);
@@ -2278,13 +2308,16 @@ fn rename_expr_refs(e: MonoExpr, renames: &IndexMap<String, String>) -> MonoExpr
 // Produces a file containing only monomorphic functions reachable from monomorphic roots.
 pub fn mono(genv: GlobalTypeEnv, file: core::File) -> Result<(MonoFile, GlobalMonoEnv), String> {
     let mut monoenv = GlobalMonoEnv::from_genv(genv);
-    // Build original function map
     let mut orig_fns: IndexMap<String, core::Fn> = IndexMap::new();
     for f in file.toplevels.into_iter() {
         orig_fns.insert(f.name.clone(), f);
     }
 
-    let mut ctx = Ctx::new(orig_fns);
+    let mut used_names: IndexSet<String> = orig_fns.keys().cloned().collect();
+    used_names.extend(monoenv.genv.structs().keys().map(|name| name.0.clone()));
+    used_names.extend(monoenv.genv.enums().keys().map(|name| name.0.clone()));
+
+    let mut ctx = Ctx::new(orig_fns, used_names);
 
     // Seed worklist with non-generic top-level functions
     // collect names first to avoid borrowing ctx immutably while mutating
@@ -2309,7 +2342,7 @@ pub fn mono(genv: GlobalTypeEnv, file: core::File) -> Result<(MonoFile, GlobalMo
     }
 
     // Rewrite function signatures and bodies
-    let mut m = TypeMono::new(&mut monoenv);
+    let mut m = TypeMono::new(&mut monoenv, ctx.used_names.clone());
     let mut new_fns = Vec::new();
     let instance_orig_names = ctx.instance_orig_names.clone();
     for f in ctx.out.into_iter() {
