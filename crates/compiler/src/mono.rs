@@ -1596,10 +1596,11 @@ fn rewrite_block_types(block: MonoBlock, m: &mut TypeMono<'_>) -> MonoBlock {
 
 fn rewrite_expr_types(e: MonoExpr, m: &mut TypeMono<'_>) -> MonoExpr {
     match e {
-        MonoExpr::EVar { name, ty } => MonoExpr::EVar {
-            name,
-            ty: m.collapse_type_apps(&ty),
-        },
+        MonoExpr::EVar { name, ty } => {
+            let ty = m.collapse_type_apps(&ty);
+            let name = canonical_trait_impl_name(&name, &ty);
+            MonoExpr::EVar { name, ty }
+        }
         MonoExpr::EPrim { value, ty } => {
             let ty = m.collapse_type_apps(&ty);
             MonoExpr::EPrim { value, ty }
@@ -1768,6 +1769,16 @@ fn rewrite_expr_types(e: MonoExpr, m: &mut TypeMono<'_>) -> MonoExpr {
             ty: m.collapse_type_apps(&ty),
         },
     }
+}
+
+fn canonical_trait_impl_name(name: &str, ty: &Ty) -> String {
+    if let Some((trait_name, _, method_name)) = parse_trait_impl_fn_name(name)
+        && let Ty::TFunc { params, .. } = ty
+        && let Some(receiver_ty) = params.first()
+    {
+        return trait_impl_fn_name(&TastIdent(trait_name.to_string()), receiver_ty, method_name);
+    }
+    name.to_string()
 }
 
 fn rename_block_refs(block: MonoBlock, renames: &IndexMap<String, String>) -> MonoBlock {
