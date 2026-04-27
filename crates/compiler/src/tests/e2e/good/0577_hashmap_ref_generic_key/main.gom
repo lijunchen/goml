@@ -1,0 +1,24 @@
+struct Wrap[T] {
+    value: T,
+}
+
+impl[T: Eq] Eq for Wrap[T] {
+    fn eq(self: Wrap[T], other: Wrap[T]) -> bool {
+        Eq::eq(self.value, other.value)
+    }
+}
+
+impl[T: Hash] Hash for Wrap[T] {
+    fn hash(self: Wrap[T]) -> uint64 {
+        Hash::hash(self.value)
+    }
+}
+
+fn main() -> unit {
+    let map: HashMap[Ref[Wrap[int32]], string] = HashMap::new();
+    map.set(ref(Wrap { value: 42i32 }), "ok");
+    match map.get(ref(Wrap { value: 42i32 })) {
+        Option::Some(value) => println(value),
+        Option::None => println("missing"),
+    }
+}
