@@ -49,7 +49,7 @@ pub fn encode_ty(ty: &tast::Ty) -> String {
 }
 
 pub fn go_ident(name: &str) -> String {
-    if is_valid_go_ident(name) && !is_go_keyword(name) {
+    if is_valid_go_ident(name) && !is_go_keyword(name) && !is_go_predeclared_identifier(name) {
         return name.to_string();
     }
     let mut out = String::from("_goml_");
@@ -116,5 +116,36 @@ fn is_go_keyword(s: &str) -> bool {
             | "import"
             | "return"
             | "var"
+    )
+}
+
+fn is_go_predeclared_identifier(s: &str) -> bool {
+    matches!(
+        s,
+        "any"
+            | "append"
+            | "cap"
+            | "clear"
+            | "close"
+            | "comparable"
+            | "complex"
+            | "copy"
+            | "delete"
+            | "error"
+            | "false"
+            | "imag"
+            | "iota"
+            | "len"
+            | "make"
+            | "max"
+            | "min"
+            | "new"
+            | "nil"
+            | "panic"
+            | "print"
+            | "println"
+            | "real"
+            | "recover"
+            | "true"
     )
 }
