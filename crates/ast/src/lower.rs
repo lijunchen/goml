@@ -11,6 +11,7 @@ use text_size::TextRange;
 
 const DEFAULT_PACKAGE_NAME: &str = "main";
 const MAX_EXPR_LOWER_DEPTH: usize = 256;
+const MAX_TYPE_LOWER_DEPTH: usize = 256;
 
 fn unescape_string(s: &str) -> String {
     let mut result = String::with_capacity(s.len());
@@ -93,6 +94,7 @@ struct LowerCtx {
     diagnostics: Diagnostics,
     constructor_names: HashSet<String>,
     expr_depth: Rc<Cell<usize>>,
+    type_depth: Rc<Cell<usize>>,
 }
 
 impl LowerCtx {
@@ -103,6 +105,7 @@ impl LowerCtx {
             diagnostics: Diagnostics::new(),
             constructor_names,
             expr_depth: Rc::new(Cell::new(0)),
+            type_depth: Rc::new(Cell::new(0)),
         }
     }
 
@@ -124,9 +127,9 @@ impl LowerCtx {
     }
 }
 
-struct ExprDepthGuard(Rc<Cell<usize>>);
+struct LowerDepthGuard(Rc<Cell<usize>>);
 
-impl Drop for ExprDepthGuard {
+impl Drop for LowerDepthGuard {
     fn drop(&mut self) {
         self.0.set(self.0.get().saturating_sub(1));
     }
@@ -495,6 +498,16 @@ fn lower_variant(
 }
 
 fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::TypeExpr> {
+    if ctx.type_depth.get() >= MAX_TYPE_LOWER_DEPTH {
+        ctx.push_error(
+            Some(node.syntax().text_range()),
+            "type is too deeply nested",
+        );
+        return None;
+    }
+    ctx.type_depth.set(ctx.type_depth.get() + 1);
+    let _type_depth = LowerDepthGuard(Rc::clone(&ctx.type_depth));
+
     match node {
         cst::Type::UnitTy(_) => Some(ast::TypeExpr::TUnit),
         cst::Type::BoolTy(_) => Some(ast::TypeExpr::TBool),
@@ -1049,7 +1062,7 @@ fn lower_expr_with_args(
         return None;
     }
     ctx.expr_depth.set(ctx.expr_depth.get() + 1);
-    let _expr_depth = ExprDepthGuard(Rc::clone(&ctx.expr_depth));
+    let _expr_depth = LowerDepthGuard(Rc::clone(&ctx.expr_depth));
     let node_range = node.syntax().text_range();
     let node_astptr = MySyntaxNodePtr::new(node.syntax());
     match node {
