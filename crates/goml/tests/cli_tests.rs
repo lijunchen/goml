@@ -105,6 +105,14 @@ fn write_project(root: &Path) -> anyhow::Result<()> {
     Ok(())
 }
 
+fn deep_left_nested_tuple_type(depth: usize) -> String {
+    let mut ty = "int32".to_string();
+    for _ in 0..depth {
+        ty = format!("({}, int32)", ty);
+    }
+    ty
+}
+
 fn go_available() -> bool {
     static AVAILABLE: OnceLock<bool> = OnceLock::new();
     *AVAILABLE.get_or_init(|| {
@@ -431,6 +439,41 @@ fn compiler_build_handles_deep_tuple_projection() -> anyhow::Result<()> {
     );
     assert!(
         stderr.contains("expression is too deeply nested"),
+        "stdout: {stdout}\nstderr: {stderr}"
+    );
+    expect![""].assert_eq(&stdout);
+
+    Ok(())
+}
+
+#[test]
+fn compiler_build_handles_deep_tuple_type() -> anyhow::Result<()> {
+    let ty = deep_left_nested_tuple_type(4000);
+    let program = format!("fn take(x: {ty}) -> unit {{ () }}\nfn main() -> unit {{ () }}\n");
+    let (_input_dir, input) = write_program(&program)?;
+    let output_dir = tempfile::tempdir()?;
+    let output_path = output_dir.path().join("main");
+
+    let output = Command::new(goml_bin())
+        .arg("compiler")
+        .arg("build")
+        .arg("--package")
+        .arg("main")
+        .arg("--input")
+        .arg(&input)
+        .arg("--output")
+        .arg(&output_path)
+        .output()?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "stdout: {stdout}\nstderr: {stderr}"
+    );
+    assert!(
+        stderr.contains("type is too deeply nested"),
         "stdout: {stdout}\nstderr: {stderr}"
     );
     expect![""].assert_eq(&stdout);
