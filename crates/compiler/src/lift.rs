@@ -273,13 +273,19 @@ impl<'env> State<'env> {
     }
 
     fn fresh_struct_name(&mut self, hint: Option<&str>) -> TastIdent {
-        let name = if let Some(hint) = hint {
-            format!("{}{}_{}", CLOSURE_ENV_PREFIX, hint, self.next_id)
-        } else {
-            format!("{}{}", CLOSURE_ENV_PREFIX, self.next_id)
-        };
-        self.next_id += 1;
-        TastIdent::new(&name)
+        loop {
+            let name = if let Some(hint) = hint {
+                format!("{}{}_{}", CLOSURE_ENV_PREFIX, hint, self.next_id)
+            } else {
+                format!("{}{}", CLOSURE_ENV_PREFIX, self.next_id)
+            };
+            self.next_id += 1;
+            let ident = TastIdent::new(&name);
+            if self.liftenv.get_struct(&ident).is_none() && self.liftenv.get_enum(&ident).is_none()
+            {
+                return ident;
+            }
+        }
     }
 
     fn register_closure_type(&mut self, struct_name: &TastIdent, apply_fn: String) {
