@@ -4035,12 +4035,19 @@ impl Typer {
             | common_defs::BinaryOp::GreaterEq
             | common_defs::BinaryOp::Eq
             | common_defs::BinaryOp::NotEq => {
-                // Comparison operators: lhs and rhs must have same type (numeric types)
                 self.push_constraint(Constraint::TypeEqual(
                     lhs_ty.clone(),
                     rhs_ty.clone(),
                     self.expr_range(lhs),
                 ));
+                self.validate_comparison_operand(
+                    genv,
+                    diagnostics,
+                    op,
+                    &lhs_ty,
+                    &rhs_ty,
+                    self.expr_range(lhs),
+                );
             }
         }
 
@@ -4050,6 +4057,50 @@ impl Typer {
             rhs: Box::new(rhs_tast),
             ty: ret_ty.clone(),
             resolution: tast::BinaryResolution::Builtin,
+        }
+    }
+
+    fn validate_comparison_operand(
+        &mut self,
+        genv: &PackageTypeEnv,
+        diagnostics: &mut Diagnostics,
+        op: common_defs::BinaryOp,
+        lhs_ty: &tast::Ty,
+        rhs_ty: &tast::Ty,
+        range: Option<TextRange>,
+    ) {
+        let lhs_norm = self.norm(lhs_ty);
+        let rhs_norm = self.norm(rhs_ty);
+        if !same_or_unresolved_ty(&lhs_norm, &rhs_norm) || contains_tvar(&lhs_norm) {
+            return;
+        }
+
+        let valid = match op {
+            common_defs::BinaryOp::Eq | common_defs::BinaryOp::NotEq => {
+                is_equality_comparable_ty(genv, &lhs_norm)
+            }
+            common_defs::BinaryOp::Less
+            | common_defs::BinaryOp::Greater
+            | common_defs::BinaryOp::LessEq
+            | common_defs::BinaryOp::GreaterEq => is_order_comparable_ty(&lhs_norm),
+            common_defs::BinaryOp::Add
+            | common_defs::BinaryOp::Sub
+            | common_defs::BinaryOp::Mul
+            | common_defs::BinaryOp::Div
+            | common_defs::BinaryOp::And
+            | common_defs::BinaryOp::Or => true,
+        };
+
+        if !valid {
+            super::util::push_error_with_range(
+                diagnostics,
+                format!(
+                    "Operator {} is not defined for type {}",
+                    comparison_operator_text(op),
+                    super::util::format_ty_for_diag(&lhs_norm)
+                ),
+                range,
+            );
         }
     }
 
@@ -5249,6 +5300,76 @@ fn is_float_ty(ty: &tast::Ty) -> bool {
 
 fn is_numeric_ty(ty: &tast::Ty) -> bool {
     is_integer_ty(ty) || is_float_ty(ty)
+}
+
+fn is_order_comparable_ty(ty: &tast::Ty) -> bool {
+    is_numeric_ty(ty) || matches!(ty, tast::Ty::TString | tast::Ty::TChar)
+}
+
+fn is_equality_comparable_ty(genv: &PackageTypeEnv, ty: &tast::Ty) -> bool {
+    match ty {
+        tast::Ty::TUnit
+        | tast::Ty::TBool
+        | tast::Ty::TString
+        | tast::Ty::TChar
+        | tast::Ty::TInt8
+        | tast::Ty::TInt16
+        | tast::Ty::TInt32
+        | tast::Ty::TInt64
+        | tast::Ty::TUint8
+        | tast::Ty::TUint16
+        | tast::Ty::TUint32
+        | tast::Ty::TUint64
+        | tast::Ty::TFloat32
+        | tast::Ty::TFloat64 => true,
+        tast::Ty::TTuple { typs } => typs
+            .iter()
+            .all(|item| is_equality_comparable_ty(genv, item)),
+        tast::Ty::TArray { elem, .. } => is_equality_comparable_ty(genv, elem),
+        _ => is_struct_equality_comparable_ty(genv, ty),
+    }
+}
+
+fn is_struct_equality_comparable_ty(genv: &PackageTypeEnv, ty: &tast::Ty) -> bool {
+    let Some((type_name, type_args)) = decompose_struct_type(ty) else {
+        return false;
+    };
+    let (resolved, env) = super::util::resolve_type_name(genv, &type_name);
+    let Some(struct_def) = env.structs().get(&tast::TastIdent::new(&resolved)) else {
+        return false;
+    };
+    if struct_def.generics.len() != type_args.len() {
+        return false;
+    }
+
+    let subst = struct_def
+        .generics
+        .iter()
+        .zip(type_args.iter())
+        .map(|(param, arg)| (param.0.clone(), arg.clone()))
+        .collect::<HashMap<_, _>>();
+
+    struct_def.fields.iter().all(|(_, field_ty)| {
+        let field_ty = substitute_ty_params(field_ty, &subst);
+        is_equality_comparable_ty(genv, &field_ty)
+    })
+}
+
+fn comparison_operator_text(op: common_defs::BinaryOp) -> &'static str {
+    match op {
+        common_defs::BinaryOp::Less => "<",
+        common_defs::BinaryOp::Greater => ">",
+        common_defs::BinaryOp::LessEq => "<=",
+        common_defs::BinaryOp::GreaterEq => ">=",
+        common_defs::BinaryOp::Eq => "==",
+        common_defs::BinaryOp::NotEq => "!=",
+        common_defs::BinaryOp::Add => "+",
+        common_defs::BinaryOp::Sub => "-",
+        common_defs::BinaryOp::Mul => "*",
+        common_defs::BinaryOp::Div => "/",
+        common_defs::BinaryOp::And => "&&",
+        common_defs::BinaryOp::Or => "||",
+    }
 }
 
 fn is_signed_numeric_ty(ty: &tast::Ty) -> bool {
