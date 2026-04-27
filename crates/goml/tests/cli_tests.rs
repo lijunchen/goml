@@ -424,12 +424,16 @@ fn compiler_build_handles_deep_tuple_projection() -> anyhow::Result<()> {
     let stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);
 
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "stdout: {stdout}\nstderr: {stderr}"
+    );
     assert!(
-        output.status.success(),
+        stderr.contains("expression is too deeply nested"),
         "stdout: {stdout}\nstderr: {stderr}"
     );
     expect![""].assert_eq(&stdout);
-    expect![""].assert_eq(&stderr);
 
     Ok(())
 }

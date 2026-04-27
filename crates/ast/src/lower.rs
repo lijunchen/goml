@@ -4,10 +4,13 @@ use ::cst::cst::CstNode;
 use ::cst::{cst, support};
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::syntax::{MySyntaxKind, MySyntaxNodePtr};
+use std::cell::Cell;
 use std::collections::HashSet;
+use std::rc::Rc;
 use text_size::TextRange;
 
 const DEFAULT_PACKAGE_NAME: &str = "main";
+const MAX_EXPR_LOWER_DEPTH: usize = 256;
 
 fn unescape_string(s: &str) -> String {
     let mut result = String::with_capacity(s.len());
@@ -89,6 +92,7 @@ struct LowerCtx {
     stage: Stage,
     diagnostics: Diagnostics,
     constructor_names: HashSet<String>,
+    expr_depth: Rc<Cell<usize>>,
 }
 
 impl LowerCtx {
@@ -98,6 +102,7 @@ impl LowerCtx {
             stage: Stage::other("lower"),
             diagnostics: Diagnostics::new(),
             constructor_names,
+            expr_depth: Rc::new(Cell::new(0)),
         }
     }
 
@@ -116,6 +121,14 @@ impl LowerCtx {
     }
     fn is_constructor(&self, ident: &ast::AstIdent) -> bool {
         self.constructor_names.contains(&ident.0)
+    }
+}
+
+struct ExprDepthGuard(Rc<Cell<usize>>);
+
+impl Drop for ExprDepthGuard {
+    fn drop(&mut self) {
+        self.0.set(self.0.get().saturating_sub(1));
     }
 }
 
@@ -1028,6 +1041,15 @@ fn lower_expr_with_args(
     node: cst::Expr,
     trailing_args: Vec<ast::Expr>,
 ) -> Option<ast::Expr> {
+    if ctx.expr_depth.get() >= MAX_EXPR_LOWER_DEPTH {
+        ctx.push_error(
+            Some(node.syntax().text_range()),
+            "expression is too deeply nested",
+        );
+        return None;
+    }
+    ctx.expr_depth.set(ctx.expr_depth.get() + 1);
+    let _expr_depth = ExprDepthGuard(Rc::clone(&ctx.expr_depth));
     let node_range = node.syntax().text_range();
     let node_astptr = MySyntaxNodePtr::new(node.syntax());
     match node {
