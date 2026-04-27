@@ -84,6 +84,14 @@ fn goml_bin() -> PathBuf {
     PathBuf::from(env!("CARGO_BIN_EXE_goml"))
 }
 
+fn workspace_root() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(Path::parent)
+        .expect("goml crate must live under crates/goml")
+        .to_path_buf()
+}
+
 fn write_program(contents: &str) -> anyhow::Result<(TempDir, PathBuf)> {
     let dir = tempfile::tempdir()?;
     let path = dir.path().join("main.gom");
@@ -391,6 +399,36 @@ fn compiler_run_single_falls_back_when_yaegi_cannot_run_function_vectors() -> an
 
     assert!(output.status.success(), "stderr: {stderr}");
     expect!["11\n"].assert_eq(&stdout);
+    expect![""].assert_eq(&stderr);
+
+    Ok(())
+}
+
+#[test]
+fn compiler_build_handles_deep_tuple_projection() -> anyhow::Result<()> {
+    let input = workspace_root()
+        .join("crates/compiler/src/tests/crashers/deep_tuple_projection_stack/main.gom");
+    let dir = tempfile::tempdir()?;
+    let output_path = dir.path().join("main");
+
+    let output = Command::new(goml_bin())
+        .arg("compiler")
+        .arg("build")
+        .arg("--package")
+        .arg("main")
+        .arg("--input")
+        .arg(&input)
+        .arg("--output")
+        .arg(&output_path)
+        .output()?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(
+        output.status.success(),
+        "stdout: {stdout}\nstderr: {stderr}"
+    );
+    expect![""].assert_eq(&stdout);
     expect![""].assert_eq(&stderr);
 
     Ok(())
