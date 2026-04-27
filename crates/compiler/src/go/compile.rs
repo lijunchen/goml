@@ -7002,8 +7002,128 @@ fn all_branches_jump_to(term: &anf::Term) -> Option<&anf::JoinId> {
     }
 }
 
+fn all_branches_jump_to_resolved(term: &anf::Term) -> Option<anf::JoinId> {
+    match term {
+        anf::Term::Jump { target, .. } => Some(target.clone()),
+        anf::Term::If { then_, else_, .. } => {
+            let then_target = block_tail_target_resolved(then_)?;
+            let else_target = block_tail_target_resolved(else_)?;
+            if then_target == else_target {
+                Some(then_target)
+            } else {
+                None
+            }
+        }
+        anf::Term::Match { arms, default, .. } => {
+            let mut target = None;
+            for arm in arms {
+                let branch_target = block_tail_target_resolved(&arm.body)?;
+                if let Some(existing) = &target {
+                    if existing != &branch_target {
+                        return None;
+                    }
+                } else {
+                    target = Some(branch_target);
+                }
+            }
+            if let Some(default) = default {
+                let branch_target = block_tail_target_resolved(default)?;
+                if let Some(existing) = &target {
+                    if existing != &branch_target {
+                        return None;
+                    }
+                } else {
+                    target = Some(branch_target);
+                }
+            }
+            target
+        }
+        _ => None,
+    }
+}
+
 fn block_tail_target(block: &anf::Block) -> Option<&anf::JoinId> {
     all_branches_jump_to(&block.term)
+}
+
+fn block_tail_target_resolved(block: &anf::Block) -> Option<anf::JoinId> {
+    let mut joins = HashMap::new();
+    for bind in &block.binds {
+        if let anf::Bind::Join(join_bind) = bind {
+            joins.insert(&join_bind.id, join_bind);
+        }
+    }
+    term_tail_target_resolved(&block.term, &joins, &mut HashSet::new())
+}
+
+fn term_tail_target_resolved(
+    term: &anf::Term,
+    joins: &HashMap<&anf::JoinId, &anf::JoinBind>,
+    visited: &mut HashSet<anf::JoinId>,
+) -> Option<anf::JoinId> {
+    match term {
+        anf::Term::Jump { target, .. } => {
+            if !visited.insert(target.clone()) {
+                return None;
+            }
+            let result = if let Some(join_bind) = joins.get(target) {
+                block_tail_target_resolved_with_joins(&join_bind.body, joins, visited)
+            } else {
+                Some(target.clone())
+            };
+            visited.remove(target);
+            result
+        }
+        anf::Term::If { then_, else_, .. } => {
+            let then_target = block_tail_target_resolved_with_joins(then_, joins, visited)?;
+            let else_target = block_tail_target_resolved_with_joins(else_, joins, visited)?;
+            if then_target == else_target {
+                Some(then_target)
+            } else {
+                None
+            }
+        }
+        anf::Term::Match { arms, default, .. } => {
+            let mut target = None;
+            for arm in arms {
+                let branch_target =
+                    block_tail_target_resolved_with_joins(&arm.body, joins, visited)?;
+                if let Some(existing) = &target {
+                    if existing != &branch_target {
+                        return None;
+                    }
+                } else {
+                    target = Some(branch_target);
+                }
+            }
+            if let Some(default) = default {
+                let branch_target = block_tail_target_resolved_with_joins(default, joins, visited)?;
+                if let Some(existing) = &target {
+                    if existing != &branch_target {
+                        return None;
+                    }
+                } else {
+                    target = Some(branch_target);
+                }
+            }
+            target
+        }
+        _ => None,
+    }
+}
+
+fn block_tail_target_resolved_with_joins(
+    block: &anf::Block,
+    parent_joins: &HashMap<&anf::JoinId, &anf::JoinBind>,
+    visited: &mut HashSet<anf::JoinId>,
+) -> Option<anf::JoinId> {
+    let mut joins = parent_joins.clone();
+    for bind in &block.binds {
+        if let anf::Bind::Join(join_bind) = bind {
+            joins.insert(&join_bind.id, join_bind);
+        }
+    }
+    term_tail_target_resolved(&block.term, &joins, visited)
 }
 
 fn compile_block_structured(
@@ -7136,21 +7256,21 @@ fn compile_term_with_continuations_ctx(
         return stmts;
     }
     if let Some(native_ctx) = native_ctx
-        && let Some(target) = all_branches_jump_to(term)
-        && let Some(join_bind) = join_env.get(target)
-        && pending_joins.iter().any(|j| j.id == *target)
+        && let Some(target) = all_branches_jump_to_resolved(term)
+        && let Some(join_bind) = join_env.get(&target)
+        && pending_joins.iter().any(|j| j.id == target)
         && join_forwards_to_native_return(join_bind, join_env, native_ctx)
     {
         return compile_term_direct_to_native_return_ctx(
-            goenv, term, target, join_env, native_ctx, let_env,
+            goenv, term, &target, join_env, native_ctx, let_env,
         );
     }
-    if let Some(target) = all_branches_jump_to(term)
-        && let Some(join_bind) = join_env.get(target)
-        && pending_joins.iter().any(|j| j.id == *target)
+    if let Some(target) = all_branches_jump_to_resolved(term)
+        && let Some(join_bind) = join_env.get(&target)
+        && pending_joins.iter().any(|j| j.id == target)
     {
         let mut stmts = compile_term_jump_to_ctx(
-            goenv, term, target, join_bind, join_env, native_ctx, let_env,
+            goenv, term, &target, join_bind, join_env, native_ctx, let_env,
         );
         stmts.extend(compile_block_structured_ctx(
             goenv,
@@ -7327,8 +7447,8 @@ fn compile_branch_to_native_return_ctx(
         stmts.extend(bind_stmts);
     }
 
-    if let Some(inner_target) = all_branches_jump_to(&block.term) {
-        if inner_target == target {
+    if let Some(inner_target) = all_branches_jump_to_resolved(&block.term) {
+        if inner_target == *target {
             stmts.extend(compile_term_direct_to_native_return_ctx(
                 goenv,
                 &block.term,
@@ -7339,14 +7459,14 @@ fn compile_branch_to_native_return_ctx(
             ));
             return stmts;
         }
-        if let Some(inner_join) = join_env.get(inner_target)
-            && inner_pending.iter().any(|j| j.id == *inner_target)
+        if let Some(inner_join) = join_env.get(&inner_target)
+            && inner_pending.iter().any(|j| j.id == inner_target)
             && join_forwards_to_native_return(inner_join, join_env, native_ctx)
         {
             stmts.extend(compile_term_direct_to_native_return_ctx(
                 goenv,
                 &block.term,
-                inner_target,
+                &inner_target,
                 join_env,
                 native_ctx,
                 &current_env,
@@ -7623,8 +7743,8 @@ fn compile_branch_to_join_ctx(
         stmts.extend(bind_stmts);
     }
 
-    if let Some(inner_target) = all_branches_jump_to(&block.term) {
-        if inner_target == target {
+    if let Some(inner_target) = all_branches_jump_to_resolved(&block.term) {
+        if inner_target == *target {
             stmts.extend(compile_term_jump_to_ctx(
                 goenv,
                 &block.term,
@@ -7636,13 +7756,13 @@ fn compile_branch_to_join_ctx(
             ));
             return stmts;
         }
-        if let Some(inner_join) = join_env.get(inner_target)
-            && inner_pending.iter().any(|j| j.id == *inner_target)
+        if let Some(inner_join) = join_env.get(&inner_target)
+            && inner_pending.iter().any(|j| j.id == inner_target)
         {
             stmts.extend(compile_term_jump_to_ctx(
                 goenv,
                 &block.term,
-                inner_target,
+                &inner_target,
                 inner_join,
                 join_env,
                 native_ctx,
