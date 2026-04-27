@@ -30,3 +30,10 @@ fn mono_type_name_collision_executes() {
 
     assert_eq!(output, "30\n");
 }
+
+#[test]
+fn tuple_go_type_name_collision_executes() {
+    let output = run_crasher("tuple_go_type_name_collision_user_symbol");
+
+    assert_eq!(output, "10\n");
+}
