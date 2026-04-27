@@ -287,6 +287,73 @@ fn validate_dyn_trait(genv: &PackageTypeEnv, diagnostics: &mut Diagnostics, trai
         return;
     };
 
+    validate_dyn_trait_methods(diagnostics, &resolved, trait_def);
+}
+
+pub(crate) fn validate_dyn_object_safety_in_ty(
+    genv: &PackageTypeEnv,
+    diagnostics: &mut Diagnostics,
+    ty: &tast::Ty,
+) {
+    match ty {
+        tast::Ty::TDyn { trait_name } => {
+            if let Some((resolved, trait_env)) = resolve_trait_name(genv, trait_name)
+                && let Some(trait_def) = trait_env.trait_env.trait_defs.get(&resolved)
+            {
+                validate_dyn_trait_methods(diagnostics, &resolved, trait_def);
+            }
+        }
+        tast::Ty::TTuple { typs } => {
+            for ty in typs {
+                validate_dyn_object_safety_in_ty(genv, diagnostics, ty);
+            }
+        }
+        tast::Ty::TApp { ty, args } => {
+            validate_dyn_object_safety_in_ty(genv, diagnostics, ty);
+            for arg in args {
+                validate_dyn_object_safety_in_ty(genv, diagnostics, arg);
+            }
+        }
+        tast::Ty::TArray { elem, .. }
+        | tast::Ty::TSlice { elem }
+        | tast::Ty::TVec { elem }
+        | tast::Ty::TRef { elem } => validate_dyn_object_safety_in_ty(genv, diagnostics, elem),
+        tast::Ty::THashMap { key, value } => {
+            validate_dyn_object_safety_in_ty(genv, diagnostics, key);
+            validate_dyn_object_safety_in_ty(genv, diagnostics, value);
+        }
+        tast::Ty::TFunc { params, ret_ty } => {
+            for param in params {
+                validate_dyn_object_safety_in_ty(genv, diagnostics, param);
+            }
+            validate_dyn_object_safety_in_ty(genv, diagnostics, ret_ty);
+        }
+        tast::Ty::TVar(_)
+        | tast::Ty::TUnit
+        | tast::Ty::TBool
+        | tast::Ty::TInt8
+        | tast::Ty::TInt16
+        | tast::Ty::TInt32
+        | tast::Ty::TInt64
+        | tast::Ty::TUint8
+        | tast::Ty::TUint16
+        | tast::Ty::TUint32
+        | tast::Ty::TUint64
+        | tast::Ty::TFloat32
+        | tast::Ty::TFloat64
+        | tast::Ty::TString
+        | tast::Ty::TChar
+        | tast::Ty::TParam { .. }
+        | tast::Ty::TEnum { .. }
+        | tast::Ty::TStruct { .. } => {}
+    }
+}
+
+fn validate_dyn_trait_methods(
+    diagnostics: &mut Diagnostics,
+    resolved: &str,
+    trait_def: &crate::env::TraitDef,
+) {
     for (method_name, scheme) in trait_def.methods.iter() {
         let tast::Ty::TFunc { params, ret_ty } = &scheme.ty else {
             push_error(

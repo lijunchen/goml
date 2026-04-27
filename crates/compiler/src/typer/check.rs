@@ -2094,7 +2094,11 @@ impl Typer {
         for param in params.iter() {
             let name_str = self.hir_table.local_ident_name(param.name);
             let param_ty = match &param.ty {
-                Some(ty) => tast::Ty::from_hir(genv, ty, &current_tparams_env),
+                Some(ty) => {
+                    let param_ty = tast::Ty::from_hir(genv, ty, &current_tparams_env);
+                    super::util::validate_dyn_object_safety_in_ty(genv, diagnostics, &param_ty);
+                    param_ty
+                }
                 None => self.fresh_ty_var(),
             };
             local_env.insert_var(param.name, param_ty.clone());
@@ -2155,10 +2159,11 @@ impl Typer {
 
                 for (param, expected_param_ty) in params.iter().zip(expected_params.iter()) {
                     let name_str = self.hir_table.local_ident_name(param.name);
-                    let annotated_ty = param
-                        .ty
-                        .as_ref()
-                        .map(|ty| tast::Ty::from_hir(genv, ty, &current_tparams_env));
+                    let annotated_ty = param.ty.as_ref().map(|ty| {
+                        let ann_ty = tast::Ty::from_hir(genv, ty, &current_tparams_env);
+                        super::util::validate_dyn_object_safety_in_ty(genv, diagnostics, &ann_ty);
+                        ann_ty
+                    });
 
                     let param_ty = match annotated_ty {
                         Some(ann_ty) => {
@@ -2214,10 +2219,11 @@ impl Typer {
         stmt: &hir::LetStmt,
     ) -> tast::LetStmt {
         let current_tparams_env = local_env.current_tparams_env();
-        let annotated_ty = stmt
-            .annotation
-            .as_ref()
-            .map(|ty| tast::Ty::from_hir(genv, ty, &current_tparams_env));
+        let annotated_ty = stmt.annotation.as_ref().map(|ty| {
+            let ann_ty = tast::Ty::from_hir(genv, ty, &current_tparams_env);
+            super::util::validate_dyn_object_safety_in_ty(genv, diagnostics, &ann_ty);
+            ann_ty
+        });
 
         let (value_tast, value_ty) = if let Some(ann_ty) = &annotated_ty {
             (
