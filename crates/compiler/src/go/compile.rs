@@ -8275,9 +8275,33 @@ fn collect_joins_from_block(block: &anf::Block, env: &mut JoinEnv) {
     }
 }
 
-fn patched_fn_name(name: &str) -> String {
+fn entry_wrapper_function_name(file: &anf::File) -> String {
+    let used_names: HashSet<String> = file
+        .toplevels
+        .iter()
+        .filter(|f| {
+            !(f.name == ENTRY_FUNCTION || f.name.ends_with(&format!("::{}", ENTRY_FUNCTION)))
+        })
+        .map(|f| go_ident(&f.name))
+        .collect();
+
+    if !used_names.contains(ENTRY_WRAPPER_FUNCTION) {
+        return ENTRY_WRAPPER_FUNCTION.to_string();
+    }
+
+    let mut index = 1usize;
+    loop {
+        let candidate = format!("{}__{}", ENTRY_WRAPPER_FUNCTION, index);
+        if !used_names.contains(&candidate) {
+            return candidate;
+        }
+        index += 1;
+    }
+}
+
+fn patched_fn_name(name: &str, entry_wrapper_name: &str) -> String {
     if name == ENTRY_FUNCTION || name.ends_with(&format!("::{}", ENTRY_FUNCTION)) {
-        ENTRY_WRAPPER_FUNCTION.to_string()
+        entry_wrapper_name.to_string()
     } else {
         go_ident(name)
     }
@@ -8304,6 +8328,7 @@ fn compile_boxed_fn_from_native(
     goenv: &GlobalGoEnv,
     f: &anf::Fn,
     native_ctx: &NativeFnCtx,
+    entry_wrapper_name: &str,
 ) -> goast::Fn {
     let params = boxed_fn_params(&f.params);
     let helper_ret_ty = native_helper_ret_ty(&native_ctx.mode);
@@ -8442,7 +8467,7 @@ fn compile_boxed_fn_from_native(
     }
 
     goast::Fn {
-        name: patched_fn_name(&f.name),
+        name: patched_fn_name(&f.name, entry_wrapper_name),
         params,
         ret_ty: Some(tast_ty_to_go_type(&f.ret_ty)),
         body: goast::Block { stmts },
@@ -8463,7 +8488,12 @@ fn compile_native_fn(goenv: &GlobalGoEnv, f: &anf::Fn, native_ctx: &NativeFnCtx)
     }
 }
 
-fn compile_fn(goenv: &GlobalGoEnv, _gensym: &Gensym, f: &anf::Fn) -> goast::Fn {
+fn compile_fn(
+    goenv: &GlobalGoEnv,
+    _gensym: &Gensym,
+    f: &anf::Fn,
+    entry_wrapper_name: &str,
+) -> goast::Fn {
     let params = boxed_fn_params(&f.params);
     let go_ret_ty = tast_ty_to_go_type(&f.ret_ty);
     let ret_ty = match go_ret_ty {
@@ -8474,7 +8504,7 @@ fn compile_fn(goenv: &GlobalGoEnv, _gensym: &Gensym, f: &anf::Fn) -> goast::Fn {
     let stmts = compile_block_structured(goenv, &f.body, &join_env);
 
     goast::Fn {
-        name: patched_fn_name(&f.name),
+        name: patched_fn_name(&f.name, entry_wrapper_name),
         params,
         ret_ty,
         body: goast::Block { stmts },
@@ -8578,6 +8608,7 @@ pub fn go_file(
     }
 
     let file = anf::anf_renamer::rename(file);
+    let entry_wrapper_name = entry_wrapper_function_name(&file);
     let dyn_req = collect_dyn_requirements(&goenv, &file);
 
     let mut toplevels = gen_type_definition(&goenv);
@@ -8597,9 +8628,15 @@ pub fn go_file(
                 &goenv,
                 &item,
                 &native_ctx,
+                &entry_wrapper_name,
             )));
         } else {
-            toplevels.push(goast::Item::Fn(compile_fn(&goenv, gensym, &item)));
+            toplevels.push(goast::Item::Fn(compile_fn(
+                &goenv,
+                gensym,
+                &item,
+                &entry_wrapper_name,
+            )));
         }
     }
     all.extend(toplevels);
@@ -8610,7 +8647,7 @@ pub fn go_file(
         body: goast::Block {
             stmts: vec![goast::Stmt::Expr(goast::Expr::Call {
                 func: Box::new(goast::Expr::Var {
-                    name: ENTRY_WRAPPER_FUNCTION.to_string(),
+                    name: entry_wrapper_name,
                     ty: goty::GoType::TFunc {
                         params: vec![],
                         ret_ty: Box::new(goty::GoType::TVoid),
