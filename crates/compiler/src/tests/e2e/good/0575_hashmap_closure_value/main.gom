@@ -1,0 +1,12 @@
+fn make(a: int32) -> (int32) -> int32 {
+    |x: int32| x + a
+}
+
+fn main() -> unit {
+    let m: HashMap[int32, (int32) -> int32] = HashMap::new();
+    m.set(0i32, make(2i32));
+    match m.get(0i32) {
+        Option::Some(f) => println(f(40i32).to_string()),
+        Option::None => println("none"),
+    }
+}
