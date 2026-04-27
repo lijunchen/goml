@@ -1523,9 +1523,16 @@ pub fn collect_typedefs(
 
 fn validate_no_infinite_size_structs(env: &PackageTypeEnv, diagnostics: &mut Diagnostics) {
     let structs = env.current().structs();
-    for (name, _) in structs.iter() {
-        let mut visited = HashSet::new();
-        if has_infinite_size(structs, &name.0, &mut visited) {
+    for (name, def) in structs.iter() {
+        let args = def
+            .generics
+            .iter()
+            .map(|param| tast::Ty::TParam {
+                name: param.0.clone(),
+            })
+            .collect::<Vec<_>>();
+        let mut active = Vec::new();
+        if has_infinite_size(structs, &name.0, &args, &mut active) {
             diagnostics.push(
                 Diagnostic::new(
                     Stage::Typer,
@@ -1543,66 +1550,99 @@ fn validate_no_infinite_size_structs(env: &PackageTypeEnv, diagnostics: &mut Dia
 fn has_infinite_size(
     structs: &IndexMap<tast::TastIdent, env::StructDef>,
     target: &str,
-    visited: &mut HashSet<String>,
+    args: &[tast::Ty],
+    active: &mut Vec<(String, Vec<tast::Ty>)>,
 ) -> bool {
-    if !visited.insert(target.to_string()) {
+    if recursive_struct_specialization(target, args, active) {
         return true;
     }
     let Some(def) = structs.get(&tast::TastIdent(target.to_string())) else {
-        visited.remove(target);
         return false;
     };
+    if def.generics.len() != args.len() {
+        return false;
+    }
+    let mut subst = HashMap::new();
+    for (param, arg) in def.generics.iter().zip(args.iter()) {
+        subst.insert(param.0.clone(), arg.clone());
+    }
+    active.push((target.to_string(), args.to_vec()));
     for (_, field_ty) in &def.fields {
-        if ty_contains_inline_struct(structs, field_ty, visited) {
-            visited.remove(target);
+        let field_ty = substitute_ty_params(field_ty, &subst);
+        if ty_contains_inline_struct(structs, &field_ty, active) {
+            let _ = active.pop();
             return true;
         }
     }
-    visited.remove(target);
+    let _ = active.pop();
     false
+}
+
+fn recursive_struct_specialization(
+    target: &str,
+    args: &[tast::Ty],
+    active: &[(String, Vec<tast::Ty>)],
+) -> bool {
+    active.iter().rev().any(|(active_name, active_args)| {
+        active_name == target
+            && (active_args == args
+                || active_args
+                    .iter()
+                    .zip(args.iter())
+                    .any(|(old_ty, new_ty)| ty_contains_proper_subterm(new_ty, old_ty)))
+    })
+}
+
+fn ty_contains_proper_subterm(ty: &tast::Ty, needle: &tast::Ty) -> bool {
+    match ty {
+        tast::Ty::TTuple { typs } => typs
+            .iter()
+            .any(|item| item == needle || ty_contains_proper_subterm(item, needle)),
+        tast::Ty::TApp { ty, args } => {
+            ty.as_ref() == needle
+                || ty_contains_proper_subterm(ty, needle)
+                || args
+                    .iter()
+                    .any(|arg| arg == needle || ty_contains_proper_subterm(arg, needle))
+        }
+        tast::Ty::TArray { elem, .. }
+        | tast::Ty::TSlice { elem }
+        | tast::Ty::TVec { elem }
+        | tast::Ty::TRef { elem } => {
+            elem.as_ref() == needle || ty_contains_proper_subterm(elem, needle)
+        }
+        tast::Ty::THashMap { key, value } => {
+            key.as_ref() == needle
+                || ty_contains_proper_subterm(key, needle)
+                || value.as_ref() == needle
+                || ty_contains_proper_subterm(value, needle)
+        }
+        tast::Ty::TFunc { params, ret_ty } => {
+            params
+                .iter()
+                .any(|param| param == needle || ty_contains_proper_subterm(param, needle))
+                || ret_ty.as_ref() == needle
+                || ty_contains_proper_subterm(ret_ty, needle)
+        }
+        _ => false,
+    }
 }
 
 fn ty_contains_inline_struct(
     structs: &IndexMap<tast::TastIdent, env::StructDef>,
     ty: &tast::Ty,
-    visited: &mut HashSet<String>,
+    active: &mut Vec<(String, Vec<tast::Ty>)>,
 ) -> bool {
     match ty {
-        tast::Ty::TStruct { name, .. } => has_infinite_size(structs, name, visited),
-        tast::Ty::TApp { .. } => instantiated_struct_field_tys(structs, ty)
-            .into_iter()
-            .flatten()
-            .any(|field_ty| ty_contains_inline_struct(structs, &field_ty, visited)),
+        tast::Ty::TStruct { name, .. } => has_infinite_size(structs, name, &[], active),
+        tast::Ty::TApp { .. } => decompose_struct_type_app(ty)
+            .is_some_and(|(name, args)| has_infinite_size(structs, &name, &args, active)),
         tast::Ty::TTuple { typs } => typs
             .iter()
-            .any(|t| ty_contains_inline_struct(structs, t, visited)),
-        tast::Ty::TArray { elem, .. } => ty_contains_inline_struct(structs, elem, visited),
+            .any(|t| ty_contains_inline_struct(structs, t, active)),
+        tast::Ty::TArray { elem, .. } => ty_contains_inline_struct(structs, elem, active),
         _ => false,
     }
-}
-
-fn instantiated_struct_field_tys(
-    structs: &IndexMap<tast::TastIdent, env::StructDef>,
-    ty: &tast::Ty,
-) -> Option<Vec<tast::Ty>> {
-    let (name, args) = decompose_struct_type_app(ty)?;
-    let struct_def = structs.get(&tast::TastIdent(name))?;
-    if struct_def.generics.len() != args.len() {
-        return None;
-    }
-
-    let mut subst = HashMap::new();
-    for (param, arg) in struct_def.generics.iter().zip(args.iter()) {
-        subst.insert(param.0.clone(), arg.clone());
-    }
-
-    Some(
-        struct_def
-            .fields
-            .iter()
-            .map(|(_, field_ty)| substitute_ty_params(field_ty, &subst))
-            .collect(),
-    )
 }
 
 fn decompose_struct_type_app(ty: &tast::Ty) -> Option<(String, Vec<tast::Ty>)> {

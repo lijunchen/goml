@@ -1665,6 +1665,8 @@ struct TypeMono<'a> {
     enum_base: IndexMap<TastIdent, EnumDef>,
     struct_base: IndexMap<TastIdent, StructDef>,
     fn_renames: IndexMap<String, String>,
+    active_instances: Vec<(String, Vec<Ty>)>,
+    error: Option<String>,
 }
 
 impl<'a> TypeMono<'a> {
@@ -1677,14 +1679,26 @@ impl<'a> TypeMono<'a> {
             enum_base,
             struct_base,
             fn_renames: IndexMap::new(),
+            active_instances: Vec::new(),
+            error: None,
         }
     }
 
     fn ensure_instance(&mut self, name: &str, args: &[Ty]) -> TastIdent {
+        if self.error.is_some() {
+            return TastIdent::new(name);
+        }
         let collapsed_args: Vec<Ty> = args.iter().map(|a| self.collapse_type_apps(a)).collect();
+        if self.error.is_some() {
+            return TastIdent::new(name);
+        }
         let key = (name.to_string(), collapsed_args.clone());
         if let Some(u) = self.map.get(&key) {
             return u.clone();
+        }
+        if let Some(message) = self.recursive_type_specialization_error(name, &collapsed_args) {
+            self.error = Some(message);
+            return TastIdent::new(name);
         }
         let suffix = if collapsed_args.is_empty() {
             "".to_string()
@@ -1702,6 +1716,8 @@ impl<'a> TypeMono<'a> {
         self.map.insert(key.clone(), new_name.clone());
 
         let ident = TastIdent::new(name);
+        self.active_instances
+            .push((name.to_string(), collapsed_args.clone()));
 
         if let Some(generic_def) = self.enum_base.get(&ident) {
             let mut subst: IndexMap<String, Ty> = IndexMap::new();
@@ -1768,7 +1784,43 @@ impl<'a> TypeMono<'a> {
         } else {
             // Unknown type constructor; just return synthesized name without registering a def
         }
+        let _ = self.active_instances.pop();
         new_name
+    }
+
+    fn recursive_type_specialization_error(&self, name: &str, args: &[Ty]) -> Option<String> {
+        for (active_name, active_args) in self.active_instances.iter().rev() {
+            if active_name != name {
+                continue;
+            }
+            for (index, (old_ty, new_ty)) in active_args.iter().zip(args.iter()).enumerate() {
+                if !ty_contains_proper_subterm(new_ty, old_ty) {
+                    continue;
+                }
+                let param = self
+                    .type_param_name(name, index)
+                    .unwrap_or_else(|| format!("#{}", index));
+                return Some(format!(
+                    "Infinite monomorphization detected for generic type {}: recursive specialization grows type parameter {} from {} to {}",
+                    name,
+                    param,
+                    format_ty_for_mono_diag(old_ty),
+                    format_ty_for_mono_diag(new_ty),
+                ));
+            }
+        }
+        None
+    }
+
+    fn type_param_name(&self, name: &str, index: usize) -> Option<String> {
+        let ident = TastIdent::new(name);
+        if let Some(def) = self.enum_base.get(&ident) {
+            return def.generics.get(index).map(|param| param.0.clone());
+        }
+        if let Some(def) = self.struct_base.get(&ident) {
+            return def.generics.get(index).map(|param| param.0.clone());
+        }
+        None
     }
 
     fn collapse_type_apps(&mut self, ty: &Ty) -> Ty {
@@ -2268,6 +2320,9 @@ pub fn mono(genv: GlobalTypeEnv, file: core::File) -> Result<(MonoFile, GlobalMo
             .collect();
         let ret_ty = m.collapse_type_apps(&f.ret_ty);
         let body = rewrite_block_types(f.body, &mut m);
+        if let Some(error) = m.error.take() {
+            return Err(error);
+        }
         let orig_name = instance_orig_names
             .get(&f.name)
             .map(String::as_str)
@@ -2323,6 +2378,9 @@ pub fn mono(genv: GlobalTypeEnv, file: core::File) -> Result<(MonoFile, GlobalMo
                 .iter()
                 .map(|(fname, fty)| (fname.clone(), m.collapse_type_apps(fty)))
                 .collect();
+            if let Some(error) = m.error.take() {
+                return Err(error);
+            }
             if let Some(def) = m.monoenv.struct_def_mut(&name) {
                 def.fields = new_fields;
             }
@@ -2339,6 +2397,9 @@ pub fn mono(genv: GlobalTypeEnv, file: core::File) -> Result<(MonoFile, GlobalMo
                     (vname.clone(), new_tys)
                 })
                 .collect();
+            if let Some(error) = m.error.take() {
+                return Err(error);
+            }
             if let Some(def) = m.monoenv.get_enum_mut(&name) {
                 def.variants = new_variants;
             }
