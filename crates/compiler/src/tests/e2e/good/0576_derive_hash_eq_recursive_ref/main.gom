@@ -1,0 +1,12 @@
+#[derive(Hash, Eq)]
+struct Node {
+    value: int32,
+    next: Ref[Option[Node]],
+}
+
+fn main() -> unit {
+    let n = Node { value: 1i32, next: ref(Option::None) };
+    let m: HashMap[Node, string] = HashMap::new();
+    hashmap_set(m, n, "ok");
+    println(hashmap_len(m).to_string())
+}
