@@ -11,6 +11,7 @@ use text_size::TextRange;
 
 const DEFAULT_PACKAGE_NAME: &str = "main";
 const MAX_EXPR_LOWER_DEPTH: usize = 256;
+const MAX_PATTERN_LOWER_DEPTH: usize = 128;
 const MAX_TYPE_LOWER_DEPTH: usize = 256;
 
 fn unescape_string(s: &str) -> String {
@@ -94,6 +95,7 @@ struct LowerCtx {
     diagnostics: Diagnostics,
     constructor_names: HashSet<String>,
     expr_depth: Rc<Cell<usize>>,
+    pattern_depth: Rc<Cell<usize>>,
     type_depth: Rc<Cell<usize>>,
 }
 
@@ -105,6 +107,7 @@ impl LowerCtx {
             diagnostics: Diagnostics::new(),
             constructor_names,
             expr_depth: Rc::new(Cell::new(0)),
+            pattern_depth: Rc::new(Cell::new(0)),
             type_depth: Rc::new(Cell::new(0)),
         }
     }
@@ -2308,6 +2311,16 @@ fn lower_arm(ctx: &mut LowerCtx, node: cst::MatchArm) -> Option<ast::Arm> {
 }
 
 fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
+    if ctx.pattern_depth.get() >= MAX_PATTERN_LOWER_DEPTH {
+        ctx.push_error(
+            Some(node.syntax().text_range()),
+            "pattern is too deeply nested",
+        );
+        return None;
+    }
+    ctx.pattern_depth.set(ctx.pattern_depth.get() + 1);
+    let _pattern_depth = LowerDepthGuard(Rc::clone(&ctx.pattern_depth));
+
     let node_astptr = MySyntaxNodePtr::new(node.syntax());
     match node {
         cst::Pattern::VarPat(it) => {
