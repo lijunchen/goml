@@ -287,11 +287,46 @@ fn variant_symbol_name_for_go_enum(
             }
         }
     }
-    if count > 1 {
+    let candidate = if count > 1 {
         format!("{}_{}", enum_go_name, go_ident(variant_name))
     } else {
         go_ident(variant_name)
+    };
+    unique_variant_symbol_name(goenv, candidate)
+}
+
+fn unique_variant_symbol_name(goenv: &GlobalGoEnv, base: String) -> String {
+    if !go_toplevel_name_is_reserved(goenv, &base) {
+        return base;
     }
+
+    let mut index = 1usize;
+    loop {
+        let candidate = format!("{}__variant{}", base, index);
+        if !go_toplevel_name_is_reserved(goenv, &candidate) {
+            return candidate;
+        }
+        index += 1;
+    }
+}
+
+fn go_toplevel_name_is_reserved(goenv: &GlobalGoEnv, name: &str) -> bool {
+    goenv
+        .structs()
+        .any(|(struct_name, _)| go_user_type_name(&struct_name.0) == name)
+        || goenv
+            .enums()
+            .any(|(enum_name, _)| go_user_type_name(&enum_name.0) == name)
+        || goenv
+            .genv
+            .type_env
+            .extern_types
+            .keys()
+            .any(|extern_name| go_user_type_name(extern_name) == name)
+        || goenv
+            .toplevel_funcs
+            .iter()
+            .any(|func_name| go_ident(func_name) == name)
 }
 
 fn enum_def_for_ty<'a>(goenv: &'a GlobalGoEnv, ty: &tast::Ty) -> Option<&'a EnumDef> {
