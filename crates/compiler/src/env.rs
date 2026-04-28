@@ -822,13 +822,25 @@ impl PackageTypeEnv {
             .map(|scheme| scheme.ty)
     }
 
+    fn shadows_builtin_nominal_type(&self, ty: &tast::Ty) -> bool {
+        let Some(name) = nominal_type_name(ty) else {
+            return false;
+        };
+        self.current.defines_struct_or_enum(name)
+            || self
+                .deps
+                .values()
+                .any(|env| env.defines_struct_or_enum(name))
+    }
+
     pub fn has_trait_impl_visible(&self, trait_name: &str, type_name: &tast::Ty) -> bool {
         let key = (trait_name.to_string(), type_name.clone());
         if let Some(cached) = self.lookup_cache.trait_impl_visibility.borrow().get(&key) {
             return *cached;
         }
 
-        let found = self.builtins.has_trait_impl(trait_name, type_name)
+        let found = (!self.shadows_builtin_nominal_type(type_name)
+            && self.builtins.has_trait_impl(trait_name, type_name))
             || self.current.has_trait_impl(trait_name, type_name)
             || self
                 .deps
@@ -854,10 +866,12 @@ impl PackageTypeEnv {
         }
 
         let mut result = Vec::new();
-        result.extend(
-            self.builtins
-                .collect_trait_impl_schemes(trait_name, type_name, func_name),
-        );
+        if !self.shadows_builtin_nominal_type(type_name) {
+            result.extend(
+                self.builtins
+                    .collect_trait_impl_schemes(trait_name, type_name, func_name),
+            );
+        }
         result.extend(
             self.current
                 .collect_trait_impl_schemes(trait_name, type_name, func_name),
@@ -886,8 +900,13 @@ impl PackageTypeEnv {
         receiver_ty: &tast::Ty,
         method: &TastIdent,
     ) -> Option<FnScheme> {
-        self.builtins
-            .lookup_inherent_method_scheme(receiver_ty, method)
+        let builtin = if self.shadows_builtin_nominal_type(receiver_ty) {
+            None
+        } else {
+            self.builtins
+                .lookup_inherent_method_scheme(receiver_ty, method)
+        };
+        builtin
             .or_else(|| {
                 self.current
                     .lookup_inherent_method_scheme(receiver_ty, method)
@@ -903,6 +922,14 @@ impl PackageTypeEnv {
         self.current
             .get_function_scheme(name)
             .or_else(|| self.builtins.get_function_scheme(name))
+    }
+}
+
+fn nominal_type_name(ty: &tast::Ty) -> Option<&str> {
+    match ty {
+        tast::Ty::TStruct { name } | tast::Ty::TEnum { name } => Some(name),
+        tast::Ty::TApp { ty, .. } => nominal_type_name(ty),
+        _ => None,
     }
 }
 
@@ -1036,6 +1063,11 @@ impl GlobalTypeEnv {
 
     pub fn get_type_of_function(&self, func: &str) -> Option<tast::Ty> {
         self.value_env.get_type_of_function(func)
+    }
+
+    fn defines_struct_or_enum(&self, name: &str) -> bool {
+        let ident = TastIdent::new(name);
+        self.type_env.structs.contains_key(&ident) || self.type_env.enums.contains_key(&ident)
     }
 
     pub fn lookup_trait_method_scheme(
