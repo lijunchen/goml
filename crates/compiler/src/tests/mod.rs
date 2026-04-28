@@ -21,6 +21,7 @@ mod constructor_value_test;
 mod deep_pattern_test;
 mod dyn_coercion_test;
 mod e2e;
+mod entrypoint_test;
 mod module;
 mod multiline_string_test;
 mod name_collision_test;
