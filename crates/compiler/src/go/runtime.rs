@@ -725,68 +725,67 @@ pub fn make_ref_runtime(ref_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
             }));
         }
 
-        let hash_stmts = if matches!(
-            elem.as_ref(),
-            tast::Ty::TDyn { trait_name } if trait_name == "Hash"
-        ) {
-            let dyn_go_ty = goty::GoType::TName {
-                name: go_dyn_struct_name("Hash"),
-            };
-            vec![
-                goast::Stmt::VarDecl {
-                    name: "value".to_string(),
-                    ty: dyn_go_ty.clone(),
-                    value: Some(goast::Expr::Call {
-                        func: Box::new(goast::Expr::Var {
-                            name: ref_get_name,
-                            ty: ref_get_fn_ty,
-                        }),
-                        args: vec![goast::Expr::Var {
-                            name: "self".to_string(),
-                            ty: ref_go_ty.clone(),
-                        }],
+        let hash_stmts = match elem.as_ref() {
+            tast::Ty::TDyn { trait_name } if trait_name == "Hash" => {
+                let dyn_go_ty = goty::GoType::TName {
+                    name: go_dyn_struct_name("Hash"),
+                };
+                Some(vec![
+                    goast::Stmt::VarDecl {
+                        name: "value".to_string(),
                         ty: dyn_go_ty.clone(),
-                    }),
-                },
-                goast::Stmt::Return {
-                    expr: Some(goast::Expr::Call {
-                        func: Box::new(goast::Expr::FieldAccess {
-                            obj: Box::new(goast::Expr::FieldAccess {
-                                obj: Box::new(goast::Expr::Var {
-                                    name: "value".to_string(),
-                                    ty: dyn_go_ty.clone(),
-                                }),
-                                field: "vtable".to_string(),
-                                ty: goty::GoType::TPointer {
-                                    elem: Box::new(goty::GoType::TName {
-                                        name: go_generated_ident("dyn__Hash_vtable"),
+                        value: Some(goast::Expr::Call {
+                            func: Box::new(goast::Expr::Var {
+                                name: ref_get_name,
+                                ty: ref_get_fn_ty,
+                            }),
+                            args: vec![goast::Expr::Var {
+                                name: "self".to_string(),
+                                ty: ref_go_ty.clone(),
+                            }],
+                            ty: dyn_go_ty.clone(),
+                        }),
+                    },
+                    goast::Stmt::Return {
+                        expr: Some(goast::Expr::Call {
+                            func: Box::new(goast::Expr::FieldAccess {
+                                obj: Box::new(goast::Expr::FieldAccess {
+                                    obj: Box::new(goast::Expr::Var {
+                                        name: "value".to_string(),
+                                        ty: dyn_go_ty.clone(),
                                     }),
+                                    field: "vtable".to_string(),
+                                    ty: goty::GoType::TPointer {
+                                        elem: Box::new(goty::GoType::TName {
+                                            name: go_generated_ident("dyn__Hash_vtable"),
+                                        }),
+                                    },
+                                }),
+                                field: "hash".to_string(),
+                                ty: goty::GoType::TFunc {
+                                    params: vec![goty::GoType::TName {
+                                        name: "any".to_string(),
+                                    }],
+                                    ret_ty: Box::new(goty::GoType::TUint64),
                                 },
                             }),
-                            field: "hash".to_string(),
-                            ty: goty::GoType::TFunc {
-                                params: vec![goty::GoType::TName {
+                            args: vec![goast::Expr::FieldAccess {
+                                obj: Box::new(goast::Expr::Var {
+                                    name: "value".to_string(),
+                                    ty: dyn_go_ty,
+                                }),
+                                field: "data".to_string(),
+                                ty: goty::GoType::TName {
                                     name: "any".to_string(),
-                                }],
-                                ret_ty: Box::new(goty::GoType::TUint64),
-                            },
+                                },
+                            }],
+                            ty: goty::GoType::TUint64,
                         }),
-                        args: vec![goast::Expr::FieldAccess {
-                            obj: Box::new(goast::Expr::Var {
-                                name: "value".to_string(),
-                                ty: dyn_go_ty,
-                            }),
-                            field: "data".to_string(),
-                            ty: goty::GoType::TName {
-                                name: "any".to_string(),
-                            },
-                        }],
-                        ty: goty::GoType::TUint64,
-                    }),
-                },
-            ]
-        } else {
-            vec![goast::Stmt::Return {
+                    },
+                ])
+            }
+            tast::Ty::TDyn { .. } => None,
+            _ => Some(vec![goast::Stmt::Return {
                 expr: Some(goast::Expr::Call {
                     func: Box::new(goast::Expr::Var {
                         name: inner_hash_name,
@@ -805,15 +804,17 @@ pub fn make_ref_runtime(ref_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
                     }],
                     ty: goty::GoType::TUint64,
                 }),
-            }]
+            }]),
         };
 
-        items.push(goast::Item::Fn(goast::Fn {
-            name: hash_name,
-            params: vec![("self".to_string(), ref_go_ty.clone())],
-            ret_ty: Some(goty::GoType::TUint64),
-            body: goast::Block { stmts: hash_stmts },
-        }));
+        if let Some(hash_stmts) = hash_stmts {
+            items.push(goast::Item::Fn(goast::Fn {
+                name: hash_name,
+                params: vec![("self".to_string(), ref_go_ty.clone())],
+                ret_ty: Some(goty::GoType::TUint64),
+                body: goast::Block { stmts: hash_stmts },
+            }));
+        }
     }
 
     items
