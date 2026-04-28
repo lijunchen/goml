@@ -34,13 +34,13 @@ type ref_int32_x struct {
     value int32
 }
 
-func ref__Ref_int32(value int32) *ref_int32_x {
+func ref__Ref_5int32(value int32) *ref_int32_x {
     return &ref_int32_x{
         value: value,
     }
 }
 
-func ref_get__Ref_int32(reference *ref_int32_x) int32 {
+func ref_get__Ref_5int32(reference *ref_int32_x) int32 {
     return reference.value
 }
 
@@ -97,7 +97,7 @@ func main0() struct{} {
         vtable: dyn__ToString__vtable__S(),
     }
     println__T_dynToString(d__2)
-    var r__3 *ref_int32_x = ref__Ref_int32(5)
+    var r__3 *ref_int32_x = ref__Ref_5int32(5)
     _goml_println__T_Ref_x5b_int32_x5d_(r__3)
     print__T_string("no-newline")
     println__T_string("!")
@@ -140,7 +140,7 @@ func println__T_dynToString(value__1 dyn__ToString) struct{} {
 }
 
 func _goml_println__T_Ref_x5b_int32_x5d_(value__1 *ref_int32_x) struct{} {
-    var t38 int32 = ref_get__Ref_int32(value__1)
+    var t38 int32 = ref_get__Ref_5int32(value__1)
     var t39 string = int32_to_string(t38)
     var t40 string = "ref(" + t39
     var t41 string = t40 + ")"

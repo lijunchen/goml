@@ -44,21 +44,21 @@ type hashmap_Key_int32_x struct {
     len int32
 }
 
-func hashmap_new__HashMap_Key_int32() *hashmap_Key_int32_x {
+func hashmap_new__HashMap_3Key_5int32() *hashmap_Key_int32_x {
     return &hashmap_Key_int32_x{
         buckets: make(map[uint64][]hashmap_Key_int32_x_entry),
         len: 0,
     }
 }
 
-func hashmap_len__HashMap_Key_int32(m *hashmap_Key_int32_x) int32 {
+func hashmap_len__HashMap_3Key_5int32(m *hashmap_Key_int32_x) int32 {
     if m == nil {
         return 0
     }
     return m.len
 }
 
-func hashmap_get_native__HashMap_Key_int32(m *hashmap_Key_int32_x, key Key) (int32, bool) {
+func hashmap_get_native__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key) (int32, bool) {
     if m == nil {
         var zero int32
         return zero, false
@@ -80,7 +80,7 @@ func hashmap_get_native__HashMap_Key_int32(m *hashmap_Key_int32_x, key Key) (int
     return zero, false
 }
 
-func hashmap_set__HashMap_Key_int32(m *hashmap_Key_int32_x, key Key, value int32) struct{} {
+func hashmap_set__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key, value int32) struct{} {
     if m == nil {
         return struct{}{}
     }
@@ -108,7 +108,7 @@ func hashmap_set__HashMap_Key_int32(m *hashmap_Key_int32_x, key Key, value int32
     return struct{}{}
 }
 
-func hashmap_remove__HashMap_Key_int32(m *hashmap_Key_int32_x, key Key) struct{} {
+func hashmap_remove__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key) struct{} {
     if m == nil {
         return struct{}{}
     }
@@ -130,7 +130,7 @@ func hashmap_remove__HashMap_Key_int32(m *hashmap_Key_int32_x, key Key) struct{}
     return struct{}{}
 }
 
-func hashmap_contains__HashMap_Key_int32(m *hashmap_Key_int32_x, key Key) bool {
+func hashmap_contains__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key) bool {
     if m == nil {
         return false
     }
@@ -150,7 +150,7 @@ func hashmap_contains__HashMap_Key_int32(m *hashmap_Key_int32_x, key Key) bool {
     return false
 }
 
-type Tuple2_Key_Key struct {
+type Tuple2_3Key_3Key struct {
     _0 Key
     _1 Key
 }
@@ -187,7 +187,7 @@ type GoError = error
 
 func _goml_trait_impl_Eq_Key_eq(self__0 Key, other__1 Key) bool {
     var retv21 bool
-    var mtmp0 Tuple2_Key_Key = Tuple2_Key_Key{
+    var mtmp0 Tuple2_3Key_3Key = Tuple2_3Key_3Key{
         _0: self__0,
         _1: other__1,
     }
@@ -349,19 +349,19 @@ func _goml_inherent_Vec_Vec_x5b_T_x5d__len__T_int32(self__74 []int32) int32 {
 
 func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__new__K_Key__V_int32() *hashmap_Key_int32_x {
     var retv72 *hashmap_Key_int32_x
-    var t73 *hashmap_Key_int32_x = hashmap_new__HashMap_Key_int32()
+    var t73 *hashmap_Key_int32_x = hashmap_new__HashMap_3Key_5int32()
     retv72 = t73
     return retv72
 }
 
 func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__set__K_Key__V_int32(self__83 *hashmap_Key_int32_x, key__84 Key, value__85 int32) struct{} {
-    hashmap_set__HashMap_Key_int32(self__83, key__84, value__85)
+    hashmap_set__HashMap_3Key_5int32(self__83, key__84, value__85)
     return struct{}{}
 }
 
 func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__len__K_Key__V_int32(self__88 *hashmap_Key_int32_x) int32 {
     var retv77 int32
-    var t78 int32 = hashmap_len__HashMap_Key_int32(self__88)
+    var t78 int32 = hashmap_len__HashMap_3Key_5int32(self__88)
     retv77 = t78
     return retv77
 }
@@ -369,7 +369,7 @@ func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__len__K_Key__V_int32(self__8
 func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_Key__V_int32__native(self__81 *hashmap_Key_int32_x, key__82 Key) (int32, bool) {
     var t81_value int32
     var t81_ok bool
-    t81_value, t81_ok = hashmap_get_native__HashMap_Key_int32(self__81, key__82)
+    t81_value, t81_ok = hashmap_get_native__HashMap_3Key_5int32(self__81, key__82)
     if !t81_ok {
         var ret_zero int32
         return ret_zero, false
@@ -397,13 +397,13 @@ func println__T_bool(value__1 bool) struct{} {
 
 func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__contains__K_Key__V_int32(self__89 *hashmap_Key_int32_x, key__90 Key) bool {
     var retv86 bool
-    var t87 bool = hashmap_contains__HashMap_Key_int32(self__89, key__90)
+    var t87 bool = hashmap_contains__HashMap_3Key_5int32(self__89, key__90)
     retv86 = t87
     return retv86
 }
 
 func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__remove__K_Key__V_int32(self__86 *hashmap_Key_int32_x, key__87 Key) struct{} {
-    hashmap_remove__HashMap_Key_int32(self__86, key__87)
+    hashmap_remove__HashMap_3Key_5int32(self__86, key__87)
     return struct{}{}
 }
 

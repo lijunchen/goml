@@ -17,7 +17,7 @@ func string_print(s string) struct{} {
     return struct{}{}
 }
 
-type Tuple2_bool_bool struct {
+type Tuple2_4bool_4bool struct {
     _0 bool
     _1 bool
 }
@@ -25,25 +25,25 @@ type Tuple2_bool_bool struct {
 type GoError = error
 
 func main0() struct{} {
-    var a__0 Tuple2_bool_bool = Tuple2_bool_bool{
+    var a__0 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: true,
         _1: false,
     }
     var x0 bool = a__0._0
     var x1 bool = a__0._1
-    var jp9 Tuple2_bool_bool
+    var jp9 Tuple2_4bool_4bool
     switch x1 {
     case true:
-        var jp24 Tuple2_bool_bool
+        var jp24 Tuple2_4bool_4bool
         switch x0 {
         case true:
-            var t25 Tuple2_bool_bool = Tuple2_bool_bool{
+            var t25 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
                 _0: false,
                 _1: false,
             }
             jp24 = t25
         case false:
-            var t26 Tuple2_bool_bool = Tuple2_bool_bool{
+            var t26 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
                 _0: true,
                 _1: false,
             }
@@ -53,16 +53,16 @@ func main0() struct{} {
         }
         jp9 = jp24
     case false:
-        var jp28 Tuple2_bool_bool
+        var jp28 Tuple2_4bool_4bool
         switch x0 {
         case true:
-            var t29 Tuple2_bool_bool = Tuple2_bool_bool{
+            var t29 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
                 _0: false,
                 _1: true,
             }
             jp28 = t29
         case false:
-            var t30 Tuple2_bool_bool = Tuple2_bool_bool{
+            var t30 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
                 _0: true,
                 _1: true,
             }
@@ -74,11 +74,11 @@ func main0() struct{} {
     default:
         panic("non-exhaustive match")
     }
-    var b__1 Tuple2_bool_bool = jp9
+    var b__1 Tuple2_4bool_4bool = jp9
     var x3 bool = b__1._1
     var w__2 bool = x3
     var b_1__3 bool = w__2
-    var mtmp4 Tuple2_bool_bool = Tuple2_bool_bool{
+    var mtmp4 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: true,
         _1: b_1__3,
     }

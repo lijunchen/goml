@@ -45,14 +45,14 @@ type hashmap_string_int32_x struct {
     len int32
 }
 
-func hashmap_new__HashMap_string_int32() *hashmap_string_int32_x {
+func hashmap_new__HashMap_6string_5int32() *hashmap_string_int32_x {
     return &hashmap_string_int32_x{
         buckets: make(map[uint64][]hashmap_string_int32_x_entry),
         len: 0,
     }
 }
 
-func hashmap_get_native__HashMap_string_int32(m *hashmap_string_int32_x, key string) (int32, bool) {
+func hashmap_get_native__HashMap_6string_5int32(m *hashmap_string_int32_x, key string) (int32, bool) {
     if m == nil {
         var zero int32
         return zero, false
@@ -74,7 +74,7 @@ func hashmap_get_native__HashMap_string_int32(m *hashmap_string_int32_x, key str
     return zero, false
 }
 
-func hashmap_set__HashMap_string_int32(m *hashmap_string_int32_x, key string, value int32) struct{} {
+func hashmap_set__HashMap_6string_5int32(m *hashmap_string_int32_x, key string, value int32) struct{} {
     if m == nil {
         return struct{}{}
     }
@@ -180,20 +180,20 @@ func main0() struct{} {
 
 func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__new__K_string__V_int32() *hashmap_string_int32_x {
     var retv26 *hashmap_string_int32_x
-    var t27 *hashmap_string_int32_x = hashmap_new__HashMap_string_int32()
+    var t27 *hashmap_string_int32_x = hashmap_new__HashMap_6string_5int32()
     retv26 = t27
     return retv26
 }
 
 func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__set__K_string__V_int32(self__83 *hashmap_string_int32_x, key__84 string, value__85 int32) struct{} {
-    hashmap_set__HashMap_string_int32(self__83, key__84, value__85)
+    hashmap_set__HashMap_6string_5int32(self__83, key__84, value__85)
     return struct{}{}
 }
 
 func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_string__V_int32__native(self__81 *hashmap_string_int32_x, key__82 string) (int32, bool) {
     var t32_value int32
     var t32_ok bool
-    t32_value, t32_ok = hashmap_get_native__HashMap_string_int32(self__81, key__82)
+    t32_value, t32_ok = hashmap_get_native__HashMap_6string_5int32(self__81, key__82)
     if !t32_ok {
         var ret_zero int32
         return ret_zero, false

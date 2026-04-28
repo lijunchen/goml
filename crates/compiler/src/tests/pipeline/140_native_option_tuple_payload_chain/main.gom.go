@@ -10,7 +10,7 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type Tuple2_string_string struct {
+type Tuple2_6string_6string struct {
     _0 string
     _1 string
 }
@@ -24,7 +24,7 @@ type None struct {}
 func (_ None) is_goml_Option___x28_string_x2c_string_x29_() {}
 
 type Some struct {
-    _0 Tuple2_string_string
+    _0 Tuple2_6string_6string
 }
 
 func (_ Some) is_goml_Option___x28_string_x2c_string_x29_() {}
@@ -37,10 +37,10 @@ func pair__native(text__0 string) (string, string, bool) {
     var t8_ok bool
     t8_value_0, t8_value_1, t8_ok = strings.Cut(text__0, ":")
     if !t8_ok {
-        var ret_zero Tuple2_string_string
+        var ret_zero Tuple2_6string_6string
         return ret_zero._0, ret_zero._1, false
     }
-    var ret_payload Tuple2_string_string = Tuple2_string_string{
+    var ret_payload Tuple2_6string_6string = Tuple2_6string_6string{
         _0: t8_value_0,
         _1: t8_value_1,
     }
@@ -54,7 +54,7 @@ func pair(text__0 string) _goml_Option___x28_string_x2c_string_x29_ {
     native_value_0, native_value_1, native_ok = pair__native(text__0)
     if native_ok {
         return Some{
-            _0: Tuple2_string_string{
+            _0: Tuple2_6string_6string{
                 _0: native_value_0,
                 _1: native_value_1,
             },
@@ -71,7 +71,7 @@ func describe(text__1 string) string {
     case None:
         jp12 = "missing"
     case Some:
-        var x1 Tuple2_string_string = mtmp0.(Some)._0
+        var x1 Tuple2_6string_6string = mtmp0.(Some)._0
         var x2 string = x1._0
         var x3 string = x1._1
         var after__3 string = x3

@@ -25,7 +25,7 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type Tuple2_float32_float64 struct {
+type Tuple2_7float32_7float64 struct {
     _0 float32
     _1 float64
 }
@@ -77,7 +77,7 @@ func summarize(event__0 FloatEvent) string {
     return retv8
 }
 
-func compare(values__5 Tuple2_float32_float64) string {
+func compare(values__5 Tuple2_7float32_7float64) string {
     var retv16 string
     var x4 float32 = values__5._0
     var x5 float64 = values__5._1
@@ -112,11 +112,11 @@ func main0() struct{} {
         _0: "f64=",
         _1: third_value__14,
     }
-    var tuple__18 Tuple2_float32_float64 = Tuple2_float32_float64{
+    var tuple__18 Tuple2_7float32_7float64 = Tuple2_7float32_7float64{
         _0: 0.75,
         _1: 4,
     }
-    var tuple_other__19 Tuple2_float32_float64 = Tuple2_float32_float64{
+    var tuple_other__19 Tuple2_7float32_7float64 = Tuple2_7float32_7float64{
         _0: 1.5,
         _1: 7.25,
     }

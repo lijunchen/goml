@@ -10,7 +10,7 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type Tuple2_string_string struct {
+type Tuple2_6string_6string struct {
     _0 string
     _1 string
 }
@@ -24,7 +24,7 @@ type None struct {}
 func (_ None) is_goml_Option___x28_string_x2c_string_x29_() {}
 
 type Some struct {
-    _0 Tuple2_string_string
+    _0 Tuple2_6string_6string
 }
 
 func (_ Some) is_goml_Option___x28_string_x2c_string_x29_() {}
@@ -38,7 +38,7 @@ func cut_pair_ffi_wrap(p0 string, p1 string) _goml_Option___x28_string_x2c_strin
     ffi_value_0, ffi_value_1, ffi_ok = strings.Cut(p0, p1)
     if ffi_ok {
         return Some{
-            _0: Tuple2_string_string{
+            _0: Tuple2_6string_6string{
                 _0: ffi_value_0,
                 _1: ffi_value_1,
             },
@@ -55,7 +55,7 @@ func describe(text__0 string) string {
     case None:
         jp9 = "missing"
     case Some:
-        var x1 Tuple2_string_string = mtmp0.(Some)._0
+        var x1 Tuple2_6string_6string = mtmp0.(Some)._0
         var x2 string = x1._0
         var x3 string = x1._1
         var after__2 string = x3

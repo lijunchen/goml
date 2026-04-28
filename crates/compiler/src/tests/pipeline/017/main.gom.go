@@ -21,14 +21,14 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type Tuple2_int32_int32 struct {
+type Tuple2_5int32_5int32 struct {
     _0 int32
     _1 int32
 }
 
 type GoError = error
 
-func _goml_trait_impl_ToString__x28_int32_x2c_int32_x29__to_string(self__0 Tuple2_int32_int32) string {
+func _goml_trait_impl_ToString__x28_int32_x2c_int32_x29__to_string(self__0 Tuple2_5int32_5int32) string {
     var retv4 string
     retv4 = "(?, ?)"
     return retv4
@@ -41,7 +41,7 @@ func main0() struct{} {
     var x__2 bool = true
     var t7 string = bool_to_string(x__2)
     string_println(t7)
-    var x__3 Tuple2_int32_int32 = Tuple2_int32_int32{
+    var x__3 Tuple2_5int32_5int32 = Tuple2_5int32_5int32{
         _0: 3,
         _1: 4,
     }

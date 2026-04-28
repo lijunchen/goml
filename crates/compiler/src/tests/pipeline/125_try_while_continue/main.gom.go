@@ -17,17 +17,17 @@ type ref_int32_x struct {
     value int32
 }
 
-func ref__Ref_int32(value int32) *ref_int32_x {
+func ref__Ref_5int32(value int32) *ref_int32_x {
     return &ref_int32_x{
         value: value,
     }
 }
 
-func ref_get__Ref_int32(reference *ref_int32_x) int32 {
+func ref_get__Ref_5int32(reference *ref_int32_x) int32 {
     return reference.value
 }
 
-func ref_set__Ref_int32(reference *ref_int32_x, value int32) struct{} {
+func ref_set__Ref_5int32(reference *ref_int32_x, value int32) struct{} {
     reference.value = value
     return struct{}{}
 }
@@ -60,16 +60,16 @@ func step__native(i__0 int32) (int32, bool) {
 }
 
 func accumulate__native(limit__1 int32) (int32, bool) {
-    var sum__2 *ref_int32_x = ref__Ref_int32(0)
-    var i__3 *ref_int32_x = ref__Ref_int32(0)
+    var sum__2 *ref_int32_x = ref__Ref_5int32(0)
+    var i__3 *ref_int32_x = ref__Ref_5int32(0)
     Loop_loop21:
     for {
-        var t22 int32 = ref_get__Ref_int32(i__3)
+        var t22 int32 = ref_get__Ref_5int32(i__3)
         var t23 bool = t22 < limit__1
         if t23 {
-            var cur__4 int32 = ref_get__Ref_int32(i__3)
+            var cur__4 int32 = ref_get__Ref_5int32(i__3)
             var t24 int32 = cur__4 + 1
-            ref_set__Ref_int32(i__3, t24)
+            ref_set__Ref_5int32(i__3, t24)
             var t30 bool = cur__4 == 1
             if t30 {
                 continue
@@ -84,16 +84,16 @@ func accumulate__native(limit__1 int32) (int32, bool) {
                 }
                 jp27 = mtmp2_value_0
                 var value__5 int32 = jp27
-                var t28 int32 = ref_get__Ref_int32(sum__2)
+                var t28 int32 = ref_get__Ref_5int32(sum__2)
                 var t29 int32 = t28 + value__5
-                ref_set__Ref_int32(sum__2, t29)
+                ref_set__Ref_5int32(sum__2, t29)
                 continue
             }
         } else {
             break Loop_loop21
         }
     }
-    var t19 int32 = ref_get__Ref_int32(sum__2)
+    var t19 int32 = ref_get__Ref_5int32(sum__2)
     return t19, true
 }
 

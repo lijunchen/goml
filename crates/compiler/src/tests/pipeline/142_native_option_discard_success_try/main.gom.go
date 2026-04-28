@@ -10,7 +10,7 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type Tuple2_string_string struct {
+type Tuple2_6string_6string struct {
     _0 string
     _1 string
 }
@@ -38,7 +38,7 @@ type _goml_Option___x28_string_x2c_string_x29__None struct {}
 func (_ _goml_Option___x28_string_x2c_string_x29__None) is_goml_Option___x28_string_x2c_string_x29_() {}
 
 type _goml_Option___x28_string_x2c_string_x29__Some struct {
-    _0 Tuple2_string_string
+    _0 Tuple2_6string_6string
 }
 
 func (_ _goml_Option___x28_string_x2c_string_x29__Some) is_goml_Option___x28_string_x2c_string_x29_() {}

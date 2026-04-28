@@ -13,7 +13,7 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type Tuple2_int32_string struct {
+type Tuple2_5int32_6string struct {
     _0 int32
     _1 string
 }
@@ -43,7 +43,7 @@ func (_ Both) isMixed() {}
 
 type GoError = error
 
-func match_mixed_pair(pair__0 Tuple2_int32_string) int32 {
+func match_mixed_pair(pair__0 Tuple2_5int32_6string) int32 {
     var retv19 int32
     var x0 int32 = pair__0._0
     var x1 string = pair__0._1
@@ -140,35 +140,35 @@ func match_mixed_enum(value__1 Mixed) int32 {
 }
 
 func main0() struct{} {
-    var t43 Tuple2_int32_string = Tuple2_int32_string{
+    var t43 Tuple2_5int32_6string = Tuple2_5int32_6string{
         _0: 0,
         _1: "zero",
     }
     var t44 int32 = match_mixed_pair(t43)
     var t45 string = int32_to_string(t44)
     string_println(t45)
-    var t46 Tuple2_int32_string = Tuple2_int32_string{
+    var t46 Tuple2_5int32_6string = Tuple2_5int32_6string{
         _0: 0,
         _1: "other",
     }
     var t47 int32 = match_mixed_pair(t46)
     var t48 string = int32_to_string(t47)
     string_println(t48)
-    var t49 Tuple2_int32_string = Tuple2_int32_string{
+    var t49 Tuple2_5int32_6string = Tuple2_5int32_6string{
         _0: 1,
         _1: "one",
     }
     var t50 int32 = match_mixed_pair(t49)
     var t51 string = int32_to_string(t50)
     string_println(t51)
-    var t52 Tuple2_int32_string = Tuple2_int32_string{
+    var t52 Tuple2_5int32_6string = Tuple2_5int32_6string{
         _0: 2,
         _1: "zero",
     }
     var t53 int32 = match_mixed_pair(t52)
     var t54 string = int32_to_string(t53)
     string_println(t54)
-    var t55 Tuple2_int32_string = Tuple2_int32_string{
+    var t55 Tuple2_5int32_6string = Tuple2_5int32_6string{
         _0: 2,
         _1: "two",
     }

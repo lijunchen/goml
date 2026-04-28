@@ -17,7 +17,7 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type Tuple2_int8_int16 struct {
+type Tuple2_4int8_5int16 struct {
     _0 int8
     _1 int16
 }
@@ -89,7 +89,7 @@ func is_special64(value__3 int64) bool {
     return retv18
 }
 
-func match_tuple(values__4 Tuple2_int8_int16) bool {
+func match_tuple(values__4 Tuple2_4int8_5int16) bool {
     var retv22 bool
     var x0 int8 = values__4._0
     var x1 int16 = values__4._1
@@ -146,12 +146,12 @@ func report(label__6 string, value__7 bool) string {
 func main0() struct{} {
     var tuple_first__8 int8 = 1
     var tuple_second__9 int16 = 2
-    var t38 Tuple2_int8_int16 = Tuple2_int8_int16{
+    var t38 Tuple2_4int8_5int16 = Tuple2_4int8_5int16{
         _0: tuple_first__8,
         _1: tuple_second__9,
     }
     var tuple_result_hit__10 bool = match_tuple(t38)
-    var t39 Tuple2_int8_int16 = Tuple2_int8_int16{
+    var t39 Tuple2_4int8_5int16 = Tuple2_4int8_5int16{
         _0: 3,
         _1: 4,
     }

@@ -10,7 +10,7 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type Tuple3_string_string_bool struct {
+type Tuple3_6string_6string_4bool struct {
     _0 string
     _1 string
     _2 bool
@@ -18,12 +18,12 @@ type Tuple3_string_string_bool struct {
 
 type GoError = error
 
-func cut_ffi_wrap(p0 string, p1 string) Tuple3_string_string_bool {
+func cut_ffi_wrap(p0 string, p1 string) Tuple3_6string_6string_4bool {
     var ffi_value_0 string
     var ffi_value_1 string
     var ffi_value_2 bool
     ffi_value_0, ffi_value_1, ffi_value_2 = strings.Cut(p0, p1)
-    return Tuple3_string_string_bool{
+    return Tuple3_6string_6string_4bool{
         _0: ffi_value_0,
         _1: ffi_value_1,
         _2: ffi_value_2,
@@ -32,7 +32,7 @@ func cut_ffi_wrap(p0 string, p1 string) Tuple3_string_string_bool {
 
 func describe(input__0 string) string {
     var retv7 string
-    var mtmp0 Tuple3_string_string_bool = cut_ffi_wrap(input__0, ":")
+    var mtmp0 Tuple3_6string_6string_4bool = cut_ffi_wrap(input__0, ":")
     var x1 string = mtmp0._0
     var x2 string = mtmp0._1
     var x3 bool = mtmp0._2

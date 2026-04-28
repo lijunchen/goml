@@ -14,7 +14,7 @@ func go_error_to_string(value GoError) string {
     return value.Error()
 }
 
-type Tuple2_string_string struct {
+type Tuple2_6string_6string struct {
     _0 string
     _1 string
 }
@@ -40,7 +40,7 @@ type _goml_Result___x28_string_x2c_string_x29___GoError interface {
 }
 
 type _goml_Result___x28_string_x2c_string_x29___GoError_Ok struct {
-    _0 Tuple2_string_string
+    _0 Tuple2_6string_6string
 }
 
 func (_ _goml_Result___x28_string_x2c_string_x29___GoError_Ok) is_goml_Result___x28_string_x2c_string_x29___GoError() {}
@@ -54,7 +54,7 @@ func (_ _goml_Result___x28_string_x2c_string_x29___GoError_Err) is_goml_Result__
 type GoError = error
 
 func render__native(text__0 string) (string, GoError) {
-    var jp12 Tuple2_string_string
+    var jp12 Tuple2_6string_6string
     var mtmp0_value_0 string
     var mtmp0_value_1 string
     var mtmp0_err GoError
@@ -63,11 +63,11 @@ func render__native(text__0 string) (string, GoError) {
         var ret_zero string
         return ret_zero, mtmp0_err
     }
-    jp12 = Tuple2_string_string{
+    jp12 = Tuple2_6string_6string{
         _0: mtmp0_value_0,
         _1: mtmp0_value_1,
     }
-    var mtmp3 Tuple2_string_string = jp12
+    var mtmp3 Tuple2_6string_6string = jp12
     var x4 string = mtmp3._0
     var x5 string = mtmp3._1
     var port__2 string = x5

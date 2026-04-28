@@ -17,7 +17,7 @@ func string_print(s string) struct{} {
     return struct{}{}
 }
 
-type Tuple2_Color_Color struct {
+type Tuple2_5Color_5Color struct {
     _0 Color
     _1 Color
 }
@@ -34,7 +34,7 @@ type GoError = error
 
 func main0() bool {
     var retv4 bool
-    var a__0 Tuple2_Color_Color = Tuple2_Color_Color{
+    var a__0 Tuple2_5Color_5Color = Tuple2_5Color_5Color{
         _0: Blue,
         _1: Blue,
     }

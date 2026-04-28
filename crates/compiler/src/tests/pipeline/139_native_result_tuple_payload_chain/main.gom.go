@@ -14,7 +14,7 @@ func go_error_to_string(value GoError) string {
     return value.Error()
 }
 
-type Tuple2_string_string struct {
+type Tuple2_6string_6string struct {
     _0 string
     _1 string
 }
@@ -24,7 +24,7 @@ type _goml_Result___x28_string_x2c_string_x29___GoError interface {
 }
 
 type _goml_Result___x28_string_x2c_string_x29___GoError_Ok struct {
-    _0 Tuple2_string_string
+    _0 Tuple2_6string_6string
 }
 
 func (_ _goml_Result___x28_string_x2c_string_x29___GoError_Ok) is_goml_Result___x28_string_x2c_string_x29___GoError() {}
@@ -59,10 +59,10 @@ func pair__native(text__0 string) (string, string, GoError) {
     var t11_err GoError
     t11_value_0, t11_value_1, t11_err = net.SplitHostPort(text__0)
     if t11_err != nil {
-        var ret_zero Tuple2_string_string
+        var ret_zero Tuple2_6string_6string
         return ret_zero._0, ret_zero._1, t11_err
     }
-    var ret_payload Tuple2_string_string = Tuple2_string_string{
+    var ret_payload Tuple2_6string_6string = Tuple2_6string_6string{
         _0: t11_value_0,
         _1: t11_value_1,
     }
@@ -70,7 +70,7 @@ func pair__native(text__0 string) (string, string, GoError) {
 }
 
 func render__native(text__1 string) (string, GoError) {
-    var jp15 Tuple2_string_string
+    var jp15 Tuple2_6string_6string
     var mtmp0_value_0 string
     var mtmp0_value_1 string
     var mtmp0_err GoError
@@ -79,11 +79,11 @@ func render__native(text__1 string) (string, GoError) {
         var ret_zero string
         return ret_zero, mtmp0_err
     }
-    jp15 = Tuple2_string_string{
+    jp15 = Tuple2_6string_6string{
         _0: mtmp0_value_0,
         _1: mtmp0_value_1,
     }
-    var mtmp3 Tuple2_string_string = jp15
+    var mtmp3 Tuple2_6string_6string = jp15
     var x4 string = mtmp3._0
     var x5 string = mtmp3._1
     var port__3 string = x5

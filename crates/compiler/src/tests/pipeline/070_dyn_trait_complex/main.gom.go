@@ -17,17 +17,17 @@ type ref_int32_x struct {
     value int32
 }
 
-func ref__Ref_int32(value int32) *ref_int32_x {
+func ref__Ref_5int32(value int32) *ref_int32_x {
     return &ref_int32_x{
         value: value,
     }
 }
 
-func ref_get__Ref_int32(reference *ref_int32_x) int32 {
+func ref_get__Ref_5int32(reference *ref_int32_x) int32 {
     return reference.value
 }
 
-func ref_set__Ref_int32(reference *ref_int32_x, value int32) struct{} {
+func ref_set__Ref_5int32(reference *ref_int32_x, value int32) struct{} {
     reference.value = value
     return struct{}{}
 }
@@ -235,7 +235,7 @@ func _goml_trait_impl_Display_Flag_bump(self__12 Flag, delta__13 int32) int32 {
 func _goml_trait_impl_Display_Counter_show(self__14 Counter) string {
     var retv64 string
     var t65 *ref_int32_x = self__14.cell
-    var t66 int32 = ref_get__Ref_int32(t65)
+    var t66 int32 = ref_get__Ref_5int32(t65)
     var t67 string = int32_to_string(t66)
     var t68 string = "Counter(" + t67
     var t69 string = t68 + ")"
@@ -247,7 +247,7 @@ func _goml_trait_impl_Display_Counter_show_with(self__15 Counter, prefix__16 str
     var retv71 string
     var t72 string = prefix__16 + "Counter("
     var t73 *ref_int32_x = self__15.cell
-    var t74 int32 = ref_get__Ref_int32(t73)
+    var t74 int32 = ref_get__Ref_5int32(t73)
     var t75 string = int32_to_string(t74)
     var t76 string = t72 + t75
     var t77 string = t76 + ")"
@@ -258,20 +258,20 @@ func _goml_trait_impl_Display_Counter_show_with(self__15 Counter, prefix__16 str
 
 func _goml_trait_impl_Display_Counter_tick(self__18 Counter) struct{} {
     var t80 *ref_int32_x = self__18.cell
-    var t81 int32 = ref_get__Ref_int32(t80)
+    var t81 int32 = ref_get__Ref_5int32(t80)
     var next__19 int32 = t81 + 1
     var t82 *ref_int32_x = self__18.cell
-    ref_set__Ref_int32(t82, next__19)
+    ref_set__Ref_5int32(t82, next__19)
     return struct{}{}
 }
 
 func _goml_trait_impl_Display_Counter_bump(self__20 Counter, delta__21 int32) int32 {
     var retv84 int32
     var t85 *ref_int32_x = self__20.cell
-    var t86 int32 = ref_get__Ref_int32(t85)
+    var t86 int32 = ref_get__Ref_5int32(t85)
     var next__22 int32 = t86 + delta__21
     var t87 *ref_int32_x = self__20.cell
-    ref_set__Ref_int32(t87, next__22)
+    ref_set__Ref_5int32(t87, next__22)
     retv84 = next__22
     return retv84
 }
@@ -329,7 +329,7 @@ func main0() struct{} {
     var f2__36 Flag = Flag{
         value: false,
     }
-    var t105 *ref_int32_x = ref__Ref_int32(10)
+    var t105 *ref_int32_x = ref__Ref_5int32(10)
     var c__37 Counter = Counter{
         cell: t105,
     }
@@ -377,17 +377,17 @@ func main0() struct{} {
     string_println(s0__45)
     string_println(s1__46)
     string_println(s2__47)
-    var i__54 *ref_int32_x = ref__Ref_int32(0)
+    var i__54 *ref_int32_x = ref__Ref_5int32(0)
     Loop_loop116:
     for {
-        var t117 int32 = ref_get__Ref_int32(i__54)
+        var t117 int32 = ref_get__Ref_5int32(i__54)
         var t118 bool = t117 < 3
         if t118 {
             var line__55 string = bump_and_show(dc__42, delta__53)
             string_println(line__55)
-            var t119 int32 = ref_get__Ref_int32(i__54)
+            var t119 int32 = ref_get__Ref_5int32(i__54)
             var t120 int32 = t119 + 1
-            ref_set__Ref_int32(i__54, t120)
+            ref_set__Ref_5int32(i__54, t120)
             continue
         } else {
             break Loop_loop116

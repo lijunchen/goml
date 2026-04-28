@@ -17,7 +17,7 @@ func string_print(s string) struct{} {
     return struct{}{}
 }
 
-type Tuple2_bool_bool struct {
+type Tuple2_4bool_4bool struct {
     _0 bool
     _1 bool
 }
@@ -25,7 +25,7 @@ type Tuple2_bool_bool struct {
 type GoError = error
 
 func main0() struct{} {
-    var a__0 Tuple2_bool_bool = Tuple2_bool_bool{
+    var a__0 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: true,
         _1: false,
     }
@@ -39,7 +39,7 @@ func main0() struct{} {
     default:
         panic("non-exhaustive match")
     }
-    var c__2 Tuple2_bool_bool = Tuple2_bool_bool{
+    var c__2 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: true,
         _1: true,
     }
