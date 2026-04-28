@@ -172,6 +172,13 @@ fn qualified_extern_type_import_alias_collision_executes() {
 }
 
 #[test]
+fn extern_type_function_name_collision_executes() {
+    let output = run_crasher("extern_type_function_name_collision");
+
+    assert_eq!(output, "13\n");
+}
+
+#[test]
 fn extern_import_alias_enum_variant_collision_executes() {
     let output = run_crasher("extern_import_alias_enum_variant_collision");
 
