@@ -114,3 +114,17 @@ fn hashmap_native_helper_function_name_collision_executes() {
 
     assert_eq!(output, "3\n");
 }
+
+#[test]
+fn import_alias_function_name_collision_executes() {
+    let output = run_crasher("import_alias_function_name_collision");
+
+    assert_eq!(output, "1\nuser-fmt\n");
+}
+
+#[test]
+fn import_alias_type_name_collision_executes() {
+    let output = run_crasher("import_alias_type_name_collision");
+
+    assert_eq!(output, "2\n");
+}
