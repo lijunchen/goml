@@ -139,7 +139,9 @@ fn runtime_generated_function_name(name: &str) -> bool {
 
 fn go_toplevel_func_name(goenv: &GlobalGoEnv, name: &str) -> String {
     let ident = go_ident(name);
-    if goenv.toplevel_funcs.contains(name)
+    let is_callable =
+        goenv.toplevel_funcs.contains(name) || goenv.genv.value_env.extern_funcs.contains_key(name);
+    if is_callable
         && (runtime_generated_function_name(name)
             || is_generated_tuple_type_name(&ident)
             || go_toplevel_func_name_collides_with_type(goenv, &ident))
@@ -166,10 +168,17 @@ fn go_toplevel_func_name_collides_with_type(goenv: &GlobalGoEnv, name: &str) -> 
 }
 
 fn go_value_name(goenv: &GlobalGoEnv, name: &str) -> String {
-    if goenv.toplevel_funcs.contains(name) {
+    if goenv.toplevel_funcs.contains(name) || goenv.genv.value_env.extern_funcs.contains_key(name) {
         go_toplevel_func_name(goenv, name)
     } else {
-        go_ident(name)
+        let ident = go_ident(name);
+        if is_generated_tuple_type_name(&ident)
+            && go_toplevel_func_name_collides_with_type(goenv, &ident)
+        {
+            format!("_goml_user_{}", ident)
+        } else {
+            ident
+        }
     }
 }
 
@@ -2345,7 +2354,7 @@ fn gen_extern_bridge_fn(goenv: &GlobalGoEnv, goml_name: &str, extern_fn: &Extern
     };
 
     goast::Fn {
-        name: go_ident(goml_name),
+        name: go_toplevel_func_name(goenv, goml_name),
         params: go_params,
         ret_ty: Some(tast_ty_to_go_type(&bridge_ret_ty)),
         body: goast::Block {
