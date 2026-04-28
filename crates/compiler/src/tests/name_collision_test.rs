@@ -135,3 +135,10 @@ fn extern_import_alias_function_name_collision_executes() {
 
     assert_eq!(output, "OK\nuser-strings\n");
 }
+
+#[test]
+fn raw_extern_value_import_alias_function_collision_executes() {
+    let output = run_crasher("raw_extern_value_import_alias_function_collision");
+
+    assert_eq!(output, "user-strings\n");
+}

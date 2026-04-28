@@ -1,0 +1,13 @@
+extern "go" "strings" "*Builder" type RawBuilder
+
+#[go_value]
+extern "go" "" "new(strings.Builder)" new_builder() -> RawBuilder
+
+fn strings() -> unit {
+    string_println("user-strings");
+}
+
+fn main() -> unit {
+    let _ = new_builder();
+    strings();
+}
