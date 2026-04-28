@@ -9,7 +9,7 @@ use crate::{
     tast::{self, TastIdent},
 };
 use std::cell::{Cell, RefCell};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct EnumDef {
@@ -855,23 +855,37 @@ impl PackageTypeEnv {
     }
 
     pub fn trait_impl_count_visible(&self, trait_name: &str, type_name: &tast::Ty) -> usize {
+        let mut visiting = HashSet::new();
+        self.trait_impl_count_visible_inner(trait_name, type_name, &mut visiting)
+    }
+
+    fn trait_impl_count_visible_inner(
+        &self,
+        trait_name: &str,
+        type_name: &tast::Ty,
+        visiting: &mut HashSet<(String, tast::Ty)>,
+    ) -> usize {
+        let key = (trait_name.to_string(), type_name.clone());
+        if !visiting.insert(key.clone()) {
+            return 0;
+        }
+
         let mut count = 0;
         if !self.shadows_builtin_nominal_type(type_name) {
-            count += self.trait_impl_count_in_env(&self.builtins, trait_name, type_name);
-            if count > 1 {
-                return count;
+            count += self.trait_impl_count_in_env(&self.builtins, trait_name, type_name, visiting);
+        }
+        if count <= 1 {
+            count += self.trait_impl_count_in_env(&self.current, trait_name, type_name, visiting);
+        }
+        if count <= 1 {
+            for env in self.deps.values() {
+                count += self.trait_impl_count_in_env(env, trait_name, type_name, visiting);
+                if count > 1 {
+                    break;
+                }
             }
         }
-        count += self.trait_impl_count_in_env(&self.current, trait_name, type_name);
-        if count > 1 {
-            return count;
-        }
-        for env in self.deps.values() {
-            count += self.trait_impl_count_in_env(env, trait_name, type_name);
-            if count > 1 {
-                return count;
-            }
-        }
+        visiting.remove(&key);
         count
     }
 
@@ -880,6 +894,7 @@ impl PackageTypeEnv {
         source: &GlobalTypeEnv,
         trait_name: &str,
         type_name: &tast::Ty,
+        visiting: &mut HashSet<(String, tast::Ty)>,
     ) -> usize {
         let mut count = 0;
         for ((impl_trait_name, impl_ty), impl_def) in source.trait_env.trait_impls.iter() {
@@ -889,7 +904,7 @@ impl PackageTypeEnv {
             let Some(subst) = trait_impl_subst(impl_ty, type_name) else {
                 continue;
             };
-            if !self.impl_constraints_satisfied(impl_def, &subst) {
+            if !self.impl_constraints_satisfied(impl_def, &subst, visiting) {
                 continue;
             }
             count += 1;
@@ -904,23 +919,29 @@ impl PackageTypeEnv {
         &self,
         impl_def: &ImplDef,
         subst: &HashMap<String, tast::Ty>,
+        visiting: &mut HashSet<(String, tast::Ty)>,
     ) -> bool {
         impl_def.methods.values().all(|scheme| {
             scheme.constraints.iter().all(|constraint| {
-                subst
-                    .get(&constraint.type_param)
-                    .is_none_or(|ty| self.trait_constraint_satisfied(&constraint.trait_name.0, ty))
+                subst.get(&constraint.type_param).is_none_or(|ty| {
+                    self.trait_constraint_satisfied(&constraint.trait_name.0, ty, visiting)
+                })
             })
         })
     }
 
-    fn trait_constraint_satisfied(&self, trait_name: &str, type_name: &tast::Ty) -> bool {
+    fn trait_constraint_satisfied(
+        &self,
+        trait_name: &str,
+        type_name: &tast::Ty,
+        visiting: &mut HashSet<(String, tast::Ty)>,
+    ) -> bool {
         matches!(
             type_name,
             tast::Ty::TDyn {
                 trait_name: dyn_trait_name
             } if dyn_trait_name == trait_name
-        ) || self.trait_impl_count_visible(trait_name, type_name) == 1
+        ) || self.trait_impl_count_visible_inner(trait_name, type_name, visiting) == 1
     }
 
     fn collect_trait_impl_schemes_in_env(
@@ -929,6 +950,7 @@ impl PackageTypeEnv {
         trait_name: &TastIdent,
         type_name: &tast::Ty,
         func_name: &TastIdent,
+        visiting: &mut HashSet<(String, tast::Ty)>,
     ) -> Vec<FnScheme> {
         let mut result = Vec::new();
         for ((impl_trait_name, impl_ty), impl_def) in source.trait_env.trait_impls.iter() {
@@ -938,7 +960,7 @@ impl PackageTypeEnv {
             let Some(subst) = trait_impl_subst(impl_ty, type_name) else {
                 continue;
             };
-            if !self.impl_constraints_satisfied(impl_def, &subst) {
+            if !self.impl_constraints_satisfied(impl_def, &subst, visiting) {
                 continue;
             }
             if let Some(method) = impl_def.methods.get(&func_name.0) {
@@ -960,12 +982,14 @@ impl PackageTypeEnv {
         }
 
         let mut result = Vec::new();
+        let mut visiting = HashSet::new();
         if !self.shadows_builtin_nominal_type(type_name) {
             result.extend(self.collect_trait_impl_schemes_in_env(
                 &self.builtins,
                 trait_name,
                 type_name,
                 func_name,
+                &mut visiting,
             ));
         }
         result.extend(self.collect_trait_impl_schemes_in_env(
@@ -973,11 +997,16 @@ impl PackageTypeEnv {
             trait_name,
             type_name,
             func_name,
+            &mut visiting,
         ));
         for env in self.deps.values() {
-            result.extend(
-                self.collect_trait_impl_schemes_in_env(env, trait_name, type_name, func_name),
-            );
+            result.extend(self.collect_trait_impl_schemes_in_env(
+                env,
+                trait_name,
+                type_name,
+                func_name,
+                &mut visiting,
+            ));
         }
         self.lookup_cache
             .trait_impl_schemes
