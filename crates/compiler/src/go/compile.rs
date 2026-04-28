@@ -9352,7 +9352,11 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
             } else {
                 let alias = go_package_alias(goenv, package_path);
                 goty::GoType::TName {
-                    name: qualify_go_type_expr(&alias, &ext.go_name),
+                    name: rewrite_go_package_alias(
+                        &qualify_go_type_expr(&alias, &ext.go_name),
+                        &go_package_default_alias(package_path),
+                        &alias,
+                    ),
                 }
             };
             defs.push(goast::Item::TypeAlias(goast::TypeAlias {
