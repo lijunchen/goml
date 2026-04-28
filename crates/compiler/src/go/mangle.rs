@@ -58,7 +58,7 @@ pub fn go_generated_ident(name: &str) -> String {
 
 fn go_ident_impl(name: &str, protect_generated: bool) -> String {
     if is_valid_go_ident(name) && !is_go_keyword(name) && !is_go_predeclared_identifier(name) {
-        if protect_generated && (name.starts_with("_goml_") || name.starts_with("dyn__")) {
+        if protect_generated && is_generated_go_ident(name) {
             return format!("_goml_user_{}", name);
         }
         return name.to_string();
@@ -86,6 +86,13 @@ fn go_ident_impl(name: &str, protect_generated: bool) -> String {
         out.push('_');
     }
     out
+}
+
+fn is_generated_go_ident(name: &str) -> bool {
+    name.starts_with("_goml_")
+        || name.starts_with("dyn__")
+        || (name.starts_with("ref_") && name.ends_with("_x"))
+        || (name.starts_with("hashmap_") && name.ends_with("_x"))
 }
 
 pub fn go_user_type_name(name: &str) -> String {
