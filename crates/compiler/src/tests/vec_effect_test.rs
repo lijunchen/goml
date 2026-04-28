@@ -36,3 +36,15 @@ fn discarded_let_vec_push_preserves_side_effect() {
 
     assert_eq!(output, "1\n");
 }
+
+#[test]
+fn vec_push_preserves_existing_binding_value() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/vec_push_preserves_existing_binding/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap();
+    let compilation = compile_single_file(&path, &src).unwrap();
+    let go = compilation.go.to_pretty(&compilation.goenv, 120);
+    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
+
+    assert_eq!(output, "2\n");
+}
