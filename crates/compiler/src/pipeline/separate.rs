@@ -13,7 +13,7 @@ use crate::mono::{self, GlobalMonoEnv};
 use crate::package_names::is_special_unqualified_package;
 use crate::package_names::{BUILTIN_PACKAGE, ENTRY_FUNCTION, ROOT_PACKAGE, is_builtin_package};
 use crate::pipeline::builtin_inherent;
-use crate::pipeline::pipeline::{CompilationError, parse_ast_file};
+use crate::pipeline::pipeline::{CompilationError, parse_ast_file, report_duplicate_trait_impls};
 use crate::pipeline::{compile_error, with_compiler_stack};
 use diagnostics::Diagnostics;
 
@@ -492,18 +492,7 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
             let unit = by_name
                 .get(pkg)
                 .ok_or_else(|| compile_error(format!("missing core for package {}", pkg)))?;
-            for (key, _) in unit.interface.exports.trait_env.trait_impls.iter() {
-                if genv.trait_env.trait_impls.contains_key(key) {
-                    diagnostics.push(diagnostics::Diagnostic::new(
-                        diagnostics::Stage::Typer,
-                        diagnostics::Severity::Error,
-                        format!(
-                            "Trait {} implementation for {:?} is defined in multiple packages (including {})",
-                            key.0, key.1, pkg
-                        ),
-                    ));
-                }
-            }
+            report_duplicate_trait_impls(&mut diagnostics, &genv, &unit.interface.exports, pkg);
             unit.interface.exports.apply_to(&mut genv);
         }
         if diagnostics.has_errors() {
