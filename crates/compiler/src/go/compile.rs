@@ -489,7 +489,22 @@ fn go_package_alias(package_path: &str) -> String {
         "unicode/utf8" => return "_goml_utf8".to_string(),
         _ => {}
     }
-    go_generated_ident(&format!("pkg#{}", package_path))
+    let last_segment = package_path.rsplit('/').next().unwrap_or(package_path);
+    let mut alias = String::new();
+    for ch in last_segment.chars() {
+        if ch.is_ascii_alphanumeric() {
+            alias.push(ch);
+        } else {
+            alias.push('_');
+        }
+    }
+    if alias.is_empty() {
+        return "pkg".to_string();
+    }
+    if alias.chars().next().is_some_and(|c| c.is_ascii_digit()) {
+        alias.insert(0, '_');
+    }
+    alias
 }
 
 fn extern_wrapper_fn_name(goml_name: &str) -> String {
@@ -8803,7 +8818,7 @@ pub fn go_file(
                 && existing_imports.insert(extern_fn.package_path.clone())
             {
                 extra_specs.push(goast::ImportSpec {
-                    alias: Some(go_package_alias(&extern_fn.package_path)),
+                    alias: None,
                     path: extern_fn.package_path.clone(),
                 });
             }
@@ -8814,7 +8829,7 @@ pub fn go_file(
                 && existing_imports.insert(package_path.clone())
             {
                 extra_specs.push(goast::ImportSpec {
-                    alias: Some(go_package_alias(package_path)),
+                    alias: None,
                     path: package_path.clone(),
                 });
             }
