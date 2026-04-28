@@ -157,11 +157,11 @@ fn dce_block_with_live(
                 let used_rhs = value.as_ref().map(vars_used_in_expr).unwrap_or_default();
 
                 if live.contains(&name) {
-                    // Needed later as an rvalue; keep the declaration with initializer
+                    live.remove(&name);
+                    needs_decl.remove(&name);
                     for u in &used_rhs {
                         live.insert(u.clone());
                     }
-                    live.remove(&name);
                     out.push(ast::Stmt::VarDecl { name, ty, value });
                 } else if needs_decl.contains(&name) {
                     // The variable is assigned later with '=' so we must keep its declaration.
@@ -212,11 +212,10 @@ fn dce_block_with_live(
                     continue;
                 }
                 if live.contains(&name) {
-                    // This assignment feeds a later rvalue use; keep it and require a prior decl
+                    live.remove(&name);
                     for u in &used_rhs {
                         live.insert(u.clone());
                     }
-                    live.remove(&name);
                     needs_decl.insert(name.clone());
                     out.push(ast::Stmt::Assignment { name, value });
                 } else {
@@ -234,14 +233,14 @@ fn dce_block_with_live(
                 let used_rhs = vars_used_in_expr(&value);
                 let keep_stmt = names.iter().any(|name| name == "_" || live.contains(name));
                 if keep_stmt {
-                    for u in &used_rhs {
-                        live.insert(u.clone());
-                    }
                     for name in &names {
                         if name != "_" {
                             live.remove(name);
                             needs_decl.insert(name.clone());
                         }
+                    }
+                    for u in &used_rhs {
+                        live.insert(u.clone());
                     }
                     out.push(ast::Stmt::MultiAssignment { names, value });
                 } else if expr_has_side_effects(&value) {
@@ -814,6 +813,31 @@ fn free_vars_in_block(b: &ast::Block) -> HashSet<String> {
 }
 
 fn emit_side_effect(e: ast::Expr) -> ast::Stmt {
+    let append_target = match &e {
+        ast::Expr::Call { func, args, .. } => match func.as_ref() {
+            ast::Expr::Var { name, .. } if name == "append" => args.first().and_then(|arg| {
+                if let ast::Expr::Var { name, .. } = arg {
+                    Some(name.clone())
+                } else {
+                    None
+                }
+            }),
+            _ => None,
+        },
+        _ => None,
+    };
+    if let Some(name) = append_target {
+        return ast::Stmt::Assignment { name, value: e };
+    }
+    if let ast::Expr::Call { func, .. } = &e
+        && let ast::Expr::Var { name, .. } = func.as_ref()
+        && name == "append"
+    {
+        return ast::Stmt::Assignment {
+            name: "_".to_string(),
+            value: e,
+        };
+    }
     if matches!(e, ast::Expr::Call { .. }) {
         ast::Stmt::Expr(e)
     } else {

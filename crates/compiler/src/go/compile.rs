@@ -5701,6 +5701,7 @@ fn compile_let_bind(goenv: &GlobalGoEnv, bind: &anf::LetBind) -> Vec<goast::Stmt
     if discard
         && let anf::ValueExpr::Call { func, args, .. } = &bind.value
         && let anf::ImmExpr::Var { id: func_id, .. } = func
+        && runtime_builtin_available(goenv, &func_id.0)
         && func_id.0 == "vec_push"
         && let Some(anf::ImmExpr::Var { id: vec_id, .. }) = args.first()
     {
