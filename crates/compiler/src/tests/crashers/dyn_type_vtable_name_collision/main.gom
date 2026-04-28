@@ -1,0 +1,29 @@
+package main;
+
+trait A {
+    fn f(Self) -> int32;
+}
+
+trait A_vtable {
+    fn g(Self) -> int32;
+}
+
+struct S {}
+
+impl A for S {
+    fn f(self: S) -> int32 {
+        3i32
+    }
+}
+
+impl A_vtable for S {
+    fn g(self: S) -> int32 {
+        4i32
+    }
+}
+
+fn main() -> unit {
+    let left: dyn A = S {};
+    let right: dyn A_vtable = S {};
+    println(A::f(left) + A_vtable::g(right));
+}

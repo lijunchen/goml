@@ -88,6 +88,13 @@ fn dyn_trait_go_function_name_collision_executes() {
 }
 
 #[test]
+fn dyn_type_vtable_name_collision_executes() {
+    let output = run_crasher("dyn_type_vtable_name_collision");
+
+    assert_eq!(output, "7\n");
+}
+
+#[test]
 fn dyn_wrap_generated_name_collision_executes() {
     let output = run_crasher("dyn_wrap_generated_name_collision");
 
