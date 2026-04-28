@@ -141,6 +141,7 @@ fn go_toplevel_func_name(goenv: &GlobalGoEnv, name: &str) -> String {
     let ident = go_ident(name);
     if goenv.toplevel_funcs.contains(name)
         && (runtime_generated_function_name(name)
+            || is_generated_tuple_type_name(&ident)
             || go_toplevel_func_name_collides_with_extern_type(goenv, &ident))
     {
         format!("_goml_user_{}", ident)
