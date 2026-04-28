@@ -149,3 +149,10 @@ fn raw_extern_value_import_alias_type_collision_executes() {
 
     assert_eq!(output, "7\n");
 }
+
+#[test]
+fn extern_import_alias_enum_variant_collision_executes() {
+    let output = run_crasher("extern_import_alias_enum_variant_collision");
+
+    assert_eq!(output, "OK\nvariant\n");
+}
