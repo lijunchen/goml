@@ -177,3 +177,10 @@ fn raw_go_import_alias_rewrite_preserves_string_literal() {
 
     assert_eq!(output, "strings.Builder\n");
 }
+
+#[test]
+fn duplicate_go_import_default_alias_executes() {
+    let output = run_crasher("duplicate_go_import_default_alias");
+
+    assert_eq!(output, "0\n");
+}
