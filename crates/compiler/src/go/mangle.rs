@@ -91,14 +91,6 @@ fn go_ident_impl(name: &str, protect_generated: bool) -> String {
             out.push(ch);
             continue;
         }
-        if ch == '#' {
-            out.push('_');
-            continue;
-        }
-        if ch == '_' {
-            out.push('_');
-            continue;
-        }
         out.push_str("_x");
         let mut buf = [0u8; 4];
         for b in ch.encode_utf8(&mut buf).as_bytes() {
