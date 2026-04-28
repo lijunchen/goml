@@ -8,7 +8,7 @@ use parser::{self, syntax::MySyntaxNode};
 use rowan::GreenNode;
 
 use crate::config::GomlConfig;
-use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE};
+use crate::package_names::{BUILTIN_PACKAGE, ENTRY_FUNCTION, ROOT_PACKAGE};
 use crate::pipeline::builtin_inherent;
 use crate::pipeline::compile_error;
 use crate::pipeline::packages;
@@ -448,13 +448,19 @@ fn should_use_single_file_mode(path: &Path) -> bool {
 
 pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> {
     let single_file = should_use_single_file_mode(path);
-    super::with_src_compiler_stack(src, || compile_inner(path, src, single_file))
+    super::with_src_compiler_stack(src, || compile_inner(path, src, single_file, true))
+}
+
+pub fn compile_for_analysis(path: &Path, src: &str) -> Result<Compilation, CompilationError> {
+    let single_file = should_use_single_file_mode(path);
+    super::with_src_compiler_stack(src, || compile_inner(path, src, single_file, false))
 }
 
 fn compile_inner(
     path: &Path,
     src: &str,
     single_file: bool,
+    validate_entrypoint: bool,
 ) -> Result<Compilation, CompilationError> {
     let (green_node, cst, entry_ast) = parse_ast_from_source(path, src)?;
 
@@ -484,6 +490,14 @@ fn compile_inner(
         return Err(CompilationError::Typer {
             diagnostics: diagnostics.clone(),
         });
+    }
+    if validate_entrypoint {
+        validate_entrypoint_for_compile(&mut diagnostics, &graph, &artifacts);
+        if diagnostics.has_errors() {
+            return Err(CompilationError::Typer {
+                diagnostics: diagnostics.clone(),
+            });
+        }
     }
     let gensym = Gensym::new();
 
@@ -567,7 +581,7 @@ fn compile_inner(
 }
 
 pub fn compile_single_file(path: &Path, src: &str) -> Result<Compilation, CompilationError> {
-    super::with_src_compiler_stack(src, || compile_inner(path, src, true))
+    super::with_src_compiler_stack(src, || compile_inner(path, src, true, true))
 }
 
 pub fn typecheck_with_packages(
@@ -718,6 +732,30 @@ pub fn typecheck_with_packages_and_results(
 
         Ok((entry_hir_table, entry_results, genv, diagnostics))
     })
+}
+
+fn validate_entrypoint_for_compile(
+    diagnostics: &mut Diagnostics,
+    graph: &packages::PackageGraph,
+    artifacts: &HashMap<String, PackageArtifact>,
+) {
+    let Some(entry_artifact) = artifacts.get(&graph.entry_package) else {
+        return;
+    };
+    if graph.entry_package == ROOT_PACKAGE
+        && !entry_artifact
+            .interface
+            .exports
+            .value_env
+            .funcs
+            .contains_key(ENTRY_FUNCTION)
+    {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            "main function is required".to_string(),
+        ));
+    }
 }
 
 fn load_external_dependencies(

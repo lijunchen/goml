@@ -10,7 +10,7 @@ use tower_lsp::lsp_types::*;
 use crate::Document;
 
 pub fn get_diagnostics(path: &Path, src: &str, doc: &Document) -> Vec<Diagnostic> {
-    let result = compiler::pipeline::pipeline::compile(path, src);
+    let result = compiler::pipeline::pipeline::compile_for_analysis(path, src);
 
     match result {
         Ok(_) => Vec::new(),
@@ -91,7 +91,7 @@ fn diagnostics_for_hover(
     let doc = Document::new(src.to_string());
     let mut messages = Vec::new();
     let mut seen: HashSet<(diagnostics::Severity, String)> = HashSet::new();
-    let result = compiler::pipeline::pipeline::compile(path, src);
+    let result = compiler::pipeline::pipeline::compile_for_analysis(path, src);
     let diagnostics = match result {
         Ok(_) => return messages,
         Err(err) => err.into_diagnostics(),
