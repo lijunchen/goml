@@ -58,6 +58,30 @@ fn builtin_generic_constraints_are_checked_at_call_site() {
 }
 
 #[test]
+fn generic_constraints_reject_overlapping_trait_impls() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/hashmap_ref_dyn_hash_overlapping_impl/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let err = compile_single_file(&path, &src).expect_err("expected typer error");
+
+    match err {
+        CompilationError::Typer { diagnostics } => {
+            let diagnostics = format_typer_diagnostics(&diagnostics, &src);
+            assert!(
+                diagnostics
+                    .iter()
+                    .any(|line| line
+                        .contains("Multiple instances found for trait Hash<Ref[dyn Hash]>")),
+                "{diagnostics:?}"
+            );
+        }
+        other => panic!("expected typer error, got {other:?}"),
+    }
+}
+
+#[test]
 fn impl_with_mismatched_return_type_reports_diagnostic() {
     let src = r#"
 trait Display {
