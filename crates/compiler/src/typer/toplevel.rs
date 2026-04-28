@@ -1214,6 +1214,22 @@ fn define_inherent_impl(
 
 fn define_function(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, func: &hir::Fn) {
     let name = func.name.clone();
+    if name == "main" {
+        if !func.params.is_empty() {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                "main function must not have parameters".to_string(),
+            ));
+        }
+        if !func.generics.is_empty() {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                "main function must not have type parameters".to_string(),
+            ));
+        }
+    }
     let tparam_names = type_param_name_set(&func.generics);
     let generics_tast: Vec<tast::TastIdent> = func
         .generics
