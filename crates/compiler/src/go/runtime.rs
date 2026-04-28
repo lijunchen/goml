@@ -3,7 +3,7 @@ use crate::{
         compile::GlobalGoEnv,
         goast::{self, GoBinaryOp, ImportDecl, ImportSpec, Item, Package},
         goty,
-        mangle::{encode_ty, go_ident},
+        mangle::{encode_ty, go_generated_ident, go_ident},
     },
     names::{trait_impl_fn_name, ty_compact},
     package_names::ENTRY_FUNCTION,
@@ -776,7 +776,11 @@ fn variant_struct_name(goenv: &GlobalGoEnv, enum_name: &str, variant_name: &str)
 }
 
 fn synthetic_option_variant_name(option_name: &str, variant_name: &str) -> String {
-    go_ident(&format!("{}_{}", option_name, variant_name))
+    go_generated_ident(&format!("_goml_synthetic_{}_{}", option_name, variant_name))
+}
+
+fn synthetic_option_type_name(option_name: &str) -> String {
+    go_generated_ident(&format!("_goml_synthetic_{}", option_name))
 }
 
 fn option_variant_go_names(goenv: &GlobalGoEnv, option_name: &str) -> Option<(String, String)> {
@@ -822,7 +826,7 @@ fn option_variant_go_names(goenv: &GlobalGoEnv, option_name: &str) -> Option<(St
 }
 
 fn make_synthetic_option_runtime(option_name: &str, value_go_ty: goty::GoType) -> Vec<goast::Item> {
-    let option_go_name = go_ident(option_name);
+    let option_go_name = synthetic_option_type_name(option_name);
     let type_identifier_method = format!("is{}", option_go_name);
     let some_go_name = synthetic_option_variant_name(option_name, "Some");
     let none_go_name = synthetic_option_variant_name(option_name, "None");
@@ -1259,10 +1263,16 @@ pub fn make_hashmap_runtime(
         let option_tast_ty = tast::Ty::TEnum {
             name: option_name.clone(),
         };
-        let option_go_ty = goast::tast_ty_to_go_type(&option_tast_ty);
         let has_option_def = goenv
             .get_enum(&tast::TastIdent::new(&option_name))
             .is_some();
+        let option_go_ty = if has_option_def {
+            goast::tast_ty_to_go_type(&option_tast_ty)
+        } else {
+            goty::GoType::TName {
+                name: synthetic_option_type_name(&option_name),
+            }
+        };
         let option_variant_names = option_variant_go_names(goenv, &option_name);
         if !has_option_def && synthetic_option_types.insert(option_name.clone()) {
             items.extend(make_synthetic_option_runtime(
