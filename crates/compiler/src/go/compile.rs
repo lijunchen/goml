@@ -378,9 +378,10 @@ fn unique_variant_symbol_name(goenv: &GlobalGoEnv, base: String) -> String {
 }
 
 fn go_toplevel_name_is_reserved(goenv: &GlobalGoEnv, name: &str) -> bool {
-    goenv
-        .structs()
-        .any(|(struct_name, _)| go_user_type_name(&struct_name.0) == name)
+    runtime_generated_function_name(name)
+        || goenv
+            .structs()
+            .any(|(struct_name, _)| go_user_type_name(&struct_name.0) == name)
         || goenv
             .enums()
             .any(|(enum_name, _)| go_user_type_name(&enum_name.0) == name)
