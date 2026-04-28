@@ -59,17 +59,17 @@ func ref_set__Ref_bool(reference *ref_bool_x, value bool) struct{} {
     return struct{}{}
 }
 
-type ref_ref_int32_x struct {
+type ref_Ref_int32_x struct {
     value *ref_int32_x
 }
 
-func ref__Ref_Ref_int32(value *ref_int32_x) *ref_ref_int32_x {
-    return &ref_ref_int32_x{
+func ref__Ref_Ref_int32(value *ref_int32_x) *ref_Ref_int32_x {
+    return &ref_Ref_int32_x{
         value: value,
     }
 }
 
-func ref_get__Ref_Ref_int32(reference *ref_ref_int32_x) *ref_int32_x {
+func ref_get__Ref_Ref_int32(reference *ref_Ref_int32_x) *ref_int32_x {
     return reference.value
 }
 
@@ -95,7 +95,7 @@ func flip(flag__1 *ref_bool_x) bool {
     return retv17
 }
 
-func nested_total(cell__3 *ref_ref_int32_x) int32 {
+func nested_total(cell__3 *ref_Ref_int32_x) int32 {
     var retv21 int32
     var inner__4 *ref_int32_x = ref_get__Ref_Ref_int32(cell__3)
     var before__5 int32 = ref_get__Ref_int32(inner__4)
@@ -133,7 +133,7 @@ func pair_sum() int32 {
     return retv31
 }
 
-func reassign_nested(nested__10 *ref_ref_int32_x) int32 {
+func reassign_nested(nested__10 *ref_Ref_int32_x) int32 {
     var retv39 int32
     var inner__11 *ref_int32_x = ref_get__Ref_Ref_int32(nested__10)
     var t40 int32 = ref_get__Ref_int32(inner__11)
@@ -148,7 +148,7 @@ func main0() struct{} {
     var counter__12 *ref_int32_x = ref__Ref_int32(39)
     var toggler__13 *ref_bool_x = ref__Ref_bool(false)
     var t44 *ref_int32_x = ref__Ref_int32(3)
-    var nested__14 *ref_ref_int32_x = ref__Ref_Ref_int32(t44)
+    var nested__14 *ref_Ref_int32_x = ref__Ref_Ref_int32(t44)
     var bumped__15 int32 = bump(counter__12)
     var flipped__16 bool = flip(toggler__13)
     var flipped_again__17 bool = flip(toggler__13)

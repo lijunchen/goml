@@ -40,44 +40,44 @@ func ref_set__Ref_int32(reference *ref_int32_x, value int32) struct{} {
     return struct{}{}
 }
 
-type ref_tv_x struct {
+type ref_Tv_x struct {
     value Tv
 }
 
-func ref__Ref_Tv(value Tv) *ref_tv_x {
-    return &ref_tv_x{
+func ref__Ref_Tv(value Tv) *ref_Tv_x {
+    return &ref_Tv_x{
         value: value,
     }
 }
 
-func ref_get__Ref_Tv(reference *ref_tv_x) Tv {
+func ref_get__Ref_Tv(reference *ref_Tv_x) Tv {
     return reference.value
 }
 
-func ref_set__Ref_Tv(reference *ref_tv_x, value Tv) struct{} {
+func ref_set__Ref_Tv(reference *ref_Tv_x, value Tv) struct{} {
     reference.value = value
     return struct{}{}
 }
 
-func ptr_eq__Ref_Tv(a *ref_tv_x, b *ref_tv_x) bool {
+func ptr_eq__Ref_Tv(a *ref_Tv_x, b *ref_Tv_x) bool {
     return a == b
 }
 
-type ref_option__typ_x struct {
+type ref_Option__Typ_x struct {
     value Option__Typ
 }
 
-func ref__Ref_Option__Typ(value Option__Typ) *ref_option__typ_x {
-    return &ref_option__typ_x{
+func ref__Ref_Option__Typ(value Option__Typ) *ref_Option__Typ_x {
+    return &ref_Option__Typ_x{
         value: value,
     }
 }
 
-func ref_get__Ref_Option__Typ(reference *ref_option__typ_x) Option__Typ {
+func ref_get__Ref_Option__Typ(reference *ref_Option__Typ_x) Option__Typ {
     return reference.value
 }
 
-func ref_set__Ref_Option__Typ(reference *ref_option__typ_x, value Option__Typ) struct{} {
+func ref_set__Ref_Option__Typ(reference *ref_Option__Typ_x, value Option__Typ) struct{} {
     reference.value = value
     return struct{}{}
 }
@@ -163,7 +163,7 @@ type Typ interface {
 }
 
 type TVar struct {
-    _0 *ref_tv_x
+    _0 *ref_Tv_x
 }
 
 func (_ TVar) isTyp() {}
@@ -401,7 +401,7 @@ func newvar(st__12 CheckerState) Typ {
         _0: name__13,
         _1: level__14,
     }
-    var t248 *ref_tv_x = ref__Ref_Tv(t247)
+    var t248 *ref_Tv_x = ref__Ref_Tv(t247)
     var t249 Typ = TVar{
         _0: t248,
     }
@@ -414,8 +414,8 @@ func typ_is_arrow(ty__15 Typ) bool {
     var jp253 bool
     switch ty__15.(type) {
     case TVar:
-        var x6 *ref_tv_x = ty__15.(TVar)._0
-        var tvref__16 *ref_tv_x = x6
+        var x6 *ref_Tv_x = ty__15.(TVar)._0
+        var tvref__16 *ref_Tv_x = x6
         var mtmp10 Tv = ref_get__Ref_Tv(tvref__16)
         var jp255 bool
         switch mtmp10.(type) {
@@ -446,8 +446,8 @@ func typ_to_string(ty__18 Typ) string {
     var jp260 string
     switch ty__18.(type) {
     case TVar:
-        var x14 *ref_tv_x = ty__18.(TVar)._0
-        var tvref__20 *ref_tv_x = x14
+        var x14 *ref_Tv_x = ty__18.(TVar)._0
+        var tvref__20 *ref_Tv_x = x14
         var mtmp18 Tv = ref_get__Ref_Tv(tvref__20)
         var jp262 string
         switch mtmp18.(type) {
@@ -509,7 +509,7 @@ func env_lookup__native(env__28 []EnvEntry, name__29 string) (Typ, bool) {
     var t279 int32 = int32(len(env__28))
     var t280 int32 = t279 - 1
     var i__30 *ref_int32_x = ref__Ref_int32(t280)
-    var found__31 *ref_option__typ_x = ref__Ref_Option__Typ(None{})
+    var found__31 *ref_Option__Typ_x = ref__Ref_Option__Typ(None{})
     var done__32 *ref_bool_x = ref__Ref_bool(false)
     Loop_loop283:
     for {
@@ -568,7 +568,7 @@ func subst_lookup__native(subst__34 []SubstEntry, name__35 string) (Typ, bool) {
     var t301 int32 = int32(len(subst__34))
     var t302 int32 = t301 - 1
     var i__36 *ref_int32_x = ref__Ref_int32(t302)
-    var found__37 *ref_option__typ_x = ref__Ref_Option__Typ(None{})
+    var found__37 *ref_Option__Typ_x = ref__Ref_Option__Typ(None{})
     var done__38 *ref_bool_x = ref__Ref_bool(false)
     Loop_loop305:
     for {
@@ -623,13 +623,13 @@ func subst_lookup(subst__34 []SubstEntry, name__35 string) Option__Typ {
     return None{}
 }
 
-func occurs(st__40 CheckerState, tvr__41 *ref_tv_x, ty__42 Typ) Result__unit__string {
+func occurs(st__40 CheckerState, tvr__41 *ref_Tv_x, ty__42 Typ) Result__unit__string {
     var retv322 Result__unit__string
     var jp324 Result__unit__string
     switch ty__42.(type) {
     case TVar:
-        var x26 *ref_tv_x = ty__42.(TVar)._0
-        var tvr2__43 *ref_tv_x = x26
+        var x26 *ref_Tv_x = ty__42.(TVar)._0
+        var tvr2__43 *ref_Tv_x = x26
         var t327 bool = ptr_eq__Ref_Tv(tvr__41, tvr2__43)
         var jp326 Result__unit__string
         if t327 {
@@ -725,13 +725,13 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
     var jp345 Result__unit__string
     switch x44.(type) {
     case TVar:
-        var x45 *ref_tv_x = x44.(TVar)._0
+        var x45 *ref_Tv_x = x44.(TVar)._0
         var jp347 Result__unit__string
         switch x43.(type) {
         case TVar:
-            var x49 *ref_tv_x = x43.(TVar)._0
-            var r1__55 *ref_tv_x = x49
-            var r2__56 *ref_tv_x = x45
+            var x49 *ref_Tv_x = x43.(TVar)._0
+            var r1__55 *ref_Tv_x = x49
+            var r2__56 *ref_Tv_x = x45
             var t350 bool = ptr_eq__Ref_Tv(r1__55, r2__56)
             var jp349 Result__unit__string
             if t350 {
@@ -804,7 +804,7 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
             }
             jp347 = jp349
         case QVar:
-            var r2__65 *ref_tv_x = x45
+            var r2__65 *ref_Tv_x = x45
             var other__64 Typ = x43
             var mtmp65 Tv = ref_get__Ref_Tv(r2__65)
             var jp368 Result__unit__string
@@ -843,7 +843,7 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
             }
             jp347 = jp368
         case TArrow:
-            var r2__65 *ref_tv_x = x45
+            var r2__65 *ref_Tv_x = x45
             var other__64 Typ = x43
             var mtmp73 Tv = ref_get__Ref_Tv(r2__65)
             var jp376 Result__unit__string
@@ -889,8 +889,8 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
         var jp384 Result__unit__string
         switch x43.(type) {
         case TVar:
-            var x81 *ref_tv_x = x43.(TVar)._0
-            var r1__60 *ref_tv_x = x81
+            var x81 *ref_Tv_x = x43.(TVar)._0
+            var r1__60 *ref_Tv_x = x81
             var other__61 Typ = x44
             var mtmp85 Tv = ref_get__Ref_Tv(r1__60)
             var jp386 Result__unit__string
@@ -948,8 +948,8 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
         var jp396 Result__unit__string
         switch x43.(type) {
         case TVar:
-            var x93 *ref_tv_x = x43.(TVar)._0
-            var r1__60 *ref_tv_x = x93
+            var x93 *ref_Tv_x = x43.(TVar)._0
+            var r1__60 *ref_Tv_x = x93
             var other__61 Typ = x44
             var mtmp97 Tv = ref_get__Ref_Tv(r1__60)
             var jp398 Result__unit__string
@@ -1032,8 +1032,8 @@ func gen(st__73 CheckerState, ty__74 Typ) Typ {
     var jp413 Typ
     switch ty__74.(type) {
     case TVar:
-        var x108 *ref_tv_x = ty__74.(TVar)._0
-        var tvref__75 *ref_tv_x = x108
+        var x108 *ref_Tv_x = ty__74.(TVar)._0
+        var tvref__75 *ref_Tv_x = x108
         var mtmp112 Tv = ref_get__Ref_Tv(tvref__75)
         var jp415 Typ
         switch mtmp112.(type) {
@@ -1094,8 +1094,8 @@ func inst_loop(st__83 CheckerState, subst__84 []SubstEntry, ty__85 Typ) Tuple2_T
     var jp429 Tuple2_Typ_Vec_SubstEntry
     switch ty__85.(type) {
     case TVar:
-        var x116 *ref_tv_x = ty__85.(TVar)._0
-        var tvref__90 *ref_tv_x = x116
+        var x116 *ref_Tv_x = ty__85.(TVar)._0
+        var tvref__90 *ref_Tv_x = x116
         var mtmp120 Tv = ref_get__Ref_Tv(tvref__90)
         var jp431 Tuple2_Typ_Vec_SubstEntry
         switch mtmp120.(type) {

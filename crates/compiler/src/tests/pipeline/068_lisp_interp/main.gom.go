@@ -94,116 +94,116 @@ func ref_set__Ref_string(reference *ref_string_x, value string) struct{} {
     return struct{}{}
 }
 
-type ref_vec_token_x struct {
+type ref_Vec_Token_x struct {
     value []Token
 }
 
-func ref__Ref_Vec_Token(value []Token) *ref_vec_token_x {
-    return &ref_vec_token_x{
+func ref__Ref_Vec_Token(value []Token) *ref_Vec_Token_x {
+    return &ref_Vec_Token_x{
         value: value,
     }
 }
 
-func ref_get__Ref_Vec_Token(reference *ref_vec_token_x) []Token {
+func ref_get__Ref_Vec_Token(reference *ref_Vec_Token_x) []Token {
     return reference.value
 }
 
-func ref_set__Ref_Vec_Token(reference *ref_vec_token_x, value []Token) struct{} {
+func ref_set__Ref_Vec_Token(reference *ref_Vec_Token_x, value []Token) struct{} {
     reference.value = value
     return struct{}{}
 }
 
-type ref_value_x struct {
+type ref_Value_x struct {
     value Value
 }
 
-func ref__Ref_Value(value Value) *ref_value_x {
-    return &ref_value_x{
+func ref__Ref_Value(value Value) *ref_Value_x {
+    return &ref_Value_x{
         value: value,
     }
 }
 
-func ref_get__Ref_Value(reference *ref_value_x) Value {
+func ref_get__Ref_Value(reference *ref_Value_x) Value {
     return reference.value
 }
 
-func ref_set__Ref_Value(reference *ref_value_x, value Value) struct{} {
+func ref_set__Ref_Value(reference *ref_Value_x, value Value) struct{} {
     reference.value = value
     return struct{}{}
 }
 
-type ref_vec_sexpr_x struct {
+type ref_Vec_SExpr_x struct {
     value []SExpr
 }
 
-func ref__Ref_Vec_SExpr(value []SExpr) *ref_vec_sexpr_x {
-    return &ref_vec_sexpr_x{
+func ref__Ref_Vec_SExpr(value []SExpr) *ref_Vec_SExpr_x {
+    return &ref_Vec_SExpr_x{
         value: value,
     }
 }
 
-func ref_get__Ref_Vec_SExpr(reference *ref_vec_sexpr_x) []SExpr {
+func ref_get__Ref_Vec_SExpr(reference *ref_Vec_SExpr_x) []SExpr {
     return reference.value
 }
 
-func ref_set__Ref_Vec_SExpr(reference *ref_vec_sexpr_x, value []SExpr) struct{} {
+func ref_set__Ref_Vec_SExpr(reference *ref_Vec_SExpr_x, value []SExpr) struct{} {
     reference.value = value
     return struct{}{}
 }
 
-type ref_vec_binding_x struct {
+type ref_Vec_Binding_x struct {
     value []Binding
 }
 
-func ref__Ref_Vec_Binding(value []Binding) *ref_vec_binding_x {
-    return &ref_vec_binding_x{
+func ref__Ref_Vec_Binding(value []Binding) *ref_Vec_Binding_x {
+    return &ref_Vec_Binding_x{
         value: value,
     }
 }
 
-func ref_get__Ref_Vec_Binding(reference *ref_vec_binding_x) []Binding {
+func ref_get__Ref_Vec_Binding(reference *ref_Vec_Binding_x) []Binding {
     return reference.value
 }
 
-func ref_set__Ref_Vec_Binding(reference *ref_vec_binding_x, value []Binding) struct{} {
+func ref_set__Ref_Vec_Binding(reference *ref_Vec_Binding_x, value []Binding) struct{} {
     reference.value = value
     return struct{}{}
 }
 
-type ref_vec_string_x struct {
+type ref_Vec_string_x struct {
     value []string
 }
 
-func ref__Ref_Vec_string(value []string) *ref_vec_string_x {
-    return &ref_vec_string_x{
+func ref__Ref_Vec_string(value []string) *ref_Vec_string_x {
+    return &ref_Vec_string_x{
         value: value,
     }
 }
 
-func ref_get__Ref_Vec_string(reference *ref_vec_string_x) []string {
+func ref_get__Ref_Vec_string(reference *ref_Vec_string_x) []string {
     return reference.value
 }
 
-func ref_set__Ref_Vec_string(reference *ref_vec_string_x, value []string) struct{} {
+func ref_set__Ref_Vec_string(reference *ref_Vec_string_x, value []string) struct{} {
     reference.value = value
     return struct{}{}
 }
 
-type ref_vec_value_x struct {
+type ref_Vec_Value_x struct {
     value []Value
 }
 
-func ref__Ref_Vec_Value(value []Value) *ref_vec_value_x {
-    return &ref_vec_value_x{
+func ref__Ref_Vec_Value(value []Value) *ref_Vec_Value_x {
+    return &ref_Vec_Value_x{
         value: value,
     }
 }
 
-func ref_get__Ref_Vec_Value(reference *ref_vec_value_x) []Value {
+func ref_get__Ref_Vec_Value(reference *ref_Vec_Value_x) []Value {
     return reference.value
 }
 
-func ref_set__Ref_Vec_Value(reference *ref_vec_value_x, value []Value) struct{} {
+func ref_set__Ref_Vec_Value(reference *ref_Vec_Value_x, value []Value) struct{} {
     reference.value = value
     return struct{}{}
 }
@@ -237,7 +237,7 @@ type Lambda struct {
     params []string
     body SExpr
     env []Binding
-    global *ref_vec_binding_x
+    global *ref_Vec_Binding_x
 }
 
 type Token interface {
@@ -566,7 +566,7 @@ func lex(source__27 string) []Token {
     var retv252 []Token
     var len__28 int32 = string_len(source__27)
     var toks0__29 []Token = nil
-    var toks__30 *ref_vec_token_x = ref__Ref_Vec_Token(toks0__29)
+    var toks__30 *ref_Vec_Token_x = ref__Ref_Vec_Token(toks0__29)
     var i__31 *ref_int32_x = ref__Ref_int32(0)
     Loop_loop255:
     for {
@@ -627,7 +627,7 @@ func env_lookup(env__35 []Binding, name__36 string) Value {
     var t284 int32 = int32(len(env__35))
     var t285 int32 = t284 - 1
     var i__37 *ref_int32_x = ref__Ref_int32(t285)
-    var result__38 *ref_value_x = ref__Ref_Value(Nil{})
+    var result__38 *ref_Value_x = ref__Ref_Value(Nil{})
     var done__39 *ref_bool_x = ref__Ref_bool(false)
     Loop_loop288:
     for {
@@ -687,7 +687,7 @@ func lookup(local__41 []Binding, global__42 []Binding, name__43 string) Value {
 func parse_list(tokens__45 []Token, start__46 int32) Tuple2_Vec_SExpr_int32 {
     var retv309 Tuple2_Vec_SExpr_int32
     var acc__47 []SExpr = nil
-    var exprs__48 *ref_vec_sexpr_x = ref__Ref_Vec_SExpr(acc__47)
+    var exprs__48 *ref_Vec_SExpr_x = ref__Ref_Vec_SExpr(acc__47)
     var i__49 *ref_int32_x = ref__Ref_int32(start__46)
     var done__50 *ref_bool_x = ref__Ref_bool(false)
     Loop_loop314:
@@ -846,7 +846,7 @@ func parse_program(tokens__60 []Token) []SExpr {
     var retv362 []SExpr
     var i__61 *ref_int32_x = ref__Ref_int32(0)
     var acc__62 []SExpr = nil
-    var exprs__63 *ref_vec_sexpr_x = ref__Ref_Vec_SExpr(acc__62)
+    var exprs__63 *ref_Vec_SExpr_x = ref__Ref_Vec_SExpr(acc__62)
     Loop_loop365:
     for {
         var t366 int32 = ref_get__Ref_int32(i__61)
@@ -922,7 +922,7 @@ func truthy(value__69 Value) bool {
     return retv380
 }
 
-func eval(expr__72 SExpr, local__73 []Binding, global__74 *ref_vec_binding_x) Value {
+func eval(expr__72 SExpr, local__73 []Binding, global__74 *ref_Vec_Binding_x) Value {
     var retv385 Value
     var jp387 Value
     switch expr__72.(type) {
@@ -958,7 +958,7 @@ func eval(expr__72 SExpr, local__73 []Binding, global__74 *ref_vec_binding_x) Va
     return retv385
 }
 
-func eval_list(items__79 []SExpr, local__80 []Binding, global__81 *ref_vec_binding_x) Value {
+func eval_list(items__79 []SExpr, local__80 []Binding, global__81 *ref_Vec_Binding_x) Value {
     var retv394 Value
     var t397 int32 = int32(len(items__79))
     var t398 bool = t397 == 0
@@ -998,7 +998,7 @@ func eval_list(items__79 []SExpr, local__80 []Binding, global__81 *ref_vec_bindi
     return retv394
 }
 
-func eval_list_sym(name__86 string, items__87 []SExpr, local__88 []Binding, global__89 *ref_vec_binding_x) Value {
+func eval_list_sym(name__86 string, items__87 []SExpr, local__88 []Binding, global__89 *ref_Vec_Binding_x) Value {
     var retv406 Value
     var jp408 Value
     switch name__86 {
@@ -1133,10 +1133,10 @@ func eval_list_sym(name__86 string, items__87 []SExpr, local__88 []Binding, glob
     return retv406
 }
 
-func eval_begin(items__100 []SExpr, start__101 int32, local__102 []Binding, global__103 *ref_vec_binding_x) Value {
+func eval_begin(items__100 []SExpr, start__101 int32, local__102 []Binding, global__103 *ref_Vec_Binding_x) Value {
     var retv451 Value
     var i__104 *ref_int32_x = ref__Ref_int32(start__101)
-    var last__105 *ref_value_x = ref__Ref_Value(Nil{})
+    var last__105 *ref_Value_x = ref__Ref_Value(Nil{})
     Loop_loop454:
     for {
         var t455 int32 = ref_get__Ref_int32(i__104)
@@ -1164,7 +1164,7 @@ func params_from_sexprs(items__107 []SExpr) []string {
     var retv464 []string
     var i__108 *ref_int32_x = ref__Ref_int32(0)
     var acc__109 []string = nil
-    var params__110 *ref_vec_string_x = ref__Ref_Vec_string(acc__109)
+    var params__110 *ref_Vec_string_x = ref__Ref_Vec_string(acc__109)
     Loop_loop467:
     for {
         var t468 int32 = ref_get__Ref_int32(i__108)
@@ -1208,11 +1208,11 @@ func params_from_sexprs(items__107 []SExpr) []string {
     return retv464
 }
 
-func eval_args(items__112 []SExpr, start__113 int32, local__114 []Binding, global__115 *ref_vec_binding_x) []Value {
+func eval_args(items__112 []SExpr, start__113 int32, local__114 []Binding, global__115 *ref_Vec_Binding_x) []Value {
     var retv488 []Value
     var i__116 *ref_int32_x = ref__Ref_int32(start__113)
     var acc__117 []Value = nil
-    var args__118 *ref_vec_value_x = ref__Ref_Vec_Value(acc__117)
+    var args__118 *ref_Vec_Value_x = ref__Ref_Vec_Value(acc__117)
     Loop_loop491:
     for {
         var t492 int32 = ref_get__Ref_int32(i__116)
@@ -1577,7 +1577,7 @@ func apply_builtin(name__120 string, args__121 []Value) Value {
     }
 }
 
-func apply(func__137 Value, args__138 []Value, global__139 *ref_vec_binding_x) Value {
+func apply(func__137 Value, args__138 []Value, global__139 *ref_Vec_Binding_x) Value {
     var retv604 Value
     var jp606 Value
     switch func__137.(type) {
@@ -1602,7 +1602,7 @@ func apply(func__137 Value, args__138 []Value, global__139 *ref_vec_binding_x) V
 func apply_lambda(lambda__141 Lambda, args__142 []Value) Value {
     var retv609 Value
     var t610 []Binding = lambda__141.env
-    var env__143 *ref_vec_binding_x = ref__Ref_Vec_Binding(t610)
+    var env__143 *ref_Vec_Binding_x = ref__Ref_Vec_Binding(t610)
     var i__144 *ref_int32_x = ref__Ref_int32(0)
     Loop_loop616:
     for {
@@ -1637,7 +1637,7 @@ func apply_lambda(lambda__141 Lambda, args__142 []Value) Value {
     }
     var t612 SExpr = lambda__141.body
     var t613 []Binding = ref_get__Ref_Vec_Binding(env__143)
-    var t614 *ref_vec_binding_x = lambda__141.global
+    var t614 *ref_Vec_Binding_x = lambda__141.global
     var t615 Value = eval(t612, t613, t614)
     retv609 = t615
     return retv609
@@ -1645,7 +1645,7 @@ func apply_lambda(lambda__141 Lambda, args__142 []Value) Value {
 
 func main0() struct{} {
     var t634 []Binding = nil
-    var global__148 *ref_vec_binding_x = ref__Ref_Vec_Binding(t634)
+    var global__148 *ref_Vec_Binding_x = ref__Ref_Vec_Binding(t634)
     var program__149 string = "(begin (define fact (lambda (n) (if (= n 0) 1 (* n (fact (- n 1)))))) (define add3 (lambda (a b c) (+ a (+ b c)))) (fact 6))"
     var t635 []Token = lex(program__149)
     var exprs__150 []SExpr = parse_program(t635)

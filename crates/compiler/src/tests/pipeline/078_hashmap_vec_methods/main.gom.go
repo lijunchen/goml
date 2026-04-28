@@ -33,44 +33,44 @@ func _goml_trait_impl_Hash_int32_hash(self int32) uint64 {
     return int32_hash(self)
 }
 
-type hashmap_key_int32_x_entry struct {
+type hashmap_Key_int32_x_entry struct {
     active bool
     key Key
     value int32
 }
 
-type hashmap_key_int32_x struct {
-    buckets map[uint64][]hashmap_key_int32_x_entry
+type hashmap_Key_int32_x struct {
+    buckets map[uint64][]hashmap_Key_int32_x_entry
     len int32
 }
 
-func hashmap_new__HashMap_Key_int32() *hashmap_key_int32_x {
-    return &hashmap_key_int32_x{
-        buckets: make(map[uint64][]hashmap_key_int32_x_entry),
+func hashmap_new__HashMap_Key_int32() *hashmap_Key_int32_x {
+    return &hashmap_Key_int32_x{
+        buckets: make(map[uint64][]hashmap_Key_int32_x_entry),
         len: 0,
     }
 }
 
-func hashmap_len__HashMap_Key_int32(m *hashmap_key_int32_x) int32 {
+func hashmap_len__HashMap_Key_int32(m *hashmap_Key_int32_x) int32 {
     if m == nil {
         return 0
     }
     return m.len
 }
 
-func hashmap_get_native__HashMap_Key_int32(m *hashmap_key_int32_x, key Key) (int32, bool) {
+func hashmap_get_native__HashMap_Key_int32(m *hashmap_Key_int32_x, key Key) (int32, bool) {
     if m == nil {
         var zero int32
         return zero, false
     }
     var h uint64 = _goml_trait_impl_Hash_Key_hash(key)
-    var bucket []hashmap_key_int32_x_entry = m.buckets[h]
+    var bucket []hashmap_Key_int32_x_entry = m.buckets[h]
     var i int32 = 0
     for {
         if i >= int32(len(bucket)) {
             break
         }
-        var entry hashmap_key_int32_x_entry = bucket[i]
+        var entry hashmap_Key_int32_x_entry = bucket[i]
         if entry.active && _goml_trait_impl_Eq_Key_eq(entry.key, key) {
             return entry.value, true
         }
@@ -80,25 +80,25 @@ func hashmap_get_native__HashMap_Key_int32(m *hashmap_key_int32_x, key Key) (int
     return zero, false
 }
 
-func hashmap_set__HashMap_Key_int32(m *hashmap_key_int32_x, key Key, value int32) struct{} {
+func hashmap_set__HashMap_Key_int32(m *hashmap_Key_int32_x, key Key, value int32) struct{} {
     if m == nil {
         return struct{}{}
     }
     var h uint64 = _goml_trait_impl_Hash_Key_hash(key)
-    var bucket []hashmap_key_int32_x_entry = m.buckets[h]
+    var bucket []hashmap_Key_int32_x_entry = m.buckets[h]
     var i int32 = 0
     for {
         if i >= int32(len(bucket)) {
             break
         }
-        var entry hashmap_key_int32_x_entry = bucket[i]
+        var entry hashmap_Key_int32_x_entry = bucket[i]
         if entry.active && _goml_trait_impl_Eq_Key_eq(entry.key, key) {
             bucket[i].value = value
             return struct{}{}
         }
         i = i + 1
     }
-    bucket = append(bucket, hashmap_key_int32_x_entry{
+    bucket = append(bucket, hashmap_Key_int32_x_entry{
         active: true,
         key: key,
         value: value,
@@ -108,18 +108,18 @@ func hashmap_set__HashMap_Key_int32(m *hashmap_key_int32_x, key Key, value int32
     return struct{}{}
 }
 
-func hashmap_remove__HashMap_Key_int32(m *hashmap_key_int32_x, key Key) struct{} {
+func hashmap_remove__HashMap_Key_int32(m *hashmap_Key_int32_x, key Key) struct{} {
     if m == nil {
         return struct{}{}
     }
     var h uint64 = _goml_trait_impl_Hash_Key_hash(key)
-    var bucket []hashmap_key_int32_x_entry = m.buckets[h]
+    var bucket []hashmap_Key_int32_x_entry = m.buckets[h]
     var i int32 = 0
     for {
         if i >= int32(len(bucket)) {
             break
         }
-        var entry hashmap_key_int32_x_entry = bucket[i]
+        var entry hashmap_Key_int32_x_entry = bucket[i]
         if entry.active && _goml_trait_impl_Eq_Key_eq(entry.key, key) {
             bucket[i].active = false
             m.len = m.len - 1
@@ -130,18 +130,18 @@ func hashmap_remove__HashMap_Key_int32(m *hashmap_key_int32_x, key Key) struct{}
     return struct{}{}
 }
 
-func hashmap_contains__HashMap_Key_int32(m *hashmap_key_int32_x, key Key) bool {
+func hashmap_contains__HashMap_Key_int32(m *hashmap_Key_int32_x, key Key) bool {
     if m == nil {
         return false
     }
     var h uint64 = _goml_trait_impl_Hash_Key_hash(key)
-    var bucket []hashmap_key_int32_x_entry = m.buckets[h]
+    var bucket []hashmap_Key_int32_x_entry = m.buckets[h]
     var i int32 = 0
     for {
         if i >= int32(len(bucket)) {
             break
         }
-        var entry hashmap_key_int32_x_entry = bucket[i]
+        var entry hashmap_Key_int32_x_entry = bucket[i]
         if entry.active && _goml_trait_impl_Eq_Key_eq(entry.key, key) {
             return true
         }
@@ -279,7 +279,7 @@ func main0() struct{} {
     println__T_int32(t43)
     var t44 int32 = _goml_inherent_Vec_Vec_x5b_T_x5d__len__T_int32(v__14)
     println__T_int32(t44)
-    var m__15 *hashmap_key_int32_x = _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__new__K_Key__V_int32()
+    var m__15 *hashmap_Key_int32_x = _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__new__K_Key__V_int32()
     _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__set__K_Key__V_int32(m__15, A{}, 10)
     var t45 Key = B{
         _0: 1,
@@ -347,26 +347,26 @@ func _goml_inherent_Vec_Vec_x5b_T_x5d__len__T_int32(self__74 []int32) int32 {
     return retv69
 }
 
-func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__new__K_Key__V_int32() *hashmap_key_int32_x {
-    var retv72 *hashmap_key_int32_x
-    var t73 *hashmap_key_int32_x = hashmap_new__HashMap_Key_int32()
+func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__new__K_Key__V_int32() *hashmap_Key_int32_x {
+    var retv72 *hashmap_Key_int32_x
+    var t73 *hashmap_Key_int32_x = hashmap_new__HashMap_Key_int32()
     retv72 = t73
     return retv72
 }
 
-func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__set__K_Key__V_int32(self__83 *hashmap_key_int32_x, key__84 Key, value__85 int32) struct{} {
+func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__set__K_Key__V_int32(self__83 *hashmap_Key_int32_x, key__84 Key, value__85 int32) struct{} {
     hashmap_set__HashMap_Key_int32(self__83, key__84, value__85)
     return struct{}{}
 }
 
-func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__len__K_Key__V_int32(self__88 *hashmap_key_int32_x) int32 {
+func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__len__K_Key__V_int32(self__88 *hashmap_Key_int32_x) int32 {
     var retv77 int32
     var t78 int32 = hashmap_len__HashMap_Key_int32(self__88)
     retv77 = t78
     return retv77
 }
 
-func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_Key__V_int32__native(self__81 *hashmap_key_int32_x, key__82 Key) (int32, bool) {
+func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_Key__V_int32__native(self__81 *hashmap_Key_int32_x, key__82 Key) (int32, bool) {
     var t81_value int32
     var t81_ok bool
     t81_value, t81_ok = hashmap_get_native__HashMap_Key_int32(self__81, key__82)
@@ -377,7 +377,7 @@ func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_Key__V_int32__native
     return t81_value, true
 }
 
-func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_Key__V_int32(self__81 *hashmap_key_int32_x, key__82 Key) Option__int32 {
+func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_Key__V_int32(self__81 *hashmap_Key_int32_x, key__82 Key) Option__int32 {
     var native_value_0 int32
     var native_ok bool
     native_value_0, native_ok = _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_Key__V_int32__native(self__81, key__82)
@@ -395,14 +395,14 @@ func println__T_bool(value__1 bool) struct{} {
     return struct{}{}
 }
 
-func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__contains__K_Key__V_int32(self__89 *hashmap_key_int32_x, key__90 Key) bool {
+func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__contains__K_Key__V_int32(self__89 *hashmap_Key_int32_x, key__90 Key) bool {
     var retv86 bool
     var t87 bool = hashmap_contains__HashMap_Key_int32(self__89, key__90)
     retv86 = t87
     return retv86
 }
 
-func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__remove__K_Key__V_int32(self__86 *hashmap_key_int32_x, key__87 Key) struct{} {
+func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__remove__K_Key__V_int32(self__86 *hashmap_Key_int32_x, key__87 Key) struct{} {
     hashmap_remove__HashMap_Key_int32(self__86, key__87)
     return struct{}{}
 }

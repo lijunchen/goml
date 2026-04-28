@@ -71,21 +71,21 @@ func vec_set__Vec_Array_2_int32(vec [][2]int32, index int32, value [2]int32) str
     return struct{}{}
 }
 
-type ref_array_2_int32_x struct {
+type ref_Array_2_int32_x struct {
     value [2]int32
 }
 
-func ref__Ref_Array_2_int32(value [2]int32) *ref_array_2_int32_x {
-    return &ref_array_2_int32_x{
+func ref__Ref_Array_2_int32(value [2]int32) *ref_Array_2_int32_x {
+    return &ref_Array_2_int32_x{
         value: value,
     }
 }
 
-func ref_get__Ref_Array_2_int32(reference *ref_array_2_int32_x) [2]int32 {
+func ref_get__Ref_Array_2_int32(reference *ref_Array_2_int32_x) [2]int32 {
     return reference.value
 }
 
-func ref_set__Ref_Array_2_int32(reference *ref_array_2_int32_x, value [2]int32) struct{} {
+func ref_set__Ref_Array_2_int32(reference *ref_Array_2_int32_x, value [2]int32) struct{} {
     reference.value = value
     return struct{}{}
 }
@@ -329,8 +329,8 @@ func main0() struct{} {
     var t116 int32 = array_get__Array_2_int32(t115, 0)
     println__T_int32(t116)
     var t117 [2]int32 = [2]int32{22, 23}
-    var r__11 *ref_array_2_int32_x = ref__Ref_Array_2_int32(t117)
-    var place_ref55 *ref_array_2_int32_x = r__11
+    var r__11 *ref_Array_2_int32_x = ref__Ref_Array_2_int32(t117)
+    var place_ref55 *ref_Array_2_int32_x = r__11
     var place_root56 [2]int32 = ref_get__Ref_Array_2_int32(place_ref55)
     var index57 int32 = 1
     array_get__Array_2_int32(place_root56, index57)
