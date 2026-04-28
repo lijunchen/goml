@@ -3,6 +3,21 @@ use std::path::PathBuf;
 use crate::env::format_typer_diagnostics;
 use crate::pipeline::pipeline::{CompilationError, compile_single_file};
 
+fn run_crasher(name: &str) -> String {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers")
+        .join(name)
+        .join("main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
+        panic!("compilation failed for {}: {:?}", path.display(), err);
+    });
+    let go = compilation.go.to_pretty(&compilation.goenv, 120);
+    super::execute_go_source(&go, &path.to_string_lossy()).unwrap()
+}
+
 fn compile_single_file_typer_diagnostics(path: PathBuf) -> String {
     let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
         panic!("failed to read {}: {err}", path.display());
@@ -205,4 +220,11 @@ fn deep_call_wrapped_all_exit_match_while_condition_reports_typer_error() {
     let diagnostics = compile_single_file_typer_diagnostics(path);
 
     assert_reports_while_condition_error(&diagnostics);
+}
+
+#[test]
+fn while_return_break_mix_executes() {
+    let output = run_crasher("while_return_break_mix");
+
+    assert_eq!(output, "1\n2\n");
 }
