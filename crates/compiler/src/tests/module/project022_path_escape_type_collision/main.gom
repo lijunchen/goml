@@ -1,0 +1,32 @@
+package main;
+
+use a;
+
+struct a_x3a__x3a_T {
+    value: int32,
+}
+
+struct Wrap[T, U] {
+    left: T,
+    right: U,
+}
+
+fn make_external() -> Wrap[a::T, (int32, int32)] {
+    Wrap {
+        left: a::make(1i32),
+        right: (2i32, 3i32),
+    }
+}
+
+fn make_plain() -> Wrap[a_x3a__x3a_T, (int32, int32)] {
+    Wrap {
+        left: a_x3a__x3a_T { value: 4i32 },
+        right: (5i32, 6i32),
+    }
+}
+
+fn main() -> unit {
+    let x = make_external();
+    let y = make_plain();
+    println(x.left.value + y.left.value + x.right.0 + y.right.1);
+}
