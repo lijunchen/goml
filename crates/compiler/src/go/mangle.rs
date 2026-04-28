@@ -121,7 +121,7 @@ fn has_generated_helper_prefix(name: &str) -> bool {
 
 pub fn go_user_type_name(name: &str) -> String {
     let ident = go_ident(name);
-    if is_generated_go_type_name(&ident) {
+    if is_generated_go_type_name(&ident) || is_generated_go_value_name(&ident) {
         format!("_goml_user_{}", ident)
     } else {
         ident
@@ -147,6 +147,44 @@ fn has_len_prefixed_type_name(name: &str, prefix: &str) -> bool {
         return false;
     }
     rest[digit_count..].is_empty() || rest[digit_count..].starts_with('_')
+}
+
+fn is_generated_go_value_name(name: &str) -> bool {
+    matches!(
+        name,
+        "unit_to_string"
+            | "bool_to_string"
+            | "bool_to_json"
+            | "json_escape_string"
+            | "string_len"
+            | "string_get"
+            | "char_to_string"
+            | "int8_to_string"
+            | "int16_to_string"
+            | "int32_to_string"
+            | "int64_to_string"
+            | "uint8_to_string"
+            | "uint16_to_string"
+            | "uint32_to_string"
+            | "uint64_to_string"
+            | "float32_to_string"
+            | "float64_to_string"
+            | "int8_hash"
+            | "int16_hash"
+            | "int32_hash"
+            | "int64_hash"
+            | "char_hash"
+            | "uint8_hash"
+            | "uint16_hash"
+            | "uint32_hash"
+            | "float32_hash"
+            | "float64_hash"
+            | "string_hash"
+            | "string_print"
+            | "string_println"
+            | "go_error_to_string"
+            | "missing"
+    )
 }
 
 fn is_valid_go_ident(s: &str) -> bool {
