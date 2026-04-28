@@ -328,8 +328,23 @@ fn has_native_result_shape(genv: &PackageTypeEnv, ty: &tast::Ty) -> bool {
     ok_seen && err_seen
 }
 
-fn is_go_error_ty(ty: &tast::Ty) -> bool {
-    matches!(ty, tast::Ty::TStruct { name } if name == "GoError")
+fn env_defines_type_named(env: &GlobalTypeEnv, name: &str) -> bool {
+    let ident = tast::TastIdent::new(name);
+    env.type_env.structs.contains_key(&ident)
+        || env.type_env.enums.contains_key(&ident)
+        || env.type_env.extern_types.contains_key(name)
+}
+
+fn is_builtin_go_error_ty(genv: &PackageTypeEnv, ty: &tast::Ty) -> bool {
+    let tast::Ty::TStruct { name } = ty else {
+        return false;
+    };
+    name == "GoError"
+        && !env_defines_type_named(genv.current(), name)
+        && !genv
+            .deps
+            .values()
+            .any(|env| env_defines_type_named(env, name))
 }
 
 fn extract_option_ty(ty: &tast::Ty) -> Option<&tast::Ty> {
@@ -425,7 +440,7 @@ fn validate_extern_return_mode(
             };
             if !has_native_result_shape(genv, ret_ty)
                 || !matches!(ok_ty, tast::Ty::TUnit)
-                || !is_go_error_ty(err_ty)
+                || !is_builtin_go_error_ty(genv, err_ty)
             {
                 super::util::push_error(
                     diagnostics,
@@ -447,7 +462,7 @@ fn validate_extern_return_mode(
                 );
                 return;
             };
-            if !has_native_result_shape(genv, ret_ty) || !is_go_error_ty(err_ty) {
+            if !has_native_result_shape(genv, ret_ty) || !is_builtin_go_error_ty(genv, err_ty) {
                 super::util::push_error(
                     diagnostics,
                     format!(

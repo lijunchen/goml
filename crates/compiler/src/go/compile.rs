@@ -661,7 +661,7 @@ fn raw_go_symbol_mentions_package(go_symbol: &str, package_alias: &str) -> bool 
             .next_back()
             .is_some_and(is_go_ident_char);
         let end = start + package_alias.len();
-        let after_dot = go_symbol[end..].chars().next() == Some('.');
+        let after_dot = go_symbol[end..].starts_with('.');
         !before_ident && after_dot
     })
 }
@@ -741,7 +741,7 @@ fn rewrite_go_package_alias(go_symbol: &str, from: &str, to: &str) -> String {
                         .next_back()
                         .is_some_and(is_go_ident_char);
                     let end = index + from.len();
-                    let after_dot = go_symbol[end..].chars().next() == Some('.');
+                    let after_dot = go_symbol[end..].starts_with('.');
                     if !before_ident && after_dot {
                         rewritten.push_str(to);
                         index = end;
@@ -1615,8 +1615,21 @@ fn option_variant_layout(goenv: &GlobalGoEnv, ty: &tast::Ty) -> Option<OptionVar
     })
 }
 
-fn is_go_error_ty(ty: &tast::Ty) -> bool {
-    matches!(ty, tast::Ty::TStruct { name } if name == "GoError")
+fn is_builtin_go_error_ty(goenv: &GlobalGoEnv, ty: &tast::Ty) -> bool {
+    let tast::Ty::TStruct { name } = ty else {
+        return false;
+    };
+    if name != "GoError" {
+        return false;
+    }
+    goenv
+        .genv
+        .type_env
+        .extern_types
+        .get(name)
+        .is_some_and(|ext| {
+            matches!(ext.package_path.as_deref(), None | Some("")) && ext.go_name == "error"
+        })
 }
 
 enum ExternFuncReturnMode {
@@ -1995,7 +2008,7 @@ type LetEnv = HashMap<anf::LocalId, anf::ValueExpr>;
 
 fn native_return_mode(goenv: &GlobalGoEnv, ret_ty: &tast::Ty) -> Option<NativeReturnMode> {
     if let Some(layout) = result_variant_layout(goenv, ret_ty)
-        && is_go_error_ty(&layout.err_ty)
+        && is_builtin_go_error_ty(goenv, &layout.err_ty)
     {
         return Some(NativeReturnMode::Result {
             ok_index: layout.ok_index,
@@ -2919,13 +2932,13 @@ fn dyn_ty_key(ty: &tast::Ty) -> String {
     ty_compact(ty)
 }
 
+type DynVtableCtorGoNames = HashMap<(String, String), String>;
+type DynWrapGoNames = HashMap<(String, String, String), String>;
+
 fn collect_dyn_helper_go_names(
     goenv: &GlobalGoEnv,
     req: &DynRequirements,
-) -> (
-    HashMap<(String, String), String>,
-    HashMap<(String, String, String), String>,
-) {
+) -> (DynVtableCtorGoNames, DynWrapGoNames) {
     let mut ctor_counts = HashMap::new();
     let mut ctor_items = Vec::new();
     let mut wrap_counts = HashMap::new();
@@ -5955,7 +5968,7 @@ fn loop_exit_target(block: &anf::Block, loop_id: &anf::JoinId) -> Option<anf::Jo
     }
 }
 
-fn local_joins_in_block<'a>(block: &'a anf::Block) -> HashMap<&'a anf::JoinId, &'a anf::JoinBind> {
+fn local_joins_in_block(block: &anf::Block) -> HashMap<&anf::JoinId, &anf::JoinBind> {
     let mut joins = HashMap::new();
     for bind in &block.binds {
         match bind {
