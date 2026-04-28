@@ -1,15 +1,15 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
 )
 
 func int32_to_string(x int32) string {
-    return fmt.Sprintf("%d", x)
+    return _goml_fmt.Sprintf("%d", x)
 }
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -55,11 +55,11 @@ func main0() struct{} {
     var first__8 int32 = apply_once(local__7, 4)
     var composed__9 int32 = compose(double, increment, first__8)
     var closure_apply__11 closure_env_closure_apply_0 = closure_env_closure_apply_0{}
-    var closure_result__12 int32 = _goml_inherent_closure_env_closure_apply_0_closure_env_closure_apply_0_apply(closure_apply__11, composed__9)
+    var closure_result__12 int32 = _goml_inherent_x23_closure_x5f_env_x5f_closure_x5f_apply_x5f_0_x23_closure_x5f_env_x5f_closure_x5f_apply_x5f_0_x23_apply(closure_apply__11, composed__9)
     var global_invoker__15 closure_env_global_invoker_1 = closure_env_global_invoker_1{}
-    var invoked_with_global__16 int32 = _goml_inherent_closure_env_global_invoker_1_closure_env_global_invoker_1_apply(global_invoker__15, double, 3)
+    var invoked_with_global__16 int32 = _goml_inherent_x23_closure_x5f_env_x5f_global_x5f_invoker_x5f_1_x23_closure_x5f_env_x5f_global_x5f_invoker_x5f_1_x23_apply(global_invoker__15, double, 3)
     var composer_closure__18 closure_env_composer_closure_2 = closure_env_composer_closure_2{}
-    var composed_by_closure__19 int32 = _goml_inherent_closure_env_composer_closure_2_closure_env_composer_closure_2_apply(composer_closure__18, 5)
+    var composed_by_closure__19 int32 = _goml_inherent_x23_closure_x5f_env_x5f_composer_x5f_closure_x5f_2_x23_closure_x5f_env_x5f_composer_x5f_closure_x5f_2_x23_apply(composer_closure__18, 5)
     var printer__20 func(string) struct{} = string_println
     var t21 string = int32_to_string(composed__9)
     printer__20(t21)
@@ -72,21 +72,21 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_inherent_closure_env_closure_apply_0_closure_env_closure_apply_0_apply(env4 closure_env_closure_apply_0, value__10 int32) int32 {
+func _goml_inherent_x23_closure_x5f_env_x5f_closure_x5f_apply_x5f_0_x23_closure_x5f_env_x5f_closure_x5f_apply_x5f_0_x23_apply(env4 closure_env_closure_apply_0, value__10 int32) int32 {
     var retv26 int32
     var t27 int32 = apply_once(increment, value__10)
     retv26 = t27
     return retv26
 }
 
-func _goml_inherent_closure_env_global_invoker_1_closure_env_global_invoker_1_apply(env5 closure_env_global_invoker_1, func_to_call__13 func(int32) int32, value__14 int32) int32 {
+func _goml_inherent_x23_closure_x5f_env_x5f_global_x5f_invoker_x5f_1_x23_closure_x5f_env_x5f_global_x5f_invoker_x5f_1_x23_apply(env5 closure_env_global_invoker_1, func_to_call__13 func(int32) int32, value__14 int32) int32 {
     var retv29 int32
     var t30 int32 = apply_once(func_to_call__13, value__14)
     retv29 = t30
     return retv29
 }
 
-func _goml_inherent_closure_env_composer_closure_2_closure_env_composer_closure_2_apply(env6 closure_env_composer_closure_2, value__17 int32) int32 {
+func _goml_inherent_x23_closure_x5f_env_x5f_composer_x5f_closure_x5f_2_x23_closure_x5f_env_x5f_composer_x5f_closure_x5f_2_x23_apply(env6 closure_env_composer_closure_2, value__17 int32) int32 {
     var retv32 int32
     var t33 int32 = compose(double, increment, value__17)
     retv32 = t33

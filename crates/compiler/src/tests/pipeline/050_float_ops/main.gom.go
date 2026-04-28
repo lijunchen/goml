@@ -1,7 +1,7 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
 )
 
 func bool_to_string(x bool) string {
@@ -13,15 +13,15 @@ func bool_to_string(x bool) string {
 }
 
 func float32_to_string(x float32) string {
-    return fmt.Sprintf("%g", x)
+    return _goml_fmt.Sprintf("%g", x)
 }
 
 func float64_to_string(x float64) string {
-    return fmt.Sprintf("%g", x)
+    return _goml_fmt.Sprintf("%g", x)
 }
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 

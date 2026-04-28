@@ -1,11 +1,11 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
 )
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -17,8 +17,6 @@ func classify(x__0 int32) string {
     var jp9 string
     if t10 {
         jp9 = "negative"
-        retv7 = jp9
-        return retv7
     } else {
         var t13 bool = 0 < x__0
         var jp12 string
@@ -28,9 +26,9 @@ func classify(x__0 int32) string {
             jp12 = "zero"
         }
         jp9 = jp12
-        retv7 = jp9
-        return retv7
     }
+    retv7 = jp9
+    return retv7
 }
 
 func triangle_type(a__1 int32, b__2 int32, c__3 int32) string {
@@ -46,8 +44,6 @@ func triangle_type(a__1 int32, b__2 int32, c__3 int32) string {
             jp20 = "peak"
         }
         jp17 = jp20
-        retv15 = jp17
-        return retv15
     } else {
         var t24 bool = a__1 < c__3
         var jp23 string
@@ -57,9 +53,9 @@ func triangle_type(a__1 int32, b__2 int32, c__3 int32) string {
             jp23 = "flat"
         }
         jp17 = jp23
-        retv15 = jp17
-        return retv15
     }
+    retv15 = jp17
+    return retv15
 }
 
 func main0() struct{} {

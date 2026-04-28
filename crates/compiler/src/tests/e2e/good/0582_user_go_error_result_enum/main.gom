@@ -1,0 +1,14 @@
+struct GoError {
+    value: int32,
+}
+
+fn fail() -> Result[int32, GoError] {
+    Result::Err(GoError { value: 7i32 })
+}
+
+fn main() -> unit {
+    match fail() {
+        Result::Ok(value) => println(value),
+        Result::Err(err) => println(err.value),
+    }
+}

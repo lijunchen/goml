@@ -1,6 +1,7 @@
 use std::cell::Cell;
 use std::mem;
 use std::path::{Path, PathBuf};
+use std::rc::Rc;
 
 use crate::syntax::{MySyntaxKind, ToSyntaxKind};
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
@@ -10,6 +11,10 @@ use rowan::{GreenNode, GreenNodeBuilder};
 use super::event::Event;
 use super::input::Input;
 
+const MAX_EXPR_PARSE_DEPTH: usize = 512;
+const MAX_PATTERN_PARSE_DEPTH: usize = 512;
+const MAX_TYPE_PARSE_DEPTH: usize = 512;
+
 pub struct Parser<'t> {
     pub filename: PathBuf,
     pub input: Input<'t>,
@@ -17,11 +22,25 @@ pub struct Parser<'t> {
     pub events: Vec<Event>,
     diagnostics: Diagnostics,
     stuck_reported: Cell<bool>,
+    depth_limit_hit: Cell<bool>,
+    expr_depth: Rc<Cell<usize>>,
+    pattern_depth: Rc<Cell<usize>>,
+    type_depth: Rc<Cell<usize>>,
 }
 
 pub struct ParseResult {
     pub green_node: GreenNode,
     pub diagnostics: Diagnostics,
+}
+
+pub(crate) struct ParserDepthGuard {
+    depth: Rc<Cell<usize>>,
+}
+
+impl Drop for ParserDepthGuard {
+    fn drop(&mut self) {
+        self.depth.set(self.depth.get().saturating_sub(1));
+    }
 }
 
 impl ParseResult {
@@ -105,12 +124,60 @@ impl<'t> Parser<'t> {
             events: Vec::new(),
             diagnostics: Diagnostics::new(),
             stuck_reported: Cell::new(false),
+            depth_limit_hit: Cell::new(false),
+            expr_depth: Rc::new(Cell::new(0)),
+            pattern_depth: Rc::new(Cell::new(0)),
+            type_depth: Rc::new(Cell::new(0)),
         }
     }
 }
 
 impl Parser<'_> {
+    fn enter_depth(
+        &mut self,
+        depth: Rc<Cell<usize>>,
+        max_depth: usize,
+        message: &str,
+    ) -> Option<ParserDepthGuard> {
+        if depth.get() >= max_depth {
+            if !self.depth_limit_hit.get() {
+                self.error(message);
+                self.depth_limit_hit.set(true);
+            }
+            return None;
+        }
+        depth.set(depth.get() + 1);
+        Some(ParserDepthGuard { depth })
+    }
+
+    pub(crate) fn enter_expr(&mut self) -> Option<ParserDepthGuard> {
+        self.enter_depth(
+            Rc::clone(&self.expr_depth),
+            MAX_EXPR_PARSE_DEPTH,
+            "expression is too deeply nested",
+        )
+    }
+
+    pub(crate) fn enter_pattern(&mut self) -> Option<ParserDepthGuard> {
+        self.enter_depth(
+            Rc::clone(&self.pattern_depth),
+            MAX_PATTERN_PARSE_DEPTH,
+            "pattern is too deeply nested",
+        )
+    }
+
+    pub(crate) fn enter_type(&mut self) -> Option<ParserDepthGuard> {
+        self.enter_depth(
+            Rc::clone(&self.type_depth),
+            MAX_TYPE_PARSE_DEPTH,
+            "type is too deeply nested",
+        )
+    }
+
     pub fn peek(&mut self) -> TokenKind {
+        if self.depth_limit_hit.get() {
+            return T![eof];
+        }
         if self.fuel.get() == 0 {
             if !self.stuck_reported.get() {
                 let message = "parser did not consume input while parsing";
@@ -132,6 +199,9 @@ impl Parser<'_> {
     }
 
     pub fn nth(&mut self, n: usize) -> TokenKind {
+        if self.depth_limit_hit.get() {
+            return T![eof];
+        }
         if self.fuel.get() == 0 {
             if !self.stuck_reported.get() {
                 let message = "parser did not consume input while parsing";
@@ -148,7 +218,7 @@ impl Parser<'_> {
     }
 
     pub fn eof(&mut self) -> bool {
-        self.input.eof()
+        self.depth_limit_hit.get() || self.input.eof()
     }
 
     pub fn at(&mut self, kind: TokenKind) -> bool {
@@ -170,6 +240,9 @@ impl Parser<'_> {
     }
 
     pub fn expect(&mut self, kind: TokenKind) {
+        if self.depth_limit_hit.get() {
+            return;
+        }
         if self.eat(kind) {
             return;
         }
@@ -201,6 +274,9 @@ impl Parser<'_> {
     }
 
     pub fn advance_with_error(&mut self, error: &str) {
+        if self.depth_limit_hit.get() {
+            return;
+        }
         let m = self.open();
         self.events.push(Event::Error(error.to_string()));
         self.advance();

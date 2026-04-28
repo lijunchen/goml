@@ -6,6 +6,7 @@ use parser::{Diagnostics, syntax::MySyntaxNode};
 
 use crate::{
     env::{GlobalTypeEnv, format_typer_diagnostics},
+    pipeline::pipeline::{CompilationError, compile_single_file},
     tast,
 };
 
@@ -30,6 +31,77 @@ fn expect_diagnostics(src: &str, expected: Expect) {
     let (_, _genv, diagnostics) = typecheck(src);
     let diagnostics = format_typer_diagnostics(&diagnostics, src);
     expected.assert_debug_eq(&diagnostics);
+}
+
+#[test]
+fn builtin_generic_constraints_are_checked_at_call_site() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/println_option_without_tostring/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let err = compile_single_file(&path, &src).expect_err("expected typer error");
+
+    match err {
+        CompilationError::Typer { diagnostics } => {
+            let diagnostics = format_typer_diagnostics(&diagnostics, &src);
+            assert!(
+                diagnostics
+                    .iter()
+                    .any(|line| line
+                        .contains("No instance found for trait ToString<Option[string]>")),
+                "{diagnostics:?}"
+            );
+        }
+        other => panic!("expected typer error, got {other:?}"),
+    }
+}
+
+#[test]
+fn generic_constraints_reject_overlapping_trait_impls() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/hashmap_ref_dyn_hash_overlapping_impl/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let err = compile_single_file(&path, &src).expect_err("expected typer error");
+
+    match err {
+        CompilationError::Typer { diagnostics } => {
+            let diagnostics = format_typer_diagnostics(&diagnostics, &src);
+            assert!(
+                diagnostics
+                    .iter()
+                    .any(|line| line
+                        .contains("Multiple instances found for trait Hash<Ref[dyn Hash]>")),
+                "{diagnostics:?}"
+            );
+        }
+        other => panic!("expected typer error, got {other:?}"),
+    }
+}
+
+#[test]
+fn recursive_blanket_trait_impl_bound_does_not_crash() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/recursive_blanket_trait_impl_bound/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let err = compile_single_file(&path, &src).expect_err("expected typer error");
+
+    match err {
+        CompilationError::Typer { diagnostics } => {
+            let diagnostics = format_typer_diagnostics(&diagnostics, &src);
+            assert!(
+                diagnostics
+                    .iter()
+                    .any(|line| line.contains("No instance found for trait Foo<int32>")),
+                "{diagnostics:?}"
+            );
+        }
+        other => panic!("expected typer error, got {other:?}"),
+    }
 }
 
 #[test]

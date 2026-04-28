@@ -4,10 +4,15 @@ use ::cst::cst::CstNode;
 use ::cst::{cst, support};
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::syntax::{MySyntaxKind, MySyntaxNodePtr};
+use std::cell::Cell;
 use std::collections::HashSet;
+use std::rc::Rc;
 use text_size::TextRange;
 
 const DEFAULT_PACKAGE_NAME: &str = "main";
+const MAX_EXPR_LOWER_DEPTH: usize = 256;
+const MAX_PATTERN_LOWER_DEPTH: usize = 128;
+const MAX_TYPE_LOWER_DEPTH: usize = 256;
 
 fn unescape_string(s: &str) -> String {
     let mut result = String::with_capacity(s.len());
@@ -89,6 +94,9 @@ struct LowerCtx {
     stage: Stage,
     diagnostics: Diagnostics,
     constructor_names: HashSet<String>,
+    expr_depth: Rc<Cell<usize>>,
+    pattern_depth: Rc<Cell<usize>>,
+    type_depth: Rc<Cell<usize>>,
 }
 
 impl LowerCtx {
@@ -98,6 +106,9 @@ impl LowerCtx {
             stage: Stage::other("lower"),
             diagnostics: Diagnostics::new(),
             constructor_names,
+            expr_depth: Rc::new(Cell::new(0)),
+            pattern_depth: Rc::new(Cell::new(0)),
+            type_depth: Rc::new(Cell::new(0)),
         }
     }
 
@@ -116,6 +127,14 @@ impl LowerCtx {
     }
     fn is_constructor(&self, ident: &ast::AstIdent) -> bool {
         self.constructor_names.contains(&ident.0)
+    }
+}
+
+struct LowerDepthGuard(Rc<Cell<usize>>);
+
+impl Drop for LowerDepthGuard {
+    fn drop(&mut self) {
+        self.0.set(self.0.get().saturating_sub(1));
     }
 }
 
@@ -482,6 +501,16 @@ fn lower_variant(
 }
 
 fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::TypeExpr> {
+    if ctx.type_depth.get() >= MAX_TYPE_LOWER_DEPTH {
+        ctx.push_error(
+            Some(node.syntax().text_range()),
+            "type is too deeply nested",
+        );
+        return None;
+    }
+    ctx.type_depth.set(ctx.type_depth.get() + 1);
+    let _type_depth = LowerDepthGuard(Rc::clone(&ctx.type_depth));
+
     match node {
         cst::Type::UnitTy(_) => Some(ast::TypeExpr::TUnit),
         cst::Type::BoolTy(_) => Some(ast::TypeExpr::TBool),
@@ -1028,6 +1057,15 @@ fn lower_expr_with_args(
     node: cst::Expr,
     trailing_args: Vec<ast::Expr>,
 ) -> Option<ast::Expr> {
+    if ctx.expr_depth.get() >= MAX_EXPR_LOWER_DEPTH {
+        ctx.push_error(
+            Some(node.syntax().text_range()),
+            "expression is too deeply nested",
+        );
+        return None;
+    }
+    ctx.expr_depth.set(ctx.expr_depth.get() + 1);
+    let _expr_depth = LowerDepthGuard(Rc::clone(&ctx.expr_depth));
     let node_range = node.syntax().text_range();
     let node_astptr = MySyntaxNodePtr::new(node.syntax());
     match node {
@@ -2273,6 +2311,16 @@ fn lower_arm(ctx: &mut LowerCtx, node: cst::MatchArm) -> Option<ast::Arm> {
 }
 
 fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
+    if ctx.pattern_depth.get() >= MAX_PATTERN_LOWER_DEPTH {
+        ctx.push_error(
+            Some(node.syntax().text_range()),
+            "pattern is too deeply nested",
+        );
+        return None;
+    }
+    ctx.pattern_depth.set(ctx.pattern_depth.get() + 1);
+    let _pattern_depth = LowerDepthGuard(Rc::clone(&ctx.pattern_depth));
+
     let node_astptr = MySyntaxNodePtr::new(node.syntax());
     match node {
         cst::Pattern::VarPat(it) => {

@@ -1,12 +1,12 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
     "time"
 )
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -17,7 +17,7 @@ type Span = time.Duration
 func describe() string {
     var retv1 string
     var value__0 Span = time.Duration(1500000000)
-    var t2 string = fmt.Sprintf("span => %v", value__0)
+    var t2 string = _goml_fmt.Sprintf("span => %v", value__0)
     retv1 = t2
     return retv1
 }

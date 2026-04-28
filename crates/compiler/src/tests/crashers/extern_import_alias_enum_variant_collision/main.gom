@@ -1,0 +1,15 @@
+extern "go" "strings" "ToUpper" upper(text: string) -> string
+
+enum Choice {
+    strings,
+    other,
+}
+
+fn main() -> unit {
+    let choice = Choice::strings;
+    string_println(upper("ok"));
+    match choice {
+        Choice::strings => string_println("variant"),
+        Choice::other => string_println("other"),
+    };
+}

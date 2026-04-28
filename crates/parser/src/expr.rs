@@ -482,6 +482,7 @@ pub fn expr(p: &mut Parser) -> Option<MarkerClosed> {
 }
 
 fn expr_bp(p: &mut Parser, min_bp: u8) -> Option<MarkerClosed> {
+    let _expr_depth = p.enter_expr()?;
     let mut lhs = if let Some(r_bp) = prefix_binding_power(p.peek()) {
         let m = p.open();
         p.advance();

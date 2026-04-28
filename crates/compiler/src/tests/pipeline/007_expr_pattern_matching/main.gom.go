@@ -1,15 +1,15 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
 )
 
 func int32_to_string(x int32) string {
-    return fmt.Sprintf("%d", x)
+    return _goml_fmt.Sprintf("%d", x)
 }
 
 func string_print(s string) struct{} {
-    fmt.Print(s)
+    _goml_fmt.Print(s)
     return struct{}{}
 }
 
@@ -55,10 +55,8 @@ func main0() struct{} {
     switch a__0.(type) {
     case Zero:
         print__T_int32(6)
-        return struct{}{}
     case Succ:
         print__T_int32(6)
-        return struct{}{}
     case Add:
         var x1 Expr = a__0.(Add)._0
         var x2 Expr = a__0.(Add)._1
@@ -76,7 +74,6 @@ func main0() struct{} {
             default:
                 panic("non-exhaustive match")
             }
-            return struct{}{}
         case Succ:
             switch x1.(type) {
             case Zero:
@@ -90,7 +87,6 @@ func main0() struct{} {
             default:
                 panic("non-exhaustive match")
             }
-            return struct{}{}
         case Add:
             switch x1.(type) {
             case Zero:
@@ -104,7 +100,6 @@ func main0() struct{} {
             default:
                 panic("non-exhaustive match")
             }
-            return struct{}{}
         case Mul:
             switch x1.(type) {
             case Zero:
@@ -118,7 +113,6 @@ func main0() struct{} {
             default:
                 panic("non-exhaustive match")
             }
-            return struct{}{}
         default:
             panic("non-exhaustive match")
         }
@@ -128,7 +122,6 @@ func main0() struct{} {
         switch x3.(type) {
         case Zero:
             print__T_int32(1)
-            return struct{}{}
         case Succ:
             switch x4.(type) {
             case Zero:
@@ -142,7 +135,6 @@ func main0() struct{} {
             default:
                 panic("non-exhaustive match")
             }
-            return struct{}{}
         case Add:
             switch x4.(type) {
             case Zero:
@@ -156,7 +148,6 @@ func main0() struct{} {
             default:
                 panic("non-exhaustive match")
             }
-            return struct{}{}
         case Mul:
             switch x4.(type) {
             case Zero:
@@ -170,13 +161,13 @@ func main0() struct{} {
             default:
                 panic("non-exhaustive match")
             }
-            return struct{}{}
         default:
             panic("non-exhaustive match")
         }
     default:
         panic("non-exhaustive match")
     }
+    return struct{}{}
 }
 
 func print__T_int32(value__0 int32) struct{} {

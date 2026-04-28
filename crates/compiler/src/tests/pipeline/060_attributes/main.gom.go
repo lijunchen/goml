@@ -1,15 +1,15 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
 )
 
 func int32_to_string(x int32) string {
-    return fmt.Sprintf("%d", x)
+    return _goml_fmt.Sprintf("%d", x)
 }
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -41,7 +41,7 @@ func (_ Write) isMessage() {}
 
 type GoError = error
 
-func _goml_trait_impl_ToString_Point_to_string(self__0 Point) string {
+func _goml_trait_x5f_impl_x23_ToString_x23_Point_x23_to_x5f_string(self__0 Point) string {
     var retv11 string
     var mtmp0 Point = self__0
     var x1 int32 = mtmp0.x
@@ -60,7 +60,7 @@ func _goml_trait_impl_ToString_Point_to_string(self__0 Point) string {
     return retv11
 }
 
-func _goml_trait_impl_ToString_Message_to_string(self__3 Message) string {
+func _goml_trait_x5f_impl_x23_ToString_x23_Message_x23_to_x5f_string(self__3 Message) string {
     var retv21 string
     var jp23 string
     switch self__3.(type) {
@@ -96,17 +96,17 @@ func main0() struct{} {
         x: 4,
         y: 7,
     }
-    var summary__8 string = _goml_trait_impl_ToString_Point_to_string(point__7)
+    var summary__8 string = _goml_trait_x5f_impl_x23_ToString_x23_Point_x23_to_x5f_string(point__7)
     var t33 Message = Move{
         _0: 1,
         _1: 2,
     }
-    var mv__9 string = _goml_trait_impl_ToString_Message_to_string(t33)
+    var mv__9 string = _goml_trait_x5f_impl_x23_ToString_x23_Message_x23_to_x5f_string(t33)
     var t34 Message = Write{
         _0: "done",
     }
-    var text__10 string = _goml_trait_impl_ToString_Message_to_string(t34)
-    var exit__11 string = _goml_trait_impl_ToString_Message_to_string(Quit{})
+    var text__10 string = _goml_trait_x5f_impl_x23_ToString_x23_Message_x23_to_x5f_string(t34)
+    var exit__11 string = _goml_trait_x5f_impl_x23_ToString_x23_Message_x23_to_x5f_string(Quit{})
     println__T_string(summary__8)
     println__T_string(mv__9)
     println__T_string(text__10)

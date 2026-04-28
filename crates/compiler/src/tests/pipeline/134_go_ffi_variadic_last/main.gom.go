@@ -1,13 +1,13 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
     "path"
     "strings"
 )
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 

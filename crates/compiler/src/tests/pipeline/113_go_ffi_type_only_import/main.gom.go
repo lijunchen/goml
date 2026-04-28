@@ -1,13 +1,13 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
     "os"
     "io"
 )
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -57,7 +57,7 @@ func describe(path__0 string) string {
     case Ok:
         var x1 Reader = mtmp0.(Ok)._0
         var reader__1 Reader = x1
-        var t8 string = fmt.Sprintf("type=%T", reader__1)
+        var t8 string = _goml_fmt.Sprintf("type=%T", reader__1)
         jp7 = t8
     case Err:
         var x2 GoError = mtmp0.(Err)._0

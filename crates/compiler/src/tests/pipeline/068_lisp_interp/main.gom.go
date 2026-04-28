@@ -1,8 +1,8 @@
 package main
 
 import (
-    "fmt"
-    "unicode/utf8"
+    _goml_fmt "fmt"
+    _goml_utf8 "unicode/utf8"
 )
 
 func bool_to_string(x bool) string {
@@ -22,18 +22,18 @@ func string_get(s string, i int32) rune {
 }
 
 func char_to_string(x rune) string {
-    if !utf8.ValidRune(x) {
+    if !_goml_utf8.ValidRune(x) {
         panic("invalid char")
     }
     return string(x)
 }
 
 func int32_to_string(x int32) string {
-    return fmt.Sprintf("%d", x)
+    return _goml_fmt.Sprintf("%d", x)
 }
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -41,17 +41,17 @@ type ref_int32_x struct {
     value int32
 }
 
-func ref__Ref_int32(value int32) *ref_int32_x {
+func ref__Ref_5int32(value int32) *ref_int32_x {
     return &ref_int32_x{
         value: value,
     }
 }
 
-func ref_get__Ref_int32(reference *ref_int32_x) int32 {
+func ref_get__Ref_5int32(reference *ref_int32_x) int32 {
     return reference.value
 }
 
-func ref_set__Ref_int32(reference *ref_int32_x, value int32) struct{} {
+func ref_set__Ref_5int32(reference *ref_int32_x, value int32) struct{} {
     reference.value = value
     return struct{}{}
 }
@@ -60,17 +60,17 @@ type ref_bool_x struct {
     value bool
 }
 
-func ref__Ref_bool(value bool) *ref_bool_x {
+func ref__Ref_4bool(value bool) *ref_bool_x {
     return &ref_bool_x{
         value: value,
     }
 }
 
-func ref_get__Ref_bool(reference *ref_bool_x) bool {
+func ref_get__Ref_4bool(reference *ref_bool_x) bool {
     return reference.value
 }
 
-func ref_set__Ref_bool(reference *ref_bool_x, value bool) struct{} {
+func ref_set__Ref_4bool(reference *ref_bool_x, value bool) struct{} {
     reference.value = value
     return struct{}{}
 }
@@ -79,151 +79,151 @@ type ref_string_x struct {
     value string
 }
 
-func ref__Ref_string(value string) *ref_string_x {
+func ref__Ref_6string(value string) *ref_string_x {
     return &ref_string_x{
         value: value,
     }
 }
 
-func ref_get__Ref_string(reference *ref_string_x) string {
+func ref_get__Ref_6string(reference *ref_string_x) string {
     return reference.value
 }
 
-func ref_set__Ref_string(reference *ref_string_x, value string) struct{} {
+func ref_set__Ref_6string(reference *ref_string_x, value string) struct{} {
     reference.value = value
     return struct{}{}
 }
 
-type ref_vec_token_x struct {
+type ref_Vec_5Token_x struct {
     value []Token
 }
 
-func ref__Ref_Vec_Token(value []Token) *ref_vec_token_x {
-    return &ref_vec_token_x{
+func ref__Ref_10Vec_5Token(value []Token) *ref_Vec_5Token_x {
+    return &ref_Vec_5Token_x{
         value: value,
     }
 }
 
-func ref_get__Ref_Vec_Token(reference *ref_vec_token_x) []Token {
+func ref_get__Ref_10Vec_5Token(reference *ref_Vec_5Token_x) []Token {
     return reference.value
 }
 
-func ref_set__Ref_Vec_Token(reference *ref_vec_token_x, value []Token) struct{} {
+func ref_set__Ref_10Vec_5Token(reference *ref_Vec_5Token_x, value []Token) struct{} {
     reference.value = value
     return struct{}{}
 }
 
-type ref_value_x struct {
+type ref_Value_x struct {
     value Value
 }
 
-func ref__Ref_Value(value Value) *ref_value_x {
-    return &ref_value_x{
+func ref__Ref_5Value(value Value) *ref_Value_x {
+    return &ref_Value_x{
         value: value,
     }
 }
 
-func ref_get__Ref_Value(reference *ref_value_x) Value {
+func ref_get__Ref_5Value(reference *ref_Value_x) Value {
     return reference.value
 }
 
-func ref_set__Ref_Value(reference *ref_value_x, value Value) struct{} {
+func ref_set__Ref_5Value(reference *ref_Value_x, value Value) struct{} {
     reference.value = value
     return struct{}{}
 }
 
-type ref_vec_sexpr_x struct {
+type ref_Vec_5SExpr_x struct {
     value []SExpr
 }
 
-func ref__Ref_Vec_SExpr(value []SExpr) *ref_vec_sexpr_x {
-    return &ref_vec_sexpr_x{
+func ref__Ref_10Vec_5SExpr(value []SExpr) *ref_Vec_5SExpr_x {
+    return &ref_Vec_5SExpr_x{
         value: value,
     }
 }
 
-func ref_get__Ref_Vec_SExpr(reference *ref_vec_sexpr_x) []SExpr {
+func ref_get__Ref_10Vec_5SExpr(reference *ref_Vec_5SExpr_x) []SExpr {
     return reference.value
 }
 
-func ref_set__Ref_Vec_SExpr(reference *ref_vec_sexpr_x, value []SExpr) struct{} {
+func ref_set__Ref_10Vec_5SExpr(reference *ref_Vec_5SExpr_x, value []SExpr) struct{} {
     reference.value = value
     return struct{}{}
 }
 
-type ref_vec_binding_x struct {
+type ref_Vec_7Binding_x struct {
     value []Binding
 }
 
-func ref__Ref_Vec_Binding(value []Binding) *ref_vec_binding_x {
-    return &ref_vec_binding_x{
+func ref__Ref_12Vec_7Binding(value []Binding) *ref_Vec_7Binding_x {
+    return &ref_Vec_7Binding_x{
         value: value,
     }
 }
 
-func ref_get__Ref_Vec_Binding(reference *ref_vec_binding_x) []Binding {
+func ref_get__Ref_12Vec_7Binding(reference *ref_Vec_7Binding_x) []Binding {
     return reference.value
 }
 
-func ref_set__Ref_Vec_Binding(reference *ref_vec_binding_x, value []Binding) struct{} {
+func ref_set__Ref_12Vec_7Binding(reference *ref_Vec_7Binding_x, value []Binding) struct{} {
     reference.value = value
     return struct{}{}
 }
 
-type ref_vec_string_x struct {
+type ref_Vec_6string_x struct {
     value []string
 }
 
-func ref__Ref_Vec_string(value []string) *ref_vec_string_x {
-    return &ref_vec_string_x{
+func ref__Ref_11Vec_6string(value []string) *ref_Vec_6string_x {
+    return &ref_Vec_6string_x{
         value: value,
     }
 }
 
-func ref_get__Ref_Vec_string(reference *ref_vec_string_x) []string {
+func ref_get__Ref_11Vec_6string(reference *ref_Vec_6string_x) []string {
     return reference.value
 }
 
-func ref_set__Ref_Vec_string(reference *ref_vec_string_x, value []string) struct{} {
+func ref_set__Ref_11Vec_6string(reference *ref_Vec_6string_x, value []string) struct{} {
     reference.value = value
     return struct{}{}
 }
 
-type ref_vec_value_x struct {
+type ref_Vec_5Value_x struct {
     value []Value
 }
 
-func ref__Ref_Vec_Value(value []Value) *ref_vec_value_x {
-    return &ref_vec_value_x{
+func ref__Ref_10Vec_5Value(value []Value) *ref_Vec_5Value_x {
+    return &ref_Vec_5Value_x{
         value: value,
     }
 }
 
-func ref_get__Ref_Vec_Value(reference *ref_vec_value_x) []Value {
+func ref_get__Ref_10Vec_5Value(reference *ref_Vec_5Value_x) []Value {
     return reference.value
 }
 
-func ref_set__Ref_Vec_Value(reference *ref_vec_value_x, value []Value) struct{} {
+func ref_set__Ref_10Vec_5Value(reference *ref_Vec_5Value_x, value []Value) struct{} {
     reference.value = value
     return struct{}{}
 }
 
-type Tuple2_Token_int32 struct {
+type Tuple2_5Token_5int32 struct {
     _0 Token
     _1 int32
 }
 
-type Tuple2_Vec_SExpr_int32 struct {
+type Tuple2_10Vec_5SExpr_5int32 struct {
     _0 []SExpr
     _1 int32
 }
 
-type Tuple2_SExpr_int32 struct {
+type Tuple2_5SExpr_5int32 struct {
     _0 SExpr
     _1 int32
 }
 
-type Tuple2_Value_Value struct {
+type Tuple2_5Value_5Value struct {
     _0 Value
     _1 Value
 }
@@ -237,7 +237,7 @@ type Lambda struct {
     params []string
     body SExpr
     env []Binding
-    global *ref_vec_binding_x
+    global *ref_Vec_7Binding_x
 }
 
 type Token interface {
@@ -376,48 +376,47 @@ func is_int_text(text__2 string) bool {
         retv158 = jp160
         return retv158
     } else {
-        var i__4 *ref_int32_x = ref__Ref_int32(0)
-        var saw_digit__5 *ref_bool_x = ref__Ref_bool(false)
-        var ok__6 *ref_bool_x = ref__Ref_bool(true)
-        var started__7 *ref_bool_x = ref__Ref_bool(false)
+        var i__4 *ref_int32_x = ref__Ref_5int32(0)
+        var saw_digit__5 *ref_bool_x = ref__Ref_4bool(false)
+        var ok__6 *ref_bool_x = ref__Ref_4bool(true)
+        var started__7 *ref_bool_x = ref__Ref_4bool(false)
         Loop_loop166:
         for {
-            var t167 bool = ref_get__Ref_bool(ok__6)
-            var t168 int32 = ref_get__Ref_int32(i__4)
+            var t167 bool = ref_get__Ref_4bool(ok__6)
+            var t168 int32 = ref_get__Ref_5int32(i__4)
             var t169 bool = t168 < len__3
             var t170 bool = t167 && t169
             if t170 {
-                var t171 int32 = ref_get__Ref_int32(i__4)
+                var t171 int32 = ref_get__Ref_5int32(i__4)
                 var ch__8 rune = string_get(text__2, t171)
-                var t173 bool = ref_get__Ref_bool(started__7)
+                var t173 bool = ref_get__Ref_4bool(started__7)
                 var t174 bool = !t173
                 var t175 bool = ch__8 == 45
                 var t176 bool = t174 && t175
                 if t176 {
-                    ref_set__Ref_bool(started__7, true)
-                    var t177 int32 = ref_get__Ref_int32(i__4)
+                    ref_set__Ref_4bool(started__7, true)
+                    var t177 int32 = ref_get__Ref_5int32(i__4)
                     var t178 int32 = t177 + 1
-                    ref_set__Ref_int32(i__4, t178)
-                    continue
+                    ref_set__Ref_5int32(i__4, t178)
                 } else {
                     var t181 bool = is_digit(ch__8)
                     if t181 {
-                        ref_set__Ref_bool(started__7, true)
-                        ref_set__Ref_bool(saw_digit__5, true)
-                        var t182 int32 = ref_get__Ref_int32(i__4)
+                        ref_set__Ref_4bool(started__7, true)
+                        ref_set__Ref_4bool(saw_digit__5, true)
+                        var t182 int32 = ref_get__Ref_5int32(i__4)
                         var t183 int32 = t182 + 1
-                        ref_set__Ref_int32(i__4, t183)
+                        ref_set__Ref_5int32(i__4, t183)
                     } else {
-                        ref_set__Ref_bool(ok__6, false)
+                        ref_set__Ref_4bool(ok__6, false)
                     }
-                    continue
                 }
+                continue
             } else {
                 break Loop_loop166
             }
         }
-        var t163 bool = ref_get__Ref_bool(ok__6)
-        var t164 bool = ref_get__Ref_bool(saw_digit__5)
+        var t163 bool = ref_get__Ref_4bool(ok__6)
+        var t164 bool = ref_get__Ref_4bool(saw_digit__5)
         var t165 bool = t163 && t164
         jp160 = t165
         retv158 = jp160
@@ -428,51 +427,51 @@ func is_int_text(text__2 string) bool {
 func parse_int32(text__9 string) int32 {
     var retv187 int32
     var len__10 int32 = string_len(text__9)
-    var i__11 *ref_int32_x = ref__Ref_int32(0)
-    var negative__12 *ref_bool_x = ref__Ref_bool(false)
-    var started__13 *ref_bool_x = ref__Ref_bool(false)
-    var acc__14 *ref_int32_x = ref__Ref_int32(0)
+    var i__11 *ref_int32_x = ref__Ref_5int32(0)
+    var negative__12 *ref_bool_x = ref__Ref_4bool(false)
+    var started__13 *ref_bool_x = ref__Ref_4bool(false)
+    var acc__14 *ref_int32_x = ref__Ref_5int32(0)
     Loop_loop195:
     for {
-        var t196 int32 = ref_get__Ref_int32(i__11)
+        var t196 int32 = ref_get__Ref_5int32(i__11)
         var t197 bool = t196 < len__10
         if t197 {
-            var t198 int32 = ref_get__Ref_int32(i__11)
+            var t198 int32 = ref_get__Ref_5int32(i__11)
             var ch__15 rune = string_get(text__9, t198)
-            var t200 bool = ref_get__Ref_bool(started__13)
+            var t200 bool = ref_get__Ref_4bool(started__13)
             var t201 bool = !t200
             var t202 bool = ch__15 == 45
             var t203 bool = t201 && t202
             if t203 {
-                ref_set__Ref_bool(started__13, true)
-                ref_set__Ref_bool(negative__12, true)
-                var t204 int32 = ref_get__Ref_int32(i__11)
+                ref_set__Ref_4bool(started__13, true)
+                ref_set__Ref_4bool(negative__12, true)
+                var t204 int32 = ref_get__Ref_5int32(i__11)
                 var t205 int32 = t204 + 1
-                ref_set__Ref_int32(i__11, t205)
+                ref_set__Ref_5int32(i__11, t205)
             } else {
-                ref_set__Ref_bool(started__13, true)
+                ref_set__Ref_4bool(started__13, true)
                 var d__16 int32 = digit_value(ch__15)
-                var t207 int32 = ref_get__Ref_int32(acc__14)
+                var t207 int32 = ref_get__Ref_5int32(acc__14)
                 var t208 int32 = t207 * 10
                 var t209 int32 = t208 + d__16
-                ref_set__Ref_int32(acc__14, t209)
-                var t210 int32 = ref_get__Ref_int32(i__11)
+                ref_set__Ref_5int32(acc__14, t209)
+                var t210 int32 = ref_get__Ref_5int32(i__11)
                 var t211 int32 = t210 + 1
-                ref_set__Ref_int32(i__11, t211)
+                ref_set__Ref_5int32(i__11, t211)
             }
             continue
         } else {
             break Loop_loop195
         }
     }
-    var t191 bool = ref_get__Ref_bool(negative__12)
+    var t191 bool = ref_get__Ref_4bool(negative__12)
     var jp190 int32
     if t191 {
-        var t192 int32 = ref_get__Ref_int32(acc__14)
+        var t192 int32 = ref_get__Ref_5int32(acc__14)
         var t193 int32 = 0 - t192
         jp190 = t193
     } else {
-        var t194 int32 = ref_get__Ref_int32(acc__14)
+        var t194 int32 = ref_get__Ref_5int32(acc__14)
         jp190 = t194
     }
     retv187 = jp190
@@ -490,40 +489,40 @@ func is_delim(ch__17 rune) bool {
     return retv214
 }
 
-func lex_atom(source__18 string, start__19 int32) Tuple2_Token_int32 {
-    var retv221 Tuple2_Token_int32
+func lex_atom(source__18 string, start__19 int32) Tuple2_5Token_5int32 {
+    var retv221 Tuple2_5Token_5int32
     var len__20 int32 = string_len(source__18)
-    var text__21 *ref_string_x = ref__Ref_string("")
-    var i__22 *ref_int32_x = ref__Ref_int32(start__19)
-    var done__23 *ref_bool_x = ref__Ref_bool(false)
+    var text__21 *ref_string_x = ref__Ref_6string("")
+    var i__22 *ref_int32_x = ref__Ref_5int32(start__19)
+    var done__23 *ref_bool_x = ref__Ref_4bool(false)
     Loop_loop235:
     for {
-        var t236 bool = ref_get__Ref_bool(done__23)
+        var t236 bool = ref_get__Ref_4bool(done__23)
         var t237 bool = !t236
-        var t238 int32 = ref_get__Ref_int32(i__22)
+        var t238 int32 = ref_get__Ref_5int32(i__22)
         var t239 bool = t238 < len__20
         var t240 bool = t237 && t239
         if t240 {
-            var t241 int32 = ref_get__Ref_int32(i__22)
+            var t241 int32 = ref_get__Ref_5int32(i__22)
             var ch__24 rune = string_get(source__18, t241)
             var t243 bool = is_delim(ch__24)
             if t243 {
-                ref_set__Ref_bool(done__23, true)
+                ref_set__Ref_4bool(done__23, true)
             } else {
-                var t245 string = ref_get__Ref_string(text__21)
+                var t245 string = ref_get__Ref_6string(text__21)
                 var t246 string = char_to_string(ch__24)
                 var t247 string = t245 + t246
-                ref_set__Ref_string(text__21, t247)
-                var t248 int32 = ref_get__Ref_int32(i__22)
+                ref_set__Ref_6string(text__21, t247)
+                var t248 int32 = ref_get__Ref_5int32(i__22)
                 var t249 int32 = t248 + 1
-                ref_set__Ref_int32(i__22, t249)
+                ref_set__Ref_5int32(i__22, t249)
             }
             continue
         } else {
             break Loop_loop235
         }
     }
-    var atom__25 string = ref_get__Ref_string(text__21)
+    var atom__25 string = ref_get__Ref_6string(text__21)
     var jp224 Token
     switch atom__25 {
     case "true":
@@ -531,27 +530,11 @@ func lex_atom(source__18 string, start__19 int32) Tuple2_Token_int32 {
             _0: true,
         }
         jp224 = t227
-        var token__26 Token = jp224
-        var t225 int32 = ref_get__Ref_int32(i__22)
-        var t226 Tuple2_Token_int32 = Tuple2_Token_int32{
-            _0: token__26,
-            _1: t225,
-        }
-        retv221 = t226
-        return retv221
     case "false":
         var t228 Token = Token_Bool{
             _0: false,
         }
         jp224 = t228
-        var token__26 Token = jp224
-        var t225 int32 = ref_get__Ref_int32(i__22)
-        var t226 Tuple2_Token_int32 = Tuple2_Token_int32{
-            _0: token__26,
-            _1: t225,
-        }
-        retv221 = t226
-        return retv221
     default:
         var t231 bool = is_int_text(atom__25)
         var jp230 Token
@@ -568,75 +551,73 @@ func lex_atom(source__18 string, start__19 int32) Tuple2_Token_int32 {
             jp230 = t234
         }
         jp224 = jp230
-        var token__26 Token = jp224
-        var t225 int32 = ref_get__Ref_int32(i__22)
-        var t226 Tuple2_Token_int32 = Tuple2_Token_int32{
-            _0: token__26,
-            _1: t225,
-        }
-        retv221 = t226
-        return retv221
     }
+    var token__26 Token = jp224
+    var t225 int32 = ref_get__Ref_5int32(i__22)
+    var t226 Tuple2_5Token_5int32 = Tuple2_5Token_5int32{
+        _0: token__26,
+        _1: t225,
+    }
+    retv221 = t226
+    return retv221
 }
 
 func lex(source__27 string) []Token {
     var retv252 []Token
     var len__28 int32 = string_len(source__27)
     var toks0__29 []Token = nil
-    var toks__30 *ref_vec_token_x = ref__Ref_Vec_Token(toks0__29)
-    var i__31 *ref_int32_x = ref__Ref_int32(0)
+    var toks__30 *ref_Vec_5Token_x = ref__Ref_10Vec_5Token(toks0__29)
+    var i__31 *ref_int32_x = ref__Ref_5int32(0)
     Loop_loop255:
     for {
-        var t256 int32 = ref_get__Ref_int32(i__31)
+        var t256 int32 = ref_get__Ref_5int32(i__31)
         var t257 bool = t256 < len__28
         if t257 {
-            var t258 int32 = ref_get__Ref_int32(i__31)
+            var t258 int32 = ref_get__Ref_5int32(i__31)
             var ch__32 rune = string_get(source__27, t258)
             var t260 bool = ch__32 == 40
             if t260 {
-                var t261 []Token = ref_get__Ref_Vec_Token(toks__30)
+                var t261 []Token = ref_get__Ref_10Vec_5Token(toks__30)
                 var t262 []Token = append(t261, LParen{})
-                ref_set__Ref_Vec_Token(toks__30, t262)
-                var t263 int32 = ref_get__Ref_int32(i__31)
+                ref_set__Ref_10Vec_5Token(toks__30, t262)
+                var t263 int32 = ref_get__Ref_5int32(i__31)
                 var t264 int32 = t263 + 1
-                ref_set__Ref_int32(i__31, t264)
-                continue
+                ref_set__Ref_5int32(i__31, t264)
             } else {
                 var t267 bool = ch__32 == 41
                 if t267 {
-                    var t268 []Token = ref_get__Ref_Vec_Token(toks__30)
+                    var t268 []Token = ref_get__Ref_10Vec_5Token(toks__30)
                     var t269 []Token = append(t268, RParen{})
-                    ref_set__Ref_Vec_Token(toks__30, t269)
-                    var t270 int32 = ref_get__Ref_int32(i__31)
+                    ref_set__Ref_10Vec_5Token(toks__30, t269)
+                    var t270 int32 = ref_get__Ref_5int32(i__31)
                     var t271 int32 = t270 + 1
-                    ref_set__Ref_int32(i__31, t271)
-                    continue
+                    ref_set__Ref_5int32(i__31, t271)
                 } else {
                     var t274 bool = ch__32 == 32
                     if t274 {
-                        var t275 int32 = ref_get__Ref_int32(i__31)
+                        var t275 int32 = ref_get__Ref_5int32(i__31)
                         var t276 int32 = t275 + 1
-                        ref_set__Ref_int32(i__31, t276)
+                        ref_set__Ref_5int32(i__31, t276)
                     } else {
-                        var t278 int32 = ref_get__Ref_int32(i__31)
-                        var mtmp13 Tuple2_Token_int32 = lex_atom(source__27, t278)
+                        var t278 int32 = ref_get__Ref_5int32(i__31)
+                        var mtmp13 Tuple2_5Token_5int32 = lex_atom(source__27, t278)
                         var x14 Token = mtmp13._0
                         var x15 int32 = mtmp13._1
                         var next__34 int32 = x15
                         var tok__33 Token = x14
-                        var t279 []Token = ref_get__Ref_Vec_Token(toks__30)
+                        var t279 []Token = ref_get__Ref_10Vec_5Token(toks__30)
                         var t280 []Token = append(t279, tok__33)
-                        ref_set__Ref_Vec_Token(toks__30, t280)
-                        ref_set__Ref_int32(i__31, next__34)
+                        ref_set__Ref_10Vec_5Token(toks__30, t280)
+                        ref_set__Ref_5int32(i__31, next__34)
                     }
-                    continue
                 }
             }
+            continue
         } else {
             break Loop_loop255
         }
     }
-    var t254 []Token = ref_get__Ref_Vec_Token(toks__30)
+    var t254 []Token = ref_get__Ref_10Vec_5Token(toks__30)
     retv252 = t254
     return retv252
 }
@@ -645,36 +626,36 @@ func env_lookup(env__35 []Binding, name__36 string) Value {
     var retv283 Value
     var t284 int32 = int32(len(env__35))
     var t285 int32 = t284 - 1
-    var i__37 *ref_int32_x = ref__Ref_int32(t285)
-    var result__38 *ref_value_x = ref__Ref_Value(Nil{})
-    var done__39 *ref_bool_x = ref__Ref_bool(false)
+    var i__37 *ref_int32_x = ref__Ref_5int32(t285)
+    var result__38 *ref_Value_x = ref__Ref_5Value(Nil{})
+    var done__39 *ref_bool_x = ref__Ref_4bool(false)
     Loop_loop288:
     for {
-        var t289 bool = ref_get__Ref_bool(done__39)
+        var t289 bool = ref_get__Ref_4bool(done__39)
         var t290 bool = !t289
-        var t291 int32 = ref_get__Ref_int32(i__37)
+        var t291 int32 = ref_get__Ref_5int32(i__37)
         var t292 bool = t291 >= 0
         var t293 bool = t290 && t292
         if t293 {
-            var t294 int32 = ref_get__Ref_int32(i__37)
+            var t294 int32 = ref_get__Ref_5int32(i__37)
             var binding__40 Binding = env__35[t294]
             var t296 string = binding__40.name
             var t297 bool = t296 == name__36
             if t297 {
                 var t298 Value = binding__40.value
-                ref_set__Ref_Value(result__38, t298)
-                ref_set__Ref_bool(done__39, true)
+                ref_set__Ref_5Value(result__38, t298)
+                ref_set__Ref_4bool(done__39, true)
             } else {
-                var t300 int32 = ref_get__Ref_int32(i__37)
+                var t300 int32 = ref_get__Ref_5int32(i__37)
                 var t301 int32 = t300 - 1
-                ref_set__Ref_int32(i__37, t301)
+                ref_set__Ref_5int32(i__37, t301)
             }
             continue
         } else {
             break Loop_loop288
         }
     }
-    var t287 Value = ref_get__Ref_Value(result__38)
+    var t287 Value = ref_get__Ref_5Value(result__38)
     retv283 = t287
     return retv283
 }
@@ -703,73 +684,73 @@ func lookup(local__41 []Binding, global__42 []Binding, name__43 string) Value {
     return retv304
 }
 
-func parse_list(tokens__45 []Token, start__46 int32) Tuple2_Vec_SExpr_int32 {
-    var retv309 Tuple2_Vec_SExpr_int32
+func parse_list(tokens__45 []Token, start__46 int32) Tuple2_10Vec_5SExpr_5int32 {
+    var retv309 Tuple2_10Vec_5SExpr_5int32
     var acc__47 []SExpr = nil
-    var exprs__48 *ref_vec_sexpr_x = ref__Ref_Vec_SExpr(acc__47)
-    var i__49 *ref_int32_x = ref__Ref_int32(start__46)
-    var done__50 *ref_bool_x = ref__Ref_bool(false)
+    var exprs__48 *ref_Vec_5SExpr_x = ref__Ref_10Vec_5SExpr(acc__47)
+    var i__49 *ref_int32_x = ref__Ref_5int32(start__46)
+    var done__50 *ref_bool_x = ref__Ref_4bool(false)
     Loop_loop314:
     for {
-        var t315 bool = ref_get__Ref_bool(done__50)
+        var t315 bool = ref_get__Ref_4bool(done__50)
         var t316 bool = !t315
-        var t317 int32 = ref_get__Ref_int32(i__49)
+        var t317 int32 = ref_get__Ref_5int32(i__49)
         var t318 int32 = int32(len(tokens__45))
         var t319 bool = t317 < t318
         var t320 bool = t316 && t319
         if t320 {
-            var t321 int32 = ref_get__Ref_int32(i__49)
+            var t321 int32 = ref_get__Ref_5int32(i__49)
             var mtmp24 Token = tokens__45[t321]
             switch mtmp24.(type) {
             case LParen:
-                var t323 int32 = ref_get__Ref_int32(i__49)
-                var mtmp28 Tuple2_SExpr_int32 = parse_expr(tokens__45, t323)
+                var t323 int32 = ref_get__Ref_5int32(i__49)
+                var mtmp28 Tuple2_5SExpr_5int32 = parse_expr(tokens__45, t323)
                 var x29 SExpr = mtmp28._0
                 var x30 int32 = mtmp28._1
                 var next__52 int32 = x30
                 var expr__51 SExpr = x29
-                var t324 []SExpr = ref_get__Ref_Vec_SExpr(exprs__48)
+                var t324 []SExpr = ref_get__Ref_10Vec_5SExpr(exprs__48)
                 var t325 []SExpr = append(t324, expr__51)
-                ref_set__Ref_Vec_SExpr(exprs__48, t325)
-                ref_set__Ref_int32(i__49, next__52)
+                ref_set__Ref_10Vec_5SExpr(exprs__48, t325)
+                ref_set__Ref_5int32(i__49, next__52)
             case RParen:
-                ref_set__Ref_bool(done__50, true)
-                var t327 int32 = ref_get__Ref_int32(i__49)
+                ref_set__Ref_4bool(done__50, true)
+                var t327 int32 = ref_get__Ref_5int32(i__49)
                 var t328 int32 = t327 + 1
-                ref_set__Ref_int32(i__49, t328)
+                ref_set__Ref_5int32(i__49, t328)
             case Token_Sym:
-                var t330 int32 = ref_get__Ref_int32(i__49)
-                var mtmp33 Tuple2_SExpr_int32 = parse_expr(tokens__45, t330)
+                var t330 int32 = ref_get__Ref_5int32(i__49)
+                var mtmp33 Tuple2_5SExpr_5int32 = parse_expr(tokens__45, t330)
                 var x34 SExpr = mtmp33._0
                 var x35 int32 = mtmp33._1
                 var next__52 int32 = x35
                 var expr__51 SExpr = x34
-                var t331 []SExpr = ref_get__Ref_Vec_SExpr(exprs__48)
+                var t331 []SExpr = ref_get__Ref_10Vec_5SExpr(exprs__48)
                 var t332 []SExpr = append(t331, expr__51)
-                ref_set__Ref_Vec_SExpr(exprs__48, t332)
-                ref_set__Ref_int32(i__49, next__52)
+                ref_set__Ref_10Vec_5SExpr(exprs__48, t332)
+                ref_set__Ref_5int32(i__49, next__52)
             case Token_Int:
-                var t334 int32 = ref_get__Ref_int32(i__49)
-                var mtmp37 Tuple2_SExpr_int32 = parse_expr(tokens__45, t334)
+                var t334 int32 = ref_get__Ref_5int32(i__49)
+                var mtmp37 Tuple2_5SExpr_5int32 = parse_expr(tokens__45, t334)
                 var x38 SExpr = mtmp37._0
                 var x39 int32 = mtmp37._1
                 var next__52 int32 = x39
                 var expr__51 SExpr = x38
-                var t335 []SExpr = ref_get__Ref_Vec_SExpr(exprs__48)
+                var t335 []SExpr = ref_get__Ref_10Vec_5SExpr(exprs__48)
                 var t336 []SExpr = append(t335, expr__51)
-                ref_set__Ref_Vec_SExpr(exprs__48, t336)
-                ref_set__Ref_int32(i__49, next__52)
+                ref_set__Ref_10Vec_5SExpr(exprs__48, t336)
+                ref_set__Ref_5int32(i__49, next__52)
             case Token_Bool:
-                var t338 int32 = ref_get__Ref_int32(i__49)
-                var mtmp41 Tuple2_SExpr_int32 = parse_expr(tokens__45, t338)
+                var t338 int32 = ref_get__Ref_5int32(i__49)
+                var mtmp41 Tuple2_5SExpr_5int32 = parse_expr(tokens__45, t338)
                 var x42 SExpr = mtmp41._0
                 var x43 int32 = mtmp41._1
                 var next__52 int32 = x43
                 var expr__51 SExpr = x42
-                var t339 []SExpr = ref_get__Ref_Vec_SExpr(exprs__48)
+                var t339 []SExpr = ref_get__Ref_10Vec_5SExpr(exprs__48)
                 var t340 []SExpr = append(t339, expr__51)
-                ref_set__Ref_Vec_SExpr(exprs__48, t340)
-                ref_set__Ref_int32(i__49, next__52)
+                ref_set__Ref_10Vec_5SExpr(exprs__48, t340)
+                ref_set__Ref_5int32(i__49, next__52)
             default:
                 panic("non-exhaustive match")
             }
@@ -778,9 +759,9 @@ func parse_list(tokens__45 []Token, start__46 int32) Tuple2_Vec_SExpr_int32 {
             break Loop_loop314
         }
     }
-    var t311 []SExpr = ref_get__Ref_Vec_SExpr(exprs__48)
-    var t312 int32 = ref_get__Ref_int32(i__49)
-    var t313 Tuple2_Vec_SExpr_int32 = Tuple2_Vec_SExpr_int32{
+    var t311 []SExpr = ref_get__Ref_10Vec_5SExpr(exprs__48)
+    var t312 int32 = ref_get__Ref_5int32(i__49)
+    var t313 Tuple2_10Vec_5SExpr_5int32 = Tuple2_10Vec_5SExpr_5int32{
         _0: t311,
         _1: t312,
     }
@@ -788,14 +769,14 @@ func parse_list(tokens__45 []Token, start__46 int32) Tuple2_Vec_SExpr_int32 {
     return retv309
 }
 
-func parse_expr(tokens__53 []Token, start__54 int32) Tuple2_SExpr_int32 {
-    var retv343 Tuple2_SExpr_int32
+func parse_expr(tokens__53 []Token, start__54 int32) Tuple2_5SExpr_5int32 {
+    var retv343 Tuple2_5SExpr_5int32
     var mtmp46 Token = tokens__53[start__54]
-    var jp345 Tuple2_SExpr_int32
+    var jp345 Tuple2_5SExpr_5int32
     switch mtmp46.(type) {
     case LParen:
         var t346 int32 = start__54 + 1
-        var mtmp50 Tuple2_Vec_SExpr_int32 = parse_list(tokens__53, t346)
+        var mtmp50 Tuple2_10Vec_5SExpr_5int32 = parse_list(tokens__53, t346)
         var x51 []SExpr = mtmp50._0
         var x52 int32 = mtmp50._1
         var next__56 int32 = x52
@@ -803,7 +784,7 @@ func parse_expr(tokens__53 []Token, start__54 int32) Tuple2_SExpr_int32 {
         var t347 SExpr = List{
             _0: items__55,
         }
-        var t348 Tuple2_SExpr_int32 = Tuple2_SExpr_int32{
+        var t348 Tuple2_5SExpr_5int32 = Tuple2_5SExpr_5int32{
             _0: t347,
             _1: next__56,
         }
@@ -813,7 +794,7 @@ func parse_expr(tokens__53 []Token, start__54 int32) Tuple2_SExpr_int32 {
             _0: ")",
         }
         var t350 int32 = start__54 + 1
-        var t351 Tuple2_SExpr_int32 = Tuple2_SExpr_int32{
+        var t351 Tuple2_5SExpr_5int32 = Tuple2_5SExpr_5int32{
             _0: t349,
             _1: t350,
         }
@@ -825,7 +806,7 @@ func parse_expr(tokens__53 []Token, start__54 int32) Tuple2_SExpr_int32 {
             _0: name__59,
         }
         var t353 int32 = start__54 + 1
-        var t354 Tuple2_SExpr_int32 = Tuple2_SExpr_int32{
+        var t354 Tuple2_5SExpr_5int32 = Tuple2_5SExpr_5int32{
             _0: t352,
             _1: t353,
         }
@@ -837,7 +818,7 @@ func parse_expr(tokens__53 []Token, start__54 int32) Tuple2_SExpr_int32 {
             _0: n__58,
         }
         var t356 int32 = start__54 + 1
-        var t357 Tuple2_SExpr_int32 = Tuple2_SExpr_int32{
+        var t357 Tuple2_5SExpr_5int32 = Tuple2_5SExpr_5int32{
             _0: t355,
             _1: t356,
         }
@@ -849,7 +830,7 @@ func parse_expr(tokens__53 []Token, start__54 int32) Tuple2_SExpr_int32 {
             _0: b__57,
         }
         var t359 int32 = start__54 + 1
-        var t360 Tuple2_SExpr_int32 = Tuple2_SExpr_int32{
+        var t360 Tuple2_5SExpr_5int32 = Tuple2_5SExpr_5int32{
             _0: t358,
             _1: t359,
         }
@@ -863,31 +844,31 @@ func parse_expr(tokens__53 []Token, start__54 int32) Tuple2_SExpr_int32 {
 
 func parse_program(tokens__60 []Token) []SExpr {
     var retv362 []SExpr
-    var i__61 *ref_int32_x = ref__Ref_int32(0)
+    var i__61 *ref_int32_x = ref__Ref_5int32(0)
     var acc__62 []SExpr = nil
-    var exprs__63 *ref_vec_sexpr_x = ref__Ref_Vec_SExpr(acc__62)
+    var exprs__63 *ref_Vec_5SExpr_x = ref__Ref_10Vec_5SExpr(acc__62)
     Loop_loop365:
     for {
-        var t366 int32 = ref_get__Ref_int32(i__61)
+        var t366 int32 = ref_get__Ref_5int32(i__61)
         var t367 int32 = int32(len(tokens__60))
         var t368 bool = t366 < t367
         if t368 {
-            var t369 int32 = ref_get__Ref_int32(i__61)
-            var mtmp53 Tuple2_SExpr_int32 = parse_expr(tokens__60, t369)
+            var t369 int32 = ref_get__Ref_5int32(i__61)
+            var mtmp53 Tuple2_5SExpr_5int32 = parse_expr(tokens__60, t369)
             var x54 SExpr = mtmp53._0
             var x55 int32 = mtmp53._1
             var next__65 int32 = x55
             var expr__64 SExpr = x54
-            var t370 []SExpr = ref_get__Ref_Vec_SExpr(exprs__63)
+            var t370 []SExpr = ref_get__Ref_10Vec_5SExpr(exprs__63)
             var t371 []SExpr = append(t370, expr__64)
-            ref_set__Ref_Vec_SExpr(exprs__63, t371)
-            ref_set__Ref_int32(i__61, next__65)
+            ref_set__Ref_10Vec_5SExpr(exprs__63, t371)
+            ref_set__Ref_5int32(i__61, next__65)
             continue
         } else {
             break Loop_loop365
         }
     }
-    var t364 []SExpr = ref_get__Ref_Vec_SExpr(exprs__63)
+    var t364 []SExpr = ref_get__Ref_10Vec_5SExpr(exprs__63)
     retv362 = t364
     return retv362
 }
@@ -941,7 +922,7 @@ func truthy(value__69 Value) bool {
     return retv380
 }
 
-func eval(expr__72 SExpr, local__73 []Binding, global__74 *ref_vec_binding_x) Value {
+func eval(expr__72 SExpr, local__73 []Binding, global__74 *ref_Vec_7Binding_x) Value {
     var retv385 Value
     var jp387 Value
     switch expr__72.(type) {
@@ -962,7 +943,7 @@ func eval(expr__72 SExpr, local__73 []Binding, global__74 *ref_vec_binding_x) Va
     case SExpr_Sym:
         var x66 string = expr__72.(SExpr_Sym)._0
         var name__77 string = x66
-        var t390 []Binding = ref_get__Ref_Vec_Binding(global__74)
+        var t390 []Binding = ref_get__Ref_12Vec_7Binding(global__74)
         var t391 Value = lookup(local__73, t390, name__77)
         jp387 = t391
     case List:
@@ -977,15 +958,13 @@ func eval(expr__72 SExpr, local__73 []Binding, global__74 *ref_vec_binding_x) Va
     return retv385
 }
 
-func eval_list(items__79 []SExpr, local__80 []Binding, global__81 *ref_vec_binding_x) Value {
+func eval_list(items__79 []SExpr, local__80 []Binding, global__81 *ref_Vec_7Binding_x) Value {
     var retv394 Value
     var t397 int32 = int32(len(items__79))
     var t398 bool = t397 == 0
     var jp396 Value
     if t398 {
         jp396 = Nil{}
-        retv394 = jp396
-        return retv394
     } else {
         var head__82 SExpr = items__79[0]
         var jp400 Value
@@ -1014,20 +993,18 @@ func eval_list(items__79 []SExpr, local__80 []Binding, global__81 *ref_vec_bindi
             panic("non-exhaustive match")
         }
         jp396 = jp400
-        retv394 = jp396
-        return retv394
     }
+    retv394 = jp396
+    return retv394
 }
 
-func eval_list_sym(name__86 string, items__87 []SExpr, local__88 []Binding, global__89 *ref_vec_binding_x) Value {
+func eval_list_sym(name__86 string, items__87 []SExpr, local__88 []Binding, global__89 *ref_Vec_7Binding_x) Value {
     var retv406 Value
     var jp408 Value
     switch name__86 {
     case "begin":
         var t409 Value = eval_begin(items__87, 1, local__88, global__89)
         jp408 = t409
-        retv406 = jp408
-        return retv406
     case "define":
         var t412 int32 = int32(len(items__87))
         var t413 bool = t412 == 3
@@ -1045,13 +1022,13 @@ func eval_list_sym(name__86 string, items__87 []SExpr, local__88 []Binding, glob
                 var var__90 string = x75
                 var t416 SExpr = items__87[2]
                 var value__91 Value = eval(t416, local__88, global__89)
-                var env__92 []Binding = ref_get__Ref_Vec_Binding(global__89)
+                var env__92 []Binding = ref_get__Ref_12Vec_7Binding(global__89)
                 var t417 Binding = Binding{
                     name: var__90,
                     value: value__91,
                 }
                 var updated__93 []Binding = append(env__92, t417)
-                ref_set__Ref_Vec_Binding(global__89, updated__93)
+                ref_set__Ref_12Vec_7Binding(global__89, updated__93)
                 jp415 = value__91
             case List:
                 jp415 = Nil{}
@@ -1059,15 +1036,10 @@ func eval_list_sym(name__86 string, items__87 []SExpr, local__88 []Binding, glob
                 panic("non-exhaustive match")
             }
             jp411 = jp415
-            jp408 = jp411
-            retv406 = jp408
-            return retv406
         } else {
             jp411 = Nil{}
-            jp408 = jp411
-            retv406 = jp408
-            return retv406
         }
+        jp408 = jp411
     case "if":
         var t420 int32 = int32(len(items__87))
         var t421 bool = t420 == 4
@@ -1087,15 +1059,10 @@ func eval_list_sym(name__86 string, items__87 []SExpr, local__88 []Binding, glob
                 jp424 = t429
             }
             jp419 = jp424
-            jp408 = jp419
-            retv406 = jp408
-            return retv406
         } else {
             jp419 = Nil{}
-            jp408 = jp419
-            retv406 = jp408
-            return retv406
         }
+        jp408 = jp419
     case "lambda":
         var t432 int32 = int32(len(items__87))
         var t433 bool = t432 == 3
@@ -1129,45 +1096,30 @@ func eval_list_sym(name__86 string, items__87 []SExpr, local__88 []Binding, glob
                 panic("non-exhaustive match")
             }
             jp431 = jp435
-            jp408 = jp431
-            retv406 = jp408
-            return retv406
         } else {
             jp431 = Nil{}
-            jp408 = jp431
-            retv406 = jp408
-            return retv406
         }
+        jp408 = jp431
     case "+":
         var t438 []Value = eval_args(items__87, 1, local__88, global__89)
         var t439 Value = apply_builtin("+", t438)
         jp408 = t439
-        retv406 = jp408
-        return retv406
     case "-":
         var t440 []Value = eval_args(items__87, 1, local__88, global__89)
         var t441 Value = apply_builtin("-", t440)
         jp408 = t441
-        retv406 = jp408
-        return retv406
     case "*":
         var t442 []Value = eval_args(items__87, 1, local__88, global__89)
         var t443 Value = apply_builtin("*", t442)
         jp408 = t443
-        retv406 = jp408
-        return retv406
     case "/":
         var t444 []Value = eval_args(items__87, 1, local__88, global__89)
         var t445 Value = apply_builtin("/", t444)
         jp408 = t445
-        retv406 = jp408
-        return retv406
     case "=":
         var t446 []Value = eval_args(items__87, 1, local__88, global__89)
         var t447 Value = apply_builtin("=", t446)
         jp408 = t447
-        retv406 = jp408
-        return retv406
     default:
         var t448 SExpr = SExpr_Sym{
             _0: name__86,
@@ -1176,73 +1128,73 @@ func eval_list_sym(name__86 string, items__87 []SExpr, local__88 []Binding, glob
         var args__99 []Value = eval_args(items__87, 1, local__88, global__89)
         var t449 Value = apply(f__98, args__99, global__89)
         jp408 = t449
-        retv406 = jp408
-        return retv406
     }
+    retv406 = jp408
+    return retv406
 }
 
-func eval_begin(items__100 []SExpr, start__101 int32, local__102 []Binding, global__103 *ref_vec_binding_x) Value {
+func eval_begin(items__100 []SExpr, start__101 int32, local__102 []Binding, global__103 *ref_Vec_7Binding_x) Value {
     var retv451 Value
-    var i__104 *ref_int32_x = ref__Ref_int32(start__101)
-    var last__105 *ref_value_x = ref__Ref_Value(Nil{})
+    var i__104 *ref_int32_x = ref__Ref_5int32(start__101)
+    var last__105 *ref_Value_x = ref__Ref_5Value(Nil{})
     Loop_loop454:
     for {
-        var t455 int32 = ref_get__Ref_int32(i__104)
+        var t455 int32 = ref_get__Ref_5int32(i__104)
         var t456 int32 = int32(len(items__100))
         var t457 bool = t455 < t456
         if t457 {
-            var t458 int32 = ref_get__Ref_int32(i__104)
+            var t458 int32 = ref_get__Ref_5int32(i__104)
             var t459 SExpr = items__100[t458]
             var v__106 Value = eval(t459, local__102, global__103)
-            ref_set__Ref_Value(last__105, v__106)
-            var t460 int32 = ref_get__Ref_int32(i__104)
+            ref_set__Ref_5Value(last__105, v__106)
+            var t460 int32 = ref_get__Ref_5int32(i__104)
             var t461 int32 = t460 + 1
-            ref_set__Ref_int32(i__104, t461)
+            ref_set__Ref_5int32(i__104, t461)
             continue
         } else {
             break Loop_loop454
         }
     }
-    var t453 Value = ref_get__Ref_Value(last__105)
+    var t453 Value = ref_get__Ref_5Value(last__105)
     retv451 = t453
     return retv451
 }
 
 func params_from_sexprs(items__107 []SExpr) []string {
     var retv464 []string
-    var i__108 *ref_int32_x = ref__Ref_int32(0)
+    var i__108 *ref_int32_x = ref__Ref_5int32(0)
     var acc__109 []string = nil
-    var params__110 *ref_vec_string_x = ref__Ref_Vec_string(acc__109)
+    var params__110 *ref_Vec_6string_x = ref__Ref_11Vec_6string(acc__109)
     Loop_loop467:
     for {
-        var t468 int32 = ref_get__Ref_int32(i__108)
+        var t468 int32 = ref_get__Ref_5int32(i__108)
         var t469 int32 = int32(len(items__107))
         var t470 bool = t468 < t469
         if t470 {
-            var t471 int32 = ref_get__Ref_int32(i__108)
+            var t471 int32 = ref_get__Ref_5int32(i__108)
             var mtmp85 SExpr = items__107[t471]
             switch mtmp85.(type) {
             case SExpr_Int:
-                var t473 int32 = ref_get__Ref_int32(i__108)
+                var t473 int32 = ref_get__Ref_5int32(i__108)
                 var t474 int32 = t473 + 1
-                ref_set__Ref_int32(i__108, t474)
+                ref_set__Ref_5int32(i__108, t474)
             case SExpr_Bool:
-                var t476 int32 = ref_get__Ref_int32(i__108)
+                var t476 int32 = ref_get__Ref_5int32(i__108)
                 var t477 int32 = t476 + 1
-                ref_set__Ref_int32(i__108, t477)
+                ref_set__Ref_5int32(i__108, t477)
             case SExpr_Sym:
                 var x88 string = mtmp85.(SExpr_Sym)._0
                 var name__111 string = x88
-                var t479 []string = ref_get__Ref_Vec_string(params__110)
+                var t479 []string = ref_get__Ref_11Vec_6string(params__110)
                 var t480 []string = append(t479, name__111)
-                ref_set__Ref_Vec_string(params__110, t480)
-                var t481 int32 = ref_get__Ref_int32(i__108)
+                ref_set__Ref_11Vec_6string(params__110, t480)
+                var t481 int32 = ref_get__Ref_5int32(i__108)
                 var t482 int32 = t481 + 1
-                ref_set__Ref_int32(i__108, t482)
+                ref_set__Ref_5int32(i__108, t482)
             case List:
-                var t484 int32 = ref_get__Ref_int32(i__108)
+                var t484 int32 = ref_get__Ref_5int32(i__108)
                 var t485 int32 = t484 + 1
-                ref_set__Ref_int32(i__108, t485)
+                ref_set__Ref_5int32(i__108, t485)
             default:
                 panic("non-exhaustive match")
             }
@@ -1251,37 +1203,37 @@ func params_from_sexprs(items__107 []SExpr) []string {
             break Loop_loop467
         }
     }
-    var t466 []string = ref_get__Ref_Vec_string(params__110)
+    var t466 []string = ref_get__Ref_11Vec_6string(params__110)
     retv464 = t466
     return retv464
 }
 
-func eval_args(items__112 []SExpr, start__113 int32, local__114 []Binding, global__115 *ref_vec_binding_x) []Value {
+func eval_args(items__112 []SExpr, start__113 int32, local__114 []Binding, global__115 *ref_Vec_7Binding_x) []Value {
     var retv488 []Value
-    var i__116 *ref_int32_x = ref__Ref_int32(start__113)
+    var i__116 *ref_int32_x = ref__Ref_5int32(start__113)
     var acc__117 []Value = nil
-    var args__118 *ref_vec_value_x = ref__Ref_Vec_Value(acc__117)
+    var args__118 *ref_Vec_5Value_x = ref__Ref_10Vec_5Value(acc__117)
     Loop_loop491:
     for {
-        var t492 int32 = ref_get__Ref_int32(i__116)
+        var t492 int32 = ref_get__Ref_5int32(i__116)
         var t493 int32 = int32(len(items__112))
         var t494 bool = t492 < t493
         if t494 {
-            var t495 int32 = ref_get__Ref_int32(i__116)
+            var t495 int32 = ref_get__Ref_5int32(i__116)
             var t496 SExpr = items__112[t495]
             var v__119 Value = eval(t496, local__114, global__115)
-            var t497 []Value = ref_get__Ref_Vec_Value(args__118)
+            var t497 []Value = ref_get__Ref_10Vec_5Value(args__118)
             var t498 []Value = append(t497, v__119)
-            ref_set__Ref_Vec_Value(args__118, t498)
-            var t499 int32 = ref_get__Ref_int32(i__116)
+            ref_set__Ref_10Vec_5Value(args__118, t498)
+            var t499 int32 = ref_get__Ref_5int32(i__116)
             var t500 int32 = t499 + 1
-            ref_set__Ref_int32(i__116, t500)
+            ref_set__Ref_5int32(i__116, t500)
             continue
         } else {
             break Loop_loop491
         }
     }
-    var t490 []Value = ref_get__Ref_Vec_Value(args__118)
+    var t490 []Value = ref_get__Ref_10Vec_5Value(args__118)
     retv488 = t490
     return retv488
 }
@@ -1297,7 +1249,7 @@ func apply_builtin(name__120 string, args__121 []Value) Value {
         if t509 {
             var t510 Value = args__121[0]
             var t511 Value = args__121[1]
-            var mtmp94 Tuple2_Value_Value = Tuple2_Value_Value{
+            var mtmp94 Tuple2_5Value_5Value = Tuple2_5Value_5Value{
                 _0: t510,
                 _1: t511,
             }
@@ -1337,10 +1289,6 @@ func apply_builtin(name__120 string, args__121 []Value) Value {
                     panic("non-exhaustive match")
                 }
                 jp513 = jp515
-                jp507 = jp513
-                jp505 = jp507
-                retv503 = jp505
-                return retv503
             case Value_Bool:
                 var x98 bool = x96.(Value_Bool)._0
                 var jp522 Value
@@ -1373,73 +1321,62 @@ func apply_builtin(name__120 string, args__121 []Value) Value {
                     panic("non-exhaustive match")
                 }
                 jp513 = jp522
-                jp507 = jp513
-                jp505 = jp507
-                retv503 = jp505
-                return retv503
             case Func:
                 var t528 Value = Value_Bool{
                     _0: false,
                 }
                 jp513 = t528
-                jp507 = jp513
-                jp505 = jp507
-                retv503 = jp505
-                return retv503
             case Nil:
                 var t529 Value = Value_Bool{
                     _0: false,
                 }
                 jp513 = t529
-                jp507 = jp513
-                jp505 = jp507
-                retv503 = jp505
-                return retv503
             default:
                 panic("non-exhaustive match")
             }
+            jp507 = jp513
         } else {
             var t530 Value = Value_Bool{
                 _0: false,
             }
             jp507 = t530
-            jp505 = jp507
-            retv503 = jp505
-            return retv503
         }
+        jp505 = jp507
+        retv503 = jp505
+        return retv503
     case "+":
-        var i__126 *ref_int32_x = ref__Ref_int32(0)
-        var acc__127 *ref_int32_x = ref__Ref_int32(0)
+        var i__126 *ref_int32_x = ref__Ref_5int32(0)
+        var acc__127 *ref_int32_x = ref__Ref_5int32(0)
         Loop_loop534:
         for {
-            var t535 int32 = ref_get__Ref_int32(i__126)
+            var t535 int32 = ref_get__Ref_5int32(i__126)
             var t536 int32 = int32(len(args__121))
             var t537 bool = t535 < t536
             if t537 {
-                var t538 int32 = ref_get__Ref_int32(i__126)
+                var t538 int32 = ref_get__Ref_5int32(i__126)
                 var mtmp106 Value = args__121[t538]
                 switch mtmp106.(type) {
                 case Value_Int:
                     var x107 int32 = mtmp106.(Value_Int)._0
                     var n__128 int32 = x107
-                    var t540 int32 = ref_get__Ref_int32(acc__127)
+                    var t540 int32 = ref_get__Ref_5int32(acc__127)
                     var t541 int32 = t540 + n__128
-                    ref_set__Ref_int32(acc__127, t541)
-                    var t542 int32 = ref_get__Ref_int32(i__126)
+                    ref_set__Ref_5int32(acc__127, t541)
+                    var t542 int32 = ref_get__Ref_5int32(i__126)
                     var t543 int32 = t542 + 1
-                    ref_set__Ref_int32(i__126, t543)
+                    ref_set__Ref_5int32(i__126, t543)
                 case Value_Bool:
-                    var t545 int32 = ref_get__Ref_int32(i__126)
+                    var t545 int32 = ref_get__Ref_5int32(i__126)
                     var t546 int32 = t545 + 1
-                    ref_set__Ref_int32(i__126, t546)
+                    ref_set__Ref_5int32(i__126, t546)
                 case Func:
-                    var t548 int32 = ref_get__Ref_int32(i__126)
+                    var t548 int32 = ref_get__Ref_5int32(i__126)
                     var t549 int32 = t548 + 1
-                    ref_set__Ref_int32(i__126, t549)
+                    ref_set__Ref_5int32(i__126, t549)
                 case Nil:
-                    var t551 int32 = ref_get__Ref_int32(i__126)
+                    var t551 int32 = ref_get__Ref_5int32(i__126)
                     var t552 int32 = t551 + 1
-                    ref_set__Ref_int32(i__126, t552)
+                    ref_set__Ref_5int32(i__126, t552)
                 default:
                     panic("non-exhaustive match")
                 }
@@ -1448,7 +1385,7 @@ func apply_builtin(name__120 string, args__121 []Value) Value {
                 break Loop_loop534
             }
         }
-        var t532 int32 = ref_get__Ref_int32(acc__127)
+        var t532 int32 = ref_get__Ref_5int32(acc__127)
         var t533 Value = Value_Int{
             _0: t532,
         }
@@ -1456,38 +1393,38 @@ func apply_builtin(name__120 string, args__121 []Value) Value {
         retv503 = jp505
         return retv503
     case "*":
-        var i__129 *ref_int32_x = ref__Ref_int32(0)
-        var acc__130 *ref_int32_x = ref__Ref_int32(1)
+        var i__129 *ref_int32_x = ref__Ref_5int32(0)
+        var acc__130 *ref_int32_x = ref__Ref_5int32(1)
         Loop_loop557:
         for {
-            var t558 int32 = ref_get__Ref_int32(i__129)
+            var t558 int32 = ref_get__Ref_5int32(i__129)
             var t559 int32 = int32(len(args__121))
             var t560 bool = t558 < t559
             if t560 {
-                var t561 int32 = ref_get__Ref_int32(i__129)
+                var t561 int32 = ref_get__Ref_5int32(i__129)
                 var mtmp112 Value = args__121[t561]
                 switch mtmp112.(type) {
                 case Value_Int:
                     var x113 int32 = mtmp112.(Value_Int)._0
                     var n__131 int32 = x113
-                    var t563 int32 = ref_get__Ref_int32(acc__130)
+                    var t563 int32 = ref_get__Ref_5int32(acc__130)
                     var t564 int32 = t563 * n__131
-                    ref_set__Ref_int32(acc__130, t564)
-                    var t565 int32 = ref_get__Ref_int32(i__129)
+                    ref_set__Ref_5int32(acc__130, t564)
+                    var t565 int32 = ref_get__Ref_5int32(i__129)
                     var t566 int32 = t565 + 1
-                    ref_set__Ref_int32(i__129, t566)
+                    ref_set__Ref_5int32(i__129, t566)
                 case Value_Bool:
-                    var t568 int32 = ref_get__Ref_int32(i__129)
+                    var t568 int32 = ref_get__Ref_5int32(i__129)
                     var t569 int32 = t568 + 1
-                    ref_set__Ref_int32(i__129, t569)
+                    ref_set__Ref_5int32(i__129, t569)
                 case Func:
-                    var t571 int32 = ref_get__Ref_int32(i__129)
+                    var t571 int32 = ref_get__Ref_5int32(i__129)
                     var t572 int32 = t571 + 1
-                    ref_set__Ref_int32(i__129, t572)
+                    ref_set__Ref_5int32(i__129, t572)
                 case Nil:
-                    var t574 int32 = ref_get__Ref_int32(i__129)
+                    var t574 int32 = ref_get__Ref_5int32(i__129)
                     var t575 int32 = t574 + 1
-                    ref_set__Ref_int32(i__129, t575)
+                    ref_set__Ref_5int32(i__129, t575)
                 default:
                     panic("non-exhaustive match")
                 }
@@ -1496,7 +1433,7 @@ func apply_builtin(name__120 string, args__121 []Value) Value {
                 break Loop_loop557
             }
         }
-        var t555 int32 = ref_get__Ref_int32(acc__130)
+        var t555 int32 = ref_get__Ref_5int32(acc__130)
         var t556 Value = Value_Int{
             _0: t555,
         }
@@ -1529,13 +1466,10 @@ func apply_builtin(name__120 string, args__121 []Value) Value {
                 panic("non-exhaustive match")
             }
             jp578 = jp580
-            jp505 = jp578
-            retv503 = jp505
-            return retv503
         case 2:
             var t583 Value = args__121[0]
             var t584 Value = args__121[1]
-            var mtmp123 Tuple2_Value_Value = Tuple2_Value_Value{
+            var mtmp123 Tuple2_5Value_5Value = Tuple2_5Value_5Value{
                 _0: t583,
                 _1: t584,
             }
@@ -1566,37 +1500,22 @@ func apply_builtin(name__120 string, args__121 []Value) Value {
                     panic("non-exhaustive match")
                 }
                 jp586 = jp588
-                jp578 = jp586
-                jp505 = jp578
-                retv503 = jp505
-                return retv503
             case Value_Bool:
                 jp586 = Nil{}
-                jp578 = jp586
-                jp505 = jp578
-                retv503 = jp505
-                return retv503
             case Func:
                 jp586 = Nil{}
-                jp578 = jp586
-                jp505 = jp578
-                retv503 = jp505
-                return retv503
             case Nil:
                 jp586 = Nil{}
-                jp578 = jp586
-                jp505 = jp578
-                retv503 = jp505
-                return retv503
             default:
                 panic("non-exhaustive match")
             }
+            jp578 = jp586
         default:
             jp578 = Nil{}
-            jp505 = jp578
-            retv503 = jp505
-            return retv503
         }
+        jp505 = jp578
+        retv503 = jp505
+        return retv503
     case "/":
         var t593 int32 = int32(len(args__121))
         var t594 bool = t593 == 2
@@ -1604,7 +1523,7 @@ func apply_builtin(name__120 string, args__121 []Value) Value {
         if t594 {
             var t595 Value = args__121[0]
             var t596 Value = args__121[1]
-            var mtmp132 Tuple2_Value_Value = Tuple2_Value_Value{
+            var mtmp132 Tuple2_5Value_5Value = Tuple2_5Value_5Value{
                 _0: t595,
                 _1: t596,
             }
@@ -1635,37 +1554,22 @@ func apply_builtin(name__120 string, args__121 []Value) Value {
                     panic("non-exhaustive match")
                 }
                 jp598 = jp600
-                jp592 = jp598
-                jp505 = jp592
-                retv503 = jp505
-                return retv503
             case Value_Bool:
                 jp598 = Nil{}
-                jp592 = jp598
-                jp505 = jp592
-                retv503 = jp505
-                return retv503
             case Func:
                 jp598 = Nil{}
-                jp592 = jp598
-                jp505 = jp592
-                retv503 = jp505
-                return retv503
             case Nil:
                 jp598 = Nil{}
-                jp592 = jp598
-                jp505 = jp592
-                retv503 = jp505
-                return retv503
             default:
                 panic("non-exhaustive match")
             }
+            jp592 = jp598
         } else {
             jp592 = Nil{}
-            jp505 = jp592
-            retv503 = jp505
-            return retv503
         }
+        jp505 = jp592
+        retv503 = jp505
+        return retv503
     default:
         jp505 = Nil{}
         retv503 = jp505
@@ -1673,7 +1577,7 @@ func apply_builtin(name__120 string, args__121 []Value) Value {
     }
 }
 
-func apply(func__137 Value, args__138 []Value, global__139 *ref_vec_binding_x) Value {
+func apply(func__137 Value, args__138 []Value, global__139 *ref_Vec_7Binding_x) Value {
     var retv604 Value
     var jp606 Value
     switch func__137.(type) {
@@ -1698,42 +1602,42 @@ func apply(func__137 Value, args__138 []Value, global__139 *ref_vec_binding_x) V
 func apply_lambda(lambda__141 Lambda, args__142 []Value) Value {
     var retv609 Value
     var t610 []Binding = lambda__141.env
-    var env__143 *ref_vec_binding_x = ref__Ref_Vec_Binding(t610)
-    var i__144 *ref_int32_x = ref__Ref_int32(0)
+    var env__143 *ref_Vec_7Binding_x = ref__Ref_12Vec_7Binding(t610)
+    var i__144 *ref_int32_x = ref__Ref_5int32(0)
     Loop_loop616:
     for {
-        var t617 int32 = ref_get__Ref_int32(i__144)
+        var t617 int32 = ref_get__Ref_5int32(i__144)
         var t618 []string = lambda__141.params
         var t619 int32 = int32(len(t618))
         var t620 bool = t617 < t619
-        var t621 int32 = ref_get__Ref_int32(i__144)
+        var t621 int32 = ref_get__Ref_5int32(i__144)
         var t622 int32 = int32(len(args__142))
         var t623 bool = t621 < t622
         var t624 bool = t620 && t623
         if t624 {
             var t625 []string = lambda__141.params
-            var t626 int32 = ref_get__Ref_int32(i__144)
+            var t626 int32 = ref_get__Ref_5int32(i__144)
             var name__145 string = t625[t626]
-            var t627 int32 = ref_get__Ref_int32(i__144)
+            var t627 int32 = ref_get__Ref_5int32(i__144)
             var value__146 Value = args__142[t627]
-            var t628 []Binding = ref_get__Ref_Vec_Binding(env__143)
+            var t628 []Binding = ref_get__Ref_12Vec_7Binding(env__143)
             var t629 Binding = Binding{
                 name: name__145,
                 value: value__146,
             }
             var updated__147 []Binding = append(t628, t629)
-            ref_set__Ref_Vec_Binding(env__143, updated__147)
-            var t630 int32 = ref_get__Ref_int32(i__144)
+            ref_set__Ref_12Vec_7Binding(env__143, updated__147)
+            var t630 int32 = ref_get__Ref_5int32(i__144)
             var t631 int32 = t630 + 1
-            ref_set__Ref_int32(i__144, t631)
+            ref_set__Ref_5int32(i__144, t631)
             continue
         } else {
             break Loop_loop616
         }
     }
     var t612 SExpr = lambda__141.body
-    var t613 []Binding = ref_get__Ref_Vec_Binding(env__143)
-    var t614 *ref_vec_binding_x = lambda__141.global
+    var t613 []Binding = ref_get__Ref_12Vec_7Binding(env__143)
+    var t614 *ref_Vec_7Binding_x = lambda__141.global
     var t615 Value = eval(t612, t613, t614)
     retv609 = t615
     return retv609
@@ -1741,7 +1645,7 @@ func apply_lambda(lambda__141 Lambda, args__142 []Value) Value {
 
 func main0() struct{} {
     var t634 []Binding = nil
-    var global__148 *ref_vec_binding_x = ref__Ref_Vec_Binding(t634)
+    var global__148 *ref_Vec_7Binding_x = ref__Ref_12Vec_7Binding(t634)
     var program__149 string = "(begin (define fact (lambda (n) (if (= n 0) 1 (* n (fact (- n 1)))))) (define add3 (lambda (a b c) (+ a (+ b c)))) (fact 6))"
     var t635 []Token = lex(program__149)
     var exprs__150 []SExpr = parse_program(t635)

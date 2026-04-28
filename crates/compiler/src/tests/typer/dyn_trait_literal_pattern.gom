@@ -1,0 +1,18 @@
+trait C {
+    fn show(Self) -> string;
+}
+
+impl C for int32 {
+    fn show(self: int32) -> string {
+        self.to_string()
+    }
+}
+
+fn main() -> unit {
+    let x: dyn C = 1i32;
+    let y = match x {
+        1i32 => 2i32,
+        _ => 3i32,
+    };
+    println(y.to_string())
+}

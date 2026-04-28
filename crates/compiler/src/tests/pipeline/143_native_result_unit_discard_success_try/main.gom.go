@@ -1,11 +1,11 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
 )
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -51,7 +51,7 @@ type GoInt = int
 
 func touch__native(text__0 string) (struct{}, GoError) {
     var mtmp0_err GoError
-    _, mtmp0_err = fmt.Print(text__0)
+    _, mtmp0_err = _goml_fmt.Print(text__0)
     if mtmp0_err != nil {
         var ret_zero struct{}
         return ret_zero, mtmp0_err
@@ -81,19 +81,17 @@ func show(res__1 Result__unit__GoError) string {
         var jp18 string
         jp18 = "ok"
         jp16 = jp18
-        retv14 = jp16
-        return retv14
     case Result__unit__GoError_Err:
         var x5 GoError = res__1.(Result__unit__GoError_Err)._0
         var err__2 GoError = x5
         var t19 string = go_error_to_string(err__2)
         var t20 string = "err=" + t19
         jp16 = t20
-        retv14 = jp16
-        return retv14
     default:
         panic("non-exhaustive match")
     }
+    retv14 = jp16
+    return retv14
 }
 
 func main0() struct{} {

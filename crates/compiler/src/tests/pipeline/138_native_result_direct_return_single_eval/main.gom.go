@@ -1,15 +1,15 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
 )
 
 func int32_to_string(x int32) string {
-    return fmt.Sprintf("%d", x)
+    return _goml_fmt.Sprintf("%d", x)
 }
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -21,17 +21,17 @@ type ref_int32_x struct {
     value int32
 }
 
-func ref__Ref_int32(value int32) *ref_int32_x {
+func ref__Ref_5int32(value int32) *ref_int32_x {
     return &ref_int32_x{
         value: value,
     }
 }
 
-func ref_get__Ref_int32(reference *ref_int32_x) int32 {
+func ref_get__Ref_5int32(reference *ref_int32_x) int32 {
     return reference.value
 }
 
-func ref_set__Ref_int32(reference *ref_int32_x, value int32) struct{} {
+func ref_set__Ref_5int32(reference *ref_int32_x, value int32) struct{} {
     reference.value = value
     return struct{}{}
 }
@@ -55,10 +55,10 @@ func (_ Err) isResult__int32__GoError() {}
 type GoError = error
 
 func inner__native(counter__0 *ref_int32_x) (int32, GoError) {
-    var t7 int32 = ref_get__Ref_int32(counter__0)
+    var t7 int32 = ref_get__Ref_5int32(counter__0)
     var t8 int32 = t7 + 1
-    ref_set__Ref_int32(counter__0, t8)
-    var t9 int32 = ref_get__Ref_int32(counter__0)
+    ref_set__Ref_5int32(counter__0, t8)
+    var t9 int32 = ref_get__Ref_5int32(counter__0)
     return t9, nil
 }
 
@@ -110,11 +110,11 @@ func show(res__2 Result__int32__GoError) string {
 }
 
 func main0() struct{} {
-    var counter__5 *ref_int32_x = ref__Ref_int32(0)
+    var counter__5 *ref_int32_x = ref__Ref_5int32(0)
     var t22 Result__int32__GoError = outer(counter__5)
     var t23 string = show(t22)
     println__T_string(t23)
-    var t24 int32 = ref_get__Ref_int32(counter__5)
+    var t24 int32 = ref_get__Ref_5int32(counter__5)
     var t25 string = int32_to_string(t24)
     println__T_string(t25)
     return struct{}{}

@@ -1,16 +1,16 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
     "strings"
 )
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
-type Tuple2_string_string struct {
+type Tuple2_6string_6string struct {
     _0 string
     _1 string
 }
@@ -29,19 +29,19 @@ type Option__string_Some struct {
 
 func (_ Option__string_Some) isOption__string() {}
 
-type _goml_Option___x28_string_x2c_string_x29_ interface {
-    is_goml_Option___x28_string_x2c_string_x29_()
+type _goml_Option_x5f__x5f__x28_string_x2c_string_x29_ interface {
+    is_goml_Option_x5f__x5f__x28_string_x2c_string_x29_()
 }
 
-type _goml_Option___x28_string_x2c_string_x29__None struct {}
+type _goml_Option_x5f__x5f__x28_string_x2c_string_x29__None struct {}
 
-func (_ _goml_Option___x28_string_x2c_string_x29__None) is_goml_Option___x28_string_x2c_string_x29_() {}
+func (_ _goml_Option_x5f__x5f__x28_string_x2c_string_x29__None) is_goml_Option_x5f__x5f__x28_string_x2c_string_x29_() {}
 
-type _goml_Option___x28_string_x2c_string_x29__Some struct {
-    _0 Tuple2_string_string
+type _goml_Option_x5f__x5f__x28_string_x2c_string_x29__Some struct {
+    _0 Tuple2_6string_6string
 }
 
-func (_ _goml_Option___x28_string_x2c_string_x29__Some) is_goml_Option___x28_string_x2c_string_x29_() {}
+func (_ _goml_Option_x5f__x5f__x28_string_x2c_string_x29__Some) is_goml_Option_x5f__x5f__x28_string_x2c_string_x29_() {}
 
 type GoError = error
 

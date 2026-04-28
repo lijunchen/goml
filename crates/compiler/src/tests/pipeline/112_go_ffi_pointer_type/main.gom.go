@@ -1,12 +1,12 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
     "os"
 )
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -93,32 +93,27 @@ func describe(path__0 string) string {
             var t16 string = "ok=" + name__2
             jp15 = t16
             jp13 = jp15
-            jp11 = jp13
-            retv9 = jp11
-            return retv9
         case Result__unit__GoError_Err:
             var x5 GoError = mtmp3.(Result__unit__GoError_Err)._0
             var err__3 GoError = x5
             var t17 string = go_error_to_string(err__3)
             var t18 string = "close_err=" + t17
             jp13 = t18
-            jp11 = jp13
-            retv9 = jp11
-            return retv9
         default:
             panic("non-exhaustive match")
         }
+        jp11 = jp13
     case Result__File__GoError_Err:
         var x2 GoError = mtmp0.(Result__File__GoError_Err)._0
         var err__4 GoError = x2
         var t19 string = go_error_to_string(err__4)
         var t20 string = "open_err=" + t19
         jp11 = t20
-        retv9 = jp11
-        return retv9
     default:
         panic("non-exhaustive match")
     }
+    retv9 = jp11
+    return retv9
 }
 
 func main0() struct{} {

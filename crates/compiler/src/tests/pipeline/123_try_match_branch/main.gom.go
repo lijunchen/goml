@@ -1,12 +1,12 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
     "time"
 )
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -72,7 +72,7 @@ func pick__native(mode__0 Mode, input__1 string) (string, GoError) {
         }
         jp17 = mtmp0_value_0
         var parsed__2 Duration = jp17
-        var t18 string = fmt.Sprintf("%v", parsed__2)
+        var t18 string = _goml_fmt.Sprintf("%v", parsed__2)
         var t19 string = "left=" + t18
         jp14 = t19
         var value__4 string = jp14
@@ -92,7 +92,7 @@ func pick__native(mode__0 Mode, input__1 string) (string, GoError) {
         }
         jp22 = mtmp3_value_0
         var parsed__3 Duration = jp22
-        var t23 string = fmt.Sprintf("%v", parsed__3)
+        var t23 string = _goml_fmt.Sprintf("%v", parsed__3)
         var t24 string = "right=" + t23
         jp14 = t24
         var value__4 string = jp14

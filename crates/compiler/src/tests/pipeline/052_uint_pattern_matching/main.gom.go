@@ -1,7 +1,7 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
 )
 
 func bool_to_string(x bool) string {
@@ -13,7 +13,7 @@ func bool_to_string(x bool) string {
 }
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -99,17 +99,13 @@ func match_struct(counter__4 Counter) bool {
             jp24 = false
         }
         jp22 = jp24
-        retv20 = jp22
-        return retv20
     case 600000000:
         jp22 = true
-        retv20 = jp22
-        return retv20
     default:
         jp22 = false
-        retv20 = jp22
-        return retv20
     }
+    retv20 = jp22
+    return retv20
 }
 
 func report(label__5 string, value__6 bool) string {

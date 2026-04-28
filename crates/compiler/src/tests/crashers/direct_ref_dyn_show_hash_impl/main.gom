@@ -1,0 +1,21 @@
+trait Show {
+    fn show(Self) -> string;
+}
+
+impl Show for int32 {
+    fn show(self: int32) -> string {
+        self.to_string()
+    }
+}
+
+impl Hash for Ref[dyn Show] {
+    fn hash(self: Ref[dyn Show]) -> uint64 {
+        string_hash(Show::show(ref_get(self)))
+    }
+}
+
+fn main() -> unit {
+    let inner: dyn Show = 1i32;
+    let r = ref(inner);
+    let _ = Hash::hash(r);
+}

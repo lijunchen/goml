@@ -17,12 +17,19 @@ pub struct PackageExports {
 impl PackageExports {
     pub fn apply_to(&self, genv: &mut GlobalTypeEnv) {
         for (name, def) in self.type_env.enums.iter() {
+            genv.type_env.structs.shift_remove(name);
+            genv.type_env.extern_types.shift_remove(&name.0);
             genv.type_env.enums.insert(name.clone(), def.clone());
         }
         for (name, def) in self.type_env.structs.iter() {
+            genv.type_env.enums.shift_remove(name);
+            genv.type_env.extern_types.shift_remove(&name.0);
             genv.type_env.structs.insert(name.clone(), def.clone());
         }
         for (name, def) in self.type_env.extern_types.iter() {
+            let ident = crate::tast::TastIdent::new(name);
+            genv.type_env.enums.shift_remove(&ident);
+            genv.type_env.structs.shift_remove(&ident);
             genv.type_env.extern_types.insert(name.clone(), def.clone());
         }
         for (name, def) in self.trait_env.trait_defs.iter() {

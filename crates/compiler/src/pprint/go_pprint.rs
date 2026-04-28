@@ -19,6 +19,10 @@ fn escape_go_string(value: &str) -> String {
             '\n' => escaped.push_str("\\n"),
             '\r' => escaped.push_str("\\r"),
             '\t' => escaped.push_str("\\t"),
+            other if other.is_ascii_control() => {
+                use std::fmt::Write;
+                write!(&mut escaped, "\\x{:02x}", other as u32).unwrap();
+            }
             other => escaped.push(other),
         }
     }

@@ -1,15 +1,15 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
 )
 
 func int32_to_string(x int32) string {
-    return fmt.Sprintf("%d", x)
+    return _goml_fmt.Sprintf("%d", x)
 }
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -23,13 +23,13 @@ const (
 type GoError = error
 
 func main0() struct{} {
-    var t1 int32 = _goml_Lib_x3a__x3a_color_to_int(Red)
+    var t1 int32 = _goml_Lib_x3a__x3a_color_x5f_to_x5f_int(Red)
     var t2 string = int32_to_string(t1)
     string_println(t2)
     return struct{}{}
 }
 
-func _goml_Lib_x3a__x3a_color_to_int(c__0 _goml_Lib_x3a__x3a_Color) int32 {
+func _goml_Lib_x3a__x3a_color_x5f_to_x5f_int(c__0 _goml_Lib_x3a__x3a_Color) int32 {
     var retv5 int32
     var jp7 int32
     switch c__0 {

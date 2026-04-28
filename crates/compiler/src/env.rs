@@ -9,7 +9,7 @@ use crate::{
     tast::{self, TastIdent},
 };
 use std::cell::{Cell, RefCell};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct EnumDef {
@@ -549,19 +549,21 @@ impl TraitEnv {
     }
 
     pub fn has_trait_impl(&self, trait_name: &str, type_name: &tast::Ty) -> bool {
-        if self
-            .trait_impls
-            .contains_key(&(trait_name.to_string(), type_name.clone()))
-        {
-            return true;
-        }
-        self.trait_impls
-            .iter()
-            .any(|((impl_trait_name, impl_ty), _)| {
-                impl_trait_name == trait_name && trait_impl_matches(impl_ty, type_name)
-            })
+        self.trait_impl_count(trait_name, type_name) > 0
     }
 
+    pub fn trait_impl_count(&self, trait_name: &str, type_name: &tast::Ty) -> usize {
+        let mut count = 0;
+        for ((impl_trait_name, impl_ty), _) in self.trait_impls.iter() {
+            if impl_trait_name == trait_name && trait_impl_matches(impl_ty, type_name) {
+                count += 1;
+            }
+            if count > 1 {
+                return count;
+            }
+        }
+        count
+    }
     pub fn collect_trait_impl_schemes(
         &self,
         trait_name: &TastIdent,
@@ -632,7 +634,7 @@ impl TraitEnv {
     }
 }
 
-fn trait_impl_matches(template: &tast::Ty, actual: &tast::Ty) -> bool {
+fn trait_impl_subst(template: &tast::Ty, actual: &tast::Ty) -> Option<HashMap<String, tast::Ty>> {
     fn go(template: &tast::Ty, actual: &tast::Ty, subst: &mut HashMap<String, tast::Ty>) -> bool {
         match template {
             tast::Ty::TParam { name } => match subst.get(name) {
@@ -727,7 +729,11 @@ fn trait_impl_matches(template: &tast::Ty, actual: &tast::Ty) -> bool {
     }
 
     let mut subst = HashMap::new();
-    go(template, actual, &mut subst)
+    go(template, actual, &mut subst).then_some(subst)
+}
+
+fn trait_impl_matches(template: &tast::Ty, actual: &tast::Ty) -> bool {
+    trait_impl_subst(template, actual).is_some()
 }
 
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
@@ -822,24 +828,146 @@ impl PackageTypeEnv {
             .map(|scheme| scheme.ty)
     }
 
+    fn shadows_builtin_nominal_type(&self, ty: &tast::Ty) -> bool {
+        let Some(name) = nominal_type_name(ty) else {
+            return false;
+        };
+        self.current.defines_struct_or_enum(name)
+            || self
+                .deps
+                .values()
+                .any(|env| env.defines_struct_or_enum(name))
+    }
+
     pub fn has_trait_impl_visible(&self, trait_name: &str, type_name: &tast::Ty) -> bool {
         let key = (trait_name.to_string(), type_name.clone());
         if let Some(cached) = self.lookup_cache.trait_impl_visibility.borrow().get(&key) {
             return *cached;
         }
 
-        let found = self.builtins.has_trait_impl(trait_name, type_name)
-            || self.current.has_trait_impl(trait_name, type_name)
-            || self
-                .deps
-                .values()
-                .any(|env| env.has_trait_impl(trait_name, type_name));
+        let found = self.trait_impl_count_visible(trait_name, type_name) > 0;
 
         self.lookup_cache
             .trait_impl_visibility
             .borrow_mut()
             .insert(key, found);
         found
+    }
+
+    pub fn trait_impl_count_visible(&self, trait_name: &str, type_name: &tast::Ty) -> usize {
+        let mut visiting = HashSet::new();
+        self.trait_impl_count_visible_inner(trait_name, type_name, &mut visiting)
+    }
+
+    fn trait_impl_count_visible_inner(
+        &self,
+        trait_name: &str,
+        type_name: &tast::Ty,
+        visiting: &mut HashSet<(String, tast::Ty)>,
+    ) -> usize {
+        let key = (trait_name.to_string(), type_name.clone());
+        if !visiting.insert(key.clone()) {
+            return 0;
+        }
+
+        let mut count = 0;
+        if !self.shadows_builtin_nominal_type(type_name) {
+            count += self.trait_impl_count_in_env(&self.builtins, trait_name, type_name, visiting);
+        }
+        if count <= 1 {
+            count += self.trait_impl_count_in_env(&self.current, trait_name, type_name, visiting);
+        }
+        if count <= 1 {
+            for env in self.deps.values() {
+                count += self.trait_impl_count_in_env(env, trait_name, type_name, visiting);
+                if count > 1 {
+                    break;
+                }
+            }
+        }
+        visiting.remove(&key);
+        count
+    }
+
+    fn trait_impl_count_in_env(
+        &self,
+        source: &GlobalTypeEnv,
+        trait_name: &str,
+        type_name: &tast::Ty,
+        visiting: &mut HashSet<(String, tast::Ty)>,
+    ) -> usize {
+        let mut count = 0;
+        for ((impl_trait_name, impl_ty), impl_def) in source.trait_env.trait_impls.iter() {
+            if impl_trait_name != trait_name {
+                continue;
+            }
+            let Some(subst) = trait_impl_subst(impl_ty, type_name) else {
+                continue;
+            };
+            if !self.impl_constraints_satisfied(impl_def, &subst, visiting) {
+                continue;
+            }
+            count += 1;
+            if count > 1 {
+                return count;
+            }
+        }
+        count
+    }
+
+    fn impl_constraints_satisfied(
+        &self,
+        impl_def: &ImplDef,
+        subst: &HashMap<String, tast::Ty>,
+        visiting: &mut HashSet<(String, tast::Ty)>,
+    ) -> bool {
+        impl_def.methods.values().all(|scheme| {
+            scheme.constraints.iter().all(|constraint| {
+                subst.get(&constraint.type_param).is_none_or(|ty| {
+                    self.trait_constraint_satisfied(&constraint.trait_name.0, ty, visiting)
+                })
+            })
+        })
+    }
+
+    fn trait_constraint_satisfied(
+        &self,
+        trait_name: &str,
+        type_name: &tast::Ty,
+        visiting: &mut HashSet<(String, tast::Ty)>,
+    ) -> bool {
+        matches!(
+            type_name,
+            tast::Ty::TDyn {
+                trait_name: dyn_trait_name
+            } if dyn_trait_name == trait_name
+        ) || self.trait_impl_count_visible_inner(trait_name, type_name, visiting) == 1
+    }
+
+    fn collect_trait_impl_schemes_in_env(
+        &self,
+        source: &GlobalTypeEnv,
+        trait_name: &TastIdent,
+        type_name: &tast::Ty,
+        func_name: &TastIdent,
+        visiting: &mut HashSet<(String, tast::Ty)>,
+    ) -> Vec<FnScheme> {
+        let mut result = Vec::new();
+        for ((impl_trait_name, impl_ty), impl_def) in source.trait_env.trait_impls.iter() {
+            if impl_trait_name != &trait_name.0 {
+                continue;
+            }
+            let Some(subst) = trait_impl_subst(impl_ty, type_name) else {
+                continue;
+            };
+            if !self.impl_constraints_satisfied(impl_def, &subst, visiting) {
+                continue;
+            }
+            if let Some(method) = impl_def.methods.get(&func_name.0) {
+                result.push(method.clone());
+            }
+        }
+        result
     }
 
     pub fn collect_visible_trait_impl_schemes(
@@ -854,16 +982,31 @@ impl PackageTypeEnv {
         }
 
         let mut result = Vec::new();
-        result.extend(
-            self.builtins
-                .collect_trait_impl_schemes(trait_name, type_name, func_name),
-        );
-        result.extend(
-            self.current
-                .collect_trait_impl_schemes(trait_name, type_name, func_name),
-        );
+        let mut visiting = HashSet::new();
+        if !self.shadows_builtin_nominal_type(type_name) {
+            result.extend(self.collect_trait_impl_schemes_in_env(
+                &self.builtins,
+                trait_name,
+                type_name,
+                func_name,
+                &mut visiting,
+            ));
+        }
+        result.extend(self.collect_trait_impl_schemes_in_env(
+            &self.current,
+            trait_name,
+            type_name,
+            func_name,
+            &mut visiting,
+        ));
         for env in self.deps.values() {
-            result.extend(env.collect_trait_impl_schemes(trait_name, type_name, func_name));
+            result.extend(self.collect_trait_impl_schemes_in_env(
+                env,
+                trait_name,
+                type_name,
+                func_name,
+                &mut visiting,
+            ));
         }
         self.lookup_cache
             .trait_impl_schemes
@@ -886,8 +1029,13 @@ impl PackageTypeEnv {
         receiver_ty: &tast::Ty,
         method: &TastIdent,
     ) -> Option<FnScheme> {
-        self.builtins
-            .lookup_inherent_method_scheme(receiver_ty, method)
+        let builtin = if self.shadows_builtin_nominal_type(receiver_ty) {
+            None
+        } else {
+            self.builtins
+                .lookup_inherent_method_scheme(receiver_ty, method)
+        };
+        builtin
             .or_else(|| {
                 self.current
                     .lookup_inherent_method_scheme(receiver_ty, method)
@@ -903,6 +1051,14 @@ impl PackageTypeEnv {
         self.current
             .get_function_scheme(name)
             .or_else(|| self.builtins.get_function_scheme(name))
+    }
+}
+
+fn nominal_type_name(ty: &tast::Ty) -> Option<&str> {
+    match ty {
+        tast::Ty::TStruct { name } | tast::Ty::TEnum { name } => Some(name),
+        tast::Ty::TApp { ty, .. } => nominal_type_name(ty),
+        _ => None,
     }
 }
 
@@ -1026,6 +1182,10 @@ impl GlobalTypeEnv {
         self.trait_env.has_trait_impl(trait_name, type_name)
     }
 
+    pub fn trait_impl_count(&self, trait_name: &str, type_name: &tast::Ty) -> usize {
+        self.trait_env.trait_impl_count(trait_name, type_name)
+    }
+
     pub fn lookup_inherent_method(
         &self,
         receiver_ty: &tast::Ty,
@@ -1036,6 +1196,11 @@ impl GlobalTypeEnv {
 
     pub fn get_type_of_function(&self, func: &str) -> Option<tast::Ty> {
         self.value_env.get_type_of_function(func)
+    }
+
+    fn defines_struct_or_enum(&self, name: &str) -> bool {
+        let ident = TastIdent::new(name);
+        self.type_env.structs.contains_key(&ident) || self.type_env.enums.contains_key(&ident)
     }
 
     pub fn lookup_trait_method_scheme(

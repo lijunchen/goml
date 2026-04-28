@@ -1,7 +1,7 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
 )
 
 func bool_to_string(x bool) string {
@@ -13,34 +13,34 @@ func bool_to_string(x bool) string {
 }
 
 func string_print(s string) struct{} {
-    fmt.Print(s)
+    _goml_fmt.Print(s)
     return struct{}{}
 }
 
-type Tuple2_bool_bool struct {
+type Tuple2_4bool_4bool struct {
     _0 bool
     _1 bool
 }
 
-type Tuple3_bool_bool_Tuple2_bool_bool struct {
+type Tuple3_4bool_4bool_18Tuple2_4bool_4bool struct {
     _0 bool
     _1 bool
-    _2 Tuple2_bool_bool
+    _2 Tuple2_4bool_4bool
 }
 
 type GoError = error
 
 func main0() struct{} {
-    var t8 Tuple2_bool_bool = Tuple2_bool_bool{
+    var t8 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: true,
         _1: false,
     }
-    var a__0 Tuple3_bool_bool_Tuple2_bool_bool = Tuple3_bool_bool_Tuple2_bool_bool{
+    var a__0 Tuple3_4bool_4bool_18Tuple2_4bool_4bool = Tuple3_4bool_4bool_18Tuple2_4bool_4bool{
         _0: true,
         _1: false,
         _2: t8,
     }
-    var x3 Tuple2_bool_bool = a__0._2
+    var x3 Tuple2_4bool_4bool = a__0._2
     var x5 bool = x3._1
     var w__4 bool = x5
     var b__5 bool = w__4

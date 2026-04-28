@@ -1,22 +1,22 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
 )
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
-type Tuple2_bool_bool struct {
+type Tuple2_4bool_4bool struct {
     _0 bool
     _1 bool
 }
 
 type GoError = error
 
-func test_nested_match(x__0 Tuple2_bool_bool, y__1 Tuple2_bool_bool) struct{} {
+func test_nested_match(x__0 Tuple2_4bool_4bool, y__1 Tuple2_4bool_4bool) struct{} {
     var x0 bool = x__0._0
     var x1 bool = x__0._1
     switch x1 {
@@ -33,10 +33,8 @@ func test_nested_match(x__0 Tuple2_bool_bool, y__1 Tuple2_bool_bool) struct{} {
             default:
                 panic("non-exhaustive match")
             }
-            return struct{}{}
         case false:
             string_println("case4")
-            return struct{}{}
         default:
             panic("non-exhaustive match")
         }
@@ -55,10 +53,8 @@ func test_nested_match(x__0 Tuple2_bool_bool, y__1 Tuple2_bool_bool) struct{} {
                 default:
                     panic("non-exhaustive match")
                 }
-                return struct{}{}
             case false:
                 string_println("case2")
-                return struct{}{}
             default:
                 panic("non-exhaustive match")
             }
@@ -75,10 +71,8 @@ func test_nested_match(x__0 Tuple2_bool_bool, y__1 Tuple2_bool_bool) struct{} {
                 default:
                     panic("non-exhaustive match")
                 }
-                return struct{}{}
             case false:
                 string_println("case4")
-                return struct{}{}
             default:
                 panic("non-exhaustive match")
             }
@@ -88,41 +82,42 @@ func test_nested_match(x__0 Tuple2_bool_bool, y__1 Tuple2_bool_bool) struct{} {
     default:
         panic("non-exhaustive match")
     }
+    return struct{}{}
 }
 
 func main0() struct{} {
-    var t31 Tuple2_bool_bool = Tuple2_bool_bool{
+    var t31 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: true,
         _1: false,
     }
-    var t32 Tuple2_bool_bool = Tuple2_bool_bool{
+    var t32 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: false,
         _1: true,
     }
     test_nested_match(t31, t32)
-    var t33 Tuple2_bool_bool = Tuple2_bool_bool{
+    var t33 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: true,
         _1: false,
     }
-    var t34 Tuple2_bool_bool = Tuple2_bool_bool{
+    var t34 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: true,
         _1: false,
     }
     test_nested_match(t33, t34)
-    var t35 Tuple2_bool_bool = Tuple2_bool_bool{
+    var t35 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: false,
         _1: true,
     }
-    var t36 Tuple2_bool_bool = Tuple2_bool_bool{
+    var t36 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: false,
         _1: true,
     }
     test_nested_match(t35, t36)
-    var t37 Tuple2_bool_bool = Tuple2_bool_bool{
+    var t37 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: false,
         _1: true,
     }
-    var t38 Tuple2_bool_bool = Tuple2_bool_bool{
+    var t38 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: true,
         _1: false,
     }

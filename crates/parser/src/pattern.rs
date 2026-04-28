@@ -31,6 +31,7 @@ pub const PATTERN_FIRST: &[TokenKind] = &[
 ];
 
 pub fn pattern(p: &mut Parser) -> Option<MarkerClosed> {
+    let _pattern_depth = p.enter_pattern()?;
     simple_pattern(p)
 }
 

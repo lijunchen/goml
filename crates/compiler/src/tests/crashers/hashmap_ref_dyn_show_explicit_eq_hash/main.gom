@@ -1,0 +1,29 @@
+trait Show {
+    fn show(Self) -> string;
+}
+
+impl Show for int32 {
+    fn show(self: int32) -> string {
+        self.to_string()
+    }
+}
+
+impl Eq for Ref[dyn Show] {
+    fn eq(self: Ref[dyn Show], other: Ref[dyn Show]) -> bool {
+        Show::show(ref_get(self)) == Show::show(ref_get(other))
+    }
+}
+
+impl Hash for Ref[dyn Show] {
+    fn hash(self: Ref[dyn Show]) -> uint64 {
+        string_hash(Show::show(ref_get(self)))
+    }
+}
+
+fn main() {
+    let h: HashMap[Ref[dyn Show], string] = hashmap_new();
+    let inner: dyn Show = 1;
+    let r = ref(inner);
+    hashmap_set(h, r, "one");
+    string_println(bool_to_string(hashmap_contains(h, r)));
+}

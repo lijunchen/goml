@@ -170,6 +170,118 @@ fn main() -> unit {
 }
 
 #[test]
+fn dyn_tostring_builtin_impl_executes() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/dyn_tostring_builtin_impl/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
+        panic!("compilation failed for {}: {:?}", path.display(), err);
+    });
+    let go = compilation.go.to_pretty(&compilation.goenv, 120);
+    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
+
+    assert_eq!(output, "1\n");
+}
+
+#[test]
+fn dyn_tostring_ref_dyn_impl_executes() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/dyn_tostring_ref_dyn_impl/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
+        panic!("compilation failed for {}: {:?}", path.display(), err);
+    });
+    let go = compilation.go.to_pretty(&compilation.goenv, 120);
+    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
+
+    assert_eq!(output, "ref(1)\n");
+}
+
+#[test]
+fn dyn_hash_ref_dyn_impl_executes() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/dyn_hash_ref_dyn_impl/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
+        panic!("compilation failed for {}: {:?}", path.display(), err);
+    });
+    let go = compilation.go.to_pretty(&compilation.goenv, 120);
+    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
+
+    assert_eq!(output, "1\n");
+}
+
+#[test]
+fn direct_ref_dyn_show_hash_impl_executes() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/direct_ref_dyn_show_hash_impl/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
+        panic!("compilation failed for {}: {:?}", path.display(), err);
+    });
+    let go = compilation.go.to_pretty(&compilation.goenv, 120);
+    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
+
+    assert_eq!(output, "");
+}
+
+#[test]
+fn hashmap_ref_dyn_hash_explicit_eq_executes() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/hashmap_ref_dyn_hash_explicit_eq/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
+        panic!("compilation failed for {}: {:?}", path.display(), err);
+    });
+    let go = compilation.go.to_pretty(&compilation.goenv, 120);
+    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
+
+    assert_eq!(output, "true\n");
+}
+
+#[test]
+fn hashmap_ref_dyn_show_explicit_eq_hash_executes() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/hashmap_ref_dyn_show_explicit_eq_hash/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
+        panic!("compilation failed for {}: {:?}", path.display(), err);
+    });
+    let go = compilation.go.to_pretty(&compilation.goenv, 120);
+    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
+
+    assert_eq!(output, "true\n");
+}
+
+#[test]
+fn hashmap_dyn_hash_explicit_eq_executes() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/hashmap_dyn_hash_explicit_eq/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
+        panic!("compilation failed for {}: {:?}", path.display(), err);
+    });
+    let go = compilation.go.to_pretty(&compilation.goenv, 120);
+    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
+
+    assert_eq!(output, "true\n");
+}
+
+#[test]
 fn dyn_trait_types_are_emitted_for_early_return_subexpressions() {
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("src/tests/crashers/dyn_trait_type_emission_return_subexpr/main.gom");
@@ -222,7 +334,10 @@ fn dyn_trait_tuple_types_are_emitted_for_nested_struct_fields_in_early_return_su
 
     assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
     assert!(go.contains("type dyn__Display struct"), "{go}");
-    assert!(go.contains("type Tuple2_dyn__Display_int32 struct"), "{go}");
+    assert!(
+        go.contains("type Tuple2_12dyn__Display_5int32 struct"),
+        "{go}"
+    );
 }
 
 #[test]
@@ -235,7 +350,10 @@ fn dyn_trait_tuple_types_are_emitted_for_nested_enum_fields_in_early_return_sube
 
     assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
     assert!(go.contains("type dyn__Display struct"), "{go}");
-    assert!(go.contains("type Tuple2_dyn__Display_int32 struct"), "{go}");
+    assert!(
+        go.contains("type Tuple2_12dyn__Display_5int32 struct"),
+        "{go}"
+    );
 }
 
 #[test]
@@ -299,7 +417,7 @@ fn dyn_callable_tuple_types_are_emitted_for_nested_early_return_subexpressions()
     assert!(go.contains("type dyn__Callable_vtable struct"), "{go}");
     assert!(go.contains("type dyn__Callable struct"), "{go}");
     assert!(
-        go.contains("type Tuple2_dyn__Callable_int32 struct"),
+        go.contains("type Tuple2_13dyn__Callable_5int32 struct"),
         "{go}"
     );
 }

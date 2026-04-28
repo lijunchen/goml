@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::go::goast as ast;
-use crate::package_names::{ENTRY_FUNCTION, ENTRY_WRAPPER_FUNCTION};
+use crate::package_names::ENTRY_FUNCTION;
 
 // Public entry: eliminate unused local variables from Go AST while
 // preserving side-effecting expressions (primarily calls).
@@ -137,9 +137,10 @@ fn dce_block_with_live(
         match stmt {
             ast::Stmt::Expr(e) => {
                 let e = dce_expr(e);
-                // keep expression statements; they may have side-effects
-                add_uses_expr(&mut live, &e);
-                out.push(ast::Stmt::Expr(e));
+                if expr_has_side_effects(&e) {
+                    add_uses_expr(&mut live, &e);
+                    out.push(ast::Stmt::Expr(e));
+                }
             }
             ast::Stmt::Go { call } => {
                 let call = dce_expr(call);
@@ -157,11 +158,11 @@ fn dce_block_with_live(
                 let used_rhs = value.as_ref().map(vars_used_in_expr).unwrap_or_default();
 
                 if live.contains(&name) {
-                    // Needed later as an rvalue; keep the declaration with initializer
+                    live.remove(&name);
+                    needs_decl.remove(&name);
                     for u in &used_rhs {
                         live.insert(u.clone());
                     }
-                    live.remove(&name);
                     out.push(ast::Stmt::VarDecl { name, ty, value });
                 } else if needs_decl.contains(&name) {
                     // The variable is assigned later with '=' so we must keep its declaration.
@@ -212,11 +213,10 @@ fn dce_block_with_live(
                     continue;
                 }
                 if live.contains(&name) {
-                    // This assignment feeds a later rvalue use; keep it and require a prior decl
+                    live.remove(&name);
                     for u in &used_rhs {
                         live.insert(u.clone());
                     }
-                    live.remove(&name);
                     needs_decl.insert(name.clone());
                     out.push(ast::Stmt::Assignment { name, value });
                 } else {
@@ -234,14 +234,14 @@ fn dce_block_with_live(
                 let used_rhs = vars_used_in_expr(&value);
                 let keep_stmt = names.iter().any(|name| name == "_" || live.contains(name));
                 if keep_stmt {
-                    for u in &used_rhs {
-                        live.insert(u.clone());
-                    }
                     for name in &names {
                         if name != "_" {
                             live.remove(name);
                             needs_decl.insert(name.clone());
                         }
+                    }
+                    for u in &used_rhs {
+                        live.insert(u.clone());
                     }
                     out.push(ast::Stmt::MultiAssignment { names, value });
                 } else if expr_has_side_effects(&value) {
@@ -814,6 +814,31 @@ fn free_vars_in_block(b: &ast::Block) -> HashSet<String> {
 }
 
 fn emit_side_effect(e: ast::Expr) -> ast::Stmt {
+    let append_target = match &e {
+        ast::Expr::Call { func, args, .. } => match func.as_ref() {
+            ast::Expr::Var { name, .. } if name == "append" => args.first().and_then(|arg| {
+                if let ast::Expr::Var { name, .. } = arg {
+                    Some(name.clone())
+                } else {
+                    None
+                }
+            }),
+            _ => None,
+        },
+        _ => None,
+    };
+    if let Some(name) = append_target {
+        return ast::Stmt::Assignment { name, value: e };
+    }
+    if let ast::Expr::Call { func, .. } = &e
+        && let ast::Expr::Var { name, .. } = func.as_ref()
+        && name == "append"
+    {
+        return ast::Stmt::Assignment {
+            name: "_".to_string(),
+            value: e,
+        };
+    }
     if matches!(e, ast::Expr::Call { .. }) {
         ast::Stmt::Expr(e)
     } else {
@@ -826,7 +851,12 @@ fn emit_side_effect(e: ast::Expr) -> ast::Stmt {
 
 fn expr_has_side_effects(e: &ast::Expr) -> bool {
     match e {
-        ast::Expr::Call { .. } => true,
+        ast::Expr::Call { func, args, .. } => {
+            if go_call_name(func).is_some_and(|name| name == "append") {
+                return true;
+            }
+            !go_call_result_must_be_used(func) || args.iter().any(expr_has_side_effects)
+        }
         ast::Expr::Block { stmts, expr, .. } => {
             // any side-effect in nested statements or nested expr
             stmts.iter().any(stmt_has_side_effects)
@@ -867,6 +897,52 @@ fn expr_has_side_effects(e: &ast::Expr) -> bool {
         | ast::Expr::Float { .. }
         | ast::Expr::String { .. } => false,
     }
+}
+
+fn go_call_name(func: &ast::Expr) -> Option<&str> {
+    if let ast::Expr::Var { name, .. } = func {
+        Some(name)
+    } else {
+        None
+    }
+}
+
+fn go_call_result_must_be_used(func: &ast::Expr) -> bool {
+    let Some(name) = go_call_name(func) else {
+        return false;
+    };
+    matches!(
+        name,
+        "append"
+            | "cap"
+            | "complex"
+            | "imag"
+            | "len"
+            | "make"
+            | "max"
+            | "min"
+            | "new"
+            | "real"
+            | "bool"
+            | "byte"
+            | "rune"
+            | "string"
+            | "int"
+            | "int8"
+            | "int16"
+            | "int32"
+            | "int64"
+            | "uint"
+            | "uint8"
+            | "uint16"
+            | "uint32"
+            | "uint64"
+            | "uintptr"
+            | "float32"
+            | "float64"
+            | "complex64"
+            | "complex128"
+    )
 }
 
 fn stmt_has_side_effects(s: &ast::Stmt) -> bool {
@@ -943,10 +1019,8 @@ fn prune_dead_functions(file: ast::File) -> ast::File {
 
     let mut reachable: HashSet<String> = HashSet::new();
     let mut stack: Vec<String> = Vec::new();
-    for root in [ENTRY_FUNCTION, ENTRY_WRAPPER_FUNCTION] {
-        if fn_map.contains_key(root) {
-            stack.push(root.to_string());
-        }
+    if fn_map.contains_key(ENTRY_FUNCTION) {
+        stack.push(ENTRY_FUNCTION.to_string());
     }
 
     while let Some(name) = stack.pop() {

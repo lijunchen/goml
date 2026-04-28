@@ -1,19 +1,19 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
 )
 
 func int32_to_string(x int32) string {
-    return fmt.Sprintf("%d", x)
+    return _goml_fmt.Sprintf("%d", x)
 }
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
-func array_get__Array_2_Fn_int32_to_int32(arr [2]func(int32) int32, index int32) func(int32) int32 {
+func array_get__Array_2_20Fn1_5int32_to_5int32(arr [2]func(int32) int32, index int32) func(int32) int32 {
     return arr[index]
 }
 
@@ -47,8 +47,8 @@ func chooser(flag__2 bool) func(int32) int32 {
 
 func main0() struct{} {
     var xs__3 [2]func(int32) int32 = [2]func(int32) int32{double, increment}
-    var f__4 func(int32) int32 = array_get__Array_2_Fn_int32_to_int32(xs__3, 0)
-    var g__5 func(int32) int32 = array_get__Array_2_Fn_int32_to_int32(xs__3, 1)
+    var f__4 func(int32) int32 = array_get__Array_2_20Fn1_5int32_to_5int32(xs__3, 0)
+    var g__5 func(int32) int32 = array_get__Array_2_20Fn1_5int32_to_5int32(xs__3, 1)
     var t14 int32 = f__4(10)
     var t15 int32 = g__5(t14)
     println__T_int32(t15)

@@ -1,0 +1,15 @@
+trait C {
+    fn call(Self) -> unit;
+}
+
+impl C for () -> unit {
+    fn call(self: () -> unit) -> unit {
+        self()
+    }
+}
+
+fn main() -> unit {
+    let c: dyn C = || ();
+    go c;
+    ()
+}

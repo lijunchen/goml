@@ -1,0 +1,36 @@
+enum Maybe[T] {
+    None,
+    Some(T),
+}
+
+#[derive(Hash, Eq)]
+struct Node {
+    value: int32,
+    next: Ref[Maybe[Node]],
+}
+
+impl Eq for Maybe[Node] {
+    fn eq(self: Maybe[Node], other: Maybe[Node]) -> bool {
+        match (self, other) {
+            (Maybe::None, Maybe::None) => true,
+            (Maybe::Some(a), Maybe::Some(b)) => Eq::eq(a, b),
+            _ => false,
+        }
+    }
+}
+
+impl Hash for Maybe[Node] {
+    fn hash(self: Maybe[Node]) -> uint64 {
+        match self {
+            Maybe::None => 0u64,
+            Maybe::Some(node) => Hash::hash(node),
+        }
+    }
+}
+
+fn main() -> unit {
+    let n = Node { value: 1i32, next: ref(Maybe::None) };
+    let m: HashMap[Node, string] = HashMap::new();
+    hashmap_set(m, n, "ok");
+    println(hashmap_len(m).to_string())
+}

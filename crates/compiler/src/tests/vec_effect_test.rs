@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::pipeline::pipeline::compile;
+use crate::pipeline::pipeline::{compile, compile_single_file};
 
 fn compile_go(src: &str, name: &str) -> String {
     let path = PathBuf::from(name);
@@ -23,4 +23,43 @@ fn main() -> unit {
     let go = compile_go(src, "discarded_vec_push_updates_binding.gom");
 
     assert!(go.contains("v__0 = append(v__0, 1)"), "{go}");
+}
+
+#[test]
+fn discarded_let_vec_push_preserves_side_effect() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/discarded_let_vec_push_side_effect/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap();
+    let compilation = compile_single_file(&path, &src).unwrap();
+    let go = compilation.go.to_pretty(&compilation.goenv, 120);
+    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
+
+    assert_eq!(output, "1\n");
+}
+
+#[test]
+fn vec_push_preserves_existing_binding_value() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/vec_push_preserves_existing_binding/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap();
+    let compilation = compile_single_file(&path, &src).unwrap();
+    let go = compilation.go.to_pretty(&compilation.goenv, 120);
+    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
+
+    assert_eq!(output, "2\n");
+}
+
+#[test]
+fn discarded_vec_len_does_not_emit_invalid_go() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/discarded_vec_len_pure_call/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap();
+    let compilation = compile_single_file(&path, &src).unwrap();
+    let go = compilation.go.to_pretty(&compilation.goenv, 120);
+    let dir = tempfile::tempdir().unwrap();
+    let file = dir.path().join("main.go");
+    std::fs::write(&file, go).unwrap();
+    let output = super::execute_with_go_run(&path.to_string_lossy(), dir.path(), &file).unwrap();
+
+    assert_eq!(output, "");
 }

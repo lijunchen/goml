@@ -1,23 +1,23 @@
 package main
 
 import (
-    "fmt"
-    "unicode/utf8"
+    _goml_fmt "fmt"
+    _goml_utf8 "unicode/utf8"
 )
 
 func char_to_string(x rune) string {
-    if !utf8.ValidRune(x) {
+    if !_goml_utf8.ValidRune(x) {
         panic("invalid char")
     }
     return string(x)
 }
 
 func int32_to_string(x int32) string {
-    return fmt.Sprintf("%d", x)
+    return _goml_fmt.Sprintf("%d", x)
 }
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -25,59 +25,59 @@ type ref_int32_x struct {
     value int32
 }
 
-func ref__Ref_int32(value int32) *ref_int32_x {
+func ref__Ref_5int32(value int32) *ref_int32_x {
     return &ref_int32_x{
         value: value,
     }
 }
 
-func ref_get__Ref_int32(reference *ref_int32_x) int32 {
+func ref_get__Ref_5int32(reference *ref_int32_x) int32 {
     return reference.value
 }
 
-func ref_set__Ref_int32(reference *ref_int32_x, value int32) struct{} {
+func ref_set__Ref_5int32(reference *ref_int32_x, value int32) struct{} {
     reference.value = value
     return struct{}{}
 }
 
-type ref_tv_x struct {
+type ref_Tv_x struct {
     value Tv
 }
 
-func ref__Ref_Tv(value Tv) *ref_tv_x {
-    return &ref_tv_x{
+func ref__Ref_2Tv(value Tv) *ref_Tv_x {
+    return &ref_Tv_x{
         value: value,
     }
 }
 
-func ref_get__Ref_Tv(reference *ref_tv_x) Tv {
+func ref_get__Ref_2Tv(reference *ref_Tv_x) Tv {
     return reference.value
 }
 
-func ref_set__Ref_Tv(reference *ref_tv_x, value Tv) struct{} {
+func ref_set__Ref_2Tv(reference *ref_Tv_x, value Tv) struct{} {
     reference.value = value
     return struct{}{}
 }
 
-func ptr_eq__Ref_Tv(a *ref_tv_x, b *ref_tv_x) bool {
+func ptr_eq__Ref_2Tv(a *ref_Tv_x, b *ref_Tv_x) bool {
     return a == b
 }
 
-type ref_option__typ_x struct {
+type ref_Option__Typ_x struct {
     value Option__Typ
 }
 
-func ref__Ref_Option__Typ(value Option__Typ) *ref_option__typ_x {
-    return &ref_option__typ_x{
+func ref__Ref_11Option__Typ(value Option__Typ) *ref_Option__Typ_x {
+    return &ref_Option__Typ_x{
         value: value,
     }
 }
 
-func ref_get__Ref_Option__Typ(reference *ref_option__typ_x) Option__Typ {
+func ref_get__Ref_11Option__Typ(reference *ref_Option__Typ_x) Option__Typ {
     return reference.value
 }
 
-func ref_set__Ref_Option__Typ(reference *ref_option__typ_x, value Option__Typ) struct{} {
+func ref_set__Ref_11Option__Typ(reference *ref_Option__Typ_x, value Option__Typ) struct{} {
     reference.value = value
     return struct{}{}
 }
@@ -86,27 +86,27 @@ type ref_bool_x struct {
     value bool
 }
 
-func ref__Ref_bool(value bool) *ref_bool_x {
+func ref__Ref_4bool(value bool) *ref_bool_x {
     return &ref_bool_x{
         value: value,
     }
 }
 
-func ref_get__Ref_bool(reference *ref_bool_x) bool {
+func ref_get__Ref_4bool(reference *ref_bool_x) bool {
     return reference.value
 }
 
-func ref_set__Ref_bool(reference *ref_bool_x, value bool) struct{} {
+func ref_set__Ref_4bool(reference *ref_bool_x, value bool) struct{} {
     reference.value = value
     return struct{}{}
 }
 
-type Tuple2_Typ_Typ struct {
+type Tuple2_3Typ_3Typ struct {
     _0 Typ
     _1 Typ
 }
 
-type Tuple2_Typ_Vec_SubstEntry struct {
+type Tuple2_3Typ_16Vec_10SubstEntry struct {
     _0 Typ
     _1 []SubstEntry
 }
@@ -163,7 +163,7 @@ type Typ interface {
 }
 
 type TVar struct {
-    _0 *ref_tv_x
+    _0 *ref_Tv_x
 }
 
 func (_ TVar) isTyp() {}
@@ -248,8 +248,8 @@ type GoError = error
 
 func state_new() CheckerState {
     var retv205 CheckerState
-    var t206 *ref_int32_x = ref__Ref_int32(0)
-    var t207 *ref_int32_x = ref__Ref_int32(1)
+    var t206 *ref_int32_x = ref__Ref_5int32(0)
+    var t207 *ref_int32_x = ref__Ref_5int32(1)
     var t208 CheckerState = CheckerState{
         gensym_counter: t206,
         current_level: t207,
@@ -260,13 +260,13 @@ func state_new() CheckerState {
 
 func reset_gensym(st__0 CheckerState) struct{} {
     var t210 *ref_int32_x = st__0.gensym_counter
-    ref_set__Ref_int32(t210, 0)
+    ref_set__Ref_5int32(t210, 0)
     return struct{}{}
 }
 
 func reset_level(st__1 CheckerState) struct{} {
     var t212 *ref_int32_x = st__1.current_level
-    ref_set__Ref_int32(t212, 1)
+    ref_set__Ref_5int32(t212, 1)
     return struct{}{}
 }
 
@@ -278,19 +278,19 @@ func reset_type_variables(st__2 CheckerState) struct{} {
 
 func enter_level(st__3 CheckerState) struct{} {
     var t216 *ref_int32_x = st__3.current_level
-    var l__4 int32 = ref_get__Ref_int32(t216)
+    var l__4 int32 = ref_get__Ref_5int32(t216)
     var t217 *ref_int32_x = st__3.current_level
     var t218 int32 = l__4 + 1
-    ref_set__Ref_int32(t217, t218)
+    ref_set__Ref_5int32(t217, t218)
     return struct{}{}
 }
 
 func leave_level(st__5 CheckerState) struct{} {
     var t220 *ref_int32_x = st__5.current_level
-    var l__6 int32 = ref_get__Ref_int32(t220)
+    var l__6 int32 = ref_get__Ref_5int32(t220)
     var t221 *ref_int32_x = st__5.current_level
     var t222 int32 = l__6 - 1
-    ref_set__Ref_int32(t221, t222)
+    ref_set__Ref_5int32(t221, t222)
     return struct{}{}
 }
 
@@ -373,10 +373,10 @@ func nth_letter(n__9 int32) rune {
 func gensym(st__10 CheckerState) string {
     var retv233 string
     var t234 *ref_int32_x = st__10.gensym_counter
-    var n__11 int32 = ref_get__Ref_int32(t234)
+    var n__11 int32 = ref_get__Ref_5int32(t234)
     var t235 *ref_int32_x = st__10.gensym_counter
     var t236 int32 = n__11 + 1
-    ref_set__Ref_int32(t235, t236)
+    ref_set__Ref_5int32(t235, t236)
     var t239 bool = n__11 < 26
     var jp238 string
     if t239 {
@@ -396,12 +396,12 @@ func newvar(st__12 CheckerState) Typ {
     var retv245 Typ
     var name__13 string = gensym(st__12)
     var t246 *ref_int32_x = st__12.current_level
-    var level__14 int32 = ref_get__Ref_int32(t246)
+    var level__14 int32 = ref_get__Ref_5int32(t246)
     var t247 Tv = Unbound{
         _0: name__13,
         _1: level__14,
     }
-    var t248 *ref_tv_x = ref__Ref_Tv(t247)
+    var t248 *ref_Tv_x = ref__Ref_2Tv(t247)
     var t249 Typ = TVar{
         _0: t248,
     }
@@ -414,9 +414,9 @@ func typ_is_arrow(ty__15 Typ) bool {
     var jp253 bool
     switch ty__15.(type) {
     case TVar:
-        var x6 *ref_tv_x = ty__15.(TVar)._0
-        var tvref__16 *ref_tv_x = x6
-        var mtmp10 Tv = ref_get__Ref_Tv(tvref__16)
+        var x6 *ref_Tv_x = ty__15.(TVar)._0
+        var tvref__16 *ref_Tv_x = x6
+        var mtmp10 Tv = ref_get__Ref_2Tv(tvref__16)
         var jp255 bool
         switch mtmp10.(type) {
         case Unbound:
@@ -430,19 +430,15 @@ func typ_is_arrow(ty__15 Typ) bool {
             panic("non-exhaustive match")
         }
         jp253 = jp255
-        retv251 = jp253
-        return retv251
     case QVar:
         jp253 = false
-        retv251 = jp253
-        return retv251
     case TArrow:
         jp253 = true
-        retv251 = jp253
-        return retv251
     default:
         panic("non-exhaustive match")
     }
+    retv251 = jp253
+    return retv251
 }
 
 func typ_to_string(ty__18 Typ) string {
@@ -450,9 +446,9 @@ func typ_to_string(ty__18 Typ) string {
     var jp260 string
     switch ty__18.(type) {
     case TVar:
-        var x14 *ref_tv_x = ty__18.(TVar)._0
-        var tvref__20 *ref_tv_x = x14
-        var mtmp18 Tv = ref_get__Ref_Tv(tvref__20)
+        var x14 *ref_Tv_x = ty__18.(TVar)._0
+        var tvref__20 *ref_Tv_x = x14
+        var mtmp18 Tv = ref_get__Ref_2Tv(tvref__20)
         var jp262 string
         switch mtmp18.(type) {
         case Unbound:
@@ -469,15 +465,11 @@ func typ_to_string(ty__18 Typ) string {
             panic("non-exhaustive match")
         }
         jp260 = jp262
-        retv258 = jp260
-        return retv258
     case QVar:
         var x15 string = ty__18.(QVar)._0
         var name__19 string = x15
         var t265 string = "'" + name__19
         jp260 = t265
-        retv258 = jp260
-        return retv258
     case TArrow:
         var x16 Typ = ty__18.(TArrow)._0
         var x17 Typ = ty__18.(TArrow)._1
@@ -499,11 +491,11 @@ func typ_to_string(ty__18 Typ) string {
         var t268 string = s1__25 + " -> "
         var t269 string = t268 + s2__26
         jp260 = t269
-        retv258 = jp260
-        return retv258
     default:
         panic("non-exhaustive match")
     }
+    retv258 = jp260
+    return retv258
 }
 
 func env_empty() []EnvEntry {
@@ -516,18 +508,18 @@ func env_empty() []EnvEntry {
 func env_lookup__native(env__28 []EnvEntry, name__29 string) (Typ, bool) {
     var t279 int32 = int32(len(env__28))
     var t280 int32 = t279 - 1
-    var i__30 *ref_int32_x = ref__Ref_int32(t280)
-    var found__31 *ref_option__typ_x = ref__Ref_Option__Typ(None{})
-    var done__32 *ref_bool_x = ref__Ref_bool(false)
+    var i__30 *ref_int32_x = ref__Ref_5int32(t280)
+    var found__31 *ref_Option__Typ_x = ref__Ref_11Option__Typ(None{})
+    var done__32 *ref_bool_x = ref__Ref_4bool(false)
     Loop_loop283:
     for {
-        var t284 bool = ref_get__Ref_bool(done__32)
+        var t284 bool = ref_get__Ref_4bool(done__32)
         var t285 bool = !t284
-        var t286 int32 = ref_get__Ref_int32(i__30)
+        var t286 int32 = ref_get__Ref_5int32(i__30)
         var t287 bool = t286 >= 0
         var t288 bool = t285 && t287
         if t288 {
-            var t289 int32 = ref_get__Ref_int32(i__30)
+            var t289 int32 = ref_get__Ref_5int32(i__30)
             var entry__33 EnvEntry = env__28[t289]
             var t291 string = entry__33.name
             var t292 bool = t291 == name__29
@@ -536,19 +528,19 @@ func env_lookup__native(env__28 []EnvEntry, name__29 string) (Typ, bool) {
                 var t294 Option__Typ = Some{
                     _0: t293,
                 }
-                ref_set__Ref_Option__Typ(found__31, t294)
-                ref_set__Ref_bool(done__32, true)
+                ref_set__Ref_11Option__Typ(found__31, t294)
+                ref_set__Ref_4bool(done__32, true)
             } else {
-                var t296 int32 = ref_get__Ref_int32(i__30)
+                var t296 int32 = ref_get__Ref_5int32(i__30)
                 var t297 int32 = t296 - 1
-                ref_set__Ref_int32(i__30, t297)
+                ref_set__Ref_5int32(i__30, t297)
             }
             continue
         } else {
             break Loop_loop283
         }
     }
-    var t282 Option__Typ = ref_get__Ref_Option__Typ(found__31)
+    var t282 Option__Typ = ref_get__Ref_11Option__Typ(found__31)
     switch ret_variant := t282.(type) {
     case None:
         var ret_zero Typ
@@ -575,18 +567,18 @@ func env_lookup(env__28 []EnvEntry, name__29 string) Option__Typ {
 func subst_lookup__native(subst__34 []SubstEntry, name__35 string) (Typ, bool) {
     var t301 int32 = int32(len(subst__34))
     var t302 int32 = t301 - 1
-    var i__36 *ref_int32_x = ref__Ref_int32(t302)
-    var found__37 *ref_option__typ_x = ref__Ref_Option__Typ(None{})
-    var done__38 *ref_bool_x = ref__Ref_bool(false)
+    var i__36 *ref_int32_x = ref__Ref_5int32(t302)
+    var found__37 *ref_Option__Typ_x = ref__Ref_11Option__Typ(None{})
+    var done__38 *ref_bool_x = ref__Ref_4bool(false)
     Loop_loop305:
     for {
-        var t306 bool = ref_get__Ref_bool(done__38)
+        var t306 bool = ref_get__Ref_4bool(done__38)
         var t307 bool = !t306
-        var t308 int32 = ref_get__Ref_int32(i__36)
+        var t308 int32 = ref_get__Ref_5int32(i__36)
         var t309 bool = t308 >= 0
         var t310 bool = t307 && t309
         if t310 {
-            var t311 int32 = ref_get__Ref_int32(i__36)
+            var t311 int32 = ref_get__Ref_5int32(i__36)
             var entry__39 SubstEntry = subst__34[t311]
             var t313 string = entry__39.name
             var t314 bool = t313 == name__35
@@ -595,19 +587,19 @@ func subst_lookup__native(subst__34 []SubstEntry, name__35 string) (Typ, bool) {
                 var t316 Option__Typ = Some{
                     _0: t315,
                 }
-                ref_set__Ref_Option__Typ(found__37, t316)
-                ref_set__Ref_bool(done__38, true)
+                ref_set__Ref_11Option__Typ(found__37, t316)
+                ref_set__Ref_4bool(done__38, true)
             } else {
-                var t318 int32 = ref_get__Ref_int32(i__36)
+                var t318 int32 = ref_get__Ref_5int32(i__36)
                 var t319 int32 = t318 - 1
-                ref_set__Ref_int32(i__36, t319)
+                ref_set__Ref_5int32(i__36, t319)
             }
             continue
         } else {
             break Loop_loop305
         }
     }
-    var t304 Option__Typ = ref_get__Ref_Option__Typ(found__37)
+    var t304 Option__Typ = ref_get__Ref_11Option__Typ(found__37)
     switch ret_variant := t304.(type) {
     case None:
         var ret_zero Typ
@@ -631,25 +623,22 @@ func subst_lookup(subst__34 []SubstEntry, name__35 string) Option__Typ {
     return None{}
 }
 
-func occurs(st__40 CheckerState, tvr__41 *ref_tv_x, ty__42 Typ) Result__unit__string {
+func occurs(st__40 CheckerState, tvr__41 *ref_Tv_x, ty__42 Typ) Result__unit__string {
     var retv322 Result__unit__string
     var jp324 Result__unit__string
     switch ty__42.(type) {
     case TVar:
-        var x26 *ref_tv_x = ty__42.(TVar)._0
-        var tvr2__43 *ref_tv_x = x26
-        var t327 bool = ptr_eq__Ref_Tv(tvr__41, tvr2__43)
+        var x26 *ref_Tv_x = ty__42.(TVar)._0
+        var tvr2__43 *ref_Tv_x = x26
+        var t327 bool = ptr_eq__Ref_2Tv(tvr__41, tvr2__43)
         var jp326 Result__unit__string
         if t327 {
             var t328 Result__unit__string = Result__unit__string_Err{
                 _0: "occurs check",
             }
             jp326 = t328
-            jp324 = jp326
-            retv322 = jp324
-            return retv322
         } else {
-            var mtmp30 Tv = ref_get__Ref_Tv(tvr2__43)
+            var mtmp30 Tv = ref_get__Ref_2Tv(tvr2__43)
             var jp330 Result__unit__string
             switch mtmp30.(type) {
             case Unbound:
@@ -657,7 +646,7 @@ func occurs(st__40 CheckerState, tvr__41 *ref_tv_x, ty__42 Typ) Result__unit__st
                 var x32 int32 = mtmp30.(Unbound)._1
                 var l2__45 int32 = x32
                 var name__44 string = x31
-                var mtmp34 Tv = ref_get__Ref_Tv(tvr__41)
+                var mtmp34 Tv = ref_get__Ref_2Tv(tvr__41)
                 var jp332 int32
                 switch mtmp34.(type) {
                 case Unbound:
@@ -675,35 +664,27 @@ func occurs(st__40 CheckerState, tvr__41 *ref_tv_x, ty__42 Typ) Result__unit__st
                     _0: name__44,
                     _1: min_level__47,
                 }
-                ref_set__Ref_Tv(tvr2__43, t333)
+                ref_set__Ref_2Tv(tvr2__43, t333)
                 var t334 Result__unit__string = Result__unit__string_Ok{
                     _0: struct{}{},
                 }
                 jp330 = t334
-                jp326 = jp330
-                jp324 = jp326
-                retv322 = jp324
-                return retv322
             case Link:
                 var x33 Typ = mtmp30.(Link)._0
                 var inner__48 Typ = x33
                 var t336 Result__unit__string = occurs(st__40, tvr__41, inner__48)
                 jp330 = t336
-                jp326 = jp330
-                jp324 = jp326
-                retv322 = jp324
-                return retv322
             default:
                 panic("non-exhaustive match")
             }
+            jp326 = jp330
         }
+        jp324 = jp326
     case QVar:
         var t337 Result__unit__string = Result__unit__string_Ok{
             _0: struct{}{},
         }
         jp324 = t337
-        retv322 = jp324
-        return retv322
     case TArrow:
         var x28 Typ = ty__42.(TArrow)._0
         var x29 Typ = ty__42.(TArrow)._1
@@ -726,16 +707,16 @@ func occurs(st__40 CheckerState, tvr__41 *ref_tv_x, ty__42 Typ) Result__unit__st
             panic("non-exhaustive match")
         }
         jp324 = jp339
-        retv322 = jp324
-        return retv322
     default:
         panic("non-exhaustive match")
     }
+    retv322 = jp324
+    return retv322
 }
 
 func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
     var retv343 Result__unit__string
-    var mtmp42 Tuple2_Typ_Typ = Tuple2_Typ_Typ{
+    var mtmp42 Tuple2_3Typ_3Typ = Tuple2_3Typ_3Typ{
         _0: t1__53,
         _1: t2__54,
     }
@@ -744,30 +725,26 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
     var jp345 Result__unit__string
     switch x44.(type) {
     case TVar:
-        var x45 *ref_tv_x = x44.(TVar)._0
+        var x45 *ref_Tv_x = x44.(TVar)._0
         var jp347 Result__unit__string
         switch x43.(type) {
         case TVar:
-            var x49 *ref_tv_x = x43.(TVar)._0
-            var r1__55 *ref_tv_x = x49
-            var r2__56 *ref_tv_x = x45
-            var t350 bool = ptr_eq__Ref_Tv(r1__55, r2__56)
+            var x49 *ref_Tv_x = x43.(TVar)._0
+            var r1__55 *ref_Tv_x = x49
+            var r2__56 *ref_Tv_x = x45
+            var t350 bool = ptr_eq__Ref_2Tv(r1__55, r2__56)
             var jp349 Result__unit__string
             if t350 {
                 var t351 Result__unit__string = Result__unit__string_Ok{
                     _0: struct{}{},
                 }
                 jp349 = t351
-                jp347 = jp349
-                jp345 = jp347
-                retv343 = jp345
-                return retv343
             } else {
-                var mtmp53 Tv = ref_get__Ref_Tv(r1__55)
+                var mtmp53 Tv = ref_get__Ref_2Tv(r1__55)
                 var jp353 Result__unit__string
                 switch mtmp53.(type) {
                 case Unbound:
-                    var mtmp57 Tv = ref_get__Ref_Tv(r2__56)
+                    var mtmp57 Tv = ref_get__Ref_2Tv(r2__56)
                     var jp355 Result__unit__string
                     switch mtmp57.(type) {
                     case Unbound:
@@ -784,7 +761,7 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                             var t360 Tv = Link{
                                 _0: t359,
                             }
-                            ref_set__Ref_Tv(r1__55, t360)
+                            ref_set__Ref_2Tv(r1__55, t360)
                             var t361 Result__unit__string = Result__unit__string_Ok{
                                 _0: struct{}{},
                             }
@@ -800,12 +777,6 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                             panic("non-exhaustive match")
                         }
                         jp355 = jp358
-                        jp353 = jp355
-                        jp349 = jp353
-                        jp347 = jp349
-                        jp345 = jp347
-                        retv343 = jp345
-                        return retv343
                     case Link:
                         var x60 Typ = mtmp57.(Link)._0
                         var inner__58 Typ = x60
@@ -814,15 +785,10 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                         }
                         var t364 Result__unit__string = unify(st__52, t363, inner__58)
                         jp355 = t364
-                        jp353 = jp355
-                        jp349 = jp353
-                        jp347 = jp349
-                        jp345 = jp347
-                        retv343 = jp345
-                        return retv343
                     default:
                         panic("non-exhaustive match")
                     }
+                    jp353 = jp355
                 case Link:
                     var x56 Typ = mtmp53.(Link)._0
                     var inner__57 Typ = x56
@@ -831,19 +797,16 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                     }
                     var t366 Result__unit__string = unify(st__52, inner__57, t365)
                     jp353 = t366
-                    jp349 = jp353
-                    jp347 = jp349
-                    jp345 = jp347
-                    retv343 = jp345
-                    return retv343
                 default:
                     panic("non-exhaustive match")
                 }
+                jp349 = jp353
             }
+            jp347 = jp349
         case QVar:
-            var r2__65 *ref_tv_x = x45
+            var r2__65 *ref_Tv_x = x45
             var other__64 Typ = x43
-            var mtmp65 Tv = ref_get__Ref_Tv(r2__65)
+            var mtmp65 Tv = ref_get__Ref_2Tv(r2__65)
             var jp368 Result__unit__string
             switch mtmp65.(type) {
             case Unbound:
@@ -854,7 +817,7 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                     var t371 Tv = Link{
                         _0: other__64,
                     }
-                    ref_set__Ref_Tv(r2__65, t371)
+                    ref_set__Ref_2Tv(r2__65, t371)
                     var t372 Result__unit__string = Result__unit__string_Ok{
                         _0: struct{}{},
                     }
@@ -870,26 +833,19 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                     panic("non-exhaustive match")
                 }
                 jp368 = jp370
-                jp347 = jp368
-                jp345 = jp347
-                retv343 = jp345
-                return retv343
             case Link:
                 var x68 Typ = mtmp65.(Link)._0
                 var inner__66 Typ = x68
                 var t374 Result__unit__string = unify(st__52, other__64, inner__66)
                 jp368 = t374
-                jp347 = jp368
-                jp345 = jp347
-                retv343 = jp345
-                return retv343
             default:
                 panic("non-exhaustive match")
             }
+            jp347 = jp368
         case TArrow:
-            var r2__65 *ref_tv_x = x45
+            var r2__65 *ref_Tv_x = x45
             var other__64 Typ = x43
-            var mtmp73 Tv = ref_get__Ref_Tv(r2__65)
+            var mtmp73 Tv = ref_get__Ref_2Tv(r2__65)
             var jp376 Result__unit__string
             switch mtmp73.(type) {
             case Unbound:
@@ -900,7 +856,7 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                     var t379 Tv = Link{
                         _0: other__64,
                     }
-                    ref_set__Ref_Tv(r2__65, t379)
+                    ref_set__Ref_2Tv(r2__65, t379)
                     var t380 Result__unit__string = Result__unit__string_Ok{
                         _0: struct{}{},
                     }
@@ -916,33 +872,27 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                     panic("non-exhaustive match")
                 }
                 jp376 = jp378
-                jp347 = jp376
-                jp345 = jp347
-                retv343 = jp345
-                return retv343
             case Link:
                 var x76 Typ = mtmp73.(Link)._0
                 var inner__66 Typ = x76
                 var t382 Result__unit__string = unify(st__52, other__64, inner__66)
                 jp376 = t382
-                jp347 = jp376
-                jp345 = jp347
-                retv343 = jp345
-                return retv343
             default:
                 panic("non-exhaustive match")
             }
+            jp347 = jp376
         default:
             panic("non-exhaustive match")
         }
+        jp345 = jp347
     case QVar:
         var jp384 Result__unit__string
         switch x43.(type) {
         case TVar:
-            var x81 *ref_tv_x = x43.(TVar)._0
-            var r1__60 *ref_tv_x = x81
+            var x81 *ref_Tv_x = x43.(TVar)._0
+            var r1__60 *ref_Tv_x = x81
             var other__61 Typ = x44
-            var mtmp85 Tv = ref_get__Ref_Tv(r1__60)
+            var mtmp85 Tv = ref_get__Ref_2Tv(r1__60)
             var jp386 Result__unit__string
             switch mtmp85.(type) {
             case Unbound:
@@ -953,7 +903,7 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                     var t389 Tv = Link{
                         _0: other__61,
                     }
-                    ref_set__Ref_Tv(r1__60, t389)
+                    ref_set__Ref_2Tv(r1__60, t389)
                     var t390 Result__unit__string = Result__unit__string_Ok{
                         _0: struct{}{},
                     }
@@ -969,51 +919,39 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                     panic("non-exhaustive match")
                 }
                 jp386 = jp388
-                jp384 = jp386
-                jp345 = jp384
-                retv343 = jp345
-                return retv343
             case Link:
                 var x88 Typ = mtmp85.(Link)._0
                 var inner__62 Typ = x88
                 var t392 Result__unit__string = unify(st__52, inner__62, other__61)
                 jp386 = t392
-                jp384 = jp386
-                jp345 = jp384
-                retv343 = jp345
-                return retv343
             default:
                 panic("non-exhaustive match")
             }
+            jp384 = jp386
         case QVar:
             var t393 Result__unit__string = Result__unit__string_Err{
                 _0: "unify error",
             }
             jp384 = t393
-            jp345 = jp384
-            retv343 = jp345
-            return retv343
         case TArrow:
             var t394 Result__unit__string = Result__unit__string_Err{
                 _0: "unify error",
             }
             jp384 = t394
-            jp345 = jp384
-            retv343 = jp345
-            return retv343
         default:
             panic("non-exhaustive match")
         }
+        jp345 = jp384
     case TArrow:
         var x47 Typ = x44.(TArrow)._0
         var x48 Typ = x44.(TArrow)._1
         var jp396 Result__unit__string
         switch x43.(type) {
         case TVar:
-            var x93 *ref_tv_x = x43.(TVar)._0
-            var r1__60 *ref_tv_x = x93
+            var x93 *ref_Tv_x = x43.(TVar)._0
+            var r1__60 *ref_Tv_x = x93
             var other__61 Typ = x44
-            var mtmp97 Tv = ref_get__Ref_Tv(r1__60)
+            var mtmp97 Tv = ref_get__Ref_2Tv(r1__60)
             var jp398 Result__unit__string
             switch mtmp97.(type) {
             case Unbound:
@@ -1024,7 +962,7 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                     var t401 Tv = Link{
                         _0: other__61,
                     }
-                    ref_set__Ref_Tv(r1__60, t401)
+                    ref_set__Ref_2Tv(r1__60, t401)
                     var t402 Result__unit__string = Result__unit__string_Ok{
                         _0: struct{}{},
                     }
@@ -1040,30 +978,20 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                     panic("non-exhaustive match")
                 }
                 jp398 = jp400
-                jp396 = jp398
-                jp345 = jp396
-                retv343 = jp345
-                return retv343
             case Link:
                 var x100 Typ = mtmp97.(Link)._0
                 var inner__62 Typ = x100
                 var t404 Result__unit__string = unify(st__52, inner__62, other__61)
                 jp398 = t404
-                jp396 = jp398
-                jp345 = jp396
-                retv343 = jp345
-                return retv343
             default:
                 panic("non-exhaustive match")
             }
+            jp396 = jp398
         case QVar:
             var t405 Result__unit__string = Result__unit__string_Err{
                 _0: "unify error",
             }
             jp396 = t405
-            jp345 = jp396
-            retv343 = jp345
-            return retv343
         case TArrow:
             var x95 Typ = x43.(TArrow)._0
             var x96 Typ = x43.(TArrow)._1
@@ -1088,15 +1016,15 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                 panic("non-exhaustive match")
             }
             jp396 = jp407
-            jp345 = jp396
-            retv343 = jp345
-            return retv343
         default:
             panic("non-exhaustive match")
         }
+        jp345 = jp396
     default:
         panic("non-exhaustive match")
     }
+    retv343 = jp345
+    return retv343
 }
 
 func gen(st__73 CheckerState, ty__74 Typ) Typ {
@@ -1104,9 +1032,9 @@ func gen(st__73 CheckerState, ty__74 Typ) Typ {
     var jp413 Typ
     switch ty__74.(type) {
     case TVar:
-        var x108 *ref_tv_x = ty__74.(TVar)._0
-        var tvref__75 *ref_tv_x = x108
-        var mtmp112 Tv = ref_get__Ref_Tv(tvref__75)
+        var x108 *ref_Tv_x = ty__74.(TVar)._0
+        var tvref__75 *ref_Tv_x = x108
+        var mtmp112 Tv = ref_get__Ref_2Tv(tvref__75)
         var jp415 Typ
         switch mtmp112.(type) {
         case Unbound:
@@ -1115,7 +1043,7 @@ func gen(st__73 CheckerState, ty__74 Typ) Typ {
             var l__77 int32 = x114
             var name__76 string = x113
             var t416 *ref_int32_x = st__73.current_level
-            var cur__78 int32 = ref_get__Ref_int32(t416)
+            var cur__78 int32 = ref_get__Ref_5int32(t416)
             var t419 bool = l__77 > cur__78
             var jp418 Typ
             if t419 {
@@ -1130,25 +1058,18 @@ func gen(st__73 CheckerState, ty__74 Typ) Typ {
                 jp418 = t421
             }
             jp415 = jp418
-            jp413 = jp415
-            retv411 = jp413
-            return retv411
         case Link:
             var x115 Typ = mtmp112.(Link)._0
             var inner__79 Typ = x115
             var t422 Typ = gen(st__73, inner__79)
             jp415 = t422
-            jp413 = jp415
-            retv411 = jp413
-            return retv411
         default:
             panic("non-exhaustive match")
         }
+        jp413 = jp415
     case QVar:
         var other__82 Typ = ty__74
         jp413 = other__82
-        retv411 = jp413
-        return retv411
     case TArrow:
         var x110 Typ = ty__74.(TArrow)._0
         var x111 Typ = ty__74.(TArrow)._1
@@ -1161,28 +1082,28 @@ func gen(st__73 CheckerState, ty__74 Typ) Typ {
             _1: t424,
         }
         jp413 = t425
-        retv411 = jp413
-        return retv411
     default:
         panic("non-exhaustive match")
     }
+    retv411 = jp413
+    return retv411
 }
 
-func inst_loop(st__83 CheckerState, subst__84 []SubstEntry, ty__85 Typ) Tuple2_Typ_Vec_SubstEntry {
-    var retv427 Tuple2_Typ_Vec_SubstEntry
-    var jp429 Tuple2_Typ_Vec_SubstEntry
+func inst_loop(st__83 CheckerState, subst__84 []SubstEntry, ty__85 Typ) Tuple2_3Typ_16Vec_10SubstEntry {
+    var retv427 Tuple2_3Typ_16Vec_10SubstEntry
+    var jp429 Tuple2_3Typ_16Vec_10SubstEntry
     switch ty__85.(type) {
     case TVar:
-        var x116 *ref_tv_x = ty__85.(TVar)._0
-        var tvref__90 *ref_tv_x = x116
-        var mtmp120 Tv = ref_get__Ref_Tv(tvref__90)
-        var jp431 Tuple2_Typ_Vec_SubstEntry
+        var x116 *ref_Tv_x = ty__85.(TVar)._0
+        var tvref__90 *ref_Tv_x = x116
+        var mtmp120 Tv = ref_get__Ref_2Tv(tvref__90)
+        var jp431 Tuple2_3Typ_16Vec_10SubstEntry
         switch mtmp120.(type) {
         case Unbound:
             var t432 Typ = TVar{
                 _0: tvref__90,
             }
-            var t433 Tuple2_Typ_Vec_SubstEntry = Tuple2_Typ_Vec_SubstEntry{
+            var t433 Tuple2_3Typ_16Vec_10SubstEntry = Tuple2_3Typ_16Vec_10SubstEntry{
                 _0: t432,
                 _1: subst__84,
             }
@@ -1190,19 +1111,17 @@ func inst_loop(st__83 CheckerState, subst__84 []SubstEntry, ty__85 Typ) Tuple2_T
         case Link:
             var x123 Typ = mtmp120.(Link)._0
             var inner__91 Typ = x123
-            var t434 Tuple2_Typ_Vec_SubstEntry = inst_loop(st__83, subst__84, inner__91)
+            var t434 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__83, subst__84, inner__91)
             jp431 = t434
         default:
             panic("non-exhaustive match")
         }
         jp429 = jp431
-        retv427 = jp429
-        return retv427
     case QVar:
         var x117 string = ty__85.(QVar)._0
         var name__86 string = x117
         var mtmp124 Option__Typ = subst_lookup(subst__84, name__86)
-        var jp436 Tuple2_Typ_Vec_SubstEntry
+        var jp436 Tuple2_3Typ_16Vec_10SubstEntry
         switch mtmp124.(type) {
         case None:
             var tv__88 Typ = newvar(st__83)
@@ -1211,7 +1130,7 @@ func inst_loop(st__83 CheckerState, subst__84 []SubstEntry, ty__85 Typ) Tuple2_T
                 ty: tv__88,
             }
             var new_subst__89 []SubstEntry = append(subst__84, t437)
-            var t438 Tuple2_Typ_Vec_SubstEntry = Tuple2_Typ_Vec_SubstEntry{
+            var t438 Tuple2_3Typ_16Vec_10SubstEntry = Tuple2_3Typ_16Vec_10SubstEntry{
                 _0: tv__88,
                 _1: new_subst__89,
             }
@@ -1219,7 +1138,7 @@ func inst_loop(st__83 CheckerState, subst__84 []SubstEntry, ty__85 Typ) Tuple2_T
         case Some:
             var x125 Typ = mtmp124.(Some)._0
             var t__87 Typ = x125
-            var t439 Tuple2_Typ_Vec_SubstEntry = Tuple2_Typ_Vec_SubstEntry{
+            var t439 Tuple2_3Typ_16Vec_10SubstEntry = Tuple2_3Typ_16Vec_10SubstEntry{
                 _0: t__87,
                 _1: subst__84,
             }
@@ -1228,19 +1147,17 @@ func inst_loop(st__83 CheckerState, subst__84 []SubstEntry, ty__85 Typ) Tuple2_T
             panic("non-exhaustive match")
         }
         jp429 = jp436
-        retv427 = jp429
-        return retv427
     case TArrow:
         var x118 Typ = ty__85.(TArrow)._0
         var x119 Typ = ty__85.(TArrow)._1
         var t2__93 Typ = x119
         var t1__92 Typ = x118
-        var mtmp126 Tuple2_Typ_Vec_SubstEntry = inst_loop(st__83, subst__84, t1__92)
+        var mtmp126 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__83, subst__84, t1__92)
         var x127 Typ = mtmp126._0
         var x128 []SubstEntry = mtmp126._1
         var subst1__95 []SubstEntry = x128
         var ty1__94 Typ = x127
-        var mtmp129 Tuple2_Typ_Vec_SubstEntry = inst_loop(st__83, subst1__95, t2__93)
+        var mtmp129 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__83, subst1__95, t2__93)
         var x130 Typ = mtmp129._0
         var x131 []SubstEntry = mtmp129._1
         var subst2__97 []SubstEntry = x131
@@ -1249,22 +1166,22 @@ func inst_loop(st__83 CheckerState, subst__84 []SubstEntry, ty__85 Typ) Tuple2_T
             _0: ty1__94,
             _1: ty2__96,
         }
-        var t441 Tuple2_Typ_Vec_SubstEntry = Tuple2_Typ_Vec_SubstEntry{
+        var t441 Tuple2_3Typ_16Vec_10SubstEntry = Tuple2_3Typ_16Vec_10SubstEntry{
             _0: t440,
             _1: subst2__97,
         }
         jp429 = t441
-        retv427 = jp429
-        return retv427
     default:
         panic("non-exhaustive match")
     }
+    retv427 = jp429
+    return retv427
 }
 
 func inst(st__98 CheckerState, ty__99 Typ) Typ {
     var retv443 Typ
     var subst0__100 []SubstEntry = nil
-    var mtmp132 Tuple2_Typ_Vec_SubstEntry = inst_loop(st__98, subst0__100, ty__99)
+    var mtmp132 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__98, subst0__100, ty__99)
     var x133 Typ = mtmp132._0
     var t__101 Typ = x133
     retv443 = t__101
@@ -1298,8 +1215,6 @@ func typeof(st__102 CheckerState, env__103 []EnvEntry, e__104 Exp) Result__Typ__
             panic("non-exhaustive match")
         }
         jp447 = jp449
-        retv445 = jp447
-        return retv445
     case App:
         var x136 Exp = e__104.(App)._0
         var x137 Exp = e__104.(App)._1
@@ -1341,10 +1256,6 @@ func typeof(st__102 CheckerState, env__103 []EnvEntry, e__104 Exp) Result__Typ__
                     panic("non-exhaustive match")
                 }
                 jp456 = jp458
-                jp454 = jp456
-                jp447 = jp454
-                retv445 = jp447
-                return retv445
             case Result__Typ__string_Err:
                 var x150 string = mtmp148.(Result__Typ__string_Err)._0
                 var e__117 string = x150
@@ -1352,13 +1263,10 @@ func typeof(st__102 CheckerState, env__103 []EnvEntry, e__104 Exp) Result__Typ__
                     _0: e__117,
                 }
                 jp456 = t461
-                jp454 = jp456
-                jp447 = jp454
-                retv445 = jp447
-                return retv445
             default:
                 panic("non-exhaustive match")
             }
+            jp454 = jp456
         case Result__Typ__string_Err:
             var x147 string = mtmp145.(Result__Typ__string_Err)._0
             var e__115 string = x147
@@ -1366,12 +1274,10 @@ func typeof(st__102 CheckerState, env__103 []EnvEntry, e__104 Exp) Result__Typ__
                 _0: e__115,
             }
             jp454 = t462
-            jp447 = jp454
-            retv445 = jp447
-            return retv445
         default:
             panic("non-exhaustive match")
         }
+        jp447 = jp454
     case Lam:
         var x138 string = e__104.(Lam)._0
         var x139 Exp = e__104.(Lam)._1
@@ -1408,8 +1314,6 @@ func typeof(st__102 CheckerState, env__103 []EnvEntry, e__104 Exp) Result__Typ__
             panic("non-exhaustive match")
         }
         jp447 = jp465
-        retv445 = jp447
-        return retv445
     case Let:
         var x140 string = e__104.(Let)._0
         var x141 Exp = e__104.(Let)._1
@@ -1444,11 +1348,11 @@ func typeof(st__102 CheckerState, env__103 []EnvEntry, e__104 Exp) Result__Typ__
             panic("non-exhaustive match")
         }
         jp447 = jp470
-        retv445 = jp447
-        return retv445
     default:
         panic("non-exhaustive match")
     }
+    retv445 = jp447
+    return retv445
 }
 
 func exp_var(name__129 string) Exp {

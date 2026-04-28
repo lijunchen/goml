@@ -1,15 +1,15 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
 )
 
 func int32_to_string(x int32) string {
-    return fmt.Sprintf("%d", x)
+    return _goml_fmt.Sprintf("%d", x)
 }
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -34,13 +34,13 @@ func (_ Nothing) isMaybe__int32() {}
 
 type GoError = error
 
-func _goml_trait_impl_Display_Point_show(self__0 Point) string {
+func _goml_trait_x5f_impl_x23_Display_x23_Point_x23_show(self__0 Point) string {
     var retv5 string
     retv5 = "Point"
     return retv5
 }
 
-func _goml_trait_impl_Display_Maybe__int32_show(self__1 Maybe__int32) string {
+func _goml_trait_x5f_impl_x23_Display_x23_Maybe_x5f__x5f_int32_x23_show(self__1 Maybe__int32) string {
     var retv7 string
     var jp9 string
     switch self__1.(type) {
@@ -82,11 +82,11 @@ func main0() struct{} {
     }
     var some_number__5 Maybe__int32 = make_maybe(true)
     var none_number__6 Maybe__int32 = make_maybe(false)
-    var t19 string = _goml_trait_impl_Display_Point_show(point__4)
+    var t19 string = _goml_trait_x5f_impl_x23_Display_x23_Point_x23_show(point__4)
     string_println(t19)
-    var t20 string = _goml_trait_impl_Display_Maybe__int32_show(some_number__5)
+    var t20 string = _goml_trait_x5f_impl_x23_Display_x23_Maybe_x5f__x5f_int32_x23_show(some_number__5)
     string_println(t20)
-    var t21 string = _goml_trait_impl_Display_Maybe__int32_show(none_number__6)
+    var t21 string = _goml_trait_x5f_impl_x23_Display_x23_Maybe_x5f__x5f_int32_x23_show(none_number__6)
     string_println(t21)
     return struct{}{}
 }

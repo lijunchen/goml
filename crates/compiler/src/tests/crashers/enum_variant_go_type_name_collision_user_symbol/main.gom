@@ -1,0 +1,18 @@
+struct E__int32_A {
+    value: int32,
+}
+
+enum E[T] {
+    A(T),
+    B,
+}
+
+fn main() -> unit {
+    let c = E__int32_A { value: 3i32 };
+    let _: E[string] = E::A("x");
+    let y: E[int32] = E::A(4i32);
+    match y {
+        E::A(v) => println(v + c.value),
+        E::B => println(0i32),
+    }
+}

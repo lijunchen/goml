@@ -607,6 +607,7 @@ pub(crate) fn type_expr(p: &mut Parser) {
 }
 
 fn type_expr_bp(p: &mut Parser, min_bp: u8) -> Option<MarkerClosed> {
+    let _type_depth = p.enter_type()?;
     let mut lhs = type_atom(p)?;
 
     loop {

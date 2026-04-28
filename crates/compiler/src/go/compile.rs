@@ -6,7 +6,7 @@ use crate::{
         InherentImplKey, StructDef,
     },
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
-    go::mangle::{encode_ty, go_ident},
+    go::mangle::{encode_ty, go_dyn_struct_name, go_generated_ident, go_ident, go_user_type_name},
     lift::{GlobalLiftEnv, is_closure_env_struct},
     names::{inherent_method_fn_name, parse_trait_impl_fn_name, trait_impl_fn_name, ty_compact},
     package_names::{ENTRY_FUNCTION, ENTRY_WRAPPER_FUNCTION},
@@ -24,6 +24,11 @@ pub struct GlobalGoEnv {
     pub genv: GlobalTypeEnv,
     pub liftenv: GlobalLiftEnv,
     pub toplevel_funcs: HashSet<String>,
+    pub colliding_callable_idents: HashSet<String>,
+    pub callable_go_names: HashMap<String, String>,
+    pub callable_go_name_set: HashSet<String>,
+    pub dyn_vtable_ctor_go_names: HashMap<(String, String), String>,
+    pub dyn_wrap_go_names: HashMap<(String, String, String), String>,
 }
 
 impl Default for GlobalGoEnv {
@@ -35,6 +40,11 @@ impl Default for GlobalGoEnv {
             genv,
             liftenv,
             toplevel_funcs: HashSet::new(),
+            colliding_callable_idents: HashSet::new(),
+            callable_go_names: HashMap::new(),
+            callable_go_name_set: HashSet::new(),
+            dyn_vtable_ctor_go_names: HashMap::new(),
+            dyn_wrap_go_names: HashMap::new(),
         }
     }
 }
@@ -47,6 +57,11 @@ impl GlobalGoEnv {
             genv,
             liftenv,
             toplevel_funcs: HashSet::new(),
+            colliding_callable_idents: HashSet::new(),
+            callable_go_names: HashMap::new(),
+            callable_go_name_set: HashSet::new(),
+            dyn_vtable_ctor_go_names: HashMap::new(),
+            dyn_wrap_go_names: HashMap::new(),
         }
     }
 
@@ -97,6 +112,139 @@ fn runtime_builtin_available(goenv: &GlobalGoEnv, name: &str) -> bool {
         .get(name)
         .map(|scheme| scheme.origin)
         == Some(FnOrigin::Builtin)
+}
+
+fn runtime_generated_function_name(name: &str) -> bool {
+    matches!(
+        name,
+        "unit_to_string"
+            | "bool_to_string"
+            | "bool_to_json"
+            | "json_escape_string"
+            | "string_len"
+            | "string_get"
+            | "char_to_string"
+            | "int8_to_string"
+            | "int16_to_string"
+            | "int32_to_string"
+            | "int64_to_string"
+            | "uint8_to_string"
+            | "uint16_to_string"
+            | "uint32_to_string"
+            | "uint64_to_string"
+            | "float32_to_string"
+            | "float64_to_string"
+            | "int8_hash"
+            | "int16_hash"
+            | "int32_hash"
+            | "int64_hash"
+            | "uint8_hash"
+            | "uint16_hash"
+            | "uint32_hash"
+            | "float32_hash"
+            | "float64_hash"
+            | "char_hash"
+            | "string_hash"
+            | "string_print"
+            | "string_println"
+            | "go_error_to_string"
+            | "missing"
+    )
+}
+
+fn go_toplevel_func_name(goenv: &GlobalGoEnv, name: &str) -> String {
+    if let Some(go_name) = goenv.callable_go_names.get(name) {
+        return go_name.clone();
+    }
+    resolve_toplevel_func_name(goenv, name)
+}
+
+fn resolve_toplevel_func_name(goenv: &GlobalGoEnv, name: &str) -> String {
+    let ident = go_ident(name);
+    let is_callable =
+        goenv.toplevel_funcs.contains(name) || goenv.genv.value_env.extern_funcs.contains_key(name);
+    if is_callable && go_callable_name_collides(goenv, &ident) {
+        go_unique_toplevel_func_name(name)
+    } else if is_callable
+        && (ident == "init"
+            || runtime_generated_function_name(name)
+            || is_generated_tuple_type_name(&ident)
+            || go_toplevel_func_name_collides_with_type(goenv, &ident))
+    {
+        format!("_goml_user_{}", ident)
+    } else {
+        ident
+    }
+}
+
+fn collect_callable_go_names(goenv: &GlobalGoEnv) -> HashMap<String, String> {
+    goenv
+        .toplevel_funcs
+        .iter()
+        .chain(goenv.genv.value_env.extern_funcs.keys())
+        .map(|name| (name.clone(), resolve_toplevel_func_name(goenv, name)))
+        .collect()
+}
+
+fn go_callable_name_collides(goenv: &GlobalGoEnv, ident: &str) -> bool {
+    goenv.colliding_callable_idents.contains(ident)
+}
+
+fn collect_colliding_callable_idents(goenv: &GlobalGoEnv) -> HashSet<String> {
+    let mut counts = HashMap::new();
+    let mut colliding = HashSet::new();
+    for name in goenv
+        .toplevel_funcs
+        .iter()
+        .chain(goenv.genv.value_env.extern_funcs.keys())
+    {
+        let ident = go_ident(name);
+        let count = counts.entry(ident.clone()).or_insert(0usize);
+        *count += 1;
+        if *count > 1 {
+            colliding.insert(ident);
+        }
+    }
+    colliding
+}
+
+fn go_unique_toplevel_func_name(name: &str) -> String {
+    let mut out = String::from("_goml_fn");
+    for byte in name.as_bytes() {
+        use std::fmt::Write;
+        write!(&mut out, "_{:02x}", byte).unwrap();
+    }
+    out
+}
+
+fn go_toplevel_func_name_collides_with_type(goenv: &GlobalGoEnv, name: &str) -> bool {
+    goenv
+        .structs()
+        .any(|(struct_name, _)| go_user_type_name(&struct_name.0) == name)
+        || goenv
+            .enums()
+            .any(|(enum_name, _)| go_user_type_name(&enum_name.0) == name)
+        || goenv
+            .genv
+            .type_env
+            .extern_types
+            .keys()
+            .any(|extern_name| go_user_type_name(extern_name) == name)
+}
+
+fn go_value_name(goenv: &GlobalGoEnv, name: &str) -> String {
+    if goenv.toplevel_funcs.contains(name) || goenv.genv.value_env.extern_funcs.contains_key(name) {
+        go_toplevel_func_name(goenv, name)
+    } else {
+        let ident = go_ident(name);
+        if is_generated_tuple_type_name(&ident)
+            && go_toplevel_func_name_collides_with_type(goenv, &ident)
+        {
+            format!("_goml_user_{}", ident)
+        } else {
+            ident
+        }
+    }
 }
 
 fn go_literal_from_primitive(value: &Prim, ty: &tast::Ty) -> goast::Expr {
@@ -206,7 +354,7 @@ fn go_literal_from_primitive(value: &Prim, ty: &tast::Ty) -> goast::Expr {
 fn compile_imm(goenv: &GlobalGoEnv, imm: &anf::ImmExpr) -> goast::Expr {
     match imm {
         anf::ImmExpr::Var { id, .. } => goast::Expr::Var {
-            name: go_ident(&id.0),
+            name: go_value_name(goenv, &id.0),
             ty: tast_ty_to_go_type(&imm_ty(imm)),
         },
         anf::ImmExpr::Prim { value, .. } => {
@@ -264,7 +412,19 @@ fn value_expr_ty(expr: &anf::ValueExpr) -> tast::Ty {
     }
 }
 
-fn variant_symbol_name(goenv: &GlobalGoEnv, enum_name: &str, variant_name: &str) -> String {
+pub(crate) fn variant_symbol_name(
+    goenv: &GlobalGoEnv,
+    enum_name: &str,
+    variant_name: &str,
+) -> String {
+    variant_symbol_name_for_go_enum(goenv, &go_user_type_name(enum_name), variant_name)
+}
+
+fn variant_symbol_name_for_go_enum(
+    goenv: &GlobalGoEnv,
+    enum_go_name: &str,
+    variant_name: &str,
+) -> String {
     // Count how many enums define a variant with this name.
     let mut count = 0;
     for (_ename, edef) in goenv.enums() {
@@ -279,11 +439,88 @@ fn variant_symbol_name(goenv: &GlobalGoEnv, enum_name: &str, variant_name: &str)
             }
         }
     }
-    if count > 1 {
-        format!("{}_{}", go_ident(enum_name), go_ident(variant_name))
+    let candidate = if count > 1 {
+        format!("{}_{}", enum_go_name, go_ident(variant_name))
     } else {
         go_ident(variant_name)
+    };
+    unique_variant_symbol_name(goenv, candidate)
+}
+
+fn unique_variant_symbol_name(goenv: &GlobalGoEnv, base: String) -> String {
+    if !go_toplevel_name_is_reserved(goenv, &base) {
+        return base;
     }
+
+    if is_generated_tuple_type_name(&base) {
+        let protected_base = format!("_goml_user_{}", base);
+        if !go_toplevel_name_is_reserved(goenv, &protected_base) {
+            return protected_base;
+        }
+        let mut index = 1usize;
+        loop {
+            let candidate = format!("{}__variant{}", protected_base, index);
+            if !go_toplevel_name_is_reserved(goenv, &candidate) {
+                return candidate;
+            }
+            index += 1;
+        }
+    }
+
+    let mut index = 1usize;
+    loop {
+        let candidate = format!("{}__variant{}", base, index);
+        if !go_toplevel_name_is_reserved(goenv, &candidate) {
+            return candidate;
+        }
+        index += 1;
+    }
+}
+
+fn is_generated_tuple_type_name(name: &str) -> bool {
+    let Some(rest) = name.strip_prefix("Tuple") else {
+        return false;
+    };
+    let digit_count = rest.chars().take_while(|ch| ch.is_ascii_digit()).count();
+    digit_count > 0 && (rest[digit_count..].is_empty() || rest[digit_count..].starts_with('_'))
+}
+
+fn go_toplevel_name_is_reserved(goenv: &GlobalGoEnv, name: &str) -> bool {
+    name == "init"
+        || is_generated_tuple_type_name(name)
+        || runtime_generated_function_name(name)
+        || goenv
+            .structs()
+            .any(|(struct_name, _)| go_user_type_name(&struct_name.0) == name)
+        || goenv
+            .enums()
+            .any(|(enum_name, _)| go_user_type_name(&enum_name.0) == name)
+        || goenv
+            .genv
+            .type_env
+            .extern_types
+            .keys()
+            .any(|extern_name| go_user_type_name(extern_name) == name)
+        || goenv.callable_go_name_set.contains(name)
+}
+
+fn go_variant_symbol_name_is_reserved(goenv: &GlobalGoEnv, name: &str) -> bool {
+    goenv.enums().any(|(enum_name, enum_def)| {
+        enum_def.variants.iter().any(|(variant_name, _)| {
+            variant_symbol_name(goenv, &enum_name.0, &variant_name.0) == name
+        })
+    })
+}
+
+fn go_package_alias_name_is_reserved(goenv: &GlobalGoEnv, name: &str) -> bool {
+    go_toplevel_name_is_reserved(goenv, name)
+        || go_variant_symbol_name_is_reserved(goenv, name)
+        || goenv
+            .genv
+            .value_env
+            .extern_funcs
+            .keys()
+            .any(|extern_name| go_ident(extern_name) == name)
 }
 
 fn enum_def_for_ty<'a>(goenv: &'a GlobalGoEnv, ty: &tast::Ty) -> Option<&'a EnumDef> {
@@ -333,13 +570,15 @@ fn lookup_variant_symbol_name(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) 
         && let Some(def) = goenv.get_enum(&TastIdent::new(name))
     {
         let (vname, _fields) = &def.variants[index];
-        return variant_symbol_name(goenv, name, &vname.0);
+        return variant_symbol_name_for_go_enum(goenv, name, &vname.0);
     }
 
     if let Some(def) = goenv.get_enum(&TastIdent::new(&base_name)) {
         let (vname, _fields) = &def.variants[index];
-        let enum_name = specialized_name.unwrap_or_else(|| go_ident(&base_name));
-        return variant_symbol_name(goenv, &enum_name, &vname.0);
+        if let Some(enum_name) = specialized_name {
+            return variant_symbol_name_for_go_enum(goenv, &enum_name, &vname.0);
+        }
+        return variant_symbol_name(goenv, &base_name, &vname.0);
     }
     if let Some(enum_name) = specialized_name.as_deref() {
         if extract_result_tys(ty).is_some() {
@@ -348,7 +587,7 @@ fn lookup_variant_symbol_name(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) 
                 1 => "Err",
                 _ => panic!("invalid Result variant index {}", index),
             };
-            return variant_symbol_name(goenv, enum_name, variant_name);
+            return variant_symbol_name_for_go_enum(goenv, enum_name, variant_name);
         }
         if extract_option_ty(ty).is_some() {
             let variant_name = match index {
@@ -356,7 +595,7 @@ fn lookup_variant_symbol_name(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) 
                 1 => "Some",
                 _ => panic!("invalid Option variant index {}", index),
             };
-            return variant_symbol_name(goenv, enum_name, variant_name);
+            return variant_symbol_name_for_go_enum(goenv, enum_name, variant_name);
         }
     }
     panic!(
@@ -371,9 +610,9 @@ fn variant_ty_by_index(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) -> goty
         "tag-only enum does not have variant struct types: {:?}",
         ty
     );
-    let vname = lookup_variant_symbol_name(goenv, ty, index);
-    let ty = tast::Ty::TStruct { name: vname };
-    tast_ty_to_go_type(&ty)
+    goty::GoType::TName {
+        name: lookup_variant_symbol_name(goenv, ty, index),
+    }
 }
 
 fn variant_const_expr_by_index(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) -> goast::Expr {
@@ -383,7 +622,7 @@ fn variant_const_expr_by_index(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize)
     }
 }
 
-fn go_package_alias(package_path: &str) -> String {
+fn go_package_default_alias(package_path: &str) -> String {
     let last_segment = package_path.rsplit('/').next().unwrap_or(package_path);
     let mut alias = String::new();
     for ch in last_segment.chars() {
@@ -402,16 +641,284 @@ fn go_package_alias(package_path: &str) -> String {
     alias
 }
 
-fn extern_wrapper_fn_name(goml_name: &str) -> String {
-    go_ident(&format!("{}_ffi_wrap", goml_name))
+fn go_package_generated_alias(package_path: &str) -> String {
+    let mut alias = String::from("_goml_pkg_");
+    for byte in package_path.bytes() {
+        if byte.is_ascii_alphanumeric() {
+            alias.push(byte as char);
+        } else {
+            use std::fmt::Write;
+            write!(&mut alias, "_x{:02x}_", byte).unwrap();
+        }
+    }
+    alias
 }
 
-fn extern_target_name(extern_fn: &ExternFunc) -> String {
-    if extern_fn.package_path.is_empty() {
-        extern_fn.go_name.clone()
+fn is_go_ident_char(ch: char) -> bool {
+    ch == '_' || ch.is_ascii_alphanumeric()
+}
+
+fn raw_go_symbol_mentions_package(go_symbol: &str, package_alias: &str) -> bool {
+    go_symbol.match_indices(package_alias).any(|(start, _)| {
+        let before_ident = go_symbol[..start]
+            .chars()
+            .next_back()
+            .is_some_and(is_go_ident_char);
+        let end = start + package_alias.len();
+        let after_dot = go_symbol[end..].starts_with('.');
+        !before_ident && after_dot
+    })
+}
+
+fn go_package_alias(goenv: &GlobalGoEnv, package_path: &str) -> String {
+    match package_path {
+        "fmt" => return "_goml_fmt".to_string(),
+        "math" => return "_goml_math".to_string(),
+        "unicode/utf8" => return "_goml_utf8".to_string(),
+        _ => {}
+    }
+    let alias = go_package_default_alias(package_path);
+    if go_package_default_alias_is_ambiguous(goenv, package_path)
+        || go_package_alias_name_is_reserved(goenv, &alias)
+        || runtime_generated_function_name(&alias)
+    {
+        return go_package_generated_alias(package_path);
+    }
+    alias
+}
+
+fn rewrite_go_package_alias(go_symbol: &str, from: &str, to: &str) -> String {
+    if from == to || !raw_go_symbol_mentions_package(go_symbol, from) {
+        return go_symbol.to_string();
+    }
+
+    enum State {
+        Normal,
+        LineComment,
+        BlockComment,
+        DoubleString { escaped: bool },
+        RawString,
+        Rune { escaped: bool },
+    }
+
+    let mut rewritten = String::new();
+    let mut state = State::Normal;
+    let mut index = 0usize;
+    while index < go_symbol.len() {
+        let rest = &go_symbol[index..];
+        match state {
+            State::Normal => {
+                if rest.starts_with("//") {
+                    rewritten.push_str("//");
+                    index += 2;
+                    state = State::LineComment;
+                    continue;
+                }
+                if rest.starts_with("/*") {
+                    rewritten.push_str("/*");
+                    index += 2;
+                    state = State::BlockComment;
+                    continue;
+                }
+                let ch = rest.chars().next().unwrap();
+                if ch == '"' {
+                    rewritten.push(ch);
+                    index += ch.len_utf8();
+                    state = State::DoubleString { escaped: false };
+                    continue;
+                }
+                if ch == '`' {
+                    rewritten.push(ch);
+                    index += ch.len_utf8();
+                    state = State::RawString;
+                    continue;
+                }
+                if ch == '\'' {
+                    rewritten.push(ch);
+                    index += ch.len_utf8();
+                    state = State::Rune { escaped: false };
+                    continue;
+                }
+                if rest.starts_with(from) {
+                    let before_ident = go_symbol[..index]
+                        .chars()
+                        .next_back()
+                        .is_some_and(is_go_ident_char);
+                    let end = index + from.len();
+                    let after_dot = go_symbol[end..].starts_with('.');
+                    if !before_ident && after_dot {
+                        rewritten.push_str(to);
+                        index = end;
+                        continue;
+                    }
+                }
+                rewritten.push(ch);
+                index += ch.len_utf8();
+            }
+            State::LineComment => {
+                let ch = rest.chars().next().unwrap();
+                rewritten.push(ch);
+                index += ch.len_utf8();
+                if ch == '\n' {
+                    state = State::Normal;
+                }
+            }
+            State::BlockComment => {
+                if rest.starts_with("*/") {
+                    rewritten.push_str("*/");
+                    index += 2;
+                    state = State::Normal;
+                } else {
+                    let ch = rest.chars().next().unwrap();
+                    rewritten.push(ch);
+                    index += ch.len_utf8();
+                }
+            }
+            State::DoubleString { escaped } => {
+                let ch = rest.chars().next().unwrap();
+                rewritten.push(ch);
+                index += ch.len_utf8();
+                state = if escaped {
+                    State::DoubleString { escaped: false }
+                } else if ch == '\\' {
+                    State::DoubleString { escaped: true }
+                } else if ch == '"' {
+                    State::Normal
+                } else {
+                    State::DoubleString { escaped: false }
+                };
+            }
+            State::RawString => {
+                let ch = rest.chars().next().unwrap();
+                rewritten.push(ch);
+                index += ch.len_utf8();
+                if ch == '`' {
+                    state = State::Normal;
+                }
+            }
+            State::Rune { escaped } => {
+                let ch = rest.chars().next().unwrap();
+                rewritten.push(ch);
+                index += ch.len_utf8();
+                state = if escaped {
+                    State::Rune { escaped: false }
+                } else if ch == '\\' {
+                    State::Rune { escaped: true }
+                } else if ch == '\'' {
+                    State::Normal
+                } else {
+                    State::Rune { escaped: false }
+                };
+            }
+        }
+    }
+    rewritten
+}
+
+fn go_import_package_paths(goenv: &GlobalGoEnv) -> IndexSet<String> {
+    let mut package_paths = IndexSet::new();
+    for extern_fn in goenv.genv.value_env.extern_funcs.values() {
+        if !extern_fn.package_path.is_empty() {
+            package_paths.insert(extern_fn.package_path.clone());
+        }
+    }
+    for extern_ty in goenv.genv.type_env.extern_types.values() {
+        if let Some(package_path) = &extern_ty.package_path
+            && !package_path.is_empty()
+        {
+            package_paths.insert(package_path.clone());
+        }
+    }
+    package_paths
+}
+
+fn go_package_default_alias_is_ambiguous(goenv: &GlobalGoEnv, package_path: &str) -> bool {
+    let alias = go_package_default_alias(package_path);
+    go_import_package_paths(goenv)
+        .iter()
+        .filter(|other_path| go_package_default_alias(other_path) == alias)
+        .take(2)
+        .count()
+        > 1
+}
+
+fn rewrite_raw_go_symbol_import_aliases(goenv: &GlobalGoEnv, go_symbol: &str) -> String {
+    let mut rewritten = go_symbol.to_string();
+    for package_path in go_import_package_paths(goenv) {
+        let from = go_package_default_alias(&package_path);
+        if raw_go_symbol_mentions_package(&rewritten, &from) {
+            let to = go_package_alias(goenv, &package_path);
+            rewritten = rewrite_go_package_alias(&rewritten, &from, &to);
+        }
+    }
+    rewritten
+}
+
+fn go_import_alias(goenv: &GlobalGoEnv, package_path: &str) -> Option<String> {
+    let alias = go_package_alias(goenv, package_path);
+    if alias == go_package_default_alias(package_path) {
+        None
     } else {
-        let alias = go_package_alias(&extern_fn.package_path);
-        qualify_go_symbol(&alias, &extern_fn.go_name)
+        Some(alias)
+    }
+}
+
+fn go_type_alias_name_is_reserved(goenv: &GlobalGoEnv, name: &str) -> bool {
+    goenv
+        .structs()
+        .any(|(struct_name, _)| go_user_type_name(&struct_name.0) == name)
+        || goenv
+            .enums()
+            .any(|(enum_name, _)| go_user_type_name(&enum_name.0) == name)
+        || goenv.enums().any(|(enum_name, enum_def)| {
+            enum_def.variants.iter().any(|(variant_name, _)| {
+                variant_symbol_name_for_go_enum(
+                    goenv,
+                    &go_user_type_name(&enum_name.0),
+                    &variant_name.0,
+                ) == name
+            })
+        })
+}
+
+fn extern_wrapper_fn_name(goenv: &GlobalGoEnv, goml_name: &str) -> String {
+    let base = go_ident(&format!("{}_ffi_wrap", goml_name));
+    if !go_package_alias_name_is_reserved(goenv, &base) {
+        return base;
+    }
+    let base = if is_generated_tuple_type_name(&base) {
+        format!("_goml_user_{}", base)
+    } else {
+        base
+    };
+    if !go_package_alias_name_is_reserved(goenv, &base) {
+        return base;
+    }
+    let mut index = 0usize;
+    loop {
+        let candidate = if index == 0 {
+            format!("{}__extern", base)
+        } else {
+            format!("{}__extern{}", base, index)
+        };
+        if !go_package_alias_name_is_reserved(goenv, &candidate) {
+            return candidate;
+        }
+        index += 1;
+    }
+}
+
+fn extern_target_name(goenv: &GlobalGoEnv, extern_fn: &ExternFunc) -> String {
+    if extern_fn.package_path.is_empty() {
+        rewrite_raw_go_symbol_import_aliases(goenv, &extern_fn.go_name)
+    } else {
+        let alias = go_package_alias(goenv, &extern_fn.package_path);
+        let target = qualify_go_symbol(&alias, &extern_fn.go_name);
+        rewrite_go_package_alias(
+            &target,
+            &go_package_default_alias(&extern_fn.package_path),
+            &alias,
+        )
     }
 }
 
@@ -846,7 +1353,7 @@ fn compile_extern_call(
 
     goast::Expr::Call {
         func: Box::new(goast::Expr::Var {
-            name: extern_target_name(extern_fn),
+            name: extern_target_name(goenv, extern_fn),
             ty: goty::GoType::TFunc {
                 params: param_tys
                     .iter()
@@ -860,9 +1367,13 @@ fn compile_extern_call(
     }
 }
 
-fn compile_extern_value(extern_fn: &ExternFunc, value_ty: goty::GoType) -> goast::Expr {
+fn compile_extern_value(
+    goenv: &GlobalGoEnv,
+    extern_fn: &ExternFunc,
+    value_ty: goty::GoType,
+) -> goast::Expr {
     goast::Expr::Var {
-        name: extern_target_name(extern_fn),
+        name: extern_target_name(goenv, extern_fn),
         ty: value_ty,
     }
 }
@@ -1108,8 +1619,21 @@ fn option_variant_layout(goenv: &GlobalGoEnv, ty: &tast::Ty) -> Option<OptionVar
     })
 }
 
-fn is_go_error_ty(ty: &tast::Ty) -> bool {
-    matches!(ty, tast::Ty::TStruct { name } if name == "GoError")
+fn is_builtin_go_error_ty(goenv: &GlobalGoEnv, ty: &tast::Ty) -> bool {
+    let tast::Ty::TStruct { name } = ty else {
+        return false;
+    };
+    if name != "GoError" {
+        return false;
+    }
+    goenv
+        .genv
+        .type_env
+        .extern_types
+        .get(name)
+        .is_some_and(|ext| {
+            matches!(ext.package_path.as_deref(), None | Some("")) && ext.go_name == "error"
+        })
 }
 
 enum ExternFuncReturnMode {
@@ -1488,7 +2012,7 @@ type LetEnv = HashMap<anf::LocalId, anf::ValueExpr>;
 
 fn native_return_mode(goenv: &GlobalGoEnv, ret_ty: &tast::Ty) -> Option<NativeReturnMode> {
     if let Some(layout) = result_variant_layout(goenv, ret_ty)
-        && is_go_error_ty(&layout.err_ty)
+        && is_builtin_go_error_ty(goenv, &layout.err_ty)
     {
         return Some(NativeReturnMode::Result {
             ok_index: layout.ok_index,
@@ -1510,7 +2034,7 @@ fn native_return_mode(goenv: &GlobalGoEnv, ret_ty: &tast::Ty) -> Option<NativeRe
 }
 
 fn native_helper_fn_name(goml_name: &str) -> String {
-    go_ident(&format!("{}__native", goml_name))
+    go_generated_ident(&format!("{}__native", goml_name))
 }
 
 fn native_helper_ret_ty(mode: &NativeReturnMode) -> goty::GoType {
@@ -1594,12 +2118,13 @@ fn gen_extern_wrapper_fn(
     match extern_fn.binding_mode {
         ExternBindingMode::Value => {
             return Some(goast::Fn {
-                name: extern_wrapper_fn_name(goml_name),
+                name: extern_wrapper_fn_name(goenv, goml_name),
                 params: go_params,
                 ret_ty: Some(tast_ty_to_go_type(&wrapper_ret_ty)),
                 body: goast::Block {
                     stmts: vec![goast::Stmt::Return {
                         expr: Some(compile_extern_value(
+                            goenv,
                             extern_fn,
                             tast_ty_to_go_type(&wrapper_ret_ty),
                         )),
@@ -1614,7 +2139,7 @@ fn gen_extern_wrapper_fn(
                 .expect("field getter binding missing field name")
                 .clone();
             return Some(goast::Fn {
-                name: extern_wrapper_fn_name(goml_name),
+                name: extern_wrapper_fn_name(goenv, goml_name),
                 params: go_params.clone(),
                 ret_ty: Some(tast_ty_to_go_type(&wrapper_ret_ty)),
                 body: goast::Block {
@@ -1639,7 +2164,7 @@ fn gen_extern_wrapper_fn(
                 .clone();
             let field_ty = go_params[1].1.clone();
             return Some(goast::Fn {
-                name: extern_wrapper_fn_name(goml_name),
+                name: extern_wrapper_fn_name(goenv, goml_name),
                 params: go_params.clone(),
                 ret_ty: Some(goty::GoType::TUnit),
                 body: goast::Block {
@@ -1692,7 +2217,7 @@ fn gen_extern_wrapper_fn(
                 expr: Some(tuple_pack_expr(&wrapper_ret_ty, &value_names)),
             });
             goast::Fn {
-                name: extern_wrapper_fn_name(goml_name),
+                name: extern_wrapper_fn_name(goenv, goml_name),
                 params: go_params,
                 ret_ty: Some(tast_ty_to_go_type(&wrapper_ret_ty)),
                 body: goast::Block { stmts },
@@ -1788,7 +2313,7 @@ fn gen_extern_wrapper_fn(
             });
 
             goast::Fn {
-                name: extern_wrapper_fn_name(goml_name),
+                name: extern_wrapper_fn_name(goenv, goml_name),
                 params: go_params,
                 ret_ty: Some(tast_ty_to_go_type(&wrapper_ret_ty)),
                 body: goast::Block { stmts },
@@ -1851,7 +2376,7 @@ fn gen_extern_wrapper_fn(
             });
 
             goast::Fn {
-                name: extern_wrapper_fn_name(goml_name),
+                name: extern_wrapper_fn_name(goenv, goml_name),
                 params: go_params,
                 ret_ty: Some(tast_ty_to_go_type(&wrapper_ret_ty)),
                 body: goast::Block { stmts },
@@ -1897,7 +2422,7 @@ fn gen_extern_bridge_fn(goenv: &GlobalGoEnv, goml_name: &str, extern_fn: &Extern
     let call = if extern_requires_wrapper(extern_fn) {
         goast::Expr::Call {
             func: Box::new(goast::Expr::Var {
-                name: extern_wrapper_fn_name(goml_name),
+                name: extern_wrapper_fn_name(goenv, goml_name),
                 ty: goty::GoType::TFunc {
                     params: params.iter().map(tast_ty_to_go_type).collect(),
                     ret_ty: Box::new(tast_ty_to_go_type(&bridge_ret_ty)),
@@ -1917,7 +2442,7 @@ fn gen_extern_bridge_fn(goenv: &GlobalGoEnv, goml_name: &str, extern_fn: &Extern
     };
 
     goast::Fn {
-        name: go_ident(goml_name),
+        name: go_toplevel_func_name(goenv, goml_name),
         params: go_params,
         ret_ty: Some(tast_ty_to_go_type(&bridge_ret_ty)),
         body: goast::Block {
@@ -2358,28 +2883,105 @@ fn any_go_type() -> goty::GoType {
 }
 
 fn dyn_struct_go_name(trait_name: &str) -> String {
-    go_ident(&format!("dyn__{}", trait_name))
+    go_dyn_struct_name(trait_name)
 }
 
 fn dyn_vtable_struct_go_name(trait_name: &str) -> String {
-    go_ident(&format!("dyn__{}_vtable", trait_name))
+    go_generated_ident(&format!("dyn__{}_vtable", trait_name))
 }
 
-fn dyn_vtable_ctor_go_name(trait_name: &str, for_ty: &tast::Ty) -> String {
-    go_ident(&format!(
+fn dyn_vtable_ctor_go_name_raw(trait_name: &str, for_ty: &tast::Ty) -> String {
+    go_generated_ident(&format!(
         "dyn__{}__vtable__{}",
         trait_name,
         encode_ty(for_ty)
     ))
 }
 
-fn dyn_wrap_go_name(trait_name: &str, for_ty: &tast::Ty, method_name: &str) -> String {
-    go_ident(&format!(
+fn dyn_vtable_ctor_go_name(goenv: &GlobalGoEnv, trait_name: &str, for_ty: &tast::Ty) -> String {
+    goenv
+        .dyn_vtable_ctor_go_names
+        .get(&(trait_name.to_string(), dyn_ty_key(for_ty)))
+        .cloned()
+        .unwrap_or_else(|| dyn_vtable_ctor_go_name_raw(trait_name, for_ty))
+}
+
+fn dyn_wrap_go_name_raw(trait_name: &str, for_ty: &tast::Ty, method_name: &str) -> String {
+    go_generated_ident(&format!(
         "dyn__{}__wrap__{}__{}",
         trait_name,
         encode_ty(for_ty),
         method_name
     ))
+}
+
+fn dyn_wrap_go_name(
+    goenv: &GlobalGoEnv,
+    trait_name: &str,
+    for_ty: &tast::Ty,
+    method_name: &str,
+) -> String {
+    goenv
+        .dyn_wrap_go_names
+        .get(&(
+            trait_name.to_string(),
+            dyn_ty_key(for_ty),
+            method_name.to_string(),
+        ))
+        .cloned()
+        .unwrap_or_else(|| dyn_wrap_go_name_raw(trait_name, for_ty, method_name))
+}
+
+fn dyn_ty_key(ty: &tast::Ty) -> String {
+    ty_compact(ty)
+}
+
+type DynVtableCtorGoNames = HashMap<(String, String), String>;
+type DynWrapGoNames = HashMap<(String, String, String), String>;
+
+fn collect_dyn_helper_go_names(
+    goenv: &GlobalGoEnv,
+    req: &DynRequirements,
+) -> (DynVtableCtorGoNames, DynWrapGoNames) {
+    let mut ctor_counts = HashMap::new();
+    let mut ctor_items = Vec::new();
+    let mut wrap_counts = HashMap::new();
+    let mut wrap_items = Vec::new();
+
+    for (trait_name, for_ty) in req.vtables.iter() {
+        let ty_key = dyn_ty_key(for_ty);
+        let ctor_raw = dyn_vtable_ctor_go_name_raw(trait_name, for_ty);
+        *ctor_counts.entry(ctor_raw.clone()).or_insert(0usize) += 1;
+        ctor_items.push(((trait_name.clone(), ty_key.clone()), ctor_raw));
+
+        for (method_name, _, _) in trait_method_sigs(goenv, trait_name) {
+            let wrap_raw = dyn_wrap_go_name_raw(trait_name, for_ty, &method_name);
+            *wrap_counts.entry(wrap_raw.clone()).or_insert(0usize) += 1;
+            wrap_items.push(((trait_name.clone(), ty_key.clone(), method_name), wrap_raw));
+        }
+    }
+
+    let mut ctor_names = HashMap::new();
+    for (key, raw) in ctor_items {
+        if ctor_counts.get(&raw).copied().unwrap_or(0) > 1 {
+            ctor_names.insert(
+                key.clone(),
+                go_unique_toplevel_func_name(&format!("dyn_vtable#{}#{}", key.0, key.1)),
+            );
+        }
+    }
+
+    let mut wrap_names = HashMap::new();
+    for (key, raw) in wrap_items {
+        if wrap_counts.get(&raw).copied().unwrap_or(0) > 1 {
+            wrap_names.insert(
+                key.clone(),
+                go_unique_toplevel_func_name(&format!("dyn_wrap#{}#{}#{}", key.0, key.1, key.2)),
+            );
+        }
+    }
+
+    (ctor_names, wrap_names)
 }
 
 fn collect_dyn_requirements(goenv: &GlobalGoEnv, file: &anf::File) -> DynRequirements {
@@ -2688,18 +3290,18 @@ fn gen_dyn_type_definitions(goenv: &GlobalGoEnv, req: &DynRequirements) -> Vec<g
 }
 
 fn build_trait_impl_name_map(
+    goenv: &GlobalGoEnv,
     toplevels: &[anf::Fn],
 ) -> std::collections::HashMap<(String, String, String), String> {
     let mut map = std::collections::HashMap::new();
     for tl in toplevels {
         if let Some((trait_name, for_ty_str, method_name)) = parse_trait_impl_fn_name(&tl.name) {
-            let base_method = method_name.split("__").next().unwrap_or(method_name);
-            let go_name = go_ident(&tl.name);
+            let go_name = go_toplevel_func_name(goenv, &tl.name);
             map.insert(
                 (
                     trait_name.to_string(),
                     for_ty_str.to_string(),
-                    base_method.to_string(),
+                    method_name.to_string(),
                 ),
                 go_name,
             );
@@ -2737,6 +3339,7 @@ fn gen_dyn_helper_fns(
         }
 
         items.push(goast::Item::Fn(gen_dyn_vtable_ctor_fn(
+            goenv,
             &trait_name,
             &for_ty,
             &methods,
@@ -2754,7 +3357,7 @@ fn gen_dyn_wrap_fn(
     ret_ty: &tast::Ty,
     impl_name_map: &std::collections::HashMap<(String, String, String), String>,
 ) -> goast::Fn {
-    let fn_name = dyn_wrap_go_name(trait_name, for_ty, method_name);
+    let fn_name = dyn_wrap_go_name(goenv, trait_name, for_ty, method_name);
 
     let mut go_params = Vec::with_capacity(params.len() + 1);
     go_params.push(("self".to_string(), any_go_type()));
@@ -2773,11 +3376,37 @@ fn gen_dyn_wrap_fn(
         .cloned()
         .unwrap_or_else(|| {
             let impl_name = trait_impl_fn_name(&trait_ident, for_ty, method_name);
-            go_ident(&impl_name)
+            go_toplevel_func_name(goenv, &impl_name)
         });
 
     let receiver_go_ty = tast_ty_to_go_type(for_ty);
     let ret_go_ty = tast_ty_to_go_type(ret_ty);
+
+    if trait_name == "ToString"
+        && method_name == "to_string"
+        && params.is_empty()
+        && let Some(expr) = builtin_tostring_expr(
+            goenv,
+            goast::Expr::Cast {
+                expr: Box::new(goast::Expr::Var {
+                    name: "self".to_string(),
+                    ty: any_go_type(),
+                }),
+                ty: receiver_go_ty.clone(),
+            },
+            for_ty,
+        )
+    {
+        return goast::Fn {
+            name: fn_name,
+            params: go_params,
+            ret_ty: Some(ret_go_ty),
+            body: goast::Block {
+                stmts: vec![goast::Stmt::Return { expr: Some(expr) }],
+            },
+        };
+    }
+
     let mut impl_param_tys = Vec::with_capacity(params.len() + 1);
     impl_param_tys.push(receiver_go_ty.clone());
     impl_param_tys.extend(params.iter().map(tast_ty_to_go_type));
@@ -2889,7 +3518,187 @@ fn gen_dyn_wrap_fn(
     }
 }
 
+fn builtin_tostring_expr(
+    goenv: &GlobalGoEnv,
+    value: goast::Expr,
+    ty: &tast::Ty,
+) -> Option<goast::Expr> {
+    match ty {
+        tast::Ty::TString => Some(value),
+        tast::Ty::TUnit => Some(unary_tostring_call("unit_to_string", value, ty)),
+        tast::Ty::TBool => Some(unary_tostring_call("bool_to_string", value, ty)),
+        tast::Ty::TChar => Some(unary_tostring_call("char_to_string", value, ty)),
+        tast::Ty::TInt8 => Some(unary_tostring_call("int8_to_string", value, ty)),
+        tast::Ty::TInt16 => Some(unary_tostring_call("int16_to_string", value, ty)),
+        tast::Ty::TInt32 => Some(unary_tostring_call("int32_to_string", value, ty)),
+        tast::Ty::TInt64 => Some(unary_tostring_call("int64_to_string", value, ty)),
+        tast::Ty::TUint8 => Some(unary_tostring_call("uint8_to_string", value, ty)),
+        tast::Ty::TUint16 => Some(unary_tostring_call("uint16_to_string", value, ty)),
+        tast::Ty::TUint32 => Some(unary_tostring_call("uint32_to_string", value, ty)),
+        tast::Ty::TUint64 => Some(unary_tostring_call("uint64_to_string", value, ty)),
+        tast::Ty::TFloat32 => Some(unary_tostring_call("float32_to_string", value, ty)),
+        tast::Ty::TFloat64 => Some(unary_tostring_call("float64_to_string", value, ty)),
+        tast::Ty::TDyn { trait_name } if trait_name == "ToString" => Some(dyn_tostring_call(value)),
+        tast::Ty::TStruct { name } if name == "GoError" && is_builtin_go_error_ty(goenv, ty) => {
+            Some(unary_tostring_call("go_error_to_string", value, ty))
+        }
+        tast::Ty::TRef { elem } => {
+            let ref_ty = tast::Ty::TRef { elem: elem.clone() };
+            let ref_go_ty = tast_ty_to_go_type(&ref_ty);
+            let elem_go_ty = tast_ty_to_go_type(elem);
+            let ref_get = goast::Expr::Call {
+                func: Box::new(goast::Expr::Var {
+                    name: runtime::ref_helper_fn_name("ref_get", &ref_ty),
+                    ty: goty::GoType::TFunc {
+                        params: vec![ref_go_ty],
+                        ret_ty: Box::new(elem_go_ty.clone()),
+                    },
+                }),
+                args: vec![value],
+                ty: elem_go_ty,
+            };
+            let inner = tostring_expr(goenv, ref_get, elem);
+            let with_prefix = goast::Expr::BinaryOp {
+                op: goast::GoBinaryOp::Add,
+                lhs: Box::new(goast::Expr::String {
+                    value: "ref(".to_string(),
+                    ty: goty::GoType::TString,
+                }),
+                rhs: Box::new(inner),
+                ty: goty::GoType::TString,
+            };
+            Some(goast::Expr::BinaryOp {
+                op: goast::GoBinaryOp::Add,
+                lhs: Box::new(with_prefix),
+                rhs: Box::new(goast::Expr::String {
+                    value: ")".to_string(),
+                    ty: goty::GoType::TString,
+                }),
+                ty: goty::GoType::TString,
+            })
+        }
+        _ => None,
+    }
+}
+
+fn tostring_expr(goenv: &GlobalGoEnv, value: goast::Expr, ty: &tast::Ty) -> goast::Expr {
+    if has_builtin_tostring_expr(goenv, ty) {
+        return builtin_tostring_expr(goenv, value, ty)
+            .expect("builtin ToString expression must exist");
+    }
+
+    let impl_name = trait_impl_fn_name(&TastIdent("ToString".to_string()), ty, "to_string");
+    let value_ty = tast_ty_to_go_type(ty);
+    goast::Expr::Call {
+        func: Box::new(goast::Expr::Var {
+            name: go_toplevel_func_name(goenv, &impl_name),
+            ty: goty::GoType::TFunc {
+                params: vec![value_ty],
+                ret_ty: Box::new(goty::GoType::TString),
+            },
+        }),
+        args: vec![value],
+        ty: goty::GoType::TString,
+    }
+}
+
+fn has_builtin_tostring_expr(goenv: &GlobalGoEnv, ty: &tast::Ty) -> bool {
+    match ty {
+        tast::Ty::TString
+        | tast::Ty::TUnit
+        | tast::Ty::TBool
+        | tast::Ty::TChar
+        | tast::Ty::TInt8
+        | tast::Ty::TInt16
+        | tast::Ty::TInt32
+        | tast::Ty::TInt64
+        | tast::Ty::TUint8
+        | tast::Ty::TUint16
+        | tast::Ty::TUint32
+        | tast::Ty::TUint64
+        | tast::Ty::TFloat32
+        | tast::Ty::TFloat64
+        | tast::Ty::TRef { .. } => true,
+        tast::Ty::TDyn { trait_name } if trait_name == "ToString" => true,
+        tast::Ty::TStruct { name } if name == "GoError" => is_builtin_go_error_ty(goenv, ty),
+        _ => false,
+    }
+}
+
+fn dyn_tostring_call(value: goast::Expr) -> goast::Expr {
+    let dyn_go_ty = goty::GoType::TName {
+        name: dyn_struct_go_name("ToString"),
+    };
+    let param_name = "_goml_dyn_value".to_string();
+    let param_expr_for_vtable = goast::Expr::Var {
+        name: param_name.clone(),
+        ty: dyn_go_ty.clone(),
+    };
+    let param_expr_for_data = goast::Expr::Var {
+        name: param_name.clone(),
+        ty: dyn_go_ty.clone(),
+    };
+    let vtable_ptr_expr = goast::Expr::FieldAccess {
+        obj: Box::new(param_expr_for_vtable),
+        field: "vtable".to_string(),
+        ty: goty::GoType::TPointer {
+            elem: Box::new(goty::GoType::TName {
+                name: dyn_vtable_struct_go_name("ToString"),
+            }),
+        },
+    };
+    let method_expr = goast::Expr::FieldAccess {
+        obj: Box::new(vtable_ptr_expr),
+        field: "to_string".to_string(),
+        ty: goty::GoType::TFunc {
+            params: vec![any_go_type()],
+            ret_ty: Box::new(goty::GoType::TString),
+        },
+    };
+    let data_expr = goast::Expr::FieldAccess {
+        obj: Box::new(param_expr_for_data),
+        field: "data".to_string(),
+        ty: any_go_type(),
+    };
+    let method_call = goast::Expr::Call {
+        func: Box::new(method_expr),
+        args: vec![data_expr],
+        ty: goty::GoType::TString,
+    };
+    let func_ty = goty::GoType::TFunc {
+        params: vec![dyn_go_ty.clone()],
+        ret_ty: Box::new(goty::GoType::TString),
+    };
+    goast::Expr::Call {
+        func: Box::new(goast::Expr::FuncLit {
+            params: vec![(param_name, dyn_go_ty)],
+            body: vec![goast::Stmt::Return {
+                expr: Some(method_call),
+            }],
+            ty: func_ty,
+        }),
+        args: vec![value],
+        ty: goty::GoType::TString,
+    }
+}
+
+fn unary_tostring_call(func_name: &str, value: goast::Expr, ty: &tast::Ty) -> goast::Expr {
+    let value_ty = tast_ty_to_go_type(ty);
+    goast::Expr::Call {
+        func: Box::new(goast::Expr::Var {
+            name: func_name.to_string(),
+            ty: goty::GoType::TFunc {
+                params: vec![value_ty],
+                ret_ty: Box::new(goty::GoType::TString),
+            },
+        }),
+        args: vec![value],
+        ty: goty::GoType::TString,
+    }
+}
+
 fn gen_dyn_vtable_ctor_fn(
+    goenv: &GlobalGoEnv,
     trait_name: &str,
     for_ty: &tast::Ty,
     methods: &[(String, Vec<tast::Ty>, tast::Ty)],
@@ -2913,7 +3722,7 @@ fn gen_dyn_vtable_ctor_fn(
         fields.push((
             go_ident(method_name),
             goast::Expr::Var {
-                name: dyn_wrap_go_name(trait_name, for_ty, method_name),
+                name: dyn_wrap_go_name(goenv, trait_name, for_ty, method_name),
                 ty: field_ty,
             },
         ));
@@ -2933,7 +3742,7 @@ fn gen_dyn_vtable_ctor_fn(
     };
 
     goast::Fn {
-        name: dyn_vtable_ctor_go_name(trait_name, for_ty),
+        name: dyn_vtable_ctor_go_name(goenv, trait_name, for_ty),
         params: vec![],
         ret_ty: Some(vtable_ptr_ty),
         body: goast::Block {
@@ -3181,7 +3990,7 @@ mod legacy_anf_codegen {
                     }),
                 };
 
-                let ctor_name = dyn_vtable_ctor_go_name(&trait_name.0, for_ty);
+                let ctor_name = dyn_vtable_ctor_go_name(goenv, &trait_name.0, for_ty);
                 let ctor_ty = goty::GoType::TFunc {
                     params: vec![],
                     ret_ty: Box::new(vtable_ptr_ty.clone()),
@@ -3250,7 +4059,7 @@ mod legacy_anf_codegen {
                     field: "data".to_string(),
                     ty: any_go_type(),
                 });
-                call_args.extend(args.iter().map(|arg| compile_imm(goenv, arg)));
+                call_args.extend(compile_call_args(goenv, &method_params, args));
 
                 goast::Expr::Call {
                     func: Box::new(method_expr),
@@ -3264,7 +4073,7 @@ mod legacy_anf_codegen {
                     tast::Ty::TFunc { params, .. } => params.clone(),
                     _ => Vec::new(),
                 };
-                let compiled_args = args.iter().map(|arg| compile_imm(goenv, arg)).collect();
+                let compiled_args = compile_call_args(goenv, &param_types, args);
                 let func_ty = tast_ty_to_go_type(&func_tast_ty);
 
                 if let anf::ImmExpr::ImmVar { name, .. } = &func
@@ -3551,7 +4360,7 @@ mod legacy_anf_codegen {
                     if extern_requires_wrapper(extern_fn) {
                         goast::Expr::Call {
                             func: Box::new(goast::Expr::Var {
-                                name: extern_wrapper_fn_name(name),
+                                name: extern_wrapper_fn_name(goenv, name),
                                 ty: goty::GoType::TFunc {
                                     params: param_types.iter().map(tast_ty_to_go_type).collect(),
                                     ret_ty: Box::new(tast_ty_to_go_type(ty)),
@@ -4391,12 +5200,11 @@ mod legacy_anf_codegen {
 
         let go_ret_ty = tast_ty_to_go_type(&f.ret_ty);
 
-        let is_entry =
-            f.name == ENTRY_FUNCTION || f.name.ends_with(&format!("::{}", ENTRY_FUNCTION));
+        let is_entry = f.name == ENTRY_FUNCTION;
         let patched_name = if is_entry {
             ENTRY_WRAPPER_FUNCTION.to_string()
         } else {
-            go_ident(&f.name)
+            go_toplevel_func_name(goenv, &f.name)
         };
 
         let body = block_to_aexpr(f.body);
@@ -4817,7 +5625,7 @@ fn compile_call(
 
         return goast::Expr::Call {
             func: Box::new(goast::Expr::Var {
-                name: extern_wrapper_fn_name(&id.0),
+                name: extern_wrapper_fn_name(goenv, &id.0),
                 ty: func_ty,
             }),
             args: compiled_args,
@@ -5156,7 +5964,7 @@ fn compile_value_expr(goenv: &GlobalGoEnv, expr: &anf::ValueExpr) -> CompiledVal
                 }),
             };
 
-            let ctor_name = dyn_vtable_ctor_go_name(&trait_name.0, for_ty);
+            let ctor_name = dyn_vtable_ctor_go_name(goenv, &trait_name.0, for_ty);
             let ctor_ty = goty::GoType::TFunc {
                 params: vec![],
                 ret_ty: Box::new(vtable_ptr_ty.clone()),
@@ -5240,7 +6048,7 @@ fn compile_value_expr(goenv: &GlobalGoEnv, expr: &anf::ValueExpr) -> CompiledVal
                 field: "data".to_string(),
                 ty: any_go_type(),
             });
-            call_args.extend(args.iter().map(|arg| compile_imm(goenv, arg)));
+            call_args.extend(compile_call_args(goenv, &method_params, args));
 
             CompiledValue {
                 stmts: Vec::new(),
@@ -5369,7 +6177,7 @@ fn loop_exit_target(block: &anf::Block, loop_id: &anf::JoinId) -> Option<anf::Jo
     }
 }
 
-fn local_joins_in_block<'a>(block: &'a anf::Block) -> HashMap<&'a anf::JoinId, &'a anf::JoinBind> {
+fn local_joins_in_block(block: &anf::Block) -> HashMap<&anf::JoinId, &anf::JoinBind> {
     let mut joins = HashMap::new();
     for bind in &block.binds {
         match bind {
@@ -5602,6 +6410,7 @@ fn compile_let_bind(goenv: &GlobalGoEnv, bind: &anf::LetBind) -> Vec<goast::Stmt
     if discard
         && let anf::ValueExpr::Call { func, args, .. } = &bind.value
         && let anf::ImmExpr::Var { id: func_id, .. } = func
+        && runtime_builtin_available(goenv, &func_id.0)
         && func_id.0 == "vec_push"
         && let Some(anf::ImmExpr::Var { id: vec_id, .. }) = args.first()
     {
@@ -5617,7 +6426,7 @@ fn compile_let_bind(goenv: &GlobalGoEnv, bind: &anf::LetBind) -> Vec<goast::Stmt
     let compiled = compile_value_expr(goenv, &bind.value);
     let mut stmts = compiled.stmts;
     if discard {
-        if matches!(compiled.expr, goast::Expr::Call { .. }) {
+        if go_expr_can_be_statement(&compiled.expr) {
             stmts.push(goast::Stmt::Expr(compiled.expr));
         }
     } else {
@@ -5636,6 +6445,51 @@ fn compile_let_bind(goenv: &GlobalGoEnv, bind: &anf::LetBind) -> Vec<goast::Stmt
         });
     }
     stmts
+}
+
+fn go_expr_can_be_statement(expr: &goast::Expr) -> bool {
+    match expr {
+        goast::Expr::Call { func, .. } => !go_call_result_must_be_used(func),
+        _ => false,
+    }
+}
+
+fn go_call_result_must_be_used(func: &goast::Expr) -> bool {
+    let goast::Expr::Var { name, .. } = func else {
+        return false;
+    };
+    matches!(
+        name.as_str(),
+        "append"
+            | "cap"
+            | "complex"
+            | "imag"
+            | "len"
+            | "make"
+            | "max"
+            | "min"
+            | "new"
+            | "real"
+            | "bool"
+            | "byte"
+            | "rune"
+            | "string"
+            | "int"
+            | "int8"
+            | "int16"
+            | "int32"
+            | "int64"
+            | "uint"
+            | "uint8"
+            | "uint16"
+            | "uint32"
+            | "uint64"
+            | "uintptr"
+            | "float32"
+            | "float64"
+            | "complex64"
+            | "complex128"
+    )
 }
 
 fn needs_closure_to_func_wrap(arg_ty: &tast::Ty, param_ty: &tast::Ty) -> bool {
@@ -7002,8 +7856,128 @@ fn all_branches_jump_to(term: &anf::Term) -> Option<&anf::JoinId> {
     }
 }
 
+fn all_branches_jump_to_resolved(term: &anf::Term) -> Option<anf::JoinId> {
+    match term {
+        anf::Term::Jump { target, .. } => Some(target.clone()),
+        anf::Term::If { then_, else_, .. } => {
+            let then_target = block_tail_target_resolved(then_)?;
+            let else_target = block_tail_target_resolved(else_)?;
+            if then_target == else_target {
+                Some(then_target)
+            } else {
+                None
+            }
+        }
+        anf::Term::Match { arms, default, .. } => {
+            let mut target = None;
+            for arm in arms {
+                let branch_target = block_tail_target_resolved(&arm.body)?;
+                if let Some(existing) = &target {
+                    if existing != &branch_target {
+                        return None;
+                    }
+                } else {
+                    target = Some(branch_target);
+                }
+            }
+            if let Some(default) = default {
+                let branch_target = block_tail_target_resolved(default)?;
+                if let Some(existing) = &target {
+                    if existing != &branch_target {
+                        return None;
+                    }
+                } else {
+                    target = Some(branch_target);
+                }
+            }
+            target
+        }
+        _ => None,
+    }
+}
+
 fn block_tail_target(block: &anf::Block) -> Option<&anf::JoinId> {
     all_branches_jump_to(&block.term)
+}
+
+fn block_tail_target_resolved(block: &anf::Block) -> Option<anf::JoinId> {
+    let mut joins = HashMap::new();
+    for bind in &block.binds {
+        if let anf::Bind::Join(join_bind) = bind {
+            joins.insert(&join_bind.id, join_bind);
+        }
+    }
+    term_tail_target_resolved(&block.term, &joins, &mut HashSet::new())
+}
+
+fn term_tail_target_resolved(
+    term: &anf::Term,
+    joins: &HashMap<&anf::JoinId, &anf::JoinBind>,
+    visited: &mut HashSet<anf::JoinId>,
+) -> Option<anf::JoinId> {
+    match term {
+        anf::Term::Jump { target, .. } => {
+            if !visited.insert(target.clone()) {
+                return None;
+            }
+            let result = if let Some(join_bind) = joins.get(target) {
+                block_tail_target_resolved_with_joins(&join_bind.body, joins, visited)
+            } else {
+                Some(target.clone())
+            };
+            visited.remove(target);
+            result
+        }
+        anf::Term::If { then_, else_, .. } => {
+            let then_target = block_tail_target_resolved_with_joins(then_, joins, visited)?;
+            let else_target = block_tail_target_resolved_with_joins(else_, joins, visited)?;
+            if then_target == else_target {
+                Some(then_target)
+            } else {
+                None
+            }
+        }
+        anf::Term::Match { arms, default, .. } => {
+            let mut target = None;
+            for arm in arms {
+                let branch_target =
+                    block_tail_target_resolved_with_joins(&arm.body, joins, visited)?;
+                if let Some(existing) = &target {
+                    if existing != &branch_target {
+                        return None;
+                    }
+                } else {
+                    target = Some(branch_target);
+                }
+            }
+            if let Some(default) = default {
+                let branch_target = block_tail_target_resolved_with_joins(default, joins, visited)?;
+                if let Some(existing) = &target {
+                    if existing != &branch_target {
+                        return None;
+                    }
+                } else {
+                    target = Some(branch_target);
+                }
+            }
+            target
+        }
+        _ => None,
+    }
+}
+
+fn block_tail_target_resolved_with_joins(
+    block: &anf::Block,
+    parent_joins: &HashMap<&anf::JoinId, &anf::JoinBind>,
+    visited: &mut HashSet<anf::JoinId>,
+) -> Option<anf::JoinId> {
+    let mut joins = parent_joins.clone();
+    for bind in &block.binds {
+        if let anf::Bind::Join(join_bind) = bind {
+            joins.insert(&join_bind.id, join_bind);
+        }
+    }
+    term_tail_target_resolved(&block.term, &joins, visited)
 }
 
 fn compile_block_structured(
@@ -7136,21 +8110,21 @@ fn compile_term_with_continuations_ctx(
         return stmts;
     }
     if let Some(native_ctx) = native_ctx
-        && let Some(target) = all_branches_jump_to(term)
-        && let Some(join_bind) = join_env.get(target)
-        && pending_joins.iter().any(|j| j.id == *target)
+        && let Some(target) = all_branches_jump_to_resolved(term)
+        && let Some(join_bind) = join_env.get(&target)
+        && pending_joins.iter().any(|j| j.id == target)
         && join_forwards_to_native_return(join_bind, join_env, native_ctx)
     {
         return compile_term_direct_to_native_return_ctx(
-            goenv, term, target, join_env, native_ctx, let_env,
+            goenv, term, &target, join_env, native_ctx, let_env,
         );
     }
-    if let Some(target) = all_branches_jump_to(term)
-        && let Some(join_bind) = join_env.get(target)
-        && pending_joins.iter().any(|j| j.id == *target)
+    if let Some(target) = all_branches_jump_to_resolved(term)
+        && let Some(join_bind) = join_env.get(&target)
+        && pending_joins.iter().any(|j| j.id == target)
     {
         let mut stmts = compile_term_jump_to_ctx(
-            goenv, term, target, join_bind, join_env, native_ctx, let_env,
+            goenv, term, &target, join_bind, join_env, native_ctx, let_env,
         );
         stmts.extend(compile_block_structured_ctx(
             goenv,
@@ -7327,8 +8301,8 @@ fn compile_branch_to_native_return_ctx(
         stmts.extend(bind_stmts);
     }
 
-    if let Some(inner_target) = all_branches_jump_to(&block.term) {
-        if inner_target == target {
+    if let Some(inner_target) = all_branches_jump_to_resolved(&block.term) {
+        if inner_target == *target {
             stmts.extend(compile_term_direct_to_native_return_ctx(
                 goenv,
                 &block.term,
@@ -7339,14 +8313,14 @@ fn compile_branch_to_native_return_ctx(
             ));
             return stmts;
         }
-        if let Some(inner_join) = join_env.get(inner_target)
-            && inner_pending.iter().any(|j| j.id == *inner_target)
+        if let Some(inner_join) = join_env.get(&inner_target)
+            && inner_pending.iter().any(|j| j.id == inner_target)
             && join_forwards_to_native_return(inner_join, join_env, native_ctx)
         {
             stmts.extend(compile_term_direct_to_native_return_ctx(
                 goenv,
                 &block.term,
-                inner_target,
+                &inner_target,
                 join_env,
                 native_ctx,
                 &current_env,
@@ -7623,8 +8597,8 @@ fn compile_branch_to_join_ctx(
         stmts.extend(bind_stmts);
     }
 
-    if let Some(inner_target) = all_branches_jump_to(&block.term) {
-        if inner_target == target {
+    if let Some(inner_target) = all_branches_jump_to_resolved(&block.term) {
+        if inner_target == *target {
             stmts.extend(compile_term_jump_to_ctx(
                 goenv,
                 &block.term,
@@ -7636,13 +8610,13 @@ fn compile_branch_to_join_ctx(
             ));
             return stmts;
         }
-        if let Some(inner_join) = join_env.get(inner_target)
-            && inner_pending.iter().any(|j| j.id == *inner_target)
+        if let Some(inner_join) = join_env.get(&inner_target)
+            && inner_pending.iter().any(|j| j.id == inner_target)
         {
             stmts.extend(compile_term_jump_to_ctx(
                 goenv,
                 &block.term,
-                inner_target,
+                &inner_target,
                 inner_join,
                 join_env,
                 native_ctx,
@@ -8275,11 +9249,56 @@ fn collect_joins_from_block(block: &anf::Block, env: &mut JoinEnv) {
     }
 }
 
-fn patched_fn_name(name: &str) -> String {
-    if name == ENTRY_FUNCTION || name.ends_with(&format!("::{}", ENTRY_FUNCTION)) {
-        ENTRY_WRAPPER_FUNCTION.to_string()
+fn entry_wrapper_function_name(goenv: &GlobalGoEnv, file: &anf::File) -> String {
+    let mut used_names: HashSet<String> = file
+        .toplevels
+        .iter()
+        .filter(|f| f.name != ENTRY_FUNCTION)
+        .map(|f| go_ident(&f.name))
+        .collect();
+    used_names.extend(
+        goenv
+            .structs()
+            .map(|(struct_name, _)| go_user_type_name(&struct_name.0)),
+    );
+    used_names.extend(
+        goenv
+            .enums()
+            .map(|(enum_name, _)| go_user_type_name(&enum_name.0)),
+    );
+    used_names.extend(
+        goenv
+            .genv
+            .type_env
+            .extern_types
+            .keys()
+            .map(|extern_name| go_user_type_name(extern_name)),
+    );
+    for (enum_name, enum_def) in goenv.enums() {
+        for (variant_name, _) in enum_def.variants.iter() {
+            used_names.insert(variant_symbol_name(goenv, &enum_name.0, &variant_name.0));
+        }
+    }
+
+    if !used_names.contains(ENTRY_WRAPPER_FUNCTION) {
+        return ENTRY_WRAPPER_FUNCTION.to_string();
+    }
+
+    let mut index = 1usize;
+    loop {
+        let candidate = format!("{}__{}", ENTRY_WRAPPER_FUNCTION, index);
+        if !used_names.contains(&candidate) {
+            return candidate;
+        }
+        index += 1;
+    }
+}
+
+fn patched_fn_name(goenv: &GlobalGoEnv, name: &str, entry_wrapper_name: &str) -> String {
+    if name == ENTRY_FUNCTION {
+        entry_wrapper_name.to_string()
     } else {
-        go_ident(name)
+        go_toplevel_func_name(goenv, name)
     }
 }
 
@@ -8304,6 +9323,7 @@ fn compile_boxed_fn_from_native(
     goenv: &GlobalGoEnv,
     f: &anf::Fn,
     native_ctx: &NativeFnCtx,
+    entry_wrapper_name: &str,
 ) -> goast::Fn {
     let params = boxed_fn_params(&f.params);
     let helper_ret_ty = native_helper_ret_ty(&native_ctx.mode);
@@ -8442,7 +9462,7 @@ fn compile_boxed_fn_from_native(
     }
 
     goast::Fn {
-        name: patched_fn_name(&f.name),
+        name: patched_fn_name(goenv, &f.name, entry_wrapper_name),
         params,
         ret_ty: Some(tast_ty_to_go_type(&f.ret_ty)),
         body: goast::Block { stmts },
@@ -8463,7 +9483,12 @@ fn compile_native_fn(goenv: &GlobalGoEnv, f: &anf::Fn, native_ctx: &NativeFnCtx)
     }
 }
 
-fn compile_fn(goenv: &GlobalGoEnv, _gensym: &Gensym, f: &anf::Fn) -> goast::Fn {
+fn compile_fn(
+    goenv: &GlobalGoEnv,
+    _gensym: &Gensym,
+    f: &anf::Fn,
+    entry_wrapper_name: &str,
+) -> goast::Fn {
     let params = boxed_fn_params(&f.params);
     let go_ret_ty = tast_ty_to_go_type(&f.ret_ty);
     let ret_ty = match go_ret_ty {
@@ -8474,7 +9499,7 @@ fn compile_fn(goenv: &GlobalGoEnv, _gensym: &Gensym, f: &anf::Fn) -> goast::Fn {
     let stmts = compile_block_structured(goenv, &f.body, &join_env);
 
     goast::Fn {
-        name: patched_fn_name(&f.name),
+        name: patched_fn_name(goenv, &f.name, entry_wrapper_name),
         params,
         ret_ty,
         body: goast::Block { stmts },
@@ -8488,6 +9513,9 @@ pub fn go_file(
 ) -> (goast::File, GlobalGoEnv) {
     let mut goenv = GlobalGoEnv::from_anf_env(anfenv);
     goenv.toplevel_funcs = file.toplevels.iter().map(|f| f.name.clone()).collect();
+    goenv.colliding_callable_idents = collect_colliding_callable_idents(&goenv);
+    goenv.callable_go_names = collect_callable_go_names(&goenv);
+    goenv.callable_go_name_set = goenv.callable_go_names.values().cloned().collect();
     let mut all = Vec::new();
 
     let (tuple_types, array_types, vec_types, ref_types, hashmap_types, missing_types) =
@@ -8517,7 +9545,7 @@ pub fn go_file(
                 && existing_imports.insert(extern_fn.package_path.clone())
             {
                 extra_specs.push(goast::ImportSpec {
-                    alias: None,
+                    alias: go_import_alias(&goenv, &extern_fn.package_path),
                     path: extern_fn.package_path.clone(),
                 });
             }
@@ -8528,7 +9556,7 @@ pub fn go_file(
                 && existing_imports.insert(package_path.clone())
             {
                 extra_specs.push(goast::ImportSpec {
-                    alias: None,
+                    alias: go_import_alias(&goenv, package_path),
                     path: package_path.clone(),
                 });
             }
@@ -8578,11 +9606,16 @@ pub fn go_file(
     }
 
     let file = anf::anf_renamer::rename(file);
+    let entry_wrapper_name = entry_wrapper_function_name(&goenv, &file);
     let dyn_req = collect_dyn_requirements(&goenv, &file);
+    let (dyn_vtable_ctor_go_names, dyn_wrap_go_names) =
+        collect_dyn_helper_go_names(&goenv, &dyn_req);
+    goenv.dyn_vtable_ctor_go_names = dyn_vtable_ctor_go_names;
+    goenv.dyn_wrap_go_names = dyn_wrap_go_names;
 
     let mut toplevels = gen_type_definition(&goenv);
     toplevels.extend(gen_dyn_type_definitions(&goenv, &dyn_req));
-    let impl_name_map = build_trait_impl_name_map(&file.toplevels);
+    let impl_name_map = build_trait_impl_name_map(&goenv, &file.toplevels);
     toplevels.extend(gen_dyn_helper_fns(&goenv, &dyn_req, &impl_name_map));
     toplevels.extend(gen_extern_wrapper_fns(&goenv));
     toplevels.extend(gen_extern_bridge_fns(&goenv));
@@ -8597,9 +9630,15 @@ pub fn go_file(
                 &goenv,
                 &item,
                 &native_ctx,
+                &entry_wrapper_name,
             )));
         } else {
-            toplevels.push(goast::Item::Fn(compile_fn(&goenv, gensym, &item)));
+            toplevels.push(goast::Item::Fn(compile_fn(
+                &goenv,
+                gensym,
+                &item,
+                &entry_wrapper_name,
+            )));
         }
     }
     all.extend(toplevels);
@@ -8610,7 +9649,7 @@ pub fn go_file(
         body: goast::Block {
             stmts: vec![goast::Stmt::Expr(goast::Expr::Call {
                 func: Box::new(goast::Expr::Var {
-                    name: ENTRY_WRAPPER_FUNCTION.to_string(),
+                    name: entry_wrapper_name,
                     ty: goty::GoType::TFunc {
                         params: vec![],
                         ret_ty: Box::new(goty::GoType::TVoid),
@@ -8648,7 +9687,7 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
             })
             .collect();
         defs.push(goast::Item::Struct(goast::Struct {
-            name: go_ident(&name.0),
+            name: go_user_type_name(&name.0),
             fields,
             methods: vec![],
         }));
@@ -8666,7 +9705,7 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
         }
 
         if is_tag_only_enum_def(def) {
-            let enum_go_name = go_ident(&name.0);
+            let enum_go_name = go_user_type_name(&name.0);
             defs.push(goast::Item::TypeDef(goast::TypeDef {
                 name: enum_go_name.clone(),
                 ty: goty::GoType::TInt32,
@@ -8693,10 +9732,10 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
             continue;
         }
 
-        let type_identifier_method = format!("is{}", go_ident(&name.0));
+        let type_identifier_method = format!("is{}", go_user_type_name(&name.0));
 
         defs.push(goast::Item::Interface(goast::Interface {
-            name: go_ident(&name.0),
+            name: go_user_type_name(&name.0),
             methods: vec![goast::MethodElem {
                 name: type_identifier_method.clone(),
                 params: vec![],
@@ -8734,19 +9773,27 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
     }
 
     for (name, ext) in goenv.genv.type_env.extern_types.iter() {
+        let alias_name = go_user_type_name(name);
+        if go_type_alias_name_is_reserved(goenv, &alias_name) {
+            continue;
+        }
         if let Some(package_path) = &ext.package_path {
             let go_ty = if package_path.is_empty() {
                 goty::GoType::TName {
-                    name: ext.go_name.clone(),
+                    name: rewrite_raw_go_symbol_import_aliases(goenv, &ext.go_name),
                 }
             } else {
-                let alias = go_package_alias(package_path);
+                let alias = go_package_alias(goenv, package_path);
                 goty::GoType::TName {
-                    name: qualify_go_type_expr(&alias, &ext.go_name),
+                    name: rewrite_go_package_alias(
+                        &qualify_go_type_expr(&alias, &ext.go_name),
+                        &go_package_default_alias(package_path),
+                        &alias,
+                    ),
                 }
             };
             defs.push(goast::Item::TypeAlias(goast::TypeAlias {
-                name: go_ident(name),
+                name: alias_name,
                 ty: go_ty,
             }));
         }

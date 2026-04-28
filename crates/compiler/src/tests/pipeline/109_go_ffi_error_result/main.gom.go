@@ -1,13 +1,13 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
     "time"
     "os"
 )
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -85,7 +85,7 @@ func describe_duration(input__0 string) string {
     case Result__Duration__GoError_Ok:
         var x1 Duration = mtmp0.(Result__Duration__GoError_Ok)._0
         var value__1 Duration = x1
-        var t13 string = fmt.Sprintf("ok=%v", value__1)
+        var t13 string = _goml_fmt.Sprintf("ok=%v", value__1)
         jp12 = t13
     case Result__Duration__GoError_Err:
         var x2 GoError = mtmp0.(Result__Duration__GoError_Err)._0
@@ -109,19 +109,17 @@ func describe_setenv() string {
         var jp21 string
         jp21 = "setenv=ok"
         jp19 = jp21
-        retv17 = jp19
-        return retv17
     case Result__unit__GoError_Err:
         var x5 GoError = mtmp3.(Result__unit__GoError_Err)._0
         var err__3 GoError = x5
         var t22 string = go_error_to_string(err__3)
         var t23 string = "setenv_err=" + t22
         jp19 = t23
-        retv17 = jp19
-        return retv17
     default:
         panic("non-exhaustive match")
     }
+    retv17 = jp19
+    return retv17
 }
 
 func main0() struct{} {

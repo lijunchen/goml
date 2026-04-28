@@ -1,19 +1,19 @@
 package main
 
 import (
-    "fmt"
-    "unicode/utf8"
+    _goml_fmt "fmt"
+    _goml_utf8 "unicode/utf8"
 )
 
 func char_to_string(x rune) string {
-    if !utf8.ValidRune(x) {
+    if !_goml_utf8.ValidRune(x) {
         panic("invalid char")
     }
     return string(x)
 }
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 

@@ -1,13 +1,13 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
     "time"
     "os"
 )
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -83,7 +83,7 @@ func configure_and_format__native(input__0 string) (string, GoError) {
     }
     jp15 = mtmp4_value_0
     var value__1 Duration = jp15
-    var t16 string = fmt.Sprintf("dur=%v", value__1)
+    var t16 string = _goml_fmt.Sprintf("dur=%v", value__1)
     return t16, nil
 }
 

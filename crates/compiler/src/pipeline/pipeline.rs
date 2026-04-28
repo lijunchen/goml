@@ -8,7 +8,7 @@ use parser::{self, syntax::MySyntaxNode};
 use rowan::GreenNode;
 
 use crate::config::GomlConfig;
-use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE};
+use crate::package_names::{BUILTIN_PACKAGE, ENTRY_FUNCTION, ROOT_PACKAGE};
 use crate::pipeline::builtin_inherent;
 use crate::pipeline::compile_error;
 use crate::pipeline::packages;
@@ -77,6 +77,65 @@ impl CompilationError {
 struct PackageInterface {
     exports: PackageExports,
     package_interface: interface::PackageInterface,
+}
+
+fn nominal_impl_type_name(ty: &tast::Ty) -> Option<&str> {
+    match ty {
+        tast::Ty::TStruct { name } | tast::Ty::TEnum { name } => Some(name),
+        tast::Ty::TApp { ty, .. } => nominal_impl_type_name(ty),
+        _ => None,
+    }
+}
+
+fn exports_define_nominal_type(exports: &PackageExports, ty: &tast::Ty) -> bool {
+    let Some(name) = nominal_impl_type_name(ty) else {
+        return false;
+    };
+    let ident = tast::TastIdent::new(name);
+    exports.type_env.structs.contains_key(&ident) || exports.type_env.enums.contains_key(&ident)
+}
+
+fn genv_defines_nominal_type(genv: &GlobalTypeEnv, ty: &tast::Ty) -> bool {
+    let Some(name) = nominal_impl_type_name(ty) else {
+        return false;
+    };
+    let ident = tast::TastIdent::new(name);
+    genv.type_env.structs.contains_key(&ident) || genv.type_env.enums.contains_key(&ident)
+}
+
+fn duplicate_trait_impl_shadows_builtin(
+    genv: &GlobalTypeEnv,
+    exports: &PackageExports,
+    key: &(String, tast::Ty),
+) -> bool {
+    builtins::builtin_env()
+        .trait_env
+        .trait_impls
+        .contains_key(key)
+        && exports_define_nominal_type(exports, &key.1)
+        && !genv_defines_nominal_type(genv, &key.1)
+}
+
+pub(super) fn report_duplicate_trait_impls(
+    diagnostics: &mut Diagnostics,
+    genv: &GlobalTypeEnv,
+    exports: &PackageExports,
+    package_name: &str,
+) {
+    for (key, _) in exports.trait_env.trait_impls.iter() {
+        if genv.trait_env.trait_impls.contains_key(key)
+            && !duplicate_trait_impl_shadows_builtin(genv, exports, key)
+        {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "Trait {} implementation for {:?} is defined in multiple packages (including {})",
+                    key.0, key.1, package_name
+                ),
+            ));
+        }
+    }
 }
 
 fn root_package_name(package_names: &[String]) -> Option<String> {
@@ -268,18 +327,7 @@ fn typecheck_packages_inner(
     let external_interfaces = external_deps.package_interfaces();
     let external_envs = external_deps.package_envs();
     for (name, module) in external_deps.modules.iter() {
-        for (key, _) in module.interface.exports.trait_env.trait_impls.iter() {
-            if genv.trait_env.trait_impls.contains_key(key) {
-                diagnostics.push(Diagnostic::new(
-                    Stage::Typer,
-                    Severity::Error,
-                    format!(
-                        "Trait {} implementation for {:?} is defined in multiple packages (including {})",
-                        key.0, key.1, name
-                    ),
-                ));
-            }
-        }
+        report_duplicate_trait_impls(&mut diagnostics, &genv, &module.interface.exports, name);
         module.interface.exports.apply_to(&mut genv);
     }
     let mut artifacts_by_name: HashMap<String, PackageArtifact> = HashMap::new();
@@ -326,18 +374,7 @@ fn typecheck_packages_inner(
 
         let mut package_diagnostics = artifact.diagnostics.clone();
         diagnostics.append(&mut package_diagnostics);
-        for (key, _) in artifact.interface.exports.trait_env.trait_impls.iter() {
-            if genv.trait_env.trait_impls.contains_key(key) {
-                diagnostics.push(Diagnostic::new(
-                    Stage::Typer,
-                    Severity::Error,
-                    format!(
-                        "Trait {} implementation for {:?} is defined in multiple packages (including {})",
-                        key.0, key.1, name
-                    ),
-                ));
-            }
-        }
+        report_duplicate_trait_impls(&mut diagnostics, &genv, &artifact.interface.exports, name);
         artifact.interface.exports.apply_to(&mut genv);
         artifacts_by_name.insert(name.clone(), artifact);
     }
@@ -411,13 +448,19 @@ fn should_use_single_file_mode(path: &Path) -> bool {
 
 pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> {
     let single_file = should_use_single_file_mode(path);
-    super::with_src_compiler_stack(src, || compile_inner(path, src, single_file))
+    super::with_src_compiler_stack(src, || compile_inner(path, src, single_file, true))
+}
+
+pub fn compile_for_analysis(path: &Path, src: &str) -> Result<Compilation, CompilationError> {
+    let single_file = should_use_single_file_mode(path);
+    super::with_src_compiler_stack(src, || compile_inner(path, src, single_file, false))
 }
 
 fn compile_inner(
     path: &Path,
     src: &str,
     single_file: bool,
+    validate_entrypoint: bool,
 ) -> Result<Compilation, CompilationError> {
     let (green_node, cst, entry_ast) = parse_ast_from_source(path, src)?;
 
@@ -447,6 +490,14 @@ fn compile_inner(
         return Err(CompilationError::Typer {
             diagnostics: diagnostics.clone(),
         });
+    }
+    if validate_entrypoint {
+        validate_entrypoint_for_compile(&mut diagnostics, &graph, &artifacts);
+        if diagnostics.has_errors() {
+            return Err(CompilationError::Typer {
+                diagnostics: diagnostics.clone(),
+            });
+        }
     }
     let gensym = Gensym::new();
 
@@ -530,7 +581,7 @@ fn compile_inner(
 }
 
 pub fn compile_single_file(path: &Path, src: &str) -> Result<Compilation, CompilationError> {
-    super::with_src_compiler_stack(src, || compile_inner(path, src, true))
+    super::with_src_compiler_stack(src, || compile_inner(path, src, true, true))
 }
 
 pub fn typecheck_with_packages(
@@ -588,18 +639,7 @@ pub fn typecheck_with_packages_and_results(
         let external_interfaces = external_deps.package_interfaces();
         let external_envs = external_deps.package_envs();
         for (name, module) in external_deps.modules.iter() {
-            for (key, _) in module.interface.exports.trait_env.trait_impls.iter() {
-                if genv.trait_env.trait_impls.contains_key(key) {
-                    diagnostics.push(Diagnostic::new(
-                        Stage::Typer,
-                        Severity::Error,
-                        format!(
-                            "Trait {} implementation for {:?} is defined in multiple packages (including {})",
-                            key.0, key.1, name
-                        ),
-                    ));
-                }
-            }
+            report_duplicate_trait_impls(&mut diagnostics, &genv, &module.interface.exports, name);
             module.interface.exports.apply_to(&mut genv);
         }
         let mut artifacts_by_name: HashMap<String, PackageInterface> = HashMap::new();
@@ -661,24 +701,12 @@ pub fn typecheck_with_packages_and_results(
             package_diagnostics.append(&mut hir_diagnostics);
             diagnostics.append(&mut package_diagnostics);
 
-            for (key, _) in package_genv.trait_env.trait_impls.iter() {
-                if genv.trait_env.trait_impls.contains_key(key) {
-                    diagnostics.push(Diagnostic::new(
-                        Stage::Typer,
-                        Severity::Error,
-                        format!(
-                            "Trait {} implementation for {:?} is defined in multiple packages (including {})",
-                            key.0, key.1, name
-                        ),
-                    ));
-                }
-            }
-
             let exports = PackageExports {
                 type_env: package_genv.type_env.clone(),
                 trait_env: package_genv.trait_env.clone(),
                 value_env: package_genv.value_env.clone(),
             };
+            report_duplicate_trait_impls(&mut diagnostics, &genv, &exports, name);
             exports.apply_to(&mut genv);
             let package_interface = interface::PackageInterface::from_exports(name, &exports);
 
@@ -704,6 +732,37 @@ pub fn typecheck_with_packages_and_results(
 
         Ok((entry_hir_table, entry_results, genv, diagnostics))
     })
+}
+
+fn validate_entrypoint_for_compile(
+    diagnostics: &mut Diagnostics,
+    graph: &packages::PackageGraph,
+    artifacts: &HashMap<String, PackageArtifact>,
+) {
+    let Some(entry_artifact) = artifacts.get(&graph.entry_package) else {
+        return;
+    };
+    if graph.entry_package != ROOT_PACKAGE {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            format!("entry package must be main, got {}", graph.entry_package),
+        ));
+        return;
+    }
+    if !entry_artifact
+        .interface
+        .exports
+        .value_env
+        .funcs
+        .contains_key(ENTRY_FUNCTION)
+    {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            "main function is required".to_string(),
+        ));
+    }
 }
 
 fn load_external_dependencies(

@@ -1,0 +1,30 @@
+struct A_B {
+    value: int32,
+}
+
+struct C {
+    value: int32,
+}
+
+struct A {
+    value: int32,
+}
+
+struct B_C {
+    value: int32,
+}
+
+fn f1(x: A_B, y: C) -> int32 {
+    x.value + y.value
+}
+
+fn f2(x: A, y: B_C) -> int32 {
+    x.value + y.value
+}
+
+fn main() -> unit {
+    let one: ((A_B, C) -> int32, int32) = (f1, 1i32);
+    let two: ((A, B_C) -> int32, int32) = (f2, 2i32);
+    println(one.1);
+    println(two.1);
+}

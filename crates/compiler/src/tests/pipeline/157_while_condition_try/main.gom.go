@@ -1,15 +1,15 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
 )
 
 func int32_to_string(x int32) string {
-    return fmt.Sprintf("%d", x)
+    return _goml_fmt.Sprintf("%d", x)
 }
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -17,17 +17,17 @@ type ref_int32_x struct {
     value int32
 }
 
-func ref__Ref_int32(value int32) *ref_int32_x {
+func ref__Ref_5int32(value int32) *ref_int32_x {
     return &ref_int32_x{
         value: value,
     }
 }
 
-func ref_get__Ref_int32(reference *ref_int32_x) int32 {
+func ref_get__Ref_5int32(reference *ref_int32_x) int32 {
     return reference.value
 }
 
-func ref_set__Ref_int32(reference *ref_int32_x, value int32) struct{} {
+func ref_set__Ref_5int32(reference *ref_int32_x, value int32) struct{} {
     reference.value = value
     return struct{}{}
 }
@@ -82,11 +82,11 @@ func step_none__native(i__1 int32) (bool, bool) {
 }
 
 func run_some__native() (int32, bool) {
-    var i__2 *ref_int32_x = ref__Ref_int32(0)
-    var total__3 *ref_int32_x = ref__Ref_int32(0)
+    var i__2 *ref_int32_x = ref__Ref_5int32(0)
+    var total__3 *ref_int32_x = ref__Ref_5int32(0)
     Loop_loop31:
     for {
-        var t32 int32 = ref_get__Ref_int32(i__2)
+        var t32 int32 = ref_get__Ref_5int32(i__2)
         var jp34 bool
         var mtmp0_value_0 bool
         var mtmp0_ok bool
@@ -97,19 +97,19 @@ func run_some__native() (int32, bool) {
         }
         jp34 = mtmp0_value_0
         if jp34 {
-            var t35 int32 = ref_get__Ref_int32(total__3)
-            var t36 int32 = ref_get__Ref_int32(i__2)
+            var t35 int32 = ref_get__Ref_5int32(total__3)
+            var t36 int32 = ref_get__Ref_5int32(i__2)
             var t37 int32 = t35 + t36
-            ref_set__Ref_int32(total__3, t37)
-            var t38 int32 = ref_get__Ref_int32(i__2)
+            ref_set__Ref_5int32(total__3, t37)
+            var t38 int32 = ref_get__Ref_5int32(i__2)
             var t39 int32 = t38 + 1
-            ref_set__Ref_int32(i__2, t39)
+            ref_set__Ref_5int32(i__2, t39)
             continue
         } else {
             break Loop_loop31
         }
     }
-    var t29 int32 = ref_get__Ref_int32(total__3)
+    var t29 int32 = ref_get__Ref_5int32(total__3)
     return t29, true
 }
 
@@ -126,11 +126,11 @@ func run_some() Option__int32 {
 }
 
 func run_none__native() (int32, bool) {
-    var i__4 *ref_int32_x = ref__Ref_int32(0)
-    var total__5 *ref_int32_x = ref__Ref_int32(0)
+    var i__4 *ref_int32_x = ref__Ref_5int32(0)
+    var total__5 *ref_int32_x = ref__Ref_5int32(0)
     Loop_loop45:
     for {
-        var t46 int32 = ref_get__Ref_int32(i__4)
+        var t46 int32 = ref_get__Ref_5int32(i__4)
         var jp48 bool
         var mtmp5_value_0 bool
         var mtmp5_ok bool
@@ -141,19 +141,19 @@ func run_none__native() (int32, bool) {
         }
         jp48 = mtmp5_value_0
         if jp48 {
-            var t49 int32 = ref_get__Ref_int32(total__5)
-            var t50 int32 = ref_get__Ref_int32(i__4)
+            var t49 int32 = ref_get__Ref_5int32(total__5)
+            var t50 int32 = ref_get__Ref_5int32(i__4)
             var t51 int32 = t49 + t50
-            ref_set__Ref_int32(total__5, t51)
-            var t52 int32 = ref_get__Ref_int32(i__4)
+            ref_set__Ref_5int32(total__5, t51)
+            var t52 int32 = ref_get__Ref_5int32(i__4)
             var t53 int32 = t52 + 1
-            ref_set__Ref_int32(i__4, t53)
+            ref_set__Ref_5int32(i__4, t53)
             continue
         } else {
             break Loop_loop45
         }
     }
-    var t43 int32 = ref_get__Ref_int32(total__5)
+    var t43 int32 = ref_get__Ref_5int32(total__5)
     return t43, true
 }
 

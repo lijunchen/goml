@@ -1,12 +1,12 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
     "time"
 )
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -62,7 +62,7 @@ func render_with_prefix__native(prefix__0 string, text__1 string) (string, GoErr
     }
     var t10_value_0 string
     var t10_err GoError
-    t10_value_0, t10_err = _goml_inherent_closure_env_run_0_closure_env_run_0_apply__native(run__3)
+    t10_value_0, t10_err = _goml_inherent_x23_closure_x5f_env_x5f_run_x5f_0_x23_closure_x5f_env_x5f_run_x5f_0_x23_apply_x5f__x5f_native(run__3)
     if t10_err != nil {
         var ret_zero string
         return ret_zero, t10_err
@@ -120,7 +120,7 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_inherent_closure_env_run_0_closure_env_run_0_apply__native(env7 closure_env_run_0) (string, GoError) {
+func _goml_inherent_x23_closure_x5f_env_x5f_run_x5f_0_x23_closure_x5f_env_x5f_run_x5f_0_x23_apply_x5f__x5f_native(env7 closure_env_run_0) (string, GoError) {
     var text__1 string = env7.text_0
     var prefix__0 string = env7.prefix_1
     var jp27 Duration
@@ -133,7 +133,7 @@ func _goml_inherent_closure_env_run_0_closure_env_run_0_apply__native(env7 closu
     }
     jp27 = mtmp0_value_0
     var value__2 Duration = jp27
-    var t28 string = fmt.Sprintf("%v", value__2)
+    var t28 string = _goml_fmt.Sprintf("%v", value__2)
     var t29 string = prefix__0 + t28
     return t29, nil
 }

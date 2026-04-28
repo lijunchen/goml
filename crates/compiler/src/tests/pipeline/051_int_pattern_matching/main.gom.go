@@ -1,7 +1,7 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
 )
 
 func bool_to_string(x bool) string {
@@ -13,11 +13,11 @@ func bool_to_string(x bool) string {
 }
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
-type Tuple2_int8_int16 struct {
+type Tuple2_4int8_5int16 struct {
     _0 int8
     _1 int16
 }
@@ -89,7 +89,7 @@ func is_special64(value__3 int64) bool {
     return retv18
 }
 
-func match_tuple(values__4 Tuple2_int8_int16) bool {
+func match_tuple(values__4 Tuple2_4int8_5int16) bool {
     var retv22 bool
     var x0 int8 = values__4._0
     var x1 int16 = values__4._1
@@ -104,13 +104,11 @@ func match_tuple(values__4 Tuple2_int8_int16) bool {
             jp26 = false
         }
         jp24 = jp26
-        retv22 = jp24
-        return retv22
     default:
         jp24 = false
-        retv22 = jp24
-        return retv22
     }
+    retv22 = jp24
+    return retv22
 }
 
 func match_struct(pair__5 PairData) bool {
@@ -128,17 +126,13 @@ func match_struct(pair__5 PairData) bool {
             jp32 = false
         }
         jp30 = jp32
-        retv28 = jp30
-        return retv28
     case 300:
         jp30 = true
-        retv28 = jp30
-        return retv28
     default:
         jp30 = false
-        retv28 = jp30
-        return retv28
     }
+    retv28 = jp30
+    return retv28
 }
 
 func report(label__6 string, value__7 bool) string {
@@ -152,12 +146,12 @@ func report(label__6 string, value__7 bool) string {
 func main0() struct{} {
     var tuple_first__8 int8 = 1
     var tuple_second__9 int16 = 2
-    var t38 Tuple2_int8_int16 = Tuple2_int8_int16{
+    var t38 Tuple2_4int8_5int16 = Tuple2_4int8_5int16{
         _0: tuple_first__8,
         _1: tuple_second__9,
     }
     var tuple_result_hit__10 bool = match_tuple(t38)
-    var t39 Tuple2_int8_int16 = Tuple2_int8_int16{
+    var t39 Tuple2_4int8_5int16 = Tuple2_4int8_5int16{
         _0: 3,
         _1: 4,
     }

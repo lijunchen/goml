@@ -1,15 +1,15 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
 )
 
 func int32_to_string(x int32) string {
-    return fmt.Sprintf("%d", x)
+    return _goml_fmt.Sprintf("%d", x)
 }
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -48,7 +48,7 @@ func main0() struct{} {
     var f1__11 closure_env_f1_3 = closure_env_f1_3{
         a_0: a__0,
     }
-    var result__12 int32 = _goml_inherent_closure_env_f1_3_closure_env_f1_3_apply(f1__11, 1)
+    var result__12 int32 = _goml_inherent_x23_closure_x5f_env_x5f_f1_x5f_3_x23_closure_x5f_env_x5f_f1_x5f_3_x23_apply(f1__11, 1)
     println__T_int32(result__12)
     return struct{}{}
 }
@@ -59,7 +59,7 @@ func println__T_int32(value__1 int32) struct{} {
     return struct{}{}
 }
 
-func _goml_inherent_closure_env_f4_0_closure_env_f4_0_apply(env0 closure_env_f4_0, w__7 int32) int32 {
+func _goml_inherent_x23_closure_x5f_env_x5f_f4_x5f_0_x23_closure_x5f_env_x5f_f4_x5f_0_x23_apply(env0 closure_env_f4_0, w__7 int32) int32 {
     var retv10 int32
     var a__0 int32 = env0.a_0
     var b__2 int32 = env0.b_1
@@ -79,7 +79,7 @@ func _goml_inherent_closure_env_f4_0_closure_env_f4_0_apply(env0 closure_env_f4_
     return retv10
 }
 
-func _goml_inherent_closure_env_f3_1_closure_env_f3_1_apply(env1 closure_env_f3_1, z__5 int32) int32 {
+func _goml_inherent_x23_closure_x5f_env_x5f_f3_x5f_1_x23_closure_x5f_env_x5f_f3_x5f_1_x23_apply(env1 closure_env_f3_1, z__5 int32) int32 {
     var retv19 int32
     var a__0 int32 = env1.a_0
     var b__2 int32 = env1.b_1
@@ -96,12 +96,12 @@ func _goml_inherent_closure_env_f3_1_closure_env_f3_1_apply(env1 closure_env_f3_
         y_5: y__3,
         z_6: z__5,
     }
-    var t20 int32 = _goml_inherent_closure_env_f4_0_closure_env_f4_0_apply(f4__8, 4)
+    var t20 int32 = _goml_inherent_x23_closure_x5f_env_x5f_f4_x5f_0_x23_closure_x5f_env_x5f_f4_x5f_0_x23_apply(f4__8, 4)
     retv19 = t20
     return retv19
 }
 
-func _goml_inherent_closure_env_f2_2_closure_env_f2_2_apply(env2 closure_env_f2_2, y__3 int32) int32 {
+func _goml_inherent_x23_closure_x5f_env_x5f_f2_x5f_2_x23_closure_x5f_env_x5f_f2_x5f_2_x23_apply(env2 closure_env_f2_2, y__3 int32) int32 {
     var retv22 int32
     var a__0 int32 = env2.a_0
     var b__2 int32 = env2.b_1
@@ -114,12 +114,12 @@ func _goml_inherent_closure_env_f2_2_closure_env_f2_2_apply(env2 closure_env_f2_
         x_3: x__1,
         y_4: y__3,
     }
-    var t23 int32 = _goml_inherent_closure_env_f3_1_closure_env_f3_1_apply(f3__9, 3)
+    var t23 int32 = _goml_inherent_x23_closure_x5f_env_x5f_f3_x5f_1_x23_closure_x5f_env_x5f_f3_x5f_1_x23_apply(f3__9, 3)
     retv22 = t23
     return retv22
 }
 
-func _goml_inherent_closure_env_f1_3_closure_env_f1_3_apply(env3 closure_env_f1_3, x__1 int32) int32 {
+func _goml_inherent_x23_closure_x5f_env_x5f_f1_x5f_3_x23_closure_x5f_env_x5f_f1_x5f_3_x23_apply(env3 closure_env_f1_3, x__1 int32) int32 {
     var retv25 int32
     var a__0 int32 = env3.a_0
     var b__2 int32 = 20
@@ -128,7 +128,7 @@ func _goml_inherent_closure_env_f1_3_closure_env_f1_3_apply(env3 closure_env_f1_
         b_1: b__2,
         x_2: x__1,
     }
-    var t26 int32 = _goml_inherent_closure_env_f2_2_closure_env_f2_2_apply(f2__10, 2)
+    var t26 int32 = _goml_inherent_x23_closure_x5f_env_x5f_f2_x5f_2_x23_closure_x5f_env_x5f_f2_x5f_2_x23_apply(f2__10, 2)
     retv25 = t26
     return retv25
 }

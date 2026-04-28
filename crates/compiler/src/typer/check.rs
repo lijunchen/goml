@@ -923,7 +923,8 @@ impl Typer {
             }
             _ if !is_concrete_dyn_target(&for_ty) => {}
             _ => {
-                if !genv.has_trait_impl_visible(&resolved_trait, &for_ty) {
+                let impl_count = genv.trait_impl_count_visible(&resolved_trait, &for_ty);
+                if impl_count == 0 {
                     diagnostics.push(
                         Diagnostic::new(
                             Stage::Typer,
@@ -932,6 +933,21 @@ impl Typer {
                                 "Type {} does not implement trait {}",
                                 super::util::format_ty_for_diag(&for_ty),
                                 resolved_trait
+                            ),
+                        )
+                        .with_range(range),
+                    );
+                    return (expr, false);
+                }
+                if impl_count > 1 {
+                    diagnostics.push(
+                        Diagnostic::new(
+                            Stage::Typer,
+                            Severity::Error,
+                            format!(
+                                "Multiple instances found for trait {}<{}>",
+                                resolved_trait,
+                                super::util::format_ty_for_diag(&for_ty)
                             ),
                         )
                         .with_range(range),
@@ -2094,7 +2110,11 @@ impl Typer {
         for param in params.iter() {
             let name_str = self.hir_table.local_ident_name(param.name);
             let param_ty = match &param.ty {
-                Some(ty) => tast::Ty::from_hir(genv, ty, &current_tparams_env),
+                Some(ty) => {
+                    let param_ty = tast::Ty::from_hir(genv, ty, &current_tparams_env);
+                    super::util::validate_dyn_object_safety_in_ty(genv, diagnostics, &param_ty);
+                    param_ty
+                }
                 None => self.fresh_ty_var(),
             };
             local_env.insert_var(param.name, param_ty.clone());
@@ -2155,10 +2175,11 @@ impl Typer {
 
                 for (param, expected_param_ty) in params.iter().zip(expected_params.iter()) {
                     let name_str = self.hir_table.local_ident_name(param.name);
-                    let annotated_ty = param
-                        .ty
-                        .as_ref()
-                        .map(|ty| tast::Ty::from_hir(genv, ty, &current_tparams_env));
+                    let annotated_ty = param.ty.as_ref().map(|ty| {
+                        let ann_ty = tast::Ty::from_hir(genv, ty, &current_tparams_env);
+                        super::util::validate_dyn_object_safety_in_ty(genv, diagnostics, &ann_ty);
+                        ann_ty
+                    });
 
                     let param_ty = match annotated_ty {
                         Some(ann_ty) => {
@@ -2214,10 +2235,11 @@ impl Typer {
         stmt: &hir::LetStmt,
     ) -> tast::LetStmt {
         let current_tparams_env = local_env.current_tparams_env();
-        let annotated_ty = stmt
-            .annotation
-            .as_ref()
-            .map(|ty| tast::Ty::from_hir(genv, ty, &current_tparams_env));
+        let annotated_ty = stmt.annotation.as_ref().map(|ty| {
+            let ann_ty = tast::Ty::from_hir(genv, ty, &current_tparams_env);
+            super::util::validate_dyn_object_safety_in_ty(genv, diagnostics, &ann_ty);
+            ann_ty
+        });
 
         let (value_tast, value_ty) = if let Some(ann_ty) = &annotated_ty {
             (
@@ -4029,12 +4051,19 @@ impl Typer {
             | common_defs::BinaryOp::GreaterEq
             | common_defs::BinaryOp::Eq
             | common_defs::BinaryOp::NotEq => {
-                // Comparison operators: lhs and rhs must have same type (numeric types)
                 self.push_constraint(Constraint::TypeEqual(
                     lhs_ty.clone(),
                     rhs_ty.clone(),
                     self.expr_range(lhs),
                 ));
+                self.validate_comparison_operand(
+                    genv,
+                    diagnostics,
+                    op,
+                    &lhs_ty,
+                    &rhs_ty,
+                    self.expr_range(lhs),
+                );
             }
         }
 
@@ -4044,6 +4073,46 @@ impl Typer {
             rhs: Box::new(rhs_tast),
             ty: ret_ty.clone(),
             resolution: tast::BinaryResolution::Builtin,
+        }
+    }
+
+    fn validate_comparison_operand(
+        &mut self,
+        genv: &PackageTypeEnv,
+        diagnostics: &mut Diagnostics,
+        op: common_defs::BinaryOp,
+        lhs_ty: &tast::Ty,
+        rhs_ty: &tast::Ty,
+        range: Option<TextRange>,
+    ) {
+        let lhs_norm = self.norm(lhs_ty);
+        let rhs_norm = self.norm(rhs_ty);
+        if contains_tvar(&lhs_norm) || contains_tvar(&rhs_norm) {
+            self.deferred_comparison_checks
+                .push(super::DeferredComparisonCheck {
+                    op,
+                    lhs_ty: lhs_ty.clone(),
+                    rhs_ty: rhs_ty.clone(),
+                    origin: range,
+                });
+            return;
+        }
+        if !same_or_unresolved_ty(&lhs_norm, &rhs_norm) {
+            return;
+        }
+
+        let valid = comparison_operand_is_valid(genv, op, &lhs_norm);
+
+        if !valid {
+            super::util::push_error_with_range(
+                diagnostics,
+                format!(
+                    "Operator {} is not defined for type {}",
+                    comparison_operator_text(op),
+                    super::util::format_ty_for_diag(&lhs_norm)
+                ),
+                range,
+            );
         }
     }
 
@@ -4525,6 +4594,21 @@ impl Typer {
         let pat_node = self.hir_table.pat(pat).clone();
         let range = self.pat_range(pat);
         let astptr = self.pat_astptr(pat);
+        if matches!(self.norm(ty), tast::Ty::TDyn { .. })
+            && !matches!(pat_node, hir::Pat::PVar { .. } | hir::Pat::PWild)
+        {
+            super::util::push_error_with_range(
+                diagnostics,
+                format!(
+                    "Pattern matching on {} is not supported",
+                    super::util::format_ty_for_diag(ty)
+                ),
+                range,
+            );
+            let out = self.check_pat_wild(ty, astptr);
+            self.results.record_pat_ty(pat, out.get_ty());
+            return out;
+        }
         let out = match pat_node {
             hir::Pat::PVar { name, astptr } => {
                 self.check_pat_var(local_env, diagnostics, name, Some(astptr), ty)
@@ -5245,6 +5329,98 @@ fn is_numeric_ty(ty: &tast::Ty) -> bool {
     is_integer_ty(ty) || is_float_ty(ty)
 }
 
+fn is_order_comparable_ty(ty: &tast::Ty) -> bool {
+    is_numeric_ty(ty) || matches!(ty, tast::Ty::TString | tast::Ty::TChar)
+}
+
+fn comparison_operand_is_valid(
+    genv: &PackageTypeEnv,
+    op: common_defs::BinaryOp,
+    ty: &tast::Ty,
+) -> bool {
+    match op {
+        common_defs::BinaryOp::Eq | common_defs::BinaryOp::NotEq => {
+            is_equality_comparable_ty(genv, ty)
+        }
+        common_defs::BinaryOp::Less
+        | common_defs::BinaryOp::Greater
+        | common_defs::BinaryOp::LessEq
+        | common_defs::BinaryOp::GreaterEq => is_order_comparable_ty(ty),
+        common_defs::BinaryOp::Add
+        | common_defs::BinaryOp::Sub
+        | common_defs::BinaryOp::Mul
+        | common_defs::BinaryOp::Div
+        | common_defs::BinaryOp::And
+        | common_defs::BinaryOp::Or => true,
+    }
+}
+
+fn is_equality_comparable_ty(genv: &PackageTypeEnv, ty: &tast::Ty) -> bool {
+    match ty {
+        tast::Ty::TUnit
+        | tast::Ty::TBool
+        | tast::Ty::TString
+        | tast::Ty::TChar
+        | tast::Ty::TInt8
+        | tast::Ty::TInt16
+        | tast::Ty::TInt32
+        | tast::Ty::TInt64
+        | tast::Ty::TUint8
+        | tast::Ty::TUint16
+        | tast::Ty::TUint32
+        | tast::Ty::TUint64
+        | tast::Ty::TFloat32
+        | tast::Ty::TFloat64 => true,
+        tast::Ty::TTuple { typs } => typs
+            .iter()
+            .all(|item| is_equality_comparable_ty(genv, item)),
+        tast::Ty::TArray { elem, .. } => is_equality_comparable_ty(genv, elem),
+        _ => is_struct_equality_comparable_ty(genv, ty),
+    }
+}
+
+fn is_struct_equality_comparable_ty(genv: &PackageTypeEnv, ty: &tast::Ty) -> bool {
+    let Some((type_name, type_args)) = decompose_struct_type(ty) else {
+        return false;
+    };
+    let (resolved, env) = super::util::resolve_type_name(genv, &type_name);
+    let Some(struct_def) = env.structs().get(&tast::TastIdent::new(&resolved)) else {
+        return false;
+    };
+    if struct_def.generics.len() != type_args.len() {
+        return false;
+    }
+
+    let subst = struct_def
+        .generics
+        .iter()
+        .zip(type_args.iter())
+        .map(|(param, arg)| (param.0.clone(), arg.clone()))
+        .collect::<HashMap<_, _>>();
+
+    struct_def.fields.iter().all(|(_, field_ty)| {
+        let field_ty = substitute_ty_params(field_ty, &subst);
+        is_equality_comparable_ty(genv, &field_ty)
+    })
+}
+
+fn comparison_operator_text(op: common_defs::BinaryOp) -> &'static str {
+    match op {
+        common_defs::BinaryOp::Less => "<",
+        common_defs::BinaryOp::Greater => ">",
+        common_defs::BinaryOp::LessEq => "<=",
+        common_defs::BinaryOp::GreaterEq => ">=",
+        common_defs::BinaryOp::Eq => "==",
+        common_defs::BinaryOp::NotEq => "!=",
+        common_defs::BinaryOp::Add => "+",
+        common_defs::BinaryOp::Sub => "-",
+        common_defs::BinaryOp::Mul => "*",
+        common_defs::BinaryOp::Div => "/",
+        common_defs::BinaryOp::And => "&&",
+        common_defs::BinaryOp::Or => "||",
+    }
+}
+
 fn is_signed_numeric_ty(ty: &tast::Ty) -> bool {
     matches!(
         ty,
@@ -5258,6 +5434,36 @@ fn is_signed_numeric_ty(ty: &tast::Ty) -> bool {
 }
 
 impl Typer {
+    pub(crate) fn validate_deferred_comparison_checks(
+        &mut self,
+        genv: &PackageTypeEnv,
+        diagnostics: &mut Diagnostics,
+    ) {
+        let checks = std::mem::take(&mut self.deferred_comparison_checks);
+        for check in checks {
+            let lhs_norm = self.norm(&check.lhs_ty);
+            let rhs_norm = self.norm(&check.rhs_ty);
+            if contains_tvar(&lhs_norm)
+                || contains_tvar(&rhs_norm)
+                || !same_or_unresolved_ty(&lhs_norm, &rhs_norm)
+            {
+                continue;
+            }
+            if comparison_operand_is_valid(genv, check.op, &lhs_norm) {
+                continue;
+            }
+            super::util::push_error_with_range(
+                diagnostics,
+                format!(
+                    "Operator {} is not defined for type {}",
+                    comparison_operator_text(check.op),
+                    super::util::format_ty_for_diag(&lhs_norm)
+                ),
+                check.origin,
+            );
+        }
+    }
+
     pub(crate) fn validate_deferred_arithmetic_checks(&mut self, diagnostics: &mut Diagnostics) {
         let checks = std::mem::take(&mut self.deferred_arithmetic_checks);
         for check in checks {

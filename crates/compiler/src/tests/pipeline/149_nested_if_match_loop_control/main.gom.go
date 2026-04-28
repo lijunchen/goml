@@ -1,15 +1,15 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
 )
 
 func int32_to_string(x int32) string {
-    return fmt.Sprintf("%d", x)
+    return _goml_fmt.Sprintf("%d", x)
 }
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -17,17 +17,17 @@ type ref_int32_x struct {
     value int32
 }
 
-func ref__Ref_int32(value int32) *ref_int32_x {
+func ref__Ref_5int32(value int32) *ref_int32_x {
     return &ref_int32_x{
         value: value,
     }
 }
 
-func ref_get__Ref_int32(reference *ref_int32_x) int32 {
+func ref_get__Ref_5int32(reference *ref_int32_x) int32 {
     return reference.value
 }
 
-func ref_set__Ref_int32(reference *ref_int32_x, value int32) struct{} {
+func ref_set__Ref_5int32(reference *ref_int32_x, value int32) struct{} {
     reference.value = value
     return struct{}{}
 }
@@ -35,16 +35,16 @@ func ref_set__Ref_int32(reference *ref_int32_x, value int32) struct{} {
 type GoError = error
 
 func main0() struct{} {
-    var i__0 *ref_int32_x = ref__Ref_int32(0)
-    var sum__1 *ref_int32_x = ref__Ref_int32(0)
+    var i__0 *ref_int32_x = ref__Ref_5int32(0)
+    var sum__1 *ref_int32_x = ref__Ref_5int32(0)
     Loop_loop8:
     for {
-        var t9 int32 = ref_get__Ref_int32(i__0)
+        var t9 int32 = ref_get__Ref_5int32(i__0)
         var t10 bool = t9 < 7
         if t10 {
-            var cur__2 int32 = ref_get__Ref_int32(i__0)
+            var cur__2 int32 = ref_get__Ref_5int32(i__0)
             var t11 int32 = cur__2 + 1
-            ref_set__Ref_int32(i__0, t11)
+            ref_set__Ref_5int32(i__0, t11)
             var t15 bool = cur__2 < 5
             if t15 {
                 switch cur__2 {
@@ -53,9 +53,9 @@ func main0() struct{} {
                 case 3:
                     continue
                 default:
-                    var t13 int32 = ref_get__Ref_int32(sum__1)
+                    var t13 int32 = ref_get__Ref_5int32(sum__1)
                     var t14 int32 = t13 + cur__2
-                    ref_set__Ref_int32(sum__1, t14)
+                    ref_set__Ref_5int32(sum__1, t14)
                     continue
                 }
             } else {
@@ -63,9 +63,9 @@ func main0() struct{} {
                 case 5:
                     break Loop_loop8
                 default:
-                    var t13 int32 = ref_get__Ref_int32(sum__1)
+                    var t13 int32 = ref_get__Ref_5int32(sum__1)
                     var t14 int32 = t13 + cur__2
-                    ref_set__Ref_int32(sum__1, t14)
+                    ref_set__Ref_5int32(sum__1, t14)
                     continue
                 }
             }
@@ -73,7 +73,7 @@ func main0() struct{} {
             break Loop_loop8
         }
     }
-    var t7 int32 = ref_get__Ref_int32(sum__1)
+    var t7 int32 = ref_get__Ref_5int32(sum__1)
     println__T_int32(t7)
     return struct{}{}
 }

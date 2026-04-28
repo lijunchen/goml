@@ -1,0 +1,14 @@
+extern "go" "strings" "*Builder" type RawBuilder
+
+#[go_value]
+extern "go" "" "new(strings.Builder)" new_builder() -> RawBuilder
+
+struct strings {
+    value: int32,
+}
+
+fn main() -> unit {
+    let _ = new_builder();
+    let x = strings { value: 7i32 };
+    println(x.value);
+}

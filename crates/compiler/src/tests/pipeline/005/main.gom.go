@@ -1,19 +1,19 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
 )
 
 func int32_to_string(x int32) string {
-    return fmt.Sprintf("%d", x)
+    return _goml_fmt.Sprintf("%d", x)
 }
 
 func string_print(s string) struct{} {
-    fmt.Print(s)
+    _goml_fmt.Print(s)
     return struct{}{}
 }
 
-type Tuple2_Color_Color struct {
+type Tuple2_5Color_5Color struct {
     _0 Color
     _1 Color
 }
@@ -29,7 +29,7 @@ const (
 type GoError = error
 
 func main0() struct{} {
-    var a__0 Tuple2_Color_Color = Tuple2_Color_Color{
+    var a__0 Tuple2_5Color_5Color = Tuple2_5Color_5Color{
         _0: Blue,
         _1: Red,
     }
@@ -47,7 +47,6 @@ func main0() struct{} {
         default:
             panic("non-exhaustive match")
         }
-        return struct{}{}
     case Green:
         switch x0 {
         case Red:
@@ -59,7 +58,6 @@ func main0() struct{} {
         default:
             panic("non-exhaustive match")
         }
-        return struct{}{}
     case Blue:
         switch x0 {
         case Red:
@@ -71,10 +69,10 @@ func main0() struct{} {
         default:
             panic("non-exhaustive match")
         }
-        return struct{}{}
     default:
         panic("non-exhaustive match")
     }
+    return struct{}{}
 }
 
 func print__T_int32(value__0 int32) struct{} {

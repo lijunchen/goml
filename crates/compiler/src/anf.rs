@@ -381,17 +381,18 @@ fn reify_k_for_expr<'a>(
 ) -> (JoinBind, Ty) {
     if expr.get_ty() == Ty::TUnit && lift_expr_always_exits_control_flow(expr) {
         let id = join(gensym.gensym("k"));
+        let ret_ty = k(unit_imm()).get_ty();
         return (
             JoinBind {
                 id,
                 params: Vec::new(),
-                ret_ty: Ty::TUnit,
+                ret_ty: ret_ty.clone(),
                 body: Block {
                     binds: Vec::new(),
-                    term: Term::Unreachable { ty: Ty::TUnit },
+                    term: Term::Unreachable { ty: ret_ty.clone() },
                 },
             },
-            Ty::TUnit,
+            ret_ty,
         );
     }
     reify_k(gensym, expr.get_ty(), k)

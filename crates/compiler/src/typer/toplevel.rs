@@ -328,8 +328,23 @@ fn has_native_result_shape(genv: &PackageTypeEnv, ty: &tast::Ty) -> bool {
     ok_seen && err_seen
 }
 
-fn is_go_error_ty(ty: &tast::Ty) -> bool {
-    matches!(ty, tast::Ty::TStruct { name } if name == "GoError")
+fn env_defines_type_named(env: &GlobalTypeEnv, name: &str) -> bool {
+    let ident = tast::TastIdent::new(name);
+    env.type_env.structs.contains_key(&ident)
+        || env.type_env.enums.contains_key(&ident)
+        || env.type_env.extern_types.contains_key(name)
+}
+
+fn is_builtin_go_error_ty(genv: &PackageTypeEnv, ty: &tast::Ty) -> bool {
+    let tast::Ty::TStruct { name } = ty else {
+        return false;
+    };
+    name == "GoError"
+        && !env_defines_type_named(genv.current(), name)
+        && !genv
+            .deps
+            .values()
+            .any(|env| env_defines_type_named(env, name))
 }
 
 fn extract_option_ty(ty: &tast::Ty) -> Option<&tast::Ty> {
@@ -425,7 +440,7 @@ fn validate_extern_return_mode(
             };
             if !has_native_result_shape(genv, ret_ty)
                 || !matches!(ok_ty, tast::Ty::TUnit)
-                || !is_go_error_ty(err_ty)
+                || !is_builtin_go_error_ty(genv, err_ty)
             {
                 super::util::push_error(
                     diagnostics,
@@ -447,7 +462,7 @@ fn validate_extern_return_mode(
                 );
                 return;
             };
-            if !has_native_result_shape(genv, ret_ty) || !is_go_error_ty(err_ty) {
+            if !has_native_result_shape(genv, ret_ty) || !is_builtin_go_error_ty(genv, err_ty) {
                 super::util::push_error(
                     diagnostics,
                     format!(
@@ -1199,6 +1214,22 @@ fn define_inherent_impl(
 
 fn define_function(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, func: &hir::Fn) {
     let name = func.name.clone();
+    if name == "main" {
+        if !func.params.is_empty() {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                "main function must not have parameters".to_string(),
+            ));
+        }
+        if !func.generics.is_empty() {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                "main function must not have type parameters".to_string(),
+            ));
+        }
+    }
     let tparam_names = type_param_name_set(&func.generics);
     let generics_tast: Vec<tast::TastIdent> = func
         .generics
@@ -1505,6 +1536,13 @@ pub fn collect_typedefs(
             hir::Def::EnumDef(enum_def) => define_enum(env, diagnostics, enum_def),
             hir::Def::StructDef(struct_def) => define_struct(env, diagnostics, struct_def),
             hir::Def::TraitDef(trait_def) => define_trait(env, trait_def),
+            hir::Def::ExternType(ext) => define_extern_type(env, diagnostics, ext),
+            _ => {}
+        }
+    }
+
+    for item in hir.toplevels.iter() {
+        match hir_table.def(*item) {
             hir::Def::ImplBlock(impl_block) => {
                 if let Some(trait_name) = &impl_block.trait_name {
                     define_trait_impl(env, diagnostics, impl_block, trait_name, hir_table);
@@ -1514,8 +1552,8 @@ pub fn collect_typedefs(
             }
             hir::Def::Fn(func) => define_function(env, diagnostics, func),
             hir::Def::ExternGo(ext) => define_extern_go(env, diagnostics, ext),
-            hir::Def::ExternType(ext) => define_extern_type(env, diagnostics, ext),
             hir::Def::ExternBuiltin(ext) => define_extern_builtin(env, diagnostics, ext),
+            _ => {}
         }
     }
     validate_no_infinite_size_structs(env, diagnostics);
@@ -1523,9 +1561,16 @@ pub fn collect_typedefs(
 
 fn validate_no_infinite_size_structs(env: &PackageTypeEnv, diagnostics: &mut Diagnostics) {
     let structs = env.current().structs();
-    for (name, _) in structs.iter() {
-        let mut visited = HashSet::new();
-        if has_infinite_size(structs, &name.0, &mut visited) {
+    for (name, def) in structs.iter() {
+        let args = def
+            .generics
+            .iter()
+            .map(|param| tast::Ty::TParam {
+                name: param.0.clone(),
+            })
+            .collect::<Vec<_>>();
+        let mut active = Vec::new();
+        if has_infinite_size(structs, &name.0, &args, &mut active) {
             diagnostics.push(
                 Diagnostic::new(
                     Stage::Typer,
@@ -1543,66 +1588,99 @@ fn validate_no_infinite_size_structs(env: &PackageTypeEnv, diagnostics: &mut Dia
 fn has_infinite_size(
     structs: &IndexMap<tast::TastIdent, env::StructDef>,
     target: &str,
-    visited: &mut HashSet<String>,
+    args: &[tast::Ty],
+    active: &mut Vec<(String, Vec<tast::Ty>)>,
 ) -> bool {
-    if !visited.insert(target.to_string()) {
+    if recursive_struct_specialization(target, args, active) {
         return true;
     }
     let Some(def) = structs.get(&tast::TastIdent(target.to_string())) else {
-        visited.remove(target);
         return false;
     };
+    if def.generics.len() != args.len() {
+        return false;
+    }
+    let mut subst = HashMap::new();
+    for (param, arg) in def.generics.iter().zip(args.iter()) {
+        subst.insert(param.0.clone(), arg.clone());
+    }
+    active.push((target.to_string(), args.to_vec()));
     for (_, field_ty) in &def.fields {
-        if ty_contains_inline_struct(structs, field_ty, visited) {
-            visited.remove(target);
+        let field_ty = substitute_ty_params(field_ty, &subst);
+        if ty_contains_inline_struct(structs, &field_ty, active) {
+            let _ = active.pop();
             return true;
         }
     }
-    visited.remove(target);
+    let _ = active.pop();
     false
+}
+
+fn recursive_struct_specialization(
+    target: &str,
+    args: &[tast::Ty],
+    active: &[(String, Vec<tast::Ty>)],
+) -> bool {
+    active.iter().rev().any(|(active_name, active_args)| {
+        active_name == target
+            && (active_args == args
+                || active_args
+                    .iter()
+                    .zip(args.iter())
+                    .any(|(old_ty, new_ty)| ty_contains_proper_subterm(new_ty, old_ty)))
+    })
+}
+
+fn ty_contains_proper_subterm(ty: &tast::Ty, needle: &tast::Ty) -> bool {
+    match ty {
+        tast::Ty::TTuple { typs } => typs
+            .iter()
+            .any(|item| item == needle || ty_contains_proper_subterm(item, needle)),
+        tast::Ty::TApp { ty, args } => {
+            ty.as_ref() == needle
+                || ty_contains_proper_subterm(ty, needle)
+                || args
+                    .iter()
+                    .any(|arg| arg == needle || ty_contains_proper_subterm(arg, needle))
+        }
+        tast::Ty::TArray { elem, .. }
+        | tast::Ty::TSlice { elem }
+        | tast::Ty::TVec { elem }
+        | tast::Ty::TRef { elem } => {
+            elem.as_ref() == needle || ty_contains_proper_subterm(elem, needle)
+        }
+        tast::Ty::THashMap { key, value } => {
+            key.as_ref() == needle
+                || ty_contains_proper_subterm(key, needle)
+                || value.as_ref() == needle
+                || ty_contains_proper_subterm(value, needle)
+        }
+        tast::Ty::TFunc { params, ret_ty } => {
+            params
+                .iter()
+                .any(|param| param == needle || ty_contains_proper_subterm(param, needle))
+                || ret_ty.as_ref() == needle
+                || ty_contains_proper_subterm(ret_ty, needle)
+        }
+        _ => false,
+    }
 }
 
 fn ty_contains_inline_struct(
     structs: &IndexMap<tast::TastIdent, env::StructDef>,
     ty: &tast::Ty,
-    visited: &mut HashSet<String>,
+    active: &mut Vec<(String, Vec<tast::Ty>)>,
 ) -> bool {
     match ty {
-        tast::Ty::TStruct { name, .. } => has_infinite_size(structs, name, visited),
-        tast::Ty::TApp { .. } => instantiated_struct_field_tys(structs, ty)
-            .into_iter()
-            .flatten()
-            .any(|field_ty| ty_contains_inline_struct(structs, &field_ty, visited)),
+        tast::Ty::TStruct { name, .. } => has_infinite_size(structs, name, &[], active),
+        tast::Ty::TApp { .. } => decompose_struct_type_app(ty)
+            .is_some_and(|(name, args)| has_infinite_size(structs, &name, &args, active)),
         tast::Ty::TTuple { typs } => typs
             .iter()
-            .any(|t| ty_contains_inline_struct(structs, t, visited)),
-        tast::Ty::TArray { elem, .. } => ty_contains_inline_struct(structs, elem, visited),
+            .any(|t| ty_contains_inline_struct(structs, t, active)),
+        tast::Ty::TArray { elem, .. } => ty_contains_inline_struct(structs, elem, active),
         _ => false,
     }
-}
-
-fn instantiated_struct_field_tys(
-    structs: &IndexMap<tast::TastIdent, env::StructDef>,
-    ty: &tast::Ty,
-) -> Option<Vec<tast::Ty>> {
-    let (name, args) = decompose_struct_type_app(ty)?;
-    let struct_def = structs.get(&tast::TastIdent(name))?;
-    if struct_def.generics.len() != args.len() {
-        return None;
-    }
-
-    let mut subst = HashMap::new();
-    for (param, arg) in struct_def.generics.iter().zip(args.iter()) {
-        subst.insert(param.0.clone(), arg.clone());
-    }
-
-    Some(
-        struct_def
-            .fields
-            .iter()
-            .map(|(_, field_ty)| substitute_ty_params(field_ty, &subst))
-            .collect(),
-    )
 }
 
 fn decompose_struct_type_app(ty: &tast::Ty) -> Option<(String, Vec<tast::Ty>)> {
@@ -1952,6 +2030,7 @@ fn typecheck_fn(
     local_env.clear_tparam_trait_bounds();
     typer.solve(genv, diagnostics);
     typer.tparam_trait_bounds.clear();
+    typer.validate_deferred_comparison_checks(genv, diagnostics);
     typer.validate_deferred_arithmetic_checks(diagnostics);
 }
 
@@ -2031,6 +2110,7 @@ fn typecheck_impl_block(
         local_env.clear_tparam_trait_bounds();
         typer.solve(genv, diagnostics);
         typer.tparam_trait_bounds.clear();
+        typer.validate_deferred_comparison_checks(genv, diagnostics);
         typer.validate_deferred_arithmetic_checks(diagnostics);
     }
 }

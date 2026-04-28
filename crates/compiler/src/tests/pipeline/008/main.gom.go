@@ -1,15 +1,15 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
 )
 
 func int32_to_string(x int32) string {
-    return fmt.Sprintf("%d", x)
+    return _goml_fmt.Sprintf("%d", x)
 }
 
 func string_print(s string) struct{} {
-    fmt.Print(s)
+    _goml_fmt.Print(s)
     return struct{}{}
 }
 
@@ -39,7 +39,6 @@ func main0() struct{} {
     case A:
         var t4 string = int32_to_string(1)
         string_print(t4)
-        return struct{}{}
     case B:
         var x0 bool = t__0.(B)._0
         switch x0 {
@@ -52,10 +51,10 @@ func main0() struct{} {
         default:
             panic("non-exhaustive match")
         }
-        return struct{}{}
     default:
         panic("non-exhaustive match")
     }
+    return struct{}{}
 }
 
 func main() {

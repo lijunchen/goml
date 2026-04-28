@@ -84,6 +84,14 @@ fn goml_bin() -> PathBuf {
     PathBuf::from(env!("CARGO_BIN_EXE_goml"))
 }
 
+fn workspace_root() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(Path::parent)
+        .expect("goml crate must live under crates/goml")
+        .to_path_buf()
+}
+
 fn write_program(contents: &str) -> anyhow::Result<(TempDir, PathBuf)> {
     let dir = tempfile::tempdir()?;
     let path = dir.path().join("main.gom");
@@ -95,6 +103,14 @@ fn write_project(root: &Path) -> anyhow::Result<()> {
     fs::write(root.join("goml.toml"), PROJECT_CONFIG)?;
     fs::write(root.join("main.gom"), PROJECT_MAIN)?;
     Ok(())
+}
+
+fn deep_left_nested_tuple_type(depth: usize) -> String {
+    let mut ty = "int32".to_string();
+    for _ in 0..depth {
+        ty = format!("({}, int32)", ty);
+    }
+    ty
 }
 
 fn go_available() -> bool {
@@ -392,6 +408,75 @@ fn compiler_run_single_falls_back_when_yaegi_cannot_run_function_vectors() -> an
     assert!(output.status.success(), "stderr: {stderr}");
     expect!["11\n"].assert_eq(&stdout);
     expect![""].assert_eq(&stderr);
+
+    Ok(())
+}
+
+#[test]
+fn compiler_build_handles_deep_tuple_projection() -> anyhow::Result<()> {
+    let input = workspace_root()
+        .join("crates/compiler/src/tests/crashers/deep_tuple_projection_stack/main.gom");
+    let dir = tempfile::tempdir()?;
+    let output_path = dir.path().join("main");
+
+    let output = Command::new(goml_bin())
+        .arg("compiler")
+        .arg("build")
+        .arg("--package")
+        .arg("main")
+        .arg("--input")
+        .arg(&input)
+        .arg("--output")
+        .arg(&output_path)
+        .output()?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "stdout: {stdout}\nstderr: {stderr}"
+    );
+    assert!(
+        stderr.contains("expression is too deeply nested"),
+        "stdout: {stdout}\nstderr: {stderr}"
+    );
+    expect![""].assert_eq(&stdout);
+
+    Ok(())
+}
+
+#[test]
+fn compiler_build_handles_deep_tuple_type() -> anyhow::Result<()> {
+    let ty = deep_left_nested_tuple_type(4000);
+    let program = format!("fn take(x: {ty}) -> unit {{ () }}\nfn main() -> unit {{ () }}\n");
+    let (_input_dir, input) = write_program(&program)?;
+    let output_dir = tempfile::tempdir()?;
+    let output_path = output_dir.path().join("main");
+
+    let output = Command::new(goml_bin())
+        .arg("compiler")
+        .arg("build")
+        .arg("--package")
+        .arg("main")
+        .arg("--input")
+        .arg(&input)
+        .arg("--output")
+        .arg(&output_path)
+        .output()?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "stdout: {stdout}\nstderr: {stderr}"
+    );
+    assert!(
+        stderr.contains("type is too deeply nested"),
+        "stdout: {stdout}\nstderr: {stderr}"
+    );
+    expect![""].assert_eq(&stdout);
 
     Ok(())
 }
@@ -734,11 +819,11 @@ fn compiler_run_single_dumps_requested_stages() -> anyhow::Result<()> {
         package main
 
         import (
-            "fmt"
+            _goml_fmt "fmt"
         )
 
         func string_println(s string) struct{} {
-            fmt.Println(s)
+            _goml_fmt.Println(s)
             return struct{}{}
         }
 

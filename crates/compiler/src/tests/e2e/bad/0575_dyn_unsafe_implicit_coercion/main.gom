@@ -1,0 +1,18 @@
+trait Cloneish {
+    fn clone(Self) -> Self;
+}
+
+struct A {
+    x: int32,
+}
+
+impl Cloneish for A {
+    fn clone(self: A) -> A {
+        A { x: self.x }
+    }
+}
+
+fn main() -> unit {
+    let _a: dyn Cloneish = A { x: 1 };
+    ()
+}

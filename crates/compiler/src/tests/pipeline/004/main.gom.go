@@ -1,7 +1,7 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
 )
 
 func bool_to_string(x bool) string {
@@ -13,11 +13,11 @@ func bool_to_string(x bool) string {
 }
 
 func string_print(s string) struct{} {
-    fmt.Print(s)
+    _goml_fmt.Print(s)
     return struct{}{}
 }
 
-type Tuple2_Color_Color struct {
+type Tuple2_5Color_5Color struct {
     _0 Color
     _1 Color
 }
@@ -34,7 +34,7 @@ type GoError = error
 
 func main0() bool {
     var retv4 bool
-    var a__0 Tuple2_Color_Color = Tuple2_Color_Color{
+    var a__0 Tuple2_5Color_5Color = Tuple2_5Color_5Color{
         _0: Blue,
         _1: Blue,
     }
@@ -55,8 +55,6 @@ func main0() bool {
             panic("non-exhaustive match")
         }
         jp6 = jp8
-        retv4 = jp6
-        return retv4
     case Green:
         var jp10 bool
         switch x0 {
@@ -70,8 +68,6 @@ func main0() bool {
             panic("non-exhaustive match")
         }
         jp6 = jp10
-        retv4 = jp6
-        return retv4
     case Blue:
         var jp12 bool
         switch x0 {
@@ -86,11 +82,11 @@ func main0() bool {
             panic("non-exhaustive match")
         }
         jp6 = jp12
-        retv4 = jp6
-        return retv4
     default:
         panic("non-exhaustive match")
     }
+    retv4 = jp6
+    return retv4
 }
 
 func print__T_bool(value__0 bool) struct{} {
