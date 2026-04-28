@@ -3381,6 +3381,32 @@ fn gen_dyn_wrap_fn(
 
     let receiver_go_ty = tast_ty_to_go_type(for_ty);
     let ret_go_ty = tast_ty_to_go_type(ret_ty);
+
+    if trait_name == "ToString"
+        && method_name == "to_string"
+        && params.is_empty()
+        && let Some(expr) = builtin_tostring_expr(
+            goenv,
+            goast::Expr::Cast {
+                expr: Box::new(goast::Expr::Var {
+                    name: "self".to_string(),
+                    ty: any_go_type(),
+                }),
+                ty: receiver_go_ty.clone(),
+            },
+            for_ty,
+        )
+    {
+        return goast::Fn {
+            name: fn_name,
+            params: go_params,
+            ret_ty: Some(ret_go_ty),
+            body: goast::Block {
+                stmts: vec![goast::Stmt::Return { expr: Some(expr) }],
+            },
+        };
+    }
+
     let mut impl_param_tys = Vec::with_capacity(params.len() + 1);
     impl_param_tys.push(receiver_go_ty.clone());
     impl_param_tys.extend(params.iter().map(tast_ty_to_go_type));
@@ -3489,6 +3515,126 @@ fn gen_dyn_wrap_fn(
                 stmts: vec![goast::Stmt::Return { expr: Some(call) }],
             },
         }
+    }
+}
+
+fn builtin_tostring_expr(
+    goenv: &GlobalGoEnv,
+    value: goast::Expr,
+    ty: &tast::Ty,
+) -> Option<goast::Expr> {
+    match ty {
+        tast::Ty::TString => Some(value),
+        tast::Ty::TUnit => Some(unary_tostring_call("unit_to_string", value, ty)),
+        tast::Ty::TBool => Some(unary_tostring_call("bool_to_string", value, ty)),
+        tast::Ty::TChar => Some(unary_tostring_call("char_to_string", value, ty)),
+        tast::Ty::TInt8 => Some(unary_tostring_call("int8_to_string", value, ty)),
+        tast::Ty::TInt16 => Some(unary_tostring_call("int16_to_string", value, ty)),
+        tast::Ty::TInt32 => Some(unary_tostring_call("int32_to_string", value, ty)),
+        tast::Ty::TInt64 => Some(unary_tostring_call("int64_to_string", value, ty)),
+        tast::Ty::TUint8 => Some(unary_tostring_call("uint8_to_string", value, ty)),
+        tast::Ty::TUint16 => Some(unary_tostring_call("uint16_to_string", value, ty)),
+        tast::Ty::TUint32 => Some(unary_tostring_call("uint32_to_string", value, ty)),
+        tast::Ty::TUint64 => Some(unary_tostring_call("uint64_to_string", value, ty)),
+        tast::Ty::TFloat32 => Some(unary_tostring_call("float32_to_string", value, ty)),
+        tast::Ty::TFloat64 => Some(unary_tostring_call("float64_to_string", value, ty)),
+        tast::Ty::TStruct { name } if name == "GoError" && is_builtin_go_error_ty(goenv, ty) => {
+            Some(unary_tostring_call("go_error_to_string", value, ty))
+        }
+        tast::Ty::TRef { elem } => {
+            let ref_ty = tast::Ty::TRef { elem: elem.clone() };
+            let ref_go_ty = tast_ty_to_go_type(&ref_ty);
+            let elem_go_ty = tast_ty_to_go_type(elem);
+            let ref_get = goast::Expr::Call {
+                func: Box::new(goast::Expr::Var {
+                    name: runtime::ref_helper_fn_name("ref_get", &ref_ty),
+                    ty: goty::GoType::TFunc {
+                        params: vec![ref_go_ty],
+                        ret_ty: Box::new(elem_go_ty.clone()),
+                    },
+                }),
+                args: vec![value],
+                ty: elem_go_ty,
+            };
+            let inner = tostring_expr(goenv, ref_get, elem);
+            let with_prefix = goast::Expr::BinaryOp {
+                op: goast::GoBinaryOp::Add,
+                lhs: Box::new(goast::Expr::String {
+                    value: "ref(".to_string(),
+                    ty: goty::GoType::TString,
+                }),
+                rhs: Box::new(inner),
+                ty: goty::GoType::TString,
+            };
+            Some(goast::Expr::BinaryOp {
+                op: goast::GoBinaryOp::Add,
+                lhs: Box::new(with_prefix),
+                rhs: Box::new(goast::Expr::String {
+                    value: ")".to_string(),
+                    ty: goty::GoType::TString,
+                }),
+                ty: goty::GoType::TString,
+            })
+        }
+        _ => None,
+    }
+}
+
+fn tostring_expr(goenv: &GlobalGoEnv, value: goast::Expr, ty: &tast::Ty) -> goast::Expr {
+    if has_builtin_tostring_expr(goenv, ty) {
+        return builtin_tostring_expr(goenv, value, ty)
+            .expect("builtin ToString expression must exist");
+    }
+
+    let impl_name = trait_impl_fn_name(&TastIdent("ToString".to_string()), ty, "to_string");
+    let value_ty = tast_ty_to_go_type(ty);
+    goast::Expr::Call {
+        func: Box::new(goast::Expr::Var {
+            name: go_toplevel_func_name(goenv, &impl_name),
+            ty: goty::GoType::TFunc {
+                params: vec![value_ty],
+                ret_ty: Box::new(goty::GoType::TString),
+            },
+        }),
+        args: vec![value],
+        ty: goty::GoType::TString,
+    }
+}
+
+fn has_builtin_tostring_expr(goenv: &GlobalGoEnv, ty: &tast::Ty) -> bool {
+    match ty {
+        tast::Ty::TString
+        | tast::Ty::TUnit
+        | tast::Ty::TBool
+        | tast::Ty::TChar
+        | tast::Ty::TInt8
+        | tast::Ty::TInt16
+        | tast::Ty::TInt32
+        | tast::Ty::TInt64
+        | tast::Ty::TUint8
+        | tast::Ty::TUint16
+        | tast::Ty::TUint32
+        | tast::Ty::TUint64
+        | tast::Ty::TFloat32
+        | tast::Ty::TFloat64
+        | tast::Ty::TRef { .. } => true,
+        tast::Ty::TStruct { name } if name == "GoError" => is_builtin_go_error_ty(goenv, ty),
+        _ => false,
+    }
+}
+
+fn unary_tostring_call(func_name: &str, value: goast::Expr, ty: &tast::Ty) -> goast::Expr {
+    let value_ty = tast_ty_to_go_type(ty);
+    goast::Expr::Call {
+        func: Box::new(goast::Expr::Var {
+            name: func_name.to_string(),
+            ty: goty::GoType::TFunc {
+                params: vec![value_ty],
+                ret_ty: Box::new(goty::GoType::TString),
+            },
+        }),
+        args: vec![value],
+        ty: goty::GoType::TString,
     }
 }
 
