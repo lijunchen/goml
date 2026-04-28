@@ -52,3 +52,27 @@ fn deep_struct_pattern_reports_lower_error() {
         other => panic!("expected lower error, got {:?}", other),
     }
 }
+
+#[test]
+fn deep_parenthesized_expression_reports_depth_error() {
+    let mut expr = "1i32".to_string();
+    for _ in 0..15_000 {
+        expr = format!("({expr})");
+    }
+    let src = format!("package main;\n\nfn main() -> unit {{\n    let x = {expr};\n    println(x);\n}}\n");
+    let path = PathBuf::from("deep_parenthesized_expression.gom");
+    let err = pipeline::pipeline::compile(&path, &src).expect_err("expected depth error");
+
+    match err {
+        CompilationError::Parser { diagnostics }
+        | CompilationError::Lower { diagnostics }
+        | CompilationError::Compile { diagnostics } => {
+            assert!(diagnostics.iter().any(|diagnostic| {
+                diagnostic
+                    .message()
+                    .contains("expression is too deeply nested")
+            }));
+        }
+        other => panic!("expected expression depth error, got {:?}", other),
+    }
+}
