@@ -1,0 +1,13 @@
+impl Eq for Ref[dyn Hash] {
+    fn eq(self: Ref[dyn Hash], other: Ref[dyn Hash]) -> bool {
+        Hash::hash(ref_get(self)) == Hash::hash(ref_get(other))
+    }
+}
+
+fn main() {
+    let h: HashMap[Ref[dyn Hash], string] = hashmap_new();
+    let inner: dyn Hash = 1;
+    let r = ref(inner);
+    hashmap_set(h, r, "one");
+    string_println(bool_to_string(hashmap_contains(h, r)));
+}
