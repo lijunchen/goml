@@ -367,6 +367,21 @@ fn unique_variant_symbol_name(goenv: &GlobalGoEnv, base: String) -> String {
         return base;
     }
 
+    if is_generated_tuple_type_name(&base) {
+        let protected_base = format!("_goml_user_{}", base);
+        if !go_toplevel_name_is_reserved(goenv, &protected_base) {
+            return protected_base;
+        }
+        let mut index = 1usize;
+        loop {
+            let candidate = format!("{}__variant{}", protected_base, index);
+            if !go_toplevel_name_is_reserved(goenv, &candidate) {
+                return candidate;
+            }
+            index += 1;
+        }
+    }
+
     let mut index = 1usize;
     loop {
         let candidate = format!("{}__variant{}", base, index);
@@ -377,8 +392,17 @@ fn unique_variant_symbol_name(goenv: &GlobalGoEnv, base: String) -> String {
     }
 }
 
+fn is_generated_tuple_type_name(name: &str) -> bool {
+    let Some(rest) = name.strip_prefix("Tuple") else {
+        return false;
+    };
+    let digit_count = rest.chars().take_while(|ch| ch.is_ascii_digit()).count();
+    digit_count > 0 && (rest[digit_count..].is_empty() || rest[digit_count..].starts_with('_'))
+}
+
 fn go_toplevel_name_is_reserved(goenv: &GlobalGoEnv, name: &str) -> bool {
-    runtime_generated_function_name(name)
+    is_generated_tuple_type_name(name)
+        || runtime_generated_function_name(name)
         || goenv
             .structs()
             .any(|(struct_name, _)| go_user_type_name(&struct_name.0) == name)
@@ -400,26 +424,7 @@ fn go_toplevel_name_is_reserved(goenv: &GlobalGoEnv, name: &str) -> bool {
 fn go_variant_symbol_name_is_reserved(goenv: &GlobalGoEnv, name: &str) -> bool {
     goenv.enums().any(|(enum_name, enum_def)| {
         enum_def.variants.iter().any(|(variant_name, _)| {
-            let count = goenv
-                .enums()
-                .filter(|(_, other_def)| {
-                    other_def
-                        .variants
-                        .iter()
-                        .any(|(other_variant_name, _)| other_variant_name.0 == variant_name.0)
-                })
-                .take(2)
-                .count();
-            let candidate = if count > 1 {
-                format!(
-                    "{}_{}",
-                    go_user_type_name(&enum_name.0),
-                    go_ident(&variant_name.0)
-                )
-            } else {
-                go_ident(&variant_name.0)
-            };
-            candidate == name
+            variant_symbol_name(goenv, &enum_name.0, &variant_name.0) == name
         })
     })
 }
