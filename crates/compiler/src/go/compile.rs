@@ -141,7 +141,9 @@ fn go_toplevel_func_name(goenv: &GlobalGoEnv, name: &str) -> String {
     let ident = go_ident(name);
     let is_callable =
         goenv.toplevel_funcs.contains(name) || goenv.genv.value_env.extern_funcs.contains_key(name);
-    if is_callable
+    if is_callable && go_callable_name_collides(goenv, &ident) {
+        go_unique_toplevel_func_name(name)
+    } else if is_callable
         && (ident == "init"
             || runtime_generated_function_name(name)
             || is_generated_tuple_type_name(&ident)
@@ -151,6 +153,32 @@ fn go_toplevel_func_name(goenv: &GlobalGoEnv, name: &str) -> String {
     } else {
         ident
     }
+}
+
+fn go_callable_name_collides(goenv: &GlobalGoEnv, ident: &str) -> bool {
+    let mut count = 0usize;
+    for name in goenv
+        .toplevel_funcs
+        .iter()
+        .chain(goenv.genv.value_env.extern_funcs.keys())
+    {
+        if go_ident(name) == ident {
+            count += 1;
+            if count > 1 {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+fn go_unique_toplevel_func_name(name: &str) -> String {
+    let mut out = String::from("_goml_fn");
+    for byte in name.as_bytes() {
+        use std::fmt::Write;
+        write!(&mut out, "_{:02x}", byte).unwrap();
+    }
+    out
 }
 
 fn go_toplevel_func_name_collides_with_type(goenv: &GlobalGoEnv, name: &str) -> bool {
@@ -436,13 +464,13 @@ fn go_toplevel_name_is_reserved(goenv: &GlobalGoEnv, name: &str) -> bool {
         || goenv
             .toplevel_funcs
             .iter()
-            .any(|func_name| go_ident(func_name) == name)
+            .any(|func_name| go_toplevel_func_name(goenv, func_name) == name)
         || goenv
             .genv
             .value_env
             .extern_funcs
             .keys()
-            .any(|extern_name| go_ident(extern_name) == name)
+            .any(|extern_name| go_toplevel_func_name(goenv, extern_name) == name)
 }
 
 fn go_variant_symbol_name_is_reserved(goenv: &GlobalGoEnv, name: &str) -> bool {
@@ -3141,13 +3169,14 @@ fn gen_dyn_type_definitions(goenv: &GlobalGoEnv, req: &DynRequirements) -> Vec<g
 }
 
 fn build_trait_impl_name_map(
+    goenv: &GlobalGoEnv,
     toplevels: &[anf::Fn],
 ) -> std::collections::HashMap<(String, String, String), String> {
     let mut map = std::collections::HashMap::new();
     for tl in toplevels {
         if let Some((trait_name, for_ty_str, method_name)) = parse_trait_impl_fn_name(&tl.name) {
             let base_method = method_name.split("__").next().unwrap_or(method_name);
-            let go_name = go_ident(&tl.name);
+            let go_name = go_toplevel_func_name(goenv, &tl.name);
             map.insert(
                 (
                     trait_name.to_string(),
@@ -3226,7 +3255,7 @@ fn gen_dyn_wrap_fn(
         .cloned()
         .unwrap_or_else(|| {
             let impl_name = trait_impl_fn_name(&trait_ident, for_ty, method_name);
-            go_ident(&impl_name)
+            go_toplevel_func_name(goenv, &impl_name)
         });
 
     let receiver_go_ty = tast_ty_to_go_type(for_ty);
@@ -9252,7 +9281,7 @@ pub fn go_file(
 
     let mut toplevels = gen_type_definition(&goenv);
     toplevels.extend(gen_dyn_type_definitions(&goenv, &dyn_req));
-    let impl_name_map = build_trait_impl_name_map(&file.toplevels);
+    let impl_name_map = build_trait_impl_name_map(&goenv, &file.toplevels);
     toplevels.extend(gen_dyn_helper_fns(&goenv, &dyn_req, &impl_name_map));
     toplevels.extend(gen_extern_wrapper_fns(&goenv));
     toplevels.extend(gen_extern_bridge_fns(&goenv));
