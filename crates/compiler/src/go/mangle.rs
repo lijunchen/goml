@@ -50,6 +50,9 @@ pub fn encode_ty(ty: &tast::Ty) -> String {
 
 pub fn go_ident(name: &str) -> String {
     if is_valid_go_ident(name) && !is_go_keyword(name) && !is_go_predeclared_identifier(name) {
+        if name.starts_with("_goml_") {
+            return format!("_goml_user_{}", name);
+        }
         return name.to_string();
     }
     let mut out = String::from("_goml_");
