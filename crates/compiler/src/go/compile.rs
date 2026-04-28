@@ -588,23 +588,126 @@ fn rewrite_go_package_alias(go_symbol: &str, from: &str, to: &str) -> String {
         return go_symbol.to_string();
     }
 
-    let mut rewritten = String::new();
-    let mut last = 0usize;
-    for (start, _) in go_symbol.match_indices(from) {
-        let before_ident = go_symbol[..start]
-            .chars()
-            .next_back()
-            .is_some_and(is_go_ident_char);
-        let end = start + from.len();
-        let after_dot = go_symbol[end..].chars().next() == Some('.');
-        if before_ident || !after_dot {
-            continue;
-        }
-        rewritten.push_str(&go_symbol[last..start]);
-        rewritten.push_str(to);
-        last = end;
+    enum State {
+        Normal,
+        LineComment,
+        BlockComment,
+        DoubleString { escaped: bool },
+        RawString,
+        Rune { escaped: bool },
     }
-    rewritten.push_str(&go_symbol[last..]);
+
+    let mut rewritten = String::new();
+    let mut state = State::Normal;
+    let mut index = 0usize;
+    while index < go_symbol.len() {
+        let rest = &go_symbol[index..];
+        match state {
+            State::Normal => {
+                if rest.starts_with("//") {
+                    rewritten.push_str("//");
+                    index += 2;
+                    state = State::LineComment;
+                    continue;
+                }
+                if rest.starts_with("/*") {
+                    rewritten.push_str("/*");
+                    index += 2;
+                    state = State::BlockComment;
+                    continue;
+                }
+                let ch = rest.chars().next().unwrap();
+                if ch == '"' {
+                    rewritten.push(ch);
+                    index += ch.len_utf8();
+                    state = State::DoubleString { escaped: false };
+                    continue;
+                }
+                if ch == '`' {
+                    rewritten.push(ch);
+                    index += ch.len_utf8();
+                    state = State::RawString;
+                    continue;
+                }
+                if ch == '\'' {
+                    rewritten.push(ch);
+                    index += ch.len_utf8();
+                    state = State::Rune { escaped: false };
+                    continue;
+                }
+                if rest.starts_with(from) {
+                    let before_ident = go_symbol[..index]
+                        .chars()
+                        .next_back()
+                        .is_some_and(is_go_ident_char);
+                    let end = index + from.len();
+                    let after_dot = go_symbol[end..].chars().next() == Some('.');
+                    if !before_ident && after_dot {
+                        rewritten.push_str(to);
+                        index = end;
+                        continue;
+                    }
+                }
+                rewritten.push(ch);
+                index += ch.len_utf8();
+            }
+            State::LineComment => {
+                let ch = rest.chars().next().unwrap();
+                rewritten.push(ch);
+                index += ch.len_utf8();
+                if ch == '\n' {
+                    state = State::Normal;
+                }
+            }
+            State::BlockComment => {
+                if rest.starts_with("*/") {
+                    rewritten.push_str("*/");
+                    index += 2;
+                    state = State::Normal;
+                } else {
+                    let ch = rest.chars().next().unwrap();
+                    rewritten.push(ch);
+                    index += ch.len_utf8();
+                }
+            }
+            State::DoubleString { escaped } => {
+                let ch = rest.chars().next().unwrap();
+                rewritten.push(ch);
+                index += ch.len_utf8();
+                state = if escaped {
+                    State::DoubleString { escaped: false }
+                } else if ch == '\\' {
+                    State::DoubleString { escaped: true }
+                } else if ch == '"' {
+                    State::Normal
+                } else {
+                    State::DoubleString { escaped: false }
+                };
+            }
+            State::RawString => {
+                let ch = rest.chars().next().unwrap();
+                rewritten.push(ch);
+                index += ch.len_utf8();
+                if ch == '`' {
+                    state = State::Normal;
+                }
+            }
+            State::Rune { escaped } => {
+                let ch = rest.chars().next().unwrap();
+                rewritten.push(ch);
+                index += ch.len_utf8();
+                state = if escaped {
+                    State::Rune { escaped: false }
+                } else if ch == '\\' {
+                    State::Rune { escaped: true }
+                } else if ch == '\'' {
+                    State::Normal
+                } else {
+                    State::Rune { escaped: false }
+                };
+            }
+        }
+    }
     rewritten
 }
 
