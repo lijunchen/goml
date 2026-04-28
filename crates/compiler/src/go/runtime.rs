@@ -43,15 +43,15 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Import(ImportDecl {
             specs: vec![
                 ImportSpec {
-                    alias: None,
+                    alias: Some("_goml_fmt".to_string()),
                     path: "fmt".to_string(),
                 },
                 ImportSpec {
-                    alias: None,
+                    alias: Some("_goml_math".to_string()),
                     path: "math".to_string(),
                 },
                 ImportSpec {
-                    alias: None,
+                    alias: Some("_goml_utf8".to_string()),
                     path: "unicode/utf8".to_string(),
                 },
             ],
@@ -2289,7 +2289,7 @@ fn json_escape_string() -> goast::Fn {
             stmts: vec![goast::Stmt::Return {
                 expr: Some(goast::Expr::Call {
                     func: Box::new(goast::Expr::Var {
-                        name: "fmt.Sprintf".to_string(),
+                        name: "_goml_fmt.Sprintf".to_string(),
                         ty: fmt_ty,
                     }),
                     args: vec![
@@ -2326,7 +2326,7 @@ fn to_string_fn(name: &str, ty: goty::GoType) -> goast::Fn {
             stmts: vec![goast::Stmt::Return {
                 expr: Some(goast::Expr::Call {
                     func: Box::new(goast::Expr::Var {
-                        name: "fmt.Sprintf".to_string(),
+                        name: "_goml_fmt.Sprintf".to_string(),
                         ty: fmt_ty,
                     }),
                     args: vec![
@@ -2398,7 +2398,7 @@ fn char_to_string() -> goast::Fn {
                         op: goast::GoUnaryOp::Not,
                         expr: Box::new(goast::Expr::Call {
                             func: Box::new(goast::Expr::Var {
-                                name: "utf8.ValidRune".to_string(),
+                                name: "_goml_utf8.ValidRune".to_string(),
                                 ty: goty::GoType::TFunc {
                                     params: vec![goty::GoType::TChar],
                                     ret_ty: Box::new(goty::GoType::TBool),
@@ -2676,7 +2676,7 @@ fn float32_hash() -> goast::Fn {
                     }),
                     args: vec![goast::Expr::Call {
                         func: Box::new(goast::Expr::Var {
-                            name: "math.Float32bits".to_string(),
+                            name: "_goml_math.Float32bits".to_string(),
                             ty: goty::GoType::TFunc {
                                 params: vec![goty::GoType::TFloat32],
                                 ret_ty: Box::new(goty::GoType::TUint32),
@@ -2704,7 +2704,7 @@ fn float64_hash() -> goast::Fn {
             stmts: vec![goast::Stmt::Return {
                 expr: Some(goast::Expr::Call {
                     func: Box::new(goast::Expr::Var {
-                        name: "math.Float64bits".to_string(),
+                        name: "_goml_math.Float64bits".to_string(),
                         ty: goty::GoType::TFunc {
                             params: vec![goty::GoType::TFloat64],
                             ret_ty: Box::new(goty::GoType::TUint64),
@@ -2942,7 +2942,7 @@ fn string_print() -> goast::Fn {
             stmts: vec![
                 goast::Stmt::Expr(goast::Expr::Call {
                     func: Box::new(goast::Expr::Var {
-                        name: "fmt.Print".to_string(),
+                        name: "_goml_fmt.Print".to_string(),
                         ty: goty::GoType::TFunc {
                             params: vec![goty::GoType::TString],
                             ret_ty: Box::new(goty::GoType::TVoid),
@@ -2973,7 +2973,7 @@ fn string_println() -> goast::Fn {
             stmts: vec![
                 goast::Stmt::Expr(goast::Expr::Call {
                     func: Box::new(goast::Expr::Var {
-                        name: "fmt.Println".to_string(),
+                        name: "_goml_fmt.Println".to_string(),
                         ty: goty::GoType::TFunc {
                             params: vec![goty::GoType::TString],
                             ret_ty: Box::new(goty::GoType::TVoid),

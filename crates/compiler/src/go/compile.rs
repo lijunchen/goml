@@ -483,22 +483,7 @@ fn variant_const_expr_by_index(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize)
 }
 
 fn go_package_alias(package_path: &str) -> String {
-    let last_segment = package_path.rsplit('/').next().unwrap_or(package_path);
-    let mut alias = String::new();
-    for ch in last_segment.chars() {
-        if ch.is_ascii_alphanumeric() {
-            alias.push(ch);
-        } else {
-            alias.push('_');
-        }
-    }
-    if alias.is_empty() {
-        return "pkg".to_string();
-    }
-    if alias.chars().next().is_some_and(|c| c.is_ascii_digit()) {
-        alias.insert(0, '_');
-    }
-    alias
+    go_generated_ident(&format!("pkg#{}", package_path))
 }
 
 fn extern_wrapper_fn_name(goml_name: &str) -> String {
@@ -8812,7 +8797,7 @@ pub fn go_file(
                 && existing_imports.insert(extern_fn.package_path.clone())
             {
                 extra_specs.push(goast::ImportSpec {
-                    alias: None,
+                    alias: Some(go_package_alias(&extern_fn.package_path)),
                     path: extern_fn.package_path.clone(),
                 });
             }
@@ -8823,7 +8808,7 @@ pub fn go_file(
                 && existing_imports.insert(package_path.clone())
             {
                 extra_specs.push(goast::ImportSpec {
-                    alias: None,
+                    alias: Some(go_package_alias(package_path)),
                     path: package_path.clone(),
                 });
             }
