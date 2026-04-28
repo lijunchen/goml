@@ -1,0 +1,37 @@
+package main;
+
+trait A {
+    fn foo(Self) -> int32;
+    fn B__foo(Self) -> int32;
+}
+
+struct C {}
+
+struct C__B {}
+
+impl A for C {
+    fn foo(self: C) -> int32 {
+        1i32
+    }
+
+    fn B__foo(self: C) -> int32 {
+        2i32
+    }
+}
+
+impl A for C__B {
+    fn foo(self: C__B) -> int32 {
+        10i32
+    }
+
+    fn B__foo(self: C__B) -> int32 {
+        20i32
+    }
+}
+
+fn main() -> unit {
+    let left: dyn A = C {};
+    let right: dyn A = C__B {};
+    println(A::B__foo(left));
+    println(A::foo(right));
+}
