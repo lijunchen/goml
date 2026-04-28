@@ -92,8 +92,31 @@ fn is_generated_go_ident(name: &str) -> bool {
     name.starts_with("_goml_")
         || name.starts_with("dyn__")
         || name.ends_with("__native")
+        || has_generated_helper_prefix(name)
         || (name.starts_with("ref_") && name.ends_with("_x"))
         || (name.starts_with("hashmap_") && name.ends_with("_x"))
+}
+
+fn has_generated_helper_prefix(name: &str) -> bool {
+    [
+        "array_get__",
+        "array_set__",
+        "vec_set__",
+        "ref__",
+        "ref_get__",
+        "ref_set__",
+        "ptr_eq__",
+        "hashmap_new__",
+        "hashmap_len__",
+        "hashmap_contains__",
+        "hashmap_get_native__",
+        "hashmap_get__",
+        "hashmap_set__",
+        "hashmap_remove__",
+        "missing__",
+    ]
+    .iter()
+    .any(|prefix| name.starts_with(prefix))
 }
 
 pub fn go_user_type_name(name: &str) -> String {
