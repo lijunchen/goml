@@ -490,10 +490,10 @@ fn dyn_struct_name(trait_name: &str) -> String {
 }
 
 pub fn ref_struct_name(elem: &tast::Ty) -> String {
-    format!("ref_{}_x", go_ident(&encode_ty(elem)).to_lowercase())
+    format!("ref_{}_x", go_ident(&encode_ty(elem)))
 }
 
 pub fn hashmap_struct_name(key: &tast::Ty, value: &tast::Ty) -> String {
     let enc = format!("{}_{}", encode_ty(key), encode_ty(value));
-    format!("hashmap_{}_x", go_ident(&enc).to_lowercase())
+    format!("hashmap_{}_x", go_ident(&enc))
 }
