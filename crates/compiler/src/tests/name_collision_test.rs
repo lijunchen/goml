@@ -100,3 +100,10 @@ fn runtime_missing_function_collision_executes() {
 
     assert_eq!(output, "user:x\n");
 }
+
+#[test]
+fn native_helper_function_name_collision_executes() {
+    let output = run_crasher("native_helper_function_name_collision_user_symbol");
+
+    assert_eq!(output, "2\n");
+}
