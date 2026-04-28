@@ -1406,6 +1406,23 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                 };
             };
 
+            if let Some((trait_name, _, method_name)) = parse_trait_impl_fn_name(func_name)
+                && let Some(Ty::TDyn {
+                    trait_name: dyn_trait_name,
+                }) = arg_tys.first()
+                && dyn_trait_name == trait_name
+            {
+                let mut dyn_args = new_args;
+                let receiver = dyn_args.remove(0);
+                return MonoExpr::EDynCall {
+                    trait_name: TastIdent(trait_name.to_string()),
+                    method_name: TastIdent(method_name.to_string()),
+                    receiver: Box::new(receiver),
+                    args: dyn_args,
+                    ty: new_ty,
+                };
+            }
+
             let Some(generic_func_name) =
                 ctx.resolve_generic_callee_name(func_name, &arg_tys, &new_ty)
             else {
