@@ -923,6 +923,31 @@ impl PackageTypeEnv {
         ) || self.trait_impl_count_visible(trait_name, type_name) == 1
     }
 
+    fn collect_trait_impl_schemes_in_env(
+        &self,
+        source: &GlobalTypeEnv,
+        trait_name: &TastIdent,
+        type_name: &tast::Ty,
+        func_name: &TastIdent,
+    ) -> Vec<FnScheme> {
+        let mut result = Vec::new();
+        for ((impl_trait_name, impl_ty), impl_def) in source.trait_env.trait_impls.iter() {
+            if impl_trait_name != &trait_name.0 {
+                continue;
+            }
+            let Some(subst) = trait_impl_subst(impl_ty, type_name) else {
+                continue;
+            };
+            if !self.impl_constraints_satisfied(impl_def, &subst) {
+                continue;
+            }
+            if let Some(method) = impl_def.methods.get(&func_name.0) {
+                result.push(method.clone());
+            }
+        }
+        result
+    }
+
     pub fn collect_visible_trait_impl_schemes(
         &self,
         trait_name: &TastIdent,
@@ -936,17 +961,23 @@ impl PackageTypeEnv {
 
         let mut result = Vec::new();
         if !self.shadows_builtin_nominal_type(type_name) {
-            result.extend(
-                self.builtins
-                    .collect_trait_impl_schemes(trait_name, type_name, func_name),
-            );
+            result.extend(self.collect_trait_impl_schemes_in_env(
+                &self.builtins,
+                trait_name,
+                type_name,
+                func_name,
+            ));
         }
-        result.extend(
-            self.current
-                .collect_trait_impl_schemes(trait_name, type_name, func_name),
-        );
+        result.extend(self.collect_trait_impl_schemes_in_env(
+            &self.current,
+            trait_name,
+            type_name,
+            func_name,
+        ));
         for env in self.deps.values() {
-            result.extend(env.collect_trait_impl_schemes(trait_name, type_name, func_name));
+            result.extend(
+                self.collect_trait_impl_schemes_in_env(env, trait_name, type_name, func_name),
+            );
         }
         self.lookup_cache
             .trait_impl_schemes
