@@ -142,7 +142,8 @@ fn go_toplevel_func_name(goenv: &GlobalGoEnv, name: &str) -> String {
     let is_callable =
         goenv.toplevel_funcs.contains(name) || goenv.genv.value_env.extern_funcs.contains_key(name);
     if is_callable
-        && (runtime_generated_function_name(name)
+        && (ident == "init"
+            || runtime_generated_function_name(name)
             || is_generated_tuple_type_name(&ident)
             || go_toplevel_func_name_collides_with_type(goenv, &ident))
     {
@@ -417,7 +418,8 @@ fn is_generated_tuple_type_name(name: &str) -> bool {
 }
 
 fn go_toplevel_name_is_reserved(goenv: &GlobalGoEnv, name: &str) -> bool {
-    is_generated_tuple_type_name(name)
+    name == "init"
+        || is_generated_tuple_type_name(name)
         || runtime_generated_function_name(name)
         || goenv
             .structs()
