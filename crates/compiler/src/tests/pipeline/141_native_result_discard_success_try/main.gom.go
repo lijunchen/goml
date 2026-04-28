@@ -2,7 +2,7 @@ package main
 
 import (
     _goml_fmt "fmt"
-    _goml_pkg_time "time"
+    "time"
 )
 
 func string_println(s string) struct{} {
@@ -48,11 +48,11 @@ func (_ Result__Duration__GoError_Err) isResult__Duration__GoError() {}
 
 type GoError = error
 
-type Duration = _goml_pkg_time.Duration
+type Duration = time.Duration
 
 func touch__native(text__0 string) (string, GoError) {
     var mtmp0_err GoError
-    _, mtmp0_err = _goml_pkg_time.ParseDuration(text__0)
+    _, mtmp0_err = time.ParseDuration(text__0)
     if mtmp0_err != nil {
         var ret_zero string
         return ret_zero, mtmp0_err

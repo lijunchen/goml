@@ -2,7 +2,7 @@ package main
 
 import (
     _goml_fmt "fmt"
-    _goml_pkg_time "time"
+    "time"
 )
 
 func string_println(s string) struct{} {
@@ -53,7 +53,7 @@ func (_ Result__Duration__GoError_Err) isResult__Duration__GoError() {}
 
 type GoError = error
 
-type Duration = _goml_pkg_time.Duration
+type Duration = time.Duration
 
 func render_with_prefix__native(prefix__0 string, text__1 string) (string, GoError) {
     var run__3 closure_env_run_0 = closure_env_run_0{
@@ -126,7 +126,7 @@ func _goml_inherent_closure_env_run_0_closure_env_run_0_apply__native(env7 closu
     var jp27 Duration
     var mtmp0_value_0 Duration
     var mtmp0_err GoError
-    mtmp0_value_0, mtmp0_err = _goml_pkg_time.ParseDuration(text__1)
+    mtmp0_value_0, mtmp0_err = time.ParseDuration(text__1)
     if mtmp0_err != nil {
         var ret_zero string
         return ret_zero, mtmp0_err

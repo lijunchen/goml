@@ -2,9 +2,9 @@ package main
 
 import (
     _goml_fmt "fmt"
-    _goml_pkg_time "time"
-    _goml_pkg_os "os"
-    _goml_pkg_io "io"
+    "time"
+    "os"
+    "io"
 )
 
 func string_println(s string) struct{} {
@@ -14,14 +14,14 @@ func string_println(s string) struct{} {
 
 type GoError = error
 
-type Reader = _goml_pkg_io.Reader
+type Reader = io.Reader
 
 func rfc3339_ffi_wrap() string {
-    return _goml_pkg_time.RFC3339
+    return time.RFC3339
 }
 
 func stdin_ffi_wrap() Reader {
-    return _goml_pkg_os.Stdin
+    return os.Stdin
 }
 
 func main0() struct{} {

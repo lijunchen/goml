@@ -2,8 +2,8 @@ package main
 
 import (
     _goml_fmt "fmt"
-    _goml_pkg_time "time"
-    _goml_pkg_os "os"
+    "time"
+    "os"
 )
 
 func string_println(s string) struct{} {
@@ -65,10 +65,10 @@ func (_ Result__Duration__GoError_Err) isResult__Duration__GoError() {}
 
 type GoError = error
 
-type Duration = _goml_pkg_time.Duration
+type Duration = time.Duration
 
 func configure_and_format__native(input__0 string) (string, GoError) {
-    var mtmp0_err GoError = _goml_pkg_os.Setenv("GOML_TRY_FFI", "ok")
+    var mtmp0_err GoError = os.Setenv("GOML_TRY_FFI", "ok")
     if mtmp0_err != nil {
         var ret_zero string
         return ret_zero, mtmp0_err
@@ -76,7 +76,7 @@ func configure_and_format__native(input__0 string) (string, GoError) {
     var jp15 Duration
     var mtmp4_value_0 Duration
     var mtmp4_err GoError
-    mtmp4_value_0, mtmp4_err = _goml_pkg_time.ParseDuration(input__0)
+    mtmp4_value_0, mtmp4_err = time.ParseDuration(input__0)
     if mtmp4_err != nil {
         var ret_zero string
         return ret_zero, mtmp4_err

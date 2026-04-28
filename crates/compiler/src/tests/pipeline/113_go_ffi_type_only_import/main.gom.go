@@ -2,8 +2,8 @@ package main
 
 import (
     _goml_fmt "fmt"
-    _goml_pkg_os "os"
-    _goml_pkg_io "io"
+    "os"
+    "io"
 )
 
 func string_println(s string) struct{} {
@@ -33,12 +33,12 @@ func (_ Err) isResult__Reader__GoError() {}
 
 type GoError = error
 
-type Reader = _goml_pkg_io.Reader
+type Reader = io.Reader
 
 func open_reader_ffi_wrap(p0 string) Result__Reader__GoError {
     var ffi_value_0 Reader
     var ffi_err GoError
-    ffi_value_0, ffi_err = _goml_pkg_os.Open(p0)
+    ffi_value_0, ffi_err = os.Open(p0)
     if ffi_err != nil {
         return Err{
             _0: ffi_err,

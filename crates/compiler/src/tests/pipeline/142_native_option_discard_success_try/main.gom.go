@@ -2,7 +2,7 @@ package main
 
 import (
     _goml_fmt "fmt"
-    _goml_pkg_strings "strings"
+    "strings"
 )
 
 func string_println(s string) struct{} {
@@ -47,7 +47,7 @@ type GoError = error
 
 func touch__native(text__0 string) (string, bool) {
     var mtmp0_ok bool
-    _, _, mtmp0_ok = _goml_pkg_strings.Cut(text__0, ":")
+    _, _, mtmp0_ok = strings.Cut(text__0, ":")
     if !mtmp0_ok {
         var ret_zero string
         return ret_zero, false

@@ -2,7 +2,7 @@ package main
 
 import (
     _goml_fmt "fmt"
-    _goml_pkg_strings "strings"
+    "strings"
 )
 
 func string_println(s string) struct{} {
@@ -22,7 +22,7 @@ func cut_ffi_wrap(p0 string, p1 string) Tuple3_string_string_bool {
     var ffi_value_0 string
     var ffi_value_1 string
     var ffi_value_2 bool
-    ffi_value_0, ffi_value_1, ffi_value_2 = _goml_pkg_strings.Cut(p0, p1)
+    ffi_value_0, ffi_value_1, ffi_value_2 = strings.Cut(p0, p1)
     return Tuple3_string_string_bool{
         _0: ffi_value_0,
         _1: ffi_value_1,

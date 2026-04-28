@@ -2,7 +2,7 @@ package main
 
 import (
     _goml_fmt "fmt"
-    _goml_pkg_time "time"
+    "time"
 )
 
 func string_println(s string) struct{} {
@@ -56,7 +56,7 @@ func (_ Result__Duration__GoError_Err) isResult__Duration__GoError() {}
 
 type GoError = error
 
-type Duration = _goml_pkg_time.Duration
+type Duration = time.Duration
 
 func pick__native(mode__0 Mode, input__1 string) (string, GoError) {
     var jp14 string
@@ -65,7 +65,7 @@ func pick__native(mode__0 Mode, input__1 string) (string, GoError) {
         var jp17 Duration
         var mtmp0_value_0 Duration
         var mtmp0_err GoError
-        mtmp0_value_0, mtmp0_err = _goml_pkg_time.ParseDuration(input__1)
+        mtmp0_value_0, mtmp0_err = time.ParseDuration(input__1)
         if mtmp0_err != nil {
             var ret_zero string
             return ret_zero, mtmp0_err
@@ -85,7 +85,7 @@ func pick__native(mode__0 Mode, input__1 string) (string, GoError) {
         var jp22 Duration
         var mtmp3_value_0 Duration
         var mtmp3_err GoError
-        mtmp3_value_0, mtmp3_err = _goml_pkg_time.ParseDuration(input__1)
+        mtmp3_value_0, mtmp3_err = time.ParseDuration(input__1)
         if mtmp3_err != nil {
             var ret_zero string
             return ret_zero, mtmp3_err

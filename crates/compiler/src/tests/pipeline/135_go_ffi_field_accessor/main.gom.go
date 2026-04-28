@@ -2,7 +2,7 @@ package main
 
 import (
     _goml_fmt "fmt"
-    _goml_pkg_net_x2f_url "net/url"
+    "net/url"
 )
 
 func string_println(s string) struct{} {
@@ -48,7 +48,7 @@ func (_ Result__URL__GoError_Err) isResult__URL__GoError() {}
 
 type GoError = error
 
-type URL = *_goml_pkg_net_x2f_url.URL
+type URL = *url.URL
 
 func url_host_ffi_wrap(p0 URL) string {
     return p0.Host
@@ -63,7 +63,7 @@ func update__native(text__0 string, path__1 string) (string, GoError) {
     var jp10 URL
     var mtmp0_value_0 URL
     var mtmp0_err GoError
-    mtmp0_value_0, mtmp0_err = _goml_pkg_net_x2f_url.Parse(text__0)
+    mtmp0_value_0, mtmp0_err = url.Parse(text__0)
     if mtmp0_err != nil {
         var ret_zero string
         return ret_zero, mtmp0_err

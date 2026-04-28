@@ -2,7 +2,7 @@ package main
 
 import (
     _goml_fmt "fmt"
-    _goml_pkg_time "time"
+    "time"
 )
 
 func string_println(s string) struct{} {
@@ -12,7 +12,7 @@ func string_println(s string) struct{} {
 
 type GoError = error
 
-type Duration = _goml_pkg_time.Duration
+type Duration = time.Duration
 
 func child_a() struct{} {
     println__T_string("child-a")
@@ -42,8 +42,8 @@ func pick(flag__1 bool) func() struct{} {
 }
 
 func wait() struct{} {
-    var t17 Duration = _goml_pkg_time.Duration(5000000)
-    _goml_pkg_time.Sleep(t17)
+    var t17 Duration = time.Duration(5000000)
+    time.Sleep(t17)
     return struct{}{}
 }
 

@@ -2,7 +2,7 @@ package main
 
 import (
     _goml_fmt "fmt"
-    _goml_pkg_strings "strings"
+    "strings"
 )
 
 func string_println(s string) struct{} {
@@ -29,7 +29,7 @@ type GoError = error
 func cut_prefix_ffi_wrap(p0 string, p1 string) Option__string {
     var ffi_value_0 string
     var ffi_ok bool
-    ffi_value_0, ffi_ok = _goml_pkg_strings.CutPrefix(p0, p1)
+    ffi_value_0, ffi_ok = strings.CutPrefix(p0, p1)
     if ffi_ok {
         return Some{
             _0: ffi_value_0,

@@ -2,7 +2,7 @@ package main
 
 import (
     _goml_fmt "fmt"
-    _goml_pkg_time "time"
+    "time"
 )
 
 func string_println(s string) struct{} {
@@ -35,7 +35,7 @@ type closure_env_main_0 struct {
 
 type GoError = error
 
-type Duration = _goml_pkg_time.Duration
+type Duration = time.Duration
 
 func main0() struct{} {
     var counter__0 *ref_int32_x = ref__Ref_int32(0)
@@ -64,8 +64,8 @@ func _goml_inherent_closure_env_main_0_closure_env_main_0_apply(env4 closure_env
         var t15 bool = t14 < 10
         if t15 {
             string_println("hello")
-            var t16 Duration = _goml_pkg_time.Duration(1000)
-            _goml_pkg_time.Sleep(t16)
+            var t16 Duration = time.Duration(1000)
+            time.Sleep(t16)
             var t17 int32 = ref_get__Ref_int32(counter__0)
             var t18 int32 = t17 + 1
             ref_set__Ref_int32(counter__0, t18)

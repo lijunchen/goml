@@ -2,8 +2,8 @@ package main
 
 import (
     _goml_fmt "fmt"
-    _goml_pkg_time "time"
-    _goml_pkg_os "os"
+    "time"
+    "os"
 )
 
 func string_println(s string) struct{} {
@@ -49,12 +49,12 @@ func (_ Result__unit__GoError_Err) isResult__unit__GoError() {}
 
 type GoError = error
 
-type Duration = _goml_pkg_time.Duration
+type Duration = time.Duration
 
 func parse_duration_ffi_wrap(p0 string) Result__Duration__GoError {
     var ffi_value_0 Duration
     var ffi_err GoError
-    ffi_value_0, ffi_err = _goml_pkg_time.ParseDuration(p0)
+    ffi_value_0, ffi_err = time.ParseDuration(p0)
     if ffi_err != nil {
         return Result__Duration__GoError_Err{
             _0: ffi_err,
@@ -66,7 +66,7 @@ func parse_duration_ffi_wrap(p0 string) Result__Duration__GoError {
 }
 
 func setenv_ffi_wrap(p0 string, p1 string) Result__unit__GoError {
-    var ffi_err GoError = _goml_pkg_os.Setenv(p0, p1)
+    var ffi_err GoError = os.Setenv(p0, p1)
     if ffi_err != nil {
         return Result__unit__GoError_Err{
             _0: ffi_err,

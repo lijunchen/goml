@@ -2,7 +2,7 @@ package main
 
 import (
     _goml_fmt "fmt"
-    _goml_pkg_strings "strings"
+    "strings"
 )
 
 func string_println(s string) struct{} {
@@ -30,7 +30,7 @@ func trim_go__native(input__0 string) (string, bool) {
     var jp8 string
     var mtmp0_value_0 string
     var mtmp0_ok bool
-    mtmp0_value_0, mtmp0_ok = _goml_pkg_strings.CutPrefix(input__0, "go")
+    mtmp0_value_0, mtmp0_ok = strings.CutPrefix(input__0, "go")
     if !mtmp0_ok {
         var ret_zero string
         return ret_zero, false
