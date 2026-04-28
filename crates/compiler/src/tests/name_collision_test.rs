@@ -163,3 +163,10 @@ fn extern_wrapper_function_name_collision_executes() {
 
     assert_eq!(output, "ab\nuser-wrapper\n");
 }
+
+#[test]
+fn extern_bridge_import_alias_collision_executes() {
+    let output = run_crasher("extern_bridge_import_alias_collision");
+
+    assert_eq!(output, "OK\n");
+}
