@@ -102,7 +102,7 @@ fn is_generated_go_ident(name: &str) -> bool {
         || name.ends_with("__native")
         || has_generated_helper_prefix(name)
         || (name.starts_with("ref_") && name.ends_with("_x"))
-        || (name.starts_with("hashmap_") && name.ends_with("_x"))
+        || (name.starts_with("hashmap_") && (name.ends_with("_x") || name.ends_with("_x_entry")))
 }
 
 fn has_generated_helper_prefix(name: &str) -> bool {
