@@ -1,0 +1,30 @@
+package main;
+
+trait A_B {
+    fn foo(Self) -> int32;
+}
+
+trait A {
+    fn foo(Self) -> int32;
+}
+
+struct C {}
+
+struct B_C {}
+
+impl A_B for C {
+    fn foo(self: C) -> int32 {
+        10i32
+    }
+}
+
+impl A for B_C {
+    fn foo(self: B_C) -> int32 {
+        20i32
+    }
+}
+
+fn main() -> unit {
+    println(A_B::foo(C {}));
+    println(A::foo(B_C {}));
+}

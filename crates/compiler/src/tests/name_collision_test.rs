@@ -88,6 +88,13 @@ fn dyn_trait_go_function_name_collision_executes() {
 }
 
 #[test]
+fn trait_impl_generated_name_collision_executes() {
+    let output = run_crasher("trait_impl_generated_name_collision");
+
+    assert_eq!(output, "10\n20\n");
+}
+
+#[test]
 fn ref_runtime_type_name_collision_executes() {
     let output = run_crasher("ref_runtime_type_name_collision_user_symbol");
 
