@@ -207,6 +207,13 @@ fn user_type_main_go_entry_collision_executes() {
 }
 
 #[test]
+fn go_init_function_name_collision_executes() {
+    let output = run_crasher("go_init_function_name_collision");
+
+    assert_eq!(output, "5\n");
+}
+
+#[test]
 fn enum_variant_runtime_function_collision_executes() {
     let output = run_crasher("enum_variant_runtime_function_collision");
 
