@@ -577,7 +577,10 @@ fn go_package_alias(goenv: &GlobalGoEnv, package_path: &str) -> String {
         _ => {}
     }
     let alias = go_package_default_alias(package_path);
-    if go_package_alias_name_is_reserved(goenv, &alias) || runtime_generated_function_name(&alias) {
+    if go_package_default_alias_is_ambiguous(goenv, package_path)
+        || go_package_alias_name_is_reserved(goenv, &alias)
+        || runtime_generated_function_name(&alias)
+    {
         return go_package_generated_alias(package_path);
     }
     alias
@@ -726,6 +729,16 @@ fn go_import_package_paths(goenv: &GlobalGoEnv) -> IndexSet<String> {
         }
     }
     package_paths
+}
+
+fn go_package_default_alias_is_ambiguous(goenv: &GlobalGoEnv, package_path: &str) -> bool {
+    let alias = go_package_default_alias(package_path);
+    go_import_package_paths(goenv)
+        .iter()
+        .filter(|other_path| go_package_default_alias(other_path) == alias)
+        .take(2)
+        .count()
+        > 1
 }
 
 fn rewrite_raw_go_symbol_import_aliases(goenv: &GlobalGoEnv, go_symbol: &str) -> String {
