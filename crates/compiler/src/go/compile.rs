@@ -639,8 +639,23 @@ fn go_import_alias(goenv: &GlobalGoEnv, package_path: &str) -> Option<String> {
     }
 }
 
-fn extern_wrapper_fn_name(goml_name: &str) -> String {
-    go_ident(&format!("{}_ffi_wrap", goml_name))
+fn extern_wrapper_fn_name(goenv: &GlobalGoEnv, goml_name: &str) -> String {
+    let base = go_ident(&format!("{}_ffi_wrap", goml_name));
+    if !go_package_alias_name_is_reserved(goenv, &base) {
+        return base;
+    }
+    let mut index = 0usize;
+    loop {
+        let candidate = if index == 0 {
+            format!("{}__extern", base)
+        } else {
+            format!("{}__extern{}", base, index)
+        };
+        if !go_package_alias_name_is_reserved(goenv, &candidate) {
+            return candidate;
+        }
+        index += 1;
+    }
 }
 
 fn extern_target_name(goenv: &GlobalGoEnv, extern_fn: &ExternFunc) -> String {
@@ -1840,7 +1855,7 @@ fn gen_extern_wrapper_fn(
     match extern_fn.binding_mode {
         ExternBindingMode::Value => {
             return Some(goast::Fn {
-                name: extern_wrapper_fn_name(goml_name),
+                name: extern_wrapper_fn_name(goenv, goml_name),
                 params: go_params,
                 ret_ty: Some(tast_ty_to_go_type(&wrapper_ret_ty)),
                 body: goast::Block {
@@ -1861,7 +1876,7 @@ fn gen_extern_wrapper_fn(
                 .expect("field getter binding missing field name")
                 .clone();
             return Some(goast::Fn {
-                name: extern_wrapper_fn_name(goml_name),
+                name: extern_wrapper_fn_name(goenv, goml_name),
                 params: go_params.clone(),
                 ret_ty: Some(tast_ty_to_go_type(&wrapper_ret_ty)),
                 body: goast::Block {
@@ -1886,7 +1901,7 @@ fn gen_extern_wrapper_fn(
                 .clone();
             let field_ty = go_params[1].1.clone();
             return Some(goast::Fn {
-                name: extern_wrapper_fn_name(goml_name),
+                name: extern_wrapper_fn_name(goenv, goml_name),
                 params: go_params.clone(),
                 ret_ty: Some(goty::GoType::TUnit),
                 body: goast::Block {
@@ -1939,7 +1954,7 @@ fn gen_extern_wrapper_fn(
                 expr: Some(tuple_pack_expr(&wrapper_ret_ty, &value_names)),
             });
             goast::Fn {
-                name: extern_wrapper_fn_name(goml_name),
+                name: extern_wrapper_fn_name(goenv, goml_name),
                 params: go_params,
                 ret_ty: Some(tast_ty_to_go_type(&wrapper_ret_ty)),
                 body: goast::Block { stmts },
@@ -2035,7 +2050,7 @@ fn gen_extern_wrapper_fn(
             });
 
             goast::Fn {
-                name: extern_wrapper_fn_name(goml_name),
+                name: extern_wrapper_fn_name(goenv, goml_name),
                 params: go_params,
                 ret_ty: Some(tast_ty_to_go_type(&wrapper_ret_ty)),
                 body: goast::Block { stmts },
@@ -2098,7 +2113,7 @@ fn gen_extern_wrapper_fn(
             });
 
             goast::Fn {
-                name: extern_wrapper_fn_name(goml_name),
+                name: extern_wrapper_fn_name(goenv, goml_name),
                 params: go_params,
                 ret_ty: Some(tast_ty_to_go_type(&wrapper_ret_ty)),
                 body: goast::Block { stmts },
@@ -2144,7 +2159,7 @@ fn gen_extern_bridge_fn(goenv: &GlobalGoEnv, goml_name: &str, extern_fn: &Extern
     let call = if extern_requires_wrapper(extern_fn) {
         goast::Expr::Call {
             func: Box::new(goast::Expr::Var {
-                name: extern_wrapper_fn_name(goml_name),
+                name: extern_wrapper_fn_name(goenv, goml_name),
                 ty: goty::GoType::TFunc {
                     params: params.iter().map(tast_ty_to_go_type).collect(),
                     ret_ty: Box::new(tast_ty_to_go_type(&bridge_ret_ty)),
@@ -3798,7 +3813,7 @@ mod legacy_anf_codegen {
                     if extern_requires_wrapper(extern_fn) {
                         goast::Expr::Call {
                             func: Box::new(goast::Expr::Var {
-                                name: extern_wrapper_fn_name(name),
+                                name: extern_wrapper_fn_name(goenv, name),
                                 ty: goty::GoType::TFunc {
                                     params: param_types.iter().map(tast_ty_to_go_type).collect(),
                                     ret_ty: Box::new(tast_ty_to_go_type(ty)),
@@ -5064,7 +5079,7 @@ fn compile_call(
 
         return goast::Expr::Call {
             func: Box::new(goast::Expr::Var {
-                name: extern_wrapper_fn_name(&id.0),
+                name: extern_wrapper_fn_name(goenv, &id.0),
                 ty: func_ty,
             }),
             args: compiled_args,
