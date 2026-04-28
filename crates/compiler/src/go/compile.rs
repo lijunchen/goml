@@ -27,6 +27,8 @@ pub struct GlobalGoEnv {
     pub colliding_callable_idents: HashSet<String>,
     pub callable_go_names: HashMap<String, String>,
     pub callable_go_name_set: HashSet<String>,
+    pub dyn_vtable_ctor_go_names: HashMap<(String, String), String>,
+    pub dyn_wrap_go_names: HashMap<(String, String, String), String>,
 }
 
 impl Default for GlobalGoEnv {
@@ -41,6 +43,8 @@ impl Default for GlobalGoEnv {
             colliding_callable_idents: HashSet::new(),
             callable_go_names: HashMap::new(),
             callable_go_name_set: HashSet::new(),
+            dyn_vtable_ctor_go_names: HashMap::new(),
+            dyn_wrap_go_names: HashMap::new(),
         }
     }
 }
@@ -56,6 +60,8 @@ impl GlobalGoEnv {
             colliding_callable_idents: HashSet::new(),
             callable_go_names: HashMap::new(),
             callable_go_name_set: HashSet::new(),
+            dyn_vtable_ctor_go_names: HashMap::new(),
+            dyn_wrap_go_names: HashMap::new(),
         }
     }
 
@@ -2867,7 +2873,7 @@ fn dyn_vtable_struct_go_name(trait_name: &str) -> String {
     go_generated_ident(&format!("dyn__{}_vtable", trait_name))
 }
 
-fn dyn_vtable_ctor_go_name(trait_name: &str, for_ty: &tast::Ty) -> String {
+fn dyn_vtable_ctor_go_name_raw(trait_name: &str, for_ty: &tast::Ty) -> String {
     go_generated_ident(&format!(
         "dyn__{}__vtable__{}",
         trait_name,
@@ -2875,13 +2881,90 @@ fn dyn_vtable_ctor_go_name(trait_name: &str, for_ty: &tast::Ty) -> String {
     ))
 }
 
-fn dyn_wrap_go_name(trait_name: &str, for_ty: &tast::Ty, method_name: &str) -> String {
+fn dyn_vtable_ctor_go_name(goenv: &GlobalGoEnv, trait_name: &str, for_ty: &tast::Ty) -> String {
+    goenv
+        .dyn_vtable_ctor_go_names
+        .get(&(trait_name.to_string(), dyn_ty_key(for_ty)))
+        .cloned()
+        .unwrap_or_else(|| dyn_vtable_ctor_go_name_raw(trait_name, for_ty))
+}
+
+fn dyn_wrap_go_name_raw(trait_name: &str, for_ty: &tast::Ty, method_name: &str) -> String {
     go_generated_ident(&format!(
         "dyn__{}__wrap__{}__{}",
         trait_name,
         encode_ty(for_ty),
         method_name
     ))
+}
+
+fn dyn_wrap_go_name(
+    goenv: &GlobalGoEnv,
+    trait_name: &str,
+    for_ty: &tast::Ty,
+    method_name: &str,
+) -> String {
+    goenv
+        .dyn_wrap_go_names
+        .get(&(
+            trait_name.to_string(),
+            dyn_ty_key(for_ty),
+            method_name.to_string(),
+        ))
+        .cloned()
+        .unwrap_or_else(|| dyn_wrap_go_name_raw(trait_name, for_ty, method_name))
+}
+
+fn dyn_ty_key(ty: &tast::Ty) -> String {
+    ty_compact(ty)
+}
+
+fn collect_dyn_helper_go_names(
+    goenv: &GlobalGoEnv,
+    req: &DynRequirements,
+) -> (
+    HashMap<(String, String), String>,
+    HashMap<(String, String, String), String>,
+) {
+    let mut ctor_counts = HashMap::new();
+    let mut ctor_items = Vec::new();
+    let mut wrap_counts = HashMap::new();
+    let mut wrap_items = Vec::new();
+
+    for (trait_name, for_ty) in req.vtables.iter() {
+        let ty_key = dyn_ty_key(for_ty);
+        let ctor_raw = dyn_vtable_ctor_go_name_raw(trait_name, for_ty);
+        *ctor_counts.entry(ctor_raw.clone()).or_insert(0usize) += 1;
+        ctor_items.push(((trait_name.clone(), ty_key.clone()), ctor_raw));
+
+        for (method_name, _, _) in trait_method_sigs(goenv, trait_name) {
+            let wrap_raw = dyn_wrap_go_name_raw(trait_name, for_ty, &method_name);
+            *wrap_counts.entry(wrap_raw.clone()).or_insert(0usize) += 1;
+            wrap_items.push(((trait_name.clone(), ty_key.clone(), method_name), wrap_raw));
+        }
+    }
+
+    let mut ctor_names = HashMap::new();
+    for (key, raw) in ctor_items {
+        if ctor_counts.get(&raw).copied().unwrap_or(0) > 1 {
+            ctor_names.insert(
+                key.clone(),
+                go_unique_toplevel_func_name(&format!("dyn_vtable#{}#{}", key.0, key.1)),
+            );
+        }
+    }
+
+    let mut wrap_names = HashMap::new();
+    for (key, raw) in wrap_items {
+        if wrap_counts.get(&raw).copied().unwrap_or(0) > 1 {
+            wrap_names.insert(
+                key.clone(),
+                go_unique_toplevel_func_name(&format!("dyn_wrap#{}#{}#{}", key.0, key.1, key.2)),
+            );
+        }
+    }
+
+    (ctor_names, wrap_names)
 }
 
 fn collect_dyn_requirements(goenv: &GlobalGoEnv, file: &anf::File) -> DynRequirements {
@@ -3196,13 +3279,12 @@ fn build_trait_impl_name_map(
     let mut map = std::collections::HashMap::new();
     for tl in toplevels {
         if let Some((trait_name, for_ty_str, method_name)) = parse_trait_impl_fn_name(&tl.name) {
-            let base_method = method_name.split("__").next().unwrap_or(method_name);
             let go_name = go_toplevel_func_name(goenv, &tl.name);
             map.insert(
                 (
                     trait_name.to_string(),
                     for_ty_str.to_string(),
-                    base_method.to_string(),
+                    method_name.to_string(),
                 ),
                 go_name,
             );
@@ -3240,6 +3322,7 @@ fn gen_dyn_helper_fns(
         }
 
         items.push(goast::Item::Fn(gen_dyn_vtable_ctor_fn(
+            goenv,
             &trait_name,
             &for_ty,
             &methods,
@@ -3257,7 +3340,7 @@ fn gen_dyn_wrap_fn(
     ret_ty: &tast::Ty,
     impl_name_map: &std::collections::HashMap<(String, String, String), String>,
 ) -> goast::Fn {
-    let fn_name = dyn_wrap_go_name(trait_name, for_ty, method_name);
+    let fn_name = dyn_wrap_go_name(goenv, trait_name, for_ty, method_name);
 
     let mut go_params = Vec::with_capacity(params.len() + 1);
     go_params.push(("self".to_string(), any_go_type()));
@@ -3393,6 +3476,7 @@ fn gen_dyn_wrap_fn(
 }
 
 fn gen_dyn_vtable_ctor_fn(
+    goenv: &GlobalGoEnv,
     trait_name: &str,
     for_ty: &tast::Ty,
     methods: &[(String, Vec<tast::Ty>, tast::Ty)],
@@ -3416,7 +3500,7 @@ fn gen_dyn_vtable_ctor_fn(
         fields.push((
             go_ident(method_name),
             goast::Expr::Var {
-                name: dyn_wrap_go_name(trait_name, for_ty, method_name),
+                name: dyn_wrap_go_name(goenv, trait_name, for_ty, method_name),
                 ty: field_ty,
             },
         ));
@@ -3436,7 +3520,7 @@ fn gen_dyn_vtable_ctor_fn(
     };
 
     goast::Fn {
-        name: dyn_vtable_ctor_go_name(trait_name, for_ty),
+        name: dyn_vtable_ctor_go_name(goenv, trait_name, for_ty),
         params: vec![],
         ret_ty: Some(vtable_ptr_ty),
         body: goast::Block {
@@ -3684,7 +3768,7 @@ mod legacy_anf_codegen {
                     }),
                 };
 
-                let ctor_name = dyn_vtable_ctor_go_name(&trait_name.0, for_ty);
+                let ctor_name = dyn_vtable_ctor_go_name(goenv, &trait_name.0, for_ty);
                 let ctor_ty = goty::GoType::TFunc {
                     params: vec![],
                     ret_ty: Box::new(vtable_ptr_ty.clone()),
@@ -5658,7 +5742,7 @@ fn compile_value_expr(goenv: &GlobalGoEnv, expr: &anf::ValueExpr) -> CompiledVal
                 }),
             };
 
-            let ctor_name = dyn_vtable_ctor_go_name(&trait_name.0, for_ty);
+            let ctor_name = dyn_vtable_ctor_go_name(goenv, &trait_name.0, for_ty);
             let ctor_ty = goty::GoType::TFunc {
                 params: vec![],
                 ret_ty: Box::new(vtable_ptr_ty.clone()),
@@ -9302,6 +9386,10 @@ pub fn go_file(
     let file = anf::anf_renamer::rename(file);
     let entry_wrapper_name = entry_wrapper_function_name(&goenv, &file);
     let dyn_req = collect_dyn_requirements(&goenv, &file);
+    let (dyn_vtable_ctor_go_names, dyn_wrap_go_names) =
+        collect_dyn_helper_go_names(&goenv, &dyn_req);
+    goenv.dyn_vtable_ctor_go_names = dyn_vtable_ctor_go_names;
+    goenv.dyn_wrap_go_names = dyn_wrap_go_names;
 
     let mut toplevels = gen_type_definition(&goenv);
     toplevels.extend(gen_dyn_type_definitions(&goenv, &dyn_req));
