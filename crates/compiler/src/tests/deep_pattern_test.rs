@@ -59,7 +59,9 @@ fn deep_parenthesized_expression_reports_depth_error() {
     for _ in 0..15_000 {
         expr = format!("({expr})");
     }
-    let src = format!("package main;\n\nfn main() -> unit {{\n    let x = {expr};\n    println(x);\n}}\n");
+    let src = format!(
+        "package main;\n\nfn main() -> unit {{\n    let x = {expr};\n    println(x);\n}}\n"
+    );
     let path = PathBuf::from("deep_parenthesized_expression.gom");
     let err = pipeline::pipeline::compile(&path, &src).expect_err("expected depth error");
 
