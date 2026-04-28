@@ -483,6 +483,12 @@ fn variant_const_expr_by_index(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize)
 }
 
 fn go_package_alias(package_path: &str) -> String {
+    match package_path {
+        "fmt" => return "_goml_fmt".to_string(),
+        "math" => return "_goml_math".to_string(),
+        "unicode/utf8" => return "_goml_utf8".to_string(),
+        _ => {}
+    }
     go_generated_ident(&format!("pkg#{}", package_path))
 }
 
