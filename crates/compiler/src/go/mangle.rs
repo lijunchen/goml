@@ -19,8 +19,7 @@ pub fn encode_ty(ty: &tast::Ty) -> String {
         tast::Ty::TVar(_v) => "Var".to_string(),
         tast::Ty::TParam { name } => format!("TParam_{}", name),
         tast::Ty::TTuple { typs } => {
-            let inner = typs.iter().map(encode_ty).collect::<Vec<_>>().join("_");
-            format!("Tuple_{}", inner)
+            format!("Tuple{}_{}", typs.len(), encode_ty_parts(typs))
         }
         tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => name.clone(),
         tast::Ty::TDyn { trait_name } => format!("Dyn_{}", trait_name),
@@ -29,23 +28,38 @@ pub fn encode_ty(ty: &tast::Ty) -> String {
             if args.is_empty() {
                 base
             } else {
-                let inner = args.iter().map(encode_ty).collect::<Vec<_>>().join("_");
-                format!("{}_{}", base, inner)
+                format!("App_{}__{}", encode_name_part(&base), encode_ty_parts(args))
             }
         }
-        tast::Ty::TArray { len, elem } => format!("Array_{}_{}", len, encode_ty(elem)),
-        tast::Ty::TSlice { elem } => format!("Slice_{}", encode_ty(elem)),
-        tast::Ty::TVec { elem } => format!("Vec_{}", encode_ty(elem)),
-        tast::Ty::TRef { elem } => format!("Ref_{}", encode_ty(elem)),
+        tast::Ty::TArray { len, elem } => format!("Array_{}_{}", len, encode_ty_part(elem)),
+        tast::Ty::TSlice { elem } => format!("Slice_{}", encode_ty_part(elem)),
+        tast::Ty::TVec { elem } => format!("Vec_{}", encode_ty_part(elem)),
+        tast::Ty::TRef { elem } => format!("Ref_{}", encode_ty_part(elem)),
         tast::Ty::THashMap { key, value } => {
-            format!("HashMap_{}_{}", encode_ty(key), encode_ty(value))
+            format!("HashMap_{}_{}", encode_ty_part(key), encode_ty_part(value))
         }
         tast::Ty::TFunc { params, ret_ty } => {
-            let p = params.iter().map(encode_ty).collect::<Vec<_>>().join("_");
-            let r = encode_ty(ret_ty);
-            format!("Fn_{}_to_{}", p, r)
+            format!(
+                "Fn{}_{}_to_{}",
+                params.len(),
+                encode_ty_parts(params),
+                encode_ty_part(ret_ty)
+            )
         }
     }
+}
+
+fn encode_ty_part(ty: &tast::Ty) -> String {
+    let encoded = encode_ty(ty);
+    encode_name_part(&encoded)
+}
+
+fn encode_ty_parts(tys: &[tast::Ty]) -> String {
+    tys.iter().map(encode_ty_part).collect::<Vec<_>>().join("_")
+}
+
+fn encode_name_part(name: &str) -> String {
+    format!("{}{}", name.len(), name)
 }
 
 pub fn go_ident(name: &str) -> String {

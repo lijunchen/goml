@@ -222,7 +222,10 @@ fn dyn_trait_tuple_types_are_emitted_for_nested_struct_fields_in_early_return_su
 
     assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
     assert!(go.contains("type dyn__Display struct"), "{go}");
-    assert!(go.contains("type Tuple2_dyn__Display_int32 struct"), "{go}");
+    assert!(
+        go.contains("type Tuple2_12dyn__Display_5int32 struct"),
+        "{go}"
+    );
 }
 
 #[test]
@@ -235,7 +238,10 @@ fn dyn_trait_tuple_types_are_emitted_for_nested_enum_fields_in_early_return_sube
 
     assert!(go.contains("type dyn__Display_vtable struct"), "{go}");
     assert!(go.contains("type dyn__Display struct"), "{go}");
-    assert!(go.contains("type Tuple2_dyn__Display_int32 struct"), "{go}");
+    assert!(
+        go.contains("type Tuple2_12dyn__Display_5int32 struct"),
+        "{go}"
+    );
 }
 
 #[test]
@@ -299,7 +305,7 @@ fn dyn_callable_tuple_types_are_emitted_for_nested_early_return_subexpressions()
     assert!(go.contains("type dyn__Callable_vtable struct"), "{go}");
     assert!(go.contains("type dyn__Callable struct"), "{go}");
     assert!(
-        go.contains("type Tuple2_dyn__Callable_int32 struct"),
+        go.contains("type Tuple2_13dyn__Callable_5int32 struct"),
         "{go}"
     );
 }
