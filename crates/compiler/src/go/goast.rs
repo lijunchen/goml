@@ -1,6 +1,6 @@
 use crate::{
     go::goty,
-    go::mangle::{encode_ty, go_ident, go_user_type_name},
+    go::mangle::{encode_ty, go_generated_ident, go_ident, go_user_type_name},
     names::ty_compact,
     tast,
 };
@@ -486,7 +486,7 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
 }
 
 fn dyn_struct_name(trait_name: &str) -> String {
-    go_ident(&format!("dyn__{}", trait_name))
+    go_generated_ident(&format!("dyn__{}", trait_name))
 }
 
 pub fn ref_struct_name(elem: &tast::Ty) -> String {

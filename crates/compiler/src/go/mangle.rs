@@ -49,8 +49,16 @@ pub fn encode_ty(ty: &tast::Ty) -> String {
 }
 
 pub fn go_ident(name: &str) -> String {
+    go_ident_impl(name, true)
+}
+
+pub fn go_generated_ident(name: &str) -> String {
+    go_ident_impl(name, false)
+}
+
+fn go_ident_impl(name: &str, protect_generated: bool) -> String {
     if is_valid_go_ident(name) && !is_go_keyword(name) && !is_go_predeclared_identifier(name) {
-        if name.starts_with("_goml_") {
+        if protect_generated && (name.starts_with("_goml_") || name.starts_with("dyn__")) {
             return format!("_goml_user_{}", name);
         }
         return name.to_string();
