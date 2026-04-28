@@ -4582,6 +4582,21 @@ impl Typer {
         let pat_node = self.hir_table.pat(pat).clone();
         let range = self.pat_range(pat);
         let astptr = self.pat_astptr(pat);
+        if matches!(self.norm(ty), tast::Ty::TDyn { .. })
+            && !matches!(pat_node, hir::Pat::PVar { .. } | hir::Pat::PWild)
+        {
+            super::util::push_error_with_range(
+                diagnostics,
+                format!(
+                    "Pattern matching on {} is not supported",
+                    super::util::format_ty_for_diag(ty)
+                ),
+                range,
+            );
+            let out = self.check_pat_wild(ty, astptr);
+            self.results.record_pat_ty(pat, out.get_ty());
+            return out;
+        }
         let out = match pat_node {
             hir::Pat::PVar { name, astptr } => {
                 self.check_pat_var(local_env, diagnostics, name, Some(astptr), ty)
