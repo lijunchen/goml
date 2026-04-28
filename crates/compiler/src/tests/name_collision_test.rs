@@ -44,3 +44,10 @@ fn closure_apply_go_name_collision_executes() {
 
     assert_eq!(output, "6\n");
 }
+
+#[test]
+fn enum_variant_go_type_name_collision_executes() {
+    let output = run_crasher("enum_variant_go_type_name_collision_user_symbol");
+
+    assert_eq!(output, "7\n");
+}
