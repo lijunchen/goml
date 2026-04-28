@@ -39,6 +39,13 @@ fn tuple_go_type_name_collision_executes() {
 }
 
 #[test]
+fn function_tuple_type_collision_executes() {
+    let output = run_crasher("function_tuple_type_collision");
+
+    assert_eq!(output, "29\n");
+}
+
+#[test]
 fn closure_apply_go_name_collision_executes() {
     let output = run_crasher("closure_apply_go_name_collision_user_symbol");
 
