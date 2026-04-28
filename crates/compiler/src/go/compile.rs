@@ -265,6 +265,14 @@ fn value_expr_ty(expr: &anf::ValueExpr) -> tast::Ty {
 }
 
 fn variant_symbol_name(goenv: &GlobalGoEnv, enum_name: &str, variant_name: &str) -> String {
+    variant_symbol_name_for_go_enum(goenv, &go_user_type_name(enum_name), variant_name)
+}
+
+fn variant_symbol_name_for_go_enum(
+    goenv: &GlobalGoEnv,
+    enum_go_name: &str,
+    variant_name: &str,
+) -> String {
     // Count how many enums define a variant with this name.
     let mut count = 0;
     for (_ename, edef) in goenv.enums() {
@@ -280,11 +288,7 @@ fn variant_symbol_name(goenv: &GlobalGoEnv, enum_name: &str, variant_name: &str)
         }
     }
     if count > 1 {
-        format!(
-            "{}_{}",
-            go_user_type_name(enum_name),
-            go_ident(variant_name)
-        )
+        format!("{}_{}", enum_go_name, go_ident(variant_name))
     } else {
         go_ident(variant_name)
     }
@@ -337,13 +341,15 @@ fn lookup_variant_symbol_name(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) 
         && let Some(def) = goenv.get_enum(&TastIdent::new(name))
     {
         let (vname, _fields) = &def.variants[index];
-        return variant_symbol_name(goenv, name, &vname.0);
+        return variant_symbol_name_for_go_enum(goenv, name, &vname.0);
     }
 
     if let Some(def) = goenv.get_enum(&TastIdent::new(&base_name)) {
         let (vname, _fields) = &def.variants[index];
-        let enum_name = specialized_name.unwrap_or_else(|| go_user_type_name(&base_name));
-        return variant_symbol_name(goenv, &enum_name, &vname.0);
+        if let Some(enum_name) = specialized_name {
+            return variant_symbol_name_for_go_enum(goenv, &enum_name, &vname.0);
+        }
+        return variant_symbol_name(goenv, &base_name, &vname.0);
     }
     if let Some(enum_name) = specialized_name.as_deref() {
         if extract_result_tys(ty).is_some() {
@@ -352,7 +358,7 @@ fn lookup_variant_symbol_name(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) 
                 1 => "Err",
                 _ => panic!("invalid Result variant index {}", index),
             };
-            return variant_symbol_name(goenv, enum_name, variant_name);
+            return variant_symbol_name_for_go_enum(goenv, enum_name, variant_name);
         }
         if extract_option_ty(ty).is_some() {
             let variant_name = match index {
@@ -360,7 +366,7 @@ fn lookup_variant_symbol_name(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) 
                 1 => "Some",
                 _ => panic!("invalid Option variant index {}", index),
             };
-            return variant_symbol_name(goenv, enum_name, variant_name);
+            return variant_symbol_name_for_go_enum(goenv, enum_name, variant_name);
         }
     }
     panic!(
@@ -375,9 +381,9 @@ fn variant_ty_by_index(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) -> goty
         "tag-only enum does not have variant struct types: {:?}",
         ty
     );
-    let vname = lookup_variant_symbol_name(goenv, ty, index);
-    let ty = tast::Ty::TStruct { name: vname };
-    tast_ty_to_go_type(&ty)
+    goty::GoType::TName {
+        name: lookup_variant_symbol_name(goenv, ty, index),
+    }
 }
 
 fn variant_const_expr_by_index(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) -> goast::Expr {
