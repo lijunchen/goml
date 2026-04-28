@@ -3850,7 +3850,7 @@ mod legacy_anf_codegen {
                     field: "data".to_string(),
                     ty: any_go_type(),
                 });
-                call_args.extend(args.iter().map(|arg| compile_imm(goenv, arg)));
+                call_args.extend(compile_call_args(goenv, &method_params, args));
 
                 goast::Expr::Call {
                     func: Box::new(method_expr),
@@ -3864,7 +3864,7 @@ mod legacy_anf_codegen {
                     tast::Ty::TFunc { params, .. } => params.clone(),
                     _ => Vec::new(),
                 };
-                let compiled_args = args.iter().map(|arg| compile_imm(goenv, arg)).collect();
+                let compiled_args = compile_call_args(goenv, &param_types, args);
                 let func_ty = tast_ty_to_go_type(&func_tast_ty);
 
                 if let anf::ImmExpr::ImmVar { name, .. } = &func
@@ -5839,7 +5839,7 @@ fn compile_value_expr(goenv: &GlobalGoEnv, expr: &anf::ValueExpr) -> CompiledVal
                 field: "data".to_string(),
                 ty: any_go_type(),
             });
-            call_args.extend(args.iter().map(|arg| compile_imm(goenv, arg)));
+            call_args.extend(compile_call_args(goenv, &method_params, args));
 
             CompiledValue {
                 stmts: Vec::new(),
