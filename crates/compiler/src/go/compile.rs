@@ -819,6 +819,14 @@ fn extern_wrapper_fn_name(goenv: &GlobalGoEnv, goml_name: &str) -> String {
     if !go_package_alias_name_is_reserved(goenv, &base) {
         return base;
     }
+    let base = if is_generated_tuple_type_name(&base) {
+        format!("_goml_user_{}", base)
+    } else {
+        base
+    };
+    if !go_package_alias_name_is_reserved(goenv, &base) {
+        return base;
+    }
     let mut index = 0usize;
     loop {
         let candidate = if index == 0 {
