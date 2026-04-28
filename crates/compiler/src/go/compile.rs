@@ -8856,8 +8856,8 @@ fn collect_joins_from_block(block: &anf::Block, env: &mut JoinEnv) {
     }
 }
 
-fn entry_wrapper_function_name(file: &anf::File) -> String {
-    let used_names: HashSet<String> = file
+fn entry_wrapper_function_name(goenv: &GlobalGoEnv, file: &anf::File) -> String {
+    let mut used_names: HashSet<String> = file
         .toplevels
         .iter()
         .filter(|f| {
@@ -8865,6 +8865,29 @@ fn entry_wrapper_function_name(file: &anf::File) -> String {
         })
         .map(|f| go_ident(&f.name))
         .collect();
+    used_names.extend(
+        goenv
+            .structs()
+            .map(|(struct_name, _)| go_user_type_name(&struct_name.0)),
+    );
+    used_names.extend(
+        goenv
+            .enums()
+            .map(|(enum_name, _)| go_user_type_name(&enum_name.0)),
+    );
+    used_names.extend(
+        goenv
+            .genv
+            .type_env
+            .extern_types
+            .keys()
+            .map(|extern_name| go_user_type_name(extern_name)),
+    );
+    for (enum_name, enum_def) in goenv.enums() {
+        for (variant_name, _) in enum_def.variants.iter() {
+            used_names.insert(variant_symbol_name(goenv, &enum_name.0, &variant_name.0));
+        }
+    }
 
     if !used_names.contains(ENTRY_WRAPPER_FUNCTION) {
         return ENTRY_WRAPPER_FUNCTION.to_string();
@@ -9189,7 +9212,7 @@ pub fn go_file(
     }
 
     let file = anf::anf_renamer::rename(file);
-    let entry_wrapper_name = entry_wrapper_function_name(&file);
+    let entry_wrapper_name = entry_wrapper_function_name(&goenv, &file);
     let dyn_req = collect_dyn_requirements(&goenv, &file);
 
     let mut toplevels = gen_type_definition(&goenv);

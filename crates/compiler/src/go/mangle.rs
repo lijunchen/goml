@@ -152,7 +152,8 @@ fn has_len_prefixed_type_name(name: &str, prefix: &str) -> bool {
 fn is_generated_go_value_name(name: &str) -> bool {
     matches!(
         name,
-        "unit_to_string"
+        "main"
+            | "unit_to_string"
             | "bool_to_string"
             | "bool_to_json"
             | "json_escape_string"
