@@ -235,6 +235,13 @@ fn extern_wrapper_function_name_collision_executes() {
 }
 
 #[test]
+fn extern_wrapper_tuple_prefix_collision_executes() {
+    let output = run_crasher("extern_wrapper_tuple_prefix_collision");
+
+    assert_eq!(output, "3\n");
+}
+
+#[test]
 fn extern_bridge_import_alias_collision_executes() {
     let output = run_crasher("extern_bridge_import_alias_collision");
 
