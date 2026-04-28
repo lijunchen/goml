@@ -1,0 +1,23 @@
+trait Display {
+    fn display(Self) -> string;
+}
+
+struct dyn__Display {
+    value: int32,
+}
+
+struct Box {
+    text: string,
+}
+
+impl Display for Box {
+    fn display(self: Self) -> string {
+        self.text
+    }
+}
+
+fn main() -> unit {
+    let c = dyn__Display { value: 1i32 };
+    let d: dyn Display = Box { text: "ok" };
+    string_println(Display::display(d) + c.value.to_string());
+}

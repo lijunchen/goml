@@ -58,3 +58,10 @@ fn enum_variant_same_name_as_enum_executes() {
 
     assert_eq!(output, "1\n");
 }
+
+#[test]
+fn dyn_trait_go_type_name_collision_executes() {
+    let output = run_crasher("dyn_trait_go_type_name_collision_user_symbol");
+
+    assert_eq!(output, "ok1\n");
+}
