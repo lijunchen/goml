@@ -65,3 +65,10 @@ fn dyn_trait_go_type_name_collision_executes() {
 
     assert_eq!(output, "ok1\n");
 }
+
+#[test]
+fn dyn_trait_go_function_name_collision_executes() {
+    let output = run_crasher("dyn_trait_go_function_name_collision_user_symbol");
+
+    assert_eq!(output, "ok1\n");
+}
