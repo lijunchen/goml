@@ -435,6 +435,12 @@ fn go_toplevel_name_is_reserved(goenv: &GlobalGoEnv, name: &str) -> bool {
             .toplevel_funcs
             .iter()
             .any(|func_name| go_ident(func_name) == name)
+        || goenv
+            .genv
+            .value_env
+            .extern_funcs
+            .keys()
+            .any(|extern_name| go_ident(extern_name) == name)
 }
 
 fn go_variant_symbol_name_is_reserved(goenv: &GlobalGoEnv, name: &str) -> bool {
