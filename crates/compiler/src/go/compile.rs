@@ -412,7 +412,14 @@ fn go_variant_symbol_name_is_reserved(goenv: &GlobalGoEnv, name: &str) -> bool {
 }
 
 fn go_package_alias_name_is_reserved(goenv: &GlobalGoEnv, name: &str) -> bool {
-    go_toplevel_name_is_reserved(goenv, name) || go_variant_symbol_name_is_reserved(goenv, name)
+    go_toplevel_name_is_reserved(goenv, name)
+        || go_variant_symbol_name_is_reserved(goenv, name)
+        || goenv
+            .genv
+            .value_env
+            .extern_funcs
+            .keys()
+            .any(|extern_name| go_ident(extern_name) == name)
 }
 
 fn enum_def_for_ty<'a>(goenv: &'a GlobalGoEnv, ty: &tast::Ty) -> Option<&'a EnumDef> {
