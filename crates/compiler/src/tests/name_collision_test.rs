@@ -51,3 +51,10 @@ fn enum_variant_go_type_name_collision_executes() {
 
     assert_eq!(output, "7\n");
 }
+
+#[test]
+fn enum_variant_same_name_as_enum_executes() {
+    let output = run_crasher("enum_variant_same_name_as_enum");
+
+    assert_eq!(output, "1\n");
+}
