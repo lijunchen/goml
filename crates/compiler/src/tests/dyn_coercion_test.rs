@@ -202,6 +202,22 @@ fn dyn_tostring_ref_dyn_impl_executes() {
 }
 
 #[test]
+fn dyn_hash_ref_dyn_impl_executes() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/dyn_hash_ref_dyn_impl/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
+        panic!("compilation failed for {}: {:?}", path.display(), err);
+    });
+    let go = compilation.go.to_pretty(&compilation.goenv, 120);
+    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
+
+    assert_eq!(output, "1\n");
+}
+
+#[test]
 fn dyn_trait_types_are_emitted_for_early_return_subexpressions() {
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("src/tests/crashers/dyn_trait_type_emission_return_subexpr/main.gom");

@@ -1,0 +1,6 @@
+fn main() {
+    let inner: dyn Hash = 1;
+    let r = ref(inner);
+    let value: dyn Hash = r;
+    string_println(uint64_to_string(Hash::hash(value)));
+}
