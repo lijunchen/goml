@@ -1123,17 +1123,12 @@ pub fn make_hashmap_runtime(
                     stmts.push(goast::Stmt::VarDecl {
                         name: "h".to_string(),
                         ty: goty::GoType::TUint64,
-                        value: Some(goast::Expr::Call {
-                            func: Box::new(goast::Expr::Var {
-                                name: hash_impl.clone(),
-                                ty: hash_fn_ty.clone(),
-                            }),
-                            args: vec![goast::Expr::Var {
-                                name: "key".to_string(),
-                                ty: key_go_ty.clone(),
-                            }],
-                            ty: goty::GoType::TUint64,
-                        }),
+                        value: Some(hashmap_key_hash_expr(
+                            key,
+                            &key_go_ty,
+                            &hash_impl,
+                            &hash_fn_ty,
+                        )),
                     });
 
                     let buckets_expr = goast::Expr::FieldAccess {
@@ -1394,17 +1389,12 @@ pub fn make_hashmap_runtime(
                     stmts.push(goast::Stmt::VarDecl {
                         name: "h".to_string(),
                         ty: goty::GoType::TUint64,
-                        value: Some(goast::Expr::Call {
-                            func: Box::new(goast::Expr::Var {
-                                name: hash_impl.clone(),
-                                ty: hash_fn_ty.clone(),
-                            }),
-                            args: vec![goast::Expr::Var {
-                                name: "key".to_string(),
-                                ty: key_go_ty.clone(),
-                            }],
-                            ty: goty::GoType::TUint64,
-                        }),
+                        value: Some(hashmap_key_hash_expr(
+                            key,
+                            &key_go_ty,
+                            &hash_impl,
+                            &hash_fn_ty,
+                        )),
                     });
 
                     let buckets_expr = goast::Expr::FieldAccess {
@@ -1713,17 +1703,12 @@ pub fn make_hashmap_runtime(
                     stmts.push(goast::Stmt::VarDecl {
                         name: "h".to_string(),
                         ty: goty::GoType::TUint64,
-                        value: Some(goast::Expr::Call {
-                            func: Box::new(goast::Expr::Var {
-                                name: hash_impl.clone(),
-                                ty: hash_fn_ty.clone(),
-                            }),
-                            args: vec![goast::Expr::Var {
-                                name: "key".to_string(),
-                                ty: key_go_ty.clone(),
-                            }],
-                            ty: goty::GoType::TUint64,
-                        }),
+                        value: Some(hashmap_key_hash_expr(
+                            key,
+                            &key_go_ty,
+                            &hash_impl,
+                            &hash_fn_ty,
+                        )),
                     });
 
                     let buckets_expr = goast::Expr::FieldAccess {
@@ -2050,17 +2035,12 @@ pub fn make_hashmap_runtime(
                     stmts.push(goast::Stmt::VarDecl {
                         name: "h".to_string(),
                         ty: goty::GoType::TUint64,
-                        value: Some(goast::Expr::Call {
-                            func: Box::new(goast::Expr::Var {
-                                name: hash_impl.clone(),
-                                ty: hash_fn_ty.clone(),
-                            }),
-                            args: vec![goast::Expr::Var {
-                                name: "key".to_string(),
-                                ty: key_go_ty.clone(),
-                            }],
-                            ty: goty::GoType::TUint64,
-                        }),
+                        value: Some(hashmap_key_hash_expr(
+                            key,
+                            &key_go_ty,
+                            &hash_impl,
+                            &hash_fn_ty,
+                        )),
                     });
 
                     let buckets_expr = goast::Expr::FieldAccess {
@@ -2290,6 +2270,65 @@ pub fn make_hashmap_runtime(
         items.push(goast::Item::Fn(contains_fn));
     }
     items
+}
+
+fn hashmap_key_hash_expr(
+    key: &tast::Ty,
+    key_go_ty: &goty::GoType,
+    hash_impl: &str,
+    hash_fn_ty: &goty::GoType,
+) -> goast::Expr {
+    if matches!(key, tast::Ty::TDyn { trait_name } if trait_name == "Hash") {
+        let dyn_go_ty = goty::GoType::TName {
+            name: go_dyn_struct_name("Hash"),
+        };
+        return goast::Expr::Call {
+            func: Box::new(goast::Expr::FieldAccess {
+                obj: Box::new(goast::Expr::FieldAccess {
+                    obj: Box::new(goast::Expr::Var {
+                        name: "key".to_string(),
+                        ty: dyn_go_ty.clone(),
+                    }),
+                    field: "vtable".to_string(),
+                    ty: goty::GoType::TPointer {
+                        elem: Box::new(goty::GoType::TName {
+                            name: go_generated_ident("dyn__Hash_vtable"),
+                        }),
+                    },
+                }),
+                field: "hash".to_string(),
+                ty: goty::GoType::TFunc {
+                    params: vec![goty::GoType::TName {
+                        name: "any".to_string(),
+                    }],
+                    ret_ty: Box::new(goty::GoType::TUint64),
+                },
+            }),
+            args: vec![goast::Expr::FieldAccess {
+                obj: Box::new(goast::Expr::Var {
+                    name: "key".to_string(),
+                    ty: dyn_go_ty,
+                }),
+                field: "data".to_string(),
+                ty: goty::GoType::TName {
+                    name: "any".to_string(),
+                },
+            }],
+            ty: goty::GoType::TUint64,
+        };
+    }
+
+    goast::Expr::Call {
+        func: Box::new(goast::Expr::Var {
+            name: hash_impl.to_string(),
+            ty: hash_fn_ty.clone(),
+        }),
+        args: vec![goast::Expr::Var {
+            name: "key".to_string(),
+            ty: key_go_ty.clone(),
+        }],
+        ty: goty::GoType::TUint64,
+    }
 }
 
 fn unit_to_string() -> goast::Fn {
