@@ -170,3 +170,10 @@ fn extern_bridge_import_alias_collision_executes() {
 
     assert_eq!(output, "OK\n");
 }
+
+#[test]
+fn raw_go_import_alias_rewrite_preserves_string_literal() {
+    let output = run_crasher("raw_go_import_alias_rewrite_string_literal");
+
+    assert_eq!(output, "strings.Builder\n");
+}
