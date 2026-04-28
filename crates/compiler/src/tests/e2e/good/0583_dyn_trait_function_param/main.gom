@@ -1,0 +1,18 @@
+trait Mapper {
+    fn map(Self, (int32) -> int32) -> int32;
+}
+
+struct Boxed {
+    value: int32,
+}
+
+impl Mapper for Boxed {
+    fn map(self: Boxed, f: (int32) -> int32) -> int32 {
+        f(self.value)
+    }
+}
+
+fn main() -> unit {
+    let x: dyn Mapper = Boxed { value: 1i32 };
+    println(Mapper::map(x, |n| n + 1i32));
+}
