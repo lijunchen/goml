@@ -32,6 +32,14 @@ pub(crate) struct DeferredArithmeticCheck {
 }
 
 #[derive(Debug, Clone)]
+pub(crate) struct DeferredComparisonCheck {
+    pub op: common_defs::BinaryOp,
+    pub lhs_ty: tast::Ty,
+    pub rhs_ty: tast::Ty,
+    pub origin: Option<text_size::TextRange>,
+}
+
+#[derive(Debug, Clone)]
 pub(crate) struct DeferredDynCoercion {
     pub expr_id: hir::ExprId,
     pub concrete_ty: tast::Ty,
@@ -55,6 +63,7 @@ pub struct Typer {
     pub(crate) loop_control_context: LoopControlContext,
     pub(crate) return_ty_stack: Vec<tast::Ty>,
     pub(crate) deferred_arithmetic_checks: Vec<DeferredArithmeticCheck>,
+    pub(crate) deferred_comparison_checks: Vec<DeferredComparisonCheck>,
     pub(crate) tparam_trait_bounds: HashMap<String, Vec<String>>,
     pub(crate) deferred_dyn_coercions: Vec<DeferredDynCoercion>,
     pub(crate) array_wildcard_counter: usize,
@@ -73,6 +82,7 @@ impl Typer {
             loop_control_context: LoopControlContext::Disallowed,
             return_ty_stack: Vec::new(),
             deferred_arithmetic_checks: Vec::new(),
+            deferred_comparison_checks: Vec::new(),
             tparam_trait_bounds: HashMap::new(),
             deferred_dyn_coercions: Vec::new(),
             array_wildcard_counter: 0,

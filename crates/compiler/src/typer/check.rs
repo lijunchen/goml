@@ -4071,25 +4071,21 @@ impl Typer {
     ) {
         let lhs_norm = self.norm(lhs_ty);
         let rhs_norm = self.norm(rhs_ty);
-        if !same_or_unresolved_ty(&lhs_norm, &rhs_norm) || contains_tvar(&lhs_norm) {
+        if contains_tvar(&lhs_norm) || contains_tvar(&rhs_norm) {
+            self.deferred_comparison_checks
+                .push(super::DeferredComparisonCheck {
+                    op,
+                    lhs_ty: lhs_ty.clone(),
+                    rhs_ty: rhs_ty.clone(),
+                    origin: range,
+                });
+            return;
+        }
+        if !same_or_unresolved_ty(&lhs_norm, &rhs_norm) {
             return;
         }
 
-        let valid = match op {
-            common_defs::BinaryOp::Eq | common_defs::BinaryOp::NotEq => {
-                is_equality_comparable_ty(genv, &lhs_norm)
-            }
-            common_defs::BinaryOp::Less
-            | common_defs::BinaryOp::Greater
-            | common_defs::BinaryOp::LessEq
-            | common_defs::BinaryOp::GreaterEq => is_order_comparable_ty(&lhs_norm),
-            common_defs::BinaryOp::Add
-            | common_defs::BinaryOp::Sub
-            | common_defs::BinaryOp::Mul
-            | common_defs::BinaryOp::Div
-            | common_defs::BinaryOp::And
-            | common_defs::BinaryOp::Or => true,
-        };
+        let valid = comparison_operand_is_valid(genv, op, &lhs_norm);
 
         if !valid {
             super::util::push_error_with_range(
@@ -5321,6 +5317,28 @@ fn is_order_comparable_ty(ty: &tast::Ty) -> bool {
     is_numeric_ty(ty) || matches!(ty, tast::Ty::TString | tast::Ty::TChar)
 }
 
+fn comparison_operand_is_valid(
+    genv: &PackageTypeEnv,
+    op: common_defs::BinaryOp,
+    ty: &tast::Ty,
+) -> bool {
+    match op {
+        common_defs::BinaryOp::Eq | common_defs::BinaryOp::NotEq => {
+            is_equality_comparable_ty(genv, ty)
+        }
+        common_defs::BinaryOp::Less
+        | common_defs::BinaryOp::Greater
+        | common_defs::BinaryOp::LessEq
+        | common_defs::BinaryOp::GreaterEq => is_order_comparable_ty(ty),
+        common_defs::BinaryOp::Add
+        | common_defs::BinaryOp::Sub
+        | common_defs::BinaryOp::Mul
+        | common_defs::BinaryOp::Div
+        | common_defs::BinaryOp::And
+        | common_defs::BinaryOp::Or => true,
+    }
+}
+
 fn is_equality_comparable_ty(genv: &PackageTypeEnv, ty: &tast::Ty) -> bool {
     match ty {
         tast::Ty::TUnit
@@ -5400,6 +5418,36 @@ fn is_signed_numeric_ty(ty: &tast::Ty) -> bool {
 }
 
 impl Typer {
+    pub(crate) fn validate_deferred_comparison_checks(
+        &mut self,
+        genv: &PackageTypeEnv,
+        diagnostics: &mut Diagnostics,
+    ) {
+        let checks = std::mem::take(&mut self.deferred_comparison_checks);
+        for check in checks {
+            let lhs_norm = self.norm(&check.lhs_ty);
+            let rhs_norm = self.norm(&check.rhs_ty);
+            if contains_tvar(&lhs_norm)
+                || contains_tvar(&rhs_norm)
+                || !same_or_unresolved_ty(&lhs_norm, &rhs_norm)
+            {
+                continue;
+            }
+            if comparison_operand_is_valid(genv, check.op, &lhs_norm) {
+                continue;
+            }
+            super::util::push_error_with_range(
+                diagnostics,
+                format!(
+                    "Operator {} is not defined for type {}",
+                    comparison_operator_text(check.op),
+                    super::util::format_ty_for_diag(&lhs_norm)
+                ),
+                check.origin,
+            );
+        }
+    }
+
     pub(crate) fn validate_deferred_arithmetic_checks(&mut self, diagnostics: &mut Diagnostics) {
         let checks = std::mem::take(&mut self.deferred_arithmetic_checks);
         for check in checks {
