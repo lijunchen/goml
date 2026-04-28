@@ -72,3 +72,17 @@ fn dyn_trait_go_function_name_collision_executes() {
 
     assert_eq!(output, "ok1\n");
 }
+
+#[test]
+fn ref_runtime_type_name_collision_executes() {
+    let output = run_crasher("ref_runtime_type_name_collision_user_symbol");
+
+    assert_eq!(output, "5\n");
+}
+
+#[test]
+fn hashmap_runtime_type_name_collision_executes() {
+    let output = run_crasher("hashmap_runtime_type_name_collision_user_symbol");
+
+    assert_eq!(output, "9\n");
+}
