@@ -109,6 +109,13 @@ fn runtime_go_error_type_collision_executes() {
 }
 
 #[test]
+fn user_go_error_local_tostring_impl_executes() {
+    let output = run_crasher("user_go_error_local_tostring_impl");
+
+    assert_eq!(output, "7\n");
+}
+
+#[test]
 fn native_helper_function_name_collision_executes() {
     let output = run_crasher("native_helper_function_name_collision_user_symbol");
 
