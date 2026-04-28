@@ -137,9 +137,10 @@ fn dce_block_with_live(
         match stmt {
             ast::Stmt::Expr(e) => {
                 let e = dce_expr(e);
-                // keep expression statements; they may have side-effects
-                add_uses_expr(&mut live, &e);
-                out.push(ast::Stmt::Expr(e));
+                if expr_has_side_effects(&e) {
+                    add_uses_expr(&mut live, &e);
+                    out.push(ast::Stmt::Expr(e));
+                }
             }
             ast::Stmt::Go { call } => {
                 let call = dce_expr(call);
@@ -850,7 +851,12 @@ fn emit_side_effect(e: ast::Expr) -> ast::Stmt {
 
 fn expr_has_side_effects(e: &ast::Expr) -> bool {
     match e {
-        ast::Expr::Call { .. } => true,
+        ast::Expr::Call { func, args, .. } => {
+            if go_call_name(func).is_some_and(|name| name == "append") {
+                return true;
+            }
+            !go_call_result_must_be_used(func) || args.iter().any(expr_has_side_effects)
+        }
         ast::Expr::Block { stmts, expr, .. } => {
             // any side-effect in nested statements or nested expr
             stmts.iter().any(stmt_has_side_effects)
@@ -891,6 +897,52 @@ fn expr_has_side_effects(e: &ast::Expr) -> bool {
         | ast::Expr::Float { .. }
         | ast::Expr::String { .. } => false,
     }
+}
+
+fn go_call_name(func: &ast::Expr) -> Option<&str> {
+    if let ast::Expr::Var { name, .. } = func {
+        Some(name)
+    } else {
+        None
+    }
+}
+
+fn go_call_result_must_be_used(func: &ast::Expr) -> bool {
+    let Some(name) = go_call_name(func) else {
+        return false;
+    };
+    matches!(
+        name,
+        "append"
+            | "cap"
+            | "complex"
+            | "imag"
+            | "len"
+            | "make"
+            | "max"
+            | "min"
+            | "new"
+            | "real"
+            | "bool"
+            | "byte"
+            | "rune"
+            | "string"
+            | "int"
+            | "int8"
+            | "int16"
+            | "int32"
+            | "int64"
+            | "uint"
+            | "uint8"
+            | "uint16"
+            | "uint32"
+            | "uint64"
+            | "uintptr"
+            | "float32"
+            | "float64"
+            | "complex64"
+            | "complex128"
+    )
 }
 
 fn stmt_has_side_effects(s: &ast::Stmt) -> bool {

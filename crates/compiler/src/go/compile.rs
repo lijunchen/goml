@@ -5717,7 +5717,7 @@ fn compile_let_bind(goenv: &GlobalGoEnv, bind: &anf::LetBind) -> Vec<goast::Stmt
     let compiled = compile_value_expr(goenv, &bind.value);
     let mut stmts = compiled.stmts;
     if discard {
-        if matches!(compiled.expr, goast::Expr::Call { .. }) {
+        if go_expr_can_be_statement(&compiled.expr) {
             stmts.push(goast::Stmt::Expr(compiled.expr));
         }
     } else {
@@ -5736,6 +5736,51 @@ fn compile_let_bind(goenv: &GlobalGoEnv, bind: &anf::LetBind) -> Vec<goast::Stmt
         });
     }
     stmts
+}
+
+fn go_expr_can_be_statement(expr: &goast::Expr) -> bool {
+    match expr {
+        goast::Expr::Call { func, .. } => !go_call_result_must_be_used(func),
+        _ => false,
+    }
+}
+
+fn go_call_result_must_be_used(func: &goast::Expr) -> bool {
+    let goast::Expr::Var { name, .. } = func else {
+        return false;
+    };
+    matches!(
+        name.as_str(),
+        "append"
+            | "cap"
+            | "complex"
+            | "imag"
+            | "len"
+            | "make"
+            | "max"
+            | "min"
+            | "new"
+            | "real"
+            | "bool"
+            | "byte"
+            | "rune"
+            | "string"
+            | "int"
+            | "int8"
+            | "int16"
+            | "int32"
+            | "int64"
+            | "uint"
+            | "uint8"
+            | "uint16"
+            | "uint32"
+            | "uint64"
+            | "uintptr"
+            | "float32"
+            | "float64"
+            | "complex64"
+            | "complex128"
+    )
 }
 
 fn needs_closure_to_func_wrap(arg_ty: &tast::Ty, param_ty: &tast::Ty) -> bool {
