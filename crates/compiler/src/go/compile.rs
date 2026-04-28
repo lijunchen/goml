@@ -762,6 +762,24 @@ fn go_import_alias(goenv: &GlobalGoEnv, package_path: &str) -> Option<String> {
     }
 }
 
+fn go_type_alias_name_is_reserved(goenv: &GlobalGoEnv, name: &str) -> bool {
+    goenv
+        .structs()
+        .any(|(struct_name, _)| go_user_type_name(&struct_name.0) == name)
+        || goenv
+            .enums()
+            .any(|(enum_name, _)| go_user_type_name(&enum_name.0) == name)
+        || goenv.enums().any(|(enum_name, enum_def)| {
+            enum_def.variants.iter().any(|(variant_name, _)| {
+                variant_symbol_name_for_go_enum(
+                    goenv,
+                    &go_user_type_name(&enum_name.0),
+                    &variant_name.0,
+                ) == name
+            })
+        })
+}
+
 fn extern_wrapper_fn_name(goenv: &GlobalGoEnv, goml_name: &str) -> String {
     let base = go_ident(&format!("{}_ffi_wrap", goml_name));
     if !go_package_alias_name_is_reserved(goenv, &base) {
@@ -9322,6 +9340,10 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
     }
 
     for (name, ext) in goenv.genv.type_env.extern_types.iter() {
+        let alias_name = go_user_type_name(name);
+        if go_type_alias_name_is_reserved(goenv, &alias_name) {
+            continue;
+        }
         if let Some(package_path) = &ext.package_path {
             let go_ty = if package_path.is_empty() {
                 goty::GoType::TName {
@@ -9334,7 +9356,7 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
                 }
             };
             defs.push(goast::Item::TypeAlias(goast::TypeAlias {
-                name: go_user_type_name(name),
+                name: alias_name,
                 ty: go_ty,
             }));
         }
