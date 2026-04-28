@@ -1520,6 +1520,13 @@ pub fn collect_typedefs(
             hir::Def::EnumDef(enum_def) => define_enum(env, diagnostics, enum_def),
             hir::Def::StructDef(struct_def) => define_struct(env, diagnostics, struct_def),
             hir::Def::TraitDef(trait_def) => define_trait(env, trait_def),
+            hir::Def::ExternType(ext) => define_extern_type(env, diagnostics, ext),
+            _ => {}
+        }
+    }
+
+    for item in hir.toplevels.iter() {
+        match hir_table.def(*item) {
             hir::Def::ImplBlock(impl_block) => {
                 if let Some(trait_name) = &impl_block.trait_name {
                     define_trait_impl(env, diagnostics, impl_block, trait_name, hir_table);
@@ -1529,8 +1536,8 @@ pub fn collect_typedefs(
             }
             hir::Def::Fn(func) => define_function(env, diagnostics, func),
             hir::Def::ExternGo(ext) => define_extern_go(env, diagnostics, ext),
-            hir::Def::ExternType(ext) => define_extern_type(env, diagnostics, ext),
             hir::Def::ExternBuiltin(ext) => define_extern_builtin(env, diagnostics, ext),
+            _ => {}
         }
     }
     validate_no_infinite_size_structs(env, diagnostics);
