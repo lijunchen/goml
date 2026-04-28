@@ -1609,7 +1609,7 @@ fn native_return_mode(goenv: &GlobalGoEnv, ret_ty: &tast::Ty) -> Option<NativeRe
 }
 
 fn native_helper_fn_name(goml_name: &str) -> String {
-    go_ident(&format!("{}__native", goml_name))
+    go_generated_ident(&format!("{}__native", goml_name))
 }
 
 fn native_helper_ret_ty(mode: &NativeReturnMode) -> goty::GoType {

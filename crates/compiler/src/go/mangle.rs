@@ -91,6 +91,7 @@ fn go_ident_impl(name: &str, protect_generated: bool) -> String {
 fn is_generated_go_ident(name: &str) -> bool {
     name.starts_with("_goml_")
         || name.starts_with("dyn__")
+        || name.ends_with("__native")
         || (name.starts_with("ref_") && name.ends_with("_x"))
         || (name.starts_with("hashmap_") && name.ends_with("_x"))
 }
