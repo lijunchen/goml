@@ -1,0 +1,6 @@
+fn main() {
+    let inner: dyn ToString = 1;
+    let r = ref(inner);
+    let value: dyn ToString = r;
+    string_println(ToString::to_string(value));
+}
