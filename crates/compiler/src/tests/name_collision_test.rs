@@ -200,6 +200,13 @@ fn enum_variant_runtime_function_collision_executes() {
 }
 
 #[test]
+fn enum_variant_tuple_type_collision_executes() {
+    let output = run_crasher("enum_variant_tuple_type_collision");
+
+    assert_eq!(output, "23\n");
+}
+
+#[test]
 fn extern_import_alias_enum_variant_collision_executes() {
     let output = run_crasher("extern_import_alias_enum_variant_collision");
 
