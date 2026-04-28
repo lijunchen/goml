@@ -16,6 +16,18 @@ fn enum_closure_payload_return_executes() {
 }
 
 #[test]
+fn option_function_payload_with_other_instantiation_executes() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/option_function_payload_with_other_instantiation/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap();
+    let compilation = compile_single_file(&path, &src).unwrap();
+    let go = compilation.go.to_pretty(&compilation.goenv, 120);
+    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
+
+    assert_eq!(output, "1\n");
+}
+
+#[test]
 fn closure_with_vec_capture_equality_reports_typer_error() {
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("src/tests/crashers/closure_equality_vec_capture/main.gom");

@@ -1,0 +1,11 @@
+fn build() -> Option[() -> int32] {
+    let _: Option[int32] = Option::Some(1i32);
+    Option::Some(|| 1i32)
+}
+
+fn main() -> unit {
+    match build() {
+        Option::Some(f) => println(f()),
+        Option::None => println(0i32),
+    }
+}
