@@ -923,7 +923,8 @@ impl Typer {
             }
             _ if !is_concrete_dyn_target(&for_ty) => {}
             _ => {
-                if !genv.has_trait_impl_visible(&resolved_trait, &for_ty) {
+                let impl_count = genv.trait_impl_count_visible(&resolved_trait, &for_ty);
+                if impl_count == 0 {
                     diagnostics.push(
                         Diagnostic::new(
                             Stage::Typer,
@@ -932,6 +933,21 @@ impl Typer {
                                 "Type {} does not implement trait {}",
                                 super::util::format_ty_for_diag(&for_ty),
                                 resolved_trait
+                            ),
+                        )
+                        .with_range(range),
+                    );
+                    return (expr, false);
+                }
+                if impl_count > 1 {
+                    diagnostics.push(
+                        Diagnostic::new(
+                            Stage::Typer,
+                            Severity::Error,
+                            format!(
+                                "Multiple instances found for trait {}<{}>",
+                                resolved_trait,
+                                super::util::format_ty_for_diag(&for_ty)
                             ),
                         )
                         .with_range(range),

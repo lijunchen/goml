@@ -9,6 +9,23 @@ use diagnostics::{Severity, Stage};
 use parser::{Diagnostic, Diagnostics};
 use text_size::TextRange;
 
+fn multiple_trait_impls_diagnostic(
+    trait_name: &str,
+    ty: &tast::Ty,
+    origin: Option<TextRange>,
+) -> Diagnostic {
+    Diagnostic::new(
+        Stage::Typer,
+        Severity::Error,
+        format!(
+            "Multiple instances found for trait {}<{}>",
+            trait_name,
+            super::util::format_ty_for_diag(ty)
+        ),
+    )
+    .with_range(origin)
+}
+
 fn pat_origin(pat: &tast::Pat) -> Option<TextRange> {
     match pat {
         tast::Pat::PVar { astptr, .. }
@@ -478,6 +495,7 @@ impl Typer {
                     Constraint::TypeEqual(l, r, origin) => {
                         let l_norm = self.norm(&l);
                         let r_norm = self.norm(&r);
+                        let mut dyn_coercion_ambiguous = false;
                         let dyn_coercion_ok = match (&l_norm, &r_norm) {
                             (concrete, tast::Ty::TDyn { trait_name })
                                 if !matches!(
@@ -485,11 +503,21 @@ impl Typer {
                                     tast::Ty::TVar(_) | tast::Ty::TDyn { .. }
                                 ) =>
                             {
-                                genv.has_trait_impl_visible(trait_name, concrete)
+                                let impl_count =
+                                    genv.trait_impl_count_visible(trait_name, concrete);
+                                if impl_count > 1 {
+                                    diagnostics.push(multiple_trait_impls_diagnostic(
+                                        trait_name, concrete, origin,
+                                    ));
+                                    dyn_coercion_ambiguous = true;
+                                }
+                                impl_count == 1
                             }
                             _ => false,
                         };
-                        if dyn_coercion_ok || self.unify(diagnostics, &l, &r, origin) {
+                        if !dyn_coercion_ambiguous
+                            && (dyn_coercion_ok || self.unify(diagnostics, &l, &r, origin))
+                        {
                             changed = true;
                         }
                     }
@@ -714,7 +742,6 @@ impl Typer {
                                 trait_name: dyn_trait_name
                             } if dyn_trait_name == &trait_name.0
                         );
-                        let impl_found = genv.has_trait_impl_visible(&trait_name.0, &norm_for_ty);
                         let tparam_satisfied = matches!(
                             &norm_for_ty,
                             tast::Ty::TParam { name }
@@ -723,7 +750,7 @@ impl Typer {
                                 .is_some_and(|bounds| bounds.contains(&trait_name.0))
                         );
                         let tparam_in_type = super::check::contains_tparam(&norm_for_ty);
-                        if dyn_satisfied || impl_found || tparam_satisfied || tparam_in_type {
+                        if dyn_satisfied || tparam_satisfied || tparam_in_type {
                             changed = true;
                         } else if matches!(norm_for_ty, tast::Ty::TVar(_))
                             || !is_concrete(&norm_for_ty)
@@ -734,18 +761,30 @@ impl Typer {
                                 origin,
                             });
                         } else {
-                            diagnostics.push(
-                                Diagnostic::new(
-                                    Stage::Typer,
-                                    Severity::Error,
-                                    format!(
-                                        "No instance found for trait {}<{}>",
-                                        trait_name.0,
-                                        super::util::format_ty_for_diag(&norm_for_ty)
-                                    ),
-                                )
-                                .with_range(origin),
-                            );
+                            let impl_count =
+                                genv.trait_impl_count_visible(&trait_name.0, &norm_for_ty);
+                            if impl_count == 1 {
+                                changed = true;
+                            } else if impl_count > 1 {
+                                diagnostics.push(multiple_trait_impls_diagnostic(
+                                    &trait_name.0,
+                                    &norm_for_ty,
+                                    origin,
+                                ));
+                            } else {
+                                diagnostics.push(
+                                    Diagnostic::new(
+                                        Stage::Typer,
+                                        Severity::Error,
+                                        format!(
+                                            "No instance found for trait {}<{}>",
+                                            trait_name.0,
+                                            super::util::format_ty_for_diag(&norm_for_ty)
+                                        ),
+                                    )
+                                    .with_range(origin),
+                                );
+                            }
                         }
                     }
                     Constraint::StructFieldAccess {
@@ -909,23 +948,33 @@ impl Typer {
                             still_deferred.push(coercion);
                         } else if matches!(concrete_norm, tast::Ty::TDyn { .. }) {
                             changed = true;
-                        } else if genv.has_trait_impl_visible(trait_name, &concrete_norm) {
-                            self.results.push_coercion(
-                                coercion.expr_id,
-                                crate::typer::results::Coercion::ToDyn {
-                                    trait_name: tast::TastIdent(trait_name.clone()),
-                                    for_ty: concrete_norm,
-                                    ty: expected_norm,
-                                    astptr: None,
-                                },
-                            );
-                            changed = true;
                         } else {
-                            constraints.push(Constraint::TypeEqual(
-                                coercion.concrete_ty,
-                                coercion.expected_ty,
-                                coercion.origin,
-                            ));
+                            let impl_count =
+                                genv.trait_impl_count_visible(trait_name, &concrete_norm);
+                            if impl_count == 1 {
+                                self.results.push_coercion(
+                                    coercion.expr_id,
+                                    crate::typer::results::Coercion::ToDyn {
+                                        trait_name: tast::TastIdent(trait_name.clone()),
+                                        for_ty: concrete_norm,
+                                        ty: expected_norm,
+                                        astptr: None,
+                                    },
+                                );
+                                changed = true;
+                            } else if impl_count > 1 {
+                                diagnostics.push(multiple_trait_impls_diagnostic(
+                                    trait_name,
+                                    &concrete_norm,
+                                    coercion.origin,
+                                ));
+                            } else {
+                                constraints.push(Constraint::TypeEqual(
+                                    coercion.concrete_ty,
+                                    coercion.expected_ty,
+                                    coercion.origin,
+                                ));
+                            }
                         }
                     }
                     _ => {
