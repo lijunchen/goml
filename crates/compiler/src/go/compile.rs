@@ -384,6 +384,37 @@ fn go_toplevel_name_is_reserved(goenv: &GlobalGoEnv, name: &str) -> bool {
             .any(|func_name| go_ident(func_name) == name)
 }
 
+fn go_variant_symbol_name_is_reserved(goenv: &GlobalGoEnv, name: &str) -> bool {
+    goenv.enums().any(|(enum_name, enum_def)| {
+        enum_def.variants.iter().any(|(variant_name, _)| {
+            let count = goenv
+                .enums()
+                .filter(|(_, other_def)| {
+                    other_def
+                        .variants
+                        .iter()
+                        .any(|(other_variant_name, _)| other_variant_name.0 == variant_name.0)
+                })
+                .take(2)
+                .count();
+            let candidate = if count > 1 {
+                format!(
+                    "{}_{}",
+                    go_user_type_name(&enum_name.0),
+                    go_ident(&variant_name.0)
+                )
+            } else {
+                go_ident(&variant_name.0)
+            };
+            candidate == name
+        })
+    })
+}
+
+fn go_package_alias_name_is_reserved(goenv: &GlobalGoEnv, name: &str) -> bool {
+    go_toplevel_name_is_reserved(goenv, name) || go_variant_symbol_name_is_reserved(goenv, name)
+}
+
 fn enum_def_for_ty<'a>(goenv: &'a GlobalGoEnv, ty: &tast::Ty) -> Option<&'a EnumDef> {
     let base_name = match ty {
         tast::Ty::TEnum { name } => Some(name.clone()),
@@ -539,7 +570,7 @@ fn go_package_alias(goenv: &GlobalGoEnv, package_path: &str) -> String {
         _ => {}
     }
     let alias = go_package_default_alias(package_path);
-    if go_toplevel_name_is_reserved(goenv, &alias) || runtime_generated_function_name(&alias) {
+    if go_package_alias_name_is_reserved(goenv, &alias) || runtime_generated_function_name(&alias) {
         return go_package_generated_alias(package_path);
     }
     alias
