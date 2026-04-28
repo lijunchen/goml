@@ -3538,6 +3538,7 @@ fn builtin_tostring_expr(
         tast::Ty::TUint64 => Some(unary_tostring_call("uint64_to_string", value, ty)),
         tast::Ty::TFloat32 => Some(unary_tostring_call("float32_to_string", value, ty)),
         tast::Ty::TFloat64 => Some(unary_tostring_call("float64_to_string", value, ty)),
+        tast::Ty::TDyn { trait_name } if trait_name == "ToString" => Some(dyn_tostring_call(value)),
         tast::Ty::TStruct { name } if name == "GoError" && is_builtin_go_error_ty(goenv, ty) => {
             Some(unary_tostring_call("go_error_to_string", value, ty))
         }
@@ -3618,8 +3619,66 @@ fn has_builtin_tostring_expr(goenv: &GlobalGoEnv, ty: &tast::Ty) -> bool {
         | tast::Ty::TFloat32
         | tast::Ty::TFloat64
         | tast::Ty::TRef { .. } => true,
+        tast::Ty::TDyn { trait_name } if trait_name == "ToString" => true,
         tast::Ty::TStruct { name } if name == "GoError" => is_builtin_go_error_ty(goenv, ty),
         _ => false,
+    }
+}
+
+fn dyn_tostring_call(value: goast::Expr) -> goast::Expr {
+    let dyn_go_ty = goty::GoType::TName {
+        name: dyn_struct_go_name("ToString"),
+    };
+    let param_name = "_goml_dyn_value".to_string();
+    let param_expr_for_vtable = goast::Expr::Var {
+        name: param_name.clone(),
+        ty: dyn_go_ty.clone(),
+    };
+    let param_expr_for_data = goast::Expr::Var {
+        name: param_name.clone(),
+        ty: dyn_go_ty.clone(),
+    };
+    let vtable_ptr_expr = goast::Expr::FieldAccess {
+        obj: Box::new(param_expr_for_vtable),
+        field: "vtable".to_string(),
+        ty: goty::GoType::TPointer {
+            elem: Box::new(goty::GoType::TName {
+                name: dyn_vtable_struct_go_name("ToString"),
+            }),
+        },
+    };
+    let method_expr = goast::Expr::FieldAccess {
+        obj: Box::new(vtable_ptr_expr),
+        field: "to_string".to_string(),
+        ty: goty::GoType::TFunc {
+            params: vec![any_go_type()],
+            ret_ty: Box::new(goty::GoType::TString),
+        },
+    };
+    let data_expr = goast::Expr::FieldAccess {
+        obj: Box::new(param_expr_for_data),
+        field: "data".to_string(),
+        ty: any_go_type(),
+    };
+    let method_call = goast::Expr::Call {
+        func: Box::new(method_expr),
+        args: vec![data_expr],
+        ty: goty::GoType::TString,
+    };
+    let func_ty = goty::GoType::TFunc {
+        params: vec![dyn_go_ty.clone()],
+        ret_ty: Box::new(goty::GoType::TString),
+    };
+    goast::Expr::Call {
+        func: Box::new(goast::Expr::FuncLit {
+            params: vec![(param_name, dyn_go_ty)],
+            body: vec![goast::Stmt::Return {
+                expr: Some(method_call),
+            }],
+            ty: func_ty,
+        }),
+        args: vec![value],
+        ty: goty::GoType::TString,
     }
 }
 
