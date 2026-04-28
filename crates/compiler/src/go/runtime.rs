@@ -1,6 +1,6 @@
 use crate::{
     go::{
-        compile::GlobalGoEnv,
+        compile::{GlobalGoEnv, variant_symbol_name},
         goast::{self, GoBinaryOp, ImportDecl, ImportSpec, Item, Package},
         goty,
         mangle::{encode_ty, go_generated_ident, go_ident},
@@ -755,24 +755,7 @@ pub fn make_ref_runtime(ref_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
 }
 
 fn variant_struct_name(goenv: &GlobalGoEnv, enum_name: &str, variant_name: &str) -> String {
-    let mut count = 0;
-    for (_, def) in goenv.enums() {
-        if def
-            .variants
-            .iter()
-            .any(|(v, _)| v.0.as_str() == variant_name)
-        {
-            count += 1;
-            if count > 1 {
-                break;
-            }
-        }
-    }
-    if count > 1 {
-        format!("{}_{}", go_ident(enum_name), go_ident(variant_name))
-    } else {
-        go_ident(variant_name)
-    }
+    variant_symbol_name(goenv, enum_name, variant_name)
 }
 
 fn synthetic_option_variant_name(option_name: &str, variant_name: &str) -> String {

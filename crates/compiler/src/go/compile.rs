@@ -412,7 +412,11 @@ fn value_expr_ty(expr: &anf::ValueExpr) -> tast::Ty {
     }
 }
 
-fn variant_symbol_name(goenv: &GlobalGoEnv, enum_name: &str, variant_name: &str) -> String {
+pub(crate) fn variant_symbol_name(
+    goenv: &GlobalGoEnv,
+    enum_name: &str,
+    variant_name: &str,
+) -> String {
     variant_symbol_name_for_go_enum(goenv, &go_user_type_name(enum_name), variant_name)
 }
 
