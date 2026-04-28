@@ -42,7 +42,7 @@ func main0() struct{} {
     var t6 closure_env_main_0 = closure_env_main_0{
         counter_0: counter__0,
     }
-    go _goml_inherent_closure_env_main_0_closure_env_main_0_apply(t6)
+    go _goml_inherent_x23_closure_x5f_env_x5f_main_x5f_0_x23_closure_x5f_env_x5f_main_x5f_0_x23_apply(t6)
     Loop_loop8:
     for {
         var t9 int32 = ref_get__Ref_5int32(counter__0)
@@ -56,7 +56,7 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_inherent_closure_env_main_0_closure_env_main_0_apply(env4 closure_env_main_0) struct{} {
+func _goml_inherent_x23_closure_x5f_env_x5f_main_x5f_0_x23_closure_x5f_env_x5f_main_x5f_0_x23_apply(env4 closure_env_main_0) struct{} {
     var counter__0 *ref_int32_x = env4.counter_0
     Loop_loop13:
     for {

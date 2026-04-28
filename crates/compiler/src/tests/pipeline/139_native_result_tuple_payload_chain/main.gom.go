@@ -19,21 +19,21 @@ type Tuple2_6string_6string struct {
     _1 string
 }
 
-type _goml_Result___x28_string_x2c_string_x29___GoError interface {
-    is_goml_Result___x28_string_x2c_string_x29___GoError()
+type _goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_GoError interface {
+    is_goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_GoError()
 }
 
-type _goml_Result___x28_string_x2c_string_x29___GoError_Ok struct {
+type _goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_GoError_Ok struct {
     _0 Tuple2_6string_6string
 }
 
-func (_ _goml_Result___x28_string_x2c_string_x29___GoError_Ok) is_goml_Result___x28_string_x2c_string_x29___GoError() {}
+func (_ _goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_GoError_Ok) is_goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_GoError() {}
 
-type _goml_Result___x28_string_x2c_string_x29___GoError_Err struct {
+type _goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_GoError_Err struct {
     _0 GoError
 }
 
-func (_ _goml_Result___x28_string_x2c_string_x29___GoError_Err) is_goml_Result___x28_string_x2c_string_x29___GoError() {}
+func (_ _goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_GoError_Err) is_goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_GoError() {}
 
 type Result__string__GoError interface {
     isResult__string__GoError()

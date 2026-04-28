@@ -23,7 +23,7 @@ type dyn__Display struct {
 }
 
 func dyn__Display__wrap__S__show(self any) string {
-    return _goml_trait_impl_Display_S_show(self.(S))
+    return _goml_trait_x5f_impl_x23_Display_x23_S_x23_show(self.(S))
 }
 
 func dyn__Display__vtable__S() *dyn__Display_vtable {
@@ -32,7 +32,7 @@ func dyn__Display__vtable__S() *dyn__Display_vtable {
     }
 }
 
-func _goml_trait_impl_Display_S_show(self__0 S) string {
+func _goml_trait_x5f_impl_x23_Display_x23_S_x23_show(self__0 S) string {
     var retv3 string
     retv3 = "ok"
     return retv3

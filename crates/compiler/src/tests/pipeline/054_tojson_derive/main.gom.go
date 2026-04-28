@@ -62,7 +62,7 @@ func (_ Rgb) isColor() {}
 
 type GoError = error
 
-func _goml_inherent_Point_Point_to_json(self__0 Point) string {
+func _goml_inherent_x23_Point_x23_Point_x23_to_x5f_json(self__0 Point) string {
     var retv15 string
     var mtmp0 Point = self__0
     var x1 int32 = mtmp0.x
@@ -81,7 +81,7 @@ func _goml_inherent_Point_Point_to_json(self__0 Point) string {
     return retv15
 }
 
-func _goml_inherent_Person_Person_to_json(self__3 Person) string {
+func _goml_inherent_x23_Person_x23_Person_x23_to_x5f_json(self__3 Person) string {
     var retv25 string
     var mtmp3 Person = self__3
     var x4 string = mtmp3.name
@@ -106,7 +106,7 @@ func _goml_inherent_Person_Person_to_json(self__3 Person) string {
     return retv25
 }
 
-func _goml_inherent_Color_Color_to_json(self__7 Color) string {
+func _goml_inherent_x23_Color_x23_Color_x23_to_x5f_json(self__7 Color) string {
     var retv39 string
     var jp41 string
     switch self__7.(type) {
@@ -156,13 +156,13 @@ func main0() struct{} {
         _1: 128,
         _2: 0,
     }
-    var t52 string = _goml_inherent_Point_Point_to_json(p__11)
+    var t52 string = _goml_inherent_x23_Point_x23_Point_x23_to_x5f_json(p__11)
     string_println(t52)
-    var t53 string = _goml_inherent_Person_Person_to_json(person__12)
+    var t53 string = _goml_inherent_x23_Person_x23_Person_x23_to_x5f_json(person__12)
     string_println(t53)
-    var t54 string = _goml_inherent_Color_Color_to_json(c1__13)
+    var t54 string = _goml_inherent_x23_Color_x23_Color_x23_to_x5f_json(c1__13)
     string_println(t54)
-    var t55 string = _goml_inherent_Color_Color_to_json(c2__14)
+    var t55 string = _goml_inherent_x23_Color_x23_Color_x23_to_x5f_json(c2__14)
     string_println(t55)
     return struct{}{}
 }

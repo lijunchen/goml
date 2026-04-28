@@ -55,7 +55,7 @@ func receiver_after_match(flag__2 bool) string {
 func closure_after_match(flag__3 bool) int32 {
     var retv18 int32
     var f__6 closure_env_f_0 = closure_env_f_0{}
-    var t19 int32 = _goml_inherent_closure_env_f_0_closure_env_f_0_apply(f__6, flag__3)
+    var t19 int32 = _goml_inherent_x23_closure_x5f_env_x5f_f_x5f_0_x23_closure_x5f_env_x5f_f_x5f_0_x23_apply(f__6, flag__3)
     retv18 = t19
     return retv18
 }
@@ -87,7 +87,7 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_inherent_closure_env_f_0_closure_env_f_0_apply(env6 closure_env_f_0, inner__4 bool) int32 {
+func _goml_inherent_x23_closure_x5f_env_x5f_f_x5f_0_x23_closure_x5f_env_x5f_f_x5f_0_x23_apply(env6 closure_env_f_0, inner__4 bool) int32 {
     var retv33 int32
     var jp35 int32
     switch inner__4 {

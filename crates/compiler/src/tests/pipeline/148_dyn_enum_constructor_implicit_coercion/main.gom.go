@@ -42,7 +42,7 @@ type dyn__Display struct {
 }
 
 func dyn__Display__wrap__int32__show(self any) string {
-    return _goml_trait_impl_Display_int32_show(self.(int32))
+    return _goml_trait_x5f_impl_x23_Display_x23_int32_x23_show(self.(int32))
 }
 
 func dyn__Display__vtable__int32() *dyn__Display_vtable {
@@ -51,7 +51,7 @@ func dyn__Display__vtable__int32() *dyn__Display_vtable {
     }
 }
 
-func _goml_trait_impl_Display_int32_show(self__0 int32) string {
+func _goml_trait_x5f_impl_x23_Display_x23_int32_x23_show(self__0 int32) string {
     var retv6 string
     var t7 string = int32_to_string(self__0)
     retv6 = t7

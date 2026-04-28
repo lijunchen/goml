@@ -26,11 +26,11 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-func _goml_trait_impl_Eq_string_eq(self string, other string) bool {
+func _goml_trait_x5f_impl_x23_Eq_x23_string_x23_eq(self string, other string) bool {
     return self == other
 }
 
-func _goml_trait_impl_Hash_string_hash(self string) uint64 {
+func _goml_trait_x5f_impl_x23_Hash_x23_string_x23_hash(self string) uint64 {
     return string_hash(self)
 }
 
@@ -57,7 +57,7 @@ func hashmap_get_native__HashMap_6string_5int32(m *hashmap_string_int32_x, key s
         var zero int32
         return zero, false
     }
-    var h uint64 = _goml_trait_impl_Hash_string_hash(key)
+    var h uint64 = _goml_trait_x5f_impl_x23_Hash_x23_string_x23_hash(key)
     var bucket []hashmap_string_int32_x_entry = m.buckets[h]
     var i int32 = 0
     for {
@@ -65,7 +65,7 @@ func hashmap_get_native__HashMap_6string_5int32(m *hashmap_string_int32_x, key s
             break
         }
         var entry hashmap_string_int32_x_entry = bucket[i]
-        if entry.active && _goml_trait_impl_Eq_string_eq(entry.key, key) {
+        if entry.active && _goml_trait_x5f_impl_x23_Eq_x23_string_x23_eq(entry.key, key) {
             return entry.value, true
         }
         i = i + 1
@@ -78,7 +78,7 @@ func hashmap_set__HashMap_6string_5int32(m *hashmap_string_int32_x, key string, 
     if m == nil {
         return struct{}{}
     }
-    var h uint64 = _goml_trait_impl_Hash_string_hash(key)
+    var h uint64 = _goml_trait_x5f_impl_x23_Hash_x23_string_x23_hash(key)
     var bucket []hashmap_string_int32_x_entry = m.buckets[h]
     var i int32 = 0
     for {
@@ -86,7 +86,7 @@ func hashmap_set__HashMap_6string_5int32(m *hashmap_string_int32_x, key string, 
             break
         }
         var entry hashmap_string_int32_x_entry = bucket[i]
-        if entry.active && _goml_trait_impl_Eq_string_eq(entry.key, key) {
+        if entry.active && _goml_trait_x5f_impl_x23_Eq_x23_string_x23_eq(entry.key, key) {
             bucket[i].value = value
             return struct{}{}
         }
@@ -119,14 +119,14 @@ func (_ Some) isOption__int32() {}
 type GoError = error
 
 func fetch__native(flag__0 bool) (int32, bool) {
-    var m__1 *hashmap_string_int32_x = _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__new__K_string__V_int32()
+    var m__1 *hashmap_string_int32_x = _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_new_x5f__x5f_K_x5f_string_x5f__x5f_V_x5f_int32()
     if flag__0 {
-        _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__set__K_string__V_int32(m__1, "a", 7)
+        _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_set_x5f__x5f_K_x5f_string_x5f__x5f_V_x5f_int32(m__1, "a", 7)
     } else {}
     var jp11 int32
     var mtmp2_value_0 int32
     var mtmp2_ok bool
-    mtmp2_value_0, mtmp2_ok = _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_string__V_int32__native(m__1, "a")
+    mtmp2_value_0, mtmp2_ok = _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_get_x5f__x5f_K_x5f_string_x5f__x5f_V_x5f_int32_x5f__x5f_native(m__1, "a")
     if !mtmp2_ok {
         var ret_zero int32
         return ret_zero, false
@@ -178,19 +178,19 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__new__K_string__V_int32() *hashmap_string_int32_x {
+func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_new_x5f__x5f_K_x5f_string_x5f__x5f_V_x5f_int32() *hashmap_string_int32_x {
     var retv26 *hashmap_string_int32_x
     var t27 *hashmap_string_int32_x = hashmap_new__HashMap_6string_5int32()
     retv26 = t27
     return retv26
 }
 
-func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__set__K_string__V_int32(self__83 *hashmap_string_int32_x, key__84 string, value__85 int32) struct{} {
+func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_set_x5f__x5f_K_x5f_string_x5f__x5f_V_x5f_int32(self__83 *hashmap_string_int32_x, key__84 string, value__85 int32) struct{} {
     hashmap_set__HashMap_6string_5int32(self__83, key__84, value__85)
     return struct{}{}
 }
 
-func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_string__V_int32__native(self__81 *hashmap_string_int32_x, key__82 string) (int32, bool) {
+func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_get_x5f__x5f_K_x5f_string_x5f__x5f_V_x5f_int32_x5f__x5f_native(self__81 *hashmap_string_int32_x, key__82 string) (int32, bool) {
     var t32_value int32
     var t32_ok bool
     t32_value, t32_ok = hashmap_get_native__HashMap_6string_5int32(self__81, key__82)

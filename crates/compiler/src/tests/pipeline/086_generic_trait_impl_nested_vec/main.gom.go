@@ -30,10 +30,10 @@ func main0() struct{} {
     var b__2 Wrap__string = Wrap__string{
         value: "x",
     }
-    var t3 int32 = _goml_trait_impl_Size_Wrap__int32_size(a__1)
+    var t3 int32 = _goml_trait_x5f_impl_x23_Size_x23_Wrap_x5f__x5f_int32_x23_size(a__1)
     var t4 string = int32_to_string(t3)
     println__T_string(t4)
-    var t5 int32 = _goml_trait_impl_Size_Wrap__string_size(b__2)
+    var t5 int32 = _goml_trait_x5f_impl_x23_Size_x23_Wrap_x5f__x5f_string_x23_size(b__2)
     var t6 string = int32_to_string(t5)
     println__T_string(t6)
     return struct{}{}
@@ -44,13 +44,13 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_trait_impl_Size_Wrap__int32_size(self__0 Wrap__int32) int32 {
+func _goml_trait_x5f_impl_x23_Size_x23_Wrap_x5f__x5f_int32_x23_size(self__0 Wrap__int32) int32 {
     var retv10 int32
     retv10 = 1
     return retv10
 }
 
-func _goml_trait_impl_Size_Wrap__string_size(self__0 Wrap__string) int32 {
+func _goml_trait_x5f_impl_x23_Size_x23_Wrap_x5f__x5f_string_x23_size(self__0 Wrap__string) int32 {
     var retv12 int32
     retv12 = 1
     return retv12

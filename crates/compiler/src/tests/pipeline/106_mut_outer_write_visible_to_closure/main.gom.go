@@ -44,13 +44,13 @@ func main0() struct{} {
         x_0: x__0,
     }
     ref_set__Ref_5int32(x__0, 41)
-    var t4 int32 = _goml_inherent_closure_env_get_0_closure_env_get_0_apply(get__1)
+    var t4 int32 = _goml_inherent_x23_closure_x5f_env_x5f_get_x5f_0_x23_closure_x5f_env_x5f_get_x5f_0_x23_apply(get__1)
     var t5 string = int32_to_string(t4)
     string_println(t5)
     return struct{}{}
 }
 
-func _goml_inherent_closure_env_get_0_closure_env_get_0_apply(env2 closure_env_get_0) int32 {
+func _goml_inherent_x23_closure_x5f_env_x5f_get_x5f_0_x23_closure_x5f_env_x5f_get_x5f_0_x23_apply(env2 closure_env_get_0) int32 {
     var retv7 int32
     var x__0 *ref_int32_x = env2.x_0
     var t8 int32 = ref_get__Ref_5int32(x__0)

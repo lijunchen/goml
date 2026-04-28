@@ -50,14 +50,14 @@ func main0() struct{} {
     var get__2 closure_env_get_1 = closure_env_get_1{
         x_0: x__0,
     }
-    _goml_inherent_closure_env_inc_0_closure_env_inc_0_apply(inc__1)
-    var t6 int32 = _goml_inherent_closure_env_get_1_closure_env_get_1_apply(get__2)
+    _goml_inherent_x23_closure_x5f_env_x5f_inc_x5f_0_x23_closure_x5f_env_x5f_inc_x5f_0_x23_apply(inc__1)
+    var t6 int32 = _goml_inherent_x23_closure_x5f_env_x5f_get_x5f_1_x23_closure_x5f_env_x5f_get_x5f_1_x23_apply(get__2)
     var t7 string = int32_to_string(t6)
     string_println(t7)
     return struct{}{}
 }
 
-func _goml_inherent_closure_env_inc_0_closure_env_inc_0_apply(env3 closure_env_inc_0) int32 {
+func _goml_inherent_x23_closure_x5f_env_x5f_inc_x5f_0_x23_closure_x5f_env_x5f_inc_x5f_0_x23_apply(env3 closure_env_inc_0) int32 {
     var retv9 int32
     var x__0 *ref_int32_x = env3.x_0
     var t10 int32 = ref_get__Ref_5int32(x__0)
@@ -68,7 +68,7 @@ func _goml_inherent_closure_env_inc_0_closure_env_inc_0_apply(env3 closure_env_i
     return retv9
 }
 
-func _goml_inherent_closure_env_get_1_closure_env_get_1_apply(env4 closure_env_get_1) int32 {
+func _goml_inherent_x23_closure_x5f_env_x5f_get_x5f_1_x23_closure_x5f_env_x5f_get_x5f_1_x23_apply(env4 closure_env_get_1) int32 {
     var retv14 int32
     var x__0 *ref_int32_x = env4.x_0
     var t15 int32 = ref_get__Ref_5int32(x__0)

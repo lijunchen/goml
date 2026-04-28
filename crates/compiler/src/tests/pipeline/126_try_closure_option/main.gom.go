@@ -50,7 +50,7 @@ func with_base__native(base__1 int32, flag__2 bool) (int32, bool) {
     }
     var t13_value_0 int32
     var t13_ok bool
-    t13_value_0, t13_ok = _goml_inherent_closure_env_run_0_closure_env_run_0_apply__native(run__4)
+    t13_value_0, t13_ok = _goml_inherent_x23_closure_x5f_env_x5f_run_x5f_0_x23_closure_x5f_env_x5f_run_x5f_0_x23_apply_x5f__x5f_native(run__4)
     if !t13_ok {
         var ret_zero int32
         return ret_zero, false
@@ -104,7 +104,7 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_inherent_closure_env_run_0_closure_env_run_0_apply__native(env5 closure_env_run_0) (int32, bool) {
+func _goml_inherent_x23_closure_x5f_env_x5f_run_x5f_0_x23_closure_x5f_env_x5f_run_x5f_0_x23_apply_x5f__x5f_native(env5 closure_env_run_0) (int32, bool) {
     var flag__2 bool = env5.flag_0
     var base__1 int32 = env5.base_1
     var jp30 int32

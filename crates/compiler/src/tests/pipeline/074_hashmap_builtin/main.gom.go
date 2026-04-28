@@ -25,11 +25,11 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-func _goml_trait_impl_Eq_int32_eq(self int32, other int32) bool {
+func _goml_trait_x5f_impl_x23_Eq_x23_int32_x23_eq(self int32, other int32) bool {
     return self == other
 }
 
-func _goml_trait_impl_Hash_int32_hash(self int32) uint64 {
+func _goml_trait_x5f_impl_x23_Hash_x23_int32_x23_hash(self int32) uint64 {
     return int32_hash(self)
 }
 
@@ -47,12 +47,12 @@ func ref_get__Ref_5Point(reference *ref_Point_x) Point {
     return reference.value
 }
 
-func _goml_trait_impl_Eq_Ref_x5b_Point_x5d__eq(self *ref_Point_x, other *ref_Point_x) bool {
-    return _goml_trait_impl_Eq_Point_eq(ref_get__Ref_5Point(self), ref_get__Ref_5Point(other))
+func _goml_trait_x5f_impl_x23_Eq_x23_Ref_x5b_Point_x5d__x23_eq(self *ref_Point_x, other *ref_Point_x) bool {
+    return _goml_trait_x5f_impl_x23_Eq_x23_Point_x23_eq(ref_get__Ref_5Point(self), ref_get__Ref_5Point(other))
 }
 
-func _goml_trait_impl_Hash_Ref_x5b_Point_x5d__hash(self *ref_Point_x) uint64 {
-    return _goml_trait_impl_Hash_Point_hash(ref_get__Ref_5Point(self))
+func _goml_trait_x5f_impl_x23_Hash_x23_Ref_x5b_Point_x5d__x23_hash(self *ref_Point_x) uint64 {
+    return _goml_trait_x5f_impl_x23_Hash_x23_Point_x23_hash(ref_get__Ref_5Point(self))
 }
 
 type ref_Key_x struct {
@@ -69,12 +69,12 @@ func ref_get__Ref_3Key(reference *ref_Key_x) Key {
     return reference.value
 }
 
-func _goml_trait_impl_Eq_Ref_x5b_Key_x5d__eq(self *ref_Key_x, other *ref_Key_x) bool {
-    return _goml_trait_impl_Eq_Key_eq(ref_get__Ref_3Key(self), ref_get__Ref_3Key(other))
+func _goml_trait_x5f_impl_x23_Eq_x23_Ref_x5b_Key_x5d__x23_eq(self *ref_Key_x, other *ref_Key_x) bool {
+    return _goml_trait_x5f_impl_x23_Eq_x23_Key_x23_eq(ref_get__Ref_3Key(self), ref_get__Ref_3Key(other))
 }
 
-func _goml_trait_impl_Hash_Ref_x5b_Key_x5d__hash(self *ref_Key_x) uint64 {
-    return _goml_trait_impl_Hash_Key_hash(ref_get__Ref_3Key(self))
+func _goml_trait_x5f_impl_x23_Hash_x23_Ref_x5b_Key_x5d__x23_hash(self *ref_Key_x) uint64 {
+    return _goml_trait_x5f_impl_x23_Hash_x23_Key_x23_hash(ref_get__Ref_3Key(self))
 }
 
 type hashmap_Key_int32_x_entry struct {
@@ -107,7 +107,7 @@ func hashmap_get_native__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key) (i
         var zero int32
         return zero, false
     }
-    var h uint64 = _goml_trait_impl_Hash_Key_hash(key)
+    var h uint64 = _goml_trait_x5f_impl_x23_Hash_x23_Key_x23_hash(key)
     var bucket []hashmap_Key_int32_x_entry = m.buckets[h]
     var i int32 = 0
     for {
@@ -115,7 +115,7 @@ func hashmap_get_native__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key) (i
             break
         }
         var entry hashmap_Key_int32_x_entry = bucket[i]
-        if entry.active && _goml_trait_impl_Eq_Key_eq(entry.key, key) {
+        if entry.active && _goml_trait_x5f_impl_x23_Eq_x23_Key_x23_eq(entry.key, key) {
             return entry.value, true
         }
         i = i + 1
@@ -140,7 +140,7 @@ func hashmap_set__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key, value int
     if m == nil {
         return struct{}{}
     }
-    var h uint64 = _goml_trait_impl_Hash_Key_hash(key)
+    var h uint64 = _goml_trait_x5f_impl_x23_Hash_x23_Key_x23_hash(key)
     var bucket []hashmap_Key_int32_x_entry = m.buckets[h]
     var i int32 = 0
     for {
@@ -148,7 +148,7 @@ func hashmap_set__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key, value int
             break
         }
         var entry hashmap_Key_int32_x_entry = bucket[i]
-        if entry.active && _goml_trait_impl_Eq_Key_eq(entry.key, key) {
+        if entry.active && _goml_trait_x5f_impl_x23_Eq_x23_Key_x23_eq(entry.key, key) {
             bucket[i].value = value
             return struct{}{}
         }
@@ -168,7 +168,7 @@ func hashmap_remove__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key) struct
     if m == nil {
         return struct{}{}
     }
-    var h uint64 = _goml_trait_impl_Hash_Key_hash(key)
+    var h uint64 = _goml_trait_x5f_impl_x23_Hash_x23_Key_x23_hash(key)
     var bucket []hashmap_Key_int32_x_entry = m.buckets[h]
     var i int32 = 0
     for {
@@ -176,7 +176,7 @@ func hashmap_remove__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key) struct
             break
         }
         var entry hashmap_Key_int32_x_entry = bucket[i]
-        if entry.active && _goml_trait_impl_Eq_Key_eq(entry.key, key) {
+        if entry.active && _goml_trait_x5f_impl_x23_Eq_x23_Key_x23_eq(entry.key, key) {
             bucket[i].active = false
             m.len = m.len - 1
             return struct{}{}
@@ -190,7 +190,7 @@ func hashmap_contains__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key) bool
     if m == nil {
         return false
     }
-    var h uint64 = _goml_trait_impl_Hash_Key_hash(key)
+    var h uint64 = _goml_trait_x5f_impl_x23_Hash_x23_Key_x23_hash(key)
     var bucket []hashmap_Key_int32_x_entry = m.buckets[h]
     var i int32 = 0
     for {
@@ -198,7 +198,7 @@ func hashmap_contains__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key) bool
             break
         }
         var entry hashmap_Key_int32_x_entry = bucket[i]
-        if entry.active && _goml_trait_impl_Eq_Key_eq(entry.key, key) {
+        if entry.active && _goml_trait_x5f_impl_x23_Eq_x23_Key_x23_eq(entry.key, key) {
             return true
         }
         i = i + 1
@@ -229,7 +229,7 @@ func hashmap_get_native__HashMap_10Ref_5Point_5int32(m *hashmap_Ref_5Point_int32
         var zero int32
         return zero, false
     }
-    var h uint64 = _goml_trait_impl_Hash_Ref_x5b_Point_x5d__hash(key)
+    var h uint64 = _goml_trait_x5f_impl_x23_Hash_x23_Ref_x5b_Point_x5d__x23_hash(key)
     var bucket []hashmap_Ref_5Point_int32_x_entry = m.buckets[h]
     var i int32 = 0
     for {
@@ -237,7 +237,7 @@ func hashmap_get_native__HashMap_10Ref_5Point_5int32(m *hashmap_Ref_5Point_int32
             break
         }
         var entry hashmap_Ref_5Point_int32_x_entry = bucket[i]
-        if entry.active && _goml_trait_impl_Eq_Ref_x5b_Point_x5d__eq(entry.key, key) {
+        if entry.active && _goml_trait_x5f_impl_x23_Eq_x23_Ref_x5b_Point_x5d__x23_eq(entry.key, key) {
             return entry.value, true
         }
         i = i + 1
@@ -262,7 +262,7 @@ func hashmap_set__HashMap_10Ref_5Point_5int32(m *hashmap_Ref_5Point_int32_x, key
     if m == nil {
         return struct{}{}
     }
-    var h uint64 = _goml_trait_impl_Hash_Ref_x5b_Point_x5d__hash(key)
+    var h uint64 = _goml_trait_x5f_impl_x23_Hash_x23_Ref_x5b_Point_x5d__x23_hash(key)
     var bucket []hashmap_Ref_5Point_int32_x_entry = m.buckets[h]
     var i int32 = 0
     for {
@@ -270,7 +270,7 @@ func hashmap_set__HashMap_10Ref_5Point_5int32(m *hashmap_Ref_5Point_int32_x, key
             break
         }
         var entry hashmap_Ref_5Point_int32_x_entry = bucket[i]
-        if entry.active && _goml_trait_impl_Eq_Ref_x5b_Point_x5d__eq(entry.key, key) {
+        if entry.active && _goml_trait_x5f_impl_x23_Eq_x23_Ref_x5b_Point_x5d__x23_eq(entry.key, key) {
             bucket[i].value = value
             return struct{}{}
         }
@@ -309,7 +309,7 @@ func hashmap_get_native__HashMap_8Ref_3Key_5int32(m *hashmap_Ref_3Key_int32_x, k
         var zero int32
         return zero, false
     }
-    var h uint64 = _goml_trait_impl_Hash_Ref_x5b_Key_x5d__hash(key)
+    var h uint64 = _goml_trait_x5f_impl_x23_Hash_x23_Ref_x5b_Key_x5d__x23_hash(key)
     var bucket []hashmap_Ref_3Key_int32_x_entry = m.buckets[h]
     var i int32 = 0
     for {
@@ -317,7 +317,7 @@ func hashmap_get_native__HashMap_8Ref_3Key_5int32(m *hashmap_Ref_3Key_int32_x, k
             break
         }
         var entry hashmap_Ref_3Key_int32_x_entry = bucket[i]
-        if entry.active && _goml_trait_impl_Eq_Ref_x5b_Key_x5d__eq(entry.key, key) {
+        if entry.active && _goml_trait_x5f_impl_x23_Eq_x23_Ref_x5b_Key_x5d__x23_eq(entry.key, key) {
             return entry.value, true
         }
         i = i + 1
@@ -342,7 +342,7 @@ func hashmap_set__HashMap_8Ref_3Key_5int32(m *hashmap_Ref_3Key_int32_x, key *ref
     if m == nil {
         return struct{}{}
     }
-    var h uint64 = _goml_trait_impl_Hash_Ref_x5b_Key_x5d__hash(key)
+    var h uint64 = _goml_trait_x5f_impl_x23_Hash_x23_Ref_x5b_Key_x5d__x23_hash(key)
     var bucket []hashmap_Ref_3Key_int32_x_entry = m.buckets[h]
     var i int32 = 0
     for {
@@ -350,7 +350,7 @@ func hashmap_set__HashMap_8Ref_3Key_5int32(m *hashmap_Ref_3Key_int32_x, key *ref
             break
         }
         var entry hashmap_Ref_3Key_int32_x_entry = bucket[i]
-        if entry.active && _goml_trait_impl_Eq_Ref_x5b_Key_x5d__eq(entry.key, key) {
+        if entry.active && _goml_trait_x5f_impl_x23_Eq_x23_Ref_x5b_Key_x5d__x23_eq(entry.key, key) {
             bucket[i].value = value
             return struct{}{}
         }
@@ -412,36 +412,36 @@ func (_ Some) isOption__int32() {}
 
 type GoError = error
 
-func _goml_trait_impl_Eq_Point_eq(self__0 Point, other__1 Point) bool {
+func _goml_trait_x5f_impl_x23_Eq_x23_Point_x23_eq(self__0 Point, other__1 Point) bool {
     var retv27 bool
     var t28 int32 = self__0.x
     var t29 int32 = other__1.x
-    var t30 bool = _goml_trait_impl_Eq_int32_eq(t28, t29)
+    var t30 bool = _goml_trait_x5f_impl_x23_Eq_x23_int32_x23_eq(t28, t29)
     var t31 bool = true && t30
     var t32 int32 = self__0.y
     var t33 int32 = other__1.y
-    var t34 bool = _goml_trait_impl_Eq_int32_eq(t32, t33)
+    var t34 bool = _goml_trait_x5f_impl_x23_Eq_x23_int32_x23_eq(t32, t33)
     var t35 bool = t31 && t34
     retv27 = t35
     return retv27
 }
 
-func _goml_trait_impl_Hash_Point_hash(self__2 Point) uint64 {
+func _goml_trait_x5f_impl_x23_Hash_x23_Point_x23_hash(self__2 Point) uint64 {
     var retv37 uint64
     var h__3 uint64 = 14695981039346656037
     var t38 uint64 = h__3 * 1099511628211
     var t39 int32 = self__2.x
-    var t40 uint64 = _goml_trait_impl_Hash_int32_hash(t39)
+    var t40 uint64 = _goml_trait_x5f_impl_x23_Hash_x23_int32_x23_hash(t39)
     var h__4 uint64 = t38 + t40
     var t41 uint64 = h__4 * 1099511628211
     var t42 int32 = self__2.y
-    var t43 uint64 = _goml_trait_impl_Hash_int32_hash(t42)
+    var t43 uint64 = _goml_trait_x5f_impl_x23_Hash_x23_int32_x23_hash(t42)
     var h__5 uint64 = t41 + t43
     retv37 = h__5
     return retv37
 }
 
-func _goml_trait_impl_Eq_Key_eq(self__6 Key, other__7 Key) bool {
+func _goml_trait_x5f_impl_x23_Eq_x23_Key_x23_eq(self__6 Key, other__7 Key) bool {
     var retv45 bool
     var mtmp0 Tuple2_3Key_3Key = Tuple2_3Key_3Key{
         _0: self__6,
@@ -474,7 +474,7 @@ func _goml_trait_impl_Eq_Key_eq(self__6 Key, other__7 Key) bool {
             var x7 int32 = x1.(B)._0
             var __l1_0__8 int32 = x7
             var __r1_0__9 int32 = x3
-            var t52 bool = _goml_trait_impl_Eq_int32_eq(__l1_0__8, __r1_0__9)
+            var t52 bool = _goml_trait_x5f_impl_x23_Eq_x23_int32_x23_eq(__l1_0__8, __r1_0__9)
             var t53 bool = true && t52
             jp51 = t53
         case P:
@@ -495,7 +495,7 @@ func _goml_trait_impl_Eq_Key_eq(self__6 Key, other__7 Key) bool {
             var x10 Point = x1.(P)._0
             var __l2_0__10 Point = x10
             var __r2_0__11 Point = x4
-            var t56 bool = _goml_trait_impl_Eq_Point_eq(__l2_0__10, __r2_0__11)
+            var t56 bool = _goml_trait_x5f_impl_x23_Eq_x23_Point_x23_eq(__l2_0__10, __r2_0__11)
             var t57 bool = true && t56
             jp55 = t57
         default:
@@ -509,7 +509,7 @@ func _goml_trait_impl_Eq_Key_eq(self__6 Key, other__7 Key) bool {
     return retv45
 }
 
-func _goml_trait_impl_Hash_Key_hash(self__12 Key) uint64 {
+func _goml_trait_x5f_impl_x23_Hash_x23_Key_x23_hash(self__12 Key) uint64 {
     var retv59 uint64
     var jp61 uint64
     switch self__12.(type) {
@@ -521,7 +521,7 @@ func _goml_trait_impl_Hash_Key_hash(self__12 Key) uint64 {
         var __field1_0__14 int32 = x11
         var h__15 uint64 = 14695981039346656037 + 2
         var t62 uint64 = h__15 * 1099511628211
-        var t63 uint64 = _goml_trait_impl_Hash_int32_hash(__field1_0__14)
+        var t63 uint64 = _goml_trait_x5f_impl_x23_Hash_x23_int32_x23_hash(__field1_0__14)
         var h__16 uint64 = t62 + t63
         jp61 = h__16
     case P:
@@ -529,7 +529,7 @@ func _goml_trait_impl_Hash_Key_hash(self__12 Key) uint64 {
         var __field2_0__17 Point = x12
         var h__18 uint64 = 14695981039346656037 + 3
         var t64 uint64 = h__18 * 1099511628211
-        var t65 uint64 = _goml_trait_impl_Hash_Point_hash(__field2_0__17)
+        var t65 uint64 = _goml_trait_x5f_impl_x23_Hash_x23_Point_x23_hash(__field2_0__17)
         var h__19 uint64 = t64 + t65
         jp61 = h__19
     default:

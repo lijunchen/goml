@@ -44,7 +44,7 @@ func early(x__0 int32) int32 {
 func closure_early(x__1 int32) int32 {
     var retv26 int32
     var f__3 closure_env_f_0 = closure_env_f_0{}
-    var t27 int32 = _goml_inherent_closure_env_f_0_closure_env_f_0_apply(f__3, x__1)
+    var t27 int32 = _goml_inherent_x23_closure_x5f_env_x5f_f_x5f_0_x23_closure_x5f_env_x5f_f_x5f_0_x23_apply(f__3, x__1)
     retv26 = t27
     return retv26
 }
@@ -96,7 +96,7 @@ func println__T_int32(value__1 int32) struct{} {
     return struct{}{}
 }
 
-func _goml_inherent_closure_env_f_0_closure_env_f_0_apply(env17 closure_env_f_0, y__2 int32) int32 {
+func _goml_inherent_x23_closure_x5f_env_x5f_f_x5f_0_x23_closure_x5f_env_x5f_f_x5f_0_x23_apply(env17 closure_env_f_0, y__2 int32) int32 {
     var retv45 int32
     var t48 bool = y__2 > 5
     if t48 {

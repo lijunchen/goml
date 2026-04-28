@@ -65,7 +65,7 @@ func plus_one(flag__3 bool) Result__int32__string {
     var run__5 closure_env_run_0 = closure_env_run_0{
         flag_0: flag__3,
     }
-    var t19 Result__int32__string = _goml_inherent_closure_env_run_0_closure_env_run_0_apply(run__5)
+    var t19 Result__int32__string = _goml_inherent_x23_closure_x5f_env_x5f_run_x5f_0_x23_closure_x5f_env_x5f_run_x5f_0_x23_apply(run__5)
     retv18 = t19
     return retv18
 }
@@ -107,7 +107,7 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_inherent_closure_env_run_0_closure_env_run_0_apply(env7 closure_env_run_0) Result__int32__string {
+func _goml_inherent_x23_closure_x5f_env_x5f_run_x5f_0_x23_closure_x5f_env_x5f_run_x5f_0_x23_apply(env7 closure_env_run_0) Result__int32__string {
     var retv35 Result__int32__string
     var flag__3 bool = env7.flag_0
     var mtmp0 Result__int32__string = parse_flag(flag__3)

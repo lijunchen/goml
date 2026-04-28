@@ -60,7 +60,7 @@ type dyn__ToString struct {
 }
 
 func dyn__ToString__wrap__S__to_string(self any) string {
-    return _goml_trait_impl_ToString_S_to_string(self.(S))
+    return _goml_trait_x5f_impl_x23_ToString_x23_S_x23_to_x5f_string(self.(S))
 }
 
 func dyn__ToString__vtable__S() *dyn__ToString_vtable {
@@ -69,7 +69,7 @@ func dyn__ToString__vtable__S() *dyn__ToString_vtable {
     }
 }
 
-func _goml_trait_impl_ToString_S_to_string(self__0 S) string {
+func _goml_trait_x5f_impl_x23_ToString_x23_S_x23_to_x5f_string(self__0 S) string {
     var retv12 string
     var t13 int32 = self__0.value
     var t14 string = int32_to_string(t13)
@@ -98,7 +98,7 @@ func main0() struct{} {
     }
     println__T_dynToString(d__2)
     var r__3 *ref_int32_x = ref__Ref_5int32(5)
-    _goml_println__T_Ref_x5b_int32_x5d_(r__3)
+    _goml_println_x5f__x5f_T_x5f_Ref_x5b_int32_x5d_(r__3)
     print__T_string("no-newline")
     println__T_string("!")
     return struct{}{}
@@ -128,7 +128,7 @@ func println__T_unit(value__1 struct{}) struct{} {
 }
 
 func println__T_S(value__1 S) struct{} {
-    var t32 string = _goml_trait_impl_ToString_S_to_string(value__1)
+    var t32 string = _goml_trait_x5f_impl_x23_ToString_x23_S_x23_to_x5f_string(value__1)
     string_println(t32)
     return struct{}{}
 }
@@ -139,7 +139,7 @@ func println__T_dynToString(value__1 dyn__ToString) struct{} {
     return struct{}{}
 }
 
-func _goml_println__T_Ref_x5b_int32_x5d_(value__1 *ref_int32_x) struct{} {
+func _goml_println_x5f__x5f_T_x5f_Ref_x5b_int32_x5d_(value__1 *ref_int32_x) struct{} {
     var t38 int32 = ref_get__Ref_5int32(value__1)
     var t39 string = int32_to_string(t38)
     var t40 string = "ref(" + t39

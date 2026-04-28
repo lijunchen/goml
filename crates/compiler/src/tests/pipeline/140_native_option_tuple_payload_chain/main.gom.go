@@ -15,19 +15,19 @@ type Tuple2_6string_6string struct {
     _1 string
 }
 
-type _goml_Option___x28_string_x2c_string_x29_ interface {
-    is_goml_Option___x28_string_x2c_string_x29_()
+type _goml_Option_x5f__x5f__x28_string_x2c_string_x29_ interface {
+    is_goml_Option_x5f__x5f__x28_string_x2c_string_x29_()
 }
 
 type None struct {}
 
-func (_ None) is_goml_Option___x28_string_x2c_string_x29_() {}
+func (_ None) is_goml_Option_x5f__x5f__x28_string_x2c_string_x29_() {}
 
 type Some struct {
     _0 Tuple2_6string_6string
 }
 
-func (_ Some) is_goml_Option___x28_string_x2c_string_x29_() {}
+func (_ Some) is_goml_Option_x5f__x5f__x28_string_x2c_string_x29_() {}
 
 type GoError = error
 
@@ -47,7 +47,7 @@ func pair__native(text__0 string) (string, string, bool) {
     return ret_payload._0, ret_payload._1, true
 }
 
-func pair(text__0 string) _goml_Option___x28_string_x2c_string_x29_ {
+func pair(text__0 string) _goml_Option_x5f__x5f__x28_string_x2c_string_x29_ {
     var native_value_0 string
     var native_value_1 string
     var native_ok bool
@@ -65,7 +65,7 @@ func pair(text__0 string) _goml_Option___x28_string_x2c_string_x29_ {
 
 func describe(text__1 string) string {
     var retv10 string
-    var mtmp0 _goml_Option___x28_string_x2c_string_x29_ = pair(text__1)
+    var mtmp0 _goml_Option_x5f__x5f__x28_string_x2c_string_x29_ = pair(text__1)
     var jp12 string
     switch mtmp0.(type) {
     case None:

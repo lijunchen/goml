@@ -174,7 +174,7 @@ func (_ Maybe__string_None) isMaybe__string() {}
 
 type GoError = error
 
-func _goml_trait_impl_Describe_Tracker_describe(self__0 Tracker) string {
+func _goml_trait_x5f_impl_x23_Describe_x23_Tracker_x23_describe(self__0 Tracker) string {
     var retv36 string
     var mtmp0 Tracker = self__0
     var x1 string = mtmp0.label
@@ -197,7 +197,7 @@ func _goml_trait_impl_Describe_Tracker_describe(self__0 Tracker) string {
     return retv36
 }
 
-func _goml_trait_impl_Describe_Record__int32_describe(self__10 Record__int32) string {
+func _goml_trait_x5f_impl_x23_Describe_x23_Record_x5f__x5f_int32_x23_describe(self__10 Record__int32) string {
     var retv42 string
     var jp44 string
     switch self__10.(type) {
@@ -229,7 +229,7 @@ func _goml_trait_impl_Describe_Record__int32_describe(self__10 Record__int32) st
     return retv42
 }
 
-func _goml_trait_impl_Describe_Record__string_describe(self__15 Record__string) string {
+func _goml_trait_x5f_impl_x23_Describe_x23_Record_x5f__x5f_string_x23_describe(self__15 Record__string) string {
     var retv54 string
     var jp56 string
     switch self__15.(type) {
@@ -356,13 +356,13 @@ func build_counter(label__41 string, start__42 int32) Tuple4_7Tracker_26TFunc0_r
     var t88 Tuple4_7Tracker_26TFunc0_ret_13Record__int32_33TFunc1_5int32_ret_13Record__int32_27TFunc0_ret_14Record__string = Tuple4_7Tracker_26TFunc0_ret_13Record__int32_33TFunc1_5int32_ret_13Record__int32_27TFunc0_ret_14Record__string{
         _0: tracker__45,
         _1: func() Record__int32 {
-            return _goml_inherent_closure_env_snapshot_0_closure_env_snapshot_0_apply(snapshot__46)
+            return _goml_inherent_x23_closure_x5f_env_x5f_snapshot_x5f_0_x23_closure_x5f_env_x5f_snapshot_x5f_0_x23_apply(snapshot__46)
         },
         _2: func(p0 int32) Record__int32 {
-            return _goml_inherent_closure_env_bump_1_closure_env_bump_1_apply(bump__49, p0)
+            return _goml_inherent_x23_closure_x5f_env_x5f_bump_x5f_1_x23_closure_x5f_env_x5f_bump_x5f_1_x23_apply(bump__49, p0)
         },
         _3: func() Record__string {
-            return _goml_inherent_closure_env_flip_2_closure_env_flip_2_apply(flip__52)
+            return _goml_inherent_x23_closure_x5f_env_x5f_flip_x5f_2_x23_closure_x5f_env_x5f_flip_x5f_2_x23_apply(flip__52)
         },
     }
     retv87 = t88
@@ -379,13 +379,13 @@ func main0() struct{} {
     var bump__55 func(int32) Record__int32 = x22
     var snapshot__54 func() Record__int32 = x21
     var tracker__53 Tracker = x20
-    var tracker_info__57 string = _goml_trait_impl_Describe_Tracker_describe(tracker__53)
+    var tracker_info__57 string = _goml_trait_x5f_impl_x23_Describe_x23_Tracker_x23_describe(tracker__53)
     var first_record__58 Record__int32 = snapshot__54()
     var bumped_record__59 Record__int32 = bump__55(5)
     var flipped_record__60 Record__string = flip__56()
     var maybe_first__61 Maybe__int32 = gather(first_record__58)
     var maybe_second__62 Maybe__int32 = gather(bumped_record__59)
-    var chosen__63 Maybe__int32 = _goml_choose__T_Maybe_x5b_int32_x5d_(true, maybe_second__62, maybe_first__61)
+    var chosen__63 Maybe__int32 = _goml_choose_x5f__x5f_T_x5f_Maybe_x5b_int32_x5d_(true, maybe_second__62, maybe_first__61)
     var stringified__64 Maybe__string = map_maybe__T_int32__U_string(chosen__63, format_total)
     var transforms__65 [2]func(int32) int32 = [2]func(int32) int32{increment, triple}
     var results__66 [2]int32 = run_transforms(4, transforms__65)
@@ -393,9 +393,9 @@ func main0() struct{} {
     var second_result__68 int32 = array_get__Array_2_5int32(results__66, 1)
     var t90 bool = first_result__67 < second_result__68
     var order_check__69 bool = t90 && true
-    var first_text__70 string = _goml_trait_impl_Describe_Record__int32_describe(first_record__58)
-    var bumped_text__71 string = _goml_trait_impl_Describe_Record__int32_describe(bumped_record__59)
-    var flipped_text__72 string = _goml_trait_impl_Describe_Record__string_describe(flipped_record__60)
+    var first_text__70 string = _goml_trait_x5f_impl_x23_Describe_x23_Record_x5f__x5f_int32_x23_describe(first_record__58)
+    var bumped_text__71 string = _goml_trait_x5f_impl_x23_Describe_x23_Record_x5f__x5f_int32_x23_describe(bumped_record__59)
+    var flipped_text__72 string = _goml_trait_x5f_impl_x23_Describe_x23_Record_x5f__x5f_string_x23_describe(flipped_record__60)
     var jp92 string
     switch stringified__64.(type) {
     case Maybe__string_Some:
@@ -427,7 +427,7 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_choose__T_Maybe_x5b_int32_x5d___native(flag__20 bool, when_true__21 Maybe__int32, when_false__22 Maybe__int32) (int32, bool) {
+func _goml_choose_x5f__x5f_T_x5f_Maybe_x5b_int32_x5d__x5f__x5f_native(flag__20 bool, when_true__21 Maybe__int32, when_false__22 Maybe__int32) (int32, bool) {
     if flag__20 {
         switch ret_variant := when_true__21.(type) {
         case Maybe__int32_None:
@@ -451,10 +451,10 @@ func _goml_choose__T_Maybe_x5b_int32_x5d___native(flag__20 bool, when_true__21 M
     }
 }
 
-func _goml_choose__T_Maybe_x5b_int32_x5d_(flag__20 bool, when_true__21 Maybe__int32, when_false__22 Maybe__int32) Maybe__int32 {
+func _goml_choose_x5f__x5f_T_x5f_Maybe_x5b_int32_x5d_(flag__20 bool, when_true__21 Maybe__int32, when_false__22 Maybe__int32) Maybe__int32 {
     var native_value_0 int32
     var native_ok bool
-    native_value_0, native_ok = _goml_choose__T_Maybe_x5b_int32_x5d___native(flag__20, when_true__21, when_false__22)
+    native_value_0, native_ok = _goml_choose_x5f__x5f_T_x5f_Maybe_x5b_int32_x5d__x5f__x5f_native(flag__20, when_true__21, when_false__22)
     if native_ok {
         return Maybe__int32_Some{
             _0: native_value_0,
@@ -490,7 +490,7 @@ func map_maybe__T_int32__U_string(value__23 Maybe__int32, f__24 func(int32) stri
     return Maybe__string_None{}
 }
 
-func _goml_inherent_closure_env_snapshot_0_closure_env_snapshot_0_apply(env32 closure_env_snapshot_0) Record__int32 {
+func _goml_inherent_x23_closure_x5f_env_x5f_snapshot_x5f_0_x23_closure_x5f_env_x5f_snapshot_x5f_0_x23_apply(env32 closure_env_snapshot_0) Record__int32 {
     var retv108 Record__int32
     var count__43 *ref_int32_x = env32.count_0
     var t109 int32 = ref_get__Ref_5int32(count__43)
@@ -501,7 +501,7 @@ func _goml_inherent_closure_env_snapshot_0_closure_env_snapshot_0_apply(env32 cl
     return retv108
 }
 
-func _goml_inherent_closure_env_bump_1_closure_env_bump_1_apply(env33 closure_env_bump_1, delta__47 int32) Record__int32 {
+func _goml_inherent_x23_closure_x5f_env_x5f_bump_x5f_1_x23_closure_x5f_env_x5f_bump_x5f_1_x23_apply(env33 closure_env_bump_1, delta__47 int32) Record__int32 {
     var retv112 Record__int32
     var count__43 *ref_int32_x = env33.count_0
     var before__48 int32 = ref_get__Ref_5int32(count__43)
@@ -516,7 +516,7 @@ func _goml_inherent_closure_env_bump_1_closure_env_bump_1_apply(env33 closure_en
     return retv112
 }
 
-func _goml_inherent_closure_env_flip_2_closure_env_flip_2_apply(env34 closure_env_flip_2) Record__string {
+func _goml_inherent_x23_closure_x5f_env_x5f_flip_x5f_2_x23_closure_x5f_env_x5f_flip_x5f_2_x23_apply(env34 closure_env_flip_2) Record__string {
     var retv117 Record__string
     var toggled__44 *ref_bool_x = env34.toggled_0
     var before__50 bool = ref_get__Ref_4bool(toggled__44)

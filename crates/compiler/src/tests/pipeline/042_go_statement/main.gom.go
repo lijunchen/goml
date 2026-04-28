@@ -44,7 +44,7 @@ func main0() struct{} {
     var t7 closure_env_main_0 = closure_env_main_0{
         signal_0: signal__1,
     }
-    go _goml_inherent_closure_env_main_0_closure_env_main_0_apply(t7)
+    go _goml_inherent_x23_closure_x5f_env_x5f_main_x5f_0_x23_closure_x5f_env_x5f_main_x5f_0_x23_apply(t7)
     Loop_loop9:
     for {
         var t10 int32 = ref_get__Ref_5int32(signal__1)
@@ -59,7 +59,7 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_inherent_closure_env_main_0_closure_env_main_0_apply(env3 closure_env_main_0) struct{} {
+func _goml_inherent_x23_closure_x5f_env_x5f_main_x5f_0_x23_closure_x5f_env_x5f_main_x5f_0_x23_apply(env3 closure_env_main_0) struct{} {
     var signal__1 *ref_int32_x = env3.signal_0
     child(signal__1)
     return struct{}{}
