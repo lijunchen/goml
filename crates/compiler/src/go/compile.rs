@@ -99,6 +99,60 @@ fn runtime_builtin_available(goenv: &GlobalGoEnv, name: &str) -> bool {
         == Some(FnOrigin::Builtin)
 }
 
+fn runtime_generated_function_name(name: &str) -> bool {
+    matches!(
+        name,
+        "unit_to_string"
+            | "bool_to_string"
+            | "bool_to_json"
+            | "json_escape_string"
+            | "string_len"
+            | "string_get"
+            | "char_to_string"
+            | "int8_to_string"
+            | "int16_to_string"
+            | "int32_to_string"
+            | "int64_to_string"
+            | "uint8_to_string"
+            | "uint16_to_string"
+            | "uint32_to_string"
+            | "uint64_to_string"
+            | "float32_to_string"
+            | "float64_to_string"
+            | "int8_hash"
+            | "int16_hash"
+            | "int32_hash"
+            | "int64_hash"
+            | "uint8_hash"
+            | "uint16_hash"
+            | "uint32_hash"
+            | "float32_hash"
+            | "float64_hash"
+            | "char_hash"
+            | "string_hash"
+            | "string_print"
+            | "string_println"
+            | "go_error_to_string"
+            | "missing"
+    )
+}
+
+fn go_toplevel_func_name(goenv: &GlobalGoEnv, name: &str) -> String {
+    if goenv.toplevel_funcs.contains(name) && runtime_generated_function_name(name) {
+        format!("_goml_user_{}", go_ident(name))
+    } else {
+        go_ident(name)
+    }
+}
+
+fn go_value_name(goenv: &GlobalGoEnv, name: &str) -> String {
+    if goenv.toplevel_funcs.contains(name) {
+        go_toplevel_func_name(goenv, name)
+    } else {
+        go_ident(name)
+    }
+}
+
 fn go_literal_from_primitive(value: &Prim, ty: &tast::Ty) -> goast::Expr {
     if matches!(value, Prim::Unit { .. }) {
         return goast::Expr::Unit {
@@ -206,7 +260,7 @@ fn go_literal_from_primitive(value: &Prim, ty: &tast::Ty) -> goast::Expr {
 fn compile_imm(goenv: &GlobalGoEnv, imm: &anf::ImmExpr) -> goast::Expr {
     match imm {
         anf::ImmExpr::Var { id, .. } => goast::Expr::Var {
-            name: go_ident(&id.0),
+            name: go_value_name(goenv, &id.0),
             ty: tast_ty_to_go_type(&imm_ty(imm)),
         },
         anf::ImmExpr::Prim { value, .. } => {
@@ -4441,7 +4495,7 @@ mod legacy_anf_codegen {
         let patched_name = if is_entry {
             ENTRY_WRAPPER_FUNCTION.to_string()
         } else {
-            go_ident(&f.name)
+            go_toplevel_func_name(goenv, &f.name)
         };
 
         let body = block_to_aexpr(f.body);
@@ -8464,11 +8518,11 @@ fn entry_wrapper_function_name(file: &anf::File) -> String {
     }
 }
 
-fn patched_fn_name(name: &str, entry_wrapper_name: &str) -> String {
+fn patched_fn_name(goenv: &GlobalGoEnv, name: &str, entry_wrapper_name: &str) -> String {
     if name == ENTRY_FUNCTION || name.ends_with(&format!("::{}", ENTRY_FUNCTION)) {
         entry_wrapper_name.to_string()
     } else {
-        go_ident(name)
+        go_toplevel_func_name(goenv, name)
     }
 }
 
@@ -8632,7 +8686,7 @@ fn compile_boxed_fn_from_native(
     }
 
     goast::Fn {
-        name: patched_fn_name(&f.name, entry_wrapper_name),
+        name: patched_fn_name(goenv, &f.name, entry_wrapper_name),
         params,
         ret_ty: Some(tast_ty_to_go_type(&f.ret_ty)),
         body: goast::Block { stmts },
@@ -8669,7 +8723,7 @@ fn compile_fn(
     let stmts = compile_block_structured(goenv, &f.body, &join_env);
 
     goast::Fn {
-        name: patched_fn_name(&f.name, entry_wrapper_name),
+        name: patched_fn_name(goenv, &f.name, entry_wrapper_name),
         params,
         ret_ty,
         body: goast::Block { stmts },
