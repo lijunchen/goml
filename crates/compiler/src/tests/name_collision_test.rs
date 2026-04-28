@@ -102,6 +102,13 @@ fn runtime_missing_function_collision_executes() {
 }
 
 #[test]
+fn runtime_go_error_type_collision_executes() {
+    let output = run_crasher("runtime_go_error_type_collision_user_symbol");
+
+    assert_eq!(output, "7\n");
+}
+
+#[test]
 fn native_helper_function_name_collision_executes() {
     let output = run_crasher("native_helper_function_name_collision_user_symbol");
 
