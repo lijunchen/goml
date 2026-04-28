@@ -1,0 +1,13 @@
+trait Foo {
+    fn foo(Self) -> int32;
+}
+
+impl [T: Foo] Foo for T {
+    fn foo(self: T) -> int32 {
+        Foo::foo(self)
+    }
+}
+
+fn main() -> unit {
+    let _ = Foo::foo(1i32);
+}

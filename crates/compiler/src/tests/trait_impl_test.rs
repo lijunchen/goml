@@ -82,6 +82,29 @@ fn generic_constraints_reject_overlapping_trait_impls() {
 }
 
 #[test]
+fn recursive_blanket_trait_impl_bound_does_not_crash() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/recursive_blanket_trait_impl_bound/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let err = compile_single_file(&path, &src).expect_err("expected typer error");
+
+    match err {
+        CompilationError::Typer { diagnostics } => {
+            let diagnostics = format_typer_diagnostics(&diagnostics, &src);
+            assert!(
+                diagnostics
+                    .iter()
+                    .any(|line| line.contains("No instance found for trait Foo<int32>")),
+                "{diagnostics:?}"
+            );
+        }
+        other => panic!("expected typer error, got {other:?}"),
+    }
+}
+
+#[test]
 fn impl_with_mismatched_return_type_reports_diagnostic() {
     let src = r#"
 trait Display {
