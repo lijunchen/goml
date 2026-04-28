@@ -128,3 +128,10 @@ fn import_alias_type_name_collision_executes() {
 
     assert_eq!(output, "2\n");
 }
+
+#[test]
+fn extern_import_alias_function_name_collision_executes() {
+    let output = run_crasher("extern_import_alias_function_name_collision");
+
+    assert_eq!(output, "OK\nuser-strings\n");
+}
