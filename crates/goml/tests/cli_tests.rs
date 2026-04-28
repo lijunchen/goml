@@ -819,11 +819,11 @@ fn compiler_run_single_dumps_requested_stages() -> anyhow::Result<()> {
         package main
 
         import (
-            "fmt"
+            _goml_fmt "fmt"
         )
 
         func string_println(s string) struct{} {
-            fmt.Println(s)
+            _goml_fmt.Println(s)
             return struct{}{}
         }
 
