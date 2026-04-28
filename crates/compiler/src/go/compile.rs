@@ -139,10 +139,7 @@ fn runtime_generated_function_name(name: &str) -> bool {
 
 fn go_toplevel_func_name(goenv: &GlobalGoEnv, name: &str) -> String {
     let ident = go_ident(name);
-    if goenv.toplevel_funcs.contains(name)
-        && (runtime_generated_function_name(name)
-            || raw_go_default_import_aliases(goenv).contains(&ident))
-    {
+    if goenv.toplevel_funcs.contains(name) && runtime_generated_function_name(name) {
         format!("_goml_user_{}", ident)
     } else {
         ident
@@ -534,55 +531,6 @@ fn raw_go_symbol_mentions_package(go_symbol: &str, package_alias: &str) -> bool 
     })
 }
 
-fn raw_go_symbols(goenv: &GlobalGoEnv) -> Vec<&str> {
-    let mut symbols = Vec::new();
-    for extern_fn in goenv.genv.value_env.extern_funcs.values() {
-        if extern_fn.package_path.is_empty() {
-            symbols.push(extern_fn.go_name.as_str());
-        }
-    }
-    for extern_ty in goenv.genv.type_env.extern_types.values() {
-        if extern_ty
-            .package_path
-            .as_ref()
-            .is_some_and(|package_path| package_path.is_empty())
-        {
-            symbols.push(extern_ty.go_name.as_str());
-        }
-    }
-    symbols
-}
-
-fn raw_go_default_import_aliases(goenv: &GlobalGoEnv) -> HashSet<String> {
-    let raw_symbols = raw_go_symbols(goenv);
-    let mut aliases = HashSet::new();
-    for extern_fn in goenv.genv.value_env.extern_funcs.values() {
-        if !extern_fn.package_path.is_empty() {
-            let alias = go_package_default_alias(&extern_fn.package_path);
-            if raw_symbols
-                .iter()
-                .any(|symbol| raw_go_symbol_mentions_package(symbol, &alias))
-            {
-                aliases.insert(alias);
-            }
-        }
-    }
-    for extern_ty in goenv.genv.type_env.extern_types.values() {
-        if let Some(package_path) = &extern_ty.package_path
-            && !package_path.is_empty()
-        {
-            let alias = go_package_default_alias(package_path);
-            if raw_symbols
-                .iter()
-                .any(|symbol| raw_go_symbol_mentions_package(symbol, &alias))
-            {
-                aliases.insert(alias);
-            }
-        }
-    }
-    aliases
-}
-
 fn go_package_alias(goenv: &GlobalGoEnv, package_path: &str) -> String {
     match package_path {
         "fmt" => return "_goml_fmt".to_string(),
@@ -591,13 +539,64 @@ fn go_package_alias(goenv: &GlobalGoEnv, package_path: &str) -> String {
         _ => {}
     }
     let alias = go_package_default_alias(package_path);
-    if raw_go_default_import_aliases(goenv).contains(&alias) {
-        return alias;
-    }
     if go_toplevel_name_is_reserved(goenv, &alias) || runtime_generated_function_name(&alias) {
         return go_package_generated_alias(package_path);
     }
     alias
+}
+
+fn rewrite_go_package_alias(go_symbol: &str, from: &str, to: &str) -> String {
+    if from == to || !raw_go_symbol_mentions_package(go_symbol, from) {
+        return go_symbol.to_string();
+    }
+
+    let mut rewritten = String::new();
+    let mut last = 0usize;
+    for (start, _) in go_symbol.match_indices(from) {
+        let before_ident = go_symbol[..start]
+            .chars()
+            .next_back()
+            .is_some_and(is_go_ident_char);
+        let end = start + from.len();
+        let after_dot = go_symbol[end..].chars().next() == Some('.');
+        if before_ident || !after_dot {
+            continue;
+        }
+        rewritten.push_str(&go_symbol[last..start]);
+        rewritten.push_str(to);
+        last = end;
+    }
+    rewritten.push_str(&go_symbol[last..]);
+    rewritten
+}
+
+fn go_import_package_paths(goenv: &GlobalGoEnv) -> IndexSet<String> {
+    let mut package_paths = IndexSet::new();
+    for extern_fn in goenv.genv.value_env.extern_funcs.values() {
+        if !extern_fn.package_path.is_empty() {
+            package_paths.insert(extern_fn.package_path.clone());
+        }
+    }
+    for extern_ty in goenv.genv.type_env.extern_types.values() {
+        if let Some(package_path) = &extern_ty.package_path
+            && !package_path.is_empty()
+        {
+            package_paths.insert(package_path.clone());
+        }
+    }
+    package_paths
+}
+
+fn rewrite_raw_go_symbol_import_aliases(goenv: &GlobalGoEnv, go_symbol: &str) -> String {
+    let mut rewritten = go_symbol.to_string();
+    for package_path in go_import_package_paths(goenv) {
+        let from = go_package_default_alias(&package_path);
+        if raw_go_symbol_mentions_package(&rewritten, &from) {
+            let to = go_package_alias(goenv, &package_path);
+            rewritten = rewrite_go_package_alias(&rewritten, &from, &to);
+        }
+    }
+    rewritten
 }
 
 fn go_import_alias(goenv: &GlobalGoEnv, package_path: &str) -> Option<String> {
@@ -615,10 +614,15 @@ fn extern_wrapper_fn_name(goml_name: &str) -> String {
 
 fn extern_target_name(goenv: &GlobalGoEnv, extern_fn: &ExternFunc) -> String {
     if extern_fn.package_path.is_empty() {
-        extern_fn.go_name.clone()
+        rewrite_raw_go_symbol_import_aliases(goenv, &extern_fn.go_name)
     } else {
         let alias = go_package_alias(goenv, &extern_fn.package_path);
-        qualify_go_symbol(&alias, &extern_fn.go_name)
+        let target = qualify_go_symbol(&alias, &extern_fn.go_name);
+        rewrite_go_package_alias(
+            &target,
+            &go_package_default_alias(&extern_fn.package_path),
+            &alias,
+        )
     }
 }
 
@@ -9152,7 +9156,7 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
         if let Some(package_path) = &ext.package_path {
             let go_ty = if package_path.is_empty() {
                 goty::GoType::TName {
-                    name: ext.go_name.clone(),
+                    name: rewrite_raw_go_symbol_import_aliases(goenv, &ext.go_name),
                 }
             } else {
                 let alias = go_package_alias(goenv, package_path);
