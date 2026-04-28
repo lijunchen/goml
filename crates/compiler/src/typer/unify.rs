@@ -479,8 +479,7 @@ impl Typer {
                         let l_norm = self.norm(&l);
                         let r_norm = self.norm(&r);
                         let dyn_coercion_ok = match (&l_norm, &r_norm) {
-                            (tast::Ty::TDyn { trait_name }, concrete)
-                            | (concrete, tast::Ty::TDyn { trait_name })
+                            (concrete, tast::Ty::TDyn { trait_name })
                                 if !matches!(
                                     concrete,
                                     tast::Ty::TVar(_) | tast::Ty::TDyn { .. }
