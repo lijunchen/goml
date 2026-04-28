@@ -6,7 +6,7 @@ use crate::{
         InherentImplKey, StructDef,
     },
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
-    go::mangle::{encode_ty, go_generated_ident, go_ident, go_user_type_name},
+    go::mangle::{encode_ty, go_dyn_struct_name, go_generated_ident, go_ident, go_user_type_name},
     lift::{GlobalLiftEnv, is_closure_env_struct},
     names::{inherent_method_fn_name, parse_trait_impl_fn_name, trait_impl_fn_name, ty_compact},
     package_names::{ENTRY_FUNCTION, ENTRY_WRAPPER_FUNCTION},
@@ -2866,7 +2866,7 @@ fn any_go_type() -> goty::GoType {
 }
 
 fn dyn_struct_go_name(trait_name: &str) -> String {
-    go_generated_ident(&format!("dyn__{}", trait_name))
+    go_dyn_struct_name(trait_name)
 }
 
 fn dyn_vtable_struct_go_name(trait_name: &str) -> String {

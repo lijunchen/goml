@@ -56,6 +56,14 @@ pub fn go_generated_ident(name: &str) -> String {
     go_ident_impl(name, false)
 }
 
+pub fn go_dyn_struct_name(trait_name: &str) -> String {
+    if trait_name.ends_with("_vtable") {
+        format!("_goml_dyn_object_{}", go_generated_ident(trait_name))
+    } else {
+        go_generated_ident(&format!("dyn__{}", trait_name))
+    }
+}
+
 fn go_ident_impl(name: &str, protect_generated: bool) -> String {
     if is_valid_go_ident(name) && !is_go_keyword(name) && !is_go_predeclared_identifier(name) {
         if protect_generated && is_generated_go_ident(name) {
