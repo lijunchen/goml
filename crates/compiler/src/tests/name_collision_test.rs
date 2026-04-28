@@ -186,6 +186,13 @@ fn extern_type_runtime_function_name_collision_executes() {
 }
 
 #[test]
+fn user_type_main_go_entry_collision_executes() {
+    let output = run_crasher("user_type_main_go_entry_collision");
+
+    assert_eq!(output, "18\n");
+}
+
+#[test]
 fn extern_import_alias_enum_variant_collision_executes() {
     let output = run_crasher("extern_import_alias_enum_variant_collision");
 
