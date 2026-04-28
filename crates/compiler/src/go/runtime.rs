@@ -644,20 +644,10 @@ pub fn make_ref_runtime(ref_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
         items.push(goast::Item::Fn(set_fn));
         items.push(goast::Item::Fn(ptr_eq_fn));
 
-        let eq_name = go_ident(&trait_impl_fn_name(
-            &tast::TastIdent("Eq".to_string()),
-            ty,
-            "eq",
-        ));
         let hash_name = go_ident(&trait_impl_fn_name(
             &tast::TastIdent("Hash".to_string()),
             ty,
             "hash",
-        ));
-        let inner_eq_name = go_ident(&trait_impl_fn_name(
-            &tast::TastIdent("Eq".to_string()),
-            elem,
-            "eq",
         ));
         let inner_hash_name = go_ident(&trait_impl_fn_name(
             &tast::TastIdent("Hash".to_string()),
@@ -665,10 +655,6 @@ pub fn make_ref_runtime(ref_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
             "hash",
         ));
         let ref_get_name = ref_helper_fn_name("ref_get", ty);
-        let inner_eq_fn_ty = goty::GoType::TFunc {
-            params: vec![elem_go_ty.clone(), elem_go_ty.clone()],
-            ret_ty: Box::new(goty::GoType::TBool),
-        };
         let inner_hash_fn_ty = goty::GoType::TFunc {
             params: vec![elem_go_ty.clone()],
             ret_ty: Box::new(goty::GoType::TUint64),
@@ -678,49 +664,66 @@ pub fn make_ref_runtime(ref_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
             ret_ty: Box::new(elem_go_ty.clone()),
         };
 
-        items.push(goast::Item::Fn(goast::Fn {
-            name: eq_name,
-            params: vec![
-                ("self".to_string(), ref_go_ty.clone()),
-                ("other".to_string(), ref_go_ty.clone()),
-            ],
-            ret_ty: Some(goty::GoType::TBool),
-            body: goast::Block {
-                stmts: vec![goast::Stmt::Return {
-                    expr: Some(goast::Expr::Call {
-                        func: Box::new(goast::Expr::Var {
-                            name: inner_eq_name,
-                            ty: inner_eq_fn_ty.clone(),
+        if !matches!(elem.as_ref(), tast::Ty::TDyn { .. }) {
+            let eq_name = go_ident(&trait_impl_fn_name(
+                &tast::TastIdent("Eq".to_string()),
+                ty,
+                "eq",
+            ));
+            let inner_eq_name = go_ident(&trait_impl_fn_name(
+                &tast::TastIdent("Eq".to_string()),
+                elem,
+                "eq",
+            ));
+            let inner_eq_fn_ty = goty::GoType::TFunc {
+                params: vec![elem_go_ty.clone(), elem_go_ty.clone()],
+                ret_ty: Box::new(goty::GoType::TBool),
+            };
+
+            items.push(goast::Item::Fn(goast::Fn {
+                name: eq_name,
+                params: vec![
+                    ("self".to_string(), ref_go_ty.clone()),
+                    ("other".to_string(), ref_go_ty.clone()),
+                ],
+                ret_ty: Some(goty::GoType::TBool),
+                body: goast::Block {
+                    stmts: vec![goast::Stmt::Return {
+                        expr: Some(goast::Expr::Call {
+                            func: Box::new(goast::Expr::Var {
+                                name: inner_eq_name,
+                                ty: inner_eq_fn_ty.clone(),
+                            }),
+                            args: vec![
+                                goast::Expr::Call {
+                                    func: Box::new(goast::Expr::Var {
+                                        name: ref_get_name.clone(),
+                                        ty: ref_get_fn_ty.clone(),
+                                    }),
+                                    args: vec![goast::Expr::Var {
+                                        name: "self".to_string(),
+                                        ty: ref_go_ty.clone(),
+                                    }],
+                                    ty: elem_go_ty.clone(),
+                                },
+                                goast::Expr::Call {
+                                    func: Box::new(goast::Expr::Var {
+                                        name: ref_get_name.clone(),
+                                        ty: ref_get_fn_ty.clone(),
+                                    }),
+                                    args: vec![goast::Expr::Var {
+                                        name: "other".to_string(),
+                                        ty: ref_go_ty.clone(),
+                                    }],
+                                    ty: elem_go_ty.clone(),
+                                },
+                            ],
+                            ty: goty::GoType::TBool,
                         }),
-                        args: vec![
-                            goast::Expr::Call {
-                                func: Box::new(goast::Expr::Var {
-                                    name: ref_get_name.clone(),
-                                    ty: ref_get_fn_ty.clone(),
-                                }),
-                                args: vec![goast::Expr::Var {
-                                    name: "self".to_string(),
-                                    ty: ref_go_ty.clone(),
-                                }],
-                                ty: elem_go_ty.clone(),
-                            },
-                            goast::Expr::Call {
-                                func: Box::new(goast::Expr::Var {
-                                    name: ref_get_name.clone(),
-                                    ty: ref_get_fn_ty.clone(),
-                                }),
-                                args: vec![goast::Expr::Var {
-                                    name: "other".to_string(),
-                                    ty: ref_go_ty.clone(),
-                                }],
-                                ty: elem_go_ty.clone(),
-                            },
-                        ],
-                        ty: goty::GoType::TBool,
-                    }),
-                }],
-            },
-        }));
+                    }],
+                },
+            }));
+        }
 
         let hash_stmts = if matches!(
             elem.as_ref(),
