@@ -742,13 +742,20 @@ fn validate_entrypoint_for_compile(
     let Some(entry_artifact) = artifacts.get(&graph.entry_package) else {
         return;
     };
-    if graph.entry_package == ROOT_PACKAGE
-        && !entry_artifact
-            .interface
-            .exports
-            .value_env
-            .funcs
-            .contains_key(ENTRY_FUNCTION)
+    if graph.entry_package != ROOT_PACKAGE {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            format!("entry package must be main, got {}", graph.entry_package),
+        ));
+        return;
+    }
+    if !entry_artifact
+        .interface
+        .exports
+        .value_env
+        .funcs
+        .contains_key(ENTRY_FUNCTION)
     {
         diagnostics.push(Diagnostic::new(
             Stage::Typer,
