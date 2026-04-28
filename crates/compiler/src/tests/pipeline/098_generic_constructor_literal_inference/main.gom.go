@@ -1,15 +1,15 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
 )
 
 func uint8_to_string(x uint8) string {
-    return fmt.Sprintf("%d", x)
+    return _goml_fmt.Sprintf("%d", x)
 }
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 

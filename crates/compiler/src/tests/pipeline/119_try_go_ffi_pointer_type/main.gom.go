@@ -1,12 +1,12 @@
 package main
 
 import (
-    "fmt"
-    "os"
+    _goml_fmt "fmt"
+    _goml_pkg_os "os"
 )
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -64,13 +64,13 @@ func (_ Result__unit__GoError_Err) isResult__unit__GoError() {}
 
 type GoError = error
 
-type File = *os.File
+type File = *_goml_pkg_os.File
 
 func describe__native(path__0 string) (string, GoError) {
     var jp14 File
     var mtmp0_value_0 File
     var mtmp0_err GoError
-    mtmp0_value_0, mtmp0_err = os.Open(path__0)
+    mtmp0_value_0, mtmp0_err = _goml_pkg_os.Open(path__0)
     if mtmp0_err != nil {
         var ret_zero string
         return ret_zero, mtmp0_err

@@ -1,12 +1,12 @@
 package main
 
 import (
-    "fmt"
-    "strings"
+    _goml_fmt "fmt"
+    _goml_pkg_strings "strings"
 )
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -35,7 +35,7 @@ func cut_pair_ffi_wrap(p0 string, p1 string) _goml_Option___x28_string_x2c_strin
     var ffi_value_0 string
     var ffi_value_1 string
     var ffi_ok bool
-    ffi_value_0, ffi_value_1, ffi_ok = strings.Cut(p0, p1)
+    ffi_value_0, ffi_value_1, ffi_ok = _goml_pkg_strings.Cut(p0, p1)
     if ffi_ok {
         return Some{
             _0: Tuple2_string_string{

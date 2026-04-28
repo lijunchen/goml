@@ -1,12 +1,12 @@
 package main
 
 import (
-    "fmt"
-    "os"
+    _goml_fmt "fmt"
+    _goml_pkg_os "os"
 )
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -48,12 +48,12 @@ func (_ Result__unit__GoError_Err) isResult__unit__GoError() {}
 
 type GoError = error
 
-type File = *os.File
+type File = *_goml_pkg_os.File
 
 func open_file_ffi_wrap(p0 string) Result__File__GoError {
     var ffi_value_0 File
     var ffi_err GoError
-    ffi_value_0, ffi_err = os.Open(p0)
+    ffi_value_0, ffi_err = _goml_pkg_os.Open(p0)
     if ffi_err != nil {
         return Result__File__GoError_Err{
             _0: ffi_err,

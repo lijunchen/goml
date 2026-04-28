@@ -1,11 +1,11 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
 )
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -51,7 +51,7 @@ type GoInt = int
 
 func touch__native(text__0 string) (struct{}, GoError) {
     var mtmp0_err GoError
-    _, mtmp0_err = fmt.Print(text__0)
+    _, mtmp0_err = _goml_fmt.Print(text__0)
     if mtmp0_err != nil {
         var ret_zero struct{}
         return ret_zero, mtmp0_err

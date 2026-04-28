@@ -1,12 +1,12 @@
 package main
 
 import (
-    "fmt"
-    "strings"
+    _goml_fmt "fmt"
+    _goml_pkg_strings "strings"
 )
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -35,7 +35,7 @@ func pair__native(text__0 string) (string, string, bool) {
     var t8_value_0 string
     var t8_value_1 string
     var t8_ok bool
-    t8_value_0, t8_value_1, t8_ok = strings.Cut(text__0, ":")
+    t8_value_0, t8_value_1, t8_ok = _goml_pkg_strings.Cut(text__0, ":")
     if !t8_ok {
         var ret_zero Tuple2_string_string
         return ret_zero._0, ret_zero._1, false

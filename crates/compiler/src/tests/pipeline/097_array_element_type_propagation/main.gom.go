@@ -1,23 +1,23 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
 )
 
 func int64_to_string(x int64) string {
-    return fmt.Sprintf("%d", x)
+    return _goml_fmt.Sprintf("%d", x)
 }
 
 func uint8_to_string(x uint8) string {
-    return fmt.Sprintf("%d", x)
+    return _goml_fmt.Sprintf("%d", x)
 }
 
 func float32_to_string(x float32) string {
-    return fmt.Sprintf("%g", x)
+    return _goml_fmt.Sprintf("%g", x)
 }
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 

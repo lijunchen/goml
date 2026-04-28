@@ -1,12 +1,12 @@
 package main
 
 import (
-    "fmt"
-    "net"
+    _goml_fmt "fmt"
+    _goml_pkg_net "net"
 )
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -58,7 +58,7 @@ func render__native(text__0 string) (string, GoError) {
     var mtmp0_value_0 string
     var mtmp0_value_1 string
     var mtmp0_err GoError
-    mtmp0_value_0, mtmp0_value_1, mtmp0_err = net.SplitHostPort(text__0)
+    mtmp0_value_0, mtmp0_value_1, mtmp0_err = _goml_pkg_net.SplitHostPort(text__0)
     if mtmp0_err != nil {
         var ret_zero string
         return ret_zero, mtmp0_err

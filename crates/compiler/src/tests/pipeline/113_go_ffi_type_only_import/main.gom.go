@@ -1,13 +1,13 @@
 package main
 
 import (
-    "fmt"
-    "os"
-    "io"
+    _goml_fmt "fmt"
+    _goml_pkg_os "os"
+    _goml_pkg_io "io"
 )
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -33,12 +33,12 @@ func (_ Err) isResult__Reader__GoError() {}
 
 type GoError = error
 
-type Reader = io.Reader
+type Reader = _goml_pkg_io.Reader
 
 func open_reader_ffi_wrap(p0 string) Result__Reader__GoError {
     var ffi_value_0 Reader
     var ffi_err GoError
-    ffi_value_0, ffi_err = os.Open(p0)
+    ffi_value_0, ffi_err = _goml_pkg_os.Open(p0)
     if ffi_err != nil {
         return Err{
             _0: ffi_err,
@@ -57,7 +57,7 @@ func describe(path__0 string) string {
     case Ok:
         var x1 Reader = mtmp0.(Ok)._0
         var reader__1 Reader = x1
-        var t8 string = fmt.Sprintf("type=%T", reader__1)
+        var t8 string = _goml_fmt.Sprintf("type=%T", reader__1)
         jp7 = t8
     case Err:
         var x2 GoError = mtmp0.(Err)._0

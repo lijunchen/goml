@@ -1,14 +1,14 @@
 package main
 
 import (
-    "fmt"
-    "os"
-    "io"
-    "io/fs"
+    _goml_fmt "fmt"
+    _goml_pkg_os "os"
+    _goml_pkg_io "io"
+    _goml_pkg_io_x2f_fs "io/fs"
 )
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -34,16 +34,16 @@ func (_ Err) isResult__unit__GoError() {}
 
 type GoError = error
 
-type FS = fs.FS
+type FS = _goml_pkg_io_x2f_fs.FS
 
-type DirEntry = fs.DirEntry
+type DirEntry = _goml_pkg_io_x2f_fs.DirEntry
 
 func eof_ffi_wrap() GoError {
-    return io.EOF
+    return _goml_pkg_io.EOF
 }
 
 func walk_dir_ffi_wrap(p0 FS, p1 string, p2 func(string, DirEntry, GoError) Result__unit__GoError) Result__unit__GoError {
-    var ffi_err GoError = fs.WalkDir(p0, p1, func(callback_arg_0 string, callback_arg_1 DirEntry, callback_arg_2 GoError) GoError {
+    var ffi_err GoError = _goml_pkg_io_x2f_fs.WalkDir(p0, p1, func(callback_arg_0 string, callback_arg_1 DirEntry, callback_arg_2 GoError) GoError {
         var ret_value Result__unit__GoError = p2(callback_arg_0, callback_arg_1, callback_arg_2)
         switch ret_variant := ret_value.(type) {
         case Ok:
@@ -103,7 +103,7 @@ func show(res__3 Result__unit__GoError) string {
 }
 
 func main0() struct{} {
-    var t16 FS = os.DirFS(".")
+    var t16 FS = _goml_pkg_os.DirFS(".")
     var t17 Result__unit__GoError = walk_dir_ffi_wrap(t16, ".", stop)
     var t18 string = show(t17)
     println__T_string(t18)

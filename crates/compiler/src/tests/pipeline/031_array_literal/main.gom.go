@@ -1,11 +1,11 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
 )
 
 func string_print(s string) struct{} {
-    fmt.Print(s)
+    _goml_fmt.Print(s)
     return struct{}{}
 }
 

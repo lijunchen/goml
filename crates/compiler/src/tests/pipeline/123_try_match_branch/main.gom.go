@@ -1,12 +1,12 @@
 package main
 
 import (
-    "fmt"
-    "time"
+    _goml_fmt "fmt"
+    _goml_pkg_time "time"
 )
 
 func string_println(s string) struct{} {
-    fmt.Println(s)
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -56,7 +56,7 @@ func (_ Result__Duration__GoError_Err) isResult__Duration__GoError() {}
 
 type GoError = error
 
-type Duration = time.Duration
+type Duration = _goml_pkg_time.Duration
 
 func pick__native(mode__0 Mode, input__1 string) (string, GoError) {
     var jp14 string
@@ -65,14 +65,14 @@ func pick__native(mode__0 Mode, input__1 string) (string, GoError) {
         var jp17 Duration
         var mtmp0_value_0 Duration
         var mtmp0_err GoError
-        mtmp0_value_0, mtmp0_err = time.ParseDuration(input__1)
+        mtmp0_value_0, mtmp0_err = _goml_pkg_time.ParseDuration(input__1)
         if mtmp0_err != nil {
             var ret_zero string
             return ret_zero, mtmp0_err
         }
         jp17 = mtmp0_value_0
         var parsed__2 Duration = jp17
-        var t18 string = fmt.Sprintf("%v", parsed__2)
+        var t18 string = _goml_fmt.Sprintf("%v", parsed__2)
         var t19 string = "left=" + t18
         jp14 = t19
         var value__4 string = jp14
@@ -85,14 +85,14 @@ func pick__native(mode__0 Mode, input__1 string) (string, GoError) {
         var jp22 Duration
         var mtmp3_value_0 Duration
         var mtmp3_err GoError
-        mtmp3_value_0, mtmp3_err = time.ParseDuration(input__1)
+        mtmp3_value_0, mtmp3_err = _goml_pkg_time.ParseDuration(input__1)
         if mtmp3_err != nil {
             var ret_zero string
             return ret_zero, mtmp3_err
         }
         jp22 = mtmp3_value_0
         var parsed__3 Duration = jp22
-        var t23 string = fmt.Sprintf("%v", parsed__3)
+        var t23 string = _goml_fmt.Sprintf("%v", parsed__3)
         var t24 string = "right=" + t23
         jp14 = t24
         var value__4 string = jp14

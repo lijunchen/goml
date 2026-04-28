@@ -1,7 +1,7 @@
 package main
 
 import (
-    "fmt"
+    _goml_fmt "fmt"
 )
 
 func unit_to_string(x struct{}) string {
@@ -9,11 +9,11 @@ func unit_to_string(x struct{}) string {
 }
 
 func int32_to_string(x int32) string {
-    return fmt.Sprintf("%d", x)
+    return _goml_fmt.Sprintf("%d", x)
 }
 
 func string_print(s string) struct{} {
-    fmt.Print(s)
+    _goml_fmt.Print(s)
     return struct{}{}
 }
 
