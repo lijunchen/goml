@@ -53,6 +53,13 @@ fn closure_apply_go_name_collision_executes() {
 }
 
 #[test]
+fn function_closure_env_type_collision_executes() {
+    let output = run_crasher("function_closure_env_type_collision");
+
+    assert_eq!(output, "37\n");
+}
+
+#[test]
 fn enum_variant_go_type_name_collision_executes() {
     let output = run_crasher("enum_variant_go_type_name_collision_user_symbol");
 
