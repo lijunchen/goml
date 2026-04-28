@@ -142,7 +142,7 @@ fn go_toplevel_func_name(goenv: &GlobalGoEnv, name: &str) -> String {
     if goenv.toplevel_funcs.contains(name)
         && (runtime_generated_function_name(name)
             || is_generated_tuple_type_name(&ident)
-            || go_toplevel_func_name_collides_with_extern_type(goenv, &ident))
+            || go_toplevel_func_name_collides_with_type(goenv, &ident))
     {
         format!("_goml_user_{}", ident)
     } else {
@@ -150,13 +150,19 @@ fn go_toplevel_func_name(goenv: &GlobalGoEnv, name: &str) -> String {
     }
 }
 
-fn go_toplevel_func_name_collides_with_extern_type(goenv: &GlobalGoEnv, name: &str) -> bool {
+fn go_toplevel_func_name_collides_with_type(goenv: &GlobalGoEnv, name: &str) -> bool {
     goenv
-        .genv
-        .type_env
-        .extern_types
-        .keys()
-        .any(|extern_name| go_user_type_name(extern_name) == name)
+        .structs()
+        .any(|(struct_name, _)| go_user_type_name(&struct_name.0) == name)
+        || goenv
+            .enums()
+            .any(|(enum_name, _)| go_user_type_name(&enum_name.0) == name)
+        || goenv
+            .genv
+            .type_env
+            .extern_types
+            .keys()
+            .any(|extern_name| go_user_type_name(extern_name) == name)
 }
 
 fn go_value_name(goenv: &GlobalGoEnv, name: &str) -> String {
