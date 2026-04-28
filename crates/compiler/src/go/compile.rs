@@ -4844,8 +4844,7 @@ mod legacy_anf_codegen {
 
         let go_ret_ty = tast_ty_to_go_type(&f.ret_ty);
 
-        let is_entry =
-            f.name == ENTRY_FUNCTION || f.name.ends_with(&format!("::{}", ENTRY_FUNCTION));
+        let is_entry = f.name == ENTRY_FUNCTION;
         let patched_name = if is_entry {
             ENTRY_WRAPPER_FUNCTION.to_string()
         } else {
@@ -8898,9 +8897,7 @@ fn entry_wrapper_function_name(goenv: &GlobalGoEnv, file: &anf::File) -> String 
     let mut used_names: HashSet<String> = file
         .toplevels
         .iter()
-        .filter(|f| {
-            !(f.name == ENTRY_FUNCTION || f.name.ends_with(&format!("::{}", ENTRY_FUNCTION)))
-        })
+        .filter(|f| f.name != ENTRY_FUNCTION)
         .map(|f| go_ident(&f.name))
         .collect();
     used_names.extend(
@@ -8942,7 +8939,7 @@ fn entry_wrapper_function_name(goenv: &GlobalGoEnv, file: &anf::File) -> String 
 }
 
 fn patched_fn_name(goenv: &GlobalGoEnv, name: &str, entry_wrapper_name: &str) -> String {
-    if name == ENTRY_FUNCTION || name.ends_with(&format!("::{}", ENTRY_FUNCTION)) {
+    if name == ENTRY_FUNCTION {
         entry_wrapper_name.to_string()
     } else {
         go_toplevel_func_name(goenv, name)
