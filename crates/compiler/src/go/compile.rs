@@ -482,13 +482,7 @@ fn variant_const_expr_by_index(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize)
     }
 }
 
-fn go_package_alias(package_path: &str) -> String {
-    match package_path {
-        "fmt" => return "_goml_fmt".to_string(),
-        "math" => return "_goml_math".to_string(),
-        "unicode/utf8" => return "_goml_utf8".to_string(),
-        _ => {}
-    }
+fn go_package_default_alias(package_path: &str) -> String {
     let last_segment = package_path.rsplit('/').next().unwrap_or(package_path);
     let mut alias = String::new();
     for ch in last_segment.chars() {
@@ -507,15 +501,51 @@ fn go_package_alias(package_path: &str) -> String {
     alias
 }
 
+fn go_package_generated_alias(package_path: &str) -> String {
+    let mut alias = String::from("_goml_pkg_");
+    for byte in package_path.bytes() {
+        if byte.is_ascii_alphanumeric() {
+            alias.push(byte as char);
+        } else {
+            use std::fmt::Write;
+            write!(&mut alias, "_x{:02x}_", byte).unwrap();
+        }
+    }
+    alias
+}
+
+fn go_package_alias(goenv: &GlobalGoEnv, package_path: &str) -> String {
+    match package_path {
+        "fmt" => return "_goml_fmt".to_string(),
+        "math" => return "_goml_math".to_string(),
+        "unicode/utf8" => return "_goml_utf8".to_string(),
+        _ => {}
+    }
+    let alias = go_package_default_alias(package_path);
+    if go_toplevel_name_is_reserved(goenv, &alias) || runtime_generated_function_name(&alias) {
+        return go_package_generated_alias(package_path);
+    }
+    alias
+}
+
+fn go_import_alias(goenv: &GlobalGoEnv, package_path: &str) -> Option<String> {
+    let alias = go_package_alias(goenv, package_path);
+    if alias == go_package_default_alias(package_path) {
+        None
+    } else {
+        Some(alias)
+    }
+}
+
 fn extern_wrapper_fn_name(goml_name: &str) -> String {
     go_ident(&format!("{}_ffi_wrap", goml_name))
 }
 
-fn extern_target_name(extern_fn: &ExternFunc) -> String {
+fn extern_target_name(goenv: &GlobalGoEnv, extern_fn: &ExternFunc) -> String {
     if extern_fn.package_path.is_empty() {
         extern_fn.go_name.clone()
     } else {
-        let alias = go_package_alias(&extern_fn.package_path);
+        let alias = go_package_alias(goenv, &extern_fn.package_path);
         qualify_go_symbol(&alias, &extern_fn.go_name)
     }
 }
@@ -951,7 +981,7 @@ fn compile_extern_call(
 
     goast::Expr::Call {
         func: Box::new(goast::Expr::Var {
-            name: extern_target_name(extern_fn),
+            name: extern_target_name(goenv, extern_fn),
             ty: goty::GoType::TFunc {
                 params: param_tys
                     .iter()
@@ -965,9 +995,13 @@ fn compile_extern_call(
     }
 }
 
-fn compile_extern_value(extern_fn: &ExternFunc, value_ty: goty::GoType) -> goast::Expr {
+fn compile_extern_value(
+    goenv: &GlobalGoEnv,
+    extern_fn: &ExternFunc,
+    value_ty: goty::GoType,
+) -> goast::Expr {
     goast::Expr::Var {
-        name: extern_target_name(extern_fn),
+        name: extern_target_name(goenv, extern_fn),
         ty: value_ty,
     }
 }
@@ -1705,6 +1739,7 @@ fn gen_extern_wrapper_fn(
                 body: goast::Block {
                     stmts: vec![goast::Stmt::Return {
                         expr: Some(compile_extern_value(
+                            goenv,
                             extern_fn,
                             tast_ty_to_go_type(&wrapper_ret_ty),
                         )),
@@ -8818,7 +8853,7 @@ pub fn go_file(
                 && existing_imports.insert(extern_fn.package_path.clone())
             {
                 extra_specs.push(goast::ImportSpec {
-                    alias: None,
+                    alias: go_import_alias(&goenv, &extern_fn.package_path),
                     path: extern_fn.package_path.clone(),
                 });
             }
@@ -8829,7 +8864,7 @@ pub fn go_file(
                 && existing_imports.insert(package_path.clone())
             {
                 extra_specs.push(goast::ImportSpec {
-                    alias: None,
+                    alias: go_import_alias(&goenv, package_path),
                     path: package_path.clone(),
                 });
             }
@@ -9048,7 +9083,7 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
                     name: ext.go_name.clone(),
                 }
             } else {
-                let alias = go_package_alias(package_path);
+                let alias = go_package_alias(goenv, package_path);
                 goty::GoType::TName {
                     name: qualify_go_type_expr(&alias, &ext.go_name),
                 }
