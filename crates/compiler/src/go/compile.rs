@@ -24,6 +24,9 @@ pub struct GlobalGoEnv {
     pub genv: GlobalTypeEnv,
     pub liftenv: GlobalLiftEnv,
     pub toplevel_funcs: HashSet<String>,
+    pub colliding_callable_idents: HashSet<String>,
+    pub callable_go_names: HashMap<String, String>,
+    pub callable_go_name_set: HashSet<String>,
 }
 
 impl Default for GlobalGoEnv {
@@ -35,6 +38,9 @@ impl Default for GlobalGoEnv {
             genv,
             liftenv,
             toplevel_funcs: HashSet::new(),
+            colliding_callable_idents: HashSet::new(),
+            callable_go_names: HashMap::new(),
+            callable_go_name_set: HashSet::new(),
         }
     }
 }
@@ -47,6 +53,9 @@ impl GlobalGoEnv {
             genv,
             liftenv,
             toplevel_funcs: HashSet::new(),
+            colliding_callable_idents: HashSet::new(),
+            callable_go_names: HashMap::new(),
+            callable_go_name_set: HashSet::new(),
         }
     }
 
@@ -138,6 +147,13 @@ fn runtime_generated_function_name(name: &str) -> bool {
 }
 
 fn go_toplevel_func_name(goenv: &GlobalGoEnv, name: &str) -> String {
+    if let Some(go_name) = goenv.callable_go_names.get(name) {
+        return go_name.clone();
+    }
+    resolve_toplevel_func_name(goenv, name)
+}
+
+fn resolve_toplevel_func_name(goenv: &GlobalGoEnv, name: &str) -> String {
     let ident = go_ident(name);
     let is_callable =
         goenv.toplevel_funcs.contains(name) || goenv.genv.value_env.extern_funcs.contains_key(name);
@@ -155,21 +171,35 @@ fn go_toplevel_func_name(goenv: &GlobalGoEnv, name: &str) -> String {
     }
 }
 
+fn collect_callable_go_names(goenv: &GlobalGoEnv) -> HashMap<String, String> {
+    goenv
+        .toplevel_funcs
+        .iter()
+        .chain(goenv.genv.value_env.extern_funcs.keys())
+        .map(|name| (name.clone(), resolve_toplevel_func_name(goenv, name)))
+        .collect()
+}
+
 fn go_callable_name_collides(goenv: &GlobalGoEnv, ident: &str) -> bool {
-    let mut count = 0usize;
+    goenv.colliding_callable_idents.contains(ident)
+}
+
+fn collect_colliding_callable_idents(goenv: &GlobalGoEnv) -> HashSet<String> {
+    let mut counts = HashMap::new();
+    let mut colliding = HashSet::new();
     for name in goenv
         .toplevel_funcs
         .iter()
         .chain(goenv.genv.value_env.extern_funcs.keys())
     {
-        if go_ident(name) == ident {
-            count += 1;
-            if count > 1 {
-                return true;
-            }
+        let ident = go_ident(name);
+        let count = counts.entry(ident.clone()).or_insert(0usize);
+        *count += 1;
+        if *count > 1 {
+            colliding.insert(ident);
         }
     }
-    false
+    colliding
 }
 
 fn go_unique_toplevel_func_name(name: &str) -> String {
@@ -461,16 +491,7 @@ fn go_toplevel_name_is_reserved(goenv: &GlobalGoEnv, name: &str) -> bool {
             .extern_types
             .keys()
             .any(|extern_name| go_user_type_name(extern_name) == name)
-        || goenv
-            .toplevel_funcs
-            .iter()
-            .any(|func_name| go_toplevel_func_name(goenv, func_name) == name)
-        || goenv
-            .genv
-            .value_env
-            .extern_funcs
-            .keys()
-            .any(|extern_name| go_toplevel_func_name(goenv, extern_name) == name)
+        || goenv.callable_go_name_set.contains(name)
 }
 
 fn go_variant_symbol_name_is_reserved(goenv: &GlobalGoEnv, name: &str) -> bool {
@@ -9186,6 +9207,9 @@ pub fn go_file(
 ) -> (goast::File, GlobalGoEnv) {
     let mut goenv = GlobalGoEnv::from_anf_env(anfenv);
     goenv.toplevel_funcs = file.toplevels.iter().map(|f| f.name.clone()).collect();
+    goenv.colliding_callable_idents = collect_colliding_callable_idents(&goenv);
+    goenv.callable_go_names = collect_callable_go_names(&goenv);
+    goenv.callable_go_name_set = goenv.callable_go_names.values().cloned().collect();
     let mut all = Vec::new();
 
     let (tuple_types, array_types, vec_types, ref_types, hashmap_types, missing_types) =
