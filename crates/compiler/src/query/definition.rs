@@ -79,7 +79,7 @@ pub fn goto_definition_locations(
             let segments = path_segments_from_token(&token).unwrap_or_default();
             if !segments.is_empty() {
                 let out = lookup_symbol_locations_for_path(
-                    symbol_lookup.graph.as_ref(),
+                    symbol_lookup.namespace_graph.as_ref(),
                     &symbol_lookup.index,
                     &token.to_string(),
                     &segments,
@@ -205,7 +205,7 @@ fn resolve_semantic_definition(
             expr_id,
             &hir_table,
             &results,
-            symbols.graph.as_ref(),
+            symbols.namespace_graph.as_ref(),
             &symbols.index,
         ) {
             return Some(out);
@@ -279,7 +279,7 @@ fn resolve_expr_definition(
     expr_id: hir::ExprId,
     hir_table: &hir::HirTable,
     results: &crate::typer::results::TypeckResults,
-    graph: Option<&crate::pipeline::packages::PackageGraph>,
+    namespace_graph: Option<&crate::pipeline::packages::PackageGraph>,
     sym_index: &ProjectSymbolIndex,
 ) -> Option<Vec<DefinitionLocation>> {
     match hir_table.expr(expr_id) {
@@ -311,7 +311,7 @@ fn resolve_expr_definition(
                     .map(|segment| segment.seg.clone())
                     .collect::<Vec<_>>();
                 let out = lookup_symbol_locations_for_path(
-                    graph,
+                    namespace_graph,
                     sym_index,
                     &token.to_string(),
                     &segments,
@@ -364,8 +364,12 @@ fn resolve_expr_definition(
                 .iter()
                 .map(|segment| segment.seg.clone())
                 .collect::<Vec<_>>();
-            let out =
-                lookup_symbol_locations_for_path(graph, sym_index, &token.to_string(), &segments);
+            let out = lookup_symbol_locations_for_path(
+                namespace_graph,
+                sym_index,
+                &token.to_string(),
+                &segments,
+            );
             if out.is_empty() { None } else { Some(out) }
         }
         hir::Expr::EField { expr, field } => {

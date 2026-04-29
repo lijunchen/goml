@@ -144,21 +144,24 @@ impl ProjectSymbolIndex {
 }
 
 pub(crate) struct SymbolLookup {
-    pub(crate) graph: Option<crate::pipeline::packages::PackageGraph>,
+    pub(crate) namespace_graph: Option<crate::pipeline::packages::PackageGraph>,
     pub(crate) index: ProjectSymbolIndex,
 }
 
 pub(crate) fn build_symbol_lookup(path: &Path, src: &str) -> SymbolLookup {
     match build_symbol_index(path, src) {
-        Ok((graph, index)) => SymbolLookup {
-            graph: Some(graph),
+        Ok((namespace_graph, index)) => SymbolLookup {
+            namespace_graph: Some(namespace_graph),
             index,
         },
         Err(_) => {
             let mut index = ProjectSymbolIndex::default();
             let _ = index_source_file_symbols(&mut index, &[ROOT_PACKAGE.to_string()], path, src);
             let _ = index_builtin_symbols(&mut index);
-            SymbolLookup { graph: None, index }
+            SymbolLookup {
+                namespace_graph: None,
+                index,
+            }
         }
     }
 }
@@ -259,7 +262,7 @@ fn build_crate_symbol_index(
             .augment_graph(&mut graph)
             .map_err(|err| err.to_string())?;
         for (logical_name, files) in external_deps.namespace_sources() {
-            let Some(namespace_dir) = graph.package_dirs.get(&logical_name) else {
+            let Some(namespace_dir) = graph.namespace_dir(&logical_name) else {
                 continue;
             };
             index_namespace_symbols_named(
@@ -337,7 +340,7 @@ pub(crate) fn namespace_nav_target_in_dir(dir: &Path) -> Option<PathBuf> {
 }
 
 pub(crate) fn lookup_symbol_locations_for_path(
-    graph: Option<&crate::pipeline::packages::PackageGraph>,
+    namespace_graph: Option<&crate::pipeline::packages::PackageGraph>,
     index: &ProjectSymbolIndex,
     token_text: &str,
     segments: &[String],
@@ -356,7 +359,9 @@ pub(crate) fn lookup_symbol_locations_for_path(
                 continue;
             }
             let namespace = segments[..=idx].join("::");
-            if graph.and_then(|g| g.package_dirs.get(&namespace)).is_some()
+            if namespace_graph
+                .and_then(|graph| graph.namespace_dir(&namespace))
+                .is_some()
                 && let Some(loc) = index.find_namespace(&namespace)
             {
                 locations.push(DefinitionLocation {

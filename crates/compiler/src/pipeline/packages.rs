@@ -999,4 +999,8 @@ impl PackageGraph {
     pub fn add_external_namespace_dir(&mut self, namespace: impl Into<String>, dir: PathBuf) {
         self.package_dirs.insert(namespace.into(), dir);
     }
+
+    pub fn namespace_dir(&self, namespace: &str) -> Option<&PathBuf> {
+        self.package_dirs.get(namespace)
+    }
 }
