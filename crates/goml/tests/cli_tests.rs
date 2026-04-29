@@ -1025,6 +1025,67 @@ fn project_build_writes_target_goml_main_go() -> anyhow::Result<()> {
 }
 
 #[test]
+fn project_build_handles_sibling_module_symbol_collisions() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    fs::create_dir_all(root.join("src"))?;
+    fs::write(
+        root.join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "src/main.gom"
+"#,
+    )?;
+    fs::write(
+        root.join("src/main.gom"),
+        r#"
+mod a;
+mod b;
+
+fn main() -> unit {
+    println(crate::a::f() + crate::b::f())
+}
+"#,
+    )?;
+    fs::write(
+        root.join("src/a.gom"),
+        r#"
+pub fn f() -> string {
+    "a"
+}
+"#,
+    )?;
+    fs::write(
+        root.join("src/b.gom"),
+        r#"
+pub fn f() -> string {
+    "b"
+}
+"#,
+    )?;
+
+    let output = run_goml(&["build"], root)?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(output.status.success(), "stderr: {stderr}");
+    expect![""].assert_eq(&stdout);
+    expect![""].assert_eq(&stderr);
+
+    if !runtime_executor_available() {
+        return Ok(());
+    }
+
+    let go_output = run_go_main(&root.join("target/goml/main.go"), root)?;
+    let go_stdout = String::from_utf8_lossy(&go_output.stdout);
+    let go_stderr = String::from_utf8_lossy(&go_output.stderr);
+    assert!(go_output.status.success(), "stderr: {go_stderr}");
+    expect!["ab\n"].assert_eq(&go_stdout);
+
+    Ok(())
+}
+
+#[test]
 fn project_build_bin_crate_reports_missing_main() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     let root = dir.path();
