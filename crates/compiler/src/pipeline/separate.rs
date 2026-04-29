@@ -623,10 +623,6 @@ pub fn read_core(path: &Path) -> Result<CoreUnit, CompilationError> {
     Ok(unit)
 }
 
-pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> {
-    with_compiler_stack(|| link_core_units(ROOT_PACKAGE, &entry_function_name(ROOT_PACKAGE), cores))
-}
-
 pub fn link_crates(root_crate: &str, cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> {
     with_compiler_stack(|| link_core_units(root_crate, &entry_function_name(root_crate), cores))
 }

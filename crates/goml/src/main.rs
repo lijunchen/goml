@@ -9,7 +9,7 @@ use clap::{Args, Parser, Subcommand};
 use compiler::config::{CrateKind, CrateManifest, load_crate_manifest};
 use compiler::env::{format_compile_diagnostics, format_typer_diagnostics};
 use compiler::external::ExternalDependencyArtifacts;
-use compiler::package_names::ENTRY_FUNCTION;
+use compiler::package_names::{ENTRY_FUNCTION, ROOT_PACKAGE};
 use compiler::pipeline::{
     pipeline::Compilation, pipeline::CompilationError, pipeline::compile_single_file,
 };
@@ -864,7 +864,7 @@ fn execute_compiler_link(options: LinkOptions) -> anyhow::Result<()> {
         units.push(unit);
     }
 
-    let linked = compiler::pipeline::separate::link_cores(units)
+    let linked = compiler::pipeline::separate::link_crates(ROOT_PACKAGE, units)
         .map_err(|err| anyhow!("link failed: {:?}", err))?;
     let go_source = linked.go.to_pretty(&linked.goenv, PRETTY_WIDTH);
     if let Some(parent) = options.output.parent() {
