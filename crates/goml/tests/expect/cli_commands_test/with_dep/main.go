@@ -11,15 +11,20 @@ func string_println(s string) struct{} {
 
 type GoError = error
 
-func _goml_Lib_x3a__x3a_msg() string {
+func _goml_dep_x3a__x3a_msg() string {
     var retv1 string
     retv1 = "hi"
     return retv1
 }
 
-func main0() struct{} {
-    var t3 string = _goml_Lib_x3a__x3a_msg()
+func _goml_app_x3a__x3a_main() struct{} {
+    var t3 string = _goml_dep_x3a__x3a_msg()
     println__T_string(t3)
+    return struct{}{}
+}
+
+func main0() struct{} {
+    _goml_app_x3a__x3a_main()
     return struct{}{}
 }
 

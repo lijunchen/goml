@@ -11,8 +11,13 @@ func string_println(s string) struct{} {
 
 type GoError = error
 
-func main0() struct{} {
+func _goml_single_x3a__x3a_main() struct{} {
     println__T_string("ok")
+    return struct{}{}
+}
+
+func main0() struct{} {
+    _goml_single_x3a__x3a_main()
     return struct{}{}
 }
 

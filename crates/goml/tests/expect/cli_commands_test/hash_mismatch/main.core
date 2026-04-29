@@ -1,11 +1,11 @@
 {
   "format_version": 4,
   "compiler_abi": 1,
-  "package": "main",
+  "package": "app",
   "interface": {
     "format_version": 4,
     "compiler_abi": 1,
-    "package": "main",
+    "package": "app",
     "exports": {
       "type_env": {
         "enums": {},
@@ -18,42 +18,56 @@
         "inherent_impls": []
       },
       "value_env": {
-        "funcs": {
-          "main": {
-            "type_params": [],
-            "constraints": [],
-            "ty": {
-              "TFunc": {
-                "params": [],
-                "ret_ty": "TUnit"
-              }
-            },
-            "origin": "User"
-          }
-        },
+        "funcs": {},
         "extern_funcs": {}
       }
     },
     "interface": {
-      "package": "main",
+      "package": "app",
       "packages": [
-        "main"
+        "app"
       ],
-      "value_exports": {
-        "main": 0
-      },
+      "value_exports": {},
       "enum_variants": {}
     },
     "deps": {
-      "Lib": "5d5ffd234afaa686def77fbbcb50013ef9de90022c25d3089f426aab19782f69",
-      "builtin": "d5162f34af492a35f5c31be62dcca86e3698bdb64d923ec200fd5d15e4fd019a"
+      "builtin": "d5162f34af492a35f5c31be62dcca86e3698bdb64d923ec200fd5d15e4fd019a",
+      "dep": "cdaf8b8efa90a4a4ac4db1406ed969544ba0941014bc37c09e09debc8675f1b3"
     },
-    "interface_hash": "d2061a65e3a9b4e3099aeeb4c00e800c87d25882f559a654f76ccd4ca585a7fe"
+    "interface_hash": "2f9c9f84fc395a73150d9fa0833328f1d2453bf5a1e33fe5b0ff45cbc0acc333"
+  },
+  "internal_exports": {
+    "type_env": {
+      "enums": {},
+      "structs": {},
+      "extern_types": {}
+    },
+    "trait_env": {
+      "trait_defs": {},
+      "trait_impls": [],
+      "inherent_impls": []
+    },
+    "value_env": {
+      "funcs": {
+        "app::main": {
+          "type_params": [],
+          "constraints": [],
+          "ty": {
+            "TFunc": {
+              "params": [],
+              "ret_ty": "TUnit"
+            }
+          },
+          "origin": "User"
+        }
+      },
+      "extern_funcs": {}
+    }
   },
   "core_ir": {
     "toplevels": [
       {
-        "name": "main",
+        "name": "app::main",
         "generics": [],
         "params": [],
         "ret_ty": "TUnit",
@@ -79,7 +93,7 @@
                   "ECall": {
                     "func": {
                       "EVar": {
-                        "name": "Lib::msg",
+                        "name": "dep::msg",
                         "ty": {
                           "TFunc": {
                             "params": [],
@@ -101,10 +115,10 @@
     ]
   },
   "deps": {
-    "Lib": "5d5ffd234afaa686def77fbbcb50013ef9de90022c25d3089f426aab19782f69",
-    "builtin": "d5162f34af492a35f5c31be62dcca86e3698bdb64d923ec200fd5d15e4fd019a"
+    "builtin": "d5162f34af492a35f5c31be62dcca86e3698bdb64d923ec200fd5d15e4fd019a",
+    "dep": "cdaf8b8efa90a4a4ac4db1406ed969544ba0941014bc37c09e09debc8675f1b3"
   },
   "sources": [
-    "<TMP>/main.gom"
+    "<TMP>/app/main.gom"
   ]
 }
