@@ -167,8 +167,8 @@ fn direct_crate_imports(
         }
     }
 
-    let known_packages = interface_units.keys().cloned().collect::<HashSet<_>>();
-    imports.extend(collect_known_crate_path_imports(files, &known_packages));
+    let known_namespaces = interface_units.keys().cloned().collect::<HashSet<_>>();
+    imports.extend(collect_known_crate_path_imports(files, &known_namespaces));
     imports
 }
 
@@ -279,9 +279,9 @@ fn typecheck_crate_sources(
     diagnostics::Diagnostics,
 ) {
     let (files, mut diagnostics) = expand_derives(files);
-    let crate_package_id = interface::package_id_for_name(crate_name);
+    let crate_id = interface::package_id_for_name(crate_name);
     let (hir, hir_table, mut hir_diagnostics) =
-        hir::lower_to_hir_files_with_env(crate_package_id, files.clone(), deps_interfaces);
+        hir::lower_to_hir_files_with_env(crate_id, files.clone(), deps_interfaces);
     let (tast, genv, mut type_diagnostics) = crate::typer::check_file_with_env(
         hir,
         hir_table,
@@ -454,7 +454,7 @@ pub fn link_crates(root_crate: &str, cores: Vec<CoreUnit>) -> Result<LinkOutput,
 }
 
 fn link_core_units(
-    root_package: &str,
+    root_crate: &str,
     entry_name: &str,
     cores: Vec<CoreUnit>,
 ) -> Result<LinkOutput, CompilationError> {
@@ -473,9 +473,9 @@ fn link_core_units(
         by_name.insert(core.package.clone(), core);
     }
 
-    let Some((_main_package, main)) = by_name.get_key_value(root_package) else {
+    let Some((_main_crate, main)) = by_name.get_key_value(root_crate) else {
         return Err(compile_error(format!(
-            "missing root crate core for {root_package}"
+            "missing root crate core for {root_crate}"
         )));
     };
     let Some(entry_fn) = main
@@ -486,7 +486,7 @@ fn link_core_units(
         .cloned()
     else {
         return Err(compile_error(format!(
-            "{root_package} crate missing root module main function"
+            "{root_crate} crate missing root module main function"
         )));
     };
     if !entry_fn.params.is_empty() {
@@ -496,13 +496,13 @@ fn link_core_units(
     }
 
     let builtin_hash = builtins::builtin_interface_hash();
-    for (pkg, unit) in by_name.iter() {
+    for (crate_name, unit) in by_name.iter() {
         for (dep, expected_hash) in unit.deps.iter() {
             if dep == BUILTIN_PACKAGE {
                 if expected_hash != &builtin_hash {
                     return Err(compile_error(format!(
                         "crate {} expects builtin interface_hash {}, but compiler has {} (rebuild {})",
-                        pkg, expected_hash, builtin_hash, pkg
+                        crate_name, expected_hash, builtin_hash, crate_name
                     )));
                 }
                 continue;
@@ -510,13 +510,13 @@ fn link_core_units(
             let Some(dep_unit) = by_name.get(dep) else {
                 return Err(compile_error(format!(
                     "crate {} depends on missing crate {}",
-                    pkg, dep
+                    crate_name, dep
                 )));
             };
             if &dep_unit.interface.interface_hash != expected_hash {
                 return Err(compile_error(format!(
                     "crate {} expects interface_hash {} for {}, but got {} (rebuild {})",
-                    pkg, expected_hash, dep, dep_unit.interface.interface_hash, pkg
+                    crate_name, expected_hash, dep, dep_unit.interface.interface_hash, crate_name
                 )));
             }
         }
@@ -526,15 +526,15 @@ fn link_core_units(
 
     let mut genv = builtins::builtin_env();
     let mut diagnostics = Diagnostics::new();
-    for pkg in order.iter() {
+    for crate_name in order.iter() {
         let unit = by_name
-            .get(pkg)
-            .ok_or_else(|| compile_error(format!("missing core for crate {}", pkg)))?;
+            .get(crate_name)
+            .ok_or_else(|| compile_error(format!("missing core for crate {}", crate_name)))?;
         let exports = unit
             .internal_exports
             .as_ref()
             .unwrap_or(&unit.interface.exports);
-        report_duplicate_trait_impls(&mut diagnostics, &genv, exports, pkg);
+        report_duplicate_trait_impls(&mut diagnostics, &genv, exports, crate_name);
         exports.apply_to(&mut genv);
     }
     if diagnostics.has_errors() {
@@ -555,10 +555,10 @@ fn link_core_units(
     );
     linked.toplevels.extend(builtin_print_core.toplevels);
 
-    for pkg in order {
+    for crate_name in order {
         let unit = by_name
-            .get(&pkg)
-            .ok_or_else(|| compile_error(format!("missing core for crate {}", pkg)))?;
+            .get(&crate_name)
+            .ok_or_else(|| compile_error(format!("missing core for crate {}", crate_name)))?;
         linked.toplevels.extend(unit.core_ir.toplevels.clone());
     }
     if entry_name != ENTRY_FUNCTION {
@@ -594,11 +594,11 @@ fn link_core_units(
     })
 }
 
-fn entry_function_name(package: &str) -> String {
-    if is_special_unqualified_package(package) {
+fn entry_function_name(crate_name: &str) -> String {
+    if is_special_unqualified_package(crate_name) {
         ENTRY_FUNCTION.to_string()
     } else {
-        format!("{package}::{ENTRY_FUNCTION}")
+        format!("{crate_name}::{ENTRY_FUNCTION}")
     }
 }
 
