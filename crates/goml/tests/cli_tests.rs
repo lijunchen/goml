@@ -283,6 +283,10 @@ pub fn version() -> string {
 pub fn tag() -> string {
     "client-1.2.0"
 }
+
+fn helper() -> string {
+    "hidden"
+}
 "#,
     )?;
 
@@ -907,6 +911,78 @@ fn main() -> unit {
     let go_stderr = String::from_utf8_lossy(&go_output.stderr);
     assert!(go_output.status.success(), "stderr: {go_stderr}");
     expect!["x\n"].assert_eq(&go_stdout);
+
+    Ok(())
+}
+
+#[test]
+fn project_check_hides_private_external_child_module_items() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let registry = create_local_registry(dir.path())?;
+    let home = dir.path().join("home");
+    fs::create_dir_all(&home)?;
+
+    let project_dir = dir.path().join("demo");
+    fs::create_dir_all(&project_dir)?;
+    fs::write(
+        project_dir.join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+
+[dependencies]
+http = { package = "alice::http", version = "1.2.0" }
+"#,
+    )?;
+    fs::write(
+        project_dir.join("main.gom"),
+        r#"
+use http;
+use http::client;
+
+fn main() -> unit {
+    let _ = client::tag();
+}
+"#,
+    )?;
+
+    let update_output = run_goml_with_home(
+        &[
+            "update",
+            "--local-registry",
+            registry.to_string_lossy().as_ref(),
+        ],
+        &project_dir,
+        &home,
+    )?;
+    assert!(
+        update_output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&update_output.stderr)
+    );
+
+    let public_output = run_goml_with_home(&["check"], &project_dir, &home)?;
+    assert!(
+        public_output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&public_output.stderr)
+    );
+
+    fs::write(
+        project_dir.join("main.gom"),
+        r#"
+use http;
+use http::client;
+
+fn main() -> unit {
+    let _ = client::helper();
+}
+"#,
+    )?;
+
+    let private_output = run_goml_with_home(&["check"], &project_dir, &home)?;
+    assert!(!private_output.status.success());
 
     Ok(())
 }
