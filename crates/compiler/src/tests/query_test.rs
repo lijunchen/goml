@@ -209,23 +209,23 @@ fn main() -> unit {
                 [
                     ValueCompletionItem {
                         name: "crate",
-                        kind: Package,
+                        kind: Namespace,
                         detail: Some(
-                            "package",
+                            "namespace",
                         ),
                     },
                     ValueCompletionItem {
                         name: "http",
-                        kind: Package,
+                        kind: Namespace,
                         detail: Some(
-                            "package",
+                            "namespace",
                         ),
                     },
                     ValueCompletionItem {
                         name: "self",
-                        kind: Package,
+                        kind: Namespace,
                         detail: Some(
-                            "package",
+                            "namespace",
                         ),
                     },
                 ]
@@ -357,16 +357,16 @@ pub fn f() -> unit {
             [
                 ValueCompletionItem {
                     name: "self",
-                    kind: Package,
+                    kind: Namespace,
                     detail: Some(
-                        "package",
+                        "namespace",
                     ),
                 },
                 ValueCompletionItem {
                     name: "super",
-                    kind: Package,
+                    kind: Namespace,
                     detail: Some(
-                        "package",
+                        "namespace",
                     ),
                 },
             ]
@@ -450,9 +450,9 @@ fn main() -> unit {
             [
                 ColonColonCompletionItem {
                     name: "data",
-                    kind: Package,
+                    kind: Namespace,
                     detail: Some(
-                        "package",
+                        "namespace",
                     ),
                 },
                 ColonColonCompletionItem {
@@ -689,9 +689,9 @@ pub fn send() -> string {
                 },
                 ColonColonCompletionItem {
                     name: "client",
-                    kind: Package,
+                    kind: Namespace,
                     detail: Some(
-                        "package",
+                        "namespace",
                     ),
                 },
                 ColonColonCompletionItem {
@@ -764,9 +764,9 @@ fn main() -> unit {
                 [
                     ValueCompletionItem {
                         name: "util",
-                        kind: Package,
+                        kind: Namespace,
                         detail: Some(
-                            "package",
+                            "namespace",
                         ),
                     },
                 ]
@@ -781,9 +781,9 @@ fn main() -> unit {
                 [
                     ValueCompletionItem {
                         name: "http",
-                        kind: Package,
+                        kind: Namespace,
                         detail: Some(
-                            "package",
+                            "namespace",
                         ),
                     },
                 ]
@@ -798,9 +798,9 @@ fn main() -> unit {
                 [
                     ValueCompletionItem {
                         name: "client",
-                        kind: Package,
+                        kind: Namespace,
                         detail: Some(
-                            "package",
+                            "namespace",
                         ),
                     },
                 ]
@@ -2155,9 +2155,9 @@ http = { package = "alice::http", version = "1.2.0" }
                 [
                     ColonColonCompletionItem {
                         name: "client",
-                        kind: Package,
+                        kind: Namespace,
                         detail: Some(
-                            "package",
+                            "namespace",
                         ),
                     },
                     ColonColonCompletionItem {
