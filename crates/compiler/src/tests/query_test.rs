@@ -1600,6 +1600,62 @@ pub fn target() -> int64 {
 
 #[test]
 #[rustfmt::skip]
+fn crate_query_goto_definition_uses_canonical_module_package_alias() {
+    let dir = tempdir().unwrap();
+    std::fs::create_dir_all(dir.path().join("api")).unwrap();
+    std::fs::write(
+        dir.path().join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        dir.path().join("main.gom"),
+        r#"
+mod api;
+
+fn main() -> unit {
+    ()
+}
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        dir.path().join("api/mod.gom"),
+        r#"
+pub mod client;
+pub mod worker;
+"#,
+    )
+    .unwrap();
+    let client_path = dir.path().join("api/client.gom");
+    std::fs::write(
+        &client_path,
+        r#"
+pub fn make() -> int64 {
+    1
+}
+"#,
+    )
+    .unwrap();
+    let worker_src = r#"
+pub fn call() -> int64 {
+    super::client::make()
+}
+"#;
+    let worker_path = dir.path().join("api/worker.gom");
+    std::fs::write(&worker_path, worker_src).unwrap();
+
+    let locations = goto_definition_locations(&worker_path, worker_src, 2, 13).unwrap();
+    assert_eq!(locations.len(), 1);
+    assert_eq!(locations[0].path, client_path);
+}
+
+#[test]
+#[rustfmt::skip]
 fn multi_package_inherent_method_completion() {
     let dir = tempdir().unwrap();
     let lib_dir = dir.path().join("Lib");

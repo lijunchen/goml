@@ -223,6 +223,14 @@ fn build_crate_symbol_index(
         graph
             .package_visibilities
             .insert(package_name.clone(), module.visibility);
+        for alias in package_names.iter().skip(1) {
+            graph
+                .package_dirs
+                .insert(alias.clone(), package_dir.clone());
+            graph
+                .package_visibilities
+                .insert(alias.clone(), module.visibility);
+        }
         graph.packages.insert(
             package_name.clone(),
             crate::pipeline::packages::PackageUnit {
