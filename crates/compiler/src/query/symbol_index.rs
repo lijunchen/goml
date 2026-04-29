@@ -167,17 +167,18 @@ pub(crate) fn build_symbol_index(
     path: &Path,
     src: &str,
 ) -> Result<(crate::pipeline::packages::PackageGraph, ProjectSymbolIndex), String> {
-    build_crate_symbol_index(path, src).or_else(|_| build_package_symbol_index(path, src))
+    if crate::config::find_crate_root(start_dir_for_path(path)).is_some() {
+        build_crate_symbol_index(path, src)
+    } else {
+        build_package_symbol_index(path, src)
+    }
 }
 
 fn build_crate_symbol_index(
     path: &Path,
     src: &str,
 ) -> Result<(crate::pipeline::packages::PackageGraph, ProjectSymbolIndex), String> {
-    let start_dir = path
-        .parent()
-        .filter(|parent| !parent.as_os_str().is_empty())
-        .unwrap_or_else(|| Path::new("."));
+    let start_dir = start_dir_for_path(path);
     let Some((crate_dir, _)) = crate::config::find_crate_root(start_dir) else {
         return Err("crate root not found".to_string());
     };
@@ -364,6 +365,12 @@ fn package_dir_for_module_file(path: &Path) -> PathBuf {
 
 fn canonical_path(path: &Path) -> PathBuf {
     path.canonicalize().unwrap_or_else(|_| path.to_path_buf())
+}
+
+fn start_dir_for_path(path: &Path) -> &Path {
+    path.parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."))
 }
 
 pub(crate) fn package_nav_target_in_dir(dir: &Path) -> Option<PathBuf> {
@@ -660,30 +667,7 @@ fn discover_packages_for_query(
     src: &str,
 ) -> Result<crate::pipeline::packages::PackageGraph, String> {
     let entry_ast = parse_ast_for_discovery(path, src)?;
-    let start_dir = path
-        .parent()
-        .filter(|parent| !parent.as_os_str().is_empty())
-        .unwrap_or_else(|| Path::new("."));
-    if let Some((crate_dir, _)) = crate::config::find_crate_root(start_dir) {
-        let external_deps = if let Ok((_module_dir, dependencies)) =
-            crate::pipeline::packages::discover_dependency_versions_from_file(path)
-        {
-            crate::external::resolve_dependency_versions(&dependencies)?
-        } else {
-            crate::external::ExternalDependencyArtifacts::default()
-        };
-        let external_imports = external_deps.external_imports();
-        let graph = crate::pipeline::packages::discover_packages_with_external_imports(
-            &crate_dir,
-            Some(path),
-            Some(entry_ast),
-            &external_imports,
-        )
-        .map_err(|e| format!("{:?}", e))?;
-        return Ok(graph);
-    }
-
-    let root_dir = start_dir;
+    let root_dir = start_dir_for_path(path);
     if !path.exists() {
         crate::pipeline::packages::discover_packages_single_file_with_external_imports(
             root_dir,
