@@ -257,7 +257,8 @@ impl InterfaceUnit {
 pub struct CoreUnit {
     pub format_version: u32,
     pub compiler_abi: u32,
-    pub package: String,
+    #[serde(rename = "package")]
+    pub crate_name: String,
     pub interface: InterfaceUnit,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub internal_exports: Option<CrateExports>,
@@ -267,12 +268,12 @@ pub struct CoreUnit {
 }
 
 impl CoreUnit {
-    pub fn new(package: String, interface: InterfaceUnit, core_ir: crate::core::File) -> Self {
+    pub fn new(crate_name: String, interface: InterfaceUnit, core_ir: crate::core::File) -> Self {
         let deps = interface.deps.clone();
         Self {
             format_version: FORMAT_VERSION,
             compiler_abi: COMPILER_ABI,
-            package,
+            crate_name,
             interface,
             internal_exports: None,
             core_ir,
@@ -284,7 +285,7 @@ impl CoreUnit {
     pub fn validate(&self) -> bool {
         self.format_version == FORMAT_VERSION
             && self.compiler_abi == COMPILER_ABI
-            && self.package == self.interface.crate_name
+            && self.crate_name == self.interface.crate_name
             && self.interface.validate_hash()
             && self.deps == self.interface.deps
     }

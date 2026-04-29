@@ -955,7 +955,7 @@ fn execute_direct_project_build(
             .values()
             .map(|module| module.core.clone())
             .collect::<Vec<_>>();
-        cores.sort_by(|left, right| left.package.cmp(&right.package));
+        cores.sort_by(|left, right| left.crate_name.cmp(&right.crate_name));
         cores.push(unit);
         let linked =
             compiler::pipeline::separate::link_crates(&project.crate_unit.config.name, cores)

@@ -465,13 +465,13 @@ fn link_core_units(
 
     let mut by_name = HashMap::new();
     for core in cores {
-        if by_name.contains_key(&core.package) {
+        if by_name.contains_key(&core.crate_name) {
             return Err(compile_error(format!(
                 "duplicate core provided for crate {}",
-                core.package
+                core.crate_name
             )));
         }
-        by_name.insert(core.package.clone(), core);
+        by_name.insert(core.crate_name.clone(), core);
     }
 
     let Some((_main_crate, main)) = by_name.get_key_value(root_crate) else {
@@ -865,7 +865,7 @@ pub fn call() -> unit {
         })
         .unwrap();
 
-        assert_eq!(core.package, "hello");
+        assert_eq!(core.crate_name, "hello");
         assert_eq!(core.interface.crate_name, "hello");
         assert!(core.validate());
         assert!(

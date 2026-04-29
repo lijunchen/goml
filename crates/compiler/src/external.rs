@@ -488,7 +488,7 @@ fn compile_external_module(
     let core = CoreUnit {
         format_version: crate::artifact::FORMAT_VERSION,
         compiler_abi: crate::artifact::COMPILER_ABI,
-        package: root_package.to_string(),
+        crate_name: root_package.to_string(),
         interface: interface.clone(),
         internal_exports: Some(merged_exports),
         core_ir: merged_core,
