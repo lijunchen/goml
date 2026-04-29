@@ -1016,6 +1016,55 @@ fn main() -> unit {
         assert_eq!(String::from_utf8_lossy(&output.stdout), "linked\n");
     }
 
+    #[test]
+    fn link_crates_requires_root_module_main() {
+        let dir = tempfile::tempdir().unwrap();
+        write(
+            dir.path().join("goml.toml"),
+            r#"[crate]
+name = "hello"
+kind = "bin"
+root = "src/main.gom"
+"#,
+        );
+        write(
+            dir.path().join("src/main.gom"),
+            r#"
+mod api;
+
+pub fn helper() -> unit {
+    ()
+}
+"#,
+        );
+        write(
+            dir.path().join("src/api.gom"),
+            r#"
+pub fn main() -> unit {
+    ()
+}
+"#,
+        );
+
+        let crate_unit = modules::discover_crate_from_dir(dir.path()).unwrap();
+        let core = build_crate(CrateInputs {
+            crate_unit,
+            interface_files: Vec::new(),
+        })
+        .unwrap();
+        let err = link_crates("hello", vec![core]).unwrap_err();
+        match err {
+            CompilationError::Compile { diagnostics } => {
+                assert!(
+                    diagnostics
+                        .iter()
+                        .any(|item| item.message() == "hello package missing main function")
+                );
+            }
+            other => panic!("expected compile error, got {other:?}"),
+        }
+    }
+
     fn write(path: PathBuf, contents: &str) {
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent).unwrap();
