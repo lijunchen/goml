@@ -443,7 +443,7 @@ fn compile_external_module(
         }
 
         let namespace_dir = graph
-            .package_dirs
+            .namespace_dirs
             .get(&namespace_name)
             .cloned()
             .ok_or_else(|| format!("missing namespace dir for {}", namespace_name))?;

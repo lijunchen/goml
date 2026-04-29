@@ -215,7 +215,7 @@ fn build_crate_symbol_index(
         entry_namespace: crate_name.clone(),
         namespaces: HashMap::new(),
         discovery_order: Vec::new(),
-        package_dirs: HashMap::new(),
+        namespace_dirs: HashMap::new(),
         package_visibilities: HashMap::new(),
         external_root_packages: HashSet::new(),
     };
