@@ -392,18 +392,17 @@ fn use_root_completions(
     }
 
     let mut names = BTreeSet::new();
-    let current_package = current_package_name(path, src);
-
     let start_dir = path
         .parent()
         .filter(|parent| !parent.as_os_str().is_empty())
         .unwrap_or_else(|| Path::new("."));
     if let Some((root_dir, _)) = crate::config::find_crate_root(start_dir) {
-        collect_local_package_names(&root_dir, current_package.as_deref(), &mut names);
+        names.insert("crate".to_string());
         if let Ok(manifest) = crate::config::load_crate_manifest(&root_dir.join("goml.toml")) {
             names.extend(manifest.dependencies.keys().cloned());
         }
     } else {
+        let current_package = current_package_name(path, src);
         collect_local_package_names(start_dir, current_package.as_deref(), &mut names);
     }
 

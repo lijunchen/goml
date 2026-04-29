@@ -208,14 +208,14 @@ fn main() -> unit {
             expect![[r#"
                 [
                     ValueCompletionItem {
-                        name: "http",
+                        name: "crate",
                         kind: Package,
                         detail: Some(
                             "package",
                         ),
                     },
                     ValueCompletionItem {
-                        name: "util",
+                        name: "http",
                         kind: Package,
                         detail: Some(
                             "package",
