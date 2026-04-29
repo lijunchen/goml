@@ -34,7 +34,7 @@ suite('GoML Module Tests', () => {
         }
     });
 
-    test('All module projects should have goml.toml', () => {
+    test('All module projects should have crate manifest', () => {
         const projectDirs = getProjectDirs();
 
         for (const projectDir of projectDirs) {
@@ -46,17 +46,13 @@ suite('GoML Module Tests', () => {
 
             const content = fs.readFileSync(gomlToml, 'utf8');
             assert.ok(
-                content.includes('[module]'),
-                `${path.basename(projectDir)}/goml.toml should have [module] section`
-            );
-            assert.ok(
-                content.includes('[package]'),
-                `${path.basename(projectDir)}/goml.toml should have [package] section`
+                content.includes('[crate]'),
+                `${path.basename(projectDir)}/goml.toml should have [crate] section`
             );
         }
     });
 
-    test('Sub-packages should have goml.toml without [module]', () => {
+    test('Submodules should not have package manifests', () => {
         const projectDirs = getProjectDirs();
 
         for (const projectDir of projectDirs) {
@@ -65,17 +61,10 @@ suite('GoML Module Tests', () => {
 
             for (const subDir of subDirs) {
                 const subGomlToml = path.join(projectDir, subDir.name, 'goml.toml');
-                if (fs.existsSync(subGomlToml)) {
-                    const content = fs.readFileSync(subGomlToml, 'utf8');
-                    assert.ok(
-                        !content.includes('[module]'),
-                        `${path.basename(projectDir)}/${subDir.name}/goml.toml should NOT have [module] section`
-                    );
-                    assert.ok(
-                        content.includes('[package]'),
-                        `${path.basename(projectDir)}/${subDir.name}/goml.toml should have [package] section`
-                    );
-                }
+                assert.ok(
+                    !fs.existsSync(subGomlToml),
+                    `${path.basename(projectDir)}/${subDir.name}/goml.toml should not exist`
+                );
             }
         }
     });

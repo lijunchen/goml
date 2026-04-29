@@ -6,6 +6,10 @@ use crate::package_names::ROOT_PACKAGE;
 use crate::pipeline::{packages, pipeline, separate};
 
 fn gom_files_in_dir(dir: &Path) -> anyhow::Result<Vec<PathBuf>> {
+    if dir.is_file() {
+        return Ok(vec![dir.to_path_buf()]);
+    }
+
     let mut files = Vec::new();
     for entry in std::fs::read_dir(dir)? {
         let entry = entry?;

@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 
-use crate::config::{GomlConfig, UserConfig, goml_home_dir};
+use crate::config::{CrateManifest, UserConfig, goml_home_dir, load_crate_manifest};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SemVer {
@@ -105,7 +105,7 @@ pub struct ResolvedModule {
     pub version: SemVer,
     pub manifest_path: PathBuf,
     pub root_dir: PathBuf,
-    pub config: GomlConfig,
+    pub manifest: CrateManifest,
 }
 
 #[derive(Debug, Clone)]
@@ -207,13 +207,13 @@ impl Registry {
             ));
         }
         let manifest_path = root_dir.join("goml.toml");
-        let config = GomlConfig::load(&manifest_path)?;
+        let manifest = load_crate_manifest(&manifest_path)?;
         Ok(ResolvedModule {
             coord: coord.clone(),
             version: version.clone(),
             manifest_path,
             root_dir,
-            config,
+            manifest,
         })
     }
 
@@ -249,7 +249,7 @@ pub fn resolve_dependencies(
         selected.insert(requirement.coord.clone(), chosen.clone());
 
         let module = registry.load_module(&requirement.coord, &chosen)?;
-        for (dep_coord, dep_version) in module.config.dependencies.iter() {
+        for (dep_coord, dep_version) in module.manifest.dependency_versions().iter() {
             queue.push_back(ModuleRequirement::parse(dep_coord, dep_version)?);
         }
     }
@@ -360,16 +360,20 @@ versions = ["0.1.0"]
         std::fs::write(
             root.join("alice/http/1.0.0/goml.toml"),
             r#"
-[package]
+[crate]
 name = "http"
+kind = "lib"
+root = "lib.gom"
 "#,
         )
         .unwrap();
         std::fs::write(
             root.join("alice/http/1.2.0/goml.toml"),
             r#"
-[package]
+[crate]
 name = "http"
+kind = "lib"
+root = "lib.gom"
 
 [dependencies]
 "alice::net" = "0.1.0"
@@ -379,8 +383,10 @@ name = "http"
         std::fs::write(
             root.join("alice/net/0.1.0/goml.toml"),
             r#"
-[package]
+[crate]
 name = "net"
+kind = "lib"
+root = "lib.gom"
 "#,
         )
         .unwrap();

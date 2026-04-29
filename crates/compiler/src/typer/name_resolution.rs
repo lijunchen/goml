@@ -225,7 +225,7 @@ fn file_imports(
         }
     }
     for use_trait in file.use_traits.iter() {
-        if let Some(package) = legacy_use_trait_import(use_trait, deps) {
+        if let Some(package) = use_trait_import(use_trait, deps) {
             imports.insert(package);
         }
     }
@@ -267,7 +267,7 @@ fn path_segments_display(path: &ast::Path) -> String {
         .join("::")
 }
 
-fn legacy_use_trait_import(
+fn use_trait_import(
     path: &ast::Path,
     deps: &HashMap<String, interface::PackageInterface>,
 ) -> Option<String> {
@@ -284,7 +284,7 @@ fn legacy_use_trait_import(
     segments.first().map(|segment| segment.ident.0.clone())
 }
 
-fn lowered_legacy_use_trait_path(
+fn lowered_use_trait_path(
     path: &ast::Path,
     deps: &HashMap<String, interface::PackageInterface>,
 ) -> Option<hir::QualifiedPath> {
@@ -729,8 +729,7 @@ impl NameResolution {
                     if use_path_is_package_import(&use_decl.path, deps) {
                         continue;
                     }
-                    let Some(qualified) = lowered_legacy_use_trait_path(&use_decl.path, deps)
-                    else {
+                    let Some(qualified) = lowered_use_trait_path(&use_decl.path, deps) else {
                         continue;
                     };
                     let Some(package) = &qualified.package else {
@@ -754,7 +753,7 @@ impl NameResolution {
                     if use_path_is_package_import(use_trait, deps) {
                         continue;
                     }
-                    let Some(qualified) = lowered_legacy_use_trait_path(use_trait, deps) else {
+                    let Some(qualified) = lowered_use_trait_path(use_trait, deps) else {
                         continue;
                     };
                     let Some(package) = &qualified.package else {

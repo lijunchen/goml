@@ -1,12 +1,11 @@
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use diagnostics::Diagnostics;
 
 use crate::artifact::{CoreUnit, InterfaceUnit, PackageExports};
 use crate::builtins;
 use crate::common::{Constructor, EnumConstructor, StructConstructor};
-use crate::config::GomlConfig;
 use crate::core;
 use crate::env::{
     EnumDef, ExternFunc, FnConstraint, FnScheme, GlobalTypeEnv, ImplDef, InherentImplKey,
@@ -149,11 +148,10 @@ struct CompiledPackage {
     core: CoreUnit,
 }
 
-pub fn resolve_project_dependencies(
-    module_dir: &Path,
-    config: &GomlConfig,
+pub fn resolve_dependency_versions(
+    dependencies: &BTreeMap<String, String>,
 ) -> Result<ExternalDependencyArtifacts, String> {
-    if config.dependencies.is_empty() {
+    if dependencies.is_empty() {
         return Ok(ExternalDependencyArtifacts::default());
     }
 
@@ -167,19 +165,18 @@ pub fn resolve_project_dependencies(
 
     let registry = Registry::load(&cache_dir)?;
     validate_registry_consistency(&registry)?;
-    resolve_project_dependencies_with_registry(module_dir, config, &registry)
+    resolve_dependency_versions_with_registry(dependencies, &registry)
 }
 
-pub fn resolve_project_dependencies_with_registry(
-    _module_dir: &Path,
-    config: &GomlConfig,
+pub fn resolve_dependency_versions_with_registry(
+    dependencies: &BTreeMap<String, String>,
     registry: &Registry,
 ) -> Result<ExternalDependencyArtifacts, String> {
-    if config.dependencies.is_empty() {
+    if dependencies.is_empty() {
         return Ok(ExternalDependencyArtifacts::default());
     }
 
-    let resolved = resolve_dependencies(registry, &config.dependencies)?;
+    let resolved = resolve_dependencies(registry, dependencies)?;
     let roots = unique_module_roots(&resolved)?;
     let order = topo_sort_modules(&resolved)?;
     let mut compiled = BTreeMap::new();
@@ -233,7 +230,7 @@ fn topo_sort_modules(resolved: &ResolvedModuleGraph) -> Result<Vec<ModuleCoord>,
     }
 
     for (coord, module) in resolved.modules.iter() {
-        for dep in module.config.dependencies.keys() {
+        for dep in module.manifest.dependency_versions().keys() {
             let dep_coord = ModuleCoord::parse(dep)?;
             if !resolved.modules.contains_key(&dep_coord) {
                 continue;
@@ -281,9 +278,9 @@ fn compile_external_module(
     validate_external_module_manifest(module, root_package)?;
 
     let available_imports = external_imports_from_modules(compiled_roots);
-    let mut graph = packages::discover_dependency_packages_with_external_imports(
+    let mut graph = packages::discover_dependency_crate_packages_with_external_imports(
         &module.root_dir,
-        &module.config,
+        root_package,
         &available_imports,
     )
     .map_err(err_text)?;
@@ -446,20 +443,17 @@ fn validate_external_module_manifest(
     module: &ResolvedModule,
     root_package: &str,
 ) -> Result<(), String> {
-    if module.config.package.name != root_package {
+    let Some(crate_config) = module.manifest.crate_config.as_ref() else {
         return Err(format!(
-            "registry module {}@{} must declare package.name = {:?} in {}",
+            "registry module {}@{} must declare [crate] in {}",
             module.coord.display(),
             module.version.display(),
-            root_package,
             module.manifest_path.display()
         ));
-    }
-    if let Some(module_config) = module.config.module.as_ref()
-        && module_config.name != root_package
-    {
+    };
+    if crate_config.name != root_package {
         return Err(format!(
-            "registry module {}@{} must declare module.name = {:?} in {}",
+            "registry module {}@{} must declare crate.name = {:?} in {}",
             module.coord.display(),
             module.version.display(),
             root_package,

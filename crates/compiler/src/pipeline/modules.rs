@@ -5,7 +5,7 @@ use ::ast::{ast, lower};
 use cst::cst::{CstNode, File as CstFile};
 use parser::syntax::MySyntaxNode;
 
-use crate::config::{CrateConfig, CrateDependency, CrateKind, GomlConfig};
+use crate::config::{CrateConfig, CrateDependency, CrateKind, load_crate_manifest};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ModulePath(Vec<String>);
@@ -114,7 +114,7 @@ pub enum DiscoveryError {
 pub fn discover_crate_from_dir(crate_dir: &Path) -> Result<CrateUnit, DiscoveryError> {
     let manifest = crate_dir.join("goml.toml");
     let manifest_config =
-        GomlConfig::load_crate_manifest(&manifest).map_err(|message| DiscoveryError::Parse {
+        load_crate_manifest(&manifest).map_err(|message| DiscoveryError::Parse {
             file_path: manifest.clone(),
             message,
         })?;

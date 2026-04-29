@@ -184,8 +184,10 @@ pub(crate) fn build_symbol_index(
         index_package_symbols_named(&mut index, pkg_name, pkg_dir, &package_files, &overrides)?;
     }
 
-    if let Ok((module_dir, config)) = crate::pipeline::packages::discover_project_from_file(path) {
-        let external_deps = crate::external::resolve_project_dependencies(&module_dir, &config)
+    if let Ok((_module_dir, dependencies)) =
+        crate::pipeline::packages::discover_dependency_versions_from_file(path)
+    {
+        let external_deps = crate::external::resolve_dependency_versions(&dependencies)
             .map_err(|err| err.to_string())?;
         external_deps
             .augment_graph(&mut graph)
@@ -209,6 +211,10 @@ pub(crate) fn build_symbol_index(
 }
 
 pub(crate) fn package_nav_target_in_dir(dir: &Path) -> Option<PathBuf> {
+    if dir.is_file() {
+        return Some(dir.to_path_buf());
+    }
+
     let toml = dir.join("goml.toml");
     if toml.exists() {
         return Some(toml);
@@ -498,11 +504,21 @@ fn discover_packages_for_query(
     src: &str,
 ) -> Result<crate::pipeline::packages::PackageGraph, String> {
     let entry_ast = parse_ast_for_discovery(path, src)?;
-    if let Ok((module_dir, config)) = crate::pipeline::packages::discover_project_from_file(path) {
-        let external_deps = crate::external::resolve_project_dependencies(&module_dir, &config)?;
+    let start_dir = path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."));
+    if let Some((crate_dir, _)) = crate::config::find_crate_root(start_dir) {
+        let external_deps = if let Ok((_module_dir, dependencies)) =
+            crate::pipeline::packages::discover_dependency_versions_from_file(path)
+        {
+            crate::external::resolve_dependency_versions(&dependencies)?
+        } else {
+            crate::external::ExternalDependencyArtifacts::default()
+        };
         let external_imports = external_deps.external_imports();
         let graph = crate::pipeline::packages::discover_packages_with_external_imports(
-            &module_dir,
+            &crate_dir,
             Some(path),
             Some(entry_ast),
             &external_imports,
@@ -511,10 +527,7 @@ fn discover_packages_for_query(
         return Ok(graph);
     }
 
-    let root_dir = path
-        .parent()
-        .filter(|parent| !parent.as_os_str().is_empty())
-        .unwrap_or_else(|| Path::new("."));
+    let root_dir = start_dir;
     if !path.exists() {
         crate::pipeline::packages::discover_packages_single_file_with_external_imports(
             root_dir,

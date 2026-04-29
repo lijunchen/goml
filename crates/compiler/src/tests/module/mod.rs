@@ -1,6 +1,5 @@
 use expect_test::expect_file;
 
-use crate::config::GomlConfig;
 use crate::pipeline;
 
 #[test]
@@ -128,18 +127,9 @@ fn run_project_inner(name: &str) -> anyhow::Result<()> {
     let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("src/tests/module")
         .join(name);
-    let config = GomlConfig::load(&root.join("goml.toml"))
-        .map_err(|err| anyhow::anyhow!("failed to load project config: {}", err))?;
-    let main_path = root.join(&config.package.entry);
     let crate_unit = pipeline::modules::discover_crate_from_dir(&root)
         .map_err(|err| anyhow::anyhow!("crate module discovery failed: {:?}", err))?;
-    if crate_unit.root_file != main_path {
-        anyhow::bail!(
-            "crate root mismatch: expected {}, discovered {}",
-            main_path.display(),
-            crate_unit.root_file.display()
-        );
-    }
+    let main_path = crate_unit.root_file;
     let main_src = std::fs::read_to_string(&main_path)?;
     let compilation = pipeline::pipeline::compile(&main_path, &main_src)
         .map_err(|err| anyhow::anyhow!("compilation failed: {:?}", err))?;

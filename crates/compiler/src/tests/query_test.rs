@@ -120,16 +120,19 @@ versions = ["1.2.0"]
     .unwrap();
     std::fs::write(
         registry.join("alice/http/1.2.0/goml.toml"),
-        r#"[package]
+        r#"[crate]
 name = "http"
+kind = "lib"
+root = "lib.gom"
 "#,
     )
     .unwrap();
     std::fs::write(
         registry.join("alice/http/1.2.0/lib.gom"),
         r#"
+mod client;
 
-use client;
+use crate::client;
 
 fn make_client() -> client::Client {
     client::Client { name: "alice" }
@@ -138,14 +141,7 @@ fn make_client() -> client::Client {
     )
     .unwrap();
     std::fs::write(
-        registry.join("alice/http/1.2.0/client/goml.toml"),
-        r#"[package]
-name = "client"
-"#,
-    )
-    .unwrap();
-    std::fs::write(
-        registry.join("alice/http/1.2.0/client/lib.gom"),
+        registry.join("alice/http/1.2.0/client/mod.gom"),
         r#"
 
 struct Client {
@@ -169,14 +165,7 @@ fn use_statement_package_completions() {
 
     std::fs::create_dir_all(dir.path().join("util")).unwrap();
     std::fs::write(
-        dir.path().join("util/goml.toml"),
-        r#"[package]
-name = "util"
-"#,
-    )
-    .unwrap();
-    std::fs::write(
-        dir.path().join("util/lib.gom"),
+        dir.path().join("util/mod.gom"),
         r#"
 
 fn ping() -> string {
@@ -188,12 +177,10 @@ fn ping() -> string {
 
     std::fs::write(
         dir.path().join("goml.toml"),
-        r#"[module]
+        r#"[crate]
 name = "demo"
-
-[package]
-name = "main"
-entry = "main.gom"
+kind = "bin"
+root = "main.gom"
 
 [dependencies]
 "alice::http" = "1.2.0"
@@ -249,14 +236,7 @@ fn imported_package_value_completions() {
 
     std::fs::create_dir_all(dir.path().join("util")).unwrap();
     std::fs::write(
-        dir.path().join("util/goml.toml"),
-        r#"[package]
-name = "util"
-"#,
-    )
-    .unwrap();
-    std::fs::write(
-        dir.path().join("util/lib.gom"),
+        dir.path().join("util/mod.gom"),
         r#"
 
 fn ping() -> string {
@@ -268,12 +248,10 @@ fn ping() -> string {
 
     std::fs::write(
         dir.path().join("goml.toml"),
-        r#"[module]
+        r#"[crate]
 name = "demo"
-
-[package]
-name = "main"
-entry = "main.gom"
+kind = "bin"
+root = "main.gom"
 
 [dependencies]
 "alice::http" = "1.2.0"
@@ -282,8 +260,9 @@ entry = "main.gom"
     .unwrap();
 
     let src = r#"
+mod util;
 
-use util;
+use crate::util;
 use alice::http;
 use alice::http::client;
 
@@ -300,7 +279,7 @@ fn main() -> unit {
         check_value_completions_with_path(
             &main_path,
             src,
-            7,
+            8,
             6,
             expect![[r#"
                 [
@@ -317,7 +296,7 @@ fn main() -> unit {
         check_value_completions_with_path(
             &main_path,
             src,
-            8,
+            9,
             6,
             expect![[r#"
                 [
@@ -334,7 +313,7 @@ fn main() -> unit {
         check_value_completions_with_path(
             &main_path,
             src,
-            9,
+            10,
             6,
             expect![[r#"
                 [
@@ -1399,12 +1378,10 @@ fn main() -> unit {
 "#;
     std::fs::write(
         dir.path().join("goml.toml"),
-        r#"[module]
+        r#"[crate]
 name = "demo"
-
-[package]
-name = "main"
-entry = "main.gom"
+kind = "bin"
+root = "main.gom"
 
 [dependencies]
 "alice::http" = "1.2.0"

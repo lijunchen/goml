@@ -9,7 +9,7 @@ use cst::nodes::{BinaryExpr, Block, ClosureExpr, Fn, Item, MatchArm, Pattern};
 use parser::syntax::{MySyntaxKind, MySyntaxNode, MySyntaxNodePtr};
 use text_size::TextSize;
 
-use crate::{config::GomlConfig, env::GlobalTypeEnv, registry::ModuleCoord, tast};
+use crate::{env::GlobalTypeEnv, registry::ModuleCoord, tast};
 
 use super::{
     ColonColonCompletionItem, ColonColonCompletionKind, DotCompletionItem, DotCompletionKind,
@@ -394,9 +394,11 @@ fn use_root_completions(
     let mut names = BTreeSet::new();
     let current_package = current_package_name(path, src);
 
-    if let Ok((module_dir, config)) = crate::pipeline::packages::discover_project_from_file(path) {
-        collect_local_package_names(&module_dir, current_package.as_deref(), &mut names);
-        for dep in config.dependencies.keys() {
+    if let Ok((root_dir, dependencies)) =
+        crate::pipeline::packages::discover_dependency_versions_from_file(path)
+    {
+        collect_local_package_names(&root_dir, current_package.as_deref(), &mut names);
+        for dep in dependencies.keys() {
             if let Ok(coord) = ModuleCoord::parse(dep) {
                 names.insert(format!("{}::{}", coord.owner, coord.module));
             }
@@ -445,13 +447,14 @@ fn visible_use_namespace_names(path: &Path, src: &str) -> BTreeSet<String> {
         return BTreeSet::new();
     };
 
-    let external_import_paths = crate::pipeline::packages::discover_project_from_file(path)
-        .ok()
-        .and_then(|(module_dir, config)| {
-            crate::external::resolve_project_dependencies(&module_dir, &config).ok()
-        })
-        .map(|external_deps| external_deps.import_paths())
-        .unwrap_or_default();
+    let external_import_paths =
+        crate::pipeline::packages::discover_dependency_versions_from_file(path)
+            .ok()
+            .and_then(|(_, dependencies)| {
+                crate::external::resolve_dependency_versions(&dependencies).ok()
+            })
+            .map(|external_deps| external_deps.import_paths())
+            .unwrap_or_default();
 
     file.use_decls()
         .filter_map(|use_decl| use_decl.path())
@@ -784,10 +787,6 @@ fn collect_local_package_names(
 }
 
 fn local_package_name(dir: &Path) -> Option<String> {
-    if let Some(config) = GomlConfig::find_package_config(dir) {
-        return Some(config.package.name);
-    }
-
     let entries = fs::read_dir(dir).ok()?;
     for entry in entries.flatten() {
         let path = entry.path();
@@ -814,9 +813,11 @@ fn use_colon_colon_items_for_namespace(
 ) -> Vec<ColonColonCompletionItem> {
     let mut items = Vec::new();
 
-    if let Ok((module_dir, config)) = crate::pipeline::packages::discover_project_from_file(path) {
+    if let Ok((_, dependencies)) =
+        crate::pipeline::packages::discover_dependency_versions_from_file(path)
+    {
         let mut module_children = BTreeSet::new();
-        for dep in config.dependencies.keys() {
+        for dep in dependencies.keys() {
             if let Ok(coord) = ModuleCoord::parse(dep)
                 && namespace == coord.owner
             {
@@ -833,9 +834,7 @@ fn use_colon_colon_items_for_namespace(
                 }),
         );
 
-        if let Ok(external_deps) =
-            crate::external::resolve_project_dependencies(&module_dir, &config)
-        {
+        if let Ok(external_deps) = crate::external::resolve_dependency_versions(&dependencies) {
             let import_paths = external_deps.import_paths();
             let prefix = format!("{namespace}::");
             let mut child_packages = BTreeSet::new();

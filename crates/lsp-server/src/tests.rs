@@ -51,16 +51,19 @@ versions = ["1.2.0"]
     .unwrap();
     std::fs::write(
         registry.join("alice/http/1.2.0/goml.toml"),
-        r#"[package]
+        r#"[crate]
 name = "http"
+kind = "lib"
+root = "lib.gom"
 "#,
     )
     .unwrap();
     std::fs::write(
         registry.join("alice/http/1.2.0/lib.gom"),
         r#"
+mod client;
 
-use client;
+use crate::client;
 
 fn make_client() -> client::Client {
     client::Client { name: "alice" }
@@ -69,14 +72,7 @@ fn make_client() -> client::Client {
     )
     .unwrap();
     std::fs::write(
-        registry.join("alice/http/1.2.0/client/goml.toml"),
-        r#"[package]
-name = "client"
-"#,
-    )
-    .unwrap();
-    std::fs::write(
-        registry.join("alice/http/1.2.0/client/lib.gom"),
+        registry.join("alice/http/1.2.0/client/mod.gom"),
         r#"
 
 struct Client {
@@ -684,13 +680,6 @@ fn main() {
 name = "demo"
 kind = "bin"
 root = "main.gom"
-
-[module]
-name = "demo"
-
-[package]
-name = "main"
-entry = "main.gom"
 "#,
         )
         .unwrap();
@@ -1168,25 +1157,10 @@ fn main() {
 name = "demo"
 kind = "bin"
 root = "main.gom"
-
-[module]
-name = "demo"
-
-[package]
-name = "main"
-entry = "main.gom"
 "#,
         )
         .unwrap();
         std::fs::create_dir_all(root.join("util")).unwrap();
-        std::fs::write(
-            root.join("util/goml.toml"),
-            r#"[package]
-name = "util"
-entry = "mod.gom"
-"#,
-        )
-        .unwrap();
         std::fs::write(
             root.join("util/mod.gom"),
             r#"
@@ -1712,13 +1686,6 @@ name = "demo"
 kind = "bin"
 root = "main.gom"
 
-[module]
-name = "demo"
-
-[package]
-name = "main"
-entry = "main.gom"
-
 [dependencies]
 "alice::http" = "1.2.0"
 "#,
@@ -1882,7 +1849,7 @@ entry = "main.gom"
             "main.gom",
             "use crate::traitpkg::Show;",
             "traitpkg",
-            expect!["traitpkg/goml.toml:0:0"],
+            expect!["traitpkg/mod.gom:0:0"],
         );
     }
 
@@ -1893,7 +1860,7 @@ entry = "main.gom"
             "datapkg/mod.gom",
             "use crate::traitpkg;",
             "traitpkg",
-            expect!["traitpkg/goml.toml:0:0"],
+            expect!["traitpkg/mod.gom:0:0"],
         );
     }
 
@@ -1904,7 +1871,7 @@ entry = "main.gom"
             "usepkg/mod.gom",
             "use crate::traitpkg;",
             "traitpkg",
-            expect!["traitpkg/goml.toml:0:0"],
+            expect!["traitpkg/mod.gom:0:0"],
         );
     }
 
@@ -2025,7 +1992,7 @@ entry = "main.gom"
             "main.gom",
             "crate::lib::Color::Green",
             "lib",
-            expect!["lib/goml.toml:0:0"],
+            expect!["lib/mod.gom:0:0"],
         );
     }
 
@@ -2173,13 +2140,6 @@ fn main() -> unit {
 name = "tmpmod"
 kind = "bin"
 root = "main.gom"
-
-[module]
-name = "tmpmod"
-
-[package]
-name = "main"
-entry = "main.gom"
 "#,
         );
         write_file(
@@ -2235,14 +2195,14 @@ fn main() -> unit {
                 "main.gom",
                 "use alice::http;",
                 "http",
-                expect!["1.2.0/goml.toml:0:0"],
+                expect!["1.2.0/lib.gom:0:0"],
             );
             check_temp_module_goto_token(
                 "registry_packages",
                 "main.gom",
                 "use alice::http::client;",
                 "client",
-                expect!["client/goml.toml:0:0"],
+                expect!["client/mod.gom:0:0"],
             );
         });
     }
@@ -2302,14 +2262,14 @@ fn main() -> unit {
                 "main.gom",
                 "http::make_client",
                 "make_client",
-                expect!["1.2.0/lib.gom:4:3"],
+                expect!["1.2.0/lib.gom:5:3"],
             );
             check_temp_module_goto_token(
                 "registry_members",
                 "main.gom",
                 "client::Client",
                 "Client",
-                expect!["client/lib.gom:2:7"],
+                expect!["client/mod.gom:2:7"],
             );
         });
     }
@@ -2325,13 +2285,6 @@ fn main() -> unit {
 name = "tmpmod"
 kind = "bin"
 root = "main.gom"
-
-[module]
-name = "tmpmod"
-
-[package]
-name = "main"
-entry = "main.gom"
 "#,
         );
         write_file(
@@ -2347,27 +2300,11 @@ fn main() {
 "#,
         );
         write_file(
-            &root.join("A/goml.toml"),
-            r#"
-[package]
-name = "A"
-entry = "mod.gom"
-"#,
-        );
-        write_file(
             &root.join("A/mod.gom"),
             r#"
 
 
 pub struct Foo {}
-"#,
-        );
-        write_file(
-            &root.join("B/goml.toml"),
-            r#"
-[package]
-name = "B"
-entry = "mod.gom"
 "#,
         );
         write_file(

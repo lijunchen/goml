@@ -122,16 +122,14 @@ fn resolve_use_decl(
     let Ok((_graph, index)) = build_symbol_index(path, src) else {
         if idx == 0 {
             let pkg = &segments[0];
-            let pkg_dir = if let Ok((module_dir, _)) =
-                crate::pipeline::packages::discover_project_from_file(path)
-            {
-                module_dir.join(pkg)
-            } else {
-                path.parent()
-                    .filter(|parent| !parent.as_os_str().is_empty())
-                    .unwrap_or_else(|| Path::new("."))
-                    .join(pkg)
-            };
+            let start_dir = path
+                .parent()
+                .filter(|parent| !parent.as_os_str().is_empty())
+                .unwrap_or_else(|| Path::new("."));
+            let root_dir = crate::config::find_crate_root(start_dir)
+                .map(|(root, _)| root)
+                .unwrap_or_else(|| start_dir.to_path_buf());
+            let pkg_dir = root_dir.join(pkg);
             if let Some(target) = package_nav_target_in_dir(&pkg_dir) {
                 return Some(vec![DefinitionLocation {
                     path: target,
@@ -175,7 +173,7 @@ fn resolve_mod_decl(path: &Path, token: &MySyntaxToken) -> Option<DefinitionLoca
         .parent()
         .filter(|parent| !parent.as_os_str().is_empty())
         .unwrap_or_else(|| Path::new("."));
-    if let Some((crate_dir, _)) = crate::config::GomlConfig::find_crate_root(start_dir)
+    if let Some((crate_dir, _)) = crate::config::find_crate_root(start_dir)
         && let Ok(unit) = crate::pipeline::modules::discover_crate_from_dir(&crate_dir)
     {
         let current = canonical_path(path);
@@ -692,8 +690,9 @@ fn package_definition_location(
 }
 
 fn external_use_definition_location(path: &Path, lookup: &str) -> Option<DefinitionLocation> {
-    let (module_dir, config) = crate::pipeline::packages::discover_project_from_file(path).ok()?;
-    let external_deps = crate::external::resolve_project_dependencies(&module_dir, &config).ok()?;
+    let (_module_dir, dependencies) =
+        crate::pipeline::packages::discover_dependency_versions_from_file(path).ok()?;
+    let external_deps = crate::external::resolve_dependency_versions(&dependencies).ok()?;
     let alias = external_deps.import_paths().get(lookup)?.clone();
     let package_dir = external_deps.package_dirs().get(&alias)?.clone();
     let target = package_nav_target_in_dir(&package_dir)?;

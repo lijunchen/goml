@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use crate::{
     env::format_typer_diagnostics,
-    pipeline::pipeline::{CompilationError, compile, compile_single_file},
+    pipeline::pipeline::{CompilationError, compile_single_file},
 };
 
 #[test]
@@ -44,52 +44,6 @@ fn missing_main_function_is_rejected() {
                 diagnostics
                     .iter()
                     .any(|line| line.contains("main function is required")),
-                "{diagnostics:?}"
-            );
-        }
-        other => panic!("expected typer error, got {other:?}"),
-    }
-}
-
-#[test]
-fn non_main_package_entry_is_rejected() {
-    let dir = tempfile::tempdir().unwrap();
-    let manifest = dir.path().join("goml.toml");
-    std::fs::write(
-        &manifest,
-        r#"[module]
-name = "demo"
-
-[package]
-name = "lib"
-entry = "main.gom"
-"#,
-    )
-    .unwrap();
-    let path = dir.path().join("main.gom");
-    let src = r#"fn main() -> unit {
-    println("lib main");
-}
-"#;
-    std::fs::write(&path, src).unwrap();
-    let err = compile(&path, src).expect_err("expected compile error");
-
-    match err {
-        CompilationError::Compile { diagnostics } => {
-            assert!(
-                diagnostics
-                    .iter()
-                    .map(|diagnostic| diagnostic.message())
-                    .any(|line| line.contains("module root package must be `main`")),
-                "{diagnostics:?}"
-            );
-        }
-        CompilationError::Typer { diagnostics } => {
-            let diagnostics = format_typer_diagnostics(&diagnostics, src);
-            assert!(
-                diagnostics
-                    .iter()
-                    .any(|line| line.contains("entry package must be main")),
                 "{diagnostics:?}"
             );
         }
