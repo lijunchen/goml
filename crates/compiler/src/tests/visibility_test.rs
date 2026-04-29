@@ -468,6 +468,38 @@ pub fn item() -> Item {
 }
 
 #[test]
+fn ordinary_use_imports_trait_for_method_syntax() {
+    assert_ok(&[
+        (
+            "main.gom",
+            r#"
+mod ext;
+
+use crate::ext::DisplayExt;
+
+fn main() -> unit {
+    "x".display()
+}
+"#,
+        ),
+        (
+            "ext.gom",
+            r#"
+pub trait DisplayExt {
+    fn display(Self) -> unit;
+}
+
+impl DisplayExt for string {
+    fn display(self: string) -> unit {
+        string_println(self)
+    }
+}
+"#,
+        ),
+    ]);
+}
+
+#[test]
 fn trait_method_syntax_requires_trait_import() {
     assert_err(&[
         (
