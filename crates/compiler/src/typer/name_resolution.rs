@@ -328,10 +328,10 @@ fn file_imports(
             imports.insert(module.name.0.clone());
         }
     }
-    let known_packages = deps.keys().cloned().collect::<HashSet<_>>();
+    let known_namespaces = deps.keys().cloned().collect::<HashSet<_>>();
     imports.extend(collect_known_crate_path_imports_from_ast(
         file,
-        &known_packages,
+        &known_namespaces,
     ));
     imports
 }
