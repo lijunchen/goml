@@ -1235,6 +1235,100 @@ fn main() {
     }
 
     #[test]
+    fn colon_colon_completion_uses_manifest_module_paths() {
+        let dir = tempdir().unwrap();
+        let root = dir.path();
+        std::fs::create_dir_all(root.join("api")).unwrap();
+        std::fs::write(
+            root.join("goml.toml"),
+            r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+"#,
+        )
+        .unwrap();
+        std::fs::write(
+            root.join("main.gom"),
+            r#"
+mod api;
+
+fn main() -> unit {
+    ()
+}
+"#,
+        )
+        .unwrap();
+        std::fs::write(
+            root.join("api/mod.gom"),
+            r#"
+pub mod client;
+
+pub struct Parent {
+    name: string,
+}
+
+pub fn helper() -> string {
+    "api"
+}
+"#,
+        )
+        .unwrap();
+
+        let client_path = root.join("api/client.gom");
+        let valid_client_src = r#"
+pub struct Request {
+    path: string,
+}
+
+pub fn send() -> string {
+    "ok"
+}
+"#;
+        std::fs::write(&client_path, valid_client_src).unwrap();
+
+        let main_completion_src = r#"
+mod api;
+
+use crate::
+
+fn main() -> unit {
+    ()
+}
+"#;
+        let main_completion = handlers::completion(
+            &root.join("main.gom"),
+            main_completion_src,
+            Position {
+                line: 3,
+                character: 11,
+            },
+        );
+        expect!["api, main"].assert_eq(&format_completion(main_completion));
+
+        let client_completion_src = r#"
+use super::
+
+pub struct Request {
+    path: string,
+}
+
+pub fn send() -> string {
+    "ok"
+}
+"#;
+        let client_completion = handlers::completion(
+            &client_path,
+            client_completion_src,
+            Position {
+                line: 1,
+                character: 11,
+            },
+        );
+        expect!["Parent, client, helper"].assert_eq(&format_completion(client_completion));
+    }
+
+    #[test]
     fn value_completion_suggests_keywords() {
         check_completion(
             r#"
