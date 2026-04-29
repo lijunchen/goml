@@ -969,13 +969,13 @@ fn visit_package(
 }
 
 impl PackageGraph {
-    pub fn package_is_publicly_visible(&self, package: &str) -> bool {
-        if package == self.entry_package {
+    pub fn namespace_is_publicly_visible(&self, namespace: &str) -> bool {
+        if namespace == self.entry_package {
             return true;
         }
 
         let mut prefix = String::new();
-        for segment in package.split("::") {
+        for segment in namespace.split("::") {
             if prefix.is_empty() {
                 prefix.push_str(segment);
             } else {
@@ -992,11 +992,11 @@ impl PackageGraph {
         true
     }
 
-    pub fn add_external_root_package(&mut self, package: impl Into<String>) {
-        self.external_root_packages.insert(package.into());
+    pub fn add_external_root_namespace(&mut self, namespace: impl Into<String>) {
+        self.external_root_packages.insert(namespace.into());
     }
 
-    pub fn add_external_package_dir(&mut self, package: impl Into<String>, dir: PathBuf) {
-        self.package_dirs.insert(package.into(), dir);
+    pub fn add_external_namespace_dir(&mut self, namespace: impl Into<String>, dir: PathBuf) {
+        self.package_dirs.insert(namespace.into(), dir);
     }
 }

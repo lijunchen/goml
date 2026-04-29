@@ -189,8 +189,8 @@ impl ExternalDependencyArtifacts {
                     package, package
                 ));
             }
-            graph.add_external_root_package(package.clone());
-            graph.add_external_package_dir(package, dir);
+            graph.add_external_root_namespace(package.clone());
+            graph.add_external_namespace_dir(package, dir);
         }
         Ok(())
     }
@@ -348,7 +348,7 @@ fn compile_external_module(
                 package
             ));
         }
-        graph.add_external_root_package(package.clone());
+        graph.add_external_root_namespace(package.clone());
     }
 
     let order = packages::topo_sort_packages(&graph).map_err(err_text)?;
@@ -402,7 +402,7 @@ fn compile_external_module(
             .get(&package_name)
             .cloned()
             .ok_or_else(|| format!("missing logical package {}", package_name))?;
-        let publicly_visible = graph.package_is_publicly_visible(&package_name);
+        let publicly_visible = graph.namespace_is_publicly_visible(&package_name);
         let transformed_exports = rename_exports(&compiled.exports, &logical_names);
         merge_exports(&mut merged_exports, &transformed_exports);
         if publicly_visible {
