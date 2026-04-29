@@ -27,6 +27,7 @@ pub struct PackageGraph {
     pub packages: HashMap<String, PackageUnit>,
     pub discovery_order: Vec<String>,
     pub package_dirs: HashMap<String, PathBuf>,
+    pub package_visibilities: HashMap<String, ast::Visibility>,
     pub external_root_packages: HashSet<String>,
 }
 
@@ -650,6 +651,7 @@ fn discover_packages_from_crate_unit(
     let mut packages = HashMap::new();
     let mut discovery_order = Vec::new();
     let mut package_dirs = HashMap::new();
+    let mut package_visibilities = HashMap::new();
 
     for module in crate_unit.modules.iter() {
         let name = module_package_name(module.path.segments(), root_package);
@@ -688,7 +690,8 @@ fn discover_packages_from_crate_unit(
             },
         );
         discovery_order.push(name.clone());
-        package_dirs.insert(name, package_dir_for_file(&module.file_path));
+        package_dirs.insert(name.clone(), package_dir_for_file(&module.file_path));
+        package_visibilities.insert(name, module.visibility);
     }
 
     let known_packages = packages.keys().cloned().collect::<HashSet<_>>();
@@ -706,6 +709,7 @@ fn discover_packages_from_crate_unit(
         packages,
         discovery_order,
         package_dirs,
+        package_visibilities,
         external_root_packages: HashSet::new(),
     })
 }
@@ -831,6 +835,7 @@ fn discover_packages_inner(
     let mut packages = HashMap::new();
     let mut discovery_order = Vec::new();
     let mut package_dirs = HashMap::new();
+    let mut package_visibilities = HashMap::new();
     let mut queue: Vec<String> = entry_package.imports.iter().cloned().collect();
     let mut loaded = HashSet::new();
 
@@ -838,6 +843,7 @@ fn discover_packages_inner(
     packages.insert(entry_name.clone(), entry_package);
     discovery_order.push(entry_name.clone());
     package_dirs.insert(entry_name.clone(), root_dir.to_path_buf());
+    package_visibilities.insert(entry_name.clone(), ast::Visibility::Public);
 
     while let Some(package_name) = queue.pop() {
         if loaded.contains(&package_name) {
@@ -883,6 +889,7 @@ fn discover_packages_inner(
         packages.insert(declared_name.clone(), package);
         discovery_order.push(declared_name.clone());
         package_dirs.insert(declared_name, package_dir);
+        package_visibilities.insert(package_name, ast::Visibility::Public);
     }
 
     Ok(PackageGraph {
@@ -892,6 +899,7 @@ fn discover_packages_inner(
         packages,
         discovery_order,
         package_dirs,
+        package_visibilities,
         external_root_packages: HashSet::new(),
     })
 }
@@ -985,6 +993,29 @@ fn visit_package(
 }
 
 impl PackageGraph {
+    pub fn package_is_publicly_visible(&self, package: &str) -> bool {
+        if package == self.entry_package {
+            return true;
+        }
+
+        let mut prefix = String::new();
+        for segment in package.split("::") {
+            if prefix.is_empty() {
+                prefix.push_str(segment);
+            } else {
+                prefix.push_str("::");
+                prefix.push_str(segment);
+            }
+            if !matches!(
+                self.package_visibilities.get(&prefix),
+                Some(ast::Visibility::Public)
+            ) {
+                return false;
+            }
+        }
+        true
+    }
+
     pub fn add_external_root_package(&mut self, package: impl Into<String>) {
         self.external_root_packages.insert(package.into());
     }

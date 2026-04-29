@@ -61,7 +61,7 @@ root = "lib.gom"
     std::fs::write(
         registry.join("alice/http/1.2.0/lib.gom"),
         r#"
-mod client;
+pub mod client;
 
 use crate::client;
 

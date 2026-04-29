@@ -383,6 +383,7 @@ fn compile_external_module(
     }
 
     let mut merged_exports = empty_exports();
+    let mut public_exports = empty_exports();
     let mut merged_core = core::File {
         toplevels: Vec::new(),
     };
@@ -401,8 +402,12 @@ fn compile_external_module(
             .get(&package_name)
             .cloned()
             .ok_or_else(|| format!("missing logical package {}", package_name))?;
+        let publicly_visible = graph.package_is_publicly_visible(&package_name);
         let transformed_exports = rename_exports(&compiled.exports, &logical_names);
         merge_exports(&mut merged_exports, &transformed_exports);
+        if publicly_visible {
+            merge_exports(&mut public_exports, &transformed_exports);
+        }
 
         let transformed_core = rename_core_file(&compiled.core.core_ir, &logical_names);
         merged_core.toplevels.extend(transformed_core.toplevels);
@@ -445,21 +450,27 @@ fn compile_external_module(
             .iter()
             .map(|file| file.path.clone())
             .collect::<Vec<_>>();
-        sources.insert(
-            logical_name.clone(),
-            ExternalPackageSource {
-                logical_name,
-                import_path: external_import_path(&module.coord.owner, root_package, &package_name),
-                dir: package_dir,
-                files,
-            },
-        );
+        if publicly_visible {
+            sources.insert(
+                logical_name.clone(),
+                ExternalPackageSource {
+                    logical_name,
+                    import_path: external_import_path(
+                        &module.coord.owner,
+                        root_package,
+                        &package_name,
+                    ),
+                    dir: package_dir,
+                    files,
+                },
+            );
+        }
     }
 
     let mut package_interfaces = BTreeMap::new();
     for source in sources.values() {
         let mut package_interface =
-            interface::PackageInterface::from_exports(&source.logical_name, &merged_exports);
+            interface::PackageInterface::from_exports(&source.logical_name, &public_exports);
         package_interface.packages = std::iter::once(source.import_path.clone()).collect();
         package_interfaces.insert(source.logical_name.clone(), package_interface);
     }
@@ -470,7 +481,7 @@ fn compile_external_module(
 
     let interface = InterfaceUnit::new(
         root_package.to_string(),
-        merged_exports.clone(),
+        public_exports,
         package_interface,
         merged_deps.clone(),
     );

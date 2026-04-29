@@ -202,6 +202,7 @@ fn create_local_registry(root: &Path) -> anyhow::Result<PathBuf> {
     let registry = root.join("registry");
     fs::create_dir_all(registry.join("alice/http/1.0.0/client"))?;
     fs::create_dir_all(registry.join("alice/http/1.2.0/client"))?;
+    fs::create_dir_all(registry.join("alice/http/1.2.0/internal"))?;
     fs::create_dir_all(registry.join("alice/net/0.1.0"))?;
     fs::create_dir_all(registry.join("alice/appdep/0.1.0"))?;
     fs::create_dir_all(registry.join("alice/fmt/1.0.0"))?;
@@ -267,12 +268,17 @@ net = { package = "alice::net", version = "0.1.0" }
     fs::write(
         registry.join("alice/http/1.2.0/lib.gom"),
         r#"
-mod client;
+pub mod client;
+mod internal;
 
 use crate::client;
 
 pub fn version() -> string {
     client::tag()
+}
+
+pub fn public_root() -> string {
+    "root"
 }
 "#,
     )?;
@@ -286,6 +292,14 @@ pub fn tag() -> string {
 
 fn helper() -> string {
     "hidden"
+}
+"#,
+    )?;
+    fs::write(
+        registry.join("alice/http/1.2.0/internal/mod.gom"),
+        r#"
+pub fn public_but_module_private() -> string {
+    "private"
 }
 "#,
     )?;
@@ -977,6 +991,77 @@ use http::client;
 
 fn main() -> unit {
     let _ = client::helper();
+}
+"#,
+    )?;
+
+    let private_output = run_goml_with_home(&["check"], &project_dir, &home)?;
+    assert!(!private_output.status.success());
+
+    Ok(())
+}
+
+#[test]
+fn project_check_hides_private_external_modules() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let registry = create_local_registry(dir.path())?;
+    let home = dir.path().join("home");
+    fs::create_dir_all(&home)?;
+
+    let project_dir = dir.path().join("demo");
+    fs::create_dir_all(&project_dir)?;
+    fs::write(
+        project_dir.join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+
+[dependencies]
+http = { package = "alice::http", version = "1.2.0" }
+"#,
+    )?;
+    fs::write(
+        project_dir.join("main.gom"),
+        r#"
+use http;
+
+fn main() -> unit {
+    let _ = http::public_root();
+}
+"#,
+    )?;
+
+    let update_output = run_goml_with_home(
+        &[
+            "update",
+            "--local-registry",
+            registry.to_string_lossy().as_ref(),
+        ],
+        &project_dir,
+        &home,
+    )?;
+    assert!(
+        update_output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&update_output.stderr)
+    );
+
+    let public_output = run_goml_with_home(&["check"], &project_dir, &home)?;
+    assert!(
+        public_output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&public_output.stderr)
+    );
+
+    fs::write(
+        project_dir.join("main.gom"),
+        r#"
+use http;
+use http::internal;
+
+fn main() -> unit {
+    let _ = internal::public_but_module_private();
 }
 "#,
     )?;
