@@ -63,8 +63,9 @@ impl CrateUnit {
         self.modules
             .iter()
             .map(|module| {
-                crate::hir::SourceFileAst::with_module_path(
+                crate::hir::SourceFileAst::with_package_and_module_path(
                     module.file_path.clone(),
+                    self.config.name.clone(),
                     module.path.segments().to_vec(),
                     module.ast.clone(),
                 )
@@ -473,14 +474,17 @@ kind = "bin"
         let source_module_paths = unit
             .source_files()
             .into_iter()
-            .map(|file| file.module_path)
+            .map(|file| (file.package, file.module_path))
             .collect::<Vec<_>>();
         assert_eq!(
             source_module_paths,
             vec![
-                Vec::<String>::new(),
-                vec!["foo".to_string()],
-                vec!["foo".to_string(), "bar".to_string()]
+                ("hello".to_string(), Vec::<String>::new()),
+                ("hello".to_string(), vec!["foo".to_string()]),
+                (
+                    "hello".to_string(),
+                    vec!["foo".to_string(), "bar".to_string()]
+                )
             ]
         );
     }
