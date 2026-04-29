@@ -131,7 +131,7 @@ pub fn foo() -> int32 {
 use Lib;
 
 fn main() -> unit {
-    string_println(int32_to_string(Lib::foo()))
+    println(Lib::foo())
 }
 "#,
     )?;

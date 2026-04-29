@@ -43,7 +43,12 @@ func main0() struct{} {
     var updated__3 [3]int32 = update_array(arr__2)
     var value__4 int32 = read_array(updated__3)
     var t8 string = int32_to_string(value__4)
-    string_println(t8)
+    println__T_string(t8)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

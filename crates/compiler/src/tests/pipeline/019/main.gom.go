@@ -149,22 +149,27 @@ func point32_to_string4(p__22 Point) string {
 func main0() struct{} {
     var start__25 Point = make_point()
     var t78 string = point32_to_string(start__25)
-    string_println(t78)
+    println__T_string(t78)
     var t79 Point = Point{
         x: 1,
         y: 2,
     }
     var swapped__26 Point = flip(t79)
     var t80 string = point32_to_string2(swapped__26)
-    string_println(t80)
+    println__T_string(t80)
     wrap_int(3)
     var a__29 Point = x_add_1(start__25)
     var t81 string = point32_to_string3(a__29)
-    string_println(t81)
+    println__T_string(t81)
     var t82 Point = x_add_1(start__25)
     var a__30 Point = flip(t82)
     var t83 string = point32_to_string4(a__30)
-    string_println(t83)
+    println__T_string(t83)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

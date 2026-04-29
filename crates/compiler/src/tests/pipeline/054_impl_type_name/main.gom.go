@@ -90,10 +90,10 @@ func main0() struct{} {
         y: 9,
     }
     var t27 string = show_point(point__8)
-    string_println(t27)
+    println__T_string(t27)
     var unit_shape__9 Shape = Unit{}
     var t28 string = show_shape(unit_shape__9)
-    string_println(t28)
+    println__T_string(t28)
     var t29 Point = Point{
         x: 1,
         y: 2,
@@ -102,7 +102,12 @@ func main0() struct{} {
         _0: t29,
     }
     var t30 string = show_shape(location_shape__10)
-    string_println(t30)
+    println__T_string(t30)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

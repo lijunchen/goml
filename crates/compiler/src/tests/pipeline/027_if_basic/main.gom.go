@@ -32,10 +32,15 @@ func main0() struct{} {
     var no__4 int32 = choose(false, 10, 99)
     var t7 string = int32_to_string(yes__3)
     var t8 string = "yes=" + t7
-    string_println(t8)
+    println__T_string(t8)
     var t9 string = int32_to_string(no__4)
     var t10 string = "no=" + t9
-    string_println(t10)
+    println__T_string(t10)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

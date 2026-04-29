@@ -115,7 +115,12 @@ func show(res__4 Result__string__GoError) string {
 func main0() struct{} {
     var t22 Result__string__GoError = update("https://example.com/old", "/new")
     var t23 string = show(t22)
-    string_println(t23)
+    println__T_string(t23)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

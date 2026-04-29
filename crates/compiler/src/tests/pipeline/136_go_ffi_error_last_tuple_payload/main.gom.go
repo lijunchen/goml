@@ -114,7 +114,12 @@ func show(res__3 Result__string__GoError) string {
 func main0() struct{} {
     var t23 Result__string__GoError = render("example.com:443")
     var t24 string = show(t23)
-    string_println(t24)
+    println__T_string(t24)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

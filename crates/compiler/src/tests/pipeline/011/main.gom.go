@@ -8,8 +8,8 @@ func int32_to_string(x int32) string {
     return _goml_fmt.Sprintf("%d", x)
 }
 
-func string_print(s string) struct{} {
-    _goml_fmt.Print(s)
+func string_println(s string) struct{} {
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -21,7 +21,12 @@ func main0() struct{} {
     var a__2 int32 = a__1 + 3
     var a__3 int32 = a__2 + 4
     var t1 string = int32_to_string(a__3)
-    string_print(t1)
+    println__T_string(t1)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

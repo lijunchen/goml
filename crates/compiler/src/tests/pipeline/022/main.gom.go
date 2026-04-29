@@ -52,22 +52,27 @@ func repeated_string(s__2 string) int32 {
 func main0() struct{} {
     var t16 int32 = match_string("hello")
     var t17 string = int32_to_string(t16)
-    string_println(t17)
+    println__T_string(t17)
     var t18 int32 = match_string("planet")
     var t19 string = int32_to_string(t18)
-    string_println(t19)
+    println__T_string(t19)
     var t20 int32 = wildcard_position("world")
     var t21 string = int32_to_string(t20)
-    string_println(t21)
+    println__T_string(t21)
     var t22 int32 = wildcard_position("sun")
     var t23 string = int32_to_string(t22)
-    string_println(t23)
+    println__T_string(t23)
     var t24 int32 = repeated_string("hello")
     var t25 string = int32_to_string(t24)
-    string_println(t25)
+    println__T_string(t25)
     var t26 int32 = repeated_string("mars")
     var t27 string = int32_to_string(t26)
-    string_println(t27)
+    println__T_string(t27)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

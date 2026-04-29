@@ -8,11 +8,6 @@ func int32_to_string(x int32) string {
     return _goml_fmt.Sprintf("%d", x)
 }
 
-func string_print(s string) struct{} {
-    _goml_fmt.Print(s)
-    return struct{}{}
-}
-
 func string_println(s string) struct{} {
     _goml_fmt.Println(s)
     return struct{}{}
@@ -38,19 +33,19 @@ type GoError = error
 func print_int_list(xs__0 IntList) struct{} {
     switch xs__0.(type) {
     case Nil:
-        string_print("Nil")
+        println__T_string("Nil")
     case Cons:
         var x0 int32 = xs__0.(Cons)._0
         var x1 IntList = xs__0.(Cons)._1
         var xs__2 IntList = x1
         var x__1 int32 = x0
-        string_print("Cons")
-        string_print("(")
+        println__T_string("Cons")
+        println__T_string("(")
         var t28 string = int32_to_string(x__1)
-        string_print(t28)
-        string_print(", ")
+        println__T_string(t28)
+        println__T_string(", ")
         print_int_list(xs__2)
-        string_print(")")
+        println__T_string(")")
     default:
         panic("non-exhaustive match")
     }
@@ -108,24 +103,24 @@ func int_list_length(xs__8 IntList) int32 {
 }
 
 func print_int_list_length(xs__10 IntList) struct{} {
-    string_print("Length: ")
+    println__T_string("Length: ")
     var t45 int32 = int_list_length(xs__10)
     var t46 string = int32_to_string(t45)
-    string_println(t46)
+    println__T_string(t46)
     return struct{}{}
 }
 
 func main0() struct{} {
     var x__11 IntList = Nil{}
     print_int_list(x__11)
-    string_println("")
+    println__T_string("")
     print_int_list_length(x__11)
     var x__12 IntList = Cons{
         _0: 1,
         _1: Nil{},
     }
     print_int_list(x__12)
-    string_println("")
+    println__T_string("")
     print_int_list_length(x__12)
     var t48 IntList = Cons{
         _0: 3,
@@ -140,11 +135,16 @@ func main0() struct{} {
         _1: t49,
     }
     print_int_list(x__13)
-    string_println("")
+    println__T_string("")
     print_int_list_length(x__13)
     var y__14 IntList = int_list_rev(x__13)
     print_int_list(y__14)
-    string_println("")
+    println__T_string("")
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

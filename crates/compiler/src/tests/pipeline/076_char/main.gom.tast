@@ -8,12 +8,12 @@ fn println(value/1: T) -> unit {
 
 fn main() -> unit {
     let c/0: char = 'A';
-    (string_println : (string) -> unit)((char::to_string : (char) -> string)((c/0 : char)));
+    (println : (string) -> unit)((char::to_string : (char) -> string)((c/0 : char)));
     let d/1: char = 'b';
     let out/2: string = match (d/1 : char) {
         'a' => "A",
         'b' => "B",
         _ : char => "?",
     };
-    (string_println : (string) -> unit)((out/2 : string));
+    (println : (string) -> unit)((out/2 : string));
 }

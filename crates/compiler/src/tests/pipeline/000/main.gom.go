@@ -173,7 +173,12 @@ func main0() struct{} {
         _1: Nil{},
     }
     var t60 string = _goml_trait_x5f_impl_x23_ToString_x23_LineList_x23_to_x5f_string(lines__21)
-    string_println(t60)
+    println__T_string(t60)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

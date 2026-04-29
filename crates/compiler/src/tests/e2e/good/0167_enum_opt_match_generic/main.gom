@@ -7,9 +7,9 @@ fn main() {
     let x: Opt[Opt[int32]] = Opt::Some(Opt::Some(42));
     match x {
         Opt::Some(inner) => match inner {
-            Opt::Some(v) => string_println(int32_to_string(v)),
-            Opt::None => string_println("inner none"),
+            Opt::Some(v) => println(int32_to_string(v)),
+            Opt::None => println("inner none"),
         },
-        Opt::None => string_println("outer none"),
+        Opt::None => println("outer none"),
     };
 }

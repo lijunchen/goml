@@ -146,87 +146,92 @@ func main0() struct{} {
     }
     var t44 int32 = match_mixed_pair(t43)
     var t45 string = int32_to_string(t44)
-    string_println(t45)
+    println__T_string(t45)
     var t46 Tuple2_5int32_6string = Tuple2_5int32_6string{
         _0: 0,
         _1: "other",
     }
     var t47 int32 = match_mixed_pair(t46)
     var t48 string = int32_to_string(t47)
-    string_println(t48)
+    println__T_string(t48)
     var t49 Tuple2_5int32_6string = Tuple2_5int32_6string{
         _0: 1,
         _1: "one",
     }
     var t50 int32 = match_mixed_pair(t49)
     var t51 string = int32_to_string(t50)
-    string_println(t51)
+    println__T_string(t51)
     var t52 Tuple2_5int32_6string = Tuple2_5int32_6string{
         _0: 2,
         _1: "zero",
     }
     var t53 int32 = match_mixed_pair(t52)
     var t54 string = int32_to_string(t53)
-    string_println(t54)
+    println__T_string(t54)
     var t55 Tuple2_5int32_6string = Tuple2_5int32_6string{
         _0: 2,
         _1: "two",
     }
     var t56 int32 = match_mixed_pair(t55)
     var t57 string = int32_to_string(t56)
-    string_println(t57)
+    println__T_string(t57)
     var t58 Mixed = OnlyInt{
         _0: 0,
     }
     var t59 int32 = match_mixed_enum(t58)
     var t60 string = int32_to_string(t59)
-    string_println(t60)
+    println__T_string(t60)
     var t61 Mixed = OnlyInt{
         _0: 5,
     }
     var t62 int32 = match_mixed_enum(t61)
     var t63 string = int32_to_string(t62)
-    string_println(t63)
+    println__T_string(t63)
     var t64 Mixed = OnlyStr{
         _0: "zero",
     }
     var t65 int32 = match_mixed_enum(t64)
     var t66 string = int32_to_string(t65)
-    string_println(t66)
+    println__T_string(t66)
     var t67 Mixed = OnlyStr{
         _0: "hello",
     }
     var t68 int32 = match_mixed_enum(t67)
     var t69 string = int32_to_string(t68)
-    string_println(t69)
+    println__T_string(t69)
     var t70 Mixed = Both{
         _0: 0,
         _1: "zero",
     }
     var t71 int32 = match_mixed_enum(t70)
     var t72 string = int32_to_string(t71)
-    string_println(t72)
+    println__T_string(t72)
     var t73 Mixed = Both{
         _0: 0,
         _1: "hello",
     }
     var t74 int32 = match_mixed_enum(t73)
     var t75 string = int32_to_string(t74)
-    string_println(t75)
+    println__T_string(t75)
     var t76 Mixed = Both{
         _0: 2,
         _1: "zero",
     }
     var t77 int32 = match_mixed_enum(t76)
     var t78 string = int32_to_string(t77)
-    string_println(t78)
+    println__T_string(t78)
     var t79 Mixed = Both{
         _0: 3,
         _1: "three",
     }
     var t80 int32 = match_mixed_enum(t79)
     var t81 string = int32_to_string(t80)
-    string_println(t81)
+    println__T_string(t81)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

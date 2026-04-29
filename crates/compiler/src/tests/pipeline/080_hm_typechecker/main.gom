@@ -366,8 +366,8 @@ fn exp_let(name: string, a: Exp, b: Exp) -> Exp {
 
 fn show_result(label: string, res: Result[Typ, string]) -> unit {
     match res {
-        Result::Ok(ty) => string_println(label + ": " + typ_to_string(ty)),
-        Result::Err(e) => string_println(label + ": " + e),
+        Result::Ok(ty) => println(label + ": " + typ_to_string(ty)),
+        Result::Err(e) => println(label + ": " + e),
     }
 }
 
@@ -575,7 +575,7 @@ fn main() -> unit {
         ),
     );
 
-    string_println("");
-    string_println("All Done");
-    string_println("");
+    println("");
+    println("All Done");
+    println("");
 }

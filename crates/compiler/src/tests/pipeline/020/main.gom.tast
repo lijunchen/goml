@@ -82,16 +82,16 @@ fn shape_unit_to_string(shape/25: Shape[unit]) -> string {
 }
 
 fn main() -> unit {
-    let _ : unit = (string_println : (string) -> unit)((point32_to_string : (Point) -> string)(Point { x: 3, y: 4 }));
-    let _ : unit = (string_println : (string) -> unit)((wrapper_int32_to_string : (Wrapper[int32]) -> string)(Wrapper { value: 7 }));
-    let _ : unit = (string_println : (string) -> unit)((wrapper_unit_to_string : (Wrapper[unit]) -> string)(Wrapper { value: () }));
+    let _ : unit = (println : (string) -> unit)((point32_to_string : (Point) -> string)(Point { x: 3, y: 4 }));
+    let _ : unit = (println : (string) -> unit)((wrapper_int32_to_string : (Wrapper[int32]) -> string)(Wrapper { value: 7 }));
+    let _ : unit = (println : (string) -> unit)((wrapper_unit_to_string : (Wrapper[unit]) -> string)(Wrapper { value: () }));
     let bounced_origin/30: Shape[int32] = (bounce_int : (Shape[int32]) -> Shape[int32])(Shape::Origin);
-    let _ : unit = (string_println : (string) -> unit)((shape_int32_to_string : (Shape[int32]) -> string)(Shape::Dot(Point { x: 3, y: 4 })));
-    let _ : unit = (string_println : (string) -> unit)((shape_int32_to_string : (Shape[int32]) -> string)(Shape::Wrapped(Wrapper { value: 7 })));
-    let _ : unit = (string_println : (string) -> unit)((shape_int32_to_string : (Shape[int32]) -> string)((bounced_origin/30 : Shape[int32])));
-    let _ : unit = (string_println : (string) -> unit)((shape_unit_to_string : (Shape[unit]) -> string)(Shape::Dot(Point { x: 3, y: 4 })));
-    let _ : unit = (string_println : (string) -> unit)((shape_unit_to_string : (Shape[unit]) -> string)(Shape::Wrapped(Wrapper { value: () })));
-    let _ : unit = (string_println : (string) -> unit)((shape_unit_to_string : (Shape[unit]) -> string)(Shape::Origin));
+    let _ : unit = (println : (string) -> unit)((shape_int32_to_string : (Shape[int32]) -> string)(Shape::Dot(Point { x: 3, y: 4 })));
+    let _ : unit = (println : (string) -> unit)((shape_int32_to_string : (Shape[int32]) -> string)(Shape::Wrapped(Wrapper { value: 7 })));
+    let _ : unit = (println : (string) -> unit)((shape_int32_to_string : (Shape[int32]) -> string)((bounced_origin/30 : Shape[int32])));
+    let _ : unit = (println : (string) -> unit)((shape_unit_to_string : (Shape[unit]) -> string)(Shape::Dot(Point { x: 3, y: 4 })));
+    let _ : unit = (println : (string) -> unit)((shape_unit_to_string : (Shape[unit]) -> string)(Shape::Wrapped(Wrapper { value: () })));
+    let _ : unit = (println : (string) -> unit)((shape_unit_to_string : (Shape[unit]) -> string)(Shape::Origin));
     let _ : int32 = (describe : (Shape[int32]) -> int32)((bounce_int : (Shape[int32]) -> Shape[int32])(Shape::Origin));
-    (string_println : (string) -> unit)("struct enums!")
+    (println : (string) -> unit)("struct enums!")
 }

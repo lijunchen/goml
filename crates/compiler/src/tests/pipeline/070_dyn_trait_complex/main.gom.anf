@@ -223,18 +223,18 @@ fn main() -> unit {
   let vlen/52 = vec_len(v/51) in
   join k109(jp110: int32) -> unit {
     let delta/53 = jp110 in
-    let mtmp3 = string_println(s0/45) in
-    let mtmp4 = string_println(s1/46) in
-    let mtmp5 = string_println(s2/47) in
+    let mtmp3 = println__T_string(s0/45) in
+    let mtmp4 = println__T_string(s1/46) in
+    let mtmp5 = println__T_string(s2/47) in
     let i/54 = ref(0) in
     join exit111() -> unit {
       let mtmp8 = () in
       let t112 = int32_to_string(vlen/52) in
       let t113 = ("len:" + t112) in
-      let mtmp9 = string_println(t113) in
+      let mtmp9 = println__T_string(t113) in
       let t114 = int32_to_string(delta/53) in
       let t115 = ("delta:" + t114) in
-      let mtmp10 = string_println(t115) in
+      let mtmp10 = println__T_string(t115) in
       jump ret104()
     } in
     joinrec {
@@ -243,7 +243,7 @@ fn main() -> unit {
         let t118 = (t117 < 3) in
         if t118 {
           let line/55 = bump_and_show(dc/42, delta/53) in
-          let _wild6 = string_println(line/55) in
+          let _wild6 = println__T_string(line/55) in
           let t119 = ref_get(i/54) in
           let t120 = (t119 + 1) in
           let mtmp7 = ref_set(i/54, t120) in
@@ -265,19 +265,27 @@ fn main() -> unit {
   }
 }
 
-fn inherent#closure_env_f_0#closure_env_f_0#apply(env11: closure_env_f_0, v/26: dyn Display, t/27: string) -> string {
-  join ret121(retv122: string) -> string {
-    retv122
+fn println__T_string(value/1: string) -> unit {
+  join ret121() -> unit {
+    ()
   } in
-  let t123 = dyn_call[Display::show_with](v/26, t/27, t/27) in
-  jump ret121(t123)
+  let t122 = string_println(value/1) in
+  jump ret121()
+}
+
+fn inherent#closure_env_f_0#closure_env_f_0#apply(env11: closure_env_f_0, v/26: dyn Display, t/27: string) -> string {
+  join ret123(retv124: string) -> string {
+    retv124
+  } in
+  let t125 = dyn_call[Display::show_with](v/26, t/27, t/27) in
+  jump ret123(t125)
 }
 
 fn inherent#closure_env_make_renderer_1#closure_env_make_renderer_1#apply(env12: closure_env_make_renderer_1, x/30: dyn Display) -> string {
-  join ret124(retv125: string) -> string {
-    retv125
+  join ret126(retv127: string) -> string {
+    retv127
   } in
   let tag/29 = closure_env_make_renderer_1.tag_0(env12) in
-  let t126 = dyn_call[Display::show_with](x/30, tag/29, tag/29) in
-  jump ret124(t126)
+  let t128 = dyn_call[Display::show_with](x/30, tag/29, tag/29) in
+  jump ret126(t128)
 }

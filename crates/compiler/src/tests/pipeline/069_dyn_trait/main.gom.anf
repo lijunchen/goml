@@ -37,8 +37,16 @@ fn main() -> unit {
   let dp/4 = to_dyn[Display]{Point}(p/2) in
   let dt/5 = to_dyn[Display]{Flag}(t/3) in
   let t18 = dyn_call[Display::show](dp/4) in
-  let mtmp0 = string_println(t18) in
+  let mtmp0 = println__T_string(t18) in
   let t19 = dyn_call[Display::show](dt/5) in
-  let mtmp1 = string_println(t19) in
+  let mtmp1 = println__T_string(t19) in
   jump ret17()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret20() -> unit {
+    ()
+  } in
+  let t21 = string_println(value/1) in
+  jump ret20()
 }

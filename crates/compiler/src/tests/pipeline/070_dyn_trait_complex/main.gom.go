@@ -374,9 +374,9 @@ func main0() struct{} {
         jp110 = 5
     }
     var delta__53 int32 = jp110
-    string_println(s0__45)
-    string_println(s1__46)
-    string_println(s2__47)
+    println__T_string(s0__45)
+    println__T_string(s1__46)
+    println__T_string(s2__47)
     var i__54 *ref_int32_x = ref__Ref_5int32(0)
     Loop_loop116:
     for {
@@ -384,7 +384,7 @@ func main0() struct{} {
         var t118 bool = t117 < 3
         if t118 {
             var line__55 string = bump_and_show(dc__42, delta__53)
-            string_println(line__55)
+            println__T_string(line__55)
             var t119 int32 = ref_get__Ref_5int32(i__54)
             var t120 int32 = t119 + 1
             ref_set__Ref_5int32(i__54, t120)
@@ -395,26 +395,31 @@ func main0() struct{} {
     }
     var t112 string = int32_to_string(vlen__52)
     var t113 string = "len:" + t112
-    string_println(t113)
+    println__T_string(t113)
     var t114 string = int32_to_string(delta__53)
     var t115 string = "delta:" + t114
-    string_println(t115)
+    println__T_string(t115)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 
 func _goml_inherent_x23_closure_x5f_env_x5f_f_x5f_0_x23_closure_x5f_env_x5f_f_x5f_0_x23_apply(env11 closure_env_f_0, v__26 dyn__Display, t__27 string) string {
-    var retv122 string
-    var t123 string = v__26.vtable.show_with(v__26.data, t__27, t__27)
-    retv122 = t123
-    return retv122
+    var retv124 string
+    var t125 string = v__26.vtable.show_with(v__26.data, t__27, t__27)
+    retv124 = t125
+    return retv124
 }
 
 func _goml_inherent_x23_closure_x5f_env_x5f_make_x5f_renderer_x5f_1_x23_closure_x5f_env_x5f_make_x5f_renderer_x5f_1_x23_apply(env12 closure_env_make_renderer_1, x__30 dyn__Display) string {
-    var retv125 string
+    var retv127 string
     var tag__29 string = env12.tag_0
-    var t126 string = x__30.vtable.show_with(x__30.data, tag__29, tag__29)
-    retv125 = t126
-    return retv125
+    var t128 string = x__30.vtable.show_with(x__30.data, tag__29, tag__29)
+    retv127 = t128
+    return retv127
 }
 
 func main() {

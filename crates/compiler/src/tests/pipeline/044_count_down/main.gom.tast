@@ -17,7 +17,7 @@ fn main() -> unit {
     go || => {
         while (ref_get : (Ref[int32]) -> int32)((counter/0 : Ref[int32])) < 10 {
             {
-                (string_println : (string) -> unit)("hello");
+                (println : (string) -> unit)("hello");
                 (sleep : (Duration) -> unit)((duration : (int32) -> Duration)(1000));
                 (ref_set : (Ref[int32], int32) -> unit)((counter/0 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((counter/0 : Ref[int32])) + 1);
             }

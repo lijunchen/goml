@@ -56,7 +56,7 @@ func main0() struct{} {
     var applied__7 int32 = chosen__6(5)
     var t16 func(int32) int32 = chooser(false)
     var direct__8 int32 = t16(5)
-    var printer__9 func(string) struct{} = string_println
+    var printer__9 func(string) struct{} = println__T_string
     var t17 string = int32_to_string(applied__7)
     printer__9(t17)
     var t18 string = int32_to_string(direct__8)
@@ -67,6 +67,11 @@ func main0() struct{} {
 func println__T_int32(value__1 int32) struct{} {
     var t20 string = int32_to_string(value__1)
     string_println(t20)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

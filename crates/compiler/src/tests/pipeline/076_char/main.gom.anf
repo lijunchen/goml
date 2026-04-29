@@ -4,11 +4,11 @@ fn main() -> unit {
   } in
   let c/0 = 'A' in
   let t3 = char_to_string(c/0) in
-  let _wild0 = string_println(t3) in
+  let _wild0 = println__T_string(t3) in
   let d/1 = 'b' in
   join k4(jp5: string) -> unit {
     let out/2 = jp5 in
-    let _wild1 = string_println(out/2) in
+    let _wild1 = println__T_string(out/2) in
     jump ret2()
   } in
   match d/1 {
@@ -22,4 +22,12 @@ fn main() -> unit {
       jump k4("?")
     },
   }
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret6() -> unit {
+    ()
+  } in
+  let t7 = string_println(value/1) in
+  jump ret6()
 }

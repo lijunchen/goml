@@ -12,7 +12,12 @@ func string_println(s string) struct{} {
 type GoError = error
 
 func main0() struct{} {
-    string_println("ok")
+    println__T_string("ok")
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

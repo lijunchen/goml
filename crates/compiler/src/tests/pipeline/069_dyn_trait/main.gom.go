@@ -97,9 +97,14 @@ func main0() struct{} {
         vtable: dyn__Display__vtable__Flag(),
     }
     var t18 string = dp__4.vtable.show(dp__4.data)
-    string_println(t18)
+    println__T_string(t18)
     var t19 string = dt__5.vtable.show(dt__5.data)
-    string_println(t19)
+    println__T_string(t19)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

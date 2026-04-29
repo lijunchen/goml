@@ -5,7 +5,7 @@ fn main() -> unit {
   let x/0 = 5 in
   join k2(jp3: string) -> unit {
     let y/1 = jp3 in
-    let _wild0 = string_println(y/1) in
+    let _wild0 = println__T_string(y/1) in
     jump ret1()
   } in
   match x/0 {
@@ -19,4 +19,12 @@ fn main() -> unit {
       jump k2("other")
     },
   }
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret4() -> unit {
+    ()
+  } in
+  let t5 = string_println(value/1) in
+  jump ret4()
 }

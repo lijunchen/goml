@@ -21,17 +21,17 @@ fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
           } in
           match x2 {
             true => {
-              let t16 = string_println("case4") in
+              let t16 = println__T_string("case4") in
               jump k15()
             },
             false => {
-              let t17 = string_println("case3") in
+              let t17 = println__T_string("case3") in
               jump k15()
             },
           }
         },
         false => {
-          let t18 = string_println("case4") in
+          let t18 = println__T_string("case4") in
           jump k14()
         },
       }
@@ -54,17 +54,17 @@ fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
               } in
               match x4 {
                 true => {
-                  let t22 = string_println("case2") in
+                  let t22 = println__T_string("case2") in
                   jump k21()
                 },
                 false => {
-                  let t23 = string_println("case1") in
+                  let t23 = println__T_string("case1") in
                   jump k21()
                 },
               }
             },
             false => {
-              let t24 = string_println("case2") in
+              let t24 = println__T_string("case2") in
               jump k20()
             },
           }
@@ -82,17 +82,17 @@ fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
               } in
               match x6 {
                 true => {
-                  let t27 = string_println("case4") in
+                  let t27 = println__T_string("case4") in
                   jump k26()
                 },
                 false => {
-                  let t28 = string_println("case3") in
+                  let t28 = println__T_string("case3") in
                   jump k26()
                 },
               }
             },
             false => {
-              let t29 = string_println("case4") in
+              let t29 = println__T_string("case4") in
               jump k25()
             },
           }
@@ -119,4 +119,12 @@ fn main() -> unit {
   let t38 = (true, false) in
   let mtmp11 = test_nested_match(t37, t38) in
   jump ret30()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret39() -> unit {
+    ()
+  } in
+  let t40 = string_println(value/1) in
+  jump ret39()
 }

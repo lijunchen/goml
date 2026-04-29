@@ -8,8 +8,8 @@ func int32_to_string(x int32) string {
     return _goml_fmt.Sprintf("%d", x)
 }
 
-func string_print(s string) struct{} {
-    _goml_fmt.Print(s)
+func string_println(s string) struct{} {
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -34,7 +34,7 @@ func test(t__0 T) struct{} {
     switch t__0.(type) {
     case A:
         var t8 string = int32_to_string(1)
-        string_print(t8)
+        println__T_string(t8)
     case B:
         var x0 bool = t__0.(B)._0
         var x1 bool = t__0.(B)._1
@@ -43,10 +43,10 @@ func test(t__0 T) struct{} {
             switch x0 {
             case true:
                 var t12 string = int32_to_string(4)
-                string_print(t12)
+                println__T_string(t12)
             case false:
                 var t14 string = int32_to_string(3)
-                string_print(t14)
+                println__T_string(t14)
             default:
                 panic("non-exhaustive match")
             }
@@ -54,10 +54,10 @@ func test(t__0 T) struct{} {
             switch x0 {
             case true:
                 var t17 string = int32_to_string(4)
-                string_print(t17)
+                println__T_string(t17)
             case false:
                 var t19 string = int32_to_string(2)
-                string_print(t19)
+                println__T_string(t19)
             default:
                 panic("non-exhaustive match")
             }
@@ -87,6 +87,11 @@ func main0() struct{} {
     }
     test(t24)
     test(A{})
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

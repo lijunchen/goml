@@ -15,7 +15,7 @@ fn main() -> unit {
   let _wild0 = go t7 in
   join exit8() -> unit {
     let _wild1 = () in
-    let _wild2 = string_println("main") in
+    let _wild2 = println__T_string("main") in
     jump ret6()
   } in
   joinrec {
@@ -32,11 +32,19 @@ fn main() -> unit {
   jump loop9()
 }
 
-fn inherent#closure_env_main_0#closure_env_main_0#apply(env3: closure_env_main_0) -> unit {
+fn println__T_string(value/1: string) -> unit {
   join ret12() -> unit {
     ()
   } in
-  let signal/1 = closure_env_main_0.signal_0(env3) in
-  let t13 = child(signal/1) in
+  let t13 = string_println(value/1) in
   jump ret12()
+}
+
+fn inherent#closure_env_main_0#closure_env_main_0#apply(env3: closure_env_main_0) -> unit {
+  join ret14() -> unit {
+    ()
+  } in
+  let signal/1 = closure_env_main_0.signal_0(env3) in
+  let t15 = child(signal/1) in
+  jump ret14()
 }

@@ -26,7 +26,7 @@ fn show_int8(label/0: string, value/1: int8) -> unit {
   } in
   let t19 = int8_to_string(value/1) in
   let t20 = (label/0 + t19) in
-  let mtmp0 = string_println(t20) in
+  let mtmp0 = println__T_string(t20) in
   jump ret18()
 }
 
@@ -36,7 +36,7 @@ fn show_bool(label/2: string, value/3: bool) -> unit {
   } in
   let t22 = bool_to_string(value/3) in
   let t23 = (label/2 + t22) in
-  let mtmp1 = string_println(t23) in
+  let mtmp1 = println__T_string(t23) in
   jump ret21()
 }
 
@@ -63,4 +63,12 @@ fn main() -> unit {
   let mtmp9 = show_int8("neg=", neg/11) in
   let mtmp10 = show_bool("b<a=", less/12) in
   jump ret24()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret25() -> unit {
+    ()
+  } in
+  let t26 = string_println(value/1) in
+  jump ret25()
 }

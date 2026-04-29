@@ -423,8 +423,8 @@ fn exp_let(name: string, a: Exp, b: Exp) -> Exp {
 
 fn show_result(label: string, res: Result[Typ, string]) -> unit {
     match res {
-        Result::Ok(ty) => string_println(label + ": " + typ_to_string(ty)),
-        Result::Err(e) => string_println(label + ": " + e),
+        Result::Ok(ty) => println(label + ": " + typ_to_string(ty)),
+        Result::Err(e) => println(label + ": " + e),
     }
 }
 
@@ -470,8 +470,8 @@ fn main() -> unit {
     show_result("sound_gen_occurs", typeof(st, env_empty(), exp_lam("x", exp_let("y", exp_var("x"), exp_app(exp_var("y"), exp_var("y"))))));
     reset_gensym(st);
     show_result("fun_x_let_y_let_z_x_id_z_y", typeof(st, env_empty(), exp_lam("x", exp_let("y", exp_let("z", exp_app(exp_var("x"), id), exp_var("z")), exp_var("y")))));
-    string_println("");
-    string_println("All Done");
-    string_println("");
+    println("");
+    println("All Done");
+    println("");
 }
 

@@ -164,17 +164,22 @@ func main0() struct{} {
     var t47 int32 = ref_get__Ref_5int32(counter__12)
     var t48 int32 = bumped__15 + t47
     var t49 string = int32_to_string(t48)
-    string_println(t49)
+    println__T_string(t49)
     var t50 int32 = nested_total_val__19 + alias_total__20
     var t51 int32 = t50 + reassigned__22
     var t52 string = int32_to_string(t51)
-    string_println(t52)
+    println__T_string(t52)
     var t53 string = int32_to_string(pair_total__21)
-    string_println(t53)
+    println__T_string(t53)
     var t54 bool = flipped__16 && flipped_again__17
     var t55 bool = t54 && bool_check__23
     var t56 string = bool_to_string(t55)
-    string_println(t56)
+    println__T_string(t56)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

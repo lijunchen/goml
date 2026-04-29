@@ -65,7 +65,7 @@ func main0() struct{} {
             var t20 int32 = ref_get__Ref_5int32(i__1)
             var t21 uint8 = array_get__Array_3_5uint8(arr__0, t20)
             var t22 string = uint8_to_string(t21)
-            string_println(t22)
+            println__T_string(t22)
             var t23 int32 = ref_get__Ref_5int32(i__1)
             var t24 int32 = t23 + 1
             ref_set__Ref_5int32(i__1, t24)
@@ -77,17 +77,22 @@ func main0() struct{} {
     var floats__2 [2]float32 = [2]float32{1.5, 2.5}
     var t9 float32 = array_get__Array_2_7float32(floats__2, 0)
     var t10 string = float32_to_string(t9)
-    string_println(t10)
+    println__T_string(t10)
     var t11 float32 = array_get__Array_2_7float32(floats__2, 1)
     var t12 string = float32_to_string(t11)
-    string_println(t12)
+    println__T_string(t12)
     var longs__3 [2]int64 = [2]int64{100, 200}
     var t13 int64 = array_get__Array_2_5int64(longs__3, 0)
     var t14 string = int64_to_string(t13)
-    string_println(t14)
+    println__T_string(t14)
     var t15 int64 = array_get__Array_2_5int64(longs__3, 1)
     var t16 string = int64_to_string(t15)
-    string_println(t16)
+    println__T_string(t16)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

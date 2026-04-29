@@ -20,7 +20,12 @@ func main0() struct{} {
     var t3 int32 = x__0 + 1
     x__0 = t3
     var t4 string = int32_to_string(x__0)
-    string_println(t4)
+    println__T_string(t4)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

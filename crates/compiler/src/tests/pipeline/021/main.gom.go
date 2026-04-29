@@ -67,28 +67,33 @@ func repeated(n__3 int32) int32 {
 func main0() struct{} {
     var t22 int32 = match_int(0)
     var t23 string = int32_to_string(t22)
-    string_println(t23)
+    println__T_string(t23)
     var t24 int32 = match_int(5)
     var t25 string = int32_to_string(t24)
-    string_println(t25)
+    println__T_string(t25)
     var t26 int32 = wildcard_first(0)
     var t27 string = int32_to_string(t26)
-    string_println(t27)
+    println__T_string(t27)
     var t28 int32 = wildcard_first(2)
     var t29 string = int32_to_string(t28)
-    string_println(t29)
+    println__T_string(t29)
     var t30 int32 = wildcard_middle(2)
     var t31 string = int32_to_string(t30)
-    string_println(t31)
+    println__T_string(t31)
     var t32 int32 = wildcard_middle(3)
     var t33 string = int32_to_string(t32)
-    string_println(t33)
+    println__T_string(t33)
     var t34 int32 = repeated(1)
     var t35 string = int32_to_string(t34)
-    string_println(t35)
+    println__T_string(t35)
     var t36 int32 = repeated(3)
     var t37 string = int32_to_string(t36)
-    string_println(t37)
+    println__T_string(t37)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

@@ -23,7 +23,12 @@ func main0() struct{} {
         jp3 = "other"
     }
     var y__1 string = jp3
-    string_println(y__1)
+    println__T_string(y__1)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

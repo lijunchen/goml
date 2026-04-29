@@ -7,9 +7,9 @@ fn main() -> unit {
   let p3/6 = inherent#Point#Point[U,V]#swap__U_int32__V_string(p1/4) in
   let x/7 = Point__string__int32.y(p3/6) in
   let t2 = int32_to_string(x/7) in
-  let _wild0 = string_println(t2) in
+  let _wild0 = println__T_string(t2) in
   let x2/8 = inherent#Point#Point[U,V]#get_x__U_string__V_string(p2/5) in
-  let t3 = string_println(x2/8) in
+  let t3 = println__T_string(x2/8) in
   jump ret1()
 }
 
@@ -39,10 +39,18 @@ fn inherent#Point#Point[U,V]#swap__U_int32__V_string(self/2: Point__int32__strin
   jump ret10(t14)
 }
 
-fn inherent#Point#Point[U,V]#get_x__U_string__V_string(self/3: Point__string__string) -> string {
-  join ret15(retv16: string) -> string {
-    retv16
+fn println__T_string(value/1: string) -> unit {
+  join ret15() -> unit {
+    ()
   } in
-  let t17 = Point__string__string.x(self/3) in
-  jump ret15(t17)
+  let t16 = string_println(value/1) in
+  jump ret15()
+}
+
+fn inherent#Point#Point[U,V]#get_x__U_string__V_string(self/3: Point__string__string) -> string {
+  join ret17(retv18: string) -> string {
+    retv18
+  } in
+  let t19 = Point__string__string.x(self/3) in
+  jump ret17(t19)
 }

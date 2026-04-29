@@ -45,14 +45,14 @@ func c_value() int8 {
 func show_int8(label__0 string, value__1 int8) struct{} {
     var t19 string = int8_to_string(value__1)
     var t20 string = label__0 + t19
-    string_println(t20)
+    println__T_string(t20)
     return struct{}{}
 }
 
 func show_bool(label__2 string, value__3 bool) struct{} {
     var t22 string = bool_to_string(value__3)
     var t23 string = label__2 + t22
-    string_println(t23)
+    println__T_string(t23)
     return struct{}{}
 }
 
@@ -75,6 +75,11 @@ func main0() struct{} {
     show_int8("quot=", quot__10)
     show_int8("neg=", neg__11)
     show_bool("b<a=", less__12)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

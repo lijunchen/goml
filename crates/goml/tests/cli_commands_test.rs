@@ -100,7 +100,7 @@ fn cli_check_build_link_single_package() -> anyhow::Result<()> {
         &main_gom,
         r#"
 fn main() -> unit {
-    string_println("ok")
+    println("ok")
 }
 "#,
     )?;
@@ -181,7 +181,7 @@ pub fn msg() -> string {
 use Lib;
 
 fn main() -> unit {
-    string_println(Lib::msg())
+    println(Lib::msg())
 }
 "#,
     )?;
@@ -286,7 +286,7 @@ pub fn extra() -> int32 {
 use Lib;
 
 fn main() -> unit {
-    string_println(Lib::msg())
+    println(Lib::msg())
 }
 "#,
     )?;
@@ -359,7 +359,7 @@ fn cli_check_rejects_interface_directory_path() -> anyhow::Result<()> {
 use Lib;
 
 fn main() -> unit {
-    string_println(Lib::msg())
+    println(Lib::msg())
 }
 "#,
     )?;

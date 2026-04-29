@@ -18,7 +18,12 @@ func main0() struct{} {
     var t2 int32 = int32(len(parts__0))
     var t3 []string = parts__0[0:t2]
     var t4 string = path.Join(t3...)
-    string_println(t4)
+    println__T_string(t4)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

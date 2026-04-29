@@ -147,19 +147,19 @@ fn main() -> unit {
         2 => 3,
         _ => 5,
     };
-    let _ = string_println(s0);
-    let _ = string_println(s1);
-    let _ = string_println(s2);
+    let _ = println(s0);
+    let _ = println(s1);
+    let _ = println(s2);
     let i: Ref[int32] = ref(0);
     let _ = while ref_get(i) < 3 {
         {
             let line = bump_and_show(dc, delta);
-            string_println(line);
+            println(line);
             let _ = ref_set(i, ref_get(i) + 1);
         }
     };
-    let _ = string_println("len:" + int32_to_string(vlen));
-    let _ = string_println("delta:" + int32_to_string(delta));
+    let _ = println("len:" + int32_to_string(vlen));
+    let _ = println("delta:" + int32_to_string(delta));
     ()
 }
 

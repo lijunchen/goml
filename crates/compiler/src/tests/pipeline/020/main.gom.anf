@@ -161,58 +161,66 @@ fn main() -> unit {
   } in
   let t70 = Point { x: 3, y: 4 } in
   let t71 = point32_to_string(t70) in
-  let mtmp15 = string_println(t71) in
+  let mtmp15 = println__T_string(t71) in
   let t72 = Wrapper__int32 { value: 7 } in
   let t73 = wrapper_int32_to_string(t72) in
-  let mtmp16 = string_println(t73) in
+  let mtmp16 = println__T_string(t73) in
   let t74 = Wrapper__unit { value: () } in
   let t75 = wrapper_unit_to_string(t74) in
-  let mtmp17 = string_println(t75) in
+  let mtmp17 = println__T_string(t75) in
   let bounced_origin/30 = bounce_int(Tag_2) in
   let t76 = Point { x: 3, y: 4 } in
   let t77 = Shape__int32::Dot(t76) in
   let t78 = shape_int32_to_string(t77) in
-  let mtmp18 = string_println(t78) in
+  let mtmp18 = println__T_string(t78) in
   let t79 = Wrapper__int32 { value: 7 } in
   let t80 = Shape__int32::Wrapped(t79) in
   let t81 = shape_int32_to_string(t80) in
-  let mtmp19 = string_println(t81) in
+  let mtmp19 = println__T_string(t81) in
   let t82 = shape_int32_to_string(bounced_origin/30) in
-  let mtmp20 = string_println(t82) in
+  let mtmp20 = println__T_string(t82) in
   let t83 = Point { x: 3, y: 4 } in
   let t84 = Shape__unit::Dot(t83) in
   let t85 = shape_unit_to_string(t84) in
-  let mtmp21 = string_println(t85) in
+  let mtmp21 = println__T_string(t85) in
   let t86 = Wrapper__unit { value: () } in
   let t87 = Shape__unit::Wrapped(t86) in
   let t88 = shape_unit_to_string(t87) in
-  let mtmp22 = string_println(t88) in
+  let mtmp22 = println__T_string(t88) in
   let t89 = shape_unit_to_string(Tag_2) in
-  let mtmp23 = string_println(t89) in
+  let mtmp23 = println__T_string(t89) in
   let t90 = bounce_int(Tag_2) in
   let mtmp24 = describe__T_int32(t90) in
-  let t91 = string_println("struct enums!") in
+  let t91 = println__T_string("struct enums!") in
   jump ret69()
 }
 
-fn describe__T_int32(shape/7: Shape__int32) -> int32 {
-  join ret92(retv93: int32) -> int32 {
-    retv93
+fn println__T_string(value/1: string) -> unit {
+  join ret92() -> unit {
+    ()
   } in
-  join k94(jp95: int32) -> int32 {
-    jump ret92(jp95)
+  let t93 = string_println(value/1) in
+  jump ret92()
+}
+
+fn describe__T_int32(shape/7: Shape__int32) -> int32 {
+  join ret94(retv95: int32) -> int32 {
+    retv95
+  } in
+  join k96(jp97: int32) -> int32 {
+    jump ret94(jp97)
   } in
   match shape/7 {
     Tag_0 => {
       let x2 = Shape__int32::Dot._0(shape/7) in
-      jump k94(1)
+      jump k96(1)
     },
     Tag_1 => {
       let x3 = Shape__int32::Wrapped._0(shape/7) in
-      jump k94(2)
+      jump k96(2)
     },
     Tag_2 => {
-      jump k94(0)
+      jump k96(0)
     },
   }
 }

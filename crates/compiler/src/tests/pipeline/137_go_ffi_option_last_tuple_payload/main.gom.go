@@ -72,9 +72,14 @@ func describe(text__0 string) string {
 
 func main0() struct{} {
     var t13 string = describe("alpha:beta")
-    string_println(t13)
+    println__T_string(t13)
     var t14 string = describe("plain")
-    string_println(t14)
+    println__T_string(t14)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

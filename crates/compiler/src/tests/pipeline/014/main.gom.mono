@@ -11,15 +11,15 @@ fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
             true => {
               match x2 {
                 true => {
-                  string_println("case4")
+                  println__T_string("case4")
                 },
                 false => {
-                  string_println("case3")
+                  println__T_string("case3")
                 },
               }
             },
             false => {
-              string_println("case4")
+              println__T_string("case4")
             },
           }
         }
@@ -34,15 +34,15 @@ fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
                 true => {
                   match x4 {
                     true => {
-                      string_println("case2")
+                      println__T_string("case2")
                     },
                     false => {
-                      string_println("case1")
+                      println__T_string("case1")
                     },
                   }
                 },
                 false => {
-                  string_println("case2")
+                  println__T_string("case2")
                 },
               }
             }
@@ -55,15 +55,15 @@ fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
                 true => {
                   match x6 {
                     true => {
-                      string_println("case4")
+                      println__T_string("case4")
                     },
                     false => {
-                      string_println("case3")
+                      println__T_string("case3")
                     },
                   }
                 },
                 false => {
-                  string_println("case4")
+                  println__T_string("case4")
                 },
               }
             }
@@ -88,4 +88,8 @@ fn main() -> unit {
       }
     }
   }
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
 }

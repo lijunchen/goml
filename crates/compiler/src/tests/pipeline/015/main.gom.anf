@@ -7,7 +7,7 @@ fn print_int_list(xs/0: IntList) -> unit {
   } in
   match xs/0 {
     Tag_0 => {
-      let t27 = string_print("Nil") in
+      let t27 = println__T_string("Nil") in
       jump k26()
     },
     Tag_1 => {
@@ -15,13 +15,13 @@ fn print_int_list(xs/0: IntList) -> unit {
       let x1 = IntList::Cons._1(xs/0) in
       let xs/2 = x1 in
       let x/1 = x0 in
-      let mtmp2 = string_print("Cons") in
-      let mtmp3 = string_print("(") in
+      let mtmp2 = println__T_string("Cons") in
+      let mtmp3 = println__T_string("(") in
       let t28 = int32_to_string(x/1) in
-      let mtmp4 = string_print(t28) in
-      let mtmp5 = string_print(", ") in
+      let mtmp4 = println__T_string(t28) in
+      let mtmp5 = println__T_string(", ") in
       let mtmp6 = print_int_list(xs/2) in
-      let mtmp7 = string_print(")") in
+      let mtmp7 = println__T_string(")") in
       jump k26()
     },
   }
@@ -84,10 +84,10 @@ fn print_int_list_length(xs/10: IntList) -> unit {
   join ret44() -> unit {
     ()
   } in
-  let mtmp12 = string_print("Length: ") in
+  let mtmp12 = println__T_string("Length: ") in
   let t45 = int_list_length(xs/10) in
   let t46 = int32_to_string(t45) in
-  let mtmp13 = string_println(t46) in
+  let mtmp13 = println__T_string(t46) in
   jump ret44()
 }
 
@@ -97,20 +97,28 @@ fn main() -> unit {
   } in
   let x/11 = Tag_0 in
   let mtmp14 = print_int_list(x/11) in
-  let mtmp15 = string_println("") in
+  let mtmp15 = println__T_string("") in
   let mtmp16 = print_int_list_length(x/11) in
   let x/12 = IntList::Cons(1, Tag_0) in
   let mtmp17 = print_int_list(x/12) in
-  let mtmp18 = string_println("") in
+  let mtmp18 = println__T_string("") in
   let mtmp19 = print_int_list_length(x/12) in
   let t48 = IntList::Cons(3, Tag_0) in
   let t49 = IntList::Cons(2, t48) in
   let x/13 = IntList::Cons(1, t49) in
   let mtmp20 = print_int_list(x/13) in
-  let mtmp21 = string_println("") in
+  let mtmp21 = println__T_string("") in
   let mtmp22 = print_int_list_length(x/13) in
   let y/14 = int_list_rev(x/13) in
   let mtmp23 = print_int_list(y/14) in
-  let mtmp24 = string_println("") in
+  let mtmp24 = println__T_string("") in
   jump ret47()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret50() -> unit {
+    ()
+  } in
+  let t51 = string_println(value/1) in
+  jump ret50()
 }

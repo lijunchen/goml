@@ -22,7 +22,7 @@ type GoError = error
 func main0() struct{} {
     var c__0 rune = 65
     var t3 string = char_to_string(c__0)
-    string_println(t3)
+    println__T_string(t3)
     var d__1 rune = 98
     var jp5 string
     switch d__1 {
@@ -34,7 +34,12 @@ func main0() struct{} {
         jp5 = "?"
     }
     var out__2 string = jp5
-    string_println(out__2)
+    println__T_string(out__2)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

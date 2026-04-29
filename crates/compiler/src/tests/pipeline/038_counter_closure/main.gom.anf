@@ -30,32 +30,40 @@ fn main() -> unit {
   let new_next/11 = x7 in
   let fourth/12 = new_next/11() in
   let t19 = int32_to_string(first/7) in
-  let mtmp9 = string_println(t19) in
+  let mtmp9 = println__T_string(t19) in
   let t20 = int32_to_string(second/8) in
-  let mtmp10 = string_println(t20) in
+  let mtmp10 = println__T_string(t20) in
   let t21 = int32_to_string(third/9) in
-  let mtmp11 = string_println(t21) in
+  let mtmp11 = println__T_string(t21) in
   let t22 = int32_to_string(fourth/12) in
-  let mtmp12 = string_println(t22) in
+  let mtmp12 = println__T_string(t22) in
   jump ret18()
 }
 
+fn println__T_string(value/1: string) -> unit {
+  join ret23() -> unit {
+    ()
+  } in
+  let t24 = string_println(value/1) in
+  jump ret23()
+}
+
 fn inherent#closure_env_next_0#closure_env_next_0#apply(env13: closure_env_next_0) -> int32 {
-  join ret23(retv24: int32) -> int32 {
-    retv24
+  join ret25(retv26: int32) -> int32 {
+    retv26
   } in
   let cell/0 = closure_env_next_0.cell_0(env13) in
-  let t25 = ref_get(cell/0) in
-  let next/1 = (t25 + 1) in
+  let t27 = ref_get(cell/0) in
+  let next/1 = (t27 + 1) in
   let mtmp0 = ref_set(cell/0, next/1) in
-  jump ret23(next/1)
+  jump ret25(next/1)
 }
 
 fn inherent#closure_env_reset_1#closure_env_reset_1#apply(env14: closure_env_reset_1) -> unit {
-  join ret26() -> unit {
+  join ret28() -> unit {
     ()
   } in
   let cell/0 = closure_env_reset_1.cell_0(env14) in
   let mtmp1 = ref_set(cell/0, 0) in
-  jump ret26()
+  jump ret28()
 }

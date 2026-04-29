@@ -39,16 +39,21 @@ func main0() struct{} {
     var val_b__12 bool = vb__11[0]
     var len_b__13 int32 = int32(len(vb__11))
     var t7 string = int32_to_string(val_i__2)
-    string_println(t7)
+    println__T_string(t7)
     var t8 string = int32_to_string(len_i__3)
-    string_println(t8)
-    string_println(val_s__7)
+    println__T_string(t8)
+    println__T_string(val_s__7)
     var t9 string = int32_to_string(len_s__8)
-    string_println(t9)
+    println__T_string(t9)
     var t10 string = bool_to_string(val_b__12)
-    string_println(t10)
+    println__T_string(t10)
     var t11 string = int32_to_string(len_b__13)
-    string_println(t11)
+    println__T_string(t11)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

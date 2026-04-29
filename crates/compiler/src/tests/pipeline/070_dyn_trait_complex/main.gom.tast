@@ -122,18 +122,18 @@ fn main() -> unit {
         2 => 3,
         _ : int32 => 5,
     };
-    let _ : unit = (string_println : (string) -> unit)((s0/45 : string));
-    let _ : unit = (string_println : (string) -> unit)((s1/46 : string));
-    let _ : unit = (string_println : (string) -> unit)((s2/47 : string));
+    let _ : unit = (println : (string) -> unit)((s0/45 : string));
+    let _ : unit = (println : (string) -> unit)((s1/46 : string));
+    let _ : unit = (println : (string) -> unit)((s2/47 : string));
     let i/54: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
     let _ : unit = while (ref_get : (Ref[int32]) -> int32)((i/54 : Ref[int32])) < 3 {
         {
             let line/55: string = (bump_and_show : (dyn Display, int32) -> string)((dc/42 : dyn Display), (delta/53 : int32));
-            (string_println : (string) -> unit)((line/55 : string));
+            (println : (string) -> unit)((line/55 : string));
             let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((i/54 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/54 : Ref[int32])) + 1);
         }
     };
-    let _ : unit = (string_println : (string) -> unit)("len:" + (int32_to_string : (int32) -> string)((vlen/52 : int32)));
-    let _ : unit = (string_println : (string) -> unit)("delta:" + (int32_to_string : (int32) -> string)((delta/53 : int32)));
+    let _ : unit = (println : (string) -> unit)("len:" + (int32_to_string : (int32) -> string)((vlen/52 : int32)));
+    let _ : unit = (println : (string) -> unit)("delta:" + (int32_to_string : (int32) -> string)((delta/53 : int32)));
     ()
 }

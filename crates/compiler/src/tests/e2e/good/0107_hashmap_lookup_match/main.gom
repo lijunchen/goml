@@ -5,16 +5,16 @@ fn main() {
     hashmap_set(m, "c", 3);
     
     match hashmap_get(m, "b") {
-        Option::Some(v) => string_println(int32_to_string(v)),
-        Option::None => string_println("not found"),
+        Option::Some(v) => println(int32_to_string(v)),
+        Option::None => println("not found"),
     };
     
     match hashmap_get(m, "z") {
-        Option::Some(v) => string_println(int32_to_string(v)),
-        Option::None => string_println("not found"),
+        Option::Some(v) => println(int32_to_string(v)),
+        Option::None => println("not found"),
     };
     
-    string_println(int32_to_string(hashmap_len(m)));
-    string_println(bool_to_string(hashmap_contains(m, "a")));
-    string_println(bool_to_string(hashmap_contains(m, "z")));
+    println(int32_to_string(hashmap_len(m)));
+    println(bool_to_string(hashmap_contains(m, "a")));
+    println(bool_to_string(hashmap_contains(m, "z")));
 }

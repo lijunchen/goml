@@ -55,7 +55,12 @@ func main0() struct{} {
     var t12 string = t11 + "; "
     var t13 string = uint64_to_string(diff64__15)
     var message__16 string = t12 + t13
-    string_println(message__16)
+    println__T_string(message__16)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

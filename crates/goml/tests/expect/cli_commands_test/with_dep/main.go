@@ -19,7 +19,12 @@ func _goml_Lib_x3a__x3a_msg() string {
 
 func main0() struct{} {
     var t3 string = _goml_Lib_x3a__x3a_msg()
-    string_println(t3)
+    println__T_string(t3)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

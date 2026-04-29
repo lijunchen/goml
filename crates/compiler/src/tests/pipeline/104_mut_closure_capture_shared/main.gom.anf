@@ -7,18 +7,26 @@ fn main() -> unit {
   let mtmp1 = inherent#closure_env_inc_0#closure_env_inc_0#apply(inc/1) in
   let t5 = ref_get(x/0) in
   let t6 = int32_to_string(t5) in
-  let _wild2 = string_println(t6) in
+  let _wild2 = println__T_string(t6) in
   jump ret4()
 }
 
+fn println__T_string(value/1: string) -> unit {
+  join ret7() -> unit {
+    ()
+  } in
+  let t8 = string_println(value/1) in
+  jump ret7()
+}
+
 fn inherent#closure_env_inc_0#closure_env_inc_0#apply(env3: closure_env_inc_0) -> int32 {
-  join ret7(retv8: int32) -> int32 {
-    retv8
+  join ret9(retv10: int32) -> int32 {
+    retv10
   } in
   let x/0 = closure_env_inc_0.x_0(env3) in
-  let t9 = ref_get(x/0) in
-  let t10 = (t9 + 1) in
-  let _wild0 = ref_set(x/0, t10) in
   let t11 = ref_get(x/0) in
-  jump ret7(t11)
+  let t12 = (t11 + 1) in
+  let _wild0 = ref_set(x/0, t12) in
+  let t13 = ref_get(x/0) in
+  jump ret9(t13)
 }

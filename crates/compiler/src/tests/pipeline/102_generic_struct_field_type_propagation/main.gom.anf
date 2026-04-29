@@ -5,9 +5,17 @@ fn main() -> unit {
   let p/0 = Pair__uint8__float32 { first: 10, second: 3.14 } in
   let t3 = Pair__uint8__float32.first(p/0) in
   let t4 = uint8_to_string(t3) in
-  let _wild0 = string_println(t4) in
+  let _wild0 = println__T_string(t4) in
   let t5 = Pair__uint8__float32.second(p/0) in
   let t6 = float32_to_string(t5) in
-  let _wild1 = string_println(t6) in
+  let _wild1 = println__T_string(t6) in
   jump ret2()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret7() -> unit {
+    ()
+  } in
+  let t8 = string_println(value/1) in
+  jump ret7()
 }

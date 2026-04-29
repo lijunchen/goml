@@ -49,7 +49,12 @@ func main0() struct{} {
     var t12 string = t11 + "; "
     var t13 string = int64_to_string(neg64__11)
     var message__12 string = t12 + t13
-    string_println(message__12)
+    println__T_string(message__12)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

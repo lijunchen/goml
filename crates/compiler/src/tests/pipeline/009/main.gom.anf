@@ -8,7 +8,7 @@ fn test(t/0: T) -> unit {
   match t/0 {
     Tag_0 => {
       let t8 = int32_to_string(1) in
-      let t9 = string_print(t8) in
+      let t9 = println__T_string(t8) in
       jump k7()
     },
     Tag_1 => {
@@ -25,12 +25,12 @@ fn test(t/0: T) -> unit {
           match x0 {
             true => {
               let t12 = int32_to_string(4) in
-              let t13 = string_print(t12) in
+              let t13 = println__T_string(t12) in
               jump k11()
             },
             false => {
               let t14 = int32_to_string(3) in
-              let t15 = string_print(t14) in
+              let t15 = println__T_string(t14) in
               jump k11()
             },
           }
@@ -42,12 +42,12 @@ fn test(t/0: T) -> unit {
           match x0 {
             true => {
               let t17 = int32_to_string(4) in
-              let t18 = string_print(t17) in
+              let t18 = println__T_string(t17) in
               jump k16()
             },
             false => {
               let t19 = int32_to_string(2) in
-              let t20 = string_print(t19) in
+              let t20 = println__T_string(t19) in
               jump k16()
             },
           }
@@ -69,4 +69,12 @@ fn main() -> unit {
   let mtmp4 = test(t24) in
   let mtmp5 = test(Tag_0) in
   jump ret21()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret25() -> unit {
+    ()
+  } in
+  let t26 = string_println(value/1) in
+  jump ret25()
 }

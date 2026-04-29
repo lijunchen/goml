@@ -27,14 +27,14 @@ func test_nested_match(x__0 Tuple2_4bool_4bool, y__1 Tuple2_4bool_4bool) struct{
         case true:
             switch x2 {
             case true:
-                string_println("case4")
+                println__T_string("case4")
             case false:
-                string_println("case3")
+                println__T_string("case3")
             default:
                 panic("non-exhaustive match")
             }
         case false:
-            string_println("case4")
+            println__T_string("case4")
         default:
             panic("non-exhaustive match")
         }
@@ -47,14 +47,14 @@ func test_nested_match(x__0 Tuple2_4bool_4bool, y__1 Tuple2_4bool_4bool) struct{
             case true:
                 switch x4 {
                 case true:
-                    string_println("case2")
+                    println__T_string("case2")
                 case false:
-                    string_println("case1")
+                    println__T_string("case1")
                 default:
                     panic("non-exhaustive match")
                 }
             case false:
-                string_println("case2")
+                println__T_string("case2")
             default:
                 panic("non-exhaustive match")
             }
@@ -65,14 +65,14 @@ func test_nested_match(x__0 Tuple2_4bool_4bool, y__1 Tuple2_4bool_4bool) struct{
             case true:
                 switch x6 {
                 case true:
-                    string_println("case4")
+                    println__T_string("case4")
                 case false:
-                    string_println("case3")
+                    println__T_string("case3")
                 default:
                     panic("non-exhaustive match")
                 }
             case false:
-                string_println("case4")
+                println__T_string("case4")
             default:
                 panic("non-exhaustive match")
             }
@@ -122,6 +122,11 @@ func main0() struct{} {
         _1: false,
     }
     test_nested_match(t37, t38)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

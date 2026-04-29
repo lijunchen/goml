@@ -14,8 +14,13 @@ type GoError = error
 func main0() struct{} {
     var poem__0 string = "roses are red\nviolets are blue\n\"quotes\" stay quoted\nbackslash \\\\\\\\ stays too"
     var trailing_blank__1 string = "line one\n\nline three"
-    string_println(poem__0)
-    string_println(trailing_blank__1)
+    println__T_string(poem__0)
+    println__T_string(trailing_blank__1)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

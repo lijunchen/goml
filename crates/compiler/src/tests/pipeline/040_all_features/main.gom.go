@@ -417,13 +417,13 @@ func main0() struct{} {
     }
     var pair_text__75 string = pair_join(t95)
     var bool_text__76 string = bool_to_string(order_check__69)
-    string_println(tracker_info__57)
-    string_println(first_text__70)
-    string_println(bumped_text__71)
-    string_println(flipped_text__72)
-    string_println(summary__74)
-    string_println(pair_text__75)
-    string_println(bool_text__76)
+    println__T_string(tracker_info__57)
+    println__T_string(first_text__70)
+    println__T_string(bumped_text__71)
+    println__T_string(flipped_text__72)
+    println__T_string(summary__74)
+    println__T_string(pair_text__75)
+    println__T_string(bool_text__76)
     return struct{}{}
 }
 
@@ -490,47 +490,52 @@ func map_maybe__T_int32__U_string(value__23 Maybe__int32, f__24 func(int32) stri
     return Maybe__string_None{}
 }
 
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
+    return struct{}{}
+}
+
 func _goml_inherent_x23_closure_x5f_env_x5f_snapshot_x5f_0_x23_closure_x5f_env_x5f_snapshot_x5f_0_x23_apply(env32 closure_env_snapshot_0) Record__int32 {
-    var retv108 Record__int32
+    var retv110 Record__int32
     var count__43 *ref_int32_x = env32.count_0
-    var t109 int32 = ref_get__Ref_5int32(count__43)
-    var t110 Record__int32 = Record__int32_Value{
-        _0: t109,
+    var t111 int32 = ref_get__Ref_5int32(count__43)
+    var t112 Record__int32 = Record__int32_Value{
+        _0: t111,
     }
-    retv108 = t110
-    return retv108
+    retv110 = t112
+    return retv110
 }
 
 func _goml_inherent_x23_closure_x5f_env_x5f_bump_x5f_1_x23_closure_x5f_env_x5f_bump_x5f_1_x23_apply(env33 closure_env_bump_1, delta__47 int32) Record__int32 {
-    var retv112 Record__int32
+    var retv114 Record__int32
     var count__43 *ref_int32_x = env33.count_0
     var before__48 int32 = ref_get__Ref_5int32(count__43)
-    var t113 int32 = before__48 + delta__47
-    ref_set__Ref_5int32(count__43, t113)
-    var t114 int32 = ref_get__Ref_5int32(count__43)
-    var t115 Record__int32 = Record__int32_Pair{
+    var t115 int32 = before__48 + delta__47
+    ref_set__Ref_5int32(count__43, t115)
+    var t116 int32 = ref_get__Ref_5int32(count__43)
+    var t117 Record__int32 = Record__int32_Pair{
         _0: before__48,
-        _1: t114,
+        _1: t116,
     }
-    retv112 = t115
-    return retv112
+    retv114 = t117
+    return retv114
 }
 
 func _goml_inherent_x23_closure_x5f_env_x5f_flip_x5f_2_x23_closure_x5f_env_x5f_flip_x5f_2_x23_apply(env34 closure_env_flip_2) Record__string {
-    var retv117 Record__string
+    var retv119 Record__string
     var toggled__44 *ref_bool_x = env34.toggled_0
     var before__50 bool = ref_get__Ref_4bool(toggled__44)
-    var t118 bool = !before__50
-    ref_set__Ref_4bool(toggled__44, t118)
+    var t120 bool = !before__50
+    ref_set__Ref_4bool(toggled__44, t120)
     var after__51 bool = ref_get__Ref_4bool(toggled__44)
-    var t119 string = bool_to_string(before__50)
-    var t120 string = bool_to_string(after__51)
-    var t121 Record__string = Record__string_Pair{
-        _0: t119,
-        _1: t120,
+    var t121 string = bool_to_string(before__50)
+    var t122 string = bool_to_string(after__51)
+    var t123 Record__string = Record__string_Pair{
+        _0: t121,
+        _1: t122,
     }
-    retv117 = t121
-    return retv117
+    retv119 = t123
+    return retv119
 }
 
 func main() {

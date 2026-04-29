@@ -1653,14 +1653,19 @@ func main0() struct{} {
     var t637 []Binding = nil
     var result__151 Value = eval(t636, t637, global__148)
     var t638 string = value_to_string(result__151)
-    string_println(t638)
+    println__T_string(t638)
     var t639 []Token = lex("(add3 10 20 30)")
     var exprs2__152 []SExpr = parse_program(t639)
     var t640 SExpr = exprs2__152[0]
     var t641 []Binding = nil
     var result2__153 Value = eval(t640, t641, global__148)
     var t642 string = value_to_string(result2__153)
-    string_println(t642)
+    println__T_string(t642)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

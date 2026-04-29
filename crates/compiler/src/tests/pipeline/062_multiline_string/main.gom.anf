@@ -4,7 +4,15 @@ fn main() -> unit {
   } in
   let poem/0 = "roses are red\nviolets are blue\n\"quotes\" stay quoted\nbackslash \\\\\\\\ stays too" in
   let trailing_blank/1 = "line one\n\nline three" in
-  let _wild0 = string_println(poem/0) in
-  let _wild1 = string_println(trailing_blank/1) in
+  let _wild0 = println__T_string(poem/0) in
+  let _wild1 = println__T_string(trailing_blank/1) in
   jump ret2()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret3() -> unit {
+    ()
+  } in
+  let t4 = string_println(value/1) in
+  jump ret3()
 }

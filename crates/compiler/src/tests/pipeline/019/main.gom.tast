@@ -56,14 +56,14 @@ fn point32_to_string4(p/22: Point) -> string {
 
 fn main() -> unit {
     let start/25: Point = (make_point : () -> Point)();
-    let _ : unit = (string_println : (string) -> unit)((point32_to_string : (Point) -> string)((start/25 : Point)));
+    let _ : unit = (println : (string) -> unit)((point32_to_string : (Point) -> string)((start/25 : Point)));
     let swapped/26: Point = (flip : (Point) -> Point)(Point { x: 1, y: 2 });
-    let _ : unit = (string_println : (string) -> unit)((point32_to_string2 : (Point) -> string)((swapped/26 : Point)));
+    let _ : unit = (println : (string) -> unit)((point32_to_string2 : (Point) -> string)((swapped/26 : Point)));
     let boxed/27: Wrapper[int32] = (wrap_int : (int32) -> Wrapper[int32])(3);
     let point_box/28: Wrapper[Point] = Wrapper { value: (swapped/26 : Point) };
     let a/29: Point = (x_add_1 : (Point) -> Point)((start/25 : Point));
-    let _ : unit = (string_println : (string) -> unit)((point32_to_string3 : (Point) -> string)((a/29 : Point)));
+    let _ : unit = (println : (string) -> unit)((point32_to_string3 : (Point) -> string)((a/29 : Point)));
     let a/30: Point = (flip : (Point) -> Point)((x_add_1 : (Point) -> Point)((start/25 : Point)));
-    let _ : unit = (string_println : (string) -> unit)((point32_to_string4 : (Point) -> string)((a/30 : Point)));
+    let _ : unit = (println : (string) -> unit)((point32_to_string4 : (Point) -> string)((a/30 : Point)));
     ()
 }

@@ -26,14 +26,14 @@ type GoError = error
 func show_int(label__0 string, value__1 int32) struct{} {
     var t13 string = int32_to_string(value__1)
     var t14 string = label__0 + t13
-    string_println(t14)
+    println__T_string(t14)
     return struct{}{}
 }
 
 func show_bool(label__2 string, value__3 bool) struct{} {
     var t16 string = bool_to_string(value__3)
     var t17 string = label__2 + t16
-    string_println(t17)
+    println__T_string(t17)
     return struct{}{}
 }
 
@@ -80,6 +80,11 @@ func main0() struct{} {
     show_bool("or=", or_result__10)
     show_bool("not=", not_result__11)
     show_bool("mixed=", mixed__12)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

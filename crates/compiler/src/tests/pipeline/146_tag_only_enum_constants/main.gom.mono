@@ -26,14 +26,18 @@ fn paint_code(paint/1: Paint) -> int32 {
 fn main() -> unit {
   let light/2 = Light::Red in
   let paint/3 = Paint::Red in
-  let mtmp0 = string_println(int32_to_string(light_code(light/2))) in
+  let mtmp0 = println__T_string(int32_to_string(light_code(light/2))) in
   {
-    let mtmp1 = string_println(int32_to_string(paint_code(paint/3))) in
+    let mtmp1 = println__T_string(int32_to_string(paint_code(paint/3))) in
     {
-      let mtmp2 = string_println(int32_to_string(light_code(Light::Green))) in
+      let mtmp2 = println__T_string(int32_to_string(light_code(Light::Green))) in
       {
-        string_println(int32_to_string(paint_code(Paint::Blue)))
+        println__T_string(int32_to_string(paint_code(Paint::Blue)))
       }
     }
   }
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
 }

@@ -16,12 +16,12 @@ fn main() -> unit {
       match x0 {
         true => {
           let t5 = int32_to_string(789) in
-          let t6 = string_print(t5) in
+          let t6 = println__T_string(t5) in
           jump k4()
         },
         false => {
           let t7 = int32_to_string(456) in
-          let t8 = string_print(t7) in
+          let t8 = println__T_string(t7) in
           jump k4()
         },
       }
@@ -33,15 +33,23 @@ fn main() -> unit {
       match x0 {
         true => {
           let t10 = int32_to_string(123) in
-          let t11 = string_print(t10) in
+          let t11 = println__T_string(t10) in
           jump k9()
         },
         false => {
           let t12 = int32_to_string(789) in
-          let t13 = string_print(t12) in
+          let t13 = println__T_string(t12) in
           jump k9()
         },
       }
     },
   }
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret14() -> unit {
+    ()
+  } in
+  let t15 = string_println(value/1) in
+  jump ret14()
 }

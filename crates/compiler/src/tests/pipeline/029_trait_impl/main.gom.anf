@@ -50,10 +50,18 @@ fn main() -> unit {
   let some_number/5 = make_maybe(true) in
   let none_number/6 = make_maybe(false) in
   let t19 = trait_impl#Display#Point#show(point/4) in
-  let mtmp1 = string_println(t19) in
+  let mtmp1 = println__T_string(t19) in
   let t20 = trait_impl#Display#Maybe__int32#show(some_number/5) in
-  let mtmp2 = string_println(t20) in
+  let mtmp2 = println__T_string(t20) in
   let t21 = trait_impl#Display#Maybe__int32#show(none_number/6) in
-  let mtmp3 = string_println(t21) in
+  let mtmp3 = println__T_string(t21) in
   jump ret18()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret22() -> unit {
+    ()
+  } in
+  let t23 = string_println(value/1) in
+  jump ret22()
 }

@@ -12,12 +12,20 @@ fn main() -> unit {
       let x0 = Option__uint8::Some._0(x/0) in
       let v/1 = x0 in
       let t4 = uint8_to_string(v/1) in
-      let t5 = string_println(t4) in
+      let t5 = println__T_string(t4) in
       jump k3()
     },
     Tag_1 => {
-      let t6 = string_println("none") in
+      let t6 = println__T_string("none") in
       jump k3()
     },
   }
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret7() -> unit {
+    ()
+  } in
+  let t8 = string_println(value/1) in
+  jump ret7()
 }

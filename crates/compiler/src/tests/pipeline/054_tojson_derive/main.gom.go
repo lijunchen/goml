@@ -157,13 +157,18 @@ func main0() struct{} {
         _2: 0,
     }
     var t52 string = _goml_inherent_x23_Point_x23_Point_x23_to_x5f_json(p__11)
-    string_println(t52)
+    println__T_string(t52)
     var t53 string = _goml_inherent_x23_Person_x23_Person_x23_to_x5f_json(person__12)
-    string_println(t53)
+    println__T_string(t53)
     var t54 string = _goml_inherent_x23_Color_x23_Color_x23_to_x5f_json(c1__13)
-    string_println(t54)
+    println__T_string(t54)
     var t55 string = _goml_inherent_x23_Color_x23_Color_x23_to_x5f_json(c2__14)
-    string_println(t55)
+    println__T_string(t55)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

@@ -25,13 +25,18 @@ func main0() struct{} {
     var third__6 int32 = v__3[2]
     var len__7 int32 = int32(len(v__3))
     var t5 string = int32_to_string(first__4)
-    string_println(t5)
+    println__T_string(t5)
     var t6 string = int32_to_string(second__5)
-    string_println(t6)
+    println__T_string(t6)
     var t7 string = int32_to_string(third__6)
-    string_println(t7)
+    println__T_string(t7)
     var t8 string = int32_to_string(len__7)
-    string_println(t8)
+    println__T_string(t8)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

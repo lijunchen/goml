@@ -152,28 +152,28 @@ fn shape_unit_to_string(shape/25: Shape__unit) -> string {
 }
 
 fn main() -> unit {
-  let mtmp15 = string_println(point32_to_string(Point { x: 3, y: 4 })) in
+  let mtmp15 = println__T_string(point32_to_string(Point { x: 3, y: 4 })) in
   {
-    let mtmp16 = string_println(wrapper_int32_to_string(Wrapper__int32 { value: 7 })) in
+    let mtmp16 = println__T_string(wrapper_int32_to_string(Wrapper__int32 { value: 7 })) in
     {
-      let mtmp17 = string_println(wrapper_unit_to_string(Wrapper__unit { value: () })) in
+      let mtmp17 = println__T_string(wrapper_unit_to_string(Wrapper__unit { value: () })) in
       {
         let bounced_origin/30 = bounce_int(Shape__int32::Origin) in
-        let mtmp18 = string_println(shape_int32_to_string(Shape__int32::Dot(Point { x: 3, y: 4 }))) in
+        let mtmp18 = println__T_string(shape_int32_to_string(Shape__int32::Dot(Point { x: 3, y: 4 }))) in
         {
-          let mtmp19 = string_println(shape_int32_to_string(Shape__int32::Wrapped(Wrapper__int32 { value: 7 }))) in
+          let mtmp19 = println__T_string(shape_int32_to_string(Shape__int32::Wrapped(Wrapper__int32 { value: 7 }))) in
           {
-            let mtmp20 = string_println(shape_int32_to_string(bounced_origin/30)) in
+            let mtmp20 = println__T_string(shape_int32_to_string(bounced_origin/30)) in
             {
-              let mtmp21 = string_println(shape_unit_to_string(Shape__unit::Dot(Point { x: 3, y: 4 }))) in
+              let mtmp21 = println__T_string(shape_unit_to_string(Shape__unit::Dot(Point { x: 3, y: 4 }))) in
               {
-                let mtmp22 = string_println(shape_unit_to_string(Shape__unit::Wrapped(Wrapper__unit { value: () }))) in
+                let mtmp22 = println__T_string(shape_unit_to_string(Shape__unit::Wrapped(Wrapper__unit { value: () }))) in
                 {
-                  let mtmp23 = string_println(shape_unit_to_string(Shape__unit::Origin)) in
+                  let mtmp23 = println__T_string(shape_unit_to_string(Shape__unit::Origin)) in
                   {
                     let mtmp24 = describe__T_int32(bounce_int(Shape__int32::Origin)) in
                     {
-                      string_println("struct enums!")
+                      println__T_string("struct enums!")
                     }
                   }
                 }
@@ -184,6 +184,10 @@ fn main() -> unit {
       }
     }
   }
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
 }
 
 fn describe__T_int32(shape/7: Shape__int32) -> int32 {
