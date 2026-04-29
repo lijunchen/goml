@@ -113,8 +113,8 @@ fn typecheck_crate_for_query(path: &Path, src: &str) -> Result<QueryTypecheck, S
         crate::pipeline::packages::discover_dependency_versions_from_file(path)
             .map_err(|err| format!("{:?}", err))?;
     let external_deps = crate::external::resolve_dependency_versions(&dependencies)?;
-    let deps_interfaces = external_deps.package_interfaces();
-    let deps_envs = external_deps.package_envs();
+    let deps_interfaces = external_deps.namespace_interfaces();
+    let deps_envs = external_deps.namespace_envs();
 
     let crate_package_id = interface::package_id_for_name(&crate_name);
     let (hir, hir_table, mut hir_diagnostics) =

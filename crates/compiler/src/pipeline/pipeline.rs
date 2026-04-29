@@ -323,8 +323,8 @@ fn typecheck_namespaces_inner(
 
     let mut diagnostics = Diagnostics::new();
     let mut genv = builtins::builtin_env();
-    let external_interfaces = external_deps.package_interfaces();
-    let external_envs = external_deps.package_envs();
+    let external_interfaces = external_deps.namespace_interfaces();
+    let external_envs = external_deps.namespace_envs();
     for (name, module) in external_deps.modules.iter() {
         report_duplicate_trait_impls(&mut diagnostics, &genv, &module.interface.exports, name);
         module.interface.exports.apply_to(&mut genv);
@@ -642,8 +642,8 @@ pub fn typecheck_with_namespaces_and_results(
         let order = packages::topo_sort_packages(&graph)?;
 
         let mut genv = builtins::builtin_env();
-        let external_interfaces = external_deps.package_interfaces();
-        let external_envs = external_deps.package_envs();
+        let external_interfaces = external_deps.namespace_interfaces();
+        let external_envs = external_deps.namespace_envs();
         for (name, module) in external_deps.modules.iter() {
             report_duplicate_trait_impls(&mut diagnostics, &genv, &module.interface.exports, name);
             module.interface.exports.apply_to(&mut genv);

@@ -49,7 +49,7 @@ impl ExternalDependencyArtifacts {
         self.modules.is_empty()
     }
 
-    pub fn package_interfaces(&self) -> HashMap<String, interface::PackageInterface> {
+    pub fn namespace_interfaces(&self) -> HashMap<String, interface::PackageInterface> {
         let mut interfaces = HashMap::new();
         for module in self.modules.values() {
             for (name, interface) in module.package_interfaces.iter() {
@@ -59,7 +59,7 @@ impl ExternalDependencyArtifacts {
         interfaces
     }
 
-    pub fn package_envs(&self) -> HashMap<String, GlobalTypeEnv> {
+    pub fn namespace_envs(&self) -> HashMap<String, GlobalTypeEnv> {
         let mut envs = HashMap::new();
         for module in self.modules.values() {
             let env = module.interface.exports.to_genv();
@@ -70,7 +70,7 @@ impl ExternalDependencyArtifacts {
         envs
     }
 
-    pub fn package_names(&self) -> HashSet<String> {
+    pub fn namespace_names(&self) -> HashSet<String> {
         self.modules
             .values()
             .flat_map(|module| module.sources.keys().cloned())
@@ -93,17 +93,17 @@ impl ExternalDependencyArtifacts {
             return Some(alias.clone());
         }
 
-        let package_names = self.package_names();
+        let namespace_names = self.namespace_names();
         let segments = path.split("::").collect::<Vec<_>>();
         let first = segments.first()?;
-        if !package_names.contains(*first) {
+        if !namespace_names.contains(*first) {
             return None;
         }
 
         let mut best = Some((*first).to_string());
         for end in 2..=segments.len() {
             let candidate = segments[1..end].join("::");
-            if package_names.contains(&candidate) {
+            if namespace_names.contains(&candidate) {
                 best = Some(candidate);
             }
         }
@@ -143,10 +143,10 @@ impl ExternalDependencyArtifacts {
     }
 
     pub fn external_imports(&self) -> ExternalImports {
-        ExternalImports::new(self.package_names(), self.import_paths())
+        ExternalImports::new(self.namespace_names(), self.import_paths())
     }
 
-    pub fn package_dirs(&self) -> HashMap<String, PathBuf> {
+    pub fn namespace_dirs(&self) -> HashMap<String, PathBuf> {
         let mut dirs = HashMap::new();
         for module in self.modules.values() {
             for (logical_name, source) in module.sources.iter() {
@@ -156,7 +156,7 @@ impl ExternalDependencyArtifacts {
         dirs
     }
 
-    pub fn package_sources(&self) -> HashMap<String, Vec<PathBuf>> {
+    pub fn namespace_sources(&self) -> HashMap<String, Vec<PathBuf>> {
         let mut files = HashMap::new();
         for module in self.modules.values() {
             for (logical_name, source) in module.sources.iter() {

@@ -258,7 +258,7 @@ fn build_crate_symbol_index(
         external_deps
             .augment_graph(&mut graph)
             .map_err(|err| err.to_string())?;
-        for (logical_name, files) in external_deps.package_sources() {
+        for (logical_name, files) in external_deps.namespace_sources() {
             let Some(namespace_dir) = graph.package_dirs.get(&logical_name) else {
                 continue;
             };
