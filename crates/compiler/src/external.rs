@@ -241,13 +241,13 @@ pub fn resolve_dependency_versions_with_registry(
             .modules
             .get(&coord)
             .ok_or_else(|| format!("missing resolved module {}", coord.display()))?;
-        let root_package = roots
+        let root_namespace = roots
             .get(&coord)
             .cloned()
             .ok_or_else(|| format!("missing module root name for {}", coord.display()))?;
-        let artifact = compile_external_module(module, &root_package, &compiled)?;
+        let artifact = compile_external_module(module, &root_namespace, &compiled)?;
         ensure_no_external_namespace_conflicts(&compiled, &artifact)?;
-        compiled.insert(root_package, artifact);
+        compiled.insert(root_namespace, artifact);
     }
 
     Ok(ExternalDependencyArtifacts { modules: compiled })
@@ -513,7 +513,7 @@ fn compile_external_module(
 
 fn validate_external_module_manifest(
     module: &ResolvedModule,
-    root_package: &str,
+    root_namespace: &str,
 ) -> Result<(), String> {
     let Some(crate_config) = module.manifest.crate_config.as_ref() else {
         return Err(format!(
@@ -523,12 +523,12 @@ fn validate_external_module_manifest(
             module.manifest_path.display()
         ));
     };
-    if crate_config.name != root_package {
+    if crate_config.name != root_namespace {
         return Err(format!(
             "registry module {}@{} must declare crate.name = {:?} in {}",
             module.coord.display(),
             module.version.display(),
-            root_package,
+            root_namespace,
             module.manifest_path.display()
         ));
     }
