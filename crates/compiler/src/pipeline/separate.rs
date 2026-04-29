@@ -341,10 +341,11 @@ fn typecheck_single_package(
     interface::PackageInterface,
     diagnostics::Diagnostics,
 ) {
+    let (files, mut diagnostics) = expand_derives(files);
     let package_id = interface::package_id_for_name(package);
     let (hir, hir_table, mut hir_diagnostics) =
         hir::lower_to_hir_files_with_env(package_id, files.clone(), deps_interfaces);
-    let (tast, genv, mut diagnostics) = crate::typer::check_file_with_env(
+    let (tast, genv, mut type_diagnostics) = crate::typer::check_file_with_env(
         hir,
         hir_table,
         GlobalTypeEnv::new(),
@@ -352,11 +353,33 @@ fn typecheck_single_package(
         package,
         deps_envs,
     );
-    diagnostics.append(&mut hir_diagnostics);
+    type_diagnostics.append(&mut hir_diagnostics);
+    diagnostics.append(&mut type_diagnostics);
     let full_exports = PackageExports::from_genv(&genv);
     let exports = PackageExports::public_from_package(package, &files, &genv);
     let pkg_interface = interface::PackageInterface::from_exports(package, &exports);
     (tast, full_exports, exports, pkg_interface, diagnostics)
+}
+
+fn expand_derives(
+    files: Vec<hir::SourceFileAst>,
+) -> (Vec<hir::SourceFileAst>, diagnostics::Diagnostics) {
+    let mut diagnostics = diagnostics::Diagnostics::new();
+    let files = files
+        .into_iter()
+        .map(|mut file| {
+            let original_ast = file.ast.clone();
+            file.ast = match crate::derive::expand(file.ast) {
+                Ok(ast) => ast,
+                Err(mut derive_diagnostics) => {
+                    diagnostics.append(&mut derive_diagnostics);
+                    original_ast
+                }
+            };
+            file
+        })
+        .collect();
+    (files, diagnostics)
 }
 
 pub fn check_crate(opts: CrateInputs) -> Result<InterfaceUnit, CompilationError> {

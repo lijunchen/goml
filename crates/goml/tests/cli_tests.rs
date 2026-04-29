@@ -1726,6 +1726,63 @@ pub fn add(a: int64, b: int64) -> int64 {
 }
 
 #[test]
+fn project_build_expands_derives_in_child_modules() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    fs::write(
+        root.join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+"#,
+    )?;
+    fs::write(
+        root.join("main.gom"),
+        r#"
+mod data;
+
+fn main() -> unit {
+    println(crate::data::label())
+}
+"#,
+    )?;
+    fs::write(
+        root.join("data.gom"),
+        r#"
+#[derive(ToString)]
+pub struct Item {
+    name: string,
+}
+
+pub fn label() -> string {
+    let item = Item { name: "demo" };
+    item.to_string()
+}
+"#,
+    )?;
+
+    let output = run_goml(&["build"], root)?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(output.status.success(), "stderr: {stderr}");
+    expect![""].assert_eq(&stdout);
+    expect![""].assert_eq(&stderr);
+
+    if !runtime_executor_available() {
+        return Ok(());
+    }
+
+    let go_output = run_go_main(&root.join("target/goml/main.go"), root)?;
+    let go_stdout = String::from_utf8_lossy(&go_output.stdout);
+    let go_stderr = String::from_utf8_lossy(&go_output.stderr);
+    assert!(go_output.status.success(), "stderr: {go_stderr}");
+    expect!["Item { name: demo }\n"].assert_eq(&go_stdout);
+
+    Ok(())
+}
+
+#[test]
 fn project_build_handles_sibling_module_symbol_collisions() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     let root = dir.path();
