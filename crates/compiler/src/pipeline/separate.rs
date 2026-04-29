@@ -11,7 +11,7 @@ use crate::interface;
 use crate::lift::{self, GlobalLiftEnv, LiftFile};
 use crate::mono::{self, GlobalMonoEnv};
 use crate::package_names::is_special_unqualified_package;
-use crate::package_names::{BUILTIN_PACKAGE, ENTRY_FUNCTION, ROOT_PACKAGE, is_builtin_package};
+use crate::package_names::{BUILTIN_PACKAGE, ENTRY_FUNCTION, is_builtin_package};
 use crate::pipeline::builtin_inherent;
 use crate::pipeline::modules::CrateUnit;
 use crate::pipeline::packages::collect_known_crate_path_imports;
@@ -473,13 +473,10 @@ fn link_core_units(
         by_name.insert(core.package.clone(), core);
     }
 
-    let Some((main_package, main)) = by_name.get_key_value(root_package) else {
-        let message = if root_package == ROOT_PACKAGE {
-            "missing main package core".to_string()
-        } else {
-            format!("missing root crate core for {root_package}")
-        };
-        return Err(compile_error(message));
+    let Some((_main_package, main)) = by_name.get_key_value(root_package) else {
+        return Err(compile_error(format!(
+            "missing root crate core for {root_package}"
+        )));
     };
     let Some(entry_fn) = main
         .core_ir
@@ -488,12 +485,9 @@ fn link_core_units(
         .find(|f| f.name == entry_name)
         .cloned()
     else {
-        let message = if root_package == ROOT_PACKAGE {
-            format!("{} package missing main function", main_package)
-        } else {
-            format!("{root_package} crate missing root module main function")
-        };
-        return Err(compile_error(message));
+        return Err(compile_error(format!(
+            "{root_package} crate missing root module main function"
+        )));
     };
     if !entry_fn.params.is_empty() {
         return Err(compile_error(
@@ -884,6 +878,55 @@ pub fn main() -> unit {
                         .iter()
                         .any(|item| item.message()
                             == "hello crate missing root module main function")
+                );
+            }
+            other => panic!("expected compile error, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn link_crates_uses_crate_errors_for_main_named_root() {
+        let dir = tempfile::tempdir().unwrap();
+        write(
+            dir.path().join("goml.toml"),
+            r#"[crate]
+name = "main"
+kind = "bin"
+root = "src/main.gom"
+"#,
+        );
+        write(
+            dir.path().join("src/main.gom"),
+            r#"
+mod api;
+
+pub fn helper() -> unit {
+    ()
+}
+"#,
+        );
+        write(
+            dir.path().join("src/api.gom"),
+            r#"
+pub fn main() -> unit {
+    ()
+}
+"#,
+        );
+
+        let crate_unit = modules::discover_crate_from_dir(dir.path()).unwrap();
+        let core = build_crate(CrateInputs {
+            crate_unit,
+            interface_files: Vec::new(),
+        })
+        .unwrap();
+        let err = link_crates("main", vec![core]).unwrap_err();
+        match err {
+            CompilationError::Compile { diagnostics } => {
+                assert!(
+                    diagnostics.iter().any(
+                        |item| item.message() == "main crate missing root module main function"
+                    )
                 );
             }
             other => panic!("expected compile error, got {other:?}"),
