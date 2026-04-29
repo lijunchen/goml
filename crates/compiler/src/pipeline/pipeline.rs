@@ -76,7 +76,7 @@ impl CompilationError {
 #[derive(Debug, Clone)]
 struct NamespaceInterface {
     exports: CrateExports,
-    package_interface: interface::CrateInterface,
+    crate_interface: interface::CrateInterface,
 }
 
 fn nominal_impl_type_name(ty: &tast::Ty) -> Option<&str> {
@@ -120,7 +120,7 @@ pub(super) fn report_duplicate_trait_impls(
     diagnostics: &mut Diagnostics,
     genv: &GlobalTypeEnv,
     exports: &CrateExports,
-    package_name: &str,
+    namespace_name: &str,
 ) {
     for (key, _) in exports.trait_env.trait_impls.iter() {
         if genv.trait_env.trait_impls.contains_key(key)
@@ -130,36 +130,36 @@ pub(super) fn report_duplicate_trait_impls(
                 Stage::Typer,
                 Severity::Error,
                 format!(
-                    "Trait {} implementation for {:?} is defined in multiple packages (including {})",
-                    key.0, key.1, package_name
+                    "Trait {} implementation for {:?} is defined in multiple namespaces (including {})",
+                    key.0, key.1, namespace_name
                 ),
             ));
         }
     }
 }
 
-fn root_package_name(package_names: &[String]) -> Option<String> {
-    if package_names.iter().any(|name| name == ROOT_PACKAGE) {
+fn root_namespace_name(namespace_names: &[String]) -> Option<String> {
+    if namespace_names.iter().any(|name| name == ROOT_PACKAGE) {
         Some(ROOT_PACKAGE.to_string())
     } else {
         None
     }
 }
 
-fn package_id_map(package_names: &[String]) -> HashMap<String, hir::PackageId> {
+fn namespace_id_map(namespace_names: &[String]) -> HashMap<String, hir::PackageId> {
     let mut ids = HashMap::new();
     ids.insert(BUILTIN_PACKAGE.to_string(), hir::PackageId(0));
 
-    let root_package = root_package_name(package_names);
-    if let Some(root_package) = &root_package {
-        ids.insert(root_package.clone(), hir::PackageId(1));
+    let root_namespace = root_namespace_name(namespace_names);
+    if let Some(root_namespace) = &root_namespace {
+        ids.insert(root_namespace.clone(), hir::PackageId(1));
     }
 
-    let mut sorted = package_names.to_vec();
+    let mut sorted = namespace_names.to_vec();
     sorted.sort();
     let mut next_id = 2u32;
     for name in sorted {
-        if name == BUILTIN_PACKAGE || Some(name.as_str()) == root_package.as_deref() {
+        if name == BUILTIN_PACKAGE || Some(name.as_str()) == root_namespace.as_deref() {
             continue;
         }
         ids.insert(name, hir::PackageId(next_id));
@@ -169,10 +169,10 @@ fn package_id_map(package_names: &[String]) -> HashMap<String, hir::PackageId> {
     ids
 }
 
-fn link_packages(packages: Vec<crate::core::File>) -> crate::core::File {
+fn link_core_files(core_files: Vec<crate::core::File>) -> crate::core::File {
     let mut toplevels = Vec::new();
-    for package in packages {
-        toplevels.extend(package.toplevels);
+    for core_file in core_files {
+        toplevels.extend(core_file.toplevels);
     }
     crate::core::File { toplevels }
 }
@@ -261,33 +261,33 @@ pub fn parse_ast_file(path: &Path, src: &str) -> Result<ast::File, CompilationEr
     Ok(ast)
 }
 
-fn typecheck_package(
-    package_id: hir::PackageId,
-    package: &packages::PackageUnit,
+fn typecheck_namespace_unit(
+    namespace_id: hir::PackageId,
+    namespace: &packages::PackageUnit,
     deps_envs: HashMap<String, GlobalTypeEnv>,
     deps_interfaces: &HashMap<String, interface::CrateInterface>,
 ) -> NamespaceArtifact {
     let (hir, hir_table, mut hir_diagnostics) =
-        hir::lower_to_hir_files_with_env(package_id, package.files.clone(), deps_interfaces);
+        hir::lower_to_hir_files_with_env(namespace_id, namespace.files.clone(), deps_interfaces);
     let (tast, genv, mut diagnostics) = typer::check_file_with_env(
         hir,
         hir_table,
         GlobalTypeEnv::new(),
         builtins::builtin_env(),
-        &package.name,
+        &namespace.name,
         deps_envs,
     );
     diagnostics.append(&mut hir_diagnostics);
     let full_exports = CrateExports::from_genv(&genv);
-    let exports = CrateExports::public_from_package(&package.name, &package.files, &genv);
-    let package_interface = interface::CrateInterface::from_exports(&package.name, &exports);
+    let exports = CrateExports::public_from_package(&namespace.name, &namespace.files, &genv);
+    let namespace_interface = interface::CrateInterface::from_exports(&namespace.name, &exports);
 
     NamespaceArtifact {
         tast,
         full_exports,
         interface: NamespaceInterface {
             exports,
-            package_interface,
+            crate_interface: namespace_interface,
         },
         diagnostics,
     }
@@ -330,18 +330,18 @@ fn typecheck_namespaces_inner(
         module.interface.exports.apply_to(&mut genv);
     }
     let mut artifacts_by_name: HashMap<String, NamespaceArtifact> = HashMap::new();
-    let mut package_names: Vec<String> = graph.packages.keys().cloned().collect();
-    package_names.sort();
-    let package_ids = package_id_map(&package_names);
+    let mut namespace_names: Vec<String> = graph.packages.keys().cloned().collect();
+    namespace_names.sort();
+    let namespace_ids = namespace_id_map(&namespace_names);
 
     for name in order.iter() {
         let package = graph
             .packages
             .get(name)
             .ok_or_else(|| compile_error(format!("namespace {} not found", name)))?;
-        let package_id = *package_ids
+        let namespace_id = *namespace_ids
             .get(name)
-            .unwrap_or_else(|| panic!("missing package id for {}", name));
+            .unwrap_or_else(|| panic!("missing namespace id for {}", name));
         let mut deps_envs = HashMap::new();
         let mut deps: Vec<_> = package.imports.iter().cloned().collect();
         deps.sort();
@@ -349,7 +349,7 @@ fn typecheck_namespaces_inner(
         for dep in deps.iter() {
             if let Some(artifact) = artifacts_by_name.get(dep) {
                 deps_envs.insert(dep.clone(), artifact.interface.exports.to_genv());
-                deps_interfaces.insert(dep.clone(), artifact.interface.package_interface.clone());
+                deps_interfaces.insert(dep.clone(), artifact.interface.crate_interface.clone());
                 continue;
             }
             if let Some(interface) = external_interfaces.get(dep) {
@@ -368,7 +368,7 @@ fn typecheck_namespaces_inner(
             )));
         }
 
-        let artifact = typecheck_package(package_id, package, deps_envs, &deps_interfaces);
+        let artifact = typecheck_namespace_unit(namespace_id, package, deps_envs, &deps_interfaces);
 
         let mut package_diagnostics = artifact.diagnostics.clone();
         diagnostics.append(&mut package_diagnostics);
@@ -507,16 +507,16 @@ fn compile_inner(
     }
     let gensym = Gensym::new();
 
-    let mut package_cores = Vec::new();
+    let mut core_files = Vec::new();
     let builtin_print_core = compile_match::compile_file(
         &builtins::builtin_env(),
         &gensym,
         &mut diagnostics,
         &builtins::builtin_print_tast(),
     );
-    package_cores.push(builtin_print_core);
+    core_files.push(builtin_print_core);
     for module in external_deps.modules.values() {
-        package_cores.push(module.core.core_ir.clone());
+        core_files.push(module.core.core_ir.clone());
     }
     for name in graph.discovery_order.iter() {
         let package = graph
@@ -545,19 +545,19 @@ fn compile_inner(
         }
         artifact.full_exports.apply_to(&mut env);
         let core = compile_match::compile_file(&env, &gensym, &mut diagnostics, &artifact.tast);
-        package_cores.push(core);
+        core_files.push(core);
     }
     let required_builtin_methods =
-        builtin_inherent::collect_required_builtin_collection_methods(&package_cores);
+        builtin_inherent::collect_required_builtin_collection_methods(&core_files);
     let builtin_collection_core = builtin_inherent::compile_builtin_collection_methods(
         &required_builtin_methods,
         &gensym,
         &mut diagnostics,
     );
     if !builtin_collection_core.toplevels.is_empty() {
-        package_cores.push(builtin_collection_core);
+        core_files.push(builtin_collection_core);
     }
-    let core = link_packages(package_cores);
+    let core = link_core_files(core_files);
     if diagnostics.has_errors() {
         return Err(CompilationError::Compile { diagnostics });
     }
@@ -649,9 +649,9 @@ pub fn typecheck_with_namespaces_and_results(
             module.interface.exports.apply_to(&mut genv);
         }
         let mut artifacts_by_name: HashMap<String, NamespaceInterface> = HashMap::new();
-        let mut package_names: Vec<String> = graph.packages.keys().cloned().collect();
-        package_names.sort();
-        let package_ids = package_id_map(&package_names);
+        let mut namespace_names: Vec<String> = graph.packages.keys().cloned().collect();
+        namespace_names.sort();
+        let namespace_ids = namespace_id_map(&namespace_names);
 
         let mut entry_hir_table = None;
         let mut entry_results = None;
@@ -661,9 +661,9 @@ pub fn typecheck_with_namespaces_and_results(
                 .packages
                 .get(name)
                 .ok_or_else(|| compile_error(format!("namespace {} not found", name)))?;
-            let package_id = *package_ids
+            let namespace_id = *namespace_ids
                 .get(name)
-                .unwrap_or_else(|| panic!("missing package id for {}", name));
+                .unwrap_or_else(|| panic!("missing namespace id for {}", name));
             let mut deps_envs = HashMap::new();
             let mut deps: Vec<_> = package.imports.iter().cloned().collect();
             deps.sort();
@@ -671,7 +671,7 @@ pub fn typecheck_with_namespaces_and_results(
             for dep in deps.iter() {
                 if let Some(interface) = artifacts_by_name.get(dep) {
                     deps_envs.insert(dep.clone(), interface.exports.to_genv());
-                    deps_interfaces.insert(dep.clone(), interface.package_interface.clone());
+                    deps_interfaces.insert(dep.clone(), interface.crate_interface.clone());
                     continue;
                 }
                 if let Some(interface) = external_interfaces.get(dep) {
@@ -691,7 +691,7 @@ pub fn typecheck_with_namespaces_and_results(
             }
 
             let (hir, hir_table, mut hir_diagnostics) = hir::lower_to_hir_files_with_env(
-                package_id,
+                namespace_id,
                 package.files.clone(),
                 &deps_interfaces,
             );
@@ -710,11 +710,11 @@ pub fn typecheck_with_namespaces_and_results(
             let exports = CrateExports::public_from_package(name, &package.files, &package_genv);
             report_duplicate_trait_impls(&mut diagnostics, &genv, &exports, name);
             exports.apply_to(&mut genv);
-            let package_interface = interface::CrateInterface::from_exports(name, &exports);
+            let crate_interface = interface::CrateInterface::from_exports(name, &exports);
 
             let interface = NamespaceInterface {
                 exports,
-                package_interface,
+                crate_interface,
             };
 
             if name == &graph.entry_package {
