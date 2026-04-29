@@ -327,15 +327,15 @@ fn topo_sort_modules(resolved: &ResolvedModuleGraph) -> Result<Vec<ModuleCoord>,
 
 fn compile_external_module(
     module: &ResolvedModule,
-    root_package: &str,
+    root_namespace: &str,
     compiled_roots: &BTreeMap<String, ExternalModuleArtifact>,
 ) -> Result<ExternalModuleArtifact, String> {
-    validate_external_module_manifest(module, root_package)?;
+    validate_external_module_manifest(module, root_namespace)?;
 
     let available_imports = external_imports_from_modules(compiled_roots);
-    let mut graph = packages::discover_dependency_crate_packages_with_external_imports(
+    let mut graph = packages::discover_dependency_crate_namespaces_with_external_imports(
         &module.root_dir,
-        root_package,
+        root_namespace,
         &available_imports,
     )
     .map_err(err_text)?;
@@ -372,7 +372,7 @@ fn compile_external_module(
         .map(|namespace| {
             (
                 namespace.clone(),
-                logical_namespace_name(root_package, namespace),
+                logical_namespace_name(root_namespace, namespace),
             )
         })
         .collect::<HashMap<_, _>>();
@@ -462,7 +462,7 @@ fn compile_external_module(
                     logical_name,
                     import_path: external_import_path(
                         &module.coord.owner,
-                        root_package,
+                        root_namespace,
                         &namespace_name,
                     ),
                     dir: namespace_dir,
@@ -480,12 +480,12 @@ fn compile_external_module(
         namespace_interfaces.insert(source.logical_name.clone(), namespace_interface);
     }
     let root_interface = namespace_interfaces
-        .get(root_package)
+        .get(root_namespace)
         .cloned()
-        .ok_or_else(|| format!("missing root namespace interface for {}", root_package))?;
+        .ok_or_else(|| format!("missing root namespace interface for {}", root_namespace))?;
 
     let interface = InterfaceUnit::new(
-        root_package.to_string(),
+        root_namespace.to_string(),
         public_exports,
         root_interface,
         merged_deps.clone(),
@@ -493,7 +493,7 @@ fn compile_external_module(
     let core = CoreUnit {
         format_version: crate::artifact::FORMAT_VERSION,
         compiler_abi: crate::artifact::COMPILER_ABI,
-        crate_name: root_package.to_string(),
+        crate_name: root_namespace.to_string(),
         interface: interface.clone(),
         internal_exports: Some(merged_exports),
         core_ir: merged_core,

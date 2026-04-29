@@ -593,9 +593,9 @@ fn load_single_file_package(
     }
 }
 
-fn module_package_name(module_path: &[String], root_package: &str) -> String {
+fn module_namespace_name(module_path: &[String], root_namespace: &str) -> String {
     if module_path.is_empty() {
-        root_package.to_string()
+        root_namespace.to_string()
     } else {
         module_path.join("::")
     }
@@ -603,7 +603,7 @@ fn module_package_name(module_path: &[String], root_package: &str) -> String {
 
 fn discover_packages_from_crate_unit(
     crate_unit: CrateUnit,
-    root_package: &str,
+    root_namespace: &str,
     entry_path: Option<&Path>,
     entry_ast: Option<ast::File>,
     external_imports: &ExternalImports,
@@ -619,7 +619,7 @@ fn discover_packages_from_crate_unit(
     let mut package_visibilities = HashMap::new();
 
     for module in crate_unit.modules.iter() {
-        let name = module_package_name(module.path.segments(), root_package);
+        let name = module_namespace_name(module.path.segments(), root_namespace);
         let ast = if let Some((override_path, override_ast)) = source_override {
             if override_path == module.file_path.as_path() {
                 override_ast.clone()
@@ -645,7 +645,7 @@ fn discover_packages_from_crate_unit(
                 .modules
                 .get(child_id.0)
                 .ok_or_else(|| compile_error(format!("module child {} not found", child_name)))?;
-            imports.insert(module_package_name(child.path.segments(), root_package));
+            imports.insert(module_namespace_name(child.path.segments(), root_namespace));
         }
         packages.insert(
             name.clone(),
@@ -671,7 +671,7 @@ fn discover_packages_from_crate_unit(
     Ok(PackageGraph {
         module_dir: crate_unit.root_dir,
         module_name: Some(crate_unit.config.name),
-        entry_package: root_package.to_string(),
+        entry_package: root_namespace.to_string(),
         packages,
         discovery_order,
         package_dirs,
@@ -752,14 +752,14 @@ pub fn discover_packages_single_file_with_external_imports(
     )
 }
 
-pub fn discover_dependency_crate_packages_with_external_imports(
+pub fn discover_dependency_crate_namespaces_with_external_imports(
     module_dir: &Path,
-    root_package: &str,
+    root_namespace: &str,
     external_imports: &ExternalImports,
 ) -> Result<PackageGraph, CompilationError> {
     let crate_unit = crate::pipeline::modules::discover_crate_from_dir(module_dir)
         .map_err(|err| compile_error(format!("crate module discovery failed: {:?}", err)))?;
-    discover_packages_from_crate_unit(crate_unit, root_package, None, None, external_imports)
+    discover_packages_from_crate_unit(crate_unit, root_namespace, None, None, external_imports)
 }
 
 fn discover_packages_inner(
