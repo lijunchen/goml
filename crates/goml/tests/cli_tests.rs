@@ -1184,7 +1184,6 @@ fn compiler_run_single_dumps_requested_stages() -> anyhow::Result<()> {
     assert!(output.status.success(), "stderr: {stderr}");
     expect![[r#"
         == AST ==
-        package main;
         fn main() -> unit {
             println("hello")
         }
