@@ -468,6 +468,45 @@ pub fn item() -> Item {
 }
 
 #[test]
+fn trait_method_syntax_requires_trait_import() {
+    assert_err(&[
+        (
+            "main.gom",
+            r#"
+mod api;
+
+fn main() -> unit {
+    let item = crate::api::item();
+    let _ = item.label();
+}
+"#,
+        ),
+        (
+            "api/mod.gom",
+            r#"
+pub trait Label {
+    fn label(Self) -> string;
+}
+
+pub struct Item {
+    value: string,
+}
+
+impl Label for Item {
+    fn label(self: Item) -> string {
+        self.value
+    }
+}
+
+pub fn item() -> Item {
+    Item { value: "ok" }
+}
+"#,
+        ),
+    ]);
+}
+
+#[test]
 fn private_trait_import_is_hidden() {
     assert_err(&[
         (
