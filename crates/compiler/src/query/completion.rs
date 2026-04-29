@@ -9,7 +9,7 @@ use cst::nodes::{BinaryExpr, Block, ClosureExpr, Fn, Item, MatchArm, Pattern};
 use parser::syntax::{MySyntaxKind, MySyntaxNode, MySyntaxNodePtr};
 use text_size::TextSize;
 
-use crate::{env::GlobalTypeEnv, registry::ModuleCoord, tast};
+use crate::{env::GlobalTypeEnv, tast};
 
 use super::{
     ColonColonCompletionItem, ColonColonCompletionKind, DotCompletionItem, DotCompletionKind,
@@ -394,21 +394,17 @@ fn use_root_completions(
     let mut names = BTreeSet::new();
     let current_package = current_package_name(path, src);
 
-    if let Ok((root_dir, dependencies)) =
-        crate::pipeline::packages::discover_dependency_versions_from_file(path)
-    {
+    let start_dir = path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."));
+    if let Some((root_dir, _)) = crate::config::find_crate_root(start_dir) {
         collect_local_package_names(&root_dir, current_package.as_deref(), &mut names);
-        for dep in dependencies.keys() {
-            if let Ok(coord) = ModuleCoord::parse(dep) {
-                names.insert(format!("{}::{}", coord.owner, coord.module));
-            }
+        if let Ok(manifest) = crate::config::load_crate_manifest(&root_dir.join("goml.toml")) {
+            names.extend(manifest.dependencies.keys().cloned());
         }
     } else {
-        let root_dir = path
-            .parent()
-            .filter(|parent| !parent.as_os_str().is_empty())
-            .unwrap_or_else(|| Path::new("."));
-        collect_local_package_names(root_dir, current_package.as_deref(), &mut names);
+        collect_local_package_names(start_dir, current_package.as_deref(), &mut names);
     }
 
     Some(
@@ -447,14 +443,12 @@ fn visible_use_namespace_names(path: &Path, src: &str) -> BTreeSet<String> {
         return BTreeSet::new();
     };
 
-    let external_import_paths =
-        crate::pipeline::packages::discover_dependency_versions_from_file(path)
-            .ok()
-            .and_then(|(_, dependencies)| {
-                crate::external::resolve_dependency_versions(&dependencies).ok()
-            })
-            .map(|external_deps| external_deps.import_paths())
-            .unwrap_or_default();
+    let external_deps = crate::pipeline::packages::discover_dependency_versions_from_file(path)
+        .ok()
+        .and_then(|(_, dependencies)| {
+            crate::external::resolve_dependency_versions(&dependencies).ok()
+        })
+        .unwrap_or_default();
 
     file.use_decls()
         .filter_map(|use_decl| use_decl.path())
@@ -468,8 +462,8 @@ fn visible_use_namespace_names(path: &Path, src: &str) -> BTreeSet<String> {
             }
 
             let full_path = segments.join("::");
-            if let Some(logical_name) = external_import_paths.get(&full_path) {
-                return Some(logical_name.clone());
+            if let Some(logical_name) = external_deps.alias_for_use_path(&full_path) {
+                return Some(logical_name);
             }
 
             if segments.len() == 1 {
@@ -816,41 +810,10 @@ fn use_colon_colon_items_for_namespace(
     if let Ok((_, dependencies)) =
         crate::pipeline::packages::discover_dependency_versions_from_file(path)
     {
-        let mut module_children = BTreeSet::new();
-        for dep in dependencies.keys() {
-            if let Ok(coord) = ModuleCoord::parse(dep)
-                && namespace == coord.owner
-            {
-                module_children.insert(coord.module);
-            }
-        }
-        items.extend(
-            module_children
-                .into_iter()
-                .map(|name| ColonColonCompletionItem {
-                    name,
-                    kind: ColonColonCompletionKind::Package,
-                    detail: Some("package".to_string()),
-                }),
-        );
-
         if let Ok(external_deps) = crate::external::resolve_dependency_versions(&dependencies) {
-            let import_paths = external_deps.import_paths();
-            let prefix = format!("{namespace}::");
-            let mut child_packages = BTreeSet::new();
-            for import_path in import_paths.keys() {
-                let Some(rest) = import_path.strip_prefix(&prefix) else {
-                    continue;
-                };
-                let Some(child) = rest.split("::").next() else {
-                    continue;
-                };
-                if !child.is_empty() {
-                    child_packages.insert(child.to_string());
-                }
-            }
             items.extend(
-                child_packages
+                external_deps
+                    .child_packages_for_use_namespace(namespace)
                     .into_iter()
                     .map(|name| ColonColonCompletionItem {
                         name,
@@ -859,8 +822,8 @@ fn use_colon_colon_items_for_namespace(
                     }),
             );
 
-            if let Some(alias) = import_paths.get(namespace) {
-                items.extend(colon_colon_items_for_namespace(genv, symbol_index, alias));
+            if let Some(alias) = external_deps.alias_for_use_path(namespace) {
+                items.extend(colon_colon_items_for_namespace(genv, symbol_index, &alias));
             }
         }
     }

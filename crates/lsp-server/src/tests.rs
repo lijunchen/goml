@@ -2180,8 +2180,8 @@ fn value() -> int32 { 0 }
             "registry_packages",
             r#"
 
-use alice::http;
-use alice::http::client;
+use http;
+use http::client;
 
 fn main() -> unit {
     ()
@@ -2193,14 +2193,14 @@ fn main() -> unit {
             check_temp_module_goto_token(
                 "registry_packages",
                 "main.gom",
-                "use alice::http;",
+                "use http;",
                 "http",
                 expect!["1.2.0/lib.gom:0:0"],
             );
             check_temp_module_goto_token(
                 "registry_packages",
                 "main.gom",
-                "use alice::http::client;",
+                "use http::client;",
                 "client",
                 expect!["client/mod.gom:0:0"],
             );
@@ -2235,6 +2235,35 @@ fn main() -> unit {
     }
 
     #[test]
+    fn registry_coordinate_use_paths_report_alias_hint() {
+        let dir = tempdir().unwrap();
+        let home = dir.path().join(".goml");
+        write_cached_registry(&home);
+        let root = write_registry_project(
+            "registry_coordinate_use_paths",
+            r#"
+
+use alice::http;
+use alice::http::client;
+
+fn main() -> unit {
+    ()
+}
+"#,
+        );
+
+        with_goml_home(&home, || {
+            let path = root.join("main.gom");
+            let src = std::fs::read_to_string(&path).unwrap();
+            let doc = Document::new(src.clone());
+            let diags = handlers::get_diagnostics(&path, &src, &doc);
+            expect![[r#"[0:0] error: unresolved crate `alice`. Dependency `alice::http` is available as crate alias `http`. Use `http` or rename the dependency key in goml.toml.
+[0:0] error: unresolved crate `alice`. Dependency `alice::http` is available as crate alias `http`. Use `http::client` or rename the dependency key in goml.toml."#]]
+            .assert_eq(&format_diagnostics(&diags));
+        });
+    }
+
+    #[test]
     fn goto_definition_registry_members() {
         let dir = tempdir().unwrap();
         let home = dir.path().join(".goml");
@@ -2243,8 +2272,8 @@ fn main() -> unit {
             "registry_members",
             r#"
 
-use alice::http;
-use alice::http::client;
+use http;
+use http::client;
 
 fn main() -> unit {
     let _ = http::make_client();

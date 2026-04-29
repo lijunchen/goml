@@ -243,6 +243,50 @@ fn external_import_path_for_alias(
         .cloned()
 }
 
+fn external_coordinate_alias_path(
+    path: &ast::Path,
+    deps: &HashMap<String, interface::PackageInterface>,
+) -> Option<(String, String)> {
+    let display = path_segments_display(path);
+    let mut best = None;
+    for (alias, dep) in deps {
+        for import_path in dep.packages.iter() {
+            let Some(import_root) = import_path.split("::").next() else {
+                continue;
+            };
+            if !import_path.contains("::") || deps.contains_key(import_root) {
+                continue;
+            }
+            if display != import_path.as_str()
+                && !display
+                    .strip_prefix(import_path)
+                    .is_some_and(|suffix| suffix.starts_with("::"))
+            {
+                continue;
+            }
+            let segment_count = import_path.split("::").count();
+            if best
+                .as_ref()
+                .is_some_and(|(_, _, best_segments)| segment_count >= *best_segments)
+            {
+                continue;
+            }
+            let suffix = display
+                .strip_prefix(import_path)
+                .unwrap_or("")
+                .strip_prefix("::")
+                .unwrap_or("");
+            let alias_path = if suffix.is_empty() {
+                alias.clone()
+            } else {
+                format!("{alias}::{suffix}")
+            };
+            best = Some((import_path.clone(), alias_path, segment_count));
+        }
+    }
+    best.map(|(import_path, alias_path, _)| (import_path, alias_path))
+}
+
 fn first_crate_segment(path: &ast::Path) -> Option<String> {
     path.segments()
         .first()
@@ -458,6 +502,27 @@ impl NameResolution {
 
         for file in files.iter() {
             let package_name = file.ast.package.0.as_str();
+            let mut reported_external_coordinates = HashSet::new();
+            for use_path in file
+                .ast
+                .uses
+                .iter()
+                .map(|use_decl| &use_decl.path)
+                .chain(file.ast.use_traits.iter())
+            {
+                if !reported_external_coordinates.insert(path_segments_display(use_path)) {
+                    continue;
+                }
+                if let Some((registry_path, alias_path)) =
+                    external_coordinate_alias_path(use_path, deps)
+                {
+                    let first = first_crate_segment(use_path).unwrap_or_default();
+                    self.error(format!(
+                        "unresolved crate `{first}`. Dependency `{registry_path}` is available as crate alias `{}`. Use `{alias_path}` or rename the dependency key in goml.toml.",
+                        alias_path.split("::").next().unwrap_or("")
+                    ));
+                }
+            }
             for use_path in file.ast.use_traits.iter() {
                 let Some(first) = use_path.segments().first() else {
                     continue;

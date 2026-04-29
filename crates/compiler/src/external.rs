@@ -87,6 +87,61 @@ impl ExternalDependencyArtifacts {
         import_paths
     }
 
+    pub fn alias_for_use_path(&self, path: &str) -> Option<String> {
+        let import_paths = self.import_paths();
+        if let Some(alias) = import_paths.get(path) {
+            return Some(alias.clone());
+        }
+
+        let package_names = self.package_names();
+        let segments = path.split("::").collect::<Vec<_>>();
+        let first = segments.first()?;
+        if !package_names.contains(*first) {
+            return None;
+        }
+
+        let mut best = Some((*first).to_string());
+        for end in 2..=segments.len() {
+            let candidate = segments[1..end].join("::");
+            if package_names.contains(&candidate) {
+                best = Some(candidate);
+            }
+        }
+        best
+    }
+
+    pub fn child_packages_for_use_namespace(&self, namespace: &str) -> BTreeSet<String> {
+        let import_paths = self.import_paths();
+        let source_namespace = import_paths
+            .iter()
+            .find_map(|(source, alias)| (alias == namespace).then_some(source.clone()))
+            .or_else(|| {
+                let alias = self.alias_for_use_path(namespace)?;
+                import_paths.iter().find_map(|(source, source_alias)| {
+                    (source_alias == &alias).then_some(source.clone())
+                })
+            })
+            .or_else(|| {
+                import_paths
+                    .contains_key(namespace)
+                    .then_some(namespace.to_string())
+            });
+
+        let Some(source_namespace) = source_namespace else {
+            return BTreeSet::new();
+        };
+
+        let prefix = format!("{source_namespace}::");
+        import_paths
+            .keys()
+            .filter_map(|source| {
+                let rest = source.strip_prefix(&prefix)?;
+                let child = rest.split("::").next()?;
+                (!child.is_empty()).then(|| child.to_string())
+            })
+            .collect()
+    }
+
     pub fn external_imports(&self) -> ExternalImports {
         ExternalImports::new(self.package_names(), self.import_paths())
     }

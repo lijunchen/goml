@@ -208,7 +208,7 @@ fn main() -> unit {
             expect![[r#"
                 [
                     ValueCompletionItem {
-                        name: "alice::http",
+                        name: "http",
                         kind: Package,
                         detail: Some(
                             "package",
@@ -263,8 +263,8 @@ http = { package = "alice::http", version = "1.2.0" }
 mod util;
 
 use crate::util;
-use alice::http;
-use alice::http::client;
+use http;
+use http::client;
 
 fn main() -> unit {
     ut
@@ -1342,8 +1342,8 @@ fn registry_dependency_hover_and_completion() {
     let main_path = dir.path().join("main.gom");
     let valid_src = r#"
 
-use alice::http;
-use alice::http::client;
+use http;
+use http::client;
 
 fn main() -> unit {
     let client = http::make_client();
@@ -1352,8 +1352,8 @@ fn main() -> unit {
 "#;
     let namespace_src = r#"
 
-use alice::http;
-use alice::http::client;
+use http;
+use http::client;
 
 fn main() -> unit {
     let _ = http::;
@@ -1361,8 +1361,8 @@ fn main() -> unit {
 "#;
     let nested_namespace_src = r#"
 
-use alice::http;
-use alice::http::client;
+use http;
+use http::client;
 
 fn main() -> unit {
     let _ = client::;
@@ -1370,7 +1370,7 @@ fn main() -> unit {
 "#;
     let use_namespace_src = r#"
 
-use alice::http::
+use http::
 
 fn main() -> unit {
     ()
@@ -1446,7 +1446,7 @@ http = { package = "alice::http", version = "1.2.0" }
             &main_path,
             use_namespace_src,
             2,
-            17,
+            10,
             expect![[r#"
                 [
                     ColonColonCompletionItem {
