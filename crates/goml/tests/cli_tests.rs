@@ -97,6 +97,22 @@ fn write_program(contents: &str) -> anyhow::Result<(TempDir, PathBuf)> {
     Ok((dir, path))
 }
 
+fn write_crate_program(name: &str, contents: &str) -> anyhow::Result<TempDir> {
+    let dir = tempfile::tempdir()?;
+    fs::write(
+        dir.path().join("goml.toml"),
+        format!(
+            r#"[crate]
+name = "{name}"
+kind = "bin"
+root = "main.gom"
+"#
+        ),
+    )?;
+    fs::write(dir.path().join("main.gom"), contents)?;
+    Ok(dir)
+}
+
 fn write_project(root: &Path) -> anyhow::Result<()> {
     fs::write(root.join("goml.toml"), PROJECT_CONFIG)?;
     fs::write(root.join("main.gom"), PROJECT_MAIN)?;
@@ -456,16 +472,16 @@ fn compiler_run_single_falls_back_when_yaegi_cannot_run_function_vectors() -> an
 fn compiler_build_handles_deep_tuple_projection() -> anyhow::Result<()> {
     let input = workspace_root()
         .join("crates/compiler/src/tests/crashers/deep_tuple_projection_stack/main.gom");
+    let program = fs::read_to_string(input)?;
+    let crate_dir = write_crate_program("deep_tuple_projection", &program)?;
     let dir = tempfile::tempdir()?;
     let output_path = dir.path().join("main");
 
     let output = Command::new(goml_bin())
         .arg("compiler")
-        .arg("build")
-        .arg("--package")
-        .arg("main")
-        .arg("--input")
-        .arg(&input)
+        .arg("build-crate")
+        .arg("--crate-dir")
+        .arg(crate_dir.path())
         .arg("--output")
         .arg(&output_path)
         .output()?;
@@ -490,17 +506,15 @@ fn compiler_build_handles_deep_tuple_projection() -> anyhow::Result<()> {
 fn compiler_build_handles_deep_tuple_type() -> anyhow::Result<()> {
     let ty = deep_left_nested_tuple_type(4000);
     let program = format!("fn take(x: {ty}) -> unit {{ () }}\nfn main() -> unit {{ () }}\n");
-    let (_input_dir, input) = write_program(&program)?;
+    let crate_dir = write_crate_program("deep_tuple_type", &program)?;
     let output_dir = tempfile::tempdir()?;
     let output_path = output_dir.path().join("main");
 
     let output = Command::new(goml_bin())
         .arg("compiler")
-        .arg("build")
-        .arg("--package")
-        .arg("main")
-        .arg("--input")
-        .arg(&input)
+        .arg("build-crate")
+        .arg("--crate-dir")
+        .arg(crate_dir.path())
         .arg("--output")
         .arg(&output_path)
         .output()?;

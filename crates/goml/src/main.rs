@@ -9,7 +9,7 @@ use clap::{Args, Parser, Subcommand};
 use compiler::config::{CrateKind, CrateManifest, load_crate_manifest};
 use compiler::env::{format_compile_diagnostics, format_typer_diagnostics};
 use compiler::external::ExternalDependencyArtifacts;
-use compiler::package_names::{ENTRY_FUNCTION, ROOT_PACKAGE};
+use compiler::package_names::ENTRY_FUNCTION;
 use compiler::pipeline::{
     pipeline::Compilation, pipeline::CompilationError, pipeline::compile_single_file,
 };
@@ -88,12 +88,6 @@ struct CompilerArgs {
 
 #[derive(Subcommand, Debug)]
 enum CompilerCommands {
-    #[command(hide = true)]
-    Check(PackageCommandArgs),
-    #[command(hide = true)]
-    Build(PackageCommandArgs),
-    #[command(hide = true)]
-    Link(LinkArgs),
     CheckCrate(CrateCommandArgs),
     BuildCrate(CrateCommandArgs),
     LinkCrates(LinkCratesArgs),
@@ -119,26 +113,6 @@ struct RunArgs {
     #[arg(long = "dump-go")]
     dump_go: bool,
     file: PathBuf,
-}
-
-#[derive(Args, Debug)]
-struct PackageCommandArgs {
-    #[arg(long)]
-    package: String,
-    #[arg(long, required = true, num_args = 1..)]
-    input: Vec<PathBuf>,
-    #[arg(long = "interface-path", value_name = "INTERFACE_FILE")]
-    interface_path: Vec<PathBuf>,
-    #[arg(long)]
-    output: PathBuf,
-}
-
-#[derive(Args, Debug)]
-struct LinkArgs {
-    #[arg(long, required = true, num_args = 1..)]
-    input: Vec<PathBuf>,
-    #[arg(long)]
-    output: PathBuf,
 }
 
 #[derive(Args, Debug)]
@@ -204,18 +178,6 @@ impl DumpStage {
 struct RunOptions {
     file_path: PathBuf,
     dumps: Vec<DumpStage>,
-}
-
-struct PackageCommandOptions {
-    package: String,
-    input_files: Vec<PathBuf>,
-    interface_files: Vec<PathBuf>,
-    output: PathBuf,
-}
-
-struct LinkOptions {
-    input_cores: Vec<PathBuf>,
-    output: PathBuf,
 }
 
 struct CrateCommandOptions {
@@ -700,31 +662,6 @@ fn execute_compiler_command(command: CompilerCommands) -> anyhow::Result<()> {
             };
             execute_run_single(options)
         }
-        CompilerCommands::Check(args) => {
-            let options = PackageCommandOptions {
-                package: args.package,
-                input_files: args.input,
-                interface_files: args.interface_path,
-                output: args.output,
-            };
-            execute_compiler_check(options)
-        }
-        CompilerCommands::Build(args) => {
-            let options = PackageCommandOptions {
-                package: args.package,
-                input_files: args.input,
-                interface_files: args.interface_path,
-                output: args.output,
-            };
-            execute_compiler_build(options)
-        }
-        CompilerCommands::Link(args) => {
-            let options = LinkOptions {
-                input_cores: args.input,
-                output: args.output,
-            };
-            execute_compiler_link(options)
-        }
         CompilerCommands::CheckCrate(args) => {
             let options = CrateCommandOptions {
                 crate_dir: args.crate_dir,
@@ -806,76 +743,6 @@ fn execute_run_single(options: RunOptions) -> anyhow::Result<()> {
     let output = execute_go_source(&go_source)?;
     print!("{output}");
 
-    Ok(())
-}
-
-fn execute_compiler_check(options: PackageCommandOptions) -> anyhow::Result<()> {
-    let unit =
-        compiler::pipeline::separate::check_package(compiler::pipeline::separate::PackageInputs {
-            package: options.package,
-            input_files: options.input_files,
-            interface_files: options.interface_files,
-        })
-        .map_err(|err| anyhow!("check failed: {:?}", err))?;
-
-    let out = options.output.with_extension("interface");
-    let json = serde_json::to_string_pretty(&unit)?;
-    if let Some(parent) = out.parent() {
-        fs::create_dir_all(parent)
-            .with_context(|| format!("failed to create directory {}", parent.display()))?;
-    }
-    fs::write(&out, json).with_context(|| format!("failed to write {}", out.display()))?;
-    Ok(())
-}
-
-fn execute_compiler_build(options: PackageCommandOptions) -> anyhow::Result<()> {
-    let unit =
-        compiler::pipeline::separate::build_package(compiler::pipeline::separate::PackageInputs {
-            package: options.package,
-            input_files: options.input_files,
-            interface_files: options.interface_files,
-        })
-        .map_err(|err| anyhow!("build failed: {:?}", err))?;
-
-    let interface_path = options.output.with_extension("interface");
-    let core_path = options.output.with_extension("core");
-
-    let interface_json = serde_json::to_string_pretty(&unit.interface)?;
-    if let Some(parent) = interface_path.parent() {
-        fs::create_dir_all(parent)
-            .with_context(|| format!("failed to create directory {}", parent.display()))?;
-    }
-    fs::write(&interface_path, interface_json)
-        .with_context(|| format!("failed to write {}", interface_path.display()))?;
-
-    let core_json = serde_json::to_string_pretty(&unit)?;
-    if let Some(parent) = core_path.parent() {
-        fs::create_dir_all(parent)
-            .with_context(|| format!("failed to create directory {}", parent.display()))?;
-    }
-    fs::write(&core_path, core_json)
-        .with_context(|| format!("failed to write {}", core_path.display()))?;
-
-    Ok(())
-}
-
-fn execute_compiler_link(options: LinkOptions) -> anyhow::Result<()> {
-    let mut units = Vec::new();
-    for path in options.input_cores {
-        let unit = compiler::pipeline::separate::read_core(&path)
-            .map_err(|err| anyhow!("link failed: {:?} ({})", err, path.display()))?;
-        units.push(unit);
-    }
-
-    let linked = compiler::pipeline::separate::link_crates(ROOT_PACKAGE, units)
-        .map_err(|err| anyhow!("link failed: {:?}", err))?;
-    let go_source = linked.go.to_pretty(&linked.goenv, PRETTY_WIDTH);
-    if let Some(parent) = options.output.parent() {
-        fs::create_dir_all(parent)
-            .with_context(|| format!("failed to create directory {}", parent.display()))?;
-    }
-    fs::write(&options.output, go_source)
-        .with_context(|| format!("failed to write {}", options.output.display()))?;
     Ok(())
 }
 

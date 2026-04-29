@@ -3,7 +3,6 @@ use std::process::{Command, Stdio};
 use std::sync::OnceLock;
 
 use compiler::artifact::{CoreUnit, InterfaceUnit};
-use compiler::package_names::ROOT_PACKAGE;
 use expect_test::expect_file;
 use xshell::{Shell, cmd};
 
@@ -17,6 +16,19 @@ fn write_file(path: &Path, content: &str) -> anyhow::Result<()> {
     }
     std::fs::write(path, content)?;
     Ok(())
+}
+
+fn write_manifest(dir: &Path, name: &str, kind: &str, root: &str) -> anyhow::Result<()> {
+    write_file(
+        &dir.join("goml.toml"),
+        &format!(
+            r#"[crate]
+name = "{name}"
+kind = "{kind}"
+root = "{root}"
+"#
+        ),
+    )
 }
 
 fn read_json<T: serde::de::DeserializeOwned>(path: &Path) -> anyhow::Result<T> {
@@ -94,7 +106,9 @@ fn cli_check_build_link_single_package() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     let root = dir.path();
     let out = root.join("out");
+    let crate_name = "single";
 
+    write_manifest(root, crate_name, "bin", "main.gom")?;
     let main_gom = root.join("main.gom");
     write_file(
         &main_gom,
@@ -106,39 +120,34 @@ fn main() -> unit {
     )?;
 
     let bin = goml_bin();
-    let main_interface = out.join(format!("{ROOT_PACKAGE}.interface"));
+    let main_interface = out.join("main.interface");
     cmd!(
         sh,
-        "{bin} compiler check --package {ROOT_PACKAGE} --input {main_gom} --output {main_interface}"
+        "{bin} compiler check-crate --crate-dir {root} --output {main_interface}"
     )
     .run()?;
     assert_snapshot_file("single", "main.interface", &main_interface, root)?;
     let unit: InterfaceUnit = read_json(&main_interface)?;
-    assert_eq!(unit.package, ROOT_PACKAGE);
+    assert_eq!(unit.package, crate_name);
     assert!(unit.validate_hash());
 
-    let main_out = out.join(ROOT_PACKAGE);
+    let main_out = out.join("main");
     cmd!(
         sh,
-        "{bin} compiler build --package {ROOT_PACKAGE} --input {main_gom} --output {main_out}"
+        "{bin} compiler build-crate --crate-dir {root} --output {main_out}"
     )
     .run()?;
-    assert!(out.join(format!("{ROOT_PACKAGE}.interface")).exists());
-    assert!(out.join(format!("{ROOT_PACKAGE}.core")).exists());
-    assert_snapshot_file(
-        "single",
-        "main.core",
-        &out.join(format!("{ROOT_PACKAGE}.core")),
-        root,
-    )?;
-    let core: CoreUnit = read_json(&out.join(format!("{ROOT_PACKAGE}.core")))?;
+    assert!(out.join("main.interface").exists());
+    assert!(out.join("main.core").exists());
+    assert_snapshot_file("single", "main.core", &out.join("main.core"), root)?;
+    let core: CoreUnit = read_json(&out.join("main.core"))?;
     assert!(core.validate());
 
     let go_file = out.join("main.go");
-    let main_core = out.join(format!("{ROOT_PACKAGE}.core"));
+    let main_core = out.join("main.core");
     cmd!(
         sh,
-        "{bin} compiler link --input {main_core} --output {go_file}"
+        "{bin} compiler link-crates --root-crate {crate_name} --input {main_core} --output {go_file}"
     )
     .run()?;
     assert_snapshot_file("single", "main.go", &go_file, root)?;
@@ -162,7 +171,9 @@ fn cli_check_build_link_with_dep() -> anyhow::Result<()> {
     let out = root.join("out");
     std::fs::create_dir_all(&out)?;
 
-    let lib_gom = root.join("lib.gom");
+    let dep_dir = root.join("dep");
+    write_manifest(&dep_dir, "dep", "lib", "lib.gom")?;
+    let lib_gom = dep_dir.join("lib.gom");
     write_file(
         &lib_gom,
         r#"
@@ -174,60 +185,57 @@ pub fn msg() -> string {
 "#,
     )?;
 
-    let main_gom = root.join("main.gom");
+    let app_dir = root.join("app");
+    write_manifest(&app_dir, "app", "bin", "main.gom")?;
+    let main_gom = app_dir.join("main.gom");
     write_file(
         &main_gom,
         r#"
-use Lib;
+use dep;
 
 fn main() -> unit {
-    println(Lib::msg())
+    println(dep::msg())
 }
 "#,
     )?;
 
     let bin = goml_bin();
     let lib_interface = out.join("Lib.interface");
-    let main_interface = out.join(format!("{ROOT_PACKAGE}.interface"));
+    let main_interface = out.join("main.interface");
     cmd!(
         sh,
-        "{bin} compiler check --package Lib --input {lib_gom} --output {lib_interface}"
+        "{bin} compiler check-crate --crate-dir {dep_dir} --output {lib_interface}"
     )
     .run()?;
     assert_snapshot_file("with_dep", "Lib.interface", &lib_interface, root)?;
     cmd!(
         sh,
-        "{bin} compiler check --package {ROOT_PACKAGE} --input {main_gom} --output {main_interface} --interface-path {lib_interface}"
+        "{bin} compiler check-crate --crate-dir {app_dir} --output {main_interface} --interface-path {lib_interface}"
     )
     .run()?;
     assert_snapshot_file("with_dep", "main.interface", &main_interface, root)?;
 
     let lib_out = out.join("Lib");
-    let main_out = out.join(ROOT_PACKAGE);
+    let main_out = out.join("main");
     cmd!(
         sh,
-        "{bin} compiler build --package Lib --input {lib_gom} --output {lib_out}"
+        "{bin} compiler build-crate --crate-dir {dep_dir} --output {lib_out}"
     )
     .run()?;
     cmd!(
         sh,
-        "{bin} compiler build --package {ROOT_PACKAGE} --input {main_gom} --output {main_out} --interface-path {lib_interface}"
+        "{bin} compiler build-crate --crate-dir {app_dir} --output {main_out} --interface-path {lib_interface}"
     )
     .run()?;
     assert_snapshot_file("with_dep", "Lib.core", &out.join("Lib.core"), root)?;
-    assert_snapshot_file(
-        "with_dep",
-        "main.core",
-        &out.join(format!("{ROOT_PACKAGE}.core")),
-        root,
-    )?;
+    assert_snapshot_file("with_dep", "main.core", &out.join("main.core"), root)?;
 
     let go_file = out.join("main.go");
     let lib_core = out.join("Lib.core");
-    let main_core = out.join(format!("{ROOT_PACKAGE}.core"));
+    let main_core = out.join("main.core");
     cmd!(
         sh,
-        "{bin} compiler link --input {lib_core} {main_core} --output {go_file}"
+        "{bin} compiler link-crates --root-crate app --input {lib_core} {main_core} --output {go_file}"
     )
     .run()?;
     assert_snapshot_file("with_dep", "main.go", &go_file, root)?;
@@ -251,7 +259,9 @@ fn cli_check_build_link_rejects_hash_mismatch() -> anyhow::Result<()> {
     let out = root.join("out");
     std::fs::create_dir_all(&out)?;
 
-    let lib_gom_v1 = root.join("lib_v1.gom");
+    let dep_v1_dir = root.join("dep_v1");
+    write_manifest(&dep_v1_dir, "dep", "lib", "lib.gom")?;
+    let lib_gom_v1 = dep_v1_dir.join("lib.gom");
     write_file(
         &lib_gom_v1,
         r#"
@@ -263,7 +273,9 @@ pub fn msg() -> string {
 "#,
     )?;
 
-    let lib_gom_v2 = root.join("lib_v2.gom");
+    let dep_v2_dir = root.join("dep_v2");
+    write_manifest(&dep_v2_dir, "dep", "lib", "lib.gom")?;
+    let lib_gom_v2 = dep_v2_dir.join("lib.gom");
     write_file(
         &lib_gom_v2,
         r#"
@@ -279,14 +291,16 @@ pub fn extra() -> int32 {
 "#,
     )?;
 
-    let main_gom = root.join("main.gom");
+    let app_dir = root.join("app");
+    write_manifest(&app_dir, "app", "bin", "main.gom")?;
+    let main_gom = app_dir.join("main.gom");
     write_file(
         &main_gom,
         r#"
-use Lib;
+use dep;
 
 fn main() -> unit {
-    println(Lib::msg())
+    println(dep::msg())
 }
 "#,
     )?;
@@ -295,15 +309,15 @@ fn main() -> unit {
     let lib_interface = out.join("Lib.interface");
     cmd!(
         sh,
-        "{bin} compiler check --package Lib --input {lib_gom_v1} --output {lib_interface}"
+        "{bin} compiler check-crate --crate-dir {dep_v1_dir} --output {lib_interface}"
     )
     .run()?;
     assert_snapshot_file("hash_mismatch", "Lib.interface", &lib_interface, root)?;
 
-    let main_interface = out.join(format!("{ROOT_PACKAGE}.interface"));
+    let main_interface = out.join("main.interface");
     cmd!(
         sh,
-        "{bin} compiler check --package {ROOT_PACKAGE} --input {main_gom} --output {main_interface} --interface-path {lib_interface}"
+        "{bin} compiler check-crate --crate-dir {app_dir} --output {main_interface} --interface-path {lib_interface}"
     )
     .run()?;
     assert_snapshot_file("hash_mismatch", "main.interface", &main_interface, root)?;
@@ -311,30 +325,25 @@ fn main() -> unit {
     let lib_out = out.join("Lib");
     cmd!(
         sh,
-        "{bin} compiler build --package Lib --input {lib_gom_v2} --output {lib_out}"
+        "{bin} compiler build-crate --crate-dir {dep_v2_dir} --output {lib_out}"
     )
     .run()?;
     assert_snapshot_file("hash_mismatch", "Lib.core", &out.join("Lib.core"), root)?;
 
-    let main_out = out.join(ROOT_PACKAGE);
+    let main_out = out.join("main");
     cmd!(
         sh,
-        "{bin} compiler build --package {ROOT_PACKAGE} --input {main_gom} --output {main_out} --interface-path {lib_interface}"
+        "{bin} compiler build-crate --crate-dir {app_dir} --output {main_out} --interface-path {lib_interface}"
     )
     .run()?;
-    assert_snapshot_file(
-        "hash_mismatch",
-        "main.core",
-        &out.join(format!("{ROOT_PACKAGE}.core")),
-        root,
-    )?;
+    assert_snapshot_file("hash_mismatch", "main.core", &out.join("main.core"), root)?;
 
     let go_file = out.join("main.go");
     let lib_core = out.join("Lib.core");
-    let main_core = out.join(format!("{ROOT_PACKAGE}.core"));
+    let main_core = out.join("main.core");
     let err = cmd!(
         sh,
-        "{bin} compiler link --input {lib_core} {main_core} --output {go_file}"
+        "{bin} compiler link-crates --root-crate app --input {lib_core} {main_core} --output {go_file}"
     )
     .read_stderr()?;
 
@@ -352,26 +361,23 @@ fn cli_check_rejects_interface_directory_path() -> anyhow::Result<()> {
     let out = root.join("out");
     std::fs::create_dir_all(&out)?;
 
+    write_manifest(root, "app", "bin", "main.gom")?;
     let main_gom = root.join("main.gom");
     write_file(
         &main_gom,
         r#"
-use Lib;
-
 fn main() -> unit {
-    println(Lib::msg())
+    println("ok")
 }
 "#,
     )?;
 
-    let main_interface = out.join(format!("{ROOT_PACKAGE}.interface"));
+    let main_interface = out.join("main.interface");
     let output = std::process::Command::new(goml_bin())
         .arg("compiler")
-        .arg("check")
-        .arg("--package")
-        .arg(ROOT_PACKAGE)
-        .arg("--input")
-        .arg(&main_gom)
+        .arg("check-crate")
+        .arg("--crate-dir")
+        .arg(root)
         .arg("--output")
         .arg(&main_interface)
         .arg("--interface-path")

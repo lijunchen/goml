@@ -130,6 +130,10 @@ pub enum DiscoveryError {
 }
 
 pub fn discover_crate_from_dir(crate_dir: &Path) -> Result<CrateUnit, DiscoveryError> {
+    super::with_compiler_stack(|| discover_crate_from_dir_inner(crate_dir))
+}
+
+fn discover_crate_from_dir_inner(crate_dir: &Path) -> Result<CrateUnit, DiscoveryError> {
     let manifest = crate_dir.join("goml.toml");
     let manifest_config =
         load_crate_manifest(&manifest).map_err(|message| DiscoveryError::Parse {
@@ -145,6 +149,10 @@ pub fn discover_crate_from_dir(crate_dir: &Path) -> Result<CrateUnit, DiscoveryE
 }
 
 pub fn discover_crate_from_file(entry: &Path) -> Result<CrateUnit, DiscoveryError> {
+    super::with_compiler_stack(|| discover_crate_from_file_inner(entry))
+}
+
+fn discover_crate_from_file_inner(entry: &Path) -> Result<CrateUnit, DiscoveryError> {
     let root_dir = entry
         .parent()
         .filter(|path| !path.as_os_str().is_empty())

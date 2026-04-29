@@ -15,15 +15,9 @@ use crate::package_names::{BUILTIN_PACKAGE, ENTRY_FUNCTION, ROOT_PACKAGE, is_bui
 use crate::pipeline::builtin_inherent;
 use crate::pipeline::modules::CrateUnit;
 use crate::pipeline::packages::collect_known_crate_path_imports;
-use crate::pipeline::pipeline::{CompilationError, parse_ast_file, report_duplicate_trait_impls};
+use crate::pipeline::pipeline::{CompilationError, report_duplicate_trait_impls};
 use crate::pipeline::{compile_error, with_compiler_stack};
 use diagnostics::Diagnostics;
-
-pub struct PackageInputs {
-    pub package: String,
-    pub input_files: Vec<PathBuf>,
-    pub interface_files: Vec<PathBuf>,
-}
 
 pub struct CrateInputs {
     pub crate_unit: CrateUnit,
@@ -152,55 +146,6 @@ fn load_interface_for_package(
     )))
 }
 
-fn read_source_files(
-    package: &str,
-    input_files: &[PathBuf],
-    interface_units: &HashMap<String, (PathBuf, InterfaceUnit)>,
-) -> Result<ReadSourceFilesResult, CompilationError> {
-    if input_files.is_empty() {
-        return Err(compile_error("no input files provided".to_string()));
-    }
-
-    let mut paths = input_files.to_vec();
-    paths.sort();
-    paths.dedup();
-
-    let mut files = Vec::new();
-    let mut imports = HashSet::new();
-    let mut source_list = Vec::new();
-
-    for path in paths {
-        let src = fs::read_to_string(&path)
-            .map_err(|err| compile_error(format!("failed to read {}: {}", path.display(), err)))?;
-        let ast = parse_ast_file(&path, &src)?;
-        for use_decl in ast.uses.iter() {
-            if let Some(package_import) =
-                external_package_import_alias(&use_decl.path, interface_units)
-            {
-                imports.insert(package_import);
-                continue;
-            }
-            if let Some(first) = use_decl.path.segments().first() {
-                imports.insert(first.ident.0.clone());
-            }
-        }
-        for item in ast.toplevels.iter() {
-            if let ast::ast::Item::Mod(module) = item {
-                imports.insert(child_package_name(package, &module.name.0));
-            }
-        }
-        source_list.push(path.display().to_string());
-        files.push(hir::SourceFileAst::with_package(path, package, ast));
-    }
-
-    let known_packages = interface_units.keys().cloned().collect::<HashSet<_>>();
-    imports.extend(collect_known_crate_path_imports(&files, &known_packages));
-
-    Ok((files, imports, source_list))
-}
-
-type ReadSourceFilesResult = (Vec<hir::SourceFileAst>, HashSet<String>, Vec<String>);
-
 fn direct_crate_imports(
     files: &[hir::SourceFileAst],
     interface_units: &HashMap<String, (PathBuf, InterfaceUnit)>,
@@ -225,14 +170,6 @@ fn direct_crate_imports(
     let known_packages = interface_units.keys().cloned().collect::<HashSet<_>>();
     imports.extend(collect_known_crate_path_imports(files, &known_packages));
     imports
-}
-
-fn child_package_name(package: &str, child: &str) -> String {
-    if package == ROOT_PACKAGE {
-        child.to_string()
-    } else {
-        format!("{package}::{child}")
-    }
 }
 
 fn external_root_import_path(unit: &InterfaceUnit) -> Option<&str> {
@@ -492,117 +429,6 @@ pub fn build_crate(opts: CrateInputs) -> Result<CoreUnit, CompilationError> {
 
         let mut unit = CoreUnit::new(package, interface, core_ir);
         unit.internal_exports = Some(full_exports);
-        unit.sources = sources;
-
-        Ok(unit)
-    })
-}
-
-pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationError> {
-    with_compiler_stack(|| {
-        let interface_units = load_interface_files(&opts.interface_files)?;
-        let (files, imports, _sources) =
-            read_source_files(&opts.package, &opts.input_files, &interface_units)?;
-
-        let mut deps: Vec<String> = imports.into_iter().collect();
-        deps.sort();
-        deps.dedup();
-
-        let mut deps_envs = HashMap::new();
-        let mut deps_interfaces = HashMap::new();
-        let mut dep_hashes = BTreeMap::new();
-
-        if opts.package != BUILTIN_PACKAGE {
-            dep_hashes.insert(
-                BUILTIN_PACKAGE.to_string(),
-                builtins::builtin_interface_hash(),
-            );
-        }
-
-        for dep in deps {
-            if dep == BUILTIN_PACKAGE || dep == opts.package {
-                continue;
-            }
-            let (unit, package_interface) =
-                load_interface_for_package(&dep, &opts.interface_files, &interface_units)?;
-            deps_envs.insert(dep.clone(), unit.exports.to_genv());
-            deps_interfaces.insert(dep.clone(), package_interface);
-            dep_hashes.insert(unit.package.clone(), unit.interface_hash.clone());
-        }
-
-        let (tast, _full_exports, exports, pkg_interface, diagnostics) =
-            typecheck_single_package(&opts.package, files, &deps_interfaces, deps_envs);
-        drop(tast);
-
-        let interface =
-            InterfaceUnit::new(opts.package.clone(), exports, pkg_interface, dep_hashes);
-        if diagnostics.has_errors() {
-            return Err(CompilationError::Typer { diagnostics });
-        }
-
-        Ok(interface)
-    })
-}
-
-pub fn build_package(opts: PackageInputs) -> Result<CoreUnit, CompilationError> {
-    with_compiler_stack(|| {
-        let interface_units = load_interface_files(&opts.interface_files)?;
-        let (files, imports, sources) =
-            read_source_files(&opts.package, &opts.input_files, &interface_units)?;
-
-        let mut deps: Vec<String> = imports.into_iter().collect();
-        deps.sort();
-        deps.dedup();
-
-        let mut deps_envs = HashMap::new();
-        let mut deps_interfaces = HashMap::new();
-        let mut dep_hashes = BTreeMap::new();
-        let mut dep_units = Vec::new();
-
-        if opts.package != BUILTIN_PACKAGE {
-            dep_hashes.insert(
-                BUILTIN_PACKAGE.to_string(),
-                builtins::builtin_interface_hash(),
-            );
-        }
-
-        for dep in deps {
-            if dep == BUILTIN_PACKAGE || dep == opts.package {
-                continue;
-            }
-            let (unit, package_interface) =
-                load_interface_for_package(&dep, &opts.interface_files, &interface_units)?;
-            deps_envs.insert(dep.clone(), unit.exports.to_genv());
-            deps_interfaces.insert(dep.clone(), package_interface);
-            dep_hashes.insert(unit.package.clone(), unit.interface_hash.clone());
-            dep_units.push(unit);
-        }
-
-        let (tast, full_exports, exports, pkg_interface, diagnostics) =
-            typecheck_single_package(&opts.package, files, &deps_interfaces, deps_envs);
-        if diagnostics.has_errors() {
-            return Err(CompilationError::Typer { diagnostics });
-        }
-
-        let interface =
-            InterfaceUnit::new(opts.package.clone(), exports, pkg_interface, dep_hashes);
-
-        let gensym = Gensym::new();
-        let mut env = builtins::builtin_env();
-        for dep in dep_units.iter() {
-            dep.exports.apply_to(&mut env);
-        }
-        full_exports.apply_to(&mut env);
-        let mut compile_diagnostics = Diagnostics::new();
-        let core_ir =
-            crate::compile_match::compile_file(&env, &gensym, &mut compile_diagnostics, &tast);
-        if compile_diagnostics.has_errors() {
-            return Err(CompilationError::Compile {
-                diagnostics: compile_diagnostics,
-            });
-        }
-
-        let mut unit = CoreUnit::new(opts.package.clone(), interface, core_ir);
         unit.sources = sources;
 
         Ok(unit)
