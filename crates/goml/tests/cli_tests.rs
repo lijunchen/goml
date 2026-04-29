@@ -923,6 +923,8 @@ fn main() -> unit {
             .join("target/goml/build/deps/alice/appdep/0.1.0/appdep.core")
             .exists()
     );
+    assert!(project_dir.join("target/goml/build/main.core").exists());
+    assert!(project_dir.join("target/goml/main.go").exists());
 
     if !runtime_executor_available() {
         return Ok(());
