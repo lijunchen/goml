@@ -2244,7 +2244,7 @@ fn new_project_can_check_and_build() -> anyhow::Result<()> {
 
 #[test]
 fn project_check_dry_run_prints_compiler_check_commands() -> anyhow::Result<()> {
-    let (dir, _) = copy_module_fixture("project008_trait_bounds_across_packages")?;
+    let (dir, _) = copy_module_fixture("project008_trait_bounds_across_modules")?;
     let output = run_goml(&["check", "--dry-run"], dir.path())?;
 
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -2266,7 +2266,7 @@ fn project_check_dry_run_prints_compiler_check_commands() -> anyhow::Result<()> 
 
 #[test]
 fn project_build_dry_run_prints_compiler_build_and_link_commands() -> anyhow::Result<()> {
-    let (dir, _) = copy_module_fixture("project008_trait_bounds_across_packages")?;
+    let (dir, _) = copy_module_fixture("project008_trait_bounds_across_modules")?;
     let output = run_goml(&["build", "--dry-run"], dir.path())?;
 
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -2293,7 +2293,7 @@ fn project_check_and_build_work_for_complex_dependency_fixtures() -> anyhow::Res
         "project005",
         "project006",
         "project007_trait_impl_orphan_ok",
-        "project008_trait_bounds_across_packages",
+        "project008_trait_bounds_across_modules",
         "project009_builtin_option_result",
     ];
 

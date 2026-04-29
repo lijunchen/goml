@@ -39,7 +39,7 @@ fn multi_module_compile_project_007() -> anyhow::Result<()> {
 
 #[test]
 fn multi_module_compile_project_008() -> anyhow::Result<()> {
-    run_project("project008_trait_bounds_across_packages")
+    run_project("project008_trait_bounds_across_modules")
 }
 
 #[test]
@@ -64,12 +64,12 @@ fn multi_module_compile_project_012() -> anyhow::Result<()> {
 
 #[test]
 fn multi_module_compile_project_013() -> anyhow::Result<()> {
-    run_project("project013_dyn_coercion_across_packages")
+    run_project("project013_dyn_coercion_across_modules")
 }
 
 #[test]
 fn multi_module_compile_project_014() -> anyhow::Result<()> {
-    run_project("project014_generic_bounds_cross_package_ufcs")
+    run_project("project014_generic_bounds_cross_module_ufcs")
 }
 
 #[test]
@@ -79,12 +79,12 @@ fn multi_module_compile_project_015() -> anyhow::Result<()> {
 
 #[test]
 fn multi_module_compile_project_016() -> anyhow::Result<()> {
-    run_project("project016_try_option_cross_package")
+    run_project("project016_try_option_cross_module")
 }
 
 #[test]
 fn multi_module_compile_project_017() -> anyhow::Result<()> {
-    run_project("project017_try_go_error_cross_package")
+    run_project("project017_try_go_error_cross_module")
 }
 
 #[test]
@@ -94,12 +94,12 @@ fn multi_module_compile_project_018() -> anyhow::Result<()> {
 
 #[test]
 fn multi_module_compile_project_019() -> anyhow::Result<()> {
-    run_project("project019_cross_package_inherent_method")
+    run_project("project019_cross_module_inherent_method")
 }
 
 #[test]
 fn multi_module_compile_project_020() -> anyhow::Result<()> {
-    run_project("project020_pascal_package_custom_entry")
+    run_project("project020_pascal_module_custom_entry")
 }
 
 #[test]

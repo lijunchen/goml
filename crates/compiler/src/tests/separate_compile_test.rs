@@ -8,7 +8,7 @@ use crate::pipeline::{modules, separate};
 fn separate_build_link_matches_project_008() -> anyhow::Result<()> {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("src/tests/module")
-        .join("project008_trait_bounds_across_packages");
+        .join("project008_trait_bounds_across_modules");
     let main_path = root.join("main.gom");
     let crate_unit = modules::discover_crate_from_dir(&root)
         .map_err(|err| anyhow::anyhow!("failed to discover crate: {:?}", err))?;

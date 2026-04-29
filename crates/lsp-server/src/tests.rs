@@ -2190,7 +2190,7 @@ http = { package = "alice::http", version = "1.2.0" }
     #[test]
     fn goto_definition_mod_decl_project008_datapkg() {
         check_module_goto_token(
-            "project008_trait_bounds_across_packages",
+            "project008_trait_bounds_across_modules",
             "main.gom",
             "mod datapkg;",
             "datapkg",
@@ -2201,7 +2201,7 @@ http = { package = "alice::http", version = "1.2.0" }
     #[test]
     fn goto_definition_mod_decl_project008_usepkg() {
         check_module_goto_token(
-            "project008_trait_bounds_across_packages",
+            "project008_trait_bounds_across_modules",
             "main.gom",
             "mod usepkg;",
             "usepkg",
@@ -2223,7 +2223,7 @@ http = { package = "alice::http", version = "1.2.0" }
     #[test]
     fn goto_definition_use_namespace_in_child_module_project008_datapkg_traitpkg() {
         check_module_goto_token(
-            "project008_trait_bounds_across_packages",
+            "project008_trait_bounds_across_modules",
             "datapkg/mod.gom",
             "use crate::traitpkg;",
             "traitpkg",
@@ -2234,7 +2234,7 @@ http = { package = "alice::http", version = "1.2.0" }
     #[test]
     fn goto_definition_use_namespace_in_child_module_project008_usepkg_traitpkg() {
         check_module_goto_token(
-            "project008_trait_bounds_across_packages",
+            "project008_trait_bounds_across_modules",
             "usepkg/mod.gom",
             "use crate::traitpkg;",
             "traitpkg",
@@ -2333,7 +2333,7 @@ http = { package = "alice::http", version = "1.2.0" }
     #[test]
     fn goto_definition_value_project008_bar_it() {
         check_module_goto_token(
-            "project008_trait_bounds_across_packages",
+            "project008_trait_bounds_across_modules",
             "main.gom",
             "crate::usepkg::bar_it",
             "bar_it",
@@ -2344,7 +2344,7 @@ http = { package = "alice::http", version = "1.2.0" }
     #[test]
     fn goto_definition_type_in_generic_bound_project008_trait_c() {
         check_module_goto_token(
-            "project008_trait_bounds_across_packages",
+            "project008_trait_bounds_across_modules",
             "usepkg/mod.gom",
             "crate::traitpkg::C",
             "C",
