@@ -744,9 +744,9 @@ appdep = { package = "alice::appdep", version = "0.1.0" }
         project_dir.join("main.gom"),
         r#"
 
-use alice::http;
+use http;
 use alice::http::client;
-use alice::appdep;
+use appdep;
 
 fn main() -> unit {
     println(http::version() + ":" + client::tag() + ":" + appdep::marker())

@@ -458,14 +458,6 @@ impl NameResolution {
 
         for file in files.iter() {
             let package_name = file.ast.package.0.as_str();
-            for import in file.ast.imports.iter() {
-                if let Some(full_path) = external_import_path_for_alias(&import.0, deps) {
-                    self.error(format!(
-                        "external dependency {} must be imported as {}",
-                        import.0, full_path
-                    ));
-                }
-            }
             for use_path in file.ast.use_traits.iter() {
                 let Some(first) = use_path.segments().first() else {
                     continue;
