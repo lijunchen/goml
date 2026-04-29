@@ -1952,6 +1952,34 @@ fn main() {
         );
     }
 
+    #[test]
+    fn goto_definition_no_manifest_use_root_ignores_local_dir() {
+        let dir = tempdir().unwrap();
+        let root = dir.path();
+        write_file(
+            &root.join("util/mod.gom"),
+            r#"
+pub fn ping() -> string {
+    "pong"
+}
+"#,
+        );
+        let src = r#"
+use util;
+
+fn main() -> unit {
+    ()
+}
+"#;
+        let path = root.join("main.gom");
+        write_file(&path, src);
+        let doc = Document::new(src.to_string());
+        let uri = Url::from_file_path(&path).unwrap();
+        let position = position_in_src(src, "use util;", "util");
+        let result = handlers::goto_definition(&uri, &path, src, position, &doc);
+        expect!["no definition"].assert_eq(&format_goto_result(result));
+    }
+
     fn check_module_goto(
         project_name: &str,
         rel_file: &str,
