@@ -1,7 +1,7 @@
 use crate::ast::{
     Arm, AssignStmt, AstIdent, Attribute, Block, ClosureParam, EnumDef, Expr, ExternBuiltin,
-    ExternGo, ExternType, File, Fn, ImplBlock, Item, LetStmt, Pat, Path, Stmt, StructDef, TraitDef,
-    TraitMethodSignature, TypeExpr, Visibility,
+    ExternGo, ExternType, File, Fn, ImplBlock, Item, LetStmt, ModDecl, Pat, Path, Stmt, StructDef,
+    TraitDef, TraitMethodSignature, TypeExpr, Visibility,
 };
 use pretty::RcDoc;
 
@@ -717,6 +717,16 @@ impl TraitMethodSignature {
     }
 }
 
+impl ModDecl {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
+        visibility_doc(self.visibility)
+            .append(RcDoc::text("mod"))
+            .append(RcDoc::space())
+            .append(RcDoc::text(self.name.0.clone()))
+            .append(RcDoc::text(";"))
+    }
+}
+
 impl ImplBlock {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let mut base = RcDoc::text("impl");
@@ -981,6 +991,7 @@ impl File {
 impl Item {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         match self {
+            Item::Mod(decl) => decl.to_doc(),
             Item::EnumDef(def) => def.to_doc(),
             Item::StructDef(def) => def.to_doc(),
             Item::TraitDef(def) => def.to_doc(),

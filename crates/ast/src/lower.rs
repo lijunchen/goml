@@ -288,7 +288,7 @@ fn find_attribute<'a>(attrs: &'a [ast::Attribute], target: &str) -> Option<&'a a
 
 fn lower_item(ctx: &mut LowerCtx, node: cst::Item) -> Option<ast::Item> {
     match node {
-        cst::Item::Mod(_) => None,
+        cst::Item::Mod(it) => Some(ast::Item::Mod(lower_mod(ctx, it)?)),
         cst::Item::Enum(it) => Some(ast::Item::EnumDef(lower_enum(ctx, it)?)),
         cst::Item::Struct(it) => Some(ast::Item::StructDef(lower_struct(ctx, it)?)),
         cst::Item::Trait(it) => Some(ast::Item::TraitDef(lower_trait(ctx, it)?)),
@@ -296,6 +296,24 @@ fn lower_item(ctx: &mut LowerCtx, node: cst::Item) -> Option<ast::Item> {
         cst::Item::Fn(it) => Some(ast::Item::Fn(lower_fn(ctx, it)?)),
         cst::Item::Extern(it) => lower_extern(ctx, it),
     }
+}
+
+fn lower_mod(ctx: &mut LowerCtx, node: cst::Mod) -> Option<ast::ModDecl> {
+    let visibility = lower_visibility(&node);
+    let name = match node.name_token() {
+        Some(name) => name.to_string(),
+        None => {
+            ctx.push_error(
+                Some(node.syntax().text_range()),
+                "Module declaration is missing a name",
+            );
+            return None;
+        }
+    };
+    Some(ast::ModDecl {
+        visibility,
+        name: ast::AstIdent::new(&name),
+    })
 }
 
 fn lower_enum(ctx: &mut LowerCtx, node: cst::Enum) -> Option<ast::EnumDef> {
@@ -2810,6 +2828,29 @@ fn f() -> unit { () }
             vec!["crate::math::add", "self::helper", "super::Named"]
         );
         assert!(file.uses.iter().all(|decl| decl.alias.is_none()));
+    }
+
+    #[test]
+    fn lower_preserves_mod_decls() {
+        let file = lower_src(
+            r#"
+pub mod api;
+mod internal;
+fn f() -> unit { () }
+"#,
+        );
+
+        let ast::Item::Mod(api) = &file.toplevels[0] else {
+            panic!("expected public module");
+        };
+        assert_eq!(api.name, ast::AstIdent::new("api"));
+        assert_eq!(api.visibility, ast::Visibility::Public);
+
+        let ast::Item::Mod(internal) = &file.toplevels[1] else {
+            panic!("expected private module");
+        };
+        assert_eq!(internal.name, ast::AstIdent::new("internal"));
+        assert_eq!(internal.visibility, ast::Visibility::Private);
     }
 
     fn lower_src(src: &str) -> ast::File {

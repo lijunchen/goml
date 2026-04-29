@@ -427,6 +427,7 @@ impl NameResolution {
             let mut def_ids = Vec::new();
             for item in file.ast.toplevels.iter() {
                 let def_id = match item {
+                    ast::Item::Mod(_) => None,
                     ast::Item::Fn(func) => {
                         let full_name = full_def_name(package_name, &func.name.0);
                         let path = full_def_path(package_name, &func.name.0);
@@ -447,7 +448,7 @@ impl NameResolution {
                             }),
                         );
                         def_names.insert(full_name, id);
-                        id
+                        Some(id)
                     }
                     ast::Item::ExternGo(ext) => {
                         let full_name = full_def_name(package_name, &ext.goml_name.0);
@@ -459,7 +460,7 @@ impl NameResolution {
                             hir::Def::ExternGo(ext_def),
                         );
                         def_names.insert(full_name, id);
-                        id
+                        Some(id)
                     }
                     ast::Item::ExternBuiltin(ext) => {
                         let full_name = full_def_name(package_name, &ext.name.0);
@@ -471,7 +472,7 @@ impl NameResolution {
                             hir::Def::ExternBuiltin(ext_def),
                         );
                         def_names.insert(full_name, id);
-                        id
+                        Some(id)
                     }
                     ast::Item::EnumDef(e) => {
                         let full_name = full_def_name(package_name, &e.name.0);
@@ -483,7 +484,7 @@ impl NameResolution {
                             hir::Def::EnumDef(enum_def),
                         );
                         def_names.insert(full_name, id);
-                        id
+                        Some(id)
                     }
                     ast::Item::StructDef(s) => {
                         let full_name = full_def_name(package_name, &s.name.0);
@@ -495,7 +496,7 @@ impl NameResolution {
                             hir::Def::StructDef(struct_def),
                         );
                         def_names.insert(full_name, id);
-                        id
+                        Some(id)
                     }
                     ast::Item::TraitDef(t) => {
                         let full_name = full_def_name(package_name, &t.name.0);
@@ -507,9 +508,9 @@ impl NameResolution {
                             hir::Def::TraitDef(trait_def),
                         );
                         def_names.insert(full_name, id);
-                        id
+                        Some(id)
                     }
-                    ast::Item::ImplBlock(_i) => hir_table.alloc_def_with_path(
+                    ast::Item::ImplBlock(_i) => Some(hir_table.alloc_def_with_path(
                         full_def_path(package_name, "impl"),
                         hir::DefKind::ImplBlock,
                         hir::Def::ImplBlock(hir::ImplBlock {
@@ -520,7 +521,7 @@ impl NameResolution {
                             for_type: hir::TypeExpr::TUnit,
                             methods: Vec::new(),
                         }),
-                    ),
+                    )),
                     ast::Item::ExternType(ext) => {
                         let full_name = full_def_name(package_name, &ext.goml_name.0);
                         let path = full_def_path(package_name, &ext.goml_name.0);
@@ -531,11 +532,13 @@ impl NameResolution {
                             hir::Def::ExternType(ext_def),
                         );
                         def_names.insert(full_name, id);
-                        id
+                        Some(id)
                     }
                 };
-                toplevels.push(def_id);
-                def_ids.push(def_id);
+                if let Some(def_id) = def_id {
+                    toplevels.push(def_id);
+                    def_ids.push(def_id);
+                }
             }
             per_file_defs.push(def_ids);
         }
@@ -556,6 +559,7 @@ impl NameResolution {
             let mut toplevel_idx = 0;
             for item in file.ast.toplevels.iter() {
                 match item {
+                    ast::Item::Mod(_) => {}
                     ast::Item::Fn(func) => {
                         let def_id = per_file_defs
                             .get(file_idx)

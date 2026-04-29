@@ -210,6 +210,7 @@ pub enum Visibility {
 
 #[derive(Debug, Clone)]
 pub enum Item {
+    Mod(ModDecl),
     EnumDef(EnumDef),
     StructDef(StructDef),
     TraitDef(TraitDef),
@@ -218,6 +219,12 @@ pub enum Item {
     ExternGo(ExternGo),
     ExternType(ExternType),
     ExternBuiltin(ExternBuiltin),
+}
+
+#[derive(Debug, Clone)]
+pub struct ModDecl {
+    pub visibility: Visibility,
+    pub name: AstIdent,
 }
 
 #[derive(Debug, Clone)]
