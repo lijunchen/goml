@@ -158,7 +158,7 @@ pub fn tag() -> string {
 
 #[test]
 #[rustfmt::skip]
-fn use_statement_package_completions() {
+fn use_statement_namespace_completions() {
     let dir = tempdir().unwrap();
     let home = dir.path().join(".goml");
     write_cached_registry(&home);
@@ -708,7 +708,7 @@ pub fn send() -> string {
 
 #[test]
 #[rustfmt::skip]
-fn imported_package_value_completions() {
+fn imported_namespace_value_completions() {
     let dir = tempdir().unwrap();
     let home = dir.path().join(".goml");
     write_cached_registry(&home);
@@ -1558,7 +1558,7 @@ fn main() {
 
 #[test]
 #[rustfmt::skip]
-fn no_manifest_use_package_hover_and_completion_stay_single_file() {
+fn no_manifest_use_namespace_hover_and_completion_stay_single_file() {
     let dir = tempdir().unwrap();
     let lib_dir = dir.path().join("Lib");
     std::fs::create_dir_all(&lib_dir).unwrap();
@@ -1862,7 +1862,7 @@ pub fn target() -> int64 {
 
 #[test]
 #[rustfmt::skip]
-fn crate_query_goto_definition_uses_canonical_module_package_alias() {
+fn crate_query_goto_definition_uses_canonical_module_namespace_alias() {
     let dir = tempdir().unwrap();
     std::fs::create_dir_all(dir.path().join("api")).unwrap();
     std::fs::write(
@@ -1918,7 +1918,7 @@ pub fn call() -> int64 {
 
 #[test]
 #[rustfmt::skip]
-fn no_manifest_use_package_inherent_method_completion_is_empty() {
+fn no_manifest_use_namespace_inherent_method_completion_is_empty() {
     let dir = tempdir().unwrap();
     let lib_dir = dir.path().join("Lib");
     std::fs::create_dir_all(&lib_dir).unwrap();
@@ -1970,7 +1970,7 @@ fn main() {
 
 #[test]
 #[rustfmt::skip]
-fn no_manifest_use_package_colon_colon_completion_is_empty() {
+fn no_manifest_use_namespace_colon_colon_completion_is_empty() {
     let dir = tempdir().unwrap();
     let lib_dir = dir.path().join("Lib");
     std::fs::create_dir_all(&lib_dir).unwrap();
