@@ -23,7 +23,7 @@ pub struct NamespaceUnit {
 pub struct NamespaceGraph {
     pub module_dir: PathBuf,
     pub module_name: Option<String>,
-    pub entry_package: String,
+    pub entry_namespace: String,
     pub packages: HashMap<String, NamespaceUnit>,
     pub discovery_order: Vec<String>,
     pub package_dirs: HashMap<String, PathBuf>,
@@ -671,7 +671,7 @@ fn discover_packages_from_crate_unit(
     Ok(NamespaceGraph {
         module_dir: crate_unit.root_dir,
         module_name: Some(crate_unit.config.name),
-        entry_package: root_namespace.to_string(),
+        entry_namespace: root_namespace.to_string(),
         packages,
         discovery_order,
         package_dirs,
@@ -793,7 +793,7 @@ fn discover_packages_inner(
         (Some(path), Some(ast)) => Some((path, ast)),
         _ => None,
     };
-    let entry_package = if single_file {
+    let entry_namespace = if single_file {
         if let Some((path, ast)) = source_override {
             load_single_file_package(path, ast, external_imports)
         } else {
@@ -812,17 +812,17 @@ fn discover_packages_inner(
             external_imports,
         )?
     };
-    let entry_name = entry_package.name.clone();
+    let entry_name = entry_namespace.name.clone();
 
     let mut packages = HashMap::new();
     let mut discovery_order = Vec::new();
     let mut package_dirs = HashMap::new();
     let mut package_visibilities = HashMap::new();
-    let mut queue: Vec<String> = entry_package.imports.iter().cloned().collect();
+    let mut queue: Vec<String> = entry_namespace.imports.iter().cloned().collect();
     let mut loaded = HashSet::new();
 
     loaded.insert(entry_name.clone());
-    packages.insert(entry_name.clone(), entry_package);
+    packages.insert(entry_name.clone(), entry_namespace);
     discovery_order.push(entry_name.clone());
     package_dirs.insert(entry_name.clone(), root_dir.to_path_buf());
     package_visibilities.insert(entry_name.clone(), ast::Visibility::Public);
@@ -877,7 +877,7 @@ fn discover_packages_inner(
     Ok(NamespaceGraph {
         module_dir: root_dir.to_path_buf(),
         module_name: None,
-        entry_package: entry_name,
+        entry_namespace: entry_name,
         packages,
         discovery_order,
         package_dirs,
@@ -976,7 +976,7 @@ fn visit_namespace(
 
 impl NamespaceGraph {
     pub fn namespace_is_publicly_visible(&self, namespace: &str) -> bool {
-        if namespace == self.entry_package {
+        if namespace == self.entry_namespace {
             return true;
         }
 

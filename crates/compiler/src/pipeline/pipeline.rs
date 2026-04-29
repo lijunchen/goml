@@ -378,7 +378,7 @@ fn typecheck_namespaces_inner(
     }
 
     let entry_tast = artifacts_by_name
-        .get(&graph.entry_package)
+        .get(&graph.entry_namespace)
         .ok_or_else(|| compile_error("entry namespace not found".to_string()))?
         .tast
         .clone();
@@ -717,7 +717,7 @@ pub fn typecheck_with_namespaces_and_results(
                 crate_interface,
             };
 
-            if name == &graph.entry_package {
+            if name == &graph.entry_namespace {
                 entry_hir_table = Some(hir_table);
                 entry_results = Some(results);
             }
@@ -741,14 +741,17 @@ fn validate_entrypoint_for_compile(
     graph: &packages::NamespaceGraph,
     artifacts: &HashMap<String, NamespaceArtifact>,
 ) {
-    let Some(entry_artifact) = artifacts.get(&graph.entry_package) else {
+    let Some(entry_artifact) = artifacts.get(&graph.entry_namespace) else {
         return;
     };
-    if graph.entry_package != ROOT_PACKAGE {
+    if graph.entry_namespace != ROOT_PACKAGE {
         diagnostics.push(Diagnostic::new(
             Stage::Typer,
             Severity::Error,
-            format!("entry package must be main, got {}", graph.entry_package),
+            format!(
+                "entry namespace must be main, got {}",
+                graph.entry_namespace
+            ),
         ));
         return;
     }

@@ -212,7 +212,7 @@ fn build_crate_symbol_index(
     let mut graph = crate::pipeline::packages::NamespaceGraph {
         module_dir: crate_unit.root_dir.clone(),
         module_name: Some(crate_name.clone()),
-        entry_package: crate_name.clone(),
+        entry_namespace: crate_name.clone(),
         packages: HashMap::new(),
         discovery_order: Vec::new(),
         package_dirs: HashMap::new(),
