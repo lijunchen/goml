@@ -317,7 +317,7 @@ pub fn colon_colon_completions(
                 &namespace,
             )
         } else {
-            colon_colon_items_for_namespace(genv.as_ref(), symbol_index.as_ref(), &namespace)
+            colon_colon_items_for_namespace(path, genv.as_ref(), symbol_index.as_ref(), &namespace)
         };
         items.sort_by(|a, b| a.name.cmp(&b.name));
         items.dedup_by(|a, b| a.name == b.name && a.kind == b.kind && a.detail == b.detail);
@@ -822,71 +822,84 @@ fn use_colon_colon_items_for_namespace(
             );
 
             if let Some(alias) = external_deps.alias_for_use_path(namespace) {
-                items.extend(colon_colon_items_for_namespace(genv, symbol_index, &alias));
+                items.extend(colon_colon_items_for_namespace(
+                    path,
+                    genv,
+                    symbol_index,
+                    &alias,
+                ));
             }
         }
     }
 
     if items.is_empty() {
-        return colon_colon_items_for_namespace(genv, symbol_index, namespace);
+        return colon_colon_items_for_namespace(path, genv, symbol_index, namespace);
     }
 
     items
 }
 
 fn colon_colon_items_for_namespace(
+    path: &Path,
     genv: Option<&GlobalTypeEnv>,
     symbol_index: Option<&ProjectSymbolIndex>,
     namespace: &str,
 ) -> Vec<ColonColonCompletionItem> {
     let mut items = Vec::new();
+    let lookup_names = namespace_lookup_names(path, namespace);
+
+    items.extend(crate_module_completion_items(path, namespace));
 
     if let Some(symbol_index) = symbol_index {
-        items.extend(
-            symbol_index
-                .package_children(namespace)
-                .into_iter()
-                .map(|name| ColonColonCompletionItem {
-                    name,
-                    kind: ColonColonCompletionKind::Package,
-                    detail: Some("package".to_string()),
-                }),
-        );
+        for lookup_name in &lookup_names {
+            items.extend(
+                symbol_index
+                    .package_children(lookup_name)
+                    .into_iter()
+                    .map(|name| ColonColonCompletionItem {
+                        name,
+                        kind: ColonColonCompletionKind::Package,
+                        detail: Some("package".to_string()),
+                    }),
+            );
+        }
     }
 
     let Some(genv) = genv else {
         return items;
     };
 
-    if let Some(enum_def) = genv.enums().get(&tast::TastIdent(namespace.to_string())) {
-        for (variant_name, payload) in &enum_def.variants {
-            let detail = if payload.is_empty() {
-                Some(namespace.to_string())
-            } else {
-                let payload_str = payload
-                    .iter()
-                    .map(|ty| ty.to_pretty(80))
-                    .collect::<Vec<_>>()
-                    .join(", ");
-                Some(format!("({}) -> {}", payload_str, namespace))
-            };
-            items.push(ColonColonCompletionItem {
-                name: variant_name.0.clone(),
-                kind: ColonColonCompletionKind::Variant,
-                detail,
-            });
+    for lookup_name in &lookup_names {
+        if let Some(enum_def) = genv.enums().get(&tast::TastIdent(lookup_name.to_string())) {
+            for (variant_name, payload) in &enum_def.variants {
+                let detail = if payload.is_empty() {
+                    Some(lookup_name.to_string())
+                } else {
+                    let payload_str = payload
+                        .iter()
+                        .map(|ty| ty.to_pretty(80))
+                        .collect::<Vec<_>>()
+                        .join(", ");
+                    Some(format!("({}) -> {}", payload_str, lookup_name))
+                };
+                items.push(ColonColonCompletionItem {
+                    name: variant_name.0.clone(),
+                    kind: ColonColonCompletionKind::Variant,
+                    detail,
+                });
+            }
+            items.extend(colon_colon_inherent_methods(
+                genv,
+                tast::Ty::TEnum {
+                    name: lookup_name.to_string(),
+                },
+            ));
+            return items;
         }
-        items.extend(colon_colon_inherent_methods(
-            genv,
-            tast::Ty::TEnum {
-                name: namespace.to_string(),
-            },
-        ));
-        return items;
     }
 
-    if genv.trait_env.trait_defs.contains_key(namespace) {
-        if let Some(trait_def) = genv.trait_env.trait_defs.get(namespace) {
+    for lookup_name in &lookup_names {
+        if let Some(trait_def) = genv.trait_env.trait_defs.get(lookup_name) {
             for (method_name, scheme) in trait_def.methods.iter() {
                 items.push(ColonColonCompletionItem {
                     name: method_name.clone(),
@@ -894,80 +907,151 @@ fn colon_colon_items_for_namespace(
                     detail: Some(scheme.ty.to_pretty(80)),
                 });
             }
-        }
-        return items;
-    }
-
-    if genv
-        .structs()
-        .contains_key(&tast::TastIdent(namespace.to_string()))
-    {
-        items.extend(colon_colon_inherent_methods(
-            genv,
-            tast::Ty::TStruct {
-                name: namespace.to_string(),
-            },
-        ));
-        return items;
-    }
-
-    if genv
-        .trait_env
-        .inherent_impls
-        .contains_key(&crate::env::InherentImplKey::Constr(namespace.to_string()))
-    {
-        items.extend(colon_colon_inherent_methods(
-            genv,
-            tast::Ty::TStruct {
-                name: namespace.to_string(),
-            },
-        ));
-        return items;
-    }
-
-    let ns_prefix = format!("{}::", namespace);
-
-    for name in genv.type_env.enums.keys() {
-        if let Some(member) = strip_namespace_member(&name.0, &ns_prefix) {
-            items.push(ColonColonCompletionItem {
-                name: member.to_string(),
-                kind: ColonColonCompletionKind::Type,
-                detail: Some("enum".to_string()),
-            });
+            return items;
         }
     }
 
-    for name in genv.type_env.structs.keys() {
-        if let Some(member) = strip_namespace_member(&name.0, &ns_prefix) {
-            items.push(ColonColonCompletionItem {
-                name: member.to_string(),
-                kind: ColonColonCompletionKind::Type,
-                detail: Some("struct".to_string()),
-            });
+    for lookup_name in &lookup_names {
+        if genv
+            .structs()
+            .contains_key(&tast::TastIdent(lookup_name.to_string()))
+        {
+            items.extend(colon_colon_inherent_methods(
+                genv,
+                tast::Ty::TStruct {
+                    name: lookup_name.to_string(),
+                },
+            ));
+            return items;
         }
     }
 
-    for name in genv.trait_env.trait_defs.keys() {
-        if let Some(member) = strip_namespace_member(name, &ns_prefix) {
-            items.push(ColonColonCompletionItem {
-                name: member.to_string(),
-                kind: ColonColonCompletionKind::Trait,
-                detail: None,
-            });
+    for lookup_name in &lookup_names {
+        if genv
+            .trait_env
+            .inherent_impls
+            .contains_key(&crate::env::InherentImplKey::Constr(
+                lookup_name.to_string(),
+            ))
+        {
+            items.extend(colon_colon_inherent_methods(
+                genv,
+                tast::Ty::TStruct {
+                    name: lookup_name.to_string(),
+                },
+            ));
+            return items;
         }
     }
 
-    for name in genv.value_env.funcs.keys() {
-        if let Some(member) = strip_namespace_member(name, &ns_prefix) {
-            items.push(ColonColonCompletionItem {
-                name: member.to_string(),
-                kind: ColonColonCompletionKind::Value,
-                detail: Some("fn".to_string()),
-            });
+    for lookup_name in &lookup_names {
+        let ns_prefix = format!("{}::", lookup_name);
+
+        for name in genv.type_env.enums.keys() {
+            if let Some(member) = strip_namespace_member(&name.0, &ns_prefix) {
+                items.push(ColonColonCompletionItem {
+                    name: member.to_string(),
+                    kind: ColonColonCompletionKind::Type,
+                    detail: Some("enum".to_string()),
+                });
+            }
+        }
+
+        for name in genv.type_env.structs.keys() {
+            if let Some(member) = strip_namespace_member(&name.0, &ns_prefix) {
+                items.push(ColonColonCompletionItem {
+                    name: member.to_string(),
+                    kind: ColonColonCompletionKind::Type,
+                    detail: Some("struct".to_string()),
+                });
+            }
+        }
+
+        for name in genv.trait_env.trait_defs.keys() {
+            if let Some(member) = strip_namespace_member(name, &ns_prefix) {
+                items.push(ColonColonCompletionItem {
+                    name: member.to_string(),
+                    kind: ColonColonCompletionKind::Trait,
+                    detail: None,
+                });
+            }
+        }
+
+        for name in genv.value_env.funcs.keys() {
+            if let Some(member) = strip_namespace_member(name, &ns_prefix) {
+                items.push(ColonColonCompletionItem {
+                    name: member.to_string(),
+                    kind: ColonColonCompletionKind::Value,
+                    detail: Some("fn".to_string()),
+                });
+            }
         }
     }
 
     items
+}
+
+fn crate_module_completion_items(path: &Path, namespace: &str) -> Vec<ColonColonCompletionItem> {
+    let module_path = if namespace == "crate" {
+        Vec::new()
+    } else if let Some(rest) = namespace.strip_prefix("crate::") {
+        rest.split("::")
+            .filter(|segment| !segment.is_empty())
+            .map(|segment| segment.to_string())
+            .collect()
+    } else {
+        return Vec::new();
+    };
+
+    let Some(crate_unit) = discover_completion_crate(path) else {
+        return Vec::new();
+    };
+    let Some(module) = crate_unit
+        .modules
+        .iter()
+        .find(|module| module.path.segments() == module_path.as_slice())
+    else {
+        return Vec::new();
+    };
+
+    module
+        .children
+        .keys()
+        .map(|name| ColonColonCompletionItem {
+            name: name.clone(),
+            kind: ColonColonCompletionKind::Package,
+            detail: Some("package".to_string()),
+        })
+        .collect()
+}
+
+fn namespace_lookup_names(path: &Path, namespace: &str) -> Vec<String> {
+    let mut names = vec![namespace.to_string()];
+
+    if let Some(crate_name) = completion_crate_name(path) {
+        if namespace == "crate" {
+            names.push(crate_name);
+        } else if let Some(rest) = namespace.strip_prefix("crate::") {
+            names.push(format!("{}::{}", crate_name, rest));
+        }
+    }
+
+    names.sort();
+    names.dedup();
+    names
+}
+
+fn completion_crate_name(path: &Path) -> Option<String> {
+    discover_completion_crate(path).map(|crate_unit| crate_unit.config.name)
+}
+
+fn discover_completion_crate(path: &Path) -> Option<crate::pipeline::modules::CrateUnit> {
+    let start_dir = path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."));
+    let (crate_dir, _) = crate::config::find_crate_root(start_dir)?;
+    crate::pipeline::modules::discover_crate_from_dir(&crate_dir).ok()
 }
 
 fn strip_namespace_member<'a>(full: &'a str, ns_prefix: &str) -> Option<&'a str> {

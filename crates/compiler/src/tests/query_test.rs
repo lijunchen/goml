@@ -229,6 +229,124 @@ fn main() -> unit {
 
 #[test]
 #[rustfmt::skip]
+fn use_crate_namespace_completions_follow_declared_modules() {
+    let dir = tempdir().unwrap();
+    std::fs::create_dir_all(dir.path().join("ghost")).unwrap();
+    std::fs::write(
+        dir.path().join("ghost/mod.gom"),
+        r#"
+
+pub fn hidden() -> string {
+    "hidden"
+}
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        dir.path().join("data.gom"),
+        r#"
+
+pub struct Item {
+    name: string,
+}
+
+pub fn label() -> string {
+    "data"
+}
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        dir.path().join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+"#,
+    )
+    .unwrap();
+
+    let valid_src = r#"
+mod data;
+
+fn main() -> unit {
+    ()
+}
+"#;
+    let root_namespace_src = r#"
+mod data;
+
+use crate::
+
+fn main() -> unit {
+    ()
+}
+"#;
+    let child_namespace_src = r#"
+mod data;
+
+use crate::data::
+
+fn main() -> unit {
+    ()
+}
+"#;
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(&main_path, valid_src).unwrap();
+
+    check_colon_colon_completions_with_path(
+        &main_path,
+        root_namespace_src,
+        3,
+        11,
+        expect![[r#"
+            [
+                ColonColonCompletionItem {
+                    name: "data",
+                    kind: Package,
+                    detail: Some(
+                        "package",
+                    ),
+                },
+                ColonColonCompletionItem {
+                    name: "main",
+                    kind: Value,
+                    detail: Some(
+                        "fn",
+                    ),
+                },
+            ]
+        "#]],
+    );
+
+    check_colon_colon_completions_with_path(
+        &main_path,
+        child_namespace_src,
+        3,
+        17,
+        expect![[r#"
+            [
+                ColonColonCompletionItem {
+                    name: "Item",
+                    kind: Type,
+                    detail: Some(
+                        "struct",
+                    ),
+                },
+                ColonColonCompletionItem {
+                    name: "label",
+                    kind: Value,
+                    detail: Some(
+                        "fn",
+                    ),
+                },
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
 fn imported_package_value_completions() {
     let dir = tempdir().unwrap();
     let home = dir.path().join(".goml");
