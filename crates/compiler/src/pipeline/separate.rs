@@ -45,13 +45,13 @@ fn validate_interface_unit(path: &Path, unit: &InterfaceUnit) -> Result<(), Comp
             path.display()
         )));
     }
-    if !is_builtin_package(&unit.package) {
+    if !is_builtin_package(&unit.crate_name) {
         let expected = builtins::builtin_interface_hash();
         let Some(actual) = unit.deps.get(BUILTIN_PACKAGE) else {
             return Err(compile_error(format!(
                 "interface {} is missing implicit builtin dependency (rebuild {})",
                 path.display(),
-                unit.package
+                unit.crate_name
             )));
         };
         if actual != &expected {
@@ -60,7 +60,7 @@ fn validate_interface_unit(path: &Path, unit: &InterfaceUnit) -> Result<(), Comp
                 path.display(),
                 actual,
                 expected,
-                unit.package
+                unit.crate_name
             )));
         }
     }
@@ -94,15 +94,15 @@ fn load_interface_files(
             ))
         })?;
         validate_interface_unit(path, &unit)?;
-        if let Some((prev_path, _)) = units.get(&unit.package) {
+        if let Some((prev_path, _)) = units.get(&unit.crate_name) {
             return Err(compile_error(format!(
                 "multiple interface files provided for crate {}: {} and {}",
-                unit.package,
+                unit.crate_name,
                 prev_path.display(),
                 path.display()
             )));
         }
-        units.insert(unit.package.clone(), (path.clone(), unit));
+        units.insert(unit.crate_name.clone(), (path.clone(), unit));
     }
 
     Ok(units)
@@ -221,8 +221,8 @@ fn external_namespace_import_alias(
     let first = segments.first()?.ident.0.as_str();
 
     for (_, unit) in interface_units.values() {
-        if first == unit.package {
-            let mut best = Some(unit.package.clone());
+        if first == unit.crate_name {
+            let mut best = Some(unit.crate_name.clone());
             for end in 2..=segments.len() {
                 let namespace = segments[1..end]
                     .iter()
@@ -240,7 +240,7 @@ fn external_namespace_import_alias(
             continue;
         };
         if display == root_import_path {
-            return Some(unit.package.clone());
+            return Some(unit.crate_name.clone());
         }
         if !display.starts_with(root_import_path) {
             continue;
@@ -249,7 +249,7 @@ fn external_namespace_import_alias(
             continue;
         }
         let root_len = root_import_path.split("::").count();
-        let mut best = Some(unit.package.clone());
+        let mut best = Some(unit.crate_name.clone());
         for end in root_len + 1..=segments.len() {
             let namespace = segments[root_len..end]
                 .iter()
@@ -349,7 +349,7 @@ pub fn check_crate(opts: CrateInputs) -> Result<InterfaceUnit, CompilationError>
                 load_interface_for_namespace(&dep, &opts.interface_files, &interface_units)?;
             deps_envs.insert(dep.clone(), unit.exports.to_genv());
             deps_interfaces.insert(dep.clone(), dep_interface);
-            dep_hashes.insert(unit.package.clone(), unit.interface_hash.clone());
+            dep_hashes.insert(unit.crate_name.clone(), unit.interface_hash.clone());
         }
 
         let (tast, _full_exports, exports, crate_interface, diagnostics) =
@@ -400,7 +400,7 @@ pub fn build_crate(opts: CrateInputs) -> Result<CoreUnit, CompilationError> {
                 load_interface_for_namespace(&dep, &opts.interface_files, &interface_units)?;
             deps_envs.insert(dep.clone(), unit.exports.to_genv());
             deps_interfaces.insert(dep.clone(), dep_interface);
-            dep_hashes.insert(unit.package.clone(), unit.interface_hash.clone());
+            dep_hashes.insert(unit.crate_name.clone(), unit.interface_hash.clone());
             dep_units.push(unit);
         }
 
@@ -724,7 +724,7 @@ pub fn call() -> unit {
         })
         .unwrap();
 
-        assert_eq!(interface.package, "hello");
+        assert_eq!(interface.crate_name, "hello");
         assert!(
             interface
                 .interface
@@ -866,7 +866,7 @@ pub fn call() -> unit {
         .unwrap();
 
         assert_eq!(core.package, "hello");
-        assert_eq!(core.interface.package, "hello");
+        assert_eq!(core.interface.crate_name, "hello");
         assert!(core.validate());
         assert!(
             core.sources

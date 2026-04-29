@@ -196,7 +196,8 @@ fn export_name_in_module(namespace: &str, module_path: &[String], name: &str) ->
 pub struct InterfaceUnit {
     pub format_version: u32,
     pub compiler_abi: u32,
-    pub package: String,
+    #[serde(rename = "package")]
+    pub crate_name: String,
     pub exports: CrateExports,
     pub interface: crate::interface::CrateInterface,
     pub deps: BTreeMap<String, String>,
@@ -215,7 +216,7 @@ struct InterfaceHashView<'a> {
 
 impl InterfaceUnit {
     pub fn new(
-        package: String,
+        crate_name: String,
         exports: CrateExports,
         interface: crate::interface::CrateInterface,
         deps: BTreeMap<String, String>,
@@ -223,7 +224,7 @@ impl InterfaceUnit {
         let mut unit = Self {
             format_version: FORMAT_VERSION,
             compiler_abi: COMPILER_ABI,
-            package,
+            crate_name,
             exports,
             interface,
             deps,
@@ -237,7 +238,7 @@ impl InterfaceUnit {
         let view = InterfaceHashView {
             format_version: self.format_version,
             compiler_abi: self.compiler_abi,
-            package: &self.package,
+            package: &self.crate_name,
             exports: &self.exports,
             interface: &self.interface,
             deps: &self.deps,
@@ -283,7 +284,7 @@ impl CoreUnit {
     pub fn validate(&self) -> bool {
         self.format_version == FORMAT_VERSION
             && self.compiler_abi == COMPILER_ABI
-            && self.package == self.interface.package
+            && self.package == self.interface.crate_name
             && self.interface.validate_hash()
             && self.deps == self.interface.deps
     }

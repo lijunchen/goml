@@ -128,7 +128,7 @@ fn main() -> unit {
     .run()?;
     assert_snapshot_file("single", "main.interface", &main_interface, root)?;
     let unit: InterfaceUnit = read_json(&main_interface)?;
-    assert_eq!(unit.package, crate_name);
+    assert_eq!(unit.crate_name, crate_name);
     assert!(unit.validate_hash());
 
     let main_out = out.join("main");
