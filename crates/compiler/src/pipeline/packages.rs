@@ -886,7 +886,7 @@ fn discover_packages_inner(
     })
 }
 
-pub fn topo_sort_packages(graph: &PackageGraph) -> Result<Vec<String>, CompilationError> {
+pub fn topo_sort_namespaces(graph: &PackageGraph) -> Result<Vec<String>, CompilationError> {
     let mut temp = HashSet::new();
     let mut perm = HashSet::new();
     let mut order = Vec::new();
@@ -899,13 +899,13 @@ pub fn topo_sort_packages(graph: &PackageGraph) -> Result<Vec<String>, Compilati
         if perm.contains(&name) {
             continue;
         }
-        visit_package(&name, graph, &mut temp, &mut perm, &mut stack, &mut order)?;
+        visit_namespace(&name, graph, &mut temp, &mut perm, &mut stack, &mut order)?;
     }
 
     Ok(order)
 }
 
-fn visit_package(
+fn visit_namespace(
     name: &str,
     graph: &PackageGraph,
     temp: &mut HashSet<String>,
@@ -943,13 +943,13 @@ fn visit_package(
     temp.insert(name.to_string());
     stack.push(name.to_string());
 
-    let Some(package) = graph.packages.get(name) else {
+    let Some(namespace) = graph.packages.get(name) else {
         return Err(compile_error(format!(
             "namespace {} not found during dependency walk",
             name
         )));
     };
-    let mut deps: Vec<String> = package.imports.iter().cloned().collect();
+    let mut deps: Vec<String> = namespace.imports.iter().cloned().collect();
     deps.sort();
 
     for dep in deps {
@@ -964,7 +964,7 @@ fn visit_package(
         if graph.external_root_packages.contains(&dep) {
             continue;
         }
-        visit_package(&dep, graph, temp, perm, stack, order)?;
+        visit_namespace(&dep, graph, temp, perm, stack, order)?;
     }
 
     stack.pop();

@@ -351,7 +351,7 @@ fn compile_external_module(
         graph.add_external_root_namespace(namespace.clone());
     }
 
-    let order = packages::topo_sort_packages(&graph).map_err(err_text)?;
+    let order = packages::topo_sort_namespaces(&graph).map_err(err_text)?;
     let mut compiled_namespaces = HashMap::<String, CompiledNamespace>::new();
 
     for namespace_name in order {

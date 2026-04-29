@@ -319,7 +319,7 @@ fn typecheck_namespaces_inner(
     external_deps
         .augment_graph(&mut graph)
         .map_err(compile_error)?;
-    let order = packages::topo_sort_packages(&graph)?;
+    let order = packages::topo_sort_namespaces(&graph)?;
 
     let mut diagnostics = Diagnostics::new();
     let mut genv = builtins::builtin_env();
@@ -639,7 +639,7 @@ pub fn typecheck_with_namespaces_and_results(
         external_deps
             .augment_graph(&mut graph)
             .map_err(compile_error)?;
-        let order = packages::topo_sort_packages(&graph)?;
+        let order = packages::topo_sort_namespaces(&graph)?;
 
         let mut genv = builtins::builtin_env();
         let external_interfaces = external_deps.namespace_interfaces();
