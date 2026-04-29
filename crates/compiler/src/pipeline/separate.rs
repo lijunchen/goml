@@ -405,6 +405,75 @@ pub fn check_crate(opts: CrateInputs) -> Result<InterfaceUnit, CompilationError>
     })
 }
 
+pub fn build_crate(opts: CrateInputs) -> Result<CoreUnit, CompilationError> {
+    with_compiler_stack(|| {
+        let interface_units = load_interface_files(&opts.interface_files)?;
+        let files = opts.crate_unit.source_files();
+        let sources = files
+            .iter()
+            .map(|file| file.path.display().to_string())
+            .collect::<Vec<_>>();
+        let imports = direct_crate_imports(&files, &interface_units);
+
+        let mut deps: Vec<String> = imports.into_iter().collect();
+        deps.sort();
+        deps.dedup();
+
+        let mut deps_envs = HashMap::new();
+        let mut deps_interfaces = HashMap::new();
+        let mut dep_hashes = BTreeMap::new();
+        let mut dep_units = Vec::new();
+        let package = opts.crate_unit.config.name.clone();
+
+        if package != BUILTIN_PACKAGE {
+            dep_hashes.insert(
+                BUILTIN_PACKAGE.to_string(),
+                builtins::builtin_interface_hash(),
+            );
+        }
+
+        for dep in deps {
+            if dep == BUILTIN_PACKAGE || dep == package {
+                continue;
+            }
+            let (unit, package_interface) =
+                load_interface_for_package(&dep, &opts.interface_files, &interface_units)?;
+            deps_envs.insert(dep.clone(), unit.exports.to_genv());
+            deps_interfaces.insert(dep.clone(), package_interface);
+            dep_hashes.insert(unit.package.clone(), unit.interface_hash.clone());
+            dep_units.push(unit);
+        }
+
+        let (tast, full_exports, exports, pkg_interface, diagnostics) =
+            typecheck_single_package(&package, files, &deps_interfaces, deps_envs);
+        if diagnostics.has_errors() {
+            return Err(CompilationError::Typer { diagnostics });
+        }
+
+        let interface = InterfaceUnit::new(package.clone(), exports, pkg_interface, dep_hashes);
+
+        let gensym = Gensym::new();
+        let mut env = builtins::builtin_env();
+        for dep in dep_units.iter() {
+            dep.exports.apply_to(&mut env);
+        }
+        full_exports.apply_to(&mut env);
+        let mut compile_diagnostics = Diagnostics::new();
+        let core_ir =
+            crate::compile_match::compile_file(&env, &gensym, &mut compile_diagnostics, &tast);
+        if compile_diagnostics.has_errors() {
+            return Err(CompilationError::Compile {
+                diagnostics: compile_diagnostics,
+            });
+        }
+
+        let mut unit = CoreUnit::new(package, interface, core_ir);
+        unit.sources = sources;
+
+        Ok(unit)
+    })
+}
+
 pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationError> {
     with_compiler_stack(|| {
         let interface_units = load_interface_files(&opts.interface_files)?;
@@ -759,6 +828,58 @@ pub fn call() -> unit {
                 .interface
                 .value_exports
                 .contains_key("hello::main")
+        );
+    }
+
+    #[test]
+    fn build_crate_builds_discovered_modules_as_one_unit() {
+        let dir = tempfile::tempdir().unwrap();
+        write(
+            dir.path().join("goml.toml"),
+            r#"[crate]
+name = "hello"
+kind = "bin"
+root = "src/main.gom"
+"#,
+        );
+        write(
+            dir.path().join("src/main.gom"),
+            r#"
+mod api;
+
+pub fn main() -> unit {
+    crate::api::call()
+}
+"#,
+        );
+        write(
+            dir.path().join("src/api.gom"),
+            r#"
+pub fn call() -> unit {
+    ()
+}
+"#,
+        );
+
+        let crate_unit = modules::discover_crate_from_dir(dir.path()).unwrap();
+        let core = build_crate(CrateInputs {
+            crate_unit,
+            interface_files: Vec::new(),
+        })
+        .unwrap();
+
+        assert_eq!(core.package, "hello");
+        assert_eq!(core.interface.package, "hello");
+        assert!(core.validate());
+        assert!(
+            core.sources
+                .iter()
+                .any(|source| source.ends_with("src/main.gom"))
+        );
+        assert!(
+            core.sources
+                .iter()
+                .any(|source| source.ends_with("src/api.gom"))
         );
     }
 
