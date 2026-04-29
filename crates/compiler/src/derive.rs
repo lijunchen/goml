@@ -20,7 +20,6 @@ const OTHER_PARAM_NAME: &str = "other";
 pub fn expand(ast: ast::File) -> Result<ast::File, Diagnostics> {
     let mut diagnostics = Diagnostics::new();
     let mut toplevels = Vec::with_capacity(ast.toplevels.len());
-    let package = ast.package.clone();
     let uses = ast.uses.clone();
 
     for item in ast.toplevels.into_iter() {
@@ -90,11 +89,7 @@ pub fn expand(ast: ast::File) -> Result<ast::File, Diagnostics> {
     if diagnostics.has_errors() {
         Err(diagnostics)
     } else {
-        Ok(ast::File {
-            package,
-            uses,
-            toplevels,
-        })
+        Ok(ast::File { uses, toplevels })
     }
 }
 

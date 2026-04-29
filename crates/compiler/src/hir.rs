@@ -12,14 +12,20 @@ use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE};
 #[derive(Debug, Clone)]
 pub struct SourceFileAst {
     pub path: PathBuf,
+    pub package: String,
     pub module_path: Vec<String>,
     pub ast: ast::File,
 }
 
 impl SourceFileAst {
     pub fn new(path: PathBuf, ast: ast::File) -> Self {
+        Self::with_package(path, ROOT_PACKAGE, ast)
+    }
+
+    pub fn with_package(path: PathBuf, package: impl Into<String>, ast: ast::File) -> Self {
         Self {
             path,
+            package: package.into(),
             module_path: Vec::new(),
             ast,
         }
@@ -28,6 +34,21 @@ impl SourceFileAst {
     pub fn with_module_path(path: PathBuf, module_path: Vec<String>, ast: ast::File) -> Self {
         Self {
             path,
+            package: ROOT_PACKAGE.to_string(),
+            module_path,
+            ast,
+        }
+    }
+
+    pub fn with_package_and_module_path(
+        path: PathBuf,
+        package: impl Into<String>,
+        module_path: Vec<String>,
+        ast: ast::File,
+    ) -> Self {
+        Self {
+            path,
+            package: package.into(),
             module_path,
             ast,
         }
@@ -166,7 +187,7 @@ pub fn lower_to_hir_files(files: Vec<SourceFileAst>) -> (PackageHir, HirTable, D
     let deps: HashMap<String, crate::interface::PackageInterface> = HashMap::new();
     let package_name = files
         .first()
-        .map(|file| file.ast.package.0.as_str())
+        .map(|file| file.package.as_str())
         .unwrap_or(ROOT_PACKAGE);
     let package_id = match package_name {
         BUILTIN_PACKAGE => PackageId(0),
@@ -232,7 +253,7 @@ pub fn lower_to_project_hir_files_with_env(
     let mut grouped: HashMap<PackageName, Vec<SourceFileAst>> = HashMap::new();
     for file in files {
         grouped
-            .entry(PackageName(file.ast.package.0.clone()))
+            .entry(PackageName(file.package.clone()))
             .or_default()
             .push(file);
     }
@@ -295,7 +316,18 @@ pub fn lower_to_project_hir_files_with_env(
 }
 
 pub fn lower_to_hir(ast: ast::File) -> (PackageHir, HirTable, Diagnostics) {
-    lower_to_hir_files(vec![SourceFileAst::new(PathBuf::from("<unknown>"), ast)])
+    lower_to_hir_with_package(ast, ROOT_PACKAGE)
+}
+
+pub fn lower_to_hir_with_package(
+    ast: ast::File,
+    package: &str,
+) -> (PackageHir, HirTable, Diagnostics) {
+    lower_to_hir_files(vec![SourceFileAst::with_package(
+        PathBuf::from("<unknown>"),
+        package,
+        ast,
+    )])
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

@@ -88,12 +88,10 @@ impl ConstructorIndex {
             enums_by_package: HashMap::new(),
         };
         index.add_files(files);
-        if !files
-            .iter()
-            .any(|file| file.ast.package.0 == BUILTIN_PACKAGE)
-        {
+        if !files.iter().any(|file| file.package == BUILTIN_PACKAGE) {
             let builtin_ast = builtins::get_builtin_ast();
-            let builtin_file = hir::SourceFileAst::new("<builtin>".into(), builtin_ast);
+            let builtin_file =
+                hir::SourceFileAst::with_package("<builtin>".into(), BUILTIN_PACKAGE, builtin_ast);
             index.add_files(std::slice::from_ref(&builtin_file));
         }
         for (package, interface) in deps {
@@ -104,7 +102,7 @@ impl ConstructorIndex {
 
     fn add_files(&mut self, files: &[hir::SourceFileAst]) {
         for file in files {
-            let package = file.ast.package.0.clone();
+            let package = file.package.clone();
             let entry = self.enums_by_package.entry(package).or_default();
             for item in &file.ast.toplevels {
                 if let ast::Item::EnumDef(def) = item {
@@ -168,12 +166,10 @@ impl TraitIndex {
             traits_by_package: HashMap::new(),
         };
         index.add_files(files);
-        if !files
-            .iter()
-            .any(|file| file.ast.package.0 == BUILTIN_PACKAGE)
-        {
+        if !files.iter().any(|file| file.package == BUILTIN_PACKAGE) {
             let builtin_ast = builtins::get_builtin_ast();
-            let builtin_file = hir::SourceFileAst::new("<builtin>".into(), builtin_ast);
+            let builtin_file =
+                hir::SourceFileAst::with_package("<builtin>".into(), BUILTIN_PACKAGE, builtin_ast);
             index.add_files(std::slice::from_ref(&builtin_file));
         }
         index
@@ -181,7 +177,7 @@ impl TraitIndex {
 
     fn add_files(&mut self, files: &[hir::SourceFileAst]) {
         for file in files {
-            let package = file.ast.package.0.clone();
+            let package = file.package.clone();
             let entry = self.traits_by_package.entry(package).or_default();
             for item in &file.ast.toplevels {
                 if let ast::Item::TraitDef(def) = item {
@@ -563,10 +559,7 @@ impl NameResolution {
 
     pub fn resolve_files(self, files: Vec<ast::File>) -> (hir::ResolvedHir, HirTable, Diagnostics) {
         let deps = HashMap::new();
-        let package_name = files
-            .first()
-            .map(|file| file.package.0.as_str())
-            .unwrap_or(ROOT_PACKAGE);
+        let package_name = ROOT_PACKAGE;
         let package_id = match package_name {
             BUILTIN_PACKAGE => hir::PackageId(0),
             ROOT_PACKAGE => hir::PackageId(1),
@@ -575,7 +568,13 @@ impl NameResolution {
         let files = files
             .into_iter()
             .enumerate()
-            .map(|(idx, ast)| hir::SourceFileAst::new(format!("<unknown:{}>", idx).into(), ast))
+            .map(|(idx, ast)| {
+                hir::SourceFileAst::with_package(
+                    format!("<unknown:{}>", idx).into(),
+                    package_name,
+                    ast,
+                )
+            })
             .collect();
         self.resolve_files_with_env(package_id, files, &deps)
     }
@@ -602,7 +601,7 @@ impl NameResolution {
         let mut per_file_defs = Vec::new();
 
         for file in files.iter() {
-            let package_name = file.ast.package.0.as_str();
+            let package_name = file.package.as_str();
             let mut reported_external_coordinates = HashSet::new();
             for use_path in file.ast.uses.iter().map(|use_decl| &use_decl.path) {
                 if !reported_external_coordinates.insert(path_segments_display(use_path)) {
@@ -764,7 +763,7 @@ impl NameResolution {
         }
 
         for (file_idx, file) in files.iter().enumerate() {
-            let package_name = file.ast.package.0.as_str();
+            let package_name = file.package.as_str();
             let imports = file_imports(&file.ast, deps);
             let use_values = file_use_value_imports(&file.ast, package_name, deps, &def_names);
             let ctx = ResolutionContext {
@@ -854,7 +853,7 @@ impl NameResolution {
             .iter()
             .enumerate()
             .map(|(idx, file)| {
-                let package = file.ast.package.0.clone();
+                let package = file.package.clone();
                 let file_name = file
                     .path
                     .file_name()

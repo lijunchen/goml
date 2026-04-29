@@ -189,7 +189,6 @@ pub struct Attribute {
 
 #[derive(Debug, Clone)]
 pub struct File {
-    pub package: AstIdent,
     pub uses: Vec<UseDecl>,
     pub toplevels: Vec<Item>,
 }

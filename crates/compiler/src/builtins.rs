@@ -44,10 +44,9 @@ fn parse_builtin_ast() -> ast::File {
     let root = MySyntaxNode::new_root(parse_result.green_node);
     let cst = CstFile::cast(root).expect("failed to cast CST file");
     let lower_result = lower::lower(cst);
-    let mut ast_file = lower_result
+    let ast_file = lower_result
         .into_result()
         .expect("failed to lower builtin.gom AST");
-    ast_file.package = ast::AstIdent::new(BUILTIN_PACKAGE);
 
     match derive::expand(ast_file) {
         Ok(ast) => ast,
@@ -78,7 +77,8 @@ fn build_builtin_artifacts() -> BuiltinArtifacts {
 
     add_array_builtins(&mut base_env.value_env.funcs);
 
-    let (hir, hir_table, mut hir_diagnostics) = hir::lower_to_hir(ast);
+    let (hir, hir_table, mut hir_diagnostics) =
+        hir::lower_to_hir_with_package(ast, BUILTIN_PACKAGE);
 
     let (tast, mut genv, mut diagnostics) = typer::check_file_with_env(
         hir,

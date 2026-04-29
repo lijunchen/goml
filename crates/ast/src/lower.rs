@@ -9,7 +9,6 @@ use std::collections::HashSet;
 use std::rc::Rc;
 use text_size::TextRange;
 
-const DEFAULT_PACKAGE_NAME: &str = "main";
 const MAX_EXPR_LOWER_DEPTH: usize = 256;
 const MAX_PATTERN_LOWER_DEPTH: usize = 128;
 const MAX_TYPE_LOWER_DEPTH: usize = 256;
@@ -167,11 +166,6 @@ fn collect_constructor_names(file: &cst::File) -> HashSet<String> {
 
 pub fn lower(node: cst::File) -> LowerResult {
     let mut ctx = LowerCtx::new(&node);
-    let package = node
-        .package_decl()
-        .and_then(|decl| decl.name_token())
-        .map(|token| ast::AstIdent::new(&token.to_string()))
-        .unwrap_or_else(|| ast::AstIdent::new(DEFAULT_PACKAGE_NAME));
     let mut uses = Vec::new();
     for decl in node.use_decls() {
         let Some(path) = decl.path() else {
@@ -193,7 +187,6 @@ pub fn lower(node: cst::File) -> LowerResult {
         None
     } else {
         Some(ast::File {
-            package,
             uses,
             toplevels: items,
         })

@@ -949,13 +949,6 @@ impl ExternBuiltin {
 impl File {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let mut docs = Vec::new();
-        docs.push(
-            RcDoc::text("package")
-                .append(RcDoc::space())
-                .append(RcDoc::text(self.package.0.clone()))
-                .append(RcDoc::text(";"))
-                .append(RcDoc::hardline()),
-        );
         if !self.uses.is_empty() {
             let use_docs = RcDoc::concat(self.uses.iter().map(|decl| {
                 let alias_doc = decl.alias.as_ref().map_or_else(RcDoc::nil, |alias| {

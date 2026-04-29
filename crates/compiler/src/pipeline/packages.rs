@@ -492,11 +492,6 @@ fn source_override_for_dir<'a>(
     })
 }
 
-fn ast_with_package(mut ast: ast::File, package: &str) -> ast::File {
-    ast.package = ast::AstIdent::new(package);
-    ast
-}
-
 fn derive_ast(ast: ast::File) -> Result<ast::File, CompilationError> {
     crate::derive::expand(ast).map_err(|diagnostics| CompilationError::Lower { diagnostics })
 }
@@ -510,7 +505,7 @@ fn load_package_file(
     let ast = if let Some((override_path, override_ast)) = source_override
         && override_path == package_file
     {
-        ast_with_package(override_ast.clone(), package_name)
+        override_ast.clone()
     } else {
         let src = fs::read_to_string(package_file).map_err(|err| {
             compile_error(format!(
@@ -519,9 +514,13 @@ fn load_package_file(
                 err
             ))
         })?;
-        ast_with_package(parse_ast_file(package_file, &src)?, package_name)
+        parse_ast_file(package_file, &src)?
     };
-    let files = vec![SourceFileAst::new(package_file.to_path_buf(), ast)];
+    let files = vec![SourceFileAst::with_package(
+        package_file.to_path_buf(),
+        package_name,
+        ast,
+    )];
     let imports = collect_imports(&files, external_imports);
     Ok(PackageUnit {
         name: package_name.to_string(),
@@ -537,18 +536,18 @@ fn load_package(
     external_imports: &ExternalImports,
 ) -> Result<PackageUnit, CompilationError> {
     let mut files = Vec::new();
-    let mut package_name = expected_package_name.map(str::to_string);
+    let package_name = expected_package_name
+        .map(str::to_string)
+        .unwrap_or_else(|| ROOT_PACKAGE.to_string());
 
     let source_override = source_override_for_dir(package_dir, source_override);
 
     if let Some((path, ast)) = source_override {
-        let ast = if let Some(package) = expected_package_name {
-            ast_with_package(ast.clone(), package)
-        } else {
-            ast.clone()
-        };
-        package_name.get_or_insert_with(|| ast.package.0.clone());
-        files.push(SourceFileAst::new(path.to_path_buf(), ast));
+        files.push(SourceFileAst::with_package(
+            path.to_path_buf(),
+            package_name.clone(),
+            ast.clone(),
+        ));
     }
 
     for path in read_gom_sources(package_dir)? {
@@ -557,35 +556,20 @@ fn load_package(
         }
         let src = fs::read_to_string(&path)
             .map_err(|err| compile_error(format!("failed to read {}: {}", path.display(), err)))?;
-        let mut ast = parse_ast_file(&path, &src)?;
-        if let Some(expected) = expected_package_name {
-            ast = ast_with_package(ast, expected);
-        }
-        if let Some(existing) = &package_name {
-            if &ast.package.0 != existing {
-                return Err(compile_error(format!(
-                    "package mismatch in {}: expected {}, found {}",
-                    path.display(),
-                    existing,
-                    ast.package.0
-                )));
-            }
-        } else {
-            package_name = Some(ast.package.0.clone());
-        }
-        files.push(SourceFileAst::new(path, ast));
+        let ast = parse_ast_file(&path, &src)?;
+        files.push(SourceFileAst::with_package(path, package_name.clone(), ast));
     }
 
-    let Some(name) = package_name else {
+    if files.is_empty() {
         return Err(compile_error(format!(
             "package directory {} has no .gom files",
             package_dir.display()
         )));
-    };
+    }
 
     let imports = collect_imports(&files, external_imports);
     Ok(PackageUnit {
-        name,
+        name: package_name,
         files,
         imports,
     })
@@ -596,10 +580,14 @@ fn load_single_file_package(
     ast: &ast::File,
     external_imports: &ExternalImports,
 ) -> PackageUnit {
-    let files = vec![SourceFileAst::new(path.to_path_buf(), ast.clone())];
+    let files = vec![SourceFileAst::with_package(
+        path.to_path_buf(),
+        ROOT_PACKAGE,
+        ast.clone(),
+    )];
     let imports = collect_imports(&files, external_imports);
     PackageUnit {
-        name: ast.package.0.clone(),
+        name: ROOT_PACKAGE.to_string(),
         files,
         imports,
     }
@@ -641,9 +629,10 @@ fn discover_packages_from_crate_unit(
         } else {
             module.ast.clone()
         };
-        let ast = derive_ast(ast_with_package(ast, &name))?;
-        let files = vec![SourceFileAst::with_module_path(
+        let ast = derive_ast(ast)?;
+        let files = vec![SourceFileAst::with_package_and_module_path(
             module.file_path.clone(),
+            name.clone(),
             module.path.segments().to_vec(),
             ast,
         )];

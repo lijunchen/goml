@@ -166,8 +166,7 @@ fn read_source_files(
     for path in paths {
         let src = fs::read_to_string(&path)
             .map_err(|err| compile_error(format!("failed to read {}: {}", path.display(), err)))?;
-        let mut ast = parse_ast_file(&path, &src)?;
-        ast.package = ast::ast::AstIdent::new(package);
+        let ast = parse_ast_file(&path, &src)?;
         for use_decl in ast.uses.iter() {
             if let Some(package_import) =
                 external_package_import_alias(&use_decl.path, interface_units)
@@ -185,7 +184,7 @@ fn read_source_files(
             }
         }
         source_list.push(path.display().to_string());
-        files.push(hir::SourceFileAst::new(path, ast));
+        files.push(hir::SourceFileAst::with_package(path, package, ast));
     }
 
     let known_packages = interface_units.keys().cloned().collect::<HashSet<_>>();
