@@ -1813,6 +1813,50 @@ mod tests {
         assert_eq!(def_paths, vec!["hello::root", "hello::api::client::call"]);
     }
 
+    #[test]
+    fn lower_to_hir_resolves_crate_paths_against_crate_name() {
+        let files = vec![
+            SourceFileAst::with_package_and_module_path(
+                "src/main.gom".into(),
+                "hello",
+                Vec::new(),
+                lower_src(
+                    r#"
+mod api;
+use crate::api::call;
+
+fn root() -> unit { call() }
+"#,
+                ),
+            ),
+            SourceFileAst::with_package_and_module_path(
+                "src/api.gom".into(),
+                "hello",
+                vec!["api".to_string()],
+                lower_src("fn call() -> unit { () }"),
+            ),
+        ];
+
+        let (_hir, table, diagnostics) = lower_to_hir_files(files);
+
+        assert!(!diagnostics.has_errors());
+        let root = table.def(table.def_id_at(0));
+        let Def::Fn(root_fn) = root else {
+            panic!("expected root function");
+        };
+        let Expr::ECall { func, .. } = table.expr(root_fn.body.tail.expect("tail call")) else {
+            panic!("expected root tail call");
+        };
+        let Expr::ENameRef { res, hint, .. } = table.expr(*func) else {
+            panic!("expected called function reference");
+        };
+        assert_eq!(hint, "hello::api::call");
+        let NameRef::Def(def_id) = res else {
+            panic!("expected resolved function reference");
+        };
+        assert_eq!(table.def_path(*def_id).display(), "hello::api::call");
+    }
+
     fn lower_src(src: &str) -> ast::File {
         let parsed = parser::parse(std::path::Path::new("test.gom"), src);
         assert!(!parsed.has_errors());

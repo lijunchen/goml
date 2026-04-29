@@ -52,6 +52,7 @@ struct ResolutionContext<'a> {
     deps: &'a HashMap<String, interface::PackageInterface>,
     current_package: &'a str,
     current_module_path: &'a [String],
+    crate_paths_include_package: bool,
     imports: &'a HashSet<String>,
     use_values: &'a HashMap<String, UseValueImport>,
     constructor_index: &'a ConstructorIndex,
@@ -78,23 +79,52 @@ fn full_def_path_in_module(package: &str, module_path: &[String], name: &str) ->
 }
 
 fn full_def_segments(package: &str, module_path: &[String], name: &str) -> Vec<String> {
-    if module_path.is_empty() {
-        if is_special_unqualified_package(package) {
-            return vec![name.to_string()];
-        }
-        return vec![package.to_string(), name.to_string()];
-    }
-
-    let module_name = module_path.join("::");
-    let mut segments = if package == module_name || is_special_unqualified_package(package) {
-        module_path.to_vec()
-    } else {
-        std::iter::once(package.to_string())
-            .chain(module_path.iter().cloned())
-            .collect()
-    };
+    let mut segments = module_prefix_segments(package, module_path);
     segments.push(name.to_string());
     segments
+}
+
+fn module_prefix_segments(package: &str, module_path: &[String]) -> Vec<String> {
+    if module_path.is_empty() {
+        if is_special_unqualified_package(package) {
+            Vec::new()
+        } else {
+            vec![package.to_string()]
+        }
+    } else {
+        let module_name = module_path.join("::");
+        if package == module_name || is_special_unqualified_package(package) {
+            module_path.to_vec()
+        } else {
+            std::iter::once(package.to_string())
+                .chain(module_path.iter().cloned())
+                .collect()
+        }
+    }
+}
+
+fn crate_prefix_segments(
+    package: &str,
+    module_path: &[String],
+    include_package: bool,
+) -> Vec<String> {
+    let module_name = module_path.join("::");
+    if !include_package
+        || is_special_unqualified_package(package)
+        || (!module_path.is_empty() && package == module_name)
+    {
+        Vec::new()
+    } else {
+        vec![package.to_string()]
+    }
+}
+
+fn parent_module_prefix_segments(package: &str, module_path: &[String]) -> Vec<String> {
+    let parent = module_path
+        .split_last()
+        .map(|(_, parent)| parent)
+        .unwrap_or(&[]);
+    module_prefix_segments(package, parent)
 }
 
 fn package_allowed(package: &str, current_package: &str, imports: &HashSet<String>) -> bool {
@@ -332,6 +362,8 @@ fn use_decl_import(
 fn use_decl_value_import(
     decl: &ast::UseDecl,
     current_package: &str,
+    current_module_path: &[String],
+    crate_paths_include_package: bool,
     deps: &HashMap<String, interface::PackageInterface>,
     def_names: &HashMap<String, hir::DefId>,
 ) -> Option<(String, UseValueImport)> {
@@ -339,6 +371,8 @@ fn use_decl_value_import(
         &decl.path,
         decl.alias.as_ref(),
         current_package,
+        current_module_path,
+        crate_paths_include_package,
         deps,
         def_names,
     )
@@ -348,17 +382,35 @@ fn path_value_import(
     path: &ast::Path,
     alias: Option<&ast::AstIdent>,
     current_package: &str,
+    current_module_path: &[String],
+    crate_paths_include_package: bool,
     deps: &HashMap<String, interface::PackageInterface>,
     def_names: &HashMap<String, hir::DefId>,
 ) -> Option<(String, UseValueImport)> {
-    if path_resolution_segments(path).len() < 2 {
+    if path_resolution_segments(path).len() < 2
+        && matches!(
+            path.root(),
+            ast::PathRoot::Relative | ast::PathRoot::Absolute
+        )
+    {
         return None;
     }
-    let full_name = path_resolution_display(path);
+    let full_name = path_resolution_display_in_module(
+        path,
+        current_package,
+        current_module_path,
+        crate_paths_include_package,
+    );
     let imported_name = alias
         .or_else(|| path.last_ident())
         .map(|ident| ident.0.clone())?;
-    let package = known_package_prefix_for_path(path, deps, current_package);
+    let package = known_package_prefix_for_path_in_module(
+        path,
+        deps,
+        current_package,
+        current_module_path,
+        crate_paths_include_package,
+    );
     if package == current_package || package == BUILTIN_PACKAGE {
         let id = def_names.get(&full_name).copied()?;
         return Some((
@@ -385,12 +437,23 @@ fn path_value_import(
 fn file_use_value_imports(
     file: &ast::File,
     current_package: &str,
+    current_module_path: &[String],
+    crate_paths_include_package: bool,
     deps: &HashMap<String, interface::PackageInterface>,
     def_names: &HashMap<String, hir::DefId>,
 ) -> HashMap<String, UseValueImport> {
     file.uses
         .iter()
-        .filter_map(|decl| use_decl_value_import(decl, current_package, deps, def_names))
+        .filter_map(|decl| {
+            use_decl_value_import(
+                decl,
+                current_package,
+                current_module_path,
+                crate_paths_include_package,
+                deps,
+                def_names,
+            )
+        })
         .collect()
 }
 
@@ -415,40 +478,79 @@ fn path_resolution_segments(path: &ast::Path) -> &[ast::PathSegment] {
     }
 }
 
-fn path_resolution_display(path: &ast::Path) -> String {
-    path_resolution_segments(path)
-        .iter()
-        .map(|segment| segment.ident.0.clone())
-        .collect::<Vec<_>>()
-        .join("::")
+fn path_resolution_segments_in_module(
+    path: &ast::Path,
+    current_package: &str,
+    current_module_path: &[String],
+    crate_paths_include_package: bool,
+) -> Vec<String> {
+    let mut prefix = match path.root() {
+        ast::PathRoot::Crate => crate_prefix_segments(
+            current_package,
+            current_module_path,
+            crate_paths_include_package,
+        ),
+        ast::PathRoot::Self_ => module_prefix_segments(current_package, current_module_path),
+        ast::PathRoot::Super => parent_module_prefix_segments(current_package, current_module_path),
+        ast::PathRoot::Relative | ast::PathRoot::Absolute => Vec::new(),
+    };
+    let segments = if matches!(
+        path.root(),
+        ast::PathRoot::Relative | ast::PathRoot::Absolute
+    ) {
+        path_resolution_segments(path)
+    } else {
+        path.segments()
+    };
+    prefix.extend(segments.iter().map(|segment| segment.ident.0.clone()));
+    prefix
 }
 
-fn known_package_prefix_for_path(
+fn path_resolution_display_in_module(
+    path: &ast::Path,
+    current_package: &str,
+    current_module_path: &[String],
+    crate_paths_include_package: bool,
+) -> String {
+    path_resolution_segments_in_module(
+        path,
+        current_package,
+        current_module_path,
+        crate_paths_include_package,
+    )
+    .join("::")
+}
+
+fn known_package_prefix_for_path_in_module(
     path: &ast::Path,
     deps: &HashMap<String, interface::PackageInterface>,
     current_package: &str,
+    current_module_path: &[String],
+    crate_paths_include_package: bool,
 ) -> String {
-    let segments = path_resolution_segments(path);
+    let segments = path_resolution_segments_in_module(
+        path,
+        current_package,
+        current_module_path,
+        crate_paths_include_package,
+    );
     if segments.len() < 2 {
-        return path_resolution_display(path);
+        if matches!(
+            path.root(),
+            ast::PathRoot::Crate | ast::PathRoot::Self_ | ast::PathRoot::Super
+        ) {
+            return current_package.to_string();
+        }
+        return segments.join("::");
     }
     let mut best = None;
     for end in 1..segments.len() {
-        let package = segments[..end]
-            .iter()
-            .map(|segment| segment.ident.0.clone())
-            .collect::<Vec<_>>()
-            .join("::");
+        let package = segments[..end].join("::");
         if package == current_package || package == BUILTIN_PACKAGE || deps.contains_key(&package) {
             best = Some(package);
         }
     }
-    best.unwrap_or_else(|| {
-        segments
-            .first()
-            .map(|segment| segment.ident.0.clone())
-            .unwrap_or_default()
-    })
+    best.unwrap_or_else(|| segments.first().cloned().unwrap_or_default())
 }
 
 fn lowered_use_trait_path(
@@ -631,6 +733,11 @@ impl NameResolution {
         let trait_index = TraitIndex::new_with_files(&files);
         let mut toplevels = Vec::new();
         let mut per_file_defs = Vec::new();
+        let packages_with_module_paths = files
+            .iter()
+            .filter(|file| !file.module_path.is_empty())
+            .map(|file| file.package.clone())
+            .collect::<HashSet<_>>();
 
         for file in files.iter() {
             let package_name = file.package.as_str();
@@ -832,13 +939,22 @@ impl NameResolution {
         for (file_idx, file) in files.iter().enumerate() {
             let package_name = file.package.as_str();
             let imports = file_imports(&file.ast, deps);
-            let use_values = file_use_value_imports(&file.ast, package_name, deps, &def_names);
+            let crate_paths_include_package = packages_with_module_paths.contains(package_name);
+            let use_values = file_use_value_imports(
+                &file.ast,
+                package_name,
+                &file.module_path,
+                crate_paths_include_package,
+                deps,
+                &def_names,
+            );
             let ctx = ResolutionContext {
                 builtin_names: &builtin_names,
                 def_names: &def_names,
                 deps,
                 current_package: package_name,
                 current_module_path: &file.module_path,
+                crate_paths_include_package,
                 imports: &imports,
                 use_values: &use_values,
                 constructor_index: &ctor_index,
@@ -941,8 +1057,18 @@ impl NameResolution {
                 imports_vec.sort_by(|a, b| a.0.cmp(&b.0));
 
                 let mut use_traits = Vec::new();
+                let crate_paths_include_package = packages_with_module_paths.contains(&package);
                 for use_decl in file.ast.uses.iter() {
-                    if use_decl_value_import(use_decl, &package, deps, &def_names).is_some() {
+                    if use_decl_value_import(
+                        use_decl,
+                        &package,
+                        &file.module_path,
+                        crate_paths_include_package,
+                        deps,
+                        &def_names,
+                    )
+                    .is_some()
+                    {
                         continue;
                     }
                     if let Some(first) = use_decl.path.segments().first()
@@ -1238,9 +1364,19 @@ impl NameResolution {
                         },
                     )
                 } else {
-                    let full_name = path_segments_display(path);
-                    let package =
-                        known_package_prefix_for_path(path, ctx.deps, ctx.current_package);
+                    let full_name = path_resolution_display_in_module(
+                        path,
+                        ctx.current_package,
+                        ctx.current_module_path,
+                        ctx.crate_paths_include_package,
+                    );
+                    let package = known_package_prefix_for_path_in_module(
+                        path,
+                        ctx.deps,
+                        ctx.current_package,
+                        ctx.current_module_path,
+                        ctx.crate_paths_include_package,
+                    );
                     if package != ctx.current_package
                         && package != BUILTIN_PACKAGE
                         && ctx.deps.contains_key(&package)
