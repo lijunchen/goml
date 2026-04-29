@@ -1575,6 +1575,99 @@ fn project_build_writes_target_goml_main_go() -> anyhow::Result<()> {
 }
 
 #[test]
+fn compiler_crate_commands_check_build_and_link() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    fs::write(
+        root.join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+"#,
+    )?;
+    fs::write(
+        root.join("main.gom"),
+        r#"
+mod msg;
+
+fn main() -> unit {
+    println(crate::msg::text())
+}
+"#,
+    )?;
+    fs::write(
+        root.join("msg.gom"),
+        r#"
+pub fn text() -> string {
+    "crate commands"
+}
+"#,
+    )?;
+
+    let out = root.join("out/demo");
+    let check_output = run_goml(
+        &[
+            "compiler",
+            "check-crate",
+            "--crate-dir",
+            root.to_string_lossy().as_ref(),
+            "--output",
+            out.to_string_lossy().as_ref(),
+        ],
+        root,
+    )?;
+    let check_stderr = String::from_utf8_lossy(&check_output.stderr);
+    assert!(check_output.status.success(), "stderr: {check_stderr}");
+    assert!(root.join("out/demo.interface").exists());
+
+    let build_output = run_goml(
+        &[
+            "compiler",
+            "build-crate",
+            "--crate-dir",
+            root.to_string_lossy().as_ref(),
+            "--output",
+            out.to_string_lossy().as_ref(),
+        ],
+        root,
+    )?;
+    let build_stderr = String::from_utf8_lossy(&build_output.stderr);
+    assert!(build_output.status.success(), "stderr: {build_stderr}");
+    assert!(root.join("out/demo.core").exists());
+
+    let go_file = root.join("out/main.go");
+    let link_output = run_goml(
+        &[
+            "compiler",
+            "link-crates",
+            "--root-crate",
+            "demo",
+            "--input",
+            root.join("out/demo.core").to_string_lossy().as_ref(),
+            "--output",
+            go_file.to_string_lossy().as_ref(),
+        ],
+        root,
+    )?;
+    let link_stderr = String::from_utf8_lossy(&link_output.stderr);
+    assert!(link_output.status.success(), "stderr: {link_stderr}");
+    assert!(go_file.exists());
+
+    if !runtime_executor_available() {
+        return Ok(());
+    }
+
+    let go_output = run_go_main(&go_file, root)?;
+    let go_stdout = String::from_utf8_lossy(&go_output.stdout);
+    let go_stderr = String::from_utf8_lossy(&go_output.stderr);
+    assert!(go_output.status.success(), "stderr: {go_stderr}");
+    expect!["crate commands\n"].assert_eq(&go_stdout);
+
+    Ok(())
+}
+
+#[test]
 fn project_build_runs_module_use_e2e() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     let root = dir.path();
