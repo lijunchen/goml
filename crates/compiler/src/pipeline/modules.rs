@@ -57,6 +57,21 @@ pub struct CrateUnit {
     pub modules: Vec<ModuleUnit>,
 }
 
+impl CrateUnit {
+    pub fn source_files(&self) -> Vec<crate::hir::SourceFileAst> {
+        self.modules
+            .iter()
+            .map(|module| {
+                crate::hir::SourceFileAst::with_module_path(
+                    module.file_path.clone(),
+                    module.path.segments().to_vec(),
+                    module.ast.clone(),
+                )
+            })
+            .collect()
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DiscoveryError {
     MissingCrateManifest {
@@ -440,6 +455,19 @@ kind = "bin"
             .map(|module| module.path.display())
             .collect::<Vec<_>>();
         assert_eq!(paths, vec!["crate", "crate::foo", "crate::foo::bar"]);
+        let source_module_paths = unit
+            .source_files()
+            .into_iter()
+            .map(|file| file.module_path)
+            .collect::<Vec<_>>();
+        assert_eq!(
+            source_module_paths,
+            vec![
+                Vec::<String>::new(),
+                vec!["foo".to_string()],
+                vec!["foo".to_string(), "bar".to_string()]
+            ]
+        );
     }
 
     #[test]

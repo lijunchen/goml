@@ -85,10 +85,7 @@ impl ConstructorIndex {
             .any(|file| file.ast.package.0 == BUILTIN_PACKAGE)
         {
             let builtin_ast = builtins::get_builtin_ast();
-            let builtin_file = hir::SourceFileAst {
-                path: "<builtin>".into(),
-                ast: builtin_ast,
-            };
+            let builtin_file = hir::SourceFileAst::new("<builtin>".into(), builtin_ast);
             index.add_files(std::slice::from_ref(&builtin_file));
         }
         for (package, interface) in deps {
@@ -168,10 +165,7 @@ impl TraitIndex {
             .any(|file| file.ast.package.0 == BUILTIN_PACKAGE)
         {
             let builtin_ast = builtins::get_builtin_ast();
-            let builtin_file = hir::SourceFileAst {
-                path: "<builtin>".into(),
-                ast: builtin_ast,
-            };
+            let builtin_file = hir::SourceFileAst::new("<builtin>".into(), builtin_ast);
             index.add_files(std::slice::from_ref(&builtin_file));
         }
         index
@@ -368,10 +362,7 @@ impl NameResolution {
         let files = files
             .into_iter()
             .enumerate()
-            .map(|(idx, ast)| hir::SourceFileAst {
-                path: format!("<unknown:{}>", idx).into(),
-                ast,
-            })
+            .map(|(idx, ast)| hir::SourceFileAst::new(format!("<unknown:{}>", idx).into(), ast))
             .collect();
         self.resolve_files_with_env(package_id, files, &deps)
     }
@@ -680,6 +671,7 @@ impl NameResolution {
                 }
                 hir::SourceFileHir {
                     path,
+                    module_path: file.module_path.clone(),
                     package: hir::PackageName(package),
                     imports: imports_vec,
                     use_traits,

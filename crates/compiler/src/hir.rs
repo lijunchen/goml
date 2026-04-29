@@ -12,7 +12,26 @@ use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE};
 #[derive(Debug, Clone)]
 pub struct SourceFileAst {
     pub path: PathBuf,
+    pub module_path: Vec<String>,
     pub ast: ast::File,
+}
+
+impl SourceFileAst {
+    pub fn new(path: PathBuf, ast: ast::File) -> Self {
+        Self {
+            path,
+            module_path: Vec::new(),
+            ast,
+        }
+    }
+
+    pub fn with_module_path(path: PathBuf, module_path: Vec<String>, ast: ast::File) -> Self {
+        Self {
+            path,
+            module_path,
+            ast,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
@@ -46,6 +65,7 @@ pub struct PackageHir {
 #[derive(Debug, Clone)]
 pub struct SourceFileHir {
     pub path: String,
+    pub module_path: Vec<String>,
     pub package: PackageName,
     pub imports: Vec<PackageName>,
     pub use_traits: Vec<QualifiedPath>,
@@ -275,10 +295,7 @@ pub fn lower_to_project_hir_files_with_env(
 }
 
 pub fn lower_to_hir(ast: ast::File) -> (PackageHir, HirTable, Diagnostics) {
-    lower_to_hir_files(vec![SourceFileAst {
-        path: PathBuf::from("<unknown>"),
-        ast,
-    }])
+    lower_to_hir_files(vec![SourceFileAst::new(PathBuf::from("<unknown>"), ast)])
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

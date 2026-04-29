@@ -189,7 +189,7 @@ fn read_source_files(
             imports.insert(first.ident.0.clone());
         }
         source_list.push(path.display().to_string());
-        files.push(hir::SourceFileAst { path, ast });
+        files.push(hir::SourceFileAst::new(path, ast));
     }
 
     Ok((files, imports, source_list))

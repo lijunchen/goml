@@ -105,10 +105,7 @@ fn load_package(
 
     if let Some((path, ast)) = source_override {
         package_name = Some(ast.package.0.clone());
-        files.push(SourceFileAst {
-            path: path.to_path_buf(),
-            ast: ast.clone(),
-        });
+        files.push(SourceFileAst::new(path.to_path_buf(), ast.clone()));
     }
 
     for path in read_gom_sources(package_dir)? {
@@ -130,7 +127,7 @@ fn load_package(
         } else {
             package_name = Some(ast.package.0.clone());
         }
-        files.push(SourceFileAst { path, ast });
+        files.push(SourceFileAst::new(path, ast));
     }
 
     let Some(name) = package_name else {
@@ -161,10 +158,7 @@ fn load_package_from_config(
     if let Some((path, ast)) = source_override
         && path == entry_file_path.as_path()
     {
-        files.push(SourceFileAst {
-            path: path.to_path_buf(),
-            ast: ast.clone(),
-        });
+        files.push(SourceFileAst::new(path.to_path_buf(), ast.clone()));
     } else if entry_file_path.exists() {
         let src = fs::read_to_string(&entry_file_path).map_err(|err| {
             compile_error(format!(
@@ -174,10 +168,7 @@ fn load_package_from_config(
             ))
         })?;
         let ast = parse_ast_file(&entry_file_path, &src)?;
-        files.push(SourceFileAst {
-            path: entry_file_path.clone(),
-            ast,
-        });
+        files.push(SourceFileAst::new(entry_file_path.clone(), ast));
     }
 
     let expected_package_name = &config.package.name;
@@ -197,10 +188,10 @@ fn load_package_from_config(
                     override_ast.package.0
                 )));
             }
-            files.push(SourceFileAst {
-                path: override_path.to_path_buf(),
-                ast: override_ast.clone(),
-            });
+            files.push(SourceFileAst::new(
+                override_path.to_path_buf(),
+                override_ast.clone(),
+            ));
             continue;
         }
         let src = fs::read_to_string(&path)
@@ -214,7 +205,7 @@ fn load_package_from_config(
                 ast.package.0
             )));
         }
-        files.push(SourceFileAst { path, ast });
+        files.push(SourceFileAst::new(path, ast));
     }
 
     if files.is_empty() {
@@ -249,10 +240,7 @@ fn load_single_file_package(
     ast: &ast::File,
     external_imports: &ExternalImports,
 ) -> PackageUnit {
-    let files = vec![SourceFileAst {
-        path: path.to_path_buf(),
-        ast: ast.clone(),
-    }];
+    let files = vec![SourceFileAst::new(path.to_path_buf(), ast.clone())];
     let imports = collect_imports(&files, external_imports);
     PackageUnit {
         name: ast.package.0.clone(),
