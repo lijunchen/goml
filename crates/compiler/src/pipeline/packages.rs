@@ -825,7 +825,7 @@ fn discover_packages_inner(
         if loaded.contains(&package_name) {
             continue;
         }
-        if external_imports.contains_package(&package_name) {
+        if external_imports.contains_namespace(&package_name) {
             loaded.insert(package_name);
             continue;
         }

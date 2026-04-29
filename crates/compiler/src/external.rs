@@ -22,7 +22,7 @@ use crate::registry::{
 use crate::tast::{self, TastIdent, Ty};
 
 #[derive(Debug, Clone)]
-pub struct ExternalPackageSource {
+pub struct ExternalNamespaceSource {
     pub logical_name: String,
     pub import_path: String,
     pub dir: PathBuf,
@@ -36,7 +36,7 @@ pub struct ExternalModuleArtifact {
     pub interface: InterfaceUnit,
     pub core: CoreUnit,
     pub namespace_interfaces: BTreeMap<String, interface::CrateInterface>,
-    pub sources: BTreeMap<String, ExternalPackageSource>,
+    pub sources: BTreeMap<String, ExternalNamespaceSource>,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -339,7 +339,7 @@ fn compile_external_module(
         &available_imports,
     )
     .map_err(err_text)?;
-    for namespace in available_imports.package_names.iter() {
+    for namespace in available_imports.namespace_names.iter() {
         if graph.packages.contains_key(namespace) {
             return Err(format!(
                 "namespace name {} in {} conflicts with external dependency namespace {}",
@@ -453,7 +453,7 @@ fn compile_external_module(
         if publicly_visible {
             sources.insert(
                 logical_name.clone(),
-                ExternalPackageSource {
+                ExternalNamespaceSource {
                     logical_name,
                     import_path: external_import_path(
                         &module.coord.owner,
@@ -644,15 +644,15 @@ fn logical_package_name(root_package: &str, package: &str) -> String {
 fn external_imports_from_modules(
     modules: &BTreeMap<String, ExternalModuleArtifact>,
 ) -> ExternalImports {
-    let mut package_names = HashSet::new();
+    let mut namespace_names = HashSet::new();
     let mut import_paths = HashMap::new();
     for module in modules.values() {
         for source in module.sources.values() {
-            package_names.insert(source.logical_name.clone());
+            namespace_names.insert(source.logical_name.clone());
             import_paths.insert(source.import_path.clone(), source.logical_name.clone());
         }
     }
-    ExternalImports::new(package_names, import_paths)
+    ExternalImports::new(namespace_names, import_paths)
 }
 
 fn ensure_no_external_namespace_conflicts(

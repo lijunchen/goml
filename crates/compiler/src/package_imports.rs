@@ -6,31 +6,31 @@ use crate::interface;
 
 #[derive(Debug, Clone, Default)]
 pub struct ExternalImports {
-    pub package_names: HashSet<String>,
+    pub namespace_names: HashSet<String>,
     pub import_paths: HashMap<String, String>,
 }
 
 impl ExternalImports {
-    pub fn new(package_names: HashSet<String>, import_paths: HashMap<String, String>) -> Self {
+    pub fn new(namespace_names: HashSet<String>, import_paths: HashMap<String, String>) -> Self {
         Self {
-            package_names,
+            namespace_names,
             import_paths,
         }
     }
 
-    pub fn contains_package(&self, package: &str) -> bool {
-        self.package_names.contains(package)
+    pub fn contains_namespace(&self, namespace: &str) -> bool {
+        self.namespace_names.contains(namespace)
     }
 
     pub fn alias_for_use_path(&self, path: &ast::Path) -> Option<String> {
         resolve_external_import_prefix_with_map(path, &self.import_paths)
-            .or_else(|| resolve_alias_root_import_prefix(path, &self.package_names))
+            .or_else(|| resolve_alias_root_import_prefix(path, &self.namespace_names))
             .map(|(alias, _)| alias)
     }
 
-    pub fn is_exact_package_import(&self, path: &ast::Path) -> bool {
+    pub fn is_exact_namespace_import(&self, path: &ast::Path) -> bool {
         resolve_external_import_prefix_with_map(path, &self.import_paths)
-            .or_else(|| resolve_alias_root_import_prefix(path, &self.package_names))
+            .or_else(|| resolve_alias_root_import_prefix(path, &self.namespace_names))
             .is_some_and(|(_, segments)| segments == path.len())
     }
 }
@@ -63,8 +63,8 @@ pub fn resolve_external_import_prefix(
             }
         }
     }
-    let package_names = deps.keys().cloned().collect();
-    if let Some(alias_match) = resolve_alias_root_import_prefix(path, &package_names) {
+    let namespace_names = deps.keys().cloned().collect();
+    if let Some(alias_match) = resolve_alias_root_import_prefix(path, &namespace_names) {
         best = Some(alias_match);
     }
     best
@@ -94,11 +94,11 @@ fn path_prefix(path: &ast::Path, end: usize) -> String {
 
 fn resolve_alias_root_import_prefix(
     path: &ast::Path,
-    package_names: &HashSet<String>,
+    namespace_names: &HashSet<String>,
 ) -> Option<(String, usize)> {
     let segments = path.segments();
     let first = segments.first()?.ident.0.as_str();
-    if !package_names.contains(first) {
+    if !namespace_names.contains(first) {
         return None;
     }
 
@@ -109,7 +109,7 @@ fn resolve_alias_root_import_prefix(
             .map(|segment| segment.ident.0.clone())
             .collect::<Vec<_>>()
             .join("::");
-        if package_names.contains(&candidate) {
+        if namespace_names.contains(&candidate) {
             best = Some((candidate, end));
         }
     }
