@@ -173,8 +173,6 @@ pub fn lower(node: cst::File) -> LowerResult {
         .map(|token| ast::AstIdent::new(&token.to_string()))
         .unwrap_or_else(|| ast::AstIdent::new(DEFAULT_PACKAGE_NAME));
     let mut uses = Vec::new();
-    let mut imports = Vec::new();
-    let mut use_traits = Vec::new();
     for decl in node.use_decls() {
         let Some(path) = decl.path() else {
             ctx.push_error(
@@ -185,32 +183,6 @@ pub fn lower(node: cst::File) -> LowerResult {
         };
         if let Some(path) = lower_path(&mut ctx, &path) {
             uses.push(ast::UseDecl { path, alias: None });
-        }
-        let idents = path
-            .ident_tokens()
-            .map(|token| ast::AstIdent::new(&token.to_string()))
-            .collect::<Vec<_>>();
-        let ast_path = ast::Path::from_idents(idents);
-        match ast_path.len() {
-            0 => {
-                ctx.push_error(
-                    Some(path.syntax().text_range()),
-                    "use declaration missing path",
-                );
-            }
-            1 => {
-                if let Some(name) = ast_path.last_ident() {
-                    imports.push(name.clone());
-                } else {
-                    ctx.push_error(
-                        Some(path.syntax().text_range()),
-                        "use declaration missing package name",
-                    );
-                }
-            }
-            2.. => {
-                use_traits.push(ast_path);
-            }
         }
     }
     let items = node
@@ -223,8 +195,8 @@ pub fn lower(node: cst::File) -> LowerResult {
         Some(ast::File {
             package,
             uses,
-            imports,
-            use_traits,
+            imports: Vec::new(),
+            use_traits: Vec::new(),
             toplevels: items,
         })
     };
@@ -2828,6 +2800,8 @@ fn f() -> unit { () }
             vec!["crate::math::add", "self::helper", "super::Named"]
         );
         assert!(file.uses.iter().all(|decl| decl.alias.is_none()));
+        assert!(file.imports.is_empty());
+        assert!(file.use_traits.is_empty());
     }
 
     #[test]

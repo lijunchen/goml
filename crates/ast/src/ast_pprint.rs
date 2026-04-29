@@ -1,6 +1,6 @@
 use crate::ast::{
     Arm, AssignStmt, AstIdent, Attribute, Block, ClosureParam, EnumDef, Expr, ExternBuiltin,
-    ExternGo, ExternType, File, Fn, ImplBlock, Item, LetStmt, ModDecl, Pat, Path, Stmt, StructDef,
+    ExternGo, ExternType, File, Fn, ImplBlock, Item, LetStmt, ModDecl, Pat, Stmt, StructDef,
     TraitDef, TraitMethodSignature, TypeExpr, Visibility,
 };
 use pretty::RcDoc;
@@ -956,20 +956,21 @@ impl File {
                 .append(RcDoc::text(";"))
                 .append(RcDoc::hardline()),
         );
-        if !self.imports.is_empty() || !self.use_traits.is_empty() {
-            let use_docs = RcDoc::concat(
-                self.imports
-                    .iter()
-                    .map(|import| Path::from_ident(import.clone()))
-                    .chain(self.use_traits.iter().cloned())
-                    .map(|path| {
-                        RcDoc::text("use")
-                            .append(RcDoc::space())
-                            .append(RcDoc::text(path.display()))
-                            .append(RcDoc::text(";"))
-                            .append(RcDoc::hardline())
-                    }),
-            );
+        if !self.uses.is_empty() {
+            let use_docs = RcDoc::concat(self.uses.iter().map(|decl| {
+                let alias_doc = decl.alias.as_ref().map_or_else(RcDoc::nil, |alias| {
+                    RcDoc::space()
+                        .append(RcDoc::text("as"))
+                        .append(RcDoc::space())
+                        .append(RcDoc::text(alias.0.clone()))
+                });
+                RcDoc::text("use")
+                    .append(RcDoc::space())
+                    .append(RcDoc::text(decl.path.display()))
+                    .append(alias_doc)
+                    .append(RcDoc::text(";"))
+                    .append(RcDoc::hardline())
+            }));
             docs.push(use_docs);
             docs.push(RcDoc::hardline());
         }
