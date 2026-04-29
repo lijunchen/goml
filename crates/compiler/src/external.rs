@@ -175,22 +175,22 @@ impl ExternalDependencyArtifacts {
                     (source.import_path.clone(), source.dir.clone()),
                 ) {
                     return Err(format!(
-                        "external package alias {} is ambiguous between {} and {}",
+                        "external namespace alias {} is ambiguous between {} and {}",
                         source.logical_name, existing.0, source.import_path
                     ));
                 }
             }
         }
 
-        for (package, (_, dir)) in seen {
-            if graph.packages.contains_key(&package) {
+        for (namespace, (_, dir)) in seen {
+            if graph.packages.contains_key(&namespace) {
                 return Err(format!(
-                    "package name {} conflicts with external dependency package {}",
-                    package, package
+                    "namespace name {} conflicts with external dependency namespace {}",
+                    namespace, namespace
                 ));
             }
-            graph.add_external_root_namespace(package.clone());
-            graph.add_external_namespace_dir(package, dir);
+            graph.add_external_root_namespace(namespace.clone());
+            graph.add_external_namespace_dir(namespace, dir);
         }
         Ok(())
     }
@@ -246,7 +246,7 @@ pub fn resolve_dependency_versions_with_registry(
             .cloned()
             .ok_or_else(|| format!("missing module root name for {}", coord.display()))?;
         let artifact = compile_external_module(module, &root_package, &compiled)?;
-        ensure_no_external_package_conflicts(&compiled, &artifact)?;
+        ensure_no_external_namespace_conflicts(&compiled, &artifact)?;
         compiled.insert(root_package, artifact);
     }
 
@@ -339,16 +339,16 @@ fn compile_external_module(
         &available_imports,
     )
     .map_err(err_text)?;
-    for package in available_imports.package_names.iter() {
-        if graph.packages.contains_key(package) {
+    for namespace in available_imports.package_names.iter() {
+        if graph.packages.contains_key(namespace) {
             return Err(format!(
-                "package name {} in {} conflicts with external dependency package {}",
-                package,
+                "namespace name {} in {} conflicts with external dependency namespace {}",
+                namespace,
                 module.root_dir.display(),
-                package
+                namespace
             ));
         }
-        graph.add_external_root_namespace(package.clone());
+        graph.add_external_root_namespace(namespace.clone());
     }
 
     let order = packages::topo_sort_packages(&graph).map_err(err_text)?;
@@ -654,7 +654,7 @@ fn external_imports_from_modules(
     ExternalImports::new(package_names, import_paths)
 }
 
-fn ensure_no_external_package_conflicts(
+fn ensure_no_external_namespace_conflicts(
     compiled: &BTreeMap<String, ExternalModuleArtifact>,
     candidate: &ExternalModuleArtifact,
 ) -> Result<(), String> {
@@ -662,7 +662,7 @@ fn ensure_no_external_package_conflicts(
         for source in existing.sources.values() {
             if let Some(other) = candidate.sources.get(&source.logical_name) {
                 return Err(format!(
-                    "external package alias {} is ambiguous between {} and {}",
+                    "external namespace alias {} is ambiguous between {} and {}",
                     source.logical_name, source.import_path, other.import_path
                 ));
             }
