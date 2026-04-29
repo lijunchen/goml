@@ -88,8 +88,11 @@ struct CompilerArgs {
 
 #[derive(Subcommand, Debug)]
 enum CompilerCommands {
+    #[command(hide = true)]
     Check(PackageCommandArgs),
+    #[command(hide = true)]
     Build(PackageCommandArgs),
+    #[command(hide = true)]
     Link(LinkArgs),
     CheckCrate(CrateCommandArgs),
     BuildCrate(CrateCommandArgs),
