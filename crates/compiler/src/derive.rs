@@ -21,6 +21,7 @@ pub fn expand(ast: ast::File) -> Result<ast::File, Diagnostics> {
     let mut diagnostics = Diagnostics::new();
     let mut toplevels = Vec::with_capacity(ast.toplevels.len());
     let package = ast.package.clone();
+    let uses = ast.uses.clone();
     let imports = ast.imports.clone();
     let use_traits = ast.use_traits.clone();
 
@@ -93,6 +94,7 @@ pub fn expand(ast: ast::File) -> Result<ast::File, Diagnostics> {
     } else {
         Ok(ast::File {
             package,
+            uses,
             imports,
             use_traits,
             toplevels,

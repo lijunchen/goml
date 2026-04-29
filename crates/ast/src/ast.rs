@@ -190,9 +190,16 @@ pub struct Attribute {
 #[derive(Debug, Clone)]
 pub struct File {
     pub package: AstIdent,
+    pub uses: Vec<UseDecl>,
     pub imports: Vec<AstIdent>,
     pub use_traits: Vec<Path>,
     pub toplevels: Vec<Item>,
+}
+
+#[derive(Debug, Clone)]
+pub struct UseDecl {
+    pub path: Path,
+    pub alias: Option<AstIdent>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

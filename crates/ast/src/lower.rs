@@ -172,6 +172,7 @@ pub fn lower(node: cst::File) -> LowerResult {
         .and_then(|decl| decl.name_token())
         .map(|token| ast::AstIdent::new(&token.to_string()))
         .unwrap_or_else(|| ast::AstIdent::new(DEFAULT_PACKAGE_NAME));
+    let mut uses = Vec::new();
     let mut imports = Vec::new();
     let mut use_traits = Vec::new();
     for decl in node.use_decls() {
@@ -182,6 +183,9 @@ pub fn lower(node: cst::File) -> LowerResult {
             );
             continue;
         };
+        if let Some(path) = lower_path(&mut ctx, &path) {
+            uses.push(ast::UseDecl { path, alias: None });
+        }
         let idents = path
             .ident_tokens()
             .map(|token| ast::AstIdent::new(&token.to_string()))
@@ -218,6 +222,7 @@ pub fn lower(node: cst::File) -> LowerResult {
     } else {
         Some(ast::File {
             package,
+            uses,
             imports,
             use_traits,
             toplevels: items,
@@ -2768,6 +2773,43 @@ pub extern "go" "fmt" println() -> unit
             panic!("expected extern go");
         };
         assert_eq!(extern_go.visibility, ast::Visibility::Public);
+    }
+
+    #[test]
+    fn lower_preserves_use_decls() {
+        let file = lower_src(
+            r#"
+use crate::math::add;
+use self::helper;
+use super::Named;
+fn f() -> unit { () }
+"#,
+        );
+
+        let roots = file
+            .uses
+            .iter()
+            .map(|decl| decl.path.root().clone())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            roots,
+            vec![
+                ast::PathRoot::Crate,
+                ast::PathRoot::Self_,
+                ast::PathRoot::Super
+            ]
+        );
+
+        let displays = file
+            .uses
+            .iter()
+            .map(|decl| decl.path.display())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            displays,
+            vec!["crate::math::add", "self::helper", "super::Named"]
+        );
+        assert!(file.uses.iter().all(|decl| decl.alias.is_none()));
     }
 
     fn lower_src(src: &str) -> ast::File {
