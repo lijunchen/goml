@@ -140,48 +140,55 @@ Key functions in the emitter:
 
 GoML projects use a `goml.toml` file for project configuration, similar to Cargo.toml in Rust.
 
-A **module** is the top-level compilation unit containing one or more packages. The module root has a `goml.toml` with a `[module]` section. Sub-packages can have their own `goml.toml` files (without `[module]`) or rely on directory-based discovery.
+A **crate** is the top-level compilation unit. The crate root has a `goml.toml` with a `[crate]` section. Child modules are declared from source with `mod name;` and are loaded from `name.gom` or `name/mod.gom`.
 
-### Module Root Example
+### Crate Root Example
 ```toml
-[module]
+[crate]
 name = "myapp"
-
-[package]
-name = "main"
-entry = "main.gom"
+kind = "bin"
+root = "main.gom"
 
 [dependencies]
-"alice/http" = "1.2.0"
+"alice::http" = "1.2.0"
 ```
 
-### Sub-Package Example
-```toml
-[package]
-name = "utils"
+### Crate Module Example
+```goml
+mod utils;
+
+fn main() -> unit {
+    string_println(crate::utils::message())
+}
 ```
 
-### Minimal Example (no module section, backward compatible)
+```text
+utils/mod.gom
+```
+
+### Library Crate Example
 ```toml
-[package]
-name = "main"
+[crate]
+name = "mylib"
+kind = "lib"
+root = "lib.gom"
 ```
 
 ### Fields
-| Field           | Required | Default     | Description                                  |
-| --------------- | -------- | ----------- | -------------------------------------------- |
-| `module.name`   | No       | -           | Module name (presence indicates module root) |
-| `package.name`  | Yes      | -           | Package name (any valid identifier)          |
-| `package.entry` | No       | `"lib.gom"` | Path to entry file relative to goml.toml     |
-| `dependencies`  | No       | `{}`        | Module-root third-party dependencies keyed by `"owner/module"` with minimum version `X.Y.Z` |
+| Field          | Required | Default | Description |
+| -------------- | -------- | ------- | ----------- |
+| `crate.name`   | Yes      | -       | Crate name; registry crates must match the module name |
+| `crate.kind`   | No       | -       | `bin` or `lib`; controls default root candidates |
+| `crate.root`   | No       | -       | Path to the root `.gom` file relative to `goml.toml` |
+| `dependencies` | No       | `{}`    | Third-party dependencies keyed by `"owner::module"` with minimum version `X.Y.Z` |
 
 ### Project Discovery
-- The LSP and CLI search upward from the current file to find `goml.toml` with a `[module]` section
-- If found, uses `package.entry` as the compilation entry point
-- For module roots, `package.name` must be `main`
-- Third-party dependencies are declared in the module root `goml.toml`; sub-packages do not declare registry dependencies
-- Sub-packages are discovered from subdirectories when imported, using their own `goml.toml` if present
-- Package names can be any valid identifier (lowercase or PascalCase)
+- The LSP and CLI search upward from the current file to find `goml.toml` with a `[crate]` section.
+- If `crate.root` is set, it is the compilation entry point.
+- Otherwise `crate.kind = "bin"` tries `src/main.gom` then `main.gom`; `crate.kind = "lib"` tries `src/lib.gom` then `lib.gom`.
+- Third-party dependencies are declared only in the crate root `goml.toml`.
+- Child modules are discovered only from explicit `mod name;` declarations.
+- The old source `package ...;` declaration and old manifest `[module]` / `[package]` format are unsupported.
 
 ## Package Management
 
@@ -191,11 +198,11 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 - The registry is a git repository with an `index.toml` at the repo root
 - Each published module version lives at `/<owner>/<module>/<version>/`
 - Each published module version must include its own `goml.toml`
-- The module root inside the registry must declare `package.name = "<module>"`; if it has a `[module]` section, `module.name` must also equal `<module>`
+- The module root inside the registry must declare `[crate] name = "<module>"`
 - `index.toml` is the authoritative package index; package management reads the index instead of scanning the full registry tree
 
 ### Dependency Semantics
-- Dependencies are declared in `[dependencies]` using `"owner/module" = "X.Y.Z"`
+- Dependencies are declared in `[dependencies]` using `"owner::module" = "X.Y.Z"`
 - Versions use strict semver `X.Y.Z` only; prerelease and build metadata are not supported
 - Version values are minimum version requirements, not exact pins
 - Resolution uses Go-style MVS: the selected version for each module is the minimum available version satisfying the highest required minimum in the graph
@@ -211,18 +218,18 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 ### CLI Commands
 - `goml update` clones or fast-forwards the registry cache into `~/.goml/cache/registry`
-- `goml add owner/module` adds the latest indexed version requirement to the current module root `goml.toml`
-- `goml add owner/module@X.Y.Z` adds or updates an explicit minimum version requirement
-- `goml remove owner/module` removes that dependency from the current module root `goml.toml`
+- `goml add owner::module` adds the latest indexed version requirement to the current crate root `goml.toml`
+- `goml add owner::module@X.Y.Z` adds or updates an explicit minimum version requirement
+- `goml remove owner::module` removes that dependency from the current crate root `goml.toml`
 - `goml update`, `goml add`, and `goml remove` all support `--local-registry <path>` to use a local git repo or registry checkout instead of the default configured registry
-- `goml add` and `goml remove` locate the module root by searching upward for `goml.toml` with a `[module]` section
+- `goml add` and `goml remove` locate the crate root by searching upward for `goml.toml` with a `[crate]` section
 
 ### External Module Namespaces
-- Registry module source layout reuses normal module layout: the root package lives at the module version root and sub-packages live in subdirectories with their own `goml.toml`
-- External module root packages are imported by module name, for example `use http;`
-- External sub-packages use the module namespace, for example `use http::client;`
-- Trait imports follow the same rule, for example `use http::Show;` and `use http::client::Show;`
-- Internally, external packages are given logical names under the module namespace, such as `http` and `http::client`
+- Registry source layout reuses normal crate/module layout.
+- External root modules are imported by owner-qualified module path, for example `use alice::http;`
+- External child modules use the module namespace, for example `use alice::http::client;`
+- Trait imports follow the same rule, for example `use alice::http::Show;` and `use alice::http::client::Show;`
+- Internally, external modules are mapped to logical names such as `http` and `client`
 - Different owners cannot appear in the same resolved graph with the same module name; `alice/http` and `dave/http` are rejected together because source imports only name the module namespace, not the owner
 
 ### Build, Check, And LSP Behavior
@@ -292,7 +299,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 - Multi-module tests are located in `crates/compiler/src/tests/module/`. They test crate/module source layout while the compiler still maps those modules through the internal package graph.
 - Each project directory follows the pattern `projectNNN/` (e.g., `project001/`, `project002/`) or `projectNNN_description/`.
 - Structure of a multi-module project:
-  - `goml.toml` - crate configuration with `[crate]` plus temporary legacy `[module]` and `[package]` sections for the current project runner
+  - `goml.toml` - crate configuration with `[crate]`
   - `main.gom` or the configured crate root - declares top-level modules with `mod Name;`
   - `Name/mod.gom` or `Name.gom` - module source files
   - `main.gom.out` - expected execution output
@@ -304,7 +311,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
   - Trait method syntax `x.method(...)` for non-`dyn` values is enabled by `use crate::Name::Trait` (builtin traits like `Show` are in the prelude and do not require `use`)
 - To add a new multi-module test:
   1. Create a new directory under `crates/compiler/src/tests/module/` (e.g., `project011/`)
-  2. Create `goml.toml` with `[crate]` plus temporary legacy `[module]` and `[package]` sections
+  2. Create `goml.toml` with a `[crate]` section
   3. Create the crate root file with `mod` declarations and `fn main()`
   4. Create module files as `Name/mod.gom` or `Name.gom`
   5. Run `env UPDATE_EXPECT=1 cargo test` to generate the expected output file
