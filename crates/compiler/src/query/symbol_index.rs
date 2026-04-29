@@ -207,8 +207,8 @@ fn build_crate_symbol_index(
     let mut index = ProjectSymbolIndex::default();
 
     for module in crate_unit.modules.iter() {
-        let package_names = query_module_package_names(module.path.segments(), &crate_name);
-        let package_name = package_names[0].clone();
+        let namespace_names = query_module_namespace_names(module.path.segments(), &crate_name);
+        let namespace_name = namespace_names[0].clone();
         let namespace_dir = namespace_dir_for_module_file(&module.file_path);
         let files = vec![crate::hir::SourceFileAst::with_package_module_visibility(
             module.file_path.clone(),
@@ -217,14 +217,14 @@ fn build_crate_symbol_index(
             true,
             module.ast.clone(),
         )];
-        graph.discovery_order.push(package_name.clone());
+        graph.discovery_order.push(namespace_name.clone());
         graph
             .package_dirs
-            .insert(package_name.clone(), namespace_dir.clone());
+            .insert(namespace_name.clone(), namespace_dir.clone());
         graph
             .package_visibilities
-            .insert(package_name.clone(), module.visibility);
-        for alias in package_names.iter().skip(1) {
+            .insert(namespace_name.clone(), module.visibility);
+        for alias in namespace_names.iter().skip(1) {
             graph
                 .package_dirs
                 .insert(alias.clone(), namespace_dir.clone());
@@ -233,17 +233,17 @@ fn build_crate_symbol_index(
                 .insert(alias.clone(), module.visibility);
         }
         graph.packages.insert(
-            package_name.clone(),
+            namespace_name.clone(),
             crate::pipeline::packages::PackageUnit {
-                name: package_name.clone(),
+                name: namespace_name.clone(),
                 files,
                 imports: HashSet::new(),
             },
         );
         index_namespace_symbols_named(
             &mut index,
-            &package_name,
-            &package_names,
+            &namespace_name,
+            &namespace_names,
             &namespace_dir,
             std::slice::from_ref(&module.file_path),
             &overrides,
@@ -277,7 +277,7 @@ fn build_crate_symbol_index(
     Ok((graph, index))
 }
 
-fn query_module_package_name(module_path: &[String], crate_name: &str) -> String {
+fn query_module_namespace_name(module_path: &[String], crate_name: &str) -> String {
     if module_path.is_empty() {
         crate_name.to_string()
     } else {
@@ -285,8 +285,8 @@ fn query_module_package_name(module_path: &[String], crate_name: &str) -> String
     }
 }
 
-fn query_module_package_names(module_path: &[String], crate_name: &str) -> Vec<String> {
-    let primary = query_module_package_name(module_path, crate_name);
+fn query_module_namespace_names(module_path: &[String], crate_name: &str) -> Vec<String> {
+    let primary = query_module_namespace_name(module_path, crate_name);
     let mut names = vec![primary.clone()];
     if !module_path.is_empty() {
         let alias = format!("{}::{}", crate_name, module_path.join("::"));
@@ -404,7 +404,7 @@ fn normalize_lookup_segments(segments: &[String]) -> &[String] {
 
 fn index_source_file_symbols(
     index: &mut ProjectSymbolIndex,
-    package_names: &[String],
+    namespace_names: &[String],
     file_path: &Path,
     src: &str,
 ) -> Result<(), String> {
@@ -419,7 +419,7 @@ fn index_source_file_symbols(
             cst::nodes::Item::Fn(f) => {
                 if let Some(name_tok) = f.lident() {
                     let mut names = Vec::new();
-                    add_name_variants(&mut names, package_names, &name_tok.to_string());
+                    add_name_variants(&mut names, namespace_names, &name_tok.to_string());
                     for name in names {
                         index.add_value(
                             name,
@@ -436,7 +436,7 @@ fn index_source_file_symbols(
                     continue;
                 };
                 let mut type_names = Vec::new();
-                add_name_variants(&mut type_names, package_names, &type_tok.to_string());
+                add_name_variants(&mut type_names, namespace_names, &type_tok.to_string());
                 for tn in type_names.iter() {
                     index.add_type(
                         tn.clone(),
@@ -469,7 +469,7 @@ fn index_source_file_symbols(
                     continue;
                 };
                 let mut type_names = Vec::new();
-                add_name_variants(&mut type_names, package_names, &type_tok.to_string());
+                add_name_variants(&mut type_names, namespace_names, &type_tok.to_string());
                 for tn in type_names.iter() {
                     index.add_type(
                         tn.clone(),
@@ -502,7 +502,7 @@ fn index_source_file_symbols(
                     continue;
                 };
                 let mut type_names = Vec::new();
-                add_name_variants(&mut type_names, package_names, &type_tok.to_string());
+                add_name_variants(&mut type_names, namespace_names, &type_tok.to_string());
                 for tn in type_names.iter() {
                     index.add_type(
                         tn.clone(),
@@ -538,7 +538,7 @@ fn index_source_file_symbols(
                 if receiver.is_empty() {
                     continue;
                 }
-                let receiver_keys = collect_receiver_keys(package_names, &receiver);
+                let receiver_keys = collect_receiver_keys(namespace_names, &receiver);
                 for f in i.functions() {
                     let Some(method_tok) = f.lident() else {
                         continue;
@@ -561,7 +561,7 @@ fn index_source_file_symbols(
                         continue;
                     };
                     let mut type_names = Vec::new();
-                    add_name_variants(&mut type_names, package_names, &type_tok.to_string());
+                    add_name_variants(&mut type_names, namespace_names, &type_tok.to_string());
                     for tn in type_names.iter() {
                         index.add_type(
                             tn.clone(),
@@ -573,7 +573,7 @@ fn index_source_file_symbols(
                     }
                 } else if let Some(name_tok) = ex.lident() {
                     let mut names = Vec::new();
-                    add_name_variants(&mut names, package_names, &name_tok.to_string());
+                    add_name_variants(&mut names, namespace_names, &name_tok.to_string());
                     for name in names {
                         index.add_value(
                             name,
@@ -595,18 +595,18 @@ fn ident_tokens_to_segments(path: &cst::nodes::Path) -> Vec<String> {
     path.ident_tokens().map(|token| token.to_string()).collect()
 }
 
-fn qualify_name(package: &str, name: &str) -> String {
-    if is_special_unqualified_package(package) {
+fn qualify_name(namespace: &str, name: &str) -> String {
+    if is_special_unqualified_package(namespace) {
         name.to_string()
     } else {
-        format!("{}::{}", package, name)
+        format!("{}::{}", namespace, name)
     }
 }
 
-fn add_name_variants(map: &mut Vec<String>, packages: &[String], name: &str) {
+fn add_name_variants(map: &mut Vec<String>, namespaces: &[String], name: &str) {
     map.push(name.to_string());
-    for package in packages {
-        let qualified = qualify_name(package, name);
+    for namespace in namespaces {
+        let qualified = qualify_name(namespace, name);
         if qualified != name {
             map.push(qualified);
         }
@@ -615,7 +615,7 @@ fn add_name_variants(map: &mut Vec<String>, packages: &[String], name: &str) {
     map.dedup();
 }
 
-fn collect_receiver_keys(packages: &[String], receiver: &str) -> Vec<String> {
+fn collect_receiver_keys(namespaces: &[String], receiver: &str) -> Vec<String> {
     let mut keys = Vec::new();
     if receiver.is_empty() {
         return keys;
@@ -631,8 +631,8 @@ fn collect_receiver_keys(packages: &[String], receiver: &str) -> Vec<String> {
         return keys;
     }
 
-    for package in packages {
-        let qualified = qualify_name(package, receiver);
+    for namespace in namespaces {
+        let qualified = qualify_name(namespace, receiver);
         if qualified != receiver {
             keys.push(qualified);
         }
@@ -668,20 +668,20 @@ fn cst_type_path_name(ty: &cst::nodes::Type) -> Option<String> {
 
 fn index_namespace_symbols_named(
     index: &mut ProjectSymbolIndex,
-    package_name: &str,
-    package_names: &[String],
+    namespace_name: &str,
+    namespace_names: &[String],
     namespace_dir: &Path,
     package_files: &[PathBuf],
     src_overrides: &HashMap<PathBuf, String>,
 ) -> Result<(), String> {
-    let package_names = if package_names.is_empty() {
-        vec![package_name.to_string()]
+    let namespace_names = if namespace_names.is_empty() {
+        vec![namespace_name.to_string()]
     } else {
-        package_names.to_vec()
+        namespace_names.to_vec()
     };
     if let Some(target) = namespace_navigation_target(namespace_dir, package_files) {
-        for package in &package_names {
-            index.namespaces.insert(package.clone(), target.clone());
+        for namespace in &namespace_names {
+            index.namespaces.insert(namespace.clone(), target.clone());
         }
     }
 
@@ -692,7 +692,7 @@ fn index_namespace_symbols_named(
             fs::read_to_string(file)
                 .map_err(|e| format!("failed to read {}: {}", file.display(), e))?
         };
-        index_source_file_symbols(index, &package_names, file, &src)?;
+        index_source_file_symbols(index, &namespace_names, file, &src)?;
     }
 
     Ok(())
