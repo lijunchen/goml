@@ -265,7 +265,7 @@ pub fn ping() -> string {
 }
 
 #[test]
-fn no_manifest_query_does_not_discover_packages_from_use() {
+fn no_manifest_query_does_not_discover_namespaces_from_use() {
     let dir = tempdir().unwrap();
     std::fs::create_dir_all(dir.path().join("util")).unwrap();
     std::fs::write(

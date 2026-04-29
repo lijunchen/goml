@@ -170,7 +170,7 @@ pub(crate) fn build_symbol_index(
     if crate::config::find_crate_root(start_dir_for_path(path)).is_some() {
         build_crate_symbol_index(path, src)
     } else {
-        Err("package discovery fallback is disabled outside manifest crates".to_string())
+        Err("namespace discovery fallback is disabled outside manifest crates".to_string())
     }
 }
 
