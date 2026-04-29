@@ -13,7 +13,7 @@ const PATH_FIRST: &[TokenKind] = &[T![ident], T![::], T![crate], T![super]];
 pub fn file(p: &mut Parser) {
     let m = p.open();
     if p.at(T![package]) {
-        package_decl(p);
+        package_decl_error(p);
     }
     while p.at(T![use]) {
         use_decl(p);
@@ -28,7 +28,7 @@ pub fn file(p: &mut Parser) {
         } else if p.at(T![pub]) {
             public_item(p);
         } else if p.at(T![package]) {
-            p.advance_with_error("package declaration must appear at the top of the file");
+            package_decl_error(p);
         } else if p.at(T![use]) {
             use_decl(p);
         } else if p.at(T![import]) {
@@ -58,17 +58,17 @@ pub fn file(p: &mut Parser) {
     p.close(m, MySyntaxKind::FILE);
 }
 
-fn package_decl(p: &mut Parser) {
+fn package_decl_error(p: &mut Parser) {
     assert!(p.at(T![package]));
     let m = p.open();
-    p.expect(T![package]);
+    p.advance_with_error("package declarations have been removed");
     if p.at(T![ident]) {
         p.advance();
-    } else {
+    } else if !p.eof() && !p.at(T![;]) {
         p.advance_with_error("expected a package name");
     }
     p.expect(T![;]);
-    p.close(m, MySyntaxKind::PACKAGE);
+    p.close(m, MySyntaxKind::ErrorTree);
 }
 
 fn use_decl(p: &mut Parser) {

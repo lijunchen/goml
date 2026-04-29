@@ -93,19 +93,30 @@ fn source_override_for_dir<'a>(
     })
 }
 
+fn ast_with_package(mut ast: ast::File, package: &str) -> ast::File {
+    ast.package = ast::AstIdent::new(package);
+    ast
+}
+
 fn load_package(
     package_dir: &Path,
+    expected_package_name: Option<&str>,
     source_override: Option<(&Path, &ast::File)>,
     external_imports: &ExternalImports,
 ) -> Result<PackageUnit, CompilationError> {
     let mut files = Vec::new();
-    let mut package_name = None;
+    let mut package_name = expected_package_name.map(str::to_string);
 
     let source_override = source_override_for_dir(package_dir, source_override);
 
     if let Some((path, ast)) = source_override {
-        package_name = Some(ast.package.0.clone());
-        files.push(SourceFileAst::new(path.to_path_buf(), ast.clone()));
+        let ast = if let Some(package) = expected_package_name {
+            ast_with_package(ast.clone(), package)
+        } else {
+            ast.clone()
+        };
+        package_name.get_or_insert_with(|| ast.package.0.clone());
+        files.push(SourceFileAst::new(path.to_path_buf(), ast));
     }
 
     for path in read_gom_sources(package_dir)? {
@@ -114,7 +125,10 @@ fn load_package(
         }
         let src = fs::read_to_string(&path)
             .map_err(|err| compile_error(format!("failed to read {}: {}", path.display(), err)))?;
-        let ast = parse_ast_file(&path, &src)?;
+        let mut ast = parse_ast_file(&path, &src)?;
+        if let Some(expected) = expected_package_name {
+            ast = ast_with_package(ast, expected);
+        }
         if let Some(existing) = &package_name {
             if &ast.package.0 != existing {
                 return Err(compile_error(format!(
@@ -153,12 +167,16 @@ fn load_package_from_config(
 ) -> Result<PackageUnit, CompilationError> {
     let mut files = Vec::new();
     let entry_file_path = package_dir.join(&config.package.entry);
+    let expected_package_name = &config.package.name;
     let source_override = source_override_for_dir(package_dir, source_override);
 
     if let Some((path, ast)) = source_override
         && path == entry_file_path.as_path()
     {
-        files.push(SourceFileAst::new(path.to_path_buf(), ast.clone()));
+        files.push(SourceFileAst::new(
+            path.to_path_buf(),
+            ast_with_package(ast.clone(), expected_package_name),
+        ));
     } else if entry_file_path.exists() {
         let src = fs::read_to_string(&entry_file_path).map_err(|err| {
             compile_error(format!(
@@ -167,11 +185,12 @@ fn load_package_from_config(
                 err
             ))
         })?;
-        let ast = parse_ast_file(&entry_file_path, &src)?;
+        let ast = ast_with_package(
+            parse_ast_file(&entry_file_path, &src)?,
+            expected_package_name,
+        );
         files.push(SourceFileAst::new(entry_file_path.clone(), ast));
     }
-
-    let expected_package_name = &config.package.name;
 
     for path in read_gom_sources(package_dir)? {
         if path == entry_file_path {
@@ -180,31 +199,15 @@ fn load_package_from_config(
         if let Some((override_path, override_ast)) = source_override
             && override_path == path.as_path()
         {
-            if &override_ast.package.0 != expected_package_name {
-                return Err(compile_error(format!(
-                    "package mismatch in {}: expected {}, found {}",
-                    override_path.display(),
-                    expected_package_name,
-                    override_ast.package.0
-                )));
-            }
             files.push(SourceFileAst::new(
                 override_path.to_path_buf(),
-                override_ast.clone(),
+                ast_with_package(override_ast.clone(), expected_package_name),
             ));
             continue;
         }
         let src = fs::read_to_string(&path)
             .map_err(|err| compile_error(format!("failed to read {}: {}", path.display(), err)))?;
-        let ast = parse_ast_file(&path, &src)?;
-        if &ast.package.0 != expected_package_name {
-            return Err(compile_error(format!(
-                "package mismatch in {}: expected {}, found {}",
-                path.display(),
-                expected_package_name,
-                ast.package.0
-            )));
-        }
+        let ast = ast_with_package(parse_ast_file(&path, &src)?, expected_package_name);
         files.push(SourceFileAst::new(path, ast));
     }
 
@@ -214,17 +217,6 @@ fn load_package_from_config(
             expected_package_name,
             package_dir.display()
         )));
-    }
-
-    for file in &files {
-        if file.ast.package.0 != *expected_package_name {
-            return Err(compile_error(format!(
-                "package mismatch in {}: goml.toml says {}, file declares {}",
-                file.path.display(),
-                expected_package_name,
-                file.ast.package.0
-            )));
-        }
     }
 
     let imports = collect_imports(&files, external_imports);
@@ -380,6 +372,7 @@ fn discover_packages_inner(
         } else {
             load_package(
                 root_dir,
+                None,
                 source_override_for_dir(root_dir, source_override),
                 external_imports,
             )?
@@ -387,6 +380,7 @@ fn discover_packages_inner(
     } else {
         load_package(
             root_dir,
+            None,
             source_override_for_dir(root_dir, source_override),
             external_imports,
         )?
@@ -421,7 +415,12 @@ fn discover_packages_inner(
         let package = if let Some(config) = GomlConfig::find_package_config(&package_dir) {
             load_package_from_config(&package_dir, &config, package_override, external_imports)?
         } else {
-            load_package(&package_dir, package_override, external_imports)?
+            load_package(
+                &package_dir,
+                Some(&package_name),
+                package_override,
+                external_imports,
+            )?
         };
         let declared_name = package.name.clone();
         if package.name != package_name {
@@ -526,7 +525,12 @@ pub fn discover_packages_from_config(
                 external_imports,
             )?
         } else {
-            load_package(&package_dir, package_override, external_imports)?
+            load_package(
+                &package_dir,
+                Some(&package_name),
+                package_override,
+                external_imports,
+            )?
         };
         let declared_name = package.name.clone();
         if package.name != package_name {

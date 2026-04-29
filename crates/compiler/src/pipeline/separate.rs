@@ -165,15 +165,8 @@ fn read_source_files(
     for path in paths {
         let src = fs::read_to_string(&path)
             .map_err(|err| compile_error(format!("failed to read {}: {}", path.display(), err)))?;
-        let ast = parse_ast_file(&path, &src)?;
-        if ast.package.0 != package {
-            return Err(compile_error(format!(
-                "package mismatch in {}: expected {}, found {}",
-                path.display(),
-                package,
-                ast.package.0
-            )));
-        }
+        let mut ast = parse_ast_file(&path, &src)?;
+        ast.package = ast::ast::AstIdent::new(package);
         for import in ast.imports.iter() {
             imports.insert(import.0.clone());
         }

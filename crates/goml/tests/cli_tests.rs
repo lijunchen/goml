@@ -73,7 +73,7 @@ name = "main"
 entry = "main.gom"
 "#;
 
-const PROJECT_MAIN: &str = r#"package main;
+const PROJECT_MAIN: &str = r#"
 
 fn main() -> unit {
     string_println("hello")
@@ -231,7 +231,7 @@ name = "http"
     )?;
     fs::write(
         registry.join("alice/http/1.0.0/lib.gom"),
-        r#"package http;
+        r#"
 
 fn version() -> string {
     "1.0.0"
@@ -246,7 +246,7 @@ name = "client"
     )?;
     fs::write(
         registry.join("alice/http/1.0.0/client/lib.gom"),
-        r#"package client;
+        r#"
 
 fn tag() -> string {
     "client-1.0.0"
@@ -265,7 +265,7 @@ name = "http"
     )?;
     fs::write(
         registry.join("alice/http/1.2.0/lib.gom"),
-        r#"package http;
+        r#"
 
 use client;
 
@@ -282,7 +282,7 @@ name = "client"
     )?;
     fs::write(
         registry.join("alice/http/1.2.0/client/lib.gom"),
-        r#"package client;
+        r#"
 
 fn tag() -> string {
     "client-1.2.0"
@@ -298,7 +298,7 @@ name = "net"
     )?;
     fs::write(
         registry.join("alice/net/0.1.0/lib.gom"),
-        r#"package net;
+        r#"
 
 fn version() -> string {
     "0.1.0"
@@ -316,7 +316,7 @@ name = "appdep"
     )?;
     fs::write(
         registry.join("alice/appdep/0.1.0/lib.gom"),
-        r#"package appdep;
+        r#"
 
 fn marker() -> string {
     "appdep"
@@ -657,7 +657,7 @@ entry = "main.gom"
     )?;
     fs::write(
         project_dir.join("main.gom"),
-        r#"package main;
+        r#"
 
 use alice::http;
 use alice::http::client;
@@ -958,8 +958,6 @@ fn new_creates_two_package_scaffold() -> anyhow::Result<()> {
     "#]]
     .assert_eq(&root_toml);
     expect![[r#"
-        package main;
-
         use lib;
 
         fn main() -> unit {
@@ -973,8 +971,6 @@ fn new_creates_two_package_scaffold() -> anyhow::Result<()> {
     "#]]
     .assert_eq(&lib_toml);
     expect![[r#"
-        package lib;
-
         fn message() -> string {
             "hello from lib"
         }
@@ -1173,7 +1169,7 @@ entry = "main.gom"
     )?;
     fs::write(
         root.join("main.gom"),
-        r#"package main;
+        r#"
 
 use A;
 
@@ -1192,7 +1188,7 @@ name = "A"
     )?;
     fs::write(
         root.join("A/lib.gom"),
-        r#"package A;
+        r#"
 
 use B;
 
@@ -1211,7 +1207,7 @@ name = "B"
     )?;
     fs::write(
         root.join("B/lib.gom"),
-        r#"package B;
+        r#"
 
 fn value() -> int32 {
     1
@@ -1223,7 +1219,7 @@ fn value() -> int32 {
     let stderr = normalize_temp_prefix(&String::from_utf8_lossy(&output.stderr), root);
     assert!(!output.status.success());
     expect![[r#"
-        build failed: Typer { diagnostics: Diagnostics { items: [Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(45..56) }, Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(45..56) }] } }
+        build failed: Typer { diagnostics: Diagnostics { items: [Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(35..46) }, Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(35..46) }] } }
         subcommand failed: goml compiler build --package A --input A/lib.gom --interface-path target/goml/build/B/B.interface --output target/goml/build/A/A
     "#]]
     .assert_eq(&stderr);
@@ -1249,7 +1245,7 @@ entry = "main.gom"
     )?;
     fs::write(
         root.join("main.gom"),
-        r#"package main;
+        r#"
 
 use Lib;
 
@@ -1269,7 +1265,7 @@ entry = "src/lib_entry.gom"
     )?;
     fs::write(
         root.join("Lib/src/lib_entry.gom"),
-        r#"package Lib;
+        r#"
 
 fn msg() -> string {
     "ok"

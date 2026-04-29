@@ -156,7 +156,7 @@ pub(crate) fn build_symbol_lookup(path: &Path, src: &str) -> SymbolLookup {
         },
         Err(_) => {
             let mut index = ProjectSymbolIndex::default();
-            let _ = index_source_file_symbols(&mut index, path, src);
+            let _ = index_source_file_symbols(&mut index, ROOT_PACKAGE, path, src);
             let _ = index_builtin_symbols(&mut index);
             SymbolLookup { graph: None, index }
         }
@@ -282,6 +282,7 @@ pub(crate) fn lookup_symbol_locations_for_path(
 
 fn index_source_file_symbols(
     index: &mut ProjectSymbolIndex,
+    package_name: &str,
     file_path: &Path,
     src: &str,
 ) -> Result<(), String> {
@@ -289,11 +290,6 @@ fn index_source_file_symbols(
     let root = MySyntaxNode::new_root(result.green_node);
     let cst_file =
         cst::cst::File::cast(root).ok_or_else(|| "failed to cast syntax tree".to_string())?;
-    let package_name = cst_file
-        .package_decl()
-        .and_then(|d| d.name_token())
-        .map(|t| t.to_string())
-        .unwrap_or_else(|| ROOT_PACKAGE.to_string());
 
     for item in cst_file.items() {
         match item {
@@ -301,7 +297,7 @@ fn index_source_file_symbols(
             cst::nodes::Item::Fn(f) => {
                 if let Some(name_tok) = f.lident() {
                     let mut names = Vec::new();
-                    add_name_variants(&mut names, &package_name, &name_tok.to_string());
+                    add_name_variants(&mut names, package_name, &name_tok.to_string());
                     for name in names {
                         index.add_value(
                             name,
@@ -318,7 +314,7 @@ fn index_source_file_symbols(
                     continue;
                 };
                 let mut type_names = Vec::new();
-                add_name_variants(&mut type_names, &package_name, &type_tok.to_string());
+                add_name_variants(&mut type_names, package_name, &type_tok.to_string());
                 for tn in type_names.iter() {
                     index.add_type(
                         tn.clone(),
@@ -351,7 +347,7 @@ fn index_source_file_symbols(
                     continue;
                 };
                 let mut type_names = Vec::new();
-                add_name_variants(&mut type_names, &package_name, &type_tok.to_string());
+                add_name_variants(&mut type_names, package_name, &type_tok.to_string());
                 for tn in type_names.iter() {
                     index.add_type(
                         tn.clone(),
@@ -384,7 +380,7 @@ fn index_source_file_symbols(
                     continue;
                 };
                 let mut type_names = Vec::new();
-                add_name_variants(&mut type_names, &package_name, &type_tok.to_string());
+                add_name_variants(&mut type_names, package_name, &type_tok.to_string());
                 for tn in type_names.iter() {
                     index.add_type(
                         tn.clone(),
@@ -420,7 +416,7 @@ fn index_source_file_symbols(
                 if receiver.is_empty() {
                     continue;
                 }
-                let receiver_keys = collect_receiver_keys(&package_name, &receiver);
+                let receiver_keys = collect_receiver_keys(package_name, &receiver);
                 for f in i.functions() {
                     let Some(method_tok) = f.lident() else {
                         continue;
@@ -443,7 +439,7 @@ fn index_source_file_symbols(
                         continue;
                     };
                     let mut type_names = Vec::new();
-                    add_name_variants(&mut type_names, &package_name, &type_tok.to_string());
+                    add_name_variants(&mut type_names, package_name, &type_tok.to_string());
                     for tn in type_names.iter() {
                         index.add_type(
                             tn.clone(),
@@ -455,7 +451,7 @@ fn index_source_file_symbols(
                     }
                 } else if let Some(name_tok) = ex.lident() {
                     let mut names = Vec::new();
-                    add_name_variants(&mut names, &package_name, &name_tok.to_string());
+                    add_name_variants(&mut names, package_name, &name_tok.to_string());
                     for name in names {
                         index.add_value(
                             name,
@@ -622,7 +618,7 @@ fn index_package_symbols_named(
             fs::read_to_string(file)
                 .map_err(|e| format!("failed to read {}: {}", file.display(), e))?
         };
-        index_source_file_symbols(index, file, &src)?;
+        index_source_file_symbols(index, package_name, file, &src)?;
     }
 
     Ok(())
@@ -635,5 +631,5 @@ fn index_builtin_symbols(index: &mut ProjectSymbolIndex) -> Result<(), String> {
     let Ok(src) = fs::read_to_string(&builtin_path) else {
         return Ok(());
     };
-    index_source_file_symbols(index, &builtin_path, &src)
+    index_source_file_symbols(index, BUILTIN_PACKAGE, &builtin_path, &src)
 }

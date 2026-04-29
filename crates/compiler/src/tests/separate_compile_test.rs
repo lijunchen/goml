@@ -97,7 +97,7 @@ fn link_rejects_interface_hash_mismatch() -> anyhow::Result<()> {
     std::fs::write(
         &lib_path,
         r#"
-package Lib;
+
 
 fn foo() -> int32 {
     1
@@ -125,8 +125,6 @@ fn foo() -> int32 {
         &main_path,
         format!(
             r#"
-package {ROOT_PACKAGE};
-
 use Lib;
 
 fn main() -> unit {{
@@ -154,7 +152,7 @@ fn main() -> unit {{
     std::fs::write(
         &lib_path,
         r#"
-package Lib;
+
 
 fn foo() -> int32 {
     1

@@ -572,9 +572,7 @@ entry = "{DEFAULT_ENTRY_FILE}"
 
 fn render_main_gom() -> String {
     format!(
-        r#"package {ROOT_PACKAGE};
-
-use {DEFAULT_LIB_PACKAGE};
+        r#"use {DEFAULT_LIB_PACKAGE};
 
 fn {ENTRY_FUNCTION}() -> unit {{
     string_println({DEFAULT_LIB_PACKAGE}::message())
@@ -593,9 +591,7 @@ name = "{DEFAULT_LIB_PACKAGE}"
 
 fn render_lib_gom() -> String {
     format!(
-        r#"package {DEFAULT_LIB_PACKAGE};
-
-fn message() -> string {{
+        r#"fn message() -> string {{
     "hello from lib"
 }}
 "#

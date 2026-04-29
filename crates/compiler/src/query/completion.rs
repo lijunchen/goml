@@ -26,10 +26,10 @@ use super::{
 
 const COMPLETION_PLACEHOLDER: &str = "completion_placeholder";
 const VALUE_COMPLETION_KEYWORDS: &[&str] = &[
-    "array", "bool", "char", "dyn", "else", "enum", "extern", "false", "float32", "float64", "fn",
-    "for", "go", "if", "impl", "import", "in", "int8", "int16", "int32", "int64", "let", "match",
-    "package", "return", "string", "struct", "trait", "true", "type", "uint8", "uint16", "uint32",
-    "uint64", "unit", "use", "while", "_",
+    "array", "bool", "char", "crate", "dyn", "else", "enum", "extern", "false", "float32",
+    "float64", "fn", "for", "go", "if", "impl", "in", "int8", "int16", "int32", "int64", "let",
+    "match", "mod", "pub", "return", "string", "struct", "super", "trait", "true", "type", "uint8",
+    "uint16", "uint32", "uint64", "unit", "use", "while", "_",
 ];
 
 #[derive(Debug, Clone)]

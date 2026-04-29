@@ -100,8 +100,6 @@ fn cli_check_build_link_single_package() -> anyhow::Result<()> {
         &main_gom,
         &format!(
             r#"
-package {ROOT_PACKAGE};
-
 fn main() -> unit {{
     string_println("ok")
 }}
@@ -170,7 +168,7 @@ fn cli_check_build_link_with_dep() -> anyhow::Result<()> {
     write_file(
         &lib_gom,
         r#"
-package Lib;
+
 
 fn msg() -> string {
     "hi"
@@ -183,8 +181,6 @@ fn msg() -> string {
         &main_gom,
         &format!(
             r#"
-package {ROOT_PACKAGE};
-
 use Lib;
 
 fn main() -> unit {{
@@ -263,7 +259,7 @@ fn cli_check_build_link_rejects_hash_mismatch() -> anyhow::Result<()> {
     write_file(
         &lib_gom_v1,
         r#"
-package Lib;
+
 
 fn msg() -> string {
     "v1"
@@ -275,7 +271,7 @@ fn msg() -> string {
     write_file(
         &lib_gom_v2,
         r#"
-package Lib;
+
 
 fn msg() -> string {
     "v2"
@@ -292,8 +288,6 @@ fn extra() -> int32 {
         &main_gom,
         &format!(
             r#"
-package {ROOT_PACKAGE};
-
 use Lib;
 
 fn main() -> unit {{
@@ -369,8 +363,6 @@ fn cli_check_rejects_interface_directory_path() -> anyhow::Result<()> {
         &main_gom,
         &format!(
             r#"
-package {ROOT_PACKAGE};
-
 use Lib;
 
 fn main() -> unit {{
