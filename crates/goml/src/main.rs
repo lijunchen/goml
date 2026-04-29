@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap};
 use std::ffi::OsString;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -91,6 +91,9 @@ enum CompilerCommands {
     Check(PackageCommandArgs),
     Build(PackageCommandArgs),
     Link(LinkArgs),
+    CheckCrate(CrateCommandArgs),
+    BuildCrate(CrateCommandArgs),
+    LinkCrates(LinkCratesArgs),
     RunSingle(RunArgs),
 }
 
@@ -129,6 +132,26 @@ struct PackageCommandArgs {
 
 #[derive(Args, Debug)]
 struct LinkArgs {
+    #[arg(long, required = true, num_args = 1..)]
+    input: Vec<PathBuf>,
+    #[arg(long)]
+    output: PathBuf,
+}
+
+#[derive(Args, Debug)]
+struct CrateCommandArgs {
+    #[arg(long = "crate-dir", default_value = ".")]
+    crate_dir: PathBuf,
+    #[arg(long = "interface-path", value_name = "INTERFACE_FILE")]
+    interface_path: Vec<PathBuf>,
+    #[arg(long)]
+    output: PathBuf,
+}
+
+#[derive(Args, Debug)]
+struct LinkCratesArgs {
+    #[arg(long = "root-crate")]
+    root_crate: String,
     #[arg(long, required = true, num_args = 1..)]
     input: Vec<PathBuf>,
     #[arg(long)]
@@ -192,22 +215,33 @@ struct LinkOptions {
     output: PathBuf,
 }
 
-struct ProjectContext {
-    crate_unit: compiler::pipeline::modules::CrateUnit,
-    module_dir: PathBuf,
-    entry_path: PathBuf,
-    kind: CrateKind,
-    dependencies: BTreeMap<String, String>,
-}
-
-struct PackageCompilerCommand {
-    package: String,
-    input_files: Vec<PathBuf>,
+struct CrateCommandOptions {
+    crate_dir: PathBuf,
     interface_files: Vec<PathBuf>,
     output: PathBuf,
 }
 
-struct LinkCompilerCommand {
+struct LinkCratesOptions {
+    root_crate: String,
+    input_cores: Vec<PathBuf>,
+    output: PathBuf,
+}
+
+struct ProjectContext {
+    crate_unit: compiler::pipeline::modules::CrateUnit,
+    module_dir: PathBuf,
+    kind: CrateKind,
+    dependencies: BTreeMap<String, String>,
+}
+
+struct CrateCompilerCommand {
+    crate_dir: PathBuf,
+    interface_files: Vec<PathBuf>,
+    output: PathBuf,
+}
+
+struct LinkCratesCompilerCommand {
+    root_crate: String,
     input_cores: Vec<PathBuf>,
     output: PathBuf,
 }
@@ -223,20 +257,22 @@ struct ExternalArtifactsPlan {
 }
 
 enum PlannedCompilerCommand {
-    Check(PackageCompilerCommand),
-    Build(PackageCompilerCommand),
-    Link(LinkCompilerCommand),
+    CheckCrate(CrateCompilerCommand),
+    BuildCrate(CrateCompilerCommand),
+    LinkCrates(LinkCratesCompilerCommand),
 }
 
 impl PlannedCompilerCommand {
     fn to_args(&self) -> Vec<OsString> {
         match self {
-            PlannedCompilerCommand::Check(cmd) => package_command_args("check", cmd),
-            PlannedCompilerCommand::Build(cmd) => package_command_args("build", cmd),
-            PlannedCompilerCommand::Link(cmd) => {
+            PlannedCompilerCommand::CheckCrate(cmd) => crate_command_args("check-crate", cmd),
+            PlannedCompilerCommand::BuildCrate(cmd) => crate_command_args("build-crate", cmd),
+            PlannedCompilerCommand::LinkCrates(cmd) => {
                 let mut args = vec![
                     OsString::from("compiler"),
-                    OsString::from("link"),
+                    OsString::from("link-crates"),
+                    OsString::from("--root-crate"),
+                    OsString::from(&cmd.root_crate),
                     OsString::from("--input"),
                 ];
                 args.extend(
@@ -260,17 +296,13 @@ impl PlannedCompilerCommand {
     }
 }
 
-fn package_command_args(kind: &str, cmd: &PackageCompilerCommand) -> Vec<OsString> {
+fn crate_command_args(kind: &str, cmd: &CrateCompilerCommand) -> Vec<OsString> {
     let mut args = vec![
         OsString::from("compiler"),
         OsString::from(kind),
-        OsString::from("--package"),
-        OsString::from(&cmd.package),
+        OsString::from("--crate-dir"),
+        cmd.crate_dir.clone().into_os_string(),
     ];
-    for input in cmd.input_files.iter() {
-        args.push(OsString::from("--input"));
-        args.push(input.clone().into_os_string());
-    }
     for interface in cmd.interface_files.iter() {
         args.push(OsString::from("--interface-path"));
         args.push(interface.clone().into_os_string());
@@ -690,6 +722,30 @@ fn execute_compiler_command(command: CompilerCommands) -> anyhow::Result<()> {
             };
             execute_compiler_link(options)
         }
+        CompilerCommands::CheckCrate(args) => {
+            let options = CrateCommandOptions {
+                crate_dir: args.crate_dir,
+                interface_files: args.interface_path,
+                output: args.output,
+            };
+            execute_compiler_check_crate(options)
+        }
+        CompilerCommands::BuildCrate(args) => {
+            let options = CrateCommandOptions {
+                crate_dir: args.crate_dir,
+                interface_files: args.interface_path,
+                output: args.output,
+            };
+            execute_compiler_build_crate(options)
+        }
+        CompilerCommands::LinkCrates(args) => {
+            let options = LinkCratesOptions {
+                root_crate: args.root_crate,
+                input_cores: args.input,
+                output: args.output,
+            };
+            execute_compiler_link_crates(options)
+        }
     }
 }
 
@@ -820,6 +876,47 @@ fn execute_compiler_link(options: LinkOptions) -> anyhow::Result<()> {
     Ok(())
 }
 
+fn execute_compiler_check_crate(options: CrateCommandOptions) -> anyhow::Result<()> {
+    let crate_unit = compiler::pipeline::modules::discover_crate_from_dir(&options.crate_dir)
+        .map_err(|err| anyhow!("crate module discovery failed: {:?}", err))?;
+    let unit =
+        compiler::pipeline::separate::check_crate(compiler::pipeline::separate::CrateInputs {
+            crate_unit,
+            interface_files: options.interface_files,
+        })
+        .map_err(|err| anyhow!("check-crate failed: {:?}", err))?;
+    write_json(
+        &options.output.with_extension("interface"),
+        serde_json::to_string_pretty(&unit)?,
+    )
+}
+
+fn execute_compiler_build_crate(options: CrateCommandOptions) -> anyhow::Result<()> {
+    let crate_unit = compiler::pipeline::modules::discover_crate_from_dir(&options.crate_dir)
+        .map_err(|err| anyhow!("crate module discovery failed: {:?}", err))?;
+    let unit =
+        compiler::pipeline::separate::build_crate(compiler::pipeline::separate::CrateInputs {
+            crate_unit,
+            interface_files: options.interface_files,
+        })
+        .map_err(|err| anyhow!("build-crate failed: {:?}", err))?;
+    write_core_unit(&options.output, &unit)
+}
+
+fn execute_compiler_link_crates(options: LinkCratesOptions) -> anyhow::Result<()> {
+    let mut units = Vec::new();
+    for path in options.input_cores {
+        let unit = compiler::pipeline::separate::read_core(&path)
+            .map_err(|err| anyhow!("link-crates failed: {:?} ({})", err, path.display()))?;
+        units.push(unit);
+    }
+
+    let linked = compiler::pipeline::separate::link_crates(&options.root_crate, units)
+        .map_err(|err| anyhow!("link-crates failed: {:?}", err))?;
+    let go_source = linked.go.to_pretty(&linked.goenv, PRETTY_WIDTH);
+    write_go_file(&options.output, go_source)
+}
+
 fn execute_project_check(args: ProjectCommandArgs) -> anyhow::Result<()> {
     let project = load_project_from_cwd()?;
     if args.dry_run {
@@ -846,124 +943,36 @@ fn execute_project_build(args: ProjectCommandArgs) -> anyhow::Result<()> {
 
 fn build_project_check_plan(project: &ProjectContext) -> anyhow::Result<ProjectCommandPlan> {
     let external = build_external_artifacts_plan(project, PROJECT_CHECK_OUTPUT_DIR)?;
-    let external_imports = external.artifacts.external_imports();
-    let mut graph = compiler::pipeline::packages::discover_packages_with_external_imports(
-        &project.module_dir,
-        Some(&project.entry_path),
-        None,
-        &external_imports,
-    )
-    .map_err(|err| anyhow!("project check failed: {:?}", err))?;
-    external
-        .artifacts
-        .augment_graph(&mut graph)
-        .map_err(anyhow::Error::msg)?;
-    let order = compiler::pipeline::packages::topo_sort_packages(&graph)
-        .map_err(|err| anyhow!("project check failed: {:?}", err))?;
-
-    let artifact_outputs =
-        package_artifact_outputs(&graph, &project.module_dir, PROJECT_CHECK_OUTPUT_DIR)?;
-    let mut commands = Vec::new();
-    let mut interface_outputs = HashMap::new();
-
-    for package_name in order.iter() {
-        let package = graph
-            .packages
-            .get(package_name)
-            .ok_or_else(|| anyhow!("project check failed: missing package {}", package_name))?;
-        let output_base = artifact_outputs.get(package_name).cloned().ok_or_else(|| {
-            anyhow!(
-                "project check failed: missing artifact output for package {}",
-                package_name
-            )
-        })?;
-        let interface_files = package_interface_inputs(
-            &graph,
-            package_name,
-            &package.imports,
-            &interface_outputs,
-            &external.interface_outputs,
-            "project check",
-        )?;
-        commands.push(PlannedCompilerCommand::Check(PackageCompilerCommand {
-            package: package_name.clone(),
-            input_files: sorted_package_inputs(&project.module_dir, package),
-            interface_files,
-            output: output_base.clone(),
-        }));
-        interface_outputs.insert(
-            package_name.clone(),
-            output_base.with_extension("interface"),
-        );
-    }
-
-    Ok(ProjectCommandPlan { commands })
+    Ok(ProjectCommandPlan {
+        commands: vec![PlannedCompilerCommand::CheckCrate(CrateCompilerCommand {
+            crate_dir: PathBuf::from("."),
+            interface_files: unique_interface_paths(&external.interface_outputs),
+            output: project_crate_output_base(project, PROJECT_CHECK_OUTPUT_DIR),
+        })],
+    })
 }
 
 fn build_project_build_plan(project: &ProjectContext) -> anyhow::Result<ProjectCommandPlan> {
     let external = build_external_artifacts_plan(project, PROJECT_BUILD_OUTPUT_DIR)?;
-    let external_imports = external.artifacts.external_imports();
-    let mut graph = compiler::pipeline::packages::discover_packages_with_external_imports(
-        &project.module_dir,
-        Some(&project.entry_path),
-        None,
-        &external_imports,
-    )
-    .map_err(|err| anyhow!("project build failed: {:?}", err))?;
-    external
-        .artifacts
-        .augment_graph(&mut graph)
-        .map_err(anyhow::Error::msg)?;
-    let order = compiler::pipeline::packages::topo_sort_packages(&graph)
-        .map_err(|err| anyhow!("project build failed: {:?}", err))?;
-
-    let artifact_outputs =
-        package_artifact_outputs(&graph, &project.module_dir, PROJECT_BUILD_OUTPUT_DIR)?;
-    let mut commands = Vec::new();
-    let mut interface_outputs = HashMap::new();
-    let mut core_outputs = Vec::new();
-
-    for package_name in order.iter() {
-        let package = graph
-            .packages
-            .get(package_name)
-            .ok_or_else(|| anyhow!("project build failed: missing package {}", package_name))?;
-        let output_base = artifact_outputs.get(package_name).cloned().ok_or_else(|| {
-            anyhow!(
-                "project build failed: missing artifact output for package {}",
-                package_name
-            )
-        })?;
-        let interface_files = package_interface_inputs(
-            &graph,
-            package_name,
-            &package.imports,
-            &interface_outputs,
-            &external.interface_outputs,
-            "project build",
-        )?;
-        commands.push(PlannedCompilerCommand::Build(PackageCompilerCommand {
-            package: package_name.clone(),
-            input_files: sorted_package_inputs(&project.module_dir, package),
-            interface_files,
-            output: output_base.clone(),
-        }));
-        interface_outputs.insert(
-            package_name.clone(),
-            output_base.with_extension("interface"),
-        );
-        core_outputs.push(output_base.with_extension("core"));
-    }
+    let output = project_crate_output_base(project, PROJECT_BUILD_OUTPUT_DIR);
+    let mut commands = vec![PlannedCompilerCommand::BuildCrate(CrateCompilerCommand {
+        crate_dir: PathBuf::from("."),
+        interface_files: unique_interface_paths(&external.interface_outputs),
+        output: output.clone(),
+    })];
 
     if project.kind == CrateKind::Bin {
-        let mut external_cores = external.core_outputs.values().cloned().collect::<Vec<_>>();
-        external_cores.sort();
-        core_outputs.splice(0..0, external_cores);
-
-        commands.push(PlannedCompilerCommand::Link(LinkCompilerCommand {
-            input_cores: core_outputs,
-            output: PathBuf::from(PROJECT_GO_OUTPUT),
-        }));
+        let mut input_cores = external.core_outputs.values().cloned().collect::<Vec<_>>();
+        input_cores.sort();
+        input_cores.dedup();
+        input_cores.push(output.with_extension("core"));
+        commands.push(PlannedCompilerCommand::LinkCrates(
+            LinkCratesCompilerCommand {
+                root_crate: project.crate_unit.config.name.clone(),
+                input_cores,
+                output: PathBuf::from(PROJECT_GO_OUTPUT),
+            },
+        ));
     }
 
     Ok(ProjectCommandPlan { commands })
@@ -1128,188 +1137,6 @@ fn write_json(path: &Path, json: String) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn package_artifact_outputs(
-    graph: &compiler::pipeline::packages::PackageGraph,
-    module_dir: &Path,
-    output_root: &str,
-) -> anyhow::Result<HashMap<String, PathBuf>> {
-    let mut names: Vec<String> = graph.packages.keys().cloned().collect();
-    names.sort();
-
-    let mut outputs = HashMap::new();
-    let mut seen = HashMap::new();
-
-    for package_name in names {
-        let base = package_artifact_base(graph, module_dir, &package_name)?;
-        let output = PathBuf::from(output_root).join(base);
-
-        if let Some(existing) = seen.insert(output.clone(), package_name.clone()) {
-            bail!(
-                "artifact path conflict in {}: packages {} and {} both map to {}",
-                output_root,
-                existing,
-                package_name,
-                output.display()
-            );
-        }
-
-        outputs.insert(package_name, output);
-    }
-
-    Ok(outputs)
-}
-
-fn package_artifact_base(
-    graph: &compiler::pipeline::packages::PackageGraph,
-    module_dir: &Path,
-    package_name: &str,
-) -> anyhow::Result<PathBuf> {
-    let package_dir = graph
-        .package_dirs
-        .get(package_name)
-        .ok_or_else(|| anyhow!("missing package dir for {}", package_name))?;
-    let package = graph
-        .packages
-        .get(package_name)
-        .ok_or_else(|| anyhow!("missing package {}", package_name))?;
-
-    let base = relative_to_module(module_dir, package_dir);
-    if package_dir.is_file() {
-        let mut base = base;
-        base.set_extension("");
-        if base.as_os_str().is_empty() {
-            bail!(
-                "package {} resolved to empty artifact path from {}",
-                package_name,
-                package_dir.display()
-            );
-        }
-        return Ok(base);
-    }
-
-    if !base.as_os_str().is_empty() {
-        return Ok(base.join(&package.name));
-    }
-
-    let entry_relative = package_entry_relative_path(package, package_dir)?;
-    let stem = entry_relative
-        .file_stem()
-        .ok_or_else(|| anyhow!("invalid root package entry {}", entry_relative.display()))?;
-    let base = PathBuf::from(stem);
-
-    if base.as_os_str().is_empty() {
-        bail!(
-            "package {} resolved to empty artifact path from {}",
-            package_name,
-            entry_relative.display()
-        );
-    }
-
-    Ok(base)
-}
-
-fn package_entry_relative_path(
-    package: &compiler::pipeline::packages::PackageUnit,
-    package_dir: &Path,
-) -> anyhow::Result<PathBuf> {
-    let default_entry = package_dir.join("lib.gom");
-    if default_entry.exists() {
-        return Ok(PathBuf::from("lib.gom"));
-    }
-
-    let mut files: Vec<PathBuf> = package.files.iter().map(|file| file.path.clone()).collect();
-    files.sort();
-
-    if files.len() == 1 {
-        return files[0]
-            .strip_prefix(package_dir)
-            .map(Path::to_path_buf)
-            .map_err(|_| {
-                anyhow!(
-                    "failed to compute entry path for package {} from {}",
-                    package.name,
-                    files[0].display()
-                )
-            });
-    }
-
-    bail!(
-        "package {} in {} has multiple .gom files and no goml.toml entry",
-        package.name,
-        package_dir.display()
-    )
-}
-
-fn package_interface_inputs(
-    graph: &compiler::pipeline::packages::PackageGraph,
-    package_name: &str,
-    imports: &HashSet<String>,
-    interface_outputs: &HashMap<String, PathBuf>,
-    external_interfaces: &HashMap<String, PathBuf>,
-    stage: &str,
-) -> anyhow::Result<Vec<PathBuf>> {
-    let mut deps: Vec<String> = imports.iter().cloned().collect();
-    deps.sort();
-    deps.dedup();
-
-    let mut outputs = Vec::new();
-    let mut seen = HashSet::new();
-    for dep in deps {
-        if dep == compiler::package_names::BUILTIN_PACKAGE || dep == package_name {
-            continue;
-        }
-        if let Some(dep_interface) = interface_outputs.get(&dep) {
-            if seen.insert(dep_interface.clone()) {
-                outputs.push(dep_interface.clone());
-            }
-            continue;
-        }
-        if let Some(dep_interface) = external_interfaces.get(&dep) {
-            if seen.insert(dep_interface.clone()) {
-                outputs.push(dep_interface.clone());
-            }
-            continue;
-        }
-        if graph.external_root_packages.contains(&dep) {
-            return Err(anyhow!(
-                "{} failed: missing external interface artifact for dependency {} of package {}",
-                stage,
-                dep,
-                package_name
-            ));
-        }
-        if !graph.packages.contains_key(&dep) {
-            continue;
-        }
-        return Err(anyhow!(
-            "{} failed: missing interface artifact for dependency {} of package {}",
-            stage,
-            dep,
-            package_name
-        ));
-    }
-    Ok(outputs)
-}
-
-fn sorted_package_inputs(
-    module_dir: &Path,
-    package: &compiler::pipeline::packages::PackageUnit,
-) -> Vec<PathBuf> {
-    let mut inputs: Vec<PathBuf> = package
-        .files
-        .iter()
-        .map(|file| relative_to_module(module_dir, &file.path))
-        .collect();
-    inputs.sort();
-    inputs
-}
-
-fn relative_to_module(module_dir: &Path, path: &Path) -> PathBuf {
-    path.strip_prefix(module_dir)
-        .map(Path::to_path_buf)
-        .unwrap_or_else(|_| path.to_path_buf())
-}
-
 fn execute_planned_commands(
     module_dir: &Path,
     commands: Vec<PlannedCompilerCommand>,
@@ -1356,10 +1183,8 @@ fn load_project_from_cwd() -> anyhow::Result<ProjectContext> {
         let crate_unit = compiler::pipeline::modules::discover_crate_from_dir(&crate_dir)
             .map_err(|err| anyhow!("crate module discovery failed: {:?}", err))?;
         let kind = project_kind(&crate_unit);
-        let entry_path = crate_unit.root_file.clone();
         return Ok(ProjectContext {
             crate_unit,
-            entry_path,
             module_dir: crate_dir,
             kind,
             dependencies: manifest.dependency_versions(),
