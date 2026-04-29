@@ -653,7 +653,7 @@ fn main() {
     }
 
     #[test]
-    fn module_project011_math_package_no_missing_dir_errors() {
+    fn module_project011_math_module_no_missing_dir_errors() {
         check_module_file_diagnostics(
             "project011_complex_dependency_graph",
             "math/mod.gom",
@@ -662,7 +662,7 @@ fn main() {
     }
 
     #[test]
-    fn module_project011_pipeline_package_no_missing_dir_errors() {
+    fn module_project011_pipeline_module_no_missing_dir_errors() {
         check_module_file_diagnostics(
             "project011_complex_dependency_graph",
             "pipeline/mod.gom",
@@ -1246,7 +1246,7 @@ fn main() {
     }
 
     #[test]
-    fn value_completion_suggests_imported_package_names() {
+    fn value_completion_suggests_imported_namespace_names() {
         let dir = tempdir().unwrap();
         let root = dir.path();
 
