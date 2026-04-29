@@ -2,7 +2,6 @@ use std::path::PathBuf;
 
 use expect_test::expect_file;
 
-use crate::package_names::ROOT_PACKAGE;
 use crate::pipeline::{modules, separate};
 
 #[test]
@@ -49,7 +48,7 @@ fn link_rejects_interface_hash_mismatch() -> anyhow::Result<()> {
     let iface_dir = dir.path().join("artifacts");
     std::fs::create_dir_all(&iface_dir)?;
 
-    let lib_path = dir.path().join("lib.gom");
+    let lib_path = dir.path().join("Lib.gom");
     std::fs::write(
         &lib_path,
         r#"
@@ -61,18 +60,20 @@ pub fn foo() -> int32 {
 "#,
     )?;
 
-    let lib_unit_v1 = separate::build_package(separate::PackageInputs {
-        package: "Lib".to_string(),
-        input_files: vec![lib_path.clone()],
+    let lib_crate_v1 = modules::discover_crate_from_file(&lib_path)
+        .map_err(|err| anyhow::anyhow!("failed to discover Lib crate: {:?}", err))?;
+    let lib_crate = lib_crate_v1.config.name.clone();
+    let lib_unit_v1 = separate::build_crate(separate::CrateInputs {
+        crate_unit: lib_crate_v1,
         interface_files: vec![],
     })
     .map_err(|err| anyhow::anyhow!("build Lib failed: {:?}", err))?;
     std::fs::write(
-        iface_dir.join("Lib.interface"),
+        iface_dir.join(format!("{lib_crate}.interface")),
         serde_json::to_string_pretty(&lib_unit_v1.interface)?,
     )?;
     std::fs::write(
-        iface_dir.join("Lib.core"),
+        iface_dir.join(format!("{lib_crate}.core")),
         serde_json::to_string_pretty(&lib_unit_v1)?,
     )?;
 
@@ -88,18 +89,20 @@ fn main() -> unit {
 "#,
     )?;
 
-    let main_unit = separate::build_package(separate::PackageInputs {
-        package: ROOT_PACKAGE.to_string(),
-        input_files: vec![main_path.clone()],
-        interface_files: vec![iface_dir.join("Lib.interface")],
+    let main_crate = modules::discover_crate_from_file(&main_path)
+        .map_err(|err| anyhow::anyhow!("failed to discover main crate: {:?}", err))?;
+    let root_crate = main_crate.config.name.clone();
+    let main_unit = separate::build_crate(separate::CrateInputs {
+        crate_unit: main_crate,
+        interface_files: vec![iface_dir.join(format!("{lib_crate}.interface"))],
     })
     .map_err(|err| anyhow::anyhow!("build main failed: {:?}", err))?;
     std::fs::write(
-        iface_dir.join(format!("{ROOT_PACKAGE}.interface")),
+        iface_dir.join(format!("{root_crate}.interface")),
         serde_json::to_string_pretty(&main_unit.interface)?,
     )?;
     std::fs::write(
-        iface_dir.join(format!("{ROOT_PACKAGE}.core")),
+        iface_dir.join(format!("{root_crate}.core")),
         serde_json::to_string_pretty(&main_unit)?,
     )?;
 
@@ -118,27 +121,28 @@ pub fn bar() -> int32 {
 "#,
     )?;
 
-    let lib_unit_v2 = separate::build_package(separate::PackageInputs {
-        package: "Lib".to_string(),
-        input_files: vec![lib_path],
+    let lib_crate_v2 = modules::discover_crate_from_file(&lib_path)
+        .map_err(|err| anyhow::anyhow!("failed to rediscover Lib crate: {:?}", err))?;
+    let lib_unit_v2 = separate::build_crate(separate::CrateInputs {
+        crate_unit: lib_crate_v2,
         interface_files: vec![],
     })
     .map_err(|err| anyhow::anyhow!("rebuild Lib failed: {:?}", err))?;
     std::fs::write(
-        iface_dir.join("Lib.interface"),
+        iface_dir.join(format!("{lib_crate}.interface")),
         serde_json::to_string_pretty(&lib_unit_v2.interface)?,
     )?;
     std::fs::write(
-        iface_dir.join("Lib.core"),
+        iface_dir.join(format!("{lib_crate}.core")),
         serde_json::to_string_pretty(&lib_unit_v2)?,
     )?;
 
-    let main_core = separate::read_core(&iface_dir.join(format!("{ROOT_PACKAGE}.core")))
+    let main_core = separate::read_core(&iface_dir.join(format!("{root_crate}.core")))
         .map_err(|err| anyhow::anyhow!("failed to read main.core: {:?}", err))?;
-    let lib_core = separate::read_core(&iface_dir.join("Lib.core"))
+    let lib_core = separate::read_core(&iface_dir.join(format!("{lib_crate}.core")))
         .map_err(|err| anyhow::anyhow!("failed to read Lib.core: {:?}", err))?;
 
-    let err = separate::link_cores(vec![main_core, lib_core]).unwrap_err();
+    let err = separate::link_crates(&root_crate, vec![main_core, lib_core]).unwrap_err();
     let msg = format!("{:?}", err);
     assert!(msg.contains("expects interface_hash"));
 
