@@ -444,6 +444,65 @@ root = "lib.gom"
     }
 
     #[test]
+    fn mvs_root_minimum_overrides_transitive_minimum() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::create_dir_all(dir.path().join("alice/a/1.0.0")).unwrap();
+        std::fs::create_dir_all(dir.path().join("alice/x/1.0.0")).unwrap();
+        std::fs::create_dir_all(dir.path().join("alice/x/2.0.0")).unwrap();
+        std::fs::write(
+            dir.path().join("index.toml"),
+            r#"[modules."alice::a"]
+latest = "1.0.0"
+versions = ["1.0.0"]
+
+[modules."alice::x"]
+latest = "2.0.0"
+versions = ["1.0.0", "2.0.0"]
+"#,
+        )
+        .unwrap();
+        std::fs::write(
+            dir.path().join("alice/a/1.0.0/goml.toml"),
+            r#"[crate]
+name = "a"
+kind = "lib"
+root = "lib.gom"
+
+[dependencies]
+x = { package = "alice::x", version = "1.0.0" }
+"#,
+        )
+        .unwrap();
+        for version in ["1.0.0", "2.0.0"] {
+            std::fs::write(
+                dir.path().join(format!("alice/x/{version}/goml.toml")),
+                r#"[crate]
+name = "x"
+kind = "lib"
+root = "lib.gom"
+"#,
+            )
+            .unwrap();
+        }
+
+        let registry = Registry::load(dir.path()).unwrap();
+        let mut deps = BTreeMap::new();
+        deps.insert("alice::a".to_string(), "1.0.0".to_string());
+        deps.insert("alice::x".to_string(), "2.0.0".to_string());
+        let resolved = resolve_dependencies(&registry, &deps).unwrap();
+
+        assert_eq!(
+            resolved
+                .modules
+                .get(&ModuleCoord::parse("alice::x").unwrap())
+                .unwrap()
+                .version
+                .display(),
+            "2.0.0"
+        );
+    }
+
+    #[test]
     fn validates_index_consistency() {
         let dir = tempfile::tempdir().unwrap();
         sample_registry(dir.path());
