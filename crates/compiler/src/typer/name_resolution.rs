@@ -50,7 +50,7 @@ struct ResolutionContext<'a> {
     builtin_names: &'a HashMap<String, hir::BuiltinId>,
     def_names: &'a HashMap<String, hir::DefId>,
     deps: &'a HashMap<String, interface::CrateInterface>,
-    current_package: &'a str,
+    current_namespace: &'a str,
     current_module_path: &'a [String],
     crate_paths_include_package: bool,
     imports: &'a HashSet<String>,
@@ -300,7 +300,7 @@ impl TraitIndex {
 
 impl ResolutionContext<'_> {
     fn namespace_allowed(&self, namespace: &str) -> bool {
-        namespace == self.current_package
+        namespace == self.current_namespace
             || namespace == BUILTIN_PACKAGE
             || self.imports.contains(namespace)
     }
@@ -409,7 +409,7 @@ fn use_decl_import(
 
 fn use_decl_value_import(
     decl: &ast::UseDecl,
-    current_package: &str,
+    current_namespace: &str,
     current_module_path: &[String],
     crate_paths_include_package: bool,
     deps: &HashMap<String, interface::CrateInterface>,
@@ -418,7 +418,7 @@ fn use_decl_value_import(
     path_value_import(
         &decl.path,
         decl.alias.as_ref(),
-        current_package,
+        current_namespace,
         current_module_path,
         crate_paths_include_package,
         deps,
@@ -429,7 +429,7 @@ fn use_decl_value_import(
 fn path_value_import(
     path: &ast::Path,
     alias: Option<&ast::AstIdent>,
-    current_package: &str,
+    current_namespace: &str,
     current_module_path: &[String],
     crate_paths_include_package: bool,
     deps: &HashMap<String, interface::CrateInterface>,
@@ -445,7 +445,7 @@ fn path_value_import(
     }
     let full_name = path_resolution_display_in_module(
         path,
-        current_package,
+        current_namespace,
         current_module_path,
         crate_paths_include_package,
     );
@@ -455,11 +455,11 @@ fn path_value_import(
     let package = known_package_prefix_for_path_in_module(
         path,
         deps,
-        current_package,
+        current_namespace,
         current_module_path,
         crate_paths_include_package,
     );
-    if package == current_package || package == BUILTIN_PACKAGE {
+    if package == current_namespace || package == BUILTIN_PACKAGE {
         let id = def_names.get(&full_name).copied()?;
         return Some((
             imported_name,
@@ -484,7 +484,7 @@ fn path_value_import(
 
 fn file_use_value_imports(
     file: &ast::File,
-    current_package: &str,
+    current_namespace: &str,
     current_module_path: &[String],
     crate_paths_include_package: bool,
     deps: &HashMap<String, interface::CrateInterface>,
@@ -495,7 +495,7 @@ fn file_use_value_imports(
         .filter_map(|decl| {
             use_decl_value_import(
                 decl,
-                current_package,
+                current_namespace,
                 current_module_path,
                 crate_paths_include_package,
                 deps,
@@ -528,7 +528,7 @@ fn path_resolution_segments(path: &ast::Path) -> &[ast::PathSegment] {
 
 fn path_resolution_segments_in_module(
     path: &ast::Path,
-    current_package: &str,
+    current_namespace: &str,
     current_module_path: &[String],
     crate_paths_include_package: bool,
 ) -> Vec<String> {
@@ -539,17 +539,19 @@ fn path_resolution_segments_in_module(
             .is_some_and(|segment| segment.ident.0 == "crate");
     let mut prefix = match path.root() {
         ast::PathRoot::Crate => crate_prefix_segments(
-            current_package,
+            current_namespace,
             current_module_path,
             crate_paths_include_package,
         ),
         _ if has_crate_segment => crate_prefix_segments(
-            current_package,
+            current_namespace,
             current_module_path,
             crate_paths_include_package,
         ),
-        ast::PathRoot::Self_ => module_prefix_segments(current_package, current_module_path),
-        ast::PathRoot::Super => parent_module_prefix_segments(current_package, current_module_path),
+        ast::PathRoot::Self_ => module_prefix_segments(current_namespace, current_module_path),
+        ast::PathRoot::Super => {
+            parent_module_prefix_segments(current_namespace, current_module_path)
+        }
         ast::PathRoot::Relative | ast::PathRoot::Absolute => Vec::new(),
     };
     let segments = if has_crate_segment {
@@ -568,13 +570,13 @@ fn path_resolution_segments_in_module(
 
 fn path_resolution_display_in_module(
     path: &ast::Path,
-    current_package: &str,
+    current_namespace: &str,
     current_module_path: &[String],
     crate_paths_include_package: bool,
 ) -> String {
     path_resolution_segments_in_module(
         path,
-        current_package,
+        current_namespace,
         current_module_path,
         crate_paths_include_package,
     )
@@ -584,13 +586,13 @@ fn path_resolution_display_in_module(
 fn known_package_prefix_for_path_in_module(
     path: &ast::Path,
     deps: &HashMap<String, interface::CrateInterface>,
-    current_package: &str,
+    current_namespace: &str,
     current_module_path: &[String],
     crate_paths_include_package: bool,
 ) -> String {
     let segments = path_resolution_segments_in_module(
         path,
-        current_package,
+        current_namespace,
         current_module_path,
         crate_paths_include_package,
     );
@@ -599,14 +601,15 @@ fn known_package_prefix_for_path_in_module(
             path.root(),
             ast::PathRoot::Crate | ast::PathRoot::Self_ | ast::PathRoot::Super
         ) {
-            return current_package.to_string();
+            return current_namespace.to_string();
         }
         return segments.join("::");
     }
     let mut best = None;
     for end in 1..segments.len() {
         let package = segments[..end].join("::");
-        if package == current_package || package == BUILTIN_PACKAGE || deps.contains_key(&package) {
+        if package == current_namespace || package == BUILTIN_PACKAGE || deps.contains_key(&package)
+        {
             best = Some(package);
         }
     }
@@ -667,7 +670,7 @@ fn qualified_path_from_segments(segments: Vec<String>) -> hir::QualifiedPath {
 fn lower_type_path(
     path: &ast::Path,
     tparams: &HashSet<String>,
-    current_package: &str,
+    current_namespace: &str,
     current_module_path: &[String],
     crate_paths_include_package: bool,
     type_index: &TypeIndex,
@@ -686,10 +689,10 @@ fn lower_type_path(
         }
         let local = module_relative_def_name(current_module_path, &name);
         if (crate_paths_include_package || !current_module_path.is_empty())
-            && type_index.has_type(current_package, &local)
+            && type_index.has_type(current_namespace, &local)
         {
             return qualified_path_from_segments(full_def_segments(
-                current_package,
+                current_namespace,
                 current_module_path,
                 &name,
             ));
@@ -706,14 +709,14 @@ fn lower_type_path(
         ast::PathRoot::Crate | ast::PathRoot::Self_ | ast::PathRoot::Super => {
             qualified_path_from_segments(path_resolution_segments_in_module(
                 path,
-                current_package,
+                current_namespace,
                 current_module_path,
                 crate_paths_include_package,
             ))
         }
         _ if has_crate_segment => qualified_path_from_segments(path_resolution_segments_in_module(
             path,
-            current_package,
+            current_namespace,
             current_module_path,
             crate_paths_include_package,
         )),
@@ -753,12 +756,12 @@ impl NameResolution {
                 let variant = &last.0;
                 if let Some(enum_name) = ctx
                     .constructor_index
-                    .unique_enum_for_variant(ctx.current_package, variant)
+                    .unique_enum_for_variant(ctx.current_namespace, variant)
                 {
-                    Some(constructor_path(ctx.current_package, &enum_name, variant))
+                    Some(constructor_path(ctx.current_namespace, &enum_name, variant))
                 } else if ctx
                     .constructor_index
-                    .has_variant(ctx.current_package, variant)
+                    .has_variant(ctx.current_namespace, variant)
                 {
                     Some(hir::Path::from_ident(variant.clone()))
                 } else {
@@ -784,14 +787,14 @@ impl NameResolution {
                 } else {
                     let resolved_segments = path_resolution_segments_in_module(
                         path,
-                        ctx.current_package,
+                        ctx.current_namespace,
                         ctx.current_module_path,
                         ctx.crate_paths_include_package,
                     );
                     let enum_segments = &resolved_segments[..resolved_segments.len() - 1];
                     let enum_name = if enum_segments
                         .first()
-                        .is_some_and(|segment| segment == ctx.current_package)
+                        .is_some_and(|segment| segment == ctx.current_namespace)
                     {
                         enum_segments[1..].join("::")
                     } else {
@@ -803,11 +806,11 @@ impl NameResolution {
                 local_candidates.dedup();
                 for candidate in local_candidates {
                     if ctx.constructor_index.enum_has_variant(
-                        ctx.current_package,
+                        ctx.current_namespace,
                         &candidate,
                         variant,
                     ) {
-                        return Some(constructor_path(ctx.current_package, &candidate, variant));
+                        return Some(constructor_path(ctx.current_namespace, &candidate, variant));
                     }
                 }
                 if ctx
@@ -830,7 +833,7 @@ impl NameResolution {
                     if exists && !ctx.namespace_allowed(package) {
                         self.error(format!(
                             "namespace {} not imported in namespace {}",
-                            package, ctx.current_package
+                            package, ctx.current_namespace
                         ));
                         return None;
                     }
@@ -1142,7 +1145,7 @@ impl NameResolution {
                 builtin_names: &builtin_names,
                 def_names: &def_names,
                 deps,
-                current_package: package_name,
+                current_namespace: package_name,
                 current_module_path: &file.module_path,
                 crate_paths_include_package,
                 imports: &imports,
@@ -1368,7 +1371,7 @@ impl NameResolution {
                     self.lower_type_expr(
                         &param.1,
                         &tparams,
-                        ctx.current_package,
+                        ctx.current_namespace,
                         ctx.current_module_path,
                         ctx.crate_paths_include_package,
                         ctx.imports,
@@ -1398,7 +1401,7 @@ impl NameResolution {
                 self.lower_type_expr(
                     t,
                     &tparams,
-                    ctx.current_package,
+                    ctx.current_namespace,
                     ctx.current_module_path,
                     ctx.crate_paths_include_package,
                     ctx.imports,
@@ -1545,7 +1548,7 @@ impl NameResolution {
                         hir::NameRef::Local(local_id)
                     } else {
                         let full_name = full_def_name_in_module(
-                            ctx.current_package,
+                            ctx.current_namespace,
                             ctx.current_module_path,
                             name_str,
                         );
@@ -1562,7 +1565,7 @@ impl NameResolution {
                     let hint = match (&res, ctx.use_values.get(name_str)) {
                         (res, Some(imported)) if imported.res == *res => imported.hint.clone(),
                         (hir::NameRef::Def(_), _) => full_def_name_in_module(
-                            ctx.current_package,
+                            ctx.current_namespace,
                             ctx.current_module_path,
                             name_str,
                         ),
@@ -1581,35 +1584,35 @@ impl NameResolution {
                     let unresolved_path =
                         hir::Path::from_idents(path_resolution_segments_in_module(
                             path,
-                            ctx.current_package,
+                            ctx.current_namespace,
                             ctx.current_module_path,
                             ctx.crate_paths_include_package,
                         ));
                     let full_name = path_resolution_display_in_module(
                         path,
-                        ctx.current_package,
+                        ctx.current_namespace,
                         ctx.current_module_path,
                         ctx.crate_paths_include_package,
                     );
                     let package = known_package_prefix_for_path_in_module(
                         path,
                         ctx.deps,
-                        ctx.current_package,
+                        ctx.current_namespace,
                         ctx.current_module_path,
                         ctx.crate_paths_include_package,
                     );
-                    if package != ctx.current_package
+                    if package != ctx.current_namespace
                         && package != BUILTIN_PACKAGE
                         && ctx.deps.contains_key(&package)
                         && !ctx.imports.contains(&package)
                     {
                         self.error(format!(
                             "namespace {} not imported in namespace {}",
-                            package, ctx.current_package
+                            package, ctx.current_namespace
                         ));
                     }
 
-                    let res = if package == ctx.current_package || package == BUILTIN_PACKAGE {
+                    let res = if package == ctx.current_namespace || package == BUILTIN_PACKAGE {
                         ctx.def_names
                             .get(&full_name)
                             .copied()
@@ -1642,7 +1645,7 @@ impl NameResolution {
                         ),
                         hir::NameRef::Unresolved(_)
                             if path.len() == 2
-                                && (package == ctx.current_package
+                                && (package == ctx.current_namespace
                                     || package == BUILTIN_PACKAGE
                                     || ctx.deps.contains_key(&package)) =>
                         {
@@ -1812,7 +1815,7 @@ impl NameResolution {
                 let qualified = lower_type_path(
                     name,
                     &HashSet::new(),
-                    ctx.current_package,
+                    ctx.current_namespace,
                     ctx.current_module_path,
                     ctx.crate_paths_include_package,
                     ctx.type_index,
@@ -1822,7 +1825,7 @@ impl NameResolution {
                 {
                     self.error(format!(
                         "namespace {} not imported in namespace {}",
-                        package.0, ctx.current_package
+                        package.0, ctx.current_namespace
                     ));
                 }
                 self.alloc_expr_with_ptr(
@@ -2214,7 +2217,7 @@ impl NameResolution {
                 let qualified = lower_type_path(
                     name,
                     &HashSet::new(),
-                    ctx.current_package,
+                    ctx.current_namespace,
                     ctx.current_module_path,
                     ctx.crate_paths_include_package,
                     ctx.type_index,
@@ -2224,7 +2227,7 @@ impl NameResolution {
                 {
                     self.error(format!(
                         "namespace {} not imported in namespace {}",
-                        package.0, ctx.current_package
+                        package.0, ctx.current_namespace
                     ));
                 }
                 self.alloc_pat_with_ptr(
@@ -2253,7 +2256,7 @@ impl NameResolution {
         &mut self,
         ty: &ast::TypeExpr,
         tparams: &HashSet<String>,
-        current_package: &str,
+        current_namespace: &str,
         current_module_path: &[String],
         crate_paths_include_package: bool,
         imports: &HashSet<String>,
@@ -2281,7 +2284,7 @@ impl NameResolution {
                         self.lower_type_expr(
                             ty,
                             tparams,
-                            current_package,
+                            current_namespace,
                             current_module_path,
                             crate_paths_include_package,
                             imports,
@@ -2294,17 +2297,17 @@ impl NameResolution {
                 let qualified = lower_type_path(
                     path,
                     tparams,
-                    current_package,
+                    current_namespace,
                     current_module_path,
                     crate_paths_include_package,
                     type_index,
                 );
                 if let Some(package) = &qualified.package
-                    && !namespace_allowed(package.as_str(), current_package, imports)
+                    && !namespace_allowed(package.as_str(), current_namespace, imports)
                 {
                     self.error(format!(
                         "namespace {} not imported in namespace {}",
-                        package.0, current_package
+                        package.0, current_namespace
                     ));
                 }
                 hir::TypeExpr::TCon { path: qualified }
@@ -2313,17 +2316,17 @@ impl NameResolution {
                 let qualified = lower_type_path(
                     trait_path,
                     &HashSet::new(),
-                    current_package,
+                    current_namespace,
                     current_module_path,
                     crate_paths_include_package,
                     type_index,
                 );
                 if let Some(package) = &qualified.package
-                    && !namespace_allowed(package.as_str(), current_package, imports)
+                    && !namespace_allowed(package.as_str(), current_namespace, imports)
                 {
                     self.error(format!(
                         "namespace {} not imported in namespace {}",
-                        package.0, current_package
+                        package.0, current_namespace
                     ));
                 }
                 hir::TypeExpr::TDyn {
@@ -2334,7 +2337,7 @@ impl NameResolution {
                 ty: Box::new(self.lower_type_expr(
                     ty.as_ref(),
                     tparams,
-                    current_package,
+                    current_namespace,
                     current_module_path,
                     crate_paths_include_package,
                     imports,
@@ -2346,7 +2349,7 @@ impl NameResolution {
                         self.lower_type_expr(
                             arg,
                             tparams,
-                            current_package,
+                            current_namespace,
                             current_module_path,
                             crate_paths_include_package,
                             imports,
@@ -2360,7 +2363,7 @@ impl NameResolution {
                 elem: Box::new(self.lower_type_expr(
                     elem.as_ref(),
                     tparams,
-                    current_package,
+                    current_namespace,
                     current_module_path,
                     crate_paths_include_package,
                     imports,
@@ -2374,7 +2377,7 @@ impl NameResolution {
                         self.lower_type_expr(
                             param,
                             tparams,
-                            current_package,
+                            current_namespace,
                             current_module_path,
                             crate_paths_include_package,
                             imports,
@@ -2385,7 +2388,7 @@ impl NameResolution {
                 ret_ty: Box::new(self.lower_type_expr(
                     ret_ty.as_ref(),
                     tparams,
-                    current_package,
+                    current_namespace,
                     current_module_path,
                     crate_paths_include_package,
                     imports,
@@ -2398,14 +2401,14 @@ impl NameResolution {
     fn lower_enum_def(
         &mut self,
         def: &ast::EnumDef,
-        current_package: &str,
+        current_namespace: &str,
         current_module_path: &[String],
         crate_paths_include_package: bool,
         imports: &HashSet<String>,
         type_index: &TypeIndex,
     ) -> hir::EnumDef {
         let tparams = type_param_set(&def.generics);
-        let name = full_def_name_in_module(current_package, current_module_path, &def.name.0);
+        let name = full_def_name_in_module(current_namespace, current_module_path, &def.name.0);
         let variants = def
             .variants
             .iter()
@@ -2416,7 +2419,7 @@ impl NameResolution {
                         self.lower_type_expr(
                             ty,
                             &tparams,
-                            current_package,
+                            current_namespace,
                             current_module_path,
                             crate_paths_include_package,
                             imports,
@@ -2438,14 +2441,14 @@ impl NameResolution {
     fn lower_struct_def(
         &mut self,
         def: &ast::StructDef,
-        current_package: &str,
+        current_namespace: &str,
         current_module_path: &[String],
         crate_paths_include_package: bool,
         imports: &HashSet<String>,
         type_index: &TypeIndex,
     ) -> hir::StructDef {
         let tparams = type_param_set(&def.generics);
-        let name = full_def_name_in_module(current_package, current_module_path, &def.name.0);
+        let name = full_def_name_in_module(current_namespace, current_module_path, &def.name.0);
         let fields = def
             .fields
             .iter()
@@ -2455,7 +2458,7 @@ impl NameResolution {
                     self.lower_type_expr(
                         ty,
                         &tparams,
-                        current_package,
+                        current_namespace,
                         current_module_path,
                         crate_paths_include_package,
                         imports,
@@ -2475,13 +2478,13 @@ impl NameResolution {
     fn lower_trait_def(
         &mut self,
         def: &ast::TraitDef,
-        current_package: &str,
+        current_namespace: &str,
         current_module_path: &[String],
         crate_paths_include_package: bool,
         imports: &HashSet<String>,
         type_index: &TypeIndex,
     ) -> hir::TraitDef {
-        let name = full_def_name_in_module(current_package, current_module_path, &def.name.0);
+        let name = full_def_name_in_module(current_namespace, current_module_path, &def.name.0);
         let method_sigs = def
             .method_sigs
             .iter()
@@ -2494,7 +2497,7 @@ impl NameResolution {
                         self.lower_type_expr(
                             ty,
                             &HashSet::new(),
-                            current_package,
+                            current_namespace,
                             current_module_path,
                             crate_paths_include_package,
                             imports,
@@ -2505,7 +2508,7 @@ impl NameResolution {
                 ret_ty: self.lower_type_expr(
                     &sig.ret_ty,
                     &HashSet::new(),
-                    current_package,
+                    current_namespace,
                     current_module_path,
                     crate_paths_include_package,
                     imports,
@@ -2536,15 +2539,15 @@ impl NameResolution {
             };
 
             let local =
-                full_def_name_in_module(ctx.current_package, ctx.current_module_path, &name);
+                full_def_name_in_module(ctx.current_namespace, ctx.current_module_path, &name);
             let local_key = module_relative_def_name(ctx.current_module_path, &name);
-            let has_local = ctx.trait_index.has_trait(ctx.current_package, &local_key);
+            let has_local = ctx.trait_index.has_trait(ctx.current_namespace, &local_key);
             let has_builtin = ctx.trait_index.has_trait(BUILTIN_PACKAGE, &name);
 
             if has_local && has_builtin && local != name {
                 self.error(format!(
                     "Ambiguous trait {}. Use {}::{} or {}::{}",
-                    name, ctx.current_package, name, BUILTIN_PACKAGE, name
+                    name, ctx.current_namespace, name, BUILTIN_PACKAGE, name
                 ));
             }
 
@@ -2560,17 +2563,17 @@ impl NameResolution {
         let qualified = lower_type_path(
             path,
             &HashSet::new(),
-            ctx.current_package,
+            ctx.current_namespace,
             ctx.current_module_path,
             ctx.crate_paths_include_package,
             ctx.type_index,
         );
         if let Some(package) = &qualified.package
-            && !namespace_allowed(package.as_str(), ctx.current_package, ctx.imports)
+            && !namespace_allowed(package.as_str(), ctx.current_namespace, ctx.imports)
         {
             self.error(format!(
                 "namespace {} not imported in namespace {}",
-                package.0, ctx.current_package
+                package.0, ctx.current_namespace
             ));
         }
         qualified.display()
@@ -2579,13 +2582,14 @@ impl NameResolution {
     fn lower_extern_go(
         &mut self,
         def: &ast::ExternGo,
-        current_package: &str,
+        current_namespace: &str,
         current_module_path: &[String],
         crate_paths_include_package: bool,
         imports: &HashSet<String>,
         type_index: &TypeIndex,
     ) -> hir::ExternGo {
-        let name = full_def_name_in_module(current_package, current_module_path, &def.goml_name.0);
+        let name =
+            full_def_name_in_module(current_namespace, current_module_path, &def.goml_name.0);
         hir::ExternGo {
             attrs: def.attrs.iter().map(|a| a.into()).collect(),
             package_path: def.package_path.clone(),
@@ -2601,7 +2605,7 @@ impl NameResolution {
                         self.lower_type_expr(
                             ty,
                             &HashSet::new(),
-                            current_package,
+                            current_namespace,
                             current_module_path,
                             crate_paths_include_package,
                             imports,
@@ -2614,7 +2618,7 @@ impl NameResolution {
                 self.lower_type_expr(
                     ty,
                     &HashSet::new(),
-                    current_package,
+                    current_namespace,
                     current_module_path,
                     crate_paths_include_package,
                     imports,
@@ -2627,10 +2631,11 @@ impl NameResolution {
     fn lower_extern_type(
         &self,
         def: &ast::ExternType,
-        current_package: &str,
+        current_namespace: &str,
         current_module_path: &[String],
     ) -> hir::ExternType {
-        let name = full_def_name_in_module(current_package, current_module_path, &def.goml_name.0);
+        let name =
+            full_def_name_in_module(current_namespace, current_module_path, &def.goml_name.0);
         hir::ExternType {
             attrs: def.attrs.iter().map(|a| a.into()).collect(),
             package_path: def.package_path.clone(),
@@ -2643,13 +2648,13 @@ impl NameResolution {
     fn lower_extern_builtin(
         &mut self,
         def: &ast::ExternBuiltin,
-        current_package: &str,
+        current_namespace: &str,
         current_module_path: &[String],
         crate_paths_include_package: bool,
         imports: &HashSet<String>,
         type_index: &TypeIndex,
     ) -> hir::ExternBuiltin {
-        let name = full_def_name_in_module(current_package, current_module_path, &def.name.0);
+        let name = full_def_name_in_module(current_namespace, current_module_path, &def.name.0);
         let generic_bounds = def
             .generic_bounds
             .iter()
@@ -2677,7 +2682,7 @@ impl NameResolution {
                         self.lower_type_expr(
                             ty,
                             &HashSet::new(),
-                            current_package,
+                            current_namespace,
                             current_module_path,
                             crate_paths_include_package,
                             imports,
@@ -2690,7 +2695,7 @@ impl NameResolution {
                 self.lower_type_expr(
                     ty,
                     &HashSet::new(),
-                    current_package,
+                    current_namespace,
                     current_module_path,
                     crate_paths_include_package,
                     imports,
@@ -2715,7 +2720,7 @@ impl NameResolution {
                 self.lower_type_expr(
                     t,
                     &HashSet::new(),
-                    ctx.current_package,
+                    ctx.current_namespace,
                     ctx.current_module_path,
                     ctx.crate_paths_include_package,
                     ctx.imports,
