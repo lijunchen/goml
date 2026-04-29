@@ -51,6 +51,7 @@ struct ResolutionContext<'a> {
     def_names: &'a HashMap<String, hir::DefId>,
     deps: &'a HashMap<String, interface::PackageInterface>,
     current_package: &'a str,
+    current_module_path: &'a [String],
     imports: &'a HashSet<String>,
     use_values: &'a HashMap<String, UseValueImport>,
     constructor_index: &'a ConstructorIndex,
@@ -469,6 +470,12 @@ impl NameResolution {
             .push(Diagnostic::new(Stage::Typer, Severity::Error, message));
     }
 
+    fn check_path_root(&mut self, path: &ast::Path, ctx: &ResolutionContext) {
+        if matches!(path.root(), ast::PathRoot::Super) && ctx.current_module_path.is_empty() {
+            self.error("`super` cannot be used at crate root");
+        }
+    }
+
     fn ice(&mut self, message: impl Into<String>) {
         self.error(format!("Internal error: {}", message.into()));
     }
@@ -771,6 +778,7 @@ impl NameResolution {
                 def_names: &def_names,
                 deps,
                 current_package: package_name,
+                current_module_path: &file.module_path,
                 imports: &imports,
                 use_values: &use_values,
                 constructor_index: &ctor_index,
@@ -1105,6 +1113,7 @@ impl NameResolution {
     ) -> hir::ExprId {
         match expr {
             ast::Expr::EPath { path, astptr } => {
+                self.check_path_root(path, ctx);
                 if let Some(constructor) = self.constructor_path_for(path, ctx) {
                     return self.alloc_expr_with_ptr(
                         hir_table,

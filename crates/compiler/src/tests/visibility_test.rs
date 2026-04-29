@@ -329,6 +329,25 @@ fn main() -> unit {
 }
 
 #[test]
+fn super_path_at_crate_root_reports_error() {
+    assert_err_contains(
+        &[(
+            "main.gom",
+            r#"
+fn helper() -> int64 {
+    1
+}
+
+fn main() -> unit {
+    let _ = super::helper();
+}
+"#,
+        )],
+        "`super` cannot be used at crate root",
+    );
+}
+
+#[test]
 fn public_struct_is_visible() {
     assert_ok(&[
         (
