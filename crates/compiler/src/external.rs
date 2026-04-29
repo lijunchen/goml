@@ -13,7 +13,7 @@ use crate::env::{
 };
 use crate::hir;
 use crate::interface;
-use crate::package_imports::ExternalImports;
+use crate::namespace_imports::ExternalImports;
 use crate::pipeline::packages::{self, PackageGraph, PackageUnit};
 use crate::registry::{
     ModuleCoord, Registry, ResolvedModule, ResolvedModuleGraph, SemVer, cached_registry_dir,

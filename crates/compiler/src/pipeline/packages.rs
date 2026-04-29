@@ -6,7 +6,7 @@ use ast::ast;
 
 use crate::config::{find_crate_root, load_crate_manifest};
 use crate::hir::SourceFileAst;
-use crate::package_imports::ExternalImports;
+use crate::namespace_imports::ExternalImports;
 use crate::package_names::ROOT_PACKAGE;
 use crate::pipeline::compile_error;
 use crate::pipeline::modules::CrateUnit;

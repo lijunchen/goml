@@ -77,7 +77,7 @@ pub fn external_import_alias(
     resolve_external_import_prefix(path, deps).map(|(alias, _)| alias)
 }
 
-pub fn is_exact_external_package_import(
+pub fn is_exact_external_namespace_import(
     path: &ast::Path,
     deps: &HashMap<String, interface::CrateInterface>,
 ) -> bool {

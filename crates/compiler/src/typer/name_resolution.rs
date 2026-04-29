@@ -7,8 +7,8 @@ use crate::env;
 use crate::hir;
 use crate::hir::HirIdent;
 use crate::interface;
-use crate::package_imports::{
-    external_import_alias, is_exact_external_package_import, resolve_external_import_prefix,
+use crate::namespace_imports::{
+    external_import_alias, is_exact_external_namespace_import, resolve_external_import_prefix,
 };
 use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package};
 use crate::pipeline::packages::collect_known_crate_path_imports_from_ast;
@@ -306,11 +306,11 @@ impl ResolutionContext<'_> {
     }
 }
 
-fn use_path_is_package_import(
+fn use_path_is_namespace_import(
     path: &ast::Path,
     deps: &HashMap<String, interface::CrateInterface>,
 ) -> bool {
-    is_exact_external_package_import(path, deps)
+    is_exact_external_namespace_import(path, deps)
 }
 
 fn file_imports(
@@ -1271,7 +1271,7 @@ impl NameResolution {
                     {
                         continue;
                     }
-                    if use_path_is_package_import(&use_decl.path, deps) {
+                    if use_path_is_namespace_import(&use_decl.path, deps) {
                         continue;
                     }
                     let Some(qualified) = lowered_use_trait_path(&use_decl.path, deps) else {
