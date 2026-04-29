@@ -6,6 +6,10 @@ use crate::package_names::ROOT_PACKAGE;
 use crate::pipeline::{packages, pipeline, separate};
 
 fn gom_files_in_dir(dir: &Path) -> anyhow::Result<Vec<PathBuf>> {
+    if dir.is_file() {
+        return Ok(vec![dir.to_path_buf()]);
+    }
+
     let mut files = Vec::new();
     for entry in std::fs::read_dir(dir)? {
         let entry = entry?;
@@ -97,9 +101,9 @@ fn link_rejects_interface_hash_mismatch() -> anyhow::Result<()> {
     std::fs::write(
         &lib_path,
         r#"
-package Lib;
 
-fn foo() -> int32 {
+
+pub fn foo() -> int32 {
     1
 }
 "#,
@@ -123,17 +127,13 @@ fn foo() -> int32 {
     let main_path = dir.path().join("main.gom");
     std::fs::write(
         &main_path,
-        format!(
-            r#"
-package {ROOT_PACKAGE};
-
+        r#"
 use Lib;
 
-fn main() -> unit {{
+fn main() -> unit {
     string_println(int32_to_string(Lib::foo()))
-}}
-"#
-        ),
+}
+"#,
     )?;
 
     let main_unit = separate::build_package(separate::PackageInputs {
@@ -154,13 +154,13 @@ fn main() -> unit {{
     std::fs::write(
         &lib_path,
         r#"
-package Lib;
 
-fn foo() -> int32 {
+
+pub fn foo() -> int32 {
     1
 }
 
-fn bar() -> int32 {
+pub fn bar() -> int32 {
     2
 }
 "#,

@@ -224,6 +224,114 @@ fn struct_pattern_shorthand() {
 }
 
 #[test]
+fn public_mod_and_rooted_use() {
+    check(
+        "pub mod math;\nuse crate::math::add;\npub fn main() -> unit { add() }\n",
+        expect![[r#"
+            FILE@0..68
+              MOD@0..14
+                PubKeyword@0..3 "pub"
+                Whitespace@3..4 " "
+                ModKeyword@4..7 "mod"
+                Whitespace@7..8 " "
+                Ident@8..12 "math"
+                Semi@12..13 ";"
+                Whitespace@13..14 "\n"
+              USE@14..36
+                UseKeyword@14..17 "use"
+                Whitespace@17..18 " "
+                PATH@18..34
+                  CrateKeyword@18..23 "crate"
+                  ColonColon@23..25 "::"
+                  Ident@25..29 "math"
+                  ColonColon@29..31 "::"
+                  Ident@31..34 "add"
+                Semi@34..35 ";"
+                Whitespace@35..36 "\n"
+              FN@36..68
+                PubKeyword@36..39 "pub"
+                Whitespace@39..40 " "
+                FnKeyword@40..42 "fn"
+                Whitespace@42..43 " "
+                Ident@43..47 "main"
+                PARAM_LIST@47..50
+                  LParen@47..48 "("
+                  RParen@48..49 ")"
+                  Whitespace@49..50 " "
+                Arrow@50..52 "->"
+                Whitespace@52..53 " "
+                TYPE_UNIT@53..58
+                  UnitKeyword@53..57 "unit"
+                  Whitespace@57..58 " "
+                BLOCK@58..68
+                  LBrace@58..59 "{"
+                  Whitespace@59..60 " "
+                  EXPR_CALL@60..66
+                    EXPR_IDENT@60..63
+                      PATH@60..63
+                        Ident@60..63 "add"
+                    ARG_LIST@63..66
+                      LParen@63..64 "("
+                      RParen@64..65 ")"
+                      Whitespace@65..66 " "
+                  RBrace@66..67 "}"
+                  Whitespace@67..68 "\n""#]],
+    );
+}
+
+#[test]
+fn rooted_paths_in_types_and_exprs() {
+    check(
+        "fn f(x: crate::Thing) -> super::Other { super::make(x) }",
+        expect![[r#"
+            FILE@0..56
+              FN@0..56
+                FnKeyword@0..2 "fn"
+                Whitespace@2..3 " "
+                Ident@3..4 "f"
+                PARAM_LIST@4..22
+                  LParen@4..5 "("
+                  PARAM@5..20
+                    Ident@5..6 "x"
+                    Colon@6..7 ":"
+                    Whitespace@7..8 " "
+                    TYPE_TAPP@8..20
+                      PATH@8..20
+                        CrateKeyword@8..13 "crate"
+                        ColonColon@13..15 "::"
+                        Ident@15..20 "Thing"
+                  RParen@20..21 ")"
+                  Whitespace@21..22 " "
+                Arrow@22..24 "->"
+                Whitespace@24..25 " "
+                TYPE_TAPP@25..38
+                  PATH@25..38
+                    SuperKeyword@25..30 "super"
+                    ColonColon@30..32 "::"
+                    Ident@32..37 "Other"
+                    Whitespace@37..38 " "
+                BLOCK@38..56
+                  LBrace@38..39 "{"
+                  Whitespace@39..40 " "
+                  EXPR_CALL@40..55
+                    EXPR_IDENT@40..51
+                      PATH@40..51
+                        SuperKeyword@40..45 "super"
+                        ColonColon@45..47 "::"
+                        Ident@47..51 "make"
+                    ARG_LIST@51..55
+                      LParen@51..52 "("
+                      ARG@52..53
+                        EXPR_IDENT@52..53
+                          PATH@52..53
+                            Ident@52..53 "x"
+                      RParen@53..54 ")"
+                      Whitespace@54..55 " "
+                  RBrace@55..56 "}""#]],
+    );
+}
+
+#[test]
 fn reports_parse_errors_without_panicking() {
     let path = Path::new("test.goml");
     let src = "fn foo(";
@@ -439,7 +547,7 @@ fn parser_handles_tricky_inputs_without_panicking() {
         ),
         (
             "invalid_tokens_and_escape_like_sequence",
-            "package main; fn main() { let y = \\u2028; @@@ }",
+            "fn main() { let y = \\u2028; @@@ }",
         ),
         (
             "unbalanced_generics_and_trait_bounds",

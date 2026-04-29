@@ -531,7 +531,7 @@ mod tests {
     #[test]
     fn compile_to_core_handles_builtin_result_match() {
         let src = r#"
-package main;
+
 
 fn unwrap_or_zero(x: Result[int32, string]) -> int32 {
     match x {

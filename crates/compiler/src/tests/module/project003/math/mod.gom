@@ -1,0 +1,20 @@
+pub struct Pair {
+    a: int32,
+    b: int32,
+}
+
+pub enum Op {
+    Add,
+    Sub,
+}
+
+pub fn apply(op: Op, a: int32, b: int32) -> int32 {
+    match op {
+        Op::Add => a + b,
+        Op::Sub => a - b,
+    }
+}
+
+pub fn apply_pair(op: Op, p: Pair) -> int32 {
+    apply(op, p.a, p.b)
+}

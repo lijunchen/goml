@@ -65,15 +65,13 @@ fn main() {
 }
 "#;
 
-const PROJECT_CONFIG: &str = r#"[module]
+const PROJECT_CONFIG: &str = r#"[crate]
 name = "demo"
-
-[package]
-name = "main"
-entry = "main.gom"
+kind = "bin"
+root = "main.gom"
 "#;
 
-const PROJECT_MAIN: &str = r#"package main;
+const PROJECT_MAIN: &str = r#"
 
 fn main() -> unit {
     string_println("hello")
@@ -225,30 +223,26 @@ versions = ["0.1.0"]
 
     fs::write(
         registry.join("alice/http/1.0.0/goml.toml"),
-        r#"[package]
+        r#"[crate]
 name = "http"
+kind = "lib"
+root = "lib.gom"
 "#,
     )?;
     fs::write(
         registry.join("alice/http/1.0.0/lib.gom"),
-        r#"package http;
+        r#"
 
-fn version() -> string {
+pub fn version() -> string {
     "1.0.0"
 }
 "#,
     )?;
     fs::write(
-        registry.join("alice/http/1.0.0/client/goml.toml"),
-        r#"[package]
-name = "client"
-"#,
-    )?;
-    fs::write(
-        registry.join("alice/http/1.0.0/client/lib.gom"),
-        r#"package client;
+        registry.join("alice/http/1.0.0/client/mod.gom"),
+        r#"
 
-fn tag() -> string {
+pub fn tag() -> string {
     "client-1.0.0"
 }
 "#,
@@ -256,8 +250,10 @@ fn tag() -> string {
 
     fs::write(
         registry.join("alice/http/1.2.0/goml.toml"),
-        r#"[package]
+        r#"[crate]
 name = "http"
+kind = "lib"
+root = "lib.gom"
 
 [dependencies]
 "alice::net" = "0.1.0"
@@ -265,26 +261,21 @@ name = "http"
     )?;
     fs::write(
         registry.join("alice/http/1.2.0/lib.gom"),
-        r#"package http;
+        r#"
+mod client;
 
-use client;
+use crate::client;
 
-fn version() -> string {
+pub fn version() -> string {
     client::tag()
 }
 "#,
     )?;
     fs::write(
-        registry.join("alice/http/1.2.0/client/goml.toml"),
-        r#"[package]
-name = "client"
-"#,
-    )?;
-    fs::write(
-        registry.join("alice/http/1.2.0/client/lib.gom"),
-        r#"package client;
+        registry.join("alice/http/1.2.0/client/mod.gom"),
+        r#"
 
-fn tag() -> string {
+pub fn tag() -> string {
     "client-1.2.0"
 }
 "#,
@@ -292,23 +283,27 @@ fn tag() -> string {
 
     fs::write(
         registry.join("alice/net/0.1.0/goml.toml"),
-        r#"[package]
+        r#"[crate]
 name = "net"
+kind = "lib"
+root = "lib.gom"
 "#,
     )?;
     fs::write(
         registry.join("alice/net/0.1.0/lib.gom"),
-        r#"package net;
+        r#"
 
-fn version() -> string {
+pub fn version() -> string {
     "0.1.0"
 }
 "#,
     )?;
     fs::write(
         registry.join("alice/appdep/0.1.0/goml.toml"),
-        r#"[package]
+        r#"[crate]
 name = "appdep"
+kind = "lib"
+root = "lib.gom"
 
 [dependencies]
 "alice::http" = "1.2.0"
@@ -316,9 +311,9 @@ name = "appdep"
     )?;
     fs::write(
         registry.join("alice/appdep/0.1.0/lib.gom"),
-        r#"package appdep;
+        r#"
 
-fn marker() -> string {
+pub fn marker() -> string {
     "appdep"
 }
 "#,
@@ -565,12 +560,10 @@ fn add_uses_latest_version_from_local_registry() -> anyhow::Result<()> {
 
     let manifest = fs::read_to_string(project_dir.join("goml.toml"))?;
     expect![[r#"
-        [module]
+        [crate]
         name = "demo"
-
-        [package]
-        name = "main"
-        entry = "main.gom"
+        kind = "bin"
+        root = "main.gom"
 
         [dependencies]
         "alice::http" = "1.2.0"
@@ -620,12 +613,10 @@ fn add_with_explicit_version_and_remove_updates_manifest() -> anyhow::Result<()>
 
     let manifest = fs::read_to_string(project_dir.join("goml.toml"))?;
     expect![[r#"
-        [module]
+        [crate]
         name = "demo"
-
-        [package]
-        name = "main"
-        entry = "main.gom"
+        kind = "bin"
+        root = "main.gom"
     "#]]
     .assert_eq(&manifest);
 
@@ -643,12 +634,10 @@ fn project_build_with_cached_registry_dependencies_uses_external_modules() -> an
     fs::create_dir_all(&project_dir)?;
     fs::write(
         project_dir.join("goml.toml"),
-        r#"[module]
+        r#"[crate]
 name = "demo"
-
-[package]
-name = "main"
-entry = "main.gom"
+kind = "bin"
+root = "main.gom"
 
 [dependencies]
 "alice::http" = "1.0.0"
@@ -657,7 +646,7 @@ entry = "main.gom"
     )?;
     fs::write(
         project_dir.join("main.gom"),
-        r#"package main;
+        r#"
 
 use alice::http;
 use alice::http::client;
@@ -945,37 +934,25 @@ fn new_creates_two_package_scaffold() -> anyhow::Result<()> {
     let project_dir = dir.path().join("demo");
     let root_toml = fs::read_to_string(project_dir.join("goml.toml"))?;
     let main_gom = fs::read_to_string(project_dir.join("main.gom"))?;
-    let lib_toml = fs::read_to_string(project_dir.join("lib/goml.toml"))?;
-    let lib_gom = fs::read_to_string(project_dir.join("lib/lib.gom"))?;
+    let lib_gom = fs::read_to_string(project_dir.join("lib/mod.gom"))?;
 
     expect![[r#"
-        [module]
+        [crate]
         name = "demo"
-
-        [package]
-        name = "main"
-        entry = "main.gom"
+        kind = "bin"
+        root = "main.gom"
     "#]]
     .assert_eq(&root_toml);
     expect![[r#"
-        package main;
-
-        use lib;
+        mod lib;
 
         fn main() -> unit {
-            string_println(lib::message())
+            string_println(crate::lib::message())
         }
     "#]]
     .assert_eq(&main_gom);
     expect![[r#"
-        [package]
-        name = "lib"
-    "#]]
-    .assert_eq(&lib_toml);
-    expect![[r#"
-        package lib;
-
-        fn message() -> string {
+        pub fn message() -> string {
             "hello from lib"
         }
     "#]]
@@ -1069,10 +1046,10 @@ fn project_check_dry_run_prints_compiler_check_commands() -> anyhow::Result<()> 
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(output.status.success(), "stderr: {stderr}");
     expect![[r#"
-        goml compiler check --package traitpkg --input traitpkg/lib.gom --output target/goml/check/traitpkg/traitpkg
-        goml compiler check --package datapkg --input datapkg/lib.gom --interface-path target/goml/check/traitpkg/traitpkg.interface --output target/goml/check/datapkg/datapkg
-        goml compiler check --package usepkg --input usepkg/lib.gom --interface-path target/goml/check/traitpkg/traitpkg.interface --output target/goml/check/usepkg/usepkg
-        goml compiler check --package main --input main.gom --interface-path target/goml/check/datapkg/datapkg.interface --interface-path target/goml/check/usepkg/usepkg.interface --output target/goml/check/main
+        goml compiler check --package traitpkg --input traitpkg/mod.gom --output target/goml/check/traitpkg/traitpkg
+        goml compiler check --package datapkg --input datapkg/mod.gom --interface-path target/goml/check/traitpkg/traitpkg.interface --output target/goml/check/datapkg/datapkg
+        goml compiler check --package usepkg --input usepkg/mod.gom --interface-path target/goml/check/traitpkg/traitpkg.interface --output target/goml/check/usepkg/usepkg
+        goml compiler check --package main --input main.gom --interface-path target/goml/check/datapkg/datapkg.interface --interface-path target/goml/check/traitpkg/traitpkg.interface --interface-path target/goml/check/usepkg/usepkg.interface --output target/goml/check/main
     "#]]
     .assert_eq(&stdout);
     assert!(!dir.path().join("target/goml/check/main.interface").exists());
@@ -1090,10 +1067,10 @@ fn project_build_dry_run_prints_compiler_build_and_link_commands() -> anyhow::Re
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(output.status.success(), "stderr: {stderr}");
     expect![[r#"
-        goml compiler build --package traitpkg --input traitpkg/lib.gom --output target/goml/build/traitpkg/traitpkg
-        goml compiler build --package datapkg --input datapkg/lib.gom --interface-path target/goml/build/traitpkg/traitpkg.interface --output target/goml/build/datapkg/datapkg
-        goml compiler build --package usepkg --input usepkg/lib.gom --interface-path target/goml/build/traitpkg/traitpkg.interface --output target/goml/build/usepkg/usepkg
-        goml compiler build --package main --input main.gom --interface-path target/goml/build/datapkg/datapkg.interface --interface-path target/goml/build/usepkg/usepkg.interface --output target/goml/build/main
+        goml compiler build --package traitpkg --input traitpkg/mod.gom --output target/goml/build/traitpkg/traitpkg
+        goml compiler build --package datapkg --input datapkg/mod.gom --interface-path target/goml/build/traitpkg/traitpkg.interface --output target/goml/build/datapkg/datapkg
+        goml compiler build --package usepkg --input usepkg/mod.gom --interface-path target/goml/build/traitpkg/traitpkg.interface --output target/goml/build/usepkg/usepkg
+        goml compiler build --package main --input main.gom --interface-path target/goml/build/datapkg/datapkg.interface --interface-path target/goml/build/traitpkg/traitpkg.interface --interface-path target/goml/build/usepkg/usepkg.interface --output target/goml/build/main
         goml compiler link --input target/goml/build/traitpkg/traitpkg.core target/goml/build/datapkg/datapkg.core target/goml/build/usepkg/usepkg.core target/goml/build/main.core --output target/goml/main.go
     "#]]
     .assert_eq(&stdout);
@@ -1163,57 +1140,44 @@ fn project_build_stops_when_compiler_subcommand_fails() -> anyhow::Result<()> {
 
     fs::write(
         root.join("goml.toml"),
-        r#"[module]
+        r#"[crate]
 name = "demo"
-
-[package]
-name = "main"
-entry = "main.gom"
+kind = "bin"
+root = "main.gom"
 "#,
     )?;
     fs::write(
         root.join("main.gom"),
-        r#"package main;
+        r#"
 
-use A;
+mod A;
+mod B;
 
 fn main() -> unit {
-    string_println(A::msg())
+    string_println(crate::A::msg())
 }
 "#,
     )?;
 
     fs::create_dir_all(root.join("A"))?;
     fs::write(
-        root.join("A/goml.toml"),
-        r#"[package]
-name = "A"
-"#,
-    )?;
-    fs::write(
-        root.join("A/lib.gom"),
-        r#"package A;
+        root.join("A/mod.gom"),
+        r#"
 
-use B;
+use crate::B;
 
-fn msg() -> string {
-    B::value()
+pub fn msg() -> string {
+    crate::B::value()
 }
 "#,
     )?;
 
     fs::create_dir_all(root.join("B"))?;
     fs::write(
-        root.join("B/goml.toml"),
-        r#"[package]
-name = "B"
-"#,
-    )?;
-    fs::write(
-        root.join("B/lib.gom"),
-        r#"package B;
+        root.join("B/mod.gom"),
+        r#"
 
-fn value() -> int32 {
+pub fn value() -> int32 {
     1
 }
 "#,
@@ -1223,8 +1187,8 @@ fn value() -> int32 {
     let stderr = normalize_temp_prefix(&String::from_utf8_lossy(&output.stderr), root);
     assert!(!output.status.success());
     expect![[r#"
-        build failed: Typer { diagnostics: Diagnostics { items: [Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(45..56) }, Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(45..56) }] } }
-        subcommand failed: goml compiler build --package A --input A/lib.gom --interface-path target/goml/build/B/B.interface --output target/goml/build/A/A
+        build failed: Typer { diagnostics: Diagnostics { items: [Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(46..64) }, Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(46..64) }] } }
+        subcommand failed: goml compiler build --package A --input A/mod.gom --interface-path target/goml/build/B/B.interface --output target/goml/build/A/A
     "#]]
     .assert_eq(&stderr);
     assert!(!root.join("target/goml/main.go").exists());
@@ -1239,39 +1203,31 @@ fn project_build_dry_run_preserves_entry_directory_structure() -> anyhow::Result
 
     fs::write(
         root.join("goml.toml"),
-        r#"[module]
+        r#"[crate]
 name = "demo"
-
-[package]
-name = "main"
-entry = "main.gom"
+kind = "bin"
+root = "src/main.gom"
 "#,
     )?;
+    fs::create_dir_all(root.join("src"))?;
     fs::write(
-        root.join("main.gom"),
-        r#"package main;
+        root.join("src/main.gom"),
+        r#"
 
-use Lib;
+mod Lib;
 
 fn main() -> unit {
-    string_println(Lib::msg())
+    string_println(crate::Lib::msg())
 }
 "#,
     )?;
 
-    fs::create_dir_all(root.join("Lib/src"))?;
+    fs::create_dir_all(root.join("src/Lib"))?;
     fs::write(
-        root.join("Lib/goml.toml"),
-        r#"[package]
-name = "Lib"
-entry = "src/lib_entry.gom"
-"#,
-    )?;
-    fs::write(
-        root.join("Lib/src/lib_entry.gom"),
-        r#"package Lib;
+        root.join("src/Lib/mod.gom"),
+        r#"
 
-fn msg() -> string {
+pub fn msg() -> string {
     "ok"
 }
 "#,
@@ -1282,9 +1238,9 @@ fn msg() -> string {
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(output.status.success(), "stderr: {stderr}");
     expect![[r#"
-        goml compiler build --package Lib --input Lib/src/lib_entry.gom --output target/goml/build/Lib/Lib
-        goml compiler build --package main --input main.gom --interface-path target/goml/build/Lib/Lib.interface --output target/goml/build/main
-        goml compiler link --input target/goml/build/Lib/Lib.core target/goml/build/main.core --output target/goml/main.go
+        goml compiler build --package Lib --input src/Lib/mod.gom --output target/goml/build/src/Lib/Lib
+        goml compiler build --package main --input src/main.gom --interface-path target/goml/build/src/Lib/Lib.interface --output target/goml/build/src/main
+        goml compiler link --input target/goml/build/src/Lib/Lib.core target/goml/build/src/main.core --output target/goml/main.go
     "#]]
     .assert_eq(&stdout);
     expect![""].assert_eq(&stderr);

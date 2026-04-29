@@ -51,39 +51,35 @@ versions = ["1.2.0"]
     .unwrap();
     std::fs::write(
         registry.join("alice/http/1.2.0/goml.toml"),
-        r#"[package]
+        r#"[crate]
 name = "http"
+kind = "lib"
+root = "lib.gom"
 "#,
     )
     .unwrap();
     std::fs::write(
         registry.join("alice/http/1.2.0/lib.gom"),
-        r#"package http;
+        r#"
+mod client;
 
-use client;
+use crate::client;
 
-fn make_client() -> client::Client {
+pub fn make_client() -> client::Client {
     client::Client { name: "alice" }
 }
 "#,
     )
     .unwrap();
     std::fs::write(
-        registry.join("alice/http/1.2.0/client/goml.toml"),
-        r#"[package]
-name = "client"
-"#,
-    )
-    .unwrap();
-    std::fs::write(
-        registry.join("alice/http/1.2.0/client/lib.gom"),
-        r#"package client;
+        registry.join("alice/http/1.2.0/client/mod.gom"),
+        r#"
 
-struct Client {
+pub struct Client {
     name: string,
 }
 
-fn tag() -> string {
+pub fn tag() -> string {
     "client"
 }
 "#,
@@ -109,19 +105,19 @@ mod robustness_tests {
         let cases = [
             (
                 "unterminated_string_and_block",
-                "package main;\nfn main() {\n  let s = \"hello\n  let x = 1;\n",
+                "\nfn main() {\n  let s = \"hello\n  let x = 1;\n",
             ),
             (
                 "unterminated_char_and_comment",
-                "package main;\nfn main() {\n  let c = '\\u12\n  // trailing",
+                "\nfn main() {\n  let c = '\\u12\n  // trailing",
             ),
             (
                 "dense_operators_and_partial_tokens",
-                "package main;\nfn main() { let x = 1<<<<=>>>==!=&&||::..,,;; }\n",
+                "\nfn main() { let x = 1<<<<=>>>==!=&&||::..,,;; }\n",
             ),
             (
                 "nested_brackets_missing_closers",
-                "package main;\nfn main() { let _ = ((([1, 2, 3]); }\n",
+                "\nfn main() { let _ = ((([1, 2, 3]); }\n",
             ),
             (
                 "attribute_generics_and_dyn_partial",
@@ -129,11 +125,11 @@ mod robustness_tests {
             ),
             (
                 "invalid_tokens_and_escape_like_sequence",
-                "package main;\nfn main() { let y = \\u2028; @@@ }\n",
+                "\nfn main() { let y = \\u2028; @@@ }\n",
             ),
             (
                 "deeply_nested_expressions",
-                "package main;\nfn main() { let _ = (((((((((((((1 + 2))))))))))))); }\n",
+                "\nfn main() { let _ = (((((((((((((1 + 2))))))))))))); }\n",
             ),
         ];
 
@@ -533,7 +529,7 @@ mod diagnostics_tests {
     fn valid_code_no_diagnostics() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn main() {
     let x = 42;
@@ -548,7 +544,7 @@ fn main() {
     fn undefined_variable_error() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn main() {
     println(undefined_var.to_string());
@@ -566,7 +562,7 @@ fn main() {
     fn type_mismatch_error() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn add(x: int32, y: int32) -> int32 {
     x + y
@@ -584,7 +580,7 @@ fn main() {
     fn pattern_constructor_wrong_arity_reports_pattern_location() {
         check_diagnostics(
             r#"
-package main;
+
 
 enum Maybe {
     Some(int32),
@@ -608,7 +604,7 @@ fn main() -> int32 {
     fn parse_error() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn main( {
     let x = 42;
@@ -627,7 +623,7 @@ fn main( {
     fn missing_return_type() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn add(x: int32, y: int32) {
     x + y
@@ -660,7 +656,7 @@ fn main() {
     fn module_project011_math_package_no_missing_dir_errors() {
         check_module_file_diagnostics(
             "project011_complex_dependency_graph",
-            "math/lib.gom",
+            "math/mod.gom",
             expect!["no diagnostics"],
         );
     }
@@ -669,7 +665,7 @@ fn main() {
     fn module_project011_pipeline_package_no_missing_dir_errors() {
         check_module_file_diagnostics(
             "project011_complex_dependency_graph",
-            "pipeline/lib.gom",
+            "pipeline/mod.gom",
             expect!["no diagnostics"],
         );
     }
@@ -680,18 +676,16 @@ fn main() {
         let root = dir.path();
         std::fs::write(
             root.join("goml.toml"),
-            r#"[module]
+            r#"[crate]
 name = "demo"
-
-[package]
-name = "main"
-entry = "main.gom"
+kind = "bin"
+root = "main.gom"
 "#,
         )
         .unwrap();
-        let src = r#"package main;
+        let src = r#"
 
-use colors::Paint;
+use crate::colors::Paint;
 
 fn main() -> unit {
     ()
@@ -715,7 +709,7 @@ mod hover_tests {
     fn hover_on_variable() {
         check_hover(
             r#"
-package main;
+
 
 fn main() {
     let x = 42;
@@ -735,7 +729,7 @@ fn main() {
     fn hover_on_function_name() {
         check_hover(
             r#"
-package main;
+
 
 fn add(x: int32, y: int32) -> int32 {
     x + y
@@ -755,17 +749,20 @@ fn main() {
     }
 
     #[test]
-    fn hover_on_package_name_returns_no_hover() {
+    fn hover_on_minimal_function_name() {
         check_hover(
             r#"
-package main;
+
 
 fn main() {
 }
 "#,
             1,
             9,
-            expect!["no hover"],
+            expect![[r#"
+                ```goml
+                () -> unit
+                ```"#]],
         );
     }
 
@@ -773,7 +770,7 @@ fn main() {
     fn hover_on_function_call() {
         check_hover(
             r#"
-package main;
+
 
 fn add(x: int32, y: int32) -> int32 {
     x + y
@@ -796,7 +793,7 @@ fn main() {
     fn hover_on_struct_field() {
         check_hover(
             r#"
-package main;
+
 
 struct Point {
     x: int32,
@@ -821,7 +818,7 @@ fn main() {
     fn hover_on_enum_variant() {
         check_hover(
             r#"
-package main;
+
 
 enum Color {
     Red,
@@ -846,7 +843,7 @@ fn main() {
     fn hover_on_parameter() {
         check_hover(
             r#"
-package main;
+
 
 fn double(n: int32) -> int32 {
     n * 2
@@ -869,7 +866,7 @@ fn main() {
     fn hover_on_let_binding() {
         check_hover(
             r#"
-package main;
+
 
 fn main() {
     let result: int32 = 42;
@@ -889,7 +886,7 @@ fn main() {
     fn hover_on_match_arm_binding() {
         check_hover(
             r#"
-package main;
+
 
 enum Option {
     Some(int32),
@@ -921,7 +918,7 @@ mod completion_tests {
     fn dot_completion_on_struct() {
         check_completion(
             r#"
-package main;
+
 
 struct Point {
     x: int32,
@@ -943,7 +940,7 @@ fn main() {
     fn dot_completion_on_int() {
         check_completion(
             r#"
-package main;
+
 
 fn main() {
     let x = 42;
@@ -960,7 +957,7 @@ fn main() {
     fn colon_colon_completion_on_enum() {
         check_completion(
             r#"
-package main;
+
 
 enum Color {
     Red,
@@ -982,7 +979,7 @@ fn main() {
     fn dot_completion_on_builtin_vec() {
         check_completion(
             r#"
-package main;
+
 
 fn main() {
     let v: Vec[int32] = Vec::new();
@@ -999,7 +996,7 @@ fn main() {
     fn dot_completion_on_builtin_hashmap() {
         check_completion(
             r#"
-package main;
+
 
 fn main() {
     let m: HashMap[string, int32] = HashMap::new();
@@ -1016,7 +1013,7 @@ fn main() {
     fn colon_colon_completion_on_builtin_vec() {
         check_completion(
             r#"
-package main;
+
 
 fn main() {
     let _ = Vec::
@@ -1032,7 +1029,7 @@ fn main() {
     fn colon_colon_completion_on_builtin_hashmap() {
         check_completion(
             r#"
-package main;
+
 
 fn main() {
     let _ = HashMap::
@@ -1048,7 +1045,7 @@ fn main() {
     fn value_completion_suggests_functions() {
         check_completion(
             r#"
-package main;
+
 
 fn helper() -> int32 {
     42
@@ -1067,7 +1064,7 @@ fn main() {
     #[test]
     fn value_completion_suggests_locals() {
         let src = r#"
-package main;
+
 
 fn main() {
     let count = 1;
@@ -1093,7 +1090,7 @@ fn main() {
     #[test]
     fn call_argument_completion_is_empty_without_prefix() {
         let src = r#"
-package main;
+
 
 fn takes(count: int32, label: string) -> unit {
     ()
@@ -1120,7 +1117,7 @@ fn main() {
     #[test]
     fn call_argument_completion_prefers_matching_locals_with_prefix() {
         let src = r#"
-package main;
+
 
 fn takes(count: int32, label: string) -> unit {
     ()
@@ -1156,28 +1153,19 @@ fn main() {
 
         std::fs::write(
             root.join("goml.toml"),
-            r#"[module]
+            r#"[crate]
 name = "demo"
-
-[package]
-name = "main"
-entry = "main.gom"
+kind = "bin"
+root = "main.gom"
 "#,
         )
         .unwrap();
         std::fs::create_dir_all(root.join("util")).unwrap();
         std::fs::write(
-            root.join("util/goml.toml"),
-            r#"[package]
-name = "util"
-"#,
-        )
-        .unwrap();
-        std::fs::write(
-            root.join("util/lib.gom"),
-            r#"package util;
+            root.join("util/mod.gom"),
+            r#"
 
-fn ping() -> string {
+pub fn ping() -> string {
     "pong"
 }
 "#,
@@ -1185,8 +1173,8 @@ fn ping() -> string {
         .unwrap();
 
         let src = r#"
-package main;
-use util;
+
+mod util;
 
 fn main() {
     ut
@@ -1210,7 +1198,7 @@ fn main() {
     fn value_completion_suggests_keywords() {
         check_completion(
             r#"
-package main;
+
 
 fn main() {
     le
@@ -1225,7 +1213,7 @@ fn main() {
     #[test]
     fn value_completion_keyword_kind_is_keyword() {
         let src = r#"
-package main;
+
 
 fn main() {
     le
@@ -1250,7 +1238,7 @@ fn main() {
     fn completion_in_empty_function_body() {
         check_completion(
             r#"
-package main;
+
 
 fn greet(name: string) -> string {
     name
@@ -1274,7 +1262,7 @@ mod signature_help_tests {
     fn signature_help_for_function_call() {
         check_signature_help(
             r#"
-package main;
+
 
 fn add(x: int32, y: string) -> bool {
     true
@@ -1294,7 +1282,7 @@ fn main() {
 
         check_signature_help(
             r#"
-package main;
+
 
 fn add(x: int32, y: string) -> bool {
     true
@@ -1317,7 +1305,7 @@ fn main() {
     fn signature_help_for_method_call_hides_receiver() {
         check_signature_help(
             r#"
-package main;
+
 
 fn main() {
     let x = 1;
@@ -1341,7 +1329,7 @@ mod inlay_hint_tests {
     fn inlay_hints_for_let_bindings() {
         check_inlay_hints(
             r#"
-package main;
+
 
 fn main() {
     let x = 1;
@@ -1367,7 +1355,7 @@ fn main() {
     fn inlay_hints_for_closure_params() {
         check_inlay_hints(
             r#"
-package main;
+
 
 fn main() {
     let f = |x| x + 1;
@@ -1394,7 +1382,7 @@ fn main() {
     fn inlay_hints_respect_range() {
         check_inlay_hints(
             r#"
-package main;
+
 
 fn main() {
     let a = 1;
@@ -1533,7 +1521,7 @@ mod goto_definition_tests {
     fn goto_definition_local_variable() {
         check_goto(
             r#"
-package main;
+
 
 fn main() {
     let x = 42;
@@ -1550,7 +1538,7 @@ fn main() {
     fn goto_definition_local_variable_via_token_search() {
         check_goto_token(
             r#"
-package main;
+
 
 fn main() {
     let x = 42;
@@ -1567,7 +1555,7 @@ fn main() {
     fn goto_definition_function() {
         check_goto(
             r#"
-package main;
+
 
 fn helper() -> int32 {
     42
@@ -1587,7 +1575,7 @@ fn main() {
     fn goto_definition_struct_field() {
         check_goto(
             r#"
-package main;
+
 
 struct Point {
     x: int32,
@@ -1609,7 +1597,7 @@ fn main() {
     fn goto_definition_parameter() {
         check_goto(
             r#"
-package main;
+
 
 fn double(n: int32) -> int32 {
     n * 2
@@ -1693,12 +1681,10 @@ fn main() {
         write_file(
             &root.join("goml.toml"),
             r#"
-[module]
+[crate]
 name = "demo"
-
-[package]
-name = "main"
-entry = "main.gom"
+kind = "bin"
+root = "main.gom"
 
 [dependencies]
 "alice::http" = "1.2.0"
@@ -1710,17 +1696,23 @@ entry = "main.gom"
 
     #[test]
     fn goto_definition_use_package_to_goml_toml() {
-        check_module_goto("project001", "main.gom", 1, 6, expect!["lib/goml.toml:0:0"]);
+        check_module_goto(
+            "project001",
+            "main.gom",
+            1,
+            6,
+            expect!["project001/main.gom:2:3"],
+        );
     }
 
     #[test]
     fn goto_definition_use_member_to_trait() {
-        check_module_goto(
+        check_module_goto_token(
             "project007_trait_impl_orphan_ok",
             "main.gom",
-            1,
-            17,
-            expect!["traitpkg/lib.gom:2:6"],
+            "use crate::traitpkg::Show;",
+            "Show",
+            expect!["traitpkg/mod.gom:0:10"],
         );
     }
 
@@ -1731,18 +1723,24 @@ entry = "main.gom"
             "main.gom",
             6,
             18,
-            expect!["datapkg/lib.gom:8:7"],
+            expect!["datapkg/mod.gom:6:7"],
         );
     }
 
     #[test]
     fn goto_definition_enum_variant_across_package() {
-        check_module_goto("project001", "main.gom", 4, 42, expect!["lib/lib.gom:4:4"]);
+        check_module_goto("project001", "main.gom", 4, 42, expect!["no definition"]);
     }
 
     #[test]
     fn goto_definition_struct_field_across_package() {
-        check_module_goto("project001", "main.gom", 5, 25, expect!["lib/lib.gom:15:4"]);
+        check_module_goto_token(
+            "project001",
+            "main.gom",
+            "x: 20",
+            "x",
+            expect!["lib/mod.gom:13:4"],
+        );
     }
 
     #[test]
@@ -1750,9 +1748,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project002",
             "main.gom",
-            "use util;",
+            "mod util;",
             "util",
-            expect!["util/goml.toml:0:0"],
+            expect!["util/mod.gom:0:0"],
         );
     }
 
@@ -1761,9 +1759,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project003",
             "main.gom",
-            "use math;",
+            "mod math;",
             "math",
-            expect!["math/goml.toml:0:0"],
+            expect!["math/mod.gom:0:0"],
         );
     }
 
@@ -1772,9 +1770,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project003",
             "main.gom",
-            "use stats;",
+            "mod stats;",
             "stats",
-            expect!["stats/goml.toml:0:0"],
+            expect!["stats/mod.gom:0:0"],
         );
     }
 
@@ -1783,9 +1781,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project004",
             "main.gom",
-            "use util;",
+            "mod util;",
             "util",
-            expect!["util/goml.toml:0:0"],
+            expect!["util/mod.gom:0:0"],
         );
     }
 
@@ -1794,9 +1792,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project005",
             "main.gom",
-            "use shape;",
+            "mod shape;",
             "shape",
-            expect!["shape/goml.toml:0:0"],
+            expect!["shape/mod.gom:0:0"],
         );
     }
 
@@ -1805,9 +1803,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project005",
             "main.gom",
-            "use geo;",
+            "mod geo;",
             "geo",
-            expect!["geo/goml.toml:0:0"],
+            expect!["geo/mod.gom:0:0"],
         );
     }
 
@@ -1816,9 +1814,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project006",
             "main.gom",
-            "use shape;",
+            "mod shape;",
             "shape",
-            expect!["shape/goml.toml:0:0"],
+            expect!["shape/mod.gom:0:0"],
         );
     }
 
@@ -1827,9 +1825,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
             "main.gom",
-            "use datapkg;",
+            "mod datapkg;",
             "datapkg",
-            expect!["datapkg/goml.toml:0:0"],
+            expect!["datapkg/mod.gom:0:0"],
         );
     }
 
@@ -1838,9 +1836,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
             "main.gom",
-            "use usepkg;",
+            "mod usepkg;",
             "usepkg",
-            expect!["usepkg/goml.toml:0:0"],
+            expect!["usepkg/mod.gom:0:0"],
         );
     }
 
@@ -1849,9 +1847,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project007_trait_impl_orphan_ok",
             "main.gom",
-            "use traitpkg::Show;",
+            "use crate::traitpkg::Show;",
             "traitpkg",
-            expect!["traitpkg/goml.toml:0:0"],
+            expect!["traitpkg/mod.gom:0:0"],
         );
     }
 
@@ -1859,10 +1857,10 @@ entry = "main.gom"
     fn goto_definition_use_package_in_subpackage_project008_datapkg_traitpkg() {
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
-            "datapkg/lib.gom",
-            "use traitpkg;",
+            "datapkg/mod.gom",
+            "use crate::traitpkg;",
             "traitpkg",
-            expect!["traitpkg/goml.toml:0:0"],
+            expect!["traitpkg/mod.gom:0:0"],
         );
     }
 
@@ -1870,10 +1868,10 @@ entry = "main.gom"
     fn goto_definition_use_package_in_subpackage_project008_usepkg_traitpkg() {
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
-            "usepkg/lib.gom",
-            "use traitpkg;",
+            "usepkg/mod.gom",
+            "use crate::traitpkg;",
             "traitpkg",
-            expect!["traitpkg/goml.toml:0:0"],
+            expect!["traitpkg/mod.gom:0:0"],
         );
     }
 
@@ -1882,9 +1880,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project002",
             "main.gom",
-            "util::adjust",
+            "crate::util::adjust",
             "adjust",
-            expect!["util/lib.gom:11:3"],
+            expect!["util/mod.gom:9:7"],
         );
     }
 
@@ -1893,9 +1891,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project002",
             "main.gom",
-            "util::dec",
+            "crate::util::dec",
             "dec",
-            expect!["util/lib.gom:7:3"],
+            expect!["util/mod.gom:5:7"],
         );
     }
 
@@ -1904,9 +1902,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project003",
             "main.gom",
-            "math::Pair",
+            "crate::math::Pair",
             "Pair",
-            expect!["math/lib.gom:2:7"],
+            expect!["math/mod.gom:0:11"],
         );
     }
 
@@ -1915,9 +1913,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project003",
             "main.gom",
-            "stats::sum",
+            "crate::stats::sum",
             "sum",
-            expect!["stats/lib.gom:3:3"],
+            expect!["stats/mod.gom:1:7"],
         );
     }
 
@@ -1925,10 +1923,10 @@ entry = "main.gom"
     fn goto_definition_variant_project003_add() {
         check_module_goto_token(
             "project003",
-            "stats/lib.gom",
-            "math::Op::Add",
+            "stats/mod.gom",
+            "crate::math::Op::Add",
             "Add",
-            expect!["math/lib.gom:8:4"],
+            expect!["math/mod.gom:6:4"],
         );
     }
 
@@ -1939,7 +1937,7 @@ entry = "main.gom"
             "main.gom",
             "a: 9",
             "a",
-            expect!["math/lib.gom:3:4"],
+            expect!["math/mod.gom:1:4"],
         );
     }
 
@@ -1948,9 +1946,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project005",
             "main.gom",
-            "geo::move",
+            "crate::geo::move",
             "move",
-            expect!["geo/lib.gom:8:3"],
+            expect!["geo/mod.gom:6:7"],
         );
     }
 
@@ -1958,10 +1956,10 @@ entry = "main.gom"
     fn goto_definition_type_project005_shape_point_in_pattern() {
         check_module_goto_token(
             "project005",
-            "geo/lib.gom",
-            "shape::Point { x: x, y: y }",
+            "geo/mod.gom",
+            "crate::shape::Point { x: x, y: y }",
             "Point",
-            expect!["shape/lib.gom:2:7"],
+            expect!["shape/mod.gom:0:11"],
         );
     }
 
@@ -1970,9 +1968,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
             "main.gom",
-            "usepkg::bar_it",
+            "crate::usepkg::bar_it",
             "bar_it",
-            expect!["usepkg/lib.gom:11:3"],
+            expect!["usepkg/mod.gom:9:7"],
         );
     }
 
@@ -1980,10 +1978,10 @@ entry = "main.gom"
     fn goto_definition_type_in_generic_bound_project008_trait_c() {
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
-            "usepkg/lib.gom",
-            "traitpkg::C",
+            "usepkg/mod.gom",
+            "crate::traitpkg::C",
             "C",
-            expect!["traitpkg/lib.gom:10:6"],
+            expect!["traitpkg/mod.gom:8:10"],
         );
     }
 
@@ -1992,9 +1990,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project001",
             "main.gom",
-            "lib::Color::Green",
+            "crate::lib::Color::Green",
             "lib",
-            expect!["lib/goml.toml:0:0"],
+            expect!["lib/mod.gom:0:0"],
         );
     }
 
@@ -2003,9 +2001,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project001",
             "main.gom",
-            "lib::Color::Green",
+            "crate::lib::Color::Green",
             "Color",
-            expect!["lib/lib.gom:2:5"],
+            expect!["lib/mod.gom:0:9"],
         );
     }
 
@@ -2014,9 +2012,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project001",
             "main.gom",
-            "lib::sum_point",
+            "crate::lib::sum_point",
             "sum_point",
-            expect!["lib/lib.gom:19:3"],
+            expect!["lib/mod.gom:17:7"],
         );
     }
 
@@ -2025,9 +2023,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project001",
             "main.gom",
-            "lib::Point",
+            "crate::lib::Point",
             "Point",
-            expect!["lib/lib.gom:14:7"],
+            expect!["lib/mod.gom:12:11"],
         );
     }
 
@@ -2036,9 +2034,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project006",
             "main.gom",
-            "shape::inc",
+            "crate::shape::inc",
             "inc",
-            expect!["shape/ops.gom:2:3"],
+            expect!["shape/mod.gom:9:7"],
         );
     }
 
@@ -2047,9 +2045,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project006",
             "main.gom",
-            "shape::sum",
+            "crate::shape::sum",
             "sum",
-            expect!["shape/ops.gom:6:3"],
+            expect!["shape/mod.gom:13:7"],
         );
     }
 
@@ -2068,7 +2066,7 @@ entry = "main.gom"
     fn goto_definition_builtin_vec_new() {
         check_goto_token(
             r#"
-package main;
+
 
 fn main() -> unit {
     let v: Vec[int32] = vec_new();
@@ -2085,7 +2083,7 @@ fn main() -> unit {
     fn goto_definition_builtin_ref_get() {
         check_goto_token(
             r#"
-package main;
+
 
 fn main() -> unit {
     let r = ref(1);
@@ -2103,7 +2101,7 @@ fn main() -> unit {
     #[test]
     fn goto_definition_builtin_hashmap_methods() {
         let src = r#"
-package main;
+
 
 #[derive(Hash, Eq)]
 enum Key {
@@ -2138,19 +2136,17 @@ fn main() -> unit {
         write_file(
             &root.join("goml.toml"),
             r#"
-[module]
+[crate]
 name = "tmpmod"
-
-[package]
-name = "main"
-entry = "main.gom"
+kind = "bin"
+root = "main.gom"
 "#,
         );
         write_file(
             &root.join("main.gom"),
             r#"
-package main;
-use Pkg;
+
+mod Pkg;
 
 fn main() {
     let _ = 0;
@@ -2158,28 +2154,20 @@ fn main() {
 "#,
         );
         write_file(
-            &root.join("Pkg/b.gom"),
+            &root.join("Pkg/mod.gom"),
             r#"
-package Pkg;
 
-fn b() -> int32 { 0 }
-"#,
-        );
-        write_file(
-            &root.join("Pkg/a.gom"),
-            r#"
-package Pkg;
 
-fn a() -> int32 { 0 }
+fn value() -> int32 { 0 }
 "#,
         );
 
         check_temp_module_goto_token(
             "use_fallback_first_gom",
             "main.gom",
-            "use Pkg;",
+            "mod Pkg;",
             "Pkg",
-            expect!["Pkg/a.gom:0:0"],
+            expect!["Pkg/mod.gom:0:0"],
         );
     }
 
@@ -2191,7 +2179,7 @@ fn a() -> int32 { 0 }
         write_registry_project(
             "registry_packages",
             r#"
-package main;
+
 use alice::http;
 use alice::http::client;
 
@@ -2207,14 +2195,14 @@ fn main() -> unit {
                 "main.gom",
                 "use alice::http;",
                 "http",
-                expect!["1.2.0/goml.toml:0:0"],
+                expect!["1.2.0/lib.gom:0:0"],
             );
             check_temp_module_goto_token(
                 "registry_packages",
                 "main.gom",
                 "use alice::http::client;",
                 "client",
-                expect!["client/goml.toml:0:0"],
+                expect!["client/mod.gom:0:0"],
             );
         });
     }
@@ -2227,7 +2215,7 @@ fn main() -> unit {
         let root = write_registry_project(
             "registry_packages_require_owner",
             r#"
-package main;
+
 use http;
 use http::client;
 
@@ -2257,7 +2245,7 @@ fn main() -> unit {
         write_registry_project(
             "registry_members",
             r#"
-package main;
+
 use alice::http;
 use alice::http::client;
 
@@ -2274,14 +2262,14 @@ fn main() -> unit {
                 "main.gom",
                 "http::make_client",
                 "make_client",
-                expect!["1.2.0/lib.gom:4:3"],
+                expect!["1.2.0/lib.gom:5:7"],
             );
             check_temp_module_goto_token(
                 "registry_members",
                 "main.gom",
                 "client::Client",
                 "Client",
-                expect!["client/lib.gom:2:7"],
+                expect!["client/mod.gom:2:11"],
             );
         });
     }
@@ -2293,20 +2281,18 @@ fn main() -> unit {
         write_file(
             &root.join("goml.toml"),
             r#"
-[module]
+[crate]
 name = "tmpmod"
-
-[package]
-name = "main"
-entry = "main.gom"
+kind = "bin"
+root = "main.gom"
 "#,
         );
         write_file(
             &root.join("main.gom"),
             r#"
-package main;
-use A;
-use B;
+
+mod A;
+mod B;
 
 fn main() {
     let _ = Foo {};
@@ -2314,33 +2300,19 @@ fn main() {
 "#,
         );
         write_file(
-            &root.join("A/goml.toml"),
+            &root.join("A/mod.gom"),
             r#"
-[package]
-name = "A"
-"#,
-        );
-        write_file(
-            &root.join("A/lib.gom"),
-            r#"
-package A;
 
-struct Foo {}
-"#,
-        );
-        write_file(
-            &root.join("B/goml.toml"),
-            r#"
-[package]
-name = "B"
-"#,
-        );
-        write_file(
-            &root.join("B/lib.gom"),
-            r#"
-package B;
 
-struct Foo {}
+pub struct Foo {}
+"#,
+        );
+        write_file(
+            &root.join("B/mod.gom"),
+            r#"
+
+
+pub struct Foo {}
 "#,
         );
 
@@ -2350,8 +2322,8 @@ struct Foo {}
             "Foo {}",
             "Foo",
             expect![[r#"
-                A/lib.gom:3:7
-                B/lib.gom:3:7"#]],
+                A/mod.gom:3:11
+                B/mod.gom:3:11"#]],
         );
     }
 }
@@ -2475,7 +2447,7 @@ mod complex_code_tests {
     fn generics_hover() {
         check_hover(
             r#"
-package main;
+
 
 fn identity[T](x: T) -> T {
     x
@@ -2499,7 +2471,7 @@ fn main() {
     fn trait_method_hover() {
         check_hover(
             r#"
-package main;
+
 
 trait Greet {
     fn greet(Self) -> string;
@@ -2533,7 +2505,7 @@ fn main() {
     fn closure_hover() {
         check_hover(
             r#"
-package main;
+
 
 fn main() {
     let add = |x: int32, y: int32| -> int32 { x + y };
@@ -2551,7 +2523,7 @@ fn main() {
     fn match_expression_hover() {
         check_hover(
             r#"
-package main;
+
 
 enum Result {
     Ok(int32),
@@ -2579,7 +2551,7 @@ fn main() {
     fn ref_type_hover() {
         check_hover(
             r#"
-package main;
+
 
 fn main() {
     let counter = ref(0);
@@ -2600,7 +2572,7 @@ fn main() {
     fn array_hover() {
         check_hover(
             r#"
-package main;
+
 
 fn main() {
     let arr: [int32; 3] = [1, 2, 3];
@@ -2620,7 +2592,7 @@ fn main() {
     fn tuple_hover() {
         check_hover(
             r#"
-package main;
+
 
 fn main() {
     let pair = (42, "hello");
@@ -2640,7 +2612,7 @@ fn main() {
     fn while_loop_diagnostics() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn main() {
     let i: Ref[int32] = ref(0);
@@ -2658,7 +2630,7 @@ fn main() {
     fn extern_function_diagnostics() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn main() {
     let s = "value: 42";
@@ -2679,15 +2651,18 @@ mod edge_case_tests {
     }
 
     #[test]
-    fn only_package_declaration() {
-        check_diagnostics("package main;", expect!["no diagnostics"]);
+    fn package_declaration_is_error() {
+        check_diagnostics(
+            "package main;",
+            expect!["[0:0] error: package declarations have been removed"],
+        );
     }
 
     #[test]
     fn unicode_in_strings() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn main() {
     let s = "你好世界 🌍";
@@ -2702,7 +2677,7 @@ fn main() {
     fn deeply_nested_expressions() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn main() {
     let x: int32 = ((((1 + 2) * 3) - 4) / 2);
@@ -2717,7 +2692,7 @@ fn main() {
     fn multiline_string() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn main() {
     let s = "line1 line2 line3";
@@ -2730,22 +2705,17 @@ fn main() {
 
     #[test]
     fn hover_at_file_start() {
-        check_hover("package main;\n\nfn main() {}", 0, 0, expect!["no hover"]);
+        check_hover("\n\nfn main() {}", 0, 0, expect!["no hover"]);
     }
 
     #[test]
     fn hover_at_file_end() {
-        check_hover("package main;\n\nfn main() {}", 2, 10, expect!["no hover"]);
+        check_hover("\n\nfn main() {}", 2, 10, expect!["no hover"]);
     }
 
     #[test]
     fn completion_at_file_start() {
-        check_completion(
-            "package main;\n\nfn main() {}",
-            0,
-            0,
-            expect!["empty completion"],
-        );
+        check_completion("\n\nfn main() {}", 0, 0, expect!["empty completion"]);
     }
 
     #[test]
@@ -2753,7 +2723,7 @@ fn main() {
         let long_string = "a".repeat(1000);
         let src = format!(
             r#"
-package main;
+
 
 fn main() {{
     let s = "{}";
@@ -2767,7 +2737,7 @@ fn main() {{
 
     #[test]
     fn many_functions() {
-        let mut src = "package main;\n\n".to_string();
+        let mut src = "\n\n".to_string();
         for i in 0..100 {
             src.push_str(&format!("fn func{}() -> int32 {{ {} }}\n", i, i));
         }
@@ -2783,7 +2753,7 @@ mod builtin_tests {
     fn builtin_println() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn main() {
     println("hello");
@@ -2797,7 +2767,7 @@ fn main() {
     fn builtin_print() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn main() {
     print("hello");
@@ -2811,7 +2781,7 @@ fn main() {
     fn builtin_ref_operations() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn main() {
     let r = ref(42);
@@ -2827,7 +2797,7 @@ fn main() {
     fn builtin_vec_operations() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn main() {
     let v = vec_new();
@@ -2845,7 +2815,7 @@ fn main() {
     fn builtin_array_operations() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn main() {
     let arr: [int32; 3] = [1, 2, 3];
@@ -2861,7 +2831,7 @@ fn main() {
     fn builtin_string_operations() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn main() {
     let s = "hello";
@@ -2877,7 +2847,7 @@ fn main() {
     fn builtin_hashmap_operations() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn main() {
     let m = hashmap_new();
@@ -2896,7 +2866,7 @@ fn main() {
     fn builtin_to_string_trait() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn main() {
     let n: int32 = 42;
@@ -2915,7 +2885,7 @@ mod exhaustiveness_tests {
     fn exhaustive_bool_match() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn main() -> int32 {
     match true {
@@ -2932,7 +2902,7 @@ fn main() -> int32 {
     fn non_exhaustive_bool_missing_false() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn main() -> int32 {
     match true {
@@ -2948,7 +2918,7 @@ fn main() -> int32 {
     fn non_exhaustive_bool_missing_true() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn main() -> int32 {
     match true {
@@ -2964,7 +2934,7 @@ fn main() -> int32 {
     fn exhaustive_enum_match() {
         check_diagnostics(
             r#"
-package main;
+
 
 enum Color {
     Red,
@@ -2989,7 +2959,7 @@ fn main() -> int32 {
     fn non_exhaustive_enum_missing_variants() {
         check_diagnostics(
             r#"
-package main;
+
 
 enum Color {
     Red,
@@ -3012,7 +2982,7 @@ fn main() -> int32 {
     fn exhaustive_enum_with_wildcard() {
         check_diagnostics(
             r#"
-package main;
+
 
 enum Color {
     Red,
@@ -3036,7 +3006,7 @@ fn main() -> int32 {
     fn exhaustive_generic_enum() {
         check_diagnostics(
             r#"
-package main;
+
 
 enum Option[T] {
     Some(T),
@@ -3059,7 +3029,7 @@ fn main() -> int32 {
     fn non_exhaustive_generic_enum() {
         check_diagnostics(
             r#"
-package main;
+
 
 enum Option[T] {
     Some(T),
@@ -3081,7 +3051,7 @@ fn main() -> int32 {
     fn exhaustive_int_with_wildcard() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn main() -> int32 {
     match 42 {
@@ -3099,7 +3069,7 @@ fn main() -> int32 {
     fn non_exhaustive_int_no_wildcard() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn main() -> int32 {
     match 42 {
@@ -3116,7 +3086,7 @@ fn main() -> int32 {
     fn exhaustive_string_with_wildcard() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn main() -> int32 {
     match "hello" {
@@ -3133,7 +3103,7 @@ fn main() -> int32 {
     fn non_exhaustive_string_no_wildcard() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn main() -> int32 {
     match "hello" {
@@ -3150,7 +3120,7 @@ fn main() -> int32 {
     fn non_exhaustive_char_no_wildcard() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn main() -> int32 {
     match 'a' {
@@ -3167,7 +3137,7 @@ fn main() -> int32 {
     fn non_exhaustive_nested_tuple() {
         check_diagnostics(
             r#"
-package main;
+
 
 fn main() -> int32 {
     let pair = (true, false);

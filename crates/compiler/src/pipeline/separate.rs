@@ -165,22 +165,41 @@ fn read_source_files(
     for path in paths {
         let src = fs::read_to_string(&path)
             .map_err(|err| compile_error(format!("failed to read {}: {}", path.display(), err)))?;
-        let ast = parse_ast_file(&path, &src)?;
-        if ast.package.0 != package {
-            return Err(compile_error(format!(
-                "package mismatch in {}: expected {}, found {}",
-                path.display(),
-                package,
-                ast.package.0
-            )));
-        }
+        let mut ast = parse_ast_file(&path, &src)?;
+        ast.package = ast::ast::AstIdent::new(package);
         for import in ast.imports.iter() {
             imports.insert(import.0.clone());
+        }
+        for use_decl in ast.uses.iter() {
+            if let Some(package_import) =
+                external_package_import_alias(&use_decl.path, interface_units)
+            {
+                imports.insert(package_import);
+                continue;
+            }
+            if let Some(first) = use_decl.path.segments().first() {
+                imports.insert(first.ident.0.clone());
+            }
+        }
+        for item in ast.toplevels.iter() {
+            if let ast::ast::Item::Mod(module) = item {
+                imports.insert(module.name.0.clone());
+            }
         }
         for use_trait in ast.use_traits.iter() {
             if let Some(package_import) = external_package_import_alias(use_trait, interface_units)
             {
                 imports.insert(package_import);
+                continue;
+            }
+            if use_trait
+                .segments()
+                .first()
+                .is_some_and(|segment| segment.ident.0 == "crate")
+            {
+                if let Some(package) = use_trait.segments().get(1) {
+                    imports.insert(package.ident.0.clone());
+                }
                 continue;
             }
             let Some(first) = use_trait.segments().first() else {
@@ -189,7 +208,7 @@ fn read_source_files(
             imports.insert(first.ident.0.clone());
         }
         source_list.push(path.display().to_string());
-        files.push(hir::SourceFileAst { path, ast });
+        files.push(hir::SourceFileAst::new(path, ast));
     }
 
     Ok((files, imports, source_list))
@@ -276,12 +295,13 @@ fn typecheck_single_package(
 ) -> (
     crate::tast::File,
     PackageExports,
+    PackageExports,
     interface::PackageInterface,
     diagnostics::Diagnostics,
 ) {
     let package_id = interface::package_id_for_name(package);
     let (hir, hir_table, mut hir_diagnostics) =
-        hir::lower_to_hir_files_with_env(package_id, files, deps_interfaces);
+        hir::lower_to_hir_files_with_env(package_id, files.clone(), deps_interfaces);
     let (tast, genv, mut diagnostics) = crate::typer::check_file_with_env(
         hir,
         hir_table,
@@ -291,13 +311,10 @@ fn typecheck_single_package(
         deps_envs,
     );
     diagnostics.append(&mut hir_diagnostics);
-    let exports = PackageExports {
-        type_env: genv.type_env.clone(),
-        trait_env: genv.trait_env.clone(),
-        value_env: genv.value_env.clone(),
-    };
+    let full_exports = PackageExports::from_genv(&genv);
+    let exports = PackageExports::public_from_package(package, &files, &genv);
     let pkg_interface = interface::PackageInterface::from_exports(package, &exports);
-    (tast, exports, pkg_interface, diagnostics)
+    (tast, full_exports, exports, pkg_interface, diagnostics)
 }
 
 pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationError> {
@@ -332,7 +349,7 @@ pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationEr
             dep_hashes.insert(unit.package.clone(), unit.interface_hash.clone());
         }
 
-        let (tast, exports, pkg_interface, diagnostics) =
+        let (tast, _full_exports, exports, pkg_interface, diagnostics) =
             typecheck_single_package(&opts.package, files, &deps_interfaces, deps_envs);
         drop(tast);
 
@@ -380,7 +397,7 @@ pub fn build_package(opts: PackageInputs) -> Result<CoreUnit, CompilationError> 
             dep_units.push(unit);
         }
 
-        let (tast, exports, pkg_interface, diagnostics) =
+        let (tast, full_exports, exports, pkg_interface, diagnostics) =
             typecheck_single_package(&opts.package, files, &deps_interfaces, deps_envs);
         if diagnostics.has_errors() {
             return Err(CompilationError::Typer { diagnostics });
@@ -394,7 +411,7 @@ pub fn build_package(opts: PackageInputs) -> Result<CoreUnit, CompilationError> 
         for dep in dep_units.iter() {
             dep.exports.apply_to(&mut env);
         }
-        interface.exports.apply_to(&mut env);
+        full_exports.apply_to(&mut env);
         let mut compile_diagnostics = Diagnostics::new();
         let core_ir =
             crate::compile_match::compile_file(&env, &gensym, &mut compile_diagnostics, &tast);

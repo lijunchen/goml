@@ -157,6 +157,7 @@ fn collect_constructor_names(file: &cst::File) -> HashSet<String> {
                     constructor_names.insert(token.to_string());
                 }
             }
+            cst::Item::Mod(_) => {}
             _ => {}
         }
     }
@@ -171,6 +172,7 @@ pub fn lower(node: cst::File) -> LowerResult {
         .and_then(|decl| decl.name_token())
         .map(|token| ast::AstIdent::new(&token.to_string()))
         .unwrap_or_else(|| ast::AstIdent::new(DEFAULT_PACKAGE_NAME));
+    let mut uses = Vec::new();
     let mut imports = Vec::new();
     let mut use_traits = Vec::new();
     for decl in node.use_decls() {
@@ -181,6 +183,9 @@ pub fn lower(node: cst::File) -> LowerResult {
             );
             continue;
         };
+        if let Some(path) = lower_path(&mut ctx, &path) {
+            uses.push(ast::UseDecl { path, alias: None });
+        }
         let idents = path
             .ident_tokens()
             .map(|token| ast::AstIdent::new(&token.to_string()))
@@ -217,6 +222,7 @@ pub fn lower(node: cst::File) -> LowerResult {
     } else {
         Some(ast::File {
             package,
+            uses,
             imports,
             use_traits,
             toplevels: items,
@@ -244,6 +250,19 @@ fn lower_attributes(list: Option<cst::AttributeList>) -> Vec<ast::Attribute> {
     .unwrap_or_default()
 }
 
+fn lower_visibility(node: &impl CstNode) -> ast::Visibility {
+    if node
+        .syntax()
+        .children_with_tokens()
+        .filter_map(|it| it.into_token())
+        .any(|token| token.kind() == MySyntaxKind::PubKeyword)
+    {
+        ast::Visibility::Public
+    } else {
+        ast::Visibility::Private
+    }
+}
+
 fn attribute_path(attr: &ast::Attribute) -> Option<&str> {
     let trimmed = attr.text.trim();
     let inner = trimmed.strip_prefix("#[")?.strip_suffix(']')?.trim();
@@ -269,6 +288,7 @@ fn find_attribute<'a>(attrs: &'a [ast::Attribute], target: &str) -> Option<&'a a
 
 fn lower_item(ctx: &mut LowerCtx, node: cst::Item) -> Option<ast::Item> {
     match node {
+        cst::Item::Mod(it) => Some(ast::Item::Mod(lower_mod(ctx, it)?)),
         cst::Item::Enum(it) => Some(ast::Item::EnumDef(lower_enum(ctx, it)?)),
         cst::Item::Struct(it) => Some(ast::Item::StructDef(lower_struct(ctx, it)?)),
         cst::Item::Trait(it) => Some(ast::Item::TraitDef(lower_trait(ctx, it)?)),
@@ -278,8 +298,27 @@ fn lower_item(ctx: &mut LowerCtx, node: cst::Item) -> Option<ast::Item> {
     }
 }
 
+fn lower_mod(ctx: &mut LowerCtx, node: cst::Mod) -> Option<ast::ModDecl> {
+    let visibility = lower_visibility(&node);
+    let name = match node.name_token() {
+        Some(name) => name.to_string(),
+        None => {
+            ctx.push_error(
+                Some(node.syntax().text_range()),
+                "Module declaration is missing a name",
+            );
+            return None;
+        }
+    };
+    Some(ast::ModDecl {
+        visibility,
+        name: ast::AstIdent::new(&name),
+    })
+}
+
 fn lower_enum(ctx: &mut LowerCtx, node: cst::Enum) -> Option<ast::EnumDef> {
     let attrs = lower_attributes(node.attributes());
+    let visibility = lower_visibility(&node);
     let name = match node.uident() {
         Some(name) => name.to_string(),
         None => {
@@ -311,6 +350,7 @@ fn lower_enum(ctx: &mut LowerCtx, node: cst::Enum) -> Option<ast::EnumDef> {
     };
     Some(ast::EnumDef {
         attrs,
+        visibility,
         name: ast::AstIdent::new(&name),
         generics,
         variants,
@@ -319,6 +359,7 @@ fn lower_enum(ctx: &mut LowerCtx, node: cst::Enum) -> Option<ast::EnumDef> {
 
 fn lower_struct(ctx: &mut LowerCtx, node: cst::Struct) -> Option<ast::StructDef> {
     let attrs = lower_attributes(node.attributes());
+    let visibility = lower_visibility(&node);
     let name = node.uident()?.to_string();
     let generics: Vec<ast::AstIdent> = node
         .generic_list()
@@ -343,6 +384,7 @@ fn lower_struct(ctx: &mut LowerCtx, node: cst::Struct) -> Option<ast::StructDef>
 
     Some(ast::StructDef {
         attrs,
+        visibility,
         name: ast::AstIdent::new(&name),
         generics,
         fields,
@@ -360,6 +402,7 @@ fn lower_struct_field(
 
 fn lower_trait(ctx: &mut LowerCtx, node: cst::Trait) -> Option<ast::TraitDef> {
     let attrs = lower_attributes(node.attributes());
+    let visibility = lower_visibility(&node);
     let name = match node.uident() {
         Some(name) => name.to_string(),
         None => {
@@ -380,6 +423,7 @@ fn lower_trait(ctx: &mut LowerCtx, node: cst::Trait) -> Option<ast::TraitDef> {
     };
     Some(ast::TraitDef {
         attrs,
+        visibility,
         name: ast::AstIdent::new(&name),
         method_sigs: methods,
     })
@@ -641,6 +685,7 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::TypeExpr> {
 
 fn lower_fn(ctx: &mut LowerCtx, node: cst::Fn) -> Option<ast::Fn> {
     let attrs = lower_attributes(node.attributes());
+    let visibility = lower_visibility(&node);
     let name = match node.lident() {
         Some(name) => name.to_string(),
         None => {
@@ -701,6 +746,7 @@ fn lower_fn(ctx: &mut LowerCtx, node: cst::Fn) -> Option<ast::Fn> {
     };
     Some(ast::Fn {
         attrs,
+        visibility,
         name: ast::AstIdent(name),
         generics,
         generic_bounds,
@@ -712,6 +758,7 @@ fn lower_fn(ctx: &mut LowerCtx, node: cst::Fn) -> Option<ast::Fn> {
 
 fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
     let attrs = lower_attributes(node.attributes());
+    let visibility = lower_visibility(&node);
 
     if let Some(attr) = find_attribute(&attrs, "builtin") {
         if node.type_keyword().is_some() {
@@ -772,6 +819,7 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
         let ret_ty = node.return_type().and_then(|ty| lower_ty(ctx, ty));
         return Some(ast::Item::ExternBuiltin(ast::ExternBuiltin {
             attrs,
+            visibility,
             name: ast::AstIdent(name),
             generics,
             generic_bounds,
@@ -791,6 +839,7 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
         let name = name_token.to_string();
         return Some(ast::Item::ExternType(ast::ExternType {
             attrs: attrs.clone(),
+            visibility,
             package_path: None,
             go_name: name.clone(),
             goml_name: ast::AstIdent::new(&name),
@@ -862,6 +911,7 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
         let go_name = go_symbol_override.unwrap_or_else(|| name.clone());
         return Some(ast::Item::ExternType(ast::ExternType {
             attrs: attrs.clone(),
+            visibility,
             package_path: Some(package_path),
             go_name,
             goml_name: ast::AstIdent::new(&name),
@@ -894,6 +944,7 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
 
     Some(ast::Item::ExternGo(ast::ExternGo {
         attrs,
+        visibility,
         package_path,
         go_symbol,
         goml_name: ast::AstIdent(name),
@@ -2598,8 +2649,15 @@ fn lower_constructor_path_from_constr_pat(
 }
 
 fn lower_path(ctx: &mut LowerCtx, path: &cst::Path) -> Option<ast::Path> {
-    let segments: Vec<ast::PathSegment> = path
-        .ident_tokens()
+    let root = lower_path_root(path);
+    let segment_tokens = path.ident_tokens().collect::<Vec<_>>();
+    let skip_root_segment = matches!(
+        root,
+        ast::PathRoot::Crate | ast::PathRoot::Self_ | ast::PathRoot::Super
+    );
+    let segments: Vec<ast::PathSegment> = segment_tokens
+        .iter()
+        .skip(usize::from(skip_root_segment))
         .map(|token| {
             ast::PathSegment::with_range(ast::AstIdent(token.to_string()), Some(token.text_range()))
         })
@@ -2612,6 +2670,198 @@ fn lower_path(ctx: &mut LowerCtx, path: &cst::Path) -> Option<ast::Path> {
         );
         None
     } else {
-        Some(ast::Path::new(segments))
+        Some(ast::Path::with_root(root, segments))
+    }
+}
+
+fn lower_path_root(path: &cst::Path) -> ast::PathRoot {
+    let first_token = path
+        .syntax()
+        .children_with_tokens()
+        .filter_map(|element| element.into_token())
+        .find(|token| {
+            !matches!(
+                token.kind(),
+                MySyntaxKind::Whitespace | MySyntaxKind::Comment
+            )
+        });
+
+    let Some(token) = first_token else {
+        return ast::PathRoot::Relative;
+    };
+
+    match token.kind() {
+        MySyntaxKind::ColonColon => ast::PathRoot::Absolute,
+        MySyntaxKind::CrateKeyword => ast::PathRoot::Crate,
+        MySyntaxKind::SuperKeyword => ast::PathRoot::Super,
+        MySyntaxKind::Ident if token.text() == "self" && path.ident_tokens().count() > 1 => {
+            ast::PathRoot::Self_
+        }
+        _ => ast::PathRoot::Relative,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::path::Path;
+
+    use super::*;
+    use parser::syntax::MySyntaxNode;
+
+    #[test]
+    fn lower_preserves_path_roots() {
+        let file = lower_src("fn f(x: crate::Thing) -> super::Other { self::make(x) }");
+        let ast::Item::Fn(func) = &file.toplevels[0] else {
+            panic!("expected function");
+        };
+        let ast::TypeExpr::TCon { path: param_path } = &func.params[0].1 else {
+            panic!("expected path type");
+        };
+        assert_eq!(param_path.root(), &ast::PathRoot::Crate);
+        assert_eq!(param_path.display(), "crate::Thing");
+
+        let ast::TypeExpr::TCon { path: ret_path } = func.ret_ty.as_ref().unwrap() else {
+            panic!("expected path return type");
+        };
+        assert_eq!(ret_path.root(), &ast::PathRoot::Super);
+        assert_eq!(ret_path.display(), "super::Other");
+
+        let ast::Expr::ECall { func, .. } = func.body.tail.as_deref().unwrap() else {
+            panic!("expected call expression");
+        };
+        let ast::Expr::EPath { path, .. } = func.as_ref() else {
+            panic!("expected path callee");
+        };
+        assert_eq!(path.root(), &ast::PathRoot::Self_);
+        assert_eq!(path.display(), "self::make");
+    }
+
+    #[test]
+    fn lower_preserves_absolute_path_root() {
+        let file = lower_src("fn f(x: ::Thing) -> unit { () }");
+        let ast::Item::Fn(func) = &file.toplevels[0] else {
+            panic!("expected function");
+        };
+        let ast::TypeExpr::TCon { path } = &func.params[0].1 else {
+            panic!("expected path type");
+        };
+        assert_eq!(path.root(), &ast::PathRoot::Absolute);
+        assert_eq!(path.display(), "::Thing");
+    }
+
+    #[test]
+    fn lower_preserves_public_visibility() {
+        let file = lower_src(
+            r#"
+pub fn f() -> unit { () }
+pub struct Thing { value: int32 }
+pub enum Choice { A }
+pub trait Named { fn name(Self) -> string; }
+pub extern type Native
+pub extern "go" "fmt" println() -> unit
+"#,
+        );
+
+        let ast::Item::Fn(func) = &file.toplevels[0] else {
+            panic!("expected function");
+        };
+        assert_eq!(func.visibility, ast::Visibility::Public);
+
+        let ast::Item::StructDef(struct_def) = &file.toplevels[1] else {
+            panic!("expected struct");
+        };
+        assert_eq!(struct_def.visibility, ast::Visibility::Public);
+
+        let ast::Item::EnumDef(enum_def) = &file.toplevels[2] else {
+            panic!("expected enum");
+        };
+        assert_eq!(enum_def.visibility, ast::Visibility::Public);
+
+        let ast::Item::TraitDef(trait_def) = &file.toplevels[3] else {
+            panic!("expected trait");
+        };
+        assert_eq!(trait_def.visibility, ast::Visibility::Public);
+
+        let ast::Item::ExternType(extern_type) = &file.toplevels[4] else {
+            panic!("expected extern type");
+        };
+        assert_eq!(extern_type.visibility, ast::Visibility::Public);
+
+        let ast::Item::ExternGo(extern_go) = &file.toplevels[5] else {
+            panic!("expected extern go");
+        };
+        assert_eq!(extern_go.visibility, ast::Visibility::Public);
+    }
+
+    #[test]
+    fn lower_preserves_use_decls() {
+        let file = lower_src(
+            r#"
+use crate::math::add;
+use self::helper;
+use super::Named;
+fn f() -> unit { () }
+"#,
+        );
+
+        let roots = file
+            .uses
+            .iter()
+            .map(|decl| decl.path.root().clone())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            roots,
+            vec![
+                ast::PathRoot::Crate,
+                ast::PathRoot::Self_,
+                ast::PathRoot::Super
+            ]
+        );
+
+        let displays = file
+            .uses
+            .iter()
+            .map(|decl| decl.path.display())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            displays,
+            vec!["crate::math::add", "self::helper", "super::Named"]
+        );
+        assert!(file.uses.iter().all(|decl| decl.alias.is_none()));
+    }
+
+    #[test]
+    fn lower_preserves_mod_decls() {
+        let file = lower_src(
+            r#"
+pub mod api;
+mod internal;
+fn f() -> unit { () }
+"#,
+        );
+
+        let ast::Item::Mod(api) = &file.toplevels[0] else {
+            panic!("expected public module");
+        };
+        assert_eq!(api.name, ast::AstIdent::new("api"));
+        assert_eq!(api.visibility, ast::Visibility::Public);
+
+        let ast::Item::Mod(internal) = &file.toplevels[1] else {
+            panic!("expected private module");
+        };
+        assert_eq!(internal.name, ast::AstIdent::new("internal"));
+        assert_eq!(internal.visibility, ast::Visibility::Private);
+    }
+
+    fn lower_src(src: &str) -> ast::File {
+        let parse = parser::parse(Path::new("test.gom"), src);
+        assert!(
+            !parse.has_errors(),
+            "unexpected parse errors: {:?}",
+            parse.format_errors(src)
+        );
+        let root = MySyntaxNode::new_root(parse.green_node);
+        let file = cst::File::cast(root).unwrap();
+        lower(file).into_result().unwrap()
     }
 }

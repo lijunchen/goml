@@ -120,39 +120,35 @@ versions = ["1.2.0"]
     .unwrap();
     std::fs::write(
         registry.join("alice/http/1.2.0/goml.toml"),
-        r#"[package]
+        r#"[crate]
 name = "http"
+kind = "lib"
+root = "lib.gom"
 "#,
     )
     .unwrap();
     std::fs::write(
         registry.join("alice/http/1.2.0/lib.gom"),
-        r#"package http;
+        r#"
+mod client;
 
-use client;
+use crate::client;
 
-fn make_client() -> client::Client {
+pub fn make_client() -> client::Client {
     client::Client { name: "alice" }
 }
 "#,
     )
     .unwrap();
     std::fs::write(
-        registry.join("alice/http/1.2.0/client/goml.toml"),
-        r#"[package]
-name = "client"
-"#,
-    )
-    .unwrap();
-    std::fs::write(
-        registry.join("alice/http/1.2.0/client/lib.gom"),
-        r#"package client;
+        registry.join("alice/http/1.2.0/client/mod.gom"),
+        r#"
 
-struct Client {
+pub struct Client {
     name: string,
 }
 
-fn tag() -> string {
+pub fn tag() -> string {
     "client"
 }
 "#,
@@ -169,17 +165,10 @@ fn use_statement_package_completions() {
 
     std::fs::create_dir_all(dir.path().join("util")).unwrap();
     std::fs::write(
-        dir.path().join("util/goml.toml"),
-        r#"[package]
-name = "util"
-"#,
-    )
-    .unwrap();
-    std::fs::write(
-        dir.path().join("util/lib.gom"),
-        r#"package util;
+        dir.path().join("util/mod.gom"),
+        r#"
 
-fn ping() -> string {
+pub fn ping() -> string {
     "pong"
 }
 "#,
@@ -188,12 +177,10 @@ fn ping() -> string {
 
     std::fs::write(
         dir.path().join("goml.toml"),
-        r#"[module]
+        r#"[crate]
 name = "demo"
-
-[package]
-name = "main"
-entry = "main.gom"
+kind = "bin"
+root = "main.gom"
 
 [dependencies]
 "alice::http" = "1.2.0"
@@ -201,7 +188,7 @@ entry = "main.gom"
     )
     .unwrap();
 
-    let src = r#"package main;
+    let src = r#"
 
 use 
 
@@ -249,17 +236,10 @@ fn imported_package_value_completions() {
 
     std::fs::create_dir_all(dir.path().join("util")).unwrap();
     std::fs::write(
-        dir.path().join("util/goml.toml"),
-        r#"[package]
-name = "util"
-"#,
-    )
-    .unwrap();
-    std::fs::write(
-        dir.path().join("util/lib.gom"),
-        r#"package util;
+        dir.path().join("util/mod.gom"),
+        r#"
 
-fn ping() -> string {
+pub fn ping() -> string {
     "pong"
 }
 "#,
@@ -268,12 +248,10 @@ fn ping() -> string {
 
     std::fs::write(
         dir.path().join("goml.toml"),
-        r#"[module]
+        r#"[crate]
 name = "demo"
-
-[package]
-name = "main"
-entry = "main.gom"
+kind = "bin"
+root = "main.gom"
 
 [dependencies]
 "alice::http" = "1.2.0"
@@ -281,9 +259,10 @@ entry = "main.gom"
     )
     .unwrap();
 
-    let src = r#"package main;
+    let src = r#"
+mod util;
 
-use util;
+use crate::util;
 use alice::http;
 use alice::http::client;
 
@@ -300,7 +279,7 @@ fn main() -> unit {
         check_value_completions_with_path(
             &main_path,
             src,
-            7,
+            8,
             6,
             expect![[r#"
                 [
@@ -317,7 +296,7 @@ fn main() -> unit {
         check_value_completions_with_path(
             &main_path,
             src,
-            8,
+            9,
             6,
             expect![[r#"
                 [
@@ -334,7 +313,7 @@ fn main() -> unit {
         check_value_completions_with_path(
             &main_path,
             src,
-            9,
+            10,
             6,
             expect![[r#"
                 [
@@ -407,15 +386,15 @@ fn main() {
 
 #[test]
 #[rustfmt::skip]
-fn hover_on_package_name_returns_none() {
-    let src = r#"package main;
+fn hover_on_minimal_function_name() {
+    let src = r#"
 
 fn main() {
 }
 "#;
 
     check(src, 0, 9, expect![[r#"
-        "<None>"
+        "() -> unit"
     "#]]);
 }
 
@@ -500,6 +479,11 @@ fn main() {
             },
             ValueCompletionItem {
                 name: "struct",
+                kind: Keyword,
+                detail: None,
+            },
+            ValueCompletionItem {
+                name: "super",
                 kind: Keyword,
                 detail: None,
             },
@@ -1100,19 +1084,19 @@ fn multi_package_query() {
     let lib_dir = dir.path().join("Lib");
     std::fs::create_dir_all(&lib_dir).unwrap();
 
-    let lib_src = r#"package Lib;
+    let lib_src = r#"
 
-enum Color {
+pub enum Color {
     Red,
     Green,
 }
 
-struct Point {
+pub struct Point {
     x: int32,
     y: int32,
 }
 
-fn color_to_int(c: Color) -> int32 {
+pub fn color_to_int(c: Color) -> int32 {
     match c {
         Color::Red => 1,
         Color::Green => 2,
@@ -1122,7 +1106,7 @@ fn color_to_int(c: Color) -> int32 {
     let lib_path = lib_dir.join("main.gom");
     std::fs::write(&lib_path, lib_src).unwrap();
 
-    let hover_src = r#"package main;
+    let hover_src = r#"
 use Lib;
 
 fn main() {
@@ -1132,7 +1116,7 @@ fn main() {
     let p = Lib::Point { x: 1, y: 2 };
 }
 "#;
-    let completion_src = r#"package main;
+    let completion_src = r#"
 use Lib;
 
 fn main() {
@@ -1183,13 +1167,13 @@ fn multi_package_inherent_method_completion() {
     let lib_dir = dir.path().join("Lib");
     std::fs::create_dir_all(&lib_dir).unwrap();
 
-    let lib_src = r#"package Lib;
+    let lib_src = r#"
 
-struct Item {
+pub struct Item {
     value: int32,
 }
 
-fn make(value: int32) -> Item {
+pub fn make(value: int32) -> Item {
     Item { value: value }
 }
 
@@ -1206,7 +1190,7 @@ impl Item {
     let lib_path = lib_dir.join("main.gom");
     std::fs::write(&lib_path, lib_src).unwrap();
 
-    let src = r#"package main;
+    let src = r#"
 use Lib;
 
 fn main() {
@@ -1257,19 +1241,19 @@ fn multi_package_colon_colon_completions() {
     let lib_dir = dir.path().join("Lib");
     std::fs::create_dir_all(&lib_dir).unwrap();
 
-    let lib_src = r#"package Lib;
+    let lib_src = r#"
 
-enum Color {
+pub enum Color {
     Red,
     Green,
 }
 
-struct Point {
+pub struct Point {
     x: int32,
     y: int32,
 }
 
-fn color_to_int(c: Color) -> int32 {
+pub fn color_to_int(c: Color) -> int32 {
     match c {
         Color::Red => 1,
         Color::Green => 2,
@@ -1279,14 +1263,14 @@ fn color_to_int(c: Color) -> int32 {
     let lib_path = lib_dir.join("main.gom");
     std::fs::write(&lib_path, lib_src).unwrap();
 
-    let src = r#"package main;
+    let src = r#"
 use Lib;
 
 fn main() {
     let _ = Lib::;
 }
 "#;
-    let src_with_prefix = r#"package main;
+    let src_with_prefix = r#"
 use Lib;
 
 fn main() {
@@ -1356,7 +1340,7 @@ fn registry_dependency_hover_and_completion() {
     write_cached_registry(&home);
 
     let main_path = dir.path().join("main.gom");
-    let valid_src = r#"package main;
+    let valid_src = r#"
 
 use alice::http;
 use alice::http::client;
@@ -1366,7 +1350,7 @@ fn main() -> unit {
     let _ = client.name;
 }
 "#;
-    let namespace_src = r#"package main;
+    let namespace_src = r#"
 
 use alice::http;
 use alice::http::client;
@@ -1375,7 +1359,7 @@ fn main() -> unit {
     let _ = http::;
 }
 "#;
-    let nested_namespace_src = r#"package main;
+    let nested_namespace_src = r#"
 
 use alice::http;
 use alice::http::client;
@@ -1384,7 +1368,7 @@ fn main() -> unit {
     let _ = client::;
 }
 "#;
-    let use_namespace_src = r#"package main;
+    let use_namespace_src = r#"
 
 use alice::http::
 
@@ -1394,12 +1378,10 @@ fn main() -> unit {
 "#;
     std::fs::write(
         dir.path().join("goml.toml"),
-        r#"[module]
+        r#"[crate]
 name = "demo"
-
-[package]
-name = "main"
-entry = "main.gom"
+kind = "bin"
+root = "main.gom"
 
 [dependencies]
 "alice::http" = "1.2.0"

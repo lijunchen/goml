@@ -1,9 +1,16 @@
 use crate::ast::{
     Arm, AssignStmt, AstIdent, Attribute, Block, ClosureParam, EnumDef, Expr, ExternBuiltin,
-    ExternGo, ExternType, File, Fn, ImplBlock, Item, LetStmt, Pat, Path, Stmt, StructDef, TraitDef,
-    TraitMethodSignature, TypeExpr,
+    ExternGo, ExternType, File, Fn, ImplBlock, Item, LetStmt, ModDecl, Pat, Path, Stmt, StructDef,
+    TraitDef, TraitMethodSignature, TypeExpr, Visibility,
 };
 use pretty::RcDoc;
+
+fn visibility_doc<'a>(visibility: Visibility) -> RcDoc<'a, ()> {
+    match visibility {
+        Visibility::Private => RcDoc::nil(),
+        Visibility::Public => RcDoc::text("pub").append(RcDoc::space()),
+    }
+}
 
 fn attrs_doc(attrs: &[Attribute]) -> RcDoc<'_, ()> {
     if attrs.is_empty() {
@@ -576,7 +583,8 @@ fn generics_to_doc(generics: &[AstIdent]) -> RcDoc<'_, ()> {
 
 impl EnumDef {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
-        let header = RcDoc::text("enum")
+        let header = visibility_doc(self.visibility)
+            .append(RcDoc::text("enum"))
             .append(RcDoc::space())
             .append(RcDoc::text(&self.name.0))
             .append(generics_to_doc(&self.generics));
@@ -623,7 +631,8 @@ impl EnumDef {
 
 impl StructDef {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
-        let header = RcDoc::text("struct")
+        let header = visibility_doc(self.visibility)
+            .append(RcDoc::text("struct"))
             .append(RcDoc::space())
             .append(RcDoc::text(&self.name.0))
             .append(generics_to_doc(&self.generics));
@@ -656,7 +665,8 @@ impl StructDef {
 
 impl TraitDef {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
-        let header = RcDoc::text("trait")
+        let header = visibility_doc(self.visibility)
+            .append(RcDoc::text("trait"))
             .append(RcDoc::space())
             .append(RcDoc::text(&self.name.0));
 
@@ -704,6 +714,16 @@ impl TraitMethodSignature {
         let mut w = Vec::new();
         self.to_doc().render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
+    }
+}
+
+impl ModDecl {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
+        visibility_doc(self.visibility)
+            .append(RcDoc::text("mod"))
+            .append(RcDoc::space())
+            .append(RcDoc::text(self.name.0.clone()))
+            .append(RcDoc::text(";"))
     }
 }
 
@@ -778,7 +798,8 @@ impl ImplBlock {
 
 impl Fn {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
-        let header = RcDoc::text("fn")
+        let header = visibility_doc(self.visibility)
+            .append(RcDoc::text("fn"))
             .append(RcDoc::space())
             .append(RcDoc::text(&self.name.0))
             .append(RcDoc::text("("));
@@ -833,7 +854,8 @@ impl ExternGo {
             RcDoc::nil()
         };
 
-        let header = RcDoc::text("extern")
+        let header = visibility_doc(self.visibility)
+            .append(RcDoc::text("extern"))
             .append(RcDoc::space())
             .append(RcDoc::text("\"go\""))
             .append(RcDoc::space())
@@ -863,7 +885,8 @@ impl ExternGo {
 impl ExternType {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let doc = if let Some(package_path) = &self.package_path {
-            RcDoc::text("extern")
+            visibility_doc(self.visibility)
+                .append(RcDoc::text("extern"))
                 .append(RcDoc::space())
                 .append(RcDoc::text("\"go\""))
                 .append(RcDoc::space())
@@ -878,7 +901,8 @@ impl ExternType {
                 .append(RcDoc::space())
                 .append(RcDoc::text(self.goml_name.0.clone()))
         } else {
-            RcDoc::text("extern")
+            visibility_doc(self.visibility)
+                .append(RcDoc::text("extern"))
                 .append(RcDoc::space())
                 .append(RcDoc::text("type"))
                 .append(RcDoc::space())
@@ -908,7 +932,8 @@ impl ExternBuiltin {
         };
 
         attrs_doc(&self.attrs).append(
-            RcDoc::text("extern")
+            visibility_doc(self.visibility)
+                .append(RcDoc::text("extern"))
                 .append(RcDoc::space())
                 .append(RcDoc::text("fn"))
                 .append(RcDoc::space())
@@ -966,6 +991,7 @@ impl File {
 impl Item {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         match self {
+            Item::Mod(decl) => decl.to_doc(),
             Item::EnumDef(def) => def.to_doc(),
             Item::StructDef(def) => def.to_doc(),
             Item::TraitDef(def) => def.to_doc(),

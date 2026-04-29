@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::ffi::OsString;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -6,10 +6,10 @@ use std::process::{Command, Stdio};
 
 use anyhow::{Context, anyhow, bail};
 use clap::{Args, Parser, Subcommand};
-use compiler::config::GomlConfig;
+use compiler::config::{find_crate_root, load_crate_manifest};
 use compiler::env::{format_compile_diagnostics, format_typer_diagnostics};
 use compiler::external::ExternalDependencyArtifacts;
-use compiler::package_names::{ENTRY_FUNCTION, ROOT_PACKAGE};
+use compiler::package_names::ENTRY_FUNCTION;
 use compiler::pipeline::{
     pipeline::Compilation, pipeline::CompilationError, pipeline::compile_single_file,
 };
@@ -195,7 +195,7 @@ struct LinkOptions {
 struct ProjectContext {
     module_dir: PathBuf,
     entry_path: PathBuf,
-    config: GomlConfig,
+    dependencies: BTreeMap<String, String>,
 }
 
 struct PackageCompilerCommand {
@@ -328,8 +328,7 @@ fn execute_new(args: NewArgs) -> anyhow::Result<()> {
         &render_root_goml_toml(&args.project_name),
     )?;
     write_file_with_dirs(&project_dir.join("main.gom"), &render_main_gom())?;
-    write_file_with_dirs(&lib_dir.join("goml.toml"), &render_lib_goml_toml())?;
-    write_file_with_dirs(&lib_dir.join("lib.gom"), &render_lib_gom())?;
+    write_file_with_dirs(&lib_dir.join("mod.gom"), &render_lib_gom())?;
 
     println!("Created project at {}", project_dir.display());
     println!("Next steps:");
@@ -474,13 +473,13 @@ fn load_registry_for_command(local_registry: Option<&Path>) -> anyhow::Result<Re
 
 fn locate_module_root_from_cwd() -> anyhow::Result<PathBuf> {
     let cwd = std::env::current_dir().context("failed to read current directory")?;
-    let Some((module_dir, _config)) = GomlConfig::find_module_root(&cwd) else {
-        bail!(
-            "no goml.toml with [module] section found in ancestors of {}",
-            cwd.display()
-        );
-    };
-    Ok(module_dir)
+    if let Some((crate_dir, _config)) = find_crate_root(&cwd) {
+        return Ok(crate_dir);
+    }
+    bail!(
+        "no goml.toml with [crate] section found in ancestors of {}",
+        cwd.display()
+    )
 }
 
 fn load_manifest_document(path: &Path) -> anyhow::Result<DocumentMut> {
@@ -560,46 +559,31 @@ fn write_file_with_dirs(path: &Path, content: &str) -> anyhow::Result<()> {
 
 fn render_root_goml_toml(project_name: &str) -> String {
     format!(
-        r#"[module]
+        r#"[crate]
 name = "{project_name}"
-
-[package]
-name = "{ROOT_PACKAGE}"
-entry = "{DEFAULT_ENTRY_FILE}"
+kind = "bin"
+root = "{DEFAULT_ENTRY_FILE}"
 "#
     )
 }
 
 fn render_main_gom() -> String {
     format!(
-        r#"package {ROOT_PACKAGE};
-
-use {DEFAULT_LIB_PACKAGE};
+        r#"mod {DEFAULT_LIB_PACKAGE};
 
 fn {ENTRY_FUNCTION}() -> unit {{
-    string_println({DEFAULT_LIB_PACKAGE}::message())
+    string_println(crate::{DEFAULT_LIB_PACKAGE}::message())
 }}
-"#
-    )
-}
-
-fn render_lib_goml_toml() -> String {
-    format!(
-        r#"[package]
-name = "{DEFAULT_LIB_PACKAGE}"
 "#
     )
 }
 
 fn render_lib_gom() -> String {
-    format!(
-        r#"package {DEFAULT_LIB_PACKAGE};
-
-fn message() -> string {{
+    r#"pub fn message() -> string {
     "hello from lib"
-}}
+}
 "#
-    )
+    .to_string()
 }
 
 fn execute_compiler_command(command: CompilerCommands) -> anyhow::Result<()> {
@@ -912,9 +896,13 @@ fn build_external_artifacts_plan(
     project: &ProjectContext,
     output_root: &str,
 ) -> anyhow::Result<ExternalArtifactsPlan> {
-    let artifacts =
-        compiler::external::resolve_project_dependencies(&project.module_dir, &project.config)
-            .map_err(anyhow::Error::msg)?;
+    let dependencies = project
+        .dependencies
+        .iter()
+        .map(|(coord, version)| (coord.clone(), version.clone()))
+        .collect();
+    let artifacts = compiler::external::resolve_dependency_versions(&dependencies)
+        .map_err(anyhow::Error::msg)?;
     let mut interface_outputs = HashMap::new();
     let mut core_outputs = HashMap::new();
 
@@ -1028,6 +1016,19 @@ fn package_artifact_base(
         .ok_or_else(|| anyhow!("missing package {}", package_name))?;
 
     let base = relative_to_module(module_dir, package_dir);
+    if package_dir.is_file() {
+        let mut base = base;
+        base.set_extension("");
+        if base.as_os_str().is_empty() {
+            bail!(
+                "package {} resolved to empty artifact path from {}",
+                package_name,
+                package_dir.display()
+            );
+        }
+        return Ok(base);
+    }
+
     if !base.as_os_str().is_empty() {
         return Ok(base.join(&package.name));
     }
@@ -1053,10 +1054,6 @@ fn package_entry_relative_path(
     package: &compiler::pipeline::packages::PackageUnit,
     package_dir: &Path,
 ) -> anyhow::Result<PathBuf> {
-    if let Some(config) = GomlConfig::find_package_config(package_dir) {
-        return Ok(PathBuf::from(config.package.entry));
-    }
-
     let default_entry = package_dir.join("lib.gom");
     if default_entry.exists() {
         return Ok(PathBuf::from("lib.gom"));
@@ -1197,18 +1194,22 @@ fn shell_escape(arg: &str) -> String {
 
 fn load_project_from_cwd() -> anyhow::Result<ProjectContext> {
     let cwd = std::env::current_dir().context("failed to read current directory")?;
-    let Some((module_dir, config)) = GomlConfig::find_module_root(&cwd) else {
-        bail!(
-            "no goml.toml with [module] section found in ancestors of {}",
-            cwd.display()
-        );
-    };
+    if let Some((crate_dir, _config)) = find_crate_root(&cwd) {
+        let crate_unit = compiler::pipeline::modules::discover_crate_from_dir(&crate_dir)
+            .map_err(|err| anyhow!("crate module discovery failed: {:?}", err))?;
+        let manifest =
+            load_crate_manifest(&crate_dir.join("goml.toml")).map_err(anyhow::Error::msg)?;
+        return Ok(ProjectContext {
+            entry_path: crate_unit.root_file,
+            module_dir: crate_dir,
+            dependencies: manifest.dependency_versions(),
+        });
+    }
 
-    Ok(ProjectContext {
-        entry_path: module_dir.join(&config.package.entry),
-        module_dir,
-        config,
-    })
+    bail!(
+        "no goml.toml with [crate] section found in ancestors of {}",
+        cwd.display()
+    )
 }
 
 fn print_dumps(compilation: &Compilation, dumps: &[DumpStage]) {

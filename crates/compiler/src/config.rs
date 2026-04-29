@@ -4,24 +4,51 @@ use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct GomlConfig {
-    pub module: Option<ModuleConfig>,
-    pub package: PackageConfig,
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+pub struct CrateConfig {
+    pub name: String,
     #[serde(default)]
-    pub dependencies: BTreeMap<String, String>,
+    pub kind: Option<CrateKind>,
+    #[serde(default)]
+    pub root: Option<String>,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct ModuleConfig {
-    pub name: String,
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CrateManifest {
+    pub crate_config: Option<CrateConfig>,
+    pub dependencies: BTreeMap<String, CrateDependency>,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct PackageConfig {
-    pub name: String,
-    #[serde(default = "default_entry")]
-    pub entry: String,
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CrateDependency {
+    pub package: Option<String>,
+    pub version: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+struct RawCrateManifest {
+    #[serde(rename = "crate", default)]
+    crate_config: Option<CrateConfig>,
+    #[serde(default)]
+    dependencies: BTreeMap<String, RawCrateDependency>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(untagged)]
+enum RawCrateDependency {
+    Version(String),
+    Detailed {
+        #[serde(default)]
+        package: Option<String>,
+        version: String,
+    },
+}
+
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum CrateKind {
+    Bin,
+    Lib,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, Default)]
@@ -36,54 +63,70 @@ pub struct UserRegistryConfig {
     pub default: String,
 }
 
-fn default_entry() -> String {
-    "lib.gom".to_string()
+pub fn load_crate_config(path: &Path) -> Result<Option<CrateConfig>, String> {
+    load_crate_manifest(path).map(|manifest| manifest.crate_config)
 }
 
-impl FromStr for GomlConfig {
-    type Err = toml::de::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        toml::from_str(s)
-    }
+pub fn load_crate_manifest(path: &Path) -> Result<CrateManifest, String> {
+    let content = std::fs::read_to_string(path)
+        .map_err(|e| format!("failed to read {}: {}", path.display(), e))?;
+    let manifest: RawCrateManifest = toml::from_str(&content)
+        .map_err(|e| format!("failed to parse {}: {}", path.display(), e))?;
+    Ok(manifest.into())
 }
 
-impl GomlConfig {
-    pub fn load(path: &Path) -> Result<Self, String> {
-        let content = std::fs::read_to_string(path)
-            .map_err(|e| format!("failed to read {}: {}", path.display(), e))?;
-        content
-            .parse()
-            .map_err(|e| format!("failed to parse {}: {}", path.display(), e))
-    }
-
-    pub fn is_module_root(&self) -> bool {
-        self.module.is_some()
-    }
-
-    pub fn find_module_root(start_dir: &Path) -> Option<(std::path::PathBuf, Self)> {
-        let mut current = start_dir.to_path_buf();
-        loop {
-            let config_path = current.join("goml.toml");
-            if config_path.exists()
-                && let Ok(config) = Self::load(&config_path)
-                && config.is_module_root()
-            {
-                return Some((current, config));
-            }
-            if !current.pop() {
-                break;
-            }
+pub fn find_crate_root(start_dir: &Path) -> Option<(PathBuf, CrateConfig)> {
+    let mut current = start_dir.to_path_buf();
+    loop {
+        let config_path = current.join("goml.toml");
+        if config_path.exists()
+            && let Ok(Some(config)) = load_crate_config(&config_path)
+        {
+            return Some((current, config));
         }
-        None
+        if !current.pop() {
+            break;
+        }
     }
+    None
+}
 
-    pub fn find_package_config(dir: &Path) -> Option<Self> {
-        let config_path = dir.join("goml.toml");
-        if config_path.exists() {
-            Self::load(&config_path).ok()
-        } else {
-            None
+impl From<RawCrateManifest> for CrateManifest {
+    fn from(value: RawCrateManifest) -> Self {
+        let dependencies = value
+            .dependencies
+            .into_iter()
+            .map(|(alias, dep)| (alias, dep.into()))
+            .collect();
+        Self {
+            crate_config: value.crate_config,
+            dependencies,
+        }
+    }
+}
+
+impl CrateManifest {
+    pub fn dependency_versions(&self) -> BTreeMap<String, String> {
+        self.dependencies
+            .iter()
+            .map(|(alias, dep)| {
+                (
+                    dep.package.clone().unwrap_or_else(|| alias.clone()),
+                    dep.version.clone(),
+                )
+            })
+            .collect()
+    }
+}
+
+impl From<RawCrateDependency> for CrateDependency {
+    fn from(value: RawCrateDependency) -> Self {
+        match value {
+            RawCrateDependency::Version(version) => Self {
+                package: None,
+                version,
+            },
+            RawCrateDependency::Detailed { package, version } => Self { package, version },
         }
     }
 }
@@ -135,69 +178,99 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parse_module_root_config() {
+    fn parse_crate_config() {
         let content = r#"
-[module]
-name = "myapp"
-
-[package]
-name = "main"
-entry = "main.gom"
+[crate]
+name = "hello"
+kind = "bin"
+root = "src/main.gom"
 "#;
-        let config: GomlConfig = content.parse().unwrap();
-        assert!(config.is_module_root());
-        assert_eq!(config.module.as_ref().unwrap().name, "myapp");
-        assert_eq!(config.package.name, "main");
-        assert_eq!(config.package.entry, "main.gom");
-        assert!(config.dependencies.is_empty());
+        let manifest: RawCrateManifest = toml::from_str(content).unwrap();
+        let crate_config = manifest.crate_config.as_ref().unwrap();
+        assert_eq!(crate_config.name, "hello");
+        assert_eq!(crate_config.kind, Some(CrateKind::Bin));
+        assert_eq!(crate_config.root.as_deref(), Some("src/main.gom"));
     }
 
     #[test]
-    fn parse_sub_package_config() {
-        let content = r#"
-[package]
-name = "utils"
-"#;
-        let config: GomlConfig = content.parse().unwrap();
-        assert!(!config.is_module_root());
-        assert_eq!(config.package.name, "utils");
-        assert_eq!(config.package.entry, "lib.gom");
-        assert!(config.dependencies.is_empty());
+    fn load_crate_config_without_package_section() {
+        let dir = tempfile::tempdir().unwrap();
+        let manifest = dir.path().join("goml.toml");
+        std::fs::write(
+            &manifest,
+            r#"[crate]
+name = "hello"
+kind = "lib"
+"#,
+        )
+        .unwrap();
+
+        let crate_config = load_crate_config(&manifest).unwrap().unwrap();
+        assert_eq!(crate_config.name, "hello");
+        assert_eq!(crate_config.kind, Some(CrateKind::Lib));
+        assert_eq!(crate_config.root, None);
     }
 
     #[test]
-    fn parse_lowercase_package_name() {
-        let content = r#"
-[package]
-name = "mypackage"
-"#;
-        let config: GomlConfig = content.parse().unwrap();
-        assert_eq!(config.package.name, "mypackage");
-    }
-
-    #[test]
-    fn parse_dependencies() {
-        let content = r#"
-[module]
-name = "myapp"
-
-[package]
-name = "main"
-entry = "main.gom"
+    fn load_crate_manifest_parses_alias_dependencies() {
+        let dir = tempfile::tempdir().unwrap();
+        let manifest = dir.path().join("goml.toml");
+        std::fs::write(
+            &manifest,
+            r#"[crate]
+name = "hello"
 
 [dependencies]
-"alice::http" = "1.2.3"
-"bob::json" = "0.4.0"
-"#;
-        let config: GomlConfig = content.parse().unwrap();
+http = { package = "alice::http", version = "1.2.3" }
+json = "0.4.0"
+"#,
+        )
+        .unwrap();
+
+        let manifest = load_crate_manifest(&manifest).unwrap();
+        assert_eq!(manifest.crate_config.as_ref().unwrap().name, "hello");
         assert_eq!(
-            config.dependencies.get("alice::http"),
+            manifest.dependencies.get("http"),
+            Some(&CrateDependency {
+                package: Some("alice::http".to_string()),
+                version: "1.2.3".to_string()
+            })
+        );
+        assert_eq!(
+            manifest.dependencies.get("json"),
+            Some(&CrateDependency {
+                package: None,
+                version: "0.4.0".to_string()
+            })
+        );
+        assert_eq!(
+            manifest.dependency_versions().get("alice::http"),
             Some(&"1.2.3".to_string())
         );
         assert_eq!(
-            config.dependencies.get("bob::json"),
+            manifest.dependency_versions().get("json"),
             Some(&"0.4.0".to_string())
         );
+    }
+
+    #[test]
+    fn find_crate_root_from_descendant() {
+        let dir = tempfile::tempdir().unwrap();
+        let nested = dir.path().join("src").join("api");
+        std::fs::create_dir_all(&nested).unwrap();
+        std::fs::write(
+            dir.path().join("goml.toml"),
+            r#"[crate]
+name = "hello"
+root = "src/main.gom"
+"#,
+        )
+        .unwrap();
+
+        let (root, crate_config) = find_crate_root(&nested).unwrap();
+        assert_eq!(root, dir.path());
+        assert_eq!(crate_config.name, "hello");
+        assert_eq!(crate_config.root.as_deref(), Some("src/main.gom"));
     }
 
     #[test]

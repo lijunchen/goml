@@ -85,10 +85,7 @@ impl ConstructorIndex {
             .any(|file| file.ast.package.0 == BUILTIN_PACKAGE)
         {
             let builtin_ast = builtins::get_builtin_ast();
-            let builtin_file = hir::SourceFileAst {
-                path: "<builtin>".into(),
-                ast: builtin_ast,
-            };
+            let builtin_file = hir::SourceFileAst::new("<builtin>".into(), builtin_ast);
             index.add_files(std::slice::from_ref(&builtin_file));
         }
         for (package, interface) in deps {
@@ -168,10 +165,7 @@ impl TraitIndex {
             .any(|file| file.ast.package.0 == BUILTIN_PACKAGE)
         {
             let builtin_ast = builtins::get_builtin_ast();
-            let builtin_file = hir::SourceFileAst {
-                path: "<builtin>".into(),
-                ast: builtin_ast,
-            };
+            let builtin_file = hir::SourceFileAst::new("<builtin>".into(), builtin_ast);
             index.add_files(std::slice::from_ref(&builtin_file));
         }
         index
@@ -220,33 +214,22 @@ fn file_imports(
         .iter()
         .map(|import| import.0.clone())
         .collect::<HashSet<_>>();
-    for use_trait in file.use_traits.iter() {
-        if let Some(alias) = external_import_alias(use_trait, deps) {
-            imports.insert(alias);
-            continue;
+    for use_decl in file.uses.iter() {
+        if let Some(package) = use_decl_import(&use_decl.path, deps) {
+            imports.insert(package);
         }
-        if let Some(first) = use_trait.segments().first() {
-            imports.insert(first.ident.0.clone());
+    }
+    for item in file.toplevels.iter() {
+        if let ast::Item::Mod(module) = item {
+            imports.insert(module.name.0.clone());
+        }
+    }
+    for use_trait in file.use_traits.iter() {
+        if let Some(package) = use_trait_import(use_trait, deps) {
+            imports.insert(package);
         }
     }
     imports
-}
-
-fn lowered_use_trait_path(
-    path: &ast::Path,
-    deps: &HashMap<String, interface::PackageInterface>,
-) -> hir::QualifiedPath {
-    if let Some((package, prefix_len)) = resolve_external_import_prefix(path, deps) {
-        let segments = path.segments()[prefix_len..]
-            .iter()
-            .map(|segment| hir::PathSegment::new(segment.ident.0.clone()))
-            .collect();
-        return hir::QualifiedPath {
-            package: Some(hir::PackageName(package)),
-            path: hir::Path::new(segments),
-        };
-    }
-    path.into()
 }
 
 fn external_import_path_for_alias(
@@ -258,6 +241,85 @@ fn external_import_path_for_alias(
         .iter()
         .find(|path| path.as_str() != alias)
         .cloned()
+}
+
+fn first_crate_segment(path: &ast::Path) -> Option<String> {
+    path.segments()
+        .first()
+        .map(|segment| segment.ident.0.clone())
+}
+
+fn use_decl_import(
+    path: &ast::Path,
+    deps: &HashMap<String, interface::PackageInterface>,
+) -> Option<String> {
+    if let Some(alias) = external_import_alias(path, deps) {
+        return Some(alias);
+    }
+    first_crate_segment(path)
+}
+
+fn path_segments_display(path: &ast::Path) -> String {
+    path.segments()
+        .iter()
+        .map(|segment| segment.ident.0.clone())
+        .collect::<Vec<_>>()
+        .join("::")
+}
+
+fn use_trait_import(
+    path: &ast::Path,
+    deps: &HashMap<String, interface::PackageInterface>,
+) -> Option<String> {
+    if let Some(alias) = external_import_alias(path, deps) {
+        return Some(alias);
+    }
+    let segments = path.segments();
+    if segments
+        .first()
+        .is_some_and(|segment| segment.ident.0 == "crate")
+    {
+        return segments.get(1).map(|segment| segment.ident.0.clone());
+    }
+    segments.first().map(|segment| segment.ident.0.clone())
+}
+
+fn lowered_use_trait_path(
+    path: &ast::Path,
+    deps: &HashMap<String, interface::PackageInterface>,
+) -> Option<hir::QualifiedPath> {
+    if let Some((package, prefix_len)) = resolve_external_import_prefix(path, deps) {
+        let segments = path.segments()[prefix_len..]
+            .iter()
+            .map(|segment| hir::PathSegment::new(segment.ident.0.clone()))
+            .collect();
+        return Some(hir::QualifiedPath {
+            package: Some(hir::PackageName(package)),
+            path: hir::Path::new(segments),
+        });
+    }
+    let segments = path.segments();
+    if segments
+        .first()
+        .is_some_and(|segment| segment.ident.0 == "crate")
+    {
+        if segments.len() < 3 {
+            return None;
+        }
+        let package = segments[1].ident.0.clone();
+        let path_segments = segments[2..]
+            .iter()
+            .map(|segment| hir::PathSegment::new(segment.ident.0.clone()))
+            .collect();
+        return Some(hir::QualifiedPath {
+            package: Some(hir::PackageName(package)),
+            path: hir::Path::new(path_segments),
+        });
+    }
+    if path.len() < 2 {
+        return None;
+    }
+    Some(path.into())
 }
 
 impl NameResolution {
@@ -368,10 +430,7 @@ impl NameResolution {
         let files = files
             .into_iter()
             .enumerate()
-            .map(|(idx, ast)| hir::SourceFileAst {
-                path: format!("<unknown:{}>", idx).into(),
-                ast,
-            })
+            .map(|(idx, ast)| hir::SourceFileAst::new(format!("<unknown:{}>", idx).into(), ast))
             .collect();
         self.resolve_files_with_env(package_id, files, &deps)
     }
@@ -436,6 +495,7 @@ impl NameResolution {
             let mut def_ids = Vec::new();
             for item in file.ast.toplevels.iter() {
                 let def_id = match item {
+                    ast::Item::Mod(_) => None,
                     ast::Item::Fn(func) => {
                         let full_name = full_def_name(package_name, &func.name.0);
                         let path = full_def_path(package_name, &func.name.0);
@@ -456,7 +516,7 @@ impl NameResolution {
                             }),
                         );
                         def_names.insert(full_name, id);
-                        id
+                        Some(id)
                     }
                     ast::Item::ExternGo(ext) => {
                         let full_name = full_def_name(package_name, &ext.goml_name.0);
@@ -468,7 +528,7 @@ impl NameResolution {
                             hir::Def::ExternGo(ext_def),
                         );
                         def_names.insert(full_name, id);
-                        id
+                        Some(id)
                     }
                     ast::Item::ExternBuiltin(ext) => {
                         let full_name = full_def_name(package_name, &ext.name.0);
@@ -480,7 +540,7 @@ impl NameResolution {
                             hir::Def::ExternBuiltin(ext_def),
                         );
                         def_names.insert(full_name, id);
-                        id
+                        Some(id)
                     }
                     ast::Item::EnumDef(e) => {
                         let full_name = full_def_name(package_name, &e.name.0);
@@ -492,7 +552,7 @@ impl NameResolution {
                             hir::Def::EnumDef(enum_def),
                         );
                         def_names.insert(full_name, id);
-                        id
+                        Some(id)
                     }
                     ast::Item::StructDef(s) => {
                         let full_name = full_def_name(package_name, &s.name.0);
@@ -504,7 +564,7 @@ impl NameResolution {
                             hir::Def::StructDef(struct_def),
                         );
                         def_names.insert(full_name, id);
-                        id
+                        Some(id)
                     }
                     ast::Item::TraitDef(t) => {
                         let full_name = full_def_name(package_name, &t.name.0);
@@ -516,9 +576,9 @@ impl NameResolution {
                             hir::Def::TraitDef(trait_def),
                         );
                         def_names.insert(full_name, id);
-                        id
+                        Some(id)
                     }
-                    ast::Item::ImplBlock(_i) => hir_table.alloc_def_with_path(
+                    ast::Item::ImplBlock(_i) => Some(hir_table.alloc_def_with_path(
                         full_def_path(package_name, "impl"),
                         hir::DefKind::ImplBlock,
                         hir::Def::ImplBlock(hir::ImplBlock {
@@ -529,7 +589,7 @@ impl NameResolution {
                             for_type: hir::TypeExpr::TUnit,
                             methods: Vec::new(),
                         }),
-                    ),
+                    )),
                     ast::Item::ExternType(ext) => {
                         let full_name = full_def_name(package_name, &ext.goml_name.0);
                         let path = full_def_path(package_name, &ext.goml_name.0);
@@ -540,11 +600,13 @@ impl NameResolution {
                             hir::Def::ExternType(ext_def),
                         );
                         def_names.insert(full_name, id);
-                        id
+                        Some(id)
                     }
                 };
-                toplevels.push(def_id);
-                def_ids.push(def_id);
+                if let Some(def_id) = def_id {
+                    toplevels.push(def_id);
+                    def_ids.push(def_id);
+                }
             }
             per_file_defs.push(def_ids);
         }
@@ -565,6 +627,7 @@ impl NameResolution {
             let mut toplevel_idx = 0;
             for item in file.ast.toplevels.iter() {
                 match item {
+                    ast::Item::Mod(_) => {}
                     ast::Item::Fn(func) => {
                         let def_id = per_file_defs
                             .get(file_idx)
@@ -656,6 +719,30 @@ impl NameResolution {
                 imports_vec.sort_by(|a, b| a.0.cmp(&b.0));
 
                 let mut use_traits = Vec::new();
+                for use_decl in file.ast.uses.iter() {
+                    if let Some(first) = use_decl.path.segments().first()
+                        && external_import_path_for_alias(&first.ident.0, deps).is_some()
+                        && external_import_alias(&use_decl.path, deps).is_none()
+                    {
+                        continue;
+                    }
+                    if use_path_is_package_import(&use_decl.path, deps) {
+                        continue;
+                    }
+                    let Some(qualified) = lowered_use_trait_path(&use_decl.path, deps) else {
+                        continue;
+                    };
+                    let Some(package) = &qualified.package else {
+                        self.ice("use trait is missing package");
+                        continue;
+                    };
+                    let Some(trait_name) = qualified.last_ident() else {
+                        self.ice("use trait is missing name");
+                        continue;
+                    };
+                    let _ = (package, trait_name);
+                    use_traits.push(qualified);
+                }
                 for use_trait in file.ast.use_traits.iter() {
                     if let Some(first) = use_trait.segments().first()
                         && external_import_path_for_alias(&first.ident.0, deps).is_some()
@@ -666,7 +753,9 @@ impl NameResolution {
                     if use_path_is_package_import(use_trait, deps) {
                         continue;
                     }
-                    let qualified = lowered_use_trait_path(use_trait, deps);
+                    let Some(qualified) = lowered_use_trait_path(use_trait, deps) else {
+                        continue;
+                    };
                     let Some(package) = &qualified.package else {
                         self.ice("use trait is missing package");
                         continue;
@@ -680,6 +769,7 @@ impl NameResolution {
                 }
                 hir::SourceFileHir {
                     path,
+                    module_path: file.module_path.clone(),
                     package: hir::PackageName(package),
                     imports: imports_vec,
                     use_traits,
@@ -935,7 +1025,7 @@ impl NameResolution {
                         },
                     )
                 } else {
-                    let full_name = path.display();
+                    let full_name = path_segments_display(path);
                     let package = path
                         .segments()
                         .first()

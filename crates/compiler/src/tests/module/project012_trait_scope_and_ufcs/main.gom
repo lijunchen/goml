@@ -1,10 +1,10 @@
-package main;
-use datapkg;
-use usepkg;
+mod datapkg;
+mod traitpkg;
+mod usepkg;
 
 fn main() -> unit {
-    let x = datapkg::Card { value: 3 };
-    println(usepkg::render_method(x));
-    let y = datapkg::Card { value: 3 };
-    println(usepkg::render_fancy(y));
+    let x = crate::datapkg::Card { value: 3 };
+    println(crate::usepkg::render_method(x));
+    let y = crate::datapkg::Card { value: 3 };
+    println(crate::usepkg::render_fancy(y));
 }

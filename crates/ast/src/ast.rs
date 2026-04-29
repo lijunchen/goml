@@ -35,24 +35,43 @@ impl PathSegment {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum PathRoot {
+    Relative,
+    Absolute,
+    Crate,
+    Self_,
+    Super,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Path {
+    pub root: PathRoot,
     pub segments: Vec<PathSegment>,
 }
 
 impl Path {
     pub fn new(segments: Vec<PathSegment>) -> Self {
-        Self { segments }
+        Self {
+            root: PathRoot::Relative,
+            segments,
+        }
+    }
+
+    pub fn with_root(root: PathRoot, segments: Vec<PathSegment>) -> Self {
+        Self { root, segments }
     }
 
     pub fn from_idents(idents: Vec<AstIdent>) -> Self {
         let segments = idents.into_iter().map(PathSegment::new).collect();
-        Self { segments }
+        Self::new(segments)
     }
 
     pub fn from_ident(ident: AstIdent) -> Self {
-        Self {
-            segments: vec![PathSegment::new(ident)],
-        }
+        Self::new(vec![PathSegment::new(ident)])
+    }
+
+    pub fn root(&self) -> &PathRoot {
+        &self.root
     }
 
     pub fn segments(&self) -> &[PathSegment] {
@@ -92,11 +111,27 @@ impl Path {
     }
 
     pub fn display(&self) -> String {
-        self.segments
+        let body = self
+            .segments
             .iter()
             .map(|segment| segment.ident.0.clone())
             .collect::<Vec<_>>()
-            .join("::")
+            .join("::");
+        match self.root {
+            PathRoot::Relative => body,
+            PathRoot::Absolute => format!("::{body}"),
+            PathRoot::Crate => join_root("crate", &body),
+            PathRoot::Self_ => join_root("self", &body),
+            PathRoot::Super => join_root("super", &body),
+        }
+    }
+}
+
+fn join_root(root: &str, body: &str) -> String {
+    if body.is_empty() {
+        root.to_string()
+    } else {
+        format!("{root}::{body}")
     }
 }
 
@@ -155,13 +190,27 @@ pub struct Attribute {
 #[derive(Debug, Clone)]
 pub struct File {
     pub package: AstIdent,
+    pub uses: Vec<UseDecl>,
     pub imports: Vec<AstIdent>,
     pub use_traits: Vec<Path>,
     pub toplevels: Vec<Item>,
 }
 
 #[derive(Debug, Clone)]
+pub struct UseDecl {
+    pub path: Path,
+    pub alias: Option<AstIdent>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Visibility {
+    Private,
+    Public,
+}
+
+#[derive(Debug, Clone)]
 pub enum Item {
+    Mod(ModDecl),
     EnumDef(EnumDef),
     StructDef(StructDef),
     TraitDef(TraitDef),
@@ -173,8 +222,15 @@ pub enum Item {
 }
 
 #[derive(Debug, Clone)]
+pub struct ModDecl {
+    pub visibility: Visibility,
+    pub name: AstIdent,
+}
+
+#[derive(Debug, Clone)]
 pub struct Fn {
     pub attrs: Vec<Attribute>,
+    pub visibility: Visibility,
     pub name: AstIdent,
     pub generics: Vec<AstIdent>,
     pub generic_bounds: Vec<(AstIdent, Vec<Path>)>,
@@ -186,6 +242,7 @@ pub struct Fn {
 #[derive(Debug, Clone)]
 pub struct ExternGo {
     pub attrs: Vec<Attribute>,
+    pub visibility: Visibility,
     pub package_path: String,
     pub go_symbol: String,
     pub goml_name: AstIdent,
@@ -197,6 +254,7 @@ pub struct ExternGo {
 #[derive(Debug, Clone)]
 pub struct ExternType {
     pub attrs: Vec<Attribute>,
+    pub visibility: Visibility,
     pub package_path: Option<String>,
     pub go_name: String,
     pub goml_name: AstIdent,
@@ -206,6 +264,7 @@ pub struct ExternType {
 #[derive(Debug, Clone)]
 pub struct ExternBuiltin {
     pub attrs: Vec<Attribute>,
+    pub visibility: Visibility,
     pub name: AstIdent,
     pub generics: Vec<AstIdent>,
     pub generic_bounds: Vec<(AstIdent, Vec<Path>)>,
@@ -216,6 +275,7 @@ pub struct ExternBuiltin {
 #[derive(Debug, Clone)]
 pub struct EnumDef {
     pub attrs: Vec<Attribute>,
+    pub visibility: Visibility,
     pub name: AstIdent,
     pub generics: Vec<AstIdent>,
     pub variants: Vec<(AstIdent, Vec<TypeExpr>)>,
@@ -224,6 +284,7 @@ pub struct EnumDef {
 #[derive(Debug, Clone)]
 pub struct StructDef {
     pub attrs: Vec<Attribute>,
+    pub visibility: Visibility,
     pub name: AstIdent,
     pub generics: Vec<AstIdent>,
     pub fields: Vec<(AstIdent, TypeExpr)>,
@@ -232,6 +293,7 @@ pub struct StructDef {
 #[derive(Debug, Clone)]
 pub struct TraitDef {
     pub attrs: Vec<Attribute>,
+    pub visibility: Visibility,
     pub name: AstIdent,
     pub method_sigs: Vec<TraitMethodSignature>,
 }

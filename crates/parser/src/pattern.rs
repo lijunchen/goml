@@ -11,6 +11,8 @@ pub const PATTERN_FIRST: &[TokenKind] = &[
     T![false],
     T![ident],
     T![::],
+    T![crate],
+    T![super],
     T!['('],
     T![_],
     T![-],
@@ -208,7 +210,7 @@ fn simple_pattern(p: &mut Parser) -> Option<MarkerClosed> {
                 p.close(m, MySyntaxKind::PATTERN_TUPLE)
             }
         }
-        T![ident] | T![::] => {
+        T![ident] | T![::] | T![crate] | T![super] => {
             let m = p.open();
             // Check if this looks like a simple variable pattern before consuming the path
             // A variable pattern is a single lowercase identifier with no following `(` or `{`

@@ -1,9 +1,9 @@
-package main;
-use traitpkg::Show;
-use datapkg;
+mod datapkg;
+mod traitpkg;
+use crate::traitpkg::Show;
 
 fn main() -> unit {
-    let item = datapkg::Item { value: 7 };
+    let item = crate::datapkg::Item { value: 7 };
     let s = item.show();
     string_println(s)
 }

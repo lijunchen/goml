@@ -7,7 +7,7 @@ use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::{self, syntax::MySyntaxNode};
 use rowan::GreenNode;
 
-use crate::config::GomlConfig;
+use crate::config::{find_crate_root, load_crate_manifest};
 use crate::package_names::{BUILTIN_PACKAGE, ENTRY_FUNCTION, ROOT_PACKAGE};
 use crate::pipeline::builtin_inherent;
 use crate::pipeline::compile_error;
@@ -180,6 +180,7 @@ fn link_packages(packages: Vec<crate::core::File>) -> crate::core::File {
 #[derive(Debug, Clone)]
 struct PackageArtifact {
     tast: tast::File,
+    full_exports: PackageExports,
     interface: PackageInterface,
     diagnostics: Diagnostics,
 }
@@ -277,15 +278,13 @@ fn typecheck_package(
         deps_envs,
     );
     diagnostics.append(&mut hir_diagnostics);
-    let exports = PackageExports {
-        type_env: genv.type_env.clone(),
-        trait_env: genv.trait_env.clone(),
-        value_env: genv.value_env.clone(),
-    };
+    let full_exports = PackageExports::from_genv(&genv);
+    let exports = PackageExports::public_from_package(&package.name, &package.files, &genv);
     let package_interface = interface::PackageInterface::from_exports(&package.name, &exports);
 
     PackageArtifact {
         tast,
+        full_exports,
         interface: PackageInterface {
             exports,
             package_interface,
@@ -433,17 +432,25 @@ fn typecheck_packages_inner(
 }
 
 fn discovery_root_for_file(path: &Path) -> PathBuf {
-    if let Ok((module_dir, _)) = packages::discover_project_from_file(path) {
-        return module_dir;
-    }
-    path.parent()
+    let start_dir = path
+        .parent()
         .filter(|parent| !parent.as_os_str().is_empty())
-        .unwrap_or_else(|| Path::new("."))
-        .to_path_buf()
+        .unwrap_or_else(|| Path::new("."));
+    if let Some((crate_dir, _)) = find_crate_root(start_dir) {
+        return crate_dir;
+    }
+    start_dir.to_path_buf()
 }
 
 fn should_use_single_file_mode(path: &Path) -> bool {
-    !path.exists() && packages::discover_project_from_file(path).is_err()
+    if path.exists() {
+        return false;
+    }
+    let start_dir = path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."));
+    find_crate_root(start_dir).is_none()
 }
 
 pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> {
@@ -537,7 +544,7 @@ fn compile_inner(
                 dep
             )));
         }
-        artifact.interface.exports.apply_to(&mut env);
+        artifact.full_exports.apply_to(&mut env);
         let core = compile_match::compile_file(&env, &gensym, &mut diagnostics, &artifact.tast);
         package_cores.push(core);
     }
@@ -701,11 +708,7 @@ pub fn typecheck_with_packages_and_results(
             package_diagnostics.append(&mut hir_diagnostics);
             diagnostics.append(&mut package_diagnostics);
 
-            let exports = PackageExports {
-                type_env: package_genv.type_env.clone(),
-                trait_env: package_genv.trait_env.clone(),
-                value_env: package_genv.value_env.clone(),
-            };
+            let exports = PackageExports::public_from_package(name, &package.files, &package_genv);
             report_duplicate_trait_impls(&mut diagnostics, &genv, &exports, name);
             exports.apply_to(&mut genv);
             let package_interface = interface::PackageInterface::from_exports(name, &exports);
@@ -768,11 +771,13 @@ fn validate_entrypoint_for_compile(
 fn load_external_dependencies(
     root: &Path,
 ) -> Result<ExternalDependencyArtifacts, CompilationError> {
-    let Some(config) = GomlConfig::find_package_config(root) else {
-        return Ok(ExternalDependencyArtifacts::default());
-    };
-    if !config.is_module_root() || config.dependencies.is_empty() {
-        return Ok(ExternalDependencyArtifacts::default());
+    let manifest = root.join("goml.toml");
+    if let Ok(crate_manifest) = load_crate_manifest(&manifest)
+        && crate_manifest.crate_config.is_some()
+    {
+        return crate::external::resolve_dependency_versions(&crate_manifest.dependency_versions())
+            .map_err(compile_error);
     }
-    crate::external::resolve_project_dependencies(root, &config).map_err(compile_error)
+
+    Ok(ExternalDependencyArtifacts::default())
 }

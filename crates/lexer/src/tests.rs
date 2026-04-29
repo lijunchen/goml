@@ -227,6 +227,26 @@ fn lexes_char_keyword() {
 }
 
 #[test]
+fn lexes_module_keywords() {
+    check(
+        "pub mod crate super self",
+        expect![[r#"
+            [
+                {kind: PubKeyword, text: "pub"},
+                {kind: Whitespace, text: " "},
+                {kind: ModKeyword, text: "mod"},
+                {kind: Whitespace, text: " "},
+                {kind: CrateKeyword, text: "crate"},
+                {kind: Whitespace, text: " "},
+                {kind: SuperKeyword, text: "super"},
+                {kind: Whitespace, text: " "},
+                {kind: Ident, text: "self"},
+            ]
+        "#]],
+    );
+}
+
+#[test]
 fn lexes_char_literal() {
     check(
         "let c = 'a'",
