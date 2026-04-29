@@ -2062,7 +2062,7 @@ http = { package = "alice::http", version = "1.2.0" }
     }
 
     #[test]
-    fn goto_definition_use_package_to_goml_toml() {
+    fn goto_definition_module_reference_to_goml_toml() {
         check_module_goto(
             "project001",
             "main.gom",
@@ -2095,12 +2095,12 @@ http = { package = "alice::http", version = "1.2.0" }
     }
 
     #[test]
-    fn goto_definition_enum_variant_across_package() {
+    fn goto_definition_enum_variant_across_module() {
         check_module_goto("project001", "main.gom", 4, 42, expect!["no definition"]);
     }
 
     #[test]
-    fn goto_definition_struct_field_across_package() {
+    fn goto_definition_struct_field_across_module() {
         check_module_goto_token(
             "project001",
             "main.gom",
@@ -2111,7 +2111,7 @@ http = { package = "alice::http", version = "1.2.0" }
     }
 
     #[test]
-    fn goto_definition_use_package_project002() {
+    fn goto_definition_mod_decl_project002() {
         check_module_goto_token(
             "project002",
             "main.gom",
@@ -2122,7 +2122,7 @@ http = { package = "alice::http", version = "1.2.0" }
     }
 
     #[test]
-    fn goto_definition_use_package_project003_math() {
+    fn goto_definition_mod_decl_project003_math() {
         check_module_goto_token(
             "project003",
             "main.gom",
@@ -2133,7 +2133,7 @@ http = { package = "alice::http", version = "1.2.0" }
     }
 
     #[test]
-    fn goto_definition_use_package_project003_stats() {
+    fn goto_definition_mod_decl_project003_stats() {
         check_module_goto_token(
             "project003",
             "main.gom",
@@ -2144,7 +2144,7 @@ http = { package = "alice::http", version = "1.2.0" }
     }
 
     #[test]
-    fn goto_definition_use_package_project004() {
+    fn goto_definition_mod_decl_project004() {
         check_module_goto_token(
             "project004",
             "main.gom",
@@ -2155,7 +2155,7 @@ http = { package = "alice::http", version = "1.2.0" }
     }
 
     #[test]
-    fn goto_definition_use_package_project005_shape() {
+    fn goto_definition_mod_decl_project005_shape() {
         check_module_goto_token(
             "project005",
             "main.gom",
@@ -2166,7 +2166,7 @@ http = { package = "alice::http", version = "1.2.0" }
     }
 
     #[test]
-    fn goto_definition_use_package_project005_geo() {
+    fn goto_definition_mod_decl_project005_geo() {
         check_module_goto_token(
             "project005",
             "main.gom",
@@ -2177,7 +2177,7 @@ http = { package = "alice::http", version = "1.2.0" }
     }
 
     #[test]
-    fn goto_definition_use_package_project006() {
+    fn goto_definition_mod_decl_project006() {
         check_module_goto_token(
             "project006",
             "main.gom",
@@ -2188,7 +2188,7 @@ http = { package = "alice::http", version = "1.2.0" }
     }
 
     #[test]
-    fn goto_definition_use_package_project008_datapkg() {
+    fn goto_definition_mod_decl_project008_datapkg() {
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
             "main.gom",
@@ -2199,7 +2199,7 @@ http = { package = "alice::http", version = "1.2.0" }
     }
 
     #[test]
-    fn goto_definition_use_package_project008_usepkg() {
+    fn goto_definition_mod_decl_project008_usepkg() {
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
             "main.gom",
@@ -2210,7 +2210,7 @@ http = { package = "alice::http", version = "1.2.0" }
     }
 
     #[test]
-    fn goto_definition_use_package_segment_project007_traitpkg() {
+    fn goto_definition_namespace_segment_project007_traitpkg() {
         check_module_goto_token(
             "project007_trait_impl_orphan_ok",
             "main.gom",
@@ -2221,7 +2221,7 @@ http = { package = "alice::http", version = "1.2.0" }
     }
 
     #[test]
-    fn goto_definition_use_package_in_subpackage_project008_datapkg_traitpkg() {
+    fn goto_definition_use_namespace_in_child_module_project008_datapkg_traitpkg() {
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
             "datapkg/mod.gom",
@@ -2232,7 +2232,7 @@ http = { package = "alice::http", version = "1.2.0" }
     }
 
     #[test]
-    fn goto_definition_use_package_in_subpackage_project008_usepkg_traitpkg() {
+    fn goto_definition_use_namespace_in_child_module_project008_usepkg_traitpkg() {
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
             "usepkg/mod.gom",
@@ -2353,7 +2353,7 @@ http = { package = "alice::http", version = "1.2.0" }
     }
 
     #[test]
-    fn goto_definition_package_segment_in_path_project001_lib() {
+    fn goto_definition_namespace_segment_in_path_project001_lib() {
         check_module_goto_token(
             "project001",
             "main.gom",
@@ -2397,7 +2397,7 @@ http = { package = "alice::http", version = "1.2.0" }
     }
 
     #[test]
-    fn goto_definition_multi_file_in_package_project006_inc() {
+    fn goto_definition_multi_file_module_project006_inc() {
         check_module_goto_token(
             "project006",
             "main.gom",
@@ -2539,12 +2539,12 @@ fn value() -> int32 { 0 }
     }
 
     #[test]
-    fn goto_definition_registry_packages() {
+    fn goto_definition_registry_dependency_namespaces() {
         let dir = tempdir().unwrap();
         let home = dir.path().join(".goml");
         write_cached_registry(&home);
         write_registry_project(
-            "registry_packages",
+            "registry_dependency_namespaces",
             r#"
 
 use http;
@@ -2558,14 +2558,14 @@ fn main() -> unit {
 
         with_goml_home(&home, || {
             check_temp_module_goto_token(
-                "registry_packages",
+                "registry_dependency_namespaces",
                 "main.gom",
                 "use http;",
                 "http",
                 expect!["1.2.0/lib.gom:0:0"],
             );
             check_temp_module_goto_token(
-                "registry_packages",
+                "registry_dependency_namespaces",
                 "main.gom",
                 "use http::client;",
                 "client",
