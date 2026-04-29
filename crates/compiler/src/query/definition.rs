@@ -676,8 +676,8 @@ fn external_use_definition_location(path: &Path, lookup: &str) -> Option<Definit
         crate::pipeline::packages::discover_dependency_versions_from_file(path).ok()?;
     let external_deps = crate::external::resolve_dependency_versions(&dependencies).ok()?;
     let alias = external_deps.alias_for_use_path(lookup)?;
-    let package_dir = external_deps.package_dirs().get(&alias)?.clone();
-    let target = namespace_nav_target_in_dir(&package_dir)?;
+    let namespace_dir = external_deps.package_dirs().get(&alias)?.clone();
+    let target = namespace_nav_target_in_dir(&namespace_dir)?;
     Some(DefinitionLocation {
         path: target,
         range: TextRange::new(text_size::TextSize::from(0), text_size::TextSize::from(0)),

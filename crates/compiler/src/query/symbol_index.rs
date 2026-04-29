@@ -259,14 +259,14 @@ fn build_crate_symbol_index(
             .augment_graph(&mut graph)
             .map_err(|err| err.to_string())?;
         for (logical_name, files) in external_deps.package_sources() {
-            let Some(pkg_dir) = graph.package_dirs.get(&logical_name) else {
+            let Some(namespace_dir) = graph.package_dirs.get(&logical_name) else {
                 continue;
             };
             index_namespace_symbols_named(
                 &mut index,
                 &logical_name,
                 std::slice::from_ref(&logical_name),
-                pkg_dir,
+                namespace_dir,
                 &files,
                 &HashMap::new(),
             )?;
@@ -355,9 +355,9 @@ pub(crate) fn lookup_symbol_locations_for_path(
             if token_text != segments[idx] {
                 continue;
             }
-            let package = segments[..=idx].join("::");
-            if graph.and_then(|g| g.package_dirs.get(&package)).is_some()
-                && let Some(loc) = index.find_namespace(&package)
+            let namespace = segments[..=idx].join("::");
+            if graph.and_then(|g| g.package_dirs.get(&namespace)).is_some()
+                && let Some(loc) = index.find_namespace(&namespace)
             {
                 locations.push(DefinitionLocation {
                     path: loc,
