@@ -522,7 +522,7 @@ root = "src/main.gom"
 "#,
         );
         write(dir.path().join("src/main.gom"), "fn main() {}\n");
-        write(dir.path().join("src/unused.gom"), "fn unused() {}\n");
+        write(dir.path().join("src/broken.gom"), "fn broken( {\n");
 
         let unit = discover_crate_from_dir(dir.path()).unwrap();
         assert_eq!(unit.modules.len(), 1);
