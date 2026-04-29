@@ -35,7 +35,7 @@ pub struct ExternalModuleArtifact {
     pub version: SemVer,
     pub interface: InterfaceUnit,
     pub core: CoreUnit,
-    pub package_interfaces: BTreeMap<String, interface::CrateInterface>,
+    pub namespace_interfaces: BTreeMap<String, interface::CrateInterface>,
     pub sources: BTreeMap<String, ExternalPackageSource>,
 }
 
@@ -52,7 +52,7 @@ impl ExternalDependencyArtifacts {
     pub fn namespace_interfaces(&self) -> HashMap<String, interface::CrateInterface> {
         let mut interfaces = HashMap::new();
         for module in self.modules.values() {
-            for (name, interface) in module.package_interfaces.iter() {
+            for (name, interface) in module.namespace_interfaces.iter() {
                 interfaces.insert(name.clone(), interface.clone());
             }
         }
@@ -63,7 +63,7 @@ impl ExternalDependencyArtifacts {
         let mut envs = HashMap::new();
         for module in self.modules.values() {
             let env = module.interface.exports.to_genv();
-            for name in module.package_interfaces.keys() {
+            for name in module.namespace_interfaces.keys() {
                 envs.insert(name.clone(), env.clone());
             }
         }
@@ -467,22 +467,22 @@ fn compile_external_module(
         }
     }
 
-    let mut package_interfaces = BTreeMap::new();
+    let mut namespace_interfaces = BTreeMap::new();
     for source in sources.values() {
-        let mut package_interface =
+        let mut namespace_interface =
             interface::CrateInterface::from_exports(&source.logical_name, &public_exports);
-        package_interface.packages = std::iter::once(source.import_path.clone()).collect();
-        package_interfaces.insert(source.logical_name.clone(), package_interface);
+        namespace_interface.packages = std::iter::once(source.import_path.clone()).collect();
+        namespace_interfaces.insert(source.logical_name.clone(), namespace_interface);
     }
-    let package_interface = package_interfaces
+    let root_interface = namespace_interfaces
         .get(root_package)
         .cloned()
-        .ok_or_else(|| format!("missing root package interface for {}", root_package))?;
+        .ok_or_else(|| format!("missing root namespace interface for {}", root_package))?;
 
     let interface = InterfaceUnit::new(
         root_package.to_string(),
         public_exports,
-        package_interface,
+        root_interface,
         merged_deps.clone(),
     );
     let core = CoreUnit {
@@ -501,7 +501,7 @@ fn compile_external_module(
         version: module.version.clone(),
         interface,
         core,
-        package_interfaces,
+        namespace_interfaces,
         sources,
     })
 }
@@ -563,9 +563,10 @@ fn compile_module_package(
             local.interface.exports.apply_to(&mut compile_env);
             continue;
         }
-        if let Some((external, package_interface)) = find_external_package(external_roots, &dep) {
+        if let Some((external, namespace_interface)) = find_external_namespace(external_roots, &dep)
+        {
             deps_envs.insert(dep.clone(), external.interface.exports.to_genv());
-            deps_interfaces.insert(dep.clone(), package_interface.clone());
+            deps_interfaces.insert(dep.clone(), namespace_interface.clone());
             dep_hashes.insert(dep.clone(), external.interface.interface_hash.clone());
             external.interface.exports.apply_to(&mut compile_env);
             continue;
@@ -671,13 +672,13 @@ fn ensure_no_external_namespace_conflicts(
     Ok(())
 }
 
-fn find_external_package<'a>(
+fn find_external_namespace<'a>(
     external_roots: &'a BTreeMap<String, ExternalModuleArtifact>,
-    package: &str,
+    namespace: &str,
 ) -> Option<(&'a ExternalModuleArtifact, &'a interface::CrateInterface)> {
     for module in external_roots.values() {
-        if let Some(package_interface) = module.package_interfaces.get(package) {
-            return Some((module, package_interface));
+        if let Some(namespace_interface) = module.namespace_interfaces.get(namespace) {
+            return Some((module, namespace_interface));
         }
     }
     None

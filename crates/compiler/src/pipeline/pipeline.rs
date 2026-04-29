@@ -772,7 +772,7 @@ fn external_package_exports<'a>(
     package: &str,
 ) -> Option<&'a CrateExports> {
     for module in external_deps.modules.values() {
-        if module.package_interfaces.contains_key(package) {
+        if module.namespace_interfaces.contains_key(package) {
             return Some(&module.interface.exports);
         }
     }
