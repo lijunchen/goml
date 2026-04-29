@@ -722,6 +722,47 @@ fn add_with_explicit_version_and_remove_updates_manifest() -> anyhow::Result<()>
 }
 
 #[test]
+fn remove_deletes_dependency_alias_without_touching_others() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let project_dir = dir.path().join("demo");
+    fs::create_dir_all(&project_dir)?;
+    fs::write(
+        project_dir.join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+
+[dependencies]
+http = { package = "alice::http", version = "1.2.0" }
+fmt = { package = "alice::fmt", version = "1.0.0" }
+"#,
+    )?;
+    fs::write(project_dir.join("main.gom"), PROJECT_MAIN)?;
+
+    let output = run_goml(&["remove", "http"], &project_dir)?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(output.status.success(), "stderr: {stderr}");
+    expect!["removed http\n"].assert_eq(&stdout);
+    expect![""].assert_eq(&stderr);
+
+    let manifest = fs::read_to_string(project_dir.join("goml.toml"))?;
+    expect![[r#"
+        [crate]
+        name = "demo"
+        kind = "bin"
+        root = "main.gom"
+
+        [dependencies]
+        fmt = { package = "alice::fmt", version = "1.0.0" }
+    "#]]
+    .assert_eq(&manifest);
+
+    Ok(())
+}
+
+#[test]
 fn remove_reports_coordinate_alias_hint() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     let project_dir = dir.path().join("demo");
