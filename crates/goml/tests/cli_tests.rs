@@ -1706,6 +1706,11 @@ pub fn add(a: int64, b: int64) -> int64 {
     assert!(output.status.success(), "stderr: {stderr}");
     expect![""].assert_eq(&stdout);
     expect![""].assert_eq(&stderr);
+    assert!(root.join("target/goml/build/demo.core").exists());
+    assert!(root.join("target/goml/build/demo.interface").exists());
+    assert!(!root.join("target/goml/build/main.core").exists());
+    assert!(!root.join("target/goml/build/a.core").exists());
+    assert!(!root.join("target/goml/build/b.core").exists());
 
     if !runtime_executor_available() {
         return Ok(());
