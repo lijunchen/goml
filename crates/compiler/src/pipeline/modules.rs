@@ -43,6 +43,7 @@ pub struct ModuleUnit {
     pub path: ModulePath,
     pub file_path: PathBuf,
     pub child_dir: PathBuf,
+    pub visibility: ast::Visibility,
     pub ast: ast::File,
     pub children: BTreeMap<String, ModuleId>,
 }
@@ -141,7 +142,11 @@ fn discover_crate(root_dir: &Path, config: CrateConfig) -> Result<CrateUnit, Dis
         modules: Vec::new(),
         seen_files: BTreeMap::new(),
     };
-    let root_mod = state.load_module(ModulePath::root(), root_file.clone())?;
+    let root_mod = state.load_module(
+        ModulePath::root(),
+        root_file.clone(),
+        ast::Visibility::Public,
+    )?;
     Ok(CrateUnit {
         config,
         root_dir: root_dir.to_path_buf(),
@@ -206,6 +211,7 @@ impl DiscoveryState {
         &mut self,
         module_path: ModulePath,
         file_path: PathBuf,
+        visibility: ast::Visibility,
     ) -> Result<ModuleId, DiscoveryError> {
         let canonical = canonical_file_key(&file_path);
         if let Some(first) = self.seen_files.get(&canonical) {
@@ -260,13 +266,14 @@ impl DiscoveryState {
             path: module_path.clone(),
             file_path: file_path.clone(),
             child_dir: child_dir.clone(),
+            visibility,
             ast,
             children: BTreeMap::new(),
         });
 
-        for name in mod_names {
+        for (name, visibility) in mod_names {
             let child_file = resolve_mod_file(&module_path, &child_dir, &name)?;
-            let child_id = self.load_module(module_path.child(&name), child_file)?;
+            let child_id = self.load_module(module_path.child(&name), child_file, visibility)?;
             self.modules[id.0].children.insert(name, child_id);
         }
 
@@ -277,7 +284,7 @@ impl DiscoveryState {
 fn collect_mod_names(
     module_path: &ModulePath,
     cst: &CstFile,
-) -> Result<Vec<String>, DiscoveryError> {
+) -> Result<Vec<(String, ast::Visibility)>, DiscoveryError> {
     let mut names = Vec::new();
     let mut seen = BTreeSet::new();
     for item in cst.items() {
@@ -293,9 +300,23 @@ fn collect_mod_names(
                 name,
             });
         }
-        names.push(name);
+        let visibility = mod_visibility(&module);
+        names.push((name, visibility));
     }
     Ok(names)
+}
+
+fn mod_visibility(module: &cst::nodes::Mod) -> ast::Visibility {
+    if module
+        .syntax()
+        .children_with_tokens()
+        .filter_map(|it| it.into_token())
+        .any(|token| token.kind() == parser::syntax::MySyntaxKind::PubKeyword)
+    {
+        ast::Visibility::Public
+    } else {
+        ast::Visibility::Private
+    }
 }
 
 fn resolve_mod_file(
@@ -365,8 +386,37 @@ root = "src/main.gom"
         assert_eq!(unit.config.name, "hello");
         assert_eq!(unit.modules.len(), 2);
         assert_eq!(unit.modules[0].path.display(), "crate");
+        assert_eq!(unit.modules[0].visibility, ast::Visibility::Public);
         assert_eq!(unit.modules[1].path.display(), "crate::math");
+        assert_eq!(unit.modules[1].visibility, ast::Visibility::Private);
         assert_eq!(unit.modules[0].children.get("math"), Some(&ModuleId(1)));
+    }
+
+    #[test]
+    fn records_public_child_module_visibility() {
+        let dir = tempfile::tempdir().unwrap();
+        write(
+            dir.path().join("goml.toml"),
+            r#"[crate]
+name = "hello"
+root = "src/main.gom"
+"#,
+        );
+        write(
+            dir.path().join("src/main.gom"),
+            "pub mod api;\nmod internal;\nfn main() {}\n",
+        );
+        write(dir.path().join("src/api.gom"), "fn api() -> int32 { 1 }\n");
+        write(
+            dir.path().join("src/internal.gom"),
+            "fn internal() -> int32 { 2 }\n",
+        );
+
+        let unit = discover_crate_from_dir(dir.path()).unwrap();
+        assert_eq!(unit.modules[1].path.display(), "crate::api");
+        assert_eq!(unit.modules[1].visibility, ast::Visibility::Public);
+        assert_eq!(unit.modules[2].path.display(), "crate::internal");
+        assert_eq!(unit.modules[2].visibility, ast::Visibility::Private);
     }
 
     #[test]
