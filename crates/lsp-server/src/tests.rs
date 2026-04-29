@@ -1329,6 +1329,57 @@ pub fn send() -> string {
     }
 
     #[test]
+    fn use_root_completion_suggests_relative_roots() {
+        let dir = tempdir().unwrap();
+        let root = dir.path();
+        std::fs::write(
+            root.join("goml.toml"),
+            r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+"#,
+        )
+        .unwrap();
+        std::fs::write(
+            root.join("main.gom"),
+            r#"
+mod api;
+
+fn main() -> unit {
+    ()
+}
+"#,
+        )
+        .unwrap();
+
+        let api_path = root.join("api.gom");
+        let valid_src = r#"
+pub fn f() -> unit {
+    ()
+}
+"#;
+        std::fs::write(&api_path, valid_src).unwrap();
+
+        let completion_src = r#"
+use s
+
+pub fn f() -> unit {
+    ()
+}
+"#;
+        let completion = handlers::completion(
+            &api_path,
+            completion_src,
+            Position {
+                line: 1,
+                character: 5,
+            },
+        );
+        expect!["self, super"].assert_eq(&format_completion(completion));
+    }
+
+    #[test]
     fn value_completion_suggests_keywords() {
         check_completion(
             r#"
