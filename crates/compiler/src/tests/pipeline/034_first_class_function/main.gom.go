@@ -60,7 +60,7 @@ func main0() struct{} {
     var invoked_with_global__16 int32 = _goml_inherent_x23_closure_x5f_env_x5f_global_x5f_invoker_x5f_1_x23_closure_x5f_env_x5f_global_x5f_invoker_x5f_1_x23_apply(global_invoker__15, double, 3)
     var composer_closure__18 closure_env_composer_closure_2 = closure_env_composer_closure_2{}
     var composed_by_closure__19 int32 = _goml_inherent_x23_closure_x5f_env_x5f_composer_x5f_closure_x5f_2_x23_closure_x5f_env_x5f_composer_x5f_closure_x5f_2_x23_apply(composer_closure__18, 5)
-    var printer__20 func(string) struct{} = string_println
+    var printer__20 func(string) struct{} = println__T_string
     var t21 string = int32_to_string(composed__9)
     printer__20(t21)
     var t22 string = int32_to_string(closure_result__12)
@@ -72,25 +72,30 @@ func main0() struct{} {
     return struct{}{}
 }
 
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
+    return struct{}{}
+}
+
 func _goml_inherent_x23_closure_x5f_env_x5f_closure_x5f_apply_x5f_0_x23_closure_x5f_env_x5f_closure_x5f_apply_x5f_0_x23_apply(env4 closure_env_closure_apply_0, value__10 int32) int32 {
-    var retv26 int32
-    var t27 int32 = apply_once(increment, value__10)
-    retv26 = t27
-    return retv26
+    var retv28 int32
+    var t29 int32 = apply_once(increment, value__10)
+    retv28 = t29
+    return retv28
 }
 
 func _goml_inherent_x23_closure_x5f_env_x5f_global_x5f_invoker_x5f_1_x23_closure_x5f_env_x5f_global_x5f_invoker_x5f_1_x23_apply(env5 closure_env_global_invoker_1, func_to_call__13 func(int32) int32, value__14 int32) int32 {
-    var retv29 int32
-    var t30 int32 = apply_once(func_to_call__13, value__14)
-    retv29 = t30
-    return retv29
+    var retv31 int32
+    var t32 int32 = apply_once(func_to_call__13, value__14)
+    retv31 = t32
+    return retv31
 }
 
 func _goml_inherent_x23_closure_x5f_env_x5f_composer_x5f_closure_x5f_2_x23_closure_x5f_env_x5f_composer_x5f_closure_x5f_2_x23_apply(env6 closure_env_composer_closure_2, value__17 int32) int32 {
-    var retv32 int32
-    var t33 int32 = compose(double, increment, value__17)
-    retv32 = t33
-    return retv32
+    var retv34 int32
+    var t35 int32 = compose(double, increment, value__17)
+    retv34 = t35
+    return retv34
 }
 
 func main() {

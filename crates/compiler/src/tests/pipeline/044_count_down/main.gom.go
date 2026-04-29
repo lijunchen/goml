@@ -56,22 +56,27 @@ func main0() struct{} {
     return struct{}{}
 }
 
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
+    return struct{}{}
+}
+
 func _goml_inherent_x23_closure_x5f_env_x5f_main_x5f_0_x23_closure_x5f_env_x5f_main_x5f_0_x23_apply(env4 closure_env_main_0) struct{} {
     var counter__0 *ref_int32_x = env4.counter_0
-    Loop_loop13:
+    Loop_loop15:
     for {
-        var t14 int32 = ref_get__Ref_5int32(counter__0)
-        var t15 bool = t14 < 10
-        if t15 {
-            string_println("hello")
-            var t16 Duration = time.Duration(1000)
-            time.Sleep(t16)
-            var t17 int32 = ref_get__Ref_5int32(counter__0)
-            var t18 int32 = t17 + 1
-            ref_set__Ref_5int32(counter__0, t18)
+        var t16 int32 = ref_get__Ref_5int32(counter__0)
+        var t17 bool = t16 < 10
+        if t17 {
+            println__T_string("hello")
+            var t18 Duration = time.Duration(1000)
+            time.Sleep(t18)
+            var t19 int32 = ref_get__Ref_5int32(counter__0)
+            var t20 int32 = t19 + 1
+            ref_set__Ref_5int32(counter__0, t20)
             continue
         } else {
-            break Loop_loop13
+            break Loop_loop15
         }
     }
     return struct{}{}

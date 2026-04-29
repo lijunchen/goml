@@ -9,7 +9,7 @@ fn println(value/1: T) -> unit {
 fn print_int_list(xs/0: IntList) -> unit {
   match xs/0 {
     IntList::Nil => {
-      string_print("Nil")
+      println("Nil")
     },
     IntList::Cons(x0, x1) => {
       {
@@ -20,17 +20,17 @@ fn print_int_list(xs/0: IntList) -> unit {
           {
             let x/1 = x0 in
             {
-              let mtmp2 = string_print("Cons") in
+              let mtmp2 = println("Cons") in
               {
-                let mtmp3 = string_print("(") in
+                let mtmp3 = println("(") in
                 {
-                  let mtmp4 = string_print(int32_to_string(x/1)) in
+                  let mtmp4 = println(int32_to_string(x/1)) in
                   {
-                    let mtmp5 = string_print(", ") in
+                    let mtmp5 = println(", ") in
                     {
                       let mtmp6 = print_int_list(xs/2) in
                       {
-                        let mtmp7 = string_print(")") in
+                        let mtmp7 = println(")") in
                         {
                           ()
                         }
@@ -91,9 +91,9 @@ fn int_list_length(xs/8: IntList) -> int32 {
 }
 
 fn print_int_list_length(xs/10: IntList) -> unit {
-  let mtmp12 = string_print("Length: ") in
+  let mtmp12 = println("Length: ") in
   {
-    let mtmp13 = string_println(int32_to_string(int_list_length(xs/10))) in
+    let mtmp13 = println(int32_to_string(int_list_length(xs/10))) in
     {
       ()
     }
@@ -104,28 +104,28 @@ fn main() -> unit {
   let x/11 = IntList::Nil in
   let mtmp14 = print_int_list(x/11) in
   {
-    let mtmp15 = string_println("") in
+    let mtmp15 = println("") in
     {
       let mtmp16 = print_int_list_length(x/11) in
       {
         let x/12 = IntList::Cons(1, IntList::Nil) in
         let mtmp17 = print_int_list(x/12) in
         {
-          let mtmp18 = string_println("") in
+          let mtmp18 = println("") in
           {
             let mtmp19 = print_int_list_length(x/12) in
             {
               let x/13 = IntList::Cons(1, IntList::Cons(2, IntList::Cons(3, IntList::Nil))) in
               let mtmp20 = print_int_list(x/13) in
               {
-                let mtmp21 = string_println("") in
+                let mtmp21 = println("") in
                 {
                   let mtmp22 = print_int_list_length(x/13) in
                   {
                     let y/14 = int_list_rev(x/13) in
                     let mtmp23 = print_int_list(y/14) in
                     {
-                      let mtmp24 = string_println("") in
+                      let mtmp24 = println("") in
                       {
                         ()
                       }

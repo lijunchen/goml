@@ -39,13 +39,13 @@ func _goml_trait_x5f_impl_x23_Arith_x23_int32_x23_less(self__2 int32, other__3 i
 
 func _goml_trait_x5f_impl_x23_Output_x23_int32_x23_output(self__4 int32) struct{} {
     var t11 string = int32_to_string(self__4)
-    string_println(t11)
+    println__T_string(t11)
     return struct{}{}
 }
 
 func _goml_trait_x5f_impl_x23_Output_x23_bool_x23_output(self__5 bool) struct{} {
     var t14 string = bool_to_string(self__5)
-    string_println(t14)
+    println__T_string(t14)
     return struct{}{}
 }
 
@@ -63,22 +63,27 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func id__T_int32(x__6 int32) int32 {
-    var retv18 int32
-    retv18 = x__6
-    return retv18
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
+    return struct{}{}
 }
 
-func id__T_string(x__6 string) string {
-    var retv20 string
+func id__T_int32(x__6 int32) int32 {
+    var retv20 int32
     retv20 = x__6
     return retv20
 }
 
-func id__T_bool(x__6 bool) bool {
-    var retv22 bool
+func id__T_string(x__6 string) string {
+    var retv22 string
     retv22 = x__6
     return retv22
+}
+
+func id__T_bool(x__6 bool) bool {
+    var retv24 bool
+    retv24 = x__6
+    return retv24
 }
 
 func main() {

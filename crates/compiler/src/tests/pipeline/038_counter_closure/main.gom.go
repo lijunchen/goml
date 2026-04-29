@@ -85,24 +85,29 @@ func main0() struct{} {
     var new_next__11 func() int32 = x7
     var fourth__12 int32 = new_next__11()
     var t19 string = int32_to_string(first__7)
-    string_println(t19)
+    println__T_string(t19)
     var t20 string = int32_to_string(second__8)
-    string_println(t20)
+    println__T_string(t20)
     var t21 string = int32_to_string(third__9)
-    string_println(t21)
+    println__T_string(t21)
     var t22 string = int32_to_string(fourth__12)
-    string_println(t22)
+    println__T_string(t22)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 
 func _goml_inherent_x23_closure_x5f_env_x5f_next_x5f_0_x23_closure_x5f_env_x5f_next_x5f_0_x23_apply(env13 closure_env_next_0) int32 {
-    var retv24 int32
+    var retv26 int32
     var cell__0 *ref_int32_x = env13.cell_0
-    var t25 int32 = ref_get__Ref_5int32(cell__0)
-    var next__1 int32 = t25 + 1
+    var t27 int32 = ref_get__Ref_5int32(cell__0)
+    var next__1 int32 = t27 + 1
     ref_set__Ref_5int32(cell__0, next__1)
-    retv24 = next__1
-    return retv24
+    retv26 = next__1
+    return retv26
 }
 
 func _goml_inherent_x23_closure_x5f_env_x5f_reset_x5f_1_x23_closure_x5f_env_x5f_reset_x5f_1_x23_apply(env14 closure_env_reset_1) struct{} {

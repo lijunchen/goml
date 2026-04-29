@@ -25,7 +25,7 @@ fn main() {
     let invoked_with_global = global_invoker(double, 3);
     let composer_closure = |value: int32| compose(double, increment, value);
     let composed_by_closure = composer_closure(5);
-    let printer = string_println;
+    let printer = println;
     let _ = printer(int32_to_string(composed));
     let _ = printer(int32_to_string(closure_result));
     let _ = printer(int32_to_string(invoked_with_global));

@@ -24,7 +24,12 @@ func describe() string {
 
 func main0() struct{} {
     var t4 string = describe()
-    string_println(t4)
+    println__T_string(t4)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

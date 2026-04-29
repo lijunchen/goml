@@ -65,27 +65,32 @@ func main0() struct{} {
     var g__8 uint64 = 7
     var h__9 float32 = 1
     var t15 string = uint8_to_string(a__2)
-    string_println(t15)
+    println__T_string(t15)
     var t16 string = int8_to_string(b__3)
-    string_println(t16)
+    println__T_string(t16)
     var t17 string = int16_to_string(c__4)
-    string_println(t17)
+    println__T_string(t17)
     var t18 string = uint16_to_string(d__5)
-    string_println(t18)
+    println__T_string(t18)
     var t19 string = uint32_to_string(e__6)
-    string_println(t19)
+    println__T_string(t19)
     var t20 string = int64_to_string(f__7)
-    string_println(t20)
+    println__T_string(t20)
     var t21 string = uint64_to_string(g__8)
-    string_println(t21)
+    println__T_string(t21)
     var t22 string = float32_to_string(h__9)
-    string_println(t22)
+    println__T_string(t22)
     var t23 uint8 = take_u8(10)
     var t24 string = uint8_to_string(t23)
-    string_println(t24)
+    println__T_string(t24)
     var t25 float32 = take_f32(2.5)
     var t26 string = float32_to_string(t25)
-    string_println(t26)
+    println__T_string(t26)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

@@ -3,9 +3,9 @@ fn main() -> unit {
   let p2/5 = inherent#Point#Point[U,V]#new__U_string__V_string("goml", "lang") in
   let p3/6 = inherent#Point#Point[U,V]#swap__U_int32__V_string(p1/4) in
   let x/7 = Point__string__int32.y(p3/6) in
-  let _wild0 = string_println(int32_to_string(x/7)) in
+  let _wild0 = println__T_string(int32_to_string(x/7)) in
   let x2/8 = inherent#Point#Point[U,V]#get_x__U_string__V_string(p2/5) in
-  string_println(x2/8)
+  println__T_string(x2/8)
 }
 
 fn inherent#Point#Point[U,V]#new__U_int32__V_string(x/0: int32, y/1: string) -> Point__int32__string {
@@ -18,6 +18,10 @@ fn inherent#Point#Point[U,V]#new__U_string__V_string(x/0: string, y/1: string) -
 
 fn inherent#Point#Point[U,V]#swap__U_int32__V_string(self/2: Point__int32__string) -> Point__string__int32 {
   Point__string__int32 { x: Point__int32__string.y(self/2), y: Point__int32__string.x(self/2) }
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
 }
 
 fn inherent#Point#Point[U,V]#get_x__U_string__V_string(self/3: Point__string__string) -> string {

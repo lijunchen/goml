@@ -1157,7 +1157,7 @@ fn show_result(label/137: string, res/138: Result__Typ__string) -> unit {
       let t489 = (label/137 + ": ") in
       let t490 = typ_to_string(ty/139) in
       let t491 = (t489 + t490) in
-      let t492 = string_println(t491) in
+      let t492 = println__T_string(t491) in
       jump k488()
     },
     Tag_1 => {
@@ -1165,7 +1165,7 @@ fn show_result(label/137: string, res/138: Result__Typ__string) -> unit {
       let e/140 = x162 in
       let t493 = (label/137 + ": ") in
       let t494 = (t493 + e/140) in
-      let t495 = string_println(t494) in
+      let t495 = println__T_string(t494) in
       jump k488()
     },
   }
@@ -1366,8 +1366,16 @@ fn main() -> unit {
   let t645 = exp_lam("x", t644) in
   let t646 = typeof(st/141, t638, t645) in
   let _wild200 = show_result("fun_x_let_y_let_z_x_id_z_y", t646) in
-  let _wild201 = string_println("") in
-  let _wild202 = string_println("All Done") in
-  let _wild203 = string_println("") in
+  let _wild201 = println__T_string("") in
+  let _wild202 = println__T_string("All Done") in
+  let _wild203 = println__T_string("") in
   jump ret496()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret647() -> unit {
+    ()
+  } in
+  let t648 = string_println(value/1) in
+  jump ret647()
 }

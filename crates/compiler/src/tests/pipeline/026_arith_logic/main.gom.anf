@@ -4,7 +4,7 @@ fn show_int(label/0: string, value/1: int32) -> unit {
   } in
   let t13 = int32_to_string(value/1) in
   let t14 = (label/0 + t13) in
-  let mtmp0 = string_println(t14) in
+  let mtmp0 = println__T_string(t14) in
   jump ret12()
 }
 
@@ -14,7 +14,7 @@ fn show_bool(label/2: string, value/3: bool) -> unit {
   } in
   let t16 = bool_to_string(value/3) in
   let t17 = (label/2 + t16) in
-  let mtmp1 = string_println(t17) in
+  let mtmp1 = println__T_string(t17) in
   jump ret15()
 }
 
@@ -71,4 +71,12 @@ fn main() -> unit {
       jump k23(true)
     },
   }
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret32() -> unit {
+    ()
+  } in
+  let t33 = string_println(value/1) in
+  jump ret32()
 }

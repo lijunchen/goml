@@ -129,7 +129,12 @@ func main0() struct{} {
     var t29 string = t27 + t28
     var t30 string = compare(tuple_other__19)
     var message__20 string = t29 + t30
-    string_println(message__20)
+    println__T_string(message__20)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

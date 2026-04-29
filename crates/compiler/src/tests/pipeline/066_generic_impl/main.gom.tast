@@ -23,7 +23,7 @@ fn main() -> unit {
     let p2/5: Point[string, string] = (Point::new : (string, string) -> Point[string, string])("goml", "lang");
     let p3/6: Point[string, int32] = (Point[int32, string]::swap : (Point[int32, string]) -> Point[string, int32])((p1/4 : Point[int32, string]));
     let x/7: int32 = (p3/6 : Point[string, int32]).y;
-    (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((x/7 : int32)));
+    (println : (string) -> unit)((int32_to_string : (int32) -> string)((x/7 : int32)));
     let x2/8: string = (Point[string, string]::get_x : (Point[string, string]) -> string)((p2/5 : Point[string, string]));
-    (string_println : (string) -> unit)((x2/8 : string))
+    (println : (string) -> unit)((x2/8 : string))
 }

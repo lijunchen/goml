@@ -10,9 +10,9 @@ fn test() -> unit {
   let y/0 = 3 in
   let z/1 = 5 in
   let f/3 = |x/2: int32| => ((x/2 * y/0) * z/1) in
-  let mtmp0 = string_println(int32_to_string(f/3(2))) in
+  let mtmp0 = println(int32_to_string(f/3(2))) in
   {
-    string_println(int32_to_string(f/3(3)))
+    println(int32_to_string(f/3(3)))
   }
 }
 
@@ -26,14 +26,14 @@ fn main() -> unit {
   let result/9 = add_base/8(7) in
   let printer/13 = |prefix/10: string, value/11: int32| => {
     let message/12 = (prefix/10 + int32_to_string(value/11)) in
-    string_println(message/12)
+    println(message/12)
   } in
   let mtmp1 = printer/13("result: ", result/9) in
   {
     let unused/15 = |y/14: int32| => (y/14 + result/9) in
     let no_capture/17 = |z/16: int32| => (z/16 * 2) in
     let doubled/18 = no_capture/17(3) in
-    let mtmp2 = string_println(int32_to_string(doubled/18)) in
+    let mtmp2 = println(int32_to_string(doubled/18)) in
     {
       let mtmp3 = test() in
       {
@@ -42,7 +42,7 @@ fn main() -> unit {
         let play_list_and_point/25 = || => {
           match list123/19 {
             IntList::Nil => {
-              string_println("Empty list")
+              println("Empty list")
             },
             IntList::Cons(x4, x5) => {
               {
@@ -53,7 +53,7 @@ fn main() -> unit {
                   {
                     let head/21 = x4 in
                     {
-                      let mtmp6 = string_println(int32_to_string(head/21)) in
+                      let mtmp6 = println(int32_to_string(head/21)) in
                       {
                         {
                           let x7 = Point.x(point/20) in
@@ -63,7 +63,7 @@ fn main() -> unit {
                             {
                               let x/23 = x7 in
                               {
-                                let mtmp9 = string_println((((("Point: (" + int32_to_string(x/23)) + ", ") + int32_to_string(y/24)) + ")")) in
+                                let mtmp9 = println((((("Point: (" + int32_to_string(x/23)) + ", ") + int32_to_string(y/24)) + ")")) in
                                 {
                                   ()
                                 }

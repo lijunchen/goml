@@ -8,14 +8,14 @@ fn println(value/1: T) -> unit {
 
 fn print_int_list(xs/0: IntList) -> unit {
     match (xs/0 : IntList) {
-        IntList::Nil => (string_print : (string) -> unit)("Nil"),
+        IntList::Nil => (println : (string) -> unit)("Nil"),
         IntList::Cons(x/1: int32, xs/2: IntList) => {
-              let _ : unit = (string_print : (string) -> unit)("Cons");
-              let _ : unit = (string_print : (string) -> unit)("(");
-              let _ : unit = (string_print : (string) -> unit)((int32_to_string : (int32) -> string)((x/1 : int32)));
-              let _ : unit = (string_print : (string) -> unit)(", ");
+              let _ : unit = (println : (string) -> unit)("Cons");
+              let _ : unit = (println : (string) -> unit)("(");
+              let _ : unit = (println : (string) -> unit)((int32_to_string : (int32) -> string)((x/1 : int32)));
+              let _ : unit = (println : (string) -> unit)(", ");
               let _ : unit = (print_int_list : (IntList) -> unit)((xs/2 : IntList));
-              let _ : unit = (string_print : (string) -> unit)(")");
+              let _ : unit = (println : (string) -> unit)(")");
               ()
           },
     }
@@ -40,26 +40,26 @@ fn int_list_length(xs/8: IntList) -> int32 {
 }
 
 fn print_int_list_length(xs/10: IntList) -> unit {
-    let _ : unit = (string_print : (string) -> unit)("Length: ");
-    let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((int_list_length : (IntList) -> int32)((xs/10 : IntList))));
+    let _ : unit = (println : (string) -> unit)("Length: ");
+    let _ : unit = (println : (string) -> unit)((int32_to_string : (int32) -> string)((int_list_length : (IntList) -> int32)((xs/10 : IntList))));
     ()
 }
 
 fn main() -> unit {
     let x/11: IntList = IntList::Nil;
     let _ : unit = (print_int_list : (IntList) -> unit)((x/11 : IntList));
-    let _ : unit = (string_println : (string) -> unit)("");
+    let _ : unit = (println : (string) -> unit)("");
     let _ : unit = (print_int_list_length : (IntList) -> unit)((x/11 : IntList));
     let x/12: IntList = IntList::Cons(1, IntList::Nil);
     let _ : unit = (print_int_list : (IntList) -> unit)((x/12 : IntList));
-    let _ : unit = (string_println : (string) -> unit)("");
+    let _ : unit = (println : (string) -> unit)("");
     let _ : unit = (print_int_list_length : (IntList) -> unit)((x/12 : IntList));
     let x/13: IntList = IntList::Cons(1, IntList::Cons(2, IntList::Cons(3, IntList::Nil)));
     let _ : unit = (print_int_list : (IntList) -> unit)((x/13 : IntList));
-    let _ : unit = (string_println : (string) -> unit)("");
+    let _ : unit = (println : (string) -> unit)("");
     let _ : unit = (print_int_list_length : (IntList) -> unit)((x/13 : IntList));
     let y/14: IntList = (int_list_rev : (IntList) -> IntList)((x/13 : IntList));
     let _ : unit = (print_int_list : (IntList) -> unit)((y/14 : IntList));
-    let _ : unit = (string_println : (string) -> unit)("");
+    let _ : unit = (println : (string) -> unit)("");
     ()
 }

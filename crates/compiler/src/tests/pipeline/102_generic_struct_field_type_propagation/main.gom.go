@@ -31,10 +31,15 @@ func main0() struct{} {
     }
     var t3 uint8 = p__0.first
     var t4 string = uint8_to_string(t3)
-    string_println(t4)
+    println__T_string(t4)
     var t5 float32 = p__0.second
     var t6 string = float32_to_string(t5)
-    string_println(t6)
+    println__T_string(t6)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

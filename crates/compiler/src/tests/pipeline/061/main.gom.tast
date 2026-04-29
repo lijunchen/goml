@@ -56,5 +56,5 @@ fn main() -> unit {
     let to/19: Point = (Point::new : (int32, int32, Color) -> Point)(30, 40, Color::Green);
     let line/20: Line = (Line::new : (Point, Point, Color) -> Line)((from/18 : Point), (to/19 : Point), Color::Blue);
     let lines/21: LineList = LineList::Cons((line/20 : Line), LineList::Nil);
-    (string_println : (string) -> unit)((ToString::to_string : (LineList) -> string)((lines/21 : LineList)));
+    (println : (string) -> unit)((ToString::to_string : (LineList) -> string)((lines/21 : LineList)));
 }

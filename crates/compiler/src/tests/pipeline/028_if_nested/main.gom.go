@@ -65,12 +65,17 @@ func main0() struct{} {
     var shape1__7 string = triangle_type(1, 2, 3)
     var shape2__8 string = triangle_type(3, 2, 1)
     var shape3__9 string = triangle_type(2, 3, 2)
-    string_println(first__4)
-    string_println(second__5)
-    string_println(third__6)
-    string_println(shape1__7)
-    string_println(shape2__8)
-    string_println(shape3__9)
+    println__T_string(first__4)
+    println__T_string(second__5)
+    println__T_string(third__6)
+    println__T_string(shape1__7)
+    println__T_string(shape2__8)
+    println__T_string(shape3__9)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

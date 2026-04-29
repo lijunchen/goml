@@ -219,13 +219,13 @@ fn main() -> unit {
     let t95 = (t93, t94) in
     let pair_text/75 = pair_join(t95) in
     let bool_text/76 = bool_to_string(order_check/69) in
-    let mtmp25 = string_println(tracker_info/57) in
-    let mtmp26 = string_println(first_text/70) in
-    let mtmp27 = string_println(bumped_text/71) in
-    let mtmp28 = string_println(flipped_text/72) in
-    let mtmp29 = string_println(summary/74) in
-    let mtmp30 = string_println(pair_text/75) in
-    let mtmp31 = string_println(bool_text/76) in
+    let mtmp25 = println__T_string(tracker_info/57) in
+    let mtmp26 = println__T_string(first_text/70) in
+    let mtmp27 = println__T_string(bumped_text/71) in
+    let mtmp28 = println__T_string(flipped_text/72) in
+    let mtmp29 = println__T_string(summary/74) in
+    let mtmp30 = println__T_string(pair_text/75) in
+    let mtmp31 = println__T_string(bool_text/76) in
     jump ret89()
   } in
   match stringified/64 {
@@ -276,40 +276,48 @@ fn map_maybe__T_int32__U_string(value/23: Maybe__int32, f/24: (int32) -> string)
   }
 }
 
+fn println__T_string(value/1: string) -> unit {
+  join ret107() -> unit {
+    ()
+  } in
+  let t108 = string_println(value/1) in
+  jump ret107()
+}
+
 fn inherent#closure_env_snapshot_0#closure_env_snapshot_0#apply(env32: closure_env_snapshot_0) -> Record__int32 {
-  join ret107(retv108: Record__int32) -> Record__int32 {
-    retv108
+  join ret109(retv110: Record__int32) -> Record__int32 {
+    retv110
   } in
   let count/43 = closure_env_snapshot_0.count_0(env32) in
-  let t109 = ref_get(count/43) in
-  let t110 = Record__int32::Value(t109) in
-  jump ret107(t110)
+  let t111 = ref_get(count/43) in
+  let t112 = Record__int32::Value(t111) in
+  jump ret109(t112)
 }
 
 fn inherent#closure_env_bump_1#closure_env_bump_1#apply(env33: closure_env_bump_1, delta/47: int32) -> Record__int32 {
-  join ret111(retv112: Record__int32) -> Record__int32 {
-    retv112
+  join ret113(retv114: Record__int32) -> Record__int32 {
+    retv114
   } in
   let count/43 = closure_env_bump_1.count_0(env33) in
   let before/48 = ref_get(count/43) in
-  let t113 = (before/48 + delta/47) in
-  let mtmp17 = ref_set(count/43, t113) in
-  let t114 = ref_get(count/43) in
-  let t115 = Record__int32::Pair(before/48, t114) in
-  jump ret111(t115)
+  let t115 = (before/48 + delta/47) in
+  let mtmp17 = ref_set(count/43, t115) in
+  let t116 = ref_get(count/43) in
+  let t117 = Record__int32::Pair(before/48, t116) in
+  jump ret113(t117)
 }
 
 fn inherent#closure_env_flip_2#closure_env_flip_2#apply(env34: closure_env_flip_2) -> Record__string {
-  join ret116(retv117: Record__string) -> Record__string {
-    retv117
+  join ret118(retv119: Record__string) -> Record__string {
+    retv119
   } in
   let toggled/44 = closure_env_flip_2.toggled_0(env34) in
   let before/50 = ref_get(toggled/44) in
-  let t118 = (!before/50) in
-  let mtmp18 = ref_set(toggled/44, t118) in
+  let t120 = (!before/50) in
+  let mtmp18 = ref_set(toggled/44, t120) in
   let after/51 = ref_get(toggled/44) in
-  let t119 = bool_to_string(before/50) in
-  let t120 = bool_to_string(after/51) in
-  let t121 = Record__string::Pair(t119, t120) in
-  jump ret116(t121)
+  let t121 = bool_to_string(before/50) in
+  let t122 = bool_to_string(after/51) in
+  let t123 = Record__string::Pair(t121, t122) in
+  jump ret118(t123)
 }

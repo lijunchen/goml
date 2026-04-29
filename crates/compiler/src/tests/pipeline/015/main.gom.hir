@@ -7,14 +7,14 @@ file main.gom
     
     fn print_int_list(local/1/0: IntList) {
         match xs/0 {
-            ctor(def/1/0::v0) => string_print("Nil"),
+            ctor(def/1/0::v0) => println("Nil"),
             ctor(def/1/0::v1)(local/1/1, local/1/2) => {
-                  let _ = string_print("Cons");
-                  let _ = string_print("(");
-                  let _ = string_print(int32_to_string(x/1));
-                  let _ = string_print(", ");
+                  let _ = println("Cons");
+                  let _ = println("(");
+                  let _ = println(int32_to_string(x/1));
+                  let _ = println(", ");
                   let _ = def/1/1(xs/2);
-                  let _ = string_print(")");
+                  let _ = println(")");
                   ()
               },
         }
@@ -39,26 +39,26 @@ file main.gom
     }
     
     fn print_int_list_length(local/1/10: IntList) {
-        let _ = string_print("Length: ");
-        let _ = string_println(int32_to_string(def/1/4(xs/10)));
+        let _ = println("Length: ");
+        let _ = println(int32_to_string(def/1/4(xs/10)));
         ()
     }
     
     fn main() {
         let local/1/11 = ctor(def/1/0::v0);
         let _ = def/1/1(x/11);
-        let _ = string_println("");
+        let _ = println("");
         let _ = def/1/5(x/11);
         let local/1/12 = ctor(def/1/0::v1)(1, ctor(def/1/0::v0));
         let _ = def/1/1(x/12);
-        let _ = string_println("");
+        let _ = println("");
         let _ = def/1/5(x/12);
         let local/1/13 = ctor(def/1/0::v1)(1, ctor(def/1/0::v1)(2, ctor(def/1/0::v1)(3, ctor(def/1/0::v0))));
         let _ = def/1/1(x/13);
-        let _ = string_println("");
+        let _ = println("");
         let _ = def/1/5(x/13);
         let local/1/14 = def/1/3(x/13);
         let _ = def/1/1(y/14);
-        let _ = string_println("");
+        let _ = println("");
         ()
     }

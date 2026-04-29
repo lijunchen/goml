@@ -1403,13 +1403,13 @@ func show_result(label__137 string, res__138 Result__Typ__string) struct{} {
         var t489 string = label__137 + ": "
         var t490 string = typ_to_string(ty__139)
         var t491 string = t489 + t490
-        string_println(t491)
+        println__T_string(t491)
     case Result__Typ__string_Err:
         var x162 string = res__138.(Result__Typ__string_Err)._0
         var e__140 string = x162
         var t493 string = label__137 + ": "
         var t494 string = t493 + e__140
-        string_println(t494)
+        println__T_string(t494)
     default:
         panic("non-exhaustive match")
     }
@@ -1608,9 +1608,14 @@ func main0() struct{} {
     var t645 Exp = exp_lam("x", t644)
     var t646 Result__Typ__string = typeof(st__141, t638, t645)
     show_result("fun_x_let_y_let_z_x_id_z_y", t646)
-    string_println("")
-    string_println("All Done")
-    string_println("")
+    println__T_string("")
+    println__T_string("All Done")
+    println__T_string("")
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

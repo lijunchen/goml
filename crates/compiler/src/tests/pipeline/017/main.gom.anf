@@ -11,12 +11,20 @@ fn main() -> unit {
   } in
   let x/1 = 123 in
   let t6 = int32_to_string(x/1) in
-  let mtmp0 = string_println(t6) in
+  let mtmp0 = println__T_string(t6) in
   let x/2 = true in
   let t7 = bool_to_string(x/2) in
-  let mtmp1 = string_println(t7) in
+  let mtmp1 = println__T_string(t7) in
   let x/3 = (3, 4) in
   let t8 = trait_impl#ToString#(int32,int32)#to_string(x/3) in
-  let mtmp2 = string_println(t8) in
+  let mtmp2 = println__T_string(t8) in
   jump ret5()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret9() -> unit {
+    ()
+  } in
+  let t10 = string_println(value/1) in
+  jump ret9()
 }

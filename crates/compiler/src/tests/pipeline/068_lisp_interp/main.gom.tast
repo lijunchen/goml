@@ -527,9 +527,9 @@ fn main() -> unit {
     let program/149: string = "(begin (define fact (lambda (n) (if (= n 0) 1 (* n (fact (- n 1)))))) (define add3 (lambda (a b c) (+ a (+ b c)))) (fact 6))";
     let exprs/150: Vec[SExpr] = (parse_program : (Vec[Token]) -> Vec[SExpr])((lex : (string) -> Vec[Token])((program/149 : string)));
     let result/151: Value = (eval : (SExpr, Vec[Binding], Ref[Vec[Binding]]) -> Value)((vec_get : (Vec[SExpr], int32) -> SExpr)((exprs/150 : Vec[SExpr]), 0), (vec_new : () -> Vec[Binding])(), (global/148 : Ref[Vec[Binding]]));
-    let _ : unit = (string_println : (string) -> unit)((value_to_string : (Value) -> string)((result/151 : Value)));
+    let _ : unit = (println : (string) -> unit)((value_to_string : (Value) -> string)((result/151 : Value)));
     let exprs2/152: Vec[SExpr] = (parse_program : (Vec[Token]) -> Vec[SExpr])((lex : (string) -> Vec[Token])("(add3 10 20 30)"));
     let result2/153: Value = (eval : (SExpr, Vec[Binding], Ref[Vec[Binding]]) -> Value)((vec_get : (Vec[SExpr], int32) -> SExpr)((exprs2/152 : Vec[SExpr]), 0), (vec_new : () -> Vec[Binding])(), (global/148 : Ref[Vec[Binding]]));
-    let _ : unit = (string_println : (string) -> unit)((value_to_string : (Value) -> string)((result2/153 : Value)));
+    let _ : unit = (println : (string) -> unit)((value_to_string : (Value) -> string)((result2/153 : Value)));
     ()
 }

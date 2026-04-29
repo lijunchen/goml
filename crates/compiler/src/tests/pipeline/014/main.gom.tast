@@ -9,12 +9,12 @@ fn println(value/1: T) -> unit {
 fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
     match (x/0 : (bool, bool)) {
         (true, false) => match (y/1 : (bool, bool)) {
-              (false, true) => (string_println : (string) -> unit)("case1"),
-              _ : (bool, bool) => (string_println : (string) -> unit)("case2"),
+              (false, true) => (println : (string) -> unit)("case1"),
+              _ : (bool, bool) => (println : (string) -> unit)("case2"),
           },
         _ : (bool, bool) => match (y/1 : (bool, bool)) {
-              (false, true) => (string_println : (string) -> unit)("case3"),
-              _ : (bool, bool) => (string_println : (string) -> unit)("case4"),
+              (false, true) => (println : (string) -> unit)("case3"),
+              _ : (bool, bool) => (println : (string) -> unit)("case4"),
           },
     }
 }

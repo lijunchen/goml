@@ -385,8 +385,8 @@ fn exp_let(name/134: string, a/135: Exp, b/136: Exp) -> Exp {
 
 fn show_result(label/137: string, res/138: Result[Typ, string]) -> unit {
     match (res/138 : Result[Typ, string]) {
-        Result::Ok(ty/139: Typ) => (string_println : (string) -> unit)((label/137 : string) + ": " + (typ_to_string : (Typ) -> string)((ty/139 : Typ))),
-        Result::Err(e/140: string) => (string_println : (string) -> unit)((label/137 : string) + ": " + (e/140 : string)),
+        Result::Ok(ty/139: Typ) => (println : (string) -> unit)((label/137 : string) + ": " + (typ_to_string : (Typ) -> string)((ty/139 : Typ))),
+        Result::Err(e/140: string) => (println : (string) -> unit)((label/137 : string) + ": " + (e/140 : string)),
     }
 }
 
@@ -432,7 +432,7 @@ fn main() -> unit {
     (show_result : (string, Result[Typ, string]) -> unit)("sound_gen_occurs", (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])((st/141 : CheckerState), (env_empty : () -> Vec[EnvEntry])(), (exp_lam : (string, Exp) -> Exp)("x", (exp_let : (string, Exp, Exp) -> Exp)("y", (exp_var : (string) -> Exp)("x"), (exp_app : (Exp, Exp) -> Exp)((exp_var : (string) -> Exp)("y"), (exp_var : (string) -> Exp)("y"))))));
     (reset_gensym : (CheckerState) -> unit)((st/141 : CheckerState));
     (show_result : (string, Result[Typ, string]) -> unit)("fun_x_let_y_let_z_x_id_z_y", (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])((st/141 : CheckerState), (env_empty : () -> Vec[EnvEntry])(), (exp_lam : (string, Exp) -> Exp)("x", (exp_let : (string, Exp, Exp) -> Exp)("y", (exp_let : (string, Exp, Exp) -> Exp)("z", (exp_app : (Exp, Exp) -> Exp)((exp_var : (string) -> Exp)("x"), (id/142 : Exp)), (exp_var : (string) -> Exp)("z")), (exp_var : (string) -> Exp)("y")))));
-    (string_println : (string) -> unit)("");
-    (string_println : (string) -> unit)("All Done");
-    (string_println : (string) -> unit)("");
+    (println : (string) -> unit)("");
+    (println : (string) -> unit)("All Done");
+    (println : (string) -> unit)("");
 }

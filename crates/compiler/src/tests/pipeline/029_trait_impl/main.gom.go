@@ -83,11 +83,16 @@ func main0() struct{} {
     var some_number__5 Maybe__int32 = make_maybe(true)
     var none_number__6 Maybe__int32 = make_maybe(false)
     var t19 string = _goml_trait_x5f_impl_x23_Display_x23_Point_x23_show(point__4)
-    string_println(t19)
+    println__T_string(t19)
     var t20 string = _goml_trait_x5f_impl_x23_Display_x23_Maybe_x5f__x5f_int32_x23_show(some_number__5)
-    string_println(t20)
+    println__T_string(t20)
     var t21 string = _goml_trait_x5f_impl_x23_Display_x23_Maybe_x5f__x5f_int32_x23_show(none_number__6)
-    string_println(t21)
+    println__T_string(t21)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

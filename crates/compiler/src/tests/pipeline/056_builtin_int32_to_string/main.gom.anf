@@ -4,6 +4,14 @@ fn main() -> unit {
   } in
   let value/0 = 42 in
   let text/1 = int32_to_string(value/0) in
-  let mtmp0 = string_println(text/1) in
+  let mtmp0 = println__T_string(text/1) in
   jump ret1()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret2() -> unit {
+    ()
+  } in
+  let t3 = string_println(value/1) in
+  jump ret2()
 }

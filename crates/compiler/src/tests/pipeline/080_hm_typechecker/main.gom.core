@@ -1268,7 +1268,7 @@ fn show_result(label/137: string, res/138: Result[Typ, string]) -> unit {
         let x161 = Result::Ok._0(res/138) in
         {
           let ty/139 = x161 in
-          string_println(((label/137 + ": ") + typ_to_string(ty/139)))
+          println(((label/137 + ": ") + typ_to_string(ty/139)))
         }
       }
     },
@@ -1277,7 +1277,7 @@ fn show_result(label/137: string, res/138: Result[Typ, string]) -> unit {
         let x162 = Result::Err._0(res/138) in
         {
           let e/140 = x162 in
-          string_println(((label/137 + ": ") + e/140))
+          println(((label/137 + ": ") + e/140))
         }
       }
     },
@@ -1326,7 +1326,7 @@ fn main() -> unit {
   let _wild198 = show_result("sound_gen_occurs", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_var("x"), exp_app(exp_var("y"), exp_var("y")))))) in
   let _wild199 = reset_gensym(st/141) in
   let _wild200 = show_result("fun_x_let_y_let_z_x_id_z_y", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_let("z", exp_app(exp_var("x"), id/142), exp_var("z")), exp_var("y"))))) in
-  let _wild201 = string_println("") in
-  let _wild202 = string_println("All Done") in
-  let _wild203 = string_println("") in
+  let _wild201 = println("") in
+  let _wild202 = println("All Done") in
+  let _wild203 = println("") in
 }

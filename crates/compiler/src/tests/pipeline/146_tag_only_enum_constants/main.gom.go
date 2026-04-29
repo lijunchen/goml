@@ -67,16 +67,21 @@ func main0() struct{} {
     var paint__3 Paint = Paint_Red
     var t12 int32 = light_code(light__2)
     var t13 string = int32_to_string(t12)
-    string_println(t13)
+    println__T_string(t13)
     var t14 int32 = paint_code(paint__3)
     var t15 string = int32_to_string(t14)
-    string_println(t15)
+    println__T_string(t15)
     var t16 int32 = light_code(Green)
     var t17 string = int32_to_string(t16)
-    string_println(t17)
+    println__T_string(t17)
     var t18 int32 = paint_code(Blue)
     var t19 string = int32_to_string(t18)
-    string_println(t19)
+    println__T_string(t19)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

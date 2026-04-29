@@ -43,25 +43,29 @@ fn main() -> unit {
         true => {
           match x5 {
             true => {
-              string_print(int32_to_string(3))
+              println__T_string(int32_to_string(3))
             },
             false => {
-              string_print(int32_to_string(1))
+              println__T_string(int32_to_string(1))
             },
           }
         },
         false => {
           match x5 {
             true => {
-              string_print(int32_to_string(2))
+              println__T_string(int32_to_string(2))
             },
             false => {
-              string_print(int32_to_string(0))
+              println__T_string(int32_to_string(0))
             },
           }
         },
       }
     }
   } in
-  string_print(unit_to_string(c/4))
+  println__T_string(unit_to_string(c/4))
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
 }

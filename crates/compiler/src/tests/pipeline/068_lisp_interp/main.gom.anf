@@ -1512,13 +1512,21 @@ fn main() -> unit {
   let t637 = vec_new() in
   let result/151 = eval(t636, t637, global/148) in
   let t638 = value_to_string(result/151) in
-  let mtmp146 = string_println(t638) in
+  let mtmp146 = println__T_string(t638) in
   let t639 = lex("(add3 10 20 30)") in
   let exprs2/152 = parse_program(t639) in
   let t640 = vec_get(exprs2/152, 0) in
   let t641 = vec_new() in
   let result2/153 = eval(t640, t641, global/148) in
   let t642 = value_to_string(result2/153) in
-  let mtmp147 = string_println(t642) in
+  let mtmp147 = println__T_string(t642) in
   jump ret633()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret643() -> unit {
+    ()
+  } in
+  let t644 = string_println(value/1) in
+  jump ret643()
 }

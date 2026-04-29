@@ -4,7 +4,7 @@ fn show32(label/0: string, value/1: float32) -> unit {
   } in
   let t11 = float32_to_string(value/1) in
   let message/2 = (label/0 + t11) in
-  let mtmp0 = string_println(message/2) in
+  let mtmp0 = println__T_string(message/2) in
   jump ret10()
 }
 
@@ -14,7 +14,7 @@ fn show64(label/3: string, value/4: float64) -> unit {
   } in
   let t13 = float64_to_string(value/4) in
   let message/5 = (label/3 + t13) in
-  let mtmp1 = string_println(message/5) in
+  let mtmp1 = println__T_string(message/5) in
   jump ret12()
 }
 
@@ -66,12 +66,20 @@ fn main() -> unit {
   let _wild4 = show32("ratio32=", ratio32/19) in
   let t26 = bool_to_string(less32/20) in
   let t27 = ("less32=" + t26) in
-  let mtmp5 = string_println(t27) in
+  let mtmp5 = println__T_string(t27) in
   let _wild6 = show64("energy=", energy/24) in
   let _wild7 = show64("neg_dx=", neg_dx/25) in
   let _wild8 = show64("adjusted=", adjusted/26) in
   let t28 = bool_to_string(less64/28) in
   let t29 = ("less64=" + t28) in
-  let mtmp9 = string_println(t29) in
+  let mtmp9 = println__T_string(t29) in
   jump ret23()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret30() -> unit {
+    ()
+  } in
+  let t31 = string_println(value/1) in
+  jump ret30()
 }

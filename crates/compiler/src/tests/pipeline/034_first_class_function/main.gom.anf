@@ -44,7 +44,7 @@ fn main() -> unit {
   let invoked_with_global/16 = inherent#closure_env_global_invoker_1#closure_env_global_invoker_1#apply(global_invoker/15, double, 3) in
   let composer_closure/18 = closure_env_composer_closure_2 {} in
   let composed_by_closure/19 = inherent#closure_env_composer_closure_2#closure_env_composer_closure_2#apply(composer_closure/18, 5) in
-  let printer/20 = string_println in
+  let printer/20 = println__T_string in
   let t21 = int32_to_string(composed/9) in
   let mtmp0 = printer/20(t21) in
   let t22 = int32_to_string(closure_result/12) in
@@ -56,26 +56,34 @@ fn main() -> unit {
   jump ret20()
 }
 
-fn inherent#closure_env_closure_apply_0#closure_env_closure_apply_0#apply(env4: closure_env_closure_apply_0, value/10: int32) -> int32 {
-  join ret25(retv26: int32) -> int32 {
-    retv26
+fn println__T_string(value/1: string) -> unit {
+  join ret25() -> unit {
+    ()
   } in
-  let t27 = apply_once(increment, value/10) in
-  jump ret25(t27)
+  let t26 = string_println(value/1) in
+  jump ret25()
+}
+
+fn inherent#closure_env_closure_apply_0#closure_env_closure_apply_0#apply(env4: closure_env_closure_apply_0, value/10: int32) -> int32 {
+  join ret27(retv28: int32) -> int32 {
+    retv28
+  } in
+  let t29 = apply_once(increment, value/10) in
+  jump ret27(t29)
 }
 
 fn inherent#closure_env_global_invoker_1#closure_env_global_invoker_1#apply(env5: closure_env_global_invoker_1, func_to_call/13: (int32) -> int32, value/14: int32) -> int32 {
-  join ret28(retv29: int32) -> int32 {
-    retv29
+  join ret30(retv31: int32) -> int32 {
+    retv31
   } in
-  let t30 = apply_once(func_to_call/13, value/14) in
-  jump ret28(t30)
+  let t32 = apply_once(func_to_call/13, value/14) in
+  jump ret30(t32)
 }
 
 fn inherent#closure_env_composer_closure_2#closure_env_composer_closure_2#apply(env6: closure_env_composer_closure_2, value/17: int32) -> int32 {
-  join ret31(retv32: int32) -> int32 {
-    retv32
+  join ret33(retv34: int32) -> int32 {
+    retv34
   } in
-  let t33 = compose(double, increment, value/17) in
-  jump ret31(t33)
+  let t35 = compose(double, increment, value/17) in
+  jump ret33(t35)
 }

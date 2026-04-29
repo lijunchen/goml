@@ -55,7 +55,12 @@ func main0() struct{} {
             break Loop_loop9
         }
     }
-    string_println("main")
+    println__T_string("main")
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

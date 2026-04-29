@@ -8,8 +8,8 @@ func int32_to_string(x int32) string {
     return _goml_fmt.Sprintf("%d", x)
 }
 
-func string_print(s string) struct{} {
-    _goml_fmt.Print(s)
+func string_println(s string) struct{} {
+    _goml_fmt.Println(s)
     return struct{}{}
 }
 
@@ -38,22 +38,27 @@ func main0() struct{} {
     switch t__0.(type) {
     case A:
         var t4 string = int32_to_string(1)
-        string_print(t4)
+        println__T_string(t4)
     case B:
         var x0 bool = t__0.(B)._0
         switch x0 {
         case true:
             var t8 string = int32_to_string(2)
-            string_print(t8)
+            println__T_string(t8)
         case false:
             var t10 string = int32_to_string(3)
-            string_print(t10)
+            println__T_string(t10)
         default:
             panic("non-exhaustive match")
         }
     default:
         panic("non-exhaustive match")
     }
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

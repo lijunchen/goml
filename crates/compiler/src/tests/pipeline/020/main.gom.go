@@ -200,17 +200,17 @@ func main0() struct{} {
         y: 4,
     }
     var t71 string = point32_to_string(t70)
-    string_println(t71)
+    println__T_string(t71)
     var t72 Wrapper__int32 = Wrapper__int32{
         value: 7,
     }
     var t73 string = wrapper_int32_to_string(t72)
-    string_println(t73)
+    println__T_string(t73)
     var t74 Wrapper__unit = Wrapper__unit{
         value: struct{}{},
     }
     var t75 string = wrapper_unit_to_string(t74)
-    string_println(t75)
+    println__T_string(t75)
     var bounced_origin__30 Shape__int32 = bounce_int(Shape__int32_Origin{})
     var t76 Point = Point{
         x: 3,
@@ -220,7 +220,7 @@ func main0() struct{} {
         _0: t76,
     }
     var t78 string = shape_int32_to_string(t77)
-    string_println(t78)
+    println__T_string(t78)
     var t79 Wrapper__int32 = Wrapper__int32{
         value: 7,
     }
@@ -228,9 +228,9 @@ func main0() struct{} {
         _0: t79,
     }
     var t81 string = shape_int32_to_string(t80)
-    string_println(t81)
+    println__T_string(t81)
     var t82 string = shape_int32_to_string(bounced_origin__30)
-    string_println(t82)
+    println__T_string(t82)
     var t83 Point = Point{
         x: 3,
         y: 4,
@@ -239,7 +239,7 @@ func main0() struct{} {
         _0: t83,
     }
     var t85 string = shape_unit_to_string(t84)
-    string_println(t85)
+    println__T_string(t85)
     var t86 Wrapper__unit = Wrapper__unit{
         value: struct{}{},
     }
@@ -247,30 +247,35 @@ func main0() struct{} {
         _0: t86,
     }
     var t88 string = shape_unit_to_string(t87)
-    string_println(t88)
+    println__T_string(t88)
     var t89 string = shape_unit_to_string(Shape__unit_Origin{})
-    string_println(t89)
+    println__T_string(t89)
     var t90 Shape__int32 = bounce_int(Shape__int32_Origin{})
     describe__T_int32(t90)
-    string_println("struct enums!")
+    println__T_string("struct enums!")
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 
 func describe__T_int32(shape__7 Shape__int32) int32 {
-    var retv93 int32
-    var jp95 int32
+    var retv95 int32
+    var jp97 int32
     switch shape__7.(type) {
     case Shape__int32_Dot:
-        jp95 = 1
+        jp97 = 1
     case Shape__int32_Wrapped:
-        jp95 = 2
+        jp97 = 2
     case Shape__int32_Origin:
-        jp95 = 0
+        jp97 = 0
     default:
         panic("non-exhaustive match")
     }
-    retv93 = jp95
-    return retv93
+    retv95 = jp97
+    return retv95
 }
 
 func main() {

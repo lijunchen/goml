@@ -7,11 +7,11 @@ fn trait_impl#Arith#int32#less(self/2: int32, other/3: int32) -> bool {
 }
 
 fn trait_impl#Output#int32#output(self/4: int32) -> unit {
-  string_println(int32_to_string(self/4))
+  println__T_string(int32_to_string(self/4))
 }
 
 fn trait_impl#Output#bool#output(self/5: bool) -> unit {
-  string_println(bool_to_string(self/5))
+  println__T_string(bool_to_string(self/5))
 }
 
 fn main() -> unit {
@@ -34,6 +34,10 @@ fn main() -> unit {
       }
     }
   }
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
 }
 
 fn id__T_int32(x/6: int32) -> int32 {

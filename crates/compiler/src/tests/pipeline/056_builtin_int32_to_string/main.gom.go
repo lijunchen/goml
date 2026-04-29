@@ -18,7 +18,12 @@ type GoError = error
 func main0() struct{} {
     var value__0 int32 = 42
     var text__1 string = int32_to_string(value__0)
-    string_println(text__1)
+    println__T_string(text__1)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

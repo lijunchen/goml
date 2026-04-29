@@ -1326,11 +1326,11 @@ fn main() -> unit {
   let program/149 = "(begin (define fact (lambda (n) (if (= n 0) 1 (* n (fact (- n 1)))))) (define add3 (lambda (a b c) (+ a (+ b c)))) (fact 6))" in
   let exprs/150 = parse_program(lex(program/149)) in
   let result/151 = eval(vec_get(exprs/150, 0), vec_new(), global/148) in
-  let mtmp146 = string_println(value_to_string(result/151)) in
+  let mtmp146 = println(value_to_string(result/151)) in
   {
     let exprs2/152 = parse_program(lex("(add3 10 20 30)")) in
     let result2/153 = eval(vec_get(exprs2/152, 0), vec_new(), global/148) in
-    let mtmp147 = string_println(value_to_string(result2/153)) in
+    let mtmp147 = println(value_to_string(result2/153)) in
     {
       ()
     }

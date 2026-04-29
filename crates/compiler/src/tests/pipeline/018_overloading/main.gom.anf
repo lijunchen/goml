@@ -19,7 +19,7 @@ fn trait_impl#Output#int32#output(self/4: int32) -> unit {
     ()
   } in
   let t11 = int32_to_string(self/4) in
-  let t12 = string_println(t11) in
+  let t12 = println__T_string(t11) in
   jump ret10()
 }
 
@@ -28,7 +28,7 @@ fn trait_impl#Output#bool#output(self/5: bool) -> unit {
     ()
   } in
   let t14 = bool_to_string(self/5) in
-  let t15 = string_println(t14) in
+  let t15 = println__T_string(t14) in
   jump ret13()
 }
 
@@ -49,23 +49,31 @@ fn main() -> unit {
   jump ret16()
 }
 
-fn id__T_int32(x/6: int32) -> int32 {
-  join ret17(retv18: int32) -> int32 {
-    retv18
+fn println__T_string(value/1: string) -> unit {
+  join ret17() -> unit {
+    ()
   } in
-  jump ret17(x/6)
+  let t18 = string_println(value/1) in
+  jump ret17()
 }
 
-fn id__T_string(x/6: string) -> string {
-  join ret19(retv20: string) -> string {
+fn id__T_int32(x/6: int32) -> int32 {
+  join ret19(retv20: int32) -> int32 {
     retv20
   } in
   jump ret19(x/6)
 }
 
-fn id__T_bool(x/6: bool) -> bool {
-  join ret21(retv22: bool) -> bool {
+fn id__T_string(x/6: string) -> string {
+  join ret21(retv22: string) -> string {
     retv22
   } in
   jump ret21(x/6)
+}
+
+fn id__T_bool(x/6: bool) -> bool {
+  join ret23(retv24: bool) -> bool {
+    retv24
+  } in
+  jump ret23(x/6)
 }

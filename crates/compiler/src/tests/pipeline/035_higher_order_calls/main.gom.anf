@@ -42,7 +42,7 @@ fn main() -> unit {
   let applied/7 = chosen/6(5) in
   let t16 = chooser(false) in
   let direct/8 = t16(5) in
-  let printer/9 = string_println in
+  let printer/9 = println__T_string in
   let t17 = int32_to_string(applied/7) in
   let mtmp1 = printer/9(t17) in
   let t18 = int32_to_string(direct/8) in
@@ -57,4 +57,12 @@ fn println__T_int32(value/1: int32) -> unit {
   let t20 = int32_to_string(value/1) in
   let t21 = string_println(t20) in
   jump ret19()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret22() -> unit {
+    ()
+  } in
+  let t23 = string_println(value/1) in
+  jump ret22()
 }

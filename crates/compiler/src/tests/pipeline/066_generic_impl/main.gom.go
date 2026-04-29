@@ -36,9 +36,9 @@ func main0() struct{} {
     var p3__6 Point__string__int32 = _goml_inherent_x23_Point_x23_Point_x5b_U_x2c_V_x5d__x23_swap_x5f__x5f_U_x5f_int32_x5f__x5f_V_x5f_string(p1__4)
     var x__7 int32 = p3__6.y
     var t2 string = int32_to_string(x__7)
-    string_println(t2)
+    println__T_string(t2)
     var x2__8 string = _goml_inherent_x23_Point_x23_Point_x5b_U_x2c_V_x5d__x23_get_x5f_x_x5f__x5f_U_x5f_string_x5f__x5f_V_x5f_string(p2__5)
-    string_println(x2__8)
+    println__T_string(x2__8)
     return struct{}{}
 }
 
@@ -74,11 +74,16 @@ func _goml_inherent_x23_Point_x23_Point_x5b_U_x2c_V_x5d__x23_swap_x5f__x5f_U_x5f
     return retv11
 }
 
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
+    return struct{}{}
+}
+
 func _goml_inherent_x23_Point_x23_Point_x5b_U_x2c_V_x5d__x23_get_x5f_x_x5f__x5f_U_x5f_string_x5f__x5f_V_x5f_string(self__3 Point__string__string) string {
-    var retv16 string
-    var t17 string = self__3.x
-    retv16 = t17
-    return retv16
+    var retv18 string
+    var t19 string = self__3.x
+    retv18 = t19
+    return retv18
 }
 
 func main() {

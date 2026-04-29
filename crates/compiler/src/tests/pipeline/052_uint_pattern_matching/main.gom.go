@@ -154,7 +154,12 @@ func main0() struct{} {
     var t56 bool = match_struct(alt_counter__8)
     var t57 string = report(",struct_second=", t56)
     var message__9 string = t55 + t57
-    string_println(message__9)
+    println__T_string(message__9)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

@@ -188,7 +188,12 @@ func main0() struct{} {
     var t52 string = t51 + part7__20
     var t53 string = t52 + part8__21
     var message__23 string = t53 + part9__22
-    string_println(message__23)
+    println__T_string(message__23)
+    return struct{}{}
+}
+
+func println__T_string(value__1 string) struct{} {
+    string_println(value__1)
     return struct{}{}
 }
 

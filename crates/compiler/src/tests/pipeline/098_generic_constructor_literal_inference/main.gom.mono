@@ -6,12 +6,16 @@ fn main() -> unit {
         let x0 = Option__uint8::Some._0(x/0) in
         {
           let v/1 = x0 in
-          string_println(uint8_to_string(v/1))
+          println__T_string(uint8_to_string(v/1))
         }
       }
     },
     Option__uint8::None => {
-      string_println("none")
+      println__T_string("none")
     },
   } in
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
 }
