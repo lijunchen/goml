@@ -1606,7 +1606,7 @@ pub fn add(a: int64, b: int64) -> int64 {
 }
 
 #[test]
-fn new_creates_two_package_scaffold() -> anyhow::Result<()> {
+fn new_creates_crate_module_scaffold() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
 
     let output = Command::new(goml_bin())
@@ -1633,6 +1633,8 @@ fn new_creates_two_package_scaffold() -> anyhow::Result<()> {
     let root_toml = fs::read_to_string(project_dir.join("goml.toml"))?;
     let main_gom = fs::read_to_string(project_dir.join("src/main.gom"))?;
     let lib_gom = fs::read_to_string(project_dir.join("src/lib.gom"))?;
+    assert!(!project_dir.join("main.gom").exists());
+    assert!(!project_dir.join("lib/mod.gom").exists());
 
     expect![[r#"
         [crate]
