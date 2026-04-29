@@ -170,7 +170,7 @@ pub(crate) fn build_symbol_index(
     if crate::config::find_crate_root(start_dir_for_path(path)).is_some() {
         build_crate_symbol_index(path, src)
     } else {
-        build_package_symbol_index(path, src)
+        Err("package discovery fallback is disabled outside manifest crates".to_string())
     }
 }
 
@@ -246,61 +246,6 @@ fn build_crate_symbol_index(
             &package_names,
             &package_dir,
             std::slice::from_ref(&module.file_path),
-            &overrides,
-        )?;
-    }
-
-    if let Ok((_module_dir, dependencies)) =
-        crate::pipeline::packages::discover_dependency_versions_from_file(path)
-    {
-        let external_deps = crate::external::resolve_dependency_versions(&dependencies)
-            .map_err(|err| err.to_string())?;
-        external_deps
-            .augment_graph(&mut graph)
-            .map_err(|err| err.to_string())?;
-        for (logical_name, files) in external_deps.package_sources() {
-            let Some(pkg_dir) = graph.package_dirs.get(&logical_name) else {
-                continue;
-            };
-            index_package_symbols_named(
-                &mut index,
-                &logical_name,
-                std::slice::from_ref(&logical_name),
-                pkg_dir,
-                &files,
-                &HashMap::new(),
-            )?;
-        }
-    }
-
-    index_builtin_symbols(&mut index)?;
-    Ok((graph, index))
-}
-
-fn build_package_symbol_index(
-    path: &Path,
-    src: &str,
-) -> Result<(crate::pipeline::packages::PackageGraph, ProjectSymbolIndex), String> {
-    let mut graph = discover_packages_for_query(path, src)?;
-    let mut index = ProjectSymbolIndex::default();
-    let mut overrides = HashMap::new();
-    overrides.insert(path.to_path_buf(), src.to_string());
-
-    for (pkg_name, unit) in graph.packages.iter() {
-        let Some(pkg_dir) = graph.package_dirs.get(pkg_name) else {
-            continue;
-        };
-        let package_files = unit
-            .files
-            .iter()
-            .map(|file| file.path.clone())
-            .collect::<Vec<_>>();
-        index_package_symbols_named(
-            &mut index,
-            pkg_name,
-            std::slice::from_ref(pkg_name),
-            pkg_dir,
-            &package_files,
             &overrides,
         )?;
     }
@@ -644,43 +589,6 @@ fn index_source_file_symbols(
     }
 
     Ok(())
-}
-
-fn parse_ast_for_discovery(path: &Path, src: &str) -> Result<::ast::ast::File, String> {
-    let result = parser::parse(path, src);
-    let (green_node, mut diagnostics) = result.into_parts();
-    let root = MySyntaxNode::new_root(green_node);
-    let cst = cst::cst::File::cast(root).ok_or_else(|| "failed to cast CST".to_string())?;
-    let lower = ::ast::lower::lower(cst);
-    let (ast, mut lower_diagnostics) = lower.into_parts();
-    diagnostics.append(&mut lower_diagnostics);
-    let ast = ast.ok_or_else(|| "AST lowering error".to_string())?;
-    Ok(ast)
-}
-
-fn discover_packages_for_query(
-    path: &Path,
-    src: &str,
-) -> Result<crate::pipeline::packages::PackageGraph, String> {
-    let entry_ast = parse_ast_for_discovery(path, src)?;
-    let root_dir = start_dir_for_path(path);
-    if !path.exists() {
-        crate::pipeline::packages::discover_packages_single_file_with_external_imports(
-            root_dir,
-            path,
-            entry_ast,
-            &crate::package_imports::ExternalImports::default(),
-        )
-        .map_err(|e| format!("{:?}", e))
-    } else {
-        crate::pipeline::packages::discover_packages_with_external_imports(
-            root_dir,
-            Some(path),
-            Some(entry_ast),
-            &crate::package_imports::ExternalImports::default(),
-        )
-        .map_err(|e| format!("{:?}", e))
-    }
 }
 
 fn ident_tokens_to_segments(path: &cst::nodes::Path) -> Vec<String> {

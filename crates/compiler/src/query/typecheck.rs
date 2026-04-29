@@ -9,7 +9,7 @@ use diagnostics::Diagnostics;
 use parser::syntax::MySyntaxNode;
 
 use crate::{
-    artifact::PackageExports, builtins, env::GlobalTypeEnv, hir, interface, pipeline,
+    artifact::PackageExports, builtins, env::GlobalTypeEnv, hir, interface,
     typer::results::TypeckResults,
 };
 
@@ -165,12 +165,15 @@ fn canonical_path(path: &Path) -> PathBuf {
 }
 
 pub(crate) fn typecheck_for_query(path: &Path, src: &str) -> Result<QueryTypecheck, String> {
-    typecheck_crate_for_query(path, src)
-        .or_else(|_| typecheck_single_file_for_query(path, src))
-        .or_else(|_| {
-            pipeline::pipeline::typecheck_with_packages_and_results(path, src)
-                .map_err(|e| format!("{:?}", e))
-        })
+    let start_dir = path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."));
+    if crate::config::find_crate_root(start_dir).is_some() {
+        typecheck_crate_for_query(path, src)
+    } else {
+        typecheck_single_file_for_query(path, src)
+    }
 }
 
 pub fn diagnostics_for_query(path: &Path, src: &str) -> Result<Diagnostics, String> {

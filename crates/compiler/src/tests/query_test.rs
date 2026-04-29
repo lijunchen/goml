@@ -265,6 +265,28 @@ pub fn ping() -> string {
 }
 
 #[test]
+fn no_manifest_query_does_not_discover_packages_from_use() {
+    let dir = tempdir().unwrap();
+    std::fs::create_dir_all(dir.path().join("util")).unwrap();
+    std::fs::write(
+        dir.path().join("util/mod.gom"),
+        r#"
+pub fn ping() -> string {
+    "pong"
+}
+"#,
+    )
+    .unwrap();
+
+    let src = "use util;\n\nfn main() -> unit {\n    let _ = util::ping();\n}\n";
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(&main_path, src).unwrap();
+
+    let locations = goto_definition_locations(&main_path, src, 3, 19);
+    assert!(locations.is_err());
+}
+
+#[test]
 #[rustfmt::skip]
 fn use_statement_root_completions_include_relative_roots() {
     let dir = tempdir().unwrap();
@@ -1514,7 +1536,7 @@ fn main() {
 
 #[test]
 #[rustfmt::skip]
-fn multi_package_query() {
+fn no_manifest_use_package_hover_and_completion_stay_single_file() {
     let dir = tempdir().unwrap();
     let lib_dir = dir.path().join("Lib");
     std::fs::create_dir_all(&lib_dir).unwrap();
@@ -1566,7 +1588,7 @@ fn main() {
     std::fs::write(&main_path, hover_src).unwrap();
 
     check_with_path(&main_path, hover_src, 4, 17, expect![[r#"
-        "(Lib::Color) -> int32"
+        "<None>"
     "#]]);
 
     check_completions_with_path(
@@ -1575,22 +1597,7 @@ fn main() {
         8,
         6,
         expect![[r#"
-            [
-                DotCompletionItem {
-                    name: "x",
-                    kind: Field,
-                    detail: Some(
-                        "int32",
-                    ),
-                },
-                DotCompletionItem {
-                    name: "y",
-                    kind: Field,
-                    detail: Some(
-                        "int32",
-                    ),
-                },
-            ]
+            []
         "#]],
     );
 }
@@ -1889,7 +1896,7 @@ pub fn call() -> int64 {
 
 #[test]
 #[rustfmt::skip]
-fn multi_package_inherent_method_completion() {
+fn no_manifest_use_package_inherent_method_completion_is_empty() {
     let dir = tempdir().unwrap();
     let lib_dir = dir.path().join("Lib");
     std::fs::create_dir_all(&lib_dir).unwrap();
@@ -1934,36 +1941,14 @@ fn main() {
         5,
         9,
         expect![[r#"
-            [
-                DotCompletionItem {
-                    name: "value",
-                    kind: Field,
-                    detail: Some(
-                        "int32",
-                    ),
-                },
-                DotCompletionItem {
-                    name: "text",
-                    kind: Method,
-                    detail: Some(
-                        "(Lib::Item) -> string",
-                    ),
-                },
-                DotCompletionItem {
-                    name: "touch",
-                    kind: Method,
-                    detail: Some(
-                        "(Lib::Item) -> unit",
-                    ),
-                },
-            ]
+            []
         "#]],
     );
 }
 
 #[test]
 #[rustfmt::skip]
-fn multi_package_colon_colon_completions() {
+fn no_manifest_use_package_colon_colon_completion_is_empty() {
     let dir = tempdir().unwrap();
     let lib_dir = dir.path().join("Lib");
     std::fs::create_dir_all(&lib_dir).unwrap();
@@ -2014,29 +1999,7 @@ fn main() {
         4,
         17,
         expect![[r#"
-            [
-                ColonColonCompletionItem {
-                    name: "Color",
-                    kind: Type,
-                    detail: Some(
-                        "enum",
-                    ),
-                },
-                ColonColonCompletionItem {
-                    name: "Point",
-                    kind: Type,
-                    detail: Some(
-                        "struct",
-                    ),
-                },
-                ColonColonCompletionItem {
-                    name: "color_to_int",
-                    kind: Value,
-                    detail: Some(
-                        "fn",
-                    ),
-                },
-            ]
+            []
         "#]],
     );
 
@@ -2046,15 +2009,7 @@ fn main() {
         4,
         19,
         expect![[r#"
-            [
-                ColonColonCompletionItem {
-                    name: "color_to_int",
-                    kind: Value,
-                    detail: Some(
-                        "fn",
-                    ),
-                },
-            ]
+            []
         "#]],
     );
 }
