@@ -347,6 +347,139 @@ fn main() -> unit {
 
 #[test]
 #[rustfmt::skip]
+fn use_self_and_super_namespace_completions_follow_current_module() {
+    let dir = tempdir().unwrap();
+    std::fs::create_dir_all(dir.path().join("api")).unwrap();
+    std::fs::write(
+        dir.path().join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        dir.path().join("main.gom"),
+        r#"
+mod api;
+
+fn main() -> unit {
+    ()
+}
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        dir.path().join("api/mod.gom"),
+        r#"
+pub mod client;
+
+pub struct Parent {
+    name: string,
+}
+
+pub fn helper() -> string {
+    "api"
+}
+"#,
+    )
+    .unwrap();
+
+    let valid_client_src = r#"
+pub struct Request {
+    path: string,
+}
+
+pub fn send() -> string {
+    "ok"
+}
+"#;
+    let self_namespace_src = r#"
+use self::
+
+pub struct Request {
+    path: string,
+}
+
+pub fn send() -> string {
+    "ok"
+}
+"#;
+    let super_namespace_src = r#"
+use super::
+
+pub struct Request {
+    path: string,
+}
+
+pub fn send() -> string {
+    "ok"
+}
+"#;
+    let client_path = dir.path().join("api/client.gom");
+    std::fs::write(&client_path, valid_client_src).unwrap();
+
+    check_colon_colon_completions_with_path(
+        &client_path,
+        self_namespace_src,
+        1,
+        10,
+        expect![[r#"
+            [
+                ColonColonCompletionItem {
+                    name: "Request",
+                    kind: Type,
+                    detail: Some(
+                        "struct",
+                    ),
+                },
+                ColonColonCompletionItem {
+                    name: "send",
+                    kind: Value,
+                    detail: Some(
+                        "fn",
+                    ),
+                },
+            ]
+        "#]],
+    );
+
+    check_colon_colon_completions_with_path(
+        &client_path,
+        super_namespace_src,
+        1,
+        11,
+        expect![[r#"
+            [
+                ColonColonCompletionItem {
+                    name: "Parent",
+                    kind: Type,
+                    detail: Some(
+                        "struct",
+                    ),
+                },
+                ColonColonCompletionItem {
+                    name: "client",
+                    kind: Package,
+                    detail: Some(
+                        "package",
+                    ),
+                },
+                ColonColonCompletionItem {
+                    name: "helper",
+                    kind: Value,
+                    detail: Some(
+                        "fn",
+                    ),
+                },
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
 fn imported_package_value_completions() {
     let dir = tempdir().unwrap();
     let home = dir.path().join(".goml");

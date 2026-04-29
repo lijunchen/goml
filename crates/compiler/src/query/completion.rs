@@ -992,18 +992,10 @@ fn colon_colon_items_for_namespace(
 }
 
 fn crate_module_completion_items(path: &Path, namespace: &str) -> Vec<ColonColonCompletionItem> {
-    let module_path = if namespace == "crate" {
-        Vec::new()
-    } else if let Some(rest) = namespace.strip_prefix("crate::") {
-        rest.split("::")
-            .filter(|segment| !segment.is_empty())
-            .map(|segment| segment.to_string())
-            .collect()
-    } else {
+    let Some(crate_unit) = discover_completion_crate(path) else {
         return Vec::new();
     };
-
-    let Some(crate_unit) = discover_completion_crate(path) else {
+    let Some(module_path) = source_namespace_module_path(path, &crate_unit, namespace) else {
         return Vec::new();
     };
     let Some(module) = crate_unit
@@ -1028,12 +1020,13 @@ fn crate_module_completion_items(path: &Path, namespace: &str) -> Vec<ColonColon
 fn namespace_lookup_names(path: &Path, namespace: &str) -> Vec<String> {
     let mut names = vec![namespace.to_string()];
 
-    if let Some(crate_name) = completion_crate_name(path) {
-        if namespace == "crate" {
-            names.push(crate_name);
-        } else if let Some(rest) = namespace.strip_prefix("crate::") {
-            names.push(format!("{}::{}", crate_name, rest));
-        }
+    if let Some(crate_unit) = discover_completion_crate(path)
+        && let Some(module_path) = source_namespace_module_path(path, &crate_unit, namespace)
+    {
+        names.push(canonical_module_namespace(
+            &crate_unit.config.name,
+            &module_path,
+        ));
     }
 
     names.sort();
@@ -1041,8 +1034,64 @@ fn namespace_lookup_names(path: &Path, namespace: &str) -> Vec<String> {
     names
 }
 
-fn completion_crate_name(path: &Path) -> Option<String> {
-    discover_completion_crate(path).map(|crate_unit| crate_unit.config.name)
+fn source_namespace_module_path(
+    path: &Path,
+    crate_unit: &crate::pipeline::modules::CrateUnit,
+    namespace: &str,
+) -> Option<Vec<String>> {
+    if let Some(rest) = namespace_root_tail(namespace, "crate") {
+        return Some(rest);
+    }
+
+    let mut module_path = current_completion_module_path(path, crate_unit)?;
+    if let Some(rest) = namespace_root_tail(namespace, "self") {
+        module_path.extend(rest);
+        return Some(module_path);
+    }
+
+    if let Some(rest) = namespace_root_tail(namespace, "super") {
+        if module_path.is_empty() {
+            return None;
+        }
+        module_path.pop();
+        module_path.extend(rest);
+        return Some(module_path);
+    }
+
+    None
+}
+
+fn namespace_root_tail(namespace: &str, root: &str) -> Option<Vec<String>> {
+    if namespace == root {
+        return Some(Vec::new());
+    }
+
+    let prefix = format!("{}::", root);
+    namespace.strip_prefix(&prefix).map(|rest| {
+        rest.split("::")
+            .filter(|segment| !segment.is_empty())
+            .map(|segment| segment.to_string())
+            .collect()
+    })
+}
+
+fn current_completion_module_path(
+    path: &Path,
+    crate_unit: &crate::pipeline::modules::CrateUnit,
+) -> Option<Vec<String>> {
+    let current_path = canonical_completion_path(path);
+    crate_unit
+        .modules
+        .iter()
+        .find(|module| canonical_completion_path(&module.file_path) == current_path)
+        .map(|module| module.path.segments().to_vec())
+}
+
+fn canonical_module_namespace(crate_name: &str, module_path: &[String]) -> String {
+    let mut segments = Vec::with_capacity(module_path.len() + 1);
+    segments.push(crate_name.to_string());
+    segments.extend(module_path.iter().cloned());
+    segments.join("::")
 }
 
 fn discover_completion_crate(path: &Path) -> Option<crate::pipeline::modules::CrateUnit> {
@@ -1052,6 +1101,10 @@ fn discover_completion_crate(path: &Path) -> Option<crate::pipeline::modules::Cr
         .unwrap_or_else(|| Path::new("."));
     let (crate_dir, _) = crate::config::find_crate_root(start_dir)?;
     crate::pipeline::modules::discover_crate_from_dir(&crate_dir).ok()
+}
+
+fn canonical_completion_path(path: &Path) -> std::path::PathBuf {
+    path.canonicalize().unwrap_or_else(|_| path.to_path_buf())
 }
 
 fn strip_namespace_member<'a>(full: &'a str, ns_prefix: &str) -> Option<&'a str> {
