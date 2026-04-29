@@ -101,7 +101,7 @@ fn normalize_temp_paths(text: &str, root: &Path) -> String {
 }
 
 #[test]
-fn cli_check_build_link_single_package() -> anyhow::Result<()> {
+fn cli_check_build_link_single_crate() -> anyhow::Result<()> {
     let sh = Shell::new()?;
     let dir = tempfile::tempdir()?;
     let root = dir.path();
