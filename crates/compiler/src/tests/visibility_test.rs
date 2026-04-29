@@ -145,6 +145,30 @@ pub fn answer() -> int32 {
 }
 
 #[test]
+fn crate_path_resolves_module_value() {
+    assert_ok(&[
+        (
+            "main.gom",
+            r#"
+mod math;
+
+fn main() -> unit {
+    let _ = crate::math::add(1, 2);
+}
+"#,
+        ),
+        (
+            "math.gom",
+            r#"
+pub fn add(a: int64, b: int64) -> int64 {
+    a + b
+}
+"#,
+        ),
+    ]);
+}
+
+#[test]
 fn value_use_is_module_local() {
     assert_err_contains(
         &[
