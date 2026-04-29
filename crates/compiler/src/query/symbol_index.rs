@@ -383,16 +383,12 @@ pub(crate) fn package_nav_target_in_dir(dir: &Path) -> Option<PathBuf> {
         return Some(toml);
     }
 
-    let mut gom_files = Vec::new();
-    let entries = fs::read_dir(dir).ok()?;
-    for entry in entries {
-        let path = entry.ok()?.path();
-        if path.extension().is_some_and(|ext| ext == "gom") {
-            gom_files.push(path);
-        }
+    let mod_gom = dir.join("mod.gom");
+    if mod_gom.exists() {
+        return Some(mod_gom);
     }
-    gom_files.sort();
-    gom_files.into_iter().next()
+
+    None
 }
 
 pub(crate) fn lookup_symbol_locations_for_path(
