@@ -923,7 +923,7 @@ fn main() -> unit {
             .join("target/goml/build/deps/alice/appdep/0.1.0/appdep.core")
             .exists()
     );
-    assert!(project_dir.join("target/goml/build/main.core").exists());
+    assert!(project_dir.join("target/goml/build/demo.core").exists());
     assert!(project_dir.join("target/goml/main.go").exists());
 
     if !runtime_executor_available() {
@@ -1498,6 +1498,8 @@ fn project_build_writes_target_goml_main_go() -> anyhow::Result<()> {
 
     let go_file = dir.path().join("target/goml/main.go");
     assert!(go_file.exists());
+    assert!(dir.path().join("target/goml/build/demo.core").exists());
+    assert!(dir.path().join("target/goml/build/demo.interface").exists());
 
     if !runtime_executor_available() {
         return Ok(());
@@ -1713,8 +1715,7 @@ fn not_main() -> unit {
     assert!(!output.status.success());
     expect![""].assert_eq(&stdout);
     expect![[r#"
-        link failed: Compile { diagnostics: Diagnostics { items: [Diagnostic { stage: Other("compile"), severity: Error, message: "main package missing main function", range: None }] } }
-        subcommand failed: goml compiler link --input target/goml/build/main.core --output target/goml/main.go
+        project link failed: Compile { diagnostics: Diagnostics { items: [Diagnostic { stage: Other("compile"), severity: Error, message: "demo package missing main function", range: None }] } }
     "#]]
     .assert_eq(&stderr);
     assert!(!root.join("target/goml/main.go").exists());
@@ -1751,8 +1752,8 @@ pub fn add(a: int64, b: int64) -> int64 {
     assert!(output.status.success(), "stderr: {stderr}");
     expect![""].assert_eq(&stdout);
     expect![""].assert_eq(&stderr);
-    assert!(root.join("target/goml/build/src/lib.core").exists());
-    assert!(root.join("target/goml/build/src/lib.interface").exists());
+    assert!(root.join("target/goml/build/math.core").exists());
+    assert!(root.join("target/goml/build/math.interface").exists());
     assert!(!root.join("target/goml/main.go").exists());
 
     Ok(())
@@ -1898,16 +1899,10 @@ fn new_project_can_check_and_build() -> anyhow::Result<()> {
 
     let go_file = project_dir.join("target/goml/main.go");
     assert!(go_file.exists());
-    assert!(project_dir.join("target/goml/build/src/main.core").exists());
+    assert!(project_dir.join("target/goml/build/demo.core").exists());
     assert!(
         project_dir
-            .join("target/goml/build/src/main.interface")
-            .exists()
-    );
-    assert!(project_dir.join("target/goml/build/src/lib.core").exists());
-    assert!(
-        project_dir
-            .join("target/goml/build/src/lib.interface")
+            .join("target/goml/build/demo.interface")
             .exists()
     );
 
@@ -2074,8 +2069,7 @@ pub fn value() -> int32 {
     let stderr = normalize_temp_prefix(&String::from_utf8_lossy(&output.stderr), root);
     assert!(!output.status.success());
     expect![[r#"
-        build failed: Typer { diagnostics: Diagnostics { items: [Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(46..64) }, Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(46..64) }] } }
-        subcommand failed: goml compiler build --package A --input A/mod.gom --interface-path target/goml/build/B/B.interface --output target/goml/build/A/A
+        project build failed: Typer { diagnostics: Diagnostics { items: [Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(46..64) }, Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(46..64) }] } }
     "#]]
     .assert_eq(&stderr);
     assert!(!root.join("target/goml/main.go").exists());

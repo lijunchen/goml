@@ -214,7 +214,6 @@ struct LinkCompilerCommand {
 
 struct ProjectCommandPlan {
     commands: Vec<PlannedCompilerCommand>,
-    external: ExternalArtifactsPlan,
 }
 
 struct ExternalArtifactsPlan {
@@ -835,11 +834,14 @@ fn execute_project_check(args: ProjectCommandArgs) -> anyhow::Result<()> {
 
 fn execute_project_build(args: ProjectCommandArgs) -> anyhow::Result<()> {
     let project = load_project_from_cwd()?;
-    let plan = build_project_build_plan(&project)?;
-    if !args.dry_run {
-        materialize_external_artifacts(&plan.external, true)?;
+    if args.dry_run {
+        let plan = build_project_build_plan(&project)?;
+        return execute_planned_commands(&project.module_dir, plan.commands, true);
     }
-    execute_planned_commands(&project.module_dir, plan.commands, args.dry_run)
+
+    let external = build_external_artifacts_plan(&project, PROJECT_BUILD_OUTPUT_DIR)?;
+    materialize_external_artifacts(&external, true)?;
+    execute_direct_project_build(&project, &external)
 }
 
 fn build_project_check_plan(project: &ProjectContext) -> anyhow::Result<ProjectCommandPlan> {
@@ -895,7 +897,7 @@ fn build_project_check_plan(project: &ProjectContext) -> anyhow::Result<ProjectC
         );
     }
 
-    Ok(ProjectCommandPlan { commands, external })
+    Ok(ProjectCommandPlan { commands })
 }
 
 fn build_project_build_plan(project: &ProjectContext) -> anyhow::Result<ProjectCommandPlan> {
@@ -964,7 +966,7 @@ fn build_project_build_plan(project: &ProjectContext) -> anyhow::Result<ProjectC
         }));
     }
 
-    Ok(ProjectCommandPlan { commands, external })
+    Ok(ProjectCommandPlan { commands })
 }
 
 fn build_external_artifacts_plan(
@@ -1052,8 +1054,62 @@ fn execute_direct_project_check(
     )
 }
 
+fn execute_direct_project_build(
+    project: &ProjectContext,
+    external: &ExternalArtifactsPlan,
+) -> anyhow::Result<()> {
+    let unit =
+        compiler::pipeline::separate::build_crate(compiler::pipeline::separate::CrateInputs {
+            crate_unit: project.crate_unit.clone(),
+            interface_files: unique_interface_paths(&external.interface_outputs),
+        })
+        .map_err(|err| anyhow!("project build failed: {:?}", err))?;
+    write_core_unit(
+        &project_crate_output_base(project, PROJECT_BUILD_OUTPUT_DIR),
+        &unit,
+    )?;
+
+    if project.kind == CrateKind::Bin {
+        let mut cores = external
+            .artifacts
+            .modules
+            .values()
+            .map(|module| module.core.clone())
+            .collect::<Vec<_>>();
+        cores.sort_by(|left, right| left.package.cmp(&right.package));
+        cores.push(unit);
+        let linked =
+            compiler::pipeline::separate::link_crates(&project.crate_unit.config.name, cores)
+                .map_err(|err| anyhow!("project link failed: {:?}", err))?;
+        let go_source = linked.go.to_pretty(&linked.goenv, PRETTY_WIDTH);
+        write_go_file(Path::new(PROJECT_GO_OUTPUT), go_source)?;
+    }
+
+    Ok(())
+}
+
 fn project_crate_output_base(project: &ProjectContext, output_root: &str) -> PathBuf {
     PathBuf::from(output_root).join(&project.crate_unit.config.name)
+}
+
+fn write_core_unit(path: &Path, unit: &compiler::artifact::CoreUnit) -> anyhow::Result<()> {
+    write_json(
+        &path.with_extension("interface"),
+        serde_json::to_string_pretty(&unit.interface)?,
+    )?;
+    write_json(
+        &path.with_extension("core"),
+        serde_json::to_string_pretty(unit)?,
+    )
+}
+
+fn write_go_file(path: &Path, source: String) -> anyhow::Result<()> {
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)
+            .with_context(|| format!("failed to create directory {}", parent.display()))?;
+    }
+    fs::write(path, source).with_context(|| format!("failed to write {}", path.display()))?;
+    Ok(())
 }
 
 fn unique_interface_paths(interface_outputs: &HashMap<String, PathBuf>) -> Vec<PathBuf> {

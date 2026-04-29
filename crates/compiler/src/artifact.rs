@@ -141,18 +141,35 @@ fn public_export_names(package: &str, files: &[SourceFileAst]) -> HashSet<String
                 _ => None,
             };
             if let Some(name) = name {
-                names.insert(export_name(package, name));
+                names.insert(export_name_in_module(package, &file.module_path, name));
             }
         }
     }
     names
 }
 
-fn export_name(package: &str, name: &str) -> String {
-    if is_special_unqualified_package(package) {
-        name.to_string()
+fn export_name_in_module(package: &str, module_path: &[String], name: &str) -> String {
+    let mut segments = if module_path.is_empty() {
+        if is_special_unqualified_package(package) {
+            Vec::new()
+        } else {
+            vec![package.to_string()]
+        }
     } else {
-        TastIdent::new(&format!("{package}::{name}")).0
+        let module_name = module_path.join("::");
+        if package == module_name || is_special_unqualified_package(package) {
+            module_path.to_vec()
+        } else {
+            std::iter::once(package.to_string())
+                .chain(module_path.iter().cloned())
+                .collect()
+        }
+    };
+    segments.push(name.to_string());
+    if segments.len() == 1 {
+        segments.pop().unwrap_or_default()
+    } else {
+        TastIdent::new(&segments.join("::")).0
     }
 }
 
