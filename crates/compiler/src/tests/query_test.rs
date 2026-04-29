@@ -287,6 +287,28 @@ pub fn ping() -> string {
 }
 
 #[test]
+fn no_manifest_use_root_goto_does_not_navigate_local_dir() {
+    let dir = tempdir().unwrap();
+    std::fs::create_dir_all(dir.path().join("util")).unwrap();
+    std::fs::write(
+        dir.path().join("util/mod.gom"),
+        r#"
+pub fn ping() -> string {
+    "pong"
+}
+"#,
+    )
+    .unwrap();
+
+    let src = "use util;\n\nfn main() -> unit {\n    ()\n}\n";
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(&main_path, src).unwrap();
+
+    let locations = goto_definition_locations(&main_path, src, 0, 5);
+    assert!(locations.is_err());
+}
+
+#[test]
 #[rustfmt::skip]
 fn use_statement_root_completions_include_relative_roots() {
     let dir = tempdir().unwrap();

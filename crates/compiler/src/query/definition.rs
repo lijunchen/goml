@@ -120,26 +120,6 @@ fn resolve_use_decl(
         return Some(vec![location]);
     }
     let Ok((_graph, index)) = build_symbol_index(path, src) else {
-        if idx == 0 {
-            let pkg = &segments[0];
-            let start_dir = path
-                .parent()
-                .filter(|parent| !parent.as_os_str().is_empty())
-                .unwrap_or_else(|| Path::new("."));
-            if crate::config::find_crate_root(start_dir).is_some() {
-                return None;
-            }
-            let pkg_dir = start_dir.join(pkg);
-            if let Some(target) = package_nav_target_in_dir(&pkg_dir) {
-                return Some(vec![DefinitionLocation {
-                    path: target,
-                    range: TextRange::new(
-                        text_size::TextSize::from(0),
-                        text_size::TextSize::from(0),
-                    ),
-                }]);
-            }
-        }
         return None;
     };
     if let Some(location) = package_definition_location(&index, &lookup) {
