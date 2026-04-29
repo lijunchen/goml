@@ -1388,6 +1388,71 @@ pub fn send() -> string {
     }
 
     #[test]
+    fn colon_colon_completion_hides_private_sibling_items() {
+        let dir = tempdir().unwrap();
+        let root = dir.path();
+        std::fs::write(
+            root.join("goml.toml"),
+            r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+"#,
+        )
+        .unwrap();
+
+        let valid_src = r#"
+mod data;
+
+fn main() -> unit {
+    ()
+}
+"#;
+        let main_path = root.join("main.gom");
+        std::fs::write(&main_path, valid_src).unwrap();
+        std::fs::write(
+            root.join("data.gom"),
+            r#"
+pub struct PublicItem {
+    name: string,
+}
+
+struct PrivateItem {
+    name: string,
+}
+
+pub fn exposed() -> string {
+    "public"
+}
+
+fn hidden() -> string {
+    "private"
+}
+"#,
+        )
+        .unwrap();
+
+        let completion_src = r#"
+mod data;
+
+use crate::data::
+
+fn main() -> unit {
+    ()
+}
+"#;
+        let completion = handlers::completion(
+            &main_path,
+            completion_src,
+            Position {
+                line: 3,
+                character: 17,
+            },
+        );
+        expect!["PublicItem, exposed"].assert_eq(&format_completion(completion));
+    }
+
+    #[test]
     fn use_root_completion_suggests_relative_roots() {
         let dir = tempdir().unwrap();
         let root = dir.path();
