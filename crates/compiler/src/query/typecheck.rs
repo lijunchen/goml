@@ -161,3 +161,7 @@ pub(crate) fn typecheck_for_query(path: &Path, src: &str) -> Result<QueryTypeche
                 .map_err(|e| format!("{:?}", e))
         })
 }
+
+pub fn diagnostics_for_query(path: &Path, src: &str) -> Result<Diagnostics, String> {
+    typecheck_for_query(path, src).map(|(_hir_table, _results, _genv, diagnostics)| diagnostics)
+}

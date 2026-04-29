@@ -671,6 +671,46 @@ fn main() {
     }
 
     #[test]
+    fn crate_module_super_path_has_no_diagnostics() {
+        let dir = tempdir().unwrap();
+        let root = dir.path();
+        std::fs::write(
+            root.join("goml.toml"),
+            r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+"#,
+        )
+        .unwrap();
+        std::fs::write(
+            root.join("main.gom"),
+            r#"
+mod api;
+
+pub fn helper() -> int64 {
+    1
+}
+
+fn main() -> unit {
+    ()
+}
+"#,
+        )
+        .unwrap();
+        let src = r#"
+fn call() -> int64 {
+    super::helper()
+}
+"#;
+        let path = root.join("api.gom");
+        std::fs::write(&path, src).unwrap();
+        let doc = Document::new(src.to_string());
+        let diagnostics = handlers::get_diagnostics(&path, src, &doc);
+        expect!["no diagnostics"].assert_eq(&format_diagnostics(&diagnostics));
+    }
+
+    #[test]
     fn missing_package_reports_high_level_diagnostic() {
         let dir = tempdir().unwrap();
         let root = dir.path();

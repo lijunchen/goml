@@ -10,42 +10,34 @@ use tower_lsp::lsp_types::*;
 use crate::Document;
 
 pub fn get_diagnostics(path: &Path, src: &str, doc: &Document) -> Vec<Diagnostic> {
-    let result = compiler::pipeline::pipeline::compile_for_analysis(path, src);
+    analysis_diagnostics(path, src)
+        .iter()
+        .map(|d| {
+            let range = d.range().and_then(|r| doc.range(r)).unwrap_or(Range {
+                start: Position {
+                    line: 0,
+                    character: 0,
+                },
+                end: Position {
+                    line: 0,
+                    character: 0,
+                },
+            });
 
-    match result {
-        Ok(_) => Vec::new(),
-        Err(err) => {
-            let diags = err.diagnostics();
-            diags
-                .iter()
-                .map(|d| {
-                    let range = d.range().and_then(|r| doc.range(r)).unwrap_or(Range {
-                        start: Position {
-                            line: 0,
-                            character: 0,
-                        },
-                        end: Position {
-                            line: 0,
-                            character: 0,
-                        },
-                    });
+            let severity = match d.severity() {
+                diagnostics::Severity::Error => DiagnosticSeverity::ERROR,
+                diagnostics::Severity::Warning => DiagnosticSeverity::WARNING,
+            };
 
-                    let severity = match d.severity() {
-                        diagnostics::Severity::Error => DiagnosticSeverity::ERROR,
-                        diagnostics::Severity::Warning => DiagnosticSeverity::WARNING,
-                    };
-
-                    Diagnostic {
-                        range,
-                        severity: Some(severity),
-                        source: Some("goml".to_string()),
-                        message: d.message().to_string(),
-                        ..Default::default()
-                    }
-                })
-                .collect()
-        }
-    }
+            Diagnostic {
+                range,
+                severity: Some(severity),
+                source: Some("goml".to_string()),
+                message: d.message().to_string(),
+                ..Default::default()
+            }
+        })
+        .collect()
 }
 
 pub fn hover(path: &Path, src: &str, position: Position) -> Option<Hover> {
@@ -91,11 +83,7 @@ fn diagnostics_for_hover(
     let doc = Document::new(src.to_string());
     let mut messages = Vec::new();
     let mut seen: HashSet<(diagnostics::Severity, String)> = HashSet::new();
-    let result = compiler::pipeline::pipeline::compile_for_analysis(path, src);
-    let diagnostics = match result {
-        Ok(_) => return messages,
-        Err(err) => err.into_diagnostics(),
-    };
+    let diagnostics = analysis_diagnostics(path, src);
     for diagnostic in diagnostics.iter() {
         let Some(text_range) = diagnostic.range() else {
             continue;
@@ -112,6 +100,32 @@ fn diagnostics_for_hover(
         }
     }
     messages
+}
+
+fn analysis_diagnostics(path: &Path, src: &str) -> diagnostics::Diagnostics {
+    let query_diagnostics = query::diagnostics_for_query(path, src).ok();
+    match compiler::pipeline::pipeline::compile_for_analysis(path, src) {
+        Ok(_) => query_diagnostics.unwrap_or_else(diagnostics::Diagnostics::new),
+        Err(err) => {
+            let pipeline_diagnostics = err.into_diagnostics();
+            if let Some(query_diagnostics) = query_diagnostics
+                && !query_diagnostics.has_errors()
+                && diagnostics_are_super_transition_errors(&pipeline_diagnostics)
+            {
+                return query_diagnostics;
+            }
+            pipeline_diagnostics
+        }
+    }
+}
+
+fn diagnostics_are_super_transition_errors(diagnostics: &diagnostics::Diagnostics) -> bool {
+    diagnostics.iter().all(|diagnostic| {
+        let message = diagnostic.message();
+        message.contains("`super` cannot be used at crate root")
+            || (message.contains("Type or trait ")
+                && message.contains(" not found for member access"))
+    })
 }
 
 fn position_in_range(position: Position, range: Range) -> bool {

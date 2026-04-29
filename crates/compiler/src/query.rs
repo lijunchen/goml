@@ -18,6 +18,7 @@ pub use definition::{goto_definition, goto_definition_locations};
 pub use hover::hover_type;
 pub use inlay::inlay_hints;
 pub use signature::signature_help;
+pub use typecheck::diagnostics_for_query;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DotCompletionKind {
