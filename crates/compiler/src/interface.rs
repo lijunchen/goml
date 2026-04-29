@@ -71,7 +71,7 @@ fn relative_export_name(package: &str, name: &str) -> String {
     name.strip_prefix(&prefix).unwrap_or(name).to_string()
 }
 
-pub fn package_id_for_name(name: &str) -> hir::PackageId {
+pub fn crate_id_for_name(name: &str) -> hir::PackageId {
     match name {
         BUILTIN_PACKAGE => hir::PackageId(0),
         ROOT_PACKAGE => hir::PackageId(1),
@@ -86,4 +86,8 @@ pub fn package_id_for_name(name: &str) -> hir::PackageId {
             hir::PackageId(id)
         }
     }
+}
+
+pub fn package_id_for_name(name: &str) -> hir::PackageId {
+    crate_id_for_name(name)
 }

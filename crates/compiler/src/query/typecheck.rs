@@ -116,9 +116,9 @@ fn typecheck_crate_for_query(path: &Path, src: &str) -> Result<QueryTypecheck, S
     let deps_interfaces = external_deps.namespace_interfaces();
     let deps_envs = external_deps.namespace_envs();
 
-    let crate_package_id = interface::package_id_for_name(&crate_name);
+    let crate_id = interface::crate_id_for_name(&crate_name);
     let (hir, hir_table, mut hir_diagnostics) =
-        hir::lower_to_hir_files_with_env(crate_package_id, files, &deps_interfaces);
+        hir::lower_to_hir_files_with_env(crate_id, files, &deps_interfaces);
     let (hir_table, results, crate_genv, mut type_diagnostics) =
         crate::typer::check_file_with_env_and_results(
             hir,

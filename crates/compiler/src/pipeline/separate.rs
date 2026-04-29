@@ -279,7 +279,7 @@ fn typecheck_crate_sources(
     diagnostics::Diagnostics,
 ) {
     let (files, mut diagnostics) = expand_derives(files);
-    let crate_id = interface::package_id_for_name(crate_name);
+    let crate_id = interface::crate_id_for_name(crate_name);
     let (hir, hir_table, mut hir_diagnostics) =
         hir::lower_to_hir_files_with_env(crate_id, files.clone(), deps_interfaces);
     let (tast, genv, mut type_diagnostics) = crate::typer::check_file_with_env(
