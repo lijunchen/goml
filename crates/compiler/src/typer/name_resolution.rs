@@ -829,7 +829,7 @@ impl NameResolution {
                         .enum_has_variant(package, &enum_name, variant);
                     if exists && !ctx.package_allowed(package) {
                         self.error(format!(
-                            "package {} not imported in package {}",
+                            "namespace {} not imported in namespace {}",
                             package, ctx.current_package
                         ));
                         return None;
@@ -1604,7 +1604,7 @@ impl NameResolution {
                         && !ctx.imports.contains(&package)
                     {
                         self.error(format!(
-                            "package {} not imported in package {}",
+                            "namespace {} not imported in namespace {}",
                             package, ctx.current_package
                         ));
                     }
@@ -1821,7 +1821,7 @@ impl NameResolution {
                     && !ctx.package_allowed(package.as_str())
                 {
                     self.error(format!(
-                        "package {} not imported in package {}",
+                        "namespace {} not imported in namespace {}",
                         package.0, ctx.current_package
                     ));
                 }
@@ -2223,7 +2223,7 @@ impl NameResolution {
                     && !ctx.package_allowed(package.as_str())
                 {
                     self.error(format!(
-                        "package {} not imported in package {}",
+                        "namespace {} not imported in namespace {}",
                         package.0, ctx.current_package
                     ));
                 }
@@ -2303,7 +2303,7 @@ impl NameResolution {
                     && !package_allowed(package.as_str(), current_package, imports)
                 {
                     self.error(format!(
-                        "package {} not imported in package {}",
+                        "namespace {} not imported in namespace {}",
                         package.0, current_package
                     ));
                 }
@@ -2322,7 +2322,7 @@ impl NameResolution {
                     && !package_allowed(package.as_str(), current_package, imports)
                 {
                     self.error(format!(
-                        "package {} not imported in package {}",
+                        "namespace {} not imported in namespace {}",
                         package.0, current_package
                     ));
                 }
@@ -2569,7 +2569,7 @@ impl NameResolution {
             && !package_allowed(package.as_str(), ctx.current_package, ctx.imports)
         {
             self.error(format!(
-                "package {} not imported in package {}",
+                "namespace {} not imported in namespace {}",
                 package.0, ctx.current_package
             ));
         }
