@@ -416,8 +416,8 @@ fn use_root_completions(
             .filter(|name| name.starts_with(prefix))
             .map(|name| ValueCompletionItem {
                 name,
-                kind: ValueCompletionKind::Package,
-                detail: Some("package".to_string()),
+                kind: ValueCompletionKind::Namespace,
+                detail: Some("namespace".to_string()),
             })
             .collect(),
     )
@@ -429,8 +429,8 @@ fn visible_use_namespace_items(path: &Path, src: &str) -> Vec<RankedValueItem> {
         .map(|name| RankedValueItem {
             item: ValueCompletionItem {
                 name,
-                kind: ValueCompletionKind::Package,
-                detail: Some("package".to_string()),
+                kind: ValueCompletionKind::Namespace,
+                detail: Some("namespace".to_string()),
             },
             ty_text: None,
             kind_rank: 2,
@@ -772,8 +772,8 @@ fn use_colon_colon_items_for_namespace(
                     .into_iter()
                     .map(|name| ColonColonCompletionItem {
                         name,
-                        kind: ColonColonCompletionKind::Package,
-                        detail: Some("package".to_string()),
+                        kind: ColonColonCompletionKind::Namespace,
+                        detail: Some("namespace".to_string()),
                     }),
             );
 
@@ -814,8 +814,8 @@ fn colon_colon_items_for_namespace(
                     .into_iter()
                     .map(|name| ColonColonCompletionItem {
                         name,
-                        kind: ColonColonCompletionKind::Package,
-                        detail: Some("package".to_string()),
+                        kind: ColonColonCompletionKind::Namespace,
+                        detail: Some("namespace".to_string()),
                     }),
             );
         }
@@ -957,7 +957,7 @@ fn filter_source_namespace_completion_items(
         return;
     };
     items.retain(|item| {
-        item.kind == ColonColonCompletionKind::Package || visible_names.contains(&item.name)
+        item.kind == ColonColonCompletionKind::Namespace || visible_names.contains(&item.name)
     });
 }
 
@@ -1019,8 +1019,8 @@ fn crate_module_completion_items(path: &Path, namespace: &str) -> Vec<ColonColon
         .keys()
         .map(|name| ColonColonCompletionItem {
             name: name.clone(),
-            kind: ColonColonCompletionKind::Package,
-            detail: Some("package".to_string()),
+            kind: ColonColonCompletionKind::Namespace,
+            detail: Some("namespace".to_string()),
         })
         .collect()
 }
