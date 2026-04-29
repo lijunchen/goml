@@ -1,0 +1,336 @@
+
+pub extern "go" "io" "Writer" type RawWriter
+pub extern "go" "strings" "*Builder" type RawBuilder
+pub extern "go" "strings" "*Reader" type RawReader
+pub extern "go" "strings" "*Replacer" type RawReplacer
+pub extern "go" "unicode" "SpecialCase" type RawSpecialCase
+pub extern "go" "" "int" type GoInt
+
+pub extern "go" "" "int" raw_go_int(value: int32) -> GoInt
+pub extern "go" "" "int32" raw_int32(value: GoInt) -> int32
+
+#[go_value]
+pub extern "go" "" "new(strings.Builder)" raw_new_builder() -> RawBuilder
+
+pub extern "go" "strings" "NewReader" raw_new_reader(text: string) -> RawReader
+
+#[go_variadic_last]
+pub extern "go" "strings" "NewReplacer" raw_new_replacer(pairs: Slice[string]) -> RawReplacer
+
+#[go_value]
+pub extern "go" "unicode" "AzeriCase" raw_azeri_case() -> RawSpecialCase
+
+#[go_value]
+pub extern "go" "unicode" "TurkishCase" raw_turkish_case() -> RawSpecialCase
+
+pub extern "go" "unicode" "SpecialCase.ToLower" raw_special_case_to_lower(case: RawSpecialCase, value: char) -> char
+pub extern "go" "unicode" "SpecialCase.ToTitle" raw_special_case_to_title(case: RawSpecialCase, value: char) -> char
+pub extern "go" "unicode" "SpecialCase.ToUpper" raw_special_case_to_upper(case: RawSpecialCase, value: char) -> char
+
+pub extern "go" "strings" "Clone" raw_clone(text: string) -> string
+pub extern "go" "strings" "Compare" raw_compare(a: string, b: string) -> GoInt
+pub extern "go" "strings" "Contains" raw_contains(text: string, substr: string) -> bool
+pub extern "go" "strings" "ContainsAny" raw_contains_any(text: string, chars: string) -> bool
+pub extern "go" "strings" "ContainsFunc" raw_contains_func(text: string, predicate: (char) -> bool) -> bool
+pub extern "go" "strings" "ContainsRune" raw_contains_rune(text: string, value: char) -> bool
+pub extern "go" "strings" "Count" raw_count(text: string, substr: string) -> GoInt
+
+#[go_option_last]
+pub extern "go" "strings" "Cut" raw_cut(text: string, sep: string) -> Option[(string, string)]
+
+#[go_option_last]
+pub extern "go" "strings" "CutPrefix" raw_cut_prefix(text: string, prefix: string) -> Option[string]
+
+#[go_option_last]
+pub extern "go" "strings" "CutSuffix" raw_cut_suffix(text: string, suffix: string) -> Option[string]
+
+pub extern "go" "strings" "EqualFold" raw_equal_fold(text: string, other: string) -> bool
+pub extern "go" "strings" "Fields" raw_fields(text: string) -> Vec[string]
+pub extern "go" "strings" "FieldsFunc" raw_fields_func(text: string, predicate: (char) -> bool) -> Vec[string]
+pub extern "go" "" "func(text string, predicate func(rune) bool, yield func(string) bool) { for part := range strings.FieldsFuncSeq(text, predicate) { if !yield(part) { return } } }" raw_fields_func_seq_each(
+    text: string,
+    predicate: (char) -> bool,
+    yield: (string) -> bool,
+) -> unit
+pub extern "go" "" "func(text string, yield func(string) bool) { for part := range strings.FieldsSeq(text) { if !yield(part) { return } } }" raw_fields_seq_each(
+    text: string,
+    yield: (string) -> bool,
+) -> unit
+pub extern "go" "strings" "HasPrefix" raw_has_prefix(text: string, prefix: string) -> bool
+pub extern "go" "strings" "HasSuffix" raw_has_suffix(text: string, suffix: string) -> bool
+pub extern "go" "strings" "Index" raw_index(text: string, substr: string) -> GoInt
+pub extern "go" "strings" "IndexAny" raw_index_any(text: string, chars: string) -> GoInt
+pub extern "go" "strings" "IndexByte" raw_index_byte(text: string, value: uint8) -> GoInt
+pub extern "go" "strings" "IndexFunc" raw_index_func(text: string, predicate: (char) -> bool) -> GoInt
+pub extern "go" "strings" "IndexRune" raw_index_rune(text: string, value: char) -> GoInt
+pub extern "go" "strings" "Join" raw_join(parts: Vec[string], sep: string) -> string
+pub extern "go" "strings" "LastIndex" raw_last_index(text: string, substr: string) -> GoInt
+pub extern "go" "strings" "LastIndexAny" raw_last_index_any(text: string, chars: string) -> GoInt
+pub extern "go" "strings" "LastIndexByte" raw_last_index_byte(text: string, value: uint8) -> GoInt
+pub extern "go" "strings" "LastIndexFunc" raw_last_index_func(text: string, predicate: (char) -> bool) -> GoInt
+pub extern "go" "" "func(text string, yield func(string) bool) { for part := range strings.Lines(text) { if !yield(part) { return } } }" raw_lines_each(
+    text: string,
+    yield: (string) -> bool,
+) -> unit
+pub extern "go" "strings" "Map" raw_map(mapping: (char) -> int32, text: string) -> string
+pub extern "go" "strings" "Repeat" raw_repeat(text: string, count: GoInt) -> string
+pub extern "go" "strings" "Replace" raw_replace(text: string, old: string, new: string, n: GoInt) -> string
+pub extern "go" "strings" "ReplaceAll" raw_replace_all(text: string, old: string, new: string) -> string
+pub extern "go" "strings" "Split" raw_split(text: string, sep: string) -> Vec[string]
+pub extern "go" "strings" "SplitAfter" raw_split_after(text: string, sep: string) -> Vec[string]
+pub extern "go" "strings" "SplitAfterN" raw_split_after_n(text: string, sep: string, n: GoInt) -> Vec[string]
+pub extern "go" "" "func(text string, sep string, yield func(string) bool) { for part := range strings.SplitAfterSeq(text, sep) { if !yield(part) { return } } }" raw_split_after_seq_each(
+    text: string,
+    sep: string,
+    yield: (string) -> bool,
+) -> unit
+pub extern "go" "strings" "SplitN" raw_split_n(text: string, sep: string, n: GoInt) -> Vec[string]
+pub extern "go" "" "func(text string, sep string, yield func(string) bool) { for part := range strings.SplitSeq(text, sep) { if !yield(part) { return } } }" raw_split_seq_each(
+    text: string,
+    sep: string,
+    yield: (string) -> bool,
+) -> unit
+pub extern "go" "strings" "Title" raw_title(text: string) -> string
+pub extern "go" "strings" "ToLower" raw_to_lower(text: string) -> string
+pub extern "go" "strings" "ToLowerSpecial" raw_to_lower_special(case: RawSpecialCase, text: string) -> string
+pub extern "go" "strings" "ToTitle" raw_to_title(text: string) -> string
+pub extern "go" "strings" "ToTitleSpecial" raw_to_title_special(case: RawSpecialCase, text: string) -> string
+pub extern "go" "strings" "ToUpper" raw_to_upper(text: string) -> string
+pub extern "go" "strings" "ToUpperSpecial" raw_to_upper_special(case: RawSpecialCase, text: string) -> string
+pub extern "go" "strings" "ToValidUTF8" raw_to_valid_utf8(text: string, replacement: string) -> string
+pub extern "go" "strings" "Trim" raw_trim(text: string, cutset: string) -> string
+pub extern "go" "strings" "TrimFunc" raw_trim_func(text: string, predicate: (char) -> bool) -> string
+pub extern "go" "strings" "TrimLeft" raw_trim_left(text: string, cutset: string) -> string
+pub extern "go" "strings" "TrimLeftFunc" raw_trim_left_func(text: string, predicate: (char) -> bool) -> string
+pub extern "go" "strings" "TrimPrefix" raw_trim_prefix(text: string, prefix: string) -> string
+pub extern "go" "strings" "TrimRight" raw_trim_right(text: string, cutset: string) -> string
+pub extern "go" "strings" "TrimRightFunc" raw_trim_right_func(text: string, predicate: (char) -> bool) -> string
+pub extern "go" "strings" "TrimSpace" raw_trim_space(text: string) -> string
+pub extern "go" "strings" "TrimSuffix" raw_trim_suffix(text: string, suffix: string) -> string
+
+pub extern "go" "strings" "(*Builder).Cap" raw_builder_cap(builder: RawBuilder) -> GoInt
+pub extern "go" "strings" "(*Builder).Grow" raw_builder_grow(builder: RawBuilder, n: GoInt) -> unit
+pub extern "go" "strings" "(*Builder).Len" raw_builder_len(builder: RawBuilder) -> GoInt
+pub extern "go" "strings" "(*Builder).Reset" raw_builder_reset(builder: RawBuilder) -> unit
+pub extern "go" "strings" "(*Builder).String" raw_builder_string(builder: RawBuilder) -> string
+
+#[go_error_last]
+pub extern "go" "strings" "(*Builder).Write" raw_builder_write(builder: RawBuilder, data: Vec[uint8]) -> Result[GoInt, GoError]
+
+#[go_error]
+pub extern "go" "strings" "(*Builder).WriteByte" raw_builder_write_byte(builder: RawBuilder, value: uint8) -> Result[unit, GoError]
+
+#[go_error_last]
+pub extern "go" "strings" "(*Builder).WriteRune" raw_builder_write_rune(builder: RawBuilder, value: char) -> Result[GoInt, GoError]
+
+#[go_error_last]
+pub extern "go" "strings" "(*Builder).WriteString" raw_builder_write_string(
+    builder: RawBuilder,
+    text: string,
+) -> Result[GoInt, GoError]
+
+pub extern "go" "strings" "(*Reader).Len" raw_reader_len(reader: RawReader) -> GoInt
+pub extern "go" "strings" "(*Reader).Reset" raw_reader_reset(reader: RawReader, text: string) -> unit
+pub extern "go" "strings" "(*Reader).Size" raw_reader_size(reader: RawReader) -> int64
+
+#[go_error_last]
+pub extern "go" "strings" "(*Reader).Read" raw_reader_read(reader: RawReader, data: Vec[uint8]) -> Result[GoInt, GoError]
+
+#[go_error_last]
+pub extern "go" "strings" "(*Reader).ReadAt" raw_reader_read_at(
+    reader: RawReader,
+    data: Vec[uint8],
+    off: int64,
+) -> Result[GoInt, GoError]
+
+#[go_error_last]
+pub extern "go" "strings" "(*Reader).ReadByte" raw_reader_read_byte(reader: RawReader) -> Result[uint8, GoError]
+
+#[go_error_last]
+pub extern "go" "strings" "(*Reader).ReadRune" raw_reader_read_rune(reader: RawReader) -> Result[(char, GoInt), GoError]
+
+#[go_error_last]
+pub extern "go" "strings" "(*Reader).Seek" raw_reader_seek(
+    reader: RawReader,
+    offset: int64,
+    whence: GoInt,
+) -> Result[int64, GoError]
+
+#[go_error]
+pub extern "go" "strings" "(*Reader).UnreadByte" raw_reader_unread_byte(reader: RawReader) -> Result[unit, GoError]
+
+#[go_error]
+pub extern "go" "strings" "(*Reader).UnreadRune" raw_reader_unread_rune(reader: RawReader) -> Result[unit, GoError]
+
+#[go_error_last]
+pub extern "go" "strings" "(*Reader).WriteTo" raw_reader_write_to_writer(
+    reader: RawReader,
+    writer: RawWriter,
+) -> Result[int64, GoError]
+
+#[go_error_last]
+pub extern "go" "strings" "(*Reader).WriteTo" raw_reader_write_to_builder(
+    reader: RawReader,
+    builder: RawBuilder,
+) -> Result[int64, GoError]
+
+pub extern "go" "strings" "(*Replacer).Replace" raw_replacer_replace(replacer: RawReplacer, text: string) -> string
+
+#[go_error_last]
+pub extern "go" "strings" "(*Replacer).WriteString" raw_replacer_write_string_writer(
+    replacer: RawReplacer,
+    writer: RawWriter,
+    text: string,
+) -> Result[GoInt, GoError]
+
+#[go_error_last]
+pub extern "go" "strings" "(*Replacer).WriteString" raw_replacer_write_string_builder(
+    replacer: RawReplacer,
+    builder: RawBuilder,
+    text: string,
+) -> Result[GoInt, GoError]
+
+pub struct Builder {
+    raw: RawBuilder,
+}
+
+pub struct Reader {
+    raw: RawReader,
+}
+
+pub struct Replacer {
+    raw: RawReplacer,
+}
+
+pub struct SpecialCase {
+    raw: RawSpecialCase,
+}
+
+pub fn collect_seq(seq: ((string) -> bool) -> unit) -> Vec[string] {
+    let items = ref(vec_new());
+    seq(|item| {
+        ref_set(items, vec_push(ref_get(items), item));
+        true
+    });
+    ref_get(items)
+}
+
+pub fn new_builder() -> Builder {
+    Builder { raw: raw_new_builder() }
+}
+
+pub fn new_reader(text: string) -> Reader {
+    Reader { raw: raw_new_reader(text) }
+}
+
+pub fn new_replacer(pairs: Vec[string]) -> Replacer {
+    Replacer {
+        raw: raw_new_replacer(slice(pairs, 0, vec_len(pairs))),
+    }
+}
+
+pub fn turkish_case() -> SpecialCase {
+    SpecialCase {
+        raw: raw_turkish_case(),
+    }
+}
+
+pub fn compare(a: string, b: string) -> int32 {
+    raw_int32(raw_compare(a, b))
+}
+
+pub fn contains(text: string, substr: string) -> bool {
+    raw_contains(text, substr)
+}
+
+pub fn contains_func(text: string, predicate: (char) -> bool) -> bool {
+    raw_contains_func(text, predicate)
+}
+
+pub fn cut(text: string, sep: string) -> Option[(string, string)] {
+    raw_cut(text, sep)
+}
+
+pub fn fields_func(text: string, predicate: (char) -> bool) -> Vec[string] {
+    raw_fields_func(text, predicate)
+}
+
+pub fn join(parts: Vec[string], sep: string) -> string {
+    raw_join(parts, sep)
+}
+
+pub fn map_text(mapping: (char) -> int32, text: string) -> string {
+    raw_map(mapping, text)
+}
+
+pub fn split_after_seq(text: string, sep: string) -> ((string) -> bool) -> unit {
+    |yield| {
+        raw_split_after_seq_each(text, sep, yield)
+    }
+}
+
+pub fn split_seq(text: string, sep: string) -> ((string) -> bool) -> unit {
+    |yield| {
+        raw_split_seq_each(text, sep, yield)
+    }
+}
+
+pub fn to_upper(text: string) -> string {
+    raw_to_upper(text)
+}
+
+pub fn to_upper_special(case: SpecialCase, text: string) -> string {
+    raw_to_upper_special(case.raw, text)
+}
+
+pub fn builder_grow(builder: Builder, n: int32) -> unit {
+    raw_builder_grow(builder.raw, raw_go_int(n))
+}
+
+pub fn builder_len(builder: Builder) -> int32 {
+    raw_int32(raw_builder_len(builder.raw))
+}
+
+pub fn builder_string(builder: Builder) -> string {
+    raw_builder_string(builder.raw)
+}
+
+pub fn builder_write_byte(builder: Builder, value: uint8) -> Result[unit, GoError] {
+    raw_builder_write_byte(builder.raw, value)
+}
+
+pub fn builder_write_rune(builder: Builder, value: char) -> Result[int32, GoError] {
+    let count = raw_builder_write_rune(builder.raw, value)?;
+    Result::Ok(raw_int32(count))
+}
+
+pub fn builder_write_string(builder: Builder, text: string) -> Result[int32, GoError] {
+    let count = raw_builder_write_string(builder.raw, text)?;
+    Result::Ok(raw_int32(count))
+}
+
+pub fn reader_read(reader: Reader, data: Vec[uint8]) -> Result[(Vec[uint8], int32), GoError] {
+    let count = raw_reader_read(reader.raw, data)?;
+    Result::Ok((data, raw_int32(count)))
+}
+
+pub fn reader_read_byte(reader: Reader) -> Result[uint8, GoError] {
+    raw_reader_read_byte(reader.raw)
+}
+
+pub fn reader_read_rune(reader: Reader) -> Result[(char, int32), GoError] {
+    let (value, size) = raw_reader_read_rune(reader.raw)?;
+    Result::Ok((value, raw_int32(size)))
+}
+
+pub fn reader_seek(reader: Reader, offset: int64, whence: int32) -> Result[int64, GoError] {
+    raw_reader_seek(reader.raw, offset, raw_go_int(whence))
+}
+
+pub fn reader_write_to_builder(reader: Reader, builder: Builder) -> Result[int64, GoError] {
+    raw_reader_write_to_builder(reader.raw, builder.raw)
+}
+
+pub fn replacer_replace(replacer: Replacer, text: string) -> string {
+    raw_replacer_replace(replacer.raw, text)
+}

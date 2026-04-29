@@ -1,9 +1,9 @@
-use bufioshim;
-use common;
-use execshim;
-use fsshim;
-use ioshim;
-use stringsshim;
+mod bufioshim;
+mod common;
+mod execshim;
+mod fsshim;
+mod ioshim;
+mod stringsshim;
 
 fn show(res: Result[string, GoError]) -> string {
     match res {
@@ -13,21 +13,21 @@ fn show(res: Result[string, GoError]) -> string {
 }
 
 fn demo_io() -> Result[string, GoError] {
-    let copied_buf = ioshim::copy_buffer_to_discard("copy-buffer", common::bytes_of_string("buf"))?;
-    let tee = ioshim::tee_read_all_text("tee-ok")?;
-    let limited = ioshim::read_limited_text("limit-ok", 5i64)?;
-    let (byte_reader, byte_writer) = ioshim::pipe();
+    let copied_buf = crate::ioshim::copy_buffer_to_discard("copy-buffer", crate::common::bytes_of_string("buf"))?;
+    let tee = crate::ioshim::tee_read_all_text("tee-ok")?;
+    let limited = crate::ioshim::read_limited_text("limit-ok", 5i64)?;
+    let (byte_reader, byte_writer) = crate::ioshim::pipe();
     go || {
-        match ioshim::pipe_write_bytes(byte_writer, common::bytes_of_string("xy")) {
+        match crate::ioshim::pipe_write_bytes(byte_writer, crate::common::bytes_of_string("xy")) {
             Result::Ok(_) => (),
             Result::Err(_) => (),
         };
-        match ioshim::close_pipe_writer_eof(byte_writer) {
+        match crate::ioshim::close_pipe_writer_eof(byte_writer) {
             Result::Ok(_) => (),
             Result::Err(_) => (),
         };
     };
-    let byte_text = ioshim::pipe_read_text(byte_reader, 2)?;
+    let byte_text = crate::ioshim::pipe_read_text(byte_reader, 2)?;
     let out = limited;
     let out = out + "|" + int64_to_string(copied_buf);
     let out = out + "|" + tee;
@@ -39,18 +39,18 @@ fn demo_exec() -> Result[string, GoError] {
     let args: Vec[string] = vec_new();
     let args = vec_push(args, "-c");
     let args = vec_push(args, "printf exec-ok");
-    let cmd = execshim::command("sh", args);
-    execshim::set_path(cmd, execshim::path(cmd));
-    execshim::set_args(cmd, execshim::args(cmd));
-    execshim::set_dir(cmd, ".");
-    let dir = execshim::dir(cmd);
-    let arg_count = int32_to_string(vec_len(execshim::args(cmd)));
-    let env = vec_push(execshim::env(cmd), "GOML_SHIM=1");
-    execshim::set_env(cmd, env);
-    let env_flag = if vec_len(execshim::environ(cmd)) > 0 { "env" } else { "noenv" };
-    let desc_flag = if execshim::command_string(cmd) != "" { "desc" } else { "nodesc" };
-    let out = execshim::output_text(cmd)?;
-    let cat = execshim::cat_stdin_text("stdin-ok")?;
+    let cmd = crate::execshim::command("sh", args);
+    crate::execshim::set_path(cmd, crate::execshim::path(cmd));
+    crate::execshim::set_args(cmd, crate::execshim::args(cmd));
+    crate::execshim::set_dir(cmd, ".");
+    let dir = crate::execshim::dir(cmd);
+    let arg_count = int32_to_string(vec_len(crate::execshim::args(cmd)));
+    let env = vec_push(crate::execshim::env(cmd), "GOML_SHIM=1");
+    crate::execshim::set_env(cmd, env);
+    let env_flag = if vec_len(crate::execshim::environ(cmd)) > 0 { "env" } else { "noenv" };
+    let desc_flag = if crate::execshim::command_string(cmd) != "" { "desc" } else { "nodesc" };
+    let out = crate::execshim::output_text(cmd)?;
+    let cat = crate::execshim::cat_stdin_text("stdin-ok")?;
     let result = dir;
     let result = result + "|" + arg_count;
     let result = result + "|" + env_flag;
@@ -61,42 +61,42 @@ fn demo_exec() -> Result[string, GoError] {
 }
 
 fn demo_fs() -> Result[string, GoError] {
-    fsshim::write_text_file("fs_data.txt", "fs-ok")?;
-    let fs = fsshim::dir_fs(".");
-    let text = fsshim::read_text(fs, "fs_data.txt")?;
-    let file = fsshim::open(fs, "fs_data.txt")?;
-    let (buf, read_count) = fsshim::file_read(file, common::bytes_of_string("....."))?;
-    let info = fsshim::file_stat(file)?;
-    fsshim::file_close(file)?;
-    let mode = fsshim::file_info_mode(info);
-    let kind = if fsshim::mode_is_regular(mode) {
+    crate::fsshim::write_text_file("fs_data.txt", "fs-ok")?;
+    let fs = crate::fsshim::dir_fs(".");
+    let text = crate::fsshim::read_text(fs, "fs_data.txt")?;
+    let file = crate::fsshim::open(fs, "fs_data.txt")?;
+    let (buf, read_count) = crate::fsshim::file_read(file, crate::common::bytes_of_string("....."))?;
+    let info = crate::fsshim::file_stat(file)?;
+    crate::fsshim::file_close(file)?;
+    let mode = crate::fsshim::file_info_mode(info);
+    let kind = if crate::fsshim::mode_is_regular(mode) {
         "regular"
     } else {
         "other"
     };
     let out = text;
-    let out = out + "|" + common::string_of_bytes(buf);
+    let out = out + "|" + crate::common::string_of_bytes(buf);
     let out = out + "|" + int32_to_string(read_count);
-    let out = out + "|" + fsshim::file_info_name(info);
+    let out = out + "|" + crate::fsshim::file_info_name(info);
     let out = out + "|" + kind;
-    let out = out + "|" + uint32_to_string(fsshim::mode_bits(fsshim::mode_perm(mode)));
-    let out = out + "|" + fsshim::mode_string(fsshim::mode_type(mode));
+    let out = out + "|" + uint32_to_string(crate::fsshim::mode_bits(crate::fsshim::mode_perm(mode)));
+    let out = out + "|" + crate::fsshim::mode_string(crate::fsshim::mode_type(mode));
     Result::Ok(out)
 }
 
 fn demo_bufio() -> Result[string, GoError] {
-    let reader = bufioshim::from_text("abc");
-    let (buf, count) = bufioshim::read(reader, common::bytes_of_string("..."))?;
-    let text = common::string_of_bytes(buf);
-    let (line, prefix) = bufioshim::read_line(bufioshim::from_text("first\n"))?;
+    let reader = crate::bufioshim::from_text("abc");
+    let (buf, count) = crate::bufioshim::read(reader, crate::common::bytes_of_string("..."))?;
+    let text = crate::common::string_of_bytes(buf);
+    let (line, prefix) = crate::bufioshim::read_line(crate::bufioshim::from_text("first\n"))?;
     let state = if prefix { "prefix" } else { "full" };
-    let (rune, width) = bufioshim::read_rune(bufioshim::from_text("好呀"))?;
-    let words = bufioshim::scan_words_csv("alpha beta")?;
-    let read_writer = bufioshim::read_writer_from_text("left/right");
-    let prefix_text = bufioshim::read_writer_read_string(read_writer, 47u8)?;
-    let _ = bufioshim::read_writer_write_text(read_writer, "!")?;
-    bufioshim::read_writer_flush(read_writer)?;
-    let rw_text = bufioshim::read_writer_contents(read_writer);
+    let (rune, width) = crate::bufioshim::read_rune(crate::bufioshim::from_text("好呀"))?;
+    let words = crate::bufioshim::scan_words_csv("alpha beta")?;
+    let read_writer = crate::bufioshim::read_writer_from_text("left/right");
+    let prefix_text = crate::bufioshim::read_writer_read_string(read_writer, 47u8)?;
+    let _ = crate::bufioshim::read_writer_write_text(read_writer, "!")?;
+    crate::bufioshim::read_writer_flush(read_writer)?;
+    let rw_text = crate::bufioshim::read_writer_contents(read_writer);
     let out = state + "|" + line;
     let out = out + "|" + text;
     let out = out + "|" + int32_to_string(count);
@@ -109,57 +109,57 @@ fn demo_bufio() -> Result[string, GoError] {
 }
 
 fn demo_strings() -> Result[string, GoError] {
-    let cmp = int32_to_string(stringsshim::compare("a", "b"));
-    let contains_flag = if stringsshim::contains("goml", "ml") {
+    let cmp = int32_to_string(crate::stringsshim::compare("a", "b"));
+    let contains_flag = if crate::stringsshim::contains("goml", "ml") {
         "contains"
     } else {
         "miss"
     };
-    let digit_flag = if stringsshim::contains_func("go2", |r| r >= '0' && r <= '9') {
+    let digit_flag = if crate::stringsshim::contains_func("go2", |r| r >= '0' && r <= '9') {
         "digit"
     } else {
         "nodigit"
     };
-    let cut_text = match stringsshim::cut("left=right", "=") {
+    let cut_text = match crate::stringsshim::cut("left=right", "=") {
         Option::Some((left, right)) => left + ":" + right,
         Option::None => "none",
     };
-    let fields_text = stringsshim::join(stringsshim::fields_func("a1bb22c", |r| r >= '0' && r <= '9'), ",");
-    let seq_text = stringsshim::join(stringsshim::collect_seq(stringsshim::split_seq("u|v|w", "|")), ",");
-    let split_after_text = stringsshim::join(
-        stringsshim::collect_seq(stringsshim::split_after_seq("x/y/z", "/")),
+    let fields_text = crate::stringsshim::join(crate::stringsshim::fields_func("a1bb22c", |r| r >= '0' && r <= '9'), ",");
+    let seq_text = crate::stringsshim::join(crate::stringsshim::collect_seq(crate::stringsshim::split_seq("u|v|w", "|")), ",");
+    let split_after_text = crate::stringsshim::join(
+        crate::stringsshim::collect_seq(crate::stringsshim::split_after_seq("x/y/z", "/")),
         ",",
     );
-    let special_flag = if stringsshim::to_upper_special(stringsshim::turkish_case(), "i")
-        != stringsshim::to_upper("i")
+    let special_flag = if crate::stringsshim::to_upper_special(crate::stringsshim::turkish_case(), "i")
+        != crate::stringsshim::to_upper("i")
     {
         "special"
     } else {
         "plain"
     };
-    let builder = stringsshim::new_builder();
-    stringsshim::builder_grow(builder, 8);
-    let _ = stringsshim::builder_write_string(builder, "go")?;
-    let _ = stringsshim::builder_write_rune(builder, '好')?;
-    let _ = stringsshim::builder_write_byte(builder, 33u8)?;
-    let built = stringsshim::builder_string(builder);
-    let built_len = int32_to_string(stringsshim::builder_len(builder));
-    let reader = stringsshim::new_reader("ab好");
-    let (one, _) = stringsshim::reader_read(reader, common::bytes_of_string("."))?;
-    let next_byte = stringsshim::reader_read_byte(reader)?;
-    let (next_rune, rune_size) = stringsshim::reader_read_rune(reader)?;
-    stringsshim::reader_seek(reader, 0i64, 0)?;
-    let copy_builder = stringsshim::new_builder();
-    let copied = stringsshim::reader_write_to_builder(reader, copy_builder)?;
-    let copied_text = stringsshim::builder_string(copy_builder);
+    let builder = crate::stringsshim::new_builder();
+    crate::stringsshim::builder_grow(builder, 8);
+    let _ = crate::stringsshim::builder_write_string(builder, "go")?;
+    let _ = crate::stringsshim::builder_write_rune(builder, '好')?;
+    let _ = crate::stringsshim::builder_write_byte(builder, 33u8)?;
+    let built = crate::stringsshim::builder_string(builder);
+    let built_len = int32_to_string(crate::stringsshim::builder_len(builder));
+    let reader = crate::stringsshim::new_reader("ab好");
+    let (one, _) = crate::stringsshim::reader_read(reader, crate::common::bytes_of_string("."))?;
+    let next_byte = crate::stringsshim::reader_read_byte(reader)?;
+    let (next_rune, rune_size) = crate::stringsshim::reader_read_rune(reader)?;
+    crate::stringsshim::reader_seek(reader, 0i64, 0)?;
+    let copy_builder = crate::stringsshim::new_builder();
+    let copied = crate::stringsshim::reader_write_to_builder(reader, copy_builder)?;
+    let copied_text = crate::stringsshim::builder_string(copy_builder);
     let pairs: Vec[string] = vec_new();
     let pairs = vec_push(pairs, "go");
     let pairs = vec_push(pairs, "GO");
     let pairs = vec_push(pairs, "ml");
     let pairs = vec_push(pairs, "ML");
-    let replacer = stringsshim::new_replacer(pairs);
-    let replaced = stringsshim::replacer_replace(replacer, "goml");
-    let mapped = stringsshim::map_text(
+    let replacer = crate::stringsshim::new_replacer(pairs);
+    let replaced = crate::stringsshim::replacer_replace(replacer, "goml");
+    let mapped = crate::stringsshim::map_text(
         |r| {
             if r == 'x' {
                 -1i32
@@ -179,7 +179,7 @@ fn demo_strings() -> Result[string, GoError] {
     let out = out + "|" + special_flag;
     let out = out + "|" + built;
     let out = out + "|" + built_len;
-    let out = out + "|" + common::string_of_bytes(one);
+    let out = out + "|" + crate::common::string_of_bytes(one);
     let out = out + "|" + uint8_to_string(next_byte);
     let out = out + "|" + next_rune.to_string();
     let out = out + "|" + int32_to_string(rune_size);

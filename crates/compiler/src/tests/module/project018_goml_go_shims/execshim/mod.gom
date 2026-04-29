@@ -1,0 +1,415 @@
+use crate::common;
+pub extern "go" "context" "Context" type RawContext
+pub extern "go" "os/exec" "*Cmd" type RawCmd
+pub extern "go" "os/exec" "*Error" type RawExecError
+pub extern "go" "os/exec" "*ExitError" type RawExitError
+pub extern "go" "io" "Reader" type RawReader
+pub extern "go" "io" "Writer" type RawWriter
+pub extern "go" "io" "ReadCloser" type RawReadCloser
+pub extern "go" "io" "WriteCloser" type RawWriteCloser
+pub extern "go" "os" "*File" type RawFile
+pub extern "go" "syscall" "*SysProcAttr" type RawSysProcAttr
+pub extern "go" "os" "*Process" type RawProcess
+pub extern "go" "os" "*ProcessState" type RawProcessState
+pub extern "go" "time" "Duration" type RawDuration
+pub extern "go" "" "func() error" type RawCancel
+pub extern "go" "" "int" type GoInt
+
+#[go_error_last]
+pub extern "go" "os/exec" "LookPath" raw_look_path(file: string) -> Result[string, GoError]
+
+pub extern "go" "context" "Background" raw_background() -> RawContext
+pub extern "go" "strings" "NewReader" raw_string_reader(text: string) -> RawReader
+
+#[go_value]
+pub extern "go" "io" "Discard" raw_discard() -> RawWriter
+
+#[go_value]
+pub extern "go" "os/exec" "ErrDot" raw_err_dot() -> GoError
+
+#[go_value]
+pub extern "go" "os/exec" "ErrNotFound" raw_err_not_found() -> GoError
+
+#[go_value]
+pub extern "go" "os/exec" "ErrWaitDelay" raw_err_wait_delay() -> GoError
+
+#[go_variadic_last]
+pub extern "go" "os/exec" "Command" raw_command(name: string, args: Slice[string]) -> RawCmd
+
+#[go_variadic_last]
+pub extern "go" "os/exec" "CommandContext" raw_command_context(
+    ctx: RawContext,
+    name: string,
+    args: Slice[string],
+) -> RawCmd
+
+#[go_field_get("Path")]
+pub extern "go" "os/exec" "Cmd.Path" raw_cmd_path(cmd: RawCmd) -> string
+
+#[go_field_set("Path")]
+pub extern "go" "os/exec" "Cmd.Path" raw_cmd_set_path(cmd: RawCmd, path: string) -> unit
+
+#[go_field_get("Args")]
+pub extern "go" "os/exec" "Cmd.Args" raw_cmd_args(cmd: RawCmd) -> Vec[string]
+
+#[go_field_set("Args")]
+pub extern "go" "os/exec" "Cmd.Args" raw_cmd_set_args(cmd: RawCmd, args: Vec[string]) -> unit
+
+#[go_field_get("Stdin")]
+pub extern "go" "os/exec" "Cmd.Stdin" raw_cmd_stdin(cmd: RawCmd) -> RawReader
+
+#[go_field_get("Dir")]
+pub extern "go" "os/exec" "Cmd.Dir" raw_cmd_dir(cmd: RawCmd) -> string
+
+#[go_field_set("Dir")]
+pub extern "go" "os/exec" "Cmd.Dir" raw_cmd_set_dir(cmd: RawCmd, dir: string) -> unit
+
+#[go_field_get("Env")]
+pub extern "go" "os/exec" "Cmd.Env" raw_cmd_env(cmd: RawCmd) -> Vec[string]
+
+#[go_field_set("Env")]
+pub extern "go" "os/exec" "Cmd.Env" raw_cmd_set_env(cmd: RawCmd, env: Vec[string]) -> unit
+
+#[go_field_set("Stdin")]
+pub extern "go" "os/exec" "Cmd.Stdin" raw_cmd_set_stdin(cmd: RawCmd, reader: RawReader) -> unit
+
+#[go_field_set("Stdout")]
+pub extern "go" "os/exec" "Cmd.Stdout" raw_cmd_set_stdout(cmd: RawCmd, writer: RawWriter) -> unit
+
+#[go_field_set("Stderr")]
+pub extern "go" "os/exec" "Cmd.Stderr" raw_cmd_set_stderr(cmd: RawCmd, writer: RawWriter) -> unit
+
+#[go_field_get("Stdout")]
+pub extern "go" "os/exec" "Cmd.Stdout" raw_cmd_stdout(cmd: RawCmd) -> RawWriter
+
+#[go_field_get("Stderr")]
+pub extern "go" "os/exec" "Cmd.Stderr" raw_cmd_stderr(cmd: RawCmd) -> RawWriter
+
+#[go_field_get("ExtraFiles")]
+pub extern "go" "os/exec" "Cmd.ExtraFiles" raw_cmd_extra_files(cmd: RawCmd) -> Vec[RawFile]
+
+#[go_field_set("ExtraFiles")]
+pub extern "go" "os/exec" "Cmd.ExtraFiles" raw_cmd_set_extra_files(cmd: RawCmd, files: Vec[RawFile]) -> unit
+
+#[go_field_get("SysProcAttr")]
+pub extern "go" "os/exec" "Cmd.SysProcAttr" raw_cmd_sys_proc_attr(cmd: RawCmd) -> RawSysProcAttr
+
+#[go_field_set("SysProcAttr")]
+pub extern "go" "os/exec" "Cmd.SysProcAttr" raw_cmd_set_sys_proc_attr(cmd: RawCmd, attr: RawSysProcAttr) -> unit
+
+#[go_field_get("Process")]
+pub extern "go" "os/exec" "Cmd.Process" raw_cmd_process(cmd: RawCmd) -> RawProcess
+
+#[go_field_set("Process")]
+pub extern "go" "os/exec" "Cmd.Process" raw_cmd_set_process(cmd: RawCmd, process: RawProcess) -> unit
+
+#[go_field_get("ProcessState")]
+pub extern "go" "os/exec" "Cmd.ProcessState" raw_cmd_process_state(cmd: RawCmd) -> RawProcessState
+
+#[go_field_set("ProcessState")]
+pub extern "go" "os/exec" "Cmd.ProcessState" raw_cmd_set_process_state(cmd: RawCmd, state: RawProcessState) -> unit
+
+#[go_field_get("Err")]
+pub extern "go" "os/exec" "Cmd.Err" raw_cmd_err(cmd: RawCmd) -> GoError
+
+#[go_field_set("Err")]
+pub extern "go" "os/exec" "Cmd.Err" raw_cmd_set_err(cmd: RawCmd, err: GoError) -> unit
+
+#[go_field_get("Cancel")]
+pub extern "go" "os/exec" "Cmd.Cancel" raw_cmd_cancel(cmd: RawCmd) -> RawCancel
+
+#[go_field_set("Cancel")]
+pub extern "go" "os/exec" "Cmd.Cancel" raw_cmd_set_cancel(cmd: RawCmd, cancel: RawCancel) -> unit
+
+#[go_field_get("WaitDelay")]
+pub extern "go" "os/exec" "Cmd.WaitDelay" raw_cmd_wait_delay(cmd: RawCmd) -> RawDuration
+
+#[go_field_set("WaitDelay")]
+pub extern "go" "os/exec" "Cmd.WaitDelay" raw_cmd_set_wait_delay(cmd: RawCmd, delay: RawDuration) -> unit
+
+#[go_error_last]
+pub extern "go" "os/exec" "(*Cmd).CombinedOutput" raw_cmd_combined_output(cmd: RawCmd) -> Result[Vec[uint8], GoError]
+
+#[go_error_last]
+pub extern "go" "os/exec" "(*Cmd).Output" raw_cmd_output(cmd: RawCmd) -> Result[Vec[uint8], GoError]
+
+pub extern "go" "os/exec" "(*Cmd).Environ" raw_cmd_environ(cmd: RawCmd) -> Vec[string]
+pub extern "go" "os/exec" "(*Cmd).String" raw_cmd_string(cmd: RawCmd) -> string
+
+#[go_error]
+pub extern "go" "os/exec" "(*Cmd).Run" raw_cmd_run(cmd: RawCmd) -> Result[unit, GoError]
+
+#[go_error]
+pub extern "go" "os/exec" "(*Cmd).Start" raw_cmd_start(cmd: RawCmd) -> Result[unit, GoError]
+
+#[go_error]
+pub extern "go" "os/exec" "(*Cmd).Wait" raw_cmd_wait(cmd: RawCmd) -> Result[unit, GoError]
+
+#[go_error_last]
+pub extern "go" "os/exec" "(*Cmd).StdoutPipe" raw_cmd_stdout_pipe(cmd: RawCmd) -> Result[RawReadCloser, GoError]
+
+#[go_error_last]
+pub extern "go" "os/exec" "(*Cmd).StderrPipe" raw_cmd_stderr_pipe(cmd: RawCmd) -> Result[RawReadCloser, GoError]
+
+#[go_error_last]
+pub extern "go" "os/exec" "(*Cmd).StdinPipe" raw_cmd_stdin_pipe(cmd: RawCmd) -> Result[RawWriteCloser, GoError]
+
+#[go_error_last]
+pub extern "go" "io" "ReadAll" raw_read_all_closer(reader: RawReadCloser) -> Result[Vec[uint8], GoError]
+
+#[go_error]
+pub extern "go" "io" "ReadCloser.Close" raw_read_closer_close(reader: RawReadCloser) -> Result[unit, GoError]
+
+#[go_error]
+pub extern "go" "io" "WriteCloser.Close" raw_write_closer_close(writer: RawWriteCloser) -> Result[unit, GoError]
+
+#[go_error_last]
+pub extern "go" "io" "WriteString" raw_write_closer_write_string(writer: RawWriteCloser, text: string) -> Result[GoInt, GoError]
+
+#[go_error]
+pub extern "go" "os/exec" "(*Error).Unwrap" raw_exec_error_unwrap(err: RawExecError) -> Result[unit, GoError]
+
+pub extern "go" "os/exec" "(*Error).Error" raw_exec_error_text(err: RawExecError) -> string
+
+#[go_field_get("Name")]
+pub extern "go" "os/exec" "Error.Name" raw_exec_error_name(err: RawExecError) -> string
+
+#[go_field_get("Err")]
+pub extern "go" "os/exec" "Error.Err" raw_exec_error_err(err: RawExecError) -> GoError
+
+pub extern "go" "os/exec" "(*ExitError).Error" raw_exit_error_text(err: RawExitError) -> string
+
+#[go_field_get("ProcessState")]
+pub extern "go" "os/exec" "ExitError.ProcessState" raw_exit_error_process_state(err: RawExitError) -> RawProcessState
+
+#[go_field_get("Stderr")]
+pub extern "go" "os/exec" "ExitError.Stderr" raw_exit_error_stderr(err: RawExitError) -> Vec[uint8]
+
+pub struct Cmd {
+    raw: RawCmd,
+}
+
+pub fn look_path(file: string) -> Result[string, GoError] {
+    raw_look_path(file)
+}
+
+pub fn has_path(file: string) -> Result[bool, GoError] {
+    let path = look_path(file)?;
+    Result::Ok(path != "")
+}
+
+pub fn command(name: string, args: Vec[string]) -> Cmd {
+    Cmd {
+        raw: raw_command(name, slice(args, 0, vec_len(args))),
+    }
+}
+
+pub fn command_context(name: string, args: Vec[string]) -> Cmd {
+    Cmd {
+        raw: raw_command_context(raw_background(), name, slice(args, 0, vec_len(args))),
+    }
+}
+
+pub fn path(cmd: Cmd) -> string {
+    raw_cmd_path(cmd.raw)
+}
+
+pub fn set_path(cmd: Cmd, path: string) -> unit {
+    raw_cmd_set_path(cmd.raw, path)
+}
+
+pub fn args(cmd: Cmd) -> Vec[string] {
+    raw_cmd_args(cmd.raw)
+}
+
+pub fn set_args(cmd: Cmd, args: Vec[string]) -> unit {
+    raw_cmd_set_args(cmd.raw, args)
+}
+
+pub fn dir(cmd: Cmd) -> string {
+    raw_cmd_dir(cmd.raw)
+}
+
+pub fn set_dir(cmd: Cmd, dir: string) -> unit {
+    raw_cmd_set_dir(cmd.raw, dir)
+}
+
+pub fn env(cmd: Cmd) -> Vec[string] {
+    raw_cmd_env(cmd.raw)
+}
+
+pub fn set_env(cmd: Cmd, env: Vec[string]) -> unit {
+    raw_cmd_set_env(cmd.raw, env)
+}
+
+pub fn environ(cmd: Cmd) -> Vec[string] {
+    raw_cmd_environ(cmd.raw)
+}
+
+pub fn err(cmd: Cmd) -> GoError {
+    raw_cmd_err(cmd.raw)
+}
+
+pub fn set_err(cmd: Cmd, err: GoError) -> unit {
+    raw_cmd_set_err(cmd.raw, err)
+}
+
+pub fn stdin(cmd: Cmd) -> RawReader {
+    raw_cmd_stdin(cmd.raw)
+}
+
+pub fn stdout(cmd: Cmd) -> RawWriter {
+    raw_cmd_stdout(cmd.raw)
+}
+
+pub fn stderr(cmd: Cmd) -> RawWriter {
+    raw_cmd_stderr(cmd.raw)
+}
+
+pub fn extra_files(cmd: Cmd) -> Vec[RawFile] {
+    raw_cmd_extra_files(cmd.raw)
+}
+
+pub fn set_extra_files(cmd: Cmd, files: Vec[RawFile]) -> unit {
+    raw_cmd_set_extra_files(cmd.raw, files)
+}
+
+pub fn sys_proc_attr(cmd: Cmd) -> RawSysProcAttr {
+    raw_cmd_sys_proc_attr(cmd.raw)
+}
+
+pub fn set_sys_proc_attr(cmd: Cmd, attr: RawSysProcAttr) -> unit {
+    raw_cmd_set_sys_proc_attr(cmd.raw, attr)
+}
+
+pub fn process(cmd: Cmd) -> RawProcess {
+    raw_cmd_process(cmd.raw)
+}
+
+pub fn set_process(cmd: Cmd, process: RawProcess) -> unit {
+    raw_cmd_set_process(cmd.raw, process)
+}
+
+pub fn process_state(cmd: Cmd) -> RawProcessState {
+    raw_cmd_process_state(cmd.raw)
+}
+
+pub fn set_process_state(cmd: Cmd, state: RawProcessState) -> unit {
+    raw_cmd_set_process_state(cmd.raw, state)
+}
+
+pub fn cancel(cmd: Cmd) -> RawCancel {
+    raw_cmd_cancel(cmd.raw)
+}
+
+pub fn set_cancel(cmd: Cmd, cancel: RawCancel) -> unit {
+    raw_cmd_set_cancel(cmd.raw, cancel)
+}
+
+pub fn wait_delay(cmd: Cmd) -> RawDuration {
+    raw_cmd_wait_delay(cmd.raw)
+}
+
+pub fn set_wait_delay(cmd: Cmd, delay: RawDuration) -> unit {
+    raw_cmd_set_wait_delay(cmd.raw, delay)
+}
+
+pub fn command_string(cmd: Cmd) -> string {
+    raw_cmd_string(cmd.raw)
+}
+
+pub fn set_stdin_text(cmd: Cmd, text: string) -> unit {
+    raw_cmd_set_stdin(cmd.raw, raw_string_reader(text))
+}
+
+pub fn set_stdout_discard(cmd: Cmd) -> unit {
+    raw_cmd_set_stdout(cmd.raw, raw_discard())
+}
+
+pub fn set_stderr_discard(cmd: Cmd) -> unit {
+    raw_cmd_set_stderr(cmd.raw, raw_discard())
+}
+
+pub fn combined_output_text(cmd: Cmd) -> Result[string, GoError] {
+    let bytes = raw_cmd_combined_output(cmd.raw)?;
+    Result::Ok(crate::common::string_of_bytes(bytes))
+}
+
+pub fn output_text(cmd: Cmd) -> Result[string, GoError] {
+    let bytes = raw_cmd_output(cmd.raw)?;
+    Result::Ok(crate::common::string_of_bytes(bytes))
+}
+
+pub fn run(cmd: Cmd) -> Result[unit, GoError] {
+    raw_cmd_run(cmd.raw)
+}
+
+pub fn start(cmd: Cmd) -> Result[unit, GoError] {
+    raw_cmd_start(cmd.raw)
+}
+
+pub fn wait(cmd: Cmd) -> Result[unit, GoError] {
+    raw_cmd_wait(cmd.raw)
+}
+
+pub fn stdout_pipe_text(cmd: Cmd) -> Result[string, GoError] {
+    let pipe = raw_cmd_stdout_pipe(cmd.raw)?;
+    start(cmd)?;
+    let bytes = raw_read_all_closer(pipe)?;
+    raw_read_closer_close(pipe)?;
+    wait(cmd)?;
+    Result::Ok(crate::common::string_of_bytes(bytes))
+}
+
+pub fn stderr_pipe_text(cmd: Cmd) -> Result[string, GoError] {
+    let pipe = raw_cmd_stderr_pipe(cmd.raw)?;
+    start(cmd)?;
+    let bytes = raw_read_all_closer(pipe)?;
+    raw_read_closer_close(pipe)?;
+    wait(cmd)?;
+    Result::Ok(crate::common::string_of_bytes(bytes))
+}
+
+pub fn cat_stdin_text(text: string) -> Result[string, GoError] {
+    let args: Vec[string] = vec_new();
+    let args = vec_push(args, "-c");
+    let args = vec_push(args, "cat");
+    let cmd = command_context("sh", args);
+    let stdout = raw_cmd_stdout_pipe(cmd.raw)?;
+    let stdin = raw_cmd_stdin_pipe(cmd.raw)?;
+    start(cmd)?;
+    let _ = raw_write_closer_write_string(stdin, text)?;
+    raw_write_closer_close(stdin)?;
+    let bytes = raw_read_all_closer(stdout)?;
+    raw_read_closer_close(stdout)?;
+    wait(cmd)?;
+    Result::Ok(crate::common::string_of_bytes(bytes))
+}
+
+pub fn exec_error_name(err: RawExecError) -> string {
+    raw_exec_error_name(err)
+}
+
+pub fn exec_error_err(err: RawExecError) -> GoError {
+    raw_exec_error_err(err)
+}
+
+pub fn exec_error_text(err: RawExecError) -> string {
+    raw_exec_error_text(err)
+}
+
+pub fn exec_error_unwrap(err: RawExecError) -> Result[unit, GoError] {
+    raw_exec_error_unwrap(err)
+}
+
+pub fn exit_error_text(err: RawExitError) -> string {
+    raw_exit_error_text(err)
+}
+
+pub fn exit_error_stderr(err: RawExitError) -> Vec[uint8] {
+    raw_exit_error_stderr(err)
+}
+
+pub fn exit_error_process_state(err: RawExitError) -> RawProcessState {
+    raw_exit_error_process_state(err)
+}

@@ -1,14 +1,13 @@
-
-use lib;
+mod lib;
 
 fn main() {
-  let x = lib::maybe_one();
+  let x = crate::lib::maybe_one();
   match x {
     Option::Some(v) => println(v),
     Option::None => println("none"),
   };
 
-  let r = lib::maybe_err(0);
+  let r = crate::lib::maybe_err(0);
   match r {
     Result::Ok(v) => println(v),
     Result::Err(e) => println(e),

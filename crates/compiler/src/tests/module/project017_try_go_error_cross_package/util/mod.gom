@@ -1,0 +1,12 @@
+
+pub extern "go" "time" "Duration" type Duration
+
+#[go_error_last]
+pub extern "go" "time" "ParseDuration" parse_duration(s: string) -> Result[Duration, GoError]
+
+pub extern "go" "fmt" "Sprintf" format_duration(format: string, value: Duration) -> string
+
+pub fn parse_and_label(input: string) -> Result[string, GoError] {
+    let value = parse_duration(input)?;
+    Result::Ok("dur=" + format_duration("%v", value))
+}

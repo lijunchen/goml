@@ -1065,10 +1065,10 @@ fn project_check_dry_run_prints_compiler_check_commands() -> anyhow::Result<()> 
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(output.status.success(), "stderr: {stderr}");
     expect![[r#"
-        goml compiler check --package traitpkg --input traitpkg/lib.gom --output target/goml/check/traitpkg/traitpkg
-        goml compiler check --package datapkg --input datapkg/lib.gom --interface-path target/goml/check/traitpkg/traitpkg.interface --output target/goml/check/datapkg/datapkg
-        goml compiler check --package usepkg --input usepkg/lib.gom --interface-path target/goml/check/traitpkg/traitpkg.interface --output target/goml/check/usepkg/usepkg
-        goml compiler check --package main --input main.gom --interface-path target/goml/check/datapkg/datapkg.interface --interface-path target/goml/check/usepkg/usepkg.interface --output target/goml/check/main
+        goml compiler check --package traitpkg --input traitpkg/mod.gom --output target/goml/check/traitpkg/traitpkg
+        goml compiler check --package datapkg --input datapkg/mod.gom --interface-path target/goml/check/traitpkg/traitpkg.interface --output target/goml/check/datapkg/datapkg
+        goml compiler check --package usepkg --input usepkg/mod.gom --interface-path target/goml/check/traitpkg/traitpkg.interface --output target/goml/check/usepkg/usepkg
+        goml compiler check --package main --input main.gom --interface-path target/goml/check/datapkg/datapkg.interface --interface-path target/goml/check/traitpkg/traitpkg.interface --interface-path target/goml/check/usepkg/usepkg.interface --output target/goml/check/main
     "#]]
     .assert_eq(&stdout);
     assert!(!dir.path().join("target/goml/check/main.interface").exists());
@@ -1086,10 +1086,10 @@ fn project_build_dry_run_prints_compiler_build_and_link_commands() -> anyhow::Re
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(output.status.success(), "stderr: {stderr}");
     expect![[r#"
-        goml compiler build --package traitpkg --input traitpkg/lib.gom --output target/goml/build/traitpkg/traitpkg
-        goml compiler build --package datapkg --input datapkg/lib.gom --interface-path target/goml/build/traitpkg/traitpkg.interface --output target/goml/build/datapkg/datapkg
-        goml compiler build --package usepkg --input usepkg/lib.gom --interface-path target/goml/build/traitpkg/traitpkg.interface --output target/goml/build/usepkg/usepkg
-        goml compiler build --package main --input main.gom --interface-path target/goml/build/datapkg/datapkg.interface --interface-path target/goml/build/usepkg/usepkg.interface --output target/goml/build/main
+        goml compiler build --package traitpkg --input traitpkg/mod.gom --output target/goml/build/traitpkg/traitpkg
+        goml compiler build --package datapkg --input datapkg/mod.gom --interface-path target/goml/build/traitpkg/traitpkg.interface --output target/goml/build/datapkg/datapkg
+        goml compiler build --package usepkg --input usepkg/mod.gom --interface-path target/goml/build/traitpkg/traitpkg.interface --output target/goml/build/usepkg/usepkg
+        goml compiler build --package main --input main.gom --interface-path target/goml/build/datapkg/datapkg.interface --interface-path target/goml/build/traitpkg/traitpkg.interface --interface-path target/goml/build/usepkg/usepkg.interface --output target/goml/build/main
         goml compiler link --input target/goml/build/traitpkg/traitpkg.core target/goml/build/datapkg/datapkg.core target/goml/build/usepkg/usepkg.core target/goml/build/main.core --output target/goml/main.go
     "#]]
     .assert_eq(&stdout);

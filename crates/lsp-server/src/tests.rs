@@ -660,7 +660,7 @@ fn main() {
     fn module_project011_math_package_no_missing_dir_errors() {
         check_module_file_diagnostics(
             "project011_complex_dependency_graph",
-            "math/lib.gom",
+            "math/mod.gom",
             expect!["no diagnostics"],
         );
     }
@@ -669,7 +669,7 @@ fn main() {
     fn module_project011_pipeline_package_no_missing_dir_errors() {
         check_module_file_diagnostics(
             "project011_complex_dependency_graph",
-            "pipeline/lib.gom",
+            "pipeline/mod.gom",
             expect!["no diagnostics"],
         );
     }
@@ -680,7 +680,12 @@ fn main() {
         let root = dir.path();
         std::fs::write(
             root.join("goml.toml"),
-            r#"[module]
+            r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+
+[module]
 name = "demo"
 
 [package]
@@ -691,7 +696,7 @@ entry = "main.gom"
         .unwrap();
         let src = r#"
 
-use colors::Paint;
+use crate::colors::Paint;
 
 fn main() -> unit {
     ()
@@ -1159,7 +1164,12 @@ fn main() {
 
         std::fs::write(
             root.join("goml.toml"),
-            r#"[module]
+            r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+
+[module]
 name = "demo"
 
 [package]
@@ -1173,11 +1183,12 @@ entry = "main.gom"
             root.join("util/goml.toml"),
             r#"[package]
 name = "util"
+entry = "mod.gom"
 "#,
         )
         .unwrap();
         std::fs::write(
-            root.join("util/lib.gom"),
+            root.join("util/mod.gom"),
             r#"
 
 fn ping() -> string {
@@ -1189,7 +1200,7 @@ fn ping() -> string {
 
         let src = r#"
 
-use util;
+mod util;
 
 fn main() {
     ut
@@ -1696,6 +1707,11 @@ fn main() {
         write_file(
             &root.join("goml.toml"),
             r#"
+[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+
 [module]
 name = "demo"
 
@@ -1724,12 +1740,12 @@ entry = "main.gom"
 
     #[test]
     fn goto_definition_use_member_to_trait() {
-        check_module_goto(
+        check_module_goto_token(
             "project007_trait_impl_orphan_ok",
             "main.gom",
-            1,
-            17,
-            expect!["project007_trait_impl_orphan_ok/main.gom:3:3"],
+            "use crate::traitpkg::Show;",
+            "Show",
+            expect!["traitpkg/mod.gom:1:10"],
         );
     }
 
@@ -1740,7 +1756,7 @@ entry = "main.gom"
             "main.gom",
             6,
             18,
-            expect!["src/builtin.gom:23:10"],
+            expect!["datapkg/mod.gom:6:7"],
         );
     }
 
@@ -1751,7 +1767,13 @@ entry = "main.gom"
 
     #[test]
     fn goto_definition_struct_field_across_package() {
-        check_module_goto("project001", "main.gom", 5, 25, expect!["lib/lib.gom:18:3"]);
+        check_module_goto_token(
+            "project001",
+            "main.gom",
+            "x: 20",
+            "x",
+            expect!["lib/mod.gom:14:4"],
+        );
     }
 
     #[test]
@@ -1759,9 +1781,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project002",
             "main.gom",
-            "use util;",
+            "mod util;",
             "util",
-            expect!["util/goml.toml:0:0"],
+            expect!["util/mod.gom:0:0"],
         );
     }
 
@@ -1770,9 +1792,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project003",
             "main.gom",
-            "use math;",
+            "mod math;",
             "math",
-            expect!["math/goml.toml:0:0"],
+            expect!["math/mod.gom:0:0"],
         );
     }
 
@@ -1781,9 +1803,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project003",
             "main.gom",
-            "use stats;",
+            "mod stats;",
             "stats",
-            expect!["stats/goml.toml:0:0"],
+            expect!["stats/mod.gom:0:0"],
         );
     }
 
@@ -1792,9 +1814,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project004",
             "main.gom",
-            "use util;",
+            "mod util;",
             "util",
-            expect!["util/goml.toml:0:0"],
+            expect!["util/mod.gom:0:0"],
         );
     }
 
@@ -1803,9 +1825,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project005",
             "main.gom",
-            "use shape;",
+            "mod shape;",
             "shape",
-            expect!["shape/goml.toml:0:0"],
+            expect!["shape/mod.gom:0:0"],
         );
     }
 
@@ -1814,9 +1836,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project005",
             "main.gom",
-            "use geo;",
+            "mod geo;",
             "geo",
-            expect!["geo/goml.toml:0:0"],
+            expect!["geo/mod.gom:0:0"],
         );
     }
 
@@ -1825,9 +1847,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project006",
             "main.gom",
-            "use shape;",
+            "mod shape;",
             "shape",
-            expect!["shape/goml.toml:0:0"],
+            expect!["shape/mod.gom:0:0"],
         );
     }
 
@@ -1836,9 +1858,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
             "main.gom",
-            "use datapkg;",
+            "mod datapkg;",
             "datapkg",
-            expect!["datapkg/goml.toml:0:0"],
+            expect!["datapkg/mod.gom:0:0"],
         );
     }
 
@@ -1847,9 +1869,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
             "main.gom",
-            "use usepkg;",
+            "mod usepkg;",
             "usepkg",
-            expect!["usepkg/goml.toml:0:0"],
+            expect!["usepkg/mod.gom:0:0"],
         );
     }
 
@@ -1858,7 +1880,7 @@ entry = "main.gom"
         check_module_goto_token(
             "project007_trait_impl_orphan_ok",
             "main.gom",
-            "use traitpkg::Show;",
+            "use crate::traitpkg::Show;",
             "traitpkg",
             expect!["traitpkg/goml.toml:0:0"],
         );
@@ -1868,8 +1890,8 @@ entry = "main.gom"
     fn goto_definition_use_package_in_subpackage_project008_datapkg_traitpkg() {
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
-            "datapkg/lib.gom",
-            "use traitpkg;",
+            "datapkg/mod.gom",
+            "use crate::traitpkg;",
             "traitpkg",
             expect!["traitpkg/goml.toml:0:0"],
         );
@@ -1879,8 +1901,8 @@ entry = "main.gom"
     fn goto_definition_use_package_in_subpackage_project008_usepkg_traitpkg() {
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
-            "usepkg/lib.gom",
-            "use traitpkg;",
+            "usepkg/mod.gom",
+            "use crate::traitpkg;",
             "traitpkg",
             expect!["traitpkg/goml.toml:0:0"],
         );
@@ -1891,9 +1913,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project002",
             "main.gom",
-            "util::adjust",
+            "crate::util::adjust",
             "adjust",
-            expect!["util/lib.gom:10:3"],
+            expect!["util/mod.gom:9:7"],
         );
     }
 
@@ -1902,9 +1924,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project002",
             "main.gom",
-            "util::dec",
+            "crate::util::dec",
             "dec",
-            expect!["util/lib.gom:6:3"],
+            expect!["util/mod.gom:5:7"],
         );
     }
 
@@ -1913,9 +1935,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project003",
             "main.gom",
-            "math::Pair",
+            "crate::math::Pair",
             "Pair",
-            expect!["math/lib.gom:1:7"],
+            expect!["math/mod.gom:1:11"],
         );
     }
 
@@ -1924,9 +1946,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project003",
             "main.gom",
-            "stats::sum",
+            "crate::stats::sum",
             "sum",
-            expect!["stats/lib.gom:2:3"],
+            expect!["stats/mod.gom:1:7"],
         );
     }
 
@@ -1934,10 +1956,10 @@ entry = "main.gom"
     fn goto_definition_variant_project003_add() {
         check_module_goto_token(
             "project003",
-            "stats/lib.gom",
-            "math::Op::Add",
+            "stats/mod.gom",
+            "crate::math::Op::Add",
             "Add",
-            expect!["math/lib.gom:7:4"],
+            expect!["math/mod.gom:7:4"],
         );
     }
 
@@ -1948,7 +1970,7 @@ entry = "main.gom"
             "main.gom",
             "a: 9",
             "a",
-            expect!["math/lib.gom:2:4"],
+            expect!["math/mod.gom:2:4"],
         );
     }
 
@@ -1957,9 +1979,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project005",
             "main.gom",
-            "geo::move",
+            "crate::geo::move",
             "move",
-            expect!["geo/lib.gom:7:3"],
+            expect!["geo/mod.gom:6:7"],
         );
     }
 
@@ -1967,10 +1989,10 @@ entry = "main.gom"
     fn goto_definition_type_project005_shape_point_in_pattern() {
         check_module_goto_token(
             "project005",
-            "geo/lib.gom",
-            "shape::Point { x: x, y: y }",
+            "geo/mod.gom",
+            "crate::shape::Point { x: x, y: y }",
             "Point",
-            expect!["shape/lib.gom:1:7"],
+            expect!["shape/mod.gom:1:11"],
         );
     }
 
@@ -1979,9 +2001,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
             "main.gom",
-            "usepkg::bar_it",
+            "crate::usepkg::bar_it",
             "bar_it",
-            expect!["usepkg/lib.gom:10:3"],
+            expect!["usepkg/mod.gom:9:7"],
         );
     }
 
@@ -1989,10 +2011,10 @@ entry = "main.gom"
     fn goto_definition_type_in_generic_bound_project008_trait_c() {
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
-            "usepkg/lib.gom",
-            "traitpkg::C",
+            "usepkg/mod.gom",
+            "crate::traitpkg::C",
             "C",
-            expect!["traitpkg/lib.gom:9:6"],
+            expect!["traitpkg/mod.gom:9:10"],
         );
     }
 
@@ -2001,7 +2023,7 @@ entry = "main.gom"
         check_module_goto_token(
             "project001",
             "main.gom",
-            "lib::Color::Green",
+            "crate::lib::Color::Green",
             "lib",
             expect!["lib/goml.toml:0:0"],
         );
@@ -2012,9 +2034,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project001",
             "main.gom",
-            "lib::Color::Green",
+            "crate::lib::Color::Green",
             "Color",
-            expect!["lib/lib.gom:1:5"],
+            expect!["lib/mod.gom:1:9"],
         );
     }
 
@@ -2023,9 +2045,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project001",
             "main.gom",
-            "lib::sum_point",
+            "crate::lib::sum_point",
             "sum_point",
-            expect!["lib/lib.gom:18:3"],
+            expect!["lib/mod.gom:18:7"],
         );
     }
 
@@ -2034,9 +2056,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project001",
             "main.gom",
-            "lib::Point",
+            "crate::lib::Point",
             "Point",
-            expect!["lib/lib.gom:13:7"],
+            expect!["lib/mod.gom:13:11"],
         );
     }
 
@@ -2045,9 +2067,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project006",
             "main.gom",
-            "shape::inc",
+            "crate::shape::inc",
             "inc",
-            expect!["shape/ops.gom:1:3"],
+            expect!["shape/mod.gom:10:7"],
         );
     }
 
@@ -2056,9 +2078,9 @@ entry = "main.gom"
         check_module_goto_token(
             "project006",
             "main.gom",
-            "shape::sum",
+            "crate::shape::sum",
             "sum",
-            expect!["shape/ops.gom:5:3"],
+            expect!["shape/mod.gom:14:7"],
         );
     }
 
@@ -2147,6 +2169,11 @@ fn main() -> unit {
         write_file(
             &root.join("goml.toml"),
             r#"
+[crate]
+name = "tmpmod"
+kind = "bin"
+root = "main.gom"
+
 [module]
 name = "tmpmod"
 
@@ -2159,7 +2186,7 @@ entry = "main.gom"
             &root.join("main.gom"),
             r#"
 
-use Pkg;
+mod Pkg;
 
 fn main() {
     let _ = 0;
@@ -2167,28 +2194,20 @@ fn main() {
 "#,
         );
         write_file(
-            &root.join("Pkg/b.gom"),
+            &root.join("Pkg/mod.gom"),
             r#"
 
 
-fn b() -> int32 { 0 }
-"#,
-        );
-        write_file(
-            &root.join("Pkg/a.gom"),
-            r#"
-
-
-fn a() -> int32 { 0 }
+fn value() -> int32 { 0 }
 "#,
         );
 
         check_temp_module_goto_token(
             "use_fallback_first_gom",
             "main.gom",
-            "use Pkg;",
+            "mod Pkg;",
             "Pkg",
-            expect!["Pkg/a.gom:0:0"],
+            expect!["Pkg/mod.gom:0:0"],
         );
     }
 
@@ -2302,6 +2321,11 @@ fn main() -> unit {
         write_file(
             &root.join("goml.toml"),
             r#"
+[crate]
+name = "tmpmod"
+kind = "bin"
+root = "main.gom"
+
 [module]
 name = "tmpmod"
 
@@ -2314,8 +2338,8 @@ entry = "main.gom"
             &root.join("main.gom"),
             r#"
 
-use A;
-use B;
+mod A;
+mod B;
 
 fn main() {
     let _ = Foo {};
@@ -2327,14 +2351,15 @@ fn main() {
             r#"
 [package]
 name = "A"
+entry = "mod.gom"
 "#,
         );
         write_file(
-            &root.join("A/lib.gom"),
+            &root.join("A/mod.gom"),
             r#"
 
 
-struct Foo {}
+pub struct Foo {}
 "#,
         );
         write_file(
@@ -2342,14 +2367,15 @@ struct Foo {}
             r#"
 [package]
 name = "B"
+entry = "mod.gom"
 "#,
         );
         write_file(
-            &root.join("B/lib.gom"),
+            &root.join("B/mod.gom"),
             r#"
 
 
-struct Foo {}
+pub struct Foo {}
 "#,
         );
 
@@ -2359,8 +2385,8 @@ struct Foo {}
             "Foo {}",
             "Foo",
             expect![[r#"
-                A/lib.gom:3:7
-                B/lib.gom:3:7"#]],
+                A/mod.gom:3:11
+                B/mod.gom:3:11"#]],
         );
     }
 }

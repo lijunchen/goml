@@ -1,0 +1,16 @@
+use crate::traitpkg;
+pub struct Card {
+    value: int32,
+}
+
+impl crate::traitpkg::Render for Card {
+    fn render(self: Card) -> string {
+        "R" + int32_to_string(self.value)
+    }
+}
+
+impl crate::traitpkg::Fancy for Card {
+    fn render(self: Card) -> string {
+        "F" + int32_to_string(self.value)
+    }
+}
