@@ -1687,7 +1687,7 @@ kind = "bin"
 root = "main.gom"
 
 [dependencies]
-"alice::http" = "1.2.0"
+http = { package = "alice::http", version = "1.2.0" }
 "#,
         );
         write_file(&root.join("main.gom"), src);

@@ -21,7 +21,7 @@ pub struct CrateManifest {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CrateDependency {
-    pub package: Option<String>,
+    pub package: String,
     pub version: String,
 }
 
@@ -34,14 +34,10 @@ struct RawCrateManifest {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-#[serde(untagged)]
-enum RawCrateDependency {
-    Version(String),
-    Detailed {
-        #[serde(default)]
-        package: Option<String>,
-        version: String,
-    },
+struct RawCrateDependency {
+    #[serde(default)]
+    package: Option<String>,
+    version: String,
 }
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq)]
@@ -70,9 +66,15 @@ pub fn load_crate_config(path: &Path) -> Result<Option<CrateConfig>, String> {
 pub fn load_crate_manifest(path: &Path) -> Result<CrateManifest, String> {
     let content = std::fs::read_to_string(path)
         .map_err(|e| format!("failed to read {}: {}", path.display(), e))?;
+    let value = toml::from_str::<toml::Value>(&content)
+        .map_err(|e| format!("failed to parse {}: {}", path.display(), e))?;
+    validate_manifest_shape(&value)
+        .map_err(|e| format!("failed to parse {}: {}", path.display(), e))?;
     let manifest: RawCrateManifest = toml::from_str(&content)
         .map_err(|e| format!("failed to parse {}: {}", path.display(), e))?;
-    Ok(manifest.into())
+    manifest
+        .into_manifest()
+        .map_err(|e| format!("failed to parse {}: {}", path.display(), e))
 }
 
 pub fn find_crate_root(start_dir: &Path) -> Option<(PathBuf, CrateConfig)> {
@@ -91,17 +93,17 @@ pub fn find_crate_root(start_dir: &Path) -> Option<(PathBuf, CrateConfig)> {
     None
 }
 
-impl From<RawCrateManifest> for CrateManifest {
-    fn from(value: RawCrateManifest) -> Self {
-        let dependencies = value
+impl RawCrateManifest {
+    fn into_manifest(self) -> Result<CrateManifest, String> {
+        let dependencies = self
             .dependencies
             .into_iter()
-            .map(|(alias, dep)| (alias, dep.into()))
-            .collect();
-        Self {
-            crate_config: value.crate_config,
+            .map(|(alias, dep)| dependency_from_raw(alias, dep))
+            .collect::<Result<_, _>>()?;
+        Ok(CrateManifest {
+            crate_config: self.crate_config,
             dependencies,
-        }
+        })
     }
 }
 
@@ -109,26 +111,84 @@ impl CrateManifest {
     pub fn dependency_versions(&self) -> BTreeMap<String, String> {
         self.dependencies
             .iter()
-            .map(|(alias, dep)| {
-                (
-                    dep.package.clone().unwrap_or_else(|| alias.clone()),
-                    dep.version.clone(),
-                )
-            })
+            .map(|(_alias, dep)| (dep.package.clone(), dep.version.clone()))
             .collect()
     }
 }
 
-impl From<RawCrateDependency> for CrateDependency {
-    fn from(value: RawCrateDependency) -> Self {
-        match value {
-            RawCrateDependency::Version(version) => Self {
-                package: None,
-                version,
-            },
-            RawCrateDependency::Detailed { package, version } => Self { package, version },
+fn validate_manifest_shape(value: &toml::Value) -> Result<(), String> {
+    if value.get("module").is_some() {
+        return Err("old [module] manifests are no longer supported; use [crate]".to_string());
+    }
+    if value.get("package").is_some() {
+        return Err("old [package] manifests are no longer supported; use [crate]".to_string());
+    }
+    let Some(dependencies) = value.get("dependencies") else {
+        return Ok(());
+    };
+    let Some(dependencies) = dependencies.as_table() else {
+        return Err("[dependencies] must be a table".to_string());
+    };
+    for (alias, dependency) in dependencies {
+        validate_dependency_alias(alias)?;
+        if !dependency.is_table() {
+            return Err(format!(
+                "dependency `{alias}` must use `{alias} = {{ package = \"owner::module\", version = \"...\" }}`"
+            ));
         }
     }
+    Ok(())
+}
+
+fn dependency_from_raw(
+    alias: String,
+    value: RawCrateDependency,
+) -> Result<(String, CrateDependency), String> {
+    validate_dependency_alias(&alias)?;
+    let RawCrateDependency { package, version } = value;
+    let Some(package) = package else {
+        return Err(format!(
+            "dependency `{alias}` is missing `package`; use `{alias} = {{ package = \"owner::module\", version = \"{version}\" }}`"
+        ));
+    };
+    if !is_valid_registry_package(&package) {
+        return Err(format!(
+            "dependency `{alias}` package `{package}` is invalid: expected owner::module"
+        ));
+    }
+    Ok((alias, CrateDependency { package, version }))
+}
+
+fn validate_dependency_alias(alias: &str) -> Result<(), String> {
+    if let Some((_, module)) = alias.split_once("::") {
+        return Err(format!(
+            "dependency key `{alias}` is a registry coordinate; use `{module} = {{ package = \"{alias}\", version = \"...\" }}`"
+        ));
+    }
+    if !is_valid_identifier(&alias) {
+        return Err(format!(
+            "dependency alias `{alias}` is invalid: expected identifier [A-Za-z_][A-Za-z0-9_]*"
+        ));
+    }
+    Ok(())
+}
+
+fn is_valid_registry_package(package: &str) -> bool {
+    let Some((owner, module)) = package.split_once("::") else {
+        return false;
+    };
+    package.matches("::").count() == 1 && is_valid_identifier(owner) && is_valid_identifier(module)
+}
+
+fn is_valid_identifier(name: &str) -> bool {
+    let mut chars = name.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+    if !(first == '_' || first.is_ascii_alphabetic()) {
+        return false;
+    }
+    chars.all(|ch| ch == '_' || ch.is_ascii_alphanumeric())
 }
 
 impl FromStr for UserConfig {
@@ -222,7 +282,7 @@ name = "hello"
 
 [dependencies]
 http = { package = "alice::http", version = "1.2.3" }
-json = "0.4.0"
+json = { package = "bob::json", version = "0.4.0" }
 "#,
         )
         .unwrap();
@@ -232,14 +292,14 @@ json = "0.4.0"
         assert_eq!(
             manifest.dependencies.get("http"),
             Some(&CrateDependency {
-                package: Some("alice::http".to_string()),
+                package: "alice::http".to_string(),
                 version: "1.2.3".to_string()
             })
         );
         assert_eq!(
             manifest.dependencies.get("json"),
             Some(&CrateDependency {
-                package: None,
+                package: "bob::json".to_string(),
                 version: "0.4.0".to_string()
             })
         );
@@ -248,9 +308,55 @@ json = "0.4.0"
             Some(&"1.2.3".to_string())
         );
         assert_eq!(
-            manifest.dependency_versions().get("json"),
+            manifest.dependency_versions().get("bob::json"),
             Some(&"0.4.0".to_string())
         );
+    }
+
+    #[test]
+    fn load_crate_manifest_rejects_legacy_sections() {
+        let dir = tempfile::tempdir().unwrap();
+        let manifest = dir.path().join("goml.toml");
+
+        std::fs::write(&manifest, "[module]\nname = \"hello\"\n").unwrap();
+        let err = load_crate_manifest(&manifest).unwrap_err();
+        assert!(err.contains("old [module] manifests are no longer supported"));
+
+        std::fs::write(&manifest, "[package]\nname = \"hello\"\n").unwrap();
+        let err = load_crate_manifest(&manifest).unwrap_err();
+        assert!(err.contains("old [package] manifests are no longer supported"));
+    }
+
+    #[test]
+    fn load_crate_manifest_rejects_legacy_dependency_forms() {
+        let dir = tempfile::tempdir().unwrap();
+        let manifest = dir.path().join("goml.toml");
+
+        std::fs::write(
+            &manifest,
+            r#"[crate]
+name = "hello"
+
+[dependencies]
+"alice::http" = "1.2.3"
+"#,
+        )
+        .unwrap();
+        let err = load_crate_manifest(&manifest).unwrap_err();
+        assert!(err.contains("dependency key `alice::http` is a registry coordinate"));
+
+        std::fs::write(
+            &manifest,
+            r#"[crate]
+name = "hello"
+
+[dependencies]
+http = "1.2.3"
+"#,
+        )
+        .unwrap();
+        let err = load_crate_manifest(&manifest).unwrap_err();
+        assert!(err.contains("dependency `http` must use"));
     }
 
     #[test]

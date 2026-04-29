@@ -376,7 +376,7 @@ kind = "lib"
 root = "lib.gom"
 
 [dependencies]
-"alice::net" = "0.1.0"
+net = { package = "alice::net", version = "0.1.0" }
 "#,
         )
         .unwrap();

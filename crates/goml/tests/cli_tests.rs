@@ -256,7 +256,7 @@ kind = "lib"
 root = "lib.gom"
 
 [dependencies]
-"alice::net" = "0.1.0"
+net = { package = "alice::net", version = "0.1.0" }
 "#,
     )?;
     fs::write(
@@ -306,7 +306,7 @@ kind = "lib"
 root = "lib.gom"
 
 [dependencies]
-"alice::http" = "1.2.0"
+http = { package = "alice::http", version = "1.2.0" }
 "#,
     )?;
     fs::write(
@@ -555,7 +555,7 @@ fn add_uses_latest_version_from_local_registry() -> anyhow::Result<()> {
     let stderr = String::from_utf8_lossy(&output.stderr);
 
     assert!(output.status.success(), "stderr: {stderr}");
-    expect!["added alice::http = 1.2.0\n"].assert_eq(&stdout);
+    expect!["added http = { package = \"alice::http\", version = \"1.2.0\" }\n"].assert_eq(&stdout);
     expect![""].assert_eq(&stderr);
 
     let manifest = fs::read_to_string(project_dir.join("goml.toml"))?;
@@ -566,7 +566,7 @@ fn add_uses_latest_version_from_local_registry() -> anyhow::Result<()> {
         root = "main.gom"
 
         [dependencies]
-        "alice::http" = "1.2.0"
+        http = { package = "alice::http", version = "1.2.0" }
     "#]]
     .assert_eq(&manifest);
 
@@ -599,7 +599,7 @@ fn add_with_explicit_version_and_remove_updates_manifest() -> anyhow::Result<()>
     let remove_output = run_goml(
         &[
             "remove",
-            "alice::http",
+            "http",
             "--local-registry",
             registry.to_string_lossy().as_ref(),
         ],
@@ -608,7 +608,7 @@ fn add_with_explicit_version_and_remove_updates_manifest() -> anyhow::Result<()>
     let stdout = String::from_utf8_lossy(&remove_output.stdout);
     let stderr = String::from_utf8_lossy(&remove_output.stderr);
     assert!(remove_output.status.success(), "stderr: {stderr}");
-    expect!["removed alice::http\n"].assert_eq(&stdout);
+    expect!["removed http\n"].assert_eq(&stdout);
     expect![""].assert_eq(&stderr);
 
     let manifest = fs::read_to_string(project_dir.join("goml.toml"))?;
@@ -640,8 +640,8 @@ kind = "bin"
 root = "main.gom"
 
 [dependencies]
-"alice::http" = "1.0.0"
-"alice::appdep" = "0.1.0"
+http = { package = "alice::http", version = "1.0.0" }
+appdep = { package = "alice::appdep", version = "0.1.0" }
 "#,
     )?;
     fs::write(

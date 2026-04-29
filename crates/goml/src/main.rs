@@ -19,7 +19,7 @@ use compiler::registry::{
 };
 use parser::format_parser_diagnostics;
 use tempfile::tempdir;
-use toml_edit::{DocumentMut, Item, Table, value};
+use toml_edit::{DocumentMut, InlineTable, Item, Table, Value};
 
 const PRETTY_WIDTH: usize = 120;
 const PROJECT_GO_OUTPUT: &str = "target/goml/main.go";
@@ -401,17 +401,22 @@ fn execute_add(args: AddArgs) -> anyhow::Result<()> {
             .latest_version(&coord)
             .map_err(anyhow::Error::msg)?
     };
+    let alias = dependency_alias(&coord).to_string();
     upsert_dependency(&manifest_path, &coord, &version.display())?;
-    println!("added {} = {}", coord.display(), version.display());
+    println!(
+        "added {} = {{ package = \"{}\", version = \"{}\" }}",
+        alias,
+        coord.display(),
+        version.display()
+    );
     Ok(())
 }
 
 fn execute_remove(args: RemoveArgs) -> anyhow::Result<()> {
     let module_dir = locate_module_root_from_cwd()?;
     let manifest_path = module_dir.join("goml.toml");
-    let coord = ModuleCoord::parse(args.dependency.trim()).map_err(anyhow::Error::msg)?;
-    remove_dependency(&manifest_path, &coord)?;
-    println!("removed {}", coord.display());
+    let alias = remove_dependency(&manifest_path, &args.dependency)?;
+    println!("removed {alias}");
     Ok(())
 }
 
@@ -489,22 +494,65 @@ fn load_manifest_document(path: &Path) -> anyhow::Result<DocumentMut> {
         .map_err(|err| anyhow!("failed to parse {}: {}", path.display(), err))
 }
 
+fn dependency_alias(coord: &ModuleCoord) -> &str {
+    &coord.module
+}
+
+fn dependency_item(coord: &ModuleCoord, version: &str) -> Item {
+    let mut table = InlineTable::new();
+    table.insert("package", Value::from(coord.display()));
+    table.insert("version", Value::from(version));
+    Item::Value(Value::InlineTable(table))
+}
+
 fn upsert_dependency(path: &Path, coord: &ModuleCoord, version: &str) -> anyhow::Result<()> {
+    let manifest = load_crate_manifest(path).map_err(anyhow::Error::msg)?;
+    let alias = dependency_alias(coord);
+    if let Some(existing) = manifest.dependencies.get(alias)
+        && existing.package != coord.display()
+    {
+        bail!(
+            "dependency alias `{}` already exists for package `{}`; rename one dependency key manually in goml.toml",
+            alias,
+            existing.package
+        );
+    }
+
     let mut doc = load_manifest_document(path)?;
-    ensure_dependencies_table(&mut doc).insert(&coord.display(), value(version));
+    ensure_dependencies_table(&mut doc).insert(alias, dependency_item(coord, version));
     fs::write(path, doc.to_string()).with_context(|| format!("failed to write {}", path.display()))
 }
 
-fn remove_dependency(path: &Path, coord: &ModuleCoord) -> anyhow::Result<()> {
+fn remove_dependency(path: &Path, dependency: &str) -> anyhow::Result<String> {
+    let alias = dependency.trim();
+    if alias.contains("::") {
+        let hint = ModuleCoord::parse(alias)
+            .map(|coord| coord.module)
+            .unwrap_or_else(|_| "the manifest alias".to_string());
+        bail!(
+            "dependency removal uses manifest aliases; use `goml remove {}` for package `{}`",
+            hint,
+            alias
+        );
+    }
+    if !is_valid_identifier(alias) {
+        bail!(
+            "invalid dependency alias `{}`: expected identifier [A-Za-z_][A-Za-z0-9_]*",
+            alias
+        );
+    }
+
     let mut doc = load_manifest_document(path)?;
     let dependencies_item = &mut doc["dependencies"];
     if let Some(table) = dependencies_item.as_table_like_mut() {
-        table.remove(coord.display().as_str());
+        table.remove(alias);
         if table.is_empty() {
             *dependencies_item = Item::None;
         }
     }
-    fs::write(path, doc.to_string()).with_context(|| format!("failed to write {}", path.display()))
+    fs::write(path, doc.to_string())
+        .with_context(|| format!("failed to write {}", path.display()))?;
+    Ok(alias.to_string())
 }
 
 fn ensure_dependencies_table(doc: &mut DocumentMut) -> &mut Table {
