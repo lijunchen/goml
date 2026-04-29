@@ -1668,6 +1668,80 @@ pub fn text() -> string {
 }
 
 #[test]
+fn compiler_link_crates_requires_root_module_main() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    fs::write(
+        root.join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+"#,
+    )?;
+    fs::write(
+        root.join("main.gom"),
+        r#"
+mod child;
+
+fn not_main() -> unit {
+    ()
+}
+"#,
+    )?;
+    fs::write(
+        root.join("child.gom"),
+        r#"
+fn main() -> unit {
+    println("child")
+}
+"#,
+    )?;
+
+    let out = root.join("out/demo");
+    let build_output = run_goml(
+        &[
+            "compiler",
+            "build-crate",
+            "--crate-dir",
+            root.to_string_lossy().as_ref(),
+            "--output",
+            out.to_string_lossy().as_ref(),
+        ],
+        root,
+    )?;
+    let build_stderr = String::from_utf8_lossy(&build_output.stderr);
+    assert!(build_output.status.success(), "stderr: {build_stderr}");
+
+    let go_file = root.join("out/main.go");
+    let link_output = run_goml(
+        &[
+            "compiler",
+            "link-crates",
+            "--root-crate",
+            "demo",
+            "--input",
+            root.join("out/demo.core").to_string_lossy().as_ref(),
+            "--output",
+            go_file.to_string_lossy().as_ref(),
+        ],
+        root,
+    )?;
+    let stdout = String::from_utf8_lossy(&link_output.stdout);
+    let stderr = String::from_utf8_lossy(&link_output.stderr);
+
+    assert!(!link_output.status.success());
+    expect![""].assert_eq(&stdout);
+    expect![[r#"
+        link-crates failed: Compile { diagnostics: Diagnostics { items: [Diagnostic { stage: Other("compile"), severity: Error, message: "demo crate missing root module main function", range: None }] } }
+    "#]]
+    .assert_eq(&stderr);
+    assert!(!go_file.exists());
+
+    Ok(())
+}
+
+#[test]
 fn project_build_runs_module_use_e2e() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     let root = dir.path();
