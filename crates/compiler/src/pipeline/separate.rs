@@ -466,7 +466,7 @@ fn link_core_units(
     for core in cores {
         if by_name.contains_key(&core.package) {
             return Err(compile_error(format!(
-                "duplicate core provided for package {}",
+                "duplicate core provided for crate {}",
                 core.package
             )));
         }
@@ -501,7 +501,7 @@ fn link_core_units(
             if dep == BUILTIN_PACKAGE {
                 if expected_hash != &builtin_hash {
                     return Err(compile_error(format!(
-                        "package {} expects builtin interface_hash {}, but compiler has {} (rebuild {})",
+                        "crate {} expects builtin interface_hash {}, but compiler has {} (rebuild {})",
                         pkg, expected_hash, builtin_hash, pkg
                     )));
                 }
@@ -509,13 +509,13 @@ fn link_core_units(
             }
             let Some(dep_unit) = by_name.get(dep) else {
                 return Err(compile_error(format!(
-                    "package {} depends on missing package {}",
+                    "crate {} depends on missing crate {}",
                     pkg, dep
                 )));
             };
             if &dep_unit.interface.interface_hash != expected_hash {
                 return Err(compile_error(format!(
-                    "package {} expects interface_hash {} for {}, but got {} (rebuild {})",
+                    "crate {} expects interface_hash {} for {}, but got {} (rebuild {})",
                     pkg, expected_hash, dep, dep_unit.interface.interface_hash, pkg
                 )));
             }
@@ -529,7 +529,7 @@ fn link_core_units(
     for pkg in order.iter() {
         let unit = by_name
             .get(pkg)
-            .ok_or_else(|| compile_error(format!("missing core for package {}", pkg)))?;
+            .ok_or_else(|| compile_error(format!("missing core for crate {}", pkg)))?;
         let exports = unit
             .internal_exports
             .as_ref()
@@ -558,7 +558,7 @@ fn link_core_units(
     for pkg in order {
         let unit = by_name
             .get(&pkg)
-            .ok_or_else(|| compile_error(format!("missing core for package {}", pkg)))?;
+            .ok_or_else(|| compile_error(format!("missing core for crate {}", pkg)))?;
         linked.toplevels.extend(unit.core_ir.toplevels.clone());
     }
     if entry_name != ENTRY_FUNCTION {
@@ -642,7 +642,7 @@ fn topo_sort(cores: &HashMap<String, CoreUnit>) -> Result<Vec<String>, Compilati
     for name in names {
         let unit = cores
             .get(&name)
-            .ok_or_else(|| compile_error(format!("missing core for package {}", name)))?;
+            .ok_or_else(|| compile_error(format!("missing core for crate {}", name)))?;
         for dep in unit.deps.keys() {
             if !cores.contains_key(dep) {
                 continue;

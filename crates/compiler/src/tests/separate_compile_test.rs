@@ -144,7 +144,7 @@ pub fn bar() -> int32 {
 
     let err = separate::link_crates(&root_crate, vec![main_core, lib_core]).unwrap_err();
     let msg = format!("{:?}", err);
-    assert!(msg.contains("expects interface_hash"));
+    assert!(msg.contains("crate main expects interface_hash"));
 
     Ok(())
 }
