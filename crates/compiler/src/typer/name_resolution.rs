@@ -136,8 +136,8 @@ fn parent_module_prefix_segments(package: &str, module_path: &[String]) -> Vec<S
     module_prefix_segments(package, parent)
 }
 
-fn package_allowed(package: &str, current_package: &str, imports: &HashSet<String>) -> bool {
-    package == current_package || package == BUILTIN_PACKAGE || imports.contains(package)
+fn namespace_allowed(namespace: &str, current_namespace: &str, imports: &HashSet<String>) -> bool {
+    namespace == current_namespace || namespace == BUILTIN_PACKAGE || imports.contains(namespace)
 }
 
 struct ConstructorIndex {
@@ -299,10 +299,10 @@ impl TraitIndex {
 }
 
 impl ResolutionContext<'_> {
-    fn package_allowed(&self, package: &str) -> bool {
-        package == self.current_package
-            || package == BUILTIN_PACKAGE
-            || self.imports.contains(package)
+    fn namespace_allowed(&self, namespace: &str) -> bool {
+        namespace == self.current_package
+            || namespace == BUILTIN_PACKAGE
+            || self.imports.contains(namespace)
     }
 }
 
@@ -827,7 +827,7 @@ impl NameResolution {
                     let exists = ctx
                         .constructor_index
                         .enum_has_variant(package, &enum_name, variant);
-                    if exists && !ctx.package_allowed(package) {
+                    if exists && !ctx.namespace_allowed(package) {
                         self.error(format!(
                             "namespace {} not imported in namespace {}",
                             package, ctx.current_package
@@ -1818,7 +1818,7 @@ impl NameResolution {
                     ctx.type_index,
                 );
                 if let Some(package) = &qualified.package
-                    && !ctx.package_allowed(package.as_str())
+                    && !ctx.namespace_allowed(package.as_str())
                 {
                     self.error(format!(
                         "namespace {} not imported in namespace {}",
@@ -2220,7 +2220,7 @@ impl NameResolution {
                     ctx.type_index,
                 );
                 if let Some(package) = &qualified.package
-                    && !ctx.package_allowed(package.as_str())
+                    && !ctx.namespace_allowed(package.as_str())
                 {
                     self.error(format!(
                         "namespace {} not imported in namespace {}",
@@ -2300,7 +2300,7 @@ impl NameResolution {
                     type_index,
                 );
                 if let Some(package) = &qualified.package
-                    && !package_allowed(package.as_str(), current_package, imports)
+                    && !namespace_allowed(package.as_str(), current_package, imports)
                 {
                     self.error(format!(
                         "namespace {} not imported in namespace {}",
@@ -2319,7 +2319,7 @@ impl NameResolution {
                     type_index,
                 );
                 if let Some(package) = &qualified.package
-                    && !package_allowed(package.as_str(), current_package, imports)
+                    && !namespace_allowed(package.as_str(), current_package, imports)
                 {
                     self.error(format!(
                         "namespace {} not imported in namespace {}",
@@ -2566,7 +2566,7 @@ impl NameResolution {
             ctx.type_index,
         );
         if let Some(package) = &qualified.package
-            && !package_allowed(package.as_str(), ctx.current_package, ctx.imports)
+            && !namespace_allowed(package.as_str(), ctx.current_package, ctx.imports)
         {
             self.error(format!(
                 "namespace {} not imported in namespace {}",
