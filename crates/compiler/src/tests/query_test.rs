@@ -1162,6 +1162,49 @@ fn main() {
 
 #[test]
 #[rustfmt::skip]
+fn crate_query_hover_resolves_super_from_module_path() {
+    let dir = tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        dir.path().join("main.gom"),
+        r#"
+mod api;
+
+pub fn helper() -> int64 {
+    1
+}
+
+fn main() -> unit {
+    ()
+}
+"#,
+    )
+    .unwrap();
+
+    let api_src = r#"
+fn call() -> int64 {
+    let value = super::helper();
+    value
+}
+"#;
+    let api_path = dir.path().join("api.gom");
+    std::fs::write(&api_path, api_src).unwrap();
+
+    check_with_path(&api_path, api_src, 3, 6, expect![[r#"
+        "int64"
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
 fn multi_package_inherent_method_completion() {
     let dir = tempdir().unwrap();
     let lib_dir = dir.path().join("Lib");

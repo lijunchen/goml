@@ -1,9 +1,17 @@
-use std::{collections::HashMap, path::Path};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+};
 
+use ast::ast;
 use cst::cst::CstNode;
+use diagnostics::Diagnostics;
 use parser::syntax::MySyntaxNode;
 
-use crate::{builtins, env::GlobalTypeEnv, hir, pipeline, typer::results::TypeckResults};
+use crate::{
+    artifact::PackageExports, builtins, env::GlobalTypeEnv, hir, interface, pipeline,
+    typer::results::TypeckResults,
+};
 
 pub(crate) type QueryTypecheck = (
     hir::HirTable,
@@ -61,9 +69,95 @@ pub(crate) fn typecheck_single_file_for_query(
     ))
 }
 
+fn parse_ast_for_query(path: &Path, src: &str) -> Result<(ast::File, Diagnostics), String> {
+    let result = parser::parse(path, src);
+    let (green_node, mut diagnostics) = result.into_parts();
+    let root = MySyntaxNode::new_root(green_node);
+    let cst = cst::cst::File::cast(root).ok_or_else(|| "failed to cast CST".to_string())?;
+
+    let lower = ::ast::lower::lower(cst);
+    let (ast, mut lower_diagnostics) = lower.into_parts();
+    diagnostics.append(&mut lower_diagnostics);
+    let ast = ast.ok_or_else(|| "AST lowering error".to_string())?;
+
+    let original_ast = ast.clone();
+    let ast = match crate::derive::expand(ast) {
+        Ok(ast) => ast,
+        Err(mut derive_diagnostics) => {
+            diagnostics.append(&mut derive_diagnostics);
+            original_ast
+        }
+    };
+
+    Ok((ast, diagnostics))
+}
+
+fn typecheck_crate_for_query(path: &Path, src: &str) -> Result<QueryTypecheck, String> {
+    let (entry_ast, mut diagnostics) = parse_ast_for_query(path, src)?;
+    let start_dir = path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."));
+    let Some((crate_dir, _)) = crate::config::find_crate_root(start_dir) else {
+        return Err("crate root not found".to_string());
+    };
+
+    let mut crate_unit = crate::pipeline::modules::discover_crate_from_dir(&crate_dir)
+        .map_err(|err| format!("crate module discovery failed: {:?}", err))?;
+    let current_path = canonical_path(path);
+    let mut found = false;
+    for module in crate_unit.modules.iter_mut() {
+        if canonical_path(&module.file_path) == current_path {
+            module.ast = entry_ast.clone();
+            found = true;
+        }
+    }
+    if !found {
+        return Err("query file is not part of the crate".to_string());
+    }
+
+    let files = crate_unit.source_files();
+    let package = crate_unit.config.name.clone();
+    let (_module_dir, dependencies) =
+        crate::pipeline::packages::discover_dependency_versions_from_file(path)
+            .map_err(|err| format!("{:?}", err))?;
+    let external_deps = crate::external::resolve_dependency_versions(&dependencies)?;
+    let deps_interfaces = external_deps.package_interfaces();
+    let deps_envs = external_deps.package_envs();
+
+    let package_id = interface::package_id_for_name(&package);
+    let (hir, hir_table, mut hir_diagnostics) =
+        hir::lower_to_hir_files_with_env(package_id, files, &deps_interfaces);
+    let (hir_table, results, package_genv, mut type_diagnostics) =
+        crate::typer::check_file_with_env_and_results(
+            hir,
+            hir_table,
+            GlobalTypeEnv::new(),
+            builtins::builtin_env(),
+            &package,
+            deps_envs,
+        );
+    type_diagnostics.append(&mut hir_diagnostics);
+    diagnostics.append(&mut type_diagnostics);
+
+    let mut genv = builtins::builtin_env();
+    for module in external_deps.modules.values() {
+        module.interface.exports.apply_to(&mut genv);
+    }
+    PackageExports::from_genv(&package_genv).apply_to(&mut genv);
+
+    Ok((hir_table, results, genv, diagnostics))
+}
+
+fn canonical_path(path: &Path) -> PathBuf {
+    path.canonicalize().unwrap_or_else(|_| path.to_path_buf())
+}
+
 pub(crate) fn typecheck_for_query(path: &Path, src: &str) -> Result<QueryTypecheck, String> {
-    typecheck_single_file_for_query(path, src).or_else(|_| {
-        pipeline::pipeline::typecheck_with_packages_and_results(path, src)
-            .map_err(|e| format!("{:?}", e))
-    })
+    typecheck_crate_for_query(path, src)
+        .or_else(|_| typecheck_single_file_for_query(path, src))
+        .or_else(|_| {
+            pipeline::pipeline::typecheck_with_packages_and_results(path, src)
+                .map_err(|e| format!("{:?}", e))
+        })
 }
