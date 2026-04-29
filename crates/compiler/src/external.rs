@@ -197,7 +197,7 @@ impl ExternalDependencyArtifacts {
 }
 
 #[derive(Clone)]
-struct CompiledPackage {
+struct CompiledNamespace {
     exports: CrateExports,
     interface: InterfaceUnit,
     core: CoreUnit,
@@ -352,30 +352,35 @@ fn compile_external_module(
     }
 
     let order = packages::topo_sort_packages(&graph).map_err(err_text)?;
-    let mut compiled_packages = HashMap::<String, CompiledPackage>::new();
+    let mut compiled_namespaces = HashMap::<String, CompiledNamespace>::new();
 
-    for package_name in order {
-        let package = graph.packages.get(&package_name).ok_or_else(|| {
+    for namespace_name in order {
+        let namespace = graph.packages.get(&namespace_name).ok_or_else(|| {
             format!(
-                "missing package {} in {}",
-                package_name,
+                "missing namespace {} in {}",
+                namespace_name,
                 module.coord.display()
             )
         })?;
-        let compiled = compile_module_package(package, &compiled_packages, compiled_roots)?;
-        compiled_packages.insert(package_name, compiled);
+        let compiled = compile_namespace_unit(namespace, &compiled_namespaces, compiled_roots)?;
+        compiled_namespaces.insert(namespace_name, compiled);
     }
 
     let logical_names = graph
         .packages
         .keys()
-        .map(|package| (package.clone(), logical_package_name(root_package, package)))
+        .map(|namespace| {
+            (
+                namespace.clone(),
+                logical_namespace_name(root_package, namespace),
+            )
+        })
         .collect::<HashMap<_, _>>();
     let mut seen_logical_names = HashSet::new();
     for logical_name in logical_names.values() {
         if !seen_logical_names.insert(logical_name.clone()) {
             return Err(format!(
-                "external dependency {} defines duplicate package alias {}",
+                "external dependency {} defines duplicate namespace alias {}",
                 module.coord.display(),
                 logical_name
             ));
@@ -389,20 +394,20 @@ fn compile_external_module(
     };
     let mut merged_sources = BTreeSet::new();
     let mut merged_deps = BTreeMap::new();
-    let local_packages = logical_names.values().cloned().collect::<HashSet<_>>();
+    let local_namespaces = logical_names.values().cloned().collect::<HashSet<_>>();
     let mut sources = BTreeMap::new();
 
-    let mut package_names = graph.packages.keys().cloned().collect::<Vec<_>>();
-    package_names.sort();
-    for package_name in package_names {
-        let compiled = compiled_packages
-            .get(&package_name)
-            .ok_or_else(|| format!("missing compiled package {}", package_name))?;
+    let mut namespace_names = graph.packages.keys().cloned().collect::<Vec<_>>();
+    namespace_names.sort();
+    for namespace_name in namespace_names {
+        let compiled = compiled_namespaces
+            .get(&namespace_name)
+            .ok_or_else(|| format!("missing compiled namespace {}", namespace_name))?;
         let logical_name = logical_names
-            .get(&package_name)
+            .get(&namespace_name)
             .cloned()
-            .ok_or_else(|| format!("missing logical package {}", package_name))?;
-        let publicly_visible = graph.namespace_is_publicly_visible(&package_name);
+            .ok_or_else(|| format!("missing logical namespace {}", namespace_name))?;
+        let publicly_visible = graph.namespace_is_publicly_visible(&namespace_name);
         let transformed_exports = rename_exports(&compiled.exports, &logical_names);
         merge_exports(&mut merged_exports, &transformed_exports);
         if publicly_visible {
@@ -416,8 +421,8 @@ fn compile_external_module(
             merged_sources.insert(source.clone());
         }
         for (dep, hash) in compiled.interface.deps.iter() {
-            let renamed = rename_package_key(dep, &logical_names);
-            if local_packages.contains(&renamed) {
+            let renamed = rename_namespace_key(dep, &logical_names);
+            if local_namespaces.contains(&renamed) {
                 continue;
             }
             match merged_deps.get(&renamed) {
@@ -437,15 +442,15 @@ fn compile_external_module(
             }
         }
 
-        let package_dir = graph
+        let namespace_dir = graph
             .package_dirs
-            .get(&package_name)
+            .get(&namespace_name)
             .cloned()
-            .ok_or_else(|| format!("missing package dir for {}", package_name))?;
+            .ok_or_else(|| format!("missing namespace dir for {}", namespace_name))?;
         let files = graph
             .packages
-            .get(&package_name)
-            .ok_or_else(|| format!("missing package files for {}", package_name))?
+            .get(&namespace_name)
+            .ok_or_else(|| format!("missing namespace files for {}", namespace_name))?
             .files
             .iter()
             .map(|file| file.path.clone())
@@ -458,9 +463,9 @@ fn compile_external_module(
                     import_path: external_import_path(
                         &module.coord.owner,
                         root_package,
-                        &package_name,
+                        &namespace_name,
                     ),
-                    dir: package_dir,
+                    dir: namespace_dir,
                     files,
                 },
             );
@@ -530,33 +535,33 @@ fn validate_external_module_manifest(
     Ok(())
 }
 
-fn compile_module_package(
-    package: &PackageUnit,
-    local_packages: &HashMap<String, CompiledPackage>,
+fn compile_namespace_unit(
+    namespace: &PackageUnit,
+    local_namespaces: &HashMap<String, CompiledNamespace>,
     external_roots: &BTreeMap<String, ExternalModuleArtifact>,
-) -> Result<CompiledPackage, String> {
-    let package_id = interface::package_id_for_name(&package.name);
+) -> Result<CompiledNamespace, String> {
+    let namespace_id = interface::crate_id_for_name(&namespace.name);
     let mut deps_envs = HashMap::new();
     let mut deps_interfaces = HashMap::new();
     let mut dep_hashes = BTreeMap::new();
     let mut compile_env = builtins::builtin_env();
 
-    if package.name != crate::package_names::BUILTIN_PACKAGE {
+    if namespace.name != crate::package_names::BUILTIN_PACKAGE {
         dep_hashes.insert(
             crate::package_names::BUILTIN_PACKAGE.to_string(),
             builtins::builtin_interface_hash(),
         );
     }
 
-    let mut deps = package.imports.iter().cloned().collect::<Vec<_>>();
+    let mut deps = namespace.imports.iter().cloned().collect::<Vec<_>>();
     deps.sort();
     deps.dedup();
 
     for dep in deps {
-        if dep == crate::package_names::BUILTIN_PACKAGE || dep == package.name {
+        if dep == crate::package_names::BUILTIN_PACKAGE || dep == namespace.name {
             continue;
         }
-        if let Some(local) = local_packages.get(&dep) {
+        if let Some(local) = local_namespaces.get(&dep) {
             deps_envs.insert(dep.clone(), local.interface.exports.to_genv());
             deps_interfaces.insert(dep.clone(), local.interface.interface.clone());
             dep_hashes.insert(dep.clone(), local.interface.interface_hash.clone());
@@ -573,18 +578,18 @@ fn compile_module_package(
         }
         return Err(format!(
             "namespace {} imports missing dependency {}",
-            package.name, dep
+            namespace.name, dep
         ));
     }
 
     let (hir, hir_table, mut hir_diagnostics) =
-        hir::lower_to_hir_files_with_env(package_id, package.files.clone(), &deps_interfaces);
+        hir::lower_to_hir_files_with_env(namespace_id, namespace.files.clone(), &deps_interfaces);
     let (tast, genv, mut diagnostics) = crate::typer::check_file_with_env(
         hir,
         hir_table,
         GlobalTypeEnv::new(),
         builtins::builtin_env(),
-        &package.name,
+        &namespace.name,
         deps_envs,
     );
     diagnostics.append(&mut hir_diagnostics);
@@ -593,10 +598,10 @@ fn compile_module_package(
     }
 
     let full_exports = CrateExports::from_genv(&genv);
-    let exports = CrateExports::public_from_namespace(&package.name, &package.files, &genv);
-    let crate_interface = interface::CrateInterface::from_exports(&package.name, &exports);
+    let exports = CrateExports::public_from_namespace(&namespace.name, &namespace.files, &genv);
+    let crate_interface = interface::CrateInterface::from_exports(&namespace.name, &exports);
     let interface = InterfaceUnit::new(
-        package.name.clone(),
+        namespace.name.clone(),
         exports.clone(),
         crate_interface,
         dep_hashes,
@@ -611,33 +616,33 @@ fn compile_module_package(
         return Err(diagnostics_text(&compile_diagnostics));
     }
 
-    let mut core = CoreUnit::new(package.name.clone(), interface.clone(), core_ir);
-    core.sources = package
+    let mut core = CoreUnit::new(namespace.name.clone(), interface.clone(), core_ir);
+    core.sources = namespace
         .files
         .iter()
         .map(|file| file.path.display().to_string())
         .collect();
 
-    Ok(CompiledPackage {
+    Ok(CompiledNamespace {
         exports,
         interface,
         core,
     })
 }
 
-fn external_import_path(owner: &str, module: &str, package: &str) -> String {
-    if package == module {
+fn external_import_path(owner: &str, module: &str, namespace: &str) -> String {
+    if namespace == module {
         format!("{owner}::{module}")
     } else {
-        format!("{owner}::{module}::{package}")
+        format!("{owner}::{module}::{namespace}")
     }
 }
 
-fn logical_package_name(root_package: &str, package: &str) -> String {
-    if package == root_package {
-        root_package.to_string()
+fn logical_namespace_name(root_namespace: &str, namespace: &str) -> String {
+    if namespace == root_namespace {
+        root_namespace.to_string()
     } else {
-        package.to_string()
+        namespace.to_string()
     }
 }
 
@@ -684,15 +689,15 @@ fn find_external_namespace<'a>(
     None
 }
 
-fn rename_package_key(name: &str, package_names: &HashMap<String, String>) -> String {
-    package_names
+fn rename_namespace_key(name: &str, namespace_names: &HashMap<String, String>) -> String {
+    namespace_names
         .get(name)
         .cloned()
         .unwrap_or_else(|| name.to_string())
 }
 
-fn rename_symbol_name(name: &str, package_names: &HashMap<String, String>) -> String {
-    for (old, new) in package_names {
+fn rename_symbol_name(name: &str, namespace_names: &HashMap<String, String>) -> String {
+    for (old, new) in namespace_names {
         if name == old {
             return new.clone();
         }
@@ -704,19 +709,19 @@ fn rename_symbol_name(name: &str, package_names: &HashMap<String, String>) -> St
     name.to_string()
 }
 
-fn rename_global_ref_name(name: &str, package_names: &HashMap<String, String>) -> String {
+fn rename_global_ref_name(name: &str, namespace_names: &HashMap<String, String>) -> String {
     if name.contains("::") {
-        rename_symbol_name(name, package_names)
+        rename_symbol_name(name, namespace_names)
     } else {
         name.to_string()
     }
 }
 
-fn rename_tast_ident(ident: &TastIdent, package_names: &HashMap<String, String>) -> TastIdent {
-    TastIdent(rename_symbol_name(&ident.0, package_names))
+fn rename_tast_ident(ident: &TastIdent, namespace_names: &HashMap<String, String>) -> TastIdent {
+    TastIdent(rename_symbol_name(&ident.0, namespace_names))
 }
 
-fn rename_ty(ty: &Ty, package_names: &HashMap<String, String>) -> Ty {
+fn rename_ty(ty: &Ty, namespace_names: &HashMap<String, String>) -> Ty {
     match ty {
         Ty::TVar(var) => Ty::TVar(*var),
         Ty::TUnit => Ty::TUnit,
@@ -734,96 +739,102 @@ fn rename_ty(ty: &Ty, package_names: &HashMap<String, String>) -> Ty {
         Ty::TString => Ty::TString,
         Ty::TChar => Ty::TChar,
         Ty::TTuple { typs } => Ty::TTuple {
-            typs: typs.iter().map(|ty| rename_ty(ty, package_names)).collect(),
+            typs: typs
+                .iter()
+                .map(|ty| rename_ty(ty, namespace_names))
+                .collect(),
         },
         Ty::TEnum { name } => Ty::TEnum {
-            name: rename_symbol_name(name, package_names),
+            name: rename_symbol_name(name, namespace_names),
         },
         Ty::TStruct { name } => Ty::TStruct {
-            name: rename_symbol_name(name, package_names),
+            name: rename_symbol_name(name, namespace_names),
         },
         Ty::TDyn { trait_name } => Ty::TDyn {
-            trait_name: rename_symbol_name(trait_name, package_names),
+            trait_name: rename_symbol_name(trait_name, namespace_names),
         },
         Ty::TApp { ty, args } => Ty::TApp {
-            ty: Box::new(rename_ty(ty, package_names)),
+            ty: Box::new(rename_ty(ty, namespace_names)),
             args: args
                 .iter()
-                .map(|arg| rename_ty(arg, package_names))
+                .map(|arg| rename_ty(arg, namespace_names))
                 .collect(),
         },
         Ty::TArray { len, elem } => Ty::TArray {
             len: *len,
-            elem: Box::new(rename_ty(elem, package_names)),
+            elem: Box::new(rename_ty(elem, namespace_names)),
         },
         Ty::TSlice { elem } => Ty::TSlice {
-            elem: Box::new(rename_ty(elem, package_names)),
+            elem: Box::new(rename_ty(elem, namespace_names)),
         },
         Ty::TVec { elem } => Ty::TVec {
-            elem: Box::new(rename_ty(elem, package_names)),
+            elem: Box::new(rename_ty(elem, namespace_names)),
         },
         Ty::TRef { elem } => Ty::TRef {
-            elem: Box::new(rename_ty(elem, package_names)),
+            elem: Box::new(rename_ty(elem, namespace_names)),
         },
         Ty::THashMap { key, value } => Ty::THashMap {
-            key: Box::new(rename_ty(key, package_names)),
-            value: Box::new(rename_ty(value, package_names)),
+            key: Box::new(rename_ty(key, namespace_names)),
+            value: Box::new(rename_ty(value, namespace_names)),
         },
         Ty::TParam { name } => Ty::TParam { name: name.clone() },
         Ty::TFunc { params, ret_ty } => Ty::TFunc {
             params: params
                 .iter()
-                .map(|param| rename_ty(param, package_names))
+                .map(|param| rename_ty(param, namespace_names))
                 .collect(),
-            ret_ty: Box::new(rename_ty(ret_ty, package_names)),
+            ret_ty: Box::new(rename_ty(ret_ty, namespace_names)),
         },
     }
 }
 
 fn rename_constraint(
     constraint: &FnConstraint,
-    package_names: &HashMap<String, String>,
+    namespace_names: &HashMap<String, String>,
 ) -> FnConstraint {
     FnConstraint {
         type_param: constraint.type_param.clone(),
-        trait_name: rename_tast_ident(&constraint.trait_name, package_names),
+        trait_name: rename_tast_ident(&constraint.trait_name, namespace_names),
     }
 }
 
-fn rename_fn_scheme(scheme: &FnScheme, package_names: &HashMap<String, String>) -> FnScheme {
+fn rename_fn_scheme(scheme: &FnScheme, namespace_names: &HashMap<String, String>) -> FnScheme {
     FnScheme {
         type_params: scheme.type_params.clone(),
         constraints: scheme
             .constraints
             .iter()
-            .map(|constraint| rename_constraint(constraint, package_names))
+            .map(|constraint| rename_constraint(constraint, namespace_names))
             .collect(),
-        ty: rename_ty(&scheme.ty, package_names),
+        ty: rename_ty(&scheme.ty, namespace_names),
         origin: scheme.origin,
     }
 }
 
-fn rename_impl_def(def: &ImplDef, package_names: &HashMap<String, String>) -> ImplDef {
+fn rename_impl_def(def: &ImplDef, namespace_names: &HashMap<String, String>) -> ImplDef {
     ImplDef {
         params: def.params.clone(),
         methods: def
             .methods
             .iter()
-            .map(|(name, scheme)| (name.clone(), rename_fn_scheme(scheme, package_names)))
+            .map(|(name, scheme)| (name.clone(), rename_fn_scheme(scheme, namespace_names)))
             .collect(),
     }
 }
 
-fn rename_exports(exports: &CrateExports, package_names: &HashMap<String, String>) -> CrateExports {
+fn rename_exports(
+    exports: &CrateExports,
+    namespace_names: &HashMap<String, String>,
+) -> CrateExports {
     let enums = exports
         .type_env
         .enums
         .iter()
         .map(|(name, def)| {
             (
-                rename_tast_ident(name, package_names),
+                rename_tast_ident(name, namespace_names),
                 EnumDef {
-                    name: rename_tast_ident(&def.name, package_names),
+                    name: rename_tast_ident(&def.name, namespace_names),
                     generics: def.generics.clone(),
                     variants: def
                         .variants
@@ -833,7 +844,7 @@ fn rename_exports(exports: &CrateExports, package_names: &HashMap<String, String
                                 variant.clone(),
                                 fields
                                     .iter()
-                                    .map(|field| rename_ty(field, package_names))
+                                    .map(|field| rename_ty(field, namespace_names))
                                     .collect(),
                             )
                         })
@@ -848,14 +859,14 @@ fn rename_exports(exports: &CrateExports, package_names: &HashMap<String, String
         .iter()
         .map(|(name, def)| {
             (
-                rename_tast_ident(name, package_names),
+                rename_tast_ident(name, namespace_names),
                 StructDef {
-                    name: rename_tast_ident(&def.name, package_names),
+                    name: rename_tast_ident(&def.name, namespace_names),
                     generics: def.generics.clone(),
                     fields: def
                         .fields
                         .iter()
-                        .map(|(field, ty)| (field.clone(), rename_ty(ty, package_names)))
+                        .map(|(field, ty)| (field.clone(), rename_ty(ty, namespace_names)))
                         .collect(),
                 },
             )
@@ -865,7 +876,7 @@ fn rename_exports(exports: &CrateExports, package_names: &HashMap<String, String
         .type_env
         .extern_types
         .iter()
-        .map(|(name, def)| (rename_symbol_name(name, package_names), def.clone()))
+        .map(|(name, def)| (rename_symbol_name(name, namespace_names), def.clone()))
         .collect();
     let trait_defs = exports
         .trait_env
@@ -873,13 +884,13 @@ fn rename_exports(exports: &CrateExports, package_names: &HashMap<String, String
         .iter()
         .map(|(name, def)| {
             (
-                rename_symbol_name(name, package_names),
+                rename_symbol_name(name, namespace_names),
                 TraitDef {
                     methods: def
                         .methods
                         .iter()
                         .map(|(method, scheme)| {
-                            (method.clone(), rename_fn_scheme(scheme, package_names))
+                            (method.clone(), rename_fn_scheme(scheme, namespace_names))
                         })
                         .collect(),
                 },
@@ -893,10 +904,10 @@ fn rename_exports(exports: &CrateExports, package_names: &HashMap<String, String
         .map(|((trait_name, ty), def)| {
             (
                 (
-                    rename_symbol_name(trait_name, package_names),
-                    rename_ty(ty, package_names),
+                    rename_symbol_name(trait_name, namespace_names),
+                    rename_ty(ty, namespace_names),
                 ),
-                rename_impl_def(def, package_names),
+                rename_impl_def(def, namespace_names),
             )
         })
         .collect();
@@ -906,12 +917,14 @@ fn rename_exports(exports: &CrateExports, package_names: &HashMap<String, String
         .iter()
         .map(|(key, def)| {
             let renamed = match key {
-                InherentImplKey::Exact(ty) => InherentImplKey::Exact(rename_ty(ty, package_names)),
+                InherentImplKey::Exact(ty) => {
+                    InherentImplKey::Exact(rename_ty(ty, namespace_names))
+                }
                 InherentImplKey::Constr(name) => {
-                    InherentImplKey::Constr(rename_symbol_name(name, package_names))
+                    InherentImplKey::Constr(rename_symbol_name(name, namespace_names))
                 }
             };
-            (renamed, rename_impl_def(def, package_names))
+            (renamed, rename_impl_def(def, namespace_names))
         })
         .collect();
     let funcs = exports
@@ -920,8 +933,8 @@ fn rename_exports(exports: &CrateExports, package_names: &HashMap<String, String
         .iter()
         .map(|(name, scheme)| {
             (
-                rename_symbol_name(name, package_names),
-                rename_fn_scheme(scheme, package_names),
+                rename_symbol_name(name, namespace_names),
+                rename_fn_scheme(scheme, namespace_names),
             )
         })
         .collect();
@@ -931,11 +944,11 @@ fn rename_exports(exports: &CrateExports, package_names: &HashMap<String, String
         .iter()
         .map(|(name, func)| {
             (
-                rename_symbol_name(name, package_names),
+                rename_symbol_name(name, namespace_names),
                 ExternFunc {
                     package_path: func.package_path.clone(),
                     go_name: func.go_name.clone(),
-                    ty: rename_ty(&func.ty, package_names),
+                    ty: rename_ty(&func.ty, namespace_names),
                     binding_mode: func.binding_mode,
                     return_mode: func.return_mode,
                     variadic_last: func.variadic_last,
@@ -965,71 +978,71 @@ fn rename_exports(exports: &CrateExports, package_names: &HashMap<String, String
 
 fn rename_constructor(
     constructor: &Constructor,
-    package_names: &HashMap<String, String>,
+    namespace_names: &HashMap<String, String>,
 ) -> Constructor {
     match constructor {
         Constructor::Enum(constructor) => Constructor::Enum(EnumConstructor {
-            type_name: rename_tast_ident(&constructor.type_name, package_names),
+            type_name: rename_tast_ident(&constructor.type_name, namespace_names),
             variant: constructor.variant.clone(),
             index: constructor.index,
         }),
         Constructor::Struct(constructor) => Constructor::Struct(StructConstructor {
-            type_name: rename_tast_ident(&constructor.type_name, package_names),
+            type_name: rename_tast_ident(&constructor.type_name, namespace_names),
         }),
     }
 }
 
-fn rename_expr(expr: &core::Expr, package_names: &HashMap<String, String>) -> core::Expr {
+fn rename_expr(expr: &core::Expr, namespace_names: &HashMap<String, String>) -> core::Expr {
     match expr {
         core::Expr::EVar { name, ty } => core::Expr::EVar {
-            name: rename_global_ref_name(name, package_names),
-            ty: rename_ty(ty, package_names),
+            name: rename_global_ref_name(name, namespace_names),
+            ty: rename_ty(ty, namespace_names),
         },
         core::Expr::EPrim { value, ty } => core::Expr::EPrim {
             value: value.clone(),
-            ty: rename_ty(ty, package_names),
+            ty: rename_ty(ty, namespace_names),
         },
         core::Expr::EConstr {
             constructor,
             args,
             ty,
         } => core::Expr::EConstr {
-            constructor: rename_constructor(constructor, package_names),
+            constructor: rename_constructor(constructor, namespace_names),
             args: args
                 .iter()
-                .map(|arg| rename_expr(arg, package_names))
+                .map(|arg| rename_expr(arg, namespace_names))
                 .collect(),
-            ty: rename_ty(ty, package_names),
+            ty: rename_ty(ty, namespace_names),
         },
         core::Expr::ETuple { items, ty } => core::Expr::ETuple {
             items: items
                 .iter()
-                .map(|item| rename_expr(item, package_names))
+                .map(|item| rename_expr(item, namespace_names))
                 .collect(),
-            ty: rename_ty(ty, package_names),
+            ty: rename_ty(ty, namespace_names),
         },
         core::Expr::EArray { items, ty } => core::Expr::EArray {
             items: items
                 .iter()
-                .map(|item| rename_expr(item, package_names))
+                .map(|item| rename_expr(item, namespace_names))
                 .collect(),
-            ty: rename_ty(ty, package_names),
+            ty: rename_ty(ty, namespace_names),
         },
         core::Expr::EClosure { params, body, ty } => core::Expr::EClosure {
             params: params
                 .iter()
                 .map(|param| tast::ClosureParam {
                     name: param.name.clone(),
-                    ty: rename_ty(&param.ty, package_names),
+                    ty: rename_ty(&param.ty, namespace_names),
                     astptr: param.astptr,
                 })
                 .collect(),
-            body: Box::new(rename_expr(body, package_names)),
-            ty: rename_ty(ty, package_names),
+            body: Box::new(rename_expr(body, namespace_names)),
+            ty: rename_ty(ty, namespace_names),
         },
         core::Expr::EBlock { block, ty } => core::Expr::EBlock {
-            block: Box::new(rename_block(block, package_names)),
-            ty: rename_ty(ty, package_names),
+            block: Box::new(rename_block(block, namespace_names)),
+            ty: rename_ty(ty, namespace_names),
         },
         core::Expr::EMatch {
             expr,
@@ -1037,18 +1050,18 @@ fn rename_expr(expr: &core::Expr, package_names: &HashMap<String, String>) -> co
             default,
             ty,
         } => core::Expr::EMatch {
-            expr: Box::new(rename_expr(expr, package_names)),
+            expr: Box::new(rename_expr(expr, namespace_names)),
             arms: arms
                 .iter()
                 .map(|arm| core::Arm {
-                    lhs: rename_expr(&arm.lhs, package_names),
-                    body: rename_expr(&arm.body, package_names),
+                    lhs: rename_expr(&arm.lhs, namespace_names),
+                    body: rename_expr(&arm.body, namespace_names),
                 })
                 .collect(),
             default: default
                 .as_ref()
-                .map(|default| Box::new(rename_expr(default, package_names))),
-            ty: rename_ty(ty, package_names),
+                .map(|default| Box::new(rename_expr(default, namespace_names))),
+            ty: rename_ty(ty, namespace_names),
         },
         core::Expr::EIf {
             cond,
@@ -1056,31 +1069,31 @@ fn rename_expr(expr: &core::Expr, package_names: &HashMap<String, String>) -> co
             else_branch,
             ty,
         } => core::Expr::EIf {
-            cond: Box::new(rename_expr(cond, package_names)),
-            then_branch: Box::new(rename_expr(then_branch, package_names)),
-            else_branch: Box::new(rename_expr(else_branch, package_names)),
-            ty: rename_ty(ty, package_names),
+            cond: Box::new(rename_expr(cond, namespace_names)),
+            then_branch: Box::new(rename_expr(then_branch, namespace_names)),
+            else_branch: Box::new(rename_expr(else_branch, namespace_names)),
+            ty: rename_ty(ty, namespace_names),
         },
         core::Expr::EWhile { cond, body, ty } => core::Expr::EWhile {
-            cond: Box::new(rename_expr(cond, package_names)),
-            body: Box::new(rename_expr(body, package_names)),
-            ty: rename_ty(ty, package_names),
+            cond: Box::new(rename_expr(cond, namespace_names)),
+            body: Box::new(rename_expr(body, namespace_names)),
+            ty: rename_ty(ty, namespace_names),
         },
         core::Expr::EBreak { ty } => core::Expr::EBreak {
-            ty: rename_ty(ty, package_names),
+            ty: rename_ty(ty, namespace_names),
         },
         core::Expr::EContinue { ty } => core::Expr::EContinue {
-            ty: rename_ty(ty, package_names),
+            ty: rename_ty(ty, namespace_names),
         },
         core::Expr::EReturn { expr, ty } => core::Expr::EReturn {
             expr: expr
                 .as_ref()
-                .map(|expr| Box::new(rename_expr(expr, package_names))),
-            ty: rename_ty(ty, package_names),
+                .map(|expr| Box::new(rename_expr(expr, namespace_names))),
+            ty: rename_ty(ty, namespace_names),
         },
         core::Expr::EGo { expr, ty } => core::Expr::EGo {
-            expr: Box::new(rename_expr(expr, package_names)),
-            ty: rename_ty(ty, package_names),
+            expr: Box::new(rename_expr(expr, namespace_names)),
+            ty: rename_ty(ty, namespace_names),
         },
         core::Expr::EConstrGet {
             expr,
@@ -1088,21 +1101,21 @@ fn rename_expr(expr: &core::Expr, package_names: &HashMap<String, String>) -> co
             field_index,
             ty,
         } => core::Expr::EConstrGet {
-            expr: Box::new(rename_expr(expr, package_names)),
-            constructor: rename_constructor(constructor, package_names),
+            expr: Box::new(rename_expr(expr, namespace_names)),
+            constructor: rename_constructor(constructor, namespace_names),
             field_index: *field_index,
-            ty: rename_ty(ty, package_names),
+            ty: rename_ty(ty, namespace_names),
         },
         core::Expr::EUnary { op, expr, ty } => core::Expr::EUnary {
             op: *op,
-            expr: Box::new(rename_expr(expr, package_names)),
-            ty: rename_ty(ty, package_names),
+            expr: Box::new(rename_expr(expr, namespace_names)),
+            ty: rename_ty(ty, namespace_names),
         },
         core::Expr::EBinary { op, lhs, rhs, ty } => core::Expr::EBinary {
             op: *op,
-            lhs: Box::new(rename_expr(lhs, package_names)),
-            rhs: Box::new(rename_expr(rhs, package_names)),
-            ty: rename_ty(ty, package_names),
+            lhs: Box::new(rename_expr(lhs, namespace_names)),
+            rhs: Box::new(rename_expr(rhs, namespace_names)),
+            ty: rename_ty(ty, namespace_names),
         },
         core::Expr::EAssign {
             name,
@@ -1111,17 +1124,17 @@ fn rename_expr(expr: &core::Expr, package_names: &HashMap<String, String>) -> co
             ty,
         } => core::Expr::EAssign {
             name: name.clone(),
-            value: Box::new(rename_expr(value, package_names)),
-            target_ty: rename_ty(target_ty, package_names),
-            ty: rename_ty(ty, package_names),
+            value: Box::new(rename_expr(value, namespace_names)),
+            target_ty: rename_ty(target_ty, namespace_names),
+            ty: rename_ty(ty, namespace_names),
         },
         core::Expr::ECall { func, args, ty } => core::Expr::ECall {
-            func: Box::new(rename_expr(func, package_names)),
+            func: Box::new(rename_expr(func, namespace_names)),
             args: args
                 .iter()
-                .map(|arg| rename_expr(arg, package_names))
+                .map(|arg| rename_expr(arg, namespace_names))
                 .collect(),
-            ty: rename_ty(ty, package_names),
+            ty: rename_ty(ty, namespace_names),
         },
         core::Expr::EToDyn {
             trait_name,
@@ -1129,10 +1142,10 @@ fn rename_expr(expr: &core::Expr, package_names: &HashMap<String, String>) -> co
             expr,
             ty,
         } => core::Expr::EToDyn {
-            trait_name: rename_tast_ident(trait_name, package_names),
-            for_ty: rename_ty(for_ty, package_names),
-            expr: Box::new(rename_expr(expr, package_names)),
-            ty: rename_ty(ty, package_names),
+            trait_name: rename_tast_ident(trait_name, namespace_names),
+            for_ty: rename_ty(for_ty, namespace_names),
+            expr: Box::new(rename_expr(expr, namespace_names)),
+            ty: rename_ty(ty, namespace_names),
         },
         core::Expr::EDynCall {
             trait_name,
@@ -1141,14 +1154,14 @@ fn rename_expr(expr: &core::Expr, package_names: &HashMap<String, String>) -> co
             args,
             ty,
         } => core::Expr::EDynCall {
-            trait_name: rename_tast_ident(trait_name, package_names),
+            trait_name: rename_tast_ident(trait_name, namespace_names),
             method_name: method_name.clone(),
-            receiver: Box::new(rename_expr(receiver, package_names)),
+            receiver: Box::new(rename_expr(receiver, namespace_names)),
             args: args
                 .iter()
-                .map(|arg| rename_expr(arg, package_names))
+                .map(|arg| rename_expr(arg, namespace_names))
                 .collect(),
-            ty: rename_ty(ty, package_names),
+            ty: rename_ty(ty, namespace_names),
         },
         core::Expr::ETraitCall {
             trait_name,
@@ -1157,56 +1170,56 @@ fn rename_expr(expr: &core::Expr, package_names: &HashMap<String, String>) -> co
             args,
             ty,
         } => core::Expr::ETraitCall {
-            trait_name: rename_tast_ident(trait_name, package_names),
+            trait_name: rename_tast_ident(trait_name, namespace_names),
             method_name: method_name.clone(),
-            receiver: Box::new(rename_expr(receiver, package_names)),
+            receiver: Box::new(rename_expr(receiver, namespace_names)),
             args: args
                 .iter()
-                .map(|arg| rename_expr(arg, package_names))
+                .map(|arg| rename_expr(arg, namespace_names))
                 .collect(),
-            ty: rename_ty(ty, package_names),
+            ty: rename_ty(ty, namespace_names),
         },
         core::Expr::EProj { tuple, index, ty } => core::Expr::EProj {
-            tuple: Box::new(rename_expr(tuple, package_names)),
+            tuple: Box::new(rename_expr(tuple, namespace_names)),
             index: *index,
-            ty: rename_ty(ty, package_names),
+            ty: rename_ty(ty, namespace_names),
         },
     }
 }
 
-fn rename_block(block: &core::Block, package_names: &HashMap<String, String>) -> core::Block {
+fn rename_block(block: &core::Block, namespace_names: &HashMap<String, String>) -> core::Block {
     core::Block {
         stmts: block
             .stmts
             .iter()
             .map(|stmt| core::LetStmt {
                 name: stmt.name.clone(),
-                value: rename_expr(&stmt.value, package_names),
-                ty: rename_ty(&stmt.ty, package_names),
+                value: rename_expr(&stmt.value, namespace_names),
+                ty: rename_ty(&stmt.ty, namespace_names),
             })
             .collect(),
         tail: block
             .tail
             .as_ref()
-            .map(|tail| Box::new(rename_expr(tail, package_names))),
+            .map(|tail| Box::new(rename_expr(tail, namespace_names))),
     }
 }
 
-fn rename_core_file(file: &core::File, package_names: &HashMap<String, String>) -> core::File {
+fn rename_core_file(file: &core::File, namespace_names: &HashMap<String, String>) -> core::File {
     core::File {
         toplevels: file
             .toplevels
             .iter()
             .map(|func| core::Fn {
-                name: rename_symbol_name(&func.name, package_names),
+                name: rename_symbol_name(&func.name, namespace_names),
                 generics: func.generics.clone(),
                 params: func
                     .params
                     .iter()
-                    .map(|(name, ty)| (name.clone(), rename_ty(ty, package_names)))
+                    .map(|(name, ty)| (name.clone(), rename_ty(ty, namespace_names)))
                     .collect(),
-                ret_ty: rename_ty(&func.ret_ty, package_names),
-                body: rename_block(&func.body, package_names),
+                ret_ty: rename_ty(&func.ret_ty, namespace_names),
+                body: rename_block(&func.body, namespace_names),
             })
             .collect(),
     }
