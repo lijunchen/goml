@@ -1394,6 +1394,34 @@ fn main() -> unit {
 }
 
 #[test]
+fn project_check_reports_missing_mod_file() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    fs::write(root.join("goml.toml"), PROJECT_CONFIG)?;
+    fs::write(
+        root.join("main.gom"),
+        r#"
+mod missing;
+
+fn main() -> unit {
+    ()
+}
+"#,
+    )?;
+
+    let output = run_goml(&["check"], root)?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(!output.status.success());
+    expect![""].assert_eq(&stdout);
+    assert!(stderr.contains("MissingModule"), "stderr: {stderr}");
+    assert!(stderr.contains("name: \"missing\""), "stderr: {stderr}");
+
+    Ok(())
+}
+
+#[test]
 fn project_build_writes_target_goml_main_go() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     write_project(dir.path())?;
