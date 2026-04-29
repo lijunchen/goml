@@ -645,6 +645,21 @@ name = "hello"
         assert!(matches!(err, DiscoveryError::AmbiguousCrateRoot { .. }));
     }
 
+    #[test]
+    fn reports_missing_configured_crate_root() {
+        let dir = tempfile::tempdir().unwrap();
+        write(
+            dir.path().join("goml.toml"),
+            r#"[crate]
+name = "hello"
+root = "src/main.gom"
+"#,
+        );
+
+        let err = discover_crate_from_dir(dir.path()).unwrap_err();
+        assert!(matches!(err, DiscoveryError::MissingCrateRoot { .. }));
+    }
+
     fn write(path: PathBuf, contents: &str) {
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent).unwrap();
