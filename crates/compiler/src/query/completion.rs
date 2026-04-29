@@ -398,8 +398,15 @@ fn use_root_completions(
         .unwrap_or_else(|| Path::new("."));
     if let Some((root_dir, _)) = crate::config::find_crate_root(start_dir) {
         names.insert("crate".to_string());
+        names.insert("self".to_string());
         if let Ok(manifest) = crate::config::load_crate_manifest(&root_dir.join("goml.toml")) {
             names.extend(manifest.dependencies.keys().cloned());
+        }
+        if let Some(crate_unit) = discover_completion_crate(path)
+            && current_completion_module_path(path, &crate_unit)
+                .is_some_and(|module_path| !module_path.is_empty())
+        {
+            names.insert("super".to_string());
         }
     } else {
         let current_package = current_package_name(path, src);

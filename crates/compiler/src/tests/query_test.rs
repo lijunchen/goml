@@ -221,10 +221,83 @@ fn main() -> unit {
                             "package",
                         ),
                     },
+                    ValueCompletionItem {
+                        name: "self",
+                        kind: Package,
+                        detail: Some(
+                            "package",
+                        ),
+                    },
                 ]
             "#]],
         );
     });
+}
+
+#[test]
+#[rustfmt::skip]
+fn use_statement_root_completions_include_relative_roots() {
+    let dir = tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        dir.path().join("main.gom"),
+        r#"
+mod api;
+
+fn main() -> unit {
+    ()
+}
+"#,
+    )
+    .unwrap();
+
+    let valid_src = r#"
+pub fn f() -> unit {
+    ()
+}
+"#;
+    let completion_src = r#"
+use s
+
+pub fn f() -> unit {
+    ()
+}
+"#;
+    let api_path = dir.path().join("api.gom");
+    std::fs::write(&api_path, valid_src).unwrap();
+
+    check_value_completions_with_path(
+        &api_path,
+        completion_src,
+        1,
+        5,
+        expect![[r#"
+            [
+                ValueCompletionItem {
+                    name: "self",
+                    kind: Package,
+                    detail: Some(
+                        "package",
+                    ),
+                },
+                ValueCompletionItem {
+                    name: "super",
+                    kind: Package,
+                    detail: Some(
+                        "package",
+                    ),
+                },
+            ]
+        "#]],
+    );
 }
 
 #[test]
