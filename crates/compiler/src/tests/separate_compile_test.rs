@@ -165,12 +165,17 @@ fn main() -> unit {
 "#,
     )?;
 
-    let msg = match separate::build_package(separate::PackageInputs {
-        package: ROOT_PACKAGE.to_string(),
-        input_files: vec![main_path],
+    let crate_unit = modules::discover_crate_from_file(&main_path)
+        .map_err(|err| anyhow::anyhow!("failed to discover crate: {:?}", err))?;
+    let root_crate = crate_unit.config.name.clone();
+    let msg = match separate::build_crate(separate::CrateInputs {
+        crate_unit,
         interface_files: vec![],
     }) {
-        Ok(unit) => format!("{:?}", separate::link_cores(vec![unit]).unwrap_err()),
+        Ok(unit) => format!(
+            "{:?}",
+            separate::link_crates(&root_crate, vec![unit]).unwrap_err()
+        ),
         Err(err) => format!("{:?}", err),
     };
     assert!(
@@ -202,14 +207,17 @@ fn main() -> unit {
 "#,
     )?;
 
-    let unit = separate::build_package(separate::PackageInputs {
-        package: ROOT_PACKAGE.to_string(),
-        input_files: vec![main_path],
+    let crate_unit = modules::discover_crate_from_file(&main_path)
+        .map_err(|err| anyhow::anyhow!("failed to discover crate: {:?}", err))?;
+    let root_crate = crate_unit.config.name.clone();
+    let unit = separate::build_crate(separate::CrateInputs {
+        crate_unit,
         interface_files: vec![],
     })
-    .map_err(|err| anyhow::anyhow!("build main failed: {:?}", err))?;
+    .map_err(|err| anyhow::anyhow!("build crate failed: {:?}", err))?;
 
-    separate::link_cores(vec![unit]).map_err(|err| anyhow::anyhow!("link failed: {:?}", err))?;
+    separate::link_crates(&root_crate, vec![unit])
+        .map_err(|err| anyhow::anyhow!("link crate failed: {:?}", err))?;
 
     Ok(())
 }
