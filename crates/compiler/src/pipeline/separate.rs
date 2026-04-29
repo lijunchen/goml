@@ -666,10 +666,12 @@ fn link_core_units(
         .find(|f| f.name == entry_name)
         .cloned()
     else {
-        return Err(compile_error(format!(
-            "{} package missing main function",
-            main_package
-        )));
+        let message = if root_package == ROOT_PACKAGE {
+            format!("{} package missing main function", main_package)
+        } else {
+            format!("{root_package} crate missing root module main function")
+        };
+        return Err(compile_error(message));
     };
     if !entry_fn.params.is_empty() {
         return Err(compile_error(
@@ -1058,7 +1060,8 @@ pub fn main() -> unit {
                 assert!(
                     diagnostics
                         .iter()
-                        .any(|item| item.message() == "hello package missing main function")
+                        .any(|item| item.message()
+                            == "hello crate missing root module main function")
                 );
             }
             other => panic!("expected compile error, got {other:?}"),

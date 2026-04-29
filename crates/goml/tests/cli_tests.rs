@@ -1929,7 +1929,7 @@ fn not_main() -> unit {
     assert!(!output.status.success());
     expect![""].assert_eq(&stdout);
     expect![[r#"
-        project link failed: Compile { diagnostics: Diagnostics { items: [Diagnostic { stage: Other("compile"), severity: Error, message: "demo package missing main function", range: None }] } }
+        project link failed: Compile { diagnostics: Diagnostics { items: [Diagnostic { stage: Other("compile"), severity: Error, message: "demo crate missing root module main function", range: None }] } }
     "#]]
     .assert_eq(&stderr);
     assert!(!root.join("target/goml/main.go").exists());
