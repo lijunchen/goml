@@ -632,6 +632,36 @@ root = "main.gom"
         ));
     }
 
+    #[cfg(unix)]
+    #[test]
+    fn reports_same_file_loaded_through_multiple_module_paths() {
+        let dir = tempfile::tempdir().unwrap();
+        write(
+            dir.path().join("goml.toml"),
+            r#"[crate]
+name = "hello"
+root = "src/main.gom"
+"#,
+        );
+        write(
+            dir.path().join("src/main.gom"),
+            "mod a;\nmod b;\nfn main() {}\n",
+        );
+        write(dir.path().join("src/a.gom"), "fn helper() {}\n");
+        std::os::unix::fs::symlink(dir.path().join("src/a.gom"), dir.path().join("src/b.gom"))
+            .unwrap();
+
+        let err = discover_crate_from_dir(dir.path()).unwrap_err();
+        assert!(matches!(
+            err,
+            DiscoveryError::ModuleCycle {
+                ref first,
+                ref second,
+                ..
+            } if first.display() == "crate::a" && second.display() == "crate::b"
+        ));
+    }
+
     #[test]
     fn reports_ambiguous_inferred_crate_root() {
         let dir = tempfile::tempdir().unwrap();
