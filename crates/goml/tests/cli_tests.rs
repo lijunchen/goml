@@ -574,6 +574,59 @@ fn add_uses_latest_version_from_local_registry() -> anyhow::Result<()> {
 }
 
 #[test]
+fn add_reports_dependency_alias_collision() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let registry = create_local_registry(dir.path())?;
+    let project_dir = dir.path().join("demo");
+    fs::create_dir_all(&project_dir)?;
+    fs::write(
+        project_dir.join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+
+[dependencies]
+http = { package = "bob::http", version = "2.0.0" }
+"#,
+    )?;
+    fs::write(project_dir.join("main.gom"), PROJECT_MAIN)?;
+
+    let output = run_goml(
+        &[
+            "add",
+            "alice::http",
+            "--local-registry",
+            registry.to_string_lossy().as_ref(),
+        ],
+        &project_dir,
+    )?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(!output.status.success());
+    expect![""].assert_eq(&stdout);
+    expect![
+        "dependency alias `http` already exists for package `bob::http`; rename one dependency key manually in goml.toml\n"
+    ]
+    .assert_eq(&stderr);
+
+    let manifest = fs::read_to_string(project_dir.join("goml.toml"))?;
+    expect![[r#"
+        [crate]
+        name = "demo"
+        kind = "bin"
+        root = "main.gom"
+
+        [dependencies]
+        http = { package = "bob::http", version = "2.0.0" }
+    "#]]
+    .assert_eq(&manifest);
+
+    Ok(())
+}
+
+#[test]
 fn add_with_explicit_version_and_remove_updates_manifest() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     let registry = create_local_registry(dir.path())?;
