@@ -232,6 +232,7 @@ pub(crate) fn lookup_symbol_locations_for_path(
     token_text: &str,
     segments: &[String],
 ) -> Vec<DefinitionLocation> {
+    let segments = normalize_lookup_segments(segments);
     if segments.is_empty() {
         return Vec::new();
     }
@@ -278,6 +279,17 @@ pub(crate) fn lookup_symbol_locations_for_path(
     locations.extend(index.find_value(&full_name));
     locations.extend(index.find_type(&full_name));
     locations
+}
+
+fn normalize_lookup_segments(segments: &[String]) -> &[String] {
+    if matches!(
+        segments.first().map(String::as_str),
+        Some("crate" | "self" | "super")
+    ) {
+        &segments[1..]
+    } else {
+        segments
+    }
 }
 
 fn index_source_file_symbols(

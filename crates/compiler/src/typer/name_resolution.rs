@@ -214,33 +214,22 @@ fn file_imports(
         .iter()
         .map(|import| import.0.clone())
         .collect::<HashSet<_>>();
-    for use_trait in file.use_traits.iter() {
-        if let Some(alias) = external_import_alias(use_trait, deps) {
-            imports.insert(alias);
-            continue;
+    for use_decl in file.uses.iter() {
+        if let Some(package) = use_decl_import(&use_decl.path, deps) {
+            imports.insert(package);
         }
-        if let Some(first) = use_trait.segments().first() {
-            imports.insert(first.ident.0.clone());
+    }
+    for item in file.toplevels.iter() {
+        if let ast::Item::Mod(module) = item {
+            imports.insert(module.name.0.clone());
+        }
+    }
+    for use_trait in file.use_traits.iter() {
+        if let Some(package) = legacy_use_trait_import(use_trait, deps) {
+            imports.insert(package);
         }
     }
     imports
-}
-
-fn lowered_use_trait_path(
-    path: &ast::Path,
-    deps: &HashMap<String, interface::PackageInterface>,
-) -> hir::QualifiedPath {
-    if let Some((package, prefix_len)) = resolve_external_import_prefix(path, deps) {
-        let segments = path.segments()[prefix_len..]
-            .iter()
-            .map(|segment| hir::PathSegment::new(segment.ident.0.clone()))
-            .collect();
-        return hir::QualifiedPath {
-            package: Some(hir::PackageName(package)),
-            path: hir::Path::new(segments),
-        };
-    }
-    path.into()
 }
 
 fn external_import_path_for_alias(
@@ -252,6 +241,85 @@ fn external_import_path_for_alias(
         .iter()
         .find(|path| path.as_str() != alias)
         .cloned()
+}
+
+fn first_crate_segment(path: &ast::Path) -> Option<String> {
+    path.segments()
+        .first()
+        .map(|segment| segment.ident.0.clone())
+}
+
+fn use_decl_import(
+    path: &ast::Path,
+    deps: &HashMap<String, interface::PackageInterface>,
+) -> Option<String> {
+    if let Some(alias) = external_import_alias(path, deps) {
+        return Some(alias);
+    }
+    first_crate_segment(path)
+}
+
+fn path_segments_display(path: &ast::Path) -> String {
+    path.segments()
+        .iter()
+        .map(|segment| segment.ident.0.clone())
+        .collect::<Vec<_>>()
+        .join("::")
+}
+
+fn legacy_use_trait_import(
+    path: &ast::Path,
+    deps: &HashMap<String, interface::PackageInterface>,
+) -> Option<String> {
+    if let Some(alias) = external_import_alias(path, deps) {
+        return Some(alias);
+    }
+    let segments = path.segments();
+    if segments
+        .first()
+        .is_some_and(|segment| segment.ident.0 == "crate")
+    {
+        return segments.get(1).map(|segment| segment.ident.0.clone());
+    }
+    segments.first().map(|segment| segment.ident.0.clone())
+}
+
+fn lowered_legacy_use_trait_path(
+    path: &ast::Path,
+    deps: &HashMap<String, interface::PackageInterface>,
+) -> Option<hir::QualifiedPath> {
+    if let Some((package, prefix_len)) = resolve_external_import_prefix(path, deps) {
+        let segments = path.segments()[prefix_len..]
+            .iter()
+            .map(|segment| hir::PathSegment::new(segment.ident.0.clone()))
+            .collect();
+        return Some(hir::QualifiedPath {
+            package: Some(hir::PackageName(package)),
+            path: hir::Path::new(segments),
+        });
+    }
+    let segments = path.segments();
+    if segments
+        .first()
+        .is_some_and(|segment| segment.ident.0 == "crate")
+    {
+        if segments.len() < 3 {
+            return None;
+        }
+        let package = segments[1].ident.0.clone();
+        let path_segments = segments[2..]
+            .iter()
+            .map(|segment| hir::PathSegment::new(segment.ident.0.clone()))
+            .collect();
+        return Some(hir::QualifiedPath {
+            package: Some(hir::PackageName(package)),
+            path: hir::Path::new(path_segments),
+        });
+    }
+    if path.len() < 2 {
+        return None;
+    }
+    Some(path.into())
 }
 
 impl NameResolution {
@@ -651,6 +719,31 @@ impl NameResolution {
                 imports_vec.sort_by(|a, b| a.0.cmp(&b.0));
 
                 let mut use_traits = Vec::new();
+                for use_decl in file.ast.uses.iter() {
+                    if let Some(first) = use_decl.path.segments().first()
+                        && external_import_path_for_alias(&first.ident.0, deps).is_some()
+                        && external_import_alias(&use_decl.path, deps).is_none()
+                    {
+                        continue;
+                    }
+                    if use_path_is_package_import(&use_decl.path, deps) {
+                        continue;
+                    }
+                    let Some(qualified) = lowered_legacy_use_trait_path(&use_decl.path, deps)
+                    else {
+                        continue;
+                    };
+                    let Some(package) = &qualified.package else {
+                        self.ice("use trait is missing package");
+                        continue;
+                    };
+                    let Some(trait_name) = qualified.last_ident() else {
+                        self.ice("use trait is missing name");
+                        continue;
+                    };
+                    let _ = (package, trait_name);
+                    use_traits.push(qualified);
+                }
                 for use_trait in file.ast.use_traits.iter() {
                     if let Some(first) = use_trait.segments().first()
                         && external_import_path_for_alias(&first.ident.0, deps).is_some()
@@ -661,7 +754,9 @@ impl NameResolution {
                     if use_path_is_package_import(use_trait, deps) {
                         continue;
                     }
-                    let qualified = lowered_use_trait_path(use_trait, deps);
+                    let Some(qualified) = lowered_legacy_use_trait_path(use_trait, deps) else {
+                        continue;
+                    };
                     let Some(package) = &qualified.package else {
                         self.ice("use trait is missing package");
                         continue;
@@ -931,7 +1026,7 @@ impl NameResolution {
                         },
                     )
                 } else {
-                    let full_name = path.display();
+                    let full_name = path_segments_display(path);
                     let package = path
                         .segments()
                         .first()

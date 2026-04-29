@@ -5,7 +5,7 @@ use std::{
 };
 
 use cst::cst::CstNode;
-use cst::nodes::{BinaryExpr, Block, ClosureExpr, Fn, MatchArm, Pattern};
+use cst::nodes::{BinaryExpr, Block, ClosureExpr, Fn, Item, MatchArm, Pattern};
 use parser::syntax::{MySyntaxKind, MySyntaxNode, MySyntaxNodePtr};
 use text_size::TextSize;
 
@@ -475,6 +475,10 @@ fn visible_use_namespace_names(path: &Path, src: &str) -> BTreeSet<String> {
 
             None
         })
+        .chain(file.items().filter_map(|item| match item {
+            Item::Mod(module) => module.name_token().map(|token| token.to_string()),
+            _ => None,
+        }))
         .collect()
 }
 

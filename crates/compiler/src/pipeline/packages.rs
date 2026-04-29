@@ -61,17 +61,54 @@ fn package_dir_is_loadable(dir: &Path) -> bool {
     dir.is_dir()
 }
 
+fn package_file_is_loadable(path: &Path) -> bool {
+    path.is_file()
+}
+
+fn import_from_legacy_use_trait(
+    path: &ast::Path,
+    external_imports: &ExternalImports,
+) -> Option<String> {
+    if let Some(alias) = external_imports.alias_for_use_path(path) {
+        return Some(alias);
+    }
+    let segments = path.segments();
+    if segments.first().is_some_and(|seg| seg.ident.0 == "crate") {
+        return segments.get(1).map(|seg| seg.ident.0.clone());
+    }
+    segments.first().map(|seg| seg.ident.0.clone())
+}
+
+fn import_from_use_decl(path: &ast::Path, external_imports: &ExternalImports) -> Option<String> {
+    if let Some(alias) = external_imports.alias_for_use_path(path) {
+        return Some(alias);
+    }
+    path.segments().first().map(|seg| seg.ident.0.clone())
+}
+
 fn collect_imports(files: &[SourceFileAst], external_imports: &ExternalImports) -> HashSet<String> {
     files
         .iter()
         .flat_map(|file| {
             let from_imports = file.ast.imports.iter().map(|import| import.0.clone());
-            let from_use_traits = file.ast.use_traits.iter().filter_map(|path| {
-                external_imports
-                    .alias_for_use_path(path)
-                    .or_else(|| path.segments().first().map(|seg| seg.ident.0.clone()))
+            let from_use_decls = file
+                .ast
+                .uses
+                .iter()
+                .filter_map(|decl| import_from_use_decl(&decl.path, external_imports));
+            let from_use_traits = file
+                .ast
+                .use_traits
+                .iter()
+                .filter_map(|path| import_from_legacy_use_trait(path, external_imports));
+            let from_mods = file.ast.toplevels.iter().filter_map(|item| match item {
+                ast::Item::Mod(module) => Some(module.name.0.clone()),
+                _ => None,
             });
-            from_imports.chain(from_use_traits)
+            from_imports
+                .chain(from_use_decls)
+                .chain(from_use_traits)
+                .chain(from_mods)
         })
         .collect()
 }
@@ -96,6 +133,35 @@ fn source_override_for_dir<'a>(
 fn ast_with_package(mut ast: ast::File, package: &str) -> ast::File {
     ast.package = ast::AstIdent::new(package);
     ast
+}
+
+fn load_package_file(
+    package_file: &Path,
+    package_name: &str,
+    source_override: Option<(&Path, &ast::File)>,
+    external_imports: &ExternalImports,
+) -> Result<PackageUnit, CompilationError> {
+    let ast = if let Some((override_path, override_ast)) = source_override
+        && override_path == package_file
+    {
+        ast_with_package(override_ast.clone(), package_name)
+    } else {
+        let src = fs::read_to_string(package_file).map_err(|err| {
+            compile_error(format!(
+                "failed to read {}: {}",
+                package_file.display(),
+                err
+            ))
+        })?;
+        ast_with_package(parse_ast_file(package_file, &src)?, package_name)
+    };
+    let files = vec![SourceFileAst::new(package_file.to_path_buf(), ast)];
+    let imports = collect_imports(&files, external_imports);
+    Ok(PackageUnit {
+        name: package_name.to_string(),
+        files,
+        imports,
+    })
 }
 
 fn load_package(
@@ -407,18 +473,28 @@ fn discover_packages_inner(
             continue;
         }
         let package_dir = root_dir.join(&package_name);
-        if !package_dir_is_loadable(&package_dir) {
+        let package_file = root_dir.join(format!("{package_name}.gom"));
+        if !package_dir_is_loadable(&package_dir) && !package_file_is_loadable(&package_file) {
             loaded.insert(package_name);
             continue;
         }
         let package_override = source_override_for_dir(&package_dir, source_override);
-        let package = if let Some(config) = GomlConfig::find_package_config(&package_dir) {
-            load_package_from_config(&package_dir, &config, package_override, external_imports)?
+        let package = if package_dir_is_loadable(&package_dir) {
+            if let Some(config) = GomlConfig::find_package_config(&package_dir) {
+                load_package_from_config(&package_dir, &config, package_override, external_imports)?
+            } else {
+                load_package(
+                    &package_dir,
+                    Some(&package_name),
+                    package_override,
+                    external_imports,
+                )?
+            }
         } else {
-            load_package(
-                &package_dir,
-                Some(&package_name),
-                package_override,
+            load_package_file(
+                &package_file,
+                &package_name,
+                source_override,
                 external_imports,
             )?
         };
@@ -512,23 +588,33 @@ pub fn discover_packages_from_config(
             continue;
         }
         let package_dir = module_dir.join(&package_name);
-        if !package_dir_is_loadable(&package_dir) {
+        let package_file = module_dir.join(format!("{package_name}.gom"));
+        if !package_dir_is_loadable(&package_dir) && !package_file_is_loadable(&package_file) {
             loaded.insert(package_name);
             continue;
         }
         let package_override = source_override_for_dir(&package_dir, source_override);
-        let package = if let Some(pkg_config) = GomlConfig::find_package_config(&package_dir) {
-            load_package_from_config(
-                &package_dir,
-                &pkg_config,
-                package_override,
-                external_imports,
-            )?
+        let package = if package_dir_is_loadable(&package_dir) {
+            if let Some(pkg_config) = GomlConfig::find_package_config(&package_dir) {
+                load_package_from_config(
+                    &package_dir,
+                    &pkg_config,
+                    package_override,
+                    external_imports,
+                )?
+            } else {
+                load_package(
+                    &package_dir,
+                    Some(&package_name),
+                    package_override,
+                    external_imports,
+                )?
+            }
         } else {
-            load_package(
-                &package_dir,
-                Some(&package_name),
-                package_override,
+            load_package_file(
+                &package_file,
+                &package_name,
+                source_override,
                 external_imports,
             )?
         };

@@ -170,10 +170,36 @@ fn read_source_files(
         for import in ast.imports.iter() {
             imports.insert(import.0.clone());
         }
+        for use_decl in ast.uses.iter() {
+            if let Some(package_import) =
+                external_package_import_alias(&use_decl.path, interface_units)
+            {
+                imports.insert(package_import);
+                continue;
+            }
+            if let Some(first) = use_decl.path.segments().first() {
+                imports.insert(first.ident.0.clone());
+            }
+        }
+        for item in ast.toplevels.iter() {
+            if let ast::ast::Item::Mod(module) = item {
+                imports.insert(module.name.0.clone());
+            }
+        }
         for use_trait in ast.use_traits.iter() {
             if let Some(package_import) = external_package_import_alias(use_trait, interface_units)
             {
                 imports.insert(package_import);
+                continue;
+            }
+            if use_trait
+                .segments()
+                .first()
+                .is_some_and(|segment| segment.ident.0 == "crate")
+            {
+                if let Some(package) = use_trait.segments().get(1) {
+                    imports.insert(package.ident.0.clone());
+                }
                 continue;
             }
             let Some(first) = use_trait.segments().first() else {

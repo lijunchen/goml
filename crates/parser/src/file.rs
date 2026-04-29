@@ -341,15 +341,22 @@ fn impl_has_trait(p: &mut Parser) -> bool {
     if tok == T![::] {
         idx += 1;
         tok = p.nth(idx);
+    } else if matches!(tok, T![crate] | T![super]) {
+        idx += 1;
+        if p.nth(idx) != T![::] {
+            return false;
+        }
+        idx += 1;
+        tok = p.nth(idx);
     }
-    if tok != T![ident] {
+    if !matches!(tok, T![ident] | T![crate] | T![super]) {
         return false;
     }
     idx += 1;
     loop {
         if p.nth(idx) == T![::] {
             idx += 1;
-            if p.nth(idx) != T![ident] {
+            if !matches!(p.nth(idx), T![ident] | T![crate] | T![super]) {
                 return false;
             }
             idx += 1;
