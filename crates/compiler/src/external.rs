@@ -571,7 +571,7 @@ fn compile_module_package(
             continue;
         }
         return Err(format!(
-            "package {} imports missing dependency {}",
+            "namespace {} imports missing dependency {}",
             package.name, dep
         ));
     }

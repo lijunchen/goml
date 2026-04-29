@@ -674,7 +674,7 @@ fn topo_sort(cores: &HashMap<String, CoreUnit>) -> Result<Vec<String>, Compilati
 
     if out.len() != cores.len() {
         return Err(compile_error(
-            "package dependency cycle detected in core inputs".to_string(),
+            "crate dependency cycle detected in core inputs".to_string(),
         ));
     }
 

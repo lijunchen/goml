@@ -738,7 +738,7 @@ fn main() -> unit {
         let formatted = format_diagnostics(&diagnostics);
 
         assert!(formatted.contains("imports missing namespace colors"));
-        assert!(!formatted.contains("failed to read package directory"));
+        assert!(!formatted.contains("failed to read namespace directory"));
     }
 }
 

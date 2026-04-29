@@ -338,7 +338,7 @@ fn typecheck_packages_inner(
         let package = graph
             .packages
             .get(name)
-            .ok_or_else(|| compile_error(format!("package {} not found", name)))?;
+            .ok_or_else(|| compile_error(format!("namespace {} not found", name)))?;
         let package_id = *package_ids
             .get(name)
             .unwrap_or_else(|| panic!("missing package id for {}", name));
@@ -355,16 +355,15 @@ fn typecheck_packages_inner(
             if let Some(interface) = external_interfaces.get(dep) {
                 deps_envs.insert(
                     dep.clone(),
-                    external_envs
-                        .get(dep)
-                        .cloned()
-                        .ok_or_else(|| compile_error(format!("missing package env for {}", dep)))?,
+                    external_envs.get(dep).cloned().ok_or_else(|| {
+                        compile_error(format!("missing namespace env for {}", dep))
+                    })?,
                 );
                 deps_interfaces.insert(dep.clone(), interface.clone());
                 continue;
             }
             return Err(compile_error(format!(
-                "missing package artifact for {}",
+                "missing namespace artifact for {}",
                 dep
             )));
         }
@@ -380,7 +379,7 @@ fn typecheck_packages_inner(
 
     let entry_tast = artifacts_by_name
         .get(&graph.entry_package)
-        .ok_or_else(|| compile_error("entry package not found".to_string()))?
+        .ok_or_else(|| compile_error("entry namespace not found".to_string()))?
         .tast
         .clone();
 
@@ -390,7 +389,7 @@ fn typecheck_packages_inner(
     for name in graph.discovery_order.iter() {
         let artifact = artifacts_by_name
             .get(name)
-            .ok_or_else(|| compile_error(format!("missing package artifact for {}", name)))?;
+            .ok_or_else(|| compile_error(format!("missing namespace artifact for {}", name)))?;
         for item in artifact.tast.toplevels.iter() {
             if let tast::Item::Fn(f) = item {
                 if f.name == "print" {
@@ -486,7 +485,7 @@ fn compile_inner(
         let package = graph
             .packages
             .get(name)
-            .ok_or_else(|| compile_error(format!("package {} not found", name)))?;
+            .ok_or_else(|| compile_error(format!("namespace {} not found", name)))?;
         all_files.extend(package.files.clone());
     }
 
@@ -523,10 +522,10 @@ fn compile_inner(
         let package = graph
             .packages
             .get(name)
-            .ok_or_else(|| compile_error(format!("package {} not found", name)))?;
+            .ok_or_else(|| compile_error(format!("namespace {} not found", name)))?;
         let artifact = artifacts
             .get(name)
-            .ok_or_else(|| compile_error(format!("missing package artifact for {}", name)))?;
+            .ok_or_else(|| compile_error(format!("missing namespace artifact for {}", name)))?;
         let mut env = builtins::builtin_env();
         let mut deps: Vec<_> = package.imports.iter().cloned().collect();
         deps.sort();
@@ -540,7 +539,7 @@ fn compile_inner(
                 continue;
             }
             return Err(compile_error(format!(
-                "missing package artifact for {}",
+                "missing namespace artifact for {}",
                 dep
             )));
         }
@@ -661,7 +660,7 @@ pub fn typecheck_with_packages_and_results(
             let package = graph
                 .packages
                 .get(name)
-                .ok_or_else(|| compile_error(format!("package {} not found", name)))?;
+                .ok_or_else(|| compile_error(format!("namespace {} not found", name)))?;
             let package_id = *package_ids
                 .get(name)
                 .unwrap_or_else(|| panic!("missing package id for {}", name));
@@ -679,14 +678,14 @@ pub fn typecheck_with_packages_and_results(
                     deps_envs.insert(
                         dep.clone(),
                         external_envs.get(dep).cloned().ok_or_else(|| {
-                            compile_error(format!("missing package env for {}", dep))
+                            compile_error(format!("missing namespace env for {}", dep))
                         })?,
                     );
                     deps_interfaces.insert(dep.clone(), interface.clone());
                     continue;
                 }
                 return Err(compile_error(format!(
-                    "missing package artifact for {}",
+                    "missing namespace artifact for {}",
                     dep
                 )));
             }
@@ -727,10 +726,10 @@ pub fn typecheck_with_packages_and_results(
         }
 
         let Some(entry_hir_table) = entry_hir_table else {
-            return Err(compile_error("entry package not found".to_string()));
+            return Err(compile_error("entry namespace not found".to_string()));
         };
         let Some(entry_results) = entry_results else {
-            return Err(compile_error("entry package not found".to_string()));
+            return Err(compile_error("entry namespace not found".to_string()));
         };
 
         Ok((entry_hir_table, entry_results, genv, diagnostics))

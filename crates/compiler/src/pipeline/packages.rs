@@ -35,7 +35,7 @@ fn read_gom_sources(dir: &Path) -> Result<Vec<PathBuf>, CompilationError> {
     let mut files = Vec::new();
     let entries = fs::read_dir(dir).map_err(|err| {
         compile_error(format!(
-            "failed to read package directory {}: {}",
+            "failed to read namespace directory {}: {}",
             dir.display(),
             err
         ))
@@ -44,7 +44,7 @@ fn read_gom_sources(dir: &Path) -> Result<Vec<PathBuf>, CompilationError> {
     for entry in entries {
         let entry = entry.map_err(|err| {
             compile_error(format!(
-                "failed to read package directory {}: {}",
+                "failed to read namespace directory {}: {}",
                 dir.display(),
                 err
             ))
@@ -562,7 +562,7 @@ fn load_package(
 
     if files.is_empty() {
         return Err(compile_error(format!(
-            "package directory {} has no .gom files",
+            "namespace directory {} has no .gom files",
             package_dir.display()
         )));
     }
@@ -854,7 +854,7 @@ fn discover_packages_inner(
         let declared_name = package.name.clone();
         if package.name != package_name {
             return Err(compile_error(format!(
-                "package directory {} declares package {}, expected {}",
+                "namespace directory {} declares namespace {}, expected {}",
                 package_dir.display(),
                 package.name,
                 package_name
@@ -929,7 +929,7 @@ fn visit_package(
             .collect::<Vec<_>>()
             .join(" -> ");
         return Err(compile_error(format!(
-            "package dependency cycle detected: {}",
+            "namespace dependency cycle detected: {}",
             display
         )));
     }
@@ -939,7 +939,7 @@ fn visit_package(
 
     let Some(package) = graph.packages.get(name) else {
         return Err(compile_error(format!(
-            "package {} not found during dependency walk",
+            "namespace {} not found during dependency walk",
             name
         )));
     };
