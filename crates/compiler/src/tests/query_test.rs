@@ -1573,6 +1573,55 @@ pub fn label() -> string {
 
 #[test]
 #[rustfmt::skip]
+fn crate_query_hover_uses_canonical_use_path() {
+    let dir = tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+"#,
+    )
+    .unwrap();
+    let main_src = r#"
+mod api;
+mod other;
+
+use crate::api::target;
+
+fn main() -> unit {
+    ()
+}
+"#;
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(&main_path, main_src).unwrap();
+    std::fs::write(
+        dir.path().join("api.gom"),
+        r#"
+pub fn target() -> int64 {
+    1
+}
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        dir.path().join("other.gom"),
+        r#"
+pub fn target(value: string) -> string {
+    value
+}
+"#,
+    )
+    .unwrap();
+
+    check_with_path(&main_path, main_src, 4, 18, expect![[r#"
+        "() -> int64"
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
 fn crate_query_goto_definition_resolves_super_from_module_path() {
     let dir = tempdir().unwrap();
     std::fs::write(
