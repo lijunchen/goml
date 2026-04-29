@@ -31,7 +31,7 @@ root = "main.gom"
 
 fn typecheck(files: &[(&str, &str)]) -> Result<Diagnostics, CompilationError> {
     let (_dir, main_path, main_src) = write_project(files);
-    pipeline::typecheck_with_packages(&main_path, &main_src)
+    pipeline::typecheck_with_namespaces(&main_path, &main_src)
         .map(|(_tast, _genv, diagnostics)| diagnostics)
 }
 

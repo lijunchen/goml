@@ -2096,7 +2096,7 @@ http = { package = "alice::http", version = "1.2.0" }
 
     with_goml_home(&home, || {
         let (_hir_table, _results, genv, _diagnostics) =
-            crate::pipeline::pipeline::typecheck_with_packages_and_results(&main_path, valid_src)
+            crate::pipeline::pipeline::typecheck_with_namespaces_and_results(&main_path, valid_src)
                 .unwrap();
         assert!(
             genv.structs()

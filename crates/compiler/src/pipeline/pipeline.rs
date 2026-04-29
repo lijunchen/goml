@@ -74,7 +74,7 @@ impl CompilationError {
 }
 
 #[derive(Debug, Clone)]
-struct PackageInterface {
+struct NamespaceInterface {
     exports: PackageExports,
     package_interface: interface::PackageInterface,
 }
@@ -178,21 +178,21 @@ fn link_packages(packages: Vec<crate::core::File>) -> crate::core::File {
 }
 
 #[derive(Debug, Clone)]
-struct PackageArtifact {
+struct NamespaceArtifact {
     tast: tast::File,
     full_exports: PackageExports,
-    interface: PackageInterface,
+    interface: NamespaceInterface,
     diagnostics: Diagnostics,
 }
 
 #[derive(Debug)]
-struct TypecheckPackagesResult {
+struct TypecheckNamespacesResult {
     entry_tast: tast::File,
     full_tast: tast::File,
     genv: GlobalTypeEnv,
     diagnostics: Diagnostics,
     graph: packages::PackageGraph,
-    artifacts: HashMap<String, PackageArtifact>,
+    artifacts: HashMap<String, NamespaceArtifact>,
     external_deps: ExternalDependencyArtifacts,
 }
 
@@ -266,7 +266,7 @@ fn typecheck_package(
     package: &packages::PackageUnit,
     deps_envs: HashMap<String, GlobalTypeEnv>,
     deps_interfaces: &HashMap<String, interface::PackageInterface>,
-) -> PackageArtifact {
+) -> NamespaceArtifact {
     let (hir, hir_table, mut hir_diagnostics) =
         hir::lower_to_hir_files_with_env(package_id, package.files.clone(), deps_interfaces);
     let (tast, genv, mut diagnostics) = typer::check_file_with_env(
@@ -282,10 +282,10 @@ fn typecheck_package(
     let exports = PackageExports::public_from_package(&package.name, &package.files, &genv);
     let package_interface = interface::PackageInterface::from_exports(&package.name, &exports);
 
-    PackageArtifact {
+    NamespaceArtifact {
         tast,
         full_exports,
-        interface: PackageInterface {
+        interface: NamespaceInterface {
             exports,
             package_interface,
         },
@@ -293,11 +293,11 @@ fn typecheck_package(
     }
 }
 
-fn typecheck_packages_inner(
+fn typecheck_namespaces_inner(
     path: &Path,
     entry_ast: ast::File,
     single_file: bool,
-) -> Result<TypecheckPackagesResult, CompilationError> {
+) -> Result<TypecheckNamespacesResult, CompilationError> {
     let root = discovery_root_for_file(path);
     let external_deps = load_external_dependencies(&root)?;
     let external_imports = external_deps.external_imports();
@@ -329,7 +329,7 @@ fn typecheck_packages_inner(
         report_duplicate_trait_impls(&mut diagnostics, &genv, &module.interface.exports, name);
         module.interface.exports.apply_to(&mut genv);
     }
-    let mut artifacts_by_name: HashMap<String, PackageArtifact> = HashMap::new();
+    let mut artifacts_by_name: HashMap<String, NamespaceArtifact> = HashMap::new();
     let mut package_names: Vec<String> = graph.packages.keys().cloned().collect();
     package_names.sort();
     let package_ids = package_id_map(&package_names);
@@ -419,7 +419,7 @@ fn typecheck_packages_inner(
         }
     }
 
-    Ok(TypecheckPackagesResult {
+    Ok(TypecheckNamespacesResult {
         entry_tast,
         full_tast: tast::File { toplevels },
         genv,
@@ -470,8 +470,8 @@ fn compile_inner(
 ) -> Result<Compilation, CompilationError> {
     let (green_node, cst, entry_ast) = parse_ast_from_source(path, src)?;
 
-    let typecheck = typecheck_packages_inner(path, entry_ast.clone(), single_file)?;
-    let TypecheckPackagesResult {
+    let typecheck = typecheck_namespaces_inner(path, entry_ast.clone(), single_file)?;
+    let TypecheckNamespacesResult {
         full_tast,
         genv,
         mut diagnostics,
@@ -590,19 +590,19 @@ pub fn compile_single_file(path: &Path, src: &str) -> Result<Compilation, Compil
     super::with_src_compiler_stack(src, || compile_inner(path, src, true, true))
 }
 
-pub fn typecheck_with_packages(
+pub fn typecheck_with_namespaces(
     path: &Path,
     src: &str,
 ) -> Result<(tast::File, GlobalTypeEnv, Diagnostics), CompilationError> {
     let single_file = should_use_single_file_mode(path);
     super::with_src_compiler_stack(src, || {
         let (_green_node, _cst, entry_ast) = parse_ast_from_source(path, src)?;
-        let result = typecheck_packages_inner(path, entry_ast, single_file)?;
+        let result = typecheck_namespaces_inner(path, entry_ast, single_file)?;
         Ok((result.entry_tast, result.genv, result.diagnostics))
     })
 }
 
-pub fn typecheck_with_packages_and_results(
+pub fn typecheck_with_namespaces_and_results(
     path: &Path,
     src: &str,
 ) -> Result<
@@ -648,7 +648,7 @@ pub fn typecheck_with_packages_and_results(
             report_duplicate_trait_impls(&mut diagnostics, &genv, &module.interface.exports, name);
             module.interface.exports.apply_to(&mut genv);
         }
-        let mut artifacts_by_name: HashMap<String, PackageInterface> = HashMap::new();
+        let mut artifacts_by_name: HashMap<String, NamespaceInterface> = HashMap::new();
         let mut package_names: Vec<String> = graph.packages.keys().cloned().collect();
         package_names.sort();
         let package_ids = package_id_map(&package_names);
@@ -712,7 +712,7 @@ pub fn typecheck_with_packages_and_results(
             exports.apply_to(&mut genv);
             let package_interface = interface::PackageInterface::from_exports(name, &exports);
 
-            let interface = PackageInterface {
+            let interface = NamespaceInterface {
                 exports,
                 package_interface,
             };
@@ -739,7 +739,7 @@ pub fn typecheck_with_packages_and_results(
 fn validate_entrypoint_for_compile(
     diagnostics: &mut Diagnostics,
     graph: &packages::PackageGraph,
-    artifacts: &HashMap<String, PackageArtifact>,
+    artifacts: &HashMap<String, NamespaceArtifact>,
 ) {
     let Some(entry_artifact) = artifacts.get(&graph.entry_package) else {
         return;
