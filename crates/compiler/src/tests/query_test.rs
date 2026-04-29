@@ -4,8 +4,8 @@ use std::sync::{Mutex, OnceLock};
 use tempfile::tempdir;
 
 use crate::query::{
-    colon_colon_completions, dot_completions, hover_type, inlay_hints, signature_help,
-    value_completions,
+    colon_colon_completions, dot_completions, goto_definition_locations, hover_type, inlay_hints,
+    signature_help, value_completions,
 };
 
 fn check(src: &str, line: u32, col: u32, expected: Expect) {
@@ -1201,6 +1201,51 @@ fn call() -> int64 {
     check_with_path(&api_path, api_src, 3, 6, expect![[r#"
         "int64"
     "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn crate_query_goto_definition_resolves_super_from_module_path() {
+    let dir = tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+"#,
+    )
+    .unwrap();
+    let main_src = r#"
+mod api;
+
+pub fn helper() -> int64 {
+    1
+}
+
+fn main() -> unit {
+    ()
+}
+"#;
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(&main_path, main_src).unwrap();
+
+    let api_src = r#"
+fn call() -> int64 {
+    let value = super::helper();
+    value
+}
+"#;
+    let api_path = dir.path().join("api.gom");
+    std::fs::write(&api_path, api_src).unwrap();
+
+    let locations = goto_definition_locations(&api_path, api_src, 2, 25).unwrap();
+    assert_eq!(locations.len(), 1);
+    assert_eq!(locations[0].path, main_path);
+    let range = locations[0].range;
+    let start = u32::from(range.start()) as usize;
+    let end = u32::from(range.end()) as usize;
+    assert_eq!(&main_src[start..end], "helper");
 }
 
 #[test]

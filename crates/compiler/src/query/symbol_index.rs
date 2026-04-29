@@ -1,5 +1,5 @@
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     fs,
     path::{Path, PathBuf},
 };
@@ -167,6 +167,108 @@ pub(crate) fn build_symbol_index(
     path: &Path,
     src: &str,
 ) -> Result<(crate::pipeline::packages::PackageGraph, ProjectSymbolIndex), String> {
+    build_crate_symbol_index(path, src).or_else(|_| build_package_symbol_index(path, src))
+}
+
+fn build_crate_symbol_index(
+    path: &Path,
+    src: &str,
+) -> Result<(crate::pipeline::packages::PackageGraph, ProjectSymbolIndex), String> {
+    let start_dir = path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."));
+    let Some((crate_dir, _)) = crate::config::find_crate_root(start_dir) else {
+        return Err("crate root not found".to_string());
+    };
+
+    let crate_unit = crate::pipeline::modules::discover_crate_from_dir(&crate_dir)
+        .map_err(|err| format!("crate module discovery failed: {:?}", err))?;
+    let crate_name = crate_unit.config.name.clone();
+    let current_path = canonical_path(path);
+    let mut overrides = HashMap::new();
+    for module in crate_unit.modules.iter() {
+        if canonical_path(&module.file_path) == current_path {
+            overrides.insert(module.file_path.clone(), src.to_string());
+        }
+    }
+
+    let mut graph = crate::pipeline::packages::PackageGraph {
+        module_dir: crate_unit.root_dir.clone(),
+        module_name: Some(crate_name.clone()),
+        entry_package: crate_name.clone(),
+        packages: HashMap::new(),
+        discovery_order: Vec::new(),
+        package_dirs: HashMap::new(),
+        package_visibilities: HashMap::new(),
+        external_root_packages: HashSet::new(),
+    };
+    let mut index = ProjectSymbolIndex::default();
+
+    for module in crate_unit.modules.iter() {
+        let package_name = query_module_package_name(module.path.segments(), &crate_name);
+        let package_dir = package_dir_for_module_file(&module.file_path);
+        let files = vec![crate::hir::SourceFileAst::with_package_module_visibility(
+            module.file_path.clone(),
+            crate_name.clone(),
+            module.path.segments().to_vec(),
+            true,
+            module.ast.clone(),
+        )];
+        graph.discovery_order.push(package_name.clone());
+        graph
+            .package_dirs
+            .insert(package_name.clone(), package_dir.clone());
+        graph
+            .package_visibilities
+            .insert(package_name.clone(), module.visibility);
+        graph.packages.insert(
+            package_name.clone(),
+            crate::pipeline::packages::PackageUnit {
+                name: package_name.clone(),
+                files,
+                imports: HashSet::new(),
+            },
+        );
+        index_package_symbols_named(
+            &mut index,
+            &package_name,
+            &package_dir,
+            std::slice::from_ref(&module.file_path),
+            &overrides,
+        )?;
+    }
+
+    if let Ok((_module_dir, dependencies)) =
+        crate::pipeline::packages::discover_dependency_versions_from_file(path)
+    {
+        let external_deps = crate::external::resolve_dependency_versions(&dependencies)
+            .map_err(|err| err.to_string())?;
+        external_deps
+            .augment_graph(&mut graph)
+            .map_err(|err| err.to_string())?;
+        for (logical_name, files) in external_deps.package_sources() {
+            let Some(pkg_dir) = graph.package_dirs.get(&logical_name) else {
+                continue;
+            };
+            index_package_symbols_named(
+                &mut index,
+                &logical_name,
+                pkg_dir,
+                &files,
+                &HashMap::new(),
+            )?;
+        }
+    }
+
+    index_builtin_symbols(&mut index)?;
+    Ok((graph, index))
+}
+
+fn build_package_symbol_index(
+    path: &Path,
+    src: &str,
+) -> Result<(crate::pipeline::packages::PackageGraph, ProjectSymbolIndex), String> {
     let mut graph = discover_packages_for_query(path, src)?;
     let mut index = ProjectSymbolIndex::default();
     let mut overrides = HashMap::new();
@@ -208,6 +310,29 @@ pub(crate) fn build_symbol_index(
 
     index_builtin_symbols(&mut index)?;
     Ok((graph, index))
+}
+
+fn query_module_package_name(module_path: &[String], crate_name: &str) -> String {
+    if module_path.is_empty() {
+        crate_name.to_string()
+    } else {
+        module_path.join("::")
+    }
+}
+
+fn package_dir_for_module_file(path: &Path) -> PathBuf {
+    if path.file_name().is_some_and(|name| name == "mod.gom") {
+        path.parent()
+            .filter(|parent| !parent.as_os_str().is_empty())
+            .unwrap_or_else(|| Path::new("."))
+            .to_path_buf()
+    } else {
+        path.to_path_buf()
+    }
+}
+
+fn canonical_path(path: &Path) -> PathBuf {
+    path.canonicalize().unwrap_or_else(|_| path.to_path_buf())
 }
 
 pub(crate) fn package_nav_target_in_dir(dir: &Path) -> Option<PathBuf> {
