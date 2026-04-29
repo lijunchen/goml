@@ -1504,6 +1504,36 @@ pub fn f() -> unit {
     }
 
     #[test]
+    fn use_root_completion_without_manifest_ignores_local_dirs() {
+        let dir = tempdir().unwrap();
+        let root = dir.path();
+        std::fs::create_dir_all(root.join("util")).unwrap();
+        std::fs::write(
+            root.join("util/mod.gom"),
+            r#"
+pub fn ping() -> string {
+    "pong"
+}
+"#,
+        )
+        .unwrap();
+
+        let src = "\nuse \n\nfn main() -> unit {\n    ()\n}\n";
+        let path = root.join("main.gom");
+        std::fs::write(&path, src).unwrap();
+
+        let completion = handlers::completion(
+            &path,
+            src,
+            Position {
+                line: 1,
+                character: 4,
+            },
+        );
+        expect!["empty completion"].assert_eq(&format_completion(completion));
+    }
+
+    #[test]
     fn value_completion_suggests_keywords() {
         check_completion(
             r#"
