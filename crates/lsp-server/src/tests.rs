@@ -2469,8 +2469,8 @@ fn main() -> unit {
     }
 
     #[test]
-    fn goto_definition_use_package_fallback_picks_first_gom_file() {
-        let root = temp_project_dir("use_fallback_first_gom");
+    fn goto_definition_mod_decl_uses_manifest_module_root() {
+        let root = temp_project_dir("mod_decl_manifest_module_root");
         let _ = std::fs::remove_dir_all(&root);
         write_file(
             &root.join("goml.toml"),
@@ -2502,7 +2502,7 @@ fn value() -> int32 { 0 }
         );
 
         check_temp_module_goto_token(
-            "use_fallback_first_gom",
+            "mod_decl_manifest_module_root",
             "main.gom",
             "mod Pkg;",
             "Pkg",
