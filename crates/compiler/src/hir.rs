@@ -1751,6 +1751,8 @@ fn resolve_constructor_path(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use ::cst::cst::CstNode;
+    use parser::syntax::MySyntaxNode;
 
     #[test]
     fn lower_to_hir_preserves_source_module_paths() {
@@ -1782,5 +1784,42 @@ mod tests {
             hir.files[1].module_path,
             vec!["api".to_string(), "client".to_string()]
         );
+    }
+
+    #[test]
+    fn lower_to_hir_uses_crate_and_module_paths_in_def_names() {
+        let files = vec![
+            SourceFileAst::with_package_and_module_path(
+                "src/main.gom".into(),
+                "hello",
+                Vec::new(),
+                lower_src("fn root() -> unit { () }"),
+            ),
+            SourceFileAst::with_package_and_module_path(
+                "src/api/client.gom".into(),
+                "hello",
+                vec!["api".to_string(), "client".to_string()],
+                lower_src("fn call() -> unit { () }"),
+            ),
+        ];
+
+        let (_hir, table, diagnostics) = lower_to_hir_files(files);
+
+        assert!(!diagnostics.has_errors());
+        let def_paths = table
+            .iter_defs()
+            .map(|(id, _)| table.def_path(id).display())
+            .collect::<Vec<_>>();
+        assert_eq!(def_paths, vec!["hello::root", "hello::api::client::call"]);
+    }
+
+    fn lower_src(src: &str) -> ast::File {
+        let parsed = parser::parse(std::path::Path::new("test.gom"), src);
+        assert!(!parsed.has_errors());
+        let root = MySyntaxNode::new_root(parsed.green_node);
+        let cst = ::cst::cst::File::cast(root).expect("parse root is a file");
+        let lowered = ::ast::lower::lower(cst);
+        assert!(!lowered.has_errors());
+        lowered.into_ast().expect("lowered AST")
     }
 }

@@ -64,12 +64,37 @@ struct UseValueImport {
     hint: String,
 }
 
-fn full_def_name(package: &str, name: &str) -> String {
-    if is_special_unqualified_package(package) {
-        name.to_string()
+fn full_def_name_in_module(package: &str, module_path: &[String], name: &str) -> String {
+    let mut segments = full_def_segments(package, module_path, name);
+    if segments.len() == 1 {
+        segments.pop().unwrap_or_default()
     } else {
-        format!("{}::{}", package, name)
+        segments.join("::")
     }
+}
+
+fn full_def_path_in_module(package: &str, module_path: &[String], name: &str) -> hir::Path {
+    hir::Path::from_idents(full_def_segments(package, module_path, name))
+}
+
+fn full_def_segments(package: &str, module_path: &[String], name: &str) -> Vec<String> {
+    if module_path.is_empty() {
+        if is_special_unqualified_package(package) {
+            return vec![name.to_string()];
+        }
+        return vec![package.to_string(), name.to_string()];
+    }
+
+    let module_name = module_path.join("::");
+    let mut segments = if package == module_name || is_special_unqualified_package(package) {
+        module_path.to_vec()
+    } else {
+        std::iter::once(package.to_string())
+            .chain(module_path.iter().cloned())
+            .collect()
+    };
+    segments.push(name.to_string());
+    segments
 }
 
 fn package_allowed(package: &str, current_package: &str, imports: &HashSet<String>) -> bool {
@@ -655,8 +680,10 @@ impl NameResolution {
                 let def_id = match item {
                     ast::Item::Mod(_) => None,
                     ast::Item::Fn(func) => {
-                        let full_name = full_def_name(package_name, &func.name.0);
-                        let path = full_def_path(package_name, &func.name.0);
+                        let full_name =
+                            full_def_name_in_module(package_name, &file.module_path, &func.name.0);
+                        let path =
+                            full_def_path_in_module(package_name, &file.module_path, &func.name.0);
                         let id = hir_table.alloc_def_with_path(
                             path,
                             hir::DefKind::Fn,
@@ -677,9 +704,18 @@ impl NameResolution {
                         Some(id)
                     }
                     ast::Item::ExternGo(ext) => {
-                        let full_name = full_def_name(package_name, &ext.goml_name.0);
-                        let path = full_def_path(package_name, &ext.goml_name.0);
-                        let ext_def = self.lower_extern_go(ext, package_name, &imports);
+                        let full_name = full_def_name_in_module(
+                            package_name,
+                            &file.module_path,
+                            &ext.goml_name.0,
+                        );
+                        let path = full_def_path_in_module(
+                            package_name,
+                            &file.module_path,
+                            &ext.goml_name.0,
+                        );
+                        let ext_def =
+                            self.lower_extern_go(ext, package_name, &file.module_path, &imports);
                         let id = hir_table.alloc_def_with_path(
                             path,
                             hir::DefKind::ExternGo,
@@ -689,9 +725,16 @@ impl NameResolution {
                         Some(id)
                     }
                     ast::Item::ExternBuiltin(ext) => {
-                        let full_name = full_def_name(package_name, &ext.name.0);
-                        let path = full_def_path(package_name, &ext.name.0);
-                        let ext_def = self.lower_extern_builtin(ext, package_name, &imports);
+                        let full_name =
+                            full_def_name_in_module(package_name, &file.module_path, &ext.name.0);
+                        let path =
+                            full_def_path_in_module(package_name, &file.module_path, &ext.name.0);
+                        let ext_def = self.lower_extern_builtin(
+                            ext,
+                            package_name,
+                            &file.module_path,
+                            &imports,
+                        );
                         let id = hir_table.alloc_def_with_path(
                             path,
                             hir::DefKind::ExternBuiltin,
@@ -701,9 +744,12 @@ impl NameResolution {
                         Some(id)
                     }
                     ast::Item::EnumDef(e) => {
-                        let full_name = full_def_name(package_name, &e.name.0);
-                        let path = full_def_path(package_name, &e.name.0);
-                        let enum_def = self.lower_enum_def(e, package_name, &imports);
+                        let full_name =
+                            full_def_name_in_module(package_name, &file.module_path, &e.name.0);
+                        let path =
+                            full_def_path_in_module(package_name, &file.module_path, &e.name.0);
+                        let enum_def =
+                            self.lower_enum_def(e, package_name, &file.module_path, &imports);
                         let id = hir_table.alloc_def_with_path(
                             path,
                             hir::DefKind::EnumDef,
@@ -713,9 +759,12 @@ impl NameResolution {
                         Some(id)
                     }
                     ast::Item::StructDef(s) => {
-                        let full_name = full_def_name(package_name, &s.name.0);
-                        let path = full_def_path(package_name, &s.name.0);
-                        let struct_def = self.lower_struct_def(s, package_name, &imports);
+                        let full_name =
+                            full_def_name_in_module(package_name, &file.module_path, &s.name.0);
+                        let path =
+                            full_def_path_in_module(package_name, &file.module_path, &s.name.0);
+                        let struct_def =
+                            self.lower_struct_def(s, package_name, &file.module_path, &imports);
                         let id = hir_table.alloc_def_with_path(
                             path,
                             hir::DefKind::StructDef,
@@ -725,9 +774,12 @@ impl NameResolution {
                         Some(id)
                     }
                     ast::Item::TraitDef(t) => {
-                        let full_name = full_def_name(package_name, &t.name.0);
-                        let path = full_def_path(package_name, &t.name.0);
-                        let trait_def = self.lower_trait_def(t, package_name, &imports);
+                        let full_name =
+                            full_def_name_in_module(package_name, &file.module_path, &t.name.0);
+                        let path =
+                            full_def_path_in_module(package_name, &file.module_path, &t.name.0);
+                        let trait_def =
+                            self.lower_trait_def(t, package_name, &file.module_path, &imports);
                         let id = hir_table.alloc_def_with_path(
                             path,
                             hir::DefKind::TraitDef,
@@ -737,7 +789,7 @@ impl NameResolution {
                         Some(id)
                     }
                     ast::Item::ImplBlock(_i) => Some(hir_table.alloc_def_with_path(
-                        full_def_path(package_name, "impl"),
+                        full_def_path_in_module(package_name, &file.module_path, "impl"),
                         hir::DefKind::ImplBlock,
                         hir::Def::ImplBlock(hir::ImplBlock {
                             attrs: Vec::new(),
@@ -749,9 +801,17 @@ impl NameResolution {
                         }),
                     )),
                     ast::Item::ExternType(ext) => {
-                        let full_name = full_def_name(package_name, &ext.goml_name.0);
-                        let path = full_def_path(package_name, &ext.goml_name.0);
-                        let ext_def = self.lower_extern_type(ext, package_name);
+                        let full_name = full_def_name_in_module(
+                            package_name,
+                            &file.module_path,
+                            &ext.goml_name.0,
+                        );
+                        let path = full_def_path_in_module(
+                            package_name,
+                            &file.module_path,
+                            &ext.goml_name.0,
+                        );
+                        let ext_def = self.lower_extern_type(ext, package_name, &file.module_path);
                         let id = hir_table.alloc_def_with_path(
                             path,
                             hir::DefKind::ExternType,
@@ -800,7 +860,8 @@ impl NameResolution {
                         };
                         toplevel_idx += 1;
                         hir_table.set_current_owner(def_id);
-                        let full_name = full_def_name(package_name, &func.name.0);
+                        let full_name =
+                            full_def_name_in_module(package_name, &file.module_path, &func.name.0);
                         let resolved_fn = self.resolve_fn(func, &ctx, &mut hir_table, full_name);
                         *hir_table.def_mut(def_id) = hir::Def::Fn(resolved_fn);
                     }
@@ -1143,7 +1204,11 @@ impl NameResolution {
                     let res = if let Some(local_id) = env.rfind(ident) {
                         hir::NameRef::Local(local_id)
                     } else {
-                        let full_name = full_def_name(ctx.current_package, name_str);
+                        let full_name = full_def_name_in_module(
+                            ctx.current_package,
+                            ctx.current_module_path,
+                            name_str,
+                        );
                         if let Some(&def_id) = ctx.def_names.get(&full_name) {
                             hir::NameRef::Def(def_id)
                         } else if let Some(&builtin_id) = ctx.builtin_names.get(name_str) {
@@ -1156,7 +1221,11 @@ impl NameResolution {
                     };
                     let hint = match (&res, ctx.use_values.get(name_str)) {
                         (res, Some(imported)) if imported.res == *res => imported.hint.clone(),
-                        (hir::NameRef::Def(_), _) => full_def_name(ctx.current_package, name_str),
+                        (hir::NameRef::Def(_), _) => full_def_name_in_module(
+                            ctx.current_package,
+                            ctx.current_module_path,
+                            name_str,
+                        ),
                         _ => name_str.clone(),
                     };
                     self.alloc_expr_with_ptr(
@@ -1898,10 +1967,11 @@ impl NameResolution {
         &mut self,
         def: &ast::EnumDef,
         current_package: &str,
+        current_module_path: &[String],
         imports: &HashSet<String>,
     ) -> hir::EnumDef {
         let tparams = type_param_set(&def.generics);
-        let name = full_def_name(current_package, &def.name.0);
+        let name = full_def_name_in_module(current_package, current_module_path, &def.name.0);
         let variants = def
             .variants
             .iter()
@@ -1925,10 +1995,11 @@ impl NameResolution {
         &mut self,
         def: &ast::StructDef,
         current_package: &str,
+        current_module_path: &[String],
         imports: &HashSet<String>,
     ) -> hir::StructDef {
         let tparams = type_param_set(&def.generics);
-        let name = full_def_name(current_package, &def.name.0);
+        let name = full_def_name_in_module(current_package, current_module_path, &def.name.0);
         let fields = def
             .fields
             .iter()
@@ -1951,9 +2022,10 @@ impl NameResolution {
         &mut self,
         def: &ast::TraitDef,
         current_package: &str,
+        current_module_path: &[String],
         imports: &HashSet<String>,
     ) -> hir::TraitDef {
-        let name = full_def_name(current_package, &def.name.0);
+        let name = full_def_name_in_module(current_package, current_module_path, &def.name.0);
         let method_sigs = def
             .method_sigs
             .iter()
@@ -1994,7 +2066,8 @@ impl NameResolution {
                 }
             };
 
-            let local = full_def_name(ctx.current_package, &name);
+            let local =
+                full_def_name_in_module(ctx.current_package, ctx.current_module_path, &name);
             let has_local = ctx.trait_index.has_trait(ctx.current_package, &name);
             let has_builtin = ctx.trait_index.has_trait(BUILTIN_PACKAGE, &name);
 
@@ -2030,9 +2103,10 @@ impl NameResolution {
         &mut self,
         def: &ast::ExternGo,
         current_package: &str,
+        current_module_path: &[String],
         imports: &HashSet<String>,
     ) -> hir::ExternGo {
-        let name = full_def_name(current_package, &def.goml_name.0);
+        let name = full_def_name_in_module(current_package, current_module_path, &def.goml_name.0);
         hir::ExternGo {
             attrs: def.attrs.iter().map(|a| a.into()).collect(),
             package_path: def.package_path.clone(),
@@ -2056,8 +2130,13 @@ impl NameResolution {
         }
     }
 
-    fn lower_extern_type(&self, def: &ast::ExternType, current_package: &str) -> hir::ExternType {
-        let name = full_def_name(current_package, &def.goml_name.0);
+    fn lower_extern_type(
+        &self,
+        def: &ast::ExternType,
+        current_package: &str,
+        current_module_path: &[String],
+    ) -> hir::ExternType {
+        let name = full_def_name_in_module(current_package, current_module_path, &def.goml_name.0);
         hir::ExternType {
             attrs: def.attrs.iter().map(|a| a.into()).collect(),
             package_path: def.package_path.clone(),
@@ -2071,9 +2150,10 @@ impl NameResolution {
         &mut self,
         def: &ast::ExternBuiltin,
         current_package: &str,
+        current_module_path: &[String],
         imports: &HashSet<String>,
     ) -> hir::ExternBuiltin {
-        let name = full_def_name(current_package, &def.name.0);
+        let name = full_def_name_in_module(current_package, current_module_path, &def.name.0);
         let generic_bounds = def
             .generic_bounds
             .iter()
@@ -2130,14 +2210,6 @@ impl NameResolution {
 
 fn type_param_set(params: &[ast::AstIdent]) -> HashSet<String> {
     params.iter().map(|param| param.0.clone()).collect()
-}
-
-fn full_def_path(package: &str, name: &str) -> hir::Path {
-    if is_special_unqualified_package(package) {
-        hir::Path::from_ident(name.to_string())
-    } else {
-        hir::Path::from_idents(vec![package.to_string(), name.to_string()])
-    }
 }
 
 fn constructor_path(package: &str, enum_name: &str, variant: &str) -> hir::Path {
