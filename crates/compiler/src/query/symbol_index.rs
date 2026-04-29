@@ -679,18 +679,9 @@ fn index_package_symbols_named(
     } else {
         package_names.to_vec()
     };
-    let package_goml = package_dir.join("goml.toml");
-    if package_goml.exists() {
+    if let Some(target) = package_navigation_target(package_dir, package_files) {
         for package in &package_names {
-            index.packages.insert(package.clone(), package_goml.clone());
-        }
-    } else {
-        let mut gom_files = package_files.to_vec();
-        gom_files.sort();
-        if let Some(first) = gom_files.first() {
-            for package in &package_names {
-                index.packages.insert(package.clone(), first.clone());
-            }
+            index.packages.insert(package.clone(), target.clone());
         }
     }
 
@@ -707,6 +698,16 @@ fn index_package_symbols_named(
     Ok(())
 }
 
+fn package_navigation_target(package_dir: &Path, package_files: &[PathBuf]) -> Option<PathBuf> {
+    if let Some(target) = package_nav_target_in_dir(package_dir) {
+        return Some(target);
+    }
+    match package_files {
+        [file] => Some(file.clone()),
+        _ => None,
+    }
+}
+
 fn index_builtin_symbols(index: &mut ProjectSymbolIndex) -> Result<(), String> {
     let builtin_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("src")
@@ -715,4 +716,39 @@ fn index_builtin_symbols(index: &mut ProjectSymbolIndex) -> Result<(), String> {
         return Ok(());
     };
     index_source_file_symbols(index, &[BUILTIN_PACKAGE.to_string()], &builtin_path, &src)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn package_navigation_target_prefers_mod_file_over_sorted_source() {
+        let dir = tempfile::tempdir().unwrap();
+        let package_dir = dir.path().join("pkg");
+        fs::create_dir_all(&package_dir).unwrap();
+        let first = package_dir.join("a.gom");
+        let module = package_dir.join("mod.gom");
+        fs::write(&first, "").unwrap();
+        fs::write(&module, "").unwrap();
+
+        let target = package_navigation_target(&package_dir, &[first, module.clone()]);
+
+        assert_eq!(target, Some(module));
+    }
+
+    #[test]
+    fn package_navigation_target_ignores_ambiguous_multi_file_dir() {
+        let dir = tempfile::tempdir().unwrap();
+        let package_dir = dir.path().join("pkg");
+        fs::create_dir_all(&package_dir).unwrap();
+        let first = package_dir.join("a.gom");
+        let second = package_dir.join("b.gom");
+        fs::write(&first, "").unwrap();
+        fs::write(&second, "").unwrap();
+
+        let target = package_navigation_target(&package_dir, &[first, second]);
+
+        assert_eq!(target, None);
+    }
 }
