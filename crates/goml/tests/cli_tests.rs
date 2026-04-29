@@ -954,14 +954,14 @@ fn new_creates_two_package_scaffold() -> anyhow::Result<()> {
 
     let project_dir = dir.path().join("demo");
     let root_toml = fs::read_to_string(project_dir.join("goml.toml"))?;
-    let main_gom = fs::read_to_string(project_dir.join("main.gom"))?;
-    let lib_gom = fs::read_to_string(project_dir.join("lib/mod.gom"))?;
+    let main_gom = fs::read_to_string(project_dir.join("src/main.gom"))?;
+    let lib_gom = fs::read_to_string(project_dir.join("src/lib.gom"))?;
 
     expect![[r#"
         [crate]
         name = "demo"
         kind = "bin"
-        root = "main.gom"
+        root = "src/main.gom"
     "#]]
     .assert_eq(&root_toml);
     expect![[r#"
@@ -1032,16 +1032,16 @@ fn new_project_can_check_and_build() -> anyhow::Result<()> {
 
     let go_file = project_dir.join("target/goml/main.go");
     assert!(go_file.exists());
-    assert!(project_dir.join("target/goml/build/main.core").exists());
+    assert!(project_dir.join("target/goml/build/src/main.core").exists());
     assert!(
         project_dir
-            .join("target/goml/build/main.interface")
+            .join("target/goml/build/src/main.interface")
             .exists()
     );
-    assert!(project_dir.join("target/goml/build/lib/lib.core").exists());
+    assert!(project_dir.join("target/goml/build/src/lib.core").exists());
     assert!(
         project_dir
-            .join("target/goml/build/lib/lib.interface")
+            .join("target/goml/build/src/lib.interface")
             .exists()
     );
 

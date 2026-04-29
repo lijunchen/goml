@@ -26,7 +26,7 @@ const PROJECT_GO_OUTPUT: &str = "target/goml/main.go";
 const PROJECT_CHECK_OUTPUT_DIR: &str = "target/goml/check";
 const PROJECT_BUILD_OUTPUT_DIR: &str = "target/goml/build";
 const DEFAULT_LIB_PACKAGE: &str = "lib";
-const DEFAULT_ENTRY_FILE: &str = "main.gom";
+const DEFAULT_ENTRY_FILE: &str = "src/main.gom";
 
 #[derive(Parser, Debug)]
 #[command(name = "goml", arg_required_else_help = true)]
@@ -319,16 +319,19 @@ fn execute_new(args: NewArgs) -> anyhow::Result<()> {
 
     let project_dir = args.path.join(&args.project_name);
     ensure_project_dir_ready(&project_dir)?;
-    let lib_dir = project_dir.join(DEFAULT_LIB_PACKAGE);
-    fs::create_dir_all(&lib_dir)
-        .with_context(|| format!("failed to create directory {}", lib_dir.display()))?;
+    let src_dir = project_dir.join("src");
+    fs::create_dir_all(&src_dir)
+        .with_context(|| format!("failed to create directory {}", src_dir.display()))?;
 
     write_file_with_dirs(
         &project_dir.join("goml.toml"),
         &render_root_goml_toml(&args.project_name),
     )?;
-    write_file_with_dirs(&project_dir.join("main.gom"), &render_main_gom())?;
-    write_file_with_dirs(&lib_dir.join("mod.gom"), &render_lib_gom())?;
+    write_file_with_dirs(&project_dir.join(DEFAULT_ENTRY_FILE), &render_main_gom())?;
+    write_file_with_dirs(
+        &src_dir.join(format!("{DEFAULT_LIB_PACKAGE}.gom")),
+        &render_lib_gom(),
+    )?;
 
     println!("Created project at {}", project_dir.display());
     println!("Next steps:");
