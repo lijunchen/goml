@@ -474,7 +474,7 @@ fn path_value_import(
         imported_name,
         UseValueImport {
             res: hir::NameRef::Def(hir::DefId {
-                pkg: interface::package_id_for_name(&package),
+                pkg: interface::crate_id_for_name(&package),
                 idx,
             }),
             hint: full_name,
@@ -1622,7 +1622,7 @@ impl NameResolution {
                             .copied()
                             .map(|idx| {
                                 hir::NameRef::Def(hir::DefId {
-                                    pkg: interface::package_id_for_name(&package),
+                                    pkg: interface::crate_id_for_name(&package),
                                     idx,
                                 })
                             })

@@ -88,7 +88,3 @@ pub fn crate_id_for_name(name: &str) -> hir::PackageId {
         }
     }
 }
-
-pub fn package_id_for_name(name: &str) -> hir::PackageId {
-    crate_id_for_name(name)
-}
