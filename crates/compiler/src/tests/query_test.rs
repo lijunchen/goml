@@ -420,6 +420,87 @@ fn main() -> unit {
 
 #[test]
 #[rustfmt::skip]
+fn use_crate_namespace_completions_hide_private_sibling_items() {
+    let dir = tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+"#,
+    )
+    .unwrap();
+
+    let valid_src = r#"
+mod data;
+
+fn main() -> unit {
+    ()
+}
+"#;
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(&main_path, valid_src).unwrap();
+    std::fs::write(
+        dir.path().join("data.gom"),
+        r#"
+pub struct PublicItem {
+    name: string,
+}
+
+struct PrivateItem {
+    name: string,
+}
+
+pub fn exposed() -> string {
+    "public"
+}
+
+fn hidden() -> string {
+    "private"
+}
+"#,
+    )
+    .unwrap();
+
+    let completion_src = r#"
+mod data;
+
+use crate::data::
+
+fn main() -> unit {
+    ()
+}
+"#;
+
+    check_colon_colon_completions_with_path(
+        &main_path,
+        completion_src,
+        3,
+        17,
+        expect![[r#"
+            [
+                ColonColonCompletionItem {
+                    name: "PublicItem",
+                    kind: Type,
+                    detail: Some(
+                        "struct",
+                    ),
+                },
+                ColonColonCompletionItem {
+                    name: "exposed",
+                    kind: Value,
+                    detail: Some(
+                        "fn",
+                    ),
+                },
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
 fn use_self_and_super_namespace_completions_follow_current_module() {
     let dir = tempdir().unwrap();
     std::fs::create_dir_all(dir.path().join("api")).unwrap();

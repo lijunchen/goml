@@ -4,6 +4,7 @@ use std::{
     path::Path,
 };
 
+use ::ast::ast as ast_defs;
 use cst::cst::CstNode;
 use cst::nodes::{BinaryExpr, Block, ClosureExpr, Fn, Item, MatchArm, Pattern};
 use parser::syntax::{MySyntaxKind, MySyntaxNode, MySyntaxNodePtr};
@@ -995,7 +996,59 @@ fn colon_colon_items_for_namespace(
         }
     }
 
+    filter_source_namespace_completion_items(path, namespace, &mut items);
     items
+}
+
+fn filter_source_namespace_completion_items(
+    path: &Path,
+    namespace: &str,
+    items: &mut Vec<ColonColonCompletionItem>,
+) {
+    let Some(visible_names) = source_namespace_visible_item_names(path, namespace) else {
+        return;
+    };
+    items.retain(|item| {
+        item.kind == ColonColonCompletionKind::Package || visible_names.contains(&item.name)
+    });
+}
+
+fn source_namespace_visible_item_names(path: &Path, namespace: &str) -> Option<BTreeSet<String>> {
+    let crate_unit = discover_completion_crate(path)?;
+    let module_path = source_namespace_module_path(path, &crate_unit, namespace)?;
+    let current_module_path = current_completion_module_path(path, &crate_unit)?;
+    let include_private = module_path == current_module_path;
+    let module = crate_unit
+        .modules
+        .iter()
+        .find(|module| module.path.segments() == module_path.as_slice())?;
+
+    Some(
+        module
+            .ast
+            .toplevels
+            .iter()
+            .filter_map(|item| source_item_completion_name(item, include_private))
+            .collect(),
+    )
+}
+
+fn source_item_completion_name(item: &ast_defs::Item, include_private: bool) -> Option<String> {
+    let (name, visibility) = match item {
+        ast_defs::Item::EnumDef(def) => (&def.name.0, def.visibility),
+        ast_defs::Item::StructDef(def) => (&def.name.0, def.visibility),
+        ast_defs::Item::TraitDef(def) => (&def.name.0, def.visibility),
+        ast_defs::Item::Fn(def) => (&def.name.0, def.visibility),
+        ast_defs::Item::ExternGo(def) => (&def.goml_name.0, def.visibility),
+        ast_defs::Item::ExternType(def) => (&def.goml_name.0, def.visibility),
+        ast_defs::Item::ExternBuiltin(def) => (&def.name.0, def.visibility),
+        _ => return None,
+    };
+    if include_private || visibility == ast_defs::Visibility::Public {
+        Some(name.clone())
+    } else {
+        None
+    }
 }
 
 fn crate_module_completion_items(path: &Path, namespace: &str) -> Vec<ColonColonCompletionItem> {
