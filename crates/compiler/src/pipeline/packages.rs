@@ -680,7 +680,7 @@ fn discover_packages_from_crate_unit(
     })
 }
 
-pub fn discover_dependency_versions_from_file(
+pub fn discover_crate_dependency_versions_from_file(
     file_path: &Path,
 ) -> Result<(PathBuf, BTreeMap<String, String>), CompilationError> {
     let start_dir = file_path
@@ -694,6 +694,12 @@ pub fn discover_dependency_versions_from_file(
     }
 
     Ok((start_dir.to_path_buf(), BTreeMap::new()))
+}
+
+pub fn discover_dependency_versions_from_file(
+    file_path: &Path,
+) -> Result<(PathBuf, BTreeMap<String, String>), CompilationError> {
+    discover_crate_dependency_versions_from_file(file_path)
 }
 
 pub fn discover_packages(

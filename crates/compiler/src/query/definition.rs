@@ -677,7 +677,7 @@ fn namespace_definition_location(
 
 fn external_use_definition_location(path: &Path, lookup: &str) -> Option<DefinitionLocation> {
     let (_module_dir, dependencies) =
-        crate::pipeline::packages::discover_dependency_versions_from_file(path).ok()?;
+        crate::pipeline::packages::discover_crate_dependency_versions_from_file(path).ok()?;
     let external_deps = crate::external::resolve_dependency_versions(&dependencies).ok()?;
     let alias = external_deps.alias_for_use_path(lookup)?;
     let namespace_dir = external_deps.namespace_dirs().get(&alias)?.clone();

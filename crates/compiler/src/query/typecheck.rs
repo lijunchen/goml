@@ -110,7 +110,7 @@ fn typecheck_crate_for_query(path: &Path, src: &str) -> Result<QueryTypecheck, S
     let files = expand_derives(crate_unit.source_files(), &mut diagnostics);
     let crate_name = crate_unit.config.name.clone();
     let (_module_dir, dependencies) =
-        crate::pipeline::packages::discover_dependency_versions_from_file(path)
+        crate::pipeline::packages::discover_crate_dependency_versions_from_file(path)
             .map_err(|err| format!("{:?}", err))?;
     let external_deps = crate::external::resolve_dependency_versions(&dependencies)?;
     let deps_interfaces = external_deps.namespace_interfaces();

@@ -446,12 +446,13 @@ fn visible_use_namespace_names(path: &Path, src: &str) -> BTreeSet<String> {
         return BTreeSet::new();
     };
 
-    let external_deps = crate::pipeline::packages::discover_dependency_versions_from_file(path)
-        .ok()
-        .and_then(|(_, dependencies)| {
-            crate::external::resolve_dependency_versions(&dependencies).ok()
-        })
-        .unwrap_or_default();
+    let external_deps =
+        crate::pipeline::packages::discover_crate_dependency_versions_from_file(path)
+            .ok()
+            .and_then(|(_, dependencies)| {
+                crate::external::resolve_dependency_versions(&dependencies).ok()
+            })
+            .unwrap_or_default();
 
     file.use_decls()
         .filter_map(|use_decl| use_decl.path())
@@ -763,7 +764,7 @@ fn use_colon_colon_items_for_namespace(
     let mut items = Vec::new();
 
     if let Ok((_, dependencies)) =
-        crate::pipeline::packages::discover_dependency_versions_from_file(path)
+        crate::pipeline::packages::discover_crate_dependency_versions_from_file(path)
     {
         if let Ok(external_deps) = crate::external::resolve_dependency_versions(&dependencies) {
             items.extend(

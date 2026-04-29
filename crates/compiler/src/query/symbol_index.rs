@@ -246,7 +246,7 @@ fn build_crate_symbol_index(
     }
 
     if let Ok((_module_dir, dependencies)) =
-        crate::pipeline::packages::discover_dependency_versions_from_file(path)
+        crate::pipeline::packages::discover_crate_dependency_versions_from_file(path)
     {
         let external_deps = crate::external::resolve_dependency_versions(&dependencies)
             .map_err(|err| err.to_string())?;
