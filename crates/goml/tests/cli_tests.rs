@@ -1682,6 +1682,27 @@ pub fn text() -> string {
 }
 
 #[test]
+fn compiler_package_subcommands_are_removed() -> anyhow::Result<()> {
+    for command in ["check", "build", "link"] {
+        let output = Command::new(goml_bin())
+            .arg("compiler")
+            .arg(command)
+            .output()?;
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let stderr = String::from_utf8_lossy(&output.stderr);
+
+        assert!(!output.status.success(), "command: {command}");
+        expect![""].assert_eq(&stdout);
+        assert!(
+            stderr.contains(&format!("unrecognized subcommand '{command}'")),
+            "stderr: {stderr}"
+        );
+    }
+
+    Ok(())
+}
+
+#[test]
 fn compiler_link_crates_requires_root_module_main() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     let root = dir.path();
