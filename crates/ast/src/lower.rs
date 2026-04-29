@@ -195,8 +195,6 @@ pub fn lower(node: cst::File) -> LowerResult {
         Some(ast::File {
             package,
             uses,
-            imports: Vec::new(),
-            use_traits: Vec::new(),
             toplevels: items,
         })
     };
@@ -2800,8 +2798,6 @@ fn f() -> unit { () }
             vec!["crate::math::add", "self::helper", "super::Named"]
         );
         assert!(file.uses.iter().all(|decl| decl.alias.is_none()));
-        assert!(file.imports.is_empty());
-        assert!(file.use_traits.is_empty());
     }
 
     #[test]

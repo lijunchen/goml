@@ -168,9 +168,6 @@ fn read_source_files(
             .map_err(|err| compile_error(format!("failed to read {}: {}", path.display(), err)))?;
         let mut ast = parse_ast_file(&path, &src)?;
         ast.package = ast::ast::AstIdent::new(package);
-        for import in ast.imports.iter() {
-            imports.insert(import.0.clone());
-        }
         for use_decl in ast.uses.iter() {
             if let Some(package_import) =
                 external_package_import_alias(&use_decl.path, interface_units)
@@ -186,27 +183,6 @@ fn read_source_files(
             if let ast::ast::Item::Mod(module) = item {
                 imports.insert(child_package_name(package, &module.name.0));
             }
-        }
-        for use_trait in ast.use_traits.iter() {
-            if let Some(package_import) = external_package_import_alias(use_trait, interface_units)
-            {
-                imports.insert(package_import);
-                continue;
-            }
-            if use_trait
-                .segments()
-                .first()
-                .is_some_and(|segment| segment.ident.0 == "crate")
-            {
-                if let Some(package) = use_trait.segments().get(1) {
-                    imports.insert(package.ident.0.clone());
-                }
-                continue;
-            }
-            let Some(first) = use_trait.segments().first() else {
-                continue;
-            };
-            imports.insert(first.ident.0.clone());
         }
         source_list.push(path.display().to_string());
         files.push(hir::SourceFileAst::new(path, ast));

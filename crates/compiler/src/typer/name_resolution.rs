@@ -217,11 +217,7 @@ fn file_imports(
     file: &ast::File,
     deps: &HashMap<String, interface::PackageInterface>,
 ) -> HashSet<String> {
-    let mut imports = file
-        .imports
-        .iter()
-        .map(|import| import.0.clone())
-        .collect::<HashSet<_>>();
+    let mut imports = HashSet::new();
     for use_decl in file.uses.iter() {
         if let Some(package) = use_decl_import(&use_decl.path, deps) {
             imports.insert(package);
@@ -230,11 +226,6 @@ fn file_imports(
     for item in file.toplevels.iter() {
         if let ast::Item::Mod(module) = item {
             imports.insert(module.name.0.clone());
-        }
-    }
-    for use_trait in file.use_traits.iter() {
-        if let Some(package) = use_trait_import(use_trait, deps) {
-            imports.insert(package);
         }
     }
     let known_packages = deps.keys().cloned().collect::<HashSet<_>>();
@@ -438,23 +429,6 @@ fn known_package_prefix_for_path(
     })
 }
 
-fn use_trait_import(
-    path: &ast::Path,
-    deps: &HashMap<String, interface::PackageInterface>,
-) -> Option<String> {
-    if let Some(alias) = external_import_alias(path, deps) {
-        return Some(alias);
-    }
-    let segments = path.segments();
-    if segments
-        .first()
-        .is_some_and(|segment| segment.ident.0 == "crate")
-    {
-        return segments.get(1).map(|segment| segment.ident.0.clone());
-    }
-    segments.first().map(|segment| segment.ident.0.clone())
-}
-
 fn lowered_use_trait_path(
     path: &ast::Path,
     deps: &HashMap<String, interface::PackageInterface>,
@@ -630,13 +604,7 @@ impl NameResolution {
         for file in files.iter() {
             let package_name = file.ast.package.0.as_str();
             let mut reported_external_coordinates = HashSet::new();
-            for use_path in file
-                .ast
-                .uses
-                .iter()
-                .map(|use_decl| &use_decl.path)
-                .chain(file.ast.use_traits.iter())
-            {
+            for use_path in file.ast.uses.iter().map(|use_decl| &use_decl.path) {
                 if !reported_external_coordinates.insert(path_segments_display(use_path)) {
                     continue;
                 }
@@ -650,7 +618,7 @@ impl NameResolution {
                     ));
                 }
             }
-            for use_path in file.ast.use_traits.iter() {
+            for use_path in file.ast.uses.iter().map(|use_decl| &use_decl.path) {
                 let Some(first) = use_path.segments().first() else {
                     continue;
                 };
@@ -919,33 +887,6 @@ impl NameResolution {
                         continue;
                     }
                     let Some(qualified) = lowered_use_trait_path(&use_decl.path, deps) else {
-                        continue;
-                    };
-                    let Some(package) = &qualified.package else {
-                        self.ice("use trait is missing package");
-                        continue;
-                    };
-                    let Some(trait_name) = qualified.last_ident() else {
-                        self.ice("use trait is missing name");
-                        continue;
-                    };
-                    let _ = (package, trait_name);
-                    use_traits.push(qualified);
-                }
-                for use_trait in file.ast.use_traits.iter() {
-                    if path_value_import(use_trait, None, &package, deps, &def_names).is_some() {
-                        continue;
-                    }
-                    if let Some(first) = use_trait.segments().first()
-                        && external_import_path_for_alias(&first.ident.0, deps).is_some()
-                        && external_import_alias(use_trait, deps).is_none()
-                    {
-                        continue;
-                    }
-                    if use_path_is_package_import(use_trait, deps) {
-                        continue;
-                    }
-                    let Some(qualified) = lowered_use_trait_path(use_trait, deps) else {
                         continue;
                     };
                     let Some(package) = &qualified.package else {

@@ -78,17 +78,6 @@ fn package_dir_for_file(path: &Path) -> PathBuf {
     }
 }
 
-fn import_from_use_trait(path: &ast::Path, external_imports: &ExternalImports) -> Option<String> {
-    if let Some(alias) = external_imports.alias_for_use_path(path) {
-        return Some(alias);
-    }
-    let segments = path.segments();
-    if segments.first().is_some_and(|seg| seg.ident.0 == "crate") {
-        return segments.get(1).map(|seg| seg.ident.0.clone());
-    }
-    segments.first().map(|seg| seg.ident.0.clone())
-}
-
 fn import_from_use_decl(path: &ast::Path, external_imports: &ExternalImports) -> Option<String> {
     if let Some(alias) = external_imports.alias_for_use_path(path) {
         return Some(alias);
@@ -100,25 +89,16 @@ fn collect_imports(files: &[SourceFileAst], external_imports: &ExternalImports) 
     files
         .iter()
         .flat_map(|file| {
-            let from_imports = file.ast.imports.iter().map(|import| import.0.clone());
             let from_use_decls = file
                 .ast
                 .uses
                 .iter()
                 .filter_map(|decl| import_from_use_decl(&decl.path, external_imports));
-            let from_use_traits = file
-                .ast
-                .use_traits
-                .iter()
-                .filter_map(|path| import_from_use_trait(path, external_imports));
             let from_mods = file.ast.toplevels.iter().filter_map(|item| match item {
                 ast::Item::Mod(module) => Some(module.name.0.clone()),
                 _ => None,
             });
-            from_imports
-                .chain(from_use_decls)
-                .chain(from_use_traits)
-                .chain(from_mods)
+            from_use_decls.chain(from_mods)
         })
         .collect()
 }
@@ -144,9 +124,6 @@ pub(crate) fn collect_known_crate_path_imports_from_ast(
     let mut imports = HashSet::new();
     for use_decl in file.uses.iter() {
         collect_path_crate_import(&use_decl.path, known_packages, &mut imports);
-    }
-    for use_trait in file.use_traits.iter() {
-        collect_path_crate_import(use_trait, known_packages, &mut imports);
     }
     for item in file.toplevels.iter() {
         collect_item_crate_path_imports(item, known_packages, &mut imports);
