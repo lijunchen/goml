@@ -216,7 +216,7 @@ fn build_crate_symbol_index(
         namespaces: HashMap::new(),
         discovery_order: Vec::new(),
         namespace_dirs: HashMap::new(),
-        package_visibilities: HashMap::new(),
+        namespace_visibilities: HashMap::new(),
         external_root_packages: HashSet::new(),
     };
     let mut index = ProjectSymbolIndex::default();

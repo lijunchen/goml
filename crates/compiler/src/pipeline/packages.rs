@@ -27,7 +27,7 @@ pub struct NamespaceGraph {
     pub namespaces: HashMap<String, NamespaceUnit>,
     pub discovery_order: Vec<String>,
     pub namespace_dirs: HashMap<String, PathBuf>,
-    pub package_visibilities: HashMap<String, ast::Visibility>,
+    pub namespace_visibilities: HashMap<String, ast::Visibility>,
     pub external_root_packages: HashSet<String>,
 }
 
@@ -616,7 +616,7 @@ fn discover_packages_from_crate_unit(
     let mut namespaces = HashMap::new();
     let mut discovery_order = Vec::new();
     let mut namespace_dirs = HashMap::new();
-    let mut package_visibilities = HashMap::new();
+    let mut namespace_visibilities = HashMap::new();
 
     for module in crate_unit.modules.iter() {
         let name = module_namespace_name(module.path.segments(), root_namespace);
@@ -657,7 +657,7 @@ fn discover_packages_from_crate_unit(
         );
         discovery_order.push(name.clone());
         namespace_dirs.insert(name.clone(), namespace_dir_for_file(&module.file_path));
-        package_visibilities.insert(name, module.visibility);
+        namespace_visibilities.insert(name, module.visibility);
     }
 
     let known_namespaces = namespaces.keys().cloned().collect::<HashSet<_>>();
@@ -675,7 +675,7 @@ fn discover_packages_from_crate_unit(
         namespaces,
         discovery_order,
         namespace_dirs,
-        package_visibilities,
+        namespace_visibilities,
         external_root_packages: HashSet::new(),
     })
 }
@@ -817,7 +817,7 @@ fn discover_packages_inner(
     let mut namespaces = HashMap::new();
     let mut discovery_order = Vec::new();
     let mut namespace_dirs = HashMap::new();
-    let mut package_visibilities = HashMap::new();
+    let mut namespace_visibilities = HashMap::new();
     let mut queue: Vec<String> = entry_namespace.imports.iter().cloned().collect();
     let mut loaded = HashSet::new();
 
@@ -825,7 +825,7 @@ fn discover_packages_inner(
     namespaces.insert(entry_name.clone(), entry_namespace);
     discovery_order.push(entry_name.clone());
     namespace_dirs.insert(entry_name.clone(), root_dir.to_path_buf());
-    package_visibilities.insert(entry_name.clone(), ast::Visibility::Public);
+    namespace_visibilities.insert(entry_name.clone(), ast::Visibility::Public);
 
     while let Some(package_name) = queue.pop() {
         if loaded.contains(&package_name) {
@@ -871,7 +871,7 @@ fn discover_packages_inner(
         namespaces.insert(declared_name.clone(), package);
         discovery_order.push(declared_name.clone());
         namespace_dirs.insert(declared_name, package_dir);
-        package_visibilities.insert(package_name, ast::Visibility::Public);
+        namespace_visibilities.insert(package_name, ast::Visibility::Public);
     }
 
     Ok(NamespaceGraph {
@@ -881,7 +881,7 @@ fn discover_packages_inner(
         namespaces,
         discovery_order,
         namespace_dirs,
-        package_visibilities,
+        namespace_visibilities,
         external_root_packages: HashSet::new(),
     })
 }
@@ -989,7 +989,7 @@ impl NamespaceGraph {
                 prefix.push_str(segment);
             }
             if !matches!(
-                self.package_visibilities.get(&prefix),
+                self.namespace_visibilities.get(&prefix),
                 Some(ast::Visibility::Public)
             ) {
                 return false;
@@ -1011,7 +1011,7 @@ impl NamespaceGraph {
         namespace: impl Into<String>,
         visibility: ast::Visibility,
     ) {
-        self.package_visibilities
+        self.namespace_visibilities
             .insert(namespace.into(), visibility);
     }
 
