@@ -539,6 +539,71 @@ pub fn item() -> Item {
 }
 
 #[test]
+fn trait_method_syntax_reports_ambiguous_imported_traits() {
+    assert_err_contains(
+        &[
+            (
+                "main.gom",
+                r#"
+mod a;
+mod b;
+mod data;
+
+use crate::a::TraitX;
+use crate::b::TraitX;
+
+fn main() -> unit {
+    let item = crate::data::item();
+    let _ = item.label();
+}
+"#,
+            ),
+            (
+                "a.gom",
+                r#"
+pub trait TraitX {
+    fn label(Self) -> string;
+}
+"#,
+            ),
+            (
+                "b.gom",
+                r#"
+pub trait TraitX {
+    fn label(Self) -> string;
+}
+"#,
+            ),
+            (
+                "data.gom",
+                r#"
+pub struct Item {
+    value: string,
+}
+
+impl crate::a::TraitX for Item {
+    fn label(self: Item) -> string {
+        "a"
+    }
+}
+
+impl crate::b::TraitX for Item {
+    fn label(self: Item) -> string {
+        "b"
+    }
+}
+
+pub fn item() -> Item {
+    Item { value: "x" }
+}
+"#,
+            ),
+        ],
+        "Ambiguous method label",
+    );
+}
+
+#[test]
 fn private_trait_import_is_hidden() {
     assert_err(&[
         (
