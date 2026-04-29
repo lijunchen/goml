@@ -949,7 +949,7 @@ fn visit_package(
     for dep in deps {
         if !graph.packages.contains_key(&dep) && !graph.external_root_packages.contains(&dep) {
             return Err(compile_error(format!(
-                "package {} imports missing package {} in {}",
+                "namespace {} imports missing namespace {} in {}",
                 name,
                 dep,
                 graph.module_dir.join(&dep).display()

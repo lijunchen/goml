@@ -711,7 +711,7 @@ fn call() -> int64 {
     }
 
     #[test]
-    fn missing_package_reports_high_level_diagnostic() {
+    fn missing_namespace_reports_high_level_diagnostic() {
         let dir = tempdir().unwrap();
         let root = dir.path();
         std::fs::write(
@@ -737,7 +737,7 @@ fn main() -> unit {
         let diagnostics = handlers::get_diagnostics(&path, src, &doc);
         let formatted = format_diagnostics(&diagnostics);
 
-        assert!(formatted.contains("imports missing package colors"));
+        assert!(formatted.contains("imports missing namespace colors"));
         assert!(!formatted.contains("failed to read package directory"));
     }
 }
