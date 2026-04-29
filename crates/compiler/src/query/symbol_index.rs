@@ -209,7 +209,7 @@ fn build_crate_symbol_index(
     for module in crate_unit.modules.iter() {
         let package_names = query_module_package_names(module.path.segments(), &crate_name);
         let package_name = package_names[0].clone();
-        let package_dir = package_dir_for_module_file(&module.file_path);
+        let namespace_dir = namespace_dir_for_module_file(&module.file_path);
         let files = vec![crate::hir::SourceFileAst::with_package_module_visibility(
             module.file_path.clone(),
             crate_name.clone(),
@@ -220,14 +220,14 @@ fn build_crate_symbol_index(
         graph.discovery_order.push(package_name.clone());
         graph
             .package_dirs
-            .insert(package_name.clone(), package_dir.clone());
+            .insert(package_name.clone(), namespace_dir.clone());
         graph
             .package_visibilities
             .insert(package_name.clone(), module.visibility);
         for alias in package_names.iter().skip(1) {
             graph
                 .package_dirs
-                .insert(alias.clone(), package_dir.clone());
+                .insert(alias.clone(), namespace_dir.clone());
             graph
                 .package_visibilities
                 .insert(alias.clone(), module.visibility);
@@ -244,7 +244,7 @@ fn build_crate_symbol_index(
             &mut index,
             &package_name,
             &package_names,
-            &package_dir,
+            &namespace_dir,
             std::slice::from_ref(&module.file_path),
             &overrides,
         )?;
@@ -297,7 +297,7 @@ fn query_module_package_names(module_path: &[String], crate_name: &str) -> Vec<S
     names
 }
 
-fn package_dir_for_module_file(path: &Path) -> PathBuf {
+fn namespace_dir_for_module_file(path: &Path) -> PathBuf {
     if path.file_name().is_some_and(|name| name == "mod.gom") {
         path.parent()
             .filter(|parent| !parent.as_os_str().is_empty())
@@ -670,7 +670,7 @@ fn index_namespace_symbols_named(
     index: &mut ProjectSymbolIndex,
     package_name: &str,
     package_names: &[String],
-    package_dir: &Path,
+    namespace_dir: &Path,
     package_files: &[PathBuf],
     src_overrides: &HashMap<PathBuf, String>,
 ) -> Result<(), String> {
@@ -679,7 +679,7 @@ fn index_namespace_symbols_named(
     } else {
         package_names.to_vec()
     };
-    if let Some(target) = namespace_navigation_target(package_dir, package_files) {
+    if let Some(target) = namespace_navigation_target(namespace_dir, package_files) {
         for package in &package_names {
             index.namespaces.insert(package.clone(), target.clone());
         }
@@ -698,8 +698,8 @@ fn index_namespace_symbols_named(
     Ok(())
 }
 
-fn namespace_navigation_target(package_dir: &Path, package_files: &[PathBuf]) -> Option<PathBuf> {
-    if let Some(target) = package_nav_target_in_dir(package_dir) {
+fn namespace_navigation_target(namespace_dir: &Path, package_files: &[PathBuf]) -> Option<PathBuf> {
+    if let Some(target) = package_nav_target_in_dir(namespace_dir) {
         return Some(target);
     }
     match package_files {
@@ -725,14 +725,14 @@ mod tests {
     #[test]
     fn namespace_navigation_target_prefers_mod_file_over_sorted_source() {
         let dir = tempfile::tempdir().unwrap();
-        let package_dir = dir.path().join("pkg");
-        fs::create_dir_all(&package_dir).unwrap();
-        let first = package_dir.join("a.gom");
-        let module = package_dir.join("mod.gom");
+        let namespace_dir = dir.path().join("pkg");
+        fs::create_dir_all(&namespace_dir).unwrap();
+        let first = namespace_dir.join("a.gom");
+        let module = namespace_dir.join("mod.gom");
         fs::write(&first, "").unwrap();
         fs::write(&module, "").unwrap();
 
-        let target = namespace_navigation_target(&package_dir, &[first, module.clone()]);
+        let target = namespace_navigation_target(&namespace_dir, &[first, module.clone()]);
 
         assert_eq!(target, Some(module));
     }
@@ -740,14 +740,14 @@ mod tests {
     #[test]
     fn namespace_navigation_target_ignores_ambiguous_multi_file_dir() {
         let dir = tempfile::tempdir().unwrap();
-        let package_dir = dir.path().join("pkg");
-        fs::create_dir_all(&package_dir).unwrap();
-        let first = package_dir.join("a.gom");
-        let second = package_dir.join("b.gom");
+        let namespace_dir = dir.path().join("pkg");
+        fs::create_dir_all(&namespace_dir).unwrap();
+        let first = namespace_dir.join("a.gom");
+        let second = namespace_dir.join("b.gom");
         fs::write(&first, "").unwrap();
         fs::write(&second, "").unwrap();
 
-        let target = namespace_navigation_target(&package_dir, &[first, second]);
+        let target = namespace_navigation_target(&namespace_dir, &[first, second]);
 
         assert_eq!(target, None);
     }
