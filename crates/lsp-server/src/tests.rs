@@ -1712,7 +1712,7 @@ root = "main.gom"
             "main.gom",
             "use crate::traitpkg::Show;",
             "Show",
-            expect!["traitpkg/mod.gom:1:10"],
+            expect!["traitpkg/mod.gom:0:10"],
         );
     }
 
@@ -1739,7 +1739,7 @@ root = "main.gom"
             "main.gom",
             "x: 20",
             "x",
-            expect!["lib/mod.gom:14:4"],
+            expect!["lib/mod.gom:13:4"],
         );
     }
 
@@ -1904,7 +1904,7 @@ root = "main.gom"
             "main.gom",
             "crate::math::Pair",
             "Pair",
-            expect!["math/mod.gom:1:11"],
+            expect!["math/mod.gom:0:11"],
         );
     }
 
@@ -1926,7 +1926,7 @@ root = "main.gom"
             "stats/mod.gom",
             "crate::math::Op::Add",
             "Add",
-            expect!["math/mod.gom:7:4"],
+            expect!["math/mod.gom:6:4"],
         );
     }
 
@@ -1937,7 +1937,7 @@ root = "main.gom"
             "main.gom",
             "a: 9",
             "a",
-            expect!["math/mod.gom:2:4"],
+            expect!["math/mod.gom:1:4"],
         );
     }
 
@@ -1959,7 +1959,7 @@ root = "main.gom"
             "geo/mod.gom",
             "crate::shape::Point { x: x, y: y }",
             "Point",
-            expect!["shape/mod.gom:1:11"],
+            expect!["shape/mod.gom:0:11"],
         );
     }
 
@@ -1981,7 +1981,7 @@ root = "main.gom"
             "usepkg/mod.gom",
             "crate::traitpkg::C",
             "C",
-            expect!["traitpkg/mod.gom:9:10"],
+            expect!["traitpkg/mod.gom:8:10"],
         );
     }
 
@@ -2003,7 +2003,7 @@ root = "main.gom"
             "main.gom",
             "crate::lib::Color::Green",
             "Color",
-            expect!["lib/mod.gom:1:9"],
+            expect!["lib/mod.gom:0:9"],
         );
     }
 
@@ -2014,7 +2014,7 @@ root = "main.gom"
             "main.gom",
             "crate::lib::sum_point",
             "sum_point",
-            expect!["lib/mod.gom:18:7"],
+            expect!["lib/mod.gom:17:7"],
         );
     }
 
@@ -2025,7 +2025,7 @@ root = "main.gom"
             "main.gom",
             "crate::lib::Point",
             "Point",
-            expect!["lib/mod.gom:13:11"],
+            expect!["lib/mod.gom:12:11"],
         );
     }
 
@@ -2036,7 +2036,7 @@ root = "main.gom"
             "main.gom",
             "crate::shape::inc",
             "inc",
-            expect!["shape/mod.gom:10:7"],
+            expect!["shape/mod.gom:9:7"],
         );
     }
 
@@ -2047,7 +2047,7 @@ root = "main.gom"
             "main.gom",
             "crate::shape::sum",
             "sum",
-            expect!["shape/mod.gom:14:7"],
+            expect!["shape/mod.gom:13:7"],
         );
     }
 
