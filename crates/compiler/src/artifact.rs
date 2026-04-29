@@ -27,16 +27,16 @@ impl CrateExports {
         }
     }
 
-    pub fn public_from_package(
-        package: &str,
+    pub fn public_from_namespace(
+        namespace: &str,
         files: &[SourceFileAst],
         genv: &GlobalTypeEnv,
     ) -> Self {
-        if package == BUILTIN_PACKAGE || package == ROOT_PACKAGE {
+        if namespace == BUILTIN_PACKAGE || namespace == ROOT_PACKAGE {
             return Self::from_genv(genv);
         }
 
-        Self::public_filtered(package, files, genv)
+        Self::public_filtered(namespace, files, genv)
     }
 
     pub fn public_from_crate(

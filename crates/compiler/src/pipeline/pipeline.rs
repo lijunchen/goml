@@ -279,7 +279,7 @@ fn typecheck_namespace_unit(
     );
     diagnostics.append(&mut hir_diagnostics);
     let full_exports = CrateExports::from_genv(&genv);
-    let exports = CrateExports::public_from_package(&namespace.name, &namespace.files, &genv);
+    let exports = CrateExports::public_from_namespace(&namespace.name, &namespace.files, &genv);
     let namespace_interface = interface::CrateInterface::from_exports(&namespace.name, &exports);
 
     NamespaceArtifact {
@@ -534,7 +534,7 @@ fn compile_inner(
                 dep_artifact.interface.exports.apply_to(&mut env);
                 continue;
             }
-            if let Some(exports) = external_package_exports(&external_deps, dep) {
+            if let Some(exports) = external_namespace_exports(&external_deps, dep) {
                 exports.apply_to(&mut env);
                 continue;
             }
@@ -707,7 +707,7 @@ pub fn typecheck_with_namespaces_and_results(
             package_diagnostics.append(&mut hir_diagnostics);
             diagnostics.append(&mut package_diagnostics);
 
-            let exports = CrateExports::public_from_package(name, &package.files, &package_genv);
+            let exports = CrateExports::public_from_namespace(name, &package.files, &package_genv);
             report_duplicate_trait_impls(&mut diagnostics, &genv, &exports, name);
             exports.apply_to(&mut genv);
             let crate_interface = interface::CrateInterface::from_exports(name, &exports);
@@ -767,12 +767,12 @@ fn validate_entrypoint_for_compile(
     }
 }
 
-fn external_package_exports<'a>(
+fn external_namespace_exports<'a>(
     external_deps: &'a ExternalDependencyArtifacts,
-    package: &str,
+    namespace: &str,
 ) -> Option<&'a CrateExports> {
     for module in external_deps.modules.values() {
-        if module.namespace_interfaces.contains_key(package) {
+        if module.namespace_interfaces.contains_key(namespace) {
             return Some(&module.interface.exports);
         }
     }

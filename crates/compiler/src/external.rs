@@ -593,12 +593,12 @@ fn compile_module_package(
     }
 
     let full_exports = CrateExports::from_genv(&genv);
-    let exports = CrateExports::public_from_package(&package.name, &package.files, &genv);
-    let package_interface = interface::CrateInterface::from_exports(&package.name, &exports);
+    let exports = CrateExports::public_from_namespace(&package.name, &package.files, &genv);
+    let crate_interface = interface::CrateInterface::from_exports(&package.name, &exports);
     let interface = InterfaceUnit::new(
         package.name.clone(),
         exports.clone(),
-        package_interface,
+        crate_interface,
         dep_hashes,
     );
 
