@@ -193,6 +193,7 @@ struct LinkOptions {
 }
 
 struct ProjectContext {
+    crate_unit: compiler::pipeline::modules::CrateUnit,
     module_dir: PathBuf,
     entry_path: PathBuf,
     kind: CrateKind,
@@ -822,11 +823,14 @@ fn execute_compiler_link(options: LinkOptions) -> anyhow::Result<()> {
 
 fn execute_project_check(args: ProjectCommandArgs) -> anyhow::Result<()> {
     let project = load_project_from_cwd()?;
-    let plan = build_project_check_plan(&project)?;
-    if !args.dry_run {
-        materialize_external_artifacts(&plan.external, false)?;
+    if args.dry_run {
+        let plan = build_project_check_plan(&project)?;
+        return execute_planned_commands(&project.module_dir, plan.commands, true);
     }
-    execute_planned_commands(&project.module_dir, plan.commands, args.dry_run)
+
+    let external = build_external_artifacts_plan(&project, PROJECT_CHECK_OUTPUT_DIR)?;
+    materialize_external_artifacts(&external, false)?;
+    execute_direct_project_check(&project, &external)
 }
 
 fn execute_project_build(args: ProjectCommandArgs) -> anyhow::Result<()> {
@@ -1030,6 +1034,33 @@ fn materialize_external_artifacts(
         }
     }
     Ok(())
+}
+
+fn execute_direct_project_check(
+    project: &ProjectContext,
+    external: &ExternalArtifactsPlan,
+) -> anyhow::Result<()> {
+    let unit =
+        compiler::pipeline::separate::check_crate(compiler::pipeline::separate::CrateInputs {
+            crate_unit: project.crate_unit.clone(),
+            interface_files: unique_interface_paths(&external.interface_outputs),
+        })
+        .map_err(|err| anyhow!("project check failed: {:?}", err))?;
+    write_json(
+        &project_crate_output_base(project, PROJECT_CHECK_OUTPUT_DIR).with_extension("interface"),
+        serde_json::to_string_pretty(&unit)?,
+    )
+}
+
+fn project_crate_output_base(project: &ProjectContext, output_root: &str) -> PathBuf {
+    PathBuf::from(output_root).join(&project.crate_unit.config.name)
+}
+
+fn unique_interface_paths(interface_outputs: &HashMap<String, PathBuf>) -> Vec<PathBuf> {
+    let mut paths = interface_outputs.values().cloned().collect::<Vec<_>>();
+    paths.sort();
+    paths.dedup();
+    paths
 }
 
 fn write_json(path: &Path, json: String) -> anyhow::Result<()> {
@@ -1269,8 +1300,10 @@ fn load_project_from_cwd() -> anyhow::Result<ProjectContext> {
         let crate_unit = compiler::pipeline::modules::discover_crate_from_dir(&crate_dir)
             .map_err(|err| anyhow!("crate module discovery failed: {:?}", err))?;
         let kind = project_kind(&crate_unit);
+        let entry_path = crate_unit.root_file.clone();
         return Ok(ProjectContext {
-            entry_path: crate_unit.root_file,
+            crate_unit,
+            entry_path,
             module_dir: crate_dir,
             kind,
             dependencies: manifest.dependency_versions(),

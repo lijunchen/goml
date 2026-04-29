@@ -1328,6 +1328,8 @@ fn project_check_checks_module_from_cwd() -> anyhow::Result<()> {
     assert!(output.status.success(), "stderr: {stderr}");
     expect![""].assert_eq(&stdout);
     expect![""].assert_eq(&stderr);
+    assert!(dir.path().join("target/goml/check/demo.interface").exists());
+    assert!(!dir.path().join("target/goml/check/main.interface").exists());
 
     Ok(())
 }
