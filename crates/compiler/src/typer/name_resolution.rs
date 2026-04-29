@@ -66,8 +66,8 @@ struct UseValueImport {
     hint: String,
 }
 
-fn full_def_name_in_module(package: &str, module_path: &[String], name: &str) -> String {
-    let mut segments = full_def_segments(package, module_path, name);
+fn full_def_name_in_module(namespace: &str, module_path: &[String], name: &str) -> String {
+    let mut segments = full_def_segments(namespace, module_path, name);
     if segments.len() == 1 {
         segments.pop().unwrap_or_default()
     } else {
@@ -75,12 +75,12 @@ fn full_def_name_in_module(package: &str, module_path: &[String], name: &str) ->
     }
 }
 
-fn full_def_path_in_module(package: &str, module_path: &[String], name: &str) -> hir::Path {
-    hir::Path::from_idents(full_def_segments(package, module_path, name))
+fn full_def_path_in_module(namespace: &str, module_path: &[String], name: &str) -> hir::Path {
+    hir::Path::from_idents(full_def_segments(namespace, module_path, name))
 }
 
-fn full_def_segments(package: &str, module_path: &[String], name: &str) -> Vec<String> {
-    let mut segments = module_prefix_segments(package, module_path);
+fn full_def_segments(namespace: &str, module_path: &[String], name: &str) -> Vec<String> {
+    let mut segments = module_prefix_segments(namespace, module_path);
     segments.push(name.to_string());
     segments
 }
@@ -93,19 +93,19 @@ fn module_relative_def_name(module_path: &[String], name: &str) -> String {
     }
 }
 
-fn module_prefix_segments(package: &str, module_path: &[String]) -> Vec<String> {
+fn module_prefix_segments(namespace: &str, module_path: &[String]) -> Vec<String> {
     if module_path.is_empty() {
-        if is_special_unqualified_package(package) {
+        if is_special_unqualified_package(namespace) {
             Vec::new()
         } else {
-            vec![package.to_string()]
+            vec![namespace.to_string()]
         }
     } else {
         let module_name = module_path.join("::");
-        if package == module_name || is_special_unqualified_package(package) {
+        if namespace == module_name || is_special_unqualified_package(namespace) {
             module_path.to_vec()
         } else {
-            std::iter::once(package.to_string())
+            std::iter::once(namespace.to_string())
                 .chain(module_path.iter().cloned())
                 .collect()
         }
@@ -113,27 +113,27 @@ fn module_prefix_segments(package: &str, module_path: &[String]) -> Vec<String> 
 }
 
 fn crate_prefix_segments(
-    package: &str,
+    namespace: &str,
     module_path: &[String],
-    include_package: bool,
+    include_namespace: bool,
 ) -> Vec<String> {
     let module_name = module_path.join("::");
-    if !include_package
-        || is_special_unqualified_package(package)
-        || (!module_path.is_empty() && package == module_name)
+    if !include_namespace
+        || is_special_unqualified_package(namespace)
+        || (!module_path.is_empty() && namespace == module_name)
     {
         Vec::new()
     } else {
-        vec![package.to_string()]
+        vec![namespace.to_string()]
     }
 }
 
-fn parent_module_prefix_segments(package: &str, module_path: &[String]) -> Vec<String> {
+fn parent_module_prefix_segments(namespace: &str, module_path: &[String]) -> Vec<String> {
     let parent = module_path
         .split_last()
         .map(|(_, parent)| parent)
         .unwrap_or(&[]);
-    module_prefix_segments(package, parent)
+    module_prefix_segments(namespace, parent)
 }
 
 fn namespace_allowed(namespace: &str, current_namespace: &str, imports: &HashSet<String>) -> bool {
