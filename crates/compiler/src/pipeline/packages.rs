@@ -13,7 +13,7 @@ use crate::pipeline::modules::CrateUnit;
 use crate::pipeline::pipeline::{CompilationError, parse_ast_file};
 
 #[derive(Debug)]
-pub struct PackageUnit {
+pub struct NamespaceUnit {
     pub name: String,
     pub files: Vec<SourceFileAst>,
     pub imports: HashSet<String>,
@@ -24,7 +24,7 @@ pub struct PackageGraph {
     pub module_dir: PathBuf,
     pub module_name: Option<String>,
     pub entry_package: String,
-    pub packages: HashMap<String, PackageUnit>,
+    pub packages: HashMap<String, NamespaceUnit>,
     pub discovery_order: Vec<String>,
     pub package_dirs: HashMap<String, PathBuf>,
     pub package_visibilities: HashMap<String, ast::Visibility>,
@@ -501,7 +501,7 @@ fn load_package_file(
     package_name: &str,
     source_override: Option<(&Path, &ast::File)>,
     external_imports: &ExternalImports,
-) -> Result<PackageUnit, CompilationError> {
+) -> Result<NamespaceUnit, CompilationError> {
     let ast = if let Some((override_path, override_ast)) = source_override
         && override_path == package_file
     {
@@ -522,7 +522,7 @@ fn load_package_file(
         ast,
     )];
     let imports = collect_imports(&files, external_imports);
-    Ok(PackageUnit {
+    Ok(NamespaceUnit {
         name: package_name.to_string(),
         files,
         imports,
@@ -534,7 +534,7 @@ fn load_package(
     expected_package_name: Option<&str>,
     source_override: Option<(&Path, &ast::File)>,
     external_imports: &ExternalImports,
-) -> Result<PackageUnit, CompilationError> {
+) -> Result<NamespaceUnit, CompilationError> {
     let mut files = Vec::new();
     let package_name = expected_package_name
         .map(str::to_string)
@@ -568,7 +568,7 @@ fn load_package(
     }
 
     let imports = collect_imports(&files, external_imports);
-    Ok(PackageUnit {
+    Ok(NamespaceUnit {
         name: package_name,
         files,
         imports,
@@ -579,14 +579,14 @@ fn load_single_file_package(
     path: &Path,
     ast: &ast::File,
     external_imports: &ExternalImports,
-) -> PackageUnit {
+) -> NamespaceUnit {
     let files = vec![SourceFileAst::with_package(
         path.to_path_buf(),
         ROOT_PACKAGE,
         ast.clone(),
     )];
     let imports = collect_imports(&files, external_imports);
-    PackageUnit {
+    NamespaceUnit {
         name: ROOT_PACKAGE.to_string(),
         files,
         imports,
@@ -649,7 +649,7 @@ fn discover_packages_from_crate_unit(
         }
         packages.insert(
             name.clone(),
-            PackageUnit {
+            NamespaceUnit {
                 name: name.clone(),
                 files,
                 imports,

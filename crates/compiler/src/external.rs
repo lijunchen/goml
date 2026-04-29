@@ -14,7 +14,7 @@ use crate::env::{
 use crate::hir;
 use crate::interface;
 use crate::namespace_imports::ExternalImports;
-use crate::pipeline::packages::{self, PackageGraph, PackageUnit};
+use crate::pipeline::packages::{self, NamespaceUnit, PackageGraph};
 use crate::registry::{
     ModuleCoord, Registry, ResolvedModule, ResolvedModuleGraph, SemVer, cached_registry_dir,
     resolve_dependencies, validate_registry_consistency,
@@ -536,7 +536,7 @@ fn validate_external_module_manifest(
 }
 
 fn compile_namespace_unit(
-    namespace: &PackageUnit,
+    namespace: &NamespaceUnit,
     local_namespaces: &HashMap<String, CompiledNamespace>,
     external_roots: &BTreeMap<String, ExternalModuleArtifact>,
 ) -> Result<CompiledNamespace, String> {

@@ -263,7 +263,7 @@ pub fn parse_ast_file(path: &Path, src: &str) -> Result<ast::File, CompilationEr
 
 fn typecheck_namespace_unit(
     namespace_id: hir::PackageId,
-    namespace: &packages::PackageUnit,
+    namespace: &packages::NamespaceUnit,
     deps_envs: HashMap<String, GlobalTypeEnv>,
     deps_interfaces: &HashMap<String, interface::CrateInterface>,
 ) -> NamespaceArtifact {

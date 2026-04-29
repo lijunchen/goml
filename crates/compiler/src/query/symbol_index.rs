@@ -229,7 +229,7 @@ fn build_crate_symbol_index(
         }
         graph.packages.insert(
             namespace_name.clone(),
-            crate::pipeline::packages::PackageUnit {
+            crate::pipeline::packages::NamespaceUnit {
                 name: namespace_name.clone(),
                 files,
                 imports: HashSet::new(),
