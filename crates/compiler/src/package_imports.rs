@@ -51,7 +51,7 @@ pub fn resolve_external_import_prefix_with_map(
 
 pub fn resolve_external_import_prefix(
     path: &ast::Path,
-    deps: &HashMap<String, interface::PackageInterface>,
+    deps: &HashMap<String, interface::CrateInterface>,
 ) -> Option<(String, usize)> {
     let mut best = None;
     for end in 2..=path.len() {
@@ -72,14 +72,14 @@ pub fn resolve_external_import_prefix(
 
 pub fn external_import_alias(
     path: &ast::Path,
-    deps: &HashMap<String, interface::PackageInterface>,
+    deps: &HashMap<String, interface::CrateInterface>,
 ) -> Option<String> {
     resolve_external_import_prefix(path, deps).map(|(alias, _)| alias)
 }
 
 pub fn is_exact_external_package_import(
     path: &ast::Path,
-    deps: &HashMap<String, interface::PackageInterface>,
+    deps: &HashMap<String, interface::CrateInterface>,
 ) -> bool {
     resolve_external_import_prefix(path, deps).is_some_and(|(_, segments)| segments == path.len())
 }

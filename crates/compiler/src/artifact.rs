@@ -198,7 +198,7 @@ pub struct InterfaceUnit {
     pub compiler_abi: u32,
     pub package: String,
     pub exports: CrateExports,
-    pub interface: crate::interface::PackageInterface,
+    pub interface: crate::interface::CrateInterface,
     pub deps: BTreeMap<String, String>,
     pub interface_hash: String,
 }
@@ -209,7 +209,7 @@ struct InterfaceHashView<'a> {
     compiler_abi: u32,
     package: &'a str,
     exports: &'a CrateExports,
-    interface: &'a crate::interface::PackageInterface,
+    interface: &'a crate::interface::CrateInterface,
     deps: &'a BTreeMap<String, String>,
 }
 
@@ -217,7 +217,7 @@ impl InterfaceUnit {
     pub fn new(
         package: String,
         exports: CrateExports,
-        interface: crate::interface::PackageInterface,
+        interface: crate::interface::CrateInterface,
         deps: BTreeMap<String, String>,
     ) -> Self {
         let mut unit = Self {

@@ -7,7 +7,7 @@ use crate::hir;
 use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package};
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct PackageInterface {
+pub struct CrateInterface {
     pub package: String,
     #[serde(default)]
     pub packages: BTreeSet<String>,
@@ -15,7 +15,7 @@ pub struct PackageInterface {
     pub enum_variants: BTreeMap<String, Vec<String>>,
 }
 
-impl PackageInterface {
+impl CrateInterface {
     pub fn from_exports(package: &str, exports: &CrateExports) -> Self {
         let mut value_names: Vec<String> = exports
             .value_env

@@ -112,7 +112,7 @@ fn load_interface_for_namespace(
     namespace: &str,
     interface_files: &[PathBuf],
     units: &HashMap<String, (PathBuf, InterfaceUnit)>,
-) -> Result<(InterfaceUnit, interface::PackageInterface), CompilationError> {
+) -> Result<(InterfaceUnit, interface::CrateInterface), CompilationError> {
     if let Some((_, unit)) = units.get(namespace) {
         return Ok((unit.clone(), unit.interface.clone()));
     }
@@ -124,11 +124,11 @@ fn load_interface_for_namespace(
         if !exports_contain_namespace(namespace, &unit.exports) {
             continue;
         }
-        let mut package_interface =
-            interface::PackageInterface::from_exports(namespace, &unit.exports);
-        package_interface.packages =
+        let mut namespace_interface =
+            interface::CrateInterface::from_exports(namespace, &unit.exports);
+        namespace_interface.packages =
             std::iter::once(format!("{root_import_path}::{namespace}")).collect();
-        return Ok((unit.clone(), package_interface));
+        return Ok((unit.clone(), namespace_interface));
     }
 
     Err(compile_error(format!(
@@ -269,13 +269,13 @@ fn external_namespace_import_alias(
 fn typecheck_crate_sources(
     crate_name: &str,
     files: Vec<hir::SourceFileAst>,
-    deps_interfaces: &HashMap<String, interface::PackageInterface>,
+    deps_interfaces: &HashMap<String, interface::CrateInterface>,
     deps_envs: HashMap<String, GlobalTypeEnv>,
 ) -> (
     crate::tast::File,
     CrateExports,
     CrateExports,
-    interface::PackageInterface,
+    interface::CrateInterface,
     diagnostics::Diagnostics,
 ) {
     let (files, mut diagnostics) = expand_derives(files);
@@ -294,8 +294,8 @@ fn typecheck_crate_sources(
     diagnostics.append(&mut type_diagnostics);
     let full_exports = CrateExports::from_genv(&genv);
     let exports = CrateExports::public_from_crate(crate_name, &files, &genv);
-    let pkg_interface = interface::PackageInterface::from_exports(crate_name, &exports);
-    (tast, full_exports, exports, pkg_interface, diagnostics)
+    let crate_interface = interface::CrateInterface::from_exports(crate_name, &exports);
+    (tast, full_exports, exports, crate_interface, diagnostics)
 }
 
 fn expand_derives(
@@ -345,18 +345,18 @@ pub fn check_crate(opts: CrateInputs) -> Result<InterfaceUnit, CompilationError>
             if dep == BUILTIN_PACKAGE || dep == crate_name {
                 continue;
             }
-            let (unit, package_interface) =
+            let (unit, dep_interface) =
                 load_interface_for_namespace(&dep, &opts.interface_files, &interface_units)?;
             deps_envs.insert(dep.clone(), unit.exports.to_genv());
-            deps_interfaces.insert(dep.clone(), package_interface);
+            deps_interfaces.insert(dep.clone(), dep_interface);
             dep_hashes.insert(unit.package.clone(), unit.interface_hash.clone());
         }
 
-        let (tast, _full_exports, exports, pkg_interface, diagnostics) =
+        let (tast, _full_exports, exports, crate_interface, diagnostics) =
             typecheck_crate_sources(&crate_name, files, &deps_interfaces, deps_envs);
         drop(tast);
 
-        let interface = InterfaceUnit::new(crate_name, exports, pkg_interface, dep_hashes);
+        let interface = InterfaceUnit::new(crate_name, exports, crate_interface, dep_hashes);
         if diagnostics.has_errors() {
             return Err(CompilationError::Typer { diagnostics });
         }
@@ -396,21 +396,22 @@ pub fn build_crate(opts: CrateInputs) -> Result<CoreUnit, CompilationError> {
             if dep == BUILTIN_PACKAGE || dep == crate_name {
                 continue;
             }
-            let (unit, package_interface) =
+            let (unit, dep_interface) =
                 load_interface_for_namespace(&dep, &opts.interface_files, &interface_units)?;
             deps_envs.insert(dep.clone(), unit.exports.to_genv());
-            deps_interfaces.insert(dep.clone(), package_interface);
+            deps_interfaces.insert(dep.clone(), dep_interface);
             dep_hashes.insert(unit.package.clone(), unit.interface_hash.clone());
             dep_units.push(unit);
         }
 
-        let (tast, full_exports, exports, pkg_interface, diagnostics) =
+        let (tast, full_exports, exports, crate_interface, diagnostics) =
             typecheck_crate_sources(&crate_name, files, &deps_interfaces, deps_envs);
         if diagnostics.has_errors() {
             return Err(CompilationError::Typer { diagnostics });
         }
 
-        let interface = InterfaceUnit::new(crate_name.clone(), exports, pkg_interface, dep_hashes);
+        let interface =
+            InterfaceUnit::new(crate_name.clone(), exports, crate_interface, dep_hashes);
 
         let gensym = Gensym::new();
         let mut env = builtins::builtin_env();

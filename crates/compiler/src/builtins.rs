@@ -177,7 +177,7 @@ pub fn builtin_interface_hash() -> String {
         trait_env: genv.trait_env.clone(),
         value_env: genv.value_env.clone(),
     };
-    let iface = interface::PackageInterface::from_exports(BUILTIN_PACKAGE, &exports);
+    let iface = interface::CrateInterface::from_exports(BUILTIN_PACKAGE, &exports);
     InterfaceUnit::new(
         BUILTIN_PACKAGE.to_string(),
         exports,

@@ -76,7 +76,7 @@ impl CompilationError {
 #[derive(Debug, Clone)]
 struct NamespaceInterface {
     exports: CrateExports,
-    package_interface: interface::PackageInterface,
+    package_interface: interface::CrateInterface,
 }
 
 fn nominal_impl_type_name(ty: &tast::Ty) -> Option<&str> {
@@ -265,7 +265,7 @@ fn typecheck_package(
     package_id: hir::PackageId,
     package: &packages::PackageUnit,
     deps_envs: HashMap<String, GlobalTypeEnv>,
-    deps_interfaces: &HashMap<String, interface::PackageInterface>,
+    deps_interfaces: &HashMap<String, interface::CrateInterface>,
 ) -> NamespaceArtifact {
     let (hir, hir_table, mut hir_diagnostics) =
         hir::lower_to_hir_files_with_env(package_id, package.files.clone(), deps_interfaces);
@@ -280,7 +280,7 @@ fn typecheck_package(
     diagnostics.append(&mut hir_diagnostics);
     let full_exports = CrateExports::from_genv(&genv);
     let exports = CrateExports::public_from_package(&package.name, &package.files, &genv);
-    let package_interface = interface::PackageInterface::from_exports(&package.name, &exports);
+    let package_interface = interface::CrateInterface::from_exports(&package.name, &exports);
 
     NamespaceArtifact {
         tast,
@@ -710,7 +710,7 @@ pub fn typecheck_with_namespaces_and_results(
             let exports = CrateExports::public_from_package(name, &package.files, &package_genv);
             report_duplicate_trait_impls(&mut diagnostics, &genv, &exports, name);
             exports.apply_to(&mut genv);
-            let package_interface = interface::PackageInterface::from_exports(name, &exports);
+            let package_interface = interface::CrateInterface::from_exports(name, &exports);
 
             let interface = NamespaceInterface {
                 exports,

@@ -49,7 +49,7 @@ impl ResolveLocalEnv {
 struct ResolutionContext<'a> {
     builtin_names: &'a HashMap<String, hir::BuiltinId>,
     def_names: &'a HashMap<String, hir::DefId>,
-    deps: &'a HashMap<String, interface::PackageInterface>,
+    deps: &'a HashMap<String, interface::CrateInterface>,
     current_package: &'a str,
     current_module_path: &'a [String],
     crate_paths_include_package: bool,
@@ -147,7 +147,7 @@ struct ConstructorIndex {
 impl ConstructorIndex {
     fn new_with_deps(
         files: &[hir::SourceFileAst],
-        deps: &HashMap<String, interface::PackageInterface>,
+        deps: &HashMap<String, interface::CrateInterface>,
     ) -> Self {
         let mut index = Self {
             enums_by_package: HashMap::new(),
@@ -181,7 +181,7 @@ impl ConstructorIndex {
         }
     }
 
-    fn add_interface(&mut self, package: &str, interface: &interface::PackageInterface) {
+    fn add_interface(&mut self, package: &str, interface: &interface::CrateInterface) {
         let entry = self
             .enums_by_package
             .entry(package.to_string())
@@ -308,14 +308,14 @@ impl ResolutionContext<'_> {
 
 fn use_path_is_package_import(
     path: &ast::Path,
-    deps: &HashMap<String, interface::PackageInterface>,
+    deps: &HashMap<String, interface::CrateInterface>,
 ) -> bool {
     is_exact_external_package_import(path, deps)
 }
 
 fn file_imports(
     file: &ast::File,
-    deps: &HashMap<String, interface::PackageInterface>,
+    deps: &HashMap<String, interface::CrateInterface>,
 ) -> HashSet<String> {
     let mut imports = HashSet::new();
     for use_decl in file.uses.iter() {
@@ -338,7 +338,7 @@ fn file_imports(
 
 fn external_import_path_for_alias(
     alias: &str,
-    deps: &HashMap<String, interface::PackageInterface>,
+    deps: &HashMap<String, interface::CrateInterface>,
 ) -> Option<String> {
     deps.get(alias)?
         .packages
@@ -349,7 +349,7 @@ fn external_import_path_for_alias(
 
 fn external_coordinate_alias_path(
     path: &ast::Path,
-    deps: &HashMap<String, interface::PackageInterface>,
+    deps: &HashMap<String, interface::CrateInterface>,
 ) -> Option<(String, String)> {
     let display = path_segments_display(path);
     let mut best = None;
@@ -399,7 +399,7 @@ fn first_crate_segment(path: &ast::Path) -> Option<String> {
 
 fn use_decl_import(
     path: &ast::Path,
-    deps: &HashMap<String, interface::PackageInterface>,
+    deps: &HashMap<String, interface::CrateInterface>,
 ) -> Option<String> {
     if let Some(alias) = external_import_alias(path, deps) {
         return Some(alias);
@@ -412,7 +412,7 @@ fn use_decl_value_import(
     current_package: &str,
     current_module_path: &[String],
     crate_paths_include_package: bool,
-    deps: &HashMap<String, interface::PackageInterface>,
+    deps: &HashMap<String, interface::CrateInterface>,
     def_names: &HashMap<String, hir::DefId>,
 ) -> Option<(String, UseValueImport)> {
     path_value_import(
@@ -432,7 +432,7 @@ fn path_value_import(
     current_package: &str,
     current_module_path: &[String],
     crate_paths_include_package: bool,
-    deps: &HashMap<String, interface::PackageInterface>,
+    deps: &HashMap<String, interface::CrateInterface>,
     def_names: &HashMap<String, hir::DefId>,
 ) -> Option<(String, UseValueImport)> {
     if path_resolution_segments(path).len() < 2
@@ -487,7 +487,7 @@ fn file_use_value_imports(
     current_package: &str,
     current_module_path: &[String],
     crate_paths_include_package: bool,
-    deps: &HashMap<String, interface::PackageInterface>,
+    deps: &HashMap<String, interface::CrateInterface>,
     def_names: &HashMap<String, hir::DefId>,
 ) -> HashMap<String, UseValueImport> {
     file.uses
@@ -583,7 +583,7 @@ fn path_resolution_display_in_module(
 
 fn known_package_prefix_for_path_in_module(
     path: &ast::Path,
-    deps: &HashMap<String, interface::PackageInterface>,
+    deps: &HashMap<String, interface::CrateInterface>,
     current_package: &str,
     current_module_path: &[String],
     crate_paths_include_package: bool,
@@ -615,7 +615,7 @@ fn known_package_prefix_for_path_in_module(
 
 fn lowered_use_trait_path(
     path: &ast::Path,
-    deps: &HashMap<String, interface::PackageInterface>,
+    deps: &HashMap<String, interface::CrateInterface>,
 ) -> Option<hir::QualifiedPath> {
     if let Some((package, prefix_len)) = resolve_external_import_prefix(path, deps) {
         let segments = path.segments()[prefix_len..]
@@ -879,7 +879,7 @@ impl NameResolution {
         mut self,
         package_id: hir::PackageId,
         files: Vec<hir::SourceFileAst>,
-        deps: &HashMap<String, interface::PackageInterface>,
+        deps: &HashMap<String, interface::CrateInterface>,
     ) -> (hir::ResolvedHir, HirTable, Diagnostics) {
         let mut hir_table = HirTable::new(package_id);
 

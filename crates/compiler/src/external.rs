@@ -35,7 +35,7 @@ pub struct ExternalModuleArtifact {
     pub version: SemVer,
     pub interface: InterfaceUnit,
     pub core: CoreUnit,
-    pub package_interfaces: BTreeMap<String, interface::PackageInterface>,
+    pub package_interfaces: BTreeMap<String, interface::CrateInterface>,
     pub sources: BTreeMap<String, ExternalPackageSource>,
 }
 
@@ -49,7 +49,7 @@ impl ExternalDependencyArtifacts {
         self.modules.is_empty()
     }
 
-    pub fn namespace_interfaces(&self) -> HashMap<String, interface::PackageInterface> {
+    pub fn namespace_interfaces(&self) -> HashMap<String, interface::CrateInterface> {
         let mut interfaces = HashMap::new();
         for module in self.modules.values() {
             for (name, interface) in module.package_interfaces.iter() {
@@ -470,7 +470,7 @@ fn compile_external_module(
     let mut package_interfaces = BTreeMap::new();
     for source in sources.values() {
         let mut package_interface =
-            interface::PackageInterface::from_exports(&source.logical_name, &public_exports);
+            interface::CrateInterface::from_exports(&source.logical_name, &public_exports);
         package_interface.packages = std::iter::once(source.import_path.clone()).collect();
         package_interfaces.insert(source.logical_name.clone(), package_interface);
     }
@@ -593,7 +593,7 @@ fn compile_module_package(
 
     let full_exports = CrateExports::from_genv(&genv);
     let exports = CrateExports::public_from_package(&package.name, &package.files, &genv);
-    let package_interface = interface::PackageInterface::from_exports(&package.name, &exports);
+    let package_interface = interface::CrateInterface::from_exports(&package.name, &exports);
     let interface = InterfaceUnit::new(
         package.name.clone(),
         exports.clone(),
@@ -674,7 +674,7 @@ fn ensure_no_external_namespace_conflicts(
 fn find_external_package<'a>(
     external_roots: &'a BTreeMap<String, ExternalModuleArtifact>,
     package: &str,
-) -> Option<(&'a ExternalModuleArtifact, &'a interface::PackageInterface)> {
+) -> Option<(&'a ExternalModuleArtifact, &'a interface::CrateInterface)> {
     for module in external_roots.values() {
         if let Some(package_interface) = module.package_interfaces.get(package) {
             return Some((module, package_interface));

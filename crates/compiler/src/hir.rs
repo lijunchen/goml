@@ -204,7 +204,7 @@ impl PackageInterface {
 }
 
 pub fn lower_to_hir_files(files: Vec<SourceFileAst>) -> (PackageHir, HirTable, Diagnostics) {
-    let deps: HashMap<String, crate::interface::PackageInterface> = HashMap::new();
+    let deps: HashMap<String, crate::interface::CrateInterface> = HashMap::new();
     let package_name = files
         .first()
         .map(|file| file.package.as_str())
@@ -220,7 +220,7 @@ pub fn lower_to_hir_files(files: Vec<SourceFileAst>) -> (PackageHir, HirTable, D
 pub fn lower_to_hir_files_with_env(
     package_id: PackageId,
     files: Vec<SourceFileAst>,
-    deps: &HashMap<String, crate::interface::PackageInterface>,
+    deps: &HashMap<String, crate::interface::CrateInterface>,
 ) -> (PackageHir, HirTable, Diagnostics) {
     use crate::typer::name_resolution::NameResolution;
     let (resolved, mut hir_table, diagnostics) =
@@ -262,13 +262,13 @@ pub fn lower_to_hir_files_with_env(
 pub fn lower_to_project_hir_files(
     files: Vec<SourceFileAst>,
 ) -> (ProjectHir, ProjectHirTable, Diagnostics) {
-    let deps: HashMap<String, crate::interface::PackageInterface> = HashMap::new();
+    let deps: HashMap<String, crate::interface::CrateInterface> = HashMap::new();
     lower_to_project_hir_files_with_env(files, &deps)
 }
 
 pub fn lower_to_project_hir_files_with_env(
     files: Vec<SourceFileAst>,
-    deps: &HashMap<String, crate::interface::PackageInterface>,
+    deps: &HashMap<String, crate::interface::CrateInterface>,
 ) -> (ProjectHir, ProjectHirTable, Diagnostics) {
     let mut grouped: HashMap<PackageName, Vec<SourceFileAst>> = HashMap::new();
     for file in files {
