@@ -169,6 +169,32 @@ pub fn add(a: int64, b: int64) -> int64 {
 }
 
 #[test]
+fn use_path_imports_module_value() {
+    assert_ok(&[
+        (
+            "main.gom",
+            r#"
+mod math;
+
+use crate::math::add;
+
+fn main() -> unit {
+    let _ = add(1, 2);
+}
+"#,
+        ),
+        (
+            "math.gom",
+            r#"
+pub fn add(a: int64, b: int64) -> int64 {
+    a + b
+}
+"#,
+        ),
+    ]);
+}
+
+#[test]
 fn value_use_is_module_local() {
     assert_err_contains(
         &[
