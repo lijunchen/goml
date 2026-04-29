@@ -6,7 +6,7 @@ use std::process::{Command, Stdio};
 
 use anyhow::{Context, anyhow, bail};
 use clap::{Args, Parser, Subcommand};
-use compiler::config::{CrateKind, find_crate_root, load_crate_manifest};
+use compiler::config::{CrateKind, CrateManifest, load_crate_manifest};
 use compiler::env::{format_compile_diagnostics, format_typer_diagnostics};
 use compiler::external::ExternalDependencyArtifacts;
 use compiler::package_names::ENTRY_FUNCTION;
@@ -482,13 +482,30 @@ fn load_registry_for_command(local_registry: Option<&Path>) -> anyhow::Result<Re
 
 fn locate_module_root_from_cwd() -> anyhow::Result<PathBuf> {
     let cwd = std::env::current_dir().context("failed to read current directory")?;
-    if let Some((crate_dir, _config)) = find_crate_root(&cwd) {
+    if let Some((crate_dir, _manifest)) = find_crate_manifest_root(&cwd)? {
         return Ok(crate_dir);
     }
     bail!(
         "no goml.toml with [crate] section found in ancestors of {}",
         cwd.display()
     )
+}
+
+fn find_crate_manifest_root(start_dir: &Path) -> anyhow::Result<Option<(PathBuf, CrateManifest)>> {
+    let mut current = start_dir.to_path_buf();
+    loop {
+        let config_path = current.join("goml.toml");
+        if config_path.exists() {
+            let manifest = load_crate_manifest(&config_path).map_err(anyhow::Error::msg)?;
+            if manifest.crate_config.is_some() {
+                return Ok(Some((current, manifest)));
+            }
+        }
+        if !current.pop() {
+            break;
+        }
+    }
+    Ok(None)
 }
 
 fn load_manifest_document(path: &Path) -> anyhow::Result<DocumentMut> {
@@ -1248,11 +1265,9 @@ fn shell_escape(arg: &str) -> String {
 
 fn load_project_from_cwd() -> anyhow::Result<ProjectContext> {
     let cwd = std::env::current_dir().context("failed to read current directory")?;
-    if let Some((crate_dir, _config)) = find_crate_root(&cwd) {
+    if let Some((crate_dir, manifest)) = find_crate_manifest_root(&cwd)? {
         let crate_unit = compiler::pipeline::modules::discover_crate_from_dir(&crate_dir)
             .map_err(|err| anyhow!("crate module discovery failed: {:?}", err))?;
-        let manifest =
-            load_crate_manifest(&crate_dir.join("goml.toml")).map_err(anyhow::Error::msg)?;
         let kind = project_kind(&crate_unit);
         return Ok(ProjectContext {
             entry_path: crate_unit.root_file,

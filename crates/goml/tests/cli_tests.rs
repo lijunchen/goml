@@ -1447,6 +1447,31 @@ root = "src/main.gom"
 }
 
 #[test]
+fn project_check_reports_legacy_manifest_section() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    fs::write(
+        root.join("goml.toml"),
+        r#"[module]
+name = "demo"
+"#,
+    )?;
+
+    let output = run_goml(&["check"], root)?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(!output.status.success());
+    expect![""].assert_eq(&stdout);
+    assert!(
+        stderr.contains("old [module] manifests are no longer supported"),
+        "stderr: {stderr}"
+    );
+
+    Ok(())
+}
+
+#[test]
 fn project_build_writes_target_goml_main_go() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     write_project(dir.path())?;
