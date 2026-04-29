@@ -213,7 +213,7 @@ fn build_crate_symbol_index(
         module_dir: crate_unit.root_dir.clone(),
         module_name: Some(crate_name.clone()),
         entry_namespace: crate_name.clone(),
-        packages: HashMap::new(),
+        namespaces: HashMap::new(),
         discovery_order: Vec::new(),
         package_dirs: HashMap::new(),
         package_visibilities: HashMap::new(),
@@ -239,7 +239,7 @@ fn build_crate_symbol_index(
             graph.add_namespace_dir(alias.clone(), namespace_dir.clone());
             graph.set_namespace_visibility(alias.clone(), module.visibility);
         }
-        graph.packages.insert(
+        graph.namespaces.insert(
             namespace_name.clone(),
             crate::pipeline::packages::NamespaceUnit {
                 name: namespace_name.clone(),

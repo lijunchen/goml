@@ -330,13 +330,13 @@ fn typecheck_namespaces_inner(
         module.interface.exports.apply_to(&mut genv);
     }
     let mut artifacts_by_name: HashMap<String, NamespaceArtifact> = HashMap::new();
-    let mut namespace_names: Vec<String> = graph.packages.keys().cloned().collect();
+    let mut namespace_names: Vec<String> = graph.namespaces.keys().cloned().collect();
     namespace_names.sort();
     let namespace_ids = namespace_id_map(&namespace_names);
 
     for name in order.iter() {
         let package = graph
-            .packages
+            .namespaces
             .get(name)
             .ok_or_else(|| compile_error(format!("namespace {} not found", name)))?;
         let namespace_id = *namespace_ids
@@ -483,7 +483,7 @@ fn compile_inner(
     let mut all_files = Vec::new();
     for name in graph.discovery_order.iter() {
         let package = graph
-            .packages
+            .namespaces
             .get(name)
             .ok_or_else(|| compile_error(format!("namespace {} not found", name)))?;
         all_files.extend(package.files.clone());
@@ -520,7 +520,7 @@ fn compile_inner(
     }
     for name in graph.discovery_order.iter() {
         let package = graph
-            .packages
+            .namespaces
             .get(name)
             .ok_or_else(|| compile_error(format!("namespace {} not found", name)))?;
         let artifact = artifacts
@@ -649,7 +649,7 @@ pub fn typecheck_with_namespaces_and_results(
             module.interface.exports.apply_to(&mut genv);
         }
         let mut artifacts_by_name: HashMap<String, NamespaceInterface> = HashMap::new();
-        let mut namespace_names: Vec<String> = graph.packages.keys().cloned().collect();
+        let mut namespace_names: Vec<String> = graph.namespaces.keys().cloned().collect();
         namespace_names.sort();
         let namespace_ids = namespace_id_map(&namespace_names);
 
@@ -658,7 +658,7 @@ pub fn typecheck_with_namespaces_and_results(
 
         for name in order.iter() {
             let package = graph
-                .packages
+                .namespaces
                 .get(name)
                 .ok_or_else(|| compile_error(format!("namespace {} not found", name)))?;
             let namespace_id = *namespace_ids

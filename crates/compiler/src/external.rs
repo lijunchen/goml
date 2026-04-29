@@ -183,7 +183,7 @@ impl ExternalDependencyArtifacts {
         }
 
         for (namespace, (_, dir)) in seen {
-            if graph.packages.contains_key(&namespace) {
+            if graph.namespaces.contains_key(&namespace) {
                 return Err(format!(
                     "namespace name {} conflicts with external dependency namespace {}",
                     namespace, namespace
@@ -340,7 +340,7 @@ fn compile_external_module(
     )
     .map_err(err_text)?;
     for namespace in available_imports.namespace_names.iter() {
-        if graph.packages.contains_key(namespace) {
+        if graph.namespaces.contains_key(namespace) {
             return Err(format!(
                 "namespace name {} in {} conflicts with external dependency namespace {}",
                 namespace,
@@ -355,7 +355,7 @@ fn compile_external_module(
     let mut compiled_namespaces = HashMap::<String, CompiledNamespace>::new();
 
     for namespace_name in order {
-        let namespace = graph.packages.get(&namespace_name).ok_or_else(|| {
+        let namespace = graph.namespaces.get(&namespace_name).ok_or_else(|| {
             format!(
                 "missing namespace {} in {}",
                 namespace_name,
@@ -367,7 +367,7 @@ fn compile_external_module(
     }
 
     let logical_names = graph
-        .packages
+        .namespaces
         .keys()
         .map(|namespace| {
             (
@@ -397,7 +397,7 @@ fn compile_external_module(
     let local_namespaces = logical_names.values().cloned().collect::<HashSet<_>>();
     let mut sources = BTreeMap::new();
 
-    let mut namespace_names = graph.packages.keys().cloned().collect::<Vec<_>>();
+    let mut namespace_names = graph.namespaces.keys().cloned().collect::<Vec<_>>();
     namespace_names.sort();
     for namespace_name in namespace_names {
         let compiled = compiled_namespaces
@@ -448,7 +448,7 @@ fn compile_external_module(
             .cloned()
             .ok_or_else(|| format!("missing namespace dir for {}", namespace_name))?;
         let files = graph
-            .packages
+            .namespaces
             .get(&namespace_name)
             .ok_or_else(|| format!("missing namespace files for {}", namespace_name))?
             .files

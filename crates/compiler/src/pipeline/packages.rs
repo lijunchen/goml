@@ -24,7 +24,7 @@ pub struct NamespaceGraph {
     pub module_dir: PathBuf,
     pub module_name: Option<String>,
     pub entry_namespace: String,
-    pub packages: HashMap<String, NamespaceUnit>,
+    pub namespaces: HashMap<String, NamespaceUnit>,
     pub discovery_order: Vec<String>,
     pub package_dirs: HashMap<String, PathBuf>,
     pub package_visibilities: HashMap<String, ast::Visibility>,
@@ -613,7 +613,7 @@ fn discover_packages_from_crate_unit(
         _ => None,
     };
 
-    let mut packages = HashMap::new();
+    let mut namespaces = HashMap::new();
     let mut discovery_order = Vec::new();
     let mut package_dirs = HashMap::new();
     let mut package_visibilities = HashMap::new();
@@ -647,7 +647,7 @@ fn discover_packages_from_crate_unit(
                 .ok_or_else(|| compile_error(format!("module child {} not found", child_name)))?;
             imports.insert(module_namespace_name(child.path.segments(), root_namespace));
         }
-        packages.insert(
+        namespaces.insert(
             name.clone(),
             NamespaceUnit {
                 name: name.clone(),
@@ -660,8 +660,8 @@ fn discover_packages_from_crate_unit(
         package_visibilities.insert(name, module.visibility);
     }
 
-    let known_namespaces = packages.keys().cloned().collect::<HashSet<_>>();
-    for (name, package) in packages.iter_mut() {
+    let known_namespaces = namespaces.keys().cloned().collect::<HashSet<_>>();
+    for (name, package) in namespaces.iter_mut() {
         let imports = collect_known_crate_path_imports(&package.files, &known_namespaces);
         package
             .imports
@@ -672,7 +672,7 @@ fn discover_packages_from_crate_unit(
         module_dir: crate_unit.root_dir,
         module_name: Some(crate_unit.config.name),
         entry_namespace: root_namespace.to_string(),
-        packages,
+        namespaces,
         discovery_order,
         package_dirs,
         package_visibilities,
@@ -814,7 +814,7 @@ fn discover_packages_inner(
     };
     let entry_name = entry_namespace.name.clone();
 
-    let mut packages = HashMap::new();
+    let mut namespaces = HashMap::new();
     let mut discovery_order = Vec::new();
     let mut package_dirs = HashMap::new();
     let mut package_visibilities = HashMap::new();
@@ -822,7 +822,7 @@ fn discover_packages_inner(
     let mut loaded = HashSet::new();
 
     loaded.insert(entry_name.clone());
-    packages.insert(entry_name.clone(), entry_namespace);
+    namespaces.insert(entry_name.clone(), entry_namespace);
     discovery_order.push(entry_name.clone());
     package_dirs.insert(entry_name.clone(), root_dir.to_path_buf());
     package_visibilities.insert(entry_name.clone(), ast::Visibility::Public);
@@ -868,7 +868,7 @@ fn discover_packages_inner(
         }
         queue.extend(package.imports.iter().cloned());
         loaded.insert(declared_name.clone());
-        packages.insert(declared_name.clone(), package);
+        namespaces.insert(declared_name.clone(), package);
         discovery_order.push(declared_name.clone());
         package_dirs.insert(declared_name, package_dir);
         package_visibilities.insert(package_name, ast::Visibility::Public);
@@ -878,7 +878,7 @@ fn discover_packages_inner(
         module_dir: root_dir.to_path_buf(),
         module_name: None,
         entry_namespace: entry_name,
-        packages,
+        namespaces,
         discovery_order,
         package_dirs,
         package_visibilities,
@@ -892,7 +892,7 @@ pub fn topo_sort_namespaces(graph: &NamespaceGraph) -> Result<Vec<String>, Compi
     let mut order = Vec::new();
     let mut stack = Vec::new();
 
-    let mut names: Vec<String> = graph.packages.keys().cloned().collect();
+    let mut names: Vec<String> = graph.namespaces.keys().cloned().collect();
     names.sort();
 
     for name in names {
@@ -943,7 +943,7 @@ fn visit_namespace(
     temp.insert(name.to_string());
     stack.push(name.to_string());
 
-    let Some(namespace) = graph.packages.get(name) else {
+    let Some(namespace) = graph.namespaces.get(name) else {
         return Err(compile_error(format!(
             "namespace {} not found during dependency walk",
             name
@@ -953,7 +953,7 @@ fn visit_namespace(
     deps.sort();
 
     for dep in deps {
-        if !graph.packages.contains_key(&dep) && !graph.external_root_packages.contains(&dep) {
+        if !graph.namespaces.contains_key(&dep) && !graph.external_root_packages.contains(&dep) {
             return Err(compile_error(format!(
                 "namespace {} imports missing namespace {} in {}",
                 name,
