@@ -233,7 +233,7 @@ root = "lib.gom"
         registry.join("alice/http/1.0.0/lib.gom"),
         r#"
 
-fn version() -> string {
+pub fn version() -> string {
     "1.0.0"
 }
 "#,
@@ -242,7 +242,7 @@ fn version() -> string {
         registry.join("alice/http/1.0.0/client/mod.gom"),
         r#"
 
-fn tag() -> string {
+pub fn tag() -> string {
     "client-1.0.0"
 }
 "#,
@@ -266,7 +266,7 @@ mod client;
 
 use crate::client;
 
-fn version() -> string {
+pub fn version() -> string {
     client::tag()
 }
 "#,
@@ -275,7 +275,7 @@ fn version() -> string {
         registry.join("alice/http/1.2.0/client/mod.gom"),
         r#"
 
-fn tag() -> string {
+pub fn tag() -> string {
     "client-1.2.0"
 }
 "#,
@@ -293,7 +293,7 @@ root = "lib.gom"
         registry.join("alice/net/0.1.0/lib.gom"),
         r#"
 
-fn version() -> string {
+pub fn version() -> string {
     "0.1.0"
 }
 "#,
@@ -313,7 +313,7 @@ root = "lib.gom"
         registry.join("alice/appdep/0.1.0/lib.gom"),
         r#"
 
-fn marker() -> string {
+pub fn marker() -> string {
     "appdep"
 }
 "#,

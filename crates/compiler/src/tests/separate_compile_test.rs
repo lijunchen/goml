@@ -103,7 +103,7 @@ fn link_rejects_interface_hash_mismatch() -> anyhow::Result<()> {
         r#"
 
 
-fn foo() -> int32 {
+pub fn foo() -> int32 {
     1
 }
 "#,
@@ -127,15 +127,13 @@ fn foo() -> int32 {
     let main_path = dir.path().join("main.gom");
     std::fs::write(
         &main_path,
-        format!(
-            r#"
+        r#"
 use Lib;
 
-fn main() -> unit {{
+fn main() -> unit {
     string_println(int32_to_string(Lib::foo()))
-}}
-"#
-        ),
+}
+"#,
     )?;
 
     let main_unit = separate::build_package(separate::PackageInputs {
@@ -158,11 +156,11 @@ fn main() -> unit {{
         r#"
 
 
-fn foo() -> int32 {
+pub fn foo() -> int32 {
     1
 }
 
-fn bar() -> int32 {
+pub fn bar() -> int32 {
     2
 }
 "#,

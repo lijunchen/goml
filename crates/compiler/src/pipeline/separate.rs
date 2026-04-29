@@ -295,12 +295,13 @@ fn typecheck_single_package(
 ) -> (
     crate::tast::File,
     PackageExports,
+    PackageExports,
     interface::PackageInterface,
     diagnostics::Diagnostics,
 ) {
     let package_id = interface::package_id_for_name(package);
     let (hir, hir_table, mut hir_diagnostics) =
-        hir::lower_to_hir_files_with_env(package_id, files, deps_interfaces);
+        hir::lower_to_hir_files_with_env(package_id, files.clone(), deps_interfaces);
     let (tast, genv, mut diagnostics) = crate::typer::check_file_with_env(
         hir,
         hir_table,
@@ -310,13 +311,10 @@ fn typecheck_single_package(
         deps_envs,
     );
     diagnostics.append(&mut hir_diagnostics);
-    let exports = PackageExports {
-        type_env: genv.type_env.clone(),
-        trait_env: genv.trait_env.clone(),
-        value_env: genv.value_env.clone(),
-    };
+    let full_exports = PackageExports::from_genv(&genv);
+    let exports = PackageExports::public_from_package(package, &files, &genv);
     let pkg_interface = interface::PackageInterface::from_exports(package, &exports);
-    (tast, exports, pkg_interface, diagnostics)
+    (tast, full_exports, exports, pkg_interface, diagnostics)
 }
 
 pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationError> {
@@ -351,7 +349,7 @@ pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationEr
             dep_hashes.insert(unit.package.clone(), unit.interface_hash.clone());
         }
 
-        let (tast, exports, pkg_interface, diagnostics) =
+        let (tast, _full_exports, exports, pkg_interface, diagnostics) =
             typecheck_single_package(&opts.package, files, &deps_interfaces, deps_envs);
         drop(tast);
 
@@ -399,7 +397,7 @@ pub fn build_package(opts: PackageInputs) -> Result<CoreUnit, CompilationError> 
             dep_units.push(unit);
         }
 
-        let (tast, exports, pkg_interface, diagnostics) =
+        let (tast, full_exports, exports, pkg_interface, diagnostics) =
             typecheck_single_package(&opts.package, files, &deps_interfaces, deps_envs);
         if diagnostics.has_errors() {
             return Err(CompilationError::Typer { diagnostics });
@@ -413,7 +411,7 @@ pub fn build_package(opts: PackageInputs) -> Result<CoreUnit, CompilationError> 
         for dep in dep_units.iter() {
             dep.exports.apply_to(&mut env);
         }
-        interface.exports.apply_to(&mut env);
+        full_exports.apply_to(&mut env);
         let mut compile_diagnostics = Diagnostics::new();
         let core_ir =
             crate::compile_match::compile_file(&env, &gensym, &mut compile_diagnostics, &tast);

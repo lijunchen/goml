@@ -579,12 +579,11 @@ fn {ENTRY_FUNCTION}() -> unit {{
 }
 
 fn render_lib_gom() -> String {
-    format!(
-        r#"pub fn message() -> string {{
+    r#"pub fn message() -> string {
     "hello from lib"
-}}
+}
 "#
-    )
+    .to_string()
 }
 
 fn execute_compiler_command(command: CompilerCommands) -> anyhow::Result<()> {

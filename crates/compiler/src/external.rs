@@ -524,11 +524,8 @@ fn compile_module_package(
         return Err(diagnostics_text(&diagnostics));
     }
 
-    let exports = PackageExports {
-        type_env: genv.type_env.clone(),
-        trait_env: genv.trait_env.clone(),
-        value_env: genv.value_env.clone(),
-    };
+    let full_exports = PackageExports::from_genv(&genv);
+    let exports = PackageExports::public_from_package(&package.name, &package.files, &genv);
     let package_interface = interface::PackageInterface::from_exports(&package.name, &exports);
     let interface = InterfaceUnit::new(
         package.name.clone(),
@@ -537,7 +534,7 @@ fn compile_module_package(
         dep_hashes,
     );
 
-    exports.apply_to(&mut compile_env);
+    full_exports.apply_to(&mut compile_env);
     let gensym = crate::env::Gensym::new();
     let mut compile_diagnostics = Diagnostics::new();
     let core_ir =

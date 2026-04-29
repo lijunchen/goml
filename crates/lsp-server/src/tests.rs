@@ -65,7 +65,7 @@ mod client;
 
 use crate::client;
 
-fn make_client() -> client::Client {
+pub fn make_client() -> client::Client {
     client::Client { name: "alice" }
 }
 "#,
@@ -75,11 +75,11 @@ fn make_client() -> client::Client {
         registry.join("alice/http/1.2.0/client/mod.gom"),
         r#"
 
-struct Client {
+pub struct Client {
     name: string,
 }
 
-fn tag() -> string {
+pub fn tag() -> string {
     "client"
 }
 "#,
@@ -1165,7 +1165,7 @@ root = "main.gom"
             root.join("util/mod.gom"),
             r#"
 
-fn ping() -> string {
+pub fn ping() -> string {
     "pong"
 }
 "#,
@@ -2262,14 +2262,14 @@ fn main() -> unit {
                 "main.gom",
                 "http::make_client",
                 "make_client",
-                expect!["1.2.0/lib.gom:5:3"],
+                expect!["1.2.0/lib.gom:5:7"],
             );
             check_temp_module_goto_token(
                 "registry_members",
                 "main.gom",
                 "client::Client",
                 "Client",
-                expect!["client/mod.gom:2:7"],
+                expect!["client/mod.gom:2:11"],
             );
         });
     }

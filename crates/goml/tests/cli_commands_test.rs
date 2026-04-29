@@ -98,13 +98,11 @@ fn cli_check_build_link_single_package() -> anyhow::Result<()> {
     let main_gom = root.join("main.gom");
     write_file(
         &main_gom,
-        &format!(
-            r#"
-fn main() -> unit {{
+        r#"
+fn main() -> unit {
     string_println("ok")
-}}
-"#
-        ),
+}
+"#,
     )?;
 
     let bin = goml_bin();
@@ -170,7 +168,7 @@ fn cli_check_build_link_with_dep() -> anyhow::Result<()> {
         r#"
 
 
-fn msg() -> string {
+pub fn msg() -> string {
     "hi"
 }
 "#,
@@ -179,15 +177,13 @@ fn msg() -> string {
     let main_gom = root.join("main.gom");
     write_file(
         &main_gom,
-        &format!(
-            r#"
+        r#"
 use Lib;
 
-fn main() -> unit {{
+fn main() -> unit {
     string_println(Lib::msg())
-}}
-"#
-        ),
+}
+"#,
     )?;
 
     let bin = goml_bin();
@@ -261,7 +257,7 @@ fn cli_check_build_link_rejects_hash_mismatch() -> anyhow::Result<()> {
         r#"
 
 
-fn msg() -> string {
+pub fn msg() -> string {
     "v1"
 }
 "#,
@@ -273,11 +269,11 @@ fn msg() -> string {
         r#"
 
 
-fn msg() -> string {
+pub fn msg() -> string {
     "v2"
 }
 
-fn extra() -> int32 {
+pub fn extra() -> int32 {
     2
 }
 "#,
@@ -286,15 +282,13 @@ fn extra() -> int32 {
     let main_gom = root.join("main.gom");
     write_file(
         &main_gom,
-        &format!(
-            r#"
+        r#"
 use Lib;
 
-fn main() -> unit {{
+fn main() -> unit {
     string_println(Lib::msg())
-}}
-"#
-        ),
+}
+"#,
     )?;
 
     let bin = goml_bin();
@@ -361,15 +355,13 @@ fn cli_check_rejects_interface_directory_path() -> anyhow::Result<()> {
     let main_gom = root.join("main.gom");
     write_file(
         &main_gom,
-        &format!(
-            r#"
+        r#"
 use Lib;
 
-fn main() -> unit {{
+fn main() -> unit {
     string_println(Lib::msg())
-}}
-"#
-        ),
+}
+"#,
     )?;
 
     let main_interface = out.join(format!("{ROOT_PACKAGE}.interface"));

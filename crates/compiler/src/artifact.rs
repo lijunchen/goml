@@ -1,8 +1,12 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashSet};
 
+use ast::ast;
 use sha2::Digest;
 
 use crate::env::{GlobalTypeEnv, TraitEnv, TypeEnv, ValueEnv};
+use crate::hir::SourceFileAst;
+use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package};
+use crate::tast::TastIdent;
 
 pub const FORMAT_VERSION: u32 = 4;
 pub const COMPILER_ABI: u32 = 1;
@@ -15,6 +19,52 @@ pub struct PackageExports {
 }
 
 impl PackageExports {
+    pub fn from_genv(genv: &GlobalTypeEnv) -> Self {
+        Self {
+            type_env: genv.type_env.clone(),
+            trait_env: genv.trait_env.clone(),
+            value_env: genv.value_env.clone(),
+        }
+    }
+
+    pub fn public_from_package(
+        package: &str,
+        files: &[SourceFileAst],
+        genv: &GlobalTypeEnv,
+    ) -> Self {
+        if package == BUILTIN_PACKAGE || package == ROOT_PACKAGE {
+            return Self::from_genv(genv);
+        }
+
+        let public_names = public_export_names(package, files);
+        let mut exports = Self::from_genv(genv);
+        exports
+            .type_env
+            .enums
+            .retain(|name, _| public_names.contains(&name.0));
+        exports
+            .type_env
+            .structs
+            .retain(|name, _| public_names.contains(&name.0));
+        exports
+            .type_env
+            .extern_types
+            .retain(|name, _| public_names.contains(name));
+        exports
+            .trait_env
+            .trait_defs
+            .retain(|name, _| public_names.contains(name));
+        exports
+            .value_env
+            .funcs
+            .retain(|name, _| public_names.contains(name));
+        exports
+            .value_env
+            .extern_funcs
+            .retain(|name, _| public_names.contains(name));
+        exports
+    }
+
     pub fn apply_to(&self, genv: &mut GlobalTypeEnv) {
         for (name, def) in self.type_env.enums.iter() {
             genv.type_env.structs.shift_remove(name);
@@ -59,6 +109,50 @@ impl PackageExports {
             trait_env: self.trait_env.clone(),
             value_env: self.value_env.clone(),
         }
+    }
+}
+
+fn public_export_names(package: &str, files: &[SourceFileAst]) -> HashSet<String> {
+    let mut names = HashSet::new();
+    for file in files {
+        for item in file.ast.toplevels.iter() {
+            let name = match item {
+                ast::Item::EnumDef(def) if def.visibility == ast::Visibility::Public => {
+                    Some(&def.name.0)
+                }
+                ast::Item::StructDef(def) if def.visibility == ast::Visibility::Public => {
+                    Some(&def.name.0)
+                }
+                ast::Item::TraitDef(def) if def.visibility == ast::Visibility::Public => {
+                    Some(&def.name.0)
+                }
+                ast::Item::Fn(def) if def.visibility == ast::Visibility::Public => {
+                    Some(&def.name.0)
+                }
+                ast::Item::ExternGo(def) if def.visibility == ast::Visibility::Public => {
+                    Some(&def.goml_name.0)
+                }
+                ast::Item::ExternType(def) if def.visibility == ast::Visibility::Public => {
+                    Some(&def.goml_name.0)
+                }
+                ast::Item::ExternBuiltin(def) if def.visibility == ast::Visibility::Public => {
+                    Some(&def.name.0)
+                }
+                _ => None,
+            };
+            if let Some(name) = name {
+                names.insert(export_name(package, name));
+            }
+        }
+    }
+    names
+}
+
+fn export_name(package: &str, name: &str) -> String {
+    if is_special_unqualified_package(package) {
+        name.to_string()
+    } else {
+        TastIdent::new(&format!("{package}::{name}")).0
     }
 }
 

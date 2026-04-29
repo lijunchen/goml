@@ -134,7 +134,7 @@ mod client;
 
 use crate::client;
 
-fn make_client() -> client::Client {
+pub fn make_client() -> client::Client {
     client::Client { name: "alice" }
 }
 "#,
@@ -144,11 +144,11 @@ fn make_client() -> client::Client {
         registry.join("alice/http/1.2.0/client/mod.gom"),
         r#"
 
-struct Client {
+pub struct Client {
     name: string,
 }
 
-fn tag() -> string {
+pub fn tag() -> string {
     "client"
 }
 "#,
@@ -168,7 +168,7 @@ fn use_statement_package_completions() {
         dir.path().join("util/mod.gom"),
         r#"
 
-fn ping() -> string {
+pub fn ping() -> string {
     "pong"
 }
 "#,
@@ -239,7 +239,7 @@ fn imported_package_value_completions() {
         dir.path().join("util/mod.gom"),
         r#"
 
-fn ping() -> string {
+pub fn ping() -> string {
     "pong"
 }
 "#,
@@ -1086,17 +1086,17 @@ fn multi_package_query() {
 
     let lib_src = r#"
 
-enum Color {
+pub enum Color {
     Red,
     Green,
 }
 
-struct Point {
+pub struct Point {
     x: int32,
     y: int32,
 }
 
-fn color_to_int(c: Color) -> int32 {
+pub fn color_to_int(c: Color) -> int32 {
     match c {
         Color::Red => 1,
         Color::Green => 2,
@@ -1169,11 +1169,11 @@ fn multi_package_inherent_method_completion() {
 
     let lib_src = r#"
 
-struct Item {
+pub struct Item {
     value: int32,
 }
 
-fn make(value: int32) -> Item {
+pub fn make(value: int32) -> Item {
     Item { value: value }
 }
 
@@ -1243,17 +1243,17 @@ fn multi_package_colon_colon_completions() {
 
     let lib_src = r#"
 
-enum Color {
+pub enum Color {
     Red,
     Green,
 }
 
-struct Point {
+pub struct Point {
     x: int32,
     y: int32,
 }
 
-fn color_to_int(c: Color) -> int32 {
+pub fn color_to_int(c: Color) -> int32 {
     match c {
         Color::Red => 1,
         Color::Green => 2,

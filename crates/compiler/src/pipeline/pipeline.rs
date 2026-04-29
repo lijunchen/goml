@@ -180,6 +180,7 @@ fn link_packages(packages: Vec<crate::core::File>) -> crate::core::File {
 #[derive(Debug, Clone)]
 struct PackageArtifact {
     tast: tast::File,
+    full_exports: PackageExports,
     interface: PackageInterface,
     diagnostics: Diagnostics,
 }
@@ -277,15 +278,13 @@ fn typecheck_package(
         deps_envs,
     );
     diagnostics.append(&mut hir_diagnostics);
-    let exports = PackageExports {
-        type_env: genv.type_env.clone(),
-        trait_env: genv.trait_env.clone(),
-        value_env: genv.value_env.clone(),
-    };
+    let full_exports = PackageExports::from_genv(&genv);
+    let exports = PackageExports::public_from_package(&package.name, &package.files, &genv);
     let package_interface = interface::PackageInterface::from_exports(&package.name, &exports);
 
     PackageArtifact {
         tast,
+        full_exports,
         interface: PackageInterface {
             exports,
             package_interface,
@@ -545,7 +544,7 @@ fn compile_inner(
                 dep
             )));
         }
-        artifact.interface.exports.apply_to(&mut env);
+        artifact.full_exports.apply_to(&mut env);
         let core = compile_match::compile_file(&env, &gensym, &mut diagnostics, &artifact.tast);
         package_cores.push(core);
     }
@@ -709,11 +708,7 @@ pub fn typecheck_with_packages_and_results(
             package_diagnostics.append(&mut hir_diagnostics);
             diagnostics.append(&mut package_diagnostics);
 
-            let exports = PackageExports {
-                type_env: package_genv.type_env.clone(),
-                trait_env: package_genv.trait_env.clone(),
-                value_env: package_genv.value_env.clone(),
-            };
+            let exports = PackageExports::public_from_package(name, &package.files, &package_genv);
             report_duplicate_trait_impls(&mut diagnostics, &genv, &exports, name);
             exports.apply_to(&mut genv);
             let package_interface = interface::PackageInterface::from_exports(name, &exports);
