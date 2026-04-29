@@ -13,6 +13,7 @@ use crate::mono::{self, GlobalMonoEnv};
 use crate::package_names::is_special_unqualified_package;
 use crate::package_names::{BUILTIN_PACKAGE, ENTRY_FUNCTION, ROOT_PACKAGE, is_builtin_package};
 use crate::pipeline::builtin_inherent;
+use crate::pipeline::packages::collect_known_crate_path_imports;
 use crate::pipeline::pipeline::{CompilationError, parse_ast_file, report_duplicate_trait_impls};
 use crate::pipeline::{compile_error, with_compiler_stack};
 use diagnostics::Diagnostics;
@@ -183,7 +184,7 @@ fn read_source_files(
         }
         for item in ast.toplevels.iter() {
             if let ast::ast::Item::Mod(module) = item {
-                imports.insert(module.name.0.clone());
+                imports.insert(child_package_name(package, &module.name.0));
             }
         }
         for use_trait in ast.use_traits.iter() {
@@ -211,10 +212,21 @@ fn read_source_files(
         files.push(hir::SourceFileAst::new(path, ast));
     }
 
+    let known_packages = interface_units.keys().cloned().collect::<HashSet<_>>();
+    imports.extend(collect_known_crate_path_imports(&files, &known_packages));
+
     Ok((files, imports, source_list))
 }
 
 type ReadSourceFilesResult = (Vec<hir::SourceFileAst>, HashSet<String>, Vec<String>);
+
+fn child_package_name(package: &str, child: &str) -> String {
+    if package == ROOT_PACKAGE {
+        child.to_string()
+    } else {
+        format!("{package}::{child}")
+    }
+}
 
 fn external_root_import_path(unit: &InterfaceUnit) -> Option<&str> {
     unit.interface.packages.iter().next().map(String::as_str)

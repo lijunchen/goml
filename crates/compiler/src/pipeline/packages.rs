@@ -122,6 +122,381 @@ fn collect_imports(files: &[SourceFileAst], external_imports: &ExternalImports) 
         .collect()
 }
 
+pub(crate) fn collect_known_crate_path_imports(
+    files: &[SourceFileAst],
+    known_packages: &HashSet<String>,
+) -> HashSet<String> {
+    let mut imports = HashSet::new();
+    for file in files {
+        imports.extend(collect_known_crate_path_imports_from_ast(
+            &file.ast,
+            known_packages,
+        ));
+    }
+    imports
+}
+
+pub(crate) fn collect_known_crate_path_imports_from_ast(
+    file: &ast::File,
+    known_packages: &HashSet<String>,
+) -> HashSet<String> {
+    let mut imports = HashSet::new();
+    for use_decl in file.uses.iter() {
+        collect_path_crate_import(&use_decl.path, known_packages, &mut imports);
+    }
+    for use_trait in file.use_traits.iter() {
+        collect_path_crate_import(use_trait, known_packages, &mut imports);
+    }
+    for item in file.toplevels.iter() {
+        collect_item_crate_path_imports(item, known_packages, &mut imports);
+    }
+    imports
+}
+
+fn collect_item_crate_path_imports(
+    item: &ast::Item,
+    known_packages: &HashSet<String>,
+    imports: &mut HashSet<String>,
+) {
+    match item {
+        ast::Item::Mod(_) | ast::Item::ExternType(_) => {}
+        ast::Item::EnumDef(def) => {
+            for (_, tys) in def.variants.iter() {
+                for ty in tys {
+                    collect_type_crate_path_imports(ty, known_packages, imports);
+                }
+            }
+        }
+        ast::Item::StructDef(def) => {
+            for (_, ty) in def.fields.iter() {
+                collect_type_crate_path_imports(ty, known_packages, imports);
+            }
+        }
+        ast::Item::TraitDef(def) => {
+            for sig in def.method_sigs.iter() {
+                for ty in sig.params.iter() {
+                    collect_type_crate_path_imports(ty, known_packages, imports);
+                }
+                collect_type_crate_path_imports(&sig.ret_ty, known_packages, imports);
+            }
+        }
+        ast::Item::ImplBlock(def) => {
+            for (_, bounds) in def.generic_bounds.iter() {
+                for bound in bounds {
+                    collect_path_crate_import(bound, known_packages, imports);
+                }
+            }
+            if let Some(trait_name) = &def.trait_name {
+                collect_path_crate_import(trait_name, known_packages, imports);
+            }
+            collect_type_crate_path_imports(&def.for_type, known_packages, imports);
+            for method in def.methods.iter() {
+                collect_fn_crate_path_imports(method, known_packages, imports);
+            }
+        }
+        ast::Item::Fn(def) => collect_fn_crate_path_imports(def, known_packages, imports),
+        ast::Item::ExternGo(def) => {
+            for (_, ty) in def.params.iter() {
+                collect_type_crate_path_imports(ty, known_packages, imports);
+            }
+            if let Some(ty) = &def.ret_ty {
+                collect_type_crate_path_imports(ty, known_packages, imports);
+            }
+        }
+        ast::Item::ExternBuiltin(def) => {
+            for (_, bounds) in def.generic_bounds.iter() {
+                for bound in bounds {
+                    collect_path_crate_import(bound, known_packages, imports);
+                }
+            }
+            for (_, ty) in def.params.iter() {
+                collect_type_crate_path_imports(ty, known_packages, imports);
+            }
+            if let Some(ty) = &def.ret_ty {
+                collect_type_crate_path_imports(ty, known_packages, imports);
+            }
+        }
+    }
+}
+
+fn collect_fn_crate_path_imports(
+    def: &ast::Fn,
+    known_packages: &HashSet<String>,
+    imports: &mut HashSet<String>,
+) {
+    for (_, bounds) in def.generic_bounds.iter() {
+        for bound in bounds {
+            collect_path_crate_import(bound, known_packages, imports);
+        }
+    }
+    for (_, ty) in def.params.iter() {
+        collect_type_crate_path_imports(ty, known_packages, imports);
+    }
+    if let Some(ty) = &def.ret_ty {
+        collect_type_crate_path_imports(ty, known_packages, imports);
+    }
+    collect_block_crate_path_imports(&def.body, known_packages, imports);
+}
+
+fn collect_type_crate_path_imports(
+    ty: &ast::TypeExpr,
+    known_packages: &HashSet<String>,
+    imports: &mut HashSet<String>,
+) {
+    match ty {
+        ast::TypeExpr::TUnit
+        | ast::TypeExpr::TBool
+        | ast::TypeExpr::TInt8
+        | ast::TypeExpr::TInt16
+        | ast::TypeExpr::TInt32
+        | ast::TypeExpr::TInt64
+        | ast::TypeExpr::TUint8
+        | ast::TypeExpr::TUint16
+        | ast::TypeExpr::TUint32
+        | ast::TypeExpr::TUint64
+        | ast::TypeExpr::TFloat32
+        | ast::TypeExpr::TFloat64
+        | ast::TypeExpr::TString
+        | ast::TypeExpr::TChar => {}
+        ast::TypeExpr::TTuple { typs } => {
+            for ty in typs {
+                collect_type_crate_path_imports(ty, known_packages, imports);
+            }
+        }
+        ast::TypeExpr::TCon { path } | ast::TypeExpr::TDyn { trait_path: path } => {
+            collect_path_crate_import(path, known_packages, imports);
+        }
+        ast::TypeExpr::TApp { ty, args } => {
+            collect_type_crate_path_imports(ty, known_packages, imports);
+            for arg in args {
+                collect_type_crate_path_imports(arg, known_packages, imports);
+            }
+        }
+        ast::TypeExpr::TArray { elem, .. } => {
+            collect_type_crate_path_imports(elem, known_packages, imports);
+        }
+        ast::TypeExpr::TFunc { params, ret_ty } => {
+            for param in params {
+                collect_type_crate_path_imports(param, known_packages, imports);
+            }
+            collect_type_crate_path_imports(ret_ty, known_packages, imports);
+        }
+    }
+}
+
+fn collect_block_crate_path_imports(
+    block: &ast::Block,
+    known_packages: &HashSet<String>,
+    imports: &mut HashSet<String>,
+) {
+    for stmt in block.stmts.iter() {
+        match stmt {
+            ast::Stmt::Let(stmt) => {
+                collect_pat_crate_path_imports(&stmt.pat, known_packages, imports);
+                if let Some(ty) = &stmt.annotation {
+                    collect_type_crate_path_imports(ty, known_packages, imports);
+                }
+                collect_expr_crate_path_imports(&stmt.value, known_packages, imports);
+            }
+            ast::Stmt::Assign(stmt) => {
+                collect_expr_crate_path_imports(&stmt.target, known_packages, imports);
+                collect_expr_crate_path_imports(&stmt.value, known_packages, imports);
+            }
+            ast::Stmt::Expr(stmt) => {
+                collect_expr_crate_path_imports(&stmt.expr, known_packages, imports);
+            }
+        }
+    }
+    if let Some(tail) = &block.tail {
+        collect_expr_crate_path_imports(tail, known_packages, imports);
+    }
+}
+
+fn collect_expr_crate_path_imports(
+    expr: &ast::Expr,
+    known_packages: &HashSet<String>,
+    imports: &mut HashSet<String>,
+) {
+    match expr {
+        ast::Expr::EPath { path, .. } => collect_path_crate_import(path, known_packages, imports),
+        ast::Expr::EConstr {
+            constructor, args, ..
+        } => {
+            collect_path_crate_import(constructor, known_packages, imports);
+            for arg in args {
+                collect_expr_crate_path_imports(arg, known_packages, imports);
+            }
+        }
+        ast::Expr::EStructLiteral { name, fields, .. } => {
+            collect_path_crate_import(name, known_packages, imports);
+            for (_, expr) in fields {
+                collect_expr_crate_path_imports(expr, known_packages, imports);
+            }
+        }
+        ast::Expr::ETuple { items, .. } | ast::Expr::EArray { items, .. } => {
+            for item in items {
+                collect_expr_crate_path_imports(item, known_packages, imports);
+            }
+        }
+        ast::Expr::EClosure { params, body, .. } => {
+            for param in params {
+                if let Some(ty) = &param.ty {
+                    collect_type_crate_path_imports(ty, known_packages, imports);
+                }
+            }
+            collect_expr_crate_path_imports(body, known_packages, imports);
+        }
+        ast::Expr::EMatch { expr, arms, .. } => {
+            collect_expr_crate_path_imports(expr, known_packages, imports);
+            for arm in arms {
+                collect_pat_crate_path_imports(&arm.pat, known_packages, imports);
+                collect_expr_crate_path_imports(&arm.body, known_packages, imports);
+            }
+        }
+        ast::Expr::EIf {
+            cond,
+            then_branch,
+            else_branch,
+            ..
+        } => {
+            collect_expr_crate_path_imports(cond, known_packages, imports);
+            collect_expr_crate_path_imports(then_branch, known_packages, imports);
+            collect_expr_crate_path_imports(else_branch, known_packages, imports);
+        }
+        ast::Expr::EWhile { cond, body, .. } => {
+            collect_expr_crate_path_imports(cond, known_packages, imports);
+            collect_expr_crate_path_imports(body, known_packages, imports);
+        }
+        ast::Expr::EReturn { expr, .. } => {
+            if let Some(expr) = expr {
+                collect_expr_crate_path_imports(expr, known_packages, imports);
+            }
+        }
+        ast::Expr::EGo { expr, .. }
+        | ast::Expr::EUnary { expr, .. }
+        | ast::Expr::ETry { expr, .. } => {
+            collect_expr_crate_path_imports(expr, known_packages, imports);
+        }
+        ast::Expr::ECall { func, args, .. } => {
+            collect_expr_crate_path_imports(func, known_packages, imports);
+            for arg in args {
+                collect_expr_crate_path_imports(arg, known_packages, imports);
+            }
+        }
+        ast::Expr::EBinary { lhs, rhs, .. } => {
+            collect_expr_crate_path_imports(lhs, known_packages, imports);
+            collect_expr_crate_path_imports(rhs, known_packages, imports);
+        }
+        ast::Expr::EProj { tuple, .. } => {
+            collect_expr_crate_path_imports(tuple, known_packages, imports);
+        }
+        ast::Expr::EField { expr, .. } => {
+            collect_expr_crate_path_imports(expr, known_packages, imports);
+        }
+        ast::Expr::EIndex { base, index, .. } => {
+            collect_expr_crate_path_imports(base, known_packages, imports);
+            collect_expr_crate_path_imports(index, known_packages, imports);
+        }
+        ast::Expr::EBlock { block, .. } => {
+            collect_block_crate_path_imports(block, known_packages, imports);
+        }
+        ast::Expr::EUnit { .. }
+        | ast::Expr::EBool { .. }
+        | ast::Expr::EInt { .. }
+        | ast::Expr::EInt8 { .. }
+        | ast::Expr::EInt16 { .. }
+        | ast::Expr::EInt32 { .. }
+        | ast::Expr::EInt64 { .. }
+        | ast::Expr::EUInt8 { .. }
+        | ast::Expr::EUInt16 { .. }
+        | ast::Expr::EUInt32 { .. }
+        | ast::Expr::EUInt64 { .. }
+        | ast::Expr::EFloat { .. }
+        | ast::Expr::EFloat32 { .. }
+        | ast::Expr::EFloat64 { .. }
+        | ast::Expr::EString { .. }
+        | ast::Expr::EChar { .. }
+        | ast::Expr::EBreak { .. }
+        | ast::Expr::EContinue { .. } => {}
+    }
+}
+
+fn collect_pat_crate_path_imports(
+    pat: &ast::Pat,
+    known_packages: &HashSet<String>,
+    imports: &mut HashSet<String>,
+) {
+    match pat {
+        ast::Pat::PConstr {
+            constructor, args, ..
+        } => {
+            collect_path_crate_import(constructor, known_packages, imports);
+            for arg in args {
+                collect_pat_crate_path_imports(arg, known_packages, imports);
+            }
+        }
+        ast::Pat::PStruct { name, fields, .. } => {
+            collect_path_crate_import(name, known_packages, imports);
+            for (_, pat) in fields {
+                collect_pat_crate_path_imports(pat, known_packages, imports);
+            }
+        }
+        ast::Pat::PTuple { pats, .. } => {
+            for pat in pats {
+                collect_pat_crate_path_imports(pat, known_packages, imports);
+            }
+        }
+        ast::Pat::PVar { .. }
+        | ast::Pat::PUnit { .. }
+        | ast::Pat::PBool { .. }
+        | ast::Pat::PInt { .. }
+        | ast::Pat::PInt8 { .. }
+        | ast::Pat::PInt16 { .. }
+        | ast::Pat::PInt32 { .. }
+        | ast::Pat::PInt64 { .. }
+        | ast::Pat::PUInt8 { .. }
+        | ast::Pat::PUInt16 { .. }
+        | ast::Pat::PUInt32 { .. }
+        | ast::Pat::PUInt64 { .. }
+        | ast::Pat::PFloat { .. }
+        | ast::Pat::PFloat32 { .. }
+        | ast::Pat::PFloat64 { .. }
+        | ast::Pat::PString { .. }
+        | ast::Pat::PChar { .. }
+        | ast::Pat::PWild { .. } => {}
+    }
+}
+
+fn collect_path_crate_import(
+    path: &ast::Path,
+    known_packages: &HashSet<String>,
+    imports: &mut HashSet<String>,
+) {
+    if !matches!(path.root(), ast::PathRoot::Crate) {
+        return;
+    }
+    if let Some(package) = longest_known_prefix(path.segments(), known_packages) {
+        imports.insert(package);
+    }
+}
+
+fn longest_known_prefix(
+    segments: &[ast::PathSegment],
+    known_packages: &HashSet<String>,
+) -> Option<String> {
+    if segments.len() < 2 {
+        return None;
+    }
+    (1..segments.len()).rev().find_map(|len| {
+        let package = segments[..len]
+            .iter()
+            .map(|segment| segment.ident.0.clone())
+            .collect::<Vec<_>>()
+            .join("::");
+        known_packages.contains(&package).then_some(package)
+    })
+}
+
 fn source_override_for_dir<'a>(
     package_dir: &Path,
     source_override: Option<(&'a Path, &'a ast::File)>,
@@ -293,7 +668,17 @@ fn discover_packages_from_crate_unit(
             module.path.segments().to_vec(),
             ast,
         )];
-        let imports = collect_imports(&files, external_imports);
+        let mut imports = collect_imports(&files, external_imports);
+        for (child_name, child_id) in module.children.iter() {
+            if !module.path.segments().is_empty() {
+                imports.remove(child_name);
+            }
+            let child = crate_unit
+                .modules
+                .get(child_id.0)
+                .ok_or_else(|| compile_error(format!("module child {} not found", child_name)))?;
+            imports.insert(module_package_name(child.path.segments(), root_package));
+        }
         packages.insert(
             name.clone(),
             PackageUnit {
@@ -304,6 +689,14 @@ fn discover_packages_from_crate_unit(
         );
         discovery_order.push(name.clone());
         package_dirs.insert(name, package_dir_for_file(&module.file_path));
+    }
+
+    let known_packages = packages.keys().cloned().collect::<HashSet<_>>();
+    for (name, package) in packages.iter_mut() {
+        let imports = collect_known_crate_path_imports(&package.files, &known_packages);
+        package
+            .imports
+            .extend(imports.into_iter().filter(|dep| dep != name));
     }
 
     Ok(PackageGraph {

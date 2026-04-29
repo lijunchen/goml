@@ -1086,6 +1086,64 @@ pub fn f() -> string {
 }
 
 #[test]
+fn project_build_runs_nested_public_module_path() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    fs::create_dir_all(root.join("api"))?;
+    fs::write(
+        root.join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+"#,
+    )?;
+    fs::write(
+        root.join("main.gom"),
+        r#"
+mod api;
+
+fn main() -> unit {
+    println(crate::api::client::name())
+}
+"#,
+    )?;
+    fs::write(
+        root.join("api/mod.gom"),
+        r#"
+pub mod client;
+"#,
+    )?;
+    fs::write(
+        root.join("api/client.gom"),
+        r#"
+pub fn name() -> string {
+    "client"
+}
+"#,
+    )?;
+
+    let output = run_goml(&["build"], root)?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(output.status.success(), "stderr: {stderr}");
+    expect![""].assert_eq(&stdout);
+    expect![""].assert_eq(&stderr);
+
+    if !runtime_executor_available() {
+        return Ok(());
+    }
+
+    let go_output = run_go_main(&root.join("target/goml/main.go"), root)?;
+    let go_stdout = String::from_utf8_lossy(&go_output.stdout);
+    let go_stderr = String::from_utf8_lossy(&go_output.stderr);
+    assert!(go_output.status.success(), "stderr: {go_stderr}");
+    expect!["client\n"].assert_eq(&go_stdout);
+
+    Ok(())
+}
+
+#[test]
 fn project_build_bin_crate_reports_missing_main() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     let root = dir.path();

@@ -633,18 +633,23 @@ pub(crate) fn resolve_type_name<'a>(
         return (name.to_string(), genv.current());
     }
 
-    if let Some((package, rest)) = name.split_once("::") {
+    if name.contains("::") {
+        let package = known_package_prefix(genv, name);
         if package == BUILTIN_PACKAGE {
+            let rest = name
+                .strip_prefix(&format!("{BUILTIN_PACKAGE}::"))
+                .unwrap_or(name);
             return (rest.to_string(), genv.builtins());
         }
-        if is_special_unqualified_package(package) && is_special_unqualified_package(&genv.package)
+        if is_special_unqualified_package(&package) && is_special_unqualified_package(&genv.package)
         {
+            let rest = name.strip_prefix(&format!("{package}::")).unwrap_or(name);
             return (rest.to_string(), genv.current());
         }
         if package == genv.package {
             return (name.to_string(), genv.current());
         }
-        if let Some(dep) = genv.deps.get(package) {
+        if let Some(dep) = genv.deps.get(&package) {
             return (name.to_string(), dep);
         }
         return (name.to_string(), genv.current());
@@ -699,18 +704,23 @@ pub(crate) fn normalize_trait_name<'a>(
         return (name.to_string(), genv.current());
     }
 
-    if let Some((package, rest)) = name.split_once("::") {
+    if name.contains("::") {
+        let package = known_package_prefix(genv, name);
         if package == BUILTIN_PACKAGE {
+            let rest = name
+                .strip_prefix(&format!("{BUILTIN_PACKAGE}::"))
+                .unwrap_or(name);
             return (rest.to_string(), genv.builtins());
         }
-        if is_special_unqualified_package(package) && is_special_unqualified_package(&genv.package)
+        if is_special_unqualified_package(&package) && is_special_unqualified_package(&genv.package)
         {
+            let rest = name.strip_prefix(&format!("{package}::")).unwrap_or(name);
             return (rest.to_string(), genv.current());
         }
         if package == genv.package {
             return (name.to_string(), genv.current());
         }
-        if let Some(dep) = genv.deps.get(package) {
+        if let Some(dep) = genv.deps.get(&package) {
             return (name.to_string(), dep);
         }
         return (name.to_string(), genv.current());
@@ -733,6 +743,19 @@ pub(crate) fn normalize_trait_name<'a>(
     }
 
     (current_name, current_env)
+}
+
+fn known_package_prefix(genv: &PackageTypeEnv, name: &str) -> String {
+    let segments = name.split("::").collect::<Vec<_>>();
+    let mut best = None;
+    for end in 1..segments.len() {
+        let package = segments[..end].join("::");
+        if package == BUILTIN_PACKAGE || package == genv.package || genv.deps.contains_key(&package)
+        {
+            best = Some(package);
+        }
+    }
+    best.unwrap_or_else(|| segments.first().copied().unwrap_or_default().to_string())
 }
 
 pub(crate) fn type_param_name_set(tparams: &[hir::HirIdent]) -> HashSet<String> {

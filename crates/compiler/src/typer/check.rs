@@ -5790,7 +5790,7 @@ fn lookup_function_path(
     }
 
     let full_name = path.display();
-    let package = path.segments().first()?.seg().as_str();
+    let package = function_path_package(genv, path)?;
     if package == BUILTIN_PACKAGE {
         let name = path.last_ident()?.clone();
         return genv
@@ -5804,7 +5804,7 @@ fn lookup_function_path(
             .get_function_scheme(&full_name)
             .map(|scheme| (full_name, scheme));
     }
-    if let Some(env) = genv.deps.get(package) {
+    if let Some(env) = genv.deps.get(&package) {
         env.get_function_scheme(&full_name)
             .map(|scheme| (full_name, scheme))
     } else {
@@ -5814,6 +5814,22 @@ fn lookup_function_path(
         );
         None
     }
+}
+
+fn function_path_package(genv: &PackageTypeEnv, path: &hir::Path) -> Option<String> {
+    let mut best = None;
+    for end in 1..path.len() {
+        let package = path.segments()[..end]
+            .iter()
+            .map(|segment| segment.seg().clone())
+            .collect::<Vec<_>>()
+            .join("::");
+        if package == BUILTIN_PACKAGE || package == genv.package || genv.deps.contains_key(&package)
+        {
+            best = Some(package);
+        }
+    }
+    best.or_else(|| path.segments().first().map(|segment| segment.seg().clone()))
 }
 
 fn lookup_function_scheme_by_hint(

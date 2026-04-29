@@ -11,6 +11,7 @@ use crate::package_imports::{
     external_import_alias, is_exact_external_package_import, resolve_external_import_prefix,
 };
 use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package};
+use crate::pipeline::packages::collect_known_crate_path_imports_from_ast;
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::syntax::MySyntaxNodePtr;
 
@@ -229,6 +230,11 @@ fn file_imports(
             imports.insert(package);
         }
     }
+    let known_packages = deps.keys().cloned().collect::<HashSet<_>>();
+    imports.extend(collect_known_crate_path_imports_from_ast(
+        file,
+        &known_packages,
+    ));
     imports
 }
 
@@ -309,6 +315,33 @@ fn path_segments_display(path: &ast::Path) -> String {
         .map(|segment| segment.ident.0.clone())
         .collect::<Vec<_>>()
         .join("::")
+}
+
+fn known_package_prefix_for_path(
+    path: &ast::Path,
+    deps: &HashMap<String, interface::PackageInterface>,
+    current_package: &str,
+) -> String {
+    if path.len() < 2 {
+        return path_segments_display(path);
+    }
+    let mut best = None;
+    for end in 1..path.len() {
+        let package = path.segments()[..end]
+            .iter()
+            .map(|segment| segment.ident.0.clone())
+            .collect::<Vec<_>>()
+            .join("::");
+        if package == current_package || package == BUILTIN_PACKAGE || deps.contains_key(&package) {
+            best = Some(package);
+        }
+    }
+    best.unwrap_or_else(|| {
+        path.segments()
+            .first()
+            .map(|segment| segment.ident.0.clone())
+            .unwrap_or_default()
+    })
 }
 
 fn use_trait_import(
@@ -1083,15 +1116,12 @@ impl NameResolution {
                     )
                 } else {
                     let full_name = path_segments_display(path);
-                    let package = path
-                        .segments()
-                        .first()
-                        .map(|seg| seg.ident().0.as_str())
-                        .unwrap_or_default();
+                    let package =
+                        known_package_prefix_for_path(path, ctx.deps, ctx.current_package);
                     if package != ctx.current_package
                         && package != BUILTIN_PACKAGE
-                        && ctx.deps.contains_key(package)
-                        && !ctx.imports.contains(package)
+                        && ctx.deps.contains_key(&package)
+                        && !ctx.imports.contains(&package)
                     {
                         self.error(format!(
                             "package {} not imported in package {}",
@@ -1105,14 +1135,14 @@ impl NameResolution {
                             .copied()
                             .map(hir::NameRef::Def)
                             .unwrap_or_else(|| hir::NameRef::Unresolved(path.into()))
-                    } else if ctx.imports.contains(package) {
+                    } else if ctx.imports.contains(&package) {
                         ctx.deps
-                            .get(package)
+                            .get(&package)
                             .and_then(|pkg_interface| pkg_interface.value_exports.get(&full_name))
                             .copied()
                             .map(|idx| {
                                 hir::NameRef::Def(hir::DefId {
-                                    pkg: interface::package_id_for_name(package),
+                                    pkg: interface::package_id_for_name(&package),
                                     idx,
                                 })
                             })
@@ -1134,7 +1164,7 @@ impl NameResolution {
                             if path.len() == 2
                                 && (package == ctx.current_package
                                     || package == BUILTIN_PACKAGE
-                                    || ctx.deps.contains_key(package)) =>
+                                    || ctx.deps.contains_key(&package)) =>
                         {
                             self.alloc_expr_with_ptr(
                                 hir_table,
