@@ -117,6 +117,43 @@ fn secret() -> int32 {
 }
 
 #[test]
+fn private_function_is_hidden_from_sibling_module() {
+    assert_err(&[
+        (
+            "main.gom",
+            r#"
+mod internal;
+pub mod api;
+
+fn main() -> unit {
+    let _ = crate::api::call();
+}
+"#,
+        ),
+        (
+            "internal.gom",
+            r#"
+fn hidden() -> int64 {
+    1
+}
+
+pub fn exposed_inside_crate() -> int64 {
+    2
+}
+"#,
+        ),
+        (
+            "api.gom",
+            r#"
+pub fn call() -> int64 {
+    crate::internal::hidden()
+}
+"#,
+        ),
+    ]);
+}
+
+#[test]
 fn private_function_can_feed_public_function() {
     assert_ok(&[
         (
