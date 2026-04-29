@@ -9,7 +9,7 @@ use diagnostics::Diagnostics;
 use parser::syntax::MySyntaxNode;
 
 use crate::{
-    artifact::PackageExports, builtins, env::GlobalTypeEnv, hir, interface,
+    artifact::CrateExports, builtins, env::GlobalTypeEnv, hir, interface,
     typer::results::TypeckResults,
 };
 
@@ -135,7 +135,7 @@ fn typecheck_crate_for_query(path: &Path, src: &str) -> Result<QueryTypecheck, S
     for module in external_deps.modules.values() {
         module.interface.exports.apply_to(&mut genv);
     }
-    PackageExports::from_genv(&crate_genv).apply_to(&mut genv);
+    CrateExports::from_genv(&crate_genv).apply_to(&mut genv);
 
     Ok((hir_table, results, genv, diagnostics))
 }

@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use sha2::Digest;
 
-use crate::artifact::PackageExports;
+use crate::artifact::CrateExports;
 use crate::hir;
 use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package};
 
@@ -16,7 +16,7 @@ pub struct PackageInterface {
 }
 
 impl PackageInterface {
-    pub fn from_exports(package: &str, exports: &PackageExports) -> Self {
+    pub fn from_exports(package: &str, exports: &CrateExports) -> Self {
         let mut value_names: Vec<String> = exports
             .value_env
             .funcs

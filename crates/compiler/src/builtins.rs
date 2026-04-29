@@ -11,7 +11,7 @@ use indexmap::{IndexMap, IndexSet};
 use parser::{self, syntax::MySyntaxNode};
 
 use crate::{
-    artifact::{InterfaceUnit, PackageExports},
+    artifact::{CrateExports, InterfaceUnit},
     env::{FnOrigin, FnScheme, GlobalTypeEnv, TraitEnv, TypeEnv, ValueEnv},
     hir, interface,
     package_names::BUILTIN_PACKAGE,
@@ -108,7 +108,7 @@ pub(crate) fn builtin_env() -> GlobalTypeEnv {
 }
 
 pub fn merge_with_builtin_env(genv: &GlobalTypeEnv) -> GlobalTypeEnv {
-    let exports = PackageExports {
+    let exports = CrateExports {
         type_env: genv.type_env.clone(),
         trait_env: genv.trait_env.clone(),
         value_env: genv.value_env.clone(),
@@ -172,7 +172,7 @@ pub(crate) fn builtin_collection_method_keys() -> &'static HashSet<(String, Stri
 
 pub fn builtin_interface_hash() -> String {
     let genv = builtin_env();
-    let exports = PackageExports {
+    let exports = CrateExports {
         type_env: genv.type_env.clone(),
         trait_env: genv.trait_env.clone(),
         value_env: genv.value_env.clone(),

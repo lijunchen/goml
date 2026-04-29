@@ -14,7 +14,7 @@ use crate::pipeline::compile_error;
 use crate::pipeline::packages;
 use crate::{
     anf::{self, GlobalAnfEnv},
-    artifact::PackageExports,
+    artifact::CrateExports,
     builtins, compile_match, derive,
     env::{Gensym, GlobalTypeEnv},
     external::ExternalDependencyArtifacts,
@@ -75,7 +75,7 @@ impl CompilationError {
 
 #[derive(Debug, Clone)]
 struct NamespaceInterface {
-    exports: PackageExports,
+    exports: CrateExports,
     package_interface: interface::PackageInterface,
 }
 
@@ -87,7 +87,7 @@ fn nominal_impl_type_name(ty: &tast::Ty) -> Option<&str> {
     }
 }
 
-fn exports_define_nominal_type(exports: &PackageExports, ty: &tast::Ty) -> bool {
+fn exports_define_nominal_type(exports: &CrateExports, ty: &tast::Ty) -> bool {
     let Some(name) = nominal_impl_type_name(ty) else {
         return false;
     };
@@ -105,7 +105,7 @@ fn genv_defines_nominal_type(genv: &GlobalTypeEnv, ty: &tast::Ty) -> bool {
 
 fn duplicate_trait_impl_shadows_builtin(
     genv: &GlobalTypeEnv,
-    exports: &PackageExports,
+    exports: &CrateExports,
     key: &(String, tast::Ty),
 ) -> bool {
     builtins::builtin_env()
@@ -119,7 +119,7 @@ fn duplicate_trait_impl_shadows_builtin(
 pub(super) fn report_duplicate_trait_impls(
     diagnostics: &mut Diagnostics,
     genv: &GlobalTypeEnv,
-    exports: &PackageExports,
+    exports: &CrateExports,
     package_name: &str,
 ) {
     for (key, _) in exports.trait_env.trait_impls.iter() {
@@ -180,7 +180,7 @@ fn link_packages(packages: Vec<crate::core::File>) -> crate::core::File {
 #[derive(Debug, Clone)]
 struct NamespaceArtifact {
     tast: tast::File,
-    full_exports: PackageExports,
+    full_exports: CrateExports,
     interface: NamespaceInterface,
     diagnostics: Diagnostics,
 }
@@ -278,8 +278,8 @@ fn typecheck_package(
         deps_envs,
     );
     diagnostics.append(&mut hir_diagnostics);
-    let full_exports = PackageExports::from_genv(&genv);
-    let exports = PackageExports::public_from_package(&package.name, &package.files, &genv);
+    let full_exports = CrateExports::from_genv(&genv);
+    let exports = CrateExports::public_from_package(&package.name, &package.files, &genv);
     let package_interface = interface::PackageInterface::from_exports(&package.name, &exports);
 
     NamespaceArtifact {
@@ -707,7 +707,7 @@ pub fn typecheck_with_namespaces_and_results(
             package_diagnostics.append(&mut hir_diagnostics);
             diagnostics.append(&mut package_diagnostics);
 
-            let exports = PackageExports::public_from_package(name, &package.files, &package_genv);
+            let exports = CrateExports::public_from_package(name, &package.files, &package_genv);
             report_duplicate_trait_impls(&mut diagnostics, &genv, &exports, name);
             exports.apply_to(&mut genv);
             let package_interface = interface::PackageInterface::from_exports(name, &exports);
@@ -770,7 +770,7 @@ fn validate_entrypoint_for_compile(
 fn external_package_exports<'a>(
     external_deps: &'a ExternalDependencyArtifacts,
     package: &str,
-) -> Option<&'a PackageExports> {
+) -> Option<&'a CrateExports> {
     for module in external_deps.modules.values() {
         if module.package_interfaces.contains_key(package) {
             return Some(&module.interface.exports);

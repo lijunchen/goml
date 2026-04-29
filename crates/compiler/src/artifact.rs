@@ -12,13 +12,13 @@ pub const FORMAT_VERSION: u32 = 4;
 pub const COMPILER_ABI: u32 = 1;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct PackageExports {
+pub struct CrateExports {
     pub type_env: TypeEnv,
     pub trait_env: TraitEnv,
     pub value_env: ValueEnv,
 }
 
-impl PackageExports {
+impl CrateExports {
     pub fn from_genv(genv: &GlobalTypeEnv) -> Self {
         Self {
             type_env: genv.type_env.clone(),
@@ -39,16 +39,20 @@ impl PackageExports {
         Self::public_filtered(package, files, genv)
     }
 
-    pub fn public_from_crate(package: &str, files: &[SourceFileAst], genv: &GlobalTypeEnv) -> Self {
-        if package == BUILTIN_PACKAGE {
+    pub fn public_from_crate(
+        crate_name: &str,
+        files: &[SourceFileAst],
+        genv: &GlobalTypeEnv,
+    ) -> Self {
+        if crate_name == BUILTIN_PACKAGE {
             return Self::from_genv(genv);
         }
 
-        Self::public_filtered(package, files, genv)
+        Self::public_filtered(crate_name, files, genv)
     }
 
-    fn public_filtered(package: &str, files: &[SourceFileAst], genv: &GlobalTypeEnv) -> Self {
-        let public_names = public_export_names(package, files);
+    fn public_filtered(namespace: &str, files: &[SourceFileAst], genv: &GlobalTypeEnv) -> Self {
+        let public_names = public_export_names(namespace, files);
         let mut exports = Self::from_genv(genv);
         exports
             .type_env
@@ -124,7 +128,7 @@ impl PackageExports {
     }
 }
 
-fn public_export_names(package: &str, files: &[SourceFileAst]) -> HashSet<String> {
+fn public_export_names(namespace: &str, files: &[SourceFileAst]) -> HashSet<String> {
     let mut names = HashSet::new();
     for file in files {
         if !file.module_visible {
@@ -156,26 +160,26 @@ fn public_export_names(package: &str, files: &[SourceFileAst]) -> HashSet<String
                 _ => None,
             };
             if let Some(name) = name {
-                names.insert(export_name_in_module(package, &file.module_path, name));
+                names.insert(export_name_in_module(namespace, &file.module_path, name));
             }
         }
     }
     names
 }
 
-fn export_name_in_module(package: &str, module_path: &[String], name: &str) -> String {
+fn export_name_in_module(namespace: &str, module_path: &[String], name: &str) -> String {
     let mut segments = if module_path.is_empty() {
-        if is_special_unqualified_package(package) {
+        if is_special_unqualified_package(namespace) {
             Vec::new()
         } else {
-            vec![package.to_string()]
+            vec![namespace.to_string()]
         }
     } else {
         let module_name = module_path.join("::");
-        if package == module_name || is_special_unqualified_package(package) {
+        if namespace == module_name || is_special_unqualified_package(namespace) {
             module_path.to_vec()
         } else {
-            std::iter::once(package.to_string())
+            std::iter::once(namespace.to_string())
                 .chain(module_path.iter().cloned())
                 .collect()
         }
@@ -193,7 +197,7 @@ pub struct InterfaceUnit {
     pub format_version: u32,
     pub compiler_abi: u32,
     pub package: String,
-    pub exports: PackageExports,
+    pub exports: CrateExports,
     pub interface: crate::interface::PackageInterface,
     pub deps: BTreeMap<String, String>,
     pub interface_hash: String,
@@ -204,7 +208,7 @@ struct InterfaceHashView<'a> {
     format_version: u32,
     compiler_abi: u32,
     package: &'a str,
-    exports: &'a PackageExports,
+    exports: &'a CrateExports,
     interface: &'a crate::interface::PackageInterface,
     deps: &'a BTreeMap<String, String>,
 }
@@ -212,7 +216,7 @@ struct InterfaceHashView<'a> {
 impl InterfaceUnit {
     pub fn new(
         package: String,
-        exports: PackageExports,
+        exports: CrateExports,
         interface: crate::interface::PackageInterface,
         deps: BTreeMap<String, String>,
     ) -> Self {
@@ -255,7 +259,7 @@ pub struct CoreUnit {
     pub package: String,
     pub interface: InterfaceUnit,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub internal_exports: Option<PackageExports>,
+    pub internal_exports: Option<CrateExports>,
     pub core_ir: crate::core::File,
     pub deps: BTreeMap<String, String>,
     pub sources: Vec<String>,

@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 use diagnostics::Diagnostics;
 
-use crate::artifact::{CoreUnit, InterfaceUnit, PackageExports};
+use crate::artifact::{CoreUnit, CrateExports, InterfaceUnit};
 use crate::builtins;
 use crate::common::{Constructor, EnumConstructor, StructConstructor};
 use crate::core;
@@ -198,7 +198,7 @@ impl ExternalDependencyArtifacts {
 
 #[derive(Clone)]
 struct CompiledPackage {
-    exports: PackageExports,
+    exports: CrateExports,
     interface: InterfaceUnit,
     core: CoreUnit,
 }
@@ -591,8 +591,8 @@ fn compile_module_package(
         return Err(diagnostics_text(&diagnostics));
     }
 
-    let full_exports = PackageExports::from_genv(&genv);
-    let exports = PackageExports::public_from_package(&package.name, &package.files, &genv);
+    let full_exports = CrateExports::from_genv(&genv);
+    let exports = CrateExports::public_from_package(&package.name, &package.files, &genv);
     let package_interface = interface::PackageInterface::from_exports(&package.name, &exports);
     let interface = InterfaceUnit::new(
         package.name.clone(),
@@ -813,10 +813,7 @@ fn rename_impl_def(def: &ImplDef, package_names: &HashMap<String, String>) -> Im
     }
 }
 
-fn rename_exports(
-    exports: &PackageExports,
-    package_names: &HashMap<String, String>,
-) -> PackageExports {
+fn rename_exports(exports: &CrateExports, package_names: &HashMap<String, String>) -> CrateExports {
     let enums = exports
         .type_env
         .enums
@@ -947,7 +944,7 @@ fn rename_exports(
         })
         .collect();
 
-    PackageExports {
+    CrateExports {
         type_env: TypeEnv {
             enums,
             structs,
@@ -1214,15 +1211,15 @@ fn rename_core_file(file: &core::File, package_names: &HashMap<String, String>) 
     }
 }
 
-fn empty_exports() -> PackageExports {
-    PackageExports {
+fn empty_exports() -> CrateExports {
+    CrateExports {
         type_env: TypeEnv::new(),
         trait_env: TraitEnv::new(),
         value_env: ValueEnv::new(),
     }
 }
 
-fn merge_exports(into: &mut PackageExports, from: &PackageExports) {
+fn merge_exports(into: &mut CrateExports, from: &CrateExports) {
     for (name, def) in from.type_env.enums.iter() {
         into.type_env.enums.insert(name.clone(), def.clone());
     }

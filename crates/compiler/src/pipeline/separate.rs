@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use crate::artifact::{CoreUnit, InterfaceUnit, PackageExports};
+use crate::artifact::{CoreUnit, CrateExports, InterfaceUnit};
 use crate::builtins;
 use crate::env::{Gensym, GlobalTypeEnv};
 use crate::go::{self, compile::GlobalGoEnv, goast};
@@ -176,7 +176,7 @@ fn external_root_import_path(unit: &InterfaceUnit) -> Option<&str> {
     unit.interface.packages.iter().next().map(String::as_str)
 }
 
-fn exports_contain_namespace(namespace: &str, exports: &PackageExports) -> bool {
+fn exports_contain_namespace(namespace: &str, exports: &CrateExports) -> bool {
     exports
         .type_env
         .enums
@@ -273,8 +273,8 @@ fn typecheck_crate_sources(
     deps_envs: HashMap<String, GlobalTypeEnv>,
 ) -> (
     crate::tast::File,
-    PackageExports,
-    PackageExports,
+    CrateExports,
+    CrateExports,
     interface::PackageInterface,
     diagnostics::Diagnostics,
 ) {
@@ -292,8 +292,8 @@ fn typecheck_crate_sources(
     );
     type_diagnostics.append(&mut hir_diagnostics);
     diagnostics.append(&mut type_diagnostics);
-    let full_exports = PackageExports::from_genv(&genv);
-    let exports = PackageExports::public_from_crate(crate_name, &files, &genv);
+    let full_exports = CrateExports::from_genv(&genv);
+    let exports = CrateExports::public_from_crate(crate_name, &files, &genv);
     let pkg_interface = interface::PackageInterface::from_exports(crate_name, &exports);
     (tast, full_exports, exports, pkg_interface, diagnostics)
 }
