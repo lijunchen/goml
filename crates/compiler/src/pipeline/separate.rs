@@ -468,6 +468,7 @@ pub fn build_crate(opts: CrateInputs) -> Result<CoreUnit, CompilationError> {
         }
 
         let mut unit = CoreUnit::new(package, interface, core_ir);
+        unit.internal_exports = Some(full_exports);
         unit.sources = sources;
 
         Ok(unit)
@@ -688,8 +689,12 @@ fn link_core_units(
         let unit = by_name
             .get(pkg)
             .ok_or_else(|| compile_error(format!("missing core for package {}", pkg)))?;
-        report_duplicate_trait_impls(&mut diagnostics, &genv, &unit.interface.exports, pkg);
-        unit.interface.exports.apply_to(&mut genv);
+        let exports = unit
+            .internal_exports
+            .as_ref()
+            .unwrap_or(&unit.interface.exports);
+        report_duplicate_trait_impls(&mut diagnostics, &genv, exports, pkg);
+        exports.apply_to(&mut genv);
     }
     if diagnostics.has_errors() {
         return Err(CompilationError::Typer { diagnostics });

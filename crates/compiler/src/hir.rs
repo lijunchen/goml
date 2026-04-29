@@ -14,6 +14,7 @@ pub struct SourceFileAst {
     pub path: PathBuf,
     pub package: String,
     pub module_path: Vec<String>,
+    pub module_visible: bool,
     pub ast: ast::File,
 }
 
@@ -27,6 +28,7 @@ impl SourceFileAst {
             path,
             package: package.into(),
             module_path: Vec::new(),
+            module_visible: true,
             ast,
         }
     }
@@ -36,6 +38,7 @@ impl SourceFileAst {
             path,
             package: ROOT_PACKAGE.to_string(),
             module_path,
+            module_visible: true,
             ast,
         }
     }
@@ -50,6 +53,23 @@ impl SourceFileAst {
             path,
             package: package.into(),
             module_path,
+            module_visible: true,
+            ast,
+        }
+    }
+
+    pub fn with_package_module_visibility(
+        path: PathBuf,
+        package: impl Into<String>,
+        module_path: Vec<String>,
+        module_visible: bool,
+        ast: ast::File,
+    ) -> Self {
+        Self {
+            path,
+            package: package.into(),
+            module_path,
+            module_visible,
             ast,
         }
     }

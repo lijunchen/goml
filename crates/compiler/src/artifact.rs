@@ -115,6 +115,9 @@ impl PackageExports {
 fn public_export_names(package: &str, files: &[SourceFileAst]) -> HashSet<String> {
     let mut names = HashSet::new();
     for file in files {
+        if !file.module_visible {
+            continue;
+        }
         for item in file.ast.toplevels.iter() {
             let name = match item {
                 ast::Item::EnumDef(def) if def.visibility == ast::Visibility::Public => {
@@ -239,6 +242,8 @@ pub struct CoreUnit {
     pub compiler_abi: u32,
     pub package: String,
     pub interface: InterfaceUnit,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub internal_exports: Option<PackageExports>,
     pub core_ir: crate::core::File,
     pub deps: BTreeMap<String, String>,
     pub sources: Vec<String>,
@@ -252,6 +257,7 @@ impl CoreUnit {
             compiler_abi: COMPILER_ABI,
             package,
             interface,
+            internal_exports: None,
             core_ir,
             deps,
             sources: Vec::new(),

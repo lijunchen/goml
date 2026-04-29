@@ -1335,6 +1335,65 @@ fn project_check_checks_module_from_cwd() -> anyhow::Result<()> {
 }
 
 #[test]
+fn project_check_hides_public_items_inside_private_modules() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    fs::write(
+        root.join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+"#,
+    )?;
+    fs::write(
+        root.join("main.gom"),
+        r#"
+mod hidden;
+pub mod shown;
+
+pub fn exported() -> string {
+    crate::hidden::secret() + crate::shown::name()
+}
+
+fn main() -> unit {
+    println(exported())
+}
+"#,
+    )?;
+    fs::write(
+        root.join("hidden.gom"),
+        r#"
+pub fn secret() -> string {
+    "hidden"
+}
+"#,
+    )?;
+    fs::write(
+        root.join("shown.gom"),
+        r#"
+pub fn name() -> string {
+    "shown"
+}
+"#,
+    )?;
+
+    let output = run_goml(&["check"], root)?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(output.status.success(), "stderr: {stderr}");
+    expect![""].assert_eq(&stdout);
+    expect![""].assert_eq(&stderr);
+
+    let interface = fs::read_to_string(root.join("target/goml/check/demo.interface"))?;
+    assert!(interface.contains("demo::exported"));
+    assert!(interface.contains("demo::shown::name"));
+    assert!(!interface.contains("demo::hidden::secret"));
+
+    Ok(())
+}
+
+#[test]
 fn project_check_reports_duplicate_mod_declarations() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     let root = dir.path();

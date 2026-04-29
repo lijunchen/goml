@@ -60,18 +60,35 @@ pub struct CrateUnit {
 
 impl CrateUnit {
     pub fn source_files(&self) -> Vec<crate::hir::SourceFileAst> {
+        let visibilities = self
+            .modules
+            .iter()
+            .map(|module| (module.path.segments().to_vec(), module.visibility))
+            .collect::<BTreeMap<_, _>>();
         self.modules
             .iter()
             .map(|module| {
-                crate::hir::SourceFileAst::with_package_and_module_path(
+                crate::hir::SourceFileAst::with_package_module_visibility(
                     module.file_path.clone(),
                     self.config.name.clone(),
                     module.path.segments().to_vec(),
+                    module_path_visible(module.path.segments(), &visibilities),
                     module.ast.clone(),
                 )
             })
             .collect()
     }
+}
+
+fn module_path_visible(
+    module_path: &[String],
+    visibilities: &BTreeMap<Vec<String>, ast::Visibility>,
+) -> bool {
+    (1..=module_path.len()).all(|end| {
+        visibilities
+            .get(&module_path[..end])
+            .is_some_and(|visibility| *visibility == ast::Visibility::Public)
+    })
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

@@ -490,6 +490,7 @@ fn compile_external_module(
         compiler_abi: crate::artifact::COMPILER_ABI,
         package: root_package.to_string(),
         interface: interface.clone(),
+        internal_exports: Some(merged_exports),
         core_ir: merged_core,
         deps: merged_deps,
         sources: merged_sources.into_iter().collect(),
