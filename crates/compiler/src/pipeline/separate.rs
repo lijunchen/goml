@@ -600,129 +600,184 @@ pub fn read_core(path: &Path) -> Result<CoreUnit, CompilationError> {
 }
 
 pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> {
-    with_compiler_stack(|| {
-        if cores.is_empty() {
-            return Err(compile_error("no core inputs provided".to_string()));
-        }
+    with_compiler_stack(|| link_core_units(ROOT_PACKAGE, &entry_function_name(ROOT_PACKAGE), cores))
+}
 
-        let mut by_name = HashMap::new();
-        for core in cores {
-            if by_name.contains_key(&core.package) {
-                return Err(compile_error(format!(
-                    "duplicate core provided for package {}",
-                    core.package
-                )));
-            }
-            by_name.insert(core.package.clone(), core);
-        }
+pub fn link_crates(root_crate: &str, cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> {
+    with_compiler_stack(|| link_core_units(root_crate, &entry_function_name(root_crate), cores))
+}
 
-        let Some((main_package, main)) = by_name.get_key_value(ROOT_PACKAGE) else {
-            return Err(compile_error("missing main package core".to_string()));
-        };
-        if !main
-            .core_ir
-            .toplevels
-            .iter()
-            .any(|f| f.name == ENTRY_FUNCTION)
-        {
+fn link_core_units(
+    root_package: &str,
+    entry_name: &str,
+    cores: Vec<CoreUnit>,
+) -> Result<LinkOutput, CompilationError> {
+    if cores.is_empty() {
+        return Err(compile_error("no core inputs provided".to_string()));
+    }
+
+    let mut by_name = HashMap::new();
+    for core in cores {
+        if by_name.contains_key(&core.package) {
             return Err(compile_error(format!(
-                "{} package missing main function",
-                main_package
+                "duplicate core provided for package {}",
+                core.package
             )));
         }
+        by_name.insert(core.package.clone(), core);
+    }
 
-        let builtin_hash = builtins::builtin_interface_hash();
-        for (pkg, unit) in by_name.iter() {
-            for (dep, expected_hash) in unit.deps.iter() {
-                if dep == BUILTIN_PACKAGE {
-                    if expected_hash != &builtin_hash {
-                        return Err(compile_error(format!(
-                            "package {} expects builtin interface_hash {}, but compiler has {} (rebuild {})",
-                            pkg, expected_hash, builtin_hash, pkg
-                        )));
-                    }
-                    continue;
-                }
-                let Some(dep_unit) = by_name.get(dep) else {
+    let Some((main_package, main)) = by_name.get_key_value(root_package) else {
+        let message = if root_package == ROOT_PACKAGE {
+            "missing main package core".to_string()
+        } else {
+            format!("missing root crate core for {root_package}")
+        };
+        return Err(compile_error(message));
+    };
+    let Some(entry_fn) = main
+        .core_ir
+        .toplevels
+        .iter()
+        .find(|f| f.name == entry_name)
+        .cloned()
+    else {
+        return Err(compile_error(format!(
+            "{} package missing main function",
+            main_package
+        )));
+    };
+    if !entry_fn.params.is_empty() {
+        return Err(compile_error(
+            "main function must not have parameters".to_string(),
+        ));
+    }
+
+    let builtin_hash = builtins::builtin_interface_hash();
+    for (pkg, unit) in by_name.iter() {
+        for (dep, expected_hash) in unit.deps.iter() {
+            if dep == BUILTIN_PACKAGE {
+                if expected_hash != &builtin_hash {
                     return Err(compile_error(format!(
-                        "package {} depends on missing package {}",
-                        pkg, dep
-                    )));
-                };
-                if &dep_unit.interface.interface_hash != expected_hash {
-                    return Err(compile_error(format!(
-                        "package {} expects interface_hash {} for {}, but got {} (rebuild {})",
-                        pkg, expected_hash, dep, dep_unit.interface.interface_hash, pkg
+                        "package {} expects builtin interface_hash {}, but compiler has {} (rebuild {})",
+                        pkg, expected_hash, builtin_hash, pkg
                     )));
                 }
+                continue;
+            }
+            let Some(dep_unit) = by_name.get(dep) else {
+                return Err(compile_error(format!(
+                    "package {} depends on missing package {}",
+                    pkg, dep
+                )));
+            };
+            if &dep_unit.interface.interface_hash != expected_hash {
+                return Err(compile_error(format!(
+                    "package {} expects interface_hash {} for {}, but got {} (rebuild {})",
+                    pkg, expected_hash, dep, dep_unit.interface.interface_hash, pkg
+                )));
             }
         }
+    }
 
-        let order = topo_sort(&by_name)?;
+    let order = topo_sort(&by_name)?;
 
-        let mut genv = builtins::builtin_env();
-        let mut diagnostics = Diagnostics::new();
-        for pkg in order.iter() {
-            let unit = by_name
-                .get(pkg)
-                .ok_or_else(|| compile_error(format!("missing core for package {}", pkg)))?;
-            report_duplicate_trait_impls(&mut diagnostics, &genv, &unit.interface.exports, pkg);
-            unit.interface.exports.apply_to(&mut genv);
-        }
-        if diagnostics.has_errors() {
-            return Err(CompilationError::Typer { diagnostics });
-        }
+    let mut genv = builtins::builtin_env();
+    let mut diagnostics = Diagnostics::new();
+    for pkg in order.iter() {
+        let unit = by_name
+            .get(pkg)
+            .ok_or_else(|| compile_error(format!("missing core for package {}", pkg)))?;
+        report_duplicate_trait_impls(&mut diagnostics, &genv, &unit.interface.exports, pkg);
+        unit.interface.exports.apply_to(&mut genv);
+    }
+    if diagnostics.has_errors() {
+        return Err(CompilationError::Typer { diagnostics });
+    }
 
-        let mut linked = crate::core::File {
-            toplevels: Vec::new(),
-        };
+    let mut linked = crate::core::File {
+        toplevels: Vec::new(),
+    };
 
-        let gensym = Gensym::new();
-        let mut compile_diagnostics = Diagnostics::new();
-        let builtin_print_core = crate::compile_match::compile_file(
-            &builtins::builtin_env(),
-            &gensym,
-            &mut compile_diagnostics,
-            &builtins::builtin_print_tast(),
-        );
-        linked.toplevels.extend(builtin_print_core.toplevels);
+    let gensym = Gensym::new();
+    let mut compile_diagnostics = Diagnostics::new();
+    let builtin_print_core = crate::compile_match::compile_file(
+        &builtins::builtin_env(),
+        &gensym,
+        &mut compile_diagnostics,
+        &builtins::builtin_print_tast(),
+    );
+    linked.toplevels.extend(builtin_print_core.toplevels);
 
-        for pkg in order {
-            let unit = by_name
-                .get(&pkg)
-                .ok_or_else(|| compile_error(format!("missing core for package {}", pkg)))?;
-            linked.toplevels.extend(unit.core_ir.toplevels.clone());
-        }
+    for pkg in order {
+        let unit = by_name
+            .get(&pkg)
+            .ok_or_else(|| compile_error(format!("missing core for package {}", pkg)))?;
+        linked.toplevels.extend(unit.core_ir.toplevels.clone());
+    }
+    if entry_name != ENTRY_FUNCTION {
+        linked.toplevels.push(crate_entry_wrapper(&entry_fn));
+    }
 
-        let required_builtin_methods =
-            builtin_inherent::collect_required_builtin_collection_methods(std::slice::from_ref(
-                &linked,
-            ));
-        let builtin_collection_core = builtin_inherent::compile_builtin_collection_methods_checked(
-            &required_builtin_methods,
-            &gensym,
-        )?;
-        if !builtin_collection_core.toplevels.is_empty() {
-            linked.toplevels.extend(builtin_collection_core.toplevels);
-        }
-        let (mono, monoenv) = mono::mono(genv.clone(), linked.clone()).map_err(compile_error)?;
-        let (lifted, liftenv) = lift::lambda_lift(monoenv.clone(), &gensym, mono.clone());
-        let (anf, anfenv) = crate::anf::anf_file(liftenv.clone(), &gensym, lifted.clone());
-        let (go, goenv) = go::compile::go_file(anfenv.clone(), &gensym, anf.clone());
+    let required_builtin_methods = builtin_inherent::collect_required_builtin_collection_methods(
+        std::slice::from_ref(&linked),
+    );
+    let builtin_collection_core = builtin_inherent::compile_builtin_collection_methods_checked(
+        &required_builtin_methods,
+        &gensym,
+    )?;
+    if !builtin_collection_core.toplevels.is_empty() {
+        linked.toplevels.extend(builtin_collection_core.toplevels);
+    }
+    let (mono, monoenv) = mono::mono(genv.clone(), linked.clone()).map_err(compile_error)?;
+    let (lifted, liftenv) = lift::lambda_lift(monoenv.clone(), &gensym, mono.clone());
+    let (anf, anfenv) = crate::anf::anf_file(liftenv.clone(), &gensym, lifted.clone());
+    let (go, goenv) = go::compile::go_file(anfenv.clone(), &gensym, anf.clone());
 
-        Ok(LinkOutput {
-            go,
-            goenv,
-            core: linked,
-            genv,
-            mono,
-            monoenv,
-            lifted,
-            liftenv,
-            anf,
-            anfenv,
-        })
+    Ok(LinkOutput {
+        go,
+        goenv,
+        core: linked,
+        genv,
+        mono,
+        monoenv,
+        lifted,
+        liftenv,
+        anf,
+        anfenv,
     })
+}
+
+fn entry_function_name(package: &str) -> String {
+    if is_special_unqualified_package(package) {
+        ENTRY_FUNCTION.to_string()
+    } else {
+        format!("{package}::{ENTRY_FUNCTION}")
+    }
+}
+
+fn crate_entry_wrapper(entry_fn: &crate::core::Fn) -> crate::core::Fn {
+    let ret_ty = entry_fn.ret_ty.clone();
+    crate::core::Fn {
+        name: ENTRY_FUNCTION.to_string(),
+        generics: Vec::new(),
+        params: Vec::new(),
+        ret_ty: ret_ty.clone(),
+        body: crate::core::Block {
+            stmts: Vec::new(),
+            tail: Some(Box::new(crate::core::Expr::ECall {
+                func: Box::new(crate::core::Expr::EVar {
+                    name: entry_fn.name.clone(),
+                    ty: crate::tast::Ty::TFunc {
+                        params: Vec::new(),
+                        ret_ty: Box::new(ret_ty.clone()),
+                    },
+                }),
+                args: Vec::new(),
+                ty: ret_ty,
+            })),
+        },
+    }
 }
 
 fn topo_sort(cores: &HashMap<String, CoreUnit>) -> Result<Vec<String>, CompilationError> {
@@ -881,6 +936,56 @@ pub fn call() -> unit {
                 .iter()
                 .any(|source| source.ends_with("src/api.gom"))
         );
+    }
+
+    #[test]
+    fn link_crates_wraps_named_crate_entrypoint() {
+        let dir = tempfile::tempdir().unwrap();
+        write(
+            dir.path().join("goml.toml"),
+            r#"[crate]
+name = "hello"
+kind = "bin"
+root = "src/main.gom"
+"#,
+        );
+        write(
+            dir.path().join("src/main.gom"),
+            r#"
+fn main() -> unit {
+    println("linked")
+}
+"#,
+        );
+
+        let crate_unit = modules::discover_crate_from_dir(dir.path()).unwrap();
+        let core = build_crate(CrateInputs {
+            crate_unit,
+            interface_files: Vec::new(),
+        })
+        .unwrap();
+        let linked = link_crates("hello", vec![core]).unwrap();
+        assert!(
+            linked
+                .core
+                .toplevels
+                .iter()
+                .any(|func| func.name == ENTRY_FUNCTION)
+        );
+
+        let go_path = dir.path().join("main.go");
+        std::fs::write(&go_path, linked.go.to_pretty(&linked.goenv, 120)).unwrap();
+        let output = std::process::Command::new("go")
+            .arg("run")
+            .arg(&go_path)
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "go run failed: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert_eq!(String::from_utf8_lossy(&output.stdout), "linked\n");
     }
 
     fn write(path: PathBuf, contents: &str) {
