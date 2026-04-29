@@ -52,7 +52,7 @@ struct ResolutionContext<'a> {
     deps: &'a HashMap<String, interface::CrateInterface>,
     current_namespace: &'a str,
     current_module_path: &'a [String],
-    crate_paths_include_package: bool,
+    crate_paths_include_namespace: bool,
     imports: &'a HashSet<String>,
     use_values: &'a HashMap<String, UseValueImport>,
     constructor_index: &'a ConstructorIndex,
@@ -411,7 +411,7 @@ fn use_decl_value_import(
     decl: &ast::UseDecl,
     current_namespace: &str,
     current_module_path: &[String],
-    crate_paths_include_package: bool,
+    crate_paths_include_namespace: bool,
     deps: &HashMap<String, interface::CrateInterface>,
     def_names: &HashMap<String, hir::DefId>,
 ) -> Option<(String, UseValueImport)> {
@@ -420,7 +420,7 @@ fn use_decl_value_import(
         decl.alias.as_ref(),
         current_namespace,
         current_module_path,
-        crate_paths_include_package,
+        crate_paths_include_namespace,
         deps,
         def_names,
     )
@@ -431,7 +431,7 @@ fn path_value_import(
     alias: Option<&ast::AstIdent>,
     current_namespace: &str,
     current_module_path: &[String],
-    crate_paths_include_package: bool,
+    crate_paths_include_namespace: bool,
     deps: &HashMap<String, interface::CrateInterface>,
     def_names: &HashMap<String, hir::DefId>,
 ) -> Option<(String, UseValueImport)> {
@@ -447,7 +447,7 @@ fn path_value_import(
         path,
         current_namespace,
         current_module_path,
-        crate_paths_include_package,
+        crate_paths_include_namespace,
     );
     let imported_name = alias
         .or_else(|| path.last_ident())
@@ -457,7 +457,7 @@ fn path_value_import(
         deps,
         current_namespace,
         current_module_path,
-        crate_paths_include_package,
+        crate_paths_include_namespace,
     );
     if package == current_namespace || package == BUILTIN_PACKAGE {
         let id = def_names.get(&full_name).copied()?;
@@ -486,7 +486,7 @@ fn file_use_value_imports(
     file: &ast::File,
     current_namespace: &str,
     current_module_path: &[String],
-    crate_paths_include_package: bool,
+    crate_paths_include_namespace: bool,
     deps: &HashMap<String, interface::CrateInterface>,
     def_names: &HashMap<String, hir::DefId>,
 ) -> HashMap<String, UseValueImport> {
@@ -497,7 +497,7 @@ fn file_use_value_imports(
                 decl,
                 current_namespace,
                 current_module_path,
-                crate_paths_include_package,
+                crate_paths_include_namespace,
                 deps,
                 def_names,
             )
@@ -530,7 +530,7 @@ fn path_resolution_segments_in_module(
     path: &ast::Path,
     current_namespace: &str,
     current_module_path: &[String],
-    crate_paths_include_package: bool,
+    crate_paths_include_namespace: bool,
 ) -> Vec<String> {
     let segments = path.segments();
     let has_crate_segment = !matches!(path.root(), ast::PathRoot::Crate)
@@ -541,12 +541,12 @@ fn path_resolution_segments_in_module(
         ast::PathRoot::Crate => crate_prefix_segments(
             current_namespace,
             current_module_path,
-            crate_paths_include_package,
+            crate_paths_include_namespace,
         ),
         _ if has_crate_segment => crate_prefix_segments(
             current_namespace,
             current_module_path,
-            crate_paths_include_package,
+            crate_paths_include_namespace,
         ),
         ast::PathRoot::Self_ => module_prefix_segments(current_namespace, current_module_path),
         ast::PathRoot::Super => {
@@ -572,13 +572,13 @@ fn path_resolution_display_in_module(
     path: &ast::Path,
     current_namespace: &str,
     current_module_path: &[String],
-    crate_paths_include_package: bool,
+    crate_paths_include_namespace: bool,
 ) -> String {
     path_resolution_segments_in_module(
         path,
         current_namespace,
         current_module_path,
-        crate_paths_include_package,
+        crate_paths_include_namespace,
     )
     .join("::")
 }
@@ -588,13 +588,13 @@ fn known_package_prefix_for_path_in_module(
     deps: &HashMap<String, interface::CrateInterface>,
     current_namespace: &str,
     current_module_path: &[String],
-    crate_paths_include_package: bool,
+    crate_paths_include_namespace: bool,
 ) -> String {
     let segments = path_resolution_segments_in_module(
         path,
         current_namespace,
         current_module_path,
-        crate_paths_include_package,
+        crate_paths_include_namespace,
     );
     if segments.len() < 2 {
         if matches!(
@@ -672,7 +672,7 @@ fn lower_type_path(
     tparams: &HashSet<String>,
     current_namespace: &str,
     current_module_path: &[String],
-    crate_paths_include_package: bool,
+    crate_paths_include_namespace: bool,
     type_index: &TypeIndex,
 ) -> hir::QualifiedPath {
     if path.len() == 1
@@ -688,7 +688,7 @@ fn lower_type_path(
             return path.into();
         }
         let local = module_relative_def_name(current_module_path, &name);
-        if (crate_paths_include_package || !current_module_path.is_empty())
+        if (crate_paths_include_namespace || !current_module_path.is_empty())
             && type_index.has_type(current_namespace, &local)
         {
             return qualified_path_from_segments(full_def_segments(
@@ -711,14 +711,14 @@ fn lower_type_path(
                 path,
                 current_namespace,
                 current_module_path,
-                crate_paths_include_package,
+                crate_paths_include_namespace,
             ))
         }
         _ if has_crate_segment => qualified_path_from_segments(path_resolution_segments_in_module(
             path,
             current_namespace,
             current_module_path,
-            crate_paths_include_package,
+            crate_paths_include_namespace,
         )),
         ast::PathRoot::Relative | ast::PathRoot::Absolute => path.into(),
     }
@@ -789,7 +789,7 @@ impl NameResolution {
                         path,
                         ctx.current_namespace,
                         ctx.current_module_path,
-                        ctx.crate_paths_include_package,
+                        ctx.crate_paths_include_namespace,
                     );
                     let enum_segments = &resolved_segments[..resolved_segments.len() - 1];
                     let enum_name = if enum_segments
@@ -899,7 +899,7 @@ impl NameResolution {
         let trait_index = TraitIndex::new_with_files(&files);
         let mut toplevels = Vec::new();
         let mut per_file_defs = Vec::new();
-        let packages_with_module_paths = files
+        let namespaces_with_module_paths = files
             .iter()
             .filter(|file| !file.module_path.is_empty())
             .map(|file| file.package.clone())
@@ -948,7 +948,7 @@ impl NameResolution {
                 }
             }
             let imports = file_imports(&file.ast, deps);
-            let crate_paths_include_package = packages_with_module_paths.contains(package_name);
+            let crate_paths_include_namespace = namespaces_with_module_paths.contains(package_name);
             let mut def_ids = Vec::new();
             for item in file.ast.toplevels.iter() {
                 let def_id = match item {
@@ -992,7 +992,7 @@ impl NameResolution {
                             ext,
                             package_name,
                             &file.module_path,
-                            crate_paths_include_package,
+                            crate_paths_include_namespace,
                             &imports,
                             &type_index,
                         );
@@ -1013,7 +1013,7 @@ impl NameResolution {
                             ext,
                             package_name,
                             &file.module_path,
-                            crate_paths_include_package,
+                            crate_paths_include_namespace,
                             &imports,
                             &type_index,
                         );
@@ -1034,7 +1034,7 @@ impl NameResolution {
                             e,
                             package_name,
                             &file.module_path,
-                            crate_paths_include_package,
+                            crate_paths_include_namespace,
                             &imports,
                             &type_index,
                         );
@@ -1055,7 +1055,7 @@ impl NameResolution {
                             s,
                             package_name,
                             &file.module_path,
-                            crate_paths_include_package,
+                            crate_paths_include_namespace,
                             &imports,
                             &type_index,
                         );
@@ -1076,7 +1076,7 @@ impl NameResolution {
                             t,
                             package_name,
                             &file.module_path,
-                            crate_paths_include_package,
+                            crate_paths_include_namespace,
                             &imports,
                             &type_index,
                         );
@@ -1132,12 +1132,12 @@ impl NameResolution {
         for (file_idx, file) in files.iter().enumerate() {
             let package_name = file.package.as_str();
             let imports = file_imports(&file.ast, deps);
-            let crate_paths_include_package = packages_with_module_paths.contains(package_name);
+            let crate_paths_include_namespace = namespaces_with_module_paths.contains(package_name);
             let use_values = file_use_value_imports(
                 &file.ast,
                 package_name,
                 &file.module_path,
-                crate_paths_include_package,
+                crate_paths_include_namespace,
                 deps,
                 &def_names,
             );
@@ -1147,7 +1147,7 @@ impl NameResolution {
                 deps,
                 current_namespace: package_name,
                 current_module_path: &file.module_path,
-                crate_paths_include_package,
+                crate_paths_include_namespace,
                 imports: &imports,
                 use_values: &use_values,
                 constructor_index: &ctor_index,
@@ -1216,7 +1216,7 @@ impl NameResolution {
                                 &tparams,
                                 package_name,
                                 &file.module_path,
-                                ctx.crate_paths_include_package,
+                                ctx.crate_paths_include_namespace,
                                 &imports,
                                 &type_index,
                             ),
@@ -1254,13 +1254,13 @@ impl NameResolution {
                 imports_vec.sort_by(|a, b| a.0.cmp(&b.0));
 
                 let mut use_traits = Vec::new();
-                let crate_paths_include_package = packages_with_module_paths.contains(&package);
+                let crate_paths_include_namespace = namespaces_with_module_paths.contains(&package);
                 for use_decl in file.ast.uses.iter() {
                     if use_decl_value_import(
                         use_decl,
                         &package,
                         &file.module_path,
-                        crate_paths_include_package,
+                        crate_paths_include_namespace,
                         deps,
                         &def_names,
                     )
@@ -1373,7 +1373,7 @@ impl NameResolution {
                         &tparams,
                         ctx.current_namespace,
                         ctx.current_module_path,
-                        ctx.crate_paths_include_package,
+                        ctx.crate_paths_include_namespace,
                         ctx.imports,
                         ctx.type_index,
                     ),
@@ -1403,7 +1403,7 @@ impl NameResolution {
                     &tparams,
                     ctx.current_namespace,
                     ctx.current_module_path,
-                    ctx.crate_paths_include_package,
+                    ctx.crate_paths_include_namespace,
                     ctx.imports,
                     ctx.type_index,
                 )
@@ -1527,7 +1527,7 @@ impl NameResolution {
                 let use_unqualified_resolution = path.len() == 1
                     && !matches!(path.root(), ast::PathRoot::Super)
                     && !(matches!(path.root(), ast::PathRoot::Crate)
-                        && ctx.crate_paths_include_package);
+                        && ctx.crate_paths_include_namespace);
                 if use_unqualified_resolution {
                     let Some(ident) = path.last_ident() else {
                         self.ice("path length 1 missing last ident");
@@ -1586,20 +1586,20 @@ impl NameResolution {
                             path,
                             ctx.current_namespace,
                             ctx.current_module_path,
-                            ctx.crate_paths_include_package,
+                            ctx.crate_paths_include_namespace,
                         ));
                     let full_name = path_resolution_display_in_module(
                         path,
                         ctx.current_namespace,
                         ctx.current_module_path,
-                        ctx.crate_paths_include_package,
+                        ctx.crate_paths_include_namespace,
                     );
                     let package = known_package_prefix_for_path_in_module(
                         path,
                         ctx.deps,
                         ctx.current_namespace,
                         ctx.current_module_path,
-                        ctx.crate_paths_include_package,
+                        ctx.crate_paths_include_namespace,
                     );
                     if package != ctx.current_namespace
                         && package != BUILTIN_PACKAGE
@@ -1817,7 +1817,7 @@ impl NameResolution {
                     &HashSet::new(),
                     ctx.current_namespace,
                     ctx.current_module_path,
-                    ctx.crate_paths_include_package,
+                    ctx.crate_paths_include_namespace,
                     ctx.type_index,
                 );
                 if let Some(package) = &qualified.package
@@ -2219,7 +2219,7 @@ impl NameResolution {
                     &HashSet::new(),
                     ctx.current_namespace,
                     ctx.current_module_path,
-                    ctx.crate_paths_include_package,
+                    ctx.crate_paths_include_namespace,
                     ctx.type_index,
                 );
                 if let Some(package) = &qualified.package
@@ -2258,7 +2258,7 @@ impl NameResolution {
         tparams: &HashSet<String>,
         current_namespace: &str,
         current_module_path: &[String],
-        crate_paths_include_package: bool,
+        crate_paths_include_namespace: bool,
         imports: &HashSet<String>,
         type_index: &TypeIndex,
     ) -> hir::TypeExpr {
@@ -2286,7 +2286,7 @@ impl NameResolution {
                             tparams,
                             current_namespace,
                             current_module_path,
-                            crate_paths_include_package,
+                            crate_paths_include_namespace,
                             imports,
                             type_index,
                         )
@@ -2299,7 +2299,7 @@ impl NameResolution {
                     tparams,
                     current_namespace,
                     current_module_path,
-                    crate_paths_include_package,
+                    crate_paths_include_namespace,
                     type_index,
                 );
                 if let Some(package) = &qualified.package
@@ -2318,7 +2318,7 @@ impl NameResolution {
                     &HashSet::new(),
                     current_namespace,
                     current_module_path,
-                    crate_paths_include_package,
+                    crate_paths_include_namespace,
                     type_index,
                 );
                 if let Some(package) = &qualified.package
@@ -2339,7 +2339,7 @@ impl NameResolution {
                     tparams,
                     current_namespace,
                     current_module_path,
-                    crate_paths_include_package,
+                    crate_paths_include_namespace,
                     imports,
                     type_index,
                 )),
@@ -2351,7 +2351,7 @@ impl NameResolution {
                             tparams,
                             current_namespace,
                             current_module_path,
-                            crate_paths_include_package,
+                            crate_paths_include_namespace,
                             imports,
                             type_index,
                         )
@@ -2365,7 +2365,7 @@ impl NameResolution {
                     tparams,
                     current_namespace,
                     current_module_path,
-                    crate_paths_include_package,
+                    crate_paths_include_namespace,
                     imports,
                     type_index,
                 )),
@@ -2379,7 +2379,7 @@ impl NameResolution {
                             tparams,
                             current_namespace,
                             current_module_path,
-                            crate_paths_include_package,
+                            crate_paths_include_namespace,
                             imports,
                             type_index,
                         )
@@ -2390,7 +2390,7 @@ impl NameResolution {
                     tparams,
                     current_namespace,
                     current_module_path,
-                    crate_paths_include_package,
+                    crate_paths_include_namespace,
                     imports,
                     type_index,
                 )),
@@ -2403,7 +2403,7 @@ impl NameResolution {
         def: &ast::EnumDef,
         current_namespace: &str,
         current_module_path: &[String],
-        crate_paths_include_package: bool,
+        crate_paths_include_namespace: bool,
         imports: &HashSet<String>,
         type_index: &TypeIndex,
     ) -> hir::EnumDef {
@@ -2421,7 +2421,7 @@ impl NameResolution {
                             &tparams,
                             current_namespace,
                             current_module_path,
-                            crate_paths_include_package,
+                            crate_paths_include_namespace,
                             imports,
                             type_index,
                         )
@@ -2443,7 +2443,7 @@ impl NameResolution {
         def: &ast::StructDef,
         current_namespace: &str,
         current_module_path: &[String],
-        crate_paths_include_package: bool,
+        crate_paths_include_namespace: bool,
         imports: &HashSet<String>,
         type_index: &TypeIndex,
     ) -> hir::StructDef {
@@ -2460,7 +2460,7 @@ impl NameResolution {
                         &tparams,
                         current_namespace,
                         current_module_path,
-                        crate_paths_include_package,
+                        crate_paths_include_namespace,
                         imports,
                         type_index,
                     ),
@@ -2480,7 +2480,7 @@ impl NameResolution {
         def: &ast::TraitDef,
         current_namespace: &str,
         current_module_path: &[String],
-        crate_paths_include_package: bool,
+        crate_paths_include_namespace: bool,
         imports: &HashSet<String>,
         type_index: &TypeIndex,
     ) -> hir::TraitDef {
@@ -2499,7 +2499,7 @@ impl NameResolution {
                             &HashSet::new(),
                             current_namespace,
                             current_module_path,
-                            crate_paths_include_package,
+                            crate_paths_include_namespace,
                             imports,
                             type_index,
                         )
@@ -2510,7 +2510,7 @@ impl NameResolution {
                     &HashSet::new(),
                     current_namespace,
                     current_module_path,
-                    crate_paths_include_package,
+                    crate_paths_include_namespace,
                     imports,
                     type_index,
                 ),
@@ -2565,7 +2565,7 @@ impl NameResolution {
             &HashSet::new(),
             ctx.current_namespace,
             ctx.current_module_path,
-            ctx.crate_paths_include_package,
+            ctx.crate_paths_include_namespace,
             ctx.type_index,
         );
         if let Some(package) = &qualified.package
@@ -2584,7 +2584,7 @@ impl NameResolution {
         def: &ast::ExternGo,
         current_namespace: &str,
         current_module_path: &[String],
-        crate_paths_include_package: bool,
+        crate_paths_include_namespace: bool,
         imports: &HashSet<String>,
         type_index: &TypeIndex,
     ) -> hir::ExternGo {
@@ -2607,7 +2607,7 @@ impl NameResolution {
                             &HashSet::new(),
                             current_namespace,
                             current_module_path,
-                            crate_paths_include_package,
+                            crate_paths_include_namespace,
                             imports,
                             type_index,
                         ),
@@ -2620,7 +2620,7 @@ impl NameResolution {
                     &HashSet::new(),
                     current_namespace,
                     current_module_path,
-                    crate_paths_include_package,
+                    crate_paths_include_namespace,
                     imports,
                     type_index,
                 )
@@ -2650,7 +2650,7 @@ impl NameResolution {
         def: &ast::ExternBuiltin,
         current_namespace: &str,
         current_module_path: &[String],
-        crate_paths_include_package: bool,
+        crate_paths_include_namespace: bool,
         imports: &HashSet<String>,
         type_index: &TypeIndex,
     ) -> hir::ExternBuiltin {
@@ -2684,7 +2684,7 @@ impl NameResolution {
                             &HashSet::new(),
                             current_namespace,
                             current_module_path,
-                            crate_paths_include_package,
+                            crate_paths_include_namespace,
                             imports,
                             type_index,
                         ),
@@ -2697,7 +2697,7 @@ impl NameResolution {
                     &HashSet::new(),
                     current_namespace,
                     current_module_path,
-                    crate_paths_include_package,
+                    crate_paths_include_namespace,
                     imports,
                     type_index,
                 )
@@ -2722,7 +2722,7 @@ impl NameResolution {
                     &HashSet::new(),
                     ctx.current_namespace,
                     ctx.current_module_path,
-                    ctx.crate_paths_include_package,
+                    ctx.crate_paths_include_namespace,
                     ctx.imports,
                     ctx.type_index,
                 )
