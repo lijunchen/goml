@@ -57,7 +57,7 @@ pub fn resolve_external_import_prefix(
     for end in 2..=path.len() {
         let prefix = path_prefix(path, end);
         for (alias, dep) in deps {
-            if dep.packages.contains(&prefix) {
+            if dep.import_paths.contains(&prefix) {
                 best = Some((alias.clone(), end));
                 break;
             }

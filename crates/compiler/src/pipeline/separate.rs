@@ -126,7 +126,7 @@ fn load_interface_for_namespace(
         }
         let mut namespace_interface =
             interface::CrateInterface::from_exports(namespace, &unit.exports);
-        namespace_interface.packages =
+        namespace_interface.import_paths =
             std::iter::once(format!("{root_import_path}::{namespace}")).collect();
         return Ok((unit.clone(), namespace_interface));
     }
@@ -173,7 +173,11 @@ fn direct_crate_imports(
 }
 
 fn external_root_import_path(unit: &InterfaceUnit) -> Option<&str> {
-    unit.interface.packages.iter().next().map(String::as_str)
+    unit.interface
+        .import_paths
+        .iter()
+        .next()
+        .map(String::as_str)
 }
 
 fn exports_contain_namespace(namespace: &str, exports: &CrateExports) -> bool {

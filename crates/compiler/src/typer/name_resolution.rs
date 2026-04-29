@@ -341,7 +341,7 @@ fn external_import_path_for_alias(
     deps: &HashMap<String, interface::CrateInterface>,
 ) -> Option<String> {
     deps.get(alias)?
-        .packages
+        .import_paths
         .iter()
         .find(|path| path.as_str() != alias)
         .cloned()
@@ -354,7 +354,7 @@ fn external_coordinate_alias_path(
     let display = path_segments_display(path);
     let mut best = None;
     for (alias, dep) in deps {
-        for import_path in dep.packages.iter() {
+        for import_path in dep.import_paths.iter() {
             let Some(import_root) = import_path.split("::").next() else {
                 continue;
             };

@@ -471,7 +471,7 @@ fn compile_external_module(
     for source in sources.values() {
         let mut namespace_interface =
             interface::CrateInterface::from_exports(&source.logical_name, &public_exports);
-        namespace_interface.packages = std::iter::once(source.import_path.clone()).collect();
+        namespace_interface.import_paths = std::iter::once(source.import_path.clone()).collect();
         namespace_interfaces.insert(source.logical_name.clone(), namespace_interface);
     }
     let root_interface = namespace_interfaces
