@@ -157,6 +157,7 @@ fn collect_constructor_names(file: &cst::File) -> HashSet<String> {
                     constructor_names.insert(token.to_string());
                 }
             }
+            cst::Item::Mod(_) => {}
             _ => {}
         }
     }
@@ -269,6 +270,7 @@ fn find_attribute<'a>(attrs: &'a [ast::Attribute], target: &str) -> Option<&'a a
 
 fn lower_item(ctx: &mut LowerCtx, node: cst::Item) -> Option<ast::Item> {
     match node {
+        cst::Item::Mod(_) => None,
         cst::Item::Enum(it) => Some(ast::Item::EnumDef(lower_enum(ctx, it)?)),
         cst::Item::Struct(it) => Some(ast::Item::StructDef(lower_struct(ctx, it)?)),
         cst::Item::Trait(it) => Some(ast::Item::TraitDef(lower_trait(ctx, it)?)),

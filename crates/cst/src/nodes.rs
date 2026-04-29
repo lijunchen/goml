@@ -128,6 +128,7 @@ impl_display_via_syntax!(Attribute);
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Item {
+    Mod(Mod),
     Enum(Enum),
     Struct(Struct),
     Trait(Trait),
@@ -140,7 +141,8 @@ impl CstNode for Item {
     fn can_cast(kind: MySyntaxKind) -> bool {
         matches!(
             kind,
-            MySyntaxKind::ENUM
+            MySyntaxKind::MOD
+                | MySyntaxKind::ENUM
                 | MySyntaxKind::STRUCT
                 | MySyntaxKind::TRAIT
                 | MySyntaxKind::IMPL
@@ -150,6 +152,7 @@ impl CstNode for Item {
     }
     fn cast(syntax: MySyntaxNode) -> Option<Self> {
         let res = match syntax.kind() {
+            MOD => Item::Mod(Mod { syntax }),
             ENUM => Item::Enum(Enum { syntax }),
             STRUCT => Item::Struct(Struct { syntax }),
             TRAIT => Item::Trait(Trait { syntax }),
@@ -162,6 +165,7 @@ impl CstNode for Item {
     }
     fn syntax(&self) -> &MySyntaxNode {
         match self {
+            Item::Mod(it) => &it.syntax,
             Item::Enum(it) => &it.syntax,
             Item::Struct(it) => &it.syntax,
             Item::Trait(it) => &it.syntax,
@@ -177,6 +181,22 @@ impl_display_via_syntax!(Item);
 ////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Mod {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl Mod {
+    pub fn name_token(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::Ident)
+    }
+}
+
+impl_cst_node_simple!(Mod, MySyntaxKind::MOD);
+impl_display_via_syntax!(Mod);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Path {
     pub(crate) syntax: MySyntaxNode,
 }
@@ -186,7 +206,12 @@ impl Path {
         self.syntax
             .children_with_tokens()
             .filter_map(|it| it.into_token())
-            .filter(|token| token.kind() == MySyntaxKind::Ident)
+            .filter(|token| {
+                matches!(
+                    token.kind(),
+                    MySyntaxKind::Ident | MySyntaxKind::CrateKeyword | MySyntaxKind::SuperKeyword
+                )
+            })
     }
 }
 

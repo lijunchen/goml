@@ -1,6 +1,15 @@
 use crate::parser::Parser;
 use crate::syntax::MySyntaxKind;
 use lexer::T;
+use lexer::TokenKind;
+
+fn is_path_start(kind: TokenKind) -> bool {
+    matches!(kind, T![ident] | T![::] | T![crate] | T![super])
+}
+
+fn is_path_segment(kind: TokenKind) -> bool {
+    matches!(kind, T![ident] | T![crate] | T![super])
+}
 
 /// Parses a path (e.g., `A::B::C`).
 /// If `always_wrap` is true, always wraps the result in a PATH node.
@@ -8,33 +17,33 @@ use lexer::T;
 /// Returns true if a PATH node was created.
 pub fn parse_path_inner(p: &mut Parser, always_wrap: bool) -> bool {
     let current = p.peek();
-    debug_assert!(matches!(current, T![ident] | T![::]));
+    debug_assert!(is_path_start(current));
 
     let has_namespace = matches!(current, T![::]);
     let should_wrap =
-        always_wrap || has_namespace || matches!(current, T![ident]) && matches!(p.nth(1), T![::]);
+        always_wrap || has_namespace || is_path_segment(current) && matches!(p.nth(1), T![::]);
     let marker = if should_wrap { Some(p.open()) } else { None };
 
     if has_namespace {
         p.expect(T![::]);
     }
 
-    if !p.at(T![ident]) {
-        p.advance_with_error("expected an identifier in path");
+    if !is_path_segment(p.peek()) {
+        p.advance_with_error("expected a path segment");
         if let Some(m) = marker {
             p.close(m, MySyntaxKind::PATH);
         }
         return true;
     }
 
-    p.expect(T![ident]);
+    p.advance();
 
     while p.at(T![::]) {
         p.expect(T![::]);
-        if p.at(T![ident]) {
-            p.expect(T![ident]);
+        if is_path_segment(p.peek()) {
+            p.advance();
         } else {
-            p.advance_with_error("expected an identifier after '::'");
+            p.advance_with_error("expected a path segment after '::'");
             break;
         }
     }

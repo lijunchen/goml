@@ -297,6 +297,7 @@ fn index_source_file_symbols(
 
     for item in cst_file.items() {
         match item {
+            cst::nodes::Item::Mod(_) => {}
             cst::nodes::Item::Fn(f) => {
                 if let Some(name_tok) = f.lident() {
                     let mut names = Vec::new();

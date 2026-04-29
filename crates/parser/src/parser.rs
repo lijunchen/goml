@@ -385,6 +385,8 @@ fn should_consume_on_expect_failure(kind: TokenKind) -> bool {
     !matches!(
         kind,
         T![fn]
+            | T![pub]
+            | T![mod]
             | T![struct]
             | T![enum]
             | T![trait]

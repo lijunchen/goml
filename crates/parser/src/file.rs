@@ -8,6 +8,8 @@ use crate::{
     syntax::MySyntaxKind,
 };
 
+const PATH_FIRST: &[TokenKind] = &[T![ident], T![::], T![crate], T![super]];
+
 pub fn file(p: &mut Parser) {
     let m = p.open();
     if p.at(T![package]) {
@@ -23,12 +25,16 @@ pub fn file(p: &mut Parser) {
         if p.at(T![#]) {
             let attrs = attribute_list(p);
             item_with_attrs(p, attrs);
+        } else if p.at(T![pub]) {
+            public_item(p);
         } else if p.at(T![package]) {
             p.advance_with_error("package declaration must appear at the top of the file");
         } else if p.at(T![use]) {
-            p.advance_with_error("use declaration must appear at the top of the file");
+            use_decl(p);
         } else if p.at(T![import]) {
             p.advance_with_error("`import` has been removed; use `use`");
+        } else if p.at(T![mod]) {
+            mod_decl(p)
         } else if p.at(T![extern]) {
             extern_decl(p)
         } else if p.at(T![fn]) {
@@ -69,7 +75,7 @@ fn use_decl(p: &mut Parser) {
     assert!(p.at(T![use]));
     let m = p.open();
     p.expect(T![use]);
-    if p.at_any(&[T![ident], T![::]]) {
+    if p.at_any(PATH_FIRST) {
         parse_path_always(p);
     } else if !p.eof() {
         p.advance_with_error("expected a path after `use`");
@@ -82,7 +88,7 @@ fn import_decl_error(p: &mut Parser) {
     assert!(p.at(T![import]));
     let m = p.open();
     p.advance_with_error("`import` has been removed; use `use`");
-    if p.at_any(&[T![ident], T![::]]) {
+    if p.at_any(PATH_FIRST) {
         parse_path_always(p);
     } else if !p.eof() {
         p.advance_with_error("expected a path after `import`");
@@ -91,9 +97,15 @@ fn import_decl_error(p: &mut Parser) {
 }
 
 fn item_with_attrs(p: &mut Parser, attrs: MarkerClosed) {
-    if p.at(T![extern]) {
+    if p.at(T![pub]) {
+        let m = attrs.precede(p);
+        public_item_with_marker(p, m);
+    } else if p.at(T![extern]) {
         let m = attrs.precede(p);
         extern_decl_with_marker(p, m);
+    } else if p.at(T![mod]) {
+        let m = attrs.precede(p);
+        mod_decl_with_marker(p, m);
     } else if p.at(T![fn]) {
         let m = attrs.precede(p);
         func_with_marker(p, m);
@@ -117,6 +129,52 @@ fn item_with_attrs(p: &mut Parser, attrs: MarkerClosed) {
         }
         p.close(m, MySyntaxKind::ErrorTree);
     }
+}
+
+fn public_item(p: &mut Parser) {
+    assert!(p.at(T![pub]));
+    let m = p.open();
+    public_item_with_marker(p, m);
+}
+
+fn public_item_with_marker(p: &mut Parser, m: MarkerOpened) {
+    p.expect(T![pub]);
+    if p.at(T![extern]) {
+        extern_decl_with_marker(p, m);
+    } else if p.at(T![mod]) {
+        mod_decl_with_marker(p, m);
+    } else if p.at(T![fn]) {
+        func_with_marker(p, m);
+    } else if p.at(T![enum]) {
+        enum_def_with_marker(p, m);
+    } else if p.at(T![struct]) {
+        struct_def_with_marker(p, m);
+    } else if p.at(T![trait]) {
+        trait_def_with_marker(p, m);
+    } else {
+        p.error("expected a public top-level item");
+        if !p.eof() {
+            p.advance();
+        }
+        p.close(m, MySyntaxKind::ErrorTree);
+    }
+}
+
+fn mod_decl(p: &mut Parser) {
+    assert!(p.at(T![mod]));
+    let m = p.open();
+    mod_decl_with_marker(p, m);
+}
+
+fn mod_decl_with_marker(p: &mut Parser, m: MarkerOpened) {
+    p.expect(T![mod]);
+    if p.at(T![ident]) {
+        p.advance();
+    } else {
+        p.advance_with_error("expected a module name");
+    }
+    p.expect(T![;]);
+    p.close(m, MySyntaxKind::MOD);
 }
 
 fn attribute_list(p: &mut Parser) -> MarkerClosed {
@@ -488,6 +546,8 @@ const TYPE_FIRST: &[TokenKind] = &[
     T!['('],
     T![ident],
     T![::],
+    T![crate],
+    T![super],
 ];
 
 fn type_list(p: &mut Parser) {
@@ -521,7 +581,7 @@ fn generic(p: &mut Parser, allow_bounds: bool) {
 
 fn trait_set(p: &mut Parser) {
     let m = p.open();
-    if p.at(T![ident]) || p.at(T![::]) {
+    if p.at_any(PATH_FIRST) {
         parse_path_always(p);
     } else {
         p.advance_with_error("expected a trait name");
@@ -530,7 +590,7 @@ fn trait_set(p: &mut Parser) {
     }
 
     while p.eat(T![+]) {
-        if p.at(T![ident]) || p.at(T![::]) {
+        if p.at_any(PATH_FIRST) {
             parse_path_always(p);
         } else {
             p.advance_with_error("expected a trait name after '+'");
@@ -559,6 +619,8 @@ fn generic_list(p: &mut Parser, allow_bounds: bool) {
 const PARAM_LIST_RECOVERY: &[TokenKind] = &[T![->], T!['{'], T![fn]];
 const BLOCK_RECOVERY: &[TokenKind] = &[
     T![#],
+    T![pub],
+    T![mod],
     T![fn],
     T![extern],
     T![struct],
@@ -730,7 +792,7 @@ fn type_atom(p: &mut Parser) -> Option<MarkerClosed> {
             }
             p.close(m, MySyntaxKind::TYPE_ARRAY)
         }
-        T![ident] | T![::] => {
+        T![ident] | T![::] | T![crate] | T![super] => {
             parse_path_always(p);
             if p.at(T!['[']) {
                 type_param_list(p);
@@ -739,7 +801,7 @@ fn type_atom(p: &mut Parser) -> Option<MarkerClosed> {
         }
         T![dyn] => {
             p.expect(T![dyn]);
-            if p.at(T![ident]) || p.at(T![::]) {
+            if p.at_any(PATH_FIRST) {
                 parse_path_always(p);
             } else {
                 p.advance_with_error("expected a trait name after dyn");

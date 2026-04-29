@@ -257,7 +257,7 @@ fn parameter_names_at_location(
                     return Some(param_names_from_extern(&extern_item));
                 }
             }
-            cst::nodes::Item::Struct(_) | cst::nodes::Item::Enum(_) => {}
+            cst::nodes::Item::Mod(_) | cst::nodes::Item::Struct(_) | cst::nodes::Item::Enum(_) => {}
         }
     }
 

@@ -25,6 +25,8 @@ pub const EXPR_FIRST: &[TokenKind] = &[
     T![char_lit],
     T![ident],
     T![::],
+    T![crate],
+    T![super],
     T![true],
     T![false],
     T![-],
@@ -167,7 +169,7 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
             p.close(m, MySyntaxKind::EXPR_BOOL)
         }
         // ExprName = 'name'
-        T![ident] | T![::] => {
+        T![ident] | T![::] | T![crate] | T![super] => {
             let m = p.open();
             // Always parse as a path - this creates a PATH node containing identifiers
             parse_path_always(p);
