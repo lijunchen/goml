@@ -14,7 +14,7 @@ use crate::env::{
 use crate::hir;
 use crate::interface;
 use crate::namespace_imports::ExternalImports;
-use crate::pipeline::packages::{self, NamespaceUnit, PackageGraph};
+use crate::pipeline::packages::{self, NamespaceGraph, NamespaceUnit};
 use crate::registry::{
     ModuleCoord, Registry, ResolvedModule, ResolvedModuleGraph, SemVer, cached_registry_dir,
     resolve_dependencies, validate_registry_consistency,
@@ -166,7 +166,7 @@ impl ExternalDependencyArtifacts {
         files
     }
 
-    pub fn augment_graph(&self, graph: &mut PackageGraph) -> Result<(), String> {
+    pub fn augment_graph(&self, graph: &mut NamespaceGraph) -> Result<(), String> {
         let mut seen = HashMap::new();
         for module in self.modules.values() {
             for source in module.sources.values() {

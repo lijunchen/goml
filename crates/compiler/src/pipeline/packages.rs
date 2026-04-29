@@ -20,7 +20,7 @@ pub struct NamespaceUnit {
 }
 
 #[derive(Debug)]
-pub struct PackageGraph {
+pub struct NamespaceGraph {
     pub module_dir: PathBuf,
     pub module_name: Option<String>,
     pub entry_package: String,
@@ -607,7 +607,7 @@ fn discover_packages_from_crate_unit(
     entry_path: Option<&Path>,
     entry_ast: Option<ast::File>,
     external_imports: &ExternalImports,
-) -> Result<PackageGraph, CompilationError> {
+) -> Result<NamespaceGraph, CompilationError> {
     let source_override = match (entry_path, entry_ast.as_ref()) {
         (Some(path), Some(ast)) => Some((path, ast)),
         _ => None,
@@ -668,7 +668,7 @@ fn discover_packages_from_crate_unit(
             .extend(imports.into_iter().filter(|dep| dep != name));
     }
 
-    Ok(PackageGraph {
+    Ok(NamespaceGraph {
         module_dir: crate_unit.root_dir,
         module_name: Some(crate_unit.config.name),
         entry_package: root_namespace.to_string(),
@@ -706,7 +706,7 @@ pub fn discover_packages(
     root_dir: &Path,
     entry_path: Option<&Path>,
     entry_ast: Option<ast::File>,
-) -> Result<PackageGraph, CompilationError> {
+) -> Result<NamespaceGraph, CompilationError> {
     discover_packages_with_external_imports(
         root_dir,
         entry_path,
@@ -720,7 +720,7 @@ pub fn discover_packages_with_external_imports(
     entry_path: Option<&Path>,
     entry_ast: Option<ast::File>,
     external_imports: &ExternalImports,
-) -> Result<PackageGraph, CompilationError> {
+) -> Result<NamespaceGraph, CompilationError> {
     discover_packages_inner(root_dir, entry_path, entry_ast, false, external_imports)
 }
 
@@ -728,7 +728,7 @@ pub fn discover_packages_single_file(
     root_dir: &Path,
     entry_path: &Path,
     entry_ast: ast::File,
-) -> Result<PackageGraph, CompilationError> {
+) -> Result<NamespaceGraph, CompilationError> {
     discover_packages_single_file_with_external_imports(
         root_dir,
         entry_path,
@@ -742,7 +742,7 @@ pub fn discover_packages_single_file_with_external_imports(
     entry_path: &Path,
     entry_ast: ast::File,
     external_imports: &ExternalImports,
-) -> Result<PackageGraph, CompilationError> {
+) -> Result<NamespaceGraph, CompilationError> {
     discover_packages_inner(
         root_dir,
         Some(entry_path),
@@ -756,7 +756,7 @@ pub fn discover_dependency_crate_namespaces_with_external_imports(
     module_dir: &Path,
     root_namespace: &str,
     external_imports: &ExternalImports,
-) -> Result<PackageGraph, CompilationError> {
+) -> Result<NamespaceGraph, CompilationError> {
     let crate_unit = crate::pipeline::modules::discover_crate_from_dir(module_dir)
         .map_err(|err| compile_error(format!("crate module discovery failed: {:?}", err)))?;
     discover_packages_from_crate_unit(crate_unit, root_namespace, None, None, external_imports)
@@ -768,7 +768,7 @@ fn discover_packages_inner(
     entry_ast: Option<ast::File>,
     single_file: bool,
     external_imports: &ExternalImports,
-) -> Result<PackageGraph, CompilationError> {
+) -> Result<NamespaceGraph, CompilationError> {
     if root_dir.join("goml.toml").exists() {
         match crate::pipeline::modules::discover_crate_from_dir(root_dir) {
             Ok(crate_unit) => {
@@ -874,7 +874,7 @@ fn discover_packages_inner(
         package_visibilities.insert(package_name, ast::Visibility::Public);
     }
 
-    Ok(PackageGraph {
+    Ok(NamespaceGraph {
         module_dir: root_dir.to_path_buf(),
         module_name: None,
         entry_package: entry_name,
@@ -886,7 +886,7 @@ fn discover_packages_inner(
     })
 }
 
-pub fn topo_sort_namespaces(graph: &PackageGraph) -> Result<Vec<String>, CompilationError> {
+pub fn topo_sort_namespaces(graph: &NamespaceGraph) -> Result<Vec<String>, CompilationError> {
     let mut temp = HashSet::new();
     let mut perm = HashSet::new();
     let mut order = Vec::new();
@@ -907,7 +907,7 @@ pub fn topo_sort_namespaces(graph: &PackageGraph) -> Result<Vec<String>, Compila
 
 fn visit_namespace(
     name: &str,
-    graph: &PackageGraph,
+    graph: &NamespaceGraph,
     temp: &mut HashSet<String>,
     perm: &mut HashSet<String>,
     stack: &mut Vec<String>,
@@ -974,7 +974,7 @@ fn visit_namespace(
     Ok(())
 }
 
-impl PackageGraph {
+impl NamespaceGraph {
     pub fn namespace_is_publicly_visible(&self, namespace: &str) -> bool {
         if namespace == self.entry_package {
             return true;

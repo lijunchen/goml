@@ -144,7 +144,7 @@ impl ProjectSymbolIndex {
 }
 
 pub(crate) struct SymbolLookup {
-    pub(crate) namespace_graph: Option<crate::pipeline::packages::PackageGraph>,
+    pub(crate) namespace_graph: Option<crate::pipeline::packages::NamespaceGraph>,
     pub(crate) index: ProjectSymbolIndex,
 }
 
@@ -169,7 +169,13 @@ pub(crate) fn build_symbol_lookup(path: &Path, src: &str) -> SymbolLookup {
 pub(crate) fn build_symbol_index(
     path: &Path,
     src: &str,
-) -> Result<(crate::pipeline::packages::PackageGraph, ProjectSymbolIndex), String> {
+) -> Result<
+    (
+        crate::pipeline::packages::NamespaceGraph,
+        ProjectSymbolIndex,
+    ),
+    String,
+> {
     if crate::config::find_crate_root(start_dir_for_path(path)).is_some() {
         build_crate_symbol_index(path, src)
     } else {
@@ -180,7 +186,13 @@ pub(crate) fn build_symbol_index(
 fn build_crate_symbol_index(
     path: &Path,
     src: &str,
-) -> Result<(crate::pipeline::packages::PackageGraph, ProjectSymbolIndex), String> {
+) -> Result<
+    (
+        crate::pipeline::packages::NamespaceGraph,
+        ProjectSymbolIndex,
+    ),
+    String,
+> {
     let start_dir = start_dir_for_path(path);
     let Some((crate_dir, _)) = crate::config::find_crate_root(start_dir) else {
         return Err("crate root not found".to_string());
@@ -197,7 +209,7 @@ fn build_crate_symbol_index(
         }
     }
 
-    let mut graph = crate::pipeline::packages::PackageGraph {
+    let mut graph = crate::pipeline::packages::NamespaceGraph {
         module_dir: crate_unit.root_dir.clone(),
         module_name: Some(crate_name.clone()),
         entry_package: crate_name.clone(),
@@ -332,7 +344,7 @@ pub(crate) fn namespace_nav_target_in_dir(dir: &Path) -> Option<PathBuf> {
 }
 
 pub(crate) fn lookup_symbol_locations_for_path(
-    namespace_graph: Option<&crate::pipeline::packages::PackageGraph>,
+    namespace_graph: Option<&crate::pipeline::packages::NamespaceGraph>,
     index: &ProjectSymbolIndex,
     token_text: &str,
     segments: &[String],

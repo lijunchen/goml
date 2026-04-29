@@ -279,7 +279,7 @@ fn resolve_expr_definition(
     expr_id: hir::ExprId,
     hir_table: &hir::HirTable,
     results: &crate::typer::results::TypeckResults,
-    namespace_graph: Option<&crate::pipeline::packages::PackageGraph>,
+    namespace_graph: Option<&crate::pipeline::packages::NamespaceGraph>,
     sym_index: &ProjectSymbolIndex,
 ) -> Option<Vec<DefinitionLocation>> {
     match hir_table.expr(expr_id) {

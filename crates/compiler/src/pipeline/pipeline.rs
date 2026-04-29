@@ -191,7 +191,7 @@ struct TypecheckNamespacesResult {
     full_tast: tast::File,
     genv: GlobalTypeEnv,
     diagnostics: Diagnostics,
-    graph: packages::PackageGraph,
+    graph: packages::NamespaceGraph,
     artifacts: HashMap<String, NamespaceArtifact>,
     external_deps: ExternalDependencyArtifacts,
 }
@@ -738,7 +738,7 @@ pub fn typecheck_with_namespaces_and_results(
 
 fn validate_entrypoint_for_compile(
     diagnostics: &mut Diagnostics,
-    graph: &packages::PackageGraph,
+    graph: &packages::NamespaceGraph,
     artifacts: &HashMap<String, NamespaceArtifact>,
 ) {
     let Some(entry_artifact) = artifacts.get(&graph.entry_package) else {
