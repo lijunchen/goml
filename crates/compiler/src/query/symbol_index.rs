@@ -318,7 +318,7 @@ fn start_dir_for_path(path: &Path) -> &Path {
         .unwrap_or_else(|| Path::new("."))
 }
 
-pub(crate) fn package_nav_target_in_dir(dir: &Path) -> Option<PathBuf> {
+pub(crate) fn namespace_nav_target_in_dir(dir: &Path) -> Option<PathBuf> {
     if dir.is_file() {
         return Some(dir.to_path_buf());
     }
@@ -671,7 +671,7 @@ fn index_namespace_symbols_named(
     namespace_name: &str,
     namespace_names: &[String],
     namespace_dir: &Path,
-    package_files: &[PathBuf],
+    source_files: &[PathBuf],
     src_overrides: &HashMap<PathBuf, String>,
 ) -> Result<(), String> {
     let namespace_names = if namespace_names.is_empty() {
@@ -679,13 +679,13 @@ fn index_namespace_symbols_named(
     } else {
         namespace_names.to_vec()
     };
-    if let Some(target) = namespace_navigation_target(namespace_dir, package_files) {
+    if let Some(target) = namespace_navigation_target(namespace_dir, source_files) {
         for namespace in &namespace_names {
             index.namespaces.insert(namespace.clone(), target.clone());
         }
     }
 
-    for file in package_files {
+    for file in source_files {
         let src = if let Some(override_src) = src_overrides.get(file) {
             override_src.clone()
         } else {
@@ -698,11 +698,11 @@ fn index_namespace_symbols_named(
     Ok(())
 }
 
-fn namespace_navigation_target(namespace_dir: &Path, package_files: &[PathBuf]) -> Option<PathBuf> {
-    if let Some(target) = package_nav_target_in_dir(namespace_dir) {
+fn namespace_navigation_target(namespace_dir: &Path, source_files: &[PathBuf]) -> Option<PathBuf> {
+    if let Some(target) = namespace_nav_target_in_dir(namespace_dir) {
         return Some(target);
     }
-    match package_files {
+    match source_files {
         [file] => Some(file.clone()),
         _ => None,
     }

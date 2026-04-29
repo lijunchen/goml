@@ -14,7 +14,7 @@ use super::{
     },
     symbol_index::{
         ProjectSymbolIndex, SymbolLookup, build_symbol_index, build_symbol_lookup,
-        lookup_symbol_locations_for_path, package_nav_target_in_dir,
+        lookup_symbol_locations_for_path, namespace_nav_target_in_dir,
     },
     syntax::{
         mod_decl_from_token, path_segments_from_token, token_segment_index, use_decl_from_token,
@@ -677,7 +677,7 @@ fn external_use_definition_location(path: &Path, lookup: &str) -> Option<Definit
     let external_deps = crate::external::resolve_dependency_versions(&dependencies).ok()?;
     let alias = external_deps.alias_for_use_path(lookup)?;
     let package_dir = external_deps.package_dirs().get(&alias)?.clone();
-    let target = package_nav_target_in_dir(&package_dir)?;
+    let target = namespace_nav_target_in_dir(&package_dir)?;
     Some(DefinitionLocation {
         path: target,
         range: TextRange::new(text_size::TextSize::from(0), text_size::TextSize::from(0)),
