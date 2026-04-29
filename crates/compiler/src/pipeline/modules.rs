@@ -5,7 +5,7 @@ use ::ast::{ast, lower};
 use cst::cst::{CstNode, File as CstFile};
 use parser::syntax::MySyntaxNode;
 
-use crate::config::{CrateConfig, CrateKind, GomlConfig};
+use crate::config::{CrateConfig, CrateDependency, CrateKind, GomlConfig};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ModulePath(Vec<String>);
@@ -51,6 +51,7 @@ pub struct ModuleUnit {
 #[derive(Debug, Clone)]
 pub struct CrateUnit {
     pub config: CrateConfig,
+    pub dependencies: BTreeMap<String, CrateDependency>,
     pub root_dir: PathBuf,
     pub root_file: PathBuf,
     pub root_mod: ModuleId,
@@ -112,17 +113,17 @@ pub enum DiscoveryError {
 
 pub fn discover_crate_from_dir(crate_dir: &Path) -> Result<CrateUnit, DiscoveryError> {
     let manifest = crate_dir.join("goml.toml");
-    let Some(config) =
-        GomlConfig::load_crate_config(&manifest).map_err(|message| DiscoveryError::Parse {
+    let manifest_config =
+        GomlConfig::load_crate_manifest(&manifest).map_err(|message| DiscoveryError::Parse {
             file_path: manifest.clone(),
             message,
-        })?
-    else {
+        })?;
+    let Some(config) = manifest_config.crate_config else {
         return Err(DiscoveryError::MissingCrateManifest {
             dir: crate_dir.to_path_buf(),
         });
     };
-    discover_crate(crate_dir, config)
+    discover_crate(crate_dir, config, manifest_config.dependencies)
 }
 
 pub fn discover_crate_from_file(entry: &Path) -> Result<CrateUnit, DiscoveryError> {
@@ -148,10 +149,14 @@ pub fn discover_crate_from_file(entry: &Path) -> Result<CrateUnit, DiscoveryErro
                 .to_string(),
         ),
     };
-    discover_crate(&root_dir, config)
+    discover_crate(&root_dir, config, BTreeMap::new())
 }
 
-fn discover_crate(root_dir: &Path, config: CrateConfig) -> Result<CrateUnit, DiscoveryError> {
+fn discover_crate(
+    root_dir: &Path,
+    config: CrateConfig,
+    dependencies: BTreeMap<String, CrateDependency>,
+) -> Result<CrateUnit, DiscoveryError> {
     let root_file = resolve_crate_root(root_dir, &config)?;
     let mut state = DiscoveryState {
         modules: Vec::new(),
@@ -164,6 +169,7 @@ fn discover_crate(root_dir: &Path, config: CrateConfig) -> Result<CrateUnit, Dis
     )?;
     Ok(CrateUnit {
         config,
+        dependencies,
         root_dir: root_dir.to_path_buf(),
         root_file,
         root_mod,
@@ -392,6 +398,9 @@ mod tests {
             r#"[crate]
 name = "hello"
 root = "src/main.gom"
+
+[dependencies]
+http = { package = "alice::http", version = "1.2.3" }
 "#,
         );
         write(dir.path().join("src/main.gom"), "mod math;\nfn main() {}\n");
@@ -399,6 +408,12 @@ root = "src/main.gom"
 
         let unit = discover_crate_from_dir(dir.path()).unwrap();
         assert_eq!(unit.config.name, "hello");
+        assert_eq!(
+            unit.dependencies
+                .get("http")
+                .map(|dep| dep.version.as_str()),
+            Some("1.2.3")
+        );
         assert_eq!(unit.modules.len(), 2);
         assert_eq!(unit.modules[0].path.display(), "crate");
         assert_eq!(unit.modules[0].visibility, ast::Visibility::Public);
