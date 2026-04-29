@@ -8,8 +8,8 @@ fn compose[A, B, C](f: (B) -> C, g: (A) -> B) -> (A) -> C {
 
 fn main() {
     let add5 = make_adder(5);
-    string_println(int32_to_string(add5(10)));
+    println(int32_to_string(add5(10)));
     
     let add10 = compose(make_adder(3), make_adder(7));
-    string_println(int32_to_string(add10(0)));
+    println(int32_to_string(add10(0)));
 }

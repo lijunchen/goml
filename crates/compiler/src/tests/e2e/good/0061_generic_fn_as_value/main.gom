@@ -10,14 +10,14 @@ fn double(x: int32) -> int32 { x * 2 }
 
 fn main() {
     let result = apply(identity, 42);
-    string_println(int32_to_string(result));
+    println(int32_to_string(result));
 
     let result2 = apply(double, 21);
-    string_println(int32_to_string(result2));
+    println(int32_to_string(result2));
 
     let result3 = pipe(identity, double, 10);
-    string_println(int32_to_string(result3));
+    println(int32_to_string(result3));
 
     let f = identity;
-    string_println(int32_to_string(f(99)));
+    println(int32_to_string(f(99)));
 }

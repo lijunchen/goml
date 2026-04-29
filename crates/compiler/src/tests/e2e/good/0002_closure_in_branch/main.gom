@@ -1,7 +1,7 @@
 fn main() {
     let cond = true;
     let f: (int32) -> int32 = if cond { |x: int32| x + 1 } else { |x: int32| x * 2 };
-    string_println(int32_to_string(f(10)));
+    println(int32_to_string(f(10)));
 
     let x: int32 = 1;
     let g: (int32) -> int32 = match x {
@@ -9,5 +9,5 @@ fn main() {
         2 => |n: int32| n * 10,
         _ => |n: int32| n,
     };
-    string_println(int32_to_string(g(5)));
+    println(int32_to_string(g(5)));
 }

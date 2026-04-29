@@ -14,7 +14,7 @@ fn main() -> unit {
     let s = \\first line
         \\second line
     ;
-    string_println(s)
+    println(s)
 }
 "#;
 

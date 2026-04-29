@@ -572,7 +572,7 @@ fn render_main_gom() -> String {
         r#"mod {DEFAULT_LIB_PACKAGE};
 
 fn {ENTRY_FUNCTION}() -> unit {{
-    string_println(crate::{DEFAULT_LIB_PACKAGE}::message())
+    println(crate::{DEFAULT_LIB_PACKAGE}::message())
 }}
 "#
     )

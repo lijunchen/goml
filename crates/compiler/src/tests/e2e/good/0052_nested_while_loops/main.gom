@@ -3,7 +3,7 @@ fn test_nested() {
     while ref_get(i) < 2 {
         let j = ref(0);
         while ref_get(j) < 3 {
-            string_println("inner");
+            println("inner");
             ref_set(j, ref_get(j) + 1);
         };
         ref_set(i, ref_get(i) + 1);
@@ -16,10 +16,10 @@ fn main() {
         let j = ref(0);
         while ref_get(j) < 2 {
             let msg = int32_to_string(ref_get(i)) + "," + int32_to_string(ref_get(j));
-            string_println(msg);
+            println(msg);
             ref_set(j, ref_get(j) + 1);
         };
         ref_set(i, ref_get(i) + 1);
     };
-    string_println("done");
+    println("done");
 }

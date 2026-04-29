@@ -456,10 +456,10 @@ fn main() -> unit {
     let program = "(begin (define fact (lambda (n) (if (= n 0) 1 (* n (fact (- n 1)))))) (define add3 (lambda (a b c) (+ a (+ b c)))) (fact 6))";
     let exprs = parse_program(lex(program));
     let result = eval(vec_get(exprs, 0), vec_new(), global);
-    let _ = string_println(value_to_string(result));
+    let _ = println(value_to_string(result));
 
     let exprs2 = parse_program(lex("(add3 10 20 30)"));
     let result2 = eval(vec_get(exprs2, 0), vec_new(), global);
-    let _ = string_println(value_to_string(result2));
+    let _ = println(value_to_string(result2));
     ()
 }

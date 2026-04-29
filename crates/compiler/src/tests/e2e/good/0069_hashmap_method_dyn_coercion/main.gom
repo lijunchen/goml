@@ -21,7 +21,7 @@ fn main() {
     routes.set("/upper", UpperHandler {});
 
     match routes.get("/echo") {
-        Option::Some(h) => string_println(Handler::handle(h, "hello")),
-        Option::None => string_println("not found"),
+        Option::Some(h) => println(Handler::handle(h, "hello")),
+        Option::None => println("not found"),
     };
 }

@@ -4,7 +4,7 @@ fn apply[A, B](f: (A) -> B, x: A) -> B {
 
 fn main() {
     let result: string = apply(|x: int32| int32_to_string(x), 42);
-    string_println(result);
+    println(result);
     
     let nums: [int32; 3] = [1, 2, 3];
     let doubled: [int32; 3] = [
@@ -14,8 +14,8 @@ fn main() {
     ];
     let i = ref(0);
     while ref_get(i) < 3 {
-        string_print(int32_to_string(array_get(doubled, ref_get(i))) + " ");
+        println(int32_to_string(array_get(doubled, ref_get(i))) + " ");
         ref_set(i, ref_get(i) + 1);
     };
-    string_println("");
+    println("");
 }

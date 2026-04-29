@@ -18,13 +18,13 @@ fn greet_with[T: Greet](greeting: T, name: string) -> string {
 }
 
 fn main() {
-    string_println(greet_with(English {}, "World"));
-    string_println(greet_with(French {}, "Monde"));
+    println(greet_with(English {}, "World"));
+    println(greet_with(French {}, "Monde"));
     
     let greeters: [dyn Greet; 2] = [English {}, French {}];
     let i = ref(0);
     while ref_get(i) < 2 {
-        string_println(Greet::greet(array_get(greeters, ref_get(i))));
+        println(Greet::greet(array_get(greeters, ref_get(i))));
         ref_set(i, ref_get(i) + 1);
     };
 }

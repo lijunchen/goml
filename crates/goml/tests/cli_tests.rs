@@ -8,7 +8,7 @@ use expect_test::expect;
 use tempfile::TempDir;
 
 const HELLO_PROGRAM: &str = r#"fn main() -> unit {
-    string_println("hello")
+    println("hello")
 }
 "#;
 
@@ -25,7 +25,7 @@ fn main() -> unit {
     let fs = vec_push(fs, inc);
     let fs = vec_push(fs, dec);
     let f = vec_get(fs, 0);
-    string_println(int32_to_string(f(10)));
+    println(f(10));
 }
 "#;
 
@@ -40,8 +40,8 @@ fn describe(text: string) -> string {
 }
 
 fn main() {
-    string_println(describe("alpha:beta"));
-    string_println(describe("plain"));
+    println(describe("alpha:beta"));
+    println(describe("plain"));
 }
 "#;
 
@@ -61,7 +61,7 @@ fn show(res: Result[string, GoError]) -> string {
 }
 
 fn main() {
-    string_println(show(render("example.com:443")));
+    println(show(render("example.com:443")));
 }
 "#;
 
@@ -74,7 +74,7 @@ root = "main.gom"
 const PROJECT_MAIN: &str = r#"
 
 fn main() -> unit {
-    string_println("hello")
+    println("hello")
 }
 "#;
 
@@ -653,7 +653,7 @@ use alice::http::client;
 use alice::appdep;
 
 fn main() -> unit {
-    string_println(http::version() + ":" + client::tag() + ":" + appdep::marker())
+    println(http::version() + ":" + client::tag() + ":" + appdep::marker())
 }
 "#,
     )?;
@@ -747,7 +747,7 @@ fn compiler_run_single_dumps_requested_stages() -> anyhow::Result<()> {
         == AST ==
         package main;
         fn main() -> unit {
-            string_println("hello")
+            println("hello")
         }
 
 
@@ -756,7 +756,7 @@ fn compiler_run_single_dumps_requested_stages() -> anyhow::Result<()> {
         package main
         file main.gom
           fn main() -> unit {
-                string_println("hello")
+                println("hello")
             }
 
         == Typed AST ==
@@ -769,7 +769,7 @@ fn compiler_run_single_dumps_requested_stages() -> anyhow::Result<()> {
         }
 
         fn main() -> unit {
-            (string_println : (string) -> unit)("hello")
+            (println : (string) -> unit)("hello")
         }
 
         == Core ==
@@ -782,17 +782,25 @@ fn compiler_run_single_dumps_requested_stages() -> anyhow::Result<()> {
         }
 
         fn main() -> unit {
-          string_println("hello")
+          println("hello")
         }
 
         == Mono ==
         fn main() -> unit {
-          string_println("hello")
+          println__T_string("hello")
+        }
+
+        fn println__T_string(value/1: string) -> unit {
+          string_println(value/1)
         }
 
         == Lifted ==
         fn main() -> unit {
-          string_println("hello")
+          println__T_string("hello")
+        }
+
+        fn println__T_string(value/1: string) -> unit {
+          string_println(value/1)
         }
 
         == ANF ==
@@ -800,8 +808,16 @@ fn compiler_run_single_dumps_requested_stages() -> anyhow::Result<()> {
           join ret0() -> unit {
             ()
           } in
-          let t1 = string_println("hello") in
+          let t1 = println__T_string("hello") in
           jump ret0()
+        }
+
+        fn println__T_string(value/1: string) -> unit {
+          join ret2() -> unit {
+            ()
+          } in
+          let t3 = string_println(value/1) in
+          jump ret2()
         }
 
         == Go ==
@@ -819,7 +835,12 @@ fn compiler_run_single_dumps_requested_stages() -> anyhow::Result<()> {
         type GoError = error
 
         func main0() struct{} {
-            string_println("hello")
+            println__T_string("hello")
+            return struct{}{}
+        }
+
+        func println__T_string(value__1 string) struct{} {
+            string_println(value__1)
             return struct{}{}
         }
 
@@ -947,7 +968,7 @@ fn new_creates_two_package_scaffold() -> anyhow::Result<()> {
         mod lib;
 
         fn main() -> unit {
-            string_println(crate::lib::message())
+            println(crate::lib::message())
         }
     "#]]
     .assert_eq(&main_gom);
@@ -1154,7 +1175,7 @@ mod A;
 mod B;
 
 fn main() -> unit {
-    string_println(crate::A::msg())
+    println(crate::A::msg())
 }
 "#,
     )?;
@@ -1217,7 +1238,7 @@ root = "src/main.gom"
 mod Lib;
 
 fn main() -> unit {
-    string_println(crate::Lib::msg())
+    println(crate::Lib::msg())
 }
 "#,
     )?;

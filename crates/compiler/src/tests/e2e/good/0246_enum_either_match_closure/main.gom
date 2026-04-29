@@ -14,7 +14,7 @@ fn main() {
     let e1: Either[string, int32] = Either::Right(42);
     let e2 = map_right(e1, |x: int32| int32_to_string(x));
     match e2 {
-        Either::Left(s) => string_println("left: " + s),
-        Either::Right(s) => string_println("right: " + s),
+        Either::Left(s) => println("left: " + s),
+        Either::Right(s) => println("right: " + s),
     };
 }

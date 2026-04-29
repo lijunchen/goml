@@ -2,13 +2,13 @@
 extern "go" "strings" "Cut" cut_pair(text: string, sep: string) -> Option[(string, string)]
 
 fn cut_pair_ffi_wrap() -> unit {
-    string_println("user-wrapper");
+    println("user-wrapper");
 }
 
 fn main() -> unit {
     match cut_pair("a:b", ":") {
-        Option::Some((left, right)) => string_println(left + right),
-        None => string_println("none"),
+        Option::Some((left, right)) => println(left + right),
+        None => println("none"),
     };
     cut_pair_ffi_wrap();
 }
