@@ -529,6 +529,31 @@ root = "src/main.gom"
     }
 
     #[test]
+    fn use_paths_do_not_discover_modules() {
+        let dir = tempfile::tempdir().unwrap();
+        write(
+            dir.path().join("goml.toml"),
+            r#"[crate]
+name = "hello"
+root = "src/main.gom"
+"#,
+        );
+        write(
+            dir.path().join("src/main.gom"),
+            "use crate::math::add;\nfn main() {}\n",
+        );
+        write(dir.path().join("src/math.gom"), "pub fn add() -> int32 { 1 }\n");
+
+        let unit = discover_crate_from_dir(dir.path()).unwrap();
+        let paths = unit
+            .modules
+            .iter()
+            .map(|module| module.path.display())
+            .collect::<Vec<_>>();
+        assert_eq!(paths, vec!["crate"]);
+    }
+
+    #[test]
     fn discovers_from_file_path_without_manifest() {
         let dir = tempfile::tempdir().unwrap();
         let entry = dir.path().join("src/main.gom");
