@@ -1747,3 +1747,40 @@ fn resolve_constructor_path(
     });
     ConstructorRef::Unresolved(path.clone())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn lower_to_hir_preserves_source_module_paths() {
+        let empty = ast::File {
+            uses: Vec::new(),
+            toplevels: Vec::new(),
+        };
+        let files = vec![
+            SourceFileAst::with_package_and_module_path(
+                "src/main.gom".into(),
+                ROOT_PACKAGE,
+                Vec::new(),
+                empty.clone(),
+            ),
+            SourceFileAst::with_package_and_module_path(
+                "src/api/client.gom".into(),
+                ROOT_PACKAGE,
+                vec!["api".to_string(), "client".to_string()],
+                empty,
+            ),
+        ];
+
+        let (hir, _table, diagnostics) = lower_to_hir_files(files);
+
+        assert!(!diagnostics.has_errors());
+        assert_eq!(hir.files.len(), 2);
+        assert_eq!(hir.files[0].module_path, Vec::<String>::new());
+        assert_eq!(
+            hir.files[1].module_path,
+            vec!["api".to_string(), "client".to_string()]
+        );
+    }
+}
