@@ -619,6 +619,45 @@ fn add_uses_latest_version_from_local_registry() -> anyhow::Result<()> {
 }
 
 #[test]
+fn add_uses_module_segment_as_dependency_alias() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let registry = create_local_registry(dir.path())?;
+    let project_dir = dir.path().join("demo");
+    fs::create_dir_all(&project_dir)?;
+    write_project(&project_dir)?;
+
+    let output = run_goml(
+        &[
+            "add",
+            "alice::fmt",
+            "--local-registry",
+            registry.to_string_lossy().as_ref(),
+        ],
+        &project_dir,
+    )?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(output.status.success(), "stderr: {stderr}");
+    expect!["added fmt = { package = \"alice::fmt\", version = \"1.0.0\" }\n"].assert_eq(&stdout);
+    expect![""].assert_eq(&stderr);
+
+    let manifest = fs::read_to_string(project_dir.join("goml.toml"))?;
+    expect![[r#"
+        [crate]
+        name = "demo"
+        kind = "bin"
+        root = "main.gom"
+
+        [dependencies]
+        fmt = { package = "alice::fmt", version = "1.0.0" }
+    "#]]
+    .assert_eq(&manifest);
+
+    Ok(())
+}
+
+#[test]
 fn add_reports_dependency_alias_collision() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     let registry = create_local_registry(dir.path())?;
