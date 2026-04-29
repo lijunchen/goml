@@ -733,6 +733,61 @@ pub fn call() -> unit {
     }
 
     #[test]
+    fn check_crate_resolves_super_from_child_module() {
+        let dir = tempfile::tempdir().unwrap();
+        write(
+            dir.path().join("goml.toml"),
+            r#"[crate]
+name = "hello"
+kind = "bin"
+root = "src/main.gom"
+"#,
+        );
+        write(
+            dir.path().join("src/main.gom"),
+            r#"
+pub mod api;
+
+pub fn main() -> unit {
+    let _ = crate::api::client::call();
+}
+"#,
+        );
+        write(
+            dir.path().join("src/api/mod.gom"),
+            r#"
+pub mod client;
+
+fn helper() -> int64 {
+    42
+}
+"#,
+        );
+        write(
+            dir.path().join("src/api/client.gom"),
+            r#"
+pub fn call() -> int64 {
+    super::helper()
+}
+"#,
+        );
+
+        let crate_unit = modules::discover_crate_from_dir(dir.path()).unwrap();
+        let interface = check_crate(CrateInputs {
+            crate_unit,
+            interface_files: Vec::new(),
+        })
+        .unwrap();
+
+        assert!(
+            interface
+                .interface
+                .value_exports
+                .contains_key("hello::api::client::call")
+        );
+    }
+
+    #[test]
     fn check_crate_named_main_filters_private_exports() {
         let dir = tempfile::tempdir().unwrap();
         write(
