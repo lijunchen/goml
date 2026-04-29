@@ -1252,3 +1252,54 @@ fn diagnostics_text(diagnostics: &Diagnostics) -> String {
 fn err_text(err: crate::pipeline::pipeline::CompilationError) -> String {
     diagnostics_text(err.diagnostics())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn write_registry_module(root: &std::path::Path, owner: &str, module: &str) {
+        let dir = root.join(owner).join(module).join("1.0.0");
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(
+            dir.join("goml.toml"),
+            format!(
+                r#"[crate]
+name = "{module}"
+kind = "lib"
+root = "lib.gom"
+"#
+            ),
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn rejects_duplicate_external_module_names() {
+        let dir = tempfile::tempdir().unwrap();
+        write_registry_module(dir.path(), "alice", "util");
+        write_registry_module(dir.path(), "bob", "util");
+        std::fs::write(
+            dir.path().join("index.toml"),
+            r#"[modules."alice::util"]
+latest = "1.0.0"
+versions = ["1.0.0"]
+
+[modules."bob::util"]
+latest = "1.0.0"
+versions = ["1.0.0"]
+"#,
+        )
+        .unwrap();
+
+        let registry = Registry::load(dir.path()).unwrap();
+        let mut dependencies = BTreeMap::new();
+        dependencies.insert("alice::util".to_string(), "1.0.0".to_string());
+        dependencies.insert("bob::util".to_string(), "1.0.0".to_string());
+
+        let err = resolve_dependency_versions_with_registry(&dependencies, &registry).unwrap_err();
+        assert_eq!(
+            err,
+            "external dependency module name util is ambiguous between alice::util and bob::util"
+        );
+    }
+}
