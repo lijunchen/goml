@@ -486,6 +486,32 @@ kind = "bin"
     }
 
     #[test]
+    fn discovers_nested_modules_under_mod_file_parent() {
+        let dir = tempfile::tempdir().unwrap();
+        write(
+            dir.path().join("goml.toml"),
+            r#"[crate]
+name = "hello"
+kind = "bin"
+"#,
+        );
+        write(dir.path().join("src/main.gom"), "mod foo;\nfn main() {}\n");
+        write(
+            dir.path().join("src/foo/mod.gom"),
+            "mod bar;\nfn foo() {}\n",
+        );
+        write(dir.path().join("src/foo/bar.gom"), "fn bar() {}\n");
+
+        let unit = discover_crate_from_dir(dir.path()).unwrap();
+        let paths = unit
+            .modules
+            .iter()
+            .map(|module| module.path.display())
+            .collect::<Vec<_>>();
+        assert_eq!(paths, vec!["crate", "crate::foo", "crate::foo::bar"]);
+    }
+
+    #[test]
     fn ignores_undeclared_gom_files() {
         let dir = tempfile::tempdir().unwrap();
         write(
