@@ -240,7 +240,7 @@ fn build_crate_symbol_index(
                 imports: HashSet::new(),
             },
         );
-        index_package_symbols_named(
+        index_namespace_symbols_named(
             &mut index,
             &package_name,
             &package_names,
@@ -262,7 +262,7 @@ fn build_crate_symbol_index(
             let Some(pkg_dir) = graph.package_dirs.get(&logical_name) else {
                 continue;
             };
-            index_package_symbols_named(
+            index_namespace_symbols_named(
                 &mut index,
                 &logical_name,
                 std::slice::from_ref(&logical_name),
@@ -666,7 +666,7 @@ fn cst_type_path_name(ty: &cst::nodes::Type) -> Option<String> {
     }
 }
 
-fn index_package_symbols_named(
+fn index_namespace_symbols_named(
     index: &mut ProjectSymbolIndex,
     package_name: &str,
     package_names: &[String],
@@ -679,7 +679,7 @@ fn index_package_symbols_named(
     } else {
         package_names.to_vec()
     };
-    if let Some(target) = package_navigation_target(package_dir, package_files) {
+    if let Some(target) = namespace_navigation_target(package_dir, package_files) {
         for package in &package_names {
             index.namespaces.insert(package.clone(), target.clone());
         }
@@ -698,7 +698,7 @@ fn index_package_symbols_named(
     Ok(())
 }
 
-fn package_navigation_target(package_dir: &Path, package_files: &[PathBuf]) -> Option<PathBuf> {
+fn namespace_navigation_target(package_dir: &Path, package_files: &[PathBuf]) -> Option<PathBuf> {
     if let Some(target) = package_nav_target_in_dir(package_dir) {
         return Some(target);
     }
@@ -723,7 +723,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn package_navigation_target_prefers_mod_file_over_sorted_source() {
+    fn namespace_navigation_target_prefers_mod_file_over_sorted_source() {
         let dir = tempfile::tempdir().unwrap();
         let package_dir = dir.path().join("pkg");
         fs::create_dir_all(&package_dir).unwrap();
@@ -732,13 +732,13 @@ mod tests {
         fs::write(&first, "").unwrap();
         fs::write(&module, "").unwrap();
 
-        let target = package_navigation_target(&package_dir, &[first, module.clone()]);
+        let target = namespace_navigation_target(&package_dir, &[first, module.clone()]);
 
         assert_eq!(target, Some(module));
     }
 
     #[test]
-    fn package_navigation_target_ignores_ambiguous_multi_file_dir() {
+    fn namespace_navigation_target_ignores_ambiguous_multi_file_dir() {
         let dir = tempfile::tempdir().unwrap();
         let package_dir = dir.path().join("pkg");
         fs::create_dir_all(&package_dir).unwrap();
@@ -747,7 +747,7 @@ mod tests {
         fs::write(&first, "").unwrap();
         fs::write(&second, "").unwrap();
 
-        let target = package_navigation_target(&package_dir, &[first, second]);
+        let target = namespace_navigation_target(&package_dir, &[first, second]);
 
         assert_eq!(target, None);
     }
