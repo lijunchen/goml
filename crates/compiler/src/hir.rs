@@ -1857,6 +1857,43 @@ fn root() -> unit { call() }
         assert_eq!(table.def_path(*def_id).display(), "hello::api::call");
     }
 
+    #[test]
+    fn lower_to_hir_resolves_super_paths_against_parent_module() {
+        let files = vec![
+            SourceFileAst::with_package_and_module_path(
+                "src/main.gom".into(),
+                "hello",
+                Vec::new(),
+                lower_src("mod api;\nfn helper() -> unit { () }"),
+            ),
+            SourceFileAst::with_package_and_module_path(
+                "src/api.gom".into(),
+                "hello",
+                vec!["api".to_string()],
+                lower_src("fn call() -> unit { super::helper() }"),
+            ),
+        ];
+
+        let (_hir, table, diagnostics) = lower_to_hir_files(files);
+
+        assert!(!diagnostics.has_errors());
+        let api_call = table.def(table.def_id_at(1));
+        let Def::Fn(api_fn) = api_call else {
+            panic!("expected api function");
+        };
+        let Expr::ECall { func, .. } = table.expr(api_fn.body.tail.expect("tail call")) else {
+            panic!("expected api tail call");
+        };
+        let Expr::ENameRef { res, hint, .. } = table.expr(*func) else {
+            panic!("expected called function reference");
+        };
+        assert_eq!(hint, "hello::helper");
+        let NameRef::Def(def_id) = res else {
+            panic!("expected resolved function reference");
+        };
+        assert_eq!(table.def_path(*def_id).display(), "hello::helper");
+    }
+
     fn lower_src(src: &str) -> ast::File {
         let parsed = parser::parse(std::path::Path::new("test.gom"), src);
         assert!(!parsed.has_errors());

@@ -1311,7 +1311,11 @@ impl NameResolution {
                         },
                     );
                 }
-                if path.len() == 1 {
+                let use_unqualified_resolution = path.len() == 1
+                    && !matches!(path.root(), ast::PathRoot::Super)
+                    && !(matches!(path.root(), ast::PathRoot::Crate)
+                        && ctx.crate_paths_include_package);
+                if use_unqualified_resolution {
                     let Some(ident) = path.last_ident() else {
                         self.ice("path length 1 missing last ident");
                         return self.alloc_expr_with_ptr(
