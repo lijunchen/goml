@@ -48,14 +48,14 @@ pub(crate) fn typecheck_single_file_for_query(
     };
 
     let (hir, hir_table, mut hir_diagnostics) = crate::hir::lower_to_hir(ast);
-    let package = hir.name.0.clone();
+    let crate_name = hir.name.0.clone();
     let (hir_table, results, genv, mut type_diagnostics) =
         crate::typer::check_file_with_env_and_results(
             hir,
             hir_table,
             GlobalTypeEnv::new(),
             builtins::builtin_env(),
-            &package,
+            &crate_name,
             HashMap::new(),
         );
     type_diagnostics.append(&mut hir_diagnostics);
@@ -108,7 +108,7 @@ fn typecheck_crate_for_query(path: &Path, src: &str) -> Result<QueryTypecheck, S
     }
 
     let files = expand_derives(crate_unit.source_files(), &mut diagnostics);
-    let package = crate_unit.config.name.clone();
+    let crate_name = crate_unit.config.name.clone();
     let (_module_dir, dependencies) =
         crate::pipeline::packages::discover_dependency_versions_from_file(path)
             .map_err(|err| format!("{:?}", err))?;
@@ -116,16 +116,16 @@ fn typecheck_crate_for_query(path: &Path, src: &str) -> Result<QueryTypecheck, S
     let deps_interfaces = external_deps.package_interfaces();
     let deps_envs = external_deps.package_envs();
 
-    let package_id = interface::package_id_for_name(&package);
+    let crate_package_id = interface::package_id_for_name(&crate_name);
     let (hir, hir_table, mut hir_diagnostics) =
-        hir::lower_to_hir_files_with_env(package_id, files, &deps_interfaces);
-    let (hir_table, results, package_genv, mut type_diagnostics) =
+        hir::lower_to_hir_files_with_env(crate_package_id, files, &deps_interfaces);
+    let (hir_table, results, crate_genv, mut type_diagnostics) =
         crate::typer::check_file_with_env_and_results(
             hir,
             hir_table,
             GlobalTypeEnv::new(),
             builtins::builtin_env(),
-            &package,
+            &crate_name,
             deps_envs,
         );
     type_diagnostics.append(&mut hir_diagnostics);
@@ -135,7 +135,7 @@ fn typecheck_crate_for_query(path: &Path, src: &str) -> Result<QueryTypecheck, S
     for module in external_deps.modules.values() {
         module.interface.exports.apply_to(&mut genv);
     }
-    PackageExports::from_genv(&package_genv).apply_to(&mut genv);
+    PackageExports::from_genv(&crate_genv).apply_to(&mut genv);
 
     Ok((hir_table, results, genv, diagnostics))
 }
