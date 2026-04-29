@@ -13,6 +13,7 @@ use crate::mono::{self, GlobalMonoEnv};
 use crate::package_names::is_special_unqualified_package;
 use crate::package_names::{BUILTIN_PACKAGE, ENTRY_FUNCTION, ROOT_PACKAGE, is_builtin_package};
 use crate::pipeline::builtin_inherent;
+use crate::pipeline::modules::CrateUnit;
 use crate::pipeline::packages::collect_known_crate_path_imports;
 use crate::pipeline::pipeline::{CompilationError, parse_ast_file, report_duplicate_trait_impls};
 use crate::pipeline::{compile_error, with_compiler_stack};
@@ -21,6 +22,11 @@ use diagnostics::Diagnostics;
 pub struct PackageInputs {
     pub package: String,
     pub input_files: Vec<PathBuf>,
+    pub interface_files: Vec<PathBuf>,
+}
+
+pub struct CrateInputs {
+    pub crate_unit: CrateUnit,
     pub interface_files: Vec<PathBuf>,
 }
 
@@ -195,6 +201,32 @@ fn read_source_files(
 
 type ReadSourceFilesResult = (Vec<hir::SourceFileAst>, HashSet<String>, Vec<String>);
 
+fn direct_crate_imports(
+    files: &[hir::SourceFileAst],
+    interface_units: &HashMap<String, (PathBuf, InterfaceUnit)>,
+) -> HashSet<String> {
+    let mut imports = HashSet::new();
+    for file in files {
+        for use_decl in file.ast.uses.iter() {
+            if let Some(package_import) =
+                external_package_import_alias(&use_decl.path, interface_units)
+            {
+                imports.insert(package_import);
+                continue;
+            }
+            if let Some(first) = use_decl.path.segments().first()
+                && interface_units.contains_key(&first.ident.0)
+            {
+                imports.insert(first.ident.0.clone());
+            }
+        }
+    }
+
+    let known_packages = interface_units.keys().cloned().collect::<HashSet<_>>();
+    imports.extend(collect_known_crate_path_imports(files, &known_packages));
+    imports
+}
+
 fn child_package_name(package: &str, child: &str) -> String {
     if package == ROOT_PACKAGE {
         child.to_string()
@@ -325,6 +357,52 @@ fn typecheck_single_package(
     let exports = PackageExports::public_from_package(package, &files, &genv);
     let pkg_interface = interface::PackageInterface::from_exports(package, &exports);
     (tast, full_exports, exports, pkg_interface, diagnostics)
+}
+
+pub fn check_crate(opts: CrateInputs) -> Result<InterfaceUnit, CompilationError> {
+    with_compiler_stack(|| {
+        let interface_units = load_interface_files(&opts.interface_files)?;
+        let files = opts.crate_unit.source_files();
+        let imports = direct_crate_imports(&files, &interface_units);
+
+        let mut deps: Vec<String> = imports.into_iter().collect();
+        deps.sort();
+        deps.dedup();
+
+        let mut deps_envs = HashMap::new();
+        let mut deps_interfaces = HashMap::new();
+        let mut dep_hashes = BTreeMap::new();
+        let package = opts.crate_unit.config.name.clone();
+
+        if package != BUILTIN_PACKAGE {
+            dep_hashes.insert(
+                BUILTIN_PACKAGE.to_string(),
+                builtins::builtin_interface_hash(),
+            );
+        }
+
+        for dep in deps {
+            if dep == BUILTIN_PACKAGE || dep == package {
+                continue;
+            }
+            let (unit, package_interface) =
+                load_interface_for_package(&dep, &opts.interface_files, &interface_units)?;
+            deps_envs.insert(dep.clone(), unit.exports.to_genv());
+            deps_interfaces.insert(dep.clone(), package_interface);
+            dep_hashes.insert(unit.package.clone(), unit.interface_hash.clone());
+        }
+
+        let (tast, _full_exports, exports, pkg_interface, diagnostics) =
+            typecheck_single_package(&package, files, &deps_interfaces, deps_envs);
+        drop(tast);
+
+        let interface = InterfaceUnit::new(package, exports, pkg_interface, dep_hashes);
+        if diagnostics.has_errors() {
+            return Err(CompilationError::Typer { diagnostics });
+        }
+
+        Ok(interface)
+    })
 }
 
 pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationError> {
@@ -631,4 +709,63 @@ fn topo_sort(cores: &HashMap<String, CoreUnit>) -> Result<Vec<String>, Compilati
     }
 
     Ok(out)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::pipeline::modules;
+
+    #[test]
+    fn check_crate_typechecks_discovered_modules_as_one_unit() {
+        let dir = tempfile::tempdir().unwrap();
+        write(
+            dir.path().join("goml.toml"),
+            r#"[crate]
+name = "hello"
+kind = "bin"
+root = "src/main.gom"
+"#,
+        );
+        write(
+            dir.path().join("src/main.gom"),
+            r#"
+mod api;
+
+pub fn main() -> unit {
+    crate::api::call()
+}
+"#,
+        );
+        write(
+            dir.path().join("src/api.gom"),
+            r#"
+pub fn call() -> unit {
+    ()
+}
+"#,
+        );
+
+        let crate_unit = modules::discover_crate_from_dir(dir.path()).unwrap();
+        let interface = check_crate(CrateInputs {
+            crate_unit,
+            interface_files: Vec::new(),
+        })
+        .unwrap();
+
+        assert_eq!(interface.package, "hello");
+        assert!(
+            interface
+                .interface
+                .value_exports
+                .contains_key("hello::main")
+        );
+    }
+
+    fn write(path: PathBuf, contents: &str) {
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent).unwrap();
+        }
+        std::fs::write(path, contents).unwrap();
+    }
 }
