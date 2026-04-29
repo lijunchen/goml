@@ -1422,6 +1422,31 @@ fn main() -> unit {
 }
 
 #[test]
+fn project_check_reports_missing_configured_crate_root() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    fs::write(
+        root.join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "src/main.gom"
+"#,
+    )?;
+
+    let output = run_goml(&["check"], root)?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(!output.status.success());
+    expect![""].assert_eq(&stdout);
+    assert!(stderr.contains("MissingCrateRoot"), "stderr: {stderr}");
+    assert!(stderr.contains("src/main.gom"), "stderr: {stderr}");
+
+    Ok(())
+}
+
+#[test]
 fn project_build_writes_target_goml_main_go() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     write_project(dir.path())?;
