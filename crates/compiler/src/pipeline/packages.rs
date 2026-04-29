@@ -28,7 +28,7 @@ pub struct NamespaceGraph {
     pub discovery_order: Vec<String>,
     pub namespace_dirs: HashMap<String, PathBuf>,
     pub namespace_visibilities: HashMap<String, ast::Visibility>,
-    pub external_root_packages: HashSet<String>,
+    pub external_root_namespaces: HashSet<String>,
 }
 
 fn read_gom_sources(dir: &Path) -> Result<Vec<PathBuf>, CompilationError> {
@@ -676,7 +676,7 @@ fn discover_packages_from_crate_unit(
         discovery_order,
         namespace_dirs,
         namespace_visibilities,
-        external_root_packages: HashSet::new(),
+        external_root_namespaces: HashSet::new(),
     })
 }
 
@@ -882,7 +882,7 @@ fn discover_packages_inner(
         discovery_order,
         namespace_dirs,
         namespace_visibilities,
-        external_root_packages: HashSet::new(),
+        external_root_namespaces: HashSet::new(),
     })
 }
 
@@ -953,7 +953,7 @@ fn visit_namespace(
     deps.sort();
 
     for dep in deps {
-        if !graph.namespaces.contains_key(&dep) && !graph.external_root_packages.contains(&dep) {
+        if !graph.namespaces.contains_key(&dep) && !graph.external_root_namespaces.contains(&dep) {
             return Err(compile_error(format!(
                 "namespace {} imports missing namespace {} in {}",
                 name,
@@ -961,7 +961,7 @@ fn visit_namespace(
                 graph.module_dir.join(&dep).display()
             )));
         }
-        if graph.external_root_packages.contains(&dep) {
+        if graph.external_root_namespaces.contains(&dep) {
             continue;
         }
         visit_namespace(&dep, graph, temp, perm, stack, order)?;
@@ -999,7 +999,7 @@ impl NamespaceGraph {
     }
 
     pub fn add_external_root_namespace(&mut self, namespace: impl Into<String>) {
-        self.external_root_packages.insert(namespace.into());
+        self.external_root_namespaces.insert(namespace.into());
     }
 
     pub fn add_namespace_dir(&mut self, namespace: impl Into<String>, dir: PathBuf) {
