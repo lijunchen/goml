@@ -179,6 +179,7 @@ fn derive_struct_tostring(
 
     let method = ast::Fn {
         attrs: Vec::new(),
+        visibility: ast::Visibility::Private,
         name: AstIdent::new(TO_STRING_FN),
         generics: Vec::new(),
         generic_bounds: Vec::new(),
@@ -210,6 +211,7 @@ fn derive_enum_tostring(
 
     let method = ast::Fn {
         attrs: Vec::new(),
+        visibility: ast::Visibility::Private,
         name: AstIdent::new(TO_STRING_FN),
         generics: Vec::new(),
         generic_bounds: Vec::new(),
@@ -242,6 +244,7 @@ fn derive_struct_tojson(
 
     let method = ast::Fn {
         attrs: Vec::new(),
+        visibility: ast::Visibility::Private,
         name: AstIdent::new(TO_JSON_FN),
         generics: Vec::new(),
         generic_bounds: Vec::new(),
@@ -273,6 +276,7 @@ fn derive_enum_tojson(
 
     let method = ast::Fn {
         attrs: Vec::new(),
+        visibility: ast::Visibility::Private,
         name: AstIdent::new(TO_JSON_FN),
         generics: Vec::new(),
         generic_bounds: Vec::new(),
@@ -306,6 +310,7 @@ fn derive_struct_eq(
 
     let method = ast::Fn {
         attrs: Vec::new(),
+        visibility: ast::Visibility::Private,
         name: AstIdent::new(EQ_FN),
         generics: Vec::new(),
         generic_bounds: Vec::new(),
@@ -345,6 +350,7 @@ fn derive_enum_eq(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Result<Impl
 
     let method = ast::Fn {
         attrs: Vec::new(),
+        visibility: ast::Visibility::Private,
         name: AstIdent::new(EQ_FN),
         generics: Vec::new(),
         generic_bounds: Vec::new(),
@@ -384,6 +390,7 @@ fn derive_struct_hash(
 
     let method = ast::Fn {
         attrs: Vec::new(),
+        visibility: ast::Visibility::Private,
         name: AstIdent::new(HASH_FN),
         generics: Vec::new(),
         generic_bounds: Vec::new(),
@@ -420,6 +427,7 @@ fn derive_enum_hash(
 
     let method = ast::Fn {
         attrs: Vec::new(),
+        visibility: ast::Visibility::Private,
         name: AstIdent::new(HASH_FN),
         generics: Vec::new(),
         generic_bounds: Vec::new(),

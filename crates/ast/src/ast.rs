@@ -195,6 +195,12 @@ pub struct File {
     pub toplevels: Vec<Item>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Visibility {
+    Private,
+    Public,
+}
+
 #[derive(Debug, Clone)]
 pub enum Item {
     EnumDef(EnumDef),
@@ -210,6 +216,7 @@ pub enum Item {
 #[derive(Debug, Clone)]
 pub struct Fn {
     pub attrs: Vec<Attribute>,
+    pub visibility: Visibility,
     pub name: AstIdent,
     pub generics: Vec<AstIdent>,
     pub generic_bounds: Vec<(AstIdent, Vec<Path>)>,
@@ -221,6 +228,7 @@ pub struct Fn {
 #[derive(Debug, Clone)]
 pub struct ExternGo {
     pub attrs: Vec<Attribute>,
+    pub visibility: Visibility,
     pub package_path: String,
     pub go_symbol: String,
     pub goml_name: AstIdent,
@@ -232,6 +240,7 @@ pub struct ExternGo {
 #[derive(Debug, Clone)]
 pub struct ExternType {
     pub attrs: Vec<Attribute>,
+    pub visibility: Visibility,
     pub package_path: Option<String>,
     pub go_name: String,
     pub goml_name: AstIdent,
@@ -241,6 +250,7 @@ pub struct ExternType {
 #[derive(Debug, Clone)]
 pub struct ExternBuiltin {
     pub attrs: Vec<Attribute>,
+    pub visibility: Visibility,
     pub name: AstIdent,
     pub generics: Vec<AstIdent>,
     pub generic_bounds: Vec<(AstIdent, Vec<Path>)>,
@@ -251,6 +261,7 @@ pub struct ExternBuiltin {
 #[derive(Debug, Clone)]
 pub struct EnumDef {
     pub attrs: Vec<Attribute>,
+    pub visibility: Visibility,
     pub name: AstIdent,
     pub generics: Vec<AstIdent>,
     pub variants: Vec<(AstIdent, Vec<TypeExpr>)>,
@@ -259,6 +270,7 @@ pub struct EnumDef {
 #[derive(Debug, Clone)]
 pub struct StructDef {
     pub attrs: Vec<Attribute>,
+    pub visibility: Visibility,
     pub name: AstIdent,
     pub generics: Vec<AstIdent>,
     pub fields: Vec<(AstIdent, TypeExpr)>,
@@ -267,6 +279,7 @@ pub struct StructDef {
 #[derive(Debug, Clone)]
 pub struct TraitDef {
     pub attrs: Vec<Attribute>,
+    pub visibility: Visibility,
     pub name: AstIdent,
     pub method_sigs: Vec<TraitMethodSignature>,
 }
