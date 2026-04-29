@@ -156,7 +156,7 @@ pub(crate) fn build_symbol_lookup(path: &Path, src: &str) -> SymbolLookup {
         },
         Err(_) => {
             let mut index = ProjectSymbolIndex::default();
-            let _ = index_source_file_symbols(&mut index, ROOT_PACKAGE, path, src);
+            let _ = index_source_file_symbols(&mut index, &[ROOT_PACKAGE.to_string()], path, src);
             let _ = index_builtin_symbols(&mut index);
             SymbolLookup { graph: None, index }
         }
@@ -206,7 +206,8 @@ fn build_crate_symbol_index(
     let mut index = ProjectSymbolIndex::default();
 
     for module in crate_unit.modules.iter() {
-        let package_name = query_module_package_name(module.path.segments(), &crate_name);
+        let package_names = query_module_package_names(module.path.segments(), &crate_name);
+        let package_name = package_names[0].clone();
         let package_dir = package_dir_for_module_file(&module.file_path);
         let files = vec![crate::hir::SourceFileAst::with_package_module_visibility(
             module.file_path.clone(),
@@ -233,6 +234,7 @@ fn build_crate_symbol_index(
         index_package_symbols_named(
             &mut index,
             &package_name,
+            &package_names,
             &package_dir,
             std::slice::from_ref(&module.file_path),
             &overrides,
@@ -254,6 +256,7 @@ fn build_crate_symbol_index(
             index_package_symbols_named(
                 &mut index,
                 &logical_name,
+                std::slice::from_ref(&logical_name),
                 pkg_dir,
                 &files,
                 &HashMap::new(),
@@ -283,7 +286,14 @@ fn build_package_symbol_index(
             .iter()
             .map(|file| file.path.clone())
             .collect::<Vec<_>>();
-        index_package_symbols_named(&mut index, pkg_name, pkg_dir, &package_files, &overrides)?;
+        index_package_symbols_named(
+            &mut index,
+            pkg_name,
+            std::slice::from_ref(pkg_name),
+            pkg_dir,
+            &package_files,
+            &overrides,
+        )?;
     }
 
     if let Ok((_module_dir, dependencies)) =
@@ -301,6 +311,7 @@ fn build_package_symbol_index(
             index_package_symbols_named(
                 &mut index,
                 &logical_name,
+                std::slice::from_ref(&logical_name),
                 pkg_dir,
                 &files,
                 &HashMap::new(),
@@ -318,6 +329,18 @@ fn query_module_package_name(module_path: &[String], crate_name: &str) -> String
     } else {
         module_path.join("::")
     }
+}
+
+fn query_module_package_names(module_path: &[String], crate_name: &str) -> Vec<String> {
+    let primary = query_module_package_name(module_path, crate_name);
+    let mut names = vec![primary.clone()];
+    if !module_path.is_empty() {
+        let alias = format!("{}::{}", crate_name, module_path.join("::"));
+        if alias != primary {
+            names.push(alias);
+        }
+    }
+    names
 }
 
 fn package_dir_for_module_file(path: &Path) -> PathBuf {
@@ -425,7 +448,7 @@ fn normalize_lookup_segments(segments: &[String]) -> &[String] {
 
 fn index_source_file_symbols(
     index: &mut ProjectSymbolIndex,
-    package_name: &str,
+    package_names: &[String],
     file_path: &Path,
     src: &str,
 ) -> Result<(), String> {
@@ -440,7 +463,7 @@ fn index_source_file_symbols(
             cst::nodes::Item::Fn(f) => {
                 if let Some(name_tok) = f.lident() {
                     let mut names = Vec::new();
-                    add_name_variants(&mut names, package_name, &name_tok.to_string());
+                    add_name_variants(&mut names, package_names, &name_tok.to_string());
                     for name in names {
                         index.add_value(
                             name,
@@ -457,7 +480,7 @@ fn index_source_file_symbols(
                     continue;
                 };
                 let mut type_names = Vec::new();
-                add_name_variants(&mut type_names, package_name, &type_tok.to_string());
+                add_name_variants(&mut type_names, package_names, &type_tok.to_string());
                 for tn in type_names.iter() {
                     index.add_type(
                         tn.clone(),
@@ -490,7 +513,7 @@ fn index_source_file_symbols(
                     continue;
                 };
                 let mut type_names = Vec::new();
-                add_name_variants(&mut type_names, package_name, &type_tok.to_string());
+                add_name_variants(&mut type_names, package_names, &type_tok.to_string());
                 for tn in type_names.iter() {
                     index.add_type(
                         tn.clone(),
@@ -523,7 +546,7 @@ fn index_source_file_symbols(
                     continue;
                 };
                 let mut type_names = Vec::new();
-                add_name_variants(&mut type_names, package_name, &type_tok.to_string());
+                add_name_variants(&mut type_names, package_names, &type_tok.to_string());
                 for tn in type_names.iter() {
                     index.add_type(
                         tn.clone(),
@@ -559,7 +582,7 @@ fn index_source_file_symbols(
                 if receiver.is_empty() {
                     continue;
                 }
-                let receiver_keys = collect_receiver_keys(package_name, &receiver);
+                let receiver_keys = collect_receiver_keys(package_names, &receiver);
                 for f in i.functions() {
                     let Some(method_tok) = f.lident() else {
                         continue;
@@ -582,7 +605,7 @@ fn index_source_file_symbols(
                         continue;
                     };
                     let mut type_names = Vec::new();
-                    add_name_variants(&mut type_names, package_name, &type_tok.to_string());
+                    add_name_variants(&mut type_names, package_names, &type_tok.to_string());
                     for tn in type_names.iter() {
                         index.add_type(
                             tn.clone(),
@@ -594,7 +617,7 @@ fn index_source_file_symbols(
                     }
                 } else if let Some(name_tok) = ex.lident() {
                     let mut names = Vec::new();
-                    add_name_variants(&mut names, package_name, &name_tok.to_string());
+                    add_name_variants(&mut names, package_names, &name_tok.to_string());
                     for name in names {
                         index.add_value(
                             name,
@@ -684,15 +707,19 @@ fn qualify_name(package: &str, name: &str) -> String {
     }
 }
 
-fn add_name_variants(map: &mut Vec<String>, package: &str, name: &str) {
+fn add_name_variants(map: &mut Vec<String>, packages: &[String], name: &str) {
     map.push(name.to_string());
-    let qualified = qualify_name(package, name);
-    if qualified != name {
-        map.push(qualified);
+    for package in packages {
+        let qualified = qualify_name(package, name);
+        if qualified != name {
+            map.push(qualified);
+        }
     }
+    map.sort();
+    map.dedup();
 }
 
-fn collect_receiver_keys(package: &str, receiver: &str) -> Vec<String> {
+fn collect_receiver_keys(packages: &[String], receiver: &str) -> Vec<String> {
     let mut keys = Vec::new();
     if receiver.is_empty() {
         return keys;
@@ -708,10 +735,14 @@ fn collect_receiver_keys(package: &str, receiver: &str) -> Vec<String> {
         return keys;
     }
 
-    let qualified = qualify_name(package, receiver);
-    if qualified != receiver {
-        keys.push(qualified);
+    for package in packages {
+        let qualified = qualify_name(package, receiver);
+        if qualified != receiver {
+            keys.push(qualified);
+        }
     }
+    keys.sort();
+    keys.dedup();
     keys
 }
 
@@ -742,22 +773,28 @@ fn cst_type_path_name(ty: &cst::nodes::Type) -> Option<String> {
 fn index_package_symbols_named(
     index: &mut ProjectSymbolIndex,
     package_name: &str,
+    package_names: &[String],
     package_dir: &Path,
     package_files: &[PathBuf],
     src_overrides: &HashMap<PathBuf, String>,
 ) -> Result<(), String> {
+    let package_names = if package_names.is_empty() {
+        vec![package_name.to_string()]
+    } else {
+        package_names.to_vec()
+    };
     let package_goml = package_dir.join("goml.toml");
     if package_goml.exists() {
-        index
-            .packages
-            .insert(package_name.to_string(), package_goml);
+        for package in &package_names {
+            index.packages.insert(package.clone(), package_goml.clone());
+        }
     } else {
         let mut gom_files = package_files.to_vec();
         gom_files.sort();
         if let Some(first) = gom_files.first() {
-            index
-                .packages
-                .insert(package_name.to_string(), first.clone());
+            for package in &package_names {
+                index.packages.insert(package.clone(), first.clone());
+            }
         }
     }
 
@@ -768,7 +805,7 @@ fn index_package_symbols_named(
             fs::read_to_string(file)
                 .map_err(|e| format!("failed to read {}: {}", file.display(), e))?
         };
-        index_source_file_symbols(index, package_name, file, &src)?;
+        index_source_file_symbols(index, &package_names, file, &src)?;
     }
 
     Ok(())
@@ -781,5 +818,5 @@ fn index_builtin_symbols(index: &mut ProjectSymbolIndex) -> Result<(), String> {
     let Ok(src) = fs::read_to_string(&builtin_path) else {
         return Ok(());
     };
-    index_source_file_symbols(index, BUILTIN_PACKAGE, &builtin_path, &src)
+    index_source_file_symbols(index, &[BUILTIN_PACKAGE.to_string()], &builtin_path, &src)
 }

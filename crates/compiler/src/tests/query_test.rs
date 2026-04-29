@@ -1545,6 +1545,61 @@ fn call() -> int64 {
 
 #[test]
 #[rustfmt::skip]
+fn crate_query_goto_definition_uses_canonical_module_hint() {
+    let dir = tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+"#,
+    )
+    .unwrap();
+    std::fs::write(
+        dir.path().join("main.gom"),
+        r#"
+mod api;
+mod other;
+
+fn main() -> unit {
+    ()
+}
+"#,
+    )
+    .unwrap();
+    let api_src = r#"
+pub fn target() -> int64 {
+    1
+}
+
+fn call() -> int64 {
+    self::target()
+}
+"#;
+    let api_path = dir.path().join("api.gom");
+    std::fs::write(&api_path, api_src).unwrap();
+    std::fs::write(
+        dir.path().join("other.gom"),
+        r#"
+pub fn target() -> int64 {
+    2
+}
+"#,
+    )
+    .unwrap();
+
+    let locations = goto_definition_locations(&api_path, api_src, 6, 12).unwrap();
+    assert_eq!(locations.len(), 1);
+    assert_eq!(locations[0].path, api_path);
+    let range = locations[0].range;
+    let start = u32::from(range.start()) as usize;
+    let end = u32::from(range.end()) as usize;
+    assert_eq!(&api_src[start..end], "target");
+}
+
+#[test]
+#[rustfmt::skip]
 fn multi_package_inherent_method_completion() {
     let dir = tempdir().unwrap();
     let lib_dir = dir.path().join("Lib");
