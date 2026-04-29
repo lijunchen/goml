@@ -59,15 +59,15 @@ fn read_gom_sources(dir: &Path) -> Result<Vec<PathBuf>, CompilationError> {
     Ok(files)
 }
 
-fn package_dir_is_loadable(dir: &Path) -> bool {
+fn namespace_dir_is_loadable(dir: &Path) -> bool {
     dir.is_dir()
 }
 
-fn package_file_is_loadable(path: &Path) -> bool {
+fn namespace_file_is_loadable(path: &Path) -> bool {
     path.is_file()
 }
 
-fn package_dir_for_file(path: &Path) -> PathBuf {
+fn namespace_dir_for_file(path: &Path) -> PathBuf {
     if path.file_name().is_some_and(|name| name == "mod.gom") {
         path.parent()
             .filter(|parent| !parent.as_os_str().is_empty())
@@ -656,7 +656,7 @@ fn discover_packages_from_crate_unit(
             },
         );
         discovery_order.push(name.clone());
-        package_dirs.insert(name.clone(), package_dir_for_file(&module.file_path));
+        package_dirs.insert(name.clone(), namespace_dir_for_file(&module.file_path));
         package_visibilities.insert(name, module.visibility);
     }
 
@@ -831,12 +831,12 @@ fn discover_packages_inner(
         }
         let package_dir = root_dir.join(&package_name);
         let package_file = root_dir.join(format!("{package_name}.gom"));
-        if !package_dir_is_loadable(&package_dir) && !package_file_is_loadable(&package_file) {
+        if !namespace_dir_is_loadable(&package_dir) && !namespace_file_is_loadable(&package_file) {
             loaded.insert(package_name);
             continue;
         }
         let package_override = source_override_for_dir(&package_dir, source_override);
-        let package = if package_dir_is_loadable(&package_dir) {
+        let package = if namespace_dir_is_loadable(&package_dir) {
             load_package(
                 &package_dir,
                 Some(&package_name),
