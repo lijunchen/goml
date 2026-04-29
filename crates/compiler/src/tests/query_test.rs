@@ -1205,6 +1205,50 @@ fn call() -> int64 {
 
 #[test]
 #[rustfmt::skip]
+fn crate_query_hover_expands_derives_in_child_modules() {
+    let dir = tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+"#,
+    )
+    .unwrap();
+    let main_src = r#"
+mod data;
+
+fn main() -> unit {
+    let text = crate::data::label();
+    text
+}
+"#;
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(&main_path, main_src).unwrap();
+    std::fs::write(
+        dir.path().join("data.gom"),
+        r#"
+#[derive(ToString)]
+pub struct Item {
+    name: string,
+}
+
+pub fn label() -> string {
+    let item = Item { name: "demo" };
+    item.to_string()
+}
+"#,
+    )
+    .unwrap();
+
+    check_with_path(&main_path, main_src, 5, 6, expect![[r#"
+        "string"
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
 fn crate_query_goto_definition_resolves_super_from_module_path() {
     let dir = tempdir().unwrap();
     std::fs::write(

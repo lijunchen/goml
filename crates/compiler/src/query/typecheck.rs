@@ -80,15 +80,6 @@ fn parse_ast_for_query(path: &Path, src: &str) -> Result<(ast::File, Diagnostics
     diagnostics.append(&mut lower_diagnostics);
     let ast = ast.ok_or_else(|| "AST lowering error".to_string())?;
 
-    let original_ast = ast.clone();
-    let ast = match crate::derive::expand(ast) {
-        Ok(ast) => ast,
-        Err(mut derive_diagnostics) => {
-            diagnostics.append(&mut derive_diagnostics);
-            original_ast
-        }
-    };
-
     Ok((ast, diagnostics))
 }
 
@@ -116,7 +107,7 @@ fn typecheck_crate_for_query(path: &Path, src: &str) -> Result<QueryTypecheck, S
         return Err("query file is not part of the crate".to_string());
     }
 
-    let files = crate_unit.source_files();
+    let files = expand_derives(crate_unit.source_files(), &mut diagnostics);
     let package = crate_unit.config.name.clone();
     let (_module_dir, dependencies) =
         crate::pipeline::packages::discover_dependency_versions_from_file(path)
@@ -147,6 +138,26 @@ fn typecheck_crate_for_query(path: &Path, src: &str) -> Result<QueryTypecheck, S
     PackageExports::from_genv(&package_genv).apply_to(&mut genv);
 
     Ok((hir_table, results, genv, diagnostics))
+}
+
+fn expand_derives(
+    files: Vec<hir::SourceFileAst>,
+    diagnostics: &mut Diagnostics,
+) -> Vec<hir::SourceFileAst> {
+    files
+        .into_iter()
+        .map(|mut file| {
+            let original_ast = file.ast.clone();
+            file.ast = match crate::derive::expand(file.ast) {
+                Ok(ast) => ast,
+                Err(mut derive_diagnostics) => {
+                    diagnostics.append(&mut derive_diagnostics);
+                    original_ast
+                }
+            };
+            file
+        })
+        .collect()
 }
 
 fn canonical_path(path: &Path) -> PathBuf {
