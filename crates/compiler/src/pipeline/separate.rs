@@ -266,8 +266,8 @@ fn external_namespace_import_alias(
     None
 }
 
-fn typecheck_single_package(
-    package: &str,
+fn typecheck_crate_sources(
+    crate_name: &str,
     files: Vec<hir::SourceFileAst>,
     deps_interfaces: &HashMap<String, interface::PackageInterface>,
     deps_envs: HashMap<String, GlobalTypeEnv>,
@@ -279,22 +279,22 @@ fn typecheck_single_package(
     diagnostics::Diagnostics,
 ) {
     let (files, mut diagnostics) = expand_derives(files);
-    let package_id = interface::package_id_for_name(package);
+    let crate_package_id = interface::package_id_for_name(crate_name);
     let (hir, hir_table, mut hir_diagnostics) =
-        hir::lower_to_hir_files_with_env(package_id, files.clone(), deps_interfaces);
+        hir::lower_to_hir_files_with_env(crate_package_id, files.clone(), deps_interfaces);
     let (tast, genv, mut type_diagnostics) = crate::typer::check_file_with_env(
         hir,
         hir_table,
         GlobalTypeEnv::new(),
         builtins::builtin_env(),
-        package,
+        crate_name,
         deps_envs,
     );
     type_diagnostics.append(&mut hir_diagnostics);
     diagnostics.append(&mut type_diagnostics);
     let full_exports = PackageExports::from_genv(&genv);
-    let exports = PackageExports::public_from_crate(package, &files, &genv);
-    let pkg_interface = interface::PackageInterface::from_exports(package, &exports);
+    let exports = PackageExports::public_from_crate(crate_name, &files, &genv);
+    let pkg_interface = interface::PackageInterface::from_exports(crate_name, &exports);
     (tast, full_exports, exports, pkg_interface, diagnostics)
 }
 
@@ -332,9 +332,9 @@ pub fn check_crate(opts: CrateInputs) -> Result<InterfaceUnit, CompilationError>
         let mut deps_envs = HashMap::new();
         let mut deps_interfaces = HashMap::new();
         let mut dep_hashes = BTreeMap::new();
-        let package = opts.crate_unit.config.name.clone();
+        let crate_name = opts.crate_unit.config.name.clone();
 
-        if package != BUILTIN_PACKAGE {
+        if crate_name != BUILTIN_PACKAGE {
             dep_hashes.insert(
                 BUILTIN_PACKAGE.to_string(),
                 builtins::builtin_interface_hash(),
@@ -342,7 +342,7 @@ pub fn check_crate(opts: CrateInputs) -> Result<InterfaceUnit, CompilationError>
         }
 
         for dep in deps {
-            if dep == BUILTIN_PACKAGE || dep == package {
+            if dep == BUILTIN_PACKAGE || dep == crate_name {
                 continue;
             }
             let (unit, package_interface) =
@@ -353,10 +353,10 @@ pub fn check_crate(opts: CrateInputs) -> Result<InterfaceUnit, CompilationError>
         }
 
         let (tast, _full_exports, exports, pkg_interface, diagnostics) =
-            typecheck_single_package(&package, files, &deps_interfaces, deps_envs);
+            typecheck_crate_sources(&crate_name, files, &deps_interfaces, deps_envs);
         drop(tast);
 
-        let interface = InterfaceUnit::new(package, exports, pkg_interface, dep_hashes);
+        let interface = InterfaceUnit::new(crate_name, exports, pkg_interface, dep_hashes);
         if diagnostics.has_errors() {
             return Err(CompilationError::Typer { diagnostics });
         }
@@ -383,9 +383,9 @@ pub fn build_crate(opts: CrateInputs) -> Result<CoreUnit, CompilationError> {
         let mut deps_interfaces = HashMap::new();
         let mut dep_hashes = BTreeMap::new();
         let mut dep_units = Vec::new();
-        let package = opts.crate_unit.config.name.clone();
+        let crate_name = opts.crate_unit.config.name.clone();
 
-        if package != BUILTIN_PACKAGE {
+        if crate_name != BUILTIN_PACKAGE {
             dep_hashes.insert(
                 BUILTIN_PACKAGE.to_string(),
                 builtins::builtin_interface_hash(),
@@ -393,7 +393,7 @@ pub fn build_crate(opts: CrateInputs) -> Result<CoreUnit, CompilationError> {
         }
 
         for dep in deps {
-            if dep == BUILTIN_PACKAGE || dep == package {
+            if dep == BUILTIN_PACKAGE || dep == crate_name {
                 continue;
             }
             let (unit, package_interface) =
@@ -405,12 +405,12 @@ pub fn build_crate(opts: CrateInputs) -> Result<CoreUnit, CompilationError> {
         }
 
         let (tast, full_exports, exports, pkg_interface, diagnostics) =
-            typecheck_single_package(&package, files, &deps_interfaces, deps_envs);
+            typecheck_crate_sources(&crate_name, files, &deps_interfaces, deps_envs);
         if diagnostics.has_errors() {
             return Err(CompilationError::Typer { diagnostics });
         }
 
-        let interface = InterfaceUnit::new(package.clone(), exports, pkg_interface, dep_hashes);
+        let interface = InterfaceUnit::new(crate_name.clone(), exports, pkg_interface, dep_hashes);
 
         let gensym = Gensym::new();
         let mut env = builtins::builtin_env();
@@ -427,7 +427,7 @@ pub fn build_crate(opts: CrateInputs) -> Result<CoreUnit, CompilationError> {
             });
         }
 
-        let mut unit = CoreUnit::new(package, interface, core_ir);
+        let mut unit = CoreUnit::new(crate_name, interface, core_ir);
         unit.internal_exports = Some(full_exports);
         unit.sources = sources;
 
