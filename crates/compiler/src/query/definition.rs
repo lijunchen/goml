@@ -122,7 +122,7 @@ fn resolve_use_decl(
     let Ok((_graph, index)) = build_symbol_index(path, src) else {
         return None;
     };
-    if let Some(location) = package_definition_location(&index, &lookup) {
+    if let Some(location) = namespace_definition_location(&index, &lookup) {
         return Some(vec![location]);
     }
     let mut out = index.find_type(&lookup);
@@ -659,14 +659,16 @@ fn tast_ty_constr_candidates(ty: &tast::Ty) -> Vec<String> {
     expanded
 }
 
-fn package_definition_location(
+fn namespace_definition_location(
     index: &ProjectSymbolIndex,
-    package: &str,
+    namespace: &str,
 ) -> Option<DefinitionLocation> {
-    index.find_package(package).map(|path| DefinitionLocation {
-        path,
-        range: TextRange::new(text_size::TextSize::from(0), text_size::TextSize::from(0)),
-    })
+    index
+        .find_namespace(namespace)
+        .map(|path| DefinitionLocation {
+            path,
+            range: TextRange::new(text_size::TextSize::from(0), text_size::TextSize::from(0)),
+        })
 }
 
 fn external_use_definition_location(path: &Path, lookup: &str) -> Option<DefinitionLocation> {

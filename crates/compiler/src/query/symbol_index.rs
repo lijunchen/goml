@@ -38,7 +38,7 @@ pub(crate) struct ProjectSymbolIndex {
     trait_methods: HashMap<MemberLookupKey, Vec<DefinitionLocation>>,
     struct_fields: HashMap<MemberLookupKey, Vec<DefinitionLocation>>,
     enum_variants: HashMap<MemberLookupKey, Vec<DefinitionLocation>>,
-    packages: HashMap<String, PathBuf>,
+    namespaces: HashMap<String, PathBuf>,
 }
 
 impl ProjectSymbolIndex {
@@ -118,14 +118,14 @@ impl ProjectSymbolIndex {
             .unwrap_or_default()
     }
 
-    pub(crate) fn find_package(&self, pkg: &str) -> Option<PathBuf> {
-        self.packages.get(pkg).cloned()
+    pub(crate) fn find_namespace(&self, namespace: &str) -> Option<PathBuf> {
+        self.namespaces.get(namespace).cloned()
     }
 
-    pub(crate) fn package_children(&self, namespace: &str) -> Vec<String> {
+    pub(crate) fn namespace_children(&self, namespace: &str) -> Vec<String> {
         let prefix = format!("{}::", namespace);
         let mut names = self
-            .packages
+            .namespaces
             .keys()
             .filter_map(|name| {
                 let rest = name.strip_prefix(&prefix)?;
@@ -357,7 +357,7 @@ pub(crate) fn lookup_symbol_locations_for_path(
             }
             let package = segments[..=idx].join("::");
             if graph.and_then(|g| g.package_dirs.get(&package)).is_some()
-                && let Some(loc) = index.find_package(&package)
+                && let Some(loc) = index.find_namespace(&package)
             {
                 locations.push(DefinitionLocation {
                     path: loc,
@@ -681,7 +681,7 @@ fn index_package_symbols_named(
     };
     if let Some(target) = package_navigation_target(package_dir, package_files) {
         for package in &package_names {
-            index.packages.insert(package.clone(), target.clone());
+            index.namespaces.insert(package.clone(), target.clone());
         }
     }
 

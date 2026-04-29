@@ -810,7 +810,7 @@ fn colon_colon_items_for_namespace(
         for lookup_name in &lookup_names {
             items.extend(
                 symbol_index
-                    .package_children(lookup_name)
+                    .namespace_children(lookup_name)
                     .into_iter()
                     .map(|name| ColonColonCompletionItem {
                         name,
