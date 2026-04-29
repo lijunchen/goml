@@ -19,7 +19,7 @@ fn typecheck_ast(
     String,
 > {
     if !ast.uses.is_empty() {
-        return Err("error: package uses are not supported in webapp".to_string());
+        return Err("error: use declarations are not supported in webapp".to_string());
     }
     let (hir, hir_table, mut hir_diagnostics) = compiler::hir::lower_to_hir(ast);
     let (tast, genv, mut diagnostics) = compiler::typer::check_file(hir, hir_table);
@@ -339,7 +339,7 @@ pub fn get_tast(src: &str) -> String {
 #[wasm_bindgen]
 pub fn hover(src: &str, line: u32, col: u32) -> String {
     if has_uses(src) {
-        return "error: package uses are not supported in webapp".to_string();
+        return "error: use declarations are not supported in webapp".to_string();
     }
     match compiler::query::hover_type(std::path::Path::new("dummy"), src, line, col) {
         Ok(result) => result,

@@ -35,7 +35,7 @@ pub(crate) fn typecheck_single_file_for_query(
     let ast = ast.ok_or_else(|| "AST lowering error".to_string())?;
 
     if !ast.uses.is_empty() {
-        return Err("package uses are not supported in this context".to_string());
+        return Err("use declarations are not supported in this context".to_string());
     }
 
     let original_ast = ast.clone();
