@@ -830,6 +830,65 @@ fn main() {
     }
 
     #[test]
+    fn hover_on_manifest_use_path_uses_canonical_module_item() {
+        let dir = tempdir().unwrap();
+        let root = dir.path();
+        std::fs::write(
+            root.join("goml.toml"),
+            r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+"#,
+        )
+        .unwrap();
+        let main_src = r#"
+mod api;
+mod other;
+
+use crate::api::target;
+
+fn main() -> unit {
+    ()
+}
+"#;
+        let main_path = root.join("main.gom");
+        std::fs::write(&main_path, main_src).unwrap();
+        std::fs::write(
+            root.join("api.gom"),
+            r#"
+pub fn target() -> int64 {
+    1
+}
+"#,
+        )
+        .unwrap();
+        std::fs::write(
+            root.join("other.gom"),
+            r#"
+pub fn target(value: string) -> string {
+    value
+}
+"#,
+        )
+        .unwrap();
+
+        let hover = handlers::hover(
+            &main_path,
+            main_src,
+            Position {
+                line: 4,
+                character: 18,
+            },
+        );
+        expect![[r#"
+            ```goml
+            () -> int64
+            ```"#]]
+        .assert_eq(&format_hover(hover));
+    }
+
+    #[test]
     fn hover_on_struct_field() {
         check_hover(
             r#"
