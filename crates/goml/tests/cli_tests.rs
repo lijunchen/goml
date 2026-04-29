@@ -1333,6 +1333,67 @@ fn project_check_checks_module_from_cwd() -> anyhow::Result<()> {
 }
 
 #[test]
+fn project_check_reports_duplicate_mod_declarations() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    fs::write(root.join("goml.toml"), PROJECT_CONFIG)?;
+    fs::write(
+        root.join("main.gom"),
+        r#"
+mod foo;
+mod foo;
+
+fn main() -> unit {
+    ()
+}
+"#,
+    )?;
+    fs::write(root.join("foo.gom"), "pub fn value() -> int64 { 1 }\n")?;
+
+    let output = run_goml(&["check"], root)?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(!output.status.success());
+    expect![""].assert_eq(&stdout);
+    assert!(stderr.contains("DuplicateModule"), "stderr: {stderr}");
+    assert!(stderr.contains("name: \"foo\""), "stderr: {stderr}");
+
+    Ok(())
+}
+
+#[test]
+fn project_check_reports_ambiguous_mod_files() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    fs::write(root.join("goml.toml"), PROJECT_CONFIG)?;
+    fs::write(
+        root.join("main.gom"),
+        r#"
+mod foo;
+
+fn main() -> unit {
+    ()
+}
+"#,
+    )?;
+    fs::write(root.join("foo.gom"), "pub fn flat() -> int64 { 1 }\n")?;
+    fs::create_dir_all(root.join("foo"))?;
+    fs::write(root.join("foo/mod.gom"), "pub fn nested() -> int64 { 2 }\n")?;
+
+    let output = run_goml(&["check"], root)?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(!output.status.success());
+    expect![""].assert_eq(&stdout);
+    assert!(stderr.contains("AmbiguousModule"), "stderr: {stderr}");
+    assert!(stderr.contains("name: \"foo\""), "stderr: {stderr}");
+
+    Ok(())
+}
+
+#[test]
 fn project_build_writes_target_goml_main_go() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     write_project(dir.path())?;

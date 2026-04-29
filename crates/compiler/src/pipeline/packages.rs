@@ -763,14 +763,24 @@ fn discover_packages_inner(
     single_file: bool,
     external_imports: &ExternalImports,
 ) -> Result<PackageGraph, CompilationError> {
-    if let Ok(crate_unit) = crate::pipeline::modules::discover_crate_from_dir(root_dir) {
-        return discover_packages_from_crate_unit(
-            crate_unit,
-            ROOT_PACKAGE,
-            entry_path,
-            entry_ast,
-            external_imports,
-        );
+    if root_dir.join("goml.toml").exists() {
+        match crate::pipeline::modules::discover_crate_from_dir(root_dir) {
+            Ok(crate_unit) => {
+                return discover_packages_from_crate_unit(
+                    crate_unit,
+                    ROOT_PACKAGE,
+                    entry_path,
+                    entry_ast,
+                    external_imports,
+                );
+            }
+            Err(err) => {
+                return Err(compile_error(format!(
+                    "crate module discovery failed: {:?}",
+                    err
+                )));
+            }
+        }
     }
 
     let source_override = match (entry_path, entry_ast.as_ref()) {
