@@ -126,10 +126,10 @@ fn resolve_use_decl(
                 .parent()
                 .filter(|parent| !parent.as_os_str().is_empty())
                 .unwrap_or_else(|| Path::new("."));
-            let root_dir = crate::config::find_crate_root(start_dir)
-                .map(|(root, _)| root)
-                .unwrap_or_else(|| start_dir.to_path_buf());
-            let pkg_dir = root_dir.join(pkg);
+            if crate::config::find_crate_root(start_dir).is_some() {
+                return None;
+            }
+            let pkg_dir = start_dir.join(pkg);
             if let Some(target) = package_nav_target_in_dir(&pkg_dir) {
                 return Some(vec![DefinitionLocation {
                     path: target,
