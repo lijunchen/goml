@@ -452,14 +452,14 @@ fn path_value_import(
     let imported_name = alias
         .or_else(|| path.last_ident())
         .map(|ident| ident.0.clone())?;
-    let package = known_package_prefix_for_path_in_module(
+    let namespace = known_namespace_prefix_for_path_in_module(
         path,
         deps,
         current_namespace,
         current_module_path,
         crate_paths_include_namespace,
     );
-    if package == current_namespace || package == BUILTIN_PACKAGE {
+    if namespace == current_namespace || namespace == BUILTIN_PACKAGE {
         let id = def_names.get(&full_name).copied()?;
         return Some((
             imported_name,
@@ -469,12 +469,16 @@ fn path_value_import(
             },
         ));
     }
-    let idx = deps.get(&package)?.value_exports.get(&full_name).copied()?;
+    let idx = deps
+        .get(&namespace)?
+        .value_exports
+        .get(&full_name)
+        .copied()?;
     Some((
         imported_name,
         UseValueImport {
             res: hir::NameRef::Def(hir::DefId {
-                pkg: interface::crate_id_for_name(&package),
+                pkg: interface::crate_id_for_name(&namespace),
                 idx,
             }),
             hint: full_name,
@@ -583,7 +587,7 @@ fn path_resolution_display_in_module(
     .join("::")
 }
 
-fn known_package_prefix_for_path_in_module(
+fn known_namespace_prefix_for_path_in_module(
     path: &ast::Path,
     deps: &HashMap<String, interface::CrateInterface>,
     current_namespace: &str,
@@ -607,10 +611,12 @@ fn known_package_prefix_for_path_in_module(
     }
     let mut best = None;
     for end in 1..segments.len() {
-        let package = segments[..end].join("::");
-        if package == current_namespace || package == BUILTIN_PACKAGE || deps.contains_key(&package)
+        let namespace = segments[..end].join("::");
+        if namespace == current_namespace
+            || namespace == BUILTIN_PACKAGE
+            || deps.contains_key(&namespace)
         {
-            best = Some(package);
+            best = Some(namespace);
         }
     }
     best.unwrap_or_else(|| segments.first().cloned().unwrap_or_default())
@@ -1594,38 +1600,39 @@ impl NameResolution {
                         ctx.current_module_path,
                         ctx.crate_paths_include_namespace,
                     );
-                    let package = known_package_prefix_for_path_in_module(
+                    let namespace = known_namespace_prefix_for_path_in_module(
                         path,
                         ctx.deps,
                         ctx.current_namespace,
                         ctx.current_module_path,
                         ctx.crate_paths_include_namespace,
                     );
-                    if package != ctx.current_namespace
-                        && package != BUILTIN_PACKAGE
-                        && ctx.deps.contains_key(&package)
-                        && !ctx.imports.contains(&package)
+                    if namespace != ctx.current_namespace
+                        && namespace != BUILTIN_PACKAGE
+                        && ctx.deps.contains_key(&namespace)
+                        && !ctx.imports.contains(&namespace)
                     {
                         self.error(format!(
                             "namespace {} not imported in namespace {}",
-                            package, ctx.current_namespace
+                            namespace, ctx.current_namespace
                         ));
                     }
 
-                    let res = if package == ctx.current_namespace || package == BUILTIN_PACKAGE {
+                    let res = if namespace == ctx.current_namespace || namespace == BUILTIN_PACKAGE
+                    {
                         ctx.def_names
                             .get(&full_name)
                             .copied()
                             .map(hir::NameRef::Def)
                             .unwrap_or_else(|| hir::NameRef::Unresolved(unresolved_path.clone()))
-                    } else if ctx.imports.contains(&package) {
+                    } else if ctx.imports.contains(&namespace) {
                         ctx.deps
-                            .get(&package)
+                            .get(&namespace)
                             .and_then(|pkg_interface| pkg_interface.value_exports.get(&full_name))
                             .copied()
                             .map(|idx| {
                                 hir::NameRef::Def(hir::DefId {
-                                    pkg: interface::crate_id_for_name(&package),
+                                    pkg: interface::crate_id_for_name(&namespace),
                                     idx,
                                 })
                             })
@@ -1645,9 +1652,9 @@ impl NameResolution {
                         ),
                         hir::NameRef::Unresolved(_)
                             if path.len() == 2
-                                && (package == ctx.current_namespace
-                                    || package == BUILTIN_PACKAGE
-                                    || ctx.deps.contains_key(&package)) =>
+                                && (namespace == ctx.current_namespace
+                                    || namespace == BUILTIN_PACKAGE
+                                    || ctx.deps.contains_key(&namespace)) =>
                         {
                             self.alloc_expr_with_ptr(
                                 hir_table,
