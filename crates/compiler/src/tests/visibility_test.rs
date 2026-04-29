@@ -222,6 +222,26 @@ pub fn add(a: int64, b: int64) -> int64 {
 }
 
 #[test]
+fn self_path_resolves_current_module_value() {
+    assert_ok(&[(
+        "main.gom",
+        r#"
+fn helper() -> int64 {
+    1
+}
+
+fn f() -> int64 {
+    self::helper()
+}
+
+fn main() -> unit {
+    let _ = f();
+}
+"#,
+    )]);
+}
+
+#[test]
 fn public_struct_is_visible() {
     assert_ok(&[
         (
