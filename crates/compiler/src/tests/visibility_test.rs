@@ -192,6 +192,36 @@ pub fn call() -> int64 {
 }
 
 #[test]
+fn local_binding_shadows_value_use() {
+    assert_ok(&[
+        (
+            "main.gom",
+            r#"
+mod math;
+
+use crate::math::add;
+
+fn shadow(add: int64) -> int64 {
+    add
+}
+
+fn main() -> unit {
+    let _ = shadow(7);
+}
+"#,
+        ),
+        (
+            "math.gom",
+            r#"
+pub fn add(a: int64, b: int64) -> int64 {
+    a + b
+}
+"#,
+        ),
+    ]);
+}
+
+#[test]
 fn public_struct_is_visible() {
     assert_ok(&[
         (
