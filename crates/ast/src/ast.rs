@@ -35,24 +35,43 @@ impl PathSegment {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum PathRoot {
+    Relative,
+    Absolute,
+    Crate,
+    Self_,
+    Super,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Path {
+    pub root: PathRoot,
     pub segments: Vec<PathSegment>,
 }
 
 impl Path {
     pub fn new(segments: Vec<PathSegment>) -> Self {
-        Self { segments }
+        Self {
+            root: PathRoot::Relative,
+            segments,
+        }
+    }
+
+    pub fn with_root(root: PathRoot, segments: Vec<PathSegment>) -> Self {
+        Self { root, segments }
     }
 
     pub fn from_idents(idents: Vec<AstIdent>) -> Self {
         let segments = idents.into_iter().map(PathSegment::new).collect();
-        Self { segments }
+        Self::new(segments)
     }
 
     pub fn from_ident(ident: AstIdent) -> Self {
-        Self {
-            segments: vec![PathSegment::new(ident)],
-        }
+        Self::new(vec![PathSegment::new(ident)])
+    }
+
+    pub fn root(&self) -> &PathRoot {
+        &self.root
     }
 
     pub fn segments(&self) -> &[PathSegment] {
@@ -92,11 +111,27 @@ impl Path {
     }
 
     pub fn display(&self) -> String {
-        self.segments
+        let body = self
+            .segments
             .iter()
             .map(|segment| segment.ident.0.clone())
             .collect::<Vec<_>>()
-            .join("::")
+            .join("::");
+        match self.root {
+            PathRoot::Relative => body,
+            PathRoot::Absolute => format!("::{body}"),
+            PathRoot::Crate => join_root("crate", &body),
+            PathRoot::Self_ => join_root("self", &body),
+            PathRoot::Super => join_root("super", &body),
+        }
+    }
+}
+
+fn join_root(root: &str, body: &str) -> String {
+    if body.is_empty() {
+        root.to_string()
+    } else {
+        format!("{root}::{body}")
     }
 }
 

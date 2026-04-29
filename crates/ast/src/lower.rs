@@ -2600,8 +2600,15 @@ fn lower_constructor_path_from_constr_pat(
 }
 
 fn lower_path(ctx: &mut LowerCtx, path: &cst::Path) -> Option<ast::Path> {
-    let segments: Vec<ast::PathSegment> = path
-        .ident_tokens()
+    let root = lower_path_root(path);
+    let segment_tokens = path.ident_tokens().collect::<Vec<_>>();
+    let skip_root_segment = matches!(
+        root,
+        ast::PathRoot::Crate | ast::PathRoot::Self_ | ast::PathRoot::Super
+    );
+    let segments: Vec<ast::PathSegment> = segment_tokens
+        .iter()
+        .skip(usize::from(skip_root_segment))
         .map(|token| {
             ast::PathSegment::with_range(ast::AstIdent(token.to_string()), Some(token.text_range()))
         })
@@ -2614,6 +2621,94 @@ fn lower_path(ctx: &mut LowerCtx, path: &cst::Path) -> Option<ast::Path> {
         );
         None
     } else {
-        Some(ast::Path::new(segments))
+        Some(ast::Path::with_root(root, segments))
+    }
+}
+
+fn lower_path_root(path: &cst::Path) -> ast::PathRoot {
+    let first_token = path
+        .syntax()
+        .children_with_tokens()
+        .filter_map(|element| element.into_token())
+        .find(|token| {
+            !matches!(
+                token.kind(),
+                MySyntaxKind::Whitespace | MySyntaxKind::Comment
+            )
+        });
+
+    let Some(token) = first_token else {
+        return ast::PathRoot::Relative;
+    };
+
+    match token.kind() {
+        MySyntaxKind::ColonColon => ast::PathRoot::Absolute,
+        MySyntaxKind::CrateKeyword => ast::PathRoot::Crate,
+        MySyntaxKind::SuperKeyword => ast::PathRoot::Super,
+        MySyntaxKind::Ident if token.text() == "self" && path.ident_tokens().count() > 1 => {
+            ast::PathRoot::Self_
+        }
+        _ => ast::PathRoot::Relative,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::path::Path;
+
+    use super::*;
+    use parser::syntax::MySyntaxNode;
+
+    #[test]
+    fn lower_preserves_path_roots() {
+        let file = lower_src("fn f(x: crate::Thing) -> super::Other { self::make(x) }");
+        let ast::Item::Fn(func) = &file.toplevels[0] else {
+            panic!("expected function");
+        };
+        let ast::TypeExpr::TCon { path: param_path } = &func.params[0].1 else {
+            panic!("expected path type");
+        };
+        assert_eq!(param_path.root(), &ast::PathRoot::Crate);
+        assert_eq!(param_path.display(), "crate::Thing");
+
+        let ast::TypeExpr::TCon { path: ret_path } = func.ret_ty.as_ref().unwrap() else {
+            panic!("expected path return type");
+        };
+        assert_eq!(ret_path.root(), &ast::PathRoot::Super);
+        assert_eq!(ret_path.display(), "super::Other");
+
+        let ast::Expr::ECall { func, .. } = func.body.tail.as_deref().unwrap() else {
+            panic!("expected call expression");
+        };
+        let ast::Expr::EPath { path, .. } = func.as_ref() else {
+            panic!("expected path callee");
+        };
+        assert_eq!(path.root(), &ast::PathRoot::Self_);
+        assert_eq!(path.display(), "self::make");
+    }
+
+    #[test]
+    fn lower_preserves_absolute_path_root() {
+        let file = lower_src("fn f(x: ::Thing) -> unit { () }");
+        let ast::Item::Fn(func) = &file.toplevels[0] else {
+            panic!("expected function");
+        };
+        let ast::TypeExpr::TCon { path } = &func.params[0].1 else {
+            panic!("expected path type");
+        };
+        assert_eq!(path.root(), &ast::PathRoot::Absolute);
+        assert_eq!(path.display(), "::Thing");
+    }
+
+    fn lower_src(src: &str) -> ast::File {
+        let parse = parser::parse(Path::new("test.gom"), src);
+        assert!(
+            !parse.has_errors(),
+            "unexpected parse errors: {:?}",
+            parse.format_errors(src)
+        );
+        let root = MySyntaxNode::new_root(parse.green_node);
+        let file = cst::File::cast(root).unwrap();
+        lower(file).into_result().unwrap()
     }
 }
