@@ -476,7 +476,7 @@ fn longest_known_prefix(
 }
 
 fn source_override_for_dir<'a>(
-    package_dir: &Path,
+    namespace_dir: &Path,
     source_override: Option<(&'a Path, &'a ast::File)>,
 ) -> Option<(&'a Path, &'a ast::File)> {
     source_override.filter(|(path, _)| {
@@ -488,7 +488,7 @@ fn source_override_for_dir<'a>(
                     parent
                 }
             })
-            .is_some_and(|parent| parent == package_dir)
+            .is_some_and(|parent| parent == namespace_dir)
     })
 }
 
@@ -496,86 +496,90 @@ fn derive_ast(ast: ast::File) -> Result<ast::File, CompilationError> {
     crate::derive::expand(ast).map_err(|diagnostics| CompilationError::Lower { diagnostics })
 }
 
-fn load_package_file(
-    package_file: &Path,
-    package_name: &str,
+fn load_namespace_file(
+    namespace_file: &Path,
+    namespace_name: &str,
     source_override: Option<(&Path, &ast::File)>,
     external_imports: &ExternalImports,
 ) -> Result<NamespaceUnit, CompilationError> {
     let ast = if let Some((override_path, override_ast)) = source_override
-        && override_path == package_file
+        && override_path == namespace_file
     {
         override_ast.clone()
     } else {
-        let src = fs::read_to_string(package_file).map_err(|err| {
+        let src = fs::read_to_string(namespace_file).map_err(|err| {
             compile_error(format!(
                 "failed to read {}: {}",
-                package_file.display(),
+                namespace_file.display(),
                 err
             ))
         })?;
-        parse_ast_file(package_file, &src)?
+        parse_ast_file(namespace_file, &src)?
     };
     let files = vec![SourceFileAst::with_package(
-        package_file.to_path_buf(),
-        package_name,
+        namespace_file.to_path_buf(),
+        namespace_name,
         ast,
     )];
     let imports = collect_imports(&files, external_imports);
     Ok(NamespaceUnit {
-        name: package_name.to_string(),
+        name: namespace_name.to_string(),
         files,
         imports,
     })
 }
 
-fn load_package(
-    package_dir: &Path,
-    expected_package_name: Option<&str>,
+fn load_namespace(
+    namespace_dir: &Path,
+    expected_namespace_name: Option<&str>,
     source_override: Option<(&Path, &ast::File)>,
     external_imports: &ExternalImports,
 ) -> Result<NamespaceUnit, CompilationError> {
     let mut files = Vec::new();
-    let package_name = expected_package_name
+    let namespace_name = expected_namespace_name
         .map(str::to_string)
         .unwrap_or_else(|| ROOT_PACKAGE.to_string());
 
-    let source_override = source_override_for_dir(package_dir, source_override);
+    let source_override = source_override_for_dir(namespace_dir, source_override);
 
     if let Some((path, ast)) = source_override {
         files.push(SourceFileAst::with_package(
             path.to_path_buf(),
-            package_name.clone(),
+            namespace_name.clone(),
             ast.clone(),
         ));
     }
 
-    for path in read_gom_sources(package_dir)? {
+    for path in read_gom_sources(namespace_dir)? {
         if source_override.is_some_and(|(override_path, _)| override_path == path.as_path()) {
             continue;
         }
         let src = fs::read_to_string(&path)
             .map_err(|err| compile_error(format!("failed to read {}: {}", path.display(), err)))?;
         let ast = parse_ast_file(&path, &src)?;
-        files.push(SourceFileAst::with_package(path, package_name.clone(), ast));
+        files.push(SourceFileAst::with_package(
+            path,
+            namespace_name.clone(),
+            ast,
+        ));
     }
 
     if files.is_empty() {
         return Err(compile_error(format!(
             "namespace directory {} has no .gom files",
-            package_dir.display()
+            namespace_dir.display()
         )));
     }
 
     let imports = collect_imports(&files, external_imports);
     Ok(NamespaceUnit {
-        name: package_name,
+        name: namespace_name,
         files,
         imports,
     })
 }
 
-fn load_single_file_package(
+fn load_single_file_namespace(
     path: &Path,
     ast: &ast::File,
     external_imports: &ExternalImports,
@@ -661,9 +665,9 @@ fn discover_packages_from_crate_unit(
     }
 
     let known_namespaces = namespaces.keys().cloned().collect::<HashSet<_>>();
-    for (name, package) in namespaces.iter_mut() {
-        let imports = collect_known_crate_path_imports(&package.files, &known_namespaces);
-        package
+    for (name, namespace) in namespaces.iter_mut() {
+        let imports = collect_known_crate_path_imports(&namespace.files, &known_namespaces);
+        namespace
             .imports
             .extend(imports.into_iter().filter(|dep| dep != name));
     }
@@ -795,9 +799,9 @@ fn discover_packages_inner(
     };
     let entry_namespace = if single_file {
         if let Some((path, ast)) = source_override {
-            load_single_file_package(path, ast, external_imports)
+            load_single_file_namespace(path, ast, external_imports)
         } else {
-            load_package(
+            load_namespace(
                 root_dir,
                 None,
                 source_override_for_dir(root_dir, source_override),
@@ -805,7 +809,7 @@ fn discover_packages_inner(
             )?
         }
     } else {
-        load_package(
+        load_namespace(
             root_dir,
             None,
             source_override_for_dir(root_dir, source_override),
@@ -827,51 +831,53 @@ fn discover_packages_inner(
     namespace_dirs.insert(entry_name.clone(), root_dir.to_path_buf());
     namespace_visibilities.insert(entry_name.clone(), ast::Visibility::Public);
 
-    while let Some(package_name) = queue.pop() {
-        if loaded.contains(&package_name) {
+    while let Some(namespace_name) = queue.pop() {
+        if loaded.contains(&namespace_name) {
             continue;
         }
-        if external_imports.contains_namespace(&package_name) {
-            loaded.insert(package_name);
+        if external_imports.contains_namespace(&namespace_name) {
+            loaded.insert(namespace_name);
             continue;
         }
-        let package_dir = root_dir.join(&package_name);
-        let package_file = root_dir.join(format!("{package_name}.gom"));
-        if !namespace_dir_is_loadable(&package_dir) && !namespace_file_is_loadable(&package_file) {
-            loaded.insert(package_name);
+        let namespace_dir = root_dir.join(&namespace_name);
+        let namespace_file = root_dir.join(format!("{namespace_name}.gom"));
+        if !namespace_dir_is_loadable(&namespace_dir)
+            && !namespace_file_is_loadable(&namespace_file)
+        {
+            loaded.insert(namespace_name);
             continue;
         }
-        let package_override = source_override_for_dir(&package_dir, source_override);
-        let package = if namespace_dir_is_loadable(&package_dir) {
-            load_package(
-                &package_dir,
-                Some(&package_name),
-                package_override,
+        let namespace_override = source_override_for_dir(&namespace_dir, source_override);
+        let namespace = if namespace_dir_is_loadable(&namespace_dir) {
+            load_namespace(
+                &namespace_dir,
+                Some(&namespace_name),
+                namespace_override,
                 external_imports,
             )?
         } else {
-            load_package_file(
-                &package_file,
-                &package_name,
+            load_namespace_file(
+                &namespace_file,
+                &namespace_name,
                 source_override,
                 external_imports,
             )?
         };
-        let declared_name = package.name.clone();
-        if package.name != package_name {
+        let declared_name = namespace.name.clone();
+        if namespace.name != namespace_name {
             return Err(compile_error(format!(
                 "namespace directory {} declares namespace {}, expected {}",
-                package_dir.display(),
-                package.name,
-                package_name
+                namespace_dir.display(),
+                namespace.name,
+                namespace_name
             )));
         }
-        queue.extend(package.imports.iter().cloned());
+        queue.extend(namespace.imports.iter().cloned());
         loaded.insert(declared_name.clone());
-        namespaces.insert(declared_name.clone(), package);
+        namespaces.insert(declared_name.clone(), namespace);
         discovery_order.push(declared_name.clone());
-        namespace_dirs.insert(declared_name, package_dir);
-        namespace_visibilities.insert(package_name, ast::Visibility::Public);
+        namespace_dirs.insert(declared_name, namespace_dir);
+        namespace_visibilities.insert(namespace_name, ast::Visibility::Public);
     }
 
     Ok(NamespaceGraph {
