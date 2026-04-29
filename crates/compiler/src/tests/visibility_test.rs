@@ -53,6 +53,21 @@ fn assert_err(files: &[(&str, &str)]) {
     }
 }
 
+fn assert_err_contains(files: &[(&str, &str)], expected: &str) {
+    let diagnostics = match typecheck(files) {
+        Ok(diagnostics) => diagnostics,
+        Err(error) => error.diagnostics().clone(),
+    };
+    let messages = diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.message().to_string())
+        .collect::<Vec<_>>();
+    assert!(
+        messages.iter().any(|message| message.contains(expected)),
+        "{messages:#?}"
+    );
+}
+
 #[test]
 fn public_function_is_visible() {
     assert_ok(&[
@@ -127,6 +142,53 @@ pub fn answer() -> int32 {
 "#,
         ),
     ]);
+}
+
+#[test]
+fn value_use_is_module_local() {
+    assert_err_contains(
+        &[
+            (
+                "main.gom",
+                r#"
+mod math;
+mod a;
+mod b;
+
+fn main() -> unit {
+    let _ = crate::a::call();
+}
+"#,
+            ),
+            (
+                "math.gom",
+                r#"
+pub fn add(a: int64, b: int64) -> int64 {
+    a + b
+}
+"#,
+            ),
+            (
+                "a.gom",
+                r#"
+use crate::math::add;
+
+pub fn call() -> int64 {
+    add(1, 2)
+}
+"#,
+            ),
+            (
+                "b.gom",
+                r#"
+pub fn call() -> int64 {
+    add(3, 4)
+}
+"#,
+            ),
+        ],
+        "Unresolved callee add",
+    );
 }
 
 #[test]
