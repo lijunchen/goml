@@ -1448,25 +1448,31 @@ root = "src/main.gom"
 
 #[test]
 fn project_check_reports_legacy_manifest_section() -> anyhow::Result<()> {
-    let dir = tempfile::tempdir()?;
-    let root = dir.path();
-    fs::write(
-        root.join("goml.toml"),
-        r#"[module]
+    for section in ["module", "package"] {
+        let dir = tempfile::tempdir()?;
+        let root = dir.path();
+        fs::write(
+            root.join("goml.toml"),
+            format!(
+                r#"[{section}]
 name = "demo"
-"#,
-    )?;
+"#
+            ),
+        )?;
 
-    let output = run_goml(&["check"], root)?;
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let stderr = String::from_utf8_lossy(&output.stderr);
+        let output = run_goml(&["check"], root)?;
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let stderr = String::from_utf8_lossy(&output.stderr);
 
-    assert!(!output.status.success());
-    expect![""].assert_eq(&stdout);
-    assert!(
-        stderr.contains("old [module] manifests are no longer supported"),
-        "stderr: {stderr}"
-    );
+        assert!(!output.status.success());
+        expect![""].assert_eq(&stdout);
+        assert!(
+            stderr.contains(&format!(
+                "old [{section}] manifests are no longer supported"
+            )),
+            "stderr: {stderr}"
+        );
+    }
 
     Ok(())
 }
