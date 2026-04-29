@@ -96,7 +96,7 @@ fn load_interface_files(
         validate_interface_unit(path, &unit)?;
         if let Some((prev_path, _)) = units.get(&unit.package) {
             return Err(compile_error(format!(
-                "multiple interface files provided for package {}: {} and {}",
+                "multiple interface files provided for crate {}: {} and {}",
                 unit.package,
                 prev_path.display(),
                 path.display()
@@ -108,12 +108,12 @@ fn load_interface_files(
     Ok(units)
 }
 
-fn load_interface_for_package(
-    package: &str,
+fn load_interface_for_namespace(
+    namespace: &str,
     interface_files: &[PathBuf],
     units: &HashMap<String, (PathBuf, InterfaceUnit)>,
 ) -> Result<(InterfaceUnit, interface::PackageInterface), CompilationError> {
-    if let Some((_, unit)) = units.get(package) {
+    if let Some((_, unit)) = units.get(namespace) {
         return Ok((unit.clone(), unit.interface.clone()));
     }
 
@@ -121,19 +121,19 @@ fn load_interface_for_package(
         let Some(root_import_path) = external_root_import_path(unit) else {
             continue;
         };
-        if !exports_contain_package(package, &unit.exports) {
+        if !exports_contain_namespace(namespace, &unit.exports) {
             continue;
         }
         let mut package_interface =
-            interface::PackageInterface::from_exports(package, &unit.exports);
+            interface::PackageInterface::from_exports(namespace, &unit.exports);
         package_interface.packages =
-            std::iter::once(format!("{root_import_path}::{package}")).collect();
+            std::iter::once(format!("{root_import_path}::{namespace}")).collect();
         return Ok((unit.clone(), package_interface));
     }
 
     Err(compile_error(format!(
-        "missing interface file for package {} (provided: {})",
-        package,
+        "missing interface file for namespace {} (provided: {})",
+        namespace,
         if interface_files.is_empty() {
             "<none>".to_string()
         } else {
@@ -153,10 +153,10 @@ fn direct_crate_imports(
     let mut imports = HashSet::new();
     for file in files {
         for use_decl in file.ast.uses.iter() {
-            if let Some(package_import) =
-                external_package_import_alias(&use_decl.path, interface_units)
+            if let Some(namespace_import) =
+                external_namespace_import_alias(&use_decl.path, interface_units)
             {
-                imports.insert(package_import);
+                imports.insert(namespace_import);
                 continue;
             }
             if let Some(first) = use_decl.path.segments().first()
@@ -176,43 +176,43 @@ fn external_root_import_path(unit: &InterfaceUnit) -> Option<&str> {
     unit.interface.packages.iter().next().map(String::as_str)
 }
 
-fn exports_contain_package(package: &str, exports: &PackageExports) -> bool {
+fn exports_contain_namespace(namespace: &str, exports: &PackageExports) -> bool {
     exports
         .type_env
         .enums
         .keys()
-        .any(|name| export_belongs_to_package(package, &name.0))
+        .any(|name| export_belongs_to_namespace(namespace, &name.0))
         || exports
             .type_env
             .structs
             .keys()
-            .any(|name| export_belongs_to_package(package, &name.0))
+            .any(|name| export_belongs_to_namespace(namespace, &name.0))
         || exports
             .type_env
             .extern_types
             .keys()
-            .any(|name| export_belongs_to_package(package, name))
+            .any(|name| export_belongs_to_namespace(namespace, name))
         || exports
             .trait_env
             .trait_defs
             .keys()
-            .any(|name| export_belongs_to_package(package, name))
+            .any(|name| export_belongs_to_namespace(namespace, name))
         || exports
             .value_env
             .funcs
             .keys()
-            .any(|name| export_belongs_to_package(package, name))
+            .any(|name| export_belongs_to_namespace(namespace, name))
 }
 
-fn export_belongs_to_package(package: &str, name: &str) -> bool {
-    if is_special_unqualified_package(package) {
+fn export_belongs_to_namespace(namespace: &str, name: &str) -> bool {
+    if is_special_unqualified_package(namespace) {
         !name.contains("::")
     } else {
-        name.starts_with(&format!("{package}::"))
+        name.starts_with(&format!("{namespace}::"))
     }
 }
 
-fn external_package_import_alias(
+fn external_namespace_import_alias(
     path: &ast::ast::Path,
     interface_units: &HashMap<String, (PathBuf, InterfaceUnit)>,
 ) -> Option<String> {
@@ -224,13 +224,13 @@ fn external_package_import_alias(
         if first == unit.package {
             let mut best = Some(unit.package.clone());
             for end in 2..=segments.len() {
-                let package = segments[1..end]
+                let namespace = segments[1..end]
                     .iter()
                     .map(|segment| segment.ident.0.clone())
                     .collect::<Vec<_>>()
                     .join("::");
-                if exports_contain_package(&package, &unit.exports) {
-                    best = Some(package);
+                if exports_contain_namespace(&namespace, &unit.exports) {
+                    best = Some(namespace);
                 }
             }
             return best;
@@ -251,13 +251,13 @@ fn external_package_import_alias(
         let root_len = root_import_path.split("::").count();
         let mut best = Some(unit.package.clone());
         for end in root_len + 1..=segments.len() {
-            let package = segments[root_len..end]
+            let namespace = segments[root_len..end]
                 .iter()
                 .map(|segment| segment.ident.0.clone())
                 .collect::<Vec<_>>()
                 .join("::");
-            if exports_contain_package(&package, &unit.exports) {
-                best = Some(package);
+            if exports_contain_namespace(&namespace, &unit.exports) {
+                best = Some(namespace);
             }
         }
         return best;
@@ -346,7 +346,7 @@ pub fn check_crate(opts: CrateInputs) -> Result<InterfaceUnit, CompilationError>
                 continue;
             }
             let (unit, package_interface) =
-                load_interface_for_package(&dep, &opts.interface_files, &interface_units)?;
+                load_interface_for_namespace(&dep, &opts.interface_files, &interface_units)?;
             deps_envs.insert(dep.clone(), unit.exports.to_genv());
             deps_interfaces.insert(dep.clone(), package_interface);
             dep_hashes.insert(unit.package.clone(), unit.interface_hash.clone());
@@ -397,7 +397,7 @@ pub fn build_crate(opts: CrateInputs) -> Result<CoreUnit, CompilationError> {
                 continue;
             }
             let (unit, package_interface) =
-                load_interface_for_package(&dep, &opts.interface_files, &interface_units)?;
+                load_interface_for_namespace(&dep, &opts.interface_files, &interface_units)?;
             deps_envs.insert(dep.clone(), unit.exports.to_genv());
             deps_interfaces.insert(dep.clone(), package_interface);
             dep_hashes.insert(unit.package.clone(), unit.interface_hash.clone());
