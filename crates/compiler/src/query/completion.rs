@@ -1,6 +1,5 @@
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap, HashSet},
-    fs,
     path::Path,
 };
 
@@ -409,9 +408,6 @@ fn use_root_completions(
         {
             names.insert("super".to_string());
         }
-    } else {
-        let current_package = current_package_name(path, src);
-        collect_local_package_names(start_dir, current_package.as_deref(), &mut names);
     }
 
     Some(
@@ -752,54 +748,6 @@ fn is_use_root_completion_context(
         .unwrap_or_default();
     let trimmed = line_prefix.trim_start();
     starts_with_use_keyword(trimmed) && !trimmed.contains("::")
-}
-
-fn current_package_name(path: &Path, src: &str) -> Option<String> {
-    let result = parser::parse(path, src);
-    let root = MySyntaxNode::new_root(result.green_node);
-    let file = cst::cst::File::cast(root)?;
-    file.package_decl()
-        .and_then(|decl| decl.name_token())
-        .map(|token| token.to_string())
-}
-
-fn collect_local_package_names(
-    root_dir: &Path,
-    current_package: Option<&str>,
-    names: &mut BTreeSet<String>,
-) {
-    let Ok(entries) = fs::read_dir(root_dir) else {
-        return;
-    };
-
-    for entry in entries.flatten() {
-        let path = entry.path();
-        if !path.is_dir() {
-            continue;
-        }
-        let Some(name) = local_package_name(&path) else {
-            continue;
-        };
-        if current_package.is_some_and(|current| current == name) {
-            continue;
-        }
-        names.insert(name);
-    }
-}
-
-fn local_package_name(dir: &Path) -> Option<String> {
-    let entries = fs::read_dir(dir).ok()?;
-    for entry in entries.flatten() {
-        let path = entry.path();
-        if path.extension().is_some_and(|ext| ext == "gom") {
-            return dir
-                .file_name()
-                .and_then(|name| name.to_str())
-                .map(|name| name.to_string());
-        }
-    }
-
-    None
 }
 
 fn starts_with_use_keyword(text: &str) -> bool {

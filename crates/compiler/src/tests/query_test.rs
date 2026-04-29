@@ -236,6 +236,36 @@ fn main() -> unit {
 
 #[test]
 #[rustfmt::skip]
+fn use_statement_root_completions_without_manifest_ignore_local_dirs() {
+    let dir = tempdir().unwrap();
+    std::fs::create_dir_all(dir.path().join("util")).unwrap();
+    std::fs::write(
+        dir.path().join("util/mod.gom"),
+        r#"
+pub fn ping() -> string {
+    "pong"
+}
+"#,
+    )
+    .unwrap();
+
+    let src = "\nuse \n\nfn main() -> unit {\n    ()\n}\n";
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(&main_path, src).unwrap();
+
+    check_value_completions_with_path(
+        &main_path,
+        src,
+        1,
+        4,
+        expect![[r#"
+            []
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
 fn use_statement_root_completions_include_relative_roots() {
     let dir = tempdir().unwrap();
     std::fs::write(
