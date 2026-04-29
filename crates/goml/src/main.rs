@@ -6,7 +6,7 @@ use std::process::{Command, Stdio};
 
 use anyhow::{Context, anyhow, bail};
 use clap::{Args, Parser, Subcommand};
-use compiler::config::{find_crate_root, load_crate_manifest};
+use compiler::config::{CrateKind, find_crate_root, load_crate_manifest};
 use compiler::env::{format_compile_diagnostics, format_typer_diagnostics};
 use compiler::external::ExternalDependencyArtifacts;
 use compiler::package_names::ENTRY_FUNCTION;
@@ -195,6 +195,7 @@ struct LinkOptions {
 struct ProjectContext {
     module_dir: PathBuf,
     entry_path: PathBuf,
+    kind: CrateKind,
     dependencies: BTreeMap<String, String>,
 }
 
@@ -931,14 +932,16 @@ fn build_project_build_plan(project: &ProjectContext) -> anyhow::Result<ProjectC
         core_outputs.push(output_base.with_extension("core"));
     }
 
-    let mut external_cores = external.core_outputs.values().cloned().collect::<Vec<_>>();
-    external_cores.sort();
-    core_outputs.splice(0..0, external_cores);
+    if project.kind == CrateKind::Bin {
+        let mut external_cores = external.core_outputs.values().cloned().collect::<Vec<_>>();
+        external_cores.sort();
+        core_outputs.splice(0..0, external_cores);
 
-    commands.push(PlannedCompilerCommand::Link(LinkCompilerCommand {
-        input_cores: core_outputs,
-        output: PathBuf::from(PROJECT_GO_OUTPUT),
-    }));
+        commands.push(PlannedCompilerCommand::Link(LinkCompilerCommand {
+            input_cores: core_outputs,
+            output: PathBuf::from(PROJECT_GO_OUTPUT),
+        }));
+    }
 
     Ok(ProjectCommandPlan { commands, external })
 }
@@ -1250,9 +1253,11 @@ fn load_project_from_cwd() -> anyhow::Result<ProjectContext> {
             .map_err(|err| anyhow!("crate module discovery failed: {:?}", err))?;
         let manifest =
             load_crate_manifest(&crate_dir.join("goml.toml")).map_err(anyhow::Error::msg)?;
+        let kind = project_kind(&crate_unit);
         return Ok(ProjectContext {
             entry_path: crate_unit.root_file,
             module_dir: crate_dir,
+            kind,
             dependencies: manifest.dependency_versions(),
         });
     }
@@ -1261,6 +1266,21 @@ fn load_project_from_cwd() -> anyhow::Result<ProjectContext> {
         "no goml.toml with [crate] section found in ancestors of {}",
         cwd.display()
     )
+}
+
+fn project_kind(crate_unit: &compiler::pipeline::modules::CrateUnit) -> CrateKind {
+    if let Some(kind) = crate_unit.config.kind {
+        return kind;
+    }
+    if crate_unit
+        .root_file
+        .file_name()
+        .is_some_and(|name| name == "lib.gom")
+    {
+        CrateKind::Lib
+    } else {
+        CrateKind::Bin
+    }
 }
 
 fn print_dumps(compilation: &Compilation, dumps: &[DumpStage]) {

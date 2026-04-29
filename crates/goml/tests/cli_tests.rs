@@ -982,6 +982,42 @@ fn project_build_writes_target_goml_main_go() -> anyhow::Result<()> {
 }
 
 #[test]
+fn project_build_lib_crate_does_not_link_or_require_main() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    fs::write(
+        root.join("goml.toml"),
+        r#"[crate]
+name = "math"
+kind = "lib"
+root = "src/lib.gom"
+"#,
+    )?;
+    fs::create_dir_all(root.join("src"))?;
+    fs::write(
+        root.join("src/lib.gom"),
+        r#"
+pub fn add(a: int64, b: int64) -> int64 {
+    a + b
+}
+"#,
+    )?;
+
+    let output = run_goml(&["build"], root)?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(output.status.success(), "stderr: {stderr}");
+    expect![""].assert_eq(&stdout);
+    expect![""].assert_eq(&stderr);
+    assert!(root.join("target/goml/build/src/lib.core").exists());
+    assert!(root.join("target/goml/build/src/lib.interface").exists());
+    assert!(!root.join("target/goml/main.go").exists());
+
+    Ok(())
+}
+
+#[test]
 fn new_creates_two_package_scaffold() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
 
