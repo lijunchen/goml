@@ -141,7 +141,7 @@ fn package_allowed(package: &str, current_package: &str, imports: &HashSet<Strin
 }
 
 struct ConstructorIndex {
-    enums_by_package: HashMap<String, HashMap<String, HashSet<String>>>,
+    enums_by_namespace: HashMap<String, HashMap<String, HashSet<String>>>,
 }
 
 impl ConstructorIndex {
@@ -150,7 +150,7 @@ impl ConstructorIndex {
         deps: &HashMap<String, interface::CrateInterface>,
     ) -> Self {
         let mut index = Self {
-            enums_by_package: HashMap::new(),
+            enums_by_namespace: HashMap::new(),
         };
         index.add_files(files);
         if !files.iter().any(|file| file.package == BUILTIN_PACKAGE) {
@@ -168,7 +168,7 @@ impl ConstructorIndex {
     fn add_files(&mut self, files: &[hir::SourceFileAst]) {
         for file in files {
             let package = file.package.clone();
-            let entry = self.enums_by_package.entry(package).or_default();
+            let entry = self.enums_by_namespace.entry(package).or_default();
             for item in &file.ast.toplevels {
                 if let ast::Item::EnumDef(def) = item {
                     let enum_name = module_relative_def_name(&file.module_path, &def.name.0);
@@ -183,7 +183,7 @@ impl ConstructorIndex {
 
     fn add_interface(&mut self, package: &str, interface: &interface::CrateInterface) {
         let entry = self
-            .enums_by_package
+            .enums_by_namespace
             .entry(package.to_string())
             .or_default();
         for (enum_name, variants) in interface.enum_variants.iter() {
@@ -195,14 +195,14 @@ impl ConstructorIndex {
     }
 
     fn enum_has_variant(&self, package: &str, enum_name: &str, variant: &str) -> bool {
-        self.enums_by_package
+        self.enums_by_namespace
             .get(package)
             .and_then(|enums| enums.get(enum_name))
             .is_some_and(|variants| variants.contains(variant))
     }
 
     fn unique_enum_for_variant(&self, package: &str, variant: &str) -> Option<String> {
-        let enums = self.enums_by_package.get(package)?;
+        let enums = self.enums_by_namespace.get(package)?;
         let mut found = None;
         for (enum_name, variants) in enums {
             if variants.contains(variant) {
@@ -216,20 +216,20 @@ impl ConstructorIndex {
     }
 
     fn has_variant(&self, package: &str, variant: &str) -> bool {
-        self.enums_by_package
+        self.enums_by_namespace
             .get(package)
             .is_some_and(|enums| enums.values().any(|vars| vars.contains(variant)))
     }
 }
 
 struct TypeIndex {
-    types_by_package: HashMap<String, HashSet<String>>,
+    types_by_namespace: HashMap<String, HashSet<String>>,
 }
 
 impl TypeIndex {
     fn new_with_files(files: &[hir::SourceFileAst]) -> Self {
         let mut index = Self {
-            types_by_package: HashMap::new(),
+            types_by_namespace: HashMap::new(),
         };
         index.add_files(files);
         index
@@ -238,7 +238,7 @@ impl TypeIndex {
     fn add_files(&mut self, files: &[hir::SourceFileAst]) {
         for file in files {
             let package = file.package.clone();
-            let entry = self.types_by_package.entry(package).or_default();
+            let entry = self.types_by_namespace.entry(package).or_default();
             for item in &file.ast.toplevels {
                 let name = match item {
                     ast::Item::EnumDef(def) => Some(&def.name.0),
@@ -254,20 +254,20 @@ impl TypeIndex {
     }
 
     fn has_type(&self, package: &str, name: &str) -> bool {
-        self.types_by_package
+        self.types_by_namespace
             .get(package)
             .is_some_and(|types| types.contains(name))
     }
 }
 
 struct TraitIndex {
-    traits_by_package: HashMap<String, HashSet<String>>,
+    traits_by_namespace: HashMap<String, HashSet<String>>,
 }
 
 impl TraitIndex {
     fn new_with_files(files: &[hir::SourceFileAst]) -> Self {
         let mut index = Self {
-            traits_by_package: HashMap::new(),
+            traits_by_namespace: HashMap::new(),
         };
         index.add_files(files);
         if !files.iter().any(|file| file.package == BUILTIN_PACKAGE) {
@@ -282,7 +282,7 @@ impl TraitIndex {
     fn add_files(&mut self, files: &[hir::SourceFileAst]) {
         for file in files {
             let package = file.package.clone();
-            let entry = self.traits_by_package.entry(package).or_default();
+            let entry = self.traits_by_namespace.entry(package).or_default();
             for item in &file.ast.toplevels {
                 if let ast::Item::TraitDef(def) = item {
                     entry.insert(module_relative_def_name(&file.module_path, &def.name.0));
@@ -292,7 +292,7 @@ impl TraitIndex {
     }
 
     fn has_trait(&self, package: &str, name: &str) -> bool {
-        self.traits_by_package
+        self.traits_by_namespace
             .get(package)
             .is_some_and(|traits| traits.contains(name))
     }
