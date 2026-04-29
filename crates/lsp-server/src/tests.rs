@@ -2208,12 +2208,12 @@ fn main() -> unit {
     }
 
     #[test]
-    fn registry_child_packages_require_owner_qualified_use_paths() {
+    fn registry_dependency_alias_use_paths_have_no_diagnostics() {
         let dir = tempdir().unwrap();
         let home = dir.path().join(".goml");
         write_cached_registry(&home);
         let root = write_registry_project(
-            "registry_child_packages_require_owner",
+            "registry_dependency_alias_use_paths",
             r#"
 
 use http;
@@ -2230,10 +2230,7 @@ fn main() -> unit {
             let src = std::fs::read_to_string(&path).unwrap();
             let doc = Document::new(src.clone());
             let diags = handlers::get_diagnostics(&path, &src, &doc);
-            expect![
-                "[0:0] error: external dependency http::client must be imported as alice::http::client"
-            ]
-            .assert_eq(&format_diagnostics(&diags));
+            expect!["no diagnostics"].assert_eq(&format_diagnostics(&diags));
         });
     }
 

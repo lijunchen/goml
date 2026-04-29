@@ -535,8 +535,8 @@ fn compile_inner(
                 dep_artifact.interface.exports.apply_to(&mut env);
                 continue;
             }
-            if let Some(module) = external_deps.modules.get(dep) {
-                module.interface.exports.apply_to(&mut env);
+            if let Some(exports) = external_package_exports(&external_deps, dep) {
+                exports.apply_to(&mut env);
                 continue;
             }
             return Err(compile_error(format!(
@@ -766,6 +766,18 @@ fn validate_entrypoint_for_compile(
             "main function is required".to_string(),
         ));
     }
+}
+
+fn external_package_exports<'a>(
+    external_deps: &'a ExternalDependencyArtifacts,
+    package: &str,
+) -> Option<&'a PackageExports> {
+    for module in external_deps.modules.values() {
+        if module.package_interfaces.contains_key(package) {
+            return Some(&module.interface.exports);
+        }
+    }
+    None
 }
 
 fn load_external_dependencies(

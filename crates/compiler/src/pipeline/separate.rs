@@ -260,13 +260,26 @@ fn external_package_import_alias(
     path: &ast::ast::Path,
     interface_units: &HashMap<String, (PathBuf, InterfaceUnit)>,
 ) -> Option<String> {
-    if path.len() < 2 {
-        return None;
-    }
     let display = path.display();
-    let last = path.last_ident()?.0.clone();
+    let segments = path.segments();
+    let first = segments.first()?.ident.0.as_str();
 
     for (_, unit) in interface_units.values() {
+        if first == unit.package {
+            let mut best = Some(unit.package.clone());
+            for end in 2..=segments.len() {
+                let package = segments[1..end]
+                    .iter()
+                    .map(|segment| segment.ident.0.clone())
+                    .collect::<Vec<_>>()
+                    .join("::");
+                if exports_contain_package(&package, &unit.exports) {
+                    best = Some(package);
+                }
+            }
+            return best;
+        }
+
         let Some(root_import_path) = external_root_import_path(unit) else {
             continue;
         };
@@ -279,9 +292,19 @@ fn external_package_import_alias(
         if !display[root_import_path.len()..].starts_with("::") {
             continue;
         }
-        if exports_contain_package(&last, &unit.exports) {
-            return Some(last.clone());
+        let root_len = root_import_path.split("::").count();
+        let mut best = Some(unit.package.clone());
+        for end in root_len + 1..=segments.len() {
+            let package = segments[root_len..end]
+                .iter()
+                .map(|segment| segment.ident.0.clone())
+                .collect::<Vec<_>>()
+                .join("::");
+            if exports_contain_package(&package, &unit.exports) {
+                best = Some(package);
+            }
         }
+        return best;
     }
 
     None

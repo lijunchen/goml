@@ -542,7 +542,10 @@ root = "src/main.gom"
             dir.path().join("src/main.gom"),
             "use crate::math::add;\nfn main() {}\n",
         );
-        write(dir.path().join("src/math.gom"), "pub fn add() -> int32 { 1 }\n");
+        write(
+            dir.path().join("src/math.gom"),
+            "pub fn add() -> int32 { 1 }\n",
+        );
 
         let unit = discover_crate_from_dir(dir.path()).unwrap();
         let paths = unit

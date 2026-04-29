@@ -745,7 +745,7 @@ appdep = { package = "alice::appdep", version = "0.1.0" }
         r#"
 
 use http;
-use alice::http::client;
+use http::client;
 use appdep;
 
 fn main() -> unit {
