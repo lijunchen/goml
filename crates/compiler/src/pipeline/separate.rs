@@ -293,7 +293,7 @@ fn typecheck_single_package(
     type_diagnostics.append(&mut hir_diagnostics);
     diagnostics.append(&mut type_diagnostics);
     let full_exports = PackageExports::from_genv(&genv);
-    let exports = PackageExports::public_from_package(package, &files, &genv);
+    let exports = PackageExports::public_from_crate(package, &files, &genv);
     let pkg_interface = interface::PackageInterface::from_exports(package, &exports);
     (tast, full_exports, exports, pkg_interface, diagnostics)
 }
@@ -730,6 +730,46 @@ pub fn call() -> unit {
                 .value_exports
                 .contains_key("hello::main")
         );
+    }
+
+    #[test]
+    fn check_crate_named_main_filters_private_exports() {
+        let dir = tempfile::tempdir().unwrap();
+        write(
+            dir.path().join("goml.toml"),
+            r#"[crate]
+name = "main"
+kind = "bin"
+root = "src/main.gom"
+"#,
+        );
+        write(
+            dir.path().join("src/main.gom"),
+            r#"
+pub fn main() -> unit {
+    helper()
+}
+
+fn helper() -> unit {
+    ()
+}
+
+pub fn visible() -> unit {
+    ()
+}
+"#,
+        );
+
+        let crate_unit = modules::discover_crate_from_dir(dir.path()).unwrap();
+        let interface = check_crate(CrateInputs {
+            crate_unit,
+            interface_files: Vec::new(),
+        })
+        .unwrap();
+
+        assert!(interface.exports.value_env.funcs.contains_key("main"));
+        assert!(interface.exports.value_env.funcs.contains_key("visible"));
+        assert!(!interface.exports.value_env.funcs.contains_key("helper"));
     }
 
     #[test]

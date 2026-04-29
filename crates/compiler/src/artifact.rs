@@ -36,6 +36,18 @@ impl PackageExports {
             return Self::from_genv(genv);
         }
 
+        Self::public_filtered(package, files, genv)
+    }
+
+    pub fn public_from_crate(package: &str, files: &[SourceFileAst], genv: &GlobalTypeEnv) -> Self {
+        if package == BUILTIN_PACKAGE {
+            return Self::from_genv(genv);
+        }
+
+        Self::public_filtered(package, files, genv)
+    }
+
+    fn public_filtered(package: &str, files: &[SourceFileAst], genv: &GlobalTypeEnv) -> Self {
         let public_names = public_export_names(package, files);
         let mut exports = Self::from_genv(genv);
         exports
