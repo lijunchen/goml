@@ -52,8 +52,15 @@ struct ResolutionContext<'a> {
     deps: &'a HashMap<String, interface::PackageInterface>,
     current_package: &'a str,
     imports: &'a HashSet<String>,
+    use_values: &'a HashMap<String, UseValueImport>,
     constructor_index: &'a ConstructorIndex,
     trait_index: &'a TraitIndex,
+}
+
+#[derive(Debug, Clone)]
+struct UseValueImport {
+    res: hir::NameRef,
+    hint: String,
 }
 
 fn full_def_name(package: &str, name: &str) -> String {
@@ -309,8 +316,94 @@ fn use_decl_import(
     first_crate_segment(path)
 }
 
+fn use_decl_value_import(
+    decl: &ast::UseDecl,
+    current_package: &str,
+    deps: &HashMap<String, interface::PackageInterface>,
+    def_names: &HashMap<String, hir::DefId>,
+) -> Option<(String, UseValueImport)> {
+    path_value_import(
+        &decl.path,
+        decl.alias.as_ref(),
+        current_package,
+        deps,
+        def_names,
+    )
+}
+
+fn path_value_import(
+    path: &ast::Path,
+    alias: Option<&ast::AstIdent>,
+    current_package: &str,
+    deps: &HashMap<String, interface::PackageInterface>,
+    def_names: &HashMap<String, hir::DefId>,
+) -> Option<(String, UseValueImport)> {
+    if path_resolution_segments(path).len() < 2 {
+        return None;
+    }
+    let full_name = path_resolution_display(path);
+    let imported_name = alias
+        .or_else(|| path.last_ident())
+        .map(|ident| ident.0.clone())?;
+    let package = known_package_prefix_for_path(path, deps, current_package);
+    if package == current_package || package == BUILTIN_PACKAGE {
+        let id = def_names.get(&full_name).copied()?;
+        return Some((
+            imported_name,
+            UseValueImport {
+                res: hir::NameRef::Def(id),
+                hint: full_name,
+            },
+        ));
+    }
+    let idx = deps.get(&package)?.value_exports.get(&full_name).copied()?;
+    Some((
+        imported_name,
+        UseValueImport {
+            res: hir::NameRef::Def(hir::DefId {
+                pkg: interface::package_id_for_name(&package),
+                idx,
+            }),
+            hint: full_name,
+        },
+    ))
+}
+
+fn file_use_value_imports(
+    file: &ast::File,
+    current_package: &str,
+    deps: &HashMap<String, interface::PackageInterface>,
+    def_names: &HashMap<String, hir::DefId>,
+) -> HashMap<String, UseValueImport> {
+    file.uses
+        .iter()
+        .filter_map(|decl| use_decl_value_import(decl, current_package, deps, def_names))
+        .collect()
+}
+
 fn path_segments_display(path: &ast::Path) -> String {
     path.segments()
+        .iter()
+        .map(|segment| segment.ident.0.clone())
+        .collect::<Vec<_>>()
+        .join("::")
+}
+
+fn path_resolution_segments(path: &ast::Path) -> &[ast::PathSegment] {
+    let segments = path.segments();
+    if !matches!(path.root(), ast::PathRoot::Crate)
+        && segments
+            .first()
+            .is_some_and(|segment| segment.ident.0 == "crate")
+    {
+        &segments[1..]
+    } else {
+        segments
+    }
+}
+
+fn path_resolution_display(path: &ast::Path) -> String {
+    path_resolution_segments(path)
         .iter()
         .map(|segment| segment.ident.0.clone())
         .collect::<Vec<_>>()
@@ -322,12 +415,13 @@ fn known_package_prefix_for_path(
     deps: &HashMap<String, interface::PackageInterface>,
     current_package: &str,
 ) -> String {
-    if path.len() < 2 {
-        return path_segments_display(path);
+    let segments = path_resolution_segments(path);
+    if segments.len() < 2 {
+        return path_resolution_display(path);
     }
     let mut best = None;
-    for end in 1..path.len() {
-        let package = path.segments()[..end]
+    for end in 1..segments.len() {
+        let package = segments[..end]
             .iter()
             .map(|segment| segment.ident.0.clone())
             .collect::<Vec<_>>()
@@ -337,7 +431,7 @@ fn known_package_prefix_for_path(
         }
     }
     best.unwrap_or_else(|| {
-        path.segments()
+        segments
             .first()
             .map(|segment| segment.ident.0.clone())
             .unwrap_or_default()
@@ -704,12 +798,14 @@ impl NameResolution {
         for (file_idx, file) in files.iter().enumerate() {
             let package_name = file.ast.package.0.as_str();
             let imports = file_imports(&file.ast, deps);
+            let use_values = file_use_value_imports(&file.ast, package_name, deps, &def_names);
             let ctx = ResolutionContext {
                 builtin_names: &builtin_names,
                 def_names: &def_names,
                 deps,
                 current_package: package_name,
                 imports: &imports,
+                use_values: &use_values,
                 constructor_index: &ctor_index,
                 trait_index: &trait_index,
             };
@@ -810,6 +906,9 @@ impl NameResolution {
 
                 let mut use_traits = Vec::new();
                 for use_decl in file.ast.uses.iter() {
+                    if use_decl_value_import(use_decl, &package, deps, &def_names).is_some() {
+                        continue;
+                    }
                     if let Some(first) = use_decl.path.segments().first()
                         && external_import_path_for_alias(&first.ident.0, deps).is_some()
                         && external_import_alias(&use_decl.path, deps).is_none()
@@ -834,6 +933,9 @@ impl NameResolution {
                     use_traits.push(qualified);
                 }
                 for use_trait in file.ast.use_traits.iter() {
+                    if path_value_import(use_trait, None, &package, deps, &def_names).is_some() {
+                        continue;
+                    }
                     if let Some(first) = use_trait.segments().first()
                         && external_import_path_for_alias(&first.ident.0, deps).is_some()
                         && external_import_alias(use_trait, deps).is_none()
@@ -1097,12 +1199,15 @@ impl NameResolution {
                             hir::NameRef::Def(def_id)
                         } else if let Some(&builtin_id) = ctx.builtin_names.get(name_str) {
                             hir::NameRef::Builtin(builtin_id)
+                        } else if let Some(imported) = ctx.use_values.get(name_str) {
+                            imported.res.clone()
                         } else {
                             hir::NameRef::Unresolved(hir::Path::from_ident(name_str.clone()))
                         }
                     };
-                    let hint = match res {
-                        hir::NameRef::Def(_) => full_def_name(ctx.current_package, name_str),
+                    let hint = match (&res, ctx.use_values.get(name_str)) {
+                        (res, Some(imported)) if imported.res == *res => imported.hint.clone(),
+                        (hir::NameRef::Def(_), _) => full_def_name(ctx.current_package, name_str),
                         _ => name_str.clone(),
                     };
                     self.alloc_expr_with_ptr(

@@ -1025,6 +1025,59 @@ fn project_build_writes_target_goml_main_go() -> anyhow::Result<()> {
 }
 
 #[test]
+fn project_build_runs_module_use_e2e() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    fs::write(
+        root.join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+"#,
+    )?;
+    fs::write(
+        root.join("main.gom"),
+        r#"
+mod math;
+
+use crate::math::add;
+
+fn main() -> unit {
+    println(int64_to_string(add(40, 2)))
+}
+"#,
+    )?;
+    fs::write(
+        root.join("math.gom"),
+        r#"
+pub fn add(a: int64, b: int64) -> int64 {
+    a + b
+}
+"#,
+    )?;
+
+    let output = run_goml(&["build"], root)?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(output.status.success(), "stderr: {stderr}");
+    expect![""].assert_eq(&stdout);
+    expect![""].assert_eq(&stderr);
+
+    if !runtime_executor_available() {
+        return Ok(());
+    }
+
+    let go_output = run_go_main(&root.join("target/goml/main.go"), root)?;
+    let go_stdout = String::from_utf8_lossy(&go_output.stdout);
+    let go_stderr = String::from_utf8_lossy(&go_output.stderr);
+    assert!(go_output.status.success(), "stderr: {go_stderr}");
+    expect!["42\n"].assert_eq(&go_stdout);
+
+    Ok(())
+}
+
+#[test]
 fn project_build_handles_sibling_module_symbol_collisions() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     let root = dir.path();
