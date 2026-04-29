@@ -221,19 +221,11 @@ fn build_crate_symbol_index(
             module.ast.clone(),
         )];
         graph.discovery_order.push(namespace_name.clone());
-        graph
-            .package_dirs
-            .insert(namespace_name.clone(), namespace_dir.clone());
-        graph
-            .package_visibilities
-            .insert(namespace_name.clone(), module.visibility);
+        graph.add_namespace_dir(namespace_name.clone(), namespace_dir.clone());
+        graph.set_namespace_visibility(namespace_name.clone(), module.visibility);
         for alias in namespace_names.iter().skip(1) {
-            graph
-                .package_dirs
-                .insert(alias.clone(), namespace_dir.clone());
-            graph
-                .package_visibilities
-                .insert(alias.clone(), module.visibility);
+            graph.add_namespace_dir(alias.clone(), namespace_dir.clone());
+            graph.set_namespace_visibility(alias.clone(), module.visibility);
         }
         graph.packages.insert(
             namespace_name.clone(),

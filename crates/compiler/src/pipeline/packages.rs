@@ -996,8 +996,21 @@ impl PackageGraph {
         self.external_root_packages.insert(namespace.into());
     }
 
-    pub fn add_external_namespace_dir(&mut self, namespace: impl Into<String>, dir: PathBuf) {
+    pub fn add_namespace_dir(&mut self, namespace: impl Into<String>, dir: PathBuf) {
         self.package_dirs.insert(namespace.into(), dir);
+    }
+
+    pub fn set_namespace_visibility(
+        &mut self,
+        namespace: impl Into<String>,
+        visibility: ast::Visibility,
+    ) {
+        self.package_visibilities
+            .insert(namespace.into(), visibility);
+    }
+
+    pub fn add_external_namespace_dir(&mut self, namespace: impl Into<String>, dir: PathBuf) {
+        self.add_namespace_dir(namespace, dir);
     }
 
     pub fn namespace_dir(&self, namespace: &str) -> Option<&PathBuf> {
