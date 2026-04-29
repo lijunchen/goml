@@ -110,7 +110,7 @@ impl ExternalDependencyArtifacts {
         best
     }
 
-    pub fn child_packages_for_use_namespace(&self, namespace: &str) -> BTreeSet<String> {
+    pub fn child_namespaces_for_use_namespace(&self, namespace: &str) -> BTreeSet<String> {
         let import_paths = self.import_paths();
         let source_namespace = import_paths
             .iter()

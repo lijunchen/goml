@@ -768,7 +768,7 @@ fn use_colon_colon_items_for_namespace(
         if let Ok(external_deps) = crate::external::resolve_dependency_versions(&dependencies) {
             items.extend(
                 external_deps
-                    .child_packages_for_use_namespace(namespace)
+                    .child_namespaces_for_use_namespace(namespace)
                     .into_iter()
                     .map(|name| ColonColonCompletionItem {
                         name,
