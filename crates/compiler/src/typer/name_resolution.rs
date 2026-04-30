@@ -864,8 +864,8 @@ impl NameResolution {
 
     pub fn resolve_files(self, files: Vec<ast::File>) -> (hir::ResolvedHir, HirTable, Diagnostics) {
         let deps = HashMap::new();
-        let package_name = ROOT_PACKAGE;
-        let package_id = match package_name {
+        let namespace_name = ROOT_PACKAGE;
+        let package_id = match namespace_name {
             BUILTIN_PACKAGE => hir::PackageId(0),
             ROOT_PACKAGE => hir::PackageId(1),
             _ => hir::PackageId(2),
@@ -876,7 +876,7 @@ impl NameResolution {
             .map(|(idx, ast)| {
                 hir::SourceFileAst::with_package(
                     format!("<unknown:{}>", idx).into(),
-                    package_name,
+                    namespace_name,
                     ast,
                 )
             })
@@ -912,7 +912,7 @@ impl NameResolution {
             .collect::<HashSet<_>>();
 
         for file in files.iter() {
-            let package_name = file.package.as_str();
+            let namespace_name = file.package.as_str();
             let mut reported_external_coordinates = HashSet::new();
             for use_path in file.ast.uses.iter().map(|use_decl| &use_decl.path) {
                 if !reported_external_coordinates.insert(path_segments_display(use_path)) {
@@ -954,16 +954,23 @@ impl NameResolution {
                 }
             }
             let imports = file_imports(&file.ast, deps);
-            let crate_paths_include_namespace = namespaces_with_module_paths.contains(package_name);
+            let crate_paths_include_namespace =
+                namespaces_with_module_paths.contains(namespace_name);
             let mut def_ids = Vec::new();
             for item in file.ast.toplevels.iter() {
                 let def_id = match item {
                     ast::Item::Mod(_) => None,
                     ast::Item::Fn(func) => {
-                        let full_name =
-                            full_def_name_in_module(package_name, &file.module_path, &func.name.0);
-                        let path =
-                            full_def_path_in_module(package_name, &file.module_path, &func.name.0);
+                        let full_name = full_def_name_in_module(
+                            namespace_name,
+                            &file.module_path,
+                            &func.name.0,
+                        );
+                        let path = full_def_path_in_module(
+                            namespace_name,
+                            &file.module_path,
+                            &func.name.0,
+                        );
                         let id = hir_table.alloc_def_with_path(
                             path,
                             hir::DefKind::Fn,
@@ -985,18 +992,18 @@ impl NameResolution {
                     }
                     ast::Item::ExternGo(ext) => {
                         let full_name = full_def_name_in_module(
-                            package_name,
+                            namespace_name,
                             &file.module_path,
                             &ext.goml_name.0,
                         );
                         let path = full_def_path_in_module(
-                            package_name,
+                            namespace_name,
                             &file.module_path,
                             &ext.goml_name.0,
                         );
                         let ext_def = self.lower_extern_go(
                             ext,
-                            package_name,
+                            namespace_name,
                             &file.module_path,
                             crate_paths_include_namespace,
                             &imports,
@@ -1012,12 +1019,12 @@ impl NameResolution {
                     }
                     ast::Item::ExternBuiltin(ext) => {
                         let full_name =
-                            full_def_name_in_module(package_name, &file.module_path, &ext.name.0);
+                            full_def_name_in_module(namespace_name, &file.module_path, &ext.name.0);
                         let path =
-                            full_def_path_in_module(package_name, &file.module_path, &ext.name.0);
+                            full_def_path_in_module(namespace_name, &file.module_path, &ext.name.0);
                         let ext_def = self.lower_extern_builtin(
                             ext,
-                            package_name,
+                            namespace_name,
                             &file.module_path,
                             crate_paths_include_namespace,
                             &imports,
@@ -1033,12 +1040,12 @@ impl NameResolution {
                     }
                     ast::Item::EnumDef(e) => {
                         let full_name =
-                            full_def_name_in_module(package_name, &file.module_path, &e.name.0);
+                            full_def_name_in_module(namespace_name, &file.module_path, &e.name.0);
                         let path =
-                            full_def_path_in_module(package_name, &file.module_path, &e.name.0);
+                            full_def_path_in_module(namespace_name, &file.module_path, &e.name.0);
                         let enum_def = self.lower_enum_def(
                             e,
-                            package_name,
+                            namespace_name,
                             &file.module_path,
                             crate_paths_include_namespace,
                             &imports,
@@ -1054,12 +1061,12 @@ impl NameResolution {
                     }
                     ast::Item::StructDef(s) => {
                         let full_name =
-                            full_def_name_in_module(package_name, &file.module_path, &s.name.0);
+                            full_def_name_in_module(namespace_name, &file.module_path, &s.name.0);
                         let path =
-                            full_def_path_in_module(package_name, &file.module_path, &s.name.0);
+                            full_def_path_in_module(namespace_name, &file.module_path, &s.name.0);
                         let struct_def = self.lower_struct_def(
                             s,
-                            package_name,
+                            namespace_name,
                             &file.module_path,
                             crate_paths_include_namespace,
                             &imports,
@@ -1075,12 +1082,12 @@ impl NameResolution {
                     }
                     ast::Item::TraitDef(t) => {
                         let full_name =
-                            full_def_name_in_module(package_name, &file.module_path, &t.name.0);
+                            full_def_name_in_module(namespace_name, &file.module_path, &t.name.0);
                         let path =
-                            full_def_path_in_module(package_name, &file.module_path, &t.name.0);
+                            full_def_path_in_module(namespace_name, &file.module_path, &t.name.0);
                         let trait_def = self.lower_trait_def(
                             t,
-                            package_name,
+                            namespace_name,
                             &file.module_path,
                             crate_paths_include_namespace,
                             &imports,
@@ -1095,7 +1102,7 @@ impl NameResolution {
                         Some(id)
                     }
                     ast::Item::ImplBlock(_i) => Some(hir_table.alloc_def_with_path(
-                        full_def_path_in_module(package_name, &file.module_path, "impl"),
+                        full_def_path_in_module(namespace_name, &file.module_path, "impl"),
                         hir::DefKind::ImplBlock,
                         hir::Def::ImplBlock(hir::ImplBlock {
                             attrs: Vec::new(),
@@ -1108,16 +1115,17 @@ impl NameResolution {
                     )),
                     ast::Item::ExternType(ext) => {
                         let full_name = full_def_name_in_module(
-                            package_name,
+                            namespace_name,
                             &file.module_path,
                             &ext.goml_name.0,
                         );
                         let path = full_def_path_in_module(
-                            package_name,
+                            namespace_name,
                             &file.module_path,
                             &ext.goml_name.0,
                         );
-                        let ext_def = self.lower_extern_type(ext, package_name, &file.module_path);
+                        let ext_def =
+                            self.lower_extern_type(ext, namespace_name, &file.module_path);
                         let id = hir_table.alloc_def_with_path(
                             path,
                             hir::DefKind::ExternType,
@@ -1136,12 +1144,13 @@ impl NameResolution {
         }
 
         for (file_idx, file) in files.iter().enumerate() {
-            let package_name = file.package.as_str();
+            let namespace_name = file.package.as_str();
             let imports = file_imports(&file.ast, deps);
-            let crate_paths_include_namespace = namespaces_with_module_paths.contains(package_name);
+            let crate_paths_include_namespace =
+                namespaces_with_module_paths.contains(namespace_name);
             let use_values = file_use_value_imports(
                 &file.ast,
-                package_name,
+                namespace_name,
                 &file.module_path,
                 crate_paths_include_namespace,
                 deps,
@@ -1151,7 +1160,7 @@ impl NameResolution {
                 builtin_names: &builtin_names,
                 def_names: &def_names,
                 deps,
-                current_namespace: package_name,
+                current_namespace: namespace_name,
                 current_module_path: &file.module_path,
                 crate_paths_include_namespace,
                 imports: &imports,
@@ -1176,8 +1185,11 @@ impl NameResolution {
                         };
                         toplevel_idx += 1;
                         hir_table.set_current_owner(def_id);
-                        let full_name =
-                            full_def_name_in_module(package_name, &file.module_path, &func.name.0);
+                        let full_name = full_def_name_in_module(
+                            namespace_name,
+                            &file.module_path,
+                            &func.name.0,
+                        );
                         let resolved_fn = self.resolve_fn(func, &ctx, &mut hir_table, full_name);
                         *hir_table.def_mut(def_id) = hir::Def::Fn(resolved_fn);
                     }
@@ -1220,7 +1232,7 @@ impl NameResolution {
                             for_type: self.lower_type_expr(
                                 &i.for_type,
                                 &tparams,
-                                package_name,
+                                namespace_name,
                                 &file.module_path,
                                 ctx.crate_paths_include_namespace,
                                 &imports,
