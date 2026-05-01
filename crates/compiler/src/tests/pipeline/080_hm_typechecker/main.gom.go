@@ -500,13 +500,13 @@ func typ_to_string(ty__18 Typ) string {
 
 func env_empty() []EnvEntry {
     var retv276 []EnvEntry
-    var env__27 []EnvEntry = nil
+    var env__27 []EnvEntry = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_EnvEntry()
     retv276 = env__27
     return retv276
 }
 
 func env_lookup__native(env__28 []EnvEntry, name__29 string) (Typ, bool) {
-    var t279 int32 = int32(len(env__28))
+    var t279 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_EnvEntry(env__28)
     var t280 int32 = t279 - 1
     var i__30 *ref_int32_x = ref__Ref_5int32(t280)
     var found__31 *ref_Option__Typ_x = ref__Ref_11Option__Typ(None{})
@@ -565,7 +565,7 @@ func env_lookup(env__28 []EnvEntry, name__29 string) Option__Typ {
 }
 
 func subst_lookup__native(subst__34 []SubstEntry, name__35 string) (Typ, bool) {
-    var t301 int32 = int32(len(subst__34))
+    var t301 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_SubstEntry(subst__34)
     var t302 int32 = t301 - 1
     var i__36 *ref_int32_x = ref__Ref_5int32(t302)
     var found__37 *ref_Option__Typ_x = ref__Ref_11Option__Typ(None{})
@@ -1129,7 +1129,7 @@ func inst_loop(st__83 CheckerState, subst__84 []SubstEntry, ty__85 Typ) Tuple2_3
                 name: name__86,
                 ty: tv__88,
             }
-            var new_subst__89 []SubstEntry = append(subst__84, t437)
+            var new_subst__89 []SubstEntry = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_SubstEntry(subst__84, t437)
             var t438 Tuple2_3Typ_16Vec_10SubstEntry = Tuple2_3Typ_16Vec_10SubstEntry{
                 _0: tv__88,
                 _1: new_subst__89,
@@ -1180,7 +1180,7 @@ func inst_loop(st__83 CheckerState, subst__84 []SubstEntry, ty__85 Typ) Tuple2_3
 
 func inst(st__98 CheckerState, ty__99 Typ) Typ {
     var retv443 Typ
-    var subst0__100 []SubstEntry = nil
+    var subst0__100 []SubstEntry = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_SubstEntry()
     var mtmp132 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__98, subst0__100, ty__99)
     var x133 Typ = mtmp132._0
     var t__101 Typ = x133
@@ -1288,7 +1288,7 @@ func typeof(st__102 CheckerState, env__103 []EnvEntry, e__104 Exp) Result__Typ__
             name: x__107,
             ty: ty_x__109,
         }
-        var env2__110 []EnvEntry = append(env__103, t463)
+        var env2__110 []EnvEntry = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_EnvEntry(env__103, t463)
         var mtmp154 Result__Typ__string = typeof(st__102, env2__110, body__108)
         var jp465 Result__Typ__string
         switch mtmp154.(type) {
@@ -1334,7 +1334,7 @@ func typeof(st__102 CheckerState, env__103 []EnvEntry, e__104 Exp) Result__Typ__
                 name: x__122,
                 ty: t471,
             }
-            var env2__128 []EnvEntry = append(env__103, t472)
+            var env2__128 []EnvEntry = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_EnvEntry(env__103, t472)
             var t473 Result__Typ__string = typeof(st__102, env2__128, e2__124)
             jp470 = t473
         case Result__Typ__string_Err:
@@ -1612,6 +1612,48 @@ func main0() struct{} {
     println__T_string("All Done")
     println__T_string("")
     return struct{}{}
+}
+
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_EnvEntry() []EnvEntry {
+    var retv648 []EnvEntry
+    var t649 []EnvEntry = nil
+    retv648 = t649
+    return retv648
+}
+
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_EnvEntry(self__74 []EnvEntry) int32 {
+    var retv651 int32
+    var t652 int32 = int32(len(self__74))
+    retv651 = t652
+    return retv651
+}
+
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_SubstEntry(self__74 []SubstEntry) int32 {
+    var retv654 int32
+    var t655 int32 = int32(len(self__74))
+    retv654 = t655
+    return retv654
+}
+
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_SubstEntry(self__67 []SubstEntry, elem__68 SubstEntry) []SubstEntry {
+    var retv657 []SubstEntry
+    var t658 []SubstEntry = append(self__67, elem__68)
+    retv657 = t658
+    return retv657
+}
+
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_SubstEntry() []SubstEntry {
+    var retv660 []SubstEntry
+    var t661 []SubstEntry = nil
+    retv660 = t661
+    return retv660
+}
+
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_EnvEntry(self__67 []EnvEntry, elem__68 EnvEntry) []EnvEntry {
+    var retv663 []EnvEntry
+    var t664 []EnvEntry = append(self__67, elem__68)
+    retv663 = t664
+    return retv663
 }
 
 func println__T_string(value__1 string) struct{} {

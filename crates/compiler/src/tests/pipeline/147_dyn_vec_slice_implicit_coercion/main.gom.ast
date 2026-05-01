@@ -14,12 +14,12 @@ fn render(x: dyn Display) -> string {
 }
 
 fn main() -> unit {
-    let v: Vec[dyn Display] = vec_new();
-    let v = vec_push(v, 10i32);
-    let v = vec_push(v, 20i32);
-    let s: Slice[dyn Display] = slice(v, 0i32, 2i32);
-    println(render(slice_get(s, 0i32)));
-    let t = slice_sub(s, 1i32, 2i32);
-    println(render(slice_get(t, 0i32)));
+    let v: Vec[dyn Display] = Vec::new();
+    let v = v.push(10i32);
+    let v = v.push(20i32);
+    let s: Slice[dyn Display] = v.slice(0i32, 2i32);
+    println(render(s[0i32]));
+    let t = s.sub(1i32, 2i32);
+    println(render(t[0i32]));
 }
 

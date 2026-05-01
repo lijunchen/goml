@@ -57,7 +57,7 @@ fn main() -> unit {
   let _wild14 = t80 in
   let t81 = vec_get(vec2/5, 0) in
   let _wild15 = println__T_int32(t81) in
-  let s/6 = slice(vec2/5, 0, 2) in
+  let s/6 = inherent#Vec#Vec[T]#slice__T_int32(vec2/5, 0, 2) in
   let t82 = slice_get(s/6, 1) in
   let _wild16 = println__T_int32(t82) in
   let map/7 = inherent#HashMap#HashMap[K,V]#new__K_string__V_int32() in
@@ -185,26 +185,34 @@ fn inherent#Vec#Vec[T]#push__T_int32(self/67: Vec[int32], elem/68: int32) -> Vec
   jump ret130(t132)
 }
 
-fn inherent#HashMap#HashMap[K,V]#new__K_string__V_int32() -> HashMap[string, int32] {
-  join ret133(retv134: HashMap[string, int32]) -> HashMap[string, int32] {
+fn inherent#Vec#Vec[T]#slice__T_int32(self/75: Vec[int32], start/76: int32, end/77: int32) -> Slice[int32] {
+  join ret133(retv134: Slice[int32]) -> Slice[int32] {
     retv134
   } in
-  let t135 = hashmap_new() in
+  let t135 = slice(self/75, start/76, end/77) in
   jump ret133(t135)
 }
 
-fn inherent#Vec#Vec[T]#new__T_[int32;2]() -> Vec[[int32; 2]] {
-  join ret136(retv137: Vec[[int32; 2]]) -> Vec[[int32; 2]] {
+fn inherent#HashMap#HashMap[K,V]#new__K_string__V_int32() -> HashMap[string, int32] {
+  join ret136(retv137: HashMap[string, int32]) -> HashMap[string, int32] {
     retv137
   } in
-  let t138 = vec_new() in
+  let t138 = hashmap_new() in
   jump ret136(t138)
 }
 
-fn inherent#Vec#Vec[T]#push__T_[int32;2](self/67: Vec[[int32; 2]], elem/68: [int32; 2]) -> Vec[[int32; 2]] {
+fn inherent#Vec#Vec[T]#new__T_[int32;2]() -> Vec[[int32; 2]] {
   join ret139(retv140: Vec[[int32; 2]]) -> Vec[[int32; 2]] {
     retv140
   } in
-  let t141 = vec_push(self/67, elem/68) in
+  let t141 = vec_new() in
   jump ret139(t141)
+}
+
+fn inherent#Vec#Vec[T]#push__T_[int32;2](self/67: Vec[[int32; 2]], elem/68: [int32; 2]) -> Vec[[int32; 2]] {
+  join ret142(retv143: Vec[[int32; 2]]) -> Vec[[int32; 2]] {
+    retv143
+  } in
+  let t144 = vec_push(self/67, elem/68) in
+  jump ret142(t144)
 }

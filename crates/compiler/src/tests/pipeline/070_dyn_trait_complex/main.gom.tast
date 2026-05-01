@@ -113,11 +113,11 @@ fn main() -> unit {
     let s0/45: string = (show_dyn : (dyn Display) -> string)((dp2/39 : dyn Display));
     let s1/46: string = (call_via_closure : (dyn Display, string) -> string)((df2/41 : dyn Display), "*");
     let s2/47: string = (render_star/43 : (dyn Display) -> string)((dp1/38 : dyn Display)) + "|" + (render_angle/44 : (dyn Display) -> string)((df1/40 : dyn Display));
-    let v/48: Vec[dyn Display] = (vec_new : () -> Vec[dyn Display])();
-    let v/49: Vec[dyn Display] = (vec_push : (Vec[dyn Display], dyn Display) -> Vec[dyn Display])((v/48 : Vec[dyn Display]), (dp1/38 : dyn Display));
-    let v/50: Vec[dyn Display] = (vec_push : (Vec[dyn Display], dyn Display) -> Vec[dyn Display])((v/49 : Vec[dyn Display]), (df1/40 : dyn Display));
-    let v/51: Vec[dyn Display] = (vec_push : (Vec[dyn Display], dyn Display) -> Vec[dyn Display])((v/50 : Vec[dyn Display]), (dc/42 : dyn Display));
-    let vlen/52: int32 = (vec_len : (Vec[dyn Display]) -> int32)((v/51 : Vec[dyn Display]));
+    let v/48: Vec[dyn Display] = (Vec[dyn Display]::new : () -> Vec[dyn Display])();
+    let v/49: Vec[dyn Display] = (Vec[dyn Display]::push : (Vec[dyn Display], dyn Display) -> Vec[dyn Display])((v/48 : Vec[dyn Display]), (dp1/38 : dyn Display));
+    let v/50: Vec[dyn Display] = (Vec[dyn Display]::push : (Vec[dyn Display], dyn Display) -> Vec[dyn Display])((v/49 : Vec[dyn Display]), (df1/40 : dyn Display));
+    let v/51: Vec[dyn Display] = (Vec[dyn Display]::push : (Vec[dyn Display], dyn Display) -> Vec[dyn Display])((v/50 : Vec[dyn Display]), (dc/42 : dyn Display));
+    let vlen/52: int32 = (Vec[dyn Display]::len : (Vec[dyn Display]) -> int32)((v/51 : Vec[dyn Display]));
     let delta/53: int32 = match (vlen/52 : int32) {
         2 => 3,
         _ : int32 => 5,

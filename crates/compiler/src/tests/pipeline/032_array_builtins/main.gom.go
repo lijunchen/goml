@@ -25,25 +25,31 @@ func array_set__Array_3_5int32(arr [3]int32, index int32, value int32) [3]int32 
 type GoError = error
 
 func update_array(arr__0 [3]int32) [3]int32 {
-    var retv2 [3]int32
-    var t3 [3]int32 = array_set__Array_3_5int32(arr__0, 1, 42)
-    retv2 = t3
-    return retv2
+    var retv7 [3]int32
+    var arr__1 [3]int32 = arr__0
+    var place_root0 [3]int32 = arr__1
+    var index1 int32 = 1
+    array_get__Array_3_5int32(place_root0, index1)
+    var value3 int32 = 42
+    var t8 [3]int32 = array_set__Array_3_5int32(place_root0, index1, value3)
+    arr__1 = t8
+    retv7 = arr__1
+    return retv7
 }
 
-func read_array(arr__1 [3]int32) int32 {
-    var retv5 int32
-    var t6 int32 = array_get__Array_3_5int32(arr__1, 1)
-    retv5 = t6
-    return retv5
+func read_array(arr__2 [3]int32) int32 {
+    var retv11 int32
+    var t12 int32 = array_get__Array_3_5int32(arr__2, 1)
+    retv11 = t12
+    return retv11
 }
 
 func main0() struct{} {
-    var arr__2 [3]int32 = [3]int32{1, 2, 3}
-    var updated__3 [3]int32 = update_array(arr__2)
-    var value__4 int32 = read_array(updated__3)
-    var t8 string = int32_to_string(value__4)
-    println__T_string(t8)
+    var arr__3 [3]int32 = [3]int32{1, 2, 3}
+    var updated__4 [3]int32 = update_array(arr__3)
+    var value__5 int32 = read_array(updated__4)
+    var t14 string = int32_to_string(value__5)
+    println__T_string(t14)
     return struct{}{}
 }
 

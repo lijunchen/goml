@@ -96,11 +96,13 @@ fn pair_join(parts: (string, string)) -> string {
 }
 
 fn run_transforms(value: int32, transforms: [(int32) -> int32; 2]) -> [int32; 2] {
-    let first = array_get(transforms, 0);
-    let second = array_get(transforms, 1);
+    let first = transforms[0];
+    let second = transforms[1];
     let first_result = first(value);
     let second_result = second(first_result);
-    array_set([first_result, value], 1, second_result)
+    let mut results = [first_result, value];
+    results[1] = second_result;
+    results
 }
 
 fn gather(record: Record[int32]) -> Maybe[int32] {
@@ -147,9 +149,9 @@ fn main() {
     let chosen = choose(true, maybe_second, maybe_first);
     let stringified = map_maybe(chosen, format_total);
     let transforms = [increment, triple];
-    let results = run_transforms(4, transforms);
-    let first_result = array_get(results, 0);
-    let second_result = array_get(results, 1);
+    let results: [int32; 2] = run_transforms(4, transforms);
+    let first_result = results[0];
+    let second_result = results[1];
     let order_check = first_result < second_result && true;
     let first_text = Describe::describe(first_record);
     let bumped_text = Describe::describe(bumped_record);

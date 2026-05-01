@@ -183,7 +183,7 @@ fn lex_atom(source/18: string, start/19: int32) -> (Token, int32) {
 
 fn lex(source/27: string) -> Vec[Token] {
   let len/28 = string_len(source/27) in
-  let toks0/29 = vec_new() in
+  let toks0/29 = inherent#Vec#Vec[T]#new__T_Token() in
   let toks/30 = ref(toks0/29) in
   let i/31 = ref(0) in
   let mtmp17 = while (ref_get(i/31) < len/28) {
@@ -191,7 +191,7 @@ fn lex(source/27: string) -> Vec[Token] {
         let ch/32 = string_get(source/27, ref_get(i/31)) in
         if (ch/32 == '(') {
             {
-              let mtmp11 = ref_set(toks/30, vec_push(ref_get(toks/30), Token::LParen)) in
+              let mtmp11 = ref_set(toks/30, inherent#Vec#Vec[T]#push__T_Token(ref_get(toks/30), Token::LParen)) in
               {
                 ref_set(i/31, (ref_get(i/31) + 1))
               }
@@ -199,7 +199,7 @@ fn lex(source/27: string) -> Vec[Token] {
         } else {
             if (ch/32 == ')') {
                 {
-                  let mtmp12 = ref_set(toks/30, vec_push(ref_get(toks/30), Token::RParen)) in
+                  let mtmp12 = ref_set(toks/30, inherent#Vec#Vec[T]#push__T_Token(ref_get(toks/30), Token::RParen)) in
                   {
                     ref_set(i/31, (ref_get(i/31) + 1))
                   }
@@ -220,7 +220,7 @@ fn lex(source/27: string) -> Vec[Token] {
                           {
                             let tok/33 = x14 in
                             {
-                              let mtmp16 = ref_set(toks/30, vec_push(ref_get(toks/30), tok/33)) in
+                              let mtmp16 = ref_set(toks/30, inherent#Vec#Vec[T]#push__T_Token(ref_get(toks/30), tok/33)) in
                               {
                                 ref_set(i/31, next/34)
                               }
@@ -240,7 +240,7 @@ fn lex(source/27: string) -> Vec[Token] {
 }
 
 fn env_lookup(env/35: Vec[Binding], name/36: string) -> Value {
-  let i/37 = ref((vec_len(env/35) - 1)) in
+  let i/37 = ref((inherent#Vec#Vec[T]#len__T_Binding(env/35) - 1)) in
   let result/38 = ref(Value::Nil) in
   let done/39 = ref(false) in
   let mtmp19 = while ((!ref_get(done/39)) && (ref_get(i/37) >= 0)) {
@@ -304,11 +304,11 @@ fn lookup(local/41: Vec[Binding], global/42: Vec[Binding], name/43: string) -> V
 }
 
 fn parse_list(tokens/45: Vec[Token], start/46: int32) -> (Vec[SExpr], int32) {
-  let acc/47 = vec_new() in
+  let acc/47 = inherent#Vec#Vec[T]#new__T_SExpr() in
   let exprs/48 = ref(acc/47) in
   let i/49 = ref(start/46) in
   let done/50 = ref(false) in
-  let mtmp45 = while ((!ref_get(done/50)) && (ref_get(i/49) < vec_len(tokens/45))) {
+  let mtmp45 = while ((!ref_get(done/50)) && (ref_get(i/49) < inherent#Vec#Vec[T]#len__T_Token(tokens/45))) {
       {
         {
           let mtmp24 = vec_get(tokens/45, ref_get(i/49)) in
@@ -324,7 +324,7 @@ fn parse_list(tokens/45: Vec[Token], start/46: int32) -> (Vec[SExpr], int32) {
                     {
                       let expr/51 = x29 in
                       {
-                        let mtmp31 = ref_set(exprs/48, vec_push(ref_get(exprs/48), expr/51)) in
+                        let mtmp31 = ref_set(exprs/48, inherent#Vec#Vec[T]#push__T_SExpr(ref_get(exprs/48), expr/51)) in
                         {
                           ref_set(i/49, next/52)
                         }
@@ -355,7 +355,7 @@ fn parse_list(tokens/45: Vec[Token], start/46: int32) -> (Vec[SExpr], int32) {
                       {
                         let expr/51 = x34 in
                         {
-                          let mtmp36 = ref_set(exprs/48, vec_push(ref_get(exprs/48), expr/51)) in
+                          let mtmp36 = ref_set(exprs/48, inherent#Vec#Vec[T]#push__T_SExpr(ref_get(exprs/48), expr/51)) in
                           {
                             ref_set(i/49, next/52)
                           }
@@ -379,7 +379,7 @@ fn parse_list(tokens/45: Vec[Token], start/46: int32) -> (Vec[SExpr], int32) {
                       {
                         let expr/51 = x38 in
                         {
-                          let mtmp40 = ref_set(exprs/48, vec_push(ref_get(exprs/48), expr/51)) in
+                          let mtmp40 = ref_set(exprs/48, inherent#Vec#Vec[T]#push__T_SExpr(ref_get(exprs/48), expr/51)) in
                           {
                             ref_set(i/49, next/52)
                           }
@@ -403,7 +403,7 @@ fn parse_list(tokens/45: Vec[Token], start/46: int32) -> (Vec[SExpr], int32) {
                       {
                         let expr/51 = x42 in
                         {
-                          let mtmp44 = ref_set(exprs/48, vec_push(ref_get(exprs/48), expr/51)) in
+                          let mtmp44 = ref_set(exprs/48, inherent#Vec#Vec[T]#push__T_SExpr(ref_get(exprs/48), expr/51)) in
                           {
                             ref_set(i/49, next/52)
                           }
@@ -481,9 +481,9 @@ fn parse_expr(tokens/53: Vec[Token], start/54: int32) -> (SExpr, int32) {
 
 fn parse_program(tokens/60: Vec[Token]) -> Vec[SExpr] {
   let i/61 = ref(0) in
-  let acc/62 = vec_new() in
+  let acc/62 = inherent#Vec#Vec[T]#new__T_SExpr() in
   let exprs/63 = ref(acc/62) in
-  let mtmp57 = while (ref_get(i/61) < vec_len(tokens/60)) {
+  let mtmp57 = while (ref_get(i/61) < inherent#Vec#Vec[T]#len__T_Token(tokens/60)) {
       {
         let mtmp53 = parse_expr(tokens/60, ref_get(i/61)) in
         {
@@ -494,7 +494,7 @@ fn parse_program(tokens/60: Vec[Token]) -> Vec[SExpr] {
             {
               let expr/64 = x54 in
               {
-                let mtmp56 = ref_set(exprs/63, vec_push(ref_get(exprs/63), expr/64)) in
+                let mtmp56 = ref_set(exprs/63, inherent#Vec#Vec[T]#push__T_SExpr(ref_get(exprs/63), expr/64)) in
                 {
                   ref_set(i/61, next/65)
                 }
@@ -615,7 +615,7 @@ fn eval(expr/72: SExpr, local/73: Vec[Binding], global/74: Ref[Vec[Binding]]) ->
 }
 
 fn eval_list(items/79: Vec[SExpr], local/80: Vec[Binding], global/81: Ref[Vec[Binding]]) -> Value {
-  if (vec_len(items/79) == 0) {
+  if (inherent#Vec#Vec[T]#len__T_SExpr(items/79) == 0) {
       {
         Value::Nil
       }
@@ -674,7 +674,7 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
     },
     "define" => {
       {
-        if (vec_len(items/87) == 3) {
+        if (inherent#Vec#Vec[T]#len__T_SExpr(items/87) == 3) {
             {
               {
                 let mtmp72 = vec_get(items/87, 1) in
@@ -699,7 +699,7 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
                         {
                           let value/91 = eval(vec_get(items/87, 2), local/88, global/89) in
                           let env/92 = ref_get(global/89) in
-                          let updated/93 = vec_push(env/92, Binding { name: var/90, value: value/91 }) in
+                          let updated/93 = inherent#Vec#Vec[T]#push__T_Binding(env/92, Binding { name: var/90, value: value/91 }) in
                           let mtmp77 = ref_set(global/89, updated/93) in
                           {
                             value/91
@@ -726,7 +726,7 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
     },
     "if" => {
       {
-        if (vec_len(items/87) == 4) {
+        if (inherent#Vec#Vec[T]#len__T_SExpr(items/87) == 4) {
             {
               let cond/94 = eval(vec_get(items/87, 1), local/88, global/89) in
               if truthy(cond/94) {
@@ -748,7 +748,7 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
     },
     "lambda" => {
       {
-        if (vec_len(items/87) == 3) {
+        if (inherent#Vec#Vec[T]#len__T_SExpr(items/87) == 3) {
             {
               {
                 let mtmp78 = vec_get(items/87, 1) in
@@ -820,7 +820,7 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
 fn eval_begin(items/100: Vec[SExpr], start/101: int32, local/102: Vec[Binding], global/103: Ref[Vec[Binding]]) -> Value {
   let i/104 = ref(start/101) in
   let last/105 = ref(Value::Nil) in
-  let mtmp84 = while (ref_get(i/104) < vec_len(items/100)) {
+  let mtmp84 = while (ref_get(i/104) < inherent#Vec#Vec[T]#len__T_SExpr(items/100)) {
       {
         let v/106 = eval(vec_get(items/100, ref_get(i/104)), local/102, global/103) in
         let mtmp83 = ref_set(last/105, v/106) in
@@ -836,9 +836,9 @@ fn eval_begin(items/100: Vec[SExpr], start/101: int32, local/102: Vec[Binding], 
 
 fn params_from_sexprs(items/107: Vec[SExpr]) -> Vec[string] {
   let i/108 = ref(0) in
-  let acc/109 = vec_new() in
+  let acc/109 = inherent#Vec#Vec[T]#new__T_string() in
   let params/110 = ref(acc/109) in
-  let mtmp91 = while (ref_get(i/108) < vec_len(items/107)) {
+  let mtmp91 = while (ref_get(i/108) < inherent#Vec#Vec[T]#len__T_SExpr(items/107)) {
       {
         {
           let mtmp85 = vec_get(items/107, ref_get(i/108)) in
@@ -861,7 +861,7 @@ fn params_from_sexprs(items/107: Vec[SExpr]) -> Vec[string] {
                 {
                   let name/111 = x88 in
                   {
-                    let mtmp90 = ref_set(params/110, vec_push(ref_get(params/110), name/111)) in
+                    let mtmp90 = ref_set(params/110, inherent#Vec#Vec[T]#push__T_string(ref_get(params/110), name/111)) in
                     {
                       ref_set(i/108, (ref_get(i/108) + 1))
                     }
@@ -886,12 +886,12 @@ fn params_from_sexprs(items/107: Vec[SExpr]) -> Vec[string] {
 
 fn eval_args(items/112: Vec[SExpr], start/113: int32, local/114: Vec[Binding], global/115: Ref[Vec[Binding]]) -> Vec[Value] {
   let i/116 = ref(start/113) in
-  let acc/117 = vec_new() in
+  let acc/117 = inherent#Vec#Vec[T]#new__T_Value() in
   let args/118 = ref(acc/117) in
-  let mtmp93 = while (ref_get(i/116) < vec_len(items/112)) {
+  let mtmp93 = while (ref_get(i/116) < inherent#Vec#Vec[T]#len__T_SExpr(items/112)) {
       {
         let v/119 = eval(vec_get(items/112, ref_get(i/116)), local/114, global/115) in
-        let mtmp92 = ref_set(args/118, vec_push(ref_get(args/118), v/119)) in
+        let mtmp92 = ref_set(args/118, inherent#Vec#Vec[T]#push__T_Value(ref_get(args/118), v/119)) in
         {
           ref_set(i/116, (ref_get(i/116) + 1))
         }
@@ -905,7 +905,7 @@ fn eval_args(items/112: Vec[SExpr], start/113: int32, local/114: Vec[Binding], g
 fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
   match name/120 {
     "=" => {
-      if (vec_len(args/121) == 2) {
+      if (inherent#Vec#Vec[T]#len__T_Value(args/121) == 2) {
           {
             {
               let mtmp94 = (vec_get(args/121, 0), vec_get(args/121, 1)) in
@@ -1004,7 +1004,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
       {
         let i/126 = ref(0) in
         let acc/127 = ref(0) in
-        let mtmp111 = while (ref_get(i/126) < vec_len(args/121)) {
+        let mtmp111 = while (ref_get(i/126) < inherent#Vec#Vec[T]#len__T_Value(args/121)) {
             {
               {
                 let mtmp106 = vec_get(args/121, ref_get(i/126)) in
@@ -1051,7 +1051,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
       {
         let i/129 = ref(0) in
         let acc/130 = ref(1) in
-        let mtmp117 = while (ref_get(i/129) < vec_len(args/121)) {
+        let mtmp117 = while (ref_get(i/129) < inherent#Vec#Vec[T]#len__T_Value(args/121)) {
             {
               {
                 let mtmp112 = vec_get(args/121, ref_get(i/129)) in
@@ -1096,7 +1096,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
     },
     "-" => {
       {
-        let mtmp118 = vec_len(args/121) in
+        let mtmp118 = inherent#Vec#Vec[T]#len__T_Value(args/121) in
         match mtmp118 {
           1 => {
             {
@@ -1194,7 +1194,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
       }
     },
     "/" => {
-      if (vec_len(args/121) == 2) {
+      if (inherent#Vec#Vec[T]#len__T_Value(args/121) == 2) {
           {
             {
               let mtmp132 = (vec_get(args/121, 0), vec_get(args/121, 1)) in
@@ -1297,11 +1297,11 @@ fn apply(func/137: Value, args/138: Vec[Value], global/139: Ref[Vec[Binding]]) -
 fn apply_lambda(lambda/141: Lambda, args/142: Vec[Value]) -> Value {
   let env/143 = ref(Lambda.env(lambda/141)) in
   let i/144 = ref(0) in
-  let mtmp145 = while ((ref_get(i/144) < vec_len(Lambda.params(lambda/141))) && (ref_get(i/144) < vec_len(args/142))) {
+  let mtmp145 = while ((ref_get(i/144) < inherent#Vec#Vec[T]#len__T_string(Lambda.params(lambda/141))) && (ref_get(i/144) < inherent#Vec#Vec[T]#len__T_Value(args/142))) {
       {
         let name/145 = vec_get(Lambda.params(lambda/141), ref_get(i/144)) in
         let value/146 = vec_get(args/142, ref_get(i/144)) in
-        let updated/147 = vec_push(ref_get(env/143), Binding { name: name/145, value: value/146 }) in
+        let updated/147 = inherent#Vec#Vec[T]#push__T_Binding(ref_get(env/143), Binding { name: name/145, value: value/146 }) in
         let mtmp144 = ref_set(env/143, updated/147) in
         {
           ref_set(i/144, (ref_get(i/144) + 1))
@@ -1314,19 +1314,79 @@ fn apply_lambda(lambda/141: Lambda, args/142: Vec[Value]) -> Value {
 }
 
 fn main() -> unit {
-  let global/148 = ref(vec_new()) in
+  let global/148 = ref(inherent#Vec#Vec[T]#new__T_Binding()) in
   let program/149 = "(begin (define fact (lambda (n) (if (= n 0) 1 (* n (fact (- n 1)))))) (define add3 (lambda (a b c) (+ a (+ b c)))) (fact 6))" in
   let exprs/150 = parse_program(lex(program/149)) in
-  let result/151 = eval(vec_get(exprs/150, 0), vec_new(), global/148) in
+  let result/151 = eval(vec_get(exprs/150, 0), inherent#Vec#Vec[T]#new__T_Binding(), global/148) in
   let mtmp146 = println__T_string(value_to_string(result/151)) in
   {
     let exprs2/152 = parse_program(lex("(add3 10 20 30)")) in
-    let result2/153 = eval(vec_get(exprs2/152, 0), vec_new(), global/148) in
+    let result2/153 = eval(vec_get(exprs2/152, 0), inherent#Vec#Vec[T]#new__T_Binding(), global/148) in
     let mtmp147 = println__T_string(value_to_string(result2/153)) in
     {
       ()
     }
   }
+}
+
+fn inherent#Vec#Vec[T]#new__T_Token() -> Vec[Token] {
+  vec_new()
+}
+
+fn inherent#Vec#Vec[T]#push__T_Token(self/67: Vec[Token], elem/68: Token) -> Vec[Token] {
+  vec_push(self/67, elem/68)
+}
+
+fn inherent#Vec#Vec[T]#len__T_Binding(self/74: Vec[Binding]) -> int32 {
+  vec_len(self/74)
+}
+
+fn inherent#Vec#Vec[T]#new__T_SExpr() -> Vec[SExpr] {
+  vec_new()
+}
+
+fn inherent#Vec#Vec[T]#len__T_Token(self/74: Vec[Token]) -> int32 {
+  vec_len(self/74)
+}
+
+fn inherent#Vec#Vec[T]#push__T_SExpr(self/67: Vec[SExpr], elem/68: SExpr) -> Vec[SExpr] {
+  vec_push(self/67, elem/68)
+}
+
+fn inherent#Vec#Vec[T]#len__T_SExpr(self/74: Vec[SExpr]) -> int32 {
+  vec_len(self/74)
+}
+
+fn inherent#Vec#Vec[T]#push__T_Binding(self/67: Vec[Binding], elem/68: Binding) -> Vec[Binding] {
+  vec_push(self/67, elem/68)
+}
+
+fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
+  vec_new()
+}
+
+fn inherent#Vec#Vec[T]#push__T_string(self/67: Vec[string], elem/68: string) -> Vec[string] {
+  vec_push(self/67, elem/68)
+}
+
+fn inherent#Vec#Vec[T]#new__T_Value() -> Vec[Value] {
+  vec_new()
+}
+
+fn inherent#Vec#Vec[T]#push__T_Value(self/67: Vec[Value], elem/68: Value) -> Vec[Value] {
+  vec_push(self/67, elem/68)
+}
+
+fn inherent#Vec#Vec[T]#len__T_Value(self/74: Vec[Value]) -> int32 {
+  vec_len(self/74)
+}
+
+fn inherent#Vec#Vec[T]#len__T_string(self/74: Vec[string]) -> int32 {
+  vec_len(self/74)
+}
+
+fn inherent#Vec#Vec[T]#new__T_Binding() -> Vec[Binding] {
+  vec_new()
 }
 
 fn println__T_string(value/1: string) -> unit {

@@ -311,7 +311,7 @@ fn env_empty() -> Vec[EnvEntry] {
   join ret275(retv276: Vec[EnvEntry]) -> Vec[EnvEntry] {
     retv276
   } in
-  let env/27 = vec_new() in
+  let env/27 = inherent#Vec#Vec[T]#new__T_EnvEntry() in
   jump ret275(env/27)
 }
 
@@ -319,7 +319,7 @@ fn env_lookup(env/28: Vec[EnvEntry], name/29: string) -> Option__Typ {
   join ret277(retv278: Option__Typ) -> Option__Typ {
     retv278
   } in
-  let t279 = vec_len(env/28) in
+  let t279 = inherent#Vec#Vec[T]#len__T_EnvEntry(env/28) in
   let t280 = (t279 - 1) in
   let i/30 = ref(t280) in
   let found/31 = ref(Tag_0) in
@@ -368,7 +368,7 @@ fn subst_lookup(subst/34: Vec[SubstEntry], name/35: string) -> Option__Typ {
   join ret299(retv300: Option__Typ) -> Option__Typ {
     retv300
   } in
-  let t301 = vec_len(subst/34) in
+  let t301 = inherent#Vec#Vec[T]#len__T_SubstEntry(subst/34) in
   let t302 = (t301 - 1) in
   let i/36 = ref(t302) in
   let found/37 = ref(Tag_0) in
@@ -917,7 +917,7 @@ fn inst_loop(st/83: CheckerState, subst/84: Vec[SubstEntry], ty/85: Typ) -> (Typ
         Tag_0 => {
           let tv/88 = newvar(st/83) in
           let t437 = SubstEntry { name: name/86, ty: tv/88 } in
-          let new_subst/89 = vec_push(subst/84, t437) in
+          let new_subst/89 = inherent#Vec#Vec[T]#push__T_SubstEntry(subst/84, t437) in
           let t438 = (tv/88, new_subst/89) in
           jump k435(t438)
         },
@@ -955,7 +955,7 @@ fn inst(st/98: CheckerState, ty/99: Typ) -> Typ {
   join ret442(retv443: Typ) -> Typ {
     retv443
   } in
-  let subst0/100 = vec_new() in
+  let subst0/100 = inherent#Vec#Vec[T]#new__T_SubstEntry() in
   let mtmp132 = inst_loop(st/98, subst0/100, ty/99) in
   let x133 = mtmp132.0 in
   let x134 = mtmp132.1 in
@@ -1056,7 +1056,7 @@ fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result__T
       let x/107 = x138 in
       let ty_x/109 = newvar(st/102) in
       let t463 = EnvEntry { name: x/107, ty: ty_x/109 } in
-      let env2/110 = vec_push(env/103, t463) in
+      let env2/110 = inherent#Vec#Vec[T]#push__T_EnvEntry(env/103, t463) in
       let mtmp154 = typeof(st/102, env2/110, body/108) in
       join k464(jp465: Result__Typ__string) -> Result__Typ__string {
         jump k446(jp465)
@@ -1096,7 +1096,7 @@ fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result__T
           let ty1/127 = x159 in
           let t471 = gen(st/102, ty1/127) in
           let t472 = EnvEntry { name: x/122, ty: t471 } in
-          let env2/128 = vec_push(env/103, t472) in
+          let env2/128 = inherent#Vec#Vec[T]#push__T_EnvEntry(env/103, t472) in
           let t473 = typeof(st/102, env2/128, e2/124) in
           jump k469(t473)
         },
@@ -1372,10 +1372,58 @@ fn main() -> unit {
   jump ret496()
 }
 
+fn inherent#Vec#Vec[T]#new__T_EnvEntry() -> Vec[EnvEntry] {
+  join ret647(retv648: Vec[EnvEntry]) -> Vec[EnvEntry] {
+    retv648
+  } in
+  let t649 = vec_new() in
+  jump ret647(t649)
+}
+
+fn inherent#Vec#Vec[T]#len__T_EnvEntry(self/74: Vec[EnvEntry]) -> int32 {
+  join ret650(retv651: int32) -> int32 {
+    retv651
+  } in
+  let t652 = vec_len(self/74) in
+  jump ret650(t652)
+}
+
+fn inherent#Vec#Vec[T]#len__T_SubstEntry(self/74: Vec[SubstEntry]) -> int32 {
+  join ret653(retv654: int32) -> int32 {
+    retv654
+  } in
+  let t655 = vec_len(self/74) in
+  jump ret653(t655)
+}
+
+fn inherent#Vec#Vec[T]#push__T_SubstEntry(self/67: Vec[SubstEntry], elem/68: SubstEntry) -> Vec[SubstEntry] {
+  join ret656(retv657: Vec[SubstEntry]) -> Vec[SubstEntry] {
+    retv657
+  } in
+  let t658 = vec_push(self/67, elem/68) in
+  jump ret656(t658)
+}
+
+fn inherent#Vec#Vec[T]#new__T_SubstEntry() -> Vec[SubstEntry] {
+  join ret659(retv660: Vec[SubstEntry]) -> Vec[SubstEntry] {
+    retv660
+  } in
+  let t661 = vec_new() in
+  jump ret659(t661)
+}
+
+fn inherent#Vec#Vec[T]#push__T_EnvEntry(self/67: Vec[EnvEntry], elem/68: EnvEntry) -> Vec[EnvEntry] {
+  join ret662(retv663: Vec[EnvEntry]) -> Vec[EnvEntry] {
+    retv663
+  } in
+  let t664 = vec_push(self/67, elem/68) in
+  jump ret662(t664)
+}
+
 fn println__T_string(value/1: string) -> unit {
-  join ret647() -> unit {
+  join ret665() -> unit {
     ()
   } in
-  let t648 = string_println(value/1) in
-  jump ret647()
+  let t666 = string_println(value/1) in
+  jump ret665()
 }

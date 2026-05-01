@@ -282,12 +282,12 @@ fn typ_to_string(ty/18: Typ) -> string {
 }
 
 fn env_empty() -> Vec[EnvEntry] {
-  let env/27 = vec_new() in
+  let env/27 = inherent#Vec#Vec[EnvEntry]#new() in
   env/27
 }
 
 fn env_lookup(env/28: Vec[EnvEntry], name/29: string) -> Option[Typ] {
-  let i/30 = ref((vec_len(env/28) - 1)) in
+  let i/30 = ref((inherent#Vec#Vec[EnvEntry]#len(env/28) - 1)) in
   let found/31 = ref(Option::None) in
   let done/32 = ref(false) in
   let mtmp23 = while ((!ref_get(done/32)) && (ref_get(i/30) >= 0)) {
@@ -313,7 +313,7 @@ fn env_lookup(env/28: Vec[EnvEntry], name/29: string) -> Option[Typ] {
 }
 
 fn subst_lookup(subst/34: Vec[SubstEntry], name/35: string) -> Option[Typ] {
-  let i/36 = ref((vec_len(subst/34) - 1)) in
+  let i/36 = ref((inherent#Vec#Vec[SubstEntry]#len(subst/34) - 1)) in
   let found/37 = ref(Option::None) in
   let done/38 = ref(false) in
   let mtmp25 = while ((!ref_get(done/38)) && (ref_get(i/36) >= 0)) {
@@ -971,7 +971,7 @@ fn inst_loop(st/83: CheckerState, subst/84: Vec[SubstEntry], ty/85: Typ) -> (Typ
               Option::None => {
                 {
                   let tv/88 = newvar(st/83) in
-                  let new_subst/89 = vec_push(subst/84, SubstEntry { name: name/86, ty: tv/88 }) in
+                  let new_subst/89 = inherent#Vec#Vec[SubstEntry]#push(subst/84, SubstEntry { name: name/86, ty: tv/88 }) in
                   (tv/88, new_subst/89)
                 }
               },
@@ -1034,7 +1034,7 @@ fn inst_loop(st/83: CheckerState, subst/84: Vec[SubstEntry], ty/85: Typ) -> (Typ
 }
 
 fn inst(st/98: CheckerState, ty/99: Typ) -> Typ {
-  let subst0/100 = vec_new() in
+  let subst0/100 = inherent#Vec#Vec[SubstEntry]#new() in
   let mtmp132 = inst_loop(st/98, subst0/100, ty/99) in
   {
     let x133 = mtmp132.0 in
@@ -1169,7 +1169,7 @@ fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result[Ty
             let x/107 = x138 in
             {
               let ty_x/109 = newvar(st/102) in
-              let env2/110 = vec_push(env/103, EnvEntry { name: x/107, ty: ty_x/109 }) in
+              let env2/110 = inherent#Vec#Vec[EnvEntry]#push(env/103, EnvEntry { name: x/107, ty: ty_x/109 }) in
               {
                 let mtmp154 = typeof(st/102, env2/110, body/108) in
                 match mtmp154 {
@@ -1220,7 +1220,7 @@ fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result[Ty
                       {
                         let ty1/127 = x159 in
                         {
-                          let env2/128 = vec_push(env/103, EnvEntry { name: x/122, ty: gen(st/102, ty1/127) }) in
+                          let env2/128 = inherent#Vec#Vec[EnvEntry]#push(env/103, EnvEntry { name: x/122, ty: gen(st/102, ty1/127) }) in
                           typeof(st/102, env2/128, e2/124)
                         }
                       }
@@ -1329,4 +1329,16 @@ fn main() -> unit {
   let _wild201 = println("") in
   let _wild202 = println("All Done") in
   let _wild203 = println("") in
+}
+
+fn inherent#Vec#Vec[T]#new() -> Vec[T] {
+  vec_new()
+}
+
+fn inherent#Vec#Vec[T]#push(self/67: Vec[T], elem/68: T) -> Vec[T] {
+  vec_push(self/67, elem/68)
+}
+
+fn inherent#Vec#Vec[T]#len(self/74: Vec[T]) -> int32 {
+  vec_len(self/74)
 }

@@ -2,20 +2,20 @@ fn main() -> unit {
   join ret6() -> unit {
     ()
   } in
-  let vi/0 = vec_new() in
-  let vi/1 = vec_push(vi/0, 42) in
+  let vi/0 = inherent#Vec#Vec[T]#new__T_int32() in
+  let vi/1 = inherent#Vec#Vec[T]#push__T_int32(vi/0, 42) in
   let val_i/2 = vec_get(vi/1, 0) in
-  let len_i/3 = vec_len(vi/1) in
-  let vs/4 = vec_new() in
-  let vs/5 = vec_push(vs/4, "hello") in
-  let vs/6 = vec_push(vs/5, "world") in
+  let len_i/3 = inherent#Vec#Vec[T]#len__T_int32(vi/1) in
+  let vs/4 = inherent#Vec#Vec[T]#new__T_string() in
+  let vs/5 = inherent#Vec#Vec[T]#push__T_string(vs/4, "hello") in
+  let vs/6 = inherent#Vec#Vec[T]#push__T_string(vs/5, "world") in
   let val_s/7 = vec_get(vs/6, 1) in
-  let len_s/8 = vec_len(vs/6) in
-  let vb/9 = vec_new() in
-  let vb/10 = vec_push(vb/9, true) in
-  let vb/11 = vec_push(vb/10, false) in
+  let len_s/8 = inherent#Vec#Vec[T]#len__T_string(vs/6) in
+  let vb/9 = inherent#Vec#Vec[T]#new__T_bool() in
+  let vb/10 = inherent#Vec#Vec[T]#push__T_bool(vb/9, true) in
+  let vb/11 = inherent#Vec#Vec[T]#push__T_bool(vb/10, false) in
   let val_b/12 = vec_get(vb/11, 0) in
-  let len_b/13 = vec_len(vb/11) in
+  let len_b/13 = inherent#Vec#Vec[T]#len__T_bool(vb/11) in
   let t7 = int32_to_string(val_i/2) in
   let mtmp0 = println__T_string(t7) in
   let t8 = int32_to_string(len_i/3) in
@@ -30,10 +30,82 @@ fn main() -> unit {
   jump ret6()
 }
 
+fn inherent#Vec#Vec[T]#new__T_int32() -> Vec[int32] {
+  join ret12(retv13: Vec[int32]) -> Vec[int32] {
+    retv13
+  } in
+  let t14 = vec_new() in
+  jump ret12(t14)
+}
+
+fn inherent#Vec#Vec[T]#push__T_int32(self/67: Vec[int32], elem/68: int32) -> Vec[int32] {
+  join ret15(retv16: Vec[int32]) -> Vec[int32] {
+    retv16
+  } in
+  let t17 = vec_push(self/67, elem/68) in
+  jump ret15(t17)
+}
+
+fn inherent#Vec#Vec[T]#len__T_int32(self/74: Vec[int32]) -> int32 {
+  join ret18(retv19: int32) -> int32 {
+    retv19
+  } in
+  let t20 = vec_len(self/74) in
+  jump ret18(t20)
+}
+
+fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
+  join ret21(retv22: Vec[string]) -> Vec[string] {
+    retv22
+  } in
+  let t23 = vec_new() in
+  jump ret21(t23)
+}
+
+fn inherent#Vec#Vec[T]#push__T_string(self/67: Vec[string], elem/68: string) -> Vec[string] {
+  join ret24(retv25: Vec[string]) -> Vec[string] {
+    retv25
+  } in
+  let t26 = vec_push(self/67, elem/68) in
+  jump ret24(t26)
+}
+
+fn inherent#Vec#Vec[T]#len__T_string(self/74: Vec[string]) -> int32 {
+  join ret27(retv28: int32) -> int32 {
+    retv28
+  } in
+  let t29 = vec_len(self/74) in
+  jump ret27(t29)
+}
+
+fn inherent#Vec#Vec[T]#new__T_bool() -> Vec[bool] {
+  join ret30(retv31: Vec[bool]) -> Vec[bool] {
+    retv31
+  } in
+  let t32 = vec_new() in
+  jump ret30(t32)
+}
+
+fn inherent#Vec#Vec[T]#push__T_bool(self/67: Vec[bool], elem/68: bool) -> Vec[bool] {
+  join ret33(retv34: Vec[bool]) -> Vec[bool] {
+    retv34
+  } in
+  let t35 = vec_push(self/67, elem/68) in
+  jump ret33(t35)
+}
+
+fn inherent#Vec#Vec[T]#len__T_bool(self/74: Vec[bool]) -> int32 {
+  join ret36(retv37: int32) -> int32 {
+    retv37
+  } in
+  let t38 = vec_len(self/74) in
+  jump ret36(t38)
+}
+
 fn println__T_string(value/1: string) -> unit {
-  join ret12() -> unit {
+  join ret39() -> unit {
     ()
   } in
-  let t13 = string_println(value/1) in
-  jump ret12()
+  let t40 = string_println(value/1) in
+  jump ret39()
 }

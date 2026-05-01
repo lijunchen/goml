@@ -12,7 +12,7 @@ fn main() -> unit {
   let v/2 = inherent#Vec#Vec[int32]#push(v/1, 20) in
   let v/3 = inherent#Vec#Vec[int32]#push(v/2, 30) in
   let v/4 = inherent#Vec#Vec[int32]#push(v/3, 40) in
-  let s/5 = slice(v/4, 1, 4) in
+  let s/5 = inherent#Vec#Vec[int32]#slice(v/4, 1, 4) in
   let _wild0 = println(inherent#Slice#Slice[int32]#len(s/5)) in
   let _wild1 = println(inherent#Slice#Slice[int32]#get(s/5, 0)) in
   let _wild2 = println(inherent#Slice#Slice[int32]#get(s/5, 1)) in
@@ -31,14 +31,18 @@ fn inherent#Vec#Vec[T]#push(self/67: Vec[T], elem/68: T) -> Vec[T] {
   vec_push(self/67, elem/68)
 }
 
-fn inherent#Slice#Slice[T]#get(self/75: Slice[T], index/76: int32) -> T {
-  slice_get(self/75, index/76)
+fn inherent#Vec#Vec[T]#slice(self/75: Vec[T], start/76: int32, end/77: int32) -> Slice[T] {
+  slice(self/75, start/76, end/77)
 }
 
-fn inherent#Slice#Slice[T]#len(self/77: Slice[T]) -> int32 {
-  slice_len(self/77)
+fn inherent#Slice#Slice[T]#get(self/78: Slice[T], index/79: int32) -> T {
+  slice_get(self/78, index/79)
 }
 
-fn inherent#Slice#Slice[T]#sub(self/78: Slice[T], start/79: int32, end/80: int32) -> Slice[T] {
-  slice_sub(self/78, start/79, end/80)
+fn inherent#Slice#Slice[T]#len(self/80: Slice[T]) -> int32 {
+  slice_len(self/80)
+}
+
+fn inherent#Slice#Slice[T]#sub(self/81: Slice[T], start/82: int32, end/83: int32) -> Slice[T] {
+  slice_sub(self/81, start/82, end/83)
 }

@@ -21,7 +21,7 @@ func main0() struct{} {
     var v__2 []int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_int32(v__1, 20)
     var v__3 []int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_int32(v__2, 30)
     var v__4 []int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_int32(v__3, 40)
-    var s__5 []int32 = v__4[1:4]
+    var s__5 []int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_slice_x5f__x5f_T_x5f_int32(v__4, 1, 4)
     var t8 int32 = _goml_inherent_x23_Slice_x23_Slice_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_int32(s__5)
     println__T_int32(t8)
     var t9 int32 = _goml_inherent_x23_Slice_x23_Slice_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_int32(s__5, 0)
@@ -54,31 +54,38 @@ func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_int32(sel
     return retv19
 }
 
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_slice_x5f__x5f_T_x5f_int32(self__75 []int32, start__76 int32, end__77 int32) []int32 {
+    var retv22 []int32
+    var t23 []int32 = self__75[start__76:end__77]
+    retv22 = t23
+    return retv22
+}
+
 func println__T_int32(value__1 int32) struct{} {
-    var t22 string = int32_to_string(value__1)
-    string_println(t22)
+    var t25 string = int32_to_string(value__1)
+    string_println(t25)
     return struct{}{}
 }
 
-func _goml_inherent_x23_Slice_x23_Slice_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_int32(self__77 []int32) int32 {
-    var retv25 int32
-    var t26 int32 = int32(len(self__77))
-    retv25 = t26
-    return retv25
-}
-
-func _goml_inherent_x23_Slice_x23_Slice_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_int32(self__75 []int32, index__76 int32) int32 {
+func _goml_inherent_x23_Slice_x23_Slice_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_int32(self__80 []int32) int32 {
     var retv28 int32
-    var t29 int32 = self__75[index__76]
+    var t29 int32 = int32(len(self__80))
     retv28 = t29
     return retv28
 }
 
-func _goml_inherent_x23_Slice_x23_Slice_x5b_T_x5d__x23_sub_x5f__x5f_T_x5f_int32(self__78 []int32, start__79 int32, end__80 int32) []int32 {
-    var retv31 []int32
-    var t32 []int32 = self__78[start__79:end__80]
+func _goml_inherent_x23_Slice_x23_Slice_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_int32(self__78 []int32, index__79 int32) int32 {
+    var retv31 int32
+    var t32 int32 = self__78[index__79]
     retv31 = t32
     return retv31
+}
+
+func _goml_inherent_x23_Slice_x23_Slice_x5b_T_x5d__x23_sub_x5f__x5f_T_x5f_int32(self__81 []int32, start__82 int32, end__83 int32) []int32 {
+    var retv34 []int32
+    var t35 []int32 = self__81[start__82:end__83]
+    retv34 = t35
+    return retv34
 }
 
 func main() {

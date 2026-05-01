@@ -565,7 +565,7 @@ func lex_atom(source__18 string, start__19 int32) Tuple2_5Token_5int32 {
 func lex(source__27 string) []Token {
     var retv252 []Token
     var len__28 int32 = string_len(source__27)
-    var toks0__29 []Token = nil
+    var toks0__29 []Token = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_Token()
     var toks__30 *ref_Vec_5Token_x = ref__Ref_10Vec_5Token(toks0__29)
     var i__31 *ref_int32_x = ref__Ref_5int32(0)
     Loop_loop255:
@@ -578,7 +578,7 @@ func lex(source__27 string) []Token {
             var t260 bool = ch__32 == 40
             if t260 {
                 var t261 []Token = ref_get__Ref_10Vec_5Token(toks__30)
-                var t262 []Token = append(t261, LParen{})
+                var t262 []Token = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_Token(t261, LParen{})
                 ref_set__Ref_10Vec_5Token(toks__30, t262)
                 var t263 int32 = ref_get__Ref_5int32(i__31)
                 var t264 int32 = t263 + 1
@@ -587,7 +587,7 @@ func lex(source__27 string) []Token {
                 var t267 bool = ch__32 == 41
                 if t267 {
                     var t268 []Token = ref_get__Ref_10Vec_5Token(toks__30)
-                    var t269 []Token = append(t268, RParen{})
+                    var t269 []Token = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_Token(t268, RParen{})
                     ref_set__Ref_10Vec_5Token(toks__30, t269)
                     var t270 int32 = ref_get__Ref_5int32(i__31)
                     var t271 int32 = t270 + 1
@@ -606,7 +606,7 @@ func lex(source__27 string) []Token {
                         var next__34 int32 = x15
                         var tok__33 Token = x14
                         var t279 []Token = ref_get__Ref_10Vec_5Token(toks__30)
-                        var t280 []Token = append(t279, tok__33)
+                        var t280 []Token = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_Token(t279, tok__33)
                         ref_set__Ref_10Vec_5Token(toks__30, t280)
                         ref_set__Ref_5int32(i__31, next__34)
                     }
@@ -624,7 +624,7 @@ func lex(source__27 string) []Token {
 
 func env_lookup(env__35 []Binding, name__36 string) Value {
     var retv283 Value
-    var t284 int32 = int32(len(env__35))
+    var t284 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_Binding(env__35)
     var t285 int32 = t284 - 1
     var i__37 *ref_int32_x = ref__Ref_5int32(t285)
     var result__38 *ref_Value_x = ref__Ref_5Value(Nil{})
@@ -686,7 +686,7 @@ func lookup(local__41 []Binding, global__42 []Binding, name__43 string) Value {
 
 func parse_list(tokens__45 []Token, start__46 int32) Tuple2_10Vec_5SExpr_5int32 {
     var retv309 Tuple2_10Vec_5SExpr_5int32
-    var acc__47 []SExpr = nil
+    var acc__47 []SExpr = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_SExpr()
     var exprs__48 *ref_Vec_5SExpr_x = ref__Ref_10Vec_5SExpr(acc__47)
     var i__49 *ref_int32_x = ref__Ref_5int32(start__46)
     var done__50 *ref_bool_x = ref__Ref_4bool(false)
@@ -695,7 +695,7 @@ func parse_list(tokens__45 []Token, start__46 int32) Tuple2_10Vec_5SExpr_5int32 
         var t315 bool = ref_get__Ref_4bool(done__50)
         var t316 bool = !t315
         var t317 int32 = ref_get__Ref_5int32(i__49)
-        var t318 int32 = int32(len(tokens__45))
+        var t318 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_Token(tokens__45)
         var t319 bool = t317 < t318
         var t320 bool = t316 && t319
         if t320 {
@@ -710,7 +710,7 @@ func parse_list(tokens__45 []Token, start__46 int32) Tuple2_10Vec_5SExpr_5int32 
                 var next__52 int32 = x30
                 var expr__51 SExpr = x29
                 var t324 []SExpr = ref_get__Ref_10Vec_5SExpr(exprs__48)
-                var t325 []SExpr = append(t324, expr__51)
+                var t325 []SExpr = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_SExpr(t324, expr__51)
                 ref_set__Ref_10Vec_5SExpr(exprs__48, t325)
                 ref_set__Ref_5int32(i__49, next__52)
             case RParen:
@@ -726,7 +726,7 @@ func parse_list(tokens__45 []Token, start__46 int32) Tuple2_10Vec_5SExpr_5int32 
                 var next__52 int32 = x35
                 var expr__51 SExpr = x34
                 var t331 []SExpr = ref_get__Ref_10Vec_5SExpr(exprs__48)
-                var t332 []SExpr = append(t331, expr__51)
+                var t332 []SExpr = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_SExpr(t331, expr__51)
                 ref_set__Ref_10Vec_5SExpr(exprs__48, t332)
                 ref_set__Ref_5int32(i__49, next__52)
             case Token_Int:
@@ -737,7 +737,7 @@ func parse_list(tokens__45 []Token, start__46 int32) Tuple2_10Vec_5SExpr_5int32 
                 var next__52 int32 = x39
                 var expr__51 SExpr = x38
                 var t335 []SExpr = ref_get__Ref_10Vec_5SExpr(exprs__48)
-                var t336 []SExpr = append(t335, expr__51)
+                var t336 []SExpr = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_SExpr(t335, expr__51)
                 ref_set__Ref_10Vec_5SExpr(exprs__48, t336)
                 ref_set__Ref_5int32(i__49, next__52)
             case Token_Bool:
@@ -748,7 +748,7 @@ func parse_list(tokens__45 []Token, start__46 int32) Tuple2_10Vec_5SExpr_5int32 
                 var next__52 int32 = x43
                 var expr__51 SExpr = x42
                 var t339 []SExpr = ref_get__Ref_10Vec_5SExpr(exprs__48)
-                var t340 []SExpr = append(t339, expr__51)
+                var t340 []SExpr = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_SExpr(t339, expr__51)
                 ref_set__Ref_10Vec_5SExpr(exprs__48, t340)
                 ref_set__Ref_5int32(i__49, next__52)
             default:
@@ -845,12 +845,12 @@ func parse_expr(tokens__53 []Token, start__54 int32) Tuple2_5SExpr_5int32 {
 func parse_program(tokens__60 []Token) []SExpr {
     var retv362 []SExpr
     var i__61 *ref_int32_x = ref__Ref_5int32(0)
-    var acc__62 []SExpr = nil
+    var acc__62 []SExpr = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_SExpr()
     var exprs__63 *ref_Vec_5SExpr_x = ref__Ref_10Vec_5SExpr(acc__62)
     Loop_loop365:
     for {
         var t366 int32 = ref_get__Ref_5int32(i__61)
-        var t367 int32 = int32(len(tokens__60))
+        var t367 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_Token(tokens__60)
         var t368 bool = t366 < t367
         if t368 {
             var t369 int32 = ref_get__Ref_5int32(i__61)
@@ -860,7 +860,7 @@ func parse_program(tokens__60 []Token) []SExpr {
             var next__65 int32 = x55
             var expr__64 SExpr = x54
             var t370 []SExpr = ref_get__Ref_10Vec_5SExpr(exprs__63)
-            var t371 []SExpr = append(t370, expr__64)
+            var t371 []SExpr = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_SExpr(t370, expr__64)
             ref_set__Ref_10Vec_5SExpr(exprs__63, t371)
             ref_set__Ref_5int32(i__61, next__65)
             continue
@@ -960,7 +960,7 @@ func eval(expr__72 SExpr, local__73 []Binding, global__74 *ref_Vec_7Binding_x) V
 
 func eval_list(items__79 []SExpr, local__80 []Binding, global__81 *ref_Vec_7Binding_x) Value {
     var retv394 Value
-    var t397 int32 = int32(len(items__79))
+    var t397 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_SExpr(items__79)
     var t398 bool = t397 == 0
     var jp396 Value
     if t398 {
@@ -1006,7 +1006,7 @@ func eval_list_sym(name__86 string, items__87 []SExpr, local__88 []Binding, glob
         var t409 Value = eval_begin(items__87, 1, local__88, global__89)
         jp408 = t409
     case "define":
-        var t412 int32 = int32(len(items__87))
+        var t412 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_SExpr(items__87)
         var t413 bool = t412 == 3
         var jp411 Value
         if t413 {
@@ -1027,7 +1027,7 @@ func eval_list_sym(name__86 string, items__87 []SExpr, local__88 []Binding, glob
                     name: var__90,
                     value: value__91,
                 }
-                var updated__93 []Binding = append(env__92, t417)
+                var updated__93 []Binding = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_Binding(env__92, t417)
                 ref_set__Ref_12Vec_7Binding(global__89, updated__93)
                 jp415 = value__91
             case List:
@@ -1041,7 +1041,7 @@ func eval_list_sym(name__86 string, items__87 []SExpr, local__88 []Binding, glob
         }
         jp408 = jp411
     case "if":
-        var t420 int32 = int32(len(items__87))
+        var t420 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_SExpr(items__87)
         var t421 bool = t420 == 4
         var jp419 Value
         if t421 {
@@ -1064,7 +1064,7 @@ func eval_list_sym(name__86 string, items__87 []SExpr, local__88 []Binding, glob
         }
         jp408 = jp419
     case "lambda":
-        var t432 int32 = int32(len(items__87))
+        var t432 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_SExpr(items__87)
         var t433 bool = t432 == 3
         var jp431 Value
         if t433 {
@@ -1140,7 +1140,7 @@ func eval_begin(items__100 []SExpr, start__101 int32, local__102 []Binding, glob
     Loop_loop454:
     for {
         var t455 int32 = ref_get__Ref_5int32(i__104)
-        var t456 int32 = int32(len(items__100))
+        var t456 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_SExpr(items__100)
         var t457 bool = t455 < t456
         if t457 {
             var t458 int32 = ref_get__Ref_5int32(i__104)
@@ -1163,12 +1163,12 @@ func eval_begin(items__100 []SExpr, start__101 int32, local__102 []Binding, glob
 func params_from_sexprs(items__107 []SExpr) []string {
     var retv464 []string
     var i__108 *ref_int32_x = ref__Ref_5int32(0)
-    var acc__109 []string = nil
+    var acc__109 []string = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_string()
     var params__110 *ref_Vec_6string_x = ref__Ref_11Vec_6string(acc__109)
     Loop_loop467:
     for {
         var t468 int32 = ref_get__Ref_5int32(i__108)
-        var t469 int32 = int32(len(items__107))
+        var t469 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_SExpr(items__107)
         var t470 bool = t468 < t469
         if t470 {
             var t471 int32 = ref_get__Ref_5int32(i__108)
@@ -1186,7 +1186,7 @@ func params_from_sexprs(items__107 []SExpr) []string {
                 var x88 string = mtmp85.(SExpr_Sym)._0
                 var name__111 string = x88
                 var t479 []string = ref_get__Ref_11Vec_6string(params__110)
-                var t480 []string = append(t479, name__111)
+                var t480 []string = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_string(t479, name__111)
                 ref_set__Ref_11Vec_6string(params__110, t480)
                 var t481 int32 = ref_get__Ref_5int32(i__108)
                 var t482 int32 = t481 + 1
@@ -1211,19 +1211,19 @@ func params_from_sexprs(items__107 []SExpr) []string {
 func eval_args(items__112 []SExpr, start__113 int32, local__114 []Binding, global__115 *ref_Vec_7Binding_x) []Value {
     var retv488 []Value
     var i__116 *ref_int32_x = ref__Ref_5int32(start__113)
-    var acc__117 []Value = nil
+    var acc__117 []Value = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_Value()
     var args__118 *ref_Vec_5Value_x = ref__Ref_10Vec_5Value(acc__117)
     Loop_loop491:
     for {
         var t492 int32 = ref_get__Ref_5int32(i__116)
-        var t493 int32 = int32(len(items__112))
+        var t493 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_SExpr(items__112)
         var t494 bool = t492 < t493
         if t494 {
             var t495 int32 = ref_get__Ref_5int32(i__116)
             var t496 SExpr = items__112[t495]
             var v__119 Value = eval(t496, local__114, global__115)
             var t497 []Value = ref_get__Ref_10Vec_5Value(args__118)
-            var t498 []Value = append(t497, v__119)
+            var t498 []Value = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_Value(t497, v__119)
             ref_set__Ref_10Vec_5Value(args__118, t498)
             var t499 int32 = ref_get__Ref_5int32(i__116)
             var t500 int32 = t499 + 1
@@ -1243,7 +1243,7 @@ func apply_builtin(name__120 string, args__121 []Value) Value {
     var jp505 Value
     switch name__120 {
     case "=":
-        var t508 int32 = int32(len(args__121))
+        var t508 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_Value(args__121)
         var t509 bool = t508 == 2
         var jp507 Value
         if t509 {
@@ -1350,7 +1350,7 @@ func apply_builtin(name__120 string, args__121 []Value) Value {
         Loop_loop534:
         for {
             var t535 int32 = ref_get__Ref_5int32(i__126)
-            var t536 int32 = int32(len(args__121))
+            var t536 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_Value(args__121)
             var t537 bool = t535 < t536
             if t537 {
                 var t538 int32 = ref_get__Ref_5int32(i__126)
@@ -1398,7 +1398,7 @@ func apply_builtin(name__120 string, args__121 []Value) Value {
         Loop_loop557:
         for {
             var t558 int32 = ref_get__Ref_5int32(i__129)
-            var t559 int32 = int32(len(args__121))
+            var t559 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_Value(args__121)
             var t560 bool = t558 < t559
             if t560 {
                 var t561 int32 = ref_get__Ref_5int32(i__129)
@@ -1441,7 +1441,7 @@ func apply_builtin(name__120 string, args__121 []Value) Value {
         retv503 = jp505
         return retv503
     case "-":
-        var mtmp118 int32 = int32(len(args__121))
+        var mtmp118 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_Value(args__121)
         var jp578 Value
         switch mtmp118 {
         case 1:
@@ -1517,7 +1517,7 @@ func apply_builtin(name__120 string, args__121 []Value) Value {
         retv503 = jp505
         return retv503
     case "/":
-        var t593 int32 = int32(len(args__121))
+        var t593 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_Value(args__121)
         var t594 bool = t593 == 2
         var jp592 Value
         if t594 {
@@ -1608,10 +1608,10 @@ func apply_lambda(lambda__141 Lambda, args__142 []Value) Value {
     for {
         var t617 int32 = ref_get__Ref_5int32(i__144)
         var t618 []string = lambda__141.params
-        var t619 int32 = int32(len(t618))
+        var t619 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_string(t618)
         var t620 bool = t617 < t619
         var t621 int32 = ref_get__Ref_5int32(i__144)
-        var t622 int32 = int32(len(args__142))
+        var t622 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_Value(args__142)
         var t623 bool = t621 < t622
         var t624 bool = t620 && t623
         if t624 {
@@ -1625,7 +1625,7 @@ func apply_lambda(lambda__141 Lambda, args__142 []Value) Value {
                 name: name__145,
                 value: value__146,
             }
-            var updated__147 []Binding = append(t628, t629)
+            var updated__147 []Binding = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_Binding(t628, t629)
             ref_set__Ref_12Vec_7Binding(env__143, updated__147)
             var t630 int32 = ref_get__Ref_5int32(i__144)
             var t631 int32 = t630 + 1
@@ -1644,24 +1644,129 @@ func apply_lambda(lambda__141 Lambda, args__142 []Value) Value {
 }
 
 func main0() struct{} {
-    var t634 []Binding = nil
+    var t634 []Binding = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_Binding()
     var global__148 *ref_Vec_7Binding_x = ref__Ref_12Vec_7Binding(t634)
     var program__149 string = "(begin (define fact (lambda (n) (if (= n 0) 1 (* n (fact (- n 1)))))) (define add3 (lambda (a b c) (+ a (+ b c)))) (fact 6))"
     var t635 []Token = lex(program__149)
     var exprs__150 []SExpr = parse_program(t635)
     var t636 SExpr = exprs__150[0]
-    var t637 []Binding = nil
+    var t637 []Binding = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_Binding()
     var result__151 Value = eval(t636, t637, global__148)
     var t638 string = value_to_string(result__151)
     println__T_string(t638)
     var t639 []Token = lex("(add3 10 20 30)")
     var exprs2__152 []SExpr = parse_program(t639)
     var t640 SExpr = exprs2__152[0]
-    var t641 []Binding = nil
+    var t641 []Binding = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_Binding()
     var result2__153 Value = eval(t640, t641, global__148)
     var t642 string = value_to_string(result2__153)
     println__T_string(t642)
     return struct{}{}
+}
+
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_Token() []Token {
+    var retv644 []Token
+    var t645 []Token = nil
+    retv644 = t645
+    return retv644
+}
+
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_Token(self__67 []Token, elem__68 Token) []Token {
+    var retv647 []Token
+    var t648 []Token = append(self__67, elem__68)
+    retv647 = t648
+    return retv647
+}
+
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_Binding(self__74 []Binding) int32 {
+    var retv650 int32
+    var t651 int32 = int32(len(self__74))
+    retv650 = t651
+    return retv650
+}
+
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_SExpr() []SExpr {
+    var retv653 []SExpr
+    var t654 []SExpr = nil
+    retv653 = t654
+    return retv653
+}
+
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_Token(self__74 []Token) int32 {
+    var retv656 int32
+    var t657 int32 = int32(len(self__74))
+    retv656 = t657
+    return retv656
+}
+
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_SExpr(self__67 []SExpr, elem__68 SExpr) []SExpr {
+    var retv659 []SExpr
+    var t660 []SExpr = append(self__67, elem__68)
+    retv659 = t660
+    return retv659
+}
+
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_SExpr(self__74 []SExpr) int32 {
+    var retv662 int32
+    var t663 int32 = int32(len(self__74))
+    retv662 = t663
+    return retv662
+}
+
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_Binding(self__67 []Binding, elem__68 Binding) []Binding {
+    var retv665 []Binding
+    var t666 []Binding = append(self__67, elem__68)
+    retv665 = t666
+    return retv665
+}
+
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_string() []string {
+    var retv668 []string
+    var t669 []string = nil
+    retv668 = t669
+    return retv668
+}
+
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_string(self__67 []string, elem__68 string) []string {
+    var retv671 []string
+    var t672 []string = append(self__67, elem__68)
+    retv671 = t672
+    return retv671
+}
+
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_Value() []Value {
+    var retv674 []Value
+    var t675 []Value = nil
+    retv674 = t675
+    return retv674
+}
+
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_Value(self__67 []Value, elem__68 Value) []Value {
+    var retv677 []Value
+    var t678 []Value = append(self__67, elem__68)
+    retv677 = t678
+    return retv677
+}
+
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_Value(self__74 []Value) int32 {
+    var retv680 int32
+    var t681 int32 = int32(len(self__74))
+    retv680 = t681
+    return retv680
+}
+
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_string(self__74 []string) int32 {
+    var retv683 int32
+    var t684 int32 = int32(len(self__74))
+    retv683 = t684
+    return retv683
+}
+
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_Binding() []Binding {
+    var retv686 []Binding
+    var t687 []Binding = nil
+    retv686 = t687
+    return retv686
 }
 
 func println__T_string(value__1 string) struct{} {

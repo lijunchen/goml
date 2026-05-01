@@ -1,18 +1,18 @@
 fn main() -> unit {
-  let vi/0 = vec_new() in
-  let vi/1 = vec_push(vi/0, 42) in
+  let vi/0 = inherent#Vec#Vec[T]#new__T_int32() in
+  let vi/1 = inherent#Vec#Vec[T]#push__T_int32(vi/0, 42) in
   let val_i/2 = vec_get(vi/1, 0) in
-  let len_i/3 = vec_len(vi/1) in
-  let vs/4 = vec_new() in
-  let vs/5 = vec_push(vs/4, "hello") in
-  let vs/6 = vec_push(vs/5, "world") in
+  let len_i/3 = inherent#Vec#Vec[T]#len__T_int32(vi/1) in
+  let vs/4 = inherent#Vec#Vec[T]#new__T_string() in
+  let vs/5 = inherent#Vec#Vec[T]#push__T_string(vs/4, "hello") in
+  let vs/6 = inherent#Vec#Vec[T]#push__T_string(vs/5, "world") in
   let val_s/7 = vec_get(vs/6, 1) in
-  let len_s/8 = vec_len(vs/6) in
-  let vb/9 = vec_new() in
-  let vb/10 = vec_push(vb/9, true) in
-  let vb/11 = vec_push(vb/10, false) in
+  let len_s/8 = inherent#Vec#Vec[T]#len__T_string(vs/6) in
+  let vb/9 = inherent#Vec#Vec[T]#new__T_bool() in
+  let vb/10 = inherent#Vec#Vec[T]#push__T_bool(vb/9, true) in
+  let vb/11 = inherent#Vec#Vec[T]#push__T_bool(vb/10, false) in
   let val_b/12 = vec_get(vb/11, 0) in
-  let len_b/13 = vec_len(vb/11) in
+  let len_b/13 = inherent#Vec#Vec[T]#len__T_bool(vb/11) in
   let mtmp0 = println__T_string(int32_to_string(val_i/2)) in
   {
     let mtmp1 = println__T_string(int32_to_string(len_i/3)) in
@@ -32,6 +32,42 @@ fn main() -> unit {
       }
     }
   }
+}
+
+fn inherent#Vec#Vec[T]#new__T_int32() -> Vec[int32] {
+  vec_new()
+}
+
+fn inherent#Vec#Vec[T]#push__T_int32(self/67: Vec[int32], elem/68: int32) -> Vec[int32] {
+  vec_push(self/67, elem/68)
+}
+
+fn inherent#Vec#Vec[T]#len__T_int32(self/74: Vec[int32]) -> int32 {
+  vec_len(self/74)
+}
+
+fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
+  vec_new()
+}
+
+fn inherent#Vec#Vec[T]#push__T_string(self/67: Vec[string], elem/68: string) -> Vec[string] {
+  vec_push(self/67, elem/68)
+}
+
+fn inherent#Vec#Vec[T]#len__T_string(self/74: Vec[string]) -> int32 {
+  vec_len(self/74)
+}
+
+fn inherent#Vec#Vec[T]#new__T_bool() -> Vec[bool] {
+  vec_new()
+}
+
+fn inherent#Vec#Vec[T]#push__T_bool(self/67: Vec[bool], elem/68: bool) -> Vec[bool] {
+  vec_push(self/67, elem/68)
+}
+
+fn inherent#Vec#Vec[T]#len__T_bool(self/74: Vec[bool]) -> int32 {
+  vec_len(self/74)
 }
 
 fn println__T_string(value/1: string) -> unit {

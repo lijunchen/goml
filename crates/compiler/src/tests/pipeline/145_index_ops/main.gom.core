@@ -47,7 +47,7 @@ fn main() -> unit {
     vec_set(place_root10, index11, value13)
   } in
   let _wild15 = println(vec_get(vec2/5, 0)) in
-  let s/6 = slice(vec2/5, 0, 2) in
+  let s/6 = inherent#Vec#Vec[int32]#slice(vec2/5, 0, 2) in
   let _wild16 = println(slice_get(s/6, 1)) in
   let map/7 = inherent#HashMap#HashMap[string,int32]#new() in
   let _wild21 = {
@@ -119,6 +119,10 @@ fn inherent#Vec#Vec[T]#new() -> Vec[T] {
 
 fn inherent#Vec#Vec[T]#push(self/67: Vec[T], elem/68: T) -> Vec[T] {
   vec_push(self/67, elem/68)
+}
+
+fn inherent#Vec#Vec[T]#slice(self/75: Vec[T], start/76: int32, end/77: int32) -> Slice[T] {
+  slice(self/75, start/76, end/77)
 }
 
 fn inherent#HashMap#HashMap[K,V]#new() -> HashMap[K, V] {

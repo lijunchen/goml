@@ -12,7 +12,7 @@ fn main() -> unit {
     let v/2: Vec[int32] = (Vec[int32]::push : (Vec[int32], int32) -> Vec[int32])((v/1 : Vec[int32]), 20);
     let v/3: Vec[int32] = (Vec[int32]::push : (Vec[int32], int32) -> Vec[int32])((v/2 : Vec[int32]), 30);
     let v/4: Vec[int32] = (Vec[int32]::push : (Vec[int32], int32) -> Vec[int32])((v/3 : Vec[int32]), 40);
-    let s/5: Slice[int32] = (slice : (Vec[int32], int32, int32) -> Slice[int32])((v/4 : Vec[int32]), 1, 4);
+    let s/5: Slice[int32] = (Vec[int32]::slice : (Vec[int32], int32, int32) -> Slice[int32])((v/4 : Vec[int32]), 1, 4);
     (println : (int32) -> unit)((Slice[int32]::len : (Slice[int32]) -> int32)((s/5 : Slice[int32])));
     (println : (int32) -> unit)((Slice[int32]::get : (Slice[int32], int32) -> int32)((s/5 : Slice[int32]), 0));
     (println : (int32) -> unit)((Slice[int32]::get : (Slice[int32], int32) -> int32)((s/5 : Slice[int32]), 1));

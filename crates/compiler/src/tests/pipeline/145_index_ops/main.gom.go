@@ -242,7 +242,7 @@ func main0() struct{} {
     vec_set__Vec_5int32(place_root10, index11, value13)
     var t81 int32 = vec2__5[0]
     println__T_int32(t81)
-    var s__6 []int32 = vec2__5[0:2]
+    var s__6 []int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_slice_x5f__x5f_T_x5f_int32(vec2__5, 0, 2)
     var t82 int32 = s__6[1]
     println__T_int32(t82)
     var map__7 *hashmap_string_int32_x = _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_new_x5f__x5f_K_x5f_string_x5f__x5f_V_x5f_int32()
@@ -368,25 +368,32 @@ func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_int32(sel
     return retv131
 }
 
-func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_new_x5f__x5f_K_x5f_string_x5f__x5f_V_x5f_int32() *hashmap_string_int32_x {
-    var retv134 *hashmap_string_int32_x
-    var t135 *hashmap_string_int32_x = hashmap_new__HashMap_6string_5int32()
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_slice_x5f__x5f_T_x5f_int32(self__75 []int32, start__76 int32, end__77 int32) []int32 {
+    var retv134 []int32
+    var t135 []int32 = self__75[start__76:end__77]
     retv134 = t135
     return retv134
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f__x5b_int32_x3b_2_x5d_() [][2]int32 {
-    var retv137 [][2]int32
-    var t138 [][2]int32 = nil
+func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_new_x5f__x5f_K_x5f_string_x5f__x5f_V_x5f_int32() *hashmap_string_int32_x {
+    var retv137 *hashmap_string_int32_x
+    var t138 *hashmap_string_int32_x = hashmap_new__HashMap_6string_5int32()
     retv137 = t138
     return retv137
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f__x5b_int32_x3b_2_x5d_(self__67 [][2]int32, elem__68 [2]int32) [][2]int32 {
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f__x5b_int32_x3b_2_x5d_() [][2]int32 {
     var retv140 [][2]int32
-    var t141 [][2]int32 = append(self__67, elem__68)
+    var t141 [][2]int32 = nil
     retv140 = t141
     return retv140
+}
+
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f__x5b_int32_x3b_2_x5d_(self__67 [][2]int32, elem__68 [2]int32) [][2]int32 {
+    var retv143 [][2]int32
+    var t144 [][2]int32 = append(self__67, elem__68)
+    retv143 = t144
+    return retv143
 }
 
 func main() {

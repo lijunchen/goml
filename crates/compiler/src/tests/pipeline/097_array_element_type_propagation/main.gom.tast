@@ -11,14 +11,14 @@ fn main() -> unit {
     let i/1: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
     while (ref_get : (Ref[int32]) -> int32)((i/1 : Ref[int32])) < 3 {
         {
-            (println : (string) -> unit)((uint8_to_string : (uint8) -> string)((array_get : ([uint8; 3], int32) -> uint8)((arr/0 : [uint8; 3]), (ref_get : (Ref[int32]) -> int32)((i/1 : Ref[int32])))));
+            (println : (string) -> unit)((uint8_to_string : (uint8) -> string)((arr/0 : [uint8; 3])[(ref_get : (Ref[int32]) -> int32)((i/1 : Ref[int32]))]));
             (ref_set : (Ref[int32], int32) -> unit)((i/1 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/1 : Ref[int32])) + 1);
         }
     };
     let floats/2: [float32; 2] = [1.5, 2.5];
-    (println : (string) -> unit)((float32_to_string : (float32) -> string)((array_get : ([float32; 2], int32) -> float32)((floats/2 : [float32; 2]), 0)));
-    (println : (string) -> unit)((float32_to_string : (float32) -> string)((array_get : ([float32; 2], int32) -> float32)((floats/2 : [float32; 2]), 1)));
+    (println : (string) -> unit)((float32_to_string : (float32) -> string)((floats/2 : [float32; 2])[0]));
+    (println : (string) -> unit)((float32_to_string : (float32) -> string)((floats/2 : [float32; 2])[1]));
     let longs/3: [int64; 2] = [100, 200];
-    (println : (string) -> unit)((int64_to_string : (int64) -> string)((array_get : ([int64; 2], int32) -> int64)((longs/3 : [int64; 2]), 0)));
-    (println : (string) -> unit)((int64_to_string : (int64) -> string)((array_get : ([int64; 2], int32) -> int64)((longs/3 : [int64; 2]), 1)));
+    (println : (string) -> unit)((int64_to_string : (int64) -> string)((longs/3 : [int64; 2])[0]));
+    (println : (string) -> unit)((int64_to_string : (int64) -> string)((longs/3 : [int64; 2])[1]));
 }

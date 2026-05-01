@@ -7,18 +7,26 @@ fn println(value/1: T) -> unit {
 }
 
 fn update_array(arr/0: [int32; 3]) -> [int32; 3] {
-  array_set(arr/0, 1, 42)
+  let arr/1 = arr/0 in
+  let _wild4 = {
+    let place_root0 = arr/1 in
+    let index1 = 1 in
+    let place2 = array_get(place_root0, index1) in
+    let value3 = 42 in
+    arr/1 = array_set(place_root0, index1, value3)
+  } in
+  arr/1
 }
 
-fn read_array(arr/1: [int32; 3]) -> int32 {
-  array_get(arr/1, 1)
+fn read_array(arr/2: [int32; 3]) -> int32 {
+  array_get(arr/2, 1)
 }
 
 fn main() -> unit {
-  let arr/2 = [1, 2, 3] in
-  let updated/3 = update_array(arr/2) in
-  let value/4 = read_array(updated/3) in
-  let mtmp0 = println(int32_to_string(value/4)) in
+  let arr/3 = [1, 2, 3] in
+  let updated/4 = update_array(arr/3) in
+  let value/5 = read_array(updated/4) in
+  let mtmp5 = println(int32_to_string(value/5)) in
   {
     ()
   }
