@@ -5,8 +5,8 @@ impl Eq for dyn Hash {
 }
 
 fn main() {
-    let h: HashMap[dyn Hash, string] = hashmap_new();
+    let h: HashMap[dyn Hash, string] = HashMap::new();
     let inner: dyn Hash = 1;
-    hashmap_set(h, inner, "one");
-    println(bool_to_string(hashmap_contains(h, inner)));
+    h.set(inner, "one");
+    println(bool_to_string(h.contains(inner)));
 }

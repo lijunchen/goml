@@ -12,7 +12,7 @@ fn main() {
     let display = |items: [dyn Show; 3]| {
         let i = ref(0i32);
         while ref_get(i) < 3 {
-            println(Show::show(array_get(items, ref_get(i))));
+            println(Show::show(items[ref_get(i)]));
             ref_set(i, ref_get(i) + 1);
         };
     };

@@ -988,7 +988,7 @@ fn main() {
 "#,
             5,
             6,
-            expect!["get, len, new, push, set"],
+            expect!["get, len, new, push, set, slice"],
         );
     }
 
@@ -1021,7 +1021,7 @@ fn main() {
 "#,
             4,
             17,
-            expect!["get, len, new, push, set"],
+            expect!["get, len, new, push, set, slice"],
         );
     }
 
@@ -2063,19 +2063,19 @@ root = "main.gom"
     }
 
     #[test]
-    fn goto_definition_builtin_vec_new() {
+    fn goto_definition_builtin_vec_new_method() {
         check_goto_token(
             r#"
 
 
 fn main() -> unit {
-    let v: Vec[int32] = vec_new();
+    let v: Vec[int32] = Vec::new();
     ()
 }
 "#,
-            "vec_new()",
-            "vec_new",
-            expect!["src/builtin.gom:116:10"],
+            "Vec::new()",
+            "new",
+            expect!["src/builtin.gom:440:7"],
         );
     }
 
@@ -2094,7 +2094,7 @@ fn main() -> unit {
 "#,
             "ref_get(r)",
             "ref_get",
-            expect!["src/builtin.gom:504:10"],
+            expect!["src/builtin.gom:508:10"],
         );
     }
 
@@ -2119,13 +2119,13 @@ fn main() -> unit {
             src,
             "HashMap::new()",
             "new",
-            expect!["src/builtin.gom:476:7"],
+            expect!["src/builtin.gom:480:7"],
         );
         check_goto_token(
             src,
             "m.set(Key::A, 1)",
             "set",
-            expect!["src/builtin.gom:484:7"],
+            expect!["src/builtin.gom:488:7"],
         );
     }
 
@@ -2576,7 +2576,7 @@ fn main() {
 
 fn main() {
     let arr: [int32; 3] = [1, 2, 3];
-    let first = array_get(arr, 0);
+    let first = arr[0];
 }
 "#,
             4,
@@ -2800,11 +2800,11 @@ fn main() {
 
 
 fn main() {
-    let v = vec_new();
-    vec_push(v, 1);
-    vec_push(v, 2);
-    let len = vec_len(v);
-    let first = vec_get(v, 0);
+    let v = Vec::new();
+    let v = v.push(1);
+    let v = v.push(2);
+    let len = v.len();
+    let first = v[0];
 }
 "#,
             expect!["no diagnostics"],
@@ -2818,9 +2818,9 @@ fn main() {
 
 
 fn main() {
-    let arr: [int32; 3] = [1, 2, 3];
-    let v = array_get(arr, 0);
-    array_set(arr, 0, v + 1);
+    let mut arr: [int32; 3] = [1, 2, 3];
+    let v = arr[0];
+    arr[0] = v + 1;
 }
 "#,
             expect!["no diagnostics"],
@@ -2850,12 +2850,12 @@ fn main() {
 
 
 fn main() {
-    let m = hashmap_new();
-    hashmap_set(m, "key", 42);
-    let v = hashmap_get(m, "key");
-    let has = hashmap_contains(m, "key");
-    let len = hashmap_len(m);
-    hashmap_remove(m, "key");
+    let m = HashMap::new();
+    m.set("key", 42);
+    let v = m.get("key");
+    let has = m.contains("key");
+    let len = m.len();
+    m.remove("key");
 }
 "#,
             expect!["no diagnostics"],

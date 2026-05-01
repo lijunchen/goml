@@ -8,13 +8,13 @@ fn main() {
     
     let nums: [int32; 3] = [1, 2, 3];
     let doubled: [int32; 3] = [
-        apply(|x| x * 2, array_get(nums, 0)),
-        apply(|x| x * 2, array_get(nums, 1)),
-        apply(|x| x * 2, array_get(nums, 2)),
+        apply(|x| x * 2, nums[0]),
+        apply(|x| x * 2, nums[1]),
+        apply(|x| x * 2, nums[2]),
     ];
     let i = ref(0);
     while ref_get(i) < 3 {
-        println(int32_to_string(array_get(doubled, ref_get(i))) + " ");
+        println(int32_to_string(doubled[ref_get(i)]) + " ");
         ref_set(i, ref_get(i) + 1);
     };
     println("");

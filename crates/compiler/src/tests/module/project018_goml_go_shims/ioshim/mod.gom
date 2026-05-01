@@ -302,10 +302,10 @@ pub struct PipeWriter {
 }
 
 pub fn zero_bytes(n: int32) -> Vec[uint8] {
-    let out: Ref[Vec[uint8]] = ref(vec_new());
+    let out: Ref[Vec[uint8]] = ref(Vec::new());
     let index = ref(0);
     while ref_get(index) < n {
-        ref_set(out, vec_push(ref_get(out), 0u8));
+        ref_set(out, ref_get(out).push(0u8));
         ref_set(index, ref_get(index) + 1);
     };
     ref_get(out)
@@ -366,16 +366,16 @@ pub fn limit(reader: Reader, n: int64) -> Reader {
 }
 
 pub fn multi_text(parts: Vec[string]) -> Reader {
-    let raws: Ref[Vec[RawReader]] = ref(vec_new());
+    let raws: Ref[Vec[RawReader]] = ref(Vec::new());
     let index = ref(0);
-    while ref_get(index) < vec_len(parts) {
-        let text = vec_get(parts, ref_get(index));
-        ref_set(raws, vec_push(ref_get(raws), raw_string_reader(text)));
+    while ref_get(index) < parts.len() {
+        let text = parts[ref_get(index)];
+        ref_set(raws, ref_get(raws).push(raw_string_reader(text)));
         ref_set(index, ref_get(index) + 1);
     };
     let raw_vec = ref_get(raws);
     Reader {
-        raw: raw_multi_reader(slice(raw_vec, 0, vec_len(raw_vec))),
+        raw: raw_multi_reader(raw_vec.slice(0, raw_vec.len())),
     }
 }
 
@@ -416,11 +416,11 @@ pub fn write(writer: Writer, data: Vec[uint8]) -> Result[int32, GoError] {
 }
 
 pub fn write_to_multi_discard(text: string) -> Result[int32, GoError] {
-    let writers0: Vec[RawWriter] = vec_new();
-    let writers1 = vec_push(writers0, discard().raw);
-    let writers2 = vec_push(writers1, discard().raw);
+    let writers0: Vec[RawWriter] = Vec::new();
+    let writers1 = writers0.push(discard().raw);
+    let writers2 = writers1.push(discard().raw);
     let writer = Writer {
-        raw: raw_multi_writer(slice(writers2, 0, vec_len(writers2))),
+        raw: raw_multi_writer(writers2.slice(0, writers2.len())),
     };
     let written = raw_write_string(writer.raw, text)?;
     Result::Ok(raw_go_int_to_int32(written))

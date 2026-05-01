@@ -347,11 +347,11 @@ pub fn open(fs: FS, name: string) -> Result[File, GoError] {
 
 pub fn read_dir(fs: FS, name: string) -> Result[Vec[DirEntry], GoError] {
     let raw_entries = raw_read_dir(fs.raw, name)?;
-    let entries = ref(vec_new());
+    let entries = ref(Vec::new());
     let index = ref(0);
-    while ref_get(index) < vec_len(raw_entries) {
-        let entry = vec_get(raw_entries, ref_get(index));
-        ref_set(entries, vec_push(ref_get(entries), wrap_dir_entry(entry)));
+    while ref_get(index) < raw_entries.len() {
+        let entry = raw_entries[ref_get(index)];
+        ref_set(entries, ref_get(entries).push(wrap_dir_entry(entry)));
         ref_set(index, ref_get(index) + 1);
     };
     Result::Ok(ref_get(entries))
@@ -359,12 +359,12 @@ pub fn read_dir(fs: FS, name: string) -> Result[Vec[DirEntry], GoError] {
 
 pub fn read_dir_names(fs: FS, name: string) -> Result[Vec[string], GoError] {
     let entries = read_dir(fs, name)?;
-    let names: Ref[Vec[string]] = ref(vec_new());
+    let names: Ref[Vec[string]] = ref(Vec::new());
     let index = ref(0);
-    while ref_get(index) < vec_len(entries) {
-        let entry = vec_get(entries, ref_get(index));
+    while ref_get(index) < entries.len() {
+        let entry = entries[ref_get(index)];
         let _ = entry.is_dir();
-        ref_set(names, vec_push(ref_get(names), entry.name()));
+        ref_set(names, ref_get(names).push(entry.name()));
         ref_set(index, ref_get(index) + 1);
     };
     Result::Ok(ref_get(names))
@@ -487,8 +487,8 @@ pub fn has_name(fs: FS, name: string) -> Result[bool, GoError] {
     let names: Vec[string] = read_dir_names(fs, ".")?;
     let index = ref(0);
     let found = ref(false);
-    while ref_get(index) < vec_len(names) {
-        if vec_get(names, ref_get(index)) == name {
+    while ref_get(index) < names.len() {
+        if names[ref_get(index)] == name {
             ref_set(found, true);
         } else {
             ()

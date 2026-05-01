@@ -25,7 +25,7 @@ fn main() {
     let shapes = [Shape::Circle(5.0), Shape::Rectangle(3.0, 4.0), Shape::Triangle(3.0, 4.0, 5.0)];
     let i = ref(0);
     while ref_get(i) < 3 {
-        let s = array_get(shapes, ref_get(i));
+        let s = shapes[ref_get(i)];
         println(HasArea::area(s).to_string());
         ref_set(i, ref_get(i) + 1);
     };

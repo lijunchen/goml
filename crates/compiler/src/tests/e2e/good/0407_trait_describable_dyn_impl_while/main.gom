@@ -26,7 +26,7 @@ fn describe_all(items: [dyn Describable; 3]) -> string {
     let result = ref("");
     let i = ref(0);
     while ref_get(i) < 3 {
-        let item = array_get(items, ref_get(i));
+        let item = items[ref_get(i)];
         let sep = if ref_get(i) > 0 { ", " } else { "" };
         ref_set(result, ref_get(result) + sep + Describable::describe(item));
         ref_set(i, ref_get(i) + 1);

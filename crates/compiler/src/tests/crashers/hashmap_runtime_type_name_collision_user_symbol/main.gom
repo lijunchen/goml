@@ -5,8 +5,8 @@ struct hashmap_int32_int32_x {
 fn main() -> unit {
     let c = hashmap_int32_int32_x { value: 4i32 };
     let m: HashMap[int32, int32] = HashMap::new();
-    hashmap_set(m, 1i32, 5i32);
-    match hashmap_get(m, 1i32) {
+    m.set(1i32, 5i32);
+    match m.get(1i32) {
         Option::Some(v) => println(c.value + v),
         Option::None => println(0i32),
     }

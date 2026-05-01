@@ -31,6 +31,6 @@ impl Hash for Maybe[Node] {
 fn main() -> unit {
     let n = Node { value: 1i32, next: ref(Maybe::None) };
     let m: HashMap[Node, string] = HashMap::new();
-    hashmap_set(m, n, "ok");
-    println(hashmap_len(m).to_string())
+    m.set(n, "ok");
+    println(m.len().to_string())
 }

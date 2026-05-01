@@ -1,20 +1,20 @@
 fn main() {
-    let m = hashmap_new();
-    hashmap_set(m, "a", 1);
-    hashmap_set(m, "b", 2);
-    hashmap_set(m, "c", 3);
+    let m = HashMap::new();
+    m.set("a", 1);
+    m.set("b", 2);
+    m.set("c", 3);
     
-    match hashmap_get(m, "b") {
+    match m.get("b") {
         Option::Some(v) => println(int32_to_string(v)),
         Option::None => println("not found"),
     };
     
-    match hashmap_get(m, "z") {
+    match m.get("z") {
         Option::Some(v) => println(int32_to_string(v)),
         Option::None => println("not found"),
     };
     
-    println(int32_to_string(hashmap_len(m)));
-    println(bool_to_string(hashmap_contains(m, "a")));
-    println(bool_to_string(hashmap_contains(m, "z")));
+    println(int32_to_string(m.len()));
+    println(bool_to_string(m.contains("a")));
+    println(bool_to_string(m.contains("z")));
 }

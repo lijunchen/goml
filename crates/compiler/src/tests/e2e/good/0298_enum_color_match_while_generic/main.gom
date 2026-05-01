@@ -15,14 +15,14 @@ fn describe(c: Color) -> string {
 }
 
 fn main() {
-    let colors: Vec[Color] = vec_new();
-    vec_push(colors, Color::Red);
-    vec_push(colors, Color::Custom(255, 128, 0));
-    vec_push(colors, Color::Blue);
+    let colors: Vec[Color] = Vec::new();
+    let colors = colors.push(Color::Red);
+    let colors = colors.push(Color::Custom(255, 128, 0));
+    let colors = colors.push(Color::Blue);
     
     let i = ref(0);
-    while ref_get(i) < vec_len(colors) {
-        println(describe(vec_get(colors, ref_get(i))));
+    while ref_get(i) < colors.len() {
+        println(describe(colors[ref_get(i)]));
         ref_set(i, ref_get(i) + 1);
     };
 }

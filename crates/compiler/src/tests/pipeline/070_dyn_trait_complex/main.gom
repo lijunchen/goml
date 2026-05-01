@@ -108,11 +108,11 @@ fn main() -> unit {
     let s1 = call_via_closure(df2, "*");
     let s2 = render_star(dp1) + "|" + render_angle(df1);
 
-    let v: Vec[dyn Display] = vec_new();
-    let v = vec_push(v, dp1);
-    let v = vec_push(v, df1);
-    let v = vec_push(v, dc);
-    let vlen = vec_len(v);
+    let v: Vec[dyn Display] = Vec::new();
+    let v = v.push(dp1);
+    let v = v.push(df1);
+    let v = v.push(dc);
+    let vlen = v.len();
     let delta = match vlen {
         2 => 3,
         _ => 5,

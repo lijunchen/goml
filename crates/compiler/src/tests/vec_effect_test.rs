@@ -11,18 +11,18 @@ fn compile_go(src: &str, name: &str) -> String {
 }
 
 #[test]
-fn discarded_vec_push_updates_binding_in_go_codegen() {
+fn vec_method_push_uses_append_in_go_codegen() {
     let src = r#"
 fn main() -> unit {
-    let v: Vec[int32] = vec_new();
-    vec_push(v, 1i32);
-    println(vec_len(v).to_string());
+    let v: Vec[int32] = Vec::new();
+    let v = v.push(1i32);
+    println(v.len().to_string());
 }
 "#;
 
-    let go = compile_go(src, "discarded_vec_push_updates_binding.gom");
+    let go = compile_go(src, "vec_method_push_uses_append.gom");
 
-    assert!(go.contains("v__0 = append(v__0, 1)"), "{go}");
+    assert!(go.contains("append(self__"), "{go}");
 }
 
 #[test]

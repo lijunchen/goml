@@ -3,7 +3,7 @@ fn main() {
     let result = ref(10);
     let i = ref(0);
     while ref_get(i) < 3 {
-        let f = array_get(fns, ref_get(i));
+        let f = fns[ref_get(i)];
         ref_set(result, f(ref_get(result)));
         ref_set(i, ref_get(i) + 1);
     };

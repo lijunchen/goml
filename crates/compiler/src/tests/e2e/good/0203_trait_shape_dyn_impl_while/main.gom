@@ -24,7 +24,7 @@ fn main() {
     let shapes: [dyn Shape; 2] = [Circle { radius: 1.0 }, Rectangle { width: 2.0, height: 3.0 }];
     let i = ref(0);
     while ref_get(i) < 2 {
-        print_area(array_get(shapes, ref_get(i)));
+        print_area(shapes[ref_get(i)]);
         ref_set(i, ref_get(i) + 1);
     };
 }

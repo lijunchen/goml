@@ -1,11 +1,11 @@
 fn map_array3[T, U](arr: [T; 3], f: (T) -> U) -> [U; 3] {
-    [f(array_get(arr, 0)), f(array_get(arr, 1)), f(array_get(arr, 2))]
+    [f(arr[0]), f(arr[1]), f(arr[2])]
 }
 
 fn main() {
     let arr: [uint8; 3] = [10, 20, 30];
     let result = map_array3(arr, |x| uint8_to_string(x));
-    println(array_get(result, 0));
-    println(array_get(result, 1));
-    println(array_get(result, 2));
+    println(result[0]);
+    println(result[1]);
+    println(result[2]);
 }

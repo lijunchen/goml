@@ -1,17 +1,17 @@
 fn main() {
-    let m = hashmap_new();
-    hashmap_set(m, 1, "one");
-    hashmap_set(m, 2, "two");
-    hashmap_set(m, 3, "three");
+    let m = HashMap::new();
+    m.set(1, "one");
+    m.set(2, "two");
+    m.set(3, "three");
     
-    match hashmap_get(m, 2) {
+    match m.get(2) {
         Option::Some(v) => println(v),
         Option::None => println("not found"),
     };
     
-    println(int32_to_string(hashmap_len(m)));
+    println(int32_to_string(m.len()));
     
-    if hashmap_contains(m, 1) {
+    if m.contains(1) {
         println("contains 1")
     } else {
         println("missing 1")

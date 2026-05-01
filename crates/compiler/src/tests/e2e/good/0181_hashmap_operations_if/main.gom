@@ -1,18 +1,18 @@
 fn main() {
-    let m: HashMap[string, int32] = hashmap_new();
-    hashmap_set(m, "a", 1);
-    hashmap_set(m, "b", 2);
-    hashmap_set(m, "c", 3);
+    let m: HashMap[string, int32] = HashMap::new();
+    m.set("a", 1);
+    m.set("b", 2);
+    m.set("c", 3);
     
-    println(int32_to_string(hashmap_len(m)));
+    println(int32_to_string(m.len()));
     
-    if hashmap_contains(m, "a") {
+    if m.contains("a") {
         println("has a");
     } else {
         println("no a");
     };
     
-    if hashmap_contains(m, "d") {
+    if m.contains("d") {
         println("has d");
     } else {
         println("no d");

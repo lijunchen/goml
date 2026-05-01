@@ -21,10 +21,10 @@ fn dec(x: int32) -> int32 {
 }
 
 fn main() -> unit {
-    let fs: Vec[(int32) -> int32] = vec_new();
-    let fs = vec_push(fs, inc);
-    let fs = vec_push(fs, dec);
-    let f = vec_get(fs, 0);
+    let fs: Vec[(int32) -> int32] = Vec::new();
+    let fs = fs.push(inc);
+    let fs = fs.push(dec);
+    let f = fs[0];
     println(f(10));
 }
 "#;

@@ -24,7 +24,7 @@ fn main() {
     
     let i = ref(0);
     while ref_get(i) < 4 {
-        ref_set(val, apply_action(array_get(actions, ref_get(i)), ref_get(val)));
+        ref_set(val, apply_action(actions[ref_get(i)], ref_get(val)));
         println(ref_get(val).to_string());
         ref_set(i, ref_get(i) + 1);
     };

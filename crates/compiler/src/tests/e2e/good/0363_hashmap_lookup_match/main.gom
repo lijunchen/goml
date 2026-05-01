@@ -1,23 +1,23 @@
 fn main() {
-    let m: HashMap[string, int32] = hashmap_new();
-    hashmap_set(m, "a", 1);
-    hashmap_set(m, "b", 2);
-    hashmap_set(m, "c", 3);
+    let m: HashMap[string, int32] = HashMap::new();
+    m.set("a", 1);
+    m.set("b", 2);
+    m.set("c", 3);
     
-    match hashmap_get(m, "b") {
+    match m.get("b") {
         Option::Some(v) => println("b = " + v.to_string()),
         Option::None => println("not found"),
     };
     
-    match hashmap_get(m, "d") {
+    match m.get("d") {
         Option::Some(v) => println("d = " + v.to_string()),
         Option::None => println("not found"),
     };
     
-    println("len = " + hashmap_len(m).to_string());
-    println("contains b = " + hashmap_contains(m, "b").to_string());
-    println("contains d = " + hashmap_contains(m, "d").to_string());
+    println("len = " + m.len().to_string());
+    println("contains b = " + m.contains("b").to_string());
+    println("contains d = " + m.contains("d").to_string());
     
-    hashmap_remove(m, "b");
-    println("len after remove = " + hashmap_len(m).to_string());
+    m.remove("b");
+    println("len after remove = " + m.len().to_string());
 }

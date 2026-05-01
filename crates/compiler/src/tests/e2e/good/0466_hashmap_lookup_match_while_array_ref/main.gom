@@ -1,14 +1,14 @@
 fn main() {
-    let m: HashMap[string, int32] = hashmap_new();
-    hashmap_set(m, "a", 1);
-    hashmap_set(m, "b", 2);
-    hashmap_set(m, "c", 3);
+    let m: HashMap[string, int32] = HashMap::new();
+    m.set("a", 1);
+    m.set("b", 2);
+    m.set("c", 3);
     
     let keys = ["a", "b", "c", "d"];
     let i = ref(0i32);
     while ref_get(i) < 4 {
-        let key = array_get(keys, ref_get(i));
-        match hashmap_get(m, key) {
+        let key = keys[ref_get(i)];
+        match m.get(key) {
             Option::Some(v) => println(key + "=" + v.to_string()),
             Option::None => println(key + " not found"),
         };

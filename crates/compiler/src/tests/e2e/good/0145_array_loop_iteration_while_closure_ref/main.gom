@@ -7,7 +7,7 @@ fn main() {
     
     let i = ref(0);
     while ref_get(i) < 3 {
-        let f = array_get(adders, ref_get(i));
+        let f = adders[ref_get(i)];
         println(int32_to_string(f(0)));
         ref_set(i, ref_get(i) + 1);
     };

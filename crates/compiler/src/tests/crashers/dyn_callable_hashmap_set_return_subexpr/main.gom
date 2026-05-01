@@ -10,7 +10,7 @@ impl Callable for (int32) -> int32 {
 
 fn build() -> (int32) -> int32 {
     let m: HashMap[int32, dyn Callable] = HashMap::new();
-    hashmap_set(m, 1i32, return |x: int32| x + 1i32);
+    m.set(1i32, return |x: int32| x + 1i32);
     |x: int32| x
 }
 

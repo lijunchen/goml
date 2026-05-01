@@ -19,9 +19,9 @@ impl Speak for Cat {
 }
 
 fn main() {
-    let v: Vec[dyn Speak] = vec_new();
-    let v = vec_push(v, Dog {});
-    let v = vec_push(v, Cat {});
-    let a = vec_get(v, 0);
+    let v: Vec[dyn Speak] = Vec::new();
+    let v = v.push(Dog {});
+    let v = v.push(Cat {});
+    let a = v[0];
     println(Speak::speak(a));
 }

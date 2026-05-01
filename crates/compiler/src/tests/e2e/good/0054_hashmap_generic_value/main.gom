@@ -1,9 +1,9 @@
 fn main() {
-    let m = hashmap_new();
-    hashmap_set(m, "x", Option::Some(42));
-    hashmap_set(m, "y", Option::None);
+    let m = HashMap::new();
+    m.set("x", Option::Some(42));
+    m.set("y", Option::None);
 
-    match hashmap_get(m, "x") {
+    match m.get("x") {
         Option::Some(opt) => match opt {
             Option::Some(n) => println(int32_to_string(n)),
             Option::None => println("inner none"),

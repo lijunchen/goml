@@ -141,16 +141,16 @@ fn typ_to_string(ty: Typ) -> string {
 }
 
 fn env_empty() -> Vec[EnvEntry] {
-    let env: Vec[EnvEntry] = vec_new();
+    let env: Vec[EnvEntry] = Vec::new();
     env
 }
 
 fn env_lookup(env: Vec[EnvEntry], name: string) -> Option[Typ] {
-    let i = ref(vec_len(env) - 1);
+    let i = ref(env.len() - 1);
     let found = ref(Option::None);
     let done = ref(false);
     let _ = (while !ref_get(done) && ref_get(i) >= 0 {
-        let entry = vec_get(env, ref_get(i));
+        let entry = env[ref_get(i)];
         if entry.name == name {
             let _ = ref_set(found, Option::Some(entry.ty));
             ref_set(done, true)
@@ -162,11 +162,11 @@ fn env_lookup(env: Vec[EnvEntry], name: string) -> Option[Typ] {
 }
 
 fn subst_lookup(subst: Vec[SubstEntry], name: string) -> Option[Typ] {
-    let i = ref(vec_len(subst) - 1);
+    let i = ref(subst.len() - 1);
     let found = ref(Option::None);
     let done = ref(false);
     let _ = (while !ref_get(done) && ref_get(i) >= 0 {
-        let entry = vec_get(subst, ref_get(i));
+        let entry = subst[ref_get(i)];
         if entry.name == name {
             let _ = ref_set(found, Option::Some(entry.ty));
             ref_set(done, true)
@@ -279,7 +279,7 @@ fn inst_loop(st: CheckerState, subst: Vec[SubstEntry], ty: Typ) -> (Typ, Vec[Sub
             Option::Some(t) => (t, subst),
             Option::None => {
                 let tv = newvar(st);
-                let new_subst = vec_push(subst, SubstEntry { name, ty: tv });
+                let new_subst = subst.push(SubstEntry { name, ty: tv });
                 (tv, new_subst)
             }
         },
@@ -296,7 +296,7 @@ fn inst_loop(st: CheckerState, subst: Vec[SubstEntry], ty: Typ) -> (Typ, Vec[Sub
 }
 
 fn inst(st: CheckerState, ty: Typ) -> Typ {
-    let subst0: Vec[SubstEntry] = vec_new();
+    let subst0: Vec[SubstEntry] = Vec::new();
     let (t, _) = inst_loop(st, subst0, ty);
     t
 }
@@ -309,7 +309,7 @@ fn typeof(st: CheckerState, env: Vec[EnvEntry], e: Exp) -> Result[Typ, string] {
         },
         Exp::Lam(x, body) => {
             let ty_x = newvar(st);
-            let env2 = vec_push(env, EnvEntry { name: x, ty: ty_x });
+            let env2 = env.push(EnvEntry { name: x, ty: ty_x });
             match typeof(st, env2, body) {
                 Result::Ok(ty_e) => Result::Ok(Typ::TArrow(ty_x, ty_e)),
                 Result::Err(e) => Result::Err(e),
@@ -340,7 +340,7 @@ fn typeof(st: CheckerState, env: Vec[EnvEntry], e: Exp) -> Result[Typ, string] {
             match ty_e {
                 Result::Err(e) => Result::Err(e),
                 Result::Ok(ty1) => {
-                    let env2 = vec_push(env, EnvEntry { name: x, ty: gen(st, ty1) });
+                    let env2 = env.push(EnvEntry { name: x, ty: gen(st, ty1) });
                     typeof(st, env2, e2)
                 }
             }

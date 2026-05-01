@@ -7,7 +7,7 @@ fn find_first(items: [int32; 5], pred: (int32) -> bool) -> Option[int32] {
     let i = ref(0);
     let result: Ref[Option[int32]] = ref(Option::None);
     while ref_get(i) < 5 {
-        let item = array_get(items, ref_get(i));
+        let item = items[ref_get(i)];
         match ref_get(result) {
             Option::None => {
                 if pred(item) {

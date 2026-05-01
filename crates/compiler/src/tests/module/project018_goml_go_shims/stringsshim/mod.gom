@@ -206,9 +206,9 @@ pub struct SpecialCase {
 }
 
 pub fn collect_seq(seq: ((string) -> bool) -> unit) -> Vec[string] {
-    let items = ref(vec_new());
+    let items = ref(Vec::new());
     seq(|item| {
-        ref_set(items, vec_push(ref_get(items), item));
+        ref_set(items, ref_get(items).push(item));
         true
     });
     ref_get(items)
@@ -224,7 +224,7 @@ pub fn new_reader(text: string) -> Reader {
 
 pub fn new_replacer(pairs: Vec[string]) -> Replacer {
     Replacer {
-        raw: raw_new_replacer(slice(pairs, 0, vec_len(pairs))),
+        raw: raw_new_replacer(pairs.slice(0, pairs.len())),
     }
 }
 
