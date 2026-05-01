@@ -928,6 +928,16 @@ impl Typer {
                                     origin,
                                 );
                             }
+                        } else {
+                            super::util::push_error_with_range(
+                                diagnostics,
+                                format!(
+                                    "Method {} not found for type {}",
+                                    method.0,
+                                    super::util::format_ty_for_diag(&norm_receiver_ty)
+                                ),
+                                origin,
+                            );
                         }
                     }
                 }
