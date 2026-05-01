@@ -23,9 +23,9 @@ fn trait_impl#Describe#Tracker#describe(self/0: Tracker) -> string {
             let flag/5 = ref_get(toggled/3) in
             let with_label/6 = ("Tracker(" + label/1) in
             let with_count_label/7 = (with_label/6 + ", count: ") in
-            let with_count/8 = (with_count_label/7 + int32_to_string(current/4)) in
+            let with_count/8 = (with_count_label/7 + trait_call[ToString::to_string](current/4)) in
             let with_flag_label/9 = (with_count/8 + ", toggled: ") in
-            ((with_flag_label/9 + bool_to_string(flag/5)) + ")")
+            ((with_flag_label/9 + trait_call[ToString::to_string](flag/5)) + ")")
           }
         }
       }
@@ -40,7 +40,7 @@ fn trait_impl#Describe#Record[int32]#describe(self/10: Record[int32]) -> string 
         let x4 = Record::Value._0(self/10) in
         {
           let value/11 = x4 in
-          (("Value(" + int32_to_string(value/11)) + ")")
+          (("Value(" + trait_call[ToString::to_string](value/11)) + ")")
         }
       }
     },
@@ -53,8 +53,8 @@ fn trait_impl#Describe#Record[int32]#describe(self/10: Record[int32]) -> string 
           {
             let before/12 = x5 in
             {
-              let prefix/14 = ("Pair(" + int32_to_string(before/12)) in
-              (((prefix/14 + ", ") + int32_to_string(after/13)) + ")")
+              let prefix/14 = ("Pair(" + trait_call[ToString::to_string](before/12)) in
+              (((prefix/14 + ", ") + trait_call[ToString::to_string](after/13)) + ")")
             }
           }
         }
@@ -219,7 +219,7 @@ fn build_counter(label/42: string, start/43: int32) -> (Tracker, () -> Record[in
     let mtmp23 = ref_set(toggled/45, (!before/51)) in
     {
       let after/52 = ref_get(toggled/45) in
-      Record::Pair(bool_to_string(before/51), bool_to_string(after/52))
+      Record::Pair(trait_call[ToString::to_string](before/51), trait_call[ToString::to_string](after/52))
     }
   } in
   (tracker/46, snapshot/47, bump/50, flip/53)
@@ -272,7 +272,7 @@ fn main() -> unit {
                 },
               } in
               let pair_text/76 = pair_join((int32_to_string(first_result/68), int32_to_string(second_result/69))) in
-              let bool_text/77 = bool_to_string(order_check/70) in
+              let bool_text/77 = trait_call[ToString::to_string](order_check/70) in
               let mtmp30 = println(tracker_info/58) in
               {
                 let mtmp31 = println(first_text/71) in

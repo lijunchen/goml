@@ -1,5 +1,5 @@
-FILE@0..110
-  FN@0..110
+FILE@0..107
+  FN@0..107
     FnKeyword@0..2 "fn"
     Whitespace@2..3 " "
     Ident@3..7 "main"
@@ -12,7 +12,7 @@ FILE@0..110
     TYPE_UNIT@13..18
       UnitKeyword@13..17 "unit"
       Whitespace@17..18 " "
-    BLOCK@18..110
+    BLOCK@18..107
       LBrace@18..19 "{"
       Whitespace@19..24 "\n    "
       STMT_LET@24..43
@@ -58,31 +58,35 @@ FILE@0..110
           Int@67..69 "41"
         Semi@69..70 ";"
         Whitespace@70..75 "\n    "
-      STMT_EXPR@75..108
-        EXPR_CALL@75..106
+      STMT_EXPR@75..105
+        EXPR_CALL@75..103
           EXPR_IDENT@75..82
             PATH@75..82
               Ident@75..82 "println"
-          ARG_LIST@82..106
+          ARG_LIST@82..103
             LParen@82..83 "("
-            ARG@83..105
-              EXPR_CALL@83..105
-                EXPR_IDENT@83..98
-                  PATH@83..98
-                    Ident@83..98 "int32_to_string"
-                ARG_LIST@98..105
-                  LParen@98..99 "("
-                  ARG@99..104
-                    EXPR_CALL@99..104
-                      EXPR_IDENT@99..102
-                        PATH@99..102
-                          Ident@99..102 "get"
-                      ARG_LIST@102..104
-                        LParen@102..103 "("
-                        RParen@103..104 ")"
-                  RParen@104..105 ")"
-            RParen@105..106 ")"
-        Semi@106..107 ";"
-        Whitespace@107..108 "\n"
-      RBrace@108..109 "}"
-      Whitespace@109..110 "\n"
+            ARG@83..102
+              EXPR_CALL@83..102
+                EXPR_BINARY@83..100
+                  EXPR_PAREN@83..90
+                    LParen@83..84 "("
+                    EXPR_CALL@84..89
+                      EXPR_IDENT@84..87
+                        PATH@84..87
+                          Ident@84..87 "get"
+                      ARG_LIST@87..89
+                        LParen@87..88 "("
+                        RParen@88..89 ")"
+                    RParen@89..90 ")"
+                  Dot@90..91 "."
+                  EXPR_IDENT@91..100
+                    PATH@91..100
+                      Ident@91..100 "to_string"
+                ARG_LIST@100..102
+                  LParen@100..101 "("
+                  RParen@101..102 ")"
+            RParen@102..103 ")"
+        Semi@103..104 ";"
+        Whitespace@104..105 "\n"
+      RBrace@105..106 "}"
+      Whitespace@106..107 "\n"

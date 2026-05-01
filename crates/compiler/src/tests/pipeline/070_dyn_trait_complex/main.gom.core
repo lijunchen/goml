@@ -63,11 +63,11 @@ fn trait_impl#Display#Flag#bump(self/12: Flag, delta/13: int32) -> int32 {
 }
 
 fn trait_impl#Display#Counter#show(self/14: Counter) -> string {
-  (("Counter(" + int32_to_string(ref_get(Counter.cell(self/14)))) + ")")
+  (("Counter(" + trait_call[ToString::to_string](ref_get(Counter.cell(self/14)))) + ")")
 }
 
 fn trait_impl#Display#Counter#show_with(self/15: Counter, prefix/16: string, suffix/17: string) -> string {
-  ((((prefix/16 + "Counter(") + int32_to_string(ref_get(Counter.cell(self/15)))) + ")") + suffix/17)
+  ((((prefix/16 + "Counter(") + trait_call[ToString::to_string](ref_get(Counter.cell(self/15)))) + ")") + suffix/17)
 }
 
 fn trait_impl#Display#Counter#tick(self/18: Counter) -> unit {
@@ -153,7 +153,7 @@ fn main() -> unit {
         {
           let mtmp9 = println(("len:" + int32_to_string(vlen/52))) in
           {
-            let mtmp10 = println(("delta:" + int32_to_string(delta/53))) in
+            let mtmp10 = println(("delta:" + trait_call[ToString::to_string](delta/53))) in
             {
               ()
             }

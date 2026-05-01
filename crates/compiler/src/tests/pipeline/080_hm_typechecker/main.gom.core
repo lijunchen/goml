@@ -147,11 +147,11 @@ fn gensym(st/10: CheckerState) -> string {
   {
     if (n/11 < 26) {
         {
-          char_to_string(nth_letter(n/11))
+          trait_call[ToString::to_string](nth_letter(n/11))
         }
     } else {
         {
-          ("t" + int32_to_string(n/11))
+          ("t" + trait_call[ToString::to_string](n/11))
         }
     }
   }

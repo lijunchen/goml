@@ -26,10 +26,10 @@ fn main() {
     let composer_closure = |value: int32| compose(double, increment, value);
     let composed_by_closure = composer_closure(5);
     let printer = println;
-    let _ = printer(int32_to_string(composed));
-    let _ = printer(int32_to_string(closure_result));
-    let _ = printer(int32_to_string(invoked_with_global));
-    let _ = printer(int32_to_string(composed_by_closure));
+    let _ = printer(composed.to_string());
+    let _ = printer(closure_result.to_string());
+    let _ = printer(invoked_with_global.to_string());
+    let _ = printer(composed_by_closure.to_string());
     ()
 }
 

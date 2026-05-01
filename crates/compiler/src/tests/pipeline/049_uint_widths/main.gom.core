@@ -23,6 +23,6 @@ fn main() -> unit {
   let add64/13 = 4000000000 in
   let sum64/14 = (start64/12 + add64/13) in
   let diff64/15 = (sum64/14 - add64/13) in
-  let message/16 = ((((((((uint8_to_string(sum8/2) + ", ") + uint8_to_string(neg8/3)) + "; ") + uint16_to_string(diff16/7)) + "; ") + uint32_to_string(neg32/11)) + "; ") + uint64_to_string(diff64/15)) in
+  let message/16 = ((((((((trait_call[ToString::to_string](sum8/2) + ", ") + trait_call[ToString::to_string](neg8/3)) + "; ") + trait_call[ToString::to_string](diff16/7)) + "; ") + trait_call[ToString::to_string](neg32/11)) + "; ") + trait_call[ToString::to_string](diff64/15)) in
   let _wild0 = println(message/16) in
 }

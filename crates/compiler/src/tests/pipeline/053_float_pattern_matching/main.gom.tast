@@ -8,8 +8,8 @@ fn println(value/1: T) -> unit {
 
 fn summarize(event/0: FloatEvent) -> string {
     match (event/0 : FloatEvent) {
-        FloatEvent::Sample32(label/1: string, value/2: float32) => (label/1 : string) + (float32_to_string : (float32) -> string)((value/2 : float32)),
-        FloatEvent::Sample64(label/3: string, value/4: float64) => (label/3 : string) + (float64_to_string : (float64) -> string)((value/4 : float64)),
+        FloatEvent::Sample32(label/1: string, value/2: float32) => (label/1 : string) + (ToString::to_string : (float32) -> string)((value/2 : float32)),
+        FloatEvent::Sample64(label/3: string, value/4: float64) => (label/3 : string) + (ToString::to_string : (float64) -> string)((value/4 : float64)),
     }
 }
 
@@ -20,7 +20,7 @@ fn compare(values/5: (float32, float64)) -> string {
               let limit64/9: float64 = 5;
               let less_left/10: bool = (left/6 : float32) < (limit32/8 : float32);
               let less_right/11: bool = (right/7 : float64) < (limit64/9 : float64);
-              "left<1?=" + (bool_to_string : (bool) -> string)((less_left/10 : bool)) + ",right<5?=" + (bool_to_string : (bool) -> string)((less_right/11 : bool))
+              "left<1?=" + (ToString::to_string : (bool) -> string)((less_left/10 : bool)) + ",right<5?=" + (ToString::to_string : (bool) -> string)((less_right/11 : bool))
           },
     }
 }

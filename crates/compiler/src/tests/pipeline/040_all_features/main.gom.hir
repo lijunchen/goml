@@ -28,19 +28,19 @@ file main.gom
           let local/1/5 = ref_get(toggled/3);
           let local/1/6 = "Tracker(" + label/1;
           let local/1/7 = with_label/6 + ", count: ";
-          let local/1/8 = with_count_label/7 + int32_to_string(current/4);
+          let local/1/8 = with_count_label/7 + current/4.to_string();
           let local/1/9 = with_count/8 + ", toggled: ";
-          with_flag_label/9 + bool_to_string(flag/5) + ")"
+          with_flag_label/9 + flag/5.to_string() + ")"
       }
     }
     
     impl Describe for Record[int32] {
       fn describe(local/1/10: Record[int32]) -> string {
           match self/10 {
-              ctor(def/1/1::v0)(local/1/11) => "Value(" + int32_to_string(value/11) + ")",
+              ctor(def/1/1::v0)(local/1/11) => "Value(" + value/11.to_string() + ")",
               ctor(def/1/1::v1)(local/1/12, local/1/13) => {
-                    let local/1/14 = "Pair(" + int32_to_string(before/12);
-                    prefix/14 + ", " + int32_to_string(after/13) + ")"
+                    let local/1/14 = "Pair(" + before/12.to_string();
+                    prefix/14 + ", " + after/13.to_string() + ")"
                 },
               ctor(def/1/1::v2) => "Empty",
           }
@@ -76,7 +76,7 @@ file main.gom
     }
     
     fn format_total(local/1/26: int32) -> string {
-        "total: " + int32_to_string(total/26)
+        "total: " + total/26.to_string()
     }
     
     fn increment(local/1/27: int32) -> int32 {
@@ -130,7 +130,7 @@ file main.gom
             let local/1/51 = ref_get(toggled/45);
             let _ = ref_set(toggled/45, !before/51);
             let local/1/52 = ref_get(toggled/45);
-            ctor(def/1/1::v1)(bool_to_string(before/51), bool_to_string(after/52))
+            ctor(def/1/1::v1)(before/51.to_string(), after/52.to_string())
         };
         (tracker/46, snapshot/47, bump/50, flip/53)
     }
@@ -157,8 +157,8 @@ file main.gom
             ctor(def/1/2::v0)(local/1/74) => "Snapshot: " + text/74,
             ctor(def/1/2::v1) => "Snapshot: none",
         };
-        let local/1/76 = def/1/12((int32_to_string(first_result/68), int32_to_string(second_result/69)));
-        let local/1/77 = bool_to_string(order_check/70);
+        let local/1/76 = def/1/12((first_result/68.to_string(), second_result/69.to_string()));
+        let local/1/77 = order_check/70.to_string();
         let _ = println(tracker_info/58);
         let _ = println(first_text/71);
         let _ = println(bumped_text/72);

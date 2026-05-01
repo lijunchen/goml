@@ -1,5 +1,5 @@
-FILE@0..89
-  FN@0..89
+FILE@0..86
+  FN@0..86
     FnKeyword@0..2 "fn"
     Whitespace@2..3 " "
     Ident@3..7 "main"
@@ -12,7 +12,7 @@ FILE@0..89
     TYPE_UNIT@13..18
       UnitKeyword@13..17 "unit"
       Whitespace@17..18 " "
-    BLOCK@18..89
+    BLOCK@18..86
       LBrace@18..19 "{"
       Whitespace@19..24 "\n    "
       STMT_LET@24..43
@@ -47,27 +47,31 @@ FILE@0..89
             Int@51..52 "1"
         Semi@52..53 ";"
         Whitespace@53..58 "\n    "
-      STMT_EXPR@58..87
-        EXPR_CALL@58..85
+      STMT_EXPR@58..84
+        EXPR_CALL@58..82
           EXPR_IDENT@58..65
             PATH@58..65
               Ident@58..65 "println"
-          ARG_LIST@65..85
+          ARG_LIST@65..82
             LParen@65..66 "("
-            ARG@66..84
-              EXPR_CALL@66..84
-                EXPR_IDENT@66..81
-                  PATH@66..81
-                    Ident@66..81 "int32_to_string"
-                ARG_LIST@81..84
-                  LParen@81..82 "("
-                  ARG@82..83
-                    EXPR_IDENT@82..83
-                      PATH@82..83
-                        Ident@82..83 "x"
-                  RParen@83..84 ")"
-            RParen@84..85 ")"
-        Semi@85..86 ";"
-        Whitespace@86..87 "\n"
-      RBrace@87..88 "}"
-      Whitespace@88..89 "\n"
+            ARG@66..81
+              EXPR_CALL@66..81
+                EXPR_BINARY@66..79
+                  EXPR_PAREN@66..69
+                    LParen@66..67 "("
+                    EXPR_IDENT@67..68
+                      PATH@67..68
+                        Ident@67..68 "x"
+                    RParen@68..69 ")"
+                  Dot@69..70 "."
+                  EXPR_IDENT@70..79
+                    PATH@70..79
+                      Ident@70..79 "to_string"
+                ARG_LIST@79..81
+                  LParen@79..80 "("
+                  RParen@80..81 ")"
+            RParen@81..82 ")"
+        Semi@82..83 ";"
+        Whitespace@83..84 "\n"
+      RBrace@84..85 "}"
+      Whitespace@85..86 "\n"

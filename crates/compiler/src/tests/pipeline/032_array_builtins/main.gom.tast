@@ -20,6 +20,6 @@ fn main() -> unit {
     let arr/3: [int32; 3] = [1, 2, 3];
     let updated/4: [int32; 3] = (update_array : ([int32; 3]) -> [int32; 3])((arr/3 : [int32; 3]));
     let value/5: int32 = (read_array : ([int32; 3]) -> int32)((updated/4 : [int32; 3]));
-    let _ : unit = (println : (string) -> unit)((int32_to_string : (int32) -> string)((value/5 : int32)));
+    let _ : unit = (println : (string) -> unit)((ToString::to_string : (int32) -> string)((value/5 : int32)));
     ()
 }

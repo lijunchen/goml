@@ -27,7 +27,7 @@ fn digit_value(ch/1: char) -> int32 {
 }
 
 fn is_int_text(text/2: string) -> bool {
-    let len/3: int32 = (string_len : (string) -> int32)((text/2 : string));
+    let len/3: int32 = (string::len : (string) -> int32)((text/2 : string));
     if (len/3 : int32) == 0 {
         {
             false
@@ -40,7 +40,7 @@ fn is_int_text(text/2: string) -> bool {
             let started/7: Ref[bool] = (ref : (bool) -> Ref[bool])(false);
             let _ : unit = while (ref_get : (Ref[bool]) -> bool)((ok/6 : Ref[bool])) && (ref_get : (Ref[int32]) -> int32)((i/4 : Ref[int32])) < (len/3 : int32) {
                 {
-                    let ch/8: char = (string_get : (string, int32) -> char)((text/2 : string), (ref_get : (Ref[int32]) -> int32)((i/4 : Ref[int32])));
+                    let ch/8: char = (string::get : (string, int32) -> char)((text/2 : string), (ref_get : (Ref[int32]) -> int32)((i/4 : Ref[int32])));
                     if !(ref_get : (Ref[bool]) -> bool)((started/7 : Ref[bool])) && (ch/8 : char) == '-' {
                         {
                             let _ : unit = (ref_set : (Ref[bool], bool) -> unit)((started/7 : Ref[bool]), true);
@@ -67,14 +67,14 @@ fn is_int_text(text/2: string) -> bool {
 }
 
 fn parse_int32(text/9: string) -> int32 {
-    let len/10: int32 = (string_len : (string) -> int32)((text/9 : string));
+    let len/10: int32 = (string::len : (string) -> int32)((text/9 : string));
     let i/11: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
     let negative/12: Ref[bool] = (ref : (bool) -> Ref[bool])(false);
     let started/13: Ref[bool] = (ref : (bool) -> Ref[bool])(false);
     let acc/14: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
     let _ : unit = while (ref_get : (Ref[int32]) -> int32)((i/11 : Ref[int32])) < (len/10 : int32) {
         {
-            let ch/15: char = (string_get : (string, int32) -> char)((text/9 : string), (ref_get : (Ref[int32]) -> int32)((i/11 : Ref[int32])));
+            let ch/15: char = (string::get : (string, int32) -> char)((text/9 : string), (ref_get : (Ref[int32]) -> int32)((i/11 : Ref[int32])));
             if !(ref_get : (Ref[bool]) -> bool)((started/13 : Ref[bool])) && (ch/15 : char) == '-' {
                 {
                     let _ : unit = (ref_set : (Ref[bool], bool) -> unit)((started/13 : Ref[bool]), true);
@@ -107,20 +107,20 @@ fn is_delim(ch/17: char) -> bool {
 }
 
 fn lex_atom(source/18: string, start/19: int32) -> (Token, int32) {
-    let len/20: int32 = (string_len : (string) -> int32)((source/18 : string));
+    let len/20: int32 = (string::len : (string) -> int32)((source/18 : string));
     let text/21: Ref[string] = (ref : (string) -> Ref[string])("");
     let i/22: Ref[int32] = (ref : (int32) -> Ref[int32])((start/19 : int32));
     let done/23: Ref[bool] = (ref : (bool) -> Ref[bool])(false);
     let _ : unit = while !(ref_get : (Ref[bool]) -> bool)((done/23 : Ref[bool])) && (ref_get : (Ref[int32]) -> int32)((i/22 : Ref[int32])) < (len/20 : int32) {
         {
-            let ch/24: char = (string_get : (string, int32) -> char)((source/18 : string), (ref_get : (Ref[int32]) -> int32)((i/22 : Ref[int32])));
+            let ch/24: char = (string::get : (string, int32) -> char)((source/18 : string), (ref_get : (Ref[int32]) -> int32)((i/22 : Ref[int32])));
             if (is_delim : (char) -> bool)((ch/24 : char)) {
                 {
                     (ref_set : (Ref[bool], bool) -> unit)((done/23 : Ref[bool]), true)
                 }
             } else {
                 {
-                    let _ : unit = (ref_set : (Ref[string], string) -> unit)((text/21 : Ref[string]), (ref_get : (Ref[string]) -> string)((text/21 : Ref[string])) + (char_to_string : (char) -> string)((ch/24 : char)));
+                    let _ : unit = (ref_set : (Ref[string], string) -> unit)((text/21 : Ref[string]), (ref_get : (Ref[string]) -> string)((text/21 : Ref[string])) + (char::to_string : (char) -> string)((ch/24 : char)));
                     (ref_set : (Ref[int32], int32) -> unit)((i/22 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/22 : Ref[int32])) + 1)
                 }
             }
@@ -144,13 +144,13 @@ fn lex_atom(source/18: string, start/19: int32) -> (Token, int32) {
 }
 
 fn lex(source/27: string) -> Vec[Token] {
-    let len/28: int32 = (string_len : (string) -> int32)((source/27 : string));
+    let len/28: int32 = (string::len : (string) -> int32)((source/27 : string));
     let toks0/29: Vec[Token] = (Vec[Token]::new : () -> Vec[Token])();
     let toks/30: Ref[Vec[Token]] = (ref : (Vec[Token]) -> Ref[Vec[Token]])((toks0/29 : Vec[Token]));
     let i/31: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
     let _ : unit = while (ref_get : (Ref[int32]) -> int32)((i/31 : Ref[int32])) < (len/28 : int32) {
         {
-            let ch/32: char = (string_get : (string, int32) -> char)((source/27 : string), (ref_get : (Ref[int32]) -> int32)((i/31 : Ref[int32])));
+            let ch/32: char = (string::get : (string, int32) -> char)((source/27 : string), (ref_get : (Ref[int32]) -> int32)((i/31 : Ref[int32])));
             if (ch/32 : char) == '(' {
                 {
                     let _ : unit = (ref_set : (Ref[Vec[Token]], Vec[Token]) -> unit)((toks/30 : Ref[Vec[Token]]), (Vec[Token]::push : (Vec[Token], Token) -> Vec[Token])((ref_get : (Ref[Vec[Token]]) -> Vec[Token])((toks/30 : Ref[Vec[Token]])), Token::LParen));
@@ -262,8 +262,8 @@ fn parse_program(tokens/60: Vec[Token]) -> Vec[SExpr] {
 
 fn value_to_string(value/66: Value) -> string {
     match (value/66 : Value) {
-        Value::Int(n/67: int32) => (int32_to_string : (int32) -> string)((n/67 : int32)),
-        Value::Bool(b/68: bool) => (bool_to_string : (bool) -> string)((b/68 : bool)),
+        Value::Int(n/67: int32) => (int32::to_string : (int32) -> string)((n/67 : int32)),
+        Value::Bool(b/68: bool) => (ToString::to_string : (bool) -> string)((b/68 : bool)),
         Value::Func(_ : Lambda) => "<lambda>",
         Value::Nil => "nil",
     }

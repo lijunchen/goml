@@ -9,7 +9,7 @@ fn println(value/1: T) -> unit {
 fn main() -> unit {
     let x/0: Option[uint8] = Option::Some(42);
     match (x/0 : Option[uint8]) {
-        Option::Some(v/1: uint8) => (println : (string) -> unit)((uint8_to_string : (uint8) -> string)((v/1 : uint8))),
+        Option::Some(v/1: uint8) => (println : (string) -> unit)((ToString::to_string : (uint8) -> string)((v/1 : uint8))),
         Option::None => (println : (string) -> unit)("none"),
     };
 }

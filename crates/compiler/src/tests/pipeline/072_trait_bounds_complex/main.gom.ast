@@ -33,13 +33,13 @@ struct Boxed {
 
 impl Display for int32 {
   fn show(self: int32) -> string {
-      int32_to_string(self)
+      self.to_string()
   }
 }
 
 impl Debug for int32 {
   fn show(self: int32) -> string {
-      "i32(" + int32_to_string(self) + ")"
+      "i32(" + self.to_string() + ")"
   }
 }
 
@@ -69,19 +69,19 @@ impl Scale for int32 {
 
 impl Inspect for int32 {
   fn inspect(self: int32) -> string {
-      "<" + int32_to_string(self) + ">"
+      "<" + self.to_string() + ">"
   }
 }
 
 impl Display for Boxed {
   fn show(self: Boxed) -> string {
-      "Boxed(" + int32_to_string(self.value) + ")"
+      "Boxed(" + self.value.to_string() + ")"
   }
 }
 
 impl Debug for Boxed {
   fn show(self: Boxed) -> string {
-      "Boxed{value=" + int32_to_string(self.value) + "}"
+      "Boxed{value=" + self.value.to_string() + "}"
   }
 }
 
@@ -115,7 +115,7 @@ impl Scale for Boxed {
 
 impl Inspect for Boxed {
   fn inspect(self: Boxed) -> string {
-      "[" + int32_to_string(self.value) + "]"
+      "[" + self.value.to_string() + "]"
   }
 }
 
@@ -136,7 +136,7 @@ fn show_both(x: T) -> string {
 }
 
 fn tag_text(tag: Q) -> string {
-    Debug::show(tag) + "#" + int32_to_string(tag.hash())
+    Debug::show(tag) + "#" + tag.hash().to_string()
 }
 
 fn combine_scaled(a: T, b: T, factor: int32) -> T {
@@ -148,7 +148,7 @@ fn report_pair(tag: Q, a: T, b: T, combined: T) -> string {
     let header = tag_text(tag);
     let repr = show_both(combined);
     let h = combined.hash();
-    header + " " + repr + " | eq=" + bool_text(same) + " | hash=" + int32_to_string(h)
+    header + " " + repr + " | eq=" + bool_text(same) + " | hash=" + h.to_string()
 }
 
 fn full_report(tag: Q, a: T, b: T) -> string {
@@ -160,7 +160,7 @@ fn sum_and_tag(tag: Q, x: T, y: T, z: T) -> string {
     let total = x.add(y).add(z);
     let header = tag_text(tag);
     let h = total.hash();
-    header + " " + total.inspect() + " @" + int32_to_string(h)
+    header + " " + total.inspect() + " @" + h.to_string()
 }
 
 fn main() {

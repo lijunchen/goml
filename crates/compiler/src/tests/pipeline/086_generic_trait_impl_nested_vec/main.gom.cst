@@ -1,4 +1,4 @@
-FILE@0..330
+FILE@0..324
   TRAIT@0..44
     TraitKeyword@0..5 "trait"
     Whitespace@5..6 " "
@@ -111,7 +111,7 @@ FILE@0..330
         Whitespace@158..159 "\n"
     RBrace@159..160 "}"
     Whitespace@160..162 "\n\n"
-  FN@162..330
+  FN@162..324
     FnKeyword@162..164 "fn"
     Whitespace@164..165 " "
     Ident@165..169 "main"
@@ -119,7 +119,7 @@ FILE@0..330
       LParen@169..170 "("
       RParen@170..171 ")"
       Whitespace@171..172 " "
-    BLOCK@172..330
+    BLOCK@172..324
       LBrace@172..173 "{"
       Whitespace@173..178 "\n    "
       STMT_LET@178..209
@@ -172,69 +172,77 @@ FILE@0..330
             RBrace@235..236 "}"
         Semi@236..237 ";"
         Whitespace@237..242 "\n    "
-      STMT_EXPR@242..287
-        EXPR_CALL@242..281
+      STMT_EXPR@242..284
+        EXPR_CALL@242..278
           EXPR_IDENT@242..249
             PATH@242..249
               Ident@242..249 "println"
-          ARG_LIST@249..281
+          ARG_LIST@249..278
             LParen@249..250 "("
-            ARG@250..280
-              EXPR_CALL@250..280
-                EXPR_IDENT@250..265
-                  PATH@250..265
-                    Ident@250..265 "int32_to_string"
-                ARG_LIST@265..280
-                  LParen@265..266 "("
-                  ARG@266..279
-                    EXPR_CALL@266..279
-                      EXPR_IDENT@266..276
-                        PATH@266..276
-                          Ident@266..270 "Size"
-                          ColonColon@270..272 "::"
-                          Ident@272..276 "size"
-                      ARG_LIST@276..279
-                        LParen@276..277 "("
-                        ARG@277..278
-                          EXPR_IDENT@277..278
-                            PATH@277..278
-                              Ident@277..278 "a"
-                        RParen@278..279 ")"
-                  RParen@279..280 ")"
-            RParen@280..281 ")"
-        Semi@281..282 ";"
-        Whitespace@282..287 "\n    "
-      STMT_EXPR@287..328
-        EXPR_CALL@287..326
-          EXPR_IDENT@287..294
-            PATH@287..294
-              Ident@287..294 "println"
-          ARG_LIST@294..326
-            LParen@294..295 "("
-            ARG@295..325
-              EXPR_CALL@295..325
-                EXPR_IDENT@295..310
-                  PATH@295..310
-                    Ident@295..310 "int32_to_string"
-                ARG_LIST@310..325
-                  LParen@310..311 "("
-                  ARG@311..324
-                    EXPR_CALL@311..324
-                      EXPR_IDENT@311..321
-                        PATH@311..321
-                          Ident@311..315 "Size"
-                          ColonColon@315..317 "::"
-                          Ident@317..321 "size"
-                      ARG_LIST@321..324
-                        LParen@321..322 "("
-                        ARG@322..323
-                          EXPR_IDENT@322..323
-                            PATH@322..323
-                              Ident@322..323 "b"
-                        RParen@323..324 ")"
-                  RParen@324..325 ")"
-            RParen@325..326 ")"
-        Semi@326..327 ";"
-        Whitespace@327..328 "\n"
-      RBrace@328..329 "}"
-      Whitespace@329..330 "\n"
+            ARG@250..277
+              EXPR_CALL@250..277
+                EXPR_BINARY@250..275
+                  EXPR_PAREN@250..265
+                    LParen@250..251 "("
+                    EXPR_CALL@251..264
+                      EXPR_IDENT@251..261
+                        PATH@251..261
+                          Ident@251..255 "Size"
+                          ColonColon@255..257 "::"
+                          Ident@257..261 "size"
+                      ARG_LIST@261..264
+                        LParen@261..262 "("
+                        ARG@262..263
+                          EXPR_IDENT@262..263
+                            PATH@262..263
+                              Ident@262..263 "a"
+                        RParen@263..264 ")"
+                    RParen@264..265 ")"
+                  Dot@265..266 "."
+                  EXPR_IDENT@266..275
+                    PATH@266..275
+                      Ident@266..275 "to_string"
+                ARG_LIST@275..277
+                  LParen@275..276 "("
+                  RParen@276..277 ")"
+            RParen@277..278 ")"
+        Semi@278..279 ";"
+        Whitespace@279..284 "\n    "
+      STMT_EXPR@284..322
+        EXPR_CALL@284..320
+          EXPR_IDENT@284..291
+            PATH@284..291
+              Ident@284..291 "println"
+          ARG_LIST@291..320
+            LParen@291..292 "("
+            ARG@292..319
+              EXPR_CALL@292..319
+                EXPR_BINARY@292..317
+                  EXPR_PAREN@292..307
+                    LParen@292..293 "("
+                    EXPR_CALL@293..306
+                      EXPR_IDENT@293..303
+                        PATH@293..303
+                          Ident@293..297 "Size"
+                          ColonColon@297..299 "::"
+                          Ident@299..303 "size"
+                      ARG_LIST@303..306
+                        LParen@303..304 "("
+                        ARG@304..305
+                          EXPR_IDENT@304..305
+                            PATH@304..305
+                              Ident@304..305 "b"
+                        RParen@305..306 ")"
+                    RParen@306..307 ")"
+                  Dot@307..308 "."
+                  EXPR_IDENT@308..317
+                    PATH@308..317
+                      Ident@308..317 "to_string"
+                ARG_LIST@317..319
+                  LParen@317..318 "("
+                  RParen@318..319 ")"
+            RParen@319..320 ")"
+        Semi@320..321 ";"
+        Whitespace@321..322 "\n"
+      RBrace@322..323 "}"
+      Whitespace@323..324 "\n"

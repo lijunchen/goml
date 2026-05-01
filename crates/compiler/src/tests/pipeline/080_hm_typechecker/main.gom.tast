@@ -86,11 +86,11 @@ fn gensym(st/10: CheckerState) -> string {
     let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((st/10 : CheckerState).gensym_counter, (n/11 : int32) + 1);
     if (n/11 : int32) < 26 {
         {
-            (char_to_string : (char) -> string)((nth_letter : (int32) -> char)((n/11 : int32)))
+            (ToString::to_string : (char) -> string)((nth_letter : (int32) -> char)((n/11 : int32)))
         }
     } else {
         {
-            "t" + (int32_to_string : (int32) -> string)((n/11 : int32))
+            "t" + (ToString::to_string : (int32) -> string)((n/11 : int32))
         }
     }
 }

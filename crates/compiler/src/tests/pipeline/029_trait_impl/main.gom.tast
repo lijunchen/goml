@@ -15,7 +15,7 @@ impl Display for Point{
 impl Display for Maybe[int32]{
   fn show(self/1: Maybe[int32]) -> string {
       match (self/1 : Maybe[int32]) {
-          Maybe::Just(value/2: int32) => "Just(" + (int32_to_string : (int32) -> string)((value/2 : int32)) + ")",
+          Maybe::Just(value/2: int32) => "Just(" + (ToString::to_string : (int32) -> string)((value/2 : int32)) + ")",
           Maybe::Nothing => "Nothing",
       }
   }

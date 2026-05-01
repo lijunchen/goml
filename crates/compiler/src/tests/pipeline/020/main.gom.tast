@@ -35,21 +35,21 @@ fn describe(shape/7: Shape[T]) -> int32 {
 
 fn point32_to_string(point/8: Point) -> string {
     let Point { x: x/9: int32, y: y/10: int32 } = (point/8 : Point);
-    let with_x/11: string = "Point { x: " + (int32_to_string : (int32) -> string)((x/9 : int32));
+    let with_x/11: string = "Point { x: " + (int32::to_string : (int32) -> string)((x/9 : int32));
     let with_y_label/12: string = (with_x/11 : string) + ", y: ";
-    let with_y/13: string = (with_y_label/12 : string) + (int32_to_string : (int32) -> string)((y/10 : int32));
+    let with_y/13: string = (with_y_label/12 : string) + (int32::to_string : (int32) -> string)((y/10 : int32));
     (with_y/13 : string) + " }"
 }
 
 fn wrapper_int32_to_string(wrapper/14: Wrapper[int32]) -> string {
     let Wrapper { value: value/15: int32 } = (wrapper/14 : Wrapper[int32]);
-    let prefix/16: string = "Wrapper[int32] { value: " + (int32_to_string : (int32) -> string)((value/15 : int32));
+    let prefix/16: string = "Wrapper[int32] { value: " + (ToString::to_string : (int32) -> string)((value/15 : int32));
     (prefix/16 : string) + " }"
 }
 
 fn wrapper_unit_to_string(wrapper/17: Wrapper[unit]) -> string {
     let Wrapper { value: value/18: unit } = (wrapper/17 : Wrapper[unit]);
-    let prefix/19: string = "Wrapper[unit] { value: " + (unit_to_string : (unit) -> string)((value/18 : unit));
+    let prefix/19: string = "Wrapper[unit] { value: " + (ToString::to_string : (unit) -> string)((value/18 : unit));
     (prefix/19 : string) + " }"
 }
 
