@@ -4,13 +4,13 @@ struct EventHandler {
 }
 
 fn make_handler() -> EventHandler {
-    let log = ref(vec_new());
+    let log = ref(Vec::new());
     EventHandler {
         on_click: |x: int32, y: int32| {
-            ref_set(log, vec_push(ref_get(log), "click:" + int32_to_string(x) + "," + int32_to_string(y)));
+            ref_set(log, ref_get(log).push("click:" + x.to_string() + "," + y.to_string()));
         },
         on_key: |c: char| {
-            ref_set(log, vec_push(ref_get(log), "key:" + char_to_string(c)));
+            ref_set(log, ref_get(log).push("key:" + c.to_string()));
         },
     }
 }

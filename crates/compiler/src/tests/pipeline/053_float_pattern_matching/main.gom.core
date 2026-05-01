@@ -16,7 +16,7 @@ fn summarize(event/0: FloatEvent) -> string {
           let value/2 = x1 in
           {
             let label/1 = x0 in
-            (label/1 + float32_to_string(value/2))
+            (label/1 + trait_call[ToString::to_string](value/2))
           }
         }
       }
@@ -29,7 +29,7 @@ fn summarize(event/0: FloatEvent) -> string {
           let value/4 = x3 in
           {
             let label/3 = x2 in
-            (label/3 + float64_to_string(value/4))
+            (label/3 + trait_call[ToString::to_string](value/4))
           }
         }
       }
@@ -50,7 +50,7 @@ fn compare(values/5: (float32, float64)) -> string {
           let limit64/9 = 5 in
           let less_left/10 = (left/6 < limit32/8) in
           let less_right/11 = (right/7 < limit64/9) in
-          ((("left<1?=" + bool_to_string(less_left/10)) + ",right<5?=") + bool_to_string(less_right/11))
+          ((("left<1?=" + trait_call[ToString::to_string](less_left/10)) + ",right<5?=") + trait_call[ToString::to_string](less_right/11))
         }
       }
     }

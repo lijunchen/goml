@@ -63,11 +63,11 @@ fn trait_impl#Display#Flag#bump(self/12: Flag, delta/13: int32) -> int32 {
 }
 
 fn trait_impl#Display#Counter#show(self/14: Counter) -> string {
-  (("Counter(" + int32_to_string(ref_get(Counter.cell(self/14)))) + ")")
+  (("Counter(" + trait_call[ToString::to_string](ref_get(Counter.cell(self/14)))) + ")")
 }
 
 fn trait_impl#Display#Counter#show_with(self/15: Counter, prefix/16: string, suffix/17: string) -> string {
-  ((((prefix/16 + "Counter(") + int32_to_string(ref_get(Counter.cell(self/15)))) + ")") + suffix/17)
+  ((((prefix/16 + "Counter(") + trait_call[ToString::to_string](ref_get(Counter.cell(self/15)))) + ")") + suffix/17)
 }
 
 fn trait_impl#Display#Counter#tick(self/18: Counter) -> unit {
@@ -122,11 +122,11 @@ fn main() -> unit {
   let s0/45 = show_dyn(dp2/39) in
   let s1/46 = call_via_closure(df2/41, "*") in
   let s2/47 = ((render_star/43(dp1/38) + "|") + render_angle/44(df1/40)) in
-  let v/48 = vec_new() in
-  let v/49 = vec_push(v/48, dp1/38) in
-  let v/50 = vec_push(v/49, df1/40) in
-  let v/51 = vec_push(v/50, dc/42) in
-  let vlen/52 = vec_len(v/51) in
+  let v/48 = inherent#Vec#Vec[dynDisplay]#new() in
+  let v/49 = inherent#Vec#Vec[dynDisplay]#push(v/48, dp1/38) in
+  let v/50 = inherent#Vec#Vec[dynDisplay]#push(v/49, df1/40) in
+  let v/51 = inherent#Vec#Vec[dynDisplay]#push(v/50, dc/42) in
+  let vlen/52 = inherent#Vec#Vec[dynDisplay]#len(v/51) in
   let delta/53 = match vlen/52 {
     2 => {
       3
@@ -153,7 +153,7 @@ fn main() -> unit {
         {
           let mtmp9 = println(("len:" + int32_to_string(vlen/52))) in
           {
-            let mtmp10 = println(("delta:" + int32_to_string(delta/53))) in
+            let mtmp10 = println(("delta:" + trait_call[ToString::to_string](delta/53))) in
             {
               ()
             }
@@ -162,4 +162,16 @@ fn main() -> unit {
       }
     }
   }
+}
+
+fn inherent#Vec#Vec[T]#new() -> Vec[T] {
+  vec_new()
+}
+
+fn inherent#Vec#Vec[T]#push(self/67: Vec[T], elem/68: T) -> Vec[T] {
+  vec_push(self/67, elem/68)
+}
+
+fn inherent#Vec#Vec[T]#len(self/74: Vec[T]) -> int32 {
+  vec_len(self/74)
 }

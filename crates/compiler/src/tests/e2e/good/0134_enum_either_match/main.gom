@@ -8,13 +8,13 @@ fn main() {
     let y: Either[int32, string] = Either::Right("hello");
     
     let result = match x {
-        Either::Left(v) => int32_to_string(v),
+        Either::Left(v) => v.to_string(),
         Either::Right(s) => s,
     };
     println(result);
     
     let result2 = match y {
-        Either::Left(v) => int32_to_string(v),
+        Either::Left(v) => v.to_string(),
         Either::Right(s) => s,
     };
     println(result2);

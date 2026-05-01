@@ -11,9 +11,9 @@ impl Hash for Ref[dyn Hash] {
 }
 
 fn main() -> unit {
-    let h: HashMap[Ref[dyn Hash], string] = hashmap_new();
+    let h: HashMap[Ref[dyn Hash], string] = HashMap::new();
     let inner: dyn Hash = 1i32;
     let r = ref(inner);
-    hashmap_set(h, r, "one");
-    println(hashmap_contains(h, r));
+    h.set(r, "one");
+    println(h.contains(r));
 }

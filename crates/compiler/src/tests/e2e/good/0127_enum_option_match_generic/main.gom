@@ -14,14 +14,14 @@ fn main() {
     let x: Option[Option[int32]] = Option::Some(Option::Some(42));
     let y = flatten(x);
     match y {
-        Option::Some(v) => println(int32_to_string(v)),
+        Option::Some(v) => println(v.to_string()),
         Option::None => println("none"),
     };
     
     let z: Option[Option[int32]] = Option::Some(Option::None);
     let w = flatten(z);
     match w {
-        Option::Some(v) => println(int32_to_string(v)),
+        Option::Some(v) => println(v.to_string()),
         Option::None => println("none"),
     };
 }

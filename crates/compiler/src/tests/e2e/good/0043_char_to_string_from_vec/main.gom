@@ -1,12 +1,12 @@
 fn main() {
-    let chars = vec_new();
-    let chars = vec_push(chars, 'H');
-    let chars = vec_push(chars, 'i');
-    let ch = vec_get(chars, 0);
+    let chars = Vec::new();
+    let chars = chars.push('H');
+    let chars = chars.push('i');
+    let ch = chars[0];
     println(ch.to_string());
     let i = ref(0);
-    while ref_get(i) < vec_len(chars) {
-        let c = vec_get(chars, ref_get(i));
+    while ref_get(i) < chars.len() {
+        let c = chars[ref_get(i)];
         println(c.to_string());
         ref_set(i, ref_get(i) + 1);
     };

@@ -125,27 +125,35 @@ fn run_transforms(value/32: int32, transforms/33: [(int32) -> int32; 2]) -> [int
   let second/35 = array_get(transforms/33, 1) in
   let first_result/36 = first/34(value/32) in
   let second_result/37 = second/35(first_result/36) in
-  array_set([first_result/36, value/32], 1, second_result/37)
+  let results/38 = [first_result/36, value/32] in
+  let _wild18 = {
+    let place_root14 = results/38 in
+    let index15 = 1 in
+    let place16 = array_get(place_root14, index15) in
+    let value17 = second_result/37 in
+    results/38 = array_set(place_root14, index15, value17)
+  } in
+  results/38
 }
 
-fn gather(record/38: Record__int32) -> Maybe__int32 {
-  match record/38 {
-    Record__int32::Value(x14) => {
+fn gather(record/39: Record__int32) -> Maybe__int32 {
+  match record/39 {
+    Record__int32::Value(x19) => {
       {
-        let x14 = Record__int32::Value._0(record/38) in
+        let x19 = Record__int32::Value._0(record/39) in
         {
-          let value/39 = x14 in
-          Maybe__int32::Some(value/39)
+          let value/40 = x19 in
+          Maybe__int32::Some(value/40)
         }
       }
     },
-    Record__int32::Pair(x15, x16) => {
+    Record__int32::Pair(x20, x21) => {
       {
-        let x15 = Record__int32::Pair._0(record/38) in
-        let x16 = Record__int32::Pair._1(record/38) in
+        let x20 = Record__int32::Pair._0(record/39) in
+        let x21 = Record__int32::Pair._1(record/39) in
         {
-          let after/40 = x16 in
-          Maybe__int32::Some(after/40)
+          let after/41 = x21 in
+          Maybe__int32::Some(after/41)
         }
       }
     },
@@ -155,70 +163,70 @@ fn gather(record/38: Record__int32) -> Maybe__int32 {
   }
 }
 
-fn build_counter(label/41: string, start/42: int32) -> (Tracker, () -> Record__int32, (int32) -> Record__int32, () -> Record__string) {
-  let count/43 = ref(start/42) in
-  let toggled/44 = ref(false) in
-  let tracker/45 = Tracker { label: label/41, count: count/43, toggled: toggled/44 } in
-  let snapshot/46 = || {
-    Record__int32::Value(ref_get(count/43))
+fn build_counter(label/42: string, start/43: int32) -> (Tracker, () -> Record__int32, (int32) -> Record__int32, () -> Record__string) {
+  let count/44 = ref(start/43) in
+  let toggled/45 = ref(false) in
+  let tracker/46 = Tracker { label: label/42, count: count/44, toggled: toggled/45 } in
+  let snapshot/47 = || {
+    Record__int32::Value(ref_get(count/44))
   } in
-  let bump/49 = |delta/47| {
-    let before/48 = ref_get(count/43) in
-    let mtmp17 = ref_set(count/43, (before/48 + delta/47)) in
+  let bump/50 = |delta/48| {
+    let before/49 = ref_get(count/44) in
+    let mtmp22 = ref_set(count/44, (before/49 + delta/48)) in
     {
-      Record__int32::Pair(before/48, ref_get(count/43))
+      Record__int32::Pair(before/49, ref_get(count/44))
     }
   } in
-  let flip/52 = || {
-    let before/50 = ref_get(toggled/44) in
-    let mtmp18 = ref_set(toggled/44, (!before/50)) in
+  let flip/53 = || {
+    let before/51 = ref_get(toggled/45) in
+    let mtmp23 = ref_set(toggled/45, (!before/51)) in
     {
-      let after/51 = ref_get(toggled/44) in
-      Record__string::Pair(bool_to_string(before/50), bool_to_string(after/51))
+      let after/52 = ref_get(toggled/45) in
+      Record__string::Pair(bool_to_string(before/51), bool_to_string(after/52))
     }
   } in
-  (tracker/45, snapshot/46, bump/49, flip/52)
+  (tracker/46, snapshot/47, bump/50, flip/53)
 }
 
 fn main() -> unit {
-  let mtmp19 = build_counter("goml", 2) in
+  let mtmp24 = build_counter("goml", 2) in
   {
-    let x20 = mtmp19.0 in
-    let x21 = mtmp19.1 in
-    let x22 = mtmp19.2 in
-    let x23 = mtmp19.3 in
+    let x25 = mtmp24.0 in
+    let x26 = mtmp24.1 in
+    let x27 = mtmp24.2 in
+    let x28 = mtmp24.3 in
     {
-      let flip/56 = x23 in
+      let flip/57 = x28 in
       {
-        let bump/55 = x22 in
+        let bump/56 = x27 in
         {
-          let snapshot/54 = x21 in
+          let snapshot/55 = x26 in
           {
-            let tracker/53 = x20 in
+            let tracker/54 = x25 in
             {
-              let tracker_info/57 = trait_impl#Describe#Tracker#describe(tracker/53) in
-              let first_record/58 = snapshot/54() in
-              let bumped_record/59 = bump/55(5) in
-              let flipped_record/60 = flip/56() in
-              let maybe_first/61 = gather(first_record/58) in
-              let maybe_second/62 = gather(bumped_record/59) in
-              let chosen/63 = choose__T_Maybe[int32](true, maybe_second/62, maybe_first/61) in
-              let stringified/64 = map_maybe__T_int32__U_string(chosen/63, format_total) in
-              let transforms/65 = [increment, triple] in
-              let results/66 = run_transforms(4, transforms/65) in
-              let first_result/67 = array_get(results/66, 0) in
-              let second_result/68 = array_get(results/66, 1) in
-              let order_check/69 = ((first_result/67 < second_result/68) && true) in
-              let first_text/70 = trait_impl#Describe#Record__int32#describe(first_record/58) in
-              let bumped_text/71 = trait_impl#Describe#Record__int32#describe(bumped_record/59) in
-              let flipped_text/72 = trait_impl#Describe#Record__string#describe(flipped_record/60) in
-              let summary/74 = match stringified/64 {
-                Maybe__string::Some(x24) => {
+              let tracker_info/58 = trait_impl#Describe#Tracker#describe(tracker/54) in
+              let first_record/59 = snapshot/55() in
+              let bumped_record/60 = bump/56(5) in
+              let flipped_record/61 = flip/57() in
+              let maybe_first/62 = gather(first_record/59) in
+              let maybe_second/63 = gather(bumped_record/60) in
+              let chosen/64 = choose__T_Maybe[int32](true, maybe_second/63, maybe_first/62) in
+              let stringified/65 = map_maybe__T_int32__U_string(chosen/64, format_total) in
+              let transforms/66 = [increment, triple] in
+              let results/67 = run_transforms(4, transforms/66) in
+              let first_result/68 = array_get(results/67, 0) in
+              let second_result/69 = array_get(results/67, 1) in
+              let order_check/70 = ((first_result/68 < second_result/69) && true) in
+              let first_text/71 = trait_impl#Describe#Record__int32#describe(first_record/59) in
+              let bumped_text/72 = trait_impl#Describe#Record__int32#describe(bumped_record/60) in
+              let flipped_text/73 = trait_impl#Describe#Record__string#describe(flipped_record/61) in
+              let summary/75 = match stringified/65 {
+                Maybe__string::Some(x29) => {
                   {
-                    let x24 = Maybe__string::Some._0(stringified/64) in
+                    let x29 = Maybe__string::Some._0(stringified/65) in
                     {
-                      let text/73 = x24 in
-                      ("Snapshot: " + text/73)
+                      let text/74 = x29 in
+                      ("Snapshot: " + text/74)
                     }
                   }
                 },
@@ -226,21 +234,21 @@ fn main() -> unit {
                   "Snapshot: none"
                 },
               } in
-              let pair_text/75 = pair_join((int32_to_string(first_result/67), int32_to_string(second_result/68))) in
-              let bool_text/76 = bool_to_string(order_check/69) in
-              let mtmp25 = println__T_string(tracker_info/57) in
+              let pair_text/76 = pair_join((int32_to_string(first_result/68), int32_to_string(second_result/69))) in
+              let bool_text/77 = bool_to_string(order_check/70) in
+              let mtmp30 = println__T_string(tracker_info/58) in
               {
-                let mtmp26 = println__T_string(first_text/70) in
+                let mtmp31 = println__T_string(first_text/71) in
                 {
-                  let mtmp27 = println__T_string(bumped_text/71) in
+                  let mtmp32 = println__T_string(bumped_text/72) in
                   {
-                    let mtmp28 = println__T_string(flipped_text/72) in
+                    let mtmp33 = println__T_string(flipped_text/73) in
                     {
-                      let mtmp29 = println__T_string(summary/74) in
+                      let mtmp34 = println__T_string(summary/75) in
                       {
-                        let mtmp30 = println__T_string(pair_text/75) in
+                        let mtmp35 = println__T_string(pair_text/76) in
                         {
-                          let mtmp31 = println__T_string(bool_text/76) in
+                          let mtmp36 = println__T_string(bool_text/77) in
                           {
                             ()
                           }

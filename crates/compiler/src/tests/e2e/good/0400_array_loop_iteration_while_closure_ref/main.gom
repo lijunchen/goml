@@ -6,7 +6,7 @@ fn main() {
         || println("third"),
     ];
     while ref_get(i) < 3 {
-        let cb = array_get(callbacks, ref_get(i));
+        let cb = callbacks[ref_get(i)];
         cb();
         ref_set(i, ref_get(i) + 1);
     };

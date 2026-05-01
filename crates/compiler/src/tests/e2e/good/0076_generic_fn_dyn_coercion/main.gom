@@ -5,7 +5,7 @@ trait Printable {
 struct Wrapped[T] { inner: T }
 
 impl Printable for Wrapped[int32] {
-    fn print(self: Wrapped[int32]) -> string { "int:" + int32_to_string(self.inner) }
+    fn print(self: Wrapped[int32]) -> string { "int:" + self.inner.to_string() }
 }
 
 impl Printable for Wrapped[string] {
@@ -17,12 +17,12 @@ fn wrap[T](x: T) -> Wrapped[T] {
 }
 
 fn main() {
-    let items: Vec[dyn Printable] = vec_new();
-    let items = vec_push(items, wrap(42));
-    let items = vec_push(items, wrap("hello"));
+    let items: Vec[dyn Printable] = Vec::new();
+    let items = items.push(wrap(42));
+    let items = items.push(wrap("hello"));
     let i = ref(0);
-    while ref_get(i) < vec_len(items) {
-        println(Printable::print(vec_get(items, ref_get(i))));
+    while ref_get(i) < items.len() {
+        println(Printable::print(items[ref_get(i)]));
         ref_set(i, ref_get(i) + 1);
     };
 }

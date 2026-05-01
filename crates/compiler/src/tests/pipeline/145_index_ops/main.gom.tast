@@ -25,7 +25,7 @@ fn main() -> unit {
     let mut vec2/5: Vec[int32] = (Vec[int32]::push : (Vec[int32], int32) -> Vec[int32])((Vec[int32]::push : (Vec[int32], int32) -> Vec[int32])((Vec[int32]::push : (Vec[int32], int32) -> Vec[int32])((Vec[int32]::new : () -> Vec[int32])(), 10), 11), 12);
     (vec2/5 : Vec[int32])[0] = 100;
     (println : (int32) -> unit)((vec2/5 : Vec[int32])[0]);
-    let s/6: Slice[int32] = (slice : (Vec[int32], int32, int32) -> Slice[int32])((vec2/5 : Vec[int32]), 0, 2);
+    let s/6: Slice[int32] = (Vec[int32]::slice : (Vec[int32], int32, int32) -> Slice[int32])((vec2/5 : Vec[int32]), 0, 2);
     (println : (int32) -> unit)((s/6 : Slice[int32])[1]);
     let map/7: HashMap[string, int32] = (HashMap[string, int32]::new : () -> HashMap[string, int32])();
     (map/7 : HashMap[string, int32])["a"] = 13;

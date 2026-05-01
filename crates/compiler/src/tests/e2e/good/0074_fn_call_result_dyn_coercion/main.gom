@@ -17,9 +17,9 @@ fn make_simple(label: string) -> SimpleAction {
 }
 
 fn main() {
-    let actions: Vec[dyn Action] = vec_new();
-    let actions = vec_push(actions, make_simple("hello"));
-    let actions = vec_push(actions, make_simple("world"));
-    println(Action::execute(vec_get(actions, 0)));
-    println(Action::execute(vec_get(actions, 1)));
+    let actions: Vec[dyn Action] = Vec::new();
+    let actions = actions.push(make_simple("hello"));
+    let actions = actions.push(make_simple("world"));
+    println(Action::execute(actions[0]));
+    println(Action::execute(actions[1]));
 }

@@ -114,11 +114,11 @@ fn main() -> unit {
   let s0/45 = show_dyn(dp2/39) in
   let s1/46 = call_via_closure(df2/41, "*") in
   let s2/47 = ((render_star/43(dp1/38) + "|") + render_angle/44(df1/40)) in
-  let v/48 = vec_new() in
-  let v/49 = vec_push(v/48, dp1/38) in
-  let v/50 = vec_push(v/49, df1/40) in
-  let v/51 = vec_push(v/50, dc/42) in
-  let vlen/52 = vec_len(v/51) in
+  let v/48 = inherent#Vec#Vec[T]#new__T_dynDisplay() in
+  let v/49 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/48, dp1/38) in
+  let v/50 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/49, df1/40) in
+  let v/51 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/50, dc/42) in
+  let vlen/52 = inherent#Vec#Vec[T]#len__T_dynDisplay(v/51) in
   let delta/53 = match vlen/52 {
     2 => {
       3
@@ -154,6 +154,18 @@ fn main() -> unit {
       }
     }
   }
+}
+
+fn inherent#Vec#Vec[T]#new__T_dynDisplay() -> Vec[dyn Display] {
+  vec_new()
+}
+
+fn inherent#Vec#Vec[T]#push__T_dynDisplay(self/67: Vec[dyn Display], elem/68: dyn Display) -> Vec[dyn Display] {
+  vec_push(self/67, elem/68)
+}
+
+fn inherent#Vec#Vec[T]#len__T_dynDisplay(self/74: Vec[dyn Display]) -> int32 {
+  vec_len(self/74)
 }
 
 fn println__T_string(value/1: string) -> unit {

@@ -909,6 +909,7 @@ fn main() {
                 "new",
                 "push",
                 "set",
+                "slice",
             ]
         "#]],
     );
@@ -949,7 +950,7 @@ fn main() {
     let v: Vec[int32] = Vec::new();
     let v = v.push(1);
     let v = v.push(2);
-    let s: Slice[int32] = slice(v, 0, 2);
+    let s: Slice[int32] = v.slice(0, 2);
     s.
 }
 "#;
@@ -1023,6 +1024,7 @@ fn main() {
                 "new",
                 "push",
                 "set",
+                "slice",
             ]
         "#]],
     );
@@ -1179,7 +1181,7 @@ pub fn make(value: int32) -> Item {
 
 impl Item {
     fn text(self: Item) -> string {
-        int32_to_string(self.value)
+        self.value.to_string()
     }
 
     fn touch(self: Item) -> unit {

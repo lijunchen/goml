@@ -10,9 +10,9 @@ fn test() -> unit {
   let y/0 = 3 in
   let z/1 = 5 in
   let f/3 = |x/2: int32| => ((x/2 * y/0) * z/1) in
-  let mtmp0 = println(int32_to_string(f/3(2))) in
+  let mtmp0 = println(trait_call[ToString::to_string](f/3(2))) in
   {
-    println(int32_to_string(f/3(3)))
+    println(trait_call[ToString::to_string](f/3(3)))
   }
 }
 
@@ -33,7 +33,7 @@ fn main() -> unit {
     let unused/15 = |y/14: int32| => (y/14 + result/9) in
     let no_capture/17 = |z/16: int32| => (z/16 * 2) in
     let doubled/18 = no_capture/17(3) in
-    let mtmp2 = println(int32_to_string(doubled/18)) in
+    let mtmp2 = println(trait_call[ToString::to_string](doubled/18)) in
     {
       let mtmp3 = test() in
       {

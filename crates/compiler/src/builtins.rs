@@ -262,6 +262,34 @@ pub(super) fn builtin_inherent_methods()
     );
     impls.insert(crate::env::InherentImplKey::Exact(char_ty), char_impl);
 
+    let string_ty = tast::Ty::TString;
+    let mut string_impl = crate::env::ImplDef::default();
+    string_impl.methods.insert(
+        "len".to_string(),
+        crate::env::FnScheme {
+            type_params: vec![],
+            constraints: vec![],
+            ty: tast::Ty::TFunc {
+                params: vec![string_ty.clone()],
+                ret_ty: Box::new(tast::Ty::TInt32),
+            },
+            origin: FnOrigin::Builtin,
+        },
+    );
+    string_impl.methods.insert(
+        "get".to_string(),
+        crate::env::FnScheme {
+            type_params: vec![],
+            constraints: vec![],
+            ty: tast::Ty::TFunc {
+                params: vec![string_ty.clone(), tast::Ty::TInt32],
+                ret_ty: Box::new(tast::Ty::TChar),
+            },
+            origin: FnOrigin::Builtin,
+        },
+    );
+    impls.insert(crate::env::InherentImplKey::Exact(string_ty), string_impl);
+
     impls
 }
 

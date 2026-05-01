@@ -14,5 +14,5 @@ impl Val for B {
 
 fn main() {
     let v: dyn Val = if true { A { x: 10 } } else { B { y: 20 } };
-    println(int32_to_string(Val::val(v)));
+    println(Val::val(v).to_string());
 }

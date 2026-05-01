@@ -2,7 +2,7 @@ fn first_over(arr: [int32; 5], threshold: int32) -> Option[int32] {
     let i = ref(0i32);
     let found: Ref[Option[int32]] = ref(Option::None);
     while ref_get(i) < 5 {
-        let val = array_get(arr, ref_get(i));
+        let val = arr[ref_get(i)];
         match ref_get(found) {
             Option::None => {
                 if val > threshold {

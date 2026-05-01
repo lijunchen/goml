@@ -94,7 +94,7 @@ fn wrapper_int32_to_string(wrapper/14: Wrapper[int32]) -> string {
     {
       let value/15 = x8 in
       {
-        let prefix/16 = ("Wrapper[int32] { value: " + int32_to_string(value/15)) in
+        let prefix/16 = ("Wrapper[int32] { value: " + trait_call[ToString::to_string](value/15)) in
         (prefix/16 + " }")
       }
     }
@@ -108,7 +108,7 @@ fn wrapper_unit_to_string(wrapper/17: Wrapper[unit]) -> string {
     {
       let value/18 = x10 in
       {
-        let prefix/19 = ("Wrapper[unit] { value: " + unit_to_string(value/18)) in
+        let prefix/19 = ("Wrapper[unit] { value: " + trait_call[ToString::to_string](value/18)) in
         (prefix/19 + " }")
       }
     }

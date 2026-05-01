@@ -16,8 +16,8 @@ impl Transform for Multiplier {
 fn apply_all(transforms: Vec[dyn Transform], x: int32) -> int32 {
     let result = ref(x);
     let i = ref(0i32);
-    while ref_get(i) < vec_len(transforms) {
-        let t = vec_get(transforms, ref_get(i));
+    while ref_get(i) < transforms.len() {
+        let t = transforms[ref_get(i)];
         ref_set(result, Transform::apply(t, ref_get(result)));
         ref_set(i, ref_get(i) + 1);
     };
@@ -25,10 +25,10 @@ fn apply_all(transforms: Vec[dyn Transform], x: int32) -> int32 {
 }
 
 fn main() {
-    let transforms: Vec[dyn Transform] = vec_new();
-    vec_push(transforms, Adder { amount: 5 });
-    vec_push(transforms, Multiplier { factor: 3 });
-    vec_push(transforms, Adder { amount: -2 });
+    let transforms: Vec[dyn Transform] = Vec::new();
+    let transforms = transforms.push(Adder { amount: 5 });
+    let transforms = transforms.push(Multiplier { factor: 3 });
+    let transforms = transforms.push(Adder { amount: -2 });
     let result = apply_all(transforms, 10);
     println(result.to_string());
 }

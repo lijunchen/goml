@@ -19,20 +19,20 @@ impl Printable for bool {
 fn join_all(items: Vec[dyn Printable], sep: string) -> string {
     let result = ref("");
     let i = ref(0);
-    while ref_get(i) < vec_len(items) {
+    while ref_get(i) < items.len() {
         if ref_get(i) > 0 {
             ref_set(result, ref_get(result) + sep);
         } else { () };
-        ref_set(result, ref_get(result) + Printable::to_str(vec_get(items, ref_get(i))));
+        ref_set(result, ref_get(result) + Printable::to_str(items[ref_get(i)]));
         ref_set(i, ref_get(i) + 1);
     };
     ref_get(result)
 }
 
 fn main() {
-    let v: Vec[dyn Printable] = vec_new();
-    let v = vec_push(v, 42);
-    let v = vec_push(v, "hello");
-    let v = vec_push(v, true);
+    let v: Vec[dyn Printable] = Vec::new();
+    let v = v.push(42);
+    let v = v.push("hello");
+    let v = v.push(true);
     let _ = println(join_all(v, ", "));
 }

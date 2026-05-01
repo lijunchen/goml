@@ -9,8 +9,8 @@ fn println(value/1: T) -> unit {
 impl TypeName for Point{
   fn type_name(self/0: Point) -> string {
       let Point { x: x/1: int32, y: y/2: int32 } = (self/0 : Point);
-      let prefix/3: string = "Point(" + (int32_to_string : (int32) -> string)((x/1 : int32));
-      (prefix/3 : string) + ", " + (int32_to_string : (int32) -> string)((y/2 : int32)) + ")"
+      let prefix/3: string = "Point(" + (int32::to_string : (int32) -> string)((x/1 : int32));
+      (prefix/3 : string) + ", " + (int32::to_string : (int32) -> string)((y/2 : int32)) + ")"
   }
 }
 

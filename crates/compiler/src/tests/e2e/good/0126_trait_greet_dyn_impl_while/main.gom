@@ -24,7 +24,7 @@ fn main() {
     let greeters: [dyn Greet; 2] = [English {}, French {}];
     let i = ref(0);
     while ref_get(i) < 2 {
-        println(Greet::greet(array_get(greeters, ref_get(i))));
+        println(Greet::greet(greeters[ref_get(i)]));
         ref_set(i, ref_get(i) + 1);
     };
 }

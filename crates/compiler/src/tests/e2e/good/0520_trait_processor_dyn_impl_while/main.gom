@@ -21,7 +21,7 @@ fn run_pipeline(p: Pipeline, input: int32) -> int32 {
     let val = ref(input);
     let i = ref(0);
     while ref_get(i) < 3 {
-        let step = array_get(p.steps, ref_get(i));
+        let step = p.steps[ref_get(i)];
         ref_set(val, Processor::process(step, ref_get(val)));
         ref_set(i, ref_get(i) + 1);
     };

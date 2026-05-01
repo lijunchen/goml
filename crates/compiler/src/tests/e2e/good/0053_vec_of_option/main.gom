@@ -1,20 +1,20 @@
 fn main() {
-    let v = vec_new();
-    let v = vec_push(v, Option::Some(1));
-    let v = vec_push(v, Option::None);
-    let v = vec_push(v, Option::Some(3));
-    let v = vec_push(v, Option::None);
-    let v = vec_push(v, Option::Some(5));
+    let v = Vec::new();
+    let v = v.push(Option::Some(1));
+    let v = v.push(Option::None);
+    let v = v.push(Option::Some(3));
+    let v = v.push(Option::None);
+    let v = v.push(Option::Some(5));
 
     let sum = ref(0);
     let i = ref(0);
-    while ref_get(i) < vec_len(v) {
-        let item = vec_get(v, ref_get(i));
+    while ref_get(i) < v.len() {
+        let item = v[ref_get(i)];
         match item {
             Option::Some(n) => ref_set(sum, ref_get(sum) + n),
             Option::None => (),
         };
         ref_set(i, ref_get(i) + 1);
     };
-    println(int32_to_string(ref_get(sum)));
+    println(ref_get(sum).to_string());
 }

@@ -361,11 +361,11 @@ func main0() struct{} {
     var t107 string = t106 + "|"
     var t108 string = render_angle__44(df1__40)
     var s2__47 string = t107 + t108
-    var v__48 []dyn__Display = nil
-    var v__49 []dyn__Display = append(v__48, dp1__38)
-    var v__50 []dyn__Display = append(v__49, df1__40)
-    var v__51 []dyn__Display = append(v__50, dc__42)
-    var vlen__52 int32 = int32(len(v__51))
+    var v__48 []dyn__Display = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_dynDisplay()
+    var v__49 []dyn__Display = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_dynDisplay(v__48, dp1__38)
+    var v__50 []dyn__Display = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_dynDisplay(v__49, df1__40)
+    var v__51 []dyn__Display = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_dynDisplay(v__50, dc__42)
+    var vlen__52 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_dynDisplay(v__51)
     var jp110 int32
     switch vlen__52 {
     case 2:
@@ -402,24 +402,45 @@ func main0() struct{} {
     return struct{}{}
 }
 
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_dynDisplay() []dyn__Display {
+    var retv122 []dyn__Display
+    var t123 []dyn__Display = nil
+    retv122 = t123
+    return retv122
+}
+
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_dynDisplay(self__67 []dyn__Display, elem__68 dyn__Display) []dyn__Display {
+    var retv125 []dyn__Display
+    var t126 []dyn__Display = append(self__67, elem__68)
+    retv125 = t126
+    return retv125
+}
+
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_dynDisplay(self__74 []dyn__Display) int32 {
+    var retv128 int32
+    var t129 int32 = int32(len(self__74))
+    retv128 = t129
+    return retv128
+}
+
 func println__T_string(value__1 string) struct{} {
     string_println(value__1)
     return struct{}{}
 }
 
 func _goml_inherent_x23_closure_x5f_env_x5f_f_x5f_0_x23_closure_x5f_env_x5f_f_x5f_0_x23_apply(env11 closure_env_f_0, v__26 dyn__Display, t__27 string) string {
-    var retv124 string
-    var t125 string = v__26.vtable.show_with(v__26.data, t__27, t__27)
-    retv124 = t125
-    return retv124
+    var retv133 string
+    var t134 string = v__26.vtable.show_with(v__26.data, t__27, t__27)
+    retv133 = t134
+    return retv133
 }
 
 func _goml_inherent_x23_closure_x5f_env_x5f_make_x5f_renderer_x5f_1_x23_closure_x5f_env_x5f_make_x5f_renderer_x5f_1_x23_apply(env12 closure_env_make_renderer_1, x__30 dyn__Display) string {
-    var retv127 string
+    var retv136 string
     var tag__29 string = env12.tag_0
-    var t128 string = x__30.vtable.show_with(x__30.data, tag__29, tag__29)
-    retv127 = t128
-    return retv127
+    var t137 string = x__30.vtable.show_with(x__30.data, tag__29, tag__29)
+    retv136 = t137
+    return retv136
 }
 
 func main() {

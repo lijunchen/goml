@@ -5,8 +5,8 @@ fn main() {
     let fns: [(int32) -> int32; 2] = [f, g];
     let i = ref(0);
     while ref_get(i) < 2 {
-        let func = array_get(fns, ref_get(i));
-        println(int32_to_string(func(10)));
+        let func = fns[ref_get(i)];
+        println(func(10).to_string());
         ref_set(i, ref_get(i) + 1);
     };
 }

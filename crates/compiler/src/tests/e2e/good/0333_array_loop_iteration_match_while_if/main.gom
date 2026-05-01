@@ -2,7 +2,7 @@ fn find_first[T](arr: [T; 5], pred: (T) -> bool) -> Option[T] {
     let i = ref(0i32);
     let result: Ref[Option[T]] = ref(Option::None);
     while ref_get(i) < 5 {
-        let item = array_get(arr, ref_get(i));
+        let item = arr[ref_get(i)];
         if pred(item) {
             match ref_get(result) {
                 Option::None => ref_set(result, Option::Some(item)),

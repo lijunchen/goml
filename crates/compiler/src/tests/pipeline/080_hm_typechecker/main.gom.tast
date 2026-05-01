@@ -86,11 +86,11 @@ fn gensym(st/10: CheckerState) -> string {
     let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((st/10 : CheckerState).gensym_counter, (n/11 : int32) + 1);
     if (n/11 : int32) < 26 {
         {
-            (char_to_string : (char) -> string)((nth_letter : (int32) -> char)((n/11 : int32)))
+            (ToString::to_string : (char) -> string)((nth_letter : (int32) -> char)((n/11 : int32)))
         }
     } else {
         {
-            "t" + (int32_to_string : (int32) -> string)((n/11 : int32))
+            "t" + (ToString::to_string : (int32) -> string)((n/11 : int32))
         }
     }
 }
@@ -136,17 +136,17 @@ fn typ_to_string(ty/18: Typ) -> string {
 }
 
 fn env_empty() -> Vec[EnvEntry] {
-    let env/27: Vec[EnvEntry] = (vec_new : () -> Vec[EnvEntry])();
+    let env/27: Vec[EnvEntry] = (Vec[EnvEntry]::new : () -> Vec[EnvEntry])();
     (env/27 : Vec[EnvEntry])
 }
 
 fn env_lookup(env/28: Vec[EnvEntry], name/29: string) -> Option[Typ] {
-    let i/30: Ref[int32] = (ref : (int32) -> Ref[int32])((vec_len : (Vec[EnvEntry]) -> int32)((env/28 : Vec[EnvEntry])) - 1);
+    let i/30: Ref[int32] = (ref : (int32) -> Ref[int32])((Vec[EnvEntry]::len : (Vec[EnvEntry]) -> int32)((env/28 : Vec[EnvEntry])) - 1);
     let found/31: Ref[Option[Typ]] = (ref : (Option[Typ]) -> Ref[Option[Typ]])(Option::None);
     let done/32: Ref[bool] = (ref : (bool) -> Ref[bool])(false);
     let _ : unit = while !(ref_get : (Ref[bool]) -> bool)((done/32 : Ref[bool])) && (ref_get : (Ref[int32]) -> int32)((i/30 : Ref[int32])) >= 0 {
         {
-            let entry/33: EnvEntry = (vec_get : (Vec[EnvEntry], int32) -> EnvEntry)((env/28 : Vec[EnvEntry]), (ref_get : (Ref[int32]) -> int32)((i/30 : Ref[int32])));
+            let entry/33: EnvEntry = (env/28 : Vec[EnvEntry])[(ref_get : (Ref[int32]) -> int32)((i/30 : Ref[int32]))];
             if (entry/33 : EnvEntry).name == (name/29 : string) {
                 {
                     let _ : unit = (ref_set : (Ref[Option[Typ]], Option[Typ]) -> unit)((found/31 : Ref[Option[Typ]]), Option::Some((entry/33 : EnvEntry).ty));
@@ -163,12 +163,12 @@ fn env_lookup(env/28: Vec[EnvEntry], name/29: string) -> Option[Typ] {
 }
 
 fn subst_lookup(subst/34: Vec[SubstEntry], name/35: string) -> Option[Typ] {
-    let i/36: Ref[int32] = (ref : (int32) -> Ref[int32])((vec_len : (Vec[SubstEntry]) -> int32)((subst/34 : Vec[SubstEntry])) - 1);
+    let i/36: Ref[int32] = (ref : (int32) -> Ref[int32])((Vec[SubstEntry]::len : (Vec[SubstEntry]) -> int32)((subst/34 : Vec[SubstEntry])) - 1);
     let found/37: Ref[Option[Typ]] = (ref : (Option[Typ]) -> Ref[Option[Typ]])(Option::None);
     let done/38: Ref[bool] = (ref : (bool) -> Ref[bool])(false);
     let _ : unit = while !(ref_get : (Ref[bool]) -> bool)((done/38 : Ref[bool])) && (ref_get : (Ref[int32]) -> int32)((i/36 : Ref[int32])) >= 0 {
         {
-            let entry/39: SubstEntry = (vec_get : (Vec[SubstEntry], int32) -> SubstEntry)((subst/34 : Vec[SubstEntry]), (ref_get : (Ref[int32]) -> int32)((i/36 : Ref[int32])));
+            let entry/39: SubstEntry = (subst/34 : Vec[SubstEntry])[(ref_get : (Ref[int32]) -> int32)((i/36 : Ref[int32]))];
             if (entry/39 : SubstEntry).name == (name/35 : string) {
                 {
                     let _ : unit = (ref_set : (Ref[Option[Typ]], Option[Typ]) -> unit)((found/37 : Ref[Option[Typ]]), Option::Some((entry/39 : SubstEntry).ty));
@@ -298,7 +298,7 @@ fn inst_loop(st/83: CheckerState, subst/84: Vec[SubstEntry], ty/85: Typ) -> (Typ
               Option::Some(t/87: Typ) => ((t/87 : Typ), (subst/84 : Vec[SubstEntry])),
               Option::None => {
                     let tv/88: Typ = (newvar : (CheckerState) -> Typ)((st/83 : CheckerState));
-                    let new_subst/89: Vec[SubstEntry] = (vec_push : (Vec[SubstEntry], SubstEntry) -> Vec[SubstEntry])((subst/84 : Vec[SubstEntry]), SubstEntry { name: (name/86 : string), ty: (tv/88 : Typ) });
+                    let new_subst/89: Vec[SubstEntry] = (Vec[SubstEntry]::push : (Vec[SubstEntry], SubstEntry) -> Vec[SubstEntry])((subst/84 : Vec[SubstEntry]), SubstEntry { name: (name/86 : string), ty: (tv/88 : Typ) });
                     ((tv/88 : Typ), (new_subst/89 : Vec[SubstEntry]))
                 },
           },
@@ -315,7 +315,7 @@ fn inst_loop(st/83: CheckerState, subst/84: Vec[SubstEntry], ty/85: Typ) -> (Typ
 }
 
 fn inst(st/98: CheckerState, ty/99: Typ) -> Typ {
-    let subst0/100: Vec[SubstEntry] = (vec_new : () -> Vec[SubstEntry])();
+    let subst0/100: Vec[SubstEntry] = (Vec[SubstEntry]::new : () -> Vec[SubstEntry])();
     let (t/101: Typ, _ : Vec[SubstEntry]) = (inst_loop : (CheckerState, Vec[SubstEntry], Typ) -> (Typ, Vec[SubstEntry]))((st/98 : CheckerState), (subst0/100 : Vec[SubstEntry]), (ty/99 : Typ));
     (t/101 : Typ)
 }
@@ -328,7 +328,7 @@ fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result[Ty
           },
         Exp::Lam(x/107: string, body/108: Exp) => {
               let ty_x/109: Typ = (newvar : (CheckerState) -> Typ)((st/102 : CheckerState));
-              let env2/110: Vec[EnvEntry] = (vec_push : (Vec[EnvEntry], EnvEntry) -> Vec[EnvEntry])((env/103 : Vec[EnvEntry]), EnvEntry { name: (x/107 : string), ty: (ty_x/109 : Typ) });
+              let env2/110: Vec[EnvEntry] = (Vec[EnvEntry]::push : (Vec[EnvEntry], EnvEntry) -> Vec[EnvEntry])((env/103 : Vec[EnvEntry]), EnvEntry { name: (x/107 : string), ty: (ty_x/109 : Typ) });
               match (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])((st/102 : CheckerState), (env2/110 : Vec[EnvEntry]), (body/108 : Exp)) {
                   Result::Ok(ty_e/111: Typ) => Result::Ok(Typ::TArrow((ty_x/109 : Typ), (ty_e/111 : Typ))),
                   Result::Err(e/112: string) => Result::Err((e/112 : string)),
@@ -359,7 +359,7 @@ fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result[Ty
               match (ty_e/125 : Result[Typ, string]) {
                   Result::Err(e/126: string) => Result::Err((e/126 : string)),
                   Result::Ok(ty1/127: Typ) => {
-                        let env2/128: Vec[EnvEntry] = (vec_push : (Vec[EnvEntry], EnvEntry) -> Vec[EnvEntry])((env/103 : Vec[EnvEntry]), EnvEntry { name: (x/122 : string), ty: (gen : (CheckerState, Typ) -> Typ)((st/102 : CheckerState), (ty1/127 : Typ)) });
+                        let env2/128: Vec[EnvEntry] = (Vec[EnvEntry]::push : (Vec[EnvEntry], EnvEntry) -> Vec[EnvEntry])((env/103 : Vec[EnvEntry]), EnvEntry { name: (x/122 : string), ty: (gen : (CheckerState, Typ) -> Typ)((st/102 : CheckerState), (ty1/127 : Typ)) });
                         (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])((st/102 : CheckerState), (env2/128 : Vec[EnvEntry]), (e2/124 : Exp))
                     },
               }

@@ -29,25 +29,25 @@ fn demo_io() -> Result[string, GoError] {
     };
     let byte_text = crate::ioshim::pipe_read_text(byte_reader, 2)?;
     let out = limited;
-    let out = out + "|" + int64_to_string(copied_buf);
+    let out = out + "|" + copied_buf.to_string();
     let out = out + "|" + tee;
     let out = out + "|" + byte_text;
     Result::Ok(out)
 }
 
 fn demo_exec() -> Result[string, GoError] {
-    let args: Vec[string] = vec_new();
-    let args = vec_push(args, "-c");
-    let args = vec_push(args, "printf exec-ok");
+    let args: Vec[string] = Vec::new();
+    let args = args.push("-c");
+    let args = args.push("printf exec-ok");
     let cmd = crate::execshim::command("sh", args);
     crate::execshim::set_path(cmd, crate::execshim::path(cmd));
     crate::execshim::set_args(cmd, crate::execshim::args(cmd));
     crate::execshim::set_dir(cmd, ".");
     let dir = crate::execshim::dir(cmd);
-    let arg_count = int32_to_string(vec_len(crate::execshim::args(cmd)));
-    let env = vec_push(crate::execshim::env(cmd), "GOML_SHIM=1");
+    let arg_count = crate::execshim::args(cmd).len().to_string();
+    let env = crate::execshim::env(cmd).push("GOML_SHIM=1");
     crate::execshim::set_env(cmd, env);
-    let env_flag = if vec_len(crate::execshim::environ(cmd)) > 0 { "env" } else { "noenv" };
+    let env_flag = if crate::execshim::environ(cmd).len() > 0 { "env" } else { "noenv" };
     let desc_flag = if crate::execshim::command_string(cmd) != "" { "desc" } else { "nodesc" };
     let out = crate::execshim::output_text(cmd)?;
     let cat = crate::execshim::cat_stdin_text("stdin-ok")?;
@@ -76,10 +76,10 @@ fn demo_fs() -> Result[string, GoError] {
     };
     let out = text;
     let out = out + "|" + crate::common::string_of_bytes(buf);
-    let out = out + "|" + int32_to_string(read_count);
+    let out = out + "|" + read_count.to_string();
     let out = out + "|" + crate::fsshim::file_info_name(info);
     let out = out + "|" + kind;
-    let out = out + "|" + uint32_to_string(crate::fsshim::mode_bits(crate::fsshim::mode_perm(mode)));
+    let out = out + "|" + crate::fsshim::mode_bits(crate::fsshim::mode_perm(mode)).to_string();
     let out = out + "|" + crate::fsshim::mode_string(crate::fsshim::mode_type(mode));
     Result::Ok(out)
 }
@@ -99,9 +99,9 @@ fn demo_bufio() -> Result[string, GoError] {
     let rw_text = crate::bufioshim::read_writer_contents(read_writer);
     let out = state + "|" + line;
     let out = out + "|" + text;
-    let out = out + "|" + int32_to_string(count);
+    let out = out + "|" + count.to_string();
     let out = out + "|" + rune.to_string();
-    let out = out + "|" + int32_to_string(width);
+    let out = out + "|" + width.to_string();
     let out = out + "|" + words;
     let out = out + "|" + prefix_text;
     let out = out + "|" + rw_text;
@@ -109,7 +109,7 @@ fn demo_bufio() -> Result[string, GoError] {
 }
 
 fn demo_strings() -> Result[string, GoError] {
-    let cmp = int32_to_string(crate::stringsshim::compare("a", "b"));
+    let cmp = crate::stringsshim::compare("a", "b").to_string();
     let contains_flag = if crate::stringsshim::contains("goml", "ml") {
         "contains"
     } else {
@@ -143,7 +143,7 @@ fn demo_strings() -> Result[string, GoError] {
     let _ = crate::stringsshim::builder_write_rune(builder, '好')?;
     let _ = crate::stringsshim::builder_write_byte(builder, 33u8)?;
     let built = crate::stringsshim::builder_string(builder);
-    let built_len = int32_to_string(crate::stringsshim::builder_len(builder));
+    let built_len = crate::stringsshim::builder_len(builder).to_string();
     let reader = crate::stringsshim::new_reader("ab好");
     let (one, _) = crate::stringsshim::reader_read(reader, crate::common::bytes_of_string("."))?;
     let next_byte = crate::stringsshim::reader_read_byte(reader)?;
@@ -152,11 +152,11 @@ fn demo_strings() -> Result[string, GoError] {
     let copy_builder = crate::stringsshim::new_builder();
     let copied = crate::stringsshim::reader_write_to_builder(reader, copy_builder)?;
     let copied_text = crate::stringsshim::builder_string(copy_builder);
-    let pairs: Vec[string] = vec_new();
-    let pairs = vec_push(pairs, "go");
-    let pairs = vec_push(pairs, "GO");
-    let pairs = vec_push(pairs, "ml");
-    let pairs = vec_push(pairs, "ML");
+    let pairs: Vec[string] = Vec::new();
+    let pairs = pairs.push("go");
+    let pairs = pairs.push("GO");
+    let pairs = pairs.push("ml");
+    let pairs = pairs.push("ML");
     let replacer = crate::stringsshim::new_replacer(pairs);
     let replaced = crate::stringsshim::replacer_replace(replacer, "goml");
     let mapped = crate::stringsshim::map_text(
@@ -180,11 +180,11 @@ fn demo_strings() -> Result[string, GoError] {
     let out = out + "|" + built;
     let out = out + "|" + built_len;
     let out = out + "|" + crate::common::string_of_bytes(one);
-    let out = out + "|" + uint8_to_string(next_byte);
+    let out = out + "|" + next_byte.to_string();
     let out = out + "|" + next_rune.to_string();
-    let out = out + "|" + int32_to_string(rune_size);
+    let out = out + "|" + rune_size.to_string();
     let out = out + "|" + copied_text;
-    let out = out + "|" + int64_to_string(copied);
+    let out = out + "|" + copied.to_string();
     let out = out + "|" + replaced;
     let out = out + "|" + mapped;
     Result::Ok(out)

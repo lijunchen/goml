@@ -354,22 +354,22 @@ func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_new_x5f__x5f_K_
     return retv72
 }
 
-func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_set_x5f__x5f_K_x5f_Key_x5f__x5f_V_x5f_int32(self__83 *hashmap_Key_int32_x, key__84 Key, value__85 int32) struct{} {
-    hashmap_set__HashMap_3Key_5int32(self__83, key__84, value__85)
+func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_set_x5f__x5f_K_x5f_Key_x5f__x5f_V_x5f_int32(self__86 *hashmap_Key_int32_x, key__87 Key, value__88 int32) struct{} {
+    hashmap_set__HashMap_3Key_5int32(self__86, key__87, value__88)
     return struct{}{}
 }
 
-func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_len_x5f__x5f_K_x5f_Key_x5f__x5f_V_x5f_int32(self__88 *hashmap_Key_int32_x) int32 {
+func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_len_x5f__x5f_K_x5f_Key_x5f__x5f_V_x5f_int32(self__91 *hashmap_Key_int32_x) int32 {
     var retv77 int32
-    var t78 int32 = hashmap_len__HashMap_3Key_5int32(self__88)
+    var t78 int32 = hashmap_len__HashMap_3Key_5int32(self__91)
     retv77 = t78
     return retv77
 }
 
-func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_get_x5f__x5f_K_x5f_Key_x5f__x5f_V_x5f_int32_x5f__x5f_native(self__81 *hashmap_Key_int32_x, key__82 Key) (int32, bool) {
+func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_get_x5f__x5f_K_x5f_Key_x5f__x5f_V_x5f_int32_x5f__x5f_native(self__84 *hashmap_Key_int32_x, key__85 Key) (int32, bool) {
     var t81_value int32
     var t81_ok bool
-    t81_value, t81_ok = hashmap_get_native__HashMap_3Key_5int32(self__81, key__82)
+    t81_value, t81_ok = hashmap_get_native__HashMap_3Key_5int32(self__84, key__85)
     if !t81_ok {
         var ret_zero int32
         return ret_zero, false
@@ -377,10 +377,10 @@ func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_get_x5f__x5f_K_
     return t81_value, true
 }
 
-func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_get_x5f__x5f_K_x5f_Key_x5f__x5f_V_x5f_int32(self__81 *hashmap_Key_int32_x, key__82 Key) Option__int32 {
+func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_get_x5f__x5f_K_x5f_Key_x5f__x5f_V_x5f_int32(self__84 *hashmap_Key_int32_x, key__85 Key) Option__int32 {
     var native_value_0 int32
     var native_ok bool
-    native_value_0, native_ok = _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_get_x5f__x5f_K_x5f_Key_x5f__x5f_V_x5f_int32_x5f__x5f_native(self__81, key__82)
+    native_value_0, native_ok = _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_get_x5f__x5f_K_x5f_Key_x5f__x5f_V_x5f_int32_x5f__x5f_native(self__84, key__85)
     if native_ok {
         return Some{
             _0: native_value_0,
@@ -395,15 +395,15 @@ func println__T_bool(value__1 bool) struct{} {
     return struct{}{}
 }
 
-func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_contains_x5f__x5f_K_x5f_Key_x5f__x5f_V_x5f_int32(self__89 *hashmap_Key_int32_x, key__90 Key) bool {
+func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_contains_x5f__x5f_K_x5f_Key_x5f__x5f_V_x5f_int32(self__92 *hashmap_Key_int32_x, key__93 Key) bool {
     var retv86 bool
-    var t87 bool = hashmap_contains__HashMap_3Key_5int32(self__89, key__90)
+    var t87 bool = hashmap_contains__HashMap_3Key_5int32(self__92, key__93)
     retv86 = t87
     return retv86
 }
 
-func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_remove_x5f__x5f_K_x5f_Key_x5f__x5f_V_x5f_int32(self__86 *hashmap_Key_int32_x, key__87 Key) struct{} {
-    hashmap_remove__HashMap_3Key_5int32(self__86, key__87)
+func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_remove_x5f__x5f_K_x5f_Key_x5f__x5f_V_x5f_int32(self__89 *hashmap_Key_int32_x, key__90 Key) struct{} {
+    hashmap_remove__HashMap_3Key_5int32(self__89, key__90)
     return struct{}{}
 }
 

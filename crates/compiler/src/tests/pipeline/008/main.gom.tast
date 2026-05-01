@@ -9,8 +9,8 @@ fn println(value/1: T) -> unit {
 fn main() -> unit {
     let t/0: T = T::B(true, ());
     match (t/0 : T) {
-        T::A => (println : (string) -> unit)((int32_to_string : (int32) -> string)(1)),
-        T::B(true, ()) => (println : (string) -> unit)((int32_to_string : (int32) -> string)(2)),
-        T::B(false, ()) => (println : (string) -> unit)((int32_to_string : (int32) -> string)(3)),
+        T::A => (println : (string) -> unit)((int32::to_string : (int32) -> string)(1)),
+        T::B(true, ()) => (println : (string) -> unit)((int32::to_string : (int32) -> string)(2)),
+        T::B(false, ()) => (println : (string) -> unit)((int32::to_string : (int32) -> string)(3)),
     }
 }

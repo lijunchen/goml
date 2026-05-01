@@ -4,9 +4,9 @@ enum Option[T] {
 }
 
 fn main() -> unit {
-    let map = hashmap_new();
-    hashmap_set(map, 1i32, 2i32);
-    match hashmap_get(map, 1i32) {
+    let map = HashMap::new();
+    map.set(1i32, 2i32);
+    match map.get(1i32) {
         Option::Just(value) => println(value),
         Option::Nada => println(0i32),
     }

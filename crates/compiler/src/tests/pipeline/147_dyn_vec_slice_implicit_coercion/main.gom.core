@@ -15,11 +15,27 @@ fn render(x/1: dyn Display) -> string {
 }
 
 fn main() -> unit {
-  let v/2 = vec_new() in
-  let v/3 = vec_push(v/2, to_dyn[Display]{int32}(10)) in
-  let v/4 = vec_push(v/3, to_dyn[Display]{int32}(20)) in
-  let s/5 = slice(v/4, 0, 2) in
+  let v/2 = inherent#Vec#Vec[dynDisplay]#new() in
+  let v/3 = inherent#Vec#Vec[dynDisplay]#push(v/2, to_dyn[Display]{int32}(10)) in
+  let v/4 = inherent#Vec#Vec[dynDisplay]#push(v/3, to_dyn[Display]{int32}(20)) in
+  let s/5 = inherent#Vec#Vec[dynDisplay]#slice(v/4, 0, 2) in
   let _wild0 = println(render(slice_get(s/5, 0))) in
-  let t/6 = slice_sub(s/5, 1, 2) in
+  let t/6 = inherent#Slice#Slice[dynDisplay]#sub(s/5, 1, 2) in
   let _wild1 = println(render(slice_get(t/6, 0))) in
+}
+
+fn inherent#Vec#Vec[T]#new() -> Vec[T] {
+  vec_new()
+}
+
+fn inherent#Vec#Vec[T]#push(self/67: Vec[T], elem/68: T) -> Vec[T] {
+  vec_push(self/67, elem/68)
+}
+
+fn inherent#Vec#Vec[T]#slice(self/75: Vec[T], start/76: int32, end/77: int32) -> Slice[T] {
+  slice(self/75, start/76, end/77)
+}
+
+fn inherent#Slice#Slice[T]#sub(self/81: Slice[T], start/82: int32, end/83: int32) -> Slice[T] {
+  slice_sub(self/81, start/82, end/83)
 }

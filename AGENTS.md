@@ -376,6 +376,9 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
   * `slice(vec, start, end)` creates a bounded view over `Vec[T]`.
   * `Slice[T]` methods: `get`, `len`, `sub`.
   * Current model is read-only view type; no `slice_set`/`push` on `Slice[T]`.
+* Built-in `string` supports method syntax for common operations.
+  * Prefer `s.len()` and `s.get(i)` over `string_len(s)` and `string_get(s, i)` in tests and examples.
+  * Prefer method syntax such as `x.to_string()` when a builtin type or in-scope trait already exposes it.
 
 ### Control Flow and Expressions
 

@@ -18,26 +18,58 @@ fn main() -> unit {
   join ret8() -> unit {
     ()
   } in
-  let v/2 = vec_new() in
+  let v/2 = inherent#Vec#Vec[T]#new__T_dynDisplay() in
   let t9 = to_dyn[Display]{int32}(10) in
-  let v/3 = vec_push(v/2, t9) in
+  let v/3 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/2, t9) in
   let t10 = to_dyn[Display]{int32}(20) in
-  let v/4 = vec_push(v/3, t10) in
-  let s/5 = slice(v/4, 0, 2) in
+  let v/4 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/3, t10) in
+  let s/5 = inherent#Vec#Vec[T]#slice__T_dynDisplay(v/4, 0, 2) in
   let t11 = slice_get(s/5, 0) in
   let t12 = render(t11) in
   let _wild0 = println__T_string(t12) in
-  let t/6 = slice_sub(s/5, 1, 2) in
+  let t/6 = inherent#Slice#Slice[T]#sub__T_dynDisplay(s/5, 1, 2) in
   let t13 = slice_get(t/6, 0) in
   let t14 = render(t13) in
   let _wild1 = println__T_string(t14) in
   jump ret8()
 }
 
+fn inherent#Vec#Vec[T]#new__T_dynDisplay() -> Vec[dyn Display] {
+  join ret15(retv16: Vec[dyn Display]) -> Vec[dyn Display] {
+    retv16
+  } in
+  let t17 = vec_new() in
+  jump ret15(t17)
+}
+
+fn inherent#Vec#Vec[T]#push__T_dynDisplay(self/67: Vec[dyn Display], elem/68: dyn Display) -> Vec[dyn Display] {
+  join ret18(retv19: Vec[dyn Display]) -> Vec[dyn Display] {
+    retv19
+  } in
+  let t20 = vec_push(self/67, elem/68) in
+  jump ret18(t20)
+}
+
+fn inherent#Vec#Vec[T]#slice__T_dynDisplay(self/75: Vec[dyn Display], start/76: int32, end/77: int32) -> Slice[dyn Display] {
+  join ret21(retv22: Slice[dyn Display]) -> Slice[dyn Display] {
+    retv22
+  } in
+  let t23 = slice(self/75, start/76, end/77) in
+  jump ret21(t23)
+}
+
 fn println__T_string(value/1: string) -> unit {
-  join ret15() -> unit {
+  join ret24() -> unit {
     ()
   } in
-  let t16 = string_println(value/1) in
-  jump ret15()
+  let t25 = string_println(value/1) in
+  jump ret24()
+}
+
+fn inherent#Slice#Slice[T]#sub__T_dynDisplay(self/81: Slice[dyn Display], start/82: int32, end/83: int32) -> Slice[dyn Display] {
+  join ret26(retv27: Slice[dyn Display]) -> Slice[dyn Display] {
+    retv27
+  } in
+  let t28 = slice_sub(self/81, start/82, end/83) in
+  jump ret26(t28)
 }

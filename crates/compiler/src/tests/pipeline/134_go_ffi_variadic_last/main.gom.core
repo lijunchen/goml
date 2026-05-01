@@ -8,5 +8,13 @@ fn println(value/1: T) -> unit {
 
 fn main() -> unit {
   let parts/0 = fields("alpha beta gamma") in
-  let _wild0 = println(join(slice(parts/0, 0, vec_len(parts/0)))) in
+  let _wild0 = println(join(inherent#Vec#Vec[string]#slice(parts/0, 0, inherent#Vec#Vec[string]#len(parts/0)))) in
+}
+
+fn inherent#Vec#Vec[T]#len(self/74: Vec[T]) -> int32 {
+  vec_len(self/74)
+}
+
+fn inherent#Vec#Vec[T]#slice(self/75: Vec[T], start/76: int32, end/77: int32) -> Slice[T] {
+  slice(self/75, start/76, end/77)
 }

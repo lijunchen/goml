@@ -1,20 +1,22 @@
 fn swap[T](arr: [T; 3], i: int32, j: int32) -> [T; 3] {
-    let tmp = array_get(arr, i);
-    let arr = array_set(arr, i, array_get(arr, j));
-    array_set(arr, j, tmp)
+    let tmp = arr[i];
+    let mut arr = arr;
+    arr[i] = arr[j];
+    arr[j] = tmp;
+    arr
 }
 
 fn main() {
-    let arr = [10, 20, 30];
-    let arr = array_set(arr, 0, array_get(arr, 2));
-    let arr = array_set(arr, 2, 10);
-    println(array_get(arr, 0));
-    println(array_get(arr, 1));
-    println(array_get(arr, 2));
+    let mut arr = [10, 20, 30];
+    arr[0] = arr[2];
+    arr[2] = 10;
+    println(arr[0]);
+    println(arr[1]);
+    println(arr[2]);
 
     let arr2 = [100, 200, 300];
     let arr2 = swap(arr2, 0, 2);
-    println(array_get(arr2, 0));
-    println(array_get(arr2, 1));
-    println(array_get(arr2, 2));
+    println(arr2[0]);
+    println(arr2[1]);
+    println(arr2[2]);
 }

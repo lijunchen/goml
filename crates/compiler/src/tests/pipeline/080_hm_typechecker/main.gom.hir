@@ -111,9 +111,9 @@ file main.gom
         let local/1/11 = ref_get(st/10.gensym_counter);
         let _ = ref_set(st/10.gensym_counter, n/11 + 1);
         if n/11 < 26 {
-            char_to_string(def/1/13(n/11))
+            def/1/13(n/11).to_string()
         } else {
-            "t" + int32_to_string(n/11)
+            "t" + n/11.to_string()
         }
     }
     
@@ -154,17 +154,17 @@ file main.gom
     }
     
     fn env_empty() -> Vec[EnvEntry] {
-        let local/1/27: Vec[EnvEntry] = vec_new();
+        let local/1/27: Vec[EnvEntry] = Vec::new();
         env/27
     }
     
     fn env_lookup(local/1/28: Vec[EnvEntry], local/1/29: string) -> Option[Typ] {
-        let local/1/30 = ref(vec_len(env/28) - 1);
+        let local/1/30 = ref(env/28.len() - 1);
         let local/1/31 = ref(Option::None);
         let local/1/32 = ref(false);
         let _ = while !ref_get(done/32) && ref_get(i/30) >= 0 {
             {
-                let local/1/33 = vec_get(env/28, ref_get(i/30));
+                let local/1/33 = env/28[ref_get(i/30)];
                 if entry/33.name == name/29 {
                     let _ = ref_set(found/31, Option::Some(entry/33.ty));
                     ref_set(done/32, true)
@@ -177,12 +177,12 @@ file main.gom
     }
     
     fn subst_lookup(local/1/34: Vec[SubstEntry], local/1/35: string) -> Option[Typ] {
-        let local/1/36 = ref(vec_len(subst/34) - 1);
+        let local/1/36 = ref(subst/34.len() - 1);
         let local/1/37 = ref(Option::None);
         let local/1/38 = ref(false);
         let _ = while !ref_get(done/38) && ref_get(i/36) >= 0 {
             {
-                let local/1/39 = vec_get(subst/34, ref_get(i/36));
+                let local/1/39 = subst/34[ref_get(i/36)];
                 if entry/39.name == name/35 {
                     let _ = ref_set(found/37, Option::Some(entry/39.ty));
                     ref_set(done/38, true)
@@ -296,7 +296,7 @@ file main.gom
                   Option::Some(local/1/87) => (t/87, subst/84),
                   Option::None => {
                         let local/1/88 = def/1/15(st/83);
-                        let local/1/89 = vec_push(subst/84, SubstEntry {
+                        let local/1/89 = subst/84.push(SubstEntry {
                               name: name/86,
                               ty: tv/88
                           });
@@ -316,7 +316,7 @@ file main.gom
     }
     
     fn inst(local/1/98: CheckerState, local/1/99: Typ) -> Typ {
-        let local/1/100: Vec[SubstEntry] = vec_new();
+        let local/1/100: Vec[SubstEntry] = Vec::new();
         let (local/1/101, _) = def/1/24(st/98, subst0/100, ty/99);
         t/101
     }
@@ -329,7 +329,7 @@ file main.gom
               },
             ctor(def/1/0::v2)(local/1/107, local/1/108) => {
                   let local/1/109 = def/1/15(st/102);
-                  let local/1/110 = vec_push(env/103, EnvEntry {
+                  let local/1/110 = env/103.push(EnvEntry {
                         name: x/107,
                         ty: ty_x/109
                     });
@@ -363,7 +363,7 @@ file main.gom
                   match ty_e/125 {
                       Result::Err(local/1/126) => Result::Err(e/126),
                       Result::Ok(local/1/127) => {
-                            let local/1/128 = vec_push(env/103, EnvEntry {
+                            let local/1/128 = env/103.push(EnvEntry {
                                   name: x/122,
                                   ty: def/1/23(st/102, ty1/127)
                               });

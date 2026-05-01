@@ -1,12 +1,12 @@
 fn main() -> unit {
-  let v/0 = vec_new() in
-  let v/1 = vec_push(v/0, 10) in
-  let v/2 = vec_push(v/1, 20) in
-  let v/3 = vec_push(v/2, 30) in
+  let v/0 = inherent#Vec#Vec[T]#new__T_int32() in
+  let v/1 = inherent#Vec#Vec[T]#push__T_int32(v/0, 10) in
+  let v/2 = inherent#Vec#Vec[T]#push__T_int32(v/1, 20) in
+  let v/3 = inherent#Vec#Vec[T]#push__T_int32(v/2, 30) in
   let first/4 = vec_get(v/3, 0) in
   let second/5 = vec_get(v/3, 1) in
   let third/6 = vec_get(v/3, 2) in
-  let len/7 = vec_len(v/3) in
+  let len/7 = inherent#Vec#Vec[T]#len__T_int32(v/3) in
   let mtmp0 = println__T_string(int32_to_string(first/4)) in
   {
     let mtmp1 = println__T_string(int32_to_string(second/5)) in
@@ -20,6 +20,18 @@ fn main() -> unit {
       }
     }
   }
+}
+
+fn inherent#Vec#Vec[T]#new__T_int32() -> Vec[int32] {
+  vec_new()
+}
+
+fn inherent#Vec#Vec[T]#push__T_int32(self/67: Vec[int32], elem/68: int32) -> Vec[int32] {
+  vec_push(self/67, elem/68)
+}
+
+fn inherent#Vec#Vec[T]#len__T_int32(self/74: Vec[int32]) -> int32 {
+  vec_len(self/74)
 }
 
 fn println__T_string(value/1: string) -> unit {

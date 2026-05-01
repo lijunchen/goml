@@ -44,21 +44,21 @@ file main.gom
     
     fn point32_to_string(local/1/8: Point) -> string {
         let Point { x: local/1/9, y: local/1/10 } = point/8;
-        let local/1/11 = "Point { x: " + int32_to_string(x/9);
+        let local/1/11 = "Point { x: " + x/9.to_string();
         let local/1/12 = with_x/11 + ", y: ";
-        let local/1/13 = with_y_label/12 + int32_to_string(y/10);
+        let local/1/13 = with_y_label/12 + y/10.to_string();
         with_y/13 + " }"
     }
     
     fn wrapper_int32_to_string(local/1/14: Wrapper[int32]) -> string {
         let Wrapper { value: local/1/15 } = wrapper/14;
-        let local/1/16 = "Wrapper[int32] { value: " + int32_to_string(value/15);
+        let local/1/16 = "Wrapper[int32] { value: " + value/15.to_string();
         prefix/16 + " }"
     }
     
     fn wrapper_unit_to_string(local/1/17: Wrapper[unit]) -> string {
         let Wrapper { value: local/1/18 } = wrapper/17;
-        let local/1/19 = "Wrapper[unit] { value: " + unit_to_string(value/18);
+        let local/1/19 = "Wrapper[unit] { value: " + value/18.to_string();
         prefix/19 + " }"
     }
     

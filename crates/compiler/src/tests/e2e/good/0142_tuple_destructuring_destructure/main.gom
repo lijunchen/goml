@@ -14,12 +14,12 @@ fn second[A, B](p: (A, B)) -> B {
 
 fn main() {
     let p = make_pair(42, "hello");
-    println(int32_to_string(first(p)));
+    println(first(p).to_string());
     println(second(p));
     
     let q = make_pair(make_pair(1, 2), "nested");
     let inner = first(q);
-    println(int32_to_string(first(inner)));
-    println(int32_to_string(second(inner)));
+    println(first(inner).to_string());
+    println(second(inner).to_string());
     println(second(q));
 }

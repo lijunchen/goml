@@ -3,8 +3,8 @@ fn main() -> unit {
     ()
   } in
   let parts/0 = fields("alpha beta gamma") in
-  let t2 = vec_len(parts/0) in
-  let t3 = slice(parts/0, 0, t2) in
+  let t2 = inherent#Vec#Vec[T]#len__T_string(parts/0) in
+  let t3 = inherent#Vec#Vec[T]#slice__T_string(parts/0, 0, t2) in
   let t4 = join(t3) in
   let _wild0 = println__T_string(t4) in
   jump ret1()
@@ -16,4 +16,20 @@ fn println__T_string(value/1: string) -> unit {
   } in
   let t6 = string_println(value/1) in
   jump ret5()
+}
+
+fn inherent#Vec#Vec[T]#len__T_string(self/74: Vec[string]) -> int32 {
+  join ret7(retv8: int32) -> int32 {
+    retv8
+  } in
+  let t9 = vec_len(self/74) in
+  jump ret7(t9)
+}
+
+fn inherent#Vec#Vec[T]#slice__T_string(self/75: Vec[string], start/76: int32, end/77: int32) -> Slice[string] {
+  join ret10(retv11: Slice[string]) -> Slice[string] {
+    retv11
+  } in
+  let t12 = slice(self/75, start/76, end/77) in
+  jump ret10(t12)
 }

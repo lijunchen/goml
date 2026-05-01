@@ -17,7 +17,7 @@ fn apply_chain(transforms: [dyn Transform; 3], input: int32) -> int32 {
     let result = ref(input);
     let i = ref(0);
     while ref_get(i) < 3 {
-        let t = array_get(transforms, ref_get(i));
+        let t = transforms[ref_get(i)];
         ref_set(result, Transform::apply(t, ref_get(result)));
         ref_set(i, ref_get(i) + 1);
     };

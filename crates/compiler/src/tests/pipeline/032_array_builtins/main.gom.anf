@@ -1,35 +1,42 @@
 fn update_array(arr/0: [int32; 3]) -> [int32; 3] {
-  join ret1(retv2: [int32; 3]) -> [int32; 3] {
-    retv2
+  join ret6(retv7: [int32; 3]) -> [int32; 3] {
+    retv7
   } in
-  let t3 = array_set(arr/0, 1, 42) in
-  jump ret1(t3)
+  let arr/1 = arr/0 in
+  let place_root0 = arr/1 in
+  let index1 = 1 in
+  let place2 = array_get(place_root0, index1) in
+  let value3 = 42 in
+  let t8 = array_set(place_root0, index1, value3) in
+  let t9 = arr/1 = t8 in
+  let _wild4 = t9 in
+  jump ret6(arr/1)
 }
 
-fn read_array(arr/1: [int32; 3]) -> int32 {
-  join ret4(retv5: int32) -> int32 {
-    retv5
+fn read_array(arr/2: [int32; 3]) -> int32 {
+  join ret10(retv11: int32) -> int32 {
+    retv11
   } in
-  let t6 = array_get(arr/1, 1) in
-  jump ret4(t6)
+  let t12 = array_get(arr/2, 1) in
+  jump ret10(t12)
 }
 
 fn main() -> unit {
-  join ret7() -> unit {
+  join ret13() -> unit {
     ()
   } in
-  let arr/2 = [1, 2, 3] in
-  let updated/3 = update_array(arr/2) in
-  let value/4 = read_array(updated/3) in
-  let t8 = int32_to_string(value/4) in
-  let mtmp0 = println__T_string(t8) in
-  jump ret7()
+  let arr/3 = [1, 2, 3] in
+  let updated/4 = update_array(arr/3) in
+  let value/5 = read_array(updated/4) in
+  let t14 = int32_to_string(value/5) in
+  let mtmp5 = println__T_string(t14) in
+  jump ret13()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret9() -> unit {
+  join ret15() -> unit {
     ()
   } in
-  let t10 = string_println(value/1) in
-  jump ret9()
+  let t16 = string_println(value/1) in
+  jump ret15()
 }

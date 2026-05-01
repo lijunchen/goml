@@ -15,11 +15,11 @@ file main.gom
     }
     
     fn main() -> unit {
-        let local/1/2: Vec[dyn Display] = vec_new();
-        let local/1/3 = vec_push(v/2, 10i32);
-        let local/1/4 = vec_push(v/3, 20i32);
-        let local/1/5: Slice[dyn Display] = slice(v/4, 0i32, 2i32);
-        println(def/1/2(slice_get(s/5, 0i32)));
-        let local/1/6 = slice_sub(s/5, 1i32, 2i32);
-        println(def/1/2(slice_get(t/6, 0i32)));
+        let local/1/2: Vec[dyn Display] = Vec::new();
+        let local/1/3 = v/2.push(10i32);
+        let local/1/4 = v/3.push(20i32);
+        let local/1/5: Slice[dyn Display] = v/4.slice(0i32, 2i32);
+        println(def/1/2(s/5[0i32]));
+        let local/1/6 = s/5.sub(1i32, 2i32);
+        println(def/1/2(t/6[0i32]));
     }

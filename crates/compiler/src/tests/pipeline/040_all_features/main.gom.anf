@@ -1,6 +1,6 @@
 fn trait_impl#Describe#Tracker#describe(self/0: Tracker) -> string {
-  join ret35(retv36: string) -> string {
-    retv36
+  join ret40(retv41: string) -> string {
+    retv41
   } in
   let mtmp0 = self/0 in
   let x1 = Tracker.label(mtmp0) in
@@ -13,64 +13,64 @@ fn trait_impl#Describe#Tracker#describe(self/0: Tracker) -> string {
   let flag/5 = ref_get(toggled/3) in
   let with_label/6 = ("Tracker(" + label/1) in
   let with_count_label/7 = (with_label/6 + ", count: ") in
-  let t37 = int32_to_string(current/4) in
-  let with_count/8 = (with_count_label/7 + t37) in
+  let t42 = int32_to_string(current/4) in
+  let with_count/8 = (with_count_label/7 + t42) in
   let with_flag_label/9 = (with_count/8 + ", toggled: ") in
-  let t38 = bool_to_string(flag/5) in
-  let t39 = (with_flag_label/9 + t38) in
-  let t40 = (t39 + ")") in
-  jump ret35(t40)
+  let t43 = bool_to_string(flag/5) in
+  let t44 = (with_flag_label/9 + t43) in
+  let t45 = (t44 + ")") in
+  jump ret40(t45)
 }
 
 fn trait_impl#Describe#Record__int32#describe(self/10: Record__int32) -> string {
-  join ret41(retv42: string) -> string {
-    retv42
+  join ret46(retv47: string) -> string {
+    retv47
   } in
-  join k43(jp44: string) -> string {
-    jump ret41(jp44)
+  join k48(jp49: string) -> string {
+    jump ret46(jp49)
   } in
   match self/10 {
     Tag_0 => {
       let x4 = Record__int32::Value._0(self/10) in
       let value/11 = x4 in
-      let t45 = int32_to_string(value/11) in
-      let t46 = ("Value(" + t45) in
-      let t47 = (t46 + ")") in
-      jump k43(t47)
+      let t50 = int32_to_string(value/11) in
+      let t51 = ("Value(" + t50) in
+      let t52 = (t51 + ")") in
+      jump k48(t52)
     },
     Tag_1 => {
       let x5 = Record__int32::Pair._0(self/10) in
       let x6 = Record__int32::Pair._1(self/10) in
       let after/13 = x6 in
       let before/12 = x5 in
-      let t48 = int32_to_string(before/12) in
-      let prefix/14 = ("Pair(" + t48) in
-      let t49 = (prefix/14 + ", ") in
-      let t50 = int32_to_string(after/13) in
-      let t51 = (t49 + t50) in
-      let t52 = (t51 + ")") in
-      jump k43(t52)
+      let t53 = int32_to_string(before/12) in
+      let prefix/14 = ("Pair(" + t53) in
+      let t54 = (prefix/14 + ", ") in
+      let t55 = int32_to_string(after/13) in
+      let t56 = (t54 + t55) in
+      let t57 = (t56 + ")") in
+      jump k48(t57)
     },
     Tag_2 => {
-      jump k43("Empty")
+      jump k48("Empty")
     },
   }
 }
 
 fn trait_impl#Describe#Record__string#describe(self/15: Record__string) -> string {
-  join ret53(retv54: string) -> string {
-    retv54
+  join ret58(retv59: string) -> string {
+    retv59
   } in
-  join k55(jp56: string) -> string {
-    jump ret53(jp56)
+  join k60(jp61: string) -> string {
+    jump ret58(jp61)
   } in
   match self/15 {
     Tag_0 => {
       let x7 = Record__string::Value._0(self/15) in
       let text/16 = x7 in
-      let t57 = ("Value(" + text/16) in
-      let t58 = (t57 + ")") in
-      jump k55(t58)
+      let t62 = ("Value(" + text/16) in
+      let t63 = (t62 + ")") in
+      jump k60(t63)
     },
     Tag_1 => {
       let x8 = Record__string::Pair._0(self/15) in
@@ -78,246 +78,252 @@ fn trait_impl#Describe#Record__string#describe(self/15: Record__string) -> strin
       let after/18 = x9 in
       let before/17 = x8 in
       let prefix/19 = ("Pair(" + before/17) in
-      let t59 = (prefix/19 + ", ") in
-      let t60 = (t59 + after/18) in
-      let t61 = (t60 + ")") in
-      jump k55(t61)
+      let t64 = (prefix/19 + ", ") in
+      let t65 = (t64 + after/18) in
+      let t66 = (t65 + ")") in
+      jump k60(t66)
     },
     Tag_2 => {
-      jump k55("Empty")
+      jump k60("Empty")
     },
   }
 }
 
 fn format_total(total/26: int32) -> string {
-  join ret62(retv63: string) -> string {
-    retv63
+  join ret67(retv68: string) -> string {
+    retv68
   } in
-  let t64 = int32_to_string(total/26) in
-  let t65 = ("total: " + t64) in
-  jump ret62(t65)
+  let t69 = int32_to_string(total/26) in
+  let t70 = ("total: " + t69) in
+  jump ret67(t70)
 }
 
 fn increment(value/27: int32) -> int32 {
-  join ret66(retv67: int32) -> int32 {
-    retv67
+  join ret71(retv72: int32) -> int32 {
+    retv72
   } in
-  let t68 = (value/27 + 1) in
-  jump ret66(t68)
+  let t73 = (value/27 + 1) in
+  jump ret71(t73)
 }
 
 fn triple(value/28: int32) -> int32 {
-  join ret69(retv70: int32) -> int32 {
-    retv70
+  join ret74(retv75: int32) -> int32 {
+    retv75
   } in
-  let t71 = (value/28 * 3) in
-  jump ret69(t71)
+  let t76 = (value/28 * 3) in
+  jump ret74(t76)
 }
 
 fn pair_join(parts/29: (string, string)) -> string {
-  join ret72(retv73: string) -> string {
-    retv73
+  join ret77(retv78: string) -> string {
+    retv78
   } in
   let mtmp11 = parts/29 in
   let x12 = mtmp11.0 in
   let x13 = mtmp11.1 in
   let right/31 = x13 in
   let left/30 = x12 in
-  let t74 = (left/30 + " -> ") in
-  let t75 = (t74 + right/31) in
-  jump ret72(t75)
+  let t79 = (left/30 + " -> ") in
+  let t80 = (t79 + right/31) in
+  jump ret77(t80)
 }
 
 fn run_transforms(value/32: int32, transforms/33: [(int32) -> int32; 2]) -> [int32; 2] {
-  join ret76(retv77: [int32; 2]) -> [int32; 2] {
-    retv77
+  join ret81(retv82: [int32; 2]) -> [int32; 2] {
+    retv82
   } in
   let first/34 = array_get(transforms/33, 0) in
   let second/35 = array_get(transforms/33, 1) in
   let first_result/36 = first/34(value/32) in
   let second_result/37 = second/35(first_result/36) in
-  let t78 = [first_result/36, value/32] in
-  let t79 = array_set(t78, 1, second_result/37) in
-  jump ret76(t79)
+  let results/38 = [first_result/36, value/32] in
+  let place_root14 = results/38 in
+  let index15 = 1 in
+  let place16 = array_get(place_root14, index15) in
+  let value17 = second_result/37 in
+  let t83 = array_set(place_root14, index15, value17) in
+  let t84 = results/38 = t83 in
+  let _wild18 = t84 in
+  jump ret81(results/38)
 }
 
-fn gather(record/38: Record__int32) -> Maybe__int32 {
-  join ret80(retv81: Maybe__int32) -> Maybe__int32 {
-    retv81
+fn gather(record/39: Record__int32) -> Maybe__int32 {
+  join ret85(retv86: Maybe__int32) -> Maybe__int32 {
+    retv86
   } in
-  join k82(jp83: Maybe__int32) -> Maybe__int32 {
-    jump ret80(jp83)
+  join k87(jp88: Maybe__int32) -> Maybe__int32 {
+    jump ret85(jp88)
   } in
-  match record/38 {
+  match record/39 {
     Tag_0 => {
-      let x14 = Record__int32::Value._0(record/38) in
-      let value/39 = x14 in
-      let t84 = Maybe__int32::Some(value/39) in
-      jump k82(t84)
+      let x19 = Record__int32::Value._0(record/39) in
+      let value/40 = x19 in
+      let t89 = Maybe__int32::Some(value/40) in
+      jump k87(t89)
     },
     Tag_1 => {
-      let x15 = Record__int32::Pair._0(record/38) in
-      let x16 = Record__int32::Pair._1(record/38) in
-      let after/40 = x16 in
-      let t85 = Maybe__int32::Some(after/40) in
-      jump k82(t85)
+      let x20 = Record__int32::Pair._0(record/39) in
+      let x21 = Record__int32::Pair._1(record/39) in
+      let after/41 = x21 in
+      let t90 = Maybe__int32::Some(after/41) in
+      jump k87(t90)
     },
     Tag_2 => {
-      jump k82(Tag_1)
+      jump k87(Tag_1)
     },
   }
 }
 
-fn build_counter(label/41: string, start/42: int32) -> (Tracker, () -> Record__int32, (int32) -> Record__int32, () -> Record__string) {
-  join ret86(retv87: (Tracker, () -> Record__int32, (int32) -> Record__int32, () -> Record__string)) -> (Tracker, () -> Record__int32, (int32) -> Record__int32, () -> Record__string) {
-    retv87
+fn build_counter(label/42: string, start/43: int32) -> (Tracker, () -> Record__int32, (int32) -> Record__int32, () -> Record__string) {
+  join ret91(retv92: (Tracker, () -> Record__int32, (int32) -> Record__int32, () -> Record__string)) -> (Tracker, () -> Record__int32, (int32) -> Record__int32, () -> Record__string) {
+    retv92
   } in
-  let count/43 = ref(start/42) in
-  let toggled/44 = ref(false) in
-  let tracker/45 = Tracker { label: label/41, count: count/43, toggled: toggled/44 } in
-  let snapshot/46 = closure_env_snapshot_0 { count_0: count/43 } in
-  let bump/49 = closure_env_bump_1 { count_0: count/43 } in
-  let flip/52 = closure_env_flip_2 { toggled_0: toggled/44 } in
-  let t88 = (tracker/45, snapshot/46, bump/49, flip/52) in
-  jump ret86(t88)
+  let count/44 = ref(start/43) in
+  let toggled/45 = ref(false) in
+  let tracker/46 = Tracker { label: label/42, count: count/44, toggled: toggled/45 } in
+  let snapshot/47 = closure_env_snapshot_0 { count_0: count/44 } in
+  let bump/50 = closure_env_bump_1 { count_0: count/44 } in
+  let flip/53 = closure_env_flip_2 { toggled_0: toggled/45 } in
+  let t93 = (tracker/46, snapshot/47, bump/50, flip/53) in
+  jump ret91(t93)
 }
 
 fn main() -> unit {
-  join ret89() -> unit {
+  join ret94() -> unit {
     ()
   } in
-  let mtmp19 = build_counter("goml", 2) in
-  let x20 = mtmp19.0 in
-  let x21 = mtmp19.1 in
-  let x22 = mtmp19.2 in
-  let x23 = mtmp19.3 in
-  let flip/56 = x23 in
-  let bump/55 = x22 in
-  let snapshot/54 = x21 in
-  let tracker/53 = x20 in
-  let tracker_info/57 = trait_impl#Describe#Tracker#describe(tracker/53) in
-  let first_record/58 = snapshot/54() in
-  let bumped_record/59 = bump/55(5) in
-  let flipped_record/60 = flip/56() in
-  let maybe_first/61 = gather(first_record/58) in
-  let maybe_second/62 = gather(bumped_record/59) in
-  let chosen/63 = choose__T_Maybe[int32](true, maybe_second/62, maybe_first/61) in
-  let stringified/64 = map_maybe__T_int32__U_string(chosen/63, format_total) in
-  let transforms/65 = [increment, triple] in
-  let results/66 = run_transforms(4, transforms/65) in
-  let first_result/67 = array_get(results/66, 0) in
-  let second_result/68 = array_get(results/66, 1) in
-  let t90 = (first_result/67 < second_result/68) in
-  let order_check/69 = (t90 && true) in
-  let first_text/70 = trait_impl#Describe#Record__int32#describe(first_record/58) in
-  let bumped_text/71 = trait_impl#Describe#Record__int32#describe(bumped_record/59) in
-  let flipped_text/72 = trait_impl#Describe#Record__string#describe(flipped_record/60) in
-  join k91(jp92: string) -> unit {
-    let summary/74 = jp92 in
-    let t93 = int32_to_string(first_result/67) in
-    let t94 = int32_to_string(second_result/68) in
-    let t95 = (t93, t94) in
-    let pair_text/75 = pair_join(t95) in
-    let bool_text/76 = bool_to_string(order_check/69) in
-    let mtmp25 = println__T_string(tracker_info/57) in
-    let mtmp26 = println__T_string(first_text/70) in
-    let mtmp27 = println__T_string(bumped_text/71) in
-    let mtmp28 = println__T_string(flipped_text/72) in
-    let mtmp29 = println__T_string(summary/74) in
-    let mtmp30 = println__T_string(pair_text/75) in
-    let mtmp31 = println__T_string(bool_text/76) in
-    jump ret89()
+  let mtmp24 = build_counter("goml", 2) in
+  let x25 = mtmp24.0 in
+  let x26 = mtmp24.1 in
+  let x27 = mtmp24.2 in
+  let x28 = mtmp24.3 in
+  let flip/57 = x28 in
+  let bump/56 = x27 in
+  let snapshot/55 = x26 in
+  let tracker/54 = x25 in
+  let tracker_info/58 = trait_impl#Describe#Tracker#describe(tracker/54) in
+  let first_record/59 = snapshot/55() in
+  let bumped_record/60 = bump/56(5) in
+  let flipped_record/61 = flip/57() in
+  let maybe_first/62 = gather(first_record/59) in
+  let maybe_second/63 = gather(bumped_record/60) in
+  let chosen/64 = choose__T_Maybe[int32](true, maybe_second/63, maybe_first/62) in
+  let stringified/65 = map_maybe__T_int32__U_string(chosen/64, format_total) in
+  let transforms/66 = [increment, triple] in
+  let results/67 = run_transforms(4, transforms/66) in
+  let first_result/68 = array_get(results/67, 0) in
+  let second_result/69 = array_get(results/67, 1) in
+  let t95 = (first_result/68 < second_result/69) in
+  let order_check/70 = (t95 && true) in
+  let first_text/71 = trait_impl#Describe#Record__int32#describe(first_record/59) in
+  let bumped_text/72 = trait_impl#Describe#Record__int32#describe(bumped_record/60) in
+  let flipped_text/73 = trait_impl#Describe#Record__string#describe(flipped_record/61) in
+  join k96(jp97: string) -> unit {
+    let summary/75 = jp97 in
+    let t98 = int32_to_string(first_result/68) in
+    let t99 = int32_to_string(second_result/69) in
+    let t100 = (t98, t99) in
+    let pair_text/76 = pair_join(t100) in
+    let bool_text/77 = bool_to_string(order_check/70) in
+    let mtmp30 = println__T_string(tracker_info/58) in
+    let mtmp31 = println__T_string(first_text/71) in
+    let mtmp32 = println__T_string(bumped_text/72) in
+    let mtmp33 = println__T_string(flipped_text/73) in
+    let mtmp34 = println__T_string(summary/75) in
+    let mtmp35 = println__T_string(pair_text/76) in
+    let mtmp36 = println__T_string(bool_text/77) in
+    jump ret94()
   } in
-  match stringified/64 {
+  match stringified/65 {
     Tag_0 => {
-      let x24 = Maybe__string::Some._0(stringified/64) in
-      let text/73 = x24 in
-      let t96 = ("Snapshot: " + text/73) in
-      jump k91(t96)
+      let x29 = Maybe__string::Some._0(stringified/65) in
+      let text/74 = x29 in
+      let t101 = ("Snapshot: " + text/74) in
+      jump k96(t101)
     },
     Tag_1 => {
-      jump k91("Snapshot: none")
+      jump k96("Snapshot: none")
     },
   }
 }
 
 fn choose__T_Maybe[int32](flag/20: bool, when_true/21: Maybe__int32, when_false/22: Maybe__int32) -> Maybe__int32 {
-  join ret97(retv98: Maybe__int32) -> Maybe__int32 {
-    retv98
+  join ret102(retv103: Maybe__int32) -> Maybe__int32 {
+    retv103
   } in
-  join k99(jp100: Maybe__int32) -> Maybe__int32 {
-    jump ret97(jp100)
+  join k104(jp105: Maybe__int32) -> Maybe__int32 {
+    jump ret102(jp105)
   } in
   if flag/20 {
-    jump k99(when_true/21)
+    jump k104(when_true/21)
   } else {
-    jump k99(when_false/22)
+    jump k104(when_false/22)
   }
 }
 
 fn map_maybe__T_int32__U_string(value/23: Maybe__int32, f/24: (int32) -> string) -> Maybe__string {
-  join ret101(retv102: Maybe__string) -> Maybe__string {
-    retv102
+  join ret106(retv107: Maybe__string) -> Maybe__string {
+    retv107
   } in
-  join k103(jp104: Maybe__string) -> Maybe__string {
-    jump ret101(jp104)
+  join k108(jp109: Maybe__string) -> Maybe__string {
+    jump ret106(jp109)
   } in
   match value/23 {
     Tag_0 => {
       let x10 = Maybe__int32::Some._0(value/23) in
       let inner/25 = x10 in
-      let t105 = f/24(inner/25) in
-      let t106 = Maybe__string::Some(t105) in
-      jump k103(t106)
+      let t110 = f/24(inner/25) in
+      let t111 = Maybe__string::Some(t110) in
+      jump k108(t111)
     },
     Tag_1 => {
-      jump k103(Tag_1)
+      jump k108(Tag_1)
     },
   }
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret107() -> unit {
+  join ret112() -> unit {
     ()
   } in
-  let t108 = string_println(value/1) in
-  jump ret107()
+  let t113 = string_println(value/1) in
+  jump ret112()
 }
 
-fn inherent#closure_env_snapshot_0#closure_env_snapshot_0#apply(env32: closure_env_snapshot_0) -> Record__int32 {
-  join ret109(retv110: Record__int32) -> Record__int32 {
-    retv110
+fn inherent#closure_env_snapshot_0#closure_env_snapshot_0#apply(env37: closure_env_snapshot_0) -> Record__int32 {
+  join ret114(retv115: Record__int32) -> Record__int32 {
+    retv115
   } in
-  let count/43 = closure_env_snapshot_0.count_0(env32) in
-  let t111 = ref_get(count/43) in
-  let t112 = Record__int32::Value(t111) in
-  jump ret109(t112)
+  let count/44 = closure_env_snapshot_0.count_0(env37) in
+  let t116 = ref_get(count/44) in
+  let t117 = Record__int32::Value(t116) in
+  jump ret114(t117)
 }
 
-fn inherent#closure_env_bump_1#closure_env_bump_1#apply(env33: closure_env_bump_1, delta/47: int32) -> Record__int32 {
-  join ret113(retv114: Record__int32) -> Record__int32 {
-    retv114
-  } in
-  let count/43 = closure_env_bump_1.count_0(env33) in
-  let before/48 = ref_get(count/43) in
-  let t115 = (before/48 + delta/47) in
-  let mtmp17 = ref_set(count/43, t115) in
-  let t116 = ref_get(count/43) in
-  let t117 = Record__int32::Pair(before/48, t116) in
-  jump ret113(t117)
-}
-
-fn inherent#closure_env_flip_2#closure_env_flip_2#apply(env34: closure_env_flip_2) -> Record__string {
-  join ret118(retv119: Record__string) -> Record__string {
+fn inherent#closure_env_bump_1#closure_env_bump_1#apply(env38: closure_env_bump_1, delta/48: int32) -> Record__int32 {
+  join ret118(retv119: Record__int32) -> Record__int32 {
     retv119
   } in
-  let toggled/44 = closure_env_flip_2.toggled_0(env34) in
-  let before/50 = ref_get(toggled/44) in
-  let t120 = (!before/50) in
-  let mtmp18 = ref_set(toggled/44, t120) in
-  let after/51 = ref_get(toggled/44) in
-  let t121 = bool_to_string(before/50) in
-  let t122 = bool_to_string(after/51) in
-  let t123 = Record__string::Pair(t121, t122) in
-  jump ret118(t123)
+  let count/44 = closure_env_bump_1.count_0(env38) in
+  let before/49 = ref_get(count/44) in
+  let t120 = (before/49 + delta/48) in
+  let mtmp22 = ref_set(count/44, t120) in
+  let t121 = ref_get(count/44) in
+  let t122 = Record__int32::Pair(before/49, t121) in
+  jump ret118(t122)
+}
+
+fn inherent#closure_env_flip_2#closure_env_flip_2#apply(env39: closure_env_flip_2) -> Record__string {
+  join ret123(retv124: Record__string) -> Record__string {
+    retv124
+  } in
+  let toggled/45 = closure_env_flip_2.toggled_0(env39) in
+  let before/51 = ref_get(toggled/45) in
+  let t125 = (!before/51) in
+  let mtmp23 = ref_set(toggled/45, t125) in
+  let after/52 = ref_get(toggled/45) in
+  let t126 = bool_to_string(before/51) in
+  let t127 = bool_to_string(after/52) in
+  let t128 = Record__string::Pair(t126, t127) in
+  jump ret123(t128)
 }

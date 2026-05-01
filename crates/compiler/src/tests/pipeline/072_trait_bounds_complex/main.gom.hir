@@ -34,13 +34,13 @@ file main.gom
     
     impl Display for int32 {
       fn show(local/1/0: int32) -> string {
-          int32_to_string(self/0)
+          self/0.to_string()
       }
     }
     
     impl Debug for int32 {
       fn show(local/1/1: int32) -> string {
-          "i32(" + int32_to_string(self/1) + ")"
+          "i32(" + self/1.to_string() + ")"
       }
     }
     
@@ -70,19 +70,19 @@ file main.gom
     
     impl Inspect for int32 {
       fn inspect(local/1/9: int32) -> string {
-          "<" + int32_to_string(self/9) + ">"
+          "<" + self/9.to_string() + ">"
       }
     }
     
     impl Display for Boxed {
       fn show(local/1/10: Boxed) -> string {
-          "Boxed(" + int32_to_string(self/10.value) + ")"
+          "Boxed(" + self/10.value.to_string() + ")"
       }
     }
     
     impl Debug for Boxed {
       fn show(local/1/11: Boxed) -> string {
-          "Boxed{value=" + int32_to_string(self/11.value) + "}"
+          "Boxed{value=" + self/11.value.to_string() + "}"
       }
     }
     
@@ -116,7 +116,7 @@ file main.gom
     
     impl Inspect for Boxed {
       fn inspect(local/1/19: Boxed) -> string {
-          "[" + int32_to_string(self/19.value) + "]"
+          "[" + self/19.value.to_string() + "]"
       }
     }
     
@@ -133,7 +133,7 @@ file main.gom
     }
     
     fn tag_text(local/1/22: Q) -> string {
-        Debug::show(tag/22) + "#" + int32_to_string(tag/22.hash())
+        Debug::show(tag/22) + "#" + tag/22.hash().to_string()
     }
     
     fn combine_scaled(local/1/23: T, local/1/24: T, local/1/25: int32) -> T {
@@ -145,7 +145,7 @@ file main.gom
         let local/1/31 = def/1/24(tag/26);
         let local/1/32 = def/1/23(combined/29);
         let local/1/33 = combined/29.hash();
-        header/31 + " " + repr/32 + " | eq=" + def/1/22(same/30) + " | hash=" + int32_to_string(h/33)
+        header/31 + " " + repr/32 + " | eq=" + def/1/22(same/30) + " | hash=" + h/33.to_string()
     }
     
     fn full_report(local/1/34: Q, local/1/35: T, local/1/36: T) -> string {
@@ -157,7 +157,7 @@ file main.gom
         let local/1/42 = x/39.add(y/40).add(z/41);
         let local/1/43 = def/1/24(tag/38);
         let local/1/44 = total/42.hash();
-        header/43 + " " + total/42.inspect() + " @" + int32_to_string(h/44)
+        header/43 + " " + total/42.inspect() + " @" + h/44.to_string()
     }
     
     fn main() {

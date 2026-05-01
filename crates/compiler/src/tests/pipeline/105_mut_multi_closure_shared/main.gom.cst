@@ -1,5 +1,5 @@
-FILE@0..172
-  FN@0..172
+FILE@0..167
+  FN@0..167
     FnKeyword@0..2 "fn"
     Whitespace@2..3 " "
     Ident@3..7 "main"
@@ -12,7 +12,7 @@ FILE@0..172
     TYPE_UNIT@13..18
       UnitKeyword@13..17 "unit"
       Whitespace@17..18 " "
-    BLOCK@18..172
+    BLOCK@18..167
       LBrace@18..19 "{"
       Whitespace@19..24 "\n    "
       STMT_LET@24..43
@@ -105,31 +105,32 @@ FILE@0..172
             RParen@130..131 ")"
         Semi@131..132 ";"
         Whitespace@132..137 "\n    "
-      STMT_EXPR@137..170
-        EXPR_CALL@137..168
+      STMT_EXPR@137..165
+        EXPR_CALL@137..163
           EXPR_IDENT@137..144
             PATH@137..144
               Ident@137..144 "println"
-          ARG_LIST@144..168
+          ARG_LIST@144..163
             LParen@144..145 "("
-            ARG@145..167
-              EXPR_CALL@145..167
-                EXPR_IDENT@145..160
-                  PATH@145..160
-                    Ident@145..160 "int32_to_string"
-                ARG_LIST@160..167
+            ARG@145..162
+              EXPR_CALL@145..162
+                EXPR_BINARY@145..160
+                  EXPR_CALL@145..150
+                    EXPR_IDENT@145..148
+                      PATH@145..148
+                        Ident@145..148 "get"
+                    ARG_LIST@148..150
+                      LParen@148..149 "("
+                      RParen@149..150 ")"
+                  Dot@150..151 "."
+                  EXPR_IDENT@151..160
+                    PATH@151..160
+                      Ident@151..160 "to_string"
+                ARG_LIST@160..162
                   LParen@160..161 "("
-                  ARG@161..166
-                    EXPR_CALL@161..166
-                      EXPR_IDENT@161..164
-                        PATH@161..164
-                          Ident@161..164 "get"
-                      ARG_LIST@164..166
-                        LParen@164..165 "("
-                        RParen@165..166 ")"
-                  RParen@166..167 ")"
-            RParen@167..168 ")"
-        Semi@168..169 ";"
-        Whitespace@169..170 "\n"
-      RBrace@170..171 "}"
-      Whitespace@171..172 "\n"
+                  RParen@161..162 ")"
+            RParen@162..163 ")"
+        Semi@163..164 ";"
+        Whitespace@164..165 "\n"
+      RBrace@165..166 "}"
+      Whitespace@166..167 "\n"

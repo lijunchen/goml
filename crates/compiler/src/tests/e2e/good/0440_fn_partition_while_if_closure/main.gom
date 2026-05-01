@@ -3,7 +3,7 @@ fn partition(items: [int32; 4], pred: (int32) -> bool) -> (int32, int32) {
     let right_count = ref(0);
     let i = ref(0);
     while ref_get(i) < 4 {
-        let item = array_get(items, ref_get(i));
+        let item = items[ref_get(i)];
         if pred(item) {
             ref_set(left_count, ref_get(left_count) + 1);
         } else {

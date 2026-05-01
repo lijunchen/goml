@@ -21,10 +21,10 @@ trait Display {
 
 impl Display for Point {
   fn show(self: Point) -> string {
-      "Point(" + int32_to_string(self.x) + "," + int32_to_string(self.y) + ")"
+      "Point(" + self.x.to_string() + "," + self.y.to_string() + ")"
   }
   fn show_with(self: Point, prefix: string, suffix: string) -> string {
-      prefix + "Point(" + int32_to_string(self.x) + "," + int32_to_string(self.y) + ")" + suffix
+      prefix + "Point(" + self.x.to_string() + "," + self.y.to_string() + ")" + suffix
   }
   fn tick(self: Point) -> unit {
       ()
@@ -75,10 +75,10 @@ impl Display for Flag {
 
 impl Display for Counter {
   fn show(self: Counter) -> string {
-      "Counter(" + int32_to_string(ref_get(self.cell)) + ")"
+      "Counter(" + ref_get(self.cell).to_string() + ")"
   }
   fn show_with(self: Counter, prefix: string, suffix: string) -> string {
-      prefix + "Counter(" + int32_to_string(ref_get(self.cell)) + ")" + suffix
+      prefix + "Counter(" + ref_get(self.cell).to_string() + ")" + suffix
   }
   fn tick(self: Counter) -> unit {
       let next = ref_get(self.cell) + 1;
@@ -107,7 +107,7 @@ fn make_renderer(tag: string) -> (dyn Display) -> string {
 
 fn bump_and_show(x: dyn Display, delta: int32) -> string {
     let _ = Display::tick(x);
-    Display::show_with(x, "[", "]") + ":" + int32_to_string(Display::bump(x, delta))
+    Display::show_with(x, "[", "]") + ":" + Display::bump(x, delta).to_string()
 }
 
 fn main() -> unit {
@@ -138,11 +138,11 @@ fn main() -> unit {
     let s0 = show_dyn(dp2);
     let s1 = call_via_closure(df2, "*");
     let s2 = render_star(dp1) + "|" + render_angle(df1);
-    let v: Vec[dyn Display] = vec_new();
-    let v = vec_push(v, dp1);
-    let v = vec_push(v, df1);
-    let v = vec_push(v, dc);
-    let vlen = vec_len(v);
+    let v: Vec[dyn Display] = Vec::new();
+    let v = v.push(dp1);
+    let v = v.push(df1);
+    let v = v.push(dc);
+    let vlen = v.len();
     let delta = match vlen {
         2 => 3,
         _ => 5,
@@ -158,8 +158,8 @@ fn main() -> unit {
             let _ = ref_set(i, ref_get(i) + 1);
         }
     };
-    let _ = println("len:" + int32_to_string(vlen));
-    let _ = println("delta:" + int32_to_string(delta));
+    let _ = println("len:" + vlen.to_string());
+    let _ = println("delta:" + delta.to_string());
     ()
 }
 

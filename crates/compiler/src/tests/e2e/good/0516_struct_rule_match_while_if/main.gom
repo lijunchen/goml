@@ -7,7 +7,7 @@ fn check_rules(rules: [Rule; 3], value: int32) -> string {
     let i = ref(0);
     let result = ref("no match");
     while ref_get(i) < 3 {
-        let r = array_get(rules, ref_get(i));
+        let r = rules[ref_get(i)];
         if r.condition(value) {
             ref_set(result, r.action(value));
         } else {

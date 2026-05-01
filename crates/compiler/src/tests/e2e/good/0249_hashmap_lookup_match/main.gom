@@ -1,9 +1,9 @@
 fn main() {
-    let m: HashMap[uint8, string] = hashmap_new();
-    hashmap_set(m, 1, "one");
-    hashmap_set(m, 2, "two");
-    hashmap_set(m, 3, "three");
-    match hashmap_get(m, 2) {
+    let m: HashMap[uint8, string] = HashMap::new();
+    m.set(1, "one");
+    m.set(2, "two");
+    m.set(3, "three");
+    match m.get(2) {
         Option::Some(v) => println(v),
         Option::None => println("not found"),
     };

@@ -9,7 +9,7 @@ struct Point {
 
 impl Describe for Point {
     fn describe(self: Point) -> string {
-        "(" + int32_to_string(self.x) + ", " + int32_to_string(self.y) + ")"
+        "(" + self.x.to_string() + ", " + self.y.to_string() + ")"
     }
 }
 
@@ -18,17 +18,17 @@ fn print_desc(s: dyn Describe) {
 }
 
 fn make_points() -> Vec[dyn Describe] {
-    let v: Vec[dyn Describe] = vec_new();
-    vec_push(v, Point { x: 1, y: 2 });
-    vec_push(v, Point { x: 3, y: 4 });
+    let v: Vec[dyn Describe] = Vec::new();
+    let v = v.push(Point { x: 1, y: 2 });
+    let v = v.push(Point { x: 3, y: 4 });
     v
 }
 
 fn main() {
     let points = make_points();
     let i = ref(0);
-    while ref_get(i) < vec_len(points) {
-        print_desc(vec_get(points, ref_get(i)));
+    while ref_get(i) < points.len() {
+        print_desc(points.get(ref_get(i)));
         ref_set(i, ref_get(i) + 1);
     };
 }

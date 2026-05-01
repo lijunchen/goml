@@ -18,7 +18,7 @@ fn fold[T: Combine](items: [T; 3], init: T) -> T {
     let acc = ref(init);
     let i = ref(0);
     while ref_get(i) < 3 {
-        ref_set(acc, Combine::combine(ref_get(acc), array_get(items, ref_get(i))));
+        ref_set(acc, Combine::combine(ref_get(acc), items[ref_get(i)]));
         ref_set(i, ref_get(i) + 1);
     };
     ref_get(acc)

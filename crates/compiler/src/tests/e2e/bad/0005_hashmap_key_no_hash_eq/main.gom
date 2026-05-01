@@ -4,9 +4,9 @@ struct Config {
 }
 
 fn main() -> unit {
-  let m = hashmap_new();
-  hashmap_set(m, Config { timeout: 30, retries: 3 }, "production");
-  let result = hashmap_get(m, Config { timeout: 30, retries: 3 });
+  let m = HashMap::new();
+  m.set(Config { timeout: 30, retries: 3 }, "production");
+  let result = m.get(Config { timeout: 30, retries: 3 });
   match result {
     Option::Some(v) => println(v),
     Option::None => println("not found"),

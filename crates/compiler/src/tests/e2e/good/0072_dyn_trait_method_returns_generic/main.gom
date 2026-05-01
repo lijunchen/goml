@@ -18,8 +18,8 @@ impl TryConvert for StringValue {
 fn sum_convertible(items: Vec[dyn TryConvert]) -> int32 {
     let sum = ref(0);
     let i = ref(0);
-    while ref_get(i) < vec_len(items) {
-        match TryConvert::try_to_int(vec_get(items, ref_get(i))) {
+    while ref_get(i) < items.len() {
+        match TryConvert::try_to_int(items[ref_get(i)]) {
             Option::Some(n) => ref_set(sum, ref_get(sum) + n),
             Option::None => (),
         };
@@ -29,10 +29,10 @@ fn sum_convertible(items: Vec[dyn TryConvert]) -> int32 {
 }
 
 fn main() {
-    let items: Vec[dyn TryConvert] = vec_new();
-    let items = vec_push(items, IntValue { n: 10 });
-    let items = vec_push(items, StringValue { s: "hello" });
-    let items = vec_push(items, IntValue { n: 20 });
+    let items: Vec[dyn TryConvert] = Vec::new();
+    let items = items.push(IntValue { n: 10 });
+    let items = items.push(StringValue { s: "hello" });
+    let items = items.push(IntValue { n: 20 });
 
     println(sum_convertible(items).to_string());
 }

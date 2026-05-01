@@ -39,7 +39,7 @@ fn main() -> unit {
     vec_set(place_root10, index11, value13)
   } in
   let _wild15 = println__T_int32(vec_get(vec2/5, 0)) in
-  let s/6 = slice(vec2/5, 0, 2) in
+  let s/6 = inherent#Vec#Vec[T]#slice__T_int32(vec2/5, 0, 2) in
   let _wild16 = println__T_int32(slice_get(s/6, 1)) in
   let map/7 = inherent#HashMap#HashMap[K,V]#new__K_string__V_int32() in
   let _wild21 = {
@@ -119,6 +119,10 @@ fn inherent#Vec#Vec[T]#new__T_int32() -> Vec[int32] {
 
 fn inherent#Vec#Vec[T]#push__T_int32(self/67: Vec[int32], elem/68: int32) -> Vec[int32] {
   vec_push(self/67, elem/68)
+}
+
+fn inherent#Vec#Vec[T]#slice__T_int32(self/75: Vec[int32], start/76: int32, end/77: int32) -> Slice[int32] {
+  slice(self/75, start/76, end/77)
 }
 
 fn inherent#HashMap#HashMap[K,V]#new__K_string__V_int32() -> HashMap[string, int32] {

@@ -11,25 +11,25 @@ enum Result[T, E] {
 fn main() {
     let x: Option[uint8] = Option::Some(42);
     match x {
-        Option::Some(v) => println(uint8_to_string(v)),
+        Option::Some(v) => println(v.to_string()),
         Option::None => println("none"),
     };
     
     let y: Option[float32] = Option::Some(3.14);
     match y {
-        Option::Some(v) => println(float32_to_string(v)),
+        Option::Some(v) => println(v.to_string()),
         Option::None => println("none"),
     };
     
     let z: Result[int64, string] = Result::Ok(12345);
     match z {
-        Result::Ok(v) => println(int64_to_string(v)),
+        Result::Ok(v) => println(v.to_string()),
         Result::Err(e) => println(e),
     };
     
     let w: Option[int64] = Option::None;
     match w {
-        Option::Some(v) => println(int64_to_string(v)),
+        Option::Some(v) => println(v.to_string()),
         Option::None => println("none"),
     };
 }

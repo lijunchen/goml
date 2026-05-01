@@ -3,17 +3,17 @@ struct Callback {
 }
 
 fn make_callbacks() -> Vec[Callback] {
-    let v = vec_new();
-    vec_push(v, Callback { handler: |s| s + " world" });
-    vec_push(v, Callback { handler: |s| s + "!" });
+    let v = Vec::new();
+    let v = v.push(Callback { handler: |s| s + " world" });
+    let v = v.push(Callback { handler: |s| s + "!" });
     v
 }
 
 fn chain(cbs: Vec[Callback], input: string) -> string {
     let result = ref(input);
     let i = ref(0);
-    while ref_get(i) < vec_len(cbs) {
-        let cb = vec_get(cbs, ref_get(i));
+    while ref_get(i) < cbs.len() {
+        let cb = cbs[ref_get(i)];
         ref_set(result, cb.handler(ref_get(result)));
         ref_set(i, ref_get(i) + 1);
     };

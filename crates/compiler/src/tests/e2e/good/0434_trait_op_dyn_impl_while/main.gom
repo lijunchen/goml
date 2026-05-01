@@ -12,7 +12,7 @@ fn pipeline(ops: [dyn Op; 3], x: int32) -> int32 {
     let result = ref(x);
     let i = ref(0i32);
     while ref_get(i) < 3 {
-        ref_set(result, Op::run(array_get(ops, ref_get(i)), ref_get(result)));
+        ref_set(result, Op::run(ops[ref_get(i)], ref_get(result)));
         ref_set(i, ref_get(i) + 1);
     };
     ref_get(result)

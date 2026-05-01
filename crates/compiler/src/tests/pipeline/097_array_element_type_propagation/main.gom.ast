@@ -4,15 +4,15 @@ fn main() {
     let i = ref(0);
     while ref_get(i) < 3 {
         {
-            println(uint8_to_string(array_get(arr, ref_get(i))));
+            println(arr[ref_get(i)].to_string());
             ref_set(i, ref_get(i) + 1);
         }
     };
     let floats: [float32; 2] = [1.5, 2.5];
-    println(float32_to_string(array_get(floats, 0)));
-    println(float32_to_string(array_get(floats, 1)));
+    println(floats[0].to_string());
+    println(floats[1].to_string());
     let longs: [int64; 2] = [100, 200];
-    println(int64_to_string(array_get(longs, 0)));
-    println(int64_to_string(array_get(longs, 1)));
+    println(longs[0].to_string());
+    println(longs[1].to_string());
 }
 

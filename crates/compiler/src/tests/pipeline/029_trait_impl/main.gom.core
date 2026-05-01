@@ -17,7 +17,7 @@ fn trait_impl#Display#Maybe[int32]#show(self/1: Maybe[int32]) -> string {
         let x0 = Maybe::Just._0(self/1) in
         {
           let value/2 = x0 in
-          (("Just(" + int32_to_string(value/2)) + ")")
+          (("Just(" + trait_call[ToString::to_string](value/2)) + ")")
         }
       }
     },

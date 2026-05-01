@@ -8,6 +8,6 @@ fn println(value/1: T) -> unit {
 
 fn main() -> unit {
   let p/0 = Pair { first: 10, second: 3.14 } in
-  let _wild0 = println(uint8_to_string(Pair.first(p/0))) in
-  let _wild1 = println(float32_to_string(Pair.second(p/0))) in
+  let _wild0 = println(trait_call[ToString::to_string](Pair.first(p/0))) in
+  let _wild1 = println(trait_call[ToString::to_string](Pair.second(p/0))) in
 }

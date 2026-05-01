@@ -9,14 +9,14 @@ struct Point {
 
 impl Show for Point {
     fn show(self: Point) -> string {
-        "(" + int32_to_string(self.x) + ", " + int32_to_string(self.y) + ")"
+        "(" + self.x.to_string() + ", " + self.y.to_string() + ")"
     }
 }
 
 fn show_all[T: Show](items: [T; 3]) {
     let i = ref(0);
     while ref_get(i) < 3 {
-        println(Show::show(array_get(items, ref_get(i))));
+        println(Show::show(items[ref_get(i)]));
         ref_set(i, ref_get(i) + 1);
     };
 }
