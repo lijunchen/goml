@@ -480,7 +480,7 @@ pub fn stat_summary(fs: FS, name: string) -> Result[string, GoError] {
     let mode = mode_bits(info.mode());
     let entry = file_info_to_dir_entry(info);
     let summary = format_dir_entry(entry);
-    Result::Ok(summary + "|" + (mode).to_string())
+    Result::Ok(summary + "|" + mode.to_string())
 }
 
 pub fn has_name(fs: FS, name: string) -> Result[bool, GoError] {

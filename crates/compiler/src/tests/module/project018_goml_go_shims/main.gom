@@ -29,7 +29,7 @@ fn demo_io() -> Result[string, GoError] {
     };
     let byte_text = crate::ioshim::pipe_read_text(byte_reader, 2)?;
     let out = limited;
-    let out = out + "|" + (copied_buf).to_string();
+    let out = out + "|" + copied_buf.to_string();
     let out = out + "|" + tee;
     let out = out + "|" + byte_text;
     Result::Ok(out)
@@ -44,7 +44,7 @@ fn demo_exec() -> Result[string, GoError] {
     crate::execshim::set_args(cmd, crate::execshim::args(cmd));
     crate::execshim::set_dir(cmd, ".");
     let dir = crate::execshim::dir(cmd);
-    let arg_count = (crate::execshim::args(cmd).len()).to_string();
+    let arg_count = crate::execshim::args(cmd).len().to_string();
     let env = crate::execshim::env(cmd).push("GOML_SHIM=1");
     crate::execshim::set_env(cmd, env);
     let env_flag = if crate::execshim::environ(cmd).len() > 0 { "env" } else { "noenv" };
@@ -76,10 +76,10 @@ fn demo_fs() -> Result[string, GoError] {
     };
     let out = text;
     let out = out + "|" + crate::common::string_of_bytes(buf);
-    let out = out + "|" + (read_count).to_string();
+    let out = out + "|" + read_count.to_string();
     let out = out + "|" + crate::fsshim::file_info_name(info);
     let out = out + "|" + kind;
-    let out = out + "|" + (crate::fsshim::mode_bits(crate::fsshim::mode_perm(mode))).to_string();
+    let out = out + "|" + crate::fsshim::mode_bits(crate::fsshim::mode_perm(mode)).to_string();
     let out = out + "|" + crate::fsshim::mode_string(crate::fsshim::mode_type(mode));
     Result::Ok(out)
 }
@@ -99,9 +99,9 @@ fn demo_bufio() -> Result[string, GoError] {
     let rw_text = crate::bufioshim::read_writer_contents(read_writer);
     let out = state + "|" + line;
     let out = out + "|" + text;
-    let out = out + "|" + (count).to_string();
+    let out = out + "|" + count.to_string();
     let out = out + "|" + rune.to_string();
-    let out = out + "|" + (width).to_string();
+    let out = out + "|" + width.to_string();
     let out = out + "|" + words;
     let out = out + "|" + prefix_text;
     let out = out + "|" + rw_text;
@@ -109,7 +109,7 @@ fn demo_bufio() -> Result[string, GoError] {
 }
 
 fn demo_strings() -> Result[string, GoError] {
-    let cmp = (crate::stringsshim::compare("a", "b")).to_string();
+    let cmp = crate::stringsshim::compare("a", "b").to_string();
     let contains_flag = if crate::stringsshim::contains("goml", "ml") {
         "contains"
     } else {
@@ -143,7 +143,7 @@ fn demo_strings() -> Result[string, GoError] {
     let _ = crate::stringsshim::builder_write_rune(builder, '好')?;
     let _ = crate::stringsshim::builder_write_byte(builder, 33u8)?;
     let built = crate::stringsshim::builder_string(builder);
-    let built_len = (crate::stringsshim::builder_len(builder)).to_string();
+    let built_len = crate::stringsshim::builder_len(builder).to_string();
     let reader = crate::stringsshim::new_reader("ab好");
     let (one, _) = crate::stringsshim::reader_read(reader, crate::common::bytes_of_string("."))?;
     let next_byte = crate::stringsshim::reader_read_byte(reader)?;
@@ -180,11 +180,11 @@ fn demo_strings() -> Result[string, GoError] {
     let out = out + "|" + built;
     let out = out + "|" + built_len;
     let out = out + "|" + crate::common::string_of_bytes(one);
-    let out = out + "|" + (next_byte).to_string();
+    let out = out + "|" + next_byte.to_string();
     let out = out + "|" + next_rune.to_string();
-    let out = out + "|" + (rune_size).to_string();
+    let out = out + "|" + rune_size.to_string();
     let out = out + "|" + copied_text;
-    let out = out + "|" + (copied).to_string();
+    let out = out + "|" + copied.to_string();
     let out = out + "|" + replaced;
     let out = out + "|" + mapped;
     Result::Ok(out)

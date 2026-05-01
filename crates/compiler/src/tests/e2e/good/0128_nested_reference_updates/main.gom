@@ -1,8 +1,8 @@
 fn main() {
     let x = ref(ref(42));
     let inner = ref_get(x);
-    println((ref_get(inner)).to_string());
+    println(ref_get(inner).to_string());
     
     ref_set(inner, 100);
-    println((ref_get(ref_get(x))).to_string());
+    println(ref_get(ref_get(x)).to_string());
 }

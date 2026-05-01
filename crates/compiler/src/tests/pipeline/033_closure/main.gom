@@ -2,8 +2,8 @@ fn test() {
     let y = 3;
     let z = 5;
     let f = |x: int32| x * y * z;
-    let _ = println((f(2)).to_string());
-    println((f(3)).to_string())
+    let _ = println(f(2).to_string());
+    println(f(3).to_string())
 }
 
 fn call_int_id(f : (int32) -> int32, v: int32) -> int32 {
@@ -25,14 +25,14 @@ fn main() {
     let add_base = |x: int32| x + base;
     let result = add_base(7);
     let printer = |prefix: string, value: int32| {
-        let message = prefix + (value).to_string();
+        let message = prefix + value.to_string();
         println(message)
     };
     let _ = printer("result: ", result);
     let unused = |y: int32| y + result;
     let no_capture = |z: int32| z * 2;
     let doubled = no_capture(3);
-    let _ = println((doubled).to_string());
+    let _ = println(doubled.to_string());
     let _ = test();
 
     let list123 = Cons(1, Cons(2, Cons(3, Nil)));
@@ -43,10 +43,10 @@ fn main() {
         match list123 {
             Nil => println("Empty list"),
             Cons(head, tail) => {
-                let _ = println((head).to_string());
+                let _ = println(head.to_string());
                 match point {
                     Point { x: x, y: y } => {
-                        let _ = println("Point: (" + (x).to_string() + ", " + (y).to_string() + ")");
+                        let _ = println("Point: (" + x.to_string() + ", " + y.to_string() + ")");
                         ()
                     }
                 }

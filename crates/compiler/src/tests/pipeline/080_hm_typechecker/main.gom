@@ -102,9 +102,9 @@ fn gensym(st: CheckerState) -> string {
     let n = ref_get(st.gensym_counter);
     let _ = ref_set(st.gensym_counter, n + 1);
     if n < 26 {
-        (nth_letter(n)).to_string()
+        nth_letter(n).to_string()
     } else {
-        "t" + (n).to_string()
+        "t" + n.to_string()
     }
 }
 

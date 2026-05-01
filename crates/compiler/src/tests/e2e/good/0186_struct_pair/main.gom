@@ -7,9 +7,9 @@ fn make_pair[A, B](a: A, b: B) -> Pair[A, B] {
 fn main() {
     let p1: Pair[int32, string] = make_pair(1, "one");
     let p2: Pair[string, Pair[int32, int32]] = make_pair("coords", make_pair(3, 4));
-    println((p1.fst).to_string());
+    println(p1.fst.to_string());
     println(p1.snd);
     println(p2.fst);
-    println((p2.snd.fst).to_string());
-    println((p2.snd.snd).to_string());
+    println(p2.snd.fst.to_string());
+    println(p2.snd.snd.to_string());
 }

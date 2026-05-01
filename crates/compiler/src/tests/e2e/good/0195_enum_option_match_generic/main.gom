@@ -12,7 +12,7 @@ fn main() {
     let x: Result[Option[int32], string] = Result::Ok(Option::Some(42));
     match x {
         Result::Ok(inner) => match inner {
-            Option::Some(v) => println((v).to_string()),
+            Option::Some(v) => println(v.to_string()),
             Option::None => println("none"),
         },
         Result::Err(e) => println(e),

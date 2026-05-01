@@ -5,7 +5,7 @@ trait Printable {
 struct Wrapped[T] { inner: T }
 
 impl Printable for Wrapped[int32] {
-    fn print(self: Wrapped[int32]) -> string { "int:" + (self.inner).to_string() }
+    fn print(self: Wrapped[int32]) -> string { "int:" + self.inner.to_string() }
 }
 
 impl Printable for Wrapped[string] {

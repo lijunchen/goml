@@ -3,7 +3,7 @@ fn apply[A, B](f: (A) -> B, x: A) -> B {
 }
 
 fn main() {
-    let result: string = apply(|x: int32| (x).to_string(), 42);
+    let result: string = apply(|x: int32| x.to_string(), 42);
     println(result);
     
     let nums: [int32; 3] = [1, 2, 3];
@@ -14,7 +14,7 @@ fn main() {
     ];
     let i = ref(0);
     while ref_get(i) < 3 {
-        println((doubled[ref_get(i)]).to_string() + " ");
+        println(doubled[ref_get(i)].to_string() + " ");
         ref_set(i, ref_get(i) + 1);
     };
     println("");

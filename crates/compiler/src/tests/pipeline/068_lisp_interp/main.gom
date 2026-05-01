@@ -230,8 +230,8 @@ fn parse_program(tokens: Vec[Token]) -> Vec[SExpr] {
 
 fn value_to_string(value: Value) -> string {
     match value {
-        Value::Int(n) => (n).to_string(),
-        Value::Bool(b) => (b).to_string(),
+        Value::Int(n) => n.to_string(),
+        Value::Bool(b) => b.to_string(),
         Value::Func(_) => "<lambda>",
         Value::Nil => "nil",
     }

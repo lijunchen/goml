@@ -16,7 +16,7 @@ impl Collection for Bag {
         self.items
     }
     fn describe(self: Bag) -> string {
-        "bag(" + (self.items).to_string() + ")"
+        "bag(" + self.items.to_string() + ")"
     }
 }
 
@@ -25,7 +25,7 @@ fn print_collection(c: dyn Collection) {
     if Collection::is_empty(c) {
         println("  empty");
     } else {
-        println("  count: " + (Collection::count(c)).to_string());
+        println("  count: " + Collection::count(c).to_string());
     };
 }
 

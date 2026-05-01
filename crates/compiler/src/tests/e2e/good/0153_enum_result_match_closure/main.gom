@@ -14,14 +14,14 @@ fn main() {
     let r: Result[int32, string] = Result::Ok(42);
     let mapped = map_result(r, |x| x * 2);
     match mapped {
-        Result::Ok(v) => println((v).to_string()),
+        Result::Ok(v) => println(v.to_string()),
         Result::Err(e) => println(e),
     };
     
     let err: Result[int32, string] = Result::Err("oops");
     let mapped2 = map_result(err, |x| x + 1);
     match mapped2 {
-        Result::Ok(v) => println((v).to_string()),
+        Result::Ok(v) => println(v.to_string()),
         Result::Err(e) => println(e),
     };
 }
