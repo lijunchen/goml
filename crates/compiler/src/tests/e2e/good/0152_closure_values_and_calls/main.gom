@@ -6,9 +6,9 @@ fn main() {
     let double = |x: int32| x * 2;
     let add_one = |x: int32| x + 1;
     let double_then_add = compose(double, add_one);
-    println(int32_to_string(double_then_add(5)));
+    println((double_then_add(5)).to_string());
     
-    let to_str = |x: int32| int32_to_string(x);
+    let to_str = |x: int32| (x).to_string();
     let with_prefix = |s: string| "Result: " + s;
     let format_num = compose(to_str, with_prefix);
     println(format_num(42));

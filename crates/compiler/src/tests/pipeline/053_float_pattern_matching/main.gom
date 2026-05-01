@@ -5,8 +5,8 @@ enum FloatEvent {
 
 fn summarize(event: FloatEvent) -> string {
     match event {
-        Sample32(label, value) => label + float32_to_string(value),
-        Sample64(label, value) => label + float64_to_string(value),
+        Sample32(label, value) => label + (value).to_string(),
+        Sample64(label, value) => label + (value).to_string(),
     }
 }
 
@@ -17,7 +17,7 @@ fn compare(values: (float32, float64)) -> string {
             let limit64: float64 = 5.0f64;
             let less_left = left < limit32;
             let less_right = right < limit64;
-            "left<1?=" + bool_to_string(less_left) + ",right<5?=" + bool_to_string(less_right)
+            "left<1?=" + (less_left).to_string() + ",right<5?=" + (less_right).to_string()
         }
     }
 }

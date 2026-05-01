@@ -20,7 +20,7 @@ impl Aged for Person {
 }
 
 fn describe[T: Named + Aged](x: T) -> string {
-    Named::name(x) + " age " + int32_to_string(Aged::age(x))
+    Named::name(x) + " age " + (Aged::age(x)).to_string()
 }
 
 fn main() {

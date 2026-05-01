@@ -53,7 +53,7 @@ fn digit_value(ch: char) -> int32 {
 }
 
 fn is_int_text(text: string) -> bool {
-    let len = string_len(text);
+    let len = text.len();
     if len == 0 {
         false
     } else {
@@ -62,7 +62,7 @@ fn is_int_text(text: string) -> bool {
         let ok = ref(true);
         let started = ref(false);
         let _ = (while ref_get(ok) && ref_get(i) < len {
-            let ch = string_get(text, ref_get(i));
+            let ch = text.get(ref_get(i));
             if !ref_get(started) && ch == '-' {
                 let _ = ref_set(started, true);
                 ref_set(i, ref_get(i) + 1)
@@ -79,13 +79,13 @@ fn is_int_text(text: string) -> bool {
 }
 
 fn parse_int32(text: string) -> int32 {
-    let len = string_len(text);
+    let len = text.len();
     let i = ref(0);
     let negative = ref(false);
     let started = ref(false);
     let acc = ref(0);
     let _ = (while ref_get(i) < len {
-        let ch = string_get(text, ref_get(i));
+        let ch = text.get(ref_get(i));
         if !ref_get(started) && ch == '-' {
             let _ = ref_set(started, true);
             let _ = ref_set(negative, true);
@@ -109,16 +109,16 @@ fn is_delim(ch: char) -> bool {
 }
 
 fn lex_atom(source: string, start: int32) -> (Token, int32) {
-    let len = string_len(source);
+    let len = source.len();
     let text = ref("");
     let i = ref(start);
     let done = ref(false);
     let _ = (while !ref_get(done) && ref_get(i) < len {
-        let ch = string_get(source, ref_get(i));
+        let ch = source.get(ref_get(i));
         if is_delim(ch) {
             ref_set(done, true)
         } else {
-            let _ = ref_set(text, ref_get(text) + char_to_string(ch));
+            let _ = ref_set(text, ref_get(text) + ch.to_string());
             ref_set(i, ref_get(i) + 1)
         }
     });
@@ -136,12 +136,12 @@ fn lex_atom(source: string, start: int32) -> (Token, int32) {
 }
 
 fn lex(source: string) -> Vec[Token] {
-    let len = string_len(source);
+    let len = source.len();
     let toks0: Vec[Token] = Vec::new();
     let toks = ref(toks0);
     let i = ref(0);
     let _ = (while ref_get(i) < len {
-        let ch = string_get(source, ref_get(i));
+        let ch = source.get(ref_get(i));
         if ch == '(' {
             let _ = ref_set(toks, ref_get(toks).push(Token::LParen));
             ref_set(i, ref_get(i) + 1)
@@ -230,8 +230,8 @@ fn parse_program(tokens: Vec[Token]) -> Vec[SExpr] {
 
 fn value_to_string(value: Value) -> string {
     match value {
-        Value::Int(n) => int32_to_string(n),
-        Value::Bool(b) => bool_to_string(b),
+        Value::Int(n) => (n).to_string(),
+        Value::Bool(b) => (b).to_string(),
         Value::Func(_) => "<lambda>",
         Value::Nil => "nil",
     }

@@ -315,7 +315,7 @@ fn build() -> int32 {
 }
 
 fn main() -> unit {
-    println(int32_to_string(build()))
+    println(build().to_string())
 }
 "#;
 

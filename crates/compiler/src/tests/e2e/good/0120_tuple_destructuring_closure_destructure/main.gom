@@ -1,12 +1,12 @@
 fn main() {
     let x: (int32, string, bool) = (42, "hello", true);
     let (a, _, c) = x;
-    println(int32_to_string(a));
-    println(bool_to_string(c));
+    println((a).to_string());
+    println((c).to_string());
     
     let f = |t: (int32, int32)| {
         let (a, b) = t;
         a + b
     };
-    println(int32_to_string(f((10, 20))));
+    println((f((10, 20))).to_string());
 }

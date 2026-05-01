@@ -5,16 +5,16 @@ fn main() {
     m.set("c", 3);
     
     match m.get("b") {
-        Option::Some(v) => println(int32_to_string(v)),
+        Option::Some(v) => println((v).to_string()),
         Option::None => println("not found"),
     };
     
     match m.get("z") {
-        Option::Some(v) => println(int32_to_string(v)),
+        Option::Some(v) => println((v).to_string()),
         Option::None => println("not found"),
     };
     
-    println(int32_to_string(m.len()));
-    println(bool_to_string(m.contains("a")));
-    println(bool_to_string(m.contains("z")));
+    println((m.len()).to_string());
+    println((m.contains("a")).to_string());
+    println((m.contains("z")).to_string());
 }

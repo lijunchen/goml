@@ -2835,8 +2835,8 @@ fn main() {
 
 fn main() {
     let s = "hello";
-    let len = string_len(s);
-    let c = string_get(s, 0);
+    let len = s.len();
+    let c = s.get(0);
 }
 "#,
             expect!["no diagnostics"],

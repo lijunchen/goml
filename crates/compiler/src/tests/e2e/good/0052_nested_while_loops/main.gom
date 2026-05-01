@@ -15,7 +15,7 @@ fn main() {
     while ref_get(i) < 3 {
         let j = ref(0);
         while ref_get(j) < 2 {
-            let msg = int32_to_string(ref_get(i)) + "," + int32_to_string(ref_get(j));
+            let msg = (ref_get(i)).to_string() + "," + (ref_get(j)).to_string();
             println(msg);
             ref_set(j, ref_get(j) + 1);
         };

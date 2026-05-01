@@ -1181,7 +1181,7 @@ pub fn make(value: int32) -> Item {
 
 impl Item {
     fn text(self: Item) -> string {
-        int32_to_string(self.value)
+        self.value.to_string()
     }
 
     fn touch(self: Item) -> unit {

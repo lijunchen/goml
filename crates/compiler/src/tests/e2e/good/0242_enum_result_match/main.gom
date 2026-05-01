@@ -6,7 +6,7 @@ enum Result[T, E] {
 fn main() {
     let r: Result[uint8, string] = Result::Ok(42);
     match r {
-        Result::Ok(v) => println(uint8_to_string(v)),
+        Result::Ok(v) => println((v).to_string()),
         Result::Err(e) => println(e),
     };
 }

@@ -168,6 +168,28 @@ fn env_registers_builtin_slice_inherent_methods() {
 }
 
 #[test]
+fn env_registers_builtin_string_inherent_methods() {
+    let env = builtins::builtin_env();
+    let receiver = tast::Ty::TString;
+
+    let len = env.lookup_inherent_method(&receiver, &tast::TastIdent("len".to_string()));
+    expect![[r#"
+        Some(
+            TFunc([TString], TInt32),
+        )
+    "#]]
+    .assert_debug_eq(&len);
+
+    let get = env.lookup_inherent_method(&receiver, &tast::TastIdent("get".to_string()));
+    expect![[r#"
+        Some(
+            TFunc([TString, TInt32], TChar),
+        )
+    "#]]
+    .assert_debug_eq(&get);
+}
+
+#[test]
 fn builtin_function_names_include_ref_builtins() {
     let names = builtins::builtin_function_names();
     assert!(names.iter().any(|n| n == "ref"));

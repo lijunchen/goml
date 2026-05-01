@@ -14,7 +14,7 @@ fn main() {
     let a: Opt[int32] = Opt::Some(10);
     let b = flat_map(a, |x: int32| {
         if x > 5 {
-            Opt::Some(int32_to_string(x))
+            Opt::Some((x).to_string())
         } else {
             Opt::None
         }
