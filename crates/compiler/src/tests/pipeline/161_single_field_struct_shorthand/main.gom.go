@@ -13,8 +13,6 @@ type Person struct {
     name string
 }
 
-type GoError = error
-
 func main0() struct{} {
     var name__0 string = "Alice"
     var p__1 Person = Person{

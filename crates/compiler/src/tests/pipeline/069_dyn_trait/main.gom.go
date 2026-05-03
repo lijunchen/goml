@@ -22,8 +22,6 @@ type Flag struct {
     value bool
 }
 
-type GoError = error
-
 type dyn__Display_vtable struct {
     show func(any) string
 }

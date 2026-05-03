@@ -1,0 +1,149 @@
+FILE@0..272
+  FN@0..272
+    FnKeyword@0..2 "fn"
+    Whitespace@2..3 " "
+    Ident@3..7 "main"
+    PARAM_LIST@7..10
+      LParen@7..8 "("
+      RParen@8..9 ")"
+      Whitespace@9..10 " "
+    Arrow@10..12 "->"
+    Whitespace@12..13 " "
+    TYPE_UNIT@13..18
+      UnitKeyword@13..17 "unit"
+      Whitespace@17..18 " "
+    BLOCK@18..272
+      LBrace@18..19 "{"
+      Whitespace@19..24 "\n    "
+      STMT_EXPR@24..78
+        EXPR_CALL@24..72
+          EXPR_IDENT@24..39
+            PATH@24..39
+              Ident@24..39 "host_write_file"
+          ARG_LIST@39..72
+            LParen@39..40 "("
+            ARG@40..62
+              EXPR_STR@40..60
+                Str@40..60 "\"goml-host-test.txt\""
+              Comma@60..61 ","
+              Whitespace@61..62 " "
+            ARG@62..71
+              EXPR_STR@62..71
+                Str@62..71 "\"host-ok\""
+            RParen@71..72 ")"
+        Semi@72..73 ";"
+        Whitespace@73..78 "\n    "
+      STMT_EXPR@78..129
+        EXPR_CALL@78..123
+          EXPR_IDENT@78..85
+            PATH@78..85
+              Ident@78..85 "println"
+          ARG_LIST@85..123
+            LParen@85..86 "("
+            ARG@86..122
+              EXPR_CALL@86..122
+                EXPR_IDENT@86..100
+                  PATH@86..100
+                    Ident@86..100 "host_read_file"
+                ARG_LIST@100..122
+                  LParen@100..101 "("
+                  ARG@101..121
+                    EXPR_STR@101..121
+                      Str@101..121 "\"goml-host-test.txt\""
+                  RParen@121..122 ")"
+            RParen@122..123 ")"
+        Semi@123..124 ";"
+        Whitespace@124..129 "\n    "
+      STMT_EXPR@129..194
+        EXPR_CALL@129..188
+          EXPR_IDENT@129..136
+            PATH@129..136
+              Ident@129..136 "println"
+          ARG_LIST@136..188
+            LParen@136..137 "("
+            ARG@137..187
+              EXPR_CALL@137..187
+                EXPR_BINARY@137..185
+                  EXPR_CALL@137..175
+                    EXPR_IDENT@137..153
+                      PATH@137..153
+                        Ident@137..153 "host_file_exists"
+                    ARG_LIST@153..175
+                      LParen@153..154 "("
+                      ARG@154..174
+                        EXPR_STR@154..174
+                          Str@154..174 "\"goml-host-test.txt\""
+                      RParen@174..175 ")"
+                  Dot@175..176 "."
+                  EXPR_IDENT@176..185
+                    PATH@176..185
+                      Ident@176..185 "to_string"
+                ARG_LIST@185..187
+                  LParen@185..186 "("
+                  RParen@186..187 ")"
+            RParen@187..188 ")"
+        Semi@188..189 ";"
+        Whitespace@189..194 "\n    "
+      STMT_LET@194..230
+        LetKeyword@194..197 "let"
+        Whitespace@197..198 " "
+        PATTERN_VARIABLE@198..204
+          Ident@198..203 "names"
+          Whitespace@203..204 " "
+        Eq@204..205 "="
+        Whitespace@205..206 " "
+        EXPR_CALL@206..224
+          EXPR_IDENT@206..219
+            PATH@206..219
+              Ident@206..219 "host_read_dir"
+          ARG_LIST@219..224
+            LParen@219..220 "("
+            ARG@220..223
+              EXPR_STR@220..223
+                Str@220..223 "\".\""
+            RParen@223..224 ")"
+        Semi@224..225 ";"
+        Whitespace@225..230 "\n    "
+      STMT_EXPR@230..270
+        EXPR_CALL@230..268
+          EXPR_IDENT@230..237
+            PATH@230..237
+              Ident@230..237 "println"
+          ARG_LIST@237..268
+            LParen@237..238 "("
+            ARG@238..267
+              EXPR_CALL@238..267
+                EXPR_BINARY@238..265
+                  EXPR_PAREN@238..255
+                    LParen@238..239 "("
+                    EXPR_BINARY@239..254
+                      EXPR_CALL@239..251
+                        EXPR_BINARY@239..248
+                          EXPR_IDENT@239..244
+                            PATH@239..244
+                              Ident@239..244 "names"
+                          Dot@244..245 "."
+                          EXPR_IDENT@245..248
+                            PATH@245..248
+                              Ident@245..248 "len"
+                        ARG_LIST@248..251
+                          LParen@248..249 "("
+                          RParen@249..250 ")"
+                          Whitespace@250..251 " "
+                      Greater@251..252 ">"
+                      Whitespace@252..253 " "
+                      EXPR_INT@253..254
+                        Int@253..254 "0"
+                    RParen@254..255 ")"
+                  Dot@255..256 "."
+                  EXPR_IDENT@256..265
+                    PATH@256..265
+                      Ident@256..265 "to_string"
+                ARG_LIST@265..267
+                  LParen@265..266 "("
+                  RParen@266..267 ")"
+            RParen@267..268 ")"
+        Semi@268..269 ";"
+        Whitespace@269..270 "\n"
+      RBrace@270..271 "}"
+      Whitespace@271..272 "\n"

@@ -1,0 +1,39 @@
+struct Handle {
+    name: string,
+}
+
+fn open_handle(ok: bool) -> Result[Handle, string] {
+    if ok {
+        Result::Ok(Handle { name: "config" })
+    } else {
+        Result::Err("open failed")
+    }
+}
+
+fn close_handle(handle: Handle, ok: bool) -> Result[unit, string] {
+    if ok {
+        Result::Ok(())
+    } else {
+        Result::Err("close failed for " + handle.name)
+    }
+}
+
+fn use_handle(open_ok: bool, close_ok: bool) -> Result[string, string] {
+    let handle = open_handle(open_ok)?;
+    let name = handle.name;
+    close_handle(handle, close_ok)?;
+    Result::Ok("closed " + name)
+}
+
+fn show(res: Result[string, string]) -> string {
+    match res {
+        Result::Ok(value) => "ok " + value,
+        Result::Err(err) => "err " + err,
+    }
+}
+
+fn main() -> unit {
+    println(show(use_handle(true, true)));
+    println(show(use_handle(false, true)));
+    println(show(use_handle(true, false)));
+}

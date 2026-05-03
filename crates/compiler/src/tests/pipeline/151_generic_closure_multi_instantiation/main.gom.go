@@ -21,8 +21,6 @@ type closure_env_make_pairer_T_string_1 struct {
     x_0 string
 }
 
-type GoError = error
-
 func main0() struct{} {
     var int_pairer__2 func(string) string = make_pairer__T_int32(7)
     var string_pairer__3 func(string) string = make_pairer__T_string("ok")

@@ -25,8 +25,6 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type GoError = error
-
 func main0() struct{} {
     var start8__0 uint8 = 200
     var add8__1 uint8 = 55

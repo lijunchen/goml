@@ -1,0 +1,81 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn bump(counter/0: Ref[int32], ok/1: bool) -> Result[int32, string] {
+  let _wild0 = ref_set(counter/0, (ref_get(counter/0) + 1)) in
+  if ok/1 {
+      {
+        Result::Ok(ref_get(counter/0))
+      }
+  } else {
+      {
+        Result::Err("bump failed")
+      }
+  }
+}
+
+fn use_try(counter/2: Ref[int32], ok/3: bool) -> Result[int32, string] {
+  let value/4 = {
+    let mtmp1 = bump(counter/2, ok/3) in
+    match mtmp1 {
+      Result::Ok(x2) => {
+        {
+          let x2 = Result::Ok._0(mtmp1) in
+          {
+            let try_value/23 = x2 in
+            try_value/23
+          }
+        }
+      },
+      Result::Err(x3) => {
+        {
+          let x3 = Result::Err._0(mtmp1) in
+          {
+            let try_residual/23 = x3 in
+            return Result::Err(try_residual/23)
+          }
+        }
+      },
+    }
+  } in
+  Result::Ok((value/4 + ref_get(counter/2)))
+}
+
+fn show(res/5: Result[int32, string]) -> string {
+  match res/5 {
+    Result::Ok(x4) => {
+      {
+        let x4 = Result::Ok._0(res/5) in
+        {
+          let value/6 = x4 in
+          ("ok " + trait_call[ToString::to_string](value/6))
+        }
+      }
+    },
+    Result::Err(x5) => {
+      {
+        let x5 = Result::Err._0(res/5) in
+        {
+          let err/7 = x5 in
+          ("err " + err/7)
+        }
+      }
+    },
+  }
+}
+
+fn run(ok/8: bool) -> string {
+  let counter/9 = ref(0) in
+  let result/10 = use_try(counter/9, ok/8) in
+  ((show(result/10) + " count=") + trait_call[ToString::to_string](ref_get(counter/9)))
+}
+
+fn main() -> unit {
+  let _wild6 = println(run(true)) in
+  let _wild7 = println(run(false)) in
+}

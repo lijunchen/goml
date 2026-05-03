@@ -1,0 +1,39 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn cut_pair(ok/0: bool) -> Option[(string, string)] {
+    if (ok/0 : bool) {
+        {
+            Option::Some(("alpha", "beta"))
+        }
+    } else {
+        {
+            Option::None
+        }
+    }
+}
+
+fn describe(ok/1: bool) -> Option[string] {
+    let (before/2: string, after/3: string) = match (cut_pair : (bool) -> Option[(string, string)])((ok/1 : bool)) {
+        Option::Some(try_value/13: (string, string)) => (try_value/13 : (string, string)),
+        Option::None => return Option::None,
+    };
+    Option::Some((before/2 : string) + "|" + (after/3 : string))
+}
+
+fn show(opt/4: Option[string]) -> string {
+    match (opt/4 : Option[string]) {
+        Option::Some(value/5: string) => "some " + (value/5 : string),
+        Option::None => "none",
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((show : (Option[string]) -> string)((describe : (bool) -> Option[string])(true)));
+    (println : (string) -> unit)((show : (Option[string]) -> string)((describe : (bool) -> Option[string])(false)));
+}

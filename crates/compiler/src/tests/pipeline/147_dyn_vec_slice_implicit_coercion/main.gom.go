@@ -13,8 +13,6 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type GoError = error
-
 type dyn__Display_vtable struct {
     show func(any) string
 }
@@ -78,16 +76,16 @@ func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_dynDisplay
     return retv16
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_dynDisplay(self__67 []dyn__Display, elem__68 dyn__Display) []dyn__Display {
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_dynDisplay(self__66 []dyn__Display, elem__67 dyn__Display) []dyn__Display {
     var retv19 []dyn__Display
-    var t20 []dyn__Display = append(self__67, elem__68)
+    var t20 []dyn__Display = append(self__66, elem__67)
     retv19 = t20
     return retv19
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_slice_x5f__x5f_T_x5f_dynDisplay(self__75 []dyn__Display, start__76 int32, end__77 int32) []dyn__Display {
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_slice_x5f__x5f_T_x5f_dynDisplay(self__74 []dyn__Display, start__75 int32, end__76 int32) []dyn__Display {
     var retv22 []dyn__Display
-    var t23 []dyn__Display = self__75[start__76:end__77]
+    var t23 []dyn__Display = self__74[start__75:end__76]
     retv22 = t23
     return retv22
 }
@@ -97,9 +95,9 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_inherent_x23_Slice_x23_Slice_x5b_T_x5d__x23_sub_x5f__x5f_T_x5f_dynDisplay(self__81 []dyn__Display, start__82 int32, end__83 int32) []dyn__Display {
+func _goml_inherent_x23_Slice_x23_Slice_x5b_T_x5d__x23_sub_x5f__x5f_T_x5f_dynDisplay(self__80 []dyn__Display, start__81 int32, end__82 int32) []dyn__Display {
     var retv27 []dyn__Display
-    var t28 []dyn__Display = self__81[start__82:end__83]
+    var t28 []dyn__Display = self__80[start__81:end__82]
     retv27 = t28
     return retv27
 }

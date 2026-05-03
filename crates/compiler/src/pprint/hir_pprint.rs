@@ -1,8 +1,8 @@
 use crate::hir;
 use crate::hir::{
-    Arm, Attribute, ClosureParam, Def, DefId, EnumDef, Expr, ExprId, ExternBuiltin, ExternGo,
-    ExternType, Fn, HirIdent, ImplBlock, PackageHir, Pat, PatId, ProjectHir, ProjectHirTable,
-    SourceFileHir, StructDef, TraitDef, TraitMethodSignature, TypeExpr,
+    Arm, Attribute, ClosureParam, Def, DefId, EnumDef, Expr, ExprId, ExternBuiltin, Fn, HirIdent,
+    ImplBlock, PackageHir, Pat, PatId, ProjectHir, ProjectHirTable, SourceFileHir, StructDef,
+    TraitDef, TraitMethodSignature, TypeExpr,
 };
 use pretty::RcDoc;
 
@@ -42,8 +42,6 @@ impl<'a> HirPrintCtx<'a> {
             Def::TraitDef(def) => def.to_doc(),
             Def::ImplBlock(def) => def.to_doc(self),
             Def::Fn(func) => func.to_doc(self),
-            Def::ExternGo(ext) => ext.to_doc(),
-            Def::ExternType(ext) => ext.to_doc(),
             Def::ExternBuiltin(ext) => ext.to_doc(),
         }
     }
@@ -801,80 +799,6 @@ impl Fn {
         let mut w = Vec::new();
         self.to_doc(ctx).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
-    }
-}
-
-impl ExternGo {
-    pub fn to_doc(&self) -> RcDoc<'_, ()> {
-        let params_doc = RcDoc::intersperse(
-            self.params.iter().map(|(name, ty)| {
-                RcDoc::text(name.to_ident_name())
-                    .append(RcDoc::text(":"))
-                    .append(RcDoc::space())
-                    .append(ty.to_doc())
-            }),
-            RcDoc::text(", "),
-        );
-
-        let ret_ty_doc = if let Some(ret_ty) = &self.ret_ty {
-            RcDoc::text(" -> ").append(ret_ty.to_doc())
-        } else {
-            RcDoc::nil()
-        };
-
-        let header = RcDoc::text("extern")
-            .append(RcDoc::space())
-            .append(RcDoc::text("\"go\""))
-            .append(RcDoc::space())
-            .append(RcDoc::text(format!("\"{}\"", self.package_path)))
-            .append(if self.explicit_go_symbol {
-                RcDoc::space().append(RcDoc::text(format!("\"{}\"", self.go_symbol)))
-            } else {
-                RcDoc::nil()
-            })
-            .append(RcDoc::space())
-            .append(RcDoc::text(self.goml_name.to_ident_name()))
-            .append(RcDoc::text("("))
-            .append(params_doc)
-            .append(RcDoc::text(")"))
-            .append(ret_ty_doc);
-
-        attrs_doc(&self.attrs).append(header)
-    }
-
-    pub fn to_pretty(&self, width: usize) -> String {
-        let mut w = Vec::new();
-        self.to_doc().render(width, &mut w).unwrap();
-        String::from_utf8(w).unwrap()
-    }
-}
-
-impl ExternType {
-    pub fn to_doc(&self) -> RcDoc<'_, ()> {
-        let doc = if let Some(package_path) = &self.package_path {
-            RcDoc::text("extern")
-                .append(RcDoc::space())
-                .append(RcDoc::text("\"go\""))
-                .append(RcDoc::space())
-                .append(RcDoc::text(format!("\"{}\"", package_path)))
-                .append(if self.explicit_go_name {
-                    RcDoc::space().append(RcDoc::text(format!("\"{}\"", self.go_name)))
-                } else {
-                    RcDoc::nil()
-                })
-                .append(RcDoc::space())
-                .append(RcDoc::text("type"))
-                .append(RcDoc::space())
-                .append(RcDoc::text(self.goml_name.to_ident_name()))
-        } else {
-            RcDoc::text("extern")
-                .append(RcDoc::space())
-                .append(RcDoc::text("type"))
-                .append(RcDoc::space())
-                .append(RcDoc::text(self.goml_name.to_ident_name()))
-        };
-
-        attrs_doc(&self.attrs).append(doc)
     }
 }
 

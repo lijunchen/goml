@@ -1,0 +1,99 @@
+fn split_host_port(ok/0: bool) -> Result__(string,string)__string {
+  join ret10(retv11: Result__(string,string)__string) -> Result__(string,string)__string {
+    retv11
+  } in
+  join k12(jp13: Result__(string,string)__string) -> Result__(string,string)__string {
+    jump ret10(jp13)
+  } in
+  if ok/0 {
+    let t14 = ("localhost", "8080") in
+    let t15 = Result__(string,string)__string::Ok(t14) in
+    jump k12(t15)
+  } else {
+    let t16 = Result__(string,string)__string::Err("missing port") in
+    jump k12(t16)
+  }
+}
+
+fn pair(ok/1: bool) -> Result__(string,string)__string {
+  join ret17(retv18: Result__(string,string)__string) -> Result__(string,string)__string {
+    retv18
+  } in
+  let t19 = split_host_port(ok/1) in
+  jump ret17(t19)
+}
+
+fn render(ok/2: bool) -> Result__string__string {
+  join ret20(retv21: Result__string__string) -> Result__string__string {
+    retv21
+  } in
+  let mtmp0 = pair(ok/2) in
+  join k22(jp23: (string, string)) -> Result__string__string {
+    let mtmp3 = jp23 in
+    let x4 = mtmp3.0 in
+    let x5 = mtmp3.1 in
+    let port/4 = x5 in
+    let host/3 = x4 in
+    let t24 = (host/3 + "=") in
+    let t25 = (t24 + port/4) in
+    let t26 = Result__string__string::Ok(t25) in
+    jump ret20(t26)
+  } in
+  match mtmp0 {
+    Tag_0 => {
+      let x1 = Result__(string,string)__string::Ok._0(mtmp0) in
+      let try_value/17 = x1 in
+      jump k22(try_value/17)
+    },
+    Tag_1 => {
+      let x2 = Result__(string,string)__string::Err._0(mtmp0) in
+      let try_residual/17 = x2 in
+      let t27 = Result__string__string::Err(try_residual/17) in
+      jump ret20(t27)
+    },
+  }
+}
+
+fn show(res/5: Result__string__string) -> string {
+  join ret28(retv29: string) -> string {
+    retv29
+  } in
+  join k30(jp31: string) -> string {
+    jump ret28(jp31)
+  } in
+  match res/5 {
+    Tag_0 => {
+      let x6 = Result__string__string::Ok._0(res/5) in
+      let value/6 = x6 in
+      let t32 = ("ok " + value/6) in
+      jump k30(t32)
+    },
+    Tag_1 => {
+      let x7 = Result__string__string::Err._0(res/5) in
+      let err/7 = x7 in
+      let t33 = ("err " + err/7) in
+      jump k30(t33)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret34() -> unit {
+    ()
+  } in
+  let t35 = render(true) in
+  let t36 = show(t35) in
+  let _wild8 = println__T_string(t36) in
+  let t37 = render(false) in
+  let t38 = show(t37) in
+  let _wild9 = println__T_string(t38) in
+  jump ret34()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret39() -> unit {
+    ()
+  } in
+  let t40 = string_println(value/1) in
+  jump ret39()
+}

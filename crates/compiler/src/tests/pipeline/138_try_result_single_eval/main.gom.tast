@@ -1,0 +1,46 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn bump(counter/0: Ref[int32], ok/1: bool) -> Result[int32, string] {
+    (ref_set : (Ref[int32], int32) -> unit)((counter/0 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((counter/0 : Ref[int32])) + 1);
+    if (ok/1 : bool) {
+        {
+            Result::Ok((ref_get : (Ref[int32]) -> int32)((counter/0 : Ref[int32])))
+        }
+    } else {
+        {
+            Result::Err("bump failed")
+        }
+    }
+}
+
+fn use_try(counter/2: Ref[int32], ok/3: bool) -> Result[int32, string] {
+    let value/4: int32 = match (bump : (Ref[int32], bool) -> Result[int32, string])((counter/2 : Ref[int32]), (ok/3 : bool)) {
+        Result::Ok(try_value/23: int32) => (try_value/23 : int32),
+        Result::Err(try_residual/23: string) => return Result::Err((try_residual/23 : string)),
+    };
+    Result::Ok((value/4 : int32) + (ref_get : (Ref[int32]) -> int32)((counter/2 : Ref[int32])))
+}
+
+fn show(res/5: Result[int32, string]) -> string {
+    match (res/5 : Result[int32, string]) {
+        Result::Ok(value/6: int32) => "ok " + (ToString::to_string : (int32) -> string)((value/6 : int32)),
+        Result::Err(err/7: string) => "err " + (err/7 : string),
+    }
+}
+
+fn run(ok/8: bool) -> string {
+    let counter/9: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
+    let result/10: Result[int32, string] = (use_try : (Ref[int32], bool) -> Result[int32, string])((counter/9 : Ref[int32]), (ok/8 : bool));
+    (show : (Result[int32, string]) -> string)((result/10 : Result[int32, string])) + " count=" + (ToString::to_string : (int32) -> string)((ref_get : (Ref[int32]) -> int32)((counter/9 : Ref[int32])))
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((run : (bool) -> string)(true));
+    (println : (string) -> unit)((run : (bool) -> string)(false));
+}

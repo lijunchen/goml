@@ -1,0 +1,114 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn configure(ok/0: bool) -> Result[unit, string] {
+  if ok/0 {
+      {
+        Result::Ok(())
+      }
+  } else {
+      {
+        Result::Err("config failed")
+      }
+  }
+}
+
+fn read_duration(ok/1: bool) -> Result[string, string] {
+  if ok/1 {
+      {
+        Result::Ok("2s")
+      }
+  } else {
+      {
+        Result::Err("duration failed")
+      }
+  }
+}
+
+fn format_duration(value/2: string) -> string {
+  ("duration=" + value/2)
+}
+
+fn configure_and_format(config_ok/3: bool, read_ok/4: bool) -> Result[string, string] {
+  let _wild3 = {
+    let mtmp0 = configure(config_ok/3) in
+    match mtmp0 {
+      Result::Ok(x1) => {
+        {
+          let x1 = Result::Ok._0(mtmp0) in
+          {
+            let try_value/23 = x1 in
+            try_value/23
+          }
+        }
+      },
+      Result::Err(x2) => {
+        {
+          let x2 = Result::Err._0(mtmp0) in
+          {
+            let try_residual/23 = x2 in
+            return Result::Err(try_residual/23)
+          }
+        }
+      },
+    }
+  } in
+  let value/5 = {
+    let mtmp4 = read_duration(read_ok/4) in
+    match mtmp4 {
+      Result::Ok(x5) => {
+        {
+          let x5 = Result::Ok._0(mtmp4) in
+          {
+            let try_value/27 = x5 in
+            try_value/27
+          }
+        }
+      },
+      Result::Err(x6) => {
+        {
+          let x6 = Result::Err._0(mtmp4) in
+          {
+            let try_residual/27 = x6 in
+            return Result::Err(try_residual/27)
+          }
+        }
+      },
+    }
+  } in
+  Result::Ok(format_duration(value/5))
+}
+
+fn show(res/6: Result[string, string]) -> string {
+  match res/6 {
+    Result::Ok(x7) => {
+      {
+        let x7 = Result::Ok._0(res/6) in
+        {
+          let value/7 = x7 in
+          ("ok " + value/7)
+        }
+      }
+    },
+    Result::Err(x8) => {
+      {
+        let x8 = Result::Err._0(res/6) in
+        {
+          let err/8 = x8 in
+          ("err " + err/8)
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild9 = println(show(configure_and_format(true, true))) in
+  let _wild10 = println(show(configure_and_format(true, false))) in
+  let _wild11 = println(show(configure_and_format(false, true))) in
+}

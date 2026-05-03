@@ -9,8 +9,6 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type GoError = error
-
 func classify(n__0 int32) string {
     var retv5 string
     var jp7 string

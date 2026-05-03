@@ -1,0 +1,60 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn configure(ok/0: bool) -> Result[unit, string] {
+    if (ok/0 : bool) {
+        {
+            Result::Ok(())
+        }
+    } else {
+        {
+            Result::Err("config failed")
+        }
+    }
+}
+
+fn read_duration(ok/1: bool) -> Result[string, string] {
+    if (ok/1 : bool) {
+        {
+            Result::Ok("2s")
+        }
+    } else {
+        {
+            Result::Err("duration failed")
+        }
+    }
+}
+
+fn format_duration(value/2: string) -> string {
+    "duration=" + (value/2 : string)
+}
+
+fn configure_and_format(config_ok/3: bool, read_ok/4: bool) -> Result[string, string] {
+    match (configure : (bool) -> Result[unit, string])((config_ok/3 : bool)) {
+        Result::Ok(try_value/23: unit) => (try_value/23 : unit),
+        Result::Err(try_residual/23: string) => return Result::Err((try_residual/23 : string)),
+    };
+    let value/5: string = match (read_duration : (bool) -> Result[string, string])((read_ok/4 : bool)) {
+        Result::Ok(try_value/27: string) => (try_value/27 : string),
+        Result::Err(try_residual/27: string) => return Result::Err((try_residual/27 : string)),
+    };
+    Result::Ok((format_duration : (string) -> string)((value/5 : string)))
+}
+
+fn show(res/6: Result[string, string]) -> string {
+    match (res/6 : Result[string, string]) {
+        Result::Ok(value/7: string) => "ok " + (value/7 : string),
+        Result::Err(err/8: string) => "err " + (err/8 : string),
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((show : (Result[string, string]) -> string)((configure_and_format : (bool, bool) -> Result[string, string])(true, true)));
+    (println : (string) -> unit)((show : (Result[string, string]) -> string)((configure_and_format : (bool, bool) -> Result[string, string])(true, false)));
+    (println : (string) -> unit)((show : (Result[string, string]) -> string)((configure_and_format : (bool, bool) -> Result[string, string])(false, true)));
+}

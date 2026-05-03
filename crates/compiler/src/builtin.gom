@@ -108,10 +108,18 @@ enum Result[T, E] {
     Err(E),
 }
 
-extern "go" "" "error" type GoError
-
 #[builtin]
-extern fn go_error_to_string(value: GoError) -> string
+extern fn host_args() -> Vec[string]
+#[builtin]
+extern fn host_read_file(path: string) -> string
+#[builtin]
+extern fn host_write_file(path: string, content: string) -> unit
+#[builtin]
+extern fn host_file_exists(path: string) -> bool
+#[builtin]
+extern fn host_read_dir(path: string) -> Vec[string]
+#[builtin]
+extern fn host_exit(code: int32) -> unit
 
 #[builtin]
 extern fn vec_new[T]() -> Vec[T]
@@ -172,12 +180,6 @@ impl ToString for bool {
 impl ToString for string {
     fn to_string(self: string) -> string {
         self
-    }
-}
-
-impl ToString for GoError {
-    fn to_string(self: GoError) -> string {
-        go_error_to_string(self)
     }
 }
 

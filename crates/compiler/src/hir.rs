@@ -140,12 +140,6 @@ impl PackageInterface {
                 Def::Fn(func) => {
                     exports.insert(func.name.clone(), def_id);
                 }
-                Def::ExternGo(ext) => {
-                    exports.insert(ext.goml_name.to_ident_name(), def_id);
-                }
-                Def::ExternType(ext) => {
-                    exports.insert(ext.goml_name.to_ident_name(), def_id);
-                }
                 Def::ExternBuiltin(ext) => {
                     exports.insert(ext.name.to_ident_name(), def_id);
                 }
@@ -305,8 +299,6 @@ pub enum DefKind {
     StructDef,
     TraitDef,
     ImplBlock,
-    ExternGo,
-    ExternType,
     ExternBuiltin,
 }
 
@@ -1151,8 +1143,6 @@ pub enum Def {
     TraitDef(TraitDef),
     ImplBlock(ImplBlock),
     Fn(Fn),
-    ExternGo(ExternGo),
-    ExternType(ExternType),
     ExternBuiltin(ExternBuiltin),
 }
 
@@ -1165,56 +1155,6 @@ pub struct Fn {
     pub params: Vec<(LocalId, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
     pub body: Block,
-}
-
-#[derive(Debug, Clone)]
-pub struct ExternGo {
-    pub attrs: Vec<Attribute>,
-    pub package_path: String,
-    pub go_symbol: String,
-    pub goml_name: HirIdent,
-    pub explicit_go_symbol: bool,
-    pub params: Vec<(HirIdent, TypeExpr)>,
-    pub ret_ty: Option<TypeExpr>,
-}
-
-impl From<&ast::ExternGo> for ExternGo {
-    fn from(ext: &ast::ExternGo) -> Self {
-        ExternGo {
-            attrs: ext.attrs.iter().map(|a| a.into()).collect(),
-            package_path: ext.package_path.clone(),
-            go_symbol: ext.go_symbol.clone(),
-            goml_name: HirIdent::name(&ext.goml_name.0),
-            explicit_go_symbol: ext.explicit_go_symbol,
-            params: ext
-                .params
-                .iter()
-                .map(|(i, t)| (HirIdent::name(&i.0), t.into()))
-                .collect(),
-            ret_ty: ext.ret_ty.as_ref().map(|t| t.into()),
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct ExternType {
-    pub attrs: Vec<Attribute>,
-    pub package_path: Option<String>,
-    pub go_name: String,
-    pub goml_name: HirIdent,
-    pub explicit_go_name: bool,
-}
-
-impl From<&ast::ExternType> for ExternType {
-    fn from(ext: &ast::ExternType) -> Self {
-        ExternType {
-            attrs: ext.attrs.iter().map(|a| a.into()).collect(),
-            package_path: ext.package_path.clone(),
-            go_name: ext.go_name.clone(),
-            goml_name: HirIdent::name(&ext.goml_name.0),
-            explicit_go_name: ext.explicit_go_name,
-        }
-    }
 }
 
 #[derive(Debug, Clone)]

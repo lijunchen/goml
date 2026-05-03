@@ -51,8 +51,6 @@ type closure_env_make_renderer_1 struct {
     tag_0 string
 }
 
-type GoError = error
-
 type dyn__Display_vtable struct {
     show func(any) string
     show_with func(any, string, string) string
@@ -409,16 +407,16 @@ func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_dynDisplay
     return retv122
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_dynDisplay(self__67 []dyn__Display, elem__68 dyn__Display) []dyn__Display {
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_dynDisplay(self__66 []dyn__Display, elem__67 dyn__Display) []dyn__Display {
     var retv125 []dyn__Display
-    var t126 []dyn__Display = append(self__67, elem__68)
+    var t126 []dyn__Display = append(self__66, elem__67)
     retv125 = t126
     return retv125
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_dynDisplay(self__74 []dyn__Display) int32 {
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_dynDisplay(self__73 []dyn__Display) int32 {
     var retv128 int32
-    var t129 int32 = int32(len(self__74))
+    var t129 int32 = int32(len(self__73))
     retv128 = t129
     return retv128
 }

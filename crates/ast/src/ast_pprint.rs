@@ -1,7 +1,7 @@
 use crate::ast::{
-    Arm, AssignStmt, AstIdent, Attribute, Block, ClosureParam, EnumDef, Expr, ExternBuiltin,
-    ExternGo, ExternType, File, Fn, ImplBlock, Item, LetStmt, ModDecl, Pat, Path, Stmt, StructDef,
-    TraitDef, TraitMethodSignature, TypeExpr, Visibility,
+    Arm, AssignStmt, AstIdent, Attribute, Block, ClosureParam, EnumDef, Expr, ExternBuiltin, File,
+    Fn, ImplBlock, Item, LetStmt, ModDecl, Pat, Path, Stmt, StructDef, TraitDef,
+    TraitMethodSignature, TypeExpr, Visibility,
 };
 use pretty::RcDoc;
 
@@ -836,83 +836,6 @@ impl Fn {
     }
 }
 
-impl ExternGo {
-    pub fn to_doc(&self) -> RcDoc<'_, ()> {
-        let params_doc = RcDoc::intersperse(
-            self.params.iter().map(|(name, ty)| {
-                RcDoc::text(name.0.clone())
-                    .append(RcDoc::text(":"))
-                    .append(RcDoc::space())
-                    .append(ty.to_doc())
-            }),
-            RcDoc::text(", "),
-        );
-
-        let ret_ty_doc = if let Some(ret_ty) = &self.ret_ty {
-            RcDoc::text(" -> ").append(ret_ty.to_doc())
-        } else {
-            RcDoc::nil()
-        };
-
-        let header = visibility_doc(self.visibility)
-            .append(RcDoc::text("extern"))
-            .append(RcDoc::space())
-            .append(RcDoc::text("\"go\""))
-            .append(RcDoc::space())
-            .append(RcDoc::text(format!("\"{}\"", self.package_path)))
-            .append(if self.explicit_go_symbol {
-                RcDoc::space().append(RcDoc::text(format!("\"{}\"", self.go_symbol)))
-            } else {
-                RcDoc::nil()
-            })
-            .append(RcDoc::space())
-            .append(RcDoc::text(self.goml_name.0.clone()))
-            .append(RcDoc::text("("))
-            .append(params_doc)
-            .append(RcDoc::text(")"))
-            .append(ret_ty_doc);
-
-        attrs_doc(&self.attrs).append(header)
-    }
-
-    pub fn to_pretty(&self, width: usize) -> String {
-        let mut w = Vec::new();
-        self.to_doc().render(width, &mut w).unwrap();
-        String::from_utf8(w).unwrap()
-    }
-}
-
-impl ExternType {
-    pub fn to_doc(&self) -> RcDoc<'_, ()> {
-        let doc = if let Some(package_path) = &self.package_path {
-            visibility_doc(self.visibility)
-                .append(RcDoc::text("extern"))
-                .append(RcDoc::space())
-                .append(RcDoc::text("\"go\""))
-                .append(RcDoc::space())
-                .append(RcDoc::text(format!("\"{}\"", package_path)))
-                .append(if self.explicit_go_name {
-                    RcDoc::space().append(RcDoc::text(format!("\"{}\"", self.go_name)))
-                } else {
-                    RcDoc::nil()
-                })
-                .append(RcDoc::space())
-                .append(RcDoc::text("type"))
-                .append(RcDoc::space())
-                .append(RcDoc::text(self.goml_name.0.clone()))
-        } else {
-            visibility_doc(self.visibility)
-                .append(RcDoc::text("extern"))
-                .append(RcDoc::space())
-                .append(RcDoc::text("type"))
-                .append(RcDoc::space())
-                .append(RcDoc::text(self.goml_name.0.clone()))
-        };
-
-        attrs_doc(&self.attrs).append(doc)
-    }
-}
-
 impl ExternBuiltin {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let params_doc = RcDoc::intersperse(
@@ -997,8 +920,6 @@ impl Item {
             Item::TraitDef(def) => def.to_doc(),
             Item::ImplBlock(def) => def.to_doc(),
             Item::Fn(func) => func.to_doc(),
-            Item::ExternGo(ext) => ext.to_doc(),
-            Item::ExternType(ext) => ext.to_doc(),
             Item::ExternBuiltin(ext) => ext.to_doc(),
         }
     }

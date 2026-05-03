@@ -3,7 +3,6 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 use std::sync::OnceLock;
 
-use compiler::pipeline::pipeline::compile_single_file;
 use expect_test::expect;
 use tempfile::TempDir;
 
@@ -26,42 +25,6 @@ fn main() -> unit {
     let fs = fs.push(dec);
     let f = fs[0];
     println(f(10));
-}
-"#;
-
-const GO_OPTION_LAST_TUPLE_PROGRAM: &str = r#"#[go_option_last]
-extern "go" "strings" "Cut" cut_pair(text: string, sep: string) -> Option[(string, string)]
-
-fn describe(text: string) -> string {
-    match cut_pair(text, ":") {
-        Option::Some((before, after)) => before + "|" + after,
-        Option::None => "missing",
-    }
-}
-
-fn main() {
-    println(describe("alpha:beta"));
-    println(describe("plain"));
-}
-"#;
-
-const GO_ERROR_LAST_TUPLE_PROGRAM: &str = r#"#[go_error_last]
-extern "go" "net" "SplitHostPort" split_host_port(text: string) -> Result[(string, string), GoError]
-
-fn render(text: string) -> Result[string, GoError] {
-    let (host, port) = split_host_port(text)?;
-    Result::Ok(host + "|" + port)
-}
-
-fn show(res: Result[string, GoError]) -> string {
-    match res {
-        Result::Ok(text) => text,
-        Result::Err(err) => err.to_string(),
-    }
-}
-
-fn main() {
-    println(show(render("example.com:443")));
 }
 "#;
 
@@ -477,37 +440,6 @@ fn compiler_build_handles_deep_tuple_type() -> anyhow::Result<()> {
 }
 
 #[test]
-fn compile_single_file_supports_go_option_last_tuple_payload() -> anyhow::Result<()> {
-    let (_dir, path) = write_program(GO_OPTION_LAST_TUPLE_PROGRAM)?;
-    let compilation = compile_single_file(&path, GO_OPTION_LAST_TUPLE_PROGRAM)
-        .map_err(|err| anyhow::anyhow!("compilation failed: {:?}", err))?;
-    let go = compilation.go.to_pretty(&compilation.goenv, 120);
-
-    assert!(go.contains("func cut_pair_ffi_wrap("), "{go}");
-    assert!(go.contains("strings.Cut(p0, p1)"), "{go}");
-    assert!(go.contains("return Some{"), "{go}");
-    assert!(go.contains("return None{}"), "{go}");
-
-    Ok(())
-}
-
-#[test]
-fn compile_single_file_supports_go_error_last_tuple_payload() -> anyhow::Result<()> {
-    let (_dir, path) = write_program(GO_ERROR_LAST_TUPLE_PROGRAM)?;
-    let compilation = compile_single_file(&path, GO_ERROR_LAST_TUPLE_PROGRAM)
-        .map_err(|err| anyhow::anyhow!("compilation failed: {:?}", err))?;
-    let go = compilation.go.to_pretty(&compilation.goenv, 120);
-
-    assert!(go.contains("func render__native("), "{go}");
-    assert!(go.contains("net.SplitHostPort(text__0)"), "{go}");
-    assert!(go.contains("return t14, nil"), "{go}");
-    assert!(go.contains("return Result__string__GoError_Ok{"), "{go}");
-    assert!(go.contains("return Result__string__GoError_Err{"), "{go}");
-
-    Ok(())
-}
-
-#[test]
 fn update_clones_local_registry_into_cache() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     let registry = create_local_registry(dir.path())?;
@@ -831,8 +763,6 @@ fn compiler_run_single_dumps_requested_stages() -> anyhow::Result<()> {
             _goml_fmt.Println(s)
             return struct{}{}
         }
-
-        type GoError = error
 
         func main0() struct{} {
             println__T_string("hello")

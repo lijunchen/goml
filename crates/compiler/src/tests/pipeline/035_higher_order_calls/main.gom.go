@@ -17,8 +17,6 @@ func array_get__Array_2_20Fn1_5int32_to_5int32(arr [2]func(int32) int32, index i
     return arr[index]
 }
 
-type GoError = error
-
 func double(x__0 int32) int32 {
     var retv4 int32
     var t5 int32 = x__0 * 2

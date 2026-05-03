@@ -20,8 +20,6 @@ const (
     Green _goml_Lib_x3a__x3a_Color = 1
 )
 
-type GoError = error
-
 func main0() struct{} {
     var t1 int32 = _goml_Lib_x3a__x3a_color_x5f_to_x5f_int(Red)
     var t2 string = int32_to_string(t1)

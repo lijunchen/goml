@@ -1,40 +1,45 @@
-extern "go" "time" "Duration" type Duration
-
-#[go_error_last]
-extern "go" "time" "ParseDuration" parse_duration(s: string) -> Result[Duration, GoError]
-
-extern "go" "fmt" "Sprintf" format_duration(format: string, value: Duration) -> string
-
-enum Mode {
-    Left,
-    Keep,
-    Right,
+enum Choice {
+    Left(bool),
+    Right(bool),
+    Keep(int32),
 }
 
-fn pick(mode: Mode, input: string) -> Result[string, GoError] {
-    let value = match mode {
-        Mode::Left => {
-            let parsed = parse_duration(input)?;
-            "left=" + format_duration("%v", parsed)
-        },
-        Mode::Keep => "keep",
-        Mode::Right => {
-            let parsed = parse_duration(input)?;
-            "right=" + format_duration("%v", parsed)
-        },
+fn read_left(ok: bool) -> Result[int32, string] {
+    if ok {
+        Result::Ok(10)
+    } else {
+        Result::Err("left failed")
+    }
+}
+
+fn read_right(ok: bool) -> Result[int32, string] {
+    if ok {
+        Result::Ok(20)
+    } else {
+        Result::Err("right failed")
+    }
+}
+
+fn choose(choice: Choice) -> Result[int32, string] {
+    let value = match choice {
+        Choice::Left(ok) => read_left(ok)?,
+        Choice::Right(ok) => read_right(ok)? + 1,
+        Choice::Keep(value) => value,
     };
     Result::Ok(value)
 }
 
-fn show(res: Result[string, GoError]) -> string {
+fn show(res: Result[int32, string]) -> string {
     match res {
-        Result::Ok(value) => value,
-        Result::Err(err) => "err=" + err.to_string(),
+        Result::Ok(value) => "ok " + value.to_string(),
+        Result::Err(err) => "err " + err,
     }
 }
 
 fn main() -> unit {
-    println(show(pick(Mode::Left, "4s")));
-    println(show(pick(Mode::Right, "bad")));
-    println(show(pick(Mode::Keep, "ignored")));
+    println(show(choose(Choice::Left(true))));
+    println(show(choose(Choice::Right(true))));
+    println(show(choose(Choice::Keep(5))));
+    println(show(choose(Choice::Left(false))));
+    println(show(choose(Choice::Right(false))));
 }

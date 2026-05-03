@@ -16,8 +16,6 @@ type Err struct {
 
 func (_ Err) isResult__unit__string() {}
 
-type GoError = error
-
 func main0() struct{} {
     return struct{}{}
 }

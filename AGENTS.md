@@ -191,7 +191,7 @@ root = "lib.gom"
 - The old source `package ...;` declaration and old manifest `[module]` / `[package]` format are unsupported.
 
 ### Current Visibility Semantics
-- Cross-module access is filtered by top-level item visibility. A module can use another module's `pub fn`, `pub struct`, `pub enum`, `pub trait`, `pub extern type`, and `pub extern` function; private top-level items are not exported to dependent modules.
+- Cross-module access is filtered by top-level item visibility. A module can use another module's `pub fn`, `pub struct`, `pub enum`, and `pub trait`; private top-level items are not exported to dependent modules.
 - Private helpers remain usable inside their defining module, including from public wrapper functions in that module.
 - `pub mod` / private `mod` visibility is parsed and recorded, but full ancestor-module path privacy is not enforced yet. In practice, mark the item itself `pub` when another module needs it.
 - Struct fields and `impl` methods do not yet have fine-grained visibility enforcement. Do not rely on that as a long-term API guarantee.
@@ -416,8 +416,8 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 ### External Interoperability
 
-* `extern type Name` declares an external type.
-* Binding Go symbols: `extern "go" "pkg" ["Func"] name(params) -> Ret`, where `"pkg"` is the Go package path and an explicit identifier is optional.
+* User-defined Go FFI is not supported while the compiler is being bootstrapped.
+* Only compiler-owned host hooks use `#[builtin] extern fn`; normal goml code should call those builtins instead of binding arbitrary Go symbols.
 
 ### Additional Conventions and Constraints
 

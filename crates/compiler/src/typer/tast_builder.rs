@@ -5,7 +5,6 @@ use crate::tast;
 use crate::typer::results::{
     CalleeElab, Coercion, NameRefElab, StructLitArgElab, StructPatArgElab, TryKind, TypeckResults,
 };
-use crate::typer::toplevel::go_symbol_name;
 
 pub fn build_file(
     genv: &PackageTypeEnv,
@@ -27,15 +26,6 @@ pub fn build_file(
                 &tparams_for(&func.generics),
                 None,
             ))),
-            hir::Def::ExternGo(ext) => {
-                toplevels.push(tast::Item::ExternGo(build_extern_go(genv, &ext)))
-            }
-            hir::Def::ExternType(ext) => toplevels.push(tast::Item::ExternType(tast::ExternType {
-                package_path: ext.package_path.clone(),
-                go_name: ext.go_name.clone(),
-                goml_name: ext.goml_name.to_ident_name(),
-                explicit_go_name: ext.explicit_go_name,
-            })),
             hir::Def::EnumDef(..)
             | hir::Def::StructDef(..)
             | hir::Def::TraitDef(..)
@@ -43,30 +33,6 @@ pub fn build_file(
         }
     }
     tast::File { toplevels }
-}
-
-fn build_extern_go(genv: &PackageTypeEnv, ext: &hir::ExternGo) -> tast::ExternGo {
-    let params = ext
-        .params
-        .iter()
-        .map(|(name, ty)| (name.to_ident_name(), tast::Ty::from_hir(genv, ty, &[])))
-        .collect::<Vec<_>>();
-    let ret_ty = ext
-        .ret_ty
-        .as_ref()
-        .map(|ty| tast::Ty::from_hir(genv, ty, &[]))
-        .unwrap_or(tast::Ty::TUnit);
-    tast::ExternGo {
-        goml_name: ext.goml_name.to_ident_name(),
-        go_name: if ext.explicit_go_symbol {
-            ext.go_symbol.clone()
-        } else {
-            go_symbol_name(&ext.go_symbol)
-        },
-        package_path: ext.package_path.clone(),
-        params,
-        ret_ty,
-    }
 }
 
 fn build_impl_block(

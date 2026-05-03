@@ -105,7 +105,6 @@ fn go_ident_impl(name: &str, protect_generated: bool) -> String {
 fn is_generated_go_ident(name: &str) -> bool {
     name.starts_with("_goml_")
         || name.starts_with("dyn__")
-        || name.ends_with("__native")
         || has_generated_helper_prefix(name)
         || (name.starts_with("ref_") && name.ends_with("_x"))
         || (name.starts_with("hashmap_") && (name.ends_with("_x") || name.ends_with("_x_entry")))
@@ -123,7 +122,7 @@ fn has_generated_helper_prefix(name: &str) -> bool {
         "hashmap_new__",
         "hashmap_len__",
         "hashmap_contains__",
-        "hashmap_get_native__",
+        "hashmap_lookup__",
         "hashmap_get__",
         "hashmap_set__",
         "hashmap_remove__",
@@ -198,7 +197,12 @@ fn is_generated_go_value_name(name: &str) -> bool {
             | "string_hash"
             | "string_print"
             | "string_println"
-            | "go_error_to_string"
+            | "host_args"
+            | "host_read_file"
+            | "host_write_file"
+            | "host_file_exists"
+            | "host_read_dir"
+            | "host_exit"
             | "missing"
     )
 }

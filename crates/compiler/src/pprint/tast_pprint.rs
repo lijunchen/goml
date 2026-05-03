@@ -34,8 +34,6 @@ impl Item {
         match self {
             Self::ImplBlock(impl_block) => impl_block.to_doc(genv),
             Self::Fn(func) => func.to_doc(genv),
-            Self::ExternGo(ext) => ext.to_doc(),
-            Self::ExternType(ext) => ext.to_doc(genv),
         }
     }
 
@@ -182,68 +180,6 @@ impl crate::tast::Block {
                 .append(RcDoc::hardline())
                 .append(RcDoc::text("}"))
                 .group()
-        }
-    }
-}
-
-impl crate::tast::ExternGo {
-    pub fn to_doc(&self) -> RcDoc<'_, ()> {
-        let params = RcDoc::intersperse(
-            self.params.iter().map(|(name, ty)| {
-                RcDoc::text(name.clone())
-                    .append(RcDoc::text(":"))
-                    .append(RcDoc::space())
-                    .append(ty.to_doc())
-            }),
-            RcDoc::text(", "),
-        );
-
-        RcDoc::text("extern")
-            .append(RcDoc::space())
-            .append(RcDoc::text("\"go\""))
-            .append(RcDoc::space())
-            .append(RcDoc::text(format!("\"{}\"", self.package_path)))
-            .append(RcDoc::space())
-            .append(RcDoc::text(self.goml_name.clone()))
-            .append(RcDoc::text("("))
-            .append(params)
-            .append(RcDoc::text(")"))
-            .append(RcDoc::space())
-            .append(RcDoc::text("->"))
-            .append(RcDoc::space())
-            .append(self.ret_ty.to_doc())
-    }
-
-    pub fn to_pretty(&self, width: usize) -> String {
-        let mut w = Vec::new();
-        self.to_doc().render(width, &mut w).unwrap();
-        String::from_utf8(w).unwrap()
-    }
-}
-
-impl crate::tast::ExternType {
-    pub fn to_doc(&self, _genv: &GlobalTypeEnv) -> RcDoc<'_, ()> {
-        if let Some(package_path) = &self.package_path {
-            RcDoc::text("extern")
-                .append(RcDoc::space())
-                .append(RcDoc::text("\"go\""))
-                .append(RcDoc::space())
-                .append(RcDoc::text(format!("\"{}\"", package_path)))
-                .append(if self.explicit_go_name {
-                    RcDoc::space().append(RcDoc::text(format!("\"{}\"", self.go_name)))
-                } else {
-                    RcDoc::nil()
-                })
-                .append(RcDoc::space())
-                .append(RcDoc::text("type"))
-                .append(RcDoc::space())
-                .append(RcDoc::text(self.goml_name.clone()))
-        } else {
-            RcDoc::text("extern")
-                .append(RcDoc::space())
-                .append(RcDoc::text("type"))
-                .append(RcDoc::space())
-                .append(RcDoc::text(self.goml_name.clone()))
         }
     }
 }

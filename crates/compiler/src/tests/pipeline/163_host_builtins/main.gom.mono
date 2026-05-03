@@ -1,0 +1,15 @@
+fn main() -> unit {
+  let _wild0 = host_write_file("goml-host-test.txt", "host-ok") in
+  let _wild1 = println__T_string(host_read_file("goml-host-test.txt")) in
+  let _wild2 = println__T_string(bool_to_string(host_file_exists("goml-host-test.txt"))) in
+  let names/0 = host_read_dir(".") in
+  let _wild3 = println__T_string(bool_to_string((inherent#Vec#Vec[T]#len__T_string(names/0) > 0))) in
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}
+
+fn inherent#Vec#Vec[T]#len__T_string(self/73: Vec[string]) -> int32 {
+  vec_len(self/73)
+}

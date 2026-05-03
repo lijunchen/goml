@@ -60,8 +60,6 @@ type Rgb struct {
 
 func (_ Rgb) isColor() {}
 
-type GoError = error
-
 func _goml_inherent_x23_Point_x23_Point_x23_to_x5f_json(self__0 Point) string {
     var retv15 string
     var mtmp0 Point = self__0

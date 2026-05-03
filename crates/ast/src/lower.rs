@@ -828,130 +828,11 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
         }));
     }
 
-    if node.type_keyword().is_some() && node.lang().is_none() {
-        let Some(name_token) = node.uident() else {
-            ctx.push_error(
-                Some(node.syntax().text_range()),
-                "Extern type declaration is missing type name",
-            );
-            return None;
-        };
-        let name = name_token.to_string();
-        return Some(ast::Item::ExternType(ast::ExternType {
-            attrs: attrs.clone(),
-            visibility,
-            package_path: None,
-            go_name: name.clone(),
-            goml_name: ast::AstIdent::new(&name),
-            explicit_go_name: false,
-        }));
-    }
-
-    let lang_token = node.lang();
-    let lang = match lang_token {
-        Some(token) => {
-            let raw = token.to_string();
-            raw.strip_prefix('\"')
-                .and_then(|s| s.strip_suffix('\"'))
-                .map(|s| s.to_string())
-        }
-        None => None,
-    };
-    let Some(lang) = lang else {
-        ctx.push_error(
-            Some(node.syntax().text_range()),
-            "Extern declaration is missing language string; builtin externs should use `#[builtin] extern fn`.",
-        );
-        return None;
-    };
-
-    if lang.as_str() != "go" {
-        ctx.push_error(
-            Some(node.syntax().text_range()),
-            format!("Unsupported extern language: {}", lang),
-        );
-        return None;
-    }
-
-    let package_token = node.package();
-    let package_path = match package_token {
-        Some(token) => {
-            let raw = token.to_string();
-            raw.strip_prefix('\"')
-                .and_then(|s| s.strip_suffix('\"'))
-                .map(|s| s.to_string())
-        }
-        None => None,
-    };
-    let Some(package_path) = package_path else {
-        ctx.push_error(
-            Some(node.syntax().text_range()),
-            "Extern declaration is missing package string",
-        );
-        return None;
-    };
-
-    let go_symbol_override = node.symbol().and_then(|token| {
-        let raw = token.to_string();
-        raw.strip_prefix('\"')
-            .and_then(|s| s.strip_suffix('\"'))
-            .map(|s| s.to_string())
-    });
-
-    if node.type_keyword().is_some() {
-        let Some(name_token) = node.uident() else {
-            ctx.push_error(
-                Some(node.syntax().text_range()),
-                "Extern type declaration is missing type name",
-            );
-            return None;
-        };
-        let name = name_token.to_string();
-        let explicit_go_name = go_symbol_override.is_some();
-        let go_name = go_symbol_override.unwrap_or_else(|| name.clone());
-        return Some(ast::Item::ExternType(ast::ExternType {
-            attrs: attrs.clone(),
-            visibility,
-            package_path: Some(package_path),
-            go_name,
-            goml_name: ast::AstIdent::new(&name),
-            explicit_go_name,
-        }));
-    }
-
-    let Some(name_token) = node.lident() else {
-        ctx.push_error(
-            Some(node.syntax().text_range()),
-            "Extern declaration is missing function name",
-        );
-        return None;
-    };
-    let name = name_token.to_string();
-    let (go_symbol, explicit_go_symbol) = match go_symbol_override {
-        Some(symbol) => (symbol, true),
-        None => (name.clone(), false),
-    };
-
-    let params = node
-        .param_list()
-        .map(|list| {
-            list.params()
-                .flat_map(|param| lower_param(ctx, param))
-                .collect()
-        })
-        .unwrap_or_default();
-    let ret_ty = node.return_type().and_then(|ty| lower_ty(ctx, ty));
-
-    Some(ast::Item::ExternGo(ast::ExternGo {
-        attrs,
-        visibility,
-        package_path,
-        go_symbol,
-        goml_name: ast::AstIdent(name),
-        explicit_go_symbol,
-        params,
-        ret_ty,
-    }))
+    ctx.push_error(
+        Some(node.syntax().text_range()),
+        "Only compiler builtin extern declarations are supported: use `#[builtin] extern fn`.",
+    );
+    None
 }
 
 fn lower_block(ctx: &mut LowerCtx, node: cst::Block) -> Option<ast::Block> {
@@ -2757,8 +2638,8 @@ pub fn f() -> unit { () }
 pub struct Thing { value: int32 }
 pub enum Choice { A }
 pub trait Named { fn name(Self) -> string; }
-pub extern type Native
-pub extern "go" "fmt" println() -> unit
+#[builtin]
+pub extern fn runtime() -> unit
 "#,
         );
 
@@ -2782,15 +2663,10 @@ pub extern "go" "fmt" println() -> unit
         };
         assert_eq!(trait_def.visibility, ast::Visibility::Public);
 
-        let ast::Item::ExternType(extern_type) = &file.toplevels[4] else {
-            panic!("expected extern type");
+        let ast::Item::ExternBuiltin(extern_builtin) = &file.toplevels[4] else {
+            panic!("expected extern builtin");
         };
-        assert_eq!(extern_type.visibility, ast::Visibility::Public);
-
-        let ast::Item::ExternGo(extern_go) = &file.toplevels[5] else {
-            panic!("expected extern go");
-        };
-        assert_eq!(extern_go.visibility, ast::Visibility::Public);
+        assert_eq!(extern_builtin.visibility, ast::Visibility::Public);
     }
 
     #[test]

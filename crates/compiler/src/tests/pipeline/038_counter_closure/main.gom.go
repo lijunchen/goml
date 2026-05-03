@@ -45,8 +45,6 @@ type closure_env_reset_1 struct {
     cell_0 *ref_int32_x
 }
 
-type GoError = error
-
 func make_counter() Tuple2_17TFunc0_ret_5int32_16TFunc0_ret_4unit {
     var retv16 Tuple2_17TFunc0_ret_5int32_16TFunc0_ret_4unit
     var cell__0 *ref_int32_x = ref__Ref_5int32(0)

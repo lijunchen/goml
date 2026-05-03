@@ -5,8 +5,6 @@ type Point struct {
     y int32
 }
 
-type GoError = error
-
 func make_point(base__0 int32) Point {
     var retv1 Point
     var t2 int32 = base__0 + 1

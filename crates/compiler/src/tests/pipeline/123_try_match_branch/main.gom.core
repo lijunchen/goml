@@ -6,88 +6,124 @@ fn println(value/1: T) -> unit {
   string_println(trait_call[ToString::to_string](value/1))
 }
 
-fn pick(mode/0: Mode, input/1: string) -> Result[string, GoError] {
-  let value/4 = match mode/0 {
-    Mode::Left => {
+fn read_left(ok/0: bool) -> Result[int32, string] {
+  if ok/0 {
       {
-        let parsed/2 = {
-          let mtmp0 = parse_duration(input/1) in
-          match mtmp0 {
-            Result::Ok(x1) => {
-              {
-                let x1 = Result::Ok._0(mtmp0) in
-                {
-                  let try_value/5 = x1 in
-                  try_value/5
-                }
-              }
-            },
-            Result::Err(x2) => {
-              {
-                let x2 = Result::Err._0(mtmp0) in
-                {
-                  let try_residual/5 = x2 in
-                  return Result::Err(try_residual/5)
-                }
-              }
-            },
-          }
-        } in
-        ("left=" + format_duration("%v", parsed/2))
+        Result::Ok(10)
       }
-    },
-    Mode::Keep => {
-      "keep"
-    },
-    Mode::Right => {
+  } else {
       {
-        let parsed/3 = {
-          let mtmp3 = parse_duration(input/1) in
-          match mtmp3 {
-            Result::Ok(x4) => {
-              {
-                let x4 = Result::Ok._0(mtmp3) in
-                {
-                  let try_value/17 = x4 in
-                  try_value/17
-                }
-              }
-            },
-            Result::Err(x5) => {
-              {
-                let x5 = Result::Err._0(mtmp3) in
-                {
-                  let try_residual/17 = x5 in
-                  return Result::Err(try_residual/17)
-                }
-              }
-            },
-          }
-        } in
-        ("right=" + format_duration("%v", parsed/3))
+        Result::Err("left failed")
       }
-    },
-  } in
-  Result::Ok(value/4)
+  }
 }
 
-fn show(res/5: Result[string, GoError]) -> string {
-  match res/5 {
-    Result::Ok(x6) => {
+fn read_right(ok/1: bool) -> Result[int32, string] {
+  if ok/1 {
       {
-        let x6 = Result::Ok._0(res/5) in
+        Result::Ok(20)
+      }
+  } else {
+      {
+        Result::Err("right failed")
+      }
+  }
+}
+
+fn choose(choice/2: Choice) -> Result[int32, string] {
+  let value/6 = match choice/2 {
+    Choice::Left(x0) => {
+      {
+        let x0 = Choice::Left._0(choice/2) in
         {
-          let value/6 = x6 in
-          value/6
+          let ok/3 = x0 in
+          {
+            let mtmp3 = read_left(ok/3) in
+            match mtmp3 {
+              Result::Ok(x4) => {
+                {
+                  let x4 = Result::Ok._0(mtmp3) in
+                  {
+                    let try_value/21 = x4 in
+                    try_value/21
+                  }
+                }
+              },
+              Result::Err(x5) => {
+                {
+                  let x5 = Result::Err._0(mtmp3) in
+                  {
+                    let try_residual/21 = x5 in
+                    return Result::Err(try_residual/21)
+                  }
+                }
+              },
+            }
+          }
         }
       }
     },
-    Result::Err(x7) => {
+    Choice::Right(x1) => {
       {
-        let x7 = Result::Err._0(res/5) in
+        let x1 = Choice::Right._0(choice/2) in
         {
-          let err/7 = x7 in
-          ("err=" + trait_call[ToString::to_string](err/7))
+          let ok/4 = x1 in
+          ({
+            let mtmp6 = read_right(ok/4) in
+            match mtmp6 {
+              Result::Ok(x7) => {
+                {
+                  let x7 = Result::Ok._0(mtmp6) in
+                  {
+                    let try_value/25 = x7 in
+                    try_value/25
+                  }
+                }
+              },
+              Result::Err(x8) => {
+                {
+                  let x8 = Result::Err._0(mtmp6) in
+                  {
+                    let try_residual/25 = x8 in
+                    return Result::Err(try_residual/25)
+                  }
+                }
+              },
+            }
+          } + 1)
+        }
+      }
+    },
+    Choice::Keep(x2) => {
+      {
+        let x2 = Choice::Keep._0(choice/2) in
+        {
+          let value/5 = x2 in
+          value/5
+        }
+      }
+    },
+  } in
+  Result::Ok(value/6)
+}
+
+fn show(res/7: Result[int32, string]) -> string {
+  match res/7 {
+    Result::Ok(x9) => {
+      {
+        let x9 = Result::Ok._0(res/7) in
+        {
+          let value/8 = x9 in
+          ("ok " + trait_call[ToString::to_string](value/8))
+        }
+      }
+    },
+    Result::Err(x10) => {
+      {
+        let x10 = Result::Err._0(res/7) in
+        {
+          let err/9 = x10 in
+          ("err " + err/9)
         }
       }
     },
@@ -95,7 +131,9 @@ fn show(res/5: Result[string, GoError]) -> string {
 }
 
 fn main() -> unit {
-  let _wild8 = println(show(pick(Mode::Left, "4s"))) in
-  let _wild9 = println(show(pick(Mode::Right, "bad"))) in
-  let _wild10 = println(show(pick(Mode::Keep, "ignored"))) in
+  let _wild11 = println(show(choose(Choice::Left(true)))) in
+  let _wild12 = println(show(choose(Choice::Right(true)))) in
+  let _wild13 = println(show(choose(Choice::Keep(5)))) in
+  let _wild14 = println(show(choose(Choice::Left(false)))) in
+  let _wild15 = println(show(choose(Choice::Right(false)))) in
 }

@@ -1,0 +1,89 @@
+fn step(ok/0: bool) -> Result__unit__string {
+  join ret8(retv9: Result__unit__string) -> Result__unit__string {
+    retv9
+  } in
+  join k10(jp11: Result__unit__string) -> Result__unit__string {
+    jump ret8(jp11)
+  } in
+  if ok/0 {
+    let t12 = Result__unit__string::Ok(()) in
+    jump k10(t12)
+  } else {
+    let t13 = Result__unit__string::Err("step failed") in
+    jump k10(t13)
+  }
+}
+
+fn run(ok/1: bool) -> Result__unit__string {
+  join ret14(retv15: Result__unit__string) -> Result__unit__string {
+    retv15
+  } in
+  let mtmp0 = step(ok/1) in
+  join k16() -> Result__unit__string {
+    let mtmp3 = () in
+    let t17 = Result__unit__string::Ok(()) in
+    jump ret14(t17)
+  } in
+  match mtmp0 {
+    Tag_0 => {
+      let x1 = Result__unit__string::Ok._0(mtmp0) in
+      let try_value/12 = x1 in
+      jump k16()
+    },
+    Tag_1 => {
+      let x2 = Result__unit__string::Err._0(mtmp0) in
+      let try_residual/12 = x2 in
+      let t18 = Result__unit__string::Err(try_residual/12) in
+      jump ret14(t18)
+    },
+  }
+}
+
+fn show(res/2: Result__unit__string) -> string {
+  join ret19(retv20: string) -> string {
+    retv20
+  } in
+  join k21(jp22: string) -> string {
+    jump ret19(jp22)
+  } in
+  match res/2 {
+    Tag_0 => {
+      let x4 = Result__unit__string::Ok._0(res/2) in
+      join k23(jp24: string) -> string {
+        jump k21(jp24)
+      } in
+      match x4 {
+        () => {
+          jump k23("ok unit")
+        },
+      }
+    },
+    Tag_1 => {
+      let x5 = Result__unit__string::Err._0(res/2) in
+      let err/3 = x5 in
+      let t25 = ("err " + err/3) in
+      jump k21(t25)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret26() -> unit {
+    ()
+  } in
+  let t27 = run(true) in
+  let t28 = show(t27) in
+  let _wild6 = println__T_string(t28) in
+  let t29 = run(false) in
+  let t30 = show(t29) in
+  let _wild7 = println__T_string(t30) in
+  jump ret26()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret31() -> unit {
+    ()
+  } in
+  let t32 = string_println(value/1) in
+  jump ret31()
+}

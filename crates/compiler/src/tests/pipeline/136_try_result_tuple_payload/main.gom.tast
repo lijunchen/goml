@@ -1,0 +1,39 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn split_host_port(ok/0: bool) -> Result[(string, string), string] {
+    if (ok/0 : bool) {
+        {
+            Result::Ok(("example.com", "443"))
+        }
+    } else {
+        {
+            Result::Err("missing port")
+        }
+    }
+}
+
+fn render(ok/1: bool) -> Result[string, string] {
+    let (host/2: string, port/3: string) = match (split_host_port : (bool) -> Result[(string, string), string])((ok/1 : bool)) {
+        Result::Ok(try_value/14: (string, string)) => (try_value/14 : (string, string)),
+        Result::Err(try_residual/14: string) => return Result::Err((try_residual/14 : string)),
+    };
+    Result::Ok((host/2 : string) + ":" + (port/3 : string))
+}
+
+fn show(res/4: Result[string, string]) -> string {
+    match (res/4 : Result[string, string]) {
+        Result::Ok(value/5: string) => "ok " + (value/5 : string),
+        Result::Err(err/6: string) => "err " + (err/6 : string),
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((show : (Result[string, string]) -> string)((render : (bool) -> Result[string, string])(true)));
+    (println : (string) -> unit)((show : (Result[string, string]) -> string)((render : (bool) -> Result[string, string])(false)));
+}

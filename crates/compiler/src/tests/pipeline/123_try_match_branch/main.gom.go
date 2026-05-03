@@ -2,151 +2,220 @@ package main
 
 import (
     _goml_fmt "fmt"
-    "time"
 )
+
+func int32_to_string(x int32) string {
+    return _goml_fmt.Sprintf("%d", x)
+}
 
 func string_println(s string) struct{} {
     _goml_fmt.Println(s)
     return struct{}{}
 }
 
-func go_error_to_string(value GoError) string {
-    return value.Error()
+type Choice interface {
+    isChoice()
 }
 
-type Mode int32
-
-const (
-    Left Mode = 0
-    Keep Mode = 1
-    Right Mode = 2
-)
-
-type Result__string__GoError interface {
-    isResult__string__GoError()
+type Left struct {
+    _0 bool
 }
 
-type Result__string__GoError_Ok struct {
+func (_ Left) isChoice() {}
+
+type Right struct {
+    _0 bool
+}
+
+func (_ Right) isChoice() {}
+
+type Keep struct {
+    _0 int32
+}
+
+func (_ Keep) isChoice() {}
+
+type Result__int32__string interface {
+    isResult__int32__string()
+}
+
+type Ok struct {
+    _0 int32
+}
+
+func (_ Ok) isResult__int32__string() {}
+
+type Err struct {
     _0 string
 }
 
-func (_ Result__string__GoError_Ok) isResult__string__GoError() {}
+func (_ Err) isResult__int32__string() {}
 
-type Result__string__GoError_Err struct {
-    _0 GoError
+func read_left(ok__0 bool) Result__int32__string {
+    var retv17 Result__int32__string
+    var jp19 Result__int32__string
+    if ok__0 {
+        var t20 Result__int32__string = Ok{
+            _0: 10,
+        }
+        jp19 = t20
+    } else {
+        var t21 Result__int32__string = Err{
+            _0: "left failed",
+        }
+        jp19 = t21
+    }
+    retv17 = jp19
+    return retv17
 }
 
-func (_ Result__string__GoError_Err) isResult__string__GoError() {}
-
-type Result__Duration__GoError interface {
-    isResult__Duration__GoError()
+func read_right(ok__1 bool) Result__int32__string {
+    var retv23 Result__int32__string
+    var jp25 Result__int32__string
+    if ok__1 {
+        var t26 Result__int32__string = Ok{
+            _0: 20,
+        }
+        jp25 = t26
+    } else {
+        var t27 Result__int32__string = Err{
+            _0: "right failed",
+        }
+        jp25 = t27
+    }
+    retv23 = jp25
+    return retv23
 }
 
-type Result__Duration__GoError_Ok struct {
-    _0 Duration
-}
-
-func (_ Result__Duration__GoError_Ok) isResult__Duration__GoError() {}
-
-type Result__Duration__GoError_Err struct {
-    _0 GoError
-}
-
-func (_ Result__Duration__GoError_Err) isResult__Duration__GoError() {}
-
-type GoError = error
-
-type Duration = time.Duration
-
-func pick__native(mode__0 Mode, input__1 string) (string, GoError) {
-    var jp14 string
-    switch mode__0 {
+func choose(choice__2 Choice) Result__int32__string {
+    var retv29 Result__int32__string
+    var jp31 int32
+    switch choice__2.(type) {
     case Left:
-        var jp17 Duration
-        var mtmp0_value_0 Duration
-        var mtmp0_err GoError
-        mtmp0_value_0, mtmp0_err = time.ParseDuration(input__1)
-        if mtmp0_err != nil {
-            var ret_zero string
-            return ret_zero, mtmp0_err
+        var x0 bool = choice__2.(Left)._0
+        var ok__3 bool = x0
+        var mtmp3 Result__int32__string = read_left(ok__3)
+        var jp34 int32
+        switch mtmp3.(type) {
+        case Ok:
+            var x4 int32 = mtmp3.(Ok)._0
+            var try_value__21 int32 = x4
+            jp34 = try_value__21
+            jp31 = jp34
+            var value__6 int32 = jp31
+            var t32 Result__int32__string = Ok{
+                _0: value__6,
+            }
+            retv29 = t32
+            return retv29
+        case Err:
+            var x5 string = mtmp3.(Err)._0
+            var try_residual__21 string = x5
+            var t35 Result__int32__string = Err{
+                _0: try_residual__21,
+            }
+            retv29 = t35
+            return retv29
+        default:
+            panic("non-exhaustive match")
         }
-        jp17 = mtmp0_value_0
-        var parsed__2 Duration = jp17
-        var t18 string = _goml_fmt.Sprintf("%v", parsed__2)
-        var t19 string = "left=" + t18
-        jp14 = t19
-        var value__4 string = jp14
-        return value__4, nil
-    case Keep:
-        jp14 = "keep"
-        var value__4 string = jp14
-        return value__4, nil
     case Right:
-        var jp22 Duration
-        var mtmp3_value_0 Duration
-        var mtmp3_err GoError
-        mtmp3_value_0, mtmp3_err = time.ParseDuration(input__1)
-        if mtmp3_err != nil {
-            var ret_zero string
-            return ret_zero, mtmp3_err
+        var x1 bool = choice__2.(Right)._0
+        var ok__4 bool = x1
+        var mtmp6 Result__int32__string = read_right(ok__4)
+        var jp37 int32
+        switch mtmp6.(type) {
+        case Ok:
+            var x7 int32 = mtmp6.(Ok)._0
+            var try_value__25 int32 = x7
+            jp37 = try_value__25
+            var t38 int32 = jp37 + 1
+            jp31 = t38
+            var value__6 int32 = jp31
+            var t32 Result__int32__string = Ok{
+                _0: value__6,
+            }
+            retv29 = t32
+            return retv29
+        case Err:
+            var x8 string = mtmp6.(Err)._0
+            var try_residual__25 string = x8
+            var t39 Result__int32__string = Err{
+                _0: try_residual__25,
+            }
+            retv29 = t39
+            return retv29
+        default:
+            panic("non-exhaustive match")
         }
-        jp22 = mtmp3_value_0
-        var parsed__3 Duration = jp22
-        var t23 string = _goml_fmt.Sprintf("%v", parsed__3)
-        var t24 string = "right=" + t23
-        jp14 = t24
-        var value__4 string = jp14
-        return value__4, nil
+    case Keep:
+        var x2 int32 = choice__2.(Keep)._0
+        var value__5 int32 = x2
+        jp31 = value__5
+        var value__6 int32 = jp31
+        var t32 Result__int32__string = Ok{
+            _0: value__6,
+        }
+        retv29 = t32
+        return retv29
     default:
         panic("non-exhaustive match")
     }
 }
 
-func pick(mode__0 Mode, input__1 string) Result__string__GoError {
-    var native_value_0 string
-    var native_err GoError
-    native_value_0, native_err = pick__native(mode__0, input__1)
-    if native_err != nil {
-        return Result__string__GoError_Err{
-            _0: native_err,
-        }
-    }
-    return Result__string__GoError_Ok{
-        _0: native_value_0,
-    }
-}
-
-func show(res__5 Result__string__GoError) string {
-    var retv27 string
-    var jp29 string
-    switch res__5.(type) {
-    case Result__string__GoError_Ok:
-        var x6 string = res__5.(Result__string__GoError_Ok)._0
-        var value__6 string = x6
-        jp29 = value__6
-    case Result__string__GoError_Err:
-        var x7 GoError = res__5.(Result__string__GoError_Err)._0
-        var err__7 GoError = x7
-        var t30 string = go_error_to_string(err__7)
-        var t31 string = "err=" + t30
-        jp29 = t31
+func show(res__7 Result__int32__string) string {
+    var retv41 string
+    var jp43 string
+    switch res__7.(type) {
+    case Ok:
+        var x9 int32 = res__7.(Ok)._0
+        var value__8 int32 = x9
+        var t44 string = int32_to_string(value__8)
+        var t45 string = "ok " + t44
+        jp43 = t45
+    case Err:
+        var x10 string = res__7.(Err)._0
+        var err__9 string = x10
+        var t46 string = "err " + err__9
+        jp43 = t46
     default:
         panic("non-exhaustive match")
     }
-    retv27 = jp29
-    return retv27
+    retv41 = jp43
+    return retv41
 }
 
 func main0() struct{} {
-    var t33 Result__string__GoError = pick(Left, "4s")
-    var t34 string = show(t33)
-    println__T_string(t34)
-    var t35 Result__string__GoError = pick(Right, "bad")
-    var t36 string = show(t35)
-    println__T_string(t36)
-    var t37 Result__string__GoError = pick(Keep, "ignored")
-    var t38 string = show(t37)
-    println__T_string(t38)
+    var t48 Choice = Left{
+        _0: true,
+    }
+    var t49 Result__int32__string = choose(t48)
+    var t50 string = show(t49)
+    println__T_string(t50)
+    var t51 Choice = Right{
+        _0: true,
+    }
+    var t52 Result__int32__string = choose(t51)
+    var t53 string = show(t52)
+    println__T_string(t53)
+    var t54 Choice = Keep{
+        _0: 5,
+    }
+    var t55 Result__int32__string = choose(t54)
+    var t56 string = show(t55)
+    println__T_string(t56)
+    var t57 Choice = Left{
+        _0: false,
+    }
+    var t58 Result__int32__string = choose(t57)
+    var t59 string = show(t58)
+    println__T_string(t59)
+    var t60 Choice = Right{
+        _0: false,
+    }
+    var t61 Result__int32__string = choose(t60)
+    var t62 string = show(t61)
+    println__T_string(t62)
     return struct{}{}
 }
 

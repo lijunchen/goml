@@ -1,0 +1,97 @@
+fn parse_text(ok/0: bool) -> Result__string__string {
+  if ok/0 {
+      {
+        Result__string__string::Ok("goml")
+      }
+  } else {
+      {
+        Result__string__string::Err("parse failed")
+      }
+  }
+}
+
+fn normalize_text(ok/1: bool) -> Result__string__string {
+  let text/2 = {
+    let mtmp0 = parse_text(ok/1) in
+    match mtmp0 {
+      Result__string__string::Ok(x1) => {
+        {
+          let x1 = Result__string__string::Ok._0(mtmp0) in
+          {
+            let try_value/12 = x1 in
+            try_value/12
+          }
+        }
+      },
+      Result__string__string::Err(x2) => {
+        {
+          let x2 = Result__string__string::Err._0(mtmp0) in
+          {
+            let try_residual/12 = x2 in
+            return Result__string__string::Err(try_residual/12)
+          }
+        }
+      },
+    }
+  } in
+  Result__string__string::Ok((text/2 + "!"))
+}
+
+fn decorate_text(ok/3: bool) -> Result__string__string {
+  let text/4 = {
+    let mtmp3 = normalize_text(ok/3) in
+    match mtmp3 {
+      Result__string__string::Ok(x4) => {
+        {
+          let x4 = Result__string__string::Ok._0(mtmp3) in
+          {
+            let try_value/20 = x4 in
+            try_value/20
+          }
+        }
+      },
+      Result__string__string::Err(x5) => {
+        {
+          let x5 = Result__string__string::Err._0(mtmp3) in
+          {
+            let try_residual/20 = x5 in
+            return Result__string__string::Err(try_residual/20)
+          }
+        }
+      },
+    }
+  } in
+  Result__string__string::Ok((("[" + text/4) + "]"))
+}
+
+fn show(res/5: Result__string__string) -> string {
+  match res/5 {
+    Result__string__string::Ok(x6) => {
+      {
+        let x6 = Result__string__string::Ok._0(res/5) in
+        {
+          let value/6 = x6 in
+          ("ok " + value/6)
+        }
+      }
+    },
+    Result__string__string::Err(x7) => {
+      {
+        let x7 = Result__string__string::Err._0(res/5) in
+        {
+          let err/7 = x7 in
+          ("err " + err/7)
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild8 = println__T_string(show(decorate_text(true))) in
+  let _wild9 = println__T_string(show(decorate_text(false))) in
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}

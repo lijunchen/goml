@@ -28,8 +28,6 @@ type B struct {
 
 func (_ B) isT() {}
 
-type GoError = error
-
 func test(t__0 T) struct{} {
     switch t__0.(type) {
     case A:

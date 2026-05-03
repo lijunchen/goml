@@ -137,29 +137,8 @@ fn runtime_missing_function_collision_executes() {
 }
 
 #[test]
-fn runtime_go_error_type_collision_executes() {
-    let output = run_crasher("runtime_go_error_type_collision_user_symbol");
-
-    assert_eq!(output, "7\n");
-}
-
-#[test]
-fn user_go_error_local_tostring_impl_executes() {
-    let output = run_crasher("user_go_error_local_tostring_impl");
-
-    assert_eq!(output, "7\n");
-}
-
-#[test]
-fn native_helper_function_name_collision_executes() {
-    let output = run_crasher("native_helper_function_name_collision_user_symbol");
-
-    assert_eq!(output, "2\n");
-}
-
-#[test]
-fn hashmap_native_helper_function_name_collision_executes() {
-    let output = run_crasher("hashmap_native_helper_function_name_collision_user_symbol");
+fn hashmap_lookup_helper_function_name_collision_executes() {
+    let output = run_crasher("hashmap_lookup_helper_function_name_collision_user_symbol");
 
     assert_eq!(output, "3\n");
 }
@@ -176,48 +155,6 @@ fn import_alias_type_name_collision_executes() {
     let output = run_crasher("import_alias_type_name_collision");
 
     assert_eq!(output, "2\n");
-}
-
-#[test]
-fn extern_import_alias_function_name_collision_executes() {
-    let output = run_crasher("extern_import_alias_function_name_collision");
-
-    assert_eq!(output, "OK\nuser-strings\n");
-}
-
-#[test]
-fn raw_extern_value_import_alias_function_collision_executes() {
-    let output = run_crasher("raw_extern_value_import_alias_function_collision");
-
-    assert_eq!(output, "user-strings\n");
-}
-
-#[test]
-fn raw_extern_value_import_alias_type_collision_executes() {
-    let output = run_crasher("raw_extern_value_import_alias_type_collision");
-
-    assert_eq!(output, "7\n");
-}
-
-#[test]
-fn qualified_extern_type_import_alias_collision_executes() {
-    let output = run_crasher("qualified_extern_type_import_alias_collision");
-
-    assert_eq!(output, "11\n");
-}
-
-#[test]
-fn extern_type_function_name_collision_executes() {
-    let output = run_crasher("extern_type_function_name_collision");
-
-    assert_eq!(output, "13\n");
-}
-
-#[test]
-fn extern_type_runtime_function_name_collision_executes() {
-    let output = run_crasher("extern_type_runtime_function_name_collision");
-
-    assert_eq!(output, "14\n");
 }
 
 #[test]
@@ -246,60 +183,4 @@ fn enum_variant_tuple_type_collision_executes() {
     let output = run_crasher("enum_variant_tuple_type_collision");
 
     assert_eq!(output, "23\n");
-}
-
-#[test]
-fn extern_import_alias_enum_variant_collision_executes() {
-    let output = run_crasher("extern_import_alias_enum_variant_collision");
-
-    assert_eq!(output, "OK\nvariant\n");
-}
-
-#[test]
-fn extern_wrapper_function_name_collision_executes() {
-    let output = run_crasher("extern_wrapper_function_name_collision");
-
-    assert_eq!(output, "ab\nuser-wrapper\n");
-}
-
-#[test]
-fn extern_wrapper_tuple_prefix_collision_executes() {
-    let output = run_crasher("extern_wrapper_tuple_prefix_collision");
-
-    assert_eq!(output, "3\n");
-}
-
-#[test]
-fn extern_bridge_import_alias_collision_executes() {
-    let output = run_crasher("extern_bridge_import_alias_collision");
-
-    assert_eq!(output, "OK\n");
-}
-
-#[test]
-fn extern_bridge_tuple_type_collision_executes() {
-    let output = run_crasher("extern_bridge_tuple_type_collision");
-
-    assert_eq!(output, "3\n");
-}
-
-#[test]
-fn extern_bridge_enum_variant_collision_executes() {
-    let output = run_crasher("extern_bridge_enum_variant_collision");
-
-    assert_eq!(output, "variant\n");
-}
-
-#[test]
-fn raw_go_import_alias_rewrite_preserves_string_literal() {
-    let output = run_crasher("raw_go_import_alias_rewrite_string_literal");
-
-    assert_eq!(output, "strings.Builder\n");
-}
-
-#[test]
-fn duplicate_go_import_default_alias_executes() {
-    let output = run_crasher("duplicate_go_import_default_alias");
-
-    assert_eq!(output, "0\n");
 }

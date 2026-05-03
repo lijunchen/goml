@@ -1,0 +1,79 @@
+fn cut_prefix(case_id/0: int32) -> Option__string {
+  join ret5(retv6: Option__string) -> Option__string {
+    retv6
+  } in
+  let t9 = (case_id/0 == 0) in
+  join k7(jp8: Option__string) -> Option__string {
+    jump ret5(jp8)
+  } in
+  if t9 {
+    let t10 = Option__string::Some("ml") in
+    jump k7(t10)
+  } else {
+    jump k7(Tag_0)
+  }
+}
+
+fn trim_go(case_id/1: int32) -> Option__string {
+  join ret11(retv12: Option__string) -> Option__string {
+    retv12
+  } in
+  let mtmp0 = cut_prefix(case_id/1) in
+  join k13(jp14: string) -> Option__string {
+    let suffix/2 = jp14 in
+    let t15 = (suffix/2 + "!") in
+    let t16 = Option__string::Some(t15) in
+    jump ret11(t16)
+  } in
+  match mtmp0 {
+    Tag_0 => {
+      jump ret11(Tag_0)
+    },
+    Tag_1 => {
+      let x1 = Option__string::Some._0(mtmp0) in
+      let try_value/13 = x1 in
+      jump k13(try_value/13)
+    },
+  }
+}
+
+fn show(opt/3: Option__string) -> string {
+  join ret17(retv18: string) -> string {
+    retv18
+  } in
+  join k19(jp20: string) -> string {
+    jump ret17(jp20)
+  } in
+  match opt/3 {
+    Tag_0 => {
+      jump k19("none")
+    },
+    Tag_1 => {
+      let x2 = Option__string::Some._0(opt/3) in
+      let value/4 = x2 in
+      let t21 = ("some " + value/4) in
+      jump k19(t21)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret22() -> unit {
+    ()
+  } in
+  let t23 = trim_go(0) in
+  let t24 = show(t23) in
+  let _wild3 = println__T_string(t24) in
+  let t25 = trim_go(1) in
+  let t26 = show(t25) in
+  let _wild4 = println__T_string(t26) in
+  jump ret22()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret27() -> unit {
+    ()
+  } in
+  let t28 = string_println(value/1) in
+  jump ret27()
+}

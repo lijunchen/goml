@@ -8,8 +8,8 @@ use crate::builtins;
 use crate::common::{Constructor, EnumConstructor, StructConstructor};
 use crate::core;
 use crate::env::{
-    EnumDef, ExternFunc, FnConstraint, FnScheme, GlobalTypeEnv, ImplDef, InherentImplKey,
-    StructDef, TraitDef, TraitEnv, TypeEnv, ValueEnv,
+    EnumDef, FnConstraint, FnScheme, GlobalTypeEnv, ImplDef, InherentImplKey, StructDef, TraitDef,
+    TraitEnv, TypeEnv, ValueEnv,
 };
 use crate::hir;
 use crate::interface;
@@ -796,12 +796,6 @@ fn rename_exports(
             )
         })
         .collect();
-    let extern_types = exports
-        .type_env
-        .extern_types
-        .iter()
-        .map(|(name, def)| (rename_symbol_name(name, package_names), def.clone()))
-        .collect();
     let trait_defs = exports
         .trait_env
         .trait_defs
@@ -860,41 +854,14 @@ fn rename_exports(
             )
         })
         .collect();
-    let extern_funcs = exports
-        .value_env
-        .extern_funcs
-        .iter()
-        .map(|(name, func)| {
-            (
-                rename_symbol_name(name, package_names),
-                ExternFunc {
-                    package_path: func.package_path.clone(),
-                    go_name: func.go_name.clone(),
-                    ty: rename_ty(&func.ty, package_names),
-                    binding_mode: func.binding_mode,
-                    return_mode: func.return_mode,
-                    variadic_last: func.variadic_last,
-                    field_name: func.field_name.clone(),
-                },
-            )
-        })
-        .collect();
-
     PackageExports {
-        type_env: TypeEnv {
-            enums,
-            structs,
-            extern_types,
-        },
+        type_env: TypeEnv { enums, structs },
         trait_env: TraitEnv {
             trait_defs,
             trait_impls,
             inherent_impls,
         },
-        value_env: ValueEnv {
-            funcs,
-            extern_funcs,
-        },
+        value_env: ValueEnv { funcs },
     }
 }
 
@@ -1162,9 +1129,6 @@ fn merge_exports(into: &mut PackageExports, from: &PackageExports) {
     for (name, def) in from.type_env.structs.iter() {
         into.type_env.structs.insert(name.clone(), def.clone());
     }
-    for (name, def) in from.type_env.extern_types.iter() {
-        into.type_env.extern_types.insert(name.clone(), def.clone());
-    }
     for (name, def) in from.trait_env.trait_defs.iter() {
         into.trait_env.trait_defs.insert(name.clone(), def.clone());
     }
@@ -1178,11 +1142,6 @@ fn merge_exports(into: &mut PackageExports, from: &PackageExports) {
     }
     for (name, scheme) in from.value_env.funcs.iter() {
         into.value_env.funcs.insert(name.clone(), scheme.clone());
-    }
-    for (name, func) in from.value_env.extern_funcs.iter() {
-        into.value_env
-            .extern_funcs
-            .insert(name.clone(), func.clone());
     }
 }
 

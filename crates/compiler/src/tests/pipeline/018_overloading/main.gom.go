@@ -21,8 +21,6 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type GoError = error
-
 func _goml_trait_x5f_impl_x23_Arith_x23_int32_x23_add(self__0 int32, other__1 int32) int32 {
     var retv5 int32
     var t6 int32 = self__0 + other__1

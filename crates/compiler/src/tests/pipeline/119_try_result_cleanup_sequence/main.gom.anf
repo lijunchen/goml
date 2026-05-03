@@ -1,0 +1,125 @@
+fn open_handle(ok/0: bool) -> Result__Handle__string {
+  join ret12(retv13: Result__Handle__string) -> Result__Handle__string {
+    retv13
+  } in
+  join k14(jp15: Result__Handle__string) -> Result__Handle__string {
+    jump ret12(jp15)
+  } in
+  if ok/0 {
+    let t16 = Handle { name: "config" } in
+    let t17 = Result__Handle__string::Ok(t16) in
+    jump k14(t17)
+  } else {
+    let t18 = Result__Handle__string::Err("open failed") in
+    jump k14(t18)
+  }
+}
+
+fn close_handle(handle/1: Handle, ok/2: bool) -> Result__unit__string {
+  join ret19(retv20: Result__unit__string) -> Result__unit__string {
+    retv20
+  } in
+  join k21(jp22: Result__unit__string) -> Result__unit__string {
+    jump ret19(jp22)
+  } in
+  if ok/2 {
+    let t23 = Result__unit__string::Ok(()) in
+    jump k21(t23)
+  } else {
+    let t24 = Handle.name(handle/1) in
+    let t25 = ("close failed for " + t24) in
+    let t26 = Result__unit__string::Err(t25) in
+    jump k21(t26)
+  }
+}
+
+fn use_handle(open_ok/3: bool, close_ok/4: bool) -> Result__string__string {
+  join ret27(retv28: Result__string__string) -> Result__string__string {
+    retv28
+  } in
+  let mtmp0 = open_handle(open_ok/3) in
+  join k29(jp30: Handle) -> Result__string__string {
+    let handle/5 = jp30 in
+    let name/6 = Handle.name(handle/5) in
+    let mtmp3 = close_handle(handle/5, close_ok/4) in
+    join k31() -> Result__string__string {
+      let _wild6 = () in
+      let t32 = ("closed " + name/6) in
+      let t33 = Result__string__string::Ok(t32) in
+      jump ret27(t33)
+    } in
+    match mtmp3 {
+      Tag_0 => {
+        let x4 = Result__unit__string::Ok._0(mtmp3) in
+        let try_value/31 = x4 in
+        jump k31()
+      },
+      Tag_1 => {
+        let x5 = Result__unit__string::Err._0(mtmp3) in
+        let try_residual/31 = x5 in
+        let t34 = Result__string__string::Err(try_residual/31) in
+        jump ret27(t34)
+      },
+    }
+  } in
+  match mtmp0 {
+    Tag_0 => {
+      let x1 = Result__Handle__string::Ok._0(mtmp0) in
+      let try_value/24 = x1 in
+      jump k29(try_value/24)
+    },
+    Tag_1 => {
+      let x2 = Result__Handle__string::Err._0(mtmp0) in
+      let try_residual/24 = x2 in
+      let t35 = Result__string__string::Err(try_residual/24) in
+      jump ret27(t35)
+    },
+  }
+}
+
+fn show(res/7: Result__string__string) -> string {
+  join ret36(retv37: string) -> string {
+    retv37
+  } in
+  join k38(jp39: string) -> string {
+    jump ret36(jp39)
+  } in
+  match res/7 {
+    Tag_0 => {
+      let x7 = Result__string__string::Ok._0(res/7) in
+      let value/8 = x7 in
+      let t40 = ("ok " + value/8) in
+      jump k38(t40)
+    },
+    Tag_1 => {
+      let x8 = Result__string__string::Err._0(res/7) in
+      let err/9 = x8 in
+      let t41 = ("err " + err/9) in
+      jump k38(t41)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret42() -> unit {
+    ()
+  } in
+  let t43 = use_handle(true, true) in
+  let t44 = show(t43) in
+  let _wild9 = println__T_string(t44) in
+  let t45 = use_handle(false, true) in
+  let t46 = show(t45) in
+  let _wild10 = println__T_string(t46) in
+  let t47 = use_handle(true, false) in
+  let t48 = show(t47) in
+  let _wild11 = println__T_string(t48) in
+  jump ret42()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret49() -> unit {
+    ()
+  } in
+  let t50 = string_println(value/1) in
+  jump ret49()
+}

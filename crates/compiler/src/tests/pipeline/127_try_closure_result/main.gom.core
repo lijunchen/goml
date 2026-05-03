@@ -1,0 +1,77 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn parse_text(ok/0: bool) -> Result[string, string] {
+  if ok/0 {
+      {
+        Result::Ok("body")
+      }
+  } else {
+      {
+        Result::Err("parse failed")
+      }
+  }
+}
+
+fn decorate(prefix/1: string, ok/2: bool) -> Result[string, string] {
+  let run/4 = || => {
+    let text/3 = {
+      let mtmp0 = parse_text(ok/2) in
+      match mtmp0 {
+        Result::Ok(x1) => {
+          {
+            let x1 = Result::Ok._0(mtmp0) in
+            {
+              let try_value/12 = x1 in
+              try_value/12
+            }
+          }
+        },
+        Result::Err(x2) => {
+          {
+            let x2 = Result::Err._0(mtmp0) in
+            {
+              let try_residual/12 = x2 in
+              return Result::Err(try_residual/12)
+            }
+          }
+        },
+      }
+    } in
+    Result::Ok(((prefix/1 + ":") + text/3))
+  } in
+  run/4()
+}
+
+fn show(res/5: Result[string, string]) -> string {
+  match res/5 {
+    Result::Ok(x3) => {
+      {
+        let x3 = Result::Ok._0(res/5) in
+        {
+          let value/6 = x3 in
+          ("ok " + value/6)
+        }
+      }
+    },
+    Result::Err(x4) => {
+      {
+        let x4 = Result::Err._0(res/5) in
+        {
+          let err/7 = x4 in
+          ("err " + err/7)
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild5 = println(show(decorate("outer", true))) in
+  let _wild6 = println(show(decorate("outer", false))) in
+}

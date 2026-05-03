@@ -2,8 +2,6 @@ package main
 
 type S struct {}
 
-type GoError = error
-
 func _goml_inherent_x23_S_x23_S_x23_method1(self__0 S) struct{} {
     return struct{}{}
 }

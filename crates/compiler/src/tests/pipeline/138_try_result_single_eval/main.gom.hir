@@ -1,0 +1,33 @@
+package main
+file main.gom
+  fn bump(local/1/0: Ref[int32], local/1/1: bool) -> Result[int32, string] {
+        ref_set(counter/0, ref_get(counter/0) + 1i32);
+        if ok/1 {
+            Result::Ok(ref_get(counter/0))
+        } else {
+            Result::Err("bump failed")
+        }
+    }
+    
+    fn use_try(local/1/2: Ref[int32], local/1/3: bool) -> Result[int32, string] {
+        let local/1/4 = def/1/0(counter/2, ok/3)?;
+        Result::Ok(value/4 + ref_get(counter/2))
+    }
+    
+    fn show(local/1/5: Result[int32, string]) -> string {
+        match res/5 {
+            Result::Ok(local/1/6) => "ok " + value/6.to_string(),
+            Result::Err(local/1/7) => "err " + err/7,
+        }
+    }
+    
+    fn run(local/1/8: bool) -> string {
+        let local/1/9 = ref(0i32);
+        let local/1/10 = def/1/1(counter/9, ok/8);
+        def/1/2(result/10) + " count=" + ref_get(counter/9).to_string()
+    }
+    
+    fn main() -> unit {
+        println(def/1/3(true));
+        println(def/1/3(false));
+    }

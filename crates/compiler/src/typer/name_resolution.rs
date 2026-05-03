@@ -518,18 +518,6 @@ impl NameResolution {
                         def_names.insert(full_name, id);
                         Some(id)
                     }
-                    ast::Item::ExternGo(ext) => {
-                        let full_name = full_def_name(package_name, &ext.goml_name.0);
-                        let path = full_def_path(package_name, &ext.goml_name.0);
-                        let ext_def = self.lower_extern_go(ext, package_name, &imports);
-                        let id = hir_table.alloc_def_with_path(
-                            path,
-                            hir::DefKind::ExternGo,
-                            hir::Def::ExternGo(ext_def),
-                        );
-                        def_names.insert(full_name, id);
-                        Some(id)
-                    }
                     ast::Item::ExternBuiltin(ext) => {
                         let full_name = full_def_name(package_name, &ext.name.0);
                         let path = full_def_path(package_name, &ext.name.0);
@@ -590,18 +578,6 @@ impl NameResolution {
                             methods: Vec::new(),
                         }),
                     )),
-                    ast::Item::ExternType(ext) => {
-                        let full_name = full_def_name(package_name, &ext.goml_name.0);
-                        let path = full_def_path(package_name, &ext.goml_name.0);
-                        let ext_def = self.lower_extern_type(ext, package_name);
-                        let id = hir_table.alloc_def_with_path(
-                            path,
-                            hir::DefKind::ExternType,
-                            hir::Def::ExternType(ext_def),
-                        );
-                        def_names.insert(full_name, id);
-                        Some(id)
-                    }
                 };
                 if let Some(def_id) = def_id {
                     toplevels.push(def_id);
@@ -1883,47 +1859,6 @@ impl NameResolution {
             ));
         }
         qualified.display()
-    }
-
-    fn lower_extern_go(
-        &mut self,
-        def: &ast::ExternGo,
-        current_package: &str,
-        imports: &HashSet<String>,
-    ) -> hir::ExternGo {
-        let name = full_def_name(current_package, &def.goml_name.0);
-        hir::ExternGo {
-            attrs: def.attrs.iter().map(|a| a.into()).collect(),
-            package_path: def.package_path.clone(),
-            go_symbol: def.go_symbol.clone(),
-            goml_name: HirIdent::name(&name),
-            explicit_go_symbol: def.explicit_go_symbol,
-            params: def
-                .params
-                .iter()
-                .map(|(param, ty)| {
-                    (
-                        HirIdent::name(&param.0),
-                        self.lower_type_expr(ty, &HashSet::new(), current_package, imports),
-                    )
-                })
-                .collect(),
-            ret_ty: def
-                .ret_ty
-                .as_ref()
-                .map(|ty| self.lower_type_expr(ty, &HashSet::new(), current_package, imports)),
-        }
-    }
-
-    fn lower_extern_type(&self, def: &ast::ExternType, current_package: &str) -> hir::ExternType {
-        let name = full_def_name(current_package, &def.goml_name.0);
-        hir::ExternType {
-            attrs: def.attrs.iter().map(|a| a.into()).collect(),
-            package_path: def.package_path.clone(),
-            go_name: def.go_name.clone(),
-            goml_name: HirIdent::name(&name),
-            explicit_go_name: def.explicit_go_name,
-        }
     }
 
     fn lower_extern_builtin(

@@ -225,17 +225,15 @@ fn extern_decl(p: &mut Parser) {
 fn extern_decl_with_marker(p: &mut Parser, m: MarkerOpened) {
     p.expect(T![extern]);
     if p.at(T![type]) {
-        p.expect(T![type]);
+        p.error("extern type declarations are no longer supported");
+        p.advance();
         if p.at(T![ident]) {
             p.advance();
-        } else {
-            p.advance_with_error("expected a type name");
         }
-        p.close(m, MySyntaxKind::EXTERN);
+        p.close(m, MySyntaxKind::ErrorTree);
         return;
     }
 
-    // Builtin declaration syntax: `extern fn name(params) -> ret`
     if p.at(T![fn]) {
         p.expect(T![fn]);
         if p.at(T![ident]) {
@@ -264,7 +262,7 @@ fn extern_decl_with_marker(p: &mut Parser, m: MarkerOpened) {
         p.advance_with_error("expected a language string");
     }
 
-    // Standard format: extern "go" "package" [symbol] name/type ...
+    p.error("non-builtin extern declarations are no longer supported; use `#[builtin] extern fn`");
     if p.at(T![str]) {
         p.advance();
     } else {
@@ -302,7 +300,7 @@ fn extern_decl_with_marker(p: &mut Parser, m: MarkerOpened) {
             type_expr(p);
         }
     }
-    p.close(m, MySyntaxKind::EXTERN);
+    p.close(m, MySyntaxKind::ErrorTree);
 }
 
 fn func(p: &mut Parser) {

@@ -17,8 +17,6 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type GoError = error
-
 func main0() struct{} {
     var c__0 rune = 65
     var t3 string = char_to_string(c__0)

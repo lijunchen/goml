@@ -32,42 +32,30 @@ type Some struct {
 
 func (_ Some) isOption__int32() {}
 
-type GoError = error
-
-func maybe_value__native(flag__0 bool) (int32, bool) {
+func maybe_value(flag__0 bool) Option__int32 {
+    var retv7 Option__int32
+    var jp9 Option__int32
     if flag__0 {
-        return 4, true
+        var t10 Option__int32 = Some{
+            _0: 4,
+        }
+        jp9 = t10
     } else {
-        var ret_zero int32
-        return ret_zero, false
+        jp9 = None{}
     }
+    retv7 = jp9
+    return retv7
 }
 
-func with_base__native(base__1 int32, flag__2 bool) (int32, bool) {
+func with_base(base__1 int32, flag__2 bool) Option__int32 {
+    var retv12 Option__int32
     var run__4 closure_env_run_0 = closure_env_run_0{
         flag_0: flag__2,
         base_1: base__1,
     }
-    var t13_value_0 int32
-    var t13_ok bool
-    t13_value_0, t13_ok = _goml_inherent_x23_closure_x5f_env_x5f_run_x5f_0_x23_closure_x5f_env_x5f_run_x5f_0_x23_apply_x5f__x5f_native(run__4)
-    if !t13_ok {
-        var ret_zero int32
-        return ret_zero, false
-    }
-    return t13_value_0, true
-}
-
-func with_base(base__1 int32, flag__2 bool) Option__int32 {
-    var native_value_0 int32
-    var native_ok bool
-    native_value_0, native_ok = with_base__native(base__1, flag__2)
-    if native_ok {
-        return Some{
-            _0: native_value_0,
-        }
-    }
-    return None{}
+    var t13 Option__int32 = _goml_inherent_x23_closure_x5f_env_x5f_run_x5f_0_x23_closure_x5f_env_x5f_run_x5f_0_x23_apply(run__4)
+    retv12 = t13
+    return retv12
 }
 
 func show(opt__5 Option__int32) string {
@@ -104,21 +92,30 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_inherent_x23_closure_x5f_env_x5f_run_x5f_0_x23_closure_x5f_env_x5f_run_x5f_0_x23_apply_x5f__x5f_native(env5 closure_env_run_0) (int32, bool) {
+func _goml_inherent_x23_closure_x5f_env_x5f_run_x5f_0_x23_closure_x5f_env_x5f_run_x5f_0_x23_apply(env5 closure_env_run_0) Option__int32 {
+    var retv28 Option__int32
     var flag__2 bool = env5.flag_0
     var base__1 int32 = env5.base_1
+    var mtmp0 Option__int32 = maybe_value(flag__2)
     var jp30 int32
-    var mtmp0_value_0 int32
-    var mtmp0_ok bool
-    mtmp0_value_0, mtmp0_ok = maybe_value__native(flag__2)
-    if !mtmp0_ok {
-        var ret_zero int32
-        return ret_zero, false
+    switch mtmp0.(type) {
+    case None:
+        retv28 = None{}
+        return retv28
+    case Some:
+        var x1 int32 = mtmp0.(Some)._0
+        var try_value__11 int32 = x1
+        jp30 = try_value__11
+        var value__3 int32 = jp30
+        var t31 int32 = value__3 + base__1
+        var t32 Option__int32 = Some{
+            _0: t31,
+        }
+        retv28 = t32
+        return retv28
+    default:
+        panic("non-exhaustive match")
     }
-    jp30 = mtmp0_value_0
-    var value__3 int32 = jp30
-    var t31 int32 = value__3 + base__1
-    return t31, true
 }
 
 func main() {

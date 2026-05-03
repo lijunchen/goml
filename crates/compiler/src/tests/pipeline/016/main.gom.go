@@ -58,8 +58,6 @@ type List__bool_Cons struct {
 
 func (_ List__bool_Cons) isList__bool() {}
 
-type GoError = error
-
 func int_list_length(xs__2 List__int32) int32 {
     var retv11 int32
     var jp13 int32

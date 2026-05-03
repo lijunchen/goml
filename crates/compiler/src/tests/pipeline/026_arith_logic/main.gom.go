@@ -21,8 +21,6 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type GoError = error
-
 func show_int(label__0 string, value__1 int32) struct{} {
     var t13 string = int32_to_string(value__1)
     var t14 string = label__0 + t13

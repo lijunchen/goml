@@ -1,0 +1,39 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn step(ok/0: bool) -> Result[unit, string] {
+    if (ok/0 : bool) {
+        {
+            Result::Ok(())
+        }
+    } else {
+        {
+            Result::Err("step failed")
+        }
+    }
+}
+
+fn run(ok/1: bool) -> Result[unit, string] {
+    let _ : unit = match (step : (bool) -> Result[unit, string])((ok/1 : bool)) {
+        Result::Ok(try_value/12: unit) => (try_value/12 : unit),
+        Result::Err(try_residual/12: string) => return Result::Err((try_residual/12 : string)),
+    };
+    Result::Ok(())
+}
+
+fn show(res/2: Result[unit, string]) -> string {
+    match (res/2 : Result[unit, string]) {
+        Result::Ok(()) => "ok unit",
+        Result::Err(err/3: string) => "err " + (err/3 : string),
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((show : (Result[unit, string]) -> string)((run : (bool) -> Result[unit, string])(true)));
+    (println : (string) -> unit)((show : (Result[unit, string]) -> string)((run : (bool) -> Result[unit, string])(false)));
+}

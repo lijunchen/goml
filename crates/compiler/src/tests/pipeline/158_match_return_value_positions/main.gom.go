@@ -15,8 +15,6 @@ func string_println(s string) struct{} {
 
 type closure_env_f_0 struct {}
 
-type GoError = error
-
 func add_after_match(flag__0 bool) int32 {
     var retv8 int32
     var jp10 int32

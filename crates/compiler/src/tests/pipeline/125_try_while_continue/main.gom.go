@@ -46,20 +46,25 @@ type Some struct {
 
 func (_ Some) isOption__int32() {}
 
-type GoError = error
-
-func step__native(i__0 int32) (int32, bool) {
+func step(i__0 int32) Option__int32 {
+    var retv10 Option__int32
     var t13 bool = i__0 == 2
+    var jp12 Option__int32
     if t13 {
-        var ret_zero int32
-        return ret_zero, false
+        jp12 = None{}
     } else {
         var t14 int32 = i__0 + 10
-        return t14, true
+        var t15 Option__int32 = Some{
+            _0: t14,
+        }
+        jp12 = t15
     }
+    retv10 = jp12
+    return retv10
 }
 
-func accumulate__native(limit__1 int32) (int32, bool) {
+func accumulate(limit__1 int32) Option__int32 {
+    var retv17 Option__int32
     var sum__2 *ref_int32_x = ref__Ref_5int32(0)
     var i__3 *ref_int32_x = ref__Ref_5int32(0)
     Loop_loop21:
@@ -74,39 +79,35 @@ func accumulate__native(limit__1 int32) (int32, bool) {
             if t30 {
                 continue
             } else {
+                var mtmp2 Option__int32 = step(cur__4)
                 var jp27 int32
-                var mtmp2_value_0 int32
-                var mtmp2_ok bool
-                mtmp2_value_0, mtmp2_ok = step__native(cur__4)
-                if !mtmp2_ok {
-                    var ret_zero int32
-                    return ret_zero, false
+                switch mtmp2.(type) {
+                case None:
+                    retv17 = None{}
+                    return retv17
+                case Some:
+                    var x3 int32 = mtmp2.(Some)._0
+                    var try_value__43 int32 = x3
+                    jp27 = try_value__43
+                    var value__5 int32 = jp27
+                    var t28 int32 = ref_get__Ref_5int32(sum__2)
+                    var t29 int32 = t28 + value__5
+                    ref_set__Ref_5int32(sum__2, t29)
+                    continue
+                default:
+                    panic("non-exhaustive match")
                 }
-                jp27 = mtmp2_value_0
-                var value__5 int32 = jp27
-                var t28 int32 = ref_get__Ref_5int32(sum__2)
-                var t29 int32 = t28 + value__5
-                ref_set__Ref_5int32(sum__2, t29)
-                continue
             }
         } else {
             break Loop_loop21
         }
     }
     var t19 int32 = ref_get__Ref_5int32(sum__2)
-    return t19, true
-}
-
-func accumulate(limit__1 int32) Option__int32 {
-    var native_value_0 int32
-    var native_ok bool
-    native_value_0, native_ok = accumulate__native(limit__1)
-    if native_ok {
-        return Some{
-            _0: native_value_0,
-        }
+    var t20 Option__int32 = Some{
+        _0: t19,
     }
-    return None{}
+    retv17 = t20
+    return retv17
 }
 
 func show(opt__6 Option__int32) string {
