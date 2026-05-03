@@ -8,12 +8,11 @@ use parser::syntax::MySyntaxNodePtr;
 const DERIVE_STAGE: &str = "derive";
 const TO_STRING_TRAIT: &str = "ToString";
 const TO_STRING_FN: &str = "to_string";
-const TO_JSON_TRAIT: &str = "ToJson";
-const TO_JSON_FN: &str = "to_json";
 const HASH_TRAIT: &str = "Hash";
 const HASH_FN: &str = "hash";
 const EQ_TRAIT: &str = "Eq";
 const EQ_FN: &str = "eq";
+const SUPPORTED_DERIVE_TARGETS: &[&str] = &[TO_STRING_TRAIT, HASH_TRAIT, EQ_TRAIT];
 const SELF_PARAM_NAME: &str = "self";
 const OTHER_PARAM_NAME: &str = "other";
 
@@ -29,14 +28,9 @@ pub fn expand(ast: ast::File) -> Result<ast::File, Diagnostics> {
         let mut derived_impls = Vec::new();
         match &item {
             Item::StructDef(struct_def) => {
+                collect_unsupported_derive_diagnostics(&struct_def.attrs, &mut diagnostics);
                 if let Some(attr_ptr) = find_derive_attr(&struct_def.attrs, TO_STRING_TRAIT) {
                     match derive_struct_tostring(struct_def, &attr_ptr) {
-                        Ok(impl_block) => derived_impls.push(impl_block),
-                        Err(diag) => diagnostics.push(diag),
-                    }
-                }
-                if let Some(attr_ptr) = find_derive_attr(&struct_def.attrs, TO_JSON_TRAIT) {
-                    match derive_struct_tojson(struct_def, &attr_ptr) {
                         Ok(impl_block) => derived_impls.push(impl_block),
                         Err(diag) => diagnostics.push(diag),
                     }
@@ -55,14 +49,9 @@ pub fn expand(ast: ast::File) -> Result<ast::File, Diagnostics> {
                 }
             }
             Item::EnumDef(enum_def) => {
+                collect_unsupported_derive_diagnostics(&enum_def.attrs, &mut diagnostics);
                 if let Some(attr_ptr) = find_derive_attr(&enum_def.attrs, TO_STRING_TRAIT) {
                     match derive_enum_tostring(enum_def, &attr_ptr) {
-                        Ok(impl_block) => derived_impls.push(impl_block),
-                        Err(diag) => diagnostics.push(diag),
-                    }
-                }
-                if let Some(attr_ptr) = find_derive_attr(&enum_def.attrs, TO_JSON_TRAIT) {
-                    match derive_enum_tojson(enum_def, &attr_ptr) {
                         Ok(impl_block) => derived_impls.push(impl_block),
                         Err(diag) => diagnostics.push(diag),
                     }
@@ -99,6 +88,19 @@ pub fn expand(ast: ast::File) -> Result<ast::File, Diagnostics> {
             use_traits,
             toplevels,
         })
+    }
+}
+
+fn collect_unsupported_derive_diagnostics(attrs: &[Attribute], diagnostics: &mut Diagnostics) {
+    for attr in attrs {
+        let Some(targets) = parse_derive_targets(attr) else {
+            continue;
+        };
+        for target in targets {
+            if !SUPPORTED_DERIVE_TARGETS.contains(&target.as_str()) {
+                diagnostics.push(unsupported_derive_target(&target, &attr.ast));
+            }
+        }
     }
 }
 
@@ -227,71 +229,6 @@ fn derive_enum_tostring(
         generics: Vec::new(),
         generic_bounds: Vec::new(),
         trait_name: Some(Path::from_ident(AstIdent::new(TO_STRING_TRAIT))),
-        for_type: ty_for_ident(&enum_def.name),
-        methods: vec![method],
-    })
-}
-
-fn derive_struct_tojson(
-    struct_def: &StructDef,
-    attr_ptr: &MySyntaxNodePtr,
-) -> Result<ImplBlock, Diagnostic> {
-    if !struct_def.generics.is_empty() {
-        return Err(generic_not_supported_json(
-            "struct",
-            &struct_def.name,
-            attr_ptr,
-        ));
-    }
-
-    let method = ast::Fn {
-        attrs: Vec::new(),
-        visibility: ast::Visibility::Private,
-        name: AstIdent::new(TO_JSON_FN),
-        generics: Vec::new(),
-        generic_bounds: Vec::new(),
-        params: vec![(
-            AstIdent::new(SELF_PARAM_NAME),
-            ty_for_ident(&struct_def.name),
-        )],
-        ret_ty: Some(ast::TypeExpr::TString),
-        body: expr_as_fn_body(build_struct_json_body(struct_def, attr_ptr), attr_ptr),
-    };
-
-    Ok(ImplBlock {
-        attrs: Vec::new(),
-        generics: Vec::new(),
-        generic_bounds: Vec::new(),
-        trait_name: None,
-        for_type: ty_for_ident(&struct_def.name),
-        methods: vec![method],
-    })
-}
-
-fn derive_enum_tojson(
-    enum_def: &EnumDef,
-    attr_ptr: &MySyntaxNodePtr,
-) -> Result<ImplBlock, Diagnostic> {
-    if !enum_def.generics.is_empty() {
-        return Err(generic_not_supported_json("enum", &enum_def.name, attr_ptr));
-    }
-
-    let method = ast::Fn {
-        attrs: Vec::new(),
-        visibility: ast::Visibility::Private,
-        name: AstIdent::new(TO_JSON_FN),
-        generics: Vec::new(),
-        generic_bounds: Vec::new(),
-        params: vec![(AstIdent::new(SELF_PARAM_NAME), ty_for_ident(&enum_def.name))],
-        ret_ty: Some(ast::TypeExpr::TString),
-        body: expr_as_fn_body(build_enum_json_body(enum_def, attr_ptr), attr_ptr),
-    };
-
-    Ok(ImplBlock {
-        attrs: Vec::new(),
-        generics: Vec::new(),
-        generic_bounds: Vec::new(),
-        trait_name: None,
         for_type: ty_for_ident(&enum_def.name),
         methods: vec![method],
     })
@@ -446,149 +383,6 @@ fn derive_enum_hash(
         for_type: ty_for_ident(&enum_def.name),
         methods: vec![method],
     })
-}
-
-fn build_struct_json_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
-    if struct_def.fields.is_empty() {
-        return Expr::EString {
-            value: "{}".to_string(),
-            astptr: *attr_ptr,
-        };
-    }
-
-    let mut parts = Vec::new();
-    parts.push(Expr::EString {
-        value: "{".to_string(),
-        astptr: *attr_ptr,
-    });
-
-    for (idx, (field_name, field_ty)) in struct_def.fields.iter().enumerate() {
-        // Add comma before each field except the first
-        if idx > 0 {
-            parts.push(Expr::EString {
-                value: ",".to_string(),
-                astptr: *attr_ptr,
-            });
-        }
-        // "fieldName":
-        parts.push(Expr::EString {
-            value: format!("\"{}\":", field_name.0),
-            astptr: *attr_ptr,
-        });
-        // field value as JSON
-        parts.push(call_to_json(
-            var_expr(field_name, attr_ptr),
-            Some(field_ty),
-            attr_ptr,
-        ));
-    }
-
-    parts.push(Expr::EString {
-        value: "}".to_string(),
-        astptr: *attr_ptr,
-    });
-
-    let body = concat_parts(parts, attr_ptr);
-    block_expr(
-        vec![let_stmt(
-            Pat::PStruct {
-                name: Path::from_ident(struct_def.name.clone()),
-                fields: struct_def
-                    .fields
-                    .iter()
-                    .map(|(field_name, _)| {
-                        (
-                            field_name.clone(),
-                            Pat::PVar {
-                                name: field_name.clone(),
-                                astptr: *attr_ptr,
-                            },
-                        )
-                    })
-                    .collect(),
-                astptr: *attr_ptr,
-            },
-            None,
-            var_expr(&AstIdent::new(SELF_PARAM_NAME), attr_ptr),
-            attr_ptr,
-        )],
-        body,
-        attr_ptr,
-    )
-}
-
-fn build_enum_json_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
-    let expr = Box::new(var_expr(&AstIdent::new(SELF_PARAM_NAME), attr_ptr));
-    let arms: Vec<Arm> = enum_def
-        .variants
-        .iter()
-        .map(|(variant_name, fields)| {
-            let constructor = Path::from_idents(vec![enum_def.name.clone(), variant_name.clone()]);
-            if fields.is_empty() {
-                // {"tag":"VariantName"}
-                Arm {
-                    pat: Pat::PConstr {
-                        constructor,
-                        args: Vec::new(),
-                        astptr: *attr_ptr,
-                    },
-                    body: Expr::EString {
-                        value: format!("{{\"tag\":\"{}\"}}", variant_name.0),
-                        astptr: *attr_ptr,
-                    },
-                }
-            } else {
-                let bindings: Vec<AstIdent> = (0..fields.len())
-                    .map(|idx| AstIdent::new(&format!("__field{}", idx)))
-                    .collect();
-                let args = bindings
-                    .iter()
-                    .map(|binding| Pat::PVar {
-                        name: binding.clone(),
-                        astptr: *attr_ptr,
-                    })
-                    .collect();
-
-                // {"tag":"VariantName","fields":[field0,field1,...]}
-                let mut parts = Vec::new();
-                parts.push(Expr::EString {
-                    value: format!("{{\"tag\":\"{}\",\"fields\":[", variant_name.0),
-                    astptr: *attr_ptr,
-                });
-                for (idx, (binding, field_ty)) in bindings.iter().zip(fields.iter()).enumerate() {
-                    if idx > 0 {
-                        parts.push(Expr::EString {
-                            value: ",".to_string(),
-                            astptr: *attr_ptr,
-                        });
-                    }
-                    parts.push(call_to_json(
-                        var_expr(binding, attr_ptr),
-                        Some(field_ty),
-                        attr_ptr,
-                    ));
-                }
-                parts.push(Expr::EString {
-                    value: "]}".to_string(),
-                    astptr: *attr_ptr,
-                });
-                Arm {
-                    pat: Pat::PConstr {
-                        constructor,
-                        args,
-                        astptr: *attr_ptr,
-                    },
-                    body: concat_parts(parts, attr_ptr),
-                }
-            }
-        })
-        .collect();
-
-    Expr::EMatch {
-        expr,
-        arms,
-        astptr: *attr_ptr,
-    }
 }
 
 fn build_struct_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
@@ -1020,60 +814,6 @@ fn call_to_string(value: Expr, ty: Option<&ast::TypeExpr>, attr_ptr: &MySyntaxNo
     }
 }
 
-fn call_to_json(value: Expr, ty: Option<&ast::TypeExpr>, attr_ptr: &MySyntaxNodePtr) -> Expr {
-    match ty {
-        // String needs to be quoted and escaped in JSON
-        Some(ast::TypeExpr::TString) => {
-            // Call json_escape_string(value) which wraps with quotes and escapes
-            call_function("json_escape_string", vec![value], attr_ptr)
-        }
-        // Booleans are serialized as true/false (lowercase)
-        Some(ast::TypeExpr::TBool) => call_function("bool_to_json", vec![value], attr_ptr),
-        // Numbers can be serialized directly via to_string
-        Some(ast::TypeExpr::TInt8)
-        | Some(ast::TypeExpr::TInt16)
-        | Some(ast::TypeExpr::TInt32)
-        | Some(ast::TypeExpr::TInt64)
-        | Some(ast::TypeExpr::TUint8)
-        | Some(ast::TypeExpr::TUint16)
-        | Some(ast::TypeExpr::TUint32)
-        | Some(ast::TypeExpr::TUint64)
-        | Some(ast::TypeExpr::TFloat32)
-        | Some(ast::TypeExpr::TFloat64) => Expr::ECall {
-            func: Box::new(Expr::EField {
-                expr: Box::new(value),
-                field: AstIdent::new(TO_STRING_FN),
-                astptr: *attr_ptr,
-            }),
-            args: Vec::new(),
-            astptr: *attr_ptr,
-        },
-        // Unit serializes as null
-        Some(ast::TypeExpr::TUnit) => Expr::EString {
-            value: "null".to_string(),
-            astptr: *attr_ptr,
-        },
-        // For other types (user-defined structs/enums), call .to_json()
-        _ => Expr::ECall {
-            func: Box::new(Expr::EField {
-                expr: Box::new(value),
-                field: AstIdent::new(TO_JSON_FN),
-                astptr: *attr_ptr,
-            }),
-            args: Vec::new(),
-            astptr: *attr_ptr,
-        },
-    }
-}
-
-fn call_function(name: &str, args: Vec<Expr>, attr_ptr: &MySyntaxNodePtr) -> Expr {
-    Expr::ECall {
-        func: Box::new(var_expr(&AstIdent::new(name), attr_ptr)),
-        args,
-        astptr: *attr_ptr,
-    }
-}
-
 fn trait_call(
     trait_name: &str,
     method_name: &str,
@@ -1118,18 +858,11 @@ fn generic_not_supported(kind: &str, name: &AstIdent, attr_ptr: &MySyntaxNodePtr
     .with_range(attr_ptr.text_range())
 }
 
-fn generic_not_supported_json(
-    kind: &str,
-    name: &AstIdent,
-    attr_ptr: &MySyntaxNodePtr,
-) -> Diagnostic {
+fn unsupported_derive_target(target: &str, attr_ptr: &MySyntaxNodePtr) -> Diagnostic {
     Diagnostic::new(
         Stage::other(DERIVE_STAGE),
         Severity::Error,
-        format!(
-            "`#[derive(ToJson)]` is not supported for generic {} `{}`",
-            kind, name.0
-        ),
+        format!("unsupported derive target `{}`", target),
     )
     .with_range(attr_ptr.text_range())
 }

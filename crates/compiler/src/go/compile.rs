@@ -116,8 +116,6 @@ fn runtime_generated_function_name(name: &str) -> bool {
         name,
         "unit_to_string"
             | "bool_to_string"
-            | "bool_to_json"
-            | "json_escape_string"
             | "string_len"
             | "string_get"
             | "char_to_string"

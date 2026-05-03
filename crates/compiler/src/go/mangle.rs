@@ -169,8 +169,6 @@ fn is_generated_go_value_name(name: &str) -> bool {
             | "main"
             | "unit_to_string"
             | "bool_to_string"
-            | "bool_to_json"
-            | "json_escape_string"
             | "string_len"
             | "string_get"
             | "char_to_string"
