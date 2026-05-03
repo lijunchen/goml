@@ -308,34 +308,31 @@ func run_transforms(value__32 int32, transforms__33 [2]func(int32) int32) [2]int
     return retv82
 }
 
-func gather__native(record__39 Record__int32) (int32, bool) {
+func gather(record__39 Record__int32) Maybe__int32 {
+    var retv86 Maybe__int32
+    var jp88 Maybe__int32
     switch record__39.(type) {
     case Record__int32_Value:
         var x19 int32 = record__39.(Record__int32_Value)._0
         var value__40 int32 = x19
-        return value__40, true
+        var t89 Maybe__int32 = Maybe__int32_Some{
+            _0: value__40,
+        }
+        jp88 = t89
     case Record__int32_Pair:
         var x21 int32 = record__39.(Record__int32_Pair)._1
         var after__41 int32 = x21
-        return after__41, true
+        var t90 Maybe__int32 = Maybe__int32_Some{
+            _0: after__41,
+        }
+        jp88 = t90
     case Record__int32_Empty:
-        var ret_zero int32
-        return ret_zero, false
+        jp88 = Maybe__int32_None{}
     default:
         panic("non-exhaustive match")
     }
-}
-
-func gather(record__39 Record__int32) Maybe__int32 {
-    var native_value_0 int32
-    var native_ok bool
-    native_value_0, native_ok = gather__native(record__39)
-    if native_ok {
-        return Maybe__int32_Some{
-            _0: native_value_0,
-        }
-    }
-    return Maybe__int32_None{}
+    retv86 = jp88
+    return retv86
 }
 
 func build_counter(label__42 string, start__43 int32) Tuple4_7Tracker_26TFunc0_ret_13Record__int32_33TFunc1_5int32_ret_13Record__int32_27TFunc0_ret_14Record__string {
@@ -430,67 +427,37 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_choose_x5f__x5f_T_x5f_Maybe_x5b_int32_x5d__x5f__x5f_native(flag__20 bool, when_true__21 Maybe__int32, when_false__22 Maybe__int32) (int32, bool) {
-    if flag__20 {
-        switch ret_variant := when_true__21.(type) {
-        case Maybe__int32_None:
-            var ret_zero int32
-            return ret_zero, false
-        case Maybe__int32_Some:
-            return ret_variant._0, true
-        default:
-            panic("non-exhaustive match")
-        }
-    } else {
-        switch ret_variant := when_false__22.(type) {
-        case Maybe__int32_None:
-            var ret_zero int32
-            return ret_zero, false
-        case Maybe__int32_Some:
-            return ret_variant._0, true
-        default:
-            panic("non-exhaustive match")
-        }
-    }
-}
-
 func _goml_choose_x5f__x5f_T_x5f_Maybe_x5b_int32_x5d_(flag__20 bool, when_true__21 Maybe__int32, when_false__22 Maybe__int32) Maybe__int32 {
-    var native_value_0 int32
-    var native_ok bool
-    native_value_0, native_ok = _goml_choose_x5f__x5f_T_x5f_Maybe_x5b_int32_x5d__x5f__x5f_native(flag__20, when_true__21, when_false__22)
-    if native_ok {
-        return Maybe__int32_Some{
-            _0: native_value_0,
-        }
+    var retv103 Maybe__int32
+    var jp105 Maybe__int32
+    if flag__20 {
+        jp105 = when_true__21
+    } else {
+        jp105 = when_false__22
     }
-    return Maybe__int32_None{}
+    retv103 = jp105
+    return retv103
 }
 
-func map_maybe__T_int32__U_string__native(value__23 Maybe__int32, f__24 func(int32) string) (string, bool) {
+func map_maybe__T_int32__U_string(value__23 Maybe__int32, f__24 func(int32) string) Maybe__string {
+    var retv107 Maybe__string
+    var jp109 Maybe__string
     switch value__23.(type) {
     case Maybe__int32_Some:
         var x10 int32 = value__23.(Maybe__int32_Some)._0
         var inner__25 int32 = x10
         var t110 string = f__24(inner__25)
-        return t110, true
+        var t111 Maybe__string = Maybe__string_Some{
+            _0: t110,
+        }
+        jp109 = t111
     case Maybe__int32_None:
-        var ret_zero string
-        return ret_zero, false
+        jp109 = Maybe__string_None{}
     default:
         panic("non-exhaustive match")
     }
-}
-
-func map_maybe__T_int32__U_string(value__23 Maybe__int32, f__24 func(int32) string) Maybe__string {
-    var native_value_0 string
-    var native_ok bool
-    native_value_0, native_ok = map_maybe__T_int32__U_string__native(value__23, f__24)
-    if native_ok {
-        return Maybe__string_Some{
-            _0: native_value_0,
-        }
-    }
-    return Maybe__string_None{}
+    retv107 = jp109
+    return retv107
 }
 
 func println__T_string(value__1 string) struct{} {

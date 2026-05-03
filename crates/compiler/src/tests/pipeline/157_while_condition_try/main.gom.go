@@ -60,111 +60,121 @@ type Option__int32_Some struct {
 
 func (_ Option__int32_Some) isOption__int32() {}
 
-func step_some__native(i__0 int32) (bool, bool) {
+func step_some(i__0 int32) Option__bool {
+    var retv14 Option__bool
     var t17 bool = i__0 < 3
+    var jp16 Option__bool
     if t17 {
-        return true, true
+        var t18 Option__bool = Option__bool_Some{
+            _0: true,
+        }
+        jp16 = t18
     } else {
-        return false, true
+        var t19 Option__bool = Option__bool_Some{
+            _0: false,
+        }
+        jp16 = t19
     }
+    retv14 = jp16
+    return retv14
 }
 
-func step_none__native(i__1 int32) (bool, bool) {
+func step_none(i__1 int32) Option__bool {
+    var retv21 Option__bool
     var t24 bool = i__1 < 2
+    var jp23 Option__bool
     if t24 {
-        return true, true
+        var t25 Option__bool = Option__bool_Some{
+            _0: true,
+        }
+        jp23 = t25
     } else {
-        var ret_zero bool
-        return ret_zero, false
+        jp23 = Option__bool_None{}
     }
+    retv21 = jp23
+    return retv21
 }
 
-func run_some__native() (int32, bool) {
+func run_some() Option__int32 {
+    var retv27 Option__int32
     var i__2 *ref_int32_x = ref__Ref_5int32(0)
     var total__3 *ref_int32_x = ref__Ref_5int32(0)
     Loop_loop31:
     for {
         var t32 int32 = ref_get__Ref_5int32(i__2)
+        var mtmp0 Option__bool = step_some(t32)
         var jp34 bool
-        var mtmp0_value_0 bool
-        var mtmp0_ok bool
-        mtmp0_value_0, mtmp0_ok = step_some__native(t32)
-        if !mtmp0_ok {
-            var ret_zero int32
-            return ret_zero, false
-        }
-        jp34 = mtmp0_value_0
-        if jp34 {
-            var t35 int32 = ref_get__Ref_5int32(total__3)
-            var t36 int32 = ref_get__Ref_5int32(i__2)
-            var t37 int32 = t35 + t36
-            ref_set__Ref_5int32(total__3, t37)
-            var t38 int32 = ref_get__Ref_5int32(i__2)
-            var t39 int32 = t38 + 1
-            ref_set__Ref_5int32(i__2, t39)
-            continue
-        } else {
-            break Loop_loop31
+        switch mtmp0.(type) {
+        case Option__bool_None:
+            retv27 = Option__int32_None{}
+            return retv27
+        case Option__bool_Some:
+            var x1 bool = mtmp0.(Option__bool_Some)._0
+            var try_value__31 bool = x1
+            jp34 = try_value__31
+            if jp34 {
+                var t35 int32 = ref_get__Ref_5int32(total__3)
+                var t36 int32 = ref_get__Ref_5int32(i__2)
+                var t37 int32 = t35 + t36
+                ref_set__Ref_5int32(total__3, t37)
+                var t38 int32 = ref_get__Ref_5int32(i__2)
+                var t39 int32 = t38 + 1
+                ref_set__Ref_5int32(i__2, t39)
+                continue
+            } else {
+                break Loop_loop31
+            }
+        default:
+            panic("non-exhaustive match")
         }
     }
     var t29 int32 = ref_get__Ref_5int32(total__3)
-    return t29, true
-}
-
-func run_some() Option__int32 {
-    var native_value_0 int32
-    var native_ok bool
-    native_value_0, native_ok = run_some__native()
-    if native_ok {
-        return Option__int32_Some{
-            _0: native_value_0,
-        }
+    var t30 Option__int32 = Option__int32_Some{
+        _0: t29,
     }
-    return Option__int32_None{}
+    retv27 = t30
+    return retv27
 }
 
-func run_none__native() (int32, bool) {
+func run_none() Option__int32 {
+    var retv41 Option__int32
     var i__4 *ref_int32_x = ref__Ref_5int32(0)
     var total__5 *ref_int32_x = ref__Ref_5int32(0)
     Loop_loop45:
     for {
         var t46 int32 = ref_get__Ref_5int32(i__4)
+        var mtmp5 Option__bool = step_none(t46)
         var jp48 bool
-        var mtmp5_value_0 bool
-        var mtmp5_ok bool
-        mtmp5_value_0, mtmp5_ok = step_none__native(t46)
-        if !mtmp5_ok {
-            var ret_zero int32
-            return ret_zero, false
-        }
-        jp48 = mtmp5_value_0
-        if jp48 {
-            var t49 int32 = ref_get__Ref_5int32(total__5)
-            var t50 int32 = ref_get__Ref_5int32(i__4)
-            var t51 int32 = t49 + t50
-            ref_set__Ref_5int32(total__5, t51)
-            var t52 int32 = ref_get__Ref_5int32(i__4)
-            var t53 int32 = t52 + 1
-            ref_set__Ref_5int32(i__4, t53)
-            continue
-        } else {
-            break Loop_loop45
+        switch mtmp5.(type) {
+        case Option__bool_None:
+            retv41 = Option__int32_None{}
+            return retv41
+        case Option__bool_Some:
+            var x6 bool = mtmp5.(Option__bool_Some)._0
+            var try_value__67 bool = x6
+            jp48 = try_value__67
+            if jp48 {
+                var t49 int32 = ref_get__Ref_5int32(total__5)
+                var t50 int32 = ref_get__Ref_5int32(i__4)
+                var t51 int32 = t49 + t50
+                ref_set__Ref_5int32(total__5, t51)
+                var t52 int32 = ref_get__Ref_5int32(i__4)
+                var t53 int32 = t52 + 1
+                ref_set__Ref_5int32(i__4, t53)
+                continue
+            } else {
+                break Loop_loop45
+            }
+        default:
+            panic("non-exhaustive match")
         }
     }
     var t43 int32 = ref_get__Ref_5int32(total__5)
-    return t43, true
-}
-
-func run_none() Option__int32 {
-    var native_value_0 int32
-    var native_ok bool
-    native_value_0, native_ok = run_none__native()
-    if native_ok {
-        return Option__int32_Some{
-            _0: native_value_0,
-        }
+    var t44 Option__int32 = Option__int32_Some{
+        _0: t43,
     }
-    return Option__int32_None{}
+    retv41 = t44
+    return retv41
 }
 
 func show(x__6 Option__int32) string {

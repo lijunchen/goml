@@ -41,79 +41,76 @@ type Option__string_Some struct {
 
 func (_ Option__string_Some) isOption__string() {}
 
-func maybe_primary__native(flag__0 bool) (int32, bool) {
+func maybe_primary(flag__0 bool) Option__int32 {
+    var retv9 Option__int32
+    var jp11 Option__int32
     if flag__0 {
-        return 4, true
+        var t12 Option__int32 = Option__int32_Some{
+            _0: 4,
+        }
+        jp11 = t12
     } else {
-        var ret_zero int32
-        return ret_zero, false
+        jp11 = Option__int32_None{}
     }
-}
-
-func maybe_secondary__native(flag__1 bool) (int32, bool) {
-    if flag__1 {
-        return 9, true
-    } else {
-        var ret_zero int32
-        return ret_zero, false
-    }
+    retv9 = jp11
+    return retv9
 }
 
 func maybe_secondary(flag__1 bool) Option__int32 {
-    var native_value_0 int32
-    var native_ok bool
-    native_value_0, native_ok = maybe_secondary__native(flag__1)
-    if native_ok {
-        return Option__int32_Some{
-            _0: native_value_0,
+    var retv14 Option__int32
+    var jp16 Option__int32
+    if flag__1 {
+        var t17 Option__int32 = Option__int32_Some{
+            _0: 9,
         }
+        jp16 = t17
+    } else {
+        jp16 = Option__int32_None{}
     }
-    return Option__int32_None{}
-}
-
-func mixed__native(primary__2 bool, secondary__3 bool) (string, bool) {
-    var jp21 int32
-    var mtmp0_value_0 int32
-    var mtmp0_ok bool
-    mtmp0_value_0, mtmp0_ok = maybe_primary__native(primary__2)
-    if !mtmp0_ok {
-        var ret_zero string
-        return ret_zero, false
-    }
-    jp21 = mtmp0_value_0
-    var value__4 int32 = jp21
-    var mtmp2 Option__int32 = maybe_secondary(secondary__3)
-    var jp23 string
-    switch mtmp2.(type) {
-    case Option__int32_None:
-        jp23 = "extra=none"
-    case Option__int32_Some:
-        var x3 int32 = mtmp2.(Option__int32_Some)._0
-        var extra__5 int32 = x3
-        var t29 string = int32_to_string(extra__5)
-        var t30 string = "extra=" + t29
-        jp23 = t30
-    default:
-        panic("non-exhaustive match")
-    }
-    var label__6 string = jp23
-    var t24 string = int32_to_string(value__4)
-    var t25 string = "value=" + t24
-    var t26 string = t25 + ","
-    var t27 string = t26 + label__6
-    return t27, true
+    retv14 = jp16
+    return retv14
 }
 
 func mixed(primary__2 bool, secondary__3 bool) Option__string {
-    var native_value_0 string
-    var native_ok bool
-    native_value_0, native_ok = mixed__native(primary__2, secondary__3)
-    if native_ok {
-        return Option__string_Some{
-            _0: native_value_0,
+    var retv19 Option__string
+    var mtmp0 Option__int32 = maybe_primary(primary__2)
+    var jp21 int32
+    switch mtmp0.(type) {
+    case Option__int32_None:
+        retv19 = Option__string_None{}
+        return retv19
+    case Option__int32_Some:
+        var x1 int32 = mtmp0.(Option__int32_Some)._0
+        var try_value__18 int32 = x1
+        jp21 = try_value__18
+        var value__4 int32 = jp21
+        var mtmp2 Option__int32 = maybe_secondary(secondary__3)
+        var jp23 string
+        switch mtmp2.(type) {
+        case Option__int32_None:
+            jp23 = "extra=none"
+        case Option__int32_Some:
+            var x3 int32 = mtmp2.(Option__int32_Some)._0
+            var extra__5 int32 = x3
+            var t29 string = int32_to_string(extra__5)
+            var t30 string = "extra=" + t29
+            jp23 = t30
+        default:
+            panic("non-exhaustive match")
         }
+        var label__6 string = jp23
+        var t24 string = int32_to_string(value__4)
+        var t25 string = "value=" + t24
+        var t26 string = t25 + ","
+        var t27 string = t26 + label__6
+        var t28 Option__string = Option__string_Some{
+            _0: t27,
+        }
+        retv19 = t28
+        return retv19
+    default:
+        panic("non-exhaustive match")
     }
-    return Option__string_None{}
 }
 
 func show(opt__7 Option__string) string {

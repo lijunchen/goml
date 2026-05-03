@@ -34,72 +34,87 @@ type Some struct {
 
 func (_ Some) isOption__int32() {}
 
-func maybe_num__native(flag__0 bool) (int32, bool) {
+func maybe_num(flag__0 bool) Option__int32 {
+    var retv9 Option__int32
+    var jp11 Option__int32
     if flag__0 {
-        return 8, true
+        var t12 Option__int32 = Some{
+            _0: 8,
+        }
+        jp11 = t12
     } else {
-        var ret_zero int32
-        return ret_zero, false
+        jp11 = None{}
     }
+    retv9 = jp11
+    return retv9
 }
 
-func nested__native(top__1 bool, mode__2 Mode, inner_flag__3 bool) (int32, bool) {
+func nested(top__1 bool, mode__2 Mode, inner_flag__3 bool) Option__int32 {
+    var retv14 Option__int32
     var jp16 int32
     if top__1 {
         var jp19 int32
         switch mode__2 {
         case Take:
+            var mtmp0 Option__int32 = maybe_num(inner_flag__3)
             var jp21 int32
-            var mtmp0_value_0 int32
-            var mtmp0_ok bool
-            mtmp0_value_0, mtmp0_ok = maybe_num__native(inner_flag__3)
-            if !mtmp0_ok {
-                var ret_zero int32
-                return ret_zero, false
+            switch mtmp0.(type) {
+            case None:
+                retv14 = None{}
+                return retv14
+            case Some:
+                var x1 int32 = mtmp0.(Some)._0
+                var try_value__13 int32 = x1
+                jp21 = try_value__13
+                var inner__4 int32 = jp21
+                var t22 int32 = inner__4 + 1
+                jp19 = t22
+                jp16 = jp19
+                var value__6 int32 = jp16
+                var t17 Option__int32 = Some{
+                    _0: value__6,
+                }
+                retv14 = t17
+                return retv14
+            default:
+                panic("non-exhaustive match")
             }
-            jp21 = mtmp0_value_0
-            var inner__4 int32 = jp21
-            var t22 int32 = inner__4 + 1
-            jp19 = t22
-            jp16 = jp19
-            var value__6 int32 = jp16
-            return value__6, true
         case Skip:
             jp19 = 20
             jp16 = jp19
             var value__6 int32 = jp16
-            return value__6, true
+            var t17 Option__int32 = Some{
+                _0: value__6,
+            }
+            retv14 = t17
+            return retv14
         default:
             panic("non-exhaustive match")
         }
     } else {
+        var mtmp2 Option__int32 = maybe_num(inner_flag__3)
         var jp24 int32
-        var mtmp2_value_0 int32
-        var mtmp2_ok bool
-        mtmp2_value_0, mtmp2_ok = maybe_num__native(inner_flag__3)
-        if !mtmp2_ok {
-            var ret_zero int32
-            return ret_zero, false
-        }
-        jp24 = mtmp2_value_0
-        var inner__5 int32 = jp24
-        var t25 int32 = inner__5 + 2
-        jp16 = t25
-        var value__6 int32 = jp16
-        return value__6, true
-    }
-}
-
-func nested(top__1 bool, mode__2 Mode, inner_flag__3 bool) Option__int32 {
-    var native_value_0 int32
-    var native_ok bool
-    native_value_0, native_ok = nested__native(top__1, mode__2, inner_flag__3)
-    if native_ok {
-        return Some{
-            _0: native_value_0,
+        switch mtmp2.(type) {
+        case None:
+            retv14 = None{}
+            return retv14
+        case Some:
+            var x3 int32 = mtmp2.(Some)._0
+            var try_value__24 int32 = x3
+            jp24 = try_value__24
+            var inner__5 int32 = jp24
+            var t25 int32 = inner__5 + 2
+            jp16 = t25
+            var value__6 int32 = jp16
+            var t17 Option__int32 = Some{
+                _0: value__6,
+            }
+            retv14 = t17
+            return retv14
+        default:
+            panic("non-exhaustive match")
         }
     }
-    return None{}
 }
 
 func show(opt__7 Option__int32) string {

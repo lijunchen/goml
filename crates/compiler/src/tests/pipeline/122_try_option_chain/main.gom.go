@@ -27,61 +27,74 @@ type Some struct {
 
 func (_ Some) isOption__int32() {}
 
-func maybe_seed__native(flag__0 bool) (int32, bool) {
+func maybe_seed(flag__0 bool) Option__int32 {
+    var retv8 Option__int32
+    var jp10 Option__int32
     if flag__0 {
-        return 3, true
+        var t11 Option__int32 = Some{
+            _0: 3,
+        }
+        jp10 = t11
     } else {
-        var ret_zero int32
-        return ret_zero, false
+        jp10 = None{}
     }
+    retv8 = jp10
+    return retv8
 }
 
-func maybe_double__native(value__1 int32) (int32, bool) {
+func maybe_double(value__1 int32) Option__int32 {
+    var retv13 Option__int32
     var t16 bool = value__1 > 0
+    var jp15 Option__int32
     if t16 {
         var t17 int32 = value__1 * 2
-        return t17, true
+        var t18 Option__int32 = Some{
+            _0: t17,
+        }
+        jp15 = t18
     } else {
-        var ret_zero int32
-        return ret_zero, false
+        jp15 = None{}
     }
-}
-
-func maybe_total__native(flag__2 bool) (int32, bool) {
-    var jp22 int32
-    var mtmp0_value_0 int32
-    var mtmp0_ok bool
-    mtmp0_value_0, mtmp0_ok = maybe_seed__native(flag__2)
-    if !mtmp0_ok {
-        var ret_zero int32
-        return ret_zero, false
-    }
-    jp22 = mtmp0_value_0
-    var a__3 int32 = jp22
-    var jp24 int32
-    var mtmp2_value_0 int32
-    var mtmp2_ok bool
-    mtmp2_value_0, mtmp2_ok = maybe_double__native(a__3)
-    if !mtmp2_ok {
-        var ret_zero int32
-        return ret_zero, false
-    }
-    jp24 = mtmp2_value_0
-    var b__4 int32 = jp24
-    var t25 int32 = a__3 + b__4
-    return t25, true
+    retv13 = jp15
+    return retv13
 }
 
 func maybe_total(flag__2 bool) Option__int32 {
-    var native_value_0 int32
-    var native_ok bool
-    native_value_0, native_ok = maybe_total__native(flag__2)
-    if native_ok {
-        return Some{
-            _0: native_value_0,
+    var retv20 Option__int32
+    var mtmp0 Option__int32 = maybe_seed(flag__2)
+    var jp22 int32
+    switch mtmp0.(type) {
+    case None:
+        retv20 = None{}
+        return retv20
+    case Some:
+        var x1 int32 = mtmp0.(Some)._0
+        var try_value__22 int32 = x1
+        jp22 = try_value__22
+        var a__3 int32 = jp22
+        var mtmp2 Option__int32 = maybe_double(a__3)
+        var jp24 int32
+        switch mtmp2.(type) {
+        case None:
+            retv20 = None{}
+            return retv20
+        case Some:
+            var x3 int32 = mtmp2.(Some)._0
+            var try_value__26 int32 = x3
+            jp24 = try_value__26
+            var b__4 int32 = jp24
+            var t25 int32 = a__3 + b__4
+            var t26 Option__int32 = Some{
+                _0: t25,
+            }
+            retv20 = t26
+            return retv20
+        default:
+            panic("non-exhaustive match")
         }
+    default:
+        panic("non-exhaustive match")
     }
-    return None{}
 }
 
 func show(opt__5 Option__int32) string {

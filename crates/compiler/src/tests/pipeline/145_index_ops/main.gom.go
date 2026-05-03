@@ -108,7 +108,7 @@ func hashmap_new__HashMap_6string_5int32() *hashmap_string_int32_x {
     }
 }
 
-func hashmap_get_native__HashMap_6string_5int32(m *hashmap_string_int32_x, key string) (int32, bool) {
+func hashmap_lookup__HashMap_6string_5int32(m *hashmap_string_int32_x, key string) (int32, bool) {
     if m == nil {
         var zero int32
         return zero, false
@@ -133,7 +133,7 @@ func hashmap_get_native__HashMap_6string_5int32(m *hashmap_string_int32_x, key s
 func hashmap_get__HashMap_6string_5int32(m *hashmap_string_int32_x, key string) Option__int32 {
     var value int32
     var ok bool
-    value, ok = hashmap_get_native__HashMap_6string_5int32(m, key)
+    value, ok = hashmap_lookup__HashMap_6string_5int32(m, key)
     if ok {
         return Some{
             _0: value,

@@ -102,7 +102,7 @@ func hashmap_len__HashMap_3Key_5int32(m *hashmap_Key_int32_x) int32 {
     return m.len
 }
 
-func hashmap_get_native__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key) (int32, bool) {
+func hashmap_lookup__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key) (int32, bool) {
     if m == nil {
         var zero int32
         return zero, false
@@ -122,6 +122,18 @@ func hashmap_get_native__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key) (i
     }
     var zero int32
     return zero, false
+}
+
+func hashmap_get__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key) Option__int32 {
+    var value int32
+    var ok bool
+    value, ok = hashmap_lookup__HashMap_3Key_5int32(m, key)
+    if ok {
+        return Some{
+            _0: value,
+        }
+    }
+    return None{}
 }
 
 func hashmap_set__HashMap_3Key_5int32(m *hashmap_Key_int32_x, key Key, value int32) struct{} {
@@ -212,7 +224,7 @@ func hashmap_new__HashMap_10Ref_5Point_5int32() *hashmap_Ref_5Point_int32_x {
     }
 }
 
-func hashmap_get_native__HashMap_10Ref_5Point_5int32(m *hashmap_Ref_5Point_int32_x, key *ref_Point_x) (int32, bool) {
+func hashmap_lookup__HashMap_10Ref_5Point_5int32(m *hashmap_Ref_5Point_int32_x, key *ref_Point_x) (int32, bool) {
     if m == nil {
         var zero int32
         return zero, false
@@ -232,6 +244,18 @@ func hashmap_get_native__HashMap_10Ref_5Point_5int32(m *hashmap_Ref_5Point_int32
     }
     var zero int32
     return zero, false
+}
+
+func hashmap_get__HashMap_10Ref_5Point_5int32(m *hashmap_Ref_5Point_int32_x, key *ref_Point_x) Option__int32 {
+    var value int32
+    var ok bool
+    value, ok = hashmap_lookup__HashMap_10Ref_5Point_5int32(m, key)
+    if ok {
+        return Some{
+            _0: value,
+        }
+    }
+    return None{}
 }
 
 func hashmap_set__HashMap_10Ref_5Point_5int32(m *hashmap_Ref_5Point_int32_x, key *ref_Point_x, value int32) struct{} {
@@ -280,7 +304,7 @@ func hashmap_new__HashMap_8Ref_3Key_5int32() *hashmap_Ref_3Key_int32_x {
     }
 }
 
-func hashmap_get_native__HashMap_8Ref_3Key_5int32(m *hashmap_Ref_3Key_int32_x, key *ref_Key_x) (int32, bool) {
+func hashmap_lookup__HashMap_8Ref_3Key_5int32(m *hashmap_Ref_3Key_int32_x, key *ref_Key_x) (int32, bool) {
     if m == nil {
         var zero int32
         return zero, false
@@ -300,6 +324,18 @@ func hashmap_get_native__HashMap_8Ref_3Key_5int32(m *hashmap_Ref_3Key_int32_x, k
     }
     var zero int32
     return zero, false
+}
+
+func hashmap_get__HashMap_8Ref_3Key_5int32(m *hashmap_Ref_3Key_int32_x, key *ref_Key_x) Option__int32 {
+    var value int32
+    var ok bool
+    value, ok = hashmap_lookup__HashMap_8Ref_3Key_5int32(m, key)
+    if ok {
+        return Some{
+            _0: value,
+        }
+    }
+    return None{}
 }
 
 func hashmap_set__HashMap_8Ref_3Key_5int32(m *hashmap_Ref_3Key_int32_x, key *ref_Key_x, value int32) struct{} {
@@ -601,27 +637,11 @@ func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_len_x5f__x5f_K_
     return retv97
 }
 
-func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_get_x5f__x5f_K_x5f_Key_x5f__x5f_V_x5f_int32_x5f__x5f_native(self__83 *hashmap_Key_int32_x, key__84 Key) (int32, bool) {
-    var t101_value int32
-    var t101_ok bool
-    t101_value, t101_ok = hashmap_get_native__HashMap_3Key_5int32(self__83, key__84)
-    if !t101_ok {
-        var ret_zero int32
-        return ret_zero, false
-    }
-    return t101_value, true
-}
-
 func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_get_x5f__x5f_K_x5f_Key_x5f__x5f_V_x5f_int32(self__83 *hashmap_Key_int32_x, key__84 Key) Option__int32 {
-    var native_value_0 int32
-    var native_ok bool
-    native_value_0, native_ok = _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_get_x5f__x5f_K_x5f_Key_x5f__x5f_V_x5f_int32_x5f__x5f_native(self__83, key__84)
-    if native_ok {
-        return Some{
-            _0: native_value_0,
-        }
-    }
-    return None{}
+    var retv100 Option__int32
+    var t101 Option__int32 = hashmap_get__HashMap_3Key_5int32(self__83, key__84)
+    retv100 = t101
+    return retv100
 }
 
 func println__T_bool(value__1 bool) struct{} {
@@ -654,27 +674,11 @@ func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_set_x5f__x5f_K_
     return struct{}{}
 }
 
-func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_get_x5f__x5f_K_x5f_Ref_x5b_Point_x5d__x5f__x5f_V_x5f_int32_x5f__x5f_native(self__83 *hashmap_Ref_5Point_int32_x, key__84 *ref_Point_x) (int32, bool) {
-    var t117_value int32
-    var t117_ok bool
-    t117_value, t117_ok = hashmap_get_native__HashMap_10Ref_5Point_5int32(self__83, key__84)
-    if !t117_ok {
-        var ret_zero int32
-        return ret_zero, false
-    }
-    return t117_value, true
-}
-
 func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_get_x5f__x5f_K_x5f_Ref_x5b_Point_x5d__x5f__x5f_V_x5f_int32(self__83 *hashmap_Ref_5Point_int32_x, key__84 *ref_Point_x) Option__int32 {
-    var native_value_0 int32
-    var native_ok bool
-    native_value_0, native_ok = _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_get_x5f__x5f_K_x5f_Ref_x5b_Point_x5d__x5f__x5f_V_x5f_int32_x5f__x5f_native(self__83, key__84)
-    if native_ok {
-        return Some{
-            _0: native_value_0,
-        }
-    }
-    return None{}
+    var retv116 Option__int32
+    var t117 Option__int32 = hashmap_get__HashMap_10Ref_5Point_5int32(self__83, key__84)
+    retv116 = t117
+    return retv116
 }
 
 func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_new_x5f__x5f_K_x5f_Ref_x5b_Key_x5d__x5f__x5f_V_x5f_int32() *hashmap_Ref_3Key_int32_x {
@@ -689,27 +693,11 @@ func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_set_x5f__x5f_K_
     return struct{}{}
 }
 
-func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_get_x5f__x5f_K_x5f_Ref_x5b_Key_x5d__x5f__x5f_V_x5f_int32_x5f__x5f_native(self__83 *hashmap_Ref_3Key_int32_x, key__84 *ref_Key_x) (int32, bool) {
-    var t125_value int32
-    var t125_ok bool
-    t125_value, t125_ok = hashmap_get_native__HashMap_8Ref_3Key_5int32(self__83, key__84)
-    if !t125_ok {
-        var ret_zero int32
-        return ret_zero, false
-    }
-    return t125_value, true
-}
-
 func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_get_x5f__x5f_K_x5f_Ref_x5b_Key_x5d__x5f__x5f_V_x5f_int32(self__83 *hashmap_Ref_3Key_int32_x, key__84 *ref_Key_x) Option__int32 {
-    var native_value_0 int32
-    var native_ok bool
-    native_value_0, native_ok = _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_get_x5f__x5f_K_x5f_Ref_x5b_Key_x5d__x5f__x5f_V_x5f_int32_x5f__x5f_native(self__83, key__84)
-    if native_ok {
-        return Some{
-            _0: native_value_0,
-        }
-    }
-    return None{}
+    var retv124 Option__int32
+    var t125 Option__int32 = hashmap_get__HashMap_8Ref_3Key_5int32(self__83, key__84)
+    retv124 = t125
+    return retv124
 }
 
 func main() {
