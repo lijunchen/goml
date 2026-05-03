@@ -29,8 +29,6 @@ type Err struct {
 
 func (_ Err) isResult__int32__string() {}
 
-type GoError = error
-
 func parse(flag__0 bool) Result__int32__string {
     var retv9 Result__int32__string
     var jp11 Result__int32__string

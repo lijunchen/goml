@@ -28,8 +28,6 @@ type B struct {
 
 func (_ B) isT() {}
 
-type GoError = error
-
 func main0() struct{} {
     var t__0 T = B{
         _0: true,

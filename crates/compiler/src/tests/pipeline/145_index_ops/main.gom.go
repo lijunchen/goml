@@ -194,8 +194,6 @@ type Some struct {
 
 func (_ Some) isOption__int32() {}
 
-type GoError = error
-
 func print_opt_int(x__0 Option__int32) struct{} {
     switch x__0.(type) {
     case None:
@@ -361,16 +359,16 @@ func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_int32() []
     return retv128
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_int32(self__67 []int32, elem__68 int32) []int32 {
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_int32(self__66 []int32, elem__67 int32) []int32 {
     var retv131 []int32
-    var t132 []int32 = append(self__67, elem__68)
+    var t132 []int32 = append(self__66, elem__67)
     retv131 = t132
     return retv131
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_slice_x5f__x5f_T_x5f_int32(self__75 []int32, start__76 int32, end__77 int32) []int32 {
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_slice_x5f__x5f_T_x5f_int32(self__74 []int32, start__75 int32, end__76 int32) []int32 {
     var retv134 []int32
-    var t135 []int32 = self__75[start__76:end__77]
+    var t135 []int32 = self__74[start__75:end__76]
     retv134 = t135
     return retv134
 }
@@ -389,9 +387,9 @@ func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f__x5b_int32
     return retv140
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f__x5b_int32_x3b_2_x5d_(self__67 [][2]int32, elem__68 [2]int32) [][2]int32 {
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f__x5b_int32_x3b_2_x5d_(self__66 [][2]int32, elem__67 [2]int32) [][2]int32 {
     var retv143 [][2]int32
-    var t144 [][2]int32 = append(self__67, elem__68)
+    var t144 [][2]int32 = append(self__66, elem__67)
     retv143 = t144
     return retv143
 }

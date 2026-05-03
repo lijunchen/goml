@@ -23,8 +23,6 @@ const (
     Light__string_Green Light__string = 1
 )
 
-type GoError = error
-
 func show_int(x__1 Light__int32) string {
     var retv3 string
     var jp5 string

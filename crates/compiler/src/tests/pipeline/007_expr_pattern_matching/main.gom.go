@@ -41,8 +41,6 @@ type Mul struct {
 
 func (_ Mul) isExpr() {}
 
-type GoError = error
-
 func main0() struct{} {
     var t51 Expr = Add{
         _0: Zero{},

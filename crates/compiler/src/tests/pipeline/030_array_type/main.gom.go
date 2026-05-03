@@ -13,8 +13,6 @@ type Buffer struct {
     values [3]int32
 }
 
-type GoError = error
-
 func main0() struct{} {
     print__T_string("array")
     return struct{}{}

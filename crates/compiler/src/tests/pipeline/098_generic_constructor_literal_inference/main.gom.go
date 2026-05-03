@@ -27,8 +27,6 @@ type None struct {}
 
 func (_ None) isOption__uint8() {}
 
-type GoError = error
-
 func main0() struct{} {
     var x__0 Option__uint8 = Some{
         _0: 42,

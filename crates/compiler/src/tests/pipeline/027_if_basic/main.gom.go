@@ -13,8 +13,6 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type GoError = error
-
 func choose(flag__0 bool, x__1 int32, y__2 int32) int32 {
     var retv3 int32
     var jp5 int32

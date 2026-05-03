@@ -46,8 +46,6 @@ type Some struct {
 
 func (_ Some) isOption__int32() {}
 
-type GoError = error
-
 func step__native(i__0 int32) (int32, bool) {
     var t13 bool = i__0 == 2
     if t13 {

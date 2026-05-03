@@ -28,8 +28,6 @@ type Cons struct {
 
 func (_ Cons) isIntList() {}
 
-type GoError = error
-
 func print_int_list(xs__0 IntList) struct{} {
     switch xs__0.(type) {
     case Nil:

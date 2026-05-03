@@ -13,8 +13,6 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type GoError = error
-
 func loop_return_unit(flag__0 bool) struct{} {
     for {
         if flag__0 {

@@ -14,8 +14,6 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type GoError = error
-
 func main0() struct{} {
     var s__0 string = "abcde"
     println__T_string(s__0)

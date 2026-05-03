@@ -41,8 +41,6 @@ type Both struct {
 
 func (_ Both) isMixed() {}
 
-type GoError = error
-
 func match_mixed_pair(pair__0 Tuple2_5int32_6string) int32 {
     var retv19 int32
     var x0 int32 = pair__0._0

@@ -17,8 +17,6 @@ type Holder__dynDisplay struct {
     value dyn__Display
 }
 
-type GoError = error
-
 type dyn__Display_vtable struct {
     show func(any) string
 }

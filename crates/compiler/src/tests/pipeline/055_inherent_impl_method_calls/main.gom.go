@@ -11,8 +11,6 @@ func string_println(s string) struct{} {
 
 type Shape struct {}
 
-type GoError = error
-
 func _goml_inherent_x23_Shape_x23_Shape_x23_name(self__0 Shape) string {
     var retv3 string
     retv3 = "Shape"

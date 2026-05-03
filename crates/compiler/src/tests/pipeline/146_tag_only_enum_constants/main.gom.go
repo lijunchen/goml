@@ -28,8 +28,6 @@ const (
     Blue Paint = 1
 )
 
-type GoError = error
-
 func light_code(light__0 Light) int32 {
     var retv4 int32
     var jp6 int32

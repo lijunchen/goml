@@ -25,8 +25,6 @@ func string_print(s string) struct{} {
     return struct{}{}
 }
 
-type GoError = error
-
 func main0() struct{} {
     print__T_unit(struct{}{})
     print__T_bool(true)

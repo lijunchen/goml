@@ -172,8 +172,6 @@ type Maybe__string_None struct {}
 
 func (_ Maybe__string_None) isMaybe__string() {}
 
-type GoError = error
-
 func _goml_trait_x5f_impl_x23_Describe_x23_Tracker_x23_describe(self__0 Tracker) string {
     var retv41 string
     var mtmp0 Tracker = self__0

@@ -18,8 +18,6 @@ type Tuple2_4bool_4bool struct {
     _1 bool
 }
 
-type GoError = error
-
 func main0() struct{} {
     var a__0 Tuple2_4bool_4bool = Tuple2_4bool_4bool{
         _0: true,

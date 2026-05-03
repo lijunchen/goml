@@ -73,8 +73,6 @@ func ref_get__Ref_10Ref_5int32(reference *ref_Ref_5int32_x) *ref_int32_x {
     return reference.value
 }
 
-type GoError = error
-
 func bump(cell__0 *ref_int32_x) int32 {
     var retv12 int32
     var t13 int32 = ref_get__Ref_5int32(cell__0)

@@ -5,8 +5,6 @@ type Point struct {
     y int32
 }
 
-type GoError = error
-
 func main0() struct{} {
     return struct{}{}
 }

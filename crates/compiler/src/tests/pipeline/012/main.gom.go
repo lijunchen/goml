@@ -13,8 +13,6 @@ func string_print(s string) struct{} {
     return struct{}{}
 }
 
-type GoError = error
-
 func fib(x__0 int32) int32 {
     var retv3 int32
     var mtmp0 bool = x__0 < 2

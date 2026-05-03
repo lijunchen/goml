@@ -21,8 +21,6 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type GoError = error
-
 func main0() struct{} {
     var start16__0 int16 = 300
     var delta16__1 int16 = 45

@@ -244,8 +244,6 @@ type Result__Typ__string_Err struct {
 
 func (_ Result__Typ__string_Err) isResult__Typ__string() {}
 
-type GoError = error
-
 func state_new() CheckerState {
     var retv205 CheckerState
     var t206 *ref_int32_x = ref__Ref_5int32(0)
@@ -1621,23 +1619,23 @@ func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_EnvEntry()
     return retv648
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_EnvEntry(self__74 []EnvEntry) int32 {
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_EnvEntry(self__73 []EnvEntry) int32 {
     var retv651 int32
-    var t652 int32 = int32(len(self__74))
+    var t652 int32 = int32(len(self__73))
     retv651 = t652
     return retv651
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_SubstEntry(self__74 []SubstEntry) int32 {
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_SubstEntry(self__73 []SubstEntry) int32 {
     var retv654 int32
-    var t655 int32 = int32(len(self__74))
+    var t655 int32 = int32(len(self__73))
     retv654 = t655
     return retv654
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_SubstEntry(self__67 []SubstEntry, elem__68 SubstEntry) []SubstEntry {
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_SubstEntry(self__66 []SubstEntry, elem__67 SubstEntry) []SubstEntry {
     var retv657 []SubstEntry
-    var t658 []SubstEntry = append(self__67, elem__68)
+    var t658 []SubstEntry = append(self__66, elem__67)
     retv657 = t658
     return retv657
 }
@@ -1649,9 +1647,9 @@ func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_SubstEntry
     return retv660
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_EnvEntry(self__67 []EnvEntry, elem__68 EnvEntry) []EnvEntry {
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_EnvEntry(self__66 []EnvEntry, elem__67 EnvEntry) []EnvEntry {
     var retv663 []EnvEntry
-    var t664 []EnvEntry = append(self__67, elem__68)
+    var t664 []EnvEntry = append(self__66, elem__67)
     retv663 = t664
     return retv663
 }

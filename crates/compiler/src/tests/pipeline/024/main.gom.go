@@ -32,8 +32,6 @@ const (
     Blue Color = 2
 )
 
-type GoError = error
-
 func point32_to_string(p__0 Point) string {
     var retv12 string
     var mtmp0 Point = p__0

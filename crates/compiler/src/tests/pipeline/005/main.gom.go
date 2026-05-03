@@ -26,8 +26,6 @@ const (
     Blue Color = 2
 )
 
-type GoError = error
-
 func main0() struct{} {
     var a__0 Tuple2_5Color_5Color = Tuple2_5Color_5Color{
         _0: Blue,

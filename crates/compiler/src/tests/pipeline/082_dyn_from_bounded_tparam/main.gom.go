@@ -11,8 +11,6 @@ func string_println(s string) struct{} {
 
 type S struct {}
 
-type GoError = error
-
 type dyn__Display_vtable struct {
     show func(any) string
 }

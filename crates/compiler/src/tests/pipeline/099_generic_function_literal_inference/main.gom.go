@@ -21,8 +21,6 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type GoError = error
-
 func main0() struct{} {
     var a__1 uint8 = identity__T_uint8(42)
     var t4 string = uint8_to_string(a__1)

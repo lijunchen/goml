@@ -41,8 +41,6 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type GoError = error
-
 func take_u8(x__0 uint8) uint8 {
     var retv11 uint8
     retv11 = x__0

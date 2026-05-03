@@ -324,8 +324,6 @@ type List struct {
 
 func (_ List) isSExpr() {}
 
-type GoError = error
-
 func is_digit(ch__0 rune) bool {
     var retv149 bool
     var t150 bool = ch__0 >= 48
@@ -1671,16 +1669,16 @@ func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_Token() []
     return retv644
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_Token(self__67 []Token, elem__68 Token) []Token {
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_Token(self__66 []Token, elem__67 Token) []Token {
     var retv647 []Token
-    var t648 []Token = append(self__67, elem__68)
+    var t648 []Token = append(self__66, elem__67)
     retv647 = t648
     return retv647
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_Binding(self__74 []Binding) int32 {
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_Binding(self__73 []Binding) int32 {
     var retv650 int32
-    var t651 int32 = int32(len(self__74))
+    var t651 int32 = int32(len(self__73))
     retv650 = t651
     return retv650
 }
@@ -1692,30 +1690,30 @@ func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_SExpr() []
     return retv653
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_Token(self__74 []Token) int32 {
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_Token(self__73 []Token) int32 {
     var retv656 int32
-    var t657 int32 = int32(len(self__74))
+    var t657 int32 = int32(len(self__73))
     retv656 = t657
     return retv656
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_SExpr(self__67 []SExpr, elem__68 SExpr) []SExpr {
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_SExpr(self__66 []SExpr, elem__67 SExpr) []SExpr {
     var retv659 []SExpr
-    var t660 []SExpr = append(self__67, elem__68)
+    var t660 []SExpr = append(self__66, elem__67)
     retv659 = t660
     return retv659
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_SExpr(self__74 []SExpr) int32 {
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_SExpr(self__73 []SExpr) int32 {
     var retv662 int32
-    var t663 int32 = int32(len(self__74))
+    var t663 int32 = int32(len(self__73))
     retv662 = t663
     return retv662
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_Binding(self__67 []Binding, elem__68 Binding) []Binding {
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_Binding(self__66 []Binding, elem__67 Binding) []Binding {
     var retv665 []Binding
-    var t666 []Binding = append(self__67, elem__68)
+    var t666 []Binding = append(self__66, elem__67)
     retv665 = t666
     return retv665
 }
@@ -1727,9 +1725,9 @@ func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_string() [
     return retv668
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_string(self__67 []string, elem__68 string) []string {
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_string(self__66 []string, elem__67 string) []string {
     var retv671 []string
-    var t672 []string = append(self__67, elem__68)
+    var t672 []string = append(self__66, elem__67)
     retv671 = t672
     return retv671
 }
@@ -1741,23 +1739,23 @@ func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_Value() []
     return retv674
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_Value(self__67 []Value, elem__68 Value) []Value {
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_Value(self__66 []Value, elem__67 Value) []Value {
     var retv677 []Value
-    var t678 []Value = append(self__67, elem__68)
+    var t678 []Value = append(self__66, elem__67)
     retv677 = t678
     return retv677
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_Value(self__74 []Value) int32 {
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_Value(self__73 []Value) int32 {
     var retv680 int32
-    var t681 int32 = int32(len(self__74))
+    var t681 int32 = int32(len(self__73))
     retv680 = t681
     return retv680
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_string(self__74 []string) int32 {
+func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_string(self__73 []string) int32 {
     var retv683 int32
-    var t684 int32 = int32(len(self__74))
+    var t684 int32 = int32(len(self__73))
     retv683 = t684
     return retv683
 }

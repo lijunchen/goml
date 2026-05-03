@@ -27,8 +27,6 @@ type Some struct {
 
 func (_ Some) isOption__int32() {}
 
-type GoError = error
-
 func maybe_value__native(flag__0 bool) (int32, bool) {
     if flag__0 {
         return 4, true

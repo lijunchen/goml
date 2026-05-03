@@ -70,8 +70,6 @@ type Shape__unit_Origin struct {}
 
 func (_ Shape__unit_Origin) isShape__unit() {}
 
-type GoError = error
-
 func bounce_int(shape__0 Shape__int32) Shape__int32 {
     var retv26 Shape__int32
     var jp28 Shape__int32

@@ -41,8 +41,6 @@ type Option__string_Some struct {
 
 func (_ Option__string_Some) isOption__string() {}
 
-type GoError = error
-
 func maybe_primary__native(flag__0 bool) (int32, bool) {
     if flag__0 {
         return 4, true

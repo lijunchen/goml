@@ -40,8 +40,6 @@ type closure_env_get_1 struct {
     x_0 *ref_int32_x
 }
 
-type GoError = error
-
 func main0() struct{} {
     var x__0 *ref_int32_x = ref__Ref_5int32(0)
     var inc__1 closure_env_inc_0 = closure_env_inc_0{

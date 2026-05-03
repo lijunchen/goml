@@ -30,8 +30,6 @@ const (
     Blue Color = 2
 )
 
-type GoError = error
-
 func main0() bool {
     var retv4 bool
     var a__0 Tuple2_5Color_5Color = Tuple2_5Color_5Color{
