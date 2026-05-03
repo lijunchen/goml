@@ -828,14 +828,6 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
         }));
     }
 
-    if node.type_keyword().is_some() && node.lang().is_none() {
-        ctx.push_error(
-            Some(node.syntax().text_range()),
-            "Extern type declaration is missing language and package strings; use `extern \"go\" \"pkg\" \"Type\" type Name`.",
-        );
-        return None;
-    }
-
     let lang_token = node.lang();
     let lang = match lang_token {
         Some(token) => {
