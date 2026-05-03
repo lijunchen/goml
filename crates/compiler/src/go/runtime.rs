@@ -90,12 +90,14 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(string_hash()),
         Item::Fn(string_print()),
         Item::Fn(string_println()),
-        Item::Fn(host_args()),
-        Item::Fn(host_read_file()),
-        Item::Fn(host_write_file()),
-        Item::Fn(host_file_exists()),
-        Item::Fn(host_read_dir()),
-        Item::Fn(host_exit()),
+        Item::Fn(std_env_args_raw()),
+        Item::Fn(std_fs_read_file_raw()),
+        Item::Fn(std_fs_write_file_raw()),
+        Item::Fn(std_fs_file_exists_raw()),
+        Item::Fn(std_fs_read_dir_raw()),
+        Item::Fn(std_io_print_raw()),
+        Item::Fn(std_io_println_raw()),
+        Item::Fn(std_process_exit_raw()),
         Item::Fn(missing()),
     ];
     items.extend(make_builtin_eq_hash_trait_impls());
@@ -292,7 +294,7 @@ fn make_builtin_eq_hash_trait_impls() -> Vec<goast::Item> {
     items
 }
 
-fn host_error_ty() -> goty::GoType {
+fn go_error_ty() -> goty::GoType {
     goty::GoType::TName {
         name: "error".to_string(),
     }
@@ -310,38 +312,46 @@ fn os_file_info_ty() -> goty::GoType {
     }
 }
 
-fn panic_error_stmt(err_name: &str) -> goast::Stmt {
-    let err_ty = host_error_ty();
-    goast::Stmt::Expr(goast::Expr::Call {
-        func: Box::new(goast::Expr::Var {
-            name: "panic".to_string(),
-            ty: goty::GoType::TFunc {
-                params: vec![goty::GoType::TString],
-                ret_ty: Box::new(goty::GoType::TVoid),
-            },
-        }),
-        args: vec![goast::Expr::Call {
-            func: Box::new(goast::Expr::FieldAccess {
-                obj: Box::new(goast::Expr::Var {
-                    name: err_name.to_string(),
-                    ty: err_ty,
-                }),
-                field: "Error".to_string(),
-                ty: goty::GoType::TFunc {
-                    params: vec![],
-                    ret_ty: Box::new(goty::GoType::TString),
-                },
-            }),
-            args: vec![],
-            ty: goty::GoType::TString,
-        }],
-        ty: goty::GoType::TVoid,
-    })
+fn std_runtime_name(package: &str, name: &str) -> String {
+    go_ident(&format!("std::{package}::{name}"))
 }
 
-fn host_args() -> goast::Fn {
+fn tuple_ty(typs: Vec<tast::Ty>) -> tast::Ty {
+    tast::Ty::TTuple { typs }
+}
+
+fn tuple_literal(ty: &tast::Ty, fields: Vec<goast::Expr>) -> goast::Expr {
+    goast::Expr::StructLiteral {
+        fields: fields
+            .into_iter()
+            .enumerate()
+            .map(|(idx, expr)| (format!("_{}", idx), expr))
+            .collect(),
+        ty: goast::tast_ty_to_go_type(ty),
+    }
+}
+
+fn error_string_expr(err_name: &str) -> goast::Expr {
+    goast::Expr::Call {
+        func: Box::new(goast::Expr::FieldAccess {
+            obj: Box::new(goast::Expr::Var {
+                name: err_name.to_string(),
+                ty: go_error_ty(),
+            }),
+            field: "Error".to_string(),
+            ty: goty::GoType::TFunc {
+                params: vec![],
+                ret_ty: Box::new(goty::GoType::TString),
+            },
+        }),
+        args: vec![],
+        ty: goty::GoType::TString,
+    }
+}
+
+fn std_env_args_raw() -> goast::Fn {
     goast::Fn {
-        name: "host_args".to_string(),
+        name: std_runtime_name("env", "args_raw"),
         params: vec![],
         ret_ty: Some(goty::GoType::TSlice {
             elem: Box::new(goty::GoType::TString),
@@ -359,15 +369,16 @@ fn host_args() -> goast::Fn {
     }
 }
 
-fn host_read_file() -> goast::Fn {
+fn std_fs_read_file_raw() -> goast::Fn {
     let data_ty = goty::GoType::TSlice {
         elem: Box::new(goty::GoType::TUint8),
     };
-    let err_ty = host_error_ty();
+    let err_ty = go_error_ty();
+    let ret_ty = tuple_ty(vec![tast::Ty::TBool, tast::Ty::TString, tast::Ty::TString]);
     goast::Fn {
-        name: "host_read_file".to_string(),
+        name: std_runtime_name("fs", "read_file_raw"),
         params: vec![("path".to_string(), goty::GoType::TString)],
-        ret_ty: Some(goty::GoType::TString),
+        ret_ty: Some(goast::tast_ty_to_go_type(&ret_ty)),
         body: goast::Block {
             stmts: vec![
                 goast::Stmt::VarDecl {
@@ -412,43 +423,72 @@ fn host_read_file() -> goast::Fn {
                         ty: goty::GoType::TBool,
                     },
                     then: goast::Block {
-                        stmts: vec![panic_error_stmt("err")],
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(tuple_literal(
+                                &ret_ty,
+                                vec![
+                                    goast::Expr::Bool {
+                                        value: false,
+                                        ty: goty::GoType::TBool,
+                                    },
+                                    goast::Expr::String {
+                                        value: String::new(),
+                                        ty: goty::GoType::TString,
+                                    },
+                                    error_string_expr("err"),
+                                ],
+                            )),
+                        }],
                     },
                     else_: None,
                 },
                 goast::Stmt::Return {
-                    expr: Some(goast::Expr::Call {
-                        func: Box::new(goast::Expr::Var {
-                            name: "string".to_string(),
-                            ty: goty::GoType::TFunc {
-                                params: vec![data_ty.clone()],
-                                ret_ty: Box::new(goty::GoType::TString),
+                    expr: Some(tuple_literal(
+                        &ret_ty,
+                        vec![
+                            goast::Expr::Bool {
+                                value: true,
+                                ty: goty::GoType::TBool,
                             },
-                        }),
-                        args: vec![goast::Expr::Var {
-                            name: "data".to_string(),
-                            ty: data_ty,
-                        }],
-                        ty: goty::GoType::TString,
-                    }),
+                            goast::Expr::Call {
+                                func: Box::new(goast::Expr::Var {
+                                    name: "string".to_string(),
+                                    ty: goty::GoType::TFunc {
+                                        params: vec![data_ty.clone()],
+                                        ret_ty: Box::new(goty::GoType::TString),
+                                    },
+                                }),
+                                args: vec![goast::Expr::Var {
+                                    name: "data".to_string(),
+                                    ty: data_ty,
+                                }],
+                                ty: goty::GoType::TString,
+                            },
+                            goast::Expr::String {
+                                value: String::new(),
+                                ty: goty::GoType::TString,
+                            },
+                        ],
+                    )),
                 },
             ],
         },
     }
 }
 
-fn host_write_file() -> goast::Fn {
+fn std_fs_write_file_raw() -> goast::Fn {
     let data_ty = goty::GoType::TSlice {
         elem: Box::new(goty::GoType::TUint8),
     };
-    let err_ty = host_error_ty();
+    let err_ty = go_error_ty();
+    let ret_ty = tuple_ty(vec![tast::Ty::TBool, tast::Ty::TString]);
     goast::Fn {
-        name: "host_write_file".to_string(),
+        name: std_runtime_name("fs", "write_file_raw"),
         params: vec![
             ("path".to_string(), goty::GoType::TString),
             ("content".to_string(), goty::GoType::TString),
         ],
-        ret_ty: Some(goty::GoType::TUnit),
+        ret_ty: Some(goast::tast_ty_to_go_type(&ret_ty)),
         body: goast::Block {
             stmts: vec![
                 goast::Stmt::VarDecl {
@@ -506,25 +546,46 @@ fn host_write_file() -> goast::Fn {
                         ty: goty::GoType::TBool,
                     },
                     then: goast::Block {
-                        stmts: vec![panic_error_stmt("err")],
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(tuple_literal(
+                                &ret_ty,
+                                vec![
+                                    goast::Expr::Bool {
+                                        value: false,
+                                        ty: goty::GoType::TBool,
+                                    },
+                                    error_string_expr("err"),
+                                ],
+                            )),
+                        }],
                     },
                     else_: None,
                 },
                 goast::Stmt::Return {
-                    expr: Some(goast::Expr::Unit {
-                        ty: goty::GoType::TUnit,
-                    }),
+                    expr: Some(tuple_literal(
+                        &ret_ty,
+                        vec![
+                            goast::Expr::Bool {
+                                value: true,
+                                ty: goty::GoType::TBool,
+                            },
+                            goast::Expr::String {
+                                value: String::new(),
+                                ty: goty::GoType::TString,
+                            },
+                        ],
+                    )),
                 },
             ],
         },
     }
 }
 
-fn host_file_exists() -> goast::Fn {
-    let err_ty = host_error_ty();
+fn std_fs_file_exists_raw() -> goast::Fn {
+    let err_ty = go_error_ty();
     let info_ty = os_file_info_ty();
     goast::Fn {
-        name: "host_file_exists".to_string(),
+        name: std_runtime_name("fs", "file_exists_raw"),
         params: vec![("path".to_string(), goty::GoType::TString)],
         ret_ty: Some(goty::GoType::TBool),
         body: goast::Block {
@@ -571,7 +632,7 @@ fn host_file_exists() -> goast::Fn {
     }
 }
 
-fn host_read_dir() -> goast::Fn {
+fn std_fs_read_dir_raw() -> goast::Fn {
     let entry_ty = os_dir_entry_ty();
     let entries_ty = goty::GoType::TSlice {
         elem: Box::new(entry_ty.clone()),
@@ -579,11 +640,18 @@ fn host_read_dir() -> goast::Fn {
     let names_ty = goty::GoType::TSlice {
         elem: Box::new(goty::GoType::TString),
     };
-    let err_ty = host_error_ty();
+    let err_ty = go_error_ty();
+    let ret_ty = tuple_ty(vec![
+        tast::Ty::TBool,
+        tast::Ty::TVec {
+            elem: Box::new(tast::Ty::TString),
+        },
+        tast::Ty::TString,
+    ]);
     goast::Fn {
-        name: "host_read_dir".to_string(),
+        name: std_runtime_name("fs", "read_dir_raw"),
         params: vec![("path".to_string(), goty::GoType::TString)],
-        ret_ty: Some(names_ty.clone()),
+        ret_ty: Some(goast::tast_ty_to_go_type(&ret_ty)),
         body: goast::Block {
             stmts: vec![
                 goast::Stmt::VarDecl {
@@ -628,7 +696,21 @@ fn host_read_dir() -> goast::Fn {
                         ty: goty::GoType::TBool,
                     },
                     then: goast::Block {
-                        stmts: vec![panic_error_stmt("err")],
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(tuple_literal(
+                                &ret_ty,
+                                vec![
+                                    goast::Expr::Bool {
+                                        value: false,
+                                        ty: goty::GoType::TBool,
+                                    },
+                                    goast::Expr::Nil {
+                                        ty: names_ty.clone(),
+                                    },
+                                    error_string_expr("err"),
+                                ],
+                            )),
+                        }],
                     },
                     else_: None,
                 },
@@ -755,19 +837,32 @@ fn host_read_dir() -> goast::Fn {
                     },
                 },
                 goast::Stmt::Return {
-                    expr: Some(goast::Expr::Var {
-                        name: "names".to_string(),
-                        ty: names_ty,
-                    }),
+                    expr: Some(tuple_literal(
+                        &ret_ty,
+                        vec![
+                            goast::Expr::Bool {
+                                value: true,
+                                ty: goty::GoType::TBool,
+                            },
+                            goast::Expr::Var {
+                                name: "names".to_string(),
+                                ty: names_ty,
+                            },
+                            goast::Expr::String {
+                                value: String::new(),
+                                ty: goty::GoType::TString,
+                            },
+                        ],
+                    )),
                 },
             ],
         },
     }
 }
 
-fn host_exit() -> goast::Fn {
+fn std_process_exit_raw() -> goast::Fn {
     goast::Fn {
-        name: "host_exit".to_string(),
+        name: std_runtime_name("process", "exit_raw"),
         params: vec![("code".to_string(), goty::GoType::TInt32)],
         ret_ty: Some(goty::GoType::TUnit),
         body: goast::Block {
@@ -793,6 +888,68 @@ fn host_exit() -> goast::Fn {
                             ty: goty::GoType::TInt32,
                         }],
                         ty: goty::GoType::TInt32,
+                    }],
+                    ty: goty::GoType::TVoid,
+                }),
+                goast::Stmt::Return {
+                    expr: Some(goast::Expr::Unit {
+                        ty: goty::GoType::TUnit,
+                    }),
+                },
+            ],
+        },
+    }
+}
+
+fn std_io_print_raw() -> goast::Fn {
+    goast::Fn {
+        name: std_runtime_name("io", "print_raw"),
+        params: vec![("value".to_string(), goty::GoType::TString)],
+        ret_ty: Some(goty::GoType::TUnit),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::Expr(goast::Expr::Call {
+                    func: Box::new(goast::Expr::Var {
+                        name: "_goml_fmt.Print".to_string(),
+                        ty: goty::GoType::TFunc {
+                            params: vec![goty::GoType::TString],
+                            ret_ty: Box::new(goty::GoType::TVoid),
+                        },
+                    }),
+                    args: vec![goast::Expr::Var {
+                        name: "value".to_string(),
+                        ty: goty::GoType::TString,
+                    }],
+                    ty: goty::GoType::TVoid,
+                }),
+                goast::Stmt::Return {
+                    expr: Some(goast::Expr::Unit {
+                        ty: goty::GoType::TUnit,
+                    }),
+                },
+            ],
+        },
+    }
+}
+
+fn std_io_println_raw() -> goast::Fn {
+    goast::Fn {
+        name: std_runtime_name("io", "println_raw"),
+        params: vec![("value".to_string(), goty::GoType::TString)],
+        ret_ty: Some(goty::GoType::TUnit),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::Expr(goast::Expr::Call {
+                    func: Box::new(goast::Expr::Var {
+                        name: "_goml_fmt.Println".to_string(),
+                        ty: goty::GoType::TFunc {
+                            params: vec![goty::GoType::TString],
+                            ret_ty: Box::new(goty::GoType::TVoid),
+                        },
+                    }),
+                    args: vec![goast::Expr::Var {
+                        name: "value".to_string(),
+                        ty: goty::GoType::TString,
                     }],
                     ty: goty::GoType::TVoid,
                 }),

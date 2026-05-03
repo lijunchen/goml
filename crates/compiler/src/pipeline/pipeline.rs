@@ -8,7 +8,7 @@ use parser::{self, syntax::MySyntaxNode};
 use rowan::GreenNode;
 
 use crate::config::{find_crate_root, load_crate_manifest};
-use crate::package_names::{BUILTIN_PACKAGE, ENTRY_FUNCTION, ROOT_PACKAGE};
+use crate::package_names::{BUILTIN_PACKAGE, ENTRY_FUNCTION, ROOT_PACKAGE, STD_PACKAGE};
 use crate::pipeline::builtin_inherent;
 use crate::pipeline::compile_error;
 use crate::pipeline::packages;
@@ -22,7 +22,7 @@ use crate::{
     hir, interface,
     lift::{self, GlobalLiftEnv, LiftFile},
     mono::{self, GlobalMonoEnv},
-    tast, typer,
+    stdlib, tast, typer,
 };
 
 #[derive(Debug)]
@@ -169,6 +169,28 @@ fn package_id_map(package_names: &[String]) -> HashMap<String, hir::PackageId> {
     ids
 }
 
+fn graph_imports_package(graph: &packages::PackageGraph, package: &str) -> bool {
+    graph
+        .packages
+        .values()
+        .any(|unit| unit.imports.contains(package))
+}
+
+fn add_stdlib_if_imported(
+    external_deps: &mut ExternalDependencyArtifacts,
+    graph: &packages::PackageGraph,
+) -> Result<(), CompilationError> {
+    if !graph_imports_package(graph, STD_PACKAGE) || external_deps.modules.contains_key(STD_PACKAGE)
+    {
+        return Ok(());
+    }
+    let artifact = stdlib::stdlib_artifact().map_err(compile_error)?;
+    external_deps
+        .modules
+        .insert(STD_PACKAGE.to_string(), artifact);
+    Ok(())
+}
+
 fn link_packages(packages: Vec<crate::core::File>) -> crate::core::File {
     let mut toplevels = Vec::new();
     for package in packages {
@@ -299,7 +321,7 @@ fn typecheck_packages_inner(
     single_file: bool,
 ) -> Result<TypecheckPackagesResult, CompilationError> {
     let root = discovery_root_for_file(path);
-    let external_deps = load_external_dependencies(&root)?;
+    let mut external_deps = load_external_dependencies(&root)?;
     let external_imports = external_deps.external_imports();
     let mut graph = if single_file {
         packages::discover_packages_single_file_with_external_imports(
@@ -316,6 +338,7 @@ fn typecheck_packages_inner(
             &external_imports,
         )?
     };
+    add_stdlib_if_imported(&mut external_deps, &graph)?;
     external_deps
         .augment_graph(&mut graph)
         .map_err(compile_error)?;
@@ -620,7 +643,7 @@ pub fn typecheck_with_packages_and_results(
         let (_green_node, _cst, entry_ast, mut diagnostics) =
             parse_ast_from_source_allow_parse_errors(path, src)?;
         let root = discovery_root_for_file(path);
-        let external_deps = load_external_dependencies(&root)?;
+        let mut external_deps = load_external_dependencies(&root)?;
         let external_imports = external_deps.external_imports();
         let mut graph = if single_file {
             packages::discover_packages_single_file_with_external_imports(
@@ -637,6 +660,7 @@ pub fn typecheck_with_packages_and_results(
                 &external_imports,
             )?
         };
+        add_stdlib_if_imported(&mut external_deps, &graph)?;
         external_deps
             .augment_graph(&mut graph)
             .map_err(compile_error)?;

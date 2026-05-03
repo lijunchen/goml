@@ -1,0 +1,42 @@
+#[builtin]
+extern fn read_file_raw(path: string) -> (bool, string, string)
+
+#[builtin]
+extern fn write_file_raw(path: string, content: string) -> (bool, string)
+
+#[builtin]
+extern fn file_exists_raw(path: string) -> bool
+
+#[builtin]
+extern fn read_dir_raw(path: string) -> (bool, Vec[string], string)
+
+pub fn read_file(path: string) -> Result[string, string] {
+    let (ok, data, err) = read_file_raw(path);
+    if ok {
+        Result::Ok(data)
+    } else {
+        Result::Err(err)
+    }
+}
+
+pub fn write_file(path: string, content: string) -> Result[unit, string] {
+    let (ok, err) = write_file_raw(path, content);
+    if ok {
+        Result::Ok(())
+    } else {
+        Result::Err(err)
+    }
+}
+
+pub fn exists(path: string) -> bool {
+    file_exists_raw(path)
+}
+
+pub fn read_dir(path: string) -> Result[Vec[string], string] {
+    let (ok, names, err) = read_dir_raw(path);
+    if ok {
+        Result::Ok(names)
+    } else {
+        Result::Err(err)
+    }
+}
