@@ -2152,7 +2152,7 @@ root = "main.gom"
             "main.gom",
             "Option::Some",
             "Some",
-            expect!["src/builtin.gom:102:4"],
+            expect!["src/builtin.gom:98:4"],
         );
     }
 
@@ -2169,7 +2169,7 @@ fn main() -> unit {
 "#,
             "Vec::new()",
             "new",
-            expect!["src/builtin.gom:429:7"],
+            expect!["src/builtin.gom:425:7"],
         );
     }
 
@@ -2188,7 +2188,7 @@ fn main() -> unit {
 "#,
             "ref_get(r)",
             "ref_get",
-            expect!["src/builtin.gom:497:10"],
+            expect!["src/builtin.gom:493:10"],
         );
     }
 
@@ -2213,13 +2213,13 @@ fn main() -> unit {
             src,
             "HashMap::new()",
             "new",
-            expect!["src/builtin.gom:469:7"],
+            expect!["src/builtin.gom:465:7"],
         );
         check_goto_token(
             src,
             "m.set(Key::A, 1)",
             "set",
-            expect!["src/builtin.gom:477:7"],
+            expect!["src/builtin.gom:473:7"],
         );
     }
 
