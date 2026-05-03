@@ -6,9 +6,9 @@ fn println(value/1: T) -> unit {
     (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
-extern type Time
+extern "go" "time" "Time" type Time
 
-extern type Duration
+extern "go" "time" "Duration" type Duration
 
 extern "go" "time" unix(secs: int32, nanos: int32) -> Time
 
