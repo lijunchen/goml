@@ -1,0 +1,57 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn open_handle(ok/0: bool) -> Result[Handle, string] {
+    if (ok/0 : bool) {
+        {
+            Result::Ok(Handle { name: "config" })
+        }
+    } else {
+        {
+            Result::Err("open failed")
+        }
+    }
+}
+
+fn close_handle(handle/1: Handle, ok/2: bool) -> Result[unit, string] {
+    if (ok/2 : bool) {
+        {
+            Result::Ok(())
+        }
+    } else {
+        {
+            Result::Err("close failed for " + (handle/1 : Handle).name)
+        }
+    }
+}
+
+fn use_handle(open_ok/3: bool, close_ok/4: bool) -> Result[string, string] {
+    let handle/5: Handle = match (open_handle : (bool) -> Result[Handle, string])((open_ok/3 : bool)) {
+        Result::Ok(try_value/24: Handle) => (try_value/24 : Handle),
+        Result::Err(try_residual/24: string) => return Result::Err((try_residual/24 : string)),
+    };
+    let name/6: string = (handle/5 : Handle).name;
+    match (close_handle : (Handle, bool) -> Result[unit, string])((handle/5 : Handle), (close_ok/4 : bool)) {
+        Result::Ok(try_value/31: unit) => (try_value/31 : unit),
+        Result::Err(try_residual/31: string) => return Result::Err((try_residual/31 : string)),
+    };
+    Result::Ok("closed " + (name/6 : string))
+}
+
+fn show(res/7: Result[string, string]) -> string {
+    match (res/7 : Result[string, string]) {
+        Result::Ok(value/8: string) => "ok " + (value/8 : string),
+        Result::Err(err/9: string) => "err " + (err/9 : string),
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((show : (Result[string, string]) -> string)((use_handle : (bool, bool) -> Result[string, string])(true, true)));
+    (println : (string) -> unit)((show : (Result[string, string]) -> string)((use_handle : (bool, bool) -> Result[string, string])(false, true)));
+    (println : (string) -> unit)((show : (Result[string, string]) -> string)((use_handle : (bool, bool) -> Result[string, string])(true, false)));
+}

@@ -1,0 +1,26 @@
+package main
+file main.gom
+  fn step(local/1/0: bool) -> Result[unit, string] {
+        if ok/0 {
+            Result::Ok(())
+        } else {
+            Result::Err("step failed")
+        }
+    }
+    
+    fn run(local/1/1: bool) -> Result[unit, string] {
+        let _ = def/1/0(ok/1)?;
+        Result::Ok(())
+    }
+    
+    fn show(local/1/2: Result[unit, string]) -> string {
+        match res/2 {
+            Result::Ok(()) => "ok unit",
+            Result::Err(local/1/3) => "err " + err/3,
+        }
+    }
+    
+    fn main() -> unit {
+        println(def/1/2(def/1/1(true)));
+        println(def/1/2(def/1/1(false)));
+    }

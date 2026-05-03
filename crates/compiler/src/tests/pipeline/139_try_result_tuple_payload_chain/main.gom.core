@@ -1,0 +1,90 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn split_host_port(ok/0: bool) -> Result[(string, string), string] {
+  if ok/0 {
+      {
+        Result::Ok(("localhost", "8080"))
+      }
+  } else {
+      {
+        Result::Err("missing port")
+      }
+  }
+}
+
+fn pair(ok/1: bool) -> Result[(string, string), string] {
+  split_host_port(ok/1)
+}
+
+fn render(ok/2: bool) -> Result[string, string] {
+  let mtmp3 = {
+    let mtmp0 = pair(ok/2) in
+    match mtmp0 {
+      Result::Ok(x1) => {
+        {
+          let x1 = Result::Ok._0(mtmp0) in
+          {
+            let try_value/17 = x1 in
+            try_value/17
+          }
+        }
+      },
+      Result::Err(x2) => {
+        {
+          let x2 = Result::Err._0(mtmp0) in
+          {
+            let try_residual/17 = x2 in
+            return Result::Err(try_residual/17)
+          }
+        }
+      },
+    }
+  } in
+  {
+    let x4 = mtmp3.0 in
+    let x5 = mtmp3.1 in
+    {
+      let port/4 = x5 in
+      {
+        let host/3 = x4 in
+        {
+          Result::Ok(((host/3 + "=") + port/4))
+        }
+      }
+    }
+  }
+}
+
+fn show(res/5: Result[string, string]) -> string {
+  match res/5 {
+    Result::Ok(x6) => {
+      {
+        let x6 = Result::Ok._0(res/5) in
+        {
+          let value/6 = x6 in
+          ("ok " + value/6)
+        }
+      }
+    },
+    Result::Err(x7) => {
+      {
+        let x7 = Result::Err._0(res/5) in
+        {
+          let err/7 = x7 in
+          ("err " + err/7)
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild8 = println(show(render(true))) in
+  let _wild9 = println(show(render(false))) in
+}

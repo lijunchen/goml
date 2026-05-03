@@ -1,0 +1,92 @@
+fn cut_pair(ok/0: bool) -> Option__(string,string) {
+  join ret8(retv9: Option__(string,string)) -> Option__(string,string) {
+    retv9
+  } in
+  join k10(jp11: Option__(string,string)) -> Option__(string,string) {
+    jump ret8(jp11)
+  } in
+  if ok/0 {
+    let t12 = ("left", "right") in
+    let t13 = Option__(string,string)::Some(t12) in
+    jump k10(t13)
+  } else {
+    jump k10(Tag_0)
+  }
+}
+
+fn pair(ok/1: bool) -> Option__(string,string) {
+  join ret14(retv15: Option__(string,string)) -> Option__(string,string) {
+    retv15
+  } in
+  let t16 = cut_pair(ok/1) in
+  jump ret14(t16)
+}
+
+fn describe(ok/2: bool) -> Option__string {
+  join ret17(retv18: Option__string) -> Option__string {
+    retv18
+  } in
+  let mtmp0 = pair(ok/2) in
+  join k19(jp20: (string, string)) -> Option__string {
+    let mtmp2 = jp20 in
+    let x3 = mtmp2.0 in
+    let x4 = mtmp2.1 in
+    let after/4 = x4 in
+    let before/3 = x3 in
+    let t21 = (before/3 + ":") in
+    let t22 = (t21 + after/4) in
+    let t23 = Option__string::Some(t22) in
+    jump ret17(t23)
+  } in
+  match mtmp0 {
+    Tag_0 => {
+      jump ret17(Tag_0)
+    },
+    Tag_1 => {
+      let x1 = Option__(string,string)::Some._0(mtmp0) in
+      let try_value/16 = x1 in
+      jump k19(try_value/16)
+    },
+  }
+}
+
+fn show(opt/5: Option__string) -> string {
+  join ret24(retv25: string) -> string {
+    retv25
+  } in
+  join k26(jp27: string) -> string {
+    jump ret24(jp27)
+  } in
+  match opt/5 {
+    Tag_0 => {
+      jump k26("none")
+    },
+    Tag_1 => {
+      let x5 = Option__string::Some._0(opt/5) in
+      let value/6 = x5 in
+      let t28 = ("some " + value/6) in
+      jump k26(t28)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret29() -> unit {
+    ()
+  } in
+  let t30 = describe(true) in
+  let t31 = show(t30) in
+  let _wild6 = println__T_string(t31) in
+  let t32 = describe(false) in
+  let t33 = show(t32) in
+  let _wild7 = println__T_string(t33) in
+  jump ret29()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret34() -> unit {
+    ()
+  } in
+  let t35 = string_println(value/1) in
+  jump ret34()
+}

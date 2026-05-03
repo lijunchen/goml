@@ -1,0 +1,78 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn cut_pair(ok/0: bool) -> Option[(string, string)] {
+  if ok/0 {
+      {
+        Option::Some(("left", "right"))
+      }
+  } else {
+      {
+        Option::None
+      }
+  }
+}
+
+fn pair(ok/1: bool) -> Option[(string, string)] {
+  cut_pair(ok/1)
+}
+
+fn describe(ok/2: bool) -> Option[string] {
+  let mtmp2 = {
+    let mtmp0 = pair(ok/2) in
+    match mtmp0 {
+      Option::None => {
+        return Option::None
+      },
+      Option::Some(x1) => {
+        {
+          let x1 = Option::Some._0(mtmp0) in
+          {
+            let try_value/16 = x1 in
+            try_value/16
+          }
+        }
+      },
+    }
+  } in
+  {
+    let x3 = mtmp2.0 in
+    let x4 = mtmp2.1 in
+    {
+      let after/4 = x4 in
+      {
+        let before/3 = x3 in
+        {
+          Option::Some(((before/3 + ":") + after/4))
+        }
+      }
+    }
+  }
+}
+
+fn show(opt/5: Option[string]) -> string {
+  match opt/5 {
+    Option::None => {
+      "none"
+    },
+    Option::Some(x5) => {
+      {
+        let x5 = Option::Some._0(opt/5) in
+        {
+          let value/6 = x5 in
+          ("some " + value/6)
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild6 = println(show(describe(true))) in
+  let _wild7 = println(show(describe(false))) in
+}

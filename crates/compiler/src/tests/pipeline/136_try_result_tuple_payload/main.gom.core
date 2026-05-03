@@ -1,0 +1,86 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn split_host_port(ok/0: bool) -> Result[(string, string), string] {
+  if ok/0 {
+      {
+        Result::Ok(("example.com", "443"))
+      }
+  } else {
+      {
+        Result::Err("missing port")
+      }
+  }
+}
+
+fn render(ok/1: bool) -> Result[string, string] {
+  let mtmp3 = {
+    let mtmp0 = split_host_port(ok/1) in
+    match mtmp0 {
+      Result::Ok(x1) => {
+        {
+          let x1 = Result::Ok._0(mtmp0) in
+          {
+            let try_value/14 = x1 in
+            try_value/14
+          }
+        }
+      },
+      Result::Err(x2) => {
+        {
+          let x2 = Result::Err._0(mtmp0) in
+          {
+            let try_residual/14 = x2 in
+            return Result::Err(try_residual/14)
+          }
+        }
+      },
+    }
+  } in
+  {
+    let x4 = mtmp3.0 in
+    let x5 = mtmp3.1 in
+    {
+      let port/3 = x5 in
+      {
+        let host/2 = x4 in
+        {
+          Result::Ok(((host/2 + ":") + port/3))
+        }
+      }
+    }
+  }
+}
+
+fn show(res/4: Result[string, string]) -> string {
+  match res/4 {
+    Result::Ok(x6) => {
+      {
+        let x6 = Result::Ok._0(res/4) in
+        {
+          let value/5 = x6 in
+          ("ok " + value/5)
+        }
+      }
+    },
+    Result::Err(x7) => {
+      {
+        let x7 = Result::Err._0(res/4) in
+        {
+          let err/6 = x7 in
+          ("err " + err/6)
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild8 = println(show(render(true))) in
+  let _wild9 = println(show(render(false))) in
+}

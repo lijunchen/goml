@@ -1,0 +1,61 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn read_left(ok/0: bool) -> Result[int32, string] {
+    if (ok/0 : bool) {
+        {
+            Result::Ok(10)
+        }
+    } else {
+        {
+            Result::Err("left failed")
+        }
+    }
+}
+
+fn read_right(ok/1: bool) -> Result[int32, string] {
+    if (ok/1 : bool) {
+        {
+            Result::Ok(20)
+        }
+    } else {
+        {
+            Result::Err("right failed")
+        }
+    }
+}
+
+fn choose(choice/2: Choice) -> Result[int32, string] {
+    let value/6: int32 = match (choice/2 : Choice) {
+        Choice::Left(ok/3: bool) => match (read_left : (bool) -> Result[int32, string])((ok/3 : bool)) {
+              Result::Ok(try_value/21: int32) => (try_value/21 : int32),
+              Result::Err(try_residual/21: string) => return Result::Err((try_residual/21 : string)),
+          },
+        Choice::Right(ok/4: bool) => match (read_right : (bool) -> Result[int32, string])((ok/4 : bool)) {
+              Result::Ok(try_value/25: int32) => (try_value/25 : int32),
+              Result::Err(try_residual/25: string) => return Result::Err((try_residual/25 : string)),
+          } + 1,
+        Choice::Keep(value/5: int32) => (value/5 : int32),
+    };
+    Result::Ok((value/6 : int32))
+}
+
+fn show(res/7: Result[int32, string]) -> string {
+    match (res/7 : Result[int32, string]) {
+        Result::Ok(value/8: int32) => "ok " + (ToString::to_string : (int32) -> string)((value/8 : int32)),
+        Result::Err(err/9: string) => "err " + (err/9 : string),
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((show : (Result[int32, string]) -> string)((choose : (Choice) -> Result[int32, string])(Choice::Left(true))));
+    (println : (string) -> unit)((show : (Result[int32, string]) -> string)((choose : (Choice) -> Result[int32, string])(Choice::Right(true))));
+    (println : (string) -> unit)((show : (Result[int32, string]) -> string)((choose : (Choice) -> Result[int32, string])(Choice::Keep(5))));
+    (println : (string) -> unit)((show : (Result[int32, string]) -> string)((choose : (Choice) -> Result[int32, string])(Choice::Left(false))));
+    (println : (string) -> unit)((show : (Result[int32, string]) -> string)((choose : (Choice) -> Result[int32, string])(Choice::Right(false))));
+}

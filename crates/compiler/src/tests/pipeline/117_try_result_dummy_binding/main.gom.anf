@@ -1,0 +1,129 @@
+fn configure(ok/0: bool) -> Result__unit__string {
+  join ret12(retv13: Result__unit__string) -> Result__unit__string {
+    retv13
+  } in
+  join k14(jp15: Result__unit__string) -> Result__unit__string {
+    jump ret12(jp15)
+  } in
+  if ok/0 {
+    let t16 = Result__unit__string::Ok(()) in
+    jump k14(t16)
+  } else {
+    let t17 = Result__unit__string::Err("config failed") in
+    jump k14(t17)
+  }
+}
+
+fn read_duration(ok/1: bool) -> Result__string__string {
+  join ret18(retv19: Result__string__string) -> Result__string__string {
+    retv19
+  } in
+  join k20(jp21: Result__string__string) -> Result__string__string {
+    jump ret18(jp21)
+  } in
+  if ok/1 {
+    let t22 = Result__string__string::Ok("2s") in
+    jump k20(t22)
+  } else {
+    let t23 = Result__string__string::Err("duration failed") in
+    jump k20(t23)
+  }
+}
+
+fn format_duration(value/2: string) -> string {
+  join ret24(retv25: string) -> string {
+    retv25
+  } in
+  let t26 = ("duration=" + value/2) in
+  jump ret24(t26)
+}
+
+fn configure_and_format(config_ok/3: bool, read_ok/4: bool) -> Result__string__string {
+  join ret27(retv28: Result__string__string) -> Result__string__string {
+    retv28
+  } in
+  let mtmp0 = configure(config_ok/3) in
+  join k29() -> Result__string__string {
+    let _wild3 = () in
+    let mtmp4 = read_duration(read_ok/4) in
+    join k30(jp31: string) -> Result__string__string {
+      let value/5 = jp31 in
+      let t32 = format_duration(value/5) in
+      let t33 = Result__string__string::Ok(t32) in
+      jump ret27(t33)
+    } in
+    match mtmp4 {
+      Tag_0 => {
+        let x5 = Result__string__string::Ok._0(mtmp4) in
+        let try_value/27 = x5 in
+        jump k30(try_value/27)
+      },
+      Tag_1 => {
+        let x6 = Result__string__string::Err._0(mtmp4) in
+        let try_residual/27 = x6 in
+        let t34 = Result__string__string::Err(try_residual/27) in
+        jump ret27(t34)
+      },
+    }
+  } in
+  match mtmp0 {
+    Tag_0 => {
+      let x1 = Result__unit__string::Ok._0(mtmp0) in
+      let try_value/23 = x1 in
+      jump k29()
+    },
+    Tag_1 => {
+      let x2 = Result__unit__string::Err._0(mtmp0) in
+      let try_residual/23 = x2 in
+      let t35 = Result__string__string::Err(try_residual/23) in
+      jump ret27(t35)
+    },
+  }
+}
+
+fn show(res/6: Result__string__string) -> string {
+  join ret36(retv37: string) -> string {
+    retv37
+  } in
+  join k38(jp39: string) -> string {
+    jump ret36(jp39)
+  } in
+  match res/6 {
+    Tag_0 => {
+      let x7 = Result__string__string::Ok._0(res/6) in
+      let value/7 = x7 in
+      let t40 = ("ok " + value/7) in
+      jump k38(t40)
+    },
+    Tag_1 => {
+      let x8 = Result__string__string::Err._0(res/6) in
+      let err/8 = x8 in
+      let t41 = ("err " + err/8) in
+      jump k38(t41)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret42() -> unit {
+    ()
+  } in
+  let t43 = configure_and_format(true, true) in
+  let t44 = show(t43) in
+  let _wild9 = println__T_string(t44) in
+  let t45 = configure_and_format(true, false) in
+  let t46 = show(t45) in
+  let _wild10 = println__T_string(t46) in
+  let t47 = configure_and_format(false, true) in
+  let t48 = show(t47) in
+  let _wild11 = println__T_string(t48) in
+  jump ret42()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret49() -> unit {
+    ()
+  } in
+  let t50 = string_println(value/1) in
+  jump ret49()
+}

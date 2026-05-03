@@ -1,0 +1,42 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn parse_text(ok/0: bool) -> Result[string, string] {
+    if (ok/0 : bool) {
+        {
+            Result::Ok("body")
+        }
+    } else {
+        {
+            Result::Err("parse failed")
+        }
+    }
+}
+
+fn decorate(prefix/1: string, ok/2: bool) -> Result[string, string] {
+    let run/4: () -> Result[string, string] = || => {
+        let text/3: string = match (parse_text : (bool) -> Result[string, string])((ok/2 : bool)) {
+            Result::Ok(try_value/12: string) => (try_value/12 : string),
+            Result::Err(try_residual/12: string) => return Result::Err((try_residual/12 : string)),
+        };
+        Result::Ok((prefix/1 : string) + ":" + (text/3 : string))
+    };
+    (run/4 : () -> Result[string, string])()
+}
+
+fn show(res/5: Result[string, string]) -> string {
+    match (res/5 : Result[string, string]) {
+        Result::Ok(value/6: string) => "ok " + (value/6 : string),
+        Result::Err(err/7: string) => "err " + (err/7 : string),
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((show : (Result[string, string]) -> string)((decorate : (string, bool) -> Result[string, string])("outer", true)));
+    (println : (string) -> unit)((show : (Result[string, string]) -> string)((decorate : (string, bool) -> Result[string, string])("outer", false)));
+}

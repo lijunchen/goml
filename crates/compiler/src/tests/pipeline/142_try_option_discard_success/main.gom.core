@@ -1,0 +1,64 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn cut_pair(ok/0: bool) -> Option[(string, string)] {
+  if ok/0 {
+      {
+        Option::Some(("left", "right"))
+      }
+  } else {
+      {
+        Option::None
+      }
+  }
+}
+
+fn check(ok/1: bool) -> Option[string] {
+  let mtmp2 = {
+    let mtmp0 = cut_pair(ok/1) in
+    match mtmp0 {
+      Option::None => {
+        return Option::None
+      },
+      Option::Some(x1) => {
+        {
+          let x1 = Option::Some._0(mtmp0) in
+          {
+            let try_value/13 = x1 in
+            try_value/13
+          }
+        }
+      },
+    }
+  } in
+  {
+    Option::Some("ok")
+  }
+}
+
+fn show(opt/2: Option[string]) -> string {
+  match opt/2 {
+    Option::None => {
+      "none"
+    },
+    Option::Some(x3) => {
+      {
+        let x3 = Option::Some._0(opt/2) in
+        {
+          let value/3 = x3 in
+          ("some " + value/3)
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild4 = println(show(check(true))) in
+  let _wild5 = println(show(check(false))) in
+}

@@ -1,0 +1,62 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn cut_prefix(case_id/0: int32) -> Option[string] {
+  if (case_id/0 == 0) {
+      {
+        Option::Some("ml")
+      }
+  } else {
+      {
+        Option::None
+      }
+  }
+}
+
+fn trim_go(case_id/1: int32) -> Option[string] {
+  let suffix/2 = {
+    let mtmp0 = cut_prefix(case_id/1) in
+    match mtmp0 {
+      Option::None => {
+        return Option::None
+      },
+      Option::Some(x1) => {
+        {
+          let x1 = Option::Some._0(mtmp0) in
+          {
+            let try_value/13 = x1 in
+            try_value/13
+          }
+        }
+      },
+    }
+  } in
+  Option::Some((suffix/2 + "!"))
+}
+
+fn show(opt/3: Option[string]) -> string {
+  match opt/3 {
+    Option::None => {
+      "none"
+    },
+    Option::Some(x2) => {
+      {
+        let x2 = Option::Some._0(opt/3) in
+        {
+          let value/4 = x2 in
+          ("some " + value/4)
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild3 = println(show(trim_go(0))) in
+  let _wild4 = println(show(trim_go(1))) in
+}
