@@ -53,7 +53,6 @@ fn predeclare_types(
                     ext.goml_name.to_ident_name(),
                     ext.package_path.clone(),
                     ext.go_name.clone(),
-                    ext.package_path.is_some(),
                 ) {
                     push_extern_type_binding_conflict(diagnostics, conflict);
                 }

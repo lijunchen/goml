@@ -829,22 +829,11 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
     }
 
     if node.type_keyword().is_some() && node.lang().is_none() {
-        let Some(name_token) = node.uident() else {
-            ctx.push_error(
-                Some(node.syntax().text_range()),
-                "Extern type declaration is missing type name",
-            );
-            return None;
-        };
-        let name = name_token.to_string();
-        return Some(ast::Item::ExternType(ast::ExternType {
-            attrs: attrs.clone(),
-            visibility,
-            package_path: None,
-            go_name: name.clone(),
-            goml_name: ast::AstIdent::new(&name),
-            explicit_go_name: false,
-        }));
+        ctx.push_error(
+            Some(node.syntax().text_range()),
+            "Extern type declaration is missing language and package strings; use `extern \"go\" \"pkg\" \"Type\" type Name`.",
+        );
+        return None;
     }
 
     let lang_token = node.lang();
@@ -2757,7 +2746,7 @@ pub fn f() -> unit { () }
 pub struct Thing { value: int32 }
 pub enum Choice { A }
 pub trait Named { fn name(Self) -> string; }
-pub extern type Native
+pub extern "go" "native" "Native" type Native
 pub extern "go" "fmt" println() -> unit
 "#,
         );

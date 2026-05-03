@@ -40,7 +40,6 @@ pub struct ExternFunc {
 pub struct ExternType {
     pub go_name: String,
     pub package_path: Option<String>,
-    pub explicit: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
@@ -223,28 +222,17 @@ impl TypeEnv {
         goml_name: String,
         package_path: Option<String>,
         go_name: String,
-        explicit: bool,
     ) -> Option<ExternTypeBindingConflict> {
         match self.extern_types.entry(goml_name.clone()) {
             indexmap::map::Entry::Vacant(entry) => {
                 entry.insert(ExternType {
                     go_name,
                     package_path,
-                    explicit,
                 });
                 None
             }
-            indexmap::map::Entry::Occupied(mut entry) => {
-                let existing = entry.get_mut();
-                if !existing.explicit && explicit {
-                    existing.package_path = package_path;
-                    existing.go_name = go_name;
-                    existing.explicit = true;
-                    return None;
-                }
-                if !explicit {
-                    return None;
-                }
+            indexmap::map::Entry::Occupied(entry) => {
+                let existing = entry.get();
                 if existing.package_path == package_path && existing.go_name == go_name {
                     return None;
                 }
@@ -256,72 +244,6 @@ impl TypeEnv {
                     new_package_path: package_path,
                 })
             }
-        }
-    }
-
-    fn assign_package_to_extern_type(&mut self, type_name: &str, package_path: &str) {
-        if let Some(ext_ty) = self.extern_types.get_mut(type_name)
-            && ext_ty.package_path.is_none()
-        {
-            ext_ty.package_path = Some(package_path.to_string());
-        }
-    }
-
-    fn record_extern_type_usage(&mut self, ty: &tast::Ty, package_path: &str) {
-        match ty {
-            tast::Ty::TVar(_)
-            | tast::Ty::TUnit
-            | tast::Ty::TBool
-            | tast::Ty::TInt8
-            | tast::Ty::TInt16
-            | tast::Ty::TInt32
-            | tast::Ty::TInt64
-            | tast::Ty::TUint8
-            | tast::Ty::TUint16
-            | tast::Ty::TUint32
-            | tast::Ty::TUint64
-            | tast::Ty::TFloat32
-            | tast::Ty::TFloat64
-            | tast::Ty::TString
-            | tast::Ty::TChar => {}
-            tast::Ty::TTuple { typs } => {
-                for ty in typs {
-                    self.record_extern_type_usage(ty, package_path);
-                }
-            }
-            tast::Ty::TFunc { params, ret_ty } => {
-                for param in params {
-                    self.record_extern_type_usage(param, package_path);
-                }
-                self.record_extern_type_usage(ret_ty, package_path);
-            }
-            tast::Ty::TParam { .. } => {}
-            tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => {
-                self.assign_package_to_extern_type(name, package_path);
-            }
-            tast::Ty::TApp { ty, args } => {
-                self.record_extern_type_usage(ty, package_path);
-                for arg in args {
-                    self.record_extern_type_usage(arg, package_path);
-                }
-            }
-            tast::Ty::TArray { elem, .. } => {
-                self.record_extern_type_usage(elem, package_path);
-            }
-            tast::Ty::TSlice { elem } => {
-                self.record_extern_type_usage(elem, package_path);
-            }
-            tast::Ty::TVec { elem } => {
-                self.record_extern_type_usage(elem, package_path);
-            }
-            tast::Ty::TRef { elem } => {
-                self.record_extern_type_usage(elem, package_path);
-            }
-            tast::Ty::THashMap { key, value } => {
-                self.record_extern_type_usage(key, package_path);
-                self.record_extern_type_usage(value, package_path);
-            }
-            tast::Ty::TDyn { .. } => {}
         }
     }
 
@@ -1137,10 +1059,9 @@ impl GlobalTypeEnv {
         goml_name: String,
         package_path: Option<String>,
         go_name: String,
-        explicit: bool,
     ) -> Option<ExternTypeBindingConflict> {
         self.type_env
-            .register_extern_type(goml_name, package_path, go_name, explicit)
+            .register_extern_type(goml_name, package_path, go_name)
     }
 
     pub fn lookup_constructor(&self, constr: &TastIdent) -> Option<(Constructor, tast::Ty)> {
@@ -1275,7 +1196,6 @@ impl GlobalTypeEnv {
                 origin: FnOrigin::User,
             },
         );
-        self.type_env.record_extern_type_usage(&ty, &package_path);
         self.value_env.extern_funcs.insert(
             goml_name,
             ExternFunc {
