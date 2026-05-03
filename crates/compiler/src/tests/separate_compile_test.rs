@@ -192,3 +192,37 @@ pub fn bar() -> int32 {
 
     Ok(())
 }
+
+#[test]
+fn separate_build_link_supports_std() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(
+        &main_path,
+        r#"
+use std::io;
+
+fn main() -> unit {
+    std::io::println("std-ok")
+}
+"#,
+    )?;
+
+    let unit = separate::build_package(separate::PackageInputs {
+        package: ROOT_PACKAGE.to_string(),
+        input_files: vec![main_path.clone()],
+        interface_files: vec![],
+    })
+    .map_err(|err| anyhow::anyhow!("build main failed: {:?}", err))?;
+    let linked = separate::link_cores(vec![unit])
+        .map_err(|err| anyhow::anyhow!("link failed: {:?}", err))?;
+    let go_source = linked.go.to_pretty(&linked.goenv, 120);
+    if !super::runtime_executor_available() {
+        return Ok(());
+    }
+    let output = super::execute_go_source(&go_source, &main_path.to_string_lossy())?;
+
+    assert_eq!(output, "std-ok\n");
+
+    Ok(())
+}
