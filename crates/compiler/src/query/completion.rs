@@ -393,6 +393,7 @@ fn use_root_completions(
 
     let mut names = BTreeSet::new();
     let current_package = current_package_name(path, src);
+    names.insert(crate::package_names::STD_PACKAGE.to_string());
 
     if let Ok((root_dir, dependencies)) =
         crate::pipeline::packages::discover_dependency_versions_from_file(path)
@@ -470,6 +471,10 @@ fn visible_use_namespace_names(path: &Path, src: &str) -> BTreeSet<String> {
             let full_path = segments.join("::");
             if let Some(logical_name) = external_import_paths.get(&full_path) {
                 return Some(logical_name.clone());
+            }
+
+            if segments.first().is_some_and(|segment| segment == "std") {
+                return Some(crate::package_names::STD_PACKAGE.to_string());
             }
 
             if segments.len() == 1 {

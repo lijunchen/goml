@@ -9,7 +9,9 @@ use parser::syntax::MySyntaxNode;
 use text_size::{TextRange, TextSize};
 
 use super::DefinitionLocation;
-use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package};
+use crate::package_names::{
+    BUILTIN_PACKAGE, ROOT_PACKAGE, STD_PACKAGE, is_special_unqualified_package,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct MemberLookupKey {
@@ -184,30 +186,47 @@ pub(crate) fn build_symbol_index(
         index_package_symbols_named(&mut index, pkg_name, pkg_dir, &package_files, &overrides)?;
     }
 
+    let mut external_deps = stdlib_deps_for_graph(&graph)?;
     if let Ok((_module_dir, dependencies)) =
         crate::pipeline::packages::discover_dependency_versions_from_file(path)
     {
-        let external_deps = crate::external::resolve_dependency_versions(&dependencies)
+        let registry_deps = crate::external::resolve_dependency_versions(&dependencies)
             .map_err(|err| err.to_string())?;
-        external_deps
-            .augment_graph(&mut graph)
-            .map_err(|err| err.to_string())?;
-        for (logical_name, files) in external_deps.package_sources() {
-            let Some(pkg_dir) = graph.package_dirs.get(&logical_name) else {
-                continue;
-            };
-            index_package_symbols_named(
-                &mut index,
-                &logical_name,
-                pkg_dir,
-                &files,
-                &HashMap::new(),
-            )?;
-        }
+        external_deps.modules.extend(registry_deps.modules);
+    }
+
+    external_deps
+        .augment_graph(&mut graph)
+        .map_err(|err| err.to_string())?;
+    for (logical_name, files) in external_deps.package_sources() {
+        let Some(pkg_dir) = graph.package_dirs.get(&logical_name) else {
+            continue;
+        };
+        index_package_symbols_named(&mut index, &logical_name, pkg_dir, &files, &HashMap::new())?;
     }
 
     index_builtin_symbols(&mut index)?;
     Ok((graph, index))
+}
+
+fn graph_imports_package(graph: &crate::pipeline::packages::PackageGraph, package: &str) -> bool {
+    graph
+        .packages
+        .values()
+        .any(|unit| unit.imports.contains(package))
+}
+
+fn stdlib_deps_for_graph(
+    graph: &crate::pipeline::packages::PackageGraph,
+) -> Result<crate::external::ExternalDependencyArtifacts, String> {
+    let mut deps = crate::external::ExternalDependencyArtifacts::default();
+    if graph_imports_package(graph, STD_PACKAGE) {
+        deps.modules.insert(
+            STD_PACKAGE.to_string(),
+            crate::stdlib::stdlib_artifact().map_err(|err| err.to_string())?,
+        );
+    }
+    Ok(deps)
 }
 
 pub(crate) fn package_nav_target_in_dir(dir: &Path) -> Option<PathBuf> {
