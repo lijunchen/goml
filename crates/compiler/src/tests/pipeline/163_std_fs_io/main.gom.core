@@ -1,0 +1,169 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn std::env::args() -> Vec[string] {
+  std::env::args_raw()
+}
+
+fn std::fs::read_file(path/0: string) -> Result[string, string] {
+  let mtmp0 = std::fs::read_file_raw(path/0) in
+  {
+    let x1 = mtmp0.0 in
+    let x2 = mtmp0.1 in
+    let x3 = mtmp0.2 in
+    {
+      let err/3 = x3 in
+      {
+        let data/2 = x2 in
+        {
+          let ok/1 = x1 in
+          {
+            if ok/1 {
+                {
+                  Result::Ok(data/2)
+                }
+            } else {
+                {
+                  Result::Err(err/3)
+                }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::fs::write_file(path/4: string, content/5: string) -> Result[unit, string] {
+  let mtmp4 = std::fs::write_file_raw(path/4, content/5) in
+  {
+    let x5 = mtmp4.0 in
+    let x6 = mtmp4.1 in
+    {
+      let err/7 = x6 in
+      {
+        let ok/6 = x5 in
+        {
+          if ok/6 {
+              {
+                Result::Ok(())
+              }
+          } else {
+              {
+                Result::Err(err/7)
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::fs::exists(path/8: string) -> bool {
+  std::fs::file_exists_raw(path/8)
+}
+
+fn std::fs::read_dir(path/9: string) -> Result[Vec[string], string] {
+  let mtmp7 = std::fs::read_dir_raw(path/9) in
+  {
+    let x8 = mtmp7.0 in
+    let x9 = mtmp7.1 in
+    let x10 = mtmp7.2 in
+    {
+      let err/12 = x10 in
+      {
+        let names/11 = x9 in
+        {
+          let ok/10 = x8 in
+          {
+            if ok/10 {
+                {
+                  Result::Ok(names/11)
+                }
+            } else {
+                {
+                  Result::Err(err/12)
+                }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::io::print(value/0: T) -> unit {
+  std::io::print_raw(trait_call[ToString::to_string](value/0))
+}
+
+fn std::io::println(value/1: T) -> unit {
+  std::io::println_raw(trait_call[ToString::to_string](value/1))
+}
+
+fn std::process::exit(code/0: int32) -> unit {
+  std::process::exit_raw(code/0)
+}
+
+fn show_read(res/0: Result[string, string]) -> string {
+  match res/0 {
+    Result::Ok(x0) => {
+      {
+        let x0 = Result::Ok._0(res/0) in
+        {
+          let value/1 = x0 in
+          value/1
+        }
+      }
+    },
+    Result::Err(x1) => {
+      {
+        let x1 = Result::Err._0(res/0) in
+        {
+          let err/2 = x1 in
+          ("err " + err/2)
+        }
+      }
+    },
+  }
+}
+
+fn show_dir(res/3: Result[Vec[string], string]) -> string {
+  match res/3 {
+    Result::Ok(x2) => {
+      {
+        let x2 = Result::Ok._0(res/3) in
+        {
+          let names/4 = x2 in
+          trait_call[ToString::to_string]((inherent#Vec#Vec[string]#len(names/4) > 0))
+        }
+      }
+    },
+    Result::Err(x3) => {
+      {
+        let x3 = Result::Err._0(res/3) in
+        {
+          let err/5 = x3 in
+          ("err " + err/5)
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let mtmp4 = std::fs::write_file("goml-std-test.txt", "std-ok") in
+  {
+    let _wild5 = std::io::println(show_read(std::fs::read_file("goml-std-test.txt"))) in
+    let _wild6 = std::io::println(trait_call[ToString::to_string](std::fs::exists("goml-std-test.txt"))) in
+    let _wild7 = std::io::println(show_dir(std::fs::read_dir("."))) in
+  }
+}
+
+fn inherent#Vec#Vec[T]#len(self/73: Vec[T]) -> int32 {
+  vec_len(self/73)
+}
