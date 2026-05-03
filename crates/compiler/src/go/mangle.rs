@@ -198,7 +198,12 @@ fn is_generated_go_value_name(name: &str) -> bool {
             | "string_hash"
             | "string_print"
             | "string_println"
-            | "go_error_to_string"
+            | "host_args"
+            | "host_read_file"
+            | "host_write_file"
+            | "host_file_exists"
+            | "host_read_dir"
+            | "host_exit"
             | "missing"
     )
 }

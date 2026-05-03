@@ -192,8 +192,6 @@ pub(crate) fn validate_ty(
                         range,
                     );
                 }
-            } else if env.type_env.extern_types.contains_key(&resolved) {
-                // Extern types do not have generics.
             } else {
                 push_error_with_range(
                     diagnostics,
@@ -243,18 +241,6 @@ pub(crate) fn validate_ty(
                         format!(
                             "Type {} expects {} type arguments, but got {}",
                             base_name, expected, actual
-                        ),
-                        range,
-                    );
-                }
-            } else if env.type_env.extern_types.contains_key(&resolved) {
-                if !args.is_empty() {
-                    push_error_with_range(
-                        diagnostics,
-                        format!(
-                            "Type {} does not accept type arguments, but got {}",
-                            base_name,
-                            args.len()
                         ),
                         range,
                     );
@@ -488,9 +474,7 @@ impl tast::Ty {
                     let ident = tast::TastIdent::new(&resolved);
                     if env.enums().contains_key(&ident) {
                         Self::TEnum { name: resolved }
-                    } else if env.structs().contains_key(&ident)
-                        || env.type_env.extern_types.contains_key(&resolved)
-                    {
+                    } else if env.structs().contains_key(&ident) {
                         Self::TStruct { name: resolved }
                     } else {
                         // FIXME
@@ -673,7 +657,6 @@ fn type_constructor_exists(env: &GlobalTypeEnv, name: &str) -> bool {
     let ident = tast::TastIdent::new(name);
     env.enums().contains_key(&ident)
         || env.structs().contains_key(&ident)
-        || env.type_env.extern_types.contains_key(name)
         || env
             .trait_env
             .inherent_impls

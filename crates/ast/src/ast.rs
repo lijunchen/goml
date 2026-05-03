@@ -216,8 +216,6 @@ pub enum Item {
     TraitDef(TraitDef),
     ImplBlock(ImplBlock),
     Fn(Fn),
-    ExternGo(ExternGo),
-    ExternType(ExternType),
     ExternBuiltin(ExternBuiltin),
 }
 
@@ -237,28 +235,6 @@ pub struct Fn {
     pub params: Vec<(AstIdent, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
     pub body: Block,
-}
-
-#[derive(Debug, Clone)]
-pub struct ExternGo {
-    pub attrs: Vec<Attribute>,
-    pub visibility: Visibility,
-    pub package_path: String,
-    pub go_symbol: String,
-    pub goml_name: AstIdent,
-    pub explicit_go_symbol: bool,
-    pub params: Vec<(AstIdent, TypeExpr)>,
-    pub ret_ty: Option<TypeExpr>,
-}
-
-#[derive(Debug, Clone)]
-pub struct ExternType {
-    pub attrs: Vec<Attribute>,
-    pub visibility: Visibility,
-    pub package_path: Option<String>,
-    pub go_name: String,
-    pub goml_name: AstIdent,
-    pub explicit_go_name: bool,
 }
 
 #[derive(Debug, Clone)]

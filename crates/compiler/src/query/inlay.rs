@@ -27,8 +27,6 @@ pub fn inlay_hints(path: &Path, src: &str) -> Option<Vec<InlayHintItem>> {
                 hir::Def::EnumDef(_)
                 | hir::Def::StructDef(_)
                 | hir::Def::TraitDef(_)
-                | hir::Def::ExternGo(_)
-                | hir::Def::ExternType(_)
                 | hir::Def::ExternBuiltin(_) => {}
             }
         }

@@ -2791,8 +2791,6 @@ pub fn compile_file(
                     },
                 });
             }
-            tast::Item::ExternGo(_) => {}
-            tast::Item::ExternType(_) => {}
         }
     }
     core::File { toplevels }

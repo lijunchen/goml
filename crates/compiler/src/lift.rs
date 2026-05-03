@@ -281,15 +281,7 @@ impl<'env> State<'env> {
             };
             self.next_id += 1;
             let ident = TastIdent::new(&name);
-            if self.liftenv.get_struct(&ident).is_none()
-                && self.liftenv.get_enum(&ident).is_none()
-                && !self
-                    .liftenv
-                    .monoenv
-                    .genv
-                    .type_env
-                    .extern_types
-                    .contains_key(&name)
+            if self.liftenv.get_struct(&ident).is_none() && self.liftenv.get_enum(&ident).is_none()
             {
                 return ident;
             }

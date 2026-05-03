@@ -23,8 +23,6 @@ pub struct File {
 pub enum Item {
     ImplBlock(ImplBlock),
     Fn(Fn),
-    ExternGo(ExternGo),
-    ExternType(ExternType),
 }
 
 #[derive(Debug, Clone)]
@@ -41,23 +39,6 @@ pub struct Fn {
     pub params: Vec<(String, Ty)>,
     pub ret_ty: Ty,
     pub body: Block,
-}
-
-#[derive(Debug, Clone)]
-pub struct ExternGo {
-    pub goml_name: String,
-    pub go_name: String,
-    pub package_path: String,
-    pub params: Vec<(String, Ty)>,
-    pub ret_ty: Ty,
-}
-
-#[derive(Debug, Clone)]
-pub struct ExternType {
-    pub package_path: Option<String>,
-    pub go_name: String,
-    pub goml_name: String,
-    pub explicit_go_name: bool,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]

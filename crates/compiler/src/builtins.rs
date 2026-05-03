@@ -72,7 +72,6 @@ fn build_builtin_artifacts() -> BuiltinArtifacts {
         trait_env: TraitEnv::new(),
         value_env: ValueEnv {
             funcs: IndexMap::new(),
-            extern_funcs: IndexMap::new(),
         },
     };
 

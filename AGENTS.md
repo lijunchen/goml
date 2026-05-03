@@ -416,8 +416,8 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 ### External Interoperability
 
-* Binding Go types: `extern "go" "pkg" "Type" type Name`, where `"pkg"` is the Go package path and `"Type"` is the Go type expression.
-* Binding Go symbols: `extern "go" "pkg" ["Func"] name(params) -> Ret`, where `"pkg"` is the Go package path and an explicit identifier is optional.
+* User-defined Go FFI is not supported while the compiler is being bootstrapped.
+* Only compiler-owned host hooks use `#[builtin] extern fn`; normal goml code should call those builtins instead of binding arbitrary Go symbols.
 
 ### Additional Conventions and Constraints
 

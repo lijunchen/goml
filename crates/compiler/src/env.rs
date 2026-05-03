@@ -26,48 +26,6 @@ pub struct StructDef {
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct ExternFunc {
-    pub package_path: String,
-    pub go_name: String,
-    pub ty: tast::Ty,
-    pub binding_mode: ExternBindingMode,
-    pub return_mode: ExternReturnMode,
-    pub variadic_last: bool,
-    pub field_name: Option<String>,
-}
-
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct ExternType {
-    pub go_name: String,
-    pub package_path: Option<String>,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub enum ExternReturnMode {
-    Plain,
-    ErrorOnly,
-    ErrorLast,
-    OptionLast,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub enum ExternBindingMode {
-    Call,
-    Value,
-    FieldGetter,
-    FieldSetter,
-}
-
-#[derive(Debug, Clone)]
-pub struct ExternTypeBindingConflict {
-    pub type_name: String,
-    pub existing_go_name: String,
-    pub existing_package_path: Option<String>,
-    pub new_go_name: String,
-    pub new_package_path: Option<String>,
-}
-
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum Constraint {
     TypeEqual(
         tast::Ty,
@@ -152,7 +110,6 @@ pub struct ImplDef {
 pub struct TypeEnv {
     pub enums: IndexMap<TastIdent, EnumDef>,
     pub structs: IndexMap<TastIdent, StructDef>,
-    pub extern_types: IndexMap<String, ExternType>,
 }
 
 impl TypeEnv {
@@ -215,36 +172,6 @@ impl TypeEnv {
 
     pub fn insert_struct(&mut self, def: StructDef) {
         self.structs.insert(def.name.clone(), def);
-    }
-
-    pub fn register_extern_type(
-        &mut self,
-        goml_name: String,
-        package_path: Option<String>,
-        go_name: String,
-    ) -> Option<ExternTypeBindingConflict> {
-        match self.extern_types.entry(goml_name.clone()) {
-            indexmap::map::Entry::Vacant(entry) => {
-                entry.insert(ExternType {
-                    go_name,
-                    package_path,
-                });
-                None
-            }
-            indexmap::map::Entry::Occupied(entry) => {
-                let existing = entry.get();
-                if existing.package_path == package_path && existing.go_name == go_name {
-                    return None;
-                }
-                Some(ExternTypeBindingConflict {
-                    type_name: goml_name,
-                    existing_go_name: existing.go_name.clone(),
-                    existing_package_path: existing.package_path.clone(),
-                    new_go_name: go_name,
-                    new_package_path: package_path,
-                })
-            }
-        }
     }
 
     pub fn lookup_constructor(&self, constr: &TastIdent) -> Option<(Constructor, tast::Ty)> {
@@ -661,7 +588,6 @@ fn trait_impl_matches(template: &tast::Ty, actual: &tast::Ty) -> bool {
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct ValueEnv {
     pub funcs: IndexMap<String, FnScheme>,
-    pub extern_funcs: IndexMap<String, ExternFunc>,
 }
 
 impl ValueEnv {
@@ -1054,16 +980,6 @@ impl GlobalTypeEnv {
         self.type_env.insert_struct(def)
     }
 
-    pub fn register_extern_type(
-        &mut self,
-        goml_name: String,
-        package_path: Option<String>,
-        go_name: String,
-    ) -> Option<ExternTypeBindingConflict> {
-        self.type_env
-            .register_extern_type(goml_name, package_path, go_name)
-    }
-
     pub fn lookup_constructor(&self, constr: &TastIdent) -> Option<(Constructor, tast::Ty)> {
         self.type_env.lookup_constructor(constr)
     }
@@ -1173,41 +1089,6 @@ impl GlobalTypeEnv {
 
     pub fn get_function_scheme(&self, func: &str) -> Option<FnScheme> {
         self.value_env.get_function_scheme(func)
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    pub fn register_extern_function(
-        &mut self,
-        goml_name: String,
-        package_path: String,
-        go_name: String,
-        ty: tast::Ty,
-        binding_mode: ExternBindingMode,
-        return_mode: ExternReturnMode,
-        variadic_last: bool,
-        field_name: Option<String>,
-    ) {
-        self.value_env.funcs.insert(
-            goml_name.clone(),
-            FnScheme {
-                type_params: vec![],
-                constraints: vec![],
-                ty: ty.clone(),
-                origin: FnOrigin::User,
-            },
-        );
-        self.value_env.extern_funcs.insert(
-            goml_name,
-            ExternFunc {
-                package_path,
-                go_name,
-                ty,
-                binding_mode,
-                return_mode,
-                variadic_last,
-                field_name,
-            },
-        );
     }
 }
 

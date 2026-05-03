@@ -47,10 +47,6 @@ impl PackageExports {
             .structs
             .retain(|name, _| public_names.contains(&name.0));
         exports
-            .type_env
-            .extern_types
-            .retain(|name, _| public_names.contains(name));
-        exports
             .trait_env
             .trait_defs
             .retain(|name, _| public_names.contains(name));
@@ -59,28 +55,16 @@ impl PackageExports {
             .funcs
             .retain(|name, _| public_names.contains(name));
         exports
-            .value_env
-            .extern_funcs
-            .retain(|name, _| public_names.contains(name));
-        exports
     }
 
     pub fn apply_to(&self, genv: &mut GlobalTypeEnv) {
         for (name, def) in self.type_env.enums.iter() {
             genv.type_env.structs.shift_remove(name);
-            genv.type_env.extern_types.shift_remove(&name.0);
             genv.type_env.enums.insert(name.clone(), def.clone());
         }
         for (name, def) in self.type_env.structs.iter() {
             genv.type_env.enums.shift_remove(name);
-            genv.type_env.extern_types.shift_remove(&name.0);
             genv.type_env.structs.insert(name.clone(), def.clone());
-        }
-        for (name, def) in self.type_env.extern_types.iter() {
-            let ident = crate::tast::TastIdent::new(name);
-            genv.type_env.enums.shift_remove(&ident);
-            genv.type_env.structs.shift_remove(&ident);
-            genv.type_env.extern_types.insert(name.clone(), def.clone());
         }
         for (name, def) in self.trait_env.trait_defs.iter() {
             genv.trait_env.trait_defs.insert(name.clone(), def.clone());
@@ -95,11 +79,6 @@ impl PackageExports {
         }
         for (name, scheme) in self.value_env.funcs.iter() {
             genv.value_env.funcs.insert(name.clone(), scheme.clone());
-        }
-        for (name, func) in self.value_env.extern_funcs.iter() {
-            genv.value_env
-                .extern_funcs
-                .insert(name.clone(), func.clone());
         }
     }
 
@@ -128,12 +107,6 @@ fn public_export_names(package: &str, files: &[SourceFileAst]) -> HashSet<String
                 }
                 ast::Item::Fn(def) if def.visibility == ast::Visibility::Public => {
                     Some(&def.name.0)
-                }
-                ast::Item::ExternGo(def) if def.visibility == ast::Visibility::Public => {
-                    Some(&def.goml_name.0)
-                }
-                ast::Item::ExternType(def) if def.visibility == ast::Visibility::Public => {
-                    Some(&def.goml_name.0)
                 }
                 ast::Item::ExternBuiltin(def) if def.visibility == ast::Visibility::Public => {
                     Some(&def.name.0)

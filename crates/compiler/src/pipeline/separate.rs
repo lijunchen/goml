@@ -232,11 +232,6 @@ fn exports_contain_package(package: &str, exports: &PackageExports) -> bool {
             .keys()
             .any(|name| export_belongs_to_package(package, &name.0))
         || exports
-            .type_env
-            .extern_types
-            .keys()
-            .any(|name| export_belongs_to_package(package, name))
-        || exports
             .trait_env
             .trait_defs
             .keys()
