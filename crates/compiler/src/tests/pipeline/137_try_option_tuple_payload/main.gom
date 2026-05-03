@@ -1,0 +1,24 @@
+fn cut_pair(ok: bool) -> Option[(string, string)] {
+    if ok {
+        Option::Some(("alpha", "beta"))
+    } else {
+        Option::None
+    }
+}
+
+fn describe(ok: bool) -> Option[string] {
+    let (before, after) = cut_pair(ok)?;
+    Option::Some(before + "|" + after)
+}
+
+fn show(opt: Option[string]) -> string {
+    match opt {
+        Option::Some(value) => "some " + value,
+        Option::None => "none",
+    }
+}
+
+fn main() -> unit {
+    println(show(describe(true)));
+    println(show(describe(false)));
+}
