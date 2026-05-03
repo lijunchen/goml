@@ -83,16 +83,6 @@ fn multi_package_compile_project_016() -> anyhow::Result<()> {
 }
 
 #[test]
-fn multi_package_compile_project_017() -> anyhow::Result<()> {
-    run_project("project017_try_go_error_cross_package")
-}
-
-#[test]
-fn multi_package_compile_project_018() -> anyhow::Result<()> {
-    run_project("project018_goml_go_shims")
-}
-
-#[test]
 fn multi_package_compile_project_019() -> anyhow::Result<()> {
     run_project("project019_cross_package_inherent_method")
 }

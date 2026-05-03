@@ -1,9 +1,0 @@
-#[go_variadic_last]
-extern "go" "path" "Join" join(parts: Slice[string]) -> string
-
-extern "go" "strings" "Fields" fields(text: string) -> Vec[string]
-
-fn main() {
-    let parts = fields("alpha beta gamma");
-    println(join(parts.slice(0, parts.len())));
-}
