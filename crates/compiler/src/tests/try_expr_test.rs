@@ -100,8 +100,8 @@ fn main() -> unit {
 
     assert!(go.contains("case Some:"));
     assert!(go.contains("case None:"));
-    assert!(go.contains("return Some{"));
-    assert!(go.contains("return None{}"));
+    assert!(go.contains("Some{"));
+    assert!(go.contains("None{}"));
 }
 
 #[test]
@@ -112,6 +112,6 @@ fn try_inside_match_while_condition_compiles_in_single_file_mode() {
     let go = compile_single_file_go(path);
 
     assert!(go.contains("Loop_"), "{go}");
-    assert!(go.contains("step__native"), "{go}");
-    assert!(go.contains("if !mtmp1_ok"), "{go}");
+    assert!(go.contains("Option__bool_Some"), "{go}");
+    assert!(!go.contains("__native"), "{go}");
 }

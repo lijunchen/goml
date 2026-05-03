@@ -822,8 +822,8 @@ pub fn hashmap_helper_fn_name(prefix: &str, ty: &tast::Ty) -> String {
     format!("{}__{}", prefix, go_ident(&encode_ty(ty)))
 }
 
-pub fn hashmap_get_native_helper_fn_name(ty: &tast::Ty) -> String {
-    hashmap_helper_fn_name("hashmap_get_native", ty)
+pub fn hashmap_lookup_helper_fn_name(ty: &tast::Ty) -> String {
+    hashmap_helper_fn_name("hashmap_lookup", ty)
 }
 
 pub fn missing_helper_fn_name(ty: &tast::Ty) -> String {
@@ -1832,7 +1832,7 @@ pub fn make_hashmap_runtime(
         };
 
         let get_native_fn = goast::Fn {
-            name: hashmap_get_native_helper_fn_name(ty),
+            name: hashmap_lookup_helper_fn_name(ty),
             params: vec![
                 ("m".to_string(), map_ptr_go_ty.clone()),
                 ("key".to_string(), key_go_ty.clone()),
@@ -2106,7 +2106,7 @@ pub fn make_hashmap_runtime(
                         names: vec!["value".to_string(), "ok".to_string()],
                         value: goast::Expr::Call {
                             func: Box::new(goast::Expr::Var {
-                                name: hashmap_get_native_helper_fn_name(ty),
+                                name: hashmap_lookup_helper_fn_name(ty),
                                 ty: goty::GoType::TFunc {
                                     params: vec![map_ptr_go_ty.clone(), key_go_ty.clone()],
                                     ret_ty: Box::new(goty::GoType::TMulti {
