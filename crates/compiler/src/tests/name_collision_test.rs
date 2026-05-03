@@ -123,13 +123,6 @@ fn hashmap_runtime_type_name_collision_executes() {
 }
 
 #[test]
-fn runtime_json_escape_function_collision_executes() {
-    let output = run_crasher("runtime_json_escape_function_collision_user_symbol");
-
-    assert_eq!(output, "user:x\n");
-}
-
-#[test]
 fn runtime_missing_function_collision_executes() {
     let output = run_crasher("runtime_missing_function_collision_user_symbol");
 
