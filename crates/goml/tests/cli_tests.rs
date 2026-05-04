@@ -1063,6 +1063,43 @@ fn new_project_can_check_and_build() -> anyhow::Result<()> {
 }
 
 #[test]
+fn project_check_and_build_support_std_imports() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    fs::write(dir.path().join("goml.toml"), PROJECT_CONFIG)?;
+    fs::write(
+        dir.path().join("main.gom"),
+        r#"
+use std::io;
+
+fn main() -> unit {
+    std::io::println("std-project")
+}
+"#,
+    )?;
+
+    let check_output = run_goml(&["check"], dir.path())?;
+    let check_stderr = String::from_utf8_lossy(&check_output.stderr);
+    assert!(check_output.status.success(), "stderr: {check_stderr}");
+
+    let build_output = run_goml(&["build"], dir.path())?;
+    let build_stderr = String::from_utf8_lossy(&build_output.stderr);
+    assert!(build_output.status.success(), "stderr: {build_stderr}");
+
+    let go_file = dir.path().join("target/goml/main.go");
+    assert!(go_file.exists());
+
+    if runtime_executor_available() {
+        let go_output = run_go_main(&go_file, dir.path())?;
+        let go_stdout = String::from_utf8_lossy(&go_output.stdout);
+        let go_stderr = String::from_utf8_lossy(&go_output.stderr);
+        assert!(go_output.status.success(), "stderr: {go_stderr}");
+        expect!["std-project\n"].assert_eq(&go_stdout);
+    }
+
+    Ok(())
+}
+
+#[test]
 fn project_check_dry_run_prints_compiler_check_commands() -> anyhow::Result<()> {
     let (dir, _) = copy_module_fixture("project008_trait_bounds_across_packages")?;
     let output = run_goml(&["check", "--dry-run"], dir.path())?;

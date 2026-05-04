@@ -810,6 +810,7 @@ fn build_project_check_plan(project: &ProjectContext) -> anyhow::Result<ProjectC
         &external_imports,
     )
     .map_err(|err| anyhow!("project check failed: {:?}", err))?;
+    mark_std_external_if_imported(&mut graph);
     external
         .artifacts
         .augment_graph(&mut graph)
@@ -866,6 +867,7 @@ fn build_project_build_plan(project: &ProjectContext) -> anyhow::Result<ProjectC
         &external_imports,
     )
     .map_err(|err| anyhow!("project build failed: {:?}", err))?;
+    mark_std_external_if_imported(&mut graph);
     external
         .artifacts
         .augment_graph(&mut graph)
@@ -1128,7 +1130,10 @@ fn package_interface_inputs(
     let mut outputs = Vec::new();
     let mut seen = HashSet::new();
     for dep in deps {
-        if dep == compiler::package_names::BUILTIN_PACKAGE || dep == package_name {
+        if dep == compiler::package_names::BUILTIN_PACKAGE
+            || dep == compiler::package_names::STD_PACKAGE
+            || dep == package_name
+        {
             continue;
         }
         if let Some(dep_interface) = interface_outputs.get(&dep) {
@@ -1162,6 +1167,17 @@ fn package_interface_inputs(
         ));
     }
     Ok(outputs)
+}
+
+fn mark_std_external_if_imported(graph: &mut compiler::pipeline::packages::PackageGraph) {
+    let uses_std = graph.packages.values().any(|package| {
+        package
+            .imports
+            .contains(compiler::package_names::STD_PACKAGE)
+    });
+    if uses_std {
+        graph.add_external_root_package(compiler::package_names::STD_PACKAGE);
+    }
 }
 
 fn sorted_package_inputs(
