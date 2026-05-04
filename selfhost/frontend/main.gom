@@ -1,0 +1,46 @@
+mod lexer;
+mod syntax;
+
+use std::env;
+use std::fs;
+use std::io;
+use std::process;
+
+fn usage() -> string {
+    "usage: frontend tokens <file.gom>"
+}
+
+fn print_token(token: crate::syntax::Token) -> unit {
+    std::io::println(token.start.to_string() + ".." + token.end.to_string() + " " + crate::syntax::token_kind_name(token.kind) + " " + token.text)
+}
+
+fn print_tokens(tokens: Vec[crate::syntax::Token]) -> unit {
+    let i = ref(0);
+    while ref_get(i) < tokens.len() {
+        print_token(tokens.get(ref_get(i)));
+        ref_set(i, ref_get(i) + 1);
+    }
+}
+
+fn run_tokens(path: string) -> int32 {
+    match std::fs::read_file(path) {
+        Result::Ok(source) => {
+            print_tokens(crate::lexer::lex(source));
+            0
+        },
+        Result::Err(err) => {
+            std::io::println("error: " + err);
+            1
+        },
+    }
+}
+
+fn main() -> unit {
+    let args = std::env::args();
+    if args.len() == 3 && args.get(1) == "tokens" {
+        std::process::exit(run_tokens(args.get(2)))
+    } else {
+        std::io::println(usage());
+        std::process::exit(1)
+    }
+}

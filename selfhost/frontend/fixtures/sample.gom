@@ -1,0 +1,22 @@
+use std::io;
+
+#[derive(ToString)]
+pub enum Token {
+    Ident(string),
+    Int(int32),
+}
+
+pub fn classify(value: int32) -> string {
+    match value {
+        0 => "zero",
+        1i32 => "one",
+        _ => if value > 1 { "many" } else { "negative" },
+    }
+}
+
+fn main() -> unit {
+    let token = Token::Ident("goml");
+    let letters = ['g', 'o', 'm', 'l'];
+    let _ = || classify(letters.len());
+    std::io::println(token.to_string());
+}
