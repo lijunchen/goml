@@ -270,13 +270,71 @@ fn topo_sort_modules(resolved: &ResolvedModuleGraph) -> Result<Vec<ModuleCoord>,
     Ok(order)
 }
 
+pub fn compile_std_module(root_dir: PathBuf) -> Result<ExternalModuleArtifact, String> {
+    let manifest_path = root_dir.join("goml.toml");
+    let manifest = crate::config::load_crate_manifest(&manifest_path)?;
+    let module = ResolvedModule {
+        coord: ModuleCoord {
+            owner: "std".to_string(),
+            module: "std".to_string(),
+        },
+        version: SemVer {
+            major: 0,
+            minor: 0,
+            patch: 0,
+        },
+        manifest_path,
+        root_dir,
+        manifest,
+    };
+    let mut artifact = compile_module_artifact(
+        &module,
+        "std",
+        &BTreeMap::new(),
+        std_logical_package_name,
+        std_import_path,
+    )?;
+    let packages = artifact
+        .sources
+        .values()
+        .map(|source| source.import_path.clone())
+        .collect::<BTreeSet<_>>();
+    artifact.interface.interface.packages = packages.clone();
+    if let Some(interface) = artifact.package_interfaces.get_mut("std") {
+        interface.packages = packages;
+    }
+    artifact.interface = InterfaceUnit::new(
+        artifact.interface.package.clone(),
+        artifact.interface.exports.clone(),
+        artifact.interface.interface.clone(),
+        artifact.interface.deps.clone(),
+    );
+    artifact.core.interface = artifact.interface.clone();
+    Ok(artifact)
+}
+
 fn compile_external_module(
     module: &ResolvedModule,
     root_package: &str,
     compiled_roots: &BTreeMap<String, ExternalModuleArtifact>,
 ) -> Result<ExternalModuleArtifact, String> {
     validate_external_module_manifest(module, root_package)?;
+    compile_module_artifact(
+        module,
+        root_package,
+        compiled_roots,
+        logical_package_name,
+        |root_package, package| external_import_path(&module.coord.owner, root_package, package),
+    )
+}
 
+fn compile_module_artifact(
+    module: &ResolvedModule,
+    root_package: &str,
+    compiled_roots: &BTreeMap<String, ExternalModuleArtifact>,
+    logical_name_for_package: impl Fn(&str, &str) -> String,
+    import_path_for_package: impl Fn(&str, &str) -> String,
+) -> Result<ExternalModuleArtifact, String> {
     let available_imports = external_imports_from_modules(compiled_roots);
     let mut graph = packages::discover_dependency_crate_packages_with_external_imports(
         &module.root_dir,
@@ -314,7 +372,12 @@ fn compile_external_module(
     let logical_names = graph
         .packages
         .keys()
-        .map(|package| (package.clone(), logical_package_name(root_package, package)))
+        .map(|package| {
+            (
+                package.clone(),
+                logical_name_for_package(root_package, package),
+            )
+        })
         .collect::<HashMap<_, _>>();
     let mut seen_logical_names = HashSet::new();
     for logical_name in logical_names.values() {
@@ -394,7 +457,7 @@ fn compile_external_module(
             logical_name.clone(),
             ExternalPackageSource {
                 logical_name,
-                import_path: external_import_path(&module.coord.owner, root_package, &package_name),
+                import_path: import_path_for_package(root_package, &package_name),
                 dir: package_dir,
                 files,
             },
@@ -565,11 +628,27 @@ fn external_import_path(owner: &str, module: &str, package: &str) -> String {
     }
 }
 
+fn std_import_path(root_package: &str, package: &str) -> String {
+    if package == root_package {
+        root_package.to_string()
+    } else {
+        format!("{root_package}::{package}")
+    }
+}
+
 fn logical_package_name(root_package: &str, package: &str) -> String {
     if package == root_package {
         root_package.to_string()
     } else {
         package.to_string()
+    }
+}
+
+fn std_logical_package_name(root_package: &str, package: &str) -> String {
+    if package == root_package {
+        root_package.to_string()
+    } else {
+        format!("{root_package}::{package}")
     }
 }
 

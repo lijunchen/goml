@@ -169,8 +169,6 @@ fn is_generated_go_value_name(name: &str) -> bool {
             | "main"
             | "unit_to_string"
             | "bool_to_string"
-            | "bool_to_json"
-            | "json_escape_string"
             | "string_len"
             | "string_get"
             | "char_to_string"
@@ -197,12 +195,6 @@ fn is_generated_go_value_name(name: &str) -> bool {
             | "string_hash"
             | "string_print"
             | "string_println"
-            | "host_args"
-            | "host_read_file"
-            | "host_write_file"
-            | "host_file_exists"
-            | "host_read_dir"
-            | "host_exit"
             | "missing"
     )
 }

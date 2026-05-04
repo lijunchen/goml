@@ -412,7 +412,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 ### Attributes and Derivation
 
-* Attributes such as `#[derive(ToString)]` and `#[derive(ToJson)]` automatically generate methods; applicable to structs and enums.
+* Attributes such as `#[derive(ToString)]`, `#[derive(Eq)]`, and `#[derive(Hash)]` automatically generate methods; applicable to structs and enums.
 
 ### External Interoperability
 

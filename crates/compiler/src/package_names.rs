@@ -1,4 +1,5 @@
 pub const BUILTIN_PACKAGE: &str = "builtin";
+pub const STD_PACKAGE: &str = "std";
 pub const ROOT_PACKAGE: &str = "main";
 pub const ENTRY_FUNCTION: &str = "main";
 pub const ENTRY_WRAPPER_FUNCTION: &str = "main0";

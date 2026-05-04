@@ -1,0 +1,13 @@
+#[builtin]
+extern fn print_raw(value: string) -> unit
+
+#[builtin]
+extern fn println_raw(value: string) -> unit
+
+pub fn print[T: ToString](value: T) -> unit {
+    print_raw(ToString::to_string(value))
+}
+
+pub fn println[T: ToString](value: T) -> unit {
+    println_raw(ToString::to_string(value))
+}

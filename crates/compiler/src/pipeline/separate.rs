@@ -11,10 +11,13 @@ use crate::interface;
 use crate::lift::{self, GlobalLiftEnv, LiftFile};
 use crate::mono::{self, GlobalMonoEnv};
 use crate::package_names::is_special_unqualified_package;
-use crate::package_names::{BUILTIN_PACKAGE, ENTRY_FUNCTION, ROOT_PACKAGE, is_builtin_package};
+use crate::package_names::{
+    BUILTIN_PACKAGE, ENTRY_FUNCTION, ROOT_PACKAGE, STD_PACKAGE, is_builtin_package,
+};
 use crate::pipeline::builtin_inherent;
 use crate::pipeline::pipeline::{CompilationError, parse_ast_file, report_duplicate_trait_impls};
 use crate::pipeline::{compile_error, with_compiler_stack};
+use crate::stdlib;
 use diagnostics::Diagnostics;
 
 pub struct PackageInputs {
@@ -312,6 +315,18 @@ fn typecheck_single_package(
     (tast, full_exports, exports, pkg_interface, diagnostics)
 }
 
+fn add_stdlib_dep(
+    deps_envs: &mut HashMap<String, GlobalTypeEnv>,
+    deps_interfaces: &mut HashMap<String, interface::PackageInterface>,
+    dep_hashes: &mut BTreeMap<String, String>,
+) -> Result<InterfaceUnit, CompilationError> {
+    let unit = stdlib::stdlib_interface().map_err(compile_error)?;
+    deps_envs.insert(STD_PACKAGE.to_string(), unit.exports.to_genv());
+    deps_interfaces.insert(STD_PACKAGE.to_string(), unit.interface.clone());
+    dep_hashes.insert(STD_PACKAGE.to_string(), unit.interface_hash.clone());
+    Ok(unit)
+}
+
 pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationError> {
     with_compiler_stack(|| {
         let interface_units = load_interface_files(&opts.interface_files)?;
@@ -333,8 +348,12 @@ pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationEr
             );
         }
 
+        if deps.iter().any(|dep| dep == STD_PACKAGE) {
+            let _ = add_stdlib_dep(&mut deps_envs, &mut deps_interfaces, &mut dep_hashes)?;
+        }
+
         for dep in deps {
-            if dep == BUILTIN_PACKAGE || dep == opts.package {
+            if dep == BUILTIN_PACKAGE || dep == STD_PACKAGE || dep == opts.package {
                 continue;
             }
             let (unit, package_interface) =
@@ -380,8 +399,13 @@ pub fn build_package(opts: PackageInputs) -> Result<CoreUnit, CompilationError> 
             );
         }
 
+        if deps.iter().any(|dep| dep == STD_PACKAGE) {
+            let unit = add_stdlib_dep(&mut deps_envs, &mut deps_interfaces, &mut dep_hashes)?;
+            dep_units.push(unit);
+        }
+
         for dep in deps {
-            if dep == BUILTIN_PACKAGE || dep == opts.package {
+            if dep == BUILTIN_PACKAGE || dep == STD_PACKAGE || dep == opts.package {
                 continue;
             }
             let (unit, package_interface) =
@@ -470,6 +494,17 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
         }
 
         let builtin_hash = builtins::builtin_interface_hash();
+        let needs_std = by_name
+            .values()
+            .any(|unit| unit.deps.contains_key(STD_PACKAGE));
+        let std_core = if needs_std {
+            Some(stdlib::stdlib_core().map_err(compile_error)?)
+        } else {
+            None
+        };
+        let std_hash = std_core
+            .as_ref()
+            .map(|unit| unit.interface.interface_hash.clone());
         for (pkg, unit) in by_name.iter() {
             for (dep, expected_hash) in unit.deps.iter() {
                 if dep == BUILTIN_PACKAGE {
@@ -477,6 +512,18 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
                         return Err(compile_error(format!(
                             "package {} expects builtin interface_hash {}, but compiler has {} (rebuild {})",
                             pkg, expected_hash, builtin_hash, pkg
+                        )));
+                    }
+                    continue;
+                }
+                if dep == STD_PACKAGE {
+                    if Some(expected_hash) != std_hash.as_ref() {
+                        return Err(compile_error(format!(
+                            "package {} expects std interface_hash {}, but compiler has {} (rebuild {})",
+                            pkg,
+                            expected_hash,
+                            std_hash.as_deref().unwrap_or("<none>"),
+                            pkg
                         )));
                     }
                     continue;
@@ -499,6 +546,9 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
         let order = topo_sort(&by_name)?;
 
         let mut genv = builtins::builtin_env();
+        if let Some(std_core) = &std_core {
+            std_core.interface.exports.apply_to(&mut genv);
+        }
         let mut diagnostics = Diagnostics::new();
         for pkg in order.iter() {
             let unit = by_name
@@ -524,6 +574,9 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
             &builtins::builtin_print_tast(),
         );
         linked.toplevels.extend(builtin_print_core.toplevels);
+        if let Some(std_core) = &std_core {
+            linked.toplevels.extend(std_core.core_ir.toplevels.clone());
+        }
 
         for pkg in order {
             let unit = by_name

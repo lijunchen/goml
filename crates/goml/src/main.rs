@@ -6,7 +6,10 @@ use std::process::{Command, Stdio};
 
 use anyhow::{Context, anyhow, bail};
 use clap::{Args, Parser, Subcommand};
-use compiler::config::{find_crate_root, load_crate_manifest};
+use compiler::config::{
+    ensure_goml_home_layout, find_crate_root, goml_bin_dir, goml_cache_dir, goml_home_dir,
+    goml_lib_dir, goml_std_dir, load_crate_manifest,
+};
 use compiler::env::{format_compile_diagnostics, format_typer_diagnostics};
 use compiler::external::ExternalDependencyArtifacts;
 use compiler::package_names::ENTRY_FUNCTION;
@@ -43,6 +46,7 @@ enum Commands {
     Update(RegistryCommandArgs),
     Add(AddArgs),
     Remove(RemoveArgs),
+    Home,
     Version,
     Compiler(CompilerArgs),
 }
@@ -296,9 +300,35 @@ fn run_cli() -> anyhow::Result<()> {
         Commands::Update(args) => execute_update(args),
         Commands::Add(args) => execute_add(args),
         Commands::Remove(args) => execute_remove(args),
+        Commands::Home => execute_home(),
         Commands::Version => execute_version(),
         Commands::Compiler(args) => execute_compiler_command(args.command),
     }
+}
+
+fn execute_home() -> anyhow::Result<()> {
+    ensure_goml_home_layout().map_err(anyhow::Error::msg)?;
+    println!(
+        "GOML_HOME={}",
+        goml_home_dir().map_err(anyhow::Error::msg)?.display()
+    );
+    println!(
+        "bin={}",
+        goml_bin_dir().map_err(anyhow::Error::msg)?.display()
+    );
+    println!(
+        "lib={}",
+        goml_lib_dir().map_err(anyhow::Error::msg)?.display()
+    );
+    println!(
+        "std={}",
+        goml_std_dir().map_err(anyhow::Error::msg)?.display()
+    );
+    println!(
+        "cache={}",
+        goml_cache_dir().map_err(anyhow::Error::msg)?.display()
+    );
+    Ok(())
 }
 
 fn execute_version() -> anyhow::Result<()> {
@@ -340,6 +370,7 @@ fn execute_new(args: NewArgs) -> anyhow::Result<()> {
 }
 
 fn execute_update(args: RegistryCommandArgs) -> anyhow::Result<()> {
+    ensure_goml_home_layout().map_err(anyhow::Error::msg)?;
     let source = registry_source(args.local_registry.as_deref())?;
     let cache_dir = cached_registry_dir().map_err(anyhow::Error::msg)?;
     if let Some(parent) = cache_dir.parent() {

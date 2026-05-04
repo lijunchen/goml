@@ -1,0 +1,28 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn show_read(res/0: Result[string, string]) -> string {
+    match (res/0 : Result[string, string]) {
+        Result::Ok(value/1: string) => (value/1 : string),
+        Result::Err(err/2: string) => "err " + (err/2 : string),
+    }
+}
+
+fn show_dir(res/3: Result[Vec[string], string]) -> string {
+    match (res/3 : Result[Vec[string], string]) {
+        Result::Ok(names/4: Vec[string]) => (ToString::to_string : (bool) -> string)((Vec[string]::len : (Vec[string]) -> int32)((names/4 : Vec[string])) > 0),
+        Result::Err(err/5: string) => "err " + (err/5 : string),
+    }
+}
+
+fn main() -> unit {
+    let _ : Result[unit, string] = (std::fs::write_file : (string, string) -> Result[unit, string])("goml-std-test.txt", "std-ok");
+    (std::io::println : (string) -> unit)((show_read : (Result[string, string]) -> string)((std::fs::read_file : (string) -> Result[string, string])("goml-std-test.txt")));
+    (std::io::println : (string) -> unit)((ToString::to_string : (bool) -> string)((std::fs::exists : (string) -> bool)("goml-std-test.txt")));
+    (std::io::println : (string) -> unit)((show_dir : (Result[Vec[string], string]) -> string)((std::fs::read_dir : (string) -> Result[Vec[string], string])(".")));
+}

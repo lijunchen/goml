@@ -121,6 +121,18 @@ fn run_goml_with_home(
         .output()?)
 }
 
+fn run_goml_with_goml_home(
+    args: &[&str],
+    cwd: &Path,
+    home: &Path,
+) -> anyhow::Result<std::process::Output> {
+    Ok(Command::new(goml_bin())
+        .args(args)
+        .current_dir(cwd)
+        .env("GOML_HOME", home)
+        .output()?)
+}
+
 fn normalize_temp_prefix(text: &str, root: &Path) -> String {
     text.replace(root.to_string_lossy().as_ref(), "<TMP>")
 }
@@ -365,6 +377,42 @@ fn compiler_run_single_falls_back_when_yaegi_cannot_run_function_vectors() -> an
 
     assert!(output.status.success(), "stderr: {stderr}");
     expect!["11\n"].assert_eq(&stdout);
+    expect![""].assert_eq(&stderr);
+
+    Ok(())
+}
+
+#[test]
+fn compiler_loads_std_from_goml_home() -> anyhow::Result<()> {
+    if !runtime_executor_available() {
+        return Ok(());
+    }
+
+    let dir = tempfile::tempdir()?;
+    let home = dir.path().join("goml-home");
+    copy_dir_recursive(&workspace_root().join("stdlib/std"), &home.join("lib/std"))?;
+    let path = dir.path().join("main.gom");
+    fs::write(
+        &path,
+        r#"
+use std::io;
+
+fn main() -> unit {
+    std::io::println("std-home")
+}
+"#,
+    )?;
+
+    let output = run_goml_with_goml_home(
+        &["compiler", "run-single", path.to_string_lossy().as_ref()],
+        dir.path(),
+        &home,
+    )?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(output.status.success(), "stderr: {stderr}");
+    expect!["std-home\n"].assert_eq(&stdout);
     expect![""].assert_eq(&stderr);
 
     Ok(())
@@ -800,6 +848,32 @@ fn version_prints_crate_version() -> anyhow::Result<()> {
     assert!(output.status.success(), "stderr: {stderr}");
     assert_eq!(stdout, current_version_output());
     expect![""].assert_eq(&stderr);
+
+    Ok(())
+}
+
+#[test]
+fn home_prints_goml_home_layout() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let home = dir.path().join("goml-home");
+    let output = run_goml_with_goml_home(&["home"], dir.path(), &home)?;
+
+    let stdout = normalize_temp_prefix(&String::from_utf8_lossy(&output.stdout), dir.path());
+    let stderr = normalize_temp_prefix(&String::from_utf8_lossy(&output.stderr), dir.path());
+
+    assert!(output.status.success(), "stderr: {stderr}");
+    expect![[r#"
+        GOML_HOME=<TMP>/goml-home
+        bin=<TMP>/goml-home/bin
+        lib=<TMP>/goml-home/lib
+        std=<TMP>/goml-home/lib/std
+        cache=<TMP>/goml-home/cache
+    "#]]
+    .assert_eq(&stdout);
+    expect![""].assert_eq(&stderr);
+    assert!(home.join("bin").is_dir());
+    assert!(home.join("lib").is_dir());
+    assert!(home.join("cache").is_dir());
 
     Ok(())
 }

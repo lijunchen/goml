@@ -87,6 +87,21 @@ pub fn tag() -> string {
     .unwrap();
 }
 
+fn write_minimal_project(root: &Path, src: &str) -> PathBuf {
+    std::fs::write(
+        root.join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+"#,
+    )
+    .unwrap();
+    let main_path = root.join("main.gom");
+    std::fs::write(&main_path, src).unwrap();
+    main_path
+}
+
 mod robustness_tests {
     use super::*;
 
@@ -662,6 +677,22 @@ fn main() {
     }
 
     #[test]
+    fn std_io_usage_no_diagnostics() {
+        let dir = tempdir().unwrap();
+        let src = r#"
+use std::io;
+
+fn main() -> unit {
+    std::io::println("ok")
+}
+"#;
+        let path = write_minimal_project(dir.path(), src);
+        let doc = Document::new(src.to_string());
+        let diags = handlers::get_diagnostics(&path, src, &doc);
+        expect!["no diagnostics"].assert_eq(&format_diagnostics(&diags));
+    }
+
+    #[test]
     fn module_project011_pipeline_package_no_missing_dir_errors() {
         check_module_file_diagnostics(
             "project011_complex_dependency_graph",
@@ -1192,6 +1223,69 @@ fn main() {
             },
         );
         expect!["util"].assert_eq(&format_completion(completion));
+    }
+
+    #[test]
+    fn use_completion_suggests_std() {
+        let dir = tempdir().unwrap();
+        let src = r#"use st
+
+fn main() -> unit {
+    ()
+}
+"#;
+        let path = write_minimal_project(dir.path(), src);
+        let completion = handlers::completion(
+            &path,
+            src,
+            Position {
+                line: 0,
+                character: 6,
+            },
+        );
+        expect!["std"].assert_eq(&format_completion(completion));
+    }
+
+    #[test]
+    fn use_completion_suggests_std_children() {
+        let dir = tempdir().unwrap();
+        let src = r#"use std::
+
+fn main() -> unit {
+    ()
+}
+"#;
+        let path = write_minimal_project(dir.path(), src);
+        let completion = handlers::completion(
+            &path,
+            src,
+            Position {
+                line: 0,
+                character: 9,
+            },
+        );
+        expect!["env, fs, io, process"].assert_eq(&format_completion(completion));
+    }
+
+    #[test]
+    fn colon_colon_completion_on_std_io() {
+        let dir = tempdir().unwrap();
+        let src = r#"use std::io;
+
+fn main() -> unit {
+    std::io::
+}
+"#;
+        let path = write_minimal_project(dir.path(), src);
+        let completion = handlers::completion(
+            &path,
+            src,
+            Position {
+                line: 3,
+                character: 13,
+            },
+        );
+        expect!["print, println"].assert_eq(&format_completion(completion));
     }
 
     #[test]
@@ -2058,7 +2152,7 @@ root = "main.gom"
             "main.gom",
             "Option::Some",
             "Some",
-            expect!["src/builtin.gom:102:4"],
+            expect!["src/builtin.gom:98:4"],
         );
     }
 
@@ -2075,7 +2169,7 @@ fn main() -> unit {
 "#,
             "Vec::new()",
             "new",
-            expect!["src/builtin.gom:442:7"],
+            expect!["src/builtin.gom:425:7"],
         );
     }
 
@@ -2094,7 +2188,7 @@ fn main() -> unit {
 "#,
             "ref_get(r)",
             "ref_get",
-            expect!["src/builtin.gom:510:10"],
+            expect!["src/builtin.gom:493:10"],
         );
     }
 
@@ -2119,13 +2213,13 @@ fn main() -> unit {
             src,
             "HashMap::new()",
             "new",
-            expect!["src/builtin.gom:482:7"],
+            expect!["src/builtin.gom:465:7"],
         );
         check_goto_token(
             src,
             "m.set(Key::A, 1)",
             "set",
-            expect!["src/builtin.gom:490:7"],
+            expect!["src/builtin.gom:473:7"],
         );
     }
 
@@ -2272,6 +2366,46 @@ fn main() -> unit {
                 expect!["client/mod.gom:2:11"],
             );
         });
+    }
+
+    #[test]
+    fn goto_definition_std_package_and_member() {
+        let root = temp_project_dir("std_package_and_member");
+        let _ = std::fs::remove_dir_all(&root);
+        write_file(
+            &root.join("goml.toml"),
+            r#"
+[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+"#,
+        );
+        write_file(
+            &root.join("main.gom"),
+            r#"
+use std::io;
+
+fn main() -> unit {
+    std::io::println("ok")
+}
+"#,
+        );
+
+        check_temp_module_goto_token(
+            "std_package_and_member",
+            "main.gom",
+            "use std::io;",
+            "io",
+            expect!["std/io.gom:0:0"],
+        );
+        check_temp_module_goto_token(
+            "std_package_and_member",
+            "main.gom",
+            "std::io::println",
+            "println",
+            expect!["std/io.gom:10:7"],
+        );
     }
 
     #[test]

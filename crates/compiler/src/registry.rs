@@ -3,7 +3,10 @@ use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 
-use crate::config::{CrateManifest, UserConfig, goml_home_dir, load_crate_manifest};
+use crate::config::{
+    CrateManifest, UserConfig, ensure_goml_home_layout, goml_cache_dir, goml_home_dir,
+    load_crate_manifest,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SemVer {
@@ -263,10 +266,6 @@ pub fn resolve_dependencies(
     Ok(ResolvedModuleGraph { modules })
 }
 
-pub fn goml_cache_dir() -> Result<PathBuf, String> {
-    Ok(goml_home_dir()?.join("cache"))
-}
-
 pub fn cached_registry_dir() -> Result<PathBuf, String> {
     Ok(goml_cache_dir()?.join("registry"))
 }
@@ -280,10 +279,7 @@ pub fn load_or_create_user_config() -> Result<UserConfig, String> {
     if path.exists() {
         return UserConfig::load(&path);
     }
-    if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent)
-            .map_err(|err| format!("failed to create {}: {}", parent.display(), err))?;
-    }
+    ensure_goml_home_layout()?;
     std::fs::write(&path, UserConfig::default_contents())
         .map_err(|err| format!("failed to write {}: {}", path.display(), err))?;
     Ok(UserConfig::default())

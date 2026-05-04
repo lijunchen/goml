@@ -116,8 +116,6 @@ fn runtime_generated_function_name(name: &str) -> bool {
         name,
         "unit_to_string"
             | "bool_to_string"
-            | "bool_to_json"
-            | "json_escape_string"
             | "string_len"
             | "string_get"
             | "char_to_string"
@@ -144,12 +142,6 @@ fn runtime_generated_function_name(name: &str) -> bool {
             | "string_hash"
             | "string_print"
             | "string_println"
-            | "host_args"
-            | "host_read_file"
-            | "host_write_file"
-            | "host_file_exists"
-            | "host_read_dir"
-            | "host_exit"
             | "missing"
     )
 }

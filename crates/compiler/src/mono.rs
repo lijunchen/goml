@@ -1545,7 +1545,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                     }
                 }
 
-                fn to_string_expr(ctx: &Ctx, expr: MonoExpr, ty: Ty) -> MonoExpr {
+                fn to_string_expr(expr: MonoExpr, ty: Ty) -> MonoExpr {
                     match ty.clone() {
                         Ty::TString => expr,
                         Ty::TUnit => call_unary_builtin("unit_to_string", expr, Ty::TString),
@@ -1564,7 +1564,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                         Ty::TRef { elem } => {
                             let inner_ty = *elem;
                             let inner = call_unary_builtin("ref_get", expr, inner_ty.clone());
-                            let inner_str = to_string_expr(ctx, inner, inner_ty);
+                            let inner_str = to_string_expr(inner, inner_ty);
                             let prefix = MonoExpr::EPrim {
                                 value: Prim::string("ref(".to_string()),
                                 ty: Ty::TString,
@@ -1616,7 +1616,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
 
                 let receiver = mono_expr(ctx, &receiver, s);
                 let receiver_ty = receiver.get_ty();
-                return to_string_expr(ctx, receiver, receiver_ty);
+                return to_string_expr(receiver, receiver_ty);
             }
 
             let receiver = mono_expr(ctx, &receiver, s);

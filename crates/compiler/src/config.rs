@@ -173,6 +173,35 @@ pub fn goml_home_dir() -> Result<PathBuf, String> {
     Err("failed to determine home directory".to_string())
 }
 
+pub fn goml_bin_dir() -> Result<PathBuf, String> {
+    Ok(goml_home_dir()?.join("bin"))
+}
+
+pub fn goml_lib_dir() -> Result<PathBuf, String> {
+    Ok(goml_home_dir()?.join("lib"))
+}
+
+pub fn goml_std_dir() -> Result<PathBuf, String> {
+    Ok(goml_lib_dir()?.join("std"))
+}
+
+pub fn goml_cache_dir() -> Result<PathBuf, String> {
+    Ok(goml_home_dir()?.join("cache"))
+}
+
+pub fn ensure_goml_home_layout() -> Result<(), String> {
+    for dir in [
+        goml_home_dir()?,
+        goml_bin_dir()?,
+        goml_lib_dir()?,
+        goml_cache_dir()?,
+    ] {
+        std::fs::create_dir_all(&dir)
+            .map_err(|err| format!("failed to create {}: {}", dir.display(), err))?;
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

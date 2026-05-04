@@ -215,6 +215,13 @@ fn main() -> unit {
                         ),
                     },
                     ValueCompletionItem {
+                        name: "std",
+                        kind: Package,
+                        detail: Some(
+                            "package",
+                        ),
+                    },
+                    ValueCompletionItem {
                         name: "util",
                         kind: Package,
                         detail: Some(

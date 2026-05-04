@@ -8,12 +8,8 @@ extern fn unit_to_string(value: unit) -> string
 // Boolean operations
 #[builtin]
 extern fn bool_to_string(value: bool) -> string
-#[builtin]
-extern fn bool_to_json(value: bool) -> string
 
 // String operations
-#[builtin]
-extern fn json_escape_string(value: string) -> string
 #[builtin]
 extern fn string_len(value: string) -> int32
 #[builtin]
@@ -107,19 +103,6 @@ enum Result[T, E] {
     Ok(T),
     Err(E),
 }
-
-#[builtin]
-extern fn host_args() -> Vec[string]
-#[builtin]
-extern fn host_read_file(path: string) -> string
-#[builtin]
-extern fn host_write_file(path: string, content: string) -> unit
-#[builtin]
-extern fn host_file_exists(path: string) -> bool
-#[builtin]
-extern fn host_read_dir(path: string) -> Vec[string]
-#[builtin]
-extern fn host_exit(code: int32) -> unit
 
 #[builtin]
 extern fn vec_new[T]() -> Vec[T]
