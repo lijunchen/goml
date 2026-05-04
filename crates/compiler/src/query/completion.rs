@@ -305,19 +305,17 @@ pub fn colon_colon_completions(
         let genv = typecheck_for_query(path, &parse_src)
             .ok()
             .map(|(_hir_table, _results, genv, _diagnostics)| genv);
-        let symbol_index = build_symbol_index(path, &parse_src)
-            .ok()
-            .map(|(_graph, index)| index);
+        let symbol_data = build_symbol_index(path, &parse_src).ok();
+        let symbol_graph = symbol_data.as_ref().map(|(graph, _index)| graph);
+        let symbol_index = symbol_data.as_ref().map(|(_graph, index)| index);
 
         let mut items = if use_decl_from_token(&token).is_some() {
-            use_colon_colon_items_for_namespace(
-                path,
-                genv.as_ref(),
-                symbol_index.as_ref(),
-                &namespace,
-            )
+            use_colon_colon_items_for_namespace(path, genv.as_ref(), symbol_index, &namespace)
+        } else if namespace == "crate" {
+            crate_root_colon_colon_items(path, symbol_graph)
         } else {
-            colon_colon_items_for_namespace(genv.as_ref(), symbol_index.as_ref(), &namespace)
+            let namespace = resolve_completion_namespace(path, src, &namespace);
+            colon_colon_items_for_namespace(genv.as_ref(), symbol_index, &namespace)
         };
         items.sort_by(|a, b| a.name.cmp(&b.name));
         items.dedup_by(|a, b| a.name == b.name && a.kind == b.kind && a.detail == b.detail);
@@ -448,14 +446,7 @@ fn visible_use_namespace_names(path: &Path, src: &str) -> BTreeSet<String> {
         return BTreeSet::new();
     };
 
-    let external_import_paths =
-        crate::pipeline::packages::discover_dependency_versions_from_file(path)
-            .ok()
-            .and_then(|(_, dependencies)| {
-                crate::external::resolve_dependency_versions(&dependencies).ok()
-            })
-            .map(|external_deps| external_deps.import_paths())
-            .unwrap_or_default();
+    let external_import_paths = external_import_paths_for_query(path);
 
     file.use_decls()
         .filter_map(|use_decl| use_decl.path())
@@ -468,26 +459,125 @@ fn visible_use_namespace_names(path: &Path, src: &str) -> BTreeSet<String> {
                 return None;
             }
 
-            let full_path = segments.join("::");
-            if let Some(logical_name) = external_import_paths.get(&full_path) {
-                return Some(logical_name.clone());
-            }
-
-            if segments.first().is_some_and(|segment| segment == "std") {
-                return Some(crate::package_names::STD_PACKAGE.to_string());
-            }
-
-            if segments.len() == 1 {
-                return segments.into_iter().next();
-            }
-
-            None
+            use_alias_name(&segments, &external_import_paths)
         })
         .chain(file.items().filter_map(|item| match item {
             Item::Mod(module) => module.name_token().map(|token| token.to_string()),
             _ => None,
         }))
         .collect()
+}
+
+fn external_import_paths_for_query(path: &Path) -> HashMap<String, String> {
+    crate::pipeline::packages::discover_dependency_versions_from_file(path)
+        .ok()
+        .and_then(|(_, dependencies)| {
+            crate::external::resolve_dependency_versions(&dependencies).ok()
+        })
+        .map(|external_deps| external_deps.import_paths())
+        .unwrap_or_default()
+}
+
+fn use_alias_name(
+    segments: &[String],
+    external_import_paths: &HashMap<String, String>,
+) -> Option<String> {
+    if segments.is_empty() {
+        return None;
+    }
+
+    let full_path = segments.join("::");
+    if let Some(logical_name) = external_import_paths.get(&full_path) {
+        return Some(logical_name.clone());
+    }
+
+    segments.last().cloned()
+}
+
+fn use_alias_target(
+    segments: &[String],
+    external_import_paths: &HashMap<String, String>,
+) -> Option<String> {
+    if segments.is_empty() {
+        return None;
+    }
+
+    let full_path = segments.join("::");
+    if let Some(logical_name) = external_import_paths.get(&full_path) {
+        return Some(logical_name.clone());
+    }
+
+    if segments.first().is_some_and(|segment| segment == "std") {
+        return Some(segments.join("::"));
+    }
+
+    if matches!(
+        segments.first().map(String::as_str),
+        Some("crate" | "self" | "super")
+    ) {
+        return Some(segments[1..].join("::"));
+    }
+
+    Some(full_path)
+}
+
+fn use_namespace_aliases(path: &Path, src: &str) -> BTreeMap<String, String> {
+    let result = parser::parse(path, src);
+    let root = MySyntaxNode::new_root(result.green_node);
+    let Some(file) = cst::cst::File::cast(root) else {
+        return BTreeMap::new();
+    };
+
+    let external_import_paths = external_import_paths_for_query(path);
+    let mut aliases = BTreeMap::new();
+    for use_decl in file.use_decls() {
+        let Some(path) = use_decl.path() else {
+            continue;
+        };
+        let segments = path
+            .ident_tokens()
+            .map(|token| token.to_string())
+            .collect::<Vec<_>>();
+        let Some(alias) = use_alias_name(&segments, &external_import_paths) else {
+            continue;
+        };
+        let Some(target) = use_alias_target(&segments, &external_import_paths) else {
+            continue;
+        };
+        if !target.is_empty() {
+            aliases.insert(alias, target);
+        }
+    }
+    aliases
+}
+
+fn resolve_completion_namespace(path: &Path, src: &str, namespace: &str) -> String {
+    let segments = namespace
+        .split("::")
+        .filter(|segment| !segment.is_empty())
+        .map(|segment| segment.to_string())
+        .collect::<Vec<_>>();
+    let Some(first) = segments.first() else {
+        return namespace.to_string();
+    };
+
+    if matches!(first.as_str(), "crate" | "self" | "super") {
+        return segments[1..].join("::");
+    }
+
+    let aliases = use_namespace_aliases(path, src);
+    let Some(target) = aliases.get(first) else {
+        return namespace.to_string();
+    };
+    if segments.len() == 1 {
+        return target.clone();
+    }
+    let mut resolved = target.clone();
+    for segment in &segments[1..] {
+        resolved.push_str("::");
+        resolved.push_str(segment);
+    }
+    resolved
 }
 
 fn visible_local_items(
@@ -818,6 +908,12 @@ fn use_colon_colon_items_for_namespace(
 ) -> Vec<ColonColonCompletionItem> {
     let mut items = Vec::new();
 
+    if namespace == "crate" {
+        return crate_root_colon_colon_items(path, None);
+    }
+
+    let namespace = resolve_completion_namespace(path, "", namespace);
+
     if let Ok((_, dependencies)) =
         crate::pipeline::packages::discover_dependency_versions_from_file(path)
     {
@@ -864,17 +960,56 @@ fn use_colon_colon_items_for_namespace(
                     }),
             );
 
-            if let Some(alias) = import_paths.get(namespace) {
+            if let Some(alias) = import_paths.get(namespace.as_str()) {
                 items.extend(colon_colon_items_for_namespace(genv, symbol_index, alias));
             }
         }
     }
 
     if items.is_empty() {
-        return colon_colon_items_for_namespace(genv, symbol_index, namespace);
+        return colon_colon_items_for_namespace(genv, symbol_index, &namespace);
     }
 
     items
+}
+
+fn crate_root_colon_colon_items(
+    path: &Path,
+    graph: Option<&crate::pipeline::packages::PackageGraph>,
+) -> Vec<ColonColonCompletionItem> {
+    let mut names = BTreeSet::new();
+    if let Some(graph) = graph {
+        for package in graph.packages.keys() {
+            if package == &graph.entry_package {
+                continue;
+            }
+            if let Some(first) = package.split("::").next()
+                && !first.is_empty()
+            {
+                names.insert(first.to_string());
+            }
+        }
+    }
+
+    if names.is_empty() {
+        let start_dir = path
+            .parent()
+            .filter(|parent| !parent.as_os_str().is_empty())
+            .unwrap_or_else(|| Path::new("."));
+        let root_dir = crate::config::find_crate_root(start_dir)
+            .map(|(root, _)| root)
+            .unwrap_or_else(|| start_dir.to_path_buf());
+        collect_local_package_names(&root_dir, None, &mut names);
+    }
+
+    names
+        .into_iter()
+        .map(|name| ColonColonCompletionItem {
+            name,
+            kind: ColonColonCompletionKind::Package,
+            detail: Some("package".to_string()),
+        })
+        .collect()
 }
 
 fn colon_colon_items_for_namespace(
