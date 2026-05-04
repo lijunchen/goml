@@ -1343,6 +1343,85 @@ fn main() {
 
 #[test]
 #[rustfmt::skip]
+fn crate_root_colon_colon_completions() {
+    let dir = tempdir().unwrap();
+    let util_dir = dir.path().join("util");
+    std::fs::create_dir_all(&util_dir).unwrap();
+    std::fs::write(
+        util_dir.join("mod.gom"),
+        r#"
+
+pub fn ping() -> string {
+    "pong"
+}
+"#,
+    )
+    .unwrap();
+
+    std::fs::write(
+        dir.path().join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+"#,
+    )
+    .unwrap();
+
+    let src = r#"
+mod util;
+
+fn main() -> unit {
+    let _ = crate::;
+}
+"#;
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(&main_path, src).unwrap();
+
+    check_colon_colon_completions_with_path(
+        &main_path,
+        src,
+        4,
+        19,
+        expect![[r#"
+            [
+                ColonColonCompletionItem {
+                    name: "util",
+                    kind: Package,
+                    detail: Some(
+                        "package",
+                    ),
+                },
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn std_use_alias_colon_colon_completions() {
+    let src = r#"
+use std::env;
+
+fn main() -> unit {
+    let _ = env::;
+}
+"#;
+
+    check_colon_colon_completion_labels(
+        src,
+        4,
+        17,
+        expect![[r#"
+            [
+                "args",
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
 fn registry_dependency_hover_and_completion() {
     let dir = tempdir().unwrap();
     let home = dir.path().join(".goml");

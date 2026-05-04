@@ -1289,6 +1289,58 @@ fn main() -> unit {
     }
 
     #[test]
+    fn colon_colon_completion_on_std_use_alias() {
+        let dir = tempdir().unwrap();
+        let src = r#"use std::env;
+
+fn main() -> unit {
+    env::
+}
+"#;
+        let path = write_minimal_project(dir.path(), src);
+        let completion = handlers::completion(
+            &path,
+            src,
+            Position {
+                line: 3,
+                character: 9,
+            },
+        );
+        expect!["args"].assert_eq(&format_completion(completion));
+    }
+
+    #[test]
+    fn colon_colon_completion_on_crate_root() {
+        let dir = tempdir().unwrap();
+        std::fs::create_dir_all(dir.path().join("util")).unwrap();
+        std::fs::write(
+            dir.path().join("util/mod.gom"),
+            r#"
+pub fn ping() -> string {
+    "pong"
+}
+"#,
+        )
+        .unwrap();
+        let src = r#"mod util;
+
+fn main() -> unit {
+    crate::
+}
+"#;
+        let path = write_minimal_project(dir.path(), src);
+        let completion = handlers::completion(
+            &path,
+            src,
+            Position {
+                line: 3,
+                character: 11,
+            },
+        );
+        expect!["util"].assert_eq(&format_completion(completion));
+    }
+
+    #[test]
     fn value_completion_suggests_keywords() {
         check_completion(
             r#"
