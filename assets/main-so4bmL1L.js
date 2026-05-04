@@ -1,0 +1,14 @@
+const n = `fn main() -> unit {
+    let mut x = 0;
+    let inc = || {
+        x = x + 1;
+        x
+    };
+    let get = || x;
+    let _ = inc();
+    println(get().to_string());
+}
+`;
+export {
+  n as default
+};

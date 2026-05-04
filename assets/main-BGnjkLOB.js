@@ -1,0 +1,22 @@
+const n = `impl ToString for (int32, int32) {
+  fn to_string(self: (int32, int32)) -> string {
+    "(?, ?)"
+  }
+}
+
+fn main() {
+    let x = 123;
+    let _ = println(ToString::to_string(x));
+
+    let x = true;
+    let _ = println(ToString::to_string(x));
+
+    let x = (3, 4);
+    let _ = println(ToString::to_string(x));
+
+    ()
+}
+`;
+export {
+  n as default
+};

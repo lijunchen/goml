@@ -1,0 +1,34 @@
+const e = `fn main() {
+    let sum = ref(0i32);
+    let i = ref(1i32);
+    while ref_get(i) <= 100i32 {
+        if ref_get(i) == 50i32 {
+            break
+        } else {
+            ()
+        };
+        ref_set(sum, ref_get(sum) + ref_get(i));
+        ref_set(i, ref_get(i) + 1i32);
+    };
+    let _ = print("sum up to break: ");
+    let _ = println(ref_get(sum));
+
+    let even_sum = ref(0i32);
+    let j = ref(1i32);
+    while ref_get(j) <= 10i32 {
+        let cur = ref_get(j);
+        ref_set(j, cur + 1i32);
+        if cur == (cur / 2i32) * 2i32 {
+            ref_set(even_sum, ref_get(even_sum) + cur);
+            continue
+        } else {
+            ()
+        };
+    };
+    let _ = print("even sum: ");
+    let _ = println(ref_get(even_sum));
+}
+`;
+export {
+  e as default
+};

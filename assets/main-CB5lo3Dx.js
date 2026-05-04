@@ -1,0 +1,33 @@
+const n = `fn main() -> unit {
+    // Test Vec with int32
+    let vi: Vec[int32] = Vec::new();
+    let vi = vi.push(42);
+    let val_i = vi[0];
+    let len_i = vi.len();
+    
+    // Test Vec with string
+    let vs: Vec[string] = Vec::new();
+    let vs = vs.push("hello");
+    let vs = vs.push("world");
+    let val_s = vs[1];
+    let len_s = vs.len();
+    
+    // Test Vec with bool
+    let vb: Vec[bool] = Vec::new();
+    let vb = vb.push(true);
+    let vb = vb.push(false);
+    let val_b = vb[0];
+    let len_b = vb.len();
+    
+    // Print results
+    let _ = println(val_i.to_string());
+    let _ = println(len_i.to_string());
+    let _ = println(val_s);
+    let _ = println(len_s.to_string());
+    let _ = println(val_b.to_string());
+    let _ = println(len_b.to_string());
+    ()
+}`;
+export {
+  n as default
+};

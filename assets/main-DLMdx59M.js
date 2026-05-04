@@ -1,0 +1,31 @@
+const n = `fn parse_text(ok: bool) -> Result[string, string] {
+    if ok {
+        Result::Ok("body")
+    } else {
+        Result::Err("parse failed")
+    }
+}
+
+fn decorate(prefix: string, ok: bool) -> Result[string, string] {
+    let run = || {
+        let text = parse_text(ok)?;
+        Result::Ok(prefix + ":" + text)
+    };
+    run()
+}
+
+fn show(res: Result[string, string]) -> string {
+    match res {
+        Result::Ok(value) => "ok " + value,
+        Result::Err(err) => "err " + err,
+    }
+}
+
+fn main() -> unit {
+    println(show(decorate("outer", true)));
+    println(show(decorate("outer", false)));
+}
+`;
+export {
+  n as default
+};

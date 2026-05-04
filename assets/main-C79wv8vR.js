@@ -1,0 +1,23 @@
+const n = `fn loop_return_unit(flag: bool) -> unit {
+    while if flag { return } else { return } {
+        println("unreachable");
+    };
+}
+
+fn loop_return() -> int32 {
+    while match 0i32 {
+        _ => return 5i32,
+    } {
+        println("unreachable");
+    };
+    0i32
+}
+
+fn main() -> unit {
+    loop_return_unit(true);
+    println(loop_return());
+}
+`;
+export {
+  n as default
+};

@@ -1,0 +1,27 @@
+const t = `use std::fs;
+use std::io;
+
+fn show_read(res: Result[string, string]) -> string {
+    match res {
+        Result::Ok(value) => value,
+        Result::Err(err) => "err " + err,
+    }
+}
+
+fn show_dir(res: Result[Vec[string], string]) -> string {
+    match res {
+        Result::Ok(names) => (names.len() > 0).to_string(),
+        Result::Err(err) => "err " + err,
+    }
+}
+
+fn main() -> unit {
+    let _ = std::fs::write_file("goml-std-test.txt", "std-ok");
+    std::io::println(show_read(std::fs::read_file("goml-std-test.txt")));
+    std::io::println(std::fs::exists("goml-std-test.txt").to_string());
+    std::io::println(show_dir(std::fs::read_dir(".")));
+}
+`;
+export {
+  t as default
+};

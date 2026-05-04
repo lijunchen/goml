@@ -1,0 +1,28 @@
+const n = `fn main() -> unit {
+    // Create a new empty Vec with type annotation
+    let v: Vec[int32] = Vec::new();
+    
+    // Push elements
+    let v = v.push(10);
+    let v = v.push(20);
+    let v = v.push(30);
+    
+    // Get elements
+    let first = v[0];
+    let second = v[1];
+    let third = v[2];
+    
+    // Get length
+    let len = v.len();
+    
+    // Print results
+    let _ = println(first.to_string());
+    let _ = println(second.to_string());
+    let _ = println(third.to_string());
+    let _ = println(len.to_string());
+    ()
+}
+`;
+export {
+  n as default
+};

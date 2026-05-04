@@ -1,0 +1,12 @@
+const n = `fn main() -> unit {
+    let a = ref(1);
+    let b = a;
+    let c = ref(1);
+
+    println(ptr_eq(a, b));
+    println(ptr_eq(a, c));
+}
+`;
+export {
+  n as default
+};

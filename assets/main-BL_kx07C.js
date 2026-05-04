@@ -1,0 +1,19 @@
+const n = `fn main() {
+    let poem = \\\\roses are red
+        \\\\violets are blue
+        \\\\"quotes" stay quoted
+        \\\\backslash \\\\\\\\ stays too
+    ;
+
+    let trailing_blank = \\\\line one
+        \\\\
+        \\\\line three
+    ;
+
+    println(poem);
+    println(trailing_blank);
+}
+`;
+export {
+  n as default
+};

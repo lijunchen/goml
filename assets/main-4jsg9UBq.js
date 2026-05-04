@@ -1,0 +1,32 @@
+const n = `fn cut_pair(ok: bool) -> Option[(string, string)] {
+    if ok {
+        Option::Some(("left", "right"))
+    } else {
+        Option::None
+    }
+}
+
+fn pair(ok: bool) -> Option[(string, string)] {
+    cut_pair(ok)
+}
+
+fn describe(ok: bool) -> Option[string] {
+    let (before, after) = pair(ok)?;
+    Option::Some(before + ":" + after)
+}
+
+fn show(opt: Option[string]) -> string {
+    match opt {
+        Option::Some(value) => "some " + value,
+        Option::None => "none",
+    }
+}
+
+fn main() -> unit {
+    println(show(describe(true)));
+    println(show(describe(false)));
+}
+`;
+export {
+  n as default
+};

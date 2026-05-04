@@ -1,0 +1,19 @@
+const n = `fn choose(flag: bool, x: int32, y: int32) -> int32 {
+  if flag {
+    x
+  } else {
+    y
+  }
+}
+
+fn main() {
+  let yes = choose(true, 10, 99);
+  let no = choose(false, 10, 99);
+  let _ = println("yes=" + yes.to_string());
+  let _ = println("no=" + no.to_string());
+  ()
+}
+`;
+export {
+  n as default
+};

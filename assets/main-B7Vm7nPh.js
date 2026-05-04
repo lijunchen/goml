@@ -1,0 +1,41 @@
+const n = `struct Point { x: int32, y: int32 }
+
+enum Maybe[T] {
+    Just(T),
+    Nothing,
+}
+
+trait Display {
+    fn show(Self) -> string;
+}
+
+impl Display for Point {
+    fn show(self: Point) -> string { "Point" }
+}
+
+impl Display for Maybe[int32] {
+    fn show(self: Maybe[int32]) -> string {
+        match self {
+            Just(value) => "Just(" + value.to_string() + ")",
+            Nothing => "Nothing",
+        }
+    }
+}
+
+fn make_maybe(flag: bool) -> Maybe[int32] {
+    if flag { Just(42) } else { Nothing }
+}
+
+fn main() {
+    let point = Point { x: 1, y: 2 };
+    let some_number = make_maybe(true);
+    let none_number = make_maybe(false);
+    let _ = println(Display::show(point));
+    let _ = println(Display::show(some_number));
+    let _ = println(Display::show(none_number));
+    ()
+}
+`;
+export {
+  n as default
+};

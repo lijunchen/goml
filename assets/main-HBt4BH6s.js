@@ -1,0 +1,30 @@
+const n = `trait Display {
+    fn show(Self) -> string;
+}
+
+impl Display for int32 {
+    fn show(self: int32) -> string {
+        self.to_string()
+    }
+}
+
+enum Boxed {
+    One(dyn Display),
+    Pair(dyn Display, dyn Display),
+}
+
+fn render(value: Boxed) -> string {
+    match value {
+        Boxed::One(inner) => Display::show(inner),
+        Boxed::Pair(left, right) => Display::show(left) + "-" + Display::show(right),
+    }
+}
+
+fn main() -> unit {
+    println(render(Boxed::One(42i32)));
+    println(render(Boxed::Pair(7i32, 9i32)));
+}
+`;
+export {
+  n as default
+};

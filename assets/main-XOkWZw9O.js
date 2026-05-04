@@ -1,0 +1,11 @@
+const n = `fn test_error() -> Result[unit, string] {
+    return Result::Err("This is an error");
+}
+
+fn main() -> unit {
+    ()
+}
+`;
+export {
+  n as default
+};

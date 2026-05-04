@@ -1,0 +1,12 @@
+const n = `fn main() {
+  let a = (true, true);
+  match a {
+    (true, false) => println((123).to_string()),
+    (false, true) => println((456).to_string()),
+    _ => println((789).to_string()),
+  }
+}
+`;
+export {
+  n as default
+};

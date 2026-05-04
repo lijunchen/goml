@@ -1,0 +1,94 @@
+const n = `// Test all comparison operators: <, >, <=, >=, ==, !=
+
+fn test_int_comparisons() {
+    let a: int32 = 10;
+    let b: int32 = 20;
+    let c: int32 = 10;
+
+    // Less than
+    let less = a < b;
+    let _ = println("10 < 20: " + less.to_string());
+
+    // Greater than
+    let greater = b > a;
+    let _ = println("20 > 10: " + greater.to_string());
+
+    // Less than or equal
+    let less_eq1 = a <= b;
+    let _ = println("10 <= 20: " + less_eq1.to_string());
+    let less_eq2 = a <= c;
+    let _ = println("10 <= 10: " + less_eq2.to_string());
+
+    // Greater than or equal
+    let greater_eq1 = b >= a;
+    let _ = println("20 >= 10: " + greater_eq1.to_string());
+    let greater_eq2 = c >= a;
+    let _ = println("10 >= 10: " + greater_eq2.to_string());
+
+    // Equal
+    let eq1 = a == c;
+    let _ = println("10 == 10: " + eq1.to_string());
+    let eq2 = a == b;
+    let _ = println("10 == 20: " + eq2.to_string());
+
+    // Not equal
+    let neq1 = a != b;
+    let _ = println("10 != 20: " + neq1.to_string());
+    let neq2 = a != c;
+    let _ = println("10 != 10: " + neq2.to_string());
+
+    ()
+}
+
+fn test_float_comparisons() {
+    let x: float64 = 3.14;
+    let y: float64 = 2.71;
+    let z: float64 = 3.14;
+
+    // Less than
+    let less = y < x;
+    let _ = println("2.71 < 3.14: " + less.to_string());
+
+    // Greater than
+    let greater = x > y;
+    let _ = println("3.14 > 2.71: " + greater.to_string());
+
+    // Less than or equal
+    let less_eq1 = y <= x;
+    let _ = println("2.71 <= 3.14: " + less_eq1.to_string());
+    let less_eq2 = x <= z;
+    let _ = println("3.14 <= 3.14: " + less_eq2.to_string());
+
+    // Greater than or equal
+    let greater_eq1 = x >= y;
+    let _ = println("3.14 >= 2.71: " + greater_eq1.to_string());
+    let greater_eq2 = z >= x;
+    let _ = println("3.14 >= 3.14: " + greater_eq2.to_string());
+
+    // Equal
+    let eq1 = x == z;
+    let _ = println("3.14 == 3.14: " + eq1.to_string());
+    let eq2 = x == y;
+    let _ = println("3.14 == 2.71: " + eq2.to_string());
+
+    // Not equal
+    let neq1 = x != y;
+    let _ = println("3.14 != 2.71: " + neq1.to_string());
+    let neq2 = x != z;
+    let _ = println("3.14 != 3.14: " + neq2.to_string());
+
+    ()
+}
+
+fn main() {
+    let _ = println("=== Integer Comparisons ===");
+    let _ = test_int_comparisons();
+    let _ = println("");
+    let _ = println("=== Float Comparisons ===");
+    let _ = test_float_comparisons();
+    ()
+}
+`;
+export {
+  n as default
+};

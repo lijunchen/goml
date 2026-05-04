@@ -1,0 +1,22 @@
+const n = `fn main() {
+    let i = ref(0i32);
+    while ref_get(i) < 8i32 {
+        ref_set(i, ref_get(i) + 1i32);
+        if ref_get(i) == 3i32 {
+            continue
+        } else {
+            ()
+        };
+        if ref_get(i) == 6i32 {
+            continue
+        } else {
+            ()
+        };
+        let _ = println(ref_get(i));
+    };
+    let _ = println("done");
+}
+`;
+export {
+  n as default
+};

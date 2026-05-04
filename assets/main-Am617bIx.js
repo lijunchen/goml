@@ -1,0 +1,20 @@
+const n = `fn main() {
+    let arr: [uint8; 3] = [10, 20, 30];
+    let i = ref(0);
+    while ref_get(i) < 3 {
+        println(arr[ref_get(i)].to_string());
+        ref_set(i, ref_get(i) + 1);
+    };
+
+    let floats: [float32; 2] = [1.5, 2.5];
+    println(floats[0].to_string());
+    println(floats[1].to_string());
+
+    let longs: [int64; 2] = [100, 200];
+    println(longs[0].to_string());
+    println(longs[1].to_string());
+}
+`;
+export {
+  n as default
+};
