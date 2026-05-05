@@ -1,11 +1,11 @@
 fn main() {
-    let sum = ref(0);
-    let i = ref(1);
-    while ref_get(i) <= 10 {
-        let v = ref_get(i);
-        let s = ref_get(sum);
-        ref_set(sum, s + v);
-        ref_set(i, v + 1);
+    let sum = Ref::new(0);
+    let i = Ref::new(1);
+    while i.get() <= 10 {
+        let v = i.get();
+        let s = sum.get();
+        sum.set(s + v);
+        i.set(v + 1);
     };
-    println(ref_get(sum).to_string());
+    println(sum.get().to_string());
 }

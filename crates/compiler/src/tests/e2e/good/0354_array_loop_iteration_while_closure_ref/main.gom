@@ -7,10 +7,10 @@ fn main() {
         |x| x + b,
         |x| x + c,
     ];
-    let i = ref(0i32);
-    while ref_get(i) < 3 {
-        let f = fns[ref_get(i)];
+    let i = Ref::new(0i32);
+    while i.get() < 3 {
+        let f = fns[i.get()];
         println(f(100).to_string());
-        ref_set(i, ref_get(i) + 1);
+        i.set(i.get() + 1);
     };
 }

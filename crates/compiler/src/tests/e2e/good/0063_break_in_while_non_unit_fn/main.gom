@@ -1,15 +1,15 @@
 fn find_first(v: Vec[int32], pred: (int32) -> bool) -> Option[int32] {
-    let i = ref(0);
-    let result: Ref[Option[int32]] = ref(Option::None);
-    while ref_get(i) < v.len() {
-        let item = v[ref_get(i)];
+    let i = Ref::new(0);
+    let result: Ref[Option[int32]] = Ref::new(Option::None);
+    while i.get() < v.len() {
+        let item = v[i.get()];
         if pred(item) {
-            ref_set(result, Option::Some(item));
+            result.set(Option::Some(item));
             break
         } else { () };
-        ref_set(i, ref_get(i) + 1);
+        i.set(i.get() + 1);
     };
-    ref_get(result)
+    result.get()
 }
 
 fn main() {

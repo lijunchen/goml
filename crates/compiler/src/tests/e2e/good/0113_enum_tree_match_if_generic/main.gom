@@ -7,8 +7,8 @@ fn depth[T](t: Tree[T]) -> int32 {
     match t {
         Tree::Leaf(_) => 1,
         Tree::Node(l, r) => {
-            let dl = depth(ref_get(l));
-            let dr = depth(ref_get(r));
+            let dl = depth(l.get());
+            let dr = depth(r.get());
             1 + if dl > dr { dl } else { dr }
         },
     }
@@ -16,11 +16,11 @@ fn depth[T](t: Tree[T]) -> int32 {
 
 fn main() {
     let t: Tree[int32] = Tree::Node(
-        ref(Tree::Node(
-            ref(Tree::Leaf(1)),
-            ref(Tree::Leaf(2))
+        Ref::new(Tree::Node(
+            Ref::new(Tree::Leaf(1)),
+            Ref::new(Tree::Leaf(2))
         )),
-        ref(Tree::Leaf(3))
+        Ref::new(Tree::Leaf(3))
     );
     println(depth(t).to_string());
 }

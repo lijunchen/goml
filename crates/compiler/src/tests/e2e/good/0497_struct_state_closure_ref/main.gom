@@ -5,13 +5,13 @@ struct State {
 
 fn make_incrementer(s: State) -> () -> string {
     || {
-        ref_set(s.counter, ref_get(s.counter) + 1);
-        s.label + ": " + ref_get(s.counter).to_string()
+        s.counter.set(s.counter.get() + 1);
+        s.label + ": " + s.counter.get().to_string()
     }
 }
 
 fn main() {
-    let s = State { counter: ref(0), label: "count" };
+    let s = State { counter: Ref::new(0), label: "count" };
     let inc = make_incrementer(s);
     println(inc());
     println(inc());

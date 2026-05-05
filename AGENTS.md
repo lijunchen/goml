@@ -84,7 +84,7 @@ if c1 {
 **while loops** lower to `JoinRec`:
 ```
 // GoML source:
-while ref_get(i) < limit {
+while i.get() < limit {
     body;
 }
 
@@ -92,7 +92,7 @@ while ref_get(i) < limit {
 join exit() { ... } in
 joinrec {
     join loop() {
-        let cond = ref_get(i) < limit in
+        let cond = i.get() < limit in
         if cond {
             <body binds>
             jump loop()           // continue → self-jump
@@ -370,7 +370,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 ### Built-in Containers and References
 
 * Fixed-length arrays `[T; N]`, literals `[1, 2, 3]`, accessed via `array_get/array_set`.
-* Mutable references `Ref[T]`: created with `ref(x)`, accessed and updated via `ref_get/ref_set`; nested references are supported.
+* Mutable references `Ref[T]`: created with `Ref::new(x)`, accessed with `x.get()`, and updated with `x.set(value)`; nested references are supported.
 * Built-in growable vectors `Vec[T]`: `vec_new/vec_push/vec_get/vec_len`.
 * Built-in read-only slices `Slice[T]`: `slice/slice_get/slice_len/slice_sub`.
   * `slice(vec, start, end)` creates a bounded view over `Vec[T]`.
@@ -446,7 +446,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 * `trait Eq { fn eq(Self, Self) -> bool; }`
 * `trait Hash { fn hash(Self) -> uint64; }`
-* `Ref[T]` implements `Eq`/`Hash` by the pointed-to content (`ref_get(self)`), not pointer identity.
+* `Ref[T]` implements `Eq`/`Hash` by the pointed-to content (`self.get()`), not pointer identity.
 
 ### Testing / snapshots gotchas
 

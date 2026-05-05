@@ -9,13 +9,13 @@ impl Reducer for Summer { fn reduce(self: Summer, acc: int32) -> int32 { acc + 1
 impl Reducer for Multiplier { fn reduce(self: Multiplier, acc: int32) -> int32 { acc * self.factor } }
 
 fn apply_reducer(r: dyn Reducer, init: int32, n: int32) -> int32 {
-    let acc = ref(init);
-    let i = ref(0i32);
-    while ref_get(i) < n {
-        ref_set(acc, Reducer::reduce(r, ref_get(acc)));
-        ref_set(i, ref_get(i) + 1);
+    let acc = Ref::new(init);
+    let i = Ref::new(0i32);
+    while i.get() < n {
+        acc.set(Reducer::reduce(r, acc.get()));
+        i.set(i.get() + 1);
     };
-    ref_get(acc)
+    acc.get()
 }
 
 fn main() {

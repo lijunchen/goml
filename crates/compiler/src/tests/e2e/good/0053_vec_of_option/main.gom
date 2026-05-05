@@ -6,15 +6,15 @@ fn main() {
     let v = v.push(Option::None);
     let v = v.push(Option::Some(5));
 
-    let sum = ref(0);
-    let i = ref(0);
-    while ref_get(i) < v.len() {
-        let item = v[ref_get(i)];
+    let sum = Ref::new(0);
+    let i = Ref::new(0);
+    while i.get() < v.len() {
+        let item = v[i.get()];
         match item {
-            Option::Some(n) => ref_set(sum, ref_get(sum) + n),
+            Option::Some(n) => sum.set(sum.get() + n),
             Option::None => (),
         };
-        ref_set(i, ref_get(i) + 1);
+        i.set(i.get() + 1);
     };
-    println(ref_get(sum).to_string());
+    println(sum.get().to_string());
 }

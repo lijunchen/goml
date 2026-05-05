@@ -22,9 +22,9 @@ fn main() {
     println(greet_with(French {}, "Monde"));
     
     let greeters: [dyn Greet; 2] = [English {}, French {}];
-    let i = ref(0);
-    while ref_get(i) < 2 {
-        println(Greet::greet(greeters[ref_get(i)]));
-        ref_set(i, ref_get(i) + 1);
+    let i = Ref::new(0);
+    while i.get() < 2 {
+        println(Greet::greet(greeters[i.get()]));
+        i.set(i.get() + 1);
     };
 }

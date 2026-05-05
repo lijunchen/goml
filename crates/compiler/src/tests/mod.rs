@@ -131,9 +131,9 @@ fn reference_runtime_executes() -> anyhow::Result<()> {
 
     let src = r#"
 fn main() -> unit {
-    let r = ref(3);
-    let _ = ref_set(r, 5);
-    println(ref_get(r))
+    let r = Ref::new(3);
+    let _ = r.set(5);
+    println(r.get())
 }
 "#;
 

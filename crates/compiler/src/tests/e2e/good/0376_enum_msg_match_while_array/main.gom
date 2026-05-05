@@ -18,9 +18,9 @@ fn main() {
         Msg::Number(42),
         Msg::Pair("answer", 42),
     ];
-    let i = ref(0i32);
-    while ref_get(i) < 3 {
-        println(format_msg(msgs[ref_get(i)]));
-        ref_set(i, ref_get(i) + 1);
+    let i = Ref::new(0i32);
+    while i.get() < 3 {
+        println(format_msg(msgs[i.get()]));
+        i.set(i.get() + 1);
     };
 }

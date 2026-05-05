@@ -32,16 +32,16 @@ struct SubstEntry {
 }
 
 fn state_new() -> CheckerState {
-    CheckerState { gensym_counter: ref(0), current_level: ref(1) }
+    CheckerState { gensym_counter: Ref::new(0), current_level: Ref::new(1) }
 }
 
 fn reset_gensym(st: CheckerState) -> unit {
-    let _ = ref_set(st.gensym_counter, 0);
+    let _ = st.gensym_counter.set(0);
     ()
 }
 
 fn reset_level(st: CheckerState) -> unit {
-    let _ = ref_set(st.current_level, 1);
+    let _ = st.current_level.set(1);
     ()
 }
 
@@ -51,14 +51,14 @@ fn reset_type_variables(st: CheckerState) -> unit {
 }
 
 fn enter_level(st: CheckerState) -> unit {
-    let l = ref_get(st.current_level);
-    let _ = ref_set(st.current_level, l + 1);
+    let l = st.current_level.get();
+    let _ = st.current_level.set(l + 1);
     ()
 }
 
 fn leave_level(st: CheckerState) -> unit {
-    let l = ref_get(st.current_level);
-    let _ = ref_set(st.current_level, l - 1);
+    let l = st.current_level.get();
+    let _ = st.current_level.set(l - 1);
     ()
 }
 
@@ -99,8 +99,8 @@ fn nth_letter(n: int32) -> char {
 }
 
 fn gensym(st: CheckerState) -> string {
-    let n = ref_get(st.gensym_counter);
-    let _ = ref_set(st.gensym_counter, n + 1);
+    let n = st.gensym_counter.get();
+    let _ = st.gensym_counter.set(n + 1);
     if n < 26 {
         nth_letter(n).to_string()
     } else {
@@ -110,14 +110,14 @@ fn gensym(st: CheckerState) -> string {
 
 fn newvar(st: CheckerState) -> Typ {
     let name = gensym(st);
-    let level = ref_get(st.current_level);
-    Typ::TVar(ref(Tv::Unbound(name, level)))
+    let level = st.current_level.get();
+    Typ::TVar(Ref::new(Tv::Unbound(name, level)))
 }
 
 fn typ_is_arrow(ty: Typ) -> bool {
     match ty {
         Typ::TArrow(_, _) => true,
-        Typ::TVar(tvref) => match ref_get(tvref) {
+        Typ::TVar(tvref) => match tvref.get() {
             Tv::Link(inner) => typ_is_arrow(inner),
             _ => false,
         },
@@ -128,7 +128,7 @@ fn typ_is_arrow(ty: Typ) -> bool {
 fn typ_to_string(ty: Typ) -> string {
     match ty {
         Typ::QVar(name) => "'" + name,
-        Typ::TVar(tvref) => match ref_get(tvref) {
+        Typ::TVar(tvref) => match tvref.get() {
             Tv::Unbound(name, _) => "'" + name,
             Tv::Link(inner) => typ_to_string(inner),
         },
@@ -146,35 +146,35 @@ fn env_empty() -> Vec[EnvEntry] {
 }
 
 fn env_lookup(env: Vec[EnvEntry], name: string) -> Option[Typ] {
-    let i = ref(env.len() - 1);
-    let found = ref(Option::None);
-    let done = ref(false);
-    let _ = (while !ref_get(done) && ref_get(i) >= 0 {
-        let entry = env[ref_get(i)];
+    let i = Ref::new(env.len() - 1);
+    let found = Ref::new(Option::None);
+    let done = Ref::new(false);
+    let _ = (while !(done.get()) && i.get() >= 0 {
+        let entry = env[i.get()];
         if entry.name == name {
-            let _ = ref_set(found, Option::Some(entry.ty));
-            ref_set(done, true)
+            let _ = found.set(Option::Some(entry.ty));
+            done.set(true)
         } else {
-            ref_set(i, ref_get(i) - 1)
+            i.set(i.get() - 1)
         }
     });
-    ref_get(found)
+    found.get()
 }
 
 fn subst_lookup(subst: Vec[SubstEntry], name: string) -> Option[Typ] {
-    let i = ref(subst.len() - 1);
-    let found = ref(Option::None);
-    let done = ref(false);
-    let _ = (while !ref_get(done) && ref_get(i) >= 0 {
-        let entry = subst[ref_get(i)];
+    let i = Ref::new(subst.len() - 1);
+    let found = Ref::new(Option::None);
+    let done = Ref::new(false);
+    let _ = (while !(done.get()) && i.get() >= 0 {
+        let entry = subst[i.get()];
         if entry.name == name {
-            let _ = ref_set(found, Option::Some(entry.ty));
-            ref_set(done, true)
+            let _ = found.set(Option::Some(entry.ty));
+            done.set(true)
         } else {
-            ref_set(i, ref_get(i) - 1)
+            i.set(i.get() - 1)
         }
     });
-    ref_get(found)
+    found.get()
 }
 
 fn occurs(st: CheckerState, tvr: Ref[Tv], ty: Typ) -> Result[unit, string] {
@@ -183,13 +183,13 @@ fn occurs(st: CheckerState, tvr: Ref[Tv], ty: Typ) -> Result[unit, string] {
             if ptr_eq(tvr, tvr2) {
                 Result::Err("occurs check")
             } else {
-                match ref_get(tvr2) {
+                match tvr2.get() {
                     Tv::Unbound(name, l2) => {
-                        let min_level = match ref_get(tvr) {
+                        let min_level = match tvr.get() {
                             Tv::Unbound(_, l) => min_i32(l, l2),
                             _ => l2,
                         };
-                        let _ = ref_set(tvr2, Tv::Unbound(name, min_level));
+                        let _ = tvr2.set(Tv::Unbound(name, min_level));
                         Result::Ok(())
                     }
                     Tv::Link(inner) => occurs(st, tvr, inner),
@@ -212,13 +212,13 @@ fn unify(st: CheckerState, t1: Typ, t2: Typ) -> Result[unit, string] {
             if ptr_eq(r1, r2) {
                 Result::Ok(())
             } else {
-                match ref_get(r1) {
+                match r1.get() {
                     Tv::Link(inner) => unify(st, inner, Typ::TVar(r2)),
-                    Tv::Unbound(_, _) => match ref_get(r2) {
+                    Tv::Unbound(_, _) => match r2.get() {
                         Tv::Link(inner) => unify(st, Typ::TVar(r1), inner),
                         Tv::Unbound(_, _) => match occurs(st, r1, Typ::TVar(r2)) {
                             Result::Ok(_) => {
-                                let _ = ref_set(r1, Tv::Link(Typ::TVar(r2)));
+                                let _ = r1.set(Tv::Link(Typ::TVar(r2)));
                                 Result::Ok(())
                             }
                             Result::Err(e) => Result::Err(e),
@@ -227,21 +227,21 @@ fn unify(st: CheckerState, t1: Typ, t2: Typ) -> Result[unit, string] {
                 }
             }
         }
-        (Typ::TVar(r1), other) => match ref_get(r1) {
+        (Typ::TVar(r1), other) => match r1.get() {
             Tv::Link(inner) => unify(st, inner, other),
             Tv::Unbound(_, _) => match occurs(st, r1, other) {
                 Result::Ok(_) => {
-                    let _ = ref_set(r1, Tv::Link(other));
+                    let _ = r1.set(Tv::Link(other));
                     Result::Ok(())
                 }
                 Result::Err(e) => Result::Err(e),
             },
         },
-        (other, Typ::TVar(r2)) => match ref_get(r2) {
+        (other, Typ::TVar(r2)) => match r2.get() {
             Tv::Link(inner) => unify(st, other, inner),
             Tv::Unbound(_, _) => match occurs(st, r2, other) {
                 Result::Ok(_) => {
-                    let _ = ref_set(r2, Tv::Link(other));
+                    let _ = r2.set(Tv::Link(other));
                     Result::Ok(())
                 }
                 Result::Err(e) => Result::Err(e),
@@ -257,9 +257,9 @@ fn unify(st: CheckerState, t1: Typ, t2: Typ) -> Result[unit, string] {
 
 fn gen(st: CheckerState, ty: Typ) -> Typ {
     match ty {
-        Typ::TVar(tvref) => match ref_get(tvref) {
+        Typ::TVar(tvref) => match tvref.get() {
             Tv::Unbound(name, l) => {
-                let cur = ref_get(st.current_level);
+                let cur = st.current_level.get();
                 if l > cur {
                     Typ::QVar(name)
                 } else {
@@ -283,7 +283,7 @@ fn inst_loop(st: CheckerState, subst: Vec[SubstEntry], ty: Typ) -> (Typ, Vec[Sub
                 (tv, new_subst)
             }
         },
-        Typ::TVar(tvref) => match ref_get(tvref) {
+        Typ::TVar(tvref) => match tvref.get() {
             Tv::Link(inner) => inst_loop(st, subst, inner),
             _ => (Typ::TVar(tvref), subst),
         },

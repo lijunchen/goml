@@ -10,10 +10,10 @@ impl Show for Str { fn show(self: Str) -> string { self.s } }
 
 fn main() {
     let display = |items: [dyn Show; 3]| {
-        let i = ref(0i32);
-        while ref_get(i) < 3 {
-            println(Show::show(items[ref_get(i)]));
-            ref_set(i, ref_get(i) + 1);
+        let i = Ref::new(0i32);
+        while i.get() < 3 {
+            println(Show::show(items[i.get()]));
+            i.set(i.get() + 1);
         };
     };
     display([Num { n: 42 }, Str { s: "hello" }, Num { n: 99 }]);

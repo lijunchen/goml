@@ -1,21 +1,21 @@
 fn first_over(arr: [int32; 5], threshold: int32) -> Option[int32] {
-    let i = ref(0i32);
-    let found: Ref[Option[int32]] = ref(Option::None);
-    while ref_get(i) < 5 {
-        let val = arr[ref_get(i)];
-        match ref_get(found) {
+    let i = Ref::new(0i32);
+    let found: Ref[Option[int32]] = Ref::new(Option::None);
+    while i.get() < 5 {
+        let val = arr[i.get()];
+        match found.get() {
             Option::None => {
                 if val > threshold {
-                    ref_set(found, Option::Some(val));
+                    found.set(Option::Some(val));
                 } else {
                     ()
                 }
             },
             Option::Some(_) => (),
         };
-        ref_set(i, ref_get(i) + 1);
+        i.set(i.get() + 1);
     };
-    ref_get(found)
+    found.get()
 }
 
 fn main() {

@@ -1,21 +1,21 @@
 fn main() {
-    let i = ref(0);
-    while ref_get(i) < 10 {
-        if ref_get(i) == 5 {
+    let i = Ref::new(0);
+    while i.get() < 10 {
+        if i.get() == 5 {
             break;
         } else { () };
-        ref_set(i, ref_get(i) + 1);
+        i.set(i.get() + 1);
     };
-    println("break at " + ref_get(i).to_string());
+    println("break at " + i.get().to_string());
 
-    let j = ref(0);
-    let sum = ref(0);
-    while ref_get(j) < 10 {
-        ref_set(j, ref_get(j) + 1);
-        if ref_get(j) / 2 * 2 == ref_get(j) {
+    let j = Ref::new(0);
+    let sum = Ref::new(0);
+    while j.get() < 10 {
+        j.set(j.get() + 1);
+        if j.get() / 2 * 2 == j.get() {
             continue;
         } else { () };
-        ref_set(sum, ref_get(sum) + ref_get(j));
+        sum.set(sum.get() + j.get());
     };
-    println("odd sum " + ref_get(sum).to_string());
+    println("odd sum " + sum.get().to_string());
 }

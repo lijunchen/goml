@@ -146,17 +146,17 @@ fn lexes_logical_operators() {
 #[test]
 fn lexes_ref_builtins() {
     check(
-        "ref_set(r, ref_get(a))",
+        "r.set(a.get())",
         expect![[r#"
             [
-                {kind: Ident, text: "ref_set"},
-                {kind: LParen, text: "("},
                 {kind: Ident, text: "r"},
-                {kind: Comma, text: ","},
-                {kind: Whitespace, text: " "},
-                {kind: Ident, text: "ref_get"},
+                {kind: Dot, text: "."},
+                {kind: Ident, text: "set"},
                 {kind: LParen, text: "("},
                 {kind: Ident, text: "a"},
+                {kind: Dot, text: "."},
+                {kind: Ident, text: "get"},
+                {kind: LParen, text: "("},
                 {kind: RParen, text: ")"},
                 {kind: RParen, text: ")"},
             ]

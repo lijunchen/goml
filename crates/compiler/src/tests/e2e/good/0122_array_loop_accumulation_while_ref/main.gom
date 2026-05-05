@@ -1,11 +1,11 @@
 fn main() {
     let arr: [uint8; 5] = [1, 2, 3, 4, 5];
-    let i = ref(0);
+    let i = Ref::new(0);
     let sum: uint8 = 0u8;
-    let total = ref(sum);
-    while ref_get(i) < 5 {
-        ref_set(total, ref_get(total) + arr[ref_get(i)]);
-        ref_set(i, ref_get(i) + 1);
+    let total = Ref::new(sum);
+    while i.get() < 5 {
+        total.set(total.get() + arr[i.get()]);
+        i.set(i.get() + 1);
     };
-    println(ref_get(total).to_string());
+    println(total.get().to_string());
 }

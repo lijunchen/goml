@@ -1,13 +1,13 @@
 fn main() {
-    let i = ref(0);
+    let i = Ref::new(0);
     while true {
-        let v = ref_get(i);
+        let v = i.get();
         match v {
             0 => println("zero"),
             1 => println("one"),
             _ => break,
         };
-        ref_set(i, ref_get(i) + 1);
+        i.set(i.get() + 1);
     };
     println("done");
 }

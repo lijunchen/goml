@@ -14,14 +14,14 @@ impl Transform for Adder {
 }
 
 fn apply_chain(transforms: [dyn Transform; 3], input: int32) -> int32 {
-    let result = ref(input);
-    let i = ref(0);
-    while ref_get(i) < 3 {
-        let t = transforms[ref_get(i)];
-        ref_set(result, Transform::apply(t, ref_get(result)));
-        ref_set(i, ref_get(i) + 1);
+    let result = Ref::new(input);
+    let i = Ref::new(0);
+    while i.get() < 3 {
+        let t = transforms[i.get()];
+        result.set(Transform::apply(t, result.get()));
+        i.set(i.get() + 1);
     };
-    ref_get(result)
+    result.get()
 }
 
 fn main() {

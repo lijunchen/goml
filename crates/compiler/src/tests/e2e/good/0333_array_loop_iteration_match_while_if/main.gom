@@ -1,19 +1,19 @@
 fn find_first[T](arr: [T; 5], pred: (T) -> bool) -> Option[T] {
-    let i = ref(0i32);
-    let result: Ref[Option[T]] = ref(Option::None);
-    while ref_get(i) < 5 {
-        let item = arr[ref_get(i)];
+    let i = Ref::new(0i32);
+    let result: Ref[Option[T]] = Ref::new(Option::None);
+    while i.get() < 5 {
+        let item = arr[i.get()];
         if pred(item) {
-            match ref_get(result) {
-                Option::None => ref_set(result, Option::Some(item)),
+            match result.get() {
+                Option::None => result.set(Option::Some(item)),
                 Option::Some(_) => (),
             };
         } else {
             ()
         };
-        ref_set(i, ref_get(i) + 1);
+        i.set(i.get() + 1);
     };
-    ref_get(result)
+    result.get()
 }
 
 fn main() {

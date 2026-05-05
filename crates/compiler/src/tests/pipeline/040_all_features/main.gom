@@ -22,8 +22,8 @@ trait Describe {
 impl Describe for Tracker {
     fn describe(self: Tracker) -> string {
         let Tracker { label: label, count: count, toggled: toggled } = self;
-        let current = ref_get(count);
-        let flag = ref_get(toggled);
+        let current = count.get();
+        let flag = toggled.get();
         let with_label = "Tracker(" + label;
         let with_count_label = with_label + ", count: ";
         let with_count = with_count_label + current.to_string();
@@ -105,21 +105,21 @@ fn gather(record: Record[int32]) -> Maybe[int32] {
 }
 
 fn build_counter(label: string, start: int32) -> (Tracker, () -> Record[int32], (int32) -> Record[int32], () -> Record[string]) {
-    let count = ref(start);
-    let toggled = ref(false);
+    let count = Ref::new(start);
+    let toggled = Ref::new(false);
     let tracker = Tracker { label: label, count: count, toggled: toggled };
     let snapshot = || {
-        Value(ref_get(count))
+        Value(count.get())
     };
     let bump = |delta: int32| {
-        let before = ref_get(count);
-        let _ = ref_set(count, before + delta);
-        Pair(before, ref_get(count))
+        let before = count.get();
+        let _ = count.set(before + delta);
+        Pair(before, count.get())
     };
     let flip = || {
-        let before = ref_get(toggled);
-        let _ = ref_set(toggled, !before);
-        let after = ref_get(toggled);
+        let before = toggled.get();
+        let _ = toggled.set(!before);
+        let after = toggled.get();
         Pair(before.to_string(), after.to_string())
     };
     (tracker, snapshot, bump, flip)

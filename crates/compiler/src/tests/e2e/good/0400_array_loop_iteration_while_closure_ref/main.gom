@@ -1,13 +1,13 @@
 fn main() {
-    let i = ref(0i32);
+    let i = Ref::new(0i32);
     let callbacks: [() -> unit; 3] = [
         || println("first"),
         || println("second"),
         || println("third"),
     ];
-    while ref_get(i) < 3 {
-        let cb = callbacks[ref_get(i)];
+    while i.get() < 3 {
+        let cb = callbacks[i.get()];
         cb();
-        ref_set(i, ref_get(i) + 1);
+        i.set(i.get() + 1);
     };
 }

@@ -7,16 +7,16 @@ struct foo {
 }
 
 fn get_upper(r: Ref[Foo]) -> int32 {
-    ref_get(r).value
+    r.get().value
 }
 
 fn get_lower(r: Ref[foo]) -> int32 {
-    ref_get(r).value
+    r.get().value
 }
 
 fn main() -> unit {
-    let upper = ref(Foo { value: 1i32 });
-    let lower = ref(foo { value: 2i32 });
+    let upper = Ref::new(Foo { value: 1i32 });
+    let lower = Ref::new(foo { value: 2i32 });
     println(get_upper(upper));
     println(get_lower(lower));
 }

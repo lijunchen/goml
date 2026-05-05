@@ -136,6 +136,38 @@ fn env_registers_builtin_vec_inherent_methods() {
 }
 
 #[test]
+fn env_registers_builtin_ref_inherent_methods() {
+    let env = builtins::builtin_env();
+    let receiver = tast::Ty::TRef {
+        elem: Box::new(tast::Ty::TInt32),
+    };
+
+    let new = env.lookup_inherent_method(&receiver, &tast::TastIdent("new".to_string()));
+    expect![[r#"
+        Some(
+            TFunc([TParam(T)], TRef(TParam(T))),
+        )
+    "#]]
+    .assert_debug_eq(&new);
+
+    let get = env.lookup_inherent_method(&receiver, &tast::TastIdent("get".to_string()));
+    expect![[r#"
+        Some(
+            TFunc([TRef(TParam(T))], TParam(T)),
+        )
+    "#]]
+    .assert_debug_eq(&get);
+
+    let set = env.lookup_inherent_method(&receiver, &tast::TastIdent("set".to_string()));
+    expect![[r#"
+        Some(
+            TFunc([TRef(TParam(T)), TParam(T)], TUnit),
+        )
+    "#]]
+    .assert_debug_eq(&set);
+}
+
+#[test]
 fn env_registers_builtin_slice_inherent_methods() {
     let env = builtins::builtin_env();
     let receiver = tast::Ty::TSlice {

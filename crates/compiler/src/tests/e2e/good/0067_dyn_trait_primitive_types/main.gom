@@ -17,16 +17,16 @@ impl Printable for bool {
 }
 
 fn join_all(items: Vec[dyn Printable], sep: string) -> string {
-    let result = ref("");
-    let i = ref(0);
-    while ref_get(i) < items.len() {
-        if ref_get(i) > 0 {
-            ref_set(result, ref_get(result) + sep);
+    let result = Ref::new("");
+    let i = Ref::new(0);
+    while i.get() < items.len() {
+        if i.get() > 0 {
+            result.set(result.get() + sep);
         } else { () };
-        ref_set(result, ref_get(result) + Printable::to_str(items[ref_get(i)]));
-        ref_set(i, ref_get(i) + 1);
+        result.set(result.get() + Printable::to_str(items[i.get()]));
+        i.set(i.get() + 1);
     };
-    ref_get(result)
+    result.get()
 }
 
 fn main() {

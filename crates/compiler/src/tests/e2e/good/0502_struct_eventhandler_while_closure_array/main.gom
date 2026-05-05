@@ -6,23 +6,23 @@ struct EventHandler {
 
 fn run_pipeline(handler: EventHandler, data: [int32; 3]) {
     handler.on_start();
-    let i = ref(0);
-    while ref_get(i) < 3 {
-        handler.on_data(data[ref_get(i)]);
-        ref_set(i, ref_get(i) + 1);
+    let i = Ref::new(0);
+    while i.get() < 3 {
+        handler.on_data(data[i.get()]);
+        i.set(i.get() + 1);
     };
     handler.on_end();
 }
 
 fn make_handler() -> EventHandler {
-    let sum = ref(0);
+    let sum = Ref::new(0);
     EventHandler {
         on_start: || println("Starting"),
         on_data: |x| {
-            ref_set(sum, ref_get(sum) + x);
+            sum.set(sum.get() + x);
             println("Got: " + x.to_string());
         },
-        on_end: || println("Sum: " + ref_get(sum).to_string()),
+        on_end: || println("Sum: " + sum.get().to_string()),
     }
 }
 

@@ -18,10 +18,10 @@ fn print_token(token: crate::syntax::Token) -> unit {
 }
 
 fn print_tokens(tokens: Vec[crate::syntax::Token]) -> unit {
-    let i = ref(0);
-    while ref_get(i) < tokens.len() {
-        print_token(tokens.get(ref_get(i)));
-        ref_set(i, ref_get(i) + 1);
+    let i = Ref::new(0);
+    while i.get() < tokens.len() {
+        print_token(tokens.get(i.get()));
+        i.set(i.get() + 1);
     }
 }
 
@@ -39,10 +39,10 @@ fn run_tokens(path: string) -> int32 {
 }
 
 fn print_diagnostics(diagnostics: Vec[crate::ast::Diagnostic]) -> unit {
-    let i = ref(0);
-    while ref_get(i) < diagnostics.len() {
-        std::io::println(crate::ast::format_diagnostic(diagnostics.get(ref_get(i))));
-        ref_set(i, ref_get(i) + 1);
+    let i = Ref::new(0);
+    while i.get() < diagnostics.len() {
+        std::io::println(crate::ast::format_diagnostic(diagnostics.get(i.get())));
+        i.set(i.get() + 1);
     }
 }
 
@@ -66,34 +66,34 @@ fn run_parse(path: string) -> int32 {
 }
 
 fn basename(path: string) -> string {
-    let start = ref(0);
-    let i = ref(0);
-    while ref_get(i) < path.len() {
-        if path.get(ref_get(i)) == '/' {
-            ref_set(start, ref_get(i) + 1);
+    let start = Ref::new(0);
+    let i = Ref::new(0);
+    while i.get() < path.len() {
+        if path.get(i.get()) == '/' {
+            start.set(i.get() + 1);
         } else {
             ()
         };
-        ref_set(i, ref_get(i) + 1);
+        i.set(i.get() + 1);
     };
-    let result = ref("");
-    let j = ref(ref_get(start));
-    while ref_get(j) < path.len() {
-        ref_set(result, ref_get(result) + path.get(ref_get(j)).to_string());
-        ref_set(j, ref_get(j) + 1);
+    let result = Ref::new("");
+    let j = Ref::new(start.get());
+    while j.get() < path.len() {
+        result.set(result.get() + path.get(j.get()).to_string());
+        j.set(j.get() + 1);
     };
-    ref_get(result)
+    result.get()
 }
 
 fn strip_gom_suffix(name: string) -> string {
     if name.len() >= 4 && name.get(name.len() - 4) == '.' && name.get(name.len() - 3) == 'g' && name.get(name.len() - 2) == 'o' && name.get(name.len() - 1) == 'm' {
-        let result = ref("");
-        let i = ref(0);
-        while ref_get(i) + 4 < name.len() {
-            ref_set(result, ref_get(result) + name.get(ref_get(i)).to_string());
-            ref_set(i, ref_get(i) + 1);
+        let result = Ref::new("");
+        let i = Ref::new(0);
+        while i.get() + 4 < name.len() {
+            result.set(result.get() + name.get(i.get()).to_string());
+            i.set(i.get() + 1);
         };
-        ref_get(result)
+        result.get()
     } else {
         name
     }
@@ -105,32 +105,32 @@ fn module_name(path: string) -> string {
 
 fn run_check(args: Vec[string]) -> int32 {
     let files0: Vec[crate::typecheck::SourceFile] = Vec::new();
-    let files = ref(files0);
-    let failed = ref(false);
-    let i = ref(2);
-    while ref_get(i) < args.len() {
-        let path = args.get(ref_get(i));
+    let files = Ref::new(files0);
+    let failed = Ref::new(false);
+    let i = Ref::new(2);
+    while i.get() < args.len() {
+        let path = args.get(i.get());
         match std::fs::read_file(path) {
             Result::Ok(source) => {
                 let parsed = crate::parser::parse_source(source);
                 if crate::ast::has_diagnostics(parsed.diagnostics) {
                     print_diagnostics(parsed.diagnostics);
-                    ref_set(failed, true);
+                    failed.set(true);
                 } else {
-                    ref_set(files, ref_get(files).push(crate::typecheck::source_file(module_name(path), parsed.root)));
+                    files.set(files.get().push(crate::typecheck::source_file(module_name(path), parsed.root)));
                 };
             },
             Result::Err(err) => {
                 std::io::println("error: " + err);
-                ref_set(failed, true);
+                failed.set(true);
             },
         };
-        ref_set(i, ref_get(i) + 1);
+        i.set(i.get() + 1);
     };
-    if ref_get(failed) {
+    if failed.get() {
         1
     } else {
-        let result = crate::typecheck::check(ref_get(files));
+        let result = crate::typecheck::check(files.get());
         print_diagnostics(result.diagnostics);
         if crate::ast::has_diagnostics(result.diagnostics) {
             1

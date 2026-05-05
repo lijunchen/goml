@@ -188,13 +188,13 @@ pub fn node_kind_name(kind: NodeKind) -> string {
 }
 
 fn indent(width: int32) -> string {
-    let result = ref("");
-    let i = ref(0);
-    while ref_get(i) < width {
-        ref_set(result, ref_get(result) + "  ");
-        ref_set(i, ref_get(i) + 1);
+    let result = Ref::new("");
+    let i = Ref::new(0);
+    while i.get() < width {
+        result.set(result.get() + "  ");
+        i.set(i.get() + 1);
     };
-    ref_get(result)
+    result.get()
 }
 
 fn format_node_at(value: Node, depth: int32) -> string {
@@ -203,13 +203,13 @@ fn format_node_at(value: Node, depth: int32) -> string {
     } else {
         indent(depth) + node_kind_name(value.kind) + "(" + value.text + ") @" + value.start.to_string() + ".." + value.end.to_string()
     };
-    let result = ref(line + "\n");
-    let i = ref(0);
-    while ref_get(i) < value.children.len() {
-        ref_set(result, ref_get(result) + format_node_at(value.children.get(ref_get(i)), depth + 1));
-        ref_set(i, ref_get(i) + 1);
+    let result = Ref::new(line + "\n");
+    let i = Ref::new(0);
+    while i.get() < value.children.len() {
+        result.set(result.get() + format_node_at(value.children.get(i.get()), depth + 1));
+        i.set(i.get() + 1);
     };
-    ref_get(result)
+    result.get()
 }
 
 pub fn format_tree(value: Node) -> string {

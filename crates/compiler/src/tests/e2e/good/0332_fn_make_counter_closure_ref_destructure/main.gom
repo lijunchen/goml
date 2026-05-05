@@ -1,7 +1,7 @@
 fn make_counter() -> (() -> int32, () -> unit) {
-    let count = ref(0i32);
-    let get = || ref_get(count);
-    let inc = || ref_set(count, ref_get(count) + 1);
+    let count = Ref::new(0i32);
+    let get = || count.get();
+    let inc = || count.set(count.get() + 1);
     (get, inc)
 }
 

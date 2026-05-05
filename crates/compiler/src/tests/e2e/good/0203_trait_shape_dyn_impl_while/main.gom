@@ -22,9 +22,9 @@ fn main() {
     print_area(Rectangle { width: 3.0, height: 4.0 });
     
     let shapes: [dyn Shape; 2] = [Circle { radius: 1.0 }, Rectangle { width: 2.0, height: 3.0 }];
-    let i = ref(0);
-    while ref_get(i) < 2 {
-        print_area(shapes[ref_get(i)]);
-        ref_set(i, ref_get(i) + 1);
+    let i = Ref::new(0);
+    while i.get() < 2 {
+        print_area(shapes[i.get()]);
+        i.set(i.get() + 1);
     };
 }

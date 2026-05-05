@@ -1,46 +1,46 @@
 fn main() -> unit {
-    let i = ref(0i32);
-    let total = ref(0i32);
+    let i = Ref::new(0i32);
+    let total = Ref::new(0i32);
 
-    while if ref_get(i) == 0i32 {
-        ref_set(i, 1i32);
+    while if i.get() == 0i32 {
+        i.set(1i32);
         true
-    } else if ref_get(i) < 4i32 {
+    } else if i.get() < 4i32 {
         true
     } else {
         false
     } {
-        ref_set(total, ref_get(total) + ref_get(i));
-        if ref_get(i) == 1i32 {
-            ref_set(i, 2i32);
+        total.set(total.get() + i.get());
+        if i.get() == 1i32 {
+            i.set(2i32);
             continue
         } else {
             ()
         };
-        ref_set(i, ref_get(i) + 1i32);
+        i.set(i.get() + 1i32);
     };
-    println(ref_get(total));
+    println(total.get());
 
-    let j = ref(0i32);
-    let total2 = ref(0i32);
-    while match ref_get(j) {
+    let j = Ref::new(0i32);
+    let total2 = Ref::new(0i32);
+    while match j.get() {
         0i32 => {
-            ref_set(j, 1i32);
+            j.set(1i32);
             true
         },
         1i32 => {
-            ref_set(j, 2i32);
+            j.set(2i32);
             true
         },
         2i32 => true,
         _ => false,
     } {
-        ref_set(total2, ref_get(total2) + ref_get(j));
-        if ref_get(j) == 2i32 {
+        total2.set(total2.get() + j.get());
+        if j.get() == 2i32 {
             break;
         } else {
             ()
         };
     };
-    println(ref_get(total2));
+    println(total2.get());
 }

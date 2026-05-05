@@ -13,7 +13,7 @@ fn apply_action(action: Action, current: int32) -> int32 {
 }
 
 fn main() {
-    let val = ref(10);
+    let val = Ref::new(10);
     
     let actions = [
         Action::Transform(|x| x * 2),
@@ -22,10 +22,10 @@ fn main() {
         Action::Reset,
     ];
     
-    let i = ref(0);
-    while ref_get(i) < 4 {
-        ref_set(val, apply_action(actions[ref_get(i)], ref_get(val)));
-        println(ref_get(val).to_string());
-        ref_set(i, ref_get(i) + 1);
+    let i = Ref::new(0);
+    while i.get() < 4 {
+        val.set(apply_action(actions[i.get()], val.get()));
+        println(val.get().to_string());
+        i.set(i.get() + 1);
     };
 }

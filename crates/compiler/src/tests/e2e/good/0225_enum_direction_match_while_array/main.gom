@@ -16,9 +16,9 @@ fn dir_to_string(d: Direction) -> string {
 
 fn main() {
     let dirs: [Direction; 4] = [Direction::Up, Direction::Down, Direction::Left, Direction::Right];
-    let i = ref(0);
-    while ref_get(i) < 4 {
-        println(dir_to_string(dirs[ref_get(i)]));
-        ref_set(i, ref_get(i) + 1);
+    let i = Ref::new(0);
+    while i.get() < 4 {
+        println(dir_to_string(dirs[i.get()]));
+        i.set(i.get() + 1);
     };
 }

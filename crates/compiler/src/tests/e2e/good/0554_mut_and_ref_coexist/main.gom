@@ -1,15 +1,15 @@
 fn main() {
     let mut local = 1;
-    let cell = ref(10);
+    let cell = Ref::new(10);
 
     let step = || {
         local = local + 2;
-        ref_set(cell, ref_get(cell) + 3);
-        local + ref_get(cell)
+        cell.set(cell.get() + 3);
+        local + cell.get()
     };
 
     println(step().to_string());
     println(step().to_string());
     println(local.to_string());
-    println(ref_get(cell).to_string());
+    println(cell.get().to_string());
 }

@@ -4,8 +4,8 @@ struct State {
 }
 
 fn main() {
-    let s = ref(State { count: 0, name: "init" });
-    println(ref_get(s).count.to_string() + " " + ref_get(s).name);
-    ref_set(s, State { count: 1, name: "updated" });
-    println(ref_get(s).count.to_string() + " " + ref_get(s).name);
+    let s = Ref::new(State { count: 0, name: "init" });
+    println(s.get().count.to_string() + " " + s.get().name);
+    s.set(State { count: 1, name: "updated" });
+    println(s.get().count.to_string() + " " + s.get().name);
 }

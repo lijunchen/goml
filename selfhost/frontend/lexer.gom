@@ -69,51 +69,51 @@ fn is_space_or_tab_at(source: string, index: int32) -> bool {
 }
 
 fn starts_with_at(source: string, index: int32, needle: string) -> bool {
-    let offset = ref(0);
-    let ok = ref(true);
-    while ref_get(offset) < needle.len() {
-        if !has_at(source, index + ref_get(offset), needle.get(ref_get(offset))) {
-            ref_set(ok, false);
+    let offset = Ref::new(0);
+    let ok = Ref::new(true);
+    while offset.get() < needle.len() {
+        if !has_at(source, index + offset.get(), needle.get(offset.get())) {
+            ok.set(false);
         } else {
             ()
         };
-        ref_set(offset, ref_get(offset) + 1);
+        offset.set(offset.get() + 1);
     };
-    ref_get(ok)
+    ok.get()
 }
 
 fn push_token(tokens: Ref[Vec[syntax::Token]], kind: syntax::TokenKind, text: string, start: int32, end: int32) -> unit {
-    ref_set(tokens, ref_get(tokens).push(syntax::token(kind, text, start, end)))
+    tokens.set(tokens.get().push(syntax::token(kind, text, start, end)))
 }
 
 fn consume_whitespace(source: string, start: int32) -> (string, int32) {
-    let index = ref(start);
-    let text = ref("");
-    while is_whitespace_at(source, ref_get(index)) {
-        ref_set(text, ref_get(text) + source.get(ref_get(index)).to_string());
-        ref_set(index, ref_get(index) + 1);
+    let index = Ref::new(start);
+    let text = Ref::new("");
+    while is_whitespace_at(source, index.get()) {
+        text.set(text.get() + source.get(index.get()).to_string());
+        index.set(index.get() + 1);
     };
-    (ref_get(text), ref_get(index))
+    (text.get(), index.get())
 }
 
 fn consume_comment(source: string, start: int32) -> (string, int32) {
-    let index = ref(start);
-    let text = ref("");
-    while is_not_newline_at(source, ref_get(index)) {
-        ref_set(text, ref_get(text) + source.get(ref_get(index)).to_string());
-        ref_set(index, ref_get(index) + 1);
+    let index = Ref::new(start);
+    let text = Ref::new("");
+    while is_not_newline_at(source, index.get()) {
+        text.set(text.get() + source.get(index.get()).to_string());
+        index.set(index.get() + 1);
     };
-    (ref_get(text), ref_get(index))
+    (text.get(), index.get())
 }
 
 fn consume_ident(source: string, start: int32) -> (string, int32) {
-    let index = ref(start);
-    let text = ref("");
-    while is_ident_continue_at(source, ref_get(index)) {
-        ref_set(text, ref_get(text) + source.get(ref_get(index)).to_string());
-        ref_set(index, ref_get(index) + 1);
+    let index = Ref::new(start);
+    let text = Ref::new("");
+    while is_ident_continue_at(source, index.get()) {
+        text.set(text.get() + source.get(index.get()).to_string());
+        index.set(index.get() + 1);
     };
-    (ref_get(text), ref_get(index))
+    (text.get(), index.get())
 }
 
 fn keyword_kind(text: string) -> syntax::TokenKind {
@@ -167,25 +167,25 @@ fn keyword_kind(text: string) -> syntax::TokenKind {
 }
 
 fn consume_digits(source: string, start: int32) -> (string, int32) {
-    let index = ref(start);
-    let text = ref("");
-    while is_digit_at(source, ref_get(index)) {
-        ref_set(text, ref_get(text) + source.get(ref_get(index)).to_string());
-        ref_set(index, ref_get(index) + 1);
+    let index = Ref::new(start);
+    let text = Ref::new("");
+    while is_digit_at(source, index.get()) {
+        text.set(text.get() + source.get(index.get()).to_string());
+        index.set(index.get() + 1);
     };
-    (ref_get(text), ref_get(index))
+    (text.get(), index.get())
 }
 
 fn consume_suffix(source: string, start: int32, base_text: string, suffix: string) -> (string, int32) {
-    let index = ref(start);
-    let text = ref(base_text);
-    let offset = ref(0);
-    while ref_get(offset) < suffix.len() {
-        ref_set(text, ref_get(text) + source.get(ref_get(index)).to_string());
-        ref_set(index, ref_get(index) + 1);
-        ref_set(offset, ref_get(offset) + 1);
+    let index = Ref::new(start);
+    let text = Ref::new(base_text);
+    let offset = Ref::new(0);
+    while offset.get() < suffix.len() {
+        text.set(text.get() + source.get(index.get()).to_string());
+        index.set(index.get() + 1);
+        offset.set(offset.get() + 1);
     };
-    (ref_get(text), ref_get(index))
+    (text.get(), index.get())
 }
 
 fn consume_number(source: string, start: int32) -> (syntax::TokenKind, string, int32) {
@@ -244,150 +244,150 @@ fn has_simple_escape_at(source: string, start: int32, quote: char) -> bool {
 }
 
 fn has_unicode_escape_at(source: string, start: int32) -> bool {
-    let ok = ref(start + 5 < source.len() && has_at(source, start + 1, 'u'));
-    let offset = ref(2);
-    while ref_get(ok) && ref_get(offset) < 6 {
-        if is_hex_digit(source.get(start + ref_get(offset))) {
+    let ok = Ref::new(start + 5 < source.len() && has_at(source, start + 1, 'u'));
+    let offset = Ref::new(2);
+    while ok.get() && offset.get() < 6 {
+        if is_hex_digit(source.get(start + offset.get())) {
             ()
         } else {
-            ref_set(ok, false);
+            ok.set(false);
         };
-        ref_set(offset, ref_get(offset) + 1);
+        offset.set(offset.get() + 1);
     };
-    ref_get(ok)
+    ok.get()
 }
 
 fn append_unicode_escape(source: string, text: Ref[string], start: int32) -> int32 {
-    let offset = ref(0);
-    while ref_get(offset) < 6 {
-        ref_set(text, ref_get(text) + source.get(start + ref_get(offset)).to_string());
-        ref_set(offset, ref_get(offset) + 1);
+    let offset = Ref::new(0);
+    while offset.get() < 6 {
+        text.set(text.get() + source.get(start + offset.get()).to_string());
+        offset.set(offset.get() + 1);
     };
     start + 6
 }
 
 fn consume_string(source: string, start: int32) -> (syntax::TokenKind, string, int32) {
-    let index = ref(start + 1);
-    let text = ref("\"");
-    let closed = ref(false);
-    let scanning = ref(true);
-    while ref_get(index) < source.len() && ref_get(scanning) {
-        let ch = source.get(ref_get(index));
+    let index = Ref::new(start + 1);
+    let text = Ref::new("\"");
+    let closed = Ref::new(false);
+    let scanning = Ref::new(true);
+    while index.get() < source.len() && scanning.get() {
+        let ch = source.get(index.get());
         if ch == '"' {
-            ref_set(text, ref_get(text) + ch.to_string());
-            ref_set(index, ref_get(index) + 1);
-            ref_set(closed, true);
-            ref_set(scanning, false);
+            text.set(text.get() + ch.to_string());
+            index.set(index.get() + 1);
+            closed.set(true);
+            scanning.set(false);
         } else if ch == '\\' {
-            if has_unicode_escape_at(source, ref_get(index)) {
-                ref_set(index, append_unicode_escape(source, text, ref_get(index)));
-            } else if has_simple_escape_at(source, ref_get(index), '"') {
-                ref_set(text, ref_get(text) + ch.to_string());
-                ref_set(text, ref_get(text) + source.get(ref_get(index) + 1).to_string());
-                ref_set(index, ref_get(index) + 2);
+            if has_unicode_escape_at(source, index.get()) {
+                index.set(append_unicode_escape(source, text, index.get()));
+            } else if has_simple_escape_at(source, index.get(), '"') {
+                text.set(text.get() + ch.to_string());
+                text.set(text.get() + source.get(index.get() + 1).to_string());
+                index.set(index.get() + 2);
             } else {
-                ref_set(scanning, false);
+                scanning.set(false);
             }
         } else if ch < ' ' {
-            ref_set(scanning, false);
+            scanning.set(false);
         } else {
-            ref_set(text, ref_get(text) + ch.to_string());
-            ref_set(index, ref_get(index) + 1);
+            text.set(text.get() + ch.to_string());
+            index.set(index.get() + 1);
         }
     };
-    if ref_get(closed) {
-        (syntax::TokenKind::Str, ref_get(text), ref_get(index))
+    if closed.get() {
+        (syntax::TokenKind::Str, text.get(), index.get())
     } else {
-        (syntax::TokenKind::Error, ref_get(text), ref_get(index))
+        (syntax::TokenKind::Error, text.get(), index.get())
     }
 }
 
 fn consume_char_literal(source: string, start: int32) -> (syntax::TokenKind, string, int32) {
-    let index = ref(start + 1);
-    let text = ref("'");
-    let ok = ref(false);
-    if ref_get(index) < source.len() {
-        let ch = source.get(ref_get(index));
+    let index = Ref::new(start + 1);
+    let text = Ref::new("'");
+    let ok = Ref::new(false);
+    if index.get() < source.len() {
+        let ch = source.get(index.get());
         if ch == '\\' {
-            if has_unicode_escape_at(source, ref_get(index)) {
-                ref_set(index, append_unicode_escape(source, text, ref_get(index)));
-                ref_set(ok, true);
-            } else if has_simple_escape_at(source, ref_get(index), '\'') {
-                ref_set(text, ref_get(text) + ch.to_string());
-                ref_set(text, ref_get(text) + source.get(ref_get(index) + 1).to_string());
-                ref_set(index, ref_get(index) + 2);
-                ref_set(ok, true);
+            if has_unicode_escape_at(source, index.get()) {
+                index.set(append_unicode_escape(source, text, index.get()));
+                ok.set(true);
+            } else if has_simple_escape_at(source, index.get(), '\'') {
+                text.set(text.get() + ch.to_string());
+                text.set(text.get() + source.get(index.get() + 1).to_string());
+                index.set(index.get() + 2);
+                ok.set(true);
             } else {
                 ()
             }
         } else if ch == '\'' || ch < ' ' {
             ()
         } else {
-            ref_set(text, ref_get(text) + ch.to_string());
-            ref_set(index, ref_get(index) + 1);
-            ref_set(ok, true);
+            text.set(text.get() + ch.to_string());
+            index.set(index.get() + 1);
+            ok.set(true);
         };
     } else {
         ()
     };
-    if ref_get(ok) && has_at(source, ref_get(index), '\'') {
-        ref_set(text, ref_get(text) + "'");
-        ref_set(index, ref_get(index) + 1);
-        (syntax::TokenKind::CharLit, ref_get(text), ref_get(index))
+    if ok.get() && has_at(source, index.get(), '\'') {
+        text.set(text.get() + "'");
+        index.set(index.get() + 1);
+        (syntax::TokenKind::CharLit, text.get(), index.get())
     } else {
         (syntax::TokenKind::Error, "'", start + 1)
     }
 }
 
 fn line_has_multiline_prefix(source: string, start: int32) -> bool {
-    let index = ref(start);
-    while is_space_or_tab_at(source, ref_get(index)) {
-        ref_set(index, ref_get(index) + 1);
+    let index = Ref::new(start);
+    while is_space_or_tab_at(source, index.get()) {
+        index.set(index.get() + 1);
     };
-    has_at(source, ref_get(index), '\\') && has_at(source, ref_get(index) + 1, '\\')
+    has_at(source, index.get(), '\\') && has_at(source, index.get() + 1, '\\')
 }
 
 fn append_multiline_line(source: string, text: Ref[string], start: int32) -> int32 {
-    let index = ref(start);
-    while is_space_or_tab_at(source, ref_get(index)) {
-        ref_set(text, ref_get(text) + source.get(ref_get(index)).to_string());
-        ref_set(index, ref_get(index) + 1);
+    let index = Ref::new(start);
+    while is_space_or_tab_at(source, index.get()) {
+        text.set(text.get() + source.get(index.get()).to_string());
+        index.set(index.get() + 1);
     };
-    ref_set(text, ref_get(text) + "\\\\");
-    ref_set(index, ref_get(index) + 2);
-    while is_not_newline_at(source, ref_get(index)) {
-        ref_set(text, ref_get(text) + source.get(ref_get(index)).to_string());
-        ref_set(index, ref_get(index) + 1);
+    text.set(text.get() + "\\\\");
+    index.set(index.get() + 2);
+    while is_not_newline_at(source, index.get()) {
+        text.set(text.get() + source.get(index.get()).to_string());
+        index.set(index.get() + 1);
     };
-    ref_get(index)
+    index.get()
 }
 
 fn consume_multiline_string(source: string, start: int32) -> (string, int32, bool) {
-    let index = ref(start + 2);
-    let text = ref("\\\\");
-    while is_not_newline_at(source, ref_get(index)) {
-        ref_set(text, ref_get(text) + source.get(ref_get(index)).to_string());
-        ref_set(index, ref_get(index) + 1);
+    let index = Ref::new(start + 2);
+    let text = Ref::new("\\\\");
+    while is_not_newline_at(source, index.get()) {
+        text.set(text.get() + source.get(index.get()).to_string());
+        index.set(index.get() + 1);
     };
-    if ref_get(index) >= source.len() {
+    if index.get() >= source.len() {
         ("\\\\", start + 2, false)
-    } else if !line_has_multiline_prefix(source, ref_get(index) + 1) {
+    } else if !line_has_multiline_prefix(source, index.get() + 1) {
         ("\\\\", start + 2, false)
     } else {
-        let done = ref(false);
-        while !ref_get(done) {
-            ref_set(text, ref_get(text) + "\n");
-            ref_set(index, ref_get(index) + 1);
-            ref_set(index, append_multiline_line(source, text, ref_get(index)));
-            if ref_get(index) >= source.len() {
-                ref_set(done, true);
-            } else if line_has_multiline_prefix(source, ref_get(index) + 1) {
+        let done = Ref::new(false);
+        while !(done.get()) {
+            text.set(text.get() + "\n");
+            index.set(index.get() + 1);
+            index.set(append_multiline_line(source, text, index.get()));
+            if index.get() >= source.len() {
+                done.set(true);
+            } else if line_has_multiline_prefix(source, index.get() + 1) {
                 ()
             } else {
-                ref_set(done, true);
+                done.set(true);
             };
         };
-        (ref_get(text), ref_get(index), true)
+        (text.get(), index.get(), true)
     }
 }
 
@@ -444,19 +444,19 @@ fn operator_token(source: string, start: int32) -> (syntax::TokenKind, string, i
 }
 
 pub fn lex(source: string) -> Vec[syntax::Token] {
-    let tokens = ref(Vec::new());
-    let index = ref(0);
-    while ref_get(index) < source.len() {
-        let start = ref_get(index);
+    let tokens = Ref::new(Vec::new());
+    let index = Ref::new(0);
+    while index.get() < source.len() {
+        let start = index.get();
         let ch = source.get(start);
         if is_whitespace(ch) {
             let (text, end) = consume_whitespace(source, start);
             push_token(tokens, syntax::TokenKind::Whitespace, text, start, end);
-            ref_set(index, end);
+            index.set(end);
         } else if ch == '/' && has_at(source, start + 1, '/') {
             let (text, end) = consume_comment(source, start);
             push_token(tokens, syntax::TokenKind::Comment, text, start, end);
-            ref_set(index, end);
+            index.set(end);
         } else if ch == '\\' && has_at(source, start + 1, '\\') {
             let (text, end, ok) = consume_multiline_string(source, start);
             if ok {
@@ -464,31 +464,31 @@ pub fn lex(source: string) -> Vec[syntax::Token] {
             } else {
                 push_token(tokens, syntax::TokenKind::Error, text, start, end);
             };
-            ref_set(index, end);
+            index.set(end);
         } else if ch == '"' {
             let (kind, text, end) = consume_string(source, start);
             push_token(tokens, kind, text, start, end);
-            ref_set(index, end);
+            index.set(end);
         } else if ch == '\'' {
             let (kind, text, end) = consume_char_literal(source, start);
             push_token(tokens, kind, text, start, end);
-            ref_set(index, end);
+            index.set(end);
         } else if is_digit(ch) {
             let (kind, text, end) = consume_number(source, start);
             push_token(tokens, kind, text, start, end);
-            ref_set(index, end);
+            index.set(end);
         } else if is_alpha(ch) || ch == '_' && is_ident_continue_at(source, start + 1) {
             let (text, end) = consume_ident(source, start);
             push_token(tokens, keyword_kind(text), text, start, end);
-            ref_set(index, end);
+            index.set(end);
         } else if ch == '_' {
             push_token(tokens, syntax::TokenKind::WildcardKeyword, "_", start, start + 1);
-            ref_set(index, start + 1);
+            index.set(start + 1);
         } else {
             let (kind, text, end) = operator_token(source, start);
             push_token(tokens, kind, text, start, end);
-            ref_set(index, end);
+            index.set(end);
         }
     };
-    ref_get(tokens)
+    tokens.get()
 }

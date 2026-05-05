@@ -4,23 +4,23 @@ enum Option[T] {
 }
 
 fn find_first(items: [int32; 5], pred: (int32) -> bool) -> Option[int32] {
-    let i = ref(0);
-    let result: Ref[Option[int32]] = ref(Option::None);
-    while ref_get(i) < 5 {
-        let item = items[ref_get(i)];
-        match ref_get(result) {
+    let i = Ref::new(0);
+    let result: Ref[Option[int32]] = Ref::new(Option::None);
+    while i.get() < 5 {
+        let item = items[i.get()];
+        match result.get() {
             Option::None => {
                 if pred(item) {
-                    ref_set(result, Option::Some(item));
+                    result.set(Option::Some(item));
                 } else {
                     ()
                 };
             },
             Option::Some(_) => (),
         };
-        ref_set(i, ref_get(i) + 1);
+        i.set(i.get() + 1);
     };
-    ref_get(result)
+    result.get()
 }
 
 fn main() {

@@ -11,6 +11,6 @@ impl Show for Num {
 }
 
 fn main() {
-    let r: Ref[dyn Show] = ref(Num { val: 42 });
-    println(Show::show(ref_get(r)));
+    let r: Ref[dyn Show] = Ref::new(Num { val: 42 });
+    println(Show::show(r.get()));
 }

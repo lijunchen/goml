@@ -10,12 +10,12 @@ impl Show for int32 {
 
 impl Hash for Ref[dyn Show] {
     fn hash(self: Ref[dyn Show]) -> uint64 {
-        string_hash(Show::show(ref_get(self)))
+        string_hash(Show::show(self.get()))
     }
 }
 
 fn main() -> unit {
     let inner: dyn Show = 1i32;
-    let r = ref(inner);
+    let r = Ref::new(inner);
     let _ = Hash::hash(r);
 }
