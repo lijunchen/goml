@@ -141,10 +141,16 @@ pub(crate) fn builtin_collection_impl_tast() -> tast::File {
         .toplevels
         .into_iter()
         .filter(|item| match item {
-            tast::Item::ImplBlock(impl_block) => matches!(
-                &impl_block.for_type,
-                tast::Ty::TVec { .. } | tast::Ty::TSlice { .. } | tast::Ty::THashMap { .. }
-            ),
+            tast::Item::ImplBlock(impl_block) => {
+                impl_block.trait_name.is_none()
+                    && matches!(
+                        &impl_block.for_type,
+                        tast::Ty::TVec { .. }
+                            | tast::Ty::TSlice { .. }
+                            | tast::Ty::THashMap { .. }
+                            | tast::Ty::TRef { .. }
+                    )
+            }
             _ => false,
         })
         .collect();

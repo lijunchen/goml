@@ -1153,6 +1153,10 @@ impl Typer {
                 match &inst_ty {
                     tast::Ty::TFunc { params, ret_ty } => params
                         .first()
+                        .filter(|param| {
+                            super::util::try_constr_name(param)
+                                .is_some_and(|name| name == resolved_type_name)
+                        })
                         .cloned()
                         .unwrap_or_else(|| (**ret_ty).clone()),
                     _ => self.fresh_ty_var(),
@@ -1480,9 +1484,16 @@ impl Typer {
             );
             return self.error_expr(None);
         };
-        let receiver_ty_for_record = receiver_ty
-            .clone()
-            .unwrap_or_else(|| params.first().cloned().unwrap_or_else(|| (*ret_ty).clone()));
+        let receiver_ty_for_record = receiver_ty.clone().unwrap_or_else(|| {
+            params
+                .first()
+                .filter(|param| {
+                    super::util::try_constr_name(param)
+                        .is_some_and(|name| name == resolved_type_name)
+                })
+                .cloned()
+                .unwrap_or_else(|| (*ret_ty).clone())
+        });
         if params.len() != args.len() {
             super::util::push_error_with_range(
                 diagnostics,
@@ -4356,7 +4367,12 @@ impl Typer {
         let range = self.expr_range(target_expr_id);
         let (index_tast, read_ty, value_ty) = match &base_ty {
             tast::Ty::TArray { elem, .. } => {
-                self.validate_array_assignment_target(local_env, diagnostics, target_expr_id);
+                self.validate_array_assignment_target(
+                    local_env,
+                    diagnostics,
+                    target_expr_id,
+                    &base_tast,
+                );
                 let elem_ty = elem.as_ref().clone();
                 (
                     self.check_expr(genv, local_env, diagnostics, index, &tast::Ty::TInt32),
@@ -4434,6 +4450,7 @@ impl Typer {
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
         expr_id: hir::ExprId,
+        base_tast: &tast::Expr,
     ) {
         match self.classify_array_assign_root(expr_id) {
             Some(ArrayAssignRoot::Local(local_id)) => {
@@ -4454,11 +4471,14 @@ impl Typer {
             }
             Some(ArrayAssignRoot::Ref) => {}
             None => {
+                if Self::tast_array_assign_root_is_ref(base_tast) {
+                    return;
+                }
                 diagnostics.push(
                     Diagnostic::new(
                         Stage::Typer,
                         Severity::Error,
-                        "array indexed assignment requires a writable root such as a mutable local or `ref_get(...)`",
+                        "array indexed assignment requires a writable root such as a mutable local or `ref.get()`",
                     )
                     .with_range(self.expr_range(expr_id)),
                 );
@@ -4519,6 +4539,25 @@ impl Typer {
                 }
             }
             _ => None,
+        }
+    }
+
+    fn tast_array_assign_root_is_ref(expr: &tast::Expr) -> bool {
+        match expr {
+            tast::Expr::EProj { tuple, .. } | tast::Expr::EField { expr: tuple, .. } => {
+                Self::tast_array_assign_root_is_ref(tuple)
+            }
+            tast::Expr::EIndex { base, .. } => Self::tast_array_assign_root_is_ref(base),
+            tast::Expr::ECall { func, args, .. } if args.len() == 1 => match func.as_ref() {
+                tast::Expr::EVar { name, .. } if name == "ref_get" => true,
+                tast::Expr::EInherentMethod {
+                    receiver_ty,
+                    method_name,
+                    ..
+                } => method_name.0 == "get" && matches!(receiver_ty, tast::Ty::TRef { .. }),
+                _ => false,
+            },
+            _ => false,
         }
     }
 

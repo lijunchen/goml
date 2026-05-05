@@ -543,6 +543,11 @@ fn is_ref_get_call(expr: &Expr) -> Option<&Expr> {
     match expr {
         Expr::ECall { func, args, .. } if args.len() == 1 => match func.as_ref() {
             Expr::EVar { name, .. } if name == "ref_get" => Some(&args[0]),
+            Expr::EInherentMethod {
+                receiver_ty,
+                method_name,
+                ..
+            } if method_name.0 == "get" && matches!(receiver_ty, Ty::TRef { .. }) => Some(&args[0]),
             _ => None,
         },
         _ => None,
@@ -3116,7 +3121,7 @@ fn compile_index_assign_action(
         CompiledPlaceRoot::Value => {
             push_compile_error(
                 diagnostics,
-                "array indexed assignment requires a writable root such as a mutable local or `ref_get(...)`",
+                "array indexed assignment requires a writable root such as a mutable local or `ref.get()`",
                 expr_range(target),
             );
             emissing(&Ty::TUnit)
