@@ -1,0 +1,869 @@
+use crate::ast;
+
+pub struct SourceFile {
+    module: string,
+    root: ast::Node,
+}
+
+pub struct Binding {
+    name: string,
+    ty: string,
+}
+
+pub struct FnInfo {
+    module: string,
+    name: string,
+    params: Vec[string],
+    ret: string,
+}
+
+pub struct CheckContext {
+    functions: Ref[Vec[FnInfo]],
+    diagnostics: Ref[Vec[ast::Diagnostic]],
+    current_module: Ref[string],
+    current_return: Ref[string],
+}
+
+pub fn source_file(module: string, root: ast::Node) -> SourceFile {
+    SourceFile {
+        module: module,
+        root: root,
+    }
+}
+
+fn push_diagnostic(ctx: CheckContext, node: ast::Node, message: string) -> unit {
+    ref_set(ctx.diagnostics, ref_get(ctx.diagnostics).push(ast::diagnostic(node.start, node.end, message)))
+}
+
+fn node_is(node: ast::Node, kind: ast::NodeKind) -> bool {
+    ast::node_kind_name(node.kind) == ast::node_kind_name(kind)
+}
+
+fn child(node: ast::Node, index: int32) -> ast::Node {
+    if index < node.children.len() {
+        node.children.get(index)
+    } else {
+        ast::leaf(ast::NodeKind::Error, "", node.end, node.end)
+    }
+}
+
+fn has_text(text: string, needle: string) -> bool {
+    let found = ref(false);
+    let i = ref(0);
+    if needle.len() == 0 {
+        true
+    } else {
+        while !ref_get(found) && ref_get(i) + needle.len() <= text.len() {
+            let ok = ref(true);
+            let j = ref(0);
+            while ref_get(ok) && ref_get(j) < needle.len() {
+                if text.get(ref_get(i) + ref_get(j)) == needle.get(ref_get(j)) {
+                    ()
+                } else {
+                    ref_set(ok, false);
+                };
+                ref_set(j, ref_get(j) + 1);
+            };
+            if ref_get(ok) {
+                ref_set(found, true);
+            } else {
+                ref_set(i, ref_get(i) + 1);
+            };
+        };
+        ref_get(found)
+    }
+}
+
+fn starts_with(text: string, prefix: string) -> bool {
+    if prefix.len() > text.len() {
+        false
+    } else {
+        let ok = ref(true);
+        let i = ref(0);
+        while ref_get(ok) && ref_get(i) < prefix.len() {
+            if text.get(ref_get(i)) == prefix.get(ref_get(i)) {
+                ()
+            } else {
+                ref_set(ok, false);
+            };
+            ref_set(i, ref_get(i) + 1);
+        };
+        ref_get(ok)
+    }
+}
+
+fn strip_prefix(text: string, prefix: string) -> string {
+    if starts_with(text, prefix) {
+        let result = ref("");
+        let i = ref(prefix.len());
+        while ref_get(i) < text.len() {
+            ref_set(result, ref_get(result) + text.get(ref_get(i)).to_string());
+            ref_set(i, ref_get(i) + 1);
+        };
+        ref_get(result)
+    } else {
+        text
+    }
+}
+
+fn normalize_path(path: string) -> string {
+    strip_prefix(path, "crate::")
+}
+
+fn last_segment(path: string) -> string {
+    let start = ref(0);
+    let i = ref(0);
+    while ref_get(i) + 1 < path.len() {
+        if path.get(ref_get(i)) == ':' && path.get(ref_get(i) + 1) == ':' {
+            ref_set(start, ref_get(i) + 2);
+            ref_set(i, ref_get(i) + 2);
+        } else {
+            ref_set(i, ref_get(i) + 1);
+        };
+    };
+    let result = ref("");
+    let j = ref(ref_get(start));
+    while ref_get(j) < path.len() {
+        ref_set(result, ref_get(result) + path.get(ref_get(j)).to_string());
+        ref_set(j, ref_get(j) + 1);
+    };
+    ref_get(result)
+}
+
+fn is_builtin_type_constructor(name: string) -> bool {
+    name == "Vec"
+        || name == "Ref"
+        || name == "Option"
+        || name == "Result"
+        || name == "HashMap"
+        || name == "Slice"
+        || name == "Hash"
+        || name == "Eq"
+        || name == "ToString"
+}
+
+fn is_primitive_type(name: string) -> bool {
+    name == "unit"
+        || name == "bool"
+        || name == "int8"
+        || name == "int16"
+        || name == "int32"
+        || name == "int64"
+        || name == "uint8"
+        || name == "uint16"
+        || name == "uint32"
+        || name == "uint64"
+        || name == "float32"
+        || name == "float64"
+        || name == "string"
+        || name == "char"
+}
+
+fn is_type_param(name: string) -> bool {
+    if name.len() == 1 {
+        let ch = name.get(0);
+        ch >= 'A' && ch <= 'Z'
+    } else {
+        false
+    }
+}
+
+fn join_type_children(module: string, children: Vec[ast::Node]) -> string {
+    let result = ref("");
+    let i = ref(0);
+    while ref_get(i) < children.len() {
+        if ref_get(i) > 0 {
+            ref_set(result, ref_get(result) + ",");
+        } else {
+            ()
+        };
+        ref_set(result, ref_get(result) + type_text(module, children.get(ref_get(i))));
+        ref_set(i, ref_get(i) + 1);
+    };
+    ref_get(result)
+}
+
+fn qualify_type_name(module: string, name: string) -> string {
+    if is_primitive_type(name) || is_builtin_type_constructor(name) || is_type_param(name) || has_text(name, "::") {
+        normalize_path(name)
+    } else if module == "" {
+        name
+    } else {
+        module + "::" + name
+    }
+}
+
+fn type_text(module: string, ty: ast::Node) -> string {
+    if node_is(ty, ast::NodeKind::TypeMissing) {
+        "unknown"
+    } else if node_is(ty, ast::NodeKind::TypeUnit) {
+        "unit"
+    } else if node_is(ty, ast::NodeKind::TypeName) {
+        let base = qualify_type_name(module, ty.text);
+        if ty.children.len() == 0 {
+            base
+        } else {
+            base + "[" + join_type_children(module, ty.children) + "]"
+        }
+    } else if node_is(ty, ast::NodeKind::TypeDyn) {
+        "dyn " + normalize_path(ty.text)
+    } else if node_is(ty, ast::NodeKind::TypeArray) {
+        if ty.children.len() > 0 {
+            "Array[" + type_text(module, ty.children.get(0)) + "]"
+        } else {
+            "Array[unknown]"
+        }
+    } else if node_is(ty, ast::NodeKind::TypeTuple) {
+        "(" + join_type_children(module, ty.children) + ")"
+    } else if node_is(ty, ast::NodeKind::TypeFn) {
+        let result = ref("(");
+        let i = ref(0);
+        while ref_get(i) + 1 < ty.children.len() {
+            if ref_get(i) > 0 {
+                ref_set(result, ref_get(result) + ",");
+            } else {
+                ()
+            };
+            ref_set(result, ref_get(result) + type_text(module, ty.children.get(ref_get(i))));
+            ref_set(i, ref_get(i) + 1);
+        };
+        if ty.children.len() > 0 {
+            ref_set(result, ref_get(result) + ")->" + type_text(module, ty.children.get(ty.children.len() - 1)));
+        } else {
+            ref_set(result, ref_get(result) + ")->unknown");
+        };
+        ref_get(result)
+    } else {
+        "unknown"
+    }
+}
+
+fn compatible(expected: string, actual: string) -> bool {
+    let e = normalize_path(expected);
+    let a = normalize_path(actual);
+    e == "unknown" || a == "unknown" || has_text(e, "unknown") || has_text(a, "unknown") || e == a || last_segment(e) == last_segment(a)
+}
+
+fn push_binding(bindings: Ref[Vec[Binding]], name: string, ty: string) -> unit {
+    ref_set(bindings, ref_get(bindings).push(Binding {
+        name: name,
+        ty: ty,
+    }))
+}
+
+fn lookup_binding(bindings: Vec[Binding], name: string) -> string {
+    let i = ref(bindings.len() - 1);
+    let result = ref("unknown");
+    let done = ref(false);
+    while !ref_get(done) && ref_get(i) >= 0 {
+        let binding = bindings.get(ref_get(i));
+        if binding.name == name {
+            ref_set(result, binding.ty);
+            ref_set(done, true);
+        } else {
+            ref_set(i, ref_get(i) - 1);
+        };
+    };
+    ref_get(result)
+}
+
+fn binding_exists(bindings: Vec[Binding], name: string) -> bool {
+    let i = ref(bindings.len() - 1);
+    let found = ref(false);
+    while !ref_get(found) && ref_get(i) >= 0 {
+        let binding = bindings.get(ref_get(i));
+        if binding.name == name {
+            ref_set(found, true);
+        } else {
+            ref_set(i, ref_get(i) - 1);
+        };
+    };
+    ref_get(found)
+}
+
+fn fn_info(module: string, name: string, params: Vec[string], ret: string) -> FnInfo {
+    FnInfo {
+        module: module,
+        name: name,
+        params: params,
+        ret: ret,
+    }
+}
+
+fn push_function(ctx: CheckContext, info: FnInfo) -> unit {
+    ref_set(ctx.functions, ref_get(ctx.functions).push(info))
+}
+
+fn add_builtin_functions(ctx: CheckContext) -> unit {
+    let one_unknown = ref(Vec::new());
+    ref_set(one_unknown, ref_get(one_unknown).push("unknown"));
+    let two_unknown = ref(Vec::new());
+    ref_set(two_unknown, ref_get(two_unknown).push("unknown"));
+    ref_set(two_unknown, ref_get(two_unknown).push("unknown"));
+    push_function(ctx, fn_info("", "ref", ref_get(one_unknown), "Ref[unknown]"));
+    push_function(ctx, fn_info("", "ref_get", ref_get(one_unknown), "unknown"));
+    push_function(ctx, fn_info("", "ref_set", ref_get(two_unknown), "unit"));
+    push_function(ctx, fn_info("std::io", "println", ref_get(one_unknown), "unit"));
+    push_function(ctx, fn_info("std::io", "print", ref_get(one_unknown), "unit"));
+    let read_file_params = ref(Vec::new());
+    ref_set(read_file_params, ref_get(read_file_params).push("string"));
+    push_function(ctx, fn_info("std::fs", "read_file", ref_get(read_file_params), "Result[string,string]"));
+    push_function(ctx, fn_info("std::fs", "write_file", ref_get(two_unknown), "Result[unit,string]"));
+    push_function(ctx, fn_info("std::fs", "exists", ref_get(read_file_params), "bool"));
+    let no_params: Vec[string] = Vec::new();
+    push_function(ctx, fn_info("std::env", "args", no_params, "Vec[string]"));
+    let exit_params = ref(Vec::new());
+    ref_set(exit_params, ref_get(exit_params).push("int32"));
+    push_function(ctx, fn_info("std::process", "exit", ref_get(exit_params), "unit"));
+}
+
+fn collect_fn(ctx: CheckContext, module: string, item: ast::Node) -> unit {
+    let params = ref(Vec::new());
+    let param_list = child(item, 1);
+    let i = ref(0);
+    while ref_get(i) < param_list.children.len() {
+        let param = param_list.children.get(ref_get(i));
+        if param.children.len() > 0 {
+            ref_set(params, ref_get(params).push(type_text(module, param.children.get(0))));
+        } else {
+            ref_set(params, ref_get(params).push("unknown"));
+        };
+        ref_set(i, ref_get(i) + 1);
+    };
+    let ret = type_text(module, child(item, 2));
+    push_function(ctx, fn_info(module, item.text, ref_get(params), ret));
+}
+
+fn collect_enum(ctx: CheckContext, module: string, item: ast::Node) -> unit {
+    let enum_name = module + "::" + item.text;
+    let i = ref(0);
+    while ref_get(i) < item.children.len() {
+        let variant = item.children.get(ref_get(i));
+        let params = ref(Vec::new());
+        let j = ref(0);
+        while ref_get(j) < variant.children.len() {
+            ref_set(params, ref_get(params).push(type_text(module, variant.children.get(ref_get(j)))));
+            ref_set(j, ref_get(j) + 1);
+        };
+        push_function(ctx, fn_info(module + "::" + item.text, variant.text, ref_get(params), enum_name));
+        ref_set(i, ref_get(i) + 1);
+    };
+}
+
+fn collect_items(ctx: CheckContext, file: SourceFile) -> unit {
+    let i = ref(0);
+    while ref_get(i) < file.root.children.len() {
+        let item = file.root.children.get(ref_get(i));
+        if node_is(item, ast::NodeKind::FnDef) || node_is(item, ast::NodeKind::ExternFn) {
+            collect_fn(ctx, file.module, item);
+        } else if node_is(item, ast::NodeKind::EnumDef) {
+            collect_enum(ctx, file.module, item);
+        } else if node_is(item, ast::NodeKind::ImplDef) {
+            let j = ref(0);
+            while ref_get(j) < item.children.len() {
+                let method = item.children.get(ref_get(j));
+                if node_is(method, ast::NodeKind::FnDef) {
+                    collect_fn(ctx, file.module, method);
+                } else {
+                    ()
+                };
+                ref_set(j, ref_get(j) + 1);
+            };
+        } else {
+            ()
+        };
+        ref_set(i, ref_get(i) + 1);
+    };
+}
+
+fn function_path(info: FnInfo) -> string {
+    if info.module == "" {
+        info.name
+    } else {
+        info.module + "::" + info.name
+    }
+}
+
+fn lookup_function_exact(functions: Vec[FnInfo], path: string) -> Option[FnInfo] {
+    let wanted = normalize_path(path);
+    let i = ref(0);
+    let result = ref(Option::None);
+    let done = ref(false);
+    while !ref_get(done) && ref_get(i) < functions.len() {
+        let info = functions.get(ref_get(i));
+        if normalize_path(function_path(info)) == wanted {
+            ref_set(result, Option::Some(info));
+            ref_set(done, true);
+        } else {
+            ref_set(i, ref_get(i) + 1);
+        };
+    };
+    ref_get(result)
+}
+
+fn lookup_function(functions: Vec[FnInfo], module: string, path: string) -> Option[FnInfo] {
+    let normalized = normalize_path(path);
+    if has_text(normalized, "::") {
+        lookup_function_exact(functions, normalized)
+    } else {
+        match lookup_function_exact(functions, module + "::" + normalized) {
+            Option::Some(info) => Option::Some(info),
+            Option::None => match lookup_function_exact(functions, normalized) {
+                Option::Some(info) => Option::Some(info),
+                Option::None => {
+                    let i = ref(0);
+                    let found = ref(Option::None);
+                    let count = ref(0);
+                    while ref_get(i) < functions.len() {
+                        let info = functions.get(ref_get(i));
+                        if info.name == normalized {
+                            ref_set(found, Option::Some(info));
+                            ref_set(count, ref_get(count) + 1);
+                        } else {
+                            ()
+                        };
+                        ref_set(i, ref_get(i) + 1);
+                    };
+                    if ref_get(count) == 1 {
+                        ref_get(found)
+                    } else {
+                        Option::None
+                    }
+                },
+            },
+        }
+    }
+}
+
+fn check_expected(ctx: CheckContext, node: ast::Node, expected: string, actual: string, message: string) -> unit {
+    if compatible(expected, actual) {
+        ()
+    } else {
+        push_diagnostic(ctx, node, message + ": expected " + expected + ", got " + actual);
+    }
+}
+
+fn bind_pattern(bindings: Ref[Vec[Binding]], pattern: ast::Node, ty: string) -> unit {
+    if node_is(pattern, ast::NodeKind::PatternVar) {
+        push_binding(bindings, pattern.text, ty);
+    } else if node_is(pattern, ast::NodeKind::PatternTuple) || node_is(pattern, ast::NodeKind::PatternConstr) {
+        let i = ref(0);
+        while ref_get(i) < pattern.children.len() {
+            bind_pattern(bindings, pattern.children.get(ref_get(i)), "unknown");
+            ref_set(i, ref_get(i) + 1);
+        };
+    } else {
+        ()
+    }
+}
+
+fn type_arg(text: string) -> string {
+    let result = ref("");
+    let open = ref(false);
+    let depth = ref(0);
+    let i = ref(0);
+    while ref_get(i) < text.len() {
+        let ch = text.get(ref_get(i));
+        if ch == '[' {
+            ref_set(depth, ref_get(depth) + 1);
+            if ref_get(depth) == 1 {
+                ref_set(open, true);
+            } else {
+                ref_set(result, ref_get(result) + ch.to_string());
+            }
+        } else if ch == ']' {
+            ref_set(depth, ref_get(depth) - 1);
+            if ref_get(depth) >= 1 {
+                ref_set(result, ref_get(result) + ch.to_string());
+            } else {
+                ()
+            }
+        } else if ref_get(open) && ref_get(depth) >= 1 {
+            ref_set(result, ref_get(result) + ch.to_string());
+        } else {
+            ()
+        };
+        ref_set(i, ref_get(i) + 1);
+    };
+    if ref_get(result) == "" {
+        "unknown"
+    } else {
+        ref_get(result)
+    }
+}
+
+fn method_type(ctx: CheckContext, receiver_node: ast::Node, receiver: string, name: string, args: Vec[ast::Node], bindings: Ref[Vec[Binding]]) -> string {
+    if name == "len" {
+        "int32"
+    } else if name == "get" {
+        if args.len() > 0 {
+            let index_ty = infer_expr(ctx, args.get(0), bindings);
+            check_expected(ctx, args.get(0), "int32", index_ty, "method `get` index type mismatch");
+        } else {
+            ()
+        };
+        if starts_with(receiver, "Vec[") || starts_with(receiver, "Array[") || starts_with(receiver, "Slice[") {
+            type_arg(receiver)
+        } else if receiver == "string" {
+            "char"
+        } else {
+            "unknown"
+        }
+    } else if name == "push" {
+        receiver
+    } else if name == "set" {
+        "unit"
+    } else if name == "sub" {
+        receiver
+    } else if name == "to_string" {
+        "string"
+    } else if name == "?" {
+        "unknown"
+    } else {
+        let _ = receiver_node;
+        "unknown"
+    }
+}
+
+fn infer_call(ctx: CheckContext, node: ast::Node, bindings: Ref[Vec[Binding]]) -> string {
+    let callee = child(node, 0);
+    if node_is(callee, ast::NodeKind::ExprPath) {
+        match lookup_function(ref_get(ctx.functions), ref_get(ctx.current_module), callee.text) {
+            Option::Some(info) => {
+                let arg_count = node.children.len() - 1;
+                if arg_count == info.params.len() {
+                    ()
+                } else {
+                    push_diagnostic(ctx, node, "call arity mismatch for `" + callee.text + "`");
+                };
+                let i = ref(0);
+                while ref_get(i) < arg_count && ref_get(i) < info.params.len() {
+                    let arg = node.children.get(ref_get(i) + 1);
+                    let actual = infer_expr(ctx, arg, bindings);
+                    check_expected(ctx, arg, info.params.get(ref_get(i)), actual, "argument type mismatch");
+                    ref_set(i, ref_get(i) + 1);
+                };
+                info.ret
+            },
+            Option::None => {
+                let _ = infer_expr(ctx, callee, bindings);
+                let i = ref(1);
+                while ref_get(i) < node.children.len() {
+                    let _ = infer_expr(ctx, node.children.get(ref_get(i)), bindings);
+                    ref_set(i, ref_get(i) + 1);
+                };
+                "unknown"
+            },
+        }
+    } else {
+        let _ = infer_expr(ctx, callee, bindings);
+        let i = ref(1);
+        while ref_get(i) < node.children.len() {
+            let _ = infer_expr(ctx, node.children.get(ref_get(i)), bindings);
+            ref_set(i, ref_get(i) + 1);
+        };
+        "unknown"
+    }
+}
+
+fn literal_ty(text: string) -> string {
+    let result = ref("");
+    let i = ref(0);
+    let done = ref(false);
+    while !ref_get(done) && ref_get(i) < text.len() {
+        let ch = text.get(ref_get(i));
+        if ch == ':' {
+            ref_set(done, true);
+        } else {
+            ref_set(result, ref_get(result) + ch.to_string());
+            ref_set(i, ref_get(i) + 1);
+        };
+    };
+    ref_get(result)
+}
+
+fn infer_binary(ctx: CheckContext, node: ast::Node, bindings: Ref[Vec[Binding]]) -> string {
+    let left = infer_expr(ctx, child(node, 0), bindings);
+    let right = infer_expr(ctx, child(node, 1), bindings);
+    if node.text == "==" || node.text == "!=" || node.text == "<" || node.text == "<=" || node.text == ">" || node.text == ">=" {
+        if compatible(left, right) {
+            ()
+        } else {
+            push_diagnostic(ctx, node, "binary operands have different types: " + left + " and " + right);
+        };
+        "bool"
+    } else if node.text == "&&" || node.text == "||" {
+        check_expected(ctx, child(node, 0), "bool", left, "logical operand type mismatch");
+        check_expected(ctx, child(node, 1), "bool", right, "logical operand type mismatch");
+        "bool"
+    } else if node.text == "+" {
+        if left == "string" || right == "string" {
+            "string"
+        } else if compatible(left, right) {
+            left
+        } else {
+            "unknown"
+        }
+    } else {
+        if compatible(left, right) {
+            left
+        } else {
+            "unknown"
+        }
+    }
+}
+
+fn infer_block(ctx: CheckContext, node: ast::Node, bindings: Ref[Vec[Binding]]) -> string {
+    let result = ref("unit");
+    let i = ref(0);
+    while ref_get(i) < node.children.len() {
+        let statement = node.children.get(ref_get(i));
+        if node_is(statement, ast::NodeKind::StmtLet) {
+            let pattern = child(statement, 0);
+            let annotation = child(statement, 1);
+            let value = child(statement, 2);
+            let value_ty = infer_expr(ctx, value, bindings);
+            let binding_ty = if node_is(annotation, ast::NodeKind::TypeMissing) {
+                value_ty
+            } else {
+                let ann = type_text(ref_get(ctx.current_module), annotation);
+                check_expected(ctx, value, ann, value_ty, "let binding type mismatch");
+                ann
+            };
+            bind_pattern(bindings, pattern, binding_ty);
+            ref_set(result, "unit");
+        } else if node_is(statement, ast::NodeKind::StmtExpr) {
+            let _ = infer_expr(ctx, child(statement, 0), bindings);
+            ref_set(result, "unit");
+        } else if node_is(statement, ast::NodeKind::StmtTail) {
+            ref_set(result, infer_expr(ctx, child(statement, 0), bindings));
+        } else {
+            ()
+        };
+        ref_set(i, ref_get(i) + 1);
+    };
+    ref_get(result)
+}
+
+fn infer_if(ctx: CheckContext, node: ast::Node, bindings: Ref[Vec[Binding]]) -> string {
+    let cond = infer_expr(ctx, child(node, 0), bindings);
+    check_expected(ctx, child(node, 0), "bool", cond, "if condition type mismatch");
+    let then_ty = if node.children.len() > 1 {
+        infer_expr(ctx, child(node, 1), bindings)
+    } else {
+        "unit"
+    };
+    let else_ty = if node.children.len() > 2 {
+        infer_expr(ctx, child(node, 2), bindings)
+    } else {
+        "unit"
+    };
+    if compatible(then_ty, else_ty) {
+        then_ty
+    } else {
+        push_diagnostic(ctx, node, "if branch type mismatch: " + then_ty + " and " + else_ty);
+        "unknown"
+    }
+}
+
+fn infer_match(ctx: CheckContext, node: ast::Node, bindings: Ref[Vec[Binding]]) -> string {
+    let _ = infer_expr(ctx, child(node, 0), bindings);
+    let result = ref("unknown");
+    let i = ref(1);
+    while ref_get(i) < node.children.len() {
+        let arm = node.children.get(ref_get(i));
+        let arm_bindings = ref(ref_get(bindings));
+        bind_pattern(arm_bindings, child(arm, 0), "unknown");
+        let arm_ty = infer_expr(ctx, child(arm, 1), arm_bindings);
+        if ref_get(result) == "unknown" {
+            ref_set(result, arm_ty);
+        } else if compatible(ref_get(result), arm_ty) {
+            ()
+        } else {
+            push_diagnostic(ctx, arm, "match arm type mismatch: " + ref_get(result) + " and " + arm_ty);
+        };
+        ref_set(i, ref_get(i) + 1);
+    };
+    ref_get(result)
+}
+
+fn infer_expr(ctx: CheckContext, node: ast::Node, bindings: Ref[Vec[Binding]]) -> string {
+    if node_is(node, ast::NodeKind::ExprLit) {
+        literal_ty(node.text)
+    } else if node_is(node, ast::NodeKind::ExprPath) {
+        let local = lookup_binding(ref_get(bindings), node.text);
+        if local != "unknown" || binding_exists(ref_get(bindings), node.text) {
+            local
+        } else {
+            match lookup_function(ref_get(ctx.functions), ref_get(ctx.current_module), node.text) {
+                Option::Some(_) => "unknown",
+                Option::None => {
+                    if has_text(node.text, "::") {
+                        "unknown"
+                    } else {
+                        push_diagnostic(ctx, node, "unresolved name `" + node.text + "`");
+                        "unknown"
+                    }
+                },
+            }
+        }
+    } else if node_is(node, ast::NodeKind::ExprCall) {
+        infer_call(ctx, node, bindings)
+    } else if node_is(node, ast::NodeKind::ExprMethodCall) {
+        let receiver = infer_expr(ctx, child(node, 0), bindings);
+        let args = ref(Vec::new());
+        let i = ref(1);
+        while ref_get(i) < node.children.len() {
+            ref_set(args, ref_get(args).push(node.children.get(ref_get(i))));
+            ref_set(i, ref_get(i) + 1);
+        };
+        method_type(ctx, child(node, 0), receiver, node.text, ref_get(args), bindings)
+    } else if node_is(node, ast::NodeKind::ExprField) {
+        let _ = infer_expr(ctx, child(node, 0), bindings);
+        "unknown"
+    } else if node_is(node, ast::NodeKind::ExprIndex) {
+        let receiver = infer_expr(ctx, child(node, 0), bindings);
+        let index_ty = infer_expr(ctx, child(node, 1), bindings);
+        check_expected(ctx, child(node, 1), "int32", index_ty, "index type mismatch");
+        type_arg(receiver)
+    } else if node_is(node, ast::NodeKind::ExprUnary) {
+        let inner = infer_expr(ctx, child(node, 0), bindings);
+        if node.text == "!" {
+            check_expected(ctx, node, "bool", inner, "unary operand type mismatch");
+            "bool"
+        } else {
+            inner
+        }
+    } else if node_is(node, ast::NodeKind::ExprBinary) {
+        infer_binary(ctx, node, bindings)
+    } else if node_is(node, ast::NodeKind::ExprTuple) {
+        if node.text == "paren" && node.children.len() == 1 {
+            infer_expr(ctx, child(node, 0), bindings)
+        } else {
+            "unknown"
+        }
+    } else if node_is(node, ast::NodeKind::ExprArray) {
+        if node.children.len() == 0 {
+            "Array[unknown]"
+        } else {
+            "Array[" + infer_expr(ctx, node.children.get(0), bindings) + "]"
+        }
+    } else if node_is(node, ast::NodeKind::ExprStructLit) {
+        let i = ref(0);
+        while ref_get(i) < node.children.len() {
+            let field = node.children.get(ref_get(i));
+            let _ = infer_expr(ctx, child(field, 0), bindings);
+            ref_set(i, ref_get(i) + 1);
+        };
+        normalize_path(node.text)
+    } else if node_is(node, ast::NodeKind::Block) {
+        infer_block(ctx, node, ref(ref_get(bindings)))
+    } else if node_is(node, ast::NodeKind::ExprIf) {
+        infer_if(ctx, node, bindings)
+    } else if node_is(node, ast::NodeKind::ExprMatch) {
+        infer_match(ctx, node, bindings)
+    } else if node_is(node, ast::NodeKind::ExprWhile) {
+        let cond = infer_expr(ctx, child(node, 0), bindings);
+        check_expected(ctx, child(node, 0), "bool", cond, "while condition type mismatch");
+        if node.children.len() > 1 {
+            let _ = infer_expr(ctx, child(node, 1), bindings);
+        } else {
+            ()
+        };
+        "unit"
+    } else if node_is(node, ast::NodeKind::ExprClosure) {
+        let last = if node.children.len() > 0 {
+            infer_expr(ctx, node.children.get(node.children.len() - 1), ref(ref_get(bindings)))
+        } else {
+            "unit"
+        };
+        "()->" + last
+    } else if node_is(node, ast::NodeKind::ExprReturn) {
+        if node.children.len() == 0 {
+            check_expected(ctx, node, ref_get(ctx.current_return), "unit", "return type mismatch");
+        } else {
+            let actual = infer_expr(ctx, child(node, 0), bindings);
+            check_expected(ctx, node, ref_get(ctx.current_return), actual, "return type mismatch");
+        };
+        ref_get(ctx.current_return)
+    } else if node_is(node, ast::NodeKind::ExprBreak) || node_is(node, ast::NodeKind::ExprContinue) || node_is(node, ast::NodeKind::ExprGo) {
+        if node_is(node, ast::NodeKind::ExprGo) && node.children.len() > 0 {
+            let _ = infer_expr(ctx, child(node, 0), bindings);
+        } else {
+            ()
+        };
+        "unit"
+    } else {
+        "unknown"
+    }
+}
+
+fn check_fn(ctx: CheckContext, module: string, item: ast::Node) -> unit {
+    if item.children.len() > 3 {
+        ref_set(ctx.current_module, module);
+        let ret = type_text(module, child(item, 2));
+        ref_set(ctx.current_return, ret);
+        let bindings = ref(Vec::new());
+        let param_list = child(item, 1);
+        let i = ref(0);
+        while ref_get(i) < param_list.children.len() {
+            let param = param_list.children.get(ref_get(i));
+            let ty = if param.children.len() > 0 {
+                type_text(module, param.children.get(0))
+            } else {
+                "unknown"
+            };
+            push_binding(bindings, param.text, ty);
+            ref_set(i, ref_get(i) + 1);
+        };
+        let actual = infer_expr(ctx, child(item, 3), bindings);
+        check_expected(ctx, item, ret, actual, "function `" + item.text + "` return type mismatch");
+    } else {
+        ()
+    }
+}
+
+fn check_items(ctx: CheckContext, file: SourceFile) -> unit {
+    let i = ref(0);
+    while ref_get(i) < file.root.children.len() {
+        let item = file.root.children.get(ref_get(i));
+        if node_is(item, ast::NodeKind::FnDef) {
+            check_fn(ctx, file.module, item);
+        } else if node_is(item, ast::NodeKind::ImplDef) {
+            let j = ref(0);
+            while ref_get(j) < item.children.len() {
+                let method = item.children.get(ref_get(j));
+                if node_is(method, ast::NodeKind::FnDef) {
+                    check_fn(ctx, file.module, method);
+                } else {
+                    ()
+                };
+                ref_set(j, ref_get(j) + 1);
+            };
+        } else {
+            ()
+        };
+        ref_set(i, ref_get(i) + 1);
+    };
+}
+
+pub fn check(files: Vec[SourceFile]) -> ast::CheckResult {
+    let ctx = CheckContext {
+        functions: ref(Vec::new()),
+        diagnostics: ref(ast::empty_diagnostics()),
+        current_module: ref(""),
+        current_return: ref("unit"),
+    };
+    add_builtin_functions(ctx);
+    let i = ref(0);
+    while ref_get(i) < files.len() {
+        collect_items(ctx, files.get(ref_get(i)));
+        ref_set(i, ref_get(i) + 1);
+    };
+    let j = ref(0);
+    while ref_get(j) < files.len() {
+        check_items(ctx, files.get(ref_get(j)));
+        ref_set(j, ref_get(j) + 1);
+    };
+    ast::check_result(ref_get(ctx.diagnostics))
+}
