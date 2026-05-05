@@ -7,11 +7,11 @@ fn println(value/1: T) -> unit {
 }
 
 fn main() -> unit {
-  let sum/0 = ref(0) in
-  let i/1 = ref(1) in
-  let _wild3 = while (ref_get(i/1) <= 100) {
+  let sum/0 = inherent#Ref#Ref[int32]#new(0) in
+  let i/1 = inherent#Ref#Ref[int32]#new(1) in
+  let _wild3 = while (inherent#Ref#Ref[int32]#get(i/1) <= 100) {
       {
-        let _wild0 = if (ref_get(i/1) == 50) {
+        let _wild0 = if (inherent#Ref#Ref[int32]#get(i/1) == 50) {
             {
               break
             }
@@ -20,23 +20,23 @@ fn main() -> unit {
               ()
             }
         } in
-        let _wild1 = ref_set(sum/0, (ref_get(sum/0) + ref_get(i/1))) in
-        let _wild2 = ref_set(i/1, (ref_get(i/1) + 1)) in
+        let _wild1 = inherent#Ref#Ref[int32]#set(sum/0, (inherent#Ref#Ref[int32]#get(sum/0) + inherent#Ref#Ref[int32]#get(i/1))) in
+        let _wild2 = inherent#Ref#Ref[int32]#set(i/1, (inherent#Ref#Ref[int32]#get(i/1) + 1)) in
       }
   } in
   let mtmp4 = print("sum up to break: ") in
   {
-    let mtmp5 = println(ref_get(sum/0)) in
+    let mtmp5 = println(inherent#Ref#Ref[int32]#get(sum/0)) in
     {
-      let even_sum/2 = ref(0) in
-      let j/3 = ref(1) in
-      let _wild9 = while (ref_get(j/3) <= 10) {
+      let even_sum/2 = inherent#Ref#Ref[int32]#new(0) in
+      let j/3 = inherent#Ref#Ref[int32]#new(1) in
+      let _wild9 = while (inherent#Ref#Ref[int32]#get(j/3) <= 10) {
           {
-            let cur/4 = ref_get(j/3) in
-            let _wild6 = ref_set(j/3, (cur/4 + 1)) in
+            let cur/4 = inherent#Ref#Ref[int32]#get(j/3) in
+            let _wild6 = inherent#Ref#Ref[int32]#set(j/3, (cur/4 + 1)) in
             let _wild8 = if (cur/4 == ((cur/4 / 2) * 2)) {
                 {
-                  let _wild7 = ref_set(even_sum/2, (ref_get(even_sum/2) + cur/4)) in
+                  let _wild7 = inherent#Ref#Ref[int32]#set(even_sum/2, (inherent#Ref#Ref[int32]#get(even_sum/2) + cur/4)) in
                   continue
                 }
             } else {
@@ -48,11 +48,23 @@ fn main() -> unit {
       } in
       let mtmp10 = print("even sum: ") in
       {
-        let mtmp11 = println(ref_get(even_sum/2)) in
+        let mtmp11 = println(inherent#Ref#Ref[int32]#get(even_sum/2)) in
         {
           ()
         }
       }
     }
   }
+}
+
+fn inherent#Ref#Ref[T]#new(value/93: T) -> Ref[T] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#get(self/94: Ref[T]) -> T {
+  ref_get(self/94)
+}
+
+fn inherent#Ref#Ref[T]#set(self/95: Ref[T], value/96: T) -> unit {
+  ref_set(self/95, value/96)
 }

@@ -93,7 +93,7 @@ fn main() -> unit {
     vec_set(place47, index48, array_set(place49, index50, value52))
   } in
   let _wild54 = println__T_int32(array_get(vec_get(Holder.vecs(holder/10), 1), 0)) in
-  let r/11 = ref([22, 23]) in
+  let r/11 = inherent#Ref#Ref[T]#new__T_[int32;2]([22, 23]) in
   let _wild60 = {
     let place_ref55 = r/11 in
     let place_root56 = ref_get(place_ref55) in
@@ -102,7 +102,7 @@ fn main() -> unit {
     let value59 = 230 in
     ref_set(place_ref55, array_set(place_root56, index57, value59))
   } in
-  let _wild61 = println__T_int32(array_get(ref_get(r/11), 1)) in
+  let _wild61 = println__T_int32(array_get(inherent#Ref#Ref[T]#get__T_[int32;2](r/11), 1)) in
 }
 
 fn println__T_string(value/1: string) -> unit {
@@ -135,4 +135,12 @@ fn inherent#Vec#Vec[T]#new__T_[int32;2]() -> Vec[[int32; 2]] {
 
 fn inherent#Vec#Vec[T]#push__T_[int32;2](self/66: Vec[[int32; 2]], elem/67: [int32; 2]) -> Vec[[int32; 2]] {
   vec_push(self/66, elem/67)
+}
+
+fn inherent#Ref#Ref[T]#new__T_[int32;2](value/93: [int32; 2]) -> Ref[[int32; 2]] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#get__T_[int32;2](self/94: Ref[[int32; 2]]) -> [int32; 2] {
+  ref_get(self/94)
 }

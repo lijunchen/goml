@@ -1,21 +1,21 @@
 package main
 file main.gom
   fn main() {
-        let local/1/0 = ref(0i32);
-        let local/1/1 = ref(0i32);
-        while ref_get(i/1) < 20i32 {
+        let local/1/0 = Ref::new(0i32);
+        let local/1/1 = Ref::new(0i32);
+        while i/1.get() < 20i32 {
             {
-                ref_set(i/1, ref_get(i/1) + 1i32);
-                if ref_get(i/1) > 5i32 {
+                i/1.set(i/1.get() + 1i32);
+                if i/1.get() > 5i32 {
                     break
                 } else {
                     ()
                 };
-                ref_set(sum/0, ref_get(sum/0) + ref_get(i/1));
+                sum/0.set(sum/0.get() + i/1.get());
             }
         };
         let _ = print("sum: ");
-        let _ = println(ref_get(sum/0));
+        let _ = println(sum/0.get());
         let _ = print("i at break: ");
-        let _ = println(ref_get(i/1));
+        let _ = println(i/1.get());
     }

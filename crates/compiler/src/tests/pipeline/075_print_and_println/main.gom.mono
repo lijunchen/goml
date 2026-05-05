@@ -13,7 +13,7 @@ fn main() -> unit {
   let _wild6 = println__T_S(s/1) in
   let d/2 = to_dyn[ToString]{S}(s/1) in
   let _wild7 = println__T_dynToString(d/2) in
-  let r/3 = ref(5) in
+  let r/3 = inherent#Ref#Ref[T]#new__T_int32(5) in
   let _wild8 = println__T_Ref[int32](r/3) in
   let _wild9 = print__T_string("no-newline") in
   let _wild10 = println__T_string("!") in
@@ -41,6 +41,10 @@ fn println__T_S(value/1: S) -> unit {
 
 fn println__T_dynToString(value/1: dyn ToString) -> unit {
   string_println(dyn_call[ToString::to_string](value/1))
+}
+
+fn inherent#Ref#Ref[T]#new__T_int32(value/93: int32) -> Ref[int32] {
+  ref(value/93)
 }
 
 fn println__T_Ref[int32](value/1: Ref[int32]) -> unit {

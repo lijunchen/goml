@@ -1,9 +1,13 @@
 fn main() -> unit {
-  let a/0 = ref(1) in
+  let a/0 = inherent#Ref#Ref[T]#new__T_int32(1) in
   let b/1 = a/0 in
-  let c/2 = ref(1) in
+  let c/2 = inherent#Ref#Ref[T]#new__T_int32(1) in
   let _wild0 = println__T_bool(ptr_eq(a/0, b/1)) in
   let _wild1 = println__T_bool(ptr_eq(a/0, c/2)) in
+}
+
+fn inherent#Ref#Ref[T]#new__T_int32(value/93: int32) -> Ref[int32] {
+  ref(value/93)
 }
 
 fn println__T_bool(value/1: bool) -> unit {

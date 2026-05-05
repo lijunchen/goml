@@ -63,24 +63,24 @@ fn trait_impl#Display#Flag#bump(self/12: Flag, delta/13: int32) -> int32 {
 }
 
 fn trait_impl#Display#Counter#show(self/14: Counter) -> string {
-  (("Counter(" + trait_call[ToString::to_string](ref_get(Counter.cell(self/14)))) + ")")
+  (("Counter(" + int32_to_string(inherent#Ref#Ref[int32]#get(Counter.cell(self/14)))) + ")")
 }
 
 fn trait_impl#Display#Counter#show_with(self/15: Counter, prefix/16: string, suffix/17: string) -> string {
-  ((((prefix/16 + "Counter(") + trait_call[ToString::to_string](ref_get(Counter.cell(self/15)))) + ")") + suffix/17)
+  ((((prefix/16 + "Counter(") + int32_to_string(inherent#Ref#Ref[int32]#get(Counter.cell(self/15)))) + ")") + suffix/17)
 }
 
 fn trait_impl#Display#Counter#tick(self/18: Counter) -> unit {
-  let next/19 = (ref_get(Counter.cell(self/18)) + 1) in
-  let mtmp0 = ref_set(Counter.cell(self/18), next/19) in
+  let next/19 = (inherent#Ref#Ref[int32]#get(Counter.cell(self/18)) + 1) in
+  let mtmp0 = inherent#Ref#Ref[int32]#set(Counter.cell(self/18), next/19) in
   {
     ()
   }
 }
 
 fn trait_impl#Display#Counter#bump(self/20: Counter, delta/21: int32) -> int32 {
-  let next/22 = (ref_get(Counter.cell(self/20)) + delta/21) in
-  let mtmp1 = ref_set(Counter.cell(self/20), next/22) in
+  let next/22 = (inherent#Ref#Ref[int32]#get(Counter.cell(self/20)) + delta/21) in
+  let mtmp1 = inherent#Ref#Ref[int32]#set(Counter.cell(self/20), next/22) in
   {
     next/22
   }
@@ -111,7 +111,7 @@ fn main() -> unit {
   let p2/34 = Point { x: 3, y: 4 } in
   let f1/35 = Flag { value: true } in
   let f2/36 = Flag { value: false } in
-  let c/37 = Counter { cell: ref(10) } in
+  let c/37 = Counter { cell: inherent#Ref#Ref[int32]#new(10) } in
   let dp1/38 = to_dyn[Display]{Point}(p1/33) in
   let dp2/39 = to_dyn[Display]{Point}(p2/34) in
   let df1/40 = to_dyn[Display]{Flag}(f1/35) in
@@ -139,12 +139,12 @@ fn main() -> unit {
     {
       let mtmp5 = println(s2/47) in
       {
-        let i/54 = ref(0) in
-        let mtmp8 = while (ref_get(i/54) < 3) {
+        let i/54 = inherent#Ref#Ref[int32]#new(0) in
+        let mtmp8 = while (inherent#Ref#Ref[int32]#get(i/54) < 3) {
             {
               let line/55 = bump_and_show(dc/42, delta/53) in
               let _wild6 = println(line/55) in
-              let mtmp7 = ref_set(i/54, (ref_get(i/54) + 1)) in
+              let mtmp7 = inherent#Ref#Ref[int32]#set(i/54, (inherent#Ref#Ref[int32]#get(i/54) + 1)) in
               {
                 ()
               }
@@ -174,4 +174,16 @@ fn inherent#Vec#Vec[T]#push(self/66: Vec[T], elem/67: T) -> Vec[T] {
 
 fn inherent#Vec#Vec[T]#len(self/73: Vec[T]) -> int32 {
   vec_len(self/73)
+}
+
+fn inherent#Ref#Ref[T]#new(value/93: T) -> Ref[T] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#get(self/94: Ref[T]) -> T {
+  ref_get(self/94)
+}
+
+fn inherent#Ref#Ref[T]#set(self/95: Ref[T], value/96: T) -> unit {
+  ref_set(self/95, value/96)
 }

@@ -19,12 +19,12 @@ fn step(i/0: int32) -> Option[int32] {
 }
 
 fn accumulate(limit/1: int32) -> Option[int32] {
-  let sum/2 = ref(0) in
-  let i/3 = ref(0) in
-  let _wild5 = while (ref_get(i/3) < limit/1) {
+  let sum/2 = inherent#Ref#Ref[int32]#new(0) in
+  let i/3 = inherent#Ref#Ref[int32]#new(0) in
+  let _wild5 = while (inherent#Ref#Ref[int32]#get(i/3) < limit/1) {
       {
-        let cur/4 = ref_get(i/3) in
-        let _wild0 = ref_set(i/3, (cur/4 + 1)) in
+        let cur/4 = inherent#Ref#Ref[int32]#get(i/3) in
+        let _wild0 = inherent#Ref#Ref[int32]#set(i/3, (cur/4 + 1)) in
         let _wild1 = if (cur/4 == 1) {
             {
               continue
@@ -51,10 +51,10 @@ fn accumulate(limit/1: int32) -> Option[int32] {
             },
           }
         } in
-        let _wild4 = ref_set(sum/2, (ref_get(sum/2) + value/5)) in
+        let _wild4 = inherent#Ref#Ref[int32]#set(sum/2, (inherent#Ref#Ref[int32]#get(sum/2) + value/5)) in
       }
   } in
-  Option::Some(ref_get(sum/2))
+  Option::Some(inherent#Ref#Ref[int32]#get(sum/2))
 }
 
 fn show(opt/6: Option[int32]) -> string {
@@ -77,4 +77,16 @@ fn show(opt/6: Option[int32]) -> string {
 fn main() -> unit {
   let _wild7 = println(show(accumulate(2))) in
   let _wild8 = println(show(accumulate(4))) in
+}
+
+fn inherent#Ref#Ref[T]#new(value/93: T) -> Ref[T] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#get(self/94: Ref[T]) -> T {
+  ref_get(self/94)
+}
+
+fn inherent#Ref#Ref[T]#set(self/95: Ref[T], value/96: T) -> unit {
+  ref_set(self/95, value/96)
 }

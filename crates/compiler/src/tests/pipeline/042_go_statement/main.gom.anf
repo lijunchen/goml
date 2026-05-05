@@ -2,7 +2,7 @@ fn child(signal/0: Ref[int32]) -> unit {
   join ret4() -> unit {
     ()
   } in
-  let t5 = ref_set(signal/0, 1) in
+  let t5 = inherent#Ref#Ref[T]#set__T_int32(signal/0, 1) in
   jump ret4()
 }
 
@@ -10,7 +10,7 @@ fn main() -> unit {
   join ret6() -> unit {
     ()
   } in
-  let signal/1 = ref(0) in
+  let signal/1 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let t7 = closure_env_main_0 { signal_0: signal/1 } in
   let _wild0 = go t7 in
   join exit8() -> unit {
@@ -20,7 +20,7 @@ fn main() -> unit {
   } in
   joinrec {
     join loop9() -> unit {
-      let t10 = ref_get(signal/1) in
+      let t10 = inherent#Ref#Ref[T]#get__T_int32(signal/1) in
       let t11 = (t10 < 1) in
       if t11 {
         jump loop9()
@@ -32,19 +32,43 @@ fn main() -> unit {
   jump loop9()
 }
 
-fn println__T_string(value/1: string) -> unit {
+fn inherent#Ref#Ref[T]#set__T_int32(self/95: Ref[int32], value/96: int32) -> unit {
   join ret12() -> unit {
     ()
   } in
-  let t13 = string_println(value/1) in
+  let t13 = ref_set(self/95, value/96) in
   jump ret12()
 }
 
+fn inherent#Ref#Ref[T]#new__T_int32(value/93: int32) -> Ref[int32] {
+  join ret14(retv15: Ref[int32]) -> Ref[int32] {
+    retv15
+  } in
+  let t16 = ref(value/93) in
+  jump ret14(t16)
+}
+
+fn inherent#Ref#Ref[T]#get__T_int32(self/94: Ref[int32]) -> int32 {
+  join ret17(retv18: int32) -> int32 {
+    retv18
+  } in
+  let t19 = ref_get(self/94) in
+  jump ret17(t19)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret20() -> unit {
+    ()
+  } in
+  let t21 = string_println(value/1) in
+  jump ret20()
+}
+
 fn inherent#closure_env_main_0#closure_env_main_0#apply(env3: closure_env_main_0) -> unit {
-  join ret14() -> unit {
+  join ret22() -> unit {
     ()
   } in
   let signal/1 = closure_env_main_0.signal_0(env3) in
-  let t15 = child(signal/1) in
-  jump ret14()
+  let t23 = child(signal/1) in
+  jump ret22()
 }

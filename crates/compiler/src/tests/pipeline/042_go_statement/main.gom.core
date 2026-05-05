@@ -7,18 +7,30 @@ fn println(value/1: T) -> unit {
 }
 
 fn child(signal/0: Ref[int32]) -> unit {
-  ref_set(signal/0, 1)
+  inherent#Ref#Ref[int32]#set(signal/0, 1)
 }
 
 fn main() -> unit {
-  let signal/1 = ref(0) in
+  let signal/1 = inherent#Ref#Ref[int32]#new(0) in
   let _wild0 = go || => {
     child(signal/1)
   } in
-  let _wild1 = while (ref_get(signal/1) < 1) {
+  let _wild1 = while (inherent#Ref#Ref[int32]#get(signal/1) < 1) {
       {
         ()
       }
   } in
   let _wild2 = println("main") in
+}
+
+fn inherent#Ref#Ref[T]#new(value/93: T) -> Ref[T] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#get(self/94: Ref[T]) -> T {
+  ref_get(self/94)
+}
+
+fn inherent#Ref#Ref[T]#set(self/95: Ref[T], value/96: T) -> unit {
+  ref_set(self/95, value/96)
 }

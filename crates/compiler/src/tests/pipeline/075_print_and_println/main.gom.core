@@ -21,8 +21,12 @@ fn main() -> unit {
   let _wild6 = println(s/1) in
   let d/2 = to_dyn[ToString]{S}(s/1) in
   let _wild7 = println(d/2) in
-  let r/3 = ref(5) in
+  let r/3 = inherent#Ref#Ref[int32]#new(5) in
   let _wild8 = println(r/3) in
   let _wild9 = print("no-newline") in
   let _wild10 = println("!") in
+}
+
+fn inherent#Ref#Ref[T]#new(value/93: T) -> Ref[T] {
+  ref(value/93)
 }

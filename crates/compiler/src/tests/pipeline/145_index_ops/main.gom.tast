@@ -42,7 +42,7 @@ fn main() -> unit {
     (println : (int32) -> unit)((holder/10 : Holder).data[0]);
     (holder/10 : Holder).vecs[1][0] = 200;
     (println : (int32) -> unit)((holder/10 : Holder).vecs[1][0]);
-    let r/11: Ref[[int32; 2]] = (ref : ([int32; 2]) -> Ref[[int32; 2]])([22, 23]);
-    (ref_get : (Ref[[int32; 2]]) -> [int32; 2])((r/11 : Ref[[int32; 2]]))[1] = 230;
-    (println : (int32) -> unit)((ref_get : (Ref[[int32; 2]]) -> [int32; 2])((r/11 : Ref[[int32; 2]]))[1]);
+    let r/11: Ref[[int32; 2]] = (Ref[[int32; 2]]::new : ([int32; 2]) -> Ref[[int32; 2]])([22, 23]);
+    (Ref[[int32; 2]]::get : (Ref[[int32; 2]]) -> [int32; 2])((r/11 : Ref[[int32; 2]]))[1] = 230;
+    (println : (int32) -> unit)((Ref[[int32; 2]]::get : (Ref[[int32; 2]]) -> [int32; 2])((r/11 : Ref[[int32; 2]]))[1]);
 }

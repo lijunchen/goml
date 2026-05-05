@@ -2,7 +2,7 @@ fn make_counter() -> (() -> int32, () -> unit) {
   join ret15(retv16: (() -> int32, () -> unit)) -> (() -> int32, () -> unit) {
     retv16
   } in
-  let cell/0 = ref(0) in
+  let cell/0 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let next/2 = closure_env_next_0 { cell_0: cell/0 } in
   let reset/3 = closure_env_reset_1 { cell_0: cell/0 } in
   let t17 = (next/2, reset/3) in
@@ -40,30 +40,54 @@ fn main() -> unit {
   jump ret18()
 }
 
-fn println__T_string(value/1: string) -> unit {
-  join ret23() -> unit {
+fn inherent#Ref#Ref[T]#new__T_int32(value/93: int32) -> Ref[int32] {
+  join ret23(retv24: Ref[int32]) -> Ref[int32] {
+    retv24
+  } in
+  let t25 = ref(value/93) in
+  jump ret23(t25)
+}
+
+fn inherent#Ref#Ref[T]#get__T_int32(self/94: Ref[int32]) -> int32 {
+  join ret26(retv27: int32) -> int32 {
+    retv27
+  } in
+  let t28 = ref_get(self/94) in
+  jump ret26(t28)
+}
+
+fn inherent#Ref#Ref[T]#set__T_int32(self/95: Ref[int32], value/96: int32) -> unit {
+  join ret29() -> unit {
     ()
   } in
-  let t24 = string_println(value/1) in
-  jump ret23()
+  let t30 = ref_set(self/95, value/96) in
+  jump ret29()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret31() -> unit {
+    ()
+  } in
+  let t32 = string_println(value/1) in
+  jump ret31()
 }
 
 fn inherent#closure_env_next_0#closure_env_next_0#apply(env13: closure_env_next_0) -> int32 {
-  join ret25(retv26: int32) -> int32 {
-    retv26
+  join ret33(retv34: int32) -> int32 {
+    retv34
   } in
   let cell/0 = closure_env_next_0.cell_0(env13) in
-  let t27 = ref_get(cell/0) in
-  let next/1 = (t27 + 1) in
-  let mtmp0 = ref_set(cell/0, next/1) in
-  jump ret25(next/1)
+  let t35 = inherent#Ref#Ref[T]#get__T_int32(cell/0) in
+  let next/1 = (t35 + 1) in
+  let mtmp0 = inherent#Ref#Ref[T]#set__T_int32(cell/0, next/1) in
+  jump ret33(next/1)
 }
 
 fn inherent#closure_env_reset_1#closure_env_reset_1#apply(env14: closure_env_reset_1) -> unit {
-  join ret28() -> unit {
+  join ret36() -> unit {
     ()
   } in
   let cell/0 = closure_env_reset_1.cell_0(env14) in
-  let mtmp1 = ref_set(cell/0, 0) in
-  jump ret28()
+  let mtmp1 = inherent#Ref#Ref[T]#set__T_int32(cell/0, 0) in
+  jump ret36()
 }

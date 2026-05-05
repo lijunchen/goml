@@ -12,12 +12,12 @@ fn step(i: int32) -> Option[int32] {
 }
 
 fn accumulate(limit: int32) -> Option[int32] {
-    let sum = ref(0i32);
-    let i = ref(0i32);
-    while ref_get(i) < limit {
+    let sum = Ref::new(0i32);
+    let i = Ref::new(0i32);
+    while i.get() < limit {
         {
-            let cur = ref_get(i);
-            ref_set(i, cur + 1i32);
+            let cur = i.get();
+            i.set(cur + 1i32);
             if cur == 1 {
                 {
                     continue
@@ -28,10 +28,10 @@ fn accumulate(limit: int32) -> Option[int32] {
                 }
             };
             let value = step(cur)?;
-            ref_set(sum, ref_get(sum) + value);
+            sum.set(sum.get() + value);
         }
     };
-    Option::Some(ref_get(sum))
+    Option::Some(sum.get())
 }
 
 fn show(opt: Option[int32]) -> string {

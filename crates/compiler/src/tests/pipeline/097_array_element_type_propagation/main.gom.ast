@@ -1,11 +1,11 @@
 package main;
 fn main() {
     let arr: [uint8; 3] = [10, 20, 30];
-    let i = ref(0);
-    while ref_get(i) < 3 {
+    let i = Ref::new(0);
+    while i.get() < 3 {
         {
-            println(arr[ref_get(i)].to_string());
-            ref_set(i, ref_get(i) + 1);
+            println(arr[i.get()].to_string());
+            i.set(i.get() + 1);
         }
     };
     let floats: [float32; 2] = [1.5, 2.5];

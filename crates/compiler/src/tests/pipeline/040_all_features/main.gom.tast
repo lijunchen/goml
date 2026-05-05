@@ -9,11 +9,11 @@ fn println(value/1: T) -> unit {
 impl Describe for Tracker{
   fn describe(self/0: Tracker) -> string {
       let Tracker { label: label/1: string, count: count/2: Ref[int32], toggled: toggled/3: Ref[bool] } = (self/0 : Tracker);
-      let current/4: int32 = (ref_get : (Ref[int32]) -> int32)((count/2 : Ref[int32]));
-      let flag/5: bool = (ref_get : (Ref[bool]) -> bool)((toggled/3 : Ref[bool]));
+      let current/4: int32 = (Ref[int32]::get : (Ref[int32]) -> int32)((count/2 : Ref[int32]));
+      let flag/5: bool = (Ref[bool]::get : (Ref[bool]) -> bool)((toggled/3 : Ref[bool]));
       let with_label/6: string = "Tracker(" + (label/1 : string);
       let with_count_label/7: string = (with_label/6 : string) + ", count: ";
-      let with_count/8: string = (with_count_label/7 : string) + (ToString::to_string : (int32) -> string)((current/4 : int32));
+      let with_count/8: string = (with_count_label/7 : string) + (int32::to_string : (int32) -> string)((current/4 : int32));
       let with_flag_label/9: string = (with_count/8 : string) + ", toggled: ";
       (with_flag_label/9 : string) + (ToString::to_string : (bool) -> string)((flag/5 : bool)) + ")"
   }
@@ -100,21 +100,21 @@ fn gather(record/39: Record[int32]) -> Maybe[int32] {
 }
 
 fn build_counter(label/42: string, start/43: int32) -> (Tracker, () -> Record[int32], (int32) -> Record[int32], () -> Record[string]) {
-    let count/44: Ref[int32] = (ref : (int32) -> Ref[int32])((start/43 : int32));
-    let toggled/45: Ref[bool] = (ref : (bool) -> Ref[bool])(false);
+    let count/44: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])((start/43 : int32));
+    let toggled/45: Ref[bool] = (Ref[bool]::new : (bool) -> Ref[bool])(false);
     let tracker/46: Tracker = Tracker { label: (label/42 : string), count: (count/44 : Ref[int32]), toggled: (toggled/45 : Ref[bool]) };
     let snapshot/47: () -> Record[int32] = || => {
-        Record::Value((ref_get : (Ref[int32]) -> int32)((count/44 : Ref[int32])))
+        Record::Value((Ref[int32]::get : (Ref[int32]) -> int32)((count/44 : Ref[int32])))
     };
     let bump/50: (int32) -> Record[int32] = |delta/48: int32| => {
-        let before/49: int32 = (ref_get : (Ref[int32]) -> int32)((count/44 : Ref[int32]));
-        let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((count/44 : Ref[int32]), (before/49 : int32) + (delta/48 : int32));
-        Record::Pair((before/49 : int32), (ref_get : (Ref[int32]) -> int32)((count/44 : Ref[int32])))
+        let before/49: int32 = (Ref[int32]::get : (Ref[int32]) -> int32)((count/44 : Ref[int32]));
+        let _ : unit = (Ref[int32]::set : (Ref[int32], int32) -> unit)((count/44 : Ref[int32]), (before/49 : int32) + (delta/48 : int32));
+        Record::Pair((before/49 : int32), (Ref[int32]::get : (Ref[int32]) -> int32)((count/44 : Ref[int32])))
     };
     let flip/53: () -> Record[string] = || => {
-        let before/51: bool = (ref_get : (Ref[bool]) -> bool)((toggled/45 : Ref[bool]));
-        let _ : unit = (ref_set : (Ref[bool], bool) -> unit)((toggled/45 : Ref[bool]), !(before/51 : bool));
-        let after/52: bool = (ref_get : (Ref[bool]) -> bool)((toggled/45 : Ref[bool]));
+        let before/51: bool = (Ref[bool]::get : (Ref[bool]) -> bool)((toggled/45 : Ref[bool]));
+        let _ : unit = (Ref[bool]::set : (Ref[bool], bool) -> unit)((toggled/45 : Ref[bool]), !(before/51 : bool));
+        let after/52: bool = (Ref[bool]::get : (Ref[bool]) -> bool)((toggled/45 : Ref[bool]));
         Record::Pair((ToString::to_string : (bool) -> string)((before/51 : bool)), (ToString::to_string : (bool) -> string)((after/52 : bool)))
     };
     ((tracker/46 : Tracker), (snapshot/47 : () -> Record[int32]), (bump/50 : (int32) -> Record[int32]), (flip/53 : () -> Record[string]))

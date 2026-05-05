@@ -7,10 +7,10 @@ fn println(value/1: T) -> unit {
 }
 
 fn bump(counter/0: Ref[int32], ok/1: bool) -> Result[int32, string] {
-  let _wild0 = ref_set(counter/0, (ref_get(counter/0) + 1)) in
+  let _wild0 = inherent#Ref#Ref[int32]#set(counter/0, (inherent#Ref#Ref[int32]#get(counter/0) + 1)) in
   if ok/1 {
       {
-        Result::Ok(ref_get(counter/0))
+        Result::Ok(inherent#Ref#Ref[int32]#get(counter/0))
       }
   } else {
       {
@@ -43,7 +43,7 @@ fn use_try(counter/2: Ref[int32], ok/3: bool) -> Result[int32, string] {
       },
     }
   } in
-  Result::Ok((value/4 + ref_get(counter/2)))
+  Result::Ok((value/4 + inherent#Ref#Ref[int32]#get(counter/2)))
 }
 
 fn show(res/5: Result[int32, string]) -> string {
@@ -70,12 +70,24 @@ fn show(res/5: Result[int32, string]) -> string {
 }
 
 fn run(ok/8: bool) -> string {
-  let counter/9 = ref(0) in
+  let counter/9 = inherent#Ref#Ref[int32]#new(0) in
   let result/10 = use_try(counter/9, ok/8) in
-  ((show(result/10) + " count=") + trait_call[ToString::to_string](ref_get(counter/9)))
+  ((show(result/10) + " count=") + trait_call[ToString::to_string](inherent#Ref#Ref[int32]#get(counter/9)))
 }
 
 fn main() -> unit {
   let _wild6 = println(run(true)) in
   let _wild7 = println(run(false)) in
+}
+
+fn inherent#Ref#Ref[T]#new(value/93: T) -> Ref[T] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#get(self/94: Ref[T]) -> T {
+  ref_get(self/94)
+}
+
+fn inherent#Ref#Ref[T]#set(self/95: Ref[T], value/96: T) -> unit {
+  ref_set(self/95, value/96)
 }

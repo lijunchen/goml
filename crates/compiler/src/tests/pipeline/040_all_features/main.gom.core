@@ -19,11 +19,11 @@ fn trait_impl#Describe#Tracker#describe(self/0: Tracker) -> string {
         {
           let label/1 = x1 in
           {
-            let current/4 = ref_get(count/2) in
-            let flag/5 = ref_get(toggled/3) in
+            let current/4 = inherent#Ref#Ref[int32]#get(count/2) in
+            let flag/5 = inherent#Ref#Ref[bool]#get(toggled/3) in
             let with_label/6 = ("Tracker(" + label/1) in
             let with_count_label/7 = (with_label/6 + ", count: ") in
-            let with_count/8 = (with_count_label/7 + trait_call[ToString::to_string](current/4)) in
+            let with_count/8 = (with_count_label/7 + int32_to_string(current/4)) in
             let with_flag_label/9 = (with_count/8 + ", toggled: ") in
             ((with_flag_label/9 + trait_call[ToString::to_string](flag/5)) + ")")
           }
@@ -201,24 +201,24 @@ fn gather(record/39: Record[int32]) -> Maybe[int32] {
 }
 
 fn build_counter(label/42: string, start/43: int32) -> (Tracker, () -> Record[int32], (int32) -> Record[int32], () -> Record[string]) {
-  let count/44 = ref(start/43) in
-  let toggled/45 = ref(false) in
+  let count/44 = inherent#Ref#Ref[int32]#new(start/43) in
+  let toggled/45 = inherent#Ref#Ref[bool]#new(false) in
   let tracker/46 = Tracker { label: label/42, count: count/44, toggled: toggled/45 } in
   let snapshot/47 = || => {
-    Record::Value(ref_get(count/44))
+    Record::Value(inherent#Ref#Ref[int32]#get(count/44))
   } in
   let bump/50 = |delta/48: int32| => {
-    let before/49 = ref_get(count/44) in
-    let mtmp22 = ref_set(count/44, (before/49 + delta/48)) in
+    let before/49 = inherent#Ref#Ref[int32]#get(count/44) in
+    let mtmp22 = inherent#Ref#Ref[int32]#set(count/44, (before/49 + delta/48)) in
     {
-      Record::Pair(before/49, ref_get(count/44))
+      Record::Pair(before/49, inherent#Ref#Ref[int32]#get(count/44))
     }
   } in
   let flip/53 = || => {
-    let before/51 = ref_get(toggled/45) in
-    let mtmp23 = ref_set(toggled/45, (!before/51)) in
+    let before/51 = inherent#Ref#Ref[bool]#get(toggled/45) in
+    let mtmp23 = inherent#Ref#Ref[bool]#set(toggled/45, (!before/51)) in
     {
-      let after/52 = ref_get(toggled/45) in
+      let after/52 = inherent#Ref#Ref[bool]#get(toggled/45) in
       Record::Pair(trait_call[ToString::to_string](before/51), trait_call[ToString::to_string](after/52))
     }
   } in
@@ -301,4 +301,16 @@ fn main() -> unit {
       }
     }
   }
+}
+
+fn inherent#Ref#Ref[T]#new(value/93: T) -> Ref[T] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#get(self/94: Ref[T]) -> T {
+  ref_get(self/94)
+}
+
+fn inherent#Ref#Ref[T]#set(self/95: Ref[T], value/96: T) -> unit {
+  ref_set(self/95, value/96)
 }

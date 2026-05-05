@@ -1,10 +1,10 @@
 package main;
 fn main() {
-    let i = ref(0i32);
-    while ref_get(i) < 8i32 {
+    let i = Ref::new(0i32);
+    while i.get() < 8i32 {
         {
-            ref_set(i, ref_get(i) + 1i32);
-            if ref_get(i) == 3i32 {
+            i.set(i.get() + 1i32);
+            if i.get() == 3i32 {
                 {
                     continue
                 }
@@ -13,7 +13,7 @@ fn main() {
                     ()
                 }
             };
-            if ref_get(i) == 6i32 {
+            if i.get() == 6i32 {
                 {
                     continue
                 }
@@ -22,7 +22,7 @@ fn main() {
                     ()
                 }
             };
-            let _ = println(ref_get(i));
+            let _ = println(i.get());
         }
     };
     let _ = println("done");

@@ -101,7 +101,7 @@ fn main() -> unit {
     vec_set(place47, index48, array_set(place49, index50, value52))
   } in
   let _wild54 = println(array_get(vec_get(Holder.vecs(holder/10), 1), 0)) in
-  let r/11 = ref([22, 23]) in
+  let r/11 = inherent#Ref#Ref[[int32;2]]#new([22, 23]) in
   let _wild60 = {
     let place_ref55 = r/11 in
     let place_root56 = ref_get(place_ref55) in
@@ -110,7 +110,7 @@ fn main() -> unit {
     let value59 = 230 in
     ref_set(place_ref55, array_set(place_root56, index57, value59))
   } in
-  let _wild61 = println(array_get(ref_get(r/11), 1)) in
+  let _wild61 = println(array_get(inherent#Ref#Ref[[int32;2]]#get(r/11), 1)) in
 }
 
 fn inherent#Vec#Vec[T]#new() -> Vec[T] {
@@ -127,4 +127,12 @@ fn inherent#Vec#Vec[T]#slice(self/74: Vec[T], start/75: int32, end/76: int32) ->
 
 fn inherent#HashMap#HashMap[K,V]#new() -> HashMap[K, V] {
   hashmap_new()
+}
+
+fn inherent#Ref#Ref[T]#new(value/93: T) -> Ref[T] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#get(self/94: Ref[T]) -> T {
+  ref_get(self/94)
 }

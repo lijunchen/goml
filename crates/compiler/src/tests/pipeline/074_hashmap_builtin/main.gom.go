@@ -583,12 +583,12 @@ func main0() struct{} {
         x: 1,
         y: 2,
     }
-    var p1__24 *ref_Point_x = ref__Ref_5Point(t80)
+    var p1__24 *ref_Point_x = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_Point(t80)
     var t81 Point = Point{
         x: 1,
         y: 2,
     }
-    var p2__25 *ref_Point_x = ref__Ref_5Point(t81)
+    var p2__25 *ref_Point_x = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_Point(t81)
     _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_set_x5f__x5f_K_x5f_Ref_x5b_Point_x5d__x5f__x5f_V_x5f_int32(m2__23, p1__24, 99)
     var t82 Option__int32 = _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_get_x5f__x5f_K_x5f_Ref_x5b_Point_x5d__x5f__x5f_V_x5f_int32(m2__23, p2__25)
     print_opt_int(t82)
@@ -596,11 +596,11 @@ func main0() struct{} {
     var t83 Key = B{
         _0: 7,
     }
-    var k1__27 *ref_Key_x = ref__Ref_3Key(t83)
+    var k1__27 *ref_Key_x = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_Key(t83)
     var t84 Key = B{
         _0: 7,
     }
-    var k2__28 *ref_Key_x = ref__Ref_3Key(t84)
+    var k2__28 *ref_Key_x = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_Key(t84)
     _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_set_x5f__x5f_K_x5f_Ref_x5b_Key_x5d__x5f__x5f_V_x5f_int32(m3__26, k1__27, 123)
     var t85 Option__int32 = _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_get_x5f__x5f_K_x5f_Ref_x5b_Key_x5d__x5f__x5f_V_x5f_int32(m3__26, k2__28)
     print_opt_int(t85)
@@ -669,23 +669,37 @@ func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_new_x5f__x5f_K_
     return retv111
 }
 
+func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_Point(value__93 Point) *ref_Point_x {
+    var retv114 *ref_Point_x
+    var t115 *ref_Point_x = ref__Ref_5Point(value__93)
+    retv114 = t115
+    return retv114
+}
+
 func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_set_x5f__x5f_K_x5f_Ref_x5b_Point_x5d__x5f__x5f_V_x5f_int32(self__85 *hashmap_Ref_5Point_int32_x, key__86 *ref_Point_x, value__87 int32) struct{} {
     hashmap_set__HashMap_10Ref_5Point_5int32(self__85, key__86, value__87)
     return struct{}{}
 }
 
 func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_get_x5f__x5f_K_x5f_Ref_x5b_Point_x5d__x5f__x5f_V_x5f_int32(self__83 *hashmap_Ref_5Point_int32_x, key__84 *ref_Point_x) Option__int32 {
-    var retv116 Option__int32
-    var t117 Option__int32 = hashmap_get__HashMap_10Ref_5Point_5int32(self__83, key__84)
-    retv116 = t117
-    return retv116
+    var retv119 Option__int32
+    var t120 Option__int32 = hashmap_get__HashMap_10Ref_5Point_5int32(self__83, key__84)
+    retv119 = t120
+    return retv119
 }
 
 func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_new_x5f__x5f_K_x5f_Ref_x5b_Key_x5d__x5f__x5f_V_x5f_int32() *hashmap_Ref_3Key_int32_x {
-    var retv119 *hashmap_Ref_3Key_int32_x
-    var t120 *hashmap_Ref_3Key_int32_x = hashmap_new__HashMap_8Ref_3Key_5int32()
-    retv119 = t120
-    return retv119
+    var retv122 *hashmap_Ref_3Key_int32_x
+    var t123 *hashmap_Ref_3Key_int32_x = hashmap_new__HashMap_8Ref_3Key_5int32()
+    retv122 = t123
+    return retv122
+}
+
+func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_Key(value__93 Key) *ref_Key_x {
+    var retv125 *ref_Key_x
+    var t126 *ref_Key_x = ref__Ref_3Key(value__93)
+    retv125 = t126
+    return retv125
 }
 
 func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_set_x5f__x5f_K_x5f_Ref_x5b_Key_x5d__x5f__x5f_V_x5f_int32(self__85 *hashmap_Ref_3Key_int32_x, key__86 *ref_Key_x, value__87 int32) struct{} {
@@ -694,10 +708,10 @@ func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_set_x5f__x5f_K_
 }
 
 func _goml_inherent_x23_HashMap_x23_HashMap_x5b_K_x2c_V_x5d__x23_get_x5f__x5f_K_x5f_Ref_x5b_Key_x5d__x5f__x5f_V_x5f_int32(self__83 *hashmap_Ref_3Key_int32_x, key__84 *ref_Key_x) Option__int32 {
-    var retv124 Option__int32
-    var t125 Option__int32 = hashmap_get__HashMap_8Ref_3Key_5int32(self__83, key__84)
-    retv124 = t125
-    return retv124
+    var retv130 Option__int32
+    var t131 Option__int32 = hashmap_get__HashMap_8Ref_3Key_5int32(self__83, key__84)
+    retv130 = t131
+    return retv130
 }
 
 func main() {

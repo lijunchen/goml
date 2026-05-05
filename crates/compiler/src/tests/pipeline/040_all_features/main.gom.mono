@@ -11,8 +11,8 @@ fn trait_impl#Describe#Tracker#describe(self/0: Tracker) -> string {
         {
           let label/1 = x1 in
           {
-            let current/4 = ref_get(count/2) in
-            let flag/5 = ref_get(toggled/3) in
+            let current/4 = inherent#Ref#Ref[T]#get__T_int32(count/2) in
+            let flag/5 = inherent#Ref#Ref[T]#get__T_bool(toggled/3) in
             let with_label/6 = ("Tracker(" + label/1) in
             let with_count_label/7 = (with_label/6 + ", count: ") in
             let with_count/8 = (with_count_label/7 + int32_to_string(current/4)) in
@@ -164,24 +164,24 @@ fn gather(record/39: Record__int32) -> Maybe__int32 {
 }
 
 fn build_counter(label/42: string, start/43: int32) -> (Tracker, () -> Record__int32, (int32) -> Record__int32, () -> Record__string) {
-  let count/44 = ref(start/43) in
-  let toggled/45 = ref(false) in
+  let count/44 = inherent#Ref#Ref[T]#new__T_int32(start/43) in
+  let toggled/45 = inherent#Ref#Ref[T]#new__T_bool(false) in
   let tracker/46 = Tracker { label: label/42, count: count/44, toggled: toggled/45 } in
   let snapshot/47 = || {
-    Record__int32::Value(ref_get(count/44))
+    Record__int32::Value(inherent#Ref#Ref[T]#get__T_int32(count/44))
   } in
   let bump/50 = |delta/48| {
-    let before/49 = ref_get(count/44) in
-    let mtmp22 = ref_set(count/44, (before/49 + delta/48)) in
+    let before/49 = inherent#Ref#Ref[T]#get__T_int32(count/44) in
+    let mtmp22 = inherent#Ref#Ref[T]#set__T_int32(count/44, (before/49 + delta/48)) in
     {
-      Record__int32::Pair(before/49, ref_get(count/44))
+      Record__int32::Pair(before/49, inherent#Ref#Ref[T]#get__T_int32(count/44))
     }
   } in
   let flip/53 = || {
-    let before/51 = ref_get(toggled/45) in
-    let mtmp23 = ref_set(toggled/45, (!before/51)) in
+    let before/51 = inherent#Ref#Ref[T]#get__T_bool(toggled/45) in
+    let mtmp23 = inherent#Ref#Ref[T]#set__T_bool(toggled/45, (!before/51)) in
     {
-      let after/52 = ref_get(toggled/45) in
+      let after/52 = inherent#Ref#Ref[T]#get__T_bool(toggled/45) in
       Record__string::Pair(bool_to_string(before/51), bool_to_string(after/52))
     }
   } in
@@ -264,6 +264,30 @@ fn main() -> unit {
       }
     }
   }
+}
+
+fn inherent#Ref#Ref[T]#get__T_int32(self/94: Ref[int32]) -> int32 {
+  ref_get(self/94)
+}
+
+fn inherent#Ref#Ref[T]#get__T_bool(self/94: Ref[bool]) -> bool {
+  ref_get(self/94)
+}
+
+fn inherent#Ref#Ref[T]#new__T_int32(value/93: int32) -> Ref[int32] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#new__T_bool(value/93: bool) -> Ref[bool] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#set__T_int32(self/95: Ref[int32], value/96: int32) -> unit {
+  ref_set(self/95, value/96)
+}
+
+fn inherent#Ref#Ref[T]#set__T_bool(self/95: Ref[bool], value/96: bool) -> unit {
+  ref_set(self/95, value/96)
 }
 
 fn choose__T_Maybe[int32](flag/20: bool, when_true/21: Maybe__int32, when_false/22: Maybe__int32) -> Maybe__int32 {

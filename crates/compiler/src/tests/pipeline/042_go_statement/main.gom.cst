@@ -1,5 +1,5 @@
-FILE@0..212
-  FN@0..65
+FILE@0..209
+  FN@0..60
     FnKeyword@0..2 "fn"
     Whitespace@2..3 " "
     Ident@3..8 "child"
@@ -24,56 +24,57 @@ FILE@0..212
     TYPE_UNIT@32..37
       UnitKeyword@32..36 "unit"
       Whitespace@36..37 " "
-    BLOCK@37..65
+    BLOCK@37..60
       LBrace@37..38 "{"
       Whitespace@38..43 "\n    "
-      EXPR_CALL@43..62
-        EXPR_IDENT@43..50
-          PATH@43..50
-            Ident@43..50 "ref_set"
-        ARG_LIST@50..62
-          LParen@50..51 "("
-          ARG@51..59
-            EXPR_IDENT@51..57
-              PATH@51..57
-                Ident@51..57 "signal"
-            Comma@57..58 ","
-            Whitespace@58..59 " "
-          ARG@59..60
-            EXPR_INT@59..60
-              Int@59..60 "1"
-          RParen@60..61 ")"
-          Whitespace@61..62 "\n"
-      RBrace@62..63 "}"
-      Whitespace@63..65 "\n\n"
-  FN@65..212
-    FnKeyword@65..67 "fn"
-    Whitespace@67..68 " "
-    Ident@68..72 "main"
-    PARAM_LIST@72..75
-      LParen@72..73 "("
-      RParen@73..74 ")"
-      Whitespace@74..75 " "
-    Arrow@75..77 "->"
-    Whitespace@77..78 " "
-    TYPE_UNIT@78..83
-      UnitKeyword@78..82 "unit"
-      Whitespace@82..83 " "
-    BLOCK@83..212
-      LBrace@83..84 "{"
-      Whitespace@84..89 "\n    "
-      STMT_LET@89..114
-        LetKeyword@89..92 "let"
-        Whitespace@92..93 " "
-        PATTERN_VARIABLE@93..100
-          Ident@93..99 "signal"
-          Whitespace@99..100 " "
-        Eq@100..101 "="
-        Whitespace@101..102 " "
-        EXPR_CALL@102..108
-          EXPR_IDENT@102..105
-            PATH@102..105
-              Ident@102..105 "ref"
+      EXPR_CALL@43..57
+        EXPR_BINARY@43..53
+          EXPR_IDENT@43..49
+            PATH@43..49
+              Ident@43..49 "signal"
+          Dot@49..50 "."
+          EXPR_IDENT@50..53
+            PATH@50..53
+              Ident@50..53 "set"
+        ARG_LIST@53..57
+          LParen@53..54 "("
+          ARG@54..55
+            EXPR_INT@54..55
+              Int@54..55 "1"
+          RParen@55..56 ")"
+          Whitespace@56..57 "\n"
+      RBrace@57..58 "}"
+      Whitespace@58..60 "\n\n"
+  FN@60..209
+    FnKeyword@60..62 "fn"
+    Whitespace@62..63 " "
+    Ident@63..67 "main"
+    PARAM_LIST@67..70
+      LParen@67..68 "("
+      RParen@68..69 ")"
+      Whitespace@69..70 " "
+    Arrow@70..72 "->"
+    Whitespace@72..73 " "
+    TYPE_UNIT@73..78
+      UnitKeyword@73..77 "unit"
+      Whitespace@77..78 " "
+    BLOCK@78..209
+      LBrace@78..79 "{"
+      Whitespace@79..84 "\n    "
+      STMT_LET@84..114
+        LetKeyword@84..87 "let"
+        Whitespace@87..88 " "
+        PATTERN_VARIABLE@88..95
+          Ident@88..94 "signal"
+          Whitespace@94..95 " "
+        Eq@95..96 "="
+        Whitespace@96..97 " "
+        EXPR_CALL@97..108
+          EXPR_IDENT@97..105
+            PATH@97..105
+              Ident@97..100 "Ref"
+              ColonColon@100..102 "::"
+              Ident@102..105 "new"
           ARG_LIST@105..108
             LParen@105..106 "("
             ARG@106..107
@@ -109,52 +110,53 @@ FILE@0..212
                 RBrace@136..137 "}"
         Semi@137..138 ";"
         Whitespace@138..143 "\n    "
-      STMT_EXPR@143..193
-        EXPR_WHILE@143..187
+      STMT_EXPR@143..190
+        EXPR_WHILE@143..184
           WhileKeyword@143..148 "while"
           Whitespace@148..149 " "
-          EXPR_WHILE_COND@149..169
-            EXPR_BINARY@149..169
-              EXPR_CALL@149..165
-                EXPR_IDENT@149..156
-                  PATH@149..156
-                    Ident@149..156 "ref_get"
-                ARG_LIST@156..165
-                  LParen@156..157 "("
-                  ARG@157..163
-                    EXPR_IDENT@157..163
-                      PATH@157..163
-                        Ident@157..163 "signal"
-                  RParen@163..164 ")"
-                  Whitespace@164..165 " "
-              Less@165..166 "<"
-              Whitespace@166..167 " "
-              EXPR_INT@167..169
-                Int@167..168 "1"
-                Whitespace@168..169 " "
-          EXPR_WHILE_BODY@169..187
-            BLOCK@169..187
-              LBrace@169..170 "{"
-              Whitespace@170..179 "\n        "
-              EXPR_UNIT@179..186
-                LParen@179..180 "("
-                RParen@180..181 ")"
-                Whitespace@181..186 "\n    "
-              RBrace@186..187 "}"
-        Semi@187..188 ";"
-        Whitespace@188..193 "\n    "
-      STMT_EXPR@193..210
-        EXPR_CALL@193..208
-          EXPR_IDENT@193..200
-            PATH@193..200
-              Ident@193..200 "println"
-          ARG_LIST@200..208
-            LParen@200..201 "("
-            ARG@201..207
-              EXPR_STR@201..207
-                Str@201..207 "\"main\""
-            RParen@207..208 ")"
-        Semi@208..209 ";"
-        Whitespace@209..210 "\n"
-      RBrace@210..211 "}"
-      Whitespace@211..212 "\n"
+          EXPR_WHILE_COND@149..166
+            EXPR_BINARY@149..166
+              EXPR_CALL@149..162
+                EXPR_BINARY@149..159
+                  EXPR_IDENT@149..155
+                    PATH@149..155
+                      Ident@149..155 "signal"
+                  Dot@155..156 "."
+                  EXPR_IDENT@156..159
+                    PATH@156..159
+                      Ident@156..159 "get"
+                ARG_LIST@159..162
+                  LParen@159..160 "("
+                  RParen@160..161 ")"
+                  Whitespace@161..162 " "
+              Less@162..163 "<"
+              Whitespace@163..164 " "
+              EXPR_INT@164..166
+                Int@164..165 "1"
+                Whitespace@165..166 " "
+          EXPR_WHILE_BODY@166..184
+            BLOCK@166..184
+              LBrace@166..167 "{"
+              Whitespace@167..176 "\n        "
+              EXPR_UNIT@176..183
+                LParen@176..177 "("
+                RParen@177..178 ")"
+                Whitespace@178..183 "\n    "
+              RBrace@183..184 "}"
+        Semi@184..185 ";"
+        Whitespace@185..190 "\n    "
+      STMT_EXPR@190..207
+        EXPR_CALL@190..205
+          EXPR_IDENT@190..197
+            PATH@190..197
+              Ident@190..197 "println"
+          ARG_LIST@197..205
+            LParen@197..198 "("
+            ARG@198..204
+              EXPR_STR@198..204
+                Str@198..204 "\"main\""
+            RParen@204..205 ")"
+        Semi@205..206 ";"
+        Whitespace@206..207 "\n"
+      RBrace@207..208 "}"
+      Whitespace@208..209 "\n"

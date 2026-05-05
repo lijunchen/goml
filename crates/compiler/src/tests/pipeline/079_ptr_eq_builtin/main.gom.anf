@@ -2,9 +2,9 @@ fn main() -> unit {
   join ret2() -> unit {
     ()
   } in
-  let a/0 = ref(1) in
+  let a/0 = inherent#Ref#Ref[T]#new__T_int32(1) in
   let b/1 = a/0 in
-  let c/2 = ref(1) in
+  let c/2 = inherent#Ref#Ref[T]#new__T_int32(1) in
   let t3 = ptr_eq(a/0, b/1) in
   let _wild0 = println__T_bool(t3) in
   let t4 = ptr_eq(a/0, c/2) in
@@ -12,11 +12,19 @@ fn main() -> unit {
   jump ret2()
 }
 
+fn inherent#Ref#Ref[T]#new__T_int32(value/93: int32) -> Ref[int32] {
+  join ret5(retv6: Ref[int32]) -> Ref[int32] {
+    retv6
+  } in
+  let t7 = ref(value/93) in
+  jump ret5(t7)
+}
+
 fn println__T_bool(value/1: bool) -> unit {
-  join ret5() -> unit {
+  join ret8() -> unit {
     ()
   } in
-  let t6 = bool_to_string(value/1) in
-  let t7 = string_println(t6) in
-  jump ret5()
+  let t9 = bool_to_string(value/1) in
+  let t10 = string_println(t9) in
+  jump ret8()
 }

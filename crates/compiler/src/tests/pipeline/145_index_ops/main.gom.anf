@@ -137,7 +137,7 @@ fn main() -> unit {
   let t116 = array_get(t115, 0) in
   let _wild54 = println__T_int32(t116) in
   let t117 = [22, 23] in
-  let r/11 = ref(t117) in
+  let r/11 = inherent#Ref#Ref[T]#new__T_[int32;2](t117) in
   let place_ref55 = r/11 in
   let place_root56 = ref_get(place_ref55) in
   let index57 = 1 in
@@ -146,7 +146,7 @@ fn main() -> unit {
   let t118 = array_set(place_root56, index57, value59) in
   let t119 = ref_set(place_ref55, t118) in
   let _wild60 = t119 in
-  let t120 = ref_get(r/11) in
+  let t120 = inherent#Ref#Ref[T]#get__T_[int32;2](r/11) in
   let t121 = array_get(t120, 1) in
   let _wild61 = println__T_int32(t121) in
   jump ret66()
@@ -215,4 +215,20 @@ fn inherent#Vec#Vec[T]#push__T_[int32;2](self/66: Vec[[int32; 2]], elem/67: [int
   } in
   let t144 = vec_push(self/66, elem/67) in
   jump ret142(t144)
+}
+
+fn inherent#Ref#Ref[T]#new__T_[int32;2](value/93: [int32; 2]) -> Ref[[int32; 2]] {
+  join ret145(retv146: Ref[[int32; 2]]) -> Ref[[int32; 2]] {
+    retv146
+  } in
+  let t147 = ref(value/93) in
+  jump ret145(t147)
+}
+
+fn inherent#Ref#Ref[T]#get__T_[int32;2](self/94: Ref[[int32; 2]]) -> [int32; 2] {
+  join ret148(retv149: [int32; 2]) -> [int32; 2] {
+    retv149
+  } in
+  let t150 = ref_get(self/94) in
+  jump ret148(t150)
 }

@@ -7,8 +7,8 @@ fn println(value/1: T) -> unit {
 }
 
 fn main() -> unit {
-    let i/0: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
-    while if (ref_get : (Ref[int32]) -> int32)((i/0 : Ref[int32])) < 3 {
+    let i/0: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+    while if (Ref[int32]::get : (Ref[int32]) -> int32)((i/0 : Ref[int32])) < 3 {
         {
             true
         }
@@ -18,21 +18,21 @@ fn main() -> unit {
         }
     } {
         {
-            (println : (int32) -> unit)((ref_get : (Ref[int32]) -> int32)((i/0 : Ref[int32])));
-            (ref_set : (Ref[int32], int32) -> unit)((i/0 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/0 : Ref[int32])) + 1);
+            (println : (int32) -> unit)((Ref[int32]::get : (Ref[int32]) -> int32)((i/0 : Ref[int32])));
+            (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/0 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/0 : Ref[int32])) + 1);
         }
     };
-    let j/1: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
-    let total/2: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
-    while if (ref_get : (Ref[int32]) -> int32)((j/1 : Ref[int32])) < 4 {
+    let j/1: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+    let total/2: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+    while if (Ref[int32]::get : (Ref[int32]) -> int32)((j/1 : Ref[int32])) < 4 {
         {
-            if (ref_get : (Ref[int32]) -> int32)((j/1 : Ref[int32])) == 1 {
+            if (Ref[int32]::get : (Ref[int32]) -> int32)((j/1 : Ref[int32])) == 1 {
                 {
                     true
                 }
             } else {
                 {
-                    (ref_get : (Ref[int32]) -> int32)((j/1 : Ref[int32])) != 3
+                    (Ref[int32]::get : (Ref[int32]) -> int32)((j/1 : Ref[int32])) != 3
                 }
             }
         }
@@ -42,16 +42,16 @@ fn main() -> unit {
         }
     } {
         {
-            (ref_set : (Ref[int32], int32) -> unit)((total/2 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((total/2 : Ref[int32])) + (ref_get : (Ref[int32]) -> int32)((j/1 : Ref[int32])));
-            (ref_set : (Ref[int32], int32) -> unit)((j/1 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((j/1 : Ref[int32])) + 1);
+            (Ref[int32]::set : (Ref[int32], int32) -> unit)((total/2 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((total/2 : Ref[int32])) + (Ref[int32]::get : (Ref[int32]) -> int32)((j/1 : Ref[int32])));
+            (Ref[int32]::set : (Ref[int32], int32) -> unit)((j/1 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((j/1 : Ref[int32])) + 1);
         }
     };
-    (println : (int32) -> unit)((ref_get : (Ref[int32]) -> int32)((total/2 : Ref[int32])));
-    let k/3: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
-    let sum/4: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
-    while match (ref_get : (Ref[int32]) -> int32)((k/3 : Ref[int32])) {
+    (println : (int32) -> unit)((Ref[int32]::get : (Ref[int32]) -> int32)((total/2 : Ref[int32])));
+    let k/3: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+    let sum/4: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+    while match (Ref[int32]::get : (Ref[int32]) -> int32)((k/3 : Ref[int32])) {
         0 => true,
-        1 => if (ref_get : (Ref[int32]) -> int32)((sum/4 : Ref[int32])) == 0 {
+        1 => if (Ref[int32]::get : (Ref[int32]) -> int32)((sum/4 : Ref[int32])) == 0 {
               {
                   true
               }
@@ -64,9 +64,9 @@ fn main() -> unit {
         _ : int32 => false,
     } {
         {
-            (ref_set : (Ref[int32], int32) -> unit)((sum/4 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((sum/4 : Ref[int32])) + (ref_get : (Ref[int32]) -> int32)((k/3 : Ref[int32])));
-            (ref_set : (Ref[int32], int32) -> unit)((k/3 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((k/3 : Ref[int32])) + 1);
+            (Ref[int32]::set : (Ref[int32], int32) -> unit)((sum/4 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((sum/4 : Ref[int32])) + (Ref[int32]::get : (Ref[int32]) -> int32)((k/3 : Ref[int32])));
+            (Ref[int32]::set : (Ref[int32], int32) -> unit)((k/3 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((k/3 : Ref[int32])) + 1);
         }
     };
-    (println : (int32) -> unit)((ref_get : (Ref[int32]) -> int32)((sum/4 : Ref[int32])));
+    (println : (int32) -> unit)((Ref[int32]::get : (Ref[int32]) -> int32)((sum/4 : Ref[int32])));
 }

@@ -23,7 +23,7 @@ fn main() -> unit {
     (println : (S) -> unit)((s/1 : S));
     let d/2: dyn ToString = to_dyn[ToString]{S}((s/1 : S));
     (println : (dyn ToString) -> unit)((d/2 : dyn ToString));
-    let r/3: Ref[int32] = (ref : (int32) -> Ref[int32])(5);
+    let r/3: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(5);
     (println : (Ref[int32]) -> unit)((r/3 : Ref[int32]));
     (print : (string) -> unit)("no-newline");
     (println : (string) -> unit)("!");

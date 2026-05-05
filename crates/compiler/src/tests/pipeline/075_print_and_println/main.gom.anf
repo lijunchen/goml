@@ -25,7 +25,7 @@ fn main() -> unit {
   let _wild6 = println__T_S(s/1) in
   let d/2 = to_dyn[ToString]{S}(s/1) in
   let _wild7 = println__T_dynToString(d/2) in
-  let r/3 = ref(5) in
+  let r/3 = inherent#Ref#Ref[T]#new__T_int32(5) in
   let _wild8 = println__T_Ref[int32](r/3) in
   let _wild9 = print__T_string("no-newline") in
   let _wild10 = println__T_string("!") in
@@ -85,22 +85,30 @@ fn println__T_dynToString(value/1: dyn ToString) -> unit {
   jump ret34()
 }
 
+fn inherent#Ref#Ref[T]#new__T_int32(value/93: int32) -> Ref[int32] {
+  join ret37(retv38: Ref[int32]) -> Ref[int32] {
+    retv38
+  } in
+  let t39 = ref(value/93) in
+  jump ret37(t39)
+}
+
 fn println__T_Ref[int32](value/1: Ref[int32]) -> unit {
-  join ret37() -> unit {
+  join ret40() -> unit {
     ()
   } in
-  let t38 = ref_get(value/1) in
-  let t39 = int32_to_string(t38) in
-  let t40 = ("ref(" + t39) in
-  let t41 = (t40 + ")") in
-  let t42 = string_println(t41) in
-  jump ret37()
+  let t41 = ref_get(value/1) in
+  let t42 = int32_to_string(t41) in
+  let t43 = ("ref(" + t42) in
+  let t44 = (t43 + ")") in
+  let t45 = string_println(t44) in
+  jump ret40()
 }
 
 fn print__T_string(value/0: string) -> unit {
-  join ret43() -> unit {
+  join ret46() -> unit {
     ()
   } in
-  let t44 = string_print(value/0) in
-  jump ret43()
+  let t47 = string_print(value/0) in
+  jump ret46()
 }

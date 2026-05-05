@@ -1,68 +1,68 @@
 fn bump(cell/0: Ref[int32]) -> int32 {
-  let mtmp0 = ref_set(cell/0, (ref_get(cell/0) + 1)) in
+  let mtmp0 = inherent#Ref#Ref[T]#set__T_int32(cell/0, (inherent#Ref#Ref[T]#get__T_int32(cell/0) + 1)) in
   {
-    ref_get(cell/0)
+    inherent#Ref#Ref[T]#get__T_int32(cell/0)
   }
 }
 
 fn flip(flag/1: Ref[bool]) -> bool {
-  let current/2 = ref_get(flag/1) in
-  let mtmp1 = ref_set(flag/1, (!current/2)) in
+  let current/2 = inherent#Ref#Ref[T]#get__T_bool(flag/1) in
+  let mtmp1 = inherent#Ref#Ref[T]#set__T_bool(flag/1, (!current/2)) in
   {
-    ref_get(flag/1)
+    inherent#Ref#Ref[T]#get__T_bool(flag/1)
   }
 }
 
 fn nested_total(cell/3: Ref[Ref[int32]]) -> int32 {
-  let inner/4 = ref_get(cell/3) in
-  let before/5 = ref_get(inner/4) in
-  let mtmp2 = ref_set(inner/4, (before/5 + 2)) in
+  let inner/4 = inherent#Ref#Ref[T]#get__T_Ref[int32](cell/3) in
+  let before/5 = inherent#Ref#Ref[T]#get__T_int32(inner/4) in
+  let mtmp2 = inherent#Ref#Ref[T]#set__T_int32(inner/4, (before/5 + 2)) in
   {
-    (before/5 + ref_get(inner/4))
+    (before/5 + inherent#Ref#Ref[T]#get__T_int32(inner/4))
   }
 }
 
 fn alias_bump(cell/6: Ref[int32]) -> int32 {
   let alias/7 = cell/6 in
-  let mtmp3 = ref_set(alias/7, (ref_get(alias/7) + 5)) in
+  let mtmp3 = inherent#Ref#Ref[T]#set__T_int32(alias/7, (inherent#Ref#Ref[T]#get__T_int32(alias/7) + 5)) in
   {
-    ref_get(alias/7)
+    inherent#Ref#Ref[T]#get__T_int32(alias/7)
   }
 }
 
 fn pair_sum() -> int32 {
-  let first/8 = ref(4) in
-  let second/9 = ref(6) in
-  let mtmp4 = ref_set(first/8, (ref_get(first/8) + ref_get(second/9))) in
+  let first/8 = inherent#Ref#Ref[T]#new__T_int32(4) in
+  let second/9 = inherent#Ref#Ref[T]#new__T_int32(6) in
+  let mtmp4 = inherent#Ref#Ref[T]#set__T_int32(first/8, (inherent#Ref#Ref[T]#get__T_int32(first/8) + inherent#Ref#Ref[T]#get__T_int32(second/9))) in
   {
-    (ref_get(first/8) + ref_get(second/9))
+    (inherent#Ref#Ref[T]#get__T_int32(first/8) + inherent#Ref#Ref[T]#get__T_int32(second/9))
   }
 }
 
 fn reassign_nested(nested/10: Ref[Ref[int32]]) -> int32 {
-  let inner/11 = ref_get(nested/10) in
-  let mtmp5 = ref_set(inner/11, (ref_get(inner/11) + 7)) in
+  let inner/11 = inherent#Ref#Ref[T]#get__T_Ref[int32](nested/10) in
+  let mtmp5 = inherent#Ref#Ref[T]#set__T_int32(inner/11, (inherent#Ref#Ref[T]#get__T_int32(inner/11) + 7)) in
   {
-    ref_get(inner/11)
+    inherent#Ref#Ref[T]#get__T_int32(inner/11)
   }
 }
 
 fn main() -> unit {
-  let counter/12 = ref(39) in
-  let toggler/13 = ref(false) in
-  let nested/14 = ref(ref(3)) in
+  let counter/12 = inherent#Ref#Ref[T]#new__T_int32(39) in
+  let toggler/13 = inherent#Ref#Ref[T]#new__T_bool(false) in
+  let nested/14 = inherent#Ref#Ref[T]#new__T_Ref[int32](inherent#Ref#Ref[T]#new__T_int32(3)) in
   let bumped/15 = bump(counter/12) in
   let flipped/16 = flip(toggler/13) in
   let flipped_again/17 = flip(toggler/13) in
-  let inner/18 = ref_get(nested/14) in
-  let mtmp6 = ref_set(inner/18, (ref_get(inner/18) + bumped/15)) in
+  let inner/18 = inherent#Ref#Ref[T]#get__T_Ref[int32](nested/14) in
+  let mtmp6 = inherent#Ref#Ref[T]#set__T_int32(inner/18, (inherent#Ref#Ref[T]#get__T_int32(inner/18) + bumped/15)) in
   {
     let nested_total_val/19 = nested_total(nested/14) in
     let alias_total/20 = alias_bump(counter/12) in
     let pair_total/21 = pair_sum() in
     let reassigned/22 = reassign_nested(nested/14) in
     let bool_check/23 = (!false) in
-    let mtmp7 = println__T_string(int32_to_string((bumped/15 + ref_get(counter/12)))) in
+    let mtmp7 = println__T_string(int32_to_string((bumped/15 + inherent#Ref#Ref[T]#get__T_int32(counter/12)))) in
     {
       let mtmp8 = println__T_string(int32_to_string(((nested_total_val/19 + alias_total/20) + reassigned/22))) in
       {
@@ -76,6 +76,38 @@ fn main() -> unit {
       }
     }
   }
+}
+
+fn inherent#Ref#Ref[T]#get__T_int32(self/94: Ref[int32]) -> int32 {
+  ref_get(self/94)
+}
+
+fn inherent#Ref#Ref[T]#set__T_int32(self/95: Ref[int32], value/96: int32) -> unit {
+  ref_set(self/95, value/96)
+}
+
+fn inherent#Ref#Ref[T]#get__T_bool(self/94: Ref[bool]) -> bool {
+  ref_get(self/94)
+}
+
+fn inherent#Ref#Ref[T]#set__T_bool(self/95: Ref[bool], value/96: bool) -> unit {
+  ref_set(self/95, value/96)
+}
+
+fn inherent#Ref#Ref[T]#get__T_Ref[int32](self/94: Ref[Ref[int32]]) -> Ref[int32] {
+  ref_get(self/94)
+}
+
+fn inherent#Ref#Ref[T]#new__T_int32(value/93: int32) -> Ref[int32] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#new__T_bool(value/93: bool) -> Ref[bool] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#new__T_Ref[int32](value/93: Ref[int32]) -> Ref[Ref[int32]] {
+  ref(value/93)
 }
 
 fn println__T_string(value/1: string) -> unit {
