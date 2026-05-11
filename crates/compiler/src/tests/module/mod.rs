@@ -102,6 +102,11 @@ fn multi_package_compile_project_022() -> anyhow::Result<()> {
     run_project("project022_path_escape_type_collision")
 }
 
+#[test]
+fn multi_package_compile_project_023() -> anyhow::Result<()> {
+    run_project("project023_private_type_public_signature")
+}
+
 fn run_project(name: &str) -> anyhow::Result<()> {
     let name = name.to_string();
     let handle = std::thread::Builder::new()
