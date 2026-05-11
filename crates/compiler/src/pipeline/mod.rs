@@ -11,7 +11,7 @@ pub mod separate;
 pub fn with_compiler_stack<T>(f: impl FnOnce() -> T) -> T {
     #[cfg(not(target_arch = "wasm32"))]
     {
-        stacker::grow(64 * 1024 * 1024, f)
+        stacker::grow(256 * 1024 * 1024, f)
     }
     #[cfg(target_arch = "wasm32")]
     {
