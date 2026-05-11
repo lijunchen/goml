@@ -635,7 +635,10 @@ kind = "bin"
 root = "main.gom"
 "#,
     )?;
-    fs::write(dir.path().join("main.gom"), wide_struct_pattern_program(2600))?;
+    fs::write(
+        dir.path().join("main.gom"),
+        wide_struct_pattern_program(2600),
+    )?;
 
     let output = run_goml(&["build"], dir.path())?;
     let stdout = String::from_utf8_lossy(&output.stdout);

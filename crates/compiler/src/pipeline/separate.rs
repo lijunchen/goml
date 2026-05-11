@@ -19,6 +19,7 @@ use crate::pipeline::pipeline::{CompilationError, parse_ast_file, report_duplica
 use crate::pipeline::{compile_error, with_compiler_stack};
 use crate::stdlib;
 use diagnostics::Diagnostics;
+use serde::Deserialize;
 
 pub struct PackageInputs {
     pub package: String,
@@ -521,17 +522,21 @@ pub fn build_package(opts: PackageInputs) -> Result<CoreUnit, CompilationError> 
 }
 
 pub fn read_core(path: &Path) -> Result<CoreUnit, CompilationError> {
-    let json = fs::read_to_string(path)
-        .map_err(|err| compile_error(format!("failed to read {}: {}", path.display(), err)))?;
-    let unit: CoreUnit = serde_json::from_str(&json)
-        .map_err(|err| compile_error(format!("failed to parse {}: {}", path.display(), err)))?;
-    if !unit.validate() {
-        return Err(compile_error(format!(
-            "core {} failed validation",
-            path.display()
-        )));
-    }
-    Ok(unit)
+    with_compiler_stack(|| {
+        let json = fs::read_to_string(path)
+            .map_err(|err| compile_error(format!("failed to read {}: {}", path.display(), err)))?;
+        let mut deserializer = serde_json::Deserializer::from_str(&json);
+        deserializer.disable_recursion_limit();
+        let unit = CoreUnit::deserialize(&mut deserializer)
+            .map_err(|err| compile_error(format!("failed to parse {}: {}", path.display(), err)))?;
+        if !unit.validate() {
+            return Err(compile_error(format!(
+                "core {} failed validation",
+                path.display()
+            )));
+        }
+        Ok(unit)
+    })
 }
 
 pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> {
