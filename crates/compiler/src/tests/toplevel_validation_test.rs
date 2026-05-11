@@ -216,3 +216,27 @@ fn user_builtin_extern_ref_get_is_rejected_before_codegen() {
         other => panic!("expected typer error, got {other:?}"),
     }
 }
+
+#[test]
+fn user_builtin_extern_bogus_is_rejected_before_codegen() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/user_builtin_extern_bogus/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let err = compile_single_file(&path, &src).expect_err("expected typer error");
+
+    match err {
+        CompilationError::Typer { diagnostics } => {
+            let diagnostics = format_typer_diagnostics(&diagnostics, &src);
+            assert!(
+                diagnostics
+                    .iter()
+                    .any(|line| line
+                        .contains("builtin extern bogus is not a compiler-owned host hook")),
+                "{diagnostics:?}"
+            );
+        }
+        other => panic!("expected typer error, got {other:?}"),
+    }
+}
