@@ -616,7 +616,7 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::TypeExpr> {
             };
             let len_text = len_token.text().to_string();
             let len = match len_text.parse::<usize>() {
-                Ok(value) if value < usize::MAX => value,
+                Ok(value) if value <= isize::MAX as usize => value,
                 Ok(_) => {
                     ctx.push_error(
                         Some(len_token.text_range()),
