@@ -267,6 +267,24 @@ fn validate_struct_field_names(diagnostics: &mut Diagnostics, struct_def: &hir::
     }
 }
 
+fn validate_trait_method_names(diagnostics: &mut Diagnostics, trait_def: &hir::TraitDef) {
+    let mut seen = HashSet::new();
+    let trait_name = trait_def.name.to_ident_name();
+    for method in trait_def.method_sigs.iter() {
+        let name = method.name.to_ident_name();
+        if !seen.insert(name.clone()) {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "method {} is defined multiple times in trait {}",
+                    name, trait_name
+                ),
+            ));
+        }
+    }
+}
+
 fn define_enum(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, enum_def: &hir::EnumDef) {
     validate_enum_variant_names(diagnostics, enum_def);
     let params_env: Vec<tast::TastIdent> = enum_def
@@ -347,7 +365,12 @@ fn define_struct(
     });
 }
 
-fn define_trait(env: &mut PackageTypeEnv, trait_def: &hir::TraitDef) {
+fn define_trait(
+    env: &mut PackageTypeEnv,
+    diagnostics: &mut Diagnostics,
+    trait_def: &hir::TraitDef,
+) {
+    validate_trait_method_names(diagnostics, trait_def);
     let mut methods = IndexMap::new();
 
     for hir::TraitMethodSignature {
@@ -1116,7 +1139,7 @@ pub fn collect_typedefs(
         match hir_table.def(*item) {
             hir::Def::EnumDef(enum_def) => define_enum(env, diagnostics, enum_def),
             hir::Def::StructDef(struct_def) => define_struct(env, diagnostics, struct_def),
-            hir::Def::TraitDef(trait_def) => define_trait(env, trait_def),
+            hir::Def::TraitDef(trait_def) => define_trait(env, diagnostics, trait_def),
             _ => {}
         }
     }
