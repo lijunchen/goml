@@ -1405,6 +1405,24 @@ fn normalize_trait_bounds(bounds: &mut indexmap::IndexMap<String, Vec<tast::Tast
     }
 }
 
+fn validate_function_parameter_names(
+    diagnostics: &mut Diagnostics,
+    hir_table: &hir::HirTable,
+    f: &hir::Fn,
+) {
+    let mut seen = HashSet::new();
+    for (id, _) in f.params.iter() {
+        let name = hir_table.local_hint(*id).to_string();
+        if !seen.insert(name.clone()) {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!("parameter {} is defined multiple times", name),
+            ));
+        }
+    }
+}
+
 fn typecheck_fn(
     genv: &PackageTypeEnv,
     typer: &mut Typer,
@@ -1412,6 +1430,7 @@ fn typecheck_fn(
     f: &hir::Fn,
     in_scope_traits: &[tast::TastIdent],
 ) {
+    validate_function_parameter_names(diagnostics, &typer.hir_table, f);
     let mut local_env = LocalTypeEnv::new();
     local_env.set_in_scope_traits(in_scope_traits.to_vec());
     let tparams: Vec<tast::TastIdent> = f
@@ -1478,6 +1497,7 @@ fn typecheck_impl_block(
             hir::Def::Fn(func) => func,
             _ => continue,
         };
+        validate_function_parameter_names(diagnostics, &typer.hir_table, &f);
         let mut local_env = LocalTypeEnv::new();
         local_env.set_in_scope_traits(in_scope_traits.to_vec());
 
