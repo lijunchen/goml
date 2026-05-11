@@ -231,7 +231,44 @@ fn validate_no_self_ty(
     }
 }
 
+fn validate_enum_variant_names(diagnostics: &mut Diagnostics, enum_def: &hir::EnumDef) {
+    let mut seen = HashSet::new();
+    let enum_name = enum_def.name.to_ident_name();
+    for (variant, _) in enum_def.variants.iter() {
+        let name = variant.to_ident_name();
+        if !seen.insert(name.clone()) {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "variant {} is defined multiple times in enum {}",
+                    name, enum_name
+                ),
+            ));
+        }
+    }
+}
+
+fn validate_struct_field_names(diagnostics: &mut Diagnostics, struct_def: &hir::StructDef) {
+    let mut seen = HashSet::new();
+    let struct_name = struct_def.name.to_ident_name();
+    for (field, _) in struct_def.fields.iter() {
+        let name = field.to_ident_name();
+        if !seen.insert(name.clone()) {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "field {} is defined multiple times in struct {}",
+                    name, struct_name
+                ),
+            ));
+        }
+    }
+}
+
 fn define_enum(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, enum_def: &hir::EnumDef) {
+    validate_enum_variant_names(diagnostics, enum_def);
     let params_env: Vec<tast::TastIdent> = enum_def
         .generics
         .iter()
@@ -276,6 +313,7 @@ fn define_struct(
     diagnostics: &mut Diagnostics,
     struct_def: &hir::StructDef,
 ) {
+    validate_struct_field_names(diagnostics, struct_def);
     let params_env: Vec<tast::TastIdent> = struct_def
         .generics
         .iter()
