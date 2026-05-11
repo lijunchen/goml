@@ -73,42 +73,46 @@ fn validate_interface_unit(path: &Path, unit: &InterfaceUnit) -> Result<(), Comp
 fn load_interface_files(
     interface_files: &[PathBuf],
 ) -> Result<HashMap<String, (PathBuf, InterfaceUnit)>, CompilationError> {
-    let mut units: HashMap<String, (PathBuf, InterfaceUnit)> = HashMap::new();
+    with_compiler_stack(|| {
+        let mut units: HashMap<String, (PathBuf, InterfaceUnit)> = HashMap::new();
 
-    for path in interface_files {
-        if path.is_dir() {
-            return Err(compile_error(format!(
-                "interface path {} is a directory; pass a concrete .interface file",
-                path.display()
-            )));
+        for path in interface_files {
+            if path.is_dir() {
+                return Err(compile_error(format!(
+                    "interface path {} is a directory; pass a concrete .interface file",
+                    path.display()
+                )));
+            }
+            let json = fs::read_to_string(path).map_err(|err| {
+                compile_error(format!(
+                    "failed to read interface {}: {}",
+                    path.display(),
+                    err
+                ))
+            })?;
+            let mut deserializer = serde_json::Deserializer::from_str(&json);
+            deserializer.disable_recursion_limit();
+            let unit = InterfaceUnit::deserialize(&mut deserializer).map_err(|err| {
+                compile_error(format!(
+                    "failed to parse interface {}: {}",
+                    path.display(),
+                    err
+                ))
+            })?;
+            validate_interface_unit(path, &unit)?;
+            if let Some((prev_path, _)) = units.get(&unit.package) {
+                return Err(compile_error(format!(
+                    "multiple interface files provided for package {}: {} and {}",
+                    unit.package,
+                    prev_path.display(),
+                    path.display()
+                )));
+            }
+            units.insert(unit.package.clone(), (path.clone(), unit));
         }
-        let json = fs::read_to_string(path).map_err(|err| {
-            compile_error(format!(
-                "failed to read interface {}: {}",
-                path.display(),
-                err
-            ))
-        })?;
-        let unit: InterfaceUnit = serde_json::from_str(&json).map_err(|err| {
-            compile_error(format!(
-                "failed to parse interface {}: {}",
-                path.display(),
-                err
-            ))
-        })?;
-        validate_interface_unit(path, &unit)?;
-        if let Some((prev_path, _)) = units.get(&unit.package) {
-            return Err(compile_error(format!(
-                "multiple interface files provided for package {}: {} and {}",
-                unit.package,
-                prev_path.display(),
-                path.display()
-            )));
-        }
-        units.insert(unit.package.clone(), (path.clone(), unit));
-    }
 
-    Ok(units)
+        Ok(units)
+    })
 }
 
 fn load_interface_for_package(
