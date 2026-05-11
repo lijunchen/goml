@@ -179,6 +179,8 @@ fn create_local_registry(root: &Path) -> anyhow::Result<PathBuf> {
     fs::create_dir_all(registry.join("alice/http/1.2.0/client"))?;
     fs::create_dir_all(registry.join("alice/net/0.1.0"))?;
     fs::create_dir_all(registry.join("alice/appdep/0.1.0"))?;
+    fs::create_dir_all(registry.join("alice/traits/1.0.0"))?;
+    fs::create_dir_all(registry.join("bob/data/1.0.0"))?;
 
     fs::write(
         registry.join("index.toml"),
@@ -193,6 +195,14 @@ versions = ["0.1.0"]
 [modules."alice::appdep"]
 latest = "0.1.0"
 versions = ["0.1.0"]
+
+[modules."alice::traits"]
+latest = "1.0.0"
+versions = ["1.0.0"]
+
+[modules."bob::data"]
+latest = "1.0.0"
+versions = ["1.0.0"]
 "#,
     )?;
 
@@ -290,6 +300,54 @@ root = "lib.gom"
 
 pub fn marker() -> string {
     "appdep"
+}
+"#,
+    )?;
+    fs::write(
+        registry.join("alice/traits/1.0.0/goml.toml"),
+        r#"[crate]
+name = "traits"
+kind = "lib"
+root = "lib.gom"
+"#,
+    )?;
+    fs::write(
+        registry.join("alice/traits/1.0.0/lib.gom"),
+        r#"
+
+pub trait Show {
+    fn show(Self) -> string;
+}
+"#,
+    )?;
+    fs::write(
+        registry.join("bob/data/1.0.0/goml.toml"),
+        r#"[crate]
+name = "data"
+kind = "lib"
+root = "lib.gom"
+
+[dependencies]
+"alice::traits" = "1.0.0"
+"#,
+    )?;
+    fs::write(
+        registry.join("bob/data/1.0.0/lib.gom"),
+        r#"
+use alice::traits;
+
+pub struct Box {
+    value: int32,
+}
+
+impl traits::Show for Box {
+    fn show(self: Box) -> string {
+        self.value.to_string()
+    }
+}
+
+pub fn make() -> Box {
+    Box { value: 21i32 }
 }
 "#,
     )?;
@@ -691,6 +749,74 @@ fn main() -> unit {
     let go_stderr = String::from_utf8_lossy(&go_output.stderr);
     assert!(go_output.status.success(), "stderr: {go_stderr}");
     expect!["client-1.2.0:client-1.2.0:appdep\n"].assert_eq(&go_stdout);
+
+    Ok(())
+}
+
+#[test]
+fn project_build_imports_transitive_external_trait() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let registry = create_local_registry(dir.path())?;
+    let home = dir.path().join("home");
+    fs::create_dir_all(&home)?;
+
+    let project_dir = dir.path().join("demo");
+    fs::create_dir_all(&project_dir)?;
+    fs::write(
+        project_dir.join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+
+[dependencies]
+"bob::data" = "1.0.0"
+"#,
+    )?;
+    fs::write(
+        project_dir.join("main.gom"),
+        r#"
+
+use bob::data;
+use alice::traits::Show;
+
+fn main() -> unit {
+    let value = data::make();
+    println(value.show())
+}
+"#,
+    )?;
+
+    let update_output = run_goml_with_home(
+        &[
+            "update",
+            "--local-registry",
+            registry.to_string_lossy().as_ref(),
+        ],
+        &project_dir,
+        &home,
+    )?;
+    assert!(
+        update_output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&update_output.stderr)
+    );
+
+    let build_output = run_goml_with_home(&["build"], &project_dir, &home)?;
+    assert!(
+        build_output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&build_output.stderr)
+    );
+
+    if !runtime_executor_available() {
+        return Ok(());
+    }
+    let go_output = run_go_main(&project_dir.join("target/goml/main.go"), &project_dir)?;
+    let go_stdout = String::from_utf8_lossy(&go_output.stdout);
+    let go_stderr = String::from_utf8_lossy(&go_output.stderr);
+    assert!(go_output.status.success(), "stderr: {go_stderr}");
+    expect!["21\n"].assert_eq(&go_stdout);
 
     Ok(())
 }
