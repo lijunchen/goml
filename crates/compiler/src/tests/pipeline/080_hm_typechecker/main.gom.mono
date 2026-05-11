@@ -284,7 +284,7 @@ fn env_lookup(env/28: Vec[EnvEntry], name/29: string) -> Option__Typ {
   let done/32 = inherent#Ref#Ref[T]#new__T_bool(false) in
   let mtmp23 = while ((!inherent#Ref#Ref[T]#get__T_bool(done/32)) && (inherent#Ref#Ref[T]#get__T_int32(i/30) >= 0)) {
       {
-        let entry/33 = vec_get(env/28, inherent#Ref#Ref[T]#get__T_int32(i/30)) in
+        let entry/33 = $goml_builtin_runtime$vec_get(env/28, inherent#Ref#Ref[T]#get__T_int32(i/30)) in
         if (EnvEntry.name(entry/33) == name/29) {
             {
               let mtmp22 = inherent#Ref#Ref[T]#set__T_Option[Typ](found/31, Option__Typ::Some(EnvEntry.ty(entry/33))) in
@@ -310,7 +310,7 @@ fn subst_lookup(subst/34: Vec[SubstEntry], name/35: string) -> Option__Typ {
   let done/38 = inherent#Ref#Ref[T]#new__T_bool(false) in
   let mtmp25 = while ((!inherent#Ref#Ref[T]#get__T_bool(done/38)) && (inherent#Ref#Ref[T]#get__T_int32(i/36) >= 0)) {
       {
-        let entry/39 = vec_get(subst/34, inherent#Ref#Ref[T]#get__T_int32(i/36)) in
+        let entry/39 = $goml_builtin_runtime$vec_get(subst/34, inherent#Ref#Ref[T]#get__T_int32(i/36)) in
         if (SubstEntry.name(entry/39) == name/35) {
             {
               let mtmp24 = inherent#Ref#Ref[T]#set__T_Option[Typ](found/37, Option__Typ::Some(SubstEntry.ty(entry/39))) in

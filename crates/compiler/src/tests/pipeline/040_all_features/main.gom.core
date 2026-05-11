@@ -158,17 +158,17 @@ fn pair_join(parts/29: (string, string)) -> string {
 }
 
 fn run_transforms(value/32: int32, transforms/33: [(int32) -> int32; 2]) -> [int32; 2] {
-  let first/34 = array_get(transforms/33, 0) in
-  let second/35 = array_get(transforms/33, 1) in
+  let first/34 = $goml_builtin_runtime$array_get(transforms/33, 0) in
+  let second/35 = $goml_builtin_runtime$array_get(transforms/33, 1) in
   let first_result/36 = first/34(value/32) in
   let second_result/37 = second/35(first_result/36) in
   let results/38 = [first_result/36, value/32] in
   let _wild18 = {
     let place_root14 = results/38 in
     let index15 = 1 in
-    let place16 = array_get(place_root14, index15) in
+    let place16 = $goml_builtin_runtime$array_get(place_root14, index15) in
     let value17 = second_result/37 in
-    results/38 = array_set(place_root14, index15, value17)
+    results/38 = $goml_builtin_runtime$array_set(place_root14, index15, value17)
   } in
   results/38
 }
@@ -251,8 +251,8 @@ fn main() -> unit {
               let stringified/65 = map_maybe(chosen/64, format_total) in
               let transforms/66 = [increment, triple] in
               let results/67 = run_transforms(4, transforms/66) in
-              let first_result/68 = array_get(results/67, 0) in
-              let second_result/69 = array_get(results/67, 1) in
+              let first_result/68 = $goml_builtin_runtime$array_get(results/67, 0) in
+              let second_result/69 = $goml_builtin_runtime$array_get(results/67, 1) in
               let order_check/70 = ((first_result/68 < second_result/69) && true) in
               let first_text/71 = trait_impl#Describe#Record[int32]#describe(first_record/59) in
               let bumped_text/72 = trait_impl#Describe#Record[int32]#describe(bumped_record/60) in

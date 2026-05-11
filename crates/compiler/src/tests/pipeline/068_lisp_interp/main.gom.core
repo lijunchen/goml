@@ -253,7 +253,7 @@ fn env_lookup(env/35: Vec[Binding], name/36: string) -> Value {
   let done/39 = inherent#Ref#Ref[bool]#new(false) in
   let mtmp19 = while ((!inherent#Ref#Ref[bool]#get(done/39)) && (inherent#Ref#Ref[int32]#get(i/37) >= 0)) {
       {
-        let binding/40 = vec_get(env/35, inherent#Ref#Ref[int32]#get(i/37)) in
+        let binding/40 = $goml_builtin_runtime$vec_get(env/35, inherent#Ref#Ref[int32]#get(i/37)) in
         if (Binding.name(binding/40) == name/36) {
             {
               let mtmp18 = inherent#Ref#Ref[Value]#set(result/38, Binding.value(binding/40)) in
@@ -319,7 +319,7 @@ fn parse_list(tokens/45: Vec[Token], start/46: int32) -> (Vec[SExpr], int32) {
   let mtmp45 = while ((!inherent#Ref#Ref[bool]#get(done/50)) && (inherent#Ref#Ref[int32]#get(i/49) < inherent#Vec#Vec[Token]#len(tokens/45))) {
       {
         {
-          let mtmp24 = vec_get(tokens/45, inherent#Ref#Ref[int32]#get(i/49)) in
+          let mtmp24 = $goml_builtin_runtime$vec_get(tokens/45, inherent#Ref#Ref[int32]#get(i/49)) in
           match mtmp24 {
             Token::LParen => {
               {
@@ -433,7 +433,7 @@ fn parse_list(tokens/45: Vec[Token], start/46: int32) -> (Vec[SExpr], int32) {
 
 fn parse_expr(tokens/53: Vec[Token], start/54: int32) -> (SExpr, int32) {
   {
-    let mtmp46 = vec_get(tokens/53, start/54) in
+    let mtmp46 = $goml_builtin_runtime$vec_get(tokens/53, start/54) in
     match mtmp46 {
       Token::LParen => {
         {
@@ -629,7 +629,7 @@ fn eval_list(items/79: Vec[SExpr], local/80: Vec[Binding], global/81: Ref[Vec[Bi
       }
   } else {
       {
-        let head/82 = vec_get(items/79, 0) in
+        let head/82 = $goml_builtin_runtime$vec_get(items/79, 0) in
         match head/82 {
           SExpr::Int(x68) => {
             {
@@ -685,7 +685,7 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
         if (inherent#Vec#Vec[SExpr]#len(items/87) == 3) {
             {
               {
-                let mtmp72 = vec_get(items/87, 1) in
+                let mtmp72 = $goml_builtin_runtime$vec_get(items/87, 1) in
                 match mtmp72 {
                   SExpr::Int(x73) => {
                     {
@@ -705,7 +705,7 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
                       {
                         let var/90 = x75 in
                         {
-                          let value/91 = eval(vec_get(items/87, 2), local/88, global/89) in
+                          let value/91 = eval($goml_builtin_runtime$vec_get(items/87, 2), local/88, global/89) in
                           let env/92 = inherent#Ref#Ref[Vec[Binding]]#get(global/89) in
                           let updated/93 = inherent#Vec#Vec[Binding]#push(env/92, Binding { name: var/90, value: value/91 }) in
                           let mtmp77 = inherent#Ref#Ref[Vec[Binding]]#set(global/89, updated/93) in
@@ -736,14 +736,14 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
       {
         if (inherent#Vec#Vec[SExpr]#len(items/87) == 4) {
             {
-              let cond/94 = eval(vec_get(items/87, 1), local/88, global/89) in
+              let cond/94 = eval($goml_builtin_runtime$vec_get(items/87, 1), local/88, global/89) in
               if truthy(cond/94) {
                   {
-                    eval(vec_get(items/87, 2), local/88, global/89)
+                    eval($goml_builtin_runtime$vec_get(items/87, 2), local/88, global/89)
                   }
               } else {
                   {
-                    eval(vec_get(items/87, 3), local/88, global/89)
+                    eval($goml_builtin_runtime$vec_get(items/87, 3), local/88, global/89)
                   }
               }
             }
@@ -759,7 +759,7 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
         if (inherent#Vec#Vec[SExpr]#len(items/87) == 3) {
             {
               {
-                let mtmp78 = vec_get(items/87, 1) in
+                let mtmp78 = $goml_builtin_runtime$vec_get(items/87, 1) in
                 match mtmp78 {
                   SExpr::Int(x79) => {
                     {
@@ -786,7 +786,7 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
                         let params_exprs/95 = x82 in
                         {
                           let params/96 = params_from_sexprs(params_exprs/95) in
-                          let body/97 = vec_get(items/87, 2) in
+                          let body/97 = $goml_builtin_runtime$vec_get(items/87, 2) in
                           Value::Func(Lambda { params: params/96, body: body/97, env: local/88, global: global/89 })
                         }
                       }
@@ -830,7 +830,7 @@ fn eval_begin(items/100: Vec[SExpr], start/101: int32, local/102: Vec[Binding], 
   let last/105 = inherent#Ref#Ref[Value]#new(Value::Nil) in
   let mtmp84 = while (inherent#Ref#Ref[int32]#get(i/104) < inherent#Vec#Vec[SExpr]#len(items/100)) {
       {
-        let v/106 = eval(vec_get(items/100, inherent#Ref#Ref[int32]#get(i/104)), local/102, global/103) in
+        let v/106 = eval($goml_builtin_runtime$vec_get(items/100, inherent#Ref#Ref[int32]#get(i/104)), local/102, global/103) in
         let mtmp83 = inherent#Ref#Ref[Value]#set(last/105, v/106) in
         {
           inherent#Ref#Ref[int32]#set(i/104, (inherent#Ref#Ref[int32]#get(i/104) + 1))
@@ -849,7 +849,7 @@ fn params_from_sexprs(items/107: Vec[SExpr]) -> Vec[string] {
   let mtmp91 = while (inherent#Ref#Ref[int32]#get(i/108) < inherent#Vec#Vec[SExpr]#len(items/107)) {
       {
         {
-          let mtmp85 = vec_get(items/107, inherent#Ref#Ref[int32]#get(i/108)) in
+          let mtmp85 = $goml_builtin_runtime$vec_get(items/107, inherent#Ref#Ref[int32]#get(i/108)) in
           match mtmp85 {
             SExpr::Int(x86) => {
               {
@@ -898,7 +898,7 @@ fn eval_args(items/112: Vec[SExpr], start/113: int32, local/114: Vec[Binding], g
   let args/118 = inherent#Ref#Ref[Vec[Value]]#new(acc/117) in
   let mtmp93 = while (inherent#Ref#Ref[int32]#get(i/116) < inherent#Vec#Vec[SExpr]#len(items/112)) {
       {
-        let v/119 = eval(vec_get(items/112, inherent#Ref#Ref[int32]#get(i/116)), local/114, global/115) in
+        let v/119 = eval($goml_builtin_runtime$vec_get(items/112, inherent#Ref#Ref[int32]#get(i/116)), local/114, global/115) in
         let mtmp92 = inherent#Ref#Ref[Vec[Value]]#set(args/118, inherent#Vec#Vec[Value]#push(inherent#Ref#Ref[Vec[Value]]#get(args/118), v/119)) in
         {
           inherent#Ref#Ref[int32]#set(i/116, (inherent#Ref#Ref[int32]#get(i/116) + 1))
@@ -916,7 +916,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
       if (inherent#Vec#Vec[Value]#len(args/121) == 2) {
           {
             {
-              let mtmp94 = (vec_get(args/121, 0), vec_get(args/121, 1)) in
+              let mtmp94 = ($goml_builtin_runtime$vec_get(args/121, 0), $goml_builtin_runtime$vec_get(args/121, 1)) in
               {
                 let x95 = mtmp94.0 in
                 let x96 = mtmp94.1 in
@@ -1015,7 +1015,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
         let mtmp111 = while (inherent#Ref#Ref[int32]#get(i/126) < inherent#Vec#Vec[Value]#len(args/121)) {
             {
               {
-                let mtmp106 = vec_get(args/121, inherent#Ref#Ref[int32]#get(i/126)) in
+                let mtmp106 = $goml_builtin_runtime$vec_get(args/121, inherent#Ref#Ref[int32]#get(i/126)) in
                 match mtmp106 {
                   Value::Int(x107) => {
                     {
@@ -1062,7 +1062,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
         let mtmp117 = while (inherent#Ref#Ref[int32]#get(i/129) < inherent#Vec#Vec[Value]#len(args/121)) {
             {
               {
-                let mtmp112 = vec_get(args/121, inherent#Ref#Ref[int32]#get(i/129)) in
+                let mtmp112 = $goml_builtin_runtime$vec_get(args/121, inherent#Ref#Ref[int32]#get(i/129)) in
                 match mtmp112 {
                   Value::Int(x113) => {
                     {
@@ -1108,7 +1108,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
         match mtmp118 {
           1 => {
             {
-              let mtmp119 = vec_get(args/121, 0) in
+              let mtmp119 = $goml_builtin_runtime$vec_get(args/121, 0) in
               match mtmp119 {
                 Value::Int(x120) => {
                   {
@@ -1139,7 +1139,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
           },
           2 => {
             {
-              let mtmp123 = (vec_get(args/121, 0), vec_get(args/121, 1)) in
+              let mtmp123 = ($goml_builtin_runtime$vec_get(args/121, 0), $goml_builtin_runtime$vec_get(args/121, 1)) in
               {
                 let x124 = mtmp123.0 in
                 let x125 = mtmp123.1 in
@@ -1205,7 +1205,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
       if (inherent#Vec#Vec[Value]#len(args/121) == 2) {
           {
             {
-              let mtmp132 = (vec_get(args/121, 0), vec_get(args/121, 1)) in
+              let mtmp132 = ($goml_builtin_runtime$vec_get(args/121, 0), $goml_builtin_runtime$vec_get(args/121, 1)) in
               {
                 let x133 = mtmp132.0 in
                 let x134 = mtmp132.1 in
@@ -1307,8 +1307,8 @@ fn apply_lambda(lambda/141: Lambda, args/142: Vec[Value]) -> Value {
   let i/144 = inherent#Ref#Ref[int32]#new(0) in
   let mtmp145 = while ((inherent#Ref#Ref[int32]#get(i/144) < inherent#Vec#Vec[string]#len(Lambda.params(lambda/141))) && (inherent#Ref#Ref[int32]#get(i/144) < inherent#Vec#Vec[Value]#len(args/142))) {
       {
-        let name/145 = vec_get(Lambda.params(lambda/141), inherent#Ref#Ref[int32]#get(i/144)) in
-        let value/146 = vec_get(args/142, inherent#Ref#Ref[int32]#get(i/144)) in
+        let name/145 = $goml_builtin_runtime$vec_get(Lambda.params(lambda/141), inherent#Ref#Ref[int32]#get(i/144)) in
+        let value/146 = $goml_builtin_runtime$vec_get(args/142, inherent#Ref#Ref[int32]#get(i/144)) in
         let updated/147 = inherent#Vec#Vec[Binding]#push(inherent#Ref#Ref[Vec[Binding]]#get(env/143), Binding { name: name/145, value: value/146 }) in
         let mtmp144 = inherent#Ref#Ref[Vec[Binding]]#set(env/143, updated/147) in
         {
@@ -1325,11 +1325,11 @@ fn main() -> unit {
   let global/148 = inherent#Ref#Ref[Vec[Binding]]#new(inherent#Vec#Vec[Binding]#new()) in
   let program/149 = "(begin (define fact (lambda (n) (if (= n 0) 1 (* n (fact (- n 1)))))) (define add3 (lambda (a b c) (+ a (+ b c)))) (fact 6))" in
   let exprs/150 = parse_program(lex(program/149)) in
-  let result/151 = eval(vec_get(exprs/150, 0), inherent#Vec#Vec[Binding]#new(), global/148) in
+  let result/151 = eval($goml_builtin_runtime$vec_get(exprs/150, 0), inherent#Vec#Vec[Binding]#new(), global/148) in
   let mtmp146 = println(value_to_string(result/151)) in
   {
     let exprs2/152 = parse_program(lex("(add3 10 20 30)")) in
-    let result2/153 = eval(vec_get(exprs2/152, 0), inherent#Vec#Vec[Binding]#new(), global/148) in
+    let result2/153 = eval($goml_builtin_runtime$vec_get(exprs2/152, 0), inherent#Vec#Vec[Binding]#new(), global/148) in
     let mtmp147 = println(value_to_string(result2/153)) in
     {
       ()

@@ -378,7 +378,7 @@ fn env_lookup(env/35: Vec[Binding], name/36: string) -> Value {
       let t293 = (t290 && t292) in
       if t293 {
         let t294 = inherent#Ref#Ref[T]#get__T_int32(i/37) in
-        let binding/40 = vec_get(env/35, t294) in
+        let binding/40 = $goml_builtin_runtime$vec_get(env/35, t294) in
         let t296 = Binding.name(binding/40) in
         let t297 = (t296 == name/36) in
         join k295() -> Value {
@@ -459,7 +459,7 @@ fn parse_list(tokens/45: Vec[Token], start/46: int32) -> (Vec[SExpr], int32) {
       let t320 = (t316 && t319) in
       if t320 {
         let t321 = inherent#Ref#Ref[T]#get__T_int32(i/49) in
-        let mtmp24 = vec_get(tokens/45, t321) in
+        let mtmp24 = $goml_builtin_runtime$vec_get(tokens/45, t321) in
         join k322() -> (Vec[SExpr], int32) {
           jump loop314()
         } in
@@ -539,7 +539,7 @@ fn parse_expr(tokens/53: Vec[Token], start/54: int32) -> (SExpr, int32) {
   join ret342(retv343: (SExpr, int32)) -> (SExpr, int32) {
     retv343
   } in
-  let mtmp46 = vec_get(tokens/53, start/54) in
+  let mtmp46 = $goml_builtin_runtime$vec_get(tokens/53, start/54) in
   join k344(jp345: (SExpr, int32)) -> (SExpr, int32) {
     jump ret342(jp345)
   } in
@@ -732,7 +732,7 @@ fn eval_list(items/79: Vec[SExpr], local/80: Vec[Binding], global/81: Ref[Vec[Bi
   if t398 {
     jump k395(Tag_3)
   } else {
-    let head/82 = vec_get(items/79, 0) in
+    let head/82 = $goml_builtin_runtime$vec_get(items/79, 0) in
     join k399(jp400: Value) -> Value {
       jump k395(jp400)
     } in
@@ -787,7 +787,7 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
         jump k407(jp411)
       } in
       if t413 {
-        let mtmp72 = vec_get(items/87, 1) in
+        let mtmp72 = $goml_builtin_runtime$vec_get(items/87, 1) in
         join k414(jp415: Value) -> Value {
           jump k410(jp415)
         } in
@@ -803,7 +803,7 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
           Tag_2 => {
             let x75 = SExpr::Sym._0(mtmp72) in
             let var/90 = x75 in
-            let t416 = vec_get(items/87, 2) in
+            let t416 = $goml_builtin_runtime$vec_get(items/87, 2) in
             let value/91 = eval(t416, local/88, global/89) in
             let env/92 = inherent#Ref#Ref[T]#get__T_Vec[Binding](global/89) in
             let t417 = Binding { name: var/90, value: value/91 } in
@@ -827,18 +827,18 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
         jump k407(jp419)
       } in
       if t421 {
-        let t422 = vec_get(items/87, 1) in
+        let t422 = $goml_builtin_runtime$vec_get(items/87, 1) in
         let cond/94 = eval(t422, local/88, global/89) in
         let t425 = truthy(cond/94) in
         join k423(jp424: Value) -> Value {
           jump k418(jp424)
         } in
         if t425 {
-          let t426 = vec_get(items/87, 2) in
+          let t426 = $goml_builtin_runtime$vec_get(items/87, 2) in
           let t427 = eval(t426, local/88, global/89) in
           jump k423(t427)
         } else {
-          let t428 = vec_get(items/87, 3) in
+          let t428 = $goml_builtin_runtime$vec_get(items/87, 3) in
           let t429 = eval(t428, local/88, global/89) in
           jump k423(t429)
         }
@@ -853,7 +853,7 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
         jump k407(jp431)
       } in
       if t433 {
-        let mtmp78 = vec_get(items/87, 1) in
+        let mtmp78 = $goml_builtin_runtime$vec_get(items/87, 1) in
         join k434(jp435: Value) -> Value {
           jump k430(jp435)
         } in
@@ -874,7 +874,7 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
             let x82 = SExpr::List._0(mtmp78) in
             let params_exprs/95 = x82 in
             let params/96 = params_from_sexprs(params_exprs/95) in
-            let body/97 = vec_get(items/87, 2) in
+            let body/97 = $goml_builtin_runtime$vec_get(items/87, 2) in
             let t436 = Lambda { params: params/96, body: body/97, env: local/88, global: global/89 } in
             let t437 = Value::Func(t436) in
             jump k434(t437)
@@ -937,7 +937,7 @@ fn eval_begin(items/100: Vec[SExpr], start/101: int32, local/102: Vec[Binding], 
       let t457 = (t455 < t456) in
       if t457 {
         let t458 = inherent#Ref#Ref[T]#get__T_int32(i/104) in
-        let t459 = vec_get(items/100, t458) in
+        let t459 = $goml_builtin_runtime$vec_get(items/100, t458) in
         let v/106 = eval(t459, local/102, global/103) in
         let mtmp83 = inherent#Ref#Ref[T]#set__T_Value(last/105, v/106) in
         let t460 = inherent#Ref#Ref[T]#get__T_int32(i/104) in
@@ -971,7 +971,7 @@ fn params_from_sexprs(items/107: Vec[SExpr]) -> Vec[string] {
       let t470 = (t468 < t469) in
       if t470 {
         let t471 = inherent#Ref#Ref[T]#get__T_int32(i/108) in
-        let mtmp85 = vec_get(items/107, t471) in
+        let mtmp85 = $goml_builtin_runtime$vec_get(items/107, t471) in
         join k472() -> Vec[string] {
           jump loop467()
         } in
@@ -1036,7 +1036,7 @@ fn eval_args(items/112: Vec[SExpr], start/113: int32, local/114: Vec[Binding], g
       let t494 = (t492 < t493) in
       if t494 {
         let t495 = inherent#Ref#Ref[T]#get__T_int32(i/116) in
-        let t496 = vec_get(items/112, t495) in
+        let t496 = $goml_builtin_runtime$vec_get(items/112, t495) in
         let v/119 = eval(t496, local/114, global/115) in
         let t497 = inherent#Ref#Ref[T]#get__T_Vec[Value](args/118) in
         let t498 = inherent#Vec#Vec[T]#push__T_Value(t497, v/119) in
@@ -1068,8 +1068,8 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
         jump k504(jp507)
       } in
       if t509 {
-        let t510 = vec_get(args/121, 0) in
-        let t511 = vec_get(args/121, 1) in
+        let t510 = $goml_builtin_runtime$vec_get(args/121, 0) in
+        let t511 = $goml_builtin_runtime$vec_get(args/121, 1) in
         let mtmp94 = (t510, t511) in
         let x95 = mtmp94.0 in
         let x96 = mtmp94.1 in
@@ -1168,7 +1168,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
           let t537 = (t535 < t536) in
           if t537 {
             let t538 = inherent#Ref#Ref[T]#get__T_int32(i/126) in
-            let mtmp106 = vec_get(args/121, t538) in
+            let mtmp106 = $goml_builtin_runtime$vec_get(args/121, t538) in
             join k539() -> Value {
               jump loop534()
             } in
@@ -1228,7 +1228,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
           let t560 = (t558 < t559) in
           if t560 {
             let t561 = inherent#Ref#Ref[T]#get__T_int32(i/129) in
-            let mtmp112 = vec_get(args/121, t561) in
+            let mtmp112 = $goml_builtin_runtime$vec_get(args/121, t561) in
             join k562() -> Value {
               jump loop557()
             } in
@@ -1279,7 +1279,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
       } in
       match mtmp118 {
         1 => {
-          let mtmp119 = vec_get(args/121, 0) in
+          let mtmp119 = $goml_builtin_runtime$vec_get(args/121, 0) in
           join k579(jp580: Value) -> Value {
             jump k577(jp580)
           } in
@@ -1305,8 +1305,8 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
           }
         },
         2 => {
-          let t583 = vec_get(args/121, 0) in
-          let t584 = vec_get(args/121, 1) in
+          let t583 = $goml_builtin_runtime$vec_get(args/121, 0) in
+          let t584 = $goml_builtin_runtime$vec_get(args/121, 1) in
           let mtmp123 = (t583, t584) in
           let x124 = mtmp123.0 in
           let x125 = mtmp123.1 in
@@ -1366,8 +1366,8 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
         jump k504(jp592)
       } in
       if t594 {
-        let t595 = vec_get(args/121, 0) in
-        let t596 = vec_get(args/121, 1) in
+        let t595 = $goml_builtin_runtime$vec_get(args/121, 0) in
+        let t596 = $goml_builtin_runtime$vec_get(args/121, 1) in
         let mtmp132 = (t595, t596) in
         let x133 = mtmp132.0 in
         let x134 = mtmp132.1 in
@@ -1480,9 +1480,9 @@ fn apply_lambda(lambda/141: Lambda, args/142: Vec[Value]) -> Value {
       if t624 {
         let t625 = Lambda.params(lambda/141) in
         let t626 = inherent#Ref#Ref[T]#get__T_int32(i/144) in
-        let name/145 = vec_get(t625, t626) in
+        let name/145 = $goml_builtin_runtime$vec_get(t625, t626) in
         let t627 = inherent#Ref#Ref[T]#get__T_int32(i/144) in
-        let value/146 = vec_get(args/142, t627) in
+        let value/146 = $goml_builtin_runtime$vec_get(args/142, t627) in
         let t628 = inherent#Ref#Ref[T]#get__T_Vec[Binding](env/143) in
         let t629 = Binding { name: name/145, value: value/146 } in
         let updated/147 = inherent#Vec#Vec[T]#push__T_Binding(t628, t629) in
@@ -1508,14 +1508,14 @@ fn main() -> unit {
   let program/149 = "(begin (define fact (lambda (n) (if (= n 0) 1 (* n (fact (- n 1)))))) (define add3 (lambda (a b c) (+ a (+ b c)))) (fact 6))" in
   let t635 = lex(program/149) in
   let exprs/150 = parse_program(t635) in
-  let t636 = vec_get(exprs/150, 0) in
+  let t636 = $goml_builtin_runtime$vec_get(exprs/150, 0) in
   let t637 = inherent#Vec#Vec[T]#new__T_Binding() in
   let result/151 = eval(t636, t637, global/148) in
   let t638 = value_to_string(result/151) in
   let mtmp146 = println__T_string(t638) in
   let t639 = lex("(add3 10 20 30)") in
   let exprs2/152 = parse_program(t639) in
-  let t640 = vec_get(exprs2/152, 0) in
+  let t640 = $goml_builtin_runtime$vec_get(exprs2/152, 0) in
   let t641 = inherent#Vec#Vec[T]#new__T_Binding() in
   let result2/153 = eval(t640, t641, global/148) in
   let t642 = value_to_string(result2/153) in
