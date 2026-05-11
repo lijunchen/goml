@@ -7,7 +7,7 @@ fn main() -> unit {
   let _wild1 = println__T_bool(true) in
   let _wild2 = println__T_string("hi") in
   let _wild3 = println__T_unit(()) in
-  let _wild4 = println__T_string(int32_to_string(2)) in
+  let _wild4 = println__T_string($goml_builtin_runtime$int32_to_string(2)) in
   let _wild5 = println__T_string($goml_builtin_runtime$int32_to_string(2)) in
   let s/1 = S { value: 9 } in
   let _wild6 = println__T_S(s/1) in
@@ -20,11 +20,11 @@ fn main() -> unit {
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  string_println(int32_to_string(value/1))
+  string_println($goml_builtin_runtime$int32_to_string(value/1))
 }
 
 fn println__T_bool(value/1: bool) -> unit {
-  string_println(bool_to_string(value/1))
+  string_println($goml_builtin_runtime$bool_to_string(value/1))
 }
 
 fn println__T_string(value/1: string) -> unit {
@@ -32,7 +32,7 @@ fn println__T_string(value/1: string) -> unit {
 }
 
 fn println__T_unit(value/1: unit) -> unit {
-  string_println(unit_to_string(value/1))
+  string_println($goml_builtin_runtime$unit_to_string(value/1))
 }
 
 fn println__T_S(value/1: S) -> unit {
@@ -48,7 +48,7 @@ fn inherent#Ref#Ref[T]#new__T_int32(value/93: int32) -> Ref[int32] {
 }
 
 fn println__T_Ref[int32](value/1: Ref[int32]) -> unit {
-  string_println((("ref(" + int32_to_string(ref_get(value/1))) + ")"))
+  string_println((("ref(" + $goml_builtin_runtime$int32_to_string($goml_builtin_runtime$ref_get(value/1))) + ")"))
 }
 
 fn print__T_string(value/0: string) -> unit {

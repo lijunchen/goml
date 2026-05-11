@@ -17,7 +17,7 @@ fn main() -> unit {
   let _wild1 = println__T_bool(true) in
   let _wild2 = println__T_string("hi") in
   let _wild3 = println__T_unit(()) in
-  let t18 = int32_to_string(2) in
+  let t18 = $goml_builtin_runtime$int32_to_string(2) in
   let _wild4 = println__T_string(t18) in
   let t19 = $goml_builtin_runtime$int32_to_string(2) in
   let _wild5 = println__T_string(t19) in
@@ -36,7 +36,7 @@ fn println__T_int32(value/1: int32) -> unit {
   join ret20() -> unit {
     ()
   } in
-  let t21 = int32_to_string(value/1) in
+  let t21 = $goml_builtin_runtime$int32_to_string(value/1) in
   let t22 = string_println(t21) in
   jump ret20()
 }
@@ -45,7 +45,7 @@ fn println__T_bool(value/1: bool) -> unit {
   join ret23() -> unit {
     ()
   } in
-  let t24 = bool_to_string(value/1) in
+  let t24 = $goml_builtin_runtime$bool_to_string(value/1) in
   let t25 = string_println(t24) in
   jump ret23()
 }
@@ -62,7 +62,7 @@ fn println__T_unit(value/1: unit) -> unit {
   join ret28() -> unit {
     ()
   } in
-  let t29 = unit_to_string(value/1) in
+  let t29 = $goml_builtin_runtime$unit_to_string(value/1) in
   let t30 = string_println(t29) in
   jump ret28()
 }
@@ -97,8 +97,8 @@ fn println__T_Ref[int32](value/1: Ref[int32]) -> unit {
   join ret40() -> unit {
     ()
   } in
-  let t41 = ref_get(value/1) in
-  let t42 = int32_to_string(t41) in
+  let t41 = $goml_builtin_runtime$ref_get(value/1) in
+  let t42 = $goml_builtin_runtime$int32_to_string(t41) in
   let t43 = ("ref(" + t42) in
   let t44 = (t43 + ")") in
   let t45 = string_println(t44) in

@@ -17,7 +17,7 @@ fn trait_impl#Describe#Tracker#describe(self/0: Tracker) -> string {
             let with_count_label/7 = (with_label/6 + ", count: ") in
             let with_count/8 = (with_count_label/7 + $goml_builtin_runtime$int32_to_string(current/4)) in
             let with_flag_label/9 = (with_count/8 + ", toggled: ") in
-            ((with_flag_label/9 + bool_to_string(flag/5)) + ")")
+            ((with_flag_label/9 + $goml_builtin_runtime$bool_to_string(flag/5)) + ")")
           }
         }
       }
@@ -32,7 +32,7 @@ fn trait_impl#Describe#Record__int32#describe(self/10: Record__int32) -> string 
         let x4 = Record__int32::Value._0(self/10) in
         {
           let value/11 = x4 in
-          (("Value(" + int32_to_string(value/11)) + ")")
+          (("Value(" + $goml_builtin_runtime$int32_to_string(value/11)) + ")")
         }
       }
     },
@@ -45,8 +45,8 @@ fn trait_impl#Describe#Record__int32#describe(self/10: Record__int32) -> string 
           {
             let before/12 = x5 in
             {
-              let prefix/14 = ("Pair(" + int32_to_string(before/12)) in
-              (((prefix/14 + ", ") + int32_to_string(after/13)) + ")")
+              let prefix/14 = ("Pair(" + $goml_builtin_runtime$int32_to_string(before/12)) in
+              (((prefix/14 + ", ") + $goml_builtin_runtime$int32_to_string(after/13)) + ")")
             }
           }
         }
@@ -182,7 +182,7 @@ fn build_counter(label/42: string, start/43: int32) -> (Tracker, () -> Record__i
     let mtmp23 = inherent#Ref#Ref[T]#set__T_bool(toggled/45, (!before/51)) in
     {
       let after/52 = inherent#Ref#Ref[T]#get__T_bool(toggled/45) in
-      Record__string::Pair(bool_to_string(before/51), bool_to_string(after/52))
+      Record__string::Pair($goml_builtin_runtime$bool_to_string(before/51), $goml_builtin_runtime$bool_to_string(after/52))
     }
   } in
   (tracker/46, snapshot/47, bump/50, flip/53)
@@ -235,7 +235,7 @@ fn main() -> unit {
                 },
               } in
               let pair_text/76 = pair_join(($goml_builtin_runtime$int32_to_string(first_result/68), $goml_builtin_runtime$int32_to_string(second_result/69))) in
-              let bool_text/77 = bool_to_string(order_check/70) in
+              let bool_text/77 = $goml_builtin_runtime$bool_to_string(order_check/70) in
               let mtmp30 = println__T_string(tracker_info/58) in
               {
                 let mtmp31 = println__T_string(first_text/71) in

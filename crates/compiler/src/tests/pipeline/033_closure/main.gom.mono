@@ -2,9 +2,9 @@ fn test() -> unit {
   let y/0 = 3 in
   let z/1 = 5 in
   let f/3 = |x/2| ((x/2 * y/0) * z/1) in
-  let mtmp0 = println__T_string(int32_to_string(f/3(2))) in
+  let mtmp0 = println__T_string($goml_builtin_runtime$int32_to_string(f/3(2))) in
   {
-    println__T_string(int32_to_string(f/3(3)))
+    println__T_string($goml_builtin_runtime$int32_to_string(f/3(3)))
   }
 }
 
@@ -25,7 +25,7 @@ fn main() -> unit {
     let unused/15 = |y/14| (y/14 + result/9) in
     let no_capture/17 = |z/16| (z/16 * 2) in
     let doubled/18 = no_capture/17(3) in
-    let mtmp2 = println__T_string(int32_to_string(doubled/18)) in
+    let mtmp2 = println__T_string($goml_builtin_runtime$int32_to_string(doubled/18)) in
     {
       let mtmp3 = test() in
       {

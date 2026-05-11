@@ -6,10 +6,10 @@ fn test() -> unit {
   let z/1 = 5 in
   let f/3 = closure_env_f_0 { y_0: y/0, z_1: z/1 } in
   let t18 = inherent#closure_env_f_0#closure_env_f_0#apply(f/3, 2) in
-  let t19 = int32_to_string(t18) in
+  let t19 = $goml_builtin_runtime$int32_to_string(t18) in
   let mtmp0 = println__T_string(t19) in
   let t20 = inherent#closure_env_f_0#closure_env_f_0#apply(f/3, 3) in
-  let t21 = int32_to_string(t20) in
+  let t21 = $goml_builtin_runtime$int32_to_string(t20) in
   let t22 = println__T_string(t21) in
   jump ret17()
 }
@@ -34,7 +34,7 @@ fn main() -> unit {
   let unused/15 = closure_env_unused_3 { result_0: result/9 } in
   let no_capture/17 = closure_env_no_capture_4 {} in
   let doubled/18 = inherent#closure_env_no_capture_4#closure_env_no_capture_4#apply(no_capture/17, 3) in
-  let t27 = int32_to_string(doubled/18) in
+  let t27 = $goml_builtin_runtime$int32_to_string(doubled/18) in
   let mtmp2 = println__T_string(t27) in
   let mtmp3 = test() in
   let t28 = IntList::Cons(3, Tag_0) in

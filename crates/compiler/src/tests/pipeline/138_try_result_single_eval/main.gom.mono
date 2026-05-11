@@ -45,7 +45,7 @@ fn show(res/5: Result__int32__string) -> string {
         let x4 = Result__int32__string::Ok._0(res/5) in
         {
           let value/6 = x4 in
-          ("ok " + int32_to_string(value/6))
+          ("ok " + $goml_builtin_runtime$int32_to_string(value/6))
         }
       }
     },
@@ -64,7 +64,7 @@ fn show(res/5: Result__int32__string) -> string {
 fn run(ok/8: bool) -> string {
   let counter/9 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let result/10 = use_try(counter/9, ok/8) in
-  ((show(result/10) + " count=") + int32_to_string(inherent#Ref#Ref[T]#get__T_int32(counter/9)))
+  ((show(result/10) + " count=") + $goml_builtin_runtime$int32_to_string(inherent#Ref#Ref[T]#get__T_int32(counter/9)))
 }
 
 fn main() -> unit {

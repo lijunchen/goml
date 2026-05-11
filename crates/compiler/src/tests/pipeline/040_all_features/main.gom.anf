@@ -16,7 +16,7 @@ fn trait_impl#Describe#Tracker#describe(self/0: Tracker) -> string {
   let t42 = $goml_builtin_runtime$int32_to_string(current/4) in
   let with_count/8 = (with_count_label/7 + t42) in
   let with_flag_label/9 = (with_count/8 + ", toggled: ") in
-  let t43 = bool_to_string(flag/5) in
+  let t43 = $goml_builtin_runtime$bool_to_string(flag/5) in
   let t44 = (with_flag_label/9 + t43) in
   let t45 = (t44 + ")") in
   jump ret40(t45)
@@ -33,7 +33,7 @@ fn trait_impl#Describe#Record__int32#describe(self/10: Record__int32) -> string 
     Tag_0 => {
       let x4 = Record__int32::Value._0(self/10) in
       let value/11 = x4 in
-      let t50 = int32_to_string(value/11) in
+      let t50 = $goml_builtin_runtime$int32_to_string(value/11) in
       let t51 = ("Value(" + t50) in
       let t52 = (t51 + ")") in
       jump k48(t52)
@@ -43,10 +43,10 @@ fn trait_impl#Describe#Record__int32#describe(self/10: Record__int32) -> string 
       let x6 = Record__int32::Pair._1(self/10) in
       let after/13 = x6 in
       let before/12 = x5 in
-      let t53 = int32_to_string(before/12) in
+      let t53 = $goml_builtin_runtime$int32_to_string(before/12) in
       let prefix/14 = ("Pair(" + t53) in
       let t54 = (prefix/14 + ", ") in
-      let t55 = int32_to_string(after/13) in
+      let t55 = $goml_builtin_runtime$int32_to_string(after/13) in
       let t56 = (t54 + t55) in
       let t57 = (t56 + ")") in
       jump k48(t57)
@@ -224,7 +224,7 @@ fn main() -> unit {
     let t99 = $goml_builtin_runtime$int32_to_string(second_result/69) in
     let t100 = (t98, t99) in
     let pair_text/76 = pair_join(t100) in
-    let bool_text/77 = bool_to_string(order_check/70) in
+    let bool_text/77 = $goml_builtin_runtime$bool_to_string(order_check/70) in
     let mtmp30 = println__T_string(tracker_info/58) in
     let mtmp31 = println__T_string(first_text/71) in
     let mtmp32 = println__T_string(bumped_text/72) in
@@ -370,8 +370,8 @@ fn inherent#closure_env_flip_2#closure_env_flip_2#apply(env39: closure_env_flip_
   let t141 = (!before/51) in
   let mtmp23 = inherent#Ref#Ref[T]#set__T_bool(toggled/45, t141) in
   let after/52 = inherent#Ref#Ref[T]#get__T_bool(toggled/45) in
-  let t142 = bool_to_string(before/51) in
-  let t143 = bool_to_string(after/52) in
+  let t142 = $goml_builtin_runtime$bool_to_string(before/51) in
+  let t143 = $goml_builtin_runtime$bool_to_string(after/52) in
   let t144 = Record__string::Pair(t142, t143) in
   jump ret139(t144)
 }

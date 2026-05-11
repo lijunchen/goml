@@ -11,7 +11,7 @@ fn summarize(event/0: FloatEvent) -> string {
       let x1 = FloatEvent::Sample32._1(event/0) in
       let value/2 = x1 in
       let label/1 = x0 in
-      let t11 = float32_to_string(value/2) in
+      let t11 = $goml_builtin_runtime$float32_to_string(value/2) in
       let t12 = (label/1 + t11) in
       jump k9(t12)
     },
@@ -20,7 +20,7 @@ fn summarize(event/0: FloatEvent) -> string {
       let x3 = FloatEvent::Sample64._1(event/0) in
       let value/4 = x3 in
       let label/3 = x2 in
-      let t13 = float64_to_string(value/4) in
+      let t13 = $goml_builtin_runtime$float64_to_string(value/4) in
       let t14 = (label/3 + t13) in
       jump k9(t14)
     },
@@ -39,10 +39,10 @@ fn compare(values/5: (float32, float64)) -> string {
   let limit64/9 = 5 in
   let less_left/10 = (left/6 < limit32/8) in
   let less_right/11 = (right/7 < limit64/9) in
-  let t17 = bool_to_string(less_left/10) in
+  let t17 = $goml_builtin_runtime$bool_to_string(less_left/10) in
   let t18 = ("left<1?=" + t17) in
   let t19 = (t18 + ",right<5?=") in
-  let t20 = bool_to_string(less_right/11) in
+  let t20 = $goml_builtin_runtime$bool_to_string(less_right/11) in
   let t21 = (t19 + t20) in
   jump ret15(t21)
 }

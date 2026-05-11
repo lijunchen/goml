@@ -2,10 +2,10 @@ fn main() -> unit {
   join ret4() -> unit {
     ()
   } in
-  let x/0 = ref(0) in
+  let x/0 = $goml_builtin_runtime$ref(0) in
   let inc/1 = closure_env_inc_0 { x_0: x/0 } in
   let mtmp1 = inherent#closure_env_inc_0#closure_env_inc_0#apply(inc/1) in
-  let t5 = ref_get(x/0) in
+  let t5 = $goml_builtin_runtime$ref_get(x/0) in
   let t6 = $goml_builtin_runtime$int32_to_string(t5) in
   let _wild2 = println__T_string(t6) in
   jump ret4()
@@ -24,9 +24,9 @@ fn inherent#closure_env_inc_0#closure_env_inc_0#apply(env3: closure_env_inc_0) -
     retv10
   } in
   let x/0 = closure_env_inc_0.x_0(env3) in
-  let t11 = ref_get(x/0) in
+  let t11 = $goml_builtin_runtime$ref_get(x/0) in
   let t12 = (t11 + 1) in
-  let _wild0 = ref_set(x/0, t12) in
-  let t13 = ref_get(x/0) in
+  let _wild0 = $goml_builtin_runtime$ref_set(x/0, t12) in
+  let t13 = $goml_builtin_runtime$ref_get(x/0) in
   jump ret9(t13)
 }
