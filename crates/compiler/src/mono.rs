@@ -823,7 +823,7 @@ impl Ctx {
             let Some(new_ty) = new_subst.get(param) else {
                 continue;
             };
-            if ty_contains_proper_subterm(new_ty, old_ty) {
+            if ty_contains_recursive_growth(new_ty, old_ty) {
                 return Some(format!(
                     "Infinite monomorphization detected for generic function {}: recursive specialization grows type parameter {} from {} to {}",
                     name,
@@ -836,7 +836,7 @@ impl Ctx {
 
         for (param, new_ty) in new_subst.iter() {
             for old_ty in active_subst.values() {
-                if ty_contains_proper_subterm(new_ty, old_ty) {
+                if ty_contains_recursive_growth(new_ty, old_ty) {
                     return Some(format!(
                         "Infinite monomorphization detected for generic function {}: recursive specialization grows type parameter {} from {} to {}",
                         name,
@@ -922,6 +922,24 @@ fn ty_contains_proper_subterm(ty: &Ty, needle: &Ty) -> bool {
                 || ret_ty.as_ref() == needle
                 || ty_contains_proper_subterm(ret_ty, needle)
         }
+        _ => false,
+    }
+}
+
+fn ty_contains_recursive_growth(ty: &Ty, needle: &Ty) -> bool {
+    ty_outer_constructor_matches(ty, needle) && ty_contains_proper_subterm(ty, needle)
+}
+
+fn ty_outer_constructor_matches(left: &Ty, right: &Ty) -> bool {
+    match (left, right) {
+        (Ty::TTuple { .. }, Ty::TTuple { .. })
+        | (Ty::TArray { .. }, Ty::TArray { .. })
+        | (Ty::TSlice { .. }, Ty::TSlice { .. })
+        | (Ty::TVec { .. }, Ty::TVec { .. })
+        | (Ty::TRef { .. }, Ty::TRef { .. })
+        | (Ty::THashMap { .. }, Ty::THashMap { .. })
+        | (Ty::TFunc { .. }, Ty::TFunc { .. }) => true,
+        (Ty::TApp { ty: left, .. }, Ty::TApp { ty: right, .. }) => left == right,
         _ => false,
     }
 }
@@ -1839,7 +1857,7 @@ impl<'a> TypeMono<'a> {
                 continue;
             }
             for (index, (old_ty, new_ty)) in active_args.iter().zip(args.iter()).enumerate() {
-                if !ty_contains_proper_subterm(new_ty, old_ty) {
+                if !ty_contains_recursive_growth(new_ty, old_ty) {
                     continue;
                 }
                 let param = self
