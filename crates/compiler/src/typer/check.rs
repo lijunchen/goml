@@ -1513,6 +1513,16 @@ impl Typer {
             let arg_tast = self.check_expr(genv, local_env, diagnostics, *arg, expected_ty);
             args_tast.push(arg_tast);
         }
+        if member == "get"
+            && let Some(receiver_arg) = args_tast.first()
+        {
+            validate_hashmap_get_option_for_map_ty(
+                genv,
+                diagnostics,
+                &receiver_arg.get_ty(),
+                self.expr_range(call_expr_id),
+            );
+        }
         let call_site_ty = tast::Ty::TFunc {
             params: args_tast.iter().map(|arg| arg.get_ty()).collect(),
             ret_ty: Box::new((*ret_ty).clone()),
@@ -3208,6 +3218,16 @@ impl Typer {
                             args: args.to_vec(),
                         },
                     );
+                    if name == "hashmap_get"
+                        && let Some(map_arg) = args_tast.first()
+                    {
+                        validate_hashmap_get_option_for_map_ty(
+                            genv,
+                            diagnostics,
+                            &map_arg.get_ty(),
+                            call_range,
+                        );
+                    }
                     tast::Expr::ECall {
                         func: Box::new(tast::Expr::EVar {
                             name: name.clone(),
@@ -3452,6 +3472,14 @@ impl Typer {
                                 .collect(),
                         },
                     );
+                    if method_name_str == "get" {
+                        validate_hashmap_get_option_for_map_ty(
+                            genv,
+                            diagnostics,
+                            &receiver_ty,
+                            self.expr_range(call_expr_id),
+                        );
+                    }
                     tast::Expr::ECall {
                         func: Box::new(tast::Expr::EInherentMethod {
                             receiver_ty: receiver_ty.clone(),
@@ -4245,10 +4273,18 @@ impl Typer {
                     elem.as_ref().clone(),
                 )
             }
-            tast::Ty::THashMap { key, value } => (
-                self.check_expr(genv, local_env, diagnostics, index, key.as_ref()),
-                option_ty("Option", value.as_ref().clone()),
-            ),
+            tast::Ty::THashMap { key, value } => {
+                validate_hashmap_get_option_ty(
+                    genv,
+                    diagnostics,
+                    value.as_ref(),
+                    self.expr_range(index_expr_id),
+                );
+                (
+                    self.check_expr(genv, local_env, diagnostics, index, key.as_ref()),
+                    option_ty("Option", value.as_ref().clone()),
+                )
+            }
             tast::Ty::TVar(_) => {
                 super::util::push_error_with_range(
                     diagnostics,
@@ -6373,6 +6409,67 @@ fn option_ty(name: &str, ok_ty: tast::Ty) -> tast::Ty {
             name: name.to_string(),
         }),
         args: vec![ok_ty],
+    }
+}
+
+fn validate_hashmap_get_option_for_map_ty(
+    genv: &PackageTypeEnv,
+    diagnostics: &mut Diagnostics,
+    map_ty: &tast::Ty,
+    range: Option<TextRange>,
+) {
+    if let tast::Ty::THashMap { value, .. } = map_ty {
+        validate_hashmap_get_option_ty(genv, diagnostics, value, range);
+    }
+}
+
+fn validate_hashmap_get_option_ty(
+    genv: &PackageTypeEnv,
+    diagnostics: &mut Diagnostics,
+    value_ty: &tast::Ty,
+    range: Option<TextRange>,
+) {
+    let (resolved, env) = super::util::resolve_type_name(genv, "Option");
+    let ident = tast::TastIdent::new(&resolved);
+    let Some(enum_def) = env.enums().get(&ident) else {
+        super::util::push_ice(
+            diagnostics,
+            "enum Option not found when checking HashMap::get",
+        );
+        return;
+    };
+
+    let valid = if enum_def.generics.len() == 1 {
+        let param = enum_def.generics[0].0.clone();
+        let mut empty_variants = 0usize;
+        let mut payload_variants = 0usize;
+        let mut matching_payload_variants = 0usize;
+        for (_, fields) in &enum_def.variants {
+            match fields.as_slice() {
+                [] => empty_variants += 1,
+                [field_ty] => {
+                    payload_variants += 1;
+                    let mut subst = HashMap::new();
+                    subst.insert(param.clone(), value_ty.clone());
+                    let field_ty = substitute_ty_params(field_ty, &subst);
+                    if same_or_unresolved_ty(&field_ty, value_ty) {
+                        matching_payload_variants += 1;
+                    }
+                }
+                _ => {}
+            }
+        }
+        empty_variants == 1 && payload_variants == 1 && matching_payload_variants == 1
+    } else {
+        false
+    };
+
+    if !valid {
+        super::util::push_error_with_range(
+            diagnostics,
+            "HashMap::get requires Option[T] to define exactly one empty variant and one payload variant containing T",
+            range,
+        );
     }
 }
 
