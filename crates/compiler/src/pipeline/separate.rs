@@ -332,7 +332,6 @@ fn external_package_import_alias(
         return None;
     }
     let display = path.display();
-    let last = path.last_ident()?.0.clone();
 
     for (_, unit) in interface_units.values() {
         let Some(root_import_path) = external_root_import_path(unit) else {
@@ -347,9 +346,13 @@ fn external_package_import_alias(
         if !display[root_import_path.len()..].starts_with("::") {
             continue;
         }
-        if exports_contain_package(&last, &unit.exports) {
-            return Some(last.clone());
+        let suffix = &display[root_import_path.len() + 2..];
+        if let Some(first) = suffix.split("::").next()
+            && exports_contain_package(first, &unit.exports)
+        {
+            return Some(first.to_string());
         }
+        return Some(unit.package.clone());
     }
 
     None
