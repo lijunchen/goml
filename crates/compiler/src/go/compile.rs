@@ -122,6 +122,22 @@ fn runtime_builtin_available_in_context(
     force_runtime_builtins || runtime_builtin_available(goenv, name)
 }
 
+fn runtime_call_name(name: &str) -> (&str, bool) {
+    match builtin_runtime_call_name(name) {
+        Some(raw) => (raw, true),
+        None => (name, false),
+    }
+}
+
+fn runtime_builtin_available_for_call(
+    goenv: &GlobalGoEnv,
+    name: &str,
+    marked_runtime: bool,
+    force_runtime_builtins: bool,
+) -> bool {
+    marked_runtime || runtime_builtin_available_in_context(goenv, name, force_runtime_builtins)
+}
+
 fn generated_instance_name_matches(name: &str, base: &str) -> bool {
     name == base
         || name
@@ -3503,292 +3519,307 @@ fn compile_call(
     let compiled_args = compile_call_args(goenv, &param_types, args);
     let func_ty = tast_ty_to_go_type(&func_tast_ty);
 
-    if let anf::ImmExpr::Var { id, .. } = func
-        && runtime_builtin_available(goenv, &id.0)
-        && id.0 == "missing"
-    {
-        let helper_name = runtime::missing_helper_fn_name(ty);
-        return goast::Expr::Call {
-            func: Box::new(goast::Expr::Var {
-                name: helper_name,
-                ty: goty::GoType::TFunc {
-                    params: vec![goty::GoType::TString],
-                    ret_ty: Box::new(tast_ty_to_go_type(ty)),
-                },
-            }),
-            args: compiled_args,
-            ty: tast_ty_to_go_type(ty),
-        };
-    }
-
-    if let anf::ImmExpr::Var { id, .. } = func
-        && runtime_builtin_available_in_context(goenv, &id.0, force_runtime_builtins)
-        && (id.0 == "array_get" || id.0 == "array_set")
-    {
-        let array_ty = imm_ty(&args[0]);
-        let helper = runtime::array_helper_fn_name(&id.0, &array_ty);
-        return goast::Expr::Call {
-            func: Box::new(goast::Expr::Var {
-                name: helper,
-                ty: func_ty,
-            }),
-            args: compiled_args,
-            ty: tast_ty_to_go_type(ty),
-        };
-    }
-
-    if let anf::ImmExpr::Var { id, .. } = func
-        && runtime_builtin_available_in_context(goenv, &id.0, force_runtime_builtins)
-        && (id.0 == "ref" || id.0 == "ref_get" || id.0 == "ref_set" || id.0 == "ptr_eq")
-    {
-        let (helper, helper_ty) = if id.0 == "ref" {
-            let tast::Ty::TRef { elem } = ty else {
-                panic!("ref return type must be reference, got {:?}", ty);
-            };
-            let elem_go_ty = tast_ty_to_go_type(elem);
-            let ref_go_ty = tast_ty_to_go_type(ty);
-            (
-                runtime::ref_helper_fn_name("ref", ty),
-                goty::GoType::TFunc {
-                    params: vec![elem_go_ty],
-                    ret_ty: Box::new(ref_go_ty),
-                },
-            )
-        } else if id.0 == "ptr_eq" {
-            let ref_ty = imm_ty(&args[0]);
-            let tast::Ty::TRef { .. } = &ref_ty else {
-                panic!("ptr_eq expects reference arguments, got {:?}", ref_ty);
-            };
-            let ref_go_ty = tast_ty_to_go_type(&ref_ty);
-            (
-                runtime::ref_helper_fn_name("ptr_eq", &ref_ty),
-                goty::GoType::TFunc {
-                    params: vec![ref_go_ty.clone(), ref_go_ty.clone()],
-                    ret_ty: Box::new(goty::GoType::TBool),
-                },
-            )
-        } else {
-            let ref_ty = imm_ty(&args[0]);
-            let tast::Ty::TRef { elem } = &ref_ty else {
-                panic!("{} expects reference argument, got {:?}", id.0, ref_ty);
-            };
-            let ref_go_ty = tast_ty_to_go_type(&ref_ty);
-            let elem_go_ty = tast_ty_to_go_type(elem);
-            let ret_ty = if id.0 == "ref_get" {
-                elem_go_ty.clone()
-            } else {
-                goty::GoType::TUnit
-            };
-            (
-                runtime::ref_helper_fn_name(&id.0, &ref_ty),
-                goty::GoType::TFunc {
-                    params: if id.0 == "ref_get" {
-                        vec![ref_go_ty.clone()]
-                    } else {
-                        vec![ref_go_ty.clone(), elem_go_ty.clone()]
-                    },
-                    ret_ty: Box::new(ret_ty),
-                },
-            )
-        };
-
-        return goast::Expr::Call {
-            func: Box::new(goast::Expr::Var {
-                name: helper,
-                ty: helper_ty,
-            }),
-            args: compiled_args,
-            ty: tast_ty_to_go_type(ty),
-        };
-    }
-
-    if let anf::ImmExpr::Var { id, .. } = func
-        && runtime_builtin_available_in_context(goenv, &id.0, force_runtime_builtins)
-        && (id.0 == "hashmap_new"
-            || id.0 == "hashmap_get"
-            || id.0 == "hashmap_set"
-            || id.0 == "hashmap_remove"
-            || id.0 == "hashmap_len"
-            || id.0 == "hashmap_contains")
-    {
-        let map_ty = if id.0 == "hashmap_new" {
-            ty.clone()
-        } else {
-            imm_ty(&args[0])
-        };
-        let tast::Ty::THashMap { key, value } = &map_ty else {
-            panic!("{} expects HashMap type, got {:?}", id.0, map_ty);
-        };
-
-        let map_go_ty = tast_ty_to_go_type(&map_ty);
-        let key_go_ty = tast_ty_to_go_type(key);
-        let value_go_ty = tast_ty_to_go_type(value);
-
-        let helper = runtime::hashmap_helper_fn_name(&id.0, &map_ty);
-        let helper_ty = match id.0.as_str() {
-            "hashmap_new" => goty::GoType::TFunc {
-                params: vec![],
-                ret_ty: Box::new(map_go_ty.clone()),
-            },
-            "hashmap_get" => goty::GoType::TFunc {
-                params: vec![map_go_ty.clone(), key_go_ty.clone()],
-                ret_ty: Box::new(tast_ty_to_go_type(ty)),
-            },
-            "hashmap_set" => goty::GoType::TFunc {
-                params: vec![map_go_ty.clone(), key_go_ty.clone(), value_go_ty.clone()],
-                ret_ty: Box::new(goty::GoType::TUnit),
-            },
-            "hashmap_remove" => goty::GoType::TFunc {
-                params: vec![map_go_ty.clone(), key_go_ty.clone()],
-                ret_ty: Box::new(goty::GoType::TUnit),
-            },
-            "hashmap_len" => goty::GoType::TFunc {
-                params: vec![map_go_ty.clone()],
-                ret_ty: Box::new(goty::GoType::TInt32),
-            },
-            "hashmap_contains" => goty::GoType::TFunc {
-                params: vec![map_go_ty.clone(), key_go_ty.clone()],
-                ret_ty: Box::new(goty::GoType::TBool),
-            },
-            _ => unreachable!(),
-        };
-
-        return goast::Expr::Call {
-            func: Box::new(goast::Expr::Var {
-                name: helper,
-                ty: helper_ty,
-            }),
-            args: compiled_args,
-            ty: tast_ty_to_go_type(ty),
-        };
-    }
-
-    if let anf::ImmExpr::Var { id, .. } = func
-        && runtime_builtin_available_in_context(goenv, &id.0, force_runtime_builtins)
-        && (id.0 == "slice" || id.0 == "slice_get" || id.0 == "slice_len" || id.0 == "slice_sub")
-    {
-        let arg0_ty = imm_ty(&args[0]);
-        return match id.0.as_str() {
-            "slice" | "slice_sub" => {
-                let mut args_iter = compiled_args.into_iter();
-                let array_arg = args_iter.next().unwrap();
-                let start_arg = args_iter.next().unwrap();
-                let end_arg = args_iter.next().unwrap();
-                goast::Expr::Slice {
-                    array: Box::new(array_arg),
-                    start: Box::new(start_arg),
-                    end: Box::new(end_arg),
-                    ty: tast_ty_to_go_type(ty),
-                }
-            }
-            "slice_get" => {
-                let mut args_iter = compiled_args.into_iter();
-                let slice_arg = args_iter.next().unwrap();
-                let index_arg = args_iter.next().unwrap();
-                goast::Expr::Index {
-                    array: Box::new(slice_arg),
-                    index: Box::new(index_arg),
-                    ty: tast_ty_to_go_type(ty),
-                }
-            }
-            "slice_len" => {
-                let mut args_iter = compiled_args.into_iter();
-                let slice_arg = args_iter.next().unwrap();
-                goast::Expr::Call {
-                    func: Box::new(goast::Expr::Var {
-                        name: "int32".to_string(),
-                        ty: goty::GoType::TFunc {
-                            params: vec![goty::GoType::TInt32],
-                            ret_ty: Box::new(goty::GoType::TInt32),
-                        },
-                    }),
-                    args: vec![goast::Expr::Call {
-                        func: Box::new(goast::Expr::Var {
-                            name: "len".to_string(),
-                            ty: goty::GoType::TFunc {
-                                params: vec![tast_ty_to_go_type(&arg0_ty)],
-                                ret_ty: Box::new(goty::GoType::TInt32),
-                            },
-                        }),
-                        args: vec![slice_arg],
-                        ty: goty::GoType::TInt32,
-                    }],
-                    ty: tast_ty_to_go_type(ty),
-                }
-            }
-            _ => unreachable!(),
-        };
-    }
-
-    if let anf::ImmExpr::Var { id, .. } = func
-        && runtime_builtin_available_in_context(goenv, &id.0, force_runtime_builtins)
-        && (id.0 == "vec_new"
-            || id.0 == "vec_push"
-            || id.0 == "vec_get"
-            || id.0 == "vec_set"
-            || id.0 == "vec_len")
-    {
-        return match id.0.as_str() {
-            "vec_new" => goast::Expr::Nil {
-                ty: tast_ty_to_go_type(ty),
-            },
-            "vec_push" => goast::Expr::Call {
+    if let anf::ImmExpr::Var { id, .. } = func {
+        let (name, marked_runtime) = runtime_call_name(&id.0);
+        if runtime_builtin_available_for_call(goenv, name, marked_runtime, force_runtime_builtins)
+            && name == "missing"
+        {
+            let helper_name = runtime::missing_helper_fn_name(ty);
+            return goast::Expr::Call {
                 func: Box::new(goast::Expr::Var {
-                    name: "append".to_string(),
+                    name: helper_name,
+                    ty: goty::GoType::TFunc {
+                        params: vec![goty::GoType::TString],
+                        ret_ty: Box::new(tast_ty_to_go_type(ty)),
+                    },
+                }),
+                args: compiled_args,
+                ty: tast_ty_to_go_type(ty),
+            };
+        }
+    }
+
+    if let anf::ImmExpr::Var { id, .. } = func {
+        let (name, marked_runtime) = runtime_call_name(&id.0);
+        if runtime_builtin_available_for_call(goenv, name, marked_runtime, force_runtime_builtins)
+            && (name == "array_get" || name == "array_set")
+        {
+            let array_ty = imm_ty(&args[0]);
+            let helper = runtime::array_helper_fn_name(name, &array_ty);
+            return goast::Expr::Call {
+                func: Box::new(goast::Expr::Var {
+                    name: helper,
                     ty: func_ty,
                 }),
                 args: compiled_args,
                 ty: tast_ty_to_go_type(ty),
-            },
-            "vec_get" => {
-                let mut args_iter = compiled_args.into_iter();
-                let v_arg = args_iter.next().unwrap();
-                let index_arg = args_iter.next().unwrap();
-                goast::Expr::Index {
-                    array: Box::new(v_arg),
-                    index: Box::new(index_arg),
-                    ty: tast_ty_to_go_type(ty),
+            };
+        }
+    }
+
+    if let anf::ImmExpr::Var { id, .. } = func {
+        let (name, marked_runtime) = runtime_call_name(&id.0);
+        if runtime_builtin_available_for_call(goenv, name, marked_runtime, force_runtime_builtins)
+            && (name == "ref" || name == "ref_get" || name == "ref_set" || name == "ptr_eq")
+        {
+            let (helper, helper_ty) = if name == "ref" {
+                let tast::Ty::TRef { elem } = ty else {
+                    panic!("ref return type must be reference, got {:?}", ty);
+                };
+                let elem_go_ty = tast_ty_to_go_type(elem);
+                let ref_go_ty = tast_ty_to_go_type(ty);
+                (
+                    runtime::ref_helper_fn_name("ref", ty),
+                    goty::GoType::TFunc {
+                        params: vec![elem_go_ty],
+                        ret_ty: Box::new(ref_go_ty),
+                    },
+                )
+            } else if name == "ptr_eq" {
+                let ref_ty = imm_ty(&args[0]);
+                let tast::Ty::TRef { .. } = &ref_ty else {
+                    panic!("ptr_eq expects reference arguments, got {:?}", ref_ty);
+                };
+                let ref_go_ty = tast_ty_to_go_type(&ref_ty);
+                (
+                    runtime::ref_helper_fn_name("ptr_eq", &ref_ty),
+                    goty::GoType::TFunc {
+                        params: vec![ref_go_ty.clone(), ref_go_ty.clone()],
+                        ret_ty: Box::new(goty::GoType::TBool),
+                    },
+                )
+            } else {
+                let ref_ty = imm_ty(&args[0]);
+                let tast::Ty::TRef { elem } = &ref_ty else {
+                    panic!("{} expects reference argument, got {:?}", name, ref_ty);
+                };
+                let ref_go_ty = tast_ty_to_go_type(&ref_ty);
+                let elem_go_ty = tast_ty_to_go_type(elem);
+                let ret_ty = if name == "ref_get" {
+                    elem_go_ty.clone()
+                } else {
+                    goty::GoType::TUnit
+                };
+                (
+                    runtime::ref_helper_fn_name(name, &ref_ty),
+                    goty::GoType::TFunc {
+                        params: if name == "ref_get" {
+                            vec![ref_go_ty.clone()]
+                        } else {
+                            vec![ref_go_ty.clone(), elem_go_ty.clone()]
+                        },
+                        ret_ty: Box::new(ret_ty),
+                    },
+                )
+            };
+
+            return goast::Expr::Call {
+                func: Box::new(goast::Expr::Var {
+                    name: helper,
+                    ty: helper_ty,
+                }),
+                args: compiled_args,
+                ty: tast_ty_to_go_type(ty),
+            };
+        }
+    }
+
+    if let anf::ImmExpr::Var { id, .. } = func {
+        let (name, marked_runtime) = runtime_call_name(&id.0);
+        if runtime_builtin_available_for_call(goenv, name, marked_runtime, force_runtime_builtins)
+            && (name == "hashmap_new"
+                || name == "hashmap_get"
+                || name == "hashmap_set"
+                || name == "hashmap_remove"
+                || name == "hashmap_len"
+                || name == "hashmap_contains")
+        {
+            let map_ty = if name == "hashmap_new" {
+                ty.clone()
+            } else {
+                imm_ty(&args[0])
+            };
+            let tast::Ty::THashMap { key, value } = &map_ty else {
+                panic!("{} expects HashMap type, got {:?}", name, map_ty);
+            };
+
+            let map_go_ty = tast_ty_to_go_type(&map_ty);
+            let key_go_ty = tast_ty_to_go_type(key);
+            let value_go_ty = tast_ty_to_go_type(value);
+
+            let helper = runtime::hashmap_helper_fn_name(name, &map_ty);
+            let helper_ty = match name {
+                "hashmap_new" => goty::GoType::TFunc {
+                    params: vec![],
+                    ret_ty: Box::new(map_go_ty.clone()),
+                },
+                "hashmap_get" => goty::GoType::TFunc {
+                    params: vec![map_go_ty.clone(), key_go_ty.clone()],
+                    ret_ty: Box::new(tast_ty_to_go_type(ty)),
+                },
+                "hashmap_set" => goty::GoType::TFunc {
+                    params: vec![map_go_ty.clone(), key_go_ty.clone(), value_go_ty.clone()],
+                    ret_ty: Box::new(goty::GoType::TUnit),
+                },
+                "hashmap_remove" => goty::GoType::TFunc {
+                    params: vec![map_go_ty.clone(), key_go_ty.clone()],
+                    ret_ty: Box::new(goty::GoType::TUnit),
+                },
+                "hashmap_len" => goty::GoType::TFunc {
+                    params: vec![map_go_ty.clone()],
+                    ret_ty: Box::new(goty::GoType::TInt32),
+                },
+                "hashmap_contains" => goty::GoType::TFunc {
+                    params: vec![map_go_ty.clone(), key_go_ty.clone()],
+                    ret_ty: Box::new(goty::GoType::TBool),
+                },
+                _ => unreachable!(),
+            };
+
+            return goast::Expr::Call {
+                func: Box::new(goast::Expr::Var {
+                    name: helper,
+                    ty: helper_ty,
+                }),
+                args: compiled_args,
+                ty: tast_ty_to_go_type(ty),
+            };
+        }
+    }
+
+    if let anf::ImmExpr::Var { id, .. } = func {
+        let (name, marked_runtime) = runtime_call_name(&id.0);
+        if runtime_builtin_available_for_call(goenv, name, marked_runtime, force_runtime_builtins)
+            && (name == "slice"
+                || name == "slice_get"
+                || name == "slice_len"
+                || name == "slice_sub")
+        {
+            let arg0_ty = imm_ty(&args[0]);
+            return match name {
+                "slice" | "slice_sub" => {
+                    let mut args_iter = compiled_args.into_iter();
+                    let array_arg = args_iter.next().unwrap();
+                    let start_arg = args_iter.next().unwrap();
+                    let end_arg = args_iter.next().unwrap();
+                    goast::Expr::Slice {
+                        array: Box::new(array_arg),
+                        start: Box::new(start_arg),
+                        end: Box::new(end_arg),
+                        ty: tast_ty_to_go_type(ty),
+                    }
                 }
-            }
-            "vec_set" => {
-                let vec_ty = imm_ty(&args[0]);
-                goast::Expr::Call {
+                "slice_get" => {
+                    let mut args_iter = compiled_args.into_iter();
+                    let slice_arg = args_iter.next().unwrap();
+                    let index_arg = args_iter.next().unwrap();
+                    goast::Expr::Index {
+                        array: Box::new(slice_arg),
+                        index: Box::new(index_arg),
+                        ty: tast_ty_to_go_type(ty),
+                    }
+                }
+                "slice_len" => {
+                    let mut args_iter = compiled_args.into_iter();
+                    let slice_arg = args_iter.next().unwrap();
+                    goast::Expr::Call {
+                        func: Box::new(goast::Expr::Var {
+                            name: "int32".to_string(),
+                            ty: goty::GoType::TFunc {
+                                params: vec![goty::GoType::TInt32],
+                                ret_ty: Box::new(goty::GoType::TInt32),
+                            },
+                        }),
+                        args: vec![goast::Expr::Call {
+                            func: Box::new(goast::Expr::Var {
+                                name: "len".to_string(),
+                                ty: goty::GoType::TFunc {
+                                    params: vec![tast_ty_to_go_type(&arg0_ty)],
+                                    ret_ty: Box::new(goty::GoType::TInt32),
+                                },
+                            }),
+                            args: vec![slice_arg],
+                            ty: goty::GoType::TInt32,
+                        }],
+                        ty: tast_ty_to_go_type(ty),
+                    }
+                }
+                _ => unreachable!(),
+            };
+        }
+    }
+
+    if let anf::ImmExpr::Var { id, .. } = func {
+        let (name, marked_runtime) = runtime_call_name(&id.0);
+        if runtime_builtin_available_for_call(goenv, name, marked_runtime, force_runtime_builtins)
+            && (name == "vec_new"
+                || name == "vec_push"
+                || name == "vec_get"
+                || name == "vec_set"
+                || name == "vec_len")
+        {
+            return match name {
+                "vec_new" => goast::Expr::Nil {
+                    ty: tast_ty_to_go_type(ty),
+                },
+                "vec_push" => goast::Expr::Call {
                     func: Box::new(goast::Expr::Var {
-                        name: runtime::vec_helper_fn_name("vec_set", &vec_ty),
+                        name: "append".to_string(),
                         ty: func_ty,
                     }),
                     args: compiled_args,
                     ty: tast_ty_to_go_type(ty),
+                },
+                "vec_get" => {
+                    let mut args_iter = compiled_args.into_iter();
+                    let v_arg = args_iter.next().unwrap();
+                    let index_arg = args_iter.next().unwrap();
+                    goast::Expr::Index {
+                        array: Box::new(v_arg),
+                        index: Box::new(index_arg),
+                        ty: tast_ty_to_go_type(ty),
+                    }
                 }
-            }
-            "vec_len" => {
-                let arg0_ty = imm_ty(args.first().unwrap());
-                let mut args_iter = compiled_args.into_iter();
-                let v_arg = args_iter.next().unwrap();
-                goast::Expr::Call {
-                    func: Box::new(goast::Expr::Var {
-                        name: "int32".to_string(),
-                        ty: goty::GoType::TFunc {
-                            params: vec![goty::GoType::TInt32],
-                            ret_ty: Box::new(goty::GoType::TInt32),
-                        },
-                    }),
-                    args: vec![goast::Expr::Call {
+                "vec_set" => {
+                    let vec_ty = imm_ty(&args[0]);
+                    goast::Expr::Call {
                         func: Box::new(goast::Expr::Var {
-                            name: "len".to_string(),
+                            name: runtime::vec_helper_fn_name("vec_set", &vec_ty),
+                            ty: func_ty,
+                        }),
+                        args: compiled_args,
+                        ty: tast_ty_to_go_type(ty),
+                    }
+                }
+                "vec_len" => {
+                    let arg0_ty = imm_ty(args.first().unwrap());
+                    let mut args_iter = compiled_args.into_iter();
+                    let v_arg = args_iter.next().unwrap();
+                    goast::Expr::Call {
+                        func: Box::new(goast::Expr::Var {
+                            name: "int32".to_string(),
                             ty: goty::GoType::TFunc {
-                                params: vec![tast_ty_to_go_type(&arg0_ty)],
+                                params: vec![goty::GoType::TInt32],
                                 ret_ty: Box::new(goty::GoType::TInt32),
                             },
                         }),
-                        args: vec![v_arg],
-                        ty: goty::GoType::TInt32,
-                    }],
-                    ty: tast_ty_to_go_type(ty),
+                        args: vec![goast::Expr::Call {
+                            func: Box::new(goast::Expr::Var {
+                                name: "len".to_string(),
+                                ty: goty::GoType::TFunc {
+                                    params: vec![tast_ty_to_go_type(&arg0_ty)],
+                                    ret_ty: Box::new(goty::GoType::TInt32),
+                                },
+                            }),
+                            args: vec![v_arg],
+                            ty: goty::GoType::TInt32,
+                        }],
+                        ty: tast_ty_to_go_type(ty),
+                    }
                 }
-            }
-            _ => unreachable!(),
-        };
+                _ => unreachable!(),
+            };
+        }
     }
 
     if let anf::ImmExpr::Var { id, .. } = func

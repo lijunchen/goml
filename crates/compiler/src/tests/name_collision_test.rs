@@ -147,10 +147,7 @@ fn builtin_runtime_exact_shadow_user_symbol_executes() {
 fn index_builtin_shadow_user_symbol_executes() {
     let output = run_crasher("index_builtin_shadow_user_symbol");
 
-    assert_eq!(
-        output,
-        "91\n5\n77\n90\n9\n71\n9\n1\n99\n61\n9\n0\n55\n42\n"
-    );
+    assert_eq!(output, "91\n5\n77\n90\n9\n71\n9\n1\n99\n61\n9\n0\n55\n42\n");
 }
 
 #[test]

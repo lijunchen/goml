@@ -630,7 +630,7 @@ fn core_var(name: impl Into<String>, ty: &Ty) -> core::Expr {
 
 fn builtin_func(name: &str, params: Vec<Ty>, ret_ty: Ty) -> core::Expr {
     core::Expr::EVar {
-        name: name.to_string(),
+        name: builtin_runtime_call(name),
         ty: Ty::TFunc {
             params,
             ret_ty: Box::new(ret_ty),
