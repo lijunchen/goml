@@ -15,6 +15,7 @@ use compiler::external::ExternalDependencyArtifacts;
 use compiler::package_names::ENTRY_FUNCTION;
 use compiler::pipeline::{
     pipeline::Compilation, pipeline::CompilationError, pipeline::compile_single_file,
+    with_compiler_stack,
 };
 use compiler::registry::{
     ModuleCoord, ModuleRequirement, Registry, cached_registry_dir, default_registry_url,
@@ -705,7 +706,8 @@ fn execute_run_single(options: RunOptions) -> anyhow::Result<()> {
         print_dumps(&compilation, &options.dumps);
     }
 
-    let go_source = compilation.go.to_pretty(&compilation.goenv, PRETTY_WIDTH);
+    let go_source =
+        with_compiler_stack(|| compilation.go.to_pretty(&compilation.goenv, PRETTY_WIDTH));
     let output = execute_go_source(&go_source)?;
     print!("{output}");
 
@@ -722,7 +724,7 @@ fn execute_compiler_check(options: PackageCommandOptions) -> anyhow::Result<()> 
         .map_err(|err| anyhow!("check failed: {:?}", err))?;
 
     let out = options.output.with_extension("interface");
-    let json = serde_json::to_string_pretty(&unit)?;
+    let json = with_compiler_stack(|| serde_json::to_string_pretty(&unit))?;
     if let Some(parent) = out.parent() {
         fs::create_dir_all(parent)
             .with_context(|| format!("failed to create directory {}", parent.display()))?;
@@ -743,7 +745,7 @@ fn execute_compiler_build(options: PackageCommandOptions) -> anyhow::Result<()> 
     let interface_path = options.output.with_extension("interface");
     let core_path = options.output.with_extension("core");
 
-    let interface_json = serde_json::to_string_pretty(&unit.interface)?;
+    let interface_json = with_compiler_stack(|| serde_json::to_string_pretty(&unit.interface))?;
     if let Some(parent) = interface_path.parent() {
         fs::create_dir_all(parent)
             .with_context(|| format!("failed to create directory {}", parent.display()))?;
@@ -751,7 +753,7 @@ fn execute_compiler_build(options: PackageCommandOptions) -> anyhow::Result<()> 
     fs::write(&interface_path, interface_json)
         .with_context(|| format!("failed to write {}", interface_path.display()))?;
 
-    let core_json = serde_json::to_string_pretty(&unit)?;
+    let core_json = with_compiler_stack(|| serde_json::to_string_pretty(&unit))?;
     if let Some(parent) = core_path.parent() {
         fs::create_dir_all(parent)
             .with_context(|| format!("failed to create directory {}", parent.display()))?;
@@ -772,7 +774,7 @@ fn execute_compiler_link(options: LinkOptions) -> anyhow::Result<()> {
 
     let linked = compiler::pipeline::separate::link_cores(units)
         .map_err(|err| anyhow!("link failed: {:?}", err))?;
-    let go_source = linked.go.to_pretty(&linked.goenv, PRETTY_WIDTH);
+    let go_source = with_compiler_stack(|| linked.go.to_pretty(&linked.goenv, PRETTY_WIDTH));
     if let Some(parent) = options.output.parent() {
         fs::create_dir_all(parent)
             .with_context(|| format!("failed to create directory {}", parent.display()))?;
@@ -980,7 +982,7 @@ fn materialize_external_artifacts(
             .ok_or_else(|| anyhow!("missing external interface output for dependency {}", root))?;
         write_json(
             interface_path,
-            serde_json::to_string_pretty(&module.interface)?,
+            with_compiler_stack(|| serde_json::to_string_pretty(&module.interface))?,
         )?;
 
         if include_core {
@@ -988,7 +990,10 @@ fn materialize_external_artifacts(
                 .core_outputs
                 .get(root)
                 .ok_or_else(|| anyhow!("missing external core output for dependency {}", root))?;
-            write_json(core_path, serde_json::to_string_pretty(&module.core)?)?;
+            write_json(
+                core_path,
+                with_compiler_stack(|| serde_json::to_string_pretty(&module.core))?,
+            )?;
         }
     }
     Ok(())
@@ -1269,7 +1274,7 @@ fn print_dumps(compilation: &Compilation, dumps: &[DumpStage]) {
 }
 
 fn print_dump(compilation: &Compilation, stage: DumpStage) {
-    let content = match stage {
+    let content = with_compiler_stack(|| match stage {
         DumpStage::Ast => compilation.ast.to_pretty(PRETTY_WIDTH),
         DumpStage::Hir => {
             let ctx = compiler::pprint::hir_pprint::HirPrintCtx::new(&compilation.hir_table);
@@ -1285,7 +1290,7 @@ fn print_dump(compilation: &Compilation, stage: DumpStage) {
             .to_pretty(&compilation.liftenv, PRETTY_WIDTH),
         DumpStage::Anf => compilation.anf.to_pretty(&compilation.anfenv, PRETTY_WIDTH),
         DumpStage::Go => compilation.go.to_pretty(&compilation.goenv, PRETTY_WIDTH),
-    };
+    });
 
     println!("== {} ==", stage.label());
     println!("{content}");

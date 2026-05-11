@@ -8,7 +8,7 @@ pub mod packages;
 pub mod pipeline;
 pub mod separate;
 
-pub(crate) fn with_compiler_stack<T>(f: impl FnOnce() -> T) -> T {
+pub fn with_compiler_stack<T>(f: impl FnOnce() -> T) -> T {
     #[cfg(not(target_arch = "wasm32"))]
     {
         stacker::grow(64 * 1024 * 1024, f)
