@@ -74,6 +74,29 @@ fn deep_left_nested_tuple_type(depth: usize) -> String {
     ty
 }
 
+fn wide_struct_pattern_program(field_count: usize) -> String {
+    let fields = (0..field_count)
+        .map(|idx| format!("f{}: int32", idx))
+        .collect::<Vec<_>>()
+        .join(", ");
+    let values = (0..field_count)
+        .map(|idx| format!("f{}: {}i32", idx, idx))
+        .collect::<Vec<_>>()
+        .join(", ");
+    let pattern_fields = (0..field_count)
+        .map(|idx| format!("f{}: x{}", idx, idx))
+        .collect::<Vec<_>>()
+        .join(", ");
+    let sum = (0..200)
+        .map(|idx| format!("x{}", idx))
+        .collect::<Vec<_>>()
+        .join(" + ");
+
+    format!(
+        "struct S {{ {fields} }}\nfn main() -> unit {{ let s = S {{ {values} }}; let total = match s {{ S {{ {pattern_fields} }} => {sum} }}; println(total.to_string()) }}\n"
+    )
+}
+
 fn go_available() -> bool {
     static AVAILABLE: OnceLock<bool> = OnceLock::new();
     *AVAILABLE.get_or_init(|| {
@@ -541,6 +564,34 @@ fn compiler_build_handles_deep_tuple_type() -> anyhow::Result<()> {
         "stdout: {stdout}\nstderr: {stderr}"
     );
     expect![""].assert_eq(&stdout);
+
+    Ok(())
+}
+
+#[test]
+fn compiler_build_handles_wide_struct_pattern() -> anyhow::Result<()> {
+    let program = wide_struct_pattern_program(1000);
+    let (_input_dir, input) = write_program(&program)?;
+    let output_dir = tempfile::tempdir()?;
+    let output_path = output_dir.path().join("main");
+
+    let output = Command::new(goml_bin())
+        .arg("compiler")
+        .arg("build")
+        .arg("--package")
+        .arg("main")
+        .arg("--input")
+        .arg(&input)
+        .arg("--output")
+        .arg(&output_path)
+        .output()?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(
+        output.status.success(),
+        "stdout: {stdout}\nstderr: {stderr}"
+    );
 
     Ok(())
 }
