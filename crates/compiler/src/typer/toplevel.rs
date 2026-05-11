@@ -175,6 +175,62 @@ fn validate_top_level_type_parameter_names(
     }
 }
 
+fn validate_decl_ty(
+    env: &PackageTypeEnv,
+    diagnostics: &mut Diagnostics,
+    ty: &tast::Ty,
+    range: Option<text_size::TextRange>,
+    tparams: &HashSet<String>,
+) {
+    validate_ty(env, diagnostics, ty, range, tparams);
+    validate_no_self_ty(diagnostics, ty, range);
+}
+
+fn validate_no_self_ty(
+    diagnostics: &mut Diagnostics,
+    ty: &tast::Ty,
+    range: Option<text_size::TextRange>,
+) {
+    match ty {
+        tast::Ty::TStruct { name } if name == "Self" => {
+            diagnostics.push(
+                Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    "Self type is only valid in impl methods".to_string(),
+                )
+                .with_range(range),
+            );
+        }
+        tast::Ty::TTuple { typs } => {
+            for ty in typs {
+                validate_no_self_ty(diagnostics, ty, range);
+            }
+        }
+        tast::Ty::TApp { ty, args } => {
+            validate_no_self_ty(diagnostics, ty, range);
+            for arg in args {
+                validate_no_self_ty(diagnostics, arg, range);
+            }
+        }
+        tast::Ty::TArray { elem, .. }
+        | tast::Ty::TSlice { elem }
+        | tast::Ty::TVec { elem }
+        | tast::Ty::TRef { elem } => validate_no_self_ty(diagnostics, elem, range),
+        tast::Ty::THashMap { key, value } => {
+            validate_no_self_ty(diagnostics, key, range);
+            validate_no_self_ty(diagnostics, value, range);
+        }
+        tast::Ty::TFunc { params, ret_ty } => {
+            for param in params {
+                validate_no_self_ty(diagnostics, param, range);
+            }
+            validate_no_self_ty(diagnostics, ret_ty, range);
+        }
+        _ => {}
+    }
+}
+
 fn define_enum(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, enum_def: &hir::EnumDef) {
     let params_env: Vec<tast::TastIdent> = enum_def
         .generics
@@ -191,7 +247,7 @@ fn define_enum(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, enum_def
                 .iter()
                 .map(|ast_ty| {
                     let ty = tast::Ty::from_hir(env, ast_ty, &params_env);
-                    validate_ty(
+                    validate_decl_ty(
                         env,
                         diagnostics,
                         &ty,
@@ -231,7 +287,7 @@ fn define_struct(
         .iter()
         .map(|(fname, ast_ty)| {
             let ty = tast::Ty::from_hir(env, ast_ty, &params_env);
-            validate_ty(
+            validate_decl_ty(
                 env,
                 diagnostics,
                 &ty,
@@ -388,7 +444,7 @@ fn define_trait_impl(
         .map(|g| tast::TastIdent(g.to_ident_name()))
         .collect();
     let for_ty = tast::Ty::from_hir(env, &impl_block.for_type, &impl_generics_tast);
-    validate_ty(
+    validate_decl_ty(
         env,
         diagnostics,
         &for_ty,
@@ -677,7 +733,7 @@ fn define_inherent_impl(
         .map(|g| tast::TastIdent(g.to_ident_name()))
         .collect();
     let for_ty = tast::Ty::from_hir(env, &impl_block.for_type, &impl_generics_tast);
-    validate_ty(
+    validate_decl_ty(
         env,
         diagnostics,
         &for_ty,
@@ -837,7 +893,7 @@ fn define_function(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, func
         .iter()
         .map(|(_, hir_ty)| {
             let ty = tast::Ty::from_hir(env, hir_ty, &generics_tast);
-            validate_ty(
+            validate_decl_ty(
                 env,
                 diagnostics,
                 &ty,
@@ -850,7 +906,7 @@ fn define_function(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, func
     let ret = match &func.ret_ty {
         Some(hir_ty) => {
             let ret = tast::Ty::from_hir(env, hir_ty, &generics_tast);
-            validate_ty(
+            validate_decl_ty(
                 env,
                 diagnostics,
                 &ret,
@@ -894,7 +950,7 @@ fn define_extern_builtin(
         .iter()
         .map(|(_, hir_ty)| {
             let ty = tast::Ty::from_hir(env, hir_ty, &tparams);
-            validate_ty(
+            validate_decl_ty(
                 env,
                 diagnostics,
                 &ty,
@@ -907,7 +963,7 @@ fn define_extern_builtin(
     let ret_ty = match &ext.ret_ty {
         Some(hir_ty) => {
             let ty = tast::Ty::from_hir(env, hir_ty, &tparams);
-            validate_ty(
+            validate_decl_ty(
                 env,
                 diagnostics,
                 &ty,
