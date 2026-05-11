@@ -99,6 +99,29 @@ fn validate_nominal_type_names(
     }
 }
 
+fn validate_top_level_function_names(
+    diagnostics: &mut Diagnostics,
+    hir: &hir::PackageHir,
+    hir_table: &hir::HirTable,
+) {
+    let mut seen = HashSet::new();
+    for item in hir.toplevels.iter() {
+        let name = match hir_table.def(*item) {
+            hir::Def::Fn(func) => func.name.clone(),
+            hir::Def::ExternBuiltin(ext) => ext.name.to_ident_name(),
+            _ => continue,
+        };
+
+        if !seen.insert(name.clone()) {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!("function {} is defined multiple times", name),
+            ));
+        }
+    }
+}
+
 fn define_enum(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, enum_def: &hir::EnumDef) {
     let params_env: Vec<tast::TastIdent> = enum_def
         .generics
@@ -938,6 +961,7 @@ pub fn collect_typedefs(
     hir_table: &hir::HirTable,
 ) {
     validate_nominal_type_names(diagnostics, hir, hir_table);
+    validate_top_level_function_names(diagnostics, hir, hir_table);
     predeclare_types(env.current_mut(), hir, hir_table);
 
     for item in hir.toplevels.iter() {
