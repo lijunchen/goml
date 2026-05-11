@@ -151,6 +151,13 @@ fn index_builtin_shadow_user_symbol_executes() {
 }
 
 #[test]
+fn hidden_ref_shadow_user_symbol_executes() {
+    let output = run_crasher("hidden_ref_shadow_user_symbol");
+
+    assert_eq!(output, "1\n1\n");
+}
+
+#[test]
 fn hashmap_lookup_helper_function_name_collision_executes() {
     let output = run_crasher("hashmap_lookup_helper_function_name_collision_user_symbol");
 
