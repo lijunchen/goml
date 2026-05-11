@@ -79,3 +79,26 @@ fn duplicate_function_parameter_name_is_rejected_before_anf() {
         other => panic!("expected typer error, got {other:?}"),
     }
 }
+
+#[test]
+fn duplicate_function_type_parameter_name_is_rejected() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/duplicate_function_type_parameter_name/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let err = compile_single_file(&path, &src).expect_err("expected typer error");
+
+    match err {
+        CompilationError::Typer { diagnostics } => {
+            let diagnostics = format_typer_diagnostics(&diagnostics, &src);
+            assert!(
+                diagnostics
+                    .iter()
+                    .any(|line| line.contains("type parameter T is defined multiple times")),
+                "{diagnostics:?}"
+            );
+        }
+        other => panic!("expected typer error, got {other:?}"),
+    }
+}
