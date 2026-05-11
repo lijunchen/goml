@@ -122,6 +122,59 @@ fn validate_top_level_function_names(
     }
 }
 
+fn validate_type_parameter_names<'a>(
+    diagnostics: &mut Diagnostics,
+    generics: impl IntoIterator<Item = &'a hir::HirIdent>,
+) {
+    let mut seen = HashSet::new();
+    for param in generics {
+        let name = param.to_ident_name();
+        if !seen.insert(name.clone()) {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!("type parameter {} is defined multiple times", name),
+            ));
+        }
+    }
+}
+
+fn validate_top_level_type_parameter_names(
+    diagnostics: &mut Diagnostics,
+    hir: &hir::PackageHir,
+    hir_table: &hir::HirTable,
+) {
+    for item in hir.toplevels.iter() {
+        match hir_table.def(*item) {
+            hir::Def::EnumDef(enum_def) => {
+                validate_type_parameter_names(diagnostics, enum_def.generics.iter());
+            }
+            hir::Def::StructDef(struct_def) => {
+                validate_type_parameter_names(diagnostics, struct_def.generics.iter());
+            }
+            hir::Def::ImplBlock(impl_block) => {
+                validate_type_parameter_names(diagnostics, impl_block.generics.iter());
+                for method in impl_block.methods.iter() {
+                    let hir::Def::Fn(func) = hir_table.def(*method) else {
+                        continue;
+                    };
+                    validate_type_parameter_names(
+                        diagnostics,
+                        impl_block.generics.iter().chain(func.generics.iter()),
+                    );
+                }
+            }
+            hir::Def::Fn(func) => {
+                validate_type_parameter_names(diagnostics, func.generics.iter());
+            }
+            hir::Def::ExternBuiltin(ext) => {
+                validate_type_parameter_names(diagnostics, ext.generics.iter());
+            }
+            hir::Def::TraitDef(..) => {}
+        }
+    }
+}
+
 fn define_enum(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, enum_def: &hir::EnumDef) {
     let params_env: Vec<tast::TastIdent> = enum_def
         .generics
@@ -962,6 +1015,7 @@ pub fn collect_typedefs(
 ) {
     validate_nominal_type_names(diagnostics, hir, hir_table);
     validate_top_level_function_names(diagnostics, hir, hir_table);
+    validate_top_level_type_parameter_names(diagnostics, hir, hir_table);
     predeclare_types(env.current_mut(), hir, hir_table);
 
     for item in hir.toplevels.iter() {
