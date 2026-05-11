@@ -597,6 +597,34 @@ fn compiler_build_handles_wide_struct_pattern() -> anyhow::Result<()> {
 }
 
 #[test]
+fn compiler_build_handles_very_wide_struct_pattern() -> anyhow::Result<()> {
+    let program = wide_struct_pattern_program(2600);
+    let (_input_dir, input) = write_program(&program)?;
+    let output_dir = tempfile::tempdir()?;
+    let output_path = output_dir.path().join("main");
+
+    let output = Command::new(goml_bin())
+        .arg("compiler")
+        .arg("build")
+        .arg("--package")
+        .arg("main")
+        .arg("--input")
+        .arg(&input)
+        .arg("--output")
+        .arg(&output_path)
+        .output()?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(
+        output.status.success(),
+        "stdout: {stdout}\nstderr: {stderr}"
+    );
+
+    Ok(())
+}
+
+#[test]
 fn update_clones_local_registry_into_cache() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     let registry = create_local_registry(dir.path())?;
