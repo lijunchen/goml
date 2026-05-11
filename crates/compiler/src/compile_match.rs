@@ -245,6 +245,13 @@ fn emissing(ty: &Ty) -> core::Expr {
     }
 }
 
+fn ebool(value: bool) -> core::Expr {
+    core::Expr::EPrim {
+        value: Prim::Bool { value },
+        ty: Ty::TBool,
+    }
+}
+
 fn exit_expr_as(expr: core::Expr, ty: &Ty, gensym: &Gensym) -> core::Expr {
     let expr_ty = expr.get_ty();
     core::Expr::EBlock {
@@ -3472,16 +3479,39 @@ fn compile_expr(
             resolution,
         } => {
             let lhs_expr = compile_expr(lhs, genv, gensym, diagnostics);
-            let rhs_expr = compile_expr(rhs, genv, gensym, diagnostics);
 
             match resolution {
-                tast::BinaryResolution::Builtin => core::Expr::EBinary {
-                    op: *op,
-                    lhs: Box::new(lhs_expr),
-                    rhs: Box::new(rhs_expr),
-                    ty: ty.clone(),
+                tast::BinaryResolution::Builtin => match op {
+                    common_defs::BinaryOp::And => {
+                        let rhs_expr = compile_expr(rhs, genv, gensym, diagnostics);
+                        core::Expr::EIf {
+                            cond: Box::new(lhs_expr),
+                            then_branch: Box::new(rhs_expr),
+                            else_branch: Box::new(ebool(false)),
+                            ty: ty.clone(),
+                        }
+                    }
+                    common_defs::BinaryOp::Or => {
+                        let rhs_expr = compile_expr(rhs, genv, gensym, diagnostics);
+                        core::Expr::EIf {
+                            cond: Box::new(lhs_expr),
+                            then_branch: Box::new(ebool(true)),
+                            else_branch: Box::new(rhs_expr),
+                            ty: ty.clone(),
+                        }
+                    }
+                    _ => {
+                        let rhs_expr = compile_expr(rhs, genv, gensym, diagnostics);
+                        core::Expr::EBinary {
+                            op: *op,
+                            lhs: Box::new(lhs_expr),
+                            rhs: Box::new(rhs_expr),
+                            ty: ty.clone(),
+                        }
+                    }
                 },
                 tast::BinaryResolution::Overloaded { trait_name } => {
+                    let rhs_expr = compile_expr(rhs, genv, gensym, diagnostics);
                     let method = op.method_name();
                     let self_ty = lhs_expr.get_ty();
                     let func_name = trait_impl_fn_name(trait_name, &self_ty, method);
