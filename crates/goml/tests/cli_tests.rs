@@ -577,6 +577,49 @@ fn compiler_build_handles_deep_tuple_type() -> anyhow::Result<()> {
 }
 
 #[test]
+fn compiler_build_rejects_reserved_array_wildcard_length() -> anyhow::Result<()> {
+    let program = r#"
+fn take(x: [int32; 18446744073709551615]) -> int32 {
+    x[0]
+}
+
+fn main() -> unit {
+    let a: [int32; 18446744073709551615] = [7i32, 8i32];
+    println(take(a).to_string())
+}
+"#;
+    let (_input_dir, input) = write_program(program)?;
+    let output_dir = tempfile::tempdir()?;
+    let output_path = output_dir.path().join("main");
+
+    let output = Command::new(goml_bin())
+        .arg("compiler")
+        .arg("build")
+        .arg("--package")
+        .arg("main")
+        .arg("--input")
+        .arg(&input)
+        .arg("--output")
+        .arg(&output_path)
+        .output()?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "stdout: {stdout}\nstderr: {stderr}"
+    );
+    assert!(
+        stderr.contains("Invalid array length"),
+        "stdout: {stdout}\nstderr: {stderr}"
+    );
+    expect![""].assert_eq(&stdout);
+
+    Ok(())
+}
+
+#[test]
 fn compiler_build_handles_wide_struct_pattern() -> anyhow::Result<()> {
     let program = wide_struct_pattern_program(1000);
     let (_input_dir, input) = write_program(&program)?;
