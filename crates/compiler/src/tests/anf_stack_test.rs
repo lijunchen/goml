@@ -31,6 +31,20 @@ fn wide_struct_source(field_count: usize) -> String {
     )
 }
 
+fn wide_complex_call_source(arg_count: usize) -> String {
+    let params = (0..arg_count)
+        .map(|idx| format!("x{}: int32", idx))
+        .collect::<Vec<_>>()
+        .join(", ");
+    let args = std::iter::repeat_n("id(1i32)", arg_count)
+        .collect::<Vec<_>>()
+        .join(", ");
+
+    format!(
+        "fn id(x: int32) -> int32 {{ x }}\nfn first({params}) -> int32 {{ x0 }}\nfn main() -> unit {{ println(first({args}).to_string()) }}\n"
+    )
+}
+
 #[test]
 fn wide_call_argument_list_compiles_without_crashing_anf() {
     let src = wide_call_source(1500);
@@ -43,6 +57,14 @@ fn wide_call_argument_list_compiles_without_crashing_anf() {
 fn wide_struct_literal_compiles_without_crashing_anf() {
     let src = wide_struct_source(1500);
     let path = PathBuf::from("wide_struct_literal.gom");
+
+    compile_single_file(&path, &src).unwrap();
+}
+
+#[test]
+fn wide_complex_call_argument_list_compiles_without_crashing_anf() {
+    let src = wide_complex_call_source(500);
+    let path = PathBuf::from("wide_complex_call_argument_list.gom");
 
     compile_single_file(&path, &src).unwrap();
 }
