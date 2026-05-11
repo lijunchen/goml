@@ -1,6 +1,6 @@
 use crate::tast;
 
-pub const BUILTIN_RUNTIME_CALL_PREFIX: &str = "__goml_builtin_runtime::";
+pub const BUILTIN_RUNTIME_CALL_PREFIX: &str = "$goml_builtin_runtime$";
 
 pub fn builtin_runtime_call_name(name: &str) -> Option<&str> {
     name.strip_prefix(BUILTIN_RUNTIME_CALL_PREFIX)
