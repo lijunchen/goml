@@ -74,6 +74,14 @@ fn deep_left_nested_tuple_type(depth: usize) -> String {
     ty
 }
 
+fn deep_ref_type(depth: usize) -> String {
+    let mut ty = "int32".to_string();
+    for _ in 0..depth {
+        ty = format!("Ref[{ty}]");
+    }
+    ty
+}
+
 fn wide_struct_pattern_program(field_count: usize) -> String {
     let fields = (0..field_count)
         .map(|idx| format!("f{}: int32", idx))
@@ -638,6 +646,43 @@ root = "main.gom"
     fs::write(
         dir.path().join("main.gom"),
         wide_struct_pattern_program(2600),
+    )?;
+
+    let output = run_goml(&["build"], dir.path())?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(
+        output.status.success(),
+        "stdout: {stdout}\nstderr: {stderr}"
+    );
+    assert!(dir.path().join("target/goml/main.go").exists());
+
+    Ok(())
+}
+
+#[test]
+fn project_build_handles_deep_public_interface_type() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    fs::write(
+        dir.path().join("goml.toml"),
+        r#"[crate]
+name = "iface_deep"
+kind = "bin"
+root = "main.gom"
+"#,
+    )?;
+    fs::create_dir_all(dir.path().join("Lib"))?;
+    fs::write(
+        dir.path().join("Lib/mod.gom"),
+        format!(
+            "pub struct Wrap {{ value: {} }}\n\npub fn ping() -> int32 {{ 1 }}\n",
+            deep_ref_type(200)
+        ),
+    )?;
+    fs::write(
+        dir.path().join("main.gom"),
+        "mod Lib;\n\nfn main() -> unit { println(crate::Lib::ping().to_string()) }\n",
     )?;
 
     let output = run_goml(&["build"], dir.path())?;
