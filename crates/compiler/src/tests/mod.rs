@@ -15,8 +15,8 @@ use crate::{
     pipeline::{self, pipeline::CompilationError},
 };
 
-mod assignment_target_test;
 mod anf_stack_test;
+mod assignment_target_test;
 mod builtin_functions_test;
 mod closure_return_test;
 mod constructor_value_test;

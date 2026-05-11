@@ -16,10 +16,33 @@ fn wide_call_source(arg_count: usize) -> String {
     )
 }
 
+fn wide_struct_source(field_count: usize) -> String {
+    let fields = (0..field_count)
+        .map(|idx| format!("f{}: int32", idx))
+        .collect::<Vec<_>>()
+        .join(", ");
+    let values = (0..field_count)
+        .map(|idx| format!("f{}: 1i32", idx))
+        .collect::<Vec<_>>()
+        .join(", ");
+
+    format!(
+        "struct S {{ {fields} }}\nfn main() -> unit {{ let s = S {{ {values} }}; println(s.f0.to_string()) }}\n"
+    )
+}
+
 #[test]
 fn wide_call_argument_list_compiles_without_crashing_anf() {
     let src = wide_call_source(1500);
     let path = PathBuf::from("wide_call_argument_list.gom");
+
+    compile_single_file(&path, &src).unwrap();
+}
+
+#[test]
+fn wide_struct_literal_compiles_without_crashing_anf() {
+    let src = wide_struct_source(1500);
+    let path = PathBuf::from("wide_struct_literal.gom");
 
     compile_single_file(&path, &src).unwrap();
 }

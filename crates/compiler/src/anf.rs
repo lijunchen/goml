@@ -280,6 +280,28 @@ fn lift_imm_to_imm(lift_imm: LiftExpr) -> ImmExpr {
     }
 }
 
+fn try_lift_imm_to_imm(lift_imm: &LiftExpr) -> Option<ImmExpr> {
+    match lift_imm {
+        LiftExpr::EVar { name, ty } => Some(ImmExpr::Var {
+            id: local(name.clone()),
+            ty: ty.clone(),
+        }),
+        LiftExpr::EPrim { value, ty } => Some(ImmExpr::Prim {
+            value: value.clone(),
+            ty: ty.clone(),
+        }),
+        LiftExpr::EConstr {
+            constructor: Constructor::Enum(enum_constructor),
+            args,
+            ty,
+        } if args.is_empty() => Some(ImmExpr::Tag {
+            index: enum_constructor.enum_index(),
+            ty: ty.clone(),
+        }),
+        _ => None,
+    }
+}
+
 fn reify_k<'a>(
     gensym: &'a Gensym,
     value_ty: Ty,
@@ -1099,6 +1121,10 @@ fn lower_list<'a>(
     es: Vec<LiftExpr>,
     k: Box<dyn FnOnce(Vec<ImmExpr>) -> Block + 'a>,
 ) -> Block {
+    if let Some(imms) = es.iter().map(try_lift_imm_to_imm).collect() {
+        return k(imms);
+    }
+
     let current = es.into_iter();
     fn go<'a>(
         anfenv: &'a GlobalAnfEnv,
