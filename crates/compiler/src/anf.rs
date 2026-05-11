@@ -1135,6 +1135,19 @@ fn lower_list<'a>(
         };
     }
 
+    if es.len() <= 128 {
+        return lower_recursive_list(anfenv, gensym, es, k);
+    }
+
+    lower_non_linear_list(anfenv, gensym, es, k)
+}
+
+fn lower_recursive_list<'a>(
+    anfenv: &'a GlobalAnfEnv,
+    gensym: &'a Gensym,
+    es: Vec<LiftExpr>,
+    k: Box<dyn FnOnce(Vec<ImmExpr>) -> Block + 'a>,
+) -> Block {
     let current = es.into_iter();
     fn go<'a>(
         anfenv: &'a GlobalAnfEnv,
@@ -1375,6 +1388,58 @@ fn bind_value(gensym: &Gensym, mut binds: Vec<Bind>, value: ValueExpr) -> (Vec<B
         ty: ty.clone(),
     }));
     (binds, ImmExpr::Var { id, ty })
+}
+
+fn lower_non_linear_list<'a>(
+    anfenv: &'a GlobalAnfEnv,
+    gensym: &'a Gensym,
+    es: Vec<LiftExpr>,
+    k: Box<dyn FnOnce(Vec<ImmExpr>) -> Block + 'a>,
+) -> Block {
+    let imms = es
+        .iter()
+        .map(|expr| {
+            let ty = expr.get_ty();
+            if ty == Ty::TUnit {
+                unit_imm()
+            } else {
+                ImmExpr::Var {
+                    id: local(gensym.gensym("t")),
+                    ty,
+                }
+            }
+        })
+        .collect::<Vec<_>>();
+
+    let mut tail = k(imms.clone());
+    for (expr, imm) in es.into_iter().zip(imms).rev() {
+        let expr_ty = expr.get_ty();
+        tail = lower(
+            anfenv,
+            gensym,
+            expr,
+            Box::new(move |value| {
+                if expr_ty == Ty::TUnit {
+                    return tail;
+                }
+
+                let ImmExpr::Var { id, ty } = imm else {
+                    unreachable!("non-unit list element should use a temporary")
+                };
+                let mut binds = vec![Bind::Let(LetBind {
+                    id,
+                    value: ValueExpr::Imm(value),
+                    ty,
+                })];
+                binds.extend(tail.binds);
+                Block {
+                    binds,
+                    term: tail.term,
+                }
+            }),
+        );
+    }
+    tail
 }
 
 pub fn anf_file(liftenv: GlobalLiftEnv, gensym: &Gensym, file: LiftFile) -> (File, GlobalAnfEnv) {
