@@ -208,9 +208,8 @@ fn user_builtin_extern_ref_get_is_rejected_before_codegen() {
         CompilationError::Typer { diagnostics } => {
             let diagnostics = format_typer_diagnostics(&diagnostics, &src);
             assert!(
-                diagnostics.iter().any(|line| line.contains(
-                    "builtin extern declarations are only allowed in the builtin package"
-                )),
+                diagnostics.iter().any(|line| line
+                    .contains("builtin extern ref_get conflicts with a compiler builtin function")),
                 "{diagnostics:?}"
             );
         }

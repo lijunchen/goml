@@ -1000,6 +1000,19 @@ fn define_extern_builtin(
     diagnostics: &mut Diagnostics,
     ext: &hir::ExternBuiltin,
 ) {
+    let name = ext.name.to_ident_name();
+    if env.package != BUILTIN_PACKAGE && builtins::builtin_function_names().contains(&name) {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            format!(
+                "builtin extern {} conflicts with a compiler builtin function",
+                name
+            ),
+        ));
+        return;
+    }
+
     let tparams: Vec<tast::TastIdent> = ext
         .generics
         .iter()
