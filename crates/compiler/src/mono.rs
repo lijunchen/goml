@@ -2,7 +2,8 @@ use crate::common::{self, Constructor, Prim};
 use crate::core::{self, Ty};
 use crate::env::{EnumDef, GlobalTypeEnv, StructDef};
 use crate::names::{
-    parse_inherent_method_fn_name, parse_trait_impl_fn_name, trait_impl_fn_name, ty_compact,
+    builtin_runtime_call, parse_inherent_method_fn_name, parse_trait_impl_fn_name,
+    trait_impl_fn_name, ty_compact,
 };
 use crate::tast::{self, TastIdent};
 use indexmap::{IndexMap, IndexSet};
@@ -1534,7 +1535,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                     let arg_ty = arg.get_ty();
                     MonoExpr::ECall {
                         func: Box::new(MonoExpr::EVar {
-                            name: func_name.to_string(),
+                            name: builtin_runtime_call(func_name),
                             ty: Ty::TFunc {
                                 params: vec![arg_ty],
                                 ret_ty: Box::new(ret_ty.clone()),

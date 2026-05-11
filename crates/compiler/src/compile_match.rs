@@ -231,7 +231,7 @@ mod tests {
 fn emissing(ty: &Ty) -> core::Expr {
     core::Expr::ECall {
         func: Box::new(core::Expr::EVar {
-            name: "missing".to_string(),
+            name: builtin_runtime_call("missing"),
             ty: Ty::TFunc {
                 params: vec![Ty::TString],
                 ret_ty: Box::new(ty.clone()),
@@ -2478,7 +2478,7 @@ fn hidden_ref_alloc(value: core::Expr, inner_ty: &Ty) -> core::Expr {
     let ref_ty = hidden_cell_ty(inner_ty);
     core::Expr::ECall {
         func: Box::new(core::Expr::EVar {
-            name: "ref".to_string(),
+            name: builtin_runtime_call("ref"),
             ty: Ty::TFunc {
                 params: vec![inner_ty.clone()],
                 ret_ty: Box::new(ref_ty.clone()),
@@ -2493,7 +2493,7 @@ fn hidden_ref_get(name: &str, inner_ty: &Ty) -> core::Expr {
     let ref_ty = hidden_cell_ty(inner_ty);
     core::Expr::ECall {
         func: Box::new(core::Expr::EVar {
-            name: "ref_get".to_string(),
+            name: builtin_runtime_call("ref_get"),
             ty: Ty::TFunc {
                 params: vec![ref_ty.clone()],
                 ret_ty: Box::new(inner_ty.clone()),
@@ -2508,7 +2508,7 @@ fn hidden_ref_set(name: &str, inner_ty: &Ty, value: core::Expr) -> core::Expr {
     let ref_ty = hidden_cell_ty(inner_ty);
     core::Expr::ECall {
         func: Box::new(core::Expr::EVar {
-            name: "ref_set".to_string(),
+            name: builtin_runtime_call("ref_set"),
             ty: Ty::TFunc {
                 params: vec![ref_ty.clone(), inner_ty.clone()],
                 ret_ty: Box::new(Ty::TUnit),
@@ -3219,7 +3219,7 @@ fn compile_block_parts(
                     }],
                     body: ECall {
                         func: Box::new(Expr::EVar {
-                            name: "missing".to_string(),
+                            name: builtin_runtime_call("missing"),
                             ty: Ty::TFunc {
                                 params: vec![Ty::TString],
                                 ret_ty: Box::new(ty.clone()),
