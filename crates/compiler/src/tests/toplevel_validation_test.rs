@@ -240,3 +240,26 @@ fn user_builtin_extern_bogus_is_rejected_before_codegen() {
         other => panic!("expected typer error, got {other:?}"),
     }
 }
+
+#[test]
+fn local_std_host_extern_shadow_is_rejected_before_codegen() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/local_std_host_extern_shadow");
+    let path = root.join("main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let err = crate::pipeline::pipeline::compile(&path, &src).expect_err("expected typer error");
+
+    match err {
+        CompilationError::Typer { diagnostics } => {
+            let diagnostics = format_typer_diagnostics(&diagnostics, &src);
+            assert!(
+                diagnostics.iter().any(|line| line
+                    .contains("builtin extern args_raw is not a compiler-owned host hook")),
+                "{diagnostics:?}"
+            );
+        }
+        other => panic!("expected typer error, got {other:?}"),
+    }
+}
