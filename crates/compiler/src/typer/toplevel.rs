@@ -18,6 +18,14 @@ use crate::{
     },
 };
 
+fn source_fn_origin(env: &PackageTypeEnv) -> FnOrigin {
+    if env.package == BUILTIN_PACKAGE {
+        FnOrigin::Builtin
+    } else {
+        FnOrigin::User
+    }
+}
+
 fn predeclare_types(
     genv: &mut GlobalTypeEnv,
     _diagnostics: &mut Diagnostics,
@@ -507,7 +515,7 @@ fn define_trait_impl(
                     type_params,
                     constraints,
                     ty: impl_method_ty,
-                    origin: FnOrigin::User,
+                    origin: source_fn_origin(env),
                 },
             );
         }
@@ -668,7 +676,7 @@ fn define_inherent_impl(
                 type_params,
                 constraints,
                 ty: impl_method_ty,
-                origin: FnOrigin::User,
+                origin: source_fn_origin(env),
             },
         );
     }
@@ -738,6 +746,7 @@ fn define_function(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, func
     };
     let fn_constraints =
         build_fn_constraints(env, diagnostics, &func.generics, &func.generic_bounds);
+    let origin = source_fn_origin(env);
     env.current_mut().value_env.funcs.insert(
         name,
         FnScheme {
@@ -747,7 +756,7 @@ fn define_function(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, func
                 params,
                 ret_ty: Box::new(ret),
             },
-            origin: FnOrigin::User,
+            origin,
         },
     );
 }
