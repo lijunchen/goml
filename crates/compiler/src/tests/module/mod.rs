@@ -112,6 +112,11 @@ fn multi_package_compile_project_024() -> anyhow::Result<()> {
     run_project("project024_builtin_runtime_marker_collision")
 }
 
+#[test]
+fn multi_package_compile_project_025() -> anyhow::Result<()> {
+    run_project("project025_nested_module_path")
+}
+
 fn run_project(name: &str) -> anyhow::Result<()> {
     let name = name.to_string();
     let handle = std::thread::Builder::new()
