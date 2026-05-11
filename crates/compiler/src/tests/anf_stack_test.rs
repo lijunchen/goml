@@ -90,3 +90,11 @@ fn wide_match_call_argument_list_compiles_without_crashing_anf() {
 
     compile_single_file(&path, &src).unwrap();
 }
+
+#[test]
+fn very_wide_match_call_argument_list_compiles_without_crashing_anf() {
+    let src = wide_match_call_source(2000);
+    let path = PathBuf::from("very_wide_match_call_argument_list.gom");
+
+    compile_single_file(&path, &src).unwrap();
+}
