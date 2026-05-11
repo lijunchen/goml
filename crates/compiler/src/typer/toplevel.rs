@@ -26,12 +26,7 @@ fn source_fn_origin(env: &PackageTypeEnv) -> FnOrigin {
     }
 }
 
-fn predeclare_types(
-    genv: &mut GlobalTypeEnv,
-    _diagnostics: &mut Diagnostics,
-    hir: &hir::PackageHir,
-    hir_table: &hir::HirTable,
-) {
+fn predeclare_types(genv: &mut GlobalTypeEnv, hir: &hir::PackageHir, hir_table: &hir::HirTable) {
     for item in hir.toplevels.iter() {
         match hir_table.def(*item) {
             hir::Def::EnumDef(enum_def) => {
@@ -54,6 +49,52 @@ fn predeclare_types(
                 );
             }
             _ => {}
+        }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum NominalKind {
+    Enum,
+    Struct,
+}
+
+impl NominalKind {
+    fn label(self) -> &'static str {
+        match self {
+            NominalKind::Enum => "enum",
+            NominalKind::Struct => "struct",
+        }
+    }
+}
+
+fn validate_nominal_type_names(
+    diagnostics: &mut Diagnostics,
+    hir: &hir::PackageHir,
+    hir_table: &hir::HirTable,
+) {
+    let mut seen = HashMap::new();
+    for item in hir.toplevels.iter() {
+        let (name, kind) = match hir_table.def(*item) {
+            hir::Def::EnumDef(enum_def) => (enum_def.name.to_ident_name(), NominalKind::Enum),
+            hir::Def::StructDef(struct_def) => {
+                (struct_def.name.to_ident_name(), NominalKind::Struct)
+            }
+            _ => continue,
+        };
+
+        match seen.insert(name.clone(), kind) {
+            Some(prev) if prev == kind => diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!("{} {} is defined multiple times", kind.label(), name),
+            )),
+            Some(_) => diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!("type {} is defined as both a struct and an enum", name),
+            )),
+            None => {}
         }
     }
 }
@@ -896,7 +937,8 @@ pub fn collect_typedefs(
     hir: &hir::PackageHir,
     hir_table: &hir::HirTable,
 ) {
-    predeclare_types(env.current_mut(), diagnostics, hir, hir_table);
+    validate_nominal_type_names(diagnostics, hir, hir_table);
+    predeclare_types(env.current_mut(), hir, hir_table);
 
     for item in hir.toplevels.iter() {
         match hir_table.def(*item) {
