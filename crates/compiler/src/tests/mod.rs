@@ -25,6 +25,7 @@ mod entrypoint_test;
 mod module;
 mod multiline_string_test;
 mod name_collision_test;
+mod operator_semantics_test;
 mod query_test;
 mod ref_type_test;
 mod separate_compile_test;
