@@ -250,6 +250,22 @@ fn hashmap_ref_dyn_hash_explicit_eq_executes() {
 }
 
 #[test]
+fn hashmap_ref_dyn_hash_builtin_ref_impl_executes() {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers/hashmap_ref_dyn_hash_builtin_ref_impl/main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
+        panic!("compilation failed for {}: {:?}", path.display(), err);
+    });
+    let go = compilation.go.to_pretty(&compilation.goenv, 120);
+    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
+
+    assert_eq!(output, "true\n");
+}
+
+#[test]
 fn hashmap_ref_dyn_show_explicit_eq_hash_executes() {
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("src/tests/crashers/hashmap_ref_dyn_show_explicit_eq_hash/main.gom");
