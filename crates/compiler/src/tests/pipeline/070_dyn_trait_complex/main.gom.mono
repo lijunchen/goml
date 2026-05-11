@@ -1,9 +1,9 @@
 fn trait_impl#Display#Point#show(self/0: Point) -> string {
-  (((("Point(" + __goml_builtin_runtime::int32_to_string(Point.x(self/0))) + ",") + __goml_builtin_runtime::int32_to_string(Point.y(self/0))) + ")")
+  (((("Point(" + $goml_builtin_runtime$int32_to_string(Point.x(self/0))) + ",") + $goml_builtin_runtime$int32_to_string(Point.y(self/0))) + ")")
 }
 
 fn trait_impl#Display#Point#show_with(self/1: Point, prefix/2: string, suffix/3: string) -> string {
-  ((((((prefix/2 + "Point(") + __goml_builtin_runtime::int32_to_string(Point.x(self/1))) + ",") + __goml_builtin_runtime::int32_to_string(Point.y(self/1))) + ")") + suffix/3)
+  ((((((prefix/2 + "Point(") + $goml_builtin_runtime$int32_to_string(Point.x(self/1))) + ",") + $goml_builtin_runtime$int32_to_string(Point.y(self/1))) + ")") + suffix/3)
 }
 
 fn trait_impl#Display#Point#tick(self/4: Point) -> unit {
@@ -55,11 +55,11 @@ fn trait_impl#Display#Flag#bump(self/12: Flag, delta/13: int32) -> int32 {
 }
 
 fn trait_impl#Display#Counter#show(self/14: Counter) -> string {
-  (("Counter(" + __goml_builtin_runtime::int32_to_string(inherent#Ref#Ref[T]#get__T_int32(Counter.cell(self/14)))) + ")")
+  (("Counter(" + $goml_builtin_runtime$int32_to_string(inherent#Ref#Ref[T]#get__T_int32(Counter.cell(self/14)))) + ")")
 }
 
 fn trait_impl#Display#Counter#show_with(self/15: Counter, prefix/16: string, suffix/17: string) -> string {
-  ((((prefix/16 + "Counter(") + __goml_builtin_runtime::int32_to_string(inherent#Ref#Ref[T]#get__T_int32(Counter.cell(self/15)))) + ")") + suffix/17)
+  ((((prefix/16 + "Counter(") + $goml_builtin_runtime$int32_to_string(inherent#Ref#Ref[T]#get__T_int32(Counter.cell(self/15)))) + ")") + suffix/17)
 }
 
 fn trait_impl#Display#Counter#tick(self/18: Counter) -> unit {
@@ -94,7 +94,7 @@ fn make_renderer(tag/29: string) -> (dyn Display) -> string {
 fn bump_and_show(x/31: dyn Display, delta/32: int32) -> string {
   let mtmp2 = dyn_call[Display::tick](x/31) in
   {
-    ((dyn_call[Display::show_with](x/31, "[", "]") + ":") + __goml_builtin_runtime::int32_to_string(dyn_call[Display::bump](x/31, delta/32)))
+    ((dyn_call[Display::show_with](x/31, "[", "]") + ":") + $goml_builtin_runtime$int32_to_string(dyn_call[Display::bump](x/31, delta/32)))
   }
 }
 
@@ -143,7 +143,7 @@ fn main() -> unit {
             }
         } in
         {
-          let mtmp9 = println__T_string(("len:" + __goml_builtin_runtime::int32_to_string(vlen/52))) in
+          let mtmp9 = println__T_string(("len:" + $goml_builtin_runtime$int32_to_string(vlen/52))) in
           {
             let mtmp10 = println__T_string(("delta:" + int32_to_string(delta/53))) in
             {
