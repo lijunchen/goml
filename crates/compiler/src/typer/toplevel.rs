@@ -995,22 +995,53 @@ fn define_function(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, func
     );
 }
 
+fn is_std_host_extern(package: &str, name: &str) -> bool {
+    matches!(
+        (package, name),
+        ("env" | "std::env", "args_raw")
+            | ("io" | "std::io", "print_raw" | "println_raw")
+            | (
+                "fs" | "std::fs",
+                "read_file_raw" | "write_file_raw" | "file_exists_raw" | "read_dir_raw"
+            )
+            | ("process" | "std::process", "exit_raw")
+    )
+}
+
 fn define_extern_builtin(
     env: &mut PackageTypeEnv,
     diagnostics: &mut Diagnostics,
     ext: &hir::ExternBuiltin,
 ) {
     let name = ext.name.to_ident_name();
-    if env.package != BUILTIN_PACKAGE && builtins::builtin_function_names().contains(&name) {
-        diagnostics.push(Diagnostic::new(
-            Stage::Typer,
-            Severity::Error,
-            format!(
-                "builtin extern {} conflicts with a compiler builtin function",
-                name
-            ),
-        ));
-        return;
+    let local_name = name.rsplit("::").next().unwrap_or(&name);
+    if env.package != BUILTIN_PACKAGE {
+        if builtins::builtin_function_names()
+            .iter()
+            .any(|builtin| builtin == local_name)
+        {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "builtin extern {} conflicts with a compiler builtin function",
+                    local_name
+                ),
+            ));
+            return;
+        }
+
+        if !is_std_host_extern(&env.package, local_name) {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "builtin extern {} is not a compiler-owned host hook",
+                    local_name
+                ),
+            ));
+            return;
+        }
     }
 
     let tparams: Vec<tast::TastIdent> = ext
