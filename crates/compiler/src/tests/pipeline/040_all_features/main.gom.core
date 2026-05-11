@@ -23,7 +23,7 @@ fn trait_impl#Describe#Tracker#describe(self/0: Tracker) -> string {
             let flag/5 = inherent#Ref#Ref[bool]#get(toggled/3) in
             let with_label/6 = ("Tracker(" + label/1) in
             let with_count_label/7 = (with_label/6 + ", count: ") in
-            let with_count/8 = (with_count_label/7 + int32_to_string(current/4)) in
+            let with_count/8 = (with_count_label/7 + __goml_builtin_runtime::int32_to_string(current/4)) in
             let with_flag_label/9 = (with_count/8 + ", toggled: ") in
             ((with_flag_label/9 + trait_call[ToString::to_string](flag/5)) + ")")
           }
@@ -129,7 +129,7 @@ fn map_maybe(value/23: Maybe[T], f/24: (T) -> U) -> Maybe[U] {
 }
 
 fn format_total(total/26: int32) -> string {
-  ("total: " + int32_to_string(total/26))
+  ("total: " + __goml_builtin_runtime::int32_to_string(total/26))
 }
 
 fn increment(value/27: int32) -> int32 {
@@ -271,7 +271,7 @@ fn main() -> unit {
                   "Snapshot: none"
                 },
               } in
-              let pair_text/76 = pair_join((int32_to_string(first_result/68), int32_to_string(second_result/69))) in
+              let pair_text/76 = pair_join((__goml_builtin_runtime::int32_to_string(first_result/68), __goml_builtin_runtime::int32_to_string(second_result/69))) in
               let bool_text/77 = trait_call[ToString::to_string](order_check/70) in
               let mtmp30 = println(tracker_info/58) in
               {

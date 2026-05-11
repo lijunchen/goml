@@ -39,7 +39,7 @@ fn digit_value(ch/1: char) -> int32 {
 }
 
 fn is_int_text(text/2: string) -> bool {
-  let len/3 = string_len(text/2) in
+  let len/3 = __goml_builtin_runtime::string_len(text/2) in
   if (len/3 == 0) {
       {
         false
@@ -52,7 +52,7 @@ fn is_int_text(text/2: string) -> bool {
         let started/7 = inherent#Ref#Ref[T]#new__T_bool(false) in
         let mtmp3 = while (inherent#Ref#Ref[T]#get__T_bool(ok/6) && (inherent#Ref#Ref[T]#get__T_int32(i/4) < len/3)) {
             {
-              let ch/8 = string_get(text/2, inherent#Ref#Ref[T]#get__T_int32(i/4)) in
+              let ch/8 = __goml_builtin_runtime::string_get(text/2, inherent#Ref#Ref[T]#get__T_int32(i/4)) in
               if ((!inherent#Ref#Ref[T]#get__T_bool(started/7)) && (ch/8 == '-')) {
                   {
                     let mtmp0 = inherent#Ref#Ref[T]#set__T_bool(started/7, true) in
@@ -87,14 +87,14 @@ fn is_int_text(text/2: string) -> bool {
 }
 
 fn parse_int32(text/9: string) -> int32 {
-  let len/10 = string_len(text/9) in
+  let len/10 = __goml_builtin_runtime::string_len(text/9) in
   let i/11 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let negative/12 = inherent#Ref#Ref[T]#new__T_bool(false) in
   let started/13 = inherent#Ref#Ref[T]#new__T_bool(false) in
   let acc/14 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let mtmp8 = while (inherent#Ref#Ref[T]#get__T_int32(i/11) < len/10) {
       {
-        let ch/15 = string_get(text/9, inherent#Ref#Ref[T]#get__T_int32(i/11)) in
+        let ch/15 = __goml_builtin_runtime::string_get(text/9, inherent#Ref#Ref[T]#get__T_int32(i/11)) in
         if ((!inherent#Ref#Ref[T]#get__T_bool(started/13)) && (ch/15 == '-')) {
             {
               let mtmp4 = inherent#Ref#Ref[T]#set__T_bool(started/13, true) in
@@ -137,20 +137,20 @@ fn is_delim(ch/17: char) -> bool {
 }
 
 fn lex_atom(source/18: string, start/19: int32) -> (Token, int32) {
-  let len/20 = string_len(source/18) in
+  let len/20 = __goml_builtin_runtime::string_len(source/18) in
   let text/21 = inherent#Ref#Ref[T]#new__T_string("") in
   let i/22 = inherent#Ref#Ref[T]#new__T_int32(start/19) in
   let done/23 = inherent#Ref#Ref[T]#new__T_bool(false) in
   let mtmp10 = while ((!inherent#Ref#Ref[T]#get__T_bool(done/23)) && (inherent#Ref#Ref[T]#get__T_int32(i/22) < len/20)) {
       {
-        let ch/24 = string_get(source/18, inherent#Ref#Ref[T]#get__T_int32(i/22)) in
+        let ch/24 = __goml_builtin_runtime::string_get(source/18, inherent#Ref#Ref[T]#get__T_int32(i/22)) in
         if is_delim(ch/24) {
             {
               inherent#Ref#Ref[T]#set__T_bool(done/23, true)
             }
         } else {
             {
-              let mtmp9 = inherent#Ref#Ref[T]#set__T_string(text/21, (inherent#Ref#Ref[T]#get__T_string(text/21) + char_to_string(ch/24))) in
+              let mtmp9 = inherent#Ref#Ref[T]#set__T_string(text/21, (inherent#Ref#Ref[T]#get__T_string(text/21) + __goml_builtin_runtime::char_to_string(ch/24))) in
               {
                 inherent#Ref#Ref[T]#set__T_int32(i/22, (inherent#Ref#Ref[T]#get__T_int32(i/22) + 1))
               }
@@ -182,13 +182,13 @@ fn lex_atom(source/18: string, start/19: int32) -> (Token, int32) {
 }
 
 fn lex(source/27: string) -> Vec[Token] {
-  let len/28 = string_len(source/27) in
+  let len/28 = __goml_builtin_runtime::string_len(source/27) in
   let toks0/29 = inherent#Vec#Vec[T]#new__T_Token() in
   let toks/30 = inherent#Ref#Ref[T]#new__T_Vec[Token](toks0/29) in
   let i/31 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let mtmp17 = while (inherent#Ref#Ref[T]#get__T_int32(i/31) < len/28) {
       {
-        let ch/32 = string_get(source/27, inherent#Ref#Ref[T]#get__T_int32(i/31)) in
+        let ch/32 = __goml_builtin_runtime::string_get(source/27, inherent#Ref#Ref[T]#get__T_int32(i/31)) in
         if (ch/32 == '(') {
             {
               let mtmp11 = inherent#Ref#Ref[T]#set__T_Vec[Token](toks/30, inherent#Vec#Vec[T]#push__T_Token(inherent#Ref#Ref[T]#get__T_Vec[Token](toks/30), Token::LParen)) in
@@ -516,7 +516,7 @@ fn value_to_string(value/66: Value) -> string {
         let x58 = Value::Int._0(value/66) in
         {
           let n/67 = x58 in
-          int32_to_string(n/67)
+          __goml_builtin_runtime::int32_to_string(n/67)
         }
       }
     },

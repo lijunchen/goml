@@ -3,11 +3,11 @@ fn trait_impl#Display#Point#show(self/0: Point) -> string {
     retv14
   } in
   let t15 = Point.x(self/0) in
-  let t16 = int32_to_string(t15) in
+  let t16 = __goml_builtin_runtime::int32_to_string(t15) in
   let t17 = ("Point(" + t16) in
   let t18 = (t17 + ",") in
   let t19 = Point.y(self/0) in
-  let t20 = int32_to_string(t19) in
+  let t20 = __goml_builtin_runtime::int32_to_string(t19) in
   let t21 = (t18 + t20) in
   let t22 = (t21 + ")") in
   jump ret13(t22)
@@ -19,11 +19,11 @@ fn trait_impl#Display#Point#show_with(self/1: Point, prefix/2: string, suffix/3:
   } in
   let t25 = (prefix/2 + "Point(") in
   let t26 = Point.x(self/1) in
-  let t27 = int32_to_string(t26) in
+  let t27 = __goml_builtin_runtime::int32_to_string(t26) in
   let t28 = (t25 + t27) in
   let t29 = (t28 + ",") in
   let t30 = Point.y(self/1) in
-  let t31 = int32_to_string(t30) in
+  let t31 = __goml_builtin_runtime::int32_to_string(t30) in
   let t32 = (t29 + t31) in
   let t33 = (t32 + ")") in
   let t34 = (t33 + suffix/3) in
@@ -111,7 +111,7 @@ fn trait_impl#Display#Counter#show(self/14: Counter) -> string {
   } in
   let t65 = Counter.cell(self/14) in
   let t66 = inherent#Ref#Ref[T]#get__T_int32(t65) in
-  let t67 = int32_to_string(t66) in
+  let t67 = __goml_builtin_runtime::int32_to_string(t66) in
   let t68 = ("Counter(" + t67) in
   let t69 = (t68 + ")") in
   jump ret63(t69)
@@ -124,7 +124,7 @@ fn trait_impl#Display#Counter#show_with(self/15: Counter, prefix/16: string, suf
   let t72 = (prefix/16 + "Counter(") in
   let t73 = Counter.cell(self/15) in
   let t74 = inherent#Ref#Ref[T]#get__T_int32(t73) in
-  let t75 = int32_to_string(t74) in
+  let t75 = __goml_builtin_runtime::int32_to_string(t74) in
   let t76 = (t72 + t75) in
   let t77 = (t76 + ")") in
   let t78 = (t77 + suffix/17) in
@@ -188,7 +188,7 @@ fn bump_and_show(x/31: dyn Display, delta/32: int32) -> string {
   let t99 = dyn_call[Display::show_with](x/31, "[", "]") in
   let t100 = (t99 + ":") in
   let t101 = dyn_call[Display::bump](x/31, delta/32) in
-  let t102 = int32_to_string(t101) in
+  let t102 = __goml_builtin_runtime::int32_to_string(t101) in
   let t103 = (t100 + t102) in
   jump ret97(t103)
 }
@@ -229,7 +229,7 @@ fn main() -> unit {
     let i/54 = inherent#Ref#Ref[T]#new__T_int32(0) in
     join exit111() -> unit {
       let mtmp8 = () in
-      let t112 = int32_to_string(vlen/52) in
+      let t112 = __goml_builtin_runtime::int32_to_string(vlen/52) in
       let t113 = ("len:" + t112) in
       let mtmp9 = println__T_string(t113) in
       let t114 = int32_to_string(delta/53) in

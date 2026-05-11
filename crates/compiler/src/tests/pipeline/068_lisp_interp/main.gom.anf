@@ -56,7 +56,7 @@ fn is_int_text(text/2: string) -> bool {
   join ret157(retv158: bool) -> bool {
     retv158
   } in
-  let len/3 = string_len(text/2) in
+  let len/3 = __goml_builtin_runtime::string_len(text/2) in
   let t161 = (len/3 == 0) in
   join k159(jp160: bool) -> bool {
     jump ret157(jp160)
@@ -83,7 +83,7 @@ fn is_int_text(text/2: string) -> bool {
         let t170 = (t167 && t169) in
         if t170 {
           let t171 = inherent#Ref#Ref[T]#get__T_int32(i/4) in
-          let ch/8 = string_get(text/2, t171) in
+          let ch/8 = __goml_builtin_runtime::string_get(text/2, t171) in
           let t173 = inherent#Ref#Ref[T]#get__T_bool(started/7) in
           let t174 = (!t173) in
           let t175 = (ch/8 == '-') in
@@ -127,7 +127,7 @@ fn parse_int32(text/9: string) -> int32 {
   join ret186(retv187: int32) -> int32 {
     retv187
   } in
-  let len/10 = string_len(text/9) in
+  let len/10 = __goml_builtin_runtime::string_len(text/9) in
   let i/11 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let negative/12 = inherent#Ref#Ref[T]#new__T_bool(false) in
   let started/13 = inherent#Ref#Ref[T]#new__T_bool(false) in
@@ -153,7 +153,7 @@ fn parse_int32(text/9: string) -> int32 {
       let t197 = (t196 < len/10) in
       if t197 {
         let t198 = inherent#Ref#Ref[T]#get__T_int32(i/11) in
-        let ch/15 = string_get(text/9, t198) in
+        let ch/15 = __goml_builtin_runtime::string_get(text/9, t198) in
         let t200 = inherent#Ref#Ref[T]#get__T_bool(started/13) in
         let t201 = (!t200) in
         let t202 = (ch/15 == '-') in
@@ -204,7 +204,7 @@ fn lex_atom(source/18: string, start/19: int32) -> (Token, int32) {
   join ret220(retv221: (Token, int32)) -> (Token, int32) {
     retv221
   } in
-  let len/20 = string_len(source/18) in
+  let len/20 = __goml_builtin_runtime::string_len(source/18) in
   let text/21 = inherent#Ref#Ref[T]#new__T_string("") in
   let i/22 = inherent#Ref#Ref[T]#new__T_int32(start/19) in
   let done/23 = inherent#Ref#Ref[T]#new__T_bool(false) in
@@ -251,7 +251,7 @@ fn lex_atom(source/18: string, start/19: int32) -> (Token, int32) {
       let t240 = (t237 && t239) in
       if t240 {
         let t241 = inherent#Ref#Ref[T]#get__T_int32(i/22) in
-        let ch/24 = string_get(source/18, t241) in
+        let ch/24 = __goml_builtin_runtime::string_get(source/18, t241) in
         let t243 = is_delim(ch/24) in
         join k242() -> (Token, int32) {
           jump loop235()
@@ -261,7 +261,7 @@ fn lex_atom(source/18: string, start/19: int32) -> (Token, int32) {
           jump k242()
         } else {
           let t245 = inherent#Ref#Ref[T]#get__T_string(text/21) in
-          let t246 = char_to_string(ch/24) in
+          let t246 = __goml_builtin_runtime::char_to_string(ch/24) in
           let t247 = (t245 + t246) in
           let mtmp9 = inherent#Ref#Ref[T]#set__T_string(text/21, t247) in
           let t248 = inherent#Ref#Ref[T]#get__T_int32(i/22) in
@@ -281,7 +281,7 @@ fn lex(source/27: string) -> Vec[Token] {
   join ret251(retv252: Vec[Token]) -> Vec[Token] {
     retv252
   } in
-  let len/28 = string_len(source/27) in
+  let len/28 = __goml_builtin_runtime::string_len(source/27) in
   let toks0/29 = inherent#Vec#Vec[T]#new__T_Token() in
   let toks/30 = inherent#Ref#Ref[T]#new__T_Vec[Token](toks0/29) in
   let i/31 = inherent#Ref#Ref[T]#new__T_int32(0) in
@@ -296,7 +296,7 @@ fn lex(source/27: string) -> Vec[Token] {
       let t257 = (t256 < len/28) in
       if t257 {
         let t258 = inherent#Ref#Ref[T]#get__T_int32(i/31) in
-        let ch/32 = string_get(source/27, t258) in
+        let ch/32 = __goml_builtin_runtime::string_get(source/27, t258) in
         let t260 = (ch/32 == '(') in
         join k259() -> Vec[Token] {
           jump loop255()
@@ -636,7 +636,7 @@ fn value_to_string(value/66: Value) -> string {
     Tag_0 => {
       let x58 = Value::Int._0(value/66) in
       let n/67 = x58 in
-      let t377 = int32_to_string(n/67) in
+      let t377 = __goml_builtin_runtime::int32_to_string(n/67) in
       jump k375(t377)
     },
     Tag_1 => {

@@ -13,7 +13,7 @@ fn trait_impl#Describe#Tracker#describe(self/0: Tracker) -> string {
   let flag/5 = inherent#Ref#Ref[T]#get__T_bool(toggled/3) in
   let with_label/6 = ("Tracker(" + label/1) in
   let with_count_label/7 = (with_label/6 + ", count: ") in
-  let t42 = int32_to_string(current/4) in
+  let t42 = __goml_builtin_runtime::int32_to_string(current/4) in
   let with_count/8 = (with_count_label/7 + t42) in
   let with_flag_label/9 = (with_count/8 + ", toggled: ") in
   let t43 = bool_to_string(flag/5) in
@@ -93,7 +93,7 @@ fn format_total(total/26: int32) -> string {
   join ret67(retv68: string) -> string {
     retv68
   } in
-  let t69 = int32_to_string(total/26) in
+  let t69 = __goml_builtin_runtime::int32_to_string(total/26) in
   let t70 = ("total: " + t69) in
   jump ret67(t70)
 }
@@ -220,8 +220,8 @@ fn main() -> unit {
   let flipped_text/73 = trait_impl#Describe#Record__string#describe(flipped_record/61) in
   join k96(jp97: string) -> unit {
     let summary/75 = jp97 in
-    let t98 = int32_to_string(first_result/68) in
-    let t99 = int32_to_string(second_result/69) in
+    let t98 = __goml_builtin_runtime::int32_to_string(first_result/68) in
+    let t99 = __goml_builtin_runtime::int32_to_string(second_result/69) in
     let t100 = (t98, t99) in
     let pair_text/76 = pair_join(t100) in
     let bool_text/77 = bool_to_string(order_check/70) in
