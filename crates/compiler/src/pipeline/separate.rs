@@ -440,7 +440,7 @@ pub fn build_package(opts: PackageInputs) -> Result<CoreUnit, CompilationError> 
             });
         }
 
-        let mut unit = CoreUnit::new(opts.package.clone(), interface, core_ir);
+        let mut unit = CoreUnit::new(opts.package.clone(), interface, full_exports, core_ir);
         unit.sources = sources;
 
         Ok(unit)
@@ -547,15 +547,15 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
 
         let mut genv = builtins::builtin_env();
         if let Some(std_core) = &std_core {
-            std_core.interface.exports.apply_to(&mut genv);
+            std_core.exports.apply_to(&mut genv);
         }
         let mut diagnostics = Diagnostics::new();
         for pkg in order.iter() {
             let unit = by_name
                 .get(pkg)
                 .ok_or_else(|| compile_error(format!("missing core for package {}", pkg)))?;
-            report_duplicate_trait_impls(&mut diagnostics, &genv, &unit.interface.exports, pkg);
-            unit.interface.exports.apply_to(&mut genv);
+            report_duplicate_trait_impls(&mut diagnostics, &genv, &unit.exports, pkg);
+            unit.exports.apply_to(&mut genv);
         }
         if diagnostics.has_errors() {
             return Err(CompilationError::Typer { diagnostics });

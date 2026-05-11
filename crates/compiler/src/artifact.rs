@@ -195,19 +195,26 @@ pub struct CoreUnit {
     pub compiler_abi: u32,
     pub package: String,
     pub interface: InterfaceUnit,
+    pub exports: PackageExports,
     pub core_ir: crate::core::File,
     pub deps: BTreeMap<String, String>,
     pub sources: Vec<String>,
 }
 
 impl CoreUnit {
-    pub fn new(package: String, interface: InterfaceUnit, core_ir: crate::core::File) -> Self {
+    pub fn new(
+        package: String,
+        interface: InterfaceUnit,
+        exports: PackageExports,
+        core_ir: crate::core::File,
+    ) -> Self {
         let deps = interface.deps.clone();
         Self {
             format_version: FORMAT_VERSION,
             compiler_abi: COMPILER_ABI,
             package,
             interface,
+            exports,
             core_ir,
             deps,
             sources: Vec::new(),

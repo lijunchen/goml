@@ -144,6 +144,7 @@ impl ExternalDependencyArtifacts {
 #[derive(Clone)]
 struct CompiledPackage {
     exports: PackageExports,
+    full_exports: PackageExports,
     interface: InterfaceUnit,
     core: CoreUnit,
 }
@@ -391,6 +392,7 @@ fn compile_module_artifact(
     }
 
     let mut merged_exports = empty_exports();
+    let mut merged_full_exports = empty_exports();
     let mut merged_core = core::File {
         toplevels: Vec::new(),
     };
@@ -411,6 +413,8 @@ fn compile_module_artifact(
             .ok_or_else(|| format!("missing logical package {}", package_name))?;
         let transformed_exports = rename_exports(&compiled.exports, &logical_names);
         merge_exports(&mut merged_exports, &transformed_exports);
+        let transformed_full_exports = rename_exports(&compiled.full_exports, &logical_names);
+        merge_exports(&mut merged_full_exports, &transformed_full_exports);
 
         let transformed_core = rename_core_file(&compiled.core.core_ir, &logical_names);
         merged_core.toplevels.extend(transformed_core.toplevels);
@@ -487,6 +491,7 @@ fn compile_module_artifact(
         compiler_abi: crate::artifact::COMPILER_ABI,
         package: root_package.to_string(),
         interface: interface.clone(),
+        exports: merged_full_exports,
         core_ir: merged_core,
         deps: merged_deps,
         sources: merged_sources.into_iter().collect(),
@@ -556,14 +561,14 @@ fn compile_module_package(
             deps_envs.insert(dep.clone(), local.interface.exports.to_genv());
             deps_interfaces.insert(dep.clone(), local.interface.interface.clone());
             dep_hashes.insert(dep.clone(), local.interface.interface_hash.clone());
-            local.interface.exports.apply_to(&mut compile_env);
+            local.core.exports.apply_to(&mut compile_env);
             continue;
         }
         if let Some((external, package_interface)) = find_external_package(external_roots, &dep) {
             deps_envs.insert(dep.clone(), external.interface.exports.to_genv());
             deps_interfaces.insert(dep.clone(), package_interface.clone());
             dep_hashes.insert(dep.clone(), external.interface.interface_hash.clone());
-            external.interface.exports.apply_to(&mut compile_env);
+            external.core.exports.apply_to(&mut compile_env);
             continue;
         }
         return Err(format!(
@@ -606,7 +611,12 @@ fn compile_module_package(
         return Err(diagnostics_text(&compile_diagnostics));
     }
 
-    let mut core = CoreUnit::new(package.name.clone(), interface.clone(), core_ir);
+    let mut core = CoreUnit::new(
+        package.name.clone(),
+        interface.clone(),
+        full_exports.clone(),
+        core_ir,
+    );
     core.sources = package
         .files
         .iter()
@@ -615,6 +625,7 @@ fn compile_module_package(
 
     Ok(CompiledPackage {
         exports,
+        full_exports,
         interface,
         core,
     })
