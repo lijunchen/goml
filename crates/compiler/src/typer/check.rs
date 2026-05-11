@@ -5922,6 +5922,18 @@ fn lookup_function_scheme_by_hint(
     {
         return Some(func_scheme);
     }
+    let mut packages = genv.deps.keys().collect::<Vec<_>>();
+    packages.sort_by_key(|package| std::cmp::Reverse(package.len()));
+    for package in packages {
+        if hint.starts_with(&format!("{package}::"))
+            && let Some(func_scheme) = genv
+                .deps
+                .get(package)
+                .and_then(|env| env.get_function_scheme(hint))
+        {
+            return Some(func_scheme);
+        }
+    }
     let segments = hint.split("::").map(|seg| seg.to_string()).collect();
     let path = hir::Path::from_idents(segments);
     lookup_function_path(genv, &path).map(|(_, scheme)| scheme)

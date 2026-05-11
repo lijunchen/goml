@@ -180,19 +180,35 @@ fn read_source_files(
                 imports.insert(package_import);
                 continue;
             }
+            if let Some(package_import) =
+                crate_package_import(&use_decl.path, package, interface_units, true)
+            {
+                insert_import_with_descendants(&mut imports, package_import, interface_units);
+                continue;
+            }
             if let Some(first) = use_decl.path.segments().first() {
                 imports.insert(first.ident.0.clone());
             }
         }
         for item in ast.toplevels.iter() {
             if let ast::ast::Item::Mod(module) = item {
-                imports.insert(module.name.0.clone());
+                insert_import_with_descendants(
+                    &mut imports,
+                    child_module_package(package, &module.name.0),
+                    interface_units,
+                );
             }
         }
         for use_trait in ast.use_traits.iter() {
             if let Some(package_import) = external_package_import_alias(use_trait, interface_units)
             {
                 imports.insert(package_import);
+                continue;
+            }
+            if let Some(package_import) =
+                crate_package_import(use_trait, package, interface_units, true)
+            {
+                insert_import_with_descendants(&mut imports, package_import, interface_units);
                 continue;
             }
             if use_trait
@@ -218,6 +234,60 @@ fn read_source_files(
 }
 
 type ReadSourceFilesResult = (Vec<hir::SourceFileAst>, HashSet<String>, Vec<String>);
+
+fn child_module_package(package: &str, name: &str) -> String {
+    if is_special_unqualified_package(package) {
+        name.to_string()
+    } else {
+        format!("{package}::{name}")
+    }
+}
+
+fn insert_import_with_descendants(
+    imports: &mut HashSet<String>,
+    package: String,
+    interface_units: &HashMap<String, (PathBuf, InterfaceUnit)>,
+) {
+    imports.insert(package.clone());
+    let prefix = format!("{package}::");
+    for dep in interface_units.keys() {
+        if dep.starts_with(&prefix) {
+            imports.insert(dep.clone());
+        }
+    }
+}
+
+fn crate_package_import(
+    path: &ast::ast::Path,
+    package: &str,
+    interface_units: &HashMap<String, (PathBuf, InterfaceUnit)>,
+    allow_full_path: bool,
+) -> Option<String> {
+    let segments = path
+        .segments()
+        .iter()
+        .map(|segment| segment.ident.0.clone())
+        .collect::<Vec<_>>();
+    let segments = if matches!(path.root(), ast::ast::PathRoot::Crate) {
+        segments
+    } else if segments.first().is_some_and(|segment| segment == "crate") {
+        segments[1..].to_vec()
+    } else {
+        return None;
+    };
+    let max_len = if allow_full_path {
+        segments.len()
+    } else {
+        segments.len().saturating_sub(1)
+    };
+    for len in (1..=max_len).rev() {
+        let candidate = segments[..len].join("::");
+        if candidate == package || interface_units.contains_key(&candidate) {
+            return Some(candidate);
+        }
+    }
+    None
+}
 
 fn external_root_import_path(unit: &InterfaceUnit) -> Option<&str> {
     unit.interface.packages.iter().next().map(String::as_str)

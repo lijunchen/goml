@@ -470,11 +470,13 @@ fn build_method_constraints(
 }
 
 fn is_local_name(current_package: &str, name: &str) -> bool {
-    if let Some((package, _)) = name.split_once("::") {
-        package == current_package
-    } else {
-        is_special_unqualified_package(current_package)
+    if is_special_unqualified_package(current_package) {
+        return !name.contains("::");
     }
+    let Some(rest) = name.strip_prefix(&format!("{current_package}::")) else {
+        return false;
+    };
+    !rest.contains("::")
 }
 
 fn is_local_nominal_type(current_package: &str, ty: &tast::Ty) -> bool {

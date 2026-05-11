@@ -208,36 +208,64 @@ impl ResolutionContext<'_> {
 
 fn use_path_is_package_import(
     path: &ast::Path,
+    current_package: &str,
     deps: &HashMap<String, interface::PackageInterface>,
 ) -> bool {
     is_exact_external_package_import(path, deps)
+        || crate_package_prefix(path, current_package, deps, true)
+            .is_some_and(|(_, len)| len == path_segments(path).len())
 }
 
 fn file_imports(
-    file: &ast::File,
+    file: &hir::SourceFileAst,
     deps: &HashMap<String, interface::PackageInterface>,
 ) -> HashSet<String> {
+    let current_package = file.ast.package.0.as_str();
     let mut imports = file
+        .ast
         .imports
         .iter()
         .map(|import| import.0.clone())
         .collect::<HashSet<_>>();
-    for use_decl in file.uses.iter() {
-        if let Some(package) = use_decl_import(&use_decl.path, deps) {
-            imports.insert(package);
+    for use_decl in file.ast.uses.iter() {
+        if let Some(package) = use_decl_import(&use_decl.path, current_package, deps) {
+            insert_import_with_descendants(&mut imports, package, deps);
         }
     }
-    for item in file.toplevels.iter() {
+    for item in file.ast.toplevels.iter() {
         if let ast::Item::Mod(module) = item {
-            imports.insert(module.name.0.clone());
+            let package = child_module_package(current_package, &module.name.0);
+            insert_import_with_descendants(&mut imports, package, deps);
         }
     }
-    for use_trait in file.use_traits.iter() {
-        if let Some(package) = use_trait_import(use_trait, deps) {
-            imports.insert(package);
+    for use_trait in file.ast.use_traits.iter() {
+        if let Some(package) = use_trait_import(use_trait, current_package, deps) {
+            insert_import_with_descendants(&mut imports, package, deps);
         }
     }
     imports
+}
+
+fn child_module_package(current_package: &str, name: &str) -> String {
+    if is_special_unqualified_package(current_package) {
+        name.to_string()
+    } else {
+        format!("{current_package}::{name}")
+    }
+}
+
+fn insert_import_with_descendants(
+    imports: &mut HashSet<String>,
+    package: String,
+    deps: &HashMap<String, interface::PackageInterface>,
+) {
+    imports.insert(package.clone());
+    let prefix = format!("{package}::");
+    for dep in deps.keys() {
+        if dep.starts_with(&prefix) {
+            imports.insert(dep.clone());
+        }
+    }
 }
 
 fn external_import_path_for_alias(
@@ -264,6 +292,17 @@ fn path_segments(path: &ast::Path) -> Vec<String> {
         .collect()
 }
 
+fn crate_path_segments(path: &ast::Path) -> Option<(Vec<String>, usize)> {
+    let segments = path_segments(path);
+    if matches!(path.root(), ast::PathRoot::Crate) {
+        return Some((segments, 0));
+    }
+    if segments.first().is_some_and(|segment| segment == "crate") {
+        return Some((segments[1..].to_vec(), 1));
+    }
+    None
+}
+
 fn path_from_segments(segments: Vec<String>) -> hir::Path {
     hir::Path::from_idents(segments)
 }
@@ -287,6 +326,7 @@ fn path_is_relative(path: &ast::Path) -> bool {
 
 fn use_alias_target(
     path: &ast::Path,
+    current_package: &str,
     deps: &HashMap<String, interface::PackageInterface>,
 ) -> Vec<String> {
     if let Some((alias, prefix_len)) = resolve_external_import_prefix(path, deps) {
@@ -299,25 +339,39 @@ fn use_alias_target(
         target.extend(segments[prefix_len..].iter().cloned());
         return target;
     }
+    if let Some((package, prefix_len)) = crate_package_prefix(path, current_package, deps, true) {
+        let segments = path_segments(path);
+        let mut target = vec![package];
+        target.extend(segments[prefix_len..].iter().cloned());
+        return target;
+    }
     path_segments(path)
 }
 
 fn use_decl_import(
     path: &ast::Path,
+    current_package: &str,
     deps: &HashMap<String, interface::PackageInterface>,
 ) -> Option<String> {
     if let Some(alias) = external_import_alias(path, deps) {
         return Some(alias);
+    }
+    if let Some((package, _)) = crate_package_prefix(path, current_package, deps, true) {
+        return Some(package);
     }
     first_crate_segment(path)
 }
 
 fn use_trait_import(
     path: &ast::Path,
+    current_package: &str,
     deps: &HashMap<String, interface::PackageInterface>,
 ) -> Option<String> {
     if let Some(alias) = external_import_alias(path, deps) {
         return Some(alias);
+    }
+    if let Some((package, _)) = crate_package_prefix(path, current_package, deps, true) {
+        return Some(package);
     }
     let segments = path.segments();
     if segments
@@ -329,8 +383,30 @@ fn use_trait_import(
     segments.first().map(|segment| segment.ident.0.clone())
 }
 
+fn crate_package_prefix(
+    path: &ast::Path,
+    current_package: &str,
+    deps: &HashMap<String, interface::PackageInterface>,
+    allow_full_path: bool,
+) -> Option<(String, usize)> {
+    let (segments, offset) = crate_path_segments(path)?;
+    let max_len = if allow_full_path {
+        segments.len()
+    } else {
+        segments.len().saturating_sub(1)
+    };
+    for len in (1..=max_len).rev() {
+        let package = segments[..len].join("::");
+        if package == current_package || deps.contains_key(&package) {
+            return Some((package, len + offset));
+        }
+    }
+    None
+}
+
 fn lowered_use_trait_path(
     path: &ast::Path,
+    current_package: &str,
     deps: &HashMap<String, interface::PackageInterface>,
 ) -> Option<hir::QualifiedPath> {
     if let Some((package, prefix_len)) = resolve_external_import_prefix(path, deps) {
@@ -343,22 +419,17 @@ fn lowered_use_trait_path(
             path: hir::Path::new(segments),
         });
     }
-    let segments = path.segments();
-    if segments
-        .first()
-        .is_some_and(|segment| segment.ident.0 == "crate")
-    {
-        if segments.len() < 3 {
-            return None;
-        }
-        let package = segments[1].ident.0.clone();
-        let path_segments = segments[2..]
+    if let Some((package, prefix_len)) = crate_package_prefix(path, current_package, deps, false) {
+        let segments = path.segments()[prefix_len..]
             .iter()
             .map(|segment| hir::PathSegment::new(segment.ident.0.clone()))
-            .collect();
+            .collect::<Vec<_>>();
+        if segments.is_empty() {
+            return None;
+        }
         return Some(hir::QualifiedPath {
             package: Some(hir::PackageName(package)),
-            path: hir::Path::new(path_segments),
+            path: hir::Path::new(segments),
         });
     }
     if path.len() < 2 {
@@ -384,7 +455,7 @@ impl NameResolution {
             else {
                 continue;
             };
-            let target = use_alias_target(&use_decl.path, deps);
+            let target = use_alias_target(&use_decl.path, file.package.0.as_str(), deps);
             match aliases.get_mut(&alias) {
                 Some(existing) if existing.as_ref().is_some_and(|prev| prev == &target) => {}
                 Some(existing) => {
@@ -428,13 +499,18 @@ impl NameResolution {
     }
 
     fn resolve_path_segments(&self, path: &ast::Path, ctx: &ResolutionContext) -> Vec<String> {
+        if let Some((package, len)) =
+            crate_package_prefix(path, ctx.current_package, ctx.deps, false)
+        {
+            let mut segments = vec![package];
+            segments.extend(path_segments(path)[len..].iter().cloned());
+            return segments;
+        }
         self.resolve_path_segments_with_aliases(path, ctx.use_aliases)
     }
 
     fn resolve_hir_path(&self, path: &ast::Path, ctx: &ResolutionContext) -> hir::Path {
-        self.expanded_path_segments(path, ctx.use_aliases)
-            .map(path_from_segments)
-            .unwrap_or_else(|| path.into())
+        path_from_segments(self.resolve_path_segments(path, ctx))
     }
 
     fn resolve_qualified_path(
@@ -442,7 +518,7 @@ impl NameResolution {
         path: &ast::Path,
         ctx: &ResolutionContext,
     ) -> hir::QualifiedPath {
-        self.resolve_qualified_path_with_aliases(path, ctx.use_aliases)
+        qualified_path_from_segments(self.resolve_path_segments(path, ctx))
     }
 
     fn resolve_qualified_path_with_aliases(
@@ -615,7 +691,7 @@ impl NameResolution {
                     ));
                 }
             }
-            let imports = file_imports(&file.ast, deps);
+            let imports = file_imports(file, deps);
             let use_aliases = self.file_use_aliases(&file.ast, deps, false);
             let mut def_ids = Vec::new();
             for item in file.ast.toplevels.iter() {
@@ -717,7 +793,7 @@ impl NameResolution {
 
         for (file_idx, file) in files.iter().enumerate() {
             let package_name = file.ast.package.0.as_str();
-            let imports = file_imports(&file.ast, deps);
+            let imports = file_imports(file, deps);
             let use_aliases = self.file_use_aliases(&file.ast, deps, true);
             let ctx = ResolutionContext {
                 builtin_names: &builtin_names,
@@ -818,7 +894,7 @@ impl NameResolution {
                 } else {
                     format!("{}/{}", package, file_name)
                 };
-                let imports = file_imports(&file.ast, deps);
+                let imports = file_imports(file, deps);
                 let mut imports_vec = imports
                     .into_iter()
                     .map(hir::PackageName)
@@ -833,10 +909,11 @@ impl NameResolution {
                     {
                         continue;
                     }
-                    if use_path_is_package_import(&use_decl.path, deps) {
+                    if use_path_is_package_import(&use_decl.path, &package, deps) {
                         continue;
                     }
-                    let Some(qualified) = lowered_use_trait_path(&use_decl.path, deps) else {
+                    let Some(qualified) = lowered_use_trait_path(&use_decl.path, &package, deps)
+                    else {
                         continue;
                     };
                     let Some(package) = &qualified.package else {
@@ -857,10 +934,10 @@ impl NameResolution {
                     {
                         continue;
                     }
-                    if use_path_is_package_import(use_trait, deps) {
+                    if use_path_is_package_import(use_trait, &package, deps) {
                         continue;
                     }
-                    let Some(qualified) = lowered_use_trait_path(use_trait, deps) else {
+                    let Some(qualified) = lowered_use_trait_path(use_trait, &package, deps) else {
                         continue;
                     };
                     let Some(package) = &qualified.package else {
