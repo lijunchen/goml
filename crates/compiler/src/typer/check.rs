@@ -4606,7 +4606,6 @@ impl Typer {
             }
             tast::Expr::EIndex { base, .. } => Self::tast_array_assign_root_is_ref(base),
             tast::Expr::ECall { func, args, .. } if args.len() == 1 => match func.as_ref() {
-                tast::Expr::EVar { name, .. } if name == "ref_get" => true,
                 tast::Expr::EInherentMethod {
                     receiver_ty,
                     method_name,

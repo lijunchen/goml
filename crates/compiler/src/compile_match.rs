@@ -549,7 +549,11 @@ enum CompiledPlaceRoot {
 fn is_ref_get_call(expr: &Expr) -> Option<&Expr> {
     match expr {
         Expr::ECall { func, args, .. } if args.len() == 1 => match func.as_ref() {
-            Expr::EVar { name, .. } if name == "ref_get" => Some(&args[0]),
+            Expr::EVar { name, .. }
+                if name == "ref_get" && matches!(args[0].get_ty(), Ty::TRef { .. }) =>
+            {
+                Some(&args[0])
+            }
             Expr::EInherentMethod {
                 receiver_ty,
                 method_name,
