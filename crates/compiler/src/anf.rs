@@ -1125,6 +1125,16 @@ fn lower_list<'a>(
         return k(imms);
     }
 
+    if let Some((binds, imms)) = lower_linear_list(gensym, &es) {
+        let block = k(imms);
+        let mut all_binds = binds;
+        all_binds.extend(block.binds);
+        return Block {
+            binds: all_binds,
+            term: block.term,
+        };
+    }
+
     let current = es.into_iter();
     fn go<'a>(
         anfenv: &'a GlobalAnfEnv,
@@ -1147,6 +1157,224 @@ fn lower_list<'a>(
         }
     }
     go(anfenv, gensym, current, Vec::new(), k)
+}
+
+fn lower_linear_list(gensym: &Gensym, es: &[LiftExpr]) -> Option<(Vec<Bind>, Vec<ImmExpr>)> {
+    let mut binds = Vec::new();
+    let mut imms = Vec::with_capacity(es.len());
+    for expr in es {
+        let (expr_binds, imm) = lower_linear_expr(gensym, expr)?;
+        binds.extend(expr_binds);
+        imms.push(imm);
+    }
+    Some((binds, imms))
+}
+
+fn lower_linear_expr(gensym: &Gensym, expr: &LiftExpr) -> Option<(Vec<Bind>, ImmExpr)> {
+    if let Some(imm) = try_lift_imm_to_imm(expr) {
+        return Some((Vec::new(), imm));
+    }
+
+    let ty = expr.get_ty();
+    match expr {
+        LiftExpr::EConstrGet {
+            expr,
+            constructor,
+            field_index,
+            ty: _,
+        } => {
+            let (binds, expr) = lower_linear_expr(gensym, expr)?;
+            return Some(bind_value(
+                gensym,
+                binds,
+                ValueExpr::ConstrGet {
+                    expr,
+                    constructor: constructor.clone(),
+                    field_index: *field_index,
+                    ty,
+                },
+            ));
+        }
+        LiftExpr::EUnary { op, expr, ty: _ } => {
+            let (binds, expr) = lower_linear_expr(gensym, expr)?;
+            return Some(bind_value(
+                gensym,
+                binds,
+                ValueExpr::Unary {
+                    op: op.clone(),
+                    expr,
+                    ty,
+                },
+            ));
+        }
+        LiftExpr::EBinary {
+            op,
+            lhs,
+            rhs,
+            ty: _,
+        } => {
+            if matches!(op, BinaryOp::And | BinaryOp::Or) {
+                return None;
+            }
+            let (mut binds, lhs) = lower_linear_expr(gensym, lhs)?;
+            let (rhs_binds, rhs) = lower_linear_expr(gensym, rhs)?;
+            binds.extend(rhs_binds);
+            return Some(bind_value(
+                gensym,
+                binds,
+                ValueExpr::Binary {
+                    op: op.clone(),
+                    lhs,
+                    rhs,
+                    ty,
+                },
+            ));
+        }
+        LiftExpr::EAssign {
+            name,
+            value,
+            target_ty,
+            ty: _,
+        } => {
+            let (binds, value) = lower_linear_expr(gensym, value)?;
+            return Some(bind_value(
+                gensym,
+                binds,
+                ValueExpr::Assign {
+                    name: local(name.clone()),
+                    value,
+                    target_ty: target_ty.clone(),
+                    ty,
+                },
+            ));
+        }
+        LiftExpr::EConstr {
+            constructor,
+            args,
+            ty: _,
+        } => {
+            let (binds, args) = lower_linear_list(gensym, args)?;
+            return Some(bind_value(
+                gensym,
+                binds,
+                ValueExpr::Constr {
+                    constructor: constructor.clone(),
+                    args,
+                    ty,
+                },
+            ));
+        }
+        LiftExpr::ETuple { items, ty: _ } => {
+            let (binds, items) = lower_linear_list(gensym, items)?;
+            return Some(bind_value(gensym, binds, ValueExpr::Tuple { items, ty }));
+        }
+        LiftExpr::EArray { items, ty: _ } => {
+            let (binds, items) = lower_linear_list(gensym, items)?;
+            return Some(bind_value(gensym, binds, ValueExpr::Array { items, ty }));
+        }
+        LiftExpr::ECall { func, args, ty: _ } => {
+            let (mut binds, func) = lower_linear_expr(gensym, func)?;
+            let (arg_binds, args) = lower_linear_list(gensym, args)?;
+            binds.extend(arg_binds);
+            let call_ty = if let ImmExpr::Var { id, .. } = &func {
+                if id.0 == "array_set" {
+                    args.first().map(imm_ty).unwrap_or_else(|| ty.clone())
+                } else if id.0 == "array_get" {
+                    args.first()
+                        .and_then(|arg0| match imm_ty(arg0) {
+                            Ty::TArray { elem, .. } => Some(*elem),
+                            _ => None,
+                        })
+                        .unwrap_or_else(|| ty.clone())
+                } else {
+                    ty
+                }
+            } else {
+                ty
+            };
+            return Some(bind_value(
+                gensym,
+                binds,
+                ValueExpr::Call {
+                    func,
+                    args,
+                    ty: call_ty,
+                },
+            ));
+        }
+        LiftExpr::EToDyn {
+            trait_name,
+            for_ty,
+            expr,
+            ty: _,
+        } => {
+            let (binds, expr) = lower_linear_expr(gensym, expr)?;
+            return Some(bind_value(
+                gensym,
+                binds,
+                ValueExpr::ToDyn {
+                    trait_name: trait_name.clone(),
+                    for_ty: for_ty.clone(),
+                    expr,
+                    ty,
+                },
+            ));
+        }
+        LiftExpr::EDynCall {
+            trait_name,
+            method_name,
+            receiver,
+            args,
+            ty: _,
+        } => {
+            let (mut binds, receiver) = lower_linear_expr(gensym, receiver)?;
+            let (arg_binds, args) = lower_linear_list(gensym, args)?;
+            binds.extend(arg_binds);
+            return Some(bind_value(
+                gensym,
+                binds,
+                ValueExpr::DynCall {
+                    trait_name: trait_name.clone(),
+                    method_name: method_name.clone(),
+                    receiver,
+                    args,
+                    ty,
+                },
+            ));
+        }
+        LiftExpr::EGo { expr, ty: _ } => {
+            let (binds, closure) = lower_linear_expr(gensym, expr)?;
+            return Some(bind_value(gensym, binds, ValueExpr::Go { closure, ty }));
+        }
+        LiftExpr::EProj {
+            tuple,
+            index,
+            ty: _,
+        } => {
+            let (binds, tuple) = lower_linear_expr(gensym, tuple)?;
+            return Some(bind_value(
+                gensym,
+                binds,
+                ValueExpr::Proj {
+                    tuple,
+                    index: *index,
+                    ty,
+                },
+            ));
+        }
+        _ => return None,
+    }
+}
+
+fn bind_value(gensym: &Gensym, mut binds: Vec<Bind>, value: ValueExpr) -> (Vec<Bind>, ImmExpr) {
+    let ty = value_expr_tast_ty(&value);
+    let id = local(gensym.gensym("t"));
+    binds.push(Bind::Let(LetBind {
+        id: id.clone(),
+        value,
+        ty: ty.clone(),
+    }));
+    (binds, ImmExpr::Var { id, ty })
 }
 
 pub fn anf_file(liftenv: GlobalLiftEnv, gensym: &Gensym, file: LiftFile) -> (File, GlobalAnfEnv) {
