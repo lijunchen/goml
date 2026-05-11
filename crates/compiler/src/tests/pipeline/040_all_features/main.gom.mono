@@ -216,7 +216,11 @@ fn main() -> unit {
               let results/67 = run_transforms(4, transforms/66) in
               let first_result/68 = $goml_builtin_runtime$array_get(results/67, 0) in
               let second_result/69 = $goml_builtin_runtime$array_get(results/67, 1) in
-              let order_check/70 = ((first_result/68 < second_result/69) && true) in
+              let order_check/70 = if (first_result/68 < second_result/69) {
+                  true
+              } else {
+                  false
+              } in
               let first_text/71 = trait_impl#Describe#Record__int32#describe(first_record/59) in
               let bumped_text/72 = trait_impl#Describe#Record__int32#describe(bumped_record/60) in
               let flipped_text/73 = trait_impl#Describe#Record__string#describe(flipped_record/61) in

@@ -290,7 +290,11 @@ fn env_lookup(env/28: Vec[EnvEntry], name/29: string) -> Option[Typ] {
   let i/30 = inherent#Ref#Ref[int32]#new((inherent#Vec#Vec[EnvEntry]#len(env/28) - 1)) in
   let found/31 = inherent#Ref#Ref[Option[Typ]]#new(Option::None) in
   let done/32 = inherent#Ref#Ref[bool]#new(false) in
-  let mtmp23 = while ((!inherent#Ref#Ref[bool]#get(done/32)) && (inherent#Ref#Ref[int32]#get(i/30) >= 0)) {
+  let mtmp23 = while if (!inherent#Ref#Ref[bool]#get(done/32)) {
+      (inherent#Ref#Ref[int32]#get(i/30) >= 0)
+  } else {
+      false
+  } {
       {
         let entry/33 = $goml_builtin_runtime$vec_get(env/28, inherent#Ref#Ref[int32]#get(i/30)) in
         if (EnvEntry.name(entry/33) == name/29) {
@@ -316,7 +320,11 @@ fn subst_lookup(subst/34: Vec[SubstEntry], name/35: string) -> Option[Typ] {
   let i/36 = inherent#Ref#Ref[int32]#new((inherent#Vec#Vec[SubstEntry]#len(subst/34) - 1)) in
   let found/37 = inherent#Ref#Ref[Option[Typ]]#new(Option::None) in
   let done/38 = inherent#Ref#Ref[bool]#new(false) in
-  let mtmp25 = while ((!inherent#Ref#Ref[bool]#get(done/38)) && (inherent#Ref#Ref[int32]#get(i/36) >= 0)) {
+  let mtmp25 = while if (!inherent#Ref#Ref[bool]#get(done/38)) {
+      (inherent#Ref#Ref[int32]#get(i/36) >= 0)
+  } else {
+      false
+  } {
       {
         let entry/39 = $goml_builtin_runtime$vec_get(subst/34, inherent#Ref#Ref[int32]#get(i/36)) in
         if (SubstEntry.name(entry/39) == name/35) {

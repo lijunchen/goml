@@ -169,18 +169,28 @@ func main0() struct{} {
     println__T_string(t52)
     var t53 string = int32_to_string(pair_total__21)
     println__T_string(t53)
-    var t54 bool = flipped__16 && flipped_again__17
-    var t55 bool = t54 && bool_check__23
-    var t56 string = bool_to_string(t55)
+    var jp58 bool
+    if flipped__16 {
+        jp58 = flipped_again__17
+    } else {
+        jp58 = false
+    }
+    var jp55 bool
+    if jp58 {
+        jp55 = bool_check__23
+    } else {
+        jp55 = false
+    }
+    var t56 string = bool_to_string(jp55)
     println__T_string(t56)
     return struct{}{}
 }
 
 func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_int32(self__94 *ref_int32_x) int32 {
-    var retv58 int32
-    var t59 int32 = ref_get__Ref_5int32(self__94)
-    retv58 = t59
-    return retv58
+    var retv60 int32
+    var t61 int32 = ref_get__Ref_5int32(self__94)
+    retv60 = t61
+    return retv60
 }
 
 func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_int32(self__95 *ref_int32_x, value__96 int32) struct{} {
@@ -189,10 +199,10 @@ func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_int32(self
 }
 
 func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_bool(self__94 *ref_bool_x) bool {
-    var retv63 bool
-    var t64 bool = ref_get__Ref_4bool(self__94)
-    retv63 = t64
-    return retv63
+    var retv65 bool
+    var t66 bool = ref_get__Ref_4bool(self__94)
+    retv65 = t66
+    return retv65
 }
 
 func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_bool(self__95 *ref_bool_x, value__96 bool) struct{} {
@@ -201,31 +211,31 @@ func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_bool(self_
 }
 
 func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_Ref_x5b_int32_x5d_(self__94 *ref_Ref_5int32_x) *ref_int32_x {
-    var retv68 *ref_int32_x
-    var t69 *ref_int32_x = ref_get__Ref_10Ref_5int32(self__94)
-    retv68 = t69
-    return retv68
+    var retv70 *ref_int32_x
+    var t71 *ref_int32_x = ref_get__Ref_10Ref_5int32(self__94)
+    retv70 = t71
+    return retv70
 }
 
 func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_int32(value__93 int32) *ref_int32_x {
-    var retv71 *ref_int32_x
-    var t72 *ref_int32_x = ref__Ref_5int32(value__93)
-    retv71 = t72
-    return retv71
+    var retv73 *ref_int32_x
+    var t74 *ref_int32_x = ref__Ref_5int32(value__93)
+    retv73 = t74
+    return retv73
 }
 
 func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_bool(value__93 bool) *ref_bool_x {
-    var retv74 *ref_bool_x
-    var t75 *ref_bool_x = ref__Ref_4bool(value__93)
-    retv74 = t75
-    return retv74
+    var retv76 *ref_bool_x
+    var t77 *ref_bool_x = ref__Ref_4bool(value__93)
+    retv76 = t77
+    return retv76
 }
 
 func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_Ref_x5b_int32_x5d_(value__93 *ref_int32_x) *ref_Ref_5int32_x {
-    var retv77 *ref_Ref_5int32_x
-    var t78 *ref_Ref_5int32_x = ref__Ref_10Ref_5int32(value__93)
-    retv77 = t78
-    return retv77
+    var retv79 *ref_Ref_5int32_x
+    var t80 *ref_Ref_5int32_x = ref__Ref_10Ref_5int32(value__93)
+    retv79 = t80
+    return retv79
 }
 
 func println__T_string(value__1 string) struct{} {

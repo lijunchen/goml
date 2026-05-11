@@ -213,81 +213,80 @@ fn main() -> unit {
   let results/67 = run_transforms(4, transforms/66) in
   let first_result/68 = $goml_builtin_runtime$array_get(results/67, 0) in
   let second_result/69 = $goml_builtin_runtime$array_get(results/67, 1) in
-  let t95 = (first_result/68 < second_result/69) in
-  let order_check/70 = (t95 && true) in
-  let first_text/71 = trait_impl#Describe#Record__int32#describe(first_record/59) in
-  let bumped_text/72 = trait_impl#Describe#Record__int32#describe(bumped_record/60) in
-  let flipped_text/73 = trait_impl#Describe#Record__string#describe(flipped_record/61) in
-  join k96(jp97: string) -> unit {
-    let summary/75 = jp97 in
-    let t98 = $goml_builtin_runtime$int32_to_string(first_result/68) in
-    let t99 = $goml_builtin_runtime$int32_to_string(second_result/69) in
-    let t100 = (t98, t99) in
-    let pair_text/76 = pair_join(t100) in
-    let bool_text/77 = $goml_builtin_runtime$bool_to_string(order_check/70) in
-    let mtmp30 = println__T_string(tracker_info/58) in
-    let mtmp31 = println__T_string(first_text/71) in
-    let mtmp32 = println__T_string(bumped_text/72) in
-    let mtmp33 = println__T_string(flipped_text/73) in
-    let mtmp34 = println__T_string(summary/75) in
-    let mtmp35 = println__T_string(pair_text/76) in
-    let mtmp36 = println__T_string(bool_text/77) in
-    jump ret94()
+  let t103 = (first_result/68 < second_result/69) in
+  join k95(jp96: bool) -> unit {
+    let order_check/70 = jp96 in
+    let first_text/71 = trait_impl#Describe#Record__int32#describe(first_record/59) in
+    let bumped_text/72 = trait_impl#Describe#Record__int32#describe(bumped_record/60) in
+    let flipped_text/73 = trait_impl#Describe#Record__string#describe(flipped_record/61) in
+    join k97(jp98: string) -> unit {
+      let summary/75 = jp98 in
+      let t99 = $goml_builtin_runtime$int32_to_string(first_result/68) in
+      let t100 = $goml_builtin_runtime$int32_to_string(second_result/69) in
+      let t101 = (t99, t100) in
+      let pair_text/76 = pair_join(t101) in
+      let bool_text/77 = $goml_builtin_runtime$bool_to_string(order_check/70) in
+      let mtmp30 = println__T_string(tracker_info/58) in
+      let mtmp31 = println__T_string(first_text/71) in
+      let mtmp32 = println__T_string(bumped_text/72) in
+      let mtmp33 = println__T_string(flipped_text/73) in
+      let mtmp34 = println__T_string(summary/75) in
+      let mtmp35 = println__T_string(pair_text/76) in
+      let mtmp36 = println__T_string(bool_text/77) in
+      jump ret94()
+    } in
+    match stringified/65 {
+      Tag_0 => {
+        let x29 = Maybe__string::Some._0(stringified/65) in
+        let text/74 = x29 in
+        let t102 = ("Snapshot: " + text/74) in
+        jump k97(t102)
+      },
+      Tag_1 => {
+        jump k97("Snapshot: none")
+      },
+    }
   } in
-  match stringified/65 {
-    Tag_0 => {
-      let x29 = Maybe__string::Some._0(stringified/65) in
-      let text/74 = x29 in
-      let t101 = ("Snapshot: " + text/74) in
-      jump k96(t101)
-    },
-    Tag_1 => {
-      jump k96("Snapshot: none")
-    },
+  if t103 {
+    jump k95(true)
+  } else {
+    jump k95(false)
   }
 }
 
 fn inherent#Ref#Ref[T]#get__T_int32(self/94: Ref[int32]) -> int32 {
-  join ret102(retv103: int32) -> int32 {
-    retv103
+  join ret104(retv105: int32) -> int32 {
+    retv105
   } in
-  let t104 = ref_get(self/94) in
-  jump ret102(t104)
+  let t106 = ref_get(self/94) in
+  jump ret104(t106)
 }
 
 fn inherent#Ref#Ref[T]#get__T_bool(self/94: Ref[bool]) -> bool {
-  join ret105(retv106: bool) -> bool {
-    retv106
+  join ret107(retv108: bool) -> bool {
+    retv108
   } in
-  let t107 = ref_get(self/94) in
-  jump ret105(t107)
+  let t109 = ref_get(self/94) in
+  jump ret107(t109)
 }
 
 fn inherent#Ref#Ref[T]#new__T_int32(value/93: int32) -> Ref[int32] {
-  join ret108(retv109: Ref[int32]) -> Ref[int32] {
-    retv109
+  join ret110(retv111: Ref[int32]) -> Ref[int32] {
+    retv111
   } in
-  let t110 = ref(value/93) in
-  jump ret108(t110)
+  let t112 = ref(value/93) in
+  jump ret110(t112)
 }
 
 fn inherent#Ref#Ref[T]#new__T_bool(value/93: bool) -> Ref[bool] {
-  join ret111(retv112: Ref[bool]) -> Ref[bool] {
-    retv112
+  join ret113(retv114: Ref[bool]) -> Ref[bool] {
+    retv114
   } in
-  let t113 = ref(value/93) in
-  jump ret111(t113)
+  let t115 = ref(value/93) in
+  jump ret113(t115)
 }
 
 fn inherent#Ref#Ref[T]#set__T_int32(self/95: Ref[int32], value/96: int32) -> unit {
-  join ret114() -> unit {
-    ()
-  } in
-  let t115 = ref_set(self/95, value/96) in
-  jump ret114()
-}
-
-fn inherent#Ref#Ref[T]#set__T_bool(self/95: Ref[bool], value/96: bool) -> unit {
   join ret116() -> unit {
     ()
   } in
@@ -295,83 +294,91 @@ fn inherent#Ref#Ref[T]#set__T_bool(self/95: Ref[bool], value/96: bool) -> unit {
   jump ret116()
 }
 
-fn choose__T_Maybe[int32](flag/20: bool, when_true/21: Maybe__int32, when_false/22: Maybe__int32) -> Maybe__int32 {
-  join ret118(retv119: Maybe__int32) -> Maybe__int32 {
-    retv119
+fn inherent#Ref#Ref[T]#set__T_bool(self/95: Ref[bool], value/96: bool) -> unit {
+  join ret118() -> unit {
+    ()
   } in
-  join k120(jp121: Maybe__int32) -> Maybe__int32 {
-    jump ret118(jp121)
+  let t119 = ref_set(self/95, value/96) in
+  jump ret118()
+}
+
+fn choose__T_Maybe[int32](flag/20: bool, when_true/21: Maybe__int32, when_false/22: Maybe__int32) -> Maybe__int32 {
+  join ret120(retv121: Maybe__int32) -> Maybe__int32 {
+    retv121
+  } in
+  join k122(jp123: Maybe__int32) -> Maybe__int32 {
+    jump ret120(jp123)
   } in
   if flag/20 {
-    jump k120(when_true/21)
+    jump k122(when_true/21)
   } else {
-    jump k120(when_false/22)
+    jump k122(when_false/22)
   }
 }
 
 fn map_maybe__T_int32__U_string(value/23: Maybe__int32, f/24: (int32) -> string) -> Maybe__string {
-  join ret122(retv123: Maybe__string) -> Maybe__string {
-    retv123
+  join ret124(retv125: Maybe__string) -> Maybe__string {
+    retv125
   } in
-  join k124(jp125: Maybe__string) -> Maybe__string {
-    jump ret122(jp125)
+  join k126(jp127: Maybe__string) -> Maybe__string {
+    jump ret124(jp127)
   } in
   match value/23 {
     Tag_0 => {
       let x10 = Maybe__int32::Some._0(value/23) in
       let inner/25 = x10 in
-      let t126 = f/24(inner/25) in
-      let t127 = Maybe__string::Some(t126) in
-      jump k124(t127)
+      let t128 = f/24(inner/25) in
+      let t129 = Maybe__string::Some(t128) in
+      jump k126(t129)
     },
     Tag_1 => {
-      jump k124(Tag_1)
+      jump k126(Tag_1)
     },
   }
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret128() -> unit {
+  join ret130() -> unit {
     ()
   } in
-  let t129 = string_println(value/1) in
-  jump ret128()
+  let t131 = string_println(value/1) in
+  jump ret130()
 }
 
 fn inherent#closure_env_snapshot_0#closure_env_snapshot_0#apply(env37: closure_env_snapshot_0) -> Record__int32 {
-  join ret130(retv131: Record__int32) -> Record__int32 {
-    retv131
+  join ret132(retv133: Record__int32) -> Record__int32 {
+    retv133
   } in
   let count/44 = closure_env_snapshot_0.count_0(env37) in
-  let t132 = inherent#Ref#Ref[T]#get__T_int32(count/44) in
-  let t133 = Record__int32::Value(t132) in
-  jump ret130(t133)
+  let t134 = inherent#Ref#Ref[T]#get__T_int32(count/44) in
+  let t135 = Record__int32::Value(t134) in
+  jump ret132(t135)
 }
 
 fn inherent#closure_env_bump_1#closure_env_bump_1#apply(env38: closure_env_bump_1, delta/48: int32) -> Record__int32 {
-  join ret134(retv135: Record__int32) -> Record__int32 {
-    retv135
+  join ret136(retv137: Record__int32) -> Record__int32 {
+    retv137
   } in
   let count/44 = closure_env_bump_1.count_0(env38) in
   let before/49 = inherent#Ref#Ref[T]#get__T_int32(count/44) in
-  let t136 = (before/49 + delta/48) in
-  let mtmp22 = inherent#Ref#Ref[T]#set__T_int32(count/44, t136) in
-  let t137 = inherent#Ref#Ref[T]#get__T_int32(count/44) in
-  let t138 = Record__int32::Pair(before/49, t137) in
-  jump ret134(t138)
+  let t138 = (before/49 + delta/48) in
+  let mtmp22 = inherent#Ref#Ref[T]#set__T_int32(count/44, t138) in
+  let t139 = inherent#Ref#Ref[T]#get__T_int32(count/44) in
+  let t140 = Record__int32::Pair(before/49, t139) in
+  jump ret136(t140)
 }
 
 fn inherent#closure_env_flip_2#closure_env_flip_2#apply(env39: closure_env_flip_2) -> Record__string {
-  join ret139(retv140: Record__string) -> Record__string {
-    retv140
+  join ret141(retv142: Record__string) -> Record__string {
+    retv142
   } in
   let toggled/45 = closure_env_flip_2.toggled_0(env39) in
   let before/51 = inherent#Ref#Ref[T]#get__T_bool(toggled/45) in
-  let t141 = (!before/51) in
-  let mtmp23 = inherent#Ref#Ref[T]#set__T_bool(toggled/45, t141) in
+  let t143 = (!before/51) in
+  let mtmp23 = inherent#Ref#Ref[T]#set__T_bool(toggled/45, t143) in
   let after/52 = inherent#Ref#Ref[T]#get__T_bool(toggled/45) in
-  let t142 = $goml_builtin_runtime$bool_to_string(before/51) in
-  let t143 = $goml_builtin_runtime$bool_to_string(after/52) in
-  let t144 = Record__string::Pair(t142, t143) in
-  jump ret139(t144)
+  let t144 = $goml_builtin_runtime$bool_to_string(before/51) in
+  let t145 = $goml_builtin_runtime$bool_to_string(after/52) in
+  let t146 = Record__string::Pair(t144, t145) in
+  jump ret141(t146)
 }

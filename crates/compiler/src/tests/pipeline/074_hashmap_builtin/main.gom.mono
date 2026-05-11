@@ -1,5 +1,13 @@
 fn trait_impl#Eq#Point#eq(self/0: Point, other/1: Point) -> bool {
-  ((true && trait_impl#Eq#int32#eq(Point.x(self/0), Point.x(other/1))) && trait_impl#Eq#int32#eq(Point.y(self/0), Point.y(other/1)))
+  if if true {
+      trait_impl#Eq#int32#eq(Point.x(self/0), Point.x(other/1))
+  } else {
+      false
+  } {
+      trait_impl#Eq#int32#eq(Point.y(self/0), Point.y(other/1))
+  } else {
+      false
+  }
 }
 
 fn trait_impl#Hash#Point#hash(self/2: Point) -> uint64 {
@@ -49,7 +57,11 @@ fn trait_impl#Eq#Key#eq(self/6: Key, other/7: Key) -> bool {
                     let __l1_0/8 = x7 in
                     {
                       let __r1_0/9 = x3 in
-                      (true && trait_impl#Eq#int32#eq(__l1_0/8, __r1_0/9))
+                      if true {
+                          trait_impl#Eq#int32#eq(__l1_0/8, __r1_0/9)
+                      } else {
+                          false
+                      }
                     }
                   }
                 }
@@ -83,7 +95,11 @@ fn trait_impl#Eq#Key#eq(self/6: Key, other/7: Key) -> bool {
                     let __l2_0/10 = x10 in
                     {
                       let __r2_0/11 = x4 in
-                      (true && trait_impl#Eq#Point#eq(__l2_0/10, __r2_0/11))
+                      if true {
+                          trait_impl#Eq#Point#eq(__l2_0/10, __r2_0/11)
+                      } else {
+                          false
+                      }
                     }
                   }
                 }

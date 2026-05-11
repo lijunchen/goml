@@ -2,46 +2,52 @@ fn my_int_equal(x/0: int32, y/1: int32) -> bool {
   join ret0(retv1: bool) -> bool {
     retv1
   } in
-  let t2 = (x/0 < y/1) in
-  let t3 = (!t2) in
-  let t4 = (y/1 < x/0) in
+  let t4 = (x/0 < y/1) in
   let t5 = (!t4) in
-  let t6 = (t3 && t5) in
-  jump ret0(t6)
+  join k2(jp3: bool) -> bool {
+    jump ret0(jp3)
+  } in
+  if t5 {
+    let t6 = (y/1 < x/0) in
+    let t7 = (!t6) in
+    jump k2(t7)
+  } else {
+    jump k2(false)
+  }
 }
 
 fn sum(n/2: int32) -> int32 {
-  join ret7(retv8: int32) -> int32 {
-    retv8
+  join ret8(retv9: int32) -> int32 {
+    retv9
   } in
-  let t11 = my_int_equal(n/2, 1) in
-  join k9(jp10: int32) -> int32 {
-    jump ret7(jp10)
+  let t12 = my_int_equal(n/2, 1) in
+  join k10(jp11: int32) -> int32 {
+    jump ret8(jp11)
   } in
-  if t11 {
-    jump k9(1)
+  if t12 {
+    jump k10(1)
   } else {
-    let t12 = (n/2 - 1) in
-    let t13 = sum(t12) in
-    let t14 = (n/2 + t13) in
-    jump k9(t14)
+    let t13 = (n/2 - 1) in
+    let t14 = sum(t13) in
+    let t15 = (n/2 + t14) in
+    jump k10(t15)
   }
 }
 
 fn main() -> unit {
-  join ret15() -> unit {
+  join ret16() -> unit {
     ()
   } in
-  let t16 = sum(100) in
-  let t17 = println__T_int32(t16) in
-  jump ret15()
+  let t17 = sum(100) in
+  let t18 = println__T_int32(t17) in
+  jump ret16()
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join ret18() -> unit {
+  join ret19() -> unit {
     ()
   } in
-  let t19 = $goml_builtin_runtime$int32_to_string(value/1) in
-  let t20 = string_println(t19) in
-  jump ret18()
+  let t20 = $goml_builtin_runtime$int32_to_string(value/1) in
+  let t21 = string_println(t20) in
+  jump ret19()
 }

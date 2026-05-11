@@ -7,7 +7,11 @@ fn println(value/1: T) -> unit {
 }
 
 fn is_digit(ch/0: char) -> bool {
-  ((ch/0 >= '0') && (ch/0 <= '9'))
+  if (ch/0 >= '0') {
+      (ch/0 <= '9')
+  } else {
+      false
+  }
 }
 
 fn digit_value(ch/1: char) -> int32 {
@@ -58,10 +62,18 @@ fn is_int_text(text/2: string) -> bool {
         let saw_digit/5 = inherent#Ref#Ref[bool]#new(false) in
         let ok/6 = inherent#Ref#Ref[bool]#new(true) in
         let started/7 = inherent#Ref#Ref[bool]#new(false) in
-        let mtmp3 = while (inherent#Ref#Ref[bool]#get(ok/6) && (inherent#Ref#Ref[int32]#get(i/4) < len/3)) {
+        let mtmp3 = while if inherent#Ref#Ref[bool]#get(ok/6) {
+            (inherent#Ref#Ref[int32]#get(i/4) < len/3)
+        } else {
+            false
+        } {
             {
               let ch/8 = $goml_builtin_runtime$string_get(text/2, inherent#Ref#Ref[int32]#get(i/4)) in
-              if ((!inherent#Ref#Ref[bool]#get(started/7)) && (ch/8 == '-')) {
+              if if (!inherent#Ref#Ref[bool]#get(started/7)) {
+                  (ch/8 == '-')
+              } else {
+                  false
+              } {
                   {
                     let mtmp0 = inherent#Ref#Ref[bool]#set(started/7, true) in
                     {
@@ -88,7 +100,11 @@ fn is_int_text(text/2: string) -> bool {
             }
         } in
         {
-          (inherent#Ref#Ref[bool]#get(ok/6) && inherent#Ref#Ref[bool]#get(saw_digit/5))
+          if inherent#Ref#Ref[bool]#get(ok/6) {
+              inherent#Ref#Ref[bool]#get(saw_digit/5)
+          } else {
+              false
+          }
         }
       }
   }
@@ -103,7 +119,11 @@ fn parse_int32(text/9: string) -> int32 {
   let mtmp8 = while (inherent#Ref#Ref[int32]#get(i/11) < len/10) {
       {
         let ch/15 = $goml_builtin_runtime$string_get(text/9, inherent#Ref#Ref[int32]#get(i/11)) in
-        if ((!inherent#Ref#Ref[bool]#get(started/13)) && (ch/15 == '-')) {
+        if if (!inherent#Ref#Ref[bool]#get(started/13)) {
+            (ch/15 == '-')
+        } else {
+            false
+        } {
             {
               let mtmp4 = inherent#Ref#Ref[bool]#set(started/13, true) in
               {
@@ -141,7 +161,15 @@ fn parse_int32(text/9: string) -> int32 {
 }
 
 fn is_delim(ch/17: char) -> bool {
-  (((ch/17 == '(') || (ch/17 == ')')) || (ch/17 == ' '))
+  if if (ch/17 == '(') {
+      true
+  } else {
+      (ch/17 == ')')
+  } {
+      true
+  } else {
+      (ch/17 == ' ')
+  }
 }
 
 fn lex_atom(source/18: string, start/19: int32) -> (Token, int32) {
@@ -149,7 +177,11 @@ fn lex_atom(source/18: string, start/19: int32) -> (Token, int32) {
   let text/21 = inherent#Ref#Ref[string]#new("") in
   let i/22 = inherent#Ref#Ref[int32]#new(start/19) in
   let done/23 = inherent#Ref#Ref[bool]#new(false) in
-  let mtmp10 = while ((!inherent#Ref#Ref[bool]#get(done/23)) && (inherent#Ref#Ref[int32]#get(i/22) < len/20)) {
+  let mtmp10 = while if (!inherent#Ref#Ref[bool]#get(done/23)) {
+      (inherent#Ref#Ref[int32]#get(i/22) < len/20)
+  } else {
+      false
+  } {
       {
         let ch/24 = $goml_builtin_runtime$string_get(source/18, inherent#Ref#Ref[int32]#get(i/22)) in
         if is_delim(ch/24) {
@@ -251,7 +283,11 @@ fn env_lookup(env/35: Vec[Binding], name/36: string) -> Value {
   let i/37 = inherent#Ref#Ref[int32]#new((inherent#Vec#Vec[Binding]#len(env/35) - 1)) in
   let result/38 = inherent#Ref#Ref[Value]#new(Value::Nil) in
   let done/39 = inherent#Ref#Ref[bool]#new(false) in
-  let mtmp19 = while ((!inherent#Ref#Ref[bool]#get(done/39)) && (inherent#Ref#Ref[int32]#get(i/37) >= 0)) {
+  let mtmp19 = while if (!inherent#Ref#Ref[bool]#get(done/39)) {
+      (inherent#Ref#Ref[int32]#get(i/37) >= 0)
+  } else {
+      false
+  } {
       {
         let binding/40 = $goml_builtin_runtime$vec_get(env/35, inherent#Ref#Ref[int32]#get(i/37)) in
         if (Binding.name(binding/40) == name/36) {
@@ -316,7 +352,11 @@ fn parse_list(tokens/45: Vec[Token], start/46: int32) -> (Vec[SExpr], int32) {
   let exprs/48 = inherent#Ref#Ref[Vec[SExpr]]#new(acc/47) in
   let i/49 = inherent#Ref#Ref[int32]#new(start/46) in
   let done/50 = inherent#Ref#Ref[bool]#new(false) in
-  let mtmp45 = while ((!inherent#Ref#Ref[bool]#get(done/50)) && (inherent#Ref#Ref[int32]#get(i/49) < inherent#Vec#Vec[Token]#len(tokens/45))) {
+  let mtmp45 = while if (!inherent#Ref#Ref[bool]#get(done/50)) {
+      (inherent#Ref#Ref[int32]#get(i/49) < inherent#Vec#Vec[Token]#len(tokens/45))
+  } else {
+      false
+  } {
       {
         {
           let mtmp24 = $goml_builtin_runtime$vec_get(tokens/45, inherent#Ref#Ref[int32]#get(i/49)) in
@@ -1305,7 +1345,11 @@ fn apply(func/137: Value, args/138: Vec[Value], global/139: Ref[Vec[Binding]]) -
 fn apply_lambda(lambda/141: Lambda, args/142: Vec[Value]) -> Value {
   let env/143 = inherent#Ref#Ref[Vec[Binding]]#new(Lambda.env(lambda/141)) in
   let i/144 = inherent#Ref#Ref[int32]#new(0) in
-  let mtmp145 = while ((inherent#Ref#Ref[int32]#get(i/144) < inherent#Vec#Vec[string]#len(Lambda.params(lambda/141))) && (inherent#Ref#Ref[int32]#get(i/144) < inherent#Vec#Vec[Value]#len(args/142))) {
+  let mtmp145 = while if (inherent#Ref#Ref[int32]#get(i/144) < inherent#Vec#Vec[string]#len(Lambda.params(lambda/141))) {
+      (inherent#Ref#Ref[int32]#get(i/144) < inherent#Vec#Vec[Value]#len(args/142))
+  } else {
+      false
+  } {
       {
         let name/145 = $goml_builtin_runtime$vec_get(Lambda.params(lambda/141), inherent#Ref#Ref[int32]#get(i/144)) in
         let value/146 = $goml_builtin_runtime$vec_get(args/142, inherent#Ref#Ref[int32]#get(i/144)) in
