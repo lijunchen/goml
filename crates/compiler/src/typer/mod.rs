@@ -15,7 +15,9 @@ mod unify;
 mod util;
 
 pub use toplevel::check_file_with_env_and_results;
-pub use toplevel::{check_file, check_file_with_env};
+pub use toplevel::{
+    check_file, check_file_with_env, check_file_with_env_allowing_std_host_externs,
+};
 
 #[derive(Debug, Clone)]
 pub(crate) enum ArithmeticKind {

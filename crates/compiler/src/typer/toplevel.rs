@@ -1031,7 +1031,7 @@ fn define_extern_builtin(
             return;
         }
 
-        if !is_std_host_extern(&env.package, local_name) {
+        if !env.allow_std_host_externs || !is_std_host_extern(&env.package, local_name) {
             diagnostics.push(Diagnostic::new(
                 Stage::Typer,
                 Severity::Error,
@@ -1429,7 +1429,33 @@ pub fn check_file_with_env(
     package: &str,
     deps: HashMap<String, env::GlobalTypeEnv>,
 ) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
+    check_file_with_env_inner(hir, hir_table, genv, builtins, package, deps, false)
+}
+
+pub fn check_file_with_env_allowing_std_host_externs(
+    hir: hir::PackageHir,
+    hir_table: name_resolution::HirTable,
+    genv: env::GlobalTypeEnv,
+    builtins: env::GlobalTypeEnv,
+    package: &str,
+    deps: HashMap<String, env::GlobalTypeEnv>,
+) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
+    check_file_with_env_inner(hir, hir_table, genv, builtins, package, deps, true)
+}
+
+fn check_file_with_env_inner(
+    hir: hir::PackageHir,
+    hir_table: name_resolution::HirTable,
+    genv: env::GlobalTypeEnv,
+    builtins: env::GlobalTypeEnv,
+    package: &str,
+    deps: HashMap<String, env::GlobalTypeEnv>,
+    allow_std_host_externs: bool,
+) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
     let mut genv = env::PackageTypeEnv::new(package.to_string(), builtins, genv, deps);
+    if allow_std_host_externs {
+        genv = genv.with_std_host_externs();
+    }
     let mut typer = Typer::new(hir_table);
     let mut diagnostics = Diagnostics::new();
     collect_typedefs(&mut genv, &mut diagnostics, &hir, &typer.hir_table);

@@ -617,6 +617,7 @@ pub struct PackageTypeEnv {
     pub builtins: GlobalTypeEnv,
     pub current: GlobalTypeEnv,
     pub deps: HashMap<String, GlobalTypeEnv>,
+    pub allow_std_host_externs: bool,
     lookup_cache: PackageTypeEnvLookupCache,
 }
 
@@ -638,8 +639,14 @@ impl PackageTypeEnv {
             builtins,
             current,
             deps,
+            allow_std_host_externs: false,
             lookup_cache: PackageTypeEnvLookupCache::default(),
         }
+    }
+
+    pub fn with_std_host_externs(mut self) -> Self {
+        self.allow_std_host_externs = true;
+        self
     }
 
     fn clear_lookup_cache(&self) {
