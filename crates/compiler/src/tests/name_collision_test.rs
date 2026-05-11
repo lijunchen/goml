@@ -158,6 +158,13 @@ fn hidden_ref_shadow_user_symbol_executes() {
 }
 
 #[test]
+fn trait_tostring_builtin_shadow_user_symbol_executes() {
+    let output = run_crasher("trait_tostring_builtin_shadow_user_symbol");
+
+    assert_eq!(output, "4\nref(3)\n");
+}
+
+#[test]
 fn hashmap_lookup_helper_function_name_collision_executes() {
     let output = run_crasher("hashmap_lookup_helper_function_name_collision_user_symbol");
 
