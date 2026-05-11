@@ -117,6 +117,11 @@ fn multi_package_compile_project_025() -> anyhow::Result<()> {
     run_project("project025_nested_module_path")
 }
 
+#[test]
+fn multi_package_compile_project_026() -> anyhow::Result<()> {
+    run_project("project026_nested_module_impl_locality")
+}
+
 fn run_project(name: &str) -> anyhow::Result<()> {
     let name = name.to_string();
     let handle = std::thread::Builder::new()
