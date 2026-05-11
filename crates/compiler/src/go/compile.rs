@@ -5905,7 +5905,7 @@ pub fn go_file(
     all.extend(runtime::make_runtime());
     all.extend(runtime::make_array_runtime(&array_types));
     all.extend(runtime::make_vec_runtime(&vec_types));
-    all.extend(runtime::make_ref_runtime(&ref_types));
+    all.extend(runtime::make_ref_runtime(&goenv, &ref_types));
     all.extend(runtime::make_hashmap_runtime(&goenv, &hashmap_types));
     all.extend(runtime::make_missing_runtime(&missing_types));
 

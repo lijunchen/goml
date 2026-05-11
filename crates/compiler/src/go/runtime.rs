@@ -1159,7 +1159,7 @@ pub fn make_vec_runtime(vec_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
     items
 }
 
-pub fn make_ref_runtime(ref_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
+pub fn make_ref_runtime(goenv: &GlobalGoEnv, ref_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
     let mut items = Vec::new();
     for ty in ref_types {
         let tast::Ty::TRef { elem } = ty else {
@@ -1312,7 +1312,17 @@ pub fn make_ref_runtime(ref_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
             ret_ty: Box::new(elem_go_ty.clone()),
         };
 
-        if !matches!(elem.as_ref(), tast::Ty::TDyn { .. }) {
+        let ref_eq_impl = trait_impl_fn_name(&tast::TastIdent("Eq".to_string()), ty, "eq");
+        let dyn_inner_eq_impl = trait_impl_fn_name(&tast::TastIdent("Eq".to_string()), elem, "eq");
+        let emit_eq = match elem.as_ref() {
+            tast::Ty::TDyn { .. } => {
+                !goenv.toplevel_funcs.contains(&ref_eq_impl)
+                    && goenv.toplevel_funcs.contains(&dyn_inner_eq_impl)
+            }
+            _ => true,
+        };
+
+        if emit_eq {
             let eq_name = go_ident(&trait_impl_fn_name(
                 &tast::TastIdent("Eq".to_string()),
                 ty,
