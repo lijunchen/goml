@@ -1,0 +1,12 @@
+struct Box {
+    value: [int32; 2],
+}
+
+fn ref_get(box: Box) -> [int32; 2] {
+    box.value
+}
+
+fn main() -> unit {
+    let box = Box { value: [1i32, 2i32] };
+    ref_get(box)[0i32] = 9i32;
+}
