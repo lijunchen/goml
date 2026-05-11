@@ -130,6 +130,13 @@ fn runtime_missing_function_collision_executes() {
 }
 
 #[test]
+fn builtin_runtime_shadow_user_symbol_executes() {
+    let output = run_crasher("builtin_runtime_shadow_user_symbol");
+
+    assert_eq!(output, "7\n1\n4\n2\n9\n1\nuser\n3\n");
+}
+
+#[test]
 fn hashmap_lookup_helper_function_name_collision_executes() {
     let output = run_crasher("hashmap_lookup_helper_function_name_collision_user_symbol");
 
