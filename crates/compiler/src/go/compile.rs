@@ -6,8 +6,8 @@ use crate::{
     go::mangle::{encode_ty, go_dyn_struct_name, go_generated_ident, go_ident, go_user_type_name},
     lift::{GlobalLiftEnv, is_closure_env_struct},
     names::{
-        inherent_method_fn_name, parse_inherent_method_fn_name, parse_trait_impl_fn_name,
-        trait_impl_fn_name, ty_compact,
+        builtin_runtime_call_name, inherent_method_fn_name, parse_inherent_method_fn_name,
+        parse_trait_impl_fn_name, trait_impl_fn_name, ty_compact,
     },
     package_names::{ENTRY_FUNCTION, ENTRY_WRAPPER_FUNCTION},
     tast::{self, TastIdent},
@@ -212,48 +212,6 @@ fn runtime_generated_function_name(name: &str) -> bool {
     )
 }
 
-fn runtime_generated_builtin_call_matches(
-    name: &str,
-    args: &[anf::ImmExpr],
-    ret_ty: &tast::Ty,
-) -> bool {
-    let arg_tys = args.iter().map(imm_ty).collect::<Vec<_>>();
-    match name {
-        "unit_to_string" => arg_tys == [tast::Ty::TUnit] && *ret_ty == tast::Ty::TString,
-        "bool_to_string" => arg_tys == [tast::Ty::TBool] && *ret_ty == tast::Ty::TString,
-        "string_len" => arg_tys == [tast::Ty::TString] && *ret_ty == tast::Ty::TInt32,
-        "string_get" => {
-            arg_tys == [tast::Ty::TString, tast::Ty::TInt32] && *ret_ty == tast::Ty::TChar
-        }
-        "char_to_string" => arg_tys == [tast::Ty::TChar] && *ret_ty == tast::Ty::TString,
-        "int8_to_string" => arg_tys == [tast::Ty::TInt8] && *ret_ty == tast::Ty::TString,
-        "int16_to_string" => arg_tys == [tast::Ty::TInt16] && *ret_ty == tast::Ty::TString,
-        "int32_to_string" => arg_tys == [tast::Ty::TInt32] && *ret_ty == tast::Ty::TString,
-        "int64_to_string" => arg_tys == [tast::Ty::TInt64] && *ret_ty == tast::Ty::TString,
-        "uint8_to_string" => arg_tys == [tast::Ty::TUint8] && *ret_ty == tast::Ty::TString,
-        "uint16_to_string" => arg_tys == [tast::Ty::TUint16] && *ret_ty == tast::Ty::TString,
-        "uint32_to_string" => arg_tys == [tast::Ty::TUint32] && *ret_ty == tast::Ty::TString,
-        "uint64_to_string" => arg_tys == [tast::Ty::TUint64] && *ret_ty == tast::Ty::TString,
-        "float32_to_string" => arg_tys == [tast::Ty::TFloat32] && *ret_ty == tast::Ty::TString,
-        "float64_to_string" => arg_tys == [tast::Ty::TFloat64] && *ret_ty == tast::Ty::TString,
-        "int8_hash" => arg_tys == [tast::Ty::TInt8] && *ret_ty == tast::Ty::TUint64,
-        "int16_hash" => arg_tys == [tast::Ty::TInt16] && *ret_ty == tast::Ty::TUint64,
-        "int32_hash" => arg_tys == [tast::Ty::TInt32] && *ret_ty == tast::Ty::TUint64,
-        "int64_hash" => arg_tys == [tast::Ty::TInt64] && *ret_ty == tast::Ty::TUint64,
-        "uint8_hash" => arg_tys == [tast::Ty::TUint8] && *ret_ty == tast::Ty::TUint64,
-        "uint16_hash" => arg_tys == [tast::Ty::TUint16] && *ret_ty == tast::Ty::TUint64,
-        "uint32_hash" => arg_tys == [tast::Ty::TUint32] && *ret_ty == tast::Ty::TUint64,
-        "float32_hash" => arg_tys == [tast::Ty::TFloat32] && *ret_ty == tast::Ty::TUint64,
-        "float64_hash" => arg_tys == [tast::Ty::TFloat64] && *ret_ty == tast::Ty::TUint64,
-        "char_hash" => arg_tys == [tast::Ty::TChar] && *ret_ty == tast::Ty::TUint64,
-        "string_hash" => arg_tys == [tast::Ty::TString] && *ret_ty == tast::Ty::TUint64,
-        "string_print" | "string_println" => {
-            arg_tys == [tast::Ty::TString] && *ret_ty == tast::Ty::TUnit
-        }
-        _ => false,
-    }
-}
-
 fn go_toplevel_func_name(goenv: &GlobalGoEnv, name: &str) -> String {
     if let Some(go_name) = goenv.callable_go_names.get(name) {
         return go_name.clone();
@@ -443,10 +401,15 @@ fn go_literal_from_primitive(value: &Prim, ty: &tast::Ty) -> goast::Expr {
 
 fn compile_imm(goenv: &GlobalGoEnv, imm: &anf::ImmExpr) -> goast::Expr {
     match imm {
-        anf::ImmExpr::Var { id, .. } => goast::Expr::Var {
-            name: go_value_name(goenv, &id.0),
-            ty: tast_ty_to_go_type(&imm_ty(imm)),
-        },
+        anf::ImmExpr::Var { id, .. } => {
+            let name = builtin_runtime_call_name(&id.0)
+                .map(str::to_string)
+                .unwrap_or_else(|| go_value_name(goenv, &id.0));
+            goast::Expr::Var {
+                name,
+                ty: tast_ty_to_go_type(&imm_ty(imm)),
+            }
+        }
         anf::ImmExpr::Prim { value, .. } => {
             let ty = imm_ty(imm);
             go_literal_from_primitive(value, &ty)
@@ -3829,14 +3792,14 @@ fn compile_call(
     }
 
     if let anf::ImmExpr::Var { id, .. } = func
-        && runtime_generated_function_name(&id.0)
-        && (force_runtime_builtins || runtime_generated_builtin_call_matches(&id.0, args, ty))
+        && (builtin_runtime_call_name(&id.0).is_some()
+            || (force_runtime_builtins && runtime_generated_function_name(&id.0)))
     {
+        let name = builtin_runtime_call_name(&id.0)
+            .map(str::to_string)
+            .unwrap_or_else(|| id.0.clone());
         return goast::Expr::Call {
-            func: Box::new(goast::Expr::Var {
-                name: id.0.clone(),
-                ty: func_ty,
-            }),
+            func: Box::new(goast::Expr::Var { name, ty: func_ty }),
             args: compiled_args,
             ty: tast_ty_to_go_type(ty),
         };

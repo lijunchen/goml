@@ -137,6 +137,13 @@ fn builtin_runtime_shadow_user_symbol_executes() {
 }
 
 #[test]
+fn builtin_runtime_exact_shadow_user_symbol_executes() {
+    let output = run_crasher("builtin_runtime_exact_shadow_user_symbol");
+
+    assert_eq!(output, "user3\n3\n103\n3\n");
+}
+
+#[test]
 fn hashmap_lookup_helper_function_name_collision_executes() {
     let output = run_crasher("hashmap_lookup_helper_function_name_collision_user_symbol");
 

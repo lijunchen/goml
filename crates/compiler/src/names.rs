@@ -1,5 +1,15 @@
 use crate::tast;
 
+pub const BUILTIN_RUNTIME_CALL_PREFIX: &str = "__goml_builtin_runtime::";
+
+pub fn builtin_runtime_call_name(name: &str) -> Option<&str> {
+    name.strip_prefix(BUILTIN_RUNTIME_CALL_PREFIX)
+}
+
+pub fn builtin_runtime_call(raw_name: &str) -> String {
+    format!("{}{}", BUILTIN_RUNTIME_CALL_PREFIX, raw_name)
+}
+
 pub fn ty_compact(ty: &tast::Ty) -> String {
     ty.to_pretty(10000)
         .chars()
