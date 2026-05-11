@@ -144,6 +144,16 @@ fn builtin_runtime_exact_shadow_user_symbol_executes() {
 }
 
 #[test]
+fn index_builtin_shadow_user_symbol_executes() {
+    let output = run_crasher("index_builtin_shadow_user_symbol");
+
+    assert_eq!(
+        output,
+        "91\n5\n77\n90\n9\n71\n9\n1\n99\n61\n9\n0\n55\n42\n"
+    );
+}
+
+#[test]
 fn hashmap_lookup_helper_function_name_collision_executes() {
     let output = run_crasher("hashmap_lookup_helper_function_name_collision_user_symbol");
 
