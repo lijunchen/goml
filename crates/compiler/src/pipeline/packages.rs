@@ -77,9 +77,16 @@ fn package_dir_for_file(path: &Path) -> PathBuf {
     }
 }
 
-fn import_from_use_trait(path: &ast::Path, external_imports: &ExternalImports) -> Option<String> {
+fn import_from_use_trait(
+    path: &ast::Path,
+    external_imports: &ExternalImports,
+    known_packages: Option<&HashSet<String>>,
+) -> Option<String> {
     if let Some(alias) = external_imports.alias_for_use_path(path) {
         return Some(alias);
+    }
+    if let Some(package) = import_from_crate_path(path, known_packages) {
+        return Some(package);
     }
     let segments = path.segments();
     if segments.first().is_some_and(|seg| seg.ident.0 == "crate") {
@@ -88,30 +95,84 @@ fn import_from_use_trait(path: &ast::Path, external_imports: &ExternalImports) -
     segments.first().map(|seg| seg.ident.0.clone())
 }
 
-fn import_from_use_decl(path: &ast::Path, external_imports: &ExternalImports) -> Option<String> {
+fn import_from_use_decl(
+    path: &ast::Path,
+    external_imports: &ExternalImports,
+    known_packages: Option<&HashSet<String>>,
+) -> Option<String> {
     if let Some(alias) = external_imports.alias_for_use_path(path) {
         return Some(alias);
+    }
+    if let Some(package) = import_from_crate_path(path, known_packages) {
+        return Some(package);
     }
     path.segments().first().map(|seg| seg.ident.0.clone())
 }
 
-fn collect_imports(files: &[SourceFileAst], external_imports: &ExternalImports) -> HashSet<String> {
+fn import_from_crate_path(
+    path: &ast::Path,
+    known_packages: Option<&HashSet<String>>,
+) -> Option<String> {
+    let segments = crate_path_segments(path)?;
+    if segments.is_empty() {
+        return None;
+    }
+    if let Some(known) = known_packages {
+        for len in (1..=segments.len()).rev() {
+            let package = segments[..len].join("::");
+            if known.contains(&package) {
+                return Some(package);
+            }
+        }
+    }
+    Some(segments[0].clone())
+}
+
+fn crate_path_segments(path: &ast::Path) -> Option<Vec<String>> {
+    let segments = path
+        .segments()
+        .iter()
+        .map(|seg| seg.ident.0.clone())
+        .collect::<Vec<_>>();
+    if matches!(path.root(), ast::PathRoot::Crate) {
+        return Some(segments);
+    }
+    if segments.first().is_some_and(|segment| segment == "crate") {
+        return Some(segments[1..].to_vec());
+    }
+    None
+}
+
+fn child_package_name(module_path: &[String], name: &str) -> String {
+    if module_path.is_empty() {
+        name.to_string()
+    } else {
+        let mut child = module_path.to_vec();
+        child.push(name.to_string());
+        child.join("::")
+    }
+}
+
+fn collect_imports(
+    files: &[SourceFileAst],
+    external_imports: &ExternalImports,
+    known_packages: Option<&HashSet<String>>,
+) -> HashSet<String> {
     files
         .iter()
         .flat_map(|file| {
             let from_imports = file.ast.imports.iter().map(|import| import.0.clone());
-            let from_use_decls = file
-                .ast
-                .uses
-                .iter()
-                .filter_map(|decl| import_from_use_decl(&decl.path, external_imports));
-            let from_use_traits = file
-                .ast
-                .use_traits
-                .iter()
-                .filter_map(|path| import_from_use_trait(path, external_imports));
+            let from_use_decls = file.ast.uses.iter().filter_map(|decl| {
+                import_from_use_decl(&decl.path, external_imports, known_packages)
+            });
+            let from_use_traits =
+                file.ast.use_traits.iter().filter_map(|path| {
+                    import_from_use_trait(path, external_imports, known_packages)
+                });
             let from_mods = file.ast.toplevels.iter().filter_map(|item| match item {
-                ast::Item::Mod(module) => Some(module.name.0.clone()),
+                ast::Item::Mod(module) => {
+                    Some(child_package_name(&file.module_path, &module.name.0))
+                }
                 _ => None,
             });
             from_imports
@@ -169,7 +230,7 @@ fn load_package_file(
         ast_with_package(parse_ast_file(package_file, &src)?, package_name)
     };
     let files = vec![SourceFileAst::new(package_file.to_path_buf(), ast)];
-    let imports = collect_imports(&files, external_imports);
+    let imports = collect_imports(&files, external_imports, None);
     Ok(PackageUnit {
         name: package_name.to_string(),
         files,
@@ -230,7 +291,7 @@ fn load_package(
         )));
     };
 
-    let imports = collect_imports(&files, external_imports);
+    let imports = collect_imports(&files, external_imports, None);
     Ok(PackageUnit {
         name,
         files,
@@ -244,7 +305,7 @@ fn load_single_file_package(
     external_imports: &ExternalImports,
 ) -> PackageUnit {
     let files = vec![SourceFileAst::new(path.to_path_buf(), ast.clone())];
-    let imports = collect_imports(&files, external_imports);
+    let imports = collect_imports(&files, external_imports, None);
     PackageUnit {
         name: ast.package.0.clone(),
         files,
@@ -257,6 +318,19 @@ fn module_package_name(module_path: &[String], root_package: &str) -> String {
         root_package.to_string()
     } else {
         module_path.join("::")
+    }
+}
+
+fn collect_child_module_imports(
+    crate_unit: &CrateUnit,
+    module_id: crate::pipeline::modules::ModuleId,
+    root_package: &str,
+    imports: &mut HashSet<String>,
+) {
+    for child_id in crate_unit.modules[module_id.0].children.values() {
+        let child = &crate_unit.modules[child_id.0];
+        imports.insert(module_package_name(child.path.segments(), root_package));
+        collect_child_module_imports(crate_unit, *child_id, root_package, imports);
     }
 }
 
@@ -275,6 +349,11 @@ fn discover_packages_from_crate_unit(
     let mut packages = HashMap::new();
     let mut discovery_order = Vec::new();
     let mut package_dirs = HashMap::new();
+    let known_packages = crate_unit
+        .modules
+        .iter()
+        .map(|module| module_package_name(module.path.segments(), root_package))
+        .collect::<HashSet<_>>();
 
     for module in crate_unit.modules.iter() {
         let name = module_package_name(module.path.segments(), root_package);
@@ -293,7 +372,8 @@ fn discover_packages_from_crate_unit(
             module.path.segments().to_vec(),
             ast,
         )];
-        let imports = collect_imports(&files, external_imports);
+        let mut imports = collect_imports(&files, external_imports, Some(&known_packages));
+        collect_child_module_imports(&crate_unit, module.id, root_package, &mut imports);
         packages.insert(
             name.clone(),
             PackageUnit {

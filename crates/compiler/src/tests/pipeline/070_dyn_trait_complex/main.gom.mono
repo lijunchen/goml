@@ -1,9 +1,9 @@
 fn trait_impl#Display#Point#show(self/0: Point) -> string {
-  (((("Point(" + int32_to_string(Point.x(self/0))) + ",") + int32_to_string(Point.y(self/0))) + ")")
+  (((("Point(" + $goml_builtin_runtime$int32_to_string(Point.x(self/0))) + ",") + $goml_builtin_runtime$int32_to_string(Point.y(self/0))) + ")")
 }
 
 fn trait_impl#Display#Point#show_with(self/1: Point, prefix/2: string, suffix/3: string) -> string {
-  ((((((prefix/2 + "Point(") + int32_to_string(Point.x(self/1))) + ",") + int32_to_string(Point.y(self/1))) + ")") + suffix/3)
+  ((((((prefix/2 + "Point(") + $goml_builtin_runtime$int32_to_string(Point.x(self/1))) + ",") + $goml_builtin_runtime$int32_to_string(Point.y(self/1))) + ")") + suffix/3)
 }
 
 fn trait_impl#Display#Point#tick(self/4: Point) -> unit {
@@ -55,24 +55,24 @@ fn trait_impl#Display#Flag#bump(self/12: Flag, delta/13: int32) -> int32 {
 }
 
 fn trait_impl#Display#Counter#show(self/14: Counter) -> string {
-  (("Counter(" + int32_to_string(ref_get(Counter.cell(self/14)))) + ")")
+  (("Counter(" + $goml_builtin_runtime$int32_to_string(inherent#Ref#Ref[T]#get__T_int32(Counter.cell(self/14)))) + ")")
 }
 
 fn trait_impl#Display#Counter#show_with(self/15: Counter, prefix/16: string, suffix/17: string) -> string {
-  ((((prefix/16 + "Counter(") + int32_to_string(ref_get(Counter.cell(self/15)))) + ")") + suffix/17)
+  ((((prefix/16 + "Counter(") + $goml_builtin_runtime$int32_to_string(inherent#Ref#Ref[T]#get__T_int32(Counter.cell(self/15)))) + ")") + suffix/17)
 }
 
 fn trait_impl#Display#Counter#tick(self/18: Counter) -> unit {
-  let next/19 = (ref_get(Counter.cell(self/18)) + 1) in
-  let mtmp0 = ref_set(Counter.cell(self/18), next/19) in
+  let next/19 = (inherent#Ref#Ref[T]#get__T_int32(Counter.cell(self/18)) + 1) in
+  let mtmp0 = inherent#Ref#Ref[T]#set__T_int32(Counter.cell(self/18), next/19) in
   {
     ()
   }
 }
 
 fn trait_impl#Display#Counter#bump(self/20: Counter, delta/21: int32) -> int32 {
-  let next/22 = (ref_get(Counter.cell(self/20)) + delta/21) in
-  let mtmp1 = ref_set(Counter.cell(self/20), next/22) in
+  let next/22 = (inherent#Ref#Ref[T]#get__T_int32(Counter.cell(self/20)) + delta/21) in
+  let mtmp1 = inherent#Ref#Ref[T]#set__T_int32(Counter.cell(self/20), next/22) in
   {
     next/22
   }
@@ -94,7 +94,7 @@ fn make_renderer(tag/29: string) -> (dyn Display) -> string {
 fn bump_and_show(x/31: dyn Display, delta/32: int32) -> string {
   let mtmp2 = dyn_call[Display::tick](x/31) in
   {
-    ((dyn_call[Display::show_with](x/31, "[", "]") + ":") + int32_to_string(dyn_call[Display::bump](x/31, delta/32)))
+    ((dyn_call[Display::show_with](x/31, "[", "]") + ":") + $goml_builtin_runtime$int32_to_string(dyn_call[Display::bump](x/31, delta/32)))
   }
 }
 
@@ -103,7 +103,7 @@ fn main() -> unit {
   let p2/34 = Point { x: 3, y: 4 } in
   let f1/35 = Flag { value: true } in
   let f2/36 = Flag { value: false } in
-  let c/37 = Counter { cell: ref(10) } in
+  let c/37 = Counter { cell: inherent#Ref#Ref[T]#new__T_int32(10) } in
   let dp1/38 = to_dyn[Display]{Point}(p1/33) in
   let dp2/39 = to_dyn[Display]{Point}(p2/34) in
   let df1/40 = to_dyn[Display]{Flag}(f1/35) in
@@ -131,21 +131,21 @@ fn main() -> unit {
     {
       let mtmp5 = println__T_string(s2/47) in
       {
-        let i/54 = ref(0) in
-        let mtmp8 = while (ref_get(i/54) < 3) {
+        let i/54 = inherent#Ref#Ref[T]#new__T_int32(0) in
+        let mtmp8 = while (inherent#Ref#Ref[T]#get__T_int32(i/54) < 3) {
             {
               let line/55 = bump_and_show(dc/42, delta/53) in
               let _wild6 = println__T_string(line/55) in
-              let mtmp7 = ref_set(i/54, (ref_get(i/54) + 1)) in
+              let mtmp7 = inherent#Ref#Ref[T]#set__T_int32(i/54, (inherent#Ref#Ref[T]#get__T_int32(i/54) + 1)) in
               {
                 ()
               }
             }
         } in
         {
-          let mtmp9 = println__T_string(("len:" + int32_to_string(vlen/52))) in
+          let mtmp9 = println__T_string(("len:" + $goml_builtin_runtime$int32_to_string(vlen/52))) in
           {
-            let mtmp10 = println__T_string(("delta:" + int32_to_string(delta/53))) in
+            let mtmp10 = println__T_string(("delta:" + $goml_builtin_runtime$int32_to_string(delta/53))) in
             {
               ()
             }
@@ -154,6 +154,18 @@ fn main() -> unit {
       }
     }
   }
+}
+
+fn inherent#Ref#Ref[T]#get__T_int32(self/94: Ref[int32]) -> int32 {
+  ref_get(self/94)
+}
+
+fn inherent#Ref#Ref[T]#set__T_int32(self/95: Ref[int32], value/96: int32) -> unit {
+  ref_set(self/95, value/96)
+}
+
+fn inherent#Ref#Ref[T]#new__T_int32(value/93: int32) -> Ref[int32] {
+  ref(value/93)
 }
 
 fn inherent#Vec#Vec[T]#new__T_dynDisplay() -> Vec[dyn Display] {

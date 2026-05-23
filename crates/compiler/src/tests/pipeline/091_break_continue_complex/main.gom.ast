@@ -1,10 +1,10 @@
 package main;
 fn main() {
-    let sum = ref(0i32);
-    let i = ref(1i32);
-    while ref_get(i) <= 100i32 {
+    let sum = Ref::new(0i32);
+    let i = Ref::new(1i32);
+    while i.get() <= 100i32 {
         {
-            if ref_get(i) == 50i32 {
+            if i.get() == 50i32 {
                 {
                     break
                 }
@@ -13,21 +13,21 @@ fn main() {
                     ()
                 }
             };
-            ref_set(sum, ref_get(sum) + ref_get(i));
-            ref_set(i, ref_get(i) + 1i32);
+            sum.set(sum.get() + i.get());
+            i.set(i.get() + 1i32);
         }
     };
     let _ = print("sum up to break: ");
-    let _ = println(ref_get(sum));
-    let even_sum = ref(0i32);
-    let j = ref(1i32);
-    while ref_get(j) <= 10i32 {
+    let _ = println(sum.get());
+    let even_sum = Ref::new(0i32);
+    let j = Ref::new(1i32);
+    while j.get() <= 10i32 {
         {
-            let cur = ref_get(j);
-            ref_set(j, cur + 1i32);
+            let cur = j.get();
+            j.set(cur + 1i32);
             if cur == cur / 2i32 * 2i32 {
                 {
-                    ref_set(even_sum, ref_get(even_sum) + cur);
+                    even_sum.set(even_sum.get() + cur);
                     continue
                 }
             } else {
@@ -38,6 +38,6 @@ fn main() {
         }
     };
     let _ = print("even sum: ");
-    let _ = println(ref_get(even_sum));
+    let _ = println(even_sum.get());
 }
 

@@ -2,7 +2,7 @@ fn trait_impl#Display#int32#show(self/0: int32) -> string {
   join ret2(retv3: string) -> string {
     retv3
   } in
-  let t4 = int32_to_string(self/0) in
+  let t4 = $goml_builtin_runtime$int32_to_string(self/0) in
   jump ret2(t4)
 }
 
@@ -24,11 +24,11 @@ fn main() -> unit {
   let t10 = to_dyn[Display]{int32}(20) in
   let v/4 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/3, t10) in
   let s/5 = inherent#Vec#Vec[T]#slice__T_dynDisplay(v/4, 0, 2) in
-  let t11 = slice_get(s/5, 0) in
+  let t11 = $goml_builtin_runtime$slice_get(s/5, 0) in
   let t12 = render(t11) in
   let _wild0 = println__T_string(t12) in
   let t/6 = inherent#Slice#Slice[T]#sub__T_dynDisplay(s/5, 1, 2) in
-  let t13 = slice_get(t/6, 0) in
+  let t13 = $goml_builtin_runtime$slice_get(t/6, 0) in
   let t14 = render(t13) in
   let _wild1 = println__T_string(t14) in
   jump ret8()

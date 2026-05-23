@@ -1,13 +1,13 @@
 package main;
 fn make_counter() -> (() -> int32, () -> unit) {
-    let cell = ref(0);
+    let cell = Ref::new(0);
     let next = || {
-        let next = ref_get(cell) + 1;
-        let _ = ref_set(cell, next);
+        let next = cell.get() + 1;
+        let _ = cell.set(next);
         next
     };
     let reset = || {
-        let _ = ref_set(cell, 0);
+        let _ = cell.set(0);
         ()
     };
     (next, reset)

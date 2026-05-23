@@ -1,13 +1,13 @@
 fn main() -> unit {
-  let i/0 = ref(0) in
-  let total/1 = ref(0) in
-  let _wild5 = while if (ref_get(i/0) == 0) {
+  let i/0 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let total/1 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let _wild5 = while if (inherent#Ref#Ref[T]#get__T_int32(i/0) == 0) {
       {
-        let _wild0 = ref_set(i/0, 1) in
+        let _wild0 = inherent#Ref#Ref[T]#set__T_int32(i/0, 1) in
         true
       }
   } else {
-      if (ref_get(i/0) < 4) {
+      if (inherent#Ref#Ref[T]#get__T_int32(i/0) < 4) {
           {
             true
           }
@@ -18,10 +18,10 @@ fn main() -> unit {
       }
   } {
       {
-        let _wild1 = ref_set(total/1, (ref_get(total/1) + ref_get(i/0))) in
-        let _wild3 = if (ref_get(i/0) == 1) {
+        let _wild1 = inherent#Ref#Ref[T]#set__T_int32(total/1, (inherent#Ref#Ref[T]#get__T_int32(total/1) + inherent#Ref#Ref[T]#get__T_int32(i/0))) in
+        let _wild3 = if (inherent#Ref#Ref[T]#get__T_int32(i/0) == 1) {
             {
-              let _wild2 = ref_set(i/0, 2) in
+              let _wild2 = inherent#Ref#Ref[T]#set__T_int32(i/0, 2) in
               continue
             }
         } else {
@@ -29,24 +29,24 @@ fn main() -> unit {
               ()
             }
         } in
-        let _wild4 = ref_set(i/0, (ref_get(i/0) + 1)) in
+        let _wild4 = inherent#Ref#Ref[T]#set__T_int32(i/0, (inherent#Ref#Ref[T]#get__T_int32(i/0) + 1)) in
       }
   } in
-  let _wild6 = println__T_int32(ref_get(total/1)) in
-  let j/2 = ref(0) in
-  let total2/3 = ref(0) in
+  let _wild6 = println__T_int32(inherent#Ref#Ref[T]#get__T_int32(total/1)) in
+  let j/2 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let total2/3 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let _wild13 = while {
-    let mtmp7 = ref_get(j/2) in
+    let mtmp7 = inherent#Ref#Ref[T]#get__T_int32(j/2) in
     match mtmp7 {
       0 => {
         {
-          let _wild8 = ref_set(j/2, 1) in
+          let _wild8 = inherent#Ref#Ref[T]#set__T_int32(j/2, 1) in
           true
         }
       },
       1 => {
         {
-          let _wild9 = ref_set(j/2, 2) in
+          let _wild9 = inherent#Ref#Ref[T]#set__T_int32(j/2, 2) in
           true
         }
       },
@@ -57,8 +57,8 @@ fn main() -> unit {
     }
   } {
       {
-        let _wild10 = ref_set(total2/3, (ref_get(total2/3) + ref_get(j/2))) in
-        let _wild12 = if (ref_get(j/2) == 2) {
+        let _wild10 = inherent#Ref#Ref[T]#set__T_int32(total2/3, (inherent#Ref#Ref[T]#get__T_int32(total2/3) + inherent#Ref#Ref[T]#get__T_int32(j/2))) in
+        let _wild12 = if (inherent#Ref#Ref[T]#get__T_int32(j/2) == 2) {
             {
               let _wild11 = break in
             }
@@ -69,9 +69,21 @@ fn main() -> unit {
         } in
       }
   } in
-  let _wild14 = println__T_int32(ref_get(total2/3)) in
+  let _wild14 = println__T_int32(inherent#Ref#Ref[T]#get__T_int32(total2/3)) in
+}
+
+fn inherent#Ref#Ref[T]#new__T_int32(value/93: int32) -> Ref[int32] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#get__T_int32(self/94: Ref[int32]) -> int32 {
+  ref_get(self/94)
+}
+
+fn inherent#Ref#Ref[T]#set__T_int32(self/95: Ref[int32], value/96: int32) -> unit {
+  ref_set(self/95, value/96)
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  string_println(int32_to_string(value/1))
+  string_println($goml_builtin_runtime$int32_to_string(value/1))
 }

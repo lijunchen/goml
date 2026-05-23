@@ -1,4 +1,4 @@
-FILE@0..1251
+FILE@0..1250
   STRUCT@0..68
     StructKeyword@0..6 "struct"
     Whitespace@6..7 " "
@@ -132,7 +132,7 @@ FILE@0..1251
           Whitespace@212..213 "\n"
       RBrace@213..214 "}"
       Whitespace@214..216 "\n\n"
-  FN@216..1251
+  FN@216..1250
     FnKeyword@216..218 "fn"
     Whitespace@218..219 " "
     Ident@219..223 "main"
@@ -145,7 +145,7 @@ FILE@0..1251
     TYPE_UNIT@229..234
       UnitKeyword@229..233 "unit"
       Whitespace@233..234 " "
-    BLOCK@234..1251
+    BLOCK@234..1250
       LBrace@234..235 "{"
       Whitespace@235..240 "\n    "
       STMT_EXPR@240..267
@@ -928,7 +928,7 @@ FILE@0..1251
             RParen@1148..1149 ")"
         Semi@1149..1150 ";"
         Whitespace@1150..1156 "\n\n    "
-      STMT_LET@1156..1200
+      STMT_LET@1156..1205
         LetKeyword@1156..1159 "let"
         Whitespace@1159..1160 " "
         PATTERN_VARIABLE@1160..1161
@@ -952,75 +952,79 @@ FILE@0..1251
             Whitespace@1178..1179 " "
         Eq@1179..1180 "="
         Whitespace@1180..1181 " "
-        EXPR_CALL@1181..1194
-          EXPR_IDENT@1181..1184
-            PATH@1181..1184
-              Ident@1181..1184 "ref"
-          ARG_LIST@1184..1194
-            LParen@1184..1185 "("
-            ARG@1185..1193
-              EXPR_ARRAY_LITERAL@1185..1193
-                LBracket@1185..1186 "["
-                EXPR_INT@1186..1188
-                  Int@1186..1188 "22"
-                Comma@1188..1189 ","
-                Whitespace@1189..1190 " "
-                EXPR_INT@1190..1192
-                  Int@1190..1192 "23"
-                RBracket@1192..1193 "]"
-            RParen@1193..1194 ")"
-        Semi@1194..1195 ";"
-        Whitespace@1195..1200 "\n    "
-      STMT_ASSIGN@1200..1225
-        EXPR_INDEX@1200..1214
-          EXPR_CALL@1200..1210
-            EXPR_IDENT@1200..1207
-              PATH@1200..1207
-                Ident@1200..1207 "ref_get"
-            ARG_LIST@1207..1210
-              LParen@1207..1208 "("
-              ARG@1208..1209
-                EXPR_IDENT@1208..1209
-                  PATH@1208..1209
-                    Ident@1208..1209 "r"
-              RParen@1209..1210 ")"
-          LBracket@1210..1211 "["
-          EXPR_INT@1211..1212
-            Int@1211..1212 "1"
-          RBracket@1212..1213 "]"
-          Whitespace@1213..1214 " "
-        Eq@1214..1215 "="
-        Whitespace@1215..1216 " "
-        EXPR_INT@1216..1219
-          Int@1216..1219 "230"
-        Semi@1219..1220 ";"
-        Whitespace@1220..1225 "\n    "
-      STMT_EXPR@1225..1249
-        EXPR_CALL@1225..1247
-          EXPR_IDENT@1225..1232
-            PATH@1225..1232
-              Ident@1225..1232 "println"
-          ARG_LIST@1232..1247
-            LParen@1232..1233 "("
-            ARG@1233..1246
-              EXPR_INDEX@1233..1246
-                EXPR_CALL@1233..1243
-                  EXPR_IDENT@1233..1240
-                    PATH@1233..1240
-                      Ident@1233..1240 "ref_get"
-                  ARG_LIST@1240..1243
+        EXPR_CALL@1181..1199
+          EXPR_IDENT@1181..1189
+            PATH@1181..1189
+              Ident@1181..1184 "Ref"
+              ColonColon@1184..1186 "::"
+              Ident@1186..1189 "new"
+          ARG_LIST@1189..1199
+            LParen@1189..1190 "("
+            ARG@1190..1198
+              EXPR_ARRAY_LITERAL@1190..1198
+                LBracket@1190..1191 "["
+                EXPR_INT@1191..1193
+                  Int@1191..1193 "22"
+                Comma@1193..1194 ","
+                Whitespace@1194..1195 " "
+                EXPR_INT@1195..1197
+                  Int@1195..1197 "23"
+                RBracket@1197..1198 "]"
+            RParen@1198..1199 ")"
+        Semi@1199..1200 ";"
+        Whitespace@1200..1205 "\n    "
+      STMT_ASSIGN@1205..1227
+        EXPR_INDEX@1205..1216
+          EXPR_CALL@1205..1212
+            EXPR_BINARY@1205..1210
+              EXPR_IDENT@1205..1206
+                PATH@1205..1206
+                  Ident@1205..1206 "r"
+              Dot@1206..1207 "."
+              EXPR_IDENT@1207..1210
+                PATH@1207..1210
+                  Ident@1207..1210 "get"
+            ARG_LIST@1210..1212
+              LParen@1210..1211 "("
+              RParen@1211..1212 ")"
+          LBracket@1212..1213 "["
+          EXPR_INT@1213..1214
+            Int@1213..1214 "1"
+          RBracket@1214..1215 "]"
+          Whitespace@1215..1216 " "
+        Eq@1216..1217 "="
+        Whitespace@1217..1218 " "
+        EXPR_INT@1218..1221
+          Int@1218..1221 "230"
+        Semi@1221..1222 ";"
+        Whitespace@1222..1227 "\n    "
+      STMT_EXPR@1227..1248
+        EXPR_CALL@1227..1246
+          EXPR_IDENT@1227..1234
+            PATH@1227..1234
+              Ident@1227..1234 "println"
+          ARG_LIST@1234..1246
+            LParen@1234..1235 "("
+            ARG@1235..1245
+              EXPR_INDEX@1235..1245
+                EXPR_CALL@1235..1242
+                  EXPR_BINARY@1235..1240
+                    EXPR_IDENT@1235..1236
+                      PATH@1235..1236
+                        Ident@1235..1236 "r"
+                    Dot@1236..1237 "."
+                    EXPR_IDENT@1237..1240
+                      PATH@1237..1240
+                        Ident@1237..1240 "get"
+                  ARG_LIST@1240..1242
                     LParen@1240..1241 "("
-                    ARG@1241..1242
-                      EXPR_IDENT@1241..1242
-                        PATH@1241..1242
-                          Ident@1241..1242 "r"
-                    RParen@1242..1243 ")"
-                LBracket@1243..1244 "["
-                EXPR_INT@1244..1245
-                  Int@1244..1245 "1"
-                RBracket@1245..1246 "]"
-            RParen@1246..1247 ")"
-        Semi@1247..1248 ";"
-        Whitespace@1248..1249 "\n"
-      RBrace@1249..1250 "}"
-      Whitespace@1250..1251 "\n"
+                    RParen@1241..1242 ")"
+                LBracket@1242..1243 "["
+                EXPR_INT@1243..1244
+                  Int@1243..1244 "1"
+                RBracket@1244..1245 "]"
+            RParen@1245..1246 ")"
+        Semi@1246..1247 ";"
+        Whitespace@1247..1248 "\n"
+      RBrace@1248..1249 "}"
+      Whitespace@1249..1250 "\n"

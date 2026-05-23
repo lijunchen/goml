@@ -8,10 +8,10 @@ fn step(i: int32) -> Option[bool] {
 }
 
 fn main() -> Option[unit] {
-    let i = ref(0i32);
-    while match step(ref_get(i))? {
+    let i = Ref::new(0i32);
+    while match step(i.get())? {
         true => {
-            ref_set(i, ref_get(i) + 1i32);
+            i.set(i.get() + 1i32);
             true
         },
         false => false,

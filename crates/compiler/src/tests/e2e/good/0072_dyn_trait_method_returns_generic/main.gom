@@ -16,16 +16,16 @@ impl TryConvert for StringValue {
 }
 
 fn sum_convertible(items: Vec[dyn TryConvert]) -> int32 {
-    let sum = ref(0);
-    let i = ref(0);
-    while ref_get(i) < items.len() {
-        match TryConvert::try_to_int(items[ref_get(i)]) {
-            Option::Some(n) => ref_set(sum, ref_get(sum) + n),
+    let sum = Ref::new(0);
+    let i = Ref::new(0);
+    while i.get() < items.len() {
+        match TryConvert::try_to_int(items[i.get()]) {
+            Option::Some(n) => sum.set(sum.get() + n),
             Option::None => (),
         };
-        ref_set(i, ref_get(i) + 1);
+        i.set(i.get() + 1);
     };
-    ref_get(sum)
+    sum.get()
 }
 
 fn main() {

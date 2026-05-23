@@ -1,12 +1,12 @@
 package main
 file main.gom
   fn main() -> unit {
-        let local/1/0 = ref(0i32);
-        let local/1/1 = ref(0i32);
-        while ref_get(i/0) < 7i32 {
+        let local/1/0 = Ref::new(0i32);
+        let local/1/1 = Ref::new(0i32);
+        while i/0.get() < 7i32 {
             {
-                let local/1/2 = ref_get(i/0);
-                ref_set(i/0, cur/2 + 1i32);
+                let local/1/2 = i/0.get();
+                i/0.set(cur/2 + 1i32);
                 let _ = if cur/2 < 5i32 {
                     match cur/2 {
                         1 => continue,
@@ -19,8 +19,8 @@ file main.gom
                         _ => (),
                     }
                 };
-                ref_set(sum/1, ref_get(sum/1) + cur/2);
+                sum/1.set(sum/1.get() + cur/2);
             }
         };
-        println(ref_get(sum/1));
+        println(sum/1.get());
     }

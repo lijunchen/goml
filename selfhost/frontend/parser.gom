@@ -1,0 +1,1116 @@
+use crate::ast;
+use crate::lexer;
+use crate::syntax;
+
+pub struct Parser {
+    tokens: Vec[syntax::Token],
+    index: Ref[int32],
+    diagnostics: Ref[Vec[ast::Diagnostic]],
+    allow_struct_literals: Ref[bool],
+}
+
+fn push_node(nodes: Ref[Vec[ast::Node]], value: ast::Node) -> unit {
+    nodes.set(nodes.get().push(value))
+}
+
+fn push_diagnostic(parser: Parser, start: int32, end: int32, message: string) -> unit {
+    parser.diagnostics.set(parser.diagnostics.get().push(ast::diagnostic(start, end, message)))
+}
+
+fn current(parser: Parser) -> syntax::Token {
+    parser.tokens.get(parser.index.get())
+}
+
+fn previous_end(parser: Parser) -> int32 {
+    if parser.index.get() == 0 {
+        current(parser).start
+    } else {
+        parser.tokens.get(parser.index.get() - 1).end
+    }
+}
+
+fn at(parser: Parser, kind: syntax::TokenKind) -> bool {
+    same_kind(current(parser).kind, kind)
+}
+
+fn same_kind(left: syntax::TokenKind, right: syntax::TokenKind) -> bool {
+    syntax::token_kind_name(left) == syntax::token_kind_name(right)
+}
+
+fn eof(parser: Parser) -> bool {
+    at(parser, syntax::TokenKind::Eof)
+}
+
+fn advance(parser: Parser) -> syntax::Token {
+    let token = current(parser);
+    if !eof(parser) {
+        parser.index.set(parser.index.get() + 1);
+    } else {
+        ()
+    };
+    token
+}
+
+fn eat(parser: Parser, kind: syntax::TokenKind) -> bool {
+    if at(parser, kind) {
+        let _ = advance(parser);
+        true
+    } else {
+        false
+    }
+}
+
+fn expect(parser: Parser, kind: syntax::TokenKind, message: string) -> syntax::Token {
+    if at(parser, kind) {
+        advance(parser)
+    } else {
+        let token = current(parser);
+        push_diagnostic(parser, token.start, token.end, message + ", got " + syntax::token_kind_name(token.kind));
+        token
+    }
+}
+
+fn unexpected(parser: Parser, message: string) -> ast::Node {
+    let token = current(parser);
+    if !eof(parser) {
+        let _ = advance(parser);
+    } else {
+        ()
+    };
+    push_diagnostic(parser, token.start, token.end, message);
+    ast::leaf(ast::NodeKind::Error, token.text, token.start, token.end)
+}
+
+fn filtered_tokens(tokens: Vec[syntax::Token], source_len: int32) -> Vec[syntax::Token] {
+    let result = Ref::new(Vec::new());
+    let i = Ref::new(0);
+    while i.get() < tokens.len() {
+        let token = tokens.get(i.get());
+        if syntax::is_trivia(token.kind) {
+            ()
+        } else {
+            result.set(result.get().push(token));
+        };
+        i.set(i.get() + 1);
+    };
+    result.set(result.get().push(syntax::token(syntax::TokenKind::Eof, "", source_len, source_len)));
+    result.get()
+}
+
+fn path_start(kind: syntax::TokenKind) -> bool {
+    match kind {
+        syntax::TokenKind::Ident => true,
+        syntax::TokenKind::CrateKeyword => true,
+        syntax::TokenKind::SuperKeyword => true,
+        syntax::TokenKind::ColonColon => true,
+        _ => false,
+    }
+}
+
+fn type_start(kind: syntax::TokenKind) -> bool {
+    if path_start(kind) {
+        true
+    } else {
+        match kind {
+            syntax::TokenKind::UnitKeyword => true,
+            syntax::TokenKind::BoolKeyword => true,
+            syntax::TokenKind::Int8Keyword => true,
+            syntax::TokenKind::Int16Keyword => true,
+            syntax::TokenKind::Int32Keyword => true,
+            syntax::TokenKind::Int64Keyword => true,
+            syntax::TokenKind::Uint8Keyword => true,
+            syntax::TokenKind::Uint16Keyword => true,
+            syntax::TokenKind::Uint32Keyword => true,
+            syntax::TokenKind::Uint64Keyword => true,
+            syntax::TokenKind::Float32Keyword => true,
+            syntax::TokenKind::Float64Keyword => true,
+            syntax::TokenKind::StringKeyword => true,
+            syntax::TokenKind::CharKeyword => true,
+            syntax::TokenKind::DynKeyword => true,
+            syntax::TokenKind::LParen => true,
+            syntax::TokenKind::LBracket => true,
+            _ => false,
+        }
+    }
+}
+
+fn expr_start(kind: syntax::TokenKind) -> bool {
+    if path_start(kind) {
+        true
+    } else {
+        match kind {
+            syntax::TokenKind::Int => true,
+            syntax::TokenKind::Int8Lit => true,
+            syntax::TokenKind::Int16Lit => true,
+            syntax::TokenKind::Int32Lit => true,
+            syntax::TokenKind::Int64Lit => true,
+            syntax::TokenKind::UInt8Lit => true,
+            syntax::TokenKind::UInt16Lit => true,
+            syntax::TokenKind::UInt32Lit => true,
+            syntax::TokenKind::UInt64Lit => true,
+            syntax::TokenKind::Float => true,
+            syntax::TokenKind::Float32Lit => true,
+            syntax::TokenKind::Float64Lit => true,
+            syntax::TokenKind::Str => true,
+            syntax::TokenKind::MultilineStr => true,
+            syntax::TokenKind::CharLit => true,
+            syntax::TokenKind::TrueKeyword => true,
+            syntax::TokenKind::FalseKeyword => true,
+            syntax::TokenKind::Minus => true,
+            syntax::TokenKind::Bang => true,
+            syntax::TokenKind::LParen => true,
+            syntax::TokenKind::LBracket => true,
+            syntax::TokenKind::LBrace => true,
+            syntax::TokenKind::IfKeyword => true,
+            syntax::TokenKind::MatchKeyword => true,
+            syntax::TokenKind::WhileKeyword => true,
+            syntax::TokenKind::BreakKeyword => true,
+            syntax::TokenKind::ContinueKeyword => true,
+            syntax::TokenKind::ReturnKeyword => true,
+            syntax::TokenKind::Pipe => true,
+            syntax::TokenKind::OrOr => true,
+            syntax::TokenKind::GoKeyword => true,
+            _ => false,
+        }
+    }
+}
+
+fn parse_segment(parser: Parser) -> string {
+    let token = current(parser);
+    if same_kind(token.kind, syntax::TokenKind::Ident) || same_kind(token.kind, syntax::TokenKind::CrateKeyword) || same_kind(token.kind, syntax::TokenKind::SuperKeyword) {
+        let _ = advance(parser);
+        token.text
+    } else {
+        push_diagnostic(parser, token.start, token.end, "expected a path segment");
+        ""
+    }
+}
+
+fn parse_path_text(parser: Parser) -> (string, int32, int32) {
+    let start = current(parser).start;
+    let text = Ref::new("");
+    if eat(parser, syntax::TokenKind::ColonColon) {
+        text.set("::");
+    } else {
+        ()
+    };
+    if path_start(current(parser).kind) && !at(parser, syntax::TokenKind::ColonColon) {
+        text.set(text.get() + parse_segment(parser));
+    } else {
+        let token = current(parser);
+        push_diagnostic(parser, token.start, token.end, "expected a path");
+    };
+    while eat(parser, syntax::TokenKind::ColonColon) {
+        text.set(text.get() + "::" + parse_segment(parser));
+    };
+    (text.get(), start, previous_end(parser))
+}
+
+fn token_type_name(token: syntax::Token) -> string {
+    match token.kind {
+        syntax::TokenKind::UnitKeyword => "unit",
+        syntax::TokenKind::BoolKeyword => "bool",
+        syntax::TokenKind::Int8Keyword => "int8",
+        syntax::TokenKind::Int16Keyword => "int16",
+        syntax::TokenKind::Int32Keyword => "int32",
+        syntax::TokenKind::Int64Keyword => "int64",
+        syntax::TokenKind::Uint8Keyword => "uint8",
+        syntax::TokenKind::Uint16Keyword => "uint16",
+        syntax::TokenKind::Uint32Keyword => "uint32",
+        syntax::TokenKind::Uint64Keyword => "uint64",
+        syntax::TokenKind::Float32Keyword => "float32",
+        syntax::TokenKind::Float64Keyword => "float64",
+        syntax::TokenKind::StringKeyword => "string",
+        syntax::TokenKind::CharKeyword => "char",
+        _ => token.text,
+    }
+}
+
+fn parse_type(parser: Parser) -> ast::Node {
+    let token = current(parser);
+    if same_kind(token.kind, syntax::TokenKind::LParen) {
+        let start = advance(parser).start;
+        let children = Ref::new(Vec::new());
+        if eat(parser, syntax::TokenKind::RParen) {
+            if eat(parser, syntax::TokenKind::Arrow) {
+                let ret = parse_type(parser);
+                push_node(children, ret);
+                ast::node(ast::NodeKind::TypeFn, "", children.get(), start, previous_end(parser))
+            } else {
+                ast::leaf(ast::NodeKind::TypeUnit, "unit", start, previous_end(parser))
+            }
+        } else {
+            push_node(children, parse_type(parser));
+            while eat(parser, syntax::TokenKind::Comma) {
+                if at(parser, syntax::TokenKind::RParen) {
+                    ()
+                } else {
+                    push_node(children, parse_type(parser));
+                };
+            };
+            let _ = expect(parser, syntax::TokenKind::RParen, "expected `)` in type");
+            if eat(parser, syntax::TokenKind::Arrow) {
+                let ret = parse_type(parser);
+                push_node(children, ret);
+                ast::node(ast::NodeKind::TypeFn, "", children.get(), start, previous_end(parser))
+            } else {
+                ast::node(ast::NodeKind::TypeTuple, "", children.get(), start, previous_end(parser))
+            }
+        }
+    } else if same_kind(token.kind, syntax::TokenKind::LBracket) {
+        let start = advance(parser).start;
+        let children = Ref::new(Vec::new());
+        push_node(children, parse_type(parser));
+        if eat(parser, syntax::TokenKind::Semi) {
+            if !at(parser, syntax::TokenKind::RBracket) && !eof(parser) {
+                let size = advance(parser);
+                push_node(children, ast::leaf(ast::NodeKind::ExprLit, size.text, size.start, size.end));
+            } else {
+                ()
+            };
+        } else {
+            ()
+        };
+        let _ = expect(parser, syntax::TokenKind::RBracket, "expected `]` in array type");
+        ast::node(ast::NodeKind::TypeArray, "", children.get(), start, previous_end(parser))
+    } else if same_kind(token.kind, syntax::TokenKind::DynKeyword) {
+        let start = advance(parser).start;
+        let children = Ref::new(Vec::new());
+        let (path, _, _) = parse_path_text(parser);
+        ast::node(ast::NodeKind::TypeDyn, path, children.get(), start, previous_end(parser))
+    } else if type_start(token.kind) {
+        let start = token.start;
+        let name = if path_start(token.kind) {
+            let (path, _, _) = parse_path_text(parser);
+            path
+        } else {
+            let _ = advance(parser);
+            token_type_name(token)
+        };
+        let children = Ref::new(Vec::new());
+        if eat(parser, syntax::TokenKind::LBracket) {
+            if !at(parser, syntax::TokenKind::RBracket) {
+                push_node(children, parse_type(parser));
+                while eat(parser, syntax::TokenKind::Comma) {
+                    if at(parser, syntax::TokenKind::RBracket) {
+                        ()
+                    } else {
+                        push_node(children, parse_type(parser));
+                    };
+                };
+            } else {
+                ()
+            };
+            let _ = expect(parser, syntax::TokenKind::RBracket, "expected `]` in type arguments");
+        } else {
+            ()
+        };
+        ast::node(ast::NodeKind::TypeName, name, children.get(), start, previous_end(parser))
+    } else {
+        push_diagnostic(parser, token.start, token.end, "expected a type");
+        ast::leaf(ast::NodeKind::TypeMissing, "", token.start, token.end)
+    }
+}
+
+fn parse_generic_list(parser: Parser) -> ast::Node {
+    let start = current(parser).start;
+    let children = Ref::new(Vec::new());
+    if eat(parser, syntax::TokenKind::LBracket) {
+        while !at(parser, syntax::TokenKind::RBracket) && !eof(parser) {
+            if at(parser, syntax::TokenKind::Ident) {
+                let name = advance(parser);
+                push_node(children, ast::leaf(ast::NodeKind::TypeName, name.text, name.start, name.end));
+            } else {
+                let token = advance(parser);
+                push_diagnostic(parser, token.start, token.end, "expected a generic parameter");
+            };
+            while !at(parser, syntax::TokenKind::Comma) && !at(parser, syntax::TokenKind::RBracket) && !eof(parser) {
+                let _ = advance(parser);
+            };
+            let _ = eat(parser, syntax::TokenKind::Comma);
+        };
+        let _ = expect(parser, syntax::TokenKind::RBracket, "expected `]` after generic parameters");
+    } else {
+        ()
+    };
+    ast::node(ast::NodeKind::GenericList, "", children.get(), start, previous_end(parser))
+}
+
+fn parse_param_list(parser: Parser) -> ast::Node {
+    let start = current(parser).start;
+    let children = Ref::new(Vec::new());
+    let _ = expect(parser, syntax::TokenKind::LParen, "expected `(` before parameters");
+    while !at(parser, syntax::TokenKind::RParen) && !eof(parser) {
+        let param_start = current(parser).start;
+        let name = if at(parser, syntax::TokenKind::Ident) {
+            advance(parser).text
+        } else {
+            let token = advance(parser);
+            push_diagnostic(parser, token.start, token.end, "expected a parameter name");
+            ""
+        };
+        let _ = expect(parser, syntax::TokenKind::Colon, "expected `:` after parameter name");
+        let ty = parse_type(parser);
+        let items = Ref::new(Vec::new());
+        push_node(items, ty);
+        push_node(children, ast::node(ast::NodeKind::Param, name, items.get(), param_start, previous_end(parser)));
+        if eat(parser, syntax::TokenKind::Comma) {
+            ()
+        } else if !at(parser, syntax::TokenKind::RParen) {
+            let token = current(parser);
+            push_diagnostic(parser, token.start, token.end, "expected `,` or `)` in parameter list");
+        } else {
+            ()
+        };
+    };
+    let _ = expect(parser, syntax::TokenKind::RParen, "expected `)` after parameters");
+    ast::node(ast::NodeKind::ParamList, "", children.get(), start, previous_end(parser))
+}
+
+fn parse_attribute(parser: Parser) -> ast::Node {
+    let start = current(parser).start;
+    let text = Ref::new("");
+    let _ = expect(parser, syntax::TokenKind::Pound, "expected `#`");
+    if eat(parser, syntax::TokenKind::Bang) {
+        text.set("!");
+    } else {
+        ()
+    };
+    if eat(parser, syntax::TokenKind::LBracket) {
+        let depth = Ref::new(1);
+        while depth.get() > 0 && !eof(parser) {
+            if at(parser, syntax::TokenKind::LBracket) {
+                depth.set(depth.get() + 1);
+                text.set(text.get() + advance(parser).text);
+            } else if at(parser, syntax::TokenKind::RBracket) {
+                depth.set(depth.get() - 1);
+                if depth.get() > 0 {
+                    text.set(text.get() + advance(parser).text);
+                } else {
+                    let _ = advance(parser);
+                }
+            } else {
+                text.set(text.get() + advance(parser).text);
+            };
+        };
+    } else {
+        push_diagnostic(parser, current(parser).start, current(parser).end, "expected `[` after attribute");
+    };
+    ast::leaf(ast::NodeKind::Attribute, text.get(), start, previous_end(parser))
+}
+
+fn parse_use(parser: Parser, start: int32) -> ast::Node {
+    let _ = expect(parser, syntax::TokenKind::UseKeyword, "expected `use`");
+    let (path, _, _) = parse_path_text(parser);
+    let _ = expect(parser, syntax::TokenKind::Semi, "expected `;` after use");
+    ast::leaf(ast::NodeKind::Use, path, start, previous_end(parser))
+}
+
+fn parse_mod(parser: Parser, start: int32) -> ast::Node {
+    let _ = expect(parser, syntax::TokenKind::ModKeyword, "expected `mod`");
+    let name = if at(parser, syntax::TokenKind::Ident) {
+        advance(parser).text
+    } else {
+        push_diagnostic(parser, current(parser).start, current(parser).end, "expected module name");
+        ""
+    };
+    let _ = expect(parser, syntax::TokenKind::Semi, "expected `;` after module declaration");
+    ast::leaf(ast::NodeKind::Mod, name, start, previous_end(parser))
+}
+
+fn parse_fn_with_start(parser: Parser, start: int32, extern_fn: bool) -> ast::Node {
+    let _ = expect(parser, syntax::TokenKind::FnKeyword, "expected `fn`");
+    let name = if at(parser, syntax::TokenKind::Ident) {
+        advance(parser).text
+    } else {
+        push_diagnostic(parser, current(parser).start, current(parser).end, "expected function name");
+        ""
+    };
+    let children = Ref::new(Vec::new());
+    if at(parser, syntax::TokenKind::LBracket) {
+        push_node(children, parse_generic_list(parser));
+    } else {
+        push_node(children, ast::node(ast::NodeKind::GenericList, "", ast::empty_nodes(), previous_end(parser), previous_end(parser)));
+    };
+    push_node(children, parse_param_list(parser));
+    if eat(parser, syntax::TokenKind::Arrow) {
+        push_node(children, parse_type(parser));
+    } else {
+        push_node(children, ast::leaf(ast::NodeKind::TypeUnit, "unit", previous_end(parser), previous_end(parser)));
+    };
+    if extern_fn {
+        let _ = eat(parser, syntax::TokenKind::Semi);
+        ast::node(ast::NodeKind::ExternFn, name, children.get(), start, previous_end(parser))
+    } else if at(parser, syntax::TokenKind::LBrace) {
+        push_node(children, parse_block(parser));
+        ast::node(ast::NodeKind::FnDef, name, children.get(), start, previous_end(parser))
+    } else {
+        let _ = expect(parser, syntax::TokenKind::Semi, "expected function body or `;`");
+        ast::node(ast::NodeKind::FnDef, name, children.get(), start, previous_end(parser))
+    }
+}
+
+fn parse_extern(parser: Parser, start: int32) -> ast::Node {
+    let _ = expect(parser, syntax::TokenKind::ExternKeyword, "expected `extern`");
+    if at(parser, syntax::TokenKind::FnKeyword) {
+        parse_fn_with_start(parser, start, true)
+    } else {
+        unexpected(parser, "expected `fn` after `extern`")
+    }
+}
+
+fn parse_struct(parser: Parser, start: int32) -> ast::Node {
+    let _ = expect(parser, syntax::TokenKind::StructKeyword, "expected `struct`");
+    let name = if at(parser, syntax::TokenKind::Ident) {
+        advance(parser).text
+    } else {
+        push_diagnostic(parser, current(parser).start, current(parser).end, "expected struct name");
+        ""
+    };
+    if at(parser, syntax::TokenKind::LBracket) {
+        let _ = parse_generic_list(parser);
+    } else {
+        ()
+    };
+    let children = Ref::new(Vec::new());
+    let _ = expect(parser, syntax::TokenKind::LBrace, "expected `{` in struct definition");
+    while !at(parser, syntax::TokenKind::RBrace) && !eof(parser) {
+        let field_start = current(parser).start;
+        let field_name = if at(parser, syntax::TokenKind::Ident) {
+            advance(parser).text
+        } else {
+            let token = advance(parser);
+            push_diagnostic(parser, token.start, token.end, "expected struct field name");
+            ""
+        };
+        let _ = expect(parser, syntax::TokenKind::Colon, "expected `:` after field name");
+        let ty = parse_type(parser);
+        let field_children = Ref::new(Vec::new());
+        push_node(field_children, ty);
+        push_node(children, ast::node(ast::NodeKind::StructField, field_name, field_children.get(), field_start, previous_end(parser)));
+        let _ = eat(parser, syntax::TokenKind::Comma);
+    };
+    let _ = expect(parser, syntax::TokenKind::RBrace, "expected `}` after struct definition");
+    ast::node(ast::NodeKind::StructDef, name, children.get(), start, previous_end(parser))
+}
+
+fn parse_enum(parser: Parser, start: int32) -> ast::Node {
+    let _ = expect(parser, syntax::TokenKind::EnumKeyword, "expected `enum`");
+    let name = if at(parser, syntax::TokenKind::Ident) {
+        advance(parser).text
+    } else {
+        push_diagnostic(parser, current(parser).start, current(parser).end, "expected enum name");
+        ""
+    };
+    if at(parser, syntax::TokenKind::LBracket) {
+        let _ = parse_generic_list(parser);
+    } else {
+        ()
+    };
+    let children = Ref::new(Vec::new());
+    let _ = expect(parser, syntax::TokenKind::LBrace, "expected `{` in enum definition");
+    while !at(parser, syntax::TokenKind::RBrace) && !eof(parser) {
+        let variant_start = current(parser).start;
+        let variant_name = if at(parser, syntax::TokenKind::Ident) {
+            advance(parser).text
+        } else {
+            let token = advance(parser);
+            push_diagnostic(parser, token.start, token.end, "expected enum variant name");
+            ""
+        };
+        let args = Ref::new(Vec::new());
+        if eat(parser, syntax::TokenKind::LParen) {
+            while !at(parser, syntax::TokenKind::RParen) && !eof(parser) {
+                push_node(args, parse_type(parser));
+                let _ = eat(parser, syntax::TokenKind::Comma);
+            };
+            let _ = expect(parser, syntax::TokenKind::RParen, "expected `)` after enum variant fields");
+        } else {
+            ()
+        };
+        push_node(children, ast::node(ast::NodeKind::EnumVariant, variant_name, args.get(), variant_start, previous_end(parser)));
+        let _ = eat(parser, syntax::TokenKind::Comma);
+    };
+    let _ = expect(parser, syntax::TokenKind::RBrace, "expected `}` after enum definition");
+    ast::node(ast::NodeKind::EnumDef, name, children.get(), start, previous_end(parser))
+}
+
+fn parse_trait(parser: Parser, start: int32) -> ast::Node {
+    let _ = expect(parser, syntax::TokenKind::TraitKeyword, "expected `trait`");
+    let name = if at(parser, syntax::TokenKind::Ident) {
+        advance(parser).text
+    } else {
+        push_diagnostic(parser, current(parser).start, current(parser).end, "expected trait name");
+        ""
+    };
+    let children = Ref::new(Vec::new());
+    let _ = expect(parser, syntax::TokenKind::LBrace, "expected `{` in trait definition");
+    while !at(parser, syntax::TokenKind::RBrace) && !eof(parser) {
+        if at(parser, syntax::TokenKind::FnKeyword) {
+            push_node(children, parse_fn_with_start(parser, current(parser).start, true));
+        } else {
+            push_node(children, unexpected(parser, "expected trait method"));
+        };
+        let _ = eat(parser, syntax::TokenKind::Semi);
+    };
+    let _ = expect(parser, syntax::TokenKind::RBrace, "expected `}` after trait definition");
+    ast::node(ast::NodeKind::TraitDef, name, children.get(), start, previous_end(parser))
+}
+
+fn parse_impl(parser: Parser, start: int32) -> ast::Node {
+    let _ = expect(parser, syntax::TokenKind::ImplKeyword, "expected `impl`");
+    let header = Ref::new("");
+    while !at(parser, syntax::TokenKind::LBrace) && !eof(parser) {
+        header.set(header.get() + advance(parser).text);
+    };
+    let children = Ref::new(Vec::new());
+    let _ = expect(parser, syntax::TokenKind::LBrace, "expected `{` in impl definition");
+    while !at(parser, syntax::TokenKind::RBrace) && !eof(parser) {
+        if at(parser, syntax::TokenKind::FnKeyword) {
+            push_node(children, parse_fn_with_start(parser, current(parser).start, false));
+        } else {
+            push_node(children, unexpected(parser, "expected impl method"));
+        };
+    };
+    let _ = expect(parser, syntax::TokenKind::RBrace, "expected `}` after impl definition");
+    ast::node(ast::NodeKind::ImplDef, header.get(), children.get(), start, previous_end(parser))
+}
+
+fn parse_item(parser: Parser) -> ast::Node {
+    let start = current(parser).start;
+    let _ = eat(parser, syntax::TokenKind::PubKeyword);
+    if at(parser, syntax::TokenKind::UseKeyword) {
+        parse_use(parser, start)
+    } else if at(parser, syntax::TokenKind::ModKeyword) {
+        parse_mod(parser, start)
+    } else if at(parser, syntax::TokenKind::ExternKeyword) {
+        parse_extern(parser, start)
+    } else if at(parser, syntax::TokenKind::FnKeyword) {
+        parse_fn_with_start(parser, start, false)
+    } else if at(parser, syntax::TokenKind::StructKeyword) {
+        parse_struct(parser, start)
+    } else if at(parser, syntax::TokenKind::EnumKeyword) {
+        parse_enum(parser, start)
+    } else if at(parser, syntax::TokenKind::TraitKeyword) {
+        parse_trait(parser, start)
+    } else if at(parser, syntax::TokenKind::ImplKeyword) {
+        parse_impl(parser, start)
+    } else {
+        unexpected(parser, "expected a top-level item")
+    }
+}
+
+fn literal_type_text(kind: syntax::TokenKind) -> string {
+    match kind {
+        syntax::TokenKind::Int8Lit => "int8",
+        syntax::TokenKind::Int16Lit => "int16",
+        syntax::TokenKind::Int32Lit => "int32",
+        syntax::TokenKind::Int64Lit => "int64",
+        syntax::TokenKind::UInt8Lit => "uint8",
+        syntax::TokenKind::UInt16Lit => "uint16",
+        syntax::TokenKind::UInt32Lit => "uint32",
+        syntax::TokenKind::UInt64Lit => "uint64",
+        syntax::TokenKind::Float32Lit => "float32",
+        syntax::TokenKind::Float64Lit => "float64",
+        syntax::TokenKind::Float => "float64",
+        syntax::TokenKind::Str => "string",
+        syntax::TokenKind::MultilineStr => "string",
+        syntax::TokenKind::CharLit => "char",
+        syntax::TokenKind::TrueKeyword => "bool",
+        syntax::TokenKind::FalseKeyword => "bool",
+        _ => "int32",
+    }
+}
+
+fn expr_literal_kind(kind: syntax::TokenKind) -> bool {
+    match kind {
+        syntax::TokenKind::Int => true,
+        syntax::TokenKind::Int8Lit => true,
+        syntax::TokenKind::Int16Lit => true,
+        syntax::TokenKind::Int32Lit => true,
+        syntax::TokenKind::Int64Lit => true,
+        syntax::TokenKind::UInt8Lit => true,
+        syntax::TokenKind::UInt16Lit => true,
+        syntax::TokenKind::UInt32Lit => true,
+        syntax::TokenKind::UInt64Lit => true,
+        syntax::TokenKind::Float => true,
+        syntax::TokenKind::Float32Lit => true,
+        syntax::TokenKind::Float64Lit => true,
+        syntax::TokenKind::Str => true,
+        syntax::TokenKind::MultilineStr => true,
+        syntax::TokenKind::CharLit => true,
+        syntax::TokenKind::TrueKeyword => true,
+        syntax::TokenKind::FalseKeyword => true,
+        _ => false,
+    }
+}
+
+fn pattern_literal_kind(kind: syntax::TokenKind) -> bool {
+    match kind {
+        syntax::TokenKind::Str => true,
+        syntax::TokenKind::CharLit => true,
+        syntax::TokenKind::Int => true,
+        syntax::TokenKind::Int8Lit => true,
+        syntax::TokenKind::Int16Lit => true,
+        syntax::TokenKind::Int32Lit => true,
+        syntax::TokenKind::Int64Lit => true,
+        syntax::TokenKind::UInt8Lit => true,
+        syntax::TokenKind::UInt16Lit => true,
+        syntax::TokenKind::UInt32Lit => true,
+        syntax::TokenKind::UInt64Lit => true,
+        syntax::TokenKind::TrueKeyword => true,
+        syntax::TokenKind::FalseKeyword => true,
+        _ => false,
+    }
+}
+
+fn parse_expr(parser: Parser) -> ast::Node {
+    parse_expr_bp(parser, 1)
+}
+
+fn parse_control_expr(parser: Parser) -> ast::Node {
+    let allow_struct_literals = parser.allow_struct_literals.get();
+    parser.allow_struct_literals.set(false);
+    let expr = parse_expr(parser);
+    parser.allow_struct_literals.set(allow_struct_literals);
+    expr
+}
+
+fn binding_power(kind: syntax::TokenKind) -> int32 {
+    match kind {
+        syntax::TokenKind::OrOr => 1,
+        syntax::TokenKind::AndAnd => 2,
+        syntax::TokenKind::EqEq => 3,
+        syntax::TokenKind::NotEq => 3,
+        syntax::TokenKind::Less => 4,
+        syntax::TokenKind::LessEq => 4,
+        syntax::TokenKind::Greater => 4,
+        syntax::TokenKind::GreaterEq => 4,
+        syntax::TokenKind::Plus => 5,
+        syntax::TokenKind::Minus => 5,
+        syntax::TokenKind::Star => 6,
+        syntax::TokenKind::Slash => 6,
+        _ => 0,
+    }
+}
+
+fn parse_expr_bp(parser: Parser, min_bp: int32) -> ast::Node {
+    let left = Ref::new(parse_prefix(parser));
+    let done = Ref::new(false);
+    while !(done.get()) {
+        let op = current(parser);
+        let bp = binding_power(op.kind);
+        if bp < min_bp || bp == 0 {
+            done.set(true);
+        } else {
+            let _ = advance(parser);
+            let right = parse_expr_bp(parser, bp + 1);
+            let children = Ref::new(Vec::new());
+            push_node(children, left.get());
+            push_node(children, right);
+            left.set(ast::node(ast::NodeKind::ExprBinary, op.text, children.get(), left.get().start, previous_end(parser)));
+        };
+    };
+    left.get()
+}
+
+fn parse_prefix(parser: Parser) -> ast::Node {
+    if at(parser, syntax::TokenKind::Minus) || at(parser, syntax::TokenKind::Bang) {
+        let op = advance(parser);
+        let children = Ref::new(Vec::new());
+        push_node(children, parse_expr_bp(parser, 7));
+        ast::node(ast::NodeKind::ExprUnary, op.text, children.get(), op.start, previous_end(parser))
+    } else {
+        parse_postfix(parser, parse_atom(parser))
+    }
+}
+
+fn parse_postfix(parser: Parser, base: ast::Node) -> ast::Node {
+    let current_expr = Ref::new(base);
+    let done = Ref::new(false);
+    while !(done.get()) {
+        if at(parser, syntax::TokenKind::LParen) {
+            let start = current_expr.get().start;
+            let children = Ref::new(Vec::new());
+            push_node(children, current_expr.get());
+            let _ = advance(parser);
+            if !at(parser, syntax::TokenKind::RParen) {
+                push_node(children, parse_expr(parser));
+                while eat(parser, syntax::TokenKind::Comma) {
+                    if at(parser, syntax::TokenKind::RParen) {
+                        ()
+                    } else {
+                        push_node(children, parse_expr(parser));
+                    };
+                };
+            } else {
+                ()
+            };
+            let _ = expect(parser, syntax::TokenKind::RParen, "expected `)` after call arguments");
+            current_expr.set(ast::node(ast::NodeKind::ExprCall, "", children.get(), start, previous_end(parser)));
+        } else if at(parser, syntax::TokenKind::Dot) {
+            let start = current_expr.get().start;
+            let _ = advance(parser);
+            let name = if at(parser, syntax::TokenKind::Ident) {
+                advance(parser).text
+            } else {
+                push_diagnostic(parser, current(parser).start, current(parser).end, "expected field or method name");
+                ""
+            };
+            if at(parser, syntax::TokenKind::LParen) {
+                let children = Ref::new(Vec::new());
+                push_node(children, current_expr.get());
+                let _ = advance(parser);
+                if !at(parser, syntax::TokenKind::RParen) {
+                    push_node(children, parse_expr(parser));
+                    while eat(parser, syntax::TokenKind::Comma) {
+                        if at(parser, syntax::TokenKind::RParen) {
+                            ()
+                        } else {
+                            push_node(children, parse_expr(parser));
+                        };
+                    };
+                } else {
+                    ()
+                };
+                let _ = expect(parser, syntax::TokenKind::RParen, "expected `)` after method arguments");
+                current_expr.set(ast::node(ast::NodeKind::ExprMethodCall, name, children.get(), start, previous_end(parser)));
+            } else {
+                let children = Ref::new(Vec::new());
+                push_node(children, current_expr.get());
+                current_expr.set(ast::node(ast::NodeKind::ExprField, name, children.get(), start, previous_end(parser)));
+            }
+        } else if at(parser, syntax::TokenKind::LBracket) {
+            let start = current_expr.get().start;
+            let children = Ref::new(Vec::new());
+            push_node(children, current_expr.get());
+            let _ = advance(parser);
+            push_node(children, parse_expr(parser));
+            let _ = expect(parser, syntax::TokenKind::RBracket, "expected `]` after index");
+            current_expr.set(ast::node(ast::NodeKind::ExprIndex, "", children.get(), start, previous_end(parser)));
+        } else if at(parser, syntax::TokenKind::Question) {
+            let token = advance(parser);
+            let children = Ref::new(Vec::new());
+            push_node(children, current_expr.get());
+            current_expr.set(ast::node(ast::NodeKind::ExprMethodCall, "?", children.get(), token.start, token.end));
+        } else {
+            done.set(true);
+        };
+    };
+    current_expr.get()
+}
+
+fn parse_atom(parser: Parser) -> ast::Node {
+    let token = current(parser);
+    if expr_literal_kind(token.kind) {
+        let _ = advance(parser);
+        ast::leaf(ast::NodeKind::ExprLit, literal_type_text(token.kind) + ":" + token.text, token.start, token.end)
+    } else if path_start(token.kind) {
+        let (path, start, _) = parse_path_text(parser);
+        if parser.allow_struct_literals.get() && at(parser, syntax::TokenKind::LBrace) {
+            parse_struct_literal(parser, path, start)
+        } else {
+            ast::leaf(ast::NodeKind::ExprPath, path, start, previous_end(parser))
+        }
+    } else if same_kind(token.kind, syntax::TokenKind::LParen) {
+        parse_paren_expr(parser)
+    } else if same_kind(token.kind, syntax::TokenKind::LBracket) {
+        parse_array_expr(parser)
+    } else if same_kind(token.kind, syntax::TokenKind::LBrace) {
+        parse_block(parser)
+    } else if same_kind(token.kind, syntax::TokenKind::IfKeyword) {
+        parse_if(parser)
+    } else if same_kind(token.kind, syntax::TokenKind::MatchKeyword) {
+        parse_match(parser)
+    } else if same_kind(token.kind, syntax::TokenKind::WhileKeyword) {
+        parse_while(parser)
+    } else if same_kind(token.kind, syntax::TokenKind::ReturnKeyword) {
+        parse_return(parser)
+    } else if same_kind(token.kind, syntax::TokenKind::BreakKeyword) {
+        let start = advance(parser).start;
+        ast::leaf(ast::NodeKind::ExprBreak, "", start, previous_end(parser))
+    } else if same_kind(token.kind, syntax::TokenKind::ContinueKeyword) {
+        let start = advance(parser).start;
+        ast::leaf(ast::NodeKind::ExprContinue, "", start, previous_end(parser))
+    } else if same_kind(token.kind, syntax::TokenKind::GoKeyword) {
+        let start = advance(parser).start;
+        let children = Ref::new(Vec::new());
+        push_node(children, parse_expr(parser));
+        ast::node(ast::NodeKind::ExprGo, "", children.get(), start, previous_end(parser))
+    } else if same_kind(token.kind, syntax::TokenKind::Pipe) || same_kind(token.kind, syntax::TokenKind::OrOr) {
+        parse_closure(parser)
+    } else {
+        unexpected(parser, "expected an expression")
+    }
+}
+
+fn parse_struct_literal(parser: Parser, path: string, start: int32) -> ast::Node {
+    let children = Ref::new(Vec::new());
+    let _ = expect(parser, syntax::TokenKind::LBrace, "expected `{` in struct literal");
+    while !at(parser, syntax::TokenKind::RBrace) && !eof(parser) {
+        let field_start = current(parser).start;
+        let name = if at(parser, syntax::TokenKind::Ident) {
+            advance(parser).text
+        } else {
+            let token = advance(parser);
+            push_diagnostic(parser, token.start, token.end, "expected struct literal field");
+            ""
+        };
+        let field_children = Ref::new(Vec::new());
+        if eat(parser, syntax::TokenKind::Colon) {
+            push_node(field_children, parse_expr(parser));
+        } else {
+            push_node(field_children, ast::leaf(ast::NodeKind::ExprPath, name, field_start, previous_end(parser)));
+        };
+        push_node(children, ast::node(ast::NodeKind::Field, name, field_children.get(), field_start, previous_end(parser)));
+        let _ = eat(parser, syntax::TokenKind::Comma);
+    };
+    let _ = expect(parser, syntax::TokenKind::RBrace, "expected `}` after struct literal");
+    ast::node(ast::NodeKind::ExprStructLit, path, children.get(), start, previous_end(parser))
+}
+
+fn parse_paren_expr(parser: Parser) -> ast::Node {
+    let start = advance(parser).start;
+    let children = Ref::new(Vec::new());
+    if eat(parser, syntax::TokenKind::RParen) {
+        ast::node(ast::NodeKind::ExprLit, "unit:()", children.get(), start, previous_end(parser))
+    } else {
+        push_node(children, parse_expr(parser));
+        if eat(parser, syntax::TokenKind::Comma) {
+            while !at(parser, syntax::TokenKind::RParen) && !eof(parser) {
+                push_node(children, parse_expr(parser));
+                let _ = eat(parser, syntax::TokenKind::Comma);
+            };
+            let _ = expect(parser, syntax::TokenKind::RParen, "expected `)` after tuple expression");
+            ast::node(ast::NodeKind::ExprTuple, "", children.get(), start, previous_end(parser))
+        } else {
+            let _ = expect(parser, syntax::TokenKind::RParen, "expected `)` after expression");
+            let inner = children.get().get(0);
+            ast::node(ast::NodeKind::ExprTuple, "paren", children.get(), start, inner.end)
+        }
+    }
+}
+
+fn parse_array_expr(parser: Parser) -> ast::Node {
+    let start = advance(parser).start;
+    let children = Ref::new(Vec::new());
+    while !at(parser, syntax::TokenKind::RBracket) && !eof(parser) {
+        push_node(children, parse_expr(parser));
+        let _ = eat(parser, syntax::TokenKind::Comma);
+    };
+    let _ = expect(parser, syntax::TokenKind::RBracket, "expected `]` after array literal");
+    ast::node(ast::NodeKind::ExprArray, "", children.get(), start, previous_end(parser))
+}
+
+fn parse_if(parser: Parser) -> ast::Node {
+    let start = advance(parser).start;
+    let children = Ref::new(Vec::new());
+    push_node(children, parse_control_expr(parser));
+    if at(parser, syntax::TokenKind::LBrace) {
+        push_node(children, parse_block(parser));
+    } else {
+        push_node(children, parse_expr(parser));
+    };
+    if eat(parser, syntax::TokenKind::ElseKeyword) {
+        if at(parser, syntax::TokenKind::IfKeyword) {
+            push_node(children, parse_if(parser));
+        } else if at(parser, syntax::TokenKind::LBrace) {
+            push_node(children, parse_block(parser));
+        } else {
+            push_node(children, parse_expr(parser));
+        }
+    } else {
+        push_diagnostic(parser, previous_end(parser), previous_end(parser), "expected `else` in if expression");
+    };
+    ast::node(ast::NodeKind::ExprIf, "", children.get(), start, previous_end(parser))
+}
+
+fn parse_match(parser: Parser) -> ast::Node {
+    let start = advance(parser).start;
+    let children = Ref::new(Vec::new());
+    push_node(children, parse_control_expr(parser));
+    let _ = expect(parser, syntax::TokenKind::LBrace, "expected `{` after match scrutinee");
+    while !at(parser, syntax::TokenKind::RBrace) && !eof(parser) {
+        let arm_start = current(parser).start;
+        let arm_children = Ref::new(Vec::new());
+        push_node(arm_children, parse_pattern(parser));
+        let _ = expect(parser, syntax::TokenKind::FatArrow, "expected `=>` in match arm");
+        push_node(arm_children, parse_expr(parser));
+        push_node(children, ast::node(ast::NodeKind::MatchArm, "", arm_children.get(), arm_start, previous_end(parser)));
+        let _ = eat(parser, syntax::TokenKind::Comma);
+    };
+    let _ = expect(parser, syntax::TokenKind::RBrace, "expected `}` after match");
+    ast::node(ast::NodeKind::ExprMatch, "", children.get(), start, previous_end(parser))
+}
+
+fn parse_while(parser: Parser) -> ast::Node {
+    let start = advance(parser).start;
+    let children = Ref::new(Vec::new());
+    push_node(children, parse_control_expr(parser));
+    if at(parser, syntax::TokenKind::LBrace) {
+        push_node(children, parse_block(parser));
+    } else {
+        push_node(children, parse_expr(parser));
+    };
+    ast::node(ast::NodeKind::ExprWhile, "", children.get(), start, previous_end(parser))
+}
+
+fn parse_return(parser: Parser) -> ast::Node {
+    let start = advance(parser).start;
+    let children = Ref::new(Vec::new());
+    if expr_start(current(parser).kind) {
+        push_node(children, parse_expr(parser));
+    } else {
+        ()
+    };
+    ast::node(ast::NodeKind::ExprReturn, "", children.get(), start, previous_end(parser))
+}
+
+fn parse_closure(parser: Parser) -> ast::Node {
+    let start = current(parser).start;
+    let children = Ref::new(Vec::new());
+    if at(parser, syntax::TokenKind::OrOr) {
+        let _ = advance(parser);
+    } else {
+        let _ = expect(parser, syntax::TokenKind::Pipe, "expected `|` in closure");
+        while !at(parser, syntax::TokenKind::Pipe) && !eof(parser) {
+            let param_start = current(parser).start;
+            let name = if at(parser, syntax::TokenKind::Ident) {
+                advance(parser).text
+            } else {
+                advance(parser).text
+            };
+            let param_children = Ref::new(Vec::new());
+            if eat(parser, syntax::TokenKind::Colon) {
+                push_node(param_children, parse_type(parser));
+            } else {
+                ()
+            };
+            push_node(children, ast::node(ast::NodeKind::Param, name, param_children.get(), param_start, previous_end(parser)));
+            let _ = eat(parser, syntax::TokenKind::Comma);
+        };
+        let _ = expect(parser, syntax::TokenKind::Pipe, "expected `|` after closure parameters");
+    };
+    push_node(children, parse_expr(parser));
+    ast::node(ast::NodeKind::ExprClosure, "", children.get(), start, previous_end(parser))
+}
+
+fn parse_pattern(parser: Parser) -> ast::Node {
+    let token = current(parser);
+    if same_kind(token.kind, syntax::TokenKind::WildcardKeyword) {
+        let _ = advance(parser);
+        ast::leaf(ast::NodeKind::PatternWildcard, "_", token.start, token.end)
+    } else if same_kind(token.kind, syntax::TokenKind::LParen) {
+        let start = advance(parser).start;
+        let children = Ref::new(Vec::new());
+        if !at(parser, syntax::TokenKind::RParen) {
+            push_node(children, parse_pattern(parser));
+            while eat(parser, syntax::TokenKind::Comma) {
+                if at(parser, syntax::TokenKind::RParen) {
+                    ()
+                } else {
+                    push_node(children, parse_pattern(parser));
+                };
+            };
+        } else {
+            ()
+        };
+        let _ = expect(parser, syntax::TokenKind::RParen, "expected `)` after pattern");
+        ast::node(ast::NodeKind::PatternTuple, "", children.get(), start, previous_end(parser))
+    } else if pattern_literal_kind(token.kind) {
+        let _ = advance(parser);
+        ast::leaf(ast::NodeKind::PatternLit, token.text, token.start, token.end)
+    } else if path_start(token.kind) {
+        let (path, start, _) = parse_path_text(parser);
+        if eat(parser, syntax::TokenKind::LParen) {
+            let children = Ref::new(Vec::new());
+            while !at(parser, syntax::TokenKind::RParen) && !eof(parser) {
+                push_node(children, parse_pattern(parser));
+                let _ = eat(parser, syntax::TokenKind::Comma);
+            };
+            let _ = expect(parser, syntax::TokenKind::RParen, "expected `)` after constructor pattern");
+            ast::node(ast::NodeKind::PatternConstr, path, children.get(), start, previous_end(parser))
+        } else if contains_colon_colon(path) {
+            ast::leaf(ast::NodeKind::PatternConstr, path, start, previous_end(parser))
+        } else {
+            ast::leaf(ast::NodeKind::PatternVar, path, start, previous_end(parser))
+        }
+    } else {
+        unexpected(parser, "expected a pattern")
+    }
+}
+
+fn contains_colon_colon(text: string) -> bool {
+    let i = Ref::new(0);
+    let found = Ref::new(false);
+    while !(found.get()) && i.get() + 1 < text.len() {
+        if text.get(i.get()) == ':' && text.get(i.get() + 1) == ':' {
+            found.set(true);
+        } else {
+            i.set(i.get() + 1);
+        };
+    };
+    found.get()
+}
+
+fn parse_let_statement(parser: Parser, start: int32) -> ast::Node {
+    let children = Ref::new(Vec::new());
+    let _ = expect(parser, syntax::TokenKind::LetKeyword, "expected `let`");
+    push_node(children, parse_pattern(parser));
+    if eat(parser, syntax::TokenKind::Colon) {
+        push_node(children, parse_type(parser));
+    } else {
+        push_node(children, ast::leaf(ast::NodeKind::TypeMissing, "", previous_end(parser), previous_end(parser)));
+    };
+    let _ = expect(parser, syntax::TokenKind::Eq, "expected `=` in let statement");
+    push_node(children, parse_expr(parser));
+    let _ = expect(parser, syntax::TokenKind::Semi, "expected `;` after let statement");
+    ast::node(ast::NodeKind::StmtLet, "", children.get(), start, previous_end(parser))
+}
+
+fn parse_block(parser: Parser) -> ast::Node {
+    let start = current(parser).start;
+    let children = Ref::new(Vec::new());
+    let _ = expect(parser, syntax::TokenKind::LBrace, "expected `{`");
+    while !at(parser, syntax::TokenKind::RBrace) && !eof(parser) {
+        if at(parser, syntax::TokenKind::LetKeyword) {
+            push_node(children, parse_let_statement(parser, current(parser).start));
+        } else if expr_start(current(parser).kind) {
+            let expr = parse_expr(parser);
+            if eat(parser, syntax::TokenKind::Semi) {
+                let statement_children = Ref::new(Vec::new());
+                push_node(statement_children, expr);
+                push_node(children, ast::node(ast::NodeKind::StmtExpr, "", statement_children.get(), expr.start, previous_end(parser)));
+            } else {
+                let statement_children = Ref::new(Vec::new());
+                push_node(statement_children, expr);
+                push_node(children, ast::node(ast::NodeKind::StmtTail, "", statement_children.get(), expr.start, previous_end(parser)));
+            }
+        } else {
+            push_node(children, unexpected(parser, "expected a statement"));
+        };
+    };
+    let _ = expect(parser, syntax::TokenKind::RBrace, "expected `}` after block");
+    ast::node(ast::NodeKind::Block, "", children.get(), start, previous_end(parser))
+}
+
+pub fn parse_source(source: string) -> ast::ParseResult {
+    let tokens = filtered_tokens(lexer::lex(source), source.len());
+    let parser = Parser {
+        tokens: tokens,
+        index: Ref::new(0),
+        diagnostics: Ref::new(ast::empty_diagnostics()),
+        allow_struct_literals: Ref::new(true),
+    };
+    let start = current(parser).start;
+    let children = Ref::new(Vec::new());
+    while !eof(parser) {
+        if at(parser, syntax::TokenKind::Pound) {
+            push_node(children, parse_attribute(parser));
+        } else {
+            push_node(children, parse_item(parser));
+        };
+    };
+    let root = ast::node(ast::NodeKind::File, "", children.get(), start, previous_end(parser));
+    ast::parse_result(root, parser.diagnostics.get())
+}

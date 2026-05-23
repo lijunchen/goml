@@ -402,22 +402,22 @@ impl Hash for float64 {
 
 impl [T: Eq] Eq for Ref[T] {
     fn eq(self: Ref[T], other: Ref[T]) -> bool {
-        let a: T = ref_get(self);
-        let b: T = ref_get(other);
+        let a: T = self.get();
+        let b: T = other.get();
         Eq::eq(a, b)
     }
 }
 
 impl [T: Hash] Hash for Ref[T] {
     fn hash(self: Ref[T]) -> uint64 {
-        let v: T = ref_get(self);
+        let v: T = self.get();
         Hash::hash(v)
     }
 }
 
 impl [T: ToString] ToString for Ref[T] {
     fn to_string(self: Ref[T]) -> string {
-        let v: T = ref_get(self);
+        let v: T = self.get();
         "ref(" + ToString::to_string(v) + ")"
     }
 }
@@ -485,6 +485,20 @@ impl [K: Hash + Eq, V] HashMap[K, V] {
 
     fn contains(self: Self, key: K) -> bool {
         hashmap_contains(self, key)
+    }
+}
+
+impl [T] Ref[T] {
+    fn new(value: T) -> Self {
+        ref(value)
+    }
+
+    fn get(self: Self) -> T {
+        ref_get(self)
+    }
+
+    fn set(self: Self, value: T) -> unit {
+        ref_set(self, value)
     }
 }
 

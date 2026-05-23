@@ -10,7 +10,9 @@ use crate::interface;
 use crate::package_imports::{
     external_import_alias, is_exact_external_package_import, resolve_external_import_prefix,
 };
-use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package};
+use crate::package_names::{
+    BUILTIN_PACKAGE, ROOT_PACKAGE, STD_PACKAGE, is_special_unqualified_package,
+};
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::syntax::MySyntaxNodePtr;
 
@@ -51,8 +53,14 @@ struct ResolutionContext<'a> {
     deps: &'a HashMap<String, interface::PackageInterface>,
     current_package: &'a str,
     imports: &'a HashSet<String>,
+    use_aliases: &'a UseAliases,
     constructor_index: &'a ConstructorIndex,
     trait_index: &'a TraitIndex,
+}
+
+#[derive(Default)]
+struct UseAliases {
+    aliases: HashMap<String, Option<Vec<String>>>,
 }
 
 fn full_def_name(package: &str, name: &str) -> String {
@@ -200,36 +208,64 @@ impl ResolutionContext<'_> {
 
 fn use_path_is_package_import(
     path: &ast::Path,
+    current_package: &str,
     deps: &HashMap<String, interface::PackageInterface>,
 ) -> bool {
     is_exact_external_package_import(path, deps)
+        || crate_package_prefix(path, current_package, deps, true)
+            .is_some_and(|(_, len)| len == path_segments(path).len())
 }
 
 fn file_imports(
-    file: &ast::File,
+    file: &hir::SourceFileAst,
     deps: &HashMap<String, interface::PackageInterface>,
 ) -> HashSet<String> {
+    let current_package = file.ast.package.0.as_str();
     let mut imports = file
+        .ast
         .imports
         .iter()
         .map(|import| import.0.clone())
         .collect::<HashSet<_>>();
-    for use_decl in file.uses.iter() {
-        if let Some(package) = use_decl_import(&use_decl.path, deps) {
-            imports.insert(package);
+    for use_decl in file.ast.uses.iter() {
+        if let Some(package) = use_decl_import(&use_decl.path, current_package, deps) {
+            insert_import_with_descendants(&mut imports, package, deps);
         }
     }
-    for item in file.toplevels.iter() {
+    for item in file.ast.toplevels.iter() {
         if let ast::Item::Mod(module) = item {
-            imports.insert(module.name.0.clone());
+            let package = child_module_package(current_package, &module.name.0);
+            insert_import_with_descendants(&mut imports, package, deps);
         }
     }
-    for use_trait in file.use_traits.iter() {
-        if let Some(package) = use_trait_import(use_trait, deps) {
-            imports.insert(package);
+    for use_trait in file.ast.use_traits.iter() {
+        if let Some(package) = use_trait_import(use_trait, current_package, deps) {
+            insert_import_with_descendants(&mut imports, package, deps);
         }
     }
     imports
+}
+
+fn child_module_package(current_package: &str, name: &str) -> String {
+    if is_special_unqualified_package(current_package) {
+        name.to_string()
+    } else {
+        format!("{current_package}::{name}")
+    }
+}
+
+fn insert_import_with_descendants(
+    imports: &mut HashSet<String>,
+    package: String,
+    deps: &HashMap<String, interface::PackageInterface>,
+) {
+    imports.insert(package.clone());
+    let prefix = format!("{package}::");
+    for dep in deps.keys() {
+        if dep.starts_with(&prefix) {
+            imports.insert(dep.clone());
+        }
+    }
 }
 
 fn external_import_path_for_alias(
@@ -249,30 +285,93 @@ fn first_crate_segment(path: &ast::Path) -> Option<String> {
         .map(|segment| segment.ident.0.clone())
 }
 
+fn path_segments(path: &ast::Path) -> Vec<String> {
+    path.segments()
+        .iter()
+        .map(|segment| segment.ident.0.clone())
+        .collect()
+}
+
+fn crate_path_segments(path: &ast::Path) -> Option<(Vec<String>, usize)> {
+    let segments = path_segments(path);
+    if matches!(path.root(), ast::PathRoot::Crate) {
+        return Some((segments, 0));
+    }
+    if segments.first().is_some_and(|segment| segment == "crate") {
+        return Some((segments[1..].to_vec(), 1));
+    }
+    None
+}
+
+fn path_from_segments(segments: Vec<String>) -> hir::Path {
+    hir::Path::from_idents(segments)
+}
+
+fn qualified_path_from_segments(segments: Vec<String>) -> hir::QualifiedPath {
+    if segments.len() <= 1 {
+        return hir::QualifiedPath {
+            package: None,
+            path: path_from_segments(segments),
+        };
+    }
+    hir::QualifiedPath {
+        package: Some(hir::PackageName(segments[0].clone())),
+        path: path_from_segments(segments[1..].to_vec()),
+    }
+}
+
+fn path_is_relative(path: &ast::Path) -> bool {
+    matches!(path.root(), ast::PathRoot::Relative)
+}
+
+fn use_alias_target(
+    path: &ast::Path,
+    current_package: &str,
+    deps: &HashMap<String, interface::PackageInterface>,
+) -> Vec<String> {
+    if let Some((alias, prefix_len)) = resolve_external_import_prefix(path, deps) {
+        let segments = path_segments(path);
+        let mut target = if alias == STD_PACKAGE {
+            segments[..prefix_len].to_vec()
+        } else {
+            vec![alias]
+        };
+        target.extend(segments[prefix_len..].iter().cloned());
+        return target;
+    }
+    if let Some((package, prefix_len)) = crate_package_prefix(path, current_package, deps, true) {
+        let segments = path_segments(path);
+        let mut target = vec![package];
+        target.extend(segments[prefix_len..].iter().cloned());
+        return target;
+    }
+    path_segments(path)
+}
+
 fn use_decl_import(
     path: &ast::Path,
+    current_package: &str,
     deps: &HashMap<String, interface::PackageInterface>,
 ) -> Option<String> {
     if let Some(alias) = external_import_alias(path, deps) {
         return Some(alias);
     }
+    if let Some((package, _)) = crate_package_prefix(path, current_package, deps, true) {
+        return Some(package);
+    }
     first_crate_segment(path)
-}
-
-fn path_segments_display(path: &ast::Path) -> String {
-    path.segments()
-        .iter()
-        .map(|segment| segment.ident.0.clone())
-        .collect::<Vec<_>>()
-        .join("::")
 }
 
 fn use_trait_import(
     path: &ast::Path,
+    current_package: &str,
     deps: &HashMap<String, interface::PackageInterface>,
 ) -> Option<String> {
     if let Some(alias) = external_import_alias(path, deps) {
         return Some(alias);
+    }
+    if let Some((package, _)) = crate_package_prefix(path, current_package, deps, true) {
+        return Some(package);
     }
     let segments = path.segments();
     if segments
@@ -284,8 +383,30 @@ fn use_trait_import(
     segments.first().map(|segment| segment.ident.0.clone())
 }
 
+fn crate_package_prefix(
+    path: &ast::Path,
+    current_package: &str,
+    deps: &HashMap<String, interface::PackageInterface>,
+    allow_full_path: bool,
+) -> Option<(String, usize)> {
+    let (segments, offset) = crate_path_segments(path)?;
+    let max_len = if allow_full_path {
+        segments.len()
+    } else {
+        segments.len().saturating_sub(1)
+    };
+    for len in (1..=max_len).rev() {
+        let package = segments[..len].join("::");
+        if package == current_package || deps.contains_key(&package) {
+            return Some((package, len + offset));
+        }
+    }
+    None
+}
+
 fn lowered_use_trait_path(
     path: &ast::Path,
+    current_package: &str,
     deps: &HashMap<String, interface::PackageInterface>,
 ) -> Option<hir::QualifiedPath> {
     if let Some((package, prefix_len)) = resolve_external_import_prefix(path, deps) {
@@ -298,22 +419,17 @@ fn lowered_use_trait_path(
             path: hir::Path::new(segments),
         });
     }
-    let segments = path.segments();
-    if segments
-        .first()
-        .is_some_and(|segment| segment.ident.0 == "crate")
-    {
-        if segments.len() < 3 {
-            return None;
-        }
-        let package = segments[1].ident.0.clone();
-        let path_segments = segments[2..]
+    if let Some((package, prefix_len)) = crate_package_prefix(path, current_package, deps, false) {
+        let segments = path.segments()[prefix_len..]
             .iter()
             .map(|segment| hir::PathSegment::new(segment.ident.0.clone()))
-            .collect();
+            .collect::<Vec<_>>();
+        if segments.is_empty() {
+            return None;
+        }
         return Some(hir::QualifiedPath {
             package: Some(hir::PackageName(package)),
-            path: hir::Path::new(path_segments),
+            path: hir::Path::new(segments),
         });
     }
     if path.len() < 2 {
@@ -323,6 +439,98 @@ fn lowered_use_trait_path(
 }
 
 impl NameResolution {
+    fn file_use_aliases(
+        &mut self,
+        file: &ast::File,
+        deps: &HashMap<String, interface::PackageInterface>,
+        report_conflicts: bool,
+    ) -> UseAliases {
+        let mut aliases: HashMap<String, Option<Vec<String>>> = HashMap::new();
+        for use_decl in file.uses.iter() {
+            let Some(alias) = use_decl
+                .alias
+                .as_ref()
+                .or_else(|| use_decl.path.last_ident())
+                .map(|ident| ident.0.clone())
+            else {
+                continue;
+            };
+            let target = use_alias_target(&use_decl.path, file.package.0.as_str(), deps);
+            match aliases.get_mut(&alias) {
+                Some(existing) if existing.as_ref().is_some_and(|prev| prev == &target) => {}
+                Some(existing) => {
+                    if report_conflicts && existing.is_some() {
+                        self.error(format!("Ambiguous use alias {}", alias));
+                    }
+                    *existing = None;
+                }
+                None => {
+                    aliases.insert(alias, Some(target));
+                }
+            }
+        }
+        UseAliases { aliases }
+    }
+
+    fn resolve_path_segments_with_aliases(
+        &self,
+        path: &ast::Path,
+        use_aliases: &UseAliases,
+    ) -> Vec<String> {
+        self.expanded_path_segments(path, use_aliases)
+            .unwrap_or_else(|| path_segments(path))
+    }
+
+    fn expanded_path_segments(
+        &self,
+        path: &ast::Path,
+        use_aliases: &UseAliases,
+    ) -> Option<Vec<String>> {
+        let segments = path_segments(path);
+        if !path_is_relative(path) || segments.len() < 2 {
+            return None;
+        }
+        let Some(Some(target)) = use_aliases.aliases.get(&segments[0]) else {
+            return None;
+        };
+        let mut resolved = target.clone();
+        resolved.extend(segments[1..].iter().cloned());
+        Some(resolved)
+    }
+
+    fn resolve_path_segments(&self, path: &ast::Path, ctx: &ResolutionContext) -> Vec<String> {
+        if let Some((package, len)) =
+            crate_package_prefix(path, ctx.current_package, ctx.deps, false)
+        {
+            let mut segments = vec![package];
+            segments.extend(path_segments(path)[len..].iter().cloned());
+            return segments;
+        }
+        self.resolve_path_segments_with_aliases(path, ctx.use_aliases)
+    }
+
+    fn resolve_hir_path(&self, path: &ast::Path, ctx: &ResolutionContext) -> hir::Path {
+        path_from_segments(self.resolve_path_segments(path, ctx))
+    }
+
+    fn resolve_qualified_path(
+        &self,
+        path: &ast::Path,
+        ctx: &ResolutionContext,
+    ) -> hir::QualifiedPath {
+        qualified_path_from_segments(self.resolve_path_segments(path, ctx))
+    }
+
+    fn resolve_qualified_path_with_aliases(
+        &self,
+        path: &ast::Path,
+        use_aliases: &UseAliases,
+    ) -> hir::QualifiedPath {
+        self.expanded_path_segments(path, use_aliases)
+            .map(qualified_path_from_segments)
+            .unwrap_or_else(|| path.into())
+    }
+
     fn error(&mut self, message: impl Into<String>) {
         self.diagnostics
             .push(Diagnostic::new(Stage::Typer, Severity::Error, message));
@@ -341,11 +549,11 @@ impl NameResolution {
         path: &ast::Path,
         ctx: &ResolutionContext,
     ) -> Option<hir::Path> {
-        let segments = path.segments();
-        let last = path.last_ident()?;
+        let segments = self.resolve_path_segments(path, ctx);
+        let last = segments.last()?;
         match segments.len() {
             1 => {
-                let variant = &last.0;
+                let variant = last;
                 if let Some(enum_name) = ctx
                     .constructor_index
                     .unique_enum_for_variant(ctx.current_package, variant)
@@ -361,12 +569,8 @@ impl NameResolution {
                 }
             }
             _ => {
-                let variant = &last.0;
-                let local_enum = segments[..segments.len() - 1]
-                    .iter()
-                    .map(|segment| segment.ident.0.clone())
-                    .collect::<Vec<_>>()
-                    .join("::");
+                let variant = last;
+                let local_enum = segments[..segments.len() - 1].join("::");
                 if ctx
                     .constructor_index
                     .enum_has_variant(ctx.current_package, &local_enum, variant)
@@ -381,12 +585,8 @@ impl NameResolution {
                 }
 
                 if segments.len() >= 3 {
-                    let package = segments.first().map(|seg| &seg.ident.0)?;
-                    let enum_name = segments[1..segments.len() - 1]
-                        .iter()
-                        .map(|segment| segment.ident.0.clone())
-                        .collect::<Vec<_>>()
-                        .join("::");
+                    let package = segments.first()?;
+                    let enum_name = segments[1..segments.len() - 1].join("::");
                     let exists = ctx
                         .constructor_index
                         .enum_has_variant(package, &enum_name, variant);
@@ -413,7 +613,7 @@ impl NameResolution {
         ctx: &ResolutionContext,
     ) -> hir::Path {
         self.constructor_path_for(path, ctx)
-            .unwrap_or_else(|| path.into())
+            .unwrap_or_else(|| self.resolve_hir_path(path, ctx))
     }
 
     pub fn resolve_files(self, files: Vec<ast::File>) -> (hir::ResolvedHir, HirTable, Diagnostics) {
@@ -491,7 +691,8 @@ impl NameResolution {
                     ));
                 }
             }
-            let imports = file_imports(&file.ast, deps);
+            let imports = file_imports(file, deps);
+            let use_aliases = self.file_use_aliases(&file.ast, deps, false);
             let mut def_ids = Vec::new();
             for item in file.ast.toplevels.iter() {
                 let def_id = match item {
@@ -521,7 +722,8 @@ impl NameResolution {
                     ast::Item::ExternBuiltin(ext) => {
                         let full_name = full_def_name(package_name, &ext.name.0);
                         let path = full_def_path(package_name, &ext.name.0);
-                        let ext_def = self.lower_extern_builtin(ext, package_name, &imports);
+                        let ext_def =
+                            self.lower_extern_builtin(ext, package_name, &imports, &use_aliases);
                         let id = hir_table.alloc_def_with_path(
                             path,
                             hir::DefKind::ExternBuiltin,
@@ -533,7 +735,7 @@ impl NameResolution {
                     ast::Item::EnumDef(e) => {
                         let full_name = full_def_name(package_name, &e.name.0);
                         let path = full_def_path(package_name, &e.name.0);
-                        let enum_def = self.lower_enum_def(e, package_name, &imports);
+                        let enum_def = self.lower_enum_def(e, package_name, &imports, &use_aliases);
                         let id = hir_table.alloc_def_with_path(
                             path,
                             hir::DefKind::EnumDef,
@@ -545,7 +747,8 @@ impl NameResolution {
                     ast::Item::StructDef(s) => {
                         let full_name = full_def_name(package_name, &s.name.0);
                         let path = full_def_path(package_name, &s.name.0);
-                        let struct_def = self.lower_struct_def(s, package_name, &imports);
+                        let struct_def =
+                            self.lower_struct_def(s, package_name, &imports, &use_aliases);
                         let id = hir_table.alloc_def_with_path(
                             path,
                             hir::DefKind::StructDef,
@@ -557,7 +760,8 @@ impl NameResolution {
                     ast::Item::TraitDef(t) => {
                         let full_name = full_def_name(package_name, &t.name.0);
                         let path = full_def_path(package_name, &t.name.0);
-                        let trait_def = self.lower_trait_def(t, package_name, &imports);
+                        let trait_def =
+                            self.lower_trait_def(t, package_name, &imports, &use_aliases);
                         let id = hir_table.alloc_def_with_path(
                             path,
                             hir::DefKind::TraitDef,
@@ -589,13 +793,15 @@ impl NameResolution {
 
         for (file_idx, file) in files.iter().enumerate() {
             let package_name = file.ast.package.0.as_str();
-            let imports = file_imports(&file.ast, deps);
+            let imports = file_imports(file, deps);
+            let use_aliases = self.file_use_aliases(&file.ast, deps, true);
             let ctx = ResolutionContext {
                 builtin_names: &builtin_names,
                 def_names: &def_names,
                 deps,
                 current_package: package_name,
                 imports: &imports,
+                use_aliases: &use_aliases,
                 constructor_index: &ctor_index,
                 trait_index: &trait_index,
             };
@@ -660,6 +866,7 @@ impl NameResolution {
                                 &tparams,
                                 package_name,
                                 &imports,
+                                &use_aliases,
                             ),
                             methods,
                         };
@@ -687,7 +894,7 @@ impl NameResolution {
                 } else {
                     format!("{}/{}", package, file_name)
                 };
-                let imports = file_imports(&file.ast, deps);
+                let imports = file_imports(file, deps);
                 let mut imports_vec = imports
                     .into_iter()
                     .map(hir::PackageName)
@@ -702,10 +909,11 @@ impl NameResolution {
                     {
                         continue;
                     }
-                    if use_path_is_package_import(&use_decl.path, deps) {
+                    if use_path_is_package_import(&use_decl.path, &package, deps) {
                         continue;
                     }
-                    let Some(qualified) = lowered_use_trait_path(&use_decl.path, deps) else {
+                    let Some(qualified) = lowered_use_trait_path(&use_decl.path, &package, deps)
+                    else {
                         continue;
                     };
                     let Some(package) = &qualified.package else {
@@ -726,10 +934,10 @@ impl NameResolution {
                     {
                         continue;
                     }
-                    if use_path_is_package_import(use_trait, deps) {
+                    if use_path_is_package_import(use_trait, &package, deps) {
                         continue;
                     }
-                    let Some(qualified) = lowered_use_trait_path(use_trait, deps) else {
+                    let Some(qualified) = lowered_use_trait_path(use_trait, &package, deps) else {
                         continue;
                     };
                     let Some(package) = &qualified.package else {
@@ -820,7 +1028,13 @@ impl NameResolution {
                 });
                 (
                     local_id,
-                    self.lower_type_expr(&param.1, &tparams, ctx.current_package, ctx.imports),
+                    self.lower_type_expr(
+                        &param.1,
+                        &tparams,
+                        ctx.current_package,
+                        ctx.imports,
+                        ctx.use_aliases,
+                    ),
                 )
             })
             .collect();
@@ -841,9 +1055,15 @@ impl NameResolution {
             generics: generics.iter().map(|g| HirIdent::name(&g.0)).collect(),
             generic_bounds: new_generic_bounds,
             params: new_params,
-            ret_ty: ret_ty
-                .as_ref()
-                .map(|t| self.lower_type_expr(t, &tparams, ctx.current_package, ctx.imports)),
+            ret_ty: ret_ty.as_ref().map(|t| {
+                self.lower_type_expr(
+                    t,
+                    &tparams,
+                    ctx.current_package,
+                    ctx.imports,
+                    ctx.use_aliases,
+                )
+            }),
             body: self.resolve_block(body, &mut env, ctx, hir_table),
         }
     }
@@ -889,7 +1109,15 @@ impl NameResolution {
         hir::LetStmt {
             is_mut: stmt.is_mut,
             pat: new_pat,
-            annotation: stmt.annotation.as_ref().map(|t| t.into()),
+            annotation: stmt.annotation.as_ref().map(|t| {
+                self.lower_type_expr(
+                    t,
+                    &HashSet::new(),
+                    ctx.current_package,
+                    ctx.imports,
+                    ctx.use_aliases,
+                )
+            }),
             value: new_value,
         }
     }
@@ -1001,11 +1229,12 @@ impl NameResolution {
                         },
                     )
                 } else {
-                    let full_name = path_segments_display(path);
-                    let package = path
+                    let resolved_path = self.resolve_hir_path(path, ctx);
+                    let full_name = resolved_path.display();
+                    let package = resolved_path
                         .segments()
                         .first()
-                        .map(|seg| seg.ident().0.as_str())
+                        .map(|seg| seg.seg().as_str())
                         .unwrap_or_default();
                     if package != ctx.current_package
                         && package != BUILTIN_PACKAGE
@@ -1023,7 +1252,7 @@ impl NameResolution {
                             .get(&full_name)
                             .copied()
                             .map(hir::NameRef::Def)
-                            .unwrap_or_else(|| hir::NameRef::Unresolved(path.into()))
+                            .unwrap_or_else(|| hir::NameRef::Unresolved(resolved_path.clone()))
                     } else if ctx.imports.contains(package) {
                         ctx.deps
                             .get(package)
@@ -1035,9 +1264,9 @@ impl NameResolution {
                                     idx,
                                 })
                             })
-                            .unwrap_or_else(|| hir::NameRef::Unresolved(path.into()))
+                            .unwrap_or_else(|| hir::NameRef::Unresolved(resolved_path.clone()))
                     } else {
-                        hir::NameRef::Unresolved(path.into())
+                        hir::NameRef::Unresolved(resolved_path.clone())
                     };
                     match res {
                         hir::NameRef::Def(_) => self.alloc_expr_with_ptr(
@@ -1050,7 +1279,7 @@ impl NameResolution {
                             },
                         ),
                         hir::NameRef::Unresolved(_)
-                            if path.len() == 2
+                            if resolved_path.len() == 2
                                 && (package == ctx.current_package
                                     || package == BUILTIN_PACKAGE
                                     || ctx.deps.contains_key(package)) =>
@@ -1069,7 +1298,7 @@ impl NameResolution {
                             hir_table,
                             *astptr,
                             hir::Expr::EStaticMember {
-                                path: path.into(),
+                                path: resolved_path,
                                 astptr: Some(*astptr),
                             },
                         ),
@@ -1218,7 +1447,7 @@ impl NameResolution {
                         )
                     })
                     .collect();
-                let qualified: hir::QualifiedPath = name.into();
+                let qualified = self.resolve_qualified_path(name, ctx);
                 if let Some(package) = &qualified.package
                     && !ctx.package_allowed(package.as_str())
                 {
@@ -1613,7 +1842,7 @@ impl NameResolution {
                         )
                     })
                     .collect();
-                let qualified: hir::QualifiedPath = name.into();
+                let qualified = self.resolve_qualified_path(name, ctx);
                 if let Some(package) = &qualified.package
                     && !ctx.package_allowed(package.as_str())
                 {
@@ -1650,6 +1879,7 @@ impl NameResolution {
         _tparams: &HashSet<String>,
         current_package: &str,
         imports: &HashSet<String>,
+        use_aliases: &UseAliases,
     ) -> hir::TypeExpr {
         match ty {
             ast::TypeExpr::TUnit => hir::TypeExpr::TUnit,
@@ -1669,11 +1899,13 @@ impl NameResolution {
             ast::TypeExpr::TTuple { typs } => hir::TypeExpr::TTuple {
                 typs: typs
                     .iter()
-                    .map(|ty| self.lower_type_expr(ty, _tparams, current_package, imports))
+                    .map(|ty| {
+                        self.lower_type_expr(ty, _tparams, current_package, imports, use_aliases)
+                    })
                     .collect(),
             },
             ast::TypeExpr::TCon { path } => {
-                let qualified: hir::QualifiedPath = path.into();
+                let qualified = self.resolve_qualified_path_with_aliases(path, use_aliases);
                 if let Some(package) = &qualified.package
                     && !package_allowed(package.as_str(), current_package, imports)
                 {
@@ -1685,7 +1917,7 @@ impl NameResolution {
                 hir::TypeExpr::TCon { path: qualified }
             }
             ast::TypeExpr::TDyn { trait_path } => {
-                let qualified: hir::QualifiedPath = trait_path.into();
+                let qualified = self.resolve_qualified_path_with_aliases(trait_path, use_aliases);
                 if let Some(package) = &qualified.package
                     && !package_allowed(package.as_str(), current_package, imports)
                 {
@@ -1699,10 +1931,18 @@ impl NameResolution {
                 }
             }
             ast::TypeExpr::TApp { ty, args } => hir::TypeExpr::TApp {
-                ty: Box::new(self.lower_type_expr(ty.as_ref(), _tparams, current_package, imports)),
+                ty: Box::new(self.lower_type_expr(
+                    ty.as_ref(),
+                    _tparams,
+                    current_package,
+                    imports,
+                    use_aliases,
+                )),
                 args: args
                     .iter()
-                    .map(|arg| self.lower_type_expr(arg, _tparams, current_package, imports))
+                    .map(|arg| {
+                        self.lower_type_expr(arg, _tparams, current_package, imports, use_aliases)
+                    })
                     .collect(),
             },
             ast::TypeExpr::TArray { len, elem } => hir::TypeExpr::TArray {
@@ -1712,18 +1952,22 @@ impl NameResolution {
                     _tparams,
                     current_package,
                     imports,
+                    use_aliases,
                 )),
             },
             ast::TypeExpr::TFunc { params, ret_ty } => hir::TypeExpr::TFunc {
                 params: params
                     .iter()
-                    .map(|param| self.lower_type_expr(param, _tparams, current_package, imports))
+                    .map(|param| {
+                        self.lower_type_expr(param, _tparams, current_package, imports, use_aliases)
+                    })
                     .collect(),
                 ret_ty: Box::new(self.lower_type_expr(
                     ret_ty.as_ref(),
                     _tparams,
                     current_package,
                     imports,
+                    use_aliases,
                 )),
             },
         }
@@ -1734,6 +1978,7 @@ impl NameResolution {
         def: &ast::EnumDef,
         current_package: &str,
         imports: &HashSet<String>,
+        use_aliases: &UseAliases,
     ) -> hir::EnumDef {
         let tparams = type_param_set(&def.generics);
         let name = full_def_name(current_package, &def.name.0);
@@ -1743,7 +1988,9 @@ impl NameResolution {
             .map(|(variant_name, tys)| {
                 let types = tys
                     .iter()
-                    .map(|ty| self.lower_type_expr(ty, &tparams, current_package, imports))
+                    .map(|ty| {
+                        self.lower_type_expr(ty, &tparams, current_package, imports, use_aliases)
+                    })
                     .collect();
                 (HirIdent::name(&variant_name.0), types)
             })
@@ -1761,6 +2008,7 @@ impl NameResolution {
         def: &ast::StructDef,
         current_package: &str,
         imports: &HashSet<String>,
+        use_aliases: &UseAliases,
     ) -> hir::StructDef {
         let tparams = type_param_set(&def.generics);
         let name = full_def_name(current_package, &def.name.0);
@@ -1770,7 +2018,7 @@ impl NameResolution {
             .map(|(field_name, ty)| {
                 (
                     HirIdent::name(&field_name.0),
-                    self.lower_type_expr(ty, &tparams, current_package, imports),
+                    self.lower_type_expr(ty, &tparams, current_package, imports, use_aliases),
                 )
             })
             .collect();
@@ -1787,6 +2035,7 @@ impl NameResolution {
         def: &ast::TraitDef,
         current_package: &str,
         imports: &HashSet<String>,
+        use_aliases: &UseAliases,
     ) -> hir::TraitDef {
         let name = full_def_name(current_package, &def.name.0);
         let method_sigs = def
@@ -1797,13 +2046,22 @@ impl NameResolution {
                 params: sig
                     .params
                     .iter()
-                    .map(|ty| self.lower_type_expr(ty, &HashSet::new(), current_package, imports))
+                    .map(|ty| {
+                        self.lower_type_expr(
+                            ty,
+                            &HashSet::new(),
+                            current_package,
+                            imports,
+                            use_aliases,
+                        )
+                    })
                     .collect(),
                 ret_ty: self.lower_type_expr(
                     &sig.ret_ty,
                     &HashSet::new(),
                     current_package,
                     imports,
+                    use_aliases,
                 ),
             })
             .collect();
@@ -1849,7 +2107,7 @@ impl NameResolution {
             return local;
         }
 
-        let qualified: hir::QualifiedPath = path.into();
+        let qualified = self.resolve_qualified_path(path, ctx);
         if let Some(package) = &qualified.package
             && !package_allowed(package.as_str(), ctx.current_package, ctx.imports)
         {
@@ -1866,6 +2124,7 @@ impl NameResolution {
         def: &ast::ExternBuiltin,
         current_package: &str,
         imports: &HashSet<String>,
+        use_aliases: &UseAliases,
     ) -> hir::ExternBuiltin {
         let name = full_def_name(current_package, &def.name.0);
         let generic_bounds = def
@@ -1892,14 +2151,19 @@ impl NameResolution {
                 .map(|(param, ty)| {
                     (
                         HirIdent::name(&param.0),
-                        self.lower_type_expr(ty, &HashSet::new(), current_package, imports),
+                        self.lower_type_expr(
+                            ty,
+                            &HashSet::new(),
+                            current_package,
+                            imports,
+                            use_aliases,
+                        ),
                     )
                 })
                 .collect(),
-            ret_ty: def
-                .ret_ty
-                .as_ref()
-                .map(|ty| self.lower_type_expr(ty, &HashSet::new(), current_package, imports)),
+            ret_ty: def.ret_ty.as_ref().map(|ty| {
+                self.lower_type_expr(ty, &HashSet::new(), current_package, imports, use_aliases)
+            }),
         }
     }
 
@@ -1915,7 +2179,13 @@ impl NameResolution {
         hir::ClosureParam {
             name: new_name,
             ty: param.ty.as_ref().map(|t| {
-                self.lower_type_expr(t, &HashSet::new(), ctx.current_package, ctx.imports)
+                self.lower_type_expr(
+                    t,
+                    &HashSet::new(),
+                    ctx.current_package,
+                    ctx.imports,
+                    ctx.use_aliases,
+                )
             }),
             astptr: param.astptr,
         }

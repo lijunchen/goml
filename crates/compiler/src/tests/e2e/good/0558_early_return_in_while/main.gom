@@ -1,12 +1,12 @@
 fn first_gt_two(limit: int32) -> int32 {
-    let i = ref(0i32);
-    while ref_get(i) < limit {
-        if ref_get(i) > 2i32 {
-            return ref_get(i)
+    let i = Ref::new(0i32);
+    while i.get() < limit {
+        if i.get() > 2i32 {
+            return i.get()
         } else {
             ()
         };
-        ref_set(i, ref_get(i) + 1i32);
+        i.set(i.get() + 1i32);
     };
     -1i32
 }

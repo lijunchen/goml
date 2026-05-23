@@ -1,20 +1,32 @@
 fn main() -> unit {
   let arr/0 = [10, 20, 30] in
-  let i/1 = ref(0) in
-  let _wild2 = while (ref_get(i/1) < 3) {
+  let i/1 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let _wild2 = while (inherent#Ref#Ref[T]#get__T_int32(i/1) < 3) {
       {
-        let _wild0 = println__T_string(uint8_to_string(array_get(arr/0, ref_get(i/1)))) in
-        let _wild1 = ref_set(i/1, (ref_get(i/1) + 1)) in
+        let _wild0 = println__T_string($goml_builtin_runtime$uint8_to_string($goml_builtin_runtime$array_get(arr/0, inherent#Ref#Ref[T]#get__T_int32(i/1)))) in
+        let _wild1 = inherent#Ref#Ref[T]#set__T_int32(i/1, (inherent#Ref#Ref[T]#get__T_int32(i/1) + 1)) in
       }
   } in
   let floats/2 = [1.5, 2.5] in
-  let _wild3 = println__T_string(float32_to_string(array_get(floats/2, 0))) in
-  let _wild4 = println__T_string(float32_to_string(array_get(floats/2, 1))) in
+  let _wild3 = println__T_string($goml_builtin_runtime$float32_to_string($goml_builtin_runtime$array_get(floats/2, 0))) in
+  let _wild4 = println__T_string($goml_builtin_runtime$float32_to_string($goml_builtin_runtime$array_get(floats/2, 1))) in
   let longs/3 = [100, 200] in
-  let _wild5 = println__T_string(int64_to_string(array_get(longs/3, 0))) in
-  let _wild6 = println__T_string(int64_to_string(array_get(longs/3, 1))) in
+  let _wild5 = println__T_string($goml_builtin_runtime$int64_to_string($goml_builtin_runtime$array_get(longs/3, 0))) in
+  let _wild6 = println__T_string($goml_builtin_runtime$int64_to_string($goml_builtin_runtime$array_get(longs/3, 1))) in
+}
+
+fn inherent#Ref#Ref[T]#new__T_int32(value/93: int32) -> Ref[int32] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#get__T_int32(self/94: Ref[int32]) -> int32 {
+  ref_get(self/94)
 }
 
 fn println__T_string(value/1: string) -> unit {
   string_println(value/1)
+}
+
+fn inherent#Ref#Ref[T]#set__T_int32(self/95: Ref[int32], value/96: int32) -> unit {
+  ref_set(self/95, value/96)
 }

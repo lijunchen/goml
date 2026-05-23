@@ -327,7 +327,7 @@ func main0() struct{} {
     var t116 int32 = array_get__Array_2_5int32(t115, 0)
     println__T_int32(t116)
     var t117 [2]int32 = [2]int32{22, 23}
-    var r__11 *ref_Array_2_5int32_x = ref__Ref_14Array_2_5int32(t117)
+    var r__11 *ref_Array_2_5int32_x = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f__x5b_int32_x3b_2_x5d_(t117)
     var place_ref55 *ref_Array_2_5int32_x = r__11
     var place_root56 [2]int32 = ref_get__Ref_14Array_2_5int32(place_ref55)
     var index57 int32 = 1
@@ -335,7 +335,7 @@ func main0() struct{} {
     var value59 int32 = 230
     var t118 [2]int32 = array_set__Array_2_5int32(place_root56, index57, value59)
     ref_set__Ref_14Array_2_5int32(place_ref55, t118)
-    var t120 [2]int32 = ref_get__Ref_14Array_2_5int32(r__11)
+    var t120 [2]int32 = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f__x5b_int32_x3b_2_x5d_(r__11)
     var t121 int32 = array_get__Array_2_5int32(t120, 1)
     println__T_int32(t121)
     return struct{}{}
@@ -392,6 +392,20 @@ func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f__x5b_int3
     var t144 [][2]int32 = append(self__66, elem__67)
     retv143 = t144
     return retv143
+}
+
+func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f__x5b_int32_x3b_2_x5d_(value__93 [2]int32) *ref_Array_2_5int32_x {
+    var retv146 *ref_Array_2_5int32_x
+    var t147 *ref_Array_2_5int32_x = ref__Ref_14Array_2_5int32(value__93)
+    retv146 = t147
+    return retv146
+}
+
+func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f__x5b_int32_x3b_2_x5d_(self__94 *ref_Array_2_5int32_x) [2]int32 {
+    var retv149 [2]int32
+    var t150 [2]int32 = ref_get__Ref_14Array_2_5int32(self__94)
+    retv149 = t150
+    return retv149
 }
 
 func main() {

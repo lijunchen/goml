@@ -19,6 +19,7 @@ use crate::pipeline::pipeline::{CompilationError, parse_ast_file, report_duplica
 use crate::pipeline::{compile_error, with_compiler_stack};
 use crate::stdlib;
 use diagnostics::Diagnostics;
+use serde::Deserialize;
 
 pub struct PackageInputs {
     pub package: String,
@@ -72,42 +73,46 @@ fn validate_interface_unit(path: &Path, unit: &InterfaceUnit) -> Result<(), Comp
 fn load_interface_files(
     interface_files: &[PathBuf],
 ) -> Result<HashMap<String, (PathBuf, InterfaceUnit)>, CompilationError> {
-    let mut units: HashMap<String, (PathBuf, InterfaceUnit)> = HashMap::new();
+    with_compiler_stack(|| {
+        let mut units: HashMap<String, (PathBuf, InterfaceUnit)> = HashMap::new();
 
-    for path in interface_files {
-        if path.is_dir() {
-            return Err(compile_error(format!(
-                "interface path {} is a directory; pass a concrete .interface file",
-                path.display()
-            )));
+        for path in interface_files {
+            if path.is_dir() {
+                return Err(compile_error(format!(
+                    "interface path {} is a directory; pass a concrete .interface file",
+                    path.display()
+                )));
+            }
+            let json = fs::read_to_string(path).map_err(|err| {
+                compile_error(format!(
+                    "failed to read interface {}: {}",
+                    path.display(),
+                    err
+                ))
+            })?;
+            let mut deserializer = serde_json::Deserializer::from_str(&json);
+            deserializer.disable_recursion_limit();
+            let unit = InterfaceUnit::deserialize(&mut deserializer).map_err(|err| {
+                compile_error(format!(
+                    "failed to parse interface {}: {}",
+                    path.display(),
+                    err
+                ))
+            })?;
+            validate_interface_unit(path, &unit)?;
+            if let Some((prev_path, _)) = units.get(&unit.package) {
+                return Err(compile_error(format!(
+                    "multiple interface files provided for package {}: {} and {}",
+                    unit.package,
+                    prev_path.display(),
+                    path.display()
+                )));
+            }
+            units.insert(unit.package.clone(), (path.clone(), unit));
         }
-        let json = fs::read_to_string(path).map_err(|err| {
-            compile_error(format!(
-                "failed to read interface {}: {}",
-                path.display(),
-                err
-            ))
-        })?;
-        let unit: InterfaceUnit = serde_json::from_str(&json).map_err(|err| {
-            compile_error(format!(
-                "failed to parse interface {}: {}",
-                path.display(),
-                err
-            ))
-        })?;
-        validate_interface_unit(path, &unit)?;
-        if let Some((prev_path, _)) = units.get(&unit.package) {
-            return Err(compile_error(format!(
-                "multiple interface files provided for package {}: {} and {}",
-                unit.package,
-                prev_path.display(),
-                path.display()
-            )));
-        }
-        units.insert(unit.package.clone(), (path.clone(), unit));
-    }
 
-    Ok(units)
+        Ok(units)
+    })
 }
 
 fn load_interface_for_package(
@@ -180,19 +185,35 @@ fn read_source_files(
                 imports.insert(package_import);
                 continue;
             }
+            if let Some(package_import) =
+                crate_package_import(&use_decl.path, package, interface_units, true)
+            {
+                insert_import_with_descendants(&mut imports, package_import, interface_units);
+                continue;
+            }
             if let Some(first) = use_decl.path.segments().first() {
                 imports.insert(first.ident.0.clone());
             }
         }
         for item in ast.toplevels.iter() {
             if let ast::ast::Item::Mod(module) = item {
-                imports.insert(module.name.0.clone());
+                insert_import_with_descendants(
+                    &mut imports,
+                    child_module_package(package, &module.name.0),
+                    interface_units,
+                );
             }
         }
         for use_trait in ast.use_traits.iter() {
             if let Some(package_import) = external_package_import_alias(use_trait, interface_units)
             {
                 imports.insert(package_import);
+                continue;
+            }
+            if let Some(package_import) =
+                crate_package_import(use_trait, package, interface_units, true)
+            {
+                insert_import_with_descendants(&mut imports, package_import, interface_units);
                 continue;
             }
             if use_trait
@@ -218,6 +239,60 @@ fn read_source_files(
 }
 
 type ReadSourceFilesResult = (Vec<hir::SourceFileAst>, HashSet<String>, Vec<String>);
+
+fn child_module_package(package: &str, name: &str) -> String {
+    if is_special_unqualified_package(package) {
+        name.to_string()
+    } else {
+        format!("{package}::{name}")
+    }
+}
+
+fn insert_import_with_descendants(
+    imports: &mut HashSet<String>,
+    package: String,
+    interface_units: &HashMap<String, (PathBuf, InterfaceUnit)>,
+) {
+    imports.insert(package.clone());
+    let prefix = format!("{package}::");
+    for dep in interface_units.keys() {
+        if dep.starts_with(&prefix) {
+            imports.insert(dep.clone());
+        }
+    }
+}
+
+fn crate_package_import(
+    path: &ast::ast::Path,
+    package: &str,
+    interface_units: &HashMap<String, (PathBuf, InterfaceUnit)>,
+    allow_full_path: bool,
+) -> Option<String> {
+    let segments = path
+        .segments()
+        .iter()
+        .map(|segment| segment.ident.0.clone())
+        .collect::<Vec<_>>();
+    let segments = if matches!(path.root(), ast::ast::PathRoot::Crate) {
+        segments
+    } else if segments.first().is_some_and(|segment| segment == "crate") {
+        segments[1..].to_vec()
+    } else {
+        return None;
+    };
+    let max_len = if allow_full_path {
+        segments.len()
+    } else {
+        segments.len().saturating_sub(1)
+    };
+    for len in (1..=max_len).rev() {
+        let candidate = segments[..len].join("::");
+        if candidate == package || interface_units.contains_key(&candidate) {
+            return Some(candidate);
+        }
+    }
+    None
+}
 
 fn external_root_import_path(unit: &InterfaceUnit) -> Option<&str> {
     unit.interface.packages.iter().next().map(String::as_str)
@@ -262,7 +337,6 @@ fn external_package_import_alias(
         return None;
     }
     let display = path.display();
-    let last = path.last_ident()?.0.clone();
 
     for (_, unit) in interface_units.values() {
         let Some(root_import_path) = external_root_import_path(unit) else {
@@ -277,9 +351,13 @@ fn external_package_import_alias(
         if !display[root_import_path.len()..].starts_with("::") {
             continue;
         }
-        if exports_contain_package(&last, &unit.exports) {
-            return Some(last.clone());
+        let suffix = &display[root_import_path.len() + 2..];
+        if let Some(first) = suffix.split("::").next()
+            && exports_contain_package(first, &unit.exports)
+        {
+            return Some(first.to_string());
         }
+        return Some(unit.package.clone());
     }
 
     None
@@ -440,7 +518,7 @@ pub fn build_package(opts: PackageInputs) -> Result<CoreUnit, CompilationError> 
             });
         }
 
-        let mut unit = CoreUnit::new(opts.package.clone(), interface, core_ir);
+        let mut unit = CoreUnit::new(opts.package.clone(), interface, full_exports, core_ir);
         unit.sources = sources;
 
         Ok(unit)
@@ -448,17 +526,21 @@ pub fn build_package(opts: PackageInputs) -> Result<CoreUnit, CompilationError> 
 }
 
 pub fn read_core(path: &Path) -> Result<CoreUnit, CompilationError> {
-    let json = fs::read_to_string(path)
-        .map_err(|err| compile_error(format!("failed to read {}: {}", path.display(), err)))?;
-    let unit: CoreUnit = serde_json::from_str(&json)
-        .map_err(|err| compile_error(format!("failed to parse {}: {}", path.display(), err)))?;
-    if !unit.validate() {
-        return Err(compile_error(format!(
-            "core {} failed validation",
-            path.display()
-        )));
-    }
-    Ok(unit)
+    with_compiler_stack(|| {
+        let json = fs::read_to_string(path)
+            .map_err(|err| compile_error(format!("failed to read {}: {}", path.display(), err)))?;
+        let mut deserializer = serde_json::Deserializer::from_str(&json);
+        deserializer.disable_recursion_limit();
+        let unit = CoreUnit::deserialize(&mut deserializer)
+            .map_err(|err| compile_error(format!("failed to parse {}: {}", path.display(), err)))?;
+        if !unit.validate() {
+            return Err(compile_error(format!(
+                "core {} failed validation",
+                path.display()
+            )));
+        }
+        Ok(unit)
+    })
 }
 
 pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> {
@@ -547,15 +629,15 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
 
         let mut genv = builtins::builtin_env();
         if let Some(std_core) = &std_core {
-            std_core.interface.exports.apply_to(&mut genv);
+            std_core.exports.apply_to(&mut genv);
         }
         let mut diagnostics = Diagnostics::new();
         for pkg in order.iter() {
             let unit = by_name
                 .get(pkg)
                 .ok_or_else(|| compile_error(format!("missing core for package {}", pkg)))?;
-            report_duplicate_trait_impls(&mut diagnostics, &genv, &unit.interface.exports, pkg);
-            unit.interface.exports.apply_to(&mut genv);
+            report_duplicate_trait_impls(&mut diagnostics, &genv, &unit.exports, pkg);
+            unit.exports.apply_to(&mut genv);
         }
         if diagnostics.has_errors() {
             return Err(CompilationError::Typer { diagnostics });

@@ -1,8 +1,8 @@
 fn side_effect_loop(n: int32) -> unit {
-    let i = ref(0i32);
-    while ref_get(i) < n {
-        println(ref_get(i).to_string());
-        ref_set(i, ref_get(i) + 1);
+    let i = Ref::new(0i32);
+    while i.get() < n {
+        println(i.get().to_string());
+        i.set(i.get() + 1);
     }
 }
 

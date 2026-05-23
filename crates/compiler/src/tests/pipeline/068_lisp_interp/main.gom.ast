@@ -61,70 +61,70 @@ fn is_int_text(text: string) -> bool {
         }
     } else {
         {
-            let i = ref(0);
-            let saw_digit = ref(false);
-            let ok = ref(true);
-            let started = ref(false);
-            let _ = while ref_get(ok) && ref_get(i) < len {
+            let i = Ref::new(0);
+            let saw_digit = Ref::new(false);
+            let ok = Ref::new(true);
+            let started = Ref::new(false);
+            let _ = while ok.get() && i.get() < len {
                 {
-                    let ch = text.get(ref_get(i));
-                    if !ref_get(started) && ch == '-' {
+                    let ch = text.get(i.get());
+                    if !started.get() && ch == '-' {
                         {
-                            let _ = ref_set(started, true);
-                            ref_set(i, ref_get(i) + 1)
+                            let _ = started.set(true);
+                            i.set(i.get() + 1)
                         }
                     } else {
                         if is_digit(ch) {
                             {
-                                let _ = ref_set(started, true);
-                                let _ = ref_set(saw_digit, true);
-                                ref_set(i, ref_get(i) + 1)
+                                let _ = started.set(true);
+                                let _ = saw_digit.set(true);
+                                i.set(i.get() + 1)
                             }
                         } else {
                             {
-                                ref_set(ok, false)
+                                ok.set(false)
                             }
                         }
                     }
                 }
             };
-            ref_get(ok) && ref_get(saw_digit)
+            ok.get() && saw_digit.get()
         }
     }
 }
 
 fn parse_int32(text: string) -> int32 {
     let len = text.len();
-    let i = ref(0);
-    let negative = ref(false);
-    let started = ref(false);
-    let acc = ref(0);
-    let _ = while ref_get(i) < len {
+    let i = Ref::new(0);
+    let negative = Ref::new(false);
+    let started = Ref::new(false);
+    let acc = Ref::new(0);
+    let _ = while i.get() < len {
         {
-            let ch = text.get(ref_get(i));
-            if !ref_get(started) && ch == '-' {
+            let ch = text.get(i.get());
+            if !started.get() && ch == '-' {
                 {
-                    let _ = ref_set(started, true);
-                    let _ = ref_set(negative, true);
-                    ref_set(i, ref_get(i) + 1)
+                    let _ = started.set(true);
+                    let _ = negative.set(true);
+                    i.set(i.get() + 1)
                 }
             } else {
                 {
-                    let _ = ref_set(started, true);
+                    let _ = started.set(true);
                     let d = digit_value(ch);
-                    let _ = ref_set(acc, ref_get(acc) * 10 + d);
-                    ref_set(i, ref_get(i) + 1)
+                    let _ = acc.set(acc.get() * 10 + d);
+                    i.set(i.get() + 1)
                 }
             }
         }
     };
-    if ref_get(negative) {
+    if negative.get() {
         {
-            0 - ref_get(acc)
+            0 - acc.get()
         }
     } else {
         {
-            ref_get(acc)
+            acc.get()
         }
     }
 }
@@ -135,25 +135,25 @@ fn is_delim(ch: char) -> bool {
 
 fn lex_atom(source: string, start: int32) -> (Token, int32) {
     let len = source.len();
-    let text = ref("");
-    let i = ref(start);
-    let done = ref(false);
-    let _ = while !ref_get(done) && ref_get(i) < len {
+    let text = Ref::new("");
+    let i = Ref::new(start);
+    let done = Ref::new(false);
+    let _ = while !done.get() && i.get() < len {
         {
-            let ch = source.get(ref_get(i));
+            let ch = source.get(i.get());
             if is_delim(ch) {
                 {
-                    ref_set(done, true)
+                    done.set(true)
                 }
             } else {
                 {
-                    let _ = ref_set(text, ref_get(text) + ch.to_string());
-                    ref_set(i, ref_get(i) + 1)
+                    let _ = text.set(text.get() + ch.to_string());
+                    i.set(i.get() + 1)
                 }
             }
         }
     };
-    let atom = ref_get(text);
+    let atom = text.get();
     let token = match atom {
         "true" => Token::Bool(true),
         "false" => Token::Bool(false),
@@ -167,67 +167,67 @@ fn lex_atom(source: string, start: int32) -> (Token, int32) {
               }
           },
     };
-    (token, ref_get(i))
+    (token, i.get())
 }
 
 fn lex(source: string) -> Vec[Token] {
     let len = source.len();
     let toks0: Vec[Token] = Vec::new();
-    let toks = ref(toks0);
-    let i = ref(0);
-    let _ = while ref_get(i) < len {
+    let toks = Ref::new(toks0);
+    let i = Ref::new(0);
+    let _ = while i.get() < len {
         {
-            let ch = source.get(ref_get(i));
+            let ch = source.get(i.get());
             if ch == '(' {
                 {
-                    let _ = ref_set(toks, ref_get(toks).push(Token::LParen));
-                    ref_set(i, ref_get(i) + 1)
+                    let _ = toks.set(toks.get().push(Token::LParen));
+                    i.set(i.get() + 1)
                 }
             } else {
                 if ch == ')' {
                     {
-                        let _ = ref_set(toks, ref_get(toks).push(Token::RParen));
-                        ref_set(i, ref_get(i) + 1)
+                        let _ = toks.set(toks.get().push(Token::RParen));
+                        i.set(i.get() + 1)
                     }
                 } else {
                     if ch == ' ' {
                         {
-                            ref_set(i, ref_get(i) + 1)
+                            i.set(i.get() + 1)
                         }
                     } else {
                         {
-                            let (tok, next) = lex_atom(source, ref_get(i));
-                            let _ = ref_set(toks, ref_get(toks).push(tok));
-                            ref_set(i, next)
+                            let (tok, next) = lex_atom(source, i.get());
+                            let _ = toks.set(toks.get().push(tok));
+                            i.set(next)
                         }
                     }
                 }
             }
         }
     };
-    ref_get(toks)
+    toks.get()
 }
 
 fn env_lookup(env: Vec[Binding], name: string) -> Value {
-    let i = ref(env.len() - 1);
-    let result = ref(Value::Nil);
-    let done = ref(false);
-    let _ = while !ref_get(done) && ref_get(i) >= 0 {
+    let i = Ref::new(env.len() - 1);
+    let result = Ref::new(Value::Nil);
+    let done = Ref::new(false);
+    let _ = while !done.get() && i.get() >= 0 {
         {
-            let binding = env[ref_get(i)];
+            let binding = env[i.get()];
             if binding.name == name {
                 {
-                    let _ = ref_set(result, binding.value);
-                    ref_set(done, true)
+                    let _ = result.set(binding.value);
+                    done.set(true)
                 }
             } else {
                 {
-                    ref_set(i, ref_get(i) - 1)
+                    i.set(i.get() - 1)
                 }
             }
         }
     };
-    ref_get(result)
+    result.get()
 }
 
 fn lookup(local: Vec[Binding], global: Vec[Binding], name: string) -> Value {
@@ -239,25 +239,25 @@ fn lookup(local: Vec[Binding], global: Vec[Binding], name: string) -> Value {
 
 fn parse_list(tokens: Vec[Token], start: int32) -> (Vec[SExpr], int32) {
     let acc: Vec[SExpr] = Vec::new();
-    let exprs = ref(acc);
-    let i = ref(start);
-    let done = ref(false);
-    let _ = while !ref_get(done) && ref_get(i) < tokens.len() {
+    let exprs = Ref::new(acc);
+    let i = Ref::new(start);
+    let done = Ref::new(false);
+    let _ = while !done.get() && i.get() < tokens.len() {
         {
-            match tokens[ref_get(i)] {
+            match tokens[i.get()] {
                 Token::RParen => {
-                      let _ = ref_set(done, true);
-                      ref_set(i, ref_get(i) + 1)
+                      let _ = done.set(true);
+                      i.set(i.get() + 1)
                   },
                 _ => {
-                      let (expr, next) = parse_expr(tokens, ref_get(i));
-                      let _ = ref_set(exprs, ref_get(exprs).push(expr));
-                      ref_set(i, next)
+                      let (expr, next) = parse_expr(tokens, i.get());
+                      let _ = exprs.set(exprs.get().push(expr));
+                      i.set(next)
                   },
             }
         }
     };
-    (ref_get(exprs), ref_get(i))
+    (exprs.get(), i.get())
 }
 
 fn parse_expr(tokens: Vec[Token], start: int32) -> (SExpr, int32) {
@@ -274,17 +274,17 @@ fn parse_expr(tokens: Vec[Token], start: int32) -> (SExpr, int32) {
 }
 
 fn parse_program(tokens: Vec[Token]) -> Vec[SExpr] {
-    let i = ref(0);
+    let i = Ref::new(0);
     let acc: Vec[SExpr] = Vec::new();
-    let exprs = ref(acc);
-    let _ = while ref_get(i) < tokens.len() {
+    let exprs = Ref::new(acc);
+    let _ = while i.get() < tokens.len() {
         {
-            let (expr, next) = parse_expr(tokens, ref_get(i));
-            let _ = ref_set(exprs, ref_get(exprs).push(expr));
-            ref_set(i, next)
+            let (expr, next) = parse_expr(tokens, i.get());
+            let _ = exprs.set(exprs.get().push(expr));
+            i.set(next)
         }
     };
-    ref_get(exprs)
+    exprs.get()
 }
 
 fn value_to_string(value: Value) -> string {
@@ -309,7 +309,7 @@ fn eval(expr: SExpr, local: Vec[Binding], global: Ref[Vec[Binding]]) -> Value {
     match expr {
         SExpr::Int(n) => Value::Int(n),
         SExpr::Bool(b) => Value::Bool(b),
-        SExpr::Sym(name) => lookup(local, ref_get(global), name),
+        SExpr::Sym(name) => lookup(local, global.get(), name),
         SExpr::List(items) => eval_list(items, local, global),
     }
 }
@@ -343,12 +343,12 @@ fn eval_list_sym(name: string, items: Vec[SExpr], local: Vec[Binding], global: R
                       match items[1] {
                           SExpr::Sym(var) => {
                                 let value = eval(items[2], local, global);
-                                let env = ref_get(global);
+                                let env = global.get();
                                 let updated = env.push(Binding {
                                       name: var,
                                       value: value
                                   });
-                                let _ = ref_set(global, updated);
+                                let _ = global.set(updated);
                                 value
                             },
                           _ => Value::Nil,
@@ -417,48 +417,48 @@ fn eval_list_sym(name: string, items: Vec[SExpr], local: Vec[Binding], global: R
 }
 
 fn eval_begin(items: Vec[SExpr], start: int32, local: Vec[Binding], global: Ref[Vec[Binding]]) -> Value {
-    let i = ref(start);
-    let last = ref(Value::Nil);
-    let _ = while ref_get(i) < items.len() {
+    let i = Ref::new(start);
+    let last = Ref::new(Value::Nil);
+    let _ = while i.get() < items.len() {
         {
-            let v = eval(items[ref_get(i)], local, global);
-            let _ = ref_set(last, v);
-            ref_set(i, ref_get(i) + 1)
+            let v = eval(items[i.get()], local, global);
+            let _ = last.set(v);
+            i.set(i.get() + 1)
         }
     };
-    ref_get(last)
+    last.get()
 }
 
 fn params_from_sexprs(items: Vec[SExpr]) -> Vec[string] {
-    let i = ref(0);
+    let i = Ref::new(0);
     let acc: Vec[string] = Vec::new();
-    let params = ref(acc);
-    let _ = while ref_get(i) < items.len() {
+    let params = Ref::new(acc);
+    let _ = while i.get() < items.len() {
         {
-            match items[ref_get(i)] {
+            match items[i.get()] {
                 SExpr::Sym(name) => {
-                      let _ = ref_set(params, ref_get(params).push(name));
-                      ref_set(i, ref_get(i) + 1)
+                      let _ = params.set(params.get().push(name));
+                      i.set(i.get() + 1)
                   },
-                _ => ref_set(i, ref_get(i) + 1),
+                _ => i.set(i.get() + 1),
             }
         }
     };
-    ref_get(params)
+    params.get()
 }
 
 fn eval_args(items: Vec[SExpr], start: int32, local: Vec[Binding], global: Ref[Vec[Binding]]) -> Vec[Value] {
-    let i = ref(start);
+    let i = Ref::new(start);
     let acc: Vec[Value] = Vec::new();
-    let args = ref(acc);
-    let _ = while ref_get(i) < items.len() {
+    let args = Ref::new(acc);
+    let _ = while i.get() < items.len() {
         {
-            let v = eval(items[ref_get(i)], local, global);
-            let _ = ref_set(args, ref_get(args).push(v));
-            ref_set(i, ref_get(i) + 1)
+            let v = eval(items[i.get()], local, global);
+            let _ = args.set(args.get().push(v));
+            i.set(i.get() + 1)
         }
     };
-    ref_get(args)
+    args.get()
 }
 
 fn apply_builtin(name: string, args: Vec[Value]) -> Value {
@@ -477,36 +477,36 @@ fn apply_builtin(name: string, args: Vec[Value]) -> Value {
               }
           },
         "+" => {
-              let i = ref(0);
-              let acc = ref(0);
-              let _ = while ref_get(i) < args.len() {
+              let i = Ref::new(0);
+              let acc = Ref::new(0);
+              let _ = while i.get() < args.len() {
                   {
-                      match args[ref_get(i)] {
+                      match args[i.get()] {
                           Value::Int(n) => {
-                                let _ = ref_set(acc, ref_get(acc) + n);
-                                ref_set(i, ref_get(i) + 1)
+                                let _ = acc.set(acc.get() + n);
+                                i.set(i.get() + 1)
                             },
-                          _ => ref_set(i, ref_get(i) + 1),
+                          _ => i.set(i.get() + 1),
                       }
                   }
               };
-              Value::Int(ref_get(acc))
+              Value::Int(acc.get())
           },
         "*" => {
-              let i = ref(0);
-              let acc = ref(1);
-              let _ = while ref_get(i) < args.len() {
+              let i = Ref::new(0);
+              let acc = Ref::new(1);
+              let _ = while i.get() < args.len() {
                   {
-                      match args[ref_get(i)] {
+                      match args[i.get()] {
                           Value::Int(n) => {
-                                let _ = ref_set(acc, ref_get(acc) * n);
-                                ref_set(i, ref_get(i) + 1)
+                                let _ = acc.set(acc.get() * n);
+                                i.set(i.get() + 1)
                             },
-                          _ => ref_set(i, ref_get(i) + 1),
+                          _ => i.set(i.get() + 1),
                       }
                   }
               };
-              Value::Int(ref_get(acc))
+              Value::Int(acc.get())
           },
         "-" => match args.len() {
               1 => match args[0] {
@@ -543,25 +543,25 @@ fn apply(func: Value, args: Vec[Value], global: Ref[Vec[Binding]]) -> Value {
 }
 
 fn apply_lambda(lambda: Lambda, args: Vec[Value]) -> Value {
-    let env = ref(lambda.env);
-    let i = ref(0);
-    let _ = while ref_get(i) < lambda.params.len() && ref_get(i) < args.len() {
+    let env = Ref::new(lambda.env);
+    let i = Ref::new(0);
+    let _ = while i.get() < lambda.params.len() && i.get() < args.len() {
         {
-            let name = lambda.params[ref_get(i)];
-            let value = args[ref_get(i)];
-            let updated = ref_get(env).push(Binding {
+            let name = lambda.params[i.get()];
+            let value = args[i.get()];
+            let updated = env.get().push(Binding {
                   name: name,
                   value: value
               });
-            let _ = ref_set(env, updated);
-            ref_set(i, ref_get(i) + 1)
+            let _ = env.set(updated);
+            i.set(i.get() + 1)
         }
     };
-    eval(lambda.body, ref_get(env), lambda.global)
+    eval(lambda.body, env.get(), lambda.global)
 }
 
 fn main() -> unit {
-    let global: Ref[Vec[Binding]] = ref(Vec::new());
+    let global: Ref[Vec[Binding]] = Ref::new(Vec::new());
     let program = "(begin (define fact (lambda (n) (if (= n 0) 1 (* n (fact (- n 1)))))) (define add3 (lambda (a b c) (+ a (+ b c)))) (fact 6))";
     let exprs: Vec[SExpr] = parse_program(lex(program));
     let result = eval(exprs[0], Vec::new(), global);

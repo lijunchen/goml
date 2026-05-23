@@ -7,12 +7,12 @@ fn println(value/1: T) -> unit {
 }
 
 fn main() -> unit {
-    let i/0: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
-    let sum/1: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
-    while (ref_get : (Ref[int32]) -> int32)((i/0 : Ref[int32])) < 7 {
+    let i/0: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+    let sum/1: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+    while (Ref[int32]::get : (Ref[int32]) -> int32)((i/0 : Ref[int32])) < 7 {
         {
-            let cur/2: int32 = (ref_get : (Ref[int32]) -> int32)((i/0 : Ref[int32]));
-            (ref_set : (Ref[int32], int32) -> unit)((i/0 : Ref[int32]), (cur/2 : int32) + 1);
+            let cur/2: int32 = (Ref[int32]::get : (Ref[int32]) -> int32)((i/0 : Ref[int32]));
+            (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/0 : Ref[int32]), (cur/2 : int32) + 1);
             let _ : unit = if (cur/2 : int32) < 5 {
                 {
                     match (cur/2 : int32) {
@@ -29,8 +29,8 @@ fn main() -> unit {
                     }
                 }
             };
-            (ref_set : (Ref[int32], int32) -> unit)((sum/1 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((sum/1 : Ref[int32])) + (cur/2 : int32));
+            (Ref[int32]::set : (Ref[int32], int32) -> unit)((sum/1 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((sum/1 : Ref[int32])) + (cur/2 : int32));
         }
     };
-    (println : (int32) -> unit)((ref_get : (Ref[int32]) -> int32)((sum/1 : Ref[int32])));
+    (println : (int32) -> unit)((Ref[int32]::get : (Ref[int32]) -> int32)((sum/1 : Ref[int32])));
 }

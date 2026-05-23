@@ -1,8 +1,8 @@
 fn make_state() -> ((int32) -> unit, () -> int32, () -> unit) {
-    let val = ref(0i32);
-    let set = |x| ref_set(val, x);
-    let get = || ref_get(val);
-    let inc = || ref_set(val, ref_get(val) + 1);
+    let val = Ref::new(0i32);
+    let set = |x| val.set(x);
+    let get = || val.get();
+    let inc = || val.set(val.get() + 1);
     (set, get, inc)
 }
 

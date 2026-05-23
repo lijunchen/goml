@@ -62,19 +62,19 @@ impl Display for Flag{
 
 impl Display for Counter{
   fn show(self/14: Counter) -> string {
-      "Counter(" + (ToString::to_string : (int32) -> string)((ref_get : (Ref[int32]) -> int32)((self/14 : Counter).cell)) + ")"
+      "Counter(" + (int32::to_string : (int32) -> string)((Ref[int32]::get : (Ref[int32]) -> int32)((self/14 : Counter).cell)) + ")"
   }
   fn show_with(self/15: Counter, prefix/16: string, suffix/17: string) -> string {
-      (prefix/16 : string) + "Counter(" + (ToString::to_string : (int32) -> string)((ref_get : (Ref[int32]) -> int32)((self/15 : Counter).cell)) + ")" + (suffix/17 : string)
+      (prefix/16 : string) + "Counter(" + (int32::to_string : (int32) -> string)((Ref[int32]::get : (Ref[int32]) -> int32)((self/15 : Counter).cell)) + ")" + (suffix/17 : string)
   }
   fn tick(self/18: Counter) -> unit {
-      let next/19: int32 = (ref_get : (Ref[int32]) -> int32)((self/18 : Counter).cell) + 1;
-      let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((self/18 : Counter).cell, (next/19 : int32));
+      let next/19: int32 = (Ref[int32]::get : (Ref[int32]) -> int32)((self/18 : Counter).cell) + 1;
+      let _ : unit = (Ref[int32]::set : (Ref[int32], int32) -> unit)((self/18 : Counter).cell, (next/19 : int32));
       ()
   }
   fn bump(self/20: Counter, delta/21: int32) -> int32 {
-      let next/22: int32 = (ref_get : (Ref[int32]) -> int32)((self/20 : Counter).cell) + (delta/21 : int32);
-      let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((self/20 : Counter).cell, (next/22 : int32));
+      let next/22: int32 = (Ref[int32]::get : (Ref[int32]) -> int32)((self/20 : Counter).cell) + (delta/21 : int32);
+      let _ : unit = (Ref[int32]::set : (Ref[int32], int32) -> unit)((self/20 : Counter).cell, (next/22 : int32));
       (next/22 : int32)
   }
 }
@@ -102,7 +102,7 @@ fn main() -> unit {
     let p2/34: Point = Point { x: 3, y: 4 };
     let f1/35: Flag = Flag { value: true };
     let f2/36: Flag = Flag { value: false };
-    let c/37: Counter = Counter { cell: (ref : (int32) -> Ref[int32])(10) };
+    let c/37: Counter = Counter { cell: (Ref[int32]::new : (int32) -> Ref[int32])(10) };
     let dp1/38: dyn Display = to_dyn[Display]{Point}((p1/33 : Point));
     let dp2/39: dyn Display = to_dyn[Display]{Point}((p2/34 : Point));
     let df1/40: dyn Display = to_dyn[Display]{Flag}((f1/35 : Flag));
@@ -125,12 +125,12 @@ fn main() -> unit {
     let _ : unit = (println : (string) -> unit)((s0/45 : string));
     let _ : unit = (println : (string) -> unit)((s1/46 : string));
     let _ : unit = (println : (string) -> unit)((s2/47 : string));
-    let i/54: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
-    let _ : unit = while (ref_get : (Ref[int32]) -> int32)((i/54 : Ref[int32])) < 3 {
+    let i/54: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+    let _ : unit = while (Ref[int32]::get : (Ref[int32]) -> int32)((i/54 : Ref[int32])) < 3 {
         {
             let line/55: string = (bump_and_show : (dyn Display, int32) -> string)((dc/42 : dyn Display), (delta/53 : int32));
             (println : (string) -> unit)((line/55 : string));
-            let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((i/54 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/54 : Ref[int32])) + 1);
+            let _ : unit = (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/54 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/54 : Ref[int32])) + 1);
         }
     };
     let _ : unit = (println : (string) -> unit)("len:" + (int32::to_string : (int32) -> string)((vlen/52 : int32)));

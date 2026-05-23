@@ -10,20 +10,20 @@ impl Show for int32 {
 
 impl Eq for Ref[dyn Show] {
     fn eq(self: Ref[dyn Show], other: Ref[dyn Show]) -> bool {
-        Show::show(ref_get(self)) == Show::show(ref_get(other))
+        Show::show(self.get()) == Show::show(other.get())
     }
 }
 
 impl Hash for Ref[dyn Show] {
     fn hash(self: Ref[dyn Show]) -> uint64 {
-        string_hash(Show::show(ref_get(self)))
+        string_hash(Show::show(self.get()))
     }
 }
 
 fn main() {
     let h: HashMap[Ref[dyn Show], string] = HashMap::new();
     let inner: dyn Show = 1;
-    let r = ref(inner);
+    let r = Ref::new(inner);
     h.set(r, "one");
     println(h.contains(r).to_string());
 }

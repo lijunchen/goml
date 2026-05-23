@@ -4,15 +4,15 @@ struct Counter {
 
 impl Counter {
     fn new() -> Counter {
-        Counter { count: ref(0) }
+        Counter { count: Ref::new(0) }
     }
     
     fn inc(self: Counter) {
-        ref_set(self.count, ref_get(self.count) + 1);
+        self.count.set(self.count.get() + 1);
     }
     
     fn get(self: Counter) -> int32 {
-        ref_get(self.count)
+        self.count.get()
     }
 }
 

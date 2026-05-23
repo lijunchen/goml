@@ -64,19 +64,19 @@ file main.gom
     
     impl Display for Counter {
       fn show(local/1/14: Counter) -> string {
-          "Counter(" + ref_get(self/14.cell).to_string() + ")"
+          "Counter(" + self/14.cell.get().to_string() + ")"
       }
       fn show_with(local/1/15: Counter, local/1/16: string, local/1/17: string) -> string {
-          prefix/16 + "Counter(" + ref_get(self/15.cell).to_string() + ")" + suffix/17
+          prefix/16 + "Counter(" + self/15.cell.get().to_string() + ")" + suffix/17
       }
       fn tick(local/1/18: Counter) -> unit {
-          let local/1/19 = ref_get(self/18.cell) + 1;
-          let _ = ref_set(self/18.cell, next/19);
+          let local/1/19 = self/18.cell.get() + 1;
+          let _ = self/18.cell.set(next/19);
           ()
       }
       fn bump(local/1/20: Counter, local/1/21: int32) -> int32 {
-          let local/1/22 = ref_get(self/20.cell) + delta/21;
-          let _ = ref_set(self/20.cell, next/22);
+          let local/1/22 = self/20.cell.get() + delta/21;
+          let _ = self/20.cell.set(next/22);
           next/22
       }
     }
@@ -115,7 +115,7 @@ file main.gom
             value: false
         };
         let local/1/37 = Counter {
-            cell: ref(10)
+            cell: Ref::new(10)
         };
         let local/1/38: dyn Display = p1/33;
         let local/1/39: dyn Display = p2/34;
@@ -139,12 +139,12 @@ file main.gom
         let _ = println(s0/45);
         let _ = println(s1/46);
         let _ = println(s2/47);
-        let local/1/54: Ref[int32] = ref(0);
-        let _ = while ref_get(i/54) < 3 {
+        let local/1/54: Ref[int32] = Ref::new(0);
+        let _ = while i/54.get() < 3 {
             {
                 let local/1/55 = def/1/10(dc/42, delta/53);
                 println(line/55);
-                let _ = ref_set(i/54, ref_get(i/54) + 1);
+                let _ = i/54.set(i/54.get() + 1);
             }
         };
         let _ = println("len:" + vlen/52.to_string());

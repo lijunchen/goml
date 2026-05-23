@@ -11,13 +11,13 @@ fn trait_impl#Describe#Tracker#describe(self/0: Tracker) -> string {
         {
           let label/1 = x1 in
           {
-            let current/4 = ref_get(count/2) in
-            let flag/5 = ref_get(toggled/3) in
+            let current/4 = inherent#Ref#Ref[T]#get__T_int32(count/2) in
+            let flag/5 = inherent#Ref#Ref[T]#get__T_bool(toggled/3) in
             let with_label/6 = ("Tracker(" + label/1) in
             let with_count_label/7 = (with_label/6 + ", count: ") in
-            let with_count/8 = (with_count_label/7 + int32_to_string(current/4)) in
+            let with_count/8 = (with_count_label/7 + $goml_builtin_runtime$int32_to_string(current/4)) in
             let with_flag_label/9 = (with_count/8 + ", toggled: ") in
-            ((with_flag_label/9 + bool_to_string(flag/5)) + ")")
+            ((with_flag_label/9 + $goml_builtin_runtime$bool_to_string(flag/5)) + ")")
           }
         }
       }
@@ -32,7 +32,7 @@ fn trait_impl#Describe#Record__int32#describe(self/10: Record__int32) -> string 
         let x4 = Record__int32::Value._0(self/10) in
         {
           let value/11 = x4 in
-          (("Value(" + int32_to_string(value/11)) + ")")
+          (("Value(" + $goml_builtin_runtime$int32_to_string(value/11)) + ")")
         }
       }
     },
@@ -45,8 +45,8 @@ fn trait_impl#Describe#Record__int32#describe(self/10: Record__int32) -> string 
           {
             let before/12 = x5 in
             {
-              let prefix/14 = ("Pair(" + int32_to_string(before/12)) in
-              (((prefix/14 + ", ") + int32_to_string(after/13)) + ")")
+              let prefix/14 = ("Pair(" + $goml_builtin_runtime$int32_to_string(before/12)) in
+              (((prefix/14 + ", ") + $goml_builtin_runtime$int32_to_string(after/13)) + ")")
             }
           }
         }
@@ -92,7 +92,7 @@ fn trait_impl#Describe#Record__string#describe(self/15: Record__string) -> strin
 }
 
 fn format_total(total/26: int32) -> string {
-  ("total: " + int32_to_string(total/26))
+  ("total: " + $goml_builtin_runtime$int32_to_string(total/26))
 }
 
 fn increment(value/27: int32) -> int32 {
@@ -121,17 +121,17 @@ fn pair_join(parts/29: (string, string)) -> string {
 }
 
 fn run_transforms(value/32: int32, transforms/33: [(int32) -> int32; 2]) -> [int32; 2] {
-  let first/34 = array_get(transforms/33, 0) in
-  let second/35 = array_get(transforms/33, 1) in
+  let first/34 = $goml_builtin_runtime$array_get(transforms/33, 0) in
+  let second/35 = $goml_builtin_runtime$array_get(transforms/33, 1) in
   let first_result/36 = first/34(value/32) in
   let second_result/37 = second/35(first_result/36) in
   let results/38 = [first_result/36, value/32] in
   let _wild18 = {
     let place_root14 = results/38 in
     let index15 = 1 in
-    let place16 = array_get(place_root14, index15) in
+    let place16 = $goml_builtin_runtime$array_get(place_root14, index15) in
     let value17 = second_result/37 in
-    results/38 = array_set(place_root14, index15, value17)
+    results/38 = $goml_builtin_runtime$array_set(place_root14, index15, value17)
   } in
   results/38
 }
@@ -164,25 +164,25 @@ fn gather(record/39: Record__int32) -> Maybe__int32 {
 }
 
 fn build_counter(label/42: string, start/43: int32) -> (Tracker, () -> Record__int32, (int32) -> Record__int32, () -> Record__string) {
-  let count/44 = ref(start/43) in
-  let toggled/45 = ref(false) in
+  let count/44 = inherent#Ref#Ref[T]#new__T_int32(start/43) in
+  let toggled/45 = inherent#Ref#Ref[T]#new__T_bool(false) in
   let tracker/46 = Tracker { label: label/42, count: count/44, toggled: toggled/45 } in
   let snapshot/47 = || {
-    Record__int32::Value(ref_get(count/44))
+    Record__int32::Value(inherent#Ref#Ref[T]#get__T_int32(count/44))
   } in
   let bump/50 = |delta/48| {
-    let before/49 = ref_get(count/44) in
-    let mtmp22 = ref_set(count/44, (before/49 + delta/48)) in
+    let before/49 = inherent#Ref#Ref[T]#get__T_int32(count/44) in
+    let mtmp22 = inherent#Ref#Ref[T]#set__T_int32(count/44, (before/49 + delta/48)) in
     {
-      Record__int32::Pair(before/49, ref_get(count/44))
+      Record__int32::Pair(before/49, inherent#Ref#Ref[T]#get__T_int32(count/44))
     }
   } in
   let flip/53 = || {
-    let before/51 = ref_get(toggled/45) in
-    let mtmp23 = ref_set(toggled/45, (!before/51)) in
+    let before/51 = inherent#Ref#Ref[T]#get__T_bool(toggled/45) in
+    let mtmp23 = inherent#Ref#Ref[T]#set__T_bool(toggled/45, (!before/51)) in
     {
-      let after/52 = ref_get(toggled/45) in
-      Record__string::Pair(bool_to_string(before/51), bool_to_string(after/52))
+      let after/52 = inherent#Ref#Ref[T]#get__T_bool(toggled/45) in
+      Record__string::Pair($goml_builtin_runtime$bool_to_string(before/51), $goml_builtin_runtime$bool_to_string(after/52))
     }
   } in
   (tracker/46, snapshot/47, bump/50, flip/53)
@@ -214,9 +214,13 @@ fn main() -> unit {
               let stringified/65 = map_maybe__T_int32__U_string(chosen/64, format_total) in
               let transforms/66 = [increment, triple] in
               let results/67 = run_transforms(4, transforms/66) in
-              let first_result/68 = array_get(results/67, 0) in
-              let second_result/69 = array_get(results/67, 1) in
-              let order_check/70 = ((first_result/68 < second_result/69) && true) in
+              let first_result/68 = $goml_builtin_runtime$array_get(results/67, 0) in
+              let second_result/69 = $goml_builtin_runtime$array_get(results/67, 1) in
+              let order_check/70 = if (first_result/68 < second_result/69) {
+                  true
+              } else {
+                  false
+              } in
               let first_text/71 = trait_impl#Describe#Record__int32#describe(first_record/59) in
               let bumped_text/72 = trait_impl#Describe#Record__int32#describe(bumped_record/60) in
               let flipped_text/73 = trait_impl#Describe#Record__string#describe(flipped_record/61) in
@@ -234,8 +238,8 @@ fn main() -> unit {
                   "Snapshot: none"
                 },
               } in
-              let pair_text/76 = pair_join((int32_to_string(first_result/68), int32_to_string(second_result/69))) in
-              let bool_text/77 = bool_to_string(order_check/70) in
+              let pair_text/76 = pair_join(($goml_builtin_runtime$int32_to_string(first_result/68), $goml_builtin_runtime$int32_to_string(second_result/69))) in
+              let bool_text/77 = $goml_builtin_runtime$bool_to_string(order_check/70) in
               let mtmp30 = println__T_string(tracker_info/58) in
               {
                 let mtmp31 = println__T_string(first_text/71) in
@@ -264,6 +268,30 @@ fn main() -> unit {
       }
     }
   }
+}
+
+fn inherent#Ref#Ref[T]#get__T_int32(self/94: Ref[int32]) -> int32 {
+  ref_get(self/94)
+}
+
+fn inherent#Ref#Ref[T]#get__T_bool(self/94: Ref[bool]) -> bool {
+  ref_get(self/94)
+}
+
+fn inherent#Ref#Ref[T]#new__T_int32(value/93: int32) -> Ref[int32] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#new__T_bool(value/93: bool) -> Ref[bool] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#set__T_int32(self/95: Ref[int32], value/96: int32) -> unit {
+  ref_set(self/95, value/96)
+}
+
+fn inherent#Ref#Ref[T]#set__T_bool(self/95: Ref[bool], value/96: bool) -> unit {
+  ref_set(self/95, value/96)
 }
 
 fn choose__T_Maybe[int32](flag/20: bool, when_true/21: Maybe__int32, when_false/22: Maybe__int32) -> Maybe__int32 {

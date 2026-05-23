@@ -1,16 +1,16 @@
 package main
 file main.gom
   fn main() {
-        let local/1/0 = ref(0i32);
-        while ref_get(i/0) < 10i32 {
+        let local/1/0 = Ref::new(0i32);
+        while i/0.get() < 10i32 {
             {
-                ref_set(i/0, ref_get(i/0) + 1i32);
-                if ref_get(i/0) == 5i32 {
+                i/0.set(i/0.get() + 1i32);
+                if i/0.get() == 5i32 {
                     continue
                 } else {
                     ()
                 };
-                let _ = println(ref_get(i/0));
+                let _ = println(i/0.get());
             }
         };
         let _ = println("done");

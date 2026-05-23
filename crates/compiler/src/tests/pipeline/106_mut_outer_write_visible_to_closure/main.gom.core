@@ -7,8 +7,8 @@ fn println(value/1: T) -> unit {
 }
 
 fn main() -> unit {
-  let x/0 = ref(0) in
-  let get/1 = || => ref_get(x/0) in
-  let _wild0 = ref_set(x/0, 41) in
+  let x/0 = $goml_builtin_runtime$ref(0) in
+  let get/1 = || => $goml_builtin_runtime$ref_get(x/0) in
+  let _wild0 = $goml_builtin_runtime$ref_set(x/0, 41) in
   let _wild1 = println(trait_call[ToString::to_string](get/1())) in
 }

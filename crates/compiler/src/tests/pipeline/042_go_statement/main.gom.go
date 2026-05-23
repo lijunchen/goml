@@ -33,19 +33,19 @@ type closure_env_main_0 struct {
 }
 
 func child(signal__0 *ref_int32_x) struct{} {
-    ref_set__Ref_5int32(signal__0, 1)
+    _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_int32(signal__0, 1)
     return struct{}{}
 }
 
 func main0() struct{} {
-    var signal__1 *ref_int32_x = ref__Ref_5int32(0)
+    var signal__1 *ref_int32_x = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_int32(0)
     var t7 closure_env_main_0 = closure_env_main_0{
         signal_0: signal__1,
     }
     go _goml_inherent_x23_closure_x5f_env_x5f_main_x5f_0_x23_closure_x5f_env_x5f_main_x5f_0_x23_apply(t7)
     Loop_loop9:
     for {
-        var t10 int32 = ref_get__Ref_5int32(signal__1)
+        var t10 int32 = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_int32(signal__1)
         var t11 bool = t10 < 1
         if t11 {
             continue
@@ -55,6 +55,25 @@ func main0() struct{} {
     }
     println__T_string("main")
     return struct{}{}
+}
+
+func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_int32(self__95 *ref_int32_x, value__96 int32) struct{} {
+    ref_set__Ref_5int32(self__95, value__96)
+    return struct{}{}
+}
+
+func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_int32(value__93 int32) *ref_int32_x {
+    var retv15 *ref_int32_x
+    var t16 *ref_int32_x = ref__Ref_5int32(value__93)
+    retv15 = t16
+    return retv15
+}
+
+func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_int32(self__94 *ref_int32_x) int32 {
+    var retv18 int32
+    var t19 int32 = ref_get__Ref_5int32(self__94)
+    retv18 = t19
+    return retv18
 }
 
 func println__T_string(value__1 string) struct{} {

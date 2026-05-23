@@ -4,10 +4,10 @@ struct Config {
 }
 
 fn make_config() -> Config {
-    let state = ref(0);
+    let state = Ref::new(0);
     Config {
-        getter: || ref_get(state),
-        setter: |v| ref_set(state, v),
+        getter: || state.get(),
+        setter: |v| state.set(v),
     }
 }
 

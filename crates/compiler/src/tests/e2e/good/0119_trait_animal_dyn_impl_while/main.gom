@@ -26,9 +26,9 @@ fn main() {
         Cat { color: "black" },
         Dog { breed: "Poodle" },
     ];
-    let i = ref(0);
-    while ref_get(i) < 3 {
-        println(describe(animals[ref_get(i)]));
-        ref_set(i, ref_get(i) + 1);
+    let i = Ref::new(0);
+    while i.get() < 3 {
+        println(describe(animals[i.get()]));
+        i.set(i.get() + 1);
     };
 }

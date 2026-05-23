@@ -130,6 +130,41 @@ fn runtime_missing_function_collision_executes() {
 }
 
 #[test]
+fn builtin_runtime_shadow_user_symbol_executes() {
+    let output = run_crasher("builtin_runtime_shadow_user_symbol");
+
+    assert_eq!(output, "7\n1\n4\n2\n9\n1\nuser\n3\n");
+}
+
+#[test]
+fn builtin_runtime_exact_shadow_user_symbol_executes() {
+    let output = run_crasher("builtin_runtime_exact_shadow_user_symbol");
+
+    assert_eq!(output, "user3\n3\n103\n3\n");
+}
+
+#[test]
+fn index_builtin_shadow_user_symbol_executes() {
+    let output = run_crasher("index_builtin_shadow_user_symbol");
+
+    assert_eq!(output, "91\n5\n77\n90\n9\n71\n9\n1\n99\n61\n9\n0\n55\n42\n");
+}
+
+#[test]
+fn hidden_ref_shadow_user_symbol_executes() {
+    let output = run_crasher("hidden_ref_shadow_user_symbol");
+
+    assert_eq!(output, "1\n1\n");
+}
+
+#[test]
+fn trait_tostring_builtin_shadow_user_symbol_executes() {
+    let output = run_crasher("trait_tostring_builtin_shadow_user_symbol");
+
+    assert_eq!(output, "4\nref(3)\n");
+}
+
+#[test]
 fn hashmap_lookup_helper_function_name_collision_executes() {
     let output = run_crasher("hashmap_lookup_helper_function_name_collision_user_symbol");
 

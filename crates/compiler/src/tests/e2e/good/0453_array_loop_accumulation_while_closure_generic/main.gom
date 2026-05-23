@@ -1,15 +1,15 @@
 fn for_each[T](arr: [T; 3], f: (T) -> unit) {
-    let i = ref(0i32);
-    while ref_get(i) < 3 {
-        f(arr[ref_get(i)]);
-        ref_set(i, ref_get(i) + 1);
+    let i = Ref::new(0i32);
+    while i.get() < 3 {
+        f(arr[i.get()]);
+        i.set(i.get() + 1);
     };
 }
 
 fn main() {
-    let sum = ref(0i32);
+    let sum = Ref::new(0i32);
     for_each([10, 20, 30], |x| {
-        ref_set(sum, ref_get(sum) + x);
+        sum.set(sum.get() + x);
     });
-    println(ref_get(sum).to_string());
+    println(sum.get().to_string());
 }

@@ -1,8 +1,8 @@
 fn main() {
-    let counter = ref(0);
+    let counter = Ref::new(0);
     let inc = || {
-        ref_set(counter, ref_get(counter) + 1);
-        ref_get(counter)
+        counter.set(counter.get() + 1);
+        counter.get()
     };
     println(inc().to_string());
     println(inc().to_string());

@@ -94,9 +94,9 @@ fn describe_stmt(stmt: &ast::ast::Stmt) -> String {
 fn references_typecheck_and_collect() {
     let src = r#"
 fn main() -> int32 {
-    let r = ref(1);
-    let _ = ref_set(r, 2);
-    ref_get(r)
+    let r = Ref::new(1);
+    let _ = r.set(2);
+    r.get()
 }
 "#;
 
@@ -130,9 +130,9 @@ fn main() -> int32 {
 
     expect![[r#"
         expr_count=3
-        expr0=let r = call ref(1)
-        expr1=let _ = call ref_set(r, 2)
-        expr2=call ref_get(r)
+        expr0=let r = call new(1)
+        expr1=let _ = call EField { expr: EPath { path: Path { root: Relative, segments: [PathSegment { ident: AstIdent("r"), range: Some(59..60) }] }, astptr: SyntaxNodePtr { kind: EXPR_IDENT, range: 59..60 } }, field: AstIdent("set"), astptr: SyntaxNodePtr { kind: EXPR_BINARY, range: 59..64 } }(2)
+        expr2=call EField { expr: EPath { path: Path { root: Relative, segments: [PathSegment { ident: AstIdent("r"), range: Some(73..74) }] }, astptr: SyntaxNodePtr { kind: EXPR_IDENT, range: 73..74 } }, field: AstIdent("get"), astptr: SyntaxNodePtr { kind: EXPR_BINARY, range: 73..78 } }()
         diagnostics=[]
         ref_constr=Ref"#]]
     .assert_eq(&lines.join("\n"));

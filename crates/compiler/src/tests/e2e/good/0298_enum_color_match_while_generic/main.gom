@@ -20,9 +20,9 @@ fn main() {
     let colors = colors.push(Color::Custom(255, 128, 0));
     let colors = colors.push(Color::Blue);
     
-    let i = ref(0);
-    while ref_get(i) < colors.len() {
-        println(describe(colors[ref_get(i)]));
-        ref_set(i, ref_get(i) + 1);
+    let i = Ref::new(0);
+    while i.get() < colors.len() {
+        println(describe(colors[i.get()]));
+        i.set(i.get() + 1);
     };
 }

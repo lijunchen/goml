@@ -16,8 +16,8 @@ impl[T: Hash] Hash for Wrap[T] {
 
 fn main() -> unit {
     let map: HashMap[Ref[Wrap[int32]], string] = HashMap::new();
-    map.set(ref(Wrap { value: 42i32 }), "ok");
-    match map.get(ref(Wrap { value: 42i32 })) {
+    map.set(Ref::new(Wrap { value: 42i32 }), "ok");
+    match map.get(Ref::new(Wrap { value: 42i32 })) {
         Option::Some(value) => println(value),
         Option::None => println("missing"),
     }

@@ -1,0 +1,21 @@
+trait Display {
+    fn show(Self) -> string;
+}
+
+impl Display for int32 {
+    fn show(self: int32) -> string {
+        self.to_string()
+    }
+}
+
+impl Hash for dyn Display {
+    fn hash(self: dyn Display) -> uint64 {
+        string_hash(Display::show(self))
+    }
+}
+
+fn main() -> unit {
+    let inner: dyn Display = 1i32;
+    let r = Ref::new(inner);
+    println((Hash::hash(r) == string_hash("1")).to_string());
+}

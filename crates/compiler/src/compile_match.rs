@@ -1,7 +1,7 @@
 use crate::common::{self, Constructor, Prim};
 use crate::core;
-use crate::env::{Gensym, GlobalTypeEnv, StructDef};
-use crate::names::{inherent_method_fn_name, trait_impl_fn_name};
+use crate::env::{FnOrigin, Gensym, GlobalTypeEnv, StructDef};
+use crate::names::{builtin_runtime_call, inherent_method_fn_name, trait_impl_fn_name};
 use crate::tast::Arm;
 use crate::tast::Expr::{self, *};
 use crate::tast::Pat::{self, *};
@@ -231,7 +231,7 @@ mod tests {
 fn emissing(ty: &Ty) -> core::Expr {
     core::Expr::ECall {
         func: Box::new(core::Expr::EVar {
-            name: "missing".to_string(),
+            name: builtin_runtime_call("missing"),
             ty: Ty::TFunc {
                 params: vec![Ty::TString],
                 ret_ty: Box::new(ty.clone()),
@@ -242,6 +242,13 @@ fn emissing(ty: &Ty) -> core::Expr {
             ty: Ty::TString,
         }],
         ty: ty.clone(),
+    }
+}
+
+fn ebool(value: bool) -> core::Expr {
+    core::Expr::EPrim {
+        value: Prim::Bool { value },
+        ty: Ty::TBool,
     }
 }
 
@@ -542,7 +549,16 @@ enum CompiledPlaceRoot {
 fn is_ref_get_call(expr: &Expr) -> Option<&Expr> {
     match expr {
         Expr::ECall { func, args, .. } if args.len() == 1 => match func.as_ref() {
-            Expr::EVar { name, .. } if name == "ref_get" => Some(&args[0]),
+            Expr::EVar { name, .. }
+                if name == "ref_get" && matches!(args[0].get_ty(), Ty::TRef { .. }) =>
+            {
+                Some(&args[0])
+            }
+            Expr::EInherentMethod {
+                receiver_ty,
+                method_name,
+                ..
+            } if method_name.0 == "get" && matches!(receiver_ty, Ty::TRef { .. }) => Some(&args[0]),
             _ => None,
         },
         _ => None,
@@ -625,7 +641,7 @@ fn core_var(name: impl Into<String>, ty: &Ty) -> core::Expr {
 
 fn builtin_func(name: &str, params: Vec<Ty>, ret_ty: Ty) -> core::Expr {
     core::Expr::EVar {
-        name: name.to_string(),
+        name: builtin_runtime_call(name),
         ty: Ty::TFunc {
             params,
             ret_ty: Box::new(ret_ty),
@@ -2473,7 +2489,7 @@ fn hidden_ref_alloc(value: core::Expr, inner_ty: &Ty) -> core::Expr {
     let ref_ty = hidden_cell_ty(inner_ty);
     core::Expr::ECall {
         func: Box::new(core::Expr::EVar {
-            name: "ref".to_string(),
+            name: builtin_runtime_call("ref"),
             ty: Ty::TFunc {
                 params: vec![inner_ty.clone()],
                 ret_ty: Box::new(ref_ty.clone()),
@@ -2488,7 +2504,7 @@ fn hidden_ref_get(name: &str, inner_ty: &Ty) -> core::Expr {
     let ref_ty = hidden_cell_ty(inner_ty);
     core::Expr::ECall {
         func: Box::new(core::Expr::EVar {
-            name: "ref_get".to_string(),
+            name: builtin_runtime_call("ref_get"),
             ty: Ty::TFunc {
                 params: vec![ref_ty.clone()],
                 ret_ty: Box::new(inner_ty.clone()),
@@ -2503,7 +2519,7 @@ fn hidden_ref_set(name: &str, inner_ty: &Ty, value: core::Expr) -> core::Expr {
     let ref_ty = hidden_cell_ty(inner_ty);
     core::Expr::ECall {
         func: Box::new(core::Expr::EVar {
-            name: "ref_set".to_string(),
+            name: builtin_runtime_call("ref_set"),
             ty: Ty::TFunc {
                 params: vec![ref_ty.clone(), inner_ty.clone()],
                 ret_ty: Box::new(Ty::TUnit),
@@ -3116,7 +3132,7 @@ fn compile_index_assign_action(
         CompiledPlaceRoot::Value => {
             push_compile_error(
                 diagnostics,
-                "array indexed assignment requires a writable root such as a mutable local or `ref_get(...)`",
+                "array indexed assignment requires a writable root such as a mutable local or `ref.get()`",
                 expr_range(target),
             );
             emissing(&Ty::TUnit)
@@ -3214,7 +3230,7 @@ fn compile_block_parts(
                     }],
                     body: ECall {
                         func: Box::new(Expr::EVar {
-                            name: "missing".to_string(),
+                            name: builtin_runtime_call("missing"),
                             ty: Ty::TFunc {
                                 params: vec![Ty::TString],
                                 ret_ty: Box::new(ty.clone()),
@@ -3467,16 +3483,39 @@ fn compile_expr(
             resolution,
         } => {
             let lhs_expr = compile_expr(lhs, genv, gensym, diagnostics);
-            let rhs_expr = compile_expr(rhs, genv, gensym, diagnostics);
 
             match resolution {
-                tast::BinaryResolution::Builtin => core::Expr::EBinary {
-                    op: *op,
-                    lhs: Box::new(lhs_expr),
-                    rhs: Box::new(rhs_expr),
-                    ty: ty.clone(),
+                tast::BinaryResolution::Builtin => match op {
+                    common_defs::BinaryOp::And => {
+                        let rhs_expr = compile_expr(rhs, genv, gensym, diagnostics);
+                        core::Expr::EIf {
+                            cond: Box::new(lhs_expr),
+                            then_branch: Box::new(rhs_expr),
+                            else_branch: Box::new(ebool(false)),
+                            ty: ty.clone(),
+                        }
+                    }
+                    common_defs::BinaryOp::Or => {
+                        let rhs_expr = compile_expr(rhs, genv, gensym, diagnostics);
+                        core::Expr::EIf {
+                            cond: Box::new(lhs_expr),
+                            then_branch: Box::new(ebool(true)),
+                            else_branch: Box::new(rhs_expr),
+                            ty: ty.clone(),
+                        }
+                    }
+                    _ => {
+                        let rhs_expr = compile_expr(rhs, genv, gensym, diagnostics);
+                        core::Expr::EBinary {
+                            op: *op,
+                            lhs: Box::new(lhs_expr),
+                            rhs: Box::new(rhs_expr),
+                            ty: ty.clone(),
+                        }
+                    }
                 },
                 tast::BinaryResolution::Overloaded { trait_name } => {
+                    let rhs_expr = compile_expr(rhs, genv, gensym, diagnostics);
                     let method = op.method_name();
                     let self_ty = lhs_expr.get_ty();
                     let func_name = trait_impl_fn_name(trait_name, &self_ty, method);
@@ -3579,12 +3618,19 @@ fn compile_expr(
                 ..
             } = func.as_ref()
             {
-                let has_inherent = genv
-                    .lookup_inherent_method_scheme(receiver_ty, method_name)
-                    .is_some();
-                if has_inherent {
+                if let Some(method_scheme) =
+                    genv.lookup_inherent_method_scheme(receiver_ty, method_name)
+                {
+                    let method_fn_name = inherent_method_fn_name(receiver_ty, &method_name.0);
+                    let name = if method_scheme.origin == FnOrigin::Builtin
+                        && !method_fn_name.contains('#')
+                    {
+                        builtin_runtime_call(&method_fn_name)
+                    } else {
+                        method_fn_name
+                    };
                     core::Expr::EVar {
-                        name: inherent_method_fn_name(receiver_ty, &method_name.0),
+                        name,
                         ty: method_ty.clone(),
                     }
                 } else if let Some((type_name, type_args)) = decompose_struct_type(receiver_ty)

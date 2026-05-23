@@ -2,34 +2,34 @@ fn main() -> unit {
   join ret8() -> unit {
     ()
   } in
-  let sum/0 = ref(0) in
-  let i/1 = ref(0) in
+  let sum/0 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let i/1 = inherent#Ref#Ref[T]#new__T_int32(0) in
   join exit9() -> unit {
     let _wild3 = () in
     let mtmp4 = print__T_string("sum: ") in
-    let t10 = ref_get(sum/0) in
+    let t10 = inherent#Ref#Ref[T]#get__T_int32(sum/0) in
     let mtmp5 = println__T_int32(t10) in
     let mtmp6 = print__T_string("i at break: ") in
-    let t11 = ref_get(i/1) in
+    let t11 = inherent#Ref#Ref[T]#get__T_int32(i/1) in
     let mtmp7 = println__T_int32(t11) in
     jump ret8()
   } in
   joinrec {
     join loop12() -> unit {
-      let t13 = ref_get(i/1) in
+      let t13 = inherent#Ref#Ref[T]#get__T_int32(i/1) in
       let t14 = (t13 < 20) in
       if t14 {
-        let t15 = ref_get(i/1) in
+        let t15 = inherent#Ref#Ref[T]#get__T_int32(i/1) in
         let t16 = (t15 + 1) in
-        let _wild0 = ref_set(i/1, t16) in
-        let t21 = ref_get(i/1) in
+        let _wild0 = inherent#Ref#Ref[T]#set__T_int32(i/1, t16) in
+        let t21 = inherent#Ref#Ref[T]#get__T_int32(i/1) in
         let t22 = (t21 > 5) in
         join k17() -> unit {
           let _wild1 = () in
-          let t18 = ref_get(sum/0) in
-          let t19 = ref_get(i/1) in
+          let t18 = inherent#Ref#Ref[T]#get__T_int32(sum/0) in
+          let t19 = inherent#Ref#Ref[T]#get__T_int32(i/1) in
           let t20 = (t18 + t19) in
-          let _wild2 = ref_set(sum/0, t20) in
+          let _wild2 = inherent#Ref#Ref[T]#set__T_int32(sum/0, t20) in
           jump loop12()
         } in
         if t22 {
@@ -45,19 +45,43 @@ fn main() -> unit {
   jump loop12()
 }
 
-fn print__T_string(value/0: string) -> unit {
-  join ret23() -> unit {
+fn inherent#Ref#Ref[T]#new__T_int32(value/93: int32) -> Ref[int32] {
+  join ret23(retv24: Ref[int32]) -> Ref[int32] {
+    retv24
+  } in
+  let t25 = ref(value/93) in
+  jump ret23(t25)
+}
+
+fn inherent#Ref#Ref[T]#get__T_int32(self/94: Ref[int32]) -> int32 {
+  join ret26(retv27: int32) -> int32 {
+    retv27
+  } in
+  let t28 = ref_get(self/94) in
+  jump ret26(t28)
+}
+
+fn inherent#Ref#Ref[T]#set__T_int32(self/95: Ref[int32], value/96: int32) -> unit {
+  join ret29() -> unit {
     ()
   } in
-  let t24 = string_print(value/0) in
-  jump ret23()
+  let t30 = ref_set(self/95, value/96) in
+  jump ret29()
+}
+
+fn print__T_string(value/0: string) -> unit {
+  join ret31() -> unit {
+    ()
+  } in
+  let t32 = string_print(value/0) in
+  jump ret31()
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join ret25() -> unit {
+  join ret33() -> unit {
     ()
   } in
-  let t26 = int32_to_string(value/1) in
-  let t27 = string_println(t26) in
-  jump ret25()
+  let t34 = $goml_builtin_runtime$int32_to_string(value/1) in
+  let t35 = string_println(t34) in
+  jump ret33()
 }

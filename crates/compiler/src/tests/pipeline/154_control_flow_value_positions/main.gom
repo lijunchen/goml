@@ -1,26 +1,26 @@
 fn main() -> unit {
-    let i = ref(0i32);
-    let sum = ref(0i32);
-    while ref_get(i) < 5i32 {
-        ref_set(i, ref_get(i) + 1i32);
-        let cur = if ref_get(i) == 3i32 {
+    let i = Ref::new(0i32);
+    let sum = Ref::new(0i32);
+    while i.get() < 5i32 {
+        i.set(i.get() + 1i32);
+        let cur = if i.get() == 3i32 {
             continue
         } else {
-            ref_get(i)
+            i.get()
         };
-        ref_set(sum, ref_get(sum) + cur);
+        sum.set(sum.get() + cur);
     };
-    println(ref_get(sum));
+    println(sum.get());
 
-    let j = ref(0i32);
-    let total = ref(0i32);
+    let j = Ref::new(0i32);
+    let total = Ref::new(0i32);
     while true {
-        ref_set(j, ref_get(j) + 1i32);
-        let cur = match ref_get(j) {
+        j.set(j.get() + 1i32);
+        let cur = match j.get() {
             5i32 => break,
-            _ => ref_get(j),
+            _ => j.get(),
         };
-        ref_set(total, ref_get(total) + cur);
+        total.set(total.get() + cur);
     };
-    println(ref_get(total));
+    println(total.get());
 }

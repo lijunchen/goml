@@ -1,5 +1,13 @@
 fn trait_impl#Eq#Point#eq(self/0: Point, other/1: Point) -> bool {
-  ((true && trait_impl#Eq#int32#eq(Point.x(self/0), Point.x(other/1))) && trait_impl#Eq#int32#eq(Point.y(self/0), Point.y(other/1)))
+  if if true {
+      trait_impl#Eq#int32#eq(Point.x(self/0), Point.x(other/1))
+  } else {
+      false
+  } {
+      trait_impl#Eq#int32#eq(Point.y(self/0), Point.y(other/1))
+  } else {
+      false
+  }
 }
 
 fn trait_impl#Hash#Point#hash(self/2: Point) -> uint64 {
@@ -49,7 +57,11 @@ fn trait_impl#Eq#Key#eq(self/6: Key, other/7: Key) -> bool {
                     let __l1_0/8 = x7 in
                     {
                       let __r1_0/9 = x3 in
-                      (true && trait_impl#Eq#int32#eq(__l1_0/8, __r1_0/9))
+                      if true {
+                          trait_impl#Eq#int32#eq(__l1_0/8, __r1_0/9)
+                      } else {
+                          false
+                      }
                     }
                   }
                 }
@@ -83,7 +95,11 @@ fn trait_impl#Eq#Key#eq(self/6: Key, other/7: Key) -> bool {
                     let __l2_0/10 = x10 in
                     {
                       let __r2_0/11 = x4 in
-                      (true && trait_impl#Eq#Point#eq(__l2_0/10, __r2_0/11))
+                      if true {
+                          trait_impl#Eq#Point#eq(__l2_0/10, __r2_0/11)
+                      } else {
+                          false
+                      }
                     }
                   }
                 }
@@ -161,13 +177,13 @@ fn main() -> unit {
   let _wild20 = println__T_bool(inherent#HashMap#HashMap[K,V]#contains__K_Key__V_int32(m1/22, Key::B(1))) in
   let _wild21 = println__T_int32(inherent#HashMap#HashMap[K,V]#len__K_Key__V_int32(m1/22)) in
   let m2/23 = inherent#HashMap#HashMap[K,V]#new__K_Ref[Point]__V_int32() in
-  let p1/24 = ref(Point { x: 1, y: 2 }) in
-  let p2/25 = ref(Point { x: 1, y: 2 }) in
+  let p1/24 = inherent#Ref#Ref[T]#new__T_Point(Point { x: 1, y: 2 }) in
+  let p2/25 = inherent#Ref#Ref[T]#new__T_Point(Point { x: 1, y: 2 }) in
   let _wild22 = inherent#HashMap#HashMap[K,V]#set__K_Ref[Point]__V_int32(m2/23, p1/24, 99) in
   let _wild23 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_Ref[Point]__V_int32(m2/23, p2/25)) in
   let m3/26 = inherent#HashMap#HashMap[K,V]#new__K_Ref[Key]__V_int32() in
-  let k1/27 = ref(Key::B(7)) in
-  let k2/28 = ref(Key::B(7)) in
+  let k1/27 = inherent#Ref#Ref[T]#new__T_Key(Key::B(7)) in
+  let k2/28 = inherent#Ref#Ref[T]#new__T_Key(Key::B(7)) in
   let _wild24 = inherent#HashMap#HashMap[K,V]#set__K_Ref[Key]__V_int32(m3/26, k1/27, 123) in
   let _wild25 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_Ref[Key]__V_int32(m3/26, k2/28)) in
 }
@@ -177,7 +193,7 @@ fn println__T_string(value/1: string) -> unit {
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  string_println(int32_to_string(value/1))
+  string_println($goml_builtin_runtime$int32_to_string(value/1))
 }
 
 fn inherent#HashMap#HashMap[K,V]#new__K_Key__V_int32() -> HashMap[Key, int32] {
@@ -197,7 +213,7 @@ fn inherent#HashMap#HashMap[K,V]#get__K_Key__V_int32(self/83: HashMap[Key, int32
 }
 
 fn println__T_bool(value/1: bool) -> unit {
-  string_println(bool_to_string(value/1))
+  string_println($goml_builtin_runtime$bool_to_string(value/1))
 }
 
 fn inherent#HashMap#HashMap[K,V]#contains__K_Key__V_int32(self/91: HashMap[Key, int32], key/92: Key) -> bool {
@@ -212,6 +228,10 @@ fn inherent#HashMap#HashMap[K,V]#new__K_Ref[Point]__V_int32() -> HashMap[Ref[Poi
   hashmap_new()
 }
 
+fn inherent#Ref#Ref[T]#new__T_Point(value/93: Point) -> Ref[Point] {
+  ref(value/93)
+}
+
 fn inherent#HashMap#HashMap[K,V]#set__K_Ref[Point]__V_int32(self/85: HashMap[Ref[Point], int32], key/86: Ref[Point], value/87: int32) -> unit {
   hashmap_set(self/85, key/86, value/87)
 }
@@ -222,6 +242,10 @@ fn inherent#HashMap#HashMap[K,V]#get__K_Ref[Point]__V_int32(self/83: HashMap[Ref
 
 fn inherent#HashMap#HashMap[K,V]#new__K_Ref[Key]__V_int32() -> HashMap[Ref[Key], int32] {
   hashmap_new()
+}
+
+fn inherent#Ref#Ref[T]#new__T_Key(value/93: Key) -> Ref[Key] {
+  ref(value/93)
 }
 
 fn inherent#HashMap#HashMap[K,V]#set__K_Ref[Key]__V_int32(self/85: HashMap[Ref[Key], int32], key/86: Ref[Key], value/87: int32) -> unit {

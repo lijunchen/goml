@@ -1,5 +1,9 @@
 fn is_digit(ch/0: char) -> bool {
-  ((ch/0 >= '0') && (ch/0 <= '9'))
+  if (ch/0 >= '0') {
+      (ch/0 <= '9')
+  } else {
+      false
+  }
 }
 
 fn digit_value(ch/1: char) -> int32 {
@@ -39,80 +43,96 @@ fn digit_value(ch/1: char) -> int32 {
 }
 
 fn is_int_text(text/2: string) -> bool {
-  let len/3 = string_len(text/2) in
+  let len/3 = $goml_builtin_runtime$string_len(text/2) in
   if (len/3 == 0) {
       {
         false
       }
   } else {
       {
-        let i/4 = ref(0) in
-        let saw_digit/5 = ref(false) in
-        let ok/6 = ref(true) in
-        let started/7 = ref(false) in
-        let mtmp3 = while (ref_get(ok/6) && (ref_get(i/4) < len/3)) {
+        let i/4 = inherent#Ref#Ref[T]#new__T_int32(0) in
+        let saw_digit/5 = inherent#Ref#Ref[T]#new__T_bool(false) in
+        let ok/6 = inherent#Ref#Ref[T]#new__T_bool(true) in
+        let started/7 = inherent#Ref#Ref[T]#new__T_bool(false) in
+        let mtmp3 = while if inherent#Ref#Ref[T]#get__T_bool(ok/6) {
+            (inherent#Ref#Ref[T]#get__T_int32(i/4) < len/3)
+        } else {
+            false
+        } {
             {
-              let ch/8 = string_get(text/2, ref_get(i/4)) in
-              if ((!ref_get(started/7)) && (ch/8 == '-')) {
+              let ch/8 = $goml_builtin_runtime$string_get(text/2, inherent#Ref#Ref[T]#get__T_int32(i/4)) in
+              if if (!inherent#Ref#Ref[T]#get__T_bool(started/7)) {
+                  (ch/8 == '-')
+              } else {
+                  false
+              } {
                   {
-                    let mtmp0 = ref_set(started/7, true) in
+                    let mtmp0 = inherent#Ref#Ref[T]#set__T_bool(started/7, true) in
                     {
-                      ref_set(i/4, (ref_get(i/4) + 1))
+                      inherent#Ref#Ref[T]#set__T_int32(i/4, (inherent#Ref#Ref[T]#get__T_int32(i/4) + 1))
                     }
                   }
               } else {
                   if is_digit(ch/8) {
                       {
-                        let mtmp1 = ref_set(started/7, true) in
+                        let mtmp1 = inherent#Ref#Ref[T]#set__T_bool(started/7, true) in
                         {
-                          let mtmp2 = ref_set(saw_digit/5, true) in
+                          let mtmp2 = inherent#Ref#Ref[T]#set__T_bool(saw_digit/5, true) in
                           {
-                            ref_set(i/4, (ref_get(i/4) + 1))
+                            inherent#Ref#Ref[T]#set__T_int32(i/4, (inherent#Ref#Ref[T]#get__T_int32(i/4) + 1))
                           }
                         }
                       }
                   } else {
                       {
-                        ref_set(ok/6, false)
+                        inherent#Ref#Ref[T]#set__T_bool(ok/6, false)
                       }
                   }
               }
             }
         } in
         {
-          (ref_get(ok/6) && ref_get(saw_digit/5))
+          if inherent#Ref#Ref[T]#get__T_bool(ok/6) {
+              inherent#Ref#Ref[T]#get__T_bool(saw_digit/5)
+          } else {
+              false
+          }
         }
       }
   }
 }
 
 fn parse_int32(text/9: string) -> int32 {
-  let len/10 = string_len(text/9) in
-  let i/11 = ref(0) in
-  let negative/12 = ref(false) in
-  let started/13 = ref(false) in
-  let acc/14 = ref(0) in
-  let mtmp8 = while (ref_get(i/11) < len/10) {
+  let len/10 = $goml_builtin_runtime$string_len(text/9) in
+  let i/11 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let negative/12 = inherent#Ref#Ref[T]#new__T_bool(false) in
+  let started/13 = inherent#Ref#Ref[T]#new__T_bool(false) in
+  let acc/14 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let mtmp8 = while (inherent#Ref#Ref[T]#get__T_int32(i/11) < len/10) {
       {
-        let ch/15 = string_get(text/9, ref_get(i/11)) in
-        if ((!ref_get(started/13)) && (ch/15 == '-')) {
+        let ch/15 = $goml_builtin_runtime$string_get(text/9, inherent#Ref#Ref[T]#get__T_int32(i/11)) in
+        if if (!inherent#Ref#Ref[T]#get__T_bool(started/13)) {
+            (ch/15 == '-')
+        } else {
+            false
+        } {
             {
-              let mtmp4 = ref_set(started/13, true) in
+              let mtmp4 = inherent#Ref#Ref[T]#set__T_bool(started/13, true) in
               {
-                let mtmp5 = ref_set(negative/12, true) in
+                let mtmp5 = inherent#Ref#Ref[T]#set__T_bool(negative/12, true) in
                 {
-                  ref_set(i/11, (ref_get(i/11) + 1))
+                  inherent#Ref#Ref[T]#set__T_int32(i/11, (inherent#Ref#Ref[T]#get__T_int32(i/11) + 1))
                 }
               }
             }
         } else {
             {
-              let mtmp6 = ref_set(started/13, true) in
+              let mtmp6 = inherent#Ref#Ref[T]#set__T_bool(started/13, true) in
               {
                 let d/16 = digit_value(ch/15) in
-                let mtmp7 = ref_set(acc/14, ((ref_get(acc/14) * 10) + d/16)) in
+                let mtmp7 = inherent#Ref#Ref[T]#set__T_int32(acc/14, ((inherent#Ref#Ref[T]#get__T_int32(acc/14) * 10) + d/16)) in
                 {
-                  ref_set(i/11, (ref_get(i/11) + 1))
+                  inherent#Ref#Ref[T]#set__T_int32(i/11, (inherent#Ref#Ref[T]#get__T_int32(i/11) + 1))
                 }
               }
             }
@@ -120,46 +140,58 @@ fn parse_int32(text/9: string) -> int32 {
       }
   } in
   {
-    if ref_get(negative/12) {
+    if inherent#Ref#Ref[T]#get__T_bool(negative/12) {
         {
-          (0 - ref_get(acc/14))
+          (0 - inherent#Ref#Ref[T]#get__T_int32(acc/14))
         }
     } else {
         {
-          ref_get(acc/14)
+          inherent#Ref#Ref[T]#get__T_int32(acc/14)
         }
     }
   }
 }
 
 fn is_delim(ch/17: char) -> bool {
-  (((ch/17 == '(') || (ch/17 == ')')) || (ch/17 == ' '))
+  if if (ch/17 == '(') {
+      true
+  } else {
+      (ch/17 == ')')
+  } {
+      true
+  } else {
+      (ch/17 == ' ')
+  }
 }
 
 fn lex_atom(source/18: string, start/19: int32) -> (Token, int32) {
-  let len/20 = string_len(source/18) in
-  let text/21 = ref("") in
-  let i/22 = ref(start/19) in
-  let done/23 = ref(false) in
-  let mtmp10 = while ((!ref_get(done/23)) && (ref_get(i/22) < len/20)) {
+  let len/20 = $goml_builtin_runtime$string_len(source/18) in
+  let text/21 = inherent#Ref#Ref[T]#new__T_string("") in
+  let i/22 = inherent#Ref#Ref[T]#new__T_int32(start/19) in
+  let done/23 = inherent#Ref#Ref[T]#new__T_bool(false) in
+  let mtmp10 = while if (!inherent#Ref#Ref[T]#get__T_bool(done/23)) {
+      (inherent#Ref#Ref[T]#get__T_int32(i/22) < len/20)
+  } else {
+      false
+  } {
       {
-        let ch/24 = string_get(source/18, ref_get(i/22)) in
+        let ch/24 = $goml_builtin_runtime$string_get(source/18, inherent#Ref#Ref[T]#get__T_int32(i/22)) in
         if is_delim(ch/24) {
             {
-              ref_set(done/23, true)
+              inherent#Ref#Ref[T]#set__T_bool(done/23, true)
             }
         } else {
             {
-              let mtmp9 = ref_set(text/21, (ref_get(text/21) + char_to_string(ch/24))) in
+              let mtmp9 = inherent#Ref#Ref[T]#set__T_string(text/21, (inherent#Ref#Ref[T]#get__T_string(text/21) + $goml_builtin_runtime$char_to_string(ch/24))) in
               {
-                ref_set(i/22, (ref_get(i/22) + 1))
+                inherent#Ref#Ref[T]#set__T_int32(i/22, (inherent#Ref#Ref[T]#get__T_int32(i/22) + 1))
               }
             }
         }
       }
   } in
   {
-    let atom/25 = ref_get(text/21) in
+    let atom/25 = inherent#Ref#Ref[T]#get__T_string(text/21) in
     let token/26 = match atom/25 {
       "true" => {
         Token::Bool(true)
@@ -177,41 +209,41 @@ fn lex_atom(source/18: string, start/19: int32) -> (Token, int32) {
           }
       },
     } in
-    (token/26, ref_get(i/22))
+    (token/26, inherent#Ref#Ref[T]#get__T_int32(i/22))
   }
 }
 
 fn lex(source/27: string) -> Vec[Token] {
-  let len/28 = string_len(source/27) in
+  let len/28 = $goml_builtin_runtime$string_len(source/27) in
   let toks0/29 = inherent#Vec#Vec[T]#new__T_Token() in
-  let toks/30 = ref(toks0/29) in
-  let i/31 = ref(0) in
-  let mtmp17 = while (ref_get(i/31) < len/28) {
+  let toks/30 = inherent#Ref#Ref[T]#new__T_Vec[Token](toks0/29) in
+  let i/31 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let mtmp17 = while (inherent#Ref#Ref[T]#get__T_int32(i/31) < len/28) {
       {
-        let ch/32 = string_get(source/27, ref_get(i/31)) in
+        let ch/32 = $goml_builtin_runtime$string_get(source/27, inherent#Ref#Ref[T]#get__T_int32(i/31)) in
         if (ch/32 == '(') {
             {
-              let mtmp11 = ref_set(toks/30, inherent#Vec#Vec[T]#push__T_Token(ref_get(toks/30), Token::LParen)) in
+              let mtmp11 = inherent#Ref#Ref[T]#set__T_Vec[Token](toks/30, inherent#Vec#Vec[T]#push__T_Token(inherent#Ref#Ref[T]#get__T_Vec[Token](toks/30), Token::LParen)) in
               {
-                ref_set(i/31, (ref_get(i/31) + 1))
+                inherent#Ref#Ref[T]#set__T_int32(i/31, (inherent#Ref#Ref[T]#get__T_int32(i/31) + 1))
               }
             }
         } else {
             if (ch/32 == ')') {
                 {
-                  let mtmp12 = ref_set(toks/30, inherent#Vec#Vec[T]#push__T_Token(ref_get(toks/30), Token::RParen)) in
+                  let mtmp12 = inherent#Ref#Ref[T]#set__T_Vec[Token](toks/30, inherent#Vec#Vec[T]#push__T_Token(inherent#Ref#Ref[T]#get__T_Vec[Token](toks/30), Token::RParen)) in
                   {
-                    ref_set(i/31, (ref_get(i/31) + 1))
+                    inherent#Ref#Ref[T]#set__T_int32(i/31, (inherent#Ref#Ref[T]#get__T_int32(i/31) + 1))
                   }
                 }
             } else {
                 if (ch/32 == ' ') {
                     {
-                      ref_set(i/31, (ref_get(i/31) + 1))
+                      inherent#Ref#Ref[T]#set__T_int32(i/31, (inherent#Ref#Ref[T]#get__T_int32(i/31) + 1))
                     }
                 } else {
                     {
-                      let mtmp13 = lex_atom(source/27, ref_get(i/31)) in
+                      let mtmp13 = lex_atom(source/27, inherent#Ref#Ref[T]#get__T_int32(i/31)) in
                       {
                         let x14 = mtmp13.0 in
                         let x15 = mtmp13.1 in
@@ -220,9 +252,9 @@ fn lex(source/27: string) -> Vec[Token] {
                           {
                             let tok/33 = x14 in
                             {
-                              let mtmp16 = ref_set(toks/30, inherent#Vec#Vec[T]#push__T_Token(ref_get(toks/30), tok/33)) in
+                              let mtmp16 = inherent#Ref#Ref[T]#set__T_Vec[Token](toks/30, inherent#Vec#Vec[T]#push__T_Token(inherent#Ref#Ref[T]#get__T_Vec[Token](toks/30), tok/33)) in
                               {
-                                ref_set(i/31, next/34)
+                                inherent#Ref#Ref[T]#set__T_int32(i/31, next/34)
                               }
                             }
                           }
@@ -235,33 +267,37 @@ fn lex(source/27: string) -> Vec[Token] {
       }
   } in
   {
-    ref_get(toks/30)
+    inherent#Ref#Ref[T]#get__T_Vec[Token](toks/30)
   }
 }
 
 fn env_lookup(env/35: Vec[Binding], name/36: string) -> Value {
-  let i/37 = ref((inherent#Vec#Vec[T]#len__T_Binding(env/35) - 1)) in
-  let result/38 = ref(Value::Nil) in
-  let done/39 = ref(false) in
-  let mtmp19 = while ((!ref_get(done/39)) && (ref_get(i/37) >= 0)) {
+  let i/37 = inherent#Ref#Ref[T]#new__T_int32((inherent#Vec#Vec[T]#len__T_Binding(env/35) - 1)) in
+  let result/38 = inherent#Ref#Ref[T]#new__T_Value(Value::Nil) in
+  let done/39 = inherent#Ref#Ref[T]#new__T_bool(false) in
+  let mtmp19 = while if (!inherent#Ref#Ref[T]#get__T_bool(done/39)) {
+      (inherent#Ref#Ref[T]#get__T_int32(i/37) >= 0)
+  } else {
+      false
+  } {
       {
-        let binding/40 = vec_get(env/35, ref_get(i/37)) in
+        let binding/40 = $goml_builtin_runtime$vec_get(env/35, inherent#Ref#Ref[T]#get__T_int32(i/37)) in
         if (Binding.name(binding/40) == name/36) {
             {
-              let mtmp18 = ref_set(result/38, Binding.value(binding/40)) in
+              let mtmp18 = inherent#Ref#Ref[T]#set__T_Value(result/38, Binding.value(binding/40)) in
               {
-                ref_set(done/39, true)
+                inherent#Ref#Ref[T]#set__T_bool(done/39, true)
               }
             }
         } else {
             {
-              ref_set(i/37, (ref_get(i/37) - 1))
+              inherent#Ref#Ref[T]#set__T_int32(i/37, (inherent#Ref#Ref[T]#get__T_int32(i/37) - 1))
             }
         }
       }
   } in
   {
-    ref_get(result/38)
+    inherent#Ref#Ref[T]#get__T_Value(result/38)
   }
 }
 
@@ -305,17 +341,21 @@ fn lookup(local/41: Vec[Binding], global/42: Vec[Binding], name/43: string) -> V
 
 fn parse_list(tokens/45: Vec[Token], start/46: int32) -> (Vec[SExpr], int32) {
   let acc/47 = inherent#Vec#Vec[T]#new__T_SExpr() in
-  let exprs/48 = ref(acc/47) in
-  let i/49 = ref(start/46) in
-  let done/50 = ref(false) in
-  let mtmp45 = while ((!ref_get(done/50)) && (ref_get(i/49) < inherent#Vec#Vec[T]#len__T_Token(tokens/45))) {
+  let exprs/48 = inherent#Ref#Ref[T]#new__T_Vec[SExpr](acc/47) in
+  let i/49 = inherent#Ref#Ref[T]#new__T_int32(start/46) in
+  let done/50 = inherent#Ref#Ref[T]#new__T_bool(false) in
+  let mtmp45 = while if (!inherent#Ref#Ref[T]#get__T_bool(done/50)) {
+      (inherent#Ref#Ref[T]#get__T_int32(i/49) < inherent#Vec#Vec[T]#len__T_Token(tokens/45))
+  } else {
+      false
+  } {
       {
         {
-          let mtmp24 = vec_get(tokens/45, ref_get(i/49)) in
+          let mtmp24 = $goml_builtin_runtime$vec_get(tokens/45, inherent#Ref#Ref[T]#get__T_int32(i/49)) in
           match mtmp24 {
             Token::LParen => {
               {
-                let mtmp28 = parse_expr(tokens/45, ref_get(i/49)) in
+                let mtmp28 = parse_expr(tokens/45, inherent#Ref#Ref[T]#get__T_int32(i/49)) in
                 {
                   let x29 = mtmp28.0 in
                   let x30 = mtmp28.1 in
@@ -324,9 +364,9 @@ fn parse_list(tokens/45: Vec[Token], start/46: int32) -> (Vec[SExpr], int32) {
                     {
                       let expr/51 = x29 in
                       {
-                        let mtmp31 = ref_set(exprs/48, inherent#Vec#Vec[T]#push__T_SExpr(ref_get(exprs/48), expr/51)) in
+                        let mtmp31 = inherent#Ref#Ref[T]#set__T_Vec[SExpr](exprs/48, inherent#Vec#Vec[T]#push__T_SExpr(inherent#Ref#Ref[T]#get__T_Vec[SExpr](exprs/48), expr/51)) in
                         {
-                          ref_set(i/49, next/52)
+                          inherent#Ref#Ref[T]#set__T_int32(i/49, next/52)
                         }
                       }
                     }
@@ -336,9 +376,9 @@ fn parse_list(tokens/45: Vec[Token], start/46: int32) -> (Vec[SExpr], int32) {
             },
             Token::RParen => {
               {
-                let mtmp32 = ref_set(done/50, true) in
+                let mtmp32 = inherent#Ref#Ref[T]#set__T_bool(done/50, true) in
                 {
-                  ref_set(i/49, (ref_get(i/49) + 1))
+                  inherent#Ref#Ref[T]#set__T_int32(i/49, (inherent#Ref#Ref[T]#get__T_int32(i/49) + 1))
                 }
               }
             },
@@ -346,7 +386,7 @@ fn parse_list(tokens/45: Vec[Token], start/46: int32) -> (Vec[SExpr], int32) {
               {
                 let x25 = Token::Sym._0(mtmp24) in
                 {
-                  let mtmp33 = parse_expr(tokens/45, ref_get(i/49)) in
+                  let mtmp33 = parse_expr(tokens/45, inherent#Ref#Ref[T]#get__T_int32(i/49)) in
                   {
                     let x34 = mtmp33.0 in
                     let x35 = mtmp33.1 in
@@ -355,9 +395,9 @@ fn parse_list(tokens/45: Vec[Token], start/46: int32) -> (Vec[SExpr], int32) {
                       {
                         let expr/51 = x34 in
                         {
-                          let mtmp36 = ref_set(exprs/48, inherent#Vec#Vec[T]#push__T_SExpr(ref_get(exprs/48), expr/51)) in
+                          let mtmp36 = inherent#Ref#Ref[T]#set__T_Vec[SExpr](exprs/48, inherent#Vec#Vec[T]#push__T_SExpr(inherent#Ref#Ref[T]#get__T_Vec[SExpr](exprs/48), expr/51)) in
                           {
-                            ref_set(i/49, next/52)
+                            inherent#Ref#Ref[T]#set__T_int32(i/49, next/52)
                           }
                         }
                       }
@@ -370,7 +410,7 @@ fn parse_list(tokens/45: Vec[Token], start/46: int32) -> (Vec[SExpr], int32) {
               {
                 let x26 = Token::Int._0(mtmp24) in
                 {
-                  let mtmp37 = parse_expr(tokens/45, ref_get(i/49)) in
+                  let mtmp37 = parse_expr(tokens/45, inherent#Ref#Ref[T]#get__T_int32(i/49)) in
                   {
                     let x38 = mtmp37.0 in
                     let x39 = mtmp37.1 in
@@ -379,9 +419,9 @@ fn parse_list(tokens/45: Vec[Token], start/46: int32) -> (Vec[SExpr], int32) {
                       {
                         let expr/51 = x38 in
                         {
-                          let mtmp40 = ref_set(exprs/48, inherent#Vec#Vec[T]#push__T_SExpr(ref_get(exprs/48), expr/51)) in
+                          let mtmp40 = inherent#Ref#Ref[T]#set__T_Vec[SExpr](exprs/48, inherent#Vec#Vec[T]#push__T_SExpr(inherent#Ref#Ref[T]#get__T_Vec[SExpr](exprs/48), expr/51)) in
                           {
-                            ref_set(i/49, next/52)
+                            inherent#Ref#Ref[T]#set__T_int32(i/49, next/52)
                           }
                         }
                       }
@@ -394,7 +434,7 @@ fn parse_list(tokens/45: Vec[Token], start/46: int32) -> (Vec[SExpr], int32) {
               {
                 let x27 = Token::Bool._0(mtmp24) in
                 {
-                  let mtmp41 = parse_expr(tokens/45, ref_get(i/49)) in
+                  let mtmp41 = parse_expr(tokens/45, inherent#Ref#Ref[T]#get__T_int32(i/49)) in
                   {
                     let x42 = mtmp41.0 in
                     let x43 = mtmp41.1 in
@@ -403,9 +443,9 @@ fn parse_list(tokens/45: Vec[Token], start/46: int32) -> (Vec[SExpr], int32) {
                       {
                         let expr/51 = x42 in
                         {
-                          let mtmp44 = ref_set(exprs/48, inherent#Vec#Vec[T]#push__T_SExpr(ref_get(exprs/48), expr/51)) in
+                          let mtmp44 = inherent#Ref#Ref[T]#set__T_Vec[SExpr](exprs/48, inherent#Vec#Vec[T]#push__T_SExpr(inherent#Ref#Ref[T]#get__T_Vec[SExpr](exprs/48), expr/51)) in
                           {
-                            ref_set(i/49, next/52)
+                            inherent#Ref#Ref[T]#set__T_int32(i/49, next/52)
                           }
                         }
                       }
@@ -419,13 +459,13 @@ fn parse_list(tokens/45: Vec[Token], start/46: int32) -> (Vec[SExpr], int32) {
       }
   } in
   {
-    (ref_get(exprs/48), ref_get(i/49))
+    (inherent#Ref#Ref[T]#get__T_Vec[SExpr](exprs/48), inherent#Ref#Ref[T]#get__T_int32(i/49))
   }
 }
 
 fn parse_expr(tokens/53: Vec[Token], start/54: int32) -> (SExpr, int32) {
   {
-    let mtmp46 = vec_get(tokens/53, start/54) in
+    let mtmp46 = $goml_builtin_runtime$vec_get(tokens/53, start/54) in
     match mtmp46 {
       Token::LParen => {
         {
@@ -480,12 +520,12 @@ fn parse_expr(tokens/53: Vec[Token], start/54: int32) -> (SExpr, int32) {
 }
 
 fn parse_program(tokens/60: Vec[Token]) -> Vec[SExpr] {
-  let i/61 = ref(0) in
+  let i/61 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let acc/62 = inherent#Vec#Vec[T]#new__T_SExpr() in
-  let exprs/63 = ref(acc/62) in
-  let mtmp57 = while (ref_get(i/61) < inherent#Vec#Vec[T]#len__T_Token(tokens/60)) {
+  let exprs/63 = inherent#Ref#Ref[T]#new__T_Vec[SExpr](acc/62) in
+  let mtmp57 = while (inherent#Ref#Ref[T]#get__T_int32(i/61) < inherent#Vec#Vec[T]#len__T_Token(tokens/60)) {
       {
-        let mtmp53 = parse_expr(tokens/60, ref_get(i/61)) in
+        let mtmp53 = parse_expr(tokens/60, inherent#Ref#Ref[T]#get__T_int32(i/61)) in
         {
           let x54 = mtmp53.0 in
           let x55 = mtmp53.1 in
@@ -494,9 +534,9 @@ fn parse_program(tokens/60: Vec[Token]) -> Vec[SExpr] {
             {
               let expr/64 = x54 in
               {
-                let mtmp56 = ref_set(exprs/63, inherent#Vec#Vec[T]#push__T_SExpr(ref_get(exprs/63), expr/64)) in
+                let mtmp56 = inherent#Ref#Ref[T]#set__T_Vec[SExpr](exprs/63, inherent#Vec#Vec[T]#push__T_SExpr(inherent#Ref#Ref[T]#get__T_Vec[SExpr](exprs/63), expr/64)) in
                 {
-                  ref_set(i/61, next/65)
+                  inherent#Ref#Ref[T]#set__T_int32(i/61, next/65)
                 }
               }
             }
@@ -505,7 +545,7 @@ fn parse_program(tokens/60: Vec[Token]) -> Vec[SExpr] {
       }
   } in
   {
-    ref_get(exprs/63)
+    inherent#Ref#Ref[T]#get__T_Vec[SExpr](exprs/63)
   }
 }
 
@@ -516,7 +556,7 @@ fn value_to_string(value/66: Value) -> string {
         let x58 = Value::Int._0(value/66) in
         {
           let n/67 = x58 in
-          int32_to_string(n/67)
+          $goml_builtin_runtime$int32_to_string(n/67)
         }
       }
     },
@@ -525,7 +565,7 @@ fn value_to_string(value/66: Value) -> string {
         let x59 = Value::Bool._0(value/66) in
         {
           let b/68 = x59 in
-          bool_to_string(b/68)
+          $goml_builtin_runtime$bool_to_string(b/68)
         }
       }
     },
@@ -598,7 +638,7 @@ fn eval(expr/72: SExpr, local/73: Vec[Binding], global/74: Ref[Vec[Binding]]) ->
         let x66 = SExpr::Sym._0(expr/72) in
         {
           let name/77 = x66 in
-          lookup(local/73, ref_get(global/74), name/77)
+          lookup(local/73, inherent#Ref#Ref[T]#get__T_Vec[Binding](global/74), name/77)
         }
       }
     },
@@ -621,7 +661,7 @@ fn eval_list(items/79: Vec[SExpr], local/80: Vec[Binding], global/81: Ref[Vec[Bi
       }
   } else {
       {
-        let head/82 = vec_get(items/79, 0) in
+        let head/82 = $goml_builtin_runtime$vec_get(items/79, 0) in
         match head/82 {
           SExpr::Int(x68) => {
             {
@@ -677,7 +717,7 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
         if (inherent#Vec#Vec[T]#len__T_SExpr(items/87) == 3) {
             {
               {
-                let mtmp72 = vec_get(items/87, 1) in
+                let mtmp72 = $goml_builtin_runtime$vec_get(items/87, 1) in
                 match mtmp72 {
                   SExpr::Int(x73) => {
                     {
@@ -697,10 +737,10 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
                       {
                         let var/90 = x75 in
                         {
-                          let value/91 = eval(vec_get(items/87, 2), local/88, global/89) in
-                          let env/92 = ref_get(global/89) in
+                          let value/91 = eval($goml_builtin_runtime$vec_get(items/87, 2), local/88, global/89) in
+                          let env/92 = inherent#Ref#Ref[T]#get__T_Vec[Binding](global/89) in
                           let updated/93 = inherent#Vec#Vec[T]#push__T_Binding(env/92, Binding { name: var/90, value: value/91 }) in
-                          let mtmp77 = ref_set(global/89, updated/93) in
+                          let mtmp77 = inherent#Ref#Ref[T]#set__T_Vec[Binding](global/89, updated/93) in
                           {
                             value/91
                           }
@@ -728,14 +768,14 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
       {
         if (inherent#Vec#Vec[T]#len__T_SExpr(items/87) == 4) {
             {
-              let cond/94 = eval(vec_get(items/87, 1), local/88, global/89) in
+              let cond/94 = eval($goml_builtin_runtime$vec_get(items/87, 1), local/88, global/89) in
               if truthy(cond/94) {
                   {
-                    eval(vec_get(items/87, 2), local/88, global/89)
+                    eval($goml_builtin_runtime$vec_get(items/87, 2), local/88, global/89)
                   }
               } else {
                   {
-                    eval(vec_get(items/87, 3), local/88, global/89)
+                    eval($goml_builtin_runtime$vec_get(items/87, 3), local/88, global/89)
                   }
               }
             }
@@ -751,7 +791,7 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
         if (inherent#Vec#Vec[T]#len__T_SExpr(items/87) == 3) {
             {
               {
-                let mtmp78 = vec_get(items/87, 1) in
+                let mtmp78 = $goml_builtin_runtime$vec_get(items/87, 1) in
                 match mtmp78 {
                   SExpr::Int(x79) => {
                     {
@@ -778,7 +818,7 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
                         let params_exprs/95 = x82 in
                         {
                           let params/96 = params_from_sexprs(params_exprs/95) in
-                          let body/97 = vec_get(items/87, 2) in
+                          let body/97 = $goml_builtin_runtime$vec_get(items/87, 2) in
                           Value::Func(Lambda { params: params/96, body: body/97, env: local/88, global: global/89 })
                         }
                       }
@@ -818,41 +858,41 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
 }
 
 fn eval_begin(items/100: Vec[SExpr], start/101: int32, local/102: Vec[Binding], global/103: Ref[Vec[Binding]]) -> Value {
-  let i/104 = ref(start/101) in
-  let last/105 = ref(Value::Nil) in
-  let mtmp84 = while (ref_get(i/104) < inherent#Vec#Vec[T]#len__T_SExpr(items/100)) {
+  let i/104 = inherent#Ref#Ref[T]#new__T_int32(start/101) in
+  let last/105 = inherent#Ref#Ref[T]#new__T_Value(Value::Nil) in
+  let mtmp84 = while (inherent#Ref#Ref[T]#get__T_int32(i/104) < inherent#Vec#Vec[T]#len__T_SExpr(items/100)) {
       {
-        let v/106 = eval(vec_get(items/100, ref_get(i/104)), local/102, global/103) in
-        let mtmp83 = ref_set(last/105, v/106) in
+        let v/106 = eval($goml_builtin_runtime$vec_get(items/100, inherent#Ref#Ref[T]#get__T_int32(i/104)), local/102, global/103) in
+        let mtmp83 = inherent#Ref#Ref[T]#set__T_Value(last/105, v/106) in
         {
-          ref_set(i/104, (ref_get(i/104) + 1))
+          inherent#Ref#Ref[T]#set__T_int32(i/104, (inherent#Ref#Ref[T]#get__T_int32(i/104) + 1))
         }
       }
   } in
   {
-    ref_get(last/105)
+    inherent#Ref#Ref[T]#get__T_Value(last/105)
   }
 }
 
 fn params_from_sexprs(items/107: Vec[SExpr]) -> Vec[string] {
-  let i/108 = ref(0) in
+  let i/108 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let acc/109 = inherent#Vec#Vec[T]#new__T_string() in
-  let params/110 = ref(acc/109) in
-  let mtmp91 = while (ref_get(i/108) < inherent#Vec#Vec[T]#len__T_SExpr(items/107)) {
+  let params/110 = inherent#Ref#Ref[T]#new__T_Vec[string](acc/109) in
+  let mtmp91 = while (inherent#Ref#Ref[T]#get__T_int32(i/108) < inherent#Vec#Vec[T]#len__T_SExpr(items/107)) {
       {
         {
-          let mtmp85 = vec_get(items/107, ref_get(i/108)) in
+          let mtmp85 = $goml_builtin_runtime$vec_get(items/107, inherent#Ref#Ref[T]#get__T_int32(i/108)) in
           match mtmp85 {
             SExpr::Int(x86) => {
               {
                 let x86 = SExpr::Int._0(mtmp85) in
-                ref_set(i/108, (ref_get(i/108) + 1))
+                inherent#Ref#Ref[T]#set__T_int32(i/108, (inherent#Ref#Ref[T]#get__T_int32(i/108) + 1))
               }
             },
             SExpr::Bool(x87) => {
               {
                 let x87 = SExpr::Bool._0(mtmp85) in
-                ref_set(i/108, (ref_get(i/108) + 1))
+                inherent#Ref#Ref[T]#set__T_int32(i/108, (inherent#Ref#Ref[T]#get__T_int32(i/108) + 1))
               }
             },
             SExpr::Sym(x88) => {
@@ -861,9 +901,9 @@ fn params_from_sexprs(items/107: Vec[SExpr]) -> Vec[string] {
                 {
                   let name/111 = x88 in
                   {
-                    let mtmp90 = ref_set(params/110, inherent#Vec#Vec[T]#push__T_string(ref_get(params/110), name/111)) in
+                    let mtmp90 = inherent#Ref#Ref[T]#set__T_Vec[string](params/110, inherent#Vec#Vec[T]#push__T_string(inherent#Ref#Ref[T]#get__T_Vec[string](params/110), name/111)) in
                     {
-                      ref_set(i/108, (ref_get(i/108) + 1))
+                      inherent#Ref#Ref[T]#set__T_int32(i/108, (inherent#Ref#Ref[T]#get__T_int32(i/108) + 1))
                     }
                   }
                 }
@@ -872,7 +912,7 @@ fn params_from_sexprs(items/107: Vec[SExpr]) -> Vec[string] {
             SExpr::List(x89) => {
               {
                 let x89 = SExpr::List._0(mtmp85) in
-                ref_set(i/108, (ref_get(i/108) + 1))
+                inherent#Ref#Ref[T]#set__T_int32(i/108, (inherent#Ref#Ref[T]#get__T_int32(i/108) + 1))
               }
             },
           }
@@ -880,25 +920,25 @@ fn params_from_sexprs(items/107: Vec[SExpr]) -> Vec[string] {
       }
   } in
   {
-    ref_get(params/110)
+    inherent#Ref#Ref[T]#get__T_Vec[string](params/110)
   }
 }
 
 fn eval_args(items/112: Vec[SExpr], start/113: int32, local/114: Vec[Binding], global/115: Ref[Vec[Binding]]) -> Vec[Value] {
-  let i/116 = ref(start/113) in
+  let i/116 = inherent#Ref#Ref[T]#new__T_int32(start/113) in
   let acc/117 = inherent#Vec#Vec[T]#new__T_Value() in
-  let args/118 = ref(acc/117) in
-  let mtmp93 = while (ref_get(i/116) < inherent#Vec#Vec[T]#len__T_SExpr(items/112)) {
+  let args/118 = inherent#Ref#Ref[T]#new__T_Vec[Value](acc/117) in
+  let mtmp93 = while (inherent#Ref#Ref[T]#get__T_int32(i/116) < inherent#Vec#Vec[T]#len__T_SExpr(items/112)) {
       {
-        let v/119 = eval(vec_get(items/112, ref_get(i/116)), local/114, global/115) in
-        let mtmp92 = ref_set(args/118, inherent#Vec#Vec[T]#push__T_Value(ref_get(args/118), v/119)) in
+        let v/119 = eval($goml_builtin_runtime$vec_get(items/112, inherent#Ref#Ref[T]#get__T_int32(i/116)), local/114, global/115) in
+        let mtmp92 = inherent#Ref#Ref[T]#set__T_Vec[Value](args/118, inherent#Vec#Vec[T]#push__T_Value(inherent#Ref#Ref[T]#get__T_Vec[Value](args/118), v/119)) in
         {
-          ref_set(i/116, (ref_get(i/116) + 1))
+          inherent#Ref#Ref[T]#set__T_int32(i/116, (inherent#Ref#Ref[T]#get__T_int32(i/116) + 1))
         }
       }
   } in
   {
-    ref_get(args/118)
+    inherent#Ref#Ref[T]#get__T_Vec[Value](args/118)
   }
 }
 
@@ -908,7 +948,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
       if (inherent#Vec#Vec[T]#len__T_Value(args/121) == 2) {
           {
             {
-              let mtmp94 = (vec_get(args/121, 0), vec_get(args/121, 1)) in
+              let mtmp94 = ($goml_builtin_runtime$vec_get(args/121, 0), $goml_builtin_runtime$vec_get(args/121, 1)) in
               {
                 let x95 = mtmp94.0 in
                 let x96 = mtmp94.1 in
@@ -1002,12 +1042,12 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
     },
     "+" => {
       {
-        let i/126 = ref(0) in
-        let acc/127 = ref(0) in
-        let mtmp111 = while (ref_get(i/126) < inherent#Vec#Vec[T]#len__T_Value(args/121)) {
+        let i/126 = inherent#Ref#Ref[T]#new__T_int32(0) in
+        let acc/127 = inherent#Ref#Ref[T]#new__T_int32(0) in
+        let mtmp111 = while (inherent#Ref#Ref[T]#get__T_int32(i/126) < inherent#Vec#Vec[T]#len__T_Value(args/121)) {
             {
               {
-                let mtmp106 = vec_get(args/121, ref_get(i/126)) in
+                let mtmp106 = $goml_builtin_runtime$vec_get(args/121, inherent#Ref#Ref[T]#get__T_int32(i/126)) in
                 match mtmp106 {
                   Value::Int(x107) => {
                     {
@@ -1015,9 +1055,9 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
                       {
                         let n/128 = x107 in
                         {
-                          let mtmp110 = ref_set(acc/127, (ref_get(acc/127) + n/128)) in
+                          let mtmp110 = inherent#Ref#Ref[T]#set__T_int32(acc/127, (inherent#Ref#Ref[T]#get__T_int32(acc/127) + n/128)) in
                           {
-                            ref_set(i/126, (ref_get(i/126) + 1))
+                            inherent#Ref#Ref[T]#set__T_int32(i/126, (inherent#Ref#Ref[T]#get__T_int32(i/126) + 1))
                           }
                         }
                       }
@@ -1026,35 +1066,35 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
                   Value::Bool(x108) => {
                     {
                       let x108 = Value::Bool._0(mtmp106) in
-                      ref_set(i/126, (ref_get(i/126) + 1))
+                      inherent#Ref#Ref[T]#set__T_int32(i/126, (inherent#Ref#Ref[T]#get__T_int32(i/126) + 1))
                     }
                   },
                   Value::Func(x109) => {
                     {
                       let x109 = Value::Func._0(mtmp106) in
-                      ref_set(i/126, (ref_get(i/126) + 1))
+                      inherent#Ref#Ref[T]#set__T_int32(i/126, (inherent#Ref#Ref[T]#get__T_int32(i/126) + 1))
                     }
                   },
                   Value::Nil => {
-                    ref_set(i/126, (ref_get(i/126) + 1))
+                    inherent#Ref#Ref[T]#set__T_int32(i/126, (inherent#Ref#Ref[T]#get__T_int32(i/126) + 1))
                   },
                 }
               }
             }
         } in
         {
-          Value::Int(ref_get(acc/127))
+          Value::Int(inherent#Ref#Ref[T]#get__T_int32(acc/127))
         }
       }
     },
     "*" => {
       {
-        let i/129 = ref(0) in
-        let acc/130 = ref(1) in
-        let mtmp117 = while (ref_get(i/129) < inherent#Vec#Vec[T]#len__T_Value(args/121)) {
+        let i/129 = inherent#Ref#Ref[T]#new__T_int32(0) in
+        let acc/130 = inherent#Ref#Ref[T]#new__T_int32(1) in
+        let mtmp117 = while (inherent#Ref#Ref[T]#get__T_int32(i/129) < inherent#Vec#Vec[T]#len__T_Value(args/121)) {
             {
               {
-                let mtmp112 = vec_get(args/121, ref_get(i/129)) in
+                let mtmp112 = $goml_builtin_runtime$vec_get(args/121, inherent#Ref#Ref[T]#get__T_int32(i/129)) in
                 match mtmp112 {
                   Value::Int(x113) => {
                     {
@@ -1062,9 +1102,9 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
                       {
                         let n/131 = x113 in
                         {
-                          let mtmp116 = ref_set(acc/130, (ref_get(acc/130) * n/131)) in
+                          let mtmp116 = inherent#Ref#Ref[T]#set__T_int32(acc/130, (inherent#Ref#Ref[T]#get__T_int32(acc/130) * n/131)) in
                           {
-                            ref_set(i/129, (ref_get(i/129) + 1))
+                            inherent#Ref#Ref[T]#set__T_int32(i/129, (inherent#Ref#Ref[T]#get__T_int32(i/129) + 1))
                           }
                         }
                       }
@@ -1073,24 +1113,24 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
                   Value::Bool(x114) => {
                     {
                       let x114 = Value::Bool._0(mtmp112) in
-                      ref_set(i/129, (ref_get(i/129) + 1))
+                      inherent#Ref#Ref[T]#set__T_int32(i/129, (inherent#Ref#Ref[T]#get__T_int32(i/129) + 1))
                     }
                   },
                   Value::Func(x115) => {
                     {
                       let x115 = Value::Func._0(mtmp112) in
-                      ref_set(i/129, (ref_get(i/129) + 1))
+                      inherent#Ref#Ref[T]#set__T_int32(i/129, (inherent#Ref#Ref[T]#get__T_int32(i/129) + 1))
                     }
                   },
                   Value::Nil => {
-                    ref_set(i/129, (ref_get(i/129) + 1))
+                    inherent#Ref#Ref[T]#set__T_int32(i/129, (inherent#Ref#Ref[T]#get__T_int32(i/129) + 1))
                   },
                 }
               }
             }
         } in
         {
-          Value::Int(ref_get(acc/130))
+          Value::Int(inherent#Ref#Ref[T]#get__T_int32(acc/130))
         }
       }
     },
@@ -1100,7 +1140,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
         match mtmp118 {
           1 => {
             {
-              let mtmp119 = vec_get(args/121, 0) in
+              let mtmp119 = $goml_builtin_runtime$vec_get(args/121, 0) in
               match mtmp119 {
                 Value::Int(x120) => {
                   {
@@ -1131,7 +1171,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
           },
           2 => {
             {
-              let mtmp123 = (vec_get(args/121, 0), vec_get(args/121, 1)) in
+              let mtmp123 = ($goml_builtin_runtime$vec_get(args/121, 0), $goml_builtin_runtime$vec_get(args/121, 1)) in
               {
                 let x124 = mtmp123.0 in
                 let x125 = mtmp123.1 in
@@ -1197,7 +1237,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
       if (inherent#Vec#Vec[T]#len__T_Value(args/121) == 2) {
           {
             {
-              let mtmp132 = (vec_get(args/121, 0), vec_get(args/121, 1)) in
+              let mtmp132 = ($goml_builtin_runtime$vec_get(args/121, 0), $goml_builtin_runtime$vec_get(args/121, 1)) in
               {
                 let x133 = mtmp132.0 in
                 let x134 = mtmp132.1 in
@@ -1295,33 +1335,37 @@ fn apply(func/137: Value, args/138: Vec[Value], global/139: Ref[Vec[Binding]]) -
 }
 
 fn apply_lambda(lambda/141: Lambda, args/142: Vec[Value]) -> Value {
-  let env/143 = ref(Lambda.env(lambda/141)) in
-  let i/144 = ref(0) in
-  let mtmp145 = while ((ref_get(i/144) < inherent#Vec#Vec[T]#len__T_string(Lambda.params(lambda/141))) && (ref_get(i/144) < inherent#Vec#Vec[T]#len__T_Value(args/142))) {
+  let env/143 = inherent#Ref#Ref[T]#new__T_Vec[Binding](Lambda.env(lambda/141)) in
+  let i/144 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let mtmp145 = while if (inherent#Ref#Ref[T]#get__T_int32(i/144) < inherent#Vec#Vec[T]#len__T_string(Lambda.params(lambda/141))) {
+      (inherent#Ref#Ref[T]#get__T_int32(i/144) < inherent#Vec#Vec[T]#len__T_Value(args/142))
+  } else {
+      false
+  } {
       {
-        let name/145 = vec_get(Lambda.params(lambda/141), ref_get(i/144)) in
-        let value/146 = vec_get(args/142, ref_get(i/144)) in
-        let updated/147 = inherent#Vec#Vec[T]#push__T_Binding(ref_get(env/143), Binding { name: name/145, value: value/146 }) in
-        let mtmp144 = ref_set(env/143, updated/147) in
+        let name/145 = $goml_builtin_runtime$vec_get(Lambda.params(lambda/141), inherent#Ref#Ref[T]#get__T_int32(i/144)) in
+        let value/146 = $goml_builtin_runtime$vec_get(args/142, inherent#Ref#Ref[T]#get__T_int32(i/144)) in
+        let updated/147 = inherent#Vec#Vec[T]#push__T_Binding(inherent#Ref#Ref[T]#get__T_Vec[Binding](env/143), Binding { name: name/145, value: value/146 }) in
+        let mtmp144 = inherent#Ref#Ref[T]#set__T_Vec[Binding](env/143, updated/147) in
         {
-          ref_set(i/144, (ref_get(i/144) + 1))
+          inherent#Ref#Ref[T]#set__T_int32(i/144, (inherent#Ref#Ref[T]#get__T_int32(i/144) + 1))
         }
       }
   } in
   {
-    eval(Lambda.body(lambda/141), ref_get(env/143), Lambda.global(lambda/141))
+    eval(Lambda.body(lambda/141), inherent#Ref#Ref[T]#get__T_Vec[Binding](env/143), Lambda.global(lambda/141))
   }
 }
 
 fn main() -> unit {
-  let global/148 = ref(inherent#Vec#Vec[T]#new__T_Binding()) in
+  let global/148 = inherent#Ref#Ref[T]#new__T_Vec[Binding](inherent#Vec#Vec[T]#new__T_Binding()) in
   let program/149 = "(begin (define fact (lambda (n) (if (= n 0) 1 (* n (fact (- n 1)))))) (define add3 (lambda (a b c) (+ a (+ b c)))) (fact 6))" in
   let exprs/150 = parse_program(lex(program/149)) in
-  let result/151 = eval(vec_get(exprs/150, 0), inherent#Vec#Vec[T]#new__T_Binding(), global/148) in
+  let result/151 = eval($goml_builtin_runtime$vec_get(exprs/150, 0), inherent#Vec#Vec[T]#new__T_Binding(), global/148) in
   let mtmp146 = println__T_string(value_to_string(result/151)) in
   {
     let exprs2/152 = parse_program(lex("(add3 10 20 30)")) in
-    let result2/153 = eval(vec_get(exprs2/152, 0), inherent#Vec#Vec[T]#new__T_Binding(), global/148) in
+    let result2/153 = eval($goml_builtin_runtime$vec_get(exprs2/152, 0), inherent#Vec#Vec[T]#new__T_Binding(), global/148) in
     let mtmp147 = println__T_string(value_to_string(result2/153)) in
     {
       ()
@@ -1329,28 +1373,104 @@ fn main() -> unit {
   }
 }
 
+fn inherent#Ref#Ref[T]#new__T_int32(value/93: int32) -> Ref[int32] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#new__T_bool(value/93: bool) -> Ref[bool] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#get__T_bool(self/94: Ref[bool]) -> bool {
+  ref_get(self/94)
+}
+
+fn inherent#Ref#Ref[T]#get__T_int32(self/94: Ref[int32]) -> int32 {
+  ref_get(self/94)
+}
+
+fn inherent#Ref#Ref[T]#set__T_bool(self/95: Ref[bool], value/96: bool) -> unit {
+  ref_set(self/95, value/96)
+}
+
+fn inherent#Ref#Ref[T]#set__T_int32(self/95: Ref[int32], value/96: int32) -> unit {
+  ref_set(self/95, value/96)
+}
+
+fn inherent#Ref#Ref[T]#new__T_string(value/93: string) -> Ref[string] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#get__T_string(self/94: Ref[string]) -> string {
+  ref_get(self/94)
+}
+
+fn inherent#Ref#Ref[T]#set__T_string(self/95: Ref[string], value/96: string) -> unit {
+  ref_set(self/95, value/96)
+}
+
 fn inherent#Vec#Vec[T]#new__T_Token() -> Vec[Token] {
   vec_new()
+}
+
+fn inherent#Ref#Ref[T]#new__T_Vec[Token](value/93: Vec[Token]) -> Ref[Vec[Token]] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#get__T_Vec[Token](self/94: Ref[Vec[Token]]) -> Vec[Token] {
+  ref_get(self/94)
 }
 
 fn inherent#Vec#Vec[T]#push__T_Token(self/66: Vec[Token], elem/67: Token) -> Vec[Token] {
   vec_push(self/66, elem/67)
 }
 
+fn inherent#Ref#Ref[T]#set__T_Vec[Token](self/95: Ref[Vec[Token]], value/96: Vec[Token]) -> unit {
+  ref_set(self/95, value/96)
+}
+
 fn inherent#Vec#Vec[T]#len__T_Binding(self/73: Vec[Binding]) -> int32 {
   vec_len(self/73)
+}
+
+fn inherent#Ref#Ref[T]#new__T_Value(value/93: Value) -> Ref[Value] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#set__T_Value(self/95: Ref[Value], value/96: Value) -> unit {
+  ref_set(self/95, value/96)
+}
+
+fn inherent#Ref#Ref[T]#get__T_Value(self/94: Ref[Value]) -> Value {
+  ref_get(self/94)
 }
 
 fn inherent#Vec#Vec[T]#new__T_SExpr() -> Vec[SExpr] {
   vec_new()
 }
 
+fn inherent#Ref#Ref[T]#new__T_Vec[SExpr](value/93: Vec[SExpr]) -> Ref[Vec[SExpr]] {
+  ref(value/93)
+}
+
 fn inherent#Vec#Vec[T]#len__T_Token(self/73: Vec[Token]) -> int32 {
   vec_len(self/73)
 }
 
+fn inherent#Ref#Ref[T]#get__T_Vec[SExpr](self/94: Ref[Vec[SExpr]]) -> Vec[SExpr] {
+  ref_get(self/94)
+}
+
 fn inherent#Vec#Vec[T]#push__T_SExpr(self/66: Vec[SExpr], elem/67: SExpr) -> Vec[SExpr] {
   vec_push(self/66, elem/67)
+}
+
+fn inherent#Ref#Ref[T]#set__T_Vec[SExpr](self/95: Ref[Vec[SExpr]], value/96: Vec[SExpr]) -> unit {
+  ref_set(self/95, value/96)
+}
+
+fn inherent#Ref#Ref[T]#get__T_Vec[Binding](self/94: Ref[Vec[Binding]]) -> Vec[Binding] {
+  ref_get(self/94)
 }
 
 fn inherent#Vec#Vec[T]#len__T_SExpr(self/73: Vec[SExpr]) -> int32 {
@@ -1361,24 +1481,56 @@ fn inherent#Vec#Vec[T]#push__T_Binding(self/66: Vec[Binding], elem/67: Binding) 
   vec_push(self/66, elem/67)
 }
 
+fn inherent#Ref#Ref[T]#set__T_Vec[Binding](self/95: Ref[Vec[Binding]], value/96: Vec[Binding]) -> unit {
+  ref_set(self/95, value/96)
+}
+
 fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
   vec_new()
+}
+
+fn inherent#Ref#Ref[T]#new__T_Vec[string](value/93: Vec[string]) -> Ref[Vec[string]] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#get__T_Vec[string](self/94: Ref[Vec[string]]) -> Vec[string] {
+  ref_get(self/94)
 }
 
 fn inherent#Vec#Vec[T]#push__T_string(self/66: Vec[string], elem/67: string) -> Vec[string] {
   vec_push(self/66, elem/67)
 }
 
+fn inherent#Ref#Ref[T]#set__T_Vec[string](self/95: Ref[Vec[string]], value/96: Vec[string]) -> unit {
+  ref_set(self/95, value/96)
+}
+
 fn inherent#Vec#Vec[T]#new__T_Value() -> Vec[Value] {
   vec_new()
+}
+
+fn inherent#Ref#Ref[T]#new__T_Vec[Value](value/93: Vec[Value]) -> Ref[Vec[Value]] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#get__T_Vec[Value](self/94: Ref[Vec[Value]]) -> Vec[Value] {
+  ref_get(self/94)
 }
 
 fn inherent#Vec#Vec[T]#push__T_Value(self/66: Vec[Value], elem/67: Value) -> Vec[Value] {
   vec_push(self/66, elem/67)
 }
 
+fn inherent#Ref#Ref[T]#set__T_Vec[Value](self/95: Ref[Vec[Value]], value/96: Vec[Value]) -> unit {
+  ref_set(self/95, value/96)
+}
+
 fn inherent#Vec#Vec[T]#len__T_Value(self/73: Vec[Value]) -> int32 {
   vec_len(self/73)
+}
+
+fn inherent#Ref#Ref[T]#new__T_Vec[Binding](value/93: Vec[Binding]) -> Ref[Vec[Binding]] {
+  ref(value/93)
 }
 
 fn inherent#Vec#Vec[T]#len__T_string(self/73: Vec[string]) -> int32 {

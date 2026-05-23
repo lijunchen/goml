@@ -2,7 +2,8 @@ use crate::common::{self, Constructor, Prim};
 use crate::core::{self, Ty};
 use crate::env::{EnumDef, GlobalTypeEnv, StructDef};
 use crate::names::{
-    parse_inherent_method_fn_name, parse_trait_impl_fn_name, trait_impl_fn_name, ty_compact,
+    builtin_runtime_call, parse_inherent_method_fn_name, parse_trait_impl_fn_name,
+    trait_impl_fn_name, ty_compact,
 };
 use crate::tast::{self, TastIdent};
 use indexmap::{IndexMap, IndexSet};
@@ -822,7 +823,7 @@ impl Ctx {
             let Some(new_ty) = new_subst.get(param) else {
                 continue;
             };
-            if ty_contains_proper_subterm(new_ty, old_ty) {
+            if ty_contains_recursive_growth(new_ty, old_ty) {
                 return Some(format!(
                     "Infinite monomorphization detected for generic function {}: recursive specialization grows type parameter {} from {} to {}",
                     name,
@@ -835,7 +836,7 @@ impl Ctx {
 
         for (param, new_ty) in new_subst.iter() {
             for old_ty in active_subst.values() {
-                if ty_contains_proper_subterm(new_ty, old_ty) {
+                if ty_contains_recursive_growth(new_ty, old_ty) {
                     return Some(format!(
                         "Infinite monomorphization detected for generic function {}: recursive specialization grows type parameter {} from {} to {}",
                         name,
@@ -921,6 +922,24 @@ fn ty_contains_proper_subterm(ty: &Ty, needle: &Ty) -> bool {
                 || ret_ty.as_ref() == needle
                 || ty_contains_proper_subterm(ret_ty, needle)
         }
+        _ => false,
+    }
+}
+
+fn ty_contains_recursive_growth(ty: &Ty, needle: &Ty) -> bool {
+    ty_outer_constructor_matches(ty, needle) && ty_contains_proper_subterm(ty, needle)
+}
+
+fn ty_outer_constructor_matches(left: &Ty, right: &Ty) -> bool {
+    match (left, right) {
+        (Ty::TTuple { .. }, Ty::TTuple { .. })
+        | (Ty::TArray { .. }, Ty::TArray { .. })
+        | (Ty::TSlice { .. }, Ty::TSlice { .. })
+        | (Ty::TVec { .. }, Ty::TVec { .. })
+        | (Ty::TRef { .. }, Ty::TRef { .. })
+        | (Ty::THashMap { .. }, Ty::THashMap { .. })
+        | (Ty::TFunc { .. }, Ty::TFunc { .. }) => true,
+        (Ty::TApp { ty: left, .. }, Ty::TApp { ty: right, .. }) => left == right,
         _ => false,
     }
 }
@@ -1534,7 +1553,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                     let arg_ty = arg.get_ty();
                     MonoExpr::ECall {
                         func: Box::new(MonoExpr::EVar {
-                            name: func_name.to_string(),
+                            name: builtin_runtime_call(func_name),
                             ty: Ty::TFunc {
                                 params: vec![arg_ty],
                                 ret_ty: Box::new(ret_ty.clone()),
@@ -1701,6 +1720,7 @@ struct TypeMono<'a> {
     struct_base: IndexMap<TastIdent, StructDef>,
     fn_renames: IndexMap<String, String>,
     active_instances: Vec<(String, Vec<Ty>)>,
+    specialized_type_args: IndexMap<String, (Ty, Vec<Ty>)>,
     error: Option<String>,
     used_names: IndexSet<String>,
 }
@@ -1716,6 +1736,7 @@ impl<'a> TypeMono<'a> {
             struct_base,
             fn_renames: IndexMap::new(),
             active_instances: Vec::new(),
+            specialized_type_args: IndexMap::new(),
             error: None,
             used_names,
         }
@@ -1723,6 +1744,11 @@ impl<'a> TypeMono<'a> {
 
     fn ensure_instance(&mut self, name: &str, args: &[Ty]) -> TastIdent {
         if self.error.is_some() {
+            return TastIdent::new(name);
+        }
+        let raw_args = args.to_vec();
+        if let Some(message) = self.recursive_type_specialization_error(name, &raw_args) {
+            self.error = Some(message);
             return TastIdent::new(name);
         }
         let collapsed_args: Vec<Ty> = args.iter().map(|a| self.collapse_type_apps(a)).collect();
@@ -1760,8 +1786,18 @@ impl<'a> TypeMono<'a> {
         self.map.insert(key.clone(), new_name.clone());
 
         let ident = TastIdent::new(name);
-        self.active_instances
-            .push((name.to_string(), collapsed_args.clone()));
+        let base_ty = if self.enum_base.contains_key(&ident) {
+            Ty::TEnum {
+                name: name.to_string(),
+            }
+        } else {
+            Ty::TStruct {
+                name: name.to_string(),
+            }
+        };
+        self.specialized_type_args
+            .insert(new_name.0.clone(), (base_ty, raw_args.clone()));
+        self.active_instances.push((name.to_string(), raw_args));
 
         if let Some(generic_def) = self.enum_base.get(&ident) {
             let mut subst: IndexMap<String, Ty> = IndexMap::new();
@@ -1838,7 +1874,9 @@ impl<'a> TypeMono<'a> {
                 continue;
             }
             for (index, (old_ty, new_ty)) in active_args.iter().zip(args.iter()).enumerate() {
-                if !ty_contains_proper_subterm(new_ty, old_ty) {
+                let old_ty = self.expand_specialized_type_aliases(old_ty);
+                let new_ty = self.expand_specialized_type_aliases(new_ty);
+                if !ty_contains_recursive_growth(&new_ty, &old_ty) {
                     continue;
                 }
                 let param = self
@@ -1848,12 +1886,79 @@ impl<'a> TypeMono<'a> {
                     "Infinite monomorphization detected for generic type {}: recursive specialization grows type parameter {} from {} to {}",
                     name,
                     param,
-                    format_ty_for_mono_diag(old_ty),
-                    format_ty_for_mono_diag(new_ty),
+                    format_ty_for_mono_diag(&old_ty),
+                    format_ty_for_mono_diag(&new_ty),
                 ));
             }
         }
         None
+    }
+
+    fn expand_specialized_type_aliases(&self, ty: &Ty) -> Ty {
+        self.expand_specialized_type_aliases_inner(ty, &mut IndexSet::new())
+    }
+
+    fn expand_specialized_type_aliases_from(&self, ty: &Ty, seen: &IndexSet<String>) -> Ty {
+        self.expand_specialized_type_aliases_inner(ty, &mut seen.clone())
+    }
+
+    fn expand_specialized_type_aliases_inner(&self, ty: &Ty, seen: &mut IndexSet<String>) -> Ty {
+        match ty {
+            Ty::TEnum { name } | Ty::TStruct { name } => {
+                let mut next_seen = seen.clone();
+                if !next_seen.insert(name.clone()) {
+                    return ty.clone();
+                }
+                let Some((base, args)) = self.specialized_type_args.get(name) else {
+                    return ty.clone();
+                };
+                Ty::TApp {
+                    ty: Box::new(self.expand_specialized_type_aliases_inner(base, &mut next_seen)),
+                    args: args
+                        .iter()
+                        .map(|arg| self.expand_specialized_type_aliases_from(arg, &next_seen))
+                        .collect(),
+                }
+            }
+            Ty::TApp { ty, args } => Ty::TApp {
+                ty: Box::new(self.expand_specialized_type_aliases_from(ty, seen)),
+                args: args
+                    .iter()
+                    .map(|arg| self.expand_specialized_type_aliases_from(arg, seen))
+                    .collect(),
+            },
+            Ty::TTuple { typs } => Ty::TTuple {
+                typs: typs
+                    .iter()
+                    .map(|ty| self.expand_specialized_type_aliases_from(ty, seen))
+                    .collect(),
+            },
+            Ty::TFunc { params, ret_ty } => Ty::TFunc {
+                params: params
+                    .iter()
+                    .map(|ty| self.expand_specialized_type_aliases_from(ty, seen))
+                    .collect(),
+                ret_ty: Box::new(self.expand_specialized_type_aliases_from(ret_ty, seen)),
+            },
+            Ty::TArray { len, elem } => Ty::TArray {
+                len: *len,
+                elem: Box::new(self.expand_specialized_type_aliases_from(elem, seen)),
+            },
+            Ty::TSlice { elem } => Ty::TSlice {
+                elem: Box::new(self.expand_specialized_type_aliases_from(elem, seen)),
+            },
+            Ty::TRef { elem } => Ty::TRef {
+                elem: Box::new(self.expand_specialized_type_aliases_from(elem, seen)),
+            },
+            Ty::TVec { elem } => Ty::TVec {
+                elem: Box::new(self.expand_specialized_type_aliases_from(elem, seen)),
+            },
+            Ty::THashMap { key, value } => Ty::THashMap {
+                key: Box::new(self.expand_specialized_type_aliases_from(key, seen)),
+                value: Box::new(self.expand_specialized_type_aliases_from(value, seen)),
+            },
+            _ => ty.clone(),
+        }
     }
 
     fn type_param_name(&self, name: &str, index: usize) -> Option<String> {

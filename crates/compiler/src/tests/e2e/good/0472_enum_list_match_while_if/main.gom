@@ -11,26 +11,26 @@ fn length[T](list: List[T]) -> int32 {
 }
 
 fn reverse[T](list: List[T]) -> List[T] {
-    let acc = ref(List::Nil);
-    let current = ref(list);
+    let acc = Ref::new(List::Nil);
+    let current = Ref::new(list);
     while true {
-        match ref_get(current) {
+        match current.get() {
             List::Cons(x, rest) => {
-                ref_set(acc, List::Cons(x, ref_get(acc)));
-                ref_set(current, rest);
+                acc.set(List::Cons(x, acc.get()));
+                current.set(rest);
             },
             List::Nil => {
-                ref_set(current, List::Nil);
+                current.set(List::Nil);
             },
         };
-        let done = match ref_get(current) {
+        let done = match current.get() {
             List::Cons(_, _) => false,
             List::Nil => true,
         };
-        if done { ref_set(current, List::Nil) } else { () };
-        if done { ref_set(acc, ref_get(acc)) } else { () };
+        if done { current.set(List::Nil) } else { () };
+        if done { acc.set(acc.get()) } else { () };
     };
-    ref_get(acc)
+    acc.get()
 }
 
 fn main() {

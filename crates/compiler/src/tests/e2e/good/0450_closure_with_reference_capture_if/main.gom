@@ -1,7 +1,7 @@
 fn main() {
-    let fact = ref(|n: int32| 0);
-    ref_set(fact, |n| {
-        if n <= 1 { 1 } else { n * ref_get(fact)(n - 1) }
+    let fact = Ref::new(|n: int32| 0);
+    fact.set(|n| {
+        if n <= 1 { 1 } else { n * fact.get()(n - 1) }
     });
-    println(ref_get(fact)(10).to_string());
+    println(fact.get()(10).to_string());
 }

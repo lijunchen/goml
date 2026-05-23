@@ -1,8 +1,8 @@
 fn main() -> unit {
-  let i/0 = ref(0) in
-  let _wild3 = while (ref_get(i/0) < 10) {
+  let i/0 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let _wild3 = while (inherent#Ref#Ref[T]#get__T_int32(i/0) < 10) {
       {
-        let _wild0 = if (ref_get(i/0) == 5) {
+        let _wild0 = if (inherent#Ref#Ref[T]#get__T_int32(i/0) == 5) {
             {
               break
             }
@@ -11,9 +11,9 @@ fn main() -> unit {
               ()
             }
         } in
-        let mtmp1 = println__T_int32(ref_get(i/0)) in
+        let mtmp1 = println__T_int32(inherent#Ref#Ref[T]#get__T_int32(i/0)) in
         {
-          let _wild2 = ref_set(i/0, (ref_get(i/0) + 1)) in
+          let _wild2 = inherent#Ref#Ref[T]#set__T_int32(i/0, (inherent#Ref#Ref[T]#get__T_int32(i/0) + 1)) in
         }
       }
   } in
@@ -23,8 +23,20 @@ fn main() -> unit {
   }
 }
 
+fn inherent#Ref#Ref[T]#new__T_int32(value/93: int32) -> Ref[int32] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#get__T_int32(self/94: Ref[int32]) -> int32 {
+  ref_get(self/94)
+}
+
 fn println__T_int32(value/1: int32) -> unit {
-  string_println(int32_to_string(value/1))
+  string_println($goml_builtin_runtime$int32_to_string(value/1))
+}
+
+fn inherent#Ref#Ref[T]#set__T_int32(self/95: Ref[int32], value/96: int32) -> unit {
+  ref_set(self/95, value/96)
 }
 
 fn println__T_string(value/1: string) -> unit {

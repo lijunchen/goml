@@ -12,10 +12,10 @@ fn main() {
         apply(|x| x * 2, nums[1]),
         apply(|x| x * 2, nums[2]),
     ];
-    let i = ref(0);
-    while ref_get(i) < 3 {
-        println(doubled[ref_get(i)].to_string() + " ");
-        ref_set(i, ref_get(i) + 1);
+    let i = Ref::new(0);
+    while i.get() < 3 {
+        println(doubled[i.get()].to_string() + " ");
+        i.set(i.get() + 1);
     };
     println("");
 }

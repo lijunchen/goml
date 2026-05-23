@@ -34,70 +34,70 @@ fn is_int_text(text/2: string) -> bool {
         }
     } else {
         {
-            let i/4: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
-            let saw_digit/5: Ref[bool] = (ref : (bool) -> Ref[bool])(false);
-            let ok/6: Ref[bool] = (ref : (bool) -> Ref[bool])(true);
-            let started/7: Ref[bool] = (ref : (bool) -> Ref[bool])(false);
-            let _ : unit = while (ref_get : (Ref[bool]) -> bool)((ok/6 : Ref[bool])) && (ref_get : (Ref[int32]) -> int32)((i/4 : Ref[int32])) < (len/3 : int32) {
+            let i/4: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+            let saw_digit/5: Ref[bool] = (Ref[bool]::new : (bool) -> Ref[bool])(false);
+            let ok/6: Ref[bool] = (Ref[bool]::new : (bool) -> Ref[bool])(true);
+            let started/7: Ref[bool] = (Ref[bool]::new : (bool) -> Ref[bool])(false);
+            let _ : unit = while (Ref[bool]::get : (Ref[bool]) -> bool)((ok/6 : Ref[bool])) && (Ref[int32]::get : (Ref[int32]) -> int32)((i/4 : Ref[int32])) < (len/3 : int32) {
                 {
-                    let ch/8: char = (string::get : (string, int32) -> char)((text/2 : string), (ref_get : (Ref[int32]) -> int32)((i/4 : Ref[int32])));
-                    if !(ref_get : (Ref[bool]) -> bool)((started/7 : Ref[bool])) && (ch/8 : char) == '-' {
+                    let ch/8: char = (string::get : (string, int32) -> char)((text/2 : string), (Ref[int32]::get : (Ref[int32]) -> int32)((i/4 : Ref[int32])));
+                    if !(Ref[bool]::get : (Ref[bool]) -> bool)((started/7 : Ref[bool])) && (ch/8 : char) == '-' {
                         {
-                            let _ : unit = (ref_set : (Ref[bool], bool) -> unit)((started/7 : Ref[bool]), true);
-                            (ref_set : (Ref[int32], int32) -> unit)((i/4 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/4 : Ref[int32])) + 1)
+                            let _ : unit = (Ref[bool]::set : (Ref[bool], bool) -> unit)((started/7 : Ref[bool]), true);
+                            (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/4 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/4 : Ref[int32])) + 1)
                         }
                     } else {
                         if (is_digit : (char) -> bool)((ch/8 : char)) {
                             {
-                                let _ : unit = (ref_set : (Ref[bool], bool) -> unit)((started/7 : Ref[bool]), true);
-                                let _ : unit = (ref_set : (Ref[bool], bool) -> unit)((saw_digit/5 : Ref[bool]), true);
-                                (ref_set : (Ref[int32], int32) -> unit)((i/4 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/4 : Ref[int32])) + 1)
+                                let _ : unit = (Ref[bool]::set : (Ref[bool], bool) -> unit)((started/7 : Ref[bool]), true);
+                                let _ : unit = (Ref[bool]::set : (Ref[bool], bool) -> unit)((saw_digit/5 : Ref[bool]), true);
+                                (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/4 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/4 : Ref[int32])) + 1)
                             }
                         } else {
                             {
-                                (ref_set : (Ref[bool], bool) -> unit)((ok/6 : Ref[bool]), false)
+                                (Ref[bool]::set : (Ref[bool], bool) -> unit)((ok/6 : Ref[bool]), false)
                             }
                         }
                     }
                 }
             };
-            (ref_get : (Ref[bool]) -> bool)((ok/6 : Ref[bool])) && (ref_get : (Ref[bool]) -> bool)((saw_digit/5 : Ref[bool]))
+            (Ref[bool]::get : (Ref[bool]) -> bool)((ok/6 : Ref[bool])) && (Ref[bool]::get : (Ref[bool]) -> bool)((saw_digit/5 : Ref[bool]))
         }
     }
 }
 
 fn parse_int32(text/9: string) -> int32 {
     let len/10: int32 = (string::len : (string) -> int32)((text/9 : string));
-    let i/11: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
-    let negative/12: Ref[bool] = (ref : (bool) -> Ref[bool])(false);
-    let started/13: Ref[bool] = (ref : (bool) -> Ref[bool])(false);
-    let acc/14: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
-    let _ : unit = while (ref_get : (Ref[int32]) -> int32)((i/11 : Ref[int32])) < (len/10 : int32) {
+    let i/11: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+    let negative/12: Ref[bool] = (Ref[bool]::new : (bool) -> Ref[bool])(false);
+    let started/13: Ref[bool] = (Ref[bool]::new : (bool) -> Ref[bool])(false);
+    let acc/14: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+    let _ : unit = while (Ref[int32]::get : (Ref[int32]) -> int32)((i/11 : Ref[int32])) < (len/10 : int32) {
         {
-            let ch/15: char = (string::get : (string, int32) -> char)((text/9 : string), (ref_get : (Ref[int32]) -> int32)((i/11 : Ref[int32])));
-            if !(ref_get : (Ref[bool]) -> bool)((started/13 : Ref[bool])) && (ch/15 : char) == '-' {
+            let ch/15: char = (string::get : (string, int32) -> char)((text/9 : string), (Ref[int32]::get : (Ref[int32]) -> int32)((i/11 : Ref[int32])));
+            if !(Ref[bool]::get : (Ref[bool]) -> bool)((started/13 : Ref[bool])) && (ch/15 : char) == '-' {
                 {
-                    let _ : unit = (ref_set : (Ref[bool], bool) -> unit)((started/13 : Ref[bool]), true);
-                    let _ : unit = (ref_set : (Ref[bool], bool) -> unit)((negative/12 : Ref[bool]), true);
-                    (ref_set : (Ref[int32], int32) -> unit)((i/11 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/11 : Ref[int32])) + 1)
+                    let _ : unit = (Ref[bool]::set : (Ref[bool], bool) -> unit)((started/13 : Ref[bool]), true);
+                    let _ : unit = (Ref[bool]::set : (Ref[bool], bool) -> unit)((negative/12 : Ref[bool]), true);
+                    (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/11 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/11 : Ref[int32])) + 1)
                 }
             } else {
                 {
-                    let _ : unit = (ref_set : (Ref[bool], bool) -> unit)((started/13 : Ref[bool]), true);
+                    let _ : unit = (Ref[bool]::set : (Ref[bool], bool) -> unit)((started/13 : Ref[bool]), true);
                     let d/16: int32 = (digit_value : (char) -> int32)((ch/15 : char));
-                    let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((acc/14 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((acc/14 : Ref[int32])) * 10 + (d/16 : int32));
-                    (ref_set : (Ref[int32], int32) -> unit)((i/11 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/11 : Ref[int32])) + 1)
+                    let _ : unit = (Ref[int32]::set : (Ref[int32], int32) -> unit)((acc/14 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((acc/14 : Ref[int32])) * 10 + (d/16 : int32));
+                    (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/11 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/11 : Ref[int32])) + 1)
                 }
             }
         }
     };
-    if (ref_get : (Ref[bool]) -> bool)((negative/12 : Ref[bool])) {
+    if (Ref[bool]::get : (Ref[bool]) -> bool)((negative/12 : Ref[bool])) {
         {
-            0 - (ref_get : (Ref[int32]) -> int32)((acc/14 : Ref[int32]))
+            0 - (Ref[int32]::get : (Ref[int32]) -> int32)((acc/14 : Ref[int32]))
         }
     } else {
         {
-            (ref_get : (Ref[int32]) -> int32)((acc/14 : Ref[int32]))
+            (Ref[int32]::get : (Ref[int32]) -> int32)((acc/14 : Ref[int32]))
         }
     }
 }
@@ -108,25 +108,25 @@ fn is_delim(ch/17: char) -> bool {
 
 fn lex_atom(source/18: string, start/19: int32) -> (Token, int32) {
     let len/20: int32 = (string::len : (string) -> int32)((source/18 : string));
-    let text/21: Ref[string] = (ref : (string) -> Ref[string])("");
-    let i/22: Ref[int32] = (ref : (int32) -> Ref[int32])((start/19 : int32));
-    let done/23: Ref[bool] = (ref : (bool) -> Ref[bool])(false);
-    let _ : unit = while !(ref_get : (Ref[bool]) -> bool)((done/23 : Ref[bool])) && (ref_get : (Ref[int32]) -> int32)((i/22 : Ref[int32])) < (len/20 : int32) {
+    let text/21: Ref[string] = (Ref[string]::new : (string) -> Ref[string])("");
+    let i/22: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])((start/19 : int32));
+    let done/23: Ref[bool] = (Ref[bool]::new : (bool) -> Ref[bool])(false);
+    let _ : unit = while !(Ref[bool]::get : (Ref[bool]) -> bool)((done/23 : Ref[bool])) && (Ref[int32]::get : (Ref[int32]) -> int32)((i/22 : Ref[int32])) < (len/20 : int32) {
         {
-            let ch/24: char = (string::get : (string, int32) -> char)((source/18 : string), (ref_get : (Ref[int32]) -> int32)((i/22 : Ref[int32])));
+            let ch/24: char = (string::get : (string, int32) -> char)((source/18 : string), (Ref[int32]::get : (Ref[int32]) -> int32)((i/22 : Ref[int32])));
             if (is_delim : (char) -> bool)((ch/24 : char)) {
                 {
-                    (ref_set : (Ref[bool], bool) -> unit)((done/23 : Ref[bool]), true)
+                    (Ref[bool]::set : (Ref[bool], bool) -> unit)((done/23 : Ref[bool]), true)
                 }
             } else {
                 {
-                    let _ : unit = (ref_set : (Ref[string], string) -> unit)((text/21 : Ref[string]), (ref_get : (Ref[string]) -> string)((text/21 : Ref[string])) + (char::to_string : (char) -> string)((ch/24 : char)));
-                    (ref_set : (Ref[int32], int32) -> unit)((i/22 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/22 : Ref[int32])) + 1)
+                    let _ : unit = (Ref[string]::set : (Ref[string], string) -> unit)((text/21 : Ref[string]), (Ref[string]::get : (Ref[string]) -> string)((text/21 : Ref[string])) + (char::to_string : (char) -> string)((ch/24 : char)));
+                    (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/22 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/22 : Ref[int32])) + 1)
                 }
             }
         }
     };
-    let atom/25: string = (ref_get : (Ref[string]) -> string)((text/21 : Ref[string]));
+    let atom/25: string = (Ref[string]::get : (Ref[string]) -> string)((text/21 : Ref[string]));
     let token/26: Token = match (atom/25 : string) {
         "true" => Token::Bool(true),
         "false" => Token::Bool(false),
@@ -140,67 +140,67 @@ fn lex_atom(source/18: string, start/19: int32) -> (Token, int32) {
               }
           },
     };
-    ((token/26 : Token), (ref_get : (Ref[int32]) -> int32)((i/22 : Ref[int32])))
+    ((token/26 : Token), (Ref[int32]::get : (Ref[int32]) -> int32)((i/22 : Ref[int32])))
 }
 
 fn lex(source/27: string) -> Vec[Token] {
     let len/28: int32 = (string::len : (string) -> int32)((source/27 : string));
     let toks0/29: Vec[Token] = (Vec[Token]::new : () -> Vec[Token])();
-    let toks/30: Ref[Vec[Token]] = (ref : (Vec[Token]) -> Ref[Vec[Token]])((toks0/29 : Vec[Token]));
-    let i/31: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
-    let _ : unit = while (ref_get : (Ref[int32]) -> int32)((i/31 : Ref[int32])) < (len/28 : int32) {
+    let toks/30: Ref[Vec[Token]] = (Ref[Vec[Token]]::new : (Vec[Token]) -> Ref[Vec[Token]])((toks0/29 : Vec[Token]));
+    let i/31: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+    let _ : unit = while (Ref[int32]::get : (Ref[int32]) -> int32)((i/31 : Ref[int32])) < (len/28 : int32) {
         {
-            let ch/32: char = (string::get : (string, int32) -> char)((source/27 : string), (ref_get : (Ref[int32]) -> int32)((i/31 : Ref[int32])));
+            let ch/32: char = (string::get : (string, int32) -> char)((source/27 : string), (Ref[int32]::get : (Ref[int32]) -> int32)((i/31 : Ref[int32])));
             if (ch/32 : char) == '(' {
                 {
-                    let _ : unit = (ref_set : (Ref[Vec[Token]], Vec[Token]) -> unit)((toks/30 : Ref[Vec[Token]]), (Vec[Token]::push : (Vec[Token], Token) -> Vec[Token])((ref_get : (Ref[Vec[Token]]) -> Vec[Token])((toks/30 : Ref[Vec[Token]])), Token::LParen));
-                    (ref_set : (Ref[int32], int32) -> unit)((i/31 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/31 : Ref[int32])) + 1)
+                    let _ : unit = (Ref[Vec[Token]]::set : (Ref[Vec[Token]], Vec[Token]) -> unit)((toks/30 : Ref[Vec[Token]]), (Vec[Token]::push : (Vec[Token], Token) -> Vec[Token])((Ref[Vec[Token]]::get : (Ref[Vec[Token]]) -> Vec[Token])((toks/30 : Ref[Vec[Token]])), Token::LParen));
+                    (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/31 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/31 : Ref[int32])) + 1)
                 }
             } else {
                 if (ch/32 : char) == ')' {
                     {
-                        let _ : unit = (ref_set : (Ref[Vec[Token]], Vec[Token]) -> unit)((toks/30 : Ref[Vec[Token]]), (Vec[Token]::push : (Vec[Token], Token) -> Vec[Token])((ref_get : (Ref[Vec[Token]]) -> Vec[Token])((toks/30 : Ref[Vec[Token]])), Token::RParen));
-                        (ref_set : (Ref[int32], int32) -> unit)((i/31 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/31 : Ref[int32])) + 1)
+                        let _ : unit = (Ref[Vec[Token]]::set : (Ref[Vec[Token]], Vec[Token]) -> unit)((toks/30 : Ref[Vec[Token]]), (Vec[Token]::push : (Vec[Token], Token) -> Vec[Token])((Ref[Vec[Token]]::get : (Ref[Vec[Token]]) -> Vec[Token])((toks/30 : Ref[Vec[Token]])), Token::RParen));
+                        (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/31 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/31 : Ref[int32])) + 1)
                     }
                 } else {
                     if (ch/32 : char) == ' ' {
                         {
-                            (ref_set : (Ref[int32], int32) -> unit)((i/31 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/31 : Ref[int32])) + 1)
+                            (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/31 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/31 : Ref[int32])) + 1)
                         }
                     } else {
                         {
-                            let (tok/33: Token, next/34: int32) = (lex_atom : (string, int32) -> (Token, int32))((source/27 : string), (ref_get : (Ref[int32]) -> int32)((i/31 : Ref[int32])));
-                            let _ : unit = (ref_set : (Ref[Vec[Token]], Vec[Token]) -> unit)((toks/30 : Ref[Vec[Token]]), (Vec[Token]::push : (Vec[Token], Token) -> Vec[Token])((ref_get : (Ref[Vec[Token]]) -> Vec[Token])((toks/30 : Ref[Vec[Token]])), (tok/33 : Token)));
-                            (ref_set : (Ref[int32], int32) -> unit)((i/31 : Ref[int32]), (next/34 : int32))
+                            let (tok/33: Token, next/34: int32) = (lex_atom : (string, int32) -> (Token, int32))((source/27 : string), (Ref[int32]::get : (Ref[int32]) -> int32)((i/31 : Ref[int32])));
+                            let _ : unit = (Ref[Vec[Token]]::set : (Ref[Vec[Token]], Vec[Token]) -> unit)((toks/30 : Ref[Vec[Token]]), (Vec[Token]::push : (Vec[Token], Token) -> Vec[Token])((Ref[Vec[Token]]::get : (Ref[Vec[Token]]) -> Vec[Token])((toks/30 : Ref[Vec[Token]])), (tok/33 : Token)));
+                            (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/31 : Ref[int32]), (next/34 : int32))
                         }
                     }
                 }
             }
         }
     };
-    (ref_get : (Ref[Vec[Token]]) -> Vec[Token])((toks/30 : Ref[Vec[Token]]))
+    (Ref[Vec[Token]]::get : (Ref[Vec[Token]]) -> Vec[Token])((toks/30 : Ref[Vec[Token]]))
 }
 
 fn env_lookup(env/35: Vec[Binding], name/36: string) -> Value {
-    let i/37: Ref[int32] = (ref : (int32) -> Ref[int32])((Vec[Binding]::len : (Vec[Binding]) -> int32)((env/35 : Vec[Binding])) - 1);
-    let result/38: Ref[Value] = (ref : (Value) -> Ref[Value])(Value::Nil);
-    let done/39: Ref[bool] = (ref : (bool) -> Ref[bool])(false);
-    let _ : unit = while !(ref_get : (Ref[bool]) -> bool)((done/39 : Ref[bool])) && (ref_get : (Ref[int32]) -> int32)((i/37 : Ref[int32])) >= 0 {
+    let i/37: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])((Vec[Binding]::len : (Vec[Binding]) -> int32)((env/35 : Vec[Binding])) - 1);
+    let result/38: Ref[Value] = (Ref[Value]::new : (Value) -> Ref[Value])(Value::Nil);
+    let done/39: Ref[bool] = (Ref[bool]::new : (bool) -> Ref[bool])(false);
+    let _ : unit = while !(Ref[bool]::get : (Ref[bool]) -> bool)((done/39 : Ref[bool])) && (Ref[int32]::get : (Ref[int32]) -> int32)((i/37 : Ref[int32])) >= 0 {
         {
-            let binding/40: Binding = (env/35 : Vec[Binding])[(ref_get : (Ref[int32]) -> int32)((i/37 : Ref[int32]))];
+            let binding/40: Binding = (env/35 : Vec[Binding])[(Ref[int32]::get : (Ref[int32]) -> int32)((i/37 : Ref[int32]))];
             if (binding/40 : Binding).name == (name/36 : string) {
                 {
-                    let _ : unit = (ref_set : (Ref[Value], Value) -> unit)((result/38 : Ref[Value]), (binding/40 : Binding).value);
-                    (ref_set : (Ref[bool], bool) -> unit)((done/39 : Ref[bool]), true)
+                    let _ : unit = (Ref[Value]::set : (Ref[Value], Value) -> unit)((result/38 : Ref[Value]), (binding/40 : Binding).value);
+                    (Ref[bool]::set : (Ref[bool], bool) -> unit)((done/39 : Ref[bool]), true)
                 }
             } else {
                 {
-                    (ref_set : (Ref[int32], int32) -> unit)((i/37 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/37 : Ref[int32])) - 1)
+                    (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/37 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/37 : Ref[int32])) - 1)
                 }
             }
         }
     };
-    (ref_get : (Ref[Value]) -> Value)((result/38 : Ref[Value]))
+    (Ref[Value]::get : (Ref[Value]) -> Value)((result/38 : Ref[Value]))
 }
 
 fn lookup(local/41: Vec[Binding], global/42: Vec[Binding], name/43: string) -> Value {
@@ -212,25 +212,25 @@ fn lookup(local/41: Vec[Binding], global/42: Vec[Binding], name/43: string) -> V
 
 fn parse_list(tokens/45: Vec[Token], start/46: int32) -> (Vec[SExpr], int32) {
     let acc/47: Vec[SExpr] = (Vec[SExpr]::new : () -> Vec[SExpr])();
-    let exprs/48: Ref[Vec[SExpr]] = (ref : (Vec[SExpr]) -> Ref[Vec[SExpr]])((acc/47 : Vec[SExpr]));
-    let i/49: Ref[int32] = (ref : (int32) -> Ref[int32])((start/46 : int32));
-    let done/50: Ref[bool] = (ref : (bool) -> Ref[bool])(false);
-    let _ : unit = while !(ref_get : (Ref[bool]) -> bool)((done/50 : Ref[bool])) && (ref_get : (Ref[int32]) -> int32)((i/49 : Ref[int32])) < (Vec[Token]::len : (Vec[Token]) -> int32)((tokens/45 : Vec[Token])) {
+    let exprs/48: Ref[Vec[SExpr]] = (Ref[Vec[SExpr]]::new : (Vec[SExpr]) -> Ref[Vec[SExpr]])((acc/47 : Vec[SExpr]));
+    let i/49: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])((start/46 : int32));
+    let done/50: Ref[bool] = (Ref[bool]::new : (bool) -> Ref[bool])(false);
+    let _ : unit = while !(Ref[bool]::get : (Ref[bool]) -> bool)((done/50 : Ref[bool])) && (Ref[int32]::get : (Ref[int32]) -> int32)((i/49 : Ref[int32])) < (Vec[Token]::len : (Vec[Token]) -> int32)((tokens/45 : Vec[Token])) {
         {
-            match (tokens/45 : Vec[Token])[(ref_get : (Ref[int32]) -> int32)((i/49 : Ref[int32]))] {
+            match (tokens/45 : Vec[Token])[(Ref[int32]::get : (Ref[int32]) -> int32)((i/49 : Ref[int32]))] {
                 Token::RParen => {
-                      let _ : unit = (ref_set : (Ref[bool], bool) -> unit)((done/50 : Ref[bool]), true);
-                      (ref_set : (Ref[int32], int32) -> unit)((i/49 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/49 : Ref[int32])) + 1)
+                      let _ : unit = (Ref[bool]::set : (Ref[bool], bool) -> unit)((done/50 : Ref[bool]), true);
+                      (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/49 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/49 : Ref[int32])) + 1)
                   },
                 _ : Token => {
-                      let (expr/51: SExpr, next/52: int32) = (parse_expr : (Vec[Token], int32) -> (SExpr, int32))((tokens/45 : Vec[Token]), (ref_get : (Ref[int32]) -> int32)((i/49 : Ref[int32])));
-                      let _ : unit = (ref_set : (Ref[Vec[SExpr]], Vec[SExpr]) -> unit)((exprs/48 : Ref[Vec[SExpr]]), (Vec[SExpr]::push : (Vec[SExpr], SExpr) -> Vec[SExpr])((ref_get : (Ref[Vec[SExpr]]) -> Vec[SExpr])((exprs/48 : Ref[Vec[SExpr]])), (expr/51 : SExpr)));
-                      (ref_set : (Ref[int32], int32) -> unit)((i/49 : Ref[int32]), (next/52 : int32))
+                      let (expr/51: SExpr, next/52: int32) = (parse_expr : (Vec[Token], int32) -> (SExpr, int32))((tokens/45 : Vec[Token]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/49 : Ref[int32])));
+                      let _ : unit = (Ref[Vec[SExpr]]::set : (Ref[Vec[SExpr]], Vec[SExpr]) -> unit)((exprs/48 : Ref[Vec[SExpr]]), (Vec[SExpr]::push : (Vec[SExpr], SExpr) -> Vec[SExpr])((Ref[Vec[SExpr]]::get : (Ref[Vec[SExpr]]) -> Vec[SExpr])((exprs/48 : Ref[Vec[SExpr]])), (expr/51 : SExpr)));
+                      (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/49 : Ref[int32]), (next/52 : int32))
                   },
             }
         }
     };
-    ((ref_get : (Ref[Vec[SExpr]]) -> Vec[SExpr])((exprs/48 : Ref[Vec[SExpr]])), (ref_get : (Ref[int32]) -> int32)((i/49 : Ref[int32])))
+    ((Ref[Vec[SExpr]]::get : (Ref[Vec[SExpr]]) -> Vec[SExpr])((exprs/48 : Ref[Vec[SExpr]])), (Ref[int32]::get : (Ref[int32]) -> int32)((i/49 : Ref[int32])))
 }
 
 fn parse_expr(tokens/53: Vec[Token], start/54: int32) -> (SExpr, int32) {
@@ -247,17 +247,17 @@ fn parse_expr(tokens/53: Vec[Token], start/54: int32) -> (SExpr, int32) {
 }
 
 fn parse_program(tokens/60: Vec[Token]) -> Vec[SExpr] {
-    let i/61: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
+    let i/61: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
     let acc/62: Vec[SExpr] = (Vec[SExpr]::new : () -> Vec[SExpr])();
-    let exprs/63: Ref[Vec[SExpr]] = (ref : (Vec[SExpr]) -> Ref[Vec[SExpr]])((acc/62 : Vec[SExpr]));
-    let _ : unit = while (ref_get : (Ref[int32]) -> int32)((i/61 : Ref[int32])) < (Vec[Token]::len : (Vec[Token]) -> int32)((tokens/60 : Vec[Token])) {
+    let exprs/63: Ref[Vec[SExpr]] = (Ref[Vec[SExpr]]::new : (Vec[SExpr]) -> Ref[Vec[SExpr]])((acc/62 : Vec[SExpr]));
+    let _ : unit = while (Ref[int32]::get : (Ref[int32]) -> int32)((i/61 : Ref[int32])) < (Vec[Token]::len : (Vec[Token]) -> int32)((tokens/60 : Vec[Token])) {
         {
-            let (expr/64: SExpr, next/65: int32) = (parse_expr : (Vec[Token], int32) -> (SExpr, int32))((tokens/60 : Vec[Token]), (ref_get : (Ref[int32]) -> int32)((i/61 : Ref[int32])));
-            let _ : unit = (ref_set : (Ref[Vec[SExpr]], Vec[SExpr]) -> unit)((exprs/63 : Ref[Vec[SExpr]]), (Vec[SExpr]::push : (Vec[SExpr], SExpr) -> Vec[SExpr])((ref_get : (Ref[Vec[SExpr]]) -> Vec[SExpr])((exprs/63 : Ref[Vec[SExpr]])), (expr/64 : SExpr)));
-            (ref_set : (Ref[int32], int32) -> unit)((i/61 : Ref[int32]), (next/65 : int32))
+            let (expr/64: SExpr, next/65: int32) = (parse_expr : (Vec[Token], int32) -> (SExpr, int32))((tokens/60 : Vec[Token]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/61 : Ref[int32])));
+            let _ : unit = (Ref[Vec[SExpr]]::set : (Ref[Vec[SExpr]], Vec[SExpr]) -> unit)((exprs/63 : Ref[Vec[SExpr]]), (Vec[SExpr]::push : (Vec[SExpr], SExpr) -> Vec[SExpr])((Ref[Vec[SExpr]]::get : (Ref[Vec[SExpr]]) -> Vec[SExpr])((exprs/63 : Ref[Vec[SExpr]])), (expr/64 : SExpr)));
+            (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/61 : Ref[int32]), (next/65 : int32))
         }
     };
-    (ref_get : (Ref[Vec[SExpr]]) -> Vec[SExpr])((exprs/63 : Ref[Vec[SExpr]]))
+    (Ref[Vec[SExpr]]::get : (Ref[Vec[SExpr]]) -> Vec[SExpr])((exprs/63 : Ref[Vec[SExpr]]))
 }
 
 fn value_to_string(value/66: Value) -> string {
@@ -282,7 +282,7 @@ fn eval(expr/72: SExpr, local/73: Vec[Binding], global/74: Ref[Vec[Binding]]) ->
     match (expr/72 : SExpr) {
         SExpr::Int(n/75: int32) => Value::Int((n/75 : int32)),
         SExpr::Bool(b/76: bool) => Value::Bool((b/76 : bool)),
-        SExpr::Sym(name/77: string) => (lookup : (Vec[Binding], Vec[Binding], string) -> Value)((local/73 : Vec[Binding]), (ref_get : (Ref[Vec[Binding]]) -> Vec[Binding])((global/74 : Ref[Vec[Binding]])), (name/77 : string)),
+        SExpr::Sym(name/77: string) => (lookup : (Vec[Binding], Vec[Binding], string) -> Value)((local/73 : Vec[Binding]), (Ref[Vec[Binding]]::get : (Ref[Vec[Binding]]) -> Vec[Binding])((global/74 : Ref[Vec[Binding]])), (name/77 : string)),
         SExpr::List(items/78: Vec[SExpr]) => (eval_list : (Vec[SExpr], Vec[Binding], Ref[Vec[Binding]]) -> Value)((items/78 : Vec[SExpr]), (local/73 : Vec[Binding]), (global/74 : Ref[Vec[Binding]])),
     }
 }
@@ -316,9 +316,9 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
                       match (items/87 : Vec[SExpr])[1] {
                           SExpr::Sym(var/90: string) => {
                                 let value/91: Value = (eval : (SExpr, Vec[Binding], Ref[Vec[Binding]]) -> Value)((items/87 : Vec[SExpr])[2], (local/88 : Vec[Binding]), (global/89 : Ref[Vec[Binding]]));
-                                let env/92: Vec[Binding] = (ref_get : (Ref[Vec[Binding]]) -> Vec[Binding])((global/89 : Ref[Vec[Binding]]));
+                                let env/92: Vec[Binding] = (Ref[Vec[Binding]]::get : (Ref[Vec[Binding]]) -> Vec[Binding])((global/89 : Ref[Vec[Binding]]));
                                 let updated/93: Vec[Binding] = (Vec[Binding]::push : (Vec[Binding], Binding) -> Vec[Binding])((env/92 : Vec[Binding]), Binding { name: (var/90 : string), value: (value/91 : Value) });
-                                let _ : unit = (ref_set : (Ref[Vec[Binding]], Vec[Binding]) -> unit)((global/89 : Ref[Vec[Binding]]), (updated/93 : Vec[Binding]));
+                                let _ : unit = (Ref[Vec[Binding]]::set : (Ref[Vec[Binding]], Vec[Binding]) -> unit)((global/89 : Ref[Vec[Binding]]), (updated/93 : Vec[Binding]));
                                 (value/91 : Value)
                             },
                           _ : SExpr => Value::Nil,
@@ -382,48 +382,48 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
 }
 
 fn eval_begin(items/100: Vec[SExpr], start/101: int32, local/102: Vec[Binding], global/103: Ref[Vec[Binding]]) -> Value {
-    let i/104: Ref[int32] = (ref : (int32) -> Ref[int32])((start/101 : int32));
-    let last/105: Ref[Value] = (ref : (Value) -> Ref[Value])(Value::Nil);
-    let _ : unit = while (ref_get : (Ref[int32]) -> int32)((i/104 : Ref[int32])) < (Vec[SExpr]::len : (Vec[SExpr]) -> int32)((items/100 : Vec[SExpr])) {
+    let i/104: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])((start/101 : int32));
+    let last/105: Ref[Value] = (Ref[Value]::new : (Value) -> Ref[Value])(Value::Nil);
+    let _ : unit = while (Ref[int32]::get : (Ref[int32]) -> int32)((i/104 : Ref[int32])) < (Vec[SExpr]::len : (Vec[SExpr]) -> int32)((items/100 : Vec[SExpr])) {
         {
-            let v/106: Value = (eval : (SExpr, Vec[Binding], Ref[Vec[Binding]]) -> Value)((items/100 : Vec[SExpr])[(ref_get : (Ref[int32]) -> int32)((i/104 : Ref[int32]))], (local/102 : Vec[Binding]), (global/103 : Ref[Vec[Binding]]));
-            let _ : unit = (ref_set : (Ref[Value], Value) -> unit)((last/105 : Ref[Value]), (v/106 : Value));
-            (ref_set : (Ref[int32], int32) -> unit)((i/104 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/104 : Ref[int32])) + 1)
+            let v/106: Value = (eval : (SExpr, Vec[Binding], Ref[Vec[Binding]]) -> Value)((items/100 : Vec[SExpr])[(Ref[int32]::get : (Ref[int32]) -> int32)((i/104 : Ref[int32]))], (local/102 : Vec[Binding]), (global/103 : Ref[Vec[Binding]]));
+            let _ : unit = (Ref[Value]::set : (Ref[Value], Value) -> unit)((last/105 : Ref[Value]), (v/106 : Value));
+            (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/104 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/104 : Ref[int32])) + 1)
         }
     };
-    (ref_get : (Ref[Value]) -> Value)((last/105 : Ref[Value]))
+    (Ref[Value]::get : (Ref[Value]) -> Value)((last/105 : Ref[Value]))
 }
 
 fn params_from_sexprs(items/107: Vec[SExpr]) -> Vec[string] {
-    let i/108: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
+    let i/108: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
     let acc/109: Vec[string] = (Vec[string]::new : () -> Vec[string])();
-    let params/110: Ref[Vec[string]] = (ref : (Vec[string]) -> Ref[Vec[string]])((acc/109 : Vec[string]));
-    let _ : unit = while (ref_get : (Ref[int32]) -> int32)((i/108 : Ref[int32])) < (Vec[SExpr]::len : (Vec[SExpr]) -> int32)((items/107 : Vec[SExpr])) {
+    let params/110: Ref[Vec[string]] = (Ref[Vec[string]]::new : (Vec[string]) -> Ref[Vec[string]])((acc/109 : Vec[string]));
+    let _ : unit = while (Ref[int32]::get : (Ref[int32]) -> int32)((i/108 : Ref[int32])) < (Vec[SExpr]::len : (Vec[SExpr]) -> int32)((items/107 : Vec[SExpr])) {
         {
-            match (items/107 : Vec[SExpr])[(ref_get : (Ref[int32]) -> int32)((i/108 : Ref[int32]))] {
+            match (items/107 : Vec[SExpr])[(Ref[int32]::get : (Ref[int32]) -> int32)((i/108 : Ref[int32]))] {
                 SExpr::Sym(name/111: string) => {
-                      let _ : unit = (ref_set : (Ref[Vec[string]], Vec[string]) -> unit)((params/110 : Ref[Vec[string]]), (Vec[string]::push : (Vec[string], string) -> Vec[string])((ref_get : (Ref[Vec[string]]) -> Vec[string])((params/110 : Ref[Vec[string]])), (name/111 : string)));
-                      (ref_set : (Ref[int32], int32) -> unit)((i/108 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/108 : Ref[int32])) + 1)
+                      let _ : unit = (Ref[Vec[string]]::set : (Ref[Vec[string]], Vec[string]) -> unit)((params/110 : Ref[Vec[string]]), (Vec[string]::push : (Vec[string], string) -> Vec[string])((Ref[Vec[string]]::get : (Ref[Vec[string]]) -> Vec[string])((params/110 : Ref[Vec[string]])), (name/111 : string)));
+                      (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/108 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/108 : Ref[int32])) + 1)
                   },
-                _ : SExpr => (ref_set : (Ref[int32], int32) -> unit)((i/108 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/108 : Ref[int32])) + 1),
+                _ : SExpr => (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/108 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/108 : Ref[int32])) + 1),
             }
         }
     };
-    (ref_get : (Ref[Vec[string]]) -> Vec[string])((params/110 : Ref[Vec[string]]))
+    (Ref[Vec[string]]::get : (Ref[Vec[string]]) -> Vec[string])((params/110 : Ref[Vec[string]]))
 }
 
 fn eval_args(items/112: Vec[SExpr], start/113: int32, local/114: Vec[Binding], global/115: Ref[Vec[Binding]]) -> Vec[Value] {
-    let i/116: Ref[int32] = (ref : (int32) -> Ref[int32])((start/113 : int32));
+    let i/116: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])((start/113 : int32));
     let acc/117: Vec[Value] = (Vec[Value]::new : () -> Vec[Value])();
-    let args/118: Ref[Vec[Value]] = (ref : (Vec[Value]) -> Ref[Vec[Value]])((acc/117 : Vec[Value]));
-    let _ : unit = while (ref_get : (Ref[int32]) -> int32)((i/116 : Ref[int32])) < (Vec[SExpr]::len : (Vec[SExpr]) -> int32)((items/112 : Vec[SExpr])) {
+    let args/118: Ref[Vec[Value]] = (Ref[Vec[Value]]::new : (Vec[Value]) -> Ref[Vec[Value]])((acc/117 : Vec[Value]));
+    let _ : unit = while (Ref[int32]::get : (Ref[int32]) -> int32)((i/116 : Ref[int32])) < (Vec[SExpr]::len : (Vec[SExpr]) -> int32)((items/112 : Vec[SExpr])) {
         {
-            let v/119: Value = (eval : (SExpr, Vec[Binding], Ref[Vec[Binding]]) -> Value)((items/112 : Vec[SExpr])[(ref_get : (Ref[int32]) -> int32)((i/116 : Ref[int32]))], (local/114 : Vec[Binding]), (global/115 : Ref[Vec[Binding]]));
-            let _ : unit = (ref_set : (Ref[Vec[Value]], Vec[Value]) -> unit)((args/118 : Ref[Vec[Value]]), (Vec[Value]::push : (Vec[Value], Value) -> Vec[Value])((ref_get : (Ref[Vec[Value]]) -> Vec[Value])((args/118 : Ref[Vec[Value]])), (v/119 : Value)));
-            (ref_set : (Ref[int32], int32) -> unit)((i/116 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/116 : Ref[int32])) + 1)
+            let v/119: Value = (eval : (SExpr, Vec[Binding], Ref[Vec[Binding]]) -> Value)((items/112 : Vec[SExpr])[(Ref[int32]::get : (Ref[int32]) -> int32)((i/116 : Ref[int32]))], (local/114 : Vec[Binding]), (global/115 : Ref[Vec[Binding]]));
+            let _ : unit = (Ref[Vec[Value]]::set : (Ref[Vec[Value]], Vec[Value]) -> unit)((args/118 : Ref[Vec[Value]]), (Vec[Value]::push : (Vec[Value], Value) -> Vec[Value])((Ref[Vec[Value]]::get : (Ref[Vec[Value]]) -> Vec[Value])((args/118 : Ref[Vec[Value]])), (v/119 : Value)));
+            (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/116 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/116 : Ref[int32])) + 1)
         }
     };
-    (ref_get : (Ref[Vec[Value]]) -> Vec[Value])((args/118 : Ref[Vec[Value]]))
+    (Ref[Vec[Value]]::get : (Ref[Vec[Value]]) -> Vec[Value])((args/118 : Ref[Vec[Value]]))
 }
 
 fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
@@ -442,36 +442,36 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
               }
           },
         "+" => {
-              let i/126: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
-              let acc/127: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
-              let _ : unit = while (ref_get : (Ref[int32]) -> int32)((i/126 : Ref[int32])) < (Vec[Value]::len : (Vec[Value]) -> int32)((args/121 : Vec[Value])) {
+              let i/126: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+              let acc/127: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+              let _ : unit = while (Ref[int32]::get : (Ref[int32]) -> int32)((i/126 : Ref[int32])) < (Vec[Value]::len : (Vec[Value]) -> int32)((args/121 : Vec[Value])) {
                   {
-                      match (args/121 : Vec[Value])[(ref_get : (Ref[int32]) -> int32)((i/126 : Ref[int32]))] {
+                      match (args/121 : Vec[Value])[(Ref[int32]::get : (Ref[int32]) -> int32)((i/126 : Ref[int32]))] {
                           Value::Int(n/128: int32) => {
-                                let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((acc/127 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((acc/127 : Ref[int32])) + (n/128 : int32));
-                                (ref_set : (Ref[int32], int32) -> unit)((i/126 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/126 : Ref[int32])) + 1)
+                                let _ : unit = (Ref[int32]::set : (Ref[int32], int32) -> unit)((acc/127 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((acc/127 : Ref[int32])) + (n/128 : int32));
+                                (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/126 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/126 : Ref[int32])) + 1)
                             },
-                          _ : Value => (ref_set : (Ref[int32], int32) -> unit)((i/126 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/126 : Ref[int32])) + 1),
+                          _ : Value => (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/126 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/126 : Ref[int32])) + 1),
                       }
                   }
               };
-              Value::Int((ref_get : (Ref[int32]) -> int32)((acc/127 : Ref[int32])))
+              Value::Int((Ref[int32]::get : (Ref[int32]) -> int32)((acc/127 : Ref[int32])))
           },
         "*" => {
-              let i/129: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
-              let acc/130: Ref[int32] = (ref : (int32) -> Ref[int32])(1);
-              let _ : unit = while (ref_get : (Ref[int32]) -> int32)((i/129 : Ref[int32])) < (Vec[Value]::len : (Vec[Value]) -> int32)((args/121 : Vec[Value])) {
+              let i/129: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+              let acc/130: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(1);
+              let _ : unit = while (Ref[int32]::get : (Ref[int32]) -> int32)((i/129 : Ref[int32])) < (Vec[Value]::len : (Vec[Value]) -> int32)((args/121 : Vec[Value])) {
                   {
-                      match (args/121 : Vec[Value])[(ref_get : (Ref[int32]) -> int32)((i/129 : Ref[int32]))] {
+                      match (args/121 : Vec[Value])[(Ref[int32]::get : (Ref[int32]) -> int32)((i/129 : Ref[int32]))] {
                           Value::Int(n/131: int32) => {
-                                let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((acc/130 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((acc/130 : Ref[int32])) * (n/131 : int32));
-                                (ref_set : (Ref[int32], int32) -> unit)((i/129 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/129 : Ref[int32])) + 1)
+                                let _ : unit = (Ref[int32]::set : (Ref[int32], int32) -> unit)((acc/130 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((acc/130 : Ref[int32])) * (n/131 : int32));
+                                (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/129 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/129 : Ref[int32])) + 1)
                             },
-                          _ : Value => (ref_set : (Ref[int32], int32) -> unit)((i/129 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/129 : Ref[int32])) + 1),
+                          _ : Value => (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/129 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/129 : Ref[int32])) + 1),
                       }
                   }
               };
-              Value::Int((ref_get : (Ref[int32]) -> int32)((acc/130 : Ref[int32])))
+              Value::Int((Ref[int32]::get : (Ref[int32]) -> int32)((acc/130 : Ref[int32])))
           },
         "-" => match (Vec[Value]::len : (Vec[Value]) -> int32)((args/121 : Vec[Value])) {
               1 => match (args/121 : Vec[Value])[0] {
@@ -508,22 +508,22 @@ fn apply(func/137: Value, args/138: Vec[Value], global/139: Ref[Vec[Binding]]) -
 }
 
 fn apply_lambda(lambda/141: Lambda, args/142: Vec[Value]) -> Value {
-    let env/143: Ref[Vec[Binding]] = (ref : (Vec[Binding]) -> Ref[Vec[Binding]])((lambda/141 : Lambda).env);
-    let i/144: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
-    let _ : unit = while (ref_get : (Ref[int32]) -> int32)((i/144 : Ref[int32])) < (Vec[string]::len : (Vec[string]) -> int32)((lambda/141 : Lambda).params) && (ref_get : (Ref[int32]) -> int32)((i/144 : Ref[int32])) < (Vec[Value]::len : (Vec[Value]) -> int32)((args/142 : Vec[Value])) {
+    let env/143: Ref[Vec[Binding]] = (Ref[Vec[Binding]]::new : (Vec[Binding]) -> Ref[Vec[Binding]])((lambda/141 : Lambda).env);
+    let i/144: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+    let _ : unit = while (Ref[int32]::get : (Ref[int32]) -> int32)((i/144 : Ref[int32])) < (Vec[string]::len : (Vec[string]) -> int32)((lambda/141 : Lambda).params) && (Ref[int32]::get : (Ref[int32]) -> int32)((i/144 : Ref[int32])) < (Vec[Value]::len : (Vec[Value]) -> int32)((args/142 : Vec[Value])) {
         {
-            let name/145: string = (lambda/141 : Lambda).params[(ref_get : (Ref[int32]) -> int32)((i/144 : Ref[int32]))];
-            let value/146: Value = (args/142 : Vec[Value])[(ref_get : (Ref[int32]) -> int32)((i/144 : Ref[int32]))];
-            let updated/147: Vec[Binding] = (Vec[Binding]::push : (Vec[Binding], Binding) -> Vec[Binding])((ref_get : (Ref[Vec[Binding]]) -> Vec[Binding])((env/143 : Ref[Vec[Binding]])), Binding { name: (name/145 : string), value: (value/146 : Value) });
-            let _ : unit = (ref_set : (Ref[Vec[Binding]], Vec[Binding]) -> unit)((env/143 : Ref[Vec[Binding]]), (updated/147 : Vec[Binding]));
-            (ref_set : (Ref[int32], int32) -> unit)((i/144 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/144 : Ref[int32])) + 1)
+            let name/145: string = (lambda/141 : Lambda).params[(Ref[int32]::get : (Ref[int32]) -> int32)((i/144 : Ref[int32]))];
+            let value/146: Value = (args/142 : Vec[Value])[(Ref[int32]::get : (Ref[int32]) -> int32)((i/144 : Ref[int32]))];
+            let updated/147: Vec[Binding] = (Vec[Binding]::push : (Vec[Binding], Binding) -> Vec[Binding])((Ref[Vec[Binding]]::get : (Ref[Vec[Binding]]) -> Vec[Binding])((env/143 : Ref[Vec[Binding]])), Binding { name: (name/145 : string), value: (value/146 : Value) });
+            let _ : unit = (Ref[Vec[Binding]]::set : (Ref[Vec[Binding]], Vec[Binding]) -> unit)((env/143 : Ref[Vec[Binding]]), (updated/147 : Vec[Binding]));
+            (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/144 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/144 : Ref[int32])) + 1)
         }
     };
-    (eval : (SExpr, Vec[Binding], Ref[Vec[Binding]]) -> Value)((lambda/141 : Lambda).body, (ref_get : (Ref[Vec[Binding]]) -> Vec[Binding])((env/143 : Ref[Vec[Binding]])), (lambda/141 : Lambda).global)
+    (eval : (SExpr, Vec[Binding], Ref[Vec[Binding]]) -> Value)((lambda/141 : Lambda).body, (Ref[Vec[Binding]]::get : (Ref[Vec[Binding]]) -> Vec[Binding])((env/143 : Ref[Vec[Binding]])), (lambda/141 : Lambda).global)
 }
 
 fn main() -> unit {
-    let global/148: Ref[Vec[Binding]] = (ref : (Vec[Binding]) -> Ref[Vec[Binding]])((Vec[Binding]::new : () -> Vec[Binding])());
+    let global/148: Ref[Vec[Binding]] = (Ref[Vec[Binding]]::new : (Vec[Binding]) -> Ref[Vec[Binding]])((Vec[Binding]::new : () -> Vec[Binding])());
     let program/149: string = "(begin (define fact (lambda (n) (if (= n 0) 1 (* n (fact (- n 1)))))) (define add3 (lambda (a b c) (+ a (+ b c)))) (fact 6))";
     let exprs/150: Vec[SExpr] = (parse_program : (Vec[Token]) -> Vec[SExpr])((lex : (string) -> Vec[Token])((program/149 : string)));
     let result/151: Value = (eval : (SExpr, Vec[Binding], Ref[Vec[Binding]]) -> Value)((exprs/150 : Vec[SExpr])[0], (Vec[Binding]::new : () -> Vec[Binding])(), (global/148 : Ref[Vec[Binding]]));

@@ -18,14 +18,14 @@ struct Pipeline {
 }
 
 fn run_pipeline(p: Pipeline, input: int32) -> int32 {
-    let val = ref(input);
-    let i = ref(0);
-    while ref_get(i) < 3 {
-        let step = p.steps[ref_get(i)];
-        ref_set(val, Processor::process(step, ref_get(val)));
-        ref_set(i, ref_get(i) + 1);
+    let val = Ref::new(input);
+    let i = Ref::new(0);
+    while i.get() < 3 {
+        let step = p.steps[i.get()];
+        val.set(Processor::process(step, val.get()));
+        i.set(i.get() + 1);
     };
-    ref_get(val)
+    val.get()
 }
 
 fn main() {

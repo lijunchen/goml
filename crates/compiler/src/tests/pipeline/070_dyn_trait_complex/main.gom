@@ -49,22 +49,22 @@ impl Display for Flag {
 
 impl Display for Counter {
     fn show(self: Counter) -> string {
-        "Counter(" + ref_get(self.cell).to_string() + ")"
+        "Counter(" + self.cell.get().to_string() + ")"
     }
 
     fn show_with(self: Counter, prefix: string, suffix: string) -> string {
-        prefix + "Counter(" + ref_get(self.cell).to_string() + ")" + suffix
+        prefix + "Counter(" + self.cell.get().to_string() + ")" + suffix
     }
 
     fn tick(self: Counter) -> unit {
-        let next = ref_get(self.cell) + 1;
-        let _ = ref_set(self.cell, next);
+        let next = self.cell.get() + 1;
+        let _ = self.cell.set(next);
         ()
     }
 
     fn bump(self: Counter, delta: int32) -> int32 {
-        let next = ref_get(self.cell) + delta;
-        let _ = ref_set(self.cell, next);
+        let next = self.cell.get() + delta;
+        let _ = self.cell.set(next);
         next
     }
 }
@@ -93,7 +93,7 @@ fn main() -> unit {
     let p2 = Point { x: 3, y: 4 };
     let f1 = Flag { value: true };
     let f2 = Flag { value: false };
-    let c = Counter { cell: ref(10) };
+    let c = Counter { cell: Ref::new(10) };
 
     let dp1: dyn Display = p1;
     let dp2: dyn Display = p2;
@@ -122,11 +122,11 @@ fn main() -> unit {
     let _ = println(s1);
     let _ = println(s2);
 
-    let i: Ref[int32] = ref(0);
-    let _ = while ref_get(i) < 3 {
+    let i: Ref[int32] = Ref::new(0);
+    let _ = while i.get() < 3 {
         let line = bump_and_show(dc, delta);
         println(line);
-        let _ = ref_set(i, ref_get(i) + 1);
+        let _ = i.set(i.get() + 1);
     };
 
     let _ = println("len:" + vlen.to_string());

@@ -45,35 +45,58 @@ func main0() struct{} {
     show_int("diff=", diff__6)
     show_int("prod=", prod__7)
     show_int("quot=", quot__8)
-    var and_result__9 bool = true && false
-    var or_result__10 bool = true || false
+    var jp20 bool
+    if true {
+        jp20 = false
+    } else {
+        jp20 = false
+    }
+    var and_result__9 bool = jp20
+    var jp22 bool
+    if true {
+        jp22 = true
+    } else {
+        jp22 = false
+    }
+    var or_result__10 bool = jp22
     var not_result__11 bool = !false
-    var t19 bool = !and_result__9
-    var t20 int32 = prod__7 * base__4
-    var t21 int32 = sum__5 + t20
-    var t22 int32 = prod__7 / 2
-    var mtmp6 int32 = t21 - t22
+    var t33 bool = !and_result__9
+    var jp26 bool
+    if t33 {
+        var t34 int32 = prod__7 * base__4
+        var t35 int32 = sum__5 + t34
+        var t36 int32 = prod__7 / 2
+        var mtmp6 int32 = t35 - t36
+        var jp38 bool
+        switch mtmp6 {
+        case 0:
+            jp38 = false
+        default:
+            jp38 = true
+        }
+        jp26 = jp38
+    } else {
+        jp26 = false
+    }
     var jp24 bool
-    switch mtmp6 {
-    case 0:
-        jp24 = false
-    default:
+    if jp26 {
         jp24 = true
+    } else {
+        var t27 int32 = diff__6 - quot__8
+        var t28 int32 = t27 + base__4
+        var t29 int32 = sum__5 / 2
+        var mtmp7 int32 = t28 - t29
+        var jp31 bool
+        switch mtmp7 {
+        case 0:
+            jp31 = false
+        default:
+            jp31 = true
+        }
+        var t32 bool = !jp31
+        jp24 = t32
     }
-    var t25 bool = t19 && jp24
-    var t26 int32 = diff__6 - quot__8
-    var t27 int32 = t26 + base__4
-    var t28 int32 = sum__5 / 2
-    var mtmp7 int32 = t27 - t28
-    var jp30 bool
-    switch mtmp7 {
-    case 0:
-        jp30 = false
-    default:
-        jp30 = true
-    }
-    var t31 bool = !jp30
-    var mixed__12 bool = t25 || t31
+    var mixed__12 bool = jp24
     show_bool("and=", and_result__9)
     show_bool("or=", or_result__10)
     show_bool("not=", not_result__11)

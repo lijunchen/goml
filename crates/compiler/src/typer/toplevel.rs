@@ -18,12 +18,15 @@ use crate::{
     },
 };
 
-fn predeclare_types(
-    genv: &mut GlobalTypeEnv,
-    _diagnostics: &mut Diagnostics,
-    hir: &hir::PackageHir,
-    hir_table: &hir::HirTable,
-) {
+fn source_fn_origin(env: &PackageTypeEnv) -> FnOrigin {
+    if env.package == BUILTIN_PACKAGE {
+        FnOrigin::Builtin
+    } else {
+        FnOrigin::User
+    }
+}
+
+fn predeclare_types(genv: &mut GlobalTypeEnv, hir: &hir::PackageHir, hir_table: &hir::HirTable) {
     for item in hir.toplevels.iter() {
         match hir_table.def(*item) {
             hir::Def::EnumDef(enum_def) => {
@@ -50,7 +53,240 @@ fn predeclare_types(
     }
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum NominalKind {
+    Enum,
+    Struct,
+}
+
+impl NominalKind {
+    fn label(self) -> &'static str {
+        match self {
+            NominalKind::Enum => "enum",
+            NominalKind::Struct => "struct",
+        }
+    }
+}
+
+fn validate_nominal_type_names(
+    diagnostics: &mut Diagnostics,
+    hir: &hir::PackageHir,
+    hir_table: &hir::HirTable,
+) {
+    let mut seen = HashMap::new();
+    for item in hir.toplevels.iter() {
+        let (name, kind) = match hir_table.def(*item) {
+            hir::Def::EnumDef(enum_def) => (enum_def.name.to_ident_name(), NominalKind::Enum),
+            hir::Def::StructDef(struct_def) => {
+                (struct_def.name.to_ident_name(), NominalKind::Struct)
+            }
+            _ => continue,
+        };
+
+        match seen.insert(name.clone(), kind) {
+            Some(prev) if prev == kind => diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!("{} {} is defined multiple times", kind.label(), name),
+            )),
+            Some(_) => diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!("type {} is defined as both a struct and an enum", name),
+            )),
+            None => {}
+        }
+    }
+}
+
+fn validate_top_level_function_names(
+    diagnostics: &mut Diagnostics,
+    hir: &hir::PackageHir,
+    hir_table: &hir::HirTable,
+) {
+    let mut seen = HashSet::new();
+    for item in hir.toplevels.iter() {
+        let name = match hir_table.def(*item) {
+            hir::Def::Fn(func) => func.name.clone(),
+            hir::Def::ExternBuiltin(ext) => ext.name.to_ident_name(),
+            _ => continue,
+        };
+
+        if !seen.insert(name.clone()) {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!("function {} is defined multiple times", name),
+            ));
+        }
+    }
+}
+
+fn validate_type_parameter_names<'a>(
+    diagnostics: &mut Diagnostics,
+    generics: impl IntoIterator<Item = &'a hir::HirIdent>,
+) {
+    let mut seen = HashSet::new();
+    for param in generics {
+        let name = param.to_ident_name();
+        if !seen.insert(name.clone()) {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!("type parameter {} is defined multiple times", name),
+            ));
+        }
+    }
+}
+
+fn validate_top_level_type_parameter_names(
+    diagnostics: &mut Diagnostics,
+    hir: &hir::PackageHir,
+    hir_table: &hir::HirTable,
+) {
+    for item in hir.toplevels.iter() {
+        match hir_table.def(*item) {
+            hir::Def::EnumDef(enum_def) => {
+                validate_type_parameter_names(diagnostics, enum_def.generics.iter());
+            }
+            hir::Def::StructDef(struct_def) => {
+                validate_type_parameter_names(diagnostics, struct_def.generics.iter());
+            }
+            hir::Def::ImplBlock(impl_block) => {
+                validate_type_parameter_names(diagnostics, impl_block.generics.iter());
+                for method in impl_block.methods.iter() {
+                    let hir::Def::Fn(func) = hir_table.def(*method) else {
+                        continue;
+                    };
+                    validate_type_parameter_names(
+                        diagnostics,
+                        impl_block.generics.iter().chain(func.generics.iter()),
+                    );
+                }
+            }
+            hir::Def::Fn(func) => {
+                validate_type_parameter_names(diagnostics, func.generics.iter());
+            }
+            hir::Def::ExternBuiltin(ext) => {
+                validate_type_parameter_names(diagnostics, ext.generics.iter());
+            }
+            hir::Def::TraitDef(..) => {}
+        }
+    }
+}
+
+fn validate_decl_ty(
+    env: &PackageTypeEnv,
+    diagnostics: &mut Diagnostics,
+    ty: &tast::Ty,
+    range: Option<text_size::TextRange>,
+    tparams: &HashSet<String>,
+) {
+    validate_ty(env, diagnostics, ty, range, tparams);
+    validate_no_self_ty(diagnostics, ty, range);
+}
+
+fn validate_no_self_ty(
+    diagnostics: &mut Diagnostics,
+    ty: &tast::Ty,
+    range: Option<text_size::TextRange>,
+) {
+    match ty {
+        tast::Ty::TStruct { name } if name == "Self" => {
+            diagnostics.push(
+                Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    "Self type is only valid in impl methods".to_string(),
+                )
+                .with_range(range),
+            );
+        }
+        tast::Ty::TTuple { typs } => {
+            for ty in typs {
+                validate_no_self_ty(diagnostics, ty, range);
+            }
+        }
+        tast::Ty::TApp { ty, args } => {
+            validate_no_self_ty(diagnostics, ty, range);
+            for arg in args {
+                validate_no_self_ty(diagnostics, arg, range);
+            }
+        }
+        tast::Ty::TArray { elem, .. }
+        | tast::Ty::TSlice { elem }
+        | tast::Ty::TVec { elem }
+        | tast::Ty::TRef { elem } => validate_no_self_ty(diagnostics, elem, range),
+        tast::Ty::THashMap { key, value } => {
+            validate_no_self_ty(diagnostics, key, range);
+            validate_no_self_ty(diagnostics, value, range);
+        }
+        tast::Ty::TFunc { params, ret_ty } => {
+            for param in params {
+                validate_no_self_ty(diagnostics, param, range);
+            }
+            validate_no_self_ty(diagnostics, ret_ty, range);
+        }
+        _ => {}
+    }
+}
+
+fn validate_enum_variant_names(diagnostics: &mut Diagnostics, enum_def: &hir::EnumDef) {
+    let mut seen = HashSet::new();
+    let enum_name = enum_def.name.to_ident_name();
+    for (variant, _) in enum_def.variants.iter() {
+        let name = variant.to_ident_name();
+        if !seen.insert(name.clone()) {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "variant {} is defined multiple times in enum {}",
+                    name, enum_name
+                ),
+            ));
+        }
+    }
+}
+
+fn validate_struct_field_names(diagnostics: &mut Diagnostics, struct_def: &hir::StructDef) {
+    let mut seen = HashSet::new();
+    let struct_name = struct_def.name.to_ident_name();
+    for (field, _) in struct_def.fields.iter() {
+        let name = field.to_ident_name();
+        if !seen.insert(name.clone()) {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "field {} is defined multiple times in struct {}",
+                    name, struct_name
+                ),
+            ));
+        }
+    }
+}
+
+fn validate_trait_method_names(diagnostics: &mut Diagnostics, trait_def: &hir::TraitDef) {
+    let mut seen = HashSet::new();
+    let trait_name = trait_def.name.to_ident_name();
+    for method in trait_def.method_sigs.iter() {
+        let name = method.name.to_ident_name();
+        if !seen.insert(name.clone()) {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "method {} is defined multiple times in trait {}",
+                    name, trait_name
+                ),
+            ));
+        }
+    }
+}
+
 fn define_enum(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, enum_def: &hir::EnumDef) {
+    validate_enum_variant_names(diagnostics, enum_def);
     let params_env: Vec<tast::TastIdent> = enum_def
         .generics
         .iter()
@@ -66,7 +302,7 @@ fn define_enum(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, enum_def
                 .iter()
                 .map(|ast_ty| {
                     let ty = tast::Ty::from_hir(env, ast_ty, &params_env);
-                    validate_ty(
+                    validate_decl_ty(
                         env,
                         diagnostics,
                         &ty,
@@ -95,6 +331,7 @@ fn define_struct(
     diagnostics: &mut Diagnostics,
     struct_def: &hir::StructDef,
 ) {
+    validate_struct_field_names(diagnostics, struct_def);
     let params_env: Vec<tast::TastIdent> = struct_def
         .generics
         .iter()
@@ -106,7 +343,7 @@ fn define_struct(
         .iter()
         .map(|(fname, ast_ty)| {
             let ty = tast::Ty::from_hir(env, ast_ty, &params_env);
-            validate_ty(
+            validate_decl_ty(
                 env,
                 diagnostics,
                 &ty,
@@ -128,7 +365,12 @@ fn define_struct(
     });
 }
 
-fn define_trait(env: &mut PackageTypeEnv, trait_def: &hir::TraitDef) {
+fn define_trait(
+    env: &mut PackageTypeEnv,
+    diagnostics: &mut Diagnostics,
+    trait_def: &hir::TraitDef,
+) {
+    validate_trait_method_names(diagnostics, trait_def);
     let mut methods = IndexMap::new();
 
     for hir::TraitMethodSignature {
@@ -228,11 +470,13 @@ fn build_method_constraints(
 }
 
 fn is_local_name(current_package: &str, name: &str) -> bool {
-    if let Some((package, _)) = name.split_once("::") {
-        package == current_package
-    } else {
-        is_special_unqualified_package(current_package)
+    if is_special_unqualified_package(current_package) {
+        return !name.contains("::");
     }
+    let Some(rest) = name.strip_prefix(&format!("{current_package}::")) else {
+        return false;
+    };
+    !rest.contains("::")
 }
 
 fn is_local_nominal_type(current_package: &str, ty: &tast::Ty) -> bool {
@@ -263,7 +507,7 @@ fn define_trait_impl(
         .map(|g| tast::TastIdent(g.to_ident_name()))
         .collect();
     let for_ty = tast::Ty::from_hir(env, &impl_block.for_type, &impl_generics_tast);
-    validate_ty(
+    validate_decl_ty(
         env,
         diagnostics,
         &for_ty,
@@ -507,7 +751,7 @@ fn define_trait_impl(
                     type_params,
                     constraints,
                     ty: impl_method_ty,
-                    origin: FnOrigin::User,
+                    origin: source_fn_origin(env),
                 },
             );
         }
@@ -552,7 +796,7 @@ fn define_inherent_impl(
         .map(|g| tast::TastIdent(g.to_ident_name()))
         .collect();
     let for_ty = tast::Ty::from_hir(env, &impl_block.for_type, &impl_generics_tast);
-    validate_ty(
+    validate_decl_ty(
         env,
         diagnostics,
         &for_ty,
@@ -668,7 +912,7 @@ fn define_inherent_impl(
                 type_params,
                 constraints,
                 ty: impl_method_ty,
-                origin: FnOrigin::User,
+                origin: source_fn_origin(env),
             },
         );
     }
@@ -712,7 +956,7 @@ fn define_function(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, func
         .iter()
         .map(|(_, hir_ty)| {
             let ty = tast::Ty::from_hir(env, hir_ty, &generics_tast);
-            validate_ty(
+            validate_decl_ty(
                 env,
                 diagnostics,
                 &ty,
@@ -725,7 +969,7 @@ fn define_function(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, func
     let ret = match &func.ret_ty {
         Some(hir_ty) => {
             let ret = tast::Ty::from_hir(env, hir_ty, &generics_tast);
-            validate_ty(
+            validate_decl_ty(
                 env,
                 diagnostics,
                 &ret,
@@ -738,6 +982,7 @@ fn define_function(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, func
     };
     let fn_constraints =
         build_fn_constraints(env, diagnostics, &func.generics, &func.generic_bounds);
+    let origin = source_fn_origin(env);
     env.current_mut().value_env.funcs.insert(
         name,
         FnScheme {
@@ -747,9 +992,22 @@ fn define_function(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, func
                 params,
                 ret_ty: Box::new(ret),
             },
-            origin: FnOrigin::User,
+            origin,
         },
     );
+}
+
+fn is_std_host_extern(package: &str, name: &str) -> bool {
+    matches!(
+        (package, name),
+        ("env" | "std::env", "args_raw")
+            | ("io" | "std::io", "print_raw" | "println_raw")
+            | (
+                "fs" | "std::fs",
+                "read_file_raw" | "write_file_raw" | "file_exists_raw" | "read_dir_raw"
+            )
+            | ("process" | "std::process", "exit_raw")
+    )
 }
 
 fn define_extern_builtin(
@@ -757,6 +1015,37 @@ fn define_extern_builtin(
     diagnostics: &mut Diagnostics,
     ext: &hir::ExternBuiltin,
 ) {
+    let name = ext.name.to_ident_name();
+    let local_name = name.rsplit("::").next().unwrap_or(&name);
+    if env.package != BUILTIN_PACKAGE {
+        if builtins::builtin_function_names()
+            .iter()
+            .any(|builtin| builtin == local_name)
+        {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "builtin extern {} conflicts with a compiler builtin function",
+                    local_name
+                ),
+            ));
+            return;
+        }
+
+        if !env.allow_std_host_externs || !is_std_host_extern(&env.package, local_name) {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "builtin extern {} is not a compiler-owned host hook",
+                    local_name
+                ),
+            ));
+            return;
+        }
+    }
+
     let tparams: Vec<tast::TastIdent> = ext
         .generics
         .iter()
@@ -768,7 +1057,7 @@ fn define_extern_builtin(
         .iter()
         .map(|(_, hir_ty)| {
             let ty = tast::Ty::from_hir(env, hir_ty, &tparams);
-            validate_ty(
+            validate_decl_ty(
                 env,
                 diagnostics,
                 &ty,
@@ -781,7 +1070,7 @@ fn define_extern_builtin(
     let ret_ty = match &ext.ret_ty {
         Some(hir_ty) => {
             let ty = tast::Ty::from_hir(env, hir_ty, &tparams);
-            validate_ty(
+            validate_decl_ty(
                 env,
                 diagnostics,
                 &ty,
@@ -887,13 +1176,16 @@ pub fn collect_typedefs(
     hir: &hir::PackageHir,
     hir_table: &hir::HirTable,
 ) {
-    predeclare_types(env.current_mut(), diagnostics, hir, hir_table);
+    validate_nominal_type_names(diagnostics, hir, hir_table);
+    validate_top_level_function_names(diagnostics, hir, hir_table);
+    validate_top_level_type_parameter_names(diagnostics, hir, hir_table);
+    predeclare_types(env.current_mut(), hir, hir_table);
 
     for item in hir.toplevels.iter() {
         match hir_table.def(*item) {
             hir::Def::EnumDef(enum_def) => define_enum(env, diagnostics, enum_def),
             hir::Def::StructDef(struct_def) => define_struct(env, diagnostics, struct_def),
-            hir::Def::TraitDef(trait_def) => define_trait(env, trait_def),
+            hir::Def::TraitDef(trait_def) => define_trait(env, diagnostics, trait_def),
             _ => {}
         }
     }
@@ -1139,7 +1431,33 @@ pub fn check_file_with_env(
     package: &str,
     deps: HashMap<String, env::GlobalTypeEnv>,
 ) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
+    check_file_with_env_inner(hir, hir_table, genv, builtins, package, deps, false)
+}
+
+pub fn check_file_with_env_allowing_std_host_externs(
+    hir: hir::PackageHir,
+    hir_table: name_resolution::HirTable,
+    genv: env::GlobalTypeEnv,
+    builtins: env::GlobalTypeEnv,
+    package: &str,
+    deps: HashMap<String, env::GlobalTypeEnv>,
+) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
+    check_file_with_env_inner(hir, hir_table, genv, builtins, package, deps, true)
+}
+
+fn check_file_with_env_inner(
+    hir: hir::PackageHir,
+    hir_table: name_resolution::HirTable,
+    genv: env::GlobalTypeEnv,
+    builtins: env::GlobalTypeEnv,
+    package: &str,
+    deps: HashMap<String, env::GlobalTypeEnv>,
+    allow_std_host_externs: bool,
+) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
     let mut genv = env::PackageTypeEnv::new(package.to_string(), builtins, genv, deps);
+    if allow_std_host_externs {
+        genv = genv.with_std_host_externs();
+    }
     let mut typer = Typer::new(hir_table);
     let mut diagnostics = Diagnostics::new();
     collect_typedefs(&mut genv, &mut diagnostics, &hir, &typer.hir_table);
@@ -1330,6 +1648,24 @@ fn normalize_trait_bounds(bounds: &mut indexmap::IndexMap<String, Vec<tast::Tast
     }
 }
 
+fn validate_function_parameter_names(
+    diagnostics: &mut Diagnostics,
+    hir_table: &hir::HirTable,
+    f: &hir::Fn,
+) {
+    let mut seen = HashSet::new();
+    for (id, _) in f.params.iter() {
+        let name = hir_table.local_hint(*id).to_string();
+        if !seen.insert(name.clone()) {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!("parameter {} is defined multiple times", name),
+            ));
+        }
+    }
+}
+
 fn typecheck_fn(
     genv: &PackageTypeEnv,
     typer: &mut Typer,
@@ -1337,6 +1673,7 @@ fn typecheck_fn(
     f: &hir::Fn,
     in_scope_traits: &[tast::TastIdent],
 ) {
+    validate_function_parameter_names(diagnostics, &typer.hir_table, f);
     let mut local_env = LocalTypeEnv::new();
     local_env.set_in_scope_traits(in_scope_traits.to_vec());
     let tparams: Vec<tast::TastIdent> = f
@@ -1403,6 +1740,7 @@ fn typecheck_impl_block(
             hir::Def::Fn(func) => func,
             _ => continue,
         };
+        validate_function_parameter_names(diagnostics, &typer.hir_table, &f);
         let mut local_env = LocalTypeEnv::new();
         local_env.set_in_scope_traits(in_scope_traits.to_vec());
 

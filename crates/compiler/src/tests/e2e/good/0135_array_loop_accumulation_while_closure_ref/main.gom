@@ -1,11 +1,11 @@
 fn fold[T, A](arr: [T; 5], init: A, f: (A, T) -> A) -> A {
-    let acc = ref(init);
-    let i = ref(0);
-    while ref_get(i) < 5 {
-        ref_set(acc, f(ref_get(acc), arr[ref_get(i)]));
-        ref_set(i, ref_get(i) + 1);
+    let acc = Ref::new(init);
+    let i = Ref::new(0);
+    while i.get() < 5 {
+        acc.set(f(acc.get(), arr[i.get()]));
+        i.set(i.get() + 1);
     };
-    ref_get(acc)
+    acc.get()
 }
 
 fn main() {

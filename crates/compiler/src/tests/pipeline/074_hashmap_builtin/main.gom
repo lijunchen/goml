@@ -30,14 +30,14 @@ fn main() -> unit {
     println(m1.len());
 
     let m2 = HashMap::new();
-    let p1 = ref(Point { x: 1, y: 2 });
-    let p2 = ref(Point { x: 1, y: 2 });
+    let p1 = Ref::new(Point { x: 1, y: 2 });
+    let p2 = Ref::new(Point { x: 1, y: 2 });
     m2.set(p1, 99);
     print_opt_int(m2.get(p2));
 
     let m3 = HashMap::new();
-    let k1 = ref(Key::B(7));
-    let k2 = ref(Key::B(7));
+    let k1 = Ref::new(Key::B(7));
+    let k2 = Ref::new(Key::B(7));
     m3.set(k1, 123);
     print_opt_int(m3.get(k2));
 }

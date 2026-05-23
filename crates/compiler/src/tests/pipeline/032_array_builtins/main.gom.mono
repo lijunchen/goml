@@ -3,22 +3,22 @@ fn update_array(arr/0: [int32; 3]) -> [int32; 3] {
   let _wild4 = {
     let place_root0 = arr/1 in
     let index1 = 1 in
-    let place2 = array_get(place_root0, index1) in
+    let place2 = $goml_builtin_runtime$array_get(place_root0, index1) in
     let value3 = 42 in
-    arr/1 = array_set(place_root0, index1, value3)
+    arr/1 = $goml_builtin_runtime$array_set(place_root0, index1, value3)
   } in
   arr/1
 }
 
 fn read_array(arr/2: [int32; 3]) -> int32 {
-  array_get(arr/2, 1)
+  $goml_builtin_runtime$array_get(arr/2, 1)
 }
 
 fn main() -> unit {
   let arr/3 = [1, 2, 3] in
   let updated/4 = update_array(arr/3) in
   let value/5 = read_array(updated/4) in
-  let mtmp5 = println__T_string(int32_to_string(value/5)) in
+  let mtmp5 = println__T_string($goml_builtin_runtime$int32_to_string(value/5)) in
   {
     ()
   }

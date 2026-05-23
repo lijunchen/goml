@@ -497,7 +497,6 @@ fn compile_inner(
     let typecheck = typecheck_packages_inner(path, entry_ast.clone(), single_file)?;
     let TypecheckPackagesResult {
         full_tast,
-        genv,
         mut diagnostics,
         graph,
         artifacts,
@@ -555,11 +554,11 @@ fn compile_inner(
         deps.sort();
         for dep in deps.iter() {
             if let Some(dep_artifact) = artifacts.get(dep) {
-                dep_artifact.interface.exports.apply_to(&mut env);
+                dep_artifact.full_exports.apply_to(&mut env);
                 continue;
             }
             if let Some(module) = external_deps.modules.get(dep) {
-                module.interface.exports.apply_to(&mut env);
+                module.core.exports.apply_to(&mut env);
                 continue;
             }
             return Err(compile_error(format!(
@@ -585,7 +584,17 @@ fn compile_inner(
     if diagnostics.has_errors() {
         return Err(CompilationError::Compile { diagnostics });
     }
-    let (mono, monoenv) = mono::mono(genv.clone(), core.clone()).map_err(compile_error)?;
+    let mut codegen_genv = builtins::builtin_env();
+    for module in external_deps.modules.values() {
+        module.core.exports.apply_to(&mut codegen_genv);
+    }
+    for name in graph.discovery_order.iter() {
+        let artifact = artifacts
+            .get(name)
+            .ok_or_else(|| compile_error(format!("missing package artifact for {}", name)))?;
+        artifact.full_exports.apply_to(&mut codegen_genv);
+    }
+    let (mono, monoenv) = mono::mono(codegen_genv.clone(), core.clone()).map_err(compile_error)?;
     let (lifted_core, liftenv) = lift::lambda_lift(monoenv.clone(), &gensym, mono.clone());
     let (anf, anfenv) = anf::anf_file(liftenv.clone(), &gensym, lifted_core.clone());
     let (go, goenv) = go::compile::go_file(anfenv.clone(), &gensym, anf.clone());
@@ -597,7 +606,7 @@ fn compile_inner(
         hir,
         hir_table,
         tast,
-        genv,
+        genv: codegen_genv,
         liftenv,
         monoenv,
         anfenv,

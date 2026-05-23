@@ -74,6 +74,37 @@ fn deep_left_nested_tuple_type(depth: usize) -> String {
     ty
 }
 
+fn deep_ref_type(depth: usize) -> String {
+    let mut ty = "int32".to_string();
+    for _ in 0..depth {
+        ty = format!("Ref[{ty}]");
+    }
+    ty
+}
+
+fn wide_struct_pattern_program(field_count: usize) -> String {
+    let fields = (0..field_count)
+        .map(|idx| format!("f{}: int32", idx))
+        .collect::<Vec<_>>()
+        .join(", ");
+    let values = (0..field_count)
+        .map(|idx| format!("f{}: {}i32", idx, idx))
+        .collect::<Vec<_>>()
+        .join(", ");
+    let pattern_fields = (0..field_count)
+        .map(|idx| format!("f{}: x{}", idx, idx))
+        .collect::<Vec<_>>()
+        .join(", ");
+    let sum = (0..200)
+        .map(|idx| format!("x{}", idx))
+        .collect::<Vec<_>>()
+        .join(" + ");
+
+    format!(
+        "struct S {{ {fields} }}\nfn main() -> unit {{ let s = S {{ {values} }}; let total = match s {{ S {{ {pattern_fields} }} => {sum} }}; println(total.to_string()) }}\n"
+    )
+}
+
 fn go_available() -> bool {
     static AVAILABLE: OnceLock<bool> = OnceLock::new();
     *AVAILABLE.get_or_init(|| {
@@ -179,6 +210,8 @@ fn create_local_registry(root: &Path) -> anyhow::Result<PathBuf> {
     fs::create_dir_all(registry.join("alice/http/1.2.0/client"))?;
     fs::create_dir_all(registry.join("alice/net/0.1.0"))?;
     fs::create_dir_all(registry.join("alice/appdep/0.1.0"))?;
+    fs::create_dir_all(registry.join("alice/traits/1.0.0"))?;
+    fs::create_dir_all(registry.join("bob/data/1.0.0"))?;
 
     fs::write(
         registry.join("index.toml"),
@@ -193,6 +226,14 @@ versions = ["0.1.0"]
 [modules."alice::appdep"]
 latest = "0.1.0"
 versions = ["0.1.0"]
+
+[modules."alice::traits"]
+latest = "1.0.0"
+versions = ["1.0.0"]
+
+[modules."bob::data"]
+latest = "1.0.0"
+versions = ["1.0.0"]
 "#,
     )?;
 
@@ -290,6 +331,54 @@ root = "lib.gom"
 
 pub fn marker() -> string {
     "appdep"
+}
+"#,
+    )?;
+    fs::write(
+        registry.join("alice/traits/1.0.0/goml.toml"),
+        r#"[crate]
+name = "traits"
+kind = "lib"
+root = "lib.gom"
+"#,
+    )?;
+    fs::write(
+        registry.join("alice/traits/1.0.0/lib.gom"),
+        r#"
+
+pub trait Show {
+    fn show(Self) -> string;
+}
+"#,
+    )?;
+    fs::write(
+        registry.join("bob/data/1.0.0/goml.toml"),
+        r#"[crate]
+name = "data"
+kind = "lib"
+root = "lib.gom"
+
+[dependencies]
+"alice::traits" = "1.0.0"
+"#,
+    )?;
+    fs::write(
+        registry.join("bob/data/1.0.0/lib.gom"),
+        r#"
+use alice::traits;
+
+pub struct Box {
+    value: int32,
+}
+
+impl traits::Show for Box {
+    fn show(self: Box) -> string {
+        self.value.to_string()
+    }
+}
+
+pub fn make() -> Box {
+    Box { value: 21i32 }
 }
 "#,
     )?;
@@ -483,6 +572,215 @@ fn compiler_build_handles_deep_tuple_type() -> anyhow::Result<()> {
         "stdout: {stdout}\nstderr: {stderr}"
     );
     expect![""].assert_eq(&stdout);
+
+    Ok(())
+}
+
+#[test]
+fn compiler_build_rejects_reserved_array_wildcard_length() -> anyhow::Result<()> {
+    let program = r#"
+fn take(x: [int32; 18446744073709551615]) -> int32 {
+    x[0]
+}
+
+fn main() -> unit {
+    let a: [int32; 18446744073709551615] = [7i32, 8i32];
+    println(take(a).to_string())
+}
+"#;
+    let (_input_dir, input) = write_program(program)?;
+    let output_dir = tempfile::tempdir()?;
+    let output_path = output_dir.path().join("main");
+
+    let output = Command::new(goml_bin())
+        .arg("compiler")
+        .arg("build")
+        .arg("--package")
+        .arg("main")
+        .arg("--input")
+        .arg(&input)
+        .arg("--output")
+        .arg(&output_path)
+        .output()?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "stdout: {stdout}\nstderr: {stderr}"
+    );
+    assert!(
+        stderr.contains("Invalid array length"),
+        "stdout: {stdout}\nstderr: {stderr}"
+    );
+    expect![""].assert_eq(&stdout);
+
+    Ok(())
+}
+
+#[test]
+fn compiler_build_rejects_array_length_above_go_int() -> anyhow::Result<()> {
+    let program = r#"
+fn take(x: [int32; 18446744073709551614]) -> int32 {
+    x[0]
+}
+
+fn main() -> unit {
+    let dummy = [0i32];
+    let a: [int32; 18446744073709551614] = [7i32, 8i32];
+    println(take(a).to_string())
+}
+"#;
+    let (_input_dir, input) = write_program(program)?;
+    let output_dir = tempfile::tempdir()?;
+    let output_path = output_dir.path().join("main");
+
+    let output = Command::new(goml_bin())
+        .arg("compiler")
+        .arg("build")
+        .arg("--package")
+        .arg("main")
+        .arg("--input")
+        .arg(&input)
+        .arg("--output")
+        .arg(&output_path)
+        .output()?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "stdout: {stdout}\nstderr: {stderr}"
+    );
+    assert!(
+        stderr.contains("Invalid array length"),
+        "stdout: {stdout}\nstderr: {stderr}"
+    );
+    expect![""].assert_eq(&stdout);
+
+    Ok(())
+}
+
+#[test]
+fn compiler_build_handles_wide_struct_pattern() -> anyhow::Result<()> {
+    let program = wide_struct_pattern_program(1000);
+    let (_input_dir, input) = write_program(&program)?;
+    let output_dir = tempfile::tempdir()?;
+    let output_path = output_dir.path().join("main");
+
+    let output = Command::new(goml_bin())
+        .arg("compiler")
+        .arg("build")
+        .arg("--package")
+        .arg("main")
+        .arg("--input")
+        .arg(&input)
+        .arg("--output")
+        .arg(&output_path)
+        .output()?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(
+        output.status.success(),
+        "stdout: {stdout}\nstderr: {stderr}"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn compiler_build_handles_very_wide_struct_pattern() -> anyhow::Result<()> {
+    let program = wide_struct_pattern_program(2600);
+    let (_input_dir, input) = write_program(&program)?;
+    let output_dir = tempfile::tempdir()?;
+    let output_path = output_dir.path().join("main");
+
+    let output = Command::new(goml_bin())
+        .arg("compiler")
+        .arg("build")
+        .arg("--package")
+        .arg("main")
+        .arg("--input")
+        .arg(&input)
+        .arg("--output")
+        .arg(&output_path)
+        .output()?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(
+        output.status.success(),
+        "stdout: {stdout}\nstderr: {stderr}"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn project_build_handles_very_wide_struct_pattern() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    fs::write(
+        dir.path().join("goml.toml"),
+        r#"[crate]
+name = "wideproj"
+kind = "bin"
+root = "main.gom"
+"#,
+    )?;
+    fs::write(
+        dir.path().join("main.gom"),
+        wide_struct_pattern_program(2600),
+    )?;
+
+    let output = run_goml(&["build"], dir.path())?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(
+        output.status.success(),
+        "stdout: {stdout}\nstderr: {stderr}"
+    );
+    assert!(dir.path().join("target/goml/main.go").exists());
+
+    Ok(())
+}
+
+#[test]
+fn project_build_handles_deep_public_interface_type() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    fs::write(
+        dir.path().join("goml.toml"),
+        r#"[crate]
+name = "iface_deep"
+kind = "bin"
+root = "main.gom"
+"#,
+    )?;
+    fs::create_dir_all(dir.path().join("Lib"))?;
+    fs::write(
+        dir.path().join("Lib/mod.gom"),
+        format!(
+            "pub struct Wrap {{ value: {} }}\n\npub fn ping() -> int32 {{ 1 }}\n",
+            deep_ref_type(200)
+        ),
+    )?;
+    fs::write(
+        dir.path().join("main.gom"),
+        "mod Lib;\n\nfn main() -> unit { println(crate::Lib::ping().to_string()) }\n",
+    )?;
+
+    let output = run_goml(&["build"], dir.path())?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(
+        output.status.success(),
+        "stdout: {stdout}\nstderr: {stderr}"
+    );
+    assert!(dir.path().join("target/goml/main.go").exists());
 
     Ok(())
 }
@@ -691,6 +989,74 @@ fn main() -> unit {
     let go_stderr = String::from_utf8_lossy(&go_output.stderr);
     assert!(go_output.status.success(), "stderr: {go_stderr}");
     expect!["client-1.2.0:client-1.2.0:appdep\n"].assert_eq(&go_stdout);
+
+    Ok(())
+}
+
+#[test]
+fn project_build_imports_transitive_external_trait() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let registry = create_local_registry(dir.path())?;
+    let home = dir.path().join("home");
+    fs::create_dir_all(&home)?;
+
+    let project_dir = dir.path().join("demo");
+    fs::create_dir_all(&project_dir)?;
+    fs::write(
+        project_dir.join("goml.toml"),
+        r#"[crate]
+name = "demo"
+kind = "bin"
+root = "main.gom"
+
+[dependencies]
+"bob::data" = "1.0.0"
+"#,
+    )?;
+    fs::write(
+        project_dir.join("main.gom"),
+        r#"
+
+use bob::data;
+use alice::traits::Show;
+
+fn main() -> unit {
+    let value = data::make();
+    println(value.show())
+}
+"#,
+    )?;
+
+    let update_output = run_goml_with_home(
+        &[
+            "update",
+            "--local-registry",
+            registry.to_string_lossy().as_ref(),
+        ],
+        &project_dir,
+        &home,
+    )?;
+    assert!(
+        update_output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&update_output.stderr)
+    );
+
+    let build_output = run_goml_with_home(&["build"], &project_dir, &home)?;
+    assert!(
+        build_output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&build_output.stderr)
+    );
+
+    if !runtime_executor_available() {
+        return Ok(());
+    }
+    let go_output = run_go_main(&project_dir.join("target/goml/main.go"), &project_dir)?;
+    let go_stdout = String::from_utf8_lossy(&go_output.stdout);
+    let go_stderr = String::from_utf8_lossy(&go_output.stderr);
+    assert!(go_output.status.success(), "stderr: {go_stderr}");
+    expect!["21\n"].assert_eq(&go_stdout);
 
     Ok(())
 }
@@ -1058,6 +1424,43 @@ fn new_project_can_check_and_build() -> anyhow::Result<()> {
     let go_stderr = String::from_utf8_lossy(&go_output.stderr);
     assert!(go_output.status.success(), "stderr: {go_stderr}");
     expect!["hello from lib\n"].assert_eq(&go_stdout);
+
+    Ok(())
+}
+
+#[test]
+fn project_check_and_build_support_std_imports() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    fs::write(dir.path().join("goml.toml"), PROJECT_CONFIG)?;
+    fs::write(
+        dir.path().join("main.gom"),
+        r#"
+use std::io;
+
+fn main() -> unit {
+    std::io::println("std-project")
+}
+"#,
+    )?;
+
+    let check_output = run_goml(&["check"], dir.path())?;
+    let check_stderr = String::from_utf8_lossy(&check_output.stderr);
+    assert!(check_output.status.success(), "stderr: {check_stderr}");
+
+    let build_output = run_goml(&["build"], dir.path())?;
+    let build_stderr = String::from_utf8_lossy(&build_output.stderr);
+    assert!(build_output.status.success(), "stderr: {build_stderr}");
+
+    let go_file = dir.path().join("target/goml/main.go");
+    assert!(go_file.exists());
+
+    if runtime_executor_available() {
+        let go_output = run_go_main(&go_file, dir.path())?;
+        let go_stdout = String::from_utf8_lossy(&go_output.stdout);
+        let go_stderr = String::from_utf8_lossy(&go_output.stderr);
+        assert!(go_output.status.success(), "stderr: {go_stderr}");
+        expect!["std-project\n"].assert_eq(&go_stdout);
+    }
 
     Ok(())
 }

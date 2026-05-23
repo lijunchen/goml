@@ -2,7 +2,7 @@ fn trait_impl#Display#int32#show(self/0: int32) -> string {
   join ret4(retv5: string) -> string {
     retv5
   } in
-  let t6 = int32_to_string(self/0) in
+  let t6 = $goml_builtin_runtime$int32_to_string(self/0) in
   jump ret4(t6)
 }
 
@@ -10,7 +10,7 @@ fn trait_impl#Debug#int32#show(self/1: int32) -> string {
   join ret7(retv8: string) -> string {
     retv8
   } in
-  let t9 = int32_to_string(self/1) in
+  let t9 = $goml_builtin_runtime$int32_to_string(self/1) in
   let t10 = ("i32(" + t9) in
   let t11 = (t10 + ")") in
   jump ret7(t11)
@@ -53,7 +53,7 @@ fn trait_impl#Inspect#int32#inspect(self/9: int32) -> string {
   join ret25(retv26: string) -> string {
     retv26
   } in
-  let t27 = int32_to_string(self/9) in
+  let t27 = $goml_builtin_runtime$int32_to_string(self/9) in
   let t28 = ("<" + t27) in
   let t29 = (t28 + ">") in
   jump ret25(t29)
@@ -64,7 +64,7 @@ fn trait_impl#Display#Boxed#show(self/10: Boxed) -> string {
     retv31
   } in
   let t32 = Boxed.value(self/10) in
-  let t33 = int32_to_string(t32) in
+  let t33 = $goml_builtin_runtime$int32_to_string(t32) in
   let t34 = ("Boxed(" + t33) in
   let t35 = (t34 + ")") in
   jump ret30(t35)
@@ -75,7 +75,7 @@ fn trait_impl#Debug#Boxed#show(self/11: Boxed) -> string {
     retv37
   } in
   let t38 = Boxed.value(self/11) in
-  let t39 = int32_to_string(t38) in
+  let t39 = $goml_builtin_runtime$int32_to_string(t38) in
   let t40 = ("Boxed{value=" + t39) in
   let t41 = (t40 + "}") in
   jump ret36(t41)
@@ -128,7 +128,7 @@ fn trait_impl#Inspect#Boxed#inspect(self/19: Boxed) -> string {
     retv65
   } in
   let t66 = Boxed.value(self/19) in
-  let t67 = int32_to_string(t66) in
+  let t67 = $goml_builtin_runtime$int32_to_string(t66) in
   let t68 = ("[" + t67) in
   let t69 = (t68 + "]") in
   jump ret64(t69)
@@ -207,7 +207,7 @@ fn sum_and_tag__Q_int32__T_int32(tag/38: int32, x/39: int32, y/40: int32, z/41: 
   let t97 = (header/43 + " ") in
   let t98 = trait_impl#Inspect#int32#inspect(total/42) in
   let t99 = (t97 + t98) in
-  let t100 = int32_to_string(h/44) in
+  let t100 = $goml_builtin_runtime$int32_to_string(h/44) in
   let t101 = (" @" + t100) in
   let t102 = (t99 + t101) in
   jump ret94(t102)
@@ -224,7 +224,7 @@ fn sum_and_tag__Q_Boxed__T_Boxed(tag/38: Boxed, x/39: Boxed, y/40: Boxed, z/41: 
   let t106 = (header/43 + " ") in
   let t107 = trait_impl#Inspect#Boxed#inspect(total/42) in
   let t108 = (t106 + t107) in
-  let t109 = int32_to_string(h/44) in
+  let t109 = $goml_builtin_runtime$int32_to_string(h/44) in
   let t110 = (" @" + t109) in
   let t111 = (t108 + t110) in
   jump ret103(t111)
@@ -251,7 +251,7 @@ fn report_pair__Q_int32__T_int32(tag/26: int32, a/27: int32, b/28: int32, combin
   let t119 = (t118 + repr/32) in
   let t120 = bool_text(same/30) in
   let t121 = (" | eq=" + t120) in
-  let t122 = int32_to_string(h/33) in
+  let t122 = $goml_builtin_runtime$int32_to_string(h/33) in
   let t123 = (" | hash=" + t122) in
   let t124 = (t121 + t123) in
   let t125 = (t119 + t124) in
@@ -279,7 +279,7 @@ fn report_pair__Q_Boxed__T_Boxed(tag/26: Boxed, a/27: Boxed, b/28: Boxed, combin
   let t133 = (t132 + repr/32) in
   let t134 = bool_text(same/30) in
   let t135 = (" | eq=" + t134) in
-  let t136 = int32_to_string(h/33) in
+  let t136 = $goml_builtin_runtime$int32_to_string(h/33) in
   let t137 = (" | hash=" + t136) in
   let t138 = (t135 + t137) in
   let t139 = (t133 + t138) in
@@ -293,7 +293,7 @@ fn tag_text__Q_int32(tag/22: int32) -> string {
   let t142 = trait_impl#Debug#int32#show(tag/22) in
   let t143 = (t142 + "#") in
   let t144 = trait_impl#MyHash#int32#hash(tag/22) in
-  let t145 = int32_to_string(t144) in
+  let t145 = $goml_builtin_runtime$int32_to_string(t144) in
   let t146 = (t143 + t145) in
   jump ret140(t146)
 }
@@ -305,7 +305,7 @@ fn tag_text__Q_Boxed(tag/22: Boxed) -> string {
   let t149 = trait_impl#Debug#Boxed#show(tag/22) in
   let t150 = (t149 + "#") in
   let t151 = trait_impl#MyHash#Boxed#hash(tag/22) in
-  let t152 = int32_to_string(t151) in
+  let t152 = $goml_builtin_runtime$int32_to_string(t151) in
   let t153 = (t150 + t152) in
   jump ret147(t153)
 }

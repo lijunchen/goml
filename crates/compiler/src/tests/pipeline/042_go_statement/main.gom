@@ -1,11 +1,11 @@
 fn child(signal: Ref[int32]) -> unit {
-    ref_set(signal, 1)
+    signal.set(1)
 }
 
 fn main() -> unit {
-    let signal = ref(0);
+    let signal = Ref::new(0);
     go || { child(signal) };
-    while ref_get(signal) < 1 {
+    while signal.get() < 1 {
         ()
     };
     println("main");

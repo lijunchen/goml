@@ -7,7 +7,15 @@ fn println(value/1: T) -> unit {
 }
 
 fn trait_impl#Eq#Point#eq(self/0: Point, other/1: Point) -> bool {
-  ((true && trait_impl#Eq#int32#eq(Point.x(self/0), Point.x(other/1))) && trait_impl#Eq#int32#eq(Point.y(self/0), Point.y(other/1)))
+  if if true {
+      trait_impl#Eq#int32#eq(Point.x(self/0), Point.x(other/1))
+  } else {
+      false
+  } {
+      trait_impl#Eq#int32#eq(Point.y(self/0), Point.y(other/1))
+  } else {
+      false
+  }
 }
 
 fn trait_impl#Hash#Point#hash(self/2: Point) -> uint64 {
@@ -57,7 +65,11 @@ fn trait_impl#Eq#Key#eq(self/6: Key, other/7: Key) -> bool {
                     let __l1_0/8 = x7 in
                     {
                       let __r1_0/9 = x3 in
-                      (true && trait_impl#Eq#int32#eq(__l1_0/8, __r1_0/9))
+                      if true {
+                          trait_impl#Eq#int32#eq(__l1_0/8, __r1_0/9)
+                      } else {
+                          false
+                      }
                     }
                   }
                 }
@@ -91,7 +103,11 @@ fn trait_impl#Eq#Key#eq(self/6: Key, other/7: Key) -> bool {
                     let __l2_0/10 = x10 in
                     {
                       let __r2_0/11 = x4 in
-                      (true && trait_impl#Eq#Point#eq(__l2_0/10, __r2_0/11))
+                      if true {
+                          trait_impl#Eq#Point#eq(__l2_0/10, __r2_0/11)
+                      } else {
+                          false
+                      }
                     }
                   }
                 }
@@ -169,13 +185,13 @@ fn main() -> unit {
   let _wild20 = println(inherent#HashMap#HashMap[Key,int32]#contains(m1/22, Key::B(1))) in
   let _wild21 = println(inherent#HashMap#HashMap[Key,int32]#len(m1/22)) in
   let m2/23 = inherent#HashMap#HashMap[Ref[Point],int32]#new() in
-  let p1/24 = ref(Point { x: 1, y: 2 }) in
-  let p2/25 = ref(Point { x: 1, y: 2 }) in
+  let p1/24 = inherent#Ref#Ref[Point]#new(Point { x: 1, y: 2 }) in
+  let p2/25 = inherent#Ref#Ref[Point]#new(Point { x: 1, y: 2 }) in
   let _wild22 = inherent#HashMap#HashMap[Ref[Point],int32]#set(m2/23, p1/24, 99) in
   let _wild23 = print_opt_int(inherent#HashMap#HashMap[Ref[Point],int32]#get(m2/23, p2/25)) in
   let m3/26 = inherent#HashMap#HashMap[Ref[Key],int32]#new() in
-  let k1/27 = ref(Key::B(7)) in
-  let k2/28 = ref(Key::B(7)) in
+  let k1/27 = inherent#Ref#Ref[Key]#new(Key::B(7)) in
+  let k2/28 = inherent#Ref#Ref[Key]#new(Key::B(7)) in
   let _wild24 = inherent#HashMap#HashMap[Ref[Key],int32]#set(m3/26, k1/27, 123) in
   let _wild25 = print_opt_int(inherent#HashMap#HashMap[Ref[Key],int32]#get(m3/26, k2/28)) in
 }
@@ -202,4 +218,8 @@ fn inherent#HashMap#HashMap[K,V]#len(self/90: HashMap[K, V]) -> int32 {
 
 fn inherent#HashMap#HashMap[K,V]#contains(self/91: HashMap[K, V], key/92: K) -> bool {
   hashmap_contains(self/91, key/92)
+}
+
+fn inherent#Ref#Ref[T]#new(value/93: T) -> Ref[T] {
+  ref(value/93)
 }

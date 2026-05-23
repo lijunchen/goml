@@ -1,0 +1,494 @@
+use crate::syntax;
+
+fn is_whitespace(ch: char) -> bool {
+    ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n'
+}
+
+fn is_digit(ch: char) -> bool {
+    ch >= '0' && ch <= '9'
+}
+
+fn is_hex_digit(ch: char) -> bool {
+    is_digit(ch) || ch >= 'a' && ch <= 'f' || ch >= 'A' && ch <= 'F'
+}
+
+fn is_alpha(ch: char) -> bool {
+    ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z'
+}
+
+fn is_ident_continue(ch: char) -> bool {
+    is_alpha(ch) || is_digit(ch) || ch == '_'
+}
+
+fn has_at(source: string, index: int32, ch: char) -> bool {
+    if index < source.len() {
+        source.get(index) == ch
+    } else {
+        false
+    }
+}
+
+fn is_digit_at(source: string, index: int32) -> bool {
+    if index < source.len() {
+        is_digit(source.get(index))
+    } else {
+        false
+    }
+}
+
+fn is_ident_continue_at(source: string, index: int32) -> bool {
+    if index < source.len() {
+        is_ident_continue(source.get(index))
+    } else {
+        false
+    }
+}
+
+fn is_whitespace_at(source: string, index: int32) -> bool {
+    if index < source.len() {
+        is_whitespace(source.get(index))
+    } else {
+        false
+    }
+}
+
+fn is_not_newline_at(source: string, index: int32) -> bool {
+    if index < source.len() {
+        source.get(index) != '\n'
+    } else {
+        false
+    }
+}
+
+fn is_space_or_tab_at(source: string, index: int32) -> bool {
+    if index < source.len() {
+        source.get(index) == ' ' || source.get(index) == '\t'
+    } else {
+        false
+    }
+}
+
+fn starts_with_at(source: string, index: int32, needle: string) -> bool {
+    let offset = Ref::new(0);
+    let ok = Ref::new(true);
+    while offset.get() < needle.len() {
+        if !has_at(source, index + offset.get(), needle.get(offset.get())) {
+            ok.set(false);
+        } else {
+            ()
+        };
+        offset.set(offset.get() + 1);
+    };
+    ok.get()
+}
+
+fn push_token(tokens: Ref[Vec[syntax::Token]], kind: syntax::TokenKind, text: string, start: int32, end: int32) -> unit {
+    tokens.set(tokens.get().push(syntax::token(kind, text, start, end)))
+}
+
+fn consume_whitespace(source: string, start: int32) -> (string, int32) {
+    let index = Ref::new(start);
+    let text = Ref::new("");
+    while is_whitespace_at(source, index.get()) {
+        text.set(text.get() + source.get(index.get()).to_string());
+        index.set(index.get() + 1);
+    };
+    (text.get(), index.get())
+}
+
+fn consume_comment(source: string, start: int32) -> (string, int32) {
+    let index = Ref::new(start);
+    let text = Ref::new("");
+    while is_not_newline_at(source, index.get()) {
+        text.set(text.get() + source.get(index.get()).to_string());
+        index.set(index.get() + 1);
+    };
+    (text.get(), index.get())
+}
+
+fn consume_ident(source: string, start: int32) -> (string, int32) {
+    let index = Ref::new(start);
+    let text = Ref::new("");
+    while is_ident_continue_at(source, index.get()) {
+        text.set(text.get() + source.get(index.get()).to_string());
+        index.set(index.get() + 1);
+    };
+    (text.get(), index.get())
+}
+
+fn keyword_kind(text: string) -> syntax::TokenKind {
+    match text {
+        "extern" => syntax::TokenKind::ExternKeyword,
+        "package" => syntax::TokenKind::PackageKeyword,
+        "use" => syntax::TokenKind::UseKeyword,
+        "import" => syntax::TokenKind::ImportKeyword,
+        "pub" => syntax::TokenKind::PubKeyword,
+        "mod" => syntax::TokenKind::ModKeyword,
+        "crate" => syntax::TokenKind::CrateKeyword,
+        "super" => syntax::TokenKind::SuperKeyword,
+        "fn" => syntax::TokenKind::FnKeyword,
+        "trait" => syntax::TokenKind::TraitKeyword,
+        "impl" => syntax::TokenKind::ImplKeyword,
+        "for" => syntax::TokenKind::ForKeyword,
+        "enum" => syntax::TokenKind::EnumKeyword,
+        "struct" => syntax::TokenKind::StructKeyword,
+        "type" => syntax::TokenKind::TypeKeyword,
+        "match" => syntax::TokenKind::MatchKeyword,
+        "if" => syntax::TokenKind::IfKeyword,
+        "else" => syntax::TokenKind::ElseKeyword,
+        "let" => syntax::TokenKind::LetKeyword,
+        "mut" => syntax::TokenKind::MutKeyword,
+        "in" => syntax::TokenKind::InKeyword,
+        "return" => syntax::TokenKind::ReturnKeyword,
+        "go" => syntax::TokenKind::GoKeyword,
+        "while" => syntax::TokenKind::WhileKeyword,
+        "break" => syntax::TokenKind::BreakKeyword,
+        "continue" => syntax::TokenKind::ContinueKeyword,
+        "dyn" => syntax::TokenKind::DynKeyword,
+        "true" => syntax::TokenKind::TrueKeyword,
+        "false" => syntax::TokenKind::FalseKeyword,
+        "unit" => syntax::TokenKind::UnitKeyword,
+        "bool" => syntax::TokenKind::BoolKeyword,
+        "int8" => syntax::TokenKind::Int8Keyword,
+        "int16" => syntax::TokenKind::Int16Keyword,
+        "int32" => syntax::TokenKind::Int32Keyword,
+        "int64" => syntax::TokenKind::Int64Keyword,
+        "uint8" => syntax::TokenKind::Uint8Keyword,
+        "uint16" => syntax::TokenKind::Uint16Keyword,
+        "uint32" => syntax::TokenKind::Uint32Keyword,
+        "uint64" => syntax::TokenKind::Uint64Keyword,
+        "float32" => syntax::TokenKind::Float32Keyword,
+        "float64" => syntax::TokenKind::Float64Keyword,
+        "string" => syntax::TokenKind::StringKeyword,
+        "char" => syntax::TokenKind::CharKeyword,
+        "array" => syntax::TokenKind::ArrayKeyword,
+        _ => syntax::TokenKind::Ident,
+    }
+}
+
+fn consume_digits(source: string, start: int32) -> (string, int32) {
+    let index = Ref::new(start);
+    let text = Ref::new("");
+    while is_digit_at(source, index.get()) {
+        text.set(text.get() + source.get(index.get()).to_string());
+        index.set(index.get() + 1);
+    };
+    (text.get(), index.get())
+}
+
+fn consume_suffix(source: string, start: int32, base_text: string, suffix: string) -> (string, int32) {
+    let index = Ref::new(start);
+    let text = Ref::new(base_text);
+    let offset = Ref::new(0);
+    while offset.get() < suffix.len() {
+        text.set(text.get() + source.get(index.get()).to_string());
+        index.set(index.get() + 1);
+        offset.set(offset.get() + 1);
+    };
+    (text.get(), index.get())
+}
+
+fn consume_number(source: string, start: int32) -> (syntax::TokenKind, string, int32) {
+    let (whole, after_whole) = consume_digits(source, start);
+    if has_at(source, after_whole, '.') && is_digit_at(source, after_whole + 1) {
+        let (fraction, after_fraction) = consume_digits(source, after_whole + 1);
+        let float_text = whole + "." + fraction;
+        if starts_with_at(source, after_fraction, "f32") {
+            let (text, end) = consume_suffix(source, after_fraction, float_text, "f32");
+            (syntax::TokenKind::Float32Lit, text, end)
+        } else if starts_with_at(source, after_fraction, "f64") {
+            let (text, end) = consume_suffix(source, after_fraction, float_text, "f64");
+            (syntax::TokenKind::Float64Lit, text, end)
+        } else {
+            (syntax::TokenKind::Float, float_text, after_fraction)
+        }
+    } else if starts_with_at(source, after_whole, "i8") {
+        let (text, end) = consume_suffix(source, after_whole, whole, "i8");
+        (syntax::TokenKind::Int8Lit, text, end)
+    } else if starts_with_at(source, after_whole, "i16") {
+        let (text, end) = consume_suffix(source, after_whole, whole, "i16");
+        (syntax::TokenKind::Int16Lit, text, end)
+    } else if starts_with_at(source, after_whole, "i32") {
+        let (text, end) = consume_suffix(source, after_whole, whole, "i32");
+        (syntax::TokenKind::Int32Lit, text, end)
+    } else if starts_with_at(source, after_whole, "i64") {
+        let (text, end) = consume_suffix(source, after_whole, whole, "i64");
+        (syntax::TokenKind::Int64Lit, text, end)
+    } else if starts_with_at(source, after_whole, "u8") {
+        let (text, end) = consume_suffix(source, after_whole, whole, "u8");
+        (syntax::TokenKind::UInt8Lit, text, end)
+    } else if starts_with_at(source, after_whole, "u16") {
+        let (text, end) = consume_suffix(source, after_whole, whole, "u16");
+        (syntax::TokenKind::UInt16Lit, text, end)
+    } else if starts_with_at(source, after_whole, "u32") {
+        let (text, end) = consume_suffix(source, after_whole, whole, "u32");
+        (syntax::TokenKind::UInt32Lit, text, end)
+    } else if starts_with_at(source, after_whole, "u64") {
+        let (text, end) = consume_suffix(source, after_whole, whole, "u64");
+        (syntax::TokenKind::UInt64Lit, text, end)
+    } else {
+        (syntax::TokenKind::Int, whole, after_whole)
+    }
+}
+
+fn is_simple_escape(ch: char, quote: char) -> bool {
+    ch == quote || ch == '\\' || ch == 'b' || ch == 'n' || ch == 'f' || ch == 'r' || ch == 't' || ch == '/'
+}
+
+fn has_simple_escape_at(source: string, start: int32, quote: char) -> bool {
+    if start + 1 < source.len() {
+        is_simple_escape(source.get(start + 1), quote)
+    } else {
+        false
+    }
+}
+
+fn has_unicode_escape_at(source: string, start: int32) -> bool {
+    let ok = Ref::new(start + 5 < source.len() && has_at(source, start + 1, 'u'));
+    let offset = Ref::new(2);
+    while ok.get() && offset.get() < 6 {
+        if is_hex_digit(source.get(start + offset.get())) {
+            ()
+        } else {
+            ok.set(false);
+        };
+        offset.set(offset.get() + 1);
+    };
+    ok.get()
+}
+
+fn append_unicode_escape(source: string, text: Ref[string], start: int32) -> int32 {
+    let offset = Ref::new(0);
+    while offset.get() < 6 {
+        text.set(text.get() + source.get(start + offset.get()).to_string());
+        offset.set(offset.get() + 1);
+    };
+    start + 6
+}
+
+fn consume_string(source: string, start: int32) -> (syntax::TokenKind, string, int32) {
+    let index = Ref::new(start + 1);
+    let text = Ref::new("\"");
+    let closed = Ref::new(false);
+    let scanning = Ref::new(true);
+    while index.get() < source.len() && scanning.get() {
+        let ch = source.get(index.get());
+        if ch == '"' {
+            text.set(text.get() + ch.to_string());
+            index.set(index.get() + 1);
+            closed.set(true);
+            scanning.set(false);
+        } else if ch == '\\' {
+            if has_unicode_escape_at(source, index.get()) {
+                index.set(append_unicode_escape(source, text, index.get()));
+            } else if has_simple_escape_at(source, index.get(), '"') {
+                text.set(text.get() + ch.to_string());
+                text.set(text.get() + source.get(index.get() + 1).to_string());
+                index.set(index.get() + 2);
+            } else {
+                scanning.set(false);
+            }
+        } else if ch < ' ' {
+            scanning.set(false);
+        } else {
+            text.set(text.get() + ch.to_string());
+            index.set(index.get() + 1);
+        }
+    };
+    if closed.get() {
+        (syntax::TokenKind::Str, text.get(), index.get())
+    } else {
+        (syntax::TokenKind::Error, text.get(), index.get())
+    }
+}
+
+fn consume_char_literal(source: string, start: int32) -> (syntax::TokenKind, string, int32) {
+    let index = Ref::new(start + 1);
+    let text = Ref::new("'");
+    let ok = Ref::new(false);
+    if index.get() < source.len() {
+        let ch = source.get(index.get());
+        if ch == '\\' {
+            if has_unicode_escape_at(source, index.get()) {
+                index.set(append_unicode_escape(source, text, index.get()));
+                ok.set(true);
+            } else if has_simple_escape_at(source, index.get(), '\'') {
+                text.set(text.get() + ch.to_string());
+                text.set(text.get() + source.get(index.get() + 1).to_string());
+                index.set(index.get() + 2);
+                ok.set(true);
+            } else {
+                ()
+            }
+        } else if ch == '\'' || ch < ' ' {
+            ()
+        } else {
+            text.set(text.get() + ch.to_string());
+            index.set(index.get() + 1);
+            ok.set(true);
+        };
+    } else {
+        ()
+    };
+    if ok.get() && has_at(source, index.get(), '\'') {
+        text.set(text.get() + "'");
+        index.set(index.get() + 1);
+        (syntax::TokenKind::CharLit, text.get(), index.get())
+    } else {
+        (syntax::TokenKind::Error, "'", start + 1)
+    }
+}
+
+fn line_has_multiline_prefix(source: string, start: int32) -> bool {
+    let index = Ref::new(start);
+    while is_space_or_tab_at(source, index.get()) {
+        index.set(index.get() + 1);
+    };
+    has_at(source, index.get(), '\\') && has_at(source, index.get() + 1, '\\')
+}
+
+fn append_multiline_line(source: string, text: Ref[string], start: int32) -> int32 {
+    let index = Ref::new(start);
+    while is_space_or_tab_at(source, index.get()) {
+        text.set(text.get() + source.get(index.get()).to_string());
+        index.set(index.get() + 1);
+    };
+    text.set(text.get() + "\\\\");
+    index.set(index.get() + 2);
+    while is_not_newline_at(source, index.get()) {
+        text.set(text.get() + source.get(index.get()).to_string());
+        index.set(index.get() + 1);
+    };
+    index.get()
+}
+
+fn consume_multiline_string(source: string, start: int32) -> (string, int32, bool) {
+    let index = Ref::new(start + 2);
+    let text = Ref::new("\\\\");
+    while is_not_newline_at(source, index.get()) {
+        text.set(text.get() + source.get(index.get()).to_string());
+        index.set(index.get() + 1);
+    };
+    if index.get() >= source.len() {
+        ("\\\\", start + 2, false)
+    } else if !line_has_multiline_prefix(source, index.get() + 1) {
+        ("\\\\", start + 2, false)
+    } else {
+        let done = Ref::new(false);
+        while !(done.get()) {
+            text.set(text.get() + "\n");
+            index.set(index.get() + 1);
+            index.set(append_multiline_line(source, text, index.get()));
+            if index.get() >= source.len() {
+                done.set(true);
+            } else if line_has_multiline_prefix(source, index.get() + 1) {
+                ()
+            } else {
+                done.set(true);
+            };
+        };
+        (text.get(), index.get(), true)
+    }
+}
+
+fn one(kind: syntax::TokenKind, text: string, start: int32) -> (syntax::TokenKind, string, int32) {
+    (kind, text, start + 1)
+}
+
+fn operator_token(source: string, start: int32) -> (syntax::TokenKind, string, int32) {
+    let ch = source.get(start);
+    if ch == ':' && has_at(source, start + 1, ':') {
+        (syntax::TokenKind::ColonColon, "::", start + 2)
+    } else if ch == '-' && has_at(source, start + 1, '>') {
+        (syntax::TokenKind::Arrow, "->", start + 2)
+    } else if ch == '=' && has_at(source, start + 1, '>') {
+        (syntax::TokenKind::FatArrow, "=>", start + 2)
+    } else if ch == '&' && has_at(source, start + 1, '&') {
+        (syntax::TokenKind::AndAnd, "&&", start + 2)
+    } else if ch == '|' && has_at(source, start + 1, '|') {
+        (syntax::TokenKind::OrOr, "||", start + 2)
+    } else if ch == '>' && has_at(source, start + 1, '=') {
+        (syntax::TokenKind::GreaterEq, ">=", start + 2)
+    } else if ch == '<' && has_at(source, start + 1, '=') {
+        (syntax::TokenKind::LessEq, "<=", start + 2)
+    } else if ch == '=' && has_at(source, start + 1, '=') {
+        (syntax::TokenKind::EqEq, "==", start + 2)
+    } else if ch == '!' && has_at(source, start + 1, '=') {
+        (syntax::TokenKind::NotEq, "!=", start + 2)
+    } else {
+        match ch {
+            '(' => one(syntax::TokenKind::LParen, "(", start),
+            ')' => one(syntax::TokenKind::RParen, ")", start),
+            '{' => one(syntax::TokenKind::LBrace, "{", start),
+            '}' => one(syntax::TokenKind::RBrace, "}", start),
+            '[' => one(syntax::TokenKind::LBracket, "[", start),
+            ']' => one(syntax::TokenKind::RBracket, "]", start),
+            '=' => one(syntax::TokenKind::Eq, "=", start),
+            ';' => one(syntax::TokenKind::Semi, ";", start),
+            ',' => one(syntax::TokenKind::Comma, ",", start),
+            ':' => one(syntax::TokenKind::Colon, ":", start),
+            '+' => one(syntax::TokenKind::Plus, "+", start),
+            '-' => one(syntax::TokenKind::Minus, "-", start),
+            '*' => one(syntax::TokenKind::Star, "*", start),
+            '/' => one(syntax::TokenKind::Slash, "/", start),
+            '.' => one(syntax::TokenKind::Dot, ".", start),
+            '|' => one(syntax::TokenKind::Pipe, "|", start),
+            '!' => one(syntax::TokenKind::Bang, "!", start),
+            '<' => one(syntax::TokenKind::Less, "<", start),
+            '>' => one(syntax::TokenKind::Greater, ">", start),
+            '?' => one(syntax::TokenKind::Question, "?", start),
+            '#' => one(syntax::TokenKind::Pound, "#", start),
+            _ => (syntax::TokenKind::Error, ch.to_string(), start + 1),
+        }
+    }
+}
+
+pub fn lex(source: string) -> Vec[syntax::Token] {
+    let tokens = Ref::new(Vec::new());
+    let index = Ref::new(0);
+    while index.get() < source.len() {
+        let start = index.get();
+        let ch = source.get(start);
+        if is_whitespace(ch) {
+            let (text, end) = consume_whitespace(source, start);
+            push_token(tokens, syntax::TokenKind::Whitespace, text, start, end);
+            index.set(end);
+        } else if ch == '/' && has_at(source, start + 1, '/') {
+            let (text, end) = consume_comment(source, start);
+            push_token(tokens, syntax::TokenKind::Comment, text, start, end);
+            index.set(end);
+        } else if ch == '\\' && has_at(source, start + 1, '\\') {
+            let (text, end, ok) = consume_multiline_string(source, start);
+            if ok {
+                push_token(tokens, syntax::TokenKind::MultilineStr, text, start, end);
+            } else {
+                push_token(tokens, syntax::TokenKind::Error, text, start, end);
+            };
+            index.set(end);
+        } else if ch == '"' {
+            let (kind, text, end) = consume_string(source, start);
+            push_token(tokens, kind, text, start, end);
+            index.set(end);
+        } else if ch == '\'' {
+            let (kind, text, end) = consume_char_literal(source, start);
+            push_token(tokens, kind, text, start, end);
+            index.set(end);
+        } else if is_digit(ch) {
+            let (kind, text, end) = consume_number(source, start);
+            push_token(tokens, kind, text, start, end);
+            index.set(end);
+        } else if is_alpha(ch) || ch == '_' && is_ident_continue_at(source, start + 1) {
+            let (text, end) = consume_ident(source, start);
+            push_token(tokens, keyword_kind(text), text, start, end);
+            index.set(end);
+        } else if ch == '_' {
+            push_token(tokens, syntax::TokenKind::WildcardKeyword, "_", start, start + 1);
+            index.set(start + 1);
+        } else {
+            let (kind, text, end) = operator_token(source, start);
+            push_token(tokens, kind, text, start, end);
+            index.set(end);
+        }
+    };
+    tokens.get()
+}

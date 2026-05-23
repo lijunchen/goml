@@ -4,10 +4,10 @@ fn main() {
         ("mul2", |x| x * 2),
         ("neg",  |x| 0 - x),
     ];
-    let i = ref(0i32);
-    while ref_get(i) < 3 {
-        let (name, f) = ops[ref_get(i)];
+    let i = Ref::new(0i32);
+    while i.get() < 3 {
+        let (name, f) = ops[i.get()];
         println(name + ": " + f(10).to_string());
-        ref_set(i, ref_get(i) + 1);
+        i.set(i.get() + 1);
     };
 }

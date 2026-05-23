@@ -1,12 +1,12 @@
 fn sum_to(limit/0: int32) -> int32 {
-  let acc/1 = ref(0) in
-  let i/2 = ref(0) in
-  let mtmp2 = while (ref_get(i/2) < limit/0) {
+  let acc/1 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let i/2 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let mtmp2 = while (inherent#Ref#Ref[T]#get__T_int32(i/2) < limit/0) {
       {
-        let current/3 = ref_get(i/2) in
-        let mtmp0 = ref_set(acc/1, (ref_get(acc/1) + current/3)) in
+        let current/3 = inherent#Ref#Ref[T]#get__T_int32(i/2) in
+        let mtmp0 = inherent#Ref#Ref[T]#set__T_int32(acc/1, (inherent#Ref#Ref[T]#get__T_int32(acc/1) + current/3)) in
         {
-          let mtmp1 = ref_set(i/2, (current/3 + 1)) in
+          let mtmp1 = inherent#Ref#Ref[T]#set__T_int32(i/2, (current/3 + 1)) in
           {
             ()
           }
@@ -14,25 +14,25 @@ fn sum_to(limit/0: int32) -> int32 {
       }
   } in
   {
-    ref_get(acc/1)
+    inherent#Ref#Ref[T]#get__T_int32(acc/1)
   }
 }
 
 fn sum_even(limit/4: int32) -> int32 {
-  let acc/5 = ref(0) in
-  let i/6 = ref(0) in
-  let is_even/7 = ref(true) in
-  let mtmp5 = while (ref_get(i/6) < limit/4) {
+  let acc/5 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let i/6 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let is_even/7 = inherent#Ref#Ref[T]#new__T_bool(true) in
+  let mtmp5 = while (inherent#Ref#Ref[T]#get__T_int32(i/6) < limit/4) {
       {
-        let current/8 = ref_get(i/6) in
-        let mtmp3 = ref_set(i/6, (current/8 + 1)) in
+        let current/8 = inherent#Ref#Ref[T]#get__T_int32(i/6) in
+        let mtmp3 = inherent#Ref#Ref[T]#set__T_int32(i/6, (current/8 + 1)) in
         {
-          let add_now/9 = ref_get(is_even/7) in
-          let mtmp4 = ref_set(is_even/7, (!add_now/9)) in
+          let add_now/9 = inherent#Ref#Ref[T]#get__T_bool(is_even/7) in
+          let mtmp4 = inherent#Ref#Ref[T]#set__T_bool(is_even/7, (!add_now/9)) in
           {
             if add_now/9 {
                 {
-                  ref_set(acc/5, (ref_get(acc/5) + current/8))
+                  inherent#Ref#Ref[T]#set__T_int32(acc/5, (inherent#Ref#Ref[T]#get__T_int32(acc/5) + current/8))
                 }
             } else {
                 {
@@ -44,7 +44,7 @@ fn sum_even(limit/4: int32) -> int32 {
       }
   } in
   {
-    ref_get(acc/5)
+    inherent#Ref#Ref[T]#get__T_int32(acc/5)
   }
 }
 
@@ -66,10 +66,34 @@ fn main() -> unit {
   }
 }
 
+fn inherent#Ref#Ref[T]#new__T_int32(value/93: int32) -> Ref[int32] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#get__T_int32(self/94: Ref[int32]) -> int32 {
+  ref_get(self/94)
+}
+
+fn inherent#Ref#Ref[T]#set__T_int32(self/95: Ref[int32], value/96: int32) -> unit {
+  ref_set(self/95, value/96)
+}
+
+fn inherent#Ref#Ref[T]#new__T_bool(value/93: bool) -> Ref[bool] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#get__T_bool(self/94: Ref[bool]) -> bool {
+  ref_get(self/94)
+}
+
+fn inherent#Ref#Ref[T]#set__T_bool(self/95: Ref[bool], value/96: bool) -> unit {
+  ref_set(self/95, value/96)
+}
+
 fn print__T_string(value/0: string) -> unit {
   string_print(value/0)
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  string_println(int32_to_string(value/1))
+  string_println($goml_builtin_runtime$int32_to_string(value/1))
 }

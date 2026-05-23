@@ -24,27 +24,27 @@ fn step_none(i: int32) -> Option[bool] {
 }
 
 fn run_some() -> Option[int32] {
-    let i = ref(0i32);
-    let total = ref(0i32);
-    while step_some(ref_get(i))? {
+    let i = Ref::new(0i32);
+    let total = Ref::new(0i32);
+    while step_some(i.get())? {
         {
-            ref_set(total, ref_get(total) + ref_get(i));
-            ref_set(i, ref_get(i) + 1i32);
+            total.set(total.get() + i.get());
+            i.set(i.get() + 1i32);
         }
     };
-    Option::Some(ref_get(total))
+    Option::Some(total.get())
 }
 
 fn run_none() -> Option[int32] {
-    let i = ref(0i32);
-    let total = ref(0i32);
-    while step_none(ref_get(i))? {
+    let i = Ref::new(0i32);
+    let total = Ref::new(0i32);
+    while step_none(i.get())? {
         {
-            ref_set(total, ref_get(total) + ref_get(i));
-            ref_set(i, ref_get(i) + 1i32);
+            total.set(total.get() + i.get());
+            i.set(i.get() + 1i32);
         }
     };
-    Option::Some(ref_get(total))
+    Option::Some(total.get())
 }
 
 fn show(x: Option[int32]) -> string {

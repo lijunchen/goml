@@ -1,0 +1,84 @@
+FILE@0..103
+  USE@0..14
+    UseKeyword@0..3 "use"
+    Whitespace@3..4 " "
+    PATH@4..12
+      Ident@4..7 "std"
+      ColonColon@7..9 "::"
+      Ident@9..12 "env"
+    Semi@12..13 ";"
+    Whitespace@13..14 "\n"
+  USE@14..28
+    UseKeyword@14..17 "use"
+    Whitespace@17..18 " "
+    PATH@18..25
+      Ident@18..21 "std"
+      ColonColon@21..23 "::"
+      Ident@23..25 "io"
+    Semi@25..26 ";"
+    Whitespace@26..28 "\n\n"
+  FN@28..103
+    FnKeyword@28..30 "fn"
+    Whitespace@30..31 " "
+    Ident@31..35 "main"
+    PARAM_LIST@35..38
+      LParen@35..36 "("
+      RParen@36..37 ")"
+      Whitespace@37..38 " "
+    Arrow@38..40 "->"
+    Whitespace@40..41 " "
+    TYPE_UNIT@41..46
+      UnitKeyword@41..45 "unit"
+      Whitespace@45..46 " "
+    BLOCK@46..103
+      LBrace@46..47 "{"
+      Whitespace@47..52 "\n    "
+      EXPR_CALL@52..101
+        EXPR_IDENT@52..63
+          PATH@52..63
+            Ident@52..54 "io"
+            ColonColon@54..56 "::"
+            Ident@56..63 "println"
+        ARG_LIST@63..101
+          LParen@63..64 "("
+          ARG@64..99
+            EXPR_CALL@64..99
+              EXPR_BINARY@64..97
+                EXPR_PAREN@64..87
+                  LParen@64..65 "("
+                  EXPR_BINARY@65..86
+                    EXPR_CALL@65..83
+                      EXPR_BINARY@65..80
+                        EXPR_CALL@65..76
+                          EXPR_IDENT@65..74
+                            PATH@65..74
+                              Ident@65..68 "env"
+                              ColonColon@68..70 "::"
+                              Ident@70..74 "args"
+                          ARG_LIST@74..76
+                            LParen@74..75 "("
+                            RParen@75..76 ")"
+                        Dot@76..77 "."
+                        EXPR_IDENT@77..80
+                          PATH@77..80
+                            Ident@77..80 "len"
+                      ARG_LIST@80..83
+                        LParen@80..81 "("
+                        RParen@81..82 ")"
+                        Whitespace@82..83 " "
+                    Greater@83..84 ">"
+                    Whitespace@84..85 " "
+                    EXPR_INT@85..86
+                      Int@85..86 "0"
+                  RParen@86..87 ")"
+                Dot@87..88 "."
+                EXPR_IDENT@88..97
+                  PATH@88..97
+                    Ident@88..97 "to_string"
+              ARG_LIST@97..99
+                LParen@97..98 "("
+                RParen@98..99 ")"
+          RParen@99..100 ")"
+          Whitespace@100..101 "\n"
+      RBrace@101..102 "}"
+      Whitespace@102..103 "\n"

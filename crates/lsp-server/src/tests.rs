@@ -1289,6 +1289,58 @@ fn main() -> unit {
     }
 
     #[test]
+    fn colon_colon_completion_on_std_use_alias() {
+        let dir = tempdir().unwrap();
+        let src = r#"use std::env;
+
+fn main() -> unit {
+    env::
+}
+"#;
+        let path = write_minimal_project(dir.path(), src);
+        let completion = handlers::completion(
+            &path,
+            src,
+            Position {
+                line: 3,
+                character: 9,
+            },
+        );
+        expect!["args"].assert_eq(&format_completion(completion));
+    }
+
+    #[test]
+    fn colon_colon_completion_on_crate_root() {
+        let dir = tempdir().unwrap();
+        std::fs::create_dir_all(dir.path().join("util")).unwrap();
+        std::fs::write(
+            dir.path().join("util/mod.gom"),
+            r#"
+pub fn ping() -> string {
+    "pong"
+}
+"#,
+        )
+        .unwrap();
+        let src = r#"mod util;
+
+fn main() -> unit {
+    crate::
+}
+"#;
+        let path = write_minimal_project(dir.path(), src);
+        let completion = handlers::completion(
+            &path,
+            src,
+            Position {
+                line: 3,
+                character: 11,
+            },
+        );
+        expect!["util"].assert_eq(&format_completion(completion));
+    }
+
+    #[test]
     fn value_completion_suggests_keywords() {
         check_completion(
             r#"
@@ -2180,15 +2232,15 @@ fn main() -> unit {
 
 
 fn main() -> unit {
-    let r = ref(1);
-    let x = ref_get(r);
+    let r = Ref::new(1);
+    let x = r.get();
     println(x);
     ()
 }
 "#,
-            "ref_get(r)",
-            "ref_get",
-            expect!["src/builtin.gom:493:10"],
+            "r.get()",
+            "get",
+            expect!["src/builtin.gom:495:7"],
         );
     }
 
@@ -2688,9 +2740,9 @@ fn main() {
 
 
 fn main() {
-    let counter = ref(0);
-    ref_set(counter, ref_get(counter) + 1);
-    println(ref_get(counter).to_string());
+    let counter = Ref::new(0);
+    counter.set(counter.get() + 1);
+    println(counter.get().to_string());
 }
 "#,
             4,
@@ -2749,11 +2801,11 @@ fn main() {
 
 
 fn main() {
-    let i: Ref[int32] = ref(0);
-    while ref_get(i) < 10 {
-        ref_set(i, ref_get(i) + 1);
+    let i: Ref[int32] = Ref::new(0);
+    while i.get() < 10 {
+        i.set(i.get() + 1);
     };
-    println(ref_get(i).to_string());
+    println(i.get().to_string());
 }
 "#,
             expect!["no diagnostics"],
@@ -2918,9 +2970,9 @@ fn main() {
 
 
 fn main() {
-    let r = ref(42);
-    let v = ref_get(r);
-    ref_set(r, v + 1);
+    let r = Ref::new(42);
+    let v = r.get();
+    r.set(v + 1);
 }
 "#,
             expect!["no diagnostics"],

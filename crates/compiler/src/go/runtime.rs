@@ -1159,7 +1159,7 @@ pub fn make_vec_runtime(vec_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
     items
 }
 
-pub fn make_ref_runtime(ref_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
+pub fn make_ref_runtime(goenv: &GlobalGoEnv, ref_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
     let mut items = Vec::new();
     for ty in ref_types {
         let tast::Ty::TRef { elem } = ty else {
@@ -1292,16 +1292,11 @@ pub fn make_ref_runtime(ref_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
         items.push(goast::Item::Fn(set_fn));
         items.push(goast::Item::Fn(ptr_eq_fn));
 
-        let hash_name = go_ident(&trait_impl_fn_name(
-            &tast::TastIdent("Hash".to_string()),
-            ty,
-            "hash",
-        ));
-        let inner_hash_name = go_ident(&trait_impl_fn_name(
-            &tast::TastIdent("Hash".to_string()),
-            elem,
-            "hash",
-        ));
+        let ref_hash_impl = trait_impl_fn_name(&tast::TastIdent("Hash".to_string()), ty, "hash");
+        let inner_hash_impl =
+            trait_impl_fn_name(&tast::TastIdent("Hash".to_string()), elem, "hash");
+        let hash_name = go_ident(&ref_hash_impl);
+        let inner_hash_name = go_ident(&inner_hash_impl);
         let ref_get_name = ref_helper_fn_name("ref_get", ty);
         let inner_hash_fn_ty = goty::GoType::TFunc {
             params: vec![elem_go_ty.clone()],
@@ -1312,7 +1307,17 @@ pub fn make_ref_runtime(ref_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
             ret_ty: Box::new(elem_go_ty.clone()),
         };
 
-        if !matches!(elem.as_ref(), tast::Ty::TDyn { .. }) {
+        let ref_eq_impl = trait_impl_fn_name(&tast::TastIdent("Eq".to_string()), ty, "eq");
+        let dyn_inner_eq_impl = trait_impl_fn_name(&tast::TastIdent("Eq".to_string()), elem, "eq");
+        let emit_eq = match elem.as_ref() {
+            tast::Ty::TDyn { .. } => {
+                !goenv.toplevel_funcs.contains(&ref_eq_impl)
+                    && goenv.toplevel_funcs.contains(&dyn_inner_eq_impl)
+            }
+            _ => true,
+        };
+
+        if emit_eq {
             let eq_name = go_ident(&trait_impl_fn_name(
                 &tast::TastIdent("Eq".to_string()),
                 ty,
@@ -1374,7 +1379,9 @@ pub fn make_ref_runtime(ref_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
         }
 
         let hash_stmts = match elem.as_ref() {
-            tast::Ty::TDyn { trait_name } if trait_name == "Hash" => {
+            tast::Ty::TDyn { trait_name }
+                if trait_name == "Hash" && !goenv.toplevel_funcs.contains(&ref_hash_impl) =>
+            {
                 let dyn_go_ty = goty::GoType::TName {
                     name: go_dyn_struct_name("Hash"),
                 };
@@ -1431,6 +1438,31 @@ pub fn make_ref_runtime(ref_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
                         }),
                     },
                 ])
+            }
+            tast::Ty::TDyn { .. }
+                if !goenv.toplevel_funcs.contains(&ref_hash_impl)
+                    && goenv.toplevel_funcs.contains(&inner_hash_impl) =>
+            {
+                Some(vec![goast::Stmt::Return {
+                    expr: Some(goast::Expr::Call {
+                        func: Box::new(goast::Expr::Var {
+                            name: inner_hash_name,
+                            ty: inner_hash_fn_ty.clone(),
+                        }),
+                        args: vec![goast::Expr::Call {
+                            func: Box::new(goast::Expr::Var {
+                                name: ref_get_name,
+                                ty: ref_get_fn_ty,
+                            }),
+                            args: vec![goast::Expr::Var {
+                                name: "self".to_string(),
+                                ty: ref_go_ty.clone(),
+                            }],
+                            ty: elem_go_ty,
+                        }],
+                        ty: goty::GoType::TUint64,
+                    }),
+                }])
             }
             tast::Ty::TDyn { .. } => None,
             _ => Some(vec![goast::Stmt::Return {

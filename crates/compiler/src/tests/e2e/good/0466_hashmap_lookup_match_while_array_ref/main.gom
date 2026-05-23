@@ -5,13 +5,13 @@ fn main() {
     m.set("c", 3);
     
     let keys = ["a", "b", "c", "d"];
-    let i = ref(0i32);
-    while ref_get(i) < 4 {
-        let key = keys[ref_get(i)];
+    let i = Ref::new(0i32);
+    while i.get() < 4 {
+        let key = keys[i.get()];
         match m.get(key) {
             Option::Some(v) => println(key + "=" + v.to_string()),
             Option::None => println(key + " not found"),
         };
-        ref_set(i, ref_get(i) + 1);
+        i.set(i.get() + 1);
     };
 }

@@ -1,9 +1,9 @@
 fn main() {
     let mut arr = [1, 2, 3, 4, 5];
     arr[2] = 99;
-    let i = ref(0i32);
-    while ref_get(i) < 5 {
-        println(arr[ref_get(i)].to_string());
-        ref_set(i, ref_get(i) + 1);
+    let i = Ref::new(0i32);
+    while i.get() < 5 {
+        println(arr[i.get()].to_string());
+        i.set(i.get() + 1);
     };
 }

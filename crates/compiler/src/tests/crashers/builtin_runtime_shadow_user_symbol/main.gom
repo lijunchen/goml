@@ -1,0 +1,34 @@
+fn hashmap_new() -> int32 {
+    7i32
+}
+
+fn ref(x: int32) -> int32 {
+    x + 1i32
+}
+
+fn vec_len() -> int32 {
+    9i32
+}
+
+fn int32_to_string() -> string {
+    "user"
+}
+
+fn main() -> unit {
+    let m: HashMap[int32, int32] = HashMap::new();
+    m.set(1i32, 2i32);
+    println(hashmap_new());
+    println(m.len());
+
+    let r = Ref::new(2i32);
+    println(ref(3i32));
+    println(r.get());
+
+    let v: Vec[int32] = Vec::new();
+    let v = v.push(1i32);
+    println(vec_len());
+    println(v.len());
+
+    println(int32_to_string());
+    println(3i32.to_string());
+}

@@ -1,11 +1,11 @@
 fn factorial(n: int64) -> int64 {
-    let result = ref(1i64);
-    let i = ref(1i64);
-    while ref_get(i) <= n {
-        ref_set(result, ref_get(result) * ref_get(i));
-        ref_set(i, ref_get(i) + 1i64);
+    let result = Ref::new(1i64);
+    let i = Ref::new(1i64);
+    while i.get() <= n {
+        result.set(result.get() * i.get());
+        i.set(i.get() + 1i64);
     };
-    ref_get(result)
+    result.get()
 }
 
 fn main() {

@@ -10,14 +10,14 @@ fn make_callbacks() -> Vec[Callback] {
 }
 
 fn chain(cbs: Vec[Callback], input: string) -> string {
-    let result = ref(input);
-    let i = ref(0);
-    while ref_get(i) < cbs.len() {
-        let cb = cbs[ref_get(i)];
-        ref_set(result, cb.handler(ref_get(result)));
-        ref_set(i, ref_get(i) + 1);
+    let result = Ref::new(input);
+    let i = Ref::new(0);
+    while i.get() < cbs.len() {
+        let cb = cbs[i.get()];
+        result.set(cb.handler(result.get()));
+        i.set(i.get() + 1);
     };
-    ref_get(result)
+    result.get()
 }
 
 fn main() {

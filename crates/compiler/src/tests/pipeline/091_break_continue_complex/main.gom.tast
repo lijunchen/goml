@@ -7,11 +7,11 @@ fn println(value/1: T) -> unit {
 }
 
 fn main() -> unit {
-    let sum/0: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
-    let i/1: Ref[int32] = (ref : (int32) -> Ref[int32])(1);
-    while (ref_get : (Ref[int32]) -> int32)((i/1 : Ref[int32])) <= 100 {
+    let sum/0: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+    let i/1: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(1);
+    while (Ref[int32]::get : (Ref[int32]) -> int32)((i/1 : Ref[int32])) <= 100 {
         {
-            if (ref_get : (Ref[int32]) -> int32)((i/1 : Ref[int32])) == 50 {
+            if (Ref[int32]::get : (Ref[int32]) -> int32)((i/1 : Ref[int32])) == 50 {
                 {
                     break
                 }
@@ -20,21 +20,21 @@ fn main() -> unit {
                     ()
                 }
             };
-            (ref_set : (Ref[int32], int32) -> unit)((sum/0 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((sum/0 : Ref[int32])) + (ref_get : (Ref[int32]) -> int32)((i/1 : Ref[int32])));
-            (ref_set : (Ref[int32], int32) -> unit)((i/1 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/1 : Ref[int32])) + 1);
+            (Ref[int32]::set : (Ref[int32], int32) -> unit)((sum/0 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((sum/0 : Ref[int32])) + (Ref[int32]::get : (Ref[int32]) -> int32)((i/1 : Ref[int32])));
+            (Ref[int32]::set : (Ref[int32], int32) -> unit)((i/1 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((i/1 : Ref[int32])) + 1);
         }
     };
     let _ : unit = (print : (string) -> unit)("sum up to break: ");
-    let _ : unit = (println : (int32) -> unit)((ref_get : (Ref[int32]) -> int32)((sum/0 : Ref[int32])));
-    let even_sum/2: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
-    let j/3: Ref[int32] = (ref : (int32) -> Ref[int32])(1);
-    while (ref_get : (Ref[int32]) -> int32)((j/3 : Ref[int32])) <= 10 {
+    let _ : unit = (println : (int32) -> unit)((Ref[int32]::get : (Ref[int32]) -> int32)((sum/0 : Ref[int32])));
+    let even_sum/2: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
+    let j/3: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(1);
+    while (Ref[int32]::get : (Ref[int32]) -> int32)((j/3 : Ref[int32])) <= 10 {
         {
-            let cur/4: int32 = (ref_get : (Ref[int32]) -> int32)((j/3 : Ref[int32]));
-            (ref_set : (Ref[int32], int32) -> unit)((j/3 : Ref[int32]), (cur/4 : int32) + 1);
+            let cur/4: int32 = (Ref[int32]::get : (Ref[int32]) -> int32)((j/3 : Ref[int32]));
+            (Ref[int32]::set : (Ref[int32], int32) -> unit)((j/3 : Ref[int32]), (cur/4 : int32) + 1);
             if (cur/4 : int32) == (cur/4 : int32) / 2 * 2 {
                 {
-                    (ref_set : (Ref[int32], int32) -> unit)((even_sum/2 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((even_sum/2 : Ref[int32])) + (cur/4 : int32));
+                    (Ref[int32]::set : (Ref[int32], int32) -> unit)((even_sum/2 : Ref[int32]), (Ref[int32]::get : (Ref[int32]) -> int32)((even_sum/2 : Ref[int32])) + (cur/4 : int32));
                     continue
                 }
             } else {
@@ -45,5 +45,5 @@ fn main() -> unit {
         }
     };
     let _ : unit = (print : (string) -> unit)("even sum: ");
-    let _ : unit = (println : (int32) -> unit)((ref_get : (Ref[int32]) -> int32)((even_sum/2 : Ref[int32])));
+    let _ : unit = (println : (int32) -> unit)((Ref[int32]::get : (Ref[int32]) -> int32)((even_sum/2 : Ref[int32])));
 }

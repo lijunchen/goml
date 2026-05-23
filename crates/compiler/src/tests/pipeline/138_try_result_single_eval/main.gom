@@ -1,7 +1,7 @@
 fn bump(counter: Ref[int32], ok: bool) -> Result[int32, string] {
-    ref_set(counter, ref_get(counter) + 1i32);
+    counter.set(counter.get() + 1i32);
     if ok {
-        Result::Ok(ref_get(counter))
+        Result::Ok(counter.get())
     } else {
         Result::Err("bump failed")
     }
@@ -9,7 +9,7 @@ fn bump(counter: Ref[int32], ok: bool) -> Result[int32, string] {
 
 fn use_try(counter: Ref[int32], ok: bool) -> Result[int32, string] {
     let value = bump(counter, ok)?;
-    Result::Ok(value + ref_get(counter))
+    Result::Ok(value + counter.get())
 }
 
 fn show(res: Result[int32, string]) -> string {
@@ -20,9 +20,9 @@ fn show(res: Result[int32, string]) -> string {
 }
 
 fn run(ok: bool) -> string {
-    let counter = ref(0i32);
+    let counter = Ref::new(0i32);
     let result = use_try(counter, ok);
-    show(result) + " count=" + ref_get(counter).to_string()
+    show(result) + " count=" + counter.get().to_string()
 }
 
 fn main() -> unit {

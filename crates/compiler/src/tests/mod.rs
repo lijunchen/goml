@@ -15,6 +15,8 @@ use crate::{
     pipeline::{self, pipeline::CompilationError},
 };
 
+mod anf_stack_test;
+mod assignment_target_test;
 mod builtin_functions_test;
 mod closure_return_test;
 mod constructor_value_test;
@@ -23,12 +25,15 @@ mod dyn_coercion_test;
 mod e2e;
 mod entrypoint_test;
 mod module;
+mod monomorphization_test;
 mod multiline_string_test;
 mod name_collision_test;
+mod operator_semantics_test;
 mod query_test;
 mod ref_type_test;
 mod separate_compile_test;
 mod struct_type_test;
+mod toplevel_validation_test;
 mod trait_impl_test;
 mod try_expr_test;
 mod tuple_projection_test;
@@ -131,9 +136,9 @@ fn reference_runtime_executes() -> anyhow::Result<()> {
 
     let src = r#"
 fn main() -> unit {
-    let r = ref(3);
-    let _ = ref_set(r, 5);
-    println(ref_get(r))
+    let r = Ref::new(3);
+    let _ = r.set(5);
+    println(r.get())
 }
 "#;
 

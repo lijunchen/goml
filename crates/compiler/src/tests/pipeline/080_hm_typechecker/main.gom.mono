@@ -1,16 +1,16 @@
 fn state_new() -> CheckerState {
-  CheckerState { gensym_counter: ref(0), current_level: ref(1) }
+  CheckerState { gensym_counter: inherent#Ref#Ref[T]#new__T_int32(0), current_level: inherent#Ref#Ref[T]#new__T_int32(1) }
 }
 
 fn reset_gensym(st/0: CheckerState) -> unit {
-  let mtmp0 = ref_set(CheckerState.gensym_counter(st/0), 0) in
+  let mtmp0 = inherent#Ref#Ref[T]#set__T_int32(CheckerState.gensym_counter(st/0), 0) in
   {
     ()
   }
 }
 
 fn reset_level(st/1: CheckerState) -> unit {
-  let mtmp1 = ref_set(CheckerState.current_level(st/1), 1) in
+  let mtmp1 = inherent#Ref#Ref[T]#set__T_int32(CheckerState.current_level(st/1), 1) in
   {
     ()
   }
@@ -22,16 +22,16 @@ fn reset_type_variables(st/2: CheckerState) -> unit {
 }
 
 fn enter_level(st/3: CheckerState) -> unit {
-  let l/4 = ref_get(CheckerState.current_level(st/3)) in
-  let mtmp3 = ref_set(CheckerState.current_level(st/3), (l/4 + 1)) in
+  let l/4 = inherent#Ref#Ref[T]#get__T_int32(CheckerState.current_level(st/3)) in
+  let mtmp3 = inherent#Ref#Ref[T]#set__T_int32(CheckerState.current_level(st/3), (l/4 + 1)) in
   {
     ()
   }
 }
 
 fn leave_level(st/5: CheckerState) -> unit {
-  let l/6 = ref_get(CheckerState.current_level(st/5)) in
-  let mtmp4 = ref_set(CheckerState.current_level(st/5), (l/6 - 1)) in
+  let l/6 = inherent#Ref#Ref[T]#get__T_int32(CheckerState.current_level(st/5)) in
+  let mtmp4 = inherent#Ref#Ref[T]#set__T_int32(CheckerState.current_level(st/5), (l/6 - 1)) in
   {
     ()
   }
@@ -134,16 +134,16 @@ fn nth_letter(n/9: int32) -> char {
 }
 
 fn gensym(st/10: CheckerState) -> string {
-  let n/11 = ref_get(CheckerState.gensym_counter(st/10)) in
-  let mtmp5 = ref_set(CheckerState.gensym_counter(st/10), (n/11 + 1)) in
+  let n/11 = inherent#Ref#Ref[T]#get__T_int32(CheckerState.gensym_counter(st/10)) in
+  let mtmp5 = inherent#Ref#Ref[T]#set__T_int32(CheckerState.gensym_counter(st/10), (n/11 + 1)) in
   {
     if (n/11 < 26) {
         {
-          char_to_string(nth_letter(n/11))
+          $goml_builtin_runtime$char_to_string(nth_letter(n/11))
         }
     } else {
         {
-          ("t" + int32_to_string(n/11))
+          ("t" + $goml_builtin_runtime$int32_to_string(n/11))
         }
     }
   }
@@ -151,8 +151,8 @@ fn gensym(st/10: CheckerState) -> string {
 
 fn newvar(st/12: CheckerState) -> Typ {
   let name/13 = gensym(st/12) in
-  let level/14 = ref_get(CheckerState.current_level(st/12)) in
-  Typ::TVar(ref(Tv::Unbound(name/13, level/14)))
+  let level/14 = inherent#Ref#Ref[T]#get__T_int32(CheckerState.current_level(st/12)) in
+  Typ::TVar(inherent#Ref#Ref[T]#new__T_Tv(Tv::Unbound(name/13, level/14)))
 }
 
 fn typ_is_arrow(ty/15: Typ) -> bool {
@@ -163,7 +163,7 @@ fn typ_is_arrow(ty/15: Typ) -> bool {
         {
           let tvref/16 = x6 in
           {
-            let mtmp10 = ref_get(tvref/16) in
+            let mtmp10 = inherent#Ref#Ref[T]#get__T_Tv(tvref/16) in
             match mtmp10 {
               Tv::Unbound(x11, x12) => {
                 {
@@ -210,7 +210,7 @@ fn typ_to_string(ty/18: Typ) -> string {
         {
           let tvref/20 = x14 in
           {
-            let mtmp18 = ref_get(tvref/20) in
+            let mtmp18 = inherent#Ref#Ref[T]#get__T_Tv(tvref/20) in
             match mtmp18 {
               Tv::Unbound(x19, x20) => {
                 {
@@ -279,54 +279,62 @@ fn env_empty() -> Vec[EnvEntry] {
 }
 
 fn env_lookup(env/28: Vec[EnvEntry], name/29: string) -> Option__Typ {
-  let i/30 = ref((inherent#Vec#Vec[T]#len__T_EnvEntry(env/28) - 1)) in
-  let found/31 = ref(Option__Typ::None) in
-  let done/32 = ref(false) in
-  let mtmp23 = while ((!ref_get(done/32)) && (ref_get(i/30) >= 0)) {
+  let i/30 = inherent#Ref#Ref[T]#new__T_int32((inherent#Vec#Vec[T]#len__T_EnvEntry(env/28) - 1)) in
+  let found/31 = inherent#Ref#Ref[T]#new__T_Option[Typ](Option__Typ::None) in
+  let done/32 = inherent#Ref#Ref[T]#new__T_bool(false) in
+  let mtmp23 = while if (!inherent#Ref#Ref[T]#get__T_bool(done/32)) {
+      (inherent#Ref#Ref[T]#get__T_int32(i/30) >= 0)
+  } else {
+      false
+  } {
       {
-        let entry/33 = vec_get(env/28, ref_get(i/30)) in
+        let entry/33 = $goml_builtin_runtime$vec_get(env/28, inherent#Ref#Ref[T]#get__T_int32(i/30)) in
         if (EnvEntry.name(entry/33) == name/29) {
             {
-              let mtmp22 = ref_set(found/31, Option__Typ::Some(EnvEntry.ty(entry/33))) in
+              let mtmp22 = inherent#Ref#Ref[T]#set__T_Option[Typ](found/31, Option__Typ::Some(EnvEntry.ty(entry/33))) in
               {
-                ref_set(done/32, true)
+                inherent#Ref#Ref[T]#set__T_bool(done/32, true)
               }
             }
         } else {
             {
-              ref_set(i/30, (ref_get(i/30) - 1))
+              inherent#Ref#Ref[T]#set__T_int32(i/30, (inherent#Ref#Ref[T]#get__T_int32(i/30) - 1))
             }
         }
       }
   } in
   {
-    ref_get(found/31)
+    inherent#Ref#Ref[T]#get__T_Option[Typ](found/31)
   }
 }
 
 fn subst_lookup(subst/34: Vec[SubstEntry], name/35: string) -> Option__Typ {
-  let i/36 = ref((inherent#Vec#Vec[T]#len__T_SubstEntry(subst/34) - 1)) in
-  let found/37 = ref(Option__Typ::None) in
-  let done/38 = ref(false) in
-  let mtmp25 = while ((!ref_get(done/38)) && (ref_get(i/36) >= 0)) {
+  let i/36 = inherent#Ref#Ref[T]#new__T_int32((inherent#Vec#Vec[T]#len__T_SubstEntry(subst/34) - 1)) in
+  let found/37 = inherent#Ref#Ref[T]#new__T_Option[Typ](Option__Typ::None) in
+  let done/38 = inherent#Ref#Ref[T]#new__T_bool(false) in
+  let mtmp25 = while if (!inherent#Ref#Ref[T]#get__T_bool(done/38)) {
+      (inherent#Ref#Ref[T]#get__T_int32(i/36) >= 0)
+  } else {
+      false
+  } {
       {
-        let entry/39 = vec_get(subst/34, ref_get(i/36)) in
+        let entry/39 = $goml_builtin_runtime$vec_get(subst/34, inherent#Ref#Ref[T]#get__T_int32(i/36)) in
         if (SubstEntry.name(entry/39) == name/35) {
             {
-              let mtmp24 = ref_set(found/37, Option__Typ::Some(SubstEntry.ty(entry/39))) in
+              let mtmp24 = inherent#Ref#Ref[T]#set__T_Option[Typ](found/37, Option__Typ::Some(SubstEntry.ty(entry/39))) in
               {
-                ref_set(done/38, true)
+                inherent#Ref#Ref[T]#set__T_bool(done/38, true)
               }
             }
         } else {
             {
-              ref_set(i/36, (ref_get(i/36) - 1))
+              inherent#Ref#Ref[T]#set__T_int32(i/36, (inherent#Ref#Ref[T]#get__T_int32(i/36) - 1))
             }
         }
       }
   } in
   {
-    ref_get(found/37)
+    inherent#Ref#Ref[T]#get__T_Option[Typ](found/37)
   }
 }
 
@@ -345,7 +353,7 @@ fn occurs(st/40: CheckerState, tvr/41: Ref[Tv], ty/42: Typ) -> Result__unit__str
             } else {
                 {
                   {
-                    let mtmp30 = ref_get(tvr2/43) in
+                    let mtmp30 = inherent#Ref#Ref[T]#get__T_Tv(tvr2/43) in
                     match mtmp30 {
                       Tv::Unbound(x31, x32) => {
                         {
@@ -357,7 +365,7 @@ fn occurs(st/40: CheckerState, tvr/41: Ref[Tv], ty/42: Typ) -> Result__unit__str
                               let name/44 = x31 in
                               {
                                 let min_level/47 = {
-                                  let mtmp34 = ref_get(tvr/41) in
+                                  let mtmp34 = inherent#Ref#Ref[T]#get__T_Tv(tvr/41) in
                                   match mtmp34 {
                                     Tv::Unbound(x35, x36) => {
                                       {
@@ -377,7 +385,7 @@ fn occurs(st/40: CheckerState, tvr/41: Ref[Tv], ty/42: Typ) -> Result__unit__str
                                     },
                                   }
                                 } in
-                                let mtmp38 = ref_set(tvr2/43, Tv::Unbound(name/44, min_level/47)) in
+                                let mtmp38 = inherent#Ref#Ref[T]#set__T_Tv(tvr2/43, Tv::Unbound(name/44, min_level/47)) in
                                 {
                                   Result__unit__string::Ok(())
                                 }
@@ -472,14 +480,14 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
                         } else {
                             {
                               {
-                                let mtmp53 = ref_get(r1/55) in
+                                let mtmp53 = inherent#Ref#Ref[T]#get__T_Tv(r1/55) in
                                 match mtmp53 {
                                   Tv::Unbound(x54, x55) => {
                                     {
                                       let x54 = Tv::Unbound._0(mtmp53) in
                                       let x55 = Tv::Unbound._1(mtmp53) in
                                       {
-                                        let mtmp57 = ref_get(r2/56) in
+                                        let mtmp57 = inherent#Ref#Ref[T]#get__T_Tv(r2/56) in
                                         match mtmp57 {
                                           Tv::Unbound(x58, x59) => {
                                             {
@@ -492,7 +500,7 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
                                                     {
                                                       let x62 = Result__unit__string::Ok._0(mtmp61) in
                                                       {
-                                                        let mtmp64 = ref_set(r1/55, Tv::Link(Typ::TVar(r2/56))) in
+                                                        let mtmp64 = inherent#Ref#Ref[T]#set__T_Tv(r1/55, Tv::Link(Typ::TVar(r2/56))) in
                                                         {
                                                           Result__unit__string::Ok(())
                                                         }
@@ -551,7 +559,7 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
                     {
                       let other/64 = x43 in
                       {
-                        let mtmp65 = ref_get(r2/65) in
+                        let mtmp65 = inherent#Ref#Ref[T]#get__T_Tv(r2/65) in
                         match mtmp65 {
                           Tv::Unbound(x66, x67) => {
                             {
@@ -564,7 +572,7 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
                                     {
                                       let x70 = Result__unit__string::Ok._0(mtmp69) in
                                       {
-                                        let mtmp72 = ref_set(r2/65, Tv::Link(other/64)) in
+                                        let mtmp72 = inherent#Ref#Ref[T]#set__T_Tv(r2/65, Tv::Link(other/64)) in
                                         {
                                           Result__unit__string::Ok(())
                                         }
@@ -608,7 +616,7 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
                     {
                       let other/64 = x43 in
                       {
-                        let mtmp73 = ref_get(r2/65) in
+                        let mtmp73 = inherent#Ref#Ref[T]#get__T_Tv(r2/65) in
                         match mtmp73 {
                           Tv::Unbound(x74, x75) => {
                             {
@@ -621,7 +629,7 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
                                     {
                                       let x78 = Result__unit__string::Ok._0(mtmp77) in
                                       {
-                                        let mtmp80 = ref_set(r2/65, Tv::Link(other/64)) in
+                                        let mtmp80 = inherent#Ref#Ref[T]#set__T_Tv(r2/65, Tv::Link(other/64)) in
                                         {
                                           Result__unit__string::Ok(())
                                         }
@@ -671,7 +679,7 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
                     {
                       let other/61 = x44 in
                       {
-                        let mtmp85 = ref_get(r1/60) in
+                        let mtmp85 = inherent#Ref#Ref[T]#get__T_Tv(r1/60) in
                         match mtmp85 {
                           Tv::Unbound(x86, x87) => {
                             {
@@ -684,7 +692,7 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
                                     {
                                       let x90 = Result__unit__string::Ok._0(mtmp89) in
                                       {
-                                        let mtmp92 = ref_set(r1/60, Tv::Link(other/61)) in
+                                        let mtmp92 = inherent#Ref#Ref[T]#set__T_Tv(r1/60, Tv::Link(other/61)) in
                                         {
                                           Result__unit__string::Ok(())
                                         }
@@ -748,7 +756,7 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
                     {
                       let other/61 = x44 in
                       {
-                        let mtmp97 = ref_get(r1/60) in
+                        let mtmp97 = inherent#Ref#Ref[T]#get__T_Tv(r1/60) in
                         match mtmp97 {
                           Tv::Unbound(x98, x99) => {
                             {
@@ -761,7 +769,7 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
                                     {
                                       let x102 = Result__unit__string::Ok._0(mtmp101) in
                                       {
-                                        let mtmp104 = ref_set(r1/60, Tv::Link(other/61)) in
+                                        let mtmp104 = inherent#Ref#Ref[T]#set__T_Tv(r1/60, Tv::Link(other/61)) in
                                         {
                                           Result__unit__string::Ok(())
                                         }
@@ -856,7 +864,7 @@ fn gen(st/73: CheckerState, ty/74: Typ) -> Typ {
         {
           let tvref/75 = x108 in
           {
-            let mtmp112 = ref_get(tvref/75) in
+            let mtmp112 = inherent#Ref#Ref[T]#get__T_Tv(tvref/75) in
             match mtmp112 {
               Tv::Unbound(x113, x114) => {
                 {
@@ -867,7 +875,7 @@ fn gen(st/73: CheckerState, ty/74: Typ) -> Typ {
                     {
                       let name/76 = x113 in
                       {
-                        let cur/78 = ref_get(CheckerState.current_level(st/73)) in
+                        let cur/78 = inherent#Ref#Ref[T]#get__T_int32(CheckerState.current_level(st/73)) in
                         if (l/77 > cur/78) {
                             {
                               Typ::QVar(name/76)
@@ -929,7 +937,7 @@ fn inst_loop(st/83: CheckerState, subst/84: Vec[SubstEntry], ty/85: Typ) -> (Typ
         {
           let tvref/90 = x116 in
           {
-            let mtmp120 = ref_get(tvref/90) in
+            let mtmp120 = inherent#Ref#Ref[T]#get__T_Tv(tvref/90) in
             match mtmp120 {
               Tv::Unbound(x121, x122) => {
                 {
@@ -1323,6 +1331,26 @@ fn main() -> unit {
   let _wild203 = println__T_string("") in
 }
 
+fn inherent#Ref#Ref[T]#new__T_int32(value/93: int32) -> Ref[int32] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#set__T_int32(self/95: Ref[int32], value/96: int32) -> unit {
+  ref_set(self/95, value/96)
+}
+
+fn inherent#Ref#Ref[T]#get__T_int32(self/94: Ref[int32]) -> int32 {
+  ref_get(self/94)
+}
+
+fn inherent#Ref#Ref[T]#new__T_Tv(value/93: Tv) -> Ref[Tv] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#get__T_Tv(self/94: Ref[Tv]) -> Tv {
+  ref_get(self/94)
+}
+
 fn inherent#Vec#Vec[T]#new__T_EnvEntry() -> Vec[EnvEntry] {
   vec_new()
 }
@@ -1331,8 +1359,36 @@ fn inherent#Vec#Vec[T]#len__T_EnvEntry(self/73: Vec[EnvEntry]) -> int32 {
   vec_len(self/73)
 }
 
+fn inherent#Ref#Ref[T]#new__T_Option[Typ](value/93: Option__Typ) -> Ref[Option__Typ] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#new__T_bool(value/93: bool) -> Ref[bool] {
+  ref(value/93)
+}
+
+fn inherent#Ref#Ref[T]#get__T_bool(self/94: Ref[bool]) -> bool {
+  ref_get(self/94)
+}
+
+fn inherent#Ref#Ref[T]#set__T_Option[Typ](self/95: Ref[Option__Typ], value/96: Option__Typ) -> unit {
+  ref_set(self/95, value/96)
+}
+
+fn inherent#Ref#Ref[T]#set__T_bool(self/95: Ref[bool], value/96: bool) -> unit {
+  ref_set(self/95, value/96)
+}
+
+fn inherent#Ref#Ref[T]#get__T_Option[Typ](self/94: Ref[Option__Typ]) -> Option__Typ {
+  ref_get(self/94)
+}
+
 fn inherent#Vec#Vec[T]#len__T_SubstEntry(self/73: Vec[SubstEntry]) -> int32 {
   vec_len(self/73)
+}
+
+fn inherent#Ref#Ref[T]#set__T_Tv(self/95: Ref[Tv], value/96: Tv) -> unit {
+  ref_set(self/95, value/96)
 }
 
 fn inherent#Vec#Vec[T]#push__T_SubstEntry(self/66: Vec[SubstEntry], elem/67: SubstEntry) -> Vec[SubstEntry] {

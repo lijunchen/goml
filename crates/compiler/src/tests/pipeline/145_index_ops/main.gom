@@ -52,7 +52,7 @@ fn main() -> unit {
     holder.vecs[1][0] = 200;
     println(holder.vecs[1][0]);
 
-    let r: Ref[[int32; 2]] = ref([22, 23]);
-    ref_get(r)[1] = 230;
-    println(ref_get(r)[1]);
+    let r: Ref[[int32; 2]] = Ref::new([22, 23]);
+    r.get()[1] = 230;
+    println(r.get()[1]);
 }

@@ -29,7 +29,7 @@ impl Hash for Maybe[Node] {
 }
 
 fn main() -> unit {
-    let n = Node { value: 1i32, next: ref(Maybe::None) };
+    let n = Node { value: 1i32, next: Ref::new(Maybe::None) };
     let m: HashMap[Node, string] = HashMap::new();
     m.set(n, "ok");
     println(m.len().to_string())
