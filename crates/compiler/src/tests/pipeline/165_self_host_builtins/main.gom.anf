@@ -1,0 +1,183 @@
+fn std::fs::read_file(path/0: string) -> Result__string__string {
+  join ret9(retv10: Result__string__string) -> Result__string__string {
+    retv10
+  } in
+  let mtmp0 = std::fs::read_file_raw(path/0) in
+  let x1 = mtmp0.0 in
+  let x2 = mtmp0.1 in
+  let x3 = mtmp0.2 in
+  let err/3 = x3 in
+  let data/2 = x2 in
+  let ok/1 = x1 in
+  join k11(jp12: Result__string__string) -> Result__string__string {
+    jump ret9(jp12)
+  } in
+  if ok/1 {
+    let t13 = Result__string__string::Ok(data/2) in
+    jump k11(t13)
+  } else {
+    let t14 = Result__string__string::Err(err/3) in
+    jump k11(t14)
+  }
+}
+
+fn std::fs::write_file(path/4: string, content/5: string) -> Result__unit__string {
+  join ret15(retv16: Result__unit__string) -> Result__unit__string {
+    retv16
+  } in
+  let mtmp4 = std::fs::write_file_raw(path/4, content/5) in
+  let x5 = mtmp4.0 in
+  let x6 = mtmp4.1 in
+  let err/7 = x6 in
+  let ok/6 = x5 in
+  join k17(jp18: Result__unit__string) -> Result__unit__string {
+    jump ret15(jp18)
+  } in
+  if ok/6 {
+    let t19 = Result__unit__string::Ok(()) in
+    jump k17(t19)
+  } else {
+    let t20 = Result__unit__string::Err(err/7) in
+    jump k17(t20)
+  }
+}
+
+fn std::fs::create_dir_all(path/8: string) -> Result__unit__string {
+  join ret21(retv22: Result__unit__string) -> Result__unit__string {
+    retv22
+  } in
+  let mtmp7 = std::fs::create_dir_all_raw(path/8) in
+  let x8 = mtmp7.0 in
+  let x9 = mtmp7.1 in
+  let err/10 = x9 in
+  let ok/9 = x8 in
+  join k23(jp24: Result__unit__string) -> Result__unit__string {
+    jump ret21(jp24)
+  } in
+  if ok/9 {
+    let t25 = Result__unit__string::Ok(()) in
+    jump k23(t25)
+  } else {
+    let t26 = Result__unit__string::Err(err/10) in
+    jump k23(t26)
+  }
+}
+
+fn std::fs::exists(path/11: string) -> bool {
+  join ret27(retv28: bool) -> bool {
+    retv28
+  } in
+  let t29 = std::fs::file_exists_raw(path/11) in
+  jump ret27(t29)
+}
+
+fn std::fs::read_dir(path/12: string) -> Result__Vec[string]__string {
+  join ret30(retv31: Result__Vec[string]__string) -> Result__Vec[string]__string {
+    retv31
+  } in
+  let mtmp10 = std::fs::read_dir_raw(path/12) in
+  let x11 = mtmp10.0 in
+  let x12 = mtmp10.1 in
+  let x13 = mtmp10.2 in
+  let err/15 = x13 in
+  let names/14 = x12 in
+  let ok/13 = x11 in
+  join k32(jp33: Result__Vec[string]__string) -> Result__Vec[string]__string {
+    jump ret30(jp33)
+  } in
+  if ok/13 {
+    let t34 = Result__Vec[string]__string::Ok(names/14) in
+    jump k32(t34)
+  } else {
+    let t35 = Result__Vec[string]__string::Err(err/15) in
+    jump k32(t35)
+  }
+}
+
+fn show_unit(result/0: Result__unit__string) -> string {
+  join ret36(retv37: string) -> string {
+    retv37
+  } in
+  join k38(jp39: string) -> string {
+    jump ret36(jp39)
+  } in
+  match result/0 {
+    Tag_0 => {
+      let x0 = Result__unit__string::Ok._0(result/0) in
+      jump k38("ok")
+    },
+    Tag_1 => {
+      let x1 = Result__unit__string::Err._0(result/0) in
+      let err/1 = x1 in
+      let t40 = ("err " + err/1) in
+      jump k38(t40)
+    },
+  }
+}
+
+fn show_string(result/2: Result__string__string) -> string {
+  join ret41(retv42: string) -> string {
+    retv42
+  } in
+  join k43(jp44: string) -> string {
+    jump ret41(jp44)
+  } in
+  match result/2 {
+    Tag_0 => {
+      let x2 = Result__string__string::Ok._0(result/2) in
+      let value/3 = x2 in
+      jump k43(value/3)
+    },
+    Tag_1 => {
+      let x3 = Result__string__string::Err._0(result/2) in
+      let err/4 = x3 in
+      let t45 = ("err " + err/4) in
+      jump k43(t45)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret46() -> unit {
+    ()
+  } in
+  let t47 = string_byte_slice("a你好z", 1, 7) in
+  let _wild4 = std::io::println__T_string(t47) in
+  let _wild5 = std::io::eprint__T_string("") in
+  let _wild6 = std::io::eprintln__T_string("") in
+  let t48 = std::fs::create_dir_all("goml-self-host/nested") in
+  let t49 = show_unit(t48) in
+  let _wild7 = std::io::println__T_string(t49) in
+  let t50 = std::fs::write_file("goml-self-host/nested/output.txt", "boot") in
+  let t51 = show_unit(t50) in
+  let _wild8 = std::io::println__T_string(t51) in
+  let t52 = std::fs::read_file("goml-self-host/nested/output.txt") in
+  let t53 = show_string(t52) in
+  let t54 = std::io::println__T_string(t53) in
+  jump ret46()
+}
+
+fn std::io::println__T_string(value/1: string) -> unit {
+  join ret55() -> unit {
+    ()
+  } in
+  let t56 = std::io::println_raw(value/1) in
+  jump ret55()
+}
+
+fn std::io::eprint__T_string(value/2: string) -> unit {
+  join ret57() -> unit {
+    ()
+  } in
+  let t58 = std::io::eprint_raw(value/2) in
+  jump ret57()
+}
+
+fn std::io::eprintln__T_string(value/3: string) -> unit {
+  join ret59() -> unit {
+    ()
+  } in
+  let t60 = (value/3 + "\n") in
+  let t61 = std::io::eprint_raw(t60) in
+  jump ret59()
+}

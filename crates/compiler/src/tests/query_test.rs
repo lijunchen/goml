@@ -443,6 +443,13 @@ fn main() {
                 ),
             },
             ValueCompletionItem {
+                name: "string_byte_slice",
+                kind: Function,
+                detail: Some(
+                    "(string, int32, int32) -> string",
+                ),
+            },
+            ValueCompletionItem {
                 name: "string_get",
                 kind: Function,
                 detail: Some(

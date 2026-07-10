@@ -1,0 +1,27 @@
+package main;
+use std::fs;
+use std::io;
+
+fn show_unit(result: Result[unit, string]) -> string {
+    match result {
+        Result::Ok(_) => "ok",
+        Result::Err(err) => "err " + err,
+    }
+}
+
+fn show_string(result: Result[string, string]) -> string {
+    match result {
+        Result::Ok(value) => value,
+        Result::Err(err) => "err " + err,
+    }
+}
+
+fn main() -> unit {
+    io::println(string_byte_slice("a你好z", 1, 7));
+    io::eprint("");
+    io::eprintln("");
+    io::println(show_unit(fs::create_dir_all("goml-self-host/nested")));
+    io::println(show_unit(fs::write_file("goml-self-host/nested/output.txt", "boot")));
+    io::println(show_string(fs::read_file("goml-self-host/nested/output.txt")))
+}
+

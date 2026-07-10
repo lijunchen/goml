@@ -197,100 +197,100 @@ func _goml_std_x3a__x3a_fs_x3a__x3a_write_x5f_file(path__4 string, content__5 st
     return retv15
 }
 
-func _goml_std_x3a__x3a_fs_x3a__x3a_exists(path__8 string) bool {
-    var retv21 bool
-    var t22 bool = _goml_std_x3a__x3a_fs_x3a__x3a_file_x5f_exists_x5f_raw(path__8)
-    retv21 = t22
-    return retv21
+func _goml_std_x3a__x3a_fs_x3a__x3a_exists(path__11 string) bool {
+    var retv27 bool
+    var t28 bool = _goml_std_x3a__x3a_fs_x3a__x3a_file_x5f_exists_x5f_raw(path__11)
+    retv27 = t28
+    return retv27
 }
 
-func _goml_std_x3a__x3a_fs_x3a__x3a_read_x5f_dir(path__9 string) _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string {
-    var retv24 _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string
-    var mtmp7 Tuple3_4bool_11Vec_6string_6string = _goml_std_x3a__x3a_fs_x3a__x3a_read_x5f_dir_x5f_raw(path__9)
-    var x8 bool = mtmp7._0
-    var x9 []string = mtmp7._1
-    var x10 string = mtmp7._2
-    var err__12 string = x10
-    var names__11 []string = x9
-    var ok__10 bool = x8
-    var jp26 _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string
-    if ok__10 {
-        var t27 _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string = _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string_Ok{
-            _0: names__11,
+func _goml_std_x3a__x3a_fs_x3a__x3a_read_x5f_dir(path__12 string) _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string {
+    var retv30 _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string
+    var mtmp10 Tuple3_4bool_11Vec_6string_6string = _goml_std_x3a__x3a_fs_x3a__x3a_read_x5f_dir_x5f_raw(path__12)
+    var x11 bool = mtmp10._0
+    var x12 []string = mtmp10._1
+    var x13 string = mtmp10._2
+    var err__15 string = x13
+    var names__14 []string = x12
+    var ok__13 bool = x11
+    var jp32 _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string
+    if ok__13 {
+        var t33 _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string = _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string_Ok{
+            _0: names__14,
         }
-        jp26 = t27
-    } else {
-        var t28 _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string = _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string_Err{
-            _0: err__12,
-        }
-        jp26 = t28
-    }
-    retv24 = jp26
-    return retv24
-}
-
-func show_read(res__0 Result__string__string) string {
-    var retv30 string
-    var jp32 string
-    switch res__0.(type) {
-    case Result__string__string_Ok:
-        var x0 string = res__0.(Result__string__string_Ok)._0
-        var value__1 string = x0
-        jp32 = value__1
-    case Result__string__string_Err:
-        var x1 string = res__0.(Result__string__string_Err)._0
-        var err__2 string = x1
-        var t33 string = "err " + err__2
         jp32 = t33
-    default:
-        panic("non-exhaustive match")
+    } else {
+        var t34 _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string = _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string_Err{
+            _0: err__15,
+        }
+        jp32 = t34
     }
     retv30 = jp32
     return retv30
 }
 
+func show_read(res__0 Result__string__string) string {
+    var retv36 string
+    var jp38 string
+    switch res__0.(type) {
+    case Result__string__string_Ok:
+        var x0 string = res__0.(Result__string__string_Ok)._0
+        var value__1 string = x0
+        jp38 = value__1
+    case Result__string__string_Err:
+        var x1 string = res__0.(Result__string__string_Err)._0
+        var err__2 string = x1
+        var t39 string = "err " + err__2
+        jp38 = t39
+    default:
+        panic("non-exhaustive match")
+    }
+    retv36 = jp38
+    return retv36
+}
+
 func show_dir(res__3 _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string) string {
-    var retv35 string
-    var jp37 string
+    var retv41 string
+    var jp43 string
     switch res__3.(type) {
     case _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string_Ok:
         var x2 []string = res__3.(_goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string_Ok)._0
         var names__4 []string = x2
-        var t38 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_string(names__4)
-        var t39 bool = t38 > 0
-        var t40 string = bool_to_string(t39)
-        jp37 = t40
+        var t44 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_string(names__4)
+        var t45 bool = t44 > 0
+        var t46 string = bool_to_string(t45)
+        jp43 = t46
     case _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string_Err:
         var x3 string = res__3.(_goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string_Err)._0
         var err__5 string = x3
-        var t41 string = "err " + err__5
-        jp37 = t41
+        var t47 string = "err " + err__5
+        jp43 = t47
     default:
         panic("non-exhaustive match")
     }
-    retv35 = jp37
-    return retv35
+    retv41 = jp43
+    return retv41
 }
 
 func main0() struct{} {
     _goml_std_x3a__x3a_fs_x3a__x3a_write_x5f_file("goml-std-test.txt", "std-ok")
-    var t43 Result__string__string = _goml_std_x3a__x3a_fs_x3a__x3a_read_x5f_file("goml-std-test.txt")
-    var t44 string = show_read(t43)
-    _goml_std_x3a__x3a_io_x3a__x3a_println_x5f__x5f_T_x5f_string(t44)
-    var t45 bool = _goml_std_x3a__x3a_fs_x3a__x3a_exists("goml-std-test.txt")
-    var t46 string = bool_to_string(t45)
-    _goml_std_x3a__x3a_io_x3a__x3a_println_x5f__x5f_T_x5f_string(t46)
-    var t47 _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string = _goml_std_x3a__x3a_fs_x3a__x3a_read_x5f_dir(".")
-    var t48 string = show_dir(t47)
-    _goml_std_x3a__x3a_io_x3a__x3a_println_x5f__x5f_T_x5f_string(t48)
+    var t49 Result__string__string = _goml_std_x3a__x3a_fs_x3a__x3a_read_x5f_file("goml-std-test.txt")
+    var t50 string = show_read(t49)
+    _goml_std_x3a__x3a_io_x3a__x3a_println_x5f__x5f_T_x5f_string(t50)
+    var t51 bool = _goml_std_x3a__x3a_fs_x3a__x3a_exists("goml-std-test.txt")
+    var t52 string = bool_to_string(t51)
+    _goml_std_x3a__x3a_io_x3a__x3a_println_x5f__x5f_T_x5f_string(t52)
+    var t53 _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string = _goml_std_x3a__x3a_fs_x3a__x3a_read_x5f_dir(".")
+    var t54 string = show_dir(t53)
+    _goml_std_x3a__x3a_io_x3a__x3a_println_x5f__x5f_T_x5f_string(t54)
     return struct{}{}
 }
 
 func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_string(self__73 []string) int32 {
-    var retv50 int32
-    var t51 int32 = int32(len(self__73))
-    retv50 = t51
-    return retv50
+    var retv56 int32
+    var t57 int32 = int32(len(self__73))
+    retv56 = t57
+    return retv56
 }
 
 func _goml_std_x3a__x3a_io_x3a__x3a_println_x5f__x5f_T_x5f_string(value__1 string) struct{} {

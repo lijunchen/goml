@@ -18,6 +18,14 @@ fn std::io::println(value/1: T) -> unit {
   std::io::println_raw(trait_call[ToString::to_string](value/1))
 }
 
+fn std::io::eprint(value/2: T) -> unit {
+  std::io::eprint_raw(trait_call[ToString::to_string](value/2))
+}
+
+fn std::io::eprintln(value/3: T) -> unit {
+  std::io::eprint_raw((trait_call[ToString::to_string](value/3) + "\n"))
+}
+
 fn main() -> unit {
   std::io::println(trait_call[ToString::to_string]((inherent#Vec#Vec[string]#len(std::env::args()) > 0)))
 }

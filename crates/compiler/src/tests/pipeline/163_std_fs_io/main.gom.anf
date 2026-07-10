@@ -42,113 +42,134 @@ fn std::fs::write_file(path/4: string, content/5: string) -> Result__unit__strin
   }
 }
 
-fn std::fs::exists(path/8: string) -> bool {
-  join ret20(retv21: bool) -> bool {
+fn std::fs::create_dir_all(path/8: string) -> Result__unit__string {
+  join ret20(retv21: Result__unit__string) -> Result__unit__string {
     retv21
   } in
-  let t22 = std::fs::file_exists_raw(path/8) in
-  jump ret20(t22)
-}
-
-fn std::fs::read_dir(path/9: string) -> Result__Vec[string]__string {
-  join ret23(retv24: Result__Vec[string]__string) -> Result__Vec[string]__string {
-    retv24
-  } in
-  let mtmp7 = std::fs::read_dir_raw(path/9) in
+  let mtmp7 = std::fs::create_dir_all_raw(path/8) in
   let x8 = mtmp7.0 in
   let x9 = mtmp7.1 in
-  let x10 = mtmp7.2 in
-  let err/12 = x10 in
-  let names/11 = x9 in
-  let ok/10 = x8 in
-  join k25(jp26: Result__Vec[string]__string) -> Result__Vec[string]__string {
-    jump ret23(jp26)
+  let err/10 = x9 in
+  let ok/9 = x8 in
+  join k22(jp23: Result__unit__string) -> Result__unit__string {
+    jump ret20(jp23)
   } in
-  if ok/10 {
-    let t27 = Result__Vec[string]__string::Ok(names/11) in
-    jump k25(t27)
+  if ok/9 {
+    let t24 = Result__unit__string::Ok(()) in
+    jump k22(t24)
   } else {
-    let t28 = Result__Vec[string]__string::Err(err/12) in
-    jump k25(t28)
+    let t25 = Result__unit__string::Err(err/10) in
+    jump k22(t25)
+  }
+}
+
+fn std::fs::exists(path/11: string) -> bool {
+  join ret26(retv27: bool) -> bool {
+    retv27
+  } in
+  let t28 = std::fs::file_exists_raw(path/11) in
+  jump ret26(t28)
+}
+
+fn std::fs::read_dir(path/12: string) -> Result__Vec[string]__string {
+  join ret29(retv30: Result__Vec[string]__string) -> Result__Vec[string]__string {
+    retv30
+  } in
+  let mtmp10 = std::fs::read_dir_raw(path/12) in
+  let x11 = mtmp10.0 in
+  let x12 = mtmp10.1 in
+  let x13 = mtmp10.2 in
+  let err/15 = x13 in
+  let names/14 = x12 in
+  let ok/13 = x11 in
+  join k31(jp32: Result__Vec[string]__string) -> Result__Vec[string]__string {
+    jump ret29(jp32)
+  } in
+  if ok/13 {
+    let t33 = Result__Vec[string]__string::Ok(names/14) in
+    jump k31(t33)
+  } else {
+    let t34 = Result__Vec[string]__string::Err(err/15) in
+    jump k31(t34)
   }
 }
 
 fn show_read(res/0: Result__string__string) -> string {
-  join ret29(retv30: string) -> string {
-    retv30
+  join ret35(retv36: string) -> string {
+    retv36
   } in
-  join k31(jp32: string) -> string {
-    jump ret29(jp32)
+  join k37(jp38: string) -> string {
+    jump ret35(jp38)
   } in
   match res/0 {
     Tag_0 => {
       let x0 = Result__string__string::Ok._0(res/0) in
       let value/1 = x0 in
-      jump k31(value/1)
+      jump k37(value/1)
     },
     Tag_1 => {
       let x1 = Result__string__string::Err._0(res/0) in
       let err/2 = x1 in
-      let t33 = ("err " + err/2) in
-      jump k31(t33)
+      let t39 = ("err " + err/2) in
+      jump k37(t39)
     },
   }
 }
 
 fn show_dir(res/3: Result__Vec[string]__string) -> string {
-  join ret34(retv35: string) -> string {
-    retv35
+  join ret40(retv41: string) -> string {
+    retv41
   } in
-  join k36(jp37: string) -> string {
-    jump ret34(jp37)
+  join k42(jp43: string) -> string {
+    jump ret40(jp43)
   } in
   match res/3 {
     Tag_0 => {
       let x2 = Result__Vec[string]__string::Ok._0(res/3) in
       let names/4 = x2 in
-      let t38 = inherent#Vec#Vec[T]#len__T_string(names/4) in
-      let t39 = (t38 > 0) in
-      let t40 = $goml_builtin_runtime$bool_to_string(t39) in
-      jump k36(t40)
+      let t44 = inherent#Vec#Vec[T]#len__T_string(names/4) in
+      let t45 = (t44 > 0) in
+      let t46 = $goml_builtin_runtime$bool_to_string(t45) in
+      jump k42(t46)
     },
     Tag_1 => {
       let x3 = Result__Vec[string]__string::Err._0(res/3) in
       let err/5 = x3 in
-      let t41 = ("err " + err/5) in
-      jump k36(t41)
+      let t47 = ("err " + err/5) in
+      jump k42(t47)
     },
   }
 }
 
 fn main() -> unit {
-  join ret42() -> unit {
+  join ret48() -> unit {
     ()
   } in
   let mtmp4 = std::fs::write_file("goml-std-test.txt", "std-ok") in
-  let t43 = std::fs::read_file("goml-std-test.txt") in
-  let t44 = show_read(t43) in
-  let _wild5 = std::io::println__T_string(t44) in
-  let t45 = std::fs::exists("goml-std-test.txt") in
-  let t46 = $goml_builtin_runtime$bool_to_string(t45) in
-  let _wild6 = std::io::println__T_string(t46) in
-  let t47 = std::fs::read_dir(".") in
-  let t48 = show_dir(t47) in
-  let _wild7 = std::io::println__T_string(t48) in
-  jump ret42()
+  let t49 = std::fs::read_file("goml-std-test.txt") in
+  let t50 = show_read(t49) in
+  let _wild5 = std::io::println__T_string(t50) in
+  let t51 = std::fs::exists("goml-std-test.txt") in
+  let t52 = $goml_builtin_runtime$bool_to_string(t51) in
+  let _wild6 = std::io::println__T_string(t52) in
+  let t53 = std::fs::read_dir(".") in
+  let t54 = show_dir(t53) in
+  let _wild7 = std::io::println__T_string(t54) in
+  jump ret48()
 }
 
 fn inherent#Vec#Vec[T]#len__T_string(self/73: Vec[string]) -> int32 {
-  join ret49(retv50: int32) -> int32 {
-    retv50
+  join ret55(retv56: int32) -> int32 {
+    retv56
   } in
-  let t51 = vec_len(self/73) in
-  jump ret49(t51)
+  let t57 = vec_len(self/73) in
+  jump ret55(t57)
 }
 
 fn std::io::println__T_string(value/1: string) -> unit {
-  join ret52() -> unit {
+  join ret58() -> unit {
     ()
   } in
-  let t53 = std::io::println_raw(value/1) in
-  jump ret52()
+  let t59 = std::io::println_raw(value/1) in
+  jump ret58()
 }
