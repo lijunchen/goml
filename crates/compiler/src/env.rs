@@ -5,7 +5,6 @@ use line_index::LineIndex;
 pub use super::builtins::builtin_function_names;
 use crate::{
     common::{self, Constructor},
-    package_names::BUILTIN_PACKAGE,
     tast::{self, TastIdent},
 };
 use std::cell::{Cell, RefCell};
@@ -667,22 +666,6 @@ impl PackageTypeEnv {
         &mut self.current
     }
 
-    pub fn env_for_package(&self, package: &str) -> Option<&GlobalTypeEnv> {
-        if package == BUILTIN_PACKAGE {
-            return Some(&self.builtins);
-        }
-        if package == self.package {
-            Some(&self.current)
-        } else {
-            self.deps.get(package)
-        }
-    }
-
-    pub fn get_type_of_function_unqualified(&self, name: &str) -> Option<tast::Ty> {
-        self.get_function_scheme_unqualified(name)
-            .map(|scheme| scheme.ty)
-    }
-
     fn shadows_builtin_nominal_type(&self, ty: &tast::Ty) -> bool {
         let Some(name) = nominal_type_name(ty) else {
             return false;
@@ -868,15 +851,6 @@ impl PackageTypeEnv {
             .borrow_mut()
             .insert(key, result.clone());
         result
-    }
-
-    pub fn lookup_visible_inherent_method(
-        &self,
-        receiver_ty: &tast::Ty,
-        method: &TastIdent,
-    ) -> Option<tast::Ty> {
-        self.lookup_visible_inherent_method_scheme(receiver_ty, method)
-            .map(|scheme| scheme.ty)
     }
 
     pub fn lookup_visible_inherent_method_scheme(

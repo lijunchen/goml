@@ -1496,30 +1496,6 @@ pub struct CallExpr {
 }
 
 impl CallExpr {
-    pub fn l_name(&self) -> Option<String> {
-        let node: Option<Expr> = support::child(&self.syntax);
-        match node {
-            Some(Expr::IdentExpr(it)) => it
-                .path()?
-                .ident_tokens()
-                .last()
-                .map(|t| t.text().to_string()),
-            _ => None,
-        }
-    }
-
-    pub fn u_name(&self) -> Option<String> {
-        let node: Option<Expr> = support::child(&self.syntax);
-        match node {
-            Some(Expr::IdentExpr(it)) => it
-                .path()?
-                .ident_tokens()
-                .last()
-                .map(|t| t.text().to_string()),
-            _ => None,
-        }
-    }
-
     pub fn arg_list(&self) -> Option<ArgList> {
         support::child(&self.syntax)
     }

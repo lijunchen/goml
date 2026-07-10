@@ -48,27 +48,11 @@ pub fn stdlib_artifact() -> Result<ExternalModuleArtifact, String> {
         .clone()
 }
 
-pub fn stdlib_interface() -> Result<InterfaceUnit, String> {
-    stdlib_package_interface("std")
-}
-
-pub fn stdlib_core() -> Result<CoreUnit, String> {
-    stdlib_package_core("std")
-}
-
 pub fn stdlib_package_interface(package: &str) -> Result<InterfaceUnit, String> {
     stdlib_artifact()?
         .packages
         .get(package)
         .map(|artifact| artifact.interface.clone())
-        .ok_or_else(|| format!("standard library package {} not found", package))
-}
-
-pub fn stdlib_package_core(package: &str) -> Result<CoreUnit, String> {
-    stdlib_artifact()?
-        .packages
-        .get(package)
-        .map(|artifact| artifact.core.clone())
         .ok_or_else(|| format!("standard library package {} not found", package))
 }
 

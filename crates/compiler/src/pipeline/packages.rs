@@ -517,19 +517,6 @@ pub fn discover_packages_with_external_imports(
     )
 }
 
-pub fn discover_packages_single_file(
-    root_dir: &Path,
-    entry_path: &Path,
-    entry_ast: ast::File,
-) -> Result<PackageGraph, CompilationError> {
-    discover_packages_single_file_with_external_imports(
-        root_dir,
-        entry_path,
-        entry_ast,
-        &ExternalImports::default(),
-    )
-}
-
 pub fn discover_packages_single_file_with_external_imports(
     root_dir: &Path,
     entry_path: &Path,

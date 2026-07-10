@@ -124,8 +124,4 @@ impl LocalTypeEnv {
         self.pop_scope(diagnostics);
         captured
     }
-
-    pub fn capture_stack_depth(&self) -> usize {
-        self.capture_stack.len()
-    }
 }

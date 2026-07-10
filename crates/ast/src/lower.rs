@@ -71,10 +71,6 @@ impl LowerResult {
         self.ast.as_ref()
     }
 
-    pub fn into_ast(self) -> Option<ast::File> {
-        self.ast
-    }
-
     pub fn into_parts(self) -> (Option<ast::File>, Diagnostics) {
         (self.ast, self.diagnostics)
     }

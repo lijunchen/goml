@@ -7,7 +7,7 @@ use crate::env;
 use crate::hir;
 use crate::hir::HirIdent;
 use crate::interface;
-use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package};
+use crate::package_names::{BUILTIN_PACKAGE, is_special_unqualified_package};
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::syntax::MySyntaxNodePtr;
 
@@ -422,25 +422,6 @@ impl NameResolution {
     ) -> hir::Path {
         self.constructor_path_for(path, ctx)
             .unwrap_or_else(|| self.resolve_hir_path(path, ctx))
-    }
-
-    pub fn resolve_files(self, files: Vec<ast::File>) -> (hir::ResolvedHir, HirTable, Diagnostics) {
-        let deps = HashMap::new();
-        let package_name = files
-            .first()
-            .map(|file| file.package.0.as_str())
-            .unwrap_or(ROOT_PACKAGE);
-        let package_id = match package_name {
-            BUILTIN_PACKAGE => hir::PackageId(0),
-            ROOT_PACKAGE => hir::PackageId(1),
-            _ => hir::PackageId(2),
-        };
-        let files = files
-            .into_iter()
-            .enumerate()
-            .map(|(idx, ast)| hir::SourceFileAst::new(format!("<unknown:{}>", idx).into(), ast))
-            .collect();
-        self.resolve_files_with_env(package_id, files, &deps)
     }
 
     pub fn resolve_files_with_env(

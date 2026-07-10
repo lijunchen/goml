@@ -292,12 +292,6 @@ impl GlobalMonoEnv {
     pub fn insert_func(&mut self, name: String, ty: Ty) {
         self.mono_funcs.insert(name, ty);
     }
-
-    pub fn rename_func(&mut self, old_name: &str, new_name: &str) {
-        if let Some(ty) = self.mono_funcs.swap_remove(old_name) {
-            self.mono_funcs.insert(new_name.to_string(), ty);
-        }
-    }
 }
 
 // Helpers
