@@ -1088,19 +1088,19 @@ fn std_io_eprint_raw() -> goast::Fn {
 }
 
 pub fn array_helper_fn_name(prefix: &str, ty: &tast::Ty) -> String {
-    format!("{}__{}", prefix, go_ident(&encode_ty(ty)))
+    go_generated_ident(&format!("{}__{}", prefix, go_ident(&encode_ty(ty))))
 }
 
 pub fn vec_helper_fn_name(prefix: &str, ty: &tast::Ty) -> String {
-    format!("{}__{}", prefix, go_ident(&encode_ty(ty)))
+    go_generated_ident(&format!("{}__{}", prefix, go_ident(&encode_ty(ty))))
 }
 
 pub fn ref_helper_fn_name(prefix: &str, ty: &tast::Ty) -> String {
-    format!("{}__{}", prefix, go_ident(&encode_ty(ty)))
+    go_generated_ident(&format!("{}__{}", prefix, go_ident(&encode_ty(ty))))
 }
 
 pub fn hashmap_helper_fn_name(prefix: &str, ty: &tast::Ty) -> String {
-    format!("{}__{}", prefix, go_ident(&encode_ty(ty)))
+    go_generated_ident(&format!("{}__{}", prefix, go_ident(&encode_ty(ty))))
 }
 
 pub fn hashmap_lookup_helper_fn_name(ty: &tast::Ty) -> String {
@@ -1108,7 +1108,7 @@ pub fn hashmap_lookup_helper_fn_name(ty: &tast::Ty) -> String {
 }
 
 pub fn missing_helper_fn_name(ty: &tast::Ty) -> String {
-    format!("missing__{}", go_ident(&encode_ty(ty)))
+    go_generated_ident(&format!("missing__{}", go_ident(&encode_ty(ty))))
 }
 
 pub fn make_missing_runtime(missing_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
@@ -1682,7 +1682,7 @@ fn option_variant_go_names(goenv: &GlobalGoEnv, option_name: &str) -> Option<(St
 
 fn make_synthetic_option_runtime(option_name: &str, value_go_ty: goty::GoType) -> Vec<goast::Item> {
     let option_go_name = synthetic_option_type_name(option_name);
-    let type_identifier_method = format!("is{}", option_go_name);
+    let type_identifier_method = go_generated_ident(&format!("is{}", option_go_name));
     let some_go_name = synthetic_option_variant_name(option_name, "Some");
     let none_go_name = synthetic_option_variant_name(option_name, "None");
 
@@ -1743,7 +1743,7 @@ pub fn make_hashmap_runtime(
         }
 
         let map_struct_name = goast::hashmap_struct_name(key, value);
-        let entry_struct_name = format!("{}_entry", map_struct_name);
+        let entry_struct_name = go_generated_ident(&format!("{}_entry", map_struct_name));
 
         let key_go_ty = goast::tast_ty_to_go_type(key);
         let value_go_ty = goast::tast_ty_to_go_type(value);

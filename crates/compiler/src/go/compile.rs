@@ -3,7 +3,10 @@ use crate::{
     common::{Constructor, Prim},
     env::{EnumDef, FnOrigin, Gensym, GlobalTypeEnv, InherentImplKey, StructDef},
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
-    go::mangle::{encode_ty, go_dyn_struct_name, go_generated_ident, go_ident, go_user_type_name},
+    go::mangle::{
+        encode_ty, go_dyn_struct_name, go_generated_ident, go_hashed_ident, go_ident,
+        go_user_type_name,
+    },
     lift::{GlobalLiftEnv, is_closure_env_struct},
     names::{
         builtin_runtime_call_name, inherent_method_fn_name, parse_inherent_method_fn_name,
@@ -246,7 +249,7 @@ fn resolve_toplevel_func_name(goenv: &GlobalGoEnv, name: &str) -> String {
             || is_generated_tuple_type_name(&ident)
             || go_toplevel_func_name_collides_with_type(goenv, &ident))
     {
-        format!("_goml_user_{}", ident)
+        go_generated_ident(&format!("_goml_user_{}", ident))
     } else {
         ident
     }
@@ -279,12 +282,7 @@ fn collect_colliding_callable_idents(goenv: &GlobalGoEnv) -> HashSet<String> {
 }
 
 fn go_unique_toplevel_func_name(name: &str) -> String {
-    let mut out = String::from("_goml_fn");
-    for byte in name.as_bytes() {
-        use std::fmt::Write;
-        write!(&mut out, "_{:02x}", byte).unwrap();
-    }
-    out
+    go_hashed_ident("fn", name)
 }
 
 fn go_toplevel_func_name_collides_with_type(goenv: &GlobalGoEnv, name: &str) -> bool {
@@ -304,7 +302,7 @@ fn go_value_name(goenv: &GlobalGoEnv, name: &str) -> String {
         if is_generated_tuple_type_name(&ident)
             && go_toplevel_func_name_collides_with_type(goenv, &ident)
         {
-            format!("_goml_user_{}", ident)
+            go_generated_ident(&format!("_goml_user_{}", ident))
         } else {
             ident
         }
@@ -497,7 +495,7 @@ fn variant_symbol_name_for_go_enum(
         }
     }
     let candidate = if count > 1 {
-        format!("{}_{}", enum_go_name, go_ident(variant_name))
+        go_generated_ident(&format!("{}_{}", enum_go_name, go_ident(variant_name)))
     } else {
         go_ident(variant_name)
     };
@@ -510,13 +508,13 @@ fn unique_variant_symbol_name(goenv: &GlobalGoEnv, base: String) -> String {
     }
 
     if is_generated_tuple_type_name(&base) {
-        let protected_base = format!("_goml_user_{}", base);
+        let protected_base = go_generated_ident(&format!("_goml_user_{}", base));
         if !go_toplevel_name_is_reserved(goenv, &protected_base) {
             return protected_base;
         }
         let mut index = 1usize;
         loop {
-            let candidate = format!("{}__variant{}", protected_base, index);
+            let candidate = go_generated_ident(&format!("{}__variant{}", protected_base, index));
             if !go_toplevel_name_is_reserved(goenv, &candidate) {
                 return candidate;
             }
@@ -526,7 +524,7 @@ fn unique_variant_symbol_name(goenv: &GlobalGoEnv, base: String) -> String {
 
     let mut index = 1usize;
     loop {
-        let candidate = format!("{}__variant{}", base, index);
+        let candidate = go_generated_ident(&format!("{}__variant{}", base, index));
         if !go_toplevel_name_is_reserved(goenv, &candidate) {
             return candidate;
         }
@@ -5690,7 +5688,7 @@ fn compile_while_loop(
     join_env: &JoinEnv,
     force_runtime_builtins: bool,
 ) -> Vec<goast::Stmt> {
-    let loop_label = format!("Loop_{}", go_ident(&wl.loop_id.0));
+    let loop_label = go_generated_ident(&format!("Loop_{}", go_ident(&wl.loop_id.0)));
 
     let mut inner_env = join_env.clone();
     inner_env.continue_targets.insert(wl.loop_id.clone());
@@ -6040,7 +6038,8 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
             continue;
         }
 
-        let type_identifier_method = format!("is{}", go_user_type_name(&name.0));
+        let type_identifier_method =
+            go_generated_ident(&format!("is{}", go_user_type_name(&name.0)));
 
         defs.push(goast::Item::Interface(goast::Interface {
             name: go_user_type_name(&name.0),
