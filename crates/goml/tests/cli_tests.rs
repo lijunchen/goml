@@ -1344,10 +1344,10 @@ fn project_check_dry_run_prints_compiler_check_commands() -> anyhow::Result<()> 
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(output.status.success(), "stderr: {stderr}");
     expect![[r#"
-        goml compiler check --package project008::traitpkg --input traitpkg/traitpkg.gom --output target/goml/check/pkg/project008/traitpkg/package
-        goml compiler check --package project008::datapkg --input datapkg/datapkg.gom --interface-path target/goml/check/pkg/project008/traitpkg/package.interface --output target/goml/check/pkg/project008/datapkg/package
-        goml compiler check --package project008::usepkg --input usepkg/usepkg.gom --interface-path target/goml/check/pkg/project008/traitpkg/package.interface --output target/goml/check/pkg/project008/usepkg/package
-        goml compiler check --package project008 --input main.gom --interface-path target/goml/check/pkg/project008/datapkg/package.interface --interface-path target/goml/check/pkg/project008/traitpkg/package.interface --interface-path target/goml/check/pkg/project008/usepkg/package.interface --output target/goml/check/pkg/project008/package
+        gomlc check --package project008::traitpkg --input traitpkg/traitpkg.gom --output target/goml/check/pkg/project008/traitpkg/package
+        gomlc check --package project008::datapkg --input datapkg/datapkg.gom --interface-path target/goml/check/pkg/project008/traitpkg/package.interface --output target/goml/check/pkg/project008/datapkg/package
+        gomlc check --package project008::usepkg --input usepkg/usepkg.gom --interface-path target/goml/check/pkg/project008/traitpkg/package.interface --output target/goml/check/pkg/project008/usepkg/package
+        gomlc check --package project008 --input main.gom --interface-path target/goml/check/pkg/project008/datapkg/package.interface --interface-path target/goml/check/pkg/project008/traitpkg/package.interface --interface-path target/goml/check/pkg/project008/usepkg/package.interface --output target/goml/check/pkg/project008/package
     "#]]
     .assert_eq(&stdout);
     assert!(!dir.path().join("target/goml/check/main.interface").exists());
@@ -1365,11 +1365,11 @@ fn project_build_dry_run_prints_compiler_build_and_link_commands() -> anyhow::Re
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(output.status.success(), "stderr: {stderr}");
     expect![[r#"
-        goml compiler build --package project008::traitpkg --input traitpkg/traitpkg.gom --output target/goml/build/pkg/project008/traitpkg/package
-        goml compiler build --package project008::datapkg --input datapkg/datapkg.gom --interface-path target/goml/build/pkg/project008/traitpkg/package.interface --output target/goml/build/pkg/project008/datapkg/package
-        goml compiler build --package project008::usepkg --input usepkg/usepkg.gom --interface-path target/goml/build/pkg/project008/traitpkg/package.interface --output target/goml/build/pkg/project008/usepkg/package
-        goml compiler build --package project008 --input main.gom --interface-path target/goml/build/pkg/project008/datapkg/package.interface --interface-path target/goml/build/pkg/project008/traitpkg/package.interface --interface-path target/goml/build/pkg/project008/usepkg/package.interface --output target/goml/build/pkg/project008/package
-        goml compiler link --input target/goml/build/pkg/project008/traitpkg/package.core target/goml/build/pkg/project008/datapkg/package.core target/goml/build/pkg/project008/usepkg/package.core target/goml/build/pkg/project008/package.core --output target/goml/main.go --entry project008
+        gomlc build --package project008::traitpkg --input traitpkg/traitpkg.gom --output target/goml/build/pkg/project008/traitpkg/package
+        gomlc build --package project008::datapkg --input datapkg/datapkg.gom --interface-path target/goml/build/pkg/project008/traitpkg/package.interface --output target/goml/build/pkg/project008/datapkg/package
+        gomlc build --package project008::usepkg --input usepkg/usepkg.gom --interface-path target/goml/build/pkg/project008/traitpkg/package.interface --output target/goml/build/pkg/project008/usepkg/package
+        gomlc build --package project008 --input main.gom --interface-path target/goml/build/pkg/project008/datapkg/package.interface --interface-path target/goml/build/pkg/project008/traitpkg/package.interface --interface-path target/goml/build/pkg/project008/usepkg/package.interface --output target/goml/build/pkg/project008/package
+        gomlc link --input target/goml/build/pkg/project008/traitpkg/package.core target/goml/build/pkg/project008/datapkg/package.core target/goml/build/pkg/project008/usepkg/package.core target/goml/build/pkg/project008/package.core --output target/goml/main.go --entry project008
     "#]]
     .assert_eq(&stdout);
     assert!(!dir.path().join("target/goml/main.go").exists());
@@ -1486,7 +1486,7 @@ pub fn value() -> int32 {
     assert!(!output.status.success());
     expect![[r#"
         build failed: Typer { diagnostics: Diagnostics { items: [Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(56..67) }, Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(56..67) }] } }
-        subcommand failed: goml compiler build --package demo::A --input A/A.gom --interface-path target/goml/build/pkg/demo/B/package.interface --output target/goml/build/pkg/demo/A/package
+        subcommand failed: gomlc build --package demo::A --input A/A.gom --interface-path target/goml/build/pkg/demo/B/package.interface --output target/goml/build/pkg/demo/A/package
     "#]]
     .assert_eq(&stderr);
     assert!(!root.join("target/goml/main.go").exists());
@@ -1536,9 +1536,9 @@ pub fn msg() -> string {
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(output.status.success(), "stderr: {stderr}");
     expect![[r#"
-        goml compiler build --package demo::src::Lib --input src/Lib/Lib.gom --output target/goml/build/pkg/demo/src/Lib/package
-        goml compiler build --package demo::src --input src/main.gom --interface-path target/goml/build/pkg/demo/src/Lib/package.interface --output target/goml/build/pkg/demo/src/package
-        goml compiler link --input target/goml/build/pkg/demo/src/Lib/package.core target/goml/build/pkg/demo/src/package.core --output target/goml/main.go --entry demo::src
+        gomlc build --package demo::src::Lib --input src/Lib/Lib.gom --output target/goml/build/pkg/demo/src/Lib/package
+        gomlc build --package demo::src --input src/main.gom --interface-path target/goml/build/pkg/demo/src/Lib/package.interface --output target/goml/build/pkg/demo/src/package
+        gomlc link --input target/goml/build/pkg/demo/src/Lib/package.core target/goml/build/pkg/demo/src/package.core --output target/goml/main.go --entry demo::src
     "#]]
     .assert_eq(&stdout);
     expect![""].assert_eq(&stderr);
