@@ -381,3 +381,121 @@ pub fn validate_registry_consistency(registry: &Registry) -> Result<(), String> 
     }
     Ok(())
 }
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn sample_registry(root: &Path) {
+        std::fs::create_dir_all(root.join("alice/http/1.0.0")).unwrap();
+        std::fs::create_dir_all(root.join("alice/http/1.2.0")).unwrap();
+        std::fs::create_dir_all(root.join("alice/net/0.1.0")).unwrap();
+        std::fs::write(
+            root.join("index.toml"),
+            r#"
+[modules."alice::http"]
+latest = "1.2.0"
+versions = ["1.0.0", "1.2.0"]
+
+[modules."alice::net"]
+latest = "0.1.0"
+versions = ["0.1.0"]
+"#,
+        )
+        .unwrap();
+        std::fs::write(
+            root.join("alice/http/1.0.0/goml.toml"),
+            r#"
+[module]
+path = "alice::http"
+"#,
+        )
+        .unwrap();
+        std::fs::write(
+            root.join("alice/http/1.2.0/goml.toml"),
+            r#"
+[module]
+path = "alice::http"
+
+[dependencies]
+"alice::net" = "0.1.0"
+"#,
+        )
+        .unwrap();
+        std::fs::write(
+            root.join("alice/net/0.1.0/goml.toml"),
+            r#"
+[module]
+path = "alice::net"
+"#,
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn parses_semver() {
+        assert_eq!(
+            SemVer::parse("1.2.3").unwrap(),
+            SemVer {
+                major: 1,
+                minor: 2,
+                patch: 3,
+            }
+        );
+        assert!(SemVer::parse("1.2").is_err());
+        assert!(SemVer::parse("1.2.3-beta").is_err());
+    }
+
+    #[test]
+    fn resolves_mvs_graph() {
+        let dir = tempfile::tempdir().unwrap();
+        sample_registry(dir.path());
+        let registry = Registry::load(dir.path()).unwrap();
+        let mut deps = BTreeMap::new();
+        deps.insert("alice::http".to_string(), "1.0.0".to_string());
+        let resolved = resolve_dependencies(&registry, &deps).unwrap();
+        assert_eq!(resolved.modules.len(), 1);
+        assert_eq!(
+            resolved
+                .modules
+                .get(&ModuleCoord::parse("alice::http").unwrap())
+                .unwrap()
+                .version
+                .display(),
+            "1.0.0"
+        );
+
+        deps.insert("alice::http".to_string(), "1.2.0".to_string());
+        let resolved = resolve_dependencies(&registry, &deps).unwrap();
+        assert_eq!(
+            resolved
+                .modules
+                .get(&ModuleCoord::parse("alice::http").unwrap())
+                .unwrap()
+                .version
+                .display(),
+            "1.2.0"
+        );
+        assert!(
+            resolved
+                .modules
+                .contains_key(&ModuleCoord::parse("alice::net").unwrap())
+        );
+    }
+
+    #[test]
+    fn validates_index_consistency() {
+        let dir = tempfile::tempdir().unwrap();
+        sample_registry(dir.path());
+        let registry = Registry::load(dir.path()).unwrap();
+        validate_registry_consistency(&registry).unwrap();
+    }
+
+    #[test]
+    fn module_coord_uses_colon_colon_syntax() {
+        let coord = ModuleCoord::parse("alice::http").unwrap();
+        assert_eq!(coord.owner, "alice");
+        assert_eq!(coord.module, "http");
+        assert_eq!(coord.display(), "alice::http");
+        assert!(ModuleCoord::parse("alice/http").is_err());
+    }
+}

@@ -621,3 +621,67 @@ fn visit_package(
     order.push(name.to_string());
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn discovers_reachable_packages_and_trait_scope_uses() {
+        let dir = tempfile::tempdir().unwrap();
+        fs::create_dir_all(dir.path().join("lib")).unwrap();
+        fs::write(dir.path().join("goml.toml"), "[module]\npath = \"demo\"\n").unwrap();
+        fs::write(
+            dir.path().join("main.gom"),
+            "package main;\nuse demo::lib;\nuse lib::Show;\nfn main() -> unit { () }\n",
+        )
+        .unwrap();
+        fs::write(
+            dir.path().join("lib/lib.gom"),
+            "package lib;\npub trait Show { fn show(Self) -> string; }\n",
+        )
+        .unwrap();
+
+        let graph = discover_project_packages(
+            dir.path(),
+            &dir.path().join("main.gom"),
+            &ExternalImports::default(),
+        )
+        .unwrap();
+        assert_eq!(graph.packages.len(), 2);
+        assert_eq!(
+            graph.packages["demo"].imports,
+            HashSet::from(["demo::lib".to_string()])
+        );
+        assert_eq!(
+            topo_sort_packages(&graph).unwrap(),
+            vec!["demo::lib".to_string(), "demo".to_string()]
+        );
+    }
+
+    #[test]
+    fn discovers_all_dependency_packages() {
+        let dir = tempfile::tempdir().unwrap();
+        fs::create_dir_all(dir.path().join("unused")).unwrap();
+        fs::write(
+            dir.path().join("goml.toml"),
+            "[module]\npath = \"alice::dep\"\n",
+        )
+        .unwrap();
+        fs::write(
+            dir.path().join("dep.gom"),
+            "package dep;\npub fn value() -> int32 { 1 }\n",
+        )
+        .unwrap();
+        fs::write(
+            dir.path().join("unused/unused.gom"),
+            "package unused;\npub fn value() -> int32 { 2 }\n",
+        )
+        .unwrap();
+
+        let graph =
+            discover_dependency_module_packages(dir.path(), &ExternalImports::default()).unwrap();
+        assert!(graph.packages.contains_key("alice::dep"));
+        assert!(graph.packages.contains_key("alice::dep::unused"));
+    }
+}

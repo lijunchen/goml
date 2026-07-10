@@ -141,3 +141,21 @@ fn verify_version_data(executable: &Path, data: &[u8]) -> Result<()> {
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn accepts_matching_driver_protocol() {
+        verify_version_data(Path::new("gomlc"), br#"{"driver_protocol":1}"#).unwrap();
+    }
+
+    #[test]
+    fn rejects_mismatched_driver_protocol() {
+        let error = verify_version_data(Path::new("gomlc"), br#"{"driver_protocol":2}"#)
+            .unwrap_err()
+            .to_string();
+        assert!(error.contains("incompatible gomlc driver protocol 2"));
+    }
+}

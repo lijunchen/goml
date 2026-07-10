@@ -176,3 +176,100 @@ pub fn ensure_goml_home_layout() -> Result<(), String> {
 
 const BUILTIN_PACKAGE: &str = crate::BUILTIN_PACKAGE;
 const STD_PACKAGE: &str = crate::STD_PACKAGE;
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parses_module_manifest() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("goml.toml");
+        std::fs::write(
+            &path,
+            r#"[module]
+path = "acme::hello"
+
+[dependencies]
+"alice::http" = "1.2.3"
+"#,
+        )
+        .unwrap();
+        let manifest = load_module_manifest(&path).unwrap();
+        assert_eq!(manifest.module.path, "acme::hello");
+        assert_eq!(
+            manifest.dependencies.get("alice::http"),
+            Some(&"1.2.3".to_string())
+        );
+    }
+
+    #[test]
+    fn rejects_crate_manifest() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("goml.toml");
+        std::fs::write(&path, "[crate]\nname = \"hello\"\n").unwrap();
+        assert!(load_module_manifest(&path).is_err());
+    }
+
+    #[test]
+    fn rejects_module_path_that_cannot_be_imported() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("goml.toml");
+        std::fs::write(&path, "[module]\npath = \"acme::not-importable\"\n").unwrap();
+        assert!(load_module_manifest(&path).is_err());
+    }
+
+    #[test]
+    fn rejects_legacy_module_fields() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("goml.toml");
+        std::fs::write(
+            &path,
+            "[module]\npath = \"acme::hello\"\nkind = \"bin\"\nroot = \"main.gom\"\n",
+        )
+        .unwrap();
+        assert!(load_module_manifest(&path).is_err());
+    }
+
+    #[test]
+    fn rejects_reserved_project_module_paths() {
+        for path in ["main", "builtin", "std", "std::internal"] {
+            assert!(validate_project_module_path(path).is_err());
+        }
+    }
+
+    #[test]
+    fn finds_module_root_from_descendant() {
+        let dir = tempfile::tempdir().unwrap();
+        let nested = dir.path().join("pkg").join("api");
+        std::fs::create_dir_all(&nested).unwrap();
+        std::fs::write(
+            dir.path().join("goml.toml"),
+            "[module]\npath = \"acme::hello\"\n",
+        )
+        .unwrap();
+        let (root, module) = find_module_root(&nested).unwrap().unwrap();
+        assert_eq!(root, dir.path());
+        assert_eq!(module.path, "acme::hello");
+    }
+
+    #[test]
+    fn malformed_nearest_manifest_is_not_skipped() {
+        let dir = tempfile::tempdir().unwrap();
+        let nested = dir.path().join("nested");
+        std::fs::create_dir_all(&nested).unwrap();
+        std::fs::write(
+            dir.path().join("goml.toml"),
+            "[module]\npath = \"acme::hello\"\n",
+        )
+        .unwrap();
+        std::fs::write(nested.join("goml.toml"), "[crate]\nname = \"old\"\n").unwrap();
+        assert!(find_module_root(&nested).is_err());
+    }
+
+    #[test]
+    fn serialize_default_user_config() {
+        let config = UserConfig::default();
+        let text = toml::to_string_pretty(&config).unwrap();
+        assert_eq!(text, "[registry]\ndefault = \"\"\n");
+    }
+}
