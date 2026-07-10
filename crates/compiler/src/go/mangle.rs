@@ -359,3 +359,57 @@ fn is_go_predeclared_identifier(s: &str) -> bool {
             | "true"
     )
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn valid_name_stays_readable() {
+        assert_eq!(go_ident("read_file"), "read_file");
+    }
+
+    #[test]
+    fn qualified_name_uses_compact_escapes() {
+        assert_eq!(
+            go_ident("alice::project::utils::message"),
+            "_goml_m_alice_p_project_p_utils_p_message"
+        );
+    }
+
+    #[test]
+    fn compact_escapes_do_not_collide_with_user_text() {
+        assert_ne!(go_ident("alice::utils"), go_ident("alice_p_utils"));
+        assert_ne!(go_ident("trait#method"), go_ident("trait_i_method"));
+        assert_ne!(go_ident("left_right?"), go_ident("left__right?"));
+    }
+
+    #[test]
+    fn long_names_are_bounded_and_deterministic() {
+        let prefix = "deeply_nested_generic_closure_".repeat(8);
+        let first = go_ident(&format!("{prefix}::first"));
+        let second = go_ident(&format!("{prefix}::second"));
+
+        assert_eq!(first.len(), MAX_GO_IDENT_LEN);
+        assert_eq!(first, go_ident(&format!("{prefix}::first")));
+        assert_ne!(first, second);
+        assert!(is_valid_go_ident(&first));
+    }
+
+    #[test]
+    fn generated_namespace_is_protected_from_user_names() {
+        assert_eq!(go_ident("missing__int32"), "_goml_user_missing__int32");
+        assert_eq!(go_generated_ident("missing__int32"), "missing__int32");
+    }
+
+    #[test]
+    fn hashed_names_keep_a_readable_hint() {
+        let raw = "inherent#closure_env_make_pairer#apply".repeat(5);
+        let first = go_hashed_ident("fn", &raw);
+        let second = go_hashed_ident("fn", &format!("{raw}x"));
+
+        assert_eq!(first.len(), MAX_GO_IDENT_LEN);
+        assert!(first.starts_with("_goml_fn_inherent_i_closure"));
+        assert_ne!(first, second);
+    }
+}
