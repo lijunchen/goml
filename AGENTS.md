@@ -12,7 +12,7 @@ The file extension for goml source files is `.gom`.
 
 ## Project Snapshot
 - Go/Rust-inspired language frontend lowers through `lexer → parser → CST → AST → HIR → typed AST → Core -> Mono -> Lift → ANF` before emitting Go (`crates/compiler/src/go`).
-- The CLI driver in `crates/goml/src/main.rs` handles both project-level commands and compiler subcommands; regression tests in `crates/compiler/src/tests` compare every IR stage and execute the Go output.
+- The `goml` CLI in `crates/goml` handles project builds and package management, while `gomlc` in `crates/gomlc` exposes compiler commands; regression tests in `crates/compiler/src/tests` compare every IR stage and execute the Go output.
 - The `webapp` folder hosts a Vite/React playground using Wasm bindings from `crates/wasm-app`; it can display each IR stage while execution is stubbed out.
 - `typer/name_resolution.rs` should only handle AST → HIR lowering plus pure name resolution and visibility metadata; avoid making decisions that depend on `GlobalTypeEnv` or type information. Cross-package export filtering happens at package/interface construction time.
 - `typer/check.rs` should only handle HIR → TAST type inference, checking, and constraint generation; avoid name-resolution responsibilities such as "fallback resolution paths" or cross-package name lookup.
@@ -131,7 +131,7 @@ Key functions in the emitter:
 
 ## Project Structure & Module Organization
 - Rust workspace in `crates/*`:
-  - `lexer`, `parser`, `cst`, `ast`, `compiler` (core pipeline and tests), `wasm-app` (Rust → Wasm bindings), `lsp-server` (Language Server Protocol).
+  - `lexer`, `parser`, `cst`, `ast`, `compiler` (core pipeline and tests), `gomlc` (compiler CLI), `goml-project` (manifest, registry, and package graph), `goml` (build and package-manager CLI), `wasm-app` (Rust → Wasm bindings), `lsp-server` (Language Server Protocol).
 - Frontend in `webapp` (Vite + React + TypeScript) consuming `crates/wasm-app/pkg`.
 - VS Code extension in `editors/vscode/` consuming LSP server binary.
 - CI/dev helpers in `.justfile`. Build artifacts in `target/` and `webapp/dist/`.
@@ -270,7 +270,8 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 ## Build, Test, and Development Commands
 - Rust build: `cargo build` (workspace). Specific crate: `cargo build -p parser`.
 - Rust tests: `cargo test`
-- CLI: use `cargo run -p goml -- new <project_name>` to scaffold a module with `main` and `lib` packages; use `cargo run -p goml -- check [package-directory]` and `cargo run -p goml -- build [package-directory]` for project workflows; use `--dry-run` to print planned per-package compiler commands; use `cargo run -p goml -- compiler run-single <file.gom>` for standalone execution; use `cargo run -p goml -- compiler check|build ...` for per-package artifacts and `compiler link --entry <canonical-package> ...` for explicit linking; add `--dump-ast|--dump-hir|--dump-tast|--dump-core|--dump-mono|--dump-lift|--dump-anf|--dump-go` to `compiler run-single` to print IR stages before execution.
+- CLI: use `cargo run -p goml -- new <project_name>` to scaffold a module with `main` and `lib` packages; use `cargo run -p goml -- check [package-directory]` and `cargo run -p goml -- build [package-directory]` for project workflows; use `--dry-run` to print planned per-package compiler commands; use `cargo run -p gomlc -- run-single <file.gom>` for standalone execution; use `cargo run -p gomlc -- check|build ...` for per-package artifacts and `gomlc link --entry <canonical-package> ...` for explicit linking; add `--dump-ast|--dump-hir|--dump-tast|--dump-core|--dump-mono|--dump-lift|--dump-anf|--dump-go` to `gomlc run-single` to print IR stages before execution.
+- `goml check` and `goml build` locate `gomlc` through `--compiler`, `GOMLC`, the directory containing `goml`, `GOML_HOME/bin`, then `PATH`; the driver protocol is verified before compilation.
 - Lint (Rust): `just clippy` (equivalent to `cargo clippy --all-targets --all-features --locked -- -D warnings`).
 - Format (Rust): `cargo fmt`.
 - Wasm build: `wasm-pack build ./crates/wasm-app`.
@@ -296,7 +297,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
   - `main.gom` - the input source file
   - `main.gom.cst`, `main.gom.ast`, `main.gom.hir`, `main.gom.tast`, `main.gom.core`, `main.gom.mono`, `main.gom.anf`, `main.gom.go` - expected IR outputs at each compilation stage
   - `main.gom.out` - expected execution output
-- You can quick check a test case with: `cargo run -p goml -- compiler run-single crates/compiler/src/tests/pipeline/001/main.gom`
+- You can quick check a test case with: `cargo run -p gomlc -- run-single crates/compiler/src/tests/pipeline/001/main.gom`
 - You should NEVER manually modify the generated files (`.cst`, `.ast`, `.hir`, `.tast`, `.core`, `.mono`, `.anf`, `.go`, `.out`). The only way to update them is by running: `env UPDATE_EXPECT=1 cargo test`.
 - When asked to "add pipeline tests", create a new directory (e.g., `063/` or `063_feature_name/`) under `crates/compiler/src/tests/pipeline/` with a `main.gom` file, then run `env UPDATE_EXPECT=1 cargo test` to generate the expected outputs.
 
