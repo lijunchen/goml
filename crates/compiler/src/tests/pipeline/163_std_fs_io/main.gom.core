@@ -6,10 +6,6 @@ fn println(value/1: T) -> unit {
   string_println(trait_call[ToString::to_string](value/1))
 }
 
-fn std::env::args() -> Vec[string] {
-  std::env::args_raw()
-}
-
 fn std::fs::read_file(path/0: string) -> Result[string, string] {
   let mtmp0 = std::fs::read_file_raw(path/0) in
   {
@@ -103,10 +99,6 @@ fn std::io::print(value/0: T) -> unit {
 
 fn std::io::println(value/1: T) -> unit {
   std::io::println_raw(trait_call[ToString::to_string](value/1))
-}
-
-fn std::process::exit(code/0: int32) -> unit {
-  std::process::exit_raw(code/0)
 }
 
 fn show_read(res/0: Result[string, string]) -> string {

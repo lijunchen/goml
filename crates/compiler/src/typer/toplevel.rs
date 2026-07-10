@@ -1000,13 +1000,13 @@ fn define_function(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, func
 fn is_std_host_extern(package: &str, name: &str) -> bool {
     matches!(
         (package, name),
-        ("env" | "std::env", "args_raw")
-            | ("io" | "std::io", "print_raw" | "println_raw")
+        ("std::env", "args_raw")
+            | ("std::io", "print_raw" | "println_raw")
             | (
-                "fs" | "std::fs",
+                "std::fs",
                 "read_file_raw" | "write_file_raw" | "file_exists_raw" | "read_dir_raw"
             )
-            | ("process" | "std::process", "exit_raw")
+            | ("std::process", "exit_raw")
     )
 }
 

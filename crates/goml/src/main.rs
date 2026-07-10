@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::ffi::OsString;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -7,8 +7,8 @@ use std::process::{Command, Stdio};
 use anyhow::{Context, anyhow, bail};
 use clap::{Args, Parser, Subcommand};
 use compiler::config::{
-    ensure_goml_home_layout, find_crate_root, goml_bin_dir, goml_cache_dir, goml_home_dir,
-    goml_lib_dir, goml_std_dir, load_crate_manifest,
+    ensure_goml_home_layout, find_module_root, goml_bin_dir, goml_cache_dir, goml_home_dir,
+    goml_lib_dir, goml_std_dir, load_module_manifest,
 };
 use compiler::env::{format_compile_diagnostics, format_typer_diagnostics};
 use compiler::external::ExternalDependencyArtifacts;
@@ -30,7 +30,6 @@ const PROJECT_GO_OUTPUT: &str = "target/goml/main.go";
 const PROJECT_CHECK_OUTPUT_DIR: &str = "target/goml/check";
 const PROJECT_BUILD_OUTPUT_DIR: &str = "target/goml/build";
 const DEFAULT_LIB_PACKAGE: &str = "lib";
-const DEFAULT_ENTRY_FILE: &str = "main.gom";
 
 #[derive(Parser, Debug)]
 #[command(name = "goml", arg_required_else_help = true)]
@@ -72,8 +71,10 @@ struct RemoveArgs {
     local_registry: Option<PathBuf>,
 }
 
-#[derive(Args, Debug, Clone, Copy)]
+#[derive(Args, Debug, Clone)]
 struct ProjectCommandArgs {
+    #[arg(default_value = ".")]
+    target: PathBuf,
     #[arg(long = "dry-run")]
     dry_run: bool,
 }
@@ -137,6 +138,8 @@ struct LinkArgs {
     #[arg(long, required = true, num_args = 1..)]
     input: Vec<PathBuf>,
     #[arg(long)]
+    entry: String,
+    #[arg(long)]
     output: PathBuf,
 }
 
@@ -194,6 +197,7 @@ struct PackageCommandOptions {
 
 struct LinkOptions {
     input_cores: Vec<PathBuf>,
+    entry_package: String,
     output: PathBuf,
 }
 
@@ -212,6 +216,7 @@ struct PackageCompilerCommand {
 
 struct LinkCompilerCommand {
     input_cores: Vec<PathBuf>,
+    entry_package: String,
     output: PathBuf,
 }
 
@@ -250,6 +255,8 @@ impl PlannedCompilerCommand {
                 );
                 args.push(OsString::from("--output"));
                 args.push(cmd.output.clone().into_os_string());
+                args.push(OsString::from("--entry"));
+                args.push(OsString::from(&cmd.entry_package));
                 args
             }
         }
@@ -347,6 +354,8 @@ fn execute_new(args: NewArgs) -> anyhow::Result<()> {
             args.project_name
         );
     }
+    compiler::config::validate_project_module_path(&args.project_name)
+        .map_err(anyhow::Error::msg)?;
 
     let project_dir = args.path.join(&args.project_name);
     ensure_project_dir_ready(&project_dir)?;
@@ -358,8 +367,11 @@ fn execute_new(args: NewArgs) -> anyhow::Result<()> {
         &project_dir.join("goml.toml"),
         &render_root_goml_toml(&args.project_name),
     )?;
-    write_file_with_dirs(&project_dir.join("main.gom"), &render_main_gom())?;
-    write_file_with_dirs(&lib_dir.join("mod.gom"), &render_lib_gom())?;
+    write_file_with_dirs(
+        &project_dir.join("main.gom"),
+        &render_main_gom(&args.project_name),
+    )?;
+    write_file_with_dirs(&lib_dir.join("lib.gom"), &render_lib_gom())?;
 
     println!("Created project at {}", project_dir.display());
     println!("Next steps:");
@@ -505,11 +517,11 @@ fn load_registry_for_command(local_registry: Option<&Path>) -> anyhow::Result<Re
 
 fn locate_module_root_from_cwd() -> anyhow::Result<PathBuf> {
     let cwd = std::env::current_dir().context("failed to read current directory")?;
-    if let Some((crate_dir, _config)) = find_crate_root(&cwd) {
-        return Ok(crate_dir);
+    if let Some((module_dir, _config)) = find_module_root(&cwd).map_err(anyhow::Error::msg)? {
+        return Ok(module_dir);
     }
     bail!(
-        "no goml.toml with [crate] section found in ancestors of {}",
+        "no goml.toml with [module] section found in ancestors of {}",
         cwd.display()
     )
 }
@@ -590,28 +602,26 @@ fn write_file_with_dirs(path: &Path, content: &str) -> anyhow::Result<()> {
 }
 
 fn render_root_goml_toml(project_name: &str) -> String {
-    format!(
-        r#"[crate]
-name = "{project_name}"
-kind = "bin"
-root = "{DEFAULT_ENTRY_FILE}"
-"#
-    )
+    format!("[module]\npath = \"{project_name}\"\n")
 }
 
-fn render_main_gom() -> String {
+fn render_main_gom(project_name: &str) -> String {
     format!(
-        r#"mod {DEFAULT_LIB_PACKAGE};
+        r#"package main;
+
+use {project_name}::{DEFAULT_LIB_PACKAGE};
 
 fn {ENTRY_FUNCTION}() -> unit {{
-    println(crate::{DEFAULT_LIB_PACKAGE}::message())
+    println({DEFAULT_LIB_PACKAGE}::message())
 }}
 "#
     )
 }
 
 fn render_lib_gom() -> String {
-    r#"pub fn message() -> string {
+    r#"package lib;
+
+pub fn message() -> string {
     "hello from lib"
 }
 "#
@@ -649,6 +659,7 @@ fn execute_compiler_command(command: CompilerCommands) -> anyhow::Result<()> {
         CompilerCommands::Link(args) => {
             let options = LinkOptions {
                 input_cores: args.input,
+                entry_package: args.entry,
                 output: args.output,
             };
             execute_compiler_link(options)
@@ -772,7 +783,7 @@ fn execute_compiler_link(options: LinkOptions) -> anyhow::Result<()> {
         units.push(unit);
     }
 
-    let linked = compiler::pipeline::separate::link_cores(units)
+    let linked = compiler::pipeline::separate::link_cores(&options.entry_package, units)
         .map_err(|err| anyhow!("link failed: {:?}", err))?;
     let go_source = with_compiler_stack(|| linked.go.to_pretty(&linked.goenv, PRETTY_WIDTH));
     if let Some(parent) = options.output.parent() {
@@ -785,7 +796,7 @@ fn execute_compiler_link(options: LinkOptions) -> anyhow::Result<()> {
 }
 
 fn execute_project_check(args: ProjectCommandArgs) -> anyhow::Result<()> {
-    let project = load_project_from_cwd()?;
+    let project = load_project(&args.target)?;
     let plan = build_project_check_plan(&project)?;
     if !args.dry_run {
         materialize_external_artifacts(&plan.external, false)?;
@@ -794,7 +805,7 @@ fn execute_project_check(args: ProjectCommandArgs) -> anyhow::Result<()> {
 }
 
 fn execute_project_build(args: ProjectCommandArgs) -> anyhow::Result<()> {
-    let project = load_project_from_cwd()?;
+    let project = load_project(&args.target)?;
     let plan = build_project_build_plan(&project)?;
     if !args.dry_run {
         materialize_external_artifacts(&plan.external, true)?;
@@ -812,7 +823,6 @@ fn build_project_check_plan(project: &ProjectContext) -> anyhow::Result<ProjectC
         &external_imports,
     )
     .map_err(|err| anyhow!("project check failed: {:?}", err))?;
-    mark_std_external_if_imported(&mut graph);
     external
         .artifacts
         .augment_graph(&mut graph)
@@ -841,7 +851,7 @@ fn build_project_check_plan(project: &ProjectContext) -> anyhow::Result<ProjectC
             package_name,
             &package.imports,
             &interface_outputs,
-            &external.interface_outputs,
+            &external,
             "project check",
         )?;
         commands.push(PlannedCompilerCommand::Check(PackageCompilerCommand {
@@ -869,7 +879,6 @@ fn build_project_build_plan(project: &ProjectContext) -> anyhow::Result<ProjectC
         &external_imports,
     )
     .map_err(|err| anyhow!("project build failed: {:?}", err))?;
-    mark_std_external_if_imported(&mut graph);
     external
         .artifacts
         .augment_graph(&mut graph)
@@ -899,7 +908,7 @@ fn build_project_build_plan(project: &ProjectContext) -> anyhow::Result<ProjectC
             package_name,
             &package.imports,
             &interface_outputs,
-            &external.interface_outputs,
+            &external,
             "project build",
         )?;
         commands.push(PlannedCompilerCommand::Build(PackageCompilerCommand {
@@ -921,6 +930,7 @@ fn build_project_build_plan(project: &ProjectContext) -> anyhow::Result<ProjectC
 
     commands.push(PlannedCompilerCommand::Link(LinkCompilerCommand {
         input_cores: core_outputs,
+        entry_package: graph.entry_package.clone(),
         output: PathBuf::from(PROJECT_GO_OUTPUT),
     }));
 
@@ -941,14 +951,12 @@ fn build_external_artifacts_plan(
     let mut interface_outputs = HashMap::new();
     let mut core_outputs = HashMap::new();
 
-    for (root, module) in artifacts.modules.iter() {
-        let base = external_artifact_base(output_root, module, root);
-        let interface_output = base.with_extension("interface");
-        interface_outputs.insert(root.clone(), interface_output.clone());
-        for source in module.sources.values() {
-            interface_outputs.insert(source.logical_name.clone(), interface_output.clone());
+    for module in artifacts.modules.values() {
+        for package in module.packages.keys() {
+            let base = external_artifact_base(output_root, module, package);
+            interface_outputs.insert(package.clone(), base.with_extension("interface"));
+            core_outputs.insert(package.clone(), base.with_extension("core"));
         }
-        core_outputs.insert(root.clone(), base.with_extension("core"));
     }
 
     Ok(ExternalArtifactsPlan {
@@ -961,39 +969,46 @@ fn build_external_artifacts_plan(
 fn external_artifact_base(
     output_root: &str,
     module: &compiler::external::ExternalModuleArtifact,
-    root: &str,
+    package: &str,
 ) -> PathBuf {
-    PathBuf::from(output_root)
+    let mut path = PathBuf::from(output_root)
         .join("deps")
         .join(&module.coord.owner)
         .join(&module.coord.module)
         .join(module.version.display())
-        .join(root)
+        .join("pkg");
+    for segment in package.split("::") {
+        path.push(segment);
+    }
+    path.join("package")
 }
 
 fn materialize_external_artifacts(
     plan: &ExternalArtifactsPlan,
     include_core: bool,
 ) -> anyhow::Result<()> {
-    for (root, module) in plan.artifacts.modules.iter() {
-        let interface_path = plan
-            .interface_outputs
-            .get(root)
-            .ok_or_else(|| anyhow!("missing external interface output for dependency {}", root))?;
-        write_json(
-            interface_path,
-            with_compiler_stack(|| serde_json::to_string_pretty(&module.interface))?,
-        )?;
-
-        if include_core {
-            let core_path = plan
-                .core_outputs
-                .get(root)
-                .ok_or_else(|| anyhow!("missing external core output for dependency {}", root))?;
+    for module in plan.artifacts.modules.values() {
+        for (package, artifact) in module.packages.iter() {
+            let interface_path = plan.interface_outputs.get(package).ok_or_else(|| {
+                anyhow!(
+                    "missing external interface output for dependency {}",
+                    package
+                )
+            })?;
             write_json(
-                core_path,
-                with_compiler_stack(|| serde_json::to_string_pretty(&module.core))?,
+                interface_path,
+                with_compiler_stack(|| serde_json::to_string_pretty(&artifact.interface))?,
             )?;
+
+            if include_core {
+                let core_path = plan.core_outputs.get(package).ok_or_else(|| {
+                    anyhow!("missing external core output for dependency {}", package)
+                })?;
+                write_json(
+                    core_path,
+                    with_compiler_stack(|| serde_json::to_string_pretty(&artifact.core))?,
+                )?;
+            }
         }
     }
     Ok(())
@@ -1041,83 +1056,18 @@ fn package_artifact_outputs(
 
 fn package_artifact_base(
     graph: &compiler::pipeline::packages::PackageGraph,
-    module_dir: &Path,
+    _module_dir: &Path,
     package_name: &str,
 ) -> anyhow::Result<PathBuf> {
-    let package_dir = graph
-        .package_dirs
-        .get(package_name)
-        .ok_or_else(|| anyhow!("missing package dir for {}", package_name))?;
-    let package = graph
-        .packages
-        .get(package_name)
-        .ok_or_else(|| anyhow!("missing package {}", package_name))?;
-
-    let base = relative_to_module(module_dir, package_dir);
-    if package_dir.is_file() {
-        let mut base = base;
-        base.set_extension("");
-        if base.as_os_str().is_empty() {
-            bail!(
-                "package {} resolved to empty artifact path from {}",
-                package_name,
-                package_dir.display()
-            );
-        }
-        return Ok(base);
+    if !graph.packages.contains_key(package_name) {
+        bail!("missing package {}", package_name);
     }
-
-    if !base.as_os_str().is_empty() {
-        return Ok(base.join(&package.name));
+    let mut base = PathBuf::from("pkg");
+    for segment in package_name.split("::") {
+        base.push(segment);
     }
-
-    let entry_relative = package_entry_relative_path(package, package_dir)?;
-    let stem = entry_relative
-        .file_stem()
-        .ok_or_else(|| anyhow!("invalid root package entry {}", entry_relative.display()))?;
-    let base = PathBuf::from(stem);
-
-    if base.as_os_str().is_empty() {
-        bail!(
-            "package {} resolved to empty artifact path from {}",
-            package_name,
-            entry_relative.display()
-        );
-    }
-
+    base.push("package");
     Ok(base)
-}
-
-fn package_entry_relative_path(
-    package: &compiler::pipeline::packages::PackageUnit,
-    package_dir: &Path,
-) -> anyhow::Result<PathBuf> {
-    let default_entry = package_dir.join("lib.gom");
-    if default_entry.exists() {
-        return Ok(PathBuf::from("lib.gom"));
-    }
-
-    let mut files: Vec<PathBuf> = package.files.iter().map(|file| file.path.clone()).collect();
-    files.sort();
-
-    if files.len() == 1 {
-        return files[0]
-            .strip_prefix(package_dir)
-            .map(Path::to_path_buf)
-            .map_err(|_| {
-                anyhow!(
-                    "failed to compute entry path for package {} from {}",
-                    package.name,
-                    files[0].display()
-                )
-            });
-    }
-
-    bail!(
-        "package {} in {} has multiple .gom files and no goml.toml entry",
-        package.name,
-        package_dir.display()
-    )
 }
 
 fn package_interface_inputs(
@@ -1125,31 +1075,40 @@ fn package_interface_inputs(
     package_name: &str,
     imports: &HashSet<String>,
     interface_outputs: &HashMap<String, PathBuf>,
-    external_interfaces: &HashMap<String, PathBuf>,
+    external: &ExternalArtifactsPlan,
     stage: &str,
 ) -> anyhow::Result<Vec<PathBuf>> {
-    let mut deps: Vec<String> = imports.iter().cloned().collect();
-    deps.sort();
-    deps.dedup();
+    let mut pending = imports.iter().cloned().collect::<BTreeSet<_>>();
+    let mut visited = HashSet::new();
 
     let mut outputs = Vec::new();
     let mut seen = HashSet::new();
-    for dep in deps {
+    while let Some(dep) = pending.pop_first() {
         if dep == compiler::package_names::BUILTIN_PACKAGE
             || dep == compiler::package_names::STD_PACKAGE
+            || dep.starts_with(&format!("{}::", compiler::package_names::STD_PACKAGE))
             || dep == package_name
         {
+            continue;
+        }
+        if !visited.insert(dep.clone()) {
             continue;
         }
         if let Some(dep_interface) = interface_outputs.get(&dep) {
             if seen.insert(dep_interface.clone()) {
                 outputs.push(dep_interface.clone());
             }
+            if let Some(package) = graph.packages.get(&dep) {
+                pending.extend(package.imports.iter().cloned());
+            }
             continue;
         }
-        if let Some(dep_interface) = external_interfaces.get(&dep) {
+        if let Some(dep_interface) = external.interface_outputs.get(&dep) {
             if seen.insert(dep_interface.clone()) {
                 outputs.push(dep_interface.clone());
+            }
+            if let Some(package) = external.artifacts.package(&dep) {
+                pending.extend(package.interface.deps.keys().cloned());
             }
             continue;
         }
@@ -1172,17 +1131,6 @@ fn package_interface_inputs(
         ));
     }
     Ok(outputs)
-}
-
-fn mark_std_external_if_imported(graph: &mut compiler::pipeline::packages::PackageGraph) {
-    let uses_std = graph.packages.values().any(|package| {
-        package
-            .imports
-            .contains(compiler::package_names::STD_PACKAGE)
-    });
-    if uses_std {
-        graph.add_external_root_package(compiler::package_names::STD_PACKAGE);
-    }
 }
 
 fn sorted_package_inputs(
@@ -1244,24 +1192,51 @@ fn shell_escape(arg: &str) -> String {
     }
 }
 
-fn load_project_from_cwd() -> anyhow::Result<ProjectContext> {
+fn load_project(target: &Path) -> anyhow::Result<ProjectContext> {
     let cwd = std::env::current_dir().context("failed to read current directory")?;
-    if let Some((crate_dir, _config)) = find_crate_root(&cwd) {
-        let crate_unit = compiler::pipeline::modules::discover_crate_from_dir(&crate_dir)
-            .map_err(|err| anyhow!("crate module discovery failed: {:?}", err))?;
-        let manifest =
-            load_crate_manifest(&crate_dir.join("goml.toml")).map_err(anyhow::Error::msg)?;
-        return Ok(ProjectContext {
-            entry_path: crate_unit.root_file,
-            module_dir: crate_dir,
-            dependencies: manifest.dependency_versions(),
-        });
-    }
-
-    bail!(
-        "no goml.toml with [crate] section found in ancestors of {}",
-        cwd.display()
-    )
+    let target = if target.is_absolute() {
+        target.to_path_buf()
+    } else {
+        cwd.join(target)
+    };
+    let (target_dir, entry_path) = if target.is_file() {
+        let dir = target
+            .parent()
+            .filter(|path| !path.as_os_str().is_empty())
+            .unwrap_or_else(|| Path::new("."))
+            .to_path_buf();
+        (dir, target)
+    } else if target.is_dir() {
+        let mut sources = fs::read_dir(&target)
+            .with_context(|| format!("failed to read package directory {}", target.display()))?
+            .filter_map(Result::ok)
+            .map(|entry| entry.path())
+            .filter(|path| path.is_file() && path.extension().is_some_and(|ext| ext == "gom"))
+            .collect::<Vec<_>>();
+        sources.sort();
+        let entry = sources
+            .first()
+            .cloned()
+            .ok_or_else(|| anyhow!("package directory {} has no .gom files", target.display()))?;
+        (target, entry)
+    } else {
+        bail!("build target {} does not exist", target.display());
+    };
+    let (module_dir, _) = find_module_root(&target_dir)
+        .map_err(anyhow::Error::msg)?
+        .ok_or_else(|| {
+            anyhow!(
+                "no goml.toml with [module] section found in ancestors of {}",
+                target_dir.display()
+            )
+        })?;
+    let manifest =
+        load_module_manifest(&module_dir.join("goml.toml")).map_err(anyhow::Error::msg)?;
+    Ok(ProjectContext {
+        module_dir,
+        entry_path,
+        dependencies: manifest.dependencies,
+    })
 }
 
 fn print_dumps(compilation: &Compilation, dumps: &[DumpStage]) {

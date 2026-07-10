@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 use std::path::{Path, PathBuf};
 
 use ast::ast;
@@ -7,7 +7,7 @@ use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::{self, syntax::MySyntaxNode};
 use rowan::GreenNode;
 
-use crate::config::{find_crate_root, load_crate_manifest};
+use crate::config::{find_module_root, load_module_manifest};
 use crate::package_names::{BUILTIN_PACKAGE, ENTRY_FUNCTION, ROOT_PACKAGE, STD_PACKAGE};
 use crate::pipeline::builtin_inherent;
 use crate::pipeline::compile_error;
@@ -169,19 +169,24 @@ fn package_id_map(package_names: &[String]) -> HashMap<String, hir::PackageId> {
     ids
 }
 
-fn graph_imports_package(graph: &packages::PackageGraph, package: &str) -> bool {
-    graph
-        .packages
-        .values()
-        .any(|unit| unit.imports.contains(package))
-}
-
 fn add_stdlib_if_imported(
     external_deps: &mut ExternalDependencyArtifacts,
     graph: &packages::PackageGraph,
 ) -> Result<(), CompilationError> {
-    if !graph_imports_package(graph, STD_PACKAGE) || external_deps.modules.contains_key(STD_PACKAGE)
-    {
+    let imports_std = graph.packages.values().any(|unit| {
+        unit.imports
+            .iter()
+            .any(|package| package == STD_PACKAGE || package.starts_with("std::"))
+    }) || external_deps.modules.values().any(|module| {
+        module.packages.values().any(|package| {
+            package
+                .core
+                .deps
+                .keys()
+                .any(|dependency| dependency == STD_PACKAGE || dependency.starts_with("std::"))
+        })
+    });
+    if !imports_std || external_deps.modules.contains_key(STD_PACKAGE) {
         return Ok(());
     }
     let artifact = stdlib::stdlib_artifact().map_err(compile_error)?;
@@ -189,6 +194,38 @@ fn add_stdlib_if_imported(
         .modules
         .insert(STD_PACKAGE.to_string(), artifact);
     Ok(())
+}
+
+fn package_dependency_closure(
+    package: &packages::PackageUnit,
+    graph: &packages::PackageGraph,
+    external_deps: &ExternalDependencyArtifacts,
+) -> Result<Vec<String>, CompilationError> {
+    let mut pending = package.imports.iter().cloned().collect::<BTreeSet<_>>();
+    let mut dependencies = BTreeSet::new();
+
+    while let Some(dependency) = pending.pop_first() {
+        if dependency == BUILTIN_PACKAGE || dependency == package.name {
+            continue;
+        }
+        if !dependencies.insert(dependency.clone()) {
+            continue;
+        }
+        if let Some(local) = graph.packages.get(&dependency) {
+            pending.extend(local.imports.iter().cloned());
+            continue;
+        }
+        if let Some(external) = external_deps.package(&dependency) {
+            pending.extend(external.core.deps.keys().cloned());
+            continue;
+        }
+        return Err(compile_error(format!(
+            "missing package artifact for {}",
+            dependency
+        )));
+    }
+
+    Ok(dependencies.into_iter().collect())
 }
 
 fn link_packages(packages: Vec<crate::core::File>) -> crate::core::File {
@@ -302,7 +339,8 @@ fn typecheck_package(
     diagnostics.append(&mut hir_diagnostics);
     let full_exports = PackageExports::from_genv(&genv);
     let exports = PackageExports::public_from_package(&package.name, &package.files, &genv);
-    let package_interface = interface::PackageInterface::from_exports(&package.name, &exports);
+    let package_interface =
+        interface::PackageInterface::from_package(&package.name, &package.declared_name, &exports);
 
     PackageArtifact {
         tast,
@@ -320,7 +358,7 @@ fn typecheck_packages_inner(
     entry_ast: ast::File,
     single_file: bool,
 ) -> Result<TypecheckPackagesResult, CompilationError> {
-    let root = discovery_root_for_file(path);
+    let root = discovery_root_for_file(path)?;
     let mut external_deps = load_external_dependencies(&root)?;
     let external_imports = external_deps.external_imports();
     let mut graph = if single_file {
@@ -343,14 +381,22 @@ fn typecheck_packages_inner(
         .augment_graph(&mut graph)
         .map_err(compile_error)?;
     let order = packages::topo_sort_packages(&graph)?;
+    let reachable_external = external_deps
+        .reachable_package_names(&graph)
+        .map_err(compile_error)?;
 
     let mut diagnostics = Diagnostics::new();
     let mut genv = builtins::builtin_env();
     let external_interfaces = external_deps.package_interfaces();
     let external_envs = external_deps.package_envs();
-    for (name, module) in external_deps.modules.iter() {
-        report_duplicate_trait_impls(&mut diagnostics, &genv, &module.interface.exports, name);
-        module.interface.exports.apply_to(&mut genv);
+    for module in external_deps.modules.values() {
+        for (name, package) in module.packages.iter() {
+            if !reachable_external.contains(name) {
+                continue;
+            }
+            report_duplicate_trait_impls(&mut diagnostics, &genv, &package.interface.exports, name);
+            package.interface.exports.apply_to(&mut genv);
+        }
     }
     let mut artifacts_by_name: HashMap<String, PackageArtifact> = HashMap::new();
     let mut package_names: Vec<String> = graph.packages.keys().cloned().collect();
@@ -366,10 +412,9 @@ fn typecheck_packages_inner(
             .get(name)
             .unwrap_or_else(|| panic!("missing package id for {}", name));
         let mut deps_envs = HashMap::new();
-        let mut deps: Vec<_> = package.imports.iter().cloned().collect();
-        deps.sort();
         let mut deps_interfaces = HashMap::new();
-        for dep in deps.iter() {
+        let dependencies = package_dependency_closure(package, &graph, &external_deps)?;
+        for dep in dependencies.iter() {
             if let Some(artifact) = artifacts_by_name.get(dep) {
                 deps_envs.insert(dep.clone(), artifact.interface.exports.to_genv());
                 deps_interfaces.insert(dep.clone(), artifact.interface.package_interface.clone());
@@ -454,35 +499,34 @@ fn typecheck_packages_inner(
     })
 }
 
-fn discovery_root_for_file(path: &Path) -> PathBuf {
+fn discovery_root_for_file(path: &Path) -> Result<PathBuf, CompilationError> {
     let start_dir = path
         .parent()
         .filter(|parent| !parent.as_os_str().is_empty())
         .unwrap_or_else(|| Path::new("."));
-    if let Some((crate_dir, _)) = find_crate_root(start_dir) {
-        return crate_dir;
+    if let Some((module_dir, _)) = find_module_root(start_dir).map_err(compile_error)? {
+        return Ok(module_dir);
     }
-    start_dir.to_path_buf()
+    Ok(start_dir.to_path_buf())
 }
 
-fn should_use_single_file_mode(path: &Path) -> bool {
-    if path.exists() {
-        return false;
-    }
+fn should_use_single_file_mode(path: &Path) -> Result<bool, CompilationError> {
     let start_dir = path
         .parent()
         .filter(|parent| !parent.as_os_str().is_empty())
         .unwrap_or_else(|| Path::new("."));
-    find_crate_root(start_dir).is_none()
+    Ok(find_module_root(start_dir)
+        .map_err(compile_error)?
+        .is_none())
 }
 
 pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> {
-    let single_file = should_use_single_file_mode(path);
+    let single_file = should_use_single_file_mode(path)?;
     super::with_src_compiler_stack(src, || compile_inner(path, src, single_file, true))
 }
 
 pub fn compile_for_analysis(path: &Path, src: &str) -> Result<Compilation, CompilationError> {
-    let single_file = should_use_single_file_mode(path);
+    let single_file = should_use_single_file_mode(path)?;
     super::with_src_compiler_stack(src, || compile_inner(path, src, single_file, false))
 }
 
@@ -503,6 +547,9 @@ fn compile_inner(
         external_deps,
         ..
     } = typecheck;
+    let reachable_external = external_deps
+        .reachable_package_names(&graph)
+        .map_err(compile_error)?;
     let mut all_files = Vec::new();
     for name in graph.discovery_order.iter() {
         let package = graph
@@ -539,7 +586,12 @@ fn compile_inner(
     );
     package_cores.push(builtin_print_core);
     for module in external_deps.modules.values() {
-        package_cores.push(module.core.core_ir.clone());
+        for (name, package) in module.packages.iter() {
+            if !reachable_external.contains(name) {
+                continue;
+            }
+            package_cores.push(package.core.core_ir.clone());
+        }
     }
     for name in graph.discovery_order.iter() {
         let package = graph
@@ -550,15 +602,14 @@ fn compile_inner(
             .get(name)
             .ok_or_else(|| compile_error(format!("missing package artifact for {}", name)))?;
         let mut env = builtins::builtin_env();
-        let mut deps: Vec<_> = package.imports.iter().cloned().collect();
-        deps.sort();
-        for dep in deps.iter() {
+        let dependencies = package_dependency_closure(package, &graph, &external_deps)?;
+        for dep in dependencies.iter() {
             if let Some(dep_artifact) = artifacts.get(dep) {
                 dep_artifact.full_exports.apply_to(&mut env);
                 continue;
             }
-            if let Some(module) = external_deps.modules.get(dep) {
-                module.core.exports.apply_to(&mut env);
+            if let Some(package) = external_deps.package(dep) {
+                package.core.exports.apply_to(&mut env);
                 continue;
             }
             return Err(compile_error(format!(
@@ -580,13 +631,29 @@ fn compile_inner(
     if !builtin_collection_core.toplevels.is_empty() {
         package_cores.push(builtin_collection_core);
     }
-    let core = link_packages(package_cores);
+    let mut core = link_packages(package_cores);
+    if validate_entrypoint && graph.entry_package != ROOT_PACKAGE {
+        let entry_name = format!("{}::{}", graph.entry_package, ENTRY_FUNCTION);
+        let entry_fn = core
+            .toplevels
+            .iter()
+            .find(|function| function.name == entry_name)
+            .cloned()
+            .ok_or_else(|| compile_error("main function is required".to_string()))?;
+        core.toplevels
+            .push(super::separate::package_entry_wrapper(&entry_fn));
+    }
     if diagnostics.has_errors() {
         return Err(CompilationError::Compile { diagnostics });
     }
     let mut codegen_genv = builtins::builtin_env();
     for module in external_deps.modules.values() {
-        module.core.exports.apply_to(&mut codegen_genv);
+        for (name, package) in module.packages.iter() {
+            if !reachable_external.contains(name) {
+                continue;
+            }
+            package.core.exports.apply_to(&mut codegen_genv);
+        }
     }
     for name in graph.discovery_order.iter() {
         let artifact = artifacts
@@ -627,7 +694,7 @@ pub fn typecheck_with_packages(
     path: &Path,
     src: &str,
 ) -> Result<(tast::File, GlobalTypeEnv, Diagnostics), CompilationError> {
-    let single_file = should_use_single_file_mode(path);
+    let single_file = should_use_single_file_mode(path)?;
     super::with_src_compiler_stack(src, || {
         let (_green_node, _cst, entry_ast) = parse_ast_from_source(path, src)?;
         let result = typecheck_packages_inner(path, entry_ast, single_file)?;
@@ -647,11 +714,11 @@ pub fn typecheck_with_packages_and_results(
     ),
     CompilationError,
 > {
-    let single_file = should_use_single_file_mode(path);
+    let single_file = should_use_single_file_mode(path)?;
     super::with_src_compiler_stack(src, || {
         let (_green_node, _cst, entry_ast, mut diagnostics) =
             parse_ast_from_source_allow_parse_errors(path, src)?;
-        let root = discovery_root_for_file(path);
+        let root = discovery_root_for_file(path)?;
         let mut external_deps = load_external_dependencies(&root)?;
         let external_imports = external_deps.external_imports();
         let mut graph = if single_file {
@@ -674,13 +741,26 @@ pub fn typecheck_with_packages_and_results(
             .augment_graph(&mut graph)
             .map_err(compile_error)?;
         let order = packages::topo_sort_packages(&graph)?;
+        let reachable_external = external_deps
+            .reachable_package_names(&graph)
+            .map_err(compile_error)?;
 
         let mut genv = builtins::builtin_env();
         let external_interfaces = external_deps.package_interfaces();
         let external_envs = external_deps.package_envs();
-        for (name, module) in external_deps.modules.iter() {
-            report_duplicate_trait_impls(&mut diagnostics, &genv, &module.interface.exports, name);
-            module.interface.exports.apply_to(&mut genv);
+        for module in external_deps.modules.values() {
+            for (name, package) in module.packages.iter() {
+                if !reachable_external.contains(name) {
+                    continue;
+                }
+                report_duplicate_trait_impls(
+                    &mut diagnostics,
+                    &genv,
+                    &package.interface.exports,
+                    name,
+                );
+                package.interface.exports.apply_to(&mut genv);
+            }
         }
         let mut artifacts_by_name: HashMap<String, PackageInterface> = HashMap::new();
         let mut package_names: Vec<String> = graph.packages.keys().cloned().collect();
@@ -699,10 +779,9 @@ pub fn typecheck_with_packages_and_results(
                 .get(name)
                 .unwrap_or_else(|| panic!("missing package id for {}", name));
             let mut deps_envs = HashMap::new();
-            let mut deps: Vec<_> = package.imports.iter().cloned().collect();
-            deps.sort();
             let mut deps_interfaces = HashMap::new();
-            for dep in deps.iter() {
+            let dependencies = package_dependency_closure(package, &graph, &external_deps)?;
+            for dep in dependencies.iter() {
                 if let Some(interface) = artifacts_by_name.get(dep) {
                     deps_envs.insert(dep.clone(), interface.exports.to_genv());
                     deps_interfaces.insert(dep.clone(), interface.package_interface.clone());
@@ -744,7 +823,8 @@ pub fn typecheck_with_packages_and_results(
             let exports = PackageExports::public_from_package(name, &package.files, &package_genv);
             report_duplicate_trait_impls(&mut diagnostics, &genv, &exports, name);
             exports.apply_to(&mut genv);
-            let package_interface = interface::PackageInterface::from_exports(name, &exports);
+            let package_interface =
+                interface::PackageInterface::from_package(name, &package.declared_name, &exports);
 
             let interface = PackageInterface {
                 exports,
@@ -775,40 +855,36 @@ fn validate_entrypoint_for_compile(
     graph: &packages::PackageGraph,
     artifacts: &HashMap<String, PackageArtifact>,
 ) {
+    let Some(entry_package) = graph.packages.get(&graph.entry_package) else {
+        return;
+    };
     let Some(entry_artifact) = artifacts.get(&graph.entry_package) else {
         return;
     };
-    if graph.entry_package != ROOT_PACKAGE {
+    if entry_package.declared_name != ROOT_PACKAGE {
         diagnostics.push(Diagnostic::new(
             Stage::Typer,
             Severity::Error,
-            format!("entry package must be main, got {}", graph.entry_package),
+            format!(
+                "entry package {} declares package {}, expected main",
+                graph.entry_package, entry_package.declared_name
+            ),
         ));
         return;
     }
-    if !entry_artifact
-        .interface
-        .exports
-        .value_env
-        .funcs
-        .contains_key(ENTRY_FUNCTION)
-    {
-        diagnostics.push(Diagnostic::new(
-            Stage::Typer,
-            Severity::Error,
-            "main function is required".to_string(),
-        ));
-    }
+    super::separate::validate_entrypoint_scheme(
+        &graph.entry_package,
+        &entry_artifact.full_exports,
+        diagnostics,
+    );
 }
 
 fn load_external_dependencies(
     root: &Path,
 ) -> Result<ExternalDependencyArtifacts, CompilationError> {
     let manifest = root.join("goml.toml");
-    if let Ok(crate_manifest) = load_crate_manifest(&manifest)
-        && crate_manifest.crate_config.is_some()
-    {
-        return crate::external::resolve_dependency_versions(&crate_manifest.dependency_versions())
+    if let Ok(module_manifest) = load_module_manifest(&manifest) {
+        return crate::external::resolve_dependency_versions(&module_manifest.dependencies)
             .map_err(compile_error);
     }
 

@@ -12,25 +12,12 @@ use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE};
 #[derive(Debug, Clone)]
 pub struct SourceFileAst {
     pub path: PathBuf,
-    pub module_path: Vec<String>,
     pub ast: ast::File,
 }
 
 impl SourceFileAst {
     pub fn new(path: PathBuf, ast: ast::File) -> Self {
-        Self {
-            path,
-            module_path: Vec::new(),
-            ast,
-        }
-    }
-
-    pub fn with_module_path(path: PathBuf, module_path: Vec<String>, ast: ast::File) -> Self {
-        Self {
-            path,
-            module_path,
-            ast,
-        }
+        Self { path, ast }
     }
 }
 
@@ -65,7 +52,6 @@ pub struct PackageHir {
 #[derive(Debug, Clone)]
 pub struct SourceFileHir {
     pub path: String,
-    pub module_path: Vec<String>,
     pub package: PackageName,
     pub imports: Vec<PackageName>,
     pub use_traits: Vec<QualifiedPath>,

@@ -49,9 +49,33 @@ pub fn stdlib_artifact() -> Result<ExternalModuleArtifact, String> {
 }
 
 pub fn stdlib_interface() -> Result<InterfaceUnit, String> {
-    Ok(stdlib_artifact()?.interface)
+    stdlib_package_interface("std")
 }
 
 pub fn stdlib_core() -> Result<CoreUnit, String> {
-    Ok(stdlib_artifact()?.core)
+    stdlib_package_core("std")
+}
+
+pub fn stdlib_package_interface(package: &str) -> Result<InterfaceUnit, String> {
+    stdlib_artifact()?
+        .packages
+        .get(package)
+        .map(|artifact| artifact.interface.clone())
+        .ok_or_else(|| format!("standard library package {} not found", package))
+}
+
+pub fn stdlib_package_core(package: &str) -> Result<CoreUnit, String> {
+    stdlib_artifact()?
+        .packages
+        .get(package)
+        .map(|artifact| artifact.core.clone())
+        .ok_or_else(|| format!("standard library package {} not found", package))
+}
+
+pub fn stdlib_cores() -> Result<Vec<CoreUnit>, String> {
+    Ok(stdlib_artifact()?
+        .packages
+        .values()
+        .map(|artifact| artifact.core.clone())
+        .collect())
 }

@@ -1,8 +1,8 @@
-use std::{fs, path::Path};
+use std::path::Path;
 
 use cst::cst::CstNode;
 use parser::syntax::{MySyntaxKind, MySyntaxToken};
-use text_size::{TextRange, TextSize};
+use text_size::TextRange;
 
 use crate::{hir, tast};
 
@@ -13,12 +13,9 @@ use super::{
         HirResultsIndex, expr_ids_from_token, local_def_range_from_pats, pat_ids_from_token,
     },
     symbol_index::{
-        ProjectSymbolIndex, SymbolLookup, build_symbol_index, build_symbol_lookup,
-        lookup_symbol_locations_for_path, package_nav_target_in_dir,
+        ProjectSymbolIndex, SymbolLookup, build_symbol_lookup, lookup_symbol_locations_for_path,
     },
-    syntax::{
-        mod_decl_from_token, path_segments_from_token, token_segment_index, use_decl_from_token,
-    },
+    syntax::{path_segments_from_token, token_segment_index, use_decl_from_token},
     typecheck::typecheck_for_query,
 };
 
@@ -53,31 +50,37 @@ pub fn goto_definition_locations(
             .token_prefer_ident()
             .ok_or_else(|| "no token at position".to_string())?;
 
-        if let Some(location) = resolve_mod_decl(path, &token) {
-            return Ok(vec![location]);
-        }
-
-        if let Some(locations) = resolve_use_decl(path, src, &token) {
-            return Ok(locations);
-        }
-
         if let Some(location) = self_definition_location(path, &token) {
             return Ok(vec![location]);
         }
 
         let symbol_lookup = build_symbol_lookup(path, src);
 
+        if let Some(locations) = resolve_use_decl(&token, &symbol_lookup) {
+            return Ok(locations);
+        }
+
         if let Some(locations) = resolve_semantic_definition(path, src, &token, &symbol_lookup) {
             return Ok(locations);
         }
 
-        if let Some(locations) = resolve_struct_literal_field_syntax(&token, &symbol_lookup.index) {
+        if let Some(locations) = resolve_struct_literal_field_syntax(&token, &symbol_lookup) {
             return Ok(locations);
         }
 
         if token.kind() == MySyntaxKind::Ident {
             let segments = path_segments_from_token(&token).unwrap_or_default();
             if !segments.is_empty() {
+                if segments
+                    .first()
+                    .is_some_and(|segment| segment == token.text())
+                    && let Some(package) = symbol_lookup.package_for_alias(token.text())
+                    && let Some(location) =
+                        package_definition_location(&symbol_lookup.index, package)
+                {
+                    return Ok(vec![location]);
+                }
+                let segments = symbol_lookup.canonicalize_segments(&segments);
                 let out = lookup_symbol_locations_for_path(
                     symbol_lookup.graph.as_ref(),
                     &symbol_lookup.index,
@@ -95,9 +98,8 @@ pub fn goto_definition_locations(
 }
 
 fn resolve_use_decl(
-    path: &Path,
-    src: &str,
     token: &MySyntaxToken,
+    symbols: &SymbolLookup,
 ) -> Option<Vec<DefinitionLocation>> {
     let use_decl = use_decl_from_token(token)?;
     let path_node = use_decl.path()?;
@@ -111,101 +113,17 @@ fn resolve_use_decl(
     }
 
     let idx = token_segment_index(token, &ident_tokens)?;
-    let lookup_segments = normalize_root_segments(&segments[..=idx]);
+    let lookup_segments = symbols.canonicalize_segments(&segments[..=idx]);
     if lookup_segments.is_empty() {
         return None;
     }
     let lookup = lookup_segments.join("::");
-    if let Some(location) = external_use_definition_location(path, &lookup) {
+    if let Some(location) = package_definition_location(&symbols.index, &lookup) {
         return Some(vec![location]);
     }
-    let Ok((_graph, index)) = build_symbol_index(path, src) else {
-        if idx == 0 {
-            let pkg = &segments[0];
-            let start_dir = path
-                .parent()
-                .filter(|parent| !parent.as_os_str().is_empty())
-                .unwrap_or_else(|| Path::new("."));
-            let root_dir = crate::config::find_crate_root(start_dir)
-                .map(|(root, _)| root)
-                .unwrap_or_else(|| start_dir.to_path_buf());
-            let pkg_dir = root_dir.join(pkg);
-            if let Some(target) = package_nav_target_in_dir(&pkg_dir) {
-                return Some(vec![DefinitionLocation {
-                    path: target,
-                    range: TextRange::new(
-                        text_size::TextSize::from(0),
-                        text_size::TextSize::from(0),
-                    ),
-                }]);
-            }
-        }
-        return None;
-    };
-    if let Some(location) = package_definition_location(&index, &lookup) {
-        return Some(vec![location]);
-    }
-    let mut out = index.find_type(&lookup);
-    out.extend(index.find_value(&lookup));
+    let mut out = symbols.index.find_type(&lookup);
+    out.extend(symbols.index.find_value(&lookup));
     if out.is_empty() { None } else { Some(out) }
-}
-
-fn normalize_root_segments(segments: &[String]) -> &[String] {
-    if matches!(
-        segments.first().map(String::as_str),
-        Some("crate" | "self" | "super")
-    ) {
-        &segments[1..]
-    } else {
-        segments
-    }
-}
-
-fn resolve_mod_decl(path: &Path, token: &MySyntaxToken) -> Option<DefinitionLocation> {
-    let module = mod_decl_from_token(token)?;
-    let name_token = module.name_token()?;
-    if token.text_range() != name_token.text_range() {
-        return None;
-    }
-    let name = name_token.to_string();
-
-    let start_dir = path
-        .parent()
-        .filter(|parent| !parent.as_os_str().is_empty())
-        .unwrap_or_else(|| Path::new("."));
-    if let Some((crate_dir, _)) = crate::config::find_crate_root(start_dir)
-        && let Ok(unit) = crate::pipeline::modules::discover_crate_from_dir(&crate_dir)
-    {
-        let current = canonical_path(path);
-        if let Some(module) = unit
-            .modules
-            .iter()
-            .find(|module| canonical_path(&module.file_path) == current)
-            && let Some(child_id) = module.children.get(&name)
-            && let Some(child) = unit.modules.get(child_id.0)
-        {
-            return Some(file_start_location(child.file_path.clone()));
-        }
-    }
-
-    let flat = start_dir.join(format!("{name}.gom"));
-    let nested = start_dir.join(&name).join("mod.gom");
-    match (flat.exists(), nested.exists()) {
-        (true, false) => Some(file_start_location(flat)),
-        (false, true) => Some(file_start_location(nested)),
-        _ => None,
-    }
-}
-
-fn canonical_path(path: &Path) -> std::path::PathBuf {
-    fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf())
-}
-
-fn file_start_location(path: std::path::PathBuf) -> DefinitionLocation {
-    DefinitionLocation {
-        path,
-        range: TextRange::new(TextSize::from(0), TextSize::from(0)),
-    }
 }
 
 fn resolve_semantic_definition(
@@ -244,7 +162,7 @@ fn resolve_semantic_definition(
 
 fn resolve_struct_literal_field_syntax(
     token: &MySyntaxToken,
-    sym_index: &ProjectSymbolIndex,
+    symbols: &SymbolLookup,
 ) -> Option<Vec<DefinitionLocation>> {
     if token.kind() != MySyntaxKind::Ident {
         return None;
@@ -273,17 +191,17 @@ fn resolve_struct_literal_field_syntax(
                 .ident_tokens()
                 .map(|token| token.to_string())
                 .collect::<Vec<_>>();
-            let segments = normalize_root_segments(&segments);
+            let segments = symbols.canonicalize_segments(&segments);
             if segments.is_empty() {
                 return None;
             }
             let field_name = token.to_string();
             let type_name = segments.join("::");
-            let mut out = sym_index.find_struct_field(&type_name, &field_name);
+            let mut out = symbols.index.find_struct_field(&type_name, &field_name);
             if out.is_empty()
                 && let Some(last) = segments.last()
             {
-                out.extend(sym_index.find_struct_field(last, &field_name));
+                out.extend(symbols.index.find_struct_field(last, &field_name));
             }
             return if out.is_empty() { None } else { Some(out) };
         }
@@ -685,19 +603,6 @@ fn package_definition_location(
 ) -> Option<DefinitionLocation> {
     index.find_package(package).map(|path| DefinitionLocation {
         path,
-        range: TextRange::new(text_size::TextSize::from(0), text_size::TextSize::from(0)),
-    })
-}
-
-fn external_use_definition_location(path: &Path, lookup: &str) -> Option<DefinitionLocation> {
-    let (_module_dir, dependencies) =
-        crate::pipeline::packages::discover_dependency_versions_from_file(path).ok()?;
-    let external_deps = crate::external::resolve_dependency_versions(&dependencies).ok()?;
-    let alias = external_deps.import_paths().get(lookup)?.clone();
-    let package_dir = external_deps.package_dirs().get(&alias)?.clone();
-    let target = package_nav_target_in_dir(&package_dir)?;
-    Some(DefinitionLocation {
-        path: target,
         range: TextRange::new(text_size::TextSize::from(0), text_size::TextSize::from(0)),
     })
 }

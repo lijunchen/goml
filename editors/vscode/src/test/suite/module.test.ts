@@ -34,7 +34,7 @@ suite('GoML Module Tests', () => {
         }
     });
 
-    test('All module projects should have crate manifest', () => {
+    test('All module projects should have module manifest', () => {
         const projectDirs = getProjectDirs();
 
         for (const projectDir of projectDirs) {
@@ -46,13 +46,13 @@ suite('GoML Module Tests', () => {
 
             const content = fs.readFileSync(gomlToml, 'utf8');
             assert.ok(
-                content.includes('[crate]'),
-                `${path.basename(projectDir)}/goml.toml should have [crate] section`
+                content.includes('[module]'),
+                `${path.basename(projectDir)}/goml.toml should have [module] section`
             );
         }
     });
 
-    test('Submodules should not have package manifests', () => {
+    test('Packages should not have module manifests', () => {
         const projectDirs = getProjectDirs();
 
         for (const projectDir of projectDirs) {

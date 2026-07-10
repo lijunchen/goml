@@ -18,7 +18,7 @@ fn typecheck_ast(
     ),
     String,
 > {
-    if !ast.imports.is_empty() || !ast.use_traits.is_empty() {
+    if !ast.uses.is_empty() {
         return Err("error: package uses are not supported in webapp".to_string());
     }
     let (hir, hir_table, mut hir_diagnostics) = compiler::hir::lower_to_hir(ast);

@@ -1,20 +1,19 @@
-package main
-  imports Lib
-file main.gom
-  fn main() {
+package packages_basic
+file packages_basic/main.gom
+  fn packages_basic::main() {
         println(Lib::color_to_int(Lib::Color::Red).to_string())
     }
 
-package Lib
-file Lib/main.gom
-  enum Lib::Color {
+package packages_basic::Lib
+file packages_basic::Lib/main.gom
+  enum packages_basic::Lib::Color {
         Red,
         Green
     }
     
-    fn Lib::color_to_int(local/2/0: Color) -> int32 {
+    fn packages_basic::Lib::color_to_int(local/3/0: Color) -> int32 {
         match c/0 {
-            ctor(def/2/0::v0) => 1,
-            ctor(def/2/0::v1) => 2,
+            ctor(def/3/0::v0) => 1,
+            ctor(def/3/0::v1) => 2,
         }
     }

@@ -2,7 +2,10 @@ use std::path::PathBuf;
 
 use crate::{
     env::format_typer_diagnostics,
-    pipeline::pipeline::{CompilationError, compile_single_file},
+    pipeline::{
+        pipeline::{CompilationError, compile_single_file},
+        separate::{self, PackageInputs},
+    },
 };
 
 #[test]
@@ -49,4 +52,68 @@ fn missing_main_function_is_rejected() {
         }
         other => panic!("expected typer error, got {other:?}"),
     }
+}
+
+fn check_canonical_main(source: &str) -> CompilationError {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("main.gom");
+    std::fs::write(&path, source).unwrap();
+    separate::check_package(PackageInputs {
+        package: "example::cmd".to_string(),
+        input_files: vec![path],
+        interface_files: Vec::new(),
+    })
+    .expect_err("expected entrypoint error")
+}
+
+#[test]
+fn canonical_main_package_rejects_parameter() {
+    let error = check_canonical_main(
+        r#"package main;
+
+fn main(value: int32) -> unit {
+    ()
+}
+"#,
+    );
+    assert!(error.diagnostics().iter().any(|diagnostic| {
+        diagnostic
+            .message()
+            .contains("main function must not have parameters")
+    }));
+}
+
+#[test]
+fn canonical_main_package_rejects_type_parameter() {
+    let error = check_canonical_main(
+        r#"package main;
+
+fn main[T]() -> unit {
+    ()
+}
+"#,
+    );
+    assert!(error.diagnostics().iter().any(|diagnostic| {
+        diagnostic
+            .message()
+            .contains("main function must not have type parameters")
+    }));
+}
+
+#[test]
+fn canonical_main_package_requires_main_function() {
+    let error = check_canonical_main(
+        r#"package main;
+
+fn helper() -> unit {
+    ()
+}
+"#,
+    );
+    assert!(
+        error
+            .diagnostics()
+            .iter()
+            .any(|diagnostic| { diagnostic.message().contains("main function is required") })
+    );
 }

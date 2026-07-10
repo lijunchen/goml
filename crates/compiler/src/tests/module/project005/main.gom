@@ -1,9 +1,11 @@
-mod geo;
-mod shape;
+package main;
+
+use project005::geo;
+use project005::shape;
 
 fn main() {
-    let p = crate::shape::make(3, 4);
-    let q = crate::geo::move(p, 1, 2);
-    let total = crate::geo::squared(q) + crate::shape::sum(q);
+    let p = shape::make(3, 4);
+    let q = geo::move(p, 1, 2);
+    let total = geo::squared(q) + shape::sum(q);
     println(total);
 }

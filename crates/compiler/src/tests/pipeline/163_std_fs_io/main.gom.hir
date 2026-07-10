@@ -1,5 +1,4 @@
 package main
-  imports std
 file main.gom
   fn show_read(local/1/0: Result[string, string]) -> string {
         match res/0 {
@@ -16,8 +15,8 @@ file main.gom
     }
     
     fn main() -> unit {
-        let _ = std::fs::write_file("goml-std-test.txt", "std-ok");
-        std::io::println(def/1/0(std::fs::read_file("goml-std-test.txt")));
-        std::io::println(std::fs::exists("goml-std-test.txt").to_string());
-        std::io::println(def/1/1(std::fs::read_dir(".")));
+        let _ = fs::write_file("goml-std-test.txt", "std-ok");
+        io::println(def/1/0(fs::read_file("goml-std-test.txt")));
+        io::println(fs::exists("goml-std-test.txt").to_string());
+        io::println(def/1/1(fs::read_dir(".")));
     }

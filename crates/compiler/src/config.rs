@@ -5,50 +5,23 @@ use std::str::FromStr;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
-pub struct CrateConfig {
-    pub name: String,
-    #[serde(default)]
-    pub kind: Option<CrateKind>,
-    #[serde(default)]
-    pub root: Option<String>,
+#[serde(deny_unknown_fields)]
+pub struct ModuleConfig {
+    pub path: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CrateManifest {
-    pub crate_config: Option<CrateConfig>,
-    pub dependencies: BTreeMap<String, CrateDependency>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CrateDependency {
-    pub package: Option<String>,
-    pub version: String,
+pub struct ModuleManifest {
+    pub module: ModuleConfig,
+    pub dependencies: BTreeMap<String, String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
-struct RawCrateManifest {
-    #[serde(rename = "crate", default)]
-    crate_config: Option<CrateConfig>,
+#[serde(deny_unknown_fields)]
+struct RawModuleManifest {
+    module: ModuleConfig,
     #[serde(default)]
-    dependencies: BTreeMap<String, RawCrateDependency>,
-}
-
-#[derive(Debug, Clone, Deserialize)]
-#[serde(untagged)]
-enum RawCrateDependency {
-    Version(String),
-    Detailed {
-        #[serde(default)]
-        package: Option<String>,
-        version: String,
-    },
-}
-
-#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq)]
-#[serde(rename_all = "lowercase")]
-pub enum CrateKind {
-    Bin,
-    Lib,
+    dependencies: BTreeMap<String, String>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, Default)]
@@ -63,72 +36,70 @@ pub struct UserRegistryConfig {
     pub default: String,
 }
 
-pub fn load_crate_config(path: &Path) -> Result<Option<CrateConfig>, String> {
-    load_crate_manifest(path).map(|manifest| manifest.crate_config)
-}
-
-pub fn load_crate_manifest(path: &Path) -> Result<CrateManifest, String> {
+pub fn load_module_manifest(path: &Path) -> Result<ModuleManifest, String> {
     let content = std::fs::read_to_string(path)
         .map_err(|e| format!("failed to read {}: {}", path.display(), e))?;
-    let manifest: RawCrateManifest = toml::from_str(&content)
+    let manifest: RawModuleManifest = toml::from_str(&content)
         .map_err(|e| format!("failed to parse {}: {}", path.display(), e))?;
-    Ok(manifest.into())
+    validate_module_path(&manifest.module.path)?;
+    for (path, version) in manifest.dependencies.iter() {
+        crate::registry::ModuleCoord::parse(path)?;
+        crate::registry::SemVer::parse(version)?;
+    }
+    Ok(ModuleManifest {
+        module: manifest.module,
+        dependencies: manifest.dependencies,
+    })
 }
 
-pub fn find_crate_root(start_dir: &Path) -> Option<(PathBuf, CrateConfig)> {
+pub fn find_module_root(start_dir: &Path) -> Result<Option<(PathBuf, ModuleConfig)>, String> {
     let mut current = start_dir.to_path_buf();
     loop {
         let config_path = current.join("goml.toml");
-        if config_path.exists()
-            && let Ok(Some(config)) = load_crate_config(&config_path)
-        {
-            return Some((current, config));
+        if config_path.exists() {
+            let manifest = load_module_manifest(&config_path)?;
+            return Ok(Some((current, manifest.module)));
         }
         if !current.pop() {
             break;
         }
     }
-    None
+    Ok(None)
 }
 
-impl From<RawCrateManifest> for CrateManifest {
-    fn from(value: RawCrateManifest) -> Self {
-        let dependencies = value
-            .dependencies
-            .into_iter()
-            .map(|(alias, dep)| (alias, dep.into()))
-            .collect();
-        Self {
-            crate_config: value.crate_config,
-            dependencies,
-        }
+pub fn validate_module_path(path: &str) -> Result<(), String> {
+    let mut segments = path.split("::");
+    let Some(first) = segments.next() else {
+        return Err("module path must not be empty".to_string());
+    };
+    if !valid_path_segment(first) || segments.any(|segment| !valid_path_segment(segment)) {
+        return Err(format!("invalid module path `{path}`"));
+    }
+    Ok(())
+}
+
+pub fn validate_project_module_path(path: &str) -> Result<(), String> {
+    validate_module_path(path)?;
+    if path == "main" || path == "builtin" || path == "std" || path.starts_with("std::") {
+        return Err(format!("module path `{path}` is reserved"));
+    }
+    Ok(())
+}
+
+pub fn validate_package_name(name: &str) -> Result<(), String> {
+    if valid_path_segment(name) {
+        Ok(())
+    } else {
+        Err(format!("invalid package name `{name}`"))
     }
 }
 
-impl CrateManifest {
-    pub fn dependency_versions(&self) -> BTreeMap<String, String> {
-        self.dependencies
-            .iter()
-            .map(|(alias, dep)| {
-                (
-                    dep.package.clone().unwrap_or_else(|| alias.clone()),
-                    dep.version.clone(),
-                )
-            })
-            .collect()
-    }
-}
-
-impl From<RawCrateDependency> for CrateDependency {
-    fn from(value: RawCrateDependency) -> Self {
-        match value {
-            RawCrateDependency::Version(version) => Self {
-                package: None,
-                version,
-            },
-            RawCrateDependency::Detailed { package, version } => Self { package, version },
-        }
-    }
+fn valid_path_segment(segment: &str) -> bool {
+    let mut chars = segment.chars();
+    chars
+        .next()
+        .is_some_and(|ch| ch == '_' || ch.is_ascii_alphabetic())
+        && chars.all(|ch| ch == '_' || ch.is_ascii_alphanumeric())
 }
 
 impl FromStr for UserConfig {
@@ -207,99 +178,89 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parse_crate_config() {
-        let content = r#"
-[crate]
-name = "hello"
-kind = "bin"
-root = "src/main.gom"
-"#;
-        let manifest: RawCrateManifest = toml::from_str(content).unwrap();
-        let crate_config = manifest.crate_config.as_ref().unwrap();
-        assert_eq!(crate_config.name, "hello");
-        assert_eq!(crate_config.kind, Some(CrateKind::Bin));
-        assert_eq!(crate_config.root.as_deref(), Some("src/main.gom"));
-    }
-
-    #[test]
-    fn load_crate_config_without_package_section() {
+    fn parses_module_manifest() {
         let dir = tempfile::tempdir().unwrap();
-        let manifest = dir.path().join("goml.toml");
+        let path = dir.path().join("goml.toml");
         std::fs::write(
-            &manifest,
-            r#"[crate]
-name = "hello"
-kind = "lib"
-"#,
-        )
-        .unwrap();
-
-        let crate_config = load_crate_config(&manifest).unwrap().unwrap();
-        assert_eq!(crate_config.name, "hello");
-        assert_eq!(crate_config.kind, Some(CrateKind::Lib));
-        assert_eq!(crate_config.root, None);
-    }
-
-    #[test]
-    fn load_crate_manifest_parses_alias_dependencies() {
-        let dir = tempfile::tempdir().unwrap();
-        let manifest = dir.path().join("goml.toml");
-        std::fs::write(
-            &manifest,
-            r#"[crate]
-name = "hello"
+            &path,
+            r#"[module]
+path = "acme::hello"
 
 [dependencies]
-http = { package = "alice::http", version = "1.2.3" }
-json = "0.4.0"
+"alice::http" = "1.2.3"
 "#,
         )
         .unwrap();
-
-        let manifest = load_crate_manifest(&manifest).unwrap();
-        assert_eq!(manifest.crate_config.as_ref().unwrap().name, "hello");
+        let manifest = load_module_manifest(&path).unwrap();
+        assert_eq!(manifest.module.path, "acme::hello");
         assert_eq!(
-            manifest.dependencies.get("http"),
-            Some(&CrateDependency {
-                package: Some("alice::http".to_string()),
-                version: "1.2.3".to_string()
-            })
-        );
-        assert_eq!(
-            manifest.dependencies.get("json"),
-            Some(&CrateDependency {
-                package: None,
-                version: "0.4.0".to_string()
-            })
-        );
-        assert_eq!(
-            manifest.dependency_versions().get("alice::http"),
+            manifest.dependencies.get("alice::http"),
             Some(&"1.2.3".to_string())
-        );
-        assert_eq!(
-            manifest.dependency_versions().get("json"),
-            Some(&"0.4.0".to_string())
         );
     }
 
     #[test]
-    fn find_crate_root_from_descendant() {
+    fn rejects_crate_manifest() {
         let dir = tempfile::tempdir().unwrap();
-        let nested = dir.path().join("src").join("api");
+        let path = dir.path().join("goml.toml");
+        std::fs::write(&path, "[crate]\nname = \"hello\"\n").unwrap();
+        assert!(load_module_manifest(&path).is_err());
+    }
+
+    #[test]
+    fn rejects_module_path_that_cannot_be_imported() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("goml.toml");
+        std::fs::write(&path, "[module]\npath = \"acme::not-importable\"\n").unwrap();
+        assert!(load_module_manifest(&path).is_err());
+    }
+
+    #[test]
+    fn rejects_legacy_module_fields() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("goml.toml");
+        std::fs::write(
+            &path,
+            "[module]\npath = \"acme::hello\"\nkind = \"bin\"\nroot = \"main.gom\"\n",
+        )
+        .unwrap();
+        assert!(load_module_manifest(&path).is_err());
+    }
+
+    #[test]
+    fn rejects_reserved_project_module_paths() {
+        for path in ["main", "builtin", "std", "std::internal"] {
+            assert!(validate_project_module_path(path).is_err());
+        }
+    }
+
+    #[test]
+    fn finds_module_root_from_descendant() {
+        let dir = tempfile::tempdir().unwrap();
+        let nested = dir.path().join("pkg").join("api");
         std::fs::create_dir_all(&nested).unwrap();
         std::fs::write(
             dir.path().join("goml.toml"),
-            r#"[crate]
-name = "hello"
-root = "src/main.gom"
-"#,
+            "[module]\npath = \"acme::hello\"\n",
         )
         .unwrap();
-
-        let (root, crate_config) = find_crate_root(&nested).unwrap();
+        let (root, module) = find_module_root(&nested).unwrap().unwrap();
         assert_eq!(root, dir.path());
-        assert_eq!(crate_config.name, "hello");
-        assert_eq!(crate_config.root.as_deref(), Some("src/main.gom"));
+        assert_eq!(module.path, "acme::hello");
+    }
+
+    #[test]
+    fn malformed_nearest_manifest_is_not_skipped() {
+        let dir = tempfile::tempdir().unwrap();
+        let nested = dir.path().join("nested");
+        std::fs::create_dir_all(&nested).unwrap();
+        std::fs::write(
+            dir.path().join("goml.toml"),
+            "[module]\npath = \"acme::hello\"\n",
+        )
+        .unwrap();
+        std::fs::write(nested.join("goml.toml"), "[crate]\nname = \"old\"\n").unwrap();
+        assert!(find_module_root(&nested).is_err());
     }
 
     #[test]

@@ -1197,7 +1197,7 @@ fn lower_linear_expr(gensym: &Gensym, expr: &LiftExpr) -> Option<(Vec<Bind>, Imm
             ty: _,
         } => {
             let (binds, expr) = lower_linear_expr(gensym, expr)?;
-            return Some(bind_value(
+            Some(bind_value(
                 gensym,
                 binds,
                 ValueExpr::ConstrGet {
@@ -1206,19 +1206,15 @@ fn lower_linear_expr(gensym: &Gensym, expr: &LiftExpr) -> Option<(Vec<Bind>, Imm
                     field_index: *field_index,
                     ty,
                 },
-            ));
+            ))
         }
         LiftExpr::EUnary { op, expr, ty: _ } => {
             let (binds, expr) = lower_linear_expr(gensym, expr)?;
-            return Some(bind_value(
+            Some(bind_value(
                 gensym,
                 binds,
-                ValueExpr::Unary {
-                    op: op.clone(),
-                    expr,
-                    ty,
-                },
-            ));
+                ValueExpr::Unary { op: *op, expr, ty },
+            ))
         }
         LiftExpr::EBinary {
             op,
@@ -1232,16 +1228,16 @@ fn lower_linear_expr(gensym: &Gensym, expr: &LiftExpr) -> Option<(Vec<Bind>, Imm
             let (mut binds, lhs) = lower_linear_expr(gensym, lhs)?;
             let (rhs_binds, rhs) = lower_linear_expr(gensym, rhs)?;
             binds.extend(rhs_binds);
-            return Some(bind_value(
+            Some(bind_value(
                 gensym,
                 binds,
                 ValueExpr::Binary {
-                    op: op.clone(),
+                    op: *op,
                     lhs,
                     rhs,
                     ty,
                 },
-            ));
+            ))
         }
         LiftExpr::EAssign {
             name,
@@ -1250,7 +1246,7 @@ fn lower_linear_expr(gensym: &Gensym, expr: &LiftExpr) -> Option<(Vec<Bind>, Imm
             ty: _,
         } => {
             let (binds, value) = lower_linear_expr(gensym, value)?;
-            return Some(bind_value(
+            Some(bind_value(
                 gensym,
                 binds,
                 ValueExpr::Assign {
@@ -1259,7 +1255,7 @@ fn lower_linear_expr(gensym: &Gensym, expr: &LiftExpr) -> Option<(Vec<Bind>, Imm
                     target_ty: target_ty.clone(),
                     ty,
                 },
-            ));
+            ))
         }
         LiftExpr::EConstr {
             constructor,
@@ -1267,7 +1263,7 @@ fn lower_linear_expr(gensym: &Gensym, expr: &LiftExpr) -> Option<(Vec<Bind>, Imm
             ty: _,
         } => {
             let (binds, args) = lower_linear_list(gensym, args)?;
-            return Some(bind_value(
+            Some(bind_value(
                 gensym,
                 binds,
                 ValueExpr::Constr {
@@ -1275,15 +1271,15 @@ fn lower_linear_expr(gensym: &Gensym, expr: &LiftExpr) -> Option<(Vec<Bind>, Imm
                     args,
                     ty,
                 },
-            ));
+            ))
         }
         LiftExpr::ETuple { items, ty: _ } => {
             let (binds, items) = lower_linear_list(gensym, items)?;
-            return Some(bind_value(gensym, binds, ValueExpr::Tuple { items, ty }));
+            Some(bind_value(gensym, binds, ValueExpr::Tuple { items, ty }))
         }
         LiftExpr::EArray { items, ty: _ } => {
             let (binds, items) = lower_linear_list(gensym, items)?;
-            return Some(bind_value(gensym, binds, ValueExpr::Array { items, ty }));
+            Some(bind_value(gensym, binds, ValueExpr::Array { items, ty }))
         }
         LiftExpr::ECall { func, args, ty: _ } => {
             let (mut binds, func) = lower_linear_expr(gensym, func)?;
@@ -1305,7 +1301,7 @@ fn lower_linear_expr(gensym: &Gensym, expr: &LiftExpr) -> Option<(Vec<Bind>, Imm
             } else {
                 ty
             };
-            return Some(bind_value(
+            Some(bind_value(
                 gensym,
                 binds,
                 ValueExpr::Call {
@@ -1313,7 +1309,7 @@ fn lower_linear_expr(gensym: &Gensym, expr: &LiftExpr) -> Option<(Vec<Bind>, Imm
                     args,
                     ty: call_ty,
                 },
-            ));
+            ))
         }
         LiftExpr::EToDyn {
             trait_name,
@@ -1322,7 +1318,7 @@ fn lower_linear_expr(gensym: &Gensym, expr: &LiftExpr) -> Option<(Vec<Bind>, Imm
             ty: _,
         } => {
             let (binds, expr) = lower_linear_expr(gensym, expr)?;
-            return Some(bind_value(
+            Some(bind_value(
                 gensym,
                 binds,
                 ValueExpr::ToDyn {
@@ -1331,7 +1327,7 @@ fn lower_linear_expr(gensym: &Gensym, expr: &LiftExpr) -> Option<(Vec<Bind>, Imm
                     expr,
                     ty,
                 },
-            ));
+            ))
         }
         LiftExpr::EDynCall {
             trait_name,
@@ -1343,7 +1339,7 @@ fn lower_linear_expr(gensym: &Gensym, expr: &LiftExpr) -> Option<(Vec<Bind>, Imm
             let (mut binds, receiver) = lower_linear_expr(gensym, receiver)?;
             let (arg_binds, args) = lower_linear_list(gensym, args)?;
             binds.extend(arg_binds);
-            return Some(bind_value(
+            Some(bind_value(
                 gensym,
                 binds,
                 ValueExpr::DynCall {
@@ -1353,11 +1349,11 @@ fn lower_linear_expr(gensym: &Gensym, expr: &LiftExpr) -> Option<(Vec<Bind>, Imm
                     args,
                     ty,
                 },
-            ));
+            ))
         }
         LiftExpr::EGo { expr, ty: _ } => {
             let (binds, closure) = lower_linear_expr(gensym, expr)?;
-            return Some(bind_value(gensym, binds, ValueExpr::Go { closure, ty }));
+            Some(bind_value(gensym, binds, ValueExpr::Go { closure, ty }))
         }
         LiftExpr::EProj {
             tuple,
@@ -1365,7 +1361,7 @@ fn lower_linear_expr(gensym: &Gensym, expr: &LiftExpr) -> Option<(Vec<Bind>, Imm
             ty: _,
         } => {
             let (binds, tuple) = lower_linear_expr(gensym, tuple)?;
-            return Some(bind_value(
+            Some(bind_value(
                 gensym,
                 binds,
                 ValueExpr::Proj {
@@ -1373,9 +1369,9 @@ fn lower_linear_expr(gensym: &Gensym, expr: &LiftExpr) -> Option<(Vec<Bind>, Imm
                     index: *index,
                     ty,
                 },
-            ));
+            ))
         }
-        _ => return None,
+        _ => None,
     }
 }
 

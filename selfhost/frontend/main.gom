@@ -1,9 +1,10 @@
-mod lexer;
-mod ast;
-mod parser;
-mod syntax;
-mod typecheck;
+package main;
 
+use frontend::ast;
+use frontend::lexer;
+use frontend::parser;
+use frontend::syntax;
+use frontend::typecheck;
 use std::env;
 use std::fs;
 use std::io;
@@ -13,11 +14,11 @@ fn usage() -> string {
     "usage: frontend tokens|parse <file.gom>\n       frontend check <file.gom> [more.gom ...]"
 }
 
-fn print_token(token: crate::syntax::Token) -> unit {
-    std::io::println(token.start.to_string() + ".." + token.end.to_string() + " " + crate::syntax::token_kind_name(token.kind) + " " + token.text)
+fn print_token(token: syntax::Token) -> unit {
+    io::println(token.start.to_string() + ".." + token.end.to_string() + " " + syntax::token_kind_name(token.kind) + " " + token.text)
 }
 
-fn print_tokens(tokens: Vec[crate::syntax::Token]) -> unit {
+fn print_tokens(tokens: Vec[syntax::Token]) -> unit {
     let i = Ref::new(0);
     while i.get() < tokens.len() {
         print_token(tokens.get(i.get()));
@@ -26,40 +27,40 @@ fn print_tokens(tokens: Vec[crate::syntax::Token]) -> unit {
 }
 
 fn run_tokens(path: string) -> int32 {
-    match std::fs::read_file(path) {
+    match fs::read_file(path) {
         Result::Ok(source) => {
-            print_tokens(crate::lexer::lex(source));
+            print_tokens(lexer::lex(source));
             0
         },
         Result::Err(err) => {
-            std::io::println("error: " + err);
+            io::println("error: " + err);
             1
         },
     }
 }
 
-fn print_diagnostics(diagnostics: Vec[crate::ast::Diagnostic]) -> unit {
+fn print_diagnostics(diagnostics: Vec[ast::Diagnostic]) -> unit {
     let i = Ref::new(0);
     while i.get() < diagnostics.len() {
-        std::io::println(crate::ast::format_diagnostic(diagnostics.get(i.get())));
+        io::println(ast::format_diagnostic(diagnostics.get(i.get())));
         i.set(i.get() + 1);
     }
 }
 
 fn run_parse(path: string) -> int32 {
-    match std::fs::read_file(path) {
+    match fs::read_file(path) {
         Result::Ok(source) => {
-            let result = crate::parser::parse_source(source);
-            std::io::println(crate::ast::format_tree(result.root));
+            let result = parser::parse_source(source);
+            io::println(ast::format_tree(result.root));
             print_diagnostics(result.diagnostics);
-            if crate::ast::has_diagnostics(result.diagnostics) {
+            if ast::has_diagnostics(result.diagnostics) {
                 1
             } else {
                 0
             }
         },
         Result::Err(err) => {
-            std::io::println("error: " + err);
+            io::println("error: " + err);
             1
         },
     }
@@ -99,29 +100,44 @@ fn strip_gom_suffix(name: string) -> string {
     }
 }
 
-fn module_name(path: string) -> string {
-    strip_gom_suffix(basename(path))
+fn source_package(path: string, root: ast::Node) -> string {
+    let i = Ref::new(0);
+    let result = Ref::new("");
+    while result.get() == "" && i.get() < root.children.len() {
+        let item = root.children.get(i.get());
+        if ast::node_kind_name(item.kind) == ast::node_kind_name(ast::NodeKind::Package) {
+            result.set(item.text);
+        } else {
+            ()
+        };
+        i.set(i.get() + 1);
+    };
+    if result.get() == "" {
+        strip_gom_suffix(basename(path))
+    } else {
+        result.get()
+    }
 }
 
 fn run_check(args: Vec[string]) -> int32 {
-    let files0: Vec[crate::typecheck::SourceFile] = Vec::new();
+    let files0: Vec[typecheck::SourceFile] = Vec::new();
     let files = Ref::new(files0);
     let failed = Ref::new(false);
     let i = Ref::new(2);
     while i.get() < args.len() {
         let path = args.get(i.get());
-        match std::fs::read_file(path) {
+        match fs::read_file(path) {
             Result::Ok(source) => {
-                let parsed = crate::parser::parse_source(source);
-                if crate::ast::has_diagnostics(parsed.diagnostics) {
+                let parsed = parser::parse_source(source);
+                if ast::has_diagnostics(parsed.diagnostics) {
                     print_diagnostics(parsed.diagnostics);
                     failed.set(true);
                 } else {
-                    files.set(files.get().push(crate::typecheck::source_file(module_name(path), parsed.root)));
+                    files.set(files.get().push(typecheck::source_file(source_package(path, parsed.root), parsed.root)));
                 };
             },
             Result::Err(err) => {
-                std::io::println("error: " + err);
+                io::println("error: " + err);
                 failed.set(true);
             },
         };
@@ -130,27 +146,27 @@ fn run_check(args: Vec[string]) -> int32 {
     if failed.get() {
         1
     } else {
-        let result = crate::typecheck::check(files.get());
+        let result = typecheck::check(files.get());
         print_diagnostics(result.diagnostics);
-        if crate::ast::has_diagnostics(result.diagnostics) {
+        if ast::has_diagnostics(result.diagnostics) {
             1
         } else {
-            std::io::println("check ok");
+            io::println("check ok");
             0
         }
     }
 }
 
 fn main() -> unit {
-    let args = std::env::args();
+    let args = env::args();
     if args.len() == 3 && args.get(1) == "tokens" {
-        std::process::exit(run_tokens(args.get(2)))
+        process::exit(run_tokens(args.get(2)))
     } else if args.len() == 3 && args.get(1) == "parse" {
-        std::process::exit(run_parse(args.get(2)))
+        process::exit(run_parse(args.get(2)))
     } else if args.len() >= 3 && args.get(1) == "check" {
-        std::process::exit(run_check(args))
+        process::exit(run_check(args))
     } else {
-        std::io::println(usage());
-        std::process::exit(1)
+        io::println(usage());
+        process::exit(1)
     }
 }

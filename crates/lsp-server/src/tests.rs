@@ -21,7 +21,9 @@ fn env_lock() -> &'static Mutex<()> {
 }
 
 fn with_goml_home<T>(home: &Path, f: impl FnOnce() -> T) -> T {
-    let _guard = env_lock().lock().unwrap();
+    let _guard = env_lock()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
     let previous = std::env::var_os("GOML_HOME");
     unsafe {
         std::env::set_var("GOML_HOME", home);
@@ -51,19 +53,17 @@ versions = ["1.2.0"]
     .unwrap();
     std::fs::write(
         registry.join("alice/http/1.2.0/goml.toml"),
-        r#"[crate]
-name = "http"
-kind = "lib"
-root = "lib.gom"
+        r#"[module]
+path = "alice::http"
 "#,
     )
     .unwrap();
     std::fs::write(
         registry.join("alice/http/1.2.0/lib.gom"),
         r#"
-mod client;
+package http;
 
-use crate::client;
+use alice::http::client;
 
 pub fn make_client() -> client::Client {
     client::Client { name: "alice" }
@@ -72,8 +72,9 @@ pub fn make_client() -> client::Client {
     )
     .unwrap();
     std::fs::write(
-        registry.join("alice/http/1.2.0/client/mod.gom"),
+        registry.join("alice/http/1.2.0/client/client.gom"),
         r#"
+package client;
 
 pub struct Client {
     name: string,
@@ -90,10 +91,8 @@ pub fn tag() -> string {
 fn write_minimal_project(root: &Path, src: &str) -> PathBuf {
     std::fs::write(
         root.join("goml.toml"),
-        r#"[crate]
-name = "demo"
-kind = "bin"
-root = "main.gom"
+        r#"[module]
+path = "demo"
 "#,
     )
     .unwrap();
@@ -671,7 +670,7 @@ fn main() {
     fn module_project011_math_package_no_missing_dir_errors() {
         check_module_file_diagnostics(
             "project011_complex_dependency_graph",
-            "math/mod.gom",
+            "math/math.gom",
             expect!["no diagnostics"],
         );
     }
@@ -680,10 +679,12 @@ fn main() {
     fn std_io_usage_no_diagnostics() {
         let dir = tempdir().unwrap();
         let src = r#"
+package main;
+
 use std::io;
 
 fn main() -> unit {
-    std::io::println("ok")
+    io::println("ok")
 }
 "#;
         let path = write_minimal_project(dir.path(), src);
@@ -696,7 +697,7 @@ fn main() -> unit {
     fn module_project011_pipeline_package_no_missing_dir_errors() {
         check_module_file_diagnostics(
             "project011_complex_dependency_graph",
-            "pipeline/mod.gom",
+            "pipeline/pipeline.gom",
             expect!["no diagnostics"],
         );
     }
@@ -707,16 +708,15 @@ fn main() -> unit {
         let root = dir.path();
         std::fs::write(
             root.join("goml.toml"),
-            r#"[crate]
-name = "demo"
-kind = "bin"
-root = "main.gom"
+            r#"[module]
+path = "demo"
 "#,
         )
         .unwrap();
-        let src = r#"
+        let src = r#"package main;
 
-use crate::colors::Paint;
+use demo::colors;
+use colors::Paint;
 
 fn main() -> unit {
     ()
@@ -728,7 +728,7 @@ fn main() -> unit {
         let diagnostics = handlers::get_diagnostics(&path, src, &doc);
         let formatted = format_diagnostics(&diagnostics);
 
-        assert!(formatted.contains("imports missing package colors"));
+        assert!(formatted.contains("package demo::colors not found at"));
         assert!(!formatted.contains("failed to read package directory"));
     }
 }
@@ -1184,17 +1184,16 @@ fn main() {
 
         std::fs::write(
             root.join("goml.toml"),
-            r#"[crate]
-name = "demo"
-kind = "bin"
-root = "main.gom"
+            r#"[module]
+path = "demo"
 "#,
         )
         .unwrap();
         std::fs::create_dir_all(root.join("util")).unwrap();
         std::fs::write(
-            root.join("util/mod.gom"),
+            root.join("util/util.gom"),
             r#"
+package util;
 
 pub fn ping() -> string {
     "pong"
@@ -1203,9 +1202,9 @@ pub fn ping() -> string {
         )
         .unwrap();
 
-        let src = r#"
+        let src = r#"package main;
 
-mod util;
+use demo::util;
 
 fn main() {
     ut
@@ -1228,7 +1227,9 @@ fn main() {
     #[test]
     fn use_completion_suggests_std() {
         let dir = tempdir().unwrap();
-        let src = r#"use st
+        let src = r#"package main;
+
+use st
 
 fn main() -> unit {
     ()
@@ -1239,7 +1240,7 @@ fn main() -> unit {
             &path,
             src,
             Position {
-                line: 0,
+                line: 2,
                 character: 6,
             },
         );
@@ -1249,7 +1250,9 @@ fn main() -> unit {
     #[test]
     fn use_completion_suggests_std_children() {
         let dir = tempdir().unwrap();
-        let src = r#"use std::
+        let src = r#"package main;
+
+use std::
 
 fn main() -> unit {
     ()
@@ -1260,7 +1263,7 @@ fn main() -> unit {
             &path,
             src,
             Position {
-                line: 0,
+                line: 2,
                 character: 9,
             },
         );
@@ -1270,10 +1273,12 @@ fn main() -> unit {
     #[test]
     fn colon_colon_completion_on_std_io() {
         let dir = tempdir().unwrap();
-        let src = r#"use std::io;
+        let src = r#"package main;
+
+use std::io;
 
 fn main() -> unit {
-    std::io::
+    io::
 }
 "#;
         let path = write_minimal_project(dir.path(), src);
@@ -1281,8 +1286,8 @@ fn main() -> unit {
             &path,
             src,
             Position {
-                line: 3,
-                character: 13,
+                line: 5,
+                character: 8,
             },
         );
         expect!["print, println"].assert_eq(&format_completion(completion));
@@ -1291,7 +1296,9 @@ fn main() -> unit {
     #[test]
     fn colon_colon_completion_on_std_use_alias() {
         let dir = tempdir().unwrap();
-        let src = r#"use std::env;
+        let src = r#"package main;
+
+use std::env;
 
 fn main() -> unit {
     env::
@@ -1302,7 +1309,7 @@ fn main() -> unit {
             &path,
             src,
             Position {
-                line: 3,
+                line: 5,
                 character: 9,
             },
         );
@@ -1310,22 +1317,26 @@ fn main() -> unit {
     }
 
     #[test]
-    fn colon_colon_completion_on_crate_root() {
+    fn colon_colon_completion_on_used_package() {
         let dir = tempdir().unwrap();
         std::fs::create_dir_all(dir.path().join("util")).unwrap();
         std::fs::write(
-            dir.path().join("util/mod.gom"),
+            dir.path().join("util/util.gom"),
             r#"
+package util;
+
 pub fn ping() -> string {
     "pong"
 }
 "#,
         )
         .unwrap();
-        let src = r#"mod util;
+        let src = r#"package main;
+
+use demo::util;
 
 fn main() -> unit {
-    crate::
+    util::
 }
 "#;
         let path = write_minimal_project(dir.path(), src);
@@ -1333,11 +1344,11 @@ fn main() -> unit {
             &path,
             src,
             Position {
-                line: 3,
-                character: 11,
+                line: 5,
+                character: 10,
             },
         );
-        expect!["util"].assert_eq(&format_completion(completion));
+        expect!["ping"].assert_eq(&format_completion(completion));
     }
 
     #[test]
@@ -1759,23 +1770,6 @@ fn main() {
         );
     }
 
-    fn check_module_goto(
-        project_name: &str,
-        rel_file: &str,
-        line: u32,
-        character: u32,
-        expect: Expect,
-    ) {
-        let project_dir = test_module_dir().join(project_name);
-        let path = project_dir.join(rel_file);
-        let src = std::fs::read_to_string(&path).unwrap();
-        let doc = Document::new(src.clone());
-        let uri = Url::from_file_path(&path).unwrap();
-        let position = Position { line, character };
-        let result = handlers::goto_definition(&uri, &path, &src, position, &doc);
-        expect.assert_eq(&format_goto_result(result));
-    }
-
     fn check_module_goto_token(
         project_name: &str,
         rel_file: &str,
@@ -1827,10 +1821,8 @@ fn main() {
         write_file(
             &root.join("goml.toml"),
             r#"
-[crate]
-name = "demo"
-kind = "bin"
-root = "main.gom"
+[module]
+path = "demo"
 
 [dependencies]
 "alice::http" = "1.2.0"
@@ -1841,13 +1833,13 @@ root = "main.gom"
     }
 
     #[test]
-    fn goto_definition_use_package_to_goml_toml() {
-        check_module_goto(
+    fn goto_definition_import_package() {
+        check_module_goto_token(
             "project001",
             "main.gom",
-            1,
-            6,
-            expect!["project001/main.gom:2:3"],
+            "use project001::lib;",
+            "lib",
+            expect!["lib/lib.gom:0:0"],
         );
     }
 
@@ -1856,26 +1848,32 @@ root = "main.gom"
         check_module_goto_token(
             "project007_trait_impl_orphan_ok",
             "main.gom",
-            "use crate::traitpkg::Show;",
+            "use traitpkg::Show;",
             "Show",
-            expect!["traitpkg/mod.gom:0:10"],
+            expect!["traitpkg/traitpkg.gom:2:10"],
         );
     }
 
     #[test]
     fn goto_definition_method_prefers_impl() {
-        check_module_goto(
+        check_module_goto_token(
             "project007_trait_impl_orphan_ok",
             "main.gom",
-            6,
-            18,
-            expect!["datapkg/mod.gom:6:7"],
+            "item.show()",
+            "show",
+            expect!["datapkg/datapkg.gom:9:7"],
         );
     }
 
     #[test]
     fn goto_definition_enum_variant_across_package() {
-        check_module_goto("project001", "main.gom", 4, 42, expect!["no definition"]);
+        check_module_goto_token(
+            "project001",
+            "main.gom",
+            "lib::Color::Green",
+            "Green",
+            expect!["lib/lib.gom:4:4"],
+        );
     }
 
     #[test]
@@ -1885,7 +1883,7 @@ root = "main.gom"
             "main.gom",
             "x: 20",
             "x",
-            expect!["lib/mod.gom:13:4"],
+            expect!["lib/lib.gom:15:4"],
         );
     }
 
@@ -1894,9 +1892,9 @@ root = "main.gom"
         check_module_goto_token(
             "project002",
             "main.gom",
-            "mod util;",
+            "use project002::util;",
             "util",
-            expect!["util/mod.gom:0:0"],
+            expect!["util/util.gom:0:0"],
         );
     }
 
@@ -1905,9 +1903,9 @@ root = "main.gom"
         check_module_goto_token(
             "project003",
             "main.gom",
-            "mod math;",
+            "use project003::math;",
             "math",
-            expect!["math/mod.gom:0:0"],
+            expect!["math/math.gom:0:0"],
         );
     }
 
@@ -1916,9 +1914,9 @@ root = "main.gom"
         check_module_goto_token(
             "project003",
             "main.gom",
-            "mod stats;",
+            "use project003::stats;",
             "stats",
-            expect!["stats/mod.gom:0:0"],
+            expect!["stats/stats.gom:0:0"],
         );
     }
 
@@ -1927,9 +1925,9 @@ root = "main.gom"
         check_module_goto_token(
             "project004",
             "main.gom",
-            "mod util;",
+            "use project004::util;",
             "util",
-            expect!["util/mod.gom:0:0"],
+            expect!["util/util.gom:0:0"],
         );
     }
 
@@ -1938,9 +1936,9 @@ root = "main.gom"
         check_module_goto_token(
             "project005",
             "main.gom",
-            "mod shape;",
+            "use project005::shape;",
             "shape",
-            expect!["shape/mod.gom:0:0"],
+            expect!["shape/shape.gom:0:0"],
         );
     }
 
@@ -1949,9 +1947,9 @@ root = "main.gom"
         check_module_goto_token(
             "project005",
             "main.gom",
-            "mod geo;",
+            "use project005::geo;",
             "geo",
-            expect!["geo/mod.gom:0:0"],
+            expect!["geo/geo.gom:0:0"],
         );
     }
 
@@ -1960,9 +1958,9 @@ root = "main.gom"
         check_module_goto_token(
             "project006",
             "main.gom",
-            "mod shape;",
+            "use project006::shape;",
             "shape",
-            expect!["shape/mod.gom:0:0"],
+            expect!["shape/shape.gom:0:0"],
         );
     }
 
@@ -1971,9 +1969,9 @@ root = "main.gom"
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
             "main.gom",
-            "mod datapkg;",
+            "use project008::datapkg;",
             "datapkg",
-            expect!["datapkg/mod.gom:0:0"],
+            expect!["datapkg/datapkg.gom:0:0"],
         );
     }
 
@@ -1982,9 +1980,9 @@ root = "main.gom"
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
             "main.gom",
-            "mod usepkg;",
+            "use project008::usepkg;",
             "usepkg",
-            expect!["usepkg/mod.gom:0:0"],
+            expect!["usepkg/usepkg.gom:0:0"],
         );
     }
 
@@ -1993,9 +1991,9 @@ root = "main.gom"
         check_module_goto_token(
             "project007_trait_impl_orphan_ok",
             "main.gom",
-            "use crate::traitpkg::Show;",
+            "use traitpkg::Show;",
             "traitpkg",
-            expect!["traitpkg/mod.gom:0:0"],
+            expect!["traitpkg/traitpkg.gom:0:0"],
         );
     }
 
@@ -2003,10 +2001,10 @@ root = "main.gom"
     fn goto_definition_use_package_in_subpackage_project008_datapkg_traitpkg() {
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
-            "datapkg/mod.gom",
-            "use crate::traitpkg;",
+            "datapkg/datapkg.gom",
+            "use project008::traitpkg;",
             "traitpkg",
-            expect!["traitpkg/mod.gom:0:0"],
+            expect!["traitpkg/traitpkg.gom:0:0"],
         );
     }
 
@@ -2014,10 +2012,10 @@ root = "main.gom"
     fn goto_definition_use_package_in_subpackage_project008_usepkg_traitpkg() {
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
-            "usepkg/mod.gom",
-            "use crate::traitpkg;",
+            "usepkg/usepkg.gom",
+            "use project008::traitpkg;",
             "traitpkg",
-            expect!["traitpkg/mod.gom:0:0"],
+            expect!["traitpkg/traitpkg.gom:0:0"],
         );
     }
 
@@ -2026,9 +2024,9 @@ root = "main.gom"
         check_module_goto_token(
             "project002",
             "main.gom",
-            "crate::util::adjust",
+            "util::adjust",
             "adjust",
-            expect!["util/mod.gom:9:7"],
+            expect!["util/util.gom:12:7"],
         );
     }
 
@@ -2037,9 +2035,9 @@ root = "main.gom"
         check_module_goto_token(
             "project002",
             "main.gom",
-            "crate::util::dec",
+            "util::dec",
             "dec",
-            expect!["util/mod.gom:5:7"],
+            expect!["util/util.gom:8:7"],
         );
     }
 
@@ -2048,9 +2046,9 @@ root = "main.gom"
         check_module_goto_token(
             "project003",
             "main.gom",
-            "crate::math::Pair",
+            "math::Pair",
             "Pair",
-            expect!["math/mod.gom:0:11"],
+            expect!["math/math.gom:2:11"],
         );
     }
 
@@ -2059,9 +2057,9 @@ root = "main.gom"
         check_module_goto_token(
             "project003",
             "main.gom",
-            "crate::stats::sum",
+            "stats::sum",
             "sum",
-            expect!["stats/mod.gom:1:7"],
+            expect!["stats/stats.gom:4:7"],
         );
     }
 
@@ -2069,10 +2067,10 @@ root = "main.gom"
     fn goto_definition_variant_project003_add() {
         check_module_goto_token(
             "project003",
-            "stats/mod.gom",
-            "crate::math::Op::Add",
+            "stats/stats.gom",
+            "math::Op::Add",
             "Add",
-            expect!["math/mod.gom:6:4"],
+            expect!["math/math.gom:8:4"],
         );
     }
 
@@ -2083,7 +2081,7 @@ root = "main.gom"
             "main.gom",
             "a: 9",
             "a",
-            expect!["math/mod.gom:1:4"],
+            expect!["math/math.gom:3:4"],
         );
     }
 
@@ -2092,9 +2090,9 @@ root = "main.gom"
         check_module_goto_token(
             "project005",
             "main.gom",
-            "crate::geo::move",
+            "geo::move",
             "move",
-            expect!["geo/mod.gom:6:7"],
+            expect!["geo/geo.gom:9:7"],
         );
     }
 
@@ -2102,10 +2100,10 @@ root = "main.gom"
     fn goto_definition_type_project005_shape_point_in_pattern() {
         check_module_goto_token(
             "project005",
-            "geo/mod.gom",
-            "crate::shape::Point { x: x, y: y }",
+            "geo/geo.gom",
+            "shape::Point { x: x, y: y }",
             "Point",
-            expect!["shape/mod.gom:0:11"],
+            expect!["shape/shape.gom:2:11"],
         );
     }
 
@@ -2114,9 +2112,9 @@ root = "main.gom"
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
             "main.gom",
-            "crate::usepkg::bar_it",
+            "usepkg::bar_it",
             "bar_it",
-            expect!["usepkg/mod.gom:9:7"],
+            expect!["usepkg/usepkg.gom:12:7"],
         );
     }
 
@@ -2124,10 +2122,10 @@ root = "main.gom"
     fn goto_definition_type_in_generic_bound_project008_trait_c() {
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
-            "usepkg/mod.gom",
-            "crate::traitpkg::C",
+            "usepkg/usepkg.gom",
+            "traitpkg::C",
             "C",
-            expect!["traitpkg/mod.gom:8:10"],
+            expect!["traitpkg/traitpkg.gom:10:10"],
         );
     }
 
@@ -2136,9 +2134,9 @@ root = "main.gom"
         check_module_goto_token(
             "project001",
             "main.gom",
-            "crate::lib::Color::Green",
+            "lib::Color::Green",
             "lib",
-            expect!["lib/mod.gom:0:0"],
+            expect!["lib/lib.gom:0:0"],
         );
     }
 
@@ -2147,9 +2145,9 @@ root = "main.gom"
         check_module_goto_token(
             "project001",
             "main.gom",
-            "crate::lib::Color::Green",
+            "lib::Color::Green",
             "Color",
-            expect!["lib/mod.gom:0:9"],
+            expect!["lib/lib.gom:2:9"],
         );
     }
 
@@ -2158,9 +2156,9 @@ root = "main.gom"
         check_module_goto_token(
             "project001",
             "main.gom",
-            "crate::lib::sum_point",
+            "lib::sum_point",
             "sum_point",
-            expect!["lib/mod.gom:17:7"],
+            expect!["lib/lib.gom:19:7"],
         );
     }
 
@@ -2169,9 +2167,9 @@ root = "main.gom"
         check_module_goto_token(
             "project001",
             "main.gom",
-            "crate::lib::Point",
+            "lib::Point",
             "Point",
-            expect!["lib/mod.gom:12:11"],
+            expect!["lib/lib.gom:14:11"],
         );
     }
 
@@ -2180,9 +2178,9 @@ root = "main.gom"
         check_module_goto_token(
             "project006",
             "main.gom",
-            "crate::shape::inc",
+            "shape::inc",
             "inc",
-            expect!["shape/mod.gom:9:7"],
+            expect!["shape/shape.gom:11:7"],
         );
     }
 
@@ -2191,9 +2189,9 @@ root = "main.gom"
         check_module_goto_token(
             "project006",
             "main.gom",
-            "crate::shape::sum",
+            "shape::sum",
             "sum",
-            expect!["shape/mod.gom:13:7"],
+            expect!["shape/shape.gom:15:7"],
         );
     }
 
@@ -2276,23 +2274,21 @@ fn main() -> unit {
     }
 
     #[test]
-    fn goto_definition_use_package_fallback_picks_first_gom_file() {
-        let root = temp_project_dir("use_fallback_first_gom");
+    fn goto_definition_import_package_picks_package_file() {
+        let root = temp_project_dir("import_package_file");
         let _ = std::fs::remove_dir_all(&root);
         write_file(
             &root.join("goml.toml"),
             r#"
-[crate]
-name = "tmpmod"
-kind = "bin"
-root = "main.gom"
+[module]
+path = "tmpmod"
 "#,
         );
         write_file(
             &root.join("main.gom"),
-            r#"
+            r#"package main;
 
-mod Pkg;
+use tmpmod::Pkg;
 
 fn main() {
     let _ = 0;
@@ -2300,20 +2296,19 @@ fn main() {
 "#,
         );
         write_file(
-            &root.join("Pkg/mod.gom"),
-            r#"
-
+            &root.join("Pkg/Pkg.gom"),
+            r#"package Pkg;
 
 fn value() -> int32 { 0 }
 "#,
         );
 
         check_temp_module_goto_token(
-            "use_fallback_first_gom",
+            "import_package_file",
             "main.gom",
-            "mod Pkg;",
+            "use tmpmod::Pkg;",
             "Pkg",
-            expect!["Pkg/mod.gom:0:0"],
+            expect!["Pkg/Pkg.gom:0:0"],
         );
     }
 
@@ -2324,7 +2319,7 @@ fn value() -> int32 { 0 }
         write_cached_registry(&home);
         write_registry_project(
             "registry_packages",
-            r#"
+            r#"package main;
 
 use alice::http;
 use alice::http::client;
@@ -2341,28 +2336,27 @@ fn main() -> unit {
                 "main.gom",
                 "use alice::http;",
                 "http",
-                expect!["1.2.0/lib.gom:0:0"],
+                expect!["1.2.0/goml.toml:0:0"],
             );
             check_temp_module_goto_token(
                 "registry_packages",
                 "main.gom",
                 "use alice::http::client;",
                 "client",
-                expect!["client/mod.gom:0:0"],
+                expect!["client/client.gom:0:0"],
             );
         });
     }
 
     #[test]
-    fn registry_packages_require_owner_qualified_use_paths() {
+    fn registry_packages_require_canonical_import_paths() {
         let dir = tempdir().unwrap();
         let home = dir.path().join(".goml");
         write_cached_registry(&home);
         let root = write_registry_project(
             "registry_packages_require_owner",
-            r#"
+            r#"package main;
 
-use http;
 use http::client;
 
 fn main() -> unit {
@@ -2376,9 +2370,7 @@ fn main() -> unit {
             let src = std::fs::read_to_string(&path).unwrap();
             let doc = Document::new(src.clone());
             let diags = handlers::get_diagnostics(&path, &src, &doc);
-            expect![
-                "[0:0] error: external dependency http must be imported as alice::http\n[0:0] error: external dependency http::client must be imported as alice::http::client"
-            ]
+            expect!["[0:0] error: package http::client is not provided by this module or its dependencies"]
             .assert_eq(&format_diagnostics(&diags));
         });
     }
@@ -2390,7 +2382,7 @@ fn main() -> unit {
         write_cached_registry(&home);
         write_registry_project(
             "registry_members",
-            r#"
+            r#"package main;
 
 use alice::http;
 use alice::http::client;
@@ -2415,7 +2407,7 @@ fn main() -> unit {
                 "main.gom",
                 "client::Client",
                 "Client",
-                expect!["client/mod.gom:2:11"],
+                expect!["client/client.gom:3:11"],
             );
         });
     }
@@ -2427,19 +2419,18 @@ fn main() -> unit {
         write_file(
             &root.join("goml.toml"),
             r#"
-[crate]
-name = "demo"
-kind = "bin"
-root = "main.gom"
+[module]
+path = "demo"
 "#,
         );
         write_file(
             &root.join("main.gom"),
-            r#"
+            r#"package main;
+
 use std::io;
 
 fn main() -> unit {
-    std::io::println("ok")
+    io::println("ok")
 }
 "#,
         );
@@ -2449,14 +2440,14 @@ fn main() -> unit {
             "main.gom",
             "use std::io;",
             "io",
-            expect!["std/io.gom:0:0"],
+            expect!["io/io.gom:0:0"],
         );
         check_temp_module_goto_token(
             "std_package_and_member",
             "main.gom",
-            "std::io::println",
+            "io::println",
             "println",
-            expect!["std/io.gom:10:7"],
+            expect!["io/io.gom:12:7"],
         );
     }
 
@@ -2467,18 +2458,16 @@ fn main() -> unit {
         write_file(
             &root.join("goml.toml"),
             r#"
-[crate]
-name = "tmpmod"
-kind = "bin"
-root = "main.gom"
+[module]
+path = "tmpmod"
 "#,
         );
         write_file(
             &root.join("main.gom"),
-            r#"
+            r#"package main;
 
-mod A;
-mod B;
+use tmpmod::A;
+use tmpmod::B;
 
 fn main() {
     let _ = Foo {};
@@ -2486,17 +2475,15 @@ fn main() {
 "#,
         );
         write_file(
-            &root.join("A/mod.gom"),
-            r#"
-
+            &root.join("A/A.gom"),
+            r#"package A;
 
 pub struct Foo {}
 "#,
         );
         write_file(
-            &root.join("B/mod.gom"),
-            r#"
-
+            &root.join("B/B.gom"),
+            r#"package B;
 
 pub struct Foo {}
 "#,
@@ -2508,8 +2495,8 @@ pub struct Foo {}
             "Foo {}",
             "Foo",
             expect![[r#"
-                A/mod.gom:3:11
-                B/mod.gom:3:11"#]],
+                A/A.gom:2:11
+                B/B.gom:2:11"#]],
         );
     }
 }
@@ -2837,11 +2824,8 @@ mod edge_case_tests {
     }
 
     #[test]
-    fn package_declaration_is_error() {
-        check_diagnostics(
-            "package main;",
-            expect!["[0:0] error: package declarations have been removed"],
-        );
+    fn package_declaration_is_supported() {
+        check_diagnostics("package main;", expect!["no diagnostics"]);
     }
 
     #[test]

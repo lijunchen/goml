@@ -28,13 +28,12 @@ fn main() -> unit {
 }
 "#;
 
-const PROJECT_CONFIG: &str = r#"[crate]
-name = "demo"
-kind = "bin"
-root = "main.gom"
+const PROJECT_CONFIG: &str = r#"[module]
+path = "demo"
 "#;
 
 const PROJECT_MAIN: &str = r#"
+package main;
 
 fn main() -> unit {
     println("hello")
@@ -56,6 +55,11 @@ fn workspace_root() -> PathBuf {
 fn write_program(contents: &str) -> anyhow::Result<(TempDir, PathBuf)> {
     let dir = tempfile::tempdir()?;
     let path = dir.path().join("main.gom");
+    let contents = if contents.trim_start().starts_with("package ") {
+        contents.to_string()
+    } else {
+        format!("package main;\n\n{contents}")
+    };
     fs::write(&path, contents)?;
     Ok((dir, path))
 }
@@ -101,7 +105,7 @@ fn wide_struct_pattern_program(field_count: usize) -> String {
         .join(" + ");
 
     format!(
-        "struct S {{ {fields} }}\nfn main() -> unit {{ let s = S {{ {values} }}; let total = match s {{ S {{ {pattern_fields} }} => {sum} }}; println(total.to_string()) }}\n"
+        "package main;\n\nstruct S {{ {fields} }}\nfn main() -> unit {{ let s = S {{ {values} }}; let total = match s {{ S {{ {pattern_fields} }} => {sum} }}; println(total.to_string()) }}\n"
     )
 }
 
@@ -211,7 +215,12 @@ fn create_local_registry(root: &Path) -> anyhow::Result<PathBuf> {
     fs::create_dir_all(registry.join("alice/net/0.1.0"))?;
     fs::create_dir_all(registry.join("alice/appdep/0.1.0"))?;
     fs::create_dir_all(registry.join("alice/traits/1.0.0"))?;
+    fs::create_dir_all(registry.join("alice/shared/1.0.0"))?;
+    fs::create_dir_all(registry.join("alice/stdio/1.0.0"))?;
+    fs::create_dir_all(registry.join("alice/model/1.0.0"))?;
     fs::create_dir_all(registry.join("bob/data/1.0.0"))?;
+    fs::create_dir_all(registry.join("bob/facade/1.0.0"))?;
+    fs::create_dir_all(registry.join("bob/shared/1.0.0"))?;
 
     fs::write(
         registry.join("index.toml"),
@@ -231,7 +240,27 @@ versions = ["0.1.0"]
 latest = "1.0.0"
 versions = ["1.0.0"]
 
+[modules."alice::shared"]
+latest = "1.0.0"
+versions = ["1.0.0"]
+
+[modules."alice::stdio"]
+latest = "1.0.0"
+versions = ["1.0.0"]
+
+[modules."alice::model"]
+latest = "1.0.0"
+versions = ["1.0.0"]
+
 [modules."bob::data"]
+latest = "1.0.0"
+versions = ["1.0.0"]
+
+[modules."bob::facade"]
+latest = "1.0.0"
+versions = ["1.0.0"]
+
+[modules."bob::shared"]
 latest = "1.0.0"
 versions = ["1.0.0"]
 "#,
@@ -239,15 +268,14 @@ versions = ["1.0.0"]
 
     fs::write(
         registry.join("alice/http/1.0.0/goml.toml"),
-        r#"[crate]
-name = "http"
-kind = "lib"
-root = "lib.gom"
+        r#"[module]
+path = "alice::http"
 "#,
     )?;
     fs::write(
         registry.join("alice/http/1.0.0/lib.gom"),
         r#"
+package http;
 
 pub fn version() -> string {
     "1.0.0"
@@ -255,8 +283,9 @@ pub fn version() -> string {
 "#,
     )?;
     fs::write(
-        registry.join("alice/http/1.0.0/client/mod.gom"),
+        registry.join("alice/http/1.0.0/client/client.gom"),
         r#"
+package client;
 
 pub fn tag() -> string {
     "client-1.0.0"
@@ -266,10 +295,8 @@ pub fn tag() -> string {
 
     fs::write(
         registry.join("alice/http/1.2.0/goml.toml"),
-        r#"[crate]
-name = "http"
-kind = "lib"
-root = "lib.gom"
+        r#"[module]
+path = "alice::http"
 
 [dependencies]
 "alice::net" = "0.1.0"
@@ -278,9 +305,9 @@ root = "lib.gom"
     fs::write(
         registry.join("alice/http/1.2.0/lib.gom"),
         r#"
-mod client;
+package http;
 
-use crate::client;
+use alice::http::client;
 
 pub fn version() -> string {
     client::tag()
@@ -288,8 +315,9 @@ pub fn version() -> string {
 "#,
     )?;
     fs::write(
-        registry.join("alice/http/1.2.0/client/mod.gom"),
+        registry.join("alice/http/1.2.0/client/client.gom"),
         r#"
+package client;
 
 pub fn tag() -> string {
     "client-1.2.0"
@@ -299,15 +327,14 @@ pub fn tag() -> string {
 
     fs::write(
         registry.join("alice/net/0.1.0/goml.toml"),
-        r#"[crate]
-name = "net"
-kind = "lib"
-root = "lib.gom"
+        r#"[module]
+path = "alice::net"
 "#,
     )?;
     fs::write(
         registry.join("alice/net/0.1.0/lib.gom"),
         r#"
+package net;
 
 pub fn version() -> string {
     "0.1.0"
@@ -316,10 +343,8 @@ pub fn version() -> string {
     )?;
     fs::write(
         registry.join("alice/appdep/0.1.0/goml.toml"),
-        r#"[crate]
-name = "appdep"
-kind = "lib"
-root = "lib.gom"
+        r#"[module]
+path = "alice::appdep"
 
 [dependencies]
 "alice::http" = "1.2.0"
@@ -328,6 +353,7 @@ root = "lib.gom"
     fs::write(
         registry.join("alice/appdep/0.1.0/lib.gom"),
         r#"
+package appdep;
 
 pub fn marker() -> string {
     "appdep"
@@ -336,15 +362,14 @@ pub fn marker() -> string {
     )?;
     fs::write(
         registry.join("alice/traits/1.0.0/goml.toml"),
-        r#"[crate]
-name = "traits"
-kind = "lib"
-root = "lib.gom"
+        r#"[module]
+path = "alice::traits"
 "#,
     )?;
     fs::write(
         registry.join("alice/traits/1.0.0/lib.gom"),
         r#"
+package traits;
 
 pub trait Show {
     fn show(Self) -> string;
@@ -353,10 +378,8 @@ pub trait Show {
     )?;
     fs::write(
         registry.join("bob/data/1.0.0/goml.toml"),
-        r#"[crate]
-name = "data"
-kind = "lib"
-root = "lib.gom"
+        r#"[module]
+path = "bob::data"
 
 [dependencies]
 "alice::traits" = "1.0.0"
@@ -365,6 +388,8 @@ root = "lib.gom"
     fs::write(
         registry.join("bob/data/1.0.0/lib.gom"),
         r#"
+package data;
+
 use alice::traits;
 
 pub struct Box {
@@ -381,6 +406,74 @@ pub fn make() -> Box {
     Box { value: 21i32 }
 }
 "#,
+    )?;
+    fs::write(
+        registry.join("alice/shared/1.0.0/goml.toml"),
+        "[module]\npath = \"alice::shared\"\n",
+    )?;
+    fs::write(
+        registry.join("alice/shared/1.0.0/lib.gom"),
+        "package shared;\n\npub fn value() -> int32 { 20 }\n",
+    )?;
+    fs::write(
+        registry.join("alice/stdio/1.0.0/goml.toml"),
+        "[module]\npath = \"alice::stdio\"\n",
+    )?;
+    fs::write(
+        registry.join("alice/stdio/1.0.0/lib.gom"),
+        r#"package stdio;
+
+use std::io;
+
+pub fn write(value: string) -> unit {
+    io::println(value)
+}
+"#,
+    )?;
+    fs::write(
+        registry.join("alice/model/1.0.0/goml.toml"),
+        "[module]\npath = \"alice::model\"\n",
+    )?;
+    fs::write(
+        registry.join("alice/model/1.0.0/lib.gom"),
+        r#"package model;
+
+pub struct Box {
+    value: int32,
+}
+
+pub fn make() -> Box {
+    Box { value: 42i32 }
+}
+"#,
+    )?;
+    fs::write(
+        registry.join("bob/facade/1.0.0/goml.toml"),
+        r#"[module]
+path = "bob::facade"
+
+[dependencies]
+"alice::model" = "1.0.0"
+"#,
+    )?;
+    fs::write(
+        registry.join("bob/facade/1.0.0/lib.gom"),
+        r#"package facade;
+
+use alice::model;
+
+pub fn make() -> model::Box {
+    model::make()
+}
+"#,
+    )?;
+    fs::write(
+        registry.join("bob/shared/1.0.0/goml.toml"),
+        "[module]\npath = \"bob::shared\"\n",
+    )?;
+    fs::write(
+        registry.join("bob/shared/1.0.0/lib.gom"),
+        "package shared;\n\npub fn value() -> int32 { 22 }\n",
     )?;
 
     Command::new("git")
@@ -487,7 +580,7 @@ fn compiler_loads_std_from_goml_home() -> anyhow::Result<()> {
 use std::io;
 
 fn main() -> unit {
-    std::io::println("std-home")
+    io::println("std-home")
 }
 "#,
     )?;
@@ -724,10 +817,8 @@ fn project_build_handles_very_wide_struct_pattern() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     fs::write(
         dir.path().join("goml.toml"),
-        r#"[crate]
-name = "wideproj"
-kind = "bin"
-root = "main.gom"
+        r#"[module]
+path = "wideproj"
 "#,
     )?;
     fs::write(
@@ -753,23 +844,21 @@ fn project_build_handles_deep_public_interface_type() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     fs::write(
         dir.path().join("goml.toml"),
-        r#"[crate]
-name = "iface_deep"
-kind = "bin"
-root = "main.gom"
+        r#"[module]
+path = "iface_deep"
 "#,
     )?;
     fs::create_dir_all(dir.path().join("Lib"))?;
     fs::write(
-        dir.path().join("Lib/mod.gom"),
+        dir.path().join("Lib/Lib.gom"),
         format!(
-            "pub struct Wrap {{ value: {} }}\n\npub fn ping() -> int32 {{ 1 }}\n",
+            "package Lib;\n\npub struct Wrap {{ value: {} }}\n\npub fn ping() -> int32 {{ 1 }}\n",
             deep_ref_type(200)
         ),
     )?;
     fs::write(
         dir.path().join("main.gom"),
-        "mod Lib;\n\nfn main() -> unit { println(crate::Lib::ping().to_string()) }\n",
+        "package main;\n\nuse iface_deep::Lib;\n\nfn main() -> unit { println(Lib::ping().to_string()) }\n",
     )?;
 
     let output = run_goml(&["build"], dir.path())?;
@@ -781,6 +870,72 @@ root = "main.gom"
         "stdout: {stdout}\nstderr: {stderr}"
     );
     assert!(dir.path().join("target/goml/main.go").exists());
+
+    Ok(())
+}
+
+#[test]
+fn project_build_loads_transitive_public_type_interfaces() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    fs::write(
+        dir.path().join("goml.toml"),
+        "[module]\npath = \"transitive_types\"\n",
+    )?;
+    fs::create_dir_all(dir.path().join("model"))?;
+    fs::create_dir_all(dir.path().join("facade"))?;
+    fs::write(
+        dir.path().join("model/model.gom"),
+        r#"package model;
+
+pub struct Box {
+    value: int32,
+}
+
+pub fn make() -> Box {
+    Box { value: 42i32 }
+}
+"#,
+    )?;
+    fs::write(
+        dir.path().join("facade/facade.gom"),
+        r#"package facade;
+
+use transitive_types::model;
+
+pub fn make() -> model::Box {
+    model::make()
+}
+"#,
+    )?;
+    fs::write(
+        dir.path().join("main.gom"),
+        r#"package main;
+
+use transitive_types::facade;
+
+fn main() -> unit {
+    println(facade::make().value.to_string())
+}
+"#,
+    )?;
+
+    let output = run_goml(&["build"], dir.path())?;
+    assert!(
+        output.status.success(),
+        "stdout: {}\nstderr: {}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    if runtime_executor_available() {
+        let go_output = run_go_main(&dir.path().join("target/goml/main.go"), dir.path())?;
+        assert!(
+            go_output.status.success(),
+            "stderr: {}",
+            String::from_utf8_lossy(&go_output.stderr)
+        );
+        expect!["42\n"].assert_eq(&String::from_utf8_lossy(&go_output.stdout));
+    }
 
     Ok(())
 }
@@ -838,10 +993,8 @@ fn add_uses_latest_version_from_local_registry() -> anyhow::Result<()> {
 
     let manifest = fs::read_to_string(project_dir.join("goml.toml"))?;
     expect![[r#"
-        [crate]
-        name = "demo"
-        kind = "bin"
-        root = "main.gom"
+        [module]
+        path = "demo"
 
         [dependencies]
         "alice::http" = "1.2.0"
@@ -891,10 +1044,8 @@ fn add_with_explicit_version_and_remove_updates_manifest() -> anyhow::Result<()>
 
     let manifest = fs::read_to_string(project_dir.join("goml.toml"))?;
     expect![[r#"
-        [crate]
-        name = "demo"
-        kind = "bin"
-        root = "main.gom"
+        [module]
+        path = "demo"
     "#]]
     .assert_eq(&manifest);
 
@@ -912,10 +1063,8 @@ fn project_build_with_cached_registry_dependencies_uses_external_modules() -> an
     fs::create_dir_all(&project_dir)?;
     fs::write(
         project_dir.join("goml.toml"),
-        r#"[crate]
-name = "demo"
-kind = "bin"
-root = "main.gom"
+        r#"[module]
+path = "demo"
 
 [dependencies]
 "alice::http" = "1.0.0"
@@ -925,6 +1074,7 @@ root = "main.gom"
     fs::write(
         project_dir.join("main.gom"),
         r#"
+package main;
 
 use alice::http;
 use alice::http::client;
@@ -967,17 +1117,17 @@ fn main() -> unit {
 
     assert!(
         project_dir
-            .join("target/goml/check/deps/alice/http/1.2.0/http.interface")
+            .join("target/goml/check/deps/alice/http/1.2.0/pkg/alice/http/package.interface")
             .exists()
     );
     assert!(
         project_dir
-            .join("target/goml/build/deps/alice/http/1.2.0/http.core")
+            .join("target/goml/build/deps/alice/http/1.2.0/pkg/alice/http/package.core")
             .exists()
     );
     assert!(
         project_dir
-            .join("target/goml/build/deps/alice/appdep/0.1.0/appdep.core")
+            .join("target/goml/build/deps/alice/appdep/0.1.0/pkg/alice/appdep/package.core")
             .exists()
     );
 
@@ -994,6 +1144,198 @@ fn main() -> unit {
 }
 
 #[test]
+fn project_build_external_package_can_import_std() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let registry = create_local_registry(dir.path())?;
+    let home = dir.path().join("home");
+    fs::create_dir_all(&home)?;
+    let project_dir = dir.path().join("demo");
+    fs::create_dir_all(&project_dir)?;
+    fs::write(
+        project_dir.join("goml.toml"),
+        r#"[module]
+path = "demo"
+
+[dependencies]
+"alice::stdio" = "1.0.0"
+"#,
+    )?;
+    fs::write(
+        project_dir.join("main.gom"),
+        r#"package main;
+
+use alice::stdio;
+
+fn main() -> unit {
+    stdio::write("external-std")
+}
+"#,
+    )?;
+
+    let update_output = run_goml_with_home(
+        &[
+            "update",
+            "--local-registry",
+            registry.to_string_lossy().as_ref(),
+        ],
+        &project_dir,
+        &home,
+    )?;
+    assert!(
+        update_output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&update_output.stderr)
+    );
+    let build_output = run_goml_with_home(&["build"], &project_dir, &home)?;
+    assert!(
+        build_output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&build_output.stderr)
+    );
+
+    if runtime_executor_available() {
+        let go_output = run_go_main(&project_dir.join("target/goml/main.go"), &project_dir)?;
+        assert!(
+            go_output.status.success(),
+            "stderr: {}",
+            String::from_utf8_lossy(&go_output.stderr)
+        );
+        expect!["external-std\n"].assert_eq(&String::from_utf8_lossy(&go_output.stdout));
+    }
+
+    Ok(())
+}
+
+#[test]
+fn project_build_loads_transitive_external_type_interfaces() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let registry = create_local_registry(dir.path())?;
+    let home = dir.path().join("home");
+    fs::create_dir_all(&home)?;
+    let project_dir = dir.path().join("demo");
+    fs::create_dir_all(&project_dir)?;
+    fs::write(
+        project_dir.join("goml.toml"),
+        r#"[module]
+path = "demo"
+
+[dependencies]
+"bob::facade" = "1.0.0"
+"#,
+    )?;
+    fs::write(
+        project_dir.join("main.gom"),
+        r#"package main;
+
+use bob::facade;
+
+fn main() -> unit {
+    println(facade::make().value.to_string())
+}
+"#,
+    )?;
+
+    let update_output = run_goml_with_home(
+        &[
+            "update",
+            "--local-registry",
+            registry.to_string_lossy().as_ref(),
+        ],
+        &project_dir,
+        &home,
+    )?;
+    assert!(
+        update_output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&update_output.stderr)
+    );
+    let build_output = run_goml_with_home(&["build"], &project_dir, &home)?;
+    assert!(
+        build_output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&build_output.stderr)
+    );
+
+    if runtime_executor_available() {
+        let go_output = run_go_main(&project_dir.join("target/goml/main.go"), &project_dir)?;
+        assert!(
+            go_output.status.success(),
+            "stderr: {}",
+            String::from_utf8_lossy(&go_output.stderr)
+        );
+        expect!["42\n"].assert_eq(&String::from_utf8_lossy(&go_output.stdout));
+    }
+
+    Ok(())
+}
+
+#[test]
+fn project_build_supports_same_named_external_packages_with_aliases() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let registry = create_local_registry(dir.path())?;
+    let home = dir.path().join("home");
+    fs::create_dir_all(&home)?;
+    let project_dir = dir.path().join("demo");
+    fs::create_dir_all(&project_dir)?;
+    fs::write(
+        project_dir.join("goml.toml"),
+        r#"[module]
+path = "demo"
+
+[dependencies]
+"alice::shared" = "1.0.0"
+"bob::shared" = "1.0.0"
+"#,
+    )?;
+    fs::write(
+        project_dir.join("main.gom"),
+        r#"package main;
+
+use alice::shared as alice_shared;
+use bob::shared as bob_shared;
+
+fn main() -> unit {
+    println(alice_shared::value() + bob_shared::value())
+}
+"#,
+    )?;
+
+    let update_output = run_goml_with_home(
+        &[
+            "update",
+            "--local-registry",
+            registry.to_string_lossy().as_ref(),
+        ],
+        &project_dir,
+        &home,
+    )?;
+    assert!(
+        update_output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&update_output.stderr)
+    );
+    let build_output = run_goml_with_home(&["build"], &project_dir, &home)?;
+    assert!(
+        build_output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&build_output.stderr)
+    );
+
+    if !runtime_executor_available() {
+        return Ok(());
+    }
+    let go_output = run_go_main(&project_dir.join("target/goml/main.go"), &project_dir)?;
+    assert!(
+        go_output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&go_output.stderr)
+    );
+    expect!["42\n"].assert_eq(&String::from_utf8_lossy(&go_output.stdout));
+
+    Ok(())
+}
+
+#[test]
 fn project_build_imports_transitive_external_trait() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     let registry = create_local_registry(dir.path())?;
@@ -1004,10 +1346,8 @@ fn project_build_imports_transitive_external_trait() -> anyhow::Result<()> {
     fs::create_dir_all(&project_dir)?;
     fs::write(
         project_dir.join("goml.toml"),
-        r#"[crate]
-name = "demo"
-kind = "bin"
-root = "main.gom"
+        r#"[module]
+path = "demo"
 
 [dependencies]
 "bob::data" = "1.0.0"
@@ -1016,9 +1356,12 @@ root = "main.gom"
     fs::write(
         project_dir.join("main.gom"),
         r#"
+package main;
 
 use bob::data;
-use alice::traits::Show;
+use alice::traits;
+
+use traits::Show;
 
 fn main() -> unit {
     let value = data::make();
@@ -1325,24 +1668,26 @@ fn new_creates_two_package_scaffold() -> anyhow::Result<()> {
     let project_dir = dir.path().join("demo");
     let root_toml = fs::read_to_string(project_dir.join("goml.toml"))?;
     let main_gom = fs::read_to_string(project_dir.join("main.gom"))?;
-    let lib_gom = fs::read_to_string(project_dir.join("lib/mod.gom"))?;
+    let lib_gom = fs::read_to_string(project_dir.join("lib/lib.gom"))?;
 
     expect![[r#"
-        [crate]
-        name = "demo"
-        kind = "bin"
-        root = "main.gom"
+        [module]
+        path = "demo"
     "#]]
     .assert_eq(&root_toml);
     expect![[r#"
-        mod lib;
+        package main;
+
+        use demo::lib;
 
         fn main() -> unit {
-            println(crate::lib::message())
+            println(lib::message())
         }
     "#]]
     .assert_eq(&main_gom);
     expect![[r#"
+        package lib;
+
         pub fn message() -> string {
             "hello from lib"
         }
@@ -1402,16 +1747,24 @@ fn new_project_can_check_and_build() -> anyhow::Result<()> {
 
     let go_file = project_dir.join("target/goml/main.go");
     assert!(go_file.exists());
-    assert!(project_dir.join("target/goml/build/main.core").exists());
     assert!(
         project_dir
-            .join("target/goml/build/main.interface")
+            .join("target/goml/build/pkg/demo/package.core")
             .exists()
     );
-    assert!(project_dir.join("target/goml/build/lib/lib.core").exists());
     assert!(
         project_dir
-            .join("target/goml/build/lib/lib.interface")
+            .join("target/goml/build/pkg/demo/package.interface")
+            .exists()
+    );
+    assert!(
+        project_dir
+            .join("target/goml/build/pkg/demo/lib/package.core")
+            .exists()
+    );
+    assert!(
+        project_dir
+            .join("target/goml/build/pkg/demo/lib/package.interface")
             .exists()
     );
 
@@ -1435,10 +1788,12 @@ fn project_check_and_build_support_std_imports() -> anyhow::Result<()> {
     fs::write(
         dir.path().join("main.gom"),
         r#"
+package main;
+
 use std::io;
 
 fn main() -> unit {
-    std::io::println("std-project")
+    io::println("std-project")
 }
 "#,
     )?;
@@ -1474,10 +1829,10 @@ fn project_check_dry_run_prints_compiler_check_commands() -> anyhow::Result<()> 
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(output.status.success(), "stderr: {stderr}");
     expect![[r#"
-        goml compiler check --package traitpkg --input traitpkg/mod.gom --output target/goml/check/traitpkg/traitpkg
-        goml compiler check --package datapkg --input datapkg/mod.gom --interface-path target/goml/check/traitpkg/traitpkg.interface --output target/goml/check/datapkg/datapkg
-        goml compiler check --package usepkg --input usepkg/mod.gom --interface-path target/goml/check/traitpkg/traitpkg.interface --output target/goml/check/usepkg/usepkg
-        goml compiler check --package main --input main.gom --interface-path target/goml/check/datapkg/datapkg.interface --interface-path target/goml/check/traitpkg/traitpkg.interface --interface-path target/goml/check/usepkg/usepkg.interface --output target/goml/check/main
+        goml compiler check --package project008::traitpkg --input traitpkg/traitpkg.gom --output target/goml/check/pkg/project008/traitpkg/package
+        goml compiler check --package project008::datapkg --input datapkg/datapkg.gom --interface-path target/goml/check/pkg/project008/traitpkg/package.interface --output target/goml/check/pkg/project008/datapkg/package
+        goml compiler check --package project008::usepkg --input usepkg/usepkg.gom --interface-path target/goml/check/pkg/project008/traitpkg/package.interface --output target/goml/check/pkg/project008/usepkg/package
+        goml compiler check --package project008 --input main.gom --interface-path target/goml/check/pkg/project008/datapkg/package.interface --interface-path target/goml/check/pkg/project008/traitpkg/package.interface --interface-path target/goml/check/pkg/project008/usepkg/package.interface --output target/goml/check/pkg/project008/package
     "#]]
     .assert_eq(&stdout);
     assert!(!dir.path().join("target/goml/check/main.interface").exists());
@@ -1495,11 +1850,11 @@ fn project_build_dry_run_prints_compiler_build_and_link_commands() -> anyhow::Re
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(output.status.success(), "stderr: {stderr}");
     expect![[r#"
-        goml compiler build --package traitpkg --input traitpkg/mod.gom --output target/goml/build/traitpkg/traitpkg
-        goml compiler build --package datapkg --input datapkg/mod.gom --interface-path target/goml/build/traitpkg/traitpkg.interface --output target/goml/build/datapkg/datapkg
-        goml compiler build --package usepkg --input usepkg/mod.gom --interface-path target/goml/build/traitpkg/traitpkg.interface --output target/goml/build/usepkg/usepkg
-        goml compiler build --package main --input main.gom --interface-path target/goml/build/datapkg/datapkg.interface --interface-path target/goml/build/traitpkg/traitpkg.interface --interface-path target/goml/build/usepkg/usepkg.interface --output target/goml/build/main
-        goml compiler link --input target/goml/build/traitpkg/traitpkg.core target/goml/build/datapkg/datapkg.core target/goml/build/usepkg/usepkg.core target/goml/build/main.core --output target/goml/main.go
+        goml compiler build --package project008::traitpkg --input traitpkg/traitpkg.gom --output target/goml/build/pkg/project008/traitpkg/package
+        goml compiler build --package project008::datapkg --input datapkg/datapkg.gom --interface-path target/goml/build/pkg/project008/traitpkg/package.interface --output target/goml/build/pkg/project008/datapkg/package
+        goml compiler build --package project008::usepkg --input usepkg/usepkg.gom --interface-path target/goml/build/pkg/project008/traitpkg/package.interface --output target/goml/build/pkg/project008/usepkg/package
+        goml compiler build --package project008 --input main.gom --interface-path target/goml/build/pkg/project008/datapkg/package.interface --interface-path target/goml/build/pkg/project008/traitpkg/package.interface --interface-path target/goml/build/pkg/project008/usepkg/package.interface --output target/goml/build/pkg/project008/package
+        goml compiler link --input target/goml/build/pkg/project008/traitpkg/package.core target/goml/build/pkg/project008/datapkg/package.core target/goml/build/pkg/project008/usepkg/package.core target/goml/build/pkg/project008/package.core --output target/goml/main.go --entry project008
     "#]]
     .assert_eq(&stdout);
     assert!(!dir.path().join("target/goml/main.go").exists());
@@ -1568,42 +1923,42 @@ fn project_build_stops_when_compiler_subcommand_fails() -> anyhow::Result<()> {
 
     fs::write(
         root.join("goml.toml"),
-        r#"[crate]
-name = "demo"
-kind = "bin"
-root = "main.gom"
+        r#"[module]
+path = "demo"
 "#,
     )?;
     fs::write(
         root.join("main.gom"),
         r#"
+package main;
 
-mod A;
-mod B;
+use demo::A;
 
 fn main() -> unit {
-    println(crate::A::msg())
+    println(A::msg())
 }
 "#,
     )?;
 
     fs::create_dir_all(root.join("A"))?;
     fs::write(
-        root.join("A/mod.gom"),
+        root.join("A/A.gom"),
         r#"
+package A;
 
-use crate::B;
+use demo::B;
 
 pub fn msg() -> string {
-    crate::B::value()
+    B::value()
 }
 "#,
     )?;
 
     fs::create_dir_all(root.join("B"))?;
     fs::write(
-        root.join("B/mod.gom"),
+        root.join("B/B.gom"),
         r#"
+package B;
 
 pub fn value() -> int32 {
     1
@@ -1615,8 +1970,8 @@ pub fn value() -> int32 {
     let stderr = normalize_temp_prefix(&String::from_utf8_lossy(&output.stderr), root);
     assert!(!output.status.success());
     expect![[r#"
-        build failed: Typer { diagnostics: Diagnostics { items: [Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(46..64) }, Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(46..64) }] } }
-        subcommand failed: goml compiler build --package A --input A/mod.gom --interface-path target/goml/build/B/B.interface --output target/goml/build/A/A
+        build failed: Typer { diagnostics: Diagnostics { items: [Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(56..67) }, Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(56..67) }] } }
+        subcommand failed: goml compiler build --package demo::A --input A/A.gom --interface-path target/goml/build/pkg/demo/B/package.interface --output target/goml/build/pkg/demo/A/package
     "#]]
     .assert_eq(&stderr);
     assert!(!root.join("target/goml/main.go").exists());
@@ -1631,29 +1986,29 @@ fn project_build_dry_run_preserves_entry_directory_structure() -> anyhow::Result
 
     fs::write(
         root.join("goml.toml"),
-        r#"[crate]
-name = "demo"
-kind = "bin"
-root = "src/main.gom"
+        r#"[module]
+path = "demo"
 "#,
     )?;
     fs::create_dir_all(root.join("src"))?;
     fs::write(
         root.join("src/main.gom"),
         r#"
+package main;
 
-mod Lib;
+use demo::src::Lib;
 
 fn main() -> unit {
-    println(crate::Lib::msg())
+    println(Lib::msg())
 }
 "#,
     )?;
 
     fs::create_dir_all(root.join("src/Lib"))?;
     fs::write(
-        root.join("src/Lib/mod.gom"),
+        root.join("src/Lib/Lib.gom"),
         r#"
+package Lib;
 
 pub fn msg() -> string {
     "ok"
@@ -1661,14 +2016,14 @@ pub fn msg() -> string {
 "#,
     )?;
 
-    let output = run_goml(&["build", "--dry-run"], root)?;
+    let output = run_goml(&["build", "src", "--dry-run"], root)?;
     let stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(output.status.success(), "stderr: {stderr}");
     expect![[r#"
-        goml compiler build --package Lib --input src/Lib/mod.gom --output target/goml/build/src/Lib/Lib
-        goml compiler build --package main --input src/main.gom --interface-path target/goml/build/src/Lib/Lib.interface --output target/goml/build/src/main
-        goml compiler link --input target/goml/build/src/Lib/Lib.core target/goml/build/src/main.core --output target/goml/main.go
+        goml compiler build --package demo::src::Lib --input src/Lib/Lib.gom --output target/goml/build/pkg/demo/src/Lib/package
+        goml compiler build --package demo::src --input src/main.gom --interface-path target/goml/build/pkg/demo/src/Lib/package.interface --output target/goml/build/pkg/demo/src/package
+        goml compiler link --input target/goml/build/pkg/demo/src/Lib/package.core target/goml/build/pkg/demo/src/package.core --output target/goml/main.go --entry demo::src
     "#]]
     .assert_eq(&stdout);
     expect![""].assert_eq(&stderr);

@@ -237,6 +237,9 @@ pub enum TokenKind {
     #[token("import")]
     ImportKeyword,
 
+    #[token("as")]
+    AsKeyword,
+
     #[token("pub")]
     PubKeyword,
 
@@ -462,6 +465,7 @@ impl std::fmt::Display for TokenKind {
             Self::PackageKeyword => "package",
             Self::UseKeyword => "use",
             Self::ImportKeyword => "import",
+            Self::AsKeyword => "as",
             Self::PubKeyword => "pub",
             Self::ModKeyword => "mod",
             Self::CrateKeyword => "crate",
@@ -563,6 +567,7 @@ macro_rules! T {
     [package] => { $crate::TokenKind::PackageKeyword };
     [use] => { $crate::TokenKind::UseKeyword };
     [import] => { $crate::TokenKind::ImportKeyword };
+    [as] => { $crate::TokenKind::AsKeyword };
     [pub] => { $crate::TokenKind::PubKeyword };
     [mod] => { $crate::TokenKind::ModKeyword };
     [crate] => { $crate::TokenKind::CrateKeyword };

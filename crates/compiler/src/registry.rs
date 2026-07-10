@@ -4,8 +4,8 @@ use std::path::{Path, PathBuf};
 use serde::Deserialize;
 
 use crate::config::{
-    CrateManifest, UserConfig, ensure_goml_home_layout, goml_cache_dir, goml_home_dir,
-    load_crate_manifest,
+    ModuleManifest, UserConfig, ensure_goml_home_layout, goml_cache_dir, goml_home_dir,
+    load_module_manifest,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -65,6 +65,11 @@ impl ModuleCoord {
                 "invalid module coordinate `{input}`: expected owner::module"
             ));
         }
+        if owner == "std" {
+            return Err(format!(
+                "invalid module coordinate `{input}`: owner std is reserved"
+            ));
+        }
         Ok(Self {
             owner: owner.to_string(),
             module: module.to_string(),
@@ -108,7 +113,7 @@ pub struct ResolvedModule {
     pub version: SemVer,
     pub manifest_path: PathBuf,
     pub root_dir: PathBuf,
-    pub manifest: CrateManifest,
+    pub manifest: ModuleManifest,
 }
 
 #[derive(Debug, Clone)]
@@ -210,7 +215,16 @@ impl Registry {
             ));
         }
         let manifest_path = root_dir.join("goml.toml");
-        let manifest = load_crate_manifest(&manifest_path)?;
+        let manifest = load_module_manifest(&manifest_path)?;
+        if manifest.module.path != coord.display() {
+            return Err(format!(
+                "registry module {}@{} declares module path `{}` in {}",
+                coord.display(),
+                version.display(),
+                manifest.module.path,
+                manifest_path.display()
+            ));
+        }
         Ok(ResolvedModule {
             coord: coord.clone(),
             version: version.clone(),
@@ -252,7 +266,7 @@ pub fn resolve_dependencies(
         selected.insert(requirement.coord.clone(), chosen.clone());
 
         let module = registry.load_module(&requirement.coord, &chosen)?;
-        for (dep_coord, dep_version) in module.manifest.dependency_versions().iter() {
+        for (dep_coord, dep_version) in module.manifest.dependencies.iter() {
             queue.push_back(ModuleRequirement::parse(dep_coord, dep_version)?);
         }
     }
@@ -356,20 +370,16 @@ versions = ["0.1.0"]
         std::fs::write(
             root.join("alice/http/1.0.0/goml.toml"),
             r#"
-[crate]
-name = "http"
-kind = "lib"
-root = "lib.gom"
+[module]
+path = "alice::http"
 "#,
         )
         .unwrap();
         std::fs::write(
             root.join("alice/http/1.2.0/goml.toml"),
             r#"
-[crate]
-name = "http"
-kind = "lib"
-root = "lib.gom"
+[module]
+path = "alice::http"
 
 [dependencies]
 "alice::net" = "0.1.0"
@@ -379,10 +389,8 @@ root = "lib.gom"
         std::fs::write(
             root.join("alice/net/0.1.0/goml.toml"),
             r#"
-[crate]
-name = "net"
-kind = "lib"
-root = "lib.gom"
+[module]
+path = "alice::net"
 "#,
         )
         .unwrap();

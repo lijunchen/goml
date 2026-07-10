@@ -10,10 +10,8 @@ fn write_project(files: &[(&str, &str)]) -> (TempDir, PathBuf, String) {
     let dir = tempfile::tempdir().unwrap();
     fs::write(
         dir.path().join("goml.toml"),
-        r#"[crate]
-name = "visibility_test"
-kind = "bin"
-root = "main.gom"
+        r#"[module]
+path = "visibility_test"
 "#,
     )
     .unwrap();
@@ -59,16 +57,20 @@ fn public_function_is_visible() {
         (
             "main.gom",
             r#"
-mod api;
+package main;
+
+use visibility_test::api;
 
 fn main() -> unit {
-    let _ = crate::api::answer();
+    let _ = api::answer();
 }
 "#,
         ),
         (
-            "api/mod.gom",
+            "api/api.gom",
             r#"
+package api;
+
 pub fn answer() -> int32 {
     42
 }
@@ -83,16 +85,20 @@ fn private_function_is_hidden() {
         (
             "main.gom",
             r#"
-mod api;
+package main;
+
+use visibility_test::api;
 
 fn main() -> unit {
-    let _ = crate::api::secret();
+    let _ = api::secret();
 }
 "#,
         ),
         (
-            "api/mod.gom",
+            "api/api.gom",
             r#"
+package api;
+
 fn secret() -> int32 {
     7
 }
@@ -107,16 +113,20 @@ fn private_function_can_feed_public_function() {
         (
             "main.gom",
             r#"
-mod api;
+package main;
+
+use visibility_test::api;
 
 fn main() -> unit {
-    let _ = crate::api::answer();
+    let _ = api::answer();
 }
 "#,
         ),
         (
-            "api/mod.gom",
+            "api/api.gom",
             r#"
+package api;
+
 fn secret() -> int32 {
     35
 }
@@ -135,17 +145,21 @@ fn public_struct_is_visible() {
         (
             "main.gom",
             r#"
-mod api;
+package main;
+
+use visibility_test::api;
 
 fn main() -> unit {
-    let p = crate::api::Point { x: 1 };
+    let p = api::Point { x: 1 };
     let _ = p.x;
 }
 "#,
         ),
         (
-            "api/mod.gom",
+            "api/api.gom",
             r#"
+package api;
+
 pub struct Point {
     x: int32,
 }
@@ -160,16 +174,20 @@ fn private_struct_is_hidden() {
         (
             "main.gom",
             r#"
-mod api;
+package main;
+
+use visibility_test::api;
 
 fn main() -> unit {
-    let _ = crate::api::Secret { x: 1 };
+    let _ = api::Secret { x: 1 };
 }
 "#,
         ),
         (
-            "api/mod.gom",
+            "api/api.gom",
             r#"
+package api;
+
 struct Secret {
     x: int32,
 }
@@ -184,16 +202,20 @@ fn public_enum_is_visible() {
         (
             "main.gom",
             r#"
-mod api;
+package main;
+
+use visibility_test::api;
 
 fn main() -> unit {
-    let _ = crate::api::Choice::B(1);
+    let _ = api::Choice::B(1);
 }
 "#,
         ),
         (
-            "api/mod.gom",
+            "api/api.gom",
             r#"
+package api;
+
 pub enum Choice {
     A,
     B(int32),
@@ -209,16 +231,20 @@ fn private_enum_is_hidden() {
         (
             "main.gom",
             r#"
-mod api;
+package main;
+
+use visibility_test::api;
 
 fn main() -> unit {
-    let _ = crate::api::Hidden::A;
+    let _ = api::Hidden::A;
 }
 "#,
         ),
         (
-            "api/mod.gom",
+            "api/api.gom",
             r#"
+package api;
+
 enum Hidden {
     A,
 }
@@ -233,19 +259,23 @@ fn public_trait_import_enables_method_syntax() {
         (
             "main.gom",
             r#"
-mod api;
+package main;
 
-use crate::api::Label;
+use visibility_test::api;
+
+use api::Label;
 
 fn main() -> unit {
-    let item = crate::api::item();
+    let item = api::item();
     let _ = item.label();
 }
 "#,
         ),
         (
-            "api/mod.gom",
+            "api/api.gom",
             r#"
+package api;
+
 pub trait Label {
     fn label(Self) -> string;
 }
@@ -274,19 +304,23 @@ fn private_trait_import_is_hidden() {
         (
             "main.gom",
             r#"
-mod api;
+package main;
 
-use crate::api::Hidden;
+use visibility_test::api;
+
+use api::Hidden;
 
 fn main() -> unit {
-    let item = crate::api::item();
+    let item = api::item();
     let _ = item.hidden();
 }
 "#,
         ),
         (
-            "api/mod.gom",
+            "api/api.gom",
             r#"
+package api;
+
 trait Hidden {
     fn hidden(Self) -> string;
 }

@@ -1,0 +1,8 @@
+package process;
+
+#[builtin]
+extern fn exit_raw(code: int32) -> unit
+
+pub fn exit(code: int32) -> unit {
+    exit_raw(code)
+}

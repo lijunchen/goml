@@ -1,14 +1,14 @@
-fn main() -> unit {
+fn packages_basic::main() -> unit {
   join ret0() -> unit {
     ()
   } in
-  let t1 = Lib::color_to_int(Tag_0) in
+  let t1 = packages_basic::Lib::color_to_int(Tag_0) in
   let t2 = $goml_builtin_runtime$int32_to_string(t1) in
   let t3 = println__T_string(t2) in
   jump ret0()
 }
 
-fn Lib::color_to_int(c/0: Lib::Color) -> int32 {
+fn packages_basic::Lib::color_to_int(c/0: packages_basic::Lib::Color) -> int32 {
   join ret4(retv5: int32) -> int32 {
     retv5
   } in
@@ -25,10 +25,18 @@ fn Lib::color_to_int(c/0: Lib::Color) -> int32 {
   }
 }
 
-fn println__T_string(value/1: string) -> unit {
+fn main() -> unit {
   join ret8() -> unit {
     ()
   } in
-  let t9 = string_println(value/1) in
+  let t9 = packages_basic::main() in
   jump ret8()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret10() -> unit {
+    ()
+  } in
+  let t11 = string_println(value/1) in
+  jump ret10()
 }

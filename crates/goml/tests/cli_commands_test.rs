@@ -99,6 +99,8 @@ fn cli_check_build_link_single_package() -> anyhow::Result<()> {
     write_file(
         &main_gom,
         r#"
+package main;
+
 fn main() -> unit {
     println("ok")
 }
@@ -115,7 +117,7 @@ fn main() -> unit {
     assert_snapshot_file("single", "main.interface", &main_interface, root)?;
     let unit: InterfaceUnit = read_json(&main_interface)?;
     assert_eq!(unit.package, ROOT_PACKAGE);
-    assert!(unit.validate_hash());
+    assert!(unit.validate());
 
     let main_out = out.join(ROOT_PACKAGE);
     cmd!(
@@ -138,7 +140,7 @@ fn main() -> unit {
     let main_core = out.join(format!("{ROOT_PACKAGE}.core"));
     cmd!(
         sh,
-        "{bin} compiler link --input {main_core} --output {go_file}"
+        "{bin} compiler link --entry {ROOT_PACKAGE} --input {main_core} --output {go_file}"
     )
     .run()?;
     assert_snapshot_file("single", "main.go", &go_file, root)?;
@@ -166,7 +168,7 @@ fn cli_check_build_link_with_dep() -> anyhow::Result<()> {
     write_file(
         &lib_gom,
         r#"
-
+package Lib;
 
 pub fn msg() -> string {
     "hi"
@@ -178,6 +180,8 @@ pub fn msg() -> string {
     write_file(
         &main_gom,
         r#"
+package main;
+
 use Lib;
 
 fn main() -> unit {
@@ -227,7 +231,7 @@ fn main() -> unit {
     let main_core = out.join(format!("{ROOT_PACKAGE}.core"));
     cmd!(
         sh,
-        "{bin} compiler link --input {lib_core} {main_core} --output {go_file}"
+        "{bin} compiler link --entry {ROOT_PACKAGE} --input {lib_core} {main_core} --output {go_file}"
     )
     .run()?;
     assert_snapshot_file("with_dep", "main.go", &go_file, root)?;
@@ -255,7 +259,7 @@ fn cli_check_build_link_rejects_hash_mismatch() -> anyhow::Result<()> {
     write_file(
         &lib_gom_v1,
         r#"
-
+package Lib;
 
 pub fn msg() -> string {
     "v1"
@@ -267,7 +271,7 @@ pub fn msg() -> string {
     write_file(
         &lib_gom_v2,
         r#"
-
+package Lib;
 
 pub fn msg() -> string {
     "v2"
@@ -283,6 +287,8 @@ pub fn extra() -> int32 {
     write_file(
         &main_gom,
         r#"
+package main;
+
 use Lib;
 
 fn main() -> unit {
@@ -334,7 +340,7 @@ fn main() -> unit {
     let main_core = out.join(format!("{ROOT_PACKAGE}.core"));
     let err = cmd!(
         sh,
-        "{bin} compiler link --input {lib_core} {main_core} --output {go_file}"
+        "{bin} compiler link --entry {ROOT_PACKAGE} --input {lib_core} {main_core} --output {go_file}"
     )
     .read_stderr()?;
 
@@ -356,6 +362,8 @@ fn cli_check_rejects_interface_directory_path() -> anyhow::Result<()> {
     write_file(
         &main_gom,
         r#"
+package main;
+
 use Lib;
 
 fn main() -> unit {

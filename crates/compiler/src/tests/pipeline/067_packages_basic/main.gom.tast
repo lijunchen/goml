@@ -6,13 +6,13 @@ fn println(value/1: T) -> unit {
     (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
-fn main() -> unit {
-    (println : (string) -> unit)((ToString::to_string : (int32) -> string)((Lib::color_to_int : (Lib::Color) -> int32)(Lib::Color::Red)))
+fn packages_basic::main() -> unit {
+    (println : (string) -> unit)((ToString::to_string : (int32) -> string)((packages_basic::Lib::color_to_int : (packages_basic::Lib::Color) -> int32)(packages_basic::Lib::Color::Red)))
 }
 
-fn Lib::color_to_int(c/0: Lib::Color) -> int32 {
-    match (c/0 : Lib::Color) {
-        Lib::Color::Red => 1,
-        Lib::Color::Green => 2,
+fn packages_basic::Lib::color_to_int(c/0: packages_basic::Lib::Color) -> int32 {
+    match (c/0 : packages_basic::Lib::Color) {
+        packages_basic::Lib::Color::Red => 1,
+        packages_basic::Lib::Color::Green => 2,
     }
 }
