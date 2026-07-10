@@ -9,7 +9,7 @@ func string_byte_slice(s string, start int32, end int32) string {
     return s[start:end]
 }
 
-func _goml_std_x3a__x3a_fs_x3a__x3a_read_x5f_file_x5f_raw(path string) Tuple3_4bool_6string_6string {
+func _goml_m_std_p_fs_p_read__file__raw(path string) Tuple3_4bool_6string_6string {
     var data []uint8
     var err error
     data, err = _goml_os.ReadFile(path)
@@ -27,7 +27,7 @@ func _goml_std_x3a__x3a_fs_x3a__x3a_read_x5f_file_x5f_raw(path string) Tuple3_4b
     }
 }
 
-func _goml_std_x3a__x3a_fs_x3a__x3a_write_x5f_file_x5f_raw(path string, content string) Tuple2_4bool_6string {
+func _goml_m_std_p_fs_p_write__file__raw(path string, content string) Tuple2_4bool_6string {
     var err error = _goml_os.WriteFile(path, []byte(content), 0644)
     if err != nil {
         return Tuple2_4bool_6string{
@@ -41,7 +41,7 @@ func _goml_std_x3a__x3a_fs_x3a__x3a_write_x5f_file_x5f_raw(path string, content 
     }
 }
 
-func _goml_std_x3a__x3a_fs_x3a__x3a_create_x5f_dir_x5f_all_x5f_raw(path string) Tuple2_4bool_6string {
+func _goml_m_std_p_fs_p_create__dir__all__raw(path string) Tuple2_4bool_6string {
     var err error = _goml_os.MkdirAll(path, 0755)
     if err != nil {
         return Tuple2_4bool_6string{
@@ -55,12 +55,12 @@ func _goml_std_x3a__x3a_fs_x3a__x3a_create_x5f_dir_x5f_all_x5f_raw(path string) 
     }
 }
 
-func _goml_std_x3a__x3a_io_x3a__x3a_println_x5f_raw(value string) struct{} {
+func _goml_m_std_p_io_p_println__raw(value string) struct{} {
     _goml_fmt.Println(value)
     return struct{}{}
 }
 
-func _goml_std_x3a__x3a_io_x3a__x3a_eprint_x5f_raw(value string) struct{} {
+func _goml_m_std_p_io_p_eprint__raw(value string) struct{} {
     _goml_fmt.Fprint(_goml_os.Stderr, value)
     return struct{}{}
 }
@@ -114,25 +114,25 @@ type Result__unit__string_Err struct {
 
 func (_ Result__unit__string_Err) isResult__unit__string() {}
 
-type _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string interface {
-    is_goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string()
+type _goml_m_Result____Vec_l_string_r_____string interface {
+    is_goml_m_Result____Vec_l_string_r_____string()
 }
 
-type _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string_Ok struct {
+type _goml_m_Result____Vec_l_string_r_____string_Ok struct {
     _0 []string
 }
 
-func (_ _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string_Ok) is_goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string() {}
+func (_ _goml_m_Result____Vec_l_string_r_____string_Ok) is_goml_m_Result____Vec_l_string_r_____string() {}
 
-type _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string_Err struct {
+type _goml_m_Result____Vec_l_string_r_____string_Err struct {
     _0 string
 }
 
-func (_ _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string_Err) is_goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string() {}
+func (_ _goml_m_Result____Vec_l_string_r_____string_Err) is_goml_m_Result____Vec_l_string_r_____string() {}
 
-func _goml_std_x3a__x3a_fs_x3a__x3a_read_x5f_file(path__0 string) Result__string__string {
+func _goml_m_std_p_fs_p_read__file(path__0 string) Result__string__string {
     var retv10 Result__string__string
-    var mtmp0 Tuple3_4bool_6string_6string = _goml_std_x3a__x3a_fs_x3a__x3a_read_x5f_file_x5f_raw(path__0)
+    var mtmp0 Tuple3_4bool_6string_6string = _goml_m_std_p_fs_p_read__file__raw(path__0)
     var x1 bool = mtmp0._0
     var x2 string = mtmp0._1
     var x3 string = mtmp0._2
@@ -155,9 +155,9 @@ func _goml_std_x3a__x3a_fs_x3a__x3a_read_x5f_file(path__0 string) Result__string
     return retv10
 }
 
-func _goml_std_x3a__x3a_fs_x3a__x3a_write_x5f_file(path__4 string, content__5 string) Result__unit__string {
+func _goml_m_std_p_fs_p_write__file(path__4 string, content__5 string) Result__unit__string {
     var retv16 Result__unit__string
-    var mtmp4 Tuple2_4bool_6string = _goml_std_x3a__x3a_fs_x3a__x3a_write_x5f_file_x5f_raw(path__4, content__5)
+    var mtmp4 Tuple2_4bool_6string = _goml_m_std_p_fs_p_write__file__raw(path__4, content__5)
     var x5 bool = mtmp4._0
     var x6 string = mtmp4._1
     var err__7 string = x6
@@ -178,9 +178,9 @@ func _goml_std_x3a__x3a_fs_x3a__x3a_write_x5f_file(path__4 string, content__5 st
     return retv16
 }
 
-func _goml_std_x3a__x3a_fs_x3a__x3a_create_x5f_dir_x5f_all(path__8 string) Result__unit__string {
+func _goml_m_std_p_fs_p_create__dir__all(path__8 string) Result__unit__string {
     var retv22 Result__unit__string
-    var mtmp7 Tuple2_4bool_6string = _goml_std_x3a__x3a_fs_x3a__x3a_create_x5f_dir_x5f_all_x5f_raw(path__8)
+    var mtmp7 Tuple2_4bool_6string = _goml_m_std_p_fs_p_create__dir__all__raw(path__8)
     var x8 bool = mtmp7._0
     var x9 string = mtmp7._1
     var err__10 string = x9
@@ -241,34 +241,34 @@ func show_string(result__2 Result__string__string) string {
 
 func main0() struct{} {
     var t47 string = string_byte_slice("a你好z", 1, 7)
-    _goml_std_x3a__x3a_io_x3a__x3a_println_x5f__x5f_T_x5f_string(t47)
-    _goml_std_x3a__x3a_io_x3a__x3a_eprint_x5f__x5f_T_x5f_string("")
-    _goml_std_x3a__x3a_io_x3a__x3a_eprintln_x5f__x5f_T_x5f_string("")
-    var t48 Result__unit__string = _goml_std_x3a__x3a_fs_x3a__x3a_create_x5f_dir_x5f_all("goml-self-host/nested")
+    _goml_m_std_p_io_p_println____T__string(t47)
+    _goml_m_std_p_io_p_eprint____T__string("")
+    _goml_m_std_p_io_p_eprintln____T__string("")
+    var t48 Result__unit__string = _goml_m_std_p_fs_p_create__dir__all("goml-self-host/nested")
     var t49 string = show_unit(t48)
-    _goml_std_x3a__x3a_io_x3a__x3a_println_x5f__x5f_T_x5f_string(t49)
-    var t50 Result__unit__string = _goml_std_x3a__x3a_fs_x3a__x3a_write_x5f_file("goml-self-host/nested/output.txt", "boot")
+    _goml_m_std_p_io_p_println____T__string(t49)
+    var t50 Result__unit__string = _goml_m_std_p_fs_p_write__file("goml-self-host/nested/output.txt", "boot")
     var t51 string = show_unit(t50)
-    _goml_std_x3a__x3a_io_x3a__x3a_println_x5f__x5f_T_x5f_string(t51)
-    var t52 Result__string__string = _goml_std_x3a__x3a_fs_x3a__x3a_read_x5f_file("goml-self-host/nested/output.txt")
+    _goml_m_std_p_io_p_println____T__string(t51)
+    var t52 Result__string__string = _goml_m_std_p_fs_p_read__file("goml-self-host/nested/output.txt")
     var t53 string = show_string(t52)
-    _goml_std_x3a__x3a_io_x3a__x3a_println_x5f__x5f_T_x5f_string(t53)
+    _goml_m_std_p_io_p_println____T__string(t53)
     return struct{}{}
 }
 
-func _goml_std_x3a__x3a_io_x3a__x3a_println_x5f__x5f_T_x5f_string(value__1 string) struct{} {
-    _goml_std_x3a__x3a_io_x3a__x3a_println_x5f_raw(value__1)
+func _goml_m_std_p_io_p_println____T__string(value__1 string) struct{} {
+    _goml_m_std_p_io_p_println__raw(value__1)
     return struct{}{}
 }
 
-func _goml_std_x3a__x3a_io_x3a__x3a_eprint_x5f__x5f_T_x5f_string(value__2 string) struct{} {
-    _goml_std_x3a__x3a_io_x3a__x3a_eprint_x5f_raw(value__2)
+func _goml_m_std_p_io_p_eprint____T__string(value__2 string) struct{} {
+    _goml_m_std_p_io_p_eprint__raw(value__2)
     return struct{}{}
 }
 
-func _goml_std_x3a__x3a_io_x3a__x3a_eprintln_x5f__x5f_T_x5f_string(value__3 string) struct{} {
+func _goml_m_std_p_io_p_eprintln____T__string(value__3 string) struct{} {
     var t60 string = value__3 + "\n"
-    _goml_std_x3a__x3a_io_x3a__x3a_eprint_x5f_raw(t60)
+    _goml_m_std_p_io_p_eprint__raw(t60)
     return struct{}{}
 }
 

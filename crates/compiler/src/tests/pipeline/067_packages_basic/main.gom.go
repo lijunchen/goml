@@ -13,21 +13,21 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type _goml_packages_x5f_basic_x3a__x3a_Lib_x3a__x3a_Color int32
+type _goml_m_packages__basic_p_Lib_p_Color int32
 
 const (
-    Red _goml_packages_x5f_basic_x3a__x3a_Lib_x3a__x3a_Color = 0
-    Green _goml_packages_x5f_basic_x3a__x3a_Lib_x3a__x3a_Color = 1
+    Red _goml_m_packages__basic_p_Lib_p_Color = 0
+    Green _goml_m_packages__basic_p_Lib_p_Color = 1
 )
 
-func _goml_packages_x5f_basic_x3a__x3a_main() struct{} {
-    var t1 int32 = _goml_packages_x5f_basic_x3a__x3a_Lib_x3a__x3a_color_x5f_to_x5f_int(Red)
+func _goml_m_packages__basic_p_main() struct{} {
+    var t1 int32 = _goml_m_packages__basic_p_Lib_p_color__to__int(Red)
     var t2 string = int32_to_string(t1)
     println__T_string(t2)
     return struct{}{}
 }
 
-func _goml_packages_x5f_basic_x3a__x3a_Lib_x3a__x3a_color_x5f_to_x5f_int(c__0 _goml_packages_x5f_basic_x3a__x3a_Lib_x3a__x3a_Color) int32 {
+func _goml_m_packages__basic_p_Lib_p_color__to__int(c__0 _goml_m_packages__basic_p_Lib_p_Color) int32 {
     var retv5 int32
     var jp7 int32
     switch c__0 {
@@ -43,7 +43,7 @@ func _goml_packages_x5f_basic_x3a__x3a_Lib_x3a__x3a_color_x5f_to_x5f_int(c__0 _g
 }
 
 func main0() struct{} {
-    _goml_packages_x5f_basic_x3a__x3a_main()
+    _goml_m_packages__basic_p_main()
     return struct{}{}
 }
 

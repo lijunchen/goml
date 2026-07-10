@@ -14,19 +14,19 @@ type Tuple2_6string_6string struct {
     _1 string
 }
 
-type _goml_Option_x5f__x5f__x28_string_x2c_string_x29_ interface {
-    is_goml_Option_x5f__x5f__x28_string_x2c_string_x29_()
+type _goml_m_Option_____o_string_c_string_q_ interface {
+    is_goml_m_Option_____o_string_c_string_q_()
 }
 
-type _goml_Option_x5f__x5f__x28_string_x2c_string_x29__None struct {}
+type _goml_m_Option_____o_string_c_string_q__None struct {}
 
-func (_ _goml_Option_x5f__x5f__x28_string_x2c_string_x29__None) is_goml_Option_x5f__x5f__x28_string_x2c_string_x29_() {}
+func (_ _goml_m_Option_____o_string_c_string_q__None) is_goml_m_Option_____o_string_c_string_q_() {}
 
-type _goml_Option_x5f__x5f__x28_string_x2c_string_x29__Some struct {
+type _goml_m_Option_____o_string_c_string_q__Some struct {
     _0 Tuple2_6string_6string
 }
 
-func (_ _goml_Option_x5f__x5f__x28_string_x2c_string_x29__Some) is_goml_Option_x5f__x5f__x28_string_x2c_string_x29_() {}
+func (_ _goml_m_Option_____o_string_c_string_q__Some) is_goml_m_Option_____o_string_c_string_q_() {}
 
 type Option__string interface {
     isOption__string()
@@ -42,20 +42,20 @@ type Option__string_Some struct {
 
 func (_ Option__string_Some) isOption__string() {}
 
-func cut_pair(ok__0 bool) _goml_Option_x5f__x5f__x28_string_x2c_string_x29_ {
-    var retv9 _goml_Option_x5f__x5f__x28_string_x2c_string_x29_
-    var jp11 _goml_Option_x5f__x5f__x28_string_x2c_string_x29_
+func cut_pair(ok__0 bool) _goml_m_Option_____o_string_c_string_q_ {
+    var retv9 _goml_m_Option_____o_string_c_string_q_
+    var jp11 _goml_m_Option_____o_string_c_string_q_
     if ok__0 {
         var t12 Tuple2_6string_6string = Tuple2_6string_6string{
             _0: "alpha",
             _1: "beta",
         }
-        var t13 _goml_Option_x5f__x5f__x28_string_x2c_string_x29_ = _goml_Option_x5f__x5f__x28_string_x2c_string_x29__Some{
+        var t13 _goml_m_Option_____o_string_c_string_q_ = _goml_m_Option_____o_string_c_string_q__Some{
             _0: t12,
         }
         jp11 = t13
     } else {
-        jp11 = _goml_Option_x5f__x5f__x28_string_x2c_string_x29__None{}
+        jp11 = _goml_m_Option_____o_string_c_string_q__None{}
     }
     retv9 = jp11
     return retv9
@@ -63,14 +63,14 @@ func cut_pair(ok__0 bool) _goml_Option_x5f__x5f__x28_string_x2c_string_x29_ {
 
 func describe(ok__1 bool) Option__string {
     var retv15 Option__string
-    var mtmp0 _goml_Option_x5f__x5f__x28_string_x2c_string_x29_ = cut_pair(ok__1)
+    var mtmp0 _goml_m_Option_____o_string_c_string_q_ = cut_pair(ok__1)
     var jp17 Tuple2_6string_6string
     switch mtmp0.(type) {
-    case _goml_Option_x5f__x5f__x28_string_x2c_string_x29__None:
+    case _goml_m_Option_____o_string_c_string_q__None:
         retv15 = Option__string_None{}
         return retv15
-    case _goml_Option_x5f__x5f__x28_string_x2c_string_x29__Some:
-        var x1 Tuple2_6string_6string = mtmp0.(_goml_Option_x5f__x5f__x28_string_x2c_string_x29__Some)._0
+    case _goml_m_Option_____o_string_c_string_q__Some:
+        var x1 Tuple2_6string_6string = mtmp0.(_goml_m_Option_____o_string_c_string_q__Some)._0
         var try_value__13 Tuple2_6string_6string = x1
         jp17 = try_value__13
         var mtmp2 Tuple2_6string_6string = jp17

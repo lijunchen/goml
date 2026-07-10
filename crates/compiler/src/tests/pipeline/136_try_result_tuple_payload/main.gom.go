@@ -14,21 +14,21 @@ type Tuple2_6string_6string struct {
     _1 string
 }
 
-type _goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_string interface {
-    is_goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_string()
+type _goml_m_Result_____o_string_c_string_q_____string interface {
+    is_goml_m_Result_____o_string_c_string_q_____string()
 }
 
-type _goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_string_Ok struct {
+type _goml_m_Result_____o_string_c_string_q_____string_Ok struct {
     _0 Tuple2_6string_6string
 }
 
-func (_ _goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_string_Ok) is_goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_string() {}
+func (_ _goml_m_Result_____o_string_c_string_q_____string_Ok) is_goml_m_Result_____o_string_c_string_q_____string() {}
 
-type _goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_string_Err struct {
+type _goml_m_Result_____o_string_c_string_q_____string_Err struct {
     _0 string
 }
 
-func (_ _goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_string_Err) is_goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_string() {}
+func (_ _goml_m_Result_____o_string_c_string_q_____string_Err) is_goml_m_Result_____o_string_c_string_q_____string() {}
 
 type Result__string__string interface {
     isResult__string__string()
@@ -46,20 +46,20 @@ type Result__string__string_Err struct {
 
 func (_ Result__string__string_Err) isResult__string__string() {}
 
-func split_host_port(ok__0 bool) _goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_string {
-    var retv11 _goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_string
-    var jp13 _goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_string
+func split_host_port(ok__0 bool) _goml_m_Result_____o_string_c_string_q_____string {
+    var retv11 _goml_m_Result_____o_string_c_string_q_____string
+    var jp13 _goml_m_Result_____o_string_c_string_q_____string
     if ok__0 {
         var t14 Tuple2_6string_6string = Tuple2_6string_6string{
             _0: "example.com",
             _1: "443",
         }
-        var t15 _goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_string = _goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_string_Ok{
+        var t15 _goml_m_Result_____o_string_c_string_q_____string = _goml_m_Result_____o_string_c_string_q_____string_Ok{
             _0: t14,
         }
         jp13 = t15
     } else {
-        var t16 _goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_string = _goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_string_Err{
+        var t16 _goml_m_Result_____o_string_c_string_q_____string = _goml_m_Result_____o_string_c_string_q_____string_Err{
             _0: "missing port",
         }
         jp13 = t16
@@ -70,11 +70,11 @@ func split_host_port(ok__0 bool) _goml_Result_x5f__x5f__x28_string_x2c_string_x2
 
 func render(ok__1 bool) Result__string__string {
     var retv18 Result__string__string
-    var mtmp0 _goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_string = split_host_port(ok__1)
+    var mtmp0 _goml_m_Result_____o_string_c_string_q_____string = split_host_port(ok__1)
     var jp20 Tuple2_6string_6string
     switch mtmp0.(type) {
-    case _goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_string_Ok:
-        var x1 Tuple2_6string_6string = mtmp0.(_goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_string_Ok)._0
+    case _goml_m_Result_____o_string_c_string_q_____string_Ok:
+        var x1 Tuple2_6string_6string = mtmp0.(_goml_m_Result_____o_string_c_string_q_____string_Ok)._0
         var try_value__14 Tuple2_6string_6string = x1
         jp20 = try_value__14
         var mtmp3 Tuple2_6string_6string = jp20
@@ -89,8 +89,8 @@ func render(ok__1 bool) Result__string__string {
         }
         retv18 = t23
         return retv18
-    case _goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_string_Err:
-        var x2 string = mtmp0.(_goml_Result_x5f__x5f__x28_string_x2c_string_x29__x5f__x5f_string_Err)._0
+    case _goml_m_Result_____o_string_c_string_q_____string_Err:
+        var x2 string = mtmp0.(_goml_m_Result_____o_string_c_string_q_____string_Err)._0
         var try_residual__14 string = x2
         var t24 Result__string__string = Result__string__string_Err{
             _0: try_residual__14,

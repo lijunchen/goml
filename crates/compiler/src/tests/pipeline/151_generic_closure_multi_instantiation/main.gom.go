@@ -37,7 +37,7 @@ func make_pairer__T_int32(x__0 int32) func(string) string {
         x_0: x__0,
     }
     retv8 = func(p0 string) string {
-        return _goml_inherent_x23_closure_x5f_env_x5f_make_x5f_pairer_x5f_T_x5f_int32_x5f_0_x23_closure_x5f_env_x5f_make_x5f_pairer_x5f_T_x5f_int32_x5f_0_x23_apply(t9, p0)
+        return _goml_m_inherent_i_closure__en_h8cae0d704ec184429c6d982f53fd0781_nt32__0_i_apply(t9, p0)
     }
     return retv8
 }
@@ -48,7 +48,7 @@ func make_pairer__T_string(x__0 string) func(string) string {
         x_0: x__0,
     }
     retv11 = func(p0 string) string {
-        return _goml_inherent_x23_closure_x5f_env_x5f_make_x5f_pairer_x5f_T_x5f_string_x5f_1_x23_closure_x5f_env_x5f_make_x5f_pairer_x5f_T_x5f_string_x5f_1_x23_apply(t12, p0)
+        return _goml_m_inherent_i_closure__en_h0926de79f2e12e90a6ce0e3536cf7f8d_ring__1_i_apply(t12, p0)
     }
     return retv11
 }
@@ -58,7 +58,7 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_inherent_x23_closure_x5f_env_x5f_make_x5f_pairer_x5f_T_x5f_int32_x5f_0_x23_closure_x5f_env_x5f_make_x5f_pairer_x5f_T_x5f_int32_x5f_0_x23_apply(env2 closure_env_make_pairer_T_int32_0, tag__1 string) string {
+func _goml_m_inherent_i_closure__en_h8cae0d704ec184429c6d982f53fd0781_nt32__0_i_apply(env2 closure_env_make_pairer_T_int32_0, tag__1 string) string {
     var retv16 string
     var x__0 int32 = env2.x_0
     var t17 string = tag__1 + ":"
@@ -68,7 +68,7 @@ func _goml_inherent_x23_closure_x5f_env_x5f_make_x5f_pairer_x5f_T_x5f_int32_x5f_
     return retv16
 }
 
-func _goml_inherent_x23_closure_x5f_env_x5f_make_x5f_pairer_x5f_T_x5f_string_x5f_1_x23_closure_x5f_env_x5f_make_x5f_pairer_x5f_T_x5f_string_x5f_1_x23_apply(env3 closure_env_make_pairer_T_string_1, tag__1 string) string {
+func _goml_m_inherent_i_closure__en_h0926de79f2e12e90a6ce0e3536cf7f8d_ring__1_i_apply(env3 closure_env_make_pairer_T_string_1, tag__1 string) string {
     var retv21 string
     var x__0 string = env3.x_0
     var t22 string = tag__1 + ":"

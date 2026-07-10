@@ -9,14 +9,14 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-func _goml_Lib_x3a__x3a_msg() string {
+func _goml_m_Lib_p_msg() string {
     var retv1 string
     retv1 = "hi"
     return retv1
 }
 
 func main0() struct{} {
-    var t3 string = _goml_Lib_x3a__x3a_msg()
+    var t3 string = _goml_m_Lib_p_msg()
     println__T_string(t3)
     return struct{}{}
 }

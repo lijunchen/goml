@@ -11,13 +11,13 @@ func string_println(s string) struct{} {
 
 type S struct {}
 
-func _goml_trait_x5f_impl_x23_A_x23_S_x23_foo(self__0 S) string {
+func _goml_m_trait__impl_i_A_i_S_i_foo(self__0 S) string {
     var retv3 string
     retv3 = "A"
     return retv3
 }
 
-func _goml_trait_x5f_impl_x23_C_x23_S_x23_bar(self__2 S) string {
+func _goml_m_trait__impl_i_C_i_S_i_bar(self__2 S) string {
     var retv7 string
     retv7 = "C"
     return retv7
@@ -39,14 +39,14 @@ func println__T_string(value__1 string) struct{} {
 
 func pick_a__T_S(x__3 S) string {
     var retv14 string
-    var t15 string = _goml_trait_x5f_impl_x23_A_x23_S_x23_foo(x__3)
+    var t15 string = _goml_m_trait__impl_i_A_i_S_i_foo(x__3)
     retv14 = t15
     return retv14
 }
 
 func bar_it__T_S(x__4 S) string {
     var retv17 string
-    var t18 string = _goml_trait_x5f_impl_x23_C_x23_S_x23_bar(x__4)
+    var t18 string = _goml_m_trait__impl_i_C_i_S_i_bar(x__4)
     retv17 = t18
     return retv17
 }

@@ -246,8 +246,8 @@ func (_ Result__Typ__string_Err) isResult__Typ__string() {}
 
 func state_new() CheckerState {
     var retv205 CheckerState
-    var t206 *ref_int32_x = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_int32(0)
-    var t207 *ref_int32_x = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_int32(1)
+    var t206 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(0)
+    var t207 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(1)
     var t208 CheckerState = CheckerState{
         gensym_counter: t206,
         current_level: t207,
@@ -258,13 +258,13 @@ func state_new() CheckerState {
 
 func reset_gensym(st__0 CheckerState) struct{} {
     var t210 *ref_int32_x = st__0.gensym_counter
-    _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_int32(t210, 0)
+    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(t210, 0)
     return struct{}{}
 }
 
 func reset_level(st__1 CheckerState) struct{} {
     var t212 *ref_int32_x = st__1.current_level
-    _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_int32(t212, 1)
+    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(t212, 1)
     return struct{}{}
 }
 
@@ -276,19 +276,19 @@ func reset_type_variables(st__2 CheckerState) struct{} {
 
 func enter_level(st__3 CheckerState) struct{} {
     var t216 *ref_int32_x = st__3.current_level
-    var l__4 int32 = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_int32(t216)
+    var l__4 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(t216)
     var t217 *ref_int32_x = st__3.current_level
     var t218 int32 = l__4 + 1
-    _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_int32(t217, t218)
+    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(t217, t218)
     return struct{}{}
 }
 
 func leave_level(st__5 CheckerState) struct{} {
     var t220 *ref_int32_x = st__5.current_level
-    var l__6 int32 = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_int32(t220)
+    var l__6 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(t220)
     var t221 *ref_int32_x = st__5.current_level
     var t222 int32 = l__6 - 1
-    _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_int32(t221, t222)
+    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(t221, t222)
     return struct{}{}
 }
 
@@ -371,10 +371,10 @@ func nth_letter(n__9 int32) rune {
 func gensym(st__10 CheckerState) string {
     var retv233 string
     var t234 *ref_int32_x = st__10.gensym_counter
-    var n__11 int32 = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_int32(t234)
+    var n__11 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(t234)
     var t235 *ref_int32_x = st__10.gensym_counter
     var t236 int32 = n__11 + 1
-    _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_int32(t235, t236)
+    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(t235, t236)
     var t239 bool = n__11 < 26
     var jp238 string
     if t239 {
@@ -394,12 +394,12 @@ func newvar(st__12 CheckerState) Typ {
     var retv245 Typ
     var name__13 string = gensym(st__12)
     var t246 *ref_int32_x = st__12.current_level
-    var level__14 int32 = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_int32(t246)
+    var level__14 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(t246)
     var t247 Tv = Unbound{
         _0: name__13,
         _1: level__14,
     }
-    var t248 *ref_Tv_x = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_Tv(t247)
+    var t248 *ref_Tv_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Tv(t247)
     var t249 Typ = TVar{
         _0: t248,
     }
@@ -414,7 +414,7 @@ func typ_is_arrow(ty__15 Typ) bool {
     case TVar:
         var x6 *ref_Tv_x = ty__15.(TVar)._0
         var tvref__16 *ref_Tv_x = x6
-        var mtmp10 Tv = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_Tv(tvref__16)
+        var mtmp10 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(tvref__16)
         var jp255 bool
         switch mtmp10.(type) {
         case Unbound:
@@ -446,7 +446,7 @@ func typ_to_string(ty__18 Typ) string {
     case TVar:
         var x14 *ref_Tv_x = ty__18.(TVar)._0
         var tvref__20 *ref_Tv_x = x14
-        var mtmp18 Tv = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_Tv(tvref__20)
+        var mtmp18 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(tvref__20)
         var jp262 string
         switch mtmp18.(type) {
         case Unbound:
@@ -498,32 +498,32 @@ func typ_to_string(ty__18 Typ) string {
 
 func env_empty() []EnvEntry {
     var retv276 []EnvEntry
-    var env__27 []EnvEntry = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_EnvEntry()
+    var env__27 []EnvEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__EnvEntry()
     retv276 = env__27
     return retv276
 }
 
 func env_lookup(env__28 []EnvEntry, name__29 string) Option__Typ {
     var retv278 Option__Typ
-    var t279 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_EnvEntry(env__28)
+    var t279 int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__EnvEntry(env__28)
     var t280 int32 = t279 - 1
-    var i__30 *ref_int32_x = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_int32(t280)
-    var found__31 *ref_Option__Typ_x = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_Option_x5b_Typ_x5d_(None{})
-    var done__32 *ref_bool_x = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_bool(false)
+    var i__30 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(t280)
+    var found__31 *ref_Option__Typ_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Option_l_Typ_r_(None{})
+    var done__32 *ref_bool_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(false)
     Loop_loop283:
     for {
-        var t296 bool = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_bool(done__32)
+        var t296 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(done__32)
         var t297 bool = !t296
         var jp285 bool
         if t297 {
-            var t298 int32 = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_int32(i__30)
+            var t298 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__30)
             var t299 bool = t298 >= 0
             jp285 = t299
         } else {
             jp285 = false
         }
         if jp285 {
-            var t286 int32 = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_int32(i__30)
+            var t286 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__30)
             var entry__33 EnvEntry = env__28[t286]
             var t288 string = entry__33.name
             var t289 bool = t288 == name__29
@@ -532,44 +532,44 @@ func env_lookup(env__28 []EnvEntry, name__29 string) Option__Typ {
                 var t291 Option__Typ = Some{
                     _0: t290,
                 }
-                _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_Option_x5b_Typ_x5d_(found__31, t291)
-                _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_bool(done__32, true)
+                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Option_l_Typ_r_(found__31, t291)
+                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(done__32, true)
             } else {
-                var t293 int32 = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_int32(i__30)
+                var t293 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__30)
                 var t294 int32 = t293 - 1
-                _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_int32(i__30, t294)
+                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(i__30, t294)
             }
             continue
         } else {
             break Loop_loop283
         }
     }
-    var t282 Option__Typ = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_Option_x5b_Typ_x5d_(found__31)
+    var t282 Option__Typ = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Option_l_Typ_r_(found__31)
     retv278 = t282
     return retv278
 }
 
 func subst_lookup(subst__34 []SubstEntry, name__35 string) Option__Typ {
     var retv301 Option__Typ
-    var t302 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_SubstEntry(subst__34)
+    var t302 int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__SubstEntry(subst__34)
     var t303 int32 = t302 - 1
-    var i__36 *ref_int32_x = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_int32(t303)
-    var found__37 *ref_Option__Typ_x = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_Option_x5b_Typ_x5d_(None{})
-    var done__38 *ref_bool_x = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_bool(false)
+    var i__36 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(t303)
+    var found__37 *ref_Option__Typ_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Option_l_Typ_r_(None{})
+    var done__38 *ref_bool_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(false)
     Loop_loop306:
     for {
-        var t319 bool = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_bool(done__38)
+        var t319 bool = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(done__38)
         var t320 bool = !t319
         var jp308 bool
         if t320 {
-            var t321 int32 = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_int32(i__36)
+            var t321 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__36)
             var t322 bool = t321 >= 0
             jp308 = t322
         } else {
             jp308 = false
         }
         if jp308 {
-            var t309 int32 = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_int32(i__36)
+            var t309 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__36)
             var entry__39 SubstEntry = subst__34[t309]
             var t311 string = entry__39.name
             var t312 bool = t311 == name__35
@@ -578,19 +578,19 @@ func subst_lookup(subst__34 []SubstEntry, name__35 string) Option__Typ {
                 var t314 Option__Typ = Some{
                     _0: t313,
                 }
-                _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_Option_x5b_Typ_x5d_(found__37, t314)
-                _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_bool(done__38, true)
+                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Option_l_Typ_r_(found__37, t314)
+                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(done__38, true)
             } else {
-                var t316 int32 = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_int32(i__36)
+                var t316 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__36)
                 var t317 int32 = t316 - 1
-                _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_int32(i__36, t317)
+                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(i__36, t317)
             }
             continue
         } else {
             break Loop_loop306
         }
     }
-    var t305 Option__Typ = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_Option_x5b_Typ_x5d_(found__37)
+    var t305 Option__Typ = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Option_l_Typ_r_(found__37)
     retv301 = t305
     return retv301
 }
@@ -610,7 +610,7 @@ func occurs(st__40 CheckerState, tvr__41 *ref_Tv_x, ty__42 Typ) Result__unit__st
             }
             jp328 = t330
         } else {
-            var mtmp30 Tv = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_Tv(tvr2__43)
+            var mtmp30 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(tvr2__43)
             var jp332 Result__unit__string
             switch mtmp30.(type) {
             case Unbound:
@@ -618,7 +618,7 @@ func occurs(st__40 CheckerState, tvr__41 *ref_Tv_x, ty__42 Typ) Result__unit__st
                 var x32 int32 = mtmp30.(Unbound)._1
                 var l2__45 int32 = x32
                 var name__44 string = x31
-                var mtmp34 Tv = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_Tv(tvr__41)
+                var mtmp34 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(tvr__41)
                 var jp334 int32
                 switch mtmp34.(type) {
                 case Unbound:
@@ -636,7 +636,7 @@ func occurs(st__40 CheckerState, tvr__41 *ref_Tv_x, ty__42 Typ) Result__unit__st
                     _0: name__44,
                     _1: min_level__47,
                 }
-                _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_Tv(tvr2__43, t335)
+                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Tv(tvr2__43, t335)
                 var t336 Result__unit__string = Result__unit__string_Ok{
                     _0: struct{}{},
                 }
@@ -712,11 +712,11 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                 }
                 jp351 = t353
             } else {
-                var mtmp53 Tv = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_Tv(r1__55)
+                var mtmp53 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(r1__55)
                 var jp355 Result__unit__string
                 switch mtmp53.(type) {
                 case Unbound:
-                    var mtmp57 Tv = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_Tv(r2__56)
+                    var mtmp57 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(r2__56)
                     var jp357 Result__unit__string
                     switch mtmp57.(type) {
                     case Unbound:
@@ -733,7 +733,7 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                             var t362 Tv = Link{
                                 _0: t361,
                             }
-                            _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_Tv(r1__55, t362)
+                            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Tv(r1__55, t362)
                             var t363 Result__unit__string = Result__unit__string_Ok{
                                 _0: struct{}{},
                             }
@@ -778,7 +778,7 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
         case QVar:
             var r2__65 *ref_Tv_x = x45
             var other__64 Typ = x43
-            var mtmp65 Tv = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_Tv(r2__65)
+            var mtmp65 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(r2__65)
             var jp370 Result__unit__string
             switch mtmp65.(type) {
             case Unbound:
@@ -789,7 +789,7 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                     var t373 Tv = Link{
                         _0: other__64,
                     }
-                    _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_Tv(r2__65, t373)
+                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Tv(r2__65, t373)
                     var t374 Result__unit__string = Result__unit__string_Ok{
                         _0: struct{}{},
                     }
@@ -817,7 +817,7 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
         case TArrow:
             var r2__65 *ref_Tv_x = x45
             var other__64 Typ = x43
-            var mtmp73 Tv = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_Tv(r2__65)
+            var mtmp73 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(r2__65)
             var jp378 Result__unit__string
             switch mtmp73.(type) {
             case Unbound:
@@ -828,7 +828,7 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                     var t381 Tv = Link{
                         _0: other__64,
                     }
-                    _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_Tv(r2__65, t381)
+                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Tv(r2__65, t381)
                     var t382 Result__unit__string = Result__unit__string_Ok{
                         _0: struct{}{},
                     }
@@ -864,7 +864,7 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
             var x81 *ref_Tv_x = x43.(TVar)._0
             var r1__60 *ref_Tv_x = x81
             var other__61 Typ = x44
-            var mtmp85 Tv = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_Tv(r1__60)
+            var mtmp85 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(r1__60)
             var jp388 Result__unit__string
             switch mtmp85.(type) {
             case Unbound:
@@ -875,7 +875,7 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                     var t391 Tv = Link{
                         _0: other__61,
                     }
-                    _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_Tv(r1__60, t391)
+                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Tv(r1__60, t391)
                     var t392 Result__unit__string = Result__unit__string_Ok{
                         _0: struct{}{},
                     }
@@ -923,7 +923,7 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
             var x93 *ref_Tv_x = x43.(TVar)._0
             var r1__60 *ref_Tv_x = x93
             var other__61 Typ = x44
-            var mtmp97 Tv = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_Tv(r1__60)
+            var mtmp97 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(r1__60)
             var jp400 Result__unit__string
             switch mtmp97.(type) {
             case Unbound:
@@ -934,7 +934,7 @@ func unify(st__52 CheckerState, t1__53 Typ, t2__54 Typ) Result__unit__string {
                     var t403 Tv = Link{
                         _0: other__61,
                     }
-                    _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_Tv(r1__60, t403)
+                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Tv(r1__60, t403)
                     var t404 Result__unit__string = Result__unit__string_Ok{
                         _0: struct{}{},
                     }
@@ -1006,7 +1006,7 @@ func gen(st__73 CheckerState, ty__74 Typ) Typ {
     case TVar:
         var x108 *ref_Tv_x = ty__74.(TVar)._0
         var tvref__75 *ref_Tv_x = x108
-        var mtmp112 Tv = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_Tv(tvref__75)
+        var mtmp112 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(tvref__75)
         var jp417 Typ
         switch mtmp112.(type) {
         case Unbound:
@@ -1015,7 +1015,7 @@ func gen(st__73 CheckerState, ty__74 Typ) Typ {
             var l__77 int32 = x114
             var name__76 string = x113
             var t418 *ref_int32_x = st__73.current_level
-            var cur__78 int32 = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_int32(t418)
+            var cur__78 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(t418)
             var t421 bool = l__77 > cur__78
             var jp420 Typ
             if t421 {
@@ -1068,7 +1068,7 @@ func inst_loop(st__83 CheckerState, subst__84 []SubstEntry, ty__85 Typ) Tuple2_3
     case TVar:
         var x116 *ref_Tv_x = ty__85.(TVar)._0
         var tvref__90 *ref_Tv_x = x116
-        var mtmp120 Tv = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_Tv(tvref__90)
+        var mtmp120 Tv = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(tvref__90)
         var jp433 Tuple2_3Typ_16Vec_10SubstEntry
         switch mtmp120.(type) {
         case Unbound:
@@ -1101,7 +1101,7 @@ func inst_loop(st__83 CheckerState, subst__84 []SubstEntry, ty__85 Typ) Tuple2_3
                 name: name__86,
                 ty: tv__88,
             }
-            var new_subst__89 []SubstEntry = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_SubstEntry(subst__84, t439)
+            var new_subst__89 []SubstEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__SubstEntry(subst__84, t439)
             var t440 Tuple2_3Typ_16Vec_10SubstEntry = Tuple2_3Typ_16Vec_10SubstEntry{
                 _0: tv__88,
                 _1: new_subst__89,
@@ -1152,7 +1152,7 @@ func inst_loop(st__83 CheckerState, subst__84 []SubstEntry, ty__85 Typ) Tuple2_3
 
 func inst(st__98 CheckerState, ty__99 Typ) Typ {
     var retv445 Typ
-    var subst0__100 []SubstEntry = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_SubstEntry()
+    var subst0__100 []SubstEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__SubstEntry()
     var mtmp132 Tuple2_3Typ_16Vec_10SubstEntry = inst_loop(st__98, subst0__100, ty__99)
     var x133 Typ = mtmp132._0
     var t__101 Typ = x133
@@ -1260,7 +1260,7 @@ func typeof(st__102 CheckerState, env__103 []EnvEntry, e__104 Exp) Result__Typ__
             name: x__107,
             ty: ty_x__109,
         }
-        var env2__110 []EnvEntry = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_EnvEntry(env__103, t465)
+        var env2__110 []EnvEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__EnvEntry(env__103, t465)
         var mtmp154 Result__Typ__string = typeof(st__102, env2__110, body__108)
         var jp467 Result__Typ__string
         switch mtmp154.(type) {
@@ -1306,7 +1306,7 @@ func typeof(st__102 CheckerState, env__103 []EnvEntry, e__104 Exp) Result__Typ__
                 name: x__122,
                 ty: t473,
             }
-            var env2__128 []EnvEntry = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_EnvEntry(env__103, t474)
+            var env2__128 []EnvEntry = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__EnvEntry(env__103, t474)
             var t475 Result__Typ__string = typeof(st__102, env2__128, e2__124)
             jp472 = t475
         case Result__Typ__string_Err:
@@ -1586,118 +1586,118 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_int32(value__93 int32) *ref_int32_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__93 int32) *ref_int32_x {
     var retv650 *ref_int32_x
     var t651 *ref_int32_x = ref__Ref_5int32(value__93)
     retv650 = t651
     return retv650
 }
 
-func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_int32(self__95 *ref_int32_x, value__96 int32) struct{} {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__95 *ref_int32_x, value__96 int32) struct{} {
     ref_set__Ref_5int32(self__95, value__96)
     return struct{}{}
 }
 
-func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_int32(self__94 *ref_int32_x) int32 {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__94 *ref_int32_x) int32 {
     var retv655 int32
     var t656 int32 = ref_get__Ref_5int32(self__94)
     retv655 = t656
     return retv655
 }
 
-func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_Tv(value__93 Tv) *ref_Tv_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Tv(value__93 Tv) *ref_Tv_x {
     var retv658 *ref_Tv_x
     var t659 *ref_Tv_x = ref__Ref_2Tv(value__93)
     retv658 = t659
     return retv658
 }
 
-func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_Tv(self__94 *ref_Tv_x) Tv {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(self__94 *ref_Tv_x) Tv {
     var retv661 Tv
     var t662 Tv = ref_get__Ref_2Tv(self__94)
     retv661 = t662
     return retv661
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_EnvEntry() []EnvEntry {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__EnvEntry() []EnvEntry {
     var retv664 []EnvEntry
     var t665 []EnvEntry = nil
     retv664 = t665
     return retv664
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_EnvEntry(self__73 []EnvEntry) int32 {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__EnvEntry(self__73 []EnvEntry) int32 {
     var retv667 int32
     var t668 int32 = int32(len(self__73))
     retv667 = t668
     return retv667
 }
 
-func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_Option_x5b_Typ_x5d_(value__93 Option__Typ) *ref_Option__Typ_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Option_l_Typ_r_(value__93 Option__Typ) *ref_Option__Typ_x {
     var retv670 *ref_Option__Typ_x
     var t671 *ref_Option__Typ_x = ref__Ref_11Option__Typ(value__93)
     retv670 = t671
     return retv670
 }
 
-func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_bool(value__93 bool) *ref_bool_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(value__93 bool) *ref_bool_x {
     var retv673 *ref_bool_x
     var t674 *ref_bool_x = ref__Ref_4bool(value__93)
     retv673 = t674
     return retv673
 }
 
-func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_bool(self__94 *ref_bool_x) bool {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(self__94 *ref_bool_x) bool {
     var retv676 bool
     var t677 bool = ref_get__Ref_4bool(self__94)
     retv676 = t677
     return retv676
 }
 
-func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_Option_x5b_Typ_x5d_(self__95 *ref_Option__Typ_x, value__96 Option__Typ) struct{} {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Option_l_Typ_r_(self__95 *ref_Option__Typ_x, value__96 Option__Typ) struct{} {
     ref_set__Ref_11Option__Typ(self__95, value__96)
     return struct{}{}
 }
 
-func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_bool(self__95 *ref_bool_x, value__96 bool) struct{} {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(self__95 *ref_bool_x, value__96 bool) struct{} {
     ref_set__Ref_4bool(self__95, value__96)
     return struct{}{}
 }
 
-func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_Option_x5b_Typ_x5d_(self__94 *ref_Option__Typ_x) Option__Typ {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Option_l_Typ_r_(self__94 *ref_Option__Typ_x) Option__Typ {
     var retv683 Option__Typ
     var t684 Option__Typ = ref_get__Ref_11Option__Typ(self__94)
     retv683 = t684
     return retv683
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_SubstEntry(self__73 []SubstEntry) int32 {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__SubstEntry(self__73 []SubstEntry) int32 {
     var retv686 int32
     var t687 int32 = int32(len(self__73))
     retv686 = t687
     return retv686
 }
 
-func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_Tv(self__95 *ref_Tv_x, value__96 Tv) struct{} {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Tv(self__95 *ref_Tv_x, value__96 Tv) struct{} {
     ref_set__Ref_2Tv(self__95, value__96)
     return struct{}{}
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_SubstEntry(self__66 []SubstEntry, elem__67 SubstEntry) []SubstEntry {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__SubstEntry(self__66 []SubstEntry, elem__67 SubstEntry) []SubstEntry {
     var retv691 []SubstEntry
     var t692 []SubstEntry = append(self__66, elem__67)
     retv691 = t692
     return retv691
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_SubstEntry() []SubstEntry {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__SubstEntry() []SubstEntry {
     var retv694 []SubstEntry
     var t695 []SubstEntry = nil
     retv694 = t695
     return retv694
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_EnvEntry(self__66 []EnvEntry, elem__67 EnvEntry) []EnvEntry {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__EnvEntry(self__66 []EnvEntry, elem__67 EnvEntry) []EnvEntry {
     var retv697 []EnvEntry
     var t698 []EnvEntry = append(self__66, elem__67)
     retv697 = t698

@@ -54,7 +54,7 @@ func decorate(prefix__1 string, ok__2 bool) Result__string__string {
         ok_0: ok__2,
         prefix_1: prefix__1,
     }
-    var t16 Result__string__string = _goml_inherent_x23_closure_x5f_env_x5f_run_x5f_0_x23_closure_x5f_env_x5f_run_x5f_0_x23_apply(run__4)
+    var t16 Result__string__string = _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(run__4)
     retv15 = t16
     return retv15
 }
@@ -95,7 +95,7 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_inherent_x23_closure_x5f_env_x5f_run_x5f_0_x23_closure_x5f_env_x5f_run_x5f_0_x23_apply(env7 closure_env_run_0) Result__string__string {
+func _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(env7 closure_env_run_0) Result__string__string {
     var retv31 Result__string__string
     var ok__2 bool = env7.ok_0
     var prefix__1 string = env7.prefix_1

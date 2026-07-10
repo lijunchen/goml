@@ -39,7 +39,7 @@ type Write struct {
 
 func (_ Write) isMessage() {}
 
-func _goml_trait_x5f_impl_x23_ToString_x23_Point_x23_to_x5f_string(self__0 Point) string {
+func _goml_m_trait__impl_i_ToString_i_Point_i_to__string(self__0 Point) string {
     var retv11 string
     var mtmp0 Point = self__0
     var x1 int32 = mtmp0.x
@@ -58,7 +58,7 @@ func _goml_trait_x5f_impl_x23_ToString_x23_Point_x23_to_x5f_string(self__0 Point
     return retv11
 }
 
-func _goml_trait_x5f_impl_x23_ToString_x23_Message_x23_to_x5f_string(self__3 Message) string {
+func _goml_m_trait__impl_i_ToString_i_Message_i_to__string(self__3 Message) string {
     var retv21 string
     var jp23 string
     switch self__3.(type) {
@@ -94,17 +94,17 @@ func main0() struct{} {
         x: 4,
         y: 7,
     }
-    var summary__8 string = _goml_trait_x5f_impl_x23_ToString_x23_Point_x23_to_x5f_string(point__7)
+    var summary__8 string = _goml_m_trait__impl_i_ToString_i_Point_i_to__string(point__7)
     var t33 Message = Move{
         _0: 1,
         _1: 2,
     }
-    var mv__9 string = _goml_trait_x5f_impl_x23_ToString_x23_Message_x23_to_x5f_string(t33)
+    var mv__9 string = _goml_m_trait__impl_i_ToString_i_Message_i_to__string(t33)
     var t34 Message = Write{
         _0: "done",
     }
-    var text__10 string = _goml_trait_x5f_impl_x23_ToString_x23_Message_x23_to_x5f_string(t34)
-    var exit__11 string = _goml_trait_x5f_impl_x23_ToString_x23_Message_x23_to_x5f_string(Quit{})
+    var text__10 string = _goml_m_trait__impl_i_ToString_i_Message_i_to__string(t34)
+    var exit__11 string = _goml_m_trait__impl_i_ToString_i_Message_i_to__string(Quit{})
     println__T_string(summary__8)
     println__T_string(mv__9)
     println__T_string(text__10)

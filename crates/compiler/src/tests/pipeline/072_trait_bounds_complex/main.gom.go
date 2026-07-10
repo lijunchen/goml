@@ -17,14 +17,14 @@ type Boxed struct {
     value int32
 }
 
-func _goml_trait_x5f_impl_x23_Display_x23_int32_x23_show(self__0 int32) string {
+func _goml_m_trait__impl_i_Display_i_int32_i_show(self__0 int32) string {
     var retv5 string
     var t6 string = int32_to_string(self__0)
     retv5 = t6
     return retv5
 }
 
-func _goml_trait_x5f_impl_x23_Debug_x23_int32_x23_show(self__1 int32) string {
+func _goml_m_trait__impl_i_Debug_i_int32_i_show(self__1 int32) string {
     var retv8 string
     var t9 string = int32_to_string(self__1)
     var t10 string = "i32(" + t9
@@ -33,14 +33,14 @@ func _goml_trait_x5f_impl_x23_Debug_x23_int32_x23_show(self__1 int32) string {
     return retv8
 }
 
-func _goml_trait_x5f_impl_x23_MyEq_x23_int32_x23_eq(self__2 int32, other__3 int32) bool {
+func _goml_m_trait__impl_i_MyEq_i_int32_i_eq(self__2 int32, other__3 int32) bool {
     var retv13 bool
     var t14 bool = self__2 == other__3
     retv13 = t14
     return retv13
 }
 
-func _goml_trait_x5f_impl_x23_MyHash_x23_int32_x23_hash(self__4 int32) int32 {
+func _goml_m_trait__impl_i_MyHash_i_int32_i_hash(self__4 int32) int32 {
     var retv16 int32
     var t17 int32 = self__4 * 16777619
     var t18 int32 = t17 + 216613626
@@ -48,21 +48,21 @@ func _goml_trait_x5f_impl_x23_MyHash_x23_int32_x23_hash(self__4 int32) int32 {
     return retv16
 }
 
-func _goml_trait_x5f_impl_x23_Add_x23_int32_x23_add(self__5 int32, other__6 int32) int32 {
+func _goml_m_trait__impl_i_Add_i_int32_i_add(self__5 int32, other__6 int32) int32 {
     var retv20 int32
     var t21 int32 = self__5 + other__6
     retv20 = t21
     return retv20
 }
 
-func _goml_trait_x5f_impl_x23_Scale_x23_int32_x23_scale(self__7 int32, factor__8 int32) int32 {
+func _goml_m_trait__impl_i_Scale_i_int32_i_scale(self__7 int32, factor__8 int32) int32 {
     var retv23 int32
     var t24 int32 = self__7 * factor__8
     retv23 = t24
     return retv23
 }
 
-func _goml_trait_x5f_impl_x23_Inspect_x23_int32_x23_inspect(self__9 int32) string {
+func _goml_m_trait__impl_i_Inspect_i_int32_i_inspect(self__9 int32) string {
     var retv26 string
     var t27 string = int32_to_string(self__9)
     var t28 string = "<" + t27
@@ -71,7 +71,7 @@ func _goml_trait_x5f_impl_x23_Inspect_x23_int32_x23_inspect(self__9 int32) strin
     return retv26
 }
 
-func _goml_trait_x5f_impl_x23_Display_x23_Boxed_x23_show(self__10 Boxed) string {
+func _goml_m_trait__impl_i_Display_i_Boxed_i_show(self__10 Boxed) string {
     var retv31 string
     var t32 int32 = self__10.value
     var t33 string = int32_to_string(t32)
@@ -81,7 +81,7 @@ func _goml_trait_x5f_impl_x23_Display_x23_Boxed_x23_show(self__10 Boxed) string 
     return retv31
 }
 
-func _goml_trait_x5f_impl_x23_Debug_x23_Boxed_x23_show(self__11 Boxed) string {
+func _goml_m_trait__impl_i_Debug_i_Boxed_i_show(self__11 Boxed) string {
     var retv37 string
     var t38 int32 = self__11.value
     var t39 string = int32_to_string(t38)
@@ -91,7 +91,7 @@ func _goml_trait_x5f_impl_x23_Debug_x23_Boxed_x23_show(self__11 Boxed) string {
     return retv37
 }
 
-func _goml_trait_x5f_impl_x23_MyEq_x23_Boxed_x23_eq(self__12 Boxed, other__13 Boxed) bool {
+func _goml_m_trait__impl_i_MyEq_i_Boxed_i_eq(self__12 Boxed, other__13 Boxed) bool {
     var retv43 bool
     var t44 int32 = self__12.value
     var t45 int32 = other__13.value
@@ -100,7 +100,7 @@ func _goml_trait_x5f_impl_x23_MyEq_x23_Boxed_x23_eq(self__12 Boxed, other__13 Bo
     return retv43
 }
 
-func _goml_trait_x5f_impl_x23_MyHash_x23_Boxed_x23_hash(self__14 Boxed) int32 {
+func _goml_m_trait__impl_i_MyHash_i_Boxed_i_hash(self__14 Boxed) int32 {
     var retv48 int32
     var t49 int32 = self__14.value
     var t50 int32 = t49 * 31
@@ -110,7 +110,7 @@ func _goml_trait_x5f_impl_x23_MyHash_x23_Boxed_x23_hash(self__14 Boxed) int32 {
     return retv48
 }
 
-func _goml_trait_x5f_impl_x23_Add_x23_Boxed_x23_add(self__15 Boxed, other__16 Boxed) Boxed {
+func _goml_m_trait__impl_i_Add_i_Boxed_i_add(self__15 Boxed, other__16 Boxed) Boxed {
     var retv54 Boxed
     var t55 int32 = self__15.value
     var t56 int32 = other__16.value
@@ -122,7 +122,7 @@ func _goml_trait_x5f_impl_x23_Add_x23_Boxed_x23_add(self__15 Boxed, other__16 Bo
     return retv54
 }
 
-func _goml_trait_x5f_impl_x23_Scale_x23_Boxed_x23_scale(self__17 Boxed, factor__18 int32) Boxed {
+func _goml_m_trait__impl_i_Scale_i_Boxed_i_scale(self__17 Boxed, factor__18 int32) Boxed {
     var retv60 Boxed
     var t61 int32 = self__17.value
     var t62 int32 = t61 * factor__18
@@ -133,7 +133,7 @@ func _goml_trait_x5f_impl_x23_Scale_x23_Boxed_x23_scale(self__17 Boxed, factor__
     return retv60
 }
 
-func _goml_trait_x5f_impl_x23_Inspect_x23_Boxed_x23_inspect(self__19 Boxed) string {
+func _goml_m_trait__impl_i_Inspect_i_Boxed_i_inspect(self__19 Boxed) string {
     var retv65 string
     var t66 int32 = self__19.value
     var t67 string = int32_to_string(t66)
@@ -211,12 +211,12 @@ func full_report__Q_Boxed__T_Boxed(tag__34 Boxed, a__35 Boxed, b__36 Boxed) stri
 
 func sum_and_tag__Q_int32__T_int32(tag__38 int32, x__39 int32, y__40 int32, z__41 int32) string {
     var retv95 string
-    var t96 int32 = _goml_trait_x5f_impl_x23_Add_x23_int32_x23_add(x__39, y__40)
-    var total__42 int32 = _goml_trait_x5f_impl_x23_Add_x23_int32_x23_add(t96, z__41)
+    var t96 int32 = _goml_m_trait__impl_i_Add_i_int32_i_add(x__39, y__40)
+    var total__42 int32 = _goml_m_trait__impl_i_Add_i_int32_i_add(t96, z__41)
     var header__43 string = tag_text__Q_int32(tag__38)
-    var h__44 int32 = _goml_trait_x5f_impl_x23_MyHash_x23_int32_x23_hash(total__42)
+    var h__44 int32 = _goml_m_trait__impl_i_MyHash_i_int32_i_hash(total__42)
     var t97 string = header__43 + " "
-    var t98 string = _goml_trait_x5f_impl_x23_Inspect_x23_int32_x23_inspect(total__42)
+    var t98 string = _goml_m_trait__impl_i_Inspect_i_int32_i_inspect(total__42)
     var t99 string = t97 + t98
     var t100 string = int32_to_string(h__44)
     var t101 string = " @" + t100
@@ -227,12 +227,12 @@ func sum_and_tag__Q_int32__T_int32(tag__38 int32, x__39 int32, y__40 int32, z__4
 
 func sum_and_tag__Q_Boxed__T_Boxed(tag__38 Boxed, x__39 Boxed, y__40 Boxed, z__41 Boxed) string {
     var retv104 string
-    var t105 Boxed = _goml_trait_x5f_impl_x23_Add_x23_Boxed_x23_add(x__39, y__40)
-    var total__42 Boxed = _goml_trait_x5f_impl_x23_Add_x23_Boxed_x23_add(t105, z__41)
+    var t105 Boxed = _goml_m_trait__impl_i_Add_i_Boxed_i_add(x__39, y__40)
+    var total__42 Boxed = _goml_m_trait__impl_i_Add_i_Boxed_i_add(t105, z__41)
     var header__43 string = tag_text__Q_Boxed(tag__38)
-    var h__44 int32 = _goml_trait_x5f_impl_x23_MyHash_x23_Boxed_x23_hash(total__42)
+    var h__44 int32 = _goml_m_trait__impl_i_MyHash_i_Boxed_i_hash(total__42)
     var t106 string = header__43 + " "
-    var t107 string = _goml_trait_x5f_impl_x23_Inspect_x23_Boxed_x23_inspect(total__42)
+    var t107 string = _goml_m_trait__impl_i_Inspect_i_Boxed_i_inspect(total__42)
     var t108 string = t106 + t107
     var t109 string = int32_to_string(h__44)
     var t110 string = " @" + t109
@@ -243,18 +243,18 @@ func sum_and_tag__Q_Boxed__T_Boxed(tag__38 Boxed, x__39 Boxed, y__40 Boxed, z__4
 
 func combine_scaled__T_int32(a__23 int32, b__24 int32, factor__25 int32) int32 {
     var retv113 int32
-    var t114 int32 = _goml_trait_x5f_impl_x23_Add_x23_int32_x23_add(a__23, b__24)
-    var t115 int32 = _goml_trait_x5f_impl_x23_Scale_x23_int32_x23_scale(t114, factor__25)
+    var t114 int32 = _goml_m_trait__impl_i_Add_i_int32_i_add(a__23, b__24)
+    var t115 int32 = _goml_m_trait__impl_i_Scale_i_int32_i_scale(t114, factor__25)
     retv113 = t115
     return retv113
 }
 
 func report_pair__Q_int32__T_int32(tag__26 int32, a__27 int32, b__28 int32, combined__29 int32) string {
     var retv117 string
-    var same__30 bool = _goml_trait_x5f_impl_x23_MyEq_x23_int32_x23_eq(a__27, b__28)
+    var same__30 bool = _goml_m_trait__impl_i_MyEq_i_int32_i_eq(a__27, b__28)
     var header__31 string = tag_text__Q_int32(tag__26)
     var repr__32 string = show_both__T_int32(combined__29)
-    var h__33 int32 = _goml_trait_x5f_impl_x23_MyHash_x23_int32_x23_hash(combined__29)
+    var h__33 int32 = _goml_m_trait__impl_i_MyHash_i_int32_i_hash(combined__29)
     var t118 string = header__31 + " "
     var t119 string = t118 + repr__32
     var t120 string = bool_text(same__30)
@@ -269,18 +269,18 @@ func report_pair__Q_int32__T_int32(tag__26 int32, a__27 int32, b__28 int32, comb
 
 func combine_scaled__T_Boxed(a__23 Boxed, b__24 Boxed, factor__25 int32) Boxed {
     var retv127 Boxed
-    var t128 Boxed = _goml_trait_x5f_impl_x23_Add_x23_Boxed_x23_add(a__23, b__24)
-    var t129 Boxed = _goml_trait_x5f_impl_x23_Scale_x23_Boxed_x23_scale(t128, factor__25)
+    var t128 Boxed = _goml_m_trait__impl_i_Add_i_Boxed_i_add(a__23, b__24)
+    var t129 Boxed = _goml_m_trait__impl_i_Scale_i_Boxed_i_scale(t128, factor__25)
     retv127 = t129
     return retv127
 }
 
 func report_pair__Q_Boxed__T_Boxed(tag__26 Boxed, a__27 Boxed, b__28 Boxed, combined__29 Boxed) string {
     var retv131 string
-    var same__30 bool = _goml_trait_x5f_impl_x23_MyEq_x23_Boxed_x23_eq(a__27, b__28)
+    var same__30 bool = _goml_m_trait__impl_i_MyEq_i_Boxed_i_eq(a__27, b__28)
     var header__31 string = tag_text__Q_Boxed(tag__26)
     var repr__32 string = show_both__T_Boxed(combined__29)
-    var h__33 int32 = _goml_trait_x5f_impl_x23_MyHash_x23_Boxed_x23_hash(combined__29)
+    var h__33 int32 = _goml_m_trait__impl_i_MyHash_i_Boxed_i_hash(combined__29)
     var t132 string = header__31 + " "
     var t133 string = t132 + repr__32
     var t134 string = bool_text(same__30)
@@ -295,9 +295,9 @@ func report_pair__Q_Boxed__T_Boxed(tag__26 Boxed, a__27 Boxed, b__28 Boxed, comb
 
 func tag_text__Q_int32(tag__22 int32) string {
     var retv141 string
-    var t142 string = _goml_trait_x5f_impl_x23_Debug_x23_int32_x23_show(tag__22)
+    var t142 string = _goml_m_trait__impl_i_Debug_i_int32_i_show(tag__22)
     var t143 string = t142 + "#"
-    var t144 int32 = _goml_trait_x5f_impl_x23_MyHash_x23_int32_x23_hash(tag__22)
+    var t144 int32 = _goml_m_trait__impl_i_MyHash_i_int32_i_hash(tag__22)
     var t145 string = int32_to_string(t144)
     var t146 string = t143 + t145
     retv141 = t146
@@ -306,9 +306,9 @@ func tag_text__Q_int32(tag__22 int32) string {
 
 func tag_text__Q_Boxed(tag__22 Boxed) string {
     var retv148 string
-    var t149 string = _goml_trait_x5f_impl_x23_Debug_x23_Boxed_x23_show(tag__22)
+    var t149 string = _goml_m_trait__impl_i_Debug_i_Boxed_i_show(tag__22)
     var t150 string = t149 + "#"
-    var t151 int32 = _goml_trait_x5f_impl_x23_MyHash_x23_Boxed_x23_hash(tag__22)
+    var t151 int32 = _goml_m_trait__impl_i_MyHash_i_Boxed_i_hash(tag__22)
     var t152 string = int32_to_string(t151)
     var t153 string = t150 + t152
     retv148 = t153
@@ -317,9 +317,9 @@ func tag_text__Q_Boxed(tag__22 Boxed) string {
 
 func show_both__T_int32(x__21 int32) string {
     var retv155 string
-    var t156 string = _goml_trait_x5f_impl_x23_Debug_x23_int32_x23_show(x__21)
+    var t156 string = _goml_m_trait__impl_i_Debug_i_int32_i_show(x__21)
     var t157 string = t156 + " / "
-    var t158 string = _goml_trait_x5f_impl_x23_Display_x23_int32_x23_show(x__21)
+    var t158 string = _goml_m_trait__impl_i_Display_i_int32_i_show(x__21)
     var t159 string = t157 + t158
     retv155 = t159
     return retv155
@@ -327,9 +327,9 @@ func show_both__T_int32(x__21 int32) string {
 
 func show_both__T_Boxed(x__21 Boxed) string {
     var retv161 string
-    var t162 string = _goml_trait_x5f_impl_x23_Debug_x23_Boxed_x23_show(x__21)
+    var t162 string = _goml_m_trait__impl_i_Debug_i_Boxed_i_show(x__21)
     var t163 string = t162 + " / "
-    var t164 string = _goml_trait_x5f_impl_x23_Display_x23_Boxed_x23_show(x__21)
+    var t164 string = _goml_m_trait__impl_i_Display_i_Boxed_i_show(x__21)
     var t165 string = t163 + t164
     retv161 = t165
     return retv161

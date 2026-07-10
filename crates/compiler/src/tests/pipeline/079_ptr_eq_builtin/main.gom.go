@@ -32,9 +32,9 @@ func ptr_eq__Ref_5int32(a *ref_int32_x, b *ref_int32_x) bool {
 }
 
 func main0() struct{} {
-    var a__0 *ref_int32_x = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_int32(1)
+    var a__0 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(1)
     var b__1 *ref_int32_x = a__0
-    var c__2 *ref_int32_x = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_int32(1)
+    var c__2 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(1)
     var t3 bool = ptr_eq__Ref_5int32(a__0, b__1)
     println__T_bool(t3)
     var t4 bool = ptr_eq__Ref_5int32(a__0, c__2)
@@ -42,7 +42,7 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_int32(value__93 int32) *ref_int32_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__93 int32) *ref_int32_x {
     var retv6 *ref_int32_x
     var t7 *ref_int32_x = ref__Ref_5int32(value__93)
     retv6 = t7

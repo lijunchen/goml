@@ -17,13 +17,13 @@ type Boxed struct {
     value int32
 }
 
-func _goml_inherent_x23_Boxed_x23_Boxed_x23_format(self__0 Boxed) string {
+func _goml_m_inherent_i_Boxed_i_Boxed_i_format(self__0 Boxed) string {
     var retv3 string
     retv3 = "inherent"
     return retv3
 }
 
-func _goml_trait_x5f_impl_x23_Render_x23_Boxed_x23_format(self__1 Boxed) string {
+func _goml_m_trait__impl_i_Render_i_Boxed_i_format(self__1 Boxed) string {
     var retv5 string
     var t6 int32 = self__1.value
     var t7 string = int32_to_string(t6)
@@ -35,12 +35,12 @@ func main0() struct{} {
     var t9 Boxed = Boxed{
         value: 9,
     }
-    var t10 string = _goml_inherent_x23_Boxed_x23_Boxed_x23_format(t9)
+    var t10 string = _goml_m_inherent_i_Boxed_i_Boxed_i_format(t9)
     println__T_string(t10)
     var t11 Boxed = Boxed{
         value: 9,
     }
-    var t12 string = _goml_trait_x5f_impl_x23_Render_x23_Boxed_x23_format(t11)
+    var t12 string = _goml_m_trait__impl_i_Render_i_Boxed_i_format(t11)
     println__T_string(t12)
     return struct{}{}
 }

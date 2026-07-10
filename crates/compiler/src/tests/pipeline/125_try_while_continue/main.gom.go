@@ -65,16 +65,16 @@ func step(i__0 int32) Option__int32 {
 
 func accumulate(limit__1 int32) Option__int32 {
     var retv17 Option__int32
-    var sum__2 *ref_int32_x = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_int32(0)
-    var i__3 *ref_int32_x = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_int32(0)
+    var sum__2 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(0)
+    var i__3 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(0)
     Loop_loop21:
     for {
-        var t22 int32 = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_int32(i__3)
+        var t22 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__3)
         var t23 bool = t22 < limit__1
         if t23 {
-            var cur__4 int32 = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_int32(i__3)
+            var cur__4 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__3)
             var t24 int32 = cur__4 + 1
-            _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_int32(i__3, t24)
+            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(i__3, t24)
             var t30 bool = cur__4 == 1
             if t30 {
                 continue
@@ -90,9 +90,9 @@ func accumulate(limit__1 int32) Option__int32 {
                     var try_value__43 int32 = x3
                     jp27 = try_value__43
                     var value__5 int32 = jp27
-                    var t28 int32 = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_int32(sum__2)
+                    var t28 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(sum__2)
                     var t29 int32 = t28 + value__5
-                    _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_int32(sum__2, t29)
+                    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(sum__2, t29)
                     continue
                 default:
                     panic("non-exhaustive match")
@@ -102,7 +102,7 @@ func accumulate(limit__1 int32) Option__int32 {
             break Loop_loop21
         }
     }
-    var t19 int32 = _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_int32(sum__2)
+    var t19 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(sum__2)
     var t20 Option__int32 = Some{
         _0: t19,
     }
@@ -139,21 +139,21 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_int32(value__93 int32) *ref_int32_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__93 int32) *ref_int32_x {
     var retv43 *ref_int32_x
     var t44 *ref_int32_x = ref__Ref_5int32(value__93)
     retv43 = t44
     return retv43
 }
 
-func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_get_x5f__x5f_T_x5f_int32(self__94 *ref_int32_x) int32 {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__94 *ref_int32_x) int32 {
     var retv46 int32
     var t47 int32 = ref_get__Ref_5int32(self__94)
     retv46 = t47
     return retv46
 }
 
-func _goml_inherent_x23_Ref_x23_Ref_x5b_T_x5d__x23_set_x5f__x5f_T_x5f_int32(self__95 *ref_int32_x, value__96 int32) struct{} {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__95 *ref_int32_x, value__96 int32) struct{} {
     ref_set__Ref_5int32(self__95, value__96)
     return struct{}{}
 }

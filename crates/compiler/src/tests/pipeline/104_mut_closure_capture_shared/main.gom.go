@@ -41,7 +41,7 @@ func main0() struct{} {
     var inc__1 closure_env_inc_0 = closure_env_inc_0{
         x_0: x__0,
     }
-    _goml_inherent_x23_closure_x5f_env_x5f_inc_x5f_0_x23_closure_x5f_env_x5f_inc_x5f_0_x23_apply(inc__1)
+    _goml_m_inherent_i_closure__env__inc__0_i_closure__env__inc__0_i_apply(inc__1)
     var t5 int32 = ref_get__Ref_5int32(x__0)
     var t6 string = int32_to_string(t5)
     println__T_string(t6)
@@ -53,7 +53,7 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_inherent_x23_closure_x5f_env_x5f_inc_x5f_0_x23_closure_x5f_env_x5f_inc_x5f_0_x23_apply(env3 closure_env_inc_0) int32 {
+func _goml_m_inherent_i_closure__env__inc__0_i_closure__env__inc__0_i_apply(env3 closure_env_inc_0) int32 {
     var retv10 int32
     var x__0 *ref_int32_x = env3.x_0
     var t11 int32 = ref_get__Ref_5int32(x__0)

@@ -32,7 +32,7 @@ type dyn__Display struct {
 }
 
 func dyn__Display__wrap__Flag__show(self any) string {
-    return _goml_trait_x5f_impl_x23_Display_x23_Flag_x23_show(self.(Flag))
+    return _goml_m_trait__impl_i_Display_i_Flag_i_show(self.(Flag))
 }
 
 func dyn__Display__vtable__Flag() *dyn__Display_vtable {
@@ -42,7 +42,7 @@ func dyn__Display__vtable__Flag() *dyn__Display_vtable {
 }
 
 func dyn__Display__wrap__Point__show(self any) string {
-    return _goml_trait_x5f_impl_x23_Display_x23_Point_x23_show(self.(Point))
+    return _goml_m_trait__impl_i_Display_i_Point_i_show(self.(Point))
 }
 
 func dyn__Display__vtable__Point() *dyn__Display_vtable {
@@ -51,7 +51,7 @@ func dyn__Display__vtable__Point() *dyn__Display_vtable {
     }
 }
 
-func _goml_trait_x5f_impl_x23_Display_x23_Point_x23_show(self__0 Point) string {
+func _goml_m_trait__impl_i_Display_i_Point_i_show(self__0 Point) string {
     var retv3 string
     var t4 int32 = self__0.x
     var t5 string = int32_to_string(t4)
@@ -65,7 +65,7 @@ func _goml_trait_x5f_impl_x23_Display_x23_Point_x23_show(self__0 Point) string {
     return retv3
 }
 
-func _goml_trait_x5f_impl_x23_Display_x23_Flag_x23_show(self__1 Flag) string {
+func _goml_m_trait__impl_i_Display_i_Flag_i_show(self__1 Flag) string {
     var retv13 string
     var t16 bool = self__1.value
     var jp15 string

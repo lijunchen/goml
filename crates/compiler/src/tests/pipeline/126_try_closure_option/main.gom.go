@@ -53,7 +53,7 @@ func with_base(base__1 int32, flag__2 bool) Option__int32 {
         flag_0: flag__2,
         base_1: base__1,
     }
-    var t13 Option__int32 = _goml_inherent_x23_closure_x5f_env_x5f_run_x5f_0_x23_closure_x5f_env_x5f_run_x5f_0_x23_apply(run__4)
+    var t13 Option__int32 = _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(run__4)
     retv12 = t13
     return retv12
 }
@@ -92,7 +92,7 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_inherent_x23_closure_x5f_env_x5f_run_x5f_0_x23_closure_x5f_env_x5f_run_x5f_0_x23_apply(env5 closure_env_run_0) Option__int32 {
+func _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(env5 closure_env_run_0) Option__int32 {
     var retv28 Option__int32
     var flag__2 bool = env5.flag_0
     var base__1 int32 = env5.base_1
