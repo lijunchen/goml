@@ -1174,7 +1174,7 @@ fn instantiate_trait_method_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
     instantiate_self_ty(ty, self_ty)
 }
 
-pub fn collect_typedefs(
+pub(crate) fn collect_typedefs(
     env: &mut PackageTypeEnv,
     diagnostics: &mut Diagnostics,
     hir: &hir::PackageHir,

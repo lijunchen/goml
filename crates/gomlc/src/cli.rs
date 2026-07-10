@@ -4,13 +4,13 @@ use clap::{Args, Parser, Subcommand, ValueEnum};
 
 #[derive(Parser, Debug)]
 #[command(name = "gomlc", arg_required_else_help = true)]
-pub struct Cli {
+pub(crate) struct Cli {
     #[command(subcommand)]
     pub command: Commands,
 }
 
 #[derive(Subcommand, Debug)]
-pub enum Commands {
+pub(crate) enum Commands {
     Check(PackageCommandArgs),
     Build(PackageCommandArgs),
     Link(LinkArgs),
@@ -19,7 +19,7 @@ pub enum Commands {
 }
 
 #[derive(Args, Debug)]
-pub struct RunArgs {
+pub(crate) struct RunArgs {
     #[arg(long = "dump-ast")]
     pub dump_ast: bool,
     #[arg(long = "dump-hir")]
@@ -40,7 +40,7 @@ pub struct RunArgs {
 }
 
 #[derive(Args, Debug)]
-pub struct PackageCommandArgs {
+pub(crate) struct PackageCommandArgs {
     #[arg(long)]
     pub package: String,
     #[arg(long, required = true, num_args = 1..)]
@@ -52,7 +52,7 @@ pub struct PackageCommandArgs {
 }
 
 #[derive(Args, Debug)]
-pub struct LinkArgs {
+pub(crate) struct LinkArgs {
     #[arg(long, required = true, num_args = 1..)]
     pub input: Vec<PathBuf>,
     #[arg(long)]
@@ -62,19 +62,19 @@ pub struct LinkArgs {
 }
 
 #[derive(Args, Debug)]
-pub struct VersionArgs {
+pub(crate) struct VersionArgs {
     #[arg(long, value_enum, default_value_t = VersionFormat::Text)]
     pub format: VersionFormat,
 }
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
-pub enum VersionFormat {
+pub(crate) enum VersionFormat {
     Text,
     Json,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub enum DumpStage {
+pub(crate) enum DumpStage {
     Ast,
     Hir,
     Tast,
@@ -86,7 +86,7 @@ pub enum DumpStage {
 }
 
 impl DumpStage {
-    pub fn label(self) -> &'static str {
+    pub(crate) fn label(self) -> &'static str {
         match self {
             Self::Ast => "AST",
             Self::Hir => "HIR",
@@ -114,7 +114,7 @@ impl DumpStage {
 }
 
 impl RunArgs {
-    pub fn dumps(&self) -> Vec<DumpStage> {
+    pub(crate) fn dumps(&self) -> Vec<DumpStage> {
         let mut dumps = Vec::new();
         if self.dump_ast {
             dumps.push(DumpStage::Ast);

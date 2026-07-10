@@ -1,7 +1,6 @@
 use super::*;
 use expect_test::{Expect, expect};
 
-#[allow(unused)]
 fn check(input: &str, expect: Expect) {
     let toks = lex(input);
     expect.assert_debug_eq(&toks)

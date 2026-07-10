@@ -91,7 +91,7 @@ suite('GoML Module Tests', () => {
         }
 
         const doc = await vscode.workspace.openTextDocument(mainGom);
-        const editor = await vscode.window.showTextDocument(doc);
+        await vscode.window.showTextDocument(doc);
 
         await new Promise(resolve => setTimeout(resolve, 3000));
 

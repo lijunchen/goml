@@ -109,7 +109,7 @@ function App() {
             [/\b\d+\b/, "number"],
             [/[a-zA-Z_]\w*(?=\s*\()/, "function"],
             [/[a-zA-Z_]\w*/, "identifier"],
-            [/[{}()\[\]]/, "@brackets"],
+            [/[{}()[\]]/, "@brackets"],
             [/[;,.]/, "delimiter"],
             [/".*?"/, "string"],
             [/\/\/.*/, "comment"],

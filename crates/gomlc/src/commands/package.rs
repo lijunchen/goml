@@ -8,7 +8,7 @@ use crate::cli::{LinkArgs, PackageCommandArgs};
 
 const PRETTY_WIDTH: usize = 120;
 
-pub fn check(args: PackageCommandArgs) -> Result<()> {
+pub(crate) fn check(args: PackageCommandArgs) -> Result<()> {
     let unit =
         compiler::pipeline::separate::check_package(compiler::pipeline::separate::PackageInputs {
             package: args.package,
@@ -23,7 +23,7 @@ pub fn check(args: PackageCommandArgs) -> Result<()> {
     )
 }
 
-pub fn build(args: PackageCommandArgs) -> Result<()> {
+pub(crate) fn build(args: PackageCommandArgs) -> Result<()> {
     let unit =
         compiler::pipeline::separate::build_package(compiler::pipeline::separate::PackageInputs {
             package: args.package,
@@ -42,7 +42,7 @@ pub fn build(args: PackageCommandArgs) -> Result<()> {
     )
 }
 
-pub fn link(args: LinkArgs) -> Result<()> {
+pub(crate) fn link(args: LinkArgs) -> Result<()> {
     let mut units = Vec::new();
     for path in args.input {
         let unit = compiler::pipeline::separate::read_core(&path)

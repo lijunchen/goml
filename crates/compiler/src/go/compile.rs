@@ -448,25 +448,6 @@ fn imm_ty(imm: &anf::ImmExpr) -> tast::Ty {
     }
 }
 
-#[allow(dead_code)]
-fn value_expr_ty(expr: &anf::ValueExpr) -> tast::Ty {
-    match expr {
-        anf::ValueExpr::Imm(imm) => imm_ty(imm),
-        anf::ValueExpr::Constr { ty, .. }
-        | anf::ValueExpr::Tuple { ty, .. }
-        | anf::ValueExpr::Array { ty, .. }
-        | anf::ValueExpr::ConstrGet { ty, .. }
-        | anf::ValueExpr::Unary { ty, .. }
-        | anf::ValueExpr::Binary { ty, .. }
-        | anf::ValueExpr::Assign { ty, .. }
-        | anf::ValueExpr::Call { ty, .. }
-        | anf::ValueExpr::ToDyn { ty, .. }
-        | anf::ValueExpr::DynCall { ty, .. }
-        | anf::ValueExpr::Go { ty, .. }
-        | anf::ValueExpr::Proj { ty, .. } => ty.clone(),
-    }
-}
-
 pub(crate) fn variant_symbol_name(
     goenv: &GlobalGoEnv,
     enum_name: &str,

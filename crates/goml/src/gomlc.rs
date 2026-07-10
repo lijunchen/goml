@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context, Result, bail};
 use goml_project::config::goml_bin_dir;
 
-pub fn resolve(explicit: Option<&Path>) -> Result<PathBuf> {
+pub(crate) fn resolve(explicit: Option<&Path>) -> Result<PathBuf> {
     if let Some(path) = explicit {
         return resolve_required(path, "--compiler");
     }
@@ -97,7 +97,7 @@ fn with_executable_suffix(name: &OsStr) -> OsString {
     executable
 }
 
-pub fn execute(
+pub(crate) fn execute(
     executable: &Path,
     args: &[OsString],
     current_dir: Option<&Path>,
@@ -112,7 +112,7 @@ pub fn execute(
         .with_context(|| format!("failed to execute {}", executable.display()))
 }
 
-pub fn verify(executable: &Path) -> Result<()> {
+pub(crate) fn verify(executable: &Path) -> Result<()> {
     let output = std::process::Command::new(executable)
         .args(["version", "--format", "json"])
         .output()

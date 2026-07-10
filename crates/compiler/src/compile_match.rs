@@ -177,12 +177,12 @@ fn move_variable_patterns(row: &mut Row) {
 
 #[derive(Debug, Clone)]
 struct Variable {
-    pub name: String,
-    pub ty: Ty,
+    name: String,
+    ty: Ty,
 }
 
 impl Variable {
-    pub fn to_core(&self) -> core::Expr {
+    fn to_core(&self) -> core::Expr {
         core::Expr::EVar {
             name: self.name.clone(),
             ty: self.ty.clone(),

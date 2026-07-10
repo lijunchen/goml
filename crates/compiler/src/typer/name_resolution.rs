@@ -22,19 +22,19 @@ pub struct NameResolution {
 struct ResolveLocalEnv(im::Vector<(ast::AstIdent, hir::LocalId)>);
 
 impl ResolveLocalEnv {
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self(im::Vector::new())
     }
 
-    pub fn enter_scope(&self) -> Self {
+    fn enter_scope(&self) -> Self {
         Self(self.0.clone())
     }
 
-    pub fn add(&mut self, name: &ast::AstIdent, new_name: hir::LocalId) {
+    fn add(&mut self, name: &ast::AstIdent, new_name: hir::LocalId) {
         self.0.push_back((name.clone(), new_name));
     }
 
-    pub fn rfind(&self, key: &ast::AstIdent) -> Option<hir::LocalId> {
+    fn rfind(&self, key: &ast::AstIdent) -> Option<hir::LocalId> {
         self.0
             .iter()
             .rfind(|(name, _)| name == key)

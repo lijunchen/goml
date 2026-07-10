@@ -1115,11 +1115,6 @@ impl Gensym {
         self.counter.set(current + 1);
         format!("{}{}", prefix, current)
     }
-
-    #[allow(unused)]
-    pub fn reset(&self) {
-        self.counter.set(0);
-    }
 }
 
 pub fn format_typer_diagnostics(diagnostics: &Diagnostics, src: &str) -> Vec<String> {

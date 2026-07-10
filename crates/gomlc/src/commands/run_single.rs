@@ -13,7 +13,7 @@ use crate::cli::{DumpStage, RunArgs};
 
 const PRETTY_WIDTH: usize = 120;
 
-pub fn execute(args: RunArgs) -> Result<()> {
+pub(crate) fn execute(args: RunArgs) -> Result<()> {
     let src = fs::read_to_string(&args.file)
         .with_context(|| format!("error reading goml file: {}", args.file.display()))?;
     let compilation = match compile_single_file(&args.file, &src) {
@@ -112,7 +112,7 @@ fn try_execute_with_yaegi(dir: &Path, file: &Path) -> Result<Option<String>> {
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .status();
-    if status.is_err() || !status.unwrap().success() {
+    if !status.is_ok_and(|status| status.success()) {
         return Ok(None);
     }
 

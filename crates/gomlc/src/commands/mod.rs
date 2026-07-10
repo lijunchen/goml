@@ -6,7 +6,7 @@ use anyhow::Result;
 
 use crate::cli::Commands;
 
-pub fn execute(command: Commands) -> Result<()> {
+pub(crate) fn execute(command: Commands) -> Result<()> {
     match command {
         Commands::Check(args) => package::check(args),
         Commands::Build(args) => package::build(args),

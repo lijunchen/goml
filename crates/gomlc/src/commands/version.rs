@@ -2,7 +2,7 @@ use anyhow::Result;
 
 use crate::cli::{VersionArgs, VersionFormat};
 
-pub fn execute(args: VersionArgs) -> Result<()> {
+pub(crate) fn execute(args: VersionArgs) -> Result<()> {
     match args.format {
         VersionFormat::Text => match (option_env!("GOML_GIT_HASH"), option_env!("GOML_GIT_DATE")) {
             (Some(hash), Some(date)) => {
