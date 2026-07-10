@@ -1290,7 +1290,7 @@ fn main() -> unit {
                 character: 8,
             },
         );
-        expect!["print, println"].assert_eq(&format_completion(completion));
+        expect!["eprint, eprintln, print, println"].assert_eq(&format_completion(completion));
     }
 
     #[test]
@@ -2447,7 +2447,7 @@ fn main() -> unit {
             "main.gom",
             "io::println",
             "println",
-            expect!["io/io.gom:12:7"],
+            expect!["io/io.gom:15:7"],
         );
     }
 
