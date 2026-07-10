@@ -1001,10 +1001,14 @@ fn is_std_host_extern(package: &str, name: &str) -> bool {
     matches!(
         (package, name),
         ("std::env", "args_raw")
-            | ("std::io", "print_raw" | "println_raw")
+            | ("std::io", "print_raw" | "println_raw" | "eprint_raw")
             | (
                 "std::fs",
-                "read_file_raw" | "write_file_raw" | "file_exists_raw" | "read_dir_raw"
+                "read_file_raw"
+                    | "write_file_raw"
+                    | "create_dir_all_raw"
+                    | "file_exists_raw"
+                    | "read_dir_raw"
             )
             | ("std::process", "exit_raw")
     )

@@ -64,6 +64,7 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(bool_to_string()),
         Item::Fn(string_len()),
         Item::Fn(string_get()),
+        Item::Fn(string_byte_slice()),
         Item::Fn(char_to_string()),
         Item::Fn(int8_to_string()),
         Item::Fn(int16_to_string()),
@@ -91,10 +92,12 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(std_env_args_raw()),
         Item::Fn(std_fs_read_file_raw()),
         Item::Fn(std_fs_write_file_raw()),
+        Item::Fn(std_fs_create_dir_all_raw()),
         Item::Fn(std_fs_file_exists_raw()),
         Item::Fn(std_fs_read_dir_raw()),
         Item::Fn(std_io_print_raw()),
         Item::Fn(std_io_println_raw()),
+        Item::Fn(std_io_eprint_raw()),
         Item::Fn(std_process_exit_raw()),
         Item::Fn(missing()),
     ];
@@ -579,6 +582,85 @@ fn std_fs_write_file_raw() -> goast::Fn {
     }
 }
 
+fn std_fs_create_dir_all_raw() -> goast::Fn {
+    let err_ty = go_error_ty();
+    let ret_ty = tuple_ty(vec![tast::Ty::TBool, tast::Ty::TString]);
+    goast::Fn {
+        name: std_runtime_name("fs", "create_dir_all_raw"),
+        params: vec![("path".to_string(), goty::GoType::TString)],
+        ret_ty: Some(goast::tast_ty_to_go_type(&ret_ty)),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::VarDecl {
+                    name: "err".to_string(),
+                    ty: err_ty.clone(),
+                    value: Some(goast::Expr::Call {
+                        func: Box::new(goast::Expr::Var {
+                            name: "_goml_os.MkdirAll".to_string(),
+                            ty: goty::GoType::TFunc {
+                                params: vec![goty::GoType::TString, goty::GoType::TUint32],
+                                ret_ty: Box::new(err_ty.clone()),
+                            },
+                        }),
+                        args: vec![
+                            goast::Expr::Var {
+                                name: "path".to_string(),
+                                ty: goty::GoType::TString,
+                            },
+                            goast::Expr::Int {
+                                value: "0755".to_string(),
+                                ty: goty::GoType::TUint32,
+                            },
+                        ],
+                        ty: err_ty.clone(),
+                    }),
+                },
+                goast::Stmt::If {
+                    cond: goast::Expr::BinaryOp {
+                        op: GoBinaryOp::NotEq,
+                        lhs: Box::new(goast::Expr::Var {
+                            name: "err".to_string(),
+                            ty: err_ty.clone(),
+                        }),
+                        rhs: Box::new(goast::Expr::Nil { ty: err_ty }),
+                        ty: goty::GoType::TBool,
+                    },
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(tuple_literal(
+                                &ret_ty,
+                                vec![
+                                    goast::Expr::Bool {
+                                        value: false,
+                                        ty: goty::GoType::TBool,
+                                    },
+                                    error_string_expr("err"),
+                                ],
+                            )),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Return {
+                    expr: Some(tuple_literal(
+                        &ret_ty,
+                        vec![
+                            goast::Expr::Bool {
+                                value: true,
+                                ty: goty::GoType::TBool,
+                            },
+                            goast::Expr::String {
+                                value: String::new(),
+                                ty: goty::GoType::TString,
+                            },
+                        ],
+                    )),
+                },
+            ],
+        },
+    }
+}
+
 fn std_fs_file_exists_raw() -> goast::Fn {
     let err_ty = go_error_ty();
     let info_ty = os_file_info_ty();
@@ -949,6 +1031,50 @@ fn std_io_println_raw() -> goast::Fn {
                         name: "value".to_string(),
                         ty: goty::GoType::TString,
                     }],
+                    ty: goty::GoType::TVoid,
+                }),
+                goast::Stmt::Return {
+                    expr: Some(goast::Expr::Unit {
+                        ty: goty::GoType::TUnit,
+                    }),
+                },
+            ],
+        },
+    }
+}
+
+fn std_io_eprint_raw() -> goast::Fn {
+    goast::Fn {
+        name: std_runtime_name("io", "eprint_raw"),
+        params: vec![("value".to_string(), goty::GoType::TString)],
+        ret_ty: Some(goty::GoType::TUnit),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::Expr(goast::Expr::Call {
+                    func: Box::new(goast::Expr::Var {
+                        name: "_goml_fmt.Fprint".to_string(),
+                        ty: goty::GoType::TFunc {
+                            params: vec![
+                                goty::GoType::TName {
+                                    name: "any".to_string(),
+                                },
+                                goty::GoType::TString,
+                            ],
+                            ret_ty: Box::new(goty::GoType::TVoid),
+                        },
+                    }),
+                    args: vec![
+                        goast::Expr::Var {
+                            name: "_goml_os.Stderr".to_string(),
+                            ty: goty::GoType::TName {
+                                name: "any".to_string(),
+                            },
+                        },
+                        goast::Expr::Var {
+                            name: "value".to_string(),
+                            ty: goty::GoType::TString,
+                        },
+                    ],
                     ty: goty::GoType::TVoid,
                 }),
                 goast::Stmt::Return {
@@ -3677,6 +3803,37 @@ fn string_get() -> goast::Fn {
                         ty: goty::GoType::TUint8,
                     }],
                     ty: goty::GoType::TChar,
+                }),
+            }],
+        },
+    }
+}
+
+fn string_byte_slice() -> goast::Fn {
+    goast::Fn {
+        name: "string_byte_slice".to_string(),
+        params: vec![
+            ("s".to_string(), goty::GoType::TString),
+            ("start".to_string(), goty::GoType::TInt32),
+            ("end".to_string(), goty::GoType::TInt32),
+        ],
+        ret_ty: Some(goty::GoType::TString),
+        body: goast::Block {
+            stmts: vec![goast::Stmt::Return {
+                expr: Some(goast::Expr::Slice {
+                    array: Box::new(goast::Expr::Var {
+                        name: "s".to_string(),
+                        ty: goty::GoType::TString,
+                    }),
+                    start: Box::new(goast::Expr::Var {
+                        name: "start".to_string(),
+                        ty: goty::GoType::TInt32,
+                    }),
+                    end: Box::new(goast::Expr::Var {
+                        name: "end".to_string(),
+                        ty: goty::GoType::TInt32,
+                    }),
+                    ty: goty::GoType::TString,
                 }),
             }],
         },
