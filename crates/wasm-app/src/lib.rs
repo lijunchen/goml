@@ -320,7 +320,7 @@ fn format_stage_errors(diagnostics: Diagnostics) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::compile_to_core;
+    use super::{compile_to_core, compile_to_mono};
 
     #[test]
     fn compile_to_core_handles_builtin_result_match() {
@@ -342,5 +342,19 @@ fn main() {
         let output = compile_to_core(src);
         assert!(!output.contains("Internal compiler error"));
         assert!(!output.contains("enum Result not found during match compilation"));
+    }
+
+    #[test]
+    fn compile_to_mono_preserves_closures() {
+        let src = r#"
+fn main() {
+    let identity = |value: int32| value;
+    let _ = identity(1);
+    ()
+}
+"#;
+
+        let output = compile_to_mono(src);
+        assert!(output.contains(" = |"), "{output}");
     }
 }
