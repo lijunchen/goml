@@ -1095,6 +1095,14 @@ fn trait_methods_for_receiver(
     receiver_ty: &tast::Ty,
 ) -> Vec<(String, String)> {
     let mut methods = BTreeMap::new();
+    let package_env = crate::env::PackageTypeEnv::new(
+        "completion".to_string(),
+        GlobalTypeEnv::default(),
+        genv.clone(),
+        Default::default(),
+    );
+    let param_env = crate::typer::ParamEnv::default();
+    let mut trait_solver = crate::typer::traits::solver::TraitSolver::new(&package_env, &param_env);
     for (key, impl_def) in &genv.trait_env.trait_impls {
         if !impl_def.valid {
             continue;
@@ -1103,6 +1111,17 @@ fn trait_methods_for_receiver(
             continue;
         };
         let trait_ref = crate::typer::type_ops::substitute_trait_ref(&key.trait_ref, &substitution);
+        if !crate::typer::type_ops::trait_ref_contains_tparam(&trait_ref)
+            && !matches!(
+                trait_solver.select_ground(crate::typer::TraitGoal {
+                    trait_ref: trait_ref.clone(),
+                    for_ty: receiver_ty.clone(),
+                }),
+                crate::typer::traits::solver::SelectionResult::Unique(_)
+            )
+        {
+            continue;
+        }
         let Some(trait_def) = genv.trait_env.trait_defs.get(&trait_ref.name.0) else {
             continue;
         };
