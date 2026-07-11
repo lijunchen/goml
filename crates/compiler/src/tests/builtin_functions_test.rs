@@ -236,6 +236,8 @@ fn builtin_function_names_include_ref_builtins() {
     assert!(names.iter().any(|n| n == "slice_sub"));
     assert!(names.iter().any(|n| n == "vec_set"));
     assert!(names.iter().any(|n| n == "string_byte_slice"));
+    assert!(names.iter().any(|n| n == "print"));
+    assert!(names.iter().any(|n| n == "println"));
     assert!(names.iter().any(|n| n == "array_get"));
     assert!(names.iter().any(|n| n == "array_set"));
 }
