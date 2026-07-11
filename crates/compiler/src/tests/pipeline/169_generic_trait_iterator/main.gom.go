@@ -231,7 +231,7 @@ func main0() struct{} {
     var filtered__12 FilterIterator__int32__MapIterator__int32__int32__Counter = _goml_m_iterator__filter____I__hae120c2dac596b59fedf4cc0625830b9__r_____T__int32(mapped__10, func(p0 int32) bool {
         return _goml_m_inherent_i_closure__env__main__1_i_closure__env__main__1_i_apply(t78, p0)
     })
-    var limited__13 TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter = _goml_m_iterator__take____I__F_hedf720f49984423d1d3f538800202cfe_c_Counter_r__r_(filtered__12, 3)
+    var limited__13 TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter = _goml_m_iterator__take____I__F_h81f3d394373aaa41b7767af875af1995__r_____T__int32(filtered__12, 3)
     var for_iter29 TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter = limited__13
     Loop_loop88:
     for {
@@ -363,7 +363,7 @@ func _goml_m_iterator__filter____I__hae120c2dac596b59fedf4cc0625830b9__r_____T__
     return retv117
 }
 
-func _goml_m_iterator__take____I__F_hedf720f49984423d1d3f538800202cfe_c_Counter_r__r_(iterator__83 FilterIterator__int32__MapIterator__int32__int32__Counter, count__84 int32) TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter {
+func _goml_m_iterator__take____I__F_h81f3d394373aaa41b7767af875af1995__r_____T__int32(iterator__83 FilterIterator__int32__MapIterator__int32__int32__Counter, count__84 int32) TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter {
     var retv120 TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter
     var t125 bool = count__84 > 0
     var jp122 int32

@@ -34,7 +34,7 @@ fn main() -> unit {
   let _wild28 = println__T_string(trait_impl#Marker#[Vec[int32]]@Any#marker(Any {})) in
   let mapped/10 = iterator_map__A_int32__B_int32__I_Counter(inherent#Counter#Counter#new(0, 8), |value/9| (value/9 * 2)) in
   let filtered/12 = iterator_filter__I_MapIterator[int32,int32,Counter]__T_int32(mapped/10, |value/11| (value/11 > 4)) in
-  let limited/13 = iterator_take__I_FilterIterator[int32,MapIterator[int32,int32,Counter]](filtered/12, 3) in
+  let limited/13 = iterator_take__I_FilterIterator[int32,MapIterator[int32,int32,Counter]]__T_int32(filtered/12, 3) in
   let _wild33 = {
     let for_iter29 = limited/13 in
     while true {
@@ -134,7 +134,7 @@ fn iterator_filter__I_MapIterator[int32,int32,Counter]__T_int32(iterator/81: Map
   FilterIterator__int32__MapIterator__int32__int32__Counter { iterator: iterator/81, predicate: predicate/82 }
 }
 
-fn iterator_take__I_FilterIterator[int32,MapIterator[int32,int32,Counter]](iterator/83: FilterIterator__int32__MapIterator__int32__int32__Counter, count/84: int32) -> TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter {
+fn iterator_take__I_FilterIterator[int32,MapIterator[int32,int32,Counter]]__T_int32(iterator/83: FilterIterator__int32__MapIterator__int32__int32__Counter, count/84: int32) -> TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter {
   let remaining/85 = if (count/84 > 0) {
       {
         count/84

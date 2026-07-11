@@ -1,5 +1,6 @@
 package main;
 trait Provider {
+  type Item: ToString;
   fn get(Self) -> Self::Item;
 }
 
@@ -12,12 +13,14 @@ struct Box[T] {
 }
 
 impl Provider for Number {
+  type Item = int32;
   fn get(self: Number) -> int32 {
       self.value
   }
 }
 
 impl[T: ToString] Provider for Box[T] {
+  type Item = T;
   fn get(self: Box[T]) -> T {
       self.value
   }

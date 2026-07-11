@@ -70,7 +70,7 @@ fn main() -> unit {
   let mapped/10 = iterator_map__A_int32__B_int32__I_Counter(t76, t77) in
   let t78 = closure_env_main_1 {} in
   let filtered/12 = iterator_filter__I_MapIterator[int32,int32,Counter]__T_int32(mapped/10, t78) in
-  let limited/13 = iterator_take__I_FilterIterator[int32,MapIterator[int32,int32,Counter]](filtered/12, 3) in
+  let limited/13 = iterator_take__I_FilterIterator[int32,MapIterator[int32,int32,Counter]]__T_int32(filtered/12, 3) in
   let for_iter29 = limited/13 in
   join exit79() -> unit {
     let _wild33 = () in
@@ -225,7 +225,7 @@ fn iterator_filter__I_MapIterator[int32,int32,Counter]__T_int32(iterator/81: Map
   jump ret116(t118)
 }
 
-fn iterator_take__I_FilterIterator[int32,MapIterator[int32,int32,Counter]](iterator/83: FilterIterator__int32__MapIterator__int32__int32__Counter, count/84: int32) -> TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter {
+fn iterator_take__I_FilterIterator[int32,MapIterator[int32,int32,Counter]]__T_int32(iterator/83: FilterIterator__int32__MapIterator__int32__int32__Counter, count/84: int32) -> TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter {
   join ret119(retv120: TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter) -> TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter {
     retv120
   } in
