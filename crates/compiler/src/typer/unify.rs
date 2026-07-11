@@ -1,37 +1,15 @@
 use std::collections::HashMap;
 
 use crate::{
-    env::{Constraint, PackageTypeEnv},
-    tast::{self, TastIdent, TypeVar},
+    tast::{self, TypeVar},
     typer::{
         Typer,
-        member_lookup::resolve_field_ty_eager,
-        type_ops::{
-            contains_tparam, contains_tvar, decompose_struct_type, instantiate_self_ty,
-            substitute_ty_params,
-        },
+        obligations::{InstantiatedScheme, ObligationCause, Predicate, TraitGoal},
     },
 };
 use diagnostics::{Severity, Stage};
 use parser::{Diagnostic, Diagnostics};
 use text_size::TextRange;
-
-fn multiple_trait_impls_diagnostic(
-    trait_name: &str,
-    ty: &tast::Ty,
-    origin: Option<TextRange>,
-) -> Diagnostic {
-    Diagnostic::new(
-        Stage::Typer,
-        Severity::Error,
-        format!(
-            "Multiple instances found for trait {}<{}>",
-            trait_name,
-            super::util::format_ty_for_diag(ty)
-        ),
-    )
-    .with_range(origin)
-}
 
 fn pat_origin(pat: &tast::Pat) -> Option<TextRange> {
     match pat {
@@ -212,775 +190,7 @@ fn occurs(
     true
 }
 
-fn instantiate_struct_field_ty(
-    diagnostics: &mut Diagnostics,
-    struct_def: &crate::env::StructDef,
-    type_args: &[tast::Ty],
-    field: &TastIdent,
-) -> Option<tast::Ty> {
-    const COMPLETION_PLACEHOLDER: &str = "completion_placeholder";
-    if struct_def.generics.len() != type_args.len() {
-        super::util::push_error(
-            diagnostics,
-            format!(
-                "Struct {} expects {} type arguments, but got {}",
-                struct_def.name.0,
-                struct_def.generics.len(),
-                type_args.len()
-            ),
-        );
-        return None;
-    }
-
-    let mut subst = HashMap::new();
-    for (param, arg) in struct_def.generics.iter().zip(type_args.iter()) {
-        subst.insert(param.0.clone(), arg.clone());
-    }
-
-    if let Some((_, ty)) = struct_def.fields.iter().find(|(fname, _)| fname == field) {
-        Some(substitute_ty_params(ty, &subst))
-    } else if field.0 == COMPLETION_PLACEHOLDER {
-        Some(tast::Ty::TUnit)
-    } else {
-        super::util::push_error(
-            diagnostics,
-            format!("Struct {} has no field {}", struct_def.name.0, field.0),
-        );
-        None
-    }
-}
-
 impl Typer {
-    fn constraint_origin(constraint: &Constraint) -> Option<TextRange> {
-        match constraint {
-            Constraint::TypeEqual(_, _, origin) => *origin,
-            Constraint::Overloaded { origin, .. } => *origin,
-            Constraint::Implements { origin, .. } => *origin,
-            Constraint::StructFieldAccess { origin, .. } => *origin,
-            Constraint::TupleProjectionAccess { origin, .. } => *origin,
-            Constraint::InherentMethodCall { origin, .. } => *origin,
-        }
-    }
-
-    fn first_constraint_origin(constraints: &[Constraint]) -> Option<TextRange> {
-        constraints.iter().find_map(Self::constraint_origin)
-    }
-
-    fn ty_mentions_var(ty: &tast::Ty, var: TypeVar) -> bool {
-        match ty {
-            tast::Ty::TVar(v) => *v == var,
-            tast::Ty::TUnit
-            | tast::Ty::TBool
-            | tast::Ty::TInt8
-            | tast::Ty::TInt16
-            | tast::Ty::TInt32
-            | tast::Ty::TInt64
-            | tast::Ty::TUint8
-            | tast::Ty::TUint16
-            | tast::Ty::TUint32
-            | tast::Ty::TUint64
-            | tast::Ty::TFloat32
-            | tast::Ty::TFloat64
-            | tast::Ty::TString
-            | tast::Ty::TChar
-            | tast::Ty::TEnum { .. }
-            | tast::Ty::TStruct { .. }
-            | tast::Ty::TDyn { .. }
-            | tast::Ty::TParam { .. } => false,
-            tast::Ty::TTuple { typs } => typs.iter().any(|t| Self::ty_mentions_var(t, var)),
-            tast::Ty::TApp { ty, args } => {
-                Self::ty_mentions_var(ty, var) || args.iter().any(|t| Self::ty_mentions_var(t, var))
-            }
-            tast::Ty::TArray { elem, .. } => Self::ty_mentions_var(elem, var),
-            tast::Ty::TSlice { elem } => Self::ty_mentions_var(elem, var),
-            tast::Ty::TVec { elem } => Self::ty_mentions_var(elem, var),
-            tast::Ty::TRef { elem } => Self::ty_mentions_var(elem, var),
-            tast::Ty::THashMap { key, value } => {
-                Self::ty_mentions_var(key, var) || Self::ty_mentions_var(value, var)
-            }
-            tast::Ty::TFunc { params, ret_ty } => {
-                params.iter().any(|t| Self::ty_mentions_var(t, var))
-                    || Self::ty_mentions_var(ret_ty, var)
-            }
-        }
-    }
-
-    fn origin_for_unresolved_type_var(&self, var: TypeVar) -> Option<TextRange> {
-        self.constraints
-            .iter()
-            .find_map(|constraint| match constraint {
-                Constraint::TypeEqual(l, r, origin) => {
-                    if Self::ty_mentions_var(l, var) || Self::ty_mentions_var(r, var) {
-                        *origin
-                    } else {
-                        None
-                    }
-                }
-                Constraint::Overloaded {
-                    call_site_type,
-                    origin,
-                    ..
-                } => {
-                    if Self::ty_mentions_var(call_site_type, var) {
-                        *origin
-                    } else {
-                        None
-                    }
-                }
-                Constraint::Implements { for_ty, origin, .. } => {
-                    if Self::ty_mentions_var(for_ty, var) {
-                        *origin
-                    } else {
-                        None
-                    }
-                }
-                Constraint::StructFieldAccess {
-                    expr_ty,
-                    result_ty,
-                    origin,
-                    ..
-                } => {
-                    if Self::ty_mentions_var(expr_ty, var) || Self::ty_mentions_var(result_ty, var)
-                    {
-                        *origin
-                    } else {
-                        None
-                    }
-                }
-                Constraint::TupleProjectionAccess {
-                    tuple_ty,
-                    result_ty,
-                    origin,
-                    ..
-                } => {
-                    if Self::ty_mentions_var(tuple_ty, var) || Self::ty_mentions_var(result_ty, var)
-                    {
-                        *origin
-                    } else {
-                        None
-                    }
-                }
-                Constraint::InherentMethodCall {
-                    receiver_ty,
-                    call_site_type,
-                    origin,
-                    ..
-                } => {
-                    if Self::ty_mentions_var(receiver_ty, var)
-                        || Self::ty_mentions_var(call_site_type, var)
-                    {
-                        *origin
-                    } else {
-                        None
-                    }
-                }
-            })
-    }
-
-    pub fn solve(&mut self, genv: &PackageTypeEnv, diagnostics: &mut Diagnostics) {
-        let mut constraints = std::mem::take(&mut self.constraints);
-        self.reported_unresolved_type_vars.clear();
-        let mut changed = true;
-
-        fn is_concrete(norm_ty: &tast::Ty) -> bool {
-            match norm_ty {
-                tast::Ty::TVar(..) => false,
-                tast::Ty::TUnit
-                | tast::Ty::TBool
-                | tast::Ty::TInt8
-                | tast::Ty::TInt16
-                | tast::Ty::TInt32
-                | tast::Ty::TInt64
-                | tast::Ty::TUint8
-                | tast::Ty::TUint16
-                | tast::Ty::TUint32
-                | tast::Ty::TUint64
-                | tast::Ty::TFloat32
-                | tast::Ty::TFloat64
-                | tast::Ty::TString
-                | tast::Ty::TChar
-                | tast::Ty::TParam { .. } => true, // TParam is treated as concrete here
-                tast::Ty::TTuple { typs } => typs.iter().all(is_concrete),
-                tast::Ty::TEnum { .. } | tast::Ty::TStruct { .. } | tast::Ty::TDyn { .. } => true,
-                tast::Ty::TApp { ty, args } => {
-                    is_concrete(ty.as_ref()) && args.iter().all(is_concrete)
-                }
-                tast::Ty::TArray { elem, .. } => is_concrete(elem),
-                tast::Ty::TSlice { elem } => is_concrete(elem),
-                tast::Ty::TVec { elem } => is_concrete(elem),
-                tast::Ty::TRef { elem } => is_concrete(elem),
-                tast::Ty::THashMap { key, value } => is_concrete(key) && is_concrete(value),
-                tast::Ty::TFunc { params, ret_ty } => {
-                    params.iter().all(is_concrete) && is_concrete(ret_ty)
-                }
-            }
-        }
-
-        while changed {
-            changed = false;
-            let mut still_pending = Vec::new();
-            for constraint in constraints.drain(..) {
-                match constraint {
-                    Constraint::TypeEqual(l, r, origin) => {
-                        let l_norm = self.norm(&l);
-                        let r_norm = self.norm(&r);
-                        let mut dyn_coercion_ambiguous = false;
-                        let dyn_coercion_ok = match (&l_norm, &r_norm) {
-                            (concrete, tast::Ty::TDyn { trait_name })
-                                if !matches!(
-                                    concrete,
-                                    tast::Ty::TVar(_) | tast::Ty::TDyn { .. }
-                                ) =>
-                            {
-                                let impl_count =
-                                    genv.trait_impl_count_visible(trait_name, concrete);
-                                if impl_count > 1 {
-                                    diagnostics.push(multiple_trait_impls_diagnostic(
-                                        trait_name, concrete, origin,
-                                    ));
-                                    dyn_coercion_ambiguous = true;
-                                }
-                                impl_count == 1
-                            }
-                            _ => false,
-                        };
-                        if !dyn_coercion_ambiguous
-                            && (dyn_coercion_ok || self.unify(diagnostics, &l, &r, origin))
-                        {
-                            changed = true;
-                        }
-                    }
-                    Constraint::Overloaded {
-                        op,
-                        trait_name,
-                        call_site_type,
-                        origin,
-                    } => {
-                        let norm_call_site_type = self.norm(&call_site_type);
-                        if let tast::Ty::TFunc {
-                            params: norm_arg_types,
-                            ret_ty: norm_ret_ty,
-                        } = norm_call_site_type
-                        {
-                            if let Some(self_ty) = norm_arg_types.first() {
-                                match self_ty {
-                                    tast::Ty::TParam { name }
-                                        if self.tparam_trait_bounds.get(name).is_some_and(
-                                            |bounds| {
-                                                let (resolved, _) =
-                                                    super::util::normalize_trait_name(
-                                                        genv,
-                                                        &trait_name.0,
-                                                    );
-                                                bounds.contains(&resolved)
-                                            },
-                                        ) =>
-                                    {
-                                        let (resolved, env) =
-                                            super::util::normalize_trait_name(genv, &trait_name.0);
-                                        let trait_ident = TastIdent(resolved);
-                                        if let Some(method_scheme) =
-                                            env.lookup_trait_method_scheme(&trait_ident, &op)
-                                        {
-                                            let method_ty = self.inst_ty(&method_scheme.ty);
-                                            let method_ty =
-                                                instantiate_self_ty(&method_ty, self_ty);
-                                            let call_fun_ty = tast::Ty::TFunc {
-                                                params: norm_arg_types.clone(),
-                                                ret_ty: norm_ret_ty.clone(),
-                                            };
-                                            still_pending.push(Constraint::TypeEqual(
-                                                call_fun_ty,
-                                                method_ty,
-                                                origin,
-                                            ));
-                                            changed = true;
-                                        } else {
-                                            diagnostics.push(
-                                                Diagnostic::new(
-                                                    Stage::Typer,
-                                                    Severity::Error,
-                                                    format!(
-                                                        "Method {} not found in trait {}",
-                                                        op.0, trait_name.0
-                                                    ),
-                                                )
-                                                .with_range(origin),
-                                            );
-                                        }
-                                    }
-                                    tast::Ty::TDyn {
-                                        trait_name: dyn_trait,
-                                    } if {
-                                        let (resolved, _) =
-                                            super::util::normalize_trait_name(genv, &trait_name.0);
-                                        *dyn_trait == resolved
-                                    } =>
-                                    {
-                                        let (resolved, env) =
-                                            super::util::normalize_trait_name(genv, &trait_name.0);
-                                        let trait_ident = TastIdent(resolved);
-                                        if let Some(method_scheme) =
-                                            env.lookup_trait_method_scheme(&trait_ident, &op)
-                                        {
-                                            let method_ty = self.inst_ty(&method_scheme.ty);
-                                            let method_ty =
-                                                instantiate_self_ty(&method_ty, self_ty);
-                                            let call_fun_ty = tast::Ty::TFunc {
-                                                params: norm_arg_types.clone(),
-                                                ret_ty: norm_ret_ty.clone(),
-                                            };
-                                            still_pending.push(Constraint::TypeEqual(
-                                                call_fun_ty,
-                                                method_ty,
-                                                origin,
-                                            ));
-                                            changed = true;
-                                        } else {
-                                            diagnostics.push(
-                                                Diagnostic::new(
-                                                    Stage::Typer,
-                                                    Severity::Error,
-                                                    format!(
-                                                        "Method {} not found in trait {}",
-                                                        op.0, trait_name.0
-                                                    ),
-                                                )
-                                                .with_range(origin),
-                                            );
-                                        }
-                                    }
-                                    ty if is_concrete(ty) => {
-                                        let (resolved, _env) =
-                                            super::util::normalize_trait_name(genv, &trait_name.0);
-                                        let trait_ident = TastIdent(resolved);
-                                        let impls = genv.collect_visible_trait_impl_schemes(
-                                            &trait_ident,
-                                            self_ty,
-                                            &op,
-                                        );
-                                        match impls.as_slice() {
-                                            [impl_scheme] => {
-                                                let impl_fun_ty = self.inst_ty(&impl_scheme.ty);
-
-                                                let call_fun_ty = tast::Ty::TFunc {
-                                                    params: norm_arg_types.clone(),
-                                                    ret_ty: norm_ret_ty.clone(),
-                                                };
-
-                                                still_pending.push(Constraint::TypeEqual(
-                                                    call_fun_ty,
-                                                    impl_fun_ty,
-                                                    origin,
-                                                ));
-
-                                                changed = true;
-                                            }
-                                            [] => {
-                                                diagnostics.push(Diagnostic::new(
-                                                    Stage::Typer,
-                                                    Severity::Error,
-                                                    format!(
-                                                        "No instance found for trait {}<{}> for operator {}",
-                                                        trait_name.0,
-                                                        super::util::format_ty_for_diag(ty),
-                                                        op.0
-                                                    ),
-                                                ).with_range(origin))
-                                            }
-                                            _ => {
-                                                diagnostics.push(Diagnostic::new(
-                                                    Stage::Typer,
-                                                    Severity::Error,
-                                                    format!(
-                                                        "Multiple instances found for trait {}<{}> for operator {}",
-                                                        trait_name.0,
-                                                        super::util::format_ty_for_diag(ty),
-                                                        op.0
-                                                    ),
-                                                ).with_range(origin))
-                                            }
-                                        }
-                                    }
-                                    tast::Ty::TVar(_) => {
-                                        // We cannot resolve this yet. Defer it.
-                                        still_pending.push(Constraint::Overloaded {
-                                            op,
-                                            trait_name,
-                                            call_site_type, // Push original back
-                                            origin,
-                                        });
-                                    }
-                                    _ if contains_tvar(self_ty) => {
-                                        still_pending.push(Constraint::Overloaded {
-                                            op,
-                                            trait_name,
-                                            call_site_type,
-                                            origin,
-                                        });
-                                    }
-                                    _ => {
-                                        diagnostics.push(Diagnostic::new(
-                                            Stage::Typer,
-                                            Severity::Error,
-                                            format!(
-                                                "Overload resolution failed for non-concrete type {}",
-                                                super::util::format_ty_for_diag(self_ty)
-                                            ),
-                                        ).with_range(origin));
-                                    }
-                                }
-                            } else {
-                                diagnostics.push(
-                                    Diagnostic::new(
-                                        Stage::Typer,
-                                        Severity::Error,
-                                        format!(
-                                            "Overloaded operator {} called with no arguments?",
-                                            op.0
-                                        ),
-                                    )
-                                    .with_range(origin),
-                                );
-                            }
-                        } else {
-                            diagnostics.push(
-                                Diagnostic::new(
-                                    Stage::Typer,
-                                    Severity::Error,
-                                    format!(
-                                    "Overloaded constraint does not involve a function type: {}",
-                                    super::util::format_ty_for_diag(&norm_call_site_type)
-                                ),
-                                )
-                                .with_range(origin),
-                            );
-                        }
-                    }
-                    Constraint::Implements {
-                        trait_name,
-                        for_ty,
-                        origin,
-                    } => {
-                        let norm_for_ty = self.norm(&for_ty);
-                        let dyn_satisfied = matches!(
-                            &norm_for_ty,
-                            tast::Ty::TDyn {
-                                trait_name: dyn_trait_name
-                            } if dyn_trait_name == &trait_name.0
-                        );
-                        let tparam_satisfied = matches!(
-                            &norm_for_ty,
-                            tast::Ty::TParam { name }
-                            if self.tparam_trait_bounds
-                                .get(name)
-                                .is_some_and(|bounds| bounds.contains(&trait_name.0))
-                        );
-                        let tparam_in_type = contains_tparam(&norm_for_ty);
-                        if dyn_satisfied || tparam_satisfied || tparam_in_type {
-                            changed = true;
-                        } else if matches!(norm_for_ty, tast::Ty::TVar(_))
-                            || !is_concrete(&norm_for_ty)
-                        {
-                            still_pending.push(Constraint::Implements {
-                                trait_name,
-                                for_ty: norm_for_ty,
-                                origin,
-                            });
-                        } else {
-                            let impl_count =
-                                genv.trait_impl_count_visible(&trait_name.0, &norm_for_ty);
-                            if impl_count == 1 {
-                                changed = true;
-                            } else if impl_count > 1 {
-                                diagnostics.push(multiple_trait_impls_diagnostic(
-                                    &trait_name.0,
-                                    &norm_for_ty,
-                                    origin,
-                                ));
-                            } else {
-                                diagnostics.push(
-                                    Diagnostic::new(
-                                        Stage::Typer,
-                                        Severity::Error,
-                                        format!(
-                                            "No instance found for trait {}<{}>",
-                                            trait_name.0,
-                                            super::util::format_ty_for_diag(&norm_for_ty)
-                                        ),
-                                    )
-                                    .with_range(origin),
-                                );
-                            }
-                        }
-                    }
-                    Constraint::StructFieldAccess {
-                        expr_ty,
-                        field,
-                        result_ty,
-                        origin,
-                    } => {
-                        let norm_expr_ty = self.norm(&expr_ty);
-                        if let Some((type_name, type_args)) = decompose_struct_type(&norm_expr_ty) {
-                            let (resolved, env) = super::util::resolve_type_name(genv, &type_name);
-                            let struct_def = env.structs().get(&TastIdent(resolved));
-                            let Some(struct_def) = struct_def else {
-                                super::util::push_error_with_range(
-                                    diagnostics,
-                                    format!(
-                                        "Struct {} not found when accessing field {}",
-                                        type_name, field.0
-                                    ),
-                                    origin,
-                                );
-                                continue;
-                            };
-                            if let Some(field_ty) = instantiate_struct_field_ty(
-                                diagnostics,
-                                struct_def,
-                                &type_args,
-                                &field,
-                            ) && self.unify(diagnostics, &result_ty, &field_ty, origin)
-                            {
-                                changed = true;
-                            }
-                        } else {
-                            still_pending.push(Constraint::StructFieldAccess {
-                                expr_ty: norm_expr_ty,
-                                field,
-                                result_ty,
-                                origin,
-                            });
-                        }
-                    }
-                    Constraint::TupleProjectionAccess {
-                        tuple_ty,
-                        index,
-                        result_ty,
-                        origin,
-                    } => {
-                        let norm_tuple_ty = self.norm(&tuple_ty);
-                        match &norm_tuple_ty {
-                            tast::Ty::TTuple { typs } => {
-                                let Some(field_ty) = typs.get(index) else {
-                                    diagnostics.push(
-                                        Diagnostic::new(
-                                            Stage::Typer,
-                                            Severity::Error,
-                                            format!(
-                                                "Tuple index {} out of bounds for type {}",
-                                                index,
-                                                super::util::format_ty_for_diag(&norm_tuple_ty)
-                                            ),
-                                        )
-                                        .with_range(origin),
-                                    );
-                                    continue;
-                                };
-                                if self.unify(diagnostics, &result_ty, field_ty, origin) {
-                                    changed = true;
-                                }
-                            }
-                            _ if contains_tvar(&norm_tuple_ty) => {
-                                still_pending.push(Constraint::TupleProjectionAccess {
-                                    tuple_ty: norm_tuple_ty,
-                                    index,
-                                    result_ty,
-                                    origin,
-                                });
-                            }
-                            _ => {
-                                diagnostics.push(
-                                    Diagnostic::new(
-                                        Stage::Typer,
-                                        Severity::Error,
-                                        format!(
-                                            "Cannot project field {} on non-tuple type {}",
-                                            index,
-                                            super::util::format_ty_for_diag(&norm_tuple_ty)
-                                        ),
-                                    )
-                                    .with_range(origin),
-                                );
-                            }
-                        }
-                    }
-                    Constraint::InherentMethodCall {
-                        receiver_ty,
-                        method,
-                        call_site_type,
-                        origin,
-                    } => {
-                        let norm_receiver_ty = self.norm(&receiver_ty);
-                        if contains_tvar(&norm_receiver_ty) {
-                            still_pending.push(Constraint::InherentMethodCall {
-                                receiver_ty: norm_receiver_ty,
-                                method,
-                                call_site_type,
-                                origin,
-                            });
-                        } else if let Some(scheme) =
-                            genv.lookup_visible_inherent_method_scheme(&norm_receiver_ty, &method)
-                        {
-                            let inst_method_ty = self.inst_ty(&scheme.ty);
-                            let unified =
-                                self.unify(diagnostics, &call_site_type, &inst_method_ty, origin);
-                            if unified {
-                                changed = true;
-                            }
-                        } else if let Some(field_ty) =
-                            resolve_field_ty_eager(genv, &norm_receiver_ty, &method)
-                        {
-                            if let tast::Ty::TFunc { params, ret_ty } = &field_ty {
-                                let mut method_params = vec![norm_receiver_ty.clone()];
-                                method_params.extend(params.iter().cloned());
-                                let method_ty = tast::Ty::TFunc {
-                                    params: method_params,
-                                    ret_ty: ret_ty.clone(),
-                                };
-                                let unified =
-                                    self.unify(diagnostics, &call_site_type, &method_ty, origin);
-                                if unified {
-                                    changed = true;
-                                }
-                            } else {
-                                super::util::push_error_with_range(
-                                    diagnostics,
-                                    format!(
-                                        "Field {} on type {} is not callable",
-                                        method.0,
-                                        super::util::format_ty_for_diag(&norm_receiver_ty)
-                                    ),
-                                    origin,
-                                );
-                            }
-                        } else {
-                            super::util::push_error_with_range(
-                                diagnostics,
-                                format!(
-                                    "Method {} not found for type {}",
-                                    method.0,
-                                    super::util::format_ty_for_diag(&norm_receiver_ty)
-                                ),
-                                origin,
-                            );
-                        }
-                    }
-                }
-            }
-            constraints.extend(still_pending);
-
-            let deferred = std::mem::take(&mut self.deferred_dyn_coercions);
-            let mut still_deferred = Vec::new();
-            for coercion in deferred {
-                let expected_norm = self.norm(&coercion.expected_ty);
-                match &expected_norm {
-                    tast::Ty::TVar(_) => {
-                        still_deferred.push(coercion);
-                    }
-                    tast::Ty::TDyn { trait_name } => {
-                        let concrete_norm = self.norm(&coercion.concrete_ty);
-                        if contains_tvar(&concrete_norm) {
-                            still_deferred.push(coercion);
-                        } else if matches!(concrete_norm, tast::Ty::TDyn { .. }) {
-                            changed = true;
-                        } else {
-                            let impl_count =
-                                genv.trait_impl_count_visible(trait_name, &concrete_norm);
-                            if impl_count == 1 {
-                                self.results.push_coercion(
-                                    coercion.expr_id,
-                                    crate::typer::results::Coercion::ToDyn {
-                                        trait_name: tast::TastIdent(trait_name.clone()),
-                                        for_ty: concrete_norm,
-                                        ty: expected_norm,
-                                        astptr: None,
-                                    },
-                                );
-                                changed = true;
-                            } else if impl_count > 1 {
-                                diagnostics.push(multiple_trait_impls_diagnostic(
-                                    trait_name,
-                                    &concrete_norm,
-                                    coercion.origin,
-                                ));
-                            } else {
-                                constraints.push(Constraint::TypeEqual(
-                                    coercion.concrete_ty,
-                                    coercion.expected_ty,
-                                    coercion.origin,
-                                ));
-                            }
-                        }
-                    }
-                    _ => {
-                        constraints.push(Constraint::TypeEqual(
-                            coercion.concrete_ty,
-                            coercion.expected_ty,
-                            coercion.origin,
-                        ));
-                        changed = true;
-                    }
-                }
-            }
-            self.deferred_dyn_coercions = still_deferred;
-
-            if !changed && !self.deferred_dyn_coercions.is_empty() {
-                let remaining = std::mem::take(&mut self.deferred_dyn_coercions);
-                let mut kept = Vec::new();
-                for coercion in &remaining {
-                    let expected_norm = self.norm(&coercion.expected_ty);
-                    if matches!(expected_norm, tast::Ty::TVar(_)) {
-                        constraints.push(Constraint::TypeEqual(
-                            coercion.concrete_ty.clone(),
-                            coercion.expected_ty.clone(),
-                            coercion.origin,
-                        ));
-                        changed = true;
-                    } else {
-                        kept.push(coercion.clone());
-                    }
-                }
-                if changed {
-                    self.deferred_dyn_coercions = kept;
-                    continue;
-                }
-                for coercion in remaining {
-                    constraints.push(Constraint::TypeEqual(
-                        coercion.concrete_ty,
-                        coercion.expected_ty,
-                        coercion.origin,
-                    ));
-                }
-                changed = true;
-                continue;
-            }
-
-            if !changed && !constraints.is_empty() {
-                diagnostics.push(
-                    Diagnostic::new(
-                        Stage::Typer,
-                        Severity::Error,
-                        "Could not solve all type constraints".to_string(),
-                    )
-                    .with_range(Self::first_constraint_origin(&constraints)),
-                );
-                break;
-            }
-        }
-        if !constraints.is_empty() {
-            diagnostics.push(
-                Diagnostic::new(
-                    Stage::Typer,
-                    Severity::Error,
-                    "Type inference failed due to unresolved constraints".to_string(),
-                )
-                .with_range(Self::first_constraint_origin(&constraints)),
-            );
-        }
-        self.constraints = constraints;
-    }
-
     pub(crate) fn norm(&mut self, ty: &tast::Ty) -> tast::Ty {
         match ty {
             tast::Ty::TVar(v) => {
@@ -1055,6 +265,16 @@ impl Typer {
             self.array_wildcard_resolutions = array_wildcard_resolutions;
             false
         }
+    }
+
+    pub(crate) fn equate(
+        &mut self,
+        diagnostics: &mut Diagnostics,
+        left: &tast::Ty,
+        right: &tast::Ty,
+        origin: Option<TextRange>,
+    ) {
+        let _ = self.unify(diagnostics, left, right, origin);
     }
 
     pub(crate) fn unify(
@@ -1372,6 +592,64 @@ impl Typer {
         self._go_inst_ty(ty, &mut subst, wildcard_len)
     }
 
+    pub(crate) fn instantiate_scheme(
+        &mut self,
+        scheme: &crate::env::FnScheme,
+        cause: ObligationCause,
+    ) -> InstantiatedScheme {
+        self.instantiate_scheme_with_substitution(scheme, HashMap::new(), cause)
+    }
+
+    pub(crate) fn instantiate_scheme_with_substitution(
+        &mut self,
+        scheme: &crate::env::FnScheme,
+        mut substitution: HashMap<String, tast::Ty>,
+        cause: ObligationCause,
+    ) -> InstantiatedScheme {
+        for param in &scheme.type_params {
+            if !substitution.contains_key(param) {
+                substitution.insert(param.clone(), self.fresh_ty_var());
+            }
+        }
+        let wildcard_len = self.fresh_array_wildcard();
+        let ty = self._go_inst_ty(&scheme.ty, &mut substitution, wildcard_len);
+        let obligations = scheme
+            .constraints
+            .iter()
+            .filter_map(|constraint| {
+                substitution
+                    .get(&constraint.type_param)
+                    .cloned()
+                    .map(|for_ty| {
+                        (
+                            TraitGoal {
+                                trait_name: constraint.trait_name.clone(),
+                                for_ty,
+                            },
+                            cause.clone(),
+                        )
+                    })
+            })
+            .collect();
+        InstantiatedScheme {
+            ty,
+            substitution,
+            obligations,
+        }
+    }
+
+    pub(crate) fn register_scheme_obligations(&mut self, instantiated: &InstantiatedScheme) {
+        debug_assert!(instantiated.obligations.iter().all(|(goal, _)| {
+            instantiated
+                .substitution
+                .values()
+                .any(|ty| ty == &goal.for_ty)
+        }));
+        for (goal, cause) in &instantiated.obligations {
+            self.push_obligation(Predicate::Trait(goal.clone()), cause.clone());
+        }
+    }
+
     fn _go_inst_ty(
         &mut self,
         ty: &tast::Ty,
@@ -1469,20 +747,20 @@ impl Typer {
                 if let Some(value) = self.uni.probe_value(*v) {
                     self.subst_ty(diagnostics, &value, origin)
                 } else {
-                    if self.reported_unresolved_type_vars.insert(*v) {
+                    let diagnostic_origin = origin
+                        .or_else(|| self.origin_for_unresolved_type_var(*v))
+                        .or_else(|| diagnostics.iter().filter_map(|d| d.range()).last());
+                    if self
+                        .reported_unresolved_type_origins
+                        .insert(diagnostic_origin.map(|range| range.start()))
+                    {
                         diagnostics.push(
                             Diagnostic::new(
                                 Stage::Typer,
                                 Severity::Error,
                                 "Could not infer type".to_string(),
                             )
-                            .with_range(
-                                origin
-                                    .or_else(|| self.origin_for_unresolved_type_var(*v))
-                                    .or_else(|| {
-                                        diagnostics.iter().filter_map(|d| d.range()).last()
-                                    }),
-                            ),
+                            .with_range(diagnostic_origin),
                         );
                     }
                     tast::Ty::TVar(*v)

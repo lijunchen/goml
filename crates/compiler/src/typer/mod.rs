@@ -1,57 +1,35 @@
 use ena::unify::InPlaceUnificationTable;
 use std::collections::{HashMap, HashSet};
 
+use crate::tast;
+use crate::tast::TypeVar;
 use crate::typer::results::TypeckResultsBuilder;
-use crate::{env::Constraint, tast::TypeVar};
-use crate::{hir, tast};
 
 mod check;
 mod literals;
 mod localenv;
 mod member_lookup;
 pub mod name_resolution;
+mod obligations;
 mod operators;
 pub mod results;
+mod solve;
 pub mod tast_builder;
 mod toplevel;
+mod traits;
 mod type_ops;
 mod unify;
 mod util;
+
+pub(crate) use obligations::{
+    ArithmeticKind, CoercionGoal, MethodGoal, Obligation, ObligationCause, ObligationCauseKind,
+    ObligationId, OperationGoal, Predicate, ProjectionGoal, TraitGoal,
+};
 
 pub use toplevel::check_file_with_env_and_results;
 pub use toplevel::{
     check_file, check_file_with_env, check_file_with_env_allowing_std_host_externs,
 };
-
-#[derive(Debug, Clone)]
-pub(crate) enum ArithmeticKind {
-    NumericOrString,
-    Numeric,
-}
-
-#[derive(Debug, Clone)]
-pub(crate) struct DeferredArithmeticCheck {
-    pub kind: ArithmeticKind,
-    pub ty: tast::Ty,
-    pub op: &'static str,
-    pub origin: Option<text_size::TextRange>,
-}
-
-#[derive(Debug, Clone)]
-pub(crate) struct DeferredComparisonCheck {
-    pub op: common_defs::BinaryOp,
-    pub lhs_ty: tast::Ty,
-    pub rhs_ty: tast::Ty,
-    pub origin: Option<text_size::TextRange>,
-}
-
-#[derive(Debug, Clone)]
-pub(crate) struct DeferredDynCoercion {
-    pub expr_id: hir::ExprId,
-    pub concrete_ty: tast::Ty,
-    pub expected_ty: tast::Ty,
-    pub origin: Option<text_size::TextRange>,
-}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum LoopControlContext {
@@ -62,16 +40,16 @@ pub(crate) enum LoopControlContext {
 
 pub struct Typer {
     pub uni: InPlaceUnificationTable<TypeVar>,
-    pub(crate) constraints: Vec<Constraint>,
-    pub(crate) reported_unresolved_type_vars: HashSet<TypeVar>,
+    pub(crate) obligations: Vec<Obligation>,
+    pub(crate) obligation_causes: HashMap<ObligationId, ObligationCause>,
+    pub(crate) next_obligation_id: ObligationId,
+    pub(crate) reported_unresolved_type_origins: HashSet<Option<text_size::TextSize>>,
+    pub(crate) unresolved_type_var_origins: HashMap<TypeVar, Option<text_size::TextRange>>,
     pub hir_table: name_resolution::HirTable,
     pub results: TypeckResultsBuilder,
     pub(crate) loop_control_context: LoopControlContext,
     pub(crate) return_ty_stack: Vec<tast::Ty>,
-    pub(crate) deferred_arithmetic_checks: Vec<DeferredArithmeticCheck>,
-    pub(crate) deferred_comparison_checks: Vec<DeferredComparisonCheck>,
     pub(crate) tparam_trait_bounds: HashMap<String, Vec<String>>,
-    pub(crate) deferred_dyn_coercions: Vec<DeferredDynCoercion>,
     pub(crate) array_wildcard_counter: usize,
     pub(crate) array_wildcard_resolutions: HashMap<usize, usize>,
 }
@@ -81,23 +59,60 @@ impl Typer {
         let results = TypeckResultsBuilder::new(&hir_table);
         Self {
             uni: InPlaceUnificationTable::new(),
-            constraints: Vec::new(),
-            reported_unresolved_type_vars: HashSet::new(),
+            obligations: Vec::new(),
+            obligation_causes: HashMap::new(),
+            next_obligation_id: 0,
+            reported_unresolved_type_origins: HashSet::new(),
+            unresolved_type_var_origins: HashMap::new(),
             hir_table,
             results,
             loop_control_context: LoopControlContext::Disallowed,
             return_ty_stack: Vec::new(),
-            deferred_arithmetic_checks: Vec::new(),
-            deferred_comparison_checks: Vec::new(),
             tparam_trait_bounds: HashMap::new(),
-            deferred_dyn_coercions: Vec::new(),
             array_wildcard_counter: 0,
             array_wildcard_resolutions: HashMap::new(),
         }
     }
 
-    pub(crate) fn push_constraint(&mut self, constraint: Constraint) {
-        self.constraints.push(constraint);
+    pub(crate) fn push_obligation(
+        &mut self,
+        predicate: Predicate,
+        cause: ObligationCause,
+    ) -> ObligationId {
+        let obligation = self.new_obligation(predicate, cause);
+        let id = obligation.id;
+        self.obligations.push(obligation);
+        id
+    }
+
+    pub(crate) fn new_obligation(
+        &mut self,
+        predicate: Predicate,
+        cause: ObligationCause,
+    ) -> Obligation {
+        let id = self.reserve_obligation_cause(cause.clone());
+        Obligation {
+            id,
+            predicate,
+            cause,
+        }
+    }
+
+    pub(crate) fn reserve_obligation_cause(&mut self, cause: ObligationCause) -> ObligationId {
+        let id = self.next_obligation_id;
+        self.next_obligation_id += 1;
+        self.obligation_causes.insert(id, cause);
+        id
+    }
+
+    pub(crate) fn push_reserved_obligation(&mut self, id: ObligationId, predicate: Predicate) {
+        if let Some(cause) = self.obligation_causes.get(&id).cloned() {
+            self.obligations.push(Obligation {
+                id,
+                predicate,
+                cause,
+            });
+        }
     }
 
     pub(crate) fn fresh_array_wildcard(&mut self) -> usize {

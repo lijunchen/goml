@@ -34,8 +34,8 @@ impl Typer {
             hir::Pat::PVar { name, astptr } => {
                 self.check_pat_var(local_env, diagnostics, name, Some(astptr), ty)
             }
-            hir::Pat::PUnit => self.check_pat_unit(ty, astptr),
-            hir::Pat::PBool { value } => self.check_pat_bool(value, ty, range, astptr),
+            hir::Pat::PUnit => self.check_pat_unit(diagnostics, ty, astptr),
+            hir::Pat::PBool { value } => self.check_pat_bool(diagnostics, value, ty, range, astptr),
             hir::Pat::PInt { value } => self.check_pat_int(diagnostics, &value, ty, range, astptr),
             hir::Pat::PInt8 { value } => {
                 self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt8, ty, range, astptr)
@@ -80,7 +80,9 @@ impl Typer {
                 range,
                 astptr,
             ),
-            hir::Pat::PString { value } => self.check_pat_string(&value, ty, range, astptr),
+            hir::Pat::PString { value } => {
+                self.check_pat_string(diagnostics, &value, ty, range, astptr)
+            }
             hir::Pat::PChar { value } => {
                 self.check_pat_char(diagnostics, value.as_str(), ty, range, astptr)
             }
@@ -117,8 +119,13 @@ impl Typer {
         }
     }
 
-    fn check_pat_unit(&mut self, ty: &tast::Ty, astptr: Option<MySyntaxNodePtr>) -> tast::Pat {
-        self.push_constraint(Constraint::TypeEqual(tast::Ty::TUnit, ty.clone(), None));
+    fn check_pat_unit(
+        &mut self,
+        diagnostics: &mut Diagnostics,
+        ty: &tast::Ty,
+        astptr: Option<MySyntaxNodePtr>,
+    ) -> tast::Pat {
+        self.equate(diagnostics, &tast::Ty::TUnit, ty, None);
         tast::Pat::PPrim {
             value: Prim::Unit { value: () },
             ty: tast::Ty::TUnit,
@@ -128,12 +135,13 @@ impl Typer {
 
     fn check_pat_bool(
         &mut self,
+        diagnostics: &mut Diagnostics,
         value: bool,
         ty: &tast::Ty,
         range: Option<TextRange>,
         astptr: Option<MySyntaxNodePtr>,
     ) -> tast::Pat {
-        self.push_constraint(Constraint::TypeEqual(tast::Ty::TBool, ty.clone(), range));
+        self.equate(diagnostics, &tast::Ty::TBool, ty, range);
         tast::Pat::PPrim {
             value: Prim::boolean(value),
             ty: tast::Ty::TBool,
@@ -152,7 +160,7 @@ impl Typer {
         let target_ty = integer_literal_target(ty).unwrap_or(tast::Ty::TInt32);
         let prim = parse_integer_literal_with_ty(diagnostics, value, &target_ty, range)
             .unwrap_or_else(|| Prim::zero_for_int_ty(&target_ty));
-        self.push_constraint(Constraint::TypeEqual(target_ty.clone(), ty.clone(), range));
+        self.equate(diagnostics, &target_ty, ty, range);
         tast::Pat::PPrim {
             value: prim,
             ty: ty.clone(),
@@ -171,11 +179,7 @@ impl Typer {
     ) -> tast::Pat {
         let prim = parse_integer_literal_with_ty(diagnostics, value, literal_ty, range)
             .unwrap_or_else(|| Prim::zero_for_int_ty(literal_ty));
-        self.push_constraint(Constraint::TypeEqual(
-            literal_ty.clone(),
-            expected_ty.clone(),
-            range,
-        ));
+        self.equate(diagnostics, literal_ty, expected_ty, range);
         tast::Pat::PPrim {
             value: prim,
             ty: literal_ty.clone(),
@@ -198,7 +202,7 @@ impl Typer {
         };
         let prim = parse_float_literal_with_ty(diagnostics, value, &target_ty, range)
             .unwrap_or(Prim::Float64 { value: 0.0 });
-        self.push_constraint(Constraint::TypeEqual(target_ty.clone(), ty.clone(), range));
+        self.equate(diagnostics, &target_ty, ty, range);
         tast::Pat::PPrim {
             value: prim,
             ty: ty.clone(),
@@ -217,11 +221,7 @@ impl Typer {
     ) -> tast::Pat {
         let prim = parse_float_literal_with_ty(diagnostics, value, literal_ty, range)
             .unwrap_or(Prim::Float64 { value: 0.0 });
-        self.push_constraint(Constraint::TypeEqual(
-            literal_ty.clone(),
-            expected_ty.clone(),
-            range,
-        ));
+        self.equate(diagnostics, literal_ty, expected_ty, range);
         tast::Pat::PPrim {
             value: prim,
             ty: literal_ty.clone(),
@@ -231,12 +231,13 @@ impl Typer {
 
     fn check_pat_string(
         &mut self,
+        diagnostics: &mut Diagnostics,
         value: &String,
         ty: &tast::Ty,
         range: Option<TextRange>,
         astptr: Option<MySyntaxNodePtr>,
     ) -> tast::Pat {
-        self.push_constraint(Constraint::TypeEqual(tast::Ty::TString, ty.clone(), range));
+        self.equate(diagnostics, &tast::Ty::TString, ty, range);
         tast::Pat::PPrim {
             value: Prim::string(value.to_owned()),
             ty: tast::Ty::TString,
@@ -252,7 +253,7 @@ impl Typer {
         range: Option<TextRange>,
         astptr: Option<MySyntaxNodePtr>,
     ) -> tast::Pat {
-        self.push_constraint(Constraint::TypeEqual(tast::Ty::TChar, ty.clone(), range));
+        self.equate(diagnostics, &tast::Ty::TChar, ty, range);
         let ch = parse_char_literal(diagnostics, value, range).unwrap_or('\0');
         tast::Pat::PPrim {
             value: Prim::character(ch),
@@ -393,11 +394,7 @@ impl Typer {
                     args_tast.push(arg_tast);
                 }
 
-                self.push_constraint(Constraint::TypeEqual(
-                    ret_ty.clone(),
-                    ty.clone(),
-                    self.pat_range(pat),
-                ));
+                self.equate(diagnostics, &ret_ty, ty, self.pat_range(pat));
 
                 self.results
                     .record_constructor_pat(pat, constructor.clone());
@@ -520,11 +517,7 @@ impl Typer {
                     );
                 }
 
-                self.push_constraint(Constraint::TypeEqual(
-                    ret_ty.clone(),
-                    ty.clone(),
-                    self.pat_range(pat),
-                ));
+                self.equate(diagnostics, &ret_ty, ty, self.pat_range(pat));
 
                 self.results.record_struct_pat_elab(
                     pat,
@@ -613,7 +606,7 @@ impl Typer {
             pats_tast.push(pat_tast);
         }
         let pat_ty = tast::Ty::TTuple { typs: pat_typs };
-        self.push_constraint(Constraint::TypeEqual(pat_ty.clone(), ty.clone(), None));
+        self.equate(diagnostics, &pat_ty, ty, None);
         tast::Pat::PTuple {
             items: pats_tast,
             ty: pat_ty,
@@ -622,8 +615,9 @@ impl Typer {
     }
 
     fn check_pat_wild(&mut self, ty: &tast::Ty, astptr: Option<MySyntaxNodePtr>) -> tast::Pat {
-        let pat_ty = self.fresh_ty_var();
-        self.push_constraint(Constraint::TypeEqual(pat_ty.clone(), ty.clone(), None));
-        tast::Pat::PWild { ty: pat_ty, astptr }
+        tast::Pat::PWild {
+            ty: ty.clone(),
+            astptr,
+        }
     }
 }

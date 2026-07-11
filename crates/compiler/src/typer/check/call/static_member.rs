@@ -20,7 +20,7 @@ struct StaticTraitMethodCall<'a> {
     site: StaticCallSite<'a>,
     trait_name: tast::TastIdent,
     method_name: tast::TastIdent,
-    method_ty: tast::Ty,
+    method_scheme: crate::env::FnScheme,
 }
 
 struct DynTraitMethodCall<'a> {
@@ -86,7 +86,7 @@ impl Typer {
             args,
         };
 
-        if let Some((trait_name, method_ty)) =
+        if let Some((trait_name, method_scheme)) =
             lookup_trait_method_from_type_name(genv, &type_name, &member_ident)
         {
             self.infer_static_trait_method_call(
@@ -97,7 +97,7 @@ impl Typer {
                     site,
                     trait_name,
                     method_name: member_ident,
-                    method_ty,
+                    method_scheme,
                 },
             )
         } else {
@@ -126,7 +126,7 @@ impl Typer {
             site,
             trait_name: type_ident,
             method_name: member_ident,
-            method_ty,
+            method_scheme,
         } = call;
         let StaticCallSite {
             call_expr_id,
@@ -134,7 +134,15 @@ impl Typer {
             astptr,
             args,
         } = site;
-        let inst_method_ty = self.inst_ty(&method_ty);
+        let range = self.expr_range(call_expr_id);
+        let parent = self
+            .reserve_obligation_cause(ObligationCause::new(range, ObligationCauseKind::MethodCall));
+        let instantiated = self.instantiate_scheme(
+            &method_scheme,
+            ObligationCause::new(range, ObligationCauseKind::FunctionBound).with_parent(parent),
+        );
+        self.register_scheme_obligations(&instantiated);
+        let inst_method_ty = instantiated.ty;
 
         if let tast::Ty::TFunc { params, ret_ty } = &inst_method_ty
             && !args.is_empty()
@@ -190,37 +198,19 @@ impl Typer {
             ret_ty: Box::new(ret_ty_for_call.clone()),
         };
 
-        if let tast::Ty::TParam { name } = &receiver_ty {
-            let in_bounds = local_env
-                .tparam_trait_bounds(name)
-                .is_some_and(|bounds| bounds.iter().any(|t| t.0 == type_ident.0));
-            if !in_bounds {
-                diagnostics.push(
-                    Diagnostic::new(
-                        Stage::Typer,
-                        Severity::Error,
-                        format!(
-                            "Type parameter {} is not constrained by trait {}",
-                            name, type_ident.0
-                        ),
-                    )
-                    .with_range(self.expr_range(call_expr_id)),
-                );
-                return self.error_expr(None);
-            }
-            self.push_constraint(Constraint::TypeEqual(
-                call_site_func_ty.clone(),
-                inst_method_ty_for_call.clone(),
-                self.expr_range(call_expr_id),
-            ));
-        } else {
-            self.push_constraint(Constraint::Overloaded {
-                op: member_ident.clone(),
+        self.equate(
+            diagnostics,
+            &call_site_func_ty,
+            &inst_method_ty_for_call,
+            range,
+        );
+        self.push_reserved_obligation(
+            parent,
+            Predicate::Trait(TraitGoal {
                 trait_name: type_ident.clone(),
-                call_site_type: call_site_func_ty.clone(),
-                origin: self.expr_range(call_expr_id),
-            });
-        }
+                for_ty: receiver_ty,
+            }),
+        );
 
         self.results.record_call_elab(
             call_expr_id,
@@ -412,7 +402,13 @@ impl Typer {
             return self.error_expr(None);
         };
 
-        let inst_method_ty = self.inst_ty(&method_scheme.ty);
+        let range = self.expr_range(call_expr_id);
+        let instantiated = self.instantiate_scheme(
+            &method_scheme,
+            ObligationCause::new(range, ObligationCauseKind::MethodCall),
+        );
+        self.register_scheme_obligations(&instantiated);
+        let inst_method_ty = instantiated.ty;
         let tast::Ty::TFunc { params, ret_ty } = inst_method_ty.clone() else {
             util::push_ice(
                 diagnostics,
@@ -458,24 +454,6 @@ impl Typer {
                 self.expr_range(call_expr_id),
             );
         }
-        let call_site_ty = tast::Ty::TFunc {
-            params: args_tast.iter().map(|arg| arg.get_ty()).collect(),
-            ret_ty: Box::new((*ret_ty).clone()),
-        };
-        if !self.apply_fn_scheme_constraints(
-            genv,
-            local_env,
-            diagnostics,
-            FnSchemeApplication {
-                scheme: &method_scheme,
-                template_call_ty: &method_scheme.ty,
-                actual_call_ty: &call_site_ty,
-                range: self.expr_range(call_expr_id),
-            },
-        ) {
-            return self.error_expr(None);
-        }
-
         self.results.record_call_elab(
             call_expr_id,
             CallElab {

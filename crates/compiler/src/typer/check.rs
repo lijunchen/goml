@@ -2,12 +2,10 @@ use std::collections::HashMap;
 
 mod call;
 mod coercion;
-mod constraints;
 mod constructors;
 mod patterns;
 
 use call::CallRequest;
-use constraints::FnSchemeApplication;
 use constructors::{ConstructorRequest, StructLiteralRequest};
 
 use diagnostics::{Severity, Stage};
@@ -22,26 +20,27 @@ use crate::typer::literals::{
 };
 use crate::typer::localenv::LocalTypeEnv;
 use crate::typer::member_lookup::{
-    MethodLookupReceiver, lookup_trait_method_candidates, lookup_trait_method_from_type_name,
-    report_ambiguous_method, report_method_not_found, resolve_field_ty_eager,
+    lookup_trait_method_candidates, lookup_trait_method_from_type_name, report_ambiguous_method,
+    report_method_not_found, resolve_field_ty_eager,
 };
 use crate::typer::operators::{
-    comparison_operand_is_valid, comparison_operator_text, integer_literal_target, is_float_ty,
-    is_integer_ty, is_numeric_ty, is_signed_numeric_ty,
+    integer_literal_target, is_float_ty, is_integer_ty, is_numeric_ty, is_signed_numeric_ty,
 };
 use crate::typer::results::{
-    CallElab, CalleeElab, Coercion, NameRefElab, StructLitArgElab, StructLitElab, StructPatArgElab,
+    CallElab, CalleeElab, NameRefElab, StructLitArgElab, StructLitElab, StructPatArgElab,
     StructPatElab, TryElab, TryKind,
 };
 use crate::typer::type_ops::{
-    collect_type_param_substitution, contains_tvar, decompose_struct_type,
-    fn_ret_depends_on_params, instantiate_self_ty, is_concrete_ty, same_or_unresolved_ty,
-    substitute_ty_params,
+    contains_tparam, contains_tvar, decompose_struct_type, fn_ret_depends_on_params,
+    instantiate_self_ty, same_or_unresolved_ty, substitute_ty_params,
 };
 use crate::{
-    env::{Constraint, PackageTypeEnv},
+    env::PackageTypeEnv,
     tast::{self},
-    typer::{LoopControlContext, Typer},
+    typer::{
+        ArithmeticKind, CoercionGoal, LoopControlContext, MethodGoal, ObligationCause,
+        ObligationCauseKind, OperationGoal, Predicate, ProjectionGoal, TraitGoal, Typer,
+    },
 };
 
 #[derive(Clone, Copy)]
@@ -766,14 +765,15 @@ impl Typer {
         if self.expr_always_exits_loop_control(e) {
             return expr_tast;
         }
-        let (expr_tast, deferred_dyn) =
-            self.coerce_to_expected_dyn(genv, local_env, diagnostics, e, expr_tast, expected);
-        if !deferred_dyn {
-            self.push_constraint(Constraint::TypeEqual(
-                expr_tast.get_ty(),
-                expected.clone(),
+        let (expr_tast, coercion_deferred) =
+            self.coerce_to_expected_dyn(genv, diagnostics, e, expr_tast, expected);
+        if !coercion_deferred {
+            self.equate(
+                diagnostics,
+                &expr_tast.get_ty(),
+                expected,
                 self.expr_range(e),
-            ));
+            );
         }
         expr_tast
     }
@@ -813,7 +813,15 @@ impl Typer {
                     );
                     return self.error_expr(astptr);
                 };
-                let inst_ty = self.inst_ty(&func_scheme.ty);
+                let instantiated = self.instantiate_scheme(
+                    &func_scheme,
+                    ObligationCause::new(
+                        astptr.map(|ptr| ptr.text_range()),
+                        ObligationCauseKind::FunctionBound,
+                    ),
+                );
+                self.register_scheme_obligations(&instantiated);
+                let inst_ty = instantiated.ty;
                 tast::Expr::EVar {
                     name: hint.to_string(),
                     ty: inst_ty,
@@ -828,7 +836,15 @@ impl Typer {
                     );
                     return self.error_expr(astptr);
                 };
-                let inst_ty = self.inst_ty(&func_scheme.ty);
+                let instantiated = self.instantiate_scheme(
+                    &func_scheme,
+                    ObligationCause::new(
+                        astptr.map(|ptr| ptr.text_range()),
+                        ObligationCauseKind::FunctionBound,
+                    ),
+                );
+                self.register_scheme_obligations(&instantiated);
+                let inst_ty = instantiated.ty;
                 tast::Expr::EVar {
                     name: hint.to_string(),
                     ty: inst_ty,
@@ -887,14 +903,21 @@ impl Typer {
         let (resolved_type_name, type_env) = super::util::resolve_type_name(genv, type_name);
         let type_ident = tast::TastIdent(resolved_type_name.clone());
         let member_ident = tast::TastIdent(member.to_string());
-        if let Some((trait_ident, method_ty)) =
+        if let Some((trait_ident, method_scheme)) =
             lookup_trait_method_from_type_name(genv, type_name, &member_ident)
         {
-            let inst_ty = self.inst_ty(&method_ty);
+            let instantiated = self.instantiate_scheme(
+                &method_scheme,
+                ObligationCause::new(
+                    astptr.map(|pointer| pointer.text_range()),
+                    ObligationCauseKind::FunctionBound,
+                ),
+            );
+            self.register_scheme_obligations(&instantiated);
             return tast::Expr::ETraitMethod {
                 trait_name: trait_ident,
                 method_name: member_ident.clone(),
-                ty: inst_ty,
+                ty: instantiated.ty,
                 astptr,
             };
         }
@@ -935,7 +958,15 @@ impl Typer {
             type_env.lookup_inherent_method_by_constr(&resolved_type_name, &member_ident)
         };
         if let Some(method_scheme) = method_scheme {
-            let inst_ty = self.inst_ty(&method_scheme.ty);
+            let instantiated = self.instantiate_scheme(
+                &method_scheme,
+                ObligationCause::new(
+                    astptr.map(|ptr| ptr.text_range()),
+                    ObligationCauseKind::MethodCall,
+                ),
+            );
+            self.register_scheme_obligations(&instantiated);
+            let inst_ty = instantiated.ty;
             let receiver_ty_for_record = if let Some(receiver_ty) = receiver_ty.clone() {
                 receiver_ty
             } else {
@@ -1030,11 +1061,12 @@ impl Typer {
         let mut items_tast = Vec::with_capacity(len);
         for item in items.iter() {
             let item_tast = self.infer_expr(genv, local_env, diagnostics, *item);
-            self.push_constraint(Constraint::TypeEqual(
-                item_tast.get_ty(),
-                elem_ty.clone(),
+            self.equate(
+                diagnostics,
+                &item_tast.get_ty(),
+                &elem_ty,
                 self.expr_range(*item),
-            ));
+            );
             items_tast.push(item_tast);
         }
 
@@ -1087,11 +1119,12 @@ impl Typer {
         let body_tast = self.infer_expr(genv, local_env, diagnostics, body);
         self.loop_control_context = saved_loop_control_context;
         let _ = self.return_ty_stack.pop();
-        self.push_constraint(Constraint::TypeEqual(
-            body_tast.get_ty(),
-            body_ty.clone(),
+        self.equate(
+            diagnostics,
+            &body_tast.get_ty(),
+            &body_ty,
             self.expr_range(body),
-        ));
+        );
         let captures = local_env.end_closure(diagnostics, &self.hir_table);
 
         let closure_ty = tast::Ty::TFunc {
@@ -1136,11 +1169,7 @@ impl Typer {
 
                     let param_ty = match annotated_ty {
                         Some(ann_ty) => {
-                            self.push_constraint(Constraint::TypeEqual(
-                                ann_ty.clone(),
-                                expected_param_ty.clone(),
-                                None,
-                            ));
+                            self.equate(diagnostics, &ann_ty, expected_param_ty, None);
                             ann_ty
                         }
                         None => expected_param_ty.clone(),
@@ -1313,11 +1342,7 @@ impl Typer {
             )))
         } else {
             if !self.block_always_returns(block) {
-                self.push_constraint(Constraint::TypeEqual(
-                    tast::Ty::TUnit,
-                    expected.clone(),
-                    None,
-                ));
+                self.equate(diagnostics, &tast::Ty::TUnit, expected, None);
             }
             None
         };
@@ -1515,11 +1540,12 @@ impl Typer {
             local_env.pop_scope(diagnostics);
             if !arm_exits {
                 has_value_arm = true;
-                self.push_constraint(Constraint::TypeEqual(
-                    arm_body_tast.get_ty(),
-                    arm_ty.clone(),
+                self.equate(
+                    diagnostics,
+                    &arm_body_tast.get_ty(),
+                    &arm_ty,
                     self.expr_range(arm.body),
-                ));
+                );
             } else {
                 arm_body_tast = self.with_expr_ty(arm_body_tast, arm_ty.clone());
             }
@@ -1551,11 +1577,12 @@ impl Typer {
         else_branch: hir::ExprId,
     ) -> tast::Expr {
         let cond_tast = self.infer_expr(genv, local_env, diagnostics, cond);
-        self.push_constraint(Constraint::TypeEqual(
-            cond_tast.get_ty(),
-            tast::Ty::TBool,
+        self.equate(
+            diagnostics,
+            &cond_tast.get_ty(),
+            &tast::Ty::TBool,
             self.expr_range(cond),
-        ));
+        );
 
         let then_tast = self.infer_expr(genv, local_env, diagnostics, then_branch);
         let else_tast = self.infer_expr(genv, local_env, diagnostics, else_branch);
@@ -1566,20 +1593,22 @@ impl Typer {
         let mut else_tast = else_tast;
 
         if !then_exits {
-            self.push_constraint(Constraint::TypeEqual(
-                then_tast.get_ty(),
-                result_ty.clone(),
+            self.equate(
+                diagnostics,
+                &then_tast.get_ty(),
+                &result_ty,
                 self.expr_range(then_branch),
-            ));
+            );
         } else {
             then_tast = self.with_expr_ty(then_tast, result_ty.clone());
         }
         if !else_exits {
-            self.push_constraint(Constraint::TypeEqual(
-                else_tast.get_ty(),
-                result_ty.clone(),
+            self.equate(
+                diagnostics,
+                &else_tast.get_ty(),
+                &result_ty,
                 self.expr_range(else_branch),
-            ));
+            );
         } else {
             else_tast = self.with_expr_ty(else_tast, result_ty.clone());
         }
@@ -1616,17 +1645,19 @@ impl Typer {
             cond_tast = self.with_expr_ty(cond_tast, tast::Ty::TBool);
             self.record_expr_result(cond, &cond_tast);
         } else {
-            self.push_constraint(Constraint::TypeEqual(
-                cond_tast.get_ty(),
-                tast::Ty::TBool,
+            self.equate(
+                diagnostics,
+                &cond_tast.get_ty(),
+                &tast::Ty::TBool,
                 self.expr_range(cond),
-            ));
+            );
         }
-        self.push_constraint(Constraint::TypeEqual(
-            body_tast.get_ty(),
-            tast::Ty::TUnit,
+        self.equate(
+            diagnostics,
+            &body_tast.get_ty(),
+            &tast::Ty::TUnit,
             self.expr_range(body),
-        ));
+        );
 
         tast::Expr::EWhile {
             cond: Box::new(cond_tast),
@@ -1712,11 +1743,12 @@ impl Typer {
                 &expected_ret_ty,
             )))
         } else {
-            self.push_constraint(Constraint::TypeEqual(
-                tast::Ty::TUnit,
-                expected_ret_ty,
+            self.equate(
+                diagnostics,
+                &tast::Ty::TUnit,
+                &expected_ret_ty,
                 self.expr_range(e),
-            ));
+            );
             None
         };
 
@@ -1782,11 +1814,12 @@ impl Typer {
                     };
                 }
                 let outer_ok_ty = self.fresh_ty_var();
-                self.push_constraint(Constraint::TypeEqual(
-                    outer_ret_ty_raw.clone(),
-                    result_ty(inner_name, outer_ok_ty, err_ty.clone()),
+                self.equate(
+                    diagnostics,
+                    &outer_ret_ty_raw,
+                    &result_ty(inner_name, outer_ok_ty, err_ty.clone()),
                     range,
-                ));
+                );
                 (
                     TryKind::Result,
                     ok_ty.clone(),
@@ -1796,11 +1829,12 @@ impl Typer {
             }
             (Some((inner_name, ok_ty, err_ty)), _, _, _, _, true) => {
                 let outer_ok_ty = self.fresh_ty_var();
-                self.push_constraint(Constraint::TypeEqual(
-                    outer_ret_ty_raw.clone(),
-                    result_ty(inner_name, outer_ok_ty, err_ty.clone()),
+                self.equate(
+                    diagnostics,
+                    &outer_ret_ty_raw,
+                    &result_ty(inner_name, outer_ok_ty, err_ty.clone()),
                     range,
-                ));
+                );
                 (
                     TryKind::Result,
                     ok_ty.clone(),
@@ -1812,29 +1846,32 @@ impl Typer {
                 if inner_name == outer_name =>
             {
                 let outer_ok_ty = self.fresh_ty_var();
-                self.push_constraint(Constraint::TypeEqual(
-                    outer_ret_ty_raw.clone(),
-                    option_ty(inner_name, outer_ok_ty),
+                self.equate(
+                    diagnostics,
+                    &outer_ret_ty_raw,
+                    &option_ty(inner_name, outer_ok_ty),
                     range,
-                ));
+                );
                 (TryKind::Option, ok_ty.clone(), None, inner_name.to_string())
             }
             (_, Some((inner_name, ok_ty)), _, _, _, true) => {
                 let outer_ok_ty = self.fresh_ty_var();
-                self.push_constraint(Constraint::TypeEqual(
-                    outer_ret_ty_raw.clone(),
-                    option_ty(inner_name, outer_ok_ty),
+                self.equate(
+                    diagnostics,
+                    &outer_ret_ty_raw,
+                    &option_ty(inner_name, outer_ok_ty),
                     range,
-                ));
+                );
                 (TryKind::Option, ok_ty.clone(), None, inner_name.to_string())
             }
             (_, _, Some((outer_name, _, err_ty)), _, true, _) => {
                 let ok_ty = self.fresh_ty_var();
-                self.push_constraint(Constraint::TypeEqual(
-                    inner_ty_raw.clone(),
-                    result_ty(outer_name, ok_ty.clone(), err_ty.clone()),
+                self.equate(
+                    diagnostics,
+                    &inner_ty_raw,
+                    &result_ty(outer_name, ok_ty.clone(), err_ty.clone()),
                     range,
-                ));
+                );
                 (
                     TryKind::Result,
                     ok_ty,
@@ -1844,11 +1881,12 @@ impl Typer {
             }
             (_, _, _, Some((outer_name, _)), true, _) => {
                 let ok_ty = self.fresh_ty_var();
-                self.push_constraint(Constraint::TypeEqual(
-                    inner_ty_raw.clone(),
-                    option_ty(outer_name, ok_ty.clone()),
+                self.equate(
+                    diagnostics,
+                    &inner_ty_raw,
+                    &option_ty(outer_name, ok_ty.clone()),
                     range,
-                ));
+                );
                 (TryKind::Option, ok_ty, None, outer_name.to_string())
             }
             (Some((_, ok_ty, _)), _, _, _, _, _) => {
@@ -1959,11 +1997,12 @@ impl Typer {
             params: vec![],
             ret_ty: Box::new(tast::Ty::TUnit),
         };
-        self.push_constraint(Constraint::TypeEqual(
-            expr_tast.get_ty(),
-            closure_ty,
+        self.equate(
+            diagnostics,
+            &expr_tast.get_ty(),
+            &closure_ty,
             self.expr_range(expr),
-        ));
+        );
 
         tast::Expr::EGo {
             expr: Box::new(expr_tast),
@@ -1983,11 +2022,12 @@ impl Typer {
         let expr_ty = expr_tast.get_ty();
         match op {
             common_defs::UnaryOp::Not => {
-                self.push_constraint(Constraint::TypeEqual(
-                    expr_ty.clone(),
-                    tast::Ty::TBool,
+                self.equate(
+                    diagnostics,
+                    &expr_ty,
+                    &tast::Ty::TBool,
                     self.expr_range(expr),
-                ));
+                );
                 tast::Expr::EUnary {
                     op,
                     expr: Box::new(expr_tast),
@@ -1996,11 +2036,14 @@ impl Typer {
                 }
             }
             common_defs::UnaryOp::Neg => {
-                self.push_constraint(Constraint::TypeEqual(
-                    expr_ty.clone(),
-                    expr_ty.clone(),
-                    self.expr_range(expr),
-                ));
+                self.push_obligation(
+                    Predicate::Operation(OperationGoal::Arithmetic {
+                        kind: ArithmeticKind::Numeric,
+                        ty: expr_ty.clone(),
+                        operator: "-",
+                    }),
+                    ObligationCause::new(self.expr_range(expr), ObligationCauseKind::Operation),
+                );
                 tast::Expr::EUnary {
                     op,
                     expr: Box::new(expr_tast),
@@ -2036,27 +2079,9 @@ impl Typer {
             | common_defs::BinaryOp::NotEq => tast::Ty::TBool,
             common_defs::BinaryOp::Add => {
                 let norm_lhs = self.norm(&lhs_ty);
-                if is_numeric_ty(&norm_lhs) || matches!(norm_lhs, tast::Ty::TString) {
-                    norm_lhs
-                } else if matches!(norm_lhs, tast::Ty::TVar(..)) {
-                    let tv = self.fresh_ty_var();
-                    self.deferred_arithmetic_checks
-                        .push(super::DeferredArithmeticCheck {
-                            kind: super::ArithmeticKind::NumericOrString,
-                            ty: tv.clone(),
-                            op: "+",
-                            origin: self.expr_range(lhs),
-                        });
-                    tv
+                if matches!(norm_lhs, tast::Ty::TVar(..)) {
+                    self.fresh_ty_var()
                 } else {
-                    super::util::push_error_with_range(
-                        diagnostics,
-                        format!(
-                            "Operator + is not defined for type {}",
-                            super::util::format_ty_for_diag(&norm_lhs)
-                        ),
-                        self.expr_range(lhs),
-                    );
                     norm_lhs
                 }
             }
@@ -2064,40 +2089,9 @@ impl Typer {
             | common_defs::BinaryOp::Mul
             | common_defs::BinaryOp::Div => {
                 let norm_lhs = self.norm(&lhs_ty);
-                if is_numeric_ty(&norm_lhs) {
-                    norm_lhs
-                } else if matches!(norm_lhs, tast::Ty::TVar(..)) {
-                    let tv = self.fresh_ty_var();
-                    let op_str = match op {
-                        common_defs::BinaryOp::Sub => "-",
-                        common_defs::BinaryOp::Mul => "*",
-                        common_defs::BinaryOp::Div => "/",
-                        _ => unreachable!(),
-                    };
-                    self.deferred_arithmetic_checks
-                        .push(super::DeferredArithmeticCheck {
-                            kind: super::ArithmeticKind::Numeric,
-                            ty: tv.clone(),
-                            op: op_str,
-                            origin: self.expr_range(lhs),
-                        });
-                    tv
+                if matches!(norm_lhs, tast::Ty::TVar(..)) {
+                    self.fresh_ty_var()
                 } else {
-                    let op_str = match op {
-                        common_defs::BinaryOp::Sub => "-",
-                        common_defs::BinaryOp::Mul => "*",
-                        common_defs::BinaryOp::Div => "/",
-                        _ => unreachable!(),
-                    };
-                    super::util::push_error_with_range(
-                        diagnostics,
-                        format!(
-                            "Operator {} is not defined for type {}",
-                            op_str,
-                            super::util::format_ty_for_diag(&norm_lhs)
-                        ),
-                        self.expr_range(lhs),
-                    );
                     norm_lhs
                 }
             }
@@ -2108,28 +2102,27 @@ impl Typer {
             | common_defs::BinaryOp::Sub
             | common_defs::BinaryOp::Mul
             | common_defs::BinaryOp::Div => {
-                self.push_constraint(Constraint::TypeEqual(
-                    lhs_ty.clone(),
-                    ret_ty.clone(),
-                    self.expr_range(lhs),
-                ));
-                self.push_constraint(Constraint::TypeEqual(
-                    rhs_ty.clone(),
-                    ret_ty.clone(),
-                    self.expr_range(rhs),
-                ));
+                self.equate(diagnostics, &lhs_ty, &ret_ty, self.expr_range(lhs));
+                self.equate(diagnostics, &rhs_ty, &ret_ty, self.expr_range(rhs));
+                let (kind, operator) = match op {
+                    common_defs::BinaryOp::Add => (ArithmeticKind::NumericOrString, "+"),
+                    common_defs::BinaryOp::Sub => (ArithmeticKind::Numeric, "-"),
+                    common_defs::BinaryOp::Mul => (ArithmeticKind::Numeric, "*"),
+                    common_defs::BinaryOp::Div => (ArithmeticKind::Numeric, "/"),
+                    _ => unreachable!(),
+                };
+                self.push_obligation(
+                    Predicate::Operation(OperationGoal::Arithmetic {
+                        kind,
+                        ty: ret_ty.clone(),
+                        operator,
+                    }),
+                    ObligationCause::new(self.expr_range(lhs), ObligationCauseKind::Operation),
+                );
             }
             common_defs::BinaryOp::And | common_defs::BinaryOp::Or => {
-                self.push_constraint(Constraint::TypeEqual(
-                    lhs_ty.clone(),
-                    tast::Ty::TBool,
-                    self.expr_range(lhs),
-                ));
-                self.push_constraint(Constraint::TypeEqual(
-                    rhs_ty.clone(),
-                    tast::Ty::TBool,
-                    self.expr_range(rhs),
-                ));
+                self.equate(diagnostics, &lhs_ty, &tast::Ty::TBool, self.expr_range(lhs));
+                self.equate(diagnostics, &rhs_ty, &tast::Ty::TBool, self.expr_range(rhs));
             }
             common_defs::BinaryOp::Less
             | common_defs::BinaryOp::Greater
@@ -2137,18 +2130,14 @@ impl Typer {
             | common_defs::BinaryOp::GreaterEq
             | common_defs::BinaryOp::Eq
             | common_defs::BinaryOp::NotEq => {
-                self.push_constraint(Constraint::TypeEqual(
-                    lhs_ty.clone(),
-                    rhs_ty.clone(),
-                    self.expr_range(lhs),
-                ));
-                self.validate_comparison_operand(
-                    genv,
-                    diagnostics,
-                    op,
-                    &lhs_ty,
-                    &rhs_ty,
-                    self.expr_range(lhs),
+                self.equate(diagnostics, &lhs_ty, &rhs_ty, self.expr_range(lhs));
+                self.push_obligation(
+                    Predicate::Operation(OperationGoal::Comparison {
+                        operator: op,
+                        lhs_ty: lhs_ty.clone(),
+                        rhs_ty: rhs_ty.clone(),
+                    }),
+                    ObligationCause::new(self.expr_range(lhs), ObligationCauseKind::Operation),
                 );
             }
         }
@@ -2159,46 +2148,6 @@ impl Typer {
             rhs: Box::new(rhs_tast),
             ty: ret_ty.clone(),
             resolution: tast::BinaryResolution::Builtin,
-        }
-    }
-
-    fn validate_comparison_operand(
-        &mut self,
-        genv: &PackageTypeEnv,
-        diagnostics: &mut Diagnostics,
-        op: common_defs::BinaryOp,
-        lhs_ty: &tast::Ty,
-        rhs_ty: &tast::Ty,
-        range: Option<TextRange>,
-    ) {
-        let lhs_norm = self.norm(lhs_ty);
-        let rhs_norm = self.norm(rhs_ty);
-        if contains_tvar(&lhs_norm) || contains_tvar(&rhs_norm) {
-            self.deferred_comparison_checks
-                .push(super::DeferredComparisonCheck {
-                    op,
-                    lhs_ty: lhs_ty.clone(),
-                    rhs_ty: rhs_ty.clone(),
-                    origin: range,
-                });
-            return;
-        }
-        if !same_or_unresolved_ty(&lhs_norm, &rhs_norm) {
-            return;
-        }
-
-        let valid = comparison_operand_is_valid(genv, op, &lhs_norm);
-
-        if !valid {
-            super::util::push_error_with_range(
-                diagnostics,
-                format!(
-                    "Operator {} is not defined for type {}",
-                    comparison_operator_text(op),
-                    super::util::format_ty_for_diag(&lhs_norm)
-                ),
-                range,
-            );
         }
     }
 
@@ -2246,12 +2195,14 @@ impl Typer {
             }
             _ if contains_tvar(&tuple_ty) => {
                 let result_ty = self.fresh_ty_var();
-                self.push_constraint(Constraint::TupleProjectionAccess {
-                    tuple_ty: tuple_ty.clone(),
-                    index,
-                    result_ty: result_ty.clone(),
-                    origin: range,
-                });
+                self.push_obligation(
+                    Predicate::Projection(ProjectionGoal::Tuple {
+                        tuple_ty: tuple_ty.clone(),
+                        index,
+                        result_ty: result_ty.clone(),
+                    }),
+                    ObligationCause::new(range, ObligationCauseKind::Projection),
+                );
                 tast::Expr::EProj {
                     tuple: Box::new(tuple_tast),
                     index,
@@ -2687,12 +2638,17 @@ impl Typer {
             tast::Ty::TUnit
         } else {
             let result_ty = self.fresh_ty_var();
-            self.push_constraint(Constraint::StructFieldAccess {
-                expr_ty: base_ty.clone(),
-                field: field_ident.clone(),
-                result_ty: result_ty.clone(),
-                origin: astptr.map(|p| p.text_range()),
-            });
+            self.push_obligation(
+                Predicate::Projection(ProjectionGoal::Field {
+                    base_ty: base_ty.clone(),
+                    field: field_ident.clone(),
+                    result_ty: result_ty.clone(),
+                }),
+                ObligationCause::new(
+                    astptr.map(|p| p.text_range()),
+                    ObligationCauseKind::Projection,
+                ),
+            );
             result_ty
         };
 

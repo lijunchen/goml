@@ -1,28 +1,10 @@
-use super::constraints::tparam_has_trait_bound;
 use super::*;
 use crate::typer::util;
 
 impl Typer {
-    pub(super) fn check_expr_with_deferred_dyn(
-        &mut self,
-        genv: &PackageTypeEnv,
-        local_env: &mut LocalTypeEnv,
-        diagnostics: &mut Diagnostics,
-        expr_id: hir::ExprId,
-        expected: &tast::Ty,
-    ) -> (tast::Expr, bool) {
-        let deferred_start = self.deferred_dyn_coercions.len();
-        let expr = self.check_expr(genv, local_env, diagnostics, expr_id, expected);
-        let deferred_dyn = self.deferred_dyn_coercions[deferred_start..]
-            .iter()
-            .any(|coercion| coercion.expr_id == expr_id);
-        (expr, deferred_dyn)
-    }
-
     pub(super) fn coerce_to_expected_dyn(
         &mut self,
         genv: &PackageTypeEnv,
-        local_env: &LocalTypeEnv,
         diagnostics: &mut Diagnostics,
         expr_id: hir::ExprId,
         expr: tast::Expr,
@@ -32,14 +14,18 @@ impl Typer {
         match &expected_norm {
             tast::Ty::TVar(_) => {
                 let for_ty = expr.get_ty();
-                if !matches!(for_ty, tast::Ty::TDyn { .. }) {
-                    self.deferred_dyn_coercions
-                        .push(super::super::DeferredDynCoercion {
+                if self.norm(&for_ty) != expected_norm {
+                    self.push_obligation(
+                        Predicate::Coerce(CoercionGoal {
                             expr_id,
-                            concrete_ty: for_ty.clone(),
-                            expected_ty: expected_norm,
-                            origin: self.expr_range(expr_id),
-                        });
+                            from_ty: for_ty,
+                            to_ty: expected_norm,
+                        }),
+                        ObligationCause::new(
+                            self.expr_range(expr_id),
+                            ObligationCauseKind::Coercion,
+                        ),
+                    );
                     return (expr, true);
                 }
                 return (expr, false);
@@ -64,81 +50,15 @@ impl Typer {
         };
 
         let for_ty = expr.get_ty();
-        match &for_ty {
-            tast::Ty::TParam { name } => {
-                if !tparam_has_trait_bound(local_env, name, &resolved_trait) {
-                    diagnostics.push(
-                        Diagnostic::new(
-                            Stage::Typer,
-                            Severity::Error,
-                            format!(
-                                "Type parameter {} is not constrained by trait {}",
-                                name, resolved_trait
-                            ),
-                        )
-                        .with_range(range),
-                    );
-                    return (expr, false);
-                }
-            }
-            tast::Ty::TVar(_) => {
-                self.push_constraint(Constraint::Implements {
-                    trait_name: tast::TastIdent(resolved_trait.clone()),
-                    for_ty: for_ty.clone(),
-                    origin: range,
-                });
-            }
-            _ if contains_tvar(&for_ty) => {
-                self.push_constraint(Constraint::Implements {
-                    trait_name: tast::TastIdent(resolved_trait.clone()),
-                    for_ty: for_ty.clone(),
-                    origin: range,
-                });
-            }
-            _ if !is_concrete_ty(&for_ty) => {}
-            _ => {
-                let impl_count = genv.trait_impl_count_visible(&resolved_trait, &for_ty);
-                if impl_count == 0 {
-                    diagnostics.push(
-                        Diagnostic::new(
-                            Stage::Typer,
-                            Severity::Error,
-                            format!(
-                                "Type {} does not implement trait {}",
-                                util::format_ty_for_diag(&for_ty),
-                                resolved_trait
-                            ),
-                        )
-                        .with_range(range),
-                    );
-                    return (expr, false);
-                }
-                if impl_count > 1 {
-                    diagnostics.push(
-                        Diagnostic::new(
-                            Stage::Typer,
-                            Severity::Error,
-                            format!(
-                                "Multiple instances found for trait {}<{}>",
-                                resolved_trait,
-                                util::format_ty_for_diag(&for_ty)
-                            ),
-                        )
-                        .with_range(range),
-                    );
-                    return (expr, false);
-                }
-            }
-        }
-
-        self.results.push_coercion(
-            expr_id,
-            Coercion::ToDyn {
-                trait_name: tast::TastIdent(resolved_trait.clone()),
-                for_ty: for_ty.clone(),
-                ty: expected_norm.clone(),
-                astptr: None,
-            },
+        self.push_obligation(
+            Predicate::Coerce(CoercionGoal {
+                expr_id,
+                from_ty: for_ty.clone(),
+                to_ty: tast::Ty::TDyn {
+                    trait_name: resolved_trait.clone(),
+                },
+            }),
+            ObligationCause::new(range, ObligationCauseKind::Coercion),
         );
         (
             tast::Expr::EToDyn {
@@ -148,7 +68,7 @@ impl Typer {
                 ty: expected_norm.clone(),
                 astptr: None,
             },
-            false,
+            true,
         )
     }
 }

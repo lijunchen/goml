@@ -3,11 +3,16 @@ use std::collections::HashMap;
 use parser::Diagnostics;
 use text_size::TextRange;
 
-use crate::{env::PackageTypeEnv, tast};
+use crate::{
+    env::{FnScheme, PackageTypeEnv},
+    tast,
+};
 
 use super::{
     localenv::LocalTypeEnv,
-    type_ops::{contains_tvar, decompose_struct_type, is_concrete_ty, substitute_ty_params},
+    obligations::{ParamEnv, TraitGoal},
+    traits::solver::{SelectionResult, TraitSolver},
+    type_ops::{contains_tvar, decompose_struct_type, substitute_ty_params},
     util::{format_ty_for_diag, push_error_with_range, resolve_trait_name, resolve_type_name},
 };
 
@@ -37,7 +42,7 @@ fn lookup_bound_trait_methods(
     genv: &PackageTypeEnv,
     bounds: &[tast::TastIdent],
     method: &tast::TastIdent,
-) -> Vec<(tast::TastIdent, tast::Ty)> {
+) -> Vec<(tast::TastIdent, FnScheme)> {
     lookup_trait_methods(genv, bounds, method, None)
 }
 
@@ -46,7 +51,7 @@ fn lookup_in_scope_trait_methods(
     in_scope_traits: &[tast::TastIdent],
     receiver_ty: &tast::Ty,
     method: &tast::TastIdent,
-) -> Vec<(tast::TastIdent, tast::Ty)> {
+) -> Vec<(tast::TastIdent, FnScheme)> {
     lookup_trait_methods(genv, in_scope_traits, method, Some(receiver_ty))
 }
 
@@ -55,22 +60,31 @@ fn lookup_trait_methods(
     trait_names: &[tast::TastIdent],
     method: &tast::TastIdent,
     receiver_ty: Option<&tast::Ty>,
-) -> Vec<(tast::TastIdent, tast::Ty)> {
+) -> Vec<(tast::TastIdent, FnScheme)> {
     let mut result = Vec::new();
+    let param_env = ParamEnv::default();
+    let mut solver = TraitSolver::new(genv, &param_env);
     for trait_name in trait_names {
         let Some((resolved_trait, trait_env)) = resolve_trait_name(genv, &trait_name.0) else {
             continue;
         };
         let resolved_ident = tast::TastIdent(resolved_trait);
-        if let Some(ty) = receiver_ty
-            && (matches!(ty, tast::Ty::TDyn { .. })
-                || !is_concrete_ty(ty)
-                || !genv.has_trait_impl_visible(&resolved_ident.0, ty))
-        {
-            continue;
+        if let Some(ty) = receiver_ty {
+            if matches!(ty, tast::Ty::TDyn { .. }) {
+                continue;
+            }
+            if !matches!(
+                solver.select(TraitGoal {
+                    trait_name: resolved_ident.clone(),
+                    for_ty: ty.clone(),
+                }),
+                SelectionResult::Unique(_)
+            ) {
+                continue;
+            }
         }
-        if let Some(method_ty) = trait_env.lookup_trait_method(&resolved_ident, method) {
-            result.push((resolved_ident, method_ty));
+        if let Some(method_scheme) = trait_env.lookup_trait_method_scheme(&resolved_ident, method) {
+            result.push((resolved_ident, method_scheme));
         }
     }
     result
@@ -80,16 +94,16 @@ pub(crate) fn lookup_trait_method_from_type_name(
     genv: &PackageTypeEnv,
     type_name: &str,
     method: &tast::TastIdent,
-) -> Option<(tast::TastIdent, tast::Ty)> {
+) -> Option<(tast::TastIdent, FnScheme)> {
     let (trait_name, trait_env) = resolve_trait_name(genv, type_name)?;
     let trait_ident = tast::TastIdent(trait_name);
-    let method_ty = trait_env.lookup_trait_method(&trait_ident, method)?;
-    Some((trait_ident, method_ty))
+    let method_scheme = trait_env.lookup_trait_method_scheme(&trait_ident, method)?;
+    Some((trait_ident, method_scheme))
 }
 
 pub(crate) struct TraitMethodLookup {
     pub receiver: MethodLookupReceiver,
-    pub candidates: Vec<(tast::TastIdent, tast::Ty)>,
+    pub candidates: Vec<(tast::TastIdent, FnScheme)>,
 }
 
 pub(crate) enum MethodLookupReceiver {
@@ -152,7 +166,7 @@ pub(crate) fn report_ambiguous_method(
     diagnostics: &mut Diagnostics,
     method_name: &tast::TastIdent,
     receiver: &MethodLookupReceiver,
-    candidates: &[(tast::TastIdent, tast::Ty)],
+    candidates: &[(tast::TastIdent, FnScheme)],
     range: Option<TextRange>,
 ) {
     let trait_names = candidates

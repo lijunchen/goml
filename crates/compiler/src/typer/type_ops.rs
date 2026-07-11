@@ -75,6 +75,15 @@ pub(crate) fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty
     })
 }
 
+pub(crate) fn rename_type_params(ty: &tast::Ty, prefix: &str) -> tast::Ty {
+    rewrite_ty(ty, &mut |ty| match ty {
+        tast::Ty::TParam { name } => Some(tast::Ty::TParam {
+            name: format!("{prefix}::{name}"),
+        }),
+        _ => None,
+    })
+}
+
 pub(crate) fn decompose_struct_type(ty: &tast::Ty) -> Option<(String, Vec<tast::Ty>)> {
     match ty {
         tast::Ty::TStruct { name } => Some((name.clone(), Vec::new())),
@@ -151,6 +160,17 @@ pub(crate) fn contains_tvar(ty: &tast::Ty) -> bool {
     .is_break()
 }
 
+pub(crate) fn type_vars(ty: &tast::Ty) -> HashSet<tast::TypeVar> {
+    let mut variables = HashSet::new();
+    let _ = visit_ty(ty, &mut |ty| {
+        if let tast::Ty::TVar(variable) = ty {
+            variables.insert(*variable);
+        }
+        ControlFlow::<()>::Continue(())
+    });
+    variables
+}
+
 pub(crate) fn contains_tparam(ty: &tast::Ty) -> bool {
     visit_ty(ty, &mut |ty| match ty {
         tast::Ty::TParam { .. } => ControlFlow::Break(()),
@@ -159,93 +179,25 @@ pub(crate) fn contains_tparam(ty: &tast::Ty) -> bool {
     .is_break()
 }
 
-pub(crate) fn same_or_unresolved_ty(lhs: &tast::Ty, rhs: &tast::Ty) -> bool {
-    lhs == rhs || contains_tvar(lhs) || contains_tvar(rhs)
-}
-
-pub(crate) fn is_concrete_ty(ty: &tast::Ty) -> bool {
-    !contains_tvar(ty) && !contains_tparam(ty)
-}
-
-pub(crate) fn collect_type_param_substitution(
-    template: &tast::Ty,
-    actual: &tast::Ty,
-    subst: &mut HashMap<String, tast::Ty>,
-) {
-    match (template, actual) {
-        (tast::Ty::TParam { name }, _) => {
-            subst.entry(name.clone()).or_insert_with(|| actual.clone());
-        }
-        (tast::Ty::TTuple { typs }, tast::Ty::TTuple { typs: actual_typs }) => {
-            for (template, actual) in typs.iter().zip(actual_typs.iter()) {
-                collect_type_param_substitution(template, actual, subst);
-            }
-        }
-        (
-            tast::Ty::TApp { ty, args },
-            tast::Ty::TApp {
-                ty: actual_ty,
-                args: actual_args,
-            },
-        ) => {
-            collect_type_param_substitution(ty, actual_ty, subst);
-            for (template, actual) in args.iter().zip(actual_args.iter()) {
-                collect_type_param_substitution(template, actual, subst);
-            }
-        }
-        (tast::Ty::TArray { elem, .. }, tast::Ty::TArray { elem: actual, .. })
-        | (tast::Ty::TSlice { elem }, tast::Ty::TSlice { elem: actual })
-        | (tast::Ty::TVec { elem }, tast::Ty::TVec { elem: actual })
-        | (tast::Ty::TRef { elem }, tast::Ty::TRef { elem: actual }) => {
-            collect_type_param_substitution(elem, actual, subst);
-        }
-        (
-            tast::Ty::THashMap { key, value },
-            tast::Ty::THashMap {
-                key: actual_key,
-                value: actual_value,
-            },
-        ) => {
-            collect_type_param_substitution(key, actual_key, subst);
-            collect_type_param_substitution(value, actual_value, subst);
-        }
-        (
-            tast::Ty::TFunc { params, ret_ty },
-            tast::Ty::TFunc {
-                params: actual_params,
-                ret_ty: actual_ret_ty,
-            },
-        ) => {
-            for (template, actual) in params.iter().zip(actual_params.iter()) {
-                collect_type_param_substitution(template, actual, subst);
-            }
-            collect_type_param_substitution(ret_ty, actual_ret_ty, subst);
-        }
-        _ => {}
-    }
-}
-
-fn collect_tvars(ty: &tast::Ty) -> HashSet<tast::TypeVar> {
-    let mut vars = HashSet::new();
+pub(crate) fn type_params(ty: &tast::Ty) -> HashSet<String> {
+    let mut parameters = HashSet::new();
     let _ = visit_ty(ty, &mut |ty| {
-        if let tast::Ty::TVar(var) = ty {
-            vars.insert(*var);
+        if let tast::Ty::TParam { name } = ty {
+            parameters.insert(name.clone());
         }
         ControlFlow::<()>::Continue(())
     });
-    vars
+    parameters
+}
+
+pub(crate) fn same_or_unresolved_ty(lhs: &tast::Ty, rhs: &tast::Ty) -> bool {
+    lhs == rhs || contains_tvar(lhs) || contains_tvar(rhs)
 }
 
 pub(crate) fn fn_ret_depends_on_params(ty: &tast::Ty) -> bool {
     let tast::Ty::TFunc { params, ret_ty } = ty else {
         return false;
     };
-    let param_vars = params
-        .iter()
-        .flat_map(collect_tvars)
-        .collect::<HashSet<_>>();
-    !param_vars.is_empty()
-        && collect_tvars(ret_ty)
-            .iter()
-            .any(|var| param_vars.contains(var))
+    let param_vars = params.iter().flat_map(type_vars).collect::<HashSet<_>>();
+    !param_vars.is_empty() && type_vars(ret_ty).iter().any(|var| param_vars.contains(var))
 }

@@ -508,6 +508,12 @@ fn define_trait_impl(
         .map(|g| tast::TastIdent(g.to_ident_name()))
         .collect();
     let for_ty = tast::Ty::from_hir(env, &impl_block.for_type, &impl_generics_tast);
+    let impl_constraints = build_fn_constraints(
+        env,
+        diagnostics,
+        &impl_block.generics,
+        &impl_block.generic_bounds,
+    );
     validate_decl_ty(
         env,
         diagnostics,
@@ -515,6 +521,26 @@ fn define_trait_impl(
         type_expr_range(&impl_block.for_type),
         &impl_tparams,
     );
+    let for_ty_params = super::type_ops::type_params(&for_ty);
+    let mut unconstrained_impl_params = impl_tparams
+        .difference(&for_ty_params)
+        .cloned()
+        .collect::<Vec<_>>();
+    unconstrained_impl_params.sort();
+    for param in &unconstrained_impl_params {
+        diagnostics.push(
+            Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "Implementation type parameter {} is not constrained by type {}",
+                    param,
+                    super::util::format_ty_for_diag(&for_ty)
+                ),
+            )
+            .with_range(type_expr_range(&impl_block.for_type)),
+        );
+    }
     let trait_name_raw = trait_name.to_ident_name();
     let Some((trait_name_str, trait_env)) = super::util::resolve_trait_name(env, &trait_name_raw)
     else {
@@ -571,6 +597,7 @@ fn define_trait_impl(
 
     let mut implemented_methods: HashSet<String> = HashSet::new();
     let mut impl_methods: IndexMap<String, env::FnScheme> = IndexMap::new();
+    let mut impl_valid = unconstrained_impl_params.is_empty();
 
     for m in impl_block.methods.iter() {
         let m = match hir_table.def(*m) {
@@ -580,6 +607,7 @@ fn define_trait_impl(
         let method_name_str = m.name.clone();
 
         if !trait_method_names.contains(&method_name_str) {
+            impl_valid = false;
             diagnostics.push(Diagnostic::new(
                 Stage::Typer,
                 Severity::Error,
@@ -592,6 +620,7 @@ fn define_trait_impl(
         }
 
         if !implemented_methods.insert(method_name_str.clone()) {
+            impl_valid = false;
             diagnostics.push(Diagnostic::new(
                 Stage::Typer,
                 Severity::Error,
@@ -608,6 +637,7 @@ fn define_trait_impl(
             .get(&method_name_str)
             .map(|scheme| scheme.ty.clone());
         let Some(trait_sig) = trait_sig else {
+            impl_valid = false;
             super::util::push_ice(
                 diagnostics,
                 format!(
@@ -739,13 +769,8 @@ fn define_trait_impl(
 
         if method_ok {
             let type_params: Vec<String> = all_generics.iter().map(|g| g.to_ident_name()).collect();
-            let constraints = build_method_constraints(
-                env,
-                diagnostics,
-                &all_generics,
-                &impl_block.generic_bounds,
-                &m.generic_bounds,
-            );
+            let constraints =
+                build_fn_constraints(env, diagnostics, &all_generics, &m.generic_bounds);
             impl_methods.insert(
                 method_name_str.clone(),
                 env::FnScheme {
@@ -755,11 +780,14 @@ fn define_trait_impl(
                     origin: source_fn_origin(env),
                 },
             );
+        } else {
+            impl_valid = false;
         }
     }
 
     for method_name in trait_method_names.iter() {
         if !implemented_methods.contains(method_name) {
+            impl_valid = false;
             diagnostics.push(Diagnostic::new(
                 Stage::Typer,
                 Severity::Error,
@@ -773,14 +801,63 @@ fn define_trait_impl(
         }
     }
 
-    // Insert the impl block
-    env.current_mut().trait_env.trait_impls.insert(
-        key,
-        env::ImplDef {
-            params: impl_generics_tast,
-            methods: impl_methods,
-        },
-    );
+    let mut candidate = env::ImplDef {
+        params: impl_generics_tast,
+        constraints: impl_constraints,
+        methods: impl_methods,
+        valid: impl_valid,
+        origin: type_expr_range(&impl_block.for_type),
+    };
+    let overlap = candidate
+        .valid
+        .then(|| {
+            env.visible_trait_impls(&trait_name_str)
+                .into_iter()
+                .filter(|(_, _, _, existing)| existing.valid)
+                .find(|(_, _, existing_ty, existing)| {
+                    super::traits::coherence::impls_overlap(
+                        env,
+                        existing_ty,
+                        existing,
+                        &for_ty,
+                        &candidate,
+                    )
+                })
+        })
+        .flatten();
+    if let Some((package, index, _, existing)) = overlap {
+        let previous = existing.origin.map_or_else(
+            || format!("{}#{}", package, index),
+            |origin| {
+                format!(
+                    "{}#{} at source range {}..{}",
+                    package,
+                    index,
+                    u32::from(origin.start()),
+                    u32::from(origin.end())
+                )
+            },
+        );
+        diagnostics.push(
+            Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "Trait {} implementation for {} overlaps with implementation {}",
+                    trait_name_str,
+                    super::util::format_ty_for_diag(&for_ty),
+                    previous
+                ),
+            )
+            .with_range(type_expr_range(&impl_block.for_type)),
+        );
+        candidate.valid = false;
+    }
+
+    env.current_mut()
+        .trait_env
+        .trait_impls
+        .insert(key, candidate);
 }
 
 fn define_inherent_impl(
@@ -1140,7 +1217,72 @@ pub(crate) fn collect_typedefs(
             _ => {}
         }
     }
+    validate_trait_impl_coherence(env, diagnostics);
     validate_no_infinite_size_structs(env, diagnostics);
+}
+
+fn validate_trait_impl_coherence(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics) {
+    let impls = env
+        .current()
+        .trait_env
+        .trait_impls
+        .iter()
+        .enumerate()
+        .map(|(index, (key, definition))| (index, key.clone(), definition.clone()))
+        .collect::<Vec<_>>();
+    let mut invalid = HashSet::new();
+    for (index, (trait_name, for_ty), definition) in &impls {
+        if !definition.valid || invalid.contains(index) {
+            continue;
+        }
+        let overlap = env
+            .visible_trait_impls(trait_name)
+            .into_iter()
+            .filter(|(package, other_index, _, other)| {
+                if !other.valid {
+                    return false;
+                }
+                package != &env.package || (other_index < index && !invalid.contains(other_index))
+            })
+            .find(|(_, _, other_ty, other)| {
+                super::traits::coherence::impls_overlap(env, other_ty, other, for_ty, definition)
+            });
+        let Some((package, other_index, _, other)) = overlap else {
+            continue;
+        };
+        let previous = other.origin.map_or_else(
+            || format!("{}#{}", package, other_index),
+            |origin| {
+                format!(
+                    "{}#{} at source range {}..{}",
+                    package,
+                    other_index,
+                    u32::from(origin.start()),
+                    u32::from(origin.end())
+                )
+            },
+        );
+        diagnostics.push(
+            Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "Trait {} implementation for {} overlaps with implementation {}",
+                    trait_name,
+                    super::util::format_ty_for_diag(for_ty),
+                    previous
+                ),
+            )
+            .with_range(definition.origin),
+        );
+        invalid.insert(*index);
+    }
+    for index in invalid {
+        if let Some((_, definition)) = env.current_mut().trait_env.trait_impls.get_index_mut(index)
+        {
+            definition.valid = false;
+        }
+    }
 }
 
 fn validate_no_infinite_size_structs(env: &PackageTypeEnv, diagnostics: &mut Diagnostics) {
@@ -1692,6 +1834,4 @@ fn typecheck_function_body(
     local_env.clear_tparam_trait_bounds();
     typer.solve(genv, diagnostics);
     typer.tparam_trait_bounds.clear();
-    typer.validate_deferred_comparison_checks(genv, diagnostics);
-    typer.validate_deferred_arithmetic_checks(diagnostics);
 }

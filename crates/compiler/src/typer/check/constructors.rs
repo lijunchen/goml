@@ -236,21 +236,7 @@ impl Typer {
         } else {
             for (arg, param_ty) in args.iter().zip(param_tys.iter()) {
                 let expected_ty = self.norm(param_ty);
-                let (arg_tast, deferred_dyn) = self.check_expr_with_deferred_dyn(
-                    genv,
-                    local_env,
-                    diagnostics,
-                    *arg,
-                    &expected_ty,
-                );
-                if contains_tvar(&expected_ty) && !deferred_dyn {
-                    self.unify(
-                        diagnostics,
-                        &arg_tast.get_ty(),
-                        &expected_ty,
-                        self.expr_range(*arg),
-                    );
-                }
+                let arg_tast = self.check_expr(genv, local_env, diagnostics, *arg, &expected_ty);
                 args_tast.push(arg_tast);
             }
         }
@@ -265,17 +251,19 @@ impl Typer {
                 params: actual_params,
                 ret_ty: Box::new(ret_ty.clone()),
             };
-            self.push_constraint(Constraint::TypeEqual(
-                inst_constr_ty,
-                actual_ty,
+            self.equate(
+                diagnostics,
+                &inst_constr_ty,
+                &actual_ty,
                 self.expr_range(expr_id),
-            ));
+            );
         } else {
-            self.push_constraint(Constraint::TypeEqual(
-                inst_constr_ty,
-                ret_ty.clone(),
+            self.equate(
+                diagnostics,
+                &inst_constr_ty,
+                &ret_ty,
                 self.expr_range(expr_id),
-            ));
+            );
         }
 
         self.results
@@ -486,17 +474,19 @@ impl Typer {
                 params: actual_params,
                 ret_ty: Box::new(ret_ty.clone()),
             };
-            self.push_constraint(Constraint::TypeEqual(
-                inst_constr_ty,
-                actual_ty,
+            self.equate(
+                diagnostics,
+                &inst_constr_ty,
+                &actual_ty,
                 self.expr_range(expr_id),
-            ));
+            );
         } else {
-            self.push_constraint(Constraint::TypeEqual(
-                inst_constr_ty,
-                ret_ty.clone(),
+            self.equate(
+                diagnostics,
+                &inst_constr_ty,
+                &ret_ty,
                 self.expr_range(expr_id),
-            ));
+            );
         }
 
         self.results.record_struct_lit_elab(

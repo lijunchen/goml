@@ -1,13 +1,10 @@
 use std::collections::HashMap;
 
-use parser::Diagnostics;
-
 use crate::{env::PackageTypeEnv, tast};
 
 use super::{
-    ArithmeticKind, Typer,
-    type_ops::{contains_tvar, decompose_struct_type, same_or_unresolved_ty, substitute_ty_params},
-    util::{format_ty_for_diag, push_error_with_range, resolve_type_name},
+    type_ops::{decompose_struct_type, substitute_ty_params},
+    util::resolve_type_name,
 };
 
 pub(crate) fn integer_literal_target(expected: &tast::Ty) -> Option<tast::Ty> {
@@ -138,60 +135,4 @@ pub(crate) fn is_signed_numeric_ty(ty: &tast::Ty) -> bool {
             | tast::Ty::TFloat32
             | tast::Ty::TFloat64
     )
-}
-
-impl Typer {
-    pub(crate) fn validate_deferred_comparison_checks(
-        &mut self,
-        genv: &PackageTypeEnv,
-        diagnostics: &mut Diagnostics,
-    ) {
-        let checks = std::mem::take(&mut self.deferred_comparison_checks);
-        for check in checks {
-            let lhs_norm = self.norm(&check.lhs_ty);
-            let rhs_norm = self.norm(&check.rhs_ty);
-            if contains_tvar(&lhs_norm)
-                || contains_tvar(&rhs_norm)
-                || !same_or_unresolved_ty(&lhs_norm, &rhs_norm)
-            {
-                continue;
-            }
-            if comparison_operand_is_valid(genv, check.op, &lhs_norm) {
-                continue;
-            }
-            push_error_with_range(
-                diagnostics,
-                format!(
-                    "Operator {} is not defined for type {}",
-                    comparison_operator_text(check.op),
-                    format_ty_for_diag(&lhs_norm)
-                ),
-                check.origin,
-            );
-        }
-    }
-
-    pub(crate) fn validate_deferred_arithmetic_checks(&mut self, diagnostics: &mut Diagnostics) {
-        let checks = std::mem::take(&mut self.deferred_arithmetic_checks);
-        for check in checks {
-            let norm_ty = self.norm(&check.ty);
-            let valid = match check.kind {
-                ArithmeticKind::NumericOrString => {
-                    is_numeric_ty(&norm_ty) || matches!(norm_ty, tast::Ty::TString)
-                }
-                ArithmeticKind::Numeric => is_numeric_ty(&norm_ty),
-            };
-            if !valid && !matches!(norm_ty, tast::Ty::TVar(..)) {
-                push_error_with_range(
-                    diagnostics,
-                    format!(
-                        "Operator {} is not defined for type {}",
-                        check.op,
-                        format_ty_for_diag(&norm_ty)
-                    ),
-                    check.origin,
-                );
-            }
-        }
-    }
 }

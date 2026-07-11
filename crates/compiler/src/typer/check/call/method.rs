@@ -36,7 +36,7 @@ struct TraitMethodCall<'a> {
     receiver_ty: tast::Ty,
     trait_name: &'a tast::TastIdent,
     method_name: &'a tast::TastIdent,
-    method_ty: &'a tast::Ty,
+    method_scheme: &'a crate::env::FnScheme,
     args: &'a [hir::ExprId],
 }
 
@@ -88,11 +88,12 @@ impl Typer {
             params: arguments.types,
             ret_ty: Box::new(ret_ty.clone()),
         };
-        self.push_constraint(Constraint::TypeEqual(
-            call.field_ty.clone(),
-            call_site_ty,
+        self.equate(
+            diagnostics,
+            &call.field_ty,
+            &call_site_ty,
             self.expr_range(call.call_expr_id),
-        ));
+        );
         self.results.record_call_elab(
             call.call_expr_id,
             CallElab {
@@ -165,7 +166,13 @@ impl Typer {
             args,
         } = call;
         let method_name_str = method_name.0;
-        let mut inst_method_ty = self.inst_ty(&method_scheme.ty);
+        let range = self.expr_range(call_expr_id);
+        let instantiated = self.instantiate_scheme(
+            &method_scheme,
+            ObligationCause::new(range, ObligationCauseKind::MethodCall),
+        );
+        self.register_scheme_obligations(&instantiated);
+        let mut inst_method_ty = instantiated.ty;
         if let tast::Ty::TFunc { params, .. } = &inst_method_ty
             && let Some(receiver_param_ty) = params.first()
         {
@@ -202,24 +209,12 @@ impl Typer {
             params: arguments.types,
             ret_ty: Box::new(ret_ty.clone()),
         };
-        if !self.apply_fn_scheme_constraints(
-            genv,
-            local_env,
+        self.equate(
             diagnostics,
-            FnSchemeApplication {
-                scheme: &method_scheme,
-                template_call_ty: &method_scheme.ty,
-                actual_call_ty: &inst_method_ty,
-                range: self.expr_range(call_expr_id),
-            },
-        ) {
-            return self.error_expr(None);
-        }
-        self.push_constraint(Constraint::TypeEqual(
-            inst_method_ty.clone(),
-            call_site_ty,
+            &inst_method_ty,
+            &call_site_ty,
             self.expr_range(call_expr_id),
-        ));
+        );
 
         self.results.record_expr_ty(func, inst_method_ty.clone());
         self.results.record_name_ref_elab(
@@ -282,10 +277,25 @@ impl Typer {
             args,
         } = call;
         let field_ty = resolve_field_ty_eager(genv, &receiver_ty, &method_name);
+        if contains_tvar(&receiver_ty) || contains_tparam(&receiver_ty) {
+            return self.infer_deferred_method_call(
+                genv,
+                local_env,
+                diagnostics,
+                DeferredMethodCall {
+                    call_expr_id,
+                    func_expr_id: func,
+                    receiver_expr_id: receiver_expr,
+                    receiver: receiver_tast,
+                    receiver_ty,
+                    method_name: &method_name,
+                    args,
+                },
+            );
+        }
         let lookup = lookup_trait_method_candidates(genv, local_env, &receiver_ty, &method_name);
-        let is_deferred = matches!(lookup.receiver, MethodLookupReceiver::Deferred(_));
         match lookup.candidates.as_slice() {
-            [(trait_name, method_ty)] => {
+            [(trait_name, method_scheme)] => {
                 if let Some(field_ty) = field_ty.clone() {
                     return self.infer_field_value_call(
                         genv,
@@ -301,7 +311,7 @@ impl Typer {
                         },
                     );
                 }
-                let result = self.infer_trait_method_call(
+                self.infer_trait_method_call(
                     genv,
                     local_env,
                     diagnostics,
@@ -313,64 +323,10 @@ impl Typer {
                         receiver_ty: receiver_ty.clone(),
                         trait_name,
                         method_name: &method_name,
-                        method_ty,
+                        method_scheme,
                         args,
                     },
-                );
-                if is_deferred {
-                    let call_site_type = if let tast::Expr::ECall {
-                        func: _,
-                        ref args,
-                        ref ty,
-                    } = result
-                    {
-                        tast::Ty::TFunc {
-                            params: args.iter().map(tast::Expr::get_ty).collect(),
-                            ret_ty: Box::new(ty.clone()),
-                        }
-                    } else {
-                        self.fresh_ty_var()
-                    };
-                    self.push_constraint(Constraint::Overloaded {
-                        op: method_name.clone(),
-                        trait_name: trait_name.clone(),
-                        call_site_type,
-                        origin: self.expr_range(call_expr_id),
-                    });
-                }
-                result
-            }
-            [] if contains_tvar(&receiver_ty) => {
-                if let Some(field_ty) = field_ty.clone() {
-                    self.infer_field_value_call(
-                        genv,
-                        local_env,
-                        diagnostics,
-                        FieldValueCall {
-                            call_expr_id,
-                            func_expr_id: func,
-                            receiver: receiver_tast,
-                            field_name: &method_name,
-                            field_ty,
-                            args,
-                        },
-                    )
-                } else {
-                    self.infer_deferred_method_call(
-                        genv,
-                        local_env,
-                        diagnostics,
-                        DeferredMethodCall {
-                            call_expr_id,
-                            func_expr_id: func,
-                            receiver_expr_id: receiver_expr,
-                            receiver: receiver_tast,
-                            receiver_ty,
-                            method_name: &method_name,
-                            args,
-                        },
-                    )
-                }
+                )
             }
             [] => {
                 if let Some(field_ty) = field_ty {
@@ -457,12 +413,32 @@ impl Typer {
             params: arguments.types,
             ret_ty: Box::new(ret_ty.clone()),
         };
-        self.push_constraint(Constraint::InherentMethodCall {
-            receiver_ty: receiver_ty.clone(),
-            method: method_name.clone(),
-            call_site_type: call_site_ty.clone(),
-            origin: self.expr_range(call_expr_id),
-        });
+        let mut candidate_traits = local_env.in_scope_traits().to_vec();
+        if let tast::Ty::TParam { name } = &receiver_ty
+            && let Some(bounds) = local_env.tparam_trait_bounds(name)
+        {
+            for bound in bounds {
+                if !candidate_traits.contains(bound) {
+                    candidate_traits.push(bound.clone());
+                }
+            }
+        }
+        self.push_obligation(
+            Predicate::Method(MethodGoal {
+                call_expr_id,
+                func_expr_id,
+                receiver_expr_id,
+                receiver_ty: receiver_ty.clone(),
+                method: method_name.clone(),
+                call_site_type: call_site_ty.clone(),
+                args: args.to_vec(),
+                in_scope_traits: candidate_traits,
+            }),
+            ObligationCause::new(
+                self.expr_range(call_expr_id),
+                ObligationCauseKind::MethodCall,
+            ),
+        );
 
         self.results
             .record_expr_ty(func_expr_id, call_site_ty.clone());
@@ -516,10 +492,23 @@ impl Typer {
             receiver_ty,
             trait_name,
             method_name,
-            method_ty,
+            method_scheme,
             args,
         } = call;
-        let inst_method_ty = self.inst_ty(method_ty);
+        let range = self.expr_range(call_expr_id);
+        let parent = self.push_obligation(
+            Predicate::Trait(TraitGoal {
+                trait_name: trait_name.clone(),
+                for_ty: receiver_ty.clone(),
+            }),
+            ObligationCause::new(range, ObligationCauseKind::MethodCall),
+        );
+        let instantiated = self.instantiate_scheme(
+            method_scheme,
+            ObligationCause::new(range, ObligationCauseKind::FunctionBound).with_parent(parent),
+        );
+        self.register_scheme_obligations(&instantiated);
+        let inst_method_ty = instantiated.ty;
         let inst_method_ty_for_call = instantiate_self_ty(&inst_method_ty, &receiver_ty);
 
         let (params, ret_ty) = match &inst_method_ty_for_call {
@@ -567,11 +556,12 @@ impl Typer {
             );
             self.fresh_ty_var()
         });
-        self.push_constraint(Constraint::TypeEqual(
-            receiver_ty,
-            receiver_param_ty,
+        self.equate(
+            diagnostics,
+            &receiver_ty,
+            &receiver_param_ty,
             self.expr_range(call_expr_id),
-        ));
+        );
 
         self.results.record_call_elab(
             call_expr_id,

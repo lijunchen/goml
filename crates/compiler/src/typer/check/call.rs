@@ -75,11 +75,12 @@ impl Typer {
                         params: arguments.types,
                         ret_ty: Box::new(ret_ty.clone()),
                     };
-                    self.push_constraint(Constraint::TypeEqual(
-                        var_ty.clone(),
-                        call_site_func_ty.clone(),
+                    self.equate(
+                        diagnostics,
+                        &var_ty,
+                        &call_site_func_ty,
                         self.expr_range(call_expr_id),
-                    ));
+                    );
 
                     self.results.record_call_elab(
                         call_expr_id,
@@ -114,7 +115,13 @@ impl Typer {
                     matches!(res, hir::NameRef::Builtin(hir::BuiltinId::Named(_)));
                 let name = &hint;
                 if let Some(func_scheme) = genv.get_function_scheme(name.as_str()) {
-                    let inst_ty = self.inst_ty(&func_scheme.ty);
+                    let call_range = self.expr_range(call_expr_id);
+                    let instantiated = self.instantiate_scheme(
+                        &func_scheme,
+                        ObligationCause::new(call_range, ObligationCauseKind::FunctionBound),
+                    );
+                    self.register_scheme_obligations(&instantiated);
+                    let inst_ty = instantiated.ty;
                     let needs_early_call_site_unify = fn_ret_depends_on_params(&inst_ty);
                     if let (Some(hint), tast::Ty::TFunc { ret_ty: fn_ret, .. }) =
                         (hint_ret_ty, &inst_ty)
@@ -136,32 +143,14 @@ impl Typer {
 
                     let ret_ty = self.fresh_ty_var();
 
-                    let call_range = self.expr_range(call_expr_id);
                     let call_site_func_ty = tast::Ty::TFunc {
                         params: arguments.types,
                         ret_ty: Box::new(ret_ty.clone()),
                     };
-                    if !self.apply_fn_scheme_constraints(
-                        genv,
-                        local_env,
-                        diagnostics,
-                        FnSchemeApplication {
-                            scheme: &func_scheme,
-                            template_call_ty: &func_scheme.ty,
-                            actual_call_ty: &inst_ty,
-                            range: call_range,
-                        },
-                    ) {
-                        return self.error_expr(astptr);
-                    }
                     if needs_early_call_site_unify {
                         self.try_unify_silent(&inst_ty, &call_site_func_ty);
                     }
-                    self.push_constraint(Constraint::TypeEqual(
-                        inst_ty.clone(),
-                        call_site_func_ty.clone(),
-                        call_range,
-                    ));
+                    self.equate(diagnostics, &inst_ty, &call_site_func_ty, call_range);
                     self.results.record_expr_ty(func, inst_ty.clone());
                     self.results.record_name_ref_elab(
                         func,
@@ -255,11 +244,12 @@ impl Typer {
                     ret_ty: Box::new(ret_ty.clone()),
                 };
                 let func_tast = self.infer_expr(genv, local_env, diagnostics, func);
-                self.push_constraint(Constraint::TypeEqual(
-                    func_tast.get_ty(),
-                    call_site_func_ty.clone(),
+                self.equate(
+                    diagnostics,
+                    &func_tast.get_ty(),
+                    &call_site_func_ty,
                     self.expr_range(call_expr_id),
-                ));
+                );
 
                 self.results.record_call_elab(
                     call_expr_id,
@@ -333,16 +323,7 @@ impl Typer {
         let mut types = Vec::with_capacity(args.len());
         for (arg, param_ty) in args.iter().zip(params) {
             let expected_ty = self.norm(param_ty);
-            let (expr, deferred_dyn) =
-                self.check_expr_with_deferred_dyn(genv, local_env, diagnostics, *arg, &expected_ty);
-            if contains_tvar(&expected_ty) && !deferred_dyn {
-                self.unify(
-                    diagnostics,
-                    &expr.get_ty(),
-                    &expected_ty,
-                    self.expr_range(*arg),
-                );
-            }
+            let expr = self.check_expr(genv, local_env, diagnostics, *arg, &expected_ty);
             types.push(if use_inferred_types {
                 expr.get_ty()
             } else {

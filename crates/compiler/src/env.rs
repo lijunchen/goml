@@ -7,8 +7,8 @@ use crate::{
     common::{self, Constructor},
     tast::{self, TastIdent},
 };
-use std::cell::{Cell, RefCell};
-use std::collections::{HashMap, HashSet};
+use std::cell::Cell;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct EnumDef {
@@ -22,49 +22,6 @@ pub struct StructDef {
     pub name: TastIdent,
     pub generics: Vec<TastIdent>,
     pub fields: Vec<(TastIdent, tast::Ty)>,
-}
-
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub enum Constraint {
-    TypeEqual(
-        tast::Ty,
-        tast::Ty,
-        #[serde(skip)] Option<text_size::TextRange>,
-    ),
-    Overloaded {
-        op: TastIdent,
-        trait_name: TastIdent,
-        call_site_type: tast::Ty,
-        #[serde(skip)]
-        origin: Option<text_size::TextRange>,
-    },
-    Implements {
-        trait_name: TastIdent,
-        for_ty: tast::Ty,
-        #[serde(skip)]
-        origin: Option<text_size::TextRange>,
-    },
-    StructFieldAccess {
-        expr_ty: tast::Ty,
-        field: TastIdent,
-        result_ty: tast::Ty,
-        #[serde(skip)]
-        origin: Option<text_size::TextRange>,
-    },
-    TupleProjectionAccess {
-        tuple_ty: tast::Ty,
-        index: usize,
-        result_ty: tast::Ty,
-        #[serde(skip)]
-        origin: Option<text_size::TextRange>,
-    },
-    InherentMethodCall {
-        receiver_ty: tast::Ty,
-        method: TastIdent,
-        call_site_type: tast::Ty,
-        #[serde(skip)]
-        origin: Option<text_size::TextRange>,
-    },
 }
 
 /// Origin of a function definition.
@@ -99,10 +56,32 @@ pub struct TraitDef {
     pub methods: IndexMap<String, FnScheme>,
 }
 
-#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct ImplDef {
     pub params: Vec<TastIdent>,
+    #[serde(default)]
+    pub constraints: Vec<FnConstraint>,
     pub methods: IndexMap<String, FnScheme>,
+    #[serde(default = "impl_is_valid")]
+    pub valid: bool,
+    #[serde(skip)]
+    pub origin: Option<text_size::TextRange>,
+}
+
+fn impl_is_valid() -> bool {
+    true
+}
+
+impl Default for ImplDef {
+    fn default() -> Self {
+        Self {
+            params: Vec::new(),
+            constraints: Vec::new(),
+            methods: IndexMap::new(),
+            valid: true,
+            origin: None,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
@@ -331,15 +310,6 @@ impl TraitEnv {
         self.trait_defs.contains_key(name)
     }
 
-    pub fn lookup_trait_method(
-        &self,
-        trait_name: &TastIdent,
-        method_name: &TastIdent,
-    ) -> Option<tast::Ty> {
-        self.lookup_trait_method_scheme(trait_name, method_name)
-            .map(|scheme| scheme.ty.clone())
-    }
-
     pub fn lookup_trait_method_scheme(
         &self,
         trait_name: &TastIdent,
@@ -349,87 +319,6 @@ impl TraitEnv {
             .get(&trait_name.0)
             .and_then(|trait_def| trait_def.methods.get(&method_name.0))
             .cloned()
-    }
-
-    pub fn get_trait_impl(
-        &self,
-        trait_name: &TastIdent,
-        type_name: &tast::Ty,
-        func_name: &TastIdent,
-    ) -> Option<tast::Ty> {
-        self.get_trait_impl_scheme(trait_name, type_name, func_name)
-            .map(|scheme| scheme.ty.clone())
-    }
-
-    pub fn get_trait_impl_scheme(
-        &self,
-        trait_name: &TastIdent,
-        type_name: &tast::Ty,
-        func_name: &TastIdent,
-    ) -> Option<FnScheme> {
-        let key = (trait_name.0.clone(), type_name.clone());
-        if let Some(scheme) = self
-            .trait_impls
-            .get(&key)
-            .and_then(|impl_def| impl_def.methods.get(&func_name.0))
-        {
-            return Some(scheme.clone());
-        }
-
-        let mut found: Option<FnScheme> = None;
-        for ((impl_trait_name, impl_for_ty), impl_def) in self.trait_impls.iter() {
-            if impl_trait_name != &trait_name.0 {
-                continue;
-            }
-            let Some(method) = impl_def.methods.get(&func_name.0) else {
-                continue;
-            };
-            if !trait_impl_matches(impl_for_ty, type_name) {
-                continue;
-            }
-            if found.is_some() {
-                return None;
-            }
-            found = Some(method.clone());
-        }
-
-        found
-    }
-
-    pub fn has_trait_impl(&self, trait_name: &str, type_name: &tast::Ty) -> bool {
-        self.trait_impl_count(trait_name, type_name) > 0
-    }
-
-    pub fn trait_impl_count(&self, trait_name: &str, type_name: &tast::Ty) -> usize {
-        let mut count = 0;
-        for ((impl_trait_name, impl_ty), _) in self.trait_impls.iter() {
-            if impl_trait_name == trait_name && trait_impl_matches(impl_ty, type_name) {
-                count += 1;
-            }
-            if count > 1 {
-                return count;
-            }
-        }
-        count
-    }
-    pub fn collect_trait_impl_schemes(
-        &self,
-        trait_name: &TastIdent,
-        type_name: &tast::Ty,
-        func_name: &TastIdent,
-    ) -> Vec<FnScheme> {
-        self.trait_impls
-            .iter()
-            .filter_map(|((impl_trait_name, impl_for_ty), impl_def)| {
-                if impl_trait_name != &trait_name.0 {
-                    return None;
-                }
-                if !trait_impl_matches(impl_for_ty, type_name) {
-                    return None;
-                }
-                impl_def.methods.get(&func_name.0).cloned()
-            })
-            .collect()
     }
 
     pub fn lookup_inherent_method(
@@ -482,108 +371,6 @@ impl TraitEnv {
     }
 }
 
-fn trait_impl_subst(template: &tast::Ty, actual: &tast::Ty) -> Option<HashMap<String, tast::Ty>> {
-    fn go(template: &tast::Ty, actual: &tast::Ty, subst: &mut HashMap<String, tast::Ty>) -> bool {
-        match template {
-            tast::Ty::TParam { name } => match subst.get(name) {
-                Some(bound) => bound == actual,
-                None => {
-                    subst.insert(name.clone(), actual.clone());
-                    true
-                }
-            },
-            tast::Ty::TVar(_)
-            | tast::Ty::TUnit
-            | tast::Ty::TBool
-            | tast::Ty::TInt8
-            | tast::Ty::TInt16
-            | tast::Ty::TInt32
-            | tast::Ty::TInt64
-            | tast::Ty::TUint8
-            | tast::Ty::TUint16
-            | tast::Ty::TUint32
-            | tast::Ty::TUint64
-            | tast::Ty::TFloat32
-            | tast::Ty::TFloat64
-            | tast::Ty::TString
-            | tast::Ty::TChar => template == actual,
-            tast::Ty::TTuple { typs } => match actual {
-                tast::Ty::TTuple { typs: actual_typs } if typs.len() == actual_typs.len() => typs
-                    .iter()
-                    .zip(actual_typs.iter())
-                    .all(|(t, a)| go(t, a, subst)),
-                _ => false,
-            },
-            tast::Ty::TEnum { name } => matches!(actual, tast::Ty::TEnum { name: n } if n == name),
-            tast::Ty::TStruct { name } => {
-                matches!(actual, tast::Ty::TStruct { name: n } if n == name)
-            }
-            tast::Ty::TDyn { trait_name } => {
-                matches!(actual, tast::Ty::TDyn { trait_name: n } if n == trait_name)
-            }
-            tast::Ty::TApp { ty, args } => match actual {
-                tast::Ty::TApp {
-                    ty: actual_ty,
-                    args: actual_args,
-                } if args.len() == actual_args.len() => {
-                    go(ty, actual_ty, subst)
-                        && args
-                            .iter()
-                            .zip(actual_args.iter())
-                            .all(|(t, a)| go(t, a, subst))
-                }
-                _ => false,
-            },
-            tast::Ty::TArray { len, elem } => match actual {
-                tast::Ty::TArray {
-                    len: actual_len,
-                    elem: actual_elem,
-                } => len == actual_len && go(elem, actual_elem, subst),
-                _ => false,
-            },
-            tast::Ty::TSlice { elem } => match actual {
-                tast::Ty::TSlice { elem: actual_elem } => go(elem, actual_elem, subst),
-                _ => false,
-            },
-            tast::Ty::TVec { elem } => match actual {
-                tast::Ty::TVec { elem: actual_elem } => go(elem, actual_elem, subst),
-                _ => false,
-            },
-            tast::Ty::TRef { elem } => match actual {
-                tast::Ty::TRef { elem: actual_elem } => go(elem, actual_elem, subst),
-                _ => false,
-            },
-            tast::Ty::THashMap { key, value } => match actual {
-                tast::Ty::THashMap {
-                    key: actual_key,
-                    value: actual_value,
-                } => go(key, actual_key, subst) && go(value, actual_value, subst),
-                _ => false,
-            },
-            tast::Ty::TFunc { params, ret_ty } => match actual {
-                tast::Ty::TFunc {
-                    params: actual_params,
-                    ret_ty: actual_ret,
-                } if params.len() == actual_params.len() => {
-                    params
-                        .iter()
-                        .zip(actual_params.iter())
-                        .all(|(t, a)| go(t, a, subst))
-                        && go(ret_ty, actual_ret, subst)
-                }
-                _ => false,
-            },
-        }
-    }
-
-    let mut subst = HashMap::new();
-    go(template, actual, &mut subst).then_some(subst)
-}
-
-fn trait_impl_matches(template: &tast::Ty, actual: &tast::Ty) -> bool {
-    trait_impl_subst(template, actual).is_some()
-}
-
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct ValueEnv {
     pub funcs: IndexMap<String, FnScheme>,
@@ -617,13 +404,6 @@ pub struct PackageTypeEnv {
     pub current: GlobalTypeEnv,
     pub deps: HashMap<String, GlobalTypeEnv>,
     pub allow_std_host_externs: bool,
-    lookup_cache: PackageTypeEnvLookupCache,
-}
-
-#[derive(Debug, Clone, Default)]
-struct PackageTypeEnvLookupCache {
-    trait_impl_visibility: RefCell<HashMap<(String, tast::Ty), bool>>,
-    trait_impl_schemes: RefCell<HashMap<(String, tast::Ty, String), Vec<FnScheme>>>,
 }
 
 impl PackageTypeEnv {
@@ -639,18 +419,12 @@ impl PackageTypeEnv {
             current,
             deps,
             allow_std_host_externs: false,
-            lookup_cache: PackageTypeEnvLookupCache::default(),
         }
     }
 
     pub fn with_std_host_externs(mut self) -> Self {
         self.allow_std_host_externs = true;
         self
-    }
-
-    fn clear_lookup_cache(&self) {
-        self.lookup_cache.trait_impl_visibility.borrow_mut().clear();
-        self.lookup_cache.trait_impl_schemes.borrow_mut().clear();
     }
 
     pub fn builtins(&self) -> &GlobalTypeEnv {
@@ -662,11 +436,10 @@ impl PackageTypeEnv {
     }
 
     pub fn current_mut(&mut self) -> &mut GlobalTypeEnv {
-        self.clear_lookup_cache();
         &mut self.current
     }
 
-    fn shadows_builtin_nominal_type(&self, ty: &tast::Ty) -> bool {
+    pub(crate) fn shadows_builtin_nominal_type(&self, ty: &tast::Ty) -> bool {
         let Some(name) = nominal_type_name(ty) else {
             return false;
         };
@@ -677,179 +450,43 @@ impl PackageTypeEnv {
                 .any(|env| env.defines_struct_or_enum(name))
     }
 
-    pub fn has_trait_impl_visible(&self, trait_name: &str, type_name: &tast::Ty) -> bool {
-        let key = (trait_name.to_string(), type_name.clone());
-        if let Some(cached) = self.lookup_cache.trait_impl_visibility.borrow().get(&key) {
-            return *cached;
-        }
-
-        let found = self.trait_impl_count_visible(trait_name, type_name) > 0;
-
-        self.lookup_cache
-            .trait_impl_visibility
-            .borrow_mut()
-            .insert(key, found);
-        found
-    }
-
-    pub fn trait_impl_count_visible(&self, trait_name: &str, type_name: &tast::Ty) -> usize {
-        let mut visiting = HashSet::new();
-        self.trait_impl_count_visible_inner(trait_name, type_name, &mut visiting)
-    }
-
-    fn trait_impl_count_visible_inner(
+    pub fn visible_trait_impls(
         &self,
         trait_name: &str,
-        type_name: &tast::Ty,
-        visiting: &mut HashSet<(String, tast::Ty)>,
-    ) -> usize {
-        let key = (trait_name.to_string(), type_name.clone());
-        if !visiting.insert(key.clone()) {
-            return 0;
-        }
-
-        let mut count = 0;
-        if !self.shadows_builtin_nominal_type(type_name) {
-            count += self.trait_impl_count_in_env(&self.builtins, trait_name, type_name, visiting);
-        }
-        if count <= 1 {
-            count += self.trait_impl_count_in_env(&self.current, trait_name, type_name, visiting);
-        }
-        if count <= 1 {
-            for env in self.deps.values() {
-                count += self.trait_impl_count_in_env(env, trait_name, type_name, visiting);
-                if count > 1 {
-                    break;
-                }
-            }
-        }
-        visiting.remove(&key);
-        count
-    }
-
-    fn trait_impl_count_in_env(
-        &self,
-        source: &GlobalTypeEnv,
-        trait_name: &str,
-        type_name: &tast::Ty,
-        visiting: &mut HashSet<(String, tast::Ty)>,
-    ) -> usize {
-        let mut count = 0;
-        for ((impl_trait_name, impl_ty), impl_def) in source.trait_env.trait_impls.iter() {
-            if impl_trait_name != trait_name {
-                continue;
-            }
-            let Some(subst) = trait_impl_subst(impl_ty, type_name) else {
+    ) -> Vec<(String, usize, &tast::Ty, &ImplDef)> {
+        let mut result = Vec::new();
+        result.extend(
+            self.builtins
+                .trait_env
+                .trait_impls
+                .iter()
+                .enumerate()
+                .filter_map(|(index, ((name, ty), impl_def))| {
+                    (name == trait_name).then_some(("builtin".to_string(), index, ty, impl_def))
+                }),
+        );
+        result.extend(
+            self.current
+                .trait_env
+                .trait_impls
+                .iter()
+                .enumerate()
+                .filter_map(|(index, ((name, ty), impl_def))| {
+                    (name == trait_name).then_some((self.package.clone(), index, ty, impl_def))
+                }),
+        );
+        let mut packages = self.deps.keys().collect::<Vec<_>>();
+        packages.sort();
+        for package in packages {
+            let Some(env) = self.deps.get(package) else {
                 continue;
             };
-            if !self.impl_constraints_satisfied(impl_def, &subst, visiting) {
-                continue;
-            }
-            count += 1;
-            if count > 1 {
-                return count;
-            }
-        }
-        count
-    }
-
-    fn impl_constraints_satisfied(
-        &self,
-        impl_def: &ImplDef,
-        subst: &HashMap<String, tast::Ty>,
-        visiting: &mut HashSet<(String, tast::Ty)>,
-    ) -> bool {
-        impl_def.methods.values().all(|scheme| {
-            scheme.constraints.iter().all(|constraint| {
-                subst.get(&constraint.type_param).is_none_or(|ty| {
-                    self.trait_constraint_satisfied(&constraint.trait_name.0, ty, visiting)
-                })
-            })
-        })
-    }
-
-    fn trait_constraint_satisfied(
-        &self,
-        trait_name: &str,
-        type_name: &tast::Ty,
-        visiting: &mut HashSet<(String, tast::Ty)>,
-    ) -> bool {
-        matches!(
-            type_name,
-            tast::Ty::TDyn {
-                trait_name: dyn_trait_name
-            } if dyn_trait_name == trait_name
-        ) || self.trait_impl_count_visible_inner(trait_name, type_name, visiting) == 1
-    }
-
-    fn collect_trait_impl_schemes_in_env(
-        &self,
-        source: &GlobalTypeEnv,
-        trait_name: &TastIdent,
-        type_name: &tast::Ty,
-        func_name: &TastIdent,
-        visiting: &mut HashSet<(String, tast::Ty)>,
-    ) -> Vec<FnScheme> {
-        let mut result = Vec::new();
-        for ((impl_trait_name, impl_ty), impl_def) in source.trait_env.trait_impls.iter() {
-            if impl_trait_name != &trait_name.0 {
-                continue;
-            }
-            let Some(subst) = trait_impl_subst(impl_ty, type_name) else {
-                continue;
-            };
-            if !self.impl_constraints_satisfied(impl_def, &subst, visiting) {
-                continue;
-            }
-            if let Some(method) = impl_def.methods.get(&func_name.0) {
-                result.push(method.clone());
-            }
-        }
-        result
-    }
-
-    pub fn collect_visible_trait_impl_schemes(
-        &self,
-        trait_name: &TastIdent,
-        type_name: &tast::Ty,
-        func_name: &TastIdent,
-    ) -> Vec<FnScheme> {
-        let key = (trait_name.0.clone(), type_name.clone(), func_name.0.clone());
-        if let Some(cached) = self.lookup_cache.trait_impl_schemes.borrow().get(&key) {
-            return cached.clone();
-        }
-
-        let mut result = Vec::new();
-        let mut visiting = HashSet::new();
-        if !self.shadows_builtin_nominal_type(type_name) {
-            result.extend(self.collect_trait_impl_schemes_in_env(
-                &self.builtins,
-                trait_name,
-                type_name,
-                func_name,
-                &mut visiting,
+            result.extend(env.trait_env.trait_impls.iter().enumerate().filter_map(
+                |(index, ((name, ty), impl_def))| {
+                    (name == trait_name).then_some((package.clone(), index, ty, impl_def))
+                },
             ));
         }
-        result.extend(self.collect_trait_impl_schemes_in_env(
-            &self.current,
-            trait_name,
-            type_name,
-            func_name,
-            &mut visiting,
-        ));
-        for env in self.deps.values() {
-            result.extend(self.collect_trait_impl_schemes_in_env(
-                env,
-                trait_name,
-                type_name,
-                func_name,
-                &mut visiting,
-            ));
-        }
-        self.lookup_cache
-            .trait_impl_schemes
-            .borrow_mut()
-            .insert(key, result.clone());
         result
     }
 
@@ -990,32 +627,6 @@ impl GlobalTypeEnv {
         self.trait_env.is_trait(name)
     }
 
-    pub fn lookup_trait_method(
-        &self,
-        trait_name: &TastIdent,
-        method_name: &TastIdent,
-    ) -> Option<tast::Ty> {
-        self.trait_env.lookup_trait_method(trait_name, method_name)
-    }
-
-    pub fn get_trait_impl(
-        &self,
-        trait_name: &TastIdent,
-        type_name: &tast::Ty,
-        func_name: &TastIdent,
-    ) -> Option<tast::Ty> {
-        self.trait_env
-            .get_trait_impl(trait_name, type_name, func_name)
-    }
-
-    pub fn has_trait_impl(&self, trait_name: &str, type_name: &tast::Ty) -> bool {
-        self.trait_env.has_trait_impl(trait_name, type_name)
-    }
-
-    pub fn trait_impl_count(&self, trait_name: &str, type_name: &tast::Ty) -> usize {
-        self.trait_env.trait_impl_count(trait_name, type_name)
-    }
-
     pub fn lookup_inherent_method(
         &self,
         receiver_ty: &tast::Ty,
@@ -1042,16 +653,6 @@ impl GlobalTypeEnv {
             .lookup_trait_method_scheme(trait_name, method_name)
     }
 
-    pub fn get_trait_impl_scheme(
-        &self,
-        trait_name: &TastIdent,
-        type_name: &tast::Ty,
-        func_name: &TastIdent,
-    ) -> Option<FnScheme> {
-        self.trait_env
-            .get_trait_impl_scheme(trait_name, type_name, func_name)
-    }
-
     pub fn lookup_inherent_method_scheme(
         &self,
         receiver_ty: &tast::Ty,
@@ -1068,16 +669,6 @@ impl GlobalTypeEnv {
     ) -> Option<FnScheme> {
         self.trait_env
             .lookup_inherent_method_by_constr(constr, method)
-    }
-
-    pub fn collect_trait_impl_schemes(
-        &self,
-        trait_name: &TastIdent,
-        type_name: &tast::Ty,
-        func_name: &TastIdent,
-    ) -> Vec<FnScheme> {
-        self.trait_env
-            .collect_trait_impl_schemes(trait_name, type_name, func_name)
     }
 
     pub fn get_function_scheme(&self, func: &str) -> Option<FnScheme> {
