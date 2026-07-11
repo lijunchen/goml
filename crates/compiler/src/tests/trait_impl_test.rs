@@ -846,6 +846,87 @@ fn main() -> unit {
 }
 
 #[test]
+fn expected_return_type_disambiguates_generic_trait_method() {
+    let src = r#"
+trait Convert[T] {
+    fn convert(Self) -> T;
+}
+
+struct Token {}
+
+impl Convert[int32] for Token {
+    fn convert(self: Token) -> int32 { 7 }
+}
+
+impl Convert[string] for Token {
+    fn convert(self: Token) -> string { "seven" }
+}
+
+fn main() -> unit {
+    let number: int32 = (Token {}).convert();
+    let text: string = (Token {}).convert();
+    ()
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
+fn trait_impl_methods_cannot_add_type_parameters() {
+    let cases = [
+        r#"
+trait Value {
+    fn value(Self) -> int32;
+}
+
+struct X {}
+
+impl Value for X {
+    fn value[Unused](self: X) -> int32 { 1 }
+}
+"#,
+        r#"
+trait Identity {
+    fn identity(Self) -> int32;
+}
+
+struct X {}
+
+impl Identity for X {
+    fn identity[T](self: X) -> T { self }
+}
+"#,
+        r#"
+trait Value {
+    fn value(Self) -> int32;
+}
+
+struct X {}
+
+impl Value for X {
+    fn value[T: Show](self: X) -> int32 { 1 }
+}
+"#,
+    ];
+
+    for src in cases {
+        let diagnostics = diagnostic_lines(src);
+        assert!(
+            diagnostics.iter().any(|line| {
+                line.contains(
+                    "Trait method implementation Value::value cannot declare type parameters",
+                ) || line.contains(
+                    "Trait method implementation Identity::identity cannot declare type parameters",
+                )
+            }),
+            "{diagnostics:?}"
+        );
+    }
+}
+
+#[test]
 fn overlapping_generic_trait_applications_are_rejected() {
     let src = r#"
 trait Convert[T] {
