@@ -766,6 +766,34 @@ fn main() {
 
 #[test]
 #[rustfmt::skip]
+fn hover_and_inlay_hints_for_for_pattern() {
+    let src = r#"
+fn main() {
+    for value in range(0, 2) {
+        let _ = value;
+    };
+}
+"#;
+
+    check(src, 2, 9, expect![[r#"
+        "int32"
+    "#]]);
+    check(src, 3, 17, expect![[r#"
+        "int32"
+    "#]]);
+    check_inlay_hints(src, expect![[r#"
+        [
+            InlayHintItem {
+                offset: 27,
+                label: ": int32",
+                kind: Type,
+            },
+        ]
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
 fn hover_fn_params() {
     let src = r#"
 fn f(x: int32, y: string) -> int32 { x }
@@ -912,6 +940,7 @@ fn main() {
         expect![[r#"
             [
                 "get",
+                "iter",
                 "len",
                 "new",
                 "push",
@@ -970,11 +999,50 @@ fn main() {
         expect![[r#"
             [
                 "get",
+                "iter",
                 "len",
                 "sub",
             ]
         "#]],
     );
+}
+
+#[test]
+#[rustfmt::skip]
+fn builtin_iterator_dot_method_completion() {
+    let src = r#"
+fn main() {
+    let iterator = range(0, 2);
+    iterator.
+}
+"#;
+
+    check_completion_labels(
+        src,
+        3,
+        13,
+        expect![[r#"
+            [
+                "from_fn",
+                "next",
+                "next_fn",
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn hover_builtin_range() {
+    let src = r#"
+fn main() {
+    let iterator = range(0, 2);
+}
+"#;
+
+    check(src, 2, 21, expect![[r#"
+        "(int32, int32) -> Iterator[int32]"
+    "#]]);
 }
 
 #[test]
@@ -1028,6 +1096,7 @@ fn main() {
         expect![[r#"
             [
                 "get",
+                "iter",
                 "len",
                 "new",
                 "push",
@@ -1081,8 +1150,31 @@ fn main() {
         expect![[r#"
             [
                 "get",
+                "iter",
                 "len",
                 "sub",
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn builtin_iterator_colon_colon_method_completion() {
+    let src = r#"
+fn main() {
+    let _ = Iterator::;
+}
+"#;
+
+    check_colon_colon_completion_labels(
+        src,
+        2,
+        22,
+        expect![[r#"
+            [
+                "from_fn",
+                "next",
             ]
         "#]],
     );

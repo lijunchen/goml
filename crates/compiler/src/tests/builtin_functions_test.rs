@@ -1,6 +1,6 @@
 use expect_test::{Expect, expect};
 
-use crate::{builtins, env::GlobalTypeEnv, tast};
+use crate::{builtins, env::GlobalTypeEnv, intrinsics::LangItemId, tast};
 
 fn expect_function_types(env: &GlobalTypeEnv, names: &[&str], expected: Expect) {
     let mut lines = Vec::new();
@@ -30,6 +30,7 @@ fn env_registers_builtin_function_signatures() {
             "slice_len",
             "slice_sub",
             "vec_set",
+            "range",
         ],
         expect![[r#"
             string_print: Some(TFunc([TString], TUnit))
@@ -44,7 +45,8 @@ fn env_registers_builtin_function_signatures() {
             slice_get: Some(TFunc([TSlice(TParam(T)), TInt32], TParam(T)))
             slice_len: Some(TFunc([TSlice(TParam(T))], TInt32))
             slice_sub: Some(TFunc([TSlice(TParam(T)), TInt32, TInt32], TSlice(TParam(T))))
-            vec_set: Some(TFunc([TVec(TParam(T)), TInt32, TParam(T)], TUnit))"#]],
+            vec_set: Some(TFunc([TVec(TParam(T)), TInt32, TParam(T)], TUnit))
+            range: Some(TFunc([TInt32, TInt32], TApp(TStruct(Iterator), [TInt32])))"#]],
     );
 }
 
@@ -135,6 +137,14 @@ fn env_registers_builtin_vec_inherent_methods() {
         )
     "#]]
     .assert_debug_eq(&len);
+
+    let iter = env.lookup_inherent_method(&receiver, &tast::TastIdent("iter".to_string()));
+    expect![[r#"
+        Some(
+            TFunc([TVec(TParam(T))], TApp(TStruct(Iterator), [TParam(T)])),
+        )
+    "#]]
+    .assert_debug_eq(&iter);
 }
 
 #[test]
@@ -199,6 +209,42 @@ fn env_registers_builtin_slice_inherent_methods() {
         )
     "#]]
     .assert_debug_eq(&sub);
+
+    let iter = env.lookup_inherent_method(&receiver, &tast::TastIdent("iter".to_string()));
+    expect![[r#"
+        Some(
+            TFunc([TSlice(TParam(T))], TApp(TStruct(Iterator), [TParam(T)])),
+        )
+    "#]]
+    .assert_debug_eq(&iter);
+}
+
+#[test]
+fn env_registers_builtin_iterator_inherent_methods() {
+    let env = builtins::builtin_env();
+    let iterator_name = env.lang_item(LangItemId::Iterator).unwrap().0.clone();
+    let receiver = tast::Ty::TApp {
+        ty: Box::new(tast::Ty::TStruct {
+            name: iterator_name,
+        }),
+        args: vec![tast::Ty::TInt32],
+    };
+
+    let from_fn = env.lookup_inherent_method(&receiver, &tast::TastIdent("from_fn".to_string()));
+    expect![[r#"
+        Some(
+            TFunc([TFunc([], TApp(TEnum(Option), [TParam(T)]))], TApp(TStruct(Iterator), [TParam(T)])),
+        )
+    "#]]
+    .assert_debug_eq(&from_fn);
+
+    let next = env.lookup_inherent_method(&receiver, &tast::TastIdent("next".to_string()));
+    expect![[r#"
+        Some(
+            TFunc([TApp(TStruct(Iterator), [TParam(T)])], TApp(TEnum(Option), [TParam(T)])),
+        )
+    "#]]
+    .assert_debug_eq(&next);
 }
 
 #[test]
@@ -240,4 +286,5 @@ fn builtin_function_names_include_ref_builtins() {
     assert!(names.iter().any(|n| n == "println"));
     assert!(names.iter().any(|n| n == "array_get"));
     assert!(names.iter().any(|n| n == "array_set"));
+    assert!(names.iter().any(|n| n == "range"));
 }
