@@ -1,0 +1,31 @@
+package host;
+
+#[runtime("std.env.args")]
+pub extern fn args() -> Vec[string]
+
+#[runtime("std.fs.read_file")]
+pub extern fn read_file(path: string) -> (bool, string, string)
+
+#[runtime("std.fs.write_file")]
+pub extern fn write_file(path: string, content: string) -> (bool, string)
+
+#[runtime("std.fs.create_dir_all")]
+pub extern fn create_dir_all(path: string) -> (bool, string)
+
+#[runtime("std.fs.file_exists")]
+pub extern fn file_exists(path: string) -> bool
+
+#[runtime("std.fs.read_dir")]
+pub extern fn read_dir(path: string) -> (bool, Vec[string], string)
+
+#[runtime("std.io.print")]
+pub extern fn print(value: string) -> unit
+
+#[runtime("std.io.println")]
+pub extern fn println(value: string) -> unit
+
+#[runtime("std.io.eprint")]
+pub extern fn eprint(value: string) -> unit
+
+#[runtime("std.process.exit")]
+pub extern fn exit(code: int32) -> unit

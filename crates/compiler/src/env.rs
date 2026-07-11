@@ -5,6 +5,7 @@ use line_index::LineIndex;
 pub use super::builtins::builtin_function_names;
 use crate::{
     common::{self, Constructor},
+    intrinsics::{CallableBody, ExternCapability, LangItemId, LangItemTable},
     tast::{self, TastIdent},
 };
 use std::cell::Cell;
@@ -24,18 +25,6 @@ pub struct StructDef {
     pub fields: Vec<(TastIdent, tast::Ty)>,
 }
 
-/// Origin of a function definition.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
-pub enum FnOrigin {
-    /// User-defined function in source code
-    #[default]
-    User,
-    /// Built-in function provided by the runtime
-    Builtin,
-    /// Compiler-generated function (e.g., from lambda lifting)
-    Compiler,
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct FnConstraint {
     pub type_param: String,
@@ -47,8 +36,8 @@ pub struct FnScheme {
     pub type_params: Vec<String>,
     pub constraints: Vec<FnConstraint>,
     pub ty: tast::Ty,
-    /// Origin of this function (user-defined, builtin, or compiler-generated)
-    pub origin: FnOrigin,
+    #[serde(default)]
+    pub body: CallableBody,
 }
 
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
@@ -395,6 +384,7 @@ pub struct GlobalTypeEnv {
     pub type_env: TypeEnv,
     pub trait_env: TraitEnv,
     pub value_env: ValueEnv,
+    pub lang_items: LangItemTable,
 }
 
 #[derive(Debug, Clone)]
@@ -403,7 +393,7 @@ pub struct PackageTypeEnv {
     pub builtins: GlobalTypeEnv,
     pub current: GlobalTypeEnv,
     pub deps: HashMap<String, GlobalTypeEnv>,
-    pub allow_std_host_externs: bool,
+    pub extern_capability: ExternCapability,
 }
 
 impl PackageTypeEnv {
@@ -418,12 +408,12 @@ impl PackageTypeEnv {
             builtins,
             current,
             deps,
-            allow_std_host_externs: false,
+            extern_capability: ExternCapability::None,
         }
     }
 
-    pub fn with_std_host_externs(mut self) -> Self {
-        self.allow_std_host_externs = true;
+    pub fn with_extern_capability(mut self, capability: ExternCapability) -> Self {
+        self.extern_capability = capability;
         self
     }
 
@@ -437,6 +427,13 @@ impl PackageTypeEnv {
 
     pub fn current_mut(&mut self) -> &mut GlobalTypeEnv {
         &mut self.current
+    }
+
+    pub fn lang_item(&self, id: LangItemId) -> Option<&TastIdent> {
+        self.current
+            .lang_item(id)
+            .or_else(|| self.builtins.lang_item(id))
+            .or_else(|| self.deps.values().find_map(|env| env.lang_item(id)))
     }
 
     pub(crate) fn shadows_builtin_nominal_type(&self, ty: &tast::Ty) -> bool {
@@ -560,7 +557,12 @@ impl GlobalTypeEnv {
                 inherent_impls: IndexMap::new(),
             },
             value_env: ValueEnv::new(),
+            lang_items: LangItemTable::default(),
         }
+    }
+
+    pub fn lang_item(&self, id: LangItemId) -> Option<&TastIdent> {
+        self.lang_items.get(id)
     }
 
     pub fn enums(&self) -> &IndexMap<TastIdent, EnumDef> {

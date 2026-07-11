@@ -685,11 +685,13 @@ fn index_package_symbols_named(
 }
 
 fn index_builtin_symbols(index: &mut ProjectSymbolIndex) -> Result<(), String> {
-    let builtin_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("src")
-        .join("builtin.gom");
-    let Ok(src) = fs::read_to_string(&builtin_path) else {
-        return Ok(());
-    };
-    index_source_file_symbols(index, BUILTIN_PACKAGE, &builtin_path, &src)
+    for file in crate::builtins::BUILTIN_SOURCE_FILES {
+        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("src")
+            .join(file);
+        let src = fs::read_to_string(&path)
+            .map_err(|error| format!("failed to read {}: {}", path.display(), error))?;
+        index_source_file_symbols(index, BUILTIN_PACKAGE, &path, &src)?;
+    }
+    Ok(())
 }

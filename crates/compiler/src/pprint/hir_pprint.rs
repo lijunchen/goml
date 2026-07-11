@@ -1,6 +1,6 @@
 use crate::hir;
 use crate::hir::{
-    Arm, Attribute, ClosureParam, Def, DefId, EnumDef, Expr, ExprId, ExternBuiltin, Fn, HirIdent,
+    Arm, Attribute, ClosureParam, Def, DefId, EnumDef, Expr, ExprId, ExternFn, Fn, HirIdent,
     ImplBlock, PackageHir, Pat, PatId, ProjectHir, ProjectHirTable, SourceFileHir, StructDef,
     TraitDef, TraitMethodSignature, TypeExpr,
 };
@@ -42,7 +42,7 @@ impl<'a> HirPrintCtx<'a> {
             Def::TraitDef(def) => def.to_doc(),
             Def::ImplBlock(def) => def.to_doc(self),
             Def::Fn(func) => func.to_doc(self),
-            Def::ExternBuiltin(ext) => ext.to_doc(),
+            Def::ExternFn(ext) => ext.to_doc(),
         }
     }
 }
@@ -807,7 +807,7 @@ impl Fn {
     }
 }
 
-impl ExternBuiltin {
+impl ExternFn {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let params_doc = RcDoc::intersperse(
             self.params.iter().map(|(name, ty)| {

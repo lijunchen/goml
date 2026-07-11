@@ -1,8 +1,7 @@
 package process;
 
-#[builtin]
-extern fn exit_raw(code: int32) -> unit
+use std::internal::host;
 
 pub fn exit(code: int32) -> unit {
-    exit_raw(code)
+    host::exit(code)
 }

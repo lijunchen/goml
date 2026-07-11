@@ -1,7 +1,8 @@
 use crate::common::{self, Constructor, Prim};
 use crate::core;
-use crate::env::{FnOrigin, Gensym, GlobalTypeEnv, StructDef};
-use crate::names::{builtin_runtime_call, inherent_method_fn_name, trait_impl_fn_name};
+use crate::env::{Gensym, GlobalTypeEnv, StructDef};
+use crate::intrinsics::{CallableBody, IntrinsicId};
+use crate::names::{inherent_method_fn_name, trait_impl_fn_name};
 use crate::tast::Arm;
 use crate::tast::Expr::{self, *};
 use crate::tast::Pat::{self, *};
@@ -230,8 +231,9 @@ mod tests {
 
 fn emissing(ty: &Ty) -> core::Expr {
     core::Expr::ECall {
-        func: Box::new(core::Expr::EVar {
-            name: builtin_runtime_call("missing"),
+        func: Box::new(core::Expr::ECallable {
+            name: IntrinsicId::Missing.source_name().to_string(),
+            body: CallableBody::Intrinsic(IntrinsicId::Missing),
             ty: Ty::TFunc {
                 params: vec![Ty::TString],
                 ret_ty: Box::new(ty.clone()),
@@ -549,11 +551,10 @@ enum CompiledPlaceRoot {
 fn is_ref_get_call(expr: &Expr) -> Option<&Expr> {
     match expr {
         Expr::ECall { func, args, .. } if args.len() == 1 => match func.as_ref() {
-            Expr::EVar { name, .. }
-                if name == "ref_get" && matches!(args[0].get_ty(), Ty::TRef { .. }) =>
-            {
-                Some(&args[0])
-            }
+            Expr::ECallable {
+                body: CallableBody::Intrinsic(IntrinsicId::RefGet),
+                ..
+            } if matches!(args[0].get_ty(), Ty::TRef { .. }) => Some(&args[0]),
             Expr::EInherentMethod {
                 receiver_ty,
                 method_name,
@@ -639,9 +640,10 @@ fn core_var(name: impl Into<String>, ty: &Ty) -> core::Expr {
     }
 }
 
-fn builtin_func(name: &str, params: Vec<Ty>, ret_ty: Ty) -> core::Expr {
-    core::Expr::EVar {
-        name: builtin_runtime_call(name),
+fn intrinsic_func(id: IntrinsicId, params: Vec<Ty>, ret_ty: Ty) -> core::Expr {
+    core::Expr::ECallable {
+        name: id.source_name().to_string(),
+        body: CallableBody::Intrinsic(id),
         ty: Ty::TFunc {
             params,
             ret_ty: Box::new(ret_ty),
@@ -649,9 +651,14 @@ fn builtin_func(name: &str, params: Vec<Ty>, ret_ty: Ty) -> core::Expr {
     }
 }
 
-fn builtin_call(name: &str, params: Vec<Ty>, ret_ty: Ty, args: Vec<core::Expr>) -> core::Expr {
+fn intrinsic_call(
+    id: IntrinsicId,
+    params: Vec<Ty>,
+    ret_ty: Ty,
+    args: Vec<core::Expr>,
+) -> core::Expr {
     core::Expr::ECall {
-        func: Box::new(builtin_func(name, params, ret_ty.clone())),
+        func: Box::new(intrinsic_func(id, params, ret_ty.clone())),
         args,
         ty: ret_ty,
     }
@@ -666,26 +673,26 @@ fn compile_index_read_core(
     range: Option<TextRange>,
 ) -> core::Expr {
     match container_ty {
-        Ty::TArray { .. } => builtin_call(
-            "array_get",
+        Ty::TArray { .. } => intrinsic_call(
+            IntrinsicId::ArrayGet,
             vec![container_ty.clone(), Ty::TInt32],
             item_ty.clone(),
             vec![container, index],
         ),
-        Ty::TVec { .. } => builtin_call(
-            "vec_get",
+        Ty::TVec { .. } => intrinsic_call(
+            IntrinsicId::VecGet,
             vec![container_ty.clone(), Ty::TInt32],
             item_ty.clone(),
             vec![container, index],
         ),
-        Ty::TSlice { .. } => builtin_call(
-            "slice_get",
+        Ty::TSlice { .. } => intrinsic_call(
+            IntrinsicId::SliceGet,
             vec![container_ty.clone(), Ty::TInt32],
             item_ty.clone(),
             vec![container, index],
         ),
-        Ty::THashMap { key, .. } => builtin_call(
-            "hashmap_get",
+        Ty::THashMap { key, .. } => intrinsic_call(
+            IntrinsicId::HashMapGet,
             vec![container_ty.clone(), key.as_ref().clone()],
             item_ty.clone(),
             vec![container, index],
@@ -702,8 +709,8 @@ fn compile_index_read_core(
 }
 
 fn compile_ref_get_core(reference: core::Expr, ref_ty: &Ty, value_ty: &Ty) -> core::Expr {
-    builtin_call(
-        "ref_get",
+    intrinsic_call(
+        IntrinsicId::RefGet,
         vec![ref_ty.clone()],
         value_ty.clone(),
         vec![reference],
@@ -711,8 +718,8 @@ fn compile_ref_get_core(reference: core::Expr, ref_ty: &Ty, value_ty: &Ty) -> co
 }
 
 fn compile_ref_set_core(reference: core::Expr, value: core::Expr, ref_ty: &Ty) -> core::Expr {
-    builtin_call(
-        "ref_set",
+    intrinsic_call(
+        IntrinsicId::RefSet,
         vec![ref_ty.clone(), value.get_ty()],
         Ty::TUnit,
         vec![reference, value],
@@ -725,8 +732,8 @@ fn compile_array_set_core(
     value: core::Expr,
 ) -> core::Expr {
     let container_ty = container.get_ty();
-    builtin_call(
-        "array_set",
+    intrinsic_call(
+        IntrinsicId::ArraySet,
         vec![container_ty.clone(), Ty::TInt32, value.get_ty()],
         container_ty,
         vec![container, index, value],
@@ -735,8 +742,8 @@ fn compile_array_set_core(
 
 fn compile_vec_set_core(container: core::Expr, index: core::Expr, value: core::Expr) -> core::Expr {
     let container_ty = container.get_ty();
-    builtin_call(
-        "vec_set",
+    intrinsic_call(
+        IntrinsicId::VecSet,
         vec![container_ty, Ty::TInt32, value.get_ty()],
         Ty::TUnit,
         vec![container, index, value],
@@ -753,8 +760,8 @@ fn compile_hashmap_set_core(
         Ty::THashMap { key, .. } => key.as_ref().clone(),
         _ => value.get_ty(),
     };
-    builtin_call(
-        "hashmap_set",
+    intrinsic_call(
+        IntrinsicId::HashMapSet,
         vec![container_ty, key_ty, value.get_ty()],
         Ty::TUnit,
         vec![container, index, value],
@@ -2300,6 +2307,7 @@ fn collect_mutable_bindings_block(block: &tast::Block, mutable_bindings: &mut Hi
 fn collect_mutable_bindings_expr(expr: &Expr, mutable_bindings: &mut HiddenMutCells) {
     match expr {
         EVar { .. }
+        | ECallable { .. }
         | EPrim { .. }
         | EBreak { .. }
         | EContinue { .. }
@@ -2396,6 +2404,7 @@ fn collect_captured_names_block(block: &tast::Block, captured: &mut HashSet<Stri
 fn collect_captured_names_expr(expr: &Expr, captured: &mut HashSet<String>) {
     match expr {
         EVar { .. }
+        | ECallable { .. }
         | EPrim { .. }
         | EBreak { .. }
         | EContinue { .. }
@@ -2488,8 +2497,9 @@ fn hidden_cell_var(name: &str, inner_ty: &Ty) -> core::Expr {
 fn hidden_ref_alloc(value: core::Expr, inner_ty: &Ty) -> core::Expr {
     let ref_ty = hidden_cell_ty(inner_ty);
     core::Expr::ECall {
-        func: Box::new(core::Expr::EVar {
-            name: builtin_runtime_call("ref"),
+        func: Box::new(core::Expr::ECallable {
+            name: IntrinsicId::RefNew.source_name().to_string(),
+            body: CallableBody::Intrinsic(IntrinsicId::RefNew),
             ty: Ty::TFunc {
                 params: vec![inner_ty.clone()],
                 ret_ty: Box::new(ref_ty.clone()),
@@ -2503,8 +2513,9 @@ fn hidden_ref_alloc(value: core::Expr, inner_ty: &Ty) -> core::Expr {
 fn hidden_ref_get(name: &str, inner_ty: &Ty) -> core::Expr {
     let ref_ty = hidden_cell_ty(inner_ty);
     core::Expr::ECall {
-        func: Box::new(core::Expr::EVar {
-            name: builtin_runtime_call("ref_get"),
+        func: Box::new(core::Expr::ECallable {
+            name: IntrinsicId::RefGet.source_name().to_string(),
+            body: CallableBody::Intrinsic(IntrinsicId::RefGet),
             ty: Ty::TFunc {
                 params: vec![ref_ty.clone()],
                 ret_ty: Box::new(inner_ty.clone()),
@@ -2518,8 +2529,9 @@ fn hidden_ref_get(name: &str, inner_ty: &Ty) -> core::Expr {
 fn hidden_ref_set(name: &str, inner_ty: &Ty, value: core::Expr) -> core::Expr {
     let ref_ty = hidden_cell_ty(inner_ty);
     core::Expr::ECall {
-        func: Box::new(core::Expr::EVar {
-            name: builtin_runtime_call("ref_set"),
+        func: Box::new(core::Expr::ECallable {
+            name: IntrinsicId::RefSet.source_name().to_string(),
+            body: CallableBody::Intrinsic(IntrinsicId::RefSet),
             ty: Ty::TFunc {
                 params: vec![ref_ty.clone(), inner_ty.clone()],
                 ret_ty: Box::new(Ty::TUnit),
@@ -2565,6 +2577,7 @@ fn lower_hidden_mut_expr(expr: core::Expr, hidden_mut_cells: &HiddenMutCells) ->
                 core::Expr::EVar { name, ty }
             }
         }
+        core::Expr::ECallable { name, body, ty } => core::Expr::ECallable { name, body, ty },
         core::Expr::EPrim { value, ty } => core::Expr::EPrim { value, ty },
         core::Expr::EConstr {
             constructor,
@@ -2765,6 +2778,7 @@ pub fn compile_file(
 
                     let f = core::Fn {
                         name: func_name,
+                        root: true,
                         generics: impl_block.generics.clone(),
                         params: m
                             .params
@@ -2789,6 +2803,7 @@ pub fn compile_file(
             tast::Item::Fn(f) => {
                 toplevels.push(core::Fn {
                     name: f.name.clone(),
+                    root: true,
                     generics: vec![],
                     params: f
                         .params
@@ -3229,8 +3244,9 @@ fn compile_block_parts(
                         },
                     }],
                     body: ECall {
-                        func: Box::new(Expr::EVar {
-                            name: builtin_runtime_call("missing"),
+                        func: Box::new(Expr::ECallable {
+                            name: IntrinsicId::Missing.source_name().to_string(),
+                            body: CallableBody::Intrinsic(IntrinsicId::Missing),
                             ty: Ty::TFunc {
                                 params: vec![Ty::TString],
                                 ret_ty: Box::new(ty.clone()),
@@ -3309,6 +3325,16 @@ fn compile_expr(
             astptr: _,
         } => core::Expr::EVar {
             name: name.to_string(),
+            ty: ty.clone(),
+        },
+        ECallable {
+            name,
+            body,
+            ty,
+            astptr: _,
+        } => core::Expr::ECallable {
+            name: name.clone(),
+            body: *body,
             ty: ty.clone(),
         },
         EPrim { value, ty } => core::Expr::EPrim {
@@ -3578,9 +3604,7 @@ fn compile_expr(
                     return emissing(ty);
                 };
                 let for_ty = receiver.get_ty();
-                if (trait_name.0 == "ToString" && method_name.0 == "to_string")
-                    || has_tparam(&for_ty)
-                {
+                if has_tparam(&for_ty) {
                     return core::Expr::ETraitCall {
                         trait_name: trait_name.clone(),
                         method_name: method_name.clone(),
@@ -3622,16 +3646,16 @@ fn compile_expr(
                     genv.lookup_inherent_method_scheme(receiver_ty, method_name)
                 {
                     let method_fn_name = inherent_method_fn_name(receiver_ty, &method_name.0);
-                    let name = if method_scheme.origin == FnOrigin::Builtin
-                        && !method_fn_name.contains('#')
-                    {
-                        builtin_runtime_call(&method_fn_name)
-                    } else {
-                        method_fn_name
-                    };
-                    core::Expr::EVar {
-                        name,
-                        ty: method_ty.clone(),
+                    match method_scheme.body {
+                        CallableBody::Goml => core::Expr::EVar {
+                            name: method_fn_name,
+                            ty: method_ty.clone(),
+                        },
+                        body => core::Expr::ECallable {
+                            name: method_fn_name,
+                            body,
+                            ty: method_ty.clone(),
+                        },
                     }
                 } else if let Some((type_name, type_args)) = decompose_struct_type(receiver_ty)
                     && let Some(struct_def) = genv.structs().get(&type_name)

@@ -34,7 +34,7 @@ pub fn source_file(module: string, root: ast::Node) -> SourceFile {
 }
 
 fn push_diagnostic(ctx: CheckContext, node: ast::Node, message: string) -> unit {
-    ctx.diagnostics.set(ctx.diagnostics.get().push(ast::diagnostic(node.start, node.end, message)))
+    ctx.diagnostics.set(ctx.diagnostics.get().pushed(ast::diagnostic(node.start, node.end, message)))
 }
 
 fn node_is(node: ast::Node, kind: ast::NodeKind) -> bool {
@@ -233,7 +233,7 @@ fn compatible(expected: string, actual: string) -> bool {
 }
 
 fn push_binding(bindings: Ref[Vec[Binding]], name: string, ty: string) -> unit {
-    bindings.set(bindings.get().push(Binding {
+    bindings.set(bindings.get().pushed(Binding {
         name: name,
         ty: ty,
     }))
@@ -279,29 +279,29 @@ fn fn_info(module: string, name: string, params: Vec[string], ret: string) -> Fn
 }
 
 fn push_function(ctx: CheckContext, info: FnInfo) -> unit {
-    ctx.functions.set(ctx.functions.get().push(info))
+    ctx.functions.set(ctx.functions.get().pushed(info))
 }
 
 fn add_builtin_functions(ctx: CheckContext) -> unit {
     let one_unknown = Ref::new(Vec::new());
-    one_unknown.set(one_unknown.get().push("unknown"));
+    one_unknown.set(one_unknown.get().pushed("unknown"));
     let two_unknown = Ref::new(Vec::new());
-    two_unknown.set(two_unknown.get().push("unknown"));
-    two_unknown.set(two_unknown.get().push("unknown"));
+    two_unknown.set(two_unknown.get().pushed("unknown"));
+    two_unknown.set(two_unknown.get().pushed("unknown"));
     push_function(ctx, fn_info("", "ref", one_unknown.get(), "Ref[unknown]"));
     push_function(ctx, fn_info("", "ref_get", one_unknown.get(), "unknown"));
     push_function(ctx, fn_info("", "ref_set", two_unknown.get(), "unit"));
     push_function(ctx, fn_info("io", "println", one_unknown.get(), "unit"));
     push_function(ctx, fn_info("io", "print", one_unknown.get(), "unit"));
     let read_file_params = Ref::new(Vec::new());
-    read_file_params.set(read_file_params.get().push("string"));
+    read_file_params.set(read_file_params.get().pushed("string"));
     push_function(ctx, fn_info("fs", "read_file", read_file_params.get(), "Result[string,string]"));
     push_function(ctx, fn_info("fs", "write_file", two_unknown.get(), "Result[unit,string]"));
     push_function(ctx, fn_info("fs", "exists", read_file_params.get(), "bool"));
     let no_params: Vec[string] = Vec::new();
     push_function(ctx, fn_info("env", "args", no_params, "Vec[string]"));
     let exit_params = Ref::new(Vec::new());
-    exit_params.set(exit_params.get().push("int32"));
+    exit_params.set(exit_params.get().pushed("int32"));
     push_function(ctx, fn_info("process", "exit", exit_params.get(), "unit"));
 }
 
@@ -312,9 +312,9 @@ fn collect_fn(ctx: CheckContext, module: string, item: ast::Node) -> unit {
     while i.get() < param_list.children.len() {
         let param = param_list.children.get(i.get());
         if param.children.len() > 0 {
-            params.set(params.get().push(type_text(module, param.children.get(0))));
+            params.set(params.get().pushed(type_text(module, param.children.get(0))));
         } else {
-            params.set(params.get().push("unknown"));
+            params.set(params.get().pushed("unknown"));
         };
         i.set(i.get() + 1);
     };
@@ -330,7 +330,7 @@ fn collect_enum(ctx: CheckContext, module: string, item: ast::Node) -> unit {
         let params = Ref::new(Vec::new());
         let j = Ref::new(0);
         while j.get() < variant.children.len() {
-            params.set(params.get().push(type_text(module, variant.children.get(j.get()))));
+            params.set(params.get().pushed(type_text(module, variant.children.get(j.get()))));
             j.set(j.get() + 1);
         };
         push_function(ctx, fn_info(module + "::" + item.text, variant.text, params.get(), enum_name));
@@ -702,7 +702,7 @@ fn infer_expr(ctx: CheckContext, node: ast::Node, bindings: Ref[Vec[Binding]]) -
         let args = Ref::new(Vec::new());
         let i = Ref::new(1);
         while i.get() < node.children.len() {
-            args.set(args.get().push(node.children.get(i.get())));
+            args.set(args.get().pushed(node.children.get(i.get())));
             i.set(i.get() + 1);
         };
         method_type(ctx, child(node, 0), receiver, node.text, args.get(), bindings)

@@ -1,15 +1,5 @@
 use crate::tast;
 
-pub const BUILTIN_RUNTIME_CALL_PREFIX: &str = "$goml_builtin_runtime$";
-
-pub fn builtin_runtime_call_name(name: &str) -> Option<&str> {
-    name.strip_prefix(BUILTIN_RUNTIME_CALL_PREFIX)
-}
-
-pub fn builtin_runtime_call(raw_name: &str) -> String {
-    format!("{}{}", BUILTIN_RUNTIME_CALL_PREFIX, raw_name)
-}
-
 pub fn ty_compact(ty: &tast::Ty) -> String {
     ty.to_pretty(10000)
         .chars()
@@ -31,9 +21,6 @@ pub fn trait_impl_fn_name(
 }
 
 pub fn inherent_method_fn_name(receiver_ty: &tast::Ty, method_name: &str) -> String {
-    if is_primitive(receiver_ty) {
-        return format!("{}_{}", inherent_base(receiver_ty), method_name);
-    }
     let base = inherent_base(receiver_ty);
     format!(
         "inherent#{}#{}#{}",
@@ -96,24 +83,4 @@ fn inherent_base(receiver_ty: &tast::Ty) -> String {
         | tast::Ty::THashMap { .. } => receiver_ty.get_constr_name_unsafe(),
         other => ty_compact(other),
     }
-}
-
-fn is_primitive(ty: &tast::Ty) -> bool {
-    matches!(
-        ty,
-        tast::Ty::TUnit
-            | tast::Ty::TBool
-            | tast::Ty::TInt8
-            | tast::Ty::TInt16
-            | tast::Ty::TInt32
-            | tast::Ty::TInt64
-            | tast::Ty::TUint8
-            | tast::Ty::TUint16
-            | tast::Ty::TUint32
-            | tast::Ty::TUint64
-            | tast::Ty::TFloat32
-            | tast::Ty::TFloat64
-            | tast::Ty::TString
-            | tast::Ty::TChar
-    )
 }

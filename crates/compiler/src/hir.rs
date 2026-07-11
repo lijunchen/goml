@@ -7,7 +7,10 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use text_size::TextRange;
 
-use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE};
+use crate::{
+    intrinsics::CallableBody,
+    package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE},
+};
 
 #[derive(Debug, Clone)]
 pub struct SourceFileAst {
@@ -126,7 +129,7 @@ impl PackageInterface {
                 Def::Fn(func) => {
                     exports.insert(func.name.clone(), def_id);
                 }
-                Def::ExternBuiltin(ext) => {
+                Def::ExternFn(ext) => {
                     exports.insert(ext.name.to_ident_name(), def_id);
                 }
                 Def::ImplBlock(_) => {}
@@ -285,7 +288,7 @@ pub enum DefKind {
     StructDef,
     TraitDef,
     ImplBlock,
-    ExternBuiltin,
+    ExternFn,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -761,93 +764,11 @@ impl std::hash::Hash for HirIdent {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum BuiltinId {
-    ArrayGet,
-    ArraySet,
-    Ref,
-    RefGet,
-    RefSet,
-    PtrEq,
-    VecNew,
-    VecPush,
-    VecGet,
-    VecSet,
-    VecLen,
-    Slice,
-    SliceGet,
-    SliceLen,
-    SliceSub,
-    HashMapNew,
-    HashMapGet,
-    HashMapSet,
-    HashMapRemove,
-    HashMapLen,
-    HashMapContains,
-    Named(u32),
-}
-
-impl BuiltinId {
-    pub fn from_name(name: &str) -> Option<Self> {
-        match name {
-            "array_get" => Some(BuiltinId::ArrayGet),
-            "array_set" => Some(BuiltinId::ArraySet),
-            "ref" => Some(BuiltinId::Ref),
-            "ref_get" => Some(BuiltinId::RefGet),
-            "ref_set" => Some(BuiltinId::RefSet),
-            "ptr_eq" => Some(BuiltinId::PtrEq),
-            "vec_new" => Some(BuiltinId::VecNew),
-            "vec_push" => Some(BuiltinId::VecPush),
-            "vec_get" => Some(BuiltinId::VecGet),
-            "vec_set" => Some(BuiltinId::VecSet),
-            "vec_len" => Some(BuiltinId::VecLen),
-            "slice" => Some(BuiltinId::Slice),
-            "slice_get" => Some(BuiltinId::SliceGet),
-            "slice_len" => Some(BuiltinId::SliceLen),
-            "slice_sub" => Some(BuiltinId::SliceSub),
-            "hashmap_new" => Some(BuiltinId::HashMapNew),
-            "hashmap_get" => Some(BuiltinId::HashMapGet),
-            "hashmap_set" => Some(BuiltinId::HashMapSet),
-            "hashmap_remove" => Some(BuiltinId::HashMapRemove),
-            "hashmap_len" => Some(BuiltinId::HashMapLen),
-            "hashmap_contains" => Some(BuiltinId::HashMapContains),
-            _ => None,
-        }
-    }
-
-    pub fn to_name(&self) -> String {
-        match self {
-            BuiltinId::ArrayGet => "array_get".to_string(),
-            BuiltinId::ArraySet => "array_set".to_string(),
-            BuiltinId::Ref => "ref".to_string(),
-            BuiltinId::RefGet => "ref_get".to_string(),
-            BuiltinId::RefSet => "ref_set".to_string(),
-            BuiltinId::PtrEq => "ptr_eq".to_string(),
-            BuiltinId::VecNew => "vec_new".to_string(),
-            BuiltinId::VecPush => "vec_push".to_string(),
-            BuiltinId::VecGet => "vec_get".to_string(),
-            BuiltinId::VecSet => "vec_set".to_string(),
-            BuiltinId::VecLen => "vec_len".to_string(),
-            BuiltinId::Slice => "slice".to_string(),
-            BuiltinId::SliceGet => "slice_get".to_string(),
-            BuiltinId::SliceLen => "slice_len".to_string(),
-            BuiltinId::SliceSub => "slice_sub".to_string(),
-            BuiltinId::HashMapNew => "hashmap_new".to_string(),
-            BuiltinId::HashMapGet => "hashmap_get".to_string(),
-            BuiltinId::HashMapSet => "hashmap_set".to_string(),
-            BuiltinId::HashMapRemove => "hashmap_remove".to_string(),
-            BuiltinId::HashMapLen => "hashmap_len".to_string(),
-            BuiltinId::HashMapContains => "hashmap_contains".to_string(),
-            BuiltinId::Named(id) => format!("builtin/{}", id),
-        }
-    }
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum NameRef {
     Local(LocalId),
     Def(DefId),
-    Builtin(BuiltinId),
+    Builtin(CallableBody),
     Unresolved(Path),
 }
 
@@ -859,7 +780,7 @@ impl NameRef {
                 .unwrap_or_else(|| panic!("missing HIR table for package {:?}", id.pkg))
                 .local_ident_name(*id),
             NameRef::Def(id) => id.to_debug_string(),
-            NameRef::Builtin(id) => id.to_name(),
+            NameRef::Builtin(body) => body.ir_name(),
             NameRef::Unresolved(path) => path.display(),
         }
     }
@@ -1129,7 +1050,7 @@ pub enum Def {
     TraitDef(TraitDef),
     ImplBlock(ImplBlock),
     Fn(Fn),
-    ExternBuiltin(ExternBuiltin),
+    ExternFn(ExternFn),
 }
 
 #[derive(Debug, Clone)]
@@ -1144,7 +1065,7 @@ pub struct Fn {
 }
 
 #[derive(Debug, Clone)]
-pub struct ExternBuiltin {
+pub struct ExternFn {
     pub attrs: Vec<Attribute>,
     pub name: HirIdent,
     pub generics: Vec<HirIdent>,
@@ -1153,9 +1074,9 @@ pub struct ExternBuiltin {
     pub ret_ty: Option<TypeExpr>,
 }
 
-impl From<&ast::ExternBuiltin> for ExternBuiltin {
-    fn from(ext: &ast::ExternBuiltin) -> Self {
-        ExternBuiltin {
+impl From<&ast::ExternFn> for ExternFn {
+    fn from(ext: &ast::ExternFn) -> Self {
+        ExternFn {
             attrs: ext.attrs.iter().map(|a| a.into()).collect(),
             name: HirIdent::name(&ext.name.0),
             generics: ext.generics.iter().map(|g| HirIdent::name(&g.0)).collect(),

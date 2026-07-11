@@ -161,6 +161,7 @@ fn call_callee_type(
     match &call_elab.callee {
         crate::typer::results::CalleeElab::Expr(expr_id) => results.expr_ty(*expr_id).cloned(),
         crate::typer::results::CalleeElab::Var { ty, .. }
+        | crate::typer::results::CalleeElab::Callable { ty, .. }
         | crate::typer::results::CalleeElab::TraitMethod { ty, .. }
         | crate::typer::results::CalleeElab::DynTraitMethod { ty, .. }
         | crate::typer::results::CalleeElab::InherentMethod { ty, .. }
@@ -175,7 +176,10 @@ fn parameter_names_for_call(
 ) -> Vec<Option<String>> {
     let symbols = build_symbol_lookup(path, src);
     let locations = match &call_elab.callee {
-        crate::typer::results::CalleeElab::Var { name, .. } => symbols.index.find_value(name),
+        crate::typer::results::CalleeElab::Var { name, .. }
+        | crate::typer::results::CalleeElab::Callable { name, .. } => {
+            symbols.index.find_value(name)
+        }
         crate::typer::results::CalleeElab::TraitMethod {
             trait_name,
             method_name,

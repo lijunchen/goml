@@ -1,22 +1,9 @@
 package fs;
 
-#[builtin]
-extern fn read_file_raw(path: string) -> (bool, string, string)
-
-#[builtin]
-extern fn write_file_raw(path: string, content: string) -> (bool, string)
-
-#[builtin]
-extern fn create_dir_all_raw(path: string) -> (bool, string)
-
-#[builtin]
-extern fn file_exists_raw(path: string) -> bool
-
-#[builtin]
-extern fn read_dir_raw(path: string) -> (bool, Vec[string], string)
+use std::internal::host;
 
 pub fn read_file(path: string) -> Result[string, string] {
-    let (ok, data, err) = read_file_raw(path);
+    let (ok, data, err) = host::read_file(path);
     if ok {
         Result::Ok(data)
     } else {
@@ -25,7 +12,7 @@ pub fn read_file(path: string) -> Result[string, string] {
 }
 
 pub fn write_file(path: string, content: string) -> Result[unit, string] {
-    let (ok, err) = write_file_raw(path, content);
+    let (ok, err) = host::write_file(path, content);
     if ok {
         Result::Ok(())
     } else {
@@ -34,7 +21,7 @@ pub fn write_file(path: string, content: string) -> Result[unit, string] {
 }
 
 pub fn create_dir_all(path: string) -> Result[unit, string] {
-    let (ok, err) = create_dir_all_raw(path);
+    let (ok, err) = host::create_dir_all(path);
     if ok {
         Result::Ok(())
     } else {
@@ -43,11 +30,11 @@ pub fn create_dir_all(path: string) -> Result[unit, string] {
 }
 
 pub fn exists(path: string) -> bool {
-    file_exists_raw(path)
+    host::file_exists(path)
 }
 
 pub fn read_dir(path: string) -> Result[Vec[string], string] {
-    let (ok, names, err) = read_dir_raw(path);
+    let (ok, names, err) = host::read_dir(path);
     if ok {
         Result::Ok(names)
     } else {

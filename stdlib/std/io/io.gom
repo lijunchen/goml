@@ -1,26 +1,19 @@
 package io;
 
-#[builtin]
-extern fn print_raw(value: string) -> unit
-
-#[builtin]
-extern fn println_raw(value: string) -> unit
-
-#[builtin]
-extern fn eprint_raw(value: string) -> unit
+use std::internal::host;
 
 pub fn print[T: ToString](value: T) -> unit {
-    print_raw(ToString::to_string(value))
+    host::print(ToString::to_string(value))
 }
 
 pub fn println[T: ToString](value: T) -> unit {
-    println_raw(ToString::to_string(value))
+    host::println(ToString::to_string(value))
 }
 
 pub fn eprint[T: ToString](value: T) -> unit {
-    eprint_raw(ToString::to_string(value))
+    host::eprint(ToString::to_string(value))
 }
 
 pub fn eprintln[T: ToString](value: T) -> unit {
-    eprint_raw(ToString::to_string(value) + "\n")
+    host::eprint(ToString::to_string(value) + "\n")
 }

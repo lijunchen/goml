@@ -1,5 +1,6 @@
 pub type Ty = crate::tast::Ty;
 use crate::common::{Constructor, Prim};
+use crate::intrinsics::CallableBody;
 use crate::tast;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -10,10 +11,16 @@ pub struct File {
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Fn {
     pub name: String,
+    #[serde(default = "root_default")]
+    pub root: bool,
     pub generics: Vec<String>,
     pub params: Vec<(String, Ty)>,
     pub ret_ty: Ty,
     pub body: Block,
+}
+
+fn root_default() -> bool {
+    true
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -33,6 +40,11 @@ pub struct Block {
 pub enum Expr {
     EVar {
         name: String,
+        ty: Ty,
+    },
+    ECallable {
+        name: String,
+        body: CallableBody,
         ty: Ty,
     },
     EPrim {
@@ -151,6 +163,7 @@ impl Expr {
     pub fn get_ty(&self) -> Ty {
         match self {
             Expr::EVar { ty, .. } => ty.clone(),
+            Expr::ECallable { ty, .. } => ty.clone(),
             Expr::EPrim { ty, .. } => ty.clone(),
             Expr::EConstr { ty, .. } => ty.clone(),
             Expr::ETuple { ty, .. } => ty.clone(),

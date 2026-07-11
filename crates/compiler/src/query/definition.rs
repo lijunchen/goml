@@ -293,7 +293,8 @@ fn resolve_expr_definition(
                             return Some(out);
                         }
                     }
-                    crate::typer::results::NameRefElab::Var { .. } => {}
+                    crate::typer::results::NameRefElab::Var { .. }
+                    | crate::typer::results::NameRefElab::Callable { .. } => {}
                 }
             }
 
@@ -324,7 +325,8 @@ fn resolve_expr_definition(
                     | crate::typer::results::NameRefElab::DynTraitMethod { method_name, .. } => {
                         method_name.0.clone()
                     }
-                    crate::typer::results::NameRefElab::Var { .. } => field_name.clone(),
+                    crate::typer::results::NameRefElab::Var { .. }
+                    | crate::typer::results::NameRefElab::Callable { .. } => field_name.clone(),
                 };
 
                 let mut out = Vec::new();

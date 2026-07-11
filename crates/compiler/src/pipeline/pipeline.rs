@@ -9,7 +9,6 @@ use rowan::GreenNode;
 
 use crate::config::{find_module_root, load_module_manifest};
 use crate::package_names::{BUILTIN_PACKAGE, ENTRY_FUNCTION, ROOT_PACKAGE, STD_PACKAGE};
-use crate::pipeline::builtin_inherent;
 use crate::pipeline::compile_error;
 use crate::pipeline::packages;
 use crate::{
@@ -453,39 +452,11 @@ fn typecheck_packages_inner(
         .clone();
 
     let mut toplevels = Vec::new();
-    let mut has_print = false;
-    let mut has_println = false;
     for name in graph.discovery_order.iter() {
         let artifact = artifacts_by_name
             .get(name)
             .ok_or_else(|| compile_error(format!("missing package artifact for {}", name)))?;
-        for item in artifact.tast.toplevels.iter() {
-            if let tast::Item::Fn(f) = item {
-                if f.name == "print" {
-                    has_print = true;
-                }
-                if f.name == "println" {
-                    has_println = true;
-                }
-            }
-        }
         toplevels.extend(artifact.tast.toplevels.clone());
-    }
-
-    if !has_print || !has_println {
-        let mut extra = Vec::new();
-        for item in builtins::builtin_tast().toplevels.iter() {
-            let tast::Item::Fn(f) = item else {
-                continue;
-            };
-            if (!has_print && f.name == "print") || (!has_println && f.name == "println") {
-                extra.push(item.clone());
-            }
-        }
-        if !extra.is_empty() {
-            extra.extend(toplevels);
-            toplevels = extra;
-        }
     }
 
     Ok(TypecheckPackagesResult {
@@ -578,13 +549,16 @@ fn compile_inner(
     let gensym = Gensym::new();
 
     let mut package_cores = Vec::new();
-    let builtin_print_core = compile_match::compile_file(
+    let mut builtin_core = compile_match::compile_file(
         &builtins::builtin_env(),
         &gensym,
         &mut diagnostics,
-        &builtins::builtin_print_tast(),
+        &builtins::builtin_tast(),
     );
-    package_cores.push(builtin_print_core);
+    for function in builtin_core.toplevels.iter_mut() {
+        function.root = false;
+    }
+    package_cores.push(builtin_core);
     for module in external_deps.modules.values() {
         for (name, package) in module.packages.iter() {
             if !reachable_external.contains(name) {
@@ -620,16 +594,6 @@ fn compile_inner(
         artifact.full_exports.apply_to(&mut env);
         let core = compile_match::compile_file(&env, &gensym, &mut diagnostics, &artifact.tast);
         package_cores.push(core);
-    }
-    let required_builtin_methods =
-        builtin_inherent::collect_required_builtin_collection_methods(&package_cores);
-    let builtin_collection_core = builtin_inherent::compile_builtin_collection_methods(
-        &required_builtin_methods,
-        &gensym,
-        &mut diagnostics,
-    );
-    if !builtin_collection_core.toplevels.is_empty() {
-        package_cores.push(builtin_collection_core);
     }
     let mut core = link_packages(package_cores);
     if validate_entrypoint && graph.entry_package != ROOT_PACKAGE {

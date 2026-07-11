@@ -718,11 +718,13 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
     let attrs = lower_attributes(node.attributes());
     let visibility = lower_visibility(&node);
 
-    if let Some(attr) = find_attribute(&attrs, "builtin") {
+    if let Some(attr) =
+        find_attribute(&attrs, "intrinsic").or_else(|| find_attribute(&attrs, "runtime"))
+    {
         if node.type_keyword().is_some() {
             ctx.push_error(
                 Some(attr.ast.text_range()),
-                "Builtin extern declarations cannot declare types",
+                "Extern function declarations cannot declare types",
             );
             return None;
         }
@@ -730,14 +732,14 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
         if let Some(lang_token) = node.lang() {
             ctx.push_error(
                 Some(lang_token.text_range()),
-                "Builtin extern declarations should not specify a language string",
+                "Extern function declarations should not specify a language string",
             );
         }
 
         let Some(name_token) = node.lident() else {
             ctx.push_error(
                 Some(node.syntax().text_range()),
-                "Extern builtin declaration is missing function name",
+                "Extern function declaration is missing function name",
             );
             return None;
         };
@@ -775,7 +777,7 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
             })
             .unwrap_or_default();
         let ret_ty = node.return_type().and_then(|ty| lower_ty(ctx, ty));
-        return Some(ast::Item::ExternBuiltin(ast::ExternBuiltin {
+        return Some(ast::Item::ExternFn(ast::ExternFn {
             attrs,
             visibility,
             name: ast::AstIdent(name),
@@ -788,7 +790,7 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
 
     ctx.push_error(
         Some(node.syntax().text_range()),
-        "Only compiler builtin extern declarations are supported: use `#[builtin] extern fn`.",
+        "Extern declarations require `#[intrinsic(...)]` or `#[runtime(...)]`.",
     );
     None
 }
@@ -2521,7 +2523,7 @@ pub fn f() -> unit { () }
 pub struct Thing { value: int32 }
 pub enum Choice { A }
 pub trait Named { fn name(Self) -> string; }
-#[builtin]
+#[runtime("core.unit_to_string")]
 pub extern fn runtime() -> unit
 "#,
         );
@@ -2546,10 +2548,10 @@ pub extern fn runtime() -> unit
         };
         assert_eq!(trait_def.visibility, ast::Visibility::Public);
 
-        let ast::Item::ExternBuiltin(extern_builtin) = &file.toplevels[4] else {
-            panic!("expected extern builtin");
+        let ast::Item::ExternFn(extern_fn) = &file.toplevels[4] else {
+            panic!("expected extern function");
         };
-        assert_eq!(extern_builtin.visibility, ast::Visibility::Public);
+        assert_eq!(extern_fn.visibility, ast::Visibility::Public);
     }
 
     #[test]

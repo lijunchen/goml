@@ -30,7 +30,7 @@ pub fn build_file(
             hir::Def::EnumDef(..)
             | hir::Def::StructDef(..)
             | hir::Def::TraitDef(..)
-            | hir::Def::ExternBuiltin(..) => {}
+            | hir::Def::ExternFn(..) => {}
         }
     }
     tast::File { toplevels }
@@ -606,14 +606,17 @@ fn build_try_expr(
 
     let arms = match try_elab.kind {
         TryKind::Result => {
-            let Some((inner_name, err_ty)) = build_result_parts(&inner_ty) else {
+            let Some((inner_name, err_ty)) =
+                build_result_parts(&inner_ty, &try_elab.container_name)
+            else {
                 return tast::Expr::EVar {
                     name: "<error>".to_string(),
                     ty: ok_ty,
                     astptr: None,
                 };
             };
-            let Some(outer_name) = build_result_name(&outer_ret_ty) else {
+            let Some(outer_name) = build_result_name(&outer_ret_ty, &try_elab.container_name)
+            else {
                 return tast::Expr::EVar {
                     name: "<error>".to_string(),
                     ty: results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit),
@@ -669,14 +672,15 @@ fn build_try_expr(
             ]
         }
         TryKind::Option => {
-            let Some(inner_name) = build_option_name(&inner_ty) else {
+            let Some(inner_name) = build_option_name(&inner_ty, &try_elab.container_name) else {
                 return tast::Expr::EVar {
                     name: "<error>".to_string(),
                     ty: ok_ty,
                     astptr: None,
                 };
             };
-            let Some(outer_name) = build_option_name(&outer_ret_ty) else {
+            let Some(outer_name) = build_option_name(&outer_ret_ty, &try_elab.container_name)
+            else {
                 return tast::Expr::EVar {
                     name: "<error>".to_string(),
                     ty: results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit),
@@ -733,42 +737,42 @@ fn build_try_expr(
     }
 }
 
-fn build_result_parts(ty: &tast::Ty) -> Option<(String, tast::Ty)> {
+fn build_result_parts(ty: &tast::Ty, expected_name: &str) -> Option<(String, tast::Ty)> {
     let tast::Ty::TApp { ty, args } = ty else {
         return None;
     };
     let tast::Ty::TEnum { name } = ty.as_ref() else {
         return None;
     };
-    if (name == "Result" || name.ends_with("::Result")) && args.len() == 2 {
+    if name == expected_name && args.len() == 2 {
         Some((name.clone(), args[1].clone()))
     } else {
         None
     }
 }
 
-fn build_result_name(ty: &tast::Ty) -> Option<String> {
+fn build_result_name(ty: &tast::Ty, expected_name: &str) -> Option<String> {
     let tast::Ty::TApp { ty, args } = ty else {
         return None;
     };
     let tast::Ty::TEnum { name } = ty.as_ref() else {
         return None;
     };
-    if (name == "Result" || name.ends_with("::Result")) && args.len() == 2 {
+    if name == expected_name && args.len() == 2 {
         Some(name.clone())
     } else {
         None
     }
 }
 
-fn build_option_name(ty: &tast::Ty) -> Option<String> {
+fn build_option_name(ty: &tast::Ty, expected_name: &str) -> Option<String> {
     let tast::Ty::TApp { ty, args } = ty else {
         return None;
     };
     let tast::Ty::TEnum { name } = ty.as_ref() else {
         return None;
     };
-    if (name == "Option" || name.ends_with("::Option")) && args.len() == 1 {
+    if name == expected_name && args.len() == 1 {
         Some(name.clone())
     } else {
         None
@@ -836,6 +840,17 @@ fn build_name_ref_expr(
             ty: ty.clone(),
             astptr: *astptr,
         },
+        Some(NameRefElab::Callable {
+            name,
+            body,
+            ty,
+            astptr,
+        }) => tast::Expr::ECallable {
+            name: name.clone(),
+            body: *body,
+            ty: ty.clone(),
+            astptr: *astptr,
+        },
         Some(NameRefElab::TraitMethod {
             trait_name,
             method_name,
@@ -886,6 +901,17 @@ fn build_callee(
         CalleeElab::Expr(expr_id) => build_expr(hir_table, results, *expr_id),
         CalleeElab::Var { name, ty, astptr } => tast::Expr::EVar {
             name: name.clone(),
+            ty: ty.clone(),
+            astptr: *astptr,
+        },
+        CalleeElab::Callable {
+            name,
+            body,
+            ty,
+            astptr,
+        } => tast::Expr::ECallable {
+            name: name.clone(),
+            body: *body,
             ty: ty.clone(),
             astptr: *astptr,
         },

@@ -5,6 +5,7 @@ use std::cell::RefCell;
 use crate::common::{Constructor, Prim};
 use crate::env::Gensym;
 use crate::env::{EnumDef, StructDef};
+use crate::intrinsics::CallableBody;
 use crate::lift::{GlobalLiftEnv, LiftArm, LiftExpr, LiftFile};
 use crate::tast::TastIdent;
 use common_defs::{BinaryOp, UnaryOp};
@@ -79,9 +80,23 @@ pub struct Block {
 
 #[derive(Debug, Clone)]
 pub enum ImmExpr {
-    Var { id: LocalId, ty: Ty },
-    Prim { value: Prim, ty: Ty },
-    Tag { index: usize, ty: Ty },
+    Var {
+        id: LocalId,
+        ty: Ty,
+    },
+    Callable {
+        name: String,
+        body: CallableBody,
+        ty: Ty,
+    },
+    Prim {
+        value: Prim,
+        ty: Ty,
+    },
+    Tag {
+        index: usize,
+        ty: Ty,
+    },
 }
 
 #[derive(Debug, Clone)]
@@ -214,7 +229,30 @@ pub enum Term {
 
 fn imm_ty(imm: &ImmExpr) -> Ty {
     match imm {
-        ImmExpr::Var { ty, .. } | ImmExpr::Prim { ty, .. } | ImmExpr::Tag { ty, .. } => ty.clone(),
+        ImmExpr::Var { ty, .. }
+        | ImmExpr::Callable { ty, .. }
+        | ImmExpr::Prim { ty, .. }
+        | ImmExpr::Tag { ty, .. } => ty.clone(),
+    }
+}
+
+fn call_ty(func: &ImmExpr, args: &[ImmExpr], fallback: Ty) -> Ty {
+    match func {
+        ImmExpr::Callable {
+            body: CallableBody::Intrinsic(crate::intrinsics::IntrinsicId::ArraySet),
+            ..
+        } => args.first().map(imm_ty).unwrap_or(fallback),
+        ImmExpr::Callable {
+            body: CallableBody::Intrinsic(crate::intrinsics::IntrinsicId::ArrayGet),
+            ..
+        } => args
+            .first()
+            .and_then(|arg| match imm_ty(arg) {
+                Ty::TArray { elem, .. } => Some(*elem),
+                _ => None,
+            })
+            .unwrap_or(fallback),
+        _ => fallback,
     }
 }
 
@@ -267,6 +305,7 @@ fn lift_imm_to_imm(lift_imm: LiftExpr) -> ImmExpr {
             id: local(name),
             ty,
         },
+        LiftExpr::ECallable { name, body, ty } => ImmExpr::Callable { name, body, ty },
         LiftExpr::EPrim { value, ty } => ImmExpr::Prim { value, ty },
         LiftExpr::EConstr {
             constructor: Constructor::Enum(enum_constructor),
@@ -284,6 +323,11 @@ fn try_lift_imm_to_imm(lift_imm: &LiftExpr) -> Option<ImmExpr> {
     match lift_imm {
         LiftExpr::EVar { name, ty } => Some(ImmExpr::Var {
             id: local(name.clone()),
+            ty: ty.clone(),
+        }),
+        LiftExpr::ECallable { name, body, ty } => Some(ImmExpr::Callable {
+            name: name.clone(),
+            body: *body,
             ty: ty.clone(),
         }),
         LiftExpr::EPrim { value, ty } => Some(ImmExpr::Prim {
@@ -392,7 +436,7 @@ fn lift_expr_always_exits_control_flow(expr: &LiftExpr) -> bool {
                 || args.iter().any(lift_expr_always_exits_control_flow)
         }
         LiftExpr::EProj { tuple, .. } => lift_expr_always_exits_control_flow(tuple),
-        LiftExpr::EVar { .. } | LiftExpr::EPrim { .. } => false,
+        LiftExpr::EVar { .. } | LiftExpr::ECallable { .. } | LiftExpr::EPrim { .. } => false,
     }
 }
 
@@ -486,6 +530,7 @@ fn lower<'a>(
             id: local(name),
             ty,
         }),
+        LiftExpr::ECallable { name, body, ty } => k(ImmExpr::Callable { name, body, ty }),
         LiftExpr::EPrim { value, ty } => k(ImmExpr::Prim { value, ty }),
         LiftExpr::EConstr {
             constructor: Constructor::Enum(enum_constructor),
@@ -865,7 +910,9 @@ fn lower_value<'a>(
 ) -> Block {
     let e_ty = e.get_ty();
     match e {
-        LiftExpr::EVar { .. } | LiftExpr::EPrim { .. } => k(ValueExpr::Imm(lift_imm_to_imm(e))),
+        LiftExpr::EVar { .. } | LiftExpr::ECallable { .. } | LiftExpr::EPrim { .. } => {
+            k(ValueExpr::Imm(lift_imm_to_imm(e)))
+        }
         LiftExpr::EConstr {
             constructor: Constructor::Enum(enum_constructor),
             args,
@@ -980,23 +1027,7 @@ fn lower_value<'a>(
                     gensym,
                     args,
                     Box::new(move |args_imm| {
-                        let call_ty = if let ImmExpr::Var { id, .. } = &func_imm {
-                            if id.0 == "array_set" {
-                                args_imm.first().map(imm_ty).unwrap_or_else(|| e_ty.clone())
-                            } else if id.0 == "array_get" {
-                                args_imm
-                                    .first()
-                                    .and_then(|arg0| match imm_ty(arg0) {
-                                        Ty::TArray { elem, .. } => Some(*elem),
-                                        _ => None,
-                                    })
-                                    .unwrap_or_else(|| e_ty.clone())
-                            } else {
-                                e_ty.clone()
-                            }
-                        } else {
-                            e_ty.clone()
-                        };
+                        let call_ty = call_ty(&func_imm, &args_imm, e_ty.clone());
                         k(ValueExpr::Call {
                             func: func_imm,
                             args: args_imm,
@@ -1084,6 +1115,7 @@ fn lower_imm<'a>(
             id: local(name),
             ty,
         }),
+        LiftExpr::ECallable { name, body, ty } => k(ImmExpr::Callable { name, body, ty }),
         LiftExpr::EPrim { value, ty } => k(ImmExpr::Prim { value, ty }),
         LiftExpr::EConstr {
             constructor: Constructor::Enum(enum_constructor),
@@ -1285,22 +1317,7 @@ fn lower_linear_expr(gensym: &Gensym, expr: &LiftExpr) -> Option<(Vec<Bind>, Imm
             let (mut binds, func) = lower_linear_expr(gensym, func)?;
             let (arg_binds, args) = lower_linear_list(gensym, args)?;
             binds.extend(arg_binds);
-            let call_ty = if let ImmExpr::Var { id, .. } = &func {
-                if id.0 == "array_set" {
-                    args.first().map(imm_ty).unwrap_or_else(|| ty.clone())
-                } else if id.0 == "array_get" {
-                    args.first()
-                        .and_then(|arg0| match imm_ty(arg0) {
-                            Ty::TArray { elem, .. } => Some(*elem),
-                            _ => None,
-                        })
-                        .unwrap_or_else(|| ty.clone())
-                } else {
-                    ty
-                }
-            } else {
-                ty
-            };
+            let call_ty = call_ty(&func, &args, ty);
             Some(bind_value(
                 gensym,
                 binds,
@@ -1558,6 +1575,7 @@ pub mod anf_renamer {
                 id: rename_local_id(id),
                 ty,
             },
+            anf::ImmExpr::Callable { name, body, ty } => anf::ImmExpr::Callable { name, body, ty },
             anf::ImmExpr::Prim { value, ty } => anf::ImmExpr::Prim { value, ty },
             anf::ImmExpr::Tag { index, ty } => anf::ImmExpr::Tag { index, ty },
         }
@@ -2184,7 +2202,9 @@ pub mod anf_verify {
                     verify_ty_is_value(errors, ty);
                 }
             }
-            anf::ImmExpr::Prim { ty, .. } | anf::ImmExpr::Tag { ty, .. } => {
+            anf::ImmExpr::Callable { ty, .. }
+            | anf::ImmExpr::Prim { ty, .. }
+            | anf::ImmExpr::Tag { ty, .. } => {
                 verify_ty_is_value(errors, ty);
             }
         }

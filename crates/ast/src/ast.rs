@@ -177,7 +177,7 @@ pub enum Item {
     TraitDef(TraitDef),
     ImplBlock(ImplBlock),
     Fn(Fn),
-    ExternBuiltin(ExternBuiltin),
+    ExternFn(ExternFn),
 }
 
 #[derive(Debug, Clone)]
@@ -193,7 +193,7 @@ pub struct Fn {
 }
 
 #[derive(Debug, Clone)]
-pub struct ExternBuiltin {
+pub struct ExternFn {
     pub attrs: Vec<Attribute>,
     pub visibility: Visibility,
     pub name: AstIdent,

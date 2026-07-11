@@ -85,7 +85,7 @@ fn starts_with_at(source: string, index: int32, needle: string) -> bool {
 }
 
 fn push_token(tokens: Ref[Vec[syntax::Token]], kind: syntax::TokenKind, text: string, start: int32, end: int32) -> unit {
-    tokens.set(tokens.get().push(syntax::token(kind, text, start, end)))
+    tokens.set(tokens.get().pushed(syntax::token(kind, text, start, end)))
 }
 
 fn consume_whitespace(source: string, start: int32) -> (string, int32) {

@@ -36,6 +36,7 @@ use crate::typer::type_ops::{
 };
 use crate::{
     env::PackageTypeEnv,
+    intrinsics::LangItemId,
     tast::{self},
     typer::{
         ArithmeticKind, CoercionGoal, LoopControlContext, MethodGoal, ObligationCause,
@@ -53,6 +54,14 @@ impl Typer {
     fn with_expr_ty(&self, expr: tast::Expr, ty: tast::Ty) -> tast::Expr {
         match expr {
             tast::Expr::EVar { name, astptr, .. } => tast::Expr::EVar { name, ty, astptr },
+            tast::Expr::ECallable {
+                name, body, astptr, ..
+            } => tast::Expr::ECallable {
+                name,
+                body,
+                ty,
+                astptr,
+            },
             tast::Expr::EPrim { value, .. } => tast::Expr::EPrim { value, ty },
             tast::Expr::EConstr {
                 constructor, args, ..
@@ -250,6 +259,22 @@ impl Typer {
                     expr_id,
                     NameRefElab::Var {
                         name: name.clone(),
+                        ty: ty.clone(),
+                        astptr: *astptr,
+                    },
+                );
+            }
+            tast::Expr::ECallable {
+                name,
+                body,
+                ty,
+                astptr,
+            } => {
+                self.results.record_name_ref_elab(
+                    expr_id,
+                    NameRefElab::Callable {
+                        name: name.clone(),
+                        body: *body,
                         ty: ty.clone(),
                         astptr: *astptr,
                     },
@@ -822,10 +847,18 @@ impl Typer {
                 );
                 self.register_scheme_obligations(&instantiated);
                 let inst_ty = instantiated.ty;
-                tast::Expr::EVar {
-                    name: hint.to_string(),
-                    ty: inst_ty,
-                    astptr,
+                match func_scheme.body {
+                    crate::intrinsics::CallableBody::Goml => tast::Expr::EVar {
+                        name: hint.to_string(),
+                        ty: inst_ty,
+                        astptr,
+                    },
+                    body => tast::Expr::ECallable {
+                        name: hint.to_string(),
+                        body,
+                        ty: inst_ty,
+                        astptr,
+                    },
                 }
             }
             hir::NameRef::Builtin(_builtin_id) => {
@@ -845,10 +878,18 @@ impl Typer {
                 );
                 self.register_scheme_obligations(&instantiated);
                 let inst_ty = instantiated.ty;
-                tast::Expr::EVar {
-                    name: hint.to_string(),
-                    ty: inst_ty,
-                    astptr,
+                match func_scheme.body {
+                    crate::intrinsics::CallableBody::Goml => tast::Expr::EVar {
+                        name: hint.to_string(),
+                        ty: inst_ty,
+                        astptr,
+                    },
+                    body => tast::Expr::ECallable {
+                        name: hint.to_string(),
+                        body,
+                        ty: inst_ty,
+                        astptr,
+                    },
                 }
             }
             hir::NameRef::Unresolved(path) => {
@@ -1768,7 +1809,7 @@ impl Typer {
     ) -> tast::Expr {
         let inner_expr = self.infer_expr(genv, local_env, diagnostics, expr);
         let inner_ty_raw = inner_expr.get_ty();
-        let inner_ty = self.recover_try_container_ty(&inner_expr, &inner_ty_raw);
+        let inner_ty = self.recover_try_container_ty(genv, &inner_expr, &inner_ty_raw);
 
         let Some(outer_ret_ty_raw) = self.return_ty_stack.last().cloned() else {
             super::util::push_error_with_range(
@@ -1786,10 +1827,10 @@ impl Typer {
         let range = self.expr_range(e);
 
         let (kind, ok_ty, residual_ty, container_name) = match (
-            try_result_parts(&inner_ty),
-            try_option_parts(&inner_ty),
-            try_result_parts(&outer_ret_ty),
-            try_option_parts(&outer_ret_ty),
+            try_result_parts(genv, &inner_ty),
+            try_option_parts(genv, &inner_ty),
+            try_result_parts(genv, &outer_ret_ty),
+            try_option_parts(genv, &outer_ret_ty),
             matches!(inner_ty, tast::Ty::TVar(_)),
             matches!(outer_ret_ty, tast::Ty::TVar(_)),
         ) {
@@ -1947,6 +1988,7 @@ impl Typer {
             e,
             TryElab {
                 kind,
+                container_name,
                 outer_ret_ty: outer_ret_ty_raw,
                 success_index,
                 residual_index,
@@ -1960,21 +2002,29 @@ impl Typer {
         }
     }
 
-    fn recover_try_container_ty(&mut self, expr: &tast::Expr, fallback: &tast::Ty) -> tast::Ty {
+    fn recover_try_container_ty(
+        &mut self,
+        genv: &PackageTypeEnv,
+        expr: &tast::Expr,
+        fallback: &tast::Ty,
+    ) -> tast::Ty {
         match expr {
             tast::Expr::ECall { func, .. } => {
                 let func_ty = self.norm(&func.get_ty());
                 if let tast::Ty::TFunc { ret_ty, .. } = func_ty {
                     let ret_ty = self.norm(ret_ty.as_ref());
-                    if try_result_parts(&ret_ty).is_some() || try_option_parts(&ret_ty).is_some() {
+                    if try_result_parts(genv, &ret_ty).is_some()
+                        || try_option_parts(genv, &ret_ty).is_some()
+                    {
                         return ret_ty;
                     }
                 }
             }
             tast::Expr::EBlock { block, .. } => {
                 if let Some(tail) = block.tail.as_deref() {
-                    let tail_ty = self.recover_try_container_ty(tail, &tail.get_ty());
-                    if try_result_parts(&tail_ty).is_some() || try_option_parts(&tail_ty).is_some()
+                    let tail_ty = self.recover_try_container_ty(genv, tail, &tail.get_ty());
+                    if try_result_parts(genv, &tail_ty).is_some()
+                        || try_option_parts(genv, &tail_ty).is_some()
                     {
                         return tail_ty;
                     }
@@ -2280,7 +2330,12 @@ impl Typer {
                 );
                 (
                     self.check_expr(genv, local_env, diagnostics, index, key.as_ref()),
-                    option_ty("Option", value.as_ref().clone()),
+                    option_ty(
+                        genv.lang_item(LangItemId::Option)
+                            .map(|name| name.0.as_str())
+                            .unwrap_or(LangItemId::Option.source_name()),
+                        value.as_ref().clone(),
+                    ),
                 )
             }
             tast::Ty::TVar(_) => {
@@ -2439,7 +2494,12 @@ impl Typer {
                 let value_ty = value.as_ref().clone();
                 (
                     self.check_expr(genv, local_env, diagnostics, index, key.as_ref()),
-                    option_ty("Option", value_ty.clone()),
+                    option_ty(
+                        genv.lang_item(LangItemId::Option)
+                            .map(|name| name.0.as_str())
+                            .unwrap_or(LangItemId::Option.source_name()),
+                        value_ty.clone(),
+                    ),
                     value_ty,
                 )
             }
@@ -2563,7 +2623,10 @@ impl Typer {
             hir::Expr::ECall { func, args } => {
                 if args.len() == 1
                     && let hir::Expr::ENameRef {
-                        res: hir::NameRef::Builtin(hir::BuiltinId::RefGet),
+                        res:
+                            hir::NameRef::Builtin(crate::intrinsics::CallableBody::Intrinsic(
+                                crate::intrinsics::IntrinsicId::RefGet,
+                            )),
                         ..
                     } = self.hir_table.expr(*func)
                 {
@@ -2588,6 +2651,13 @@ impl Typer {
                     method_name,
                     ..
                 } => method_name.0 == "get" && matches!(receiver_ty, tast::Ty::TRef { .. }),
+                tast::Expr::ECallable {
+                    body:
+                        crate::intrinsics::CallableBody::Intrinsic(
+                            crate::intrinsics::IntrinsicId::RefGet,
+                        ),
+                    ..
+                } => true,
                 _ => false,
             },
             _ => false,
@@ -2661,14 +2731,20 @@ impl Typer {
     }
 }
 
-fn try_result_parts(ty: &tast::Ty) -> Option<(&str, &tast::Ty, &tast::Ty)> {
+fn try_result_parts<'a>(
+    genv: &PackageTypeEnv,
+    ty: &'a tast::Ty,
+) -> Option<(&'a str, &'a tast::Ty, &'a tast::Ty)> {
     let tast::Ty::TApp { ty, args } = ty else {
         return None;
     };
     let tast::Ty::TEnum { name } = ty.as_ref() else {
         return None;
     };
-    if name != "Result" && !name.ends_with("::Result") {
+    if genv
+        .lang_item(LangItemId::Result)
+        .is_none_or(|item| item.0 != *name)
+    {
         return None;
     }
     if args.len() != 2 {
@@ -2677,14 +2753,20 @@ fn try_result_parts(ty: &tast::Ty) -> Option<(&str, &tast::Ty, &tast::Ty)> {
     Some((name.as_str(), &args[0], &args[1]))
 }
 
-fn try_option_parts(ty: &tast::Ty) -> Option<(&str, &tast::Ty)> {
+fn try_option_parts<'a>(
+    genv: &PackageTypeEnv,
+    ty: &'a tast::Ty,
+) -> Option<(&'a str, &'a tast::Ty)> {
     let tast::Ty::TApp { ty, args } = ty else {
         return None;
     };
     let tast::Ty::TEnum { name } = ty.as_ref() else {
         return None;
     };
-    if name != "Option" && !name.ends_with("::Option") {
+    if genv
+        .lang_item(LangItemId::Option)
+        .is_none_or(|item| item.0 != *name)
+    {
         return None;
     }
     if args.len() != 1 {
@@ -2822,7 +2904,11 @@ fn validate_hashmap_get_option_ty(
     value_ty: &tast::Ty,
     range: Option<TextRange>,
 ) {
-    let (resolved, env) = super::util::resolve_type_name(genv, "Option");
+    let option_name = genv
+        .lang_item(LangItemId::Option)
+        .map(|name| name.0.as_str())
+        .unwrap_or(LangItemId::Option.source_name());
+    let (resolved, env) = super::util::resolve_type_name(genv, option_name);
     let ident = tast::TastIdent::new(&resolved);
     let Some(enum_def) = env.enums().get(&ident) else {
         super::util::push_ice(

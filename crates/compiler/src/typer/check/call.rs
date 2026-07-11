@@ -109,10 +109,11 @@ impl Typer {
                 }
             }
             hir::Expr::ENameRef {
-                res, hint, astptr, ..
-            } if matches!(res, hir::NameRef::Def(_) | hir::NameRef::Builtin(_)) => {
-                let is_named_builtin =
-                    matches!(res, hir::NameRef::Builtin(hir::BuiltinId::Named(_)));
+                res: hir::NameRef::Def(_) | hir::NameRef::Builtin(_),
+                hint,
+                astptr,
+                ..
+            } => {
                 let name = &hint;
                 if let Some(func_scheme) = genv.get_function_scheme(name.as_str()) {
                     let call_range = self.expr_range(call_expr_id);
@@ -129,14 +130,7 @@ impl Typer {
                         self.unify(diagnostics, fn_ret, hint, self.expr_range(call_expr_id));
                     }
                     let arguments = if let tast::Ty::TFunc { params, .. } = &inst_ty {
-                        self.check_scheme_call_arguments(
-                            genv,
-                            local_env,
-                            diagnostics,
-                            args,
-                            params,
-                            is_named_builtin,
-                        )
+                        self.check_scheme_call_arguments(genv, local_env, diagnostics, args, params)
                     } else {
                         self.infer_call_arguments(genv, local_env, diagnostics, args)
                     };
@@ -152,27 +146,53 @@ impl Typer {
                     }
                     self.equate(diagnostics, &inst_ty, &call_site_func_ty, call_range);
                     self.results.record_expr_ty(func, inst_ty.clone());
-                    self.results.record_name_ref_elab(
-                        func,
-                        NameRefElab::Var {
-                            name: name.clone(),
-                            ty: inst_ty.clone(),
-                            astptr,
-                        },
-                    );
-                    self.results.record_call_elab(
-                        call_expr_id,
-                        CallElab {
-                            callee: CalleeElab::Var {
+                    let callee = match func_scheme.body {
+                        crate::intrinsics::CallableBody::Goml => {
+                            self.results.record_name_ref_elab(
+                                func,
+                                NameRefElab::Var {
+                                    name: name.clone(),
+                                    ty: inst_ty.clone(),
+                                    astptr,
+                                },
+                            );
+                            CalleeElab::Var {
                                 name: name.clone(),
                                 ty: inst_ty.clone(),
                                 astptr: None,
-                            },
+                            }
+                        }
+                        body => {
+                            self.results.record_name_ref_elab(
+                                func,
+                                NameRefElab::Callable {
+                                    name: name.clone(),
+                                    body,
+                                    ty: inst_ty.clone(),
+                                    astptr,
+                                },
+                            );
+                            CalleeElab::Callable {
+                                name: name.clone(),
+                                body,
+                                ty: inst_ty.clone(),
+                                astptr: None,
+                            }
+                        }
+                    };
+                    self.results.record_call_elab(
+                        call_expr_id,
+                        CallElab {
+                            callee,
                             args: args.to_vec(),
                         },
                     );
-                    if name == "hashmap_get"
-                        && let Some(map_arg) = arguments.exprs.first()
+                    if matches!(
+                        func_scheme.body,
+                        crate::intrinsics::CallableBody::Intrinsic(
+                            crate::intrinsics::IntrinsicId::HashMapGet
+                        )
+                    ) && let Some(map_arg) = arguments.exprs.first()
                     {
                         validate_hashmap_get_option_for_map_ty(
                             genv,
@@ -181,12 +201,21 @@ impl Typer {
                             call_range,
                         );
                     }
-                    tast::Expr::ECall {
-                        func: Box::new(tast::Expr::EVar {
+                    let func = match func_scheme.body {
+                        crate::intrinsics::CallableBody::Goml => tast::Expr::EVar {
                             name: name.clone(),
                             ty: inst_ty,
                             astptr: None,
-                        }),
+                        },
+                        body => tast::Expr::ECallable {
+                            name: name.clone(),
+                            body,
+                            ty: inst_ty,
+                            astptr: None,
+                        },
+                    };
+                    tast::Expr::ECall {
+                        func: Box::new(func),
                         args: arguments.exprs,
                         ty: ret_ty,
                     }
@@ -313,7 +342,6 @@ impl Typer {
         diagnostics: &mut Diagnostics,
         args: &[hir::ExprId],
         params: &[tast::Ty],
-        use_inferred_types: bool,
     ) -> InferredArguments {
         if params.len() != args.len() || params.is_empty() {
             return self.infer_call_arguments(genv, local_env, diagnostics, args);
@@ -324,11 +352,7 @@ impl Typer {
         for (arg, param_ty) in args.iter().zip(params) {
             let expected_ty = self.norm(param_ty);
             let expr = self.check_expr(genv, local_env, diagnostics, *arg, &expected_ty);
-            types.push(if use_inferred_types {
-                expr.get_ty()
-            } else {
-                expected_ty
-            });
+            types.push(expected_ty);
             exprs.push(expr);
         }
         InferredArguments { exprs, types }

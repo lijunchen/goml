@@ -31,7 +31,9 @@ fn pat_origin(pat: &tast::Pat) -> Option<TextRange> {
 
 fn expr_origin(expr: &tast::Expr) -> Option<TextRange> {
     match expr {
-        tast::Expr::EVar { astptr, .. } => astptr.as_ref().map(|ptr| ptr.text_range()),
+        tast::Expr::EVar { astptr, .. } | tast::Expr::ECallable { astptr, .. } => {
+            astptr.as_ref().map(|ptr| ptr.text_range())
+        }
         tast::Expr::EMatch { astptr, expr, .. } => astptr
             .as_ref()
             .map(|ptr| ptr.text_range())
@@ -1017,6 +1019,21 @@ impl Typer {
                 tast::Expr::EVar {
                     name,
                     ty: ty.clone(),
+                    astptr,
+                }
+            }
+            tast::Expr::ECallable {
+                name,
+                body,
+                ty,
+                astptr,
+            } => {
+                let origin = astptr.as_ref().map(|ptr| ptr.text_range());
+                let ty = self.subst_ty(diagnostics, &ty, origin);
+                tast::Expr::ECallable {
+                    name,
+                    body,
+                    ty,
                     astptr,
                 }
             }

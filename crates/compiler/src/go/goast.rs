@@ -390,8 +390,10 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
         tast::Ty::TSlice { elem } => goty::GoType::TSlice {
             elem: Box::new(tast_ty_to_go_type(elem)),
         },
-        tast::Ty::TVec { elem } => goty::GoType::TSlice {
-            elem: Box::new(tast_ty_to_go_type(elem)),
+        tast::Ty::TVec { elem } => goty::GoType::TPointer {
+            elem: Box::new(goty::GoType::TName {
+                name: vec_struct_name(elem),
+            }),
         },
         tast::Ty::TRef { elem } => {
             let struct_name = ref_struct_name(elem);
@@ -493,6 +495,10 @@ fn dyn_struct_name(trait_name: &str) -> String {
 
 pub fn ref_struct_name(elem: &tast::Ty) -> String {
     go_generated_ident(&format!("ref_{}_x", go_ident(&encode_ty(elem))))
+}
+
+pub fn vec_struct_name(elem: &tast::Ty) -> String {
+    go_generated_ident(&format!("_goml_vec_{}", go_ident(&encode_ty(elem))))
 }
 
 pub fn hashmap_struct_name(key: &tast::Ty, value: &tast::Ty) -> String {

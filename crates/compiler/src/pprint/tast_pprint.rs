@@ -300,6 +300,11 @@ impl Expr {
                 .append(RcDoc::text(" : "))
                 .append(ty.to_doc())
                 .append(RcDoc::text(")")),
+            Self::ECallable { body, ty, .. } => RcDoc::text("(")
+                .append(RcDoc::text(body.ir_name()))
+                .append(RcDoc::text(" : "))
+                .append(ty.to_doc())
+                .append(RcDoc::text(")")),
 
             Self::EPrim { value, ty: _ } => RcDoc::text(value.to_string()),
             Expr::EConstr {

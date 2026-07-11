@@ -27,9 +27,7 @@ pub(crate) use obligations::{
 };
 
 pub use toplevel::check_file_with_env_and_results;
-pub use toplevel::{
-    check_file, check_file_with_env, check_file_with_env_allowing_std_host_externs,
-};
+pub use toplevel::{check_file, check_file_with_env, check_file_with_env_capability};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum LoopControlContext {

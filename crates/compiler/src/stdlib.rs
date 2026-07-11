@@ -29,14 +29,14 @@ fn stdlib_root() -> Result<PathBuf, String> {
         return validate_stdlib_root(PathBuf::from(path));
     }
 
-    let home_std = goml_std_dir()?;
-    if home_std.join("goml.toml").is_file() {
-        return Ok(home_std);
-    }
-
     let dev_std = source_tree_stdlib_root();
     if dev_std.join("goml.toml").is_file() {
         return Ok(dev_std);
+    }
+
+    let home_std = goml_std_dir()?;
+    if home_std.join("goml.toml").is_file() {
+        return Ok(home_std);
     }
 
     validate_stdlib_root(home_std)

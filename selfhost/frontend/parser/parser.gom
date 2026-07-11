@@ -12,11 +12,11 @@ pub struct Parser {
 }
 
 fn push_node(nodes: Ref[Vec[ast::Node]], value: ast::Node) -> unit {
-    nodes.set(nodes.get().push(value))
+    nodes.set(nodes.get().pushed(value))
 }
 
 fn push_diagnostic(parser: Parser, start: int32, end: int32, message: string) -> unit {
-    parser.diagnostics.set(parser.diagnostics.get().push(ast::diagnostic(start, end, message)))
+    parser.diagnostics.set(parser.diagnostics.get().pushed(ast::diagnostic(start, end, message)))
 }
 
 fn current(parser: Parser) -> syntax::Token {
@@ -91,11 +91,11 @@ fn filtered_tokens(tokens: Vec[syntax::Token], source_len: int32) -> Vec[syntax:
         if syntax::is_trivia(token.kind) {
             ()
         } else {
-            result.set(result.get().push(token));
+            result.set(result.get().pushed(token));
         };
         i.set(i.get() + 1);
     };
-    result.set(result.get().push(syntax::token(syntax::TokenKind::Eof, "", source_len, source_len)));
+    result.set(result.get().pushed(syntax::token(syntax::TokenKind::Eof, "", source_len, source_len)));
     result.get()
 }
 

@@ -65,6 +65,7 @@ impl LiftExpr {
     pub fn to_doc(&self, liftenv: &GlobalLiftEnv) -> RcDoc<'_, ()> {
         match self {
             LiftExpr::EVar { name, ty: _ } => RcDoc::text(name.clone()),
+            LiftExpr::ECallable { body, .. } => RcDoc::text(body.ir_name()),
 
             LiftExpr::EPrim { value, ty: _ } => RcDoc::text(value.to_string()),
             LiftExpr::EConstr {

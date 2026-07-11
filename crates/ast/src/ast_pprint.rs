@@ -1,6 +1,6 @@
 use crate::ast::{
-    Arm, AssignStmt, AstIdent, Attribute, Block, ClosureParam, EnumDef, Expr, ExternBuiltin, File,
-    Fn, ImplBlock, Item, LetStmt, Pat, Stmt, StructDef, TraitDef, TraitMethodSignature, TypeExpr,
+    Arm, AssignStmt, AstIdent, Attribute, Block, ClosureParam, EnumDef, Expr, ExternFn, File, Fn,
+    ImplBlock, Item, LetStmt, Pat, Stmt, StructDef, TraitDef, TraitMethodSignature, TypeExpr,
     Visibility,
 };
 use pretty::RcDoc;
@@ -826,7 +826,7 @@ impl Fn {
     }
 }
 
-impl ExternBuiltin {
+impl ExternFn {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let params_doc = RcDoc::intersperse(
             self.params.iter().map(|(name, ty)| {
@@ -909,7 +909,7 @@ impl Item {
             Item::TraitDef(def) => def.to_doc(),
             Item::ImplBlock(def) => def.to_doc(),
             Item::Fn(func) => func.to_doc(),
-            Item::ExternBuiltin(ext) => ext.to_doc(),
+            Item::ExternFn(ext) => ext.to_doc(),
         }
     }
 

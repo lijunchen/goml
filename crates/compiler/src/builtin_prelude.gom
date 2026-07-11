@@ -1,26 +1,3 @@
-// Builtin function declarations for goml.
-// These functions are implemented by the runtime and injected into the initial GlobalTypeEnv.
-
-// Unit type
-#[builtin]
-extern fn unit_to_string(value: unit) -> string
-
-// Boolean operations
-#[builtin]
-extern fn bool_to_string(value: bool) -> string
-
-// String operations
-#[builtin]
-extern fn string_len(value: string) -> int32
-#[builtin]
-extern fn string_get(value: string, index: int32) -> char
-#[builtin]
-extern fn string_byte_slice(value: string, start: int32, end: int32) -> string
-#[builtin]
-extern fn string_print(value: string) -> unit
-#[builtin]
-extern fn string_println(value: string) -> unit
-
 fn print[T: ToString](value: T) -> unit {
     string_print(ToString::to_string(value))
 }
@@ -29,125 +6,26 @@ fn println[T: ToString](value: T) -> unit {
     string_println(ToString::to_string(value))
 }
 
-#[builtin]
-extern fn char_to_string(value: char) -> string
-
-// Int8 operations
-#[builtin]
-extern fn int8_to_string(value: int8) -> string
-
-// Int16 operations
-#[builtin]
-extern fn int16_to_string(value: int16) -> string
-
-// Int32 operations
-#[builtin]
-extern fn int32_to_string(value: int32) -> string
-
-// Int64 operations
-#[builtin]
-extern fn int64_to_string(value: int64) -> string
-
-// Uint8 operations
-#[builtin]
-extern fn uint8_to_string(value: uint8) -> string
-
-// Uint16 operations
-#[builtin]
-extern fn uint16_to_string(value: uint16) -> string
-
-// Uint32 operations
-#[builtin]
-extern fn uint32_to_string(value: uint32) -> string
-
-// Uint64 operations
-#[builtin]
-extern fn uint64_to_string(value: uint64) -> string
-
-// Float32 operations
-#[builtin]
-extern fn float32_to_string(value: float32) -> string
-
-// Float64 operations
-#[builtin]
-extern fn float64_to_string(value: float64) -> string
-
-// Hash helpers
-#[builtin]
-extern fn int8_hash(value: int8) -> uint64
-#[builtin]
-extern fn int16_hash(value: int16) -> uint64
-#[builtin]
-extern fn int32_hash(value: int32) -> uint64
-#[builtin]
-extern fn int64_hash(value: int64) -> uint64
-#[builtin]
-extern fn uint8_hash(value: uint8) -> uint64
-#[builtin]
-extern fn uint16_hash(value: uint16) -> uint64
-#[builtin]
-extern fn uint32_hash(value: uint32) -> uint64
-#[builtin]
-extern fn float32_hash(value: float32) -> uint64
-#[builtin]
-extern fn float64_hash(value: float64) -> uint64
-#[builtin]
-extern fn string_hash(value: string) -> uint64
-#[builtin]
-extern fn char_hash(value: char) -> uint64
-
-enum Option[T] {
-    None,
-    Some(T),
+impl int32 {
+    fn to_string(self: int32) -> string {
+        int32_to_string(self)
+    }
 }
 
-enum Result[T, E] {
-    Ok(T),
-    Err(E),
+impl char {
+    fn to_string(self: char) -> string {
+        char_to_string(self)
+    }
 }
 
-#[builtin]
-extern fn vec_new[T]() -> Vec[T]
-#[builtin]
-extern fn vec_push[T](vec: Vec[T], elem: T) -> Vec[T]
-#[builtin]
-extern fn vec_get[T](vec: Vec[T], index: int32) -> T
-#[builtin]
-extern fn vec_set[T](vec: Vec[T], index: int32, elem: T) -> unit
-#[builtin]
-extern fn vec_len[T](vec: Vec[T]) -> int32
-#[builtin]
-extern fn slice[T](vec: Vec[T], start: int32, end: int32) -> Slice[T]
-#[builtin]
-extern fn slice_get[T](s: Slice[T], index: int32) -> T
-#[builtin]
-extern fn slice_len[T](s: Slice[T]) -> int32
-#[builtin]
-extern fn slice_sub[T](s: Slice[T], start: int32, end: int32) -> Slice[T]
+impl string {
+    fn len(self: string) -> int32 {
+        string_len(self)
+    }
 
-trait Eq {
-    fn eq(Self, Self) -> bool;
-}
-
-trait Hash {
-    fn hash(Self) -> uint64;
-}
-
-#[builtin]
-extern fn hashmap_new[K: Hash + Eq, V]() -> HashMap[K, V]
-#[builtin]
-extern fn hashmap_get[K: Hash + Eq, V](m: HashMap[K, V], key: K) -> Option[V]
-#[builtin]
-extern fn hashmap_set[K: Hash + Eq, V](m: HashMap[K, V], key: K, value: V) -> unit
-#[builtin]
-extern fn hashmap_remove[K: Hash + Eq, V](m: HashMap[K, V], key: K) -> unit
-#[builtin]
-extern fn hashmap_len[K: Hash + Eq, V](m: HashMap[K, V]) -> int32
-#[builtin]
-extern fn hashmap_contains[K: Hash + Eq, V](m: HashMap[K, V], key: K) -> bool
-
-trait ToString {
-    fn to_string(Self) -> string;
+    fn get(self: string, index: int32) -> char {
+        string_get(self, index)
+    }
 }
 
 impl ToString for unit {
@@ -429,8 +307,19 @@ impl [T] Vec[T] {
         vec_new()
     }
 
-    fn push(self: Self, elem: T) -> Self {
+    fn push(self: Self, elem: T) -> unit {
         vec_push(self, elem)
+    }
+
+    fn pushed(self: Self, elem: T) -> Self {
+        let result: Vec[T] = Vec::new();
+        let index = Ref::new(0);
+        while index.get() < self.len() {
+            result.push(self.get(index.get()));
+            index.set(index.get() + 1);
+        };
+        result.push(elem);
+        result
     }
 
     fn get(self: Self, index: int32) -> T {
@@ -503,12 +392,3 @@ impl [T] Ref[T] {
         ref_set(self, value)
     }
 }
-
-#[builtin]
-extern fn ref[T](value: T) -> Ref[T]
-#[builtin]
-extern fn ref_get[T](reference: Ref[T]) -> T
-#[builtin]
-extern fn ref_set[T](reference: Ref[T], value: T) -> unit
-#[builtin]
-extern fn ptr_eq[T](a: Ref[T], b: Ref[T]) -> bool

@@ -1,17 +1,15 @@
 use crate::{
     anf::{self, GlobalAnfEnv},
     common::{Constructor, Prim},
-    env::{EnumDef, FnOrigin, Gensym, GlobalTypeEnv, InherentImplKey, StructDef},
+    env::{EnumDef, Gensym, GlobalTypeEnv, InherentImplKey, StructDef},
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
     go::mangle::{
         encode_ty, go_dyn_struct_name, go_generated_ident, go_hashed_ident, go_ident,
         go_user_type_name,
     },
+    intrinsics::{CallableBody, IntrinsicId, LangItemId, RuntimeHookId},
     lift::{GlobalLiftEnv, is_closure_env_struct},
-    names::{
-        builtin_runtime_call_name, inherent_method_fn_name, parse_inherent_method_fn_name,
-        parse_trait_impl_fn_name, trait_impl_fn_name, ty_compact,
-    },
+    names::{inherent_method_fn_name, parse_trait_impl_fn_name, trait_impl_fn_name, ty_compact},
     package_names::{ENTRY_FUNCTION, ENTRY_WRAPPER_FUNCTION},
     tast::{self, TastIdent},
 };
@@ -103,134 +101,6 @@ impl GlobalGoEnv {
     }
 }
 
-fn runtime_builtin_available(goenv: &GlobalGoEnv, name: &str) -> bool {
-    if goenv.toplevel_funcs.contains(name) {
-        return false;
-    }
-
-    goenv
-        .genv
-        .value_env
-        .funcs
-        .get(name)
-        .map(|scheme| scheme.origin)
-        == Some(FnOrigin::Builtin)
-}
-
-fn runtime_builtin_available_in_context(
-    goenv: &GlobalGoEnv,
-    name: &str,
-    force_runtime_builtins: bool,
-) -> bool {
-    force_runtime_builtins || runtime_builtin_available(goenv, name)
-}
-
-fn runtime_call_name(name: &str) -> (&str, bool) {
-    match builtin_runtime_call_name(name) {
-        Some(raw) => (raw, true),
-        None => (name, false),
-    }
-}
-
-fn runtime_builtin_available_for_call(
-    goenv: &GlobalGoEnv,
-    name: &str,
-    marked_runtime: bool,
-    force_runtime_builtins: bool,
-) -> bool {
-    marked_runtime || runtime_builtin_available_in_context(goenv, name, force_runtime_builtins)
-}
-
-fn generated_instance_name_matches(name: &str, base: &str) -> bool {
-    name == base
-        || name
-            .strip_prefix(base)
-            .is_some_and(|suffix| suffix.starts_with("__"))
-}
-
-fn method_base_name(name: &str) -> &str {
-    name.split_once("__").map(|(base, _)| base).unwrap_or(name)
-}
-
-fn builtin_runtime_forwarder_fn(goenv: &GlobalGoEnv, name: &str) -> bool {
-    for (func_name, scheme) in goenv.genv.value_env.funcs.iter() {
-        if matches!(scheme.origin, FnOrigin::Builtin | FnOrigin::Compiler)
-            && generated_instance_name_matches(name, func_name)
-        {
-            return true;
-        }
-    }
-
-    if let Some((base, raw_method)) = parse_inherent_method_fn_name(name) {
-        let method = method_base_name(raw_method);
-        for (key, impl_def) in goenv.genv.trait_env.inherent_impls.iter() {
-            let base_matches = match key {
-                InherentImplKey::Constr(constr) => constr == base,
-                InherentImplKey::Exact(ty) => {
-                    generated_instance_name_matches(name, &inherent_method_fn_name(ty, method))
-                }
-            };
-            if base_matches
-                && impl_def
-                    .methods
-                    .get(method)
-                    .is_some_and(|scheme| scheme.origin == FnOrigin::Builtin)
-            {
-                return true;
-            }
-        }
-    }
-
-    for ((trait_name, for_ty), impl_def) in goenv.genv.trait_env.trait_impls.iter() {
-        for (method, scheme) in impl_def.methods.iter() {
-            if !matches!(scheme.origin, FnOrigin::Builtin | FnOrigin::Compiler) {
-                continue;
-            }
-            let base = trait_impl_fn_name(&TastIdent::new(trait_name), for_ty, method);
-            if generated_instance_name_matches(name, &base) {
-                return true;
-            }
-        }
-    }
-
-    false
-}
-
-fn runtime_generated_function_name(name: &str) -> bool {
-    matches!(
-        name,
-        "unit_to_string"
-            | "bool_to_string"
-            | "string_len"
-            | "string_get"
-            | "char_to_string"
-            | "int8_to_string"
-            | "int16_to_string"
-            | "int32_to_string"
-            | "int64_to_string"
-            | "uint8_to_string"
-            | "uint16_to_string"
-            | "uint32_to_string"
-            | "uint64_to_string"
-            | "float32_to_string"
-            | "float64_to_string"
-            | "int8_hash"
-            | "int16_hash"
-            | "int32_hash"
-            | "int64_hash"
-            | "uint8_hash"
-            | "uint16_hash"
-            | "uint32_hash"
-            | "float32_hash"
-            | "float64_hash"
-            | "char_hash"
-            | "string_hash"
-            | "string_print"
-            | "string_println"
-            | "missing"
-    )
-}
-
 fn go_toplevel_func_name(goenv: &GlobalGoEnv, name: &str) -> String {
     if let Some(go_name) = goenv.callable_go_names.get(name) {
         return go_name.clone();
@@ -245,7 +115,6 @@ fn resolve_toplevel_func_name(goenv: &GlobalGoEnv, name: &str) -> String {
         go_unique_toplevel_func_name(name)
     } else if is_callable
         && (ident == "init"
-            || runtime_generated_function_name(name)
             || is_generated_tuple_type_name(&ident)
             || go_toplevel_func_name_collides_with_type(goenv, &ident))
     {
@@ -415,13 +284,21 @@ fn go_literal_from_primitive(value: &Prim, ty: &tast::Ty) -> goast::Expr {
 
 fn compile_imm(goenv: &GlobalGoEnv, imm: &anf::ImmExpr) -> goast::Expr {
     match imm {
-        anf::ImmExpr::Var { id, .. } => {
-            let name = builtin_runtime_call_name(&id.0)
-                .map(str::to_string)
-                .unwrap_or_else(|| go_value_name(goenv, &id.0));
+        anf::ImmExpr::Var { id, .. } => goast::Expr::Var {
+            name: go_value_name(goenv, &id.0),
+            ty: tast_ty_to_go_type(&imm_ty(imm)),
+        },
+        anf::ImmExpr::Callable { name, body, ty } => {
+            let name = match body {
+                CallableBody::Goml => go_value_name(goenv, name),
+                CallableBody::Intrinsic(id) => {
+                    return compile_intrinsic_callable(*id, ty);
+                }
+                CallableBody::Runtime(id) => runtime_hook_go_name(*id),
+            };
             goast::Expr::Var {
                 name,
-                ty: tast_ty_to_go_type(&imm_ty(imm)),
+                ty: tast_ty_to_go_type(ty),
             }
         }
         anf::ImmExpr::Prim { value, .. } => {
@@ -443,8 +320,128 @@ fn compile_imm(goenv: &GlobalGoEnv, imm: &anf::ImmExpr) -> goast::Expr {
 fn imm_ty(imm: &anf::ImmExpr) -> tast::Ty {
     match imm {
         anf::ImmExpr::Var { ty, .. }
+        | anf::ImmExpr::Callable { ty, .. }
         | anf::ImmExpr::Prim { ty, .. }
         | anf::ImmExpr::Tag { ty, .. } => ty.clone(),
+    }
+}
+
+fn runtime_hook_go_name(id: RuntimeHookId) -> String {
+    runtime::runtime_hook_fn_name(id)
+}
+
+fn compile_intrinsic_callable(id: IntrinsicId, ty: &tast::Ty) -> goast::Expr {
+    let tast::Ty::TFunc { params, ret_ty } = ty else {
+        panic!("intrinsic callable must have function type, got {:?}", ty);
+    };
+    let helper_ty = tast_ty_to_go_type(ty);
+    let helper_name = match id {
+        IntrinsicId::ArrayGet | IntrinsicId::ArraySet => {
+            runtime::array_helper_fn_name(id.source_name(), &params[0])
+        }
+        IntrinsicId::RefNew => runtime::ref_helper_fn_name(id.source_name(), ret_ty),
+        IntrinsicId::RefGet | IntrinsicId::RefSet | IntrinsicId::RefPtrEq => {
+            runtime::ref_helper_fn_name(id.source_name(), &params[0])
+        }
+        IntrinsicId::VecNew => runtime::vec_helper_fn_name(id.source_name(), ret_ty),
+        IntrinsicId::VecPush | IntrinsicId::VecGet | IntrinsicId::VecSet | IntrinsicId::VecLen => {
+            runtime::vec_helper_fn_name(id.source_name(), &params[0])
+        }
+        IntrinsicId::HashMapNew => runtime::hashmap_helper_fn_name(id.source_name(), ret_ty),
+        IntrinsicId::HashMapGet
+        | IntrinsicId::HashMapSet
+        | IntrinsicId::HashMapRemove
+        | IntrinsicId::HashMapLen
+        | IntrinsicId::HashMapContains => {
+            runtime::hashmap_helper_fn_name(id.source_name(), &params[0])
+        }
+        IntrinsicId::Missing => runtime::missing_helper_fn_name(ret_ty),
+        IntrinsicId::SliceNew
+        | IntrinsicId::SliceGet
+        | IntrinsicId::SliceLen
+        | IntrinsicId::SliceSub => return compile_slice_callable(id, params, ret_ty, helper_ty),
+    };
+    goast::Expr::Var {
+        name: helper_name,
+        ty: helper_ty,
+    }
+}
+
+fn compile_slice_callable(
+    id: IntrinsicId,
+    params: &[tast::Ty],
+    ret_ty: &tast::Ty,
+    func_ty: goty::GoType,
+) -> goast::Expr {
+    let go_params = params
+        .iter()
+        .enumerate()
+        .map(|(index, ty)| (format!("p{index}"), tast_ty_to_go_type(ty)))
+        .collect::<Vec<_>>();
+    let var = |index: usize| {
+        let (name, ty) = &go_params[index];
+        goast::Expr::Var {
+            name: name.clone(),
+            ty: ty.clone(),
+        }
+    };
+    let ret_go_ty = tast_ty_to_go_type(ret_ty);
+    let value = match id {
+        IntrinsicId::SliceNew => {
+            let tast::Ty::TVec { elem } = &params[0] else {
+                panic!("slice.new expects Vec parameter, got {:?}", params[0]);
+            };
+            goast::Expr::Slice {
+                array: Box::new(goast::Expr::FieldAccess {
+                    obj: Box::new(var(0)),
+                    field: "items".to_string(),
+                    ty: goty::GoType::TSlice {
+                        elem: Box::new(tast_ty_to_go_type(elem)),
+                    },
+                }),
+                start: Box::new(var(1)),
+                end: Box::new(var(2)),
+                ty: ret_go_ty,
+            }
+        }
+        IntrinsicId::SliceGet => goast::Expr::Index {
+            array: Box::new(var(0)),
+            index: Box::new(var(1)),
+            ty: ret_go_ty,
+        },
+        IntrinsicId::SliceLen => goast::Expr::Call {
+            func: Box::new(goast::Expr::Var {
+                name: "int32".to_string(),
+                ty: goty::GoType::TFunc {
+                    params: vec![goty::GoType::TInt32],
+                    ret_ty: Box::new(goty::GoType::TInt32),
+                },
+            }),
+            args: vec![goast::Expr::Call {
+                func: Box::new(goast::Expr::Var {
+                    name: "len".to_string(),
+                    ty: goty::GoType::TFunc {
+                        params: vec![tast_ty_to_go_type(&params[0])],
+                        ret_ty: Box::new(goty::GoType::TInt32),
+                    },
+                }),
+                args: vec![var(0)],
+                ty: goty::GoType::TInt32,
+            }],
+            ty: ret_go_ty,
+        },
+        IntrinsicId::SliceSub => goast::Expr::Slice {
+            array: Box::new(var(0)),
+            start: Box::new(var(1)),
+            end: Box::new(var(2)),
+            ty: ret_go_ty,
+        },
+        _ => unreachable!(),
+    };
+    goast::Expr::FuncLit {
+        params: go_params,
+        body: vec![goast::Stmt::Return { expr: Some(value) }],
+        ty: func_ty,
     }
 }
 
@@ -524,7 +521,6 @@ fn is_generated_tuple_type_name(name: &str) -> bool {
 fn go_toplevel_name_is_reserved(goenv: &GlobalGoEnv, name: &str) -> bool {
     name == "init"
         || is_generated_tuple_type_name(name)
-        || runtime_generated_function_name(name)
         || goenv
             .structs()
             .any(|(struct_name, _)| go_user_type_name(&struct_name.0) == name)
@@ -592,7 +588,7 @@ fn lookup_variant_symbol_name(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) 
         return variant_symbol_name(goenv, &base_name, &vname.0);
     }
     if let Some(enum_name) = specialized_name.as_deref() {
-        if extract_result_tys(ty).is_some() {
+        if extract_result_tys(goenv, ty).is_some() {
             let variant_name = match index {
                 0 => "Ok",
                 1 => "Err",
@@ -600,7 +596,7 @@ fn lookup_variant_symbol_name(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) 
             };
             return variant_symbol_name_for_go_enum(goenv, enum_name, variant_name);
         }
-        if extract_option_ty(ty).is_some() {
+        if extract_option_ty(goenv, ty).is_some() {
             let variant_name = match index {
                 0 => "None",
                 1 => "Some",
@@ -633,40 +629,45 @@ fn variant_const_expr_by_index(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize)
     }
 }
 
-fn extract_result_tys(ty: &tast::Ty) -> Option<(&tast::Ty, &tast::Ty)> {
-    let tast::Ty::TApp { ty, args } = ty else {
-        return None;
-    };
-    let tast::Ty::TEnum { name } = ty.as_ref() else {
-        return None;
-    };
-    if !(name == "Result"
-        || name.ends_with("::Result")
-        || name.starts_with("Result__")
-        || name.contains("_x3a__x3a_Result"))
-        || args.len() != 2
-    {
-        return None;
+fn lang_item_args<'a>(
+    goenv: &'a GlobalGoEnv,
+    ty: &'a tast::Ty,
+    id: LangItemId,
+) -> Option<&'a [tast::Ty]> {
+    match ty {
+        tast::Ty::TApp { ty, args } => {
+            let tast::Ty::TEnum { name } = ty.as_ref() else {
+                return None;
+            };
+            goenv
+                .genv
+                .lang_item(id)
+                .is_some_and(|item| item.0 == *name)
+                .then_some(args.as_slice())
+        }
+        tast::Ty::TEnum { name } => goenv
+            .liftenv
+            .monoenv
+            .lang_item_instance_args(id, &TastIdent::new(name)),
+        _ => None,
     }
-    Some((&args[0], &args[1]))
 }
 
-fn extract_option_ty(ty: &tast::Ty) -> Option<&tast::Ty> {
-    let tast::Ty::TApp { ty, args } = ty else {
+fn extract_result_tys<'a>(
+    goenv: &'a GlobalGoEnv,
+    ty: &'a tast::Ty,
+) -> Option<(&'a tast::Ty, &'a tast::Ty)> {
+    let [ok, err] = lang_item_args(goenv, ty, LangItemId::Result)? else {
         return None;
     };
-    let tast::Ty::TEnum { name } = ty.as_ref() else {
+    Some((ok, err))
+}
+
+fn extract_option_ty<'a>(goenv: &'a GlobalGoEnv, ty: &'a tast::Ty) -> Option<&'a tast::Ty> {
+    let [value] = lang_item_args(goenv, ty, LangItemId::Option)? else {
         return None;
     };
-    if !(name == "Option"
-        || name.ends_with("::Option")
-        || name.starts_with("Option__")
-        || name.contains("_x3a__x3a_Option"))
-        || args.len() != 1
-    {
-        return None;
-    }
-    Some(&args[0])
+    Some(value)
 }
 
 fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tast::Ty {
@@ -970,8 +971,10 @@ fn collect_runtime_types(goenv: &GlobalGoEnv, file: &anf::File) -> RuntimeTypeSe
                     for arg in args {
                         self.collect_imm(arg);
                     }
-                    if let anf::ImmExpr::Var { id, .. } = func
-                        && id.0 == "missing"
+                    if let anf::ImmExpr::Callable {
+                        body: CallableBody::Intrinsic(IntrinsicId::Missing),
+                        ..
+                    } = func
                     {
                         self.missings.insert(ty.clone());
                     }
@@ -1005,8 +1008,17 @@ fn collect_runtime_types(goenv: &GlobalGoEnv, file: &anf::File) -> RuntimeTypeSe
         }
 
         fn collect_imm(&mut self, imm: &anf::ImmExpr) {
+            if let anf::ImmExpr::Callable {
+                body: CallableBody::Intrinsic(IntrinsicId::Missing),
+                ty: tast::Ty::TFunc { ret_ty, .. },
+                ..
+            } = imm
+            {
+                self.missings.insert(ret_ty.as_ref().clone());
+            }
             match imm {
                 anf::ImmExpr::Var { ty, .. }
+                | anf::ImmExpr::Callable { ty, .. }
                 | anf::ImmExpr::Prim { ty, .. }
                 | anf::ImmExpr::Tag { ty, .. } => {
                     self.collect_type(ty);
@@ -1228,6 +1240,7 @@ fn collect_dyn_requirements(goenv: &GlobalGoEnv, file: &anf::File) -> DynRequire
     fn collect_imm(req: &mut DynRequirements, imm: &anf::ImmExpr) {
         match imm {
             anf::ImmExpr::Var { ty, .. }
+            | anf::ImmExpr::Callable { ty, .. }
             | anf::ImmExpr::Prim { ty, .. }
             | anf::ImmExpr::Tag { ty, .. } => collect_ty(req, ty),
         }
@@ -1585,31 +1598,6 @@ fn gen_dyn_wrap_fn(
     let receiver_go_ty = tast_ty_to_go_type(for_ty);
     let ret_go_ty = tast_ty_to_go_type(ret_ty);
 
-    if trait_name == "ToString"
-        && method_name == "to_string"
-        && params.is_empty()
-        && let Some(expr) = builtin_tostring_expr(
-            goenv,
-            goast::Expr::Cast {
-                expr: Box::new(goast::Expr::Var {
-                    name: "self".to_string(),
-                    ty: any_go_type(),
-                }),
-                ty: receiver_go_ty.clone(),
-            },
-            for_ty,
-        )
-    {
-        return goast::Fn {
-            name: fn_name,
-            params: go_params,
-            ret_ty: Some(ret_go_ty),
-            body: goast::Block {
-                stmts: vec![goast::Stmt::Return { expr: Some(expr) }],
-            },
-        };
-    }
-
     let mut impl_param_tys = Vec::with_capacity(params.len() + 1);
     impl_param_tys.push(receiver_go_ty.clone());
     impl_param_tys.extend(params.iter().map(tast_ty_to_go_type));
@@ -1721,181 +1709,6 @@ fn gen_dyn_wrap_fn(
     }
 }
 
-fn builtin_tostring_expr(
-    goenv: &GlobalGoEnv,
-    value: goast::Expr,
-    ty: &tast::Ty,
-) -> Option<goast::Expr> {
-    match ty {
-        tast::Ty::TString => Some(value),
-        tast::Ty::TUnit => Some(unary_tostring_call("unit_to_string", value, ty)),
-        tast::Ty::TBool => Some(unary_tostring_call("bool_to_string", value, ty)),
-        tast::Ty::TChar => Some(unary_tostring_call("char_to_string", value, ty)),
-        tast::Ty::TInt8 => Some(unary_tostring_call("int8_to_string", value, ty)),
-        tast::Ty::TInt16 => Some(unary_tostring_call("int16_to_string", value, ty)),
-        tast::Ty::TInt32 => Some(unary_tostring_call("int32_to_string", value, ty)),
-        tast::Ty::TInt64 => Some(unary_tostring_call("int64_to_string", value, ty)),
-        tast::Ty::TUint8 => Some(unary_tostring_call("uint8_to_string", value, ty)),
-        tast::Ty::TUint16 => Some(unary_tostring_call("uint16_to_string", value, ty)),
-        tast::Ty::TUint32 => Some(unary_tostring_call("uint32_to_string", value, ty)),
-        tast::Ty::TUint64 => Some(unary_tostring_call("uint64_to_string", value, ty)),
-        tast::Ty::TFloat32 => Some(unary_tostring_call("float32_to_string", value, ty)),
-        tast::Ty::TFloat64 => Some(unary_tostring_call("float64_to_string", value, ty)),
-        tast::Ty::TDyn { trait_name } if trait_name == "ToString" => Some(dyn_tostring_call(value)),
-        tast::Ty::TRef { elem } => {
-            let ref_ty = tast::Ty::TRef { elem: elem.clone() };
-            let ref_go_ty = tast_ty_to_go_type(&ref_ty);
-            let elem_go_ty = tast_ty_to_go_type(elem);
-            let ref_get = goast::Expr::Call {
-                func: Box::new(goast::Expr::Var {
-                    name: runtime::ref_helper_fn_name("ref_get", &ref_ty),
-                    ty: goty::GoType::TFunc {
-                        params: vec![ref_go_ty],
-                        ret_ty: Box::new(elem_go_ty.clone()),
-                    },
-                }),
-                args: vec![value],
-                ty: elem_go_ty,
-            };
-            let inner = tostring_expr(goenv, ref_get, elem);
-            let with_prefix = goast::Expr::BinaryOp {
-                op: goast::GoBinaryOp::Add,
-                lhs: Box::new(goast::Expr::String {
-                    value: "ref(".to_string(),
-                    ty: goty::GoType::TString,
-                }),
-                rhs: Box::new(inner),
-                ty: goty::GoType::TString,
-            };
-            Some(goast::Expr::BinaryOp {
-                op: goast::GoBinaryOp::Add,
-                lhs: Box::new(with_prefix),
-                rhs: Box::new(goast::Expr::String {
-                    value: ")".to_string(),
-                    ty: goty::GoType::TString,
-                }),
-                ty: goty::GoType::TString,
-            })
-        }
-        _ => None,
-    }
-}
-
-fn tostring_expr(goenv: &GlobalGoEnv, value: goast::Expr, ty: &tast::Ty) -> goast::Expr {
-    if has_builtin_tostring_expr(goenv, ty) {
-        return builtin_tostring_expr(goenv, value, ty)
-            .expect("builtin ToString expression must exist");
-    }
-
-    let impl_name = trait_impl_fn_name(&TastIdent("ToString".to_string()), ty, "to_string");
-    let value_ty = tast_ty_to_go_type(ty);
-    goast::Expr::Call {
-        func: Box::new(goast::Expr::Var {
-            name: go_toplevel_func_name(goenv, &impl_name),
-            ty: goty::GoType::TFunc {
-                params: vec![value_ty],
-                ret_ty: Box::new(goty::GoType::TString),
-            },
-        }),
-        args: vec![value],
-        ty: goty::GoType::TString,
-    }
-}
-
-fn has_builtin_tostring_expr(_goenv: &GlobalGoEnv, ty: &tast::Ty) -> bool {
-    match ty {
-        tast::Ty::TString
-        | tast::Ty::TUnit
-        | tast::Ty::TBool
-        | tast::Ty::TChar
-        | tast::Ty::TInt8
-        | tast::Ty::TInt16
-        | tast::Ty::TInt32
-        | tast::Ty::TInt64
-        | tast::Ty::TUint8
-        | tast::Ty::TUint16
-        | tast::Ty::TUint32
-        | tast::Ty::TUint64
-        | tast::Ty::TFloat32
-        | tast::Ty::TFloat64
-        | tast::Ty::TRef { .. } => true,
-        tast::Ty::TDyn { trait_name } if trait_name == "ToString" => true,
-        _ => false,
-    }
-}
-
-fn dyn_tostring_call(value: goast::Expr) -> goast::Expr {
-    let dyn_go_ty = goty::GoType::TName {
-        name: dyn_struct_go_name("ToString"),
-    };
-    let param_name = "_goml_dyn_value".to_string();
-    let param_expr_for_vtable = goast::Expr::Var {
-        name: param_name.clone(),
-        ty: dyn_go_ty.clone(),
-    };
-    let param_expr_for_data = goast::Expr::Var {
-        name: param_name.clone(),
-        ty: dyn_go_ty.clone(),
-    };
-    let vtable_ptr_expr = goast::Expr::FieldAccess {
-        obj: Box::new(param_expr_for_vtable),
-        field: "vtable".to_string(),
-        ty: goty::GoType::TPointer {
-            elem: Box::new(goty::GoType::TName {
-                name: dyn_vtable_struct_go_name("ToString"),
-            }),
-        },
-    };
-    let method_expr = goast::Expr::FieldAccess {
-        obj: Box::new(vtable_ptr_expr),
-        field: "to_string".to_string(),
-        ty: goty::GoType::TFunc {
-            params: vec![any_go_type()],
-            ret_ty: Box::new(goty::GoType::TString),
-        },
-    };
-    let data_expr = goast::Expr::FieldAccess {
-        obj: Box::new(param_expr_for_data),
-        field: "data".to_string(),
-        ty: any_go_type(),
-    };
-    let method_call = goast::Expr::Call {
-        func: Box::new(method_expr),
-        args: vec![data_expr],
-        ty: goty::GoType::TString,
-    };
-    let func_ty = goty::GoType::TFunc {
-        params: vec![dyn_go_ty.clone()],
-        ret_ty: Box::new(goty::GoType::TString),
-    };
-    goast::Expr::Call {
-        func: Box::new(goast::Expr::FuncLit {
-            params: vec![(param_name, dyn_go_ty)],
-            body: vec![goast::Stmt::Return {
-                expr: Some(method_call),
-            }],
-            ty: func_ty,
-        }),
-        args: vec![value],
-        ty: goty::GoType::TString,
-    }
-}
-
-fn unary_tostring_call(func_name: &str, value: goast::Expr, ty: &tast::Ty) -> goast::Expr {
-    let value_ty = tast_ty_to_go_type(ty);
-    goast::Expr::Call {
-        func: Box::new(goast::Expr::Var {
-            name: func_name.to_string(),
-            ty: goty::GoType::TFunc {
-                params: vec![value_ty],
-                ret_ty: Box::new(goty::GoType::TString),
-            },
-        }),
-        args: vec![value],
-        ty: goty::GoType::TString,
-    }
-}
-
 fn gen_dyn_vtable_ctor_fn(
     goenv: &GlobalGoEnv,
     trait_name: &str,
@@ -1966,1458 +1779,6 @@ fn tuple_to_go_struct_type(ty: &tast::Ty) -> goty::GoType {
     }
 }
 
-#[cfg(any())]
-mod legacy_anf_codegen {
-    use super::*;
-
-    fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
-        match e {
-            anf::CExpr::CImm { imm } => compile_imm(goenv, imm),
-            anf::CExpr::EConstr {
-                constructor,
-                args,
-                ty,
-            } => match constructor {
-                Constructor::Enum(enum_constructor) => {
-                    let variant_ty = variant_ty_by_index(goenv, ty, enum_constructor.index);
-                    let variant_field_types = goenv
-                        .get_enum(&enum_constructor.type_name)
-                        .and_then(|def| def.variants.get(enum_constructor.index))
-                        .map(|(_, fields)| fields.as_slice());
-                    let fields = args
-                        .iter()
-                        .enumerate()
-                        .map(|(i, a)| {
-                            let field_ty = variant_field_types.and_then(|f| f.get(i));
-                            let arg_ty = imm_ty(a);
-                            let val = if let Some(ft) = field_ty
-                                && needs_closure_to_func_wrap(&arg_ty, ft)
-                            {
-                                closure_to_func_lit(goenv, a, ft)
-                            } else {
-                                compile_imm(goenv, a)
-                            };
-                            (format!("_{}", i), val)
-                        })
-                        .collect();
-                    goast::Expr::StructLiteral {
-                        ty: variant_ty,
-                        fields,
-                    }
-                }
-                Constructor::Struct(struct_constructor) => {
-                    let go_ty = tast_ty_to_go_type(ty);
-                    let struct_def = goenv
-                        .get_struct(&struct_constructor.type_name)
-                        .unwrap_or_else(|| {
-                            panic!("unknown struct {}", struct_constructor.type_name.0)
-                        });
-                    if struct_def.fields.len() != args.len() {
-                        panic!(
-                            "struct constructor {} expects {} args, got {}",
-                            struct_constructor.type_name.0,
-                            struct_def.fields.len(),
-                            args.len()
-                        );
-                    }
-                    let fields = struct_def
-                        .fields
-                        .iter()
-                        .zip(args.iter())
-                        .map(|((fname, field_ty), arg)| {
-                            let arg_ty = imm_ty(arg);
-                            let val = if needs_closure_to_func_wrap(&arg_ty, field_ty) {
-                                closure_to_func_lit(goenv, arg, field_ty)
-                            } else {
-                                compile_imm(goenv, arg)
-                            };
-                            (go_ident(&fname.0), val)
-                        })
-                        .collect();
-                    goast::Expr::StructLiteral { ty: go_ty, fields }
-                }
-            },
-            anf::CExpr::ETuple { items, ty } => {
-                let fields = items
-                    .iter()
-                    .enumerate()
-                    .map(|(i, a)| (format!("_{}", i), compile_imm(goenv, a)))
-                    .collect();
-                goast::Expr::StructLiteral {
-                    ty: tuple_to_go_struct_type(ty),
-                    fields,
-                }
-            }
-            anf::CExpr::EArray { items, ty } => {
-                let elem_ty = match ty {
-                    tast::Ty::TArray { elem, .. } => elem.as_ref(),
-                    _ => ty,
-                };
-                let elems = items
-                    .iter()
-                    .map(|item| {
-                        let arg_ty = imm_ty(item);
-                        if needs_closure_to_func_wrap(&arg_ty, elem_ty) {
-                            closure_to_func_lit(goenv, item, elem_ty)
-                        } else {
-                            compile_imm(goenv, item)
-                        }
-                    })
-                    .collect();
-                goast::Expr::ArrayLiteral {
-                    elems,
-                    ty: tast_ty_to_go_type(ty),
-                }
-            }
-            anf::CExpr::EMatch { expr, .. } => match imm_ty(expr) {
-                // Boolean matches are handled as statements (not expressions) in Go.
-                tast::Ty::TBool => {
-                    panic!("boolean match should be lowered to  goast::Stmt::If in compile_aexpr")
-                }
-                _ => {
-                    panic!("EMatch should be lowered in compile_aexpr/compile_aexpr_assign")
-                }
-            },
-            anf::CExpr::EIf {
-                cond: _,
-                then: _,
-                else_: _,
-                ty: _,
-            } => panic!("EIf should be lowered to  goast::Stmt::If in compile_aexpr"),
-            anf::CExpr::EWhile { .. } => {
-                panic!("EWhile should be lowered to goast::Stmt::Loop in compile_aexpr")
-            }
-            anf::CExpr::EGo { .. } => {
-                panic!("EGo should be handled as a statement, not as an expression")
-            }
-            anf::CExpr::EConstrGet {
-                expr,
-                constructor,
-                field_index,
-                ty: _,
-            } => {
-                let obj = compile_imm(goenv, expr);
-                match constructor {
-                    Constructor::Enum(enum_constructor) => {
-                        let def = goenv
-                            .get_enum(&enum_constructor.type_name)
-                            .expect("unknown enum in EConstrGet");
-                        let field_ty = def.variants[enum_constructor.index].1[*field_index].clone();
-                        goast::Expr::FieldAccess {
-                            obj: Box::new(obj),
-                            field: format!("_{}", field_index),
-                            ty: tast_ty_to_go_type(&field_ty),
-                        }
-                    }
-                    Constructor::Struct(struct_constructor) => {
-                        let scrut_ty = imm_ty(expr);
-                        let (ty_name, type_args) = match scrut_ty {
-                            tast::Ty::TStruct { name } => (name, Vec::new()),
-                            tast::Ty::TApp { ty, args } => {
-                                let base_name = ty.get_constr_name_unsafe();
-                                (base_name, args)
-                            }
-                            other => panic!(
-                                "EConstrGet on non-struct type {:?} for constructor {}",
-                                other, struct_constructor.type_name.0
-                            ),
-                        };
-                        let struct_name = &struct_constructor.type_name.0;
-                        assert_eq!(
-                            ty_name, *struct_name,
-                            "struct constructor type mismatch: expected {}, got {}",
-                            struct_name, ty_name
-                        );
-                        let fields = instantiate_struct_fields(
-                            goenv,
-                            &struct_constructor.type_name,
-                            &type_args,
-                        );
-                        let (field_name, field_ty) = &fields[*field_index];
-                        goast::Expr::FieldAccess {
-                            obj: Box::new(obj),
-                            field: go_ident(field_name),
-                            ty: tast_ty_to_go_type(field_ty),
-                        }
-                    }
-                }
-            }
-            anf::CExpr::EUnary { op, expr, ty } => {
-                let go_op = match op {
-                    common_defs::UnaryOp::Neg => goast::GoUnaryOp::Neg,
-                    common_defs::UnaryOp::Not => goast::GoUnaryOp::Not,
-                };
-                goast::Expr::UnaryOp {
-                    op: go_op,
-                    expr: Box::new(compile_imm(goenv, expr)),
-                    ty: tast_ty_to_go_type(ty),
-                }
-            }
-            anf::CExpr::EBinary { op, lhs, rhs, ty } => {
-                let go_op = match op {
-                    common_defs::BinaryOp::Add => goast::GoBinaryOp::Add,
-                    common_defs::BinaryOp::Sub => goast::GoBinaryOp::Sub,
-                    common_defs::BinaryOp::Mul => goast::GoBinaryOp::Mul,
-                    common_defs::BinaryOp::Div => goast::GoBinaryOp::Div,
-                    common_defs::BinaryOp::And => goast::GoBinaryOp::And,
-                    common_defs::BinaryOp::Or => goast::GoBinaryOp::Or,
-                    common_defs::BinaryOp::Less => goast::GoBinaryOp::Less,
-                    common_defs::BinaryOp::Greater => goast::GoBinaryOp::Greater,
-                    common_defs::BinaryOp::LessEq => goast::GoBinaryOp::LessEq,
-                    common_defs::BinaryOp::GreaterEq => goast::GoBinaryOp::GreaterEq,
-                    common_defs::BinaryOp::Eq => goast::GoBinaryOp::Eq,
-                    common_defs::BinaryOp::NotEq => goast::GoBinaryOp::NotEq,
-                };
-                goast::Expr::BinaryOp {
-                    op: go_op,
-                    lhs: Box::new(compile_imm(goenv, lhs)),
-                    rhs: Box::new(compile_imm(goenv, rhs)),
-                    ty: tast_ty_to_go_type(ty),
-                }
-            }
-            anf::CExpr::EToDyn {
-                trait_name,
-                for_ty,
-                expr,
-                ty,
-            } => {
-                let dyn_struct_ty = tast_ty_to_go_type(ty);
-                let vtable_struct_name = dyn_vtable_struct_go_name(&trait_name.0);
-                let vtable_ptr_ty = goty::GoType::TPointer {
-                    elem: Box::new(goty::GoType::TName {
-                        name: vtable_struct_name,
-                    }),
-                };
-
-                let ctor_name = dyn_vtable_ctor_go_name(goenv, &trait_name.0, for_ty);
-                let ctor_ty = goty::GoType::TFunc {
-                    params: vec![],
-                    ret_ty: Box::new(vtable_ptr_ty.clone()),
-                };
-                let vtable_expr = goast::Expr::Call {
-                    func: Box::new(goast::Expr::Var {
-                        name: ctor_name,
-                        ty: ctor_ty,
-                    }),
-                    args: vec![],
-                    ty: vtable_ptr_ty,
-                };
-
-                goast::Expr::StructLiteral {
-                    fields: vec![
-                        ("data".to_string(), compile_imm(goenv, expr)),
-                        ("vtable".to_string(), vtable_expr),
-                    ],
-                    ty: dyn_struct_ty,
-                }
-            }
-            anf::CExpr::EDynCall {
-                trait_name,
-                method_name,
-                receiver,
-                args,
-                ty,
-            } => {
-                let receiver_expr_for_vtable = compile_imm(goenv, receiver);
-                let receiver_expr_for_data = compile_imm(goenv, receiver);
-
-                let (method_params, method_ret) = trait_method_sigs(goenv, &trait_name.0)
-                    .into_iter()
-                    .find(|(name, _, _)| name == &method_name.0)
-                    .map(|(_name, params, ret)| (params, ret))
-                    .unwrap_or_else(|| {
-                        panic!("missing trait method {}::{}", trait_name.0, method_name.0)
-                    });
-
-                let mut fn_params = Vec::with_capacity(method_params.len() + 1);
-                fn_params.push(any_go_type());
-                fn_params.extend(method_params.iter().map(tast_ty_to_go_type));
-                let fn_ret = tast_ty_to_go_type(&method_ret);
-
-                let vtable_ptr_expr = goast::Expr::FieldAccess {
-                    obj: Box::new(receiver_expr_for_vtable),
-                    field: "vtable".to_string(),
-                    ty: goty::GoType::TPointer {
-                        elem: Box::new(goty::GoType::TName {
-                            name: dyn_vtable_struct_go_name(&trait_name.0),
-                        }),
-                    },
-                };
-                let method_expr = goast::Expr::FieldAccess {
-                    obj: Box::new(vtable_ptr_expr),
-                    field: go_ident(&method_name.0),
-                    ty: goty::GoType::TFunc {
-                        params: fn_params,
-                        ret_ty: Box::new(fn_ret.clone()),
-                    },
-                };
-
-                let mut call_args = Vec::with_capacity(args.len() + 1);
-                call_args.push(goast::Expr::FieldAccess {
-                    obj: Box::new(receiver_expr_for_data),
-                    field: "data".to_string(),
-                    ty: any_go_type(),
-                });
-                call_args.extend(compile_call_args(goenv, &method_params, args));
-
-                goast::Expr::Call {
-                    func: Box::new(method_expr),
-                    args: call_args,
-                    ty: tast_ty_to_go_type(ty),
-                }
-            }
-            anf::CExpr::ECall { func, args, ty } => {
-                let func_tast_ty = imm_ty(func);
-                let param_types: Vec<tast::Ty> = match &func_tast_ty {
-                    tast::Ty::TFunc { params, .. } => params.clone(),
-                    _ => Vec::new(),
-                };
-                let compiled_args = compile_call_args(goenv, &param_types, args);
-                let func_ty = tast_ty_to_go_type(&func_tast_ty);
-
-                if let anf::ImmExpr::ImmVar { name, .. } = &func
-                    && runtime_builtin_available(goenv, name)
-                    && *name == "missing"
-                {
-                    let helper_name = runtime::missing_helper_fn_name(ty);
-                    goast::Expr::Call {
-                        func: Box::new(goast::Expr::Var {
-                            name: helper_name,
-                            ty: goty::GoType::TFunc {
-                                params: vec![goty::GoType::TString],
-                                ret_ty: Box::new(tast_ty_to_go_type(ty)),
-                            },
-                        }),
-                        args: compiled_args,
-                        ty: tast_ty_to_go_type(ty),
-                    }
-                } else if let anf::ImmExpr::ImmVar { name, .. } = &func
-                    && runtime_builtin_available(goenv, name)
-                    && (*name == "array_get" || *name == "array_set")
-                {
-                    let helper = runtime::array_helper_fn_name(name, &imm_ty(&args[0]));
-                    goast::Expr::Call {
-                        func: Box::new(goast::Expr::Var {
-                            name: helper,
-                            ty: func_ty,
-                        }),
-                        args: compiled_args,
-                        ty: tast_ty_to_go_type(ty),
-                    }
-                } else if let anf::ImmExpr::ImmVar { name, .. } = &func
-                    && runtime_builtin_available(goenv, name)
-                    && (*name == "ref"
-                        || *name == "ref_get"
-                        || *name == "ref_set"
-                        || *name == "ptr_eq")
-                {
-                    let (helper, helper_ty) = if name == "ref" {
-                        let tast::Ty::TRef { elem } = ty else {
-                            panic!("ref return type must be reference, got {:?}", ty);
-                        };
-                        let elem_go_ty = tast_ty_to_go_type(elem);
-                        let ref_go_ty = tast_ty_to_go_type(ty);
-                        (
-                            runtime::ref_helper_fn_name("ref", ty),
-                            goty::GoType::TFunc {
-                                params: vec![elem_go_ty],
-                                ret_ty: Box::new(ref_go_ty),
-                            },
-                        )
-                    } else if name == "ptr_eq" {
-                        let ref_ty = imm_ty(&args[0]);
-                        let tast::Ty::TRef { .. } = &ref_ty else {
-                            panic!("ptr_eq expects reference arguments, got {:?}", ref_ty);
-                        };
-                        let ref_go_ty = tast_ty_to_go_type(&ref_ty);
-                        (
-                            runtime::ref_helper_fn_name("ptr_eq", &ref_ty),
-                            goty::GoType::TFunc {
-                                params: vec![ref_go_ty.clone(), ref_go_ty.clone()],
-                                ret_ty: Box::new(goty::GoType::TBool),
-                            },
-                        )
-                    } else {
-                        let ref_ty = imm_ty(&args[0]);
-                        let tast::Ty::TRef { elem } = &ref_ty else {
-                            panic!("{} expects reference argument, got {:?}", name, ref_ty);
-                        };
-                        let ref_go_ty = tast_ty_to_go_type(&ref_ty);
-                        let elem_go_ty = tast_ty_to_go_type(elem);
-                        let ret_ty = if name == "ref_get" {
-                            elem_go_ty.clone()
-                        } else {
-                            goty::GoType::TUnit
-                        };
-                        (
-                            runtime::ref_helper_fn_name(name, &ref_ty),
-                            goty::GoType::TFunc {
-                                params: if name == "ref_get" {
-                                    vec![ref_go_ty.clone()]
-                                } else {
-                                    vec![ref_go_ty.clone(), elem_go_ty.clone()]
-                                },
-                                ret_ty: Box::new(ret_ty),
-                            },
-                        )
-                    };
-                    goast::Expr::Call {
-                        func: Box::new(goast::Expr::Var {
-                            name: helper,
-                            ty: helper_ty,
-                        }),
-                        args: compiled_args,
-                        ty: tast_ty_to_go_type(ty),
-                    }
-                } else if let anf::ImmExpr::ImmVar { name, .. } = &func
-                    && runtime_builtin_available(goenv, name)
-                    && (*name == "hashmap_new"
-                        || *name == "hashmap_get"
-                        || *name == "hashmap_set"
-                        || *name == "hashmap_remove"
-                        || *name == "hashmap_len"
-                        || *name == "hashmap_contains")
-                {
-                    let map_ty = if name == "hashmap_new" {
-                        ty.clone()
-                    } else {
-                        imm_ty(&args[0])
-                    };
-                    let tast::Ty::THashMap { key, value } = &map_ty else {
-                        panic!("{} expects HashMap type, got {:?}", name, map_ty);
-                    };
-
-                    let map_go_ty = tast_ty_to_go_type(&map_ty);
-                    let key_go_ty = tast_ty_to_go_type(key);
-                    let value_go_ty = tast_ty_to_go_type(value);
-
-                    let helper = runtime::hashmap_helper_fn_name(name, &map_ty);
-                    let helper_ty = match name.as_str() {
-                        "hashmap_new" => goty::GoType::TFunc {
-                            params: vec![],
-                            ret_ty: Box::new(map_go_ty.clone()),
-                        },
-                        "hashmap_get" => goty::GoType::TFunc {
-                            params: vec![map_go_ty.clone(), key_go_ty.clone()],
-                            ret_ty: Box::new(tast_ty_to_go_type(ty)),
-                        },
-                        "hashmap_set" => goty::GoType::TFunc {
-                            params: vec![map_go_ty.clone(), key_go_ty.clone(), value_go_ty.clone()],
-                            ret_ty: Box::new(goty::GoType::TUnit),
-                        },
-                        "hashmap_remove" => goty::GoType::TFunc {
-                            params: vec![map_go_ty.clone(), key_go_ty.clone()],
-                            ret_ty: Box::new(goty::GoType::TUnit),
-                        },
-                        "hashmap_len" => goty::GoType::TFunc {
-                            params: vec![map_go_ty.clone()],
-                            ret_ty: Box::new(goty::GoType::TInt32),
-                        },
-                        "hashmap_contains" => goty::GoType::TFunc {
-                            params: vec![map_go_ty.clone(), key_go_ty.clone()],
-                            ret_ty: Box::new(goty::GoType::TBool),
-                        },
-                        _ => unreachable!(),
-                    };
-
-                    goast::Expr::Call {
-                        func: Box::new(goast::Expr::Var {
-                            name: helper,
-                            ty: helper_ty,
-                        }),
-                        args: compiled_args,
-                        ty: tast_ty_to_go_type(ty),
-                    }
-                } else if let anf::ImmExpr::ImmVar { name, .. } = &func
-                    && runtime_builtin_available(goenv, name)
-                    && (*name == "slice"
-                        || *name == "slice_get"
-                        || *name == "slice_len"
-                        || *name == "slice_sub")
-                {
-                    match name.as_str() {
-                        "slice" | "slice_sub" => {
-                            let mut args_iter = compiled_args.into_iter();
-                            let array_arg = args_iter.next().unwrap();
-                            let start_arg = args_iter.next().unwrap();
-                            let end_arg = args_iter.next().unwrap();
-                            goast::Expr::Slice {
-                                array: Box::new(array_arg),
-                                start: Box::new(start_arg),
-                                end: Box::new(end_arg),
-                                ty: tast_ty_to_go_type(ty),
-                            }
-                        }
-                        "slice_get" => {
-                            let mut args_iter = compiled_args.into_iter();
-                            let slice_arg = args_iter.next().unwrap();
-                            let index_arg = args_iter.next().unwrap();
-                            goast::Expr::Index {
-                                array: Box::new(slice_arg),
-                                index: Box::new(index_arg),
-                                ty: tast_ty_to_go_type(ty),
-                            }
-                        }
-                        "slice_len" => {
-                            let mut args_iter = compiled_args.into_iter();
-                            let slice_arg = args_iter.next().unwrap();
-                            goast::Expr::Call {
-                                func: Box::new(goast::Expr::Var {
-                                    name: "int32".to_string(),
-                                    ty: goty::GoType::TFunc {
-                                        params: vec![goty::GoType::TInt32],
-                                        ret_ty: Box::new(goty::GoType::TInt32),
-                                    },
-                                }),
-                                args: vec![goast::Expr::Call {
-                                    func: Box::new(goast::Expr::Var {
-                                        name: "len".to_string(),
-                                        ty: goty::GoType::TFunc {
-                                            params: vec![tast_ty_to_go_type(&imm_ty(&args[0]))],
-                                            ret_ty: Box::new(goty::GoType::TInt32),
-                                        },
-                                    }),
-                                    args: vec![slice_arg],
-                                    ty: goty::GoType::TInt32,
-                                }],
-                                ty: tast_ty_to_go_type(ty),
-                            }
-                        }
-                        _ => unreachable!(),
-                    }
-                } else if let anf::ImmExpr::ImmVar { name, .. } = &func
-                    && runtime_builtin_available(goenv, name)
-                    && (*name == "vec_new"
-                        || *name == "vec_push"
-                        || *name == "vec_get"
-                        || *name == "vec_set"
-                        || *name == "vec_len")
-                {
-                    match name.as_str() {
-                        "vec_new" => goast::Expr::Nil {
-                            ty: tast_ty_to_go_type(ty),
-                        },
-                        "vec_push" => goast::Expr::Call {
-                            func: Box::new(goast::Expr::Var {
-                                name: "append".to_string(),
-                                ty: func_ty,
-                            }),
-                            args: compiled_args,
-                            ty: tast_ty_to_go_type(ty),
-                        },
-                        "vec_get" => {
-                            let mut args_iter = compiled_args.into_iter();
-                            let v_arg = args_iter.next().unwrap();
-                            let index_arg = args_iter.next().unwrap();
-                            goast::Expr::Index {
-                                array: Box::new(v_arg),
-                                index: Box::new(index_arg),
-                                ty: tast_ty_to_go_type(ty),
-                            }
-                        }
-                        "vec_set" => {
-                            let vec_ty = imm_ty(&args[0]);
-                            goast::Expr::Call {
-                                func: Box::new(goast::Expr::Var {
-                                    name: runtime::vec_helper_fn_name("vec_set", &vec_ty),
-                                    ty: func_ty,
-                                }),
-                                args: compiled_args,
-                                ty: tast_ty_to_go_type(ty),
-                            }
-                        }
-                        "vec_len" => {
-                            let mut args_iter = compiled_args.into_iter();
-                            let v_arg = args_iter.next().unwrap();
-                            goast::Expr::Call {
-                                func: Box::new(goast::Expr::Var {
-                                    name: "int32".to_string(),
-                                    ty: goty::GoType::TFunc {
-                                        params: vec![goty::GoType::TInt32],
-                                        ret_ty: Box::new(goty::GoType::TInt32),
-                                    },
-                                }),
-                                args: vec![goast::Expr::Call {
-                                    func: Box::new(goast::Expr::Var {
-                                        name: "len".to_string(),
-                                        ty: goty::GoType::TFunc {
-                                            params: vec![tast_ty_to_go_type(&imm_ty(&args[0]))],
-                                            ret_ty: Box::new(goty::GoType::TInt32),
-                                        },
-                                    }),
-                                    args: vec![v_arg],
-                                    ty: goty::GoType::TInt32,
-                                }],
-                                ty: tast_ty_to_go_type(ty),
-                            }
-                        }
-                        _ => unreachable!(),
-                    }
-                } else {
-                    goast::Expr::Call {
-                        func: Box::new(compile_imm(goenv, func)),
-                        args: compiled_args,
-                        ty: tast_ty_to_go_type(ty),
-                    }
-                }
-            }
-            anf::CExpr::EProj { tuple, index, ty } => {
-                let obj = compile_imm(goenv, tuple);
-                goast::Expr::FieldAccess {
-                    obj: Box::new(obj),
-                    field: format!("_{}", index),
-                    ty: tast_ty_to_go_type(ty),
-                }
-            }
-        }
-    }
-
-    fn compile_int_match_branch<F, E>(
-        goenv: &GlobalGoEnv,
-        scrutinee: &anf::ImmExpr,
-        arms: &[anf::Arm],
-        default: &Option<Box<anf::Block>>,
-        build_branch: &mut F,
-        extract: E,
-    ) -> Vec<goast::Stmt>
-    where
-        F: FnMut(anf::AExpr) -> Vec<goast::Stmt>,
-        E: Fn(&Prim) -> Option<String>,
-    {
-        let mut cases = Vec::new();
-        for arm in arms {
-            if let anf::ImmExpr::ImmPrim { value, .. } = &arm.lhs {
-                if let Some(v) = extract(value) {
-                    cases.push((
-                        goast::Expr::Int {
-                            value: v,
-                            ty: tast_ty_to_go_type(&imm_ty(&arm.lhs)),
-                        },
-                        goast::Block {
-                            stmts: build_branch(block_to_aexpr(arm.body.clone())),
-                        },
-                    ));
-                } else {
-                    panic!("expected integer primitive in match arm");
-                }
-            } else {
-                panic!("expected primitive literal in integer match arm");
-            }
-        }
-        let default_block = default.as_ref().map(|d| goast::Block {
-            stmts: build_branch(block_to_aexpr((**d).clone())),
-        });
-        vec![goast::Stmt::SwitchExpr {
-            expr: compile_imm(goenv, scrutinee),
-            cases,
-            default: default_block,
-        }]
-    }
-
-    fn compile_float_match_branch<F, E>(
-        goenv: &GlobalGoEnv,
-        scrutinee: &anf::ImmExpr,
-        arms: &[anf::Arm],
-        default: &Option<Box<anf::Block>>,
-        build_branch: &mut F,
-        extract: E,
-    ) -> Vec<goast::Stmt>
-    where
-        F: FnMut(anf::AExpr) -> Vec<goast::Stmt>,
-        E: Fn(&Prim) -> Option<f64>,
-    {
-        let mut cases = Vec::new();
-        for arm in arms {
-            if let anf::ImmExpr::ImmPrim { value, .. } = &arm.lhs {
-                if let Some(v) = extract(value) {
-                    cases.push((
-                        goast::Expr::Float {
-                            value: v,
-                            ty: tast_ty_to_go_type(&imm_ty(&arm.lhs)),
-                        },
-                        goast::Block {
-                            stmts: build_branch(block_to_aexpr(arm.body.clone())),
-                        },
-                    ));
-                } else {
-                    panic!("expected float primitive in match arm");
-                }
-            } else {
-                panic!("expected primitive literal in float match arm");
-            }
-        }
-        let default_block = default.as_ref().map(|d| goast::Block {
-            stmts: build_branch(block_to_aexpr((**d).clone())),
-        });
-        vec![goast::Stmt::SwitchExpr {
-            expr: compile_imm(goenv, scrutinee),
-            cases,
-            default: default_block,
-        }]
-    }
-
-    fn compile_match_branches<F>(
-        goenv: &GlobalGoEnv,
-        scrutinee: &anf::ImmExpr,
-        arms: &[anf::Arm],
-        default: &Option<Box<anf::Block>>,
-        mut build_branch: F,
-    ) -> Vec<goast::Stmt>
-    where
-        F: FnMut(anf::AExpr) -> Vec<goast::Stmt>,
-    {
-        match imm_ty(scrutinee) {
-            tast::Ty::TUnit => {
-                if let Some(first) = arms.first() {
-                    return build_branch(block_to_aexpr(first.body.clone()));
-                }
-                if let Some(default_arm) = default.as_ref() {
-                    return build_branch(block_to_aexpr((**default_arm).clone()));
-                }
-                Vec::new()
-            }
-            tast::Ty::TBool => {
-                let mut cases = Vec::new();
-                for arm in arms {
-                    if let anf::ImmExpr::ImmPrim { value, .. } = &arm.lhs {
-                        if let Some(bool_value) = value.as_bool() {
-                            cases.push((
-                                goast::Expr::Bool {
-                                    value: bool_value,
-                                    ty: tast_ty_to_go_type(&imm_ty(&arm.lhs)),
-                                },
-                                goast::Block {
-                                    stmts: build_branch(block_to_aexpr(arm.body.clone())),
-                                },
-                            ));
-                        } else {
-                            panic!("expected boolean primitive in boolean match arm");
-                        }
-                    } else {
-                        panic!("expected primitive literal in boolean match arm");
-                    }
-                }
-                let default_block = default.as_ref().map(|d| goast::Block {
-                    stmts: build_branch(block_to_aexpr((**d).clone())),
-                });
-                vec![goast::Stmt::SwitchExpr {
-                    expr: compile_imm(goenv, scrutinee),
-                    cases,
-                    default: default_block,
-                }]
-            }
-            tast::Ty::TInt8 => {
-                compile_int_match_branch(goenv, scrutinee, arms, default, &mut build_branch, |v| {
-                    v.as_int8().map(|x| x.to_string())
-                })
-            }
-            tast::Ty::TInt16 => {
-                compile_int_match_branch(goenv, scrutinee, arms, default, &mut build_branch, |v| {
-                    v.as_int16().map(|x| x.to_string())
-                })
-            }
-            tast::Ty::TInt32 => {
-                compile_int_match_branch(goenv, scrutinee, arms, default, &mut build_branch, |v| {
-                    v.as_int32().map(|x| x.to_string())
-                })
-            }
-            tast::Ty::TInt64 => {
-                compile_int_match_branch(goenv, scrutinee, arms, default, &mut build_branch, |v| {
-                    v.as_int64().map(|x| x.to_string())
-                })
-            }
-            tast::Ty::TUint8 => {
-                compile_int_match_branch(goenv, scrutinee, arms, default, &mut build_branch, |v| {
-                    v.as_uint8().map(|x| x.to_string())
-                })
-            }
-            tast::Ty::TUint16 => {
-                compile_int_match_branch(goenv, scrutinee, arms, default, &mut build_branch, |v| {
-                    v.as_uint16().map(|x| x.to_string())
-                })
-            }
-            tast::Ty::TUint32 => {
-                compile_int_match_branch(goenv, scrutinee, arms, default, &mut build_branch, |v| {
-                    v.as_uint32().map(|x| x.to_string())
-                })
-            }
-            tast::Ty::TUint64 => {
-                compile_int_match_branch(goenv, scrutinee, arms, default, &mut build_branch, |v| {
-                    v.as_uint64().map(|x| x.to_string())
-                })
-            }
-            tast::Ty::TChar => {
-                compile_int_match_branch(goenv, scrutinee, arms, default, &mut build_branch, |v| {
-                    v.as_char().map(|ch| (ch as u32).to_string())
-                })
-            }
-            tast::Ty::TFloat32 => compile_float_match_branch(
-                goenv,
-                scrutinee,
-                arms,
-                default,
-                &mut build_branch,
-                |v| v.as_float32().map(|x| x as f64),
-            ),
-            tast::Ty::TFloat64 => compile_float_match_branch(
-                goenv,
-                scrutinee,
-                arms,
-                default,
-                &mut build_branch,
-                |v| v.as_float64(),
-            ),
-            tast::Ty::TString => {
-                let mut cases = Vec::new();
-                for arm in arms {
-                    if let anf::ImmExpr::ImmPrim { value, .. } = &arm.lhs {
-                        if let Some(str_value) = value.as_str() {
-                            cases.push((
-                                goast::Expr::String {
-                                    value: str_value.to_string(),
-                                    ty: tast_ty_to_go_type(&imm_ty(&arm.lhs)),
-                                },
-                                goast::Block {
-                                    stmts: build_branch(block_to_aexpr(arm.body.clone())),
-                                },
-                            ));
-                        } else {
-                            panic!("expected string primitive in string match arm");
-                        }
-                    } else {
-                        panic!("expected primitive literal in string match arm");
-                    }
-                }
-                let default_block = default.as_ref().map(|d| goast::Block {
-                    stmts: build_branch(block_to_aexpr((**d).clone())),
-                });
-                vec![goast::Stmt::SwitchExpr {
-                    expr: compile_imm(goenv, scrutinee),
-                    cases,
-                    default: default_block,
-                }]
-            }
-            tast::Ty::TEnum { .. } => {
-                let scrutinee_name = match scrutinee {
-                    anf::ImmExpr::ImmVar { name, .. } => name.clone(),
-                    _ => {
-                        unreachable!("expected scrutinee to be a variable after ANF lowering")
-                    }
-                };
-                let mut cases = Vec::new();
-                for arm in arms {
-                    if let anf::ImmExpr::ImmTag { index, ty } = &arm.lhs {
-                        let vty = variant_ty_by_index(goenv, ty, *index);
-                        cases.push((
-                            vty,
-                            goast::Block {
-                                stmts: build_branch(block_to_aexpr(arm.body.clone())),
-                            },
-                        ));
-                    } else {
-                        panic!("expected ImmTag in enum match arm");
-                    }
-                }
-                let default_block = default.as_ref().map(|d| goast::Block {
-                    stmts: build_branch(block_to_aexpr((**d).clone())),
-                });
-                vec![goast::Stmt::SwitchType {
-                    bind: Some(scrutinee_name),
-                    expr: compile_imm(goenv, scrutinee),
-                    cases,
-                    default: default_block,
-                }]
-            }
-            tast::Ty::TStruct { .. } => {
-                panic!("struct matches are not supported in Go backend")
-            }
-            tast::Ty::TApp { ty: base, .. } => match base.as_ref() {
-                tast::Ty::TEnum { .. } => {
-                    let scrutinee_name = match scrutinee {
-                        anf::ImmExpr::ImmVar { name, .. } => name.clone(),
-                        _ => {
-                            unreachable!("expected scrutinee to be a variable after ANF lowering")
-                        }
-                    };
-                    let mut cases = Vec::new();
-                    for arm in arms {
-                        if let anf::ImmExpr::ImmTag { index, ty } = &arm.lhs {
-                            let vty = variant_ty_by_index(goenv, ty, *index);
-                            cases.push((
-                                vty,
-                                goast::Block {
-                                    stmts: build_branch(block_to_aexpr(arm.body.clone())),
-                                },
-                            ));
-                        } else {
-                            panic!("expected ImmTag in enum match arm");
-                        }
-                    }
-                    let default_block = default.as_ref().map(|d| goast::Block {
-                        stmts: build_branch(block_to_aexpr((**d).clone())),
-                    });
-                    vec![goast::Stmt::SwitchType {
-                        bind: Some(scrutinee_name),
-                        expr: compile_imm(goenv, scrutinee),
-                        cases,
-                        default: default_block,
-                    }]
-                }
-                _ => panic!(
-                    "unsupported scrutinee type TApp({:?}, ..) for match in Go backend",
-                    base
-                ),
-            },
-            _ => panic!("unsupported scrutinee type for match in Go backend"),
-        }
-    }
-
-    fn compile_cexpr_effect(goenv: &GlobalGoEnv, expr: &anf::CExpr) -> Vec<goast::Stmt> {
-        match expr {
-            anf::CExpr::CImm { .. }
-            | anf::CExpr::EConstr { .. }
-            | anf::CExpr::ETuple { .. }
-            | anf::CExpr::EArray { .. }
-            | anf::CExpr::EConstrGet { .. }
-            | anf::CExpr::EUnary { .. }
-            | anf::CExpr::EBinary { .. }
-            | anf::CExpr::EToDyn { .. }
-            | anf::CExpr::EProj { .. } => Vec::new(),
-            anf::CExpr::ECall { .. } | anf::CExpr::EDynCall { .. } => {
-                vec![goast::Stmt::Expr(compile_cexpr(goenv, expr))]
-            }
-            anf::CExpr::EGo { closure, .. } => {
-                vec![compile_go(goenv, closure)]
-            }
-            anf::CExpr::EMatch { .. } | anf::CExpr::EIf { .. } | anf::CExpr::EWhile { .. } => {
-                panic!("control-flow expressions should be handled before compile_cexpr_effect")
-            }
-        }
-    }
-
-    struct ClosureApplyFn {
-        name: String,
-        ty: tast::Ty,
-        ret_ty: tast::Ty,
-    }
-
-    fn compile_go(goenv: &GlobalGoEnv, closure: &anf::ImmExpr) -> goast::Stmt {
-        let closure_ty = imm_ty(closure);
-        let call_expr = if let Some(apply) = find_closure_apply_fn(goenv, &closure_ty) {
-            let apply_call = anf::CExpr::ECall {
-                func: anf::ImmExpr::ImmVar {
-                    name: apply.name.clone(),
-                    ty: apply.ty.clone(),
-                },
-                args: vec![closure.clone()],
-                ty: apply.ret_ty.clone(),
-            };
-            compile_cexpr(goenv, &apply_call)
-        } else {
-            let tast::Ty::TFunc { params, ret_ty } = &closure_ty else {
-                panic!(
-                    "go statement expects a zero-arg function value or closure, got {:?}",
-                    closure_ty
-                );
-            };
-            if !params.is_empty() {
-                panic!(
-                    "go statement expects a zero-arg function value, got {:?}",
-                    closure_ty
-                );
-            }
-            goast::Expr::Call {
-                func: Box::new(compile_imm(goenv, closure)),
-                args: vec![],
-                ty: tast_ty_to_go_type(ret_ty),
-            }
-        };
-        goast::Stmt::Go { call: call_expr }
-    }
-
-    fn find_closure_apply_fn(goenv: &GlobalGoEnv, closure_ty: &tast::Ty) -> Option<ClosureApplyFn> {
-        // Look up the apply method via inherent_impls
-        let fn_ty = goenv.closure_apply_method(closure_ty)?;
-
-        let tast::Ty::TFunc { params, ret_ty } = &fn_ty else {
-            return None;
-        };
-
-        if params.first()? != closure_ty {
-            return None;
-        }
-
-        let apply_name = inherent_method_fn_name(closure_ty, "apply");
-
-        Some(ClosureApplyFn {
-            name: apply_name,
-            ty: fn_ty.clone(),
-            ret_ty: (**ret_ty).clone(),
-        })
-    }
-
-    fn block_to_aexpr(block: anf::Block) -> anf::AExpr {
-        let mut expr = anf::AExpr::ACExpr { expr: block.tail };
-        for stmt in block.stmts.into_iter().rev() {
-            let body_ty = expr.get_ty();
-            expr = anf::AExpr::ALet {
-                name: stmt.name,
-                value: Box::new(stmt.value),
-                body: Box::new(expr),
-                ty: body_ty,
-            };
-        }
-        expr
-    }
-
-    fn compile_aexpr_effect(
-        goenv: &GlobalGoEnv,
-        gensym: &Gensym,
-        e: anf::AExpr,
-    ) -> Vec<goast::Stmt> {
-        match e {
-            AExpr::ACExpr { expr } => match expr {
-                anf::CExpr::EIf {
-                    cond, then, else_, ..
-                } => {
-                    let cond_e = compile_imm(goenv, &cond);
-                    let then_block = goast::Block {
-                        stmts: compile_aexpr_effect(goenv, gensym, block_to_aexpr(*then)),
-                    };
-                    let else_block = goast::Block {
-                        stmts: compile_aexpr_effect(goenv, gensym, block_to_aexpr(*else_)),
-                    };
-                    vec![goast::Stmt::If {
-                        cond: cond_e,
-                        then: then_block,
-                        else_: Some(else_block),
-                    }]
-                }
-                anf::CExpr::EMatch {
-                    expr: scrutinee,
-                    arms,
-                    default,
-                    ty: _,
-                } => compile_match_branches(goenv, scrutinee.as_ref(), &arms, &default, |branch| {
-                    compile_aexpr_effect(goenv, gensym, branch)
-                }),
-                anf::CExpr::EWhile { cond, body, .. } => compile_while(goenv, gensym, *cond, *body),
-                other => compile_cexpr_effect(goenv, &other),
-            },
-            AExpr::ALet {
-                name,
-                value,
-                body,
-                ty: _,
-            } => {
-                let mut out = Vec::new();
-                let value_expr = *value;
-
-                match value_expr {
-                    complex @ (anf::CExpr::EIf { .. }
-                    | anf::CExpr::EMatch { .. }
-                    | anf::CExpr::EWhile { .. }) => {
-                        out.push(goast::Stmt::VarDecl {
-                            name: go_ident(&name),
-                            ty: cexpr_ty(goenv, &complex),
-                            value: None,
-                        });
-                        out.extend(compile_aexpr_assign(
-                            goenv,
-                            gensym,
-                            &name,
-                            AExpr::ACExpr { expr: complex },
-                        ));
-                    }
-                    anf::CExpr::EGo { ref closure, .. } => {
-                        out.push(compile_go(goenv, closure));
-                        out.push(goast::Stmt::VarDecl {
-                            name: go_ident(&name),
-                            ty: goty::GoType::TUnit,
-                            value: Some(goast::Expr::Unit {
-                                ty: goty::GoType::TUnit,
-                            }),
-                        });
-                        out.extend(compile_aexpr_effect(goenv, gensym, *body));
-                        return out;
-                    }
-                    simple @ anf::CExpr::ECall { .. } => {
-                        out.push(goast::Stmt::VarDecl {
-                            name: go_ident(&name),
-                            ty: cexpr_ty(goenv, &simple),
-                            value: Some(compile_cexpr(goenv, &simple)),
-                        });
-                    }
-                    simple => {
-                        out.push(goast::Stmt::VarDecl {
-                            name: go_ident(&name),
-                            ty: cexpr_ty(goenv, &simple),
-                            value: Some(compile_cexpr(goenv, &simple)),
-                        });
-                    }
-                }
-                out.extend(compile_aexpr_effect(goenv, gensym, *body));
-                out
-            }
-        }
-    }
-
-    fn compile_while(
-        goenv: &GlobalGoEnv,
-        gensym: &Gensym,
-        cond: anf::Block,
-        body: anf::Block,
-    ) -> Vec<goast::Stmt> {
-        let cond_ty = cond.get_ty();
-        if cond_ty != tast::Ty::TBool {
-            panic!("while condition must have type bool, got {:?}", cond_ty);
-        }
-
-        let cond_var = gensym.gensym("cond");
-        let mut stmts = Vec::new();
-        stmts.push(goast::Stmt::VarDecl {
-            name: go_ident(&cond_var),
-            ty: goty::GoType::TBool,
-            value: None,
-        });
-
-        let mut loop_body = compile_aexpr_assign(goenv, gensym, &cond_var, block_to_aexpr(cond));
-        let not_cond = goast::Expr::UnaryOp {
-            op: goast::GoUnaryOp::Not,
-            expr: Box::new(goast::Expr::Var {
-                name: go_ident(&cond_var),
-                ty: goty::GoType::TBool,
-            }),
-            ty: goty::GoType::TBool,
-        };
-        loop_body.push(goast::Stmt::If {
-            cond: not_cond,
-            then: goast::Block {
-                stmts: vec![goast::Stmt::Break],
-            },
-            else_: None,
-        });
-        loop_body.extend(compile_aexpr_effect(goenv, gensym, block_to_aexpr(body)));
-
-        stmts.push(goast::Stmt::Loop {
-            body: goast::Block { stmts: loop_body },
-            label: None,
-        });
-        stmts
-    }
-
-    fn compile_aexpr_assign(
-        goenv: &GlobalGoEnv,
-        gensym: &Gensym,
-        target: &str,
-        e: anf::AExpr,
-    ) -> Vec<goast::Stmt> {
-        match e {
-            AExpr::ACExpr { expr } => match expr {
-                anf::CExpr::EIf {
-                    cond, then, else_, ..
-                } => {
-                    let cond_e = compile_imm(goenv, &cond);
-                    let then_stmts =
-                        compile_aexpr_assign(goenv, gensym, target, block_to_aexpr(*then));
-                    let else_stmts =
-                        compile_aexpr_assign(goenv, gensym, target, block_to_aexpr(*else_));
-                    vec![goast::Stmt::If {
-                        cond: cond_e,
-                        then: goast::Block { stmts: then_stmts },
-                        else_: Some(goast::Block { stmts: else_stmts }),
-                    }]
-                }
-                anf::CExpr::EMatch {
-                    expr: scrutinee,
-                    arms,
-                    default,
-                    ty: _,
-                } => compile_match_branches(goenv, scrutinee.as_ref(), &arms, &default, |branch| {
-                    compile_aexpr_assign(goenv, gensym, target, branch)
-                }),
-                anf::CExpr::EWhile { cond, body, .. } => {
-                    let mut stmts = compile_while(goenv, gensym, *cond, *body);
-                    stmts.push(goast::Stmt::Assignment {
-                        name: go_ident(target),
-                        value: goast::Expr::Unit {
-                            ty: goty::GoType::TUnit,
-                        },
-                    });
-                    stmts
-                }
-                other @ (anf::CExpr::CImm { .. }
-                | anf::CExpr::EConstr { .. }
-                | anf::CExpr::EConstrGet { .. }
-                | anf::CExpr::EUnary { .. }
-                | anf::CExpr::EBinary { .. }
-                | anf::CExpr::EToDyn { .. }
-                | anf::CExpr::EProj { .. }
-                | anf::CExpr::ETuple { .. }
-                | anf::CExpr::EArray { .. }) => vec![goast::Stmt::Assignment {
-                    name: go_ident(target),
-                    value: compile_cexpr(goenv, &other),
-                }],
-                anf::CExpr::ECall { func, args, ty } => {
-                    vec![goast::Stmt::Assignment {
-                        name: go_ident(target),
-                        value: compile_cexpr(goenv, &anf::CExpr::ECall { func, args, ty }),
-                    }]
-                }
-                anf::CExpr::EDynCall {
-                    trait_name,
-                    method_name,
-                    receiver,
-                    args,
-                    ty,
-                } => {
-                    vec![goast::Stmt::Assignment {
-                        name: go_ident(target),
-                        value: compile_cexpr(
-                            goenv,
-                            &anf::CExpr::EDynCall {
-                                trait_name,
-                                method_name,
-                                receiver,
-                                args,
-                                ty,
-                            },
-                        ),
-                    }]
-                }
-                anf::CExpr::EGo { closure, .. } => {
-                    vec![
-                        compile_go(goenv, &closure),
-                        goast::Stmt::Assignment {
-                            name: go_ident(target),
-                            value: goast::Expr::Unit {
-                                ty: goty::GoType::TUnit,
-                            },
-                        },
-                    ]
-                }
-            },
-            AExpr::ALet {
-                name,
-                value,
-                body,
-                ty: _,
-            } => {
-                let mut out = Vec::new();
-                let value_expr = *value;
-
-                match value_expr {
-                    complex @ (anf::CExpr::EIf { .. }
-                    | anf::CExpr::EMatch { .. }
-                    | anf::CExpr::EWhile { .. }) => {
-                        out.push(goast::Stmt::VarDecl {
-                            name: go_ident(&name),
-                            ty: cexpr_ty(goenv, &complex),
-                            value: None,
-                        });
-                        out.extend(compile_aexpr_assign(
-                            goenv,
-                            gensym,
-                            &name,
-                            AExpr::ACExpr { expr: complex },
-                        ));
-                    }
-                    anf::CExpr::EGo { ref closure, .. } => {
-                        out.push(compile_go(goenv, closure));
-                        out.push(goast::Stmt::VarDecl {
-                            name: go_ident(&name),
-                            ty: goty::GoType::TUnit,
-                            value: Some(goast::Expr::Unit {
-                                ty: goty::GoType::TUnit,
-                            }),
-                        });
-                        out.extend(compile_aexpr_assign(goenv, gensym, target, *body));
-                        return out;
-                    }
-                    simple @ anf::CExpr::ECall { .. } => {
-                        out.push(goast::Stmt::VarDecl {
-                            name: go_ident(&name),
-                            ty: cexpr_ty(goenv, &simple),
-                            value: Some(compile_cexpr(goenv, &simple)),
-                        });
-                    }
-                    simple => {
-                        out.push(goast::Stmt::VarDecl {
-                            name: go_ident(&name),
-                            ty: cexpr_ty(goenv, &simple),
-                            value: Some(compile_cexpr(goenv, &simple)),
-                        });
-                    }
-                }
-
-                out.extend(compile_aexpr_assign(goenv, gensym, target, *body));
-                out
-            }
-        }
-    }
-
-    fn compile_aexpr(goenv: &GlobalGoEnv, gensym: &Gensym, e: anf::AExpr) -> Vec<goast::Stmt> {
-        let mut stmts = Vec::new();
-        match e {
-            AExpr::ACExpr { expr } => match expr {
-                // Lower conditional expressions to if-statements with returns in branches
-                anf::CExpr::EIf {
-                    cond, then, else_, ..
-                } => {
-                    let cond_e = compile_imm(goenv, &cond);
-                    let then_block = goast::Block {
-                        stmts: compile_aexpr(goenv, gensym, block_to_aexpr(*then)),
-                    };
-                    let else_block = goast::Block {
-                        stmts: compile_aexpr(goenv, gensym, block_to_aexpr(*else_)),
-                    };
-                    stmts.push(goast::Stmt::If {
-                        cond: cond_e,
-                        then: then_block,
-                        else_: Some(else_block),
-                    });
-                }
-                anf::CExpr::EMatch {
-                    expr: scrutinee,
-                    arms,
-                    default,
-                    ty: _,
-                } => {
-                    stmts.extend(compile_match_branches(
-                        goenv,
-                        scrutinee.as_ref(),
-                        &arms,
-                        &default,
-                        |branch| compile_aexpr(goenv, gensym, branch),
-                    ));
-                }
-                anf::CExpr::EWhile { cond, body, .. } => {
-                    stmts.extend(compile_while(goenv, gensym, *cond, *body));
-                    stmts.push(goast::Stmt::Return {
-                        expr: Some(goast::Expr::Unit {
-                            ty: goty::GoType::TUnit,
-                        }),
-                    });
-                }
-                _ => {
-                    let e = compile_cexpr(goenv, &expr);
-                    match e.get_ty() {
-                        goty::GoType::TVoid => {}
-                        _ => {
-                            stmts.push(goast::Stmt::Return { expr: Some(e) });
-                        }
-                    }
-                }
-            },
-            AExpr::ALet {
-                name,
-                value,
-                body,
-                ty: _,
-            } => {
-                let value_expr = *value;
-
-                match value_expr {
-                    // If RHS needs statements, declare then fill via if-lowering
-                    complex @ (anf::CExpr::EIf { .. }
-                    | anf::CExpr::EMatch { .. }
-                    | anf::CExpr::EWhile { .. }) => {
-                        stmts.push(goast::Stmt::VarDecl {
-                            name: go_ident(&name),
-                            ty: cexpr_ty(goenv, &complex),
-                            value: None,
-                        });
-                        stmts.extend(compile_aexpr_assign(
-                            goenv,
-                            gensym,
-                            &name,
-                            AExpr::ACExpr { expr: complex },
-                        ));
-                    }
-                    anf::CExpr::EGo { ref closure, .. } => {
-                        stmts.push(compile_go(goenv, closure));
-                        stmts.push(goast::Stmt::VarDecl {
-                            name: go_ident(&name),
-                            ty: goty::GoType::TUnit,
-                            value: Some(goast::Expr::Unit {
-                                ty: goty::GoType::TUnit,
-                            }),
-                        });
-                        stmts.extend(compile_aexpr(goenv, gensym, *body));
-                        return stmts;
-                    }
-                    simple @ anf::CExpr::ECall { .. } => {
-                        stmts.push(goast::Stmt::VarDecl {
-                            name: go_ident(&name),
-                            ty: cexpr_ty(goenv, &simple),
-                            value: Some(compile_cexpr(goenv, &simple)),
-                        });
-                    }
-                    simple => {
-                        stmts.push(goast::Stmt::VarDecl {
-                            name: go_ident(&name),
-                            ty: cexpr_ty(goenv, &simple),
-                            value: Some(compile_cexpr(goenv, &simple)),
-                        });
-                    }
-                }
-                stmts.extend(compile_aexpr(goenv, gensym, *body));
-            }
-        }
-        stmts
-    }
-
-    fn compile_fn(goenv: &GlobalGoEnv, gensym: &Gensym, f: anf::Fn) -> goast::Fn {
-        let mut params = Vec::new();
-        for (name, ty) in f.params {
-            params.push((go_ident(&name), tast_ty_to_go_type(&ty)));
-        }
-
-        let go_ret_ty = tast_ty_to_go_type(&f.ret_ty);
-
-        let is_entry = f.name == ENTRY_FUNCTION;
-        let patched_name = if is_entry {
-            ENTRY_WRAPPER_FUNCTION.to_string()
-        } else {
-            go_toplevel_func_name(goenv, &f.name)
-        };
-
-        let body = block_to_aexpr(f.body);
-
-        let (ret_ty, body_stmts) = match go_ret_ty {
-            goty::GoType::TVoid => (None, compile_aexpr(goenv, gensym, body)),
-            _ => {
-                let ret_name = gensym.gensym("ret");
-                let mut stmts = Vec::new();
-
-                stmts.push(goast::Stmt::VarDecl {
-                    name: go_ident(&ret_name),
-                    ty: go_ret_ty.clone(),
-                    value: None,
-                });
-
-                stmts.extend(compile_aexpr_assign(goenv, gensym, &ret_name, body));
-
-                stmts.push(goast::Stmt::Return {
-                    expr: Some(goast::Expr::Var {
-                        name: go_ident(&ret_name),
-                        ty: go_ret_ty.clone(),
-                    }),
-                });
-
-                (Some(go_ret_ty), stmts)
-            }
-        };
-
-        goast::Fn {
-            name: patched_name,
-            params,
-            ret_ty,
-            body: goast::Block { stmts: body_stmts },
-        }
-    }
-}
-
 #[derive(Debug, Clone)]
 struct ClosureApplyFn {
     name: String,
@@ -3483,28 +1844,18 @@ struct CompiledValue {
     expr: goast::Expr,
 }
 
-fn compile_call(
-    goenv: &GlobalGoEnv,
-    func: &anf::ImmExpr,
+fn compile_intrinsic_call(
+    _goenv: &GlobalGoEnv,
+    id: IntrinsicId,
     args: &[anf::ImmExpr],
+    compiled_args: Vec<goast::Expr>,
     ty: &tast::Ty,
-    force_runtime_builtins: bool,
+    func_ty: goty::GoType,
 ) -> goast::Expr {
-    let func_tast_ty = imm_ty(func);
-    let param_types: Vec<tast::Ty> = match &func_tast_ty {
-        tast::Ty::TFunc { params, .. } => params.clone(),
-        _ => Vec::new(),
-    };
-    let compiled_args = compile_call_args(goenv, &param_types, args);
-    let func_ty = tast_ty_to_go_type(&func_tast_ty);
-
-    if let anf::ImmExpr::Var { id, .. } = func {
-        let (name, marked_runtime) = runtime_call_name(&id.0);
-        if runtime_builtin_available_for_call(goenv, name, marked_runtime, force_runtime_builtins)
-            && name == "missing"
-        {
+    match id {
+        IntrinsicId::Missing => {
             let helper_name = runtime::missing_helper_fn_name(ty);
-            return goast::Expr::Call {
+            goast::Expr::Call {
                 func: Box::new(goast::Expr::Var {
                     name: helper_name,
                     ty: goty::GoType::TFunc {
@@ -3514,106 +1865,95 @@ fn compile_call(
                 }),
                 args: compiled_args,
                 ty: tast_ty_to_go_type(ty),
-            };
+            }
         }
-    }
-
-    if let anf::ImmExpr::Var { id, .. } = func {
-        let (name, marked_runtime) = runtime_call_name(&id.0);
-        if runtime_builtin_available_for_call(goenv, name, marked_runtime, force_runtime_builtins)
-            && (name == "array_get" || name == "array_set")
-        {
+        IntrinsicId::ArrayGet | IntrinsicId::ArraySet => {
+            let name = id.source_name();
             let array_ty = imm_ty(&args[0]);
-            let helper = runtime::array_helper_fn_name(name, &array_ty);
-            return goast::Expr::Call {
+            goast::Expr::Call {
                 func: Box::new(goast::Expr::Var {
-                    name: helper,
+                    name: runtime::array_helper_fn_name(name, &array_ty),
                     ty: func_ty,
                 }),
                 args: compiled_args,
                 ty: tast_ty_to_go_type(ty),
-            };
+            }
         }
-    }
-
-    if let anf::ImmExpr::Var { id, .. } = func {
-        let (name, marked_runtime) = runtime_call_name(&id.0);
-        if runtime_builtin_available_for_call(goenv, name, marked_runtime, force_runtime_builtins)
-            && (name == "ref" || name == "ref_get" || name == "ref_set" || name == "ptr_eq")
-        {
-            let (helper, helper_ty) = if name == "ref" {
-                let tast::Ty::TRef { elem } = ty else {
-                    panic!("ref return type must be reference, got {:?}", ty);
-                };
-                let elem_go_ty = tast_ty_to_go_type(elem);
-                let ref_go_ty = tast_ty_to_go_type(ty);
-                (
-                    runtime::ref_helper_fn_name("ref", ty),
-                    goty::GoType::TFunc {
-                        params: vec![elem_go_ty],
-                        ret_ty: Box::new(ref_go_ty),
-                    },
-                )
-            } else if name == "ptr_eq" {
-                let ref_ty = imm_ty(&args[0]);
-                let tast::Ty::TRef { .. } = &ref_ty else {
-                    panic!("ptr_eq expects reference arguments, got {:?}", ref_ty);
-                };
-                let ref_go_ty = tast_ty_to_go_type(&ref_ty);
-                (
-                    runtime::ref_helper_fn_name("ptr_eq", &ref_ty),
-                    goty::GoType::TFunc {
-                        params: vec![ref_go_ty.clone(), ref_go_ty.clone()],
-                        ret_ty: Box::new(goty::GoType::TBool),
-                    },
-                )
-            } else {
-                let ref_ty = imm_ty(&args[0]);
-                let tast::Ty::TRef { elem } = &ref_ty else {
-                    panic!("{} expects reference argument, got {:?}", name, ref_ty);
-                };
-                let ref_go_ty = tast_ty_to_go_type(&ref_ty);
-                let elem_go_ty = tast_ty_to_go_type(elem);
-                let ret_ty = if name == "ref_get" {
-                    elem_go_ty.clone()
-                } else {
-                    goty::GoType::TUnit
-                };
-                (
-                    runtime::ref_helper_fn_name(name, &ref_ty),
-                    goty::GoType::TFunc {
-                        params: if name == "ref_get" {
-                            vec![ref_go_ty.clone()]
-                        } else {
-                            vec![ref_go_ty.clone(), elem_go_ty.clone()]
+        IntrinsicId::RefNew | IntrinsicId::RefGet | IntrinsicId::RefSet | IntrinsicId::RefPtrEq => {
+            let name = id.source_name();
+            let (helper, helper_ty) = match id {
+                IntrinsicId::RefNew => {
+                    let tast::Ty::TRef { elem } = ty else {
+                        panic!("ref return type must be reference, got {:?}", ty);
+                    };
+                    let elem_go_ty = tast_ty_to_go_type(elem);
+                    let ref_go_ty = tast_ty_to_go_type(ty);
+                    (
+                        runtime::ref_helper_fn_name(name, ty),
+                        goty::GoType::TFunc {
+                            params: vec![elem_go_ty],
+                            ret_ty: Box::new(ref_go_ty),
                         },
-                        ret_ty: Box::new(ret_ty),
-                    },
-                )
+                    )
+                }
+                IntrinsicId::RefPtrEq => {
+                    let ref_ty = imm_ty(&args[0]);
+                    let tast::Ty::TRef { .. } = &ref_ty else {
+                        panic!("ptr_eq expects reference arguments, got {:?}", ref_ty);
+                    };
+                    let ref_go_ty = tast_ty_to_go_type(&ref_ty);
+                    (
+                        runtime::ref_helper_fn_name(name, &ref_ty),
+                        goty::GoType::TFunc {
+                            params: vec![ref_go_ty.clone(), ref_go_ty],
+                            ret_ty: Box::new(goty::GoType::TBool),
+                        },
+                    )
+                }
+                IntrinsicId::RefGet | IntrinsicId::RefSet => {
+                    let ref_ty = imm_ty(&args[0]);
+                    let tast::Ty::TRef { elem } = &ref_ty else {
+                        panic!("{} expects reference argument, got {:?}", name, ref_ty);
+                    };
+                    let ref_go_ty = tast_ty_to_go_type(&ref_ty);
+                    let elem_go_ty = tast_ty_to_go_type(elem);
+                    let params = if id == IntrinsicId::RefGet {
+                        vec![ref_go_ty]
+                    } else {
+                        vec![ref_go_ty, elem_go_ty.clone()]
+                    };
+                    let ret_ty = if id == IntrinsicId::RefGet {
+                        elem_go_ty
+                    } else {
+                        goty::GoType::TUnit
+                    };
+                    (
+                        runtime::ref_helper_fn_name(name, &ref_ty),
+                        goty::GoType::TFunc {
+                            params,
+                            ret_ty: Box::new(ret_ty),
+                        },
+                    )
+                }
+                _ => unreachable!(),
             };
-
-            return goast::Expr::Call {
+            goast::Expr::Call {
                 func: Box::new(goast::Expr::Var {
                     name: helper,
                     ty: helper_ty,
                 }),
                 args: compiled_args,
                 ty: tast_ty_to_go_type(ty),
-            };
+            }
         }
-    }
-
-    if let anf::ImmExpr::Var { id, .. } = func {
-        let (name, marked_runtime) = runtime_call_name(&id.0);
-        if runtime_builtin_available_for_call(goenv, name, marked_runtime, force_runtime_builtins)
-            && (name == "hashmap_new"
-                || name == "hashmap_get"
-                || name == "hashmap_set"
-                || name == "hashmap_remove"
-                || name == "hashmap_len"
-                || name == "hashmap_contains")
-        {
-            let map_ty = if name == "hashmap_new" {
+        IntrinsicId::HashMapNew
+        | IntrinsicId::HashMapGet
+        | IntrinsicId::HashMapSet
+        | IntrinsicId::HashMapRemove
+        | IntrinsicId::HashMapLen
+        | IntrinsicId::HashMapContains => {
+            let name = id.source_name();
+            let map_ty = if id == IntrinsicId::HashMapNew {
                 ty.clone()
             } else {
                 imm_ty(&args[0])
@@ -3621,198 +1961,161 @@ fn compile_call(
             let tast::Ty::THashMap { key, value } = &map_ty else {
                 panic!("{} expects HashMap type, got {:?}", name, map_ty);
             };
-
             let map_go_ty = tast_ty_to_go_type(&map_ty);
             let key_go_ty = tast_ty_to_go_type(key);
             let value_go_ty = tast_ty_to_go_type(value);
-
-            let helper = runtime::hashmap_helper_fn_name(name, &map_ty);
-            let helper_ty = match name {
-                "hashmap_new" => goty::GoType::TFunc {
+            let helper_ty = match id {
+                IntrinsicId::HashMapNew => goty::GoType::TFunc {
                     params: vec![],
                     ret_ty: Box::new(map_go_ty.clone()),
                 },
-                "hashmap_get" => goty::GoType::TFunc {
+                IntrinsicId::HashMapGet => goty::GoType::TFunc {
                     params: vec![map_go_ty.clone(), key_go_ty.clone()],
                     ret_ty: Box::new(tast_ty_to_go_type(ty)),
                 },
-                "hashmap_set" => goty::GoType::TFunc {
-                    params: vec![map_go_ty.clone(), key_go_ty.clone(), value_go_ty.clone()],
+                IntrinsicId::HashMapSet => goty::GoType::TFunc {
+                    params: vec![map_go_ty.clone(), key_go_ty.clone(), value_go_ty],
                     ret_ty: Box::new(goty::GoType::TUnit),
                 },
-                "hashmap_remove" => goty::GoType::TFunc {
+                IntrinsicId::HashMapRemove => goty::GoType::TFunc {
                     params: vec![map_go_ty.clone(), key_go_ty.clone()],
                     ret_ty: Box::new(goty::GoType::TUnit),
                 },
-                "hashmap_len" => goty::GoType::TFunc {
+                IntrinsicId::HashMapLen => goty::GoType::TFunc {
                     params: vec![map_go_ty.clone()],
                     ret_ty: Box::new(goty::GoType::TInt32),
                 },
-                "hashmap_contains" => goty::GoType::TFunc {
-                    params: vec![map_go_ty.clone(), key_go_ty.clone()],
+                IntrinsicId::HashMapContains => goty::GoType::TFunc {
+                    params: vec![map_go_ty.clone(), key_go_ty],
                     ret_ty: Box::new(goty::GoType::TBool),
                 },
                 _ => unreachable!(),
             };
-
-            return goast::Expr::Call {
+            goast::Expr::Call {
                 func: Box::new(goast::Expr::Var {
-                    name: helper,
+                    name: runtime::hashmap_helper_fn_name(name, &map_ty),
                     ty: helper_ty,
                 }),
                 args: compiled_args,
                 ty: tast_ty_to_go_type(ty),
-            };
+            }
         }
-    }
-
-    if let anf::ImmExpr::Var { id, .. } = func {
-        let (name, marked_runtime) = runtime_call_name(&id.0);
-        if runtime_builtin_available_for_call(goenv, name, marked_runtime, force_runtime_builtins)
-            && (name == "slice"
-                || name == "slice_get"
-                || name == "slice_len"
-                || name == "slice_sub")
-        {
+        IntrinsicId::SliceNew => {
+            let vec_ty = imm_ty(&args[0]);
+            let tast::Ty::TVec { elem } = &vec_ty else {
+                panic!("slice.new expects Vec argument, got {:?}", vec_ty);
+            };
+            let items_ty = goty::GoType::TSlice {
+                elem: Box::new(tast_ty_to_go_type(elem)),
+            };
+            let mut compiled = compiled_args.into_iter();
+            let vec = compiled.next().unwrap();
+            goast::Expr::Slice {
+                array: Box::new(goast::Expr::FieldAccess {
+                    obj: Box::new(vec),
+                    field: "items".to_string(),
+                    ty: items_ty,
+                }),
+                start: Box::new(compiled.next().unwrap()),
+                end: Box::new(compiled.next().unwrap()),
+                ty: tast_ty_to_go_type(ty),
+            }
+        }
+        IntrinsicId::SliceSub => {
+            let mut args = compiled_args.into_iter();
+            goast::Expr::Slice {
+                array: Box::new(args.next().unwrap()),
+                start: Box::new(args.next().unwrap()),
+                end: Box::new(args.next().unwrap()),
+                ty: tast_ty_to_go_type(ty),
+            }
+        }
+        IntrinsicId::SliceGet => {
+            let mut args = compiled_args.into_iter();
+            goast::Expr::Index {
+                array: Box::new(args.next().unwrap()),
+                index: Box::new(args.next().unwrap()),
+                ty: tast_ty_to_go_type(ty),
+            }
+        }
+        IntrinsicId::SliceLen => {
             let arg0_ty = imm_ty(&args[0]);
-            return match name {
-                "slice" | "slice_sub" => {
-                    let mut args_iter = compiled_args.into_iter();
-                    let array_arg = args_iter.next().unwrap();
-                    let start_arg = args_iter.next().unwrap();
-                    let end_arg = args_iter.next().unwrap();
-                    goast::Expr::Slice {
-                        array: Box::new(array_arg),
-                        start: Box::new(start_arg),
-                        end: Box::new(end_arg),
-                        ty: tast_ty_to_go_type(ty),
-                    }
-                }
-                "slice_get" => {
-                    let mut args_iter = compiled_args.into_iter();
-                    let slice_arg = args_iter.next().unwrap();
-                    let index_arg = args_iter.next().unwrap();
-                    goast::Expr::Index {
-                        array: Box::new(slice_arg),
-                        index: Box::new(index_arg),
-                        ty: tast_ty_to_go_type(ty),
-                    }
-                }
-                "slice_len" => {
-                    let mut args_iter = compiled_args.into_iter();
-                    let slice_arg = args_iter.next().unwrap();
-                    goast::Expr::Call {
-                        func: Box::new(goast::Expr::Var {
-                            name: "int32".to_string(),
-                            ty: goty::GoType::TFunc {
-                                params: vec![goty::GoType::TInt32],
-                                ret_ty: Box::new(goty::GoType::TInt32),
-                            },
-                        }),
-                        args: vec![goast::Expr::Call {
-                            func: Box::new(goast::Expr::Var {
-                                name: "len".to_string(),
-                                ty: goty::GoType::TFunc {
-                                    params: vec![tast_ty_to_go_type(&arg0_ty)],
-                                    ret_ty: Box::new(goty::GoType::TInt32),
-                                },
-                            }),
-                            args: vec![slice_arg],
-                            ty: goty::GoType::TInt32,
-                        }],
-                        ty: tast_ty_to_go_type(ty),
-                    }
-                }
-                _ => unreachable!(),
+            let value = compiled_args.into_iter().next().unwrap();
+            goast::Expr::Call {
+                func: Box::new(goast::Expr::Var {
+                    name: "int32".to_string(),
+                    ty: goty::GoType::TFunc {
+                        params: vec![goty::GoType::TInt32],
+                        ret_ty: Box::new(goty::GoType::TInt32),
+                    },
+                }),
+                args: vec![goast::Expr::Call {
+                    func: Box::new(goast::Expr::Var {
+                        name: "len".to_string(),
+                        ty: goty::GoType::TFunc {
+                            params: vec![tast_ty_to_go_type(&arg0_ty)],
+                            ret_ty: Box::new(goty::GoType::TInt32),
+                        },
+                    }),
+                    args: vec![value],
+                    ty: goty::GoType::TInt32,
+                }],
+                ty: tast_ty_to_go_type(ty),
+            }
+        }
+        IntrinsicId::VecNew
+        | IntrinsicId::VecPush
+        | IntrinsicId::VecGet
+        | IntrinsicId::VecSet
+        | IntrinsicId::VecLen => {
+            let vec_ty = if id == IntrinsicId::VecNew {
+                ty.clone()
+            } else {
+                imm_ty(&args[0])
             };
+            goast::Expr::Call {
+                func: Box::new(goast::Expr::Var {
+                    name: runtime::vec_helper_fn_name(id.source_name(), &vec_ty),
+                    ty: func_ty,
+                }),
+                args: compiled_args,
+                ty: tast_ty_to_go_type(ty),
+            }
         }
     }
+}
 
-    if let anf::ImmExpr::Var { id, .. } = func {
-        let (name, marked_runtime) = runtime_call_name(&id.0);
-        if runtime_builtin_available_for_call(goenv, name, marked_runtime, force_runtime_builtins)
-            && (name == "vec_new"
-                || name == "vec_push"
-                || name == "vec_get"
-                || name == "vec_set"
-                || name == "vec_len")
-        {
-            return match name {
-                "vec_new" => goast::Expr::Nil {
-                    ty: tast_ty_to_go_type(ty),
-                },
-                "vec_push" => goast::Expr::Call {
+fn compile_call(
+    goenv: &GlobalGoEnv,
+    func: &anf::ImmExpr,
+    args: &[anf::ImmExpr],
+    ty: &tast::Ty,
+) -> goast::Expr {
+    let func_tast_ty = imm_ty(func);
+    let param_types: Vec<tast::Ty> = match &func_tast_ty {
+        tast::Ty::TFunc { params, .. } => params.clone(),
+        _ => Vec::new(),
+    };
+    let compiled_args = compile_call_args(goenv, &param_types, args);
+    let func_ty = tast_ty_to_go_type(&func_tast_ty);
+
+    if let anf::ImmExpr::Callable { body, .. } = func {
+        match body {
+            CallableBody::Intrinsic(id) => {
+                return compile_intrinsic_call(goenv, *id, args, compiled_args, ty, func_ty);
+            }
+            CallableBody::Runtime(id) => {
+                return goast::Expr::Call {
                     func: Box::new(goast::Expr::Var {
-                        name: "append".to_string(),
+                        name: runtime_hook_go_name(*id),
                         ty: func_ty,
                     }),
                     args: compiled_args,
                     ty: tast_ty_to_go_type(ty),
-                },
-                "vec_get" => {
-                    let mut args_iter = compiled_args.into_iter();
-                    let v_arg = args_iter.next().unwrap();
-                    let index_arg = args_iter.next().unwrap();
-                    goast::Expr::Index {
-                        array: Box::new(v_arg),
-                        index: Box::new(index_arg),
-                        ty: tast_ty_to_go_type(ty),
-                    }
-                }
-                "vec_set" => {
-                    let vec_ty = imm_ty(&args[0]);
-                    goast::Expr::Call {
-                        func: Box::new(goast::Expr::Var {
-                            name: runtime::vec_helper_fn_name("vec_set", &vec_ty),
-                            ty: func_ty,
-                        }),
-                        args: compiled_args,
-                        ty: tast_ty_to_go_type(ty),
-                    }
-                }
-                "vec_len" => {
-                    let arg0_ty = imm_ty(args.first().unwrap());
-                    let mut args_iter = compiled_args.into_iter();
-                    let v_arg = args_iter.next().unwrap();
-                    goast::Expr::Call {
-                        func: Box::new(goast::Expr::Var {
-                            name: "int32".to_string(),
-                            ty: goty::GoType::TFunc {
-                                params: vec![goty::GoType::TInt32],
-                                ret_ty: Box::new(goty::GoType::TInt32),
-                            },
-                        }),
-                        args: vec![goast::Expr::Call {
-                            func: Box::new(goast::Expr::Var {
-                                name: "len".to_string(),
-                                ty: goty::GoType::TFunc {
-                                    params: vec![tast_ty_to_go_type(&arg0_ty)],
-                                    ret_ty: Box::new(goty::GoType::TInt32),
-                                },
-                            }),
-                            args: vec![v_arg],
-                            ty: goty::GoType::TInt32,
-                        }],
-                        ty: tast_ty_to_go_type(ty),
-                    }
-                }
-                _ => unreachable!(),
-            };
+                };
+            }
+            CallableBody::Goml => {}
         }
-    }
-
-    if let anf::ImmExpr::Var { id, .. } = func
-        && (builtin_runtime_call_name(&id.0).is_some()
-            || (force_runtime_builtins && runtime_generated_function_name(&id.0)))
-    {
-        let name = builtin_runtime_call_name(&id.0)
-            .map(str::to_string)
-            .unwrap_or_else(|| id.0.clone());
-        return goast::Expr::Call {
-            func: Box::new(goast::Expr::Var { name, ty: func_ty }),
-            args: compiled_args,
-            ty: tast_ty_to_go_type(ty),
-        };
     }
 
     if let tast::Ty::TStruct { name } = &func_tast_ty
@@ -3833,28 +2136,10 @@ fn compile_call(
     }
 
     goast::Expr::Call {
-        func: Box::new(compile_call_func(goenv, func, force_runtime_builtins)),
+        func: Box::new(compile_imm(goenv, func)),
         args: compiled_args,
         ty: tast_ty_to_go_type(ty),
     }
-}
-
-fn compile_call_func(
-    goenv: &GlobalGoEnv,
-    func: &anf::ImmExpr,
-    force_runtime_builtins: bool,
-) -> goast::Expr {
-    if force_runtime_builtins
-        && let anf::ImmExpr::Var { id, .. } = func
-        && runtime_generated_function_name(&id.0)
-    {
-        return goast::Expr::Var {
-            name: id.0.clone(),
-            ty: tast_ty_to_go_type(&imm_ty(func)),
-        };
-    }
-
-    compile_imm(goenv, func)
 }
 
 fn compile_call_args(
@@ -3876,11 +2161,7 @@ fn compile_call_args(
         .collect()
 }
 
-fn compile_value_expr(
-    goenv: &GlobalGoEnv,
-    expr: &anf::ValueExpr,
-    force_runtime_builtins: bool,
-) -> CompiledValue {
+fn compile_value_expr(goenv: &GlobalGoEnv, expr: &anf::ValueExpr) -> CompiledValue {
     match expr {
         anf::ValueExpr::Imm(imm) => CompiledValue {
             stmts: Vec::new(),
@@ -4131,29 +2412,10 @@ fn compile_value_expr(
                 },
             }
         }
-        anf::ValueExpr::Call { func, args, ty } => {
-            if let anf::ImmExpr::Var { id, .. } = func
-                && runtime_builtin_available(goenv, &id.0)
-                && (id.0 == "print" || id.0 == "println")
-            {
-                let call_expr = goast::Expr::Call {
-                    func: Box::new(compile_imm(goenv, func)),
-                    args: args.iter().map(|arg| compile_imm(goenv, arg)).collect(),
-                    ty: goty::GoType::TVoid,
-                };
-                CompiledValue {
-                    stmts: vec![goast::Stmt::Expr(call_expr)],
-                    expr: goast::Expr::Unit {
-                        ty: tast_ty_to_go_type(ty),
-                    },
-                }
-            } else {
-                CompiledValue {
-                    stmts: Vec::new(),
-                    expr: compile_call(goenv, func, args, ty, force_runtime_builtins),
-                }
-            }
-        }
+        anf::ValueExpr::Call { func, args, ty } => CompiledValue {
+            stmts: Vec::new(),
+            expr: compile_call(goenv, func, args, ty),
+        },
         anf::ValueExpr::ToDyn {
             trait_name,
             for_ty,
@@ -4608,30 +2870,10 @@ fn all_paths_reach_or_terminate_term(
     }
 }
 
-fn compile_let_bind(
-    goenv: &GlobalGoEnv,
-    bind: &anf::LetBind,
-    force_runtime_builtins: bool,
-) -> Vec<goast::Stmt> {
+fn compile_let_bind(goenv: &GlobalGoEnv, bind: &anf::LetBind) -> Vec<goast::Stmt> {
     let discard = bind.id.0 == "_" || bind.id.0.starts_with("_wild");
 
-    if discard
-        && let anf::ValueExpr::Call { func, args, .. } = &bind.value
-        && let anf::ImmExpr::Var { id: func_id, .. } = func
-        && runtime_builtin_available_in_context(goenv, &func_id.0, force_runtime_builtins)
-        && func_id.0 == "vec_push"
-        && let Some(anf::ImmExpr::Var { id: vec_id, .. }) = args.first()
-    {
-        let compiled = compile_value_expr(goenv, &bind.value, force_runtime_builtins);
-        let mut stmts = compiled.stmts;
-        stmts.push(goast::Stmt::Assignment {
-            name: go_ident(&vec_id.0),
-            value: compiled.expr,
-        });
-        return stmts;
-    }
-
-    let compiled = compile_value_expr(goenv, &bind.value, force_runtime_builtins);
+    let compiled = compile_value_expr(goenv, &bind.value);
     let mut stmts = compiled.stmts;
     if discard {
         if go_expr_can_be_statement(&compiled.expr) {
@@ -4951,7 +3193,6 @@ fn compile_block_structured(
     goenv: &GlobalGoEnv,
     block: &anf::Block,
     join_env: &JoinEnv,
-    force_runtime_builtins: bool,
 ) -> Vec<goast::Stmt> {
     let mut pending_joins: Vec<&anf::JoinBind> = Vec::new();
     let mut while_loop_ids: Vec<anf::JoinId> = Vec::new();
@@ -4959,7 +3200,7 @@ fn compile_block_structured(
     for bind in &block.binds {
         match bind {
             anf::Bind::Let(let_bind) => {
-                stmts.extend(compile_let_bind(goenv, let_bind, force_runtime_builtins));
+                stmts.extend(compile_let_bind(goenv, let_bind));
             }
             anf::Bind::Join(join_bind) => {
                 for (id, ty) in &join_bind.params {
@@ -4979,12 +3220,7 @@ fn compile_block_structured(
                         while_loop_ids.push(j.id.clone());
                     }
                 }
-                stmts.extend(compile_joinrec(
-                    goenv,
-                    group,
-                    join_env,
-                    force_runtime_builtins,
-                ));
+                stmts.extend(compile_joinrec(goenv, group, join_env));
             }
         }
     }
@@ -5001,7 +3237,6 @@ fn compile_block_structured(
         &block.term,
         join_env,
         &pending_joins,
-        force_runtime_builtins,
     ));
     stmts
 }
@@ -5011,29 +3246,16 @@ fn compile_term_with_continuations_ctx(
     term: &anf::Term,
     join_env: &JoinEnv,
     pending_joins: &[&anf::JoinBind],
-    force_runtime_builtins: bool,
 ) -> Vec<goast::Stmt> {
     if let Some(target) = all_branches_jump_to_resolved(term)
         && let Some(join_bind) = join_env.get(&target)
         && pending_joins.iter().any(|j| j.id == target)
     {
-        let mut stmts = compile_term_jump_to_ctx(
-            goenv,
-            term,
-            &target,
-            join_bind,
-            join_env,
-            force_runtime_builtins,
-        );
-        stmts.extend(compile_block_structured(
-            goenv,
-            &join_bind.body,
-            join_env,
-            force_runtime_builtins,
-        ));
+        let mut stmts = compile_term_jump_to_ctx(goenv, term, &target, join_bind, join_env);
+        stmts.extend(compile_block_structured(goenv, &join_bind.body, join_env));
         return stmts;
     }
-    compile_term_leaf_ctx(goenv, term, join_env, force_runtime_builtins)
+    compile_term_leaf_ctx(goenv, term, join_env)
 }
 
 fn compile_term_jump_to_ctx(
@@ -5042,29 +3264,14 @@ fn compile_term_jump_to_ctx(
     target: &anf::JoinId,
     join_bind: &anf::JoinBind,
     join_env: &JoinEnv,
-    force_runtime_builtins: bool,
 ) -> Vec<goast::Stmt> {
     match term {
         anf::Term::Jump { args, .. } => compile_jump_args(goenv, &join_bind.params, args),
         anf::Term::If {
             cond, then_, else_, ..
         } => {
-            let then_stmts = compile_branch_to_join_ctx(
-                goenv,
-                then_,
-                target,
-                join_bind,
-                join_env,
-                force_runtime_builtins,
-            );
-            let else_stmts = compile_branch_to_join_ctx(
-                goenv,
-                else_,
-                target,
-                join_bind,
-                join_env,
-                force_runtime_builtins,
-            );
+            let then_stmts = compile_branch_to_join_ctx(goenv, then_, target, join_bind, join_env);
+            let else_stmts = compile_branch_to_join_ctx(goenv, else_, target, join_bind, join_env);
             vec![goast::Stmt::If {
                 cond: compile_imm(goenv, cond),
                 then: goast::Block { stmts: then_stmts },
@@ -5084,9 +3291,8 @@ fn compile_term_jump_to_ctx(
             target,
             join_bind,
             join_env,
-            force_runtime_builtins,
         ),
-        _ => compile_term_leaf_ctx(goenv, term, join_env, force_runtime_builtins),
+        _ => compile_term_leaf_ctx(goenv, term, join_env),
     }
 }
 
@@ -5096,14 +3302,13 @@ fn compile_branch_to_join_ctx(
     target: &anf::JoinId,
     join_bind: &anf::JoinBind,
     join_env: &JoinEnv,
-    force_runtime_builtins: bool,
 ) -> Vec<goast::Stmt> {
     let mut inner_pending: Vec<&anf::JoinBind> = Vec::new();
     let mut stmts = Vec::new();
     for bind in &block.binds {
         match bind {
             anf::Bind::Let(let_bind) => {
-                stmts.extend(compile_let_bind(goenv, let_bind, force_runtime_builtins));
+                stmts.extend(compile_let_bind(goenv, let_bind));
             }
             anf::Bind::Join(jb) => {
                 for (id, ty) in &jb.params {
@@ -5118,12 +3323,7 @@ fn compile_branch_to_join_ctx(
                 inner_pending.push(jb);
             }
             anf::Bind::JoinRec(group) => {
-                stmts.extend(compile_joinrec(
-                    goenv,
-                    group,
-                    join_env,
-                    force_runtime_builtins,
-                ));
+                stmts.extend(compile_joinrec(goenv, group, join_env));
             }
         }
     }
@@ -5136,7 +3336,6 @@ fn compile_branch_to_join_ctx(
                 target,
                 join_bind,
                 join_env,
-                force_runtime_builtins,
             ));
             return stmts;
         }
@@ -5149,7 +3348,6 @@ fn compile_branch_to_join_ctx(
                 &inner_target,
                 inner_join,
                 join_env,
-                force_runtime_builtins,
             ));
             stmts.extend(compile_branch_to_join_ctx(
                 goenv,
@@ -5157,7 +3355,6 @@ fn compile_branch_to_join_ctx(
                 target,
                 join_bind,
                 join_env,
-                force_runtime_builtins,
             ));
             return stmts;
         }
@@ -5167,7 +3364,6 @@ fn compile_branch_to_join_ctx(
         &block.term,
         join_env,
         &inner_pending,
-        force_runtime_builtins,
     ));
     stmts
 }
@@ -5181,7 +3377,6 @@ fn compile_match_to_join_ctx(
     target: &anf::JoinId,
     join_bind: &anf::JoinBind,
     join_env: &JoinEnv,
-    force_runtime_builtins: bool,
 ) -> Vec<goast::Stmt> {
     let scrut_ty = imm_ty(scrut);
 
@@ -5203,14 +3398,7 @@ fn compile_match_to_join_ctx(
             .or(var_arm.map(|(_, b)| b))
             .or(default);
         if let Some(block) = block {
-            return compile_branch_to_join_ctx(
-                goenv,
-                block,
-                target,
-                join_bind,
-                join_env,
-                force_runtime_builtins,
-            );
+            return compile_branch_to_join_ctx(goenv, block, target, join_bind, join_env);
         }
         return vec![panic_stmt("non-exhaustive match")];
     }
@@ -5225,7 +3413,6 @@ fn compile_match_to_join_ctx(
             target,
             join_bind,
             join_env,
-            force_runtime_builtins,
         ),
         tast::Ty::TApp { ty, .. } if matches!(ty.as_ref(), tast::Ty::TEnum { .. }) => {
             compile_enum_match_to_join_ctx(
@@ -5237,7 +3424,6 @@ fn compile_match_to_join_ctx(
                 target,
                 join_bind,
                 join_env,
-                force_runtime_builtins,
             )
         }
         _ => compile_switch_match_to_join_ctx(
@@ -5249,7 +3435,6 @@ fn compile_match_to_join_ctx(
             target,
             join_bind,
             join_env,
-            force_runtime_builtins,
         ),
     }
 }
@@ -5264,7 +3449,6 @@ fn compile_enum_match_to_join_ctx(
     target: &anf::JoinId,
     join_bind: &anf::JoinBind,
     join_env: &JoinEnv,
-    force_runtime_builtins: bool,
 ) -> Vec<goast::Stmt> {
     if enum_is_tag_only(goenv, &imm_ty(scrut)) {
         return compile_switch_match_to_join_ctx(
@@ -5276,7 +3460,6 @@ fn compile_enum_match_to_join_ctx(
             target,
             join_bind,
             join_env,
-            force_runtime_builtins,
         );
     }
     let mut cases = Vec::new();
@@ -5285,14 +3468,7 @@ fn compile_enum_match_to_join_ctx(
             panic!("expected tag pattern in enum match, got {:?}", pat);
         };
         let vty = variant_ty_by_index(goenv, ty, *index);
-        let stmts = compile_branch_to_join_ctx(
-            goenv,
-            body,
-            target,
-            join_bind,
-            join_env,
-            force_runtime_builtins,
-        );
+        let stmts = compile_branch_to_join_ctx(goenv, body, target, join_bind, join_env);
         cases.push((vty, goast::Block { stmts }));
     }
 
@@ -5306,24 +3482,12 @@ fn compile_enum_match_to_join_ctx(
             });
         }
         stmts.extend(compile_branch_to_join_ctx(
-            goenv,
-            body,
-            target,
-            join_bind,
-            join_env,
-            force_runtime_builtins,
+            goenv, body, target, join_bind, join_env,
         ));
         Some(goast::Block { stmts })
     } else if let Some(def_block) = default {
         Some(goast::Block {
-            stmts: compile_branch_to_join_ctx(
-                goenv,
-                def_block,
-                target,
-                join_bind,
-                join_env,
-                force_runtime_builtins,
-            ),
+            stmts: compile_branch_to_join_ctx(goenv, def_block, target, join_bind, join_env),
         })
     } else {
         Some(goast::Block {
@@ -5349,18 +3513,10 @@ fn compile_switch_match_to_join_ctx(
     target: &anf::JoinId,
     join_bind: &anf::JoinBind,
     join_env: &JoinEnv,
-    force_runtime_builtins: bool,
 ) -> Vec<goast::Stmt> {
     let mut cases = Vec::new();
     for (pat, body) in arms {
-        let stmts = compile_branch_to_join_ctx(
-            goenv,
-            body,
-            target,
-            join_bind,
-            join_env,
-            force_runtime_builtins,
-        );
+        let stmts = compile_branch_to_join_ctx(goenv, body, target, join_bind, join_env);
         cases.push((compile_imm(goenv, pat), goast::Block { stmts }));
     }
 
@@ -5374,24 +3530,12 @@ fn compile_switch_match_to_join_ctx(
             });
         }
         stmts.extend(compile_branch_to_join_ctx(
-            goenv,
-            body,
-            target,
-            join_bind,
-            join_env,
-            force_runtime_builtins,
+            goenv, body, target, join_bind, join_env,
         ));
         Some(goast::Block { stmts })
     } else if let Some(def_block) = default {
         Some(goast::Block {
-            stmts: compile_branch_to_join_ctx(
-                goenv,
-                def_block,
-                target,
-                join_bind,
-                join_env,
-                force_runtime_builtins,
-            ),
+            stmts: compile_branch_to_join_ctx(goenv, def_block, target, join_bind, join_env),
         })
     } else {
         Some(goast::Block {
@@ -5410,7 +3554,6 @@ fn compile_term_leaf_ctx(
     goenv: &GlobalGoEnv,
     term: &anf::Term,
     join_env: &JoinEnv,
-    force_runtime_builtins: bool,
 ) -> Vec<goast::Stmt> {
     match term {
         anf::Term::Return(imm) => vec![goast::Stmt::Return {
@@ -5428,12 +3571,7 @@ fn compile_term_leaf_ctx(
             }
             if let Some(join_bind) = join_env.get(target) {
                 let mut stmts = compile_jump_args(goenv, &join_bind.params, args);
-                stmts.extend(compile_block_structured(
-                    goenv,
-                    &join_bind.body,
-                    join_env,
-                    force_runtime_builtins,
-                ));
+                stmts.extend(compile_block_structured(goenv, &join_bind.body, join_env));
                 stmts
             } else {
                 vec![panic_stmt(&format!("unknown join {:?}", target))]
@@ -5442,10 +3580,8 @@ fn compile_term_leaf_ctx(
         anf::Term::If {
             cond, then_, else_, ..
         } => {
-            let then_stmts =
-                compile_block_structured(goenv, then_, join_env, force_runtime_builtins);
-            let else_stmts =
-                compile_block_structured(goenv, else_, join_env, force_runtime_builtins);
+            let then_stmts = compile_block_structured(goenv, then_, join_env);
+            let else_stmts = compile_block_structured(goenv, else_, join_env);
             vec![goast::Stmt::If {
                 cond: compile_imm(goenv, cond),
                 then: goast::Block { stmts: then_stmts },
@@ -5457,14 +3593,7 @@ fn compile_term_leaf_ctx(
             arms,
             default,
             ..
-        } => compile_match_leaf_ctx(
-            goenv,
-            scrut,
-            arms,
-            default.as_deref(),
-            join_env,
-            force_runtime_builtins,
-        ),
+        } => compile_match_leaf_ctx(goenv, scrut, arms, default.as_deref(), join_env),
         anf::Term::Unreachable { .. } => vec![panic_stmt("unreachable")],
     }
 }
@@ -5475,7 +3604,6 @@ fn compile_match_leaf_ctx(
     arms: &[anf::Arm],
     default: Option<&anf::Block>,
     join_env: &JoinEnv,
-    force_runtime_builtins: bool,
 ) -> Vec<goast::Stmt> {
     let scrut_ty = imm_ty(scrut);
 
@@ -5497,41 +3625,19 @@ fn compile_match_leaf_ctx(
             .or(var_arm.map(|(_, b)| b))
             .or(default);
         if let Some(block) = block {
-            return compile_block_structured(goenv, block, join_env, force_runtime_builtins);
+            return compile_block_structured(goenv, block, join_env);
         }
         return vec![panic_stmt("non-exhaustive match")];
     }
 
     match &scrut_ty {
-        tast::Ty::TEnum { .. } => compile_enum_match_leaf_ctx(
-            goenv,
-            scrut,
-            &literal_arms,
-            var_arm,
-            default,
-            join_env,
-            force_runtime_builtins,
-        ),
-        tast::Ty::TApp { ty, .. } if matches!(ty.as_ref(), tast::Ty::TEnum { .. }) => {
-            compile_enum_match_leaf_ctx(
-                goenv,
-                scrut,
-                &literal_arms,
-                var_arm,
-                default,
-                join_env,
-                force_runtime_builtins,
-            )
+        tast::Ty::TEnum { .. } => {
+            compile_enum_match_leaf_ctx(goenv, scrut, &literal_arms, var_arm, default, join_env)
         }
-        _ => compile_switch_match_leaf_ctx(
-            goenv,
-            scrut,
-            &literal_arms,
-            var_arm,
-            default,
-            join_env,
-            force_runtime_builtins,
-        ),
+        tast::Ty::TApp { ty, .. } if matches!(ty.as_ref(), tast::Ty::TEnum { .. }) => {
+            compile_enum_match_leaf_ctx(goenv, scrut, &literal_arms, var_arm, default, join_env)
+        }
+        _ => compile_switch_match_leaf_ctx(goenv, scrut, &literal_arms, var_arm, default, join_env),
     }
 }
 
@@ -5543,18 +3649,9 @@ fn compile_enum_match_leaf_ctx(
     var_default: Option<(&anf::LocalId, &anf::Block)>,
     default: Option<&anf::Block>,
     join_env: &JoinEnv,
-    force_runtime_builtins: bool,
 ) -> Vec<goast::Stmt> {
     if enum_is_tag_only(goenv, &imm_ty(scrut)) {
-        return compile_switch_match_leaf_ctx(
-            goenv,
-            scrut,
-            arms,
-            var_default,
-            default,
-            join_env,
-            force_runtime_builtins,
-        );
+        return compile_switch_match_leaf_ctx(goenv, scrut, arms, var_default, default, join_env);
     }
     let mut cases = Vec::new();
     for (pat, body) in arms {
@@ -5562,7 +3659,7 @@ fn compile_enum_match_leaf_ctx(
             panic!("expected tag pattern in enum match, got {:?}", pat);
         };
         let vty = variant_ty_by_index(goenv, ty, *index);
-        let stmts = compile_block_structured(goenv, body, join_env, force_runtime_builtins);
+        let stmts = compile_block_structured(goenv, body, join_env);
         cases.push((vty, goast::Block { stmts }));
     }
 
@@ -5575,16 +3672,11 @@ fn compile_enum_match_leaf_ctx(
                 value: Some(compile_imm(goenv, scrut)),
             });
         }
-        stmts.extend(compile_block_structured(
-            goenv,
-            body,
-            join_env,
-            force_runtime_builtins,
-        ));
+        stmts.extend(compile_block_structured(goenv, body, join_env));
         Some(goast::Block { stmts })
     } else if let Some(def_block) = default {
         Some(goast::Block {
-            stmts: compile_block_structured(goenv, def_block, join_env, force_runtime_builtins),
+            stmts: compile_block_structured(goenv, def_block, join_env),
         })
     } else {
         Some(goast::Block {
@@ -5608,11 +3700,10 @@ fn compile_switch_match_leaf_ctx(
     var_default: Option<(&anf::LocalId, &anf::Block)>,
     default: Option<&anf::Block>,
     join_env: &JoinEnv,
-    force_runtime_builtins: bool,
 ) -> Vec<goast::Stmt> {
     let mut cases = Vec::new();
     for (pat, body) in arms {
-        let stmts = compile_block_structured(goenv, body, join_env, force_runtime_builtins);
+        let stmts = compile_block_structured(goenv, body, join_env);
         cases.push((compile_imm(goenv, pat), goast::Block { stmts }));
     }
 
@@ -5625,16 +3716,11 @@ fn compile_switch_match_leaf_ctx(
                 value: Some(compile_imm(goenv, scrut)),
             });
         }
-        stmts.extend(compile_block_structured(
-            goenv,
-            body,
-            join_env,
-            force_runtime_builtins,
-        ));
+        stmts.extend(compile_block_structured(goenv, body, join_env));
         Some(goast::Block { stmts })
     } else if let Some(def_block) = default {
         Some(goast::Block {
-            stmts: compile_block_structured(goenv, def_block, join_env, force_runtime_builtins),
+            stmts: compile_block_structured(goenv, def_block, join_env),
         })
     } else {
         Some(goast::Block {
@@ -5653,22 +3739,16 @@ fn compile_joinrec(
     goenv: &GlobalGoEnv,
     group: &[anf::JoinBind],
     join_env: &JoinEnv,
-    force_runtime_builtins: bool,
 ) -> Vec<goast::Stmt> {
     if group.len() == 1
         && let Some(wl) = is_while_loop(&group[0])
     {
-        return compile_while_loop(goenv, &wl, join_env, force_runtime_builtins);
+        return compile_while_loop(goenv, &wl, join_env);
     }
     Vec::new()
 }
 
-fn compile_while_loop(
-    goenv: &GlobalGoEnv,
-    wl: &WhileLoop,
-    join_env: &JoinEnv,
-    force_runtime_builtins: bool,
-) -> Vec<goast::Stmt> {
+fn compile_while_loop(goenv: &GlobalGoEnv, wl: &WhileLoop, join_env: &JoinEnv) -> Vec<goast::Stmt> {
     let loop_label = go_generated_ident(&format!("Loop_{}", go_ident(&wl.loop_id.0)));
 
     let mut inner_env = join_env.clone();
@@ -5677,8 +3757,7 @@ fn compile_while_loop(
     inner_env
         .break_labels
         .insert(wl.exit_id.clone(), loop_label.clone());
-    let loop_body_stmts =
-        compile_block_structured(goenv, &wl.body, &inner_env, force_runtime_builtins);
+    let loop_body_stmts = compile_block_structured(goenv, &wl.body, &inner_env);
 
     let has_break_label = stmts_contain_break_label(&loop_body_stmts, &loop_label);
     let mut stmts = vec![goast::Stmt::Loop {
@@ -5692,12 +3771,7 @@ fn compile_while_loop(
         },
     }];
 
-    stmts.extend(compile_block_structured(
-        goenv,
-        &wl.after,
-        join_env,
-        force_runtime_builtins,
-    ));
+    stmts.extend(compile_block_structured(goenv, &wl.after, join_env));
     stmts
 }
 
@@ -5855,8 +3929,7 @@ fn compile_fn(
         _ => Some(go_ret_ty.clone()),
     };
     let join_env = build_join_env(&f.body);
-    let force_runtime_builtins = builtin_runtime_forwarder_fn(goenv, &f.name);
-    let stmts = compile_block_structured(goenv, &f.body, &join_env, force_runtime_builtins);
+    let stmts = compile_block_structured(goenv, &f.body, &join_env);
 
     goast::Fn {
         name: patched_fn_name(goenv, &f.name, entry_wrapper_name),
@@ -5884,7 +3957,7 @@ pub fn go_file(
     all.extend(runtime::make_runtime());
     all.extend(runtime::make_array_runtime(&array_types));
     all.extend(runtime::make_vec_runtime(&vec_types));
-    all.extend(runtime::make_ref_runtime(&goenv, &ref_types));
+    all.extend(runtime::make_ref_runtime(&ref_types));
     all.extend(runtime::make_hashmap_runtime(&goenv, &hashmap_types));
     all.extend(runtime::make_missing_runtime(&missing_types));
 

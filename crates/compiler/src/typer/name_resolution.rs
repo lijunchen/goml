@@ -3,10 +3,10 @@ use std::collections::{HashMap, HashSet};
 use ast::ast;
 
 use crate::builtins;
-use crate::env;
 use crate::hir;
 use crate::hir::HirIdent;
 use crate::interface;
+use crate::intrinsics::CallableBody;
 use crate::package_names::{BUILTIN_PACKAGE, is_special_unqualified_package};
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::syntax::MySyntaxNodePtr;
@@ -43,7 +43,7 @@ impl ResolveLocalEnv {
 }
 
 struct ResolutionContext<'a> {
-    builtin_names: &'a HashMap<String, hir::BuiltinId>,
+    builtin_names: &'a HashMap<String, CallableBody>,
     def_names: &'a HashMap<String, hir::DefId>,
     deps: &'a HashMap<String, interface::PackageInterface>,
     current_package: &'a str,
@@ -68,6 +68,16 @@ fn full_def_name(package: &str, name: &str) -> String {
 
 fn package_allowed(package: &str, current_package: &str, imports: &HashSet<String>) -> bool {
     package == current_package || package == BUILTIN_PACKAGE || imports.contains(package)
+}
+
+fn internal_package_allowed(package: &str, current_package: &str) -> bool {
+    let Some((owner, _)) = package.split_once("::internal::") else {
+        return true;
+    };
+    current_package == owner
+        || current_package
+            .strip_prefix(owner)
+            .is_some_and(|suffix| suffix.starts_with("::"))
 }
 
 struct ConstructorIndex {
@@ -201,18 +211,6 @@ impl ResolutionContext<'_> {
     }
 }
 
-fn file_imports(
-    file: &hir::SourceFileAst,
-    deps: &HashMap<String, interface::PackageInterface>,
-) -> HashSet<String> {
-    file.ast
-        .uses
-        .iter()
-        .map(|use_decl| use_decl.path.display())
-        .filter(|package| deps.contains_key(package))
-        .collect()
-}
-
 fn default_package_alias(
     package: &str,
     deps: &HashMap<String, interface::PackageInterface>,
@@ -249,6 +247,34 @@ fn qualified_path_from_segments(segments: Vec<String>) -> hir::QualifiedPath {
 }
 
 impl NameResolution {
+    fn file_imports(
+        &mut self,
+        file: &hir::SourceFileAst,
+        deps: &HashMap<String, interface::PackageInterface>,
+        report_internal_error: bool,
+    ) -> HashSet<String> {
+        let current_package = &file.ast.package.0;
+        let mut imports = HashSet::new();
+        for use_decl in file.ast.uses.iter() {
+            let package = use_decl.path.display();
+            if !deps.contains_key(&package) {
+                continue;
+            }
+            if !internal_package_allowed(&package, current_package) {
+                if report_internal_error {
+                    self.error(format!(
+                        "package {} is internal to {}",
+                        package,
+                        package.split_once("::internal::").unwrap().0
+                    ));
+                }
+                continue;
+            }
+            imports.insert(package);
+        }
+        imports
+    }
+
     fn file_use_aliases(
         &mut self,
         file: &ast::File,
@@ -260,6 +286,9 @@ impl NameResolution {
         for use_decl in file.uses.iter() {
             let target = use_decl.path.display();
             if !deps.contains_key(&target) {
+                continue;
+            }
+            if !internal_package_allowed(&target, &file.package.0) {
                 continue;
             }
             if !imported_packages.insert(target.clone()) && report_conflicts {
@@ -432,12 +461,10 @@ impl NameResolution {
     ) -> (hir::ResolvedHir, HirTable, Diagnostics) {
         let mut hir_table = HirTable::new(package_id);
 
-        let mut builtin_names = HashMap::new();
-        for (index, name) in env::builtin_function_names().into_iter().enumerate() {
-            let id =
-                hir::BuiltinId::from_name(&name).unwrap_or(hir::BuiltinId::Named(index as u32));
-            builtin_names.insert(name, id);
-        }
+        let builtin_names = builtins::builtin_callables()
+            .iter()
+            .map(|(name, body)| (name.clone(), *body))
+            .collect::<HashMap<_, _>>();
 
         let mut def_names = HashMap::new();
         let ctor_index = ConstructorIndex::new_with_deps(&files, deps);
@@ -447,7 +474,7 @@ impl NameResolution {
 
         for file in files.iter() {
             let package_name = file.ast.package.0.as_str();
-            let imports = file_imports(file, deps);
+            let imports = self.file_imports(file, deps, false);
             let use_aliases = self.file_use_aliases(&file.ast, deps, false);
             let mut def_ids = Vec::new();
             for item in file.ast.toplevels.iter() {
@@ -474,15 +501,15 @@ impl NameResolution {
                         def_names.insert(full_name, id);
                         Some(id)
                     }
-                    ast::Item::ExternBuiltin(ext) => {
+                    ast::Item::ExternFn(ext) => {
                         let full_name = full_def_name(package_name, &ext.name.0);
                         let path = full_def_path(package_name, &ext.name.0);
                         let ext_def =
-                            self.lower_extern_builtin(ext, package_name, &imports, &use_aliases);
+                            self.lower_extern_fn(ext, package_name, &imports, &use_aliases);
                         let id = hir_table.alloc_def_with_path(
                             path,
-                            hir::DefKind::ExternBuiltin,
-                            hir::Def::ExternBuiltin(ext_def),
+                            hir::DefKind::ExternFn,
+                            hir::Def::ExternFn(ext_def),
                         );
                         def_names.insert(full_name, id);
                         Some(id)
@@ -548,7 +575,7 @@ impl NameResolution {
 
         for (file_idx, file) in files.iter().enumerate() {
             let package_name = file.ast.package.0.as_str();
-            let imports = file_imports(file, deps);
+            let imports = self.file_imports(file, deps, true);
             let use_aliases = self.file_use_aliases(&file.ast, deps, true);
             let ctx = ResolutionContext {
                 builtin_names: &builtin_names,
@@ -648,7 +675,7 @@ impl NameResolution {
                 } else {
                     format!("{}/{}", package, file_name)
                 };
-                let imports = file_imports(file, deps);
+                let imports = self.file_imports(file, deps, false);
                 let use_aliases = self.file_use_aliases(&file.ast, deps, false);
                 let mut imports_vec = imports
                     .into_iter()
@@ -1860,13 +1887,13 @@ impl NameResolution {
         qualified.display()
     }
 
-    fn lower_extern_builtin(
+    fn lower_extern_fn(
         &mut self,
-        def: &ast::ExternBuiltin,
+        def: &ast::ExternFn,
         current_package: &str,
         imports: &HashSet<String>,
         use_aliases: &UseAliases,
-    ) -> hir::ExternBuiltin {
+    ) -> hir::ExternFn {
         let name = full_def_name(current_package, &def.name.0);
         let generic_bounds = def
             .generic_bounds
@@ -1881,7 +1908,7 @@ impl NameResolution {
                 (HirIdent::name(&param.0), traits)
             })
             .collect();
-        hir::ExternBuiltin {
+        hir::ExternFn {
             attrs: def.attrs.iter().map(|a| a.into()).collect(),
             name: HirIdent::name(&name),
             generics: def.generics.iter().map(|g| HirIdent::name(&g.0)).collect(),

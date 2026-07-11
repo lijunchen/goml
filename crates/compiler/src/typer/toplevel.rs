@@ -6,8 +6,12 @@ use parser::{Diagnostic, Diagnostics};
 
 use crate::{
     builtins,
-    env::{self, FnOrigin, FnScheme, GlobalTypeEnv, PackageTypeEnv},
+    env::{self, FnScheme, GlobalTypeEnv, PackageTypeEnv},
     hir::{self},
+    intrinsics::{
+        CallableBody, ExternCapability, callable_body_from_attributes, lang_item_from_attributes,
+        validate_callable_signature,
+    },
     package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package},
     tast::{self},
     typer::{
@@ -18,14 +22,6 @@ use crate::{
         util::{type_expr_range, type_param_name_set, validate_ty},
     },
 };
-
-fn source_fn_origin(env: &PackageTypeEnv) -> FnOrigin {
-    if env.package == BUILTIN_PACKAGE {
-        FnOrigin::Builtin
-    } else {
-        FnOrigin::User
-    }
-}
 
 fn predeclare_types(genv: &mut GlobalTypeEnv, hir: &hir::PackageHir, hir_table: &hir::HirTable) {
     for item in hir.toplevels.iter() {
@@ -109,7 +105,7 @@ fn validate_top_level_function_names(
     for item in hir.toplevels.iter() {
         let name = match hir_table.def(*item) {
             hir::Def::Fn(func) => func.name.clone(),
-            hir::Def::ExternBuiltin(ext) => ext.name.to_ident_name(),
+            hir::Def::ExternFn(ext) => ext.name.to_ident_name(),
             _ => continue,
         };
 
@@ -168,7 +164,7 @@ fn validate_top_level_type_parameter_names(
             hir::Def::Fn(func) => {
                 validate_type_parameter_names(diagnostics, func.generics.iter());
             }
-            hir::Def::ExternBuiltin(ext) => {
+            hir::Def::ExternFn(ext) => {
                 validate_type_parameter_names(diagnostics, ext.generics.iter());
             }
             hir::Def::TraitDef(..) => {}
@@ -185,6 +181,59 @@ fn validate_decl_ty(
 ) {
     validate_ty(env, diagnostics, ty, range, tparams);
     validate_no_self_ty(diagnostics, ty, range);
+}
+
+fn register_lang_item(
+    env: &mut PackageTypeEnv,
+    diagnostics: &mut Diagnostics,
+    attrs: &[hir::Attribute],
+    name: &str,
+) {
+    let item = match lang_item_from_attributes(attrs.iter().map(|attr| attr.text.as_str())) {
+        Ok(item) => item,
+        Err(message) => {
+            diagnostics.push(Diagnostic::new(Stage::Typer, Severity::Error, message));
+            return;
+        }
+    };
+    let Some(item) = item else {
+        return;
+    };
+    if env.extern_capability != ExternCapability::Core {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            format!("lang item {} is not permitted in this source", item.key()),
+        ));
+        return;
+    }
+    if name != item.source_name() {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            format!(
+                "lang item {} must be declared as {}",
+                item.key(),
+                item.source_name()
+            ),
+        ));
+        return;
+    }
+    if let Err(existing) = env
+        .current_mut()
+        .lang_items
+        .insert(item, tast::TastIdent::new(name))
+    {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            format!(
+                "lang item {} is already declared as {}",
+                item.key(),
+                existing.0
+            ),
+        ));
+    }
 }
 
 fn validate_no_self_ty(
@@ -287,6 +336,12 @@ fn validate_trait_method_names(diagnostics: &mut Diagnostics, trait_def: &hir::T
 }
 
 fn define_enum(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, enum_def: &hir::EnumDef) {
+    register_lang_item(
+        env,
+        diagnostics,
+        &enum_def.attrs,
+        &enum_def.name.to_ident_name(),
+    );
     validate_enum_variant_names(diagnostics, enum_def);
     let params_env: Vec<tast::TastIdent> = enum_def
         .generics
@@ -332,6 +387,12 @@ fn define_struct(
     diagnostics: &mut Diagnostics,
     struct_def: &hir::StructDef,
 ) {
+    register_lang_item(
+        env,
+        diagnostics,
+        &struct_def.attrs,
+        &struct_def.name.to_ident_name(),
+    );
     validate_struct_field_names(diagnostics, struct_def);
     let params_env: Vec<tast::TastIdent> = struct_def
         .generics
@@ -371,6 +432,12 @@ fn define_trait(
     diagnostics: &mut Diagnostics,
     trait_def: &hir::TraitDef,
 ) {
+    register_lang_item(
+        env,
+        diagnostics,
+        &trait_def.attrs,
+        &trait_def.name.to_ident_name(),
+    );
     validate_trait_method_names(diagnostics, trait_def);
     let mut methods = IndexMap::new();
 
@@ -396,7 +463,7 @@ fn define_trait(
                 type_params: vec![],
                 constraints: vec![],
                 ty: fn_ty,
-                origin: FnOrigin::User,
+                body: CallableBody::Goml,
             },
         );
     }
@@ -777,7 +844,7 @@ fn define_trait_impl(
                     type_params,
                     constraints,
                     ty: impl_method_ty,
-                    origin: source_fn_origin(env),
+                    body: CallableBody::Goml,
                 },
             );
         } else {
@@ -881,7 +948,9 @@ fn define_inherent_impl(
         type_expr_range(&impl_block.for_type),
         &impl_tparams,
     );
-    if !is_local_nominal_type(&env.package, &for_ty) {
+    if env.extern_capability != ExternCapability::Core
+        && !is_local_nominal_type(&env.package, &for_ty)
+    {
         diagnostics.push(Diagnostic::new(
             Stage::Typer,
             Severity::Error,
@@ -990,7 +1059,7 @@ fn define_inherent_impl(
                 type_params,
                 constraints,
                 ty: impl_method_ty,
-                origin: source_fn_origin(env),
+                body: CallableBody::Goml,
             },
         );
     }
@@ -1060,7 +1129,6 @@ fn define_function(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, func
     };
     let fn_constraints =
         build_fn_constraints(env, diagnostics, &func.generics, &func.generic_bounds);
-    let origin = source_fn_origin(env);
     env.current_mut().value_env.funcs.insert(
         name,
         FnScheme {
@@ -1070,64 +1138,30 @@ fn define_function(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, func
                 params,
                 ret_ty: Box::new(ret),
             },
-            origin,
+            body: CallableBody::Goml,
         },
     );
 }
 
-fn is_std_host_extern(package: &str, name: &str) -> bool {
-    matches!(
-        (package, name),
-        ("std::env", "args_raw")
-            | ("std::io", "print_raw" | "println_raw" | "eprint_raw")
-            | (
-                "std::fs",
-                "read_file_raw"
-                    | "write_file_raw"
-                    | "create_dir_all_raw"
-                    | "file_exists_raw"
-                    | "read_dir_raw"
-            )
-            | ("std::process", "exit_raw")
-    )
-}
-
-fn define_extern_builtin(
-    env: &mut PackageTypeEnv,
-    diagnostics: &mut Diagnostics,
-    ext: &hir::ExternBuiltin,
-) {
+fn define_extern_fn(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, ext: &hir::ExternFn) {
     let name = ext.name.to_ident_name();
     let local_name = name.rsplit("::").next().unwrap_or(&name);
-    if env.package != BUILTIN_PACKAGE {
-        if builtins::builtin_function_names()
-            .iter()
-            .any(|builtin| builtin == local_name)
-        {
-            diagnostics.push(Diagnostic::new(
-                Stage::Typer,
-                Severity::Error,
-                format!(
-                    "builtin extern {} conflicts with a compiler builtin function",
-                    local_name
-                ),
-            ));
+    let body = match callable_body_from_attributes(ext.attrs.iter().map(|attr| attr.text.as_str()))
+    {
+        Ok(body) => body,
+        Err(message) => {
+            diagnostics.push(Diagnostic::new(Stage::Typer, Severity::Error, message));
             return;
         }
-
-        if !env.allow_std_host_externs || !is_std_host_extern(&env.package, local_name) {
-            diagnostics.push(Diagnostic::new(
-                Stage::Typer,
-                Severity::Error,
-                format!(
-                    "builtin extern {} is not a compiler-owned host hook",
-                    local_name
-                ),
-            ));
-            return;
-        }
+    };
+    if !env.extern_capability.permits(body) {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            format!("extern {local_name} is not permitted in this source"),
+        ));
+        return;
     }
-
     let tparams: Vec<tast::TastIdent> = ext
         .generics
         .iter()
@@ -1164,17 +1198,38 @@ fn define_extern_builtin(
         None => tast::Ty::TUnit,
     };
     let fn_constraints = build_fn_constraints(env, diagnostics, &ext.generics, &ext.generic_bounds);
+    let type_params = ext
+        .generics
+        .iter()
+        .map(|generic| generic.to_ident_name())
+        .collect::<Vec<_>>();
+    let ty = tast::Ty::TFunc {
+        params,
+        ret_ty: Box::new(ret_ty),
+    };
+    let contract_constraints = fn_constraints
+        .iter()
+        .map(|constraint| {
+            (
+                constraint.type_param.clone(),
+                constraint.trait_name.0.clone(),
+            )
+        })
+        .collect::<Vec<_>>();
+    if let Err(message) =
+        validate_callable_signature(body, &type_params, &contract_constraints, &ty)
+    {
+        diagnostics.push(Diagnostic::new(Stage::Typer, Severity::Error, message));
+        return;
+    }
 
     env.current_mut().value_env.funcs.insert(
         ext.name.to_ident_name(),
         FnScheme {
-            type_params: ext.generics.iter().map(|g| g.to_ident_name()).collect(),
+            type_params,
             constraints: fn_constraints,
-            ty: tast::Ty::TFunc {
-                params,
-                ret_ty: Box::new(ret_ty),
-            },
-            origin: FnOrigin::Builtin,
+            ty,
+            body,
         },
     );
 }
@@ -1213,7 +1268,7 @@ pub(crate) fn collect_typedefs(
                 }
             }
             hir::Def::Fn(func) => define_function(env, diagnostics, func),
-            hir::Def::ExternBuiltin(ext) => define_extern_builtin(env, diagnostics, ext),
+            hir::Def::ExternFn(ext) => define_extern_fn(env, diagnostics, ext),
             _ => {}
         }
     }
@@ -1431,18 +1486,27 @@ pub fn check_file_with_env(
     package: &str,
     deps: HashMap<String, env::GlobalTypeEnv>,
 ) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
-    check_file_with_env_inner(hir, hir_table, genv, builtins, package, deps, false)
+    check_file_with_env_inner(
+        hir,
+        hir_table,
+        genv,
+        builtins,
+        package,
+        deps,
+        ExternCapability::None,
+    )
 }
 
-pub fn check_file_with_env_allowing_std_host_externs(
+pub fn check_file_with_env_capability(
     hir: hir::PackageHir,
     hir_table: name_resolution::HirTable,
     genv: env::GlobalTypeEnv,
     builtins: env::GlobalTypeEnv,
     package: &str,
     deps: HashMap<String, env::GlobalTypeEnv>,
+    capability: ExternCapability,
 ) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
-    check_file_with_env_inner(hir, hir_table, genv, builtins, package, deps, true)
+    check_file_with_env_inner(hir, hir_table, genv, builtins, package, deps, capability)
 }
 
 fn check_file_with_env_inner(
@@ -1452,22 +1516,14 @@ fn check_file_with_env_inner(
     builtins: env::GlobalTypeEnv,
     package: &str,
     deps: HashMap<String, env::GlobalTypeEnv>,
-    allow_std_host_externs: bool,
+    capability: ExternCapability,
 ) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
     let TypecheckedPackage {
         hir,
         mut typer,
         genv,
         mut diagnostics,
-    } = typecheck_package(
-        hir,
-        hir_table,
-        genv,
-        builtins,
-        package,
-        deps,
-        allow_std_host_externs,
-    );
+    } = typecheck_package(hir, hir_table, genv, builtins, package, deps, capability);
     let file = crate::typer::tast_builder::build_file(
         &genv,
         &hir,
@@ -1493,12 +1549,10 @@ fn typecheck_package(
     builtins: env::GlobalTypeEnv,
     package: &str,
     deps: HashMap<String, env::GlobalTypeEnv>,
-    allow_std_host_externs: bool,
+    capability: ExternCapability,
 ) -> TypecheckedPackage {
-    let mut genv = env::PackageTypeEnv::new(package.to_string(), builtins, genv, deps);
-    if allow_std_host_externs {
-        genv = genv.with_std_host_externs();
-    }
+    let mut genv = env::PackageTypeEnv::new(package.to_string(), builtins, genv, deps)
+        .with_extern_capability(capability);
     let mut typer = Typer::new(hir_table);
     let mut diagnostics = Diagnostics::new();
     collect_typedefs(&mut genv, &mut diagnostics, &hir, &typer.hir_table);
@@ -1518,7 +1572,7 @@ fn typecheck_package(
             hir::Def::EnumDef(..)
             | hir::Def::StructDef(..)
             | hir::Def::TraitDef(..)
-            | hir::Def::ExternBuiltin(..) => {}
+            | hir::Def::ExternFn(..) => {}
         }
     }
     let mut results = std::mem::replace(
@@ -1553,7 +1607,15 @@ pub fn check_file_with_env_and_results(
         genv,
         diagnostics,
         ..
-    } = typecheck_package(hir, hir_table, genv, builtins, package, deps, false);
+    } = typecheck_package(
+        hir,
+        hir_table,
+        genv,
+        builtins,
+        package,
+        deps,
+        ExternCapability::None,
+    );
     let Typer {
         hir_table, results, ..
     } = typer;

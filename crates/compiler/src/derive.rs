@@ -5,12 +5,14 @@ use ::ast::ast::{
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::syntax::MySyntaxNodePtr;
 
+use crate::intrinsics::LangItemId;
+
 const DERIVE_STAGE: &str = "derive";
-const TO_STRING_TRAIT: &str = "ToString";
+const TO_STRING_TRAIT: &str = LangItemId::ToString.source_name();
 const TO_STRING_FN: &str = "to_string";
-const HASH_TRAIT: &str = "Hash";
+const HASH_TRAIT: &str = LangItemId::Hash.source_name();
 const HASH_FN: &str = "hash";
-const EQ_TRAIT: &str = "Eq";
+const EQ_TRAIT: &str = LangItemId::Eq.source_name();
 const EQ_FN: &str = "eq";
 const SUPPORTED_DERIVE_TARGETS: &[&str] = &[TO_STRING_TRAIT, HASH_TRAIT, EQ_TRAIT];
 const SELF_PARAM_NAME: &str = "self";

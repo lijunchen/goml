@@ -11,6 +11,7 @@ pub mod external;
 pub mod go;
 pub mod hir;
 pub mod interface;
+pub mod intrinsics;
 pub mod lift;
 pub mod mono;
 pub mod names;

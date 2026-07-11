@@ -2,7 +2,8 @@ use indexmap::IndexMap;
 
 use crate::{
     common::{self, Constructor, Prim, StructConstructor},
-    env::{EnumDef, FnOrigin, FnScheme, Gensym, ImplDef, InherentImplKey, StructDef},
+    env::{EnumDef, FnScheme, Gensym, ImplDef, InherentImplKey, StructDef},
+    intrinsics::CallableBody,
     mono::{GlobalMonoEnv, MonoBlock, MonoExpr, MonoFile, MonoLetStmt},
     names::inherent_method_fn_name,
     tast::{self, TastIdent, Ty},
@@ -111,6 +112,11 @@ pub enum LiftExpr {
         name: String,
         ty: Ty,
     },
+    ECallable {
+        name: String,
+        body: CallableBody,
+        ty: Ty,
+    },
     EPrim {
         value: Prim,
         ty: Ty,
@@ -217,6 +223,7 @@ impl LiftExpr {
     pub fn get_ty(&self) -> Ty {
         match self {
             LiftExpr::EVar { ty, .. } => ty.clone(),
+            LiftExpr::ECallable { ty, .. } => ty.clone(),
             LiftExpr::EPrim { ty, .. } => ty.clone(),
             LiftExpr::EConstr { ty, .. } => ty.clone(),
             LiftExpr::ETuple { ty, .. } => ty.clone(),
@@ -528,6 +535,7 @@ fn rewrite_lift_expr_with_final_types(
                 LiftExpr::EVar { name, ty }
             }
         }
+        LiftExpr::ECallable { name, body, ty } => LiftExpr::ECallable { name, body, ty },
         LiftExpr::EPrim { value, ty } => LiftExpr::EPrim { value, ty },
         LiftExpr::EConstr {
             constructor,
@@ -799,6 +807,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: MonoExpr) -> L
                 LiftExpr::EVar { name, ty }
             }
         }
+        MonoExpr::ECallable { name, body, ty } => LiftExpr::ECallable { name, body, ty },
         MonoExpr::EPrim { value, ty } => LiftExpr::EPrim { value, ty },
         MonoExpr::EConstr {
             constructor,
@@ -1211,7 +1220,7 @@ fn transform_closure(
             type_params: vec![],
             constraints: vec![],
             ty: apply_fn_ty,
-            origin: FnOrigin::Compiler,
+            body: CallableBody::Goml,
         },
     );
 
@@ -1240,7 +1249,7 @@ fn collect_captured(
                     .or_insert_with(|| entry.ty.clone());
             }
         }
-        LiftExpr::EPrim { .. } => {}
+        LiftExpr::ECallable { .. } | LiftExpr::EPrim { .. } => {}
         LiftExpr::EConstr { args, .. } => {
             for arg in args {
                 collect_captured(arg, bound, captured, scope);

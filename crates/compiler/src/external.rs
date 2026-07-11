@@ -8,6 +8,7 @@ use crate::builtins;
 use crate::env::GlobalTypeEnv;
 use crate::hir;
 use crate::interface;
+use crate::intrinsics::ExternCapability;
 use crate::package_imports::ExternalImports;
 use crate::pipeline::packages::{self, PackageGraph, PackageUnit};
 use crate::registry::{
@@ -297,7 +298,7 @@ pub fn compile_std_module(root_dir: PathBuf) -> Result<ExternalModuleArtifact, S
         root_dir,
         manifest,
     };
-    compile_module_artifact(&module, &BTreeMap::new(), true)
+    compile_module_artifact(&module, &BTreeMap::new(), ExternCapability::StandardLibrary)
 }
 
 fn compile_external_module(
@@ -305,13 +306,13 @@ fn compile_external_module(
     compiled_roots: &BTreeMap<String, ExternalModuleArtifact>,
 ) -> Result<ExternalModuleArtifact, String> {
     validate_external_module_manifest(module)?;
-    compile_module_artifact(module, compiled_roots, false)
+    compile_module_artifact(module, compiled_roots, ExternCapability::None)
 }
 
 fn compile_module_artifact(
     module: &ResolvedModule,
     compiled_roots: &BTreeMap<String, ExternalModuleArtifact>,
-    allow_std_host_externs: bool,
+    extern_capability: ExternCapability,
 ) -> Result<ExternalModuleArtifact, String> {
     let available_imports = external_imports_from_modules(compiled_roots);
     let mut graph = packages::discover_dependency_module_packages_with_external_imports(
@@ -330,7 +331,7 @@ fn compile_module_artifact(
             .any(|dependency| dependency == "std" || dependency.starts_with("std::"))
     });
     let mut dependency_modules = compiled_roots.clone();
-    if imports_std && !allow_std_host_externs {
+    if imports_std && extern_capability != ExternCapability::StandardLibrary {
         dependency_modules.insert("std".to_string(), crate::stdlib::stdlib_artifact()?);
     }
 
@@ -350,7 +351,7 @@ fn compile_module_artifact(
             package,
             &compiled_packages,
             &dependency_modules,
-            allow_std_host_externs,
+            extern_capability,
         )?;
         let dir = graph
             .package_dirs
@@ -429,7 +430,7 @@ fn compile_module_package(
     package: &PackageUnit,
     local_packages: &HashMap<String, CompiledPackage>,
     external_roots: &BTreeMap<String, ExternalModuleArtifact>,
-    allow_std_host_externs: bool,
+    extern_capability: ExternCapability,
 ) -> Result<CompiledPackage, String> {
     let package_id = interface::package_id_for_name(&package.name);
     let mut deps_envs = HashMap::new();
@@ -474,25 +475,22 @@ fn compile_module_package(
 
     let (hir, hir_table, mut hir_diagnostics) =
         hir::lower_to_hir_files_with_env(package_id, package.files.clone(), &deps_interfaces);
-    let (tast, genv, mut diagnostics) = if allow_std_host_externs {
-        crate::typer::check_file_with_env_allowing_std_host_externs(
-            hir,
-            hir_table,
-            GlobalTypeEnv::new(),
-            builtins::builtin_env(),
-            &package.name,
-            deps_envs,
-        )
+    let package_extern_capability = if extern_capability == ExternCapability::StandardLibrary
+        && package.name == "std::internal::host"
+    {
+        ExternCapability::StandardLibrary
     } else {
-        crate::typer::check_file_with_env(
-            hir,
-            hir_table,
-            GlobalTypeEnv::new(),
-            builtins::builtin_env(),
-            &package.name,
-            deps_envs,
-        )
+        ExternCapability::None
     };
+    let (tast, genv, mut diagnostics) = crate::typer::check_file_with_env_capability(
+        hir,
+        hir_table,
+        GlobalTypeEnv::new(),
+        builtins::builtin_env(),
+        &package.name,
+        deps_envs,
+        package_extern_capability,
+    );
     diagnostics.append(&mut hir_diagnostics);
     if diagnostics.has_errors() {
         return Err(diagnostics_text(&diagnostics));

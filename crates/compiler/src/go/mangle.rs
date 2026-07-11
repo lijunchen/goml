@@ -202,7 +202,11 @@ fn has_generated_helper_prefix(name: &str) -> bool {
     [
         "array_get__",
         "array_set__",
+        "vec_new__",
+        "vec_push__",
+        "vec_get__",
         "vec_set__",
+        "vec_len__",
         "ref__",
         "ref_get__",
         "ref_set__",
@@ -251,40 +255,7 @@ fn has_len_prefixed_type_name(name: &str, prefix: &str) -> bool {
 }
 
 fn is_generated_go_value_name(name: &str) -> bool {
-    matches!(
-        name,
-        "init"
-            | "main"
-            | "unit_to_string"
-            | "bool_to_string"
-            | "string_len"
-            | "string_get"
-            | "char_to_string"
-            | "int8_to_string"
-            | "int16_to_string"
-            | "int32_to_string"
-            | "int64_to_string"
-            | "uint8_to_string"
-            | "uint16_to_string"
-            | "uint32_to_string"
-            | "uint64_to_string"
-            | "float32_to_string"
-            | "float64_to_string"
-            | "int8_hash"
-            | "int16_hash"
-            | "int32_hash"
-            | "int64_hash"
-            | "char_hash"
-            | "uint8_hash"
-            | "uint16_hash"
-            | "uint32_hash"
-            | "float32_hash"
-            | "float64_hash"
-            | "string_hash"
-            | "string_print"
-            | "string_println"
-            | "missing"
-    )
+    matches!(name, "init" | "main")
 }
 
 fn is_valid_go_ident(s: &str) -> bool {
@@ -400,6 +371,22 @@ mod tests {
     fn generated_namespace_is_protected_from_user_names() {
         assert_eq!(go_ident("missing__int32"), "_goml_user_missing__int32");
         assert_eq!(go_generated_ident("missing__int32"), "missing__int32");
+        assert_eq!(
+            go_ident("vec_new__Vec_5int32"),
+            "_goml_user_vec_new__Vec_5int32"
+        );
+        assert_eq!(
+            go_ident("vec_push__Vec_5int32"),
+            "_goml_user_vec_push__Vec_5int32"
+        );
+        assert_eq!(
+            go_ident("vec_get__Vec_5int32"),
+            "_goml_user_vec_get__Vec_5int32"
+        );
+        assert_eq!(
+            go_ident("vec_len__Vec_5int32"),
+            "_goml_user_vec_len__Vec_5int32"
+        );
     }
 
     #[test]

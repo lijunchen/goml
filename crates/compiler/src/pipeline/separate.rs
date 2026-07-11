@@ -14,7 +14,6 @@ use crate::package_names::is_special_unqualified_package;
 use crate::package_names::{
     BUILTIN_PACKAGE, ENTRY_FUNCTION, ROOT_PACKAGE, STD_PACKAGE, is_builtin_package,
 };
-use crate::pipeline::builtin_inherent;
 use crate::pipeline::pipeline::{CompilationError, parse_ast_file, report_duplicate_trait_impls};
 use crate::pipeline::{compile_error, with_compiler_stack};
 use crate::stdlib;
@@ -709,13 +708,16 @@ pub fn link_cores(
 
         let gensym = Gensym::new();
         let mut compile_diagnostics = Diagnostics::new();
-        let builtin_print_core = crate::compile_match::compile_file(
+        let mut builtin_core = crate::compile_match::compile_file(
             &builtins::builtin_env(),
             &gensym,
             &mut compile_diagnostics,
-            &builtins::builtin_print_tast(),
+            &builtins::builtin_tast(),
         );
-        linked.toplevels.extend(builtin_print_core.toplevels);
+        for function in builtin_core.toplevels.iter_mut() {
+            function.root = false;
+        }
+        linked.toplevels.extend(builtin_core.toplevels);
         for package in std_packages {
             let std_core = std_cores
                 .get(&package)
@@ -733,17 +735,6 @@ pub fn link_cores(
             linked.toplevels.push(package_entry_wrapper(&entry_fn));
         }
 
-        let required_builtin_methods =
-            builtin_inherent::collect_required_builtin_collection_methods(std::slice::from_ref(
-                &linked,
-            ));
-        let builtin_collection_core = builtin_inherent::compile_builtin_collection_methods_checked(
-            &required_builtin_methods,
-            &gensym,
-        )?;
-        if !builtin_collection_core.toplevels.is_empty() {
-            linked.toplevels.extend(builtin_collection_core.toplevels);
-        }
         let (mono, monoenv) = mono::mono(genv.clone(), linked.clone()).map_err(compile_error)?;
         let (lifted, liftenv) = lift::lambda_lift(monoenv.clone(), &gensym, mono.clone());
         let (anf, anfenv) = crate::anf::anf_file(liftenv.clone(), &gensym, lifted.clone());
@@ -822,6 +813,7 @@ pub(crate) fn package_entry_wrapper(entry_fn: &crate::core::Fn) -> crate::core::
     let ret_ty = entry_fn.ret_ty.clone();
     crate::core::Fn {
         name: ENTRY_FUNCTION.to_string(),
+        root: true,
         generics: Vec::new(),
         params: Vec::new(),
         ret_ty: ret_ty.clone(),

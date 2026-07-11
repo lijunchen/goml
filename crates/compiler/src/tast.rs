@@ -2,6 +2,7 @@ use ena::unify::{EqUnifyValue, UnifyKey};
 use parser::syntax::MySyntaxNodePtr;
 
 use crate::common::{Constructor, Prim};
+use crate::intrinsics::CallableBody;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub struct TastIdent(pub String);
@@ -321,6 +322,12 @@ pub enum Expr {
         ty: Ty,
         astptr: Option<MySyntaxNodePtr>,
     },
+    ECallable {
+        name: String,
+        body: CallableBody,
+        ty: Ty,
+        astptr: Option<MySyntaxNodePtr>,
+    },
     EPrim {
         value: Prim,
         ty: Ty,
@@ -445,6 +452,7 @@ impl Expr {
     pub fn get_ty(&self) -> Ty {
         match self {
             Self::EVar { ty, .. } => ty.clone(),
+            Self::ECallable { ty, .. } => ty.clone(),
             Self::EPrim { ty, .. } => ty.clone(),
             Self::EConstr { ty, .. } => ty.clone(),
             Self::ETuple { ty, .. } => ty.clone(),

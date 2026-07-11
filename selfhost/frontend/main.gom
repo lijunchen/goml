@@ -133,7 +133,7 @@ fn run_check(args: Vec[string]) -> int32 {
                     print_diagnostics(parsed.diagnostics);
                     failed.set(true);
                 } else {
-                    files.set(files.get().push(typecheck::source_file(source_package(path, parsed.root), parsed.root)));
+                    files.set(files.get().pushed(typecheck::source_file(source_package(path, parsed.root), parsed.root)));
                 };
             },
             Result::Err(err) => {
