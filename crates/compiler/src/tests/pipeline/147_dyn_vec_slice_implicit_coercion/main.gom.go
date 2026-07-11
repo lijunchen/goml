@@ -98,14 +98,14 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__dynDisplay() *_goml_vec_Dyn
     return retv43
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__dynDisplay(self__96 *_goml_vec_Dyn_Display, elem__97 dyn__Display) struct{} {
-    vec_push__Vec_11Dyn_Display(self__96, elem__97)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__dynDisplay(self__97 *_goml_vec_Dyn_Display, elem__98 dyn__Display) struct{} {
+    vec_push__Vec_11Dyn_Display(self__97, elem__98)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_slice____T__dynDisplay(self__108 *_goml_vec_Dyn_Display, start__109 int32, end__110 int32) []dyn__Display {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_slice____T__dynDisplay(self__109 *_goml_vec_Dyn_Display, start__110 int32, end__111 int32) []dyn__Display {
     var retv48 []dyn__Display
-    var t49 []dyn__Display = self__108.items[start__109:end__110]
+    var t49 []dyn__Display = self__109.items[start__110:end__111]
     retv48 = t49
     return retv48
 }
@@ -116,9 +116,9 @@ func println__T_string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_sub____T__dynDisplay(self__119 []dyn__Display, start__120 int32, end__121 int32) []dyn__Display {
+func _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_sub____T__dynDisplay(self__121 []dyn__Display, start__122 int32, end__123 int32) []dyn__Display {
     var retv54 []dyn__Display
-    var t55 []dyn__Display = self__119[start__120:end__121]
+    var t55 []dyn__Display = self__121[start__122:end__123]
     retv54 = t55
     return retv54
 }

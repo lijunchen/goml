@@ -692,13 +692,13 @@ fn gomlc_run_single_dumps_requested_stages() -> anyhow::Result<()> {
           FnIterator { next_fn: next_fn/71 }
         }
 
-        fn trait_impl#Iterator#[T]@FnIterator[T]#next(self/72: FnIterator[T]) -> Option[T] {
+        fn trait_impl#Iterator#FnIterator[T]#next(self/72: FnIterator[T]) -> Option[T] {
           FnIterator.next_fn(self/72)()
         }
 
-        fn trait_impl#Iterator#[B]@MapIterator[A,B,I]#next(self/73: MapIterator[A, B, I]) -> Option[B] {
+        fn trait_impl#Iterator#MapIterator[A,B,I]#next(self/73: MapIterator[A, B, I]) -> Option[B] {
           {
-            let mtmp0 = trait_call[Iterator[A]::next](MapIterator.iterator(self/73)) in
+            let mtmp0 = trait_call[Iterator::next](MapIterator.iterator(self/73)) in
             match mtmp0 {
               Option::None => {
                 Option::None
@@ -716,11 +716,11 @@ fn gomlc_run_single_dumps_requested_stages() -> anyhow::Result<()> {
           }
         }
 
-        fn trait_impl#Iterator#[T]@FilterIterator[T,I]#next(self/75: FilterIterator[T, I]) -> Option[T] {
+        fn trait_impl#Iterator#FilterIterator[T,I]#next(self/75: FilterIterator[T, I]) -> Option[T] {
           let _wild5 = while true {
               {
                 let _wild4 = {
-                  let mtmp2 = trait_call[Iterator[T]::next](FilterIterator.iterator(self/75)) in
+                  let mtmp2 = trait_call[Iterator::next](FilterIterator.iterator(self/75)) in
                   match mtmp2 {
                     Option::None => {
                       return Option::None
@@ -749,12 +749,12 @@ fn gomlc_run_single_dumps_requested_stages() -> anyhow::Result<()> {
           Option::None
         }
 
-        fn trait_impl#Iterator#[T]@TakeIterator[I]#next(self/77: TakeIterator[I]) -> Option[T] {
+        fn trait_impl#Iterator#TakeIterator[I]#next(self/77: TakeIterator[I]) -> Option[I::Item] {
           let remaining/78 = inherent#Ref#Ref[int32]#get(TakeIterator.remaining(self/77)) in
           if (remaining/78 > 0) {
               {
                 let _wild6 = inherent#Ref#Ref[int32]#set(TakeIterator.remaining(self/77), (remaining/78 - 1)) in
-                trait_call[Iterator[T]::next](TakeIterator.iterator(self/77))
+                trait_call[Iterator::next](TakeIterator.iterator(self/77))
               }
           } else {
               {
@@ -763,44 +763,48 @@ fn gomlc_run_single_dumps_requested_stages() -> anyhow::Result<()> {
           }
         }
 
-        fn iterator_map(iterator/79: I, map_fn/80: (A) -> B) -> MapIterator[A, B, I] {
-          MapIterator { iterator: iterator/79, map_fn: map_fn/80 }
+        fn trait_impl#IntoIterator#I#into_iter(self/79: I) -> I {
+          self/79
         }
 
-        fn iterator_filter(iterator/81: I, predicate/82: (T) -> bool) -> FilterIterator[T, I] {
-          FilterIterator { iterator: iterator/81, predicate: predicate/82 }
+        fn iterator_map(iterator/80: I, map_fn/81: (A) -> B) -> MapIterator[A, B, I] {
+          MapIterator { iterator: iterator/80, map_fn: map_fn/81 }
         }
 
-        fn iterator_take(iterator/83: I, count/84: int32) -> TakeIterator[I] {
-          let remaining/85 = if (count/84 > 0) {
+        fn iterator_filter(iterator/82: I, predicate/83: (T) -> bool) -> FilterIterator[T, I] {
+          FilterIterator { iterator: iterator/82, predicate: predicate/83 }
+        }
+
+        fn iterator_take(iterator/84: I, count/85: int32) -> TakeIterator[I] {
+          let remaining/86 = if (count/85 > 0) {
               {
-                count/84
+                count/85
               }
           } else {
               {
                 0
               }
           } in
-          TakeIterator { iterator: iterator/83, remaining: inherent#Ref#Ref[int32]#new(remaining/85) }
+          TakeIterator { iterator: iterator/84, remaining: inherent#Ref#Ref[int32]#new(remaining/86) }
         }
 
-        fn iterator_fold(iterator/86: I, initial/87: A, combine/88: (A, T) -> A) -> A {
-          let accumulator/89 = inherent#Ref#Ref[A]#new(initial/87) in
-          let running/90 = inherent#Ref#Ref[bool]#new(true) in
-          let _wild10 = while inherent#Ref#Ref[bool]#get(running/90) {
+        fn iterator_fold(iterator/87: I, initial/88: A, combine/89: (A, T) -> A) -> A {
+          let accumulator/90 = inherent#Ref#Ref[A]#new(initial/88) in
+          let running/91 = inherent#Ref#Ref[bool]#new(true) in
+          let _wild10 = while inherent#Ref#Ref[bool]#get(running/91) {
               {
                 let _wild9 = {
-                  let mtmp7 = trait_call[Iterator[T]::next](iterator/86) in
+                  let mtmp7 = trait_call[Iterator::next](iterator/87) in
                   match mtmp7 {
                     Option::None => {
-                      inherent#Ref#Ref[bool]#set(running/90, false)
+                      inherent#Ref#Ref[bool]#set(running/91, false)
                     },
                     Option::Some(x8) => {
                       {
                         let x8 = Option::Some._0(mtmp7) in
                         {
-                          let value/91 = x8 in
-                          inherent#Ref#Ref[A]#set(accumulator/89, combine/88(inherent#Ref#Ref[A]#get(accumulator/89), value/91))
+                          let value/92 = x8 in
+                          inherent#Ref#Ref[A]#set(accumulator/90, combine/89(inherent#Ref#Ref[A]#get(accumulator/90), value/92))
                         }
                       }
                     },
@@ -808,26 +812,26 @@ fn gomlc_run_single_dumps_requested_stages() -> anyhow::Result<()> {
                 } in
               }
           } in
-          inherent#Ref#Ref[A]#get(accumulator/89)
+          inherent#Ref#Ref[A]#get(accumulator/90)
         }
 
-        fn iterator_collect(iterator/92: I) -> Vec[T] {
-          let values/93 = inherent#Vec#Vec[T]#new() in
-          let running/94 = inherent#Ref#Ref[bool]#new(true) in
-          let _wild14 = while inherent#Ref#Ref[bool]#get(running/94) {
+        fn iterator_collect(iterator/93: I) -> Vec[T] {
+          let values/94 = inherent#Vec#Vec[T]#new() in
+          let running/95 = inherent#Ref#Ref[bool]#new(true) in
+          let _wild14 = while inherent#Ref#Ref[bool]#get(running/95) {
               {
                 let _wild13 = {
-                  let mtmp11 = trait_call[Iterator[T]::next](iterator/92) in
+                  let mtmp11 = trait_call[Iterator::next](iterator/93) in
                   match mtmp11 {
                     Option::None => {
-                      inherent#Ref#Ref[bool]#set(running/94, false)
+                      inherent#Ref#Ref[bool]#set(running/95, false)
                     },
                     Option::Some(x12) => {
                       {
                         let x12 = Option::Some._0(mtmp11) in
                         {
-                          let value/95 = x12 in
-                          inherent#Vec#Vec[T]#push(values/93, value/95)
+                          let value/96 = x12 in
+                          inherent#Vec#Vec[T]#push(values/94, value/96)
                         }
                       }
                     },
@@ -835,56 +839,56 @@ fn gomlc_run_single_dumps_requested_stages() -> anyhow::Result<()> {
                 } in
               }
           } in
-          values/93
+          values/94
         }
 
         fn inherent#Vec#Vec[T]#new() -> Vec[T] {
           @intrinsic(vec.new)()
         }
 
-        fn inherent#Vec#Vec[T]#push(self/96: Vec[T], elem/97: T) -> unit {
-          @intrinsic(vec.push)(self/96, elem/97)
+        fn inherent#Vec#Vec[T]#push(self/97: Vec[T], elem/98: T) -> unit {
+          @intrinsic(vec.push)(self/97, elem/98)
         }
 
-        fn inherent#Vec#Vec[T]#pushed(self/98: Vec[T], elem/99: T) -> Vec[T] {
-          let result/100 = inherent#Vec#Vec[T]#new() in
-          let index/101 = inherent#Ref#Ref[int32]#new(0) in
-          let _wild17 = while (inherent#Ref#Ref[int32]#get(index/101) < inherent#Vec#Vec[T]#len(self/98)) {
+        fn inherent#Vec#Vec[T]#pushed(self/99: Vec[T], elem/100: T) -> Vec[T] {
+          let result/101 = inherent#Vec#Vec[T]#new() in
+          let index/102 = inherent#Ref#Ref[int32]#new(0) in
+          let _wild17 = while (inherent#Ref#Ref[int32]#get(index/102) < inherent#Vec#Vec[T]#len(self/99)) {
               {
-                let _wild15 = inherent#Vec#Vec[T]#push(result/100, inherent#Vec#Vec[T]#get(self/98, inherent#Ref#Ref[int32]#get(index/101))) in
-                let _wild16 = inherent#Ref#Ref[int32]#set(index/101, (inherent#Ref#Ref[int32]#get(index/101) + 1)) in
+                let _wild15 = inherent#Vec#Vec[T]#push(result/101, inherent#Vec#Vec[T]#get(self/99, inherent#Ref#Ref[int32]#get(index/102))) in
+                let _wild16 = inherent#Ref#Ref[int32]#set(index/102, (inherent#Ref#Ref[int32]#get(index/102) + 1)) in
               }
           } in
-          let _wild18 = inherent#Vec#Vec[T]#push(result/100, elem/99) in
-          result/100
+          let _wild18 = inherent#Vec#Vec[T]#push(result/101, elem/100) in
+          result/101
         }
 
-        fn inherent#Vec#Vec[T]#get(self/102: Vec[T], index/103: int32) -> T {
-          @intrinsic(vec.get)(self/102, index/103)
+        fn inherent#Vec#Vec[T]#get(self/103: Vec[T], index/104: int32) -> T {
+          @intrinsic(vec.get)(self/103, index/104)
         }
 
-        fn inherent#Vec#Vec[T]#set(self/104: Vec[T], index/105: int32, elem/106: T) -> unit {
-          @intrinsic(vec.set)(self/104, index/105, elem/106)
+        fn inherent#Vec#Vec[T]#set(self/105: Vec[T], index/106: int32, elem/107: T) -> unit {
+          @intrinsic(vec.set)(self/105, index/106, elem/107)
         }
 
-        fn inherent#Vec#Vec[T]#len(self/107: Vec[T]) -> int32 {
-          @intrinsic(vec.len)(self/107)
+        fn inherent#Vec#Vec[T]#len(self/108: Vec[T]) -> int32 {
+          @intrinsic(vec.len)(self/108)
         }
 
-        fn inherent#Vec#Vec[T]#slice(self/108: Vec[T], start/109: int32, end/110: int32) -> Slice[T] {
-          @intrinsic(slice.new)(self/108, start/109, end/110)
+        fn inherent#Vec#Vec[T]#slice(self/109: Vec[T], start/110: int32, end/111: int32) -> Slice[T] {
+          @intrinsic(slice.new)(self/109, start/110, end/111)
         }
 
-        fn inherent#Vec#Vec[T]#iter(self/111: Vec[T]) -> FnIterator[T] {
-          let index/112 = inherent#Ref#Ref[int32]#new(0) in
-          let len/113 = inherent#Vec#Vec[T]#len(self/111) in
+        fn inherent#Vec#Vec[T]#iter(self/112: Vec[T]) -> FnIterator[T] {
+          let index/113 = inherent#Ref#Ref[int32]#new(0) in
+          let len/114 = inherent#Vec#Vec[T]#len(self/112) in
           inherent#FnIterator#FnIterator#from_fn(|| => {
-            let current/114 = inherent#Ref#Ref[int32]#get(index/112) in
-            if (current/114 < len/113) {
+            let current/115 = inherent#Ref#Ref[int32]#get(index/113) in
+            if (current/115 < len/114) {
                 {
-                  let value/115 = inherent#Vec#Vec[T]#get(self/111, current/114) in
-                  let _wild19 = inherent#Ref#Ref[int32]#set(index/112, (current/114 + 1)) in
-                  Option::Some(value/115)
+                  let value/116 = inherent#Vec#Vec[T]#get(self/112, current/115) in
+                  let _wild19 = inherent#Ref#Ref[int32]#set(index/113, (current/115 + 1)) in
+                  Option::Some(value/116)
                 }
             } else {
                 {
@@ -894,28 +898,32 @@ fn gomlc_run_single_dumps_requested_stages() -> anyhow::Result<()> {
           })
         }
 
-        fn inherent#Slice#Slice[T]#get(self/116: Slice[T], index/117: int32) -> T {
-          @intrinsic(slice.get)(self/116, index/117)
+        fn trait_impl#IntoIterator#Vec[T]#into_iter(self/117: Vec[T]) -> FnIterator[T] {
+          inherent#Vec#Vec[T]#iter(self/117)
         }
 
-        fn inherent#Slice#Slice[T]#len(self/118: Slice[T]) -> int32 {
-          @intrinsic(slice.len)(self/118)
+        fn inherent#Slice#Slice[T]#get(self/118: Slice[T], index/119: int32) -> T {
+          @intrinsic(slice.get)(self/118, index/119)
         }
 
-        fn inherent#Slice#Slice[T]#sub(self/119: Slice[T], start/120: int32, end/121: int32) -> Slice[T] {
-          @intrinsic(slice.sub)(self/119, start/120, end/121)
+        fn inherent#Slice#Slice[T]#len(self/120: Slice[T]) -> int32 {
+          @intrinsic(slice.len)(self/120)
         }
 
-        fn inherent#Slice#Slice[T]#iter(self/122: Slice[T]) -> FnIterator[T] {
-          let index/123 = inherent#Ref#Ref[int32]#new(0) in
-          let len/124 = inherent#Slice#Slice[T]#len(self/122) in
+        fn inherent#Slice#Slice[T]#sub(self/121: Slice[T], start/122: int32, end/123: int32) -> Slice[T] {
+          @intrinsic(slice.sub)(self/121, start/122, end/123)
+        }
+
+        fn inherent#Slice#Slice[T]#iter(self/124: Slice[T]) -> FnIterator[T] {
+          let index/125 = inherent#Ref#Ref[int32]#new(0) in
+          let len/126 = inherent#Slice#Slice[T]#len(self/124) in
           inherent#FnIterator#FnIterator#from_fn(|| => {
-            let current/125 = inherent#Ref#Ref[int32]#get(index/123) in
-            if (current/125 < len/124) {
+            let current/127 = inherent#Ref#Ref[int32]#get(index/125) in
+            if (current/127 < len/126) {
                 {
-                  let value/126 = inherent#Slice#Slice[T]#get(self/122, current/125) in
-                  let _wild20 = inherent#Ref#Ref[int32]#set(index/123, (current/125 + 1)) in
-                  Option::Some(value/126)
+                  let value/128 = inherent#Slice#Slice[T]#get(self/124, current/127) in
+                  let _wild20 = inherent#Ref#Ref[int32]#set(index/125, (current/127 + 1)) in
+                  Option::Some(value/128)
                 }
             } else {
                 {
@@ -923,52 +931,56 @@ fn gomlc_run_single_dumps_requested_stages() -> anyhow::Result<()> {
                 }
             }
           })
+        }
+
+        fn trait_impl#IntoIterator#Slice[T]#into_iter(self/129: Slice[T]) -> FnIterator[T] {
+          inherent#Slice#Slice[T]#iter(self/129)
         }
 
         fn inherent#HashMap#HashMap[K,V]#new() -> HashMap[K, V] {
           @intrinsic(hashmap.new)()
         }
 
-        fn inherent#HashMap#HashMap[K,V]#get(self/127: HashMap[K, V], key/128: K) -> Option[V] {
-          @intrinsic(hashmap.get)(self/127, key/128)
+        fn inherent#HashMap#HashMap[K,V]#get(self/130: HashMap[K, V], key/131: K) -> Option[V] {
+          @intrinsic(hashmap.get)(self/130, key/131)
         }
 
-        fn inherent#HashMap#HashMap[K,V]#set(self/129: HashMap[K, V], key/130: K, value/131: V) -> unit {
-          @intrinsic(hashmap.set)(self/129, key/130, value/131)
+        fn inherent#HashMap#HashMap[K,V]#set(self/132: HashMap[K, V], key/133: K, value/134: V) -> unit {
+          @intrinsic(hashmap.set)(self/132, key/133, value/134)
         }
 
-        fn inherent#HashMap#HashMap[K,V]#remove(self/132: HashMap[K, V], key/133: K) -> unit {
-          @intrinsic(hashmap.remove)(self/132, key/133)
+        fn inherent#HashMap#HashMap[K,V]#remove(self/135: HashMap[K, V], key/136: K) -> unit {
+          @intrinsic(hashmap.remove)(self/135, key/136)
         }
 
-        fn inherent#HashMap#HashMap[K,V]#len(self/134: HashMap[K, V]) -> int32 {
-          @intrinsic(hashmap.len)(self/134)
+        fn inherent#HashMap#HashMap[K,V]#len(self/137: HashMap[K, V]) -> int32 {
+          @intrinsic(hashmap.len)(self/137)
         }
 
-        fn inherent#HashMap#HashMap[K,V]#contains(self/135: HashMap[K, V], key/136: K) -> bool {
-          @intrinsic(hashmap.contains)(self/135, key/136)
+        fn inherent#HashMap#HashMap[K,V]#contains(self/138: HashMap[K, V], key/139: K) -> bool {
+          @intrinsic(hashmap.contains)(self/138, key/139)
         }
 
-        fn inherent#Ref#Ref[T]#new(value/137: T) -> Ref[T] {
-          @intrinsic(ref.new)(value/137)
+        fn inherent#Ref#Ref[T]#new(value/140: T) -> Ref[T] {
+          @intrinsic(ref.new)(value/140)
         }
 
-        fn inherent#Ref#Ref[T]#get(self/138: Ref[T]) -> T {
-          @intrinsic(ref.get)(self/138)
+        fn inherent#Ref#Ref[T]#get(self/141: Ref[T]) -> T {
+          @intrinsic(ref.get)(self/141)
         }
 
-        fn inherent#Ref#Ref[T]#set(self/139: Ref[T], value/140: T) -> unit {
-          @intrinsic(ref.set)(self/139, value/140)
+        fn inherent#Ref#Ref[T]#set(self/142: Ref[T], value/143: T) -> unit {
+          @intrinsic(ref.set)(self/142, value/143)
         }
 
-        fn range(start/141: int32, end/142: int32) -> FnIterator[int32] {
-          let current/143 = inherent#Ref#Ref[int32]#new(start/141) in
+        fn range(start/144: int32, end/145: int32) -> FnIterator[int32] {
+          let current/146 = inherent#Ref#Ref[int32]#new(start/144) in
           inherent#FnIterator#FnIterator#from_fn(|| => {
-            let value/144 = inherent#Ref#Ref[int32]#get(current/143) in
-            if (value/144 < end/142) {
+            let value/147 = inherent#Ref#Ref[int32]#get(current/146) in
+            if (value/147 < end/145) {
                 {
-                  let _wild21 = inherent#Ref#Ref[int32]#set(current/143, (value/144 + 1)) in
-                  Option::Some(value/144)
+                  let _wild21 = inherent#Ref#Ref[int32]#set(current/146, (value/147 + 1)) in
+                  Option::Some(value/147)
                 }
             } else {
                 {

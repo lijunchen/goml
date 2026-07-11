@@ -636,21 +636,21 @@ func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_new____K__Key____V__int32
     return retv125
 }
 
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__Key____V__int32(self__129 *hashmap_Key_int32_x, key__130 Key, value__131 int32) struct{} {
-    hashmap_set__HashMap_3Key_5int32(self__129, key__130, value__131)
+func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__Key____V__int32(self__132 *hashmap_Key_int32_x, key__133 Key, value__134 int32) struct{} {
+    hashmap_set__HashMap_3Key_5int32(self__132, key__133, value__134)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_len____K__Key____V__int32(self__134 *hashmap_Key_int32_x) int32 {
+func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_len____K__Key____V__int32(self__137 *hashmap_Key_int32_x) int32 {
     var retv130 int32
-    var t131 int32 = hashmap_len__HashMap_3Key_5int32(self__134)
+    var t131 int32 = hashmap_len__HashMap_3Key_5int32(self__137)
     retv130 = t131
     return retv130
 }
 
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_get____K__Key____V__int32(self__127 *hashmap_Key_int32_x, key__128 Key) Option__int32 {
+func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_get____K__Key____V__int32(self__130 *hashmap_Key_int32_x, key__131 Key) Option__int32 {
     var retv133 Option__int32
-    var t134 Option__int32 = hashmap_get__HashMap_3Key_5int32(self__127, key__128)
+    var t134 Option__int32 = hashmap_get__HashMap_3Key_5int32(self__130, key__131)
     retv133 = t134
     return retv133
 }
@@ -661,15 +661,15 @@ func println__T_bool(value__1 bool) struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_contains____K__Key____V__int32(self__135 *hashmap_Key_int32_x, key__136 Key) bool {
+func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_contains____K__Key____V__int32(self__138 *hashmap_Key_int32_x, key__139 Key) bool {
     var retv139 bool
-    var t140 bool = hashmap_contains__HashMap_3Key_5int32(self__135, key__136)
+    var t140 bool = hashmap_contains__HashMap_3Key_5int32(self__138, key__139)
     retv139 = t140
     return retv139
 }
 
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_remove____K__Key____V__int32(self__132 *hashmap_Key_int32_x, key__133 Key) struct{} {
-    hashmap_remove__HashMap_3Key_5int32(self__132, key__133)
+func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_remove____K__Key____V__int32(self__135 *hashmap_Key_int32_x, key__136 Key) struct{} {
+    hashmap_remove__HashMap_3Key_5int32(self__135, key__136)
     return struct{}{}
 }
 
@@ -680,21 +680,21 @@ func _goml_m_inherent_i_HashMap_i_H_h8965aba642d8a393e2049e4587079c44__r_____V__
     return retv144
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Point(value__137 Point) *ref_Point_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Point(value__140 Point) *ref_Point_x {
     var retv147 *ref_Point_x
-    var t148 *ref_Point_x = ref__Ref_5Point(value__137)
+    var t148 *ref_Point_x = ref__Ref_5Point(value__140)
     retv147 = t148
     return retv147
 }
 
-func _goml_m_inherent_i_HashMap_i_H_h92a9b8ea001265f897bc67524ef74086__r_____V__int32(self__129 *hashmap_Ref_5Point_int32_x, key__130 *ref_Point_x, value__131 int32) struct{} {
-    hashmap_set__HashMap_10Ref_5Point_5int32(self__129, key__130, value__131)
+func _goml_m_inherent_i_HashMap_i_H_h92a9b8ea001265f897bc67524ef74086__r_____V__int32(self__132 *hashmap_Ref_5Point_int32_x, key__133 *ref_Point_x, value__134 int32) struct{} {
+    hashmap_set__HashMap_10Ref_5Point_5int32(self__132, key__133, value__134)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_HashMap_i_H_h8816d503fd85179e4f674a4a9db321b9__r_____V__int32(self__127 *hashmap_Ref_5Point_int32_x, key__128 *ref_Point_x) Option__int32 {
+func _goml_m_inherent_i_HashMap_i_H_h8816d503fd85179e4f674a4a9db321b9__r_____V__int32(self__130 *hashmap_Ref_5Point_int32_x, key__131 *ref_Point_x) Option__int32 {
     var retv152 Option__int32
-    var t153 Option__int32 = hashmap_get__HashMap_10Ref_5Point_5int32(self__127, key__128)
+    var t153 Option__int32 = hashmap_get__HashMap_10Ref_5Point_5int32(self__130, key__131)
     retv152 = t153
     return retv152
 }
@@ -706,21 +706,21 @@ func _goml_m_inherent_i_HashMap_i_H_h35e4bb85f0aaff40bae5445e99f77c49__r_____V__
     return retv155
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Key(value__137 Key) *ref_Key_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Key(value__140 Key) *ref_Key_x {
     var retv158 *ref_Key_x
-    var t159 *ref_Key_x = ref__Ref_3Key(value__137)
+    var t159 *ref_Key_x = ref__Ref_3Key(value__140)
     retv158 = t159
     return retv158
 }
 
-func _goml_m_inherent_i_HashMap_i_H_h8d7eb9d75c42de8655645502911541c0__r_____V__int32(self__129 *hashmap_Ref_3Key_int32_x, key__130 *ref_Key_x, value__131 int32) struct{} {
-    hashmap_set__HashMap_8Ref_3Key_5int32(self__129, key__130, value__131)
+func _goml_m_inherent_i_HashMap_i_H_h8d7eb9d75c42de8655645502911541c0__r_____V__int32(self__132 *hashmap_Ref_3Key_int32_x, key__133 *ref_Key_x, value__134 int32) struct{} {
+    hashmap_set__HashMap_8Ref_3Key_5int32(self__132, key__133, value__134)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_HashMap_i_H_h488c149fa298920fe2fbb4be132c4bc3__r_____V__int32(self__127 *hashmap_Ref_3Key_int32_x, key__128 *ref_Key_x) Option__int32 {
+func _goml_m_inherent_i_HashMap_i_H_h488c149fa298920fe2fbb4be132c4bc3__r_____V__int32(self__130 *hashmap_Ref_3Key_int32_x, key__131 *ref_Key_x) Option__int32 {
     var retv163 Option__int32
-    var t164 Option__int32 = hashmap_get__HashMap_8Ref_3Key_5int32(self__127, key__128)
+    var t164 Option__int32 = hashmap_get__HashMap_8Ref_3Key_5int32(self__130, key__131)
     retv163 = t164
     return retv163
 }
@@ -779,16 +779,16 @@ func _goml_m_trait__impl_i_Hash_i_Ref_l_Key_r__i_hash(self__67 *ref_Key_x) uint6
     return retv183
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Point(self__138 *ref_Point_x) Point {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Point(self__141 *ref_Point_x) Point {
     var retv186 Point
-    var t187 Point = ref_get__Ref_5Point(self__138)
+    var t187 Point = ref_get__Ref_5Point(self__141)
     retv186 = t187
     return retv186
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Key(self__138 *ref_Key_x) Key {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Key(self__141 *ref_Key_x) Key {
     var retv189 Key
-    var t190 Key = ref_get__Ref_3Key(self__138)
+    var t190 Key = ref_get__Ref_3Key(self__141)
     retv189 = t190
     return retv189
 }

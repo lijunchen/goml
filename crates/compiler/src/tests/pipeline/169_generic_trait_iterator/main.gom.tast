@@ -26,7 +26,7 @@ impl Counter{
   }
 }
 
-impl Iterator[int32] for Counter{
+impl Iterator for Counter{
   fn next(self/6: Counter) -> Option[int32] {
       let current/7: int32 = (Ref[int32]::get : (Ref[int32]) -> int32)((self/6 : Counter).current);
       if (current/7 : int32) < (self/6 : Counter).end {
@@ -61,7 +61,7 @@ fn main() -> unit {
     });
     (println : (int32) -> unit)((sum/17 : int32));
     let texts/19: Vec[string] = (iterator_collect : (MapIterator[int32, string, FnIterator[int32]]) -> Vec[string])((iterator_map : (FnIterator[int32], (int32) -> string) -> MapIterator[int32, string, FnIterator[int32]])((range : (int32, int32) -> FnIterator[int32])(1, 4), |value/18: int32| => "v" + (int32::to_string : (int32) -> string)((value/18 : int32))));
-    for text/20: string in (Vec[string]::iter : (Vec[string]) -> FnIterator[string])((texts/19 : Vec[string])) {
+    for text/20: string in (texts/19 : Vec[string]) {
         (println : (string) -> unit)((text/20 : string));
     };
 }

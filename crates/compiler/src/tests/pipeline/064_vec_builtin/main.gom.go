@@ -63,14 +63,14 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__int32() *_goml_vec_int32 {
     return retv35
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(self__96 *_goml_vec_int32, elem__97 int32) struct{} {
-    vec_push__Vec_5int32(self__96, elem__97)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(self__97 *_goml_vec_int32, elem__98 int32) struct{} {
+    vec_push__Vec_5int32(self__97, elem__98)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__107 *_goml_vec_int32) int32 {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__108 *_goml_vec_int32) int32 {
     var retv40 int32
-    var t41 int32 = vec_len__Vec_5int32(self__107)
+    var t41 int32 = vec_len__Vec_5int32(self__108)
     retv40 = t41
     return retv40
 }

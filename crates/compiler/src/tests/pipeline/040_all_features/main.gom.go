@@ -433,16 +433,16 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__138 *ref_int32_x) int32 {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__141 *ref_int32_x) int32 {
     var retv127 int32
-    var t128 int32 = ref_get__Ref_5int32(self__138)
+    var t128 int32 = ref_get__Ref_5int32(self__141)
     retv127 = t128
     return retv127
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(self__138 *ref_bool_x) bool {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(self__141 *ref_bool_x) bool {
     var retv130 bool
-    var t131 bool = ref_get__Ref_4bool(self__138)
+    var t131 bool = ref_get__Ref_4bool(self__141)
     retv130 = t131
     return retv130
 }
@@ -461,27 +461,27 @@ func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__8 bool) string {
     return retv136
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__137 int32) *ref_int32_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__140 int32) *ref_int32_x {
     var retv139 *ref_int32_x
-    var t140 *ref_int32_x = ref__Ref_5int32(value__137)
+    var t140 *ref_int32_x = ref__Ref_5int32(value__140)
     retv139 = t140
     return retv139
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(value__137 bool) *ref_bool_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(value__140 bool) *ref_bool_x {
     var retv142 *ref_bool_x
-    var t143 *ref_bool_x = ref__Ref_4bool(value__137)
+    var t143 *ref_bool_x = ref__Ref_4bool(value__140)
     retv142 = t143
     return retv142
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__139 *ref_int32_x, value__140 int32) struct{} {
-    ref_set__Ref_5int32(self__139, value__140)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__142 *ref_int32_x, value__143 int32) struct{} {
+    ref_set__Ref_5int32(self__142, value__143)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(self__139 *ref_bool_x, value__140 bool) struct{} {
-    ref_set__Ref_4bool(self__139, value__140)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(self__142 *ref_bool_x, value__143 bool) struct{} {
+    ref_set__Ref_4bool(self__142, value__143)
     return struct{}{}
 }
 

@@ -954,6 +954,7 @@ fn main() {
         expect![[r#"
             [
                 "get",
+                "into_iter",
                 "iter",
                 "len",
                 "new",
@@ -1013,6 +1014,7 @@ fn main() {
         expect![[r#"
             [
                 "get",
+                "into_iter",
                 "iter",
                 "len",
                 "sub",
@@ -1038,6 +1040,7 @@ fn main() {
         expect![[r#"
             [
                 "from_fn",
+                "into_iter",
                 "next",
                 "next_fn",
             ]

@@ -298,9 +298,9 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(self__107 *_goml_vec_string) int32 {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(self__108 *_goml_vec_string) int32 {
     var retv78 int32
-    var t79 int32 = vec_len__Vec_6string(self__107)
+    var t79 int32 = vec_len__Vec_6string(self__108)
     retv78 = t79
     return retv78
 }

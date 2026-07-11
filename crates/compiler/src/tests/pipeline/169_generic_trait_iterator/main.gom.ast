@@ -49,7 +49,8 @@ impl Counter {
   }
 }
 
-impl Iterator[int32] for Counter {
+impl Iterator for Counter {
+  type Item = int32;
   fn next(self: Self) -> Option[int32] {
       let current = self.current.get();
       if current < self.end {
@@ -84,7 +85,7 @@ fn main() -> unit {
       });
     println(sum);
     let texts: Vec[string] = iterator_collect(iterator_map(range(1, 4), |value: int32| "v" + value.to_string()));
-    for text in texts.iter() {
+    for text in texts {
         println(text);
     };
 }

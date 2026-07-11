@@ -1018,7 +1018,7 @@ fn main() {
 "#,
             5,
             6,
-            expect!["get, iter, len, new, push, pushed, set, slice"],
+            expect!["get, into_iter, iter, len, new, push, pushed, set, slice"],
         );
     }
 
@@ -2218,7 +2218,7 @@ fn main() -> unit {
 "#,
             "Vec::new()",
             "new",
-            expect!["src/builtin_prelude.gom:404:7"],
+            expect!["src/builtin_prelude.gom:439:7"],
         );
     }
 
@@ -2237,7 +2237,7 @@ fn main() -> unit {
 "#,
             "r.get()",
             "get",
-            expect!["src/builtin_prelude.gom:515:7"],
+            expect!["src/builtin_prelude.gom:568:7"],
         );
     }
 
@@ -2262,13 +2262,13 @@ fn main() -> unit {
             src,
             "HashMap::new()",
             "new",
-            expect!["src/builtin_prelude.gom:485:7"],
+            expect!["src/builtin_prelude.gom:538:7"],
         );
         check_goto_token(
             src,
             "m.set(Key::A, 1)",
             "set",
-            expect!["src/builtin_prelude.gom:493:7"],
+            expect!["src/builtin_prelude.gom:546:7"],
         );
     }
 

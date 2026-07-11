@@ -50,7 +50,8 @@ file main.gom
       }
     }
     
-    impl Iterator[int32] for Counter {
+    impl Iterator for Counter {
+      type Item = int32;
       fn next(local/1/6: Self) -> Option[int32] {
           let local/1/7 = self/6.current.get();
           if current/7 < self/6.end {
@@ -81,7 +82,7 @@ file main.gom
           });
         println(sum/17);
         let local/1/19: Vec[string] = iterator_collect(iterator_map(range(1, 4), |local/1/18: int32| "v" + value/18.to_string()));
-        for local/1/20 in texts/19.iter() {
+        for local/1/20 in texts/19 {
             println(text/20);
         };
     }

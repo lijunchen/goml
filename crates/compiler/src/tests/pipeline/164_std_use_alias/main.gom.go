@@ -54,9 +54,9 @@ func _goml_m_std_p_io_p_println____T__string(value__1 string) struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(self__107 *_goml_vec_string) int32 {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(self__108 *_goml_vec_string) int32 {
     var retv35 int32
-    var t36 int32 = vec_len__Vec_6string(self__107)
+    var t36 int32 = vec_len__Vec_6string(self__108)
     retv35 = t36
     return retv35
 }

@@ -184,14 +184,14 @@ func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_new____K__string____V__in
     return retv48
 }
 
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__string____V__int32(self__129 *hashmap_string_int32_x, key__130 string, value__131 int32) struct{} {
-    hashmap_set__HashMap_6string_5int32(self__129, key__130, value__131)
+func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__string____V__int32(self__132 *hashmap_string_int32_x, key__133 string, value__134 int32) struct{} {
+    hashmap_set__HashMap_6string_5int32(self__132, key__133, value__134)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_get____K__string____V__int32(self__127 *hashmap_string_int32_x, key__128 string) Option__int32 {
+func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_get____K__string____V__int32(self__130 *hashmap_string_int32_x, key__131 string) Option__int32 {
     var retv53 Option__int32
-    var t54 Option__int32 = hashmap_get__HashMap_6string_5int32(self__127, key__128)
+    var t54 Option__int32 = hashmap_get__HashMap_6string_5int32(self__130, key__131)
     retv53 = t54
     return retv53
 }
