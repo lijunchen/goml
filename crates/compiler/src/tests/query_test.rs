@@ -912,6 +912,20 @@ fn main() {
         expect![[r#"
             [
                 DotCompletionItem {
+                    name: "eq",
+                    kind: Method,
+                    detail: Some(
+                        "(int32, int32) -> bool",
+                    ),
+                },
+                DotCompletionItem {
+                    name: "hash",
+                    kind: Method,
+                    detail: Some(
+                        "(int32) -> uint64",
+                    ),
+                },
+                DotCompletionItem {
                     name: "to_string",
                     kind: Method,
                     detail: Some(
@@ -1033,6 +1047,38 @@ fn main() {
 
 #[test]
 #[rustfmt::skip]
+fn generic_trait_dot_method_completion() {
+    let src = r#"
+trait Convert[T] {
+    fn convert(Self) -> T;
+}
+
+struct Token {}
+
+impl Convert[int32] for Token {
+    fn convert(self: Token) -> int32 { 7 }
+}
+
+fn main() {
+    let token = Token {};
+    token.
+}
+"#;
+
+    check_completion_labels(
+        src,
+        13,
+        10,
+        expect![[r#"
+            [
+                "convert",
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
 fn hover_builtin_range() {
     let src = r#"
 fn main() {
@@ -1041,7 +1087,7 @@ fn main() {
 "#;
 
     check(src, 2, 21, expect![[r#"
-        "(int32, int32) -> Iterator[int32]"
+        "(int32, int32) -> FnIterator[int32]"
     "#]]);
 }
 
@@ -1173,7 +1219,6 @@ fn main() {
         22,
         expect![[r#"
             [
-                "from_fn",
                 "next",
             ]
         "#]],

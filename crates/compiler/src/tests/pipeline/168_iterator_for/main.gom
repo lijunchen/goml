@@ -1,6 +1,6 @@
-fn countdown(start: int32) -> Iterator[int32] {
+fn countdown(start: int32) -> FnIterator[int32] {
     let current = Ref::new(start);
-    Iterator::from_fn(|| {
+    FnIterator::from_fn(|| {
         let value = current.get();
         if value > 0 {
             current.set(value - 1);
@@ -11,12 +11,12 @@ fn countdown(start: int32) -> Iterator[int32] {
     })
 }
 
-fn counted_range(calls: Ref[int32]) -> Iterator[int32] {
+fn counted_range(calls: Ref[int32]) -> FnIterator[int32] {
     calls.set(calls.get() + 1);
     range(1, 5)
 }
 
-fn first_even(values: Iterator[int32]) -> int32 {
+fn first_even(values: FnIterator[int32]) -> int32 {
     for value in values {
         if value / 2 * 2 == value {
             return value

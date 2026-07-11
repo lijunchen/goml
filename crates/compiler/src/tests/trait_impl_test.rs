@@ -812,3 +812,245 @@ impl Point {
         origin_scheme=TFunc([], TStruct(Point))"#]]
     .assert_eq(&lines.join("\n"));
 }
+
+#[test]
+fn generic_trait_applications_are_distinct() {
+    let src = r#"
+trait Convert[T] {
+    fn convert(Self) -> T;
+}
+
+struct Token {}
+
+impl Convert[int32] for Token {
+    fn convert(self: Token) -> int32 { 7 }
+}
+
+impl Convert[string] for Token {
+    fn convert(self: Token) -> string { "seven" }
+}
+
+fn convert_to[T, V: Convert[T]](value: V) -> T {
+    value.convert()
+}
+
+fn main() -> unit {
+    let number: int32 = convert_to(Token {});
+    let text: string = convert_to(Token {});
+    ()
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
+fn overlapping_generic_trait_applications_are_rejected() {
+    let src = r#"
+trait Convert[T] {
+    fn convert(Self) -> T;
+}
+
+struct Box[T] { value: T }
+
+impl[T] Convert[T] for Box[T] {
+    fn convert(self: Box[T]) -> T { self.value }
+}
+
+impl Convert[int32] for Box[int32] {
+    fn convert(self: Box[int32]) -> int32 { self.value }
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("overlaps with implementation")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn generic_trait_arity_is_checked() {
+    let src = r#"
+trait Convert[T] {
+    fn convert(Self) -> T;
+}
+
+struct Token {}
+
+fn missing[T: Convert](value: T) -> unit { () }
+
+impl Convert[int32, string] for Token {
+    fn convert(self: Token) -> int32 { 7 }
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("Trait Convert expects 1 type arguments, but got 0")),
+        "{diagnostics:?}"
+    );
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("Trait Convert expects 1 type arguments, but got 2")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn generic_trait_parameters_and_signatures_are_validated() {
+    let src = r#"
+trait Duplicate[T, T] {
+    fn value(Self) -> T;
+}
+
+trait Broken[T] {
+    fn value(Self) -> Missing;
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("type parameter T is defined multiple times")),
+        "{diagnostics:?}"
+    );
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("Unknown type constructor Missing")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn generic_trait_arguments_are_validated() {
+    let src = r#"
+trait Convert[T] {
+    fn convert(Self) -> T;
+}
+
+fn convert_missing[T: Convert[Missing]](value: T) -> unit { () }
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("Unknown type constructor Missing")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn explicit_generic_trait_arguments_are_validated() {
+    let src = r#"
+trait Convert[T] {
+    fn convert(Self) -> T;
+}
+
+struct Token {}
+
+impl Convert[int32] for Token {
+    fn convert(self: Token) -> int32 { 7 }
+}
+
+fn main() -> unit {
+    let _ = Convert[int32, string]::convert(Token {});
+    let _ = Convert[Missing]::convert(Token {});
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("Trait Convert expects 1 type arguments, but got 2")),
+        "{diagnostics:?}"
+    );
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("Unknown type constructor Missing")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn generic_traits_are_rejected_as_dyn_types() {
+    let src = r#"
+trait Convert[T] {
+    fn convert(Self) -> T;
+}
+
+fn consume(value: dyn Convert) -> unit { () }
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("Generic trait Convert cannot be used as dyn")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn for_loop_reports_ambiguous_iterator_item_type() {
+    let src = r#"
+struct Values {}
+
+impl Iterator[int32] for Values {
+    fn next(self: Values) -> Option[int32] { Option::None }
+}
+
+impl Iterator[string] for Values {
+    fn next(self: Values) -> Option[string] { Option::None }
+}
+
+fn main() -> unit {
+    for value in (Values {}) {};
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("Could not infer the item type for for loop over Values")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn for_loop_body_can_select_iterator_application() {
+    let src = r#"
+struct Values {}
+
+impl Iterator[int32] for Values {
+    fn next(self: Values) -> Option[int32] { Option::None }
+}
+
+impl Iterator[string] for Values {
+    fn next(self: Values) -> Option[string] { Option::None }
+}
+
+fn consume_int(value: int32) -> unit { () }
+
+fn main() -> unit {
+    for value in (Values {}) {
+        consume_int(value);
+    };
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}

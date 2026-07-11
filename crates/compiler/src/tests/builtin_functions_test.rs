@@ -46,7 +46,7 @@ fn env_registers_builtin_function_signatures() {
             slice_len: Some(TFunc([TSlice(TParam(T))], TInt32))
             slice_sub: Some(TFunc([TSlice(TParam(T)), TInt32, TInt32], TSlice(TParam(T))))
             vec_set: Some(TFunc([TVec(TParam(T)), TInt32, TParam(T)], TUnit))
-            range: Some(TFunc([TInt32, TInt32], TApp(TStruct(Iterator), [TInt32])))"#]],
+            range: Some(TFunc([TInt32, TInt32], TApp(TStruct(FnIterator), [TInt32])))"#]],
     );
 }
 
@@ -141,7 +141,7 @@ fn env_registers_builtin_vec_inherent_methods() {
     let iter = env.lookup_inherent_method(&receiver, &tast::TastIdent("iter".to_string()));
     expect![[r#"
         Some(
-            TFunc([TVec(TParam(T))], TApp(TStruct(Iterator), [TParam(T)])),
+            TFunc([TVec(TParam(T))], TApp(TStruct(FnIterator), [TParam(T)])),
         )
     "#]]
     .assert_debug_eq(&iter);
@@ -213,38 +213,58 @@ fn env_registers_builtin_slice_inherent_methods() {
     let iter = env.lookup_inherent_method(&receiver, &tast::TastIdent("iter".to_string()));
     expect![[r#"
         Some(
-            TFunc([TSlice(TParam(T))], TApp(TStruct(Iterator), [TParam(T)])),
+            TFunc([TSlice(TParam(T))], TApp(TStruct(FnIterator), [TParam(T)])),
         )
     "#]]
     .assert_debug_eq(&iter);
 }
 
 #[test]
-fn env_registers_builtin_iterator_inherent_methods() {
+fn env_registers_builtin_iterator_trait_and_fn_iterator_methods() {
     let env = builtins::builtin_env();
     let iterator_name = env.lang_item(LangItemId::Iterator).unwrap().0.clone();
-    let receiver = tast::Ty::TApp {
+    let iterator_ref = tast::TraitRef::new(
+        tast::TastIdent(iterator_name.clone()),
+        vec![tast::Ty::TInt32],
+    );
+    let trait_def = env
+        .trait_env
+        .trait_defs
+        .get(&iterator_name)
+        .expect("iterator trait exists");
+    assert_eq!(trait_def.params, vec![tast::TastIdent("T".to_string())]);
+
+    let next = env
+        .lookup_trait_method_scheme(&iterator_ref, &tast::TastIdent("next".to_string()))
+        .expect("iterator next method exists");
+    assert_eq!(
+        next.ty,
+        tast::Ty::TFunc {
+            params: vec![tast::Ty::TStruct {
+                name: "Self".to_string(),
+            }],
+            ret_ty: Box::new(tast::Ty::TApp {
+                ty: Box::new(tast::Ty::TEnum {
+                    name: "Option".to_string(),
+                }),
+                args: vec![tast::Ty::TInt32],
+            }),
+        }
+    );
+
+    let fn_iterator = tast::Ty::TApp {
         ty: Box::new(tast::Ty::TStruct {
-            name: iterator_name,
+            name: "FnIterator".to_string(),
         }),
         args: vec![tast::Ty::TInt32],
     };
-
-    let from_fn = env.lookup_inherent_method(&receiver, &tast::TastIdent("from_fn".to_string()));
-    expect![[r#"
-        Some(
-            TFunc([TFunc([], TApp(TEnum(Option), [TParam(T)]))], TApp(TStruct(Iterator), [TParam(T)])),
-        )
-    "#]]
-    .assert_debug_eq(&from_fn);
-
-    let next = env.lookup_inherent_method(&receiver, &tast::TastIdent("next".to_string()));
-    expect![[r#"
-        Some(
-            TFunc([TApp(TStruct(Iterator), [TParam(T)])], TApp(TEnum(Option), [TParam(T)])),
-        )
-    "#]]
-    .assert_debug_eq(&next);
+    assert!(
+        env.lookup_inherent_method(&fn_iterator, &tast::TastIdent("from_fn".to_string()))
+            .is_some()
+    );
+    assert!(env.trait_env.trait_impls.keys().any(|key| {
+        key.trait_ref.name.0 == iterator_name && key.for_ty.get_constr_name_unsafe() == "FnIterator"
+    }));
 }
 
 #[test]
@@ -270,7 +290,7 @@ fn env_registers_builtin_string_inherent_methods() {
 }
 
 #[test]
-fn builtin_function_names_include_ref_builtins() {
+fn builtin_function_names_include_container_and_iterator_builtins() {
     let names = builtins::builtin_function_names();
     assert!(names.iter().any(|n| n == "ref"));
     assert!(names.iter().any(|n| n == "ref_get"));
@@ -287,4 +307,9 @@ fn builtin_function_names_include_ref_builtins() {
     assert!(names.iter().any(|n| n == "array_get"));
     assert!(names.iter().any(|n| n == "array_set"));
     assert!(names.iter().any(|n| n == "range"));
+    assert!(names.iter().any(|n| n == "iterator_map"));
+    assert!(names.iter().any(|n| n == "iterator_filter"));
+    assert!(names.iter().any(|n| n == "iterator_take"));
+    assert!(names.iter().any(|n| n == "iterator_fold"));
+    assert!(names.iter().any(|n| n == "iterator_collect"));
 }
