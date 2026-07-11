@@ -1,42 +1,58 @@
 fn packages_basic::main() -> unit {
-  join ret0() -> unit {
+  join ret4() -> unit {
     ()
   } in
-  let t1 = packages_basic::Lib::color_to_int(Tag_0) in
-  let t2 = $goml_builtin_runtime$int32_to_string(t1) in
-  let t3 = println__T_string(t2) in
-  jump ret0()
+  let t5 = packages_basic::Lib::color_to_int(Tag_0) in
+  let t6 = inherent#int32#int32#to_string(t5) in
+  let t7 = println__T_string(t6) in
+  jump ret4()
 }
 
 fn packages_basic::Lib::color_to_int(c/0: packages_basic::Lib::Color) -> int32 {
-  join ret4(retv5: int32) -> int32 {
-    retv5
+  join ret8(retv9: int32) -> int32 {
+    retv9
   } in
-  join k6(jp7: int32) -> int32 {
-    jump ret4(jp7)
+  join k10(jp11: int32) -> int32 {
+    jump ret8(jp11)
   } in
   match c/0 {
     Tag_0 => {
-      jump k6(1)
+      jump k10(1)
     },
     Tag_1 => {
-      jump k6(2)
+      jump k10(2)
     },
   }
 }
 
 fn main() -> unit {
-  join ret8() -> unit {
+  join ret12() -> unit {
     ()
   } in
-  let t9 = packages_basic::main() in
-  jump ret8()
+  let t13 = packages_basic::main() in
+  jump ret12()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret10() -> unit {
+  join ret14() -> unit {
     ()
   } in
-  let t11 = string_println(value/1) in
-  jump ret10()
+  let t15 = trait_impl#ToString#string#to_string(value/1) in
+  let t16 = @runtime(core.string_println)(t15) in
+  jump ret14()
+}
+
+fn inherent#int32#int32#to_string(self/2: int32) -> string {
+  join ret17(retv18: string) -> string {
+    retv18
+  } in
+  let t19 = @runtime(core.int32_to_string)(self/2) in
+  jump ret17(t19)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  join ret20(retv21: string) -> string {
+    retv21
+  } in
+  jump ret20(self/9)
 }

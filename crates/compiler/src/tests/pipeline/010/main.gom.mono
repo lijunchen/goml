@@ -1,26 +1,26 @@
 fn main() -> unit {
   let a/0 = (true, true) in
   {
-    let x0 = a/0.0 in
-    let x1 = a/0.1 in
-    match x1 {
+    let x4 = a/0.0 in
+    let x5 = a/0.1 in
+    match x5 {
       true => {
-        match x0 {
+        match x4 {
           true => {
-            println__T_string($goml_builtin_runtime$int32_to_string(789))
+            println__T_string(inherent#int32#int32#to_string(789))
           },
           false => {
-            println__T_string($goml_builtin_runtime$int32_to_string(456))
+            println__T_string(inherent#int32#int32#to_string(456))
           },
         }
       },
       false => {
-        match x0 {
+        match x4 {
           true => {
-            println__T_string($goml_builtin_runtime$int32_to_string(123))
+            println__T_string(inherent#int32#int32#to_string(123))
           },
           false => {
-            println__T_string($goml_builtin_runtime$int32_to_string(789))
+            println__T_string(inherent#int32#int32#to_string(789))
           },
         }
       },
@@ -29,5 +29,13 @@ fn main() -> unit {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  string_println(value/1)
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn inherent#int32#int32#to_string(self/2: int32) -> string {
+  @runtime(core.int32_to_string)(self/2)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  self/9
 }

@@ -1,60 +1,60 @@
 fn main() -> bool {
-  join ret3(retv4: bool) -> bool {
-    retv4
+  join ret7(retv8: bool) -> bool {
+    retv8
   } in
   let a/0 = (Tag_2, Tag_2) in
-  let x0 = a/0.0 in
-  let x1 = a/0.1 in
-  join k5(jp6: bool) -> bool {
-    jump ret3(jp6)
+  let x4 = a/0.0 in
+  let x5 = a/0.1 in
+  join k9(jp10: bool) -> bool {
+    jump ret7(jp10)
   } in
-  match x1 {
+  match x5 {
     Tag_0 => {
-      join k7(jp8: bool) -> bool {
-        jump k5(jp8)
+      join k11(jp12: bool) -> bool {
+        jump k9(jp12)
       } in
-      match x0 {
+      match x4 {
         Tag_0 => {
-          jump k7(true)
+          jump k11(true)
         },
         Tag_1 => {
-          jump k7(false)
+          jump k11(false)
         },
         Tag_2 => {
-          jump k7(false)
+          jump k11(false)
         },
       }
     },
     Tag_1 => {
-      join k9(jp10: bool) -> bool {
-        jump k5(jp10)
+      join k13(jp14: bool) -> bool {
+        jump k9(jp14)
       } in
-      match x0 {
+      match x4 {
         Tag_0 => {
-          jump k9(true)
+          jump k13(true)
         },
         Tag_1 => {
-          jump k9(false)
+          jump k13(false)
         },
         Tag_2 => {
-          jump k9(false)
+          jump k13(false)
         },
       }
     },
     Tag_2 => {
-      join k11(jp12: bool) -> bool {
-        jump k5(jp12)
+      join k15(jp16: bool) -> bool {
+        jump k9(jp16)
       } in
-      match x0 {
+      match x4 {
         Tag_0 => {
-          jump k11(false)
+          jump k15(false)
         },
         Tag_1 => {
-          jump k11(false)
+          jump k15(false)
         },
         Tag_2 => {
-          let mtmp2 = print__T_bool(true) in
-          jump k11(false)
+          let mtmp6 = print__T_bool(true) in
+          jump k15(false)
         },
       }
     },
@@ -62,10 +62,18 @@ fn main() -> bool {
 }
 
 fn print__T_bool(value/0: bool) -> unit {
-  join ret13() -> unit {
+  join ret17() -> unit {
     ()
   } in
-  let t14 = $goml_builtin_runtime$bool_to_string(value/0) in
-  let t15 = string_print(t14) in
-  jump ret13()
+  let t18 = trait_impl#ToString#bool#to_string(value/0) in
+  let t19 = @runtime(core.string_print)(t18) in
+  jump ret17()
+}
+
+fn trait_impl#ToString#bool#to_string(self/8: bool) -> string {
+  join ret20(retv21: string) -> string {
+    retv21
+  } in
+  let t22 = @runtime(core.bool_to_string)(self/8) in
+  jump ret20(t22)
 }

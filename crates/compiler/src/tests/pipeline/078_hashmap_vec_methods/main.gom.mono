@@ -1,37 +1,37 @@
 fn trait_impl#Eq#Key#eq(self/0: Key, other/1: Key) -> bool {
   {
-    let mtmp0 = (self/0, other/1) in
+    let mtmp4 = (self/0, other/1) in
     {
-      let x1 = mtmp0.0 in
-      let x2 = mtmp0.1 in
-      match x2 {
+      let x5 = mtmp4.0 in
+      let x6 = mtmp4.1 in
+      match x6 {
         Key::A => {
-          match x1 {
+          match x5 {
             Key::A => {
               true
             },
-            Key::B(x4) => {
+            Key::B(x8) => {
               {
-                let x4 = Key::B._0(x1) in
+                let x8 = Key::B._0(x5) in
                 false
               }
             },
           }
         },
-        Key::B(x3) => {
+        Key::B(x7) => {
           {
-            let x3 = Key::B._0(x2) in
-            match x1 {
+            let x7 = Key::B._0(x6) in
+            match x5 {
               Key::A => {
                 false
               },
-              Key::B(x5) => {
+              Key::B(x9) => {
                 {
-                  let x5 = Key::B._0(x1) in
+                  let x9 = Key::B._0(x5) in
                   {
-                    let __l1_0/2 = x5 in
+                    let __l1_0/2 = x9 in
                     {
-                      let __r1_0/3 = x3 in
+                      let __r1_0/3 = x7 in
                       if true {
                           trait_impl#Eq#int32#eq(__l1_0/2, __r1_0/3)
                       } else {
@@ -57,11 +57,11 @@ fn trait_impl#Hash#Key#hash(self/4: Key) -> uint64 {
         h/5
       }
     },
-    Key::B(x6) => {
+    Key::B(x10) => {
       {
-        let x6 = Key::B._0(self/4) in
+        let x10 = Key::B._0(self/4) in
         {
-          let __field1_0/6 = x6 in
+          let __field1_0/6 = x10 in
           {
             let h/7 = (14695981039346656037 + 2) in
             let h/8 = ((h/7 * 1099511628211) + trait_impl#Hash#int32#hash(__field1_0/6)) in
@@ -78,11 +78,11 @@ fn print_opt_int(x/9: Option__int32) -> unit {
     Option__int32::None => {
       println__T_string("none")
     },
-    Option__int32::Some(x7) => {
+    Option__int32::Some(x11) => {
       {
-        let x7 = Option__int32::Some._0(x/9) in
+        let x11 = Option__int32::Some._0(x/9) in
         {
-          let v/10 = x7 in
+          let v/10 = x11 in
           println__T_int32(v/10)
         }
       }
@@ -92,72 +92,92 @@ fn print_opt_int(x/9: Option__int32) -> unit {
 
 fn main() -> unit {
   let v/11 = inherent#Vec#Vec[T]#new__T_int32() in
-  let v/12 = inherent#Vec#Vec[T]#push__T_int32(v/11, 10) in
-  let v/13 = inherent#Vec#Vec[T]#push__T_int32(v/12, 20) in
-  let v/14 = inherent#Vec#Vec[T]#push__T_int32(v/13, 30) in
-  let _wild8 = println__T_int32(inherent#Vec#Vec[T]#get__T_int32(v/14, 0)) in
-  let _wild9 = println__T_int32(inherent#Vec#Vec[T]#get__T_int32(v/14, 1)) in
-  let _wild10 = println__T_int32(inherent#Vec#Vec[T]#get__T_int32(v/14, 2)) in
-  let _wild11 = println__T_int32(inherent#Vec#Vec[T]#len__T_int32(v/14)) in
-  let m/15 = inherent#HashMap#HashMap[K,V]#new__K_Key__V_int32() in
-  let _wild12 = inherent#HashMap#HashMap[K,V]#set__K_Key__V_int32(m/15, Key::A, 10) in
-  let _wild13 = inherent#HashMap#HashMap[K,V]#set__K_Key__V_int32(m/15, Key::B(1), 20) in
-  let _wild14 = println__T_int32(inherent#HashMap#HashMap[K,V]#len__K_Key__V_int32(m/15)) in
-  let _wild15 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_Key__V_int32(m/15, Key::A)) in
-  let _wild16 = println__T_bool(inherent#HashMap#HashMap[K,V]#contains__K_Key__V_int32(m/15, Key::B(1))) in
-  let _wild17 = inherent#HashMap#HashMap[K,V]#remove__K_Key__V_int32(m/15, Key::B(1)) in
-  let _wild18 = println__T_bool(inherent#HashMap#HashMap[K,V]#contains__K_Key__V_int32(m/15, Key::B(1))) in
-  let _wild19 = println__T_int32(inherent#HashMap#HashMap[K,V]#len__K_Key__V_int32(m/15)) in
+  let _wild12 = inherent#Vec#Vec[T]#push__T_int32(v/11, 10) in
+  let _wild13 = inherent#Vec#Vec[T]#push__T_int32(v/11, 20) in
+  let _wild14 = inherent#Vec#Vec[T]#push__T_int32(v/11, 30) in
+  let _wild15 = println__T_int32(inherent#Vec#Vec[T]#get__T_int32(v/11, 0)) in
+  let _wild16 = println__T_int32(inherent#Vec#Vec[T]#get__T_int32(v/11, 1)) in
+  let _wild17 = println__T_int32(inherent#Vec#Vec[T]#get__T_int32(v/11, 2)) in
+  let _wild18 = println__T_int32(inherent#Vec#Vec[T]#len__T_int32(v/11)) in
+  let m/12 = inherent#HashMap#HashMap[K,V]#new__K_Key__V_int32() in
+  let _wild19 = inherent#HashMap#HashMap[K,V]#set__K_Key__V_int32(m/12, Key::A, 10) in
+  let _wild20 = inherent#HashMap#HashMap[K,V]#set__K_Key__V_int32(m/12, Key::B(1), 20) in
+  let _wild21 = println__T_int32(inherent#HashMap#HashMap[K,V]#len__K_Key__V_int32(m/12)) in
+  let _wild22 = print_opt_int(inherent#HashMap#HashMap[K,V]#get__K_Key__V_int32(m/12, Key::A)) in
+  let _wild23 = println__T_bool(inherent#HashMap#HashMap[K,V]#contains__K_Key__V_int32(m/12, Key::B(1))) in
+  let _wild24 = inherent#HashMap#HashMap[K,V]#remove__K_Key__V_int32(m/12, Key::B(1)) in
+  let _wild25 = println__T_bool(inherent#HashMap#HashMap[K,V]#contains__K_Key__V_int32(m/12, Key::B(1))) in
+  let _wild26 = println__T_int32(inherent#HashMap#HashMap[K,V]#len__K_Key__V_int32(m/12)) in
+}
+
+fn trait_impl#Eq#int32#eq(self/33: int32, other/34: int32) -> bool {
+  (self/33 == other/34)
+}
+
+fn trait_impl#Hash#int32#hash(self/55: int32) -> uint64 {
+  @runtime(core.int32_hash)(self/55)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  string_println(value/1)
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  string_println($goml_builtin_runtime$int32_to_string(value/1))
+  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
 }
 
 fn inherent#Vec#Vec[T]#new__T_int32() -> Vec[int32] {
-  vec_new()
+  @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_int32(self/66: Vec[int32], elem/67: int32) -> Vec[int32] {
-  vec_push(self/66, elem/67)
+fn inherent#Vec#Vec[T]#push__T_int32(self/71: Vec[int32], elem/72: int32) -> unit {
+  @intrinsic(vec.push)(self/71, elem/72)
 }
 
-fn inherent#Vec#Vec[T]#get__T_int32(self/68: Vec[int32], index/69: int32) -> int32 {
-  vec_get(self/68, index/69)
+fn inherent#Vec#Vec[T]#get__T_int32(self/77: Vec[int32], index/78: int32) -> int32 {
+  @intrinsic(vec.get)(self/77, index/78)
 }
 
-fn inherent#Vec#Vec[T]#len__T_int32(self/73: Vec[int32]) -> int32 {
-  vec_len(self/73)
+fn inherent#Vec#Vec[T]#len__T_int32(self/82: Vec[int32]) -> int32 {
+  @intrinsic(vec.len)(self/82)
 }
 
 fn inherent#HashMap#HashMap[K,V]#new__K_Key__V_int32() -> HashMap[Key, int32] {
-  hashmap_new()
+  @intrinsic(hashmap.new)()
 }
 
-fn inherent#HashMap#HashMap[K,V]#set__K_Key__V_int32(self/85: HashMap[Key, int32], key/86: Key, value/87: int32) -> unit {
-  hashmap_set(self/85, key/86, value/87)
+fn inherent#HashMap#HashMap[K,V]#set__K_Key__V_int32(self/94: HashMap[Key, int32], key/95: Key, value/96: int32) -> unit {
+  @intrinsic(hashmap.set)(self/94, key/95, value/96)
 }
 
-fn inherent#HashMap#HashMap[K,V]#len__K_Key__V_int32(self/90: HashMap[Key, int32]) -> int32 {
-  hashmap_len(self/90)
+fn inherent#HashMap#HashMap[K,V]#len__K_Key__V_int32(self/99: HashMap[Key, int32]) -> int32 {
+  @intrinsic(hashmap.len)(self/99)
 }
 
-fn inherent#HashMap#HashMap[K,V]#get__K_Key__V_int32(self/83: HashMap[Key, int32], key/84: Key) -> Option__int32 {
-  hashmap_get(self/83, key/84)
+fn inherent#HashMap#HashMap[K,V]#get__K_Key__V_int32(self/92: HashMap[Key, int32], key/93: Key) -> Option__int32 {
+  @intrinsic(hashmap.get)(self/92, key/93)
 }
 
 fn println__T_bool(value/1: bool) -> unit {
-  string_println($goml_builtin_runtime$bool_to_string(value/1))
+  @runtime(core.string_println)(trait_impl#ToString#bool#to_string(value/1))
 }
 
-fn inherent#HashMap#HashMap[K,V]#contains__K_Key__V_int32(self/91: HashMap[Key, int32], key/92: Key) -> bool {
-  hashmap_contains(self/91, key/92)
+fn inherent#HashMap#HashMap[K,V]#contains__K_Key__V_int32(self/100: HashMap[Key, int32], key/101: Key) -> bool {
+  @intrinsic(hashmap.contains)(self/100, key/101)
 }
 
-fn inherent#HashMap#HashMap[K,V]#remove__K_Key__V_int32(self/88: HashMap[Key, int32], key/89: Key) -> unit {
-  hashmap_remove(self/88, key/89)
+fn inherent#HashMap#HashMap[K,V]#remove__K_Key__V_int32(self/97: HashMap[Key, int32], key/98: Key) -> unit {
+  @intrinsic(hashmap.remove)(self/97, key/98)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  self/9
+}
+
+fn trait_impl#ToString#int32#to_string(self/13: int32) -> string {
+  @runtime(core.int32_to_string)(self/13)
+}
+
+fn trait_impl#ToString#bool#to_string(self/8: bool) -> string {
+  @runtime(core.bool_to_string)(self/8)
 }

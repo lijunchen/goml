@@ -1,5 +1,5 @@
 fn std::fs::read_file(path/0: string) -> Result__string__string {
-  let mtmp0 = std::fs::read_file_raw(path/0) in
+  let mtmp0 = @runtime(std.fs.read_file)(path/0) in
   {
     let x1 = mtmp0.0 in
     let x2 = mtmp0.1 in
@@ -28,7 +28,7 @@ fn std::fs::read_file(path/0: string) -> Result__string__string {
 }
 
 fn std::fs::write_file(path/4: string, content/5: string) -> Result__unit__string {
-  let mtmp4 = std::fs::write_file_raw(path/4, content/5) in
+  let mtmp4 = @runtime(std.fs.write_file)(path/4, content/5) in
   {
     let x5 = mtmp4.0 in
     let x6 = mtmp4.1 in
@@ -53,7 +53,7 @@ fn std::fs::write_file(path/4: string, content/5: string) -> Result__unit__strin
 }
 
 fn std::fs::create_dir_all(path/8: string) -> Result__unit__string {
-  let mtmp7 = std::fs::create_dir_all_raw(path/8) in
+  let mtmp7 = @runtime(std.fs.create_dir_all)(path/8) in
   {
     let x8 = mtmp7.0 in
     let x9 = mtmp7.1 in
@@ -78,11 +78,11 @@ fn std::fs::create_dir_all(path/8: string) -> Result__unit__string {
 }
 
 fn std::fs::exists(path/11: string) -> bool {
-  std::fs::file_exists_raw(path/11)
+  @runtime(std.fs.file_exists)(path/11)
 }
 
 fn std::fs::read_dir(path/12: string) -> Result__Vec[string]__string {
-  let mtmp10 = std::fs::read_dir_raw(path/12) in
+  let mtmp10 = @runtime(std.fs.read_dir)(path/12) in
   {
     let x11 = mtmp10.0 in
     let x12 = mtmp10.1 in
@@ -112,17 +112,17 @@ fn std::fs::read_dir(path/12: string) -> Result__Vec[string]__string {
 
 fn show_unit(result/0: Result__unit__string) -> string {
   match result/0 {
-    Result__unit__string::Ok(x0) => {
+    Result__unit__string::Ok(x4) => {
       {
-        let x0 = Result__unit__string::Ok._0(result/0) in
+        let x4 = Result__unit__string::Ok._0(result/0) in
         "ok"
       }
     },
-    Result__unit__string::Err(x1) => {
+    Result__unit__string::Err(x5) => {
       {
-        let x1 = Result__unit__string::Err._0(result/0) in
+        let x5 = Result__unit__string::Err._0(result/0) in
         {
-          let err/1 = x1 in
+          let err/1 = x5 in
           ("err " + err/1)
         }
       }
@@ -132,20 +132,20 @@ fn show_unit(result/0: Result__unit__string) -> string {
 
 fn show_string(result/2: Result__string__string) -> string {
   match result/2 {
-    Result__string__string::Ok(x2) => {
+    Result__string__string::Ok(x6) => {
       {
-        let x2 = Result__string__string::Ok._0(result/2) in
+        let x6 = Result__string__string::Ok._0(result/2) in
         {
-          let value/3 = x2 in
+          let value/3 = x6 in
           value/3
         }
       }
     },
-    Result__string__string::Err(x3) => {
+    Result__string__string::Err(x7) => {
       {
-        let x3 = Result__string__string::Err._0(result/2) in
+        let x7 = Result__string__string::Err._0(result/2) in
         {
-          let err/4 = x3 in
+          let err/4 = x7 in
           ("err " + err/4)
         }
       }
@@ -154,22 +154,26 @@ fn show_string(result/2: Result__string__string) -> string {
 }
 
 fn main() -> unit {
-  let _wild4 = std::io::println__T_string(string_byte_slice("a你好z", 1, 7)) in
-  let _wild5 = std::io::eprint__T_string("") in
-  let _wild6 = std::io::eprintln__T_string("") in
-  let _wild7 = std::io::println__T_string(show_unit(std::fs::create_dir_all("goml-self-host/nested"))) in
-  let _wild8 = std::io::println__T_string(show_unit(std::fs::write_file("goml-self-host/nested/output.txt", "boot"))) in
+  let _wild8 = std::io::println__T_string(@runtime(core.string_byte_slice)("a你好z", 1, 7)) in
+  let _wild9 = std::io::eprint__T_string("") in
+  let _wild10 = std::io::eprintln__T_string("") in
+  let _wild11 = std::io::println__T_string(show_unit(std::fs::create_dir_all("goml-self-host/nested"))) in
+  let _wild12 = std::io::println__T_string(show_unit(std::fs::write_file("goml-self-host/nested/output.txt", "boot"))) in
   std::io::println__T_string(show_string(std::fs::read_file("goml-self-host/nested/output.txt")))
 }
 
 fn std::io::println__T_string(value/1: string) -> unit {
-  std::io::println_raw(value/1)
+  @runtime(std.io.println)(trait_impl#ToString#string#to_string(value/1))
 }
 
 fn std::io::eprint__T_string(value/2: string) -> unit {
-  std::io::eprint_raw(value/2)
+  @runtime(std.io.eprint)(trait_impl#ToString#string#to_string(value/2))
 }
 
 fn std::io::eprintln__T_string(value/3: string) -> unit {
-  std::io::eprint_raw((value/3 + "\n"))
+  @runtime(std.io.eprint)((trait_impl#ToString#string#to_string(value/3) + "\n"))
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  self/9
 }

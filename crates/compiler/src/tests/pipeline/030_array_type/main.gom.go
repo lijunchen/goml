@@ -4,7 +4,7 @@ import (
     _goml_fmt "fmt"
 )
 
-func string_print(s string) struct{} {
+func _goml_runtime_core_string_print(s string) struct{} {
     _goml_fmt.Print(s)
     return struct{}{}
 }
@@ -19,8 +19,15 @@ func main0() struct{} {
 }
 
 func print__T_string(value__0 string) struct{} {
-    string_print(value__0)
+    var t9 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__0)
+    _goml_runtime_core_string_print(t9)
     return struct{}{}
+}
+
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
+    var retv12 string
+    retv12 = self__9
+    return retv12
 }
 
 func main() {

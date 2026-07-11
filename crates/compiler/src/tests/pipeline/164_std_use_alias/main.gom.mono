@@ -1,15 +1,23 @@
 fn std::env::args() -> Vec[string] {
-  std::env::args_raw()
+  @runtime(std.env.args)()
 }
 
 fn main() -> unit {
-  std::io::println__T_string($goml_builtin_runtime$bool_to_string((inherent#Vec#Vec[T]#len__T_string(std::env::args()) > 0)))
+  std::io::println__T_string(trait_impl#ToString#bool#to_string((inherent#Vec#Vec[T]#len__T_string(std::env::args()) > 0)))
 }
 
 fn std::io::println__T_string(value/1: string) -> unit {
-  std::io::println_raw(value/1)
+  @runtime(std.io.println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#Vec#Vec[T]#len__T_string(self/73: Vec[string]) -> int32 {
-  vec_len(self/73)
+fn inherent#Vec#Vec[T]#len__T_string(self/82: Vec[string]) -> int32 {
+  @intrinsic(vec.len)(self/82)
+}
+
+fn trait_impl#ToString#bool#to_string(self/8: bool) -> string {
+  @runtime(core.bool_to_string)(self/8)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  self/9
 }

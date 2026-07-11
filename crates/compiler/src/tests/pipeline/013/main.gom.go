@@ -4,12 +4,12 @@ import (
     _goml_fmt "fmt"
 )
 
-func string_print(s string) struct{} {
+func _goml_runtime_core_string_print(s string) struct{} {
     _goml_fmt.Print(s)
     return struct{}{}
 }
 
-func string_println(s string) struct{} {
+func _goml_runtime_core_string_println(s string) struct{} {
     _goml_fmt.Println(s)
     return struct{}{}
 }
@@ -22,13 +22,21 @@ func main0() struct{} {
 }
 
 func println__T_string(value__1 string) struct{} {
-    string_println(value__1)
+    var t8 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t8)
     return struct{}{}
 }
 
 func print__T_string(value__0 string) struct{} {
-    string_print(value__0)
+    var t11 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__0)
+    _goml_runtime_core_string_print(t11)
     return struct{}{}
+}
+
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
+    var retv14 string
+    retv14 = self__9
+    return retv14
 }
 
 func main() {

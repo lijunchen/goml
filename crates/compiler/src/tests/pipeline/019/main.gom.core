@@ -1,9 +1,302 @@
 fn print(value/0: T) -> unit {
-  string_print(trait_call[ToString::to_string](value/0))
+  @runtime(core.string_print)(trait_call[ToString::to_string](value/0))
 }
 
 fn println(value/1: T) -> unit {
-  string_println(trait_call[ToString::to_string](value/1))
+  @runtime(core.string_println)(trait_call[ToString::to_string](value/1))
+}
+
+fn inherent#int32#int32#to_string(self/2: int32) -> string {
+  @runtime(core.int32_to_string)(self/2)
+}
+
+fn inherent#char#char#to_string(self/3: char) -> string {
+  @runtime(core.char_to_string)(self/3)
+}
+
+fn inherent#string#string#len(self/4: string) -> int32 {
+  @runtime(core.string_len)(self/4)
+}
+
+fn inherent#string#string#get(self/5: string, index/6: int32) -> char {
+  @runtime(core.string_get)(self/5, index/6)
+}
+
+fn trait_impl#ToString#unit#to_string(self/7: unit) -> string {
+  @runtime(core.unit_to_string)(self/7)
+}
+
+fn trait_impl#ToString#bool#to_string(self/8: bool) -> string {
+  @runtime(core.bool_to_string)(self/8)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  self/9
+}
+
+fn trait_impl#ToString#char#to_string(self/10: char) -> string {
+  @runtime(core.char_to_string)(self/10)
+}
+
+fn trait_impl#ToString#int8#to_string(self/11: int8) -> string {
+  @runtime(core.int8_to_string)(self/11)
+}
+
+fn trait_impl#ToString#int16#to_string(self/12: int16) -> string {
+  @runtime(core.int16_to_string)(self/12)
+}
+
+fn trait_impl#ToString#int32#to_string(self/13: int32) -> string {
+  @runtime(core.int32_to_string)(self/13)
+}
+
+fn trait_impl#ToString#int64#to_string(self/14: int64) -> string {
+  @runtime(core.int64_to_string)(self/14)
+}
+
+fn trait_impl#ToString#uint8#to_string(self/15: uint8) -> string {
+  @runtime(core.uint8_to_string)(self/15)
+}
+
+fn trait_impl#ToString#uint16#to_string(self/16: uint16) -> string {
+  @runtime(core.uint16_to_string)(self/16)
+}
+
+fn trait_impl#ToString#uint32#to_string(self/17: uint32) -> string {
+  @runtime(core.uint32_to_string)(self/17)
+}
+
+fn trait_impl#ToString#uint64#to_string(self/18: uint64) -> string {
+  @runtime(core.uint64_to_string)(self/18)
+}
+
+fn trait_impl#ToString#float32#to_string(self/19: float32) -> string {
+  @runtime(core.float32_to_string)(self/19)
+}
+
+fn trait_impl#ToString#float64#to_string(self/20: float64) -> string {
+  @runtime(core.float64_to_string)(self/20)
+}
+
+fn trait_impl#Eq#unit#eq(self/21: unit, other/22: unit) -> bool {
+  true
+}
+
+fn trait_impl#Eq#bool#eq(self/23: bool, other/24: bool) -> bool {
+  (self/23 == other/24)
+}
+
+fn trait_impl#Eq#string#eq(self/25: string, other/26: string) -> bool {
+  (self/25 == other/26)
+}
+
+fn trait_impl#Eq#char#eq(self/27: char, other/28: char) -> bool {
+  (self/27 == other/28)
+}
+
+fn trait_impl#Eq#int8#eq(self/29: int8, other/30: int8) -> bool {
+  (self/29 == other/30)
+}
+
+fn trait_impl#Eq#int16#eq(self/31: int16, other/32: int16) -> bool {
+  (self/31 == other/32)
+}
+
+fn trait_impl#Eq#int32#eq(self/33: int32, other/34: int32) -> bool {
+  (self/33 == other/34)
+}
+
+fn trait_impl#Eq#int64#eq(self/35: int64, other/36: int64) -> bool {
+  (self/35 == other/36)
+}
+
+fn trait_impl#Eq#uint8#eq(self/37: uint8, other/38: uint8) -> bool {
+  (self/37 == other/38)
+}
+
+fn trait_impl#Eq#uint16#eq(self/39: uint16, other/40: uint16) -> bool {
+  (self/39 == other/40)
+}
+
+fn trait_impl#Eq#uint32#eq(self/41: uint32, other/42: uint32) -> bool {
+  (self/41 == other/42)
+}
+
+fn trait_impl#Eq#uint64#eq(self/43: uint64, other/44: uint64) -> bool {
+  (self/43 == other/44)
+}
+
+fn trait_impl#Eq#float32#eq(self/45: float32, other/46: float32) -> bool {
+  (self/45 == other/46)
+}
+
+fn trait_impl#Eq#float64#eq(self/47: float64, other/48: float64) -> bool {
+  (self/47 == other/48)
+}
+
+fn trait_impl#Hash#unit#hash(self/49: unit) -> uint64 {
+  0
+}
+
+fn trait_impl#Hash#bool#hash(self/50: bool) -> uint64 {
+  if self/50 {
+      {
+        1
+      }
+  } else {
+      {
+        0
+      }
+  }
+}
+
+fn trait_impl#Hash#string#hash(self/51: string) -> uint64 {
+  @runtime(core.string_hash)(self/51)
+}
+
+fn trait_impl#Hash#char#hash(self/52: char) -> uint64 {
+  @runtime(core.char_hash)(self/52)
+}
+
+fn trait_impl#Hash#int8#hash(self/53: int8) -> uint64 {
+  @runtime(core.int8_hash)(self/53)
+}
+
+fn trait_impl#Hash#int16#hash(self/54: int16) -> uint64 {
+  @runtime(core.int16_hash)(self/54)
+}
+
+fn trait_impl#Hash#int32#hash(self/55: int32) -> uint64 {
+  @runtime(core.int32_hash)(self/55)
+}
+
+fn trait_impl#Hash#int64#hash(self/56: int64) -> uint64 {
+  @runtime(core.int64_hash)(self/56)
+}
+
+fn trait_impl#Hash#uint8#hash(self/57: uint8) -> uint64 {
+  @runtime(core.uint8_hash)(self/57)
+}
+
+fn trait_impl#Hash#uint16#hash(self/58: uint16) -> uint64 {
+  @runtime(core.uint16_hash)(self/58)
+}
+
+fn trait_impl#Hash#uint32#hash(self/59: uint32) -> uint64 {
+  @runtime(core.uint32_hash)(self/59)
+}
+
+fn trait_impl#Hash#uint64#hash(self/60: uint64) -> uint64 {
+  self/60
+}
+
+fn trait_impl#Hash#float32#hash(self/61: float32) -> uint64 {
+  @runtime(core.float32_hash)(self/61)
+}
+
+fn trait_impl#Hash#float64#hash(self/62: float64) -> uint64 {
+  @runtime(core.float64_hash)(self/62)
+}
+
+fn trait_impl#Eq#Ref[T]#eq(self/63: Ref[T], other/64: Ref[T]) -> bool {
+  let a/65 = inherent#Ref#Ref[T]#get(self/63) in
+  let b/66 = inherent#Ref#Ref[T]#get(other/64) in
+  trait_call[Eq::eq](a/65, b/66)
+}
+
+fn trait_impl#Hash#Ref[T]#hash(self/67: Ref[T]) -> uint64 {
+  let v/68 = inherent#Ref#Ref[T]#get(self/67) in
+  trait_call[Hash::hash](v/68)
+}
+
+fn trait_impl#ToString#Ref[T]#to_string(self/69: Ref[T]) -> string {
+  let v/70 = inherent#Ref#Ref[T]#get(self/69) in
+  (("ref(" + trait_call[ToString::to_string](v/70)) + ")")
+}
+
+fn inherent#Vec#Vec[T]#new() -> Vec[T] {
+  @intrinsic(vec.new)()
+}
+
+fn inherent#Vec#Vec[T]#push(self/71: Vec[T], elem/72: T) -> unit {
+  @intrinsic(vec.push)(self/71, elem/72)
+}
+
+fn inherent#Vec#Vec[T]#pushed(self/73: Vec[T], elem/74: T) -> Vec[T] {
+  let result/75 = inherent#Vec#Vec[T]#new() in
+  let index/76 = inherent#Ref#Ref[int32]#new(0) in
+  let _wild2 = while (inherent#Ref#Ref[int32]#get(index/76) < inherent#Vec#Vec[T]#len(self/73)) {
+      {
+        let _wild0 = inherent#Vec#Vec[T]#push(result/75, inherent#Vec#Vec[T]#get(self/73, inherent#Ref#Ref[int32]#get(index/76))) in
+        let _wild1 = inherent#Ref#Ref[int32]#set(index/76, (inherent#Ref#Ref[int32]#get(index/76) + 1)) in
+      }
+  } in
+  let _wild3 = inherent#Vec#Vec[T]#push(result/75, elem/74) in
+  result/75
+}
+
+fn inherent#Vec#Vec[T]#get(self/77: Vec[T], index/78: int32) -> T {
+  @intrinsic(vec.get)(self/77, index/78)
+}
+
+fn inherent#Vec#Vec[T]#set(self/79: Vec[T], index/80: int32, elem/81: T) -> unit {
+  @intrinsic(vec.set)(self/79, index/80, elem/81)
+}
+
+fn inherent#Vec#Vec[T]#len(self/82: Vec[T]) -> int32 {
+  @intrinsic(vec.len)(self/82)
+}
+
+fn inherent#Vec#Vec[T]#slice(self/83: Vec[T], start/84: int32, end/85: int32) -> Slice[T] {
+  @intrinsic(slice.new)(self/83, start/84, end/85)
+}
+
+fn inherent#Slice#Slice[T]#get(self/86: Slice[T], index/87: int32) -> T {
+  @intrinsic(slice.get)(self/86, index/87)
+}
+
+fn inherent#Slice#Slice[T]#len(self/88: Slice[T]) -> int32 {
+  @intrinsic(slice.len)(self/88)
+}
+
+fn inherent#Slice#Slice[T]#sub(self/89: Slice[T], start/90: int32, end/91: int32) -> Slice[T] {
+  @intrinsic(slice.sub)(self/89, start/90, end/91)
+}
+
+fn inherent#HashMap#HashMap[K,V]#new() -> HashMap[K, V] {
+  @intrinsic(hashmap.new)()
+}
+
+fn inherent#HashMap#HashMap[K,V]#get(self/92: HashMap[K, V], key/93: K) -> Option[V] {
+  @intrinsic(hashmap.get)(self/92, key/93)
+}
+
+fn inherent#HashMap#HashMap[K,V]#set(self/94: HashMap[K, V], key/95: K, value/96: V) -> unit {
+  @intrinsic(hashmap.set)(self/94, key/95, value/96)
+}
+
+fn inherent#HashMap#HashMap[K,V]#remove(self/97: HashMap[K, V], key/98: K) -> unit {
+  @intrinsic(hashmap.remove)(self/97, key/98)
+}
+
+fn inherent#HashMap#HashMap[K,V]#len(self/99: HashMap[K, V]) -> int32 {
+  @intrinsic(hashmap.len)(self/99)
+}
+
+fn inherent#HashMap#HashMap[K,V]#contains(self/100: HashMap[K, V], key/101: K) -> bool {
+  @intrinsic(hashmap.contains)(self/100, key/101)
+}
+
+fn inherent#Ref#Ref[T]#new(value/102: T) -> Ref[T] {
+  @intrinsic(ref.new)(value/102)
+}
+
+fn inherent#Ref#Ref[T]#get(self/103: Ref[T]) -> T {
+  @intrinsic(ref.get)(self/103)
+}
+
+fn inherent#Ref#Ref[T]#set(self/104: Ref[T], value/105: T) -> unit {
+  @intrinsic(ref.set)(self/104, value/105)
 }
 
 fn make_point() -> Point {
@@ -11,14 +304,14 @@ fn make_point() -> Point {
 }
 
 fn flip(point/0: Point) -> Point {
-  let mtmp0 = point/0 in
+  let mtmp4 = point/0 in
   {
-    let x1 = Point.x(mtmp0) in
-    let x2 = Point.y(mtmp0) in
+    let x5 = Point.x(mtmp4) in
+    let x6 = Point.y(mtmp4) in
     {
-      let y/2 = x2 in
+      let y/2 = x6 in
       {
-        let x/1 = x1 in
+        let x/1 = x5 in
         {
           Point { x: y/2, y: x/1 }
         }
@@ -32,14 +325,14 @@ fn wrap_int(x/3: int32) -> Wrapper[int32] {
 }
 
 fn x_add_1(p/4: Point) -> Point {
-  let mtmp3 = p/4 in
+  let mtmp7 = p/4 in
   {
-    let x4 = Point.x(mtmp3) in
-    let x5 = Point.y(mtmp3) in
+    let x8 = Point.x(mtmp7) in
+    let x9 = Point.y(mtmp7) in
     {
-      let y/6 = x5 in
+      let y/6 = x9 in
       {
-        let x/5 = x4 in
+        let x/5 = x8 in
         {
           Point { x: (x/5 + 1), y: y/6 }
         }
@@ -49,14 +342,14 @@ fn x_add_1(p/4: Point) -> Point {
 }
 
 fn get_x(p/7: Point) -> int32 {
-  let mtmp6 = p/7 in
+  let mtmp10 = p/7 in
   {
-    let x7 = Point.x(mtmp6) in
-    let x8 = Point.y(mtmp6) in
+    let x11 = Point.x(mtmp10) in
+    let x12 = Point.y(mtmp10) in
     {
-      let y/9 = x8 in
+      let y/9 = x12 in
       {
-        let x/8 = x7 in
+        let x/8 = x11 in
         {
           x/8
         }
@@ -66,14 +359,14 @@ fn get_x(p/7: Point) -> int32 {
 }
 
 fn get_y(p/10: Point) -> int32 {
-  let mtmp9 = p/10 in
+  let mtmp13 = p/10 in
   {
-    let x10 = Point.x(mtmp9) in
-    let x11 = Point.y(mtmp9) in
+    let x14 = Point.x(mtmp13) in
+    let x15 = Point.y(mtmp13) in
     {
-      let y/12 = x11 in
+      let y/12 = x15 in
       {
-        let x/11 = x10 in
+        let x/11 = x14 in
         {
           y/12
         }
@@ -83,16 +376,16 @@ fn get_y(p/10: Point) -> int32 {
 }
 
 fn point32_to_string(p/13: Point) -> string {
-  let mtmp12 = p/13 in
+  let mtmp16 = p/13 in
   {
-    let x13 = Point.x(mtmp12) in
-    let x14 = Point.y(mtmp12) in
+    let x17 = Point.x(mtmp16) in
+    let x18 = Point.y(mtmp16) in
     {
-      let y/15 = x14 in
+      let y/15 = x18 in
       {
-        let x/14 = x13 in
+        let x/14 = x17 in
         {
-          (((("Point { x: " + $goml_builtin_runtime$int32_to_string(x/14)) + ", y: ") + $goml_builtin_runtime$int32_to_string(y/15)) + "}")
+          (((("Point { x: " + inherent#int32#int32#to_string(x/14)) + ", y: ") + inherent#int32#int32#to_string(y/15)) + "}")
         }
       }
     }
@@ -100,16 +393,16 @@ fn point32_to_string(p/13: Point) -> string {
 }
 
 fn point32_to_string2(p/16: Point) -> string {
-  let mtmp15 = p/16 in
+  let mtmp19 = p/16 in
   {
-    let x16 = Point.x(mtmp15) in
-    let x17 = Point.y(mtmp15) in
+    let x20 = Point.x(mtmp19) in
+    let x21 = Point.y(mtmp19) in
     {
-      let y/18 = x17 in
+      let y/18 = x21 in
       {
-        let x/17 = x16 in
+        let x/17 = x20 in
         {
-          (((("Point { x: " + $goml_builtin_runtime$int32_to_string(x/17)) + ", y: ") + $goml_builtin_runtime$int32_to_string(y/18)) + "}")
+          (((("Point { x: " + inherent#int32#int32#to_string(x/17)) + ", y: ") + inherent#int32#int32#to_string(y/18)) + "}")
         }
       }
     }
@@ -117,16 +410,16 @@ fn point32_to_string2(p/16: Point) -> string {
 }
 
 fn point32_to_string3(p/19: Point) -> string {
-  let mtmp18 = p/19 in
+  let mtmp22 = p/19 in
   {
-    let x19 = Point.x(mtmp18) in
-    let x20 = Point.y(mtmp18) in
+    let x23 = Point.x(mtmp22) in
+    let x24 = Point.y(mtmp22) in
     {
-      let y/21 = x20 in
+      let y/21 = x24 in
       {
-        let x/20 = x19 in
+        let x/20 = x23 in
         {
-          (((("Point { x: " + $goml_builtin_runtime$int32_to_string(x/20)) + ", y: ") + $goml_builtin_runtime$int32_to_string(y/21)) + "}")
+          (((("Point { x: " + inherent#int32#int32#to_string(x/20)) + ", y: ") + inherent#int32#int32#to_string(y/21)) + "}")
         }
       }
     }
@@ -134,16 +427,16 @@ fn point32_to_string3(p/19: Point) -> string {
 }
 
 fn point32_to_string4(p/22: Point) -> string {
-  let mtmp21 = p/22 in
+  let mtmp25 = p/22 in
   {
-    let x22 = Point.x(mtmp21) in
-    let x23 = Point.y(mtmp21) in
+    let x26 = Point.x(mtmp25) in
+    let x27 = Point.y(mtmp25) in
     {
-      let y/24 = x23 in
+      let y/24 = x27 in
       {
-        let x/23 = x22 in
+        let x/23 = x26 in
         {
-          (((("Point { x: " + $goml_builtin_runtime$int32_to_string(x/23)) + ", y: ") + $goml_builtin_runtime$int32_to_string(y/24)) + "}")
+          (((("Point { x: " + inherent#int32#int32#to_string(x/23)) + ", y: ") + inherent#int32#int32#to_string(y/24)) + "}")
         }
       }
     }
@@ -152,18 +445,18 @@ fn point32_to_string4(p/22: Point) -> string {
 
 fn main() -> unit {
   let start/25 = make_point() in
-  let mtmp24 = println(point32_to_string(start/25)) in
+  let mtmp28 = println(point32_to_string(start/25)) in
   {
     let swapped/26 = flip(Point { x: 1, y: 2 }) in
-    let mtmp25 = println(point32_to_string2(swapped/26)) in
+    let mtmp29 = println(point32_to_string2(swapped/26)) in
     {
       let boxed/27 = wrap_int(3) in
       let point_box/28 = Wrapper { value: swapped/26 } in
       let a/29 = x_add_1(start/25) in
-      let mtmp26 = println(point32_to_string3(a/29)) in
+      let mtmp30 = println(point32_to_string3(a/29)) in
       {
         let a/30 = flip(x_add_1(start/25)) in
-        let mtmp27 = println(point32_to_string4(a/30)) in
+        let mtmp31 = println(point32_to_string4(a/30)) in
         {
           ()
         }

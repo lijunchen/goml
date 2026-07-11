@@ -4,48 +4,55 @@ import (
     _goml_fmt "fmt"
 )
 
-func string_println(s string) struct{} {
+func _goml_runtime_core_string_println(s string) struct{} {
     _goml_fmt.Println(s)
     return struct{}{}
 }
 
 func classify(x__0 float64) string {
-    var retv6 string
-    var jp8 string
+    var retv10 string
+    var jp12 string
     switch x__0 {
     case 0:
-        jp8 = "zero"
+        jp12 = "zero"
     case 1:
-        jp8 = "one"
+        jp12 = "one"
     case -1:
-        jp8 = "minus one"
+        jp12 = "minus one"
     case 3.14:
-        jp8 = "pi"
+        jp12 = "pi"
     default:
-        jp8 = "other"
+        jp12 = "other"
     }
-    retv6 = jp8
-    return retv6
+    retv10 = jp12
+    return retv10
 }
 
 func main0() struct{} {
-    var t10 string = classify(0)
-    println__T_string(t10)
-    var t11 string = classify(1)
-    println__T_string(t11)
-    var t12 float64 = -1
-    var t13 string = classify(t12)
-    println__T_string(t13)
-    var t14 string = classify(3.14)
+    var t14 string = classify(0)
     println__T_string(t14)
-    var t15 string = classify(42)
+    var t15 string = classify(1)
     println__T_string(t15)
+    var t16 float64 = -1
+    var t17 string = classify(t16)
+    println__T_string(t17)
+    var t18 string = classify(3.14)
+    println__T_string(t18)
+    var t19 string = classify(42)
+    println__T_string(t19)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    string_println(value__1)
+    var t21 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t21)
     return struct{}{}
+}
+
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
+    var retv24 string
+    retv24 = self__9
+    return retv24
 }
 
 func main() {

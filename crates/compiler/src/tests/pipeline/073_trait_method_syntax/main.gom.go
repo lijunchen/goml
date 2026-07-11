@@ -4,11 +4,11 @@ import (
     _goml_fmt "fmt"
 )
 
-func int32_to_string(x int32) string {
+func _goml_runtime_core_int32_to_string(x int32) string {
     return _goml_fmt.Sprintf("%d", x)
 }
 
-func string_println(s string) struct{} {
+func _goml_runtime_core_string_println(s string) struct{} {
     _goml_fmt.Println(s)
     return struct{}{}
 }
@@ -18,27 +18,41 @@ type S struct {
 }
 
 func _goml_m_trait__impl_i_ToString_i_S_i_to__string(self__0 S) string {
-    var retv2 string
-    var t3 int32 = self__0.value
-    var t4 string = int32_to_string(t3)
-    var t5 string = "S(" + t4
-    var t6 string = t5 + ")"
-    retv2 = t6
-    return retv2
+    var retv6 string
+    var t7 int32 = self__0.value
+    var t8 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t7)
+    var t9 string = "S(" + t8
+    var t10 string = t9 + ")"
+    retv6 = t10
+    return retv6
 }
 
 func main0() struct{} {
     var s__1 S = S{
         value: 7,
     }
-    var t8 string = _goml_m_trait__impl_i_ToString_i_S_i_to__string(s__1)
-    println__T_string(t8)
+    var t12 string = _goml_m_trait__impl_i_ToString_i_S_i_to__string(s__1)
+    println__T_string(t12)
     return struct{}{}
 }
 
+func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
+    var retv14 string
+    var t15 string = _goml_runtime_core_int32_to_string(self__2)
+    retv14 = t15
+    return retv14
+}
+
 func println__T_string(value__1 string) struct{} {
-    string_println(value__1)
+    var t17 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t17)
     return struct{}{}
+}
+
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
+    var retv20 string
+    retv20 = self__9
+    return retv20
 }
 
 func main() {

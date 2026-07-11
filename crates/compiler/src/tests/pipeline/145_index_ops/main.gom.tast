@@ -1,11 +1,3 @@
-fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
-}
-
-fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
-}
-
 fn print_opt_int(x/0: Option[int32]) -> unit {
     match (x/0 : Option[int32]) {
         Option::Some(v/1: int32) => (println : (int32) -> unit)((v/1 : int32)),
@@ -20,9 +12,9 @@ fn main() -> unit {
     let mut arr2/3: [int32; 3] = [4, 5, 6];
     (arr2/3 : [int32; 3])[1] = 50;
     (println : (int32) -> unit)((arr2/3 : [int32; 3])[1]);
-    let vec/4: Vec[int32] = (Vec[int32]::push : (Vec[int32], int32) -> Vec[int32])((Vec[int32]::push : (Vec[int32], int32) -> Vec[int32])((Vec[int32]::push : (Vec[int32], int32) -> Vec[int32])((Vec[int32]::new : () -> Vec[int32])(), 7), 8), 9);
+    let vec/4: Vec[int32] = (Vec[int32]::pushed : (Vec[int32], int32) -> Vec[int32])((Vec[int32]::pushed : (Vec[int32], int32) -> Vec[int32])((Vec[int32]::pushed : (Vec[int32], int32) -> Vec[int32])((Vec[int32]::new : () -> Vec[int32])(), 7), 8), 9);
     (println : (int32) -> unit)((vec/4 : Vec[int32])[2]);
-    let mut vec2/5: Vec[int32] = (Vec[int32]::push : (Vec[int32], int32) -> Vec[int32])((Vec[int32]::push : (Vec[int32], int32) -> Vec[int32])((Vec[int32]::push : (Vec[int32], int32) -> Vec[int32])((Vec[int32]::new : () -> Vec[int32])(), 10), 11), 12);
+    let mut vec2/5: Vec[int32] = (Vec[int32]::pushed : (Vec[int32], int32) -> Vec[int32])((Vec[int32]::pushed : (Vec[int32], int32) -> Vec[int32])((Vec[int32]::pushed : (Vec[int32], int32) -> Vec[int32])((Vec[int32]::new : () -> Vec[int32])(), 10), 11), 12);
     (vec2/5 : Vec[int32])[0] = 100;
     (println : (int32) -> unit)((vec2/5 : Vec[int32])[0]);
     let s/6: Slice[int32] = (Vec[int32]::slice : (Vec[int32], int32, int32) -> Slice[int32])((vec2/5 : Vec[int32]), 0, 2);
@@ -37,7 +29,7 @@ fn main() -> unit {
     let mut pair/9: ([int32; 2], int32) = ([14, 15], 0);
     (pair/9 : ([int32; 2], int32)).0[1] = 150;
     (println : (int32) -> unit)((pair/9 : ([int32; 2], int32)).0[1]);
-    let mut holder/10: Holder = Holder { data: [16, 17], vecs: (Vec[[int32; 2]]::push : (Vec[[int32; 2]], [int32; 2]) -> Vec[[int32; 2]])((Vec[[int32; 2]]::push : (Vec[[int32; 2]], [int32; 2]) -> Vec[[int32; 2]])((Vec[[int32; 2]]::new : () -> Vec[[int32; 2]])(), [18, 19]), [20, 21]) };
+    let mut holder/10: Holder = Holder { data: [16, 17], vecs: (Vec[[int32; 2]]::pushed : (Vec[[int32; 2]], [int32; 2]) -> Vec[[int32; 2]])((Vec[[int32; 2]]::pushed : (Vec[[int32; 2]], [int32; 2]) -> Vec[[int32; 2]])((Vec[[int32; 2]]::new : () -> Vec[[int32; 2]])(), [18, 19]), [20, 21]) };
     (holder/10 : Holder).data[0] = 160;
     (println : (int32) -> unit)((holder/10 : Holder).data[0]);
     (holder/10 : Holder).vecs[1][0] = 200;

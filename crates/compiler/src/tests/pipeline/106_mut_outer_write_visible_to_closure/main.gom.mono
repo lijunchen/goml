@@ -1,10 +1,26 @@
 fn main() -> unit {
-  let x/0 = $goml_builtin_runtime$ref(0) in
-  let get/1 = || $goml_builtin_runtime$ref_get(x/0) in
-  let _wild0 = $goml_builtin_runtime$ref_set(x/0, 41) in
-  let _wild1 = println__T_string($goml_builtin_runtime$int32_to_string(get/1())) in
+  let x/0 = @intrinsic(ref.new)(0) in
+  let get/1 = || @intrinsic(ref.get)(x/0) in
+  let _wild4 = @intrinsic(ref.set)(x/0, 41) in
+  let _wild5 = println__T_string(inherent#int32#int32#to_string(get/1())) in
 }
 
 fn println__T_string(value/1: string) -> unit {
-  string_println(value/1)
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn inherent#int32#int32#to_string(self/2: int32) -> string {
+  @runtime(core.int32_to_string)(self/2)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  self/9
+}
+
+fn trait_impl#Eq#int32#eq(self/33: int32, other/34: int32) -> bool {
+  (self/33 == other/34)
+}
+
+fn trait_impl#Hash#int32#hash(self/55: int32) -> uint64 {
+  @runtime(core.int32_hash)(self/55)
 }

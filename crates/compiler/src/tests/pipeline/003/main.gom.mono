@@ -1,11 +1,11 @@
 fn main() -> unit {
-  let mtmp0 = print__T_unit(()) in
+  let mtmp4 = print__T_unit(()) in
   {
-    let mtmp1 = print__T_bool(true) in
+    let mtmp5 = print__T_bool(true) in
     {
-      let mtmp2 = print__T_bool(false) in
+      let mtmp6 = print__T_bool(false) in
       {
-        let mtmp3 = print__T_int32(123) in
+        let mtmp7 = print__T_int32(123) in
         {
           ()
         }
@@ -15,13 +15,25 @@ fn main() -> unit {
 }
 
 fn print__T_unit(value/0: unit) -> unit {
-  string_print($goml_builtin_runtime$unit_to_string(value/0))
+  @runtime(core.string_print)(trait_impl#ToString#unit#to_string(value/0))
 }
 
 fn print__T_bool(value/0: bool) -> unit {
-  string_print($goml_builtin_runtime$bool_to_string(value/0))
+  @runtime(core.string_print)(trait_impl#ToString#bool#to_string(value/0))
 }
 
 fn print__T_int32(value/0: int32) -> unit {
-  string_print($goml_builtin_runtime$int32_to_string(value/0))
+  @runtime(core.string_print)(trait_impl#ToString#int32#to_string(value/0))
+}
+
+fn trait_impl#ToString#unit#to_string(self/7: unit) -> string {
+  @runtime(core.unit_to_string)(self/7)
+}
+
+fn trait_impl#ToString#bool#to_string(self/8: bool) -> string {
+  @runtime(core.bool_to_string)(self/8)
+}
+
+fn trait_impl#ToString#int32#to_string(self/13: int32) -> string {
+  @runtime(core.int32_to_string)(self/13)
 }

@@ -21,12 +21,12 @@ fn show_string(x/2: Light__string) -> string {
 }
 
 fn main() -> unit {
-  let _wild0 = println__T_string(show_int(flip__T_int32(Light__int32::Red))) in
-  let _wild1 = println__T_string(show_string(flip__T_string(Light__string::Green))) in
+  let _wild4 = println__T_string(show_int(flip__T_int32(Light__int32::Red))) in
+  let _wild5 = println__T_string(show_string(flip__T_string(Light__string::Green))) in
 }
 
 fn println__T_string(value/1: string) -> unit {
-  string_println(value/1)
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
 fn flip__T_int32(x/0: Light__int32) -> Light__int32 {
@@ -49,4 +49,8 @@ fn flip__T_string(x/0: Light__string) -> Light__string {
       Light__string::Red
     },
   }
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  self/9
 }

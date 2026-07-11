@@ -1,22 +1,30 @@
 fn id_array(x/0: [int32; 3]) -> [int32; 3] {
-  join ret0(retv1: [int32; 3]) -> [int32; 3] {
-    retv1
+  join ret4(retv5: [int32; 3]) -> [int32; 3] {
+    retv5
   } in
-  jump ret0(x/0)
+  jump ret4(x/0)
 }
 
 fn main() -> unit {
-  join ret2() -> unit {
+  join ret6() -> unit {
     ()
   } in
-  let t3 = print__T_string("array") in
-  jump ret2()
+  let t7 = print__T_string("array") in
+  jump ret6()
 }
 
 fn print__T_string(value/0: string) -> unit {
-  join ret4() -> unit {
+  join ret8() -> unit {
     ()
   } in
-  let t5 = string_print(value/0) in
-  jump ret4()
+  let t9 = trait_impl#ToString#string#to_string(value/0) in
+  let t10 = @runtime(core.string_print)(t9) in
+  jump ret8()
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  join ret11(retv12: string) -> string {
+    retv12
+  } in
+  jump ret11(self/9)
 }

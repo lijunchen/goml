@@ -1,22 +1,22 @@
 fn main() -> unit {
-  let mtmp0 = () in
+  let mtmp4 = () in
   {
     let a/0 = (true, false, (true, false)) in
     let b/5 = {
-      let x1 = a/0.0 in
-      let x2 = a/0.1 in
-      let x3 = a/0.2 in
+      let x5 = a/0.0 in
+      let x6 = a/0.1 in
+      let x7 = a/0.2 in
       {
-        let x4 = x3.0 in
-        let x5 = x3.1 in
+        let x8 = x7.0 in
+        let x9 = x7.1 in
         {
-          let w/4 = x5 in
+          let w/4 = x9 in
           {
-            let z/3 = x4 in
+            let z/3 = x8 in
             {
-              let y/2 = x2 in
+              let y/2 = x6 in
               {
-                let x/1 = x1 in
+                let x/1 = x5 in
                 w/4
               }
             }
@@ -24,7 +24,7 @@ fn main() -> unit {
         }
       }
     } in
-    let mtmp6 = print__T_bool(b/5) in
+    let mtmp10 = print__T_bool(b/5) in
     {
       ()
     }
@@ -32,5 +32,9 @@ fn main() -> unit {
 }
 
 fn print__T_bool(value/0: bool) -> unit {
-  string_print($goml_builtin_runtime$bool_to_string(value/0))
+  @runtime(core.string_print)(trait_impl#ToString#bool#to_string(value/0))
+}
+
+fn trait_impl#ToString#bool#to_string(self/8: bool) -> string {
+  @runtime(core.bool_to_string)(self/8)
 }

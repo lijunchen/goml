@@ -4,20 +4,20 @@ import (
     _goml_fmt "fmt"
 )
 
-func int8_to_string(x int8) string {
+func _goml_runtime_core_int8_to_string(x int8) string {
     return _goml_fmt.Sprintf("%d", x)
 }
 
-func int32_to_string(x int32) string {
+func _goml_runtime_core_int32_to_string(x int32) string {
     return _goml_fmt.Sprintf("%d", x)
 }
 
-func string_print(s string) struct{} {
+func _goml_runtime_core_string_print(s string) struct{} {
     _goml_fmt.Print(s)
     return struct{}{}
 }
 
-func string_println(s string) struct{} {
+func _goml_runtime_core_string_println(s string) struct{} {
     _goml_fmt.Println(s)
     return struct{}{}
 }
@@ -33,20 +33,41 @@ func main0() struct{} {
 }
 
 func print__T_string(value__0 string) struct{} {
-    string_print(value__0)
+    var t10 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__0)
+    _goml_runtime_core_string_print(t10)
     return struct{}{}
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t8 string = int32_to_string(value__1)
-    string_println(t8)
+    var t13 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
+    _goml_runtime_core_string_println(t13)
     return struct{}{}
 }
 
 func println__T_int8(value__1 int8) struct{} {
-    var t11 string = int8_to_string(value__1)
-    string_println(t11)
+    var t16 string = _goml_m_trait__impl_i_ToString_i_int8_i_to__string(value__1)
+    _goml_runtime_core_string_println(t16)
     return struct{}{}
+}
+
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
+    var retv19 string
+    retv19 = self__9
+    return retv19
+}
+
+func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__13 int32) string {
+    var retv21 string
+    var t22 string = _goml_runtime_core_int32_to_string(self__13)
+    retv21 = t22
+    return retv21
+}
+
+func _goml_m_trait__impl_i_ToString_i_int8_i_to__string(self__11 int8) string {
+    var retv24 string
+    var t25 string = _goml_runtime_core_int8_to_string(self__11)
+    retv24 = t25
+    return retv24
 }
 
 func main() {

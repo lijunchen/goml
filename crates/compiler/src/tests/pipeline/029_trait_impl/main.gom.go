@@ -4,11 +4,11 @@ import (
     _goml_fmt "fmt"
 )
 
-func int32_to_string(x int32) string {
+func _goml_runtime_core_int32_to_string(x int32) string {
     return _goml_fmt.Sprintf("%d", x)
 }
 
-func string_println(s string) struct{} {
+func _goml_runtime_core_string_println(s string) struct{} {
     _goml_fmt.Println(s)
     return struct{}{}
 }
@@ -33,44 +33,44 @@ type Nothing struct {}
 func (_ Nothing) isMaybe__int32() {}
 
 func _goml_m_trait__impl_i_Display_i_Point_i_show(self__0 Point) string {
-    var retv5 string
-    retv5 = "Point"
-    return retv5
+    var retv9 string
+    retv9 = "Point"
+    return retv9
 }
 
 func _goml_m_trait__impl_i_Display_i_Maybe____int32_i_show(self__1 Maybe__int32) string {
-    var retv7 string
-    var jp9 string
+    var retv11 string
+    var jp13 string
     switch self__1.(type) {
     case Just:
-        var x0 int32 = self__1.(Just)._0
-        var value__2 int32 = x0
-        var t10 string = int32_to_string(value__2)
-        var t11 string = "Just(" + t10
-        var t12 string = t11 + ")"
-        jp9 = t12
+        var x4 int32 = self__1.(Just)._0
+        var value__2 int32 = x4
+        var t14 string = _goml_m_inherent_i_int32_i_int32_i_to__string(value__2)
+        var t15 string = "Just(" + t14
+        var t16 string = t15 + ")"
+        jp13 = t16
     case Nothing:
-        jp9 = "Nothing"
+        jp13 = "Nothing"
     default:
         panic("non-exhaustive match")
     }
-    retv7 = jp9
-    return retv7
+    retv11 = jp13
+    return retv11
 }
 
 func make_maybe(flag__3 bool) Maybe__int32 {
-    var retv14 Maybe__int32
-    var jp16 Maybe__int32
+    var retv18 Maybe__int32
+    var jp20 Maybe__int32
     if flag__3 {
-        var t17 Maybe__int32 = Just{
+        var t21 Maybe__int32 = Just{
             _0: 42,
         }
-        jp16 = t17
+        jp20 = t21
     } else {
-        jp16 = Nothing{}
+        jp20 = Nothing{}
     }
-    retv14 = jp16
-    return retv14
+    retv18 = jp20
+    return retv18
 }
 
 func main0() struct{} {
@@ -80,18 +80,32 @@ func main0() struct{} {
     }
     var some_number__5 Maybe__int32 = make_maybe(true)
     var none_number__6 Maybe__int32 = make_maybe(false)
-    var t19 string = _goml_m_trait__impl_i_Display_i_Point_i_show(point__4)
-    println__T_string(t19)
-    var t20 string = _goml_m_trait__impl_i_Display_i_Maybe____int32_i_show(some_number__5)
-    println__T_string(t20)
-    var t21 string = _goml_m_trait__impl_i_Display_i_Maybe____int32_i_show(none_number__6)
-    println__T_string(t21)
+    var t23 string = _goml_m_trait__impl_i_Display_i_Point_i_show(point__4)
+    println__T_string(t23)
+    var t24 string = _goml_m_trait__impl_i_Display_i_Maybe____int32_i_show(some_number__5)
+    println__T_string(t24)
+    var t25 string = _goml_m_trait__impl_i_Display_i_Maybe____int32_i_show(none_number__6)
+    println__T_string(t25)
     return struct{}{}
 }
 
+func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
+    var retv27 string
+    var t28 string = _goml_runtime_core_int32_to_string(self__2)
+    retv27 = t28
+    return retv27
+}
+
 func println__T_string(value__1 string) struct{} {
-    string_println(value__1)
+    var t30 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t30)
     return struct{}{}
+}
+
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
+    var retv33 string
+    retv33 = self__9
+    return retv33
 }
 
 func main() {

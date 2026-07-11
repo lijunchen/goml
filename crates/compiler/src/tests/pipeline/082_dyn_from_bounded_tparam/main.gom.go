@@ -4,7 +4,7 @@ import (
     _goml_fmt "fmt"
 )
 
-func string_println(s string) struct{} {
+func _goml_runtime_core_string_println(s string) struct{} {
     _goml_fmt.Println(s)
     return struct{}{}
 }
@@ -31,31 +31,38 @@ func dyn__Display__vtable__S() *dyn__Display_vtable {
 }
 
 func _goml_m_trait__impl_i_Display_i_S_i_show(self__0 S) string {
-    var retv3 string
-    retv3 = "ok"
-    return retv3
+    var retv7 string
+    retv7 = "ok"
+    return retv7
 }
 
 func main0() struct{} {
-    var t5 S = S{}
-    to_dyn__T_S(t5)
+    var t9 S = S{}
+    to_dyn__T_S(t9)
     println__T_string("ok")
     return struct{}{}
 }
 
 func to_dyn__T_S(x__1 S) dyn__Display {
-    var retv7 dyn__Display
-    var t8 dyn__Display = dyn__Display{
+    var retv11 dyn__Display
+    var t12 dyn__Display = dyn__Display{
         data: x__1,
         vtable: dyn__Display__vtable__S(),
     }
-    retv7 = t8
-    return retv7
+    retv11 = t12
+    return retv11
 }
 
 func println__T_string(value__1 string) struct{} {
-    string_println(value__1)
+    var t14 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t14)
     return struct{}{}
+}
+
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
+    var retv17 string
+    retv17 = self__9
+    return retv17
 }
 
 func main() {

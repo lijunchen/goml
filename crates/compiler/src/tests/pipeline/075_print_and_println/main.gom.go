@@ -4,11 +4,11 @@ import (
     _goml_fmt "fmt"
 )
 
-func unit_to_string(x struct{}) string {
+func _goml_runtime_core_unit_to_string(x struct{}) string {
     return "()"
 }
 
-func bool_to_string(x bool) string {
+func _goml_runtime_core_bool_to_string(x bool) string {
     if x {
         return "true"
     } else {
@@ -16,16 +16,16 @@ func bool_to_string(x bool) string {
     }
 }
 
-func int32_to_string(x int32) string {
+func _goml_runtime_core_int32_to_string(x int32) string {
     return _goml_fmt.Sprintf("%d", x)
 }
 
-func string_print(s string) struct{} {
+func _goml_runtime_core_string_print(s string) struct{} {
     _goml_fmt.Print(s)
     return struct{}{}
 }
 
-func string_println(s string) struct{} {
+func _goml_runtime_core_string_println(s string) struct{} {
     _goml_fmt.Println(s)
     return struct{}{}
 }
@@ -68,13 +68,13 @@ func dyn__ToString__vtable__S() *dyn__ToString_vtable {
 }
 
 func _goml_m_trait__impl_i_ToString_i_S_i_to__string(self__0 S) string {
-    var retv12 string
-    var t13 int32 = self__0.value
-    var t14 string = int32_to_string(t13)
-    var t15 string = "S(" + t14
-    var t16 string = t15 + ")"
-    retv12 = t16
-    return retv12
+    var retv16 string
+    var t17 int32 = self__0.value
+    var t18 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t17)
+    var t19 string = "S(" + t18
+    var t20 string = t19 + ")"
+    retv16 = t20
+    return retv16
 }
 
 func main0() struct{} {
@@ -82,10 +82,10 @@ func main0() struct{} {
     println__T_bool(true)
     println__T_string("hi")
     println__T_unit(struct{}{})
-    var t18 string = int32_to_string(2)
-    println__T_string(t18)
-    var t19 string = int32_to_string(2)
-    println__T_string(t19)
+    var t22 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(2)
+    println__T_string(t22)
+    var t23 string = _goml_m_inherent_i_int32_i_int32_i_to__string(2)
+    println__T_string(t23)
     var s__1 S = S{
         value: 9,
     }
@@ -102,60 +102,110 @@ func main0() struct{} {
     return struct{}{}
 }
 
+func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
+    var retv25 string
+    var t26 string = _goml_runtime_core_int32_to_string(self__2)
+    retv25 = t26
+    return retv25
+}
+
 func println__T_int32(value__1 int32) struct{} {
-    var t21 string = int32_to_string(value__1)
-    string_println(t21)
+    var t28 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
+    _goml_runtime_core_string_println(t28)
     return struct{}{}
 }
 
 func println__T_bool(value__1 bool) struct{} {
-    var t24 string = bool_to_string(value__1)
-    string_println(t24)
+    var t31 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__1)
+    _goml_runtime_core_string_println(t31)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    string_println(value__1)
+    var t34 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t34)
     return struct{}{}
 }
 
 func println__T_unit(value__1 struct{}) struct{} {
-    var t29 string = unit_to_string(value__1)
-    string_println(t29)
+    var t37 string = _goml_m_trait__impl_i_ToString_i_unit_i_to__string(value__1)
+    _goml_runtime_core_string_println(t37)
     return struct{}{}
 }
 
+func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__13 int32) string {
+    var retv40 string
+    var t41 string = _goml_runtime_core_int32_to_string(self__13)
+    retv40 = t41
+    return retv40
+}
+
 func println__T_S(value__1 S) struct{} {
-    var t32 string = _goml_m_trait__impl_i_ToString_i_S_i_to__string(value__1)
-    string_println(t32)
+    var t43 string = _goml_m_trait__impl_i_ToString_i_S_i_to__string(value__1)
+    _goml_runtime_core_string_println(t43)
     return struct{}{}
 }
 
 func println__T_dynToString(value__1 dyn__ToString) struct{} {
-    var t35 string = value__1.vtable.to_string(value__1.data)
-    string_println(t35)
+    var t46 string = value__1.vtable.to_string(value__1.data)
+    _goml_runtime_core_string_println(t46)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__93 int32) *ref_int32_x {
-    var retv38 *ref_int32_x
-    var t39 *ref_int32_x = ref__Ref_5int32(value__93)
-    retv38 = t39
-    return retv38
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__102 int32) *ref_int32_x {
+    var retv49 *ref_int32_x
+    var t50 *ref_int32_x = ref__Ref_5int32(value__102)
+    retv49 = t50
+    return retv49
 }
 
 func _goml_m_println____T__Ref_l_int32_r_(value__1 *ref_int32_x) struct{} {
-    var t41 int32 = ref_get__Ref_5int32(value__1)
-    var t42 string = int32_to_string(t41)
-    var t43 string = "ref(" + t42
-    var t44 string = t43 + ")"
-    string_println(t44)
+    var t52 string = _goml_m_trait__impl_i_ToString_i_Ref_l_int32_r__i_to__string(value__1)
+    _goml_runtime_core_string_println(t52)
     return struct{}{}
 }
 
 func print__T_string(value__0 string) struct{} {
-    string_print(value__0)
+    var t55 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__0)
+    _goml_runtime_core_string_print(t55)
     return struct{}{}
+}
+
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__8 bool) string {
+    var retv58 string
+    var t59 string = _goml_runtime_core_bool_to_string(self__8)
+    retv58 = t59
+    return retv58
+}
+
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
+    var retv61 string
+    retv61 = self__9
+    return retv61
+}
+
+func _goml_m_trait__impl_i_ToString_i_unit_i_to__string(self__7 struct{}) string {
+    var retv63 string
+    var t64 string = _goml_runtime_core_unit_to_string(self__7)
+    retv63 = t64
+    return retv63
+}
+
+func _goml_m_trait__impl_i_ToString_i_Ref_l_int32_r__i_to__string(self__69 *ref_int32_x) string {
+    var retv66 string
+    var v__70 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__69)
+    var t67 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(v__70)
+    var t68 string = "ref(" + t67
+    var t69 string = t68 + ")"
+    retv66 = t69
+    return retv66
+}
+
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__103 *ref_int32_x) int32 {
+    var retv71 int32
+    var t72 int32 = ref_get__Ref_5int32(self__103)
+    retv71 = t72
+    return retv71
 }
 
 func main() {

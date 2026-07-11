@@ -1,46 +1,54 @@
 fn main() -> unit {
-  join ret5() -> unit {
+  join ret9() -> unit {
     ()
   } in
   let a/0 = (true, false) in
-  let x0 = a/0.0 in
-  let x1 = a/0.1 in
-  join k6() -> unit {
-    let mtmp2 = () in
+  let x4 = a/0.0 in
+  let x5 = a/0.1 in
+  join k10() -> unit {
+    let mtmp6 = () in
     let c/2 = (true, true) in
-    let x3 = c/2.0 in
-    let x4 = c/2.1 in
-    join k7() -> unit {
-      jump ret5()
+    let x7 = c/2.0 in
+    let x8 = c/2.1 in
+    join k11() -> unit {
+      jump ret9()
     } in
-    match x3 {
+    match x7 {
       true => {
-        let d/3 = x4 in
-        let t8 = print__T_bool(d/3) in
-        jump k7()
+        let d/3 = x8 in
+        let t12 = print__T_bool(d/3) in
+        jump k11()
       },
       false => {
-        jump k7()
+        jump k11()
       },
     }
   } in
-  match x0 {
+  match x4 {
     true => {
-      let b/1 = x1 in
-      let t9 = print__T_bool(b/1) in
-      jump k6()
+      let b/1 = x5 in
+      let t13 = print__T_bool(b/1) in
+      jump k10()
     },
     false => {
-      jump k6()
+      jump k10()
     },
   }
 }
 
 fn print__T_bool(value/0: bool) -> unit {
-  join ret10() -> unit {
+  join ret14() -> unit {
     ()
   } in
-  let t11 = $goml_builtin_runtime$bool_to_string(value/0) in
-  let t12 = string_print(t11) in
-  jump ret10()
+  let t15 = trait_impl#ToString#bool#to_string(value/0) in
+  let t16 = @runtime(core.string_print)(t15) in
+  jump ret14()
+}
+
+fn trait_impl#ToString#bool#to_string(self/8: bool) -> string {
+  join ret17(retv18: string) -> string {
+    retv18
+  } in
+  let t19 = @runtime(core.bool_to_string)(self/8) in
+  jump ret17(t19)
 }

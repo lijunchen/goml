@@ -1,36 +1,52 @@
 fn choose(flag/0: bool, x/1: int32, y/2: int32) -> int32 {
-  join ret2(retv3: int32) -> int32 {
-    retv3
+  join ret6(retv7: int32) -> int32 {
+    retv7
   } in
-  join k4(jp5: int32) -> int32 {
-    jump ret2(jp5)
+  join k8(jp9: int32) -> int32 {
+    jump ret6(jp9)
   } in
   if flag/0 {
-    jump k4(x/1)
+    jump k8(x/1)
   } else {
-    jump k4(y/2)
+    jump k8(y/2)
   }
 }
 
 fn main() -> unit {
-  join ret6() -> unit {
+  join ret10() -> unit {
     ()
   } in
   let yes/3 = choose(true, 10, 99) in
   let no/4 = choose(false, 10, 99) in
-  let t7 = $goml_builtin_runtime$int32_to_string(yes/3) in
-  let t8 = ("yes=" + t7) in
-  let mtmp0 = println__T_string(t8) in
-  let t9 = $goml_builtin_runtime$int32_to_string(no/4) in
-  let t10 = ("no=" + t9) in
-  let mtmp1 = println__T_string(t10) in
-  jump ret6()
+  let t11 = inherent#int32#int32#to_string(yes/3) in
+  let t12 = ("yes=" + t11) in
+  let mtmp4 = println__T_string(t12) in
+  let t13 = inherent#int32#int32#to_string(no/4) in
+  let t14 = ("no=" + t13) in
+  let mtmp5 = println__T_string(t14) in
+  jump ret10()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret11() -> unit {
+  join ret15() -> unit {
     ()
   } in
-  let t12 = string_println(value/1) in
-  jump ret11()
+  let t16 = trait_impl#ToString#string#to_string(value/1) in
+  let t17 = @runtime(core.string_println)(t16) in
+  jump ret15()
+}
+
+fn inherent#int32#int32#to_string(self/2: int32) -> string {
+  join ret18(retv19: string) -> string {
+    retv19
+  } in
+  let t20 = @runtime(core.int32_to_string)(self/2) in
+  jump ret18(t20)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  join ret21(retv22: string) -> string {
+    retv22
+  } in
+  jump ret21(self/9)
 }

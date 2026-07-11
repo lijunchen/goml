@@ -1,11 +1,3 @@
-fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
-}
-
-fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
-}
-
 fn show_unit(result/0: Result[unit, string]) -> string {
     match (result/0 : Result[unit, string]) {
         Result::Ok(_ : unit) => "ok",
@@ -21,7 +13,7 @@ fn show_string(result/2: Result[string, string]) -> string {
 }
 
 fn main() -> unit {
-    (std::io::println : (string) -> unit)((string_byte_slice : (string, int32, int32) -> string)("a你好z", 1, 7));
+    (std::io::println : (string) -> unit)((@runtime(core.string_byte_slice) : (string, int32, int32) -> string)("a你好z", 1, 7));
     (std::io::eprint : (string) -> unit)("");
     (std::io::eprintln : (string) -> unit)("");
     (std::io::println : (string) -> unit)((show_unit : (Result[unit, string]) -> string)((std::fs::create_dir_all : (string) -> Result[unit, string])("goml-self-host/nested")));

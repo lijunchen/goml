@@ -1,43 +1,59 @@
 fn trait_impl#Display#Point#show(self/0: Point) -> string {
-  join ret1(retv2: string) -> string {
-    retv2
-  } in
-  let t3 = Point.value(self/0) in
-  let t4 = $goml_builtin_runtime$int32_to_string(t3) in
-  jump ret1(t4)
-}
-
-fn render(x/2: dyn Display) -> string {
   join ret5(retv6: string) -> string {
     retv6
   } in
-  let t7 = dyn_call[Display::show](x/2) in
-  jump ret5(t7)
+  let t7 = Point.value(self/0) in
+  let t8 = inherent#int32#int32#to_string(t7) in
+  jump ret5(t8)
+}
+
+fn render(x/2: dyn Display) -> string {
+  join ret9(retv10: string) -> string {
+    retv10
+  } in
+  let t11 = dyn_call[Display::show](x/2) in
+  jump ret9(t11)
 }
 
 fn main() -> unit {
-  join ret8() -> unit {
+  join ret12() -> unit {
     ()
   } in
-  let t9 = Point { value: 7 } in
-  let d/3 = to_dyn__T_Point(t9) in
-  let t10 = render(d/3) in
-  let _wild0 = println__T_string(t10) in
-  jump ret8()
+  let t13 = Point { value: 7 } in
+  let d/3 = to_dyn__T_Point(t13) in
+  let t14 = render(d/3) in
+  let _wild4 = println__T_string(t14) in
+  jump ret12()
+}
+
+fn inherent#int32#int32#to_string(self/2: int32) -> string {
+  join ret15(retv16: string) -> string {
+    retv16
+  } in
+  let t17 = @runtime(core.int32_to_string)(self/2) in
+  jump ret15(t17)
 }
 
 fn to_dyn__T_Point(x/1: Point) -> dyn Display {
-  join ret11(retv12: dyn Display) -> dyn Display {
-    retv12
+  join ret18(retv19: dyn Display) -> dyn Display {
+    retv19
   } in
-  let t13 = to_dyn[Display]{Point}(x/1) in
-  jump ret11(t13)
+  let t20 = to_dyn[Display]{Point}(x/1) in
+  jump ret18(t20)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret14() -> unit {
+  join ret21() -> unit {
     ()
   } in
-  let t15 = string_println(value/1) in
-  jump ret14()
+  let t22 = trait_impl#ToString#string#to_string(value/1) in
+  let t23 = @runtime(core.string_println)(t22) in
+  jump ret21()
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  join ret24(retv25: string) -> string {
+    retv25
+  } in
+  jump ret24(self/9)
 }

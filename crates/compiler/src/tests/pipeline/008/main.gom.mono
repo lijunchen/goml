@@ -2,20 +2,20 @@ fn main() -> unit {
   let t/0 = T::B(true, ()) in
   match t/0 {
     T::A => {
-      println__T_string($goml_builtin_runtime$int32_to_string(1))
+      println__T_string(inherent#int32#int32#to_string(1))
     },
-    T::B(x0, x1) => {
+    T::B(x4, x5) => {
       {
-        let x0 = T::B._0(t/0) in
-        let x1 = T::B._1(t/0) in
-        match x1 {
+        let x4 = T::B._0(t/0) in
+        let x5 = T::B._1(t/0) in
+        match x5 {
           () => {
-            match x0 {
+            match x4 {
               true => {
-                println__T_string($goml_builtin_runtime$int32_to_string(2))
+                println__T_string(inherent#int32#int32#to_string(2))
               },
               false => {
-                println__T_string($goml_builtin_runtime$int32_to_string(3))
+                println__T_string(inherent#int32#int32#to_string(3))
               },
             }
           },
@@ -26,5 +26,13 @@ fn main() -> unit {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  string_println(value/1)
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn inherent#int32#int32#to_string(self/2: int32) -> string {
+  @runtime(core.int32_to_string)(self/2)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  self/9
 }

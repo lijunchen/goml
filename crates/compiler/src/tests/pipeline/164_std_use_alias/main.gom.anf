@@ -1,35 +1,51 @@
 fn std::env::args() -> Vec[string] {
-  join ret0(retv1: Vec[string]) -> Vec[string] {
-    retv1
+  join ret4(retv5: Vec[string]) -> Vec[string] {
+    retv5
   } in
-  let t2 = std::env::args_raw() in
-  jump ret0(t2)
+  let t6 = @runtime(std.env.args)() in
+  jump ret4(t6)
 }
 
 fn main() -> unit {
-  join ret3() -> unit {
+  join ret7() -> unit {
     ()
   } in
-  let t4 = std::env::args() in
-  let t5 = inherent#Vec#Vec[T]#len__T_string(t4) in
-  let t6 = (t5 > 0) in
-  let t7 = $goml_builtin_runtime$bool_to_string(t6) in
-  let t8 = std::io::println__T_string(t7) in
-  jump ret3()
+  let t8 = std::env::args() in
+  let t9 = inherent#Vec#Vec[T]#len__T_string(t8) in
+  let t10 = (t9 > 0) in
+  let t11 = trait_impl#ToString#bool#to_string(t10) in
+  let t12 = std::io::println__T_string(t11) in
+  jump ret7()
 }
 
 fn std::io::println__T_string(value/1: string) -> unit {
-  join ret9() -> unit {
+  join ret13() -> unit {
     ()
   } in
-  let t10 = std::io::println_raw(value/1) in
-  jump ret9()
+  let t14 = trait_impl#ToString#string#to_string(value/1) in
+  let t15 = @runtime(std.io.println)(t14) in
+  jump ret13()
 }
 
-fn inherent#Vec#Vec[T]#len__T_string(self/73: Vec[string]) -> int32 {
-  join ret11(retv12: int32) -> int32 {
-    retv12
+fn inherent#Vec#Vec[T]#len__T_string(self/82: Vec[string]) -> int32 {
+  join ret16(retv17: int32) -> int32 {
+    retv17
   } in
-  let t13 = vec_len(self/73) in
-  jump ret11(t13)
+  let t18 = @intrinsic(vec.len)(self/82) in
+  jump ret16(t18)
+}
+
+fn trait_impl#ToString#bool#to_string(self/8: bool) -> string {
+  join ret19(retv20: string) -> string {
+    retv20
+  } in
+  let t21 = @runtime(core.bool_to_string)(self/8) in
+  jump ret19(t21)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  join ret22(retv23: string) -> string {
+    retv23
+  } in
+  jump ret22(self/9)
 }

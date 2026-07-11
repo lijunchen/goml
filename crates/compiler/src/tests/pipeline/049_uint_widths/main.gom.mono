@@ -15,10 +15,30 @@ fn main() -> unit {
   let add64/13 = 4000000000 in
   let sum64/14 = (start64/12 + add64/13) in
   let diff64/15 = (sum64/14 - add64/13) in
-  let message/16 = (((((((($goml_builtin_runtime$uint8_to_string(sum8/2) + ", ") + $goml_builtin_runtime$uint8_to_string(neg8/3)) + "; ") + $goml_builtin_runtime$uint16_to_string(diff16/7)) + "; ") + $goml_builtin_runtime$uint32_to_string(neg32/11)) + "; ") + $goml_builtin_runtime$uint64_to_string(diff64/15)) in
-  let _wild0 = println__T_string(message/16) in
+  let message/16 = ((((((((trait_impl#ToString#uint8#to_string(sum8/2) + ", ") + trait_impl#ToString#uint8#to_string(neg8/3)) + "; ") + trait_impl#ToString#uint16#to_string(diff16/7)) + "; ") + trait_impl#ToString#uint32#to_string(neg32/11)) + "; ") + trait_impl#ToString#uint64#to_string(diff64/15)) in
+  let _wild4 = println__T_string(message/16) in
+}
+
+fn trait_impl#ToString#uint8#to_string(self/15: uint8) -> string {
+  @runtime(core.uint8_to_string)(self/15)
+}
+
+fn trait_impl#ToString#uint16#to_string(self/16: uint16) -> string {
+  @runtime(core.uint16_to_string)(self/16)
+}
+
+fn trait_impl#ToString#uint32#to_string(self/17: uint32) -> string {
+  @runtime(core.uint32_to_string)(self/17)
+}
+
+fn trait_impl#ToString#uint64#to_string(self/18: uint64) -> string {
+  @runtime(core.uint64_to_string)(self/18)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  string_println(value/1)
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  self/9
 }

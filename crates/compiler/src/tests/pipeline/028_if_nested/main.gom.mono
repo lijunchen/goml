@@ -53,17 +53,17 @@ fn main() -> unit {
   let shape1/7 = triangle_type(1, 2, 3) in
   let shape2/8 = triangle_type(3, 2, 1) in
   let shape3/9 = triangle_type(2, 3, 2) in
-  let mtmp0 = println__T_string(first/4) in
+  let mtmp4 = println__T_string(first/4) in
   {
-    let mtmp1 = println__T_string(second/5) in
+    let mtmp5 = println__T_string(second/5) in
     {
-      let mtmp2 = println__T_string(third/6) in
+      let mtmp6 = println__T_string(third/6) in
       {
-        let mtmp3 = println__T_string(shape1/7) in
+        let mtmp7 = println__T_string(shape1/7) in
         {
-          let mtmp4 = println__T_string(shape2/8) in
+          let mtmp8 = println__T_string(shape2/8) in
           {
-            let mtmp5 = println__T_string(shape3/9) in
+            let mtmp9 = println__T_string(shape3/9) in
             {
               ()
             }
@@ -75,5 +75,9 @@ fn main() -> unit {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  string_println(value/1)
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  self/9
 }

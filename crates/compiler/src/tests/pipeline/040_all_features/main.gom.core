@@ -1,31 +1,324 @@
 fn print(value/0: T) -> unit {
-  string_print(trait_call[ToString::to_string](value/0))
+  @runtime(core.string_print)(trait_call[ToString::to_string](value/0))
 }
 
 fn println(value/1: T) -> unit {
-  string_println(trait_call[ToString::to_string](value/1))
+  @runtime(core.string_println)(trait_call[ToString::to_string](value/1))
+}
+
+fn inherent#int32#int32#to_string(self/2: int32) -> string {
+  @runtime(core.int32_to_string)(self/2)
+}
+
+fn inherent#char#char#to_string(self/3: char) -> string {
+  @runtime(core.char_to_string)(self/3)
+}
+
+fn inherent#string#string#len(self/4: string) -> int32 {
+  @runtime(core.string_len)(self/4)
+}
+
+fn inherent#string#string#get(self/5: string, index/6: int32) -> char {
+  @runtime(core.string_get)(self/5, index/6)
+}
+
+fn trait_impl#ToString#unit#to_string(self/7: unit) -> string {
+  @runtime(core.unit_to_string)(self/7)
+}
+
+fn trait_impl#ToString#bool#to_string(self/8: bool) -> string {
+  @runtime(core.bool_to_string)(self/8)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  self/9
+}
+
+fn trait_impl#ToString#char#to_string(self/10: char) -> string {
+  @runtime(core.char_to_string)(self/10)
+}
+
+fn trait_impl#ToString#int8#to_string(self/11: int8) -> string {
+  @runtime(core.int8_to_string)(self/11)
+}
+
+fn trait_impl#ToString#int16#to_string(self/12: int16) -> string {
+  @runtime(core.int16_to_string)(self/12)
+}
+
+fn trait_impl#ToString#int32#to_string(self/13: int32) -> string {
+  @runtime(core.int32_to_string)(self/13)
+}
+
+fn trait_impl#ToString#int64#to_string(self/14: int64) -> string {
+  @runtime(core.int64_to_string)(self/14)
+}
+
+fn trait_impl#ToString#uint8#to_string(self/15: uint8) -> string {
+  @runtime(core.uint8_to_string)(self/15)
+}
+
+fn trait_impl#ToString#uint16#to_string(self/16: uint16) -> string {
+  @runtime(core.uint16_to_string)(self/16)
+}
+
+fn trait_impl#ToString#uint32#to_string(self/17: uint32) -> string {
+  @runtime(core.uint32_to_string)(self/17)
+}
+
+fn trait_impl#ToString#uint64#to_string(self/18: uint64) -> string {
+  @runtime(core.uint64_to_string)(self/18)
+}
+
+fn trait_impl#ToString#float32#to_string(self/19: float32) -> string {
+  @runtime(core.float32_to_string)(self/19)
+}
+
+fn trait_impl#ToString#float64#to_string(self/20: float64) -> string {
+  @runtime(core.float64_to_string)(self/20)
+}
+
+fn trait_impl#Eq#unit#eq(self/21: unit, other/22: unit) -> bool {
+  true
+}
+
+fn trait_impl#Eq#bool#eq(self/23: bool, other/24: bool) -> bool {
+  (self/23 == other/24)
+}
+
+fn trait_impl#Eq#string#eq(self/25: string, other/26: string) -> bool {
+  (self/25 == other/26)
+}
+
+fn trait_impl#Eq#char#eq(self/27: char, other/28: char) -> bool {
+  (self/27 == other/28)
+}
+
+fn trait_impl#Eq#int8#eq(self/29: int8, other/30: int8) -> bool {
+  (self/29 == other/30)
+}
+
+fn trait_impl#Eq#int16#eq(self/31: int16, other/32: int16) -> bool {
+  (self/31 == other/32)
+}
+
+fn trait_impl#Eq#int32#eq(self/33: int32, other/34: int32) -> bool {
+  (self/33 == other/34)
+}
+
+fn trait_impl#Eq#int64#eq(self/35: int64, other/36: int64) -> bool {
+  (self/35 == other/36)
+}
+
+fn trait_impl#Eq#uint8#eq(self/37: uint8, other/38: uint8) -> bool {
+  (self/37 == other/38)
+}
+
+fn trait_impl#Eq#uint16#eq(self/39: uint16, other/40: uint16) -> bool {
+  (self/39 == other/40)
+}
+
+fn trait_impl#Eq#uint32#eq(self/41: uint32, other/42: uint32) -> bool {
+  (self/41 == other/42)
+}
+
+fn trait_impl#Eq#uint64#eq(self/43: uint64, other/44: uint64) -> bool {
+  (self/43 == other/44)
+}
+
+fn trait_impl#Eq#float32#eq(self/45: float32, other/46: float32) -> bool {
+  (self/45 == other/46)
+}
+
+fn trait_impl#Eq#float64#eq(self/47: float64, other/48: float64) -> bool {
+  (self/47 == other/48)
+}
+
+fn trait_impl#Hash#unit#hash(self/49: unit) -> uint64 {
+  0
+}
+
+fn trait_impl#Hash#bool#hash(self/50: bool) -> uint64 {
+  if self/50 {
+      {
+        1
+      }
+  } else {
+      {
+        0
+      }
+  }
+}
+
+fn trait_impl#Hash#string#hash(self/51: string) -> uint64 {
+  @runtime(core.string_hash)(self/51)
+}
+
+fn trait_impl#Hash#char#hash(self/52: char) -> uint64 {
+  @runtime(core.char_hash)(self/52)
+}
+
+fn trait_impl#Hash#int8#hash(self/53: int8) -> uint64 {
+  @runtime(core.int8_hash)(self/53)
+}
+
+fn trait_impl#Hash#int16#hash(self/54: int16) -> uint64 {
+  @runtime(core.int16_hash)(self/54)
+}
+
+fn trait_impl#Hash#int32#hash(self/55: int32) -> uint64 {
+  @runtime(core.int32_hash)(self/55)
+}
+
+fn trait_impl#Hash#int64#hash(self/56: int64) -> uint64 {
+  @runtime(core.int64_hash)(self/56)
+}
+
+fn trait_impl#Hash#uint8#hash(self/57: uint8) -> uint64 {
+  @runtime(core.uint8_hash)(self/57)
+}
+
+fn trait_impl#Hash#uint16#hash(self/58: uint16) -> uint64 {
+  @runtime(core.uint16_hash)(self/58)
+}
+
+fn trait_impl#Hash#uint32#hash(self/59: uint32) -> uint64 {
+  @runtime(core.uint32_hash)(self/59)
+}
+
+fn trait_impl#Hash#uint64#hash(self/60: uint64) -> uint64 {
+  self/60
+}
+
+fn trait_impl#Hash#float32#hash(self/61: float32) -> uint64 {
+  @runtime(core.float32_hash)(self/61)
+}
+
+fn trait_impl#Hash#float64#hash(self/62: float64) -> uint64 {
+  @runtime(core.float64_hash)(self/62)
+}
+
+fn trait_impl#Eq#Ref[T]#eq(self/63: Ref[T], other/64: Ref[T]) -> bool {
+  let a/65 = inherent#Ref#Ref[T]#get(self/63) in
+  let b/66 = inherent#Ref#Ref[T]#get(other/64) in
+  trait_call[Eq::eq](a/65, b/66)
+}
+
+fn trait_impl#Hash#Ref[T]#hash(self/67: Ref[T]) -> uint64 {
+  let v/68 = inherent#Ref#Ref[T]#get(self/67) in
+  trait_call[Hash::hash](v/68)
+}
+
+fn trait_impl#ToString#Ref[T]#to_string(self/69: Ref[T]) -> string {
+  let v/70 = inherent#Ref#Ref[T]#get(self/69) in
+  (("ref(" + trait_call[ToString::to_string](v/70)) + ")")
+}
+
+fn inherent#Vec#Vec[T]#new() -> Vec[T] {
+  @intrinsic(vec.new)()
+}
+
+fn inherent#Vec#Vec[T]#push(self/71: Vec[T], elem/72: T) -> unit {
+  @intrinsic(vec.push)(self/71, elem/72)
+}
+
+fn inherent#Vec#Vec[T]#pushed(self/73: Vec[T], elem/74: T) -> Vec[T] {
+  let result/75 = inherent#Vec#Vec[T]#new() in
+  let index/76 = inherent#Ref#Ref[int32]#new(0) in
+  let _wild2 = while (inherent#Ref#Ref[int32]#get(index/76) < inherent#Vec#Vec[T]#len(self/73)) {
+      {
+        let _wild0 = inherent#Vec#Vec[T]#push(result/75, inherent#Vec#Vec[T]#get(self/73, inherent#Ref#Ref[int32]#get(index/76))) in
+        let _wild1 = inherent#Ref#Ref[int32]#set(index/76, (inherent#Ref#Ref[int32]#get(index/76) + 1)) in
+      }
+  } in
+  let _wild3 = inherent#Vec#Vec[T]#push(result/75, elem/74) in
+  result/75
+}
+
+fn inherent#Vec#Vec[T]#get(self/77: Vec[T], index/78: int32) -> T {
+  @intrinsic(vec.get)(self/77, index/78)
+}
+
+fn inherent#Vec#Vec[T]#set(self/79: Vec[T], index/80: int32, elem/81: T) -> unit {
+  @intrinsic(vec.set)(self/79, index/80, elem/81)
+}
+
+fn inherent#Vec#Vec[T]#len(self/82: Vec[T]) -> int32 {
+  @intrinsic(vec.len)(self/82)
+}
+
+fn inherent#Vec#Vec[T]#slice(self/83: Vec[T], start/84: int32, end/85: int32) -> Slice[T] {
+  @intrinsic(slice.new)(self/83, start/84, end/85)
+}
+
+fn inherent#Slice#Slice[T]#get(self/86: Slice[T], index/87: int32) -> T {
+  @intrinsic(slice.get)(self/86, index/87)
+}
+
+fn inherent#Slice#Slice[T]#len(self/88: Slice[T]) -> int32 {
+  @intrinsic(slice.len)(self/88)
+}
+
+fn inherent#Slice#Slice[T]#sub(self/89: Slice[T], start/90: int32, end/91: int32) -> Slice[T] {
+  @intrinsic(slice.sub)(self/89, start/90, end/91)
+}
+
+fn inherent#HashMap#HashMap[K,V]#new() -> HashMap[K, V] {
+  @intrinsic(hashmap.new)()
+}
+
+fn inherent#HashMap#HashMap[K,V]#get(self/92: HashMap[K, V], key/93: K) -> Option[V] {
+  @intrinsic(hashmap.get)(self/92, key/93)
+}
+
+fn inherent#HashMap#HashMap[K,V]#set(self/94: HashMap[K, V], key/95: K, value/96: V) -> unit {
+  @intrinsic(hashmap.set)(self/94, key/95, value/96)
+}
+
+fn inherent#HashMap#HashMap[K,V]#remove(self/97: HashMap[K, V], key/98: K) -> unit {
+  @intrinsic(hashmap.remove)(self/97, key/98)
+}
+
+fn inherent#HashMap#HashMap[K,V]#len(self/99: HashMap[K, V]) -> int32 {
+  @intrinsic(hashmap.len)(self/99)
+}
+
+fn inherent#HashMap#HashMap[K,V]#contains(self/100: HashMap[K, V], key/101: K) -> bool {
+  @intrinsic(hashmap.contains)(self/100, key/101)
+}
+
+fn inherent#Ref#Ref[T]#new(value/102: T) -> Ref[T] {
+  @intrinsic(ref.new)(value/102)
+}
+
+fn inherent#Ref#Ref[T]#get(self/103: Ref[T]) -> T {
+  @intrinsic(ref.get)(self/103)
+}
+
+fn inherent#Ref#Ref[T]#set(self/104: Ref[T], value/105: T) -> unit {
+  @intrinsic(ref.set)(self/104, value/105)
 }
 
 fn trait_impl#Describe#Tracker#describe(self/0: Tracker) -> string {
-  let mtmp0 = self/0 in
+  let mtmp4 = self/0 in
   {
-    let x1 = Tracker.label(mtmp0) in
-    let x2 = Tracker.count(mtmp0) in
-    let x3 = Tracker.toggled(mtmp0) in
+    let x5 = Tracker.label(mtmp4) in
+    let x6 = Tracker.count(mtmp4) in
+    let x7 = Tracker.toggled(mtmp4) in
     {
-      let toggled/3 = x3 in
+      let toggled/3 = x7 in
       {
-        let count/2 = x2 in
+        let count/2 = x6 in
         {
-          let label/1 = x1 in
+          let label/1 = x5 in
           {
             let current/4 = inherent#Ref#Ref[int32]#get(count/2) in
             let flag/5 = inherent#Ref#Ref[bool]#get(toggled/3) in
             let with_label/6 = ("Tracker(" + label/1) in
             let with_count_label/7 = (with_label/6 + ", count: ") in
-            let with_count/8 = (with_count_label/7 + $goml_builtin_runtime$int32_to_string(current/4)) in
+            let with_count/8 = (with_count_label/7 + inherent#int32#int32#to_string(current/4)) in
             let with_flag_label/9 = (with_count/8 + ", toggled: ") in
-            ((with_flag_label/9 + trait_call[ToString::to_string](flag/5)) + ")")
+            ((with_flag_label/9 + trait_impl#ToString#bool#to_string(flag/5)) + ")")
           }
         }
       }
@@ -35,26 +328,26 @@ fn trait_impl#Describe#Tracker#describe(self/0: Tracker) -> string {
 
 fn trait_impl#Describe#Record[int32]#describe(self/10: Record[int32]) -> string {
   match self/10 {
-    Record::Value(x4) => {
+    Record::Value(x8) => {
       {
-        let x4 = Record::Value._0(self/10) in
+        let x8 = Record::Value._0(self/10) in
         {
-          let value/11 = x4 in
-          (("Value(" + $goml_builtin_runtime$int32_to_string(value/11)) + ")")
+          let value/11 = x8 in
+          (("Value(" + inherent#int32#int32#to_string(value/11)) + ")")
         }
       }
     },
-    Record::Pair(x5, x6) => {
+    Record::Pair(x9, x10) => {
       {
-        let x5 = Record::Pair._0(self/10) in
-        let x6 = Record::Pair._1(self/10) in
+        let x9 = Record::Pair._0(self/10) in
+        let x10 = Record::Pair._1(self/10) in
         {
-          let after/13 = x6 in
+          let after/13 = x10 in
           {
-            let before/12 = x5 in
+            let before/12 = x9 in
             {
-              let prefix/14 = ("Pair(" + $goml_builtin_runtime$int32_to_string(before/12)) in
-              (((prefix/14 + ", ") + $goml_builtin_runtime$int32_to_string(after/13)) + ")")
+              let prefix/14 = ("Pair(" + inherent#int32#int32#to_string(before/12)) in
+              (((prefix/14 + ", ") + inherent#int32#int32#to_string(after/13)) + ")")
             }
           }
         }
@@ -68,23 +361,23 @@ fn trait_impl#Describe#Record[int32]#describe(self/10: Record[int32]) -> string 
 
 fn trait_impl#Describe#Record[string]#describe(self/15: Record[string]) -> string {
   match self/15 {
-    Record::Value(x7) => {
+    Record::Value(x11) => {
       {
-        let x7 = Record::Value._0(self/15) in
+        let x11 = Record::Value._0(self/15) in
         {
-          let text/16 = x7 in
+          let text/16 = x11 in
           (("Value(" + text/16) + ")")
         }
       }
     },
-    Record::Pair(x8, x9) => {
+    Record::Pair(x12, x13) => {
       {
-        let x8 = Record::Pair._0(self/15) in
-        let x9 = Record::Pair._1(self/15) in
+        let x12 = Record::Pair._0(self/15) in
+        let x13 = Record::Pair._1(self/15) in
         {
-          let after/18 = x9 in
+          let after/18 = x13 in
           {
-            let before/17 = x8 in
+            let before/17 = x12 in
             {
               let prefix/19 = ("Pair(" + before/17) in
               (((prefix/19 + ", ") + after/18) + ")")
@@ -113,11 +406,11 @@ fn choose(flag/20: bool, when_true/21: T, when_false/22: T) -> T {
 
 fn map_maybe(value/23: Maybe[T], f/24: (T) -> U) -> Maybe[U] {
   match value/23 {
-    Maybe::Some(x10) => {
+    Maybe::Some(x14) => {
       {
-        let x10 = Maybe::Some._0(value/23) in
+        let x14 = Maybe::Some._0(value/23) in
         {
-          let inner/25 = x10 in
+          let inner/25 = x14 in
           Maybe::Some(f/24(inner/25))
         }
       }
@@ -129,7 +422,7 @@ fn map_maybe(value/23: Maybe[T], f/24: (T) -> U) -> Maybe[U] {
 }
 
 fn format_total(total/26: int32) -> string {
-  ("total: " + $goml_builtin_runtime$int32_to_string(total/26))
+  ("total: " + inherent#int32#int32#to_string(total/26))
 }
 
 fn increment(value/27: int32) -> int32 {
@@ -141,14 +434,14 @@ fn triple(value/28: int32) -> int32 {
 }
 
 fn pair_join(parts/29: (string, string)) -> string {
-  let mtmp11 = parts/29 in
+  let mtmp15 = parts/29 in
   {
-    let x12 = mtmp11.0 in
-    let x13 = mtmp11.1 in
+    let x16 = mtmp15.0 in
+    let x17 = mtmp15.1 in
     {
-      let right/31 = x13 in
+      let right/31 = x17 in
       {
-        let left/30 = x12 in
+        let left/30 = x16 in
         {
           ((left/30 + " -> ") + right/31)
         }
@@ -158,38 +451,38 @@ fn pair_join(parts/29: (string, string)) -> string {
 }
 
 fn run_transforms(value/32: int32, transforms/33: [(int32) -> int32; 2]) -> [int32; 2] {
-  let first/34 = $goml_builtin_runtime$array_get(transforms/33, 0) in
-  let second/35 = $goml_builtin_runtime$array_get(transforms/33, 1) in
+  let first/34 = @intrinsic(array.get)(transforms/33, 0) in
+  let second/35 = @intrinsic(array.get)(transforms/33, 1) in
   let first_result/36 = first/34(value/32) in
   let second_result/37 = second/35(first_result/36) in
   let results/38 = [first_result/36, value/32] in
-  let _wild18 = {
-    let place_root14 = results/38 in
-    let index15 = 1 in
-    let place16 = $goml_builtin_runtime$array_get(place_root14, index15) in
-    let value17 = second_result/37 in
-    results/38 = $goml_builtin_runtime$array_set(place_root14, index15, value17)
+  let _wild22 = {
+    let place_root18 = results/38 in
+    let index19 = 1 in
+    let place20 = @intrinsic(array.get)(place_root18, index19) in
+    let value21 = second_result/37 in
+    results/38 = @intrinsic(array.set)(place_root18, index19, value21)
   } in
   results/38
 }
 
 fn gather(record/39: Record[int32]) -> Maybe[int32] {
   match record/39 {
-    Record::Value(x19) => {
+    Record::Value(x23) => {
       {
-        let x19 = Record::Value._0(record/39) in
+        let x23 = Record::Value._0(record/39) in
         {
-          let value/40 = x19 in
+          let value/40 = x23 in
           Maybe::Some(value/40)
         }
       }
     },
-    Record::Pair(x20, x21) => {
+    Record::Pair(x24, x25) => {
       {
-        let x20 = Record::Pair._0(record/39) in
-        let x21 = Record::Pair._1(record/39) in
+        let x24 = Record::Pair._0(record/39) in
+        let x25 = Record::Pair._1(record/39) in
         {
-          let after/41 = x21 in
+          let after/41 = x25 in
           Maybe::Some(after/41)
         }
       }
@@ -209,37 +502,37 @@ fn build_counter(label/42: string, start/43: int32) -> (Tracker, () -> Record[in
   } in
   let bump/50 = |delta/48: int32| => {
     let before/49 = inherent#Ref#Ref[int32]#get(count/44) in
-    let mtmp22 = inherent#Ref#Ref[int32]#set(count/44, (before/49 + delta/48)) in
+    let mtmp26 = inherent#Ref#Ref[int32]#set(count/44, (before/49 + delta/48)) in
     {
       Record::Pair(before/49, inherent#Ref#Ref[int32]#get(count/44))
     }
   } in
   let flip/53 = || => {
     let before/51 = inherent#Ref#Ref[bool]#get(toggled/45) in
-    let mtmp23 = inherent#Ref#Ref[bool]#set(toggled/45, (!before/51)) in
+    let mtmp27 = inherent#Ref#Ref[bool]#set(toggled/45, (!before/51)) in
     {
       let after/52 = inherent#Ref#Ref[bool]#get(toggled/45) in
-      Record::Pair(trait_call[ToString::to_string](before/51), trait_call[ToString::to_string](after/52))
+      Record::Pair(trait_impl#ToString#bool#to_string(before/51), trait_impl#ToString#bool#to_string(after/52))
     }
   } in
   (tracker/46, snapshot/47, bump/50, flip/53)
 }
 
 fn main() -> unit {
-  let mtmp24 = build_counter("goml", 2) in
+  let mtmp28 = build_counter("goml", 2) in
   {
-    let x25 = mtmp24.0 in
-    let x26 = mtmp24.1 in
-    let x27 = mtmp24.2 in
-    let x28 = mtmp24.3 in
+    let x29 = mtmp28.0 in
+    let x30 = mtmp28.1 in
+    let x31 = mtmp28.2 in
+    let x32 = mtmp28.3 in
     {
-      let flip/57 = x28 in
+      let flip/57 = x32 in
       {
-        let bump/56 = x27 in
+        let bump/56 = x31 in
         {
-          let snapshot/55 = x26 in
+          let snapshot/55 = x30 in
           {
-            let tracker/54 = x25 in
+            let tracker/54 = x29 in
             {
               let tracker_info/58 = trait_impl#Describe#Tracker#describe(tracker/54) in
               let first_record/59 = snapshot/55() in
@@ -251,8 +544,8 @@ fn main() -> unit {
               let stringified/65 = map_maybe(chosen/64, format_total) in
               let transforms/66 = [increment, triple] in
               let results/67 = run_transforms(4, transforms/66) in
-              let first_result/68 = $goml_builtin_runtime$array_get(results/67, 0) in
-              let second_result/69 = $goml_builtin_runtime$array_get(results/67, 1) in
+              let first_result/68 = @intrinsic(array.get)(results/67, 0) in
+              let second_result/69 = @intrinsic(array.get)(results/67, 1) in
               let order_check/70 = if (first_result/68 < second_result/69) {
                   true
               } else {
@@ -262,11 +555,11 @@ fn main() -> unit {
               let bumped_text/72 = trait_impl#Describe#Record[int32]#describe(bumped_record/60) in
               let flipped_text/73 = trait_impl#Describe#Record[string]#describe(flipped_record/61) in
               let summary/75 = match stringified/65 {
-                Maybe::Some(x29) => {
+                Maybe::Some(x33) => {
                   {
-                    let x29 = Maybe::Some._0(stringified/65) in
+                    let x33 = Maybe::Some._0(stringified/65) in
                     {
-                      let text/74 = x29 in
+                      let text/74 = x33 in
                       ("Snapshot: " + text/74)
                     }
                   }
@@ -275,21 +568,21 @@ fn main() -> unit {
                   "Snapshot: none"
                 },
               } in
-              let pair_text/76 = pair_join(($goml_builtin_runtime$int32_to_string(first_result/68), $goml_builtin_runtime$int32_to_string(second_result/69))) in
-              let bool_text/77 = trait_call[ToString::to_string](order_check/70) in
-              let mtmp30 = println(tracker_info/58) in
+              let pair_text/76 = pair_join((inherent#int32#int32#to_string(first_result/68), inherent#int32#int32#to_string(second_result/69))) in
+              let bool_text/77 = trait_impl#ToString#bool#to_string(order_check/70) in
+              let mtmp34 = println(tracker_info/58) in
               {
-                let mtmp31 = println(first_text/71) in
+                let mtmp35 = println(first_text/71) in
                 {
-                  let mtmp32 = println(bumped_text/72) in
+                  let mtmp36 = println(bumped_text/72) in
                   {
-                    let mtmp33 = println(flipped_text/73) in
+                    let mtmp37 = println(flipped_text/73) in
                     {
-                      let mtmp34 = println(summary/75) in
+                      let mtmp38 = println(summary/75) in
                       {
-                        let mtmp35 = println(pair_text/76) in
+                        let mtmp39 = println(pair_text/76) in
                         {
-                          let mtmp36 = println(bool_text/77) in
+                          let mtmp40 = println(bool_text/77) in
                           {
                             ()
                           }
@@ -305,16 +598,4 @@ fn main() -> unit {
       }
     }
   }
-}
-
-fn inherent#Ref#Ref[T]#new(value/93: T) -> Ref[T] {
-  ref(value/93)
-}
-
-fn inherent#Ref#Ref[T]#get(self/94: Ref[T]) -> T {
-  ref_get(self/94)
-}
-
-fn inherent#Ref#Ref[T]#set(self/95: Ref[T], value/96: T) -> unit {
-  ref_set(self/95, value/96)
 }

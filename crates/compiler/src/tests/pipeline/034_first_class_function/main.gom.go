@@ -4,11 +4,11 @@ import (
     _goml_fmt "fmt"
 )
 
-func int32_to_string(x int32) string {
+func _goml_runtime_core_int32_to_string(x int32) string {
     return _goml_fmt.Sprintf("%d", x)
 }
 
-func string_println(s string) struct{} {
+func _goml_runtime_core_string_println(s string) struct{} {
     _goml_fmt.Println(s)
     return struct{}{}
 }
@@ -20,32 +20,32 @@ type closure_env_global_invoker_1 struct {}
 type closure_env_composer_closure_2 struct {}
 
 func double(x__0 int32) int32 {
-    var retv8 int32
-    var t9 int32 = x__0 * 2
-    retv8 = t9
-    return retv8
+    var retv12 int32
+    var t13 int32 = x__0 * 2
+    retv12 = t13
+    return retv12
 }
 
 func increment(x__1 int32) int32 {
-    var retv11 int32
-    var t12 int32 = x__1 + 1
-    retv11 = t12
-    return retv11
+    var retv15 int32
+    var t16 int32 = x__1 + 1
+    retv15 = t16
+    return retv15
 }
 
 func apply_once(f__2 func(int32) int32, value__3 int32) int32 {
-    var retv14 int32
-    var t15 int32 = f__2(value__3)
-    retv14 = t15
-    return retv14
+    var retv18 int32
+    var t19 int32 = f__2(value__3)
+    retv18 = t19
+    return retv18
 }
 
 func compose(f__4 func(int32) int32, g__5 func(int32) int32, value__6 int32) int32 {
-    var retv17 int32
-    var t18 int32 = g__5(value__6)
-    var t19 int32 = f__4(t18)
-    retv17 = t19
-    return retv17
+    var retv21 int32
+    var t22 int32 = g__5(value__6)
+    var t23 int32 = f__4(t22)
+    retv21 = t23
+    return retv21
 }
 
 func main0() struct{} {
@@ -59,41 +59,55 @@ func main0() struct{} {
     var composer_closure__18 closure_env_composer_closure_2 = closure_env_composer_closure_2{}
     var composed_by_closure__19 int32 = _goml_m_inherent_i_closure__en_h55d634371047d8dd612a447303ccba2c_sure__2_i_apply(composer_closure__18, 5)
     var printer__20 func(string) struct{} = println__T_string
-    var t21 string = int32_to_string(composed__9)
-    printer__20(t21)
-    var t22 string = int32_to_string(closure_result__12)
-    printer__20(t22)
-    var t23 string = int32_to_string(invoked_with_global__16)
-    printer__20(t23)
-    var t24 string = int32_to_string(composed_by_closure__19)
-    printer__20(t24)
+    var t25 string = _goml_m_inherent_i_int32_i_int32_i_to__string(composed__9)
+    printer__20(t25)
+    var t26 string = _goml_m_inherent_i_int32_i_int32_i_to__string(closure_result__12)
+    printer__20(t26)
+    var t27 string = _goml_m_inherent_i_int32_i_int32_i_to__string(invoked_with_global__16)
+    printer__20(t27)
+    var t28 string = _goml_m_inherent_i_int32_i_int32_i_to__string(composed_by_closure__19)
+    printer__20(t28)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    string_println(value__1)
+    var t30 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t30)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_closure__en_haa892b00b0eb7ffc029d576cdd67daaf_pply__0_i_apply(env4 closure_env_closure_apply_0, value__10 int32) int32 {
-    var retv28 int32
-    var t29 int32 = apply_once(increment, value__10)
-    retv28 = t29
-    return retv28
+func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
+    var retv33 string
+    var t34 string = _goml_runtime_core_int32_to_string(self__2)
+    retv33 = t34
+    return retv33
 }
 
-func _goml_m_inherent_i_closure__en_h3286eba341bf64dee5b16b571aed9928_oker__1_i_apply(env5 closure_env_global_invoker_1, func_to_call__13 func(int32) int32, value__14 int32) int32 {
-    var retv31 int32
-    var t32 int32 = apply_once(func_to_call__13, value__14)
-    retv31 = t32
-    return retv31
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
+    var retv36 string
+    retv36 = self__9
+    return retv36
 }
 
-func _goml_m_inherent_i_closure__en_h55d634371047d8dd612a447303ccba2c_sure__2_i_apply(env6 closure_env_composer_closure_2, value__17 int32) int32 {
-    var retv34 int32
-    var t35 int32 = compose(double, increment, value__17)
-    retv34 = t35
-    return retv34
+func _goml_m_inherent_i_closure__en_haa892b00b0eb7ffc029d576cdd67daaf_pply__0_i_apply(env8 closure_env_closure_apply_0, value__10 int32) int32 {
+    var retv38 int32
+    var t39 int32 = apply_once(increment, value__10)
+    retv38 = t39
+    return retv38
+}
+
+func _goml_m_inherent_i_closure__en_h3286eba341bf64dee5b16b571aed9928_oker__1_i_apply(env9 closure_env_global_invoker_1, func_to_call__13 func(int32) int32, value__14 int32) int32 {
+    var retv41 int32
+    var t42 int32 = apply_once(func_to_call__13, value__14)
+    retv41 = t42
+    return retv41
+}
+
+func _goml_m_inherent_i_closure__en_h55d634371047d8dd612a447303ccba2c_sure__2_i_apply(env10 closure_env_composer_closure_2, value__17 int32) int32 {
+    var retv44 int32
+    var t45 int32 = compose(double, increment, value__17)
+    retv44 = t45
+    return retv44
 }
 
 func main() {

@@ -1,40 +1,21 @@
 fn main() -> unit {
-  join ret2() -> unit {
+  join ret6() -> unit {
     ()
   } in
   let a/0 = (Tag_2, Tag_0) in
-  let x0 = a/0.0 in
-  let x1 = a/0.1 in
-  join k3() -> unit {
-    jump ret2()
+  let x4 = a/0.0 in
+  let x5 = a/0.1 in
+  join k7() -> unit {
+    jump ret6()
   } in
-  match x1 {
+  match x5 {
     Tag_0 => {
-      join k4() -> unit {
-        jump k3()
-      } in
-      match x0 {
-        Tag_0 => {
-          let t5 = print__T_int32(1) in
-          jump k4()
-        },
-        Tag_1 => {
-          let t6 = print__T_int32(3) in
-          jump k4()
-        },
-        Tag_2 => {
-          let t7 = print__T_int32(3) in
-          jump k4()
-        },
-      }
-    },
-    Tag_1 => {
       join k8() -> unit {
-        jump k3()
+        jump k7()
       } in
-      match x0 {
+      match x4 {
         Tag_0 => {
-          let t9 = print__T_int32(0) in
+          let t9 = print__T_int32(1) in
           jump k8()
         },
         Tag_1 => {
@@ -47,13 +28,13 @@ fn main() -> unit {
         },
       }
     },
-    Tag_2 => {
+    Tag_1 => {
       join k12() -> unit {
-        jump k3()
+        jump k7()
       } in
-      match x0 {
+      match x4 {
         Tag_0 => {
-          let t13 = print__T_int32(3) in
+          let t13 = print__T_int32(0) in
           jump k12()
         },
         Tag_1 => {
@@ -61,8 +42,27 @@ fn main() -> unit {
           jump k12()
         },
         Tag_2 => {
-          let t15 = print__T_int32(2) in
+          let t15 = print__T_int32(3) in
           jump k12()
+        },
+      }
+    },
+    Tag_2 => {
+      join k16() -> unit {
+        jump k7()
+      } in
+      match x4 {
+        Tag_0 => {
+          let t17 = print__T_int32(3) in
+          jump k16()
+        },
+        Tag_1 => {
+          let t18 = print__T_int32(3) in
+          jump k16()
+        },
+        Tag_2 => {
+          let t19 = print__T_int32(2) in
+          jump k16()
         },
       }
     },
@@ -70,10 +70,18 @@ fn main() -> unit {
 }
 
 fn print__T_int32(value/0: int32) -> unit {
-  join ret16() -> unit {
+  join ret20() -> unit {
     ()
   } in
-  let t17 = $goml_builtin_runtime$int32_to_string(value/0) in
-  let t18 = string_print(t17) in
-  jump ret16()
+  let t21 = trait_impl#ToString#int32#to_string(value/0) in
+  let t22 = @runtime(core.string_print)(t21) in
+  jump ret20()
+}
+
+fn trait_impl#ToString#int32#to_string(self/13: int32) -> string {
+  join ret23(retv24: string) -> string {
+    retv24
+  } in
+  let t25 = @runtime(core.int32_to_string)(self/13) in
+  jump ret23(t25)
 }
