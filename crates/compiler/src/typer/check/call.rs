@@ -268,6 +268,7 @@ impl Typer {
                     receiver_expr,
                     field,
                     args,
+                    hint_ret_ty,
                 },
             ),
             _ => {

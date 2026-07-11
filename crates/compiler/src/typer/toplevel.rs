@@ -864,6 +864,19 @@ fn define_trait_impl(
             continue;
         }
 
+        if !m.generics.is_empty() {
+            impl_valid = false;
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "Trait method implementation {}::{} cannot declare type parameters",
+                    trait_name_str, method_name_str
+                ),
+            ));
+            continue;
+        }
+
         let trait_sig = trait_env
             .lookup_trait_method_scheme(&trait_ref, &tast::TastIdent::new(&method_name_str))
             .map(|scheme| scheme.ty);
@@ -879,8 +892,7 @@ fn define_trait_impl(
             continue;
         };
 
-        let mut all_generics = impl_block.generics.clone();
-        all_generics.extend(m.generics.clone());
+        let all_generics = impl_block.generics.clone();
         let tparam_names = type_param_name_set(&all_generics);
         let all_generics_tast: Vec<tast::TastIdent> = all_generics
             .iter()

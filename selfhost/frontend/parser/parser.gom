@@ -201,6 +201,39 @@ fn parse_path_text(parser: Parser) -> (string, int32, int32) {
     (text.get(), start, previous_end(parser))
 }
 
+fn generic_ufcs_start(parser: Parser) -> bool {
+    if !at(parser, syntax::TokenKind::LBracket) {
+        false
+    } else {
+        let index = Ref::new(parser.index.get());
+        let depth = Ref::new(0);
+        let found = Ref::new(false);
+        let done = Ref::new(false);
+        while !(done.get()) && index.get() < parser.tokens.len() {
+            let token = parser.tokens.get(index.get());
+            if same_kind(token.kind, syntax::TokenKind::LBracket) {
+                depth.set(depth.get() + 1);
+            } else if same_kind(token.kind, syntax::TokenKind::RBracket) {
+                depth.set(depth.get() - 1);
+                if depth.get() == 0 {
+                    if index.get() + 1 < parser.tokens.len() {
+                        found.set(same_kind(parser.tokens.get(index.get() + 1).kind, syntax::TokenKind::ColonColon));
+                    } else {
+                        ()
+                    };
+                    done.set(true);
+                } else {
+                    ()
+                };
+            } else {
+                ()
+            };
+            index.set(index.get() + 1);
+        };
+        found.get()
+    }
+}
+
 fn token_type_name(token: syntax::Token) -> string {
     match token.kind {
         syntax::TokenKind::UnitKeyword => "unit",
@@ -570,6 +603,11 @@ fn parse_trait(parser: Parser, start: int32) -> ast::Node {
         ""
     };
     let children = Ref::new(Vec::new());
+    if at(parser, syntax::TokenKind::LBracket) {
+        push_node(children, parse_generic_list(parser));
+    } else {
+        push_node(children, ast::node(ast::NodeKind::GenericList, "", ast::empty_nodes(), previous_end(parser), previous_end(parser)));
+    };
     let _ = expect(parser, syntax::TokenKind::LBrace, "expected `{` in trait definition");
     while !at(parser, syntax::TokenKind::RBrace) && !eof(parser) {
         if at(parser, syntax::TokenKind::FnKeyword) {
@@ -585,11 +623,26 @@ fn parse_trait(parser: Parser, start: int32) -> ast::Node {
 
 fn parse_impl(parser: Parser, start: int32) -> ast::Node {
     let _ = expect(parser, syntax::TokenKind::ImplKeyword, "expected `impl`");
-    let header = Ref::new("");
-    while !at(parser, syntax::TokenKind::LBrace) && !eof(parser) {
-        header.set(header.get() + advance(parser).text);
-    };
     let children = Ref::new(Vec::new());
+    if at(parser, syntax::TokenKind::LBracket) {
+        push_node(children, parse_generic_list(parser));
+    } else {
+        push_node(children, ast::node(ast::NodeKind::GenericList, "", ast::empty_nodes(), previous_end(parser), previous_end(parser)));
+    };
+    if type_start(current(parser).kind) {
+        push_node(children, parse_type(parser));
+    } else {
+        push_node(children, unexpected(parser, "expected impl type or trait"));
+    };
+    if eat(parser, syntax::TokenKind::ForKeyword) {
+        if type_start(current(parser).kind) {
+            push_node(children, parse_type(parser));
+        } else {
+            push_node(children, unexpected(parser, "expected impl target type"));
+        };
+    } else {
+        ()
+    };
     let _ = expect(parser, syntax::TokenKind::LBrace, "expected `{` in impl definition");
     while !at(parser, syntax::TokenKind::RBrace) && !eof(parser) {
         if at(parser, syntax::TokenKind::FnKeyword) {
@@ -599,7 +652,7 @@ fn parse_impl(parser: Parser, start: int32) -> ast::Node {
         };
     };
     let _ = expect(parser, syntax::TokenKind::RBrace, "expected `}` after impl definition");
-    ast::node(ast::NodeKind::ImplDef, header.get(), children.get(), start, previous_end(parser))
+    ast::node(ast::NodeKind::ImplDef, "", children.get(), start, previous_end(parser))
 }
 
 fn parse_item(parser: Parser) -> ast::Node {
@@ -837,10 +890,35 @@ fn parse_atom(parser: Parser) -> ast::Node {
         ast::leaf(ast::NodeKind::ExprLit, literal_type_text(token.kind) + ":" + token.text, token.start, token.end)
     } else if path_start(token.kind) {
         let (path, start, _) = parse_path_text(parser);
-        if parser.allow_struct_literals.get() && at(parser, syntax::TokenKind::LBrace) {
+        let resolved_path = Ref::new(path);
+        let type_args = Ref::new(Vec::new());
+        if generic_ufcs_start(parser) {
+            let _ = expect(parser, syntax::TokenKind::LBracket, "expected `[` before trait arguments");
+            if !at(parser, syntax::TokenKind::RBracket) {
+                push_node(type_args, parse_type(parser));
+                while eat(parser, syntax::TokenKind::Comma) {
+                    if !at(parser, syntax::TokenKind::RBracket) {
+                        push_node(type_args, parse_type(parser));
+                    } else {
+                        ()
+                    };
+                };
+            } else {
+                ()
+            };
+            let _ = expect(parser, syntax::TokenKind::RBracket, "expected `]` after trait arguments");
+            let _ = expect(parser, syntax::TokenKind::ColonColon, "expected `::` after trait arguments");
+            resolved_path.set(resolved_path.get() + "::" + parse_segment(parser));
+            while eat(parser, syntax::TokenKind::ColonColon) {
+                resolved_path.set(resolved_path.get() + "::" + parse_segment(parser));
+            };
+        } else {
+            ()
+        };
+        if parser.allow_struct_literals.get() && at(parser, syntax::TokenKind::LBrace) && type_args.get().len() == 0 {
             parse_struct_literal(parser, path, start)
         } else {
-            ast::leaf(ast::NodeKind::ExprPath, path, start, previous_end(parser))
+            ast::node(ast::NodeKind::ExprPath, resolved_path.get(), type_args.get(), start, previous_end(parser))
         }
     } else if same_kind(token.kind, syntax::TokenKind::LParen) {
         parse_paren_expr(parser)

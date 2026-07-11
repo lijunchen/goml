@@ -16,6 +16,7 @@ pub(super) struct MethodCallRequest<'a> {
     pub(super) receiver_expr: hir::ExprId,
     pub(super) field: hir::HirIdent,
     pub(super) args: &'a [hir::ExprId],
+    pub(super) hint_ret_ty: Option<&'a tast::Ty>,
 }
 
 struct ReceiverCall<'a> {
@@ -26,6 +27,7 @@ struct ReceiverCall<'a> {
     receiver_ty: tast::Ty,
     method_name: tast::TastIdent,
     args: &'a [hir::ExprId],
+    hint_ret_ty: Option<&'a tast::Ty>,
 }
 
 struct TraitMethodCall<'a> {
@@ -126,6 +128,7 @@ impl Typer {
             receiver_expr,
             field,
             args,
+            hint_ret_ty,
         } = request;
         let receiver = self.infer_expr(genv, local_env, diagnostics, receiver_expr);
         let receiver_ty = receiver.get_ty();
@@ -139,6 +142,7 @@ impl Typer {
             receiver_ty,
             method_name,
             args,
+            hint_ret_ty,
         };
         match method_scheme {
             Some(method_scheme) => {
@@ -164,6 +168,7 @@ impl Typer {
             receiver_ty,
             method_name,
             args,
+            hint_ret_ty: _,
         } = call;
         let method_name_str = method_name.0;
         let range = self.expr_range(call_expr_id);
@@ -275,6 +280,7 @@ impl Typer {
             receiver_ty,
             method_name,
             args,
+            hint_ret_ty,
         } = call;
         let field_ty = resolve_field_ty_eager(genv, &receiver_ty, &method_name);
         if contains_tvar(&receiver_ty) || contains_tparam(&receiver_ty) {
@@ -293,8 +299,31 @@ impl Typer {
                 },
             );
         }
-        let lookup =
+        let mut lookup =
             lookup_trait_method_candidates(self, genv, local_env, &receiver_ty, &method_name);
+        if lookup.candidates.len() > 1
+            && let Some(expected) = hint_ret_ty
+        {
+            lookup.candidates.retain(|(_, scheme)| {
+                let method_ty = instantiate_self_ty(&scheme.ty, &receiver_ty);
+                let tast::Ty::TFunc { params, ret_ty } = method_ty else {
+                    return false;
+                };
+                if params.len() != args.len() + 1 {
+                    return false;
+                }
+                let snapshot = self.snapshot_inference();
+                let mut candidate_diagnostics = Diagnostics::new();
+                let matches = self.unify(
+                    &mut candidate_diagnostics,
+                    &ret_ty,
+                    expected,
+                    self.expr_range(call_expr_id),
+                );
+                self.rollback_inference(snapshot);
+                matches
+            });
+        }
         match lookup.candidates.as_slice() {
             [(trait_ref, method_scheme)] => {
                 if let Some(field_ty) = field_ty.clone() {

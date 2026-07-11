@@ -13,7 +13,7 @@ use super::{
     localenv::LocalTypeEnv,
     obligations::{ParamEnv, TraitGoal},
     traits::solver::{SelectionResult, TraitSolver},
-    type_ops::{contains_tvar, decompose_struct_type, substitute_ty_params},
+    type_ops::{contains_tvar, decompose_struct_type, substitute_trait_ref, substitute_ty_params},
     util::{
         format_trait_ref_for_diag, format_ty_for_diag, push_error_with_range, resolve_trait_name,
         resolve_type_name, type_expr_range, validate_ty,
@@ -113,7 +113,6 @@ fn lookup_in_scope_trait_methods(
 ) -> Vec<(tast::TraitRef, FnScheme)> {
     let mut result = Vec::new();
     let param_env = ParamEnv::default();
-    let mut solver = TraitSolver::new(genv, &param_env);
     for trait_name in in_scope_traits {
         let Some((resolved_trait, trait_env)) = resolve_trait_name(genv, &trait_name.0) else {
             continue;
@@ -121,36 +120,59 @@ fn lookup_in_scope_trait_methods(
         if matches!(receiver_ty, tast::Ty::TDyn { .. }) {
             continue;
         }
-        let Some(definition) = trait_env.trait_env.trait_defs.get(&resolved_trait) else {
+        if !trait_env.trait_env.trait_defs.contains_key(&resolved_trait) {
             continue;
-        };
-        let mut trait_ref = tast::TraitRef {
-            name: tast::TastIdent(resolved_trait),
-            args: definition
+        }
+        for (origin, _, impl_trait_ref, impl_ty, impl_def) in
+            genv.visible_trait_impls(&resolved_trait)
+        {
+            if !impl_def.valid
+                || origin == "builtin" && genv.shadows_builtin_nominal_type(receiver_ty)
+            {
+                continue;
+            }
+            let snapshot = typer.snapshot_inference();
+            let substitution = impl_def
                 .params
                 .iter()
-                .map(|_| typer.fresh_ty_var())
-                .collect(),
-        };
-        if !matches!(
-            solver.select(
-                typer,
-                TraitGoal {
-                    trait_ref: trait_ref.clone(),
-                    for_ty: receiver_ty.clone(),
-                }
-            ),
-            SelectionResult::Unique(_)
-        ) {
-            continue;
-        }
-        for arg in &mut trait_ref.args {
-            *arg = typer.norm(arg);
-        }
-        if let Some(method_scheme) = trait_env.lookup_trait_method_scheme(&trait_ref, method) {
-            result.push((trait_ref, method_scheme));
+                .map(|param| (param.0.clone(), typer.fresh_ty_var()))
+                .collect::<HashMap<_, _>>();
+            let candidate_ty = substitute_ty_params(impl_ty, &substitution);
+            if !typer.try_unify_silent(&candidate_ty, receiver_ty) {
+                typer.rollback_inference(snapshot);
+                continue;
+            }
+            let mut trait_ref = substitute_trait_ref(impl_trait_ref, &substitution);
+            for arg in &mut trait_ref.args {
+                *arg = typer.norm(arg);
+            }
+            let mut solver = TraitSolver::new(genv, &param_env);
+            if matches!(
+                solver.select(
+                    typer,
+                    TraitGoal {
+                        trait_ref: trait_ref.clone(),
+                        for_ty: receiver_ty.clone(),
+                    }
+                ),
+                SelectionResult::NoSolution | SelectionResult::Overflow
+            ) {
+                typer.rollback_inference(snapshot);
+                continue;
+            }
+            for arg in &mut trait_ref.args {
+                *arg = typer.norm(arg);
+            }
+            typer.commit_inference(snapshot);
+            if let Some(method_scheme) = trait_env.lookup_trait_method_scheme(&trait_ref, method) {
+                result.push((trait_ref, method_scheme));
+            }
         }
     }
+    result.sort_by(|(left, _), (right, _)| {
+        format_trait_ref_for_diag(left).cmp(&format_trait_ref_for_diag(right))
+    });
+    result.dedup_by(|(left, _), (right, _)| left == right);
     result
 }
 
