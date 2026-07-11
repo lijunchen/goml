@@ -142,6 +142,11 @@ fn multi_package_compile_project_030() -> anyhow::Result<()> {
     run_project("project030_supertraits")
 }
 
+#[test]
+fn multi_package_compile_project_031() -> anyhow::Result<()> {
+    run_project("project031_into_iterator")
+}
+
 fn run_project(name: &str) -> anyhow::Result<()> {
     let name = name.to_string();
     let handle = std::thread::Builder::new()

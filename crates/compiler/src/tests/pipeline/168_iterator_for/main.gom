@@ -33,7 +33,7 @@ fn main() -> unit {
     values.push(20);
     values.push(30);
     let sum = Ref::new(0);
-    for value in values.iter() {
+    for value in values {
         if value == 20 {
             continue
         } else {
@@ -46,7 +46,7 @@ fn main() -> unit {
     let pairs: Vec[(int32, string)] = Vec::new();
     pairs.push((1, "a"));
     pairs.push((2, "b"));
-    for (number, text) in pairs.iter() {
+    for (number, text) in pairs {
         println(number.to_string() + text);
     };
 
@@ -59,7 +59,7 @@ fn main() -> unit {
     println(range_sum.get());
 
     let slice_sum = Ref::new(0);
-    for value in values.slice(1, 3).iter() {
+    for value in values.slice(1, 3) {
         slice_sum.set(slice_sum.get() + value);
     };
     println(slice_sum.get());

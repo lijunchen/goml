@@ -1084,20 +1084,18 @@ fn consume(value: dyn Convert) -> unit { () }
 }
 
 #[test]
-fn for_loop_reports_ambiguous_iterator_item_type() {
+fn iterator_associated_item_prevents_conflicting_impls() {
     let src = r#"
 struct Values {}
 
-impl Iterator[int32] for Values {
+impl Iterator for Values {
+    type Item = int32;
     fn next(self: Values) -> Option[int32] { Option::None }
 }
 
-impl Iterator[string] for Values {
+impl Iterator for Values {
+    type Item = string;
     fn next(self: Values) -> Option[string] { Option::None }
-}
-
-fn main() -> unit {
-    for value in (Values {}) {};
 }
 "#;
 
@@ -1105,22 +1103,19 @@ fn main() -> unit {
     assert!(
         diagnostics
             .iter()
-            .any(|line| line.contains("Could not infer the item type for for loop over Values")),
+            .any(|line| line.contains("implementation for Values is already defined")),
         "{diagnostics:?}"
     );
 }
 
 #[test]
-fn for_loop_body_can_select_iterator_application() {
+fn for_loop_uses_iterator_associated_item_type() {
     let src = r#"
 struct Values {}
 
-impl Iterator[int32] for Values {
+impl Iterator for Values {
+    type Item = int32;
     fn next(self: Values) -> Option[int32] { Option::None }
-}
-
-impl Iterator[string] for Values {
-    fn next(self: Values) -> Option[string] { Option::None }
 }
 
 fn consume_int(value: int32) -> unit { () }
@@ -1134,6 +1129,101 @@ fn main() -> unit {
 
     let diagnostics = diagnostic_lines(src);
     assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
+fn for_loop_accepts_custom_into_iterator() {
+    let src = r#"
+struct Values {
+    values: Vec[int32],
+}
+
+impl IntoIterator for Values {
+    type Item = int32;
+    type IntoIter = FnIterator[int32];
+
+    fn into_iter(self: Values) -> FnIterator[int32] {
+        self.values.iter()
+    }
+}
+
+fn consume_int(value: int32) -> unit { () }
+
+fn main() -> unit {
+    for value in (Values { values: Vec::new() }) {
+        consume_int(value);
+    };
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
+fn generic_into_iterator_bound_implies_iterator_for_into_iter() {
+    let src = r#"
+fn sum[S: IntoIterator](source: S) -> int32
+where
+    S::Item == int32,
+{
+    let total = Ref::new(0);
+    for value in source {
+        total.set(total.get() + value);
+    };
+    total.get()
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
+fn into_iterator_impl_rejects_inconsistent_item() {
+    let src = r#"
+struct Values {}
+
+impl IntoIterator for Values {
+    type Item = string;
+    type IntoIter = FnIterator[int32];
+
+    fn into_iter(self: Values) -> FnIterator[int32] {
+        range(0, 1)
+    }
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics.iter().any(|line| line
+            .contains("does not satisfy declared requirement string == FnIterator[int32]::Item")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn into_iterator_impl_rejects_non_iterator_into_iter() {
+    let src = r#"
+struct Values {}
+
+impl IntoIterator for Values {
+    type Item = int32;
+    type IntoIter = int32;
+
+    fn into_iter(self: Values) -> int32 {
+        0
+    }
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics.iter().any(|line| {
+            line.contains("Associated type IntoIter = int32 does not satisfy bound Iterator")
+        }),
+        "{diagnostics:?}"
+    );
 }
 
 #[test]

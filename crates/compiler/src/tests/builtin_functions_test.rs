@@ -223,16 +223,14 @@ fn env_registers_builtin_slice_inherent_methods() {
 fn env_registers_builtin_iterator_trait_and_fn_iterator_methods() {
     let env = builtins::builtin_env();
     let iterator_name = env.lang_item(LangItemId::Iterator).unwrap().0.clone();
-    let iterator_ref = tast::TraitRef::new(
-        tast::TastIdent(iterator_name.clone()),
-        vec![tast::Ty::TInt32],
-    );
+    let iterator_ref = tast::TraitRef::new(tast::TastIdent(iterator_name.clone()), Vec::new());
     let trait_def = env
         .trait_env
         .trait_defs
         .get(&iterator_name)
         .expect("iterator trait exists");
-    assert_eq!(trait_def.params, vec![tast::TastIdent("T".to_string())]);
+    assert!(trait_def.params.is_empty());
+    assert!(trait_def.associated_types.contains_key("Item"));
 
     let next = env
         .lookup_trait_method_scheme(&iterator_ref, &tast::TastIdent("next".to_string()))
@@ -247,7 +245,13 @@ fn env_registers_builtin_iterator_trait_and_fn_iterator_methods() {
                 ty: Box::new(tast::Ty::TEnum {
                     name: "Option".to_string(),
                 }),
-                args: vec![tast::Ty::TInt32],
+                args: vec![tast::Ty::TProjection {
+                    trait_ref: Some(iterator_ref.clone()),
+                    for_ty: Box::new(tast::Ty::TStruct {
+                        name: "Self".to_string(),
+                    }),
+                    name: tast::TastIdent("Item".to_string()),
+                }],
             }),
         }
     );
@@ -264,6 +268,21 @@ fn env_registers_builtin_iterator_trait_and_fn_iterator_methods() {
     );
     assert!(env.trait_env.trait_impls.keys().any(|key| {
         key.trait_ref.name.0 == iterator_name && key.for_ty.get_constr_name_unsafe() == "FnIterator"
+    }));
+
+    let into_iterator_name = env.lang_item(LangItemId::IntoIterator).unwrap().0.clone();
+    let into_iterator_def = env
+        .trait_env
+        .trait_defs
+        .get(&into_iterator_name)
+        .expect("into iterator trait exists");
+    assert!(into_iterator_def.associated_types.contains_key("Item"));
+    assert!(into_iterator_def.associated_types.contains_key("IntoIter"));
+    assert!(env.trait_env.trait_impls.keys().any(|key| {
+        key.trait_ref.name.0 == into_iterator_name && matches!(key.for_ty, tast::Ty::TVec { .. })
+    }));
+    assert!(env.trait_env.trait_impls.keys().any(|key| {
+        key.trait_ref.name.0 == into_iterator_name && matches!(key.for_ty, tast::Ty::TSlice { .. })
     }));
 }
 
