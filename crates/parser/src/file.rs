@@ -279,37 +279,13 @@ fn impl_block(p: &mut Parser) {
     impl_block_with_marker(p, m);
 }
 
-fn impl_has_trait(p: &mut Parser) -> bool {
-    let mut idx = 0;
-    let tok = p.nth(idx);
-    if !matches!(tok, T![ident]) {
-        return false;
-    }
-    idx += 1;
-    loop {
-        if p.nth(idx) == T![::] {
-            idx += 1;
-            if !matches!(p.nth(idx), T![ident]) {
-                return false;
-            }
-            idx += 1;
-            continue;
-        }
-        break;
-    }
-    p.nth(idx) == T![for]
-}
-
 fn impl_block_with_marker(p: &mut Parser, m: MarkerOpened) {
     p.expect(T![impl]);
     if p.at(T!['[']) {
         generic_list(p, true);
     }
-    if impl_has_trait(p) {
-        parse_path_always(p);
-        p.expect(T![for]);
-        type_expr(p);
-    } else {
+    type_expr(p);
+    if p.eat(T![for]) {
         type_expr(p);
     }
     if p.at(T!['{']) {
@@ -519,7 +495,7 @@ fn generic(p: &mut Parser, allow_bounds: bool) {
 fn trait_set(p: &mut Parser) {
     let m = p.open();
     if p.at_any(PATH_FIRST) {
-        parse_path_always(p);
+        trait_ref(p);
     } else {
         p.advance_with_error("expected a trait name");
         p.close(m, MySyntaxKind::TRAIT_SET);
@@ -528,13 +504,22 @@ fn trait_set(p: &mut Parser) {
 
     while p.eat(T![+]) {
         if p.at_any(PATH_FIRST) {
-            parse_path_always(p);
+            trait_ref(p);
         } else {
             p.advance_with_error("expected a trait name after '+'");
             break;
         }
     }
     p.close(m, MySyntaxKind::TRAIT_SET);
+}
+
+fn trait_ref(p: &mut Parser) {
+    let m = p.open();
+    parse_path_always(p);
+    if p.at(T!['[']) {
+        type_param_list(p);
+    }
+    p.close(m, MySyntaxKind::TYPE_TAPP);
 }
 
 fn generic_list(p: &mut Parser, allow_bounds: bool) {
@@ -753,7 +738,7 @@ fn type_atom(p: &mut Parser) -> Option<MarkerClosed> {
     Some(result)
 }
 
-fn type_param_list(p: &mut Parser) {
+pub(crate) fn type_param_list(p: &mut Parser) {
     assert!(p.at(T!['[']));
     let m = p.open();
     p.expect(T!['[']);

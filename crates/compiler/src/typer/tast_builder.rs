@@ -1,6 +1,7 @@
 use crate::common::{Constructor, Prim, StructConstructor};
 use crate::env::PackageTypeEnv;
 use crate::hir;
+use crate::intrinsics::LangItemId;
 use crate::tast;
 use crate::typer::results::{
     CalleeElab, Coercion, NameRefElab, StructLitArgElab, StructPatArgElab, TryKind, TypeckResults,
@@ -44,12 +45,10 @@ fn build_impl_block(
 ) -> tast::ImplBlock {
     let impl_tparams = tparams_for(&impl_block.generics);
     let for_ty = tast::Ty::from_hir(genv, &impl_block.for_type, &impl_tparams);
-    let trait_name = impl_block.trait_name.as_ref().map(|t| {
-        let name = t.to_ident_name();
-        super::util::resolve_trait_name(genv, &name)
-            .map(|(resolved, _)| tast::TastIdent(resolved))
-            .unwrap_or_else(|| tast::TastIdent(name))
-    });
+    let trait_ref = impl_block
+        .trait_ref
+        .as_ref()
+        .map(|trait_ref| tast::TraitRef::from_hir(genv, trait_ref, &impl_tparams));
 
     let mut methods = Vec::new();
     for method_id in impl_block.methods.iter().copied() {
@@ -74,7 +73,7 @@ fn build_impl_block(
             .iter()
             .map(|g| g.to_ident_name())
             .collect(),
-        trait_name,
+        trait_ref,
         for_type: for_ty,
         methods,
     }
@@ -444,12 +443,17 @@ fn build_expr(
             body,
         } => {
             let pat = build_pat(hir_table, results, pat);
+            let trait_ref = tast::TraitRef {
+                name: tast::TastIdent::new(LangItemId::Iterator.source_name()),
+                args: vec![pat.get_ty()],
+            };
             let iterator = Box::new(build_expr(hir_table, results, iterator));
             let body = Box::new(build_expr(hir_table, results, body));
             let ty = results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit);
             tast::Expr::EFor {
                 pat,
                 iterator,
+                trait_ref,
                 body,
                 ty,
             }
@@ -868,12 +872,12 @@ fn build_name_ref_expr(
             astptr: *astptr,
         },
         Some(NameRefElab::TraitMethod {
-            trait_name,
+            trait_ref,
             method_name,
             ty,
             astptr,
         }) => tast::Expr::ETraitMethod {
-            trait_name: trait_name.clone(),
+            trait_ref: trait_ref.clone(),
             method_name: method_name.clone(),
             ty: ty.clone(),
             astptr: *astptr,
@@ -932,12 +936,12 @@ fn build_callee(
             astptr: *astptr,
         },
         CalleeElab::TraitMethod {
-            trait_name,
+            trait_ref,
             method_name,
             ty,
             astptr,
         } => tast::Expr::ETraitMethod {
-            trait_name: trait_name.clone(),
+            trait_ref: trait_ref.clone(),
             method_name: method_name.clone(),
             ty: ty.clone(),
             astptr: *astptr,

@@ -78,7 +78,12 @@ impl Typer {
             variables.extend(type_vars(&typer.norm(ty)));
         };
         match predicate {
-            Predicate::Trait(goal) => add(&goal.for_ty, self),
+            Predicate::Trait(goal) => {
+                add(&goal.for_ty, self);
+                for arg in &goal.trait_ref.args {
+                    add(arg, self);
+                }
+            }
             Predicate::Method(goal) => {
                 add(&goal.receiver_ty, self);
                 add(&goal.call_site_type, self);
@@ -258,19 +263,35 @@ impl Typer {
             else {
                 continue;
             };
-            let trait_name = tast::TastIdent(resolved);
-            let Some(trait_scheme) =
-                trait_env.lookup_trait_method_scheme(&trait_name, &goal.method)
-            else {
+            let Some(definition) = trait_env.trait_env.trait_defs.get(&resolved) else {
+                continue;
+            };
+            let mut trait_ref = tast::TraitRef {
+                name: tast::TastIdent(resolved),
+                args: definition
+                    .params
+                    .iter()
+                    .map(|_| self.fresh_ty_var())
+                    .collect(),
+            };
+            let Some(_) = trait_env.lookup_trait_method_scheme(&trait_ref, &goal.method) else {
                 continue;
             };
             let trait_goal = TraitGoal {
-                trait_name: trait_name.clone(),
+                trait_ref: trait_ref.clone(),
                 for_ty: goal.receiver_ty.clone(),
             };
-            match trait_solver.select_ground(trait_goal) {
+            match trait_solver.select(self, trait_goal) {
                 SelectionResult::Unique(selection) => {
-                    candidates.push((trait_name, trait_scheme, selection));
+                    for arg in &mut trait_ref.args {
+                        *arg = self.norm(arg);
+                    }
+                    let Some(trait_scheme) =
+                        trait_env.lookup_trait_method_scheme(&trait_ref, &goal.method)
+                    else {
+                        continue;
+                    };
+                    candidates.push((trait_ref, trait_scheme, selection));
                 }
                 SelectionResult::Ambiguous(ids) => ambiguous_impls.extend(ids),
                 SelectionResult::NoSolution => {}
@@ -314,7 +335,7 @@ impl Typer {
             return MethodGoalOutcome::Failed;
         }
 
-        let [(trait_name, trait_scheme, selection)] = candidates.as_slice() else {
+        let [(trait_ref, trait_scheme, selection)] = candidates.as_slice() else {
             if candidates.is_empty() {
                 super::util::push_error_with_range(
                     diagnostics,
@@ -328,7 +349,7 @@ impl Typer {
             } else {
                 let names = candidates
                     .iter()
-                    .map(|(trait_name, _, _)| trait_name.0.clone())
+                    .map(|(trait_ref, _, _)| super::util::format_trait_ref_for_diag(trait_ref))
                     .collect::<Vec<_>>()
                     .join(", ");
                 super::util::push_error_with_range(
@@ -394,7 +415,7 @@ impl Typer {
         let generated = Self::scheme_obligations(&instantiated);
         let changed_variables =
             self.equate_and_collect(diagnostics, &goal.call_site_type, &method_ty, cause.span);
-        self.record_trait_method_resolution(&goal, trait_name, method_ty);
+        self.record_trait_method_resolution(&goal, trait_ref, method_ty);
         MethodGoalOutcome::Resolved {
             generated,
             changed_variables,
@@ -440,7 +461,7 @@ impl Typer {
     fn record_trait_method_resolution(
         &mut self,
         goal: &MethodGoal,
-        trait_name: &tast::TastIdent,
+        trait_ref: &tast::TraitRef,
         method_ty: tast::Ty,
     ) {
         self.results
@@ -448,7 +469,7 @@ impl Typer {
         self.results.record_name_ref_elab(
             goal.func_expr_id,
             NameRefElab::TraitMethod {
-                trait_name: trait_name.clone(),
+                trait_ref: trait_ref.clone(),
                 method_name: goal.method.clone(),
                 ty: method_ty.clone(),
                 astptr: None,
@@ -458,7 +479,7 @@ impl Typer {
             goal.call_expr_id,
             CallElab {
                 callee: CalleeElab::TraitMethod {
-                    trait_name: trait_name.clone(),
+                    trait_ref: trait_ref.clone(),
                     method_name: goal.method.clone(),
                     ty: method_ty,
                     astptr: None,
@@ -488,7 +509,12 @@ impl Typer {
                 match predicate {
                     Predicate::Trait(mut goal) => {
                         goal.for_ty = self.norm(&goal.for_ty);
-                        if contains_tvar(&goal.for_ty) && !allow_trait_inference {
+                        for arg in &mut goal.trait_ref.args {
+                            *arg = self.norm(arg);
+                        }
+                        let goal_has_tvar = contains_tvar(&goal.for_ty)
+                            || goal.trait_ref.args.iter().any(contains_tvar);
+                        if goal_has_tvar && !allow_trait_inference {
                             let predicate = Predicate::Trait(goal);
                             let variables = self.predicate_type_vars(&predicate);
                             worklist.defer(
@@ -501,19 +527,24 @@ impl Typer {
                             );
                             continue;
                         }
-                        let result = if contains_tvar(&goal.for_ty) {
+                        let result = if goal_has_tvar {
                             trait_solver.select(self, goal.clone())
                         } else {
                             trait_solver.select_ground(goal.clone())
                         };
                         goal.for_ty = self.norm(&goal.for_ty);
-                        let unresolved = contains_tvar(&goal.for_ty);
+                        for arg in &mut goal.trait_ref.args {
+                            *arg = self.norm(arg);
+                        }
+                        let unresolved = contains_tvar(&goal.for_ty)
+                            || goal.trait_ref.args.iter().any(contains_tvar);
                         match result {
                             SelectionResult::Unique(selection) => {
                                 worklist.wake(selection.changed_variables);
                             }
-                            SelectionResult::NoSolution | SelectionResult::Ambiguous(_)
-                                if unresolved =>
+                            SelectionResult::NoSolution
+                                if unresolved
+                                    && !matches!(cause.kind, ObligationCauseKind::ForLoop) =>
                             {
                                 let predicate = Predicate::Trait(goal);
                                 let variables = self.predicate_type_vars(&predicate);
@@ -526,16 +557,44 @@ impl Typer {
                                     variables,
                                 );
                             }
-                            SelectionResult::NoSolution => self.push_obligation_error(
-                                diagnostics,
-                                &mut reported,
-                                format!(
-                                    "No instance found for trait {}<{}>",
-                                    goal.trait_name.0,
-                                    super::util::format_ty_for_diag(&goal.for_ty)
-                                ),
-                                &cause,
-                            ),
+                            SelectionResult::Ambiguous(_) if unresolved => {
+                                let predicate = Predicate::Trait(goal);
+                                let variables = self.predicate_type_vars(&predicate);
+                                worklist.defer(
+                                    Obligation {
+                                        id,
+                                        predicate,
+                                        cause,
+                                    },
+                                    variables,
+                                );
+                            }
+                            SelectionResult::NoSolution => {
+                                let message = if matches!(cause.kind, ObligationCauseKind::ForLoop)
+                                {
+                                    if let Some(item_ty) = goal.trait_ref.args.first()
+                                        && matches!(self.norm(item_ty), tast::Ty::TVar(_))
+                                    {
+                                        self.try_unify_silent(item_ty, &tast::Ty::TUnit);
+                                    }
+                                    format!(
+                                        "for loop expects a type implementing Iterator[T], got {}",
+                                        super::util::format_ty_for_diag(&goal.for_ty)
+                                    )
+                                } else {
+                                    format!(
+                                        "No instance found for trait {}<{}>",
+                                        super::util::format_trait_ref_for_diag(&goal.trait_ref),
+                                        super::util::format_ty_for_diag(&goal.for_ty)
+                                    )
+                                };
+                                self.push_obligation_error(
+                                    diagnostics,
+                                    &mut reported,
+                                    message,
+                                    &cause,
+                                );
+                            }
                             SelectionResult::Ambiguous(ids) => {
                                 let candidates = ids
                                     .iter()
@@ -547,7 +606,7 @@ impl Typer {
                                     &mut reported,
                                     format!(
                                         "Multiple instances found for trait {}<{}> ({})",
-                                        goal.trait_name.0,
+                                        super::util::format_trait_ref_for_diag(&goal.trait_ref),
                                         super::util::format_ty_for_diag(&goal.for_ty),
                                         candidates
                                     ),
@@ -559,7 +618,7 @@ impl Typer {
                                 &mut reported,
                                 format!(
                                     "Trait resolution overflow for {}<{}>",
-                                    goal.trait_name.0,
+                                    super::util::format_trait_ref_for_diag(&goal.trait_ref),
                                     super::util::format_ty_for_diag(&goal.for_ty)
                                 ),
                                 &cause,
@@ -796,7 +855,9 @@ impl Typer {
                             continue;
                         };
                         let trait_goal = TraitGoal {
-                            trait_name: tast::TastIdent(resolved_trait.clone()),
+                            trait_ref: tast::TraitRef::without_args(tast::TastIdent(
+                                resolved_trait.clone(),
+                            )),
                             for_ty: from_ty.clone(),
                         };
                         match trait_solver.select_ground(trait_goal) {
@@ -976,6 +1037,13 @@ impl Typer {
             }
 
             for obligation in retained {
+                if matches!(obligation.cause.kind, ObligationCauseKind::ForLoop)
+                    && let Predicate::Trait(goal) = &obligation.predicate
+                    && let Some(item_ty) = goal.trait_ref.args.first()
+                    && matches!(self.norm(item_ty), tast::Ty::TVar(_))
+                {
+                    self.try_unify_silent(item_ty, &tast::Ty::TUnit);
+                }
                 let variables = self.predicate_type_vars(&obligation.predicate);
                 for variable in variables {
                     self.unresolved_type_var_origins
@@ -983,9 +1051,17 @@ impl Typer {
                         .or_insert(obligation.cause.span);
                 }
                 let message = match &obligation.predicate {
+                    Predicate::Trait(goal)
+                        if matches!(obligation.cause.kind, ObligationCauseKind::ForLoop) =>
+                    {
+                        format!(
+                            "Could not infer the item type for for loop over {}",
+                            super::util::format_ty_for_diag(&self.norm(&goal.for_ty))
+                        )
+                    }
                     Predicate::Trait(goal) => format!(
                         "Could not infer the type required to prove {}<{}>",
-                        goal.trait_name.0,
+                        super::util::format_trait_ref_for_diag(&goal.trait_ref),
                         super::util::format_ty_for_diag(&self.norm(&goal.for_ty))
                     ),
                     Predicate::Method(goal) => format!(

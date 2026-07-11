@@ -346,13 +346,21 @@ fn completions_for_type(genv: &GlobalTypeEnv, ty: &tast::Ty) -> Vec<DotCompletio
         }
     }
 
-    items.extend(inherent_methods_for_receiver(genv, ty).into_iter().map(
-        |(method_name, method_ty)| DotCompletionItem {
-            name: method_name,
-            kind: DotCompletionKind::Method,
-            detail: Some(method_ty),
-        },
-    ));
+    let mut methods = inherent_methods_for_receiver(genv, ty)
+        .into_iter()
+        .collect::<BTreeMap<_, _>>();
+    for (method_name, method_ty) in trait_methods_for_receiver(genv, ty) {
+        methods.entry(method_name).or_insert(method_ty);
+    }
+    items.extend(
+        methods
+            .into_iter()
+            .map(|(method_name, method_ty)| DotCompletionItem {
+                name: method_name,
+                kind: DotCompletionKind::Method,
+                detail: Some(method_ty),
+            }),
+    );
 
     items
 }
@@ -1079,6 +1087,37 @@ fn inherent_methods_for_receiver(
         }
     }
 
+    methods.into_iter().collect()
+}
+
+fn trait_methods_for_receiver(
+    genv: &GlobalTypeEnv,
+    receiver_ty: &tast::Ty,
+) -> Vec<(String, String)> {
+    let mut methods = BTreeMap::new();
+    for (key, impl_def) in &genv.trait_env.trait_impls {
+        if !impl_def.valid {
+            continue;
+        }
+        let Some(substitution) = crate::typer::impl_self_subst(&key.for_ty, receiver_ty) else {
+            continue;
+        };
+        let trait_ref = crate::typer::type_ops::substitute_trait_ref(&key.trait_ref, &substitution);
+        let Some(trait_def) = genv.trait_env.trait_defs.get(&trait_ref.name.0) else {
+            continue;
+        };
+        for method_name in trait_def.methods.keys() {
+            let method_name_ident = tast::TastIdent(method_name.clone());
+            let Some(scheme) = genv.lookup_trait_method_scheme(&trait_ref, &method_name_ident)
+            else {
+                continue;
+            };
+            let method_ty = crate::typer::type_ops::instantiate_self_ty(&scheme.ty, receiver_ty);
+            methods
+                .entry(method_name.clone())
+                .or_insert_with(|| method_ty.to_pretty(80));
+        }
+    }
     methods.into_iter().collect()
 }
 

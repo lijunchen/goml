@@ -1,5 +1,5 @@
 use crate::{
-    file::{block, type_expr},
+    file::{block, type_expr, type_param_list},
     parser::{MarkerClosed, Parser},
     path::parse_path_always,
     syntax::MySyntaxKind,
@@ -170,8 +170,16 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
         // ExprName = 'name'
         T![ident] => {
             let m = p.open();
-            // Always parse as a path - this creates a PATH node containing identifiers
-            parse_path_always(p);
+            if path_has_type_args(p) {
+                let owner = p.open();
+                parse_path_always(p);
+                type_param_list(p);
+                p.close(owner, MySyntaxKind::TYPE_TAPP);
+                p.expect(T![::]);
+                parse_path_always(p);
+            } else {
+                parse_path_always(p);
+            }
             if p.struct_literals_allowed() && looks_like_struct_literal(p) {
                 struct_literal_field_list(p);
                 p.close(m, MySyntaxKind::EXPR_STRUCT_LITERAL)
@@ -348,6 +356,31 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
         }
     };
     Some(result)
+}
+
+fn path_has_type_args(p: &mut Parser) -> bool {
+    let mut index = 1;
+    while p.nth(index) == T![::] && p.nth(index + 1) == T![ident] {
+        index += 2;
+    }
+    if p.nth(index) != T!['['] {
+        return false;
+    }
+    let mut depth = 0;
+    loop {
+        match p.nth(index) {
+            T!['['] => depth += 1,
+            T![']'] => {
+                depth -= 1;
+                if depth == 0 {
+                    return p.nth(index + 1) == T![::];
+                }
+            }
+            T![eof] => return false,
+            _ => {}
+        }
+        index += 1;
+    }
 }
 
 fn closure_expr(p: &mut Parser) -> MarkerClosed {

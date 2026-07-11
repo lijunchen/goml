@@ -657,7 +657,17 @@ impl Typer {
                     .map(|for_ty| {
                         (
                             TraitGoal {
-                                trait_name: constraint.trait_name.clone(),
+                                trait_ref: tast::TraitRef {
+                                    name: constraint.trait_ref.name.clone(),
+                                    args: constraint
+                                        .trait_ref
+                                        .args
+                                        .iter()
+                                        .map(|arg| {
+                                            self._go_inst_ty(arg, &mut substitution, wildcard_len)
+                                        })
+                                        .collect(),
+                                },
                                 for_ty,
                             },
                             cause.clone(),
@@ -1198,6 +1208,7 @@ impl Typer {
             tast::Expr::EFor {
                 pat,
                 iterator,
+                mut trait_ref,
                 body,
                 ty,
             } => {
@@ -1206,11 +1217,15 @@ impl Typer {
                     .or_else(|| expr_origin(body.as_ref()));
                 let ty = self.subst_ty(diagnostics, &ty, origin);
                 let pat = self.subst_pat(diagnostics, pat);
+                for arg in &mut trait_ref.args {
+                    *arg = self.subst_ty(diagnostics, arg, origin);
+                }
                 let iterator = Box::new(self.subst(diagnostics, *iterator));
                 let body = Box::new(self.subst(diagnostics, *body));
                 tast::Expr::EFor {
                     pat,
                     iterator,
+                    trait_ref,
                     body,
                     ty,
                 }
@@ -1340,15 +1355,18 @@ impl Typer {
                 }
             }
             tast::Expr::ETraitMethod {
-                trait_name,
+                mut trait_ref,
                 method_name,
                 ty,
                 astptr,
             } => {
                 let origin = astptr.as_ref().map(|ptr| ptr.text_range());
+                for arg in &mut trait_ref.args {
+                    *arg = self.subst_ty(diagnostics, arg, origin);
+                }
                 let ty = self.subst_ty(diagnostics, &ty, origin);
                 tast::Expr::ETraitMethod {
-                    trait_name,
+                    trait_ref,
                     method_name,
                     ty: ty.clone(),
                     astptr,

@@ -1058,7 +1058,7 @@ pub struct Fn {
     pub attrs: Vec<Attribute>,
     pub name: String,
     pub generics: Vec<HirIdent>,
-    pub generic_bounds: Vec<(HirIdent, Vec<Path>)>,
+    pub generic_bounds: Vec<(HirIdent, Vec<TraitRef>)>,
     pub params: Vec<(LocalId, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
     pub body: Block,
@@ -1069,7 +1069,7 @@ pub struct ExternFn {
     pub attrs: Vec<Attribute>,
     pub name: HirIdent,
     pub generics: Vec<HirIdent>,
-    pub generic_bounds: Vec<(HirIdent, Vec<Path>)>,
+    pub generic_bounds: Vec<(HirIdent, Vec<TraitRef>)>,
     pub params: Vec<(HirIdent, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
 }
@@ -1084,7 +1084,7 @@ impl From<&ast::ExternFn> for ExternFn {
                 .generic_bounds
                 .iter()
                 .map(|(param, traits)| {
-                    let traits = traits.iter().map(|p| p.into()).collect::<Vec<_>>();
+                    let traits = traits.iter().map(TraitRef::from).collect::<Vec<_>>();
                     (HirIdent::name(&param.0), traits)
                 })
                 .collect(),
@@ -1148,6 +1148,7 @@ impl From<&ast::StructDef> for StructDef {
 pub struct TraitDef {
     pub attrs: Vec<Attribute>,
     pub name: HirIdent,
+    pub generics: Vec<HirIdent>,
     pub method_sigs: Vec<TraitMethodSignature>,
 }
 
@@ -1156,7 +1157,23 @@ impl From<&ast::TraitDef> for TraitDef {
         TraitDef {
             attrs: t.attrs.iter().map(|a| a.into()).collect(),
             name: HirIdent::name(&t.name.0),
+            generics: t.generics.iter().map(|g| HirIdent::name(&g.0)).collect(),
             method_sigs: t.method_sigs.iter().map(|m| m.into()).collect(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct TraitRef {
+    pub name: HirIdent,
+    pub args: Vec<TypeExpr>,
+}
+
+impl From<&ast::TraitRef> for TraitRef {
+    fn from(trait_ref: &ast::TraitRef) -> Self {
+        Self {
+            name: HirIdent::name(trait_ref.path.display()),
+            args: trait_ref.args.iter().map(TypeExpr::from).collect(),
         }
     }
 }
@@ -1182,8 +1199,8 @@ impl From<&ast::TraitMethodSignature> for TraitMethodSignature {
 pub struct ImplBlock {
     pub attrs: Vec<Attribute>,
     pub generics: Vec<HirIdent>,
-    pub generic_bounds: Vec<(HirIdent, Vec<Path>)>,
-    pub trait_name: Option<HirIdent>,
+    pub generic_bounds: Vec<(HirIdent, Vec<TraitRef>)>,
+    pub trait_ref: Option<TraitRef>,
     pub for_type: TypeExpr,
     pub methods: Vec<DefId>,
 }
@@ -1229,6 +1246,7 @@ pub enum Expr {
     },
     EStaticMember {
         path: Path,
+        type_args: Vec<TypeExpr>,
         astptr: Option<MySyntaxNodePtr>,
     },
     EUnit,

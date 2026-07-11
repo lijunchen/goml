@@ -34,7 +34,7 @@ struct TraitMethodCall<'a> {
     receiver_expr_id: hir::ExprId,
     receiver: tast::Expr,
     receiver_ty: tast::Ty,
-    trait_name: &'a tast::TastIdent,
+    trait_ref: &'a tast::TraitRef,
     method_name: &'a tast::TastIdent,
     method_scheme: &'a crate::env::FnScheme,
     args: &'a [hir::ExprId],
@@ -293,9 +293,10 @@ impl Typer {
                 },
             );
         }
-        let lookup = lookup_trait_method_candidates(genv, local_env, &receiver_ty, &method_name);
+        let lookup =
+            lookup_trait_method_candidates(self, genv, local_env, &receiver_ty, &method_name);
         match lookup.candidates.as_slice() {
-            [(trait_name, method_scheme)] => {
+            [(trait_ref, method_scheme)] => {
                 if let Some(field_ty) = field_ty.clone() {
                     return self.infer_field_value_call(
                         genv,
@@ -321,7 +322,7 @@ impl Typer {
                         receiver_expr_id: receiver_expr,
                         receiver: receiver_tast,
                         receiver_ty: receiver_ty.clone(),
-                        trait_name,
+                        trait_ref,
                         method_name: &method_name,
                         method_scheme,
                         args,
@@ -418,8 +419,8 @@ impl Typer {
             && let Some(bounds) = local_env.tparam_trait_bounds(name)
         {
             for bound in bounds {
-                if !candidate_traits.contains(bound) {
-                    candidate_traits.push(bound.clone());
+                if !candidate_traits.contains(&bound.name) {
+                    candidate_traits.push(bound.name.clone());
                 }
             }
         }
@@ -490,7 +491,7 @@ impl Typer {
             receiver_expr_id,
             receiver,
             receiver_ty,
-            trait_name,
+            trait_ref,
             method_name,
             method_scheme,
             args,
@@ -498,7 +499,7 @@ impl Typer {
         let range = self.expr_range(call_expr_id);
         let parent = self.push_obligation(
             Predicate::Trait(TraitGoal {
-                trait_name: trait_name.clone(),
+                trait_ref: trait_ref.clone(),
                 for_ty: receiver_ty.clone(),
             }),
             ObligationCause::new(range, ObligationCauseKind::MethodCall),
@@ -518,7 +519,7 @@ impl Typer {
                     diagnostics,
                     format!(
                         "Expected trait method {}::{} to have a function type",
-                        trait_name.0, method_name.0
+                        trait_ref.name.0, method_name.0
                     ),
                 );
                 return self.error_expr(None);
@@ -530,7 +531,7 @@ impl Typer {
                 diagnostics,
                 format!(
                     "Trait method {}::{} expects {} arguments but got {}",
-                    trait_name.0,
+                    trait_ref.name.0,
                     method_name.0,
                     params.len(),
                     args.len() + 1
@@ -551,7 +552,7 @@ impl Typer {
                 diagnostics,
                 format!(
                     "trait method {}::{} missing receiver parameter",
-                    trait_name.0, method_name.0
+                    trait_ref.name.0, method_name.0
                 ),
             );
             self.fresh_ty_var()
@@ -567,7 +568,7 @@ impl Typer {
             call_expr_id,
             CallElab {
                 callee: CalleeElab::TraitMethod {
-                    trait_name: trait_name.clone(),
+                    trait_ref: trait_ref.clone(),
                     method_name: method_name.clone(),
                     ty: inst_method_ty_for_call.clone(),
                     astptr: None,
@@ -582,7 +583,7 @@ impl Typer {
         self.results.record_name_ref_elab(
             func_expr_id,
             NameRefElab::TraitMethod {
-                trait_name: trait_name.clone(),
+                trait_ref: trait_ref.clone(),
                 method_name: method_name.clone(),
                 ty: inst_method_ty_for_call.clone(),
                 astptr: None,
@@ -590,7 +591,7 @@ impl Typer {
         );
         tast::Expr::ECall {
             func: Box::new(tast::Expr::ETraitMethod {
-                trait_name: trait_name.clone(),
+                trait_ref: trait_ref.clone(),
                 method_name: method_name.clone(),
                 ty: inst_method_ty_for_call,
                 astptr: None,

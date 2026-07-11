@@ -2,7 +2,7 @@ use crate::hir;
 use crate::hir::{
     Arm, Attribute, ClosureParam, Def, DefId, EnumDef, Expr, ExprId, ExternFn, Fn, HirIdent,
     ImplBlock, PackageHir, Pat, PatId, ProjectHir, ProjectHirTable, SourceFileHir, StructDef,
-    TraitDef, TraitMethodSignature, TypeExpr,
+    TraitDef, TraitMethodSignature, TraitRef, TypeExpr,
 };
 use pretty::RcDoc;
 
@@ -222,7 +222,29 @@ impl Expr {
                 ..
             } => RcDoc::text(hint.clone()),
             hir::Expr::ENameRef { res, .. } => RcDoc::text(res.display(ctx.hir_table)),
-            hir::Expr::EStaticMember { path, .. } => RcDoc::text(path.display()),
+            hir::Expr::EStaticMember {
+                path, type_args, ..
+            } => {
+                if type_args.is_empty() {
+                    RcDoc::text(path.display())
+                } else {
+                    let owner = path
+                        .namespace_segments()
+                        .iter()
+                        .map(|segment| segment.seg().clone())
+                        .collect::<Vec<_>>()
+                        .join("::");
+                    let member = path.last_ident().cloned().unwrap_or_default();
+                    RcDoc::text(owner)
+                        .append(RcDoc::text("["))
+                        .append(RcDoc::intersperse(
+                            type_args.iter().map(TypeExpr::to_doc),
+                            RcDoc::text(", "),
+                        ))
+                        .append(RcDoc::text("]::"))
+                        .append(RcDoc::text(member))
+                }
+            }
 
             hir::Expr::EUnit => RcDoc::text("()"),
 
@@ -663,7 +685,8 @@ impl TraitDef {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let header = RcDoc::text("trait")
             .append(RcDoc::space())
-            .append(RcDoc::text(self.name.to_ident_name()));
+            .append(RcDoc::text(self.name.to_ident_name()))
+            .append(generics_to_doc(&self.generics));
 
         let methods_doc = RcDoc::intersperse(
             self.method_sigs.iter().map(|sig| sig.to_doc()),
@@ -683,6 +706,28 @@ impl TraitDef {
         let mut w = Vec::new();
         self.to_doc().render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
+    }
+}
+
+impl TraitRef {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
+        let mut doc = RcDoc::text(self.name.to_ident_name());
+        if !self.args.is_empty() {
+            doc = doc
+                .append(RcDoc::text("["))
+                .append(RcDoc::intersperse(
+                    self.args.iter().map(TypeExpr::to_doc),
+                    RcDoc::text(", "),
+                ))
+                .append(RcDoc::text("]"));
+        }
+        doc
+    }
+
+    pub fn display(&self) -> String {
+        let mut output = Vec::new();
+        self.to_doc().render(usize::MAX, &mut output).unwrap();
+        String::from_utf8(output).unwrap()
     }
 }
 
@@ -750,9 +795,9 @@ impl ImplBlock {
                 .append(RcDoc::text("]"));
         }
 
-        let header = if let Some(trait_name) = &self.trait_name {
+        let header = if let Some(trait_ref) = &self.trait_ref {
             base.append(RcDoc::space())
-                .append(RcDoc::text(trait_name.to_ident_name()))
+                .append(trait_ref.to_doc())
                 .append(RcDoc::text(" for "))
                 .append(self.for_type.to_doc())
                 .append(RcDoc::text(" {"))

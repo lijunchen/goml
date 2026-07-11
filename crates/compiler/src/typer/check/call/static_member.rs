@@ -5,6 +5,7 @@ pub(super) struct StaticMemberCall<'a> {
     pub(super) call_expr_id: hir::ExprId,
     pub(super) func_expr_id: hir::ExprId,
     pub(super) path: &'a hir::Path,
+    pub(super) type_args: &'a [hir::TypeExpr],
     pub(super) astptr: Option<MySyntaxNodePtr>,
     pub(super) args: &'a [hir::ExprId],
 }
@@ -18,7 +19,7 @@ struct StaticCallSite<'a> {
 
 struct StaticTraitMethodCall<'a> {
     site: StaticCallSite<'a>,
-    trait_name: tast::TastIdent,
+    trait_ref: tast::TraitRef,
     method_name: tast::TastIdent,
     method_scheme: crate::env::FnScheme,
 }
@@ -54,6 +55,7 @@ impl Typer {
             call_expr_id,
             func_expr_id,
             path,
+            type_args,
             astptr,
             args,
         } = call;
@@ -86,8 +88,19 @@ impl Typer {
             args,
         };
 
+        let explicit_args = match resolve_explicit_trait_args(
+            genv,
+            local_env,
+            diagnostics,
+            &type_name,
+            type_args,
+            astptr.map(|pointer| pointer.text_range()),
+        ) {
+            Ok(args) => args,
+            Err(()) => return self.error_expr(astptr),
+        };
         if let Some((trait_name, method_scheme)) =
-            lookup_trait_method_from_type_name(genv, &type_name, &member_ident)
+            lookup_trait_method_from_type_name(self, genv, &type_name, &member_ident, explicit_args)
         {
             self.infer_static_trait_method_call(
                 genv,
@@ -95,7 +108,7 @@ impl Typer {
                 diagnostics,
                 StaticTraitMethodCall {
                     site,
-                    trait_name,
+                    trait_ref: trait_name,
                     method_name: member_ident,
                     method_scheme,
                 },
@@ -124,7 +137,7 @@ impl Typer {
     ) -> tast::Expr {
         let StaticTraitMethodCall {
             site,
-            trait_name: type_ident,
+            trait_ref,
             method_name: member_ident,
             method_scheme,
         } = call;
@@ -155,7 +168,8 @@ impl Typer {
             if let tast::Ty::TDyn {
                 trait_name: recv_trait,
             } = receiver_tast.get_ty()
-                && recv_trait == type_ident.0
+                && trait_ref.args.is_empty()
+                && recv_trait == trait_ref.name.0
             {
                 return self.infer_dyn_trait_method_call(
                     genv,
@@ -167,7 +181,7 @@ impl Typer {
                         astptr,
                         args,
                         receiver: receiver_tast,
-                        trait_name: &type_ident,
+                        trait_name: &trait_ref.name,
                         method_name: &member_ident,
                         params,
                         ret_ty,
@@ -207,7 +221,7 @@ impl Typer {
         self.push_reserved_obligation(
             parent,
             Predicate::Trait(TraitGoal {
-                trait_name: type_ident.clone(),
+                trait_ref: trait_ref.clone(),
                 for_ty: receiver_ty,
             }),
         );
@@ -216,7 +230,7 @@ impl Typer {
             call_expr_id,
             CallElab {
                 callee: CalleeElab::TraitMethod {
-                    trait_name: type_ident.clone(),
+                    trait_ref: trait_ref.clone(),
                     method_name: member_ident.clone(),
                     ty: inst_method_ty_for_call.clone(),
                     astptr: None,
@@ -229,7 +243,7 @@ impl Typer {
         self.results.record_name_ref_elab(
             func_expr_id,
             NameRefElab::TraitMethod {
-                trait_name: type_ident.clone(),
+                trait_ref: trait_ref.clone(),
                 method_name: member_ident.clone(),
                 ty: inst_method_ty_for_call.clone(),
                 astptr,
@@ -237,7 +251,7 @@ impl Typer {
         );
         tast::Expr::ECall {
             func: Box::new(tast::Expr::ETraitMethod {
-                trait_name: type_ident.clone(),
+                trait_ref: trait_ref.clone(),
                 method_name: member_ident.clone(),
                 ty: inst_method_ty_for_call,
                 astptr: None,

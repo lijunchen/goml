@@ -21,7 +21,7 @@ use crate::typer::literals::{
 use crate::typer::localenv::LocalTypeEnv;
 use crate::typer::member_lookup::{
     lookup_trait_method_candidates, lookup_trait_method_from_type_name, report_ambiguous_method,
-    report_method_not_found, resolve_field_ty_eager,
+    report_method_not_found, resolve_explicit_trait_args, resolve_field_ty_eager,
 };
 use crate::typer::operators::{
     integer_literal_target, is_float_ty, is_integer_ty, is_numeric_ty, is_signed_numeric_ty,
@@ -48,6 +48,13 @@ use crate::{
 enum ArrayAssignRoot {
     Local(hir::LocalId),
     Ref,
+}
+
+struct TypeMemberRequest<'a> {
+    type_name: &'a str,
+    member: &'a str,
+    type_args: &'a [hir::TypeExpr],
+    astptr: Option<MySyntaxNodePtr>,
 }
 
 impl Typer {
@@ -107,11 +114,13 @@ impl Typer {
             tast::Expr::EFor {
                 pat,
                 iterator,
+                trait_ref,
                 body,
                 ..
             } => tast::Expr::EFor {
                 pat,
                 iterator,
+                trait_ref,
                 body,
                 ty,
             },
@@ -168,12 +177,12 @@ impl Typer {
                 resolution,
             },
             tast::Expr::ETraitMethod {
-                trait_name,
+                trait_ref,
                 method_name,
                 astptr,
                 ..
             } => tast::Expr::ETraitMethod {
-                trait_name,
+                trait_ref,
                 method_name,
                 ty,
                 astptr,
@@ -292,7 +301,7 @@ impl Typer {
                 );
             }
             tast::Expr::ETraitMethod {
-                trait_name,
+                trait_ref,
                 method_name,
                 ty,
                 astptr,
@@ -300,7 +309,7 @@ impl Typer {
                 self.results.record_name_ref_elab(
                     expr_id,
                     NameRefElab::TraitMethod {
-                        trait_name: trait_name.clone(),
+                        trait_ref: trait_ref.clone(),
                         method_name: method_name.clone(),
                         ty: ty.clone(),
                         astptr: *astptr,
@@ -355,9 +364,18 @@ impl Typer {
             hir::Expr::ENameRef { res, hint, astptr } => {
                 self.infer_res_expr(genv, local_env, diagnostics, &res, &hint, astptr)
             }
-            hir::Expr::EStaticMember { path, astptr } => {
-                self.infer_static_member_expr(genv, diagnostics, &path, astptr)
-            }
+            hir::Expr::EStaticMember {
+                path,
+                type_args,
+                astptr,
+            } => self.infer_static_member_expr(
+                genv,
+                local_env,
+                diagnostics,
+                &path,
+                &type_args,
+                astptr,
+            ),
             hir::Expr::EUnit => tast::Expr::EPrim {
                 value: Prim::unit(),
                 ty: tast::Ty::TUnit,
@@ -922,8 +940,10 @@ impl Typer {
     fn infer_static_member_expr(
         &mut self,
         genv: &PackageTypeEnv,
+        local_env: &LocalTypeEnv,
         diagnostics: &mut Diagnostics,
         path: &hir::Path,
+        type_args: &[hir::TypeExpr],
         astptr: Option<MySyntaxNodePtr>,
     ) -> tast::Expr {
         if path.len() < 2 {
@@ -946,22 +966,48 @@ impl Typer {
             super::util::push_ice(diagnostics, "static member path missing final segment");
             return self.error_expr(astptr);
         };
-        self.infer_type_member_expr(genv, diagnostics, &type_name, member, astptr)
+        self.infer_type_member_expr(
+            genv,
+            local_env,
+            diagnostics,
+            TypeMemberRequest {
+                type_name: &type_name,
+                member,
+                type_args,
+                astptr,
+            },
+        )
     }
 
     fn infer_type_member_expr(
         &mut self,
         genv: &PackageTypeEnv,
+        local_env: &LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        type_name: &str,
-        member: &str,
-        astptr: Option<MySyntaxNodePtr>,
+        request: TypeMemberRequest<'_>,
     ) -> tast::Expr {
+        let TypeMemberRequest {
+            type_name,
+            member,
+            type_args,
+            astptr,
+        } = request;
         let (resolved_type_name, type_env) = super::util::resolve_type_name(genv, type_name);
         let type_ident = tast::TastIdent(resolved_type_name.clone());
         let member_ident = tast::TastIdent(member.to_string());
+        let explicit_args = match resolve_explicit_trait_args(
+            genv,
+            local_env,
+            diagnostics,
+            type_name,
+            type_args,
+            astptr.map(|pointer| pointer.text_range()),
+        ) {
+            Ok(args) => args,
+            Err(()) => return self.error_expr(astptr),
+        };
         if let Some((trait_ident, method_scheme)) =
-            lookup_trait_method_from_type_name(genv, type_name, &member_ident)
+            lookup_trait_method_from_type_name(self, genv, type_name, &member_ident, explicit_args)
         {
             let instantiated = self.instantiate_scheme(
                 &method_scheme,
@@ -972,7 +1018,7 @@ impl Typer {
             );
             self.register_scheme_obligations(&instantiated);
             return tast::Expr::ETraitMethod {
-                trait_name: trait_ident,
+                trait_ref: trait_ident,
                 method_name: member_ident.clone(),
                 ty: instantiated.ty,
                 astptr,
@@ -1735,31 +1781,22 @@ impl Typer {
     ) -> tast::Expr {
         let iterator_tast = self.infer_expr(genv, local_env, diagnostics, iterator);
         let iterator_expr_ty = self.norm(&iterator_tast.get_ty());
-        let item_ty = match iterator_item_ty(genv, &iterator_expr_ty) {
-            Some(item_ty) => item_ty.clone(),
-            None if matches!(iterator_expr_ty, tast::Ty::TVar(_)) => {
-                let item_ty = self.fresh_ty_var();
-                let expected = iterator_ty(genv, item_ty.clone());
-                self.equate(
-                    diagnostics,
-                    &iterator_expr_ty,
-                    &expected,
-                    self.expr_range(iterator),
-                );
-                item_ty
-            }
-            None => {
-                super::util::push_error_with_range(
-                    diagnostics,
-                    format!(
-                        "for loop expects Iterator[T], got {}; call .iter() on supported collections",
-                        super::util::format_ty_for_diag(&iterator_expr_ty)
-                    ),
-                    self.expr_range(iterator),
-                );
-                tast::Ty::TUnit
-            }
+        let item_ty = self.fresh_ty_var();
+        let iterator_trait = genv
+            .lang_item(LangItemId::Iterator)
+            .cloned()
+            .unwrap_or_else(|| tast::TastIdent::new(LangItemId::Iterator.source_name()));
+        let trait_ref = tast::TraitRef {
+            name: iterator_trait,
+            args: vec![item_ty.clone()],
         };
+        self.push_obligation(
+            Predicate::Trait(TraitGoal {
+                trait_ref: trait_ref.clone(),
+                for_ty: iterator_expr_ty,
+            }),
+            ObligationCause::new(self.expr_range(iterator), ObligationCauseKind::ForLoop),
+        );
 
         local_env.push_scope();
         let pat_tast = self.check_pat(genv, local_env, diagnostics, pat, &item_ty);
@@ -1779,6 +1816,7 @@ impl Typer {
         tast::Expr::EFor {
             pat: pat_tast,
             iterator: Box::new(iterator_tast),
+            trait_ref,
             body: Box::new(body_tast),
             ty: tast::Ty::TUnit,
         }
@@ -2962,36 +3000,6 @@ fn option_ty(name: &str, ok_ty: tast::Ty) -> tast::Ty {
         }),
         args: vec![ok_ty],
     }
-}
-
-fn iterator_ty(genv: &PackageTypeEnv, item_ty: tast::Ty) -> tast::Ty {
-    let name = genv
-        .lang_item(LangItemId::Iterator)
-        .map(|name| name.0.clone())
-        .unwrap_or_else(|| LangItemId::Iterator.source_name().to_string());
-    tast::Ty::TApp {
-        ty: Box::new(tast::Ty::TStruct { name }),
-        args: vec![item_ty],
-    }
-}
-
-fn iterator_item_ty<'a>(genv: &PackageTypeEnv, ty: &'a tast::Ty) -> Option<&'a tast::Ty> {
-    let tast::Ty::TApp { ty, args } = ty else {
-        return None;
-    };
-    let tast::Ty::TStruct { name } = ty.as_ref() else {
-        return None;
-    };
-    if genv
-        .lang_item(LangItemId::Iterator)
-        .is_none_or(|item| item.0 != *name)
-    {
-        return None;
-    }
-    if args.len() != 1 {
-        return None;
-    }
-    Some(&args[0])
 }
 
 fn validate_hashmap_get_option_for_map_ty(

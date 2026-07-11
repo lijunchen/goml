@@ -127,7 +127,7 @@ impl ObligationWorklist {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct TraitGoal {
-    pub trait_name: tast::TastIdent,
+    pub trait_ref: tast::TraitRef,
     pub for_ty: tast::Ty,
 }
 
@@ -159,31 +159,21 @@ pub(crate) enum ProjectionGoal {
 
 #[derive(Debug, Clone, Default)]
 pub(crate) struct ParamEnv {
-    bounds: HashMap<String, HashSet<String>>,
+    bounds: HashMap<String, Vec<tast::TraitRef>>,
 }
 
 impl ParamEnv {
-    pub(crate) fn from_bounds(bounds: &HashMap<String, Vec<String>>) -> Self {
+    pub(crate) fn from_bounds(bounds: &HashMap<String, Vec<tast::TraitRef>>) -> Self {
         Self {
-            bounds: bounds
-                .iter()
-                .map(|(param, traits)| {
-                    (
-                        param.clone(),
-                        traits.iter().cloned().collect::<HashSet<_>>(),
-                    )
-                })
-                .collect(),
+            bounds: bounds.clone(),
         }
     }
 
-    pub(crate) fn proves(&self, goal: &TraitGoal) -> bool {
+    pub(crate) fn bounds_for(&self, goal: &TraitGoal) -> &[tast::TraitRef] {
         let tast::Ty::TParam { name } = &goal.for_ty else {
-            return false;
+            return &[];
         };
-        self.bounds
-            .get(name)
-            .is_some_and(|bounds| bounds.contains(&goal.trait_name.0))
+        self.bounds.get(name).map_or(&[], Vec::as_slice)
     }
 }
 
@@ -214,6 +204,7 @@ pub(crate) enum ObligationCauseKind {
     FunctionBound,
     ImplBound,
     MethodCall,
+    ForLoop,
     Coercion,
     Projection,
     Operation,
@@ -225,6 +216,7 @@ impl ObligationCauseKind {
             Self::FunctionBound => "a function bound",
             Self::ImplBound => "an implementation bound",
             Self::MethodCall => "a method call",
+            Self::ForLoop => "a for loop",
             Self::Coercion => "a trait-object coercion",
             Self::Projection => "a projection",
             Self::Operation => "an operator",

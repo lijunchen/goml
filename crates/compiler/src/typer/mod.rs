@@ -17,7 +17,8 @@ mod solve;
 pub mod tast_builder;
 mod toplevel;
 mod traits;
-mod type_ops;
+pub(crate) use traits::matching::impl_self_subst;
+pub(crate) mod type_ops;
 mod unify;
 mod util;
 
@@ -47,7 +48,7 @@ pub struct Typer {
     pub results: TypeckResultsBuilder,
     pub(crate) loop_control_context: LoopControlContext,
     pub(crate) return_ty_stack: Vec<tast::Ty>,
-    pub(crate) tparam_trait_bounds: HashMap<String, Vec<String>>,
+    pub(crate) tparam_trait_bounds: HashMap<String, Vec<tast::TraitRef>>,
     pub(crate) array_wildcard_counter: usize,
     pub(crate) array_wildcard_resolutions: HashMap<usize, usize>,
 }

@@ -126,6 +126,7 @@ fn is_builtin_type_constructor(name: string) -> bool {
         || name == "HashMap"
         || name == "Slice"
         || name == "Iterator"
+        || name == "FnIterator"
         || name == "Hash"
         || name == "Eq"
         || name == "ToString"
@@ -295,7 +296,7 @@ fn add_builtin_functions(ctx: CheckContext) -> unit {
     let range_params = Ref::new(Vec::new());
     range_params.set(range_params.get().pushed("int32"));
     range_params.set(range_params.get().pushed("int32"));
-    push_function(ctx, fn_info("", "range", range_params.get(), "Iterator[int32]"));
+    push_function(ctx, fn_info("", "range", range_params.get(), "FnIterator[int32]"));
     push_function(ctx, fn_info("io", "println", one_unknown.get(), "unit"));
     push_function(ctx, fn_info("io", "print", one_unknown.get(), "unit"));
     let read_file_params = Ref::new(Vec::new());
@@ -526,12 +527,12 @@ fn method_type(ctx: CheckContext, receiver_node: ast::Node, receiver: string, na
         receiver
     } else if name == "iter" {
         if starts_with(receiver, "Vec[") || starts_with(receiver, "Slice[") {
-            "Iterator[" + type_arg(receiver) + "]"
+            "FnIterator[" + type_arg(receiver) + "]"
         } else {
             "unknown"
         }
     } else if name == "next" {
-        if starts_with(receiver, "Iterator[") {
+        if starts_with(receiver, "FnIterator[") {
             "Option[" + type_arg(receiver) + "]"
         } else {
             "unknown"
@@ -794,7 +795,7 @@ fn infer_expr(ctx: CheckContext, node: ast::Node, bindings: Ref[Vec[Binding]]) -
         "unit"
     } else if node_is(node, ast::NodeKind::ExprFor) {
         let iterator = infer_expr(ctx, child(node, 1), bindings);
-        if starts_with(iterator, "Iterator[") {
+        if starts_with(iterator, "FnIterator[") {
             ()
         } else {
             push_diagnostic(ctx, child(node, 1), "for loop expects Iterator[T], got " + iterator);

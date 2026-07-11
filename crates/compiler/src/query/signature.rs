@@ -181,11 +181,13 @@ fn parameter_names_for_call(
             symbols.index.find_value(name)
         }
         crate::typer::results::CalleeElab::TraitMethod {
-            trait_name,
+            trait_ref,
             method_name,
             ..
-        }
-        | crate::typer::results::CalleeElab::DynTraitMethod {
+        } => symbols
+            .index
+            .find_trait_methods(&trait_ref.name.0, &method_name.0),
+        crate::typer::results::CalleeElab::DynTraitMethod {
             trait_name,
             method_name,
             ..

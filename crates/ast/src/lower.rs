@@ -361,6 +361,15 @@ fn lower_trait(ctx: &mut LowerCtx, node: cst::Trait) -> Option<ast::TraitDef> {
             return None;
         }
     };
+    let generics = node
+        .generic_list()
+        .map(|list| {
+            list.generics()
+                .filter_map(|generic| generic.uident())
+                .map(|token| ast::AstIdent::new(token.text()))
+                .collect()
+        })
+        .unwrap_or_default();
     let methods = if let Some(list) = node.trait_method_list() {
         list.methods()
             .flat_map(|method| lower_trait_method(ctx, method))
@@ -376,8 +385,25 @@ fn lower_trait(ctx: &mut LowerCtx, node: cst::Trait) -> Option<ast::TraitDef> {
         attrs,
         visibility,
         name: ast::AstIdent::new(&name),
+        generics,
         method_sigs: methods,
     })
+}
+
+fn lower_trait_ref(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::TraitRef> {
+    let cst::Type::TAppTy(node) = node else {
+        ctx.push_error(
+            Some(node.syntax().text_range()),
+            "Expected a trait name with optional type arguments",
+        );
+        return None;
+    };
+    let path = node.path().and_then(|path| lower_path(ctx, &path))?;
+    let args = node
+        .type_param_list()
+        .map(|list| list.types().filter_map(|ty| lower_ty(ctx, ty)).collect())
+        .unwrap_or_default();
+    Some(ast::TraitRef { path, args })
 }
 
 fn lower_trait_method(
@@ -425,7 +451,7 @@ fn lower_trait_method(
 
 fn lower_impl_block(ctx: &mut LowerCtx, node: cst::Impl) -> Option<ast::ImplBlock> {
     let attrs = lower_attributes(node.attributes());
-    let (generics, generic_bounds): (Vec<ast::AstIdent>, Vec<(ast::AstIdent, Vec<ast::Path>)>) =
+    let (generics, generic_bounds): (Vec<ast::AstIdent>, Vec<(ast::AstIdent, Vec<ast::TraitRef>)>) =
         node.generic_list()
             .map(|list| {
                 let mut generics = Vec::new();
@@ -441,7 +467,7 @@ fn lower_impl_block(ctx: &mut LowerCtx, node: cst::Impl) -> Option<ast::ImplBloc
                     if let Some(trait_set) = generic.trait_set() {
                         let traits = trait_set
                             .traits()
-                            .flat_map(|path| lower_path(ctx, &path))
+                            .filter_map(|trait_ref| lower_trait_ref(ctx, trait_ref))
                             .collect::<Vec<_>>();
                         bounds.push((ident, traits));
                     }
@@ -449,7 +475,9 @@ fn lower_impl_block(ctx: &mut LowerCtx, node: cst::Impl) -> Option<ast::ImplBloc
                 (generics, bounds)
             })
             .unwrap_or_default();
-    let trait_name = node.trait_path().and_then(|path| lower_path(ctx, &path));
+    let trait_ref = node
+        .trait_type()
+        .and_then(|trait_ref| lower_trait_ref(ctx, trait_ref));
     let for_type = match node.for_type().and_then(|ty| lower_ty(ctx, ty)) {
         Some(ty) => ty,
         None => {
@@ -468,7 +496,7 @@ fn lower_impl_block(ctx: &mut LowerCtx, node: cst::Impl) -> Option<ast::ImplBloc
         attrs,
         generics,
         generic_bounds,
-        trait_name,
+        trait_ref,
         for_type,
         methods,
     })
@@ -654,7 +682,7 @@ fn lower_fn(ctx: &mut LowerCtx, node: cst::Fn) -> Option<ast::Fn> {
             return None;
         }
     };
-    let (generics, generic_bounds): (Vec<ast::AstIdent>, Vec<(ast::AstIdent, Vec<ast::Path>)>) =
+    let (generics, generic_bounds): (Vec<ast::AstIdent>, Vec<(ast::AstIdent, Vec<ast::TraitRef>)>) =
         node.generic_list()
             .map(|list| {
                 let mut generics = Vec::new();
@@ -670,7 +698,7 @@ fn lower_fn(ctx: &mut LowerCtx, node: cst::Fn) -> Option<ast::Fn> {
                     if let Some(trait_set) = generic.trait_set() {
                         let traits = trait_set
                             .traits()
-                            .flat_map(|path| lower_path(ctx, &path))
+                            .filter_map(|trait_ref| lower_trait_ref(ctx, trait_ref))
                             .collect::<Vec<_>>();
                         bounds.push((ident, traits));
                     }
@@ -744,30 +772,33 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
             return None;
         };
         let name = name_token.to_string();
-        let (generics, generic_bounds): (Vec<ast::AstIdent>, Vec<(ast::AstIdent, Vec<ast::Path>)>) =
-            node.generic_list()
-                .map(|list| {
-                    let mut generics = Vec::new();
-                    let mut bounds = Vec::new();
-                    for generic in list.generics() {
-                        let Some(token) = generic.uident() else {
-                            continue;
-                        };
-                        let name = token.to_string();
-                        let ident = ast::AstIdent::new(&name);
-                        generics.push(ident.clone());
+        let (generics, generic_bounds): (
+            Vec<ast::AstIdent>,
+            Vec<(ast::AstIdent, Vec<ast::TraitRef>)>,
+        ) = node
+            .generic_list()
+            .map(|list| {
+                let mut generics = Vec::new();
+                let mut bounds = Vec::new();
+                for generic in list.generics() {
+                    let Some(token) = generic.uident() else {
+                        continue;
+                    };
+                    let name = token.to_string();
+                    let ident = ast::AstIdent::new(&name);
+                    generics.push(ident.clone());
 
-                        if let Some(trait_set) = generic.trait_set() {
-                            let traits = trait_set
-                                .traits()
-                                .flat_map(|path| lower_path(ctx, &path))
-                                .collect::<Vec<_>>();
-                            bounds.push((ident, traits));
-                        }
+                    if let Some(trait_set) = generic.trait_set() {
+                        let traits = trait_set
+                            .traits()
+                            .filter_map(|trait_ref| lower_trait_ref(ctx, trait_ref))
+                            .collect::<Vec<_>>();
+                        bounds.push((ident, traits));
                     }
-                    (generics, bounds)
-                })
-                .unwrap_or_default();
+                }
+                (generics, bounds)
+            })
+            .unwrap_or_default();
         let params = node
             .param_list()
             .map(|list| {
@@ -1303,7 +1334,8 @@ fn lower_expr_with_args(
             if let Some(callee) = support::child::<cst::Expr>(it.syntax()) {
                 return match callee {
                     cst::Expr::IdentExpr(ident_expr) => {
-                        let constructor = lower_constructor_path_from_ident_expr(ctx, &ident_expr)?;
+                        let (constructor, type_args) =
+                            lower_constructor_path_from_ident_expr(ctx, &ident_expr)?;
                         let Some(variant_ident) = constructor.last_ident().cloned() else {
                             ctx.push_error(
                                 Some(it.syntax().text_range()),
@@ -1313,7 +1345,7 @@ fn lower_expr_with_args(
                         };
                         let callee_astptr = MySyntaxNodePtr::new(ident_expr.syntax());
 
-                        if ctx.is_constructor(&variant_ident) {
+                        if type_args.is_empty() && ctx.is_constructor(&variant_ident) {
                             let constr = ast::Expr::EConstr {
                                 constructor,
                                 args,
@@ -1328,6 +1360,7 @@ fn lower_expr_with_args(
                         } else {
                             let path_expr = ast::Expr::EPath {
                                 path: constructor,
+                                type_args,
                                 astptr: callee_astptr,
                             };
                             let call = ast::Expr::ECall {
@@ -1713,6 +1746,7 @@ fn lower_expr_with_args(
                                 .or_else(|| {
                                     Some(ast::Expr::EPath {
                                         path: ast::Path::from_ident(ident.clone()),
+                                        type_args: Vec::new(),
                                         astptr: MySyntaxNodePtr::new(field.syntax()),
                                     })
                                 })?;
@@ -1741,7 +1775,7 @@ fn lower_expr_with_args(
         }
         cst::Expr::IdentExpr(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
-            let constructor = lower_constructor_path_from_ident_expr(ctx, &it)?;
+            let (constructor, type_args) = lower_constructor_path_from_ident_expr(ctx, &it)?;
             let Some(variant_ident) = constructor.last_ident().cloned() else {
                 ctx.push_error(
                     Some(it.syntax().text_range()),
@@ -1749,7 +1783,7 @@ fn lower_expr_with_args(
                 );
                 return None;
             };
-            if ctx.is_constructor(&variant_ident) {
+            if type_args.is_empty() && ctx.is_constructor(&variant_ident) {
                 let expr = ast::Expr::EConstr {
                     constructor,
                     args: vec![],
@@ -1759,6 +1793,7 @@ fn lower_expr_with_args(
             } else {
                 let expr = ast::Expr::EPath {
                     path: constructor,
+                    type_args,
                     astptr,
                 };
                 apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
@@ -2139,8 +2174,16 @@ fn apply_trailing_args(
     }
 
     match expr {
-        ast::Expr::EPath { path, astptr } => Some(ast::Expr::ECall {
-            func: Box::new(ast::Expr::EPath { path, astptr }),
+        ast::Expr::EPath {
+            path,
+            type_args,
+            astptr,
+        } => Some(ast::Expr::ECall {
+            func: Box::new(ast::Expr::EPath {
+                path,
+                type_args,
+                astptr,
+            }),
             args: trailing_args,
             astptr,
         }),
@@ -2516,9 +2559,19 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
 fn lower_constructor_path_from_ident_expr(
     ctx: &mut LowerCtx,
     expr: &cst::IdentExpr,
-) -> Option<ast::Path> {
-    if let Some(path) = expr.path() {
-        lower_path(ctx, &path)
+) -> Option<(ast::Path, Vec<ast::TypeExpr>)> {
+    if let Some(type_app) = expr.type_app() {
+        let owner = type_app.path().and_then(|path| lower_path(ctx, &path))?;
+        let member = expr.path().and_then(|path| lower_path(ctx, &path))?;
+        let mut segments = owner.segments().to_vec();
+        segments.extend(member.segments().iter().cloned());
+        let args = type_app
+            .type_param_list()
+            .map(|list| list.types().filter_map(|ty| lower_ty(ctx, ty)).collect())
+            .unwrap_or_default();
+        Some((ast::Path::new(segments), args))
+    } else if let Some(path) = expr.path() {
+        Some((lower_path(ctx, &path)?, Vec::new()))
     } else {
         ctx.push_error(
             Some(expr.syntax().text_range()),

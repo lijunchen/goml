@@ -94,6 +94,23 @@ pub(crate) fn format_ty_for_diag(ty: &tast::Ty) -> String {
     }
 }
 
+pub(crate) fn format_trait_ref_for_diag(trait_ref: &tast::TraitRef) -> String {
+    if trait_ref.args.is_empty() {
+        trait_ref.name.0.clone()
+    } else {
+        format!(
+            "{}[{}]",
+            trait_ref.name.0,
+            trait_ref
+                .args
+                .iter()
+                .map(format_ty_for_diag)
+                .collect::<Vec<_>>()
+                .join(", ")
+        )
+    }
+}
+
 pub(crate) fn try_constr_name(ty: &tast::Ty) -> Option<String> {
     match ty {
         tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => Some(name.clone()),
@@ -273,6 +290,14 @@ fn validate_dyn_trait(genv: &PackageTypeEnv, diagnostics: &mut Diagnostics, trai
         return;
     };
 
+    if !trait_def.params.is_empty() {
+        push_error(
+            diagnostics,
+            format!("Generic trait {} cannot be used as dyn", trait_name),
+        );
+        return;
+    }
+
     validate_dyn_trait_methods(diagnostics, &resolved, trait_def);
 }
 
@@ -285,6 +310,7 @@ pub(crate) fn validate_dyn_object_safety_in_ty(
         tast::Ty::TDyn { trait_name } => {
             if let Some((resolved, trait_env)) = resolve_trait_name(genv, trait_name)
                 && let Some(trait_def) = trait_env.trait_env.trait_defs.get(&resolved)
+                && trait_def.params.is_empty()
             {
                 validate_dyn_trait_methods(diagnostics, &resolved, trait_def);
             }
@@ -556,6 +582,27 @@ impl tast::Ty {
                     .collect(),
                 ret_ty: Box::new(Self::from_hir(genv, ret_ty, tparams_env)),
             },
+        }
+    }
+}
+
+impl tast::TraitRef {
+    pub(crate) fn from_hir(
+        genv: &PackageTypeEnv,
+        trait_ref: &hir::TraitRef,
+        tparams_env: &[tast::TastIdent],
+    ) -> Self {
+        let raw_name = trait_ref.name.to_ident_name();
+        let name = resolve_trait_name(genv, &raw_name)
+            .map(|(resolved, _)| resolved)
+            .unwrap_or(raw_name);
+        Self {
+            name: tast::TastIdent(name),
+            args: trait_ref
+                .args
+                .iter()
+                .map(|arg| tast::Ty::from_hir(genv, arg, tparams_env))
+                .collect(),
         }
     }
 }

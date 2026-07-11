@@ -13,6 +13,22 @@ impl TastIdent {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+pub struct TraitRef {
+    pub name: TastIdent,
+    pub args: Vec<Ty>,
+}
+
+impl TraitRef {
+    pub fn new(name: TastIdent, args: Vec<Ty>) -> Self {
+        Self { name, args }
+    }
+
+    pub fn without_args(name: TastIdent) -> Self {
+        Self::new(name, Vec::new())
+    }
+}
+
 pub const ARRAY_WILDCARD_LEN: usize = usize::MAX;
 
 #[derive(Debug, Clone)]
@@ -29,7 +45,7 @@ pub enum Item {
 #[derive(Debug, Clone)]
 pub struct ImplBlock {
     pub generics: Vec<String>,
-    pub trait_name: Option<TastIdent>,
+    pub trait_ref: Option<TraitRef>,
     pub for_type: Ty,
     pub methods: Vec<Fn>,
 }
@@ -375,6 +391,7 @@ pub enum Expr {
     EFor {
         pat: Pat,
         iterator: Box<Expr>,
+        trait_ref: TraitRef,
         body: Box<Expr>,
         ty: Ty,
     },
@@ -428,7 +445,7 @@ pub enum Expr {
         resolution: BinaryResolution,
     },
     ETraitMethod {
-        trait_name: TastIdent,
+        trait_ref: TraitRef,
         method_name: TastIdent,
         ty: Ty,
         astptr: Option<MySyntaxNodePtr>,

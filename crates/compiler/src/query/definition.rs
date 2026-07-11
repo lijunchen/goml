@@ -279,11 +279,16 @@ fn resolve_expr_definition(
                         }
                     }
                     crate::typer::results::NameRefElab::TraitMethod {
-                        trait_name,
+                        trait_ref,
                         method_name,
                         ..
+                    } => {
+                        let out = sym_index.find_trait_methods(&trait_ref.name.0, &method_name.0);
+                        if !out.is_empty() {
+                            return Some(out);
+                        }
                     }
-                    | crate::typer::results::NameRefElab::DynTraitMethod {
+                    crate::typer::results::NameRefElab::DynTraitMethod {
                         trait_name,
                         method_name,
                         ..
@@ -334,12 +339,15 @@ fn resolve_expr_definition(
                     out.extend(sym_index.find_impl_methods(receiver_key, &method_name));
                 }
 
-                if out.is_empty()
-                    && let crate::typer::results::NameRefElab::TraitMethod { trait_name, .. }
-                    | crate::typer::results::NameRefElab::DynTraitMethod { trait_name, .. } =
-                        elab
-                {
-                    out.extend(sym_index.find_trait_methods(&trait_name.0, &method_name));
+                if out.is_empty() {
+                    match elab {
+                        crate::typer::results::NameRefElab::TraitMethod { trait_ref, .. } => out
+                            .extend(sym_index.find_trait_methods(&trait_ref.name.0, &method_name)),
+                        crate::typer::results::NameRefElab::DynTraitMethod {
+                            trait_name, ..
+                        } => out.extend(sym_index.find_trait_methods(&trait_name.0, &method_name)),
+                        _ => {}
+                    }
                 }
 
                 if !out.is_empty() {

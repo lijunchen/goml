@@ -11,7 +11,7 @@ use crate::typer::util::push_ice;
 pub struct LocalTypeEnv {
     scopes: Vec<ImHashMap<LocalId, tast::Ty>>,
     tparams_env: Vec<TastIdent>,
-    tparam_trait_bounds: IndexMap<String, Vec<TastIdent>>,
+    tparam_trait_bounds: IndexMap<String, Vec<tast::TraitRef>>,
     in_scope_traits: Vec<TastIdent>,
     capture_stack: Vec<IndexMap<LocalId, tast::Ty>>,
 }
@@ -80,7 +80,7 @@ impl LocalTypeEnv {
         self.tparams_env.clone()
     }
 
-    pub fn set_tparam_trait_bounds(&mut self, bounds: IndexMap<String, Vec<TastIdent>>) {
+    pub fn set_tparam_trait_bounds(&mut self, bounds: IndexMap<String, Vec<tast::TraitRef>>) {
         self.tparam_trait_bounds = bounds;
     }
 
@@ -88,11 +88,11 @@ impl LocalTypeEnv {
         self.tparam_trait_bounds.clear();
     }
 
-    pub fn tparam_trait_bounds(&self, name: &str) -> Option<&[TastIdent]> {
+    pub fn tparam_trait_bounds(&self, name: &str) -> Option<&[tast::TraitRef]> {
         self.tparam_trait_bounds.get(name).map(|v| v.as_slice())
     }
 
-    pub fn tparam_trait_bounds_map(&self) -> &IndexMap<String, Vec<TastIdent>> {
+    pub fn tparam_trait_bounds_map(&self) -> &IndexMap<String, Vec<tast::TraitRef>> {
         &self.tparam_trait_bounds
     }
 

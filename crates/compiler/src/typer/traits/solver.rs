@@ -9,7 +9,10 @@ use crate::{
         obligations::{ParamEnv, TraitGoal},
         traits::index::{ImplCandidate, ImplId, ImplIndex},
         traits::matching::trait_impl_subst,
-        type_ops::{contains_tvar, substitute_ty_params, type_vars},
+        type_ops::{
+            contains_tvar, substitute_trait_ref, substitute_ty_params, trait_ref_type_vars,
+            type_vars,
+        },
     },
 };
 
@@ -83,6 +86,56 @@ impl<'a> TraitSolver<'a> {
         self.index.describe_candidate(id)
     }
 
+    fn select_param_env(&self, typer: &mut Typer, goal: &TraitGoal) -> Option<SelectionResult> {
+        let matching = self
+            .param_env
+            .bounds_for(goal)
+            .iter()
+            .filter(|bound| {
+                bound.name == goal.trait_ref.name && bound.args.len() == goal.trait_ref.args.len()
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        if matching.is_empty() {
+            return None;
+        }
+        let mut successful = Vec::new();
+        for bound in matching {
+            let snapshot = typer.snapshot_inference();
+            let matches = bound
+                .args
+                .iter()
+                .zip(goal.trait_ref.args.iter())
+                .all(|(bound, goal)| typer.try_unify_silent(bound, goal));
+            typer.rollback_inference(snapshot);
+            if matches {
+                successful.push(bound);
+            }
+        }
+        let [bound] = successful.as_slice() else {
+            return (!successful.is_empty()).then_some(SelectionResult::Ambiguous(Vec::new()));
+        };
+        let changed_variables = type_vars(&goal.for_ty)
+            .into_iter()
+            .chain(trait_ref_type_vars(&goal.trait_ref))
+            .collect();
+        let snapshot = typer.snapshot_inference();
+        let matches = bound
+            .args
+            .iter()
+            .zip(goal.trait_ref.args.iter())
+            .all(|(bound, goal)| typer.try_unify_silent(bound, goal));
+        if !matches {
+            typer.rollback_inference(snapshot);
+            return Some(SelectionResult::NoSolution);
+        }
+        typer.commit_inference(snapshot);
+        Some(SelectionResult::Unique(Selection {
+            source: SelectionSource::ParamEnv,
+            changed_variables,
+        }))
+    }
+
     fn select_at_depth(
         &mut self,
         typer: &mut Typer,
@@ -93,15 +146,16 @@ impl<'a> TraitSolver<'a> {
             return SelectionResult::Overflow;
         }
         goal.for_ty = typer.norm(&goal.for_ty);
-        if self.param_env.proves(&goal) {
-            return SelectionResult::Unique(Selection {
-                source: SelectionSource::ParamEnv,
-                changed_variables: HashSet::new(),
-            });
+        for arg in &mut goal.trait_ref.args {
+            *arg = typer.norm(arg);
+        }
+        if let Some(result) = self.select_param_env(typer, &goal) {
+            return result;
         }
         if matches!(
             &goal.for_ty,
-            tast::Ty::TDyn { trait_name } if trait_name == &goal.trait_name.0
+            tast::Ty::TDyn { trait_name }
+                if goal.trait_ref.args.is_empty() && trait_name == &goal.trait_ref.name.0
         ) {
             return SelectionResult::Unique(Selection {
                 source: SelectionSource::Dyn,
@@ -120,7 +174,7 @@ impl<'a> TraitSolver<'a> {
 
         let candidates = self
             .index
-            .candidates(&goal.trait_name.0, &goal.for_ty)
+            .candidates(&goal.trait_ref, &goal.for_ty)
             .into_iter()
             .cloned()
             .collect::<Vec<_>>();
@@ -174,7 +228,10 @@ impl<'a> TraitSolver<'a> {
         let Some(candidate) = self.index.candidate(&id).cloned() else {
             return SelectionResult::NoSolution;
         };
-        let changed_variables = type_vars(&goal.for_ty);
+        let changed_variables = type_vars(&goal.for_ty)
+            .into_iter()
+            .chain(trait_ref_type_vars(&goal.trait_ref))
+            .collect();
         let snapshot = typer.snapshot_inference();
         match self.confirm_candidate(typer, goal, &candidate, depth + 1) {
             CandidateResult::Success(substitution) => {
@@ -222,8 +279,17 @@ impl<'a> TraitSolver<'a> {
             .iter()
             .map(|param| (param.0.clone(), typer.fresh_ty_var()))
             .collect::<HashMap<_, _>>();
+        let candidate_trait_ref = substitute_trait_ref(&candidate.trait_ref, &substitution);
         let head = substitute_ty_params(&candidate.head, &substitution);
-        if !typer.try_unify_silent(&head, &goal.for_ty) {
+        if candidate_trait_ref.name != goal.trait_ref.name
+            || candidate_trait_ref.args.len() != goal.trait_ref.args.len()
+            || !candidate_trait_ref
+                .args
+                .iter()
+                .zip(goal.trait_ref.args.iter())
+                .all(|(candidate, goal)| typer.try_unify_silent(candidate, goal))
+            || !typer.try_unify_silent(&head, &goal.for_ty)
+        {
             return CandidateResult::Failure;
         }
         for constraint in &candidate.definition.constraints {
@@ -231,12 +297,19 @@ impl<'a> TraitSolver<'a> {
                 return CandidateResult::Failure;
             };
             let nested = TraitGoal {
-                trait_name: constraint.trait_name.clone(),
+                trait_ref: substitute_trait_ref(&constraint.trait_ref, &substitution),
                 for_ty: typer.norm(for_ty),
             };
             match self.select_at_depth(typer, nested.clone(), depth) {
                 SelectionResult::Unique(_) => {}
-                SelectionResult::NoSolution if contains_tvar(&typer.norm(&nested.for_ty)) => {
+                SelectionResult::NoSolution
+                    if contains_tvar(&typer.norm(&nested.for_ty))
+                        || nested
+                            .trait_ref
+                            .args
+                            .iter()
+                            .any(|arg| contains_tvar(&typer.norm(arg))) =>
+                {
                     return CandidateResult::Ambiguous;
                 }
                 SelectionResult::NoSolution => return CandidateResult::Failure,
@@ -256,7 +329,12 @@ impl<'a> TraitSolver<'a> {
         if depth >= MAX_GOAL_DEPTH {
             return SelectionResult::Overflow;
         }
-        if self.param_env.proves(&goal) {
+        if self
+            .param_env
+            .bounds_for(&goal)
+            .iter()
+            .any(|bound| bound == &goal.trait_ref)
+        {
             return SelectionResult::Unique(Selection {
                 source: SelectionSource::ParamEnv,
                 changed_variables: HashSet::new(),
@@ -264,7 +342,8 @@ impl<'a> TraitSolver<'a> {
         }
         if matches!(
             &goal.for_ty,
-            tast::Ty::TDyn { trait_name } if trait_name == &goal.trait_name.0
+            tast::Ty::TDyn { trait_name }
+                if goal.trait_ref.args.is_empty() && trait_name == &goal.trait_ref.name.0
         ) {
             return SelectionResult::Unique(Selection {
                 source: SelectionSource::Dyn,
@@ -280,7 +359,7 @@ impl<'a> TraitSolver<'a> {
 
         let candidates = self
             .index
-            .candidates(&goal.trait_name.0, &goal.for_ty)
+            .candidates(&goal.trait_ref, &goal.for_ty)
             .into_iter()
             .cloned()
             .collect::<Vec<_>>();
@@ -335,7 +414,12 @@ impl<'a> TraitSolver<'a> {
         if candidate.builtin && self.env.shadows_builtin_nominal_type(&goal.for_ty) {
             return CandidateResult::Failure;
         }
-        let Some(substitution) = trait_impl_subst(&candidate.head, &goal.for_ty) else {
+        let Some(substitution) = trait_impl_subst(
+            &candidate.trait_ref,
+            &candidate.head,
+            &goal.trait_ref,
+            &goal.for_ty,
+        ) else {
             return CandidateResult::Failure;
         };
         if candidate
@@ -351,7 +435,7 @@ impl<'a> TraitSolver<'a> {
                 return CandidateResult::Failure;
             };
             let nested = TraitGoal {
-                trait_name: constraint.trait_name.clone(),
+                trait_ref: substitute_trait_ref(&constraint.trait_ref, &substitution),
                 for_ty: for_ty.clone(),
             };
             match self.select_ground_at_depth(nested, depth) {
@@ -369,7 +453,15 @@ fn canonicalize_goal(goal: &TraitGoal) -> TraitGoal {
     let mut variables = HashMap::new();
     let mut next = 0;
     TraitGoal {
-        trait_name: goal.trait_name.clone(),
+        trait_ref: tast::TraitRef {
+            name: goal.trait_ref.name.clone(),
+            args: goal
+                .trait_ref
+                .args
+                .iter()
+                .map(|arg| canonicalize_ty(arg, &mut variables, &mut next))
+                .collect(),
+        },
         for_ty: canonicalize_ty(&goal.for_ty, &mut variables, &mut next),
     }
 }

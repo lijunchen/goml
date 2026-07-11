@@ -105,14 +105,14 @@ fn genv_defines_nominal_type(genv: &GlobalTypeEnv, ty: &tast::Ty) -> bool {
 fn duplicate_trait_impl_shadows_builtin(
     genv: &GlobalTypeEnv,
     exports: &PackageExports,
-    key: &(String, tast::Ty),
+    key: &crate::env::TraitImplKey,
 ) -> bool {
     builtins::builtin_env()
         .trait_env
         .trait_impls
         .contains_key(key)
-        && exports_define_nominal_type(exports, &key.1)
-        && !genv_defines_nominal_type(genv, &key.1)
+        && exports_define_nominal_type(exports, &key.for_ty)
+        && !genv_defines_nominal_type(genv, &key.for_ty)
 }
 
 pub(super) fn report_duplicate_trait_impls(
@@ -130,7 +130,7 @@ pub(super) fn report_duplicate_trait_impls(
                 Severity::Error,
                 format!(
                     "Trait {} implementation for {:?} is defined in multiple packages (including {})",
-                    key.0, key.1, package_name
+                    key.trait_ref.name.0, key.for_ty, package_name
                 ),
             ));
         }

@@ -167,7 +167,9 @@ fn validate_top_level_type_parameter_names(
             hir::Def::ExternFn(ext) => {
                 validate_type_parameter_names(diagnostics, ext.generics.iter());
             }
-            hir::Def::TraitDef(..) => {}
+            hir::Def::TraitDef(trait_def) => {
+                validate_type_parameter_names(diagnostics, trait_def.generics.iter());
+            }
         }
     }
 }
@@ -439,6 +441,12 @@ fn define_trait(
         &trait_def.name.to_ident_name(),
     );
     validate_trait_method_names(diagnostics, trait_def);
+    let trait_params = trait_def
+        .generics
+        .iter()
+        .map(|param| tast::TastIdent(param.to_ident_name()))
+        .collect::<Vec<_>>();
+    let trait_param_names = type_param_name_set(&trait_def.generics);
     let mut methods = IndexMap::new();
 
     for hir::TraitMethodSignature {
@@ -449,9 +457,27 @@ fn define_trait(
     {
         let param_tys = params
             .iter()
-            .map(|ast_ty| tast::Ty::from_hir(env, ast_ty, &[]))
+            .map(|ast_ty| {
+                let ty = tast::Ty::from_hir(env, ast_ty, &trait_params);
+                validate_ty(
+                    env,
+                    diagnostics,
+                    &ty,
+                    type_expr_range(ast_ty),
+                    &trait_param_names,
+                );
+                ty
+            })
             .collect::<Vec<_>>();
-        let ret_ty = tast::Ty::from_hir(env, ret_ty, &[]);
+        let hir_ret_ty = ret_ty;
+        let ret_ty = tast::Ty::from_hir(env, hir_ret_ty, &trait_params);
+        validate_ty(
+            env,
+            diagnostics,
+            &ret_ty,
+            type_expr_range(hir_ret_ty),
+            &trait_param_names,
+        );
         let fn_ty = tast::Ty::TFunc {
             params: param_tys,
             ret_ty: Box::new(ret_ty),
@@ -468,16 +494,105 @@ fn define_trait(
         );
     }
 
-    env.current_mut()
-        .trait_env
-        .trait_defs
-        .insert(trait_def.name.to_ident_name(), env::TraitDef { methods });
+    env.current_mut().trait_env.trait_defs.insert(
+        trait_def.name.to_ident_name(),
+        env::TraitDef {
+            params: trait_params,
+            methods,
+        },
+    );
+}
+
+fn resolve_hir_trait_ref(
+    env: &PackageTypeEnv,
+    diagnostics: &mut Diagnostics,
+    trait_ref: &hir::TraitRef,
+    type_params: &[tast::TastIdent],
+) -> Option<tast::TraitRef> {
+    let raw_name = trait_ref.name.to_ident_name();
+    let Some((name, trait_env)) = super::util::resolve_trait_name(env, &raw_name) else {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            format!("Unknown trait {}", raw_name),
+        ));
+        return None;
+    };
+    let Some(definition) = trait_env.trait_env.trait_defs.get(&name) else {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            format!("Unknown trait {}", raw_name),
+        ));
+        return None;
+    };
+    let type_param_names = type_params
+        .iter()
+        .map(|param| param.0.clone())
+        .collect::<HashSet<_>>();
+    let diagnostic_count = diagnostics.len();
+    let args = trait_ref
+        .args
+        .iter()
+        .map(|arg| {
+            let ty = tast::Ty::from_hir(env, arg, type_params);
+            validate_ty(
+                env,
+                diagnostics,
+                &ty,
+                type_expr_range(arg),
+                &type_param_names,
+            );
+            ty
+        })
+        .collect::<Vec<_>>();
+    if diagnostics.len() != diagnostic_count {
+        return None;
+    }
+    if definition.params.len() != args.len() {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            format!(
+                "Trait {} expects {} type arguments, but got {}",
+                name,
+                definition.params.len(),
+                args.len()
+            ),
+        ));
+        return None;
+    }
+    Some(tast::TraitRef {
+        name: tast::TastIdent(name),
+        args,
+    })
+}
+
+fn resolve_hir_trait_ref_silent(
+    env: &PackageTypeEnv,
+    trait_ref: &hir::TraitRef,
+    type_params: &[tast::TastIdent],
+) -> Option<tast::TraitRef> {
+    let raw_name = trait_ref.name.to_ident_name();
+    let (name, trait_env) = super::util::resolve_trait_name(env, &raw_name)?;
+    let definition = trait_env.trait_env.trait_defs.get(&name)?;
+    let args = trait_ref
+        .args
+        .iter()
+        .map(|arg| tast::Ty::from_hir(env, arg, type_params))
+        .collect::<Vec<_>>();
+    (definition.params.len() == args.len()).then_some(tast::TraitRef {
+        name: tast::TastIdent(name),
+        args,
+    })
 }
 
 fn add_fn_constraints_from_bounds(
     env: &PackageTypeEnv,
+    diagnostics: &mut Diagnostics,
     known_type_params: &HashSet<String>,
-    bounds: &[(hir::HirIdent, Vec<hir::Path>)],
+    type_params: &[tast::TastIdent],
+    bounds: &[(hir::HirIdent, Vec<hir::TraitRef>)],
     constraints: &mut Vec<env::FnConstraint>,
 ) {
     for (param, traits) in bounds.iter() {
@@ -485,16 +600,14 @@ fn add_fn_constraints_from_bounds(
         if !known_type_params.contains(&param_name) {
             continue;
         }
-        for trait_path in traits.iter() {
-            let raw_trait_name = trait_path.display();
-            let Some((trait_name, _trait_env)) =
-                super::util::resolve_trait_name(env, &raw_trait_name)
+        for trait_ref in traits.iter() {
+            let Some(trait_ref) = resolve_hir_trait_ref(env, diagnostics, trait_ref, type_params)
             else {
                 continue;
             };
             let constraint = env::FnConstraint {
                 type_param: param_name.clone(),
-                trait_name: tast::TastIdent(trait_name),
+                trait_ref,
             };
             if !constraints.contains(&constraint) {
                 constraints.push(constraint);
@@ -507,15 +620,25 @@ fn build_fn_constraints(
     env: &PackageTypeEnv,
     diagnostics: &mut Diagnostics,
     generics: &[hir::HirIdent],
-    bounds: &[(hir::HirIdent, Vec<hir::Path>)],
+    bounds: &[(hir::HirIdent, Vec<hir::TraitRef>)],
 ) -> Vec<env::FnConstraint> {
     let known_type_params = generics
         .iter()
         .map(|param| param.to_ident_name())
         .collect::<HashSet<_>>();
     let mut constraints = Vec::new();
-    let _ = diagnostics;
-    add_fn_constraints_from_bounds(env, &known_type_params, bounds, &mut constraints);
+    let type_params = generics
+        .iter()
+        .map(|param| tast::TastIdent(param.to_ident_name()))
+        .collect::<Vec<_>>();
+    add_fn_constraints_from_bounds(
+        env,
+        diagnostics,
+        &known_type_params,
+        &type_params,
+        bounds,
+        &mut constraints,
+    );
     constraints
 }
 
@@ -523,17 +646,34 @@ fn build_method_constraints(
     env: &PackageTypeEnv,
     diagnostics: &mut Diagnostics,
     all_generics: &[hir::HirIdent],
-    impl_bounds: &[(hir::HirIdent, Vec<hir::Path>)],
-    method_bounds: &[(hir::HirIdent, Vec<hir::Path>)],
+    impl_bounds: &[(hir::HirIdent, Vec<hir::TraitRef>)],
+    method_bounds: &[(hir::HirIdent, Vec<hir::TraitRef>)],
 ) -> Vec<env::FnConstraint> {
     let known_type_params = all_generics
         .iter()
         .map(|param| param.to_ident_name())
         .collect::<HashSet<_>>();
     let mut constraints = Vec::new();
-    let _ = diagnostics;
-    add_fn_constraints_from_bounds(env, &known_type_params, impl_bounds, &mut constraints);
-    add_fn_constraints_from_bounds(env, &known_type_params, method_bounds, &mut constraints);
+    let type_params = all_generics
+        .iter()
+        .map(|param| tast::TastIdent(param.to_ident_name()))
+        .collect::<Vec<_>>();
+    add_fn_constraints_from_bounds(
+        env,
+        diagnostics,
+        &known_type_params,
+        &type_params,
+        impl_bounds,
+        &mut constraints,
+    );
+    add_fn_constraints_from_bounds(
+        env,
+        diagnostics,
+        &known_type_params,
+        &type_params,
+        method_bounds,
+        &mut constraints,
+    );
     constraints
 }
 
@@ -565,7 +705,7 @@ fn define_trait_impl(
     env: &mut PackageTypeEnv,
     diagnostics: &mut Diagnostics,
     impl_block: &hir::ImplBlock,
-    trait_name: &hir::HirIdent,
+    hir_trait_ref: &hir::TraitRef,
     hir_table: &hir::HirTable,
 ) {
     let impl_tparams = type_param_name_set(&impl_block.generics);
@@ -575,6 +715,35 @@ fn define_trait_impl(
         .map(|g| tast::TastIdent(g.to_ident_name()))
         .collect();
     let for_ty = tast::Ty::from_hir(env, &impl_block.for_type, &impl_generics_tast);
+    let raw_trait_name = hir_trait_ref.name.to_ident_name();
+    let trait_is_defined = super::util::resolve_trait_name(env, &raw_trait_name)
+        .and_then(|(name, trait_env)| trait_env.trait_env.trait_defs.get(&name))
+        .is_some();
+    if !trait_is_defined {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            format!(
+                "Trait {} is not defined, cannot implement it for {}",
+                raw_trait_name,
+                super::util::format_ty_for_diag(&for_ty)
+            ),
+        ));
+        return;
+    }
+    let Some(trait_ref) =
+        resolve_hir_trait_ref(env, diagnostics, hir_trait_ref, &impl_generics_tast)
+    else {
+        return;
+    };
+    let trait_ref = tast::TraitRef {
+        name: trait_ref.name,
+        args: trait_ref
+            .args
+            .iter()
+            .map(|arg| instantiate_self_ty(arg, &for_ty))
+            .collect(),
+    };
     let impl_constraints = build_fn_constraints(
         env,
         diagnostics,
@@ -588,9 +757,12 @@ fn define_trait_impl(
         type_expr_range(&impl_block.for_type),
         &impl_tparams,
     );
-    let for_ty_params = super::type_ops::type_params(&for_ty);
+    let mut constrained_params = super::type_ops::type_params(&for_ty);
+    for arg in &trait_ref.args {
+        constrained_params.extend(super::type_ops::type_params(arg));
+    }
     let mut unconstrained_impl_params = impl_tparams
-        .difference(&for_ty_params)
+        .difference(&constrained_params)
         .cloned()
         .collect::<Vec<_>>();
     unconstrained_impl_params.sort();
@@ -608,18 +780,8 @@ fn define_trait_impl(
             .with_range(type_expr_range(&impl_block.for_type)),
         );
     }
-    let trait_name_raw = trait_name.to_ident_name();
-    let Some((trait_name_str, trait_env)) = super::util::resolve_trait_name(env, &trait_name_raw)
-    else {
-        diagnostics.push(Diagnostic::new(
-            Stage::Typer,
-            Severity::Error,
-            format!(
-                "Trait {} is not defined, cannot implement it for {}",
-                trait_name_raw,
-                super::util::format_ty_for_diag(&for_ty)
-            ),
-        ));
+    let trait_name_str = trait_ref.name.0.clone();
+    let Some((_, trait_env)) = super::util::resolve_trait_name(env, &trait_name_str) else {
         return;
     };
     let trait_def = trait_env.trait_env.trait_defs.get(&trait_name_str).cloned();
@@ -646,7 +808,10 @@ fn define_trait_impl(
         return;
     }
 
-    let key = (trait_name_str.clone(), for_ty.clone());
+    let key = env::TraitImplKey {
+        trait_ref: trait_ref.clone(),
+        for_ty: for_ty.clone(),
+    };
     if env.current().trait_env.trait_impls.contains_key(&key) {
         diagnostics.push(Diagnostic::new(
             Stage::Typer,
@@ -699,10 +864,9 @@ fn define_trait_impl(
             continue;
         }
 
-        let trait_sig = trait_def
-            .methods
-            .get(&method_name_str)
-            .map(|scheme| scheme.ty.clone());
+        let trait_sig = trait_env
+            .lookup_trait_method_scheme(&trait_ref, &tast::TastIdent::new(&method_name_str))
+            .map(|scheme| scheme.ty);
         let Some(trait_sig) = trait_sig else {
             impl_valid = false;
             super::util::push_ice(
@@ -880,19 +1044,21 @@ fn define_trait_impl(
         .then(|| {
             env.visible_trait_impls(&trait_name_str)
                 .into_iter()
-                .filter(|(_, _, _, existing)| existing.valid)
-                .find(|(_, _, existing_ty, existing)| {
+                .filter(|(_, _, _, _, existing)| existing.valid)
+                .find(|(_, _, existing_trait_ref, existing_ty, existing)| {
                     super::traits::coherence::impls_overlap(
                         env,
+                        existing_trait_ref,
                         existing_ty,
                         existing,
+                        &trait_ref,
                         &for_ty,
                         &candidate,
                     )
                 })
         })
         .flatten();
-    if let Some((package, index, _, existing)) = overlap {
+    if let Some((package, index, _, _, existing)) = overlap {
         let previous = existing.origin.map_or_else(
             || format!("{}#{}", package, index),
             |origin| {
@@ -1212,7 +1378,7 @@ fn define_extern_fn(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, ext
         .map(|constraint| {
             (
                 constraint.type_param.clone(),
-                constraint.trait_name.0.clone(),
+                constraint.trait_ref.name.0.clone(),
             )
         })
         .collect::<Vec<_>>();
@@ -1261,8 +1427,8 @@ pub(crate) fn collect_typedefs(
     for item in hir.toplevels.iter() {
         match hir_table.def(*item) {
             hir::Def::ImplBlock(impl_block) => {
-                if let Some(trait_name) = &impl_block.trait_name {
-                    define_trait_impl(env, diagnostics, impl_block, trait_name, hir_table);
+                if let Some(trait_ref) = &impl_block.trait_ref {
+                    define_trait_impl(env, diagnostics, impl_block, trait_ref, hir_table);
                 } else {
                     define_inherent_impl(env, diagnostics, impl_block, hir_table);
                 }
@@ -1286,23 +1452,31 @@ fn validate_trait_impl_coherence(env: &mut PackageTypeEnv, diagnostics: &mut Dia
         .map(|(index, (key, definition))| (index, key.clone(), definition.clone()))
         .collect::<Vec<_>>();
     let mut invalid = HashSet::new();
-    for (index, (trait_name, for_ty), definition) in &impls {
+    for (index, key, definition) in &impls {
         if !definition.valid || invalid.contains(index) {
             continue;
         }
         let overlap = env
-            .visible_trait_impls(trait_name)
+            .visible_trait_impls(&key.trait_ref.name.0)
             .into_iter()
-            .filter(|(package, other_index, _, other)| {
+            .filter(|(package, other_index, _, _, other)| {
                 if !other.valid {
                     return false;
                 }
                 package != &env.package || (other_index < index && !invalid.contains(other_index))
             })
-            .find(|(_, _, other_ty, other)| {
-                super::traits::coherence::impls_overlap(env, other_ty, other, for_ty, definition)
+            .find(|(_, _, other_trait_ref, other_ty, other)| {
+                super::traits::coherence::impls_overlap(
+                    env,
+                    other_trait_ref,
+                    other_ty,
+                    other,
+                    &key.trait_ref,
+                    &key.for_ty,
+                    definition,
+                )
             });
-        let Some((package, other_index, _, other)) = overlap else {
+        let Some((package, other_index, _, _, other)) = overlap else {
             continue;
         };
         let previous = other.origin.map_or_else(
@@ -1323,8 +1497,8 @@ fn validate_trait_impl_coherence(env: &mut PackageTypeEnv, diagnostics: &mut Dia
                 Severity::Error,
                 format!(
                     "Trait {} implementation for {} overlaps with implementation {}",
-                    trait_name,
-                    super::util::format_ty_for_diag(for_ty),
+                    key.trait_ref.name.0,
+                    super::util::format_ty_for_diag(&key.for_ty),
                     previous
                 ),
             )
@@ -1677,7 +1851,7 @@ fn build_in_scope_traits(
 
 fn init_trait_bounds(
     tparams: &[tast::TastIdent],
-) -> indexmap::IndexMap<String, Vec<tast::TastIdent>> {
+) -> indexmap::IndexMap<String, Vec<tast::TraitRef>> {
     let mut bounds = indexmap::IndexMap::new();
     for param in tparams.iter() {
         bounds.insert(param.0.clone(), Vec::new());
@@ -1687,18 +1861,21 @@ fn init_trait_bounds(
 
 fn extend_trait_bounds(
     genv: &PackageTypeEnv,
-    diagnostics: &mut Diagnostics,
-    bounds: &mut indexmap::IndexMap<String, Vec<tast::TastIdent>>,
-    generic_bounds: &[(hir::HirIdent, Vec<hir::Path>)],
+    bounds: &mut indexmap::IndexMap<String, Vec<tast::TraitRef>>,
+    generic_bounds: &[(hir::HirIdent, Vec<hir::TraitRef>)],
 ) {
+    let type_params = bounds
+        .keys()
+        .cloned()
+        .map(tast::TastIdent)
+        .collect::<Vec<_>>();
     for (param, traits) in generic_bounds.iter() {
         let param_name = param.to_ident_name();
         let Some(out) = bounds.get_mut(&param_name) else {
             continue;
         };
-        for trait_path in traits.iter() {
-            let name = trait_path.display();
-            if let Some(resolved) = resolve_trait_ident_or_report(genv, diagnostics, &name) {
+        for trait_ref in traits.iter() {
+            if let Some(resolved) = resolve_hir_trait_ref_silent(genv, trait_ref, &type_params) {
                 out.push(resolved);
             }
         }
@@ -1721,10 +1898,15 @@ fn resolve_trait_ident_or_report(
     None
 }
 
-fn normalize_trait_bounds(bounds: &mut indexmap::IndexMap<String, Vec<tast::TastIdent>>) {
+fn normalize_trait_bounds(bounds: &mut indexmap::IndexMap<String, Vec<tast::TraitRef>>) {
     for traits in bounds.values_mut() {
-        traits.sort_by(|a, b| a.0.cmp(&b.0));
-        traits.dedup_by(|a, b| a.0 == b.0);
+        let mut unique = Vec::new();
+        for trait_ref in std::mem::take(traits) {
+            if !unique.contains(&trait_ref) {
+                unique.push(trait_ref);
+            }
+        }
+        *traits = unique;
     }
 }
 
@@ -1759,7 +1941,7 @@ fn typecheck_fn(
         .map(|g| tast::TastIdent(g.to_ident_name()))
         .collect();
     let mut bounds = init_trait_bounds(&tparams);
-    extend_trait_bounds(genv, diagnostics, &mut bounds, &f.generic_bounds);
+    extend_trait_bounds(genv, &mut bounds, &f.generic_bounds);
     normalize_trait_bounds(&mut bounds);
     typecheck_function_body(
         genv,
@@ -1801,8 +1983,8 @@ fn typecheck_impl_block(
             .collect();
 
         let mut bounds = init_trait_bounds(&tparams);
-        extend_trait_bounds(genv, diagnostics, &mut bounds, &impl_block.generic_bounds);
-        extend_trait_bounds(genv, diagnostics, &mut bounds, &f.generic_bounds);
+        extend_trait_bounds(genv, &mut bounds, &impl_block.generic_bounds);
+        extend_trait_bounds(genv, &mut bounds, &f.generic_bounds);
         normalize_trait_bounds(&mut bounds);
         typecheck_function_body(
             genv,
@@ -1823,7 +2005,7 @@ struct FunctionCheck<'a> {
     function: &'a hir::Fn,
     in_scope_traits: &'a [tast::TastIdent],
     tparams: &'a [tast::TastIdent],
-    bounds: IndexMap<String, Vec<tast::TastIdent>>,
+    bounds: IndexMap<String, Vec<tast::TraitRef>>,
     self_ty: Option<&'a tast::Ty>,
 }
 
@@ -1883,15 +2065,7 @@ fn typecheck_function_body(
     typer.tparam_trait_bounds = local_env
         .tparam_trait_bounds_map()
         .iter()
-        .map(|(name, traits)| {
-            (
-                name.clone(),
-                traits
-                    .iter()
-                    .map(|trait_name| trait_name.0.clone())
-                    .collect(),
-            )
-        })
+        .map(|(name, traits)| (name.clone(), traits.clone()))
         .collect();
     local_env.clear_tparam_trait_bounds();
     typer.solve(genv, diagnostics);

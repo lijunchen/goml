@@ -68,6 +68,20 @@ pub(crate) fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::
     })
 }
 
+pub(crate) fn substitute_trait_ref(
+    trait_ref: &tast::TraitRef,
+    subst: &HashMap<String, tast::Ty>,
+) -> tast::TraitRef {
+    tast::TraitRef {
+        name: trait_ref.name.clone(),
+        args: trait_ref
+            .args
+            .iter()
+            .map(|arg| substitute_ty_params(arg, subst))
+            .collect(),
+    }
+}
+
 pub(crate) fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
     rewrite_ty(ty, &mut |ty| match ty {
         tast::Ty::TStruct { name } if name == "Self" => Some(self_ty.clone()),
@@ -82,6 +96,17 @@ pub(crate) fn rename_type_params(ty: &tast::Ty, prefix: &str) -> tast::Ty {
         }),
         _ => None,
     })
+}
+
+pub(crate) fn rename_trait_params(trait_ref: &tast::TraitRef, prefix: &str) -> tast::TraitRef {
+    tast::TraitRef {
+        name: trait_ref.name.clone(),
+        args: trait_ref
+            .args
+            .iter()
+            .map(|arg| rename_type_params(arg, prefix))
+            .collect(),
+    }
 }
 
 pub(crate) fn decompose_struct_type(ty: &tast::Ty) -> Option<(String, Vec<tast::Ty>)> {
@@ -171,12 +196,20 @@ pub(crate) fn type_vars(ty: &tast::Ty) -> HashSet<tast::TypeVar> {
     variables
 }
 
+pub(crate) fn trait_ref_type_vars(trait_ref: &tast::TraitRef) -> HashSet<tast::TypeVar> {
+    trait_ref.args.iter().flat_map(type_vars).collect()
+}
+
 pub(crate) fn contains_tparam(ty: &tast::Ty) -> bool {
     visit_ty(ty, &mut |ty| match ty {
         tast::Ty::TParam { .. } => ControlFlow::Break(()),
         _ => ControlFlow::Continue(()),
     })
     .is_break()
+}
+
+pub(crate) fn trait_ref_contains_tparam(trait_ref: &tast::TraitRef) -> bool {
+    trait_ref.args.iter().any(contains_tparam)
 }
 
 pub(crate) fn type_params(ty: &tast::Ty) -> HashSet<String> {

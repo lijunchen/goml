@@ -121,7 +121,7 @@ pub enum NameRefElab {
         astptr: Option<MySyntaxNodePtr>,
     },
     TraitMethod {
-        trait_name: tast::TastIdent,
+        trait_ref: tast::TraitRef,
         method_name: tast::TastIdent,
         ty: tast::Ty,
         astptr: Option<MySyntaxNodePtr>,
@@ -161,7 +161,7 @@ pub enum CalleeElab {
         astptr: Option<MySyntaxNodePtr>,
     },
     TraitMethod {
-        trait_name: tast::TastIdent,
+        trait_ref: tast::TraitRef,
         method_name: tast::TastIdent,
         ty: tast::Ty,
         astptr: Option<MySyntaxNodePtr>,
@@ -395,7 +395,12 @@ impl TypeckResultsBuilder {
                 NameRefElab::Var { ty, .. } | NameRefElab::Callable { ty, .. } => {
                     *ty = typer.subst_ty_silent(ty);
                 }
-                NameRefElab::TraitMethod { ty, .. } => *ty = typer.subst_ty_silent(ty),
+                NameRefElab::TraitMethod { trait_ref, ty, .. } => {
+                    for arg in &mut trait_ref.args {
+                        *arg = typer.subst_ty_silent(arg);
+                    }
+                    *ty = typer.subst_ty_silent(ty);
+                }
                 NameRefElab::DynTraitMethod { ty, .. } => *ty = typer.subst_ty_silent(ty),
                 NameRefElab::InherentMethod {
                     receiver_ty, ty, ..
@@ -405,7 +410,7 @@ impl TypeckResultsBuilder {
                 }
             }
             if let NameRefElab::TraitMethod {
-                trait_name,
+                trait_ref,
                 method_name,
                 ty,
                 astptr,
@@ -414,10 +419,11 @@ impl TypeckResultsBuilder {
                 && let Some(tast::Ty::TDyn {
                     trait_name: recv_trait,
                 }) = params.first()
-                && *recv_trait == trait_name.0
+                && trait_ref.args.is_empty()
+                && *recv_trait == trait_ref.name.0
             {
                 *elab = NameRefElab::DynTraitMethod {
-                    trait_name: trait_name.clone(),
+                    trait_name: trait_ref.name.clone(),
                     method_name: method_name.clone(),
                     ty: ty.clone(),
                     astptr: *astptr,
@@ -430,7 +436,12 @@ impl TypeckResultsBuilder {
                 CalleeElab::Var { ty, .. } | CalleeElab::Callable { ty, .. } => {
                     *ty = typer.subst_ty_silent(ty);
                 }
-                CalleeElab::TraitMethod { ty, .. } => *ty = typer.subst_ty_silent(ty),
+                CalleeElab::TraitMethod { trait_ref, ty, .. } => {
+                    for arg in &mut trait_ref.args {
+                        *arg = typer.subst_ty_silent(arg);
+                    }
+                    *ty = typer.subst_ty_silent(ty);
+                }
                 CalleeElab::DynTraitMethod { ty, .. } => *ty = typer.subst_ty_silent(ty),
                 CalleeElab::InherentMethod {
                     receiver_ty, ty, ..
@@ -441,7 +452,7 @@ impl TypeckResultsBuilder {
                 CalleeElab::Error { ty, .. } => *ty = typer.subst_ty_silent(ty),
             }
             if let CalleeElab::TraitMethod {
-                trait_name,
+                trait_ref,
                 method_name,
                 ty,
                 astptr,
@@ -450,10 +461,11 @@ impl TypeckResultsBuilder {
                 && let Some(tast::Ty::TDyn {
                     trait_name: recv_trait,
                 }) = params.first()
-                && *recv_trait == trait_name.0
+                && trait_ref.args.is_empty()
+                && *recv_trait == trait_ref.name.0
             {
                 elab.callee = CalleeElab::DynTraitMethod {
-                    trait_name: trait_name.clone(),
+                    trait_name: trait_ref.name.clone(),
                     method_name: method_name.clone(),
                     ty: ty.clone(),
                     astptr: *astptr,

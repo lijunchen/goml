@@ -815,6 +815,7 @@ pub(crate) fn package_entry_wrapper(entry_fn: &crate::core::Fn) -> crate::core::
         name: ENTRY_FUNCTION.to_string(),
         root: true,
         generics: Vec::new(),
+        trait_impl: None,
         params: Vec::new(),
         ret_ty: ret_ty.clone(),
         body: crate::core::Block {

@@ -559,7 +559,7 @@ impl NameResolution {
                             attrs: Vec::new(),
                             generics: Vec::new(),
                             generic_bounds: Vec::new(),
-                            trait_name: None,
+                            trait_ref: None,
                             for_type: hir::TypeExpr::TUnit,
                             methods: Vec::new(),
                         }),
@@ -628,20 +628,22 @@ impl NameResolution {
                             .map(|(param, traits)| {
                                 let traits = traits
                                     .iter()
-                                    .map(|path| self.lower_trait_path(path, &ctx))
+                                    .map(|trait_ref| {
+                                        self.lower_trait_ref(trait_ref, &tparams, &ctx)
+                                    })
                                     .collect::<Vec<_>>();
                                 (HirIdent::name(&param.0), traits)
                             })
                             .collect();
-                        let trait_name = i
-                            .trait_name
+                        let trait_ref = i
+                            .trait_ref
                             .as_ref()
-                            .map(|t| HirIdent::name(self.lower_impl_trait_name(t, &ctx)));
+                            .map(|trait_ref| self.lower_trait_ref(trait_ref, &tparams, &ctx));
                         let impl_block = hir::ImplBlock {
                             attrs: i.attrs.iter().map(|a| a.into()).collect(),
                             generics: i.generics.iter().map(|g| HirIdent::name(&g.0)).collect(),
                             generic_bounds,
-                            trait_name,
+                            trait_ref,
                             for_type: self.lower_type_expr(
                                 &i.for_type,
                                 &tparams,
@@ -812,7 +814,7 @@ impl NameResolution {
             .map(|(param, traits)| {
                 let traits = traits
                     .iter()
-                    .map(|path| self.lower_trait_path(path, ctx))
+                    .map(|trait_ref| self.lower_trait_ref(trait_ref, &tparams, ctx))
                     .collect::<Vec<_>>();
                 (HirIdent::name(&param.0), traits)
             })
@@ -944,7 +946,35 @@ impl NameResolution {
         hir_table: &mut HirTable,
     ) -> hir::ExprId {
         match expr {
-            ast::Expr::EPath { path, astptr } => {
+            ast::Expr::EPath {
+                path,
+                type_args,
+                astptr,
+            } => {
+                if !type_args.is_empty() {
+                    let resolved_path = self.resolve_hir_path(path, ctx);
+                    let resolved_type_args = type_args
+                        .iter()
+                        .map(|arg| {
+                            self.lower_type_expr(
+                                arg,
+                                &HashSet::new(),
+                                ctx.current_package,
+                                ctx.imports,
+                                ctx.use_aliases,
+                            )
+                        })
+                        .collect();
+                    return self.alloc_expr_with_ptr(
+                        hir_table,
+                        *astptr,
+                        hir::Expr::EStaticMember {
+                            path: resolved_path,
+                            type_args: resolved_type_args,
+                            astptr: Some(*astptr),
+                        },
+                    );
+                }
                 if let Some(constructor) = self.constructor_path_for(path, ctx) {
                     return self.alloc_expr_with_ptr(
                         hir_table,
@@ -1067,6 +1097,7 @@ impl NameResolution {
                             *astptr,
                             hir::Expr::EStaticMember {
                                 path: resolved_path,
+                                type_args: Vec::new(),
                                 astptr: Some(*astptr),
                             },
                         ),
@@ -1825,6 +1856,7 @@ impl NameResolution {
         imports: &HashSet<String>,
         use_aliases: &UseAliases,
     ) -> hir::TraitDef {
+        let tparams = type_param_set(&def.generics);
         let name = full_def_name(current_package, &def.name.0);
         let method_sigs = def
             .method_sigs
@@ -1835,18 +1867,12 @@ impl NameResolution {
                     .params
                     .iter()
                     .map(|ty| {
-                        self.lower_type_expr(
-                            ty,
-                            &HashSet::new(),
-                            current_package,
-                            imports,
-                            use_aliases,
-                        )
+                        self.lower_type_expr(ty, &tparams, current_package, imports, use_aliases)
                     })
                     .collect(),
                 ret_ty: self.lower_type_expr(
                     &sig.ret_ty,
-                    &HashSet::new(),
+                    &tparams,
                     current_package,
                     imports,
                     use_aliases,
@@ -1856,13 +1882,33 @@ impl NameResolution {
         hir::TraitDef {
             attrs: def.attrs.iter().map(|a| a.into()).collect(),
             name: HirIdent::name(&name),
+            generics: def.generics.iter().map(|g| HirIdent::name(&g.0)).collect(),
             method_sigs,
         }
     }
 
-    fn lower_trait_path(&mut self, path: &ast::Path, ctx: &ResolutionContext) -> hir::Path {
-        let lowered = self.lower_impl_trait_name(path, ctx);
-        hir::Path::from_idents(lowered.split("::").map(|s| s.to_string()).collect())
+    fn lower_trait_ref(
+        &mut self,
+        trait_ref: &ast::TraitRef,
+        tparams: &HashSet<String>,
+        ctx: &ResolutionContext,
+    ) -> hir::TraitRef {
+        hir::TraitRef {
+            name: HirIdent::name(self.lower_impl_trait_name(&trait_ref.path, ctx)),
+            args: trait_ref
+                .args
+                .iter()
+                .map(|arg| {
+                    self.lower_type_expr(
+                        arg,
+                        tparams,
+                        ctx.current_package,
+                        ctx.imports,
+                        ctx.use_aliases,
+                    )
+                })
+                .collect(),
+        }
     }
 
     fn lower_impl_trait_name(&mut self, path: &ast::Path, ctx: &ResolutionContext) -> String {
@@ -1915,14 +1961,28 @@ impl NameResolution {
         use_aliases: &UseAliases,
     ) -> hir::ExternFn {
         let name = full_def_name(current_package, &def.name.0);
+        let tparams = type_param_set(&def.generics);
         let generic_bounds = def
             .generic_bounds
             .iter()
             .map(|(param, traits)| {
                 let traits = traits
                     .iter()
-                    .map(|path| {
-                        hir::Path::new(path.segments().iter().map(hir::PathSegment::from).collect())
+                    .map(|trait_ref| hir::TraitRef {
+                        name: HirIdent::name(trait_ref.path.display()),
+                        args: trait_ref
+                            .args
+                            .iter()
+                            .map(|arg| {
+                                self.lower_type_expr(
+                                    arg,
+                                    &tparams,
+                                    current_package,
+                                    imports,
+                                    use_aliases,
+                                )
+                            })
+                            .collect(),
                     })
                     .collect::<Vec<_>>();
                 (HirIdent::name(&param.0), traits)
@@ -1939,18 +1999,12 @@ impl NameResolution {
                 .map(|(param, ty)| {
                     (
                         HirIdent::name(&param.0),
-                        self.lower_type_expr(
-                            ty,
-                            &HashSet::new(),
-                            current_package,
-                            imports,
-                            use_aliases,
-                        ),
+                        self.lower_type_expr(ty, &tparams, current_package, imports, use_aliases),
                     )
                 })
                 .collect(),
             ret_ty: def.ret_ty.as_ref().map(|ty| {
-                self.lower_type_expr(ty, &HashSet::new(), current_package, imports, use_aliases)
+                self.lower_type_expr(ty, &tparams, current_package, imports, use_aliases)
             }),
         }
     }

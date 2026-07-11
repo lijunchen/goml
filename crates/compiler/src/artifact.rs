@@ -8,8 +8,8 @@ use crate::hir::SourceFileAst;
 use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package};
 use crate::tast::TastIdent;
 
-pub const FORMAT_VERSION: u32 = 6;
-pub const COMPILER_ABI: u32 = 1;
+pub const FORMAT_VERSION: u32 = 7;
+pub const COMPILER_ABI: u32 = 2;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct PackageExports {

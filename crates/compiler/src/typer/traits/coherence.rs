@@ -6,21 +6,39 @@ use crate::{
     typer::{
         obligations::{ParamEnv, TraitGoal},
         traits::solver::{SelectionResult, TraitSolver},
-        type_ops::{contains_tparam, rename_type_params},
+        type_ops::{
+            contains_tparam, rename_trait_params, rename_type_params, substitute_ty_params,
+            trait_ref_contains_tparam,
+        },
     },
 };
 
 pub(crate) fn impls_overlap(
     env: &PackageTypeEnv,
-    left: &tast::Ty,
+    left_trait_ref: &tast::TraitRef,
+    left_self: &tast::Ty,
     left_def: &ImplDef,
-    right: &tast::Ty,
+    right_trait_ref: &tast::TraitRef,
+    right_self: &tast::Ty,
     right_def: &ImplDef,
 ) -> bool {
-    let left = rename_type_params(left, "left");
-    let right = rename_type_params(right, "right");
+    if left_trait_ref.name != right_trait_ref.name
+        || left_trait_ref.args.len() != right_trait_ref.args.len()
+    {
+        return false;
+    }
+    let left_trait_ref = rename_trait_params(left_trait_ref, "left");
+    let right_trait_ref = rename_trait_params(right_trait_ref, "right");
+    let left_self = rename_type_params(left_self, "left");
+    let right_self = rename_type_params(right_self, "right");
     let mut subst = HashMap::new();
-    if !unify(&left, &right, &mut subst) {
+    if !left_trait_ref
+        .args
+        .iter()
+        .zip(right_trait_ref.args.iter())
+        .all(|(left, right)| unify(left, right, &mut subst))
+        || !unify(&left_self, &right_self, &mut subst)
+    {
         return false;
     }
 
@@ -43,24 +61,32 @@ pub(crate) fn impls_overlap(
                 },
                 &subst,
             );
+            let trait_ref = rename_trait_params(&constraint.trait_ref, prefix);
+            let trait_ref = tast::TraitRef {
+                name: trait_ref.name,
+                args: trait_ref
+                    .args
+                    .iter()
+                    .map(|arg| resolve(arg, &subst))
+                    .collect(),
+            };
             contains_tparam(&for_ty)
+                || trait_ref_contains_tparam(&trait_ref)
                 || matches!(
-                    solver.select_ground(TraitGoal {
-                        trait_name: constraint.trait_name.clone(),
-                        for_ty,
-                    }),
+                    solver.select_ground(TraitGoal { trait_ref, for_ty }),
                     SelectionResult::Unique(_)
                 )
         })
 }
 
 fn resolve(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tast::Ty {
-    match ty {
-        tast::Ty::TParam { name } => subst
-            .get(name)
-            .map(|ty| resolve(ty, subst))
-            .unwrap_or_else(|| ty.clone()),
-        _ => ty.clone(),
+    let mut current = ty.clone();
+    loop {
+        let next = substitute_ty_params(&current, subst);
+        if next == current {
+            return current;
+        }
+        current = next;
     }
 }
 

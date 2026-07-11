@@ -28,7 +28,7 @@ pub struct StructDef {
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct FnConstraint {
     pub type_param: String,
-    pub trait_name: TastIdent,
+    pub trait_ref: tast::TraitRef,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -42,7 +42,14 @@ pub struct FnScheme {
 
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct TraitDef {
+    pub params: Vec<TastIdent>,
     pub methods: IndexMap<String, FnScheme>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+pub struct TraitImplKey {
+    pub trait_ref: tast::TraitRef,
+    pub for_ty: tast::Ty,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -275,7 +282,7 @@ impl TypeEnv {
 pub struct TraitEnv {
     pub trait_defs: IndexMap<String, TraitDef>,
     #[serde(with = "indexmap::map::serde_seq")]
-    pub trait_impls: IndexMap<(String, tast::Ty), ImplDef>,
+    pub trait_impls: IndexMap<TraitImplKey, ImplDef>,
     #[serde(with = "indexmap::map::serde_seq")]
     pub inherent_impls: IndexMap<InherentImplKey, ImplDef>,
 }
@@ -301,13 +308,26 @@ impl TraitEnv {
 
     pub fn lookup_trait_method_scheme(
         &self,
-        trait_name: &TastIdent,
+        trait_ref: &tast::TraitRef,
         method_name: &TastIdent,
     ) -> Option<FnScheme> {
-        self.trait_defs
-            .get(&trait_name.0)
-            .and_then(|trait_def| trait_def.methods.get(&method_name.0))
-            .cloned()
+        let trait_def = self.trait_defs.get(&trait_ref.name.0)?;
+        if trait_def.params.len() != trait_ref.args.len() {
+            return None;
+        }
+        let substitution = trait_def
+            .params
+            .iter()
+            .zip(trait_ref.args.iter())
+            .map(|(param, arg)| (param.0.clone(), arg.clone()))
+            .collect::<HashMap<_, _>>();
+        let mut scheme = trait_def.methods.get(&method_name.0)?.clone();
+        scheme.ty = crate::typer::type_ops::substitute_ty_params(&scheme.ty, &substitution);
+        for constraint in &mut scheme.constraints {
+            constraint.trait_ref =
+                crate::typer::type_ops::substitute_trait_ref(&constraint.trait_ref, &substitution);
+        }
+        Some(scheme)
     }
 
     pub fn lookup_inherent_method(
@@ -450,7 +470,7 @@ impl PackageTypeEnv {
     pub fn visible_trait_impls(
         &self,
         trait_name: &str,
-    ) -> Vec<(String, usize, &tast::Ty, &ImplDef)> {
+    ) -> Vec<(String, usize, &tast::TraitRef, &tast::Ty, &ImplDef)> {
         let mut result = Vec::new();
         result.extend(
             self.builtins
@@ -458,8 +478,14 @@ impl PackageTypeEnv {
                 .trait_impls
                 .iter()
                 .enumerate()
-                .filter_map(|(index, ((name, ty), impl_def))| {
-                    (name == trait_name).then_some(("builtin".to_string(), index, ty, impl_def))
+                .filter_map(|(index, (key, impl_def))| {
+                    (key.trait_ref.name.0 == trait_name).then_some((
+                        "builtin".to_string(),
+                        index,
+                        &key.trait_ref,
+                        &key.for_ty,
+                        impl_def,
+                    ))
                 }),
         );
         result.extend(
@@ -468,8 +494,14 @@ impl PackageTypeEnv {
                 .trait_impls
                 .iter()
                 .enumerate()
-                .filter_map(|(index, ((name, ty), impl_def))| {
-                    (name == trait_name).then_some((self.package.clone(), index, ty, impl_def))
+                .filter_map(|(index, (key, impl_def))| {
+                    (key.trait_ref.name.0 == trait_name).then_some((
+                        self.package.clone(),
+                        index,
+                        &key.trait_ref,
+                        &key.for_ty,
+                        impl_def,
+                    ))
                 }),
         );
         let mut packages = self.deps.keys().collect::<Vec<_>>();
@@ -479,8 +511,14 @@ impl PackageTypeEnv {
                 continue;
             };
             result.extend(env.trait_env.trait_impls.iter().enumerate().filter_map(
-                |(index, ((name, ty), impl_def))| {
-                    (name == trait_name).then_some((package.clone(), index, ty, impl_def))
+                |(index, (key, impl_def))| {
+                    (key.trait_ref.name.0 == trait_name).then_some((
+                        package.clone(),
+                        index,
+                        &key.trait_ref,
+                        &key.for_ty,
+                        impl_def,
+                    ))
                 },
             ));
         }
@@ -648,11 +686,11 @@ impl GlobalTypeEnv {
 
     pub fn lookup_trait_method_scheme(
         &self,
-        trait_name: &TastIdent,
+        trait_ref: &tast::TraitRef,
         method_name: &TastIdent,
     ) -> Option<FnScheme> {
         self.trait_env
-            .lookup_trait_method_scheme(trait_name, method_name)
+            .lookup_trait_method_scheme(trait_ref, method_name)
     }
 
     pub fn lookup_inherent_method_scheme(

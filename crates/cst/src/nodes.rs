@@ -272,6 +272,10 @@ impl Trait {
         support::token(&self.syntax, MySyntaxKind::Ident)
     }
 
+    pub fn generic_list(&self) -> Option<GenericList> {
+        support::child(&self.syntax)
+    }
+
     pub fn trait_method_list(&self) -> Option<TraitMethodList> {
         support::child(&self.syntax)
     }
@@ -340,12 +344,13 @@ impl Impl {
         support::token(&self.syntax, MySyntaxKind::Ident)
     }
 
-    pub fn trait_path(&self) -> Option<Path> {
-        support::child(&self.syntax)
+    pub fn trait_type(&self) -> Option<Type> {
+        support::token(&self.syntax, MySyntaxKind::ForKeyword)?;
+        support::children(&self.syntax).next()
     }
 
     pub fn for_type(&self) -> Option<Type> {
-        support::child(&self.syntax)
+        support::children(&self.syntax).last()
     }
 
     pub fn functions(&self) -> CstChildren<Fn> {
@@ -383,7 +388,7 @@ pub struct TraitSet {
 }
 
 impl TraitSet {
-    pub fn traits(&self) -> CstChildren<Path> {
+    pub fn traits(&self) -> CstChildren<Type> {
         support::children(&self.syntax)
     }
 }
@@ -1574,6 +1579,10 @@ pub struct IdentExpr {
 
 impl IdentExpr {
     pub fn path(&self) -> Option<Path> {
+        support::child(&self.syntax)
+    }
+
+    pub fn type_app(&self) -> Option<TAppTy> {
         support::child(&self.syntax)
     }
 }

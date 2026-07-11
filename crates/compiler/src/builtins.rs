@@ -153,7 +153,7 @@ fn make_fn_scheme(intrinsic: IntrinsicId) -> FnScheme {
             .into_iter()
             .map(|(type_param, trait_name)| FnConstraint {
                 type_param,
-                trait_name: tast::TastIdent::new(&trait_name),
+                trait_ref: tast::TraitRef::without_args(tast::TastIdent::new(&trait_name)),
             })
             .collect(),
         ty: signature.ty,

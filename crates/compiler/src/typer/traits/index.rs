@@ -40,6 +40,7 @@ pub(crate) struct ImplId {
 #[derive(Debug, Clone)]
 pub(crate) struct ImplCandidate {
     pub id: ImplId,
+    pub trait_ref: tast::TraitRef,
     pub head: tast::Ty,
     pub definition: env::ImplDef,
     pub builtin: bool,
@@ -67,52 +68,55 @@ impl ImplIndex {
     }
 
     fn add_env(&mut self, package: &str, env: &env::GlobalTypeEnv, builtin: bool) {
-        for (index, ((trait_name, head), definition)) in
-            env.trait_env.trait_impls.iter().enumerate()
-        {
+        for (index, (key, definition)) in env.trait_env.trait_impls.iter().enumerate() {
             let candidate = ImplCandidate {
                 id: ImplId {
                     package: package.to_string(),
                     index,
                 },
-                head: head.clone(),
+                trait_ref: key.trait_ref.clone(),
+                head: key.for_ty.clone(),
                 definition: definition.clone(),
                 builtin,
             };
-            if let Some(type_head) = type_head(head) {
+            if let Some(type_head) = type_head(&key.for_ty) {
                 self.by_head
-                    .entry((trait_name.clone(), type_head))
+                    .entry((key.trait_ref.name.0.clone(), type_head))
                     .or_default()
                     .push(candidate);
             } else {
                 self.blanket
-                    .entry(trait_name.clone())
+                    .entry(key.trait_ref.name.0.clone())
                     .or_default()
                     .push(candidate);
             }
         }
     }
 
-    pub(crate) fn candidates(&self, trait_name: &str, ty: &tast::Ty) -> Vec<&ImplCandidate> {
+    pub(crate) fn candidates(
+        &self,
+        trait_ref: &tast::TraitRef,
+        ty: &tast::Ty,
+    ) -> Vec<&ImplCandidate> {
         let mut result = Vec::new();
         if matches!(ty, tast::Ty::TVar(_)) {
             for ((candidate_trait, _), candidates) in &self.by_head {
-                if candidate_trait == trait_name {
+                if candidate_trait == &trait_ref.name.0 {
                     result.extend(candidates);
                 }
             }
-            if let Some(candidates) = self.blanket.get(trait_name) {
+            if let Some(candidates) = self.blanket.get(&trait_ref.name.0) {
                 result.extend(candidates);
             }
             result.sort_by(|left, right| left.id.cmp(&right.id));
             return result;
         }
         if let Some(head) = type_head(ty)
-            && let Some(candidates) = self.by_head.get(&(trait_name.to_string(), head))
+            && let Some(candidates) = self.by_head.get(&(trait_ref.name.0.clone(), head))
         {
             result.extend(candidates);
         }
-        if let Some(candidates) = self.blanket.get(trait_name) {
+        if let Some(candidates) = self.blanket.get(&trait_ref.name.0) {
             result.extend(candidates);
         }
         result
