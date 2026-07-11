@@ -31,7 +31,7 @@ pub(crate) enum TypeHead {
     TypeVar,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub(crate) struct ImplId {
     pub package: String,
     pub index: usize,
@@ -95,6 +95,18 @@ impl ImplIndex {
 
     pub(crate) fn candidates(&self, trait_name: &str, ty: &tast::Ty) -> Vec<&ImplCandidate> {
         let mut result = Vec::new();
+        if matches!(ty, tast::Ty::TVar(_)) {
+            for ((candidate_trait, _), candidates) in &self.by_head {
+                if candidate_trait == trait_name {
+                    result.extend(candidates);
+                }
+            }
+            if let Some(candidates) = self.blanket.get(trait_name) {
+                result.extend(candidates);
+            }
+            result.sort_by(|left, right| left.id.cmp(&right.id));
+            return result;
+        }
         if let Some(head) = type_head(ty)
             && let Some(candidates) = self.by_head.get(&(trait_name.to_string(), head))
         {
@@ -106,13 +118,16 @@ impl ImplIndex {
         result
     }
 
-    pub(crate) fn describe_candidate(&self, id: &ImplId) -> String {
-        let candidate = self
-            .by_head
+    pub(crate) fn candidate(&self, id: &ImplId) -> Option<&ImplCandidate> {
+        self.by_head
             .values()
             .chain(self.blanket.values())
             .flatten()
-            .find(|candidate| &candidate.id == id);
+            .find(|candidate| &candidate.id == id)
+    }
+
+    pub(crate) fn describe_candidate(&self, id: &ImplId) -> String {
+        let candidate = self.candidate(id);
         match candidate.and_then(|candidate| candidate.definition.origin) {
             Some(origin) => format!(
                 "{}#{} at {}..{}",

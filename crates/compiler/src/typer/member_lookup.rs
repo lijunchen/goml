@@ -74,7 +74,7 @@ fn lookup_trait_methods(
                 continue;
             }
             if !matches!(
-                solver.select(TraitGoal {
+                solver.select_ground(TraitGoal {
                     trait_name: resolved_ident.clone(),
                     for_ty: ty.clone(),
                 }),

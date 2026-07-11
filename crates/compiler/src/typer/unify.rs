@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use ena::unify::{InPlace, Snapshot};
+
 use crate::{
     tast::{self, TypeVar},
     typer::{
@@ -10,6 +12,12 @@ use crate::{
 use diagnostics::{Severity, Stage};
 use parser::{Diagnostic, Diagnostics};
 use text_size::TextRange;
+
+pub(crate) struct InferenceSnapshot {
+    table: Snapshot<InPlace<TypeVar>>,
+    array_wildcard_counter: usize,
+    array_wildcard_resolutions: HashMap<usize, usize>,
+}
 
 fn pat_origin(pat: &tast::Pat) -> Option<TextRange> {
     match pat {
@@ -254,17 +262,33 @@ impl Typer {
     }
 
     pub(crate) fn try_unify_silent(&mut self, l: &tast::Ty, r: &tast::Ty) -> bool {
-        let snapshot = self.uni.snapshot();
-        let array_wildcard_resolutions = self.array_wildcard_resolutions.clone();
+        let snapshot = self.snapshot_inference();
         let mut diagnostics = Diagnostics::new();
         if self.unify(&mut diagnostics, l, r, None) {
-            self.uni.commit(snapshot);
+            self.commit_inference(snapshot);
             true
         } else {
-            self.uni.rollback_to(snapshot);
-            self.array_wildcard_resolutions = array_wildcard_resolutions;
+            self.rollback_inference(snapshot);
             false
         }
+    }
+
+    pub(crate) fn snapshot_inference(&mut self) -> InferenceSnapshot {
+        InferenceSnapshot {
+            table: self.uni.snapshot(),
+            array_wildcard_counter: self.array_wildcard_counter,
+            array_wildcard_resolutions: self.array_wildcard_resolutions.clone(),
+        }
+    }
+
+    pub(crate) fn commit_inference(&mut self, snapshot: InferenceSnapshot) {
+        self.uni.commit(snapshot.table);
+    }
+
+    pub(crate) fn rollback_inference(&mut self, snapshot: InferenceSnapshot) {
+        self.uni.rollback_to(snapshot.table);
+        self.array_wildcard_counter = snapshot.array_wildcard_counter;
+        self.array_wildcard_resolutions = snapshot.array_wildcard_resolutions;
     }
 
     pub(crate) fn equate(

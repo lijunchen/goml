@@ -45,7 +45,7 @@ pub(crate) fn impls_overlap(
             );
             contains_tparam(&for_ty)
                 || matches!(
-                    solver.select(TraitGoal {
+                    solver.select_ground(TraitGoal {
                         trait_name: constraint.trait_name.clone(),
                         for_ty,
                     }),

@@ -268,7 +268,7 @@ impl Typer {
                 trait_name: trait_name.clone(),
                 for_ty: goal.receiver_ty.clone(),
             };
-            match trait_solver.select(trait_goal) {
+            match trait_solver.select_ground(trait_goal) {
                 SelectionResult::Unique(selection) => {
                     candidates.push((trait_name, trait_scheme, selection));
                 }
@@ -476,6 +476,7 @@ impl Typer {
         let mut trait_solver = TraitSolver::new(genv, &param_env);
         let mut worklist = ObligationWorklist::new(std::mem::take(&mut self.obligations));
         let mut reported = HashSet::new();
+        let mut allow_trait_inference = false;
 
         loop {
             while let Some(obligation) = worklist.pop() {
@@ -487,7 +488,7 @@ impl Typer {
                 match predicate {
                     Predicate::Trait(mut goal) => {
                         goal.for_ty = self.norm(&goal.for_ty);
-                        if contains_tvar(&goal.for_ty) {
+                        if contains_tvar(&goal.for_ty) && !allow_trait_inference {
                             let predicate = Predicate::Trait(goal);
                             let variables = self.predicate_type_vars(&predicate);
                             worklist.defer(
@@ -500,8 +501,31 @@ impl Typer {
                             );
                             continue;
                         }
-                        match trait_solver.select(goal.clone()) {
-                            SelectionResult::Unique(_) => {}
+                        let result = if contains_tvar(&goal.for_ty) {
+                            trait_solver.select(self, goal.clone())
+                        } else {
+                            trait_solver.select_ground(goal.clone())
+                        };
+                        goal.for_ty = self.norm(&goal.for_ty);
+                        let unresolved = contains_tvar(&goal.for_ty);
+                        match result {
+                            SelectionResult::Unique(selection) => {
+                                worklist.wake(selection.changed_variables);
+                            }
+                            SelectionResult::NoSolution | SelectionResult::Ambiguous(_)
+                                if unresolved =>
+                            {
+                                let predicate = Predicate::Trait(goal);
+                                let variables = self.predicate_type_vars(&predicate);
+                                worklist.defer(
+                                    Obligation {
+                                        id,
+                                        predicate,
+                                        cause,
+                                    },
+                                    variables,
+                                );
+                            }
                             SelectionResult::NoSolution => self.push_obligation_error(
                                 diagnostics,
                                 &mut reported,
@@ -775,7 +799,7 @@ impl Typer {
                             trait_name: tast::TastIdent(resolved_trait.clone()),
                             for_ty: from_ty.clone(),
                         };
-                        match trait_solver.select(trait_goal) {
+                        match trait_solver.select_ground(trait_goal) {
                             SelectionResult::Unique(_) => {
                                 self.results.push_coercion(
                                     goal.expr_id,
@@ -942,6 +966,11 @@ impl Typer {
                 }
             }
             if fallback_progress {
+                worklist = ObligationWorklist::new(retained);
+                continue;
+            }
+            if !allow_trait_inference {
+                allow_trait_inference = true;
                 worklist = ObligationWorklist::new(retained);
                 continue;
             }
