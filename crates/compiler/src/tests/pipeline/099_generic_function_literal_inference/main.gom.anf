@@ -1,44 +1,76 @@
 fn main() -> unit {
-  join ret3() -> unit {
+  join ret7() -> unit {
     ()
   } in
   let a/1 = identity__T_uint8(42) in
-  let t4 = $goml_builtin_runtime$uint8_to_string(a/1) in
-  let _wild0 = println__T_string(t4) in
+  let t8 = trait_impl#ToString#uint8#to_string(a/1) in
+  let _wild4 = println__T_string(t8) in
   let b/2 = identity__T_float32(3.14) in
-  let t5 = $goml_builtin_runtime$float32_to_string(b/2) in
-  let _wild1 = println__T_string(t5) in
+  let t9 = trait_impl#ToString#float32#to_string(b/2) in
+  let _wild5 = println__T_string(t9) in
   let c/3 = identity__T_int64(100) in
-  let t6 = $goml_builtin_runtime$int64_to_string(c/3) in
-  let _wild2 = println__T_string(t6) in
-  jump ret3()
+  let t10 = trait_impl#ToString#int64#to_string(c/3) in
+  let _wild6 = println__T_string(t10) in
+  jump ret7()
 }
 
 fn identity__T_uint8(x/0: uint8) -> uint8 {
-  join ret7(retv8: uint8) -> uint8 {
-    retv8
-  } in
-  jump ret7(x/0)
-}
-
-fn println__T_string(value/1: string) -> unit {
-  join ret9() -> unit {
-    ()
-  } in
-  let t10 = string_println(value/1) in
-  jump ret9()
-}
-
-fn identity__T_float32(x/0: float32) -> float32 {
-  join ret11(retv12: float32) -> float32 {
+  join ret11(retv12: uint8) -> uint8 {
     retv12
   } in
   jump ret11(x/0)
 }
 
-fn identity__T_int64(x/0: int64) -> int64 {
-  join ret13(retv14: int64) -> int64 {
-    retv14
+fn println__T_string(value/1: string) -> unit {
+  join ret13() -> unit {
+    ()
   } in
-  jump ret13(x/0)
+  let t14 = trait_impl#ToString#string#to_string(value/1) in
+  let t15 = @runtime(core.string_println)(t14) in
+  jump ret13()
+}
+
+fn trait_impl#ToString#uint8#to_string(self/15: uint8) -> string {
+  join ret16(retv17: string) -> string {
+    retv17
+  } in
+  let t18 = @runtime(core.uint8_to_string)(self/15) in
+  jump ret16(t18)
+}
+
+fn identity__T_float32(x/0: float32) -> float32 {
+  join ret19(retv20: float32) -> float32 {
+    retv20
+  } in
+  jump ret19(x/0)
+}
+
+fn trait_impl#ToString#float32#to_string(self/19: float32) -> string {
+  join ret21(retv22: string) -> string {
+    retv22
+  } in
+  let t23 = @runtime(core.float32_to_string)(self/19) in
+  jump ret21(t23)
+}
+
+fn identity__T_int64(x/0: int64) -> int64 {
+  join ret24(retv25: int64) -> int64 {
+    retv25
+  } in
+  jump ret24(x/0)
+}
+
+fn trait_impl#ToString#int64#to_string(self/14: int64) -> string {
+  join ret26(retv27: string) -> string {
+    retv27
+  } in
+  let t28 = @runtime(core.int64_to_string)(self/14) in
+  jump ret26(t28)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  join ret29(retv30: string) -> string {
+    retv30
+  } in
+  jump ret29(self/9)
 }

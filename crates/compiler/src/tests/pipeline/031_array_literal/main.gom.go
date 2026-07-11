@@ -4,16 +4,16 @@ import (
     _goml_fmt "fmt"
 )
 
-func string_print(s string) struct{} {
+func _goml_runtime_core_string_print(s string) struct{} {
     _goml_fmt.Print(s)
     return struct{}{}
 }
 
 func make_array() [3]int32 {
-    var retv4 [3]int32
-    var t5 [3]int32 = [3]int32{1, 2, 3}
-    retv4 = t5
-    return retv4
+    var retv8 [3]int32
+    var t9 [3]int32 = [3]int32{1, 2, 3}
+    retv8 = t9
+    return retv8
 }
 
 func main0() struct{} {
@@ -23,8 +23,15 @@ func main0() struct{} {
 }
 
 func print__T_string(value__0 string) struct{} {
-    string_print(value__0)
+    var t12 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__0)
+    _goml_runtime_core_string_print(t12)
     return struct{}{}
+}
+
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
+    var retv15 string
+    retv15 = self__9
+    return retv15
 }
 
 func main() {

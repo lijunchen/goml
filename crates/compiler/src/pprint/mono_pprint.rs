@@ -97,6 +97,7 @@ impl MonoExpr {
     pub fn to_doc(&self, monoenv: &GlobalMonoEnv) -> RcDoc<'_, ()> {
         match self {
             MonoExpr::EVar { name, ty: _ } => RcDoc::text(name.clone()),
+            MonoExpr::ECallable { body, .. } => RcDoc::text(body.ir_name()),
 
             MonoExpr::EPrim { value, ty: _ } => RcDoc::text(value.to_string()),
             MonoExpr::EConstr {

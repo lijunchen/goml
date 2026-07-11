@@ -1,11 +1,3 @@
-fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
-}
-
-fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
-}
-
 fn maybe_primary(flag/0: bool) -> Option[int32] {
     if (flag/0 : bool) {
         {
@@ -36,7 +28,7 @@ fn mixed(primary/2: bool, secondary/3: bool) -> Option[string] {
         Option::None => return Option::None,
     };
     let label/6: string = match (maybe_secondary : (bool) -> Option[int32])((secondary/3 : bool)) {
-        Option::Some(extra/5: int32) => "extra=" + (ToString::to_string : (int32) -> string)((extra/5 : int32)),
+        Option::Some(extra/5: int32) => "extra=" + (int32::to_string : (int32) -> string)((extra/5 : int32)),
         Option::None => "extra=none",
     };
     Option::Some("value=" + (int32::to_string : (int32) -> string)((value/4 : int32)) + "," + (label/6 : string))

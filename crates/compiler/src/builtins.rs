@@ -1,29 +1,28 @@
-use std::{
-    collections::{HashMap, HashSet},
-    path::Path,
-    sync::OnceLock,
-};
+use std::{collections::HashMap, path::Path, sync::OnceLock};
 
 use crate::derive;
 use ::ast::{ast, lower};
 use cst::cst::{CstNode, File as CstFile};
-use indexmap::{IndexMap, IndexSet};
+use indexmap::IndexMap;
 use parser::{self, syntax::MySyntaxNode};
 
 use crate::{
     artifact::{InterfaceUnit, PackageExports},
-    env::{FnOrigin, FnScheme, GlobalTypeEnv, TraitEnv, TypeEnv, ValueEnv},
+    env::{FnConstraint, FnScheme, GlobalTypeEnv, TraitEnv, TypeEnv, ValueEnv},
     hir, interface,
+    intrinsics::{CallableBody, ExternCapability, IntrinsicId, LangItemId, LangItemTable},
     package_names::BUILTIN_PACKAGE,
     tast, typer,
 };
 
-/// The embedded builtin.gom source code
-const BUILTIN_GOM: &str = include_str!("builtin.gom");
+pub const BUILTIN_SOURCE_FILES: [&str; 2] = ["builtin_contract.gom", "builtin_prelude.gom"];
+
+const BUILTIN_CONTRACT_GOM: &str = include_str!("builtin_contract.gom");
+const BUILTIN_PRELUDE_GOM: &str = include_str!("builtin_prelude.gom");
 
 static BUILTIN_AST: OnceLock<ast::File> = OnceLock::new();
 static BUILTIN_ARTIFACTS: OnceLock<BuiltinArtifacts> = OnceLock::new();
-static BUILTIN_COLLECTION_METHOD_KEYS: OnceLock<HashSet<(String, String)>> = OnceLock::new();
+static BUILTIN_CALLABLES: OnceLock<IndexMap<String, CallableBody>> = OnceLock::new();
 
 #[derive(Debug, Clone)]
 struct BuiltinArtifacts {
@@ -32,11 +31,12 @@ struct BuiltinArtifacts {
 }
 
 fn parse_builtin_ast() -> ast::File {
-    let path = Path::new("builtin.gom");
-    let parse_result = parser::parse(path, BUILTIN_GOM);
+    let path = Path::new("builtin_contract.gom");
+    let source = format!("{BUILTIN_CONTRACT_GOM}\n{BUILTIN_PRELUDE_GOM}");
+    let parse_result = parser::parse(path, &source);
     if parse_result.has_errors() {
         panic!(
-            "Failed to parse builtin.gom: {:?}",
+            "Failed to parse builtin sources: {:?}",
             parse_result.into_diagnostics()
         );
     }
@@ -46,12 +46,12 @@ fn parse_builtin_ast() -> ast::File {
     let lower_result = lower::lower(cst);
     let mut ast_file = lower_result
         .into_result()
-        .expect("failed to lower builtin.gom AST");
+        .expect("failed to lower builtin AST");
     ast_file.package = ast::AstIdent::new(BUILTIN_PACKAGE);
 
     match derive::expand(ast_file) {
         Ok(ast) => ast,
-        Err(diags) => panic!("Failed to expand builtin.gom: {:?}", diags),
+        Err(diags) => panic!("Failed to expand builtin sources: {:?}", diags),
     }
 }
 
@@ -73,28 +73,31 @@ fn build_builtin_artifacts() -> BuiltinArtifacts {
         value_env: ValueEnv {
             funcs: IndexMap::new(),
         },
+        lang_items: LangItemTable::with_builtin_types(),
     };
 
     add_array_builtins(&mut base_env.value_env.funcs);
 
     let (hir, hir_table, mut hir_diagnostics) = hir::lower_to_hir(ast);
 
-    let (tast, mut genv, mut diagnostics) = typer::check_file_with_env(
+    let (tast, genv, mut diagnostics) = typer::check_file_with_env_capability(
         hir,
         hir_table,
         base_env,
         GlobalTypeEnv::new_empty(),
         BUILTIN_PACKAGE,
         HashMap::new(),
+        ExternCapability::Core,
     );
     diagnostics.append(&mut hir_diagnostics);
     if diagnostics.has_errors() {
-        panic!("Failed to typecheck builtin.gom: {:?}", diagnostics);
+        panic!("Failed to typecheck builtin sources: {:?}", diagnostics);
     }
-
-    genv.trait_env
-        .inherent_impls
-        .extend(builtin_inherent_methods());
+    for item in LangItemId::ALL {
+        if genv.lang_item(item).is_none() {
+            panic!("missing lang item {}", item.key());
+        }
+    }
 
     BuiltinArtifacts { genv, tast }
 }
@@ -124,57 +127,6 @@ pub(crate) fn builtin_tast() -> tast::File {
         .clone()
 }
 
-pub(crate) fn builtin_print_tast() -> tast::File {
-    let toplevels = builtin_tast()
-        .toplevels
-        .into_iter()
-        .filter(|item| match item {
-            tast::Item::Fn(f) => f.name == "print" || f.name == "println",
-            _ => false,
-        })
-        .collect();
-    tast::File { toplevels }
-}
-
-pub(crate) fn builtin_collection_impl_tast() -> tast::File {
-    let toplevels = builtin_tast()
-        .toplevels
-        .into_iter()
-        .filter(|item| match item {
-            tast::Item::ImplBlock(impl_block) => {
-                impl_block.trait_name.is_none()
-                    && matches!(
-                        &impl_block.for_type,
-                        tast::Ty::TVec { .. }
-                            | tast::Ty::TSlice { .. }
-                            | tast::Ty::THashMap { .. }
-                            | tast::Ty::TRef { .. }
-                    )
-            }
-            _ => false,
-        })
-        .collect();
-    tast::File { toplevels }
-}
-
-fn build_builtin_collection_method_keys() -> HashSet<(String, String)> {
-    let mut keys = HashSet::new();
-    for item in builtin_collection_impl_tast().toplevels {
-        let tast::Item::ImplBlock(impl_block) = item else {
-            continue;
-        };
-        let base = impl_block.for_type.get_constr_name_unsafe();
-        for method in impl_block.methods {
-            keys.insert((base.clone(), method.name));
-        }
-    }
-    keys
-}
-
-pub(crate) fn builtin_collection_method_keys() -> &'static HashSet<(String, String)> {
-    BUILTIN_COLLECTION_METHOD_KEYS.get_or_init(build_builtin_collection_method_keys)
-}
-
 pub fn builtin_interface_hash() -> String {
     let genv = builtin_env();
     let exports = PackageExports {
@@ -192,124 +144,69 @@ pub fn builtin_interface_hash() -> String {
     .interface_hash
 }
 
-fn make_fn_scheme(params: Vec<tast::Ty>, ret: tast::Ty) -> FnScheme {
+fn make_fn_scheme(intrinsic: IntrinsicId) -> FnScheme {
+    let signature = intrinsic.signature();
     FnScheme {
-        type_params: vec![],
-        constraints: vec![],
-        ty: tast::Ty::TFunc {
-            params,
-            ret_ty: Box::new(ret),
-        },
-        origin: FnOrigin::Builtin,
+        type_params: signature.type_params,
+        constraints: signature
+            .constraints
+            .into_iter()
+            .map(|(type_param, trait_name)| FnConstraint {
+                type_param,
+                trait_name: tast::TastIdent::new(&trait_name),
+            })
+            .collect(),
+        ty: signature.ty,
+        body: CallableBody::Intrinsic(intrinsic),
     }
 }
 
 fn add_array_builtins(funcs: &mut IndexMap<String, FnScheme>) {
-    let array_elem_param = tast::Ty::TParam {
-        name: "T".to_string(),
-    };
-    let array_ty = tast::Ty::TArray {
-        len: tast::ARRAY_WILDCARD_LEN,
-        elem: Box::new(array_elem_param.clone()),
-    };
     funcs.insert(
-        "array_get".to_string(),
-        make_fn_scheme(
-            vec![array_ty.clone(), tast::Ty::TInt32],
-            array_elem_param.clone(),
-        ),
+        IntrinsicId::ArrayGet.source_name().to_string(),
+        make_fn_scheme(IntrinsicId::ArrayGet),
     );
     funcs.insert(
-        "array_set".to_string(),
-        make_fn_scheme(
-            vec![array_ty.clone(), tast::Ty::TInt32, array_elem_param.clone()],
-            array_ty,
-        ),
+        IntrinsicId::ArraySet.source_name().to_string(),
+        make_fn_scheme(IntrinsicId::ArraySet),
     );
 }
 
-pub(super) fn builtin_inherent_methods()
--> IndexMap<crate::env::InherentImplKey, crate::env::ImplDef> {
-    let mut impls = IndexMap::new();
-
-    let int32_ty = tast::Ty::TInt32;
-    let method_ty = tast::Ty::TFunc {
-        params: vec![int32_ty.clone()],
-        ret_ty: Box::new(tast::Ty::TString),
-    };
-
-    let mut int32_impl = crate::env::ImplDef::default();
-    int32_impl.methods.insert(
-        "to_string".to_string(),
-        crate::env::FnScheme {
-            type_params: vec![],
-            constraints: vec![],
-            ty: method_ty,
-            origin: FnOrigin::Builtin,
-        },
+fn build_builtin_callables() -> IndexMap<String, CallableBody> {
+    let mut callables = IndexMap::new();
+    for item in builtin_ast().toplevels.iter() {
+        match item {
+            ast::Item::Fn(func) => {
+                callables.insert(func.name.0.clone(), CallableBody::Goml);
+            }
+            ast::Item::ExternFn(ext) => {
+                let body = crate::intrinsics::callable_body_from_attributes(
+                    ext.attrs.iter().map(|attr| attr.text.as_str()),
+                )
+                .expect("invalid builtin callable declaration");
+                callables.insert(ext.name.0.clone(), body);
+            }
+            ast::Item::EnumDef(_)
+            | ast::Item::StructDef(_)
+            | ast::Item::TraitDef(_)
+            | ast::Item::ImplBlock(_) => {}
+        }
+    }
+    callables.insert(
+        IntrinsicId::ArrayGet.source_name().to_string(),
+        CallableBody::Intrinsic(IntrinsicId::ArrayGet),
     );
-    impls.insert(crate::env::InherentImplKey::Exact(int32_ty), int32_impl);
-
-    let char_ty = tast::Ty::TChar;
-    let char_method_ty = tast::Ty::TFunc {
-        params: vec![char_ty.clone()],
-        ret_ty: Box::new(tast::Ty::TString),
-    };
-    let mut char_impl = crate::env::ImplDef::default();
-    char_impl.methods.insert(
-        "to_string".to_string(),
-        crate::env::FnScheme {
-            type_params: vec![],
-            constraints: vec![],
-            ty: char_method_ty,
-            origin: FnOrigin::Builtin,
-        },
+    callables.insert(
+        IntrinsicId::ArraySet.source_name().to_string(),
+        CallableBody::Intrinsic(IntrinsicId::ArraySet),
     );
-    impls.insert(crate::env::InherentImplKey::Exact(char_ty), char_impl);
+    callables
+}
 
-    let string_ty = tast::Ty::TString;
-    let mut string_impl = crate::env::ImplDef::default();
-    string_impl.methods.insert(
-        "len".to_string(),
-        crate::env::FnScheme {
-            type_params: vec![],
-            constraints: vec![],
-            ty: tast::Ty::TFunc {
-                params: vec![string_ty.clone()],
-                ret_ty: Box::new(tast::Ty::TInt32),
-            },
-            origin: FnOrigin::Builtin,
-        },
-    );
-    string_impl.methods.insert(
-        "get".to_string(),
-        crate::env::FnScheme {
-            type_params: vec![],
-            constraints: vec![],
-            ty: tast::Ty::TFunc {
-                params: vec![string_ty.clone(), tast::Ty::TInt32],
-                ret_ty: Box::new(tast::Ty::TChar),
-            },
-            origin: FnOrigin::Builtin,
-        },
-    );
-    impls.insert(crate::env::InherentImplKey::Exact(string_ty), string_impl);
-
-    impls
+pub fn builtin_callables() -> &'static IndexMap<String, CallableBody> {
+    BUILTIN_CALLABLES.get_or_init(build_builtin_callables)
 }
 
 pub fn builtin_function_names() -> Vec<String> {
-    let mut names: IndexSet<String> = IndexSet::new();
-
-    for item in builtin_ast().toplevels.iter() {
-        if let ast::Item::ExternBuiltin(ext) = item {
-            names.insert(ext.name.0.clone());
-        }
-    }
-
-    for name in ["array_get", "array_set"] {
-        names.insert(name.to_string());
-    }
-
-    names.into_iter().collect()
+    builtin_callables().keys().cloned().collect()
 }

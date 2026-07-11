@@ -5,7 +5,7 @@ use std::{
 };
 
 use cst::cst::CstNode;
-use cst::nodes::{BinaryExpr, Block, ClosureExpr, Fn, Item, MatchArm, Pattern};
+use cst::nodes::{BinaryExpr, Block, ClosureExpr, Fn, MatchArm, Pattern};
 use parser::syntax::{MySyntaxKind, MySyntaxNode, MySyntaxNodePtr};
 use text_size::TextSize;
 
@@ -16,7 +16,7 @@ use super::{
     ValueCompletionItem, ValueCompletionKind,
     hir_index::{ClosureParamIndex, HirResultsIndex},
     signature::{CallSignatureContext, call_signature_context_from_parts},
-    symbol_index::{ProjectSymbolIndex, build_symbol_index},
+    symbol_index::build_symbol_lookup,
     syntax::{
         ancestor_path_from_token, call_expr_and_active_parameter, ident_prefix_at_offset,
         token_at_offset_for_query, use_decl_from_token,
@@ -26,10 +26,10 @@ use super::{
 
 const COMPLETION_PLACEHOLDER: &str = "completion_placeholder";
 const VALUE_COMPLETION_KEYWORDS: &[&str] = &[
-    "array", "bool", "char", "crate", "dyn", "else", "enum", "extern", "false", "float32",
-    "float64", "fn", "for", "go", "if", "impl", "in", "int8", "int16", "int32", "int64", "let",
-    "match", "mod", "pub", "return", "string", "struct", "super", "trait", "true", "type", "uint8",
-    "uint16", "uint32", "uint64", "unit", "use", "while", "_",
+    "array", "bool", "char", "dyn", "else", "enum", "extern", "false", "float32", "float64", "fn",
+    "for", "go", "if", "impl", "in", "int8", "int16", "int32", "int64", "let", "match", "package",
+    "pub", "return", "string", "struct", "trait", "true", "type", "uint8", "uint16", "uint32",
+    "uint64", "unit", "use", "while", "_",
 ];
 
 #[derive(Debug, Clone)]
@@ -125,7 +125,7 @@ pub fn value_completions(
         let line_index = line_index::LineIndex::new(src);
         let offset = line_index.offset(line_index::LineCol { line, col })?;
         let (prefix_start, prefix) = ident_prefix_at_offset(src, offset)?;
-        if let Some(items) = use_root_completions(path, src, offset, prefix_start, &prefix) {
+        if let Some(items) = import_root_completions(path, src, offset, prefix_start, &prefix) {
             return Some(items);
         }
 
@@ -197,7 +197,7 @@ pub fn value_completions(
             );
         }
 
-        ranked_items.extend(visible_use_namespace_items(path, src));
+        ranked_items.extend(visible_import_namespace_items(path, src));
 
         let mut seen = HashSet::new();
         let mut items = Vec::new();
@@ -305,17 +305,16 @@ pub fn colon_colon_completions(
         let genv = typecheck_for_query(path, &parse_src)
             .ok()
             .map(|(_hir_table, _results, genv, _diagnostics)| genv);
-        let symbol_data = build_symbol_index(path, &parse_src).ok();
-        let symbol_graph = symbol_data.as_ref().map(|(graph, _index)| graph);
-        let symbol_index = symbol_data.as_ref().map(|(_graph, index)| index);
-
-        let mut items = if use_decl_from_token(&token).is_some() {
-            use_colon_colon_items_for_namespace(path, genv.as_ref(), symbol_index, &namespace)
-        } else if namespace == "crate" {
-            crate_root_colon_colon_items(path, symbol_graph)
+        let package_items = if use_decl_from_token(&token).is_some() {
+            import_colon_colon_items_for_namespace(path, &namespace)
         } else {
+            Vec::new()
+        };
+        let mut items = if package_items.is_empty() {
             let namespace = resolve_completion_namespace(path, src, &namespace);
-            colon_colon_items_for_namespace(genv.as_ref(), symbol_index, &namespace)
+            colon_colon_items_for_namespace(genv.as_ref(), &namespace)
+        } else {
+            package_items
         };
         items.sort_by(|a, b| a.name.cmp(&b.name));
         items.dedup_by(|a, b| a.name == b.name && a.kind == b.kind && a.detail == b.detail);
@@ -378,25 +377,24 @@ fn filter_dot_items(items: Vec<DotCompletionItem>, prefix: &str) -> Vec<DotCompl
         .collect()
 }
 
-fn use_root_completions(
+fn import_root_completions(
     path: &Path,
     src: &str,
     offset: TextSize,
     prefix_start: TextSize,
     prefix: &str,
 ) -> Option<Vec<ValueCompletionItem>> {
-    if !is_use_root_completion_context(path, src, offset, prefix_start) {
+    if !is_import_root_completion_context(path, src, offset, prefix_start) {
         return None;
     }
 
     let mut names = BTreeSet::new();
-    let current_package = current_package_name(path, src);
     names.insert(crate::package_names::STD_PACKAGE.to_string());
 
     if let Ok((root_dir, dependencies)) =
         crate::pipeline::packages::discover_dependency_versions_from_file(path)
     {
-        collect_local_package_names(&root_dir, current_package.as_deref(), &mut names);
+        collect_local_package_names(&root_dir, path, &mut names);
         for dep in dependencies.keys() {
             if let Ok(coord) = ModuleCoord::parse(dep) {
                 names.insert(format!("{}::{}", coord.owner, coord.module));
@@ -407,7 +405,7 @@ fn use_root_completions(
             .parent()
             .filter(|parent| !parent.as_os_str().is_empty())
             .unwrap_or_else(|| Path::new("."));
-        collect_local_package_names(root_dir, current_package.as_deref(), &mut names);
+        collect_local_package_names(root_dir, path, &mut names);
     }
 
     Some(
@@ -423,8 +421,8 @@ fn use_root_completions(
     )
 }
 
-fn visible_use_namespace_items(path: &Path, src: &str) -> Vec<RankedValueItem> {
-    visible_use_namespace_names(path, src)
+fn visible_import_namespace_items(path: &Path, src: &str) -> Vec<RankedValueItem> {
+    visible_import_namespace_names(path, src)
         .into_iter()
         .map(|name| RankedValueItem {
             item: ValueCompletionItem {
@@ -439,18 +437,17 @@ fn visible_use_namespace_items(path: &Path, src: &str) -> Vec<RankedValueItem> {
         .collect()
 }
 
-fn visible_use_namespace_names(path: &Path, src: &str) -> BTreeSet<String> {
+fn visible_import_namespace_names(path: &Path, src: &str) -> BTreeSet<String> {
     let result = parser::parse(path, src);
     let root = MySyntaxNode::new_root(result.green_node);
     let Some(file) = cst::cst::File::cast(root) else {
         return BTreeSet::new();
     };
 
-    let external_import_paths = external_import_paths_for_query(path);
-
+    let symbols = build_symbol_lookup(path, src);
     file.use_decls()
-        .filter_map(|use_decl| use_decl.path())
-        .filter_map(|path| {
+        .filter_map(|use_decl| {
+            let path = use_decl.path()?;
             let segments = path
                 .ident_tokens()
                 .map(|token| token.to_string())
@@ -458,77 +455,30 @@ fn visible_use_namespace_names(path: &Path, src: &str) -> BTreeSet<String> {
             if segments.is_empty() {
                 return None;
             }
-
-            use_alias_name(&segments, &external_import_paths)
+            let target = segments.join("::");
+            if !symbols
+                .graph
+                .as_ref()
+                .is_some_and(|graph| graph.package_dirs.contains_key(&target))
+            {
+                return None;
+            }
+            use_decl
+                .alias_token()
+                .map(|token| token.to_string())
+                .or_else(|| Some(symbols.default_alias_for_package(&target)))
         })
-        .chain(file.items().filter_map(|item| match item {
-            Item::Mod(module) => module.name_token().map(|token| token.to_string()),
-            _ => None,
-        }))
         .collect()
 }
 
-fn external_import_paths_for_query(path: &Path) -> HashMap<String, String> {
-    crate::pipeline::packages::discover_dependency_versions_from_file(path)
-        .ok()
-        .and_then(|(_, dependencies)| {
-            crate::external::resolve_dependency_versions(&dependencies).ok()
-        })
-        .map(|external_deps| external_deps.import_paths())
-        .unwrap_or_default()
-}
-
-fn use_alias_name(
-    segments: &[String],
-    external_import_paths: &HashMap<String, String>,
-) -> Option<String> {
-    if segments.is_empty() {
-        return None;
-    }
-
-    let full_path = segments.join("::");
-    if let Some(logical_name) = external_import_paths.get(&full_path) {
-        return Some(logical_name.clone());
-    }
-
-    segments.last().cloned()
-}
-
-fn use_alias_target(
-    segments: &[String],
-    external_import_paths: &HashMap<String, String>,
-) -> Option<String> {
-    if segments.is_empty() {
-        return None;
-    }
-
-    let full_path = segments.join("::");
-    if let Some(logical_name) = external_import_paths.get(&full_path) {
-        return Some(logical_name.clone());
-    }
-
-    if segments.first().is_some_and(|segment| segment == "std") {
-        return Some(segments.join("::"));
-    }
-
-    if matches!(
-        segments.first().map(String::as_str),
-        Some("crate" | "self" | "super")
-    ) {
-        return Some(segments[1..].join("::"));
-    }
-
-    Some(full_path)
-}
-
-fn use_namespace_aliases(path: &Path, src: &str) -> BTreeMap<String, String> {
+fn import_namespace_aliases(path: &Path, src: &str) -> BTreeMap<String, String> {
     let result = parser::parse(path, src);
     let root = MySyntaxNode::new_root(result.green_node);
     let Some(file) = cst::cst::File::cast(root) else {
         return BTreeMap::new();
     };
 
-    let external_import_paths = external_import_paths_for_query(path);
+    let symbols = build_symbol_lookup(path, src);
     let mut aliases = BTreeMap::new();
     for use_decl in file.use_decls() {
         let Some(path) = use_decl.path() else {
@@ -538,10 +488,19 @@ fn use_namespace_aliases(path: &Path, src: &str) -> BTreeMap<String, String> {
             .ident_tokens()
             .map(|token| token.to_string())
             .collect::<Vec<_>>();
-        let Some(alias) = use_alias_name(&segments, &external_import_paths) else {
+        let target = segments.join("::");
+        if !symbols
+            .graph
+            .as_ref()
+            .is_some_and(|graph| graph.package_dirs.contains_key(&target))
+        {
             continue;
-        };
-        let Some(target) = use_alias_target(&segments, &external_import_paths) else {
+        }
+        let Some(alias) = use_decl
+            .alias_token()
+            .map(|token| token.to_string())
+            .or_else(|| Some(symbols.default_alias_for_package(&target)))
+        else {
             continue;
         };
         if !target.is_empty() {
@@ -561,11 +520,7 @@ fn resolve_completion_namespace(path: &Path, src: &str, namespace: &str) -> Stri
         return namespace.to_string();
     };
 
-    if matches!(first.as_str(), "crate" | "self" | "super") {
-        return segments[1..].join("::");
-    }
-
-    let aliases = use_namespace_aliases(path, src);
+    let aliases = import_namespace_aliases(path, src);
     let Some(target) = aliases.get(first) else {
         return namespace.to_string();
     };
@@ -814,7 +769,7 @@ fn value_item_match_rank(item: &RankedValueItem, expected_ty: Option<&str>) -> u
     }
 }
 
-fn is_use_root_completion_context(
+fn is_import_root_completion_context(
     path: &Path,
     src: &str,
     offset: TextSize,
@@ -848,161 +803,96 @@ fn is_use_root_completion_context(
     starts_with_use_keyword(trimmed) && !trimmed.contains("::")
 }
 
-fn current_package_name(path: &Path, src: &str) -> Option<String> {
-    let result = parser::parse(path, src);
-    let root = MySyntaxNode::new_root(result.green_node);
-    let file = cst::cst::File::cast(root)?;
-    file.package_decl()
-        .and_then(|decl| decl.name_token())
-        .map(|token| token.to_string())
-}
-
-fn collect_local_package_names(
-    root_dir: &Path,
-    current_package: Option<&str>,
-    names: &mut BTreeSet<String>,
-) {
-    let Ok(entries) = fs::read_dir(root_dir) else {
+fn collect_local_package_names(root_dir: &Path, source_path: &Path, names: &mut BTreeSet<String>) {
+    let Ok(manifest) = crate::config::load_module_manifest(&root_dir.join("goml.toml")) else {
         return;
     };
-
-    for entry in entries.flatten() {
-        let path = entry.path();
-        if !path.is_dir() {
-            continue;
-        }
-        let Some(name) = local_package_name(&path) else {
-            continue;
-        };
-        if current_package.is_some_and(|current| current == name) {
-            continue;
-        }
-        names.insert(name);
-    }
+    let current_dir = source_path.parent().unwrap_or(root_dir);
+    collect_local_package_names_inner(
+        root_dir,
+        root_dir,
+        current_dir,
+        &manifest.module.path,
+        names,
+    );
 }
 
-fn local_package_name(dir: &Path) -> Option<String> {
-    let entries = fs::read_dir(dir).ok()?;
+fn collect_local_package_names_inner(
+    root_dir: &Path,
+    dir: &Path,
+    current_dir: &Path,
+    module_path: &str,
+    names: &mut BTreeSet<String>,
+) {
+    if dir != root_dir && dir.join("goml.toml").is_file() {
+        return;
+    }
+    let Ok(entries) = fs::read_dir(dir) else {
+        return;
+    };
+    let mut children = Vec::new();
+    let mut has_source = false;
     for entry in entries.flatten() {
         let path = entry.path();
-        if path.extension().is_some_and(|ext| ext == "gom") {
-            return dir
-                .file_name()
-                .and_then(|name| name.to_str())
-                .map(|name| name.to_string());
+        if path.is_file() && path.extension().is_some_and(|ext| ext == "gom") {
+            has_source = true;
+        } else if path.is_dir()
+            && !entry.file_name().to_string_lossy().starts_with('.')
+            && entry.file_name() != "target"
+        {
+            children.push(path);
         }
     }
-
-    None
+    if has_source && dir != current_dir {
+        let relative = dir.strip_prefix(root_dir).unwrap_or(dir);
+        let suffix = relative
+            .components()
+            .filter_map(|component| component.as_os_str().to_str())
+            .collect::<Vec<_>>()
+            .join("::");
+        if suffix.is_empty() {
+            names.insert(module_path.to_string());
+        } else {
+            names.insert(format!("{module_path}::{suffix}"));
+        }
+    }
+    children.sort();
+    for child in children {
+        collect_local_package_names_inner(root_dir, &child, current_dir, module_path, names);
+    }
 }
 
 fn starts_with_use_keyword(text: &str) -> bool {
     text == "use" || text.starts_with("use ")
 }
 
-fn use_colon_colon_items_for_namespace(
+fn import_colon_colon_items_for_namespace(
     path: &Path,
-    genv: Option<&GlobalTypeEnv>,
-    symbol_index: Option<&ProjectSymbolIndex>,
     namespace: &str,
 ) -> Vec<ColonColonCompletionItem> {
-    let mut items = Vec::new();
-
-    if namespace == "crate" {
-        return crate_root_colon_colon_items(path, None);
-    }
-
-    let namespace = resolve_completion_namespace(path, "", namespace);
-
-    if let Ok((_, dependencies)) =
+    let mut packages = BTreeSet::from([
+        "std::env".to_string(),
+        "std::fs".to_string(),
+        "std::io".to_string(),
+        "std::process".to_string(),
+    ]);
+    if let Ok((root_dir, dependencies)) =
         crate::pipeline::packages::discover_dependency_versions_from_file(path)
     {
-        let mut module_children = BTreeSet::new();
-        for dep in dependencies.keys() {
-            if let Ok(coord) = ModuleCoord::parse(dep)
-                && namespace == coord.owner
-            {
-                module_children.insert(coord.module);
-            }
-        }
-        items.extend(
-            module_children
-                .into_iter()
-                .map(|name| ColonColonCompletionItem {
-                    name,
-                    kind: ColonColonCompletionKind::Package,
-                    detail: Some("package".to_string()),
-                }),
-        );
-
+        collect_local_package_names(&root_dir, path, &mut packages);
+        packages.extend(dependencies.keys().cloned());
         if let Ok(external_deps) = crate::external::resolve_dependency_versions(&dependencies) {
-            let import_paths = external_deps.import_paths();
-            let prefix = format!("{namespace}::");
-            let mut child_packages = BTreeSet::new();
-            for import_path in import_paths.keys() {
-                let Some(rest) = import_path.strip_prefix(&prefix) else {
-                    continue;
-                };
-                let Some(child) = rest.split("::").next() else {
-                    continue;
-                };
-                if !child.is_empty() {
-                    child_packages.insert(child.to_string());
-                }
-            }
-            items.extend(
-                child_packages
-                    .into_iter()
-                    .map(|name| ColonColonCompletionItem {
-                        name,
-                        kind: ColonColonCompletionKind::Package,
-                        detail: Some("package".to_string()),
-                    }),
-            );
-
-            if let Some(alias) = import_paths.get(namespace.as_str()) {
-                items.extend(colon_colon_items_for_namespace(genv, symbol_index, alias));
-            }
+            packages.extend(external_deps.package_names());
         }
     }
-
-    if items.is_empty() {
-        return colon_colon_items_for_namespace(genv, symbol_index, &namespace);
-    }
-
-    items
-}
-
-fn crate_root_colon_colon_items(
-    path: &Path,
-    graph: Option<&crate::pipeline::packages::PackageGraph>,
-) -> Vec<ColonColonCompletionItem> {
-    let mut names = BTreeSet::new();
-    if let Some(graph) = graph {
-        for package in graph.packages.keys() {
-            if package == &graph.entry_package {
-                continue;
-            }
-            if let Some(first) = package.split("::").next()
-                && !first.is_empty()
-            {
-                names.insert(first.to_string());
-            }
-        }
-    }
-
-    if names.is_empty() {
-        let start_dir = path
-            .parent()
-            .filter(|parent| !parent.as_os_str().is_empty())
-            .unwrap_or_else(|| Path::new("."));
-        let root_dir = crate::config::find_crate_root(start_dir)
-            .map(|(root, _)| root)
-            .unwrap_or_else(|| start_dir.to_path_buf());
-        collect_local_package_names(&root_dir, None, &mut names);
-    }
-
-    names
+    let prefix = format!("{namespace}::");
+    packages
+        .into_iter()
+        .filter_map(|package| {
+            let rest = package.strip_prefix(&prefix)?;
+            rest.split("::").next().map(str::to_string)
+        })
+        .collect::<BTreeSet<_>>()
         .into_iter()
         .map(|name| ColonColonCompletionItem {
             name,
@@ -1014,23 +904,9 @@ fn crate_root_colon_colon_items(
 
 fn colon_colon_items_for_namespace(
     genv: Option<&GlobalTypeEnv>,
-    symbol_index: Option<&ProjectSymbolIndex>,
     namespace: &str,
 ) -> Vec<ColonColonCompletionItem> {
     let mut items = Vec::new();
-
-    if let Some(symbol_index) = symbol_index {
-        items.extend(
-            symbol_index
-                .package_children(namespace)
-                .into_iter()
-                .map(|name| ColonColonCompletionItem {
-                    name,
-                    kind: ColonColonCompletionKind::Package,
-                    detail: Some("package".to_string()),
-                }),
-        );
-    }
 
     let Some(genv) = genv else {
         return items;

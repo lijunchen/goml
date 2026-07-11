@@ -5,40 +5,54 @@ import (
     _goml_utf8 "unicode/utf8"
 )
 
-func char_to_string(x rune) string {
+func _goml_runtime_core_char_to_string(x rune) string {
     if !_goml_utf8.ValidRune(x) {
         panic("invalid char")
     }
     return string(x)
 }
 
-func string_println(s string) struct{} {
+func _goml_runtime_core_string_println(s string) struct{} {
     _goml_fmt.Println(s)
     return struct{}{}
 }
 
 func main0() struct{} {
     var c__0 rune = 65
-    var t3 string = char_to_string(c__0)
-    println__T_string(t3)
+    var t7 string = _goml_m_inherent_i_char_i_char_i_to__string(c__0)
+    println__T_string(t7)
     var d__1 rune = 98
-    var jp5 string
+    var jp9 string
     switch d__1 {
     case 97:
-        jp5 = "A"
+        jp9 = "A"
     case 98:
-        jp5 = "B"
+        jp9 = "B"
     default:
-        jp5 = "?"
+        jp9 = "?"
     }
-    var out__2 string = jp5
+    var out__2 string = jp9
     println__T_string(out__2)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    string_println(value__1)
+    var t11 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t11)
     return struct{}{}
+}
+
+func _goml_m_inherent_i_char_i_char_i_to__string(self__3 rune) string {
+    var retv14 string
+    var t15 string = _goml_runtime_core_char_to_string(self__3)
+    retv14 = t15
+    return retv14
+}
+
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
+    var retv17 string
+    retv17 = self__9
+    return retv17
 }
 
 func main() {

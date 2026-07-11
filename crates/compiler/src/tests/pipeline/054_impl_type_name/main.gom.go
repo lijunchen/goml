@@ -4,11 +4,11 @@ import (
     _goml_fmt "fmt"
 )
 
-func int32_to_string(x int32) string {
+func _goml_runtime_core_int32_to_string(x int32) string {
     return _goml_fmt.Sprintf("%d", x)
 }
 
-func string_println(s string) struct{} {
+func _goml_runtime_core_string_println(s string) struct{} {
     _goml_fmt.Println(s)
     return struct{}{}
 }
@@ -32,54 +32,54 @@ type Location struct {
 
 func (_ Location) isShape() {}
 
-func _goml_trait_x5f_impl_x23_TypeName_x23_Point_x23_type_x5f_name(self__0 Point) string {
-    var retv8 string
-    var mtmp0 Point = self__0
-    var x1 int32 = mtmp0.x
-    var x2 int32 = mtmp0.y
-    var y__2 int32 = x2
-    var x__1 int32 = x1
-    var t9 string = int32_to_string(x__1)
-    var prefix__3 string = "Point(" + t9
-    var t10 string = prefix__3 + ", "
-    var t11 string = int32_to_string(y__2)
-    var t12 string = t10 + t11
-    var t13 string = t12 + ")"
-    retv8 = t13
-    return retv8
+func _goml_m_trait__impl_i_TypeName_i_Point_i_type__name(self__0 Point) string {
+    var retv12 string
+    var mtmp4 Point = self__0
+    var x5 int32 = mtmp4.x
+    var x6 int32 = mtmp4.y
+    var y__2 int32 = x6
+    var x__1 int32 = x5
+    var t13 string = _goml_m_inherent_i_int32_i_int32_i_to__string(x__1)
+    var prefix__3 string = "Point(" + t13
+    var t14 string = prefix__3 + ", "
+    var t15 string = _goml_m_inherent_i_int32_i_int32_i_to__string(y__2)
+    var t16 string = t14 + t15
+    var t17 string = t16 + ")"
+    retv12 = t17
+    return retv12
 }
 
-func _goml_trait_x5f_impl_x23_TypeName_x23_Shape_x23_type_x5f_name(self__4 Shape) string {
-    var retv15 string
-    var jp17 string
+func _goml_m_trait__impl_i_TypeName_i_Shape_i_type__name(self__4 Shape) string {
+    var retv19 string
+    var jp21 string
     switch self__4.(type) {
     case Unit:
-        jp17 = "Unit"
+        jp21 = "Unit"
     case Location:
-        var x3 Point = self__4.(Location)._0
-        var point__5 Point = x3
-        var t18 string = _goml_trait_x5f_impl_x23_TypeName_x23_Point_x23_type_x5f_name(point__5)
-        var t19 string = "Shape::" + t18
-        jp17 = t19
+        var x7 Point = self__4.(Location)._0
+        var point__5 Point = x7
+        var t22 string = _goml_m_trait__impl_i_TypeName_i_Point_i_type__name(point__5)
+        var t23 string = "Shape::" + t22
+        jp21 = t23
     default:
         panic("non-exhaustive match")
     }
-    retv15 = jp17
-    return retv15
+    retv19 = jp21
+    return retv19
 }
 
 func show_point(point__6 Point) string {
-    var retv21 string
-    var t22 string = _goml_trait_x5f_impl_x23_TypeName_x23_Point_x23_type_x5f_name(point__6)
-    retv21 = t22
-    return retv21
+    var retv25 string
+    var t26 string = _goml_m_trait__impl_i_TypeName_i_Point_i_type__name(point__6)
+    retv25 = t26
+    return retv25
 }
 
 func show_shape(shape__7 Shape) string {
-    var retv24 string
-    var t25 string = _goml_trait_x5f_impl_x23_TypeName_x23_Shape_x23_type_x5f_name(shape__7)
-    retv24 = t25
-    return retv24
+    var retv28 string
+    var t29 string = _goml_m_trait__impl_i_TypeName_i_Shape_i_type__name(shape__7)
+    retv28 = t29
+    return retv28
 }
 
 func main0() struct{} {
@@ -87,26 +87,40 @@ func main0() struct{} {
         x: 7,
         y: 9,
     }
-    var t27 string = show_point(point__8)
-    println__T_string(t27)
+    var t31 string = show_point(point__8)
+    println__T_string(t31)
     var unit_shape__9 Shape = Unit{}
-    var t28 string = show_shape(unit_shape__9)
-    println__T_string(t28)
-    var t29 Point = Point{
+    var t32 string = show_shape(unit_shape__9)
+    println__T_string(t32)
+    var t33 Point = Point{
         x: 1,
         y: 2,
     }
     var location_shape__10 Shape = Location{
-        _0: t29,
+        _0: t33,
     }
-    var t30 string = show_shape(location_shape__10)
-    println__T_string(t30)
+    var t34 string = show_shape(location_shape__10)
+    println__T_string(t34)
     return struct{}{}
 }
 
+func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
+    var retv36 string
+    var t37 string = _goml_runtime_core_int32_to_string(self__2)
+    retv36 = t37
+    return retv36
+}
+
 func println__T_string(value__1 string) struct{} {
-    string_println(value__1)
+    var t39 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t39)
     return struct{}{}
+}
+
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
+    var retv42 string
+    retv42 = self__9
+    return retv42
 }
 
 func main() {

@@ -1,6 +1,6 @@
 use parser::syntax::MySyntaxNodePtr;
 
-use crate::{common, hir, tast};
+use crate::{common, hir, intrinsics::CallableBody, tast};
 
 #[derive(Debug, Clone)]
 pub struct TypeckResults {
@@ -114,6 +114,12 @@ pub enum NameRefElab {
         ty: tast::Ty,
         astptr: Option<MySyntaxNodePtr>,
     },
+    Callable {
+        name: String,
+        body: CallableBody,
+        ty: tast::Ty,
+        astptr: Option<MySyntaxNodePtr>,
+    },
     TraitMethod {
         trait_name: tast::TastIdent,
         method_name: tast::TastIdent,
@@ -145,6 +151,12 @@ pub enum CalleeElab {
     Expr(hir::ExprId),
     Var {
         name: String,
+        ty: tast::Ty,
+        astptr: Option<MySyntaxNodePtr>,
+    },
+    Callable {
+        name: String,
+        body: CallableBody,
         ty: tast::Ty,
         astptr: Option<MySyntaxNodePtr>,
     },
@@ -215,6 +227,7 @@ pub enum TryKind {
 #[derive(Debug, Clone)]
 pub struct TryElab {
     pub kind: TryKind,
+    pub container_name: String,
     pub outer_ret_ty: tast::Ty,
     pub success_index: usize,
     pub residual_index: usize,
@@ -379,7 +392,9 @@ impl TypeckResultsBuilder {
             .filter_map(Option::as_mut)
         {
             match elab {
-                NameRefElab::Var { ty, .. } => *ty = typer.subst_ty_silent(ty),
+                NameRefElab::Var { ty, .. } | NameRefElab::Callable { ty, .. } => {
+                    *ty = typer.subst_ty_silent(ty);
+                }
                 NameRefElab::TraitMethod { ty, .. } => *ty = typer.subst_ty_silent(ty),
                 NameRefElab::DynTraitMethod { ty, .. } => *ty = typer.subst_ty_silent(ty),
                 NameRefElab::InherentMethod {
@@ -412,7 +427,9 @@ impl TypeckResultsBuilder {
         for elab in self.results.call_elab.iter_mut().filter_map(Option::as_mut) {
             match &mut elab.callee {
                 CalleeElab::Expr(_) => {}
-                CalleeElab::Var { ty, .. } => *ty = typer.subst_ty_silent(ty),
+                CalleeElab::Var { ty, .. } | CalleeElab::Callable { ty, .. } => {
+                    *ty = typer.subst_ty_silent(ty);
+                }
                 CalleeElab::TraitMethod { ty, .. } => *ty = typer.subst_ty_silent(ty),
                 CalleeElab::DynTraitMethod { ty, .. } => *ty = typer.subst_ty_silent(ty),
                 CalleeElab::InherentMethod {

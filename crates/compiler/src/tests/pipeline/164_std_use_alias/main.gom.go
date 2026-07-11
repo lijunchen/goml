@@ -5,7 +5,7 @@ import (
     _goml_os "os"
 )
 
-func bool_to_string(x bool) string {
+func _goml_runtime_core_bool_to_string(x bool) string {
     if x {
         return "true"
     } else {
@@ -13,106 +13,65 @@ func bool_to_string(x bool) string {
     }
 }
 
-func _goml_std_x3a__x3a_env_x3a__x3a_args_x5f_raw() []string {
-    return _goml_os.Args
+func _goml_runtime_std_env_args() *_goml_vec_string {
+    return &_goml_vec_string{
+        items: _goml_os.Args,
+    }
 }
 
-func _goml_std_x3a__x3a_io_x3a__x3a_println_x5f_raw(value string) struct{} {
+func _goml_runtime_std_io_println(value string) struct{} {
     _goml_fmt.Println(value)
     return struct{}{}
 }
 
-type Tuple3_4bool_6string_6string struct {
-    _0 bool
-    _1 string
-    _2 string
+type _goml_vec_string struct {
+    items []string
 }
 
-type Tuple2_4bool_6string struct {
-    _0 bool
-    _1 string
+func vec_len__Vec_6string(vec *_goml_vec_string) int32 {
+    return int32(len(vec.items))
 }
 
-type Tuple3_4bool_11Vec_6string_6string struct {
-    _0 bool
-    _1 []string
-    _2 string
-}
-
-type Result__string__string interface {
-    isResult__string__string()
-}
-
-type Result__string__string_Ok struct {
-    _0 string
-}
-
-func (_ Result__string__string_Ok) isResult__string__string() {}
-
-type Result__string__string_Err struct {
-    _0 string
-}
-
-func (_ Result__string__string_Err) isResult__string__string() {}
-
-type Result__unit__string interface {
-    isResult__unit__string()
-}
-
-type Result__unit__string_Ok struct {
-    _0 struct{}
-}
-
-func (_ Result__unit__string_Ok) isResult__unit__string() {}
-
-type Result__unit__string_Err struct {
-    _0 string
-}
-
-func (_ Result__unit__string_Err) isResult__unit__string() {}
-
-type _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string interface {
-    is_goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string()
-}
-
-type _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string_Ok struct {
-    _0 []string
-}
-
-func (_ _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string_Ok) is_goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string() {}
-
-type _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string_Err struct {
-    _0 string
-}
-
-func (_ _goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string_Err) is_goml_Result_x5f__x5f_Vec_x5b_string_x5d__x5f__x5f_string() {}
-
-func _goml_std_x3a__x3a_env_x3a__x3a_args() []string {
-    var retv1 []string
-    var t2 []string = _goml_std_x3a__x3a_env_x3a__x3a_args_x5f_raw()
-    retv1 = t2
-    return retv1
+func _goml_m_std_p_env_p_args() *_goml_vec_string {
+    var retv5 *_goml_vec_string
+    var t6 *_goml_vec_string = _goml_runtime_std_env_args()
+    retv5 = t6
+    return retv5
 }
 
 func main0() struct{} {
-    var t27 []string = _goml_std_x3a__x3a_env_x3a__x3a_args()
-    var t28 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_string(t27)
-    var t29 bool = t28 > 0
-    var t30 string = bool_to_string(t29)
-    _goml_std_x3a__x3a_io_x3a__x3a_println_x5f__x5f_T_x5f_string(t30)
+    var t8 *_goml_vec_string = _goml_m_std_p_env_p_args()
+    var t9 int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(t8)
+    var t10 bool = t9 > 0
+    var t11 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t10)
+    _goml_m_std_p_io_p_println____T__string(t11)
     return struct{}{}
 }
 
-func _goml_std_x3a__x3a_io_x3a__x3a_println_x5f__x5f_T_x5f_string(value__1 string) struct{} {
-    _goml_std_x3a__x3a_io_x3a__x3a_println_x5f_raw(value__1)
+func _goml_m_std_p_io_p_println____T__string(value__1 string) struct{} {
+    var t14 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_std_io_println(t14)
     return struct{}{}
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_string(self__73 []string) int32 {
-    var retv35 int32
-    var t36 int32 = int32(len(self__73))
-    retv35 = t36
-    return retv35
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(self__82 *_goml_vec_string) int32 {
+    var retv17 int32
+    var t18 int32 = vec_len__Vec_6string(self__82)
+    retv17 = t18
+    return retv17
+}
+
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__8 bool) string {
+    var retv20 string
+    var t21 string = _goml_runtime_core_bool_to_string(self__8)
+    retv20 = t21
+    return retv20
+}
+
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
+    var retv23 string
+    retv23 = self__9
+    return retv23
 }
 
 func main() {

@@ -303,6 +303,7 @@ impl ImmExpr {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         match self {
             ImmExpr::Var { id, ty: _ } => RcDoc::text(id.0.clone()),
+            ImmExpr::Callable { body, .. } => RcDoc::text(body.ir_name()),
             ImmExpr::Prim { value, ty: _ } => RcDoc::text(value.to_string()),
             ImmExpr::Tag { index, ty: _ } => RcDoc::text(format!("Tag_{}", index)),
         }

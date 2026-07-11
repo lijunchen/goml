@@ -1,31 +1,47 @@
 fn main() -> unit {
-  join ret2() -> unit {
+  join ret6() -> unit {
     ()
   } in
   let x/0 = Option__uint8::Some(42) in
-  join k3() -> unit {
-    let _wild1 = () in
-    jump ret2()
+  join k7() -> unit {
+    let _wild5 = () in
+    jump ret6()
   } in
   match x/0 {
     Tag_0 => {
-      let x0 = Option__uint8::Some._0(x/0) in
-      let v/1 = x0 in
-      let t4 = $goml_builtin_runtime$uint8_to_string(v/1) in
-      let t5 = println__T_string(t4) in
-      jump k3()
+      let x4 = Option__uint8::Some._0(x/0) in
+      let v/1 = x4 in
+      let t8 = trait_impl#ToString#uint8#to_string(v/1) in
+      let t9 = println__T_string(t8) in
+      jump k7()
     },
     Tag_1 => {
-      let t6 = println__T_string("none") in
-      jump k3()
+      let t10 = println__T_string("none") in
+      jump k7()
     },
   }
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret7() -> unit {
+  join ret11() -> unit {
     ()
   } in
-  let t8 = string_println(value/1) in
-  jump ret7()
+  let t12 = trait_impl#ToString#string#to_string(value/1) in
+  let t13 = @runtime(core.string_println)(t12) in
+  jump ret11()
+}
+
+fn trait_impl#ToString#uint8#to_string(self/15: uint8) -> string {
+  join ret14(retv15: string) -> string {
+    retv15
+  } in
+  let t16 = @runtime(core.uint8_to_string)(self/15) in
+  jump ret14(t16)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  join ret17(retv18: string) -> string {
+    retv18
+  } in
+  jump ret17(self/9)
 }

@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 
 use sha2::Digest;
 
@@ -9,14 +9,18 @@ use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct PackageInterface {
     pub package: String,
-    #[serde(default)]
-    pub packages: BTreeSet<String>,
+    pub name: String,
     pub value_exports: BTreeMap<String, u32>,
     pub enum_variants: BTreeMap<String, Vec<String>>,
 }
 
 impl PackageInterface {
     pub fn from_exports(package: &str, exports: &PackageExports) -> Self {
+        let name = package.rsplit("::").next().unwrap_or(package);
+        Self::from_package(package, name, exports)
+    }
+
+    pub fn from_package(package: &str, name: &str, exports: &PackageExports) -> Self {
         let mut value_names: Vec<String> = exports
             .value_env
             .funcs
@@ -48,7 +52,7 @@ impl PackageInterface {
 
         Self {
             package: package.to_string(),
-            packages: std::iter::once(package.to_string()).collect(),
+            name: name.to_string(),
             value_exports,
             enum_variants,
         }

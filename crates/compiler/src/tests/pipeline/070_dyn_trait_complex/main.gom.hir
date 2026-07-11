@@ -128,26 +128,26 @@ file main.gom
         let local/1/46 = def/1/8(df2/41, "*");
         let local/1/47 = render_star/43(dp1/38) + "|" + render_angle/44(df1/40);
         let local/1/48: Vec[dyn Display] = Vec::new();
-        let local/1/49 = v/48.push(dp1/38);
-        let local/1/50 = v/49.push(df1/40);
-        let local/1/51 = v/50.push(dc/42);
-        let local/1/52 = v/51.len();
-        let local/1/53 = match vlen/52 {
+        v/48.push(dp1/38);
+        v/48.push(df1/40);
+        v/48.push(dc/42);
+        let local/1/49 = v/48.len();
+        let local/1/50 = match vlen/49 {
             2 => 3,
             _ => 5,
         };
         let _ = println(s0/45);
         let _ = println(s1/46);
         let _ = println(s2/47);
-        let local/1/54: Ref[int32] = Ref::new(0);
-        let _ = while i/54.get() < 3 {
+        let local/1/51: Ref[int32] = Ref::new(0);
+        let _ = while i/51.get() < 3 {
             {
-                let local/1/55 = def/1/10(dc/42, delta/53);
-                println(line/55);
-                let _ = i/54.set(i/54.get() + 1);
+                let local/1/52 = def/1/10(dc/42, delta/50);
+                println(line/52);
+                let _ = i/51.set(i/51.get() + 1);
             }
         };
-        let _ = println("len:" + vlen/52.to_string());
-        let _ = println("delta:" + delta/53.to_string());
+        let _ = println("len:" + vlen/49.to_string());
+        let _ = println("delta:" + delta/50.to_string());
         ()
     }

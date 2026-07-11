@@ -5,12 +5,14 @@ use ::ast::ast::{
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::syntax::MySyntaxNodePtr;
 
+use crate::intrinsics::LangItemId;
+
 const DERIVE_STAGE: &str = "derive";
-const TO_STRING_TRAIT: &str = "ToString";
+const TO_STRING_TRAIT: &str = LangItemId::ToString.source_name();
 const TO_STRING_FN: &str = "to_string";
-const HASH_TRAIT: &str = "Hash";
+const HASH_TRAIT: &str = LangItemId::Hash.source_name();
 const HASH_FN: &str = "hash";
-const EQ_TRAIT: &str = "Eq";
+const EQ_TRAIT: &str = LangItemId::Eq.source_name();
 const EQ_FN: &str = "eq";
 const SUPPORTED_DERIVE_TARGETS: &[&str] = &[TO_STRING_TRAIT, HASH_TRAIT, EQ_TRAIT];
 const SELF_PARAM_NAME: &str = "self";
@@ -20,9 +22,8 @@ pub fn expand(ast: ast::File) -> Result<ast::File, Diagnostics> {
     let mut diagnostics = Diagnostics::new();
     let mut toplevels = Vec::with_capacity(ast.toplevels.len());
     let package = ast.package.clone();
+    let package_explicit = ast.package_explicit;
     let uses = ast.uses.clone();
-    let imports = ast.imports.clone();
-    let use_traits = ast.use_traits.clone();
 
     for item in ast.toplevels.into_iter() {
         let mut derived_impls = Vec::new();
@@ -83,9 +84,8 @@ pub fn expand(ast: ast::File) -> Result<ast::File, Diagnostics> {
     } else {
         Ok(ast::File {
             package,
+            package_explicit,
             uses,
-            imports,
-            use_traits,
             toplevels,
         })
     }

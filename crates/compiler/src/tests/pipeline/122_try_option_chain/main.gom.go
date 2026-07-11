@@ -4,11 +4,11 @@ import (
     _goml_fmt "fmt"
 )
 
-func int32_to_string(x int32) string {
+func _goml_runtime_core_int32_to_string(x int32) string {
     return _goml_fmt.Sprintf("%d", x)
 }
 
-func string_println(s string) struct{} {
+func _goml_runtime_core_string_println(s string) struct{} {
     _goml_fmt.Println(s)
     return struct{}{}
 }
@@ -28,67 +28,67 @@ type Some struct {
 func (_ Some) isOption__int32() {}
 
 func maybe_seed(flag__0 bool) Option__int32 {
-    var retv8 Option__int32
-    var jp10 Option__int32
+    var retv12 Option__int32
+    var jp14 Option__int32
     if flag__0 {
-        var t11 Option__int32 = Some{
+        var t15 Option__int32 = Some{
             _0: 3,
         }
-        jp10 = t11
+        jp14 = t15
     } else {
-        jp10 = None{}
+        jp14 = None{}
     }
-    retv8 = jp10
-    return retv8
+    retv12 = jp14
+    return retv12
 }
 
 func maybe_double(value__1 int32) Option__int32 {
-    var retv13 Option__int32
-    var t16 bool = value__1 > 0
-    var jp15 Option__int32
-    if t16 {
-        var t17 int32 = value__1 * 2
-        var t18 Option__int32 = Some{
-            _0: t17,
+    var retv17 Option__int32
+    var t20 bool = value__1 > 0
+    var jp19 Option__int32
+    if t20 {
+        var t21 int32 = value__1 * 2
+        var t22 Option__int32 = Some{
+            _0: t21,
         }
-        jp15 = t18
+        jp19 = t22
     } else {
-        jp15 = None{}
+        jp19 = None{}
     }
-    retv13 = jp15
-    return retv13
+    retv17 = jp19
+    return retv17
 }
 
 func maybe_total(flag__2 bool) Option__int32 {
-    var retv20 Option__int32
-    var mtmp0 Option__int32 = maybe_seed(flag__2)
-    var jp22 int32
-    switch mtmp0.(type) {
+    var retv24 Option__int32
+    var mtmp4 Option__int32 = maybe_seed(flag__2)
+    var jp26 int32
+    switch mtmp4.(type) {
     case None:
-        retv20 = None{}
-        return retv20
+        retv24 = None{}
+        return retv24
     case Some:
-        var x1 int32 = mtmp0.(Some)._0
-        var try_value__22 int32 = x1
-        jp22 = try_value__22
-        var a__3 int32 = jp22
-        var mtmp2 Option__int32 = maybe_double(a__3)
-        var jp24 int32
-        switch mtmp2.(type) {
+        var x5 int32 = mtmp4.(Some)._0
+        var try_value__22 int32 = x5
+        jp26 = try_value__22
+        var a__3 int32 = jp26
+        var mtmp6 Option__int32 = maybe_double(a__3)
+        var jp28 int32
+        switch mtmp6.(type) {
         case None:
-            retv20 = None{}
-            return retv20
+            retv24 = None{}
+            return retv24
         case Some:
-            var x3 int32 = mtmp2.(Some)._0
-            var try_value__26 int32 = x3
-            jp24 = try_value__26
-            var b__4 int32 = jp24
-            var t25 int32 = a__3 + b__4
-            var t26 Option__int32 = Some{
-                _0: t25,
+            var x7 int32 = mtmp6.(Some)._0
+            var try_value__26 int32 = x7
+            jp28 = try_value__26
+            var b__4 int32 = jp28
+            var t29 int32 = a__3 + b__4
+            var t30 Option__int32 = Some{
+                _0: t29,
             }
-            retv20 = t26
-            return retv20
+            retv24 = t30
+            return retv24
         default:
             panic("non-exhaustive match")
         }
@@ -98,37 +98,51 @@ func maybe_total(flag__2 bool) Option__int32 {
 }
 
 func show(opt__5 Option__int32) string {
-    var retv28 string
-    var jp30 string
+    var retv32 string
+    var jp34 string
     switch opt__5.(type) {
     case None:
-        jp30 = "none"
+        jp34 = "none"
     case Some:
-        var x4 int32 = opt__5.(Some)._0
-        var value__6 int32 = x4
-        var t31 string = int32_to_string(value__6)
-        var t32 string = "some=" + t31
-        jp30 = t32
+        var x8 int32 = opt__5.(Some)._0
+        var value__6 int32 = x8
+        var t35 string = _goml_m_inherent_i_int32_i_int32_i_to__string(value__6)
+        var t36 string = "some=" + t35
+        jp34 = t36
     default:
         panic("non-exhaustive match")
     }
-    retv28 = jp30
-    return retv28
+    retv32 = jp34
+    return retv32
 }
 
 func main0() struct{} {
-    var t34 Option__int32 = maybe_total(true)
-    var t35 string = show(t34)
-    println__T_string(t35)
-    var t36 Option__int32 = maybe_total(false)
-    var t37 string = show(t36)
-    println__T_string(t37)
+    var t38 Option__int32 = maybe_total(true)
+    var t39 string = show(t38)
+    println__T_string(t39)
+    var t40 Option__int32 = maybe_total(false)
+    var t41 string = show(t40)
+    println__T_string(t41)
     return struct{}{}
 }
 
+func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
+    var retv43 string
+    var t44 string = _goml_runtime_core_int32_to_string(self__2)
+    retv43 = t44
+    return retv43
+}
+
 func println__T_string(value__1 string) struct{} {
-    string_println(value__1)
+    var t46 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t46)
     return struct{}{}
+}
+
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
+    var retv49 string
+    retv49 = self__9
+    return retv49
 }
 
 func main() {

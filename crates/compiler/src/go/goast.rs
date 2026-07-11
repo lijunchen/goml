@@ -390,8 +390,10 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
         tast::Ty::TSlice { elem } => goty::GoType::TSlice {
             elem: Box::new(tast_ty_to_go_type(elem)),
         },
-        tast::Ty::TVec { elem } => goty::GoType::TSlice {
-            elem: Box::new(tast_ty_to_go_type(elem)),
+        tast::Ty::TVec { elem } => goty::GoType::TPointer {
+            elem: Box::new(goty::GoType::TName {
+                name: vec_struct_name(elem),
+            }),
         },
         tast::Ty::TRef { elem } => {
             let struct_name = ref_struct_name(elem);
@@ -405,7 +407,9 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
                 elem: Box::new(goty::GoType::TName { name: struct_name }),
             }
         }
-        tast::Ty::TParam { name } => goty::GoType::TName { name: name.clone() },
+        tast::Ty::TParam { name } => goty::GoType::TName {
+            name: go_ident(name),
+        },
         tast::Ty::TFunc { params, ret_ty } => {
             let param_tys = params.iter().map(tast_ty_to_go_type).collect();
             let ret_ty = Box::new(tast_ty_to_go_type(ret_ty));
@@ -441,7 +445,7 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
                 s.push('_');
                 s.push_str(&go_type_name_part(arg));
             }
-            s
+            go_generated_ident(&s)
         }
         tast::Ty::TTuple { typs } => {
             let mut s = format!("Tuple{}", typs.len());
@@ -449,17 +453,21 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
                 s.push('_');
                 s.push_str(&go_type_name_part(t));
             }
-            s
+            go_generated_ident(&s)
         }
-        tast::Ty::TArray { len, elem } => format!("Array{}_{}", len, go_type_name_part(elem)),
-        tast::Ty::TSlice { elem } => format!("Slice_{}", go_type_name_part(elem)),
-        tast::Ty::TVec { elem } => format!("Vec_{}", go_type_name_part(elem)),
-        tast::Ty::TRef { elem } => format!("Ptr_{}", go_type_name_part(elem)),
-        tast::Ty::THashMap { key, value } => format!(
+        tast::Ty::TArray { len, elem } => {
+            go_generated_ident(&format!("Array{}_{}", len, go_type_name_part(elem)))
+        }
+        tast::Ty::TSlice { elem } => {
+            go_generated_ident(&format!("Slice_{}", go_type_name_part(elem)))
+        }
+        tast::Ty::TVec { elem } => go_generated_ident(&format!("Vec_{}", go_type_name_part(elem))),
+        tast::Ty::TRef { elem } => go_generated_ident(&format!("Ptr_{}", go_type_name_part(elem))),
+        tast::Ty::THashMap { key, value } => go_generated_ident(&format!(
             "HashMap_{}_{}",
             go_type_name_part(key),
             go_type_name_part(value)
-        ),
+        )),
         tast::Ty::TFunc { params, ret_ty } => {
             let mut s = format!("TFunc{}", params.len());
             for param in params {
@@ -468,10 +476,11 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
             }
             s.push_str("_ret_");
             s.push_str(&go_type_name_part(ret_ty));
-            s
+            go_generated_ident(&s)
         }
         // Fallback textual
-        tast::Ty::TVar(_) | tast::Ty::TParam { .. } => format!("{:?}", ty),
+        tast::Ty::TVar(_) => go_generated_ident(&format!("{:?}", ty)),
+        tast::Ty::TParam { name } => go_ident(name),
     }
 }
 
@@ -485,10 +494,14 @@ fn dyn_struct_name(trait_name: &str) -> String {
 }
 
 pub fn ref_struct_name(elem: &tast::Ty) -> String {
-    format!("ref_{}_x", go_ident(&encode_ty(elem)))
+    go_generated_ident(&format!("ref_{}_x", go_ident(&encode_ty(elem))))
+}
+
+pub fn vec_struct_name(elem: &tast::Ty) -> String {
+    go_generated_ident(&format!("_goml_vec_{}", go_ident(&encode_ty(elem))))
 }
 
 pub fn hashmap_struct_name(key: &tast::Ty, value: &tast::Ty) -> String {
     let enc = format!("{}_{}", encode_ty(key), encode_ty(value));
-    format!("hashmap_{}_x", go_ident(&enc))
+    go_generated_ident(&format!("hashmap_{}_x", go_ident(&enc)))
 }

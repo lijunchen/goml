@@ -1,13 +1,13 @@
 fn main() -> unit {
   let x/0 = 1 in
   let y/1 = 1 in
-  let mtmp0 = print__T_string("int32: ") in
+  let mtmp4 = print__T_string("int32: ") in
   {
-    let mtmp1 = println__T_int32(x/0) in
+    let mtmp5 = println__T_int32(x/0) in
     {
-      let mtmp2 = print__T_string("int8: ") in
+      let mtmp6 = print__T_string("int8: ") in
       {
-        let mtmp3 = println__T_int8(y/1) in
+        let mtmp7 = println__T_int8(y/1) in
         {
           ()
         }
@@ -17,13 +17,25 @@ fn main() -> unit {
 }
 
 fn print__T_string(value/0: string) -> unit {
-  string_print(value/0)
+  @runtime(core.string_print)(trait_impl#ToString#string#to_string(value/0))
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  string_println($goml_builtin_runtime$int32_to_string(value/1))
+  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
 }
 
 fn println__T_int8(value/1: int8) -> unit {
-  string_println($goml_builtin_runtime$int8_to_string(value/1))
+  @runtime(core.string_println)(trait_impl#ToString#int8#to_string(value/1))
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  self/9
+}
+
+fn trait_impl#ToString#int32#to_string(self/13: int32) -> string {
+  @runtime(core.int32_to_string)(self/13)
+}
+
+fn trait_impl#ToString#int8#to_string(self/11: int8) -> string {
+  @runtime(core.int8_to_string)(self/11)
 }

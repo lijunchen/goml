@@ -1,11 +1,3 @@
-fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
-}
-
-fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
-}
-
 fn show_int(label/0: string, value/1: int32) -> unit {
     let _ : unit = (println : (string) -> unit)((label/0 : string) + (int32::to_string : (int32) -> string)((value/1 : int32)));
     ()

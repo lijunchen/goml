@@ -1,11 +1,3 @@
-fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
-}
-
-fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
-}
-
 fn show_read(res/0: Result[string, string]) -> string {
     match (res/0 : Result[string, string]) {
         Result::Ok(value/1: string) => (value/1 : string),

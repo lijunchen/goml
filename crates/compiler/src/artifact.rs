@@ -8,7 +8,7 @@ use crate::hir::SourceFileAst;
 use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package};
 use crate::tast::TastIdent;
 
-pub const FORMAT_VERSION: u32 = 4;
+pub const FORMAT_VERSION: u32 = 6;
 pub const COMPILER_ABI: u32 = 1;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -87,6 +87,7 @@ impl PackageExports {
             type_env: self.type_env.clone(),
             trait_env: self.trait_env.clone(),
             value_env: self.value_env.clone(),
+            lang_items: Default::default(),
         }
     }
 }
@@ -108,7 +109,7 @@ fn public_export_names(package: &str, files: &[SourceFileAst]) -> HashSet<String
                 ast::Item::Fn(def) if def.visibility == ast::Visibility::Public => {
                     Some(&def.name.0)
                 }
-                ast::Item::ExternBuiltin(def) if def.visibility == ast::Visibility::Public => {
+                ast::Item::ExternFn(def) if def.visibility == ast::Visibility::Public => {
                     Some(&def.name.0)
                 }
                 _ => None,
@@ -187,6 +188,15 @@ impl InterfaceUnit {
     pub fn validate_hash(&self) -> bool {
         self.interface_hash == self.compute_hash()
     }
+
+    pub fn validate(&self) -> bool {
+        self.format_version == FORMAT_VERSION
+            && self.compiler_abi == COMPILER_ABI
+            && crate::config::validate_module_path(&self.package).is_ok()
+            && self.package == self.interface.package
+            && crate::config::validate_package_name(&self.interface.name).is_ok()
+            && self.validate_hash()
+    }
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -224,8 +234,9 @@ impl CoreUnit {
     pub fn validate(&self) -> bool {
         self.format_version == FORMAT_VERSION
             && self.compiler_abi == COMPILER_ABI
+            && crate::config::validate_module_path(&self.package).is_ok()
             && self.package == self.interface.package
-            && self.interface.validate_hash()
+            && self.interface.validate()
             && self.deps == self.interface.deps
     }
 }

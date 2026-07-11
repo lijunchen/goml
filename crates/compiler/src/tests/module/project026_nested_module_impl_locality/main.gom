@@ -1,7 +1,10 @@
-mod a;
-use crate::a::b::Showish;
+package main;
+
+use nested::a::b;
+
+use b::Showish;
 
 fn main() -> unit {
-    let x: crate::a::b::Box = crate::a::b::new_box();
+    let x: b::Box = b::new_box();
     string_println(x.show())
 }

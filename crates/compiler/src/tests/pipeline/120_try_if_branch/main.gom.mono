@@ -14,22 +14,22 @@ fn bump(flag/1: bool, fallback/2: bool) -> Result__int32__string {
   let value/3 = if flag/1 {
       {
         {
-          let mtmp0 = parse(fallback/2) in
-          match mtmp0 {
-            Result__int32__string::Ok(x1) => {
+          let mtmp4 = parse(fallback/2) in
+          match mtmp4 {
+            Result__int32__string::Ok(x5) => {
               {
-                let x1 = Result__int32__string::Ok._0(mtmp0) in
+                let x5 = Result__int32__string::Ok._0(mtmp4) in
                 {
-                  let try_value/13 = x1 in
+                  let try_value/13 = x5 in
                   try_value/13
                 }
               }
             },
-            Result__int32__string::Err(x2) => {
+            Result__int32__string::Err(x6) => {
               {
-                let x2 = Result__int32__string::Err._0(mtmp0) in
+                let x6 = Result__int32__string::Err._0(mtmp4) in
                 {
-                  let try_residual/13 = x2 in
+                  let try_residual/13 = x6 in
                   return Result__int32__string::Err(try_residual/13)
                 }
               }
@@ -47,20 +47,20 @@ fn bump(flag/1: bool, fallback/2: bool) -> Result__int32__string {
 
 fn show(res/4: Result__int32__string) -> string {
   match res/4 {
-    Result__int32__string::Ok(x3) => {
+    Result__int32__string::Ok(x7) => {
       {
-        let x3 = Result__int32__string::Ok._0(res/4) in
+        let x7 = Result__int32__string::Ok._0(res/4) in
         {
-          let value/5 = x3 in
-          ("ok=" + $goml_builtin_runtime$int32_to_string(value/5))
+          let value/5 = x7 in
+          ("ok=" + inherent#int32#int32#to_string(value/5))
         }
       }
     },
-    Result__int32__string::Err(x4) => {
+    Result__int32__string::Err(x8) => {
       {
-        let x4 = Result__int32__string::Err._0(res/4) in
+        let x8 = Result__int32__string::Err._0(res/4) in
         {
-          let err/6 = x4 in
+          let err/6 = x8 in
           ("err=" + err/6)
         }
       }
@@ -69,11 +69,19 @@ fn show(res/4: Result__int32__string) -> string {
 }
 
 fn main() -> unit {
-  let _wild5 = println__T_string(show(bump(true, true))) in
-  let _wild6 = println__T_string(show(bump(true, false))) in
-  let _wild7 = println__T_string(show(bump(false, false))) in
+  let _wild9 = println__T_string(show(bump(true, true))) in
+  let _wild10 = println__T_string(show(bump(true, false))) in
+  let _wild11 = println__T_string(show(bump(false, false))) in
+}
+
+fn inherent#int32#int32#to_string(self/2: int32) -> string {
+  @runtime(core.int32_to_string)(self/2)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  string_println(value/1)
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  self/9
 }

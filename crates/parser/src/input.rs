@@ -2,7 +2,7 @@ use lexer::{T, Token, TokenKind};
 use text_size::TextRange;
 
 pub struct Input<'t> {
-    pub tokens: Vec<Token<'t>>,
+    pub(super) tokens: Vec<Token<'t>>,
     cursor: usize,
 }
 
@@ -43,12 +43,6 @@ impl<'t> Input<'t> {
         T![eof]
     }
 
-    #[allow(unused)]
-    fn at(&mut self, kind: TokenKind) -> bool {
-        self.eat_trivia();
-        self.peek() == kind
-    }
-
     fn eat_trivia(&mut self) {
         while self.at_trivia() {
             self.cursor += 1;
@@ -59,20 +53,11 @@ impl<'t> Input<'t> {
         self.peek_raw_kind().is_trivia()
     }
 
-    #[allow(unused)]
-    fn peek_raw_token(&self) -> &Token<'_> {
-        &self.tokens[self.cursor]
-    }
-
     fn peek_raw_kind(&self) -> TokenKind {
         self.tokens.get(self.cursor).map_or(T![eof], |it| it.kind)
     }
 
     pub fn current_range(&self) -> Option<TextRange> {
         self.tokens.get(self.cursor).map(|token| token.range)
-    }
-
-    pub fn current_text(&self) -> Option<&'t str> {
-        self.tokens.get(self.cursor).map(|token| token.text)
     }
 }

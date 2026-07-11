@@ -18,6 +18,7 @@ fn env_registers_builtin_function_signatures() {
         &env,
         &[
             "string_print",
+            "string_byte_slice",
             "int8_to_string",
             "uint8_to_string",
             "ref",
@@ -32,6 +33,7 @@ fn env_registers_builtin_function_signatures() {
         ],
         expect![[r#"
             string_print: Some(TFunc([TString], TUnit))
+            string_byte_slice: Some(TFunc([TString, TInt32, TInt32], TString))
             int8_to_string: Some(TFunc([TInt8], TString))
             uint8_to_string: Some(TFunc([TUint8], TString))
             ref: Some(TFunc([TParam(T)], TRef(TParam(T))))
@@ -105,7 +107,7 @@ fn env_registers_builtin_vec_inherent_methods() {
     let push = env.lookup_inherent_method(&receiver, &tast::TastIdent("push".to_string()));
     expect![[r#"
         Some(
-            TFunc([TVec(TParam(T)), TParam(T)], TVec(TParam(T))),
+            TFunc([TVec(TParam(T)), TParam(T)], TUnit),
         )
     "#]]
     .assert_debug_eq(&push);
@@ -233,6 +235,9 @@ fn builtin_function_names_include_ref_builtins() {
     assert!(names.iter().any(|n| n == "slice_len"));
     assert!(names.iter().any(|n| n == "slice_sub"));
     assert!(names.iter().any(|n| n == "vec_set"));
+    assert!(names.iter().any(|n| n == "string_byte_slice"));
+    assert!(names.iter().any(|n| n == "print"));
+    assert!(names.iter().any(|n| n == "println"));
     assert!(names.iter().any(|n| n == "array_get"));
     assert!(names.iter().any(|n| n == "array_set"));
 }

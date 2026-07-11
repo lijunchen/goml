@@ -1,118 +1,51 @@
 fn std::env::args() -> Vec[string] {
-  join ret0(retv1: Vec[string]) -> Vec[string] {
-    retv1
+  join ret4(retv5: Vec[string]) -> Vec[string] {
+    retv5
   } in
-  let t2 = std::env::args_raw() in
-  jump ret0(t2)
-}
-
-fn std::fs::read_file(path/0: string) -> Result__string__string {
-  join ret3(retv4: Result__string__string) -> Result__string__string {
-    retv4
-  } in
-  let mtmp0 = std::fs::read_file_raw(path/0) in
-  let x1 = mtmp0.0 in
-  let x2 = mtmp0.1 in
-  let x3 = mtmp0.2 in
-  let err/3 = x3 in
-  let data/2 = x2 in
-  let ok/1 = x1 in
-  join k5(jp6: Result__string__string) -> Result__string__string {
-    jump ret3(jp6)
-  } in
-  if ok/1 {
-    let t7 = Result__string__string::Ok(data/2) in
-    jump k5(t7)
-  } else {
-    let t8 = Result__string__string::Err(err/3) in
-    jump k5(t8)
-  }
-}
-
-fn std::fs::write_file(path/4: string, content/5: string) -> Result__unit__string {
-  join ret9(retv10: Result__unit__string) -> Result__unit__string {
-    retv10
-  } in
-  let mtmp4 = std::fs::write_file_raw(path/4, content/5) in
-  let x5 = mtmp4.0 in
-  let x6 = mtmp4.1 in
-  let err/7 = x6 in
-  let ok/6 = x5 in
-  join k11(jp12: Result__unit__string) -> Result__unit__string {
-    jump ret9(jp12)
-  } in
-  if ok/6 {
-    let t13 = Result__unit__string::Ok(()) in
-    jump k11(t13)
-  } else {
-    let t14 = Result__unit__string::Err(err/7) in
-    jump k11(t14)
-  }
-}
-
-fn std::fs::exists(path/8: string) -> bool {
-  join ret15(retv16: bool) -> bool {
-    retv16
-  } in
-  let t17 = std::fs::file_exists_raw(path/8) in
-  jump ret15(t17)
-}
-
-fn std::fs::read_dir(path/9: string) -> Result__Vec[string]__string {
-  join ret18(retv19: Result__Vec[string]__string) -> Result__Vec[string]__string {
-    retv19
-  } in
-  let mtmp7 = std::fs::read_dir_raw(path/9) in
-  let x8 = mtmp7.0 in
-  let x9 = mtmp7.1 in
-  let x10 = mtmp7.2 in
-  let err/12 = x10 in
-  let names/11 = x9 in
-  let ok/10 = x8 in
-  join k20(jp21: Result__Vec[string]__string) -> Result__Vec[string]__string {
-    jump ret18(jp21)
-  } in
-  if ok/10 {
-    let t22 = Result__Vec[string]__string::Ok(names/11) in
-    jump k20(t22)
-  } else {
-    let t23 = Result__Vec[string]__string::Err(err/12) in
-    jump k20(t23)
-  }
-}
-
-fn std::process::exit(code/0: int32) -> unit {
-  join ret24() -> unit {
-    ()
-  } in
-  let t25 = std::process::exit_raw(code/0) in
-  jump ret24()
+  let t6 = @runtime(std.env.args)() in
+  jump ret4(t6)
 }
 
 fn main() -> unit {
-  join ret26() -> unit {
+  join ret7() -> unit {
     ()
   } in
-  let t27 = std::env::args() in
-  let t28 = inherent#Vec#Vec[T]#len__T_string(t27) in
-  let t29 = (t28 > 0) in
-  let t30 = $goml_builtin_runtime$bool_to_string(t29) in
-  let t31 = std::io::println__T_string(t30) in
-  jump ret26()
+  let t8 = std::env::args() in
+  let t9 = inherent#Vec#Vec[T]#len__T_string(t8) in
+  let t10 = (t9 > 0) in
+  let t11 = trait_impl#ToString#bool#to_string(t10) in
+  let t12 = std::io::println__T_string(t11) in
+  jump ret7()
 }
 
 fn std::io::println__T_string(value/1: string) -> unit {
-  join ret32() -> unit {
+  join ret13() -> unit {
     ()
   } in
-  let t33 = std::io::println_raw(value/1) in
-  jump ret32()
+  let t14 = trait_impl#ToString#string#to_string(value/1) in
+  let t15 = @runtime(std.io.println)(t14) in
+  jump ret13()
 }
 
-fn inherent#Vec#Vec[T]#len__T_string(self/73: Vec[string]) -> int32 {
-  join ret34(retv35: int32) -> int32 {
-    retv35
+fn inherent#Vec#Vec[T]#len__T_string(self/82: Vec[string]) -> int32 {
+  join ret16(retv17: int32) -> int32 {
+    retv17
   } in
-  let t36 = vec_len(self/73) in
-  jump ret34(t36)
+  let t18 = @intrinsic(vec.len)(self/82) in
+  jump ret16(t18)
+}
+
+fn trait_impl#ToString#bool#to_string(self/8: bool) -> string {
+  join ret19(retv20: string) -> string {
+    retv20
+  } in
+  let t21 = @runtime(core.bool_to_string)(self/8) in
+  jump ret19(t21)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  join ret22(retv23: string) -> string {
+    retv23
+  } in
+  jump ret22(self/9)
 }

@@ -71,10 +71,6 @@ impl LowerResult {
         self.ast.as_ref()
     }
 
-    pub fn into_ast(self) -> Option<ast::File> {
-        self.ast
-    }
-
     pub fn into_parts(self) -> (Option<ast::File>, Diagnostics) {
         (self.ast, self.diagnostics)
     }
@@ -157,7 +153,6 @@ fn collect_constructor_names(file: &cst::File) -> HashSet<String> {
                     constructor_names.insert(token.to_string());
                 }
             }
-            cst::Item::Mod(_) => {}
             _ => {}
         }
     }
@@ -167,14 +162,13 @@ fn collect_constructor_names(file: &cst::File) -> HashSet<String> {
 
 pub fn lower(node: cst::File) -> LowerResult {
     let mut ctx = LowerCtx::new(&node);
+    let package_explicit = node.package_decl().is_some();
     let package = node
         .package_decl()
         .and_then(|decl| decl.name_token())
         .map(|token| ast::AstIdent::new(&token.to_string()))
         .unwrap_or_else(|| ast::AstIdent::new(DEFAULT_PACKAGE_NAME));
     let mut uses = Vec::new();
-    let mut imports = Vec::new();
-    let mut use_traits = Vec::new();
     for decl in node.use_decls() {
         let Some(path) = decl.path() else {
             ctx.push_error(
@@ -184,33 +178,10 @@ pub fn lower(node: cst::File) -> LowerResult {
             continue;
         };
         if let Some(path) = lower_path(&mut ctx, &path) {
-            uses.push(ast::UseDecl { path, alias: None });
-        }
-        let idents = path
-            .ident_tokens()
-            .map(|token| ast::AstIdent::new(&token.to_string()))
-            .collect::<Vec<_>>();
-        let ast_path = ast::Path::from_idents(idents);
-        match ast_path.len() {
-            0 => {
-                ctx.push_error(
-                    Some(path.syntax().text_range()),
-                    "use declaration missing path",
-                );
-            }
-            1 => {
-                if let Some(name) = ast_path.last_ident() {
-                    imports.push(name.clone());
-                } else {
-                    ctx.push_error(
-                        Some(path.syntax().text_range()),
-                        "use declaration missing package name",
-                    );
-                }
-            }
-            2.. => {
-                use_traits.push(ast_path);
-            }
+            let alias = decl
+                .alias_token()
+                .map(|token| ast::AstIdent::new(&token.to_string()));
+            uses.push(ast::UseDecl { path, alias });
         }
     }
     let items = node
@@ -222,9 +193,8 @@ pub fn lower(node: cst::File) -> LowerResult {
     } else {
         Some(ast::File {
             package,
+            package_explicit,
             uses,
-            imports,
-            use_traits,
             toplevels: items,
         })
     };
@@ -288,7 +258,6 @@ fn find_attribute<'a>(attrs: &'a [ast::Attribute], target: &str) -> Option<&'a a
 
 fn lower_item(ctx: &mut LowerCtx, node: cst::Item) -> Option<ast::Item> {
     match node {
-        cst::Item::Mod(it) => Some(ast::Item::Mod(lower_mod(ctx, it)?)),
         cst::Item::Enum(it) => Some(ast::Item::EnumDef(lower_enum(ctx, it)?)),
         cst::Item::Struct(it) => Some(ast::Item::StructDef(lower_struct(ctx, it)?)),
         cst::Item::Trait(it) => Some(ast::Item::TraitDef(lower_trait(ctx, it)?)),
@@ -296,24 +265,6 @@ fn lower_item(ctx: &mut LowerCtx, node: cst::Item) -> Option<ast::Item> {
         cst::Item::Fn(it) => Some(ast::Item::Fn(lower_fn(ctx, it)?)),
         cst::Item::Extern(it) => lower_extern(ctx, it),
     }
-}
-
-fn lower_mod(ctx: &mut LowerCtx, node: cst::Mod) -> Option<ast::ModDecl> {
-    let visibility = lower_visibility(&node);
-    let name = match node.name_token() {
-        Some(name) => name.to_string(),
-        None => {
-            ctx.push_error(
-                Some(node.syntax().text_range()),
-                "Module declaration is missing a name",
-            );
-            return None;
-        }
-    };
-    Some(ast::ModDecl {
-        visibility,
-        name: ast::AstIdent::new(&name),
-    })
 }
 
 fn lower_enum(ctx: &mut LowerCtx, node: cst::Enum) -> Option<ast::EnumDef> {
@@ -767,11 +718,13 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
     let attrs = lower_attributes(node.attributes());
     let visibility = lower_visibility(&node);
 
-    if let Some(attr) = find_attribute(&attrs, "builtin") {
+    if let Some(attr) =
+        find_attribute(&attrs, "intrinsic").or_else(|| find_attribute(&attrs, "runtime"))
+    {
         if node.type_keyword().is_some() {
             ctx.push_error(
                 Some(attr.ast.text_range()),
-                "Builtin extern declarations cannot declare types",
+                "Extern function declarations cannot declare types",
             );
             return None;
         }
@@ -779,14 +732,14 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
         if let Some(lang_token) = node.lang() {
             ctx.push_error(
                 Some(lang_token.text_range()),
-                "Builtin extern declarations should not specify a language string",
+                "Extern function declarations should not specify a language string",
             );
         }
 
         let Some(name_token) = node.lident() else {
             ctx.push_error(
                 Some(node.syntax().text_range()),
-                "Extern builtin declaration is missing function name",
+                "Extern function declaration is missing function name",
             );
             return None;
         };
@@ -824,7 +777,7 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
             })
             .unwrap_or_default();
         let ret_ty = node.return_type().and_then(|ty| lower_ty(ctx, ty));
-        return Some(ast::Item::ExternBuiltin(ast::ExternBuiltin {
+        return Some(ast::Item::ExternFn(ast::ExternFn {
             attrs,
             visibility,
             name: ast::AstIdent(name),
@@ -837,7 +790,7 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
 
     ctx.push_error(
         Some(node.syntax().text_range()),
-        "Only compiler builtin extern declarations are supported: use `#[builtin] extern fn`.",
+        "Extern declarations require `#[intrinsic(...)]` or `#[runtime(...)]`.",
     );
     None
 }
@@ -2537,15 +2490,8 @@ fn lower_constructor_path_from_constr_pat(
 }
 
 fn lower_path(ctx: &mut LowerCtx, path: &cst::Path) -> Option<ast::Path> {
-    let root = lower_path_root(path);
-    let segment_tokens = path.ident_tokens().collect::<Vec<_>>();
-    let skip_root_segment = matches!(
-        root,
-        ast::PathRoot::Crate | ast::PathRoot::Self_ | ast::PathRoot::Super
-    );
-    let segments: Vec<ast::PathSegment> = segment_tokens
-        .iter()
-        .skip(usize::from(skip_root_segment))
+    let segments: Vec<ast::PathSegment> = path
+        .ident_tokens()
         .map(|token| {
             ast::PathSegment::with_range(ast::AstIdent(token.to_string()), Some(token.text_range()))
         })
@@ -2558,34 +2504,7 @@ fn lower_path(ctx: &mut LowerCtx, path: &cst::Path) -> Option<ast::Path> {
         );
         None
     } else {
-        Some(ast::Path::with_root(root, segments))
-    }
-}
-
-fn lower_path_root(path: &cst::Path) -> ast::PathRoot {
-    let first_token = path
-        .syntax()
-        .children_with_tokens()
-        .filter_map(|element| element.into_token())
-        .find(|token| {
-            !matches!(
-                token.kind(),
-                MySyntaxKind::Whitespace | MySyntaxKind::Comment
-            )
-        });
-
-    let Some(token) = first_token else {
-        return ast::PathRoot::Relative;
-    };
-
-    match token.kind() {
-        MySyntaxKind::ColonColon => ast::PathRoot::Absolute,
-        MySyntaxKind::CrateKeyword => ast::PathRoot::Crate,
-        MySyntaxKind::SuperKeyword => ast::PathRoot::Super,
-        MySyntaxKind::Ident if token.text() == "self" && path.ident_tokens().count() > 1 => {
-            ast::PathRoot::Self_
-        }
-        _ => ast::PathRoot::Relative,
+        Some(ast::Path::new(segments))
     }
 }
 
@@ -2597,47 +2516,6 @@ mod tests {
     use parser::syntax::MySyntaxNode;
 
     #[test]
-    fn lower_preserves_path_roots() {
-        let file = lower_src("fn f(x: crate::Thing) -> super::Other { self::make(x) }");
-        let ast::Item::Fn(func) = &file.toplevels[0] else {
-            panic!("expected function");
-        };
-        let ast::TypeExpr::TCon { path: param_path } = &func.params[0].1 else {
-            panic!("expected path type");
-        };
-        assert_eq!(param_path.root(), &ast::PathRoot::Crate);
-        assert_eq!(param_path.display(), "crate::Thing");
-
-        let ast::TypeExpr::TCon { path: ret_path } = func.ret_ty.as_ref().unwrap() else {
-            panic!("expected path return type");
-        };
-        assert_eq!(ret_path.root(), &ast::PathRoot::Super);
-        assert_eq!(ret_path.display(), "super::Other");
-
-        let ast::Expr::ECall { func, .. } = func.body.tail.as_deref().unwrap() else {
-            panic!("expected call expression");
-        };
-        let ast::Expr::EPath { path, .. } = func.as_ref() else {
-            panic!("expected path callee");
-        };
-        assert_eq!(path.root(), &ast::PathRoot::Self_);
-        assert_eq!(path.display(), "self::make");
-    }
-
-    #[test]
-    fn lower_preserves_absolute_path_root() {
-        let file = lower_src("fn f(x: ::Thing) -> unit { () }");
-        let ast::Item::Fn(func) = &file.toplevels[0] else {
-            panic!("expected function");
-        };
-        let ast::TypeExpr::TCon { path } = &func.params[0].1 else {
-            panic!("expected path type");
-        };
-        assert_eq!(path.root(), &ast::PathRoot::Absolute);
-        assert_eq!(path.display(), "::Thing");
-    }
-
-    #[test]
     fn lower_preserves_public_visibility() {
         let file = lower_src(
             r#"
@@ -2645,7 +2523,7 @@ pub fn f() -> unit { () }
 pub struct Thing { value: int32 }
 pub enum Choice { A }
 pub trait Named { fn name(Self) -> string; }
-#[builtin]
+#[runtime("core.unit_to_string")]
 pub extern fn runtime() -> unit
 "#,
         );
@@ -2670,70 +2548,26 @@ pub extern fn runtime() -> unit
         };
         assert_eq!(trait_def.visibility, ast::Visibility::Public);
 
-        let ast::Item::ExternBuiltin(extern_builtin) = &file.toplevels[4] else {
-            panic!("expected extern builtin");
+        let ast::Item::ExternFn(extern_fn) = &file.toplevels[4] else {
+            panic!("expected extern function");
         };
-        assert_eq!(extern_builtin.visibility, ast::Visibility::Public);
+        assert_eq!(extern_fn.visibility, ast::Visibility::Public);
     }
 
     #[test]
     fn lower_preserves_use_decls() {
         let file = lower_src(
             r#"
-use crate::math::add;
-use self::helper;
-use super::Named;
+use example::math as mathlib;
+use mathlib::Named;
 fn f() -> unit { () }
 "#,
         );
 
-        let roots = file
-            .uses
-            .iter()
-            .map(|decl| decl.path.root().clone())
-            .collect::<Vec<_>>();
-        assert_eq!(
-            roots,
-            vec![
-                ast::PathRoot::Crate,
-                ast::PathRoot::Self_,
-                ast::PathRoot::Super
-            ]
-        );
-
-        let displays = file
-            .uses
-            .iter()
-            .map(|decl| decl.path.display())
-            .collect::<Vec<_>>();
-        assert_eq!(
-            displays,
-            vec!["crate::math::add", "self::helper", "super::Named"]
-        );
-        assert!(file.uses.iter().all(|decl| decl.alias.is_none()));
-    }
-
-    #[test]
-    fn lower_preserves_mod_decls() {
-        let file = lower_src(
-            r#"
-pub mod api;
-mod internal;
-fn f() -> unit { () }
-"#,
-        );
-
-        let ast::Item::Mod(api) = &file.toplevels[0] else {
-            panic!("expected public module");
-        };
-        assert_eq!(api.name, ast::AstIdent::new("api"));
-        assert_eq!(api.visibility, ast::Visibility::Public);
-
-        let ast::Item::Mod(internal) = &file.toplevels[1] else {
-            panic!("expected private module");
-        };
-        assert_eq!(internal.name, ast::AstIdent::new("internal"));
-        assert_eq!(internal.visibility, ast::Visibility::Private);
+        assert_eq!(file.uses[0].path.display(), "example::math");
+        assert_eq!(file.uses[0].alias, Some(ast::AstIdent::new("mathlib")));
+        assert_eq!(file.uses[1].path.display(), "mathlib::Named");
+        assert_eq!(file.uses[1].alias, None);
     }
 
     fn lower_src(src: &str) -> ast::File {

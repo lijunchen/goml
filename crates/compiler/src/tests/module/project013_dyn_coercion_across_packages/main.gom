@@ -1,7 +1,8 @@
-mod datapkg;
-mod traitpkg;
-mod usepkg;
+package main;
+
+use project013_dyn_coercion_across_packages::datapkg;
+use project013_dyn_coercion_across_packages::usepkg;
 
 fn main() -> unit {
-    println(crate::usepkg::call_wrap(crate::datapkg::Wrap { value: 5 }));
+    println(usepkg::call_wrap(datapkg::Wrap { value: 5 }));
 }

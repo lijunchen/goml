@@ -5,38 +5,36 @@ use diagnostics::Diagnostics;
 
 use crate::artifact::{CoreUnit, InterfaceUnit, PackageExports};
 use crate::builtins;
-use crate::common::{Constructor, EnumConstructor, StructConstructor};
-use crate::core;
-use crate::env::{
-    EnumDef, FnConstraint, FnScheme, GlobalTypeEnv, ImplDef, InherentImplKey, StructDef, TraitDef,
-    TraitEnv, TypeEnv, ValueEnv,
-};
+use crate::env::GlobalTypeEnv;
 use crate::hir;
 use crate::interface;
+use crate::intrinsics::ExternCapability;
 use crate::package_imports::ExternalImports;
 use crate::pipeline::packages::{self, PackageGraph, PackageUnit};
 use crate::registry::{
     ModuleCoord, Registry, ResolvedModule, ResolvedModuleGraph, SemVer, cached_registry_dir,
     resolve_dependencies, validate_registry_consistency,
 };
-use crate::tast::{self, TastIdent, Ty};
 
 #[derive(Debug, Clone)]
 pub struct ExternalPackageSource {
-    pub logical_name: String,
-    pub import_path: String,
+    pub declared_name: String,
     pub dir: PathBuf,
     pub files: Vec<PathBuf>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ExternalPackageArtifact {
+    pub interface: InterfaceUnit,
+    pub core: CoreUnit,
+    pub source: ExternalPackageSource,
 }
 
 #[derive(Debug, Clone)]
 pub struct ExternalModuleArtifact {
     pub coord: ModuleCoord,
     pub version: SemVer,
-    pub interface: InterfaceUnit,
-    pub core: CoreUnit,
-    pub package_interfaces: BTreeMap<String, interface::PackageInterface>,
-    pub sources: BTreeMap<String, ExternalPackageSource>,
+    pub packages: BTreeMap<String, ExternalPackageArtifact>,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -44,107 +42,139 @@ pub struct ExternalDependencyArtifacts {
     pub modules: BTreeMap<String, ExternalModuleArtifact>,
 }
 
+impl ExternalModuleArtifact {
+    pub fn package(&self, package: &str) -> Option<&ExternalPackageArtifact> {
+        self.packages.get(package)
+    }
+}
+
 impl ExternalDependencyArtifacts {
     pub fn is_empty(&self) -> bool {
         self.modules.is_empty()
     }
 
+    pub fn package(&self, package: &str) -> Option<&ExternalPackageArtifact> {
+        self.modules
+            .values()
+            .find_map(|module| module.package(package))
+    }
+
     pub fn package_interfaces(&self) -> HashMap<String, interface::PackageInterface> {
-        let mut interfaces = HashMap::new();
-        for module in self.modules.values() {
-            for (name, interface) in module.package_interfaces.iter() {
-                interfaces.insert(name.clone(), interface.clone());
-            }
-        }
-        interfaces
+        self.modules
+            .values()
+            .flat_map(|module| {
+                module
+                    .packages
+                    .iter()
+                    .map(|(name, artifact)| (name.clone(), artifact.interface.interface.clone()))
+            })
+            .collect()
     }
 
     pub fn package_envs(&self) -> HashMap<String, GlobalTypeEnv> {
-        let mut envs = HashMap::new();
-        for module in self.modules.values() {
-            let env = module.interface.exports.to_genv();
-            for name in module.package_interfaces.keys() {
-                envs.insert(name.clone(), env.clone());
-            }
-        }
-        envs
+        self.modules
+            .values()
+            .flat_map(|module| {
+                module
+                    .packages
+                    .iter()
+                    .map(|(name, artifact)| (name.clone(), artifact.interface.exports.to_genv()))
+            })
+            .collect()
     }
 
     pub fn package_names(&self) -> HashSet<String> {
         self.modules
             .values()
-            .flat_map(|module| module.sources.keys().cloned())
+            .flat_map(|module| module.packages.keys().cloned())
             .collect()
     }
 
-    pub fn import_paths(&self) -> HashMap<String, String> {
-        let mut import_paths = HashMap::new();
-        for module in self.modules.values() {
-            for source in module.sources.values() {
-                import_paths.insert(source.import_path.clone(), source.logical_name.clone());
-            }
-        }
-        import_paths
-    }
-
     pub fn external_imports(&self) -> ExternalImports {
-        ExternalImports::new(self.package_names(), self.import_paths())
+        ExternalImports::new(
+            self.modules
+                .values()
+                .flat_map(|module| {
+                    module.packages.iter().map(|(name, artifact)| {
+                        (name.clone(), artifact.source.declared_name.clone())
+                    })
+                })
+                .collect(),
+        )
     }
 
     pub fn package_dirs(&self) -> HashMap<String, PathBuf> {
-        let mut dirs = HashMap::new();
-        for module in self.modules.values() {
-            for (logical_name, source) in module.sources.iter() {
-                dirs.insert(logical_name.clone(), source.dir.clone());
-            }
-        }
-        dirs
+        self.modules
+            .values()
+            .flat_map(|module| {
+                module
+                    .packages
+                    .iter()
+                    .map(|(name, artifact)| (name.clone(), artifact.source.dir.clone()))
+            })
+            .collect()
     }
 
     pub fn package_sources(&self) -> HashMap<String, Vec<PathBuf>> {
-        let mut files = HashMap::new();
-        for module in self.modules.values() {
-            for (logical_name, source) in module.sources.iter() {
-                files.insert(logical_name.clone(), source.files.clone());
-            }
-        }
-        files
+        self.modules
+            .values()
+            .flat_map(|module| {
+                module
+                    .packages
+                    .iter()
+                    .map(|(name, artifact)| (name.clone(), artifact.source.files.clone()))
+            })
+            .collect()
     }
 
     pub fn augment_graph(&self, graph: &mut PackageGraph) -> Result<(), String> {
-        let mut seen = HashMap::new();
         for module in self.modules.values() {
-            for source in module.sources.values() {
-                if let Some(existing) = seen.insert(
-                    source.logical_name.clone(),
-                    (source.import_path.clone(), source.dir.clone()),
-                ) {
+            for (package, artifact) in module.packages.iter() {
+                if graph.packages.contains_key(package) {
                     return Err(format!(
-                        "external package alias {} is ambiguous between {} and {}",
-                        source.logical_name, existing.0, source.import_path
+                        "package {} conflicts with external dependency package {}",
+                        package, package
                     ));
+                }
+                graph.add_external_root_package(package.clone());
+                graph.add_external_package(
+                    package.clone(),
+                    artifact.source.declared_name.clone(),
+                    artifact.source.dir.clone(),
+                );
+            }
+        }
+        Ok(())
+    }
+
+    pub fn reachable_package_names(&self, graph: &PackageGraph) -> Result<HashSet<String>, String> {
+        let mut reachable = HashSet::new();
+        let mut pending = graph
+            .packages
+            .values()
+            .flat_map(|package| package.imports.iter())
+            .filter(|package| self.package(package).is_some())
+            .cloned()
+            .collect::<Vec<_>>();
+        while let Some(package) = pending.pop() {
+            if !reachable.insert(package.clone()) {
+                continue;
+            }
+            let artifact = self
+                .package(&package)
+                .ok_or_else(|| format!("external package {} not found", package))?;
+            for dependency in artifact.core.deps.keys() {
+                if self.package(dependency).is_some() {
+                    pending.push(dependency.clone());
                 }
             }
         }
-
-        for (package, (_, dir)) in seen {
-            if graph.packages.contains_key(&package) {
-                return Err(format!(
-                    "package name {} conflicts with external dependency package {}",
-                    package, package
-                ));
-            }
-            graph.add_external_root_package(package.clone());
-            graph.add_external_package_dir(package, dir);
-        }
-        Ok(())
+        Ok(reachable)
     }
 }
 
 #[derive(Clone)]
 struct CompiledPackage {
-    exports: PackageExports,
-    full_exports: PackageExports,
     interface: InterfaceUnit,
     core: CoreUnit,
 }
@@ -178,7 +208,6 @@ pub fn resolve_dependency_versions_with_registry(
     }
 
     let resolved = resolve_dependencies(registry, dependencies)?;
-    let roots = unique_module_roots(&resolved)?;
     let order = topo_sort_modules(&resolved)?;
     let mut compiled = BTreeMap::new();
 
@@ -187,38 +216,13 @@ pub fn resolve_dependency_versions_with_registry(
             .modules
             .get(&coord)
             .ok_or_else(|| format!("missing resolved module {}", coord.display()))?;
-        let root_package = roots
-            .get(&coord)
-            .cloned()
-            .ok_or_else(|| format!("missing module root name for {}", coord.display()))?;
-        let artifact = compile_external_module(module, &root_package, &compiled)?;
+        let module_path = coord.display();
+        let artifact = compile_external_module(module, &compiled)?;
         ensure_no_external_package_conflicts(&compiled, &artifact)?;
-        compiled.insert(root_package, artifact);
+        compiled.insert(module_path, artifact);
     }
 
     Ok(ExternalDependencyArtifacts { modules: compiled })
-}
-
-fn unique_module_roots(
-    resolved: &ResolvedModuleGraph,
-) -> Result<BTreeMap<ModuleCoord, String>, String> {
-    let mut roots = BTreeMap::new();
-    let mut owners = HashMap::new();
-
-    for coord in resolved.modules.keys() {
-        let root = coord.module.clone();
-        if let Some(existing) = owners.insert(root.clone(), coord.display()) {
-            return Err(format!(
-                "external dependency module name {} is ambiguous between {} and {}",
-                root,
-                existing,
-                coord.display()
-            ));
-        }
-        roots.insert(coord.clone(), root);
-    }
-
-    Ok(roots)
 }
 
 fn topo_sort_modules(resolved: &ResolvedModuleGraph) -> Result<Vec<ModuleCoord>, String> {
@@ -231,7 +235,7 @@ fn topo_sort_modules(resolved: &ResolvedModuleGraph) -> Result<Vec<ModuleCoord>,
     }
 
     for (coord, module) in resolved.modules.iter() {
-        for dep in module.manifest.dependency_versions().keys() {
+        for dep in module.manifest.dependencies.keys() {
             let dep_coord = ModuleCoord::parse(dep)?;
             if !resolved.modules.contains_key(&dep_coord) {
                 continue;
@@ -273,7 +277,13 @@ fn topo_sort_modules(resolved: &ResolvedModuleGraph) -> Result<Vec<ModuleCoord>,
 
 pub fn compile_std_module(root_dir: PathBuf) -> Result<ExternalModuleArtifact, String> {
     let manifest_path = root_dir.join("goml.toml");
-    let manifest = crate::config::load_crate_manifest(&manifest_path)?;
+    let manifest = crate::config::load_module_manifest(&manifest_path)?;
+    if manifest.module.path != "std" {
+        return Err(format!(
+            "standard library at {} must declare module.path = \"std\"",
+            manifest_path.display()
+        ));
+    }
     let module = ResolvedModule {
         coord: ModuleCoord {
             owner: "std".to_string(),
@@ -288,78 +298,46 @@ pub fn compile_std_module(root_dir: PathBuf) -> Result<ExternalModuleArtifact, S
         root_dir,
         manifest,
     };
-    let mut artifact = compile_module_artifact(
-        &module,
-        "std",
-        &BTreeMap::new(),
-        std_logical_package_name,
-        std_import_path,
-        true,
-    )?;
-    let packages = artifact
-        .sources
-        .values()
-        .map(|source| source.import_path.clone())
-        .collect::<BTreeSet<_>>();
-    artifact.interface.interface.packages = packages.clone();
-    if let Some(interface) = artifact.package_interfaces.get_mut("std") {
-        interface.packages = packages;
-    }
-    artifact.interface = InterfaceUnit::new(
-        artifact.interface.package.clone(),
-        artifact.interface.exports.clone(),
-        artifact.interface.interface.clone(),
-        artifact.interface.deps.clone(),
-    );
-    artifact.core.interface = artifact.interface.clone();
-    Ok(artifact)
+    compile_module_artifact(&module, &BTreeMap::new(), ExternCapability::StandardLibrary)
 }
 
 fn compile_external_module(
     module: &ResolvedModule,
-    root_package: &str,
     compiled_roots: &BTreeMap<String, ExternalModuleArtifact>,
 ) -> Result<ExternalModuleArtifact, String> {
-    validate_external_module_manifest(module, root_package)?;
-    compile_module_artifact(
-        module,
-        root_package,
-        compiled_roots,
-        logical_package_name,
-        |root_package, package| external_import_path(&module.coord.owner, root_package, package),
-        false,
-    )
+    validate_external_module_manifest(module)?;
+    compile_module_artifact(module, compiled_roots, ExternCapability::None)
 }
 
 fn compile_module_artifact(
     module: &ResolvedModule,
-    root_package: &str,
     compiled_roots: &BTreeMap<String, ExternalModuleArtifact>,
-    logical_name_for_package: impl Fn(&str, &str) -> String,
-    import_path_for_package: impl Fn(&str, &str) -> String,
-    allow_std_host_externs: bool,
+    extern_capability: ExternCapability,
 ) -> Result<ExternalModuleArtifact, String> {
     let available_imports = external_imports_from_modules(compiled_roots);
-    let mut graph = packages::discover_dependency_crate_packages_with_external_imports(
+    let mut graph = packages::discover_dependency_module_packages_with_external_imports(
         &module.root_dir,
-        root_package,
         &available_imports,
     )
     .map_err(err_text)?;
-    for package in available_imports.package_names.iter() {
-        if graph.packages.contains_key(package) {
-            return Err(format!(
-                "package name {} in {} conflicts with external dependency package {}",
-                package,
-                module.root_dir.display(),
-                package
-            ));
-        }
+    for package in available_imports.package_names.keys() {
         graph.add_external_root_package(package.clone());
+    }
+
+    let imports_std = graph.packages.values().any(|package| {
+        package
+            .imports
+            .iter()
+            .any(|dependency| dependency == "std" || dependency.starts_with("std::"))
+    });
+    let mut dependency_modules = compiled_roots.clone();
+    if imports_std && extern_capability != ExternCapability::StandardLibrary {
+        dependency_modules.insert("std".to_string(), crate::stdlib::stdlib_artifact()?);
     }
 
     let order = packages::topo_sort_packages(&graph).map_err(err_text)?;
     let mut compiled_packages = HashMap::<String, CompiledPackage>::new();
+    let mut package_artifacts = BTreeMap::new();
 
     for package_name in order {
         let package = graph.packages.get(&package_name).ok_or_else(|| {
@@ -372,178 +350,87 @@ fn compile_module_artifact(
         let compiled = compile_module_package(
             package,
             &compiled_packages,
-            compiled_roots,
-            allow_std_host_externs,
+            &dependency_modules,
+            extern_capability,
         )?;
-        compiled_packages.insert(package_name, compiled);
-    }
-
-    let logical_names = graph
-        .packages
-        .keys()
-        .map(|package| {
-            (
-                package.clone(),
-                logical_name_for_package(root_package, package),
-            )
-        })
-        .collect::<HashMap<_, _>>();
-    let mut seen_logical_names = HashSet::new();
-    for logical_name in logical_names.values() {
-        if !seen_logical_names.insert(logical_name.clone()) {
-            return Err(format!(
-                "external dependency {} defines duplicate package alias {}",
-                module.coord.display(),
-                logical_name
-            ));
-        }
-    }
-
-    let mut merged_exports = empty_exports();
-    let mut merged_full_exports = empty_exports();
-    let mut merged_core = core::File {
-        toplevels: Vec::new(),
-    };
-    let mut merged_sources = BTreeSet::new();
-    let mut merged_deps = BTreeMap::new();
-    let local_packages = logical_names.values().cloned().collect::<HashSet<_>>();
-    let mut sources = BTreeMap::new();
-
-    let mut package_names = graph.packages.keys().cloned().collect::<Vec<_>>();
-    package_names.sort();
-    for package_name in package_names {
-        let compiled = compiled_packages
-            .get(&package_name)
-            .ok_or_else(|| format!("missing compiled package {}", package_name))?;
-        let logical_name = logical_names
-            .get(&package_name)
-            .cloned()
-            .ok_or_else(|| format!("missing logical package {}", package_name))?;
-        let transformed_exports = rename_exports(&compiled.exports, &logical_names);
-        merge_exports(&mut merged_exports, &transformed_exports);
-        let transformed_full_exports = rename_exports(&compiled.full_exports, &logical_names);
-        merge_exports(&mut merged_full_exports, &transformed_full_exports);
-
-        let transformed_core = rename_core_file(&compiled.core.core_ir, &logical_names);
-        merged_core.toplevels.extend(transformed_core.toplevels);
-
-        for source in compiled.core.sources.iter() {
-            merged_sources.insert(source.clone());
-        }
-        for (dep, hash) in compiled.interface.deps.iter() {
-            let renamed = rename_package_key(dep, &logical_names);
-            if local_packages.contains(&renamed) {
-                continue;
-            }
-            match merged_deps.get(&renamed) {
-                Some(existing) if existing != hash => {
-                    return Err(format!(
-                        "dependency hash mismatch while merging {}: {} has both {} and {}",
-                        module.coord.display(),
-                        renamed,
-                        existing,
-                        hash
-                    ));
-                }
-                Some(_) => {}
-                None => {
-                    merged_deps.insert(renamed, hash.clone());
-                }
-            }
-        }
-
-        let package_dir = graph
+        let dir = graph
             .package_dirs
             .get(&package_name)
             .cloned()
-            .ok_or_else(|| format!("missing package dir for {}", package_name))?;
-        let files = graph
-            .packages
-            .get(&package_name)
-            .ok_or_else(|| format!("missing package files for {}", package_name))?
-            .files
-            .iter()
-            .map(|file| file.path.clone())
-            .collect::<Vec<_>>();
-        sources.insert(
-            logical_name.clone(),
-            ExternalPackageSource {
-                logical_name,
-                import_path: import_path_for_package(root_package, &package_name),
-                dir: package_dir,
-                files,
+            .ok_or_else(|| format!("missing package directory for {}", package_name))?;
+        let files = package.files.iter().map(|file| file.path.clone()).collect();
+        package_artifacts.insert(
+            package_name.clone(),
+            ExternalPackageArtifact {
+                interface: compiled.interface.clone(),
+                core: compiled.core.clone(),
+                source: ExternalPackageSource {
+                    declared_name: package.declared_name.clone(),
+                    dir,
+                    files,
+                },
             },
         );
+        compiled_packages.insert(package_name, compiled);
     }
-
-    let mut package_interfaces = BTreeMap::new();
-    for source in sources.values() {
-        let mut package_interface =
-            interface::PackageInterface::from_exports(&source.logical_name, &merged_exports);
-        package_interface.packages = std::iter::once(source.import_path.clone()).collect();
-        package_interfaces.insert(source.logical_name.clone(), package_interface);
-    }
-    let package_interface = package_interfaces
-        .get(root_package)
-        .cloned()
-        .ok_or_else(|| format!("missing root package interface for {}", root_package))?;
-
-    let interface = InterfaceUnit::new(
-        root_package.to_string(),
-        merged_exports.clone(),
-        package_interface,
-        merged_deps.clone(),
-    );
-    let core = CoreUnit {
-        format_version: crate::artifact::FORMAT_VERSION,
-        compiler_abi: crate::artifact::COMPILER_ABI,
-        package: root_package.to_string(),
-        interface: interface.clone(),
-        exports: merged_full_exports,
-        core_ir: merged_core,
-        deps: merged_deps,
-        sources: merged_sources.into_iter().collect(),
-    };
 
     Ok(ExternalModuleArtifact {
         coord: module.coord.clone(),
         version: module.version.clone(),
-        interface,
-        core,
-        package_interfaces,
-        sources,
+        packages: package_artifacts,
     })
 }
 
-fn validate_external_module_manifest(
-    module: &ResolvedModule,
-    root_package: &str,
-) -> Result<(), String> {
-    let Some(crate_config) = module.manifest.crate_config.as_ref() else {
+fn validate_external_module_manifest(module: &ResolvedModule) -> Result<(), String> {
+    if module.manifest.module.path != module.coord.display() {
         return Err(format!(
-            "registry module {}@{} must declare [crate] in {}",
+            "registry module {}@{} must declare module.path = {:?} in {}",
             module.coord.display(),
             module.version.display(),
-            module.manifest_path.display()
-        ));
-    };
-    if crate_config.name != root_package {
-        return Err(format!(
-            "registry module {}@{} must declare crate.name = {:?} in {}",
             module.coord.display(),
-            module.version.display(),
-            root_package,
             module.manifest_path.display()
         ));
     }
     Ok(())
 }
 
+fn module_package_dependency_closure(
+    package: &PackageUnit,
+    local_packages: &HashMap<String, CompiledPackage>,
+    external_roots: &BTreeMap<String, ExternalModuleArtifact>,
+) -> Result<Vec<String>, String> {
+    let mut pending = package.imports.iter().cloned().collect::<BTreeSet<_>>();
+    let mut dependencies = BTreeSet::new();
+
+    while let Some(dependency) = pending.pop_first() {
+        if dependency == crate::package_names::BUILTIN_PACKAGE || dependency == package.name {
+            continue;
+        }
+        if !dependencies.insert(dependency.clone()) {
+            continue;
+        }
+        if let Some(local) = local_packages.get(&dependency) {
+            pending.extend(local.interface.deps.keys().cloned());
+            continue;
+        }
+        if let Some(external) = find_external_package(external_roots, &dependency) {
+            pending.extend(external.interface.deps.keys().cloned());
+            continue;
+        }
+        return Err(format!(
+            "package {} imports missing dependency {}",
+            package.name, dependency
+        ));
+    }
+
+    Ok(dependencies.into_iter().collect())
+}
+
 fn compile_module_package(
     package: &PackageUnit,
     local_packages: &HashMap<String, CompiledPackage>,
     external_roots: &BTreeMap<String, ExternalModuleArtifact>,
-    allow_std_host_externs: bool,
+    extern_capability: ExternCapability,
 ) -> Result<CompiledPackage, String> {
     let package_id = interface::package_id_for_name(&package.name);
     let mut deps_envs = HashMap::new();
@@ -558,25 +445,25 @@ fn compile_module_package(
         );
     }
 
-    let mut deps = package.imports.iter().cloned().collect::<Vec<_>>();
-    deps.sort();
-    deps.dedup();
+    let direct_dependencies = package.imports.iter().cloned().collect::<HashSet<_>>();
+    let dependencies = module_package_dependency_closure(package, local_packages, external_roots)?;
 
-    for dep in deps {
-        if dep == crate::package_names::BUILTIN_PACKAGE || dep == package.name {
-            continue;
-        }
+    for dep in dependencies {
         if let Some(local) = local_packages.get(&dep) {
             deps_envs.insert(dep.clone(), local.interface.exports.to_genv());
             deps_interfaces.insert(dep.clone(), local.interface.interface.clone());
-            dep_hashes.insert(dep.clone(), local.interface.interface_hash.clone());
+            if direct_dependencies.contains(&dep) {
+                dep_hashes.insert(dep.clone(), local.interface.interface_hash.clone());
+            }
             local.core.exports.apply_to(&mut compile_env);
             continue;
         }
-        if let Some((external, package_interface)) = find_external_package(external_roots, &dep) {
+        if let Some(external) = find_external_package(external_roots, &dep) {
             deps_envs.insert(dep.clone(), external.interface.exports.to_genv());
-            deps_interfaces.insert(dep.clone(), package_interface.clone());
-            dep_hashes.insert(dep.clone(), external.interface.interface_hash.clone());
+            deps_interfaces.insert(dep.clone(), external.interface.interface.clone());
+            if direct_dependencies.contains(&dep) {
+                dep_hashes.insert(dep.clone(), external.interface.interface_hash.clone());
+            }
             external.core.exports.apply_to(&mut compile_env);
             continue;
         }
@@ -588,25 +475,22 @@ fn compile_module_package(
 
     let (hir, hir_table, mut hir_diagnostics) =
         hir::lower_to_hir_files_with_env(package_id, package.files.clone(), &deps_interfaces);
-    let (tast, genv, mut diagnostics) = if allow_std_host_externs {
-        crate::typer::check_file_with_env_allowing_std_host_externs(
-            hir,
-            hir_table,
-            GlobalTypeEnv::new(),
-            builtins::builtin_env(),
-            &package.name,
-            deps_envs,
-        )
+    let package_extern_capability = if extern_capability == ExternCapability::StandardLibrary
+        && package.name == "std::internal::host"
+    {
+        ExternCapability::StandardLibrary
     } else {
-        crate::typer::check_file_with_env(
-            hir,
-            hir_table,
-            GlobalTypeEnv::new(),
-            builtins::builtin_env(),
-            &package.name,
-            deps_envs,
-        )
+        ExternCapability::None
     };
+    let (tast, genv, mut diagnostics) = crate::typer::check_file_with_env_capability(
+        hir,
+        hir_table,
+        GlobalTypeEnv::new(),
+        builtins::builtin_env(),
+        &package.name,
+        deps_envs,
+        package_extern_capability,
+    );
     diagnostics.append(&mut hir_diagnostics);
     if diagnostics.has_errors() {
         return Err(diagnostics_text(&diagnostics));
@@ -614,13 +498,10 @@ fn compile_module_package(
 
     let full_exports = PackageExports::from_genv(&genv);
     let exports = PackageExports::public_from_package(&package.name, &package.files, &genv);
-    let package_interface = interface::PackageInterface::from_exports(&package.name, &exports);
-    let interface = InterfaceUnit::new(
-        package.name.clone(),
-        exports.clone(),
-        package_interface,
-        dep_hashes,
-    );
+    let package_interface =
+        interface::PackageInterface::from_package(&package.name, &package.declared_name, &exports);
+    let interface =
+        InterfaceUnit::new(package.name.clone(), exports, package_interface, dep_hashes);
 
     full_exports.apply_to(&mut compile_env);
     let gensym = crate::env::Gensym::new();
@@ -634,7 +515,7 @@ fn compile_module_package(
     let mut core = CoreUnit::new(
         package.name.clone(),
         interface.clone(),
-        full_exports.clone(),
+        full_exports,
         core_ir,
     );
     core.sources = package
@@ -643,58 +524,22 @@ fn compile_module_package(
         .map(|file| file.path.display().to_string())
         .collect();
 
-    Ok(CompiledPackage {
-        exports,
-        full_exports,
-        interface,
-        core,
-    })
-}
-
-fn external_import_path(owner: &str, module: &str, package: &str) -> String {
-    if package == module {
-        format!("{owner}::{module}")
-    } else {
-        format!("{owner}::{module}::{package}")
-    }
-}
-
-fn std_import_path(root_package: &str, package: &str) -> String {
-    if package == root_package {
-        root_package.to_string()
-    } else {
-        format!("{root_package}::{package}")
-    }
-}
-
-fn logical_package_name(root_package: &str, package: &str) -> String {
-    if package == root_package {
-        root_package.to_string()
-    } else {
-        package.to_string()
-    }
-}
-
-fn std_logical_package_name(root_package: &str, package: &str) -> String {
-    if package == root_package {
-        root_package.to_string()
-    } else {
-        format!("{root_package}::{package}")
-    }
+    Ok(CompiledPackage { interface, core })
 }
 
 fn external_imports_from_modules(
     modules: &BTreeMap<String, ExternalModuleArtifact>,
 ) -> ExternalImports {
-    let mut package_names = HashSet::new();
-    let mut import_paths = HashMap::new();
-    for module in modules.values() {
-        for source in module.sources.values() {
-            package_names.insert(source.logical_name.clone());
-            import_paths.insert(source.import_path.clone(), source.logical_name.clone());
-        }
-    }
-    ExternalImports::new(package_names, import_paths)
+    let package_names = modules
+        .values()
+        .flat_map(|module| {
+            module
+                .packages
+                .iter()
+                .map(|(name, artifact)| (name.clone(), artifact.source.declared_name.clone()))
+        })
+        .collect::<HashMap<_, _>>();
+    ExternalImports::new(package_names)
 }
 
 fn ensure_no_external_package_conflicts(
@@ -702,11 +547,11 @@ fn ensure_no_external_package_conflicts(
     candidate: &ExternalModuleArtifact,
 ) -> Result<(), String> {
     for existing in compiled.values() {
-        for source in existing.sources.values() {
-            if let Some(other) = candidate.sources.get(&source.logical_name) {
+        for package in existing.packages.keys() {
+            if candidate.packages.contains_key(package) {
                 return Err(format!(
-                    "external package alias {} is ambiguous between {} and {}",
-                    source.logical_name, source.import_path, other.import_path
+                    "external package {} is provided by more than one module",
+                    package
                 ));
             }
         }
@@ -717,542 +562,10 @@ fn ensure_no_external_package_conflicts(
 fn find_external_package<'a>(
     external_roots: &'a BTreeMap<String, ExternalModuleArtifact>,
     package: &str,
-) -> Option<(&'a ExternalModuleArtifact, &'a interface::PackageInterface)> {
-    for module in external_roots.values() {
-        if let Some(package_interface) = module.package_interfaces.get(package) {
-            return Some((module, package_interface));
-        }
-    }
-    None
-}
-
-fn rename_package_key(name: &str, package_names: &HashMap<String, String>) -> String {
-    package_names
-        .get(name)
-        .cloned()
-        .unwrap_or_else(|| name.to_string())
-}
-
-fn rename_symbol_name(name: &str, package_names: &HashMap<String, String>) -> String {
-    for (old, new) in package_names {
-        if name == old {
-            return new.clone();
-        }
-        let prefix = format!("{old}::");
-        if let Some(rest) = name.strip_prefix(&prefix) {
-            return format!("{new}::{rest}");
-        }
-    }
-    name.to_string()
-}
-
-fn rename_global_ref_name(name: &str, package_names: &HashMap<String, String>) -> String {
-    if name.contains("::") {
-        rename_symbol_name(name, package_names)
-    } else {
-        name.to_string()
-    }
-}
-
-fn rename_tast_ident(ident: &TastIdent, package_names: &HashMap<String, String>) -> TastIdent {
-    TastIdent(rename_symbol_name(&ident.0, package_names))
-}
-
-fn rename_ty(ty: &Ty, package_names: &HashMap<String, String>) -> Ty {
-    match ty {
-        Ty::TVar(var) => Ty::TVar(*var),
-        Ty::TUnit => Ty::TUnit,
-        Ty::TBool => Ty::TBool,
-        Ty::TInt8 => Ty::TInt8,
-        Ty::TInt16 => Ty::TInt16,
-        Ty::TInt32 => Ty::TInt32,
-        Ty::TInt64 => Ty::TInt64,
-        Ty::TUint8 => Ty::TUint8,
-        Ty::TUint16 => Ty::TUint16,
-        Ty::TUint32 => Ty::TUint32,
-        Ty::TUint64 => Ty::TUint64,
-        Ty::TFloat32 => Ty::TFloat32,
-        Ty::TFloat64 => Ty::TFloat64,
-        Ty::TString => Ty::TString,
-        Ty::TChar => Ty::TChar,
-        Ty::TTuple { typs } => Ty::TTuple {
-            typs: typs.iter().map(|ty| rename_ty(ty, package_names)).collect(),
-        },
-        Ty::TEnum { name } => Ty::TEnum {
-            name: rename_symbol_name(name, package_names),
-        },
-        Ty::TStruct { name } => Ty::TStruct {
-            name: rename_symbol_name(name, package_names),
-        },
-        Ty::TDyn { trait_name } => Ty::TDyn {
-            trait_name: rename_symbol_name(trait_name, package_names),
-        },
-        Ty::TApp { ty, args } => Ty::TApp {
-            ty: Box::new(rename_ty(ty, package_names)),
-            args: args
-                .iter()
-                .map(|arg| rename_ty(arg, package_names))
-                .collect(),
-        },
-        Ty::TArray { len, elem } => Ty::TArray {
-            len: *len,
-            elem: Box::new(rename_ty(elem, package_names)),
-        },
-        Ty::TSlice { elem } => Ty::TSlice {
-            elem: Box::new(rename_ty(elem, package_names)),
-        },
-        Ty::TVec { elem } => Ty::TVec {
-            elem: Box::new(rename_ty(elem, package_names)),
-        },
-        Ty::TRef { elem } => Ty::TRef {
-            elem: Box::new(rename_ty(elem, package_names)),
-        },
-        Ty::THashMap { key, value } => Ty::THashMap {
-            key: Box::new(rename_ty(key, package_names)),
-            value: Box::new(rename_ty(value, package_names)),
-        },
-        Ty::TParam { name } => Ty::TParam { name: name.clone() },
-        Ty::TFunc { params, ret_ty } => Ty::TFunc {
-            params: params
-                .iter()
-                .map(|param| rename_ty(param, package_names))
-                .collect(),
-            ret_ty: Box::new(rename_ty(ret_ty, package_names)),
-        },
-    }
-}
-
-fn rename_constraint(
-    constraint: &FnConstraint,
-    package_names: &HashMap<String, String>,
-) -> FnConstraint {
-    FnConstraint {
-        type_param: constraint.type_param.clone(),
-        trait_name: rename_tast_ident(&constraint.trait_name, package_names),
-    }
-}
-
-fn rename_fn_scheme(scheme: &FnScheme, package_names: &HashMap<String, String>) -> FnScheme {
-    FnScheme {
-        type_params: scheme.type_params.clone(),
-        constraints: scheme
-            .constraints
-            .iter()
-            .map(|constraint| rename_constraint(constraint, package_names))
-            .collect(),
-        ty: rename_ty(&scheme.ty, package_names),
-        origin: scheme.origin,
-    }
-}
-
-fn rename_impl_def(def: &ImplDef, package_names: &HashMap<String, String>) -> ImplDef {
-    ImplDef {
-        params: def.params.clone(),
-        methods: def
-            .methods
-            .iter()
-            .map(|(name, scheme)| (name.clone(), rename_fn_scheme(scheme, package_names)))
-            .collect(),
-    }
-}
-
-fn rename_exports(
-    exports: &PackageExports,
-    package_names: &HashMap<String, String>,
-) -> PackageExports {
-    let enums = exports
-        .type_env
-        .enums
-        .iter()
-        .map(|(name, def)| {
-            (
-                rename_tast_ident(name, package_names),
-                EnumDef {
-                    name: rename_tast_ident(&def.name, package_names),
-                    generics: def.generics.clone(),
-                    variants: def
-                        .variants
-                        .iter()
-                        .map(|(variant, fields)| {
-                            (
-                                variant.clone(),
-                                fields
-                                    .iter()
-                                    .map(|field| rename_ty(field, package_names))
-                                    .collect(),
-                            )
-                        })
-                        .collect(),
-                },
-            )
-        })
-        .collect();
-    let structs = exports
-        .type_env
-        .structs
-        .iter()
-        .map(|(name, def)| {
-            (
-                rename_tast_ident(name, package_names),
-                StructDef {
-                    name: rename_tast_ident(&def.name, package_names),
-                    generics: def.generics.clone(),
-                    fields: def
-                        .fields
-                        .iter()
-                        .map(|(field, ty)| (field.clone(), rename_ty(ty, package_names)))
-                        .collect(),
-                },
-            )
-        })
-        .collect();
-    let trait_defs = exports
-        .trait_env
-        .trait_defs
-        .iter()
-        .map(|(name, def)| {
-            (
-                rename_symbol_name(name, package_names),
-                TraitDef {
-                    methods: def
-                        .methods
-                        .iter()
-                        .map(|(method, scheme)| {
-                            (method.clone(), rename_fn_scheme(scheme, package_names))
-                        })
-                        .collect(),
-                },
-            )
-        })
-        .collect();
-    let trait_impls = exports
-        .trait_env
-        .trait_impls
-        .iter()
-        .map(|((trait_name, ty), def)| {
-            (
-                (
-                    rename_symbol_name(trait_name, package_names),
-                    rename_ty(ty, package_names),
-                ),
-                rename_impl_def(def, package_names),
-            )
-        })
-        .collect();
-    let inherent_impls = exports
-        .trait_env
-        .inherent_impls
-        .iter()
-        .map(|(key, def)| {
-            let renamed = match key {
-                InherentImplKey::Exact(ty) => InherentImplKey::Exact(rename_ty(ty, package_names)),
-                InherentImplKey::Constr(name) => {
-                    InherentImplKey::Constr(rename_symbol_name(name, package_names))
-                }
-            };
-            (renamed, rename_impl_def(def, package_names))
-        })
-        .collect();
-    let funcs = exports
-        .value_env
-        .funcs
-        .iter()
-        .map(|(name, scheme)| {
-            (
-                rename_symbol_name(name, package_names),
-                rename_fn_scheme(scheme, package_names),
-            )
-        })
-        .collect();
-    PackageExports {
-        type_env: TypeEnv { enums, structs },
-        trait_env: TraitEnv {
-            trait_defs,
-            trait_impls,
-            inherent_impls,
-        },
-        value_env: ValueEnv { funcs },
-    }
-}
-
-fn rename_constructor(
-    constructor: &Constructor,
-    package_names: &HashMap<String, String>,
-) -> Constructor {
-    match constructor {
-        Constructor::Enum(constructor) => Constructor::Enum(EnumConstructor {
-            type_name: rename_tast_ident(&constructor.type_name, package_names),
-            variant: constructor.variant.clone(),
-            index: constructor.index,
-        }),
-        Constructor::Struct(constructor) => Constructor::Struct(StructConstructor {
-            type_name: rename_tast_ident(&constructor.type_name, package_names),
-        }),
-    }
-}
-
-fn rename_expr(expr: &core::Expr, package_names: &HashMap<String, String>) -> core::Expr {
-    match expr {
-        core::Expr::EVar { name, ty } => core::Expr::EVar {
-            name: rename_global_ref_name(name, package_names),
-            ty: rename_ty(ty, package_names),
-        },
-        core::Expr::EPrim { value, ty } => core::Expr::EPrim {
-            value: value.clone(),
-            ty: rename_ty(ty, package_names),
-        },
-        core::Expr::EConstr {
-            constructor,
-            args,
-            ty,
-        } => core::Expr::EConstr {
-            constructor: rename_constructor(constructor, package_names),
-            args: args
-                .iter()
-                .map(|arg| rename_expr(arg, package_names))
-                .collect(),
-            ty: rename_ty(ty, package_names),
-        },
-        core::Expr::ETuple { items, ty } => core::Expr::ETuple {
-            items: items
-                .iter()
-                .map(|item| rename_expr(item, package_names))
-                .collect(),
-            ty: rename_ty(ty, package_names),
-        },
-        core::Expr::EArray { items, ty } => core::Expr::EArray {
-            items: items
-                .iter()
-                .map(|item| rename_expr(item, package_names))
-                .collect(),
-            ty: rename_ty(ty, package_names),
-        },
-        core::Expr::EClosure { params, body, ty } => core::Expr::EClosure {
-            params: params
-                .iter()
-                .map(|param| tast::ClosureParam {
-                    name: param.name.clone(),
-                    ty: rename_ty(&param.ty, package_names),
-                    astptr: param.astptr,
-                })
-                .collect(),
-            body: Box::new(rename_expr(body, package_names)),
-            ty: rename_ty(ty, package_names),
-        },
-        core::Expr::EBlock { block, ty } => core::Expr::EBlock {
-            block: Box::new(rename_block(block, package_names)),
-            ty: rename_ty(ty, package_names),
-        },
-        core::Expr::EMatch {
-            expr,
-            arms,
-            default,
-            ty,
-        } => core::Expr::EMatch {
-            expr: Box::new(rename_expr(expr, package_names)),
-            arms: arms
-                .iter()
-                .map(|arm| core::Arm {
-                    lhs: rename_expr(&arm.lhs, package_names),
-                    body: rename_expr(&arm.body, package_names),
-                })
-                .collect(),
-            default: default
-                .as_ref()
-                .map(|default| Box::new(rename_expr(default, package_names))),
-            ty: rename_ty(ty, package_names),
-        },
-        core::Expr::EIf {
-            cond,
-            then_branch,
-            else_branch,
-            ty,
-        } => core::Expr::EIf {
-            cond: Box::new(rename_expr(cond, package_names)),
-            then_branch: Box::new(rename_expr(then_branch, package_names)),
-            else_branch: Box::new(rename_expr(else_branch, package_names)),
-            ty: rename_ty(ty, package_names),
-        },
-        core::Expr::EWhile { cond, body, ty } => core::Expr::EWhile {
-            cond: Box::new(rename_expr(cond, package_names)),
-            body: Box::new(rename_expr(body, package_names)),
-            ty: rename_ty(ty, package_names),
-        },
-        core::Expr::EBreak { ty } => core::Expr::EBreak {
-            ty: rename_ty(ty, package_names),
-        },
-        core::Expr::EContinue { ty } => core::Expr::EContinue {
-            ty: rename_ty(ty, package_names),
-        },
-        core::Expr::EReturn { expr, ty } => core::Expr::EReturn {
-            expr: expr
-                .as_ref()
-                .map(|expr| Box::new(rename_expr(expr, package_names))),
-            ty: rename_ty(ty, package_names),
-        },
-        core::Expr::EGo { expr, ty } => core::Expr::EGo {
-            expr: Box::new(rename_expr(expr, package_names)),
-            ty: rename_ty(ty, package_names),
-        },
-        core::Expr::EConstrGet {
-            expr,
-            constructor,
-            field_index,
-            ty,
-        } => core::Expr::EConstrGet {
-            expr: Box::new(rename_expr(expr, package_names)),
-            constructor: rename_constructor(constructor, package_names),
-            field_index: *field_index,
-            ty: rename_ty(ty, package_names),
-        },
-        core::Expr::EUnary { op, expr, ty } => core::Expr::EUnary {
-            op: *op,
-            expr: Box::new(rename_expr(expr, package_names)),
-            ty: rename_ty(ty, package_names),
-        },
-        core::Expr::EBinary { op, lhs, rhs, ty } => core::Expr::EBinary {
-            op: *op,
-            lhs: Box::new(rename_expr(lhs, package_names)),
-            rhs: Box::new(rename_expr(rhs, package_names)),
-            ty: rename_ty(ty, package_names),
-        },
-        core::Expr::EAssign {
-            name,
-            value,
-            target_ty,
-            ty,
-        } => core::Expr::EAssign {
-            name: name.clone(),
-            value: Box::new(rename_expr(value, package_names)),
-            target_ty: rename_ty(target_ty, package_names),
-            ty: rename_ty(ty, package_names),
-        },
-        core::Expr::ECall { func, args, ty } => core::Expr::ECall {
-            func: Box::new(rename_expr(func, package_names)),
-            args: args
-                .iter()
-                .map(|arg| rename_expr(arg, package_names))
-                .collect(),
-            ty: rename_ty(ty, package_names),
-        },
-        core::Expr::EToDyn {
-            trait_name,
-            for_ty,
-            expr,
-            ty,
-        } => core::Expr::EToDyn {
-            trait_name: rename_tast_ident(trait_name, package_names),
-            for_ty: rename_ty(for_ty, package_names),
-            expr: Box::new(rename_expr(expr, package_names)),
-            ty: rename_ty(ty, package_names),
-        },
-        core::Expr::EDynCall {
-            trait_name,
-            method_name,
-            receiver,
-            args,
-            ty,
-        } => core::Expr::EDynCall {
-            trait_name: rename_tast_ident(trait_name, package_names),
-            method_name: method_name.clone(),
-            receiver: Box::new(rename_expr(receiver, package_names)),
-            args: args
-                .iter()
-                .map(|arg| rename_expr(arg, package_names))
-                .collect(),
-            ty: rename_ty(ty, package_names),
-        },
-        core::Expr::ETraitCall {
-            trait_name,
-            method_name,
-            receiver,
-            args,
-            ty,
-        } => core::Expr::ETraitCall {
-            trait_name: rename_tast_ident(trait_name, package_names),
-            method_name: method_name.clone(),
-            receiver: Box::new(rename_expr(receiver, package_names)),
-            args: args
-                .iter()
-                .map(|arg| rename_expr(arg, package_names))
-                .collect(),
-            ty: rename_ty(ty, package_names),
-        },
-        core::Expr::EProj { tuple, index, ty } => core::Expr::EProj {
-            tuple: Box::new(rename_expr(tuple, package_names)),
-            index: *index,
-            ty: rename_ty(ty, package_names),
-        },
-    }
-}
-
-fn rename_block(block: &core::Block, package_names: &HashMap<String, String>) -> core::Block {
-    core::Block {
-        stmts: block
-            .stmts
-            .iter()
-            .map(|stmt| core::LetStmt {
-                name: stmt.name.clone(),
-                value: rename_expr(&stmt.value, package_names),
-                ty: rename_ty(&stmt.ty, package_names),
-            })
-            .collect(),
-        tail: block
-            .tail
-            .as_ref()
-            .map(|tail| Box::new(rename_expr(tail, package_names))),
-    }
-}
-
-fn rename_core_file(file: &core::File, package_names: &HashMap<String, String>) -> core::File {
-    core::File {
-        toplevels: file
-            .toplevels
-            .iter()
-            .map(|func| core::Fn {
-                name: rename_symbol_name(&func.name, package_names),
-                generics: func.generics.clone(),
-                params: func
-                    .params
-                    .iter()
-                    .map(|(name, ty)| (name.clone(), rename_ty(ty, package_names)))
-                    .collect(),
-                ret_ty: rename_ty(&func.ret_ty, package_names),
-                body: rename_block(&func.body, package_names),
-            })
-            .collect(),
-    }
-}
-
-fn empty_exports() -> PackageExports {
-    PackageExports {
-        type_env: TypeEnv::new(),
-        trait_env: TraitEnv::new(),
-        value_env: ValueEnv::new(),
-    }
-}
-
-fn merge_exports(into: &mut PackageExports, from: &PackageExports) {
-    for (name, def) in from.type_env.enums.iter() {
-        into.type_env.enums.insert(name.clone(), def.clone());
-    }
-    for (name, def) in from.type_env.structs.iter() {
-        into.type_env.structs.insert(name.clone(), def.clone());
-    }
-    for (name, def) in from.trait_env.trait_defs.iter() {
-        into.trait_env.trait_defs.insert(name.clone(), def.clone());
-    }
-    for (key, def) in from.trait_env.trait_impls.iter() {
-        into.trait_env.trait_impls.insert(key.clone(), def.clone());
-    }
-    for (key, def) in from.trait_env.inherent_impls.iter() {
-        into.trait_env
-            .inherent_impls
-            .insert(key.clone(), def.clone());
-    }
-    for (name, scheme) in from.value_env.funcs.iter() {
-        into.value_env.funcs.insert(name.clone(), scheme.clone());
-    }
+) -> Option<&'a ExternalPackageArtifact> {
+    external_roots
+        .values()
+        .find_map(|module| module.package(package))
 }
 
 fn diagnostics_text(diagnostics: &Diagnostics) -> String {

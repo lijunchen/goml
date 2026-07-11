@@ -1,7 +1,7 @@
 use crate::ast::{
-    Arm, AssignStmt, AstIdent, Attribute, Block, ClosureParam, EnumDef, Expr, ExternBuiltin, File,
-    Fn, ImplBlock, Item, LetStmt, ModDecl, Pat, Path, Stmt, StructDef, TraitDef,
-    TraitMethodSignature, TypeExpr, Visibility,
+    Arm, AssignStmt, AstIdent, Attribute, Block, ClosureParam, EnumDef, Expr, ExternFn, File, Fn,
+    ImplBlock, Item, LetStmt, Pat, Stmt, StructDef, TraitDef, TraitMethodSignature, TypeExpr,
+    Visibility,
 };
 use pretty::RcDoc;
 
@@ -717,16 +717,6 @@ impl TraitMethodSignature {
     }
 }
 
-impl ModDecl {
-    pub fn to_doc(&self) -> RcDoc<'_, ()> {
-        visibility_doc(self.visibility)
-            .append(RcDoc::text("mod"))
-            .append(RcDoc::space())
-            .append(RcDoc::text(self.name.0.clone()))
-            .append(RcDoc::text(";"))
-    }
-}
-
 impl ImplBlock {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let mut base = RcDoc::text("impl");
@@ -836,7 +826,7 @@ impl Fn {
     }
 }
 
-impl ExternBuiltin {
+impl ExternFn {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let params_doc = RcDoc::intersperse(
             self.params.iter().map(|(name, ty)| {
@@ -879,21 +869,21 @@ impl File {
                 .append(RcDoc::text(";"))
                 .append(RcDoc::hardline()),
         );
-        if !self.imports.is_empty() || !self.use_traits.is_empty() {
-            let use_docs = RcDoc::concat(
-                self.imports
-                    .iter()
-                    .map(|import| Path::from_ident(import.clone()))
-                    .chain(self.use_traits.iter().cloned())
-                    .map(|path| {
-                        RcDoc::text("use")
-                            .append(RcDoc::space())
-                            .append(RcDoc::text(path.display()))
-                            .append(RcDoc::text(";"))
-                            .append(RcDoc::hardline())
-                    }),
-            );
-            docs.push(use_docs);
+        if !self.uses.is_empty() {
+            docs.push(RcDoc::concat(self.uses.iter().map(|use_decl| {
+                let alias = use_decl.alias.as_ref().map_or_else(RcDoc::nil, |alias| {
+                    RcDoc::space()
+                        .append(RcDoc::text("as"))
+                        .append(RcDoc::space())
+                        .append(RcDoc::text(alias.0.clone()))
+                });
+                RcDoc::text("use")
+                    .append(RcDoc::space())
+                    .append(RcDoc::text(use_decl.path.display()))
+                    .append(alias)
+                    .append(RcDoc::text(";"))
+                    .append(RcDoc::hardline())
+            })));
             docs.push(RcDoc::hardline());
         }
         docs.push(RcDoc::concat(self.toplevels.iter().map(|item| {
@@ -914,13 +904,12 @@ impl File {
 impl Item {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         match self {
-            Item::Mod(decl) => decl.to_doc(),
             Item::EnumDef(def) => def.to_doc(),
             Item::StructDef(def) => def.to_doc(),
             Item::TraitDef(def) => def.to_doc(),
             Item::ImplBlock(def) => def.to_doc(),
             Item::Fn(func) => func.to_doc(),
-            Item::ExternBuiltin(ext) => ext.to_doc(),
+            Item::ExternFn(ext) => ext.to_doc(),
         }
     }
 

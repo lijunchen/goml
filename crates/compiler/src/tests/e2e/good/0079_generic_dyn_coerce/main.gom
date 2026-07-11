@@ -6,19 +6,13 @@ struct Wrapper[T] {
     value: T,
 }
 
-impl Codec for Wrapper[int32] {
-    fn encode(self: Wrapper[int32]) -> string {
+impl[T: ToString] Codec for Wrapper[T] {
+    fn encode(self: Wrapper[T]) -> string {
         self.value.to_string()
     }
 }
 
-impl Codec for Wrapper[string] {
-    fn encode(self: Wrapper[string]) -> string {
-        self.value
-    }
-}
-
-fn wrap[T](value: T) -> dyn Codec {
+fn wrap[T: ToString](value: T) -> dyn Codec {
     Wrapper { value: value }
 }
 

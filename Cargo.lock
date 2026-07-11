@@ -89,7 +89,6 @@ dependencies = [
  "common_defs",
  "cst",
  "diagnostics",
- "expect-test",
  "parser",
  "pretty",
  "text-size",
@@ -245,6 +244,7 @@ dependencies = [
  "diagnostics",
  "ena",
  "expect-test",
+ "goml-project",
  "hex",
  "im",
  "indexmap",
@@ -259,7 +259,6 @@ dependencies = [
  "stacker",
  "tempfile",
  "text-size",
- "toml",
 ]
 
 [[package]]
@@ -528,13 +527,38 @@ version = "0.0.0"
 dependencies = [
  "anyhow",
  "clap",
+ "expect-test",
+ "goml-project",
+ "serde_json",
+ "tempfile",
+ "toml_edit",
+]
+
+[[package]]
+name = "goml-project"
+version = "0.0.0"
+dependencies = [
+ "ast",
+ "cst",
+ "parser",
+ "serde",
+ "tempfile",
+ "toml",
+]
+
+[[package]]
+name = "gomlc"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "clap",
  "compiler",
  "expect-test",
+ "goml-project",
  "parser",
  "serde",
  "serde_json",
  "tempfile",
- "toml_edit",
  "xshell",
 ]
 
@@ -932,7 +956,6 @@ dependencies = [
  "expect-test",
  "lexer",
  "line-index",
- "pretty",
  "rowan",
  "text-size",
 ]
@@ -1662,7 +1685,6 @@ dependencies = [
  "compiler",
  "cst",
  "diagnostics",
- "im",
  "parser",
  "wasm-bindgen",
 ]

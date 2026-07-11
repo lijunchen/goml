@@ -4,11 +4,11 @@ import (
     _goml_fmt "fmt"
 )
 
-func int32_to_string(x int32) string {
+func _goml_runtime_core_int32_to_string(x int32) string {
     return _goml_fmt.Sprintf("%d", x)
 }
 
-func string_println(s string) struct{} {
+func _goml_runtime_core_string_println(s string) struct{} {
     _goml_fmt.Println(s)
     return struct{}{}
 }
@@ -35,17 +35,17 @@ func main0() struct{} {
     }
     switch t__0.(type) {
     case A:
-        var t4 string = int32_to_string(1)
-        println__T_string(t4)
+        var t8 string = _goml_m_inherent_i_int32_i_int32_i_to__string(1)
+        println__T_string(t8)
     case B:
-        var x0 bool = t__0.(B)._0
-        switch x0 {
+        var x4 bool = t__0.(B)._0
+        switch x4 {
         case true:
-            var t8 string = int32_to_string(2)
-            println__T_string(t8)
+            var t12 string = _goml_m_inherent_i_int32_i_int32_i_to__string(2)
+            println__T_string(t12)
         case false:
-            var t10 string = int32_to_string(3)
-            println__T_string(t10)
+            var t14 string = _goml_m_inherent_i_int32_i_int32_i_to__string(3)
+            println__T_string(t14)
         default:
             panic("non-exhaustive match")
         }
@@ -56,8 +56,22 @@ func main0() struct{} {
 }
 
 func println__T_string(value__1 string) struct{} {
-    string_println(value__1)
+    var t17 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t17)
     return struct{}{}
+}
+
+func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
+    var retv20 string
+    var t21 string = _goml_runtime_core_int32_to_string(self__2)
+    retv20 = t21
+    return retv20
+}
+
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
+    var retv23 string
+    retv23 = self__9
+    return retv23
 }
 
 func main() {

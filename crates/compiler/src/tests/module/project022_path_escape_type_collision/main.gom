@@ -1,4 +1,6 @@
-mod a;
+package main;
+
+use path_escape_type_collision::a;
 
 struct a_x3a__x3a_T {
     value: int32,
@@ -9,9 +11,9 @@ struct Wrap[T, U] {
     right: U,
 }
 
-fn make_external() -> Wrap[crate::a::T, (int32, int32)] {
+fn make_external() -> Wrap[a::T, (int32, int32)] {
     Wrap {
-        left: crate::a::make(1i32),
+        left: a::make(1i32),
         right: (2i32, 3i32),
     }
 }

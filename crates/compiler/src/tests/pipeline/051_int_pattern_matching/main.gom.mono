@@ -48,11 +48,11 @@ fn is_special64(value/3: int64) -> bool {
 
 fn match_tuple(values/4: (int8, int16)) -> bool {
   {
-    let x0 = values/4.0 in
-    let x1 = values/4.1 in
-    match x1 {
+    let x4 = values/4.0 in
+    let x5 = values/4.1 in
+    match x5 {
       2 => {
-        match x0 {
+        match x4 {
           1 => {
             true
           },
@@ -66,11 +66,11 @@ fn match_tuple(values/4: (int8, int16)) -> bool {
 
 fn match_struct(pair/5: PairData) -> bool {
   {
-    let x2 = PairData.head(pair/5) in
-    let x3 = PairData.tail(pair/5) in
-    match x3 {
+    let x6 = PairData.head(pair/5) in
+    let x7 = PairData.tail(pair/5) in
+    match x7 {
       200 => {
-        match x2 {
+        match x6 {
           100 => {
             true
           },
@@ -86,7 +86,7 @@ fn match_struct(pair/5: PairData) -> bool {
 }
 
 fn report(label/6: string, value/7: bool) -> string {
-  (label/6 + $goml_builtin_runtime$bool_to_string(value/7))
+  (label/6 + trait_impl#ToString#bool#to_string(value/7))
 }
 
 fn main() -> unit {
@@ -106,12 +106,20 @@ fn main() -> unit {
   let part8/21 = report(",struct_first=", pair_first/12) in
   let part9/22 = report(",struct_second=", pair_second/13) in
   let message/23 = ((((((((part1/14 + part2/15) + part3/16) + part4/17) + part5/18) + part6/19) + part7/20) + part8/21) + part9/22) in
-  let mtmp4 = println__T_string(message/23) in
+  let mtmp8 = println__T_string(message/23) in
   {
     ()
   }
 }
 
+fn trait_impl#ToString#bool#to_string(self/8: bool) -> string {
+  @runtime(core.bool_to_string)(self/8)
+}
+
 fn println__T_string(value/1: string) -> unit {
-  string_println(value/1)
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  self/9
 }

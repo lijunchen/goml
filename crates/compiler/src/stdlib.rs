@@ -29,14 +29,14 @@ fn stdlib_root() -> Result<PathBuf, String> {
         return validate_stdlib_root(PathBuf::from(path));
     }
 
-    let home_std = goml_std_dir()?;
-    if home_std.join("goml.toml").is_file() {
-        return Ok(home_std);
-    }
-
     let dev_std = source_tree_stdlib_root();
     if dev_std.join("goml.toml").is_file() {
         return Ok(dev_std);
+    }
+
+    let home_std = goml_std_dir()?;
+    if home_std.join("goml.toml").is_file() {
+        return Ok(home_std);
     }
 
     validate_stdlib_root(home_std)
@@ -48,10 +48,18 @@ pub fn stdlib_artifact() -> Result<ExternalModuleArtifact, String> {
         .clone()
 }
 
-pub fn stdlib_interface() -> Result<InterfaceUnit, String> {
-    Ok(stdlib_artifact()?.interface)
+pub fn stdlib_package_interface(package: &str) -> Result<InterfaceUnit, String> {
+    stdlib_artifact()?
+        .packages
+        .get(package)
+        .map(|artifact| artifact.interface.clone())
+        .ok_or_else(|| format!("standard library package {} not found", package))
 }
 
-pub fn stdlib_core() -> Result<CoreUnit, String> {
-    Ok(stdlib_artifact()?.core)
+pub fn stdlib_cores() -> Result<Vec<CoreUnit>, String> {
+    Ok(stdlib_artifact()?
+        .packages
+        .values()
+        .map(|artifact| artifact.core.clone())
+        .collect())
 }

@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -14,11 +14,10 @@ use crate::package_names::is_special_unqualified_package;
 use crate::package_names::{
     BUILTIN_PACKAGE, ENTRY_FUNCTION, ROOT_PACKAGE, STD_PACKAGE, is_builtin_package,
 };
-use crate::pipeline::builtin_inherent;
 use crate::pipeline::pipeline::{CompilationError, parse_ast_file, report_duplicate_trait_impls};
 use crate::pipeline::{compile_error, with_compiler_stack};
 use crate::stdlib;
-use diagnostics::Diagnostics;
+use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use serde::Deserialize;
 
 pub struct PackageInputs {
@@ -42,9 +41,31 @@ pub struct LinkOutput {
 }
 
 fn validate_interface_unit(path: &Path, unit: &InterfaceUnit) -> Result<(), CompilationError> {
+    if unit.format_version != crate::artifact::FORMAT_VERSION {
+        return Err(compile_error(format!(
+            "interface {} uses format version {}, expected {}",
+            path.display(),
+            unit.format_version,
+            crate::artifact::FORMAT_VERSION
+        )));
+    }
+    if unit.compiler_abi != crate::artifact::COMPILER_ABI {
+        return Err(compile_error(format!(
+            "interface {} uses compiler ABI {}, expected {}",
+            path.display(),
+            unit.compiler_abi,
+            crate::artifact::COMPILER_ABI
+        )));
+    }
     if !unit.validate_hash() {
         return Err(compile_error(format!(
             "interface {} has invalid interface_hash",
+            path.display()
+        )));
+    }
+    if !unit.validate() {
+        return Err(compile_error(format!(
+            "interface {} failed validation",
             path.display()
         )));
     }
@@ -124,20 +145,6 @@ fn load_interface_for_package(
         return Ok((unit.clone(), unit.interface.clone()));
     }
 
-    for (_, unit) in units.values() {
-        let Some(root_import_path) = external_root_import_path(unit) else {
-            continue;
-        };
-        if !exports_contain_package(package, &unit.exports) {
-            continue;
-        }
-        let mut package_interface =
-            interface::PackageInterface::from_exports(package, &unit.exports);
-        package_interface.packages =
-            std::iter::once(format!("{root_import_path}::{package}")).collect();
-        return Ok((unit.clone(), package_interface));
-    }
-
     Err(compile_error(format!(
         "missing interface file for package {} (provided: {})",
         package,
@@ -153,11 +160,84 @@ fn load_interface_for_package(
     )))
 }
 
+fn dependency_interface_unit(
+    package: &str,
+    interface_files: &[PathBuf],
+    units: &HashMap<String, (PathBuf, InterfaceUnit)>,
+) -> Result<InterfaceUnit, CompilationError> {
+    if package == STD_PACKAGE || package.starts_with("std::") {
+        return stdlib::stdlib_package_interface(package).map_err(compile_error);
+    }
+    load_interface_for_package(package, interface_files, units).map(|(unit, _)| unit)
+}
+
+fn resolve_dependency_interfaces(
+    current_package: &str,
+    direct_dependencies: &BTreeSet<String>,
+    interface_files: &[PathBuf],
+    units: &HashMap<String, (PathBuf, InterfaceUnit)>,
+) -> Result<Vec<InterfaceUnit>, CompilationError> {
+    let mut pending = direct_dependencies
+        .iter()
+        .cloned()
+        .map(|package| (package, None::<(String, String)>))
+        .collect::<Vec<_>>();
+    let mut resolved = BTreeMap::<String, InterfaceUnit>::new();
+
+    while let Some((package, expected)) = pending.pop() {
+        if package == BUILTIN_PACKAGE {
+            if let Some((parent, expected_hash)) = expected {
+                let actual_hash = builtins::builtin_interface_hash();
+                if expected_hash != actual_hash {
+                    return Err(compile_error(format!(
+                        "interface {} expects builtin interface_hash {}, but compiler has {}",
+                        parent, expected_hash, actual_hash
+                    )));
+                }
+            }
+            continue;
+        }
+        if package == current_package {
+            return Err(compile_error(format!(
+                "package {} cannot use itself",
+                current_package
+            )));
+        }
+
+        let unit = if let Some(unit) = resolved.get(&package) {
+            unit.clone()
+        } else {
+            dependency_interface_unit(&package, interface_files, units)?
+        };
+        if let Some((parent, expected_hash)) = expected
+            && unit.interface_hash != expected_hash
+        {
+            return Err(compile_error(format!(
+                "interface {} expects interface_hash {} for {}, but got {}",
+                parent, expected_hash, package, unit.interface_hash
+            )));
+        }
+        if resolved.contains_key(&package) {
+            continue;
+        }
+        for (dependency, expected_hash) in unit.deps.iter() {
+            pending.push((
+                dependency.clone(),
+                Some((unit.package.clone(), expected_hash.clone())),
+            ));
+        }
+        resolved.insert(package, unit);
+    }
+
+    Ok(resolved.into_values().collect())
+}
+
 fn read_source_files(
     package: &str,
     input_files: &[PathBuf],
     interface_units: &HashMap<String, (PathBuf, InterfaceUnit)>,
 ) -> Result<ReadSourceFilesResult, CompilationError> {
+    crate::config::validate_module_path(package).map_err(compile_error)?;
     if input_files.is_empty() {
         return Err(compile_error("no input files provided".to_string()));
     }
@@ -169,202 +249,90 @@ fn read_source_files(
     let mut files = Vec::new();
     let mut imports = HashSet::new();
     let mut source_list = Vec::new();
+    let mut declared_name = None::<String>;
 
     for path in paths {
         let src = fs::read_to_string(&path)
             .map_err(|err| compile_error(format!("failed to read {}: {}", path.display(), err)))?;
         let mut ast = parse_ast_file(&path, &src)?;
-        ast.package = ast::ast::AstIdent::new(package);
-        for import in ast.imports.iter() {
-            imports.insert(import.0.clone());
+        if !ast.package_explicit {
+            return Err(compile_error(format!(
+                "{} must declare `package <name>;`",
+                path.display()
+            )));
         }
+        if let Some(existing) = declared_name.as_deref() {
+            if existing != ast.package.0 {
+                return Err(compile_error(format!(
+                    "package mismatch in {}: expected {}, found {}",
+                    path.display(),
+                    existing,
+                    ast.package.0
+                )));
+            }
+        } else {
+            declared_name = Some(ast.package.0.clone());
+        }
+        let mut known_packages = HashSet::new();
+        let mut aliases = HashSet::new();
         for use_decl in ast.uses.iter() {
-            if let Some(package_import) =
-                external_package_import_alias(&use_decl.path, interface_units)
-            {
-                imports.insert(package_import);
-                continue;
-            }
-            if let Some(package_import) =
-                crate_package_import(&use_decl.path, package, interface_units, true)
-            {
-                insert_import_with_descendants(&mut imports, package_import, interface_units);
-                continue;
-            }
-            if let Some(first) = use_decl.path.segments().first() {
-                imports.insert(first.ident.0.clone());
-            }
-        }
-        for item in ast.toplevels.iter() {
-            if let ast::ast::Item::Mod(module) = item {
-                insert_import_with_descendants(
-                    &mut imports,
-                    child_module_package(package, &module.name.0),
-                    interface_units,
+            let target = use_decl.path.display();
+            let default_alias = if target == STD_PACKAGE || target.starts_with("std::") {
+                target.rsplit("::").next().map(str::to_string)
+            } else {
+                interface_units
+                    .get(&target)
+                    .map(|(_, unit)| unit.interface.name.clone())
+            };
+            if let Some(default_alias) = default_alias {
+                known_packages.insert(target);
+                aliases.insert(
+                    use_decl
+                        .alias
+                        .as_ref()
+                        .map(|alias| alias.0.clone())
+                        .unwrap_or(default_alias),
                 );
             }
         }
-        for use_trait in ast.use_traits.iter() {
-            if let Some(package_import) = external_package_import_alias(use_trait, interface_units)
-            {
-                imports.insert(package_import);
+        for use_decl in ast.uses.iter() {
+            let target = use_decl.path.display();
+            if known_packages.contains(&target) {
+                imports.insert(target);
                 continue;
             }
-            if let Some(package_import) =
-                crate_package_import(use_trait, package, interface_units, true)
-            {
-                insert_import_with_descendants(&mut imports, package_import, interface_units);
-                continue;
-            }
-            if use_trait
+            let first = use_decl
+                .path
                 .segments()
                 .first()
-                .is_some_and(|segment| segment.ident.0 == "crate")
-            {
-                if let Some(package) = use_trait.segments().get(1) {
-                    imports.insert(package.ident.0.clone());
-                }
-                continue;
+                .map(|segment| segment.ident.0.as_str());
+            if !first.is_some_and(|first| aliases.contains(first)) {
+                imports.insert(target);
             }
-            let Some(first) = use_trait.segments().first() else {
-                continue;
-            };
-            imports.insert(first.ident.0.clone());
         }
+        ast.package = ast::ast::AstIdent::new(package);
         source_list.push(path.display().to_string());
         files.push(hir::SourceFileAst::new(path, ast));
     }
 
-    Ok((files, imports, source_list))
+    Ok((
+        files,
+        imports,
+        source_list,
+        declared_name.unwrap_or_else(|| package.rsplit("::").next().unwrap_or(package).to_string()),
+    ))
 }
 
-type ReadSourceFilesResult = (Vec<hir::SourceFileAst>, HashSet<String>, Vec<String>);
-
-fn child_module_package(package: &str, name: &str) -> String {
-    if is_special_unqualified_package(package) {
-        name.to_string()
-    } else {
-        format!("{package}::{name}")
-    }
-}
-
-fn insert_import_with_descendants(
-    imports: &mut HashSet<String>,
-    package: String,
-    interface_units: &HashMap<String, (PathBuf, InterfaceUnit)>,
-) {
-    imports.insert(package.clone());
-    let prefix = format!("{package}::");
-    for dep in interface_units.keys() {
-        if dep.starts_with(&prefix) {
-            imports.insert(dep.clone());
-        }
-    }
-}
-
-fn crate_package_import(
-    path: &ast::ast::Path,
-    package: &str,
-    interface_units: &HashMap<String, (PathBuf, InterfaceUnit)>,
-    allow_full_path: bool,
-) -> Option<String> {
-    let segments = path
-        .segments()
-        .iter()
-        .map(|segment| segment.ident.0.clone())
-        .collect::<Vec<_>>();
-    let segments = if matches!(path.root(), ast::ast::PathRoot::Crate) {
-        segments
-    } else if segments.first().is_some_and(|segment| segment == "crate") {
-        segments[1..].to_vec()
-    } else {
-        return None;
-    };
-    let max_len = if allow_full_path {
-        segments.len()
-    } else {
-        segments.len().saturating_sub(1)
-    };
-    for len in (1..=max_len).rev() {
-        let candidate = segments[..len].join("::");
-        if candidate == package || interface_units.contains_key(&candidate) {
-            return Some(candidate);
-        }
-    }
-    None
-}
-
-fn external_root_import_path(unit: &InterfaceUnit) -> Option<&str> {
-    unit.interface.packages.iter().next().map(String::as_str)
-}
-
-fn exports_contain_package(package: &str, exports: &PackageExports) -> bool {
-    exports
-        .type_env
-        .enums
-        .keys()
-        .any(|name| export_belongs_to_package(package, &name.0))
-        || exports
-            .type_env
-            .structs
-            .keys()
-            .any(|name| export_belongs_to_package(package, &name.0))
-        || exports
-            .trait_env
-            .trait_defs
-            .keys()
-            .any(|name| export_belongs_to_package(package, name))
-        || exports
-            .value_env
-            .funcs
-            .keys()
-            .any(|name| export_belongs_to_package(package, name))
-}
-
-fn export_belongs_to_package(package: &str, name: &str) -> bool {
-    if is_special_unqualified_package(package) {
-        !name.contains("::")
-    } else {
-        name.starts_with(&format!("{package}::"))
-    }
-}
-
-fn external_package_import_alias(
-    path: &ast::ast::Path,
-    interface_units: &HashMap<String, (PathBuf, InterfaceUnit)>,
-) -> Option<String> {
-    if path.len() < 2 {
-        return None;
-    }
-    let display = path.display();
-
-    for (_, unit) in interface_units.values() {
-        let Some(root_import_path) = external_root_import_path(unit) else {
-            continue;
-        };
-        if display == root_import_path {
-            return Some(unit.package.clone());
-        }
-        if !display.starts_with(root_import_path) {
-            continue;
-        }
-        if !display[root_import_path.len()..].starts_with("::") {
-            continue;
-        }
-        let suffix = &display[root_import_path.len() + 2..];
-        if let Some(first) = suffix.split("::").next()
-            && exports_contain_package(first, &unit.exports)
-        {
-            return Some(first.to_string());
-        }
-        return Some(unit.package.clone());
-    }
-
-    None
-}
+type ReadSourceFilesResult = (
+    Vec<hir::SourceFileAst>,
+    HashSet<String>,
+    Vec<String>,
+    String,
+);
 
 fn typecheck_single_package(
     package: &str,
+    declared_name: &str,
     files: Vec<hir::SourceFileAst>,
     deps_interfaces: &HashMap<String, interface::PackageInterface>,
     deps_envs: HashMap<String, GlobalTypeEnv>,
@@ -389,31 +357,59 @@ fn typecheck_single_package(
     diagnostics.append(&mut hir_diagnostics);
     let full_exports = PackageExports::from_genv(&genv);
     let exports = PackageExports::public_from_package(package, &files, &genv);
-    let pkg_interface = interface::PackageInterface::from_exports(package, &exports);
+    let pkg_interface = interface::PackageInterface::from_package(package, declared_name, &exports);
     (tast, full_exports, exports, pkg_interface, diagnostics)
 }
 
-fn add_stdlib_dep(
-    deps_envs: &mut HashMap<String, GlobalTypeEnv>,
-    deps_interfaces: &mut HashMap<String, interface::PackageInterface>,
-    dep_hashes: &mut BTreeMap<String, String>,
-) -> Result<InterfaceUnit, CompilationError> {
-    let unit = stdlib::stdlib_interface().map_err(compile_error)?;
-    deps_envs.insert(STD_PACKAGE.to_string(), unit.exports.to_genv());
-    deps_interfaces.insert(STD_PACKAGE.to_string(), unit.interface.clone());
-    dep_hashes.insert(STD_PACKAGE.to_string(), unit.interface_hash.clone());
-    Ok(unit)
+pub(crate) fn validate_entrypoint_scheme(
+    package: &str,
+    exports: &PackageExports,
+    diagnostics: &mut Diagnostics,
+) {
+    let entry_name = if is_special_unqualified_package(package) {
+        ENTRY_FUNCTION.to_string()
+    } else {
+        format!("{package}::{ENTRY_FUNCTION}")
+    };
+    let Some(scheme) = exports.value_env.funcs.get(&entry_name) else {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            "main function is required".to_string(),
+        ));
+        return;
+    };
+    if !scheme.type_params.is_empty() {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            "main function must not have type parameters".to_string(),
+        ));
+    }
+    if let crate::tast::Ty::TFunc { params, .. } = &scheme.ty
+        && !params.is_empty()
+    {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            "main function must not have parameters".to_string(),
+        ));
+    }
 }
 
 pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationError> {
     with_compiler_stack(|| {
         let interface_units = load_interface_files(&opts.interface_files)?;
-        let (files, imports, _sources) =
+        let (files, imports, _sources, declared_name) =
             read_source_files(&opts.package, &opts.input_files, &interface_units)?;
 
-        let mut deps: Vec<String> = imports.into_iter().collect();
-        deps.sort();
-        deps.dedup();
+        let direct_dependencies = imports.into_iter().collect::<BTreeSet<_>>();
+        let dependency_units = resolve_dependency_interfaces(
+            &opts.package,
+            &direct_dependencies,
+            &opts.interface_files,
+            &interface_units,
+        )?;
 
         let mut deps_envs = HashMap::new();
         let mut deps_interfaces = HashMap::new();
@@ -426,24 +422,27 @@ pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationEr
             );
         }
 
-        if deps.iter().any(|dep| dep == STD_PACKAGE) {
-            let _ = add_stdlib_dep(&mut deps_envs, &mut deps_interfaces, &mut dep_hashes)?;
-        }
-
-        for dep in deps {
-            if dep == BUILTIN_PACKAGE || dep == STD_PACKAGE || dep == opts.package {
-                continue;
+        for unit in dependency_units {
+            deps_envs.insert(unit.package.clone(), unit.exports.to_genv());
+            deps_interfaces.insert(unit.package.clone(), unit.interface.clone());
+            if direct_dependencies.contains(&unit.package) {
+                dep_hashes.insert(unit.package.clone(), unit.interface_hash.clone());
             }
-            let (unit, package_interface) =
-                load_interface_for_package(&dep, &opts.interface_files, &interface_units)?;
-            deps_envs.insert(dep.clone(), unit.exports.to_genv());
-            deps_interfaces.insert(dep.clone(), package_interface);
-            dep_hashes.insert(unit.package.clone(), unit.interface_hash.clone());
         }
 
-        let (tast, _full_exports, exports, pkg_interface, diagnostics) =
-            typecheck_single_package(&opts.package, files, &deps_interfaces, deps_envs);
+        let (tast, full_exports, exports, pkg_interface, mut diagnostics) =
+            typecheck_single_package(
+                &opts.package,
+                &declared_name,
+                files,
+                &deps_interfaces,
+                deps_envs,
+            );
         drop(tast);
+
+        if declared_name == ROOT_PACKAGE {
+            validate_entrypoint_scheme(&opts.package, &full_exports, &mut diagnostics);
+        }
 
         let interface =
             InterfaceUnit::new(opts.package.clone(), exports, pkg_interface, dep_hashes);
@@ -458,12 +457,16 @@ pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationEr
 pub fn build_package(opts: PackageInputs) -> Result<CoreUnit, CompilationError> {
     with_compiler_stack(|| {
         let interface_units = load_interface_files(&opts.interface_files)?;
-        let (files, imports, sources) =
+        let (files, imports, sources, declared_name) =
             read_source_files(&opts.package, &opts.input_files, &interface_units)?;
 
-        let mut deps: Vec<String> = imports.into_iter().collect();
-        deps.sort();
-        deps.dedup();
+        let direct_dependencies = imports.into_iter().collect::<BTreeSet<_>>();
+        let dependency_units = resolve_dependency_interfaces(
+            &opts.package,
+            &direct_dependencies,
+            &opts.interface_files,
+            &interface_units,
+        )?;
 
         let mut deps_envs = HashMap::new();
         let mut deps_interfaces = HashMap::new();
@@ -477,25 +480,26 @@ pub fn build_package(opts: PackageInputs) -> Result<CoreUnit, CompilationError> 
             );
         }
 
-        if deps.iter().any(|dep| dep == STD_PACKAGE) {
-            let unit = add_stdlib_dep(&mut deps_envs, &mut deps_interfaces, &mut dep_hashes)?;
-            dep_units.push(unit);
-        }
-
-        for dep in deps {
-            if dep == BUILTIN_PACKAGE || dep == STD_PACKAGE || dep == opts.package {
-                continue;
+        for unit in dependency_units {
+            deps_envs.insert(unit.package.clone(), unit.exports.to_genv());
+            deps_interfaces.insert(unit.package.clone(), unit.interface.clone());
+            if direct_dependencies.contains(&unit.package) {
+                dep_hashes.insert(unit.package.clone(), unit.interface_hash.clone());
             }
-            let (unit, package_interface) =
-                load_interface_for_package(&dep, &opts.interface_files, &interface_units)?;
-            deps_envs.insert(dep.clone(), unit.exports.to_genv());
-            deps_interfaces.insert(dep.clone(), package_interface);
-            dep_hashes.insert(unit.package.clone(), unit.interface_hash.clone());
             dep_units.push(unit);
         }
 
-        let (tast, full_exports, exports, pkg_interface, diagnostics) =
-            typecheck_single_package(&opts.package, files, &deps_interfaces, deps_envs);
+        let (tast, full_exports, exports, pkg_interface, mut diagnostics) =
+            typecheck_single_package(
+                &opts.package,
+                &declared_name,
+                files,
+                &deps_interfaces,
+                deps_envs,
+            );
+        if declared_name == ROOT_PACKAGE {
+            validate_entrypoint_scheme(&opts.package, &full_exports, &mut diagnostics);
+        }
         if diagnostics.has_errors() {
             return Err(CompilationError::Typer { diagnostics });
         }
@@ -543,7 +547,10 @@ pub fn read_core(path: &Path) -> Result<CoreUnit, CompilationError> {
     })
 }
 
-pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> {
+pub fn link_cores(
+    entry_package: &str,
+    cores: Vec<CoreUnit>,
+) -> Result<LinkOutput, CompilationError> {
     with_compiler_stack(|| {
         if cores.is_empty() {
             return Err(compile_error("no core inputs provided".to_string()));
@@ -560,33 +567,76 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
             by_name.insert(core.package.clone(), core);
         }
 
-        let Some((main_package, main)) = by_name.get_key_value(ROOT_PACKAGE) else {
-            return Err(compile_error("missing main package core".to_string()));
+        if !by_name.contains_key(entry_package) {
+            return Err(compile_error(format!(
+                "missing entry package core for {}",
+                entry_package
+            )));
+        }
+        let reachable = reachable_core_packages(entry_package, &by_name)?;
+        by_name.retain(|package, _| reachable.contains(package));
+
+        let Some((main_package, main)) = by_name.get_key_value(entry_package) else {
+            return Err(compile_error(format!(
+                "missing entry package core for {}",
+                entry_package
+            )));
         };
-        if !main
+        if !main.interface.interface.name.is_empty()
+            && main.interface.interface.name != ROOT_PACKAGE
+        {
+            return Err(compile_error(format!(
+                "entry package {} declares package {}, expected main",
+                entry_package, main.interface.interface.name
+            )));
+        }
+        let entry_name = if is_special_unqualified_package(entry_package) {
+            ENTRY_FUNCTION.to_string()
+        } else {
+            format!("{entry_package}::{ENTRY_FUNCTION}")
+        };
+        let Some(entry_fn) = main
             .core_ir
             .toplevels
             .iter()
-            .any(|f| f.name == ENTRY_FUNCTION)
-        {
+            .find(|function| function.name == entry_name)
+            .cloned()
+        else {
             return Err(compile_error(format!(
                 "{} package missing main function",
                 main_package
             )));
+        };
+        if !entry_fn.params.is_empty() {
+            return Err(compile_error(
+                "main function must not have parameters".to_string(),
+            ));
+        }
+        if !entry_fn.generics.is_empty() {
+            return Err(compile_error(
+                "main function must not have type parameters".to_string(),
+            ));
         }
 
         let builtin_hash = builtins::builtin_interface_hash();
-        let needs_std = by_name
+        let requested_std_packages = by_name
             .values()
-            .any(|unit| unit.deps.contains_key(STD_PACKAGE));
-        let std_core = if needs_std {
-            Some(stdlib::stdlib_core().map_err(compile_error)?)
+            .flat_map(|unit| unit.deps.keys())
+            .filter(|dep| dep.as_str() == STD_PACKAGE || dep.starts_with("std::"))
+            .cloned()
+            .collect::<HashSet<_>>();
+        let mut std_cores = if requested_std_packages.is_empty() {
+            HashMap::new()
         } else {
-            None
+            stdlib::stdlib_cores()
+                .map_err(compile_error)?
+                .into_iter()
+                .map(|unit| (unit.package.clone(), unit))
+                .collect::<HashMap<_, _>>()
         };
-        let std_hash = std_core
-            .as_ref()
-            .map(|unit| unit.interface.interface_hash.clone());
+        let reachable_std =
+            reachable_std_packages(requested_std_packages, &std_cores).map_err(compile_error)?;
+        std_cores.retain(|package, _| reachable_std.contains(package));
         for (pkg, unit) in by_name.iter() {
             for (dep, expected_hash) in unit.deps.iter() {
                 if dep == BUILTIN_PACKAGE {
@@ -598,13 +648,17 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
                     }
                     continue;
                 }
-                if dep == STD_PACKAGE {
-                    if Some(expected_hash) != std_hash.as_ref() {
+                if dep == STD_PACKAGE || dep.starts_with("std::") {
+                    let actual_hash = std_cores
+                        .get(dep)
+                        .map(|unit| unit.interface.interface_hash.as_str());
+                    if Some(expected_hash.as_str()) != actual_hash {
                         return Err(compile_error(format!(
-                            "package {} expects std interface_hash {}, but compiler has {} (rebuild {})",
+                            "package {} expects interface_hash {} for {}, but compiler has {} (rebuild {})",
                             pkg,
                             expected_hash,
-                            std_hash.as_deref().unwrap_or("<none>"),
+                            dep,
+                            actual_hash.unwrap_or("<none>"),
                             pkg
                         )));
                     }
@@ -628,7 +682,12 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
         let order = topo_sort(&by_name)?;
 
         let mut genv = builtins::builtin_env();
-        if let Some(std_core) = &std_core {
+        let mut std_packages = std_cores.keys().cloned().collect::<Vec<_>>();
+        std_packages.sort();
+        for package in std_packages.iter() {
+            let std_core = std_cores
+                .get(package)
+                .ok_or_else(|| compile_error(format!("missing std core for {}", package)))?;
             std_core.exports.apply_to(&mut genv);
         }
         let mut diagnostics = Diagnostics::new();
@@ -649,14 +708,20 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
 
         let gensym = Gensym::new();
         let mut compile_diagnostics = Diagnostics::new();
-        let builtin_print_core = crate::compile_match::compile_file(
+        let mut builtin_core = crate::compile_match::compile_file(
             &builtins::builtin_env(),
             &gensym,
             &mut compile_diagnostics,
-            &builtins::builtin_print_tast(),
+            &builtins::builtin_tast(),
         );
-        linked.toplevels.extend(builtin_print_core.toplevels);
-        if let Some(std_core) = &std_core {
+        for function in builtin_core.toplevels.iter_mut() {
+            function.root = false;
+        }
+        linked.toplevels.extend(builtin_core.toplevels);
+        for package in std_packages {
+            let std_core = std_cores
+                .get(&package)
+                .ok_or_else(|| compile_error(format!("missing std core for {}", package)))?;
             linked.toplevels.extend(std_core.core_ir.toplevels.clone());
         }
 
@@ -666,18 +731,10 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
                 .ok_or_else(|| compile_error(format!("missing core for package {}", pkg)))?;
             linked.toplevels.extend(unit.core_ir.toplevels.clone());
         }
-
-        let required_builtin_methods =
-            builtin_inherent::collect_required_builtin_collection_methods(std::slice::from_ref(
-                &linked,
-            ));
-        let builtin_collection_core = builtin_inherent::compile_builtin_collection_methods_checked(
-            &required_builtin_methods,
-            &gensym,
-        )?;
-        if !builtin_collection_core.toplevels.is_empty() {
-            linked.toplevels.extend(builtin_collection_core.toplevels);
+        if entry_name != ENTRY_FUNCTION {
+            linked.toplevels.push(package_entry_wrapper(&entry_fn));
         }
+
         let (mono, monoenv) = mono::mono(genv.clone(), linked.clone()).map_err(compile_error)?;
         let (lifted, liftenv) = lift::lambda_lift(monoenv.clone(), &gensym, mono.clone());
         let (anf, anfenv) = crate::anf::anf_file(liftenv.clone(), &gensym, lifted.clone());
@@ -696,6 +753,85 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
             anfenv,
         })
     })
+}
+
+fn reachable_core_packages(
+    entry_package: &str,
+    cores: &HashMap<String, CoreUnit>,
+) -> Result<HashSet<String>, CompilationError> {
+    let mut reachable = HashSet::new();
+    let mut pending = vec![entry_package.to_string()];
+    while let Some(package) = pending.pop() {
+        if !reachable.insert(package.clone()) {
+            continue;
+        }
+        let unit = cores
+            .get(&package)
+            .ok_or_else(|| compile_error(format!("missing core for package {}", package)))?;
+        for dependency in unit.deps.keys() {
+            if dependency == BUILTIN_PACKAGE
+                || dependency == STD_PACKAGE
+                || dependency.starts_with("std::")
+            {
+                continue;
+            }
+            if !cores.contains_key(dependency) {
+                return Err(compile_error(format!(
+                    "package {} depends on missing package {}",
+                    package, dependency
+                )));
+            }
+            pending.push(dependency.clone());
+        }
+    }
+    Ok(reachable)
+}
+
+fn reachable_std_packages(
+    requested: HashSet<String>,
+    cores: &HashMap<String, CoreUnit>,
+) -> Result<HashSet<String>, String> {
+    let mut reachable = HashSet::new();
+    let mut pending = requested.into_iter().collect::<Vec<_>>();
+    while let Some(package) = pending.pop() {
+        if !reachable.insert(package.clone()) {
+            continue;
+        }
+        let unit = cores
+            .get(&package)
+            .ok_or_else(|| format!("standard library package {} not found", package))?;
+        for dependency in unit.deps.keys() {
+            if dependency == STD_PACKAGE || dependency.starts_with("std::") {
+                pending.push(dependency.clone());
+            }
+        }
+    }
+    Ok(reachable)
+}
+
+pub(crate) fn package_entry_wrapper(entry_fn: &crate::core::Fn) -> crate::core::Fn {
+    let ret_ty = entry_fn.ret_ty.clone();
+    crate::core::Fn {
+        name: ENTRY_FUNCTION.to_string(),
+        root: true,
+        generics: Vec::new(),
+        params: Vec::new(),
+        ret_ty: ret_ty.clone(),
+        body: crate::core::Block {
+            stmts: Vec::new(),
+            tail: Some(Box::new(crate::core::Expr::ECall {
+                func: Box::new(crate::core::Expr::EVar {
+                    name: entry_fn.name.clone(),
+                    ty: crate::tast::Ty::TFunc {
+                        params: Vec::new(),
+                        ret_ty: Box::new(ret_ty.clone()),
+                    },
+                }),
+                args: Vec::new(),
+                ty: ret_ty,
+            })),
+        },
+    }
 }
 
 fn topo_sort(cores: &HashMap<String, CoreUnit>) -> Result<Vec<String>, CompilationError> {

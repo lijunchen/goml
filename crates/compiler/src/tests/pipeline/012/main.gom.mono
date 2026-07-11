@@ -1,7 +1,7 @@
 fn fib(x/0: int32) -> int32 {
   {
-    let mtmp0 = (x/0 < 2) in
-    match mtmp0 {
+    let mtmp4 = (x/0 < 2) in
+    match mtmp4 {
       true => {
         1
       },
@@ -13,12 +13,16 @@ fn fib(x/0: int32) -> int32 {
 }
 
 fn main() -> unit {
-  let mtmp1 = print__T_int32(fib(10)) in
+  let mtmp5 = print__T_int32(fib(10)) in
   {
     ()
   }
 }
 
 fn print__T_int32(value/0: int32) -> unit {
-  string_print($goml_builtin_runtime$int32_to_string(value/0))
+  @runtime(core.string_print)(trait_impl#ToString#int32#to_string(value/0))
+}
+
+fn trait_impl#ToString#int32#to_string(self/13: int32) -> string {
+  @runtime(core.int32_to_string)(self/13)
 }

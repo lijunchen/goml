@@ -4,7 +4,7 @@ import (
     _goml_fmt "fmt"
 )
 
-func bool_to_string(x bool) string {
+func _goml_runtime_core_bool_to_string(x bool) string {
     if x {
         return "true"
     } else {
@@ -12,7 +12,7 @@ func bool_to_string(x bool) string {
     }
 }
 
-func string_println(s string) struct{} {
+func _goml_runtime_core_string_println(s string) struct{} {
     _goml_fmt.Println(s)
     return struct{}{}
 }
@@ -23,27 +23,12 @@ type Counter struct {
 }
 
 func is_flag8(value__0 uint8) bool {
-    var retv4 bool
-    var jp6 bool
-    switch value__0 {
-    case 0:
-        jp6 = true
-    case 200:
-        jp6 = true
-    default:
-        jp6 = false
-    }
-    retv4 = jp6
-    return retv4
-}
-
-func is_flag16(value__1 uint16) bool {
     var retv8 bool
     var jp10 bool
-    switch value__1 {
-    case 1024:
+    switch value__0 {
+    case 0:
         jp10 = true
-    case 65000:
+    case 200:
         jp10 = true
     default:
         jp10 = false
@@ -52,13 +37,13 @@ func is_flag16(value__1 uint16) bool {
     return retv8
 }
 
-func is_flag32(value__2 uint32) bool {
+func is_flag16(value__1 uint16) bool {
     var retv12 bool
     var jp14 bool
-    switch value__2 {
-    case 4000000000:
+    switch value__1 {
+    case 1024:
         jp14 = true
-    case 1234567890:
+    case 65000:
         jp14 = true
     default:
         jp14 = false
@@ -67,13 +52,13 @@ func is_flag32(value__2 uint32) bool {
     return retv12
 }
 
-func is_flag64(value__3 uint64) bool {
+func is_flag32(value__2 uint32) bool {
     var retv16 bool
     var jp18 bool
-    switch value__3 {
-    case 900000000:
+    switch value__2 {
+    case 4000000000:
         jp18 = true
-    case 600000000:
+    case 1234567890:
         jp18 = true
     default:
         jp18 = false
@@ -82,21 +67,12 @@ func is_flag64(value__3 uint64) bool {
     return retv16
 }
 
-func match_struct(counter__4 Counter) bool {
+func is_flag64(value__3 uint64) bool {
     var retv20 bool
-    var x0 uint32 = counter__4.start
-    var x1 uint64 = counter__4.end
     var jp22 bool
-    switch x1 {
+    switch value__3 {
     case 900000000:
-        var jp24 bool
-        switch x0 {
-        case 4000000000:
-            jp24 = true
-        default:
-            jp24 = false
-        }
-        jp22 = jp24
+        jp22 = true
     case 600000000:
         jp22 = true
     default:
@@ -106,12 +82,36 @@ func match_struct(counter__4 Counter) bool {
     return retv20
 }
 
+func match_struct(counter__4 Counter) bool {
+    var retv24 bool
+    var x4 uint32 = counter__4.start
+    var x5 uint64 = counter__4.end
+    var jp26 bool
+    switch x5 {
+    case 900000000:
+        var jp28 bool
+        switch x4 {
+        case 4000000000:
+            jp28 = true
+        default:
+            jp28 = false
+        }
+        jp26 = jp28
+    case 600000000:
+        jp26 = true
+    default:
+        jp26 = false
+    }
+    retv24 = jp26
+    return retv24
+}
+
 func report(label__5 string, value__6 bool) string {
-    var retv26 string
-    var t27 string = bool_to_string(value__6)
-    var t28 string = label__5 + t27
-    retv26 = t28
-    return retv26
+    var retv30 string
+    var t31 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__6)
+    var t32 string = label__5 + t31
+    retv30 = t32
+    return retv30
 }
 
 func main0() struct{} {
@@ -123,42 +123,56 @@ func main0() struct{} {
         start: 12,
         end: 600000000,
     }
-    var t30 bool = is_flag8(200)
-    var t31 string = report("u8_hit=", t30)
-    var t32 bool = is_flag8(15)
-    var t33 string = report(",u8_miss=", t32)
-    var t34 string = t31 + t33
-    var t35 bool = is_flag16(65000)
-    var t36 string = report(",u16_hit=", t35)
-    var t37 string = t34 + t36
-    var t38 bool = is_flag16(42)
-    var t39 string = report(",u16_miss=", t38)
-    var t40 string = t37 + t39
-    var t41 bool = is_flag32(1234567890)
-    var t42 string = report(",u32_hit=", t41)
-    var t43 string = t40 + t42
-    var t44 bool = is_flag32(99)
-    var t45 string = report(",u32_miss=", t44)
-    var t46 string = t43 + t45
-    var t47 bool = is_flag64(900000000)
-    var t48 string = report(",u64_hit=", t47)
-    var t49 string = t46 + t48
-    var t50 bool = is_flag64(700000000)
-    var t51 string = report(",u64_miss=", t50)
-    var t52 string = t49 + t51
-    var t53 bool = match_struct(counter__7)
-    var t54 string = report(",struct_first=", t53)
-    var t55 string = t52 + t54
-    var t56 bool = match_struct(alt_counter__8)
-    var t57 string = report(",struct_second=", t56)
-    var message__9 string = t55 + t57
+    var t34 bool = is_flag8(200)
+    var t35 string = report("u8_hit=", t34)
+    var t36 bool = is_flag8(15)
+    var t37 string = report(",u8_miss=", t36)
+    var t38 string = t35 + t37
+    var t39 bool = is_flag16(65000)
+    var t40 string = report(",u16_hit=", t39)
+    var t41 string = t38 + t40
+    var t42 bool = is_flag16(42)
+    var t43 string = report(",u16_miss=", t42)
+    var t44 string = t41 + t43
+    var t45 bool = is_flag32(1234567890)
+    var t46 string = report(",u32_hit=", t45)
+    var t47 string = t44 + t46
+    var t48 bool = is_flag32(99)
+    var t49 string = report(",u32_miss=", t48)
+    var t50 string = t47 + t49
+    var t51 bool = is_flag64(900000000)
+    var t52 string = report(",u64_hit=", t51)
+    var t53 string = t50 + t52
+    var t54 bool = is_flag64(700000000)
+    var t55 string = report(",u64_miss=", t54)
+    var t56 string = t53 + t55
+    var t57 bool = match_struct(counter__7)
+    var t58 string = report(",struct_first=", t57)
+    var t59 string = t56 + t58
+    var t60 bool = match_struct(alt_counter__8)
+    var t61 string = report(",struct_second=", t60)
+    var message__9 string = t59 + t61
     println__T_string(message__9)
     return struct{}{}
 }
 
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__8 bool) string {
+    var retv63 string
+    var t64 string = _goml_runtime_core_bool_to_string(self__8)
+    retv63 = t64
+    return retv63
+}
+
 func println__T_string(value__1 string) struct{} {
-    string_println(value__1)
+    var t66 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t66)
     return struct{}{}
+}
+
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
+    var retv69 string
+    retv69 = self__9
+    return retv69
 }
 
 func main() {

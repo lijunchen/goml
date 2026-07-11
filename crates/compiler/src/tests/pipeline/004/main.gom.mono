@@ -1,11 +1,11 @@
 fn main() -> bool {
   let a/0 = (Color::Blue, Color::Blue) in
   {
-    let x0 = a/0.0 in
-    let x1 = a/0.1 in
-    match x1 {
+    let x4 = a/0.0 in
+    let x5 = a/0.1 in
+    match x5 {
       Color::Red => {
-        match x0 {
+        match x4 {
           Color::Red => {
             true
           },
@@ -18,7 +18,7 @@ fn main() -> bool {
         }
       },
       Color::Green => {
-        match x0 {
+        match x4 {
           Color::Red => {
             true
           },
@@ -31,7 +31,7 @@ fn main() -> bool {
         }
       },
       Color::Blue => {
-        match x0 {
+        match x4 {
           Color::Red => {
             false
           },
@@ -40,7 +40,7 @@ fn main() -> bool {
           },
           Color::Blue => {
             {
-              let mtmp2 = print__T_bool(true) in
+              let mtmp6 = print__T_bool(true) in
               {
                 false
               }
@@ -53,5 +53,9 @@ fn main() -> bool {
 }
 
 fn print__T_bool(value/0: bool) -> unit {
-  string_print($goml_builtin_runtime$bool_to_string(value/0))
+  @runtime(core.string_print)(trait_impl#ToString#bool#to_string(value/0))
+}
+
+fn trait_impl#ToString#bool#to_string(self/8: bool) -> string {
+  @runtime(core.bool_to_string)(self/8)
 }

@@ -24,17 +24,17 @@ fn repeated_string(s/2: string) -> int32 {
 }
 
 fn main() -> unit {
-  let mtmp0 = println__T_string($goml_builtin_runtime$int32_to_string(match_string("hello"))) in
+  let mtmp4 = println__T_string(inherent#int32#int32#to_string(match_string("hello"))) in
   {
-    let mtmp1 = println__T_string($goml_builtin_runtime$int32_to_string(match_string("planet"))) in
+    let mtmp5 = println__T_string(inherent#int32#int32#to_string(match_string("planet"))) in
     {
-      let mtmp2 = println__T_string($goml_builtin_runtime$int32_to_string(wildcard_position("world"))) in
+      let mtmp6 = println__T_string(inherent#int32#int32#to_string(wildcard_position("world"))) in
       {
-        let mtmp3 = println__T_string($goml_builtin_runtime$int32_to_string(wildcard_position("sun"))) in
+        let mtmp7 = println__T_string(inherent#int32#int32#to_string(wildcard_position("sun"))) in
         {
-          let mtmp4 = println__T_string($goml_builtin_runtime$int32_to_string(repeated_string("hello"))) in
+          let mtmp8 = println__T_string(inherent#int32#int32#to_string(repeated_string("hello"))) in
           {
-            println__T_string($goml_builtin_runtime$int32_to_string(repeated_string("mars")))
+            println__T_string(inherent#int32#int32#to_string(repeated_string("mars")))
           }
         }
       }
@@ -43,5 +43,13 @@ fn main() -> unit {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  string_println(value/1)
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn inherent#int32#int32#to_string(self/2: int32) -> string {
+  @runtime(core.int32_to_string)(self/2)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  self/9
 }

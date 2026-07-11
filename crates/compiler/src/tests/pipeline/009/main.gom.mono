@@ -1,30 +1,30 @@
 fn test(t/0: T) -> unit {
   match t/0 {
     T::A => {
-      println__T_string($goml_builtin_runtime$int32_to_string(1))
+      println__T_string(inherent#int32#int32#to_string(1))
     },
-    T::B(x0, x1) => {
+    T::B(x4, x5) => {
       {
-        let x0 = T::B._0(t/0) in
-        let x1 = T::B._1(t/0) in
-        match x1 {
+        let x4 = T::B._0(t/0) in
+        let x5 = T::B._1(t/0) in
+        match x5 {
           true => {
-            match x0 {
+            match x4 {
               true => {
-                println__T_string($goml_builtin_runtime$int32_to_string(4))
+                println__T_string(inherent#int32#int32#to_string(4))
               },
               false => {
-                println__T_string($goml_builtin_runtime$int32_to_string(3))
+                println__T_string(inherent#int32#int32#to_string(3))
               },
             }
           },
           false => {
-            match x0 {
+            match x4 {
               true => {
-                println__T_string($goml_builtin_runtime$int32_to_string(4))
+                println__T_string(inherent#int32#int32#to_string(4))
               },
               false => {
-                println__T_string($goml_builtin_runtime$int32_to_string(2))
+                println__T_string(inherent#int32#int32#to_string(2))
               },
             }
           },
@@ -35,13 +35,13 @@ fn test(t/0: T) -> unit {
 }
 
 fn main() -> unit {
-  let mtmp2 = test(T::B(true, true)) in
+  let mtmp6 = test(T::B(true, true)) in
   {
-    let mtmp3 = test(T::B(false, true)) in
+    let mtmp7 = test(T::B(false, true)) in
     {
-      let mtmp4 = test(T::B(false, false)) in
+      let mtmp8 = test(T::B(false, false)) in
       {
-        let mtmp5 = test(T::A) in
+        let mtmp9 = test(T::A) in
         {
           ()
         }
@@ -51,5 +51,13 @@ fn main() -> unit {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  string_println(value/1)
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn inherent#int32#int32#to_string(self/2: int32) -> string {
+  @runtime(core.int32_to_string)(self/2)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  self/9
 }

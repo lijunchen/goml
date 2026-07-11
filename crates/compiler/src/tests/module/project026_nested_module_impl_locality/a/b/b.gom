@@ -1,0 +1,19 @@
+package b;
+
+pub struct Box {
+    value: int32,
+}
+
+pub trait Showish {
+    fn show(Self) -> string;
+}
+
+impl Showish for Box {
+    fn show(self: Box) -> string {
+        self.value.to_string()
+    }
+}
+
+pub fn new_box() -> Box {
+    Box { value: 59i32 }
+}

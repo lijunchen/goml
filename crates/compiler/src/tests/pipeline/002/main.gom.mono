@@ -1,11 +1,11 @@
 fn main() -> unit {
   let a/0 = (true, false) in
   let b/1 = {
-    let x0 = a/0.0 in
-    let x1 = a/0.1 in
-    match x1 {
+    let x4 = a/0.0 in
+    let x5 = a/0.1 in
+    match x5 {
       true => {
-        match x0 {
+        match x4 {
           true => {
             (false, false)
           },
@@ -15,7 +15,7 @@ fn main() -> unit {
         }
       },
       false => {
-        match x0 {
+        match x4 {
           true => {
             (false, true)
           },
@@ -27,45 +27,57 @@ fn main() -> unit {
     }
   } in
   let b_1/3 = {
-    let x2 = b/1.0 in
-    let x3 = b/1.1 in
+    let x6 = b/1.0 in
+    let x7 = b/1.1 in
     {
-      let w/2 = x3 in
+      let w/2 = x7 in
       w/2
     }
   } in
   let c/4 = {
-    let mtmp4 = (true, b_1/3) in
+    let mtmp8 = (true, b_1/3) in
     {
-      let x5 = mtmp4.0 in
-      let x6 = mtmp4.1 in
-      match x6 {
+      let x9 = mtmp8.0 in
+      let x10 = mtmp8.1 in
+      match x10 {
         true => {
-          match x5 {
+          match x9 {
             true => {
-              println__T_string($goml_builtin_runtime$int32_to_string(3))
+              println__T_string(inherent#int32#int32#to_string(3))
             },
             false => {
-              println__T_string($goml_builtin_runtime$int32_to_string(1))
+              println__T_string(inherent#int32#int32#to_string(1))
             },
           }
         },
         false => {
-          match x5 {
+          match x9 {
             true => {
-              println__T_string($goml_builtin_runtime$int32_to_string(2))
+              println__T_string(inherent#int32#int32#to_string(2))
             },
             false => {
-              println__T_string($goml_builtin_runtime$int32_to_string(0))
+              println__T_string(inherent#int32#int32#to_string(0))
             },
           }
         },
       }
     }
   } in
-  println__T_string($goml_builtin_runtime$unit_to_string(c/4))
+  println__T_string(trait_impl#ToString#unit#to_string(c/4))
 }
 
 fn println__T_string(value/1: string) -> unit {
-  string_println(value/1)
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn inherent#int32#int32#to_string(self/2: int32) -> string {
+  @runtime(core.int32_to_string)(self/2)
+}
+
+fn trait_impl#ToString#unit#to_string(self/7: unit) -> string {
+  @runtime(core.unit_to_string)(self/7)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  self/9
 }

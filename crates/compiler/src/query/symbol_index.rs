@@ -123,46 +123,95 @@ impl ProjectSymbolIndex {
     pub(crate) fn find_package(&self, pkg: &str) -> Option<PathBuf> {
         self.packages.get(pkg).cloned()
     }
-
-    pub(crate) fn package_children(&self, namespace: &str) -> Vec<String> {
-        let prefix = format!("{}::", namespace);
-        let mut names = self
-            .packages
-            .keys()
-            .filter_map(|name| {
-                let rest = name.strip_prefix(&prefix)?;
-                let child = rest.split("::").next()?;
-                if child.is_empty() {
-                    None
-                } else {
-                    Some(child.to_string())
-                }
-            })
-            .collect::<Vec<_>>();
-        names.sort();
-        names.dedup();
-        names
-    }
 }
 
 pub(crate) struct SymbolLookup {
     pub(crate) graph: Option<crate::pipeline::packages::PackageGraph>,
     pub(crate) index: ProjectSymbolIndex,
+    package_aliases: HashMap<String, String>,
+}
+
+impl SymbolLookup {
+    pub(crate) fn canonicalize_segments(&self, segments: &[String]) -> Vec<String> {
+        let Some((first, rest)) = segments.split_first() else {
+            return Vec::new();
+        };
+        let Some(package) = self.package_aliases.get(first) else {
+            return segments.to_vec();
+        };
+        let mut canonical = Vec::with_capacity(segments.len());
+        canonical.push(package.clone());
+        canonical.extend(rest.iter().cloned());
+        canonical
+    }
+
+    pub(crate) fn package_for_alias(&self, alias: &str) -> Option<&str> {
+        self.package_aliases.get(alias).map(String::as_str)
+    }
+
+    pub(crate) fn default_alias_for_package(&self, package: &str) -> String {
+        self.graph
+            .as_ref()
+            .and_then(|graph| graph.declared_package_names.get(package))
+            .cloned()
+            .unwrap_or_else(|| package.rsplit("::").next().unwrap_or(package).to_string())
+    }
 }
 
 pub(crate) fn build_symbol_lookup(path: &Path, src: &str) -> SymbolLookup {
     match build_symbol_index(path, src) {
-        Ok((graph, index)) => SymbolLookup {
-            graph: Some(graph),
-            index,
-        },
+        Ok((graph, index)) => {
+            let package_aliases = package_aliases(path, src, &graph);
+            SymbolLookup {
+                graph: Some(graph),
+                index,
+                package_aliases,
+            }
+        }
         Err(_) => {
             let mut index = ProjectSymbolIndex::default();
             let _ = index_source_file_symbols(&mut index, ROOT_PACKAGE, path, src);
             let _ = index_builtin_symbols(&mut index);
-            SymbolLookup { graph: None, index }
+            SymbolLookup {
+                graph: None,
+                index,
+                package_aliases: HashMap::new(),
+            }
         }
     }
+}
+
+fn package_aliases(
+    path: &Path,
+    src: &str,
+    graph: &crate::pipeline::packages::PackageGraph,
+) -> HashMap<String, String> {
+    let Ok(ast) = parse_ast_for_discovery(path, src) else {
+        return HashMap::new();
+    };
+    let mut candidates: HashMap<String, Option<String>> = HashMap::new();
+    for use_decl in ast.uses {
+        let package = use_decl.path.display();
+        if !graph.package_dirs.contains_key(&package) {
+            continue;
+        }
+        let alias = use_decl
+            .alias
+            .map(|alias| alias.0)
+            .or_else(|| graph.declared_package_names.get(&package).cloned())
+            .unwrap_or_else(|| package.rsplit("::").next().unwrap_or(&package).to_string());
+        match candidates.get_mut(&alias) {
+            Some(existing) if existing.as_ref() == Some(&package) => {}
+            Some(existing) => *existing = None,
+            None => {
+                candidates.insert(alias, Some(package));
+            }
+        }
+    }
+    candidates
+        .into_iter()
+        .filter_map(|(alias, package)| package.map(|package| (alias, package)))
+        .collect()
 }
 
 pub(crate) fn build_symbol_index(
@@ -198,7 +247,11 @@ pub(crate) fn build_symbol_index(
     external_deps
         .augment_graph(&mut graph)
         .map_err(|err| err.to_string())?;
+    let reachable_external = external_deps.reachable_package_names(&graph)?;
     for (logical_name, files) in external_deps.package_sources() {
+        if !reachable_external.contains(&logical_name) {
+            continue;
+        }
         let Some(pkg_dir) = graph.package_dirs.get(&logical_name) else {
             continue;
         };
@@ -210,10 +263,11 @@ pub(crate) fn build_symbol_index(
 }
 
 fn graph_imports_package(graph: &crate::pipeline::packages::PackageGraph, package: &str) -> bool {
-    graph
-        .packages
-        .values()
-        .any(|unit| unit.imports.contains(package))
+    graph.packages.values().any(|unit| {
+        unit.imports
+            .iter()
+            .any(|import| import == package || import.starts_with(&format!("{package}::")))
+    })
 }
 
 fn stdlib_deps_for_graph(
@@ -229,35 +283,12 @@ fn stdlib_deps_for_graph(
     Ok(deps)
 }
 
-pub(crate) fn package_nav_target_in_dir(dir: &Path) -> Option<PathBuf> {
-    if dir.is_file() {
-        return Some(dir.to_path_buf());
-    }
-
-    let toml = dir.join("goml.toml");
-    if toml.exists() {
-        return Some(toml);
-    }
-
-    let mut gom_files = Vec::new();
-    let entries = fs::read_dir(dir).ok()?;
-    for entry in entries {
-        let path = entry.ok()?.path();
-        if path.extension().is_some_and(|ext| ext == "gom") {
-            gom_files.push(path);
-        }
-    }
-    gom_files.sort();
-    gom_files.into_iter().next()
-}
-
 pub(crate) fn lookup_symbol_locations_for_path(
     graph: Option<&crate::pipeline::packages::PackageGraph>,
     index: &ProjectSymbolIndex,
     token_text: &str,
     segments: &[String],
 ) -> Vec<DefinitionLocation> {
-    let segments = normalize_lookup_segments(segments);
     if segments.is_empty() {
         return Vec::new();
     }
@@ -306,17 +337,6 @@ pub(crate) fn lookup_symbol_locations_for_path(
     locations
 }
 
-fn normalize_lookup_segments(segments: &[String]) -> &[String] {
-    if matches!(
-        segments.first().map(String::as_str),
-        Some("crate" | "self" | "super")
-    ) {
-        &segments[1..]
-    } else {
-        segments
-    }
-}
-
 fn index_source_file_symbols(
     index: &mut ProjectSymbolIndex,
     package_name: &str,
@@ -330,7 +350,6 @@ fn index_source_file_symbols(
 
     for item in cst_file.items() {
         match item {
-            cst::nodes::Item::Mod(_) => {}
             cst::nodes::Item::Fn(f) => {
                 if let Some(name_tok) = f.lident() {
                     let mut names = Vec::new();
@@ -527,17 +546,14 @@ fn discover_packages_for_query(
         .parent()
         .filter(|parent| !parent.as_os_str().is_empty())
         .unwrap_or_else(|| Path::new("."));
-    if let Some((crate_dir, _)) = crate::config::find_crate_root(start_dir) {
-        let external_deps = if let Ok((_module_dir, dependencies)) =
+    if let Some((module_dir, _)) = crate::config::find_module_root(start_dir)? {
+        let (_module_dir, dependencies) =
             crate::pipeline::packages::discover_dependency_versions_from_file(path)
-        {
-            crate::external::resolve_dependency_versions(&dependencies)?
-        } else {
-            crate::external::ExternalDependencyArtifacts::default()
-        };
+                .map_err(|err| format!("{:?}", err))?;
+        let external_deps = crate::external::resolve_dependency_versions(&dependencies)?;
         let external_imports = external_deps.external_imports();
         let graph = crate::pipeline::packages::discover_packages_with_external_imports(
-            &crate_dir,
+            &module_dir,
             Some(path),
             Some(entry_ast),
             &external_imports,
@@ -669,11 +685,13 @@ fn index_package_symbols_named(
 }
 
 fn index_builtin_symbols(index: &mut ProjectSymbolIndex) -> Result<(), String> {
-    let builtin_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("src")
-        .join("builtin.gom");
-    let Ok(src) = fs::read_to_string(&builtin_path) else {
-        return Ok(());
-    };
-    index_source_file_symbols(index, BUILTIN_PACKAGE, &builtin_path, &src)
+    for file in crate::builtins::BUILTIN_SOURCE_FILES {
+        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("src")
+            .join(file);
+        let src = fs::read_to_string(&path)
+            .map_err(|error| format!("failed to read {}: {}", path.display(), error))?;
+        index_source_file_symbols(index, BUILTIN_PACKAGE, &path, &src)?;
+    }
+    Ok(())
 }

@@ -224,110 +224,111 @@ fn struct_pattern_shorthand() {
 }
 
 #[test]
-fn public_mod_and_rooted_use() {
+fn package_and_trait_use() {
     check(
-        "pub mod math;\nuse crate::math::add;\npub fn main() -> unit { add() }\n",
+        "package main;\nuse example::math;\nuse math::Add;\npub fn main() -> unit { () }\n",
         expect![[r#"
-            FILE@0..68
-              MOD@0..14
-                PubKeyword@0..3 "pub"
-                Whitespace@3..4 " "
-                ModKeyword@4..7 "mod"
+            FILE@0..77
+              PACKAGE@0..14
+                PackageKeyword@0..7 "package"
                 Whitespace@7..8 " "
-                Ident@8..12 "math"
+                Ident@8..12 "main"
                 Semi@12..13 ";"
                 Whitespace@13..14 "\n"
-              USE@14..36
+              USE@14..33
                 UseKeyword@14..17 "use"
                 Whitespace@17..18 " "
-                PATH@18..34
-                  CrateKeyword@18..23 "crate"
-                  ColonColon@23..25 "::"
-                  Ident@25..29 "math"
-                  ColonColon@29..31 "::"
-                  Ident@31..34 "add"
-                Semi@34..35 ";"
-                Whitespace@35..36 "\n"
-              FN@36..68
-                PubKeyword@36..39 "pub"
-                Whitespace@39..40 " "
-                FnKeyword@40..42 "fn"
-                Whitespace@42..43 " "
-                Ident@43..47 "main"
-                PARAM_LIST@47..50
-                  LParen@47..48 "("
-                  RParen@48..49 ")"
-                  Whitespace@49..50 " "
-                Arrow@50..52 "->"
-                Whitespace@52..53 " "
-                TYPE_UNIT@53..58
-                  UnitKeyword@53..57 "unit"
-                  Whitespace@57..58 " "
-                BLOCK@58..68
-                  LBrace@58..59 "{"
-                  Whitespace@59..60 " "
-                  EXPR_CALL@60..66
-                    EXPR_IDENT@60..63
-                      PATH@60..63
-                        Ident@60..63 "add"
-                    ARG_LIST@63..66
-                      LParen@63..64 "("
-                      RParen@64..65 ")"
-                      Whitespace@65..66 " "
-                  RBrace@66..67 "}"
-                  Whitespace@67..68 "\n""#]],
+                PATH@18..31
+                  Ident@18..25 "example"
+                  ColonColon@25..27 "::"
+                  Ident@27..31 "math"
+                Semi@31..32 ";"
+                Whitespace@32..33 "\n"
+              USE@33..48
+                UseKeyword@33..36 "use"
+                Whitespace@36..37 " "
+                PATH@37..46
+                  Ident@37..41 "math"
+                  ColonColon@41..43 "::"
+                  Ident@43..46 "Add"
+                Semi@46..47 ";"
+                Whitespace@47..48 "\n"
+              FN@48..77
+                PubKeyword@48..51 "pub"
+                Whitespace@51..52 " "
+                FnKeyword@52..54 "fn"
+                Whitespace@54..55 " "
+                Ident@55..59 "main"
+                PARAM_LIST@59..62
+                  LParen@59..60 "("
+                  RParen@60..61 ")"
+                  Whitespace@61..62 " "
+                Arrow@62..64 "->"
+                Whitespace@64..65 " "
+                TYPE_UNIT@65..70
+                  UnitKeyword@65..69 "unit"
+                  Whitespace@69..70 " "
+                BLOCK@70..77
+                  LBrace@70..71 "{"
+                  Whitespace@71..72 " "
+                  EXPR_UNIT@72..75
+                    LParen@72..73 "("
+                    RParen@73..74 ")"
+                    Whitespace@74..75 " "
+                  RBrace@75..76 "}"
+                  Whitespace@76..77 "\n""#]],
     );
 }
 
 #[test]
-fn rooted_paths_in_types_and_exprs() {
+fn package_alias_paths_in_types_and_exprs() {
     check(
-        "fn f(x: crate::Thing) -> super::Other { super::make(x) }",
+        "fn f(x: math::Thing) -> math::Other { math::make(x) }",
         expect![[r#"
-            FILE@0..56
-              FN@0..56
+            FILE@0..53
+              FN@0..53
                 FnKeyword@0..2 "fn"
                 Whitespace@2..3 " "
                 Ident@3..4 "f"
-                PARAM_LIST@4..22
+                PARAM_LIST@4..21
                   LParen@4..5 "("
-                  PARAM@5..20
+                  PARAM@5..19
                     Ident@5..6 "x"
                     Colon@6..7 ":"
                     Whitespace@7..8 " "
-                    TYPE_TAPP@8..20
-                      PATH@8..20
-                        CrateKeyword@8..13 "crate"
-                        ColonColon@13..15 "::"
-                        Ident@15..20 "Thing"
-                  RParen@20..21 ")"
-                  Whitespace@21..22 " "
-                Arrow@22..24 "->"
-                Whitespace@24..25 " "
-                TYPE_TAPP@25..38
-                  PATH@25..38
-                    SuperKeyword@25..30 "super"
-                    ColonColon@30..32 "::"
-                    Ident@32..37 "Other"
-                    Whitespace@37..38 " "
-                BLOCK@38..56
-                  LBrace@38..39 "{"
-                  Whitespace@39..40 " "
-                  EXPR_CALL@40..55
-                    EXPR_IDENT@40..51
-                      PATH@40..51
-                        SuperKeyword@40..45 "super"
-                        ColonColon@45..47 "::"
-                        Ident@47..51 "make"
-                    ARG_LIST@51..55
-                      LParen@51..52 "("
-                      ARG@52..53
-                        EXPR_IDENT@52..53
-                          PATH@52..53
-                            Ident@52..53 "x"
-                      RParen@53..54 ")"
-                      Whitespace@54..55 " "
-                  RBrace@55..56 "}""#]],
+                    TYPE_TAPP@8..19
+                      PATH@8..19
+                        Ident@8..12 "math"
+                        ColonColon@12..14 "::"
+                        Ident@14..19 "Thing"
+                  RParen@19..20 ")"
+                  Whitespace@20..21 " "
+                Arrow@21..23 "->"
+                Whitespace@23..24 " "
+                TYPE_TAPP@24..36
+                  PATH@24..36
+                    Ident@24..28 "math"
+                    ColonColon@28..30 "::"
+                    Ident@30..35 "Other"
+                    Whitespace@35..36 " "
+                BLOCK@36..53
+                  LBrace@36..37 "{"
+                  Whitespace@37..38 " "
+                  EXPR_CALL@38..52
+                    EXPR_IDENT@38..48
+                      PATH@38..48
+                        Ident@38..42 "math"
+                        ColonColon@42..44 "::"
+                        Ident@44..48 "make"
+                    ARG_LIST@48..52
+                      LParen@48..49 "("
+                      ARG@49..50
+                        EXPR_IDENT@49..50
+                          PATH@49..50
+                            Ident@49..50 "x"
+                      RParen@50..51 ")"
+                      Whitespace@51..52 " "
+                  RBrace@52..53 "}""#]],
     );
 }
 
@@ -343,6 +344,20 @@ fn reports_parse_errors_without_panicking() {
 }
 
 #[test]
+fn import_keyword_reports_use_migration() {
+    let path = Path::new("test.goml");
+    let src = "import example::math;";
+    let result = parse(path, src);
+    assert!(result.has_errors());
+    let errors = result.format_errors(src);
+    assert!(
+        errors
+            .iter()
+            .any(|message| message.contains("`import` has been removed; use `use` instead"))
+    );
+}
+
+#[test]
 fn let_expression_without_pattern_reports_error() {
     let path = Path::new("test.goml");
     let src = "fn main() { let = 42; foo }";
@@ -355,45 +370,43 @@ fn let_expression_without_pattern_reports_error() {
 #[test]
 fn parses_namespaced_expr_ident() {
     check(
-        "::foo::bar",
+        "foo::bar",
         expect![[r#"
-            FILE@0..10
-              EXPR_IDENT@0..10
-                PATH@0..10
-                  ColonColon@0..2 "::"
-                  Ident@2..5 "foo"
-                  ColonColon@5..7 "::"
-                  Ident@7..10 "bar""#]],
+            FILE@0..8
+              EXPR_IDENT@0..8
+                PATH@0..8
+                  Ident@0..3 "foo"
+                  ColonColon@3..5 "::"
+                  Ident@5..8 "bar""#]],
     );
 }
 
 #[test]
 fn parses_namespaced_type() {
     check(
-        "fn main(x: ::foo::Bar) {}",
+        "fn main(x: foo::Bar) {}",
         expect![[r#"
-            FILE@0..25
-              FN@0..25
+            FILE@0..23
+              FN@0..23
                 FnKeyword@0..2 "fn"
                 Whitespace@2..3 " "
                 Ident@3..7 "main"
-                PARAM_LIST@7..23
+                PARAM_LIST@7..21
                   LParen@7..8 "("
-                  PARAM@8..21
+                  PARAM@8..19
                     Ident@8..9 "x"
                     Colon@9..10 ":"
                     Whitespace@10..11 " "
-                    TYPE_TAPP@11..21
-                      PATH@11..21
-                        ColonColon@11..13 "::"
-                        Ident@13..16 "foo"
-                        ColonColon@16..18 "::"
-                        Ident@18..21 "Bar"
-                  RParen@21..22 ")"
-                  Whitespace@22..23 " "
-                BLOCK@23..25
-                  LBrace@23..24 "{"
-                  RBrace@24..25 "}""#]],
+                    TYPE_TAPP@11..19
+                      PATH@11..19
+                        Ident@11..14 "foo"
+                        ColonColon@14..16 "::"
+                        Ident@16..19 "Bar"
+                  RParen@19..20 ")"
+                  Whitespace@20..21 " "
+                BLOCK@21..23
+                  LBrace@21..22 "{"
+                  RBrace@22..23 "}""#]],
     );
 }
 

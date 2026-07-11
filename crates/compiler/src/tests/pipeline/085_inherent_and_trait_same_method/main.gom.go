@@ -4,11 +4,11 @@ import (
     _goml_fmt "fmt"
 )
 
-func int32_to_string(x int32) string {
+func _goml_runtime_core_int32_to_string(x int32) string {
     return _goml_fmt.Sprintf("%d", x)
 }
 
-func string_println(s string) struct{} {
+func _goml_runtime_core_string_println(s string) struct{} {
     _goml_fmt.Println(s)
     return struct{}{}
 }
@@ -17,37 +17,51 @@ type Boxed struct {
     value int32
 }
 
-func _goml_inherent_x23_Boxed_x23_Boxed_x23_format(self__0 Boxed) string {
-    var retv3 string
-    retv3 = "inherent"
-    return retv3
+func _goml_m_inherent_i_Boxed_i_Boxed_i_format(self__0 Boxed) string {
+    var retv7 string
+    retv7 = "inherent"
+    return retv7
 }
 
-func _goml_trait_x5f_impl_x23_Render_x23_Boxed_x23_format(self__1 Boxed) string {
-    var retv5 string
-    var t6 int32 = self__1.value
-    var t7 string = int32_to_string(t6)
-    retv5 = t7
-    return retv5
+func _goml_m_trait__impl_i_Render_i_Boxed_i_format(self__1 Boxed) string {
+    var retv9 string
+    var t10 int32 = self__1.value
+    var t11 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t10)
+    retv9 = t11
+    return retv9
 }
 
 func main0() struct{} {
-    var t9 Boxed = Boxed{
+    var t13 Boxed = Boxed{
         value: 9,
     }
-    var t10 string = _goml_inherent_x23_Boxed_x23_Boxed_x23_format(t9)
-    println__T_string(t10)
-    var t11 Boxed = Boxed{
+    var t14 string = _goml_m_inherent_i_Boxed_i_Boxed_i_format(t13)
+    println__T_string(t14)
+    var t15 Boxed = Boxed{
         value: 9,
     }
-    var t12 string = _goml_trait_x5f_impl_x23_Render_x23_Boxed_x23_format(t11)
-    println__T_string(t12)
+    var t16 string = _goml_m_trait__impl_i_Render_i_Boxed_i_format(t15)
+    println__T_string(t16)
     return struct{}{}
 }
 
+func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
+    var retv18 string
+    var t19 string = _goml_runtime_core_int32_to_string(self__2)
+    retv18 = t19
+    return retv18
+}
+
 func println__T_string(value__1 string) struct{} {
-    string_println(value__1)
+    var t21 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t21)
     return struct{}{}
+}
+
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
+    var retv24 string
+    retv24 = self__9
+    return retv24
 }
 
 func main() {

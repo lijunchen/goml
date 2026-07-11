@@ -1,11 +1,3 @@
-fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
-}
-
-fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
-}
-
 fn state_new() -> CheckerState {
     CheckerState { gensym_counter: (Ref[int32]::new : (int32) -> Ref[int32])(0), current_level: (Ref[int32]::new : (int32) -> Ref[int32])(1) }
 }
@@ -86,7 +78,7 @@ fn gensym(st/10: CheckerState) -> string {
     let _ : unit = (Ref[int32]::set : (Ref[int32], int32) -> unit)((st/10 : CheckerState).gensym_counter, (n/11 : int32) + 1);
     if (n/11 : int32) < 26 {
         {
-            (ToString::to_string : (char) -> string)((nth_letter : (int32) -> char)((n/11 : int32)))
+            (char::to_string : (char) -> string)((nth_letter : (int32) -> char)((n/11 : int32)))
         }
     } else {
         {
@@ -187,7 +179,7 @@ fn subst_lookup(subst/34: Vec[SubstEntry], name/35: string) -> Option[Typ] {
 fn occurs(st/40: CheckerState, tvr/41: Ref[Tv], ty/42: Typ) -> Result[unit, string] {
     match (ty/42 : Typ) {
         Typ::TVar(tvr2/43: Ref[Tv]) => {
-              if (ptr_eq : (Ref[Tv], Ref[Tv]) -> bool)((tvr/41 : Ref[Tv]), (tvr2/43 : Ref[Tv])) {
+              if (@intrinsic(ref.ptr_eq) : (Ref[Tv], Ref[Tv]) -> bool)((tvr/41 : Ref[Tv]), (tvr2/43 : Ref[Tv])) {
                   {
                       Result::Err("occurs check")
                   }
@@ -220,7 +212,7 @@ fn occurs(st/40: CheckerState, tvr/41: Ref[Tv], ty/42: Typ) -> Result[unit, stri
 fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result[unit, string] {
     match ((t1/53 : Typ), (t2/54 : Typ)) {
         (Typ::TVar(r1/55: Ref[Tv]), Typ::TVar(r2/56: Ref[Tv])) => {
-              if (ptr_eq : (Ref[Tv], Ref[Tv]) -> bool)((r1/55 : Ref[Tv]), (r2/56 : Ref[Tv])) {
+              if (@intrinsic(ref.ptr_eq) : (Ref[Tv], Ref[Tv]) -> bool)((r1/55 : Ref[Tv]), (r2/56 : Ref[Tv])) {
                   {
                       Result::Ok(())
                   }
@@ -298,7 +290,7 @@ fn inst_loop(st/83: CheckerState, subst/84: Vec[SubstEntry], ty/85: Typ) -> (Typ
               Option::Some(t/87: Typ) => ((t/87 : Typ), (subst/84 : Vec[SubstEntry])),
               Option::None => {
                     let tv/88: Typ = (newvar : (CheckerState) -> Typ)((st/83 : CheckerState));
-                    let new_subst/89: Vec[SubstEntry] = (Vec[SubstEntry]::push : (Vec[SubstEntry], SubstEntry) -> Vec[SubstEntry])((subst/84 : Vec[SubstEntry]), SubstEntry { name: (name/86 : string), ty: (tv/88 : Typ) });
+                    let new_subst/89: Vec[SubstEntry] = (Vec[SubstEntry]::pushed : (Vec[SubstEntry], SubstEntry) -> Vec[SubstEntry])((subst/84 : Vec[SubstEntry]), SubstEntry { name: (name/86 : string), ty: (tv/88 : Typ) });
                     ((tv/88 : Typ), (new_subst/89 : Vec[SubstEntry]))
                 },
           },
@@ -328,7 +320,7 @@ fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result[Ty
           },
         Exp::Lam(x/107: string, body/108: Exp) => {
               let ty_x/109: Typ = (newvar : (CheckerState) -> Typ)((st/102 : CheckerState));
-              let env2/110: Vec[EnvEntry] = (Vec[EnvEntry]::push : (Vec[EnvEntry], EnvEntry) -> Vec[EnvEntry])((env/103 : Vec[EnvEntry]), EnvEntry { name: (x/107 : string), ty: (ty_x/109 : Typ) });
+              let env2/110: Vec[EnvEntry] = (Vec[EnvEntry]::pushed : (Vec[EnvEntry], EnvEntry) -> Vec[EnvEntry])((env/103 : Vec[EnvEntry]), EnvEntry { name: (x/107 : string), ty: (ty_x/109 : Typ) });
               match (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])((st/102 : CheckerState), (env2/110 : Vec[EnvEntry]), (body/108 : Exp)) {
                   Result::Ok(ty_e/111: Typ) => Result::Ok(Typ::TArrow((ty_x/109 : Typ), (ty_e/111 : Typ))),
                   Result::Err(e/112: string) => Result::Err((e/112 : string)),
@@ -359,7 +351,7 @@ fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result[Ty
               match (ty_e/125 : Result[Typ, string]) {
                   Result::Err(e/126: string) => Result::Err((e/126 : string)),
                   Result::Ok(ty1/127: Typ) => {
-                        let env2/128: Vec[EnvEntry] = (Vec[EnvEntry]::push : (Vec[EnvEntry], EnvEntry) -> Vec[EnvEntry])((env/103 : Vec[EnvEntry]), EnvEntry { name: (x/122 : string), ty: (gen : (CheckerState, Typ) -> Typ)((st/102 : CheckerState), (ty1/127 : Typ)) });
+                        let env2/128: Vec[EnvEntry] = (Vec[EnvEntry]::pushed : (Vec[EnvEntry], EnvEntry) -> Vec[EnvEntry])((env/103 : Vec[EnvEntry]), EnvEntry { name: (x/122 : string), ty: (gen : (CheckerState, Typ) -> Typ)((st/102 : CheckerState), (ty1/127 : Typ)) });
                         (typeof : (CheckerState, Vec[EnvEntry], Exp) -> Result[Typ, string])((st/102 : CheckerState), (env2/128 : Vec[EnvEntry]), (e2/124 : Exp))
                     },
               }

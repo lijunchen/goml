@@ -1,30 +1,54 @@
 fn main() -> unit {
-  join ret2() -> unit {
+  join ret6() -> unit {
     ()
   } in
   let a/0 = inherent#Ref#Ref[T]#new__T_int32(1) in
   let b/1 = a/0 in
   let c/2 = inherent#Ref#Ref[T]#new__T_int32(1) in
-  let t3 = ptr_eq(a/0, b/1) in
-  let _wild0 = println__T_bool(t3) in
-  let t4 = ptr_eq(a/0, c/2) in
-  let _wild1 = println__T_bool(t4) in
-  jump ret2()
+  let t7 = @intrinsic(ref.ptr_eq)(a/0, b/1) in
+  let _wild4 = println__T_bool(t7) in
+  let t8 = @intrinsic(ref.ptr_eq)(a/0, c/2) in
+  let _wild5 = println__T_bool(t8) in
+  jump ret6()
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/93: int32) -> Ref[int32] {
-  join ret5(retv6: Ref[int32]) -> Ref[int32] {
-    retv6
+fn inherent#Ref#Ref[T]#new__T_int32(value/102: int32) -> Ref[int32] {
+  join ret9(retv10: Ref[int32]) -> Ref[int32] {
+    retv10
   } in
-  let t7 = ref(value/93) in
-  jump ret5(t7)
+  let t11 = @intrinsic(ref.new)(value/102) in
+  jump ret9(t11)
 }
 
 fn println__T_bool(value/1: bool) -> unit {
-  join ret8() -> unit {
+  join ret12() -> unit {
     ()
   } in
-  let t9 = $goml_builtin_runtime$bool_to_string(value/1) in
-  let t10 = string_println(t9) in
-  jump ret8()
+  let t13 = trait_impl#ToString#bool#to_string(value/1) in
+  let t14 = @runtime(core.string_println)(t13) in
+  jump ret12()
+}
+
+fn trait_impl#ToString#bool#to_string(self/8: bool) -> string {
+  join ret15(retv16: string) -> string {
+    retv16
+  } in
+  let t17 = @runtime(core.bool_to_string)(self/8) in
+  jump ret15(t17)
+}
+
+fn trait_impl#Eq#int32#eq(self/33: int32, other/34: int32) -> bool {
+  join ret18(retv19: bool) -> bool {
+    retv19
+  } in
+  let t20 = (self/33 == other/34) in
+  jump ret18(t20)
+}
+
+fn trait_impl#Hash#int32#hash(self/55: int32) -> uint64 {
+  join ret21(retv22: uint64) -> uint64 {
+    retv22
+  } in
+  let t23 = @runtime(core.int32_hash)(self/55) in
+  jump ret21(t23)
 }

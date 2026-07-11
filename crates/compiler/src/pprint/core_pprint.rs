@@ -98,6 +98,7 @@ impl Expr {
     pub fn to_doc(&self, genv: &GlobalTypeEnv) -> RcDoc<'_, ()> {
         match self {
             Expr::EVar { name, ty: _ } => RcDoc::text(name.clone()),
+            Expr::ECallable { body, .. } => RcDoc::text(body.ir_name()),
 
             Expr::EPrim { value, ty: _ } => RcDoc::text(value.to_string()),
             Expr::EConstr {

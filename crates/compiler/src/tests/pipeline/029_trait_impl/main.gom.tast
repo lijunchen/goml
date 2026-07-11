@@ -1,11 +1,3 @@
-fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
-}
-
-fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
-}
-
 impl Display for Point{
   fn show(self/0: Point) -> string {
       "Point"
@@ -15,7 +7,7 @@ impl Display for Point{
 impl Display for Maybe[int32]{
   fn show(self/1: Maybe[int32]) -> string {
       match (self/1 : Maybe[int32]) {
-          Maybe::Just(value/2: int32) => "Just(" + (ToString::to_string : (int32) -> string)((value/2 : int32)) + ")",
+          Maybe::Just(value/2: int32) => "Just(" + (int32::to_string : (int32) -> string)((value/2 : int32)) + ")",
           Maybe::Nothing => "Nothing",
       }
   }

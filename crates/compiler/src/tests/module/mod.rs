@@ -137,9 +137,16 @@ fn run_project_inner(name: &str) -> anyhow::Result<()> {
     let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("src/tests/module")
         .join(name);
-    let crate_unit = pipeline::modules::discover_crate_from_dir(&root)
-        .map_err(|err| anyhow::anyhow!("crate module discovery failed: {:?}", err))?;
-    let main_path = crate_unit.root_file;
+    let mut root_sources = std::fs::read_dir(&root)?
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
+        .filter(|path| path.extension().is_some_and(|extension| extension == "gom"))
+        .collect::<Vec<_>>();
+    root_sources.sort();
+    let main_path = root_sources
+        .into_iter()
+        .next()
+        .ok_or_else(|| anyhow::anyhow!("project has no root package source"))?;
     let main_src = std::fs::read_to_string(&main_path)?;
     let compilation = pipeline::pipeline::compile(&main_path, &main_src)
         .map_err(|err| anyhow::anyhow!("compilation failed: {:?}", err))?;

@@ -17,7 +17,7 @@ fn format_lower_diagnostics(diagnostics: &Diagnostics) -> Vec<String> {
         .collect()
 }
 
-pub fn run_e2e_cases(dir: &Path) -> anyhow::Result<()> {
+pub(super) fn run_e2e_cases(dir: &Path) -> anyhow::Result<()> {
     let mut case_paths = Vec::new();
     for subdir_name in ["good", "bad"] {
         let subdir = dir.join(subdir_name);

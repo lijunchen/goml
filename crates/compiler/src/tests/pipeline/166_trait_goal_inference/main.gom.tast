@@ -1,0 +1,14 @@
+impl Measure for Vec[int32]{
+  fn measure(self/0: Vec[int32]) -> int32 {
+      (Vec[int32]::len : (Vec[int32]) -> int32)((self/0 : Vec[int32]))
+  }
+}
+
+fn read_measure(value/1: T) -> int32 {
+    (Measure::measure : (T) -> int32)((value/1 : T))
+}
+
+fn main() -> unit {
+    let values/2: Vec[int32] = (@intrinsic(vec.new) : () -> Vec[int32])();
+    (println : (string) -> unit)((int32::to_string : (int32) -> string)((read_measure : (Vec[int32]) -> int32)((values/2 : Vec[int32]))))
+}

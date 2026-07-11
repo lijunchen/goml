@@ -45,8 +45,8 @@ impl Show for Wrap {
 
 fn main() -> unit {
     let v: Vec[dyn Show] = Vec::new();
-    let v = v.push(10i32);
-    let v = v.push(Wrap { value: "ok" });
+    v.push(10i32);
+    v.push(Wrap { value: "ok" });
     let _ = println(Show::show(v[0i32]));
     let _ = println(Show::show(v[1i32]));
 }

@@ -15,28 +15,13 @@ const (
 )
 
 func color_is_red(color__0 Color) bool {
-    var retv2 bool
-    var jp4 bool
+    var retv6 bool
+    var jp8 bool
     switch color__0 {
     case Color_Red:
-        jp4 = true
+        jp8 = true
     case Green:
-        jp4 = false
-    default:
-        panic("non-exhaustive match")
-    }
-    retv2 = jp4
-    return retv2
-}
-
-func toggle_signal(signal__1 Signal) Signal {
-    var retv6 Signal
-    var jp8 Signal
-    switch signal__1 {
-    case Signal_Red:
-        jp8 = Yellow
-    case Yellow:
-        jp8 = Signal_Red
+        jp8 = false
     default:
         panic("non-exhaustive match")
     }
@@ -44,13 +29,28 @@ func toggle_signal(signal__1 Signal) Signal {
     return retv6
 }
 
-func main0() Signal {
+func toggle_signal(signal__1 Signal) Signal {
     var retv10 Signal
+    var jp12 Signal
+    switch signal__1 {
+    case Signal_Red:
+        jp12 = Yellow
+    case Yellow:
+        jp12 = Signal_Red
+    default:
+        panic("non-exhaustive match")
+    }
+    retv10 = jp12
+    return retv10
+}
+
+func main0() Signal {
+    var retv14 Signal
     var current__2 Color = Color_Red
     color_is_red(current__2)
-    var t11 Signal = toggle_signal(Signal_Red)
-    retv10 = t11
-    return retv10
+    var t15 Signal = toggle_signal(Signal_Red)
+    retv14 = t15
+    return retv14
 }
 
 func main() {

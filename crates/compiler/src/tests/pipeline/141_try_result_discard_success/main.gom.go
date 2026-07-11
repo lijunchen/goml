@@ -4,7 +4,7 @@ import (
     _goml_fmt "fmt"
 )
 
-func string_println(s string) struct{} {
+func _goml_runtime_core_string_println(s string) struct{} {
     _goml_fmt.Println(s)
     return struct{}{}
 }
@@ -26,80 +26,87 @@ type Err struct {
 func (_ Err) isResult__string__string() {}
 
 func parse_text(ok__0 bool) Result__string__string {
-    var retv9 Result__string__string
-    var jp11 Result__string__string
+    var retv13 Result__string__string
+    var jp15 Result__string__string
     if ok__0 {
-        var t12 Result__string__string = Ok{
+        var t16 Result__string__string = Ok{
             _0: "ignored",
         }
-        jp11 = t12
+        jp15 = t16
     } else {
-        var t13 Result__string__string = Err{
+        var t17 Result__string__string = Err{
             _0: "parse failed",
         }
-        jp11 = t13
+        jp15 = t17
     }
-    retv9 = jp11
-    return retv9
+    retv13 = jp15
+    return retv13
 }
 
 func check(ok__1 bool) Result__string__string {
-    var retv15 Result__string__string
-    var mtmp0 Result__string__string = parse_text(ok__1)
-    switch mtmp0.(type) {
+    var retv19 Result__string__string
+    var mtmp4 Result__string__string = parse_text(ok__1)
+    switch mtmp4.(type) {
     case Ok:
-        var t18 Result__string__string = Ok{
+        var t22 Result__string__string = Ok{
             _0: "ok",
         }
-        retv15 = t18
-        return retv15
+        retv19 = t22
+        return retv19
     case Err:
-        var x2 string = mtmp0.(Err)._0
-        var try_residual__12 string = x2
-        var t19 Result__string__string = Err{
+        var x6 string = mtmp4.(Err)._0
+        var try_residual__12 string = x6
+        var t23 Result__string__string = Err{
             _0: try_residual__12,
         }
-        retv15 = t19
-        return retv15
+        retv19 = t23
+        return retv19
     default:
         panic("non-exhaustive match")
     }
 }
 
 func show(res__2 Result__string__string) string {
-    var retv21 string
-    var jp23 string
+    var retv25 string
+    var jp27 string
     switch res__2.(type) {
     case Ok:
-        var x4 string = res__2.(Ok)._0
-        var value__3 string = x4
-        var t24 string = "ok " + value__3
-        jp23 = t24
+        var x8 string = res__2.(Ok)._0
+        var value__3 string = x8
+        var t28 string = "ok " + value__3
+        jp27 = t28
     case Err:
-        var x5 string = res__2.(Err)._0
-        var err__4 string = x5
-        var t25 string = "err " + err__4
-        jp23 = t25
+        var x9 string = res__2.(Err)._0
+        var err__4 string = x9
+        var t29 string = "err " + err__4
+        jp27 = t29
     default:
         panic("non-exhaustive match")
     }
-    retv21 = jp23
-    return retv21
+    retv25 = jp27
+    return retv25
 }
 
 func main0() struct{} {
-    var t27 Result__string__string = check(true)
-    var t28 string = show(t27)
-    println__T_string(t28)
-    var t29 Result__string__string = check(false)
-    var t30 string = show(t29)
-    println__T_string(t30)
+    var t31 Result__string__string = check(true)
+    var t32 string = show(t31)
+    println__T_string(t32)
+    var t33 Result__string__string = check(false)
+    var t34 string = show(t33)
+    println__T_string(t34)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    string_println(value__1)
+    var t36 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t36)
     return struct{}{}
+}
+
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
+    var retv39 string
+    retv39 = self__9
+    return retv39
 }
 
 func main() {

@@ -2,9 +2,9 @@ fn test() -> unit {
   let y/0 = 3 in
   let z/1 = 5 in
   let f/3 = |x/2| ((x/2 * y/0) * z/1) in
-  let mtmp0 = println__T_string($goml_builtin_runtime$int32_to_string(f/3(2))) in
+  let mtmp4 = println__T_string(inherent#int32#int32#to_string(f/3(2))) in
   {
-    println__T_string($goml_builtin_runtime$int32_to_string(f/3(3)))
+    println__T_string(inherent#int32#int32#to_string(f/3(3)))
   }
 }
 
@@ -17,17 +17,17 @@ fn main() -> unit {
   let add_base/8 = |x/7| (x/7 + base/6) in
   let result/9 = add_base/8(7) in
   let printer/13 = |prefix/10, value/11| {
-    let message/12 = (prefix/10 + $goml_builtin_runtime$int32_to_string(value/11)) in
+    let message/12 = (prefix/10 + inherent#int32#int32#to_string(value/11)) in
     println__T_string(message/12)
   } in
-  let mtmp1 = printer/13("result: ", result/9) in
+  let mtmp5 = printer/13("result: ", result/9) in
   {
     let unused/15 = |y/14| (y/14 + result/9) in
     let no_capture/17 = |z/16| (z/16 * 2) in
     let doubled/18 = no_capture/17(3) in
-    let mtmp2 = println__T_string($goml_builtin_runtime$int32_to_string(doubled/18)) in
+    let mtmp6 = println__T_string(inherent#int32#int32#to_string(doubled/18)) in
     {
-      let mtmp3 = test() in
+      let mtmp7 = test() in
       {
         let list123/19 = IntList::Cons(1, IntList::Cons(2, IntList::Cons(3, IntList::Nil))) in
         let point/20 = Point { x: 10, y: 20 } in
@@ -36,26 +36,26 @@ fn main() -> unit {
             IntList::Nil => {
               println__T_string("Empty list")
             },
-            IntList::Cons(x4, x5) => {
+            IntList::Cons(x8, x9) => {
               {
-                let x4 = IntList::Cons._0(list123/19) in
-                let x5 = IntList::Cons._1(list123/19) in
+                let x8 = IntList::Cons._0(list123/19) in
+                let x9 = IntList::Cons._1(list123/19) in
                 {
-                  let tail/22 = x5 in
+                  let tail/22 = x9 in
                   {
-                    let head/21 = x4 in
+                    let head/21 = x8 in
                     {
-                      let mtmp6 = println__T_string($goml_builtin_runtime$int32_to_string(head/21)) in
+                      let mtmp10 = println__T_string(inherent#int32#int32#to_string(head/21)) in
                       {
                         {
-                          let x7 = Point.x(point/20) in
-                          let x8 = Point.y(point/20) in
+                          let x11 = Point.x(point/20) in
+                          let x12 = Point.y(point/20) in
                           {
-                            let y/24 = x8 in
+                            let y/24 = x12 in
                             {
-                              let x/23 = x7 in
+                              let x/23 = x11 in
                               {
-                                let mtmp9 = println__T_string((((("Point: (" + $goml_builtin_runtime$int32_to_string(x/23)) + ", ") + $goml_builtin_runtime$int32_to_string(y/24)) + ")")) in
+                                let mtmp13 = println__T_string((((("Point: (" + inherent#int32#int32#to_string(x/23)) + ", ") + inherent#int32#int32#to_string(y/24)) + ")")) in
                                 {
                                   ()
                                 }
@@ -71,7 +71,7 @@ fn main() -> unit {
             },
           }
         } in
-        let mtmp10 = play_list_and_point/25() in
+        let mtmp14 = play_list_and_point/25() in
         {
           ()
         }
@@ -81,5 +81,13 @@ fn main() -> unit {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  string_println(value/1)
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn inherent#int32#int32#to_string(self/2: int32) -> string {
+  @runtime(core.int32_to_string)(self/2)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  self/9
 }

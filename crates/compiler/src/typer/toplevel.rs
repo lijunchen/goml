@@ -6,25 +6,22 @@ use parser::{Diagnostic, Diagnostics};
 
 use crate::{
     builtins,
-    env::{self, FnOrigin, FnScheme, GlobalTypeEnv, PackageTypeEnv},
+    env::{self, FnScheme, GlobalTypeEnv, PackageTypeEnv},
     hir::{self},
+    intrinsics::{
+        CallableBody, ExternCapability, callable_body_from_attributes, lang_item_from_attributes,
+        validate_callable_signature,
+    },
     package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package},
     tast::{self},
     typer::{
         Typer,
         localenv::LocalTypeEnv,
         name_resolution,
+        type_ops::{decompose_struct_type, instantiate_self_ty, substitute_ty_params},
         util::{type_expr_range, type_param_name_set, validate_ty},
     },
 };
-
-fn source_fn_origin(env: &PackageTypeEnv) -> FnOrigin {
-    if env.package == BUILTIN_PACKAGE {
-        FnOrigin::Builtin
-    } else {
-        FnOrigin::User
-    }
-}
 
 fn predeclare_types(genv: &mut GlobalTypeEnv, hir: &hir::PackageHir, hir_table: &hir::HirTable) {
     for item in hir.toplevels.iter() {
@@ -108,7 +105,7 @@ fn validate_top_level_function_names(
     for item in hir.toplevels.iter() {
         let name = match hir_table.def(*item) {
             hir::Def::Fn(func) => func.name.clone(),
-            hir::Def::ExternBuiltin(ext) => ext.name.to_ident_name(),
+            hir::Def::ExternFn(ext) => ext.name.to_ident_name(),
             _ => continue,
         };
 
@@ -167,7 +164,7 @@ fn validate_top_level_type_parameter_names(
             hir::Def::Fn(func) => {
                 validate_type_parameter_names(diagnostics, func.generics.iter());
             }
-            hir::Def::ExternBuiltin(ext) => {
+            hir::Def::ExternFn(ext) => {
                 validate_type_parameter_names(diagnostics, ext.generics.iter());
             }
             hir::Def::TraitDef(..) => {}
@@ -184,6 +181,59 @@ fn validate_decl_ty(
 ) {
     validate_ty(env, diagnostics, ty, range, tparams);
     validate_no_self_ty(diagnostics, ty, range);
+}
+
+fn register_lang_item(
+    env: &mut PackageTypeEnv,
+    diagnostics: &mut Diagnostics,
+    attrs: &[hir::Attribute],
+    name: &str,
+) {
+    let item = match lang_item_from_attributes(attrs.iter().map(|attr| attr.text.as_str())) {
+        Ok(item) => item,
+        Err(message) => {
+            diagnostics.push(Diagnostic::new(Stage::Typer, Severity::Error, message));
+            return;
+        }
+    };
+    let Some(item) = item else {
+        return;
+    };
+    if env.extern_capability != ExternCapability::Core {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            format!("lang item {} is not permitted in this source", item.key()),
+        ));
+        return;
+    }
+    if name != item.source_name() {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            format!(
+                "lang item {} must be declared as {}",
+                item.key(),
+                item.source_name()
+            ),
+        ));
+        return;
+    }
+    if let Err(existing) = env
+        .current_mut()
+        .lang_items
+        .insert(item, tast::TastIdent::new(name))
+    {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            format!(
+                "lang item {} is already declared as {}",
+                item.key(),
+                existing.0
+            ),
+        ));
+    }
 }
 
 fn validate_no_self_ty(
@@ -286,6 +336,12 @@ fn validate_trait_method_names(diagnostics: &mut Diagnostics, trait_def: &hir::T
 }
 
 fn define_enum(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, enum_def: &hir::EnumDef) {
+    register_lang_item(
+        env,
+        diagnostics,
+        &enum_def.attrs,
+        &enum_def.name.to_ident_name(),
+    );
     validate_enum_variant_names(diagnostics, enum_def);
     let params_env: Vec<tast::TastIdent> = enum_def
         .generics
@@ -331,6 +387,12 @@ fn define_struct(
     diagnostics: &mut Diagnostics,
     struct_def: &hir::StructDef,
 ) {
+    register_lang_item(
+        env,
+        diagnostics,
+        &struct_def.attrs,
+        &struct_def.name.to_ident_name(),
+    );
     validate_struct_field_names(diagnostics, struct_def);
     let params_env: Vec<tast::TastIdent> = struct_def
         .generics
@@ -370,6 +432,12 @@ fn define_trait(
     diagnostics: &mut Diagnostics,
     trait_def: &hir::TraitDef,
 ) {
+    register_lang_item(
+        env,
+        diagnostics,
+        &trait_def.attrs,
+        &trait_def.name.to_ident_name(),
+    );
     validate_trait_method_names(diagnostics, trait_def);
     let mut methods = IndexMap::new();
 
@@ -395,7 +463,7 @@ fn define_trait(
                 type_params: vec![],
                 constraints: vec![],
                 ty: fn_ty,
-                origin: FnOrigin::User,
+                body: CallableBody::Goml,
             },
         );
     }
@@ -507,6 +575,12 @@ fn define_trait_impl(
         .map(|g| tast::TastIdent(g.to_ident_name()))
         .collect();
     let for_ty = tast::Ty::from_hir(env, &impl_block.for_type, &impl_generics_tast);
+    let impl_constraints = build_fn_constraints(
+        env,
+        diagnostics,
+        &impl_block.generics,
+        &impl_block.generic_bounds,
+    );
     validate_decl_ty(
         env,
         diagnostics,
@@ -514,6 +588,26 @@ fn define_trait_impl(
         type_expr_range(&impl_block.for_type),
         &impl_tparams,
     );
+    let for_ty_params = super::type_ops::type_params(&for_ty);
+    let mut unconstrained_impl_params = impl_tparams
+        .difference(&for_ty_params)
+        .cloned()
+        .collect::<Vec<_>>();
+    unconstrained_impl_params.sort();
+    for param in &unconstrained_impl_params {
+        diagnostics.push(
+            Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "Implementation type parameter {} is not constrained by type {}",
+                    param,
+                    super::util::format_ty_for_diag(&for_ty)
+                ),
+            )
+            .with_range(type_expr_range(&impl_block.for_type)),
+        );
+    }
     let trait_name_raw = trait_name.to_ident_name();
     let Some((trait_name_str, trait_env)) = super::util::resolve_trait_name(env, &trait_name_raw)
     else {
@@ -570,6 +664,7 @@ fn define_trait_impl(
 
     let mut implemented_methods: HashSet<String> = HashSet::new();
     let mut impl_methods: IndexMap<String, env::FnScheme> = IndexMap::new();
+    let mut impl_valid = unconstrained_impl_params.is_empty();
 
     for m in impl_block.methods.iter() {
         let m = match hir_table.def(*m) {
@@ -579,6 +674,7 @@ fn define_trait_impl(
         let method_name_str = m.name.clone();
 
         if !trait_method_names.contains(&method_name_str) {
+            impl_valid = false;
             diagnostics.push(Diagnostic::new(
                 Stage::Typer,
                 Severity::Error,
@@ -591,6 +687,7 @@ fn define_trait_impl(
         }
 
         if !implemented_methods.insert(method_name_str.clone()) {
+            impl_valid = false;
             diagnostics.push(Diagnostic::new(
                 Stage::Typer,
                 Severity::Error,
@@ -607,6 +704,7 @@ fn define_trait_impl(
             .get(&method_name_str)
             .map(|scheme| scheme.ty.clone());
         let Some(trait_sig) = trait_sig else {
+            impl_valid = false;
             super::util::push_ice(
                 diagnostics,
                 format!(
@@ -738,27 +836,25 @@ fn define_trait_impl(
 
         if method_ok {
             let type_params: Vec<String> = all_generics.iter().map(|g| g.to_ident_name()).collect();
-            let constraints = build_method_constraints(
-                env,
-                diagnostics,
-                &all_generics,
-                &impl_block.generic_bounds,
-                &m.generic_bounds,
-            );
+            let constraints =
+                build_fn_constraints(env, diagnostics, &all_generics, &m.generic_bounds);
             impl_methods.insert(
                 method_name_str.clone(),
                 env::FnScheme {
                     type_params,
                     constraints,
                     ty: impl_method_ty,
-                    origin: source_fn_origin(env),
+                    body: CallableBody::Goml,
                 },
             );
+        } else {
+            impl_valid = false;
         }
     }
 
     for method_name in trait_method_names.iter() {
         if !implemented_methods.contains(method_name) {
+            impl_valid = false;
             diagnostics.push(Diagnostic::new(
                 Stage::Typer,
                 Severity::Error,
@@ -772,14 +868,63 @@ fn define_trait_impl(
         }
     }
 
-    // Insert the impl block
-    env.current_mut().trait_env.trait_impls.insert(
-        key,
-        env::ImplDef {
-            params: impl_generics_tast,
-            methods: impl_methods,
-        },
-    );
+    let mut candidate = env::ImplDef {
+        params: impl_generics_tast,
+        constraints: impl_constraints,
+        methods: impl_methods,
+        valid: impl_valid,
+        origin: type_expr_range(&impl_block.for_type),
+    };
+    let overlap = candidate
+        .valid
+        .then(|| {
+            env.visible_trait_impls(&trait_name_str)
+                .into_iter()
+                .filter(|(_, _, _, existing)| existing.valid)
+                .find(|(_, _, existing_ty, existing)| {
+                    super::traits::coherence::impls_overlap(
+                        env,
+                        existing_ty,
+                        existing,
+                        &for_ty,
+                        &candidate,
+                    )
+                })
+        })
+        .flatten();
+    if let Some((package, index, _, existing)) = overlap {
+        let previous = existing.origin.map_or_else(
+            || format!("{}#{}", package, index),
+            |origin| {
+                format!(
+                    "{}#{} at source range {}..{}",
+                    package,
+                    index,
+                    u32::from(origin.start()),
+                    u32::from(origin.end())
+                )
+            },
+        );
+        diagnostics.push(
+            Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "Trait {} implementation for {} overlaps with implementation {}",
+                    trait_name_str,
+                    super::util::format_ty_for_diag(&for_ty),
+                    previous
+                ),
+            )
+            .with_range(type_expr_range(&impl_block.for_type)),
+        );
+        candidate.valid = false;
+    }
+
+    env.current_mut()
+        .trait_env
+        .trait_impls
+        .insert(key, candidate);
 }
 
 fn define_inherent_impl(
@@ -803,7 +948,9 @@ fn define_inherent_impl(
         type_expr_range(&impl_block.for_type),
         &impl_tparams,
     );
-    if !is_local_nominal_type(&env.package, &for_ty) {
+    if env.extern_capability != ExternCapability::Core
+        && !is_local_nominal_type(&env.package, &for_ty)
+    {
         diagnostics.push(Diagnostic::new(
             Stage::Typer,
             Severity::Error,
@@ -912,7 +1059,7 @@ fn define_inherent_impl(
                 type_params,
                 constraints,
                 ty: impl_method_ty,
-                origin: source_fn_origin(env),
+                body: CallableBody::Goml,
             },
         );
     }
@@ -982,7 +1129,6 @@ fn define_function(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, func
     };
     let fn_constraints =
         build_fn_constraints(env, diagnostics, &func.generics, &func.generic_bounds);
-    let origin = source_fn_origin(env);
     env.current_mut().value_env.funcs.insert(
         name,
         FnScheme {
@@ -992,60 +1138,30 @@ fn define_function(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, func
                 params,
                 ret_ty: Box::new(ret),
             },
-            origin,
+            body: CallableBody::Goml,
         },
     );
 }
 
-fn is_std_host_extern(package: &str, name: &str) -> bool {
-    matches!(
-        (package, name),
-        ("env" | "std::env", "args_raw")
-            | ("io" | "std::io", "print_raw" | "println_raw")
-            | (
-                "fs" | "std::fs",
-                "read_file_raw" | "write_file_raw" | "file_exists_raw" | "read_dir_raw"
-            )
-            | ("process" | "std::process", "exit_raw")
-    )
-}
-
-fn define_extern_builtin(
-    env: &mut PackageTypeEnv,
-    diagnostics: &mut Diagnostics,
-    ext: &hir::ExternBuiltin,
-) {
+fn define_extern_fn(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, ext: &hir::ExternFn) {
     let name = ext.name.to_ident_name();
     let local_name = name.rsplit("::").next().unwrap_or(&name);
-    if env.package != BUILTIN_PACKAGE {
-        if builtins::builtin_function_names()
-            .iter()
-            .any(|builtin| builtin == local_name)
-        {
-            diagnostics.push(Diagnostic::new(
-                Stage::Typer,
-                Severity::Error,
-                format!(
-                    "builtin extern {} conflicts with a compiler builtin function",
-                    local_name
-                ),
-            ));
+    let body = match callable_body_from_attributes(ext.attrs.iter().map(|attr| attr.text.as_str()))
+    {
+        Ok(body) => body,
+        Err(message) => {
+            diagnostics.push(Diagnostic::new(Stage::Typer, Severity::Error, message));
             return;
         }
-
-        if !env.allow_std_host_externs || !is_std_host_extern(&env.package, local_name) {
-            diagnostics.push(Diagnostic::new(
-                Stage::Typer,
-                Severity::Error,
-                format!(
-                    "builtin extern {} is not a compiler-owned host hook",
-                    local_name
-                ),
-            ));
-            return;
-        }
+    };
+    if !env.extern_capability.permits(body) {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            format!("extern {local_name} is not permitted in this source"),
+        ));
+        return;
     }
-
     let tparams: Vec<tast::TastIdent> = ext
         .generics
         .iter()
@@ -1082,95 +1198,47 @@ fn define_extern_builtin(
         None => tast::Ty::TUnit,
     };
     let fn_constraints = build_fn_constraints(env, diagnostics, &ext.generics, &ext.generic_bounds);
+    let type_params = ext
+        .generics
+        .iter()
+        .map(|generic| generic.to_ident_name())
+        .collect::<Vec<_>>();
+    let ty = tast::Ty::TFunc {
+        params,
+        ret_ty: Box::new(ret_ty),
+    };
+    let contract_constraints = fn_constraints
+        .iter()
+        .map(|constraint| {
+            (
+                constraint.type_param.clone(),
+                constraint.trait_name.0.clone(),
+            )
+        })
+        .collect::<Vec<_>>();
+    if let Err(message) =
+        validate_callable_signature(body, &type_params, &contract_constraints, &ty)
+    {
+        diagnostics.push(Diagnostic::new(Stage::Typer, Severity::Error, message));
+        return;
+    }
 
     env.current_mut().value_env.funcs.insert(
         ext.name.to_ident_name(),
         FnScheme {
-            type_params: ext.generics.iter().map(|g| g.to_ident_name()).collect(),
+            type_params,
             constraints: fn_constraints,
-            ty: tast::Ty::TFunc {
-                params,
-                ret_ty: Box::new(ret_ty),
-            },
-            origin: FnOrigin::Builtin,
+            ty,
+            body,
         },
     );
-}
-
-fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
-    match ty {
-        tast::Ty::TVar(var) => tast::Ty::TVar(*var),
-        tast::Ty::TUnit => tast::Ty::TUnit,
-        tast::Ty::TBool => tast::Ty::TBool,
-        tast::Ty::TInt8 => tast::Ty::TInt8,
-        tast::Ty::TInt16 => tast::Ty::TInt16,
-        tast::Ty::TInt32 => tast::Ty::TInt32,
-        tast::Ty::TInt64 => tast::Ty::TInt64,
-        tast::Ty::TUint8 => tast::Ty::TUint8,
-        tast::Ty::TUint16 => tast::Ty::TUint16,
-        tast::Ty::TUint32 => tast::Ty::TUint32,
-        tast::Ty::TUint64 => tast::Ty::TUint64,
-        tast::Ty::TFloat32 => tast::Ty::TFloat32,
-        tast::Ty::TFloat64 => tast::Ty::TFloat64,
-        tast::Ty::TString => tast::Ty::TString,
-        tast::Ty::TChar => tast::Ty::TChar,
-        tast::Ty::TTuple { typs } => tast::Ty::TTuple {
-            typs: typs
-                .iter()
-                .map(|ty| instantiate_self_ty(ty, self_ty))
-                .collect(),
-        },
-        tast::Ty::TEnum { name } => tast::Ty::TEnum { name: name.clone() },
-        tast::Ty::TStruct { name } => {
-            if name == "Self" {
-                self_ty.clone()
-            } else {
-                tast::Ty::TStruct { name: name.clone() }
-            }
-        }
-        tast::Ty::TDyn { trait_name } => tast::Ty::TDyn {
-            trait_name: trait_name.clone(),
-        },
-        tast::Ty::TApp { ty, args } => tast::Ty::TApp {
-            ty: Box::new(instantiate_self_ty(ty, self_ty)),
-            args: args
-                .iter()
-                .map(|ty| instantiate_self_ty(ty, self_ty))
-                .collect(),
-        },
-        tast::Ty::TArray { len, elem } => tast::Ty::TArray {
-            len: *len,
-            elem: Box::new(instantiate_self_ty(elem, self_ty)),
-        },
-        tast::Ty::TSlice { elem } => tast::Ty::TSlice {
-            elem: Box::new(instantiate_self_ty(elem, self_ty)),
-        },
-        tast::Ty::TVec { elem } => tast::Ty::TVec {
-            elem: Box::new(instantiate_self_ty(elem, self_ty)),
-        },
-        tast::Ty::TRef { elem } => tast::Ty::TRef {
-            elem: Box::new(instantiate_self_ty(elem, self_ty)),
-        },
-        tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
-            key: Box::new(instantiate_self_ty(key, self_ty)),
-            value: Box::new(instantiate_self_ty(value, self_ty)),
-        },
-        tast::Ty::TParam { name } => tast::Ty::TParam { name: name.clone() },
-        tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
-            params: params
-                .iter()
-                .map(|param| instantiate_self_ty(param, self_ty))
-                .collect(),
-            ret_ty: Box::new(instantiate_self_ty(ret_ty, self_ty)),
-        },
-    }
 }
 
 fn instantiate_trait_method_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
     instantiate_self_ty(ty, self_ty)
 }
 
-pub fn collect_typedefs(
+pub(crate) fn collect_typedefs(
     env: &mut PackageTypeEnv,
     diagnostics: &mut Diagnostics,
     hir: &hir::PackageHir,
@@ -1200,11 +1268,76 @@ pub fn collect_typedefs(
                 }
             }
             hir::Def::Fn(func) => define_function(env, diagnostics, func),
-            hir::Def::ExternBuiltin(ext) => define_extern_builtin(env, diagnostics, ext),
+            hir::Def::ExternFn(ext) => define_extern_fn(env, diagnostics, ext),
             _ => {}
         }
     }
+    validate_trait_impl_coherence(env, diagnostics);
     validate_no_infinite_size_structs(env, diagnostics);
+}
+
+fn validate_trait_impl_coherence(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics) {
+    let impls = env
+        .current()
+        .trait_env
+        .trait_impls
+        .iter()
+        .enumerate()
+        .map(|(index, (key, definition))| (index, key.clone(), definition.clone()))
+        .collect::<Vec<_>>();
+    let mut invalid = HashSet::new();
+    for (index, (trait_name, for_ty), definition) in &impls {
+        if !definition.valid || invalid.contains(index) {
+            continue;
+        }
+        let overlap = env
+            .visible_trait_impls(trait_name)
+            .into_iter()
+            .filter(|(package, other_index, _, other)| {
+                if !other.valid {
+                    return false;
+                }
+                package != &env.package || (other_index < index && !invalid.contains(other_index))
+            })
+            .find(|(_, _, other_ty, other)| {
+                super::traits::coherence::impls_overlap(env, other_ty, other, for_ty, definition)
+            });
+        let Some((package, other_index, _, other)) = overlap else {
+            continue;
+        };
+        let previous = other.origin.map_or_else(
+            || format!("{}#{}", package, other_index),
+            |origin| {
+                format!(
+                    "{}#{} at source range {}..{}",
+                    package,
+                    other_index,
+                    u32::from(origin.start()),
+                    u32::from(origin.end())
+                )
+            },
+        );
+        diagnostics.push(
+            Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "Trait {} implementation for {} overlaps with implementation {}",
+                    trait_name,
+                    super::util::format_ty_for_diag(for_ty),
+                    previous
+                ),
+            )
+            .with_range(definition.origin),
+        );
+        invalid.insert(*index);
+    }
+    for index in invalid {
+        if let Some((_, definition)) = env.current_mut().trait_env.trait_impls.get_index_mut(index)
+        {
+            definition.valid = false;
+        }
+    }
 }
 
 fn validate_no_infinite_size_structs(env: &PackageTypeEnv, diagnostics: &mut Diagnostics) {
@@ -1321,91 +1454,13 @@ fn ty_contains_inline_struct(
 ) -> bool {
     match ty {
         tast::Ty::TStruct { name, .. } => has_infinite_size(structs, name, &[], active),
-        tast::Ty::TApp { .. } => decompose_struct_type_app(ty)
+        tast::Ty::TApp { .. } => decompose_struct_type(ty)
             .is_some_and(|(name, args)| has_infinite_size(structs, &name, &args, active)),
         tast::Ty::TTuple { typs } => typs
             .iter()
             .any(|t| ty_contains_inline_struct(structs, t, active)),
         tast::Ty::TArray { elem, .. } => ty_contains_inline_struct(structs, elem, active),
         _ => false,
-    }
-}
-
-fn decompose_struct_type_app(ty: &tast::Ty) -> Option<(String, Vec<tast::Ty>)> {
-    match ty {
-        tast::Ty::TStruct { name } => Some((name.clone(), Vec::new())),
-        tast::Ty::TApp { ty: base, args } => {
-            let (name, mut collected) = decompose_struct_type_app(base)?;
-            collected.extend(args.iter().cloned());
-            Some((name, collected))
-        }
-        _ => None,
-    }
-}
-
-fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tast::Ty {
-    match ty {
-        tast::Ty::TVar(_)
-        | tast::Ty::TUnit
-        | tast::Ty::TBool
-        | tast::Ty::TInt8
-        | tast::Ty::TInt16
-        | tast::Ty::TInt32
-        | tast::Ty::TInt64
-        | tast::Ty::TUint8
-        | tast::Ty::TUint16
-        | tast::Ty::TUint32
-        | tast::Ty::TUint64
-        | tast::Ty::TFloat32
-        | tast::Ty::TFloat64
-        | tast::Ty::TString
-        | tast::Ty::TChar => ty.clone(),
-        tast::Ty::TTuple { typs } => tast::Ty::TTuple {
-            typs: typs
-                .iter()
-                .map(|item| substitute_ty_params(item, subst))
-                .collect(),
-        },
-        tast::Ty::TEnum { name } => tast::Ty::TEnum { name: name.clone() },
-        tast::Ty::TStruct { name } => tast::Ty::TStruct { name: name.clone() },
-        tast::Ty::TDyn { trait_name } => tast::Ty::TDyn {
-            trait_name: trait_name.clone(),
-        },
-        tast::Ty::TApp { ty, args } => tast::Ty::TApp {
-            ty: Box::new(substitute_ty_params(ty, subst)),
-            args: args
-                .iter()
-                .map(|item| substitute_ty_params(item, subst))
-                .collect(),
-        },
-        tast::Ty::TArray { len, elem } => tast::Ty::TArray {
-            len: *len,
-            elem: Box::new(substitute_ty_params(elem, subst)),
-        },
-        tast::Ty::TSlice { elem } => tast::Ty::TSlice {
-            elem: Box::new(substitute_ty_params(elem, subst)),
-        },
-        tast::Ty::TVec { elem } => tast::Ty::TVec {
-            elem: Box::new(substitute_ty_params(elem, subst)),
-        },
-        tast::Ty::TRef { elem } => tast::Ty::TRef {
-            elem: Box::new(substitute_ty_params(elem, subst)),
-        },
-        tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
-            key: Box::new(substitute_ty_params(key, subst)),
-            value: Box::new(substitute_ty_params(value, subst)),
-        },
-        tast::Ty::TParam { name } => subst
-            .get(name)
-            .cloned()
-            .unwrap_or_else(|| tast::Ty::TParam { name: name.clone() }),
-        tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
-            params: params
-                .iter()
-                .map(|item| substitute_ty_params(item, subst))
-                .collect(),
-            ret_ty: Box::new(substitute_ty_params(ret_ty, subst)),
-        },
     }
 }
 
@@ -1431,18 +1486,27 @@ pub fn check_file_with_env(
     package: &str,
     deps: HashMap<String, env::GlobalTypeEnv>,
 ) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
-    check_file_with_env_inner(hir, hir_table, genv, builtins, package, deps, false)
+    check_file_with_env_inner(
+        hir,
+        hir_table,
+        genv,
+        builtins,
+        package,
+        deps,
+        ExternCapability::None,
+    )
 }
 
-pub fn check_file_with_env_allowing_std_host_externs(
+pub fn check_file_with_env_capability(
     hir: hir::PackageHir,
     hir_table: name_resolution::HirTable,
     genv: env::GlobalTypeEnv,
     builtins: env::GlobalTypeEnv,
     package: &str,
     deps: HashMap<String, env::GlobalTypeEnv>,
+    capability: ExternCapability,
 ) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
-    check_file_with_env_inner(hir, hir_table, genv, builtins, package, deps, true)
+    check_file_with_env_inner(hir, hir_table, genv, builtins, package, deps, capability)
 }
 
 fn check_file_with_env_inner(
@@ -1452,12 +1516,43 @@ fn check_file_with_env_inner(
     builtins: env::GlobalTypeEnv,
     package: &str,
     deps: HashMap<String, env::GlobalTypeEnv>,
-    allow_std_host_externs: bool,
+    capability: ExternCapability,
 ) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
-    let mut genv = env::PackageTypeEnv::new(package.to_string(), builtins, genv, deps);
-    if allow_std_host_externs {
-        genv = genv.with_std_host_externs();
-    }
+    let TypecheckedPackage {
+        hir,
+        mut typer,
+        genv,
+        mut diagnostics,
+    } = typecheck_package(hir, hir_table, genv, builtins, package, deps, capability);
+    let file = crate::typer::tast_builder::build_file(
+        &genv,
+        &hir,
+        &typer.hir_table,
+        typer.results.results(),
+    );
+    let file = subst_file(&mut typer, &mut diagnostics, file);
+
+    (file, genv.current, diagnostics)
+}
+
+struct TypecheckedPackage {
+    hir: hir::PackageHir,
+    typer: Typer,
+    genv: PackageTypeEnv,
+    diagnostics: Diagnostics,
+}
+
+fn typecheck_package(
+    hir: hir::PackageHir,
+    hir_table: name_resolution::HirTable,
+    genv: env::GlobalTypeEnv,
+    builtins: env::GlobalTypeEnv,
+    package: &str,
+    deps: HashMap<String, env::GlobalTypeEnv>,
+    capability: ExternCapability,
+) -> TypecheckedPackage {
+    let mut genv = env::PackageTypeEnv::new(package.to_string(), builtins, genv, deps)
+        .with_extern_capability(capability);
     let mut typer = Typer::new(hir_table);
     let mut diagnostics = Diagnostics::new();
     collect_typedefs(&mut genv, &mut diagnostics, &hir, &typer.hir_table);
@@ -1477,7 +1572,7 @@ fn check_file_with_env_inner(
             hir::Def::EnumDef(..)
             | hir::Def::StructDef(..)
             | hir::Def::TraitDef(..)
-            | hir::Def::ExternBuiltin(..) => {}
+            | hir::Def::ExternFn(..) => {}
         }
     }
     let mut results = std::mem::replace(
@@ -1486,15 +1581,12 @@ fn check_file_with_env_inner(
     );
     results.finalize_types(&mut typer);
     typer.results = results;
-    let file = crate::typer::tast_builder::build_file(
-        &genv,
-        &hir,
-        &typer.hir_table,
-        typer.results.results(),
-    );
-    let file = subst_file(&mut typer, &mut diagnostics, file);
-
-    (file, genv.current, diagnostics)
+    TypecheckedPackage {
+        hir,
+        typer,
+        genv,
+        diagnostics,
+    }
 }
 
 pub fn check_file_with_env_and_results(
@@ -1510,37 +1602,25 @@ pub fn check_file_with_env_and_results(
     env::GlobalTypeEnv,
     Diagnostics,
 ) {
-    let mut genv = env::PackageTypeEnv::new(package.to_string(), builtins, genv, deps);
-    let mut typer = Typer::new(hir_table);
-    let mut diagnostics = Diagnostics::new();
-    collect_typedefs(&mut genv, &mut diagnostics, &hir, &typer.hir_table);
-    let in_scope_traits = build_in_scope_traits(&genv, &hir, &mut diagnostics);
-    for item in hir.toplevels.iter() {
-        match typer.hir_table.def(*item).clone() {
-            hir::Def::ImplBlock(impl_block) => typecheck_impl_block(
-                &genv,
-                &mut typer,
-                &mut diagnostics,
-                &impl_block,
-                &in_scope_traits,
-            ),
-            hir::Def::Fn(func) => {
-                typecheck_fn(&genv, &mut typer, &mut diagnostics, &func, &in_scope_traits)
-            }
-            hir::Def::EnumDef(..)
-            | hir::Def::StructDef(..)
-            | hir::Def::TraitDef(..)
-            | hir::Def::ExternBuiltin(..) => {}
-        }
-    }
-    let mut results = std::mem::replace(
-        &mut typer.results,
-        crate::typer::results::TypeckResultsBuilder::new(&typer.hir_table),
+    let TypecheckedPackage {
+        typer,
+        genv,
+        diagnostics,
+        ..
+    } = typecheck_package(
+        hir,
+        hir_table,
+        genv,
+        builtins,
+        package,
+        deps,
+        ExternCapability::None,
     );
-    results.finalize_types(&mut typer);
-    let results = results.finish();
+    let Typer {
+        hir_table, results, ..
+    } = typer;
 
-    (typer.hir_table, results, genv.current, diagnostics)
+    (hir_table, results.finish(), genv.current, diagnostics)
 }
 
 fn subst_file(typer: &mut Typer, diagnostics: &mut Diagnostics, file: tast::File) -> tast::File {
@@ -1673,9 +1753,6 @@ fn typecheck_fn(
     f: &hir::Fn,
     in_scope_traits: &[tast::TastIdent],
 ) {
-    validate_function_parameter_names(diagnostics, &typer.hir_table, f);
-    let mut local_env = LocalTypeEnv::new();
-    local_env.set_in_scope_traits(in_scope_traits.to_vec());
     let tparams: Vec<tast::TastIdent> = f
         .generics
         .iter()
@@ -1684,42 +1761,18 @@ fn typecheck_fn(
     let mut bounds = init_trait_bounds(&tparams);
     extend_trait_bounds(genv, diagnostics, &mut bounds, &f.generic_bounds);
     normalize_trait_bounds(&mut bounds);
-    local_env.set_tparam_trait_bounds(bounds);
-    let param_types: Vec<(hir::LocalId, tast::Ty)> = f
-        .params
-        .iter()
-        .map(|(name, ty)| {
-            let ty = tast::Ty::from_hir(genv, ty, &tparams);
-            (*name, ty)
-        })
-        .collect();
-
-    let ret_ty = match &f.ret_ty {
-        Some(ty) => tast::Ty::from_hir(genv, ty, &tparams),
-        None => tast::Ty::TUnit,
-    };
-
-    local_env.set_tparams_env(&tparams);
-    local_env.push_scope();
-    for (id, ty) in param_types.iter() {
-        local_env.insert_var(*id, ty.clone());
-        typer.results.record_local_ty(*id, ty.clone());
-    }
-    typer.return_ty_stack.push(ret_ty.clone());
-    let _typed_body = typer.check_block(genv, &mut local_env, diagnostics, &f.body, &ret_ty);
-    let _ = typer.return_ty_stack.pop();
-    local_env.pop_scope(diagnostics);
-    local_env.clear_tparams_env();
-    typer.tparam_trait_bounds = local_env
-        .tparam_trait_bounds_map()
-        .iter()
-        .map(|(k, v)| (k.clone(), v.iter().map(|t| t.0.clone()).collect()))
-        .collect();
-    local_env.clear_tparam_trait_bounds();
-    typer.solve(genv, diagnostics);
-    typer.tparam_trait_bounds.clear();
-    typer.validate_deferred_comparison_checks(genv, diagnostics);
-    typer.validate_deferred_arithmetic_checks(diagnostics);
+    typecheck_function_body(
+        genv,
+        typer,
+        diagnostics,
+        FunctionCheck {
+            function: f,
+            in_scope_traits,
+            tparams: &tparams,
+            bounds,
+            self_ty: None,
+        },
+    );
 }
 
 fn typecheck_impl_block(
@@ -1740,66 +1793,107 @@ fn typecheck_impl_block(
             hir::Def::Fn(func) => func,
             _ => continue,
         };
-        validate_function_parameter_names(diagnostics, &typer.hir_table, &f);
-        let mut local_env = LocalTypeEnv::new();
-        local_env.set_in_scope_traits(in_scope_traits.to_vec());
-
-        // Combine impl generics and method generics
         let mut all_generics = impl_block.generics.clone();
         all_generics.extend(f.generics.clone());
-        let all_generics_tast: Vec<tast::TastIdent> = all_generics
-            .iter()
-            .map(|g| tast::TastIdent(g.to_ident_name()))
-            .collect();
-
-        let mut bounds = init_trait_bounds(&all_generics_tast);
-        extend_trait_bounds(genv, diagnostics, &mut bounds, &impl_block.generic_bounds);
-        extend_trait_bounds(genv, diagnostics, &mut bounds, &f.generic_bounds);
-        normalize_trait_bounds(&mut bounds);
-        local_env.set_tparam_trait_bounds(bounds);
-
-        let param_types: Vec<(hir::LocalId, tast::Ty)> = f
-            .params
-            .iter()
-            .map(|(name, ty)| {
-                let ty = tast::Ty::from_hir(genv, ty, &all_generics_tast);
-                let ty = instantiate_self_ty(&ty, &for_ty);
-                (*name, ty)
-            })
-            .collect();
-
-        let ret_ty = match &f.ret_ty {
-            Some(ty) => {
-                let ty = tast::Ty::from_hir(genv, ty, &all_generics_tast);
-                instantiate_self_ty(&ty, &for_ty)
-            }
-            None => tast::Ty::TUnit,
-        };
-
         let tparams: Vec<tast::TastIdent> = all_generics
             .iter()
             .map(|g| tast::TastIdent(g.to_ident_name()))
             .collect();
-        local_env.set_tparams_env(&tparams);
-        local_env.push_scope();
-        for (id, ty) in param_types.iter() {
-            local_env.insert_var(*id, ty.clone());
-            typer.results.record_local_ty(*id, ty.clone());
-        }
-        typer.return_ty_stack.push(ret_ty.clone());
-        let _typed_body = typer.check_block(genv, &mut local_env, diagnostics, &f.body, &ret_ty);
-        let _ = typer.return_ty_stack.pop();
-        local_env.pop_scope(diagnostics);
-        local_env.clear_tparams_env();
-        typer.tparam_trait_bounds = local_env
-            .tparam_trait_bounds_map()
-            .iter()
-            .map(|(k, v)| (k.clone(), v.iter().map(|t| t.0.clone()).collect()))
-            .collect();
-        local_env.clear_tparam_trait_bounds();
-        typer.solve(genv, diagnostics);
-        typer.tparam_trait_bounds.clear();
-        typer.validate_deferred_comparison_checks(genv, diagnostics);
-        typer.validate_deferred_arithmetic_checks(diagnostics);
+
+        let mut bounds = init_trait_bounds(&tparams);
+        extend_trait_bounds(genv, diagnostics, &mut bounds, &impl_block.generic_bounds);
+        extend_trait_bounds(genv, diagnostics, &mut bounds, &f.generic_bounds);
+        normalize_trait_bounds(&mut bounds);
+        typecheck_function_body(
+            genv,
+            typer,
+            diagnostics,
+            FunctionCheck {
+                function: &f,
+                in_scope_traits,
+                tparams: &tparams,
+                bounds,
+                self_ty: Some(&for_ty),
+            },
+        );
     }
+}
+
+struct FunctionCheck<'a> {
+    function: &'a hir::Fn,
+    in_scope_traits: &'a [tast::TastIdent],
+    tparams: &'a [tast::TastIdent],
+    bounds: IndexMap<String, Vec<tast::TastIdent>>,
+    self_ty: Option<&'a tast::Ty>,
+}
+
+fn typecheck_function_body(
+    genv: &PackageTypeEnv,
+    typer: &mut Typer,
+    diagnostics: &mut Diagnostics,
+    check: FunctionCheck<'_>,
+) {
+    let FunctionCheck {
+        function,
+        in_scope_traits,
+        tparams,
+        bounds,
+        self_ty,
+    } = check;
+    validate_function_parameter_names(diagnostics, &typer.hir_table, function);
+    let mut local_env = LocalTypeEnv::new();
+    local_env.set_in_scope_traits(in_scope_traits.to_vec());
+    local_env.set_tparam_trait_bounds(bounds);
+
+    let param_types = function
+        .params
+        .iter()
+        .map(|(name, ty)| {
+            let ty = tast::Ty::from_hir(genv, ty, tparams);
+            let ty = match self_ty {
+                Some(self_ty) => instantiate_self_ty(&ty, self_ty),
+                None => ty,
+            };
+            (*name, ty)
+        })
+        .collect::<Vec<_>>();
+    let ret_ty = function
+        .ret_ty
+        .as_ref()
+        .map(|ty| {
+            let ty = tast::Ty::from_hir(genv, ty, tparams);
+            match self_ty {
+                Some(self_ty) => instantiate_self_ty(&ty, self_ty),
+                None => ty,
+            }
+        })
+        .unwrap_or(tast::Ty::TUnit);
+
+    local_env.set_tparams_env(tparams);
+    local_env.push_scope();
+    for (id, ty) in param_types {
+        local_env.insert_var(id, ty.clone());
+        typer.results.record_local_ty(id, ty);
+    }
+    typer.return_ty_stack.push(ret_ty.clone());
+    let _ = typer.check_block(genv, &mut local_env, diagnostics, &function.body, &ret_ty);
+    let _ = typer.return_ty_stack.pop();
+    local_env.pop_scope(diagnostics);
+    local_env.clear_tparams_env();
+    typer.tparam_trait_bounds = local_env
+        .tparam_trait_bounds_map()
+        .iter()
+        .map(|(name, traits)| {
+            (
+                name.clone(),
+                traits
+                    .iter()
+                    .map(|trait_name| trait_name.0.clone())
+                    .collect(),
+            )
+        })
+        .collect();
+    local_env.clear_tparam_trait_bounds();
+    typer.solve(genv, diagnostics);
+    typer.tparam_trait_bounds.clear();
 }

@@ -1,9 +1,302 @@
 fn print(value/0: T) -> unit {
-  string_print(trait_call[ToString::to_string](value/0))
+  @runtime(core.string_print)(trait_call[ToString::to_string](value/0))
 }
 
 fn println(value/1: T) -> unit {
-  string_println(trait_call[ToString::to_string](value/1))
+  @runtime(core.string_println)(trait_call[ToString::to_string](value/1))
+}
+
+fn inherent#int32#int32#to_string(self/2: int32) -> string {
+  @runtime(core.int32_to_string)(self/2)
+}
+
+fn inherent#char#char#to_string(self/3: char) -> string {
+  @runtime(core.char_to_string)(self/3)
+}
+
+fn inherent#string#string#len(self/4: string) -> int32 {
+  @runtime(core.string_len)(self/4)
+}
+
+fn inherent#string#string#get(self/5: string, index/6: int32) -> char {
+  @runtime(core.string_get)(self/5, index/6)
+}
+
+fn trait_impl#ToString#unit#to_string(self/7: unit) -> string {
+  @runtime(core.unit_to_string)(self/7)
+}
+
+fn trait_impl#ToString#bool#to_string(self/8: bool) -> string {
+  @runtime(core.bool_to_string)(self/8)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  self/9
+}
+
+fn trait_impl#ToString#char#to_string(self/10: char) -> string {
+  @runtime(core.char_to_string)(self/10)
+}
+
+fn trait_impl#ToString#int8#to_string(self/11: int8) -> string {
+  @runtime(core.int8_to_string)(self/11)
+}
+
+fn trait_impl#ToString#int16#to_string(self/12: int16) -> string {
+  @runtime(core.int16_to_string)(self/12)
+}
+
+fn trait_impl#ToString#int32#to_string(self/13: int32) -> string {
+  @runtime(core.int32_to_string)(self/13)
+}
+
+fn trait_impl#ToString#int64#to_string(self/14: int64) -> string {
+  @runtime(core.int64_to_string)(self/14)
+}
+
+fn trait_impl#ToString#uint8#to_string(self/15: uint8) -> string {
+  @runtime(core.uint8_to_string)(self/15)
+}
+
+fn trait_impl#ToString#uint16#to_string(self/16: uint16) -> string {
+  @runtime(core.uint16_to_string)(self/16)
+}
+
+fn trait_impl#ToString#uint32#to_string(self/17: uint32) -> string {
+  @runtime(core.uint32_to_string)(self/17)
+}
+
+fn trait_impl#ToString#uint64#to_string(self/18: uint64) -> string {
+  @runtime(core.uint64_to_string)(self/18)
+}
+
+fn trait_impl#ToString#float32#to_string(self/19: float32) -> string {
+  @runtime(core.float32_to_string)(self/19)
+}
+
+fn trait_impl#ToString#float64#to_string(self/20: float64) -> string {
+  @runtime(core.float64_to_string)(self/20)
+}
+
+fn trait_impl#Eq#unit#eq(self/21: unit, other/22: unit) -> bool {
+  true
+}
+
+fn trait_impl#Eq#bool#eq(self/23: bool, other/24: bool) -> bool {
+  (self/23 == other/24)
+}
+
+fn trait_impl#Eq#string#eq(self/25: string, other/26: string) -> bool {
+  (self/25 == other/26)
+}
+
+fn trait_impl#Eq#char#eq(self/27: char, other/28: char) -> bool {
+  (self/27 == other/28)
+}
+
+fn trait_impl#Eq#int8#eq(self/29: int8, other/30: int8) -> bool {
+  (self/29 == other/30)
+}
+
+fn trait_impl#Eq#int16#eq(self/31: int16, other/32: int16) -> bool {
+  (self/31 == other/32)
+}
+
+fn trait_impl#Eq#int32#eq(self/33: int32, other/34: int32) -> bool {
+  (self/33 == other/34)
+}
+
+fn trait_impl#Eq#int64#eq(self/35: int64, other/36: int64) -> bool {
+  (self/35 == other/36)
+}
+
+fn trait_impl#Eq#uint8#eq(self/37: uint8, other/38: uint8) -> bool {
+  (self/37 == other/38)
+}
+
+fn trait_impl#Eq#uint16#eq(self/39: uint16, other/40: uint16) -> bool {
+  (self/39 == other/40)
+}
+
+fn trait_impl#Eq#uint32#eq(self/41: uint32, other/42: uint32) -> bool {
+  (self/41 == other/42)
+}
+
+fn trait_impl#Eq#uint64#eq(self/43: uint64, other/44: uint64) -> bool {
+  (self/43 == other/44)
+}
+
+fn trait_impl#Eq#float32#eq(self/45: float32, other/46: float32) -> bool {
+  (self/45 == other/46)
+}
+
+fn trait_impl#Eq#float64#eq(self/47: float64, other/48: float64) -> bool {
+  (self/47 == other/48)
+}
+
+fn trait_impl#Hash#unit#hash(self/49: unit) -> uint64 {
+  0
+}
+
+fn trait_impl#Hash#bool#hash(self/50: bool) -> uint64 {
+  if self/50 {
+      {
+        1
+      }
+  } else {
+      {
+        0
+      }
+  }
+}
+
+fn trait_impl#Hash#string#hash(self/51: string) -> uint64 {
+  @runtime(core.string_hash)(self/51)
+}
+
+fn trait_impl#Hash#char#hash(self/52: char) -> uint64 {
+  @runtime(core.char_hash)(self/52)
+}
+
+fn trait_impl#Hash#int8#hash(self/53: int8) -> uint64 {
+  @runtime(core.int8_hash)(self/53)
+}
+
+fn trait_impl#Hash#int16#hash(self/54: int16) -> uint64 {
+  @runtime(core.int16_hash)(self/54)
+}
+
+fn trait_impl#Hash#int32#hash(self/55: int32) -> uint64 {
+  @runtime(core.int32_hash)(self/55)
+}
+
+fn trait_impl#Hash#int64#hash(self/56: int64) -> uint64 {
+  @runtime(core.int64_hash)(self/56)
+}
+
+fn trait_impl#Hash#uint8#hash(self/57: uint8) -> uint64 {
+  @runtime(core.uint8_hash)(self/57)
+}
+
+fn trait_impl#Hash#uint16#hash(self/58: uint16) -> uint64 {
+  @runtime(core.uint16_hash)(self/58)
+}
+
+fn trait_impl#Hash#uint32#hash(self/59: uint32) -> uint64 {
+  @runtime(core.uint32_hash)(self/59)
+}
+
+fn trait_impl#Hash#uint64#hash(self/60: uint64) -> uint64 {
+  self/60
+}
+
+fn trait_impl#Hash#float32#hash(self/61: float32) -> uint64 {
+  @runtime(core.float32_hash)(self/61)
+}
+
+fn trait_impl#Hash#float64#hash(self/62: float64) -> uint64 {
+  @runtime(core.float64_hash)(self/62)
+}
+
+fn trait_impl#Eq#Ref[T]#eq(self/63: Ref[T], other/64: Ref[T]) -> bool {
+  let a/65 = inherent#Ref#Ref[T]#get(self/63) in
+  let b/66 = inherent#Ref#Ref[T]#get(other/64) in
+  trait_call[Eq::eq](a/65, b/66)
+}
+
+fn trait_impl#Hash#Ref[T]#hash(self/67: Ref[T]) -> uint64 {
+  let v/68 = inherent#Ref#Ref[T]#get(self/67) in
+  trait_call[Hash::hash](v/68)
+}
+
+fn trait_impl#ToString#Ref[T]#to_string(self/69: Ref[T]) -> string {
+  let v/70 = inherent#Ref#Ref[T]#get(self/69) in
+  (("ref(" + trait_call[ToString::to_string](v/70)) + ")")
+}
+
+fn inherent#Vec#Vec[T]#new() -> Vec[T] {
+  @intrinsic(vec.new)()
+}
+
+fn inherent#Vec#Vec[T]#push(self/71: Vec[T], elem/72: T) -> unit {
+  @intrinsic(vec.push)(self/71, elem/72)
+}
+
+fn inherent#Vec#Vec[T]#pushed(self/73: Vec[T], elem/74: T) -> Vec[T] {
+  let result/75 = inherent#Vec#Vec[T]#new() in
+  let index/76 = inherent#Ref#Ref[int32]#new(0) in
+  let _wild2 = while (inherent#Ref#Ref[int32]#get(index/76) < inherent#Vec#Vec[T]#len(self/73)) {
+      {
+        let _wild0 = inherent#Vec#Vec[T]#push(result/75, inherent#Vec#Vec[T]#get(self/73, inherent#Ref#Ref[int32]#get(index/76))) in
+        let _wild1 = inherent#Ref#Ref[int32]#set(index/76, (inherent#Ref#Ref[int32]#get(index/76) + 1)) in
+      }
+  } in
+  let _wild3 = inherent#Vec#Vec[T]#push(result/75, elem/74) in
+  result/75
+}
+
+fn inherent#Vec#Vec[T]#get(self/77: Vec[T], index/78: int32) -> T {
+  @intrinsic(vec.get)(self/77, index/78)
+}
+
+fn inherent#Vec#Vec[T]#set(self/79: Vec[T], index/80: int32, elem/81: T) -> unit {
+  @intrinsic(vec.set)(self/79, index/80, elem/81)
+}
+
+fn inherent#Vec#Vec[T]#len(self/82: Vec[T]) -> int32 {
+  @intrinsic(vec.len)(self/82)
+}
+
+fn inherent#Vec#Vec[T]#slice(self/83: Vec[T], start/84: int32, end/85: int32) -> Slice[T] {
+  @intrinsic(slice.new)(self/83, start/84, end/85)
+}
+
+fn inherent#Slice#Slice[T]#get(self/86: Slice[T], index/87: int32) -> T {
+  @intrinsic(slice.get)(self/86, index/87)
+}
+
+fn inherent#Slice#Slice[T]#len(self/88: Slice[T]) -> int32 {
+  @intrinsic(slice.len)(self/88)
+}
+
+fn inherent#Slice#Slice[T]#sub(self/89: Slice[T], start/90: int32, end/91: int32) -> Slice[T] {
+  @intrinsic(slice.sub)(self/89, start/90, end/91)
+}
+
+fn inherent#HashMap#HashMap[K,V]#new() -> HashMap[K, V] {
+  @intrinsic(hashmap.new)()
+}
+
+fn inherent#HashMap#HashMap[K,V]#get(self/92: HashMap[K, V], key/93: K) -> Option[V] {
+  @intrinsic(hashmap.get)(self/92, key/93)
+}
+
+fn inherent#HashMap#HashMap[K,V]#set(self/94: HashMap[K, V], key/95: K, value/96: V) -> unit {
+  @intrinsic(hashmap.set)(self/94, key/95, value/96)
+}
+
+fn inherent#HashMap#HashMap[K,V]#remove(self/97: HashMap[K, V], key/98: K) -> unit {
+  @intrinsic(hashmap.remove)(self/97, key/98)
+}
+
+fn inherent#HashMap#HashMap[K,V]#len(self/99: HashMap[K, V]) -> int32 {
+  @intrinsic(hashmap.len)(self/99)
+}
+
+fn inherent#HashMap#HashMap[K,V]#contains(self/100: HashMap[K, V], key/101: K) -> bool {
+  @intrinsic(hashmap.contains)(self/100, key/101)
+}
+
+fn inherent#Ref#Ref[T]#new(value/102: T) -> Ref[T] {
+  @intrinsic(ref.new)(value/102)
+}
+
+fn inherent#Ref#Ref[T]#get(self/103: Ref[T]) -> T {
+  @intrinsic(ref.get)(self/103)
+}
+
+fn inherent#Ref#Ref[T]#set(self/104: Ref[T], value/105: T) -> unit {
+  @intrinsic(ref.set)(self/104, value/105)
 }
 
 fn print_opt_int(x/0: Option[int32]) -> unit {
@@ -11,11 +304,11 @@ fn print_opt_int(x/0: Option[int32]) -> unit {
     Option::None => {
       println("none")
     },
-    Option::Some(x0) => {
+    Option::Some(x4) => {
       {
-        let x0 = Option::Some._0(x/0) in
+        let x4 = Option::Some._0(x/0) in
         {
-          let v/1 = x0 in
+          let v/1 = x4 in
           println(v/1)
         }
       }
@@ -24,115 +317,91 @@ fn print_opt_int(x/0: Option[int32]) -> unit {
 }
 
 fn main() -> unit {
-  let _wild1 = println($goml_builtin_runtime$array_get([31, 32], 1)) in
+  let _wild5 = println(@intrinsic(array.get)([31, 32], 1)) in
   let arr/2 = [1, 2, 3] in
-  let _wild2 = println($goml_builtin_runtime$array_get(arr/2, 0)) in
+  let _wild6 = println(@intrinsic(array.get)(arr/2, 0)) in
   let arr2/3 = [4, 5, 6] in
-  let _wild7 = {
-    let place_root3 = arr2/3 in
-    let index4 = 1 in
-    let place5 = $goml_builtin_runtime$array_get(place_root3, index4) in
-    let value6 = 50 in
-    arr2/3 = $goml_builtin_runtime$array_set(place_root3, index4, value6)
+  let _wild11 = {
+    let place_root7 = arr2/3 in
+    let index8 = 1 in
+    let place9 = @intrinsic(array.get)(place_root7, index8) in
+    let value10 = 50 in
+    arr2/3 = @intrinsic(array.set)(place_root7, index8, value10)
   } in
-  let _wild8 = println($goml_builtin_runtime$array_get(arr2/3, 1)) in
-  let vec/4 = inherent#Vec#Vec[int32]#push(inherent#Vec#Vec[int32]#push(inherent#Vec#Vec[int32]#push(inherent#Vec#Vec[int32]#new(), 7), 8), 9) in
-  let _wild9 = println($goml_builtin_runtime$vec_get(vec/4, 2)) in
-  let vec2/5 = inherent#Vec#Vec[int32]#push(inherent#Vec#Vec[int32]#push(inherent#Vec#Vec[int32]#push(inherent#Vec#Vec[int32]#new(), 10), 11), 12) in
-  let _wild14 = {
-    let place_root10 = vec2/5 in
-    let index11 = 0 in
-    let place12 = $goml_builtin_runtime$vec_get(place_root10, index11) in
-    let value13 = 100 in
-    $goml_builtin_runtime$vec_set(place_root10, index11, value13)
+  let _wild12 = println(@intrinsic(array.get)(arr2/3, 1)) in
+  let vec/4 = inherent#Vec#Vec[int32]#pushed(inherent#Vec#Vec[int32]#pushed(inherent#Vec#Vec[int32]#pushed(inherent#Vec#Vec[int32]#new(), 7), 8), 9) in
+  let _wild13 = println(@intrinsic(vec.get)(vec/4, 2)) in
+  let vec2/5 = inherent#Vec#Vec[int32]#pushed(inherent#Vec#Vec[int32]#pushed(inherent#Vec#Vec[int32]#pushed(inherent#Vec#Vec[int32]#new(), 10), 11), 12) in
+  let _wild18 = {
+    let place_root14 = vec2/5 in
+    let index15 = 0 in
+    let place16 = @intrinsic(vec.get)(place_root14, index15) in
+    let value17 = 100 in
+    @intrinsic(vec.set)(place_root14, index15, value17)
   } in
-  let _wild15 = println($goml_builtin_runtime$vec_get(vec2/5, 0)) in
+  let _wild19 = println(@intrinsic(vec.get)(vec2/5, 0)) in
   let s/6 = inherent#Vec#Vec[int32]#slice(vec2/5, 0, 2) in
-  let _wild16 = println($goml_builtin_runtime$slice_get(s/6, 1)) in
+  let _wild20 = println(@intrinsic(slice.get)(s/6, 1)) in
   let map/7 = inherent#HashMap#HashMap[string,int32]#new() in
-  let _wild21 = {
-    let place_root17 = map/7 in
-    let index18 = "a" in
-    let place19 = $goml_builtin_runtime$hashmap_get(place_root17, index18) in
-    let value20 = 13 in
-    $goml_builtin_runtime$hashmap_set(place_root17, index18, value20)
+  let _wild25 = {
+    let place_root21 = map/7 in
+    let index22 = "a" in
+    let place23 = @intrinsic(hashmap.get)(place_root21, index22) in
+    let value24 = 13 in
+    @intrinsic(hashmap.set)(place_root21, index22, value24)
   } in
-  let _wild22 = print_opt_int($goml_builtin_runtime$hashmap_get(map/7, "a")) in
-  let _wild23 = print_opt_int($goml_builtin_runtime$hashmap_get(map/7, "missing")) in
+  let _wild26 = print_opt_int(@intrinsic(hashmap.get)(map/7, "a")) in
+  let _wild27 = print_opt_int(@intrinsic(hashmap.get)(map/7, "missing")) in
   let matrix/8 = [[1, 2], [3, 4]] in
-  let _wild30 = {
-    let place_root24 = matrix/8 in
-    let index25 = 1 in
-    let place26 = $goml_builtin_runtime$array_get(place_root24, index25) in
-    let index27 = 0 in
-    let place28 = $goml_builtin_runtime$array_get(place26, index27) in
-    let value29 = 30 in
-    matrix/8 = $goml_builtin_runtime$array_set(place_root24, index25, $goml_builtin_runtime$array_set(place26, index27, value29))
+  let _wild34 = {
+    let place_root28 = matrix/8 in
+    let index29 = 1 in
+    let place30 = @intrinsic(array.get)(place_root28, index29) in
+    let index31 = 0 in
+    let place32 = @intrinsic(array.get)(place30, index31) in
+    let value33 = 30 in
+    matrix/8 = @intrinsic(array.set)(place_root28, index29, @intrinsic(array.set)(place30, index31, value33))
   } in
-  let _wild31 = println($goml_builtin_runtime$array_get($goml_builtin_runtime$array_get(matrix/8, 1), 0)) in
+  let _wild35 = println(@intrinsic(array.get)(@intrinsic(array.get)(matrix/8, 1), 0)) in
   let pair/9 = ([14, 15], 0) in
-  let _wild37 = {
-    let place_root32 = pair/9 in
-    let place33 = place_root32.0 in
-    let index34 = 1 in
-    let place35 = $goml_builtin_runtime$array_get(place33, index34) in
-    let value36 = 150 in
-    pair/9 = ($goml_builtin_runtime$array_set(place33, index34, value36), place_root32.1)
+  let _wild41 = {
+    let place_root36 = pair/9 in
+    let place37 = place_root36.0 in
+    let index38 = 1 in
+    let place39 = @intrinsic(array.get)(place37, index38) in
+    let value40 = 150 in
+    pair/9 = (@intrinsic(array.set)(place37, index38, value40), place_root36.1)
   } in
-  let _wild38 = println($goml_builtin_runtime$array_get(pair/9.0, 1)) in
-  let holder/10 = Holder { data: [16, 17], vecs: inherent#Vec#Vec[[int32;2]]#push(inherent#Vec#Vec[[int32;2]]#push(inherent#Vec#Vec[[int32;2]]#new(), [18, 19]), [20, 21]) } in
-  let _wild44 = {
-    let place_root39 = holder/10 in
-    let place40 = Holder.data(place_root39) in
-    let index41 = 0 in
-    let place42 = $goml_builtin_runtime$array_get(place40, index41) in
-    let value43 = 160 in
-    holder/10 = Holder { data: $goml_builtin_runtime$array_set(place40, index41, value43), vecs: Holder.vecs(place_root39) }
+  let _wild42 = println(@intrinsic(array.get)(pair/9.0, 1)) in
+  let holder/10 = Holder { data: [16, 17], vecs: inherent#Vec#Vec[[int32;2]]#pushed(inherent#Vec#Vec[[int32;2]]#pushed(inherent#Vec#Vec[[int32;2]]#new(), [18, 19]), [20, 21]) } in
+  let _wild48 = {
+    let place_root43 = holder/10 in
+    let place44 = Holder.data(place_root43) in
+    let index45 = 0 in
+    let place46 = @intrinsic(array.get)(place44, index45) in
+    let value47 = 160 in
+    holder/10 = Holder { data: @intrinsic(array.set)(place44, index45, value47), vecs: Holder.vecs(place_root43) }
   } in
-  let _wild45 = println($goml_builtin_runtime$array_get(Holder.data(holder/10), 0)) in
-  let _wild53 = {
-    let place_root46 = holder/10 in
-    let place47 = Holder.vecs(place_root46) in
-    let index48 = 1 in
-    let place49 = $goml_builtin_runtime$vec_get(place47, index48) in
-    let index50 = 0 in
-    let place51 = $goml_builtin_runtime$array_get(place49, index50) in
-    let value52 = 200 in
-    $goml_builtin_runtime$vec_set(place47, index48, $goml_builtin_runtime$array_set(place49, index50, value52))
+  let _wild49 = println(@intrinsic(array.get)(Holder.data(holder/10), 0)) in
+  let _wild57 = {
+    let place_root50 = holder/10 in
+    let place51 = Holder.vecs(place_root50) in
+    let index52 = 1 in
+    let place53 = @intrinsic(vec.get)(place51, index52) in
+    let index54 = 0 in
+    let place55 = @intrinsic(array.get)(place53, index54) in
+    let value56 = 200 in
+    @intrinsic(vec.set)(place51, index52, @intrinsic(array.set)(place53, index54, value56))
   } in
-  let _wild54 = println($goml_builtin_runtime$array_get($goml_builtin_runtime$vec_get(Holder.vecs(holder/10), 1), 0)) in
+  let _wild58 = println(@intrinsic(array.get)(@intrinsic(vec.get)(Holder.vecs(holder/10), 1), 0)) in
   let r/11 = inherent#Ref#Ref[[int32;2]]#new([22, 23]) in
-  let _wild60 = {
-    let place_ref55 = r/11 in
-    let place_root56 = $goml_builtin_runtime$ref_get(place_ref55) in
-    let index57 = 1 in
-    let place58 = $goml_builtin_runtime$array_get(place_root56, index57) in
-    let value59 = 230 in
-    $goml_builtin_runtime$ref_set(place_ref55, $goml_builtin_runtime$array_set(place_root56, index57, value59))
+  let _wild64 = {
+    let place_ref59 = r/11 in
+    let place_root60 = @intrinsic(ref.get)(place_ref59) in
+    let index61 = 1 in
+    let place62 = @intrinsic(array.get)(place_root60, index61) in
+    let value63 = 230 in
+    @intrinsic(ref.set)(place_ref59, @intrinsic(array.set)(place_root60, index61, value63))
   } in
-  let _wild61 = println($goml_builtin_runtime$array_get(inherent#Ref#Ref[[int32;2]]#get(r/11), 1)) in
-}
-
-fn inherent#Vec#Vec[T]#new() -> Vec[T] {
-  vec_new()
-}
-
-fn inherent#Vec#Vec[T]#push(self/66: Vec[T], elem/67: T) -> Vec[T] {
-  vec_push(self/66, elem/67)
-}
-
-fn inherent#Vec#Vec[T]#slice(self/74: Vec[T], start/75: int32, end/76: int32) -> Slice[T] {
-  slice(self/74, start/75, end/76)
-}
-
-fn inherent#HashMap#HashMap[K,V]#new() -> HashMap[K, V] {
-  hashmap_new()
-}
-
-fn inherent#Ref#Ref[T]#new(value/93: T) -> Ref[T] {
-  ref(value/93)
-}
-
-fn inherent#Ref#Ref[T]#get(self/94: Ref[T]) -> T {
-  ref_get(self/94)
+  let _wild65 = println(@intrinsic(array.get)(inherent#Ref#Ref[[int32;2]]#get(r/11), 1)) in
 }

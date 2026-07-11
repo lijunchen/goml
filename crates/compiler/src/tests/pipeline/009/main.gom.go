@@ -4,11 +4,11 @@ import (
     _goml_fmt "fmt"
 )
 
-func int32_to_string(x int32) string {
+func _goml_runtime_core_int32_to_string(x int32) string {
     return _goml_fmt.Sprintf("%d", x)
 }
 
-func string_println(s string) struct{} {
+func _goml_runtime_core_string_println(s string) struct{} {
     _goml_fmt.Println(s)
     return struct{}{}
 }
@@ -31,31 +31,31 @@ func (_ B) isT() {}
 func test(t__0 T) struct{} {
     switch t__0.(type) {
     case A:
-        var t8 string = int32_to_string(1)
-        println__T_string(t8)
+        var t12 string = _goml_m_inherent_i_int32_i_int32_i_to__string(1)
+        println__T_string(t12)
     case B:
-        var x0 bool = t__0.(B)._0
-        var x1 bool = t__0.(B)._1
-        switch x1 {
+        var x4 bool = t__0.(B)._0
+        var x5 bool = t__0.(B)._1
+        switch x5 {
         case true:
-            switch x0 {
+            switch x4 {
             case true:
-                var t12 string = int32_to_string(4)
-                println__T_string(t12)
+                var t16 string = _goml_m_inherent_i_int32_i_int32_i_to__string(4)
+                println__T_string(t16)
             case false:
-                var t14 string = int32_to_string(3)
-                println__T_string(t14)
+                var t18 string = _goml_m_inherent_i_int32_i_int32_i_to__string(3)
+                println__T_string(t18)
             default:
                 panic("non-exhaustive match")
             }
         case false:
-            switch x0 {
+            switch x4 {
             case true:
-                var t17 string = int32_to_string(4)
-                println__T_string(t17)
+                var t21 string = _goml_m_inherent_i_int32_i_int32_i_to__string(4)
+                println__T_string(t21)
             case false:
-                var t19 string = int32_to_string(2)
-                println__T_string(t19)
+                var t23 string = _goml_m_inherent_i_int32_i_int32_i_to__string(2)
+                println__T_string(t23)
             default:
                 panic("non-exhaustive match")
             }
@@ -69,28 +69,42 @@ func test(t__0 T) struct{} {
 }
 
 func main0() struct{} {
-    var t22 T = B{
+    var t26 T = B{
         _0: true,
         _1: true,
     }
-    test(t22)
-    var t23 T = B{
+    test(t26)
+    var t27 T = B{
         _0: false,
         _1: true,
     }
-    test(t23)
-    var t24 T = B{
+    test(t27)
+    var t28 T = B{
         _0: false,
         _1: false,
     }
-    test(t24)
+    test(t28)
     test(A{})
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    string_println(value__1)
+    var t30 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t30)
     return struct{}{}
+}
+
+func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
+    var retv33 string
+    var t34 string = _goml_runtime_core_int32_to_string(self__2)
+    retv33 = t34
+    return retv33
+}
+
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
+    var retv36 string
+    retv36 = self__9
+    return retv36
 }
 
 func main() {

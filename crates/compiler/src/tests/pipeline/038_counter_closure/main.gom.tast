@@ -1,11 +1,3 @@
-fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
-}
-
-fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
-}
-
 fn make_counter() -> (() -> int32, () -> unit) {
     let cell/0: Ref[int32] = (Ref[int32]::new : (int32) -> Ref[int32])(0);
     let next/2: () -> int32 = || => {
@@ -30,9 +22,9 @@ fn main() -> unit {
     let new_counter/10: (() -> int32, () -> unit) = (make_counter : () -> (() -> int32, () -> unit))();
     let (new_next/11: () -> int32, _ : () -> unit) = (new_counter/10 : (() -> int32, () -> unit));
     let fourth/12: int32 = (new_next/11 : () -> int32)();
-    let _ : unit = (println : (string) -> unit)((ToString::to_string : (int32) -> string)((first/7 : int32)));
-    let _ : unit = (println : (string) -> unit)((ToString::to_string : (int32) -> string)((second/8 : int32)));
-    let _ : unit = (println : (string) -> unit)((ToString::to_string : (int32) -> string)((third/9 : int32)));
-    let _ : unit = (println : (string) -> unit)((ToString::to_string : (int32) -> string)((fourth/12 : int32)));
+    let _ : unit = (println : (string) -> unit)((int32::to_string : (int32) -> string)((first/7 : int32)));
+    let _ : unit = (println : (string) -> unit)((int32::to_string : (int32) -> string)((second/8 : int32)));
+    let _ : unit = (println : (string) -> unit)((int32::to_string : (int32) -> string)((third/9 : int32)));
+    let _ : unit = (println : (string) -> unit)((int32::to_string : (int32) -> string)((fourth/12 : int32)));
     ()
 }

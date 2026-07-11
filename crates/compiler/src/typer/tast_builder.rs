@@ -5,6 +5,7 @@ use crate::tast;
 use crate::typer::results::{
     CalleeElab, Coercion, NameRefElab, StructLitArgElab, StructPatArgElab, TryKind, TypeckResults,
 };
+use crate::typer::type_ops::instantiate_self_ty;
 
 pub fn build_file(
     genv: &PackageTypeEnv,
@@ -29,7 +30,7 @@ pub fn build_file(
             hir::Def::EnumDef(..)
             | hir::Def::StructDef(..)
             | hir::Def::TraitDef(..)
-            | hir::Def::ExternBuiltin(..) => {}
+            | hir::Def::ExternFn(..) => {}
         }
     }
     tast::File { toplevels }
@@ -122,75 +123,6 @@ fn tparams_for(generics: &[hir::HirIdent]) -> Vec<tast::TastIdent> {
         .iter()
         .map(|g| tast::TastIdent(g.to_ident_name()))
         .collect()
-}
-
-fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
-    match ty {
-        tast::Ty::TVar(var) => tast::Ty::TVar(*var),
-        tast::Ty::TUnit => tast::Ty::TUnit,
-        tast::Ty::TBool => tast::Ty::TBool,
-        tast::Ty::TInt8 => tast::Ty::TInt8,
-        tast::Ty::TInt16 => tast::Ty::TInt16,
-        tast::Ty::TInt32 => tast::Ty::TInt32,
-        tast::Ty::TInt64 => tast::Ty::TInt64,
-        tast::Ty::TUint8 => tast::Ty::TUint8,
-        tast::Ty::TUint16 => tast::Ty::TUint16,
-        tast::Ty::TUint32 => tast::Ty::TUint32,
-        tast::Ty::TUint64 => tast::Ty::TUint64,
-        tast::Ty::TFloat32 => tast::Ty::TFloat32,
-        tast::Ty::TFloat64 => tast::Ty::TFloat64,
-        tast::Ty::TString => tast::Ty::TString,
-        tast::Ty::TChar => tast::Ty::TChar,
-        tast::Ty::TTuple { typs } => tast::Ty::TTuple {
-            typs: typs
-                .iter()
-                .map(|ty| instantiate_self_ty(ty, self_ty))
-                .collect(),
-        },
-        tast::Ty::TEnum { name } => tast::Ty::TEnum { name: name.clone() },
-        tast::Ty::TStruct { name } => {
-            if name == "Self" {
-                self_ty.clone()
-            } else {
-                tast::Ty::TStruct { name: name.clone() }
-            }
-        }
-        tast::Ty::TDyn { trait_name } => tast::Ty::TDyn {
-            trait_name: trait_name.clone(),
-        },
-        tast::Ty::TApp { ty, args } => tast::Ty::TApp {
-            ty: Box::new(instantiate_self_ty(ty, self_ty)),
-            args: args
-                .iter()
-                .map(|ty| instantiate_self_ty(ty, self_ty))
-                .collect(),
-        },
-        tast::Ty::TArray { len, elem } => tast::Ty::TArray {
-            len: *len,
-            elem: Box::new(instantiate_self_ty(elem, self_ty)),
-        },
-        tast::Ty::TSlice { elem } => tast::Ty::TSlice {
-            elem: Box::new(instantiate_self_ty(elem, self_ty)),
-        },
-        tast::Ty::TVec { elem } => tast::Ty::TVec {
-            elem: Box::new(instantiate_self_ty(elem, self_ty)),
-        },
-        tast::Ty::TRef { elem } => tast::Ty::TRef {
-            elem: Box::new(instantiate_self_ty(elem, self_ty)),
-        },
-        tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
-            key: Box::new(instantiate_self_ty(key, self_ty)),
-            value: Box::new(instantiate_self_ty(value, self_ty)),
-        },
-        tast::Ty::TParam { name } => tast::Ty::TParam { name: name.clone() },
-        tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
-            params: params
-                .iter()
-                .map(|param| instantiate_self_ty(param, self_ty))
-                .collect(),
-            ret_ty: Box::new(instantiate_self_ty(ret_ty, self_ty)),
-        },
-    }
 }
 
 fn build_expr(
@@ -674,14 +606,17 @@ fn build_try_expr(
 
     let arms = match try_elab.kind {
         TryKind::Result => {
-            let Some((inner_name, err_ty)) = build_result_parts(&inner_ty) else {
+            let Some((inner_name, err_ty)) =
+                build_result_parts(&inner_ty, &try_elab.container_name)
+            else {
                 return tast::Expr::EVar {
                     name: "<error>".to_string(),
                     ty: ok_ty,
                     astptr: None,
                 };
             };
-            let Some(outer_name) = build_result_name(&outer_ret_ty) else {
+            let Some(outer_name) = build_result_name(&outer_ret_ty, &try_elab.container_name)
+            else {
                 return tast::Expr::EVar {
                     name: "<error>".to_string(),
                     ty: results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit),
@@ -737,14 +672,15 @@ fn build_try_expr(
             ]
         }
         TryKind::Option => {
-            let Some(inner_name) = build_option_name(&inner_ty) else {
+            let Some(inner_name) = build_option_name(&inner_ty, &try_elab.container_name) else {
                 return tast::Expr::EVar {
                     name: "<error>".to_string(),
                     ty: ok_ty,
                     astptr: None,
                 };
             };
-            let Some(outer_name) = build_option_name(&outer_ret_ty) else {
+            let Some(outer_name) = build_option_name(&outer_ret_ty, &try_elab.container_name)
+            else {
                 return tast::Expr::EVar {
                     name: "<error>".to_string(),
                     ty: results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit),
@@ -801,42 +737,42 @@ fn build_try_expr(
     }
 }
 
-fn build_result_parts(ty: &tast::Ty) -> Option<(String, tast::Ty)> {
+fn build_result_parts(ty: &tast::Ty, expected_name: &str) -> Option<(String, tast::Ty)> {
     let tast::Ty::TApp { ty, args } = ty else {
         return None;
     };
     let tast::Ty::TEnum { name } = ty.as_ref() else {
         return None;
     };
-    if (name == "Result" || name.ends_with("::Result")) && args.len() == 2 {
+    if name == expected_name && args.len() == 2 {
         Some((name.clone(), args[1].clone()))
     } else {
         None
     }
 }
 
-fn build_result_name(ty: &tast::Ty) -> Option<String> {
+fn build_result_name(ty: &tast::Ty, expected_name: &str) -> Option<String> {
     let tast::Ty::TApp { ty, args } = ty else {
         return None;
     };
     let tast::Ty::TEnum { name } = ty.as_ref() else {
         return None;
     };
-    if (name == "Result" || name.ends_with("::Result")) && args.len() == 2 {
+    if name == expected_name && args.len() == 2 {
         Some(name.clone())
     } else {
         None
     }
 }
 
-fn build_option_name(ty: &tast::Ty) -> Option<String> {
+fn build_option_name(ty: &tast::Ty, expected_name: &str) -> Option<String> {
     let tast::Ty::TApp { ty, args } = ty else {
         return None;
     };
     let tast::Ty::TEnum { name } = ty.as_ref() else {
         return None;
     };
-    if (name == "Option" || name.ends_with("::Option")) && args.len() == 1 {
+    if name == expected_name && args.len() == 1 {
         Some(name.clone())
     } else {
         None
@@ -904,6 +840,17 @@ fn build_name_ref_expr(
             ty: ty.clone(),
             astptr: *astptr,
         },
+        Some(NameRefElab::Callable {
+            name,
+            body,
+            ty,
+            astptr,
+        }) => tast::Expr::ECallable {
+            name: name.clone(),
+            body: *body,
+            ty: ty.clone(),
+            astptr: *astptr,
+        },
         Some(NameRefElab::TraitMethod {
             trait_name,
             method_name,
@@ -954,6 +901,17 @@ fn build_callee(
         CalleeElab::Expr(expr_id) => build_expr(hir_table, results, *expr_id),
         CalleeElab::Var { name, ty, astptr } => tast::Expr::EVar {
             name: name.clone(),
+            ty: ty.clone(),
+            astptr: *astptr,
+        },
+        CalleeElab::Callable {
+            name,
+            body,
+            ty,
+            astptr,
+        } => tast::Expr::ECallable {
+            name: name.clone(),
+            body: *body,
             ty: ty.clone(),
             astptr: *astptr,
         },

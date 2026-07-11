@@ -73,8 +73,8 @@ fn separate_build_link_matches_project_008() -> anyhow::Result<()> {
         );
     }
 
-    let linked =
-        separate::link_cores(cores).map_err(|err| anyhow::anyhow!("link failed: {:?}", err))?;
+    let linked = separate::link_cores(&graph.entry_package, cores)
+        .map_err(|err| anyhow::anyhow!("link failed: {:?}", err))?;
     let go_source = linked.go.to_pretty(&linked.goenv, 120);
     if !super::runtime_executor_available() {
         println!(
@@ -101,7 +101,7 @@ fn link_rejects_interface_hash_mismatch() -> anyhow::Result<()> {
     std::fs::write(
         &lib_path,
         r#"
-
+package lib;
 
 pub fn foo() -> int32 {
     1
@@ -128,10 +128,12 @@ pub fn foo() -> int32 {
     std::fs::write(
         &main_path,
         r#"
-use Lib;
+package main;
+
+use Lib as lib;
 
 fn main() -> unit {
-    println(Lib::foo())
+    println(lib::foo())
 }
 "#,
     )?;
@@ -154,7 +156,7 @@ fn main() -> unit {
     std::fs::write(
         &lib_path,
         r#"
-
+package lib;
 
 pub fn foo() -> int32 {
     1
@@ -186,7 +188,11 @@ pub fn bar() -> int32 {
     let lib_core = separate::read_core(&iface_dir.join("Lib.core"))
         .map_err(|err| anyhow::anyhow!("failed to read Lib.core: {:?}", err))?;
 
-    let err = separate::link_cores(vec![main_core, lib_core]).unwrap_err();
+    let err = separate::link_cores(
+        crate::package_names::ROOT_PACKAGE,
+        vec![main_core, lib_core],
+    )
+    .unwrap_err();
     let msg = format!("{:?}", err);
     assert!(msg.contains("expects interface_hash"));
 
@@ -200,10 +206,12 @@ fn separate_build_link_supports_std() -> anyhow::Result<()> {
     std::fs::write(
         &main_path,
         r#"
+package main;
+
 use std::io;
 
 fn main() -> unit {
-    std::io::println("std-ok")
+    io::println("std-ok")
 }
 "#,
     )?;
@@ -214,7 +222,7 @@ fn main() -> unit {
         interface_files: vec![],
     })
     .map_err(|err| anyhow::anyhow!("build main failed: {:?}", err))?;
-    let linked = separate::link_cores(vec![unit])
+    let linked = separate::link_cores(crate::package_names::ROOT_PACKAGE, vec![unit])
         .map_err(|err| anyhow::anyhow!("link failed: {:?}", err))?;
     let go_source = linked.go.to_pretty(&linked.goenv, 120);
     if !super::runtime_executor_available() {
@@ -223,6 +231,95 @@ fn main() -> unit {
     let output = super::execute_go_source(&go_source, &main_path.to_string_lossy())?;
 
     assert_eq!(output, "std-ok\n");
+
+    Ok(())
+}
+
+#[test]
+fn user_package_cannot_import_std_internal_host() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(
+        &main_path,
+        r#"
+package main;
+
+use std::internal::host;
+
+fn main() -> unit {
+    host::println("hidden")
+}
+"#,
+    )?;
+
+    let err = separate::build_package(separate::PackageInputs {
+        package: ROOT_PACKAGE.to_string(),
+        input_files: vec![main_path],
+        interface_files: vec![],
+    })
+    .expect_err("expected internal package visibility error");
+    let message = format!("{err:?}");
+    assert!(
+        message.contains("package std::internal::host is internal to std"),
+        "{message}"
+    );
+    assert_eq!(
+        message
+            .matches("package std::internal::host is internal to std")
+            .count(),
+        1,
+        "{message}"
+    );
+
+    Ok(())
+}
+
+#[test]
+fn link_ignores_unreachable_core_inputs() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(
+        &main_path,
+        r#"package main;
+
+fn main() -> unit {
+    ()
+}
+"#,
+    )?;
+    let extra_path = dir.path().join("extra.gom");
+    std::fs::write(
+        &extra_path,
+        r#"package extra;
+
+pub fn unused() -> unit {
+    ()
+}
+"#,
+    )?;
+
+    let main = separate::build_package(separate::PackageInputs {
+        package: ROOT_PACKAGE.to_string(),
+        input_files: vec![main_path],
+        interface_files: Vec::new(),
+    })
+    .map_err(|err| anyhow::anyhow!("build main failed: {:?}", err))?;
+    let extra = separate::build_package(separate::PackageInputs {
+        package: "example::extra".to_string(),
+        input_files: vec![extra_path],
+        interface_files: Vec::new(),
+    })
+    .map_err(|err| anyhow::anyhow!("build extra failed: {:?}", err))?;
+
+    let linked = separate::link_cores(ROOT_PACKAGE, vec![extra, main])
+        .map_err(|err| anyhow::anyhow!("link failed: {:?}", err))?;
+    assert!(
+        linked
+            .core
+            .toplevels
+            .iter()
+            .all(|function| function.name != "example::extra::unused")
+    );
 
     Ok(())
 }

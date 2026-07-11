@@ -1,10 +1,22 @@
 fn main() -> unit {
   let a/0 = -128 in
-  let _wild0 = println__T_string($goml_builtin_runtime$int8_to_string(a/0)) in
+  let _wild4 = println__T_string(trait_impl#ToString#int8#to_string(a/0)) in
   let b/1 = -32768 in
-  let _wild1 = println__T_string($goml_builtin_runtime$int16_to_string(b/1)) in
+  let _wild5 = println__T_string(trait_impl#ToString#int16#to_string(b/1)) in
 }
 
 fn println__T_string(value/1: string) -> unit {
-  string_println(value/1)
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#int8#to_string(self/11: int8) -> string {
+  @runtime(core.int8_to_string)(self/11)
+}
+
+fn trait_impl#ToString#int16#to_string(self/12: int16) -> string {
+  @runtime(core.int16_to_string)(self/12)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  self/9
 }

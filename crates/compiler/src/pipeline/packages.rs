@@ -1,20 +1,22 @@
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 
 use ast::ast;
 
-use crate::config::{find_crate_root, load_crate_manifest};
+use crate::config::{
+    find_module_root, load_module_manifest, validate_module_path, validate_project_module_path,
+};
 use crate::hir::SourceFileAst;
 use crate::package_imports::ExternalImports;
 use crate::package_names::ROOT_PACKAGE;
 use crate::pipeline::compile_error;
-use crate::pipeline::modules::CrateUnit;
 use crate::pipeline::pipeline::{CompilationError, parse_ast_file};
 
 #[derive(Debug)]
 pub struct PackageUnit {
     pub name: String,
+    pub declared_name: String,
     pub files: Vec<SourceFileAst>,
     pub imports: HashSet<String>,
 }
@@ -27,6 +29,7 @@ pub struct PackageGraph {
     pub packages: HashMap<String, PackageUnit>,
     pub discovery_order: Vec<String>,
     pub package_dirs: HashMap<String, PathBuf>,
+    pub declared_package_names: HashMap<String, String>,
     pub external_root_packages: HashSet<String>,
 }
 
@@ -39,7 +42,6 @@ fn read_gom_sources(dir: &Path) -> Result<Vec<PathBuf>, CompilationError> {
             err
         ))
     })?;
-
     for entry in entries {
         let entry = entry.map_err(|err| {
             compile_error(format!(
@@ -49,367 +51,437 @@ fn read_gom_sources(dir: &Path) -> Result<Vec<PathBuf>, CompilationError> {
             ))
         })?;
         let path = entry.path();
-        if path.extension().is_some_and(|ext| ext == "gom") {
+        if path.is_file() && path.extension().is_some_and(|ext| ext == "gom") {
             files.push(path);
         }
     }
-
     files.sort();
     Ok(files)
-}
-
-fn package_dir_is_loadable(dir: &Path) -> bool {
-    dir.is_dir()
-}
-
-fn package_file_is_loadable(path: &Path) -> bool {
-    path.is_file()
-}
-
-fn package_dir_for_file(path: &Path) -> PathBuf {
-    if path.file_name().is_some_and(|name| name == "mod.gom") {
-        path.parent()
-            .filter(|parent| !parent.as_os_str().is_empty())
-            .unwrap_or_else(|| Path::new("."))
-            .to_path_buf()
-    } else {
-        path.to_path_buf()
-    }
-}
-
-fn import_from_use_trait(
-    path: &ast::Path,
-    external_imports: &ExternalImports,
-    known_packages: Option<&HashSet<String>>,
-) -> Option<String> {
-    if let Some(alias) = external_imports.alias_for_use_path(path) {
-        return Some(alias);
-    }
-    if let Some(package) = import_from_crate_path(path, known_packages) {
-        return Some(package);
-    }
-    let segments = path.segments();
-    if segments.first().is_some_and(|seg| seg.ident.0 == "crate") {
-        return segments.get(1).map(|seg| seg.ident.0.clone());
-    }
-    segments.first().map(|seg| seg.ident.0.clone())
-}
-
-fn import_from_use_decl(
-    path: &ast::Path,
-    external_imports: &ExternalImports,
-    known_packages: Option<&HashSet<String>>,
-) -> Option<String> {
-    if let Some(alias) = external_imports.alias_for_use_path(path) {
-        return Some(alias);
-    }
-    if let Some(package) = import_from_crate_path(path, known_packages) {
-        return Some(package);
-    }
-    path.segments().first().map(|seg| seg.ident.0.clone())
-}
-
-fn import_from_crate_path(
-    path: &ast::Path,
-    known_packages: Option<&HashSet<String>>,
-) -> Option<String> {
-    let segments = crate_path_segments(path)?;
-    if segments.is_empty() {
-        return None;
-    }
-    if let Some(known) = known_packages {
-        for len in (1..=segments.len()).rev() {
-            let package = segments[..len].join("::");
-            if known.contains(&package) {
-                return Some(package);
-            }
-        }
-    }
-    Some(segments[0].clone())
-}
-
-fn crate_path_segments(path: &ast::Path) -> Option<Vec<String>> {
-    let segments = path
-        .segments()
-        .iter()
-        .map(|seg| seg.ident.0.clone())
-        .collect::<Vec<_>>();
-    if matches!(path.root(), ast::PathRoot::Crate) {
-        return Some(segments);
-    }
-    if segments.first().is_some_and(|segment| segment == "crate") {
-        return Some(segments[1..].to_vec());
-    }
-    None
-}
-
-fn child_package_name(module_path: &[String], name: &str) -> String {
-    if module_path.is_empty() {
-        name.to_string()
-    } else {
-        let mut child = module_path.to_vec();
-        child.push(name.to_string());
-        child.join("::")
-    }
-}
-
-fn collect_imports(
-    files: &[SourceFileAst],
-    external_imports: &ExternalImports,
-    known_packages: Option<&HashSet<String>>,
-) -> HashSet<String> {
-    files
-        .iter()
-        .flat_map(|file| {
-            let from_imports = file.ast.imports.iter().map(|import| import.0.clone());
-            let from_use_decls = file.ast.uses.iter().filter_map(|decl| {
-                import_from_use_decl(&decl.path, external_imports, known_packages)
-            });
-            let from_use_traits =
-                file.ast.use_traits.iter().filter_map(|path| {
-                    import_from_use_trait(path, external_imports, known_packages)
-                });
-            let from_mods = file.ast.toplevels.iter().filter_map(|item| match item {
-                ast::Item::Mod(module) => {
-                    Some(child_package_name(&file.module_path, &module.name.0))
-                }
-                _ => None,
-            });
-            from_imports
-                .chain(from_use_decls)
-                .chain(from_use_traits)
-                .chain(from_mods)
-        })
-        .collect()
 }
 
 fn source_override_for_dir<'a>(
     package_dir: &Path,
     source_override: Option<(&'a Path, &'a ast::File)>,
 ) -> Option<(&'a Path, &'a ast::File)> {
-    source_override.filter(|(path, _)| {
-        path.parent()
-            .map(|parent| {
-                if parent.as_os_str().is_empty() {
-                    Path::new(".")
-                } else {
-                    parent
-                }
-            })
-            .is_some_and(|parent| parent == package_dir)
-    })
+    source_override.filter(|(path, _)| normalized_parent(path) == package_dir)
 }
 
-fn ast_with_package(mut ast: ast::File, package: &str) -> ast::File {
-    ast.package = ast::AstIdent::new(package);
-    ast
+fn normalized_parent(path: &Path) -> &Path {
+    path.parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."))
 }
 
-fn derive_ast(ast: ast::File) -> Result<ast::File, CompilationError> {
-    crate::derive::expand(ast).map_err(|diagnostics| CompilationError::Lower { diagnostics })
+fn import_path_text(path: &ast::Path) -> Result<String, CompilationError> {
+    if path.is_empty() {
+        return Err(compile_error(format!(
+            "package use must name a canonical package path, found `{}`",
+            path.display()
+        )));
+    }
+    Ok(path
+        .segments()
+        .iter()
+        .map(|segment| segment.ident.0.clone())
+        .collect::<Vec<_>>()
+        .join("::"))
 }
 
-fn load_package_file(
-    package_file: &Path,
-    package_name: &str,
-    source_override: Option<(&Path, &ast::File)>,
+struct PackageUseCandidate {
+    default_alias: String,
+    exists: bool,
+}
+
+fn package_use_candidate(
+    import_path: &str,
+    module: Option<(&str, &Path)>,
     external_imports: &ExternalImports,
-) -> Result<PackageUnit, CompilationError> {
-    let ast = if let Some((override_path, override_ast)) = source_override
-        && override_path == package_file
+) -> Result<Option<PackageUseCandidate>, CompilationError> {
+    if let Some(name) = external_imports.declared_name(import_path) {
+        return Ok(Some(PackageUseCandidate {
+            default_alias: name.to_string(),
+            exists: true,
+        }));
+    }
+    if external_imports
+        .package_names
+        .keys()
+        .any(|package| import_path.starts_with(&format!("{package}::")))
     {
-        ast_with_package(override_ast.clone(), package_name)
-    } else {
-        let src = fs::read_to_string(package_file).map_err(|err| {
-            compile_error(format!(
-                "failed to read {}: {}",
-                package_file.display(),
-                err
-            ))
-        })?;
-        ast_with_package(parse_ast_file(package_file, &src)?, package_name)
+        return Ok(import_path
+            .rsplit("::")
+            .next()
+            .map(|default_alias| PackageUseCandidate {
+                default_alias: default_alias.to_string(),
+                exists: false,
+            }));
+    }
+    if import_path == crate::package_names::STD_PACKAGE || import_path.starts_with("std::") {
+        return Ok(import_path
+            .rsplit("::")
+            .next()
+            .map(|default_alias| PackageUseCandidate {
+                default_alias: default_alias.to_string(),
+                exists: true,
+            }));
+    }
+    let Some((module_path, module_dir)) = module else {
+        return Ok(None);
     };
-    let files = vec![SourceFileAst::new(package_file.to_path_buf(), ast)];
-    let imports = collect_imports(&files, external_imports, None);
-    Ok(PackageUnit {
-        name: package_name.to_string(),
-        files,
-        imports,
-    })
+    let Some(package_dir) = local_package_dir(module_path, module_dir, import_path) else {
+        return Ok(None);
+    };
+    if !package_dir.is_dir() {
+        return Ok(import_path
+            .rsplit("::")
+            .next()
+            .map(|default_alias| PackageUseCandidate {
+                default_alias: default_alias.to_string(),
+                exists: false,
+            }));
+    }
+    let Some(path) = read_gom_sources(&package_dir)?.into_iter().next() else {
+        return Ok(import_path
+            .rsplit("::")
+            .next()
+            .map(|default_alias| PackageUseCandidate {
+                default_alias: default_alias.to_string(),
+                exists: true,
+            }));
+    };
+    let src = fs::read_to_string(&path)
+        .map_err(|err| compile_error(format!("failed to read {}: {}", path.display(), err)))?;
+    let parsed = parse_ast_file(&path, &src)?;
+    let default_alias = if parsed.package_explicit {
+        parsed.package.0
+    } else {
+        import_path
+            .rsplit("::")
+            .next()
+            .unwrap_or(import_path)
+            .to_string()
+    };
+    Ok(Some(PackageUseCandidate {
+        default_alias,
+        exists: true,
+    }))
+}
+
+fn collect_imports(
+    files: &[SourceFileAst],
+    module: Option<(&str, &Path)>,
+    external_imports: &ExternalImports,
+) -> Result<HashSet<String>, CompilationError> {
+    let mut imports = HashSet::new();
+    for file in files {
+        let mut known_packages = HashSet::new();
+        let mut alias_targets = HashMap::<String, HashSet<String>>::new();
+        for use_decl in file.ast.uses.iter() {
+            let import_path = import_path_text(&use_decl.path)?;
+            if let Some(candidate) = package_use_candidate(&import_path, module, external_imports)?
+            {
+                let alias = use_decl
+                    .alias
+                    .as_ref()
+                    .map(|alias| alias.0.clone())
+                    .unwrap_or(candidate.default_alias);
+                alias_targets
+                    .entry(alias)
+                    .or_default()
+                    .insert(import_path.clone());
+                if candidate.exists {
+                    known_packages.insert(import_path);
+                }
+            }
+        }
+        for use_decl in file.ast.uses.iter() {
+            let import_path = import_path_text(&use_decl.path)?;
+            if known_packages.contains(&import_path) {
+                imports.insert(import_path);
+                continue;
+            }
+            let first = use_decl
+                .path
+                .segments()
+                .first()
+                .map(|segment| segment.ident.0.as_str());
+            if first.is_some_and(|first| {
+                alias_targets
+                    .get(first)
+                    .is_some_and(|targets| targets.iter().any(|target| target != &import_path))
+            }) {
+                continue;
+            }
+            imports.insert(import_path);
+        }
+    }
+    Ok(imports)
+}
+
+fn set_package_identity(ast: &mut ast::File, import_path: &str) {
+    ast.package = ast::AstIdent::new(import_path);
 }
 
 fn load_package(
     package_dir: &Path,
-    expected_package_name: Option<&str>,
+    import_path: &str,
     source_override: Option<(&Path, &ast::File)>,
-    external_imports: &ExternalImports,
+    allow_implicit_package: bool,
 ) -> Result<PackageUnit, CompilationError> {
-    let mut files = Vec::new();
-    let mut package_name = expected_package_name.map(str::to_string);
-
     let source_override = source_override_for_dir(package_dir, source_override);
-
-    if let Some((path, ast)) = source_override {
-        let ast = if let Some(package) = expected_package_name {
-            ast_with_package(ast.clone(), package)
-        } else {
-            ast.clone()
-        };
-        package_name.get_or_insert_with(|| ast.package.0.clone());
-        files.push(SourceFileAst::new(path.to_path_buf(), ast));
+    let mut paths = read_gom_sources(package_dir)?;
+    if let Some((override_path, _)) = source_override
+        && !paths.iter().any(|path| path == override_path)
+    {
+        paths.push(override_path.to_path_buf());
+        paths.sort();
     }
-
-    for path in read_gom_sources(package_dir)? {
-        if source_override.is_some_and(|(override_path, _)| override_path == path.as_path()) {
-            continue;
-        }
-        let src = fs::read_to_string(&path)
-            .map_err(|err| compile_error(format!("failed to read {}: {}", path.display(), err)))?;
-        let mut ast = parse_ast_file(&path, &src)?;
-        if let Some(expected) = expected_package_name {
-            ast = ast_with_package(ast, expected);
-        }
-        if let Some(existing) = &package_name {
-            if &ast.package.0 != existing {
-                return Err(compile_error(format!(
-                    "package mismatch in {}: expected {}, found {}",
-                    path.display(),
-                    existing,
-                    ast.package.0
-                )));
-            }
-        } else {
-            package_name = Some(ast.package.0.clone());
-        }
-        files.push(SourceFileAst::new(path, ast));
-    }
-
-    let Some(name) = package_name else {
+    if paths.is_empty() {
         return Err(compile_error(format!(
             "package directory {} has no .gom files",
             package_dir.display()
         )));
-    };
+    }
 
-    let imports = collect_imports(&files, external_imports, None);
+    let mut files = Vec::new();
+    let mut declared_name = None::<String>;
+    for path in paths {
+        let mut parsed = if let Some((override_path, override_ast)) = source_override
+            && path == override_path
+        {
+            override_ast.clone()
+        } else {
+            let src = fs::read_to_string(&path).map_err(|err| {
+                compile_error(format!("failed to read {}: {}", path.display(), err))
+            })?;
+            parse_ast_file(&path, &src)?
+        };
+        if !parsed.package_explicit && !allow_implicit_package {
+            return Err(compile_error(format!(
+                "{} must declare `package <name>;`",
+                path.display()
+            )));
+        }
+        let file_package = if parsed.package_explicit {
+            parsed.package.0.clone()
+        } else {
+            ROOT_PACKAGE.to_string()
+        };
+        if let Some(existing) = declared_name.as_deref() {
+            if existing != file_package {
+                return Err(compile_error(format!(
+                    "package mismatch in {}: expected {}, found {}",
+                    path.display(),
+                    existing,
+                    file_package
+                )));
+            }
+        } else {
+            declared_name = Some(file_package);
+        }
+        set_package_identity(&mut parsed, import_path);
+        files.push(SourceFileAst::new(path, parsed));
+    }
     Ok(PackageUnit {
-        name,
+        name: import_path.to_string(),
+        declared_name: declared_name.unwrap_or_else(|| ROOT_PACKAGE.to_string()),
         files,
-        imports,
+        imports: HashSet::new(),
     })
 }
 
-fn load_single_file_package(
-    path: &Path,
-    ast: &ast::File,
-    external_imports: &ExternalImports,
-) -> PackageUnit {
-    let files = vec![SourceFileAst::new(path.to_path_buf(), ast.clone())];
-    let imports = collect_imports(&files, external_imports, None);
-    PackageUnit {
-        name: ast.package.0.clone(),
-        files,
-        imports,
+fn package_import_path(
+    module_path: &str,
+    module_dir: &Path,
+    package_dir: &Path,
+) -> Result<String, CompilationError> {
+    let relative = package_dir.strip_prefix(module_dir).map_err(|_| {
+        compile_error(format!(
+            "package directory {} is outside module root {}",
+            package_dir.display(),
+            module_dir.display()
+        ))
+    })?;
+    let mut segments = module_path
+        .split("::")
+        .map(str::to_string)
+        .collect::<Vec<_>>();
+    for component in relative.components() {
+        match component {
+            Component::Normal(segment) => {
+                let Some(segment) = segment.to_str() else {
+                    return Err(compile_error(format!(
+                        "package path {} is not valid UTF-8",
+                        package_dir.display()
+                    )));
+                };
+                segments.push(segment.to_string());
+            }
+            Component::CurDir => {}
+            _ => {
+                return Err(compile_error(format!(
+                    "invalid package directory {}",
+                    package_dir.display()
+                )));
+            }
+        }
     }
+    let import_path = segments.join("::");
+    validate_module_path(&import_path).map_err(compile_error)?;
+    Ok(import_path)
 }
 
-fn module_package_name(module_path: &[String], root_package: &str) -> String {
-    if module_path.is_empty() {
-        root_package.to_string()
-    } else {
-        module_path.join("::")
+fn local_package_dir(module_path: &str, module_dir: &Path, import_path: &str) -> Option<PathBuf> {
+    if import_path == module_path {
+        return Some(module_dir.to_path_buf());
     }
+    let suffix = import_path.strip_prefix(&format!("{module_path}::"))?;
+    let mut dir = module_dir.to_path_buf();
+    for segment in suffix.split("::") {
+        if segment.is_empty() || segment == "." || segment == ".." {
+            return None;
+        }
+        dir.push(segment);
+        if dir.join("goml.toml").is_file() {
+            return None;
+        }
+    }
+    Some(dir)
 }
 
-fn collect_child_module_imports(
-    crate_unit: &CrateUnit,
-    module_id: crate::pipeline::modules::ModuleId,
-    root_package: &str,
-    imports: &mut HashSet<String>,
-) {
-    for child_id in crate_unit.modules[module_id.0].children.values() {
-        let child = &crate_unit.modules[child_id.0];
-        imports.insert(module_package_name(child.path.segments(), root_package));
-        collect_child_module_imports(crate_unit, *child_id, root_package, imports);
-    }
-}
-
-fn discover_packages_from_crate_unit(
-    crate_unit: CrateUnit,
-    root_package: &str,
-    entry_path: Option<&Path>,
-    entry_ast: Option<ast::File>,
+fn discover_module_packages(
+    module_dir: &Path,
+    module_path: &str,
+    target_dir: &Path,
+    source_override: Option<(&Path, &ast::File)>,
     external_imports: &ExternalImports,
 ) -> Result<PackageGraph, CompilationError> {
-    let source_override = match (entry_path, entry_ast.as_ref()) {
-        (Some(path), Some(ast)) => Some((path, ast)),
-        _ => None,
-    };
-
+    let entry_package = package_import_path(module_path, module_dir, target_dir)?;
+    let mut entry = load_package(target_dir, &entry_package, source_override, false)?;
+    entry.imports = collect_imports(
+        &entry.files,
+        Some((module_path, module_dir)),
+        external_imports,
+    )?;
     let mut packages = HashMap::new();
     let mut discovery_order = Vec::new();
     let mut package_dirs = HashMap::new();
-    let known_packages = crate_unit
-        .modules
-        .iter()
-        .map(|module| module_package_name(module.path.segments(), root_package))
-        .collect::<HashSet<_>>();
+    let mut declared_package_names = HashMap::new();
+    let mut external_root_packages = HashSet::new();
+    let mut queue = entry.imports.iter().cloned().collect::<BTreeSet<_>>();
+    declared_package_names.insert(entry_package.clone(), entry.declared_name.clone());
+    packages.insert(entry_package.clone(), entry);
+    discovery_order.push(entry_package.clone());
+    package_dirs.insert(entry_package.clone(), target_dir.to_path_buf());
 
-    for module in crate_unit.modules.iter() {
-        let name = module_package_name(module.path.segments(), root_package);
-        let ast = if let Some((override_path, override_ast)) = source_override {
-            if override_path == module.file_path.as_path() {
-                override_ast.clone()
-            } else {
-                module.ast.clone()
+    while let Some(import_path) = queue.pop_first() {
+        if packages.contains_key(&import_path) || external_root_packages.contains(&import_path) {
+            continue;
+        }
+        if let Some(package_dir) = local_package_dir(module_path, module_dir, &import_path) {
+            if !package_dir.is_dir() {
+                return Err(compile_error(format!(
+                    "package {} not found at {}",
+                    import_path,
+                    package_dir.display()
+                )));
             }
-        } else {
-            module.ast.clone()
-        };
-        let ast = derive_ast(ast_with_package(ast, &name))?;
-        let files = vec![SourceFileAst::with_module_path(
-            module.file_path.clone(),
-            module.path.segments().to_vec(),
-            ast,
-        )];
-        let mut imports = collect_imports(&files, external_imports, Some(&known_packages));
-        collect_child_module_imports(&crate_unit, module.id, root_package, &mut imports);
-        packages.insert(
-            name.clone(),
-            PackageUnit {
-                name: name.clone(),
-                files,
-                imports,
-            },
-        );
-        discovery_order.push(name.clone());
-        package_dirs.insert(name, package_dir_for_file(&module.file_path));
+            let mut package = load_package(&package_dir, &import_path, source_override, false)?;
+            package.imports = collect_imports(
+                &package.files,
+                Some((module_path, module_dir)),
+                external_imports,
+            )?;
+            queue.extend(package.imports.iter().cloned());
+            package_dirs.insert(import_path.clone(), package_dir);
+            declared_package_names.insert(import_path.clone(), package.declared_name.clone());
+            discovery_order.push(import_path.clone());
+            packages.insert(import_path, package);
+            continue;
+        }
+        if external_imports.contains_package(&import_path)
+            || import_path == crate::package_names::STD_PACKAGE
+            || import_path.starts_with(&format!("{}::", crate::package_names::STD_PACKAGE))
+        {
+            external_root_packages.insert(import_path);
+            continue;
+        }
+        return Err(compile_error(format!(
+            "package {} is not provided by this module or its dependencies",
+            import_path
+        )));
     }
 
     Ok(PackageGraph {
-        module_dir: crate_unit.root_dir,
-        module_name: Some(crate_unit.config.name),
-        entry_package: root_package.to_string(),
+        module_dir: module_dir.to_path_buf(),
+        module_name: Some(module_path.to_string()),
+        entry_package,
         packages,
         discovery_order,
         package_dirs,
-        external_root_packages: HashSet::new(),
+        declared_package_names,
+        external_root_packages,
+    })
+}
+
+fn discover_single_file_packages(
+    root_dir: &Path,
+    entry_path: &Path,
+    entry_ast: ast::File,
+    external_imports: &ExternalImports,
+) -> Result<PackageGraph, CompilationError> {
+    let mut entry = load_package(
+        normalized_parent(entry_path),
+        ROOT_PACKAGE,
+        Some((entry_path, &entry_ast)),
+        true,
+    )?;
+    entry.imports = collect_imports(&entry.files, None, external_imports)?;
+    let imports = entry.imports.clone();
+    let mut external_root_packages = HashSet::new();
+    for import in imports {
+        if external_imports.contains_package(&import)
+            || import == crate::package_names::STD_PACKAGE
+            || import.starts_with("std::")
+        {
+            external_root_packages.insert(import);
+            continue;
+        }
+        return Err(compile_error(format!(
+            "single-file compilation cannot use project package {}",
+            import
+        )));
+    }
+    let mut packages = HashMap::new();
+    let declared_package_names =
+        HashMap::from([(ROOT_PACKAGE.to_string(), entry.declared_name.clone())]);
+    packages.insert(ROOT_PACKAGE.to_string(), entry);
+    let mut package_dirs = HashMap::new();
+    package_dirs.insert(
+        ROOT_PACKAGE.to_string(),
+        normalized_parent(entry_path).to_path_buf(),
+    );
+    Ok(PackageGraph {
+        module_dir: root_dir.to_path_buf(),
+        module_name: None,
+        entry_package: ROOT_PACKAGE.to_string(),
+        packages,
+        discovery_order: vec![ROOT_PACKAGE.to_string()],
+        package_dirs,
+        declared_package_names,
+        external_root_packages,
     })
 }
 
 pub fn discover_dependency_versions_from_file(
     file_path: &Path,
 ) -> Result<(PathBuf, BTreeMap<String, String>), CompilationError> {
-    let start_dir = file_path
-        .parent()
-        .filter(|p| !p.as_os_str().is_empty())
-        .unwrap_or(Path::new("."));
-
-    if let Some((crate_dir, _)) = find_crate_root(start_dir) {
-        let manifest = load_crate_manifest(&crate_dir.join("goml.toml")).map_err(compile_error)?;
-        return Ok((crate_dir, manifest.dependency_versions()));
+    let start_dir = normalized_parent(file_path);
+    if let Some((module_dir, _)) = find_module_root(start_dir).map_err(compile_error)? {
+        let manifest =
+            load_module_manifest(&module_dir.join("goml.toml")).map_err(compile_error)?;
+        return Ok((module_dir, manifest.dependencies));
     }
-
     Ok((start_dir.to_path_buf(), BTreeMap::new()))
 }
 
@@ -432,19 +504,16 @@ pub fn discover_packages_with_external_imports(
     entry_ast: Option<ast::File>,
     external_imports: &ExternalImports,
 ) -> Result<PackageGraph, CompilationError> {
-    discover_packages_inner(root_dir, entry_path, entry_ast, false, external_imports)
-}
-
-pub fn discover_packages_single_file(
-    root_dir: &Path,
-    entry_path: &Path,
-    entry_ast: ast::File,
-) -> Result<PackageGraph, CompilationError> {
-    discover_packages_single_file_with_external_imports(
+    let manifest = load_module_manifest(&root_dir.join("goml.toml")).map_err(compile_error)?;
+    validate_project_module_path(&manifest.module.path).map_err(compile_error)?;
+    let target_dir = entry_path.map(normalized_parent).unwrap_or(root_dir);
+    let source_override = entry_path.zip(entry_ast.as_ref());
+    discover_module_packages(
         root_dir,
-        entry_path,
-        entry_ast,
-        &ExternalImports::default(),
+        &manifest.module.path,
+        target_dir,
+        source_override,
+        external_imports,
     )
 }
 
@@ -454,133 +523,139 @@ pub fn discover_packages_single_file_with_external_imports(
     entry_ast: ast::File,
     external_imports: &ExternalImports,
 ) -> Result<PackageGraph, CompilationError> {
-    discover_packages_inner(
-        root_dir,
-        Some(entry_path),
-        Some(entry_ast),
-        true,
-        external_imports,
-    )
+    discover_single_file_packages(root_dir, entry_path, entry_ast, external_imports)
 }
 
-pub fn discover_dependency_crate_packages_with_external_imports(
+pub fn discover_dependency_module_packages_with_external_imports(
     module_dir: &Path,
-    root_package: &str,
     external_imports: &ExternalImports,
 ) -> Result<PackageGraph, CompilationError> {
-    let crate_unit = crate::pipeline::modules::discover_crate_from_dir(module_dir)
-        .map_err(|err| compile_error(format!("crate module discovery failed: {:?}", err)))?;
-    discover_packages_from_crate_unit(crate_unit, root_package, None, None, external_imports)
+    let manifest = load_module_manifest(&module_dir.join("goml.toml")).map_err(compile_error)?;
+    discover_all_module_packages(module_dir, &manifest.module.path, external_imports)
 }
 
-fn discover_packages_inner(
-    root_dir: &Path,
-    entry_path: Option<&Path>,
-    entry_ast: Option<ast::File>,
-    single_file: bool,
+fn discover_all_module_packages(
+    module_dir: &Path,
+    module_path: &str,
     external_imports: &ExternalImports,
 ) -> Result<PackageGraph, CompilationError> {
-    if let Ok(crate_unit) = crate::pipeline::modules::discover_crate_from_dir(root_dir) {
-        return discover_packages_from_crate_unit(
-            crate_unit,
-            ROOT_PACKAGE,
-            entry_path,
-            entry_ast,
-            external_imports,
-        );
+    let mut dirs = Vec::new();
+    collect_package_dirs(module_dir, module_dir, &mut dirs)?;
+    dirs.sort();
+    if dirs.is_empty() {
+        return Err(compile_error(format!(
+            "module {} has no package directories",
+            module_path
+        )));
     }
-
-    let source_override = match (entry_path, entry_ast.as_ref()) {
-        (Some(path), Some(ast)) => Some((path, ast)),
-        _ => None,
-    };
-    let entry_package = if single_file {
-        if let Some((path, ast)) = source_override {
-            load_single_file_package(path, ast, external_imports)
-        } else {
-            load_package(
-                root_dir,
-                None,
-                source_override_for_dir(root_dir, source_override),
-                external_imports,
-            )?
-        }
-    } else {
-        load_package(
-            root_dir,
-            None,
-            source_override_for_dir(root_dir, source_override),
-            external_imports,
-        )?
-    };
-    let entry_name = entry_package.name.clone();
 
     let mut packages = HashMap::new();
     let mut discovery_order = Vec::new();
     let mut package_dirs = HashMap::new();
-    let mut queue: Vec<String> = entry_package.imports.iter().cloned().collect();
-    let mut loaded = HashSet::new();
-
-    loaded.insert(entry_name.clone());
-    packages.insert(entry_name.clone(), entry_package);
-    discovery_order.push(entry_name.clone());
-    package_dirs.insert(entry_name.clone(), root_dir.to_path_buf());
-
-    while let Some(package_name) = queue.pop() {
-        if loaded.contains(&package_name) {
-            continue;
-        }
-        if external_imports.contains_package(&package_name) {
-            loaded.insert(package_name);
-            continue;
-        }
-        let package_dir = root_dir.join(&package_name);
-        let package_file = root_dir.join(format!("{package_name}.gom"));
-        if !package_dir_is_loadable(&package_dir) && !package_file_is_loadable(&package_file) {
-            loaded.insert(package_name);
-            continue;
-        }
-        let package_override = source_override_for_dir(&package_dir, source_override);
-        let package = if package_dir_is_loadable(&package_dir) {
-            load_package(
-                &package_dir,
-                Some(&package_name),
-                package_override,
-                external_imports,
-            )?
-        } else {
-            load_package_file(
-                &package_file,
-                &package_name,
-                source_override,
-                external_imports,
-            )?
-        };
-        let declared_name = package.name.clone();
-        if package.name != package_name {
-            return Err(compile_error(format!(
-                "package directory {} declares package {}, expected {}",
-                package_dir.display(),
-                package.name,
-                package_name
-            )));
-        }
-        queue.extend(package.imports.iter().cloned());
-        loaded.insert(declared_name.clone());
-        packages.insert(declared_name.clone(), package);
-        discovery_order.push(declared_name.clone());
-        package_dirs.insert(declared_name, package_dir);
+    let mut declared_package_names = HashMap::new();
+    for dir in dirs {
+        let import_path = package_import_path(module_path, module_dir, &dir)?;
+        let mut package = load_package(&dir, &import_path, None, false)?;
+        package.imports = collect_imports(
+            &package.files,
+            Some((module_path, module_dir)),
+            external_imports,
+        )?;
+        discovery_order.push(import_path.clone());
+        package_dirs.insert(import_path.clone(), dir);
+        declared_package_names.insert(import_path.clone(), package.declared_name.clone());
+        packages.insert(import_path, package);
     }
 
+    let mut external_root_packages = HashSet::new();
+    for package in packages.values() {
+        for import in package.imports.iter() {
+            if packages.contains_key(import) {
+                continue;
+            }
+            if external_imports.contains_package(import)
+                || import == crate::package_names::STD_PACKAGE
+                || import.starts_with("std::")
+            {
+                external_root_packages.insert(import.clone());
+                continue;
+            }
+            return Err(compile_error(format!(
+                "package {} uses missing package {}",
+                package.name, import
+            )));
+        }
+    }
+
+    let entry_package = if packages.contains_key(module_path) {
+        module_path.to_string()
+    } else {
+        discovery_order
+            .first()
+            .cloned()
+            .ok_or_else(|| compile_error(format!("module {} has no packages", module_path)))?
+    };
+
     Ok(PackageGraph {
-        module_dir: root_dir.to_path_buf(),
-        module_name: None,
-        entry_package: entry_name,
+        module_dir: module_dir.to_path_buf(),
+        module_name: Some(module_path.to_string()),
+        entry_package,
         packages,
         discovery_order,
         package_dirs,
-        external_root_packages: HashSet::new(),
+        declared_package_names,
+        external_root_packages,
     })
+}
+
+fn collect_package_dirs(
+    module_dir: &Path,
+    dir: &Path,
+    packages: &mut Vec<PathBuf>,
+) -> Result<(), CompilationError> {
+    if dir != module_dir && dir.join("goml.toml").is_file() {
+        return Ok(());
+    }
+    let entries = fs::read_dir(dir).map_err(|err| {
+        compile_error(format!(
+            "failed to read module directory {}: {}",
+            dir.display(),
+            err
+        ))
+    })?;
+    let mut children = Vec::new();
+    let mut has_source = false;
+    for entry in entries {
+        let entry = entry.map_err(|err| {
+            compile_error(format!(
+                "failed to read module directory {}: {}",
+                dir.display(),
+                err
+            ))
+        })?;
+        let path = entry.path();
+        if path.is_file() && path.extension().is_some_and(|extension| extension == "gom") {
+            has_source = true;
+            continue;
+        }
+        if !path.is_dir() {
+            continue;
+        }
+        let name = entry.file_name();
+        let name = name.to_string_lossy();
+        if name.starts_with('.') || name == "target" {
+            continue;
+        }
+        children.push(path);
+    }
+    if has_source {
+        packages.push(dir.to_path_buf());
+    }
+    children.sort();
+    for child in children {
+        collect_package_dirs(module_dir, &child, packages)?;
+    }
+    Ok(())
 }
 
 pub fn topo_sort_packages(graph: &PackageGraph) -> Result<Vec<String>, CompilationError> {
@@ -588,17 +663,13 @@ pub fn topo_sort_packages(graph: &PackageGraph) -> Result<Vec<String>, Compilati
     let mut perm = HashSet::new();
     let mut order = Vec::new();
     let mut stack = Vec::new();
-
-    let mut names: Vec<String> = graph.packages.keys().cloned().collect();
+    let mut names = graph.packages.keys().cloned().collect::<Vec<_>>();
     names.sort();
-
     for name in names {
-        if perm.contains(&name) {
-            continue;
+        if !perm.contains(&name) {
+            visit_package(&name, graph, &mut temp, &mut perm, &mut stack, &mut order)?;
         }
-        visit_package(&name, graph, &mut temp, &mut perm, &mut stack, &mut order)?;
     }
-
     Ok(order)
 }
 
@@ -614,56 +685,37 @@ fn visit_package(
         return Ok(());
     }
     if temp.contains(name) {
-        let mut cycle = Vec::new();
-        if let Some(pos) = stack.iter().position(|n| n == name) {
-            cycle.extend_from_slice(&stack[pos..]);
-        }
-        cycle.push(name.to_string());
-        let display = cycle
+        let position = stack
             .iter()
-            .map(|pkg| {
-                let dir = graph
-                    .package_dirs
-                    .get(pkg)
-                    .map(|dir| dir.display().to_string())
-                    .unwrap_or_else(|| graph.module_dir.join(pkg).display().to_string());
-                format!("{} ({})", pkg, dir)
-            })
-            .collect::<Vec<_>>()
-            .join(" -> ");
+            .position(|package| package == name)
+            .unwrap_or(0);
+        let mut cycle = stack[position..].to_vec();
+        cycle.push(name.to_string());
         return Err(compile_error(format!(
-            "package dependency cycle detected: {}",
-            display
+            "package use cycle: {}",
+            cycle.join(" -> ")
         )));
     }
-
     temp.insert(name.to_string());
     stack.push(name.to_string());
-
-    let Some(package) = graph.packages.get(name) else {
-        return Err(compile_error(format!(
-            "package {} not found during dependency walk",
-            name
-        )));
-    };
-    let mut deps: Vec<String> = package.imports.iter().cloned().collect();
-    deps.sort();
-
-    for dep in deps {
-        if !graph.packages.contains_key(&dep) && !graph.external_root_packages.contains(&dep) {
-            return Err(compile_error(format!(
-                "package {} imports missing package {} in {}",
-                name,
-                dep,
-                graph.module_dir.join(&dep).display()
-            )));
-        }
-        if graph.external_root_packages.contains(&dep) {
+    let package = graph
+        .packages
+        .get(name)
+        .ok_or_else(|| compile_error(format!("package {} not found", name)))?;
+    let mut imports = package.imports.iter().cloned().collect::<Vec<_>>();
+    imports.sort();
+    for import in imports {
+        if graph.external_root_packages.contains(&import) {
             continue;
         }
-        visit_package(&dep, graph, temp, perm, stack, order)?;
+        if !graph.packages.contains_key(&import) {
+            return Err(compile_error(format!(
+                "package {} uses missing package {}",
+                name, import
+            )));
+        }
+        visit_package(&import, graph, temp, perm, stack, order)?;
     }
-
     stack.pop();
     temp.remove(name);
     perm.insert(name.to_string());
@@ -676,7 +728,15 @@ impl PackageGraph {
         self.external_root_packages.insert(package.into());
     }
 
-    pub fn add_external_package_dir(&mut self, package: impl Into<String>, dir: PathBuf) {
-        self.package_dirs.insert(package.into(), dir);
+    pub fn add_external_package(
+        &mut self,
+        package: impl Into<String>,
+        declared_name: impl Into<String>,
+        dir: PathBuf,
+    ) {
+        let package = package.into();
+        self.package_dirs.insert(package.clone(), dir);
+        self.declared_package_names
+            .insert(package, declared_name.into());
     }
 }

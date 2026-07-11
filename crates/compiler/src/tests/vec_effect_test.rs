@@ -11,22 +11,22 @@ fn compile_go(src: &str, name: &str) -> String {
 }
 
 #[test]
-fn vec_method_push_uses_append_in_go_codegen() {
+fn vec_method_push_mutates_shared_storage_in_go_codegen() {
     let src = r#"
 fn main() -> unit {
     let v: Vec[int32] = Vec::new();
-    let v = v.push(1i32);
+    v.push(1i32);
     println(v.len().to_string());
 }
 "#;
 
-    let go = compile_go(src, "vec_method_push_uses_append.gom");
+    let go = compile_go(src, "vec_method_push_mutates_shared_storage.gom");
 
-    assert!(go.contains("append(self__"), "{go}");
+    assert!(go.contains("vec.items = append(vec.items, elem)"), "{go}");
 }
 
 #[test]
-fn discarded_let_vec_push_preserves_side_effect() {
+fn discarded_vec_push_preserves_side_effect() {
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("src/tests/crashers/discarded_let_vec_push_side_effect/main.gom");
     let src = std::fs::read_to_string(&path).unwrap();

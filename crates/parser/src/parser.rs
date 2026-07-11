@@ -193,11 +193,6 @@ impl Parser<'_> {
         self.input.peek()
     }
 
-    pub fn peek_text(&mut self) -> Option<&str> {
-        let _ = self.peek();
-        self.input.current_text()
-    }
-
     pub fn nth(&mut self, n: usize) -> TokenKind {
         if self.depth_limit_hit.get() {
             return T![eof];

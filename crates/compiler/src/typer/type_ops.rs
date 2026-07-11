@@ -1,0 +1,203 @@
+use std::{
+    collections::{HashMap, HashSet},
+    ops::ControlFlow,
+};
+
+use crate::tast;
+
+fn rewrite_ty(ty: &tast::Ty, rewrite: &mut impl FnMut(&tast::Ty) -> Option<tast::Ty>) -> tast::Ty {
+    if let Some(rewritten) = rewrite(ty) {
+        return rewritten;
+    }
+
+    match ty {
+        tast::Ty::TVar(_)
+        | tast::Ty::TUnit
+        | tast::Ty::TBool
+        | tast::Ty::TInt8
+        | tast::Ty::TInt16
+        | tast::Ty::TInt32
+        | tast::Ty::TInt64
+        | tast::Ty::TUint8
+        | tast::Ty::TUint16
+        | tast::Ty::TUint32
+        | tast::Ty::TUint64
+        | tast::Ty::TFloat32
+        | tast::Ty::TFloat64
+        | tast::Ty::TString
+        | tast::Ty::TChar
+        | tast::Ty::TEnum { .. }
+        | tast::Ty::TStruct { .. }
+        | tast::Ty::TDyn { .. }
+        | tast::Ty::TParam { .. } => ty.clone(),
+        tast::Ty::TTuple { typs } => tast::Ty::TTuple {
+            typs: typs.iter().map(|ty| rewrite_ty(ty, rewrite)).collect(),
+        },
+        tast::Ty::TApp { ty, args } => tast::Ty::TApp {
+            ty: Box::new(rewrite_ty(ty, rewrite)),
+            args: args.iter().map(|ty| rewrite_ty(ty, rewrite)).collect(),
+        },
+        tast::Ty::TArray { len, elem } => tast::Ty::TArray {
+            len: *len,
+            elem: Box::new(rewrite_ty(elem, rewrite)),
+        },
+        tast::Ty::TSlice { elem } => tast::Ty::TSlice {
+            elem: Box::new(rewrite_ty(elem, rewrite)),
+        },
+        tast::Ty::TVec { elem } => tast::Ty::TVec {
+            elem: Box::new(rewrite_ty(elem, rewrite)),
+        },
+        tast::Ty::TRef { elem } => tast::Ty::TRef {
+            elem: Box::new(rewrite_ty(elem, rewrite)),
+        },
+        tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
+            key: Box::new(rewrite_ty(key, rewrite)),
+            value: Box::new(rewrite_ty(value, rewrite)),
+        },
+        tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
+            params: params.iter().map(|ty| rewrite_ty(ty, rewrite)).collect(),
+            ret_ty: Box::new(rewrite_ty(ret_ty, rewrite)),
+        },
+    }
+}
+
+pub(crate) fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tast::Ty {
+    rewrite_ty(ty, &mut |ty| match ty {
+        tast::Ty::TParam { name } => subst.get(name).cloned(),
+        _ => None,
+    })
+}
+
+pub(crate) fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
+    rewrite_ty(ty, &mut |ty| match ty {
+        tast::Ty::TStruct { name } if name == "Self" => Some(self_ty.clone()),
+        _ => None,
+    })
+}
+
+pub(crate) fn rename_type_params(ty: &tast::Ty, prefix: &str) -> tast::Ty {
+    rewrite_ty(ty, &mut |ty| match ty {
+        tast::Ty::TParam { name } => Some(tast::Ty::TParam {
+            name: format!("{prefix}::{name}"),
+        }),
+        _ => None,
+    })
+}
+
+pub(crate) fn decompose_struct_type(ty: &tast::Ty) -> Option<(String, Vec<tast::Ty>)> {
+    match ty {
+        tast::Ty::TStruct { name } => Some((name.clone(), Vec::new())),
+        tast::Ty::TApp { ty, args } => {
+            let (name, mut collected) = decompose_struct_type(ty)?;
+            collected.extend(args.iter().cloned());
+            Some((name, collected))
+        }
+        _ => None,
+    }
+}
+
+fn visit_ty<B>(
+    ty: &tast::Ty,
+    visitor: &mut impl FnMut(&tast::Ty) -> ControlFlow<B>,
+) -> ControlFlow<B> {
+    visitor(ty)?;
+
+    match ty {
+        tast::Ty::TTuple { typs } => {
+            for ty in typs {
+                visit_ty(ty, visitor)?;
+            }
+        }
+        tast::Ty::TApp { ty, args } => {
+            visit_ty(ty, visitor)?;
+            for ty in args {
+                visit_ty(ty, visitor)?;
+            }
+        }
+        tast::Ty::TArray { elem, .. }
+        | tast::Ty::TSlice { elem }
+        | tast::Ty::TVec { elem }
+        | tast::Ty::TRef { elem } => visit_ty(elem, visitor)?,
+        tast::Ty::THashMap { key, value } => {
+            visit_ty(key, visitor)?;
+            visit_ty(value, visitor)?;
+        }
+        tast::Ty::TFunc { params, ret_ty } => {
+            for ty in params {
+                visit_ty(ty, visitor)?;
+            }
+            visit_ty(ret_ty, visitor)?;
+        }
+        tast::Ty::TVar(_)
+        | tast::Ty::TUnit
+        | tast::Ty::TBool
+        | tast::Ty::TInt8
+        | tast::Ty::TInt16
+        | tast::Ty::TInt32
+        | tast::Ty::TInt64
+        | tast::Ty::TUint8
+        | tast::Ty::TUint16
+        | tast::Ty::TUint32
+        | tast::Ty::TUint64
+        | tast::Ty::TFloat32
+        | tast::Ty::TFloat64
+        | tast::Ty::TString
+        | tast::Ty::TChar
+        | tast::Ty::TEnum { .. }
+        | tast::Ty::TStruct { .. }
+        | tast::Ty::TDyn { .. }
+        | tast::Ty::TParam { .. } => {}
+    }
+
+    ControlFlow::Continue(())
+}
+
+pub(crate) fn contains_tvar(ty: &tast::Ty) -> bool {
+    visit_ty(ty, &mut |ty| match ty {
+        tast::Ty::TVar(_) => ControlFlow::Break(()),
+        _ => ControlFlow::Continue(()),
+    })
+    .is_break()
+}
+
+pub(crate) fn type_vars(ty: &tast::Ty) -> HashSet<tast::TypeVar> {
+    let mut variables = HashSet::new();
+    let _ = visit_ty(ty, &mut |ty| {
+        if let tast::Ty::TVar(variable) = ty {
+            variables.insert(*variable);
+        }
+        ControlFlow::<()>::Continue(())
+    });
+    variables
+}
+
+pub(crate) fn contains_tparam(ty: &tast::Ty) -> bool {
+    visit_ty(ty, &mut |ty| match ty {
+        tast::Ty::TParam { .. } => ControlFlow::Break(()),
+        _ => ControlFlow::Continue(()),
+    })
+    .is_break()
+}
+
+pub(crate) fn type_params(ty: &tast::Ty) -> HashSet<String> {
+    let mut parameters = HashSet::new();
+    let _ = visit_ty(ty, &mut |ty| {
+        if let tast::Ty::TParam { name } = ty {
+            parameters.insert(name.clone());
+        }
+        ControlFlow::<()>::Continue(())
+    });
+    parameters
+}
+
+pub(crate) fn same_or_unresolved_ty(lhs: &tast::Ty, rhs: &tast::Ty) -> bool {
+    lhs == rhs || contains_tvar(lhs) || contains_tvar(rhs)
+}
+
+pub(crate) fn fn_ret_depends_on_params(ty: &tast::Ty) -> bool {
+    let tast::Ty::TFunc { params, ret_ty } = ty else {
+        return false;
+    };
+    let param_vars = params.iter().flat_map(type_vars).collect::<HashSet<_>>();
+    !param_vars.is_empty() && type_vars(ret_ty).iter().any(|var| param_vars.contains(var))
+}

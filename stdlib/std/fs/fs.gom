@@ -1,0 +1,43 @@
+package fs;
+
+use std::internal::host;
+
+pub fn read_file(path: string) -> Result[string, string] {
+    let (ok, data, err) = host::read_file(path);
+    if ok {
+        Result::Ok(data)
+    } else {
+        Result::Err(err)
+    }
+}
+
+pub fn write_file(path: string, content: string) -> Result[unit, string] {
+    let (ok, err) = host::write_file(path, content);
+    if ok {
+        Result::Ok(())
+    } else {
+        Result::Err(err)
+    }
+}
+
+pub fn create_dir_all(path: string) -> Result[unit, string] {
+    let (ok, err) = host::create_dir_all(path);
+    if ok {
+        Result::Ok(())
+    } else {
+        Result::Err(err)
+    }
+}
+
+pub fn exists(path: string) -> bool {
+    host::file_exists(path)
+}
+
+pub fn read_dir(path: string) -> Result[Vec[string], string] {
+    let (ok, names, err) = host::read_dir(path);
+    if ok {
+        Result::Ok(names)
+    } else {
+        Result::Err(err)
+    }
+}

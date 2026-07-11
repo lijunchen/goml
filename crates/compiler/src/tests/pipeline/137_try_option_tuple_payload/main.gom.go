@@ -4,7 +4,7 @@ import (
     _goml_fmt "fmt"
 )
 
-func string_println(s string) struct{} {
+func _goml_runtime_core_string_println(s string) struct{} {
     _goml_fmt.Println(s)
     return struct{}{}
 }
@@ -14,19 +14,19 @@ type Tuple2_6string_6string struct {
     _1 string
 }
 
-type _goml_Option_x5f__x5f__x28_string_x2c_string_x29_ interface {
-    is_goml_Option_x5f__x5f__x28_string_x2c_string_x29_()
+type _goml_m_Option_____o_string_c_string_q_ interface {
+    is_goml_m_Option_____o_string_c_string_q_()
 }
 
-type _goml_Option_x5f__x5f__x28_string_x2c_string_x29__None struct {}
+type _goml_m_Option_____o_string_c_string_q__None struct {}
 
-func (_ _goml_Option_x5f__x5f__x28_string_x2c_string_x29__None) is_goml_Option_x5f__x5f__x28_string_x2c_string_x29_() {}
+func (_ _goml_m_Option_____o_string_c_string_q__None) is_goml_m_Option_____o_string_c_string_q_() {}
 
-type _goml_Option_x5f__x5f__x28_string_x2c_string_x29__Some struct {
+type _goml_m_Option_____o_string_c_string_q__Some struct {
     _0 Tuple2_6string_6string
 }
 
-func (_ _goml_Option_x5f__x5f__x28_string_x2c_string_x29__Some) is_goml_Option_x5f__x5f__x28_string_x2c_string_x29_() {}
+func (_ _goml_m_Option_____o_string_c_string_q__Some) is_goml_m_Option_____o_string_c_string_q_() {}
 
 type Option__string interface {
     isOption__string()
@@ -42,85 +42,92 @@ type Option__string_Some struct {
 
 func (_ Option__string_Some) isOption__string() {}
 
-func cut_pair(ok__0 bool) _goml_Option_x5f__x5f__x28_string_x2c_string_x29_ {
-    var retv9 _goml_Option_x5f__x5f__x28_string_x2c_string_x29_
-    var jp11 _goml_Option_x5f__x5f__x28_string_x2c_string_x29_
+func cut_pair(ok__0 bool) _goml_m_Option_____o_string_c_string_q_ {
+    var retv13 _goml_m_Option_____o_string_c_string_q_
+    var jp15 _goml_m_Option_____o_string_c_string_q_
     if ok__0 {
-        var t12 Tuple2_6string_6string = Tuple2_6string_6string{
+        var t16 Tuple2_6string_6string = Tuple2_6string_6string{
             _0: "alpha",
             _1: "beta",
         }
-        var t13 _goml_Option_x5f__x5f__x28_string_x2c_string_x29_ = _goml_Option_x5f__x5f__x28_string_x2c_string_x29__Some{
-            _0: t12,
+        var t17 _goml_m_Option_____o_string_c_string_q_ = _goml_m_Option_____o_string_c_string_q__Some{
+            _0: t16,
         }
-        jp11 = t13
+        jp15 = t17
     } else {
-        jp11 = _goml_Option_x5f__x5f__x28_string_x2c_string_x29__None{}
+        jp15 = _goml_m_Option_____o_string_c_string_q__None{}
     }
-    retv9 = jp11
-    return retv9
+    retv13 = jp15
+    return retv13
 }
 
 func describe(ok__1 bool) Option__string {
-    var retv15 Option__string
-    var mtmp0 _goml_Option_x5f__x5f__x28_string_x2c_string_x29_ = cut_pair(ok__1)
-    var jp17 Tuple2_6string_6string
-    switch mtmp0.(type) {
-    case _goml_Option_x5f__x5f__x28_string_x2c_string_x29__None:
-        retv15 = Option__string_None{}
-        return retv15
-    case _goml_Option_x5f__x5f__x28_string_x2c_string_x29__Some:
-        var x1 Tuple2_6string_6string = mtmp0.(_goml_Option_x5f__x5f__x28_string_x2c_string_x29__Some)._0
-        var try_value__13 Tuple2_6string_6string = x1
-        jp17 = try_value__13
-        var mtmp2 Tuple2_6string_6string = jp17
-        var x3 string = mtmp2._0
-        var x4 string = mtmp2._1
-        var after__3 string = x4
-        var before__2 string = x3
-        var t18 string = before__2 + "|"
-        var t19 string = t18 + after__3
-        var t20 Option__string = Option__string_Some{
-            _0: t19,
+    var retv19 Option__string
+    var mtmp4 _goml_m_Option_____o_string_c_string_q_ = cut_pair(ok__1)
+    var jp21 Tuple2_6string_6string
+    switch mtmp4.(type) {
+    case _goml_m_Option_____o_string_c_string_q__None:
+        retv19 = Option__string_None{}
+        return retv19
+    case _goml_m_Option_____o_string_c_string_q__Some:
+        var x5 Tuple2_6string_6string = mtmp4.(_goml_m_Option_____o_string_c_string_q__Some)._0
+        var try_value__13 Tuple2_6string_6string = x5
+        jp21 = try_value__13
+        var mtmp6 Tuple2_6string_6string = jp21
+        var x7 string = mtmp6._0
+        var x8 string = mtmp6._1
+        var after__3 string = x8
+        var before__2 string = x7
+        var t22 string = before__2 + "|"
+        var t23 string = t22 + after__3
+        var t24 Option__string = Option__string_Some{
+            _0: t23,
         }
-        retv15 = t20
-        return retv15
+        retv19 = t24
+        return retv19
     default:
         panic("non-exhaustive match")
     }
 }
 
 func show(opt__4 Option__string) string {
-    var retv22 string
-    var jp24 string
+    var retv26 string
+    var jp28 string
     switch opt__4.(type) {
     case Option__string_None:
-        jp24 = "none"
+        jp28 = "none"
     case Option__string_Some:
-        var x5 string = opt__4.(Option__string_Some)._0
-        var value__5 string = x5
-        var t25 string = "some " + value__5
-        jp24 = t25
+        var x9 string = opt__4.(Option__string_Some)._0
+        var value__5 string = x9
+        var t29 string = "some " + value__5
+        jp28 = t29
     default:
         panic("non-exhaustive match")
     }
-    retv22 = jp24
-    return retv22
+    retv26 = jp28
+    return retv26
 }
 
 func main0() struct{} {
-    var t27 Option__string = describe(true)
-    var t28 string = show(t27)
-    println__T_string(t28)
-    var t29 Option__string = describe(false)
-    var t30 string = show(t29)
-    println__T_string(t30)
+    var t31 Option__string = describe(true)
+    var t32 string = show(t31)
+    println__T_string(t32)
+    var t33 Option__string = describe(false)
+    var t34 string = show(t33)
+    println__T_string(t34)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    string_println(value__1)
+    var t36 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t36)
     return struct{}{}
+}
+
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
+    var retv39 string
+    retv39 = self__9
+    return retv39
 }
 
 func main() {

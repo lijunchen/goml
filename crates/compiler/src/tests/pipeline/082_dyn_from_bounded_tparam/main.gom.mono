@@ -3,9 +3,9 @@ fn trait_impl#Display#S#show(self/0: S) -> string {
 }
 
 fn main() -> unit {
-  let mtmp0 = to_dyn__T_S(S {}) in
+  let mtmp4 = to_dyn__T_S(S {}) in
   {
-    let _wild1 = println__T_string("ok") in
+    let _wild5 = println__T_string("ok") in
   }
 }
 
@@ -14,5 +14,9 @@ fn to_dyn__T_S(x/1: S) -> dyn Display {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  string_println(value/1)
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  self/9
 }

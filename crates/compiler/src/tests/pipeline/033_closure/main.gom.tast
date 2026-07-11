@@ -1,17 +1,9 @@
-fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
-}
-
-fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
-}
-
 fn test() -> unit {
     let y/0: int32 = 3;
     let z/1: int32 = 5;
     let f/3: (int32) -> int32 = |x/2: int32| => (x/2 : int32) * (y/0 : int32) * (z/1 : int32);
-    let _ : unit = (println : (string) -> unit)((ToString::to_string : (int32) -> string)((f/3 : (int32) -> int32)(2)));
-    (println : (string) -> unit)((ToString::to_string : (int32) -> string)((f/3 : (int32) -> int32)(3)))
+    let _ : unit = (println : (string) -> unit)((int32::to_string : (int32) -> string)((f/3 : (int32) -> int32)(2)));
+    (println : (string) -> unit)((int32::to_string : (int32) -> string)((f/3 : (int32) -> int32)(3)))
 }
 
 fn call_int_id(f/4: (int32) -> int32, v/5: int32) -> int32 {
@@ -30,7 +22,7 @@ fn main() -> unit {
     let unused/15: (int32) -> int32 = |y/14: int32| => (y/14 : int32) + (result/9 : int32);
     let no_capture/17: (int32) -> int32 = |z/16: int32| => (z/16 : int32) * 2;
     let doubled/18: int32 = (no_capture/17 : (int32) -> int32)(3);
-    let _ : unit = (println : (string) -> unit)((ToString::to_string : (int32) -> string)((doubled/18 : int32)));
+    let _ : unit = (println : (string) -> unit)((int32::to_string : (int32) -> string)((doubled/18 : int32)));
     let _ : unit = (test : () -> unit)();
     let list123/19: IntList = IntList::Cons(1, IntList::Cons(2, IntList::Cons(3, IntList::Nil)));
     let point/20: Point = Point { x: 10, y: 20 };

@@ -1,11 +1,11 @@
 fn main() -> unit {
   let a/0 = (Color::Blue, Color::Red) in
   {
-    let x0 = a/0.0 in
-    let x1 = a/0.1 in
-    match x1 {
+    let x4 = a/0.0 in
+    let x5 = a/0.1 in
+    match x5 {
       Color::Red => {
-        match x0 {
+        match x4 {
           Color::Red => {
             print__T_int32(1)
           },
@@ -18,7 +18,7 @@ fn main() -> unit {
         }
       },
       Color::Green => {
-        match x0 {
+        match x4 {
           Color::Red => {
             print__T_int32(0)
           },
@@ -31,7 +31,7 @@ fn main() -> unit {
         }
       },
       Color::Blue => {
-        match x0 {
+        match x4 {
           Color::Red => {
             print__T_int32(3)
           },
@@ -48,5 +48,9 @@ fn main() -> unit {
 }
 
 fn print__T_int32(value/0: int32) -> unit {
-  string_print($goml_builtin_runtime$int32_to_string(value/0))
+  @runtime(core.string_print)(trait_impl#ToString#int32#to_string(value/0))
+}
+
+fn trait_impl#ToString#int32#to_string(self/13: int32) -> string {
+  @runtime(core.int32_to_string)(self/13)
 }

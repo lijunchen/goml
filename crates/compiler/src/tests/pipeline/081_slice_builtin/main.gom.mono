@@ -1,44 +1,48 @@
 fn main() -> unit {
   let v/0 = inherent#Vec#Vec[T]#new__T_int32() in
-  let v/1 = inherent#Vec#Vec[T]#push__T_int32(v/0, 10) in
-  let v/2 = inherent#Vec#Vec[T]#push__T_int32(v/1, 20) in
-  let v/3 = inherent#Vec#Vec[T]#push__T_int32(v/2, 30) in
-  let v/4 = inherent#Vec#Vec[T]#push__T_int32(v/3, 40) in
-  let s/5 = inherent#Vec#Vec[T]#slice__T_int32(v/4, 1, 4) in
-  let _wild0 = println__T_int32(inherent#Slice#Slice[T]#len__T_int32(s/5)) in
-  let _wild1 = println__T_int32(inherent#Slice#Slice[T]#get__T_int32(s/5, 0)) in
-  let _wild2 = println__T_int32(inherent#Slice#Slice[T]#get__T_int32(s/5, 1)) in
-  let _wild3 = println__T_int32(inherent#Slice#Slice[T]#get__T_int32(s/5, 2)) in
-  let t/6 = inherent#Slice#Slice[T]#sub__T_int32(s/5, 1, 3) in
-  let _wild4 = println__T_int32(inherent#Slice#Slice[T]#len__T_int32(t/6)) in
-  let _wild5 = println__T_int32(inherent#Slice#Slice[T]#get__T_int32(t/6, 0)) in
-  let _wild6 = println__T_int32(inherent#Slice#Slice[T]#get__T_int32(t/6, 1)) in
+  let _wild4 = inherent#Vec#Vec[T]#push__T_int32(v/0, 10) in
+  let _wild5 = inherent#Vec#Vec[T]#push__T_int32(v/0, 20) in
+  let _wild6 = inherent#Vec#Vec[T]#push__T_int32(v/0, 30) in
+  let _wild7 = inherent#Vec#Vec[T]#push__T_int32(v/0, 40) in
+  let s/1 = inherent#Vec#Vec[T]#slice__T_int32(v/0, 1, 4) in
+  let _wild8 = println__T_int32(inherent#Slice#Slice[T]#len__T_int32(s/1)) in
+  let _wild9 = println__T_int32(inherent#Slice#Slice[T]#get__T_int32(s/1, 0)) in
+  let _wild10 = println__T_int32(inherent#Slice#Slice[T]#get__T_int32(s/1, 1)) in
+  let _wild11 = println__T_int32(inherent#Slice#Slice[T]#get__T_int32(s/1, 2)) in
+  let t/2 = inherent#Slice#Slice[T]#sub__T_int32(s/1, 1, 3) in
+  let _wild12 = println__T_int32(inherent#Slice#Slice[T]#len__T_int32(t/2)) in
+  let _wild13 = println__T_int32(inherent#Slice#Slice[T]#get__T_int32(t/2, 0)) in
+  let _wild14 = println__T_int32(inherent#Slice#Slice[T]#get__T_int32(t/2, 1)) in
 }
 
 fn inherent#Vec#Vec[T]#new__T_int32() -> Vec[int32] {
-  vec_new()
+  @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_int32(self/66: Vec[int32], elem/67: int32) -> Vec[int32] {
-  vec_push(self/66, elem/67)
+fn inherent#Vec#Vec[T]#push__T_int32(self/71: Vec[int32], elem/72: int32) -> unit {
+  @intrinsic(vec.push)(self/71, elem/72)
 }
 
-fn inherent#Vec#Vec[T]#slice__T_int32(self/74: Vec[int32], start/75: int32, end/76: int32) -> Slice[int32] {
-  slice(self/74, start/75, end/76)
+fn inherent#Vec#Vec[T]#slice__T_int32(self/83: Vec[int32], start/84: int32, end/85: int32) -> Slice[int32] {
+  @intrinsic(slice.new)(self/83, start/84, end/85)
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  string_println($goml_builtin_runtime$int32_to_string(value/1))
+  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
 }
 
-fn inherent#Slice#Slice[T]#len__T_int32(self/79: Slice[int32]) -> int32 {
-  slice_len(self/79)
+fn inherent#Slice#Slice[T]#len__T_int32(self/88: Slice[int32]) -> int32 {
+  @intrinsic(slice.len)(self/88)
 }
 
-fn inherent#Slice#Slice[T]#get__T_int32(self/77: Slice[int32], index/78: int32) -> int32 {
-  slice_get(self/77, index/78)
+fn inherent#Slice#Slice[T]#get__T_int32(self/86: Slice[int32], index/87: int32) -> int32 {
+  @intrinsic(slice.get)(self/86, index/87)
 }
 
-fn inherent#Slice#Slice[T]#sub__T_int32(self/80: Slice[int32], start/81: int32, end/82: int32) -> Slice[int32] {
-  slice_sub(self/80, start/81, end/82)
+fn inherent#Slice#Slice[T]#sub__T_int32(self/89: Slice[int32], start/90: int32, end/91: int32) -> Slice[int32] {
+  @intrinsic(slice.sub)(self/89, start/90, end/91)
+}
+
+fn trait_impl#ToString#int32#to_string(self/13: int32) -> string {
+  @runtime(core.int32_to_string)(self/13)
 }

@@ -33,7 +33,7 @@ install-vscode-ext:
     cd editors/vscode && npx @vscode/vsce package --allow-missing-repository --skip-license && code --install-extension *.vsix
 
 install:
-    home="${GOML_HOME:-$HOME/.goml}"; cargo install --path ./crates/goml --debug --offline --root "$home" --force --locked; rm -rf "$home/lib/std"; mkdir -p "$home/lib"; cp -R stdlib/std "$home/lib/std"
+    home="${GOML_HOME:-$HOME/.goml}"; cargo install --path ./crates/gomlc --debug --offline --root "$home" --force --locked; cargo install --path ./crates/goml --debug --offline --root "$home" --force --locked; rm -rf "$home/lib/std"; mkdir -p "$home/lib"; cp -R stdlib/std "$home/lib/std"
 
 install-lsp-suite:
     just install-lsp

@@ -327,7 +327,7 @@ fn inst_loop(st: CheckerState, subst: Vec[SubstEntry], ty: Typ) -> (Typ, Vec[Sub
               Option::Some(t) => (t, subst),
               Option::None => {
                     let tv = newvar(st);
-                    let new_subst = subst.push(SubstEntry {
+                    let new_subst = subst.pushed(SubstEntry {
                           name: name,
                           ty: tv
                       });
@@ -360,7 +360,7 @@ fn typeof(st: CheckerState, env: Vec[EnvEntry], e: Exp) -> Result[Typ, string] {
           },
         Exp::Lam(x, body) => {
               let ty_x = newvar(st);
-              let env2 = env.push(EnvEntry {
+              let env2 = env.pushed(EnvEntry {
                     name: x,
                     ty: ty_x
                 });
@@ -394,7 +394,7 @@ fn typeof(st: CheckerState, env: Vec[EnvEntry], e: Exp) -> Result[Typ, string] {
               match ty_e {
                   Result::Err(e) => Result::Err(e),
                   Result::Ok(ty1) => {
-                        let env2 = env.push(EnvEntry {
+                        let env2 = env.pushed(EnvEntry {
                               name: x,
                               ty: gen(st, ty1)
                           });

@@ -1,21 +1,45 @@
 fn main() -> unit {
-  join ret2() -> unit {
+  join ret6() -> unit {
     ()
   } in
   let p/0 = Pair__uint8__float32 { first: 10, second: 3.14 } in
-  let t3 = Pair__uint8__float32.first(p/0) in
-  let t4 = $goml_builtin_runtime$uint8_to_string(t3) in
-  let _wild0 = println__T_string(t4) in
-  let t5 = Pair__uint8__float32.second(p/0) in
-  let t6 = $goml_builtin_runtime$float32_to_string(t5) in
-  let _wild1 = println__T_string(t6) in
-  jump ret2()
+  let t7 = Pair__uint8__float32.first(p/0) in
+  let t8 = trait_impl#ToString#uint8#to_string(t7) in
+  let _wild4 = println__T_string(t8) in
+  let t9 = Pair__uint8__float32.second(p/0) in
+  let t10 = trait_impl#ToString#float32#to_string(t9) in
+  let _wild5 = println__T_string(t10) in
+  jump ret6()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret7() -> unit {
+  join ret11() -> unit {
     ()
   } in
-  let t8 = string_println(value/1) in
-  jump ret7()
+  let t12 = trait_impl#ToString#string#to_string(value/1) in
+  let t13 = @runtime(core.string_println)(t12) in
+  jump ret11()
+}
+
+fn trait_impl#ToString#uint8#to_string(self/15: uint8) -> string {
+  join ret14(retv15: string) -> string {
+    retv15
+  } in
+  let t16 = @runtime(core.uint8_to_string)(self/15) in
+  jump ret14(t16)
+}
+
+fn trait_impl#ToString#float32#to_string(self/19: float32) -> string {
+  join ret17(retv18: string) -> string {
+    retv18
+  } in
+  let t19 = @runtime(core.float32_to_string)(self/19) in
+  jump ret17(t19)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  join ret20(retv21: string) -> string {
+    retv21
+  } in
+  jump ret20(self/9)
 }

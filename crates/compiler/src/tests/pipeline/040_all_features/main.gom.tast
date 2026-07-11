@@ -1,11 +1,3 @@
-fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
-}
-
-fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
-}
-
 impl Describe for Tracker{
   fn describe(self/0: Tracker) -> string {
       let Tracker { label: label/1: string, count: count/2: Ref[int32], toggled: toggled/3: Ref[bool] } = (self/0 : Tracker);
@@ -22,10 +14,10 @@ impl Describe for Tracker{
 impl Describe for Record[int32]{
   fn describe(self/10: Record[int32]) -> string {
       match (self/10 : Record[int32]) {
-          Record::Value(value/11: int32) => "Value(" + (ToString::to_string : (int32) -> string)((value/11 : int32)) + ")",
+          Record::Value(value/11: int32) => "Value(" + (int32::to_string : (int32) -> string)((value/11 : int32)) + ")",
           Record::Pair(before/12: int32, after/13: int32) => {
-                let prefix/14: string = "Pair(" + (ToString::to_string : (int32) -> string)((before/12 : int32));
-                (prefix/14 : string) + ", " + (ToString::to_string : (int32) -> string)((after/13 : int32)) + ")"
+                let prefix/14: string = "Pair(" + (int32::to_string : (int32) -> string)((before/12 : int32));
+                (prefix/14 : string) + ", " + (int32::to_string : (int32) -> string)((after/13 : int32)) + ")"
             },
           Record::Empty => "Empty",
       }

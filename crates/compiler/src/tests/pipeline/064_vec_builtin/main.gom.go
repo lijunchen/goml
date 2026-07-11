@@ -4,59 +4,94 @@ import (
     _goml_fmt "fmt"
 )
 
-func int32_to_string(x int32) string {
+func _goml_runtime_core_int32_to_string(x int32) string {
     return _goml_fmt.Sprintf("%d", x)
 }
 
-func string_println(s string) struct{} {
+func _goml_runtime_core_string_println(s string) struct{} {
     _goml_fmt.Println(s)
     return struct{}{}
 }
 
-func main0() struct{} {
-    var v__0 []int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_int32()
-    var v__1 []int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_int32(v__0, 10)
-    var v__2 []int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_int32(v__1, 20)
-    var v__3 []int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_int32(v__2, 30)
-    var first__4 int32 = v__3[0]
-    var second__5 int32 = v__3[1]
-    var third__6 int32 = v__3[2]
-    var len__7 int32 = _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_int32(v__3)
-    var t5 string = int32_to_string(first__4)
-    println__T_string(t5)
-    var t6 string = int32_to_string(second__5)
-    println__T_string(t6)
-    var t7 string = int32_to_string(third__6)
-    println__T_string(t7)
-    var t8 string = int32_to_string(len__7)
-    println__T_string(t8)
+type _goml_vec_int32 struct {
+    items []int32
+}
+
+func vec_new__Vec_5int32() *_goml_vec_int32 {
+    return &_goml_vec_int32{
+        items: nil,
+    }
+}
+
+func vec_push__Vec_5int32(vec *_goml_vec_int32, elem int32) struct{} {
+    vec.items = append(vec.items, elem)
     return struct{}{}
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_new_x5f__x5f_T_x5f_int32() []int32 {
-    var retv10 []int32
-    var t11 []int32 = nil
-    retv10 = t11
-    return retv10
+func vec_get__Vec_5int32(vec *_goml_vec_int32, index int32) int32 {
+    return vec.items[index]
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_push_x5f__x5f_T_x5f_int32(self__66 []int32, elem__67 int32) []int32 {
-    var retv13 []int32
-    var t14 []int32 = append(self__66, elem__67)
-    retv13 = t14
-    return retv13
+func vec_len__Vec_5int32(vec *_goml_vec_int32) int32 {
+    return int32(len(vec.items))
 }
 
-func _goml_inherent_x23_Vec_x23_Vec_x5b_T_x5d__x23_len_x5f__x5f_T_x5f_int32(self__73 []int32) int32 {
-    var retv16 int32
-    var t17 int32 = int32(len(self__73))
-    retv16 = t17
-    return retv16
+func main0() struct{} {
+    var v__0 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__int32()
+    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(v__0, 10)
+    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(v__0, 20)
+    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(v__0, 30)
+    var first__1 int32 = vec_get__Vec_5int32(v__0, 0)
+    var second__2 int32 = vec_get__Vec_5int32(v__0, 1)
+    var third__3 int32 = vec_get__Vec_5int32(v__0, 2)
+    var len__4 int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(v__0)
+    var t12 string = _goml_m_inherent_i_int32_i_int32_i_to__string(first__1)
+    println__T_string(t12)
+    var t13 string = _goml_m_inherent_i_int32_i_int32_i_to__string(second__2)
+    println__T_string(t13)
+    var t14 string = _goml_m_inherent_i_int32_i_int32_i_to__string(third__3)
+    println__T_string(t14)
+    var t15 string = _goml_m_inherent_i_int32_i_int32_i_to__string(len__4)
+    println__T_string(t15)
+    return struct{}{}
+}
+
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__int32() *_goml_vec_int32 {
+    var retv17 *_goml_vec_int32
+    var t18 *_goml_vec_int32 = vec_new__Vec_5int32()
+    retv17 = t18
+    return retv17
+}
+
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(self__71 *_goml_vec_int32, elem__72 int32) struct{} {
+    vec_push__Vec_5int32(self__71, elem__72)
+    return struct{}{}
+}
+
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__82 *_goml_vec_int32) int32 {
+    var retv22 int32
+    var t23 int32 = vec_len__Vec_5int32(self__82)
+    retv22 = t23
+    return retv22
 }
 
 func println__T_string(value__1 string) struct{} {
-    string_println(value__1)
+    var t25 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t25)
     return struct{}{}
+}
+
+func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
+    var retv28 string
+    var t29 string = _goml_runtime_core_int32_to_string(self__2)
+    retv28 = t29
+    return retv28
+}
+
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
+    var retv31 string
+    retv31 = self__9
+    return retv31
 }
 
 func main() {

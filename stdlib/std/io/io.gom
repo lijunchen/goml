@@ -1,0 +1,19 @@
+package io;
+
+use std::internal::host;
+
+pub fn print[T: ToString](value: T) -> unit {
+    host::print(ToString::to_string(value))
+}
+
+pub fn println[T: ToString](value: T) -> unit {
+    host::println(ToString::to_string(value))
+}
+
+pub fn eprint[T: ToString](value: T) -> unit {
+    host::eprint(ToString::to_string(value))
+}
+
+pub fn eprintln[T: ToString](value: T) -> unit {
+    host::eprint(ToString::to_string(value) + "\n")
+}

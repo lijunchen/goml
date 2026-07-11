@@ -1,4 +1,8 @@
 use crate::tast;
+use sha2::{Digest, Sha256};
+
+pub const MAX_GO_IDENT_LEN: usize = 80;
+const HASH_BYTES: usize = 16;
 
 pub fn encode_ty(ty: &tast::Ty) -> String {
     match ty {
@@ -71,35 +75,119 @@ pub fn go_generated_ident(name: &str) -> String {
 }
 
 pub fn go_dyn_struct_name(trait_name: &str) -> String {
-    if trait_name.ends_with("_vtable") {
-        format!("_goml_dyn_object_{}", go_generated_ident(trait_name))
+    let name = if trait_name.ends_with("_vtable") {
+        format!("_goml_dyn_object_{}", trait_name)
     } else {
-        go_generated_ident(&format!("dyn__{}", trait_name))
-    }
+        format!("dyn__{}", trait_name)
+    };
+    go_generated_ident(&name)
+}
+
+pub fn go_hashed_ident(kind: &str, name: &str) -> String {
+    let prefix = format!("_goml_{}_", kind);
+    let digest = stable_hash(&format!("{}\0{}", kind, name));
+    let suffix = format!("_h{}", digest);
+    let budget = MAX_GO_IDENT_LEN - prefix.len() - suffix.len();
+    let hint = bounded_hint(&encode_name(name), budget);
+    format!("{}{}{}", prefix, hint, suffix)
 }
 
 fn go_ident_impl(name: &str, protect_generated: bool) -> String {
     if is_valid_go_ident(name) && !is_go_keyword(name) && !is_go_predeclared_identifier(name) {
         if protect_generated && is_generated_go_ident(name) {
-            return format!("_goml_user_{}", name);
+            return compact_ident(&format!("_goml_user_{}", name));
         }
-        return name.to_string();
+        return compact_ident(name);
     }
-    let mut out = String::from("_goml_");
-    for ch in name.chars() {
+    compact_ident(&format!("_goml_m_{}", encode_name(name)))
+}
+
+fn encode_name(name: &str) -> String {
+    let mut out = String::new();
+    let mut chars = name.chars().peekable();
+    while let Some(ch) = chars.next() {
         if ch.is_ascii_alphanumeric() {
             out.push(ch);
             continue;
         }
+        if ch == ':' && chars.peek() == Some(&':') {
+            chars.next();
+            out.push_str("_p_");
+            continue;
+        }
+        let token = match ch {
+            '_' => Some("__"),
+            '#' => Some("_i_"),
+            '[' => Some("_l_"),
+            ']' => Some("_r_"),
+            '(' => Some("_o_"),
+            ')' => Some("_q_"),
+            '{' => Some("_b_"),
+            '}' => Some("_e_"),
+            ',' => Some("_c_"),
+            ':' => Some("_k_"),
+            '$' => Some("_d_"),
+            '-' => Some("_m_"),
+            '.' => Some("_t_"),
+            '/' => Some("_f_"),
+            '*' => Some("_a_"),
+            '&' => Some("_n_"),
+            '+' => Some("_u_"),
+            '<' => Some("_v_"),
+            '>' => Some("_z_"),
+            _ => None,
+        };
+        if let Some(token) = token {
+            out.push_str(token);
+            continue;
+        }
         out.push_str("_x");
         let mut buf = [0u8; 4];
-        for b in ch.encode_utf8(&mut buf).as_bytes() {
+        for byte in ch.encode_utf8(&mut buf).as_bytes() {
             use std::fmt::Write;
-            write!(&mut out, "{:02x}", b).unwrap();
+            write!(&mut out, "{:02x}", byte).unwrap();
         }
         out.push('_');
     }
     out
+}
+
+fn compact_ident(candidate: &str) -> String {
+    if candidate.len() <= MAX_GO_IDENT_LEN {
+        return candidate.to_string();
+    }
+    let digest = stable_hash(candidate);
+    let marker = format!("_h{}_", digest);
+    let budget = MAX_GO_IDENT_LEN - marker.len();
+    let head_len = budget * 2 / 3;
+    let tail_len = budget - head_len;
+    format!(
+        "{}{}{}",
+        &candidate[..head_len],
+        marker,
+        &candidate[candidate.len() - tail_len..]
+    )
+}
+
+fn bounded_hint(hint: &str, budget: usize) -> String {
+    if hint.len() <= budget {
+        return hint.to_string();
+    }
+    let separator = "_";
+    let content_budget = budget - separator.len();
+    let head_len = content_budget * 2 / 3;
+    let tail_len = content_budget - head_len;
+    format!(
+        "{}{}{}",
+        &hint[..head_len],
+        separator,
+        &hint[hint.len() - tail_len..]
+    )
+}
+
+fn stable_hash(value: &str) -> String {
+    let digest = Sha256::digest(value.as_bytes());
+    hex::encode(&digest[..HASH_BYTES])
 }
 
 fn is_generated_go_ident(name: &str) -> bool {
@@ -114,7 +202,11 @@ fn has_generated_helper_prefix(name: &str) -> bool {
     [
         "array_get__",
         "array_set__",
+        "vec_new__",
+        "vec_push__",
+        "vec_get__",
         "vec_set__",
+        "vec_len__",
         "ref__",
         "ref_get__",
         "ref_set__",
@@ -135,7 +227,7 @@ fn has_generated_helper_prefix(name: &str) -> bool {
 pub fn go_user_type_name(name: &str) -> String {
     let ident = go_ident(name);
     if is_generated_go_type_name(&ident) || is_generated_go_value_name(&ident) {
-        format!("_goml_user_{}", ident)
+        go_generated_ident(&format!("_goml_user_{}", ident))
     } else {
         ident
     }
@@ -163,40 +255,7 @@ fn has_len_prefixed_type_name(name: &str, prefix: &str) -> bool {
 }
 
 fn is_generated_go_value_name(name: &str) -> bool {
-    matches!(
-        name,
-        "init"
-            | "main"
-            | "unit_to_string"
-            | "bool_to_string"
-            | "string_len"
-            | "string_get"
-            | "char_to_string"
-            | "int8_to_string"
-            | "int16_to_string"
-            | "int32_to_string"
-            | "int64_to_string"
-            | "uint8_to_string"
-            | "uint16_to_string"
-            | "uint32_to_string"
-            | "uint64_to_string"
-            | "float32_to_string"
-            | "float64_to_string"
-            | "int8_hash"
-            | "int16_hash"
-            | "int32_hash"
-            | "int64_hash"
-            | "char_hash"
-            | "uint8_hash"
-            | "uint16_hash"
-            | "uint32_hash"
-            | "float32_hash"
-            | "float64_hash"
-            | "string_hash"
-            | "string_print"
-            | "string_println"
-            | "missing"
-    )
+    matches!(name, "init" | "main")
 }
 
 fn is_valid_go_ident(s: &str) -> bool {
@@ -270,4 +329,74 @@ fn is_go_predeclared_identifier(s: &str) -> bool {
             | "recover"
             | "true"
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn valid_name_stays_readable() {
+        assert_eq!(go_ident("read_file"), "read_file");
+    }
+
+    #[test]
+    fn qualified_name_uses_compact_escapes() {
+        assert_eq!(
+            go_ident("alice::project::utils::message"),
+            "_goml_m_alice_p_project_p_utils_p_message"
+        );
+    }
+
+    #[test]
+    fn compact_escapes_do_not_collide_with_user_text() {
+        assert_ne!(go_ident("alice::utils"), go_ident("alice_p_utils"));
+        assert_ne!(go_ident("trait#method"), go_ident("trait_i_method"));
+        assert_ne!(go_ident("left_right?"), go_ident("left__right?"));
+    }
+
+    #[test]
+    fn long_names_are_bounded_and_deterministic() {
+        let prefix = "deeply_nested_generic_closure_".repeat(8);
+        let first = go_ident(&format!("{prefix}::first"));
+        let second = go_ident(&format!("{prefix}::second"));
+
+        assert_eq!(first.len(), MAX_GO_IDENT_LEN);
+        assert_eq!(first, go_ident(&format!("{prefix}::first")));
+        assert_ne!(first, second);
+        assert!(is_valid_go_ident(&first));
+    }
+
+    #[test]
+    fn generated_namespace_is_protected_from_user_names() {
+        assert_eq!(go_ident("missing__int32"), "_goml_user_missing__int32");
+        assert_eq!(go_generated_ident("missing__int32"), "missing__int32");
+        assert_eq!(
+            go_ident("vec_new__Vec_5int32"),
+            "_goml_user_vec_new__Vec_5int32"
+        );
+        assert_eq!(
+            go_ident("vec_push__Vec_5int32"),
+            "_goml_user_vec_push__Vec_5int32"
+        );
+        assert_eq!(
+            go_ident("vec_get__Vec_5int32"),
+            "_goml_user_vec_get__Vec_5int32"
+        );
+        assert_eq!(
+            go_ident("vec_len__Vec_5int32"),
+            "_goml_user_vec_len__Vec_5int32"
+        );
+    }
+
+    #[test]
+    fn hashed_names_keep_a_readable_hint() {
+        let raw = "inherent#closure_env_make_pairer#apply".repeat(5);
+        let first = go_hashed_ident("fn", &raw);
+        let second = go_hashed_ident("fn", &format!("{raw}x"));
+
+        assert_eq!(first.len(), MAX_GO_IDENT_LEN);
+        assert!(first.starts_with("_goml_fn_inherent_i_closure"));
+        assert_ne!(first, second);
+    }
 }

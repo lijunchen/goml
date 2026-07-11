@@ -4,7 +4,7 @@ import (
     _goml_fmt "fmt"
 )
 
-func string_println(s string) struct{} {
+func _goml_runtime_core_string_println(s string) struct{} {
     _goml_fmt.Println(s)
     return struct{}{}
 }
@@ -62,127 +62,134 @@ type Result__string__string_Err struct {
 func (_ Result__string__string_Err) isResult__string__string() {}
 
 func open_handle(ok__0 bool) Result__Handle__string {
-    var retv13 Result__Handle__string
-    var jp15 Result__Handle__string
+    var retv17 Result__Handle__string
+    var jp19 Result__Handle__string
     if ok__0 {
-        var t16 Handle = Handle{
+        var t20 Handle = Handle{
             name: "config",
         }
-        var t17 Result__Handle__string = Result__Handle__string_Ok{
-            _0: t16,
+        var t21 Result__Handle__string = Result__Handle__string_Ok{
+            _0: t20,
         }
-        jp15 = t17
+        jp19 = t21
     } else {
-        var t18 Result__Handle__string = Result__Handle__string_Err{
+        var t22 Result__Handle__string = Result__Handle__string_Err{
             _0: "open failed",
         }
-        jp15 = t18
+        jp19 = t22
     }
-    retv13 = jp15
-    return retv13
+    retv17 = jp19
+    return retv17
 }
 
 func close_handle(handle__1 Handle, ok__2 bool) Result__unit__string {
-    var retv20 Result__unit__string
-    var jp22 Result__unit__string
+    var retv24 Result__unit__string
+    var jp26 Result__unit__string
     if ok__2 {
-        var t23 Result__unit__string = Result__unit__string_Ok{
+        var t27 Result__unit__string = Result__unit__string_Ok{
             _0: struct{}{},
         }
-        jp22 = t23
+        jp26 = t27
     } else {
-        var t24 string = handle__1.name
-        var t25 string = "close failed for " + t24
-        var t26 Result__unit__string = Result__unit__string_Err{
-            _0: t25,
+        var t28 string = handle__1.name
+        var t29 string = "close failed for " + t28
+        var t30 Result__unit__string = Result__unit__string_Err{
+            _0: t29,
         }
-        jp22 = t26
+        jp26 = t30
     }
-    retv20 = jp22
-    return retv20
+    retv24 = jp26
+    return retv24
 }
 
 func use_handle(open_ok__3 bool, close_ok__4 bool) Result__string__string {
-    var retv28 Result__string__string
-    var mtmp0 Result__Handle__string = open_handle(open_ok__3)
-    var jp30 Handle
-    switch mtmp0.(type) {
+    var retv32 Result__string__string
+    var mtmp4 Result__Handle__string = open_handle(open_ok__3)
+    var jp34 Handle
+    switch mtmp4.(type) {
     case Result__Handle__string_Ok:
-        var x1 Handle = mtmp0.(Result__Handle__string_Ok)._0
-        var try_value__24 Handle = x1
-        jp30 = try_value__24
-        var handle__5 Handle = jp30
+        var x5 Handle = mtmp4.(Result__Handle__string_Ok)._0
+        var try_value__24 Handle = x5
+        jp34 = try_value__24
+        var handle__5 Handle = jp34
         var name__6 string = handle__5.name
-        var mtmp3 Result__unit__string = close_handle(handle__5, close_ok__4)
-        switch mtmp3.(type) {
+        var mtmp7 Result__unit__string = close_handle(handle__5, close_ok__4)
+        switch mtmp7.(type) {
         case Result__unit__string_Ok:
-            var t32 string = "closed " + name__6
-            var t33 Result__string__string = Result__string__string_Ok{
-                _0: t32,
+            var t36 string = "closed " + name__6
+            var t37 Result__string__string = Result__string__string_Ok{
+                _0: t36,
             }
-            retv28 = t33
-            return retv28
+            retv32 = t37
+            return retv32
         case Result__unit__string_Err:
-            var x5 string = mtmp3.(Result__unit__string_Err)._0
-            var try_residual__31 string = x5
-            var t34 Result__string__string = Result__string__string_Err{
+            var x9 string = mtmp7.(Result__unit__string_Err)._0
+            var try_residual__31 string = x9
+            var t38 Result__string__string = Result__string__string_Err{
                 _0: try_residual__31,
             }
-            retv28 = t34
-            return retv28
+            retv32 = t38
+            return retv32
         default:
             panic("non-exhaustive match")
         }
     case Result__Handle__string_Err:
-        var x2 string = mtmp0.(Result__Handle__string_Err)._0
-        var try_residual__24 string = x2
-        var t35 Result__string__string = Result__string__string_Err{
+        var x6 string = mtmp4.(Result__Handle__string_Err)._0
+        var try_residual__24 string = x6
+        var t39 Result__string__string = Result__string__string_Err{
             _0: try_residual__24,
         }
-        retv28 = t35
-        return retv28
+        retv32 = t39
+        return retv32
     default:
         panic("non-exhaustive match")
     }
 }
 
 func show(res__7 Result__string__string) string {
-    var retv37 string
-    var jp39 string
+    var retv41 string
+    var jp43 string
     switch res__7.(type) {
     case Result__string__string_Ok:
-        var x7 string = res__7.(Result__string__string_Ok)._0
-        var value__8 string = x7
-        var t40 string = "ok " + value__8
-        jp39 = t40
+        var x11 string = res__7.(Result__string__string_Ok)._0
+        var value__8 string = x11
+        var t44 string = "ok " + value__8
+        jp43 = t44
     case Result__string__string_Err:
-        var x8 string = res__7.(Result__string__string_Err)._0
-        var err__9 string = x8
-        var t41 string = "err " + err__9
-        jp39 = t41
+        var x12 string = res__7.(Result__string__string_Err)._0
+        var err__9 string = x12
+        var t45 string = "err " + err__9
+        jp43 = t45
     default:
         panic("non-exhaustive match")
     }
-    retv37 = jp39
-    return retv37
+    retv41 = jp43
+    return retv41
 }
 
 func main0() struct{} {
-    var t43 Result__string__string = use_handle(true, true)
-    var t44 string = show(t43)
-    println__T_string(t44)
-    var t45 Result__string__string = use_handle(false, true)
-    var t46 string = show(t45)
-    println__T_string(t46)
-    var t47 Result__string__string = use_handle(true, false)
+    var t47 Result__string__string = use_handle(true, true)
     var t48 string = show(t47)
     println__T_string(t48)
+    var t49 Result__string__string = use_handle(false, true)
+    var t50 string = show(t49)
+    println__T_string(t50)
+    var t51 Result__string__string = use_handle(true, false)
+    var t52 string = show(t51)
+    println__T_string(t52)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    string_println(value__1)
+    var t54 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t54)
     return struct{}{}
+}
+
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
+    var retv57 string
+    retv57 = self__9
+    return retv57
 }
 
 func main() {
