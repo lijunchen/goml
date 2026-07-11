@@ -1,0 +1,42 @@
+fn trait_impl#Measure#Vec[int32]#measure(self/0: Vec[int32]) -> int32 {
+  join ret0(retv1: int32) -> int32 {
+    retv1
+  } in
+  let t2 = inherent#Vec#Vec[T]#len__T_int32(self/0) in
+  jump ret0(t2)
+}
+
+fn main() -> unit {
+  join ret3() -> unit {
+    ()
+  } in
+  let values/2 = vec_new() in
+  let t4 = read_measure__T_Vec[int32](values/2) in
+  let t5 = $goml_builtin_runtime$int32_to_string(t4) in
+  let t6 = println__T_string(t5) in
+  jump ret3()
+}
+
+fn inherent#Vec#Vec[T]#len__T_int32(self/73: Vec[int32]) -> int32 {
+  join ret7(retv8: int32) -> int32 {
+    retv8
+  } in
+  let t9 = vec_len(self/73) in
+  jump ret7(t9)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret10() -> unit {
+    ()
+  } in
+  let t11 = string_println(value/1) in
+  jump ret10()
+}
+
+fn read_measure__T_Vec[int32](value/1: Vec[int32]) -> int32 {
+  join ret12(retv13: int32) -> int32 {
+    retv13
+  } in
+  let t14 = trait_impl#Measure#Vec[int32]#measure(value/1) in
+  jump ret12(t14)
+}

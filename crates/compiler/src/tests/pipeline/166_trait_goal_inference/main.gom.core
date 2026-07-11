@@ -1,0 +1,24 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn trait_impl#Measure#Vec[int32]#measure(self/0: Vec[int32]) -> int32 {
+  inherent#Vec#Vec[int32]#len(self/0)
+}
+
+fn read_measure(value/1: T) -> int32 {
+  trait_call[Measure::measure](value/1)
+}
+
+fn main() -> unit {
+  let values/2 = vec_new() in
+  println($goml_builtin_runtime$int32_to_string(read_measure(values/2)))
+}
+
+fn inherent#Vec#Vec[T]#len(self/73: Vec[T]) -> int32 {
+  vec_len(self/73)
+}
