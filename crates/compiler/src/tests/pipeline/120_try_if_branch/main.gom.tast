@@ -36,7 +36,7 @@ fn bump(flag/1: bool, fallback/2: bool) -> Result[int32, string] {
 
 fn show(res/4: Result[int32, string]) -> string {
     match (res/4 : Result[int32, string]) {
-        Result::Ok(value/5: int32) => "ok=" + (ToString::to_string : (int32) -> string)((value/5 : int32)),
+        Result::Ok(value/5: int32) => "ok=" + (int32::to_string : (int32) -> string)((value/5 : int32)),
         Result::Err(err/6: string) => "err=" + (err/6 : string),
     }
 }

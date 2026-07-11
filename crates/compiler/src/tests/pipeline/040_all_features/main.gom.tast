@@ -22,10 +22,10 @@ impl Describe for Tracker{
 impl Describe for Record[int32]{
   fn describe(self/10: Record[int32]) -> string {
       match (self/10 : Record[int32]) {
-          Record::Value(value/11: int32) => "Value(" + (ToString::to_string : (int32) -> string)((value/11 : int32)) + ")",
+          Record::Value(value/11: int32) => "Value(" + (int32::to_string : (int32) -> string)((value/11 : int32)) + ")",
           Record::Pair(before/12: int32, after/13: int32) => {
-                let prefix/14: string = "Pair(" + (ToString::to_string : (int32) -> string)((before/12 : int32));
-                (prefix/14 : string) + ", " + (ToString::to_string : (int32) -> string)((after/13 : int32)) + ")"
+                let prefix/14: string = "Pair(" + (int32::to_string : (int32) -> string)((before/12 : int32));
+                (prefix/14 : string) + ", " + (int32::to_string : (int32) -> string)((after/13 : int32)) + ")"
             },
           Record::Empty => "Empty",
       }

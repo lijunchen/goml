@@ -43,7 +43,7 @@ fn point32_to_string(point/8: Point) -> string {
 
 fn wrapper_int32_to_string(wrapper/14: Wrapper[int32]) -> string {
     let Wrapper { value: value/15: int32 } = (wrapper/14 : Wrapper[int32]);
-    let prefix/16: string = "Wrapper[int32] { value: " + (ToString::to_string : (int32) -> string)((value/15 : int32));
+    let prefix/16: string = "Wrapper[int32] { value: " + (int32::to_string : (int32) -> string)((value/15 : int32));
     (prefix/16 : string) + " }"
 }
 

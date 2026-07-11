@@ -47,7 +47,7 @@ fn choose(choice/2: Choice) -> Result[int32, string] {
 
 fn show(res/7: Result[int32, string]) -> string {
     match (res/7 : Result[int32, string]) {
-        Result::Ok(value/8: int32) => "ok " + (ToString::to_string : (int32) -> string)((value/8 : int32)),
+        Result::Ok(value/8: int32) => "ok " + (int32::to_string : (int32) -> string)((value/8 : int32)),
         Result::Err(err/9: string) => "err " + (err/9 : string),
     }
 }

@@ -46,7 +46,7 @@ fn nested(top/1: bool, mode/2: Mode, inner_flag/3: bool) -> Option[int32] {
 
 fn show(opt/7: Option[int32]) -> string {
     match (opt/7 : Option[int32]) {
-        Option::Some(value/8: int32) => "some=" + (ToString::to_string : (int32) -> string)((value/8 : int32)),
+        Option::Some(value/8: int32) => "some=" + (int32::to_string : (int32) -> string)((value/8 : int32)),
         Option::None => "none",
     }
 }

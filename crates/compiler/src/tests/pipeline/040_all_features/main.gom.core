@@ -40,7 +40,7 @@ fn trait_impl#Describe#Record[int32]#describe(self/10: Record[int32]) -> string 
         let x4 = Record::Value._0(self/10) in
         {
           let value/11 = x4 in
-          (("Value(" + trait_call[ToString::to_string](value/11)) + ")")
+          (("Value(" + $goml_builtin_runtime$int32_to_string(value/11)) + ")")
         }
       }
     },
@@ -53,8 +53,8 @@ fn trait_impl#Describe#Record[int32]#describe(self/10: Record[int32]) -> string 
           {
             let before/12 = x5 in
             {
-              let prefix/14 = ("Pair(" + trait_call[ToString::to_string](before/12)) in
-              (((prefix/14 + ", ") + trait_call[ToString::to_string](after/13)) + ")")
+              let prefix/14 = ("Pair(" + $goml_builtin_runtime$int32_to_string(before/12)) in
+              (((prefix/14 + ", ") + $goml_builtin_runtime$int32_to_string(after/13)) + ")")
             }
           }
         }

@@ -566,9 +566,8 @@ fn main() {
 "#,
             expect![[r#"
                 [4:12] error: Unresolved name undefined_var
-                [4:12] error: Could not solve all type constraints
-                [4:12] error: Type inference failed due to unresolved constraints
-                [4:12] error: Could not infer type"#]],
+                [4:4] error: Could not infer the type required to prove ToString<unknown>
+                [4:12] error: Could not infer the receiver type for method to_string"#]],
         );
     }
 
