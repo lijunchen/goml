@@ -104,6 +104,17 @@ impl Typer {
                 ty,
             },
             tast::Expr::EWhile { cond, body, .. } => tast::Expr::EWhile { cond, body, ty },
+            tast::Expr::EFor {
+                pat,
+                iterator,
+                body,
+                ..
+            } => tast::Expr::EFor {
+                pat,
+                iterator,
+                body,
+                ty,
+            },
             tast::Expr::EBreak { .. } => tast::Expr::EBreak { ty },
             tast::Expr::EContinue { .. } => tast::Expr::EContinue { ty },
             tast::Expr::EReturn { expr, .. } => tast::Expr::EReturn { expr, ty },
@@ -504,6 +515,11 @@ impl Typer {
             hir::Expr::EWhile { cond, body } => {
                 self.infer_while_expr(genv, local_env, diagnostics, cond, body)
             }
+            hir::Expr::EFor {
+                pat,
+                iterator,
+                body,
+            } => self.infer_for_expr(genv, local_env, diagnostics, pat, iterator, body),
             hir::Expr::EBreak => self.infer_break_expr(diagnostics, e),
             hir::Expr::EContinue => self.infer_continue_expr(diagnostics, e),
             hir::Expr::EReturn { expr } => {
@@ -1549,6 +1565,7 @@ impl Typer {
                         .all(|arm| self.expr_always_exits_loop_control(arm.body))
             }
             hir::Expr::EWhile { cond, .. } => self.expr_always_exits_loop_control(*cond),
+            hir::Expr::EFor { iterator, .. } => self.expr_always_exits_loop_control(*iterator),
             _ => false,
         }
     }
@@ -1688,20 +1705,80 @@ impl Typer {
         } else {
             self.equate(
                 diagnostics,
-                &cond_tast.get_ty(),
                 &tast::Ty::TBool,
+                &cond_tast.get_ty(),
                 self.expr_range(cond),
             );
         }
         self.equate(
             diagnostics,
-            &body_tast.get_ty(),
             &tast::Ty::TUnit,
+            &body_tast.get_ty(),
             self.expr_range(body),
         );
 
         tast::Expr::EWhile {
             cond: Box::new(cond_tast),
+            body: Box::new(body_tast),
+            ty: tast::Ty::TUnit,
+        }
+    }
+
+    fn infer_for_expr(
+        &mut self,
+        genv: &PackageTypeEnv,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        pat: hir::PatId,
+        iterator: hir::ExprId,
+        body: hir::ExprId,
+    ) -> tast::Expr {
+        let iterator_tast = self.infer_expr(genv, local_env, diagnostics, iterator);
+        let iterator_expr_ty = self.norm(&iterator_tast.get_ty());
+        let item_ty = match iterator_item_ty(genv, &iterator_expr_ty) {
+            Some(item_ty) => item_ty.clone(),
+            None if matches!(iterator_expr_ty, tast::Ty::TVar(_)) => {
+                let item_ty = self.fresh_ty_var();
+                let expected = iterator_ty(genv, item_ty.clone());
+                self.equate(
+                    diagnostics,
+                    &iterator_expr_ty,
+                    &expected,
+                    self.expr_range(iterator),
+                );
+                item_ty
+            }
+            None => {
+                super::util::push_error_with_range(
+                    diagnostics,
+                    format!(
+                        "for loop expects Iterator[T], got {}; call .iter() on supported collections",
+                        super::util::format_ty_for_diag(&iterator_expr_ty)
+                    ),
+                    self.expr_range(iterator),
+                );
+                tast::Ty::TUnit
+            }
+        };
+
+        local_env.push_scope();
+        let pat_tast = self.check_pat(genv, local_env, diagnostics, pat, &item_ty);
+        self.check_irrefutable_for_pattern(diagnostics, pat);
+        let saved_loop_control_context = self.loop_control_context;
+        self.loop_control_context = LoopControlContext::Allowed;
+        let body_tast = self.infer_expr(genv, local_env, diagnostics, body);
+        self.loop_control_context = saved_loop_control_context;
+        local_env.pop_scope(diagnostics);
+        self.equate(
+            diagnostics,
+            &tast::Ty::TUnit,
+            &body_tast.get_ty(),
+            self.expr_range(body),
+        );
+
+        tast::Expr::EFor {
+            pat: pat_tast,
+            iterator: Box::new(iterator_tast),
             body: Box::new(body_tast),
             ty: tast::Ty::TUnit,
         }
@@ -1720,7 +1797,7 @@ impl Typer {
             LoopControlContext::Disallowed => {
                 super::util::push_error_with_range(
                     diagnostics,
-                    "`break` outside of a while loop",
+                    "`break` outside of a loop",
                     self.expr_range(e),
                 );
             }
@@ -1743,7 +1820,7 @@ impl Typer {
             LoopControlContext::Disallowed => {
                 super::util::push_error_with_range(
                     diagnostics,
-                    "`continue` outside of a while loop",
+                    "`continue` outside of a loop",
                     self.expr_range(e),
                 );
             }
@@ -2885,6 +2962,36 @@ fn option_ty(name: &str, ok_ty: tast::Ty) -> tast::Ty {
         }),
         args: vec![ok_ty],
     }
+}
+
+fn iterator_ty(genv: &PackageTypeEnv, item_ty: tast::Ty) -> tast::Ty {
+    let name = genv
+        .lang_item(LangItemId::Iterator)
+        .map(|name| name.0.clone())
+        .unwrap_or_else(|| LangItemId::Iterator.source_name().to_string());
+    tast::Ty::TApp {
+        ty: Box::new(tast::Ty::TStruct { name }),
+        args: vec![item_ty],
+    }
+}
+
+fn iterator_item_ty<'a>(genv: &PackageTypeEnv, ty: &'a tast::Ty) -> Option<&'a tast::Ty> {
+    let tast::Ty::TApp { ty, args } = ty else {
+        return None;
+    };
+    let tast::Ty::TStruct { name } = ty.as_ref() else {
+        return None;
+    };
+    if genv
+        .lang_item(LangItemId::Iterator)
+        .is_none_or(|item| item.0 != *name)
+    {
+        return None;
+    }
+    if args.len() != 1 {
+        return None;
+    }
+    Some(&args[0])
 }
 
 fn validate_hashmap_get_option_for_map_ty(

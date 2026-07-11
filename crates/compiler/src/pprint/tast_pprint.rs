@@ -445,6 +445,21 @@ impl Expr {
                     .append(RcDoc::text("}"))
                     .group()
             }
+            Self::EFor {
+                pat,
+                iterator,
+                body,
+                ..
+            } => RcDoc::text("for")
+                .append(RcDoc::space())
+                .append(pat.to_doc(genv))
+                .append(RcDoc::space())
+                .append(RcDoc::text("in"))
+                .append(RcDoc::space())
+                .append(iterator.to_doc(genv))
+                .append(RcDoc::space())
+                .append(body.to_doc(genv))
+                .group(),
             Self::EGo { expr, .. } => RcDoc::text("go")
                 .append(RcDoc::space())
                 .append(expr.to_doc(genv)),

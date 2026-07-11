@@ -372,6 +372,12 @@ pub enum Expr {
         body: Box<Expr>,
         ty: Ty,
     },
+    EFor {
+        pat: Pat,
+        iterator: Box<Expr>,
+        body: Box<Expr>,
+        ty: Ty,
+    },
     EBreak {
         ty: Ty,
     },
@@ -462,6 +468,7 @@ impl Expr {
             Self::EMatch { ty, .. } => ty.clone(),
             Self::EIf { ty, .. } => ty.clone(),
             Self::EWhile { ty, .. } => ty.clone(),
+            Self::EFor { ty, .. } => ty.clone(),
             Self::EBreak { ty, .. } => ty.clone(),
             Self::EContinue { ty, .. } => ty.clone(),
             Self::EReturn { ty, .. } => ty.clone(),

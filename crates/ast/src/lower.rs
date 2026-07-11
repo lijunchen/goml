@@ -1636,6 +1636,60 @@ fn lower_expr_with_args(
                 astptr,
             })
         }
+        cst::Expr::ForExpr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to for expression",
+                );
+                return None;
+            }
+
+            let pat = match it.pattern().and_then(|pat| lower_pat(ctx, pat)) {
+                Some(pat) => pat,
+                None => {
+                    ctx.push_error(
+                        Some(it.syntax().text_range()),
+                        "For expression missing pattern",
+                    );
+                    return None;
+                }
+            };
+            let iterator = match it.iterator().and_then(|expr| lower_expr(ctx, expr)) {
+                Some(iterator) => iterator,
+                None => {
+                    ctx.push_error(
+                        Some(it.syntax().text_range()),
+                        "For expression missing iterator",
+                    );
+                    return None;
+                }
+            };
+            let body = match it.body().and_then(|block| {
+                let astptr = MySyntaxNodePtr::new(block.syntax());
+                lower_block(ctx, block).map(|block| ast::Expr::EBlock {
+                    block: Box::new(block),
+                    astptr,
+                })
+            }) {
+                Some(body) => body,
+                None => {
+                    ctx.push_error(
+                        Some(it.syntax().text_range()),
+                        "For expression missing body",
+                    );
+                    return None;
+                }
+            };
+
+            Some(ast::Expr::EFor {
+                pat,
+                iterator: Box::new(iterator),
+                body: Box::new(body),
+                astptr,
+            })
+        }
         cst::Expr::StructLiteralExpr(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
             if !trailing_args.is_empty() {

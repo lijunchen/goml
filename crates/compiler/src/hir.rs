@@ -1308,6 +1308,11 @@ pub enum Expr {
         cond: ExprId,
         body: ExprId,
     },
+    EFor {
+        pat: PatId,
+        iterator: ExprId,
+        body: ExprId,
+    },
     EBreak,
     EContinue,
     EReturn {

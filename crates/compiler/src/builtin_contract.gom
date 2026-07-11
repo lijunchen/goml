@@ -82,6 +82,11 @@ enum Result[T, E] {
     Err(E),
 }
 
+#[lang("iterator")]
+struct Iterator[T] {
+    next_fn: () -> Option[T],
+}
+
 #[intrinsic("vec.new")]
 extern fn vec_new[T]() -> Vec[T]
 #[intrinsic("vec.push")]

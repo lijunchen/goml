@@ -163,6 +163,7 @@ fn expr_start(kind: syntax::TokenKind) -> bool {
             syntax::TokenKind::IfKeyword => true,
             syntax::TokenKind::MatchKeyword => true,
             syntax::TokenKind::WhileKeyword => true,
+            syntax::TokenKind::ForKeyword => true,
             syntax::TokenKind::BreakKeyword => true,
             syntax::TokenKind::ContinueKeyword => true,
             syntax::TokenKind::ReturnKeyword => true,
@@ -853,6 +854,8 @@ fn parse_atom(parser: Parser) -> ast::Node {
         parse_match(parser)
     } else if same_kind(token.kind, syntax::TokenKind::WhileKeyword) {
         parse_while(parser)
+    } else if same_kind(token.kind, syntax::TokenKind::ForKeyword) {
+        parse_for(parser)
     } else if same_kind(token.kind, syntax::TokenKind::ReturnKeyword) {
         parse_return(parser)
     } else if same_kind(token.kind, syntax::TokenKind::BreakKeyword) {
@@ -982,6 +985,20 @@ fn parse_while(parser: Parser) -> ast::Node {
         push_node(children, parse_expr(parser));
     };
     ast::node(ast::NodeKind::ExprWhile, "", children.get(), start, previous_end(parser))
+}
+
+fn parse_for(parser: Parser) -> ast::Node {
+    let start = advance(parser).start;
+    let children = Ref::new(Vec::new());
+    push_node(children, parse_pattern(parser));
+    let _ = expect(parser, syntax::TokenKind::InKeyword, "expected `in` after for pattern");
+    push_node(children, parse_control_expr(parser));
+    if at(parser, syntax::TokenKind::LBrace) {
+        push_node(children, parse_block(parser));
+    } else {
+        push_node(children, unexpected(parser, "expected a block for for loop body"));
+    };
+    ast::node(ast::NodeKind::ExprFor, "", children.get(), start, previous_end(parser))
 }
 
 fn parse_return(parser: Parser) -> ast::Node {

@@ -773,6 +773,7 @@ pub fn block(p: &mut Parser) {
     assert!(p.at(T!['{']));
     let m = p.open();
     p.expect(T!['{']);
+    let _struct_literals = p.with_struct_literals_allowed(true);
 
     let mut trailing_expr_seen = false;
 

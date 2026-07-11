@@ -842,7 +842,7 @@ fn lower<'a>(
                 .loop_ctx
                 .borrow()
                 .clone()
-                .expect("break outside while loop");
+                .expect("break outside loop");
             Block {
                 binds: Vec::new(),
                 term: Term::Jump {
@@ -857,7 +857,7 @@ fn lower<'a>(
                 .loop_ctx
                 .borrow()
                 .clone()
-                .expect("continue outside while loop");
+                .expect("continue outside loop");
             Block {
                 binds: Vec::new(),
                 term: Term::Jump {

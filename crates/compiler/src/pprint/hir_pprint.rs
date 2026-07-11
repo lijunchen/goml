@@ -380,6 +380,20 @@ impl Expr {
                     .append(RcDoc::text("}"))
                     .group()
             }
+            hir::Expr::EFor {
+                pat,
+                iterator,
+                body,
+            } => RcDoc::text("for")
+                .append(RcDoc::space())
+                .append(ctx.pat_to_doc(*pat))
+                .append(RcDoc::space())
+                .append(RcDoc::text("in"))
+                .append(RcDoc::space())
+                .append(ctx.expr_to_doc(*iterator))
+                .append(RcDoc::space())
+                .append(ctx.expr_to_doc(*body))
+                .group(),
 
             hir::Expr::EGo { expr } => RcDoc::text("go")
                 .append(RcDoc::space())

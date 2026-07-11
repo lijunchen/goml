@@ -1,7 +1,7 @@
 use crate::common::{self, Constructor, Prim};
 use crate::core;
 use crate::env::{Gensym, GlobalTypeEnv, StructDef};
-use crate::intrinsics::{CallableBody, IntrinsicId};
+use crate::intrinsics::{CallableBody, IntrinsicId, LangItemId};
 use crate::names::{inherent_method_fn_name, trait_impl_fn_name};
 use crate::tast::Arm;
 use crate::tast::Expr::{self, *};
@@ -102,6 +102,7 @@ fn expr_always_exits_control_flow(expr: &Expr) -> bool {
                 && expr_always_exits_control_flow(else_branch)
         }
         EWhile { cond, .. } => expr_always_exits_control_flow(cond),
+        EFor { iterator, .. } => expr_always_exits_control_flow(iterator),
         EMatch { arms, .. } => arms
             .iter()
             .all(|arm| expr_always_exits_control_flow(&arm.body)),
@@ -2355,6 +2356,10 @@ fn collect_mutable_bindings_expr(expr: &Expr, mutable_bindings: &mut HiddenMutCe
             collect_mutable_bindings_expr(cond, mutable_bindings);
             collect_mutable_bindings_expr(body, mutable_bindings);
         }
+        EFor { iterator, body, .. } => {
+            collect_mutable_bindings_expr(iterator, mutable_bindings);
+            collect_mutable_bindings_expr(body, mutable_bindings);
+        }
         EGo { expr, .. } => {
             collect_mutable_bindings_expr(expr, mutable_bindings);
         }
@@ -2453,6 +2458,10 @@ fn collect_captured_names_expr(expr: &Expr, captured: &mut HashSet<String>) {
         }
         EWhile { cond, body, .. } => {
             collect_captured_names_expr(cond, captured);
+            collect_captured_names_expr(body, captured);
+        }
+        EFor { iterator, body, .. } => {
+            collect_captured_names_expr(iterator, captured);
             collect_captured_names_expr(body, captured);
         }
         EGo { expr, .. } => {
@@ -3312,6 +3321,129 @@ fn compile_block_parts(
     }
 }
 
+fn compile_for_expr(
+    pat: &Pat,
+    iterator: &Expr,
+    body: &Expr,
+    genv: &GlobalTypeEnv,
+    gensym: &Gensym,
+    diagnostics: &mut Diagnostics,
+) -> core::Expr {
+    let range = pat_range(pat).or_else(|| expr_range(iterator));
+    let Some(option_name) = genv.lang_item(LangItemId::Option).cloned() else {
+        push_compile_ice(diagnostics, "Option lang item is not registered", range);
+        return emissing(&Ty::TUnit);
+    };
+    let Some((some_constructor, _)) =
+        genv.lookup_constructor_with_namespace(Some(&option_name), &TastIdent::new("Some"))
+    else {
+        push_compile_ice(diagnostics, "Option::Some is not registered", range);
+        return emissing(&Ty::TUnit);
+    };
+    let Some((none_constructor, _)) =
+        genv.lookup_constructor_with_namespace(Some(&option_name), &TastIdent::new("None"))
+    else {
+        push_compile_ice(diagnostics, "Option::None is not registered", range);
+        return emissing(&Ty::TUnit);
+    };
+
+    let iterator_ty = iterator.get_ty();
+    let item_ty = pat.get_ty();
+    let option_ty = Ty::TApp {
+        ty: Box::new(Ty::TEnum {
+            name: option_name.0,
+        }),
+        args: vec![item_ty],
+    };
+    let iterator_name = gensym.gensym("for_iter");
+    let next_name = gensym.gensym("for_next");
+    let method_ty = Ty::TFunc {
+        params: vec![iterator_ty.clone()],
+        ret_ty: Box::new(option_ty.clone()),
+    };
+    let next_call = Expr::ECall {
+        func: Box::new(Expr::EInherentMethod {
+            receiver_ty: iterator_ty.clone(),
+            method_name: TastIdent::new("next"),
+            ty: method_ty,
+            astptr: None,
+        }),
+        args: vec![Expr::EVar {
+            name: iterator_name.clone(),
+            ty: iterator_ty.clone(),
+            astptr: None,
+        }],
+        ty: option_ty.clone(),
+    };
+    let next_pat = Pat::PVar {
+        name: next_name.clone(),
+        ty: option_ty.clone(),
+        astptr: None,
+    };
+    let match_expr = Expr::EMatch {
+        expr: Box::new(Expr::EVar {
+            name: next_name,
+            ty: option_ty.clone(),
+            astptr: None,
+        }),
+        arms: vec![
+            Arm {
+                pat: Pat::PConstr {
+                    constructor: some_constructor,
+                    args: vec![pat.clone()],
+                    ty: option_ty.clone(),
+                    astptr: None,
+                },
+                body: body.clone(),
+            },
+            Arm {
+                pat: Pat::PConstr {
+                    constructor: none_constructor,
+                    args: Vec::new(),
+                    ty: option_ty.clone(),
+                    astptr: None,
+                },
+                body: Expr::EBreak { ty: Ty::TUnit },
+            },
+        ],
+        ty: Ty::TUnit,
+        astptr: None,
+    };
+    let loop_body = Expr::EBlock {
+        block: Box::new(tast::Block {
+            stmts: vec![tast::Stmt::Let(tast::LetStmt {
+                is_mut: false,
+                pat: next_pat,
+                value: Box::new(next_call),
+            })],
+            tail: Some(Box::new(match_expr)),
+        }),
+        ty: Ty::TUnit,
+    };
+    let loop_expr = Expr::EWhile {
+        cond: Box::new(Expr::EPrim {
+            value: Prim::boolean(true),
+            ty: Ty::TBool,
+        }),
+        body: Box::new(loop_body),
+        ty: Ty::TUnit,
+    };
+    let iterator_value = compile_expr(iterator, genv, gensym, diagnostics);
+    let loop_value = compile_expr(&loop_expr, genv, gensym, diagnostics);
+
+    core::Expr::EBlock {
+        block: Box::new(core::Block {
+            stmts: vec![core::LetStmt {
+                name: iterator_name,
+                value: iterator_value,
+                ty: iterator_ty,
+            }],
+            tail: Some(Box::new(loop_value)),
+        }),
+        ty: Ty::TUnit,
+    }
+}
+
 fn compile_expr(
     e: &Expr,
     genv: &GlobalTypeEnv,
@@ -3457,6 +3589,12 @@ fn compile_expr(
             body: Box::new(compile_expr(body, genv, gensym, diagnostics)),
             ty: ty.clone(),
         },
+        EFor {
+            pat,
+            iterator,
+            body,
+            ..
+        } => compile_for_expr(pat, iterator, body, genv, gensym, diagnostics),
         EBreak { ty } => core::Expr::EBreak { ty: ty.clone() },
         EContinue { ty } => core::Expr::EContinue { ty: ty.clone() },
         EReturn { expr, ty } => core::Expr::EReturn {

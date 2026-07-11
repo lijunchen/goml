@@ -438,6 +438,22 @@ fn build_expr(
             let ty = results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit);
             tast::Expr::EWhile { cond, body, ty }
         }
+        hir::Expr::EFor {
+            pat,
+            iterator,
+            body,
+        } => {
+            let pat = build_pat(hir_table, results, pat);
+            let iterator = Box::new(build_expr(hir_table, results, iterator));
+            let body = Box::new(build_expr(hir_table, results, body));
+            let ty = results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit);
+            tast::Expr::EFor {
+                pat,
+                iterator,
+                body,
+                ty,
+            }
+        }
         hir::Expr::EBreak => {
             let ty = results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit);
             tast::Expr::EBreak { ty }

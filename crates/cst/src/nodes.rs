@@ -785,6 +785,7 @@ pub enum Expr {
     MatchExpr(MatchExpr),
     IfExpr(IfExpr),
     WhileExpr(WhileExpr),
+    ForExpr(ForExpr),
     BreakExpr(BreakExpr),
     ContinueExpr(ContinueExpr),
     ReturnExpr(ReturnExpr),
@@ -833,6 +834,7 @@ impl CstNode for Expr {
                 | EXPR_TRY
                 | EXPR_CLOSURE
                 | EXPR_WHILE
+                | EXPR_FOR
                 | EXPR_BREAK
                 | EXPR_CONTINUE
                 | EXPR_RETURN
@@ -863,6 +865,7 @@ impl CstNode for Expr {
             EXPR_MATCH => Expr::MatchExpr(MatchExpr { syntax }),
             EXPR_IF => Expr::IfExpr(IfExpr { syntax }),
             EXPR_WHILE => Expr::WhileExpr(WhileExpr { syntax }),
+            EXPR_FOR => Expr::ForExpr(ForExpr { syntax }),
             EXPR_BREAK => Expr::BreakExpr(BreakExpr { syntax }),
             EXPR_CONTINUE => Expr::ContinueExpr(ContinueExpr { syntax }),
             EXPR_RETURN => Expr::ReturnExpr(ReturnExpr { syntax }),
@@ -905,6 +908,7 @@ impl CstNode for Expr {
             Self::MatchExpr(it) => &it.syntax,
             Self::IfExpr(it) => &it.syntax,
             Self::WhileExpr(it) => &it.syntax,
+            Self::ForExpr(it) => &it.syntax,
             Self::BreakExpr(it) => &it.syntax,
             Self::ContinueExpr(it) => &it.syntax,
             Self::ReturnExpr(it) => &it.syntax,
@@ -1395,6 +1399,30 @@ impl WhileExprBody {
 
 impl_cst_node_simple!(WhileExprBody, MySyntaxKind::EXPR_WHILE_BODY);
 impl_display_via_syntax!(WhileExprBody);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ForExpr {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl ForExpr {
+    pub fn pattern(&self) -> Option<Pattern> {
+        support::child(&self.syntax)
+    }
+
+    pub fn iterator(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+
+    pub fn body(&self) -> Option<Block> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(ForExpr, MySyntaxKind::EXPR_FOR);
+impl_display_via_syntax!(ForExpr);
 
 ////////////////////////////////////////////////////////////////////////////////
 

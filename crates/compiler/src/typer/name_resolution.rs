@@ -1327,6 +1327,26 @@ impl NameResolution {
                     },
                 )
             }
+            ast::Expr::EFor {
+                pat,
+                iterator,
+                body,
+                astptr,
+            } => {
+                let new_iterator = self.resolve_expr(iterator, env, ctx, hir_table);
+                let mut body_env = env.enter_scope();
+                let new_pat = self.resolve_pat(pat, &mut body_env, ctx, hir_table);
+                let new_body = self.resolve_expr(body, &mut body_env, ctx, hir_table);
+                self.alloc_expr_with_ptr(
+                    hir_table,
+                    *astptr,
+                    hir::Expr::EFor {
+                        pat: new_pat,
+                        iterator: new_iterator,
+                        body: new_body,
+                    },
+                )
+            }
             ast::Expr::EGo { expr, astptr } => {
                 let new_expr = self.resolve_expr(expr, env, ctx, hir_table);
                 self.alloc_expr_with_ptr(hir_table, *astptr, hir::Expr::EGo { expr: new_expr })

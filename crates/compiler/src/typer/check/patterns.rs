@@ -545,6 +545,23 @@ impl Typer {
         diagnostics: &mut Diagnostics,
         pat_id: hir::PatId,
     ) {
+        self.check_irrefutable_pattern(diagnostics, pat_id, "let binding");
+    }
+
+    pub(super) fn check_irrefutable_for_pattern(
+        &mut self,
+        diagnostics: &mut Diagnostics,
+        pat_id: hir::PatId,
+    ) {
+        self.check_irrefutable_pattern(diagnostics, pat_id, "for loop");
+    }
+
+    fn check_irrefutable_pattern(
+        &mut self,
+        diagnostics: &mut Diagnostics,
+        pat_id: hir::PatId,
+        context: &str,
+    ) {
         if self.is_irrefutable_pat(pat_id) {
             return;
         }
@@ -552,7 +569,7 @@ impl Typer {
             Diagnostic::new(
                 Stage::Typer,
                 Severity::Error,
-                "Refutable pattern is not allowed in let binding; use match instead".to_string(),
+                format!("Refutable pattern is not allowed in {context}; use match instead"),
             )
             .with_range(self.pat_range(pat_id)),
         );

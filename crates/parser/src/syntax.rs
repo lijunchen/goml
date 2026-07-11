@@ -148,6 +148,7 @@ pub enum MySyntaxKind {
     EXPR_WHILE,
     EXPR_WHILE_COND,
     EXPR_WHILE_BODY,
+    EXPR_FOR,
     EXPR_BREAK,
     EXPR_CONTINUE,
     EXPR_MATCH,

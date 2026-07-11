@@ -452,6 +452,7 @@ pub enum LangItemId {
     Slice,
     Ref,
     HashMap,
+    Iterator,
     Eq,
     Hash,
     ToString,
@@ -498,11 +499,12 @@ impl LangItemTable {
 }
 
 impl LangItemId {
-    pub const ALL: [Self; 9] = [
+    pub const ALL: [Self; 10] = [
         Self::Vec,
         Self::Slice,
         Self::Ref,
         Self::HashMap,
+        Self::Iterator,
         Self::Eq,
         Self::Hash,
         Self::ToString,
@@ -516,6 +518,7 @@ impl LangItemId {
             Self::Slice => "slice",
             Self::Ref => "ref",
             Self::HashMap => "hashmap",
+            Self::Iterator => "iterator",
             Self::Eq => "eq",
             Self::Hash => "hash",
             Self::ToString => "to_string",
@@ -534,6 +537,7 @@ impl LangItemId {
             Self::Slice => "Slice",
             Self::Ref => "Ref",
             Self::HashMap => "HashMap",
+            Self::Iterator => "Iterator",
             Self::Eq => "Eq",
             Self::Hash => "Hash",
             Self::ToString => "ToString",

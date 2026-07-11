@@ -88,6 +88,14 @@ fn expr_origin(expr: &tast::Expr) -> Option<TextRange> {
             .or_else(|| expr_origin(then_branch))
             .or_else(|| expr_origin(else_branch)),
         tast::Expr::EWhile { cond, body, .. } => expr_origin(cond).or_else(|| expr_origin(body)),
+        tast::Expr::EFor {
+            pat,
+            iterator,
+            body,
+            ..
+        } => pat_origin(pat)
+            .or_else(|| expr_origin(iterator))
+            .or_else(|| expr_origin(body)),
         tast::Expr::EBreak { .. } | tast::Expr::EContinue { .. } => None,
         tast::Expr::EReturn { expr, .. } => expr.as_deref().and_then(expr_origin),
         tast::Expr::EGo { expr, .. } => expr_origin(expr),
@@ -1185,6 +1193,26 @@ impl Typer {
                     cond,
                     body,
                     ty: ty.clone(),
+                }
+            }
+            tast::Expr::EFor {
+                pat,
+                iterator,
+                body,
+                ty,
+            } => {
+                let origin = pat_origin(&pat)
+                    .or_else(|| expr_origin(iterator.as_ref()))
+                    .or_else(|| expr_origin(body.as_ref()));
+                let ty = self.subst_ty(diagnostics, &ty, origin);
+                let pat = self.subst_pat(diagnostics, pat);
+                let iterator = Box::new(self.subst(diagnostics, *iterator));
+                let body = Box::new(self.subst(diagnostics, *body));
+                tast::Expr::EFor {
+                    pat,
+                    iterator,
+                    body,
+                    ty,
                 }
             }
             tast::Expr::EBreak { ty } => {

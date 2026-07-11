@@ -302,6 +302,16 @@ impl [T: ToString] ToString for Ref[T] {
     }
 }
 
+impl [T] Iterator[T] {
+    fn from_fn(next_fn: () -> Option[T]) -> Self {
+        Iterator { next_fn }
+    }
+
+    fn next(self: Self) -> Option[T] {
+        self.next_fn()
+    }
+}
+
 impl [T] Vec[T] {
     fn new() -> Self {
         vec_new()
@@ -337,6 +347,21 @@ impl [T] Vec[T] {
     fn slice(self: Self, start: int32, end: int32) -> Slice[T] {
         slice(self, start, end)
     }
+
+    fn iter(self: Self) -> Iterator[T] {
+        let index = Ref::new(0);
+        let len = self.len();
+        Iterator::from_fn(|| {
+            let current = index.get();
+            if current < len {
+                let value = self.get(current);
+                index.set(current + 1);
+                Option::Some(value)
+            } else {
+                Option::None
+            }
+        })
+    }
 }
 
 impl [T] Slice[T] {
@@ -350,6 +375,21 @@ impl [T] Slice[T] {
 
     fn sub(self: Self, start: int32, end: int32) -> Self {
         slice_sub(self, start, end)
+    }
+
+    fn iter(self: Self) -> Iterator[T] {
+        let index = Ref::new(0);
+        let len = self.len();
+        Iterator::from_fn(|| {
+            let current = index.get();
+            if current < len {
+                let value = self.get(current);
+                index.set(current + 1);
+                Option::Some(value)
+            } else {
+                Option::None
+            }
+        })
     }
 }
 
@@ -391,4 +431,17 @@ impl [T] Ref[T] {
     fn set(self: Self, value: T) -> unit {
         ref_set(self, value)
     }
+}
+
+fn range(start: int32, end: int32) -> Iterator[int32] {
+    let current = Ref::new(start);
+    Iterator::from_fn(|| {
+        let value = current.get();
+        if value < end {
+            current.set(value + 1);
+            Option::Some(value)
+        } else {
+            Option::None
+        }
+    })
 }

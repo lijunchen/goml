@@ -390,6 +390,12 @@ pub enum Expr {
         body: Box<Expr>,
         astptr: MySyntaxNodePtr,
     },
+    EFor {
+        pat: Pat,
+        iterator: Box<Expr>,
+        body: Box<Expr>,
+        astptr: MySyntaxNodePtr,
+    },
     EBreak {
         astptr: MySyntaxNodePtr,
     },

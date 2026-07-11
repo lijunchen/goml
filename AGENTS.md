@@ -369,11 +369,14 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 * Fixed-length arrays `[T; N]`, literals `[1, 2, 3]`, accessed via `array_get/array_set`.
 * Mutable references `Ref[T]`: created with `Ref::new(x)`, accessed with `x.get()`, and updated with `x.set(value)`; nested references are supported.
-* Built-in growable vectors `Vec[T]`: `vec_new/vec_push/vec_get/vec_len`.
+* Built-in growable vectors `Vec[T]`: `vec_new/vec_push/vec_get/vec_len`; `v.iter()` creates an `Iterator[T]`.
 * Built-in read-only slices `Slice[T]`: `slice/slice_get/slice_len/slice_sub`.
   * `slice(vec, start, end)` creates a bounded view over `Vec[T]`.
-  * `Slice[T]` methods: `get`, `len`, `sub`.
+  * `Slice[T]` methods: `get`, `len`, `sub`, `iter`.
   * Current model is read-only view type; no `slice_set`/`push` on `Slice[T]`.
+* Single-pass iterators use `Iterator[T]`.
+  * `Iterator::from_fn(|| Option[T])` creates a closure-backed iterator and `iterator.next()` advances it.
+  * `range(start, end)` creates a half-open `Iterator[int32]` over increasing values.
 * Built-in `string` supports method syntax for common operations.
   * Prefer `s.len()` and `s.get(i)` over `string_len(s)` and `string_get(s, i)` in tests and examples.
   * Prefer method syntax such as `x.to_string()` when a builtin type or in-scope trait already exposes it.
@@ -381,6 +384,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 ### Control Flow and Expressions
 
 * `if ... else ...` is an expression; branches may be nested. `while cond { ... }` loops return `unit`.
+* `for pattern in iterator { ... }` consumes an `Iterator[T]`, evaluates the iterator expression once, and returns `unit`. The pattern must be irrefutable and the body must return `unit`; collections are iterated explicitly with `.iter()`.
 * Boolean and arithmetic operators: `+ - * /`, unary negation, logical `! && ||`, and comparisons `== != < > <= >=`.
 * `match expr { pattern => expr, ... }`: patterns are tried in order. Patterns include literals, tuples, structs, enums, bindings, and the wildcard `_`. Missing coverage results in an error (e.g., unmatched destructuring).
 
@@ -428,6 +432,17 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 * Builtin type: `HashMap[K, V]`, backed by generated Go runtime code and Go `map` internally.
 * Builtin API: `hashmap_new`, `hashmap_get -> Option[V]`, `hashmap_set -> unit`, `hashmap_remove -> unit`, `hashmap_len -> int32`, `hashmap_contains -> bool`.
 * Key requirements: `K` must have both `Hash` and `Eq`.
+
+### Builtin `Iterator`
+
+* Builtin type: `Iterator[T]`, represented as a single-pass closure-backed iterator.
+* Builtin API:
+  * `Iterator::from_fn(next_fn: () -> Option[T]) -> Iterator[T]`
+  * `iterator.next() -> Option[T]`
+  * `Vec[T]::iter() -> Iterator[T]`
+  * `Slice[T]::iter() -> Iterator[T]`
+  * `range(start: int32, end: int32) -> Iterator[int32]`
+* `range` is half-open and increasing; `start >= end` produces an empty iterator.
 
 ### Builtin `Slice`
 
