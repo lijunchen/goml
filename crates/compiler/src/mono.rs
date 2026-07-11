@@ -1,6 +1,6 @@
 use crate::common::{self, Constructor, Prim};
 use crate::core::{self, Ty};
-use crate::env::{EnumDef, GlobalTypeEnv, StructDef};
+use crate::env::{EnumDef, GlobalTypeEnv, PackageTypeEnv, StructDef};
 use crate::intrinsics::{CallableBody, LangItemId};
 use crate::names::{
     parse_inherent_method_fn_name, parse_trait_impl_fn_name, trait_impl_fn_name,
@@ -558,6 +558,7 @@ fn subst_ty(ty: &Ty, s: &Subst) -> Ty {
 fn normalize_associated_ty(genv: &GlobalTypeEnv, ty: &Ty) -> Ty {
     fn normalize(
         genv: &GlobalTypeEnv,
+        trait_solver: &mut crate::typer::traits::solver::TraitSolver<'_>,
         ty: &Ty,
         active: &mut HashSet<(tast::TraitRef, Ty, String)>,
     ) -> Ty {
@@ -575,10 +576,10 @@ fn normalize_associated_ty(genv: &GlobalTypeEnv, ty: &Ty) -> Ty {
                 args: trait_ref
                     .args
                     .iter()
-                    .map(|arg| normalize(genv, arg, active))
+                    .map(|arg| normalize(genv, trait_solver, arg, active))
                     .collect(),
             };
-            let for_ty = normalize(genv, for_ty, active);
+            let for_ty = normalize(genv, trait_solver, for_ty, active);
             let key = (trait_ref.clone(), for_ty.clone(), name.0.clone());
             if !active.insert(key.clone()) {
                 return Some(Ty::TProjection {
@@ -587,30 +588,28 @@ fn normalize_associated_ty(genv: &GlobalTypeEnv, ty: &Ty) -> Ty {
                     name: name.clone(),
                 });
             }
-            let matches = genv
-                .trait_env
-                .trait_impls
-                .iter()
-                .filter(|(_, definition)| definition.valid)
-                .filter_map(|(candidate, definition)| {
-                    crate::typer::trait_impl_subst(
-                        &candidate.trait_ref,
-                        &candidate.for_ty,
-                        &trait_ref,
-                        &for_ty,
-                    )
-                    .map(|substitution| (definition, substitution))
-                })
-                .collect::<Vec<_>>();
-            let normalized = match matches.as_slice() {
-                [(definition, substitution)] => {
-                    definition.associated_types.get(&name.0).map(|binding| {
+            let normalized = match trait_solver.select_ground(crate::typer::TraitGoal {
+                trait_ref: trait_ref.clone(),
+                for_ty: for_ty.clone(),
+            }) {
+                crate::typer::traits::solver::SelectionResult::Unique(selection) => match selection
+                    .source
+                {
+                    crate::typer::traits::solver::SelectionSource::Impl {
+                        definition,
+                        substitution,
+                        ..
+                    } => definition.associated_types.get(&name.0).map(|binding| {
                         let binding =
-                            crate::typer::type_ops::substitute_ty_params(binding, substitution);
-                        normalize(genv, &binding, active)
-                    })
-                }
-                _ => None,
+                            crate::typer::type_ops::substitute_ty_params(binding, &substitution);
+                        normalize(genv, trait_solver, &binding, active)
+                    }),
+                    crate::typer::traits::solver::SelectionSource::ParamEnv
+                    | crate::typer::traits::solver::SelectionSource::Dyn => None,
+                },
+                crate::typer::traits::solver::SelectionResult::NoSolution
+                | crate::typer::traits::solver::SelectionResult::Ambiguous(_)
+                | crate::typer::traits::solver::SelectionResult::Overflow => None,
             };
             active.remove(&key);
             Some(normalized.unwrap_or(Ty::TProjection {
@@ -621,7 +620,15 @@ fn normalize_associated_ty(genv: &GlobalTypeEnv, ty: &Ty) -> Ty {
         })
     }
 
-    normalize(genv, ty, &mut HashSet::new())
+    let package_env = PackageTypeEnv::new(
+        "mono".to_string(),
+        GlobalTypeEnv::default(),
+        genv.clone(),
+        Default::default(),
+    );
+    let param_env = crate::typer::ParamEnv::default();
+    let mut trait_solver = crate::typer::traits::solver::TraitSolver::new(&package_env, &param_env);
+    normalize(genv, &mut trait_solver, ty, &mut HashSet::new())
 }
 
 fn subst_trait_ref(trait_ref: &tast::TraitRef, s: &Subst) -> tast::TraitRef {

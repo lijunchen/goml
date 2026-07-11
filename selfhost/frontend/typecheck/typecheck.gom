@@ -795,10 +795,10 @@ fn infer_expr(ctx: CheckContext, node: ast::Node, bindings: Ref[Vec[Binding]]) -
         "unit"
     } else if node_is(node, ast::NodeKind::ExprFor) {
         let iterator = infer_expr(ctx, child(node, 1), bindings);
-        if starts_with(iterator, "FnIterator[") {
+        if starts_with(iterator, "FnIterator[") || starts_with(iterator, "Vec[") || starts_with(iterator, "Slice[") {
             ()
         } else {
-            push_diagnostic(ctx, child(node, 1), "for loop expects Iterator[T], got " + iterator);
+            push_diagnostic(ctx, child(node, 1), "for loop expects IntoIterator, got " + iterator);
         };
         let loop_bindings = Ref::new(bindings.get());
         if pattern_is_irrefutable(child(node, 0)) {

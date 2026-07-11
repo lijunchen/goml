@@ -27,7 +27,7 @@ use crate::typer::operators::{
     integer_literal_target, is_float_ty, is_integer_ty, is_numeric_ty, is_signed_numeric_ty,
 };
 use crate::typer::results::{
-    CallElab, CalleeElab, NameRefElab, StructLitArgElab, StructLitElab, StructPatArgElab,
+    CallElab, CalleeElab, ForElab, NameRefElab, StructLitArgElab, StructLitElab, StructPatArgElab,
     StructPatElab, TryElab, TryKind,
 };
 use crate::typer::type_ops::{
@@ -114,13 +114,17 @@ impl Typer {
             tast::Expr::EFor {
                 pat,
                 iterator,
-                trait_ref,
+                into_iter_trait_ref,
+                iterator_trait_ref,
+                iterator_ty,
                 body,
                 ..
             } => tast::Expr::EFor {
                 pat,
                 iterator,
-                trait_ref,
+                into_iter_trait_ref,
+                iterator_trait_ref,
+                iterator_ty,
                 body,
                 ty,
             },
@@ -537,7 +541,7 @@ impl Typer {
                 pat,
                 iterator,
                 body,
-            } => self.infer_for_expr(genv, local_env, diagnostics, pat, iterator, body),
+            } => self.infer_for_expr(genv, local_env, diagnostics, e, pat, iterator, body),
             hir::Expr::EBreak => self.infer_break_expr(diagnostics, e),
             hir::Expr::EContinue => self.infer_continue_expr(diagnostics, e),
             hir::Expr::EReturn { expr } => {
@@ -1775,27 +1779,80 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
+        expr_id: hir::ExprId,
         pat: hir::PatId,
         iterator: hir::ExprId,
         body: hir::ExprId,
     ) -> tast::Expr {
         let iterator_tast = self.infer_expr(genv, local_env, diagnostics, iterator);
-        let iterator_expr_ty = self.norm(&iterator_tast.get_ty());
+        let source_ty = self.norm(&iterator_tast.get_ty());
         let item_ty = self.fresh_ty_var();
-        let iterator_trait = genv
-            .lang_item(LangItemId::Iterator)
-            .cloned()
-            .unwrap_or_else(|| tast::TastIdent::new(LangItemId::Iterator.source_name()));
-        let trait_ref = tast::TraitRef {
-            name: iterator_trait,
-            args: vec![item_ty.clone()],
+        let iterator_ty = self.fresh_ty_var();
+        let iterator_trait_ref = tast::TraitRef {
+            name: genv
+                .lang_item(LangItemId::Iterator)
+                .cloned()
+                .unwrap_or_else(|| tast::TastIdent::new(LangItemId::Iterator.source_name())),
+            args: Vec::new(),
         };
-        self.push_obligation(
+        let into_iter_trait_ref = tast::TraitRef {
+            name: genv
+                .lang_item(LangItemId::IntoIterator)
+                .cloned()
+                .unwrap_or_else(|| tast::TastIdent::new(LangItemId::IntoIterator.source_name())),
+            args: Vec::new(),
+        };
+        let into_iter_obligation = self.push_obligation(
             Predicate::Trait(TraitGoal {
-                trait_ref: trait_ref.clone(),
-                for_ty: iterator_expr_ty,
+                trait_ref: into_iter_trait_ref.clone(),
+                for_ty: source_ty.clone(),
             }),
             ObligationCause::new(self.expr_range(iterator), ObligationCauseKind::ForLoop),
+        );
+        let projection_cause =
+            ObligationCause::new(self.expr_range(iterator), ObligationCauseKind::Projection)
+                .with_parent(into_iter_obligation);
+        self.push_obligation(
+            Predicate::Projection(ProjectionGoal::AssociatedType {
+                trait_ref: into_iter_trait_ref.clone(),
+                for_ty: source_ty.clone(),
+                name: tast::TastIdent::new("Item"),
+                result_ty: item_ty.clone(),
+            }),
+            projection_cause.clone(),
+        );
+        self.push_obligation(
+            Predicate::Projection(ProjectionGoal::AssociatedType {
+                trait_ref: into_iter_trait_ref.clone(),
+                for_ty: source_ty,
+                name: tast::TastIdent::new("IntoIter"),
+                result_ty: iterator_ty.clone(),
+            }),
+            projection_cause.clone(),
+        );
+        self.push_obligation(
+            Predicate::Trait(TraitGoal {
+                trait_ref: iterator_trait_ref.clone(),
+                for_ty: iterator_ty.clone(),
+            }),
+            projection_cause.clone(),
+        );
+        self.push_obligation(
+            Predicate::Projection(ProjectionGoal::AssociatedType {
+                trait_ref: iterator_trait_ref.clone(),
+                for_ty: iterator_ty.clone(),
+                name: tast::TastIdent::new("Item"),
+                result_ty: item_ty.clone(),
+            }),
+            projection_cause,
+        );
+        self.results.record_for_elab(
+            expr_id,
+            ForElab {
+                into_iter_trait_ref: into_iter_trait_ref.clone(),
+                iterator_trait_ref: iterator_trait_ref.clone(),
+                iterator_ty: iterator_ty.clone(),
+            },
         );
 
         local_env.push_scope();
@@ -1816,7 +1873,9 @@ impl Typer {
         tast::Expr::EFor {
             pat: pat_tast,
             iterator: Box::new(iterator_tast),
-            trait_ref,
+            into_iter_trait_ref,
+            iterator_trait_ref,
+            iterator_ty,
             body: Box::new(body_tast),
             ty: tast::Ty::TUnit,
         }

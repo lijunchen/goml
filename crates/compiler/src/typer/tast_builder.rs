@@ -475,17 +475,40 @@ fn build_expr(
             body,
         } => {
             let pat = build_pat(hir_table, results, pat);
-            let trait_ref = tast::TraitRef {
-                name: tast::TastIdent::new(LangItemId::Iterator.source_name()),
-                args: vec![pat.get_ty()],
-            };
             let iterator = Box::new(build_expr(hir_table, results, iterator));
+            let (into_iter_trait_ref, iterator_trait_ref, iterator_ty) = results
+                .for_elab(expr_id)
+                .map(|elab| {
+                    (
+                        elab.into_iter_trait_ref.clone(),
+                        elab.iterator_trait_ref.clone(),
+                        elab.iterator_ty.clone(),
+                    )
+                })
+                .unwrap_or_else(|| {
+                    let into_iter_trait_ref = tast::TraitRef {
+                        name: tast::TastIdent::new(LangItemId::IntoIterator.source_name()),
+                        args: Vec::new(),
+                    };
+                    let iterator_trait_ref = tast::TraitRef {
+                        name: tast::TastIdent::new(LangItemId::Iterator.source_name()),
+                        args: Vec::new(),
+                    };
+                    let iterator_ty = tast::Ty::TProjection {
+                        trait_ref: Some(into_iter_trait_ref.clone()),
+                        for_ty: Box::new(iterator.get_ty()),
+                        name: tast::TastIdent::new("IntoIter"),
+                    };
+                    (into_iter_trait_ref, iterator_trait_ref, iterator_ty)
+                });
             let body = Box::new(build_expr(hir_table, results, body));
             let ty = results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit);
             tast::Expr::EFor {
                 pat,
                 iterator,
-                trait_ref,
+                into_iter_trait_ref,
+                iterator_trait_ref,
+                iterator_ty,
                 body,
                 ty,
             }

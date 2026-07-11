@@ -5,6 +5,7 @@ use crate::{
     tast,
     typer::{
         obligations::{ParamEnv, TraitGoal},
+        traits::index::ImplIndex,
         traits::solver::{SelectionResult, TraitSolver},
         type_ops::{
             contains_tparam, rename_predicate_params, rename_trait_params, rename_type_params,
@@ -66,12 +67,14 @@ pub(crate) fn impls_overlap(
                             .map(|arg| resolve(arg, &subst))
                             .collect(),
                     };
-                    contains_tparam(&for_ty)
-                        || trait_ref_contains_tparam(&trait_ref)
-                        || matches!(
+                    if contains_tparam(&for_ty) || trait_ref_contains_tparam(&trait_ref) {
+                        trait_predicate_with_params_may_hold(env, &trait_ref, &for_ty)
+                    } else {
+                        matches!(
                             solver.select_ground(TraitGoal { trait_ref, for_ty }),
                             SelectionResult::Unique(_)
                         )
+                    }
                 }
                 crate::env::TypePredicate::Equality { lhs, rhs } => {
                     let lhs = resolve(&lhs, &subst);
@@ -80,6 +83,39 @@ pub(crate) fn impls_overlap(
                 }
             },
         )
+}
+
+fn trait_predicate_with_params_may_hold(
+    env: &PackageTypeEnv,
+    trait_ref: &tast::TraitRef,
+    for_ty: &tast::Ty,
+) -> bool {
+    if matches!(
+        for_ty,
+        tast::Ty::TParam { .. } | tast::Ty::TProjection { .. }
+    ) {
+        return true;
+    }
+    ImplIndex::build(env)
+        .candidates(trait_ref, for_ty)
+        .into_iter()
+        .any(|candidate| {
+            if !candidate.definition.valid {
+                return false;
+            }
+            let prefix = format!("candidate{}{}", candidate.id.package, candidate.id.index);
+            let candidate_trait_ref = rename_trait_params(&candidate.trait_ref, &prefix);
+            let candidate_head = rename_type_params(&candidate.head, &prefix);
+            let mut subst = HashMap::new();
+            candidate_trait_ref.name == trait_ref.name
+                && candidate_trait_ref.args.len() == trait_ref.args.len()
+                && candidate_trait_ref
+                    .args
+                    .iter()
+                    .zip(&trait_ref.args)
+                    .all(|(candidate, goal)| unify(candidate, goal, &mut subst))
+                && unify(&candidate_head, for_ty, &mut subst)
+        })
 }
 
 fn resolve(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tast::Ty {

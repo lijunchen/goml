@@ -83,8 +83,18 @@ enum Result[T, E] {
 }
 
 #[lang("iterator")]
-trait Iterator[T] {
-    fn next(Self) -> Option[T];
+trait Iterator {
+    type Item;
+
+    fn next(Self) -> Option[Self::Item];
+}
+
+#[lang("into_iterator")]
+trait IntoIterator {
+    type Item;
+    type IntoIter: Iterator;
+
+    fn into_iter(Self) -> Self::IntoIter;
 }
 
 struct FnIterator[T] {

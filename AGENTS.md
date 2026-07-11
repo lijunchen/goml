@@ -355,7 +355,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 * Top-level function declaration: `fn name(params) -> Ret { ... }`. Top-level functions must have explicit signatures; if the return type is omitted, it defaults to `unit`.
 * Only top-level functions may declare generic parameters, using square brackets, e.g. `fn id[T](x: T) -> T`.
-* Top-level function generics may add trait bounds per parameter: `fn f[T: A + B + C](x: T) -> ...`. Generic trait applications are valid bounds, for example `fn drain[T, I: Iterator[T]](iterator: I) -> ...`. `A + B` is only valid in these generic bounds (not in type annotations/param/return types, and not in `dyn`).
+* Top-level function generics may add trait bounds per parameter: `fn f[T: A + B + C](x: T) -> ...`. Associated types can be constrained with `where`, for example `fn drain[T, I: Iterator](iterator: I) -> unit where I::Item == T`. `A + B` is only valid in generic bounds (not in type annotations/param/return types, and not in `dyn`).
 * Function types are written as `(A, B) -> C` and can be stored in arrays, passed as arguments, or returned.
 * Closures are written as `|args| expr` or `|| { ... }`. They can capture outer variables, support multiple levels of nesting, and can return closures.
 
@@ -369,12 +369,12 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 * Fixed-length arrays `[T; N]`, literals `[1, 2, 3]`, accessed via `array_get/array_set`.
 * Mutable references `Ref[T]`: created with `Ref::new(x)`, accessed with `x.get()`, and updated with `x.set(value)`; nested references are supported.
-* Built-in growable vectors `Vec[T]`: `vec_new/vec_push/vec_get/vec_len`; `v.iter()` creates a `FnIterator[T]` implementing `Iterator[T]`.
+* Built-in growable vectors `Vec[T]`: `vec_new/vec_push/vec_get/vec_len`; `v.iter()` creates a `FnIterator[T]` implementing `Iterator` with `Item = T`.
 * Built-in read-only slices `Slice[T]`: `slice/slice_get/slice_len/slice_sub`.
   * `slice(vec, start, end)` creates a bounded view over `Vec[T]`.
   * `Slice[T]` methods: `get`, `len`, `sub`, `iter`.
   * Current model is read-only view type; no `slice_set`/`push` on `Slice[T]`.
-* Single-pass iterators implement the generic trait `Iterator[T]`.
+* Single-pass iterators implement `Iterator` and bind its associated `Item` type.
   * `FnIterator::from_fn(|| Option[T])` creates a closure-backed iterator and `iterator.next()` advances it.
   * `range(start, end)` creates a half-open `FnIterator[int32]` over increasing values.
 * Built-in `string` supports method syntax for common operations.
@@ -384,7 +384,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 ### Control Flow and Expressions
 
 * `if ... else ...` is an expression; branches may be nested. `while cond { ... }` loops return `unit`.
-* `for pattern in iterator { ... }` accepts any value whose concrete type implements `Iterator[T]`, evaluates the iterator expression once, and returns `unit`. The pattern must be irrefutable and the body must return `unit`; collections are iterated explicitly with `.iter()`.
+* `for pattern in source { ... }` accepts any value implementing `IntoIterator`, evaluates the source expression and `into_iter` conversion once, and returns `unit`. The pattern must be irrefutable and the body must return `unit`; `Vec[T]`, `Slice[T]`, and iterator values can be used directly.
 * Boolean and arithmetic operators: `+ - * /`, unary negation, logical `! && ||`, and comparisons `== != < > <= >=`.
 * `match expr { pattern => expr, ... }`: patterns are tried in order. Patterns include literals, tuples, structs, enums, bindings, and the wildcard `_`. Missing coverage results in an error (e.g., unmatched destructuring).
 
@@ -436,18 +436,19 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 ### Builtin `Iterator`
 
-* Builtin protocol: `trait Iterator[T] { fn next(Self) -> Option[T]; }`.
-* `FnIterator[T]` is the standard closure-backed concrete iterator; user-defined stateful types can implement `Iterator[T]` directly.
+* Builtin iterator protocol: `trait Iterator { type Item; fn next(Self) -> Option[Self::Item]; }`.
+* Builtin conversion protocol: `trait IntoIterator { type Item; type IntoIter: Iterator; fn into_iter(Self) -> Self::IntoIter; }`. The compiler enforces `IntoIterator::Item == IntoIterator::IntoIter::Item`.
+* `FnIterator[T]` is the standard closure-backed concrete iterator; user-defined stateful types can implement `Iterator` directly, and every iterator receives the identity `IntoIterator` implementation.
 * Builtin API:
   * `FnIterator::from_fn(next_fn: () -> Option[T]) -> FnIterator[T]`
-  * `Iterator[T]::next(iterator) -> Option[T]` or `iterator.next()` when the application is unambiguous
+  * `Iterator::next(iterator) -> Option[Iterator::Item]` or `iterator.next()`
   * `Vec[T]::iter() -> FnIterator[T]`
   * `Slice[T]::iter() -> FnIterator[T]`
   * `range(start: int32, end: int32) -> FnIterator[int32]`
   * `iterator_map`, `iterator_filter`, and `iterator_take` return concrete adapter iterator types
   * `iterator_fold` reduces an iterator and `iterator_collect` materializes it as `Vec[T]`
 * `range` is half-open and increasing; `start >= end` produces an empty iterator.
-* There is no `IntoIterator` conversion yet; `for` consumes the iterator value supplied by the source expression directly.
+* `Vec[T]` and `Slice[T]` implement `IntoIterator`, so `for value in values` and `for value in slice` work without an explicit `.iter()` conversion.
 
 ### Builtin `Slice`
 

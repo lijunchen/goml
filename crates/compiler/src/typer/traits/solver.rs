@@ -10,8 +10,8 @@ use crate::{
         traits::index::{ImplCandidate, ImplId, ImplIndex},
         traits::matching::trait_impl_subst,
         type_ops::{
-            contains_tvar, substitute_predicate, substitute_trait_ref, substitute_ty_params,
-            trait_ref_type_vars, type_vars,
+            contains_tvar, rewrite_ty, substitute_predicate, substitute_trait_ref,
+            substitute_ty_params, trait_ref_type_vars, type_vars,
         },
     },
 };
@@ -276,7 +276,7 @@ impl<'a> TraitSolver<'a> {
         if !candidate.definition.valid {
             return CandidateResult::Failure;
         }
-        if candidate.builtin && self.env.shadows_builtin_nominal_type(&goal.for_ty) {
+        if candidate.builtin && self.env.shadows_builtin_nominal_type(&candidate.head) {
             return CandidateResult::Failure;
         }
         let substitution = candidate
@@ -323,6 +323,22 @@ impl<'a> TraitSolver<'a> {
                     }
                 }
                 env::TypePredicate::Equality { lhs, rhs } => {
+                    let lhs = match self.normalize_candidate_ty(typer, &lhs, depth) {
+                        Ok(ty) => ty,
+                        Err(NormalizationFailure::Failure) => return CandidateResult::Failure,
+                        Err(NormalizationFailure::Ambiguous) => {
+                            return CandidateResult::Ambiguous;
+                        }
+                        Err(NormalizationFailure::Overflow) => return CandidateResult::Overflow,
+                    };
+                    let rhs = match self.normalize_candidate_ty(typer, &rhs, depth) {
+                        Ok(ty) => ty,
+                        Err(NormalizationFailure::Failure) => return CandidateResult::Failure,
+                        Err(NormalizationFailure::Ambiguous) => {
+                            return CandidateResult::Ambiguous;
+                        }
+                        Err(NormalizationFailure::Overflow) => return CandidateResult::Overflow,
+                    };
                     if !typer.try_unify_silent(&lhs, &rhs) {
                         return CandidateResult::Failure;
                     }
@@ -335,6 +351,99 @@ impl<'a> TraitSolver<'a> {
                 .map(|(name, ty)| (name, typer.norm(&ty)))
                 .collect(),
         )
+    }
+
+    fn normalize_candidate_ty(
+        &mut self,
+        typer: &mut Typer,
+        ty: &tast::Ty,
+        depth: usize,
+    ) -> Result<tast::Ty, NormalizationFailure> {
+        let mut current = typer.norm(ty);
+        for offset in 0..MAX_GOAL_DEPTH.saturating_sub(depth) {
+            let mut failure = None;
+            let next = rewrite_ty(&current, &mut |ty| {
+                let tast::Ty::TProjection {
+                    trait_ref: Some(trait_ref),
+                    for_ty,
+                    name,
+                } = ty
+                else {
+                    return None;
+                };
+                let trait_ref = tast::TraitRef {
+                    name: trait_ref.name.clone(),
+                    args: trait_ref.args.iter().map(|arg| typer.norm(arg)).collect(),
+                };
+                let for_ty = typer.norm(for_ty);
+                if contains_tvar(&for_ty) || trait_ref.args.iter().any(contains_tvar) {
+                    failure = Some(NormalizationFailure::Ambiguous);
+                    return None;
+                }
+                match self.select_at_depth(
+                    typer,
+                    TraitGoal {
+                        trait_ref: trait_ref.clone(),
+                        for_ty: for_ty.clone(),
+                    },
+                    depth + offset + 1,
+                ) {
+                    SelectionResult::Unique(selection) => match selection.source {
+                        SelectionSource::Impl {
+                            definition,
+                            substitution,
+                            ..
+                        } => definition
+                            .associated_types
+                            .get(&name.0)
+                            .map(|binding| substitute_ty_params(binding, &substitution))
+                            .or_else(|| {
+                                failure = Some(NormalizationFailure::Failure);
+                                None
+                            }),
+                        SelectionSource::ParamEnv => {
+                            let projection = tast::Ty::TProjection {
+                                trait_ref: Some(trait_ref.clone()),
+                                for_ty: Box::new(for_ty.clone()),
+                                name: name.clone(),
+                            };
+                            let normalized = typer.norm(&projection);
+                            if normalized == projection {
+                                failure = Some(NormalizationFailure::Ambiguous);
+                                None
+                            } else {
+                                Some(normalized)
+                            }
+                        }
+                        SelectionSource::Dyn => {
+                            failure = Some(NormalizationFailure::Failure);
+                            None
+                        }
+                    },
+                    SelectionResult::NoSolution => {
+                        failure = Some(NormalizationFailure::Failure);
+                        None
+                    }
+                    SelectionResult::Ambiguous(_) => {
+                        failure = Some(NormalizationFailure::Ambiguous);
+                        None
+                    }
+                    SelectionResult::Overflow => {
+                        failure = Some(NormalizationFailure::Overflow);
+                        None
+                    }
+                }
+            });
+            if let Some(failure) = failure {
+                return Err(failure);
+            }
+            let next = typer.norm(&next);
+            if next == current {
+                return Ok(next);
+            }
+            current = next;
+        }
+        Err(NormalizationFailure::Overflow)
     }
 
     fn select_ground_at_depth(&mut self, goal: TraitGoal, depth: usize) -> SelectionResult {
@@ -424,7 +533,7 @@ impl<'a> TraitSolver<'a> {
         if !candidate.definition.valid {
             return CandidateResult::Failure;
         }
-        if candidate.builtin && self.env.shadows_builtin_nominal_type(&goal.for_ty) {
+        if candidate.builtin && self.env.shadows_builtin_nominal_type(&candidate.head) {
             return CandidateResult::Failure;
         }
         let Some(substitution) = trait_impl_subst(
@@ -455,6 +564,22 @@ impl<'a> TraitSolver<'a> {
                     }
                 }
                 env::TypePredicate::Equality { lhs, rhs } => {
+                    let lhs = match self.normalize_ground_candidate_ty(&lhs, depth) {
+                        Ok(ty) => ty,
+                        Err(NormalizationFailure::Failure) => return CandidateResult::Failure,
+                        Err(NormalizationFailure::Ambiguous) => {
+                            return CandidateResult::Ambiguous;
+                        }
+                        Err(NormalizationFailure::Overflow) => return CandidateResult::Overflow,
+                    };
+                    let rhs = match self.normalize_ground_candidate_ty(&rhs, depth) {
+                        Ok(ty) => ty,
+                        Err(NormalizationFailure::Failure) => return CandidateResult::Failure,
+                        Err(NormalizationFailure::Ambiguous) => {
+                            return CandidateResult::Ambiguous;
+                        }
+                        Err(NormalizationFailure::Overflow) => return CandidateResult::Overflow,
+                    };
                     if lhs != rhs {
                         return CandidateResult::Failure;
                     }
@@ -463,6 +588,84 @@ impl<'a> TraitSolver<'a> {
         }
         CandidateResult::Success(substitution)
     }
+
+    fn normalize_ground_candidate_ty(
+        &mut self,
+        ty: &tast::Ty,
+        depth: usize,
+    ) -> Result<tast::Ty, NormalizationFailure> {
+        let mut current = ty.clone();
+        for offset in 0..MAX_GOAL_DEPTH.saturating_sub(depth) {
+            let mut failure = None;
+            let next = rewrite_ty(&current, &mut |ty| {
+                let tast::Ty::TProjection {
+                    trait_ref: Some(trait_ref),
+                    for_ty,
+                    name,
+                } = ty
+                else {
+                    return None;
+                };
+                match self.select_ground_at_depth(
+                    TraitGoal {
+                        trait_ref: trait_ref.clone(),
+                        for_ty: for_ty.as_ref().clone(),
+                    },
+                    depth + offset + 1,
+                ) {
+                    SelectionResult::Unique(selection) => match selection.source {
+                        SelectionSource::Impl {
+                            definition,
+                            substitution,
+                            ..
+                        } => definition
+                            .associated_types
+                            .get(&name.0)
+                            .map(|binding| substitute_ty_params(binding, &substitution))
+                            .or_else(|| {
+                                failure = Some(NormalizationFailure::Failure);
+                                None
+                            }),
+                        SelectionSource::ParamEnv => {
+                            failure = Some(NormalizationFailure::Ambiguous);
+                            None
+                        }
+                        SelectionSource::Dyn => {
+                            failure = Some(NormalizationFailure::Failure);
+                            None
+                        }
+                    },
+                    SelectionResult::NoSolution => {
+                        failure = Some(NormalizationFailure::Failure);
+                        None
+                    }
+                    SelectionResult::Ambiguous(_) => {
+                        failure = Some(NormalizationFailure::Ambiguous);
+                        None
+                    }
+                    SelectionResult::Overflow => {
+                        failure = Some(NormalizationFailure::Overflow);
+                        None
+                    }
+                }
+            });
+            if let Some(failure) = failure {
+                return Err(failure);
+            }
+            if next == current {
+                return Ok(next);
+            }
+            current = next;
+        }
+        Err(NormalizationFailure::Overflow)
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+enum NormalizationFailure {
+    Failure,
+    Ambiguous,
+    Overflow,
 }
 
 fn canonicalize_goal(goal: &TraitGoal) -> TraitGoal {

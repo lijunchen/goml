@@ -3324,7 +3324,9 @@ fn compile_block_parts(
 fn compile_for_expr(
     pat: &Pat,
     iterator: &Expr,
-    trait_ref: &tast::TraitRef,
+    into_iter_trait_ref: &tast::TraitRef,
+    iterator_trait_ref: &tast::TraitRef,
+    iterator_ty: &Ty,
     body: &Expr,
     genv: &GlobalTypeEnv,
     gensym: &Gensym,
@@ -3348,7 +3350,7 @@ fn compile_for_expr(
         return emissing(&Ty::TUnit);
     };
 
-    let iterator_ty = iterator.get_ty();
+    let source_ty = iterator.get_ty();
     let item_ty = pat.get_ty();
     let option_ty = Ty::TApp {
         ty: Box::new(Ty::TEnum {
@@ -3364,7 +3366,7 @@ fn compile_for_expr(
     };
     let next_call = Expr::ECall {
         func: Box::new(Expr::ETraitMethod {
-            trait_ref: trait_ref.clone(),
+            trait_ref: iterator_trait_ref.clone(),
             method_name: TastIdent::new("next"),
             ty: method_ty,
             astptr: None,
@@ -3429,7 +3431,20 @@ fn compile_for_expr(
         body: Box::new(loop_body),
         ty: Ty::TUnit,
     };
-    let iterator_value = compile_expr(iterator, genv, gensym, diagnostics);
+    let into_iter_call = Expr::ECall {
+        func: Box::new(Expr::ETraitMethod {
+            trait_ref: into_iter_trait_ref.clone(),
+            method_name: TastIdent::new("into_iter"),
+            ty: Ty::TFunc {
+                params: vec![source_ty],
+                ret_ty: Box::new(iterator_ty.clone()),
+            },
+            astptr: None,
+        }),
+        args: vec![iterator.clone()],
+        ty: iterator_ty.clone(),
+    };
+    let iterator_value = compile_expr(&into_iter_call, genv, gensym, diagnostics);
     let loop_value = compile_expr(&loop_expr, genv, gensym, diagnostics);
 
     core::Expr::EBlock {
@@ -3437,7 +3452,7 @@ fn compile_for_expr(
             stmts: vec![core::LetStmt {
                 name: iterator_name,
                 value: iterator_value,
-                ty: iterator_ty,
+                ty: iterator_ty.clone(),
             }],
             tail: Some(Box::new(loop_value)),
         }),
@@ -3593,10 +3608,22 @@ fn compile_expr(
         EFor {
             pat,
             iterator,
-            trait_ref,
+            into_iter_trait_ref,
+            iterator_trait_ref,
+            iterator_ty,
             body,
             ..
-        } => compile_for_expr(pat, iterator, trait_ref, body, genv, gensym, diagnostics),
+        } => compile_for_expr(
+            pat,
+            iterator,
+            into_iter_trait_ref,
+            iterator_trait_ref,
+            iterator_ty,
+            body,
+            genv,
+            gensym,
+            diagnostics,
+        ),
         EBreak { ty } => core::Expr::EBreak { ty: ty.clone() },
         EContinue { ty } => core::Expr::EContinue { ty: ty.clone() },
         EReturn { expr, ty } => core::Expr::EReturn {

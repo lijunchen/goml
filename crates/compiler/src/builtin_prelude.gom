@@ -308,25 +308,37 @@ impl [T] FnIterator[T] {
     }
 }
 
-impl [T] Iterator[T] for FnIterator[T] {
+impl [T] Iterator for FnIterator[T] {
+    type Item = T;
+
     fn next(self: Self) -> Option[T] {
         self.next_fn()
     }
 }
 
-impl [A, B, I: Iterator[A]] Iterator[B] for MapIterator[A, B, I] {
+impl [A, B, I: Iterator] Iterator for MapIterator[A, B, I]
+where
+    I::Item == A,
+{
+    type Item = B;
+
     fn next(self: Self) -> Option[B] {
-        match Iterator[A]::next(self.iterator) {
+        match Iterator::next(self.iterator) {
             Option::Some(value) => Option::Some(self.map_fn(value)),
             Option::None => Option::None,
         }
     }
 }
 
-impl [T, I: Iterator[T]] Iterator[T] for FilterIterator[T, I] {
+impl [T, I: Iterator] Iterator for FilterIterator[T, I]
+where
+    I::Item == T,
+{
+    type Item = T;
+
     fn next(self: Self) -> Option[T] {
         while true {
-            match Iterator[T]::next(self.iterator) {
+            match Iterator::next(self.iterator) {
                 Option::Some(value) => if self.predicate(value) {
                     return Option::Some(value)
                 } else {
@@ -339,33 +351,50 @@ impl [T, I: Iterator[T]] Iterator[T] for FilterIterator[T, I] {
     }
 }
 
-impl [T, I: Iterator[T]] Iterator[T] for TakeIterator[I] {
-    fn next(self: Self) -> Option[T] {
+impl [I: Iterator] Iterator for TakeIterator[I] {
+    type Item = I::Item;
+
+    fn next(self: Self) -> Option[I::Item] {
         let remaining = self.remaining.get();
         if remaining > 0 {
             self.remaining.set(remaining - 1);
-            Iterator[T]::next(self.iterator)
+            Iterator::next(self.iterator)
         } else {
             Option::None
         }
     }
 }
 
-fn iterator_map[A, B, I: Iterator[A]](
+impl [I: Iterator] IntoIterator for I {
+    type Item = I::Item;
+    type IntoIter = I;
+
+    fn into_iter(self: I) -> I {
+        self
+    }
+}
+
+fn iterator_map[A, B, I: Iterator](
     iterator: I,
     map_fn: (A) -> B,
-) -> MapIterator[A, B, I] {
+) -> MapIterator[A, B, I]
+where
+    I::Item == A,
+{
     MapIterator { iterator, map_fn }
 }
 
-fn iterator_filter[T, I: Iterator[T]](
+fn iterator_filter[T, I: Iterator](
     iterator: I,
     predicate: (T) -> bool,
-) -> FilterIterator[T, I] {
+) -> FilterIterator[T, I]
+where
+    I::Item == T,
+{
     FilterIterator { iterator, predicate }
 }
 
-fn iterator_take[T, I: Iterator[T]](iterator: I, count: int32) -> TakeIterator[I] {
+fn iterator_take[I: Iterator](iterator: I, count: int32) -> TakeIterator[I] {
     let remaining = if count > 0 { count } else { 0 };
     TakeIterator {
         iterator,
@@ -373,15 +402,18 @@ fn iterator_take[T, I: Iterator[T]](iterator: I, count: int32) -> TakeIterator[I
     }
 }
 
-fn iterator_fold[T, A, I: Iterator[T]](
+fn iterator_fold[T, A, I: Iterator](
     iterator: I,
     initial: A,
     combine: (A, T) -> A,
-) -> A {
+) -> A
+where
+    I::Item == T,
+{
     let accumulator = Ref::new(initial);
     let running = Ref::new(true);
     while running.get() {
-        match Iterator[T]::next(iterator) {
+        match Iterator::next(iterator) {
             Option::Some(value) => accumulator.set(combine(accumulator.get(), value)),
             Option::None => running.set(false),
         };
@@ -389,11 +421,14 @@ fn iterator_fold[T, A, I: Iterator[T]](
     accumulator.get()
 }
 
-fn iterator_collect[T, I: Iterator[T]](iterator: I) -> Vec[T] {
+fn iterator_collect[T, I: Iterator](iterator: I) -> Vec[T]
+where
+    I::Item == T,
+{
     let values: Vec[T] = Vec::new();
     let running = Ref::new(true);
     while running.get() {
-        match Iterator[T]::next(iterator) {
+        match Iterator::next(iterator) {
             Option::Some(value) => values.push(value),
             Option::None => running.set(false),
         };
@@ -453,6 +488,15 @@ impl [T] Vec[T] {
     }
 }
 
+impl [T] IntoIterator for Vec[T] {
+    type Item = T;
+    type IntoIter = FnIterator[T];
+
+    fn into_iter(self: Vec[T]) -> FnIterator[T] {
+        self.iter()
+    }
+}
+
 impl [T] Slice[T] {
     fn get(self: Self, index: int32) -> T {
         slice_get(self, index)
@@ -479,6 +523,15 @@ impl [T] Slice[T] {
                 Option::None
             }
         })
+    }
+}
+
+impl [T] IntoIterator for Slice[T] {
+    type Item = T;
+    type IntoIter = FnIterator[T];
+
+    fn into_iter(self: Slice[T]) -> FnIterator[T] {
+        self.iter()
     }
 }
 

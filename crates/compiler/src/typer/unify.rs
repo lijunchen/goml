@@ -1406,7 +1406,9 @@ impl Typer {
             tast::Expr::EFor {
                 pat,
                 iterator,
-                mut trait_ref,
+                mut into_iter_trait_ref,
+                mut iterator_trait_ref,
+                iterator_ty,
                 body,
                 ty,
             } => {
@@ -1415,15 +1417,21 @@ impl Typer {
                     .or_else(|| expr_origin(body.as_ref()));
                 let ty = self.subst_ty(diagnostics, &ty, origin);
                 let pat = self.subst_pat(diagnostics, pat);
-                for arg in &mut trait_ref.args {
+                for arg in &mut into_iter_trait_ref.args {
                     *arg = self.subst_ty(diagnostics, arg, origin);
                 }
+                for arg in &mut iterator_trait_ref.args {
+                    *arg = self.subst_ty(diagnostics, arg, origin);
+                }
+                let iterator_ty = self.subst_ty(diagnostics, &iterator_ty, origin);
                 let iterator = Box::new(self.subst(diagnostics, *iterator));
                 let body = Box::new(self.subst(diagnostics, *body));
                 tast::Expr::EFor {
                     pat,
                     iterator,
-                    trait_ref,
+                    into_iter_trait_ref,
+                    iterator_trait_ref,
+                    iterator_ty,
                     body,
                     ty,
                 }

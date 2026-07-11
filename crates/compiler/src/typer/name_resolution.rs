@@ -606,7 +606,8 @@ impl NameResolution {
                         toplevel_idx += 1;
                         hir_table.set_current_owner(def_id);
                         let full_name = full_def_name(package_name, &func.name.0);
-                        let resolved_fn = self.resolve_fn(func, &ctx, &mut hir_table, full_name);
+                        let resolved_fn =
+                            self.resolve_fn(func, &ctx, &mut hir_table, full_name, &HashSet::new());
                         *hir_table.def_mut(def_id) = hir::Def::Fn(resolved_fn);
                     }
                     ast::Item::ImplBlock(i) => {
@@ -619,12 +620,12 @@ impl NameResolution {
                             break;
                         };
                         toplevel_idx += 1;
+                        let tparams = type_param_set(&i.generics);
                         let methods = i
                             .methods
                             .iter()
-                            .map(|m| self.resolve_fn_def(m, &ctx, &mut hir_table))
+                            .map(|m| self.resolve_fn_def(m, &ctx, &mut hir_table, &tparams))
                             .collect();
-                        let tparams = type_param_set(&i.generics);
                         let generic_bounds = i
                             .generic_bounds
                             .iter()
@@ -769,6 +770,7 @@ impl NameResolution {
         func: &ast::Fn,
         ctx: &ResolutionContext,
         hir_table: &mut HirTable,
+        inherited_tparams: &HashSet<String>,
     ) -> hir::DefId {
         let def_id = hir_table.alloc_def(
             func.name.0.clone(),
@@ -788,7 +790,7 @@ impl NameResolution {
             }),
         );
         hir_table.set_current_owner(def_id);
-        let func = self.resolve_fn(func, ctx, hir_table, func.name.0.clone());
+        let func = self.resolve_fn(func, ctx, hir_table, func.name.0.clone(), inherited_tparams);
         *hir_table.def_mut(def_id) = hir::Def::Fn(func);
         def_id
     }
@@ -799,6 +801,7 @@ impl NameResolution {
         ctx: &ResolutionContext,
         hir_table: &mut HirTable,
         resolved_name: String,
+        inherited_tparams: &HashSet<String>,
     ) -> hir::Fn {
         let ast::Fn {
             attrs,
@@ -814,7 +817,8 @@ impl NameResolution {
         for param in params {
             env.add(&param.0, self.fresh_name(&param.0.0, hir_table));
         }
-        let tparams = type_param_set(generics);
+        let mut tparams = type_param_set(generics);
+        tparams.extend(inherited_tparams.iter().cloned());
         let new_params = params
             .iter()
             .map(|param| {

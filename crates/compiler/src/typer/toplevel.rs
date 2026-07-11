@@ -10,8 +10,8 @@ use crate::{
     env::{self, FnScheme, GlobalTypeEnv, PackageTypeEnv},
     hir::{self},
     intrinsics::{
-        CallableBody, ExternCapability, callable_body_from_attributes, lang_item_from_attributes,
-        validate_callable_signature,
+        CallableBody, ExternCapability, LangItemId, callable_body_from_attributes,
+        lang_item_from_attributes, validate_callable_signature,
     },
     package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package},
     tast::{self},
@@ -681,6 +681,26 @@ fn expand_implied_predicates(
                     result.push(declared);
                 }
             }
+            for (name, associated) in &definition.associated_types {
+                let projection = tast::Ty::TProjection {
+                    trait_ref: Some(application.clone()),
+                    for_ty: Box::new(for_ty.clone()),
+                    name: tast::TastIdent::new(name),
+                };
+                for bound in &associated.bounds {
+                    let bound = super::type_ops::substitute_trait_ref(bound, &substitution);
+                    let implied = instantiate_predicate_self(
+                        &env::TypePredicate::Trait {
+                            for_ty: projection.clone(),
+                            trait_ref: bound,
+                        },
+                        &for_ty,
+                    );
+                    if !result.contains(&implied) {
+                        result.push(implied);
+                    }
+                }
+            }
         }
     }
     result
@@ -709,6 +729,70 @@ fn normalize_impl_associated_types(
         });
         if next == normalized {
             break;
+        }
+        normalized = next;
+    }
+    normalized
+}
+
+fn normalize_selected_associated_types(
+    trait_solver: &mut super::traits::solver::TraitSolver<'_>,
+    typer: &mut Typer,
+    ty: &tast::Ty,
+) -> tast::Ty {
+    let mut normalized = typer.norm(ty);
+    for _ in 0..64 {
+        let next = super::type_ops::rewrite_ty(&normalized, &mut |ty| {
+            let tast::Ty::TProjection {
+                trait_ref: Some(trait_ref),
+                for_ty,
+                name,
+            } = ty
+            else {
+                return None;
+            };
+            let trait_ref = tast::TraitRef {
+                name: trait_ref.name.clone(),
+                args: trait_ref.args.iter().map(|arg| typer.norm(arg)).collect(),
+            };
+            let for_ty = typer.norm(for_ty);
+            match trait_solver.select(
+                typer,
+                super::obligations::TraitGoal {
+                    trait_ref: trait_ref.clone(),
+                    for_ty: for_ty.clone(),
+                },
+            ) {
+                super::traits::solver::SelectionResult::Unique(selection) => {
+                    match selection.source {
+                        super::traits::solver::SelectionSource::Impl {
+                            definition,
+                            substitution,
+                            ..
+                        } => definition
+                            .associated_types
+                            .get(&name.0)
+                            .map(|binding| substitute_ty_params(binding, &substitution)),
+                        super::traits::solver::SelectionSource::ParamEnv => {
+                            let projection = tast::Ty::TProjection {
+                                trait_ref: Some(trait_ref),
+                                for_ty: Box::new(for_ty),
+                                name: name.clone(),
+                            };
+                            let projection = typer.norm(&projection);
+                            (projection != *ty).then_some(projection)
+                        }
+                        super::traits::solver::SelectionSource::Dyn => None,
+                    }
+                }
+                super::traits::solver::SelectionResult::NoSolution
+                | super::traits::solver::SelectionResult::Ambiguous(_)
+                | super::traits::solver::SelectionResult::Overflow => None,
+            }
+        });
+        let next = typer.norm(&next);
+        if next == normalized {
+            return normalized;
         }
         normalized = next;
     }
@@ -861,13 +945,42 @@ fn define_trait(
         .iter()
         .map(|associated| associated.name.to_ident_name())
         .collect::<HashSet<_>>();
-    let predicates = build_fn_constraints(
+    let mut predicates = build_fn_constraints(
         env,
         diagnostics,
         &trait_def.generics,
         &trait_def.generic_bounds,
         &trait_def.predicates,
     );
+    if env.lang_item(LangItemId::IntoIterator) == Some(&trait_ref.name)
+        && let Some(iterator) = env.lang_item(LangItemId::Iterator).cloned()
+    {
+        let self_ty = tast::Ty::TStruct {
+            name: "Self".to_string(),
+        };
+        let item = tast::Ty::TProjection {
+            trait_ref: Some(trait_ref.clone()),
+            for_ty: Box::new(self_ty.clone()),
+            name: tast::TastIdent::new("Item"),
+        };
+        let into_iter = tast::Ty::TProjection {
+            trait_ref: Some(trait_ref.clone()),
+            for_ty: Box::new(self_ty),
+            name: tast::TastIdent::new("IntoIter"),
+        };
+        let iterator_item = tast::Ty::TProjection {
+            trait_ref: Some(tast::TraitRef {
+                name: iterator,
+                args: Vec::new(),
+            }),
+            for_ty: Box::new(into_iter),
+            name: tast::TastIdent::new("Item"),
+        };
+        predicates.push(env::TypePredicate::Equality {
+            lhs: item,
+            rhs: iterator_item,
+        });
+    }
     let mut projection_candidates = projection_candidates_from_predicates(env, &predicates);
     projection_candidates.push(ProjectionCandidate {
         for_ty: tast::Ty::TStruct {
@@ -2410,7 +2523,10 @@ fn validate_trait_impl_requirements(
                     ),
                     super::traits::solver::SelectionResult::Unique(_)
                 ),
-                env::TypePredicate::Equality { lhs, rhs } => typer.norm(lhs) == typer.norm(rhs),
+                env::TypePredicate::Equality { lhs, rhs } => {
+                    normalize_selected_associated_types(&mut trait_solver, &mut typer, lhs)
+                        == normalize_selected_associated_types(&mut trait_solver, &mut typer, rhs)
+                }
             };
             if satisfied {
                 continue;
@@ -3058,21 +3174,59 @@ fn predicate_type_aliases(predicates: &[env::TypePredicate]) -> HashMap<String, 
 
 fn predicate_projection_aliases(predicates: &[env::TypePredicate]) -> HashMap<tast::Ty, tast::Ty> {
     let mut aliases = HashMap::new();
+    let mut projection_equalities = Vec::new();
     for predicate in predicates {
         let env::TypePredicate::Equality { lhs, rhs } = predicate else {
             continue;
         };
         match (lhs, rhs) {
+            (tast::Ty::TProjection { .. }, tast::Ty::TProjection { .. }) => {
+                projection_equalities.push((lhs.clone(), rhs.clone()));
+            }
             (tast::Ty::TProjection { .. }, other) => {
-                aliases.insert(lhs.clone(), other.clone());
+                aliases.entry(lhs.clone()).or_insert_with(|| other.clone());
             }
             (other, tast::Ty::TProjection { .. }) => {
-                aliases.insert(rhs.clone(), other.clone());
+                aliases.entry(rhs.clone()).or_insert_with(|| other.clone());
             }
             _ => {}
         }
     }
+    loop {
+        let mut changed = false;
+        for (lhs, rhs) in &projection_equalities {
+            let lhs_alias = resolve_projection_alias(lhs, &aliases);
+            let rhs_alias = resolve_projection_alias(rhs, &aliases);
+            if lhs_alias != *lhs && rhs_alias == *rhs {
+                aliases.insert(rhs.clone(), lhs_alias);
+                changed = true;
+            } else if rhs_alias != *rhs && lhs_alias == *lhs {
+                aliases.insert(lhs.clone(), rhs_alias);
+                changed = true;
+            }
+        }
+        if !changed {
+            break;
+        }
+    }
+    for (lhs, rhs) in projection_equalities {
+        if !aliases.contains_key(&lhs) && !aliases.contains_key(&rhs) {
+            aliases.insert(lhs, rhs);
+        }
+    }
     aliases
+}
+
+fn resolve_projection_alias(ty: &tast::Ty, aliases: &HashMap<tast::Ty, tast::Ty>) -> tast::Ty {
+    let mut current = ty.clone();
+    let mut visited = HashSet::new();
+    while visited.insert(current.clone()) {
+        let Some(next) = aliases.get(&current) else {
+            break;
+        };
+        current = next.clone();
+    }
+    current
 }
 
 fn normalize_type_predicate(

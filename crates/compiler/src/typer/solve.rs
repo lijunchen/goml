@@ -180,6 +180,24 @@ impl Typer {
         }
     }
 
+    fn depends_on_failed_obligation(
+        &self,
+        cause: &ObligationCause,
+        failed: &HashSet<ObligationId>,
+    ) -> bool {
+        let mut parent = cause.parent;
+        while let Some(id) = parent {
+            if failed.contains(&id) {
+                return true;
+            }
+            parent = self
+                .obligation_causes
+                .get(&id)
+                .and_then(|cause| cause.parent);
+        }
+        false
+    }
+
     fn push_obligation_error(
         &self,
         diagnostics: &mut Diagnostics,
@@ -551,6 +569,7 @@ impl Typer {
         let mut trait_solver = TraitSolver::new(genv, &param_env);
         let mut worklist = ObligationWorklist::new(std::mem::take(&mut self.obligations));
         let mut reported = HashSet::new();
+        let mut failed = HashSet::new();
         let mut allow_trait_inference = false;
 
         loop {
@@ -560,6 +579,18 @@ impl Typer {
                     predicate,
                     cause,
                 } = obligation;
+                if self.depends_on_failed_obligation(&cause, &failed) {
+                    if let Predicate::Projection(ProjectionGoal::AssociatedType {
+                        result_ty, ..
+                    }) = &predicate
+                    {
+                        let variables = type_vars(&self.norm(result_ty));
+                        if self.try_unify_silent(result_ty, &tast::Ty::TUnit) {
+                            worklist.wake(variables);
+                        }
+                    }
+                    continue;
+                }
                 match predicate {
                     Predicate::Trait(mut goal) => {
                         goal.for_ty = self.norm(&goal.for_ty);
@@ -624,15 +655,13 @@ impl Typer {
                                 );
                             }
                             SelectionResult::NoSolution => {
+                                if matches!(cause.kind, ObligationCauseKind::ForLoop) {
+                                    failed.insert(id);
+                                }
                                 let message = if matches!(cause.kind, ObligationCauseKind::ForLoop)
                                 {
-                                    if let Some(item_ty) = goal.trait_ref.args.first()
-                                        && matches!(self.norm(item_ty), tast::Ty::TVar(_))
-                                    {
-                                        self.try_unify_silent(item_ty, &tast::Ty::TUnit);
-                                    }
                                     format!(
-                                        "for loop expects a type implementing Iterator[T], got {}",
+                                        "for loop expects a type implementing IntoIterator, got {}",
                                         super::util::format_ty_for_diag(&goal.for_ty)
                                     )
                                 } else {
@@ -650,6 +679,9 @@ impl Typer {
                                 );
                             }
                             SelectionResult::Ambiguous(ids) => {
+                                if matches!(cause.kind, ObligationCauseKind::ForLoop) {
+                                    failed.insert(id);
+                                }
                                 let candidates = ids
                                     .iter()
                                     .map(|id| trait_solver.describe_candidate(id))
@@ -667,16 +699,21 @@ impl Typer {
                                     &cause,
                                 );
                             }
-                            SelectionResult::Overflow => self.push_obligation_error(
-                                diagnostics,
-                                &mut reported,
-                                format!(
-                                    "Trait resolution overflow for {}<{}>",
-                                    super::util::format_trait_ref_for_diag(&goal.trait_ref),
-                                    super::util::format_ty_for_diag(&goal.for_ty)
-                                ),
-                                &cause,
-                            ),
+                            SelectionResult::Overflow => {
+                                if matches!(cause.kind, ObligationCauseKind::ForLoop) {
+                                    failed.insert(id);
+                                }
+                                self.push_obligation_error(
+                                    diagnostics,
+                                    &mut reported,
+                                    format!(
+                                        "Trait resolution overflow for {}<{}>",
+                                        super::util::format_trait_ref_for_diag(&goal.trait_ref),
+                                        super::util::format_ty_for_diag(&goal.for_ty)
+                                    ),
+                                    &cause,
+                                )
+                            }
                         }
                     }
                     Predicate::TypeEquality(goal) => {
@@ -1290,13 +1327,6 @@ impl Typer {
             }
 
             for obligation in retained {
-                if matches!(obligation.cause.kind, ObligationCauseKind::ForLoop)
-                    && let Predicate::Trait(goal) = &obligation.predicate
-                    && let Some(item_ty) = goal.trait_ref.args.first()
-                    && matches!(self.norm(item_ty), tast::Ty::TVar(_))
-                {
-                    self.try_unify_silent(item_ty, &tast::Ty::TUnit);
-                }
                 let variables = self.predicate_type_vars(&obligation.predicate);
                 for variable in variables {
                     self.unresolved_type_var_origins
@@ -1308,7 +1338,7 @@ impl Typer {
                         if matches!(obligation.cause.kind, ObligationCauseKind::ForLoop) =>
                     {
                         format!(
-                            "Could not infer the item type for for loop over {}",
+                            "Could not infer the iterator type for for loop over {}",
                             super::util::format_ty_for_diag(&self.norm(&goal.for_ty))
                         )
                     }
