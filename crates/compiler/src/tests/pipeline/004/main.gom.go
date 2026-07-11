@@ -31,73 +31,73 @@ const (
 )
 
 func main0() bool {
-    var retv11 bool
+    var retv26 bool
     var a__0 Tuple2_5Color_5Color = Tuple2_5Color_5Color{
         _0: Blue,
         _1: Blue,
     }
-    var x7 Color = a__0._0
-    var x8 Color = a__0._1
-    var jp13 bool
-    switch x8 {
+    var x22 Color = a__0._0
+    var x23 Color = a__0._1
+    var jp28 bool
+    switch x23 {
     case Red:
-        var jp15 bool
-        switch x7 {
+        var jp30 bool
+        switch x22 {
         case Red:
-            jp15 = true
+            jp30 = true
         case Green:
-            jp15 = false
+            jp30 = false
         case Blue:
-            jp15 = false
+            jp30 = false
         default:
             panic("non-exhaustive match")
         }
-        jp13 = jp15
+        jp28 = jp30
     case Green:
-        var jp17 bool
-        switch x7 {
+        var jp32 bool
+        switch x22 {
         case Red:
-            jp17 = true
+            jp32 = true
         case Green:
-            jp17 = false
+            jp32 = false
         case Blue:
-            jp17 = false
+            jp32 = false
         default:
             panic("non-exhaustive match")
         }
-        jp13 = jp17
+        jp28 = jp32
     case Blue:
-        var jp19 bool
-        switch x7 {
+        var jp34 bool
+        switch x22 {
         case Red:
-            jp19 = false
+            jp34 = false
         case Green:
-            jp19 = false
+            jp34 = false
         case Blue:
             print__T_bool(true)
-            jp19 = false
+            jp34 = false
         default:
             panic("non-exhaustive match")
         }
-        jp13 = jp19
+        jp28 = jp34
     default:
         panic("non-exhaustive match")
     }
-    retv11 = jp13
-    return retv11
+    retv26 = jp28
+    return retv26
 }
 
 func print__T_bool(value__0 bool) struct{} {
-    var t21 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__0)
-    _goml_runtime_core_string_print(t21)
+    var t36 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__0)
+    _goml_runtime_core_string_print(t36)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__8 bool) string {
-    var retv24 string
-    var t25 string = _goml_runtime_core_bool_to_string(self__8)
-    retv24 = t25
-    return retv24
+    var retv39 string
+    var t40 string = _goml_runtime_core_bool_to_string(self__8)
+    retv39 = t40
+    return retv39
 }
 
 func main() {

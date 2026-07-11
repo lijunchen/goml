@@ -1,96 +1,96 @@
 fn show_int(x/1: Light__int32) -> string {
-  join ret9(retv10: string) -> string {
-    retv10
+  join ret24(retv25: string) -> string {
+    retv25
   } in
-  join k11(jp12: string) -> string {
-    jump ret9(jp12)
+  join k26(jp27: string) -> string {
+    jump ret24(jp27)
   } in
   match x/1 {
     Tag_0 => {
-      jump k11("ri")
+      jump k26("ri")
     },
     Tag_1 => {
-      jump k11("gi")
+      jump k26("gi")
     },
   }
 }
 
 fn show_string(x/2: Light__string) -> string {
-  join ret13(retv14: string) -> string {
-    retv14
+  join ret28(retv29: string) -> string {
+    retv29
   } in
-  join k15(jp16: string) -> string {
-    jump ret13(jp16)
+  join k30(jp31: string) -> string {
+    jump ret28(jp31)
   } in
   match x/2 {
     Tag_0 => {
-      jump k15("rs")
+      jump k30("rs")
     },
     Tag_1 => {
-      jump k15("gs")
+      jump k30("gs")
     },
   }
 }
 
 fn main() -> unit {
-  join ret17() -> unit {
+  join ret32() -> unit {
     ()
   } in
-  let t18 = flip__T_int32(Tag_0) in
-  let t19 = show_int(t18) in
-  let _wild7 = println__T_string(t19) in
-  let t20 = flip__T_string(Tag_1) in
-  let t21 = show_string(t20) in
-  let _wild8 = println__T_string(t21) in
-  jump ret17()
+  let t33 = flip__T_int32(Tag_0) in
+  let t34 = show_int(t33) in
+  let _wild22 = println__T_string(t34) in
+  let t35 = flip__T_string(Tag_1) in
+  let t36 = show_string(t35) in
+  let _wild23 = println__T_string(t36) in
+  jump ret32()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret22() -> unit {
+  join ret37() -> unit {
     ()
   } in
-  let t23 = trait_impl#ToString#string#to_string(value/1) in
-  let t24 = @runtime(core.string_println)(t23) in
-  jump ret22()
+  let t38 = trait_impl#ToString#string#to_string(value/1) in
+  let t39 = @runtime(core.string_println)(t38) in
+  jump ret37()
 }
 
 fn flip__T_int32(x/0: Light__int32) -> Light__int32 {
-  join ret25(retv26: Light__int32) -> Light__int32 {
-    retv26
+  join ret40(retv41: Light__int32) -> Light__int32 {
+    retv41
   } in
-  join k27(jp28: Light__int32) -> Light__int32 {
-    jump ret25(jp28)
+  join k42(jp43: Light__int32) -> Light__int32 {
+    jump ret40(jp43)
   } in
   match x/0 {
     Tag_0 => {
-      jump k27(Tag_1)
+      jump k42(Tag_1)
     },
     Tag_1 => {
-      jump k27(Tag_0)
+      jump k42(Tag_0)
     },
   }
 }
 
 fn flip__T_string(x/0: Light__string) -> Light__string {
-  join ret29(retv30: Light__string) -> Light__string {
-    retv30
+  join ret44(retv45: Light__string) -> Light__string {
+    retv45
   } in
-  join k31(jp32: Light__string) -> Light__string {
-    jump ret29(jp32)
+  join k46(jp47: Light__string) -> Light__string {
+    jump ret44(jp47)
   } in
   match x/0 {
     Tag_0 => {
-      jump k31(Tag_1)
+      jump k46(Tag_1)
     },
     Tag_1 => {
-      jump k31(Tag_0)
+      jump k46(Tag_0)
     },
   }
 }
 
 fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret33(retv34: string) -> string {
-    retv34
+  join ret48(retv49: string) -> string {
+    retv49
   } in
-  jump ret33(self/9)
+  jump ret48(self/9)
 }

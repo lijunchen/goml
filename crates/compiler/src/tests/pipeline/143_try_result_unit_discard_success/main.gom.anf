@@ -1,97 +1,97 @@
 fn step(ok/0: bool) -> Result__unit__string {
-  join ret15(retv16: Result__unit__string) -> Result__unit__string {
-    retv16
+  join ret30(retv31: Result__unit__string) -> Result__unit__string {
+    retv31
   } in
-  join k17(jp18: Result__unit__string) -> Result__unit__string {
-    jump ret15(jp18)
+  join k32(jp33: Result__unit__string) -> Result__unit__string {
+    jump ret30(jp33)
   } in
   if ok/0 {
-    let t19 = Result__unit__string::Ok(()) in
-    jump k17(t19)
+    let t34 = Result__unit__string::Ok(()) in
+    jump k32(t34)
   } else {
-    let t20 = Result__unit__string::Err("step failed") in
-    jump k17(t20)
+    let t35 = Result__unit__string::Err("step failed") in
+    jump k32(t35)
   }
 }
 
 fn run(ok/1: bool) -> Result__unit__string {
-  join ret21(retv22: Result__unit__string) -> Result__unit__string {
-    retv22
+  join ret36(retv37: Result__unit__string) -> Result__unit__string {
+    retv37
   } in
-  let mtmp7 = step(ok/1) in
-  join k23() -> Result__unit__string {
-    let mtmp10 = () in
-    let t24 = Result__unit__string::Ok(()) in
-    jump ret21(t24)
+  let mtmp22 = step(ok/1) in
+  join k38() -> Result__unit__string {
+    let mtmp25 = () in
+    let t39 = Result__unit__string::Ok(()) in
+    jump ret36(t39)
   } in
-  match mtmp7 {
+  match mtmp22 {
     Tag_0 => {
-      let x8 = Result__unit__string::Ok._0(mtmp7) in
-      let try_value/12 = x8 in
-      jump k23()
+      let x23 = Result__unit__string::Ok._0(mtmp22) in
+      let try_value/12 = x23 in
+      jump k38()
     },
     Tag_1 => {
-      let x9 = Result__unit__string::Err._0(mtmp7) in
-      let try_residual/12 = x9 in
-      let t25 = Result__unit__string::Err(try_residual/12) in
-      jump ret21(t25)
+      let x24 = Result__unit__string::Err._0(mtmp22) in
+      let try_residual/12 = x24 in
+      let t40 = Result__unit__string::Err(try_residual/12) in
+      jump ret36(t40)
     },
   }
 }
 
 fn show(res/2: Result__unit__string) -> string {
-  join ret26(retv27: string) -> string {
-    retv27
+  join ret41(retv42: string) -> string {
+    retv42
   } in
-  join k28(jp29: string) -> string {
-    jump ret26(jp29)
+  join k43(jp44: string) -> string {
+    jump ret41(jp44)
   } in
   match res/2 {
     Tag_0 => {
-      let x11 = Result__unit__string::Ok._0(res/2) in
-      join k30(jp31: string) -> string {
-        jump k28(jp31)
+      let x26 = Result__unit__string::Ok._0(res/2) in
+      join k45(jp46: string) -> string {
+        jump k43(jp46)
       } in
-      match x11 {
+      match x26 {
         () => {
-          jump k30("ok unit")
+          jump k45("ok unit")
         },
       }
     },
     Tag_1 => {
-      let x12 = Result__unit__string::Err._0(res/2) in
-      let err/3 = x12 in
-      let t32 = ("err " + err/3) in
-      jump k28(t32)
+      let x27 = Result__unit__string::Err._0(res/2) in
+      let err/3 = x27 in
+      let t47 = ("err " + err/3) in
+      jump k43(t47)
     },
   }
 }
 
 fn main() -> unit {
-  join ret33() -> unit {
+  join ret48() -> unit {
     ()
   } in
-  let t34 = run(true) in
-  let t35 = show(t34) in
-  let _wild13 = println__T_string(t35) in
-  let t36 = run(false) in
-  let t37 = show(t36) in
-  let _wild14 = println__T_string(t37) in
-  jump ret33()
+  let t49 = run(true) in
+  let t50 = show(t49) in
+  let _wild28 = println__T_string(t50) in
+  let t51 = run(false) in
+  let t52 = show(t51) in
+  let _wild29 = println__T_string(t52) in
+  jump ret48()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret38() -> unit {
+  join ret53() -> unit {
     ()
   } in
-  let t39 = trait_impl#ToString#string#to_string(value/1) in
-  let t40 = @runtime(core.string_println)(t39) in
-  jump ret38()
+  let t54 = trait_impl#ToString#string#to_string(value/1) in
+  let t55 = @runtime(core.string_println)(t54) in
+  jump ret53()
 }
 
 fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret41(retv42: string) -> string {
-    retv42
+  join ret56(retv57: string) -> string {
+    retv57
   } in
-  jump ret41(self/9)
+  jump ret56(self/9)
 }

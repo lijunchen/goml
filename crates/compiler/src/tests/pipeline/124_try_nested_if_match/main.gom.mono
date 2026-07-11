@@ -17,16 +17,16 @@ fn nested(top/1: bool, mode/2: Mode, inner_flag/3: bool) -> Option__int32 {
           Mode::Take => {
             {
               let inner/4 = {
-                let mtmp7 = maybe_num(inner_flag/3) in
-                match mtmp7 {
+                let mtmp22 = maybe_num(inner_flag/3) in
+                match mtmp22 {
                   Option__int32::None => {
                     return Option__int32::None
                   },
-                  Option__int32::Some(x8) => {
+                  Option__int32::Some(x23) => {
                     {
-                      let x8 = Option__int32::Some._0(mtmp7) in
+                      let x23 = Option__int32::Some._0(mtmp22) in
                       {
-                        let try_value/13 = x8 in
+                        let try_value/13 = x23 in
                         try_value/13
                       }
                     }
@@ -44,16 +44,16 @@ fn nested(top/1: bool, mode/2: Mode, inner_flag/3: bool) -> Option__int32 {
   } else {
       {
         let inner/5 = {
-          let mtmp9 = maybe_num(inner_flag/3) in
-          match mtmp9 {
+          let mtmp24 = maybe_num(inner_flag/3) in
+          match mtmp24 {
             Option__int32::None => {
               return Option__int32::None
             },
-            Option__int32::Some(x10) => {
+            Option__int32::Some(x25) => {
               {
-                let x10 = Option__int32::Some._0(mtmp9) in
+                let x25 = Option__int32::Some._0(mtmp24) in
                 {
-                  let try_value/24 = x10 in
+                  let try_value/24 = x25 in
                   try_value/24
                 }
               }
@@ -71,11 +71,11 @@ fn show(opt/7: Option__int32) -> string {
     Option__int32::None => {
       "none"
     },
-    Option__int32::Some(x11) => {
+    Option__int32::Some(x26) => {
       {
-        let x11 = Option__int32::Some._0(opt/7) in
+        let x26 = Option__int32::Some._0(opt/7) in
         {
-          let value/8 = x11 in
+          let value/8 = x26 in
           ("some=" + inherent#int32#int32#to_string(value/8))
         }
       }
@@ -84,9 +84,9 @@ fn show(opt/7: Option__int32) -> string {
 }
 
 fn main() -> unit {
-  let _wild12 = println__T_string(show(nested(true, Mode::Take, true))) in
-  let _wild13 = println__T_string(show(nested(true, Mode::Skip, false))) in
-  let _wild14 = println__T_string(show(nested(false, Mode::Take, false))) in
+  let _wild27 = println__T_string(show(nested(true, Mode::Take, true))) in
+  let _wild28 = println__T_string(show(nested(true, Mode::Skip, false))) in
+  let _wild29 = println__T_string(show(nested(false, Mode::Take, false))) in
 }
 
 fn inherent#int32#int32#to_string(self/2: int32) -> string {

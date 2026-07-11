@@ -1,65 +1,65 @@
 fn make_some(value/0: int32) -> option__int32 {
-  join ret14(retv15: option__int32) -> option__int32 {
-    retv15
+  join ret29(retv30: option__int32) -> option__int32 {
+    retv30
   } in
-  let t16 = option__int32::some(value/0) in
-  jump ret14(t16)
+  let t31 = option__int32::some(value/0) in
+  jump ret29(t31)
 }
 
 fn build_point(x/1: int32, y/2: int32) -> point {
-  join ret17(retv18: point) -> point {
-    retv18
+  join ret32(retv33: point) -> point {
+    retv33
   } in
-  let t19 = point { x: x/1, y: y/2 } in
-  jump ret17(t19)
+  let t34 = point { x: x/1, y: y/2 } in
+  jump ret32(t34)
 }
 
 fn magnitude(p/3: point) -> int32 {
-  join ret20(retv21: int32) -> int32 {
-    retv21
+  join ret35(retv36: int32) -> int32 {
+    retv36
   } in
-  let mtmp7 = p/3 in
-  let x8 = point.x(mtmp7) in
-  let x9 = point.y(mtmp7) in
-  let y/5 = x9 in
-  let x/4 = x8 in
-  let t22 = (x/4 + y/5) in
-  jump ret20(t22)
+  let mtmp22 = p/3 in
+  let x23 = point.x(mtmp22) in
+  let x24 = point.y(mtmp22) in
+  let y/5 = x24 in
+  let x/4 = x23 in
+  let t37 = (x/4 + y/5) in
+  jump ret35(t37)
 }
 
 fn main() -> int32 {
-  join ret23(retv24: int32) -> int32 {
-    retv24
+  join ret38(retv39: int32) -> int32 {
+    retv39
   } in
-  let mtmp10 = make_some(5) in
-  join k25(jp26: int32) -> int32 {
-    jump ret23(jp26)
+  let mtmp25 = make_some(5) in
+  join k40(jp41: int32) -> int32 {
+    jump ret38(jp41)
   } in
-  match mtmp10 {
+  match mtmp25 {
     Tag_0 => {
-      let x11 = option__int32::some._0(mtmp10) in
-      let result/6 = x11 in
+      let x26 = option__int32::some._0(mtmp25) in
+      let result/6 = x26 in
       let pt/7 = build_point(result/6, 7) in
-      let t27 = point.x(pt/7) in
-      let mtmp12 = option__int32::some(t27) in
-      join k28(jp29: int32) -> int32 {
-        jump k25(jp29)
+      let t42 = point.x(pt/7) in
+      let mtmp27 = option__int32::some(t42) in
+      join k43(jp44: int32) -> int32 {
+        jump k40(jp44)
       } in
-      match mtmp12 {
+      match mtmp27 {
         Tag_0 => {
-          let x13 = option__int32::some._0(mtmp12) in
-          let value/8 = x13 in
-          let t30 = magnitude(pt/7) in
-          let t31 = (value/8 + t30) in
-          jump k28(t31)
+          let x28 = option__int32::some._0(mtmp27) in
+          let value/8 = x28 in
+          let t45 = magnitude(pt/7) in
+          let t46 = (value/8 + t45) in
+          jump k43(t46)
         },
         Tag_1 => {
-          jump k28(0)
+          jump k43(0)
         },
       }
     },
     Tag_1 => {
-      jump k25(0)
+      jump k40(0)
     },
   }
 }

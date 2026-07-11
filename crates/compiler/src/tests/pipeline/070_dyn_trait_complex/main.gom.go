@@ -158,33 +158,33 @@ func dyn__Display__vtable__Point() *dyn__Display_vtable {
 }
 
 func _goml_m_trait__impl_i_Display_i_Point_i_show(self__0 Point) string {
-    var retv24 string
-    var t25 int32 = self__0.x
-    var t26 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t25)
-    var t27 string = "Point(" + t26
-    var t28 string = t27 + ","
-    var t29 int32 = self__0.y
-    var t30 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t29)
-    var t31 string = t28 + t30
-    var t32 string = t31 + ")"
-    retv24 = t32
-    return retv24
+    var retv39 string
+    var t40 int32 = self__0.x
+    var t41 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t40)
+    var t42 string = "Point(" + t41
+    var t43 string = t42 + ","
+    var t44 int32 = self__0.y
+    var t45 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t44)
+    var t46 string = t43 + t45
+    var t47 string = t46 + ")"
+    retv39 = t47
+    return retv39
 }
 
 func _goml_m_trait__impl_i_Display_i_Point_i_show__with(self__1 Point, prefix__2 string, suffix__3 string) string {
-    var retv34 string
-    var t35 string = prefix__2 + "Point("
-    var t36 int32 = self__1.x
-    var t37 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t36)
-    var t38 string = t35 + t37
-    var t39 string = t38 + ","
-    var t40 int32 = self__1.y
-    var t41 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t40)
-    var t42 string = t39 + t41
-    var t43 string = t42 + ")"
-    var t44 string = t43 + suffix__3
-    retv34 = t44
-    return retv34
+    var retv49 string
+    var t50 string = prefix__2 + "Point("
+    var t51 int32 = self__1.x
+    var t52 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t51)
+    var t53 string = t50 + t52
+    var t54 string = t53 + ","
+    var t55 int32 = self__1.y
+    var t56 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t55)
+    var t57 string = t54 + t56
+    var t58 string = t57 + ")"
+    var t59 string = t58 + suffix__3
+    retv49 = t59
+    return retv49
 }
 
 func _goml_m_trait__impl_i_Display_i_Point_i_tick(self__4 Point) struct{} {
@@ -192,43 +192,43 @@ func _goml_m_trait__impl_i_Display_i_Point_i_tick(self__4 Point) struct{} {
 }
 
 func _goml_m_trait__impl_i_Display_i_Point_i_bump(self__5 Point, delta__6 int32) int32 {
-    var retv47 int32
-    var t48 int32 = self__5.x
-    var t49 int32 = self__5.y
-    var t50 int32 = t48 + t49
-    var t51 int32 = t50 + delta__6
-    retv47 = t51
-    return retv47
+    var retv62 int32
+    var t63 int32 = self__5.x
+    var t64 int32 = self__5.y
+    var t65 int32 = t63 + t64
+    var t66 int32 = t65 + delta__6
+    retv62 = t66
+    return retv62
 }
 
 func _goml_m_trait__impl_i_Display_i_Flag_i_show(self__7 Flag) string {
-    var retv53 string
-    var t56 bool = self__7.value
-    var jp55 string
-    if t56 {
-        jp55 = "Flag(true)"
+    var retv68 string
+    var t71 bool = self__7.value
+    var jp70 string
+    if t71 {
+        jp70 = "Flag(true)"
     } else {
-        jp55 = "Flag(false)"
+        jp70 = "Flag(false)"
     }
-    retv53 = jp55
-    return retv53
+    retv68 = jp70
+    return retv68
 }
 
 func _goml_m_trait__impl_i_Display_i_Flag_i_show__with(self__8 Flag, prefix__9 string, suffix__10 string) string {
-    var retv58 string
-    var t61 bool = self__8.value
-    var jp60 string
-    if t61 {
-        var t62 string = prefix__9 + "Flag(true)"
-        var t63 string = t62 + suffix__10
-        jp60 = t63
+    var retv73 string
+    var t76 bool = self__8.value
+    var jp75 string
+    if t76 {
+        var t77 string = prefix__9 + "Flag(true)"
+        var t78 string = t77 + suffix__10
+        jp75 = t78
     } else {
-        var t64 string = prefix__9 + "Flag(false)"
-        var t65 string = t64 + suffix__10
-        jp60 = t65
+        var t79 string = prefix__9 + "Flag(false)"
+        var t80 string = t79 + suffix__10
+        jp75 = t80
     }
-    retv58 = jp60
-    return retv58
+    retv73 = jp75
+    return retv73
 }
 
 func _goml_m_trait__impl_i_Display_i_Flag_i_tick(self__11 Flag) struct{} {
@@ -236,99 +236,99 @@ func _goml_m_trait__impl_i_Display_i_Flag_i_tick(self__11 Flag) struct{} {
 }
 
 func _goml_m_trait__impl_i_Display_i_Flag_i_bump(self__12 Flag, delta__13 int32) int32 {
-    var retv68 int32
-    var t71 bool = self__12.value
-    var jp70 int32
-    if t71 {
-        jp70 = delta__13
+    var retv83 int32
+    var t86 bool = self__12.value
+    var jp85 int32
+    if t86 {
+        jp85 = delta__13
     } else {
-        var t72 int32 = -delta__13
-        jp70 = t72
+        var t87 int32 = -delta__13
+        jp85 = t87
     }
-    retv68 = jp70
-    return retv68
+    retv83 = jp85
+    return retv83
 }
 
 func _goml_m_trait__impl_i_Display_i_Counter_i_show(self__14 Counter) string {
-    var retv74 string
-    var t75 *ref_int32_x = self__14.cell
-    var t76 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(t75)
-    var t77 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t76)
-    var t78 string = "Counter(" + t77
-    var t79 string = t78 + ")"
-    retv74 = t79
-    return retv74
+    var retv89 string
+    var t90 *ref_int32_x = self__14.cell
+    var t91 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(t90)
+    var t92 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t91)
+    var t93 string = "Counter(" + t92
+    var t94 string = t93 + ")"
+    retv89 = t94
+    return retv89
 }
 
 func _goml_m_trait__impl_i_Display_i_Counter_i_show__with(self__15 Counter, prefix__16 string, suffix__17 string) string {
-    var retv81 string
-    var t82 string = prefix__16 + "Counter("
-    var t83 *ref_int32_x = self__15.cell
-    var t84 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(t83)
-    var t85 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t84)
-    var t86 string = t82 + t85
-    var t87 string = t86 + ")"
-    var t88 string = t87 + suffix__17
-    retv81 = t88
-    return retv81
+    var retv96 string
+    var t97 string = prefix__16 + "Counter("
+    var t98 *ref_int32_x = self__15.cell
+    var t99 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(t98)
+    var t100 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t99)
+    var t101 string = t97 + t100
+    var t102 string = t101 + ")"
+    var t103 string = t102 + suffix__17
+    retv96 = t103
+    return retv96
 }
 
 func _goml_m_trait__impl_i_Display_i_Counter_i_tick(self__18 Counter) struct{} {
-    var t90 *ref_int32_x = self__18.cell
-    var t91 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(t90)
-    var next__19 int32 = t91 + 1
-    var t92 *ref_int32_x = self__18.cell
-    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(t92, next__19)
+    var t105 *ref_int32_x = self__18.cell
+    var t106 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(t105)
+    var next__19 int32 = t106 + 1
+    var t107 *ref_int32_x = self__18.cell
+    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(t107, next__19)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_Display_i_Counter_i_bump(self__20 Counter, delta__21 int32) int32 {
-    var retv94 int32
-    var t95 *ref_int32_x = self__20.cell
-    var t96 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(t95)
-    var next__22 int32 = t96 + delta__21
-    var t97 *ref_int32_x = self__20.cell
-    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(t97, next__22)
-    retv94 = next__22
-    return retv94
+    var retv109 int32
+    var t110 *ref_int32_x = self__20.cell
+    var t111 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(t110)
+    var next__22 int32 = t111 + delta__21
+    var t112 *ref_int32_x = self__20.cell
+    _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(t112, next__22)
+    retv109 = next__22
+    return retv109
 }
 
 func show_dyn(x__23 dyn__Display) string {
-    var retv99 string
-    var t100 string = x__23.vtable.show_with(x__23.data, "<", ">")
-    retv99 = t100
-    return retv99
+    var retv114 string
+    var t115 string = x__23.vtable.show_with(x__23.data, "<", ">")
+    retv114 = t115
+    return retv114
 }
 
 func call_via_closure(x__24 dyn__Display, tag__25 string) string {
-    var retv102 string
+    var retv117 string
     var f__28 closure_env_f_0 = closure_env_f_0{}
-    var t103 string = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(f__28, x__24, tag__25)
-    retv102 = t103
-    return retv102
+    var t118 string = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(f__28, x__24, tag__25)
+    retv117 = t118
+    return retv117
 }
 
 func make_renderer(tag__29 string) func(dyn__Display) string {
-    var retv105 func(dyn__Display) string
-    var t106 closure_env_make_renderer_1 = closure_env_make_renderer_1{
+    var retv120 func(dyn__Display) string
+    var t121 closure_env_make_renderer_1 = closure_env_make_renderer_1{
         tag_0: tag__29,
     }
-    retv105 = func(p0 dyn__Display) string {
-        return _goml_m_inherent_i_closure__en_h5c3741356b48d7360bc79df27842b70e_erer__1_i_apply(t106, p0)
+    retv120 = func(p0 dyn__Display) string {
+        return _goml_m_inherent_i_closure__en_h5c3741356b48d7360bc79df27842b70e_erer__1_i_apply(t121, p0)
     }
-    return retv105
+    return retv120
 }
 
 func bump_and_show(x__31 dyn__Display, delta__32 int32) string {
-    var retv108 string
+    var retv123 string
     x__31.vtable.tick(x__31.data)
-    var t109 string = x__31.vtable.show_with(x__31.data, "[", "]")
-    var t110 string = t109 + ":"
-    var t111 int32 = x__31.vtable.bump(x__31.data, delta__32)
-    var t112 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t111)
-    var t113 string = t110 + t112
-    retv108 = t113
-    return retv108
+    var t124 string = x__31.vtable.show_with(x__31.data, "[", "]")
+    var t125 string = t124 + ":"
+    var t126 int32 = x__31.vtable.bump(x__31.data, delta__32)
+    var t127 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t126)
+    var t128 string = t125 + t127
+    retv123 = t128
+    return retv123
 }
 
 func main0() struct{} {
@@ -346,9 +346,9 @@ func main0() struct{} {
     var f2__36 Flag = Flag{
         value: false,
     }
-    var t115 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(10)
+    var t130 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(10)
     var c__37 Counter = Counter{
-        cell: t115,
+        cell: t130,
     }
     var dp1__38 dyn__Display = dyn__Display{
         data: p1__33,
@@ -374,121 +374,121 @@ func main0() struct{} {
     var render_angle__44 func(dyn__Display) string = make_renderer("<")
     var s0__45 string = show_dyn(dp2__39)
     var s1__46 string = call_via_closure(df2__41, "*")
-    var t116 string = render_star__43(dp1__38)
-    var t117 string = t116 + "|"
-    var t118 string = render_angle__44(df1__40)
-    var s2__47 string = t117 + t118
+    var t131 string = render_star__43(dp1__38)
+    var t132 string = t131 + "|"
+    var t133 string = render_angle__44(df1__40)
+    var s2__47 string = t132 + t133
     var v__48 *_goml_vec_Dyn_Display = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__dynDisplay()
     _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__dynDisplay(v__48, dp1__38)
     _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__dynDisplay(v__48, df1__40)
     _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__dynDisplay(v__48, dc__42)
     var vlen__49 int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__dynDisplay(v__48)
-    var jp120 int32
+    var jp135 int32
     switch vlen__49 {
     case 2:
-        jp120 = 3
+        jp135 = 3
     default:
-        jp120 = 5
+        jp135 = 5
     }
-    var delta__50 int32 = jp120
+    var delta__50 int32 = jp135
     println__T_string(s0__45)
     println__T_string(s1__46)
     println__T_string(s2__47)
     var i__51 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(0)
-    Loop_loop126:
+    Loop_loop141:
     for {
-        var t127 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__51)
-        var t128 bool = t127 < 3
-        if t128 {
+        var t142 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__51)
+        var t143 bool = t142 < 3
+        if t143 {
             var line__52 string = bump_and_show(dc__42, delta__50)
             println__T_string(line__52)
-            var t129 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__51)
-            var t130 int32 = t129 + 1
-            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(i__51, t130)
+            var t144 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__51)
+            var t145 int32 = t144 + 1
+            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(i__51, t145)
             continue
         } else {
-            break Loop_loop126
+            break Loop_loop141
         }
     }
-    var t122 string = _goml_m_inherent_i_int32_i_int32_i_to__string(vlen__49)
-    var t123 string = "len:" + t122
-    println__T_string(t123)
-    var t124 string = _goml_m_inherent_i_int32_i_int32_i_to__string(delta__50)
-    var t125 string = "delta:" + t124
-    println__T_string(t125)
+    var t137 string = _goml_m_inherent_i_int32_i_int32_i_to__string(vlen__49)
+    var t138 string = "len:" + t137
+    println__T_string(t138)
+    var t139 string = _goml_m_inherent_i_int32_i_int32_i_to__string(delta__50)
+    var t140 string = "delta:" + t139
+    println__T_string(t140)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
-    var retv132 string
-    var t133 string = _goml_runtime_core_int32_to_string(self__2)
-    retv132 = t133
-    return retv132
+    var retv147 string
+    var t148 string = _goml_runtime_core_int32_to_string(self__2)
+    retv147 = t148
+    return retv147
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__115 *ref_int32_x) int32 {
-    var retv135 int32
-    var t136 int32 = ref_get__Ref_5int32(self__115)
-    retv135 = t136
-    return retv135
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__138 *ref_int32_x) int32 {
+    var retv150 int32
+    var t151 int32 = ref_get__Ref_5int32(self__138)
+    retv150 = t151
+    return retv150
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__116 *ref_int32_x, value__117 int32) struct{} {
-    ref_set__Ref_5int32(self__116, value__117)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__139 *ref_int32_x, value__140 int32) struct{} {
+    ref_set__Ref_5int32(self__139, value__140)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__114 int32) *ref_int32_x {
-    var retv140 *ref_int32_x
-    var t141 *ref_int32_x = ref__Ref_5int32(value__114)
-    retv140 = t141
-    return retv140
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__137 int32) *ref_int32_x {
+    var retv155 *ref_int32_x
+    var t156 *ref_int32_x = ref__Ref_5int32(value__137)
+    retv155 = t156
+    return retv155
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__dynDisplay() *_goml_vec_Dyn_Display {
-    var retv143 *_goml_vec_Dyn_Display
-    var t144 *_goml_vec_Dyn_Display = vec_new__Vec_11Dyn_Display()
-    retv143 = t144
-    return retv143
+    var retv158 *_goml_vec_Dyn_Display
+    var t159 *_goml_vec_Dyn_Display = vec_new__Vec_11Dyn_Display()
+    retv158 = t159
+    return retv158
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__dynDisplay(self__73 *_goml_vec_Dyn_Display, elem__74 dyn__Display) struct{} {
-    vec_push__Vec_11Dyn_Display(self__73, elem__74)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__dynDisplay(self__96 *_goml_vec_Dyn_Display, elem__97 dyn__Display) struct{} {
+    vec_push__Vec_11Dyn_Display(self__96, elem__97)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__dynDisplay(self__84 *_goml_vec_Dyn_Display) int32 {
-    var retv148 int32
-    var t149 int32 = vec_len__Vec_11Dyn_Display(self__84)
-    retv148 = t149
-    return retv148
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__dynDisplay(self__107 *_goml_vec_Dyn_Display) int32 {
+    var retv163 int32
+    var t164 int32 = vec_len__Vec_11Dyn_Display(self__107)
+    retv163 = t164
+    return retv163
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t151 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t151)
+    var t166 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t166)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
-    var retv154 string
-    retv154 = self__9
-    return retv154
+    var retv169 string
+    retv169 = self__9
+    return retv169
 }
 
-func _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(env21 closure_env_f_0, v__26 dyn__Display, t__27 string) string {
-    var retv162 string
-    var t163 string = v__26.vtable.show_with(v__26.data, t__27, t__27)
-    retv162 = t163
-    return retv162
+func _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(env36 closure_env_f_0, v__26 dyn__Display, t__27 string) string {
+    var retv177 string
+    var t178 string = v__26.vtable.show_with(v__26.data, t__27, t__27)
+    retv177 = t178
+    return retv177
 }
 
-func _goml_m_inherent_i_closure__en_h5c3741356b48d7360bc79df27842b70e_erer__1_i_apply(env22 closure_env_make_renderer_1, x__30 dyn__Display) string {
-    var retv165 string
-    var tag__29 string = env22.tag_0
-    var t166 string = x__30.vtable.show_with(x__30.data, tag__29, tag__29)
-    retv165 = t166
-    return retv165
+func _goml_m_inherent_i_closure__en_h5c3741356b48d7360bc79df27842b70e_erer__1_i_apply(env37 closure_env_make_renderer_1, x__30 dyn__Display) string {
+    var retv180 string
+    var tag__29 string = env37.tag_0
+    var t181 string = x__30.vtable.show_with(x__30.data, tag__29, tag__29)
+    retv180 = t181
+    return retv180
 }
 
 func main() {

@@ -42,12 +42,12 @@ type Mul struct {
 func (_ Mul) isExpr() {}
 
 func main0() struct{} {
-    var t58 Expr = Add{
+    var t73 Expr = Add{
         _0: Zero{},
         _1: Zero{},
     }
     var a__0 Expr = Mul{
-        _0: t58,
+        _0: t73,
         _1: Zero{},
     }
     switch a__0.(type) {
@@ -56,11 +56,11 @@ func main0() struct{} {
     case Succ:
         print__T_int32(6)
     case Add:
-        var x8 Expr = a__0.(Add)._0
-        var x9 Expr = a__0.(Add)._1
-        switch x9.(type) {
+        var x23 Expr = a__0.(Add)._0
+        var x24 Expr = a__0.(Add)._1
+        switch x24.(type) {
         case Zero:
-            switch x8.(type) {
+            switch x23.(type) {
             case Zero:
                 print__T_int32(0)
             case Succ:
@@ -73,7 +73,7 @@ func main0() struct{} {
                 panic("non-exhaustive match")
             }
         case Succ:
-            switch x8.(type) {
+            switch x23.(type) {
             case Zero:
                 print__T_int32(6)
             case Succ:
@@ -86,7 +86,7 @@ func main0() struct{} {
                 panic("non-exhaustive match")
             }
         case Add:
-            switch x8.(type) {
+            switch x23.(type) {
             case Zero:
                 print__T_int32(6)
             case Succ:
@@ -99,7 +99,7 @@ func main0() struct{} {
                 panic("non-exhaustive match")
             }
         case Mul:
-            switch x8.(type) {
+            switch x23.(type) {
             case Zero:
                 print__T_int32(6)
             case Succ:
@@ -115,13 +115,13 @@ func main0() struct{} {
             panic("non-exhaustive match")
         }
     case Mul:
-        var x10 Expr = a__0.(Mul)._0
-        var x11 Expr = a__0.(Mul)._1
-        switch x10.(type) {
+        var x25 Expr = a__0.(Mul)._0
+        var x26 Expr = a__0.(Mul)._1
+        switch x25.(type) {
         case Zero:
             print__T_int32(1)
         case Succ:
-            switch x11.(type) {
+            switch x26.(type) {
             case Zero:
                 print__T_int32(3)
             case Succ:
@@ -134,7 +134,7 @@ func main0() struct{} {
                 panic("non-exhaustive match")
             }
         case Add:
-            switch x11.(type) {
+            switch x26.(type) {
             case Zero:
                 print__T_int32(3)
             case Succ:
@@ -147,7 +147,7 @@ func main0() struct{} {
                 panic("non-exhaustive match")
             }
         case Mul:
-            switch x11.(type) {
+            switch x26.(type) {
             case Zero:
                 print__T_int32(3)
             case Succ:
@@ -169,16 +169,16 @@ func main0() struct{} {
 }
 
 func print__T_int32(value__0 int32) struct{} {
-    var t101 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__0)
-    _goml_runtime_core_string_print(t101)
+    var t116 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__0)
+    _goml_runtime_core_string_print(t116)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__13 int32) string {
-    var retv104 string
-    var t105 string = _goml_runtime_core_int32_to_string(self__13)
-    retv104 = t105
-    return retv104
+    var retv119 string
+    var t120 string = _goml_runtime_core_int32_to_string(self__13)
+    retv119 = t120
+    return retv119
 }
 
 func main() {

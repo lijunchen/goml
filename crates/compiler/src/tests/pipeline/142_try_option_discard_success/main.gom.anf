@@ -1,86 +1,86 @@
 fn cut_pair(ok/0: bool) -> Option__(string,string) {
-  join ret13(retv14: Option__(string,string)) -> Option__(string,string) {
-    retv14
+  join ret28(retv29: Option__(string,string)) -> Option__(string,string) {
+    retv29
   } in
-  join k15(jp16: Option__(string,string)) -> Option__(string,string) {
-    jump ret13(jp16)
+  join k30(jp31: Option__(string,string)) -> Option__(string,string) {
+    jump ret28(jp31)
   } in
   if ok/0 {
-    let t17 = ("left", "right") in
-    let t18 = Option__(string,string)::Some(t17) in
-    jump k15(t18)
+    let t32 = ("left", "right") in
+    let t33 = Option__(string,string)::Some(t32) in
+    jump k30(t33)
   } else {
-    jump k15(Tag_0)
+    jump k30(Tag_0)
   }
 }
 
 fn check(ok/1: bool) -> Option__string {
-  join ret19(retv20: Option__string) -> Option__string {
-    retv20
+  join ret34(retv35: Option__string) -> Option__string {
+    retv35
   } in
-  let mtmp7 = cut_pair(ok/1) in
-  join k21(jp22: (string, string)) -> Option__string {
-    let mtmp9 = jp22 in
-    let t23 = Option__string::Some("ok") in
-    jump ret19(t23)
+  let mtmp22 = cut_pair(ok/1) in
+  join k36(jp37: (string, string)) -> Option__string {
+    let mtmp24 = jp37 in
+    let t38 = Option__string::Some("ok") in
+    jump ret34(t38)
   } in
-  match mtmp7 {
+  match mtmp22 {
     Tag_0 => {
-      jump ret19(Tag_0)
+      jump ret34(Tag_0)
     },
     Tag_1 => {
-      let x8 = Option__(string,string)::Some._0(mtmp7) in
-      let try_value/13 = x8 in
-      jump k21(try_value/13)
+      let x23 = Option__(string,string)::Some._0(mtmp22) in
+      let try_value/13 = x23 in
+      jump k36(try_value/13)
     },
   }
 }
 
 fn show(opt/2: Option__string) -> string {
-  join ret24(retv25: string) -> string {
-    retv25
+  join ret39(retv40: string) -> string {
+    retv40
   } in
-  join k26(jp27: string) -> string {
-    jump ret24(jp27)
+  join k41(jp42: string) -> string {
+    jump ret39(jp42)
   } in
   match opt/2 {
     Tag_0 => {
-      jump k26("none")
+      jump k41("none")
     },
     Tag_1 => {
-      let x10 = Option__string::Some._0(opt/2) in
-      let value/3 = x10 in
-      let t28 = ("some " + value/3) in
-      jump k26(t28)
+      let x25 = Option__string::Some._0(opt/2) in
+      let value/3 = x25 in
+      let t43 = ("some " + value/3) in
+      jump k41(t43)
     },
   }
 }
 
 fn main() -> unit {
-  join ret29() -> unit {
+  join ret44() -> unit {
     ()
   } in
-  let t30 = check(true) in
-  let t31 = show(t30) in
-  let _wild11 = println__T_string(t31) in
-  let t32 = check(false) in
-  let t33 = show(t32) in
-  let _wild12 = println__T_string(t33) in
-  jump ret29()
+  let t45 = check(true) in
+  let t46 = show(t45) in
+  let _wild26 = println__T_string(t46) in
+  let t47 = check(false) in
+  let t48 = show(t47) in
+  let _wild27 = println__T_string(t48) in
+  jump ret44()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret34() -> unit {
+  join ret49() -> unit {
     ()
   } in
-  let t35 = trait_impl#ToString#string#to_string(value/1) in
-  let t36 = @runtime(core.string_println)(t35) in
-  jump ret34()
+  let t50 = trait_impl#ToString#string#to_string(value/1) in
+  let t51 = @runtime(core.string_println)(t50) in
+  jump ret49()
 }
 
 fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret37(retv38: string) -> string {
-    retv38
+  join ret52(retv53: string) -> string {
+    retv53
   } in
-  jump ret37(self/9)
+  jump ret52(self/9)
 }

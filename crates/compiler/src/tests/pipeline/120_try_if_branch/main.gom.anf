@@ -1,112 +1,112 @@
 fn parse(flag/0: bool) -> Result__int32__string {
-  join ret15(retv16: Result__int32__string) -> Result__int32__string {
-    retv16
+  join ret30(retv31: Result__int32__string) -> Result__int32__string {
+    retv31
   } in
-  join k17(jp18: Result__int32__string) -> Result__int32__string {
-    jump ret15(jp18)
+  join k32(jp33: Result__int32__string) -> Result__int32__string {
+    jump ret30(jp33)
   } in
   if flag/0 {
-    let t19 = Result__int32__string::Ok(5) in
-    jump k17(t19)
+    let t34 = Result__int32__string::Ok(5) in
+    jump k32(t34)
   } else {
-    let t20 = Result__int32__string::Err("bad-branch") in
-    jump k17(t20)
+    let t35 = Result__int32__string::Err("bad-branch") in
+    jump k32(t35)
   }
 }
 
 fn bump(flag/1: bool, fallback/2: bool) -> Result__int32__string {
-  join ret21(retv22: Result__int32__string) -> Result__int32__string {
-    retv22
+  join ret36(retv37: Result__int32__string) -> Result__int32__string {
+    retv37
   } in
-  join k23(jp24: int32) -> Result__int32__string {
-    let value/3 = jp24 in
-    let t25 = (value/3 + 1) in
-    let t26 = Result__int32__string::Ok(t25) in
-    jump ret21(t26)
+  join k38(jp39: int32) -> Result__int32__string {
+    let value/3 = jp39 in
+    let t40 = (value/3 + 1) in
+    let t41 = Result__int32__string::Ok(t40) in
+    jump ret36(t41)
   } in
   if flag/1 {
-    let mtmp7 = parse(fallback/2) in
-    join k27(jp28: int32) -> Result__int32__string {
-      jump k23(jp28)
+    let mtmp22 = parse(fallback/2) in
+    join k42(jp43: int32) -> Result__int32__string {
+      jump k38(jp43)
     } in
-    match mtmp7 {
+    match mtmp22 {
       Tag_0 => {
-        let x8 = Result__int32__string::Ok._0(mtmp7) in
-        let try_value/13 = x8 in
-        jump k27(try_value/13)
+        let x23 = Result__int32__string::Ok._0(mtmp22) in
+        let try_value/13 = x23 in
+        jump k42(try_value/13)
       },
       Tag_1 => {
-        let x9 = Result__int32__string::Err._0(mtmp7) in
-        let try_residual/13 = x9 in
-        let t29 = Result__int32__string::Err(try_residual/13) in
-        jump ret21(t29)
+        let x24 = Result__int32__string::Err._0(mtmp22) in
+        let try_residual/13 = x24 in
+        let t44 = Result__int32__string::Err(try_residual/13) in
+        jump ret36(t44)
       },
     }
   } else {
-    jump k23(10)
+    jump k38(10)
   }
 }
 
 fn show(res/4: Result__int32__string) -> string {
-  join ret30(retv31: string) -> string {
-    retv31
+  join ret45(retv46: string) -> string {
+    retv46
   } in
-  join k32(jp33: string) -> string {
-    jump ret30(jp33)
+  join k47(jp48: string) -> string {
+    jump ret45(jp48)
   } in
   match res/4 {
     Tag_0 => {
-      let x10 = Result__int32__string::Ok._0(res/4) in
-      let value/5 = x10 in
-      let t34 = inherent#int32#int32#to_string(value/5) in
-      let t35 = ("ok=" + t34) in
-      jump k32(t35)
+      let x25 = Result__int32__string::Ok._0(res/4) in
+      let value/5 = x25 in
+      let t49 = inherent#int32#int32#to_string(value/5) in
+      let t50 = ("ok=" + t49) in
+      jump k47(t50)
     },
     Tag_1 => {
-      let x11 = Result__int32__string::Err._0(res/4) in
-      let err/6 = x11 in
-      let t36 = ("err=" + err/6) in
-      jump k32(t36)
+      let x26 = Result__int32__string::Err._0(res/4) in
+      let err/6 = x26 in
+      let t51 = ("err=" + err/6) in
+      jump k47(t51)
     },
   }
 }
 
 fn main() -> unit {
-  join ret37() -> unit {
+  join ret52() -> unit {
     ()
   } in
-  let t38 = bump(true, true) in
-  let t39 = show(t38) in
-  let _wild12 = println__T_string(t39) in
-  let t40 = bump(true, false) in
-  let t41 = show(t40) in
-  let _wild13 = println__T_string(t41) in
-  let t42 = bump(false, false) in
-  let t43 = show(t42) in
-  let _wild14 = println__T_string(t43) in
-  jump ret37()
+  let t53 = bump(true, true) in
+  let t54 = show(t53) in
+  let _wild27 = println__T_string(t54) in
+  let t55 = bump(true, false) in
+  let t56 = show(t55) in
+  let _wild28 = println__T_string(t56) in
+  let t57 = bump(false, false) in
+  let t58 = show(t57) in
+  let _wild29 = println__T_string(t58) in
+  jump ret52()
 }
 
 fn inherent#int32#int32#to_string(self/2: int32) -> string {
-  join ret44(retv45: string) -> string {
-    retv45
+  join ret59(retv60: string) -> string {
+    retv60
   } in
-  let t46 = @runtime(core.int32_to_string)(self/2) in
-  jump ret44(t46)
+  let t61 = @runtime(core.int32_to_string)(self/2) in
+  jump ret59(t61)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret47() -> unit {
+  join ret62() -> unit {
     ()
   } in
-  let t48 = trait_impl#ToString#string#to_string(value/1) in
-  let t49 = @runtime(core.string_println)(t48) in
-  jump ret47()
+  let t63 = trait_impl#ToString#string#to_string(value/1) in
+  let t64 = @runtime(core.string_println)(t63) in
+  jump ret62()
 }
 
 fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret50(retv51: string) -> string {
-    retv51
+  join ret65(retv66: string) -> string {
+    retv66
   } in
-  jump ret50(self/9)
+  jump ret65(self/9)
 }

@@ -1,54 +1,54 @@
 fn main() -> unit {
-  join ret12() -> unit {
+  join ret27() -> unit {
     ()
   } in
   let a/0 = (true, false) in
-  let x7 = a/0.0 in
-  let x8 = a/0.1 in
-  join k13() -> unit {
-    let mtmp9 = () in
+  let x22 = a/0.0 in
+  let x23 = a/0.1 in
+  join k28() -> unit {
+    let mtmp24 = () in
     let c/2 = (true, true) in
-    let x10 = c/2.0 in
-    let x11 = c/2.1 in
-    join k14() -> unit {
-      jump ret12()
+    let x25 = c/2.0 in
+    let x26 = c/2.1 in
+    join k29() -> unit {
+      jump ret27()
     } in
-    match x10 {
+    match x25 {
       true => {
-        let d/3 = x11 in
-        let t15 = print__T_bool(d/3) in
-        jump k14()
+        let d/3 = x26 in
+        let t30 = print__T_bool(d/3) in
+        jump k29()
       },
       false => {
-        jump k14()
+        jump k29()
       },
     }
   } in
-  match x7 {
+  match x22 {
     true => {
-      let b/1 = x8 in
-      let t16 = print__T_bool(b/1) in
-      jump k13()
+      let b/1 = x23 in
+      let t31 = print__T_bool(b/1) in
+      jump k28()
     },
     false => {
-      jump k13()
+      jump k28()
     },
   }
 }
 
 fn print__T_bool(value/0: bool) -> unit {
-  join ret17() -> unit {
+  join ret32() -> unit {
     ()
   } in
-  let t18 = trait_impl#ToString#bool#to_string(value/0) in
-  let t19 = @runtime(core.string_print)(t18) in
-  jump ret17()
+  let t33 = trait_impl#ToString#bool#to_string(value/0) in
+  let t34 = @runtime(core.string_print)(t33) in
+  jump ret32()
 }
 
 fn trait_impl#ToString#bool#to_string(self/8: bool) -> string {
-  join ret20(retv21: string) -> string {
-    retv21
+  join ret35(retv36: string) -> string {
+    retv36
   } in
-  let t22 = @runtime(core.bool_to_string)(self/8) in
-  jump ret20(t22)
+  let t37 = @runtime(core.bool_to_string)(self/8) in
+  jump ret35(t37)
 }

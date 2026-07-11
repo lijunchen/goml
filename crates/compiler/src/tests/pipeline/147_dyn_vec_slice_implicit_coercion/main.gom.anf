@@ -1,91 +1,91 @@
 fn trait_impl#Display#int32#show(self/0: int32) -> string {
-  join ret11(retv12: string) -> string {
-    retv12
+  join ret26(retv27: string) -> string {
+    retv27
   } in
-  let t13 = inherent#int32#int32#to_string(self/0) in
-  jump ret11(t13)
+  let t28 = inherent#int32#int32#to_string(self/0) in
+  jump ret26(t28)
 }
 
 fn render(x/1: dyn Display) -> string {
-  join ret14(retv15: string) -> string {
-    retv15
+  join ret29(retv30: string) -> string {
+    retv30
   } in
-  let t16 = dyn_call[Display::show](x/1) in
-  jump ret14(t16)
+  let t31 = dyn_call[Display::show](x/1) in
+  jump ret29(t31)
 }
 
 fn main() -> unit {
-  join ret17() -> unit {
+  join ret32() -> unit {
     ()
   } in
   let v/2 = inherent#Vec#Vec[T]#new__T_dynDisplay() in
-  let t18 = to_dyn[Display]{int32}(10) in
-  let _wild7 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/2, t18) in
-  let t19 = to_dyn[Display]{int32}(20) in
-  let _wild8 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/2, t19) in
+  let t33 = to_dyn[Display]{int32}(10) in
+  let _wild22 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/2, t33) in
+  let t34 = to_dyn[Display]{int32}(20) in
+  let _wild23 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/2, t34) in
   let s/3 = inherent#Vec#Vec[T]#slice__T_dynDisplay(v/2, 0, 2) in
-  let t20 = @intrinsic(slice.get)(s/3, 0) in
-  let t21 = render(t20) in
-  let _wild9 = println__T_string(t21) in
+  let t35 = @intrinsic(slice.get)(s/3, 0) in
+  let t36 = render(t35) in
+  let _wild24 = println__T_string(t36) in
   let t/4 = inherent#Slice#Slice[T]#sub__T_dynDisplay(s/3, 1, 2) in
-  let t22 = @intrinsic(slice.get)(t/4, 0) in
-  let t23 = render(t22) in
-  let _wild10 = println__T_string(t23) in
-  jump ret17()
+  let t37 = @intrinsic(slice.get)(t/4, 0) in
+  let t38 = render(t37) in
+  let _wild25 = println__T_string(t38) in
+  jump ret32()
 }
 
 fn inherent#int32#int32#to_string(self/2: int32) -> string {
-  join ret24(retv25: string) -> string {
-    retv25
+  join ret39(retv40: string) -> string {
+    retv40
   } in
-  let t26 = @runtime(core.int32_to_string)(self/2) in
-  jump ret24(t26)
+  let t41 = @runtime(core.int32_to_string)(self/2) in
+  jump ret39(t41)
 }
 
 fn inherent#Vec#Vec[T]#new__T_dynDisplay() -> Vec[dyn Display] {
-  join ret27(retv28: Vec[dyn Display]) -> Vec[dyn Display] {
-    retv28
+  join ret42(retv43: Vec[dyn Display]) -> Vec[dyn Display] {
+    retv43
   } in
-  let t29 = @intrinsic(vec.new)() in
-  jump ret27(t29)
+  let t44 = @intrinsic(vec.new)() in
+  jump ret42(t44)
 }
 
-fn inherent#Vec#Vec[T]#push__T_dynDisplay(self/73: Vec[dyn Display], elem/74: dyn Display) -> unit {
-  join ret30() -> unit {
+fn inherent#Vec#Vec[T]#push__T_dynDisplay(self/96: Vec[dyn Display], elem/97: dyn Display) -> unit {
+  join ret45() -> unit {
     ()
   } in
-  let t31 = @intrinsic(vec.push)(self/73, elem/74) in
-  jump ret30()
+  let t46 = @intrinsic(vec.push)(self/96, elem/97) in
+  jump ret45()
 }
 
-fn inherent#Vec#Vec[T]#slice__T_dynDisplay(self/85: Vec[dyn Display], start/86: int32, end/87: int32) -> Slice[dyn Display] {
-  join ret32(retv33: Slice[dyn Display]) -> Slice[dyn Display] {
-    retv33
+fn inherent#Vec#Vec[T]#slice__T_dynDisplay(self/108: Vec[dyn Display], start/109: int32, end/110: int32) -> Slice[dyn Display] {
+  join ret47(retv48: Slice[dyn Display]) -> Slice[dyn Display] {
+    retv48
   } in
-  let t34 = @intrinsic(slice.new)(self/85, start/86, end/87) in
-  jump ret32(t34)
+  let t49 = @intrinsic(slice.new)(self/108, start/109, end/110) in
+  jump ret47(t49)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret35() -> unit {
+  join ret50() -> unit {
     ()
   } in
-  let t36 = trait_impl#ToString#string#to_string(value/1) in
-  let t37 = @runtime(core.string_println)(t36) in
-  jump ret35()
+  let t51 = trait_impl#ToString#string#to_string(value/1) in
+  let t52 = @runtime(core.string_println)(t51) in
+  jump ret50()
 }
 
-fn inherent#Slice#Slice[T]#sub__T_dynDisplay(self/96: Slice[dyn Display], start/97: int32, end/98: int32) -> Slice[dyn Display] {
-  join ret38(retv39: Slice[dyn Display]) -> Slice[dyn Display] {
-    retv39
+fn inherent#Slice#Slice[T]#sub__T_dynDisplay(self/119: Slice[dyn Display], start/120: int32, end/121: int32) -> Slice[dyn Display] {
+  join ret53(retv54: Slice[dyn Display]) -> Slice[dyn Display] {
+    retv54
   } in
-  let t40 = @intrinsic(slice.sub)(self/96, start/97, end/98) in
-  jump ret38(t40)
+  let t55 = @intrinsic(slice.sub)(self/119, start/120, end/121) in
+  jump ret53(t55)
 }
 
 fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret41(retv42: string) -> string {
-    retv42
+  join ret56(retv57: string) -> string {
+    retv57
   } in
-  jump ret41(self/9)
+  jump ret56(self/9)
 }

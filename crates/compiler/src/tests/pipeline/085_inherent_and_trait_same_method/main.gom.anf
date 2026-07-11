@@ -1,52 +1,52 @@
 fn inherent#Boxed#Boxed#format(self/0: Boxed) -> string {
-  join ret9(retv10: string) -> string {
-    retv10
+  join ret24(retv25: string) -> string {
+    retv25
   } in
-  jump ret9("inherent")
+  jump ret24("inherent")
 }
 
 fn trait_impl#Render#Boxed#format(self/1: Boxed) -> string {
-  join ret11(retv12: string) -> string {
-    retv12
-  } in
-  let t13 = Boxed.value(self/1) in
-  let t14 = inherent#int32#int32#to_string(t13) in
-  jump ret11(t14)
-}
-
-fn main() -> unit {
-  join ret15() -> unit {
-    ()
-  } in
-  let t16 = Boxed { value: 9 } in
-  let t17 = inherent#Boxed#Boxed#format(t16) in
-  let _wild7 = println__T_string(t17) in
-  let t18 = Boxed { value: 9 } in
-  let t19 = trait_impl#Render#Boxed#format(t18) in
-  let _wild8 = println__T_string(t19) in
-  jump ret15()
-}
-
-fn inherent#int32#int32#to_string(self/2: int32) -> string {
-  join ret20(retv21: string) -> string {
-    retv21
-  } in
-  let t22 = @runtime(core.int32_to_string)(self/2) in
-  jump ret20(t22)
-}
-
-fn println__T_string(value/1: string) -> unit {
-  join ret23() -> unit {
-    ()
-  } in
-  let t24 = trait_impl#ToString#string#to_string(value/1) in
-  let t25 = @runtime(core.string_println)(t24) in
-  jump ret23()
-}
-
-fn trait_impl#ToString#string#to_string(self/9: string) -> string {
   join ret26(retv27: string) -> string {
     retv27
   } in
-  jump ret26(self/9)
+  let t28 = Boxed.value(self/1) in
+  let t29 = inherent#int32#int32#to_string(t28) in
+  jump ret26(t29)
+}
+
+fn main() -> unit {
+  join ret30() -> unit {
+    ()
+  } in
+  let t31 = Boxed { value: 9 } in
+  let t32 = inherent#Boxed#Boxed#format(t31) in
+  let _wild22 = println__T_string(t32) in
+  let t33 = Boxed { value: 9 } in
+  let t34 = trait_impl#Render#Boxed#format(t33) in
+  let _wild23 = println__T_string(t34) in
+  jump ret30()
+}
+
+fn inherent#int32#int32#to_string(self/2: int32) -> string {
+  join ret35(retv36: string) -> string {
+    retv36
+  } in
+  let t37 = @runtime(core.int32_to_string)(self/2) in
+  jump ret35(t37)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret38() -> unit {
+    ()
+  } in
+  let t39 = trait_impl#ToString#string#to_string(value/1) in
+  let t40 = @runtime(core.string_println)(t39) in
+  jump ret38()
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  join ret41(retv42: string) -> string {
+    retv42
+  } in
+  jump ret41(self/9)
 }

@@ -42,40 +42,40 @@ func main0() struct{} {
         x_0: x__0,
     }
     _goml_m_inherent_i_closure__env__inc__0_i_closure__env__inc__0_i_apply(inc__1)
-    var t12 int32 = ref_get__Ref_5int32(x__0)
-    var t13 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t12)
-    println__T_string(t13)
+    var t27 int32 = ref_get__Ref_5int32(x__0)
+    var t28 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t27)
+    println__T_string(t28)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t15 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t15)
+    var t30 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t30)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
-    var retv18 string
-    var t19 string = _goml_runtime_core_int32_to_string(self__2)
-    retv18 = t19
-    return retv18
+    var retv33 string
+    var t34 string = _goml_runtime_core_int32_to_string(self__2)
+    retv33 = t34
+    return retv33
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
-    var retv21 string
-    retv21 = self__9
-    return retv21
+    var retv36 string
+    retv36 = self__9
+    return retv36
 }
 
-func _goml_m_inherent_i_closure__env__inc__0_i_closure__env__inc__0_i_apply(env10 closure_env_inc_0) int32 {
-    var retv29 int32
-    var x__0 *ref_int32_x = env10.x_0
-    var t30 int32 = ref_get__Ref_5int32(x__0)
-    var t31 int32 = t30 + 1
-    ref_set__Ref_5int32(x__0, t31)
-    var t32 int32 = ref_get__Ref_5int32(x__0)
-    retv29 = t32
-    return retv29
+func _goml_m_inherent_i_closure__env__inc__0_i_closure__env__inc__0_i_apply(env25 closure_env_inc_0) int32 {
+    var retv44 int32
+    var x__0 *ref_int32_x = env25.x_0
+    var t45 int32 = ref_get__Ref_5int32(x__0)
+    var t46 int32 = t45 + 1
+    ref_set__Ref_5int32(x__0, t46)
+    var t47 int32 = ref_get__Ref_5int32(x__0)
+    retv44 = t47
+    return retv44
 }
 
 func main() {
