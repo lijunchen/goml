@@ -1542,3 +1542,136 @@ impl Pair for Value {
         "{diagnostics:?}"
     );
 }
+
+#[test]
+fn supertrait_impl_is_required_at_definition() {
+    let src = r#"
+trait Parent {
+    fn parent(Self) -> string;
+}
+
+trait Child: Parent {
+    fn child(Self) -> string;
+}
+
+struct Value {}
+
+impl Child for Value {
+    fn child(self: Value) -> string { "child" }
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("requires supertrait Parent")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn trait_parameter_bounds_are_required_at_impl_definition() {
+    let src = r#"
+trait Mark {
+    fn mark(Self) -> unit;
+}
+
+trait Container[T: Mark] {
+    fn value(Self) -> T;
+}
+
+struct Item {}
+struct Box {}
+
+impl Container[Item] for Box {
+    fn value(self: Box) -> Item { Item {} }
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| { line.contains("does not satisfy declared requirement Item: Mark") }),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn inherited_method_name_conflicts_remain_ambiguous() {
+    let src = r#"
+trait Left {
+    fn name(Self) -> string;
+}
+
+trait Right {
+    fn name(Self) -> string;
+}
+
+trait Both: Left + Right {
+    fn both(Self) -> unit;
+}
+
+fn name[T: Both](value: T) -> string {
+    value.name()
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("Ambiguous method name")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn supertrait_cycles_are_rejected() {
+    let src = r#"
+trait First: Second {
+    fn first(Self) -> unit;
+}
+
+trait Second: First {
+    fn second(Self) -> unit;
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("Supertrait cycle detected")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn forward_and_diamond_supertraits_are_supported() {
+    let src = r#"
+trait Child: Left + Right {
+    fn child(Self) -> unit;
+}
+
+trait Left: Base {
+    fn left(Self) -> unit;
+}
+
+trait Right: Base {
+    fn right(Self) -> unit;
+}
+
+trait Base {
+    fn base(Self) -> string;
+}
+
+fn inherited[T: Child](value: T) -> string {
+    value.base()
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}

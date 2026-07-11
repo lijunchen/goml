@@ -137,6 +137,11 @@ fn multi_package_compile_project_029() -> anyhow::Result<()> {
     run_project("project029_associated_types")
 }
 
+#[test]
+fn multi_package_compile_project_030() -> anyhow::Result<()> {
+    run_project("project030_supertraits")
+}
+
 fn run_project(name: &str) -> anyhow::Result<()> {
     let name = name.to_string();
     let handle = std::thread::Builder::new()

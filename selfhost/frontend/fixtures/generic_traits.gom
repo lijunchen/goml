@@ -1,6 +1,10 @@
 package fixtures;
 
-trait Convert[T] where T: Show {
+trait Parent[T] {
+    fn parent(Self) -> T;
+}
+
+trait Convert[T: Show]: Parent[T] where T: Eq {
     type Output: Show;
 
     fn convert(Self) -> T;
