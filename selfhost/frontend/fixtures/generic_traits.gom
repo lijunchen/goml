@@ -1,6 +1,8 @@
 package fixtures;
 
 trait Convert[T] where T: Show {
+    type Output: Show;
+
     fn convert(Self) -> T;
 }
 
@@ -9,6 +11,8 @@ struct Box[T] {
 }
 
 impl[T: Show] Convert[T] for Box[T] where Vec[T]: Show {
+    type Output = T;
+
     fn convert(self: Box[T]) -> T {
         self.value
     }

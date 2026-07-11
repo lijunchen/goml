@@ -1343,3 +1343,202 @@ fn render_equal[T: Render, U](value: U) -> string where T == U {
     let diagnostics = diagnostic_lines(src);
     assert!(diagnostics.is_empty(), "{diagnostics:?}");
 }
+
+#[test]
+fn associated_type_impl_requires_complete_known_unique_bindings() {
+    let duplicate_declaration = r#"
+trait Source {
+    type Item;
+    type Item;
+    fn get(Self) -> Self::Item;
+}
+"#;
+    let missing = r#"
+trait Source {
+    type Item;
+    fn get(Self) -> Self::Item;
+}
+
+struct Value {}
+
+impl Source for Value {
+    fn get(self: Value) -> int32 { 1 }
+}
+"#;
+    let unknown = r#"
+trait Source {
+    type Item;
+    fn get(Self) -> Self::Item;
+}
+
+struct Value {}
+
+impl Source for Value {
+    type Item = int32;
+    type Extra = string;
+    fn get(self: Value) -> int32 { 1 }
+}
+"#;
+    let duplicate = r#"
+trait Source {
+    type Item;
+    fn get(Self) -> Self::Item;
+}
+
+struct Value {}
+
+impl Source for Value {
+    type Item = int32;
+    type Item = int32;
+    fn get(self: Value) -> int32 { 1 }
+}
+"#;
+
+    let duplicate_declaration_diagnostics = diagnostic_lines(duplicate_declaration);
+    assert!(
+        duplicate_declaration_diagnostics
+            .iter()
+            .any(|line| line.contains("associated type Item is defined multiple times")),
+        "{duplicate_declaration_diagnostics:?}"
+    );
+    let missing_diagnostics = diagnostic_lines(missing);
+    assert!(
+        missing_diagnostics
+            .iter()
+            .any(|line| line.contains("is missing associated type Item")),
+        "{missing_diagnostics:?}"
+    );
+    let unknown_diagnostics = diagnostic_lines(unknown);
+    assert!(
+        unknown_diagnostics
+            .iter()
+            .any(|line| line.contains("Associated type Extra is not declared")),
+        "{unknown_diagnostics:?}"
+    );
+    let duplicate_diagnostics = diagnostic_lines(duplicate);
+    assert!(
+        duplicate_diagnostics
+            .iter()
+            .any(|line| line.contains("Associated type Item is bound multiple times")),
+        "{duplicate_diagnostics:?}"
+    );
+}
+
+#[test]
+fn associated_type_binding_must_match_trait_method_signature() {
+    let src = r#"
+trait Source {
+    type Item;
+    fn get(Self) -> Self::Item;
+}
+
+struct Value {}
+
+impl Source for Value {
+    type Item = int32;
+    fn get(self: Value) -> string { "wrong" }
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("expected return type int32 but found string")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn associated_type_bound_is_checked_at_impl_definition() {
+    let src = r#"
+trait Mark {
+    fn mark(Self) -> unit;
+}
+
+trait Source {
+    type Item: Mark;
+    fn get(Self) -> Self::Item;
+}
+
+struct Value {}
+struct Item {}
+
+impl Source for Value {
+    type Item = Item;
+    fn get(self: Value) -> Item { Item {} }
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics.iter().any(|line| {
+            line.contains("Associated type Item = Item does not satisfy bound Mark")
+        }),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn associated_type_projection_requires_one_defining_bound() {
+    let missing = r#"
+fn project[T](value: T) -> T::Item {
+    value
+}
+"#;
+    let ambiguous = r#"
+trait Left {
+    type Item;
+}
+
+trait Right {
+    type Item;
+}
+
+fn project[T: Left + Right](value: T) -> T::Item {
+    value
+}
+"#;
+
+    let missing_diagnostics = diagnostic_lines(missing);
+    assert!(
+        missing_diagnostics
+            .iter()
+            .any(|line| line.contains("is not provided by a trait bound")),
+        "{missing_diagnostics:?}"
+    );
+    let ambiguous_diagnostics = diagnostic_lines(ambiguous);
+    assert!(
+        ambiguous_diagnostics
+            .iter()
+            .any(|line| line.contains("is ambiguous between Left, Right")),
+        "{ambiguous_diagnostics:?}"
+    );
+}
+
+#[test]
+fn associated_type_cycles_are_rejected() {
+    let src = r#"
+trait Pair {
+    type First;
+    type Second;
+    fn touch(Self) -> unit;
+}
+
+struct Value {}
+
+impl Pair for Value {
+    type First = Self::Second;
+    type Second = Self::First;
+    fn touch(self: Value) -> unit { () }
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("has a cyclic definition")),
+        "{diagnostics:?}"
+    );
+}
