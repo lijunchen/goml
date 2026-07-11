@@ -1018,7 +1018,7 @@ fn main() {
 "#,
             5,
             6,
-            expect!["get, len, new, push, set, slice"],
+            expect!["get, len, new, push, pushed, set, slice"],
         );
     }
 
@@ -1051,7 +1051,7 @@ fn main() {
 "#,
             4,
             17,
-            expect!["get, len, new, push, set, slice"],
+            expect!["get, len, new, push, pushed, set, slice"],
         );
     }
 
@@ -2201,7 +2201,7 @@ path = "demo"
             "main.gom",
             "Option::Some",
             "Some",
-            expect!["src/builtin.gom:100:4"],
+            expect!["src/builtin_contract.gom:75:4"],
         );
     }
 
@@ -2218,7 +2218,7 @@ fn main() -> unit {
 "#,
             "Vec::new()",
             "new",
-            expect!["src/builtin.gom:427:7"],
+            expect!["src/builtin_prelude.gom:305:7"],
         );
     }
 
@@ -2237,7 +2237,7 @@ fn main() -> unit {
 "#,
             "r.get()",
             "get",
-            expect!["src/builtin.gom:497:7"],
+            expect!["src/builtin_prelude.gom:386:7"],
         );
     }
 
@@ -2262,13 +2262,13 @@ fn main() -> unit {
             src,
             "HashMap::new()",
             "new",
-            expect!["src/builtin.gom:467:7"],
+            expect!["src/builtin_prelude.gom:356:7"],
         );
         check_goto_token(
             src,
             "m.set(Key::A, 1)",
             "set",
-            expect!["src/builtin.gom:475:7"],
+            expect!["src/builtin_prelude.gom:364:7"],
         );
     }
 
@@ -2446,7 +2446,7 @@ fn main() -> unit {
             "main.gom",
             "io::println",
             "println",
-            expect!["io/io.gom:15:7"],
+            expect!["io/io.gom:8:7"],
         );
     }
 
@@ -2970,8 +2970,8 @@ fn main() {
 
 fn main() {
     let v = Vec::new();
-    let v = v.push(1);
-    let v = v.push(2);
+    v.push(1);
+    v.push(2);
     let len = v.len();
     let first = v[0];
 }

@@ -143,16 +143,16 @@ fn lex(source: string) -> Vec[Token] {
     let _ = (while i.get() < len {
         let ch = source.get(i.get());
         if ch == '(' {
-            let _ = toks.set(toks.get().push(Token::LParen));
+            let _ = toks.set(toks.get().pushed(Token::LParen));
             i.set(i.get() + 1)
         } else if ch == ')' {
-            let _ = toks.set(toks.get().push(Token::RParen));
+            let _ = toks.set(toks.get().pushed(Token::RParen));
             i.set(i.get() + 1)
         } else if ch == ' ' {
             i.set(i.get() + 1)
         } else {
             let (tok, next) = lex_atom(source, i.get());
-            let _ = toks.set(toks.get().push(tok));
+            let _ = toks.set(toks.get().pushed(tok));
             i.set(next)
         }
     });
@@ -195,7 +195,7 @@ fn parse_list(tokens: Vec[Token], start: int32) -> (Vec[SExpr], int32) {
             }
             _ => {
                 let (expr, next) = parse_expr(tokens, i.get());
-                let _ = exprs.set(exprs.get().push(expr));
+                let _ = exprs.set(exprs.get().pushed(expr));
                 i.set(next)
             }
         }
@@ -222,7 +222,7 @@ fn parse_program(tokens: Vec[Token]) -> Vec[SExpr] {
     let exprs = Ref::new(acc);
     let _ = (while i.get() < tokens.len() {
         let (expr, next) = parse_expr(tokens, i.get());
-        let _ = exprs.set(exprs.get().push(expr));
+        let _ = exprs.set(exprs.get().pushed(expr));
         i.set(next)
     });
     exprs.get()
@@ -280,7 +280,7 @@ fn eval_list_sym(name: string, items: Vec[SExpr], local: Vec[Binding], global: R
                     SExpr::Sym(var) => {
                         let value = eval(items[2], local, global);
                         let env = global.get();
-                        let updated = env.push(Binding { name: var, value: value });
+                        let updated = env.pushed(Binding { name: var, value: value });
                         let _ = global.set(updated);
                         value
                     }
@@ -347,7 +347,7 @@ fn params_from_sexprs(items: Vec[SExpr]) -> Vec[string] {
     let _ = (while i.get() < items.len() {
         match items[i.get()] {
             SExpr::Sym(name) => {
-                let _ = params.set(params.get().push(name));
+                let _ = params.set(params.get().pushed(name));
                 i.set(i.get() + 1)
             }
             _ => i.set(i.get() + 1),
@@ -362,7 +362,7 @@ fn eval_args(items: Vec[SExpr], start: int32, local: Vec[Binding], global: Ref[V
     let args = Ref::new(acc);
     let _ = (while i.get() < items.len() {
         let v = eval(items[i.get()], local, global);
-        let _ = args.set(args.get().push(v));
+        let _ = args.set(args.get().pushed(v));
         i.set(i.get() + 1)
     });
     args.get()
@@ -443,7 +443,7 @@ fn apply_lambda(lambda: Lambda, args: Vec[Value]) -> Value {
     let _ = (while i.get() < lambda.params.len() && i.get() < args.len() {
         let name = lambda.params[i.get()];
         let value = args[i.get()];
-        let updated = env.get().push(Binding { name: name, value: value });
+        let updated = env.get().pushed(Binding { name: name, value: value });
         let _ = env.set(updated);
         i.set(i.get() + 1)
     });

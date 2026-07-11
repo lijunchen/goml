@@ -915,6 +915,7 @@ fn main() {
                 "len",
                 "new",
                 "push",
+                "pushed",
                 "set",
                 "slice",
             ]
@@ -955,8 +956,8 @@ fn builtin_slice_dot_method_completion() {
     let src = r#"
 fn main() {
     let v: Vec[int32] = Vec::new();
-    let v = v.push(1);
-    let v = v.push(2);
+    v.push(1);
+    v.push(2);
     let s: Slice[int32] = v.slice(0, 2);
     s.
 }
@@ -1030,6 +1031,7 @@ fn main() {
                 "len",
                 "new",
                 "push",
+                "pushed",
                 "set",
                 "slice",
             ]

@@ -26,9 +26,9 @@ fn apply_all(transforms: Vec[dyn Transform], x: int32) -> int32 {
 
 fn main() {
     let transforms: Vec[dyn Transform] = Vec::new();
-    let transforms = transforms.push(Adder { amount: 5 });
-    let transforms = transforms.push(Multiplier { factor: 3 });
-    let transforms = transforms.push(Adder { amount: -2 });
+    transforms.push(Adder { amount: 5 });
+    transforms.push(Multiplier { factor: 3 });
+    transforms.push(Adder { amount: -2 });
     let result = apply_all(transforms, 10);
     println(result.to_string());
 }

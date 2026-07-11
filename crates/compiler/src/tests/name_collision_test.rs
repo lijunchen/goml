@@ -123,6 +123,13 @@ fn hashmap_runtime_type_name_collision_executes() {
 }
 
 #[test]
+fn vec_runtime_helper_name_collision_executes() {
+    let output = run_crasher("vec_runtime_helper_name_collision_user_symbol");
+
+    assert_eq!(output, "8\n1\n10\n21\n32\n43\n54\n");
+}
+
+#[test]
 fn runtime_missing_function_collision_executes() {
     let output = run_crasher("runtime_missing_function_collision_user_symbol");
 

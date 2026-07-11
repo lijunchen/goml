@@ -196,7 +196,7 @@ fn duplicate_trait_method_name_is_rejected() {
 }
 
 #[test]
-fn user_builtin_extern_ref_get_is_rejected_before_codegen() {
+fn user_intrinsic_extern_is_rejected_before_codegen() {
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("src/tests/crashers/user_builtin_extern_ref_get/main.gom");
     let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
@@ -208,8 +208,9 @@ fn user_builtin_extern_ref_get_is_rejected_before_codegen() {
         CompilationError::Typer { diagnostics } => {
             let diagnostics = format_typer_diagnostics(&diagnostics, &src);
             assert!(
-                diagnostics.iter().any(|line| line
-                    .contains("builtin extern ref_get conflicts with a compiler builtin function")),
+                diagnostics
+                    .iter()
+                    .any(|line| line.contains("extern ref_get is not permitted in this source")),
                 "{diagnostics:?}"
             );
         }
@@ -218,7 +219,7 @@ fn user_builtin_extern_ref_get_is_rejected_before_codegen() {
 }
 
 #[test]
-fn user_builtin_extern_bogus_is_rejected_before_codegen() {
+fn user_runtime_extern_is_rejected_before_codegen() {
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("src/tests/crashers/user_builtin_extern_bogus/main.gom");
     let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
@@ -232,8 +233,7 @@ fn user_builtin_extern_bogus_is_rejected_before_codegen() {
             assert!(
                 diagnostics
                     .iter()
-                    .any(|line| line
-                        .contains("builtin extern bogus is not a compiler-owned host hook")),
+                    .any(|line| line.contains("extern bogus is not permitted in this source")),
                 "{diagnostics:?}"
             );
         }
@@ -242,7 +242,7 @@ fn user_builtin_extern_bogus_is_rejected_before_codegen() {
 }
 
 #[test]
-fn local_std_host_extern_shadow_is_rejected_before_codegen() {
+fn local_std_runtime_extern_is_rejected_before_codegen() {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("src/tests/crashers/local_std_host_extern_shadow");
     let path = root.join("main.gom");
@@ -255,8 +255,39 @@ fn local_std_host_extern_shadow_is_rejected_before_codegen() {
         CompilationError::Typer { diagnostics } => {
             let diagnostics = format_typer_diagnostics(&diagnostics, &src);
             assert!(
-                diagnostics.iter().any(|line| line
-                    .contains("builtin extern args_raw is not a compiler-owned host hook")),
+                diagnostics
+                    .iter()
+                    .any(|line| line.contains("extern args_raw is not permitted in this source")),
+                "{diagnostics:?}"
+            );
+        }
+        other => panic!("expected typer error, got {other:?}"),
+    }
+}
+
+#[test]
+fn user_lang_item_declaration_is_rejected() {
+    let path = PathBuf::from("user_lang_item_declaration.gom");
+    let src = r#"
+#[lang("option")]
+enum Maybe[T] {
+    None,
+    Some(T),
+}
+
+fn main() -> unit {
+    ()
+}
+"#;
+    let err = compile_single_file(&path, src).expect_err("expected typer error");
+
+    match err {
+        CompilationError::Typer { diagnostics } => {
+            let diagnostics = format_typer_diagnostics(&diagnostics, src);
+            assert!(
+                diagnostics
+                    .iter()
+                    .any(|line| line.contains("lang item option is not permitted in this source")),
                 "{diagnostics:?}"
             );
         }

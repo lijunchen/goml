@@ -236,6 +236,45 @@ fn main() -> unit {
 }
 
 #[test]
+fn user_package_cannot_import_std_internal_host() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(
+        &main_path,
+        r#"
+package main;
+
+use std::internal::host;
+
+fn main() -> unit {
+    host::println("hidden")
+}
+"#,
+    )?;
+
+    let err = separate::build_package(separate::PackageInputs {
+        package: ROOT_PACKAGE.to_string(),
+        input_files: vec![main_path],
+        interface_files: vec![],
+    })
+    .expect_err("expected internal package visibility error");
+    let message = format!("{err:?}");
+    assert!(
+        message.contains("package std::internal::host is internal to std"),
+        "{message}"
+    );
+    assert_eq!(
+        message
+            .matches("package std::internal::host is internal to std")
+            .count(),
+        1,
+        "{message}"
+    );
+
+    Ok(())
+}
+
+#[test]
 fn link_ignores_unreachable_core_inputs() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     let main_path = dir.path().join("main.gom");

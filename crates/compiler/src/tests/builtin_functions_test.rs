@@ -107,7 +107,7 @@ fn env_registers_builtin_vec_inherent_methods() {
     let push = env.lookup_inherent_method(&receiver, &tast::TastIdent("push".to_string()));
     expect![[r#"
         Some(
-            TFunc([TVec(TParam(T)), TParam(T)], TVec(TParam(T))),
+            TFunc([TVec(TParam(T)), TParam(T)], TUnit),
         )
     "#]]
     .assert_debug_eq(&push);

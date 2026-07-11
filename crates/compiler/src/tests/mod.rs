@@ -25,6 +25,7 @@ mod dyn_coercion_test;
 mod e2e;
 mod entrypoint_test;
 mod go_name_mangling_test;
+mod intrinsics_test;
 mod module;
 mod monomorphization_test;
 mod multiline_string_test;
