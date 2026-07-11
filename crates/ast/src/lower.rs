@@ -361,12 +361,35 @@ fn lower_trait(ctx: &mut LowerCtx, node: cst::Trait) -> Option<ast::TraitDef> {
             return None;
         }
     };
-    let generics = node
+    let (generics, generic_bounds) = node
         .generic_list()
         .map(|list| {
-            list.generics()
-                .filter_map(|generic| generic.uident())
-                .map(|token| ast::AstIdent::new(token.text()))
+            let mut generics = Vec::new();
+            let mut bounds = Vec::new();
+            for generic in list.generics() {
+                let Some(token) = generic.uident() else {
+                    continue;
+                };
+                let ident = ast::AstIdent::new(token.text());
+                generics.push(ident.clone());
+                if let Some(trait_set) = generic.trait_set() {
+                    bounds.push((
+                        ident,
+                        trait_set
+                            .traits()
+                            .filter_map(|trait_ref| lower_trait_ref(ctx, trait_ref))
+                            .collect(),
+                    ));
+                }
+            }
+            (generics, bounds)
+        })
+        .unwrap_or_default();
+    let supertraits = node
+        .trait_set()
+        .map(|set| {
+            set.traits()
+                .filter_map(|trait_ref| lower_trait_ref(ctx, trait_ref))
                 .collect()
         })
         .unwrap_or_default();
@@ -408,7 +431,9 @@ fn lower_trait(ctx: &mut LowerCtx, node: cst::Trait) -> Option<ast::TraitDef> {
         visibility,
         name: ast::AstIdent::new(&name),
         generics,
+        generic_bounds,
         predicates: lower_where_clause(ctx, node.where_clause()),
+        supertraits,
         associated_types,
         method_sigs: methods,
     })

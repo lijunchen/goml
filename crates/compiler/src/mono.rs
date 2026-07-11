@@ -1011,8 +1011,79 @@ impl Ctx {
         None
     }
 
+    fn complete_substitution(&self, name: &str, substitution: &mut Subst) {
+        let Some(scheme) = self.genv.value_env.get_function_scheme(name) else {
+            return;
+        };
+        for _ in 0..=scheme.type_params.len() {
+            let previous_len = substitution.len();
+            for predicate in &scheme.constraints {
+                match predicate {
+                    crate::env::TypePredicate::Trait { for_ty, trait_ref } => {
+                        let for_ty = subst_ty(for_ty, substitution);
+                        if has_tparam(&for_ty) {
+                            continue;
+                        }
+                        let trait_ref = subst_trait_ref(trait_ref, substitution);
+                        let mut applications = self
+                            .genv
+                            .trait_env
+                            .trait_impls
+                            .iter()
+                            .filter(|(candidate, definition)| {
+                                definition.valid && candidate.trait_ref.name == trait_ref.name
+                            })
+                            .filter_map(|(candidate, _)| {
+                                let impl_substitution =
+                                    crate::typer::impl_self_subst(&candidate.for_ty, &for_ty)?;
+                                Some(crate::typer::type_ops::substitute_trait_ref(
+                                    &candidate.trait_ref,
+                                    &impl_substitution,
+                                ))
+                            })
+                            .filter(|application| {
+                                application.args.len() == trait_ref.args.len()
+                                    && trait_ref.args.iter().zip(application.args.iter()).all(
+                                        |(expected, actual)| {
+                                            let mut trial = substitution.clone();
+                                            unify(expected, actual, &mut trial).is_ok()
+                                        },
+                                    )
+                            })
+                            .collect::<Vec<_>>();
+                        applications.sort_by_key(|application| {
+                            application
+                                .args
+                                .iter()
+                                .map(format_ty_for_mono_diag)
+                                .collect::<Vec<_>>()
+                                .join(",")
+                        });
+                        applications.dedup();
+                        let [application] = applications.as_slice() else {
+                            continue;
+                        };
+                        for (expected, actual) in trait_ref.args.iter().zip(application.args.iter())
+                        {
+                            let _ = unify(expected, actual, substitution);
+                        }
+                    }
+                    crate::env::TypePredicate::Equality { lhs, rhs } => {
+                        let lhs = subst_ty(lhs, substitution);
+                        let rhs = subst_ty(rhs, substitution);
+                        let _ = unify(&lhs, &rhs, substitution);
+                    }
+                }
+            }
+            if substitution.len() == previous_len {
+                break;
+            }
+        }
+    }
+
     // Ensure an instance exists (or is queued) and return its specialized name
-    fn ensure_instance(&mut self, name: &str, s: Subst) -> String {
+    fn ensure_instance(&mut self, name: &str, mut s: Subst) -> String {
+        self.complete_substitution(name, &mut s);
         let key = SubstKey::new(&s);
         let k = (name.to_string(), key.clone());
         if let Some(n) = self.instances.get(&k) {

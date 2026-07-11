@@ -46,6 +46,31 @@ fn predeclare_types(genv: &mut GlobalTypeEnv, hir: &hir::PackageHir, hir_table: 
                         .collect(),
                 );
             }
+            hir::Def::TraitDef(trait_def) => {
+                genv.trait_env.trait_defs.insert(
+                    trait_def.name.to_ident_name(),
+                    env::TraitDef {
+                        params: trait_def
+                            .generics
+                            .iter()
+                            .map(|param| tast::TastIdent(param.to_ident_name()))
+                            .collect(),
+                        predicates: Vec::new(),
+                        supertraits: Vec::new(),
+                        associated_types: trait_def
+                            .associated_types
+                            .iter()
+                            .map(|associated| {
+                                (
+                                    associated.name.to_ident_name(),
+                                    env::AssociatedTypeDef::default(),
+                                )
+                            })
+                            .collect(),
+                        methods: IndexMap::new(),
+                    },
+                );
+            }
             _ => {}
         }
     }
@@ -584,6 +609,83 @@ fn resolve_type_predicates(
         .collect()
 }
 
+fn instantiate_predicate_self(
+    predicate: &env::TypePredicate,
+    self_ty: &tast::Ty,
+) -> env::TypePredicate {
+    match predicate {
+        env::TypePredicate::Trait { for_ty, trait_ref } => env::TypePredicate::Trait {
+            for_ty: instantiate_self_ty(for_ty, self_ty),
+            trait_ref: tast::TraitRef {
+                name: trait_ref.name.clone(),
+                args: trait_ref
+                    .args
+                    .iter()
+                    .map(|arg| instantiate_self_ty(arg, self_ty))
+                    .collect(),
+            },
+        },
+        env::TypePredicate::Equality { lhs, rhs } => env::TypePredicate::Equality {
+            lhs: instantiate_self_ty(lhs, self_ty),
+            rhs: instantiate_self_ty(rhs, self_ty),
+        },
+    }
+}
+
+fn expand_implied_predicates(
+    env: &PackageTypeEnv,
+    predicates: Vec<env::TypePredicate>,
+) -> Vec<env::TypePredicate> {
+    let mut result = Vec::new();
+    for predicate in predicates {
+        if !result.contains(&predicate) {
+            result.push(predicate);
+        }
+    }
+    let mut index = 0;
+    while index < result.len() {
+        let predicate = result[index].clone();
+        index += 1;
+        let env::TypePredicate::Trait { for_ty, trait_ref } = predicate else {
+            continue;
+        };
+        for application in super::util::trait_ref_closure(env, &trait_ref) {
+            let implied = env::TypePredicate::Trait {
+                for_ty: for_ty.clone(),
+                trait_ref: application.clone(),
+            };
+            if !result.contains(&implied) {
+                result.push(implied);
+            }
+            let Some((resolved, trait_env)) =
+                super::util::resolve_trait_name(env, &application.name.0)
+            else {
+                continue;
+            };
+            let Some(definition) = trait_env.trait_env.trait_defs.get(&resolved) else {
+                continue;
+            };
+            if definition.params.len() != application.args.len() {
+                continue;
+            }
+            let substitution = definition
+                .params
+                .iter()
+                .zip(application.args.iter())
+                .map(|(param, arg)| (param.0.clone(), arg.clone()))
+                .collect::<HashMap<_, _>>();
+            for declared in &definition.predicates {
+                let declared = super::type_ops::substitute_predicate(declared, &substitution);
+                let declared = instantiate_predicate_self(&declared, &for_ty);
+                if !result.contains(&declared) {
+                    result.push(declared);
+                }
+            }
+        }
+    }
+    result
+}
+
 fn normalize_impl_associated_types(
     ty: &tast::Ty,
     trait_ref: &tast::TraitRef,
@@ -759,13 +861,48 @@ fn define_trait(
         .iter()
         .map(|associated| associated.name.to_ident_name())
         .collect::<HashSet<_>>();
-    let projection_candidates = vec![ProjectionCandidate {
+    let predicates = build_fn_constraints(
+        env,
+        diagnostics,
+        &trait_def.generics,
+        &trait_def.generic_bounds,
+        &trait_def.predicates,
+    );
+    let mut projection_candidates = projection_candidates_from_predicates(env, &predicates);
+    projection_candidates.push(ProjectionCandidate {
         for_ty: tast::Ty::TStruct {
             name: "Self".to_string(),
         },
         trait_ref: trait_ref.clone(),
         associated_types: associated_names,
-    }];
+    });
+    let mut supertraits = Vec::new();
+    for supertrait in &trait_def.supertraits {
+        let Some(supertrait) = resolve_hir_trait_ref(env, diagnostics, supertrait, &trait_params)
+        else {
+            continue;
+        };
+        let supertrait = resolve_trait_ref_projections(
+            env,
+            diagnostics,
+            &supertrait,
+            &projection_candidates,
+            None,
+        );
+        if let Some((resolved, supertrait_env)) =
+            super::util::resolve_trait_name(env, &supertrait.name.0)
+            && let Some(supertrait_def) = supertrait_env.trait_env.trait_defs.get(&resolved)
+        {
+            projection_candidates.push(ProjectionCandidate {
+                for_ty: tast::Ty::TStruct {
+                    name: "Self".to_string(),
+                },
+                trait_ref: supertrait.clone(),
+                associated_types: supertrait_def.associated_types.keys().cloned().collect(),
+            });
+        }
+        supertraits.push(supertrait);
+    }
     let mut associated_types = IndexMap::new();
     for associated in &trait_def.associated_types {
         let name = associated.name.to_ident_name();
@@ -861,6 +998,8 @@ fn define_trait(
         trait_def.name.to_ident_name(),
         env::TraitDef {
             params: trait_params,
+            predicates,
+            supertraits,
             associated_types,
             methods,
         },
@@ -1069,7 +1208,8 @@ fn build_fn_constraints(
         predicates,
         &mut constraints,
     );
-    resolve_type_predicates(env, diagnostics, constraints)
+    let constraints = resolve_type_predicates(env, diagnostics, constraints);
+    expand_implied_predicates(env, constraints)
 }
 
 fn build_method_constraints(
@@ -1122,7 +1262,8 @@ fn build_method_constraints(
         method_predicates,
         &mut constraints,
     );
-    resolve_type_predicates(env, diagnostics, constraints)
+    let constraints = resolve_type_predicates(env, diagnostics, constraints);
+    expand_implied_predicates(env, constraints)
 }
 
 fn is_local_name(current_package: &str, name: &str) -> bool {
@@ -2045,6 +2186,7 @@ pub(crate) fn collect_typedefs(
             _ => {}
         }
     }
+    validate_supertrait_cycles(env, diagnostics);
 
     for item in hir.toplevels.iter() {
         match hir_table.def(*item) {
@@ -2060,12 +2202,78 @@ pub(crate) fn collect_typedefs(
             _ => {}
         }
     }
-    validate_trait_impl_associated_type_bounds(env, diagnostics, hir_table);
+    validate_trait_impl_requirements(env, diagnostics, hir_table);
     validate_trait_impl_coherence(env, diagnostics);
     validate_no_infinite_size_structs(env, diagnostics);
 }
 
-fn validate_trait_impl_associated_type_bounds(
+fn validate_supertrait_cycles(env: &PackageTypeEnv, diagnostics: &mut Diagnostics) {
+    fn visit(
+        name: &str,
+        graph: &HashMap<String, Vec<String>>,
+        visiting: &mut Vec<String>,
+        visited: &mut HashSet<String>,
+        reported: &mut HashSet<Vec<String>>,
+        diagnostics: &mut Diagnostics,
+    ) {
+        if visited.contains(name) {
+            return;
+        }
+        if let Some(start) = visiting.iter().position(|active| active == name) {
+            let mut cycle = visiting[start..].to_vec();
+            cycle.push(name.to_string());
+            if reported.insert(cycle.clone()) {
+                diagnostics.push(Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!("Supertrait cycle detected: {}", cycle.join(" -> ")),
+                ));
+            }
+            return;
+        }
+        visiting.push(name.to_string());
+        if let Some(supertraits) = graph.get(name) {
+            for supertrait in supertraits {
+                if graph.contains_key(supertrait) {
+                    visit(supertrait, graph, visiting, visited, reported, diagnostics);
+                }
+            }
+        }
+        let _ = visiting.pop();
+        visited.insert(name.to_string());
+    }
+
+    let graph = env
+        .current()
+        .trait_env
+        .trait_defs
+        .iter()
+        .map(|(name, definition)| {
+            (
+                name.clone(),
+                definition
+                    .supertraits
+                    .iter()
+                    .map(|supertrait| supertrait.name.0.clone())
+                    .collect(),
+            )
+        })
+        .collect::<HashMap<_, _>>();
+    let mut visited = HashSet::new();
+    let mut reported = HashSet::new();
+    for name in graph.keys() {
+        visit(
+            name,
+            &graph,
+            &mut Vec::new(),
+            &mut visited,
+            &mut reported,
+            diagnostics,
+        );
+    }
+}
+
+fn validate_trait_impl_requirements(
     env: &mut PackageTypeEnv,
     diagnostics: &mut Diagnostics,
     hir_table: &hir::HirTable,
@@ -2106,6 +2314,134 @@ fn validate_trait_impl_associated_type_bounds(
         let mut typer = Typer::new(hir_table.clone());
         typer.param_type_aliases = predicate_type_aliases(&definition.constraints);
         typer.param_projection_aliases = predicate_projection_aliases(&definition.constraints);
+        for supertrait in &trait_def.supertraits {
+            let supertrait = super::type_ops::substitute_trait_ref(supertrait, &substitution);
+            let supertrait = tast::TraitRef {
+                name: supertrait.name,
+                args: supertrait
+                    .args
+                    .iter()
+                    .map(|arg| instantiate_self_ty(arg, &key.for_ty))
+                    .map(|arg| {
+                        normalize_impl_associated_types(
+                            &arg,
+                            &key.trait_ref,
+                            &key.for_ty,
+                            &definition.associated_types,
+                        )
+                    })
+                    .collect(),
+            };
+            let goal = super::obligations::TraitGoal {
+                trait_ref: supertrait.clone(),
+                for_ty: key.for_ty.clone(),
+            };
+            if matches!(
+                trait_solver.select(&mut typer, goal),
+                super::traits::solver::SelectionResult::Unique(_)
+            ) {
+                continue;
+            }
+            invalid.insert(index);
+            diagnostics.push(
+                Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!(
+                        "Trait {} implementation for {} requires supertrait {}",
+                        key.trait_ref.name.0,
+                        super::util::format_ty_for_diag(&key.for_ty),
+                        super::util::format_trait_ref_for_diag(&supertrait)
+                    ),
+                )
+                .with_range(definition.origin),
+            );
+        }
+        for declared in &trait_def.predicates {
+            let declared = super::type_ops::substitute_predicate(declared, &substitution);
+            let declared = instantiate_predicate_self(&declared, &key.for_ty);
+            let declared = match declared {
+                env::TypePredicate::Trait { for_ty, trait_ref } => env::TypePredicate::Trait {
+                    for_ty: normalize_impl_associated_types(
+                        &for_ty,
+                        &key.trait_ref,
+                        &key.for_ty,
+                        &definition.associated_types,
+                    ),
+                    trait_ref: tast::TraitRef {
+                        name: trait_ref.name,
+                        args: trait_ref
+                            .args
+                            .iter()
+                            .map(|arg| {
+                                normalize_impl_associated_types(
+                                    arg,
+                                    &key.trait_ref,
+                                    &key.for_ty,
+                                    &definition.associated_types,
+                                )
+                            })
+                            .collect(),
+                    },
+                },
+                env::TypePredicate::Equality { lhs, rhs } => env::TypePredicate::Equality {
+                    lhs: normalize_impl_associated_types(
+                        &lhs,
+                        &key.trait_ref,
+                        &key.for_ty,
+                        &definition.associated_types,
+                    ),
+                    rhs: normalize_impl_associated_types(
+                        &rhs,
+                        &key.trait_ref,
+                        &key.for_ty,
+                        &definition.associated_types,
+                    ),
+                },
+            };
+            let satisfied = match &declared {
+                env::TypePredicate::Trait { for_ty, trait_ref } => matches!(
+                    trait_solver.select(
+                        &mut typer,
+                        super::obligations::TraitGoal {
+                            trait_ref: trait_ref.clone(),
+                            for_ty: for_ty.clone(),
+                        },
+                    ),
+                    super::traits::solver::SelectionResult::Unique(_)
+                ),
+                env::TypePredicate::Equality { lhs, rhs } => typer.norm(lhs) == typer.norm(rhs),
+            };
+            if satisfied {
+                continue;
+            }
+            invalid.insert(index);
+            let requirement = match &declared {
+                env::TypePredicate::Trait { for_ty, trait_ref } => format!(
+                    "{}: {}",
+                    super::util::format_ty_for_diag(for_ty),
+                    super::util::format_trait_ref_for_diag(trait_ref)
+                ),
+                env::TypePredicate::Equality { lhs, rhs } => format!(
+                    "{} == {}",
+                    super::util::format_ty_for_diag(lhs),
+                    super::util::format_ty_for_diag(rhs)
+                ),
+            };
+            diagnostics.push(
+                Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!(
+                        "Trait {} implementation for {} does not satisfy declared requirement {}",
+                        key.trait_ref.name.0,
+                        super::util::format_ty_for_diag(&key.for_ty),
+                        requirement
+                    ),
+                )
+                .with_range(definition.origin),
+            );
+        }
         for (name, associated) in &trait_def.associated_types {
             let Some(binding) = definition.associated_types.get(name) else {
                 continue;
@@ -2700,7 +3036,8 @@ fn build_param_env_predicates(
             result.push(predicate);
         }
     }
-    resolve_type_predicates(genv, diagnostics, result)
+    let result = resolve_type_predicates(genv, diagnostics, result);
+    expand_implied_predicates(genv, result)
 }
 
 fn predicate_type_aliases(predicates: &[env::TypePredicate]) -> HashMap<String, tast::Ty> {
@@ -2871,7 +3208,7 @@ fn typecheck_function_body(
         function,
         in_scope_traits,
         tparams,
-        bounds,
+        mut bounds,
         predicates,
         self_ty,
     } = check;
@@ -2886,6 +3223,20 @@ fn typecheck_function_body(
         .map(|(projection, alias)| (typer.norm(&projection), typer.norm(&alias)))
         .collect();
     let projection_candidates = projection_candidates_from_predicates(genv, &predicates);
+    for predicate in &predicates {
+        let env::TypePredicate::Trait { for_ty, trait_ref } = predicate else {
+            continue;
+        };
+        let tast::Ty::TParam { name } = for_ty else {
+            continue;
+        };
+        if let Some(traits) = bounds.get_mut(name)
+            && !traits.contains(trait_ref)
+        {
+            traits.push(trait_ref.clone());
+        }
+    }
+    normalize_trait_bounds(&mut bounds);
     local_env.set_tparam_trait_bounds(bounds);
     local_env.set_predicates(predicates);
 

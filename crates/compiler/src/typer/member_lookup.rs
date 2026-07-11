@@ -94,14 +94,20 @@ fn lookup_bound_trait_methods(
     bounds: &[tast::TraitRef],
     method: &tast::TastIdent,
 ) -> Vec<(tast::TraitRef, FnScheme)> {
-    bounds
+    let mut result = bounds
         .iter()
+        .flat_map(|trait_ref| super::util::trait_ref_closure(genv, trait_ref))
         .filter_map(|trait_ref| {
             let (_, trait_env) = resolve_trait_name(genv, &trait_ref.name.0)?;
-            let scheme = trait_env.lookup_trait_method_scheme(trait_ref, method)?;
-            Some((trait_ref.clone(), scheme))
+            let scheme = trait_env.lookup_trait_method_scheme(&trait_ref, method)?;
+            Some((trait_ref, scheme))
         })
-        .collect()
+        .collect::<Vec<_>>();
+    result.sort_by(|(left, _), (right, _)| {
+        format_trait_ref_for_diag(left).cmp(&format_trait_ref_for_diag(right))
+    });
+    result.dedup_by(|(left, _), (right, _)| left == right);
+    result
 }
 
 fn lookup_in_scope_trait_methods(
@@ -164,8 +170,16 @@ fn lookup_in_scope_trait_methods(
                 *arg = typer.norm(arg);
             }
             typer.commit_inference(snapshot);
-            if let Some(method_scheme) = trait_env.lookup_trait_method_scheme(&trait_ref, method) {
-                result.push((trait_ref, method_scheme));
+            for method_trait_ref in super::util::trait_ref_closure(genv, &trait_ref) {
+                let Some((_, method_env)) = resolve_trait_name(genv, &method_trait_ref.name.0)
+                else {
+                    continue;
+                };
+                if let Some(method_scheme) =
+                    method_env.lookup_trait_method_scheme(&method_trait_ref, method)
+                {
+                    result.push((method_trait_ref, method_scheme));
+                }
             }
         }
     }
@@ -199,8 +213,24 @@ pub(crate) fn lookup_trait_method_from_type_name(
         name: tast::TastIdent(trait_name),
         args,
     };
-    let method_scheme = trait_env.lookup_trait_method_scheme(&trait_ref, method)?;
-    Some((trait_ref, method_scheme))
+    let mut candidates = super::util::trait_ref_closure(genv, &trait_ref)
+        .into_iter()
+        .filter_map(|method_trait_ref| {
+            let (_, method_env) = resolve_trait_name(genv, &method_trait_ref.name.0)?;
+            let scheme = method_env.lookup_trait_method_scheme(&method_trait_ref, method)?;
+            Some((method_trait_ref, scheme))
+        })
+        .collect::<Vec<_>>();
+    if let Some(index) = candidates
+        .iter()
+        .position(|(candidate, _)| candidate == &trait_ref)
+    {
+        return Some(candidates.swap_remove(index));
+    }
+    let [candidate] = candidates.as_slice() else {
+        return None;
+    };
+    Some(candidate.clone())
 }
 
 pub(crate) struct TraitMethodLookup {

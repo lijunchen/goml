@@ -17,7 +17,6 @@ mod solve;
 pub mod tast_builder;
 mod toplevel;
 mod traits;
-pub(crate) use traits::matching::impl_self_subst;
 pub(crate) mod type_ops;
 mod unify;
 mod util;
@@ -26,7 +25,7 @@ pub(crate) use obligations::{
     ArithmeticKind, CoercionGoal, MethodGoal, Obligation, ObligationCause, ObligationCauseKind,
     ObligationId, OperationGoal, Predicate, ProjectionGoal, TraitGoal,
 };
-pub(crate) use traits::matching::trait_impl_subst;
+pub(crate) use traits::matching::{impl_self_subst, trait_impl_subst};
 
 pub use toplevel::check_file_with_env_and_results;
 pub use toplevel::{check_file, check_file_with_env, check_file_with_env_capability};

@@ -229,7 +229,9 @@ pub struct TraitDef {
     pub visibility: Visibility,
     pub name: AstIdent,
     pub generics: Vec<AstIdent>,
+    pub generic_bounds: Vec<(AstIdent, Vec<TraitRef>)>,
     pub predicates: Vec<Predicate>,
+    pub supertraits: Vec<TraitRef>,
     pub associated_types: Vec<AssociatedType>,
     pub method_sigs: Vec<TraitMethodSignature>,
 }

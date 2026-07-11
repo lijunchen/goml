@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use crate::{
     env::{GlobalTypeEnv, PackageTypeEnv},
@@ -746,6 +746,50 @@ pub(crate) fn resolve_trait_name<'a>(
         .trait_defs
         .contains_key(&resolved)
         .then_some((resolved, env))
+}
+
+pub(crate) fn trait_ref_closure(
+    env: &PackageTypeEnv,
+    trait_ref: &tast::TraitRef,
+) -> Vec<tast::TraitRef> {
+    fn collect(
+        env: &PackageTypeEnv,
+        trait_ref: tast::TraitRef,
+        seen: &mut HashSet<tast::TraitRef>,
+        result: &mut Vec<tast::TraitRef>,
+    ) {
+        if !seen.insert(trait_ref.clone()) {
+            return;
+        }
+        result.push(trait_ref.clone());
+        let Some((resolved, trait_env)) = resolve_trait_name(env, &trait_ref.name.0) else {
+            return;
+        };
+        let Some(definition) = trait_env.trait_env.trait_defs.get(&resolved) else {
+            return;
+        };
+        if definition.params.len() != trait_ref.args.len() {
+            return;
+        }
+        let substitution = definition
+            .params
+            .iter()
+            .zip(trait_ref.args.iter())
+            .map(|(param, arg)| (param.0.clone(), arg.clone()))
+            .collect::<HashMap<_, _>>();
+        for supertrait in &definition.supertraits {
+            collect(
+                env,
+                super::type_ops::substitute_trait_ref(supertrait, &substitution),
+                seen,
+                result,
+            );
+        }
+    }
+
+    let mut result = Vec::new();
+    collect(env, trait_ref.clone(), &mut HashSet::new(), &mut result);
+    result
 }
 
 pub(crate) fn normalize_trait_name<'a>(

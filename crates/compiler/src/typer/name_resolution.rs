@@ -1959,6 +1959,38 @@ impl NameResolution {
             attrs: def.attrs.iter().map(|a| a.into()).collect(),
             name: HirIdent::name(&name),
             generics: def.generics.iter().map(|g| HirIdent::name(&g.0)).collect(),
+            generic_bounds: def
+                .generic_bounds
+                .iter()
+                .map(|(param, bounds)| {
+                    (
+                        HirIdent::name(&param.0),
+                        bounds
+                            .iter()
+                            .map(|bound| {
+                                let qualified = self
+                                    .resolve_qualified_path_with_aliases(&bound.path, use_aliases);
+                                hir::TraitRef {
+                                    name: HirIdent::name(qualified.display()),
+                                    args: bound
+                                        .args
+                                        .iter()
+                                        .map(|arg| {
+                                            self.lower_type_expr(
+                                                arg,
+                                                &tparams,
+                                                current_package,
+                                                imports,
+                                                use_aliases,
+                                            )
+                                        })
+                                        .collect(),
+                                }
+                            })
+                            .collect(),
+                    )
+                })
+                .collect(),
             predicates: def
                 .predicates
                 .iter()
@@ -1970,6 +2002,30 @@ impl NameResolution {
                         imports,
                         use_aliases,
                     )
+                })
+                .collect(),
+            supertraits: def
+                .supertraits
+                .iter()
+                .map(|bound| {
+                    let qualified =
+                        self.resolve_qualified_path_with_aliases(&bound.path, use_aliases);
+                    hir::TraitRef {
+                        name: HirIdent::name(qualified.display()),
+                        args: bound
+                            .args
+                            .iter()
+                            .map(|arg| {
+                                self.lower_type_expr(
+                                    arg,
+                                    &tparams,
+                                    current_package,
+                                    imports,
+                                    use_aliases,
+                                )
+                            })
+                            .collect(),
+                    }
                 })
                 .collect(),
             associated_types,

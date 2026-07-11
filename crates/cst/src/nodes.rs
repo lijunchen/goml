@@ -283,6 +283,10 @@ impl Trait {
     pub fn where_clause(&self) -> Option<WhereClause> {
         support::child(&self.syntax)
     }
+
+    pub fn trait_set(&self) -> Option<TraitSet> {
+        support::child(&self.syntax)
+    }
 }
 
 impl_cst_node_simple!(Trait, MySyntaxKind::TRAIT);

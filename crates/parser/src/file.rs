@@ -323,7 +323,10 @@ fn trait_def_with_marker(p: &mut Parser, m: MarkerOpened) {
     p.expect(T![trait]);
     p.expect(T![ident]);
     if p.at(T!['[']) {
-        generic_list(p, false);
+        generic_list(p, true);
+    }
+    if p.eat(T![:]) {
+        trait_set(p);
     }
     if p.at(T![where]) {
         where_clause(p);

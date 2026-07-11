@@ -290,24 +290,62 @@ impl Typer {
                     .map(|_| self.fresh_ty_var())
                     .collect(),
             };
-            let Some(_) = trait_env.lookup_trait_method_scheme(&trait_ref, &goal.method) else {
-                continue;
-            };
             let trait_goal = TraitGoal {
                 trait_ref: trait_ref.clone(),
                 for_ty: goal.receiver_ty.clone(),
             };
             match trait_solver.select(self, trait_goal) {
-                SelectionResult::Unique(selection) => {
+                SelectionResult::Unique(root_selection) => {
                     for arg in &mut trait_ref.args {
                         *arg = self.norm(arg);
                     }
-                    let Some(trait_scheme) =
-                        trait_env.lookup_trait_method_scheme(&trait_ref, &goal.method)
-                    else {
-                        continue;
-                    };
-                    candidates.push((trait_ref, trait_scheme, selection));
+                    for method_trait_ref in super::util::trait_ref_closure(genv, &trait_ref) {
+                        let Some((_, method_env)) =
+                            super::util::resolve_trait_name(genv, &method_trait_ref.name.0)
+                        else {
+                            continue;
+                        };
+                        let Some(trait_scheme) =
+                            method_env.lookup_trait_method_scheme(&method_trait_ref, &goal.method)
+                        else {
+                            continue;
+                        };
+                        let selection = if method_trait_ref == trait_ref {
+                            SelectionResult::Unique(root_selection.clone())
+                        } else {
+                            trait_solver.select(
+                                self,
+                                TraitGoal {
+                                    trait_ref: method_trait_ref.clone(),
+                                    for_ty: goal.receiver_ty.clone(),
+                                },
+                            )
+                        };
+                        match selection {
+                            SelectionResult::Unique(selection) => {
+                                candidates.push((method_trait_ref, trait_scheme, selection));
+                            }
+                            SelectionResult::Ambiguous(ids) => ambiguous_impls.extend(ids),
+                            SelectionResult::NoSolution => {}
+                            SelectionResult::Overflow => {
+                                diagnostics.push(
+                                    Diagnostic::new(
+                                        Stage::Typer,
+                                        Severity::Error,
+                                        format!(
+                                            "Trait resolution overflow while resolving method {} for {}",
+                                            goal.method.0,
+                                            super::util::format_ty_for_diag(
+                                                &goal.receiver_ty
+                                            )
+                                        ),
+                                    )
+                                    .with_range(cause.span),
+                                );
+                                return MethodGoalOutcome::Failed;
+                            }
+                        }
+                    }
                 }
                 SelectionResult::Ambiguous(ids) => ambiguous_impls.extend(ids),
                 SelectionResult::NoSolution => {}
@@ -328,6 +366,12 @@ impl Typer {
                 }
             }
         }
+
+        candidates.sort_by(|(left, _, _), (right, _, _)| {
+            super::util::format_trait_ref_for_diag(left)
+                .cmp(&super::util::format_trait_ref_for_diag(right))
+        });
+        candidates.dedup_by(|(left, _, _), (right, _, _)| left == right);
 
         if !ambiguous_impls.is_empty() {
             let impls = ambiguous_impls

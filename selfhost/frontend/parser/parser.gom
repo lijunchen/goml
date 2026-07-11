@@ -403,6 +403,21 @@ fn empty_where_clause(parser: Parser) -> ast::Node {
     ast::node(ast::NodeKind::WhereClause, "", ast::empty_nodes(), previous_end(parser), previous_end(parser))
 }
 
+fn empty_supertrait_list(parser: Parser) -> ast::Node {
+    ast::node(ast::NodeKind::SupertraitList, "", ast::empty_nodes(), previous_end(parser), previous_end(parser))
+}
+
+fn parse_supertrait_list(parser: Parser) -> ast::Node {
+    let start = expect(parser, syntax::TokenKind::Colon, "expected `:` before supertraits").start;
+    ast::node(
+        ast::NodeKind::SupertraitList,
+        "",
+        parse_trait_bound_list(parser, "expected supertrait"),
+        start,
+        previous_end(parser),
+    )
+}
+
 fn parse_where_clause(parser: Parser) -> ast::Node {
     let start = expect(parser, syntax::TokenKind::WhereKeyword, "expected `where`").start;
     let predicates = Ref::new(Vec::new());
@@ -688,6 +703,11 @@ fn parse_trait(parser: Parser, start: int32) -> ast::Node {
         push_node(children, parse_generic_list(parser));
     } else {
         push_node(children, ast::node(ast::NodeKind::GenericList, "", ast::empty_nodes(), previous_end(parser), previous_end(parser)));
+    };
+    if at(parser, syntax::TokenKind::Colon) {
+        push_node(children, parse_supertrait_list(parser));
+    } else {
+        push_node(children, empty_supertrait_list(parser));
     };
     if at(parser, syntax::TokenKind::WhereKeyword) {
         push_node(children, parse_where_clause(parser));

@@ -1156,7 +1156,9 @@ pub struct TraitDef {
     pub attrs: Vec<Attribute>,
     pub name: HirIdent,
     pub generics: Vec<HirIdent>,
+    pub generic_bounds: Vec<(HirIdent, Vec<TraitRef>)>,
     pub predicates: Vec<Predicate>,
+    pub supertraits: Vec<TraitRef>,
     pub associated_types: Vec<AssociatedType>,
     pub method_sigs: Vec<TraitMethodSignature>,
 }
@@ -1167,7 +1169,18 @@ impl From<&ast::TraitDef> for TraitDef {
             attrs: t.attrs.iter().map(|a| a.into()).collect(),
             name: HirIdent::name(&t.name.0),
             generics: t.generics.iter().map(|g| HirIdent::name(&g.0)).collect(),
+            generic_bounds: t
+                .generic_bounds
+                .iter()
+                .map(|(param, bounds)| {
+                    (
+                        HirIdent::name(&param.0),
+                        bounds.iter().map(TraitRef::from).collect(),
+                    )
+                })
+                .collect(),
             predicates: t.predicates.iter().map(Predicate::from).collect(),
+            supertraits: t.supertraits.iter().map(TraitRef::from).collect(),
             associated_types: t
                 .associated_types
                 .iter()

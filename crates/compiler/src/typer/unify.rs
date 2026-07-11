@@ -736,8 +736,9 @@ impl Typer {
                 }
             };
         }
-        let substitution = crate::typer::type_ops::type_params(self_ty)
+        let substitution = crate::typer::type_ops::type_params(&scheme.ty)
             .into_iter()
+            .filter(|name| !scheme.type_params.contains(name))
             .map(|name| (name.clone(), tast::Ty::TParam { name }))
             .collect();
         self.instantiate_scheme_with_substitution(&scheme, substitution, cause)

@@ -49,6 +49,8 @@ pub struct FnScheme {
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct TraitDef {
     pub params: Vec<TastIdent>,
+    pub predicates: Vec<TypePredicate>,
+    pub supertraits: Vec<tast::TraitRef>,
     pub associated_types: IndexMap<String, AssociatedTypeDef>,
     pub methods: IndexMap<String, FnScheme>,
 }
