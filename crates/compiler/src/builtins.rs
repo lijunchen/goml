@@ -302,8 +302,17 @@ pub fn builtin_function_names() -> Vec<String> {
     let mut names: IndexSet<String> = IndexSet::new();
 
     for item in builtin_ast().toplevels.iter() {
-        if let ast::Item::ExternBuiltin(ext) = item {
-            names.insert(ext.name.0.clone());
+        match item {
+            ast::Item::Fn(func) => {
+                names.insert(func.name.0.clone());
+            }
+            ast::Item::ExternBuiltin(ext) => {
+                names.insert(ext.name.0.clone());
+            }
+            ast::Item::EnumDef(_)
+            | ast::Item::StructDef(_)
+            | ast::Item::TraitDef(_)
+            | ast::Item::ImplBlock(_) => {}
         }
     }
 

@@ -14,6 +14,7 @@ use crate::{
         Typer,
         localenv::LocalTypeEnv,
         name_resolution,
+        type_ops::{decompose_struct_type, instantiate_self_ty, substitute_ty_params},
         util::{type_expr_range, type_param_name_set, validate_ty},
     },
 };
@@ -1101,75 +1102,6 @@ fn define_extern_builtin(
     );
 }
 
-fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
-    match ty {
-        tast::Ty::TVar(var) => tast::Ty::TVar(*var),
-        tast::Ty::TUnit => tast::Ty::TUnit,
-        tast::Ty::TBool => tast::Ty::TBool,
-        tast::Ty::TInt8 => tast::Ty::TInt8,
-        tast::Ty::TInt16 => tast::Ty::TInt16,
-        tast::Ty::TInt32 => tast::Ty::TInt32,
-        tast::Ty::TInt64 => tast::Ty::TInt64,
-        tast::Ty::TUint8 => tast::Ty::TUint8,
-        tast::Ty::TUint16 => tast::Ty::TUint16,
-        tast::Ty::TUint32 => tast::Ty::TUint32,
-        tast::Ty::TUint64 => tast::Ty::TUint64,
-        tast::Ty::TFloat32 => tast::Ty::TFloat32,
-        tast::Ty::TFloat64 => tast::Ty::TFloat64,
-        tast::Ty::TString => tast::Ty::TString,
-        tast::Ty::TChar => tast::Ty::TChar,
-        tast::Ty::TTuple { typs } => tast::Ty::TTuple {
-            typs: typs
-                .iter()
-                .map(|ty| instantiate_self_ty(ty, self_ty))
-                .collect(),
-        },
-        tast::Ty::TEnum { name } => tast::Ty::TEnum { name: name.clone() },
-        tast::Ty::TStruct { name } => {
-            if name == "Self" {
-                self_ty.clone()
-            } else {
-                tast::Ty::TStruct { name: name.clone() }
-            }
-        }
-        tast::Ty::TDyn { trait_name } => tast::Ty::TDyn {
-            trait_name: trait_name.clone(),
-        },
-        tast::Ty::TApp { ty, args } => tast::Ty::TApp {
-            ty: Box::new(instantiate_self_ty(ty, self_ty)),
-            args: args
-                .iter()
-                .map(|ty| instantiate_self_ty(ty, self_ty))
-                .collect(),
-        },
-        tast::Ty::TArray { len, elem } => tast::Ty::TArray {
-            len: *len,
-            elem: Box::new(instantiate_self_ty(elem, self_ty)),
-        },
-        tast::Ty::TSlice { elem } => tast::Ty::TSlice {
-            elem: Box::new(instantiate_self_ty(elem, self_ty)),
-        },
-        tast::Ty::TVec { elem } => tast::Ty::TVec {
-            elem: Box::new(instantiate_self_ty(elem, self_ty)),
-        },
-        tast::Ty::TRef { elem } => tast::Ty::TRef {
-            elem: Box::new(instantiate_self_ty(elem, self_ty)),
-        },
-        tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
-            key: Box::new(instantiate_self_ty(key, self_ty)),
-            value: Box::new(instantiate_self_ty(value, self_ty)),
-        },
-        tast::Ty::TParam { name } => tast::Ty::TParam { name: name.clone() },
-        tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
-            params: params
-                .iter()
-                .map(|param| instantiate_self_ty(param, self_ty))
-                .collect(),
-            ret_ty: Box::new(instantiate_self_ty(ret_ty, self_ty)),
-        },
-    }
-}
-
 fn instantiate_trait_method_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
     instantiate_self_ty(ty, self_ty)
 }
@@ -1325,91 +1257,13 @@ fn ty_contains_inline_struct(
 ) -> bool {
     match ty {
         tast::Ty::TStruct { name, .. } => has_infinite_size(structs, name, &[], active),
-        tast::Ty::TApp { .. } => decompose_struct_type_app(ty)
+        tast::Ty::TApp { .. } => decompose_struct_type(ty)
             .is_some_and(|(name, args)| has_infinite_size(structs, &name, &args, active)),
         tast::Ty::TTuple { typs } => typs
             .iter()
             .any(|t| ty_contains_inline_struct(structs, t, active)),
         tast::Ty::TArray { elem, .. } => ty_contains_inline_struct(structs, elem, active),
         _ => false,
-    }
-}
-
-fn decompose_struct_type_app(ty: &tast::Ty) -> Option<(String, Vec<tast::Ty>)> {
-    match ty {
-        tast::Ty::TStruct { name } => Some((name.clone(), Vec::new())),
-        tast::Ty::TApp { ty: base, args } => {
-            let (name, mut collected) = decompose_struct_type_app(base)?;
-            collected.extend(args.iter().cloned());
-            Some((name, collected))
-        }
-        _ => None,
-    }
-}
-
-fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tast::Ty {
-    match ty {
-        tast::Ty::TVar(_)
-        | tast::Ty::TUnit
-        | tast::Ty::TBool
-        | tast::Ty::TInt8
-        | tast::Ty::TInt16
-        | tast::Ty::TInt32
-        | tast::Ty::TInt64
-        | tast::Ty::TUint8
-        | tast::Ty::TUint16
-        | tast::Ty::TUint32
-        | tast::Ty::TUint64
-        | tast::Ty::TFloat32
-        | tast::Ty::TFloat64
-        | tast::Ty::TString
-        | tast::Ty::TChar => ty.clone(),
-        tast::Ty::TTuple { typs } => tast::Ty::TTuple {
-            typs: typs
-                .iter()
-                .map(|item| substitute_ty_params(item, subst))
-                .collect(),
-        },
-        tast::Ty::TEnum { name } => tast::Ty::TEnum { name: name.clone() },
-        tast::Ty::TStruct { name } => tast::Ty::TStruct { name: name.clone() },
-        tast::Ty::TDyn { trait_name } => tast::Ty::TDyn {
-            trait_name: trait_name.clone(),
-        },
-        tast::Ty::TApp { ty, args } => tast::Ty::TApp {
-            ty: Box::new(substitute_ty_params(ty, subst)),
-            args: args
-                .iter()
-                .map(|item| substitute_ty_params(item, subst))
-                .collect(),
-        },
-        tast::Ty::TArray { len, elem } => tast::Ty::TArray {
-            len: *len,
-            elem: Box::new(substitute_ty_params(elem, subst)),
-        },
-        tast::Ty::TSlice { elem } => tast::Ty::TSlice {
-            elem: Box::new(substitute_ty_params(elem, subst)),
-        },
-        tast::Ty::TVec { elem } => tast::Ty::TVec {
-            elem: Box::new(substitute_ty_params(elem, subst)),
-        },
-        tast::Ty::TRef { elem } => tast::Ty::TRef {
-            elem: Box::new(substitute_ty_params(elem, subst)),
-        },
-        tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
-            key: Box::new(substitute_ty_params(key, subst)),
-            value: Box::new(substitute_ty_params(value, subst)),
-        },
-        tast::Ty::TParam { name } => subst
-            .get(name)
-            .cloned()
-            .unwrap_or_else(|| tast::Ty::TParam { name: name.clone() }),
-        tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
-            params: params
-                .iter()
-                .map(|item| substitute_ty_params(item, subst))
-                .collect(),
-            ret_ty: Box::new(substitute_ty_params(ret_ty, subst)),
-        },
     }
 }
 
@@ -1458,6 +1312,47 @@ fn check_file_with_env_inner(
     deps: HashMap<String, env::GlobalTypeEnv>,
     allow_std_host_externs: bool,
 ) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
+    let TypecheckedPackage {
+        hir,
+        mut typer,
+        genv,
+        mut diagnostics,
+    } = typecheck_package(
+        hir,
+        hir_table,
+        genv,
+        builtins,
+        package,
+        deps,
+        allow_std_host_externs,
+    );
+    let file = crate::typer::tast_builder::build_file(
+        &genv,
+        &hir,
+        &typer.hir_table,
+        typer.results.results(),
+    );
+    let file = subst_file(&mut typer, &mut diagnostics, file);
+
+    (file, genv.current, diagnostics)
+}
+
+struct TypecheckedPackage {
+    hir: hir::PackageHir,
+    typer: Typer,
+    genv: PackageTypeEnv,
+    diagnostics: Diagnostics,
+}
+
+fn typecheck_package(
+    hir: hir::PackageHir,
+    hir_table: name_resolution::HirTable,
+    genv: env::GlobalTypeEnv,
+    builtins: env::GlobalTypeEnv,
+    package: &str,
+    deps: HashMap<String, env::GlobalTypeEnv>,
+    allow_std_host_externs: bool,
+) -> TypecheckedPackage {
     let mut genv = env::PackageTypeEnv::new(package.to_string(), builtins, genv, deps);
     if allow_std_host_externs {
         genv = genv.with_std_host_externs();
@@ -1490,15 +1385,12 @@ fn check_file_with_env_inner(
     );
     results.finalize_types(&mut typer);
     typer.results = results;
-    let file = crate::typer::tast_builder::build_file(
-        &genv,
-        &hir,
-        &typer.hir_table,
-        typer.results.results(),
-    );
-    let file = subst_file(&mut typer, &mut diagnostics, file);
-
-    (file, genv.current, diagnostics)
+    TypecheckedPackage {
+        hir,
+        typer,
+        genv,
+        diagnostics,
+    }
 }
 
 pub fn check_file_with_env_and_results(
@@ -1514,37 +1406,17 @@ pub fn check_file_with_env_and_results(
     env::GlobalTypeEnv,
     Diagnostics,
 ) {
-    let mut genv = env::PackageTypeEnv::new(package.to_string(), builtins, genv, deps);
-    let mut typer = Typer::new(hir_table);
-    let mut diagnostics = Diagnostics::new();
-    collect_typedefs(&mut genv, &mut diagnostics, &hir, &typer.hir_table);
-    let in_scope_traits = build_in_scope_traits(&genv, &hir, &mut diagnostics);
-    for item in hir.toplevels.iter() {
-        match typer.hir_table.def(*item).clone() {
-            hir::Def::ImplBlock(impl_block) => typecheck_impl_block(
-                &genv,
-                &mut typer,
-                &mut diagnostics,
-                &impl_block,
-                &in_scope_traits,
-            ),
-            hir::Def::Fn(func) => {
-                typecheck_fn(&genv, &mut typer, &mut diagnostics, &func, &in_scope_traits)
-            }
-            hir::Def::EnumDef(..)
-            | hir::Def::StructDef(..)
-            | hir::Def::TraitDef(..)
-            | hir::Def::ExternBuiltin(..) => {}
-        }
-    }
-    let mut results = std::mem::replace(
-        &mut typer.results,
-        crate::typer::results::TypeckResultsBuilder::new(&typer.hir_table),
-    );
-    results.finalize_types(&mut typer);
-    let results = results.finish();
+    let TypecheckedPackage {
+        typer,
+        genv,
+        diagnostics,
+        ..
+    } = typecheck_package(hir, hir_table, genv, builtins, package, deps, false);
+    let Typer {
+        hir_table, results, ..
+    } = typer;
 
-    (typer.hir_table, results, genv.current, diagnostics)
+    (hir_table, results.finish(), genv.current, diagnostics)
 }
 
 fn subst_file(typer: &mut Typer, diagnostics: &mut Diagnostics, file: tast::File) -> tast::File {
@@ -1677,9 +1549,6 @@ fn typecheck_fn(
     f: &hir::Fn,
     in_scope_traits: &[tast::TastIdent],
 ) {
-    validate_function_parameter_names(diagnostics, &typer.hir_table, f);
-    let mut local_env = LocalTypeEnv::new();
-    local_env.set_in_scope_traits(in_scope_traits.to_vec());
     let tparams: Vec<tast::TastIdent> = f
         .generics
         .iter()
@@ -1688,42 +1557,18 @@ fn typecheck_fn(
     let mut bounds = init_trait_bounds(&tparams);
     extend_trait_bounds(genv, diagnostics, &mut bounds, &f.generic_bounds);
     normalize_trait_bounds(&mut bounds);
-    local_env.set_tparam_trait_bounds(bounds);
-    let param_types: Vec<(hir::LocalId, tast::Ty)> = f
-        .params
-        .iter()
-        .map(|(name, ty)| {
-            let ty = tast::Ty::from_hir(genv, ty, &tparams);
-            (*name, ty)
-        })
-        .collect();
-
-    let ret_ty = match &f.ret_ty {
-        Some(ty) => tast::Ty::from_hir(genv, ty, &tparams),
-        None => tast::Ty::TUnit,
-    };
-
-    local_env.set_tparams_env(&tparams);
-    local_env.push_scope();
-    for (id, ty) in param_types.iter() {
-        local_env.insert_var(*id, ty.clone());
-        typer.results.record_local_ty(*id, ty.clone());
-    }
-    typer.return_ty_stack.push(ret_ty.clone());
-    let _typed_body = typer.check_block(genv, &mut local_env, diagnostics, &f.body, &ret_ty);
-    let _ = typer.return_ty_stack.pop();
-    local_env.pop_scope(diagnostics);
-    local_env.clear_tparams_env();
-    typer.tparam_trait_bounds = local_env
-        .tparam_trait_bounds_map()
-        .iter()
-        .map(|(k, v)| (k.clone(), v.iter().map(|t| t.0.clone()).collect()))
-        .collect();
-    local_env.clear_tparam_trait_bounds();
-    typer.solve(genv, diagnostics);
-    typer.tparam_trait_bounds.clear();
-    typer.validate_deferred_comparison_checks(genv, diagnostics);
-    typer.validate_deferred_arithmetic_checks(diagnostics);
+    typecheck_function_body(
+        genv,
+        typer,
+        diagnostics,
+        FunctionCheck {
+            function: f,
+            in_scope_traits,
+            tparams: &tparams,
+            bounds,
+            self_ty: None,
+        },
+    );
 }
 
 fn typecheck_impl_block(
@@ -1744,66 +1589,109 @@ fn typecheck_impl_block(
             hir::Def::Fn(func) => func,
             _ => continue,
         };
-        validate_function_parameter_names(diagnostics, &typer.hir_table, &f);
-        let mut local_env = LocalTypeEnv::new();
-        local_env.set_in_scope_traits(in_scope_traits.to_vec());
-
-        // Combine impl generics and method generics
         let mut all_generics = impl_block.generics.clone();
         all_generics.extend(f.generics.clone());
-        let all_generics_tast: Vec<tast::TastIdent> = all_generics
-            .iter()
-            .map(|g| tast::TastIdent(g.to_ident_name()))
-            .collect();
-
-        let mut bounds = init_trait_bounds(&all_generics_tast);
-        extend_trait_bounds(genv, diagnostics, &mut bounds, &impl_block.generic_bounds);
-        extend_trait_bounds(genv, diagnostics, &mut bounds, &f.generic_bounds);
-        normalize_trait_bounds(&mut bounds);
-        local_env.set_tparam_trait_bounds(bounds);
-
-        let param_types: Vec<(hir::LocalId, tast::Ty)> = f
-            .params
-            .iter()
-            .map(|(name, ty)| {
-                let ty = tast::Ty::from_hir(genv, ty, &all_generics_tast);
-                let ty = instantiate_self_ty(&ty, &for_ty);
-                (*name, ty)
-            })
-            .collect();
-
-        let ret_ty = match &f.ret_ty {
-            Some(ty) => {
-                let ty = tast::Ty::from_hir(genv, ty, &all_generics_tast);
-                instantiate_self_ty(&ty, &for_ty)
-            }
-            None => tast::Ty::TUnit,
-        };
-
         let tparams: Vec<tast::TastIdent> = all_generics
             .iter()
             .map(|g| tast::TastIdent(g.to_ident_name()))
             .collect();
-        local_env.set_tparams_env(&tparams);
-        local_env.push_scope();
-        for (id, ty) in param_types.iter() {
-            local_env.insert_var(*id, ty.clone());
-            typer.results.record_local_ty(*id, ty.clone());
-        }
-        typer.return_ty_stack.push(ret_ty.clone());
-        let _typed_body = typer.check_block(genv, &mut local_env, diagnostics, &f.body, &ret_ty);
-        let _ = typer.return_ty_stack.pop();
-        local_env.pop_scope(diagnostics);
-        local_env.clear_tparams_env();
-        typer.tparam_trait_bounds = local_env
-            .tparam_trait_bounds_map()
-            .iter()
-            .map(|(k, v)| (k.clone(), v.iter().map(|t| t.0.clone()).collect()))
-            .collect();
-        local_env.clear_tparam_trait_bounds();
-        typer.solve(genv, diagnostics);
-        typer.tparam_trait_bounds.clear();
-        typer.validate_deferred_comparison_checks(genv, diagnostics);
-        typer.validate_deferred_arithmetic_checks(diagnostics);
+
+        let mut bounds = init_trait_bounds(&tparams);
+        extend_trait_bounds(genv, diagnostics, &mut bounds, &impl_block.generic_bounds);
+        extend_trait_bounds(genv, diagnostics, &mut bounds, &f.generic_bounds);
+        normalize_trait_bounds(&mut bounds);
+        typecheck_function_body(
+            genv,
+            typer,
+            diagnostics,
+            FunctionCheck {
+                function: &f,
+                in_scope_traits,
+                tparams: &tparams,
+                bounds,
+                self_ty: Some(&for_ty),
+            },
+        );
     }
+}
+
+struct FunctionCheck<'a> {
+    function: &'a hir::Fn,
+    in_scope_traits: &'a [tast::TastIdent],
+    tparams: &'a [tast::TastIdent],
+    bounds: IndexMap<String, Vec<tast::TastIdent>>,
+    self_ty: Option<&'a tast::Ty>,
+}
+
+fn typecheck_function_body(
+    genv: &PackageTypeEnv,
+    typer: &mut Typer,
+    diagnostics: &mut Diagnostics,
+    check: FunctionCheck<'_>,
+) {
+    let FunctionCheck {
+        function,
+        in_scope_traits,
+        tparams,
+        bounds,
+        self_ty,
+    } = check;
+    validate_function_parameter_names(diagnostics, &typer.hir_table, function);
+    let mut local_env = LocalTypeEnv::new();
+    local_env.set_in_scope_traits(in_scope_traits.to_vec());
+    local_env.set_tparam_trait_bounds(bounds);
+
+    let param_types = function
+        .params
+        .iter()
+        .map(|(name, ty)| {
+            let ty = tast::Ty::from_hir(genv, ty, tparams);
+            let ty = match self_ty {
+                Some(self_ty) => instantiate_self_ty(&ty, self_ty),
+                None => ty,
+            };
+            (*name, ty)
+        })
+        .collect::<Vec<_>>();
+    let ret_ty = function
+        .ret_ty
+        .as_ref()
+        .map(|ty| {
+            let ty = tast::Ty::from_hir(genv, ty, tparams);
+            match self_ty {
+                Some(self_ty) => instantiate_self_ty(&ty, self_ty),
+                None => ty,
+            }
+        })
+        .unwrap_or(tast::Ty::TUnit);
+
+    local_env.set_tparams_env(tparams);
+    local_env.push_scope();
+    for (id, ty) in param_types {
+        local_env.insert_var(id, ty.clone());
+        typer.results.record_local_ty(id, ty);
+    }
+    typer.return_ty_stack.push(ret_ty.clone());
+    let _ = typer.check_block(genv, &mut local_env, diagnostics, &function.body, &ret_ty);
+    let _ = typer.return_ty_stack.pop();
+    local_env.pop_scope(diagnostics);
+    local_env.clear_tparams_env();
+    typer.tparam_trait_bounds = local_env
+        .tparam_trait_bounds_map()
+        .iter()
+        .map(|(name, traits)| {
+            (
+                name.clone(),
+                traits
+                    .iter()
+                    .map(|trait_name| trait_name.0.clone())
+                    .collect(),
+            )
+        })
+        .collect();
+    local_env.clear_tparam_trait_bounds();
+    typer.solve(genv, diagnostics);
+    typer.tparam_trait_bounds.clear();
+    typer.validate_deferred_comparison_checks(genv, diagnostics);
+    typer.validate_deferred_arithmetic_checks(diagnostics);
 }

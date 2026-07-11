@@ -3,7 +3,14 @@ use std::collections::HashMap;
 use crate::{
     env::{Constraint, PackageTypeEnv},
     tast::{self, TastIdent, TypeVar},
-    typer::{Typer, check::contains_tvar},
+    typer::{
+        Typer,
+        member_lookup::resolve_field_ty_eager,
+        type_ops::{
+            contains_tparam, contains_tvar, decompose_struct_type, instantiate_self_ty,
+            substitute_ty_params,
+        },
+    },
 };
 use diagnostics::{Severity, Stage};
 use parser::{Diagnostic, Diagnostics};
@@ -205,72 +212,6 @@ fn occurs(
     true
 }
 
-fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tast::Ty {
-    match ty {
-        tast::Ty::TVar(_)
-        | tast::Ty::TUnit
-        | tast::Ty::TBool
-        | tast::Ty::TInt8
-        | tast::Ty::TInt16
-        | tast::Ty::TInt32
-        | tast::Ty::TInt64
-        | tast::Ty::TUint8
-        | tast::Ty::TUint16
-        | tast::Ty::TUint32
-        | tast::Ty::TUint64
-        | tast::Ty::TFloat32
-        | tast::Ty::TFloat64
-        | tast::Ty::TString
-        | tast::Ty::TChar => ty.clone(),
-        tast::Ty::TTuple { typs } => tast::Ty::TTuple {
-            typs: typs
-                .iter()
-                .map(|t| substitute_ty_params(t, subst))
-                .collect(),
-        },
-        tast::Ty::TEnum { name } => tast::Ty::TEnum { name: name.clone() },
-        tast::Ty::TStruct { name } => tast::Ty::TStruct { name: name.clone() },
-        tast::Ty::TDyn { trait_name } => tast::Ty::TDyn {
-            trait_name: trait_name.clone(),
-        },
-        tast::Ty::TApp { ty, args } => tast::Ty::TApp {
-            ty: Box::new(substitute_ty_params(ty, subst)),
-            args: args
-                .iter()
-                .map(|t| substitute_ty_params(t, subst))
-                .collect(),
-        },
-        tast::Ty::TParam { name } => subst
-            .get(name)
-            .cloned()
-            .unwrap_or_else(|| tast::Ty::TParam { name: name.clone() }),
-        tast::Ty::TArray { len, elem } => tast::Ty::TArray {
-            len: *len,
-            elem: Box::new(substitute_ty_params(elem, subst)),
-        },
-        tast::Ty::TSlice { elem } => tast::Ty::TSlice {
-            elem: Box::new(substitute_ty_params(elem, subst)),
-        },
-        tast::Ty::TVec { elem } => tast::Ty::TVec {
-            elem: Box::new(substitute_ty_params(elem, subst)),
-        },
-        tast::Ty::TRef { elem } => tast::Ty::TRef {
-            elem: Box::new(substitute_ty_params(elem, subst)),
-        },
-        tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
-            key: Box::new(substitute_ty_params(key, subst)),
-            value: Box::new(substitute_ty_params(value, subst)),
-        },
-        tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
-            params: params
-                .iter()
-                .map(|t| substitute_ty_params(t, subst))
-                .collect(),
-            ret_ty: Box::new(substitute_ty_params(ret_ty, subst)),
-        },
-    }
-}
-
 fn instantiate_struct_field_ty(
     diagnostics: &mut Diagnostics,
     struct_def: &crate::env::StructDef,
@@ -306,18 +247,6 @@ fn instantiate_struct_field_ty(
             format!("Struct {} has no field {}", struct_def.name.0, field.0),
         );
         None
-    }
-}
-
-fn decompose_struct_type(ty: &tast::Ty) -> Option<(TastIdent, Vec<tast::Ty>)> {
-    match ty {
-        tast::Ty::TStruct { name } => Some((TastIdent::new(name), Vec::new())),
-        tast::Ty::TApp { ty: base, args } => {
-            let (type_name, mut collected) = decompose_struct_type(base)?;
-            collected.extend(args.iter().cloned());
-            Some((type_name, collected))
-        }
-        _ => None,
     }
 }
 
@@ -554,9 +483,8 @@ impl Typer {
                                             env.lookup_trait_method_scheme(&trait_ident, &op)
                                         {
                                             let method_ty = self.inst_ty(&method_scheme.ty);
-                                            let method_ty = super::check::instantiate_self_ty(
-                                                &method_ty, self_ty,
-                                            );
+                                            let method_ty =
+                                                instantiate_self_ty(&method_ty, self_ty);
                                             let call_fun_ty = tast::Ty::TFunc {
                                                 params: norm_arg_types.clone(),
                                                 ret_ty: norm_ret_ty.clone(),
@@ -596,9 +524,8 @@ impl Typer {
                                             env.lookup_trait_method_scheme(&trait_ident, &op)
                                         {
                                             let method_ty = self.inst_ty(&method_scheme.ty);
-                                            let method_ty = super::check::instantiate_self_ty(
-                                                &method_ty, self_ty,
-                                            );
+                                            let method_ty =
+                                                instantiate_self_ty(&method_ty, self_ty);
                                             let call_fun_ty = tast::Ty::TFunc {
                                                 params: norm_arg_types.clone(),
                                                 ret_ty: norm_ret_ty.clone(),
@@ -684,7 +611,7 @@ impl Typer {
                                             origin,
                                         });
                                     }
-                                    _ if crate::typer::check::contains_tvar(self_ty) => {
+                                    _ if contains_tvar(self_ty) => {
                                         still_pending.push(Constraint::Overloaded {
                                             op,
                                             trait_name,
@@ -749,7 +676,7 @@ impl Typer {
                                 .get(name)
                                 .is_some_and(|bounds| bounds.contains(&trait_name.0))
                         );
-                        let tparam_in_type = super::check::contains_tparam(&norm_for_ty);
+                        let tparam_in_type = contains_tparam(&norm_for_ty);
                         if dyn_satisfied || tparam_satisfied || tparam_in_type {
                             changed = true;
                         } else if matches!(norm_for_ty, tast::Ty::TVar(_))
@@ -795,15 +722,14 @@ impl Typer {
                     } => {
                         let norm_expr_ty = self.norm(&expr_ty);
                         if let Some((type_name, type_args)) = decompose_struct_type(&norm_expr_ty) {
-                            let (resolved, env) =
-                                super::util::resolve_type_name(genv, &type_name.0);
+                            let (resolved, env) = super::util::resolve_type_name(genv, &type_name);
                             let struct_def = env.structs().get(&TastIdent(resolved));
                             let Some(struct_def) = struct_def else {
                                 super::util::push_error_with_range(
                                     diagnostics,
                                     format!(
                                         "Struct {} not found when accessing field {}",
-                                        type_name.0, field.0
+                                        type_name, field.0
                                     ),
                                     origin,
                                 );
@@ -886,7 +812,7 @@ impl Typer {
                         origin,
                     } => {
                         let norm_receiver_ty = self.norm(&receiver_ty);
-                        if super::check::contains_tvar(&norm_receiver_ty) {
+                        if contains_tvar(&norm_receiver_ty) {
                             still_pending.push(Constraint::InherentMethodCall {
                                 receiver_ty: norm_receiver_ty,
                                 method,
@@ -903,7 +829,7 @@ impl Typer {
                                 changed = true;
                             }
                         } else if let Some(field_ty) =
-                            super::check::resolve_field_ty_eager(genv, &norm_receiver_ty, &method)
+                            resolve_field_ty_eager(genv, &norm_receiver_ty, &method)
                         {
                             if let tast::Ty::TFunc { params, ret_ty } = &field_ty {
                                 let mut method_params = vec![norm_receiver_ty.clone()];
@@ -954,7 +880,7 @@ impl Typer {
                     }
                     tast::Ty::TDyn { trait_name } => {
                         let concrete_norm = self.norm(&coercion.concrete_ty);
-                        if super::check::contains_tvar(&concrete_norm) {
+                        if contains_tvar(&concrete_norm) {
                             still_deferred.push(coercion);
                         } else if matches!(concrete_norm, tast::Ty::TDyn { .. }) {
                             changed = true;

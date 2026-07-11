@@ -433,10 +433,10 @@ impl NameResolution {
         let mut hir_table = HirTable::new(package_id);
 
         let mut builtin_names = HashMap::new();
-        for name in env::builtin_function_names() {
-            if let Some(id) = hir::BuiltinId::from_name(&name) {
-                builtin_names.insert(name, id);
-            }
+        for (index, name) in env::builtin_function_names().into_iter().enumerate() {
+            let id =
+                hir::BuiltinId::from_name(&name).unwrap_or(hir::BuiltinId::Named(index as u32));
+            builtin_names.insert(name, id);
         }
 
         let mut def_names = HashMap::new();

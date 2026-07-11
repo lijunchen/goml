@@ -6,11 +6,15 @@ use crate::{env::Constraint, tast::TypeVar};
 use crate::{hir, tast};
 
 mod check;
+mod literals;
 mod localenv;
+mod member_lookup;
 pub mod name_resolution;
+mod operators;
 pub mod results;
 pub mod tast_builder;
 mod toplevel;
+mod type_ops;
 mod unify;
 mod util;
 

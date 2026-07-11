@@ -5,6 +5,7 @@ use crate::tast;
 use crate::typer::results::{
     CalleeElab, Coercion, NameRefElab, StructLitArgElab, StructPatArgElab, TryKind, TypeckResults,
 };
+use crate::typer::type_ops::instantiate_self_ty;
 
 pub fn build_file(
     genv: &PackageTypeEnv,
@@ -122,75 +123,6 @@ fn tparams_for(generics: &[hir::HirIdent]) -> Vec<tast::TastIdent> {
         .iter()
         .map(|g| tast::TastIdent(g.to_ident_name()))
         .collect()
-}
-
-fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
-    match ty {
-        tast::Ty::TVar(var) => tast::Ty::TVar(*var),
-        tast::Ty::TUnit => tast::Ty::TUnit,
-        tast::Ty::TBool => tast::Ty::TBool,
-        tast::Ty::TInt8 => tast::Ty::TInt8,
-        tast::Ty::TInt16 => tast::Ty::TInt16,
-        tast::Ty::TInt32 => tast::Ty::TInt32,
-        tast::Ty::TInt64 => tast::Ty::TInt64,
-        tast::Ty::TUint8 => tast::Ty::TUint8,
-        tast::Ty::TUint16 => tast::Ty::TUint16,
-        tast::Ty::TUint32 => tast::Ty::TUint32,
-        tast::Ty::TUint64 => tast::Ty::TUint64,
-        tast::Ty::TFloat32 => tast::Ty::TFloat32,
-        tast::Ty::TFloat64 => tast::Ty::TFloat64,
-        tast::Ty::TString => tast::Ty::TString,
-        tast::Ty::TChar => tast::Ty::TChar,
-        tast::Ty::TTuple { typs } => tast::Ty::TTuple {
-            typs: typs
-                .iter()
-                .map(|ty| instantiate_self_ty(ty, self_ty))
-                .collect(),
-        },
-        tast::Ty::TEnum { name } => tast::Ty::TEnum { name: name.clone() },
-        tast::Ty::TStruct { name } => {
-            if name == "Self" {
-                self_ty.clone()
-            } else {
-                tast::Ty::TStruct { name: name.clone() }
-            }
-        }
-        tast::Ty::TDyn { trait_name } => tast::Ty::TDyn {
-            trait_name: trait_name.clone(),
-        },
-        tast::Ty::TApp { ty, args } => tast::Ty::TApp {
-            ty: Box::new(instantiate_self_ty(ty, self_ty)),
-            args: args
-                .iter()
-                .map(|ty| instantiate_self_ty(ty, self_ty))
-                .collect(),
-        },
-        tast::Ty::TArray { len, elem } => tast::Ty::TArray {
-            len: *len,
-            elem: Box::new(instantiate_self_ty(elem, self_ty)),
-        },
-        tast::Ty::TSlice { elem } => tast::Ty::TSlice {
-            elem: Box::new(instantiate_self_ty(elem, self_ty)),
-        },
-        tast::Ty::TVec { elem } => tast::Ty::TVec {
-            elem: Box::new(instantiate_self_ty(elem, self_ty)),
-        },
-        tast::Ty::TRef { elem } => tast::Ty::TRef {
-            elem: Box::new(instantiate_self_ty(elem, self_ty)),
-        },
-        tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
-            key: Box::new(instantiate_self_ty(key, self_ty)),
-            value: Box::new(instantiate_self_ty(value, self_ty)),
-        },
-        tast::Ty::TParam { name } => tast::Ty::TParam { name: name.clone() },
-        tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
-            params: params
-                .iter()
-                .map(|param| instantiate_self_ty(param, self_ty))
-                .collect(),
-            ret_ty: Box::new(instantiate_self_ty(ret_ty, self_ty)),
-        },
-    }
 }
 
 fn build_expr(

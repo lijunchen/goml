@@ -876,10 +876,22 @@ impl PackageTypeEnv {
             })
     }
 
-    pub fn get_function_scheme_unqualified(&self, name: &str) -> Option<FnScheme> {
-        self.current
+    pub fn get_function_scheme(&self, name: &str) -> Option<FnScheme> {
+        if let Some(scheme) = self
+            .current
             .get_function_scheme(name)
             .or_else(|| self.builtins.get_function_scheme(name))
+        {
+            return Some(scheme);
+        }
+
+        let mut packages = self.deps.keys().collect::<Vec<_>>();
+        packages.sort_by_key(|package| std::cmp::Reverse(package.len()));
+        packages.into_iter().find_map(|package| {
+            name.strip_prefix(package)
+                .filter(|rest| rest.starts_with("::"))
+                .and_then(|_| self.deps.get(package)?.get_function_scheme(name))
+        })
     }
 }
 
