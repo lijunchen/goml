@@ -49,7 +49,13 @@ pub struct FnScheme {
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct TraitDef {
     pub params: Vec<TastIdent>,
+    pub associated_types: IndexMap<String, AssociatedTypeDef>,
     pub methods: IndexMap<String, FnScheme>,
+}
+
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
+pub struct AssociatedTypeDef {
+    pub bounds: Vec<tast::TraitRef>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
@@ -63,6 +69,8 @@ pub struct ImplDef {
     pub params: Vec<TastIdent>,
     #[serde(default)]
     pub constraints: Vec<TypePredicate>,
+    #[serde(default)]
+    pub associated_types: IndexMap<String, tast::Ty>,
     pub methods: IndexMap<String, FnScheme>,
     #[serde(default = "impl_is_valid")]
     pub valid: bool,
@@ -79,6 +87,7 @@ impl Default for ImplDef {
         Self {
             params: Vec::new(),
             constraints: Vec::new(),
+            associated_types: IndexMap::new(),
             methods: IndexMap::new(),
             valid: true,
             origin: None,

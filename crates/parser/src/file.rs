@@ -302,8 +302,10 @@ fn impl_block_with_marker(p: &mut Parser, m: MarkerOpened) {
         while !p.at(T!['}']) && !p.eof() {
             if p.at(T![fn]) {
                 func(p);
+            } else if p.at(T![type]) {
+                impl_associated_type(p);
             } else {
-                p.advance_with_error("expected a function");
+                p.advance_with_error("expected a function or associated type binding");
             }
         }
         p.expect(T!['}']);
@@ -345,8 +347,10 @@ fn trait_method_list(p: &mut Parser) {
         if p.at(T![fn]) {
             trait_method(p);
             p.eat(T![;]);
+        } else if p.at(T![type]) {
+            trait_associated_type(p);
         } else {
-            p.advance_with_error("expected a method");
+            p.advance_with_error("expected a method or associated type");
         }
     }
     p.expect(T!['}']);
@@ -365,6 +369,29 @@ fn trait_method(p: &mut Parser) {
         type_expr(p);
     }
     p.close(m, MySyntaxKind::TRAIT_METHOD_SIG);
+}
+
+fn trait_associated_type(p: &mut Parser) {
+    assert!(p.at(T![type]));
+    let m = p.open();
+    p.expect(T![type]);
+    p.expect(T![ident]);
+    if p.eat(T![:]) {
+        trait_set(p);
+    }
+    p.expect(T![;]);
+    p.close(m, MySyntaxKind::TRAIT_ASSOCIATED_TYPE);
+}
+
+fn impl_associated_type(p: &mut Parser) {
+    assert!(p.at(T![type]));
+    let m = p.open();
+    p.expect(T![type]);
+    p.expect(T![ident]);
+    p.expect(T![=]);
+    type_expr(p);
+    p.expect(T![;]);
+    p.close(m, MySyntaxKind::IMPL_ASSOCIATED_TYPE);
 }
 
 fn enum_def(p: &mut Parser) {

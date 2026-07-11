@@ -7,7 +7,8 @@ use crate::{
     typer::{
         Typer,
         obligations::{
-            InstantiatedScheme, ObligationCause, Predicate, TraitGoal, TypeEqualityGoal,
+            InstantiatedScheme, ObligationCause, ObligationCauseKind, Predicate, ProjectionGoal,
+            TraitGoal, TypeEqualityGoal,
         },
     },
 };
@@ -167,6 +168,20 @@ fn occurs(
                 }
             }
         }
+        tast::Ty::TProjection {
+            trait_ref, for_ty, ..
+        } => {
+            if !occurs(diagnostics, origin, var, for_ty) {
+                return false;
+            }
+            if let Some(trait_ref) = trait_ref {
+                for arg in &trait_ref.args {
+                    if !occurs(diagnostics, origin, var, arg) {
+                        return false;
+                    }
+                }
+            }
+        }
         tast::Ty::TArray { elem, .. } => {
             if !occurs(diagnostics, origin, var, elem) {
                 return false;
@@ -243,6 +258,24 @@ impl Typer {
             tast::Ty::TDyn { trait_name } => tast::Ty::TDyn {
                 trait_name: trait_name.clone(),
             },
+            tast::Ty::TProjection {
+                trait_ref,
+                for_ty,
+                name,
+            } => {
+                let projection = tast::Ty::TProjection {
+                    trait_ref: trait_ref.as_ref().map(|trait_ref| tast::TraitRef {
+                        name: trait_ref.name.clone(),
+                        args: trait_ref.args.iter().map(|arg| self.norm(arg)).collect(),
+                    }),
+                    for_ty: Box::new(self.norm(for_ty)),
+                    name: name.clone(),
+                };
+                match self.param_projection_aliases.get(&projection).cloned() {
+                    Some(alias) => self.norm(&alias),
+                    None => projection,
+                }
+            }
             tast::Ty::TApp { ty, args } => tast::Ty::TApp {
                 ty: Box::new(self.norm(ty)),
                 args: args.iter().map(|ty| self.norm(ty)).collect(),
@@ -537,6 +570,37 @@ impl Typer {
                 }
             }
             (
+                tast::Ty::TProjection {
+                    trait_ref: trait_ref1,
+                    for_ty: for_ty1,
+                    name: name1,
+                },
+                tast::Ty::TProjection {
+                    trait_ref: trait_ref2,
+                    for_ty: for_ty2,
+                    name: name2,
+                },
+            ) => {
+                if name1 != name2
+                    || trait_ref1.as_ref().map(|reference| &reference.name)
+                        != trait_ref2.as_ref().map(|reference| &reference.name)
+                    || !self.unify(diagnostics, for_ty1, for_ty2, origin)
+                {
+                    return false;
+                }
+                match (trait_ref1, trait_ref2) {
+                    (Some(left), Some(right)) if left.args.len() == right.args.len() => {
+                        for (left, right) in left.args.iter().zip(right.args.iter()) {
+                            if !self.unify(diagnostics, left, right, origin) {
+                                return false;
+                            }
+                        }
+                    }
+                    (None, None) => {}
+                    _ => return false,
+                }
+            }
+            (
                 tast::Ty::TApp {
                     ty: ty1,
                     args: args1,
@@ -639,6 +703,42 @@ impl Typer {
         self.instantiate_scheme_with_substitution(scheme, HashMap::new(), cause)
     }
 
+    pub(crate) fn instantiate_scheme_with_self(
+        &mut self,
+        scheme: &crate::env::FnScheme,
+        self_ty: &tast::Ty,
+        cause: ObligationCause,
+    ) -> InstantiatedScheme {
+        let mut scheme = scheme.clone();
+        scheme.ty = crate::typer::type_ops::instantiate_self_ty(&scheme.ty, self_ty);
+        for predicate in &mut scheme.constraints {
+            *predicate = match predicate {
+                crate::env::TypePredicate::Trait { for_ty, trait_ref } => {
+                    crate::env::TypePredicate::Trait {
+                        for_ty: crate::typer::type_ops::instantiate_self_ty(for_ty, self_ty),
+                        trait_ref: tast::TraitRef {
+                            name: trait_ref.name.clone(),
+                            args: trait_ref
+                                .args
+                                .iter()
+                                .map(|arg| {
+                                    crate::typer::type_ops::instantiate_self_ty(arg, self_ty)
+                                })
+                                .collect(),
+                        },
+                    }
+                }
+                crate::env::TypePredicate::Equality { lhs, rhs } => {
+                    crate::env::TypePredicate::Equality {
+                        lhs: crate::typer::type_ops::instantiate_self_ty(lhs, self_ty),
+                        rhs: crate::typer::type_ops::instantiate_self_ty(rhs, self_ty),
+                    }
+                }
+            };
+        }
+        self.instantiate_scheme(&scheme, cause)
+    }
+
     pub(crate) fn instantiate_scheme_with_substitution(
         &mut self,
         scheme: &crate::env::FnScheme,
@@ -652,37 +752,85 @@ impl Typer {
         }
         let wildcard_len = self.fresh_array_wildcard();
         let ty = self._go_inst_ty(&scheme.ty, &mut substitution, wildcard_len);
-        let obligations = scheme
-            .constraints
-            .iter()
-            .map(|predicate| {
-                let predicate = match predicate {
-                    crate::env::TypePredicate::Trait { for_ty, trait_ref } => {
-                        Predicate::Trait(TraitGoal {
-                            trait_ref: tast::TraitRef {
-                                name: trait_ref.name.clone(),
-                                args: trait_ref
-                                    .args
-                                    .iter()
-                                    .map(|arg| {
-                                        self._go_inst_ty(arg, &mut substitution, wildcard_len)
-                                    })
-                                    .collect(),
-                            },
-                            for_ty: self._go_inst_ty(for_ty, &mut substitution, wildcard_len),
-                        })
-                    }
-                    crate::env::TypePredicate::Equality { lhs, rhs } => {
-                        Predicate::TypeEquality(TypeEqualityGoal {
-                            lhs: self._go_inst_ty(lhs, &mut substitution, wildcard_len),
-                            rhs: self._go_inst_ty(rhs, &mut substitution, wildcard_len),
-                        })
-                    }
-                };
-                (predicate, cause.clone())
-            })
-            .collect();
+        let mut obligations = Vec::new();
+        let ty = self.lower_associated_projections(&ty, &cause, &mut obligations);
+        for predicate in &scheme.constraints {
+            let predicate = match predicate {
+                crate::env::TypePredicate::Trait { for_ty, trait_ref } => {
+                    let for_ty = self._go_inst_ty(for_ty, &mut substitution, wildcard_len);
+                    let for_ty =
+                        self.lower_associated_projections(&for_ty, &cause, &mut obligations);
+                    let args = trait_ref
+                        .args
+                        .iter()
+                        .map(|arg| self._go_inst_ty(arg, &mut substitution, wildcard_len))
+                        .collect::<Vec<_>>();
+                    let args = args
+                        .iter()
+                        .map(|arg| self.lower_associated_projections(arg, &cause, &mut obligations))
+                        .collect();
+                    Predicate::Trait(TraitGoal {
+                        trait_ref: tast::TraitRef {
+                            name: trait_ref.name.clone(),
+                            args,
+                        },
+                        for_ty,
+                    })
+                }
+                crate::env::TypePredicate::Equality { lhs, rhs } => {
+                    let lhs = self._go_inst_ty(lhs, &mut substitution, wildcard_len);
+                    let rhs = self._go_inst_ty(rhs, &mut substitution, wildcard_len);
+                    let lhs = self.lower_associated_projections(&lhs, &cause, &mut obligations);
+                    let rhs = self.lower_associated_projections(&rhs, &cause, &mut obligations);
+                    Predicate::TypeEquality(TypeEqualityGoal { lhs, rhs })
+                }
+            };
+            obligations.push((predicate, cause.clone()));
+        }
         InstantiatedScheme { ty, obligations }
+    }
+
+    pub(crate) fn lower_associated_projections(
+        &mut self,
+        ty: &tast::Ty,
+        cause: &ObligationCause,
+        obligations: &mut Vec<(Predicate, ObligationCause)>,
+    ) -> tast::Ty {
+        crate::typer::type_ops::rewrite_ty(ty, &mut |ty| {
+            let tast::Ty::TProjection {
+                trait_ref: Some(trait_ref),
+                for_ty,
+                name,
+            } = ty
+            else {
+                return None;
+            };
+            let for_ty = self.lower_associated_projections(for_ty, cause, obligations);
+            let trait_ref = tast::TraitRef {
+                name: trait_ref.name.clone(),
+                args: trait_ref
+                    .args
+                    .iter()
+                    .map(|arg| self.lower_associated_projections(arg, cause, obligations))
+                    .collect(),
+            };
+            let result_ty = self.fresh_ty_var();
+            let projection_cause = match cause.parent {
+                Some(parent) => ObligationCause::new(cause.span, ObligationCauseKind::Projection)
+                    .with_parent(parent),
+                None => ObligationCause::new(cause.span, ObligationCauseKind::Projection),
+            };
+            obligations.push((
+                Predicate::Projection(ProjectionGoal::AssociatedType {
+                    trait_ref,
+                    for_ty,
+                    name: name.clone(),
+                    result_ty: result_ty.clone(),
+                }),
+                projection_cause,
+            ));
+            Some(result_ty)
+        })
     }
 
     pub(crate) fn register_scheme_obligations(&mut self, instantiated: &InstantiatedScheme) {
@@ -724,6 +872,22 @@ impl Typer {
             tast::Ty::TStruct { name } => tast::Ty::TStruct { name: name.clone() },
             tast::Ty::TDyn { trait_name } => tast::Ty::TDyn {
                 trait_name: trait_name.clone(),
+            },
+            tast::Ty::TProjection {
+                trait_ref,
+                for_ty,
+                name,
+            } => tast::Ty::TProjection {
+                trait_ref: trait_ref.as_ref().map(|trait_ref| tast::TraitRef {
+                    name: trait_ref.name.clone(),
+                    args: trait_ref
+                        .args
+                        .iter()
+                        .map(|arg| self._go_inst_ty(arg, subst, wildcard_len))
+                        .collect(),
+                }),
+                for_ty: Box::new(self._go_inst_ty(for_ty, subst, wildcard_len)),
+                name: name.clone(),
             },
             tast::Ty::TApp { ty, args } => {
                 let ty = self._go_inst_ty(ty, subst, wildcard_len);
@@ -833,6 +997,22 @@ impl Typer {
             tast::Ty::TDyn { trait_name } => tast::Ty::TDyn {
                 trait_name: trait_name.clone(),
             },
+            tast::Ty::TProjection {
+                trait_ref,
+                for_ty,
+                name,
+            } => tast::Ty::TProjection {
+                trait_ref: trait_ref.as_ref().map(|trait_ref| tast::TraitRef {
+                    name: trait_ref.name.clone(),
+                    args: trait_ref
+                        .args
+                        .iter()
+                        .map(|arg| self.subst_ty(diagnostics, arg, origin))
+                        .collect(),
+                }),
+                for_ty: Box::new(self.subst_ty(diagnostics, for_ty, origin)),
+                name: name.clone(),
+            },
             tast::Ty::TApp { ty, args } => tast::Ty::TApp {
                 ty: Box::new(self.subst_ty(diagnostics, ty, origin)),
                 args: args
@@ -898,6 +1078,22 @@ impl Typer {
             tast::Ty::TStruct { name } => tast::Ty::TStruct { name: name.clone() },
             tast::Ty::TDyn { trait_name } => tast::Ty::TDyn {
                 trait_name: trait_name.clone(),
+            },
+            tast::Ty::TProjection {
+                trait_ref,
+                for_ty,
+                name,
+            } => tast::Ty::TProjection {
+                trait_ref: trait_ref.as_ref().map(|trait_ref| tast::TraitRef {
+                    name: trait_ref.name.clone(),
+                    args: trait_ref
+                        .args
+                        .iter()
+                        .map(|arg| self.subst_ty_silent(arg))
+                        .collect(),
+                }),
+                for_ty: Box::new(self.subst_ty_silent(for_ty)),
+                name: name.clone(),
             },
             tast::Ty::TApp { ty, args } => tast::Ty::TApp {
                 ty: Box::new(self.subst_ty_silent(ty)),

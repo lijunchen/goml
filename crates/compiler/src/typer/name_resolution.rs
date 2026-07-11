@@ -561,6 +561,7 @@ impl NameResolution {
                             generics: Vec::new(),
                             generic_bounds: Vec::new(),
                             predicates: Vec::new(),
+                            associated_types: Vec::new(),
                             trait_ref: None,
                             for_type: hir::TypeExpr::TUnit,
                             methods: Vec::new(),
@@ -649,6 +650,22 @@ impl NameResolution {
                                 .predicates
                                 .iter()
                                 .map(|predicate| self.lower_predicate(predicate, &tparams, &ctx))
+                                .collect(),
+                            associated_types: i
+                                .associated_types
+                                .iter()
+                                .map(|(name, ty)| {
+                                    (
+                                        HirIdent::name(&name.0),
+                                        self.lower_type_expr(
+                                            ty,
+                                            &tparams,
+                                            package_name,
+                                            &imports,
+                                            &use_aliases,
+                                        ),
+                                    )
+                                })
                                 .collect(),
                             trait_ref,
                             for_type: self.lower_type_expr(
@@ -1737,6 +1754,21 @@ impl NameResolution {
                     .collect(),
             },
             ast::TypeExpr::TCon { path } => {
+                if path.len() == 2
+                    && let (Some(base), Some(assoc)) =
+                        (path.segments().first(), path.segments().get(1))
+                    && (base.ident.0 == "Self" || _tparams.contains(&base.ident.0))
+                {
+                    return hir::TypeExpr::TProjection {
+                        base: Box::new(hir::TypeExpr::TCon {
+                            path: hir::QualifiedPath {
+                                package: None,
+                                path: hir::Path::new(vec![base.into()]),
+                            },
+                        }),
+                        assoc: HirIdent::name(&assoc.ident.0),
+                    };
+                }
                 let qualified = self.resolve_qualified_path_with_aliases(path, use_aliases);
                 if let Some(package) = &qualified.package
                     && !package_allowed(package.as_str(), current_package, imports)
@@ -1892,6 +1924,37 @@ impl NameResolution {
                 ),
             })
             .collect();
+        let associated_types = def
+            .associated_types
+            .iter()
+            .map(|associated| hir::AssociatedType {
+                name: HirIdent::name(&associated.name.0),
+                bounds: associated
+                    .bounds
+                    .iter()
+                    .map(|bound| {
+                        let qualified =
+                            self.resolve_qualified_path_with_aliases(&bound.path, use_aliases);
+                        hir::TraitRef {
+                            name: HirIdent::name(qualified.display()),
+                            args: bound
+                                .args
+                                .iter()
+                                .map(|arg| {
+                                    self.lower_type_expr(
+                                        arg,
+                                        &tparams,
+                                        current_package,
+                                        imports,
+                                        use_aliases,
+                                    )
+                                })
+                                .collect(),
+                        }
+                    })
+                    .collect(),
+            })
+            .collect();
         hir::TraitDef {
             attrs: def.attrs.iter().map(|a| a.into()).collect(),
             name: HirIdent::name(&name),
@@ -1909,6 +1972,7 @@ impl NameResolution {
                     )
                 })
                 .collect(),
+            associated_types,
             method_sigs,
         }
     }

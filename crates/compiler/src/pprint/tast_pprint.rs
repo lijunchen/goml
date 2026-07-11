@@ -244,6 +244,10 @@ impl Ty {
             }
             Self::TEnum { name } | Self::TStruct { name } => RcDoc::text(name.clone()),
             Self::TDyn { trait_name } => RcDoc::text("dyn ").append(RcDoc::text(trait_name)),
+            Self::TProjection { for_ty, name, .. } => for_ty
+                .to_doc()
+                .append(RcDoc::text("::"))
+                .append(RcDoc::text(name.0.clone())),
             Self::TApp { ty, args } => {
                 let mut doc = ty.to_doc();
 

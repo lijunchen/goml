@@ -42,6 +42,34 @@ fn match_ty(template: &tast::Ty, actual: &tast::Ty, subst: &mut HashMap<String, 
         tast::Ty::TDyn { trait_name } => {
             matches!(actual, tast::Ty::TDyn { trait_name: actual } if actual == trait_name)
         }
+        tast::Ty::TProjection {
+            trait_ref,
+            for_ty,
+            name,
+        } => match actual {
+            tast::Ty::TProjection {
+                trait_ref: actual_trait_ref,
+                for_ty: actual_for_ty,
+                name: actual_name,
+            } if name == actual_name
+                && trait_ref.as_ref().map(|reference| &reference.name)
+                    == actual_trait_ref.as_ref().map(|reference| &reference.name) =>
+            {
+                let args_match = match (trait_ref, actual_trait_ref) {
+                    (Some(expected), Some(actual)) if expected.args.len() == actual.args.len() => {
+                        expected
+                            .args
+                            .iter()
+                            .zip(actual.args.iter())
+                            .all(|(expected, actual)| match_ty(expected, actual, subst))
+                    }
+                    (None, None) => true,
+                    _ => false,
+                };
+                args_match && match_ty(for_ty, actual_for_ty, subst)
+            }
+            _ => false,
+        },
         tast::Ty::TApp { ty, args } => match actual {
             tast::Ty::TApp {
                 ty: actual_ty,

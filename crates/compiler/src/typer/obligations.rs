@@ -152,6 +152,12 @@ pub(crate) struct MethodGoal {
 
 #[derive(Debug, Clone)]
 pub(crate) enum ProjectionGoal {
+    AssociatedType {
+        trait_ref: tast::TraitRef,
+        for_ty: tast::Ty,
+        name: tast::TastIdent,
+        result_ty: tast::Ty,
+    },
     Field {
         base_ty: tast::Ty,
         field: tast::TastIdent,

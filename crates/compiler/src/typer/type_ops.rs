@@ -5,7 +5,10 @@ use std::{
 
 use crate::{env, tast};
 
-fn rewrite_ty(ty: &tast::Ty, rewrite: &mut impl FnMut(&tast::Ty) -> Option<tast::Ty>) -> tast::Ty {
+pub(crate) fn rewrite_ty(
+    ty: &tast::Ty,
+    rewrite: &mut impl FnMut(&tast::Ty) -> Option<tast::Ty>,
+) -> tast::Ty {
     if let Some(rewritten) = rewrite(ty) {
         return rewritten;
     }
@@ -30,6 +33,22 @@ fn rewrite_ty(ty: &tast::Ty, rewrite: &mut impl FnMut(&tast::Ty) -> Option<tast:
         | tast::Ty::TStruct { .. }
         | tast::Ty::TDyn { .. }
         | tast::Ty::TParam { .. } => ty.clone(),
+        tast::Ty::TProjection {
+            trait_ref,
+            for_ty,
+            name,
+        } => tast::Ty::TProjection {
+            trait_ref: trait_ref.as_ref().map(|trait_ref| tast::TraitRef {
+                name: trait_ref.name.clone(),
+                args: trait_ref
+                    .args
+                    .iter()
+                    .map(|arg| rewrite_ty(arg, rewrite))
+                    .collect(),
+            }),
+            for_ty: Box::new(rewrite_ty(for_ty, rewrite)),
+            name: name.clone(),
+        },
         tast::Ty::TTuple { typs } => tast::Ty::TTuple {
             typs: typs.iter().map(|ty| rewrite_ty(ty, rewrite)).collect(),
         },
@@ -169,6 +188,16 @@ fn visit_ty<B>(
             visit_ty(ty, visitor)?;
             for ty in args {
                 visit_ty(ty, visitor)?;
+            }
+        }
+        tast::Ty::TProjection {
+            trait_ref, for_ty, ..
+        } => {
+            visit_ty(for_ty, visitor)?;
+            if let Some(trait_ref) = trait_ref {
+                for arg in &trait_ref.args {
+                    visit_ty(arg, visitor)?;
+                }
             }
         }
         tast::Ty::TArray { elem, .. }

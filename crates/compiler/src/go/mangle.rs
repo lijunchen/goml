@@ -22,6 +22,9 @@ pub fn encode_ty(ty: &tast::Ty) -> String {
         tast::Ty::TChar => "char".to_string(),
         tast::Ty::TVar(_v) => "Var".to_string(),
         tast::Ty::TParam { name } => format!("TParam_{}", name),
+        tast::Ty::TProjection { for_ty, name, .. } => {
+            format!("Projection_{}_{}", encode_ty_part(for_ty), name.0)
+        }
         tast::Ty::TTuple { typs } => {
             format!("Tuple{}_{}", typs.len(), encode_ty_parts(typs))
         }

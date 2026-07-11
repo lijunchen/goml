@@ -53,6 +53,9 @@ pub(crate) fn format_ty_for_diag(ty: &tast::Ty) -> String {
         }
         tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => name.clone(),
         tast::Ty::TDyn { trait_name } => format!("dyn {}", trait_name),
+        tast::Ty::TProjection { for_ty, name, .. } => {
+            format!("{}::{}", format_ty_for_diag(for_ty), name.0)
+        }
         tast::Ty::TApp { ty, args } => {
             let base = format_ty_for_diag(ty.as_ref());
             if args.is_empty() {
@@ -174,6 +177,16 @@ pub(crate) fn validate_ty(
                     format!("Unknown type parameter {}", name),
                     range,
                 );
+            }
+        }
+        tast::Ty::TProjection {
+            trait_ref, for_ty, ..
+        } => {
+            validate_ty(genv, diagnostics, for_ty, range, tparams);
+            if let Some(trait_ref) = trait_ref {
+                for arg in &trait_ref.args {
+                    validate_ty(genv, diagnostics, arg, range, tparams);
+                }
             }
         }
         tast::Ty::TDyn { trait_name } => {
@@ -330,6 +343,16 @@ pub(crate) fn validate_dyn_object_safety_in_ty(
         | tast::Ty::TSlice { elem }
         | tast::Ty::TVec { elem }
         | tast::Ty::TRef { elem } => validate_dyn_object_safety_in_ty(genv, diagnostics, elem),
+        tast::Ty::TProjection {
+            trait_ref, for_ty, ..
+        } => {
+            validate_dyn_object_safety_in_ty(genv, diagnostics, for_ty);
+            if let Some(trait_ref) = trait_ref {
+                for arg in &trait_ref.args {
+                    validate_dyn_object_safety_in_ty(genv, diagnostics, arg);
+                }
+            }
+        }
         tast::Ty::THashMap { key, value } => {
             validate_dyn_object_safety_in_ty(genv, diagnostics, key);
             validate_dyn_object_safety_in_ty(genv, diagnostics, value);
@@ -440,6 +463,14 @@ fn ty_contains_self(ty: &tast::Ty) -> bool {
         tast::Ty::TFunc { params, ret_ty } => {
             params.iter().any(ty_contains_self) || ty_contains_self(ret_ty)
         }
+        tast::Ty::TProjection {
+            trait_ref, for_ty, ..
+        } => {
+            ty_contains_self(for_ty)
+                || trait_ref
+                    .as_ref()
+                    .is_some_and(|trait_ref| trait_ref.args.iter().any(ty_contains_self))
+        }
         tast::Ty::TEnum { .. }
         | tast::Ty::TDyn { .. }
         | tast::Ty::TVar(_)
@@ -508,6 +539,11 @@ impl tast::Ty {
                     }
                 }
             }
+            hir::TypeExpr::TProjection { base, assoc } => Self::TProjection {
+                trait_ref: None,
+                for_ty: Box::new(Self::from_hir(genv, base, tparams_env)),
+                name: tast::TastIdent(assoc.to_ident_name()),
+            },
             hir::TypeExpr::TDyn { trait_path } => {
                 let name = trait_path.display();
                 let (resolved, _env) = normalize_trait_name(genv, &name);
@@ -619,6 +655,7 @@ pub(crate) fn type_expr_range(ty: &hir::TypeExpr) -> Option<TextRange> {
                     .iter()
                     .find_map(|segment| segment.range())
             }),
+        hir::TypeExpr::TProjection { base, .. } => type_expr_range(base),
         hir::TypeExpr::TDyn { trait_path } => trait_path
             .path
             .last()

@@ -102,6 +102,17 @@ fn contains_param(ty: &tast::Ty, param: &str, subst: &HashMap<String, tast::Ty>)
             contains_param(ty, param, subst)
                 || args.iter().any(|ty| contains_param(ty, param, subst))
         }
+        tast::Ty::TProjection {
+            trait_ref, for_ty, ..
+        } => {
+            contains_param(for_ty, param, subst)
+                || trait_ref.as_ref().is_some_and(|trait_ref| {
+                    trait_ref
+                        .args
+                        .iter()
+                        .any(|ty| contains_param(ty, param, subst))
+                })
+        }
         tast::Ty::TArray { elem, .. }
         | tast::Ty::TSlice { elem }
         | tast::Ty::TVec { elem }
@@ -179,6 +190,34 @@ pub(crate) fn unify(
                     .iter()
                     .zip(right_args.iter())
                     .all(|(left, right)| unify(left, right, subst))
+        }
+        (
+            tast::Ty::TProjection {
+                trait_ref: left_trait,
+                for_ty: left_self,
+                name: left_name,
+            },
+            tast::Ty::TProjection {
+                trait_ref: right_trait,
+                for_ty: right_self,
+                name: right_name,
+            },
+        ) => {
+            left_name == right_name
+                && match (left_trait, right_trait) {
+                    (Some(left), Some(right)) => {
+                        left.name == right.name
+                            && left.args.len() == right.args.len()
+                            && left
+                                .args
+                                .iter()
+                                .zip(right.args.iter())
+                                .all(|(left, right)| unify(left, right, subst))
+                    }
+                    (None, None) => true,
+                    _ => false,
+                }
+                && unify(left_self, right_self, subst)
         }
         (
             tast::Ty::TArray {

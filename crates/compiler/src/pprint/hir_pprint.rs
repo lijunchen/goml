@@ -91,6 +91,10 @@ impl TypeExpr {
                 doc.append(RcDoc::text(")"))
             }
             Self::TCon { path } => RcDoc::text(path.display()),
+            Self::TProjection { base, assoc } => base
+                .to_doc()
+                .append(RcDoc::text("::"))
+                .append(RcDoc::text(assoc.to_ident_name())),
             Self::TDyn { trait_path } => {
                 RcDoc::text("dyn ").append(RcDoc::text(trait_path.display()))
             }

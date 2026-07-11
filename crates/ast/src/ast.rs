@@ -230,7 +230,14 @@ pub struct TraitDef {
     pub name: AstIdent,
     pub generics: Vec<AstIdent>,
     pub predicates: Vec<Predicate>,
+    pub associated_types: Vec<AssociatedType>,
     pub method_sigs: Vec<TraitMethodSignature>,
+}
+
+#[derive(Debug, Clone)]
+pub struct AssociatedType {
+    pub name: AstIdent,
+    pub bounds: Vec<TraitRef>,
 }
 
 #[derive(Debug, Clone)]
@@ -258,6 +265,7 @@ pub struct ImplBlock {
     pub generics: Vec<AstIdent>,
     pub generic_bounds: Vec<(AstIdent, Vec<TraitRef>)>,
     pub predicates: Vec<Predicate>,
+    pub associated_types: Vec<(AstIdent, TypeExpr)>,
     pub trait_ref: Option<TraitRef>,
     pub for_type: TypeExpr,
     pub methods: Vec<Fn>,

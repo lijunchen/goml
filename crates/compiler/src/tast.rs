@@ -89,18 +89,51 @@ pub enum Ty {
     TFloat64,
     TString,
     TChar,
-    TTuple { typs: Vec<Ty> },
-    TEnum { name: String },
-    TStruct { name: String },
-    TDyn { trait_name: String },
-    TApp { ty: Box<Ty>, args: Vec<Ty> },
-    TArray { len: usize, elem: Box<Ty> },
-    TSlice { elem: Box<Ty> },
-    TVec { elem: Box<Ty> },
-    TRef { elem: Box<Ty> },
-    THashMap { key: Box<Ty>, value: Box<Ty> },
-    TParam { name: String },
-    TFunc { params: Vec<Ty>, ret_ty: Box<Ty> },
+    TTuple {
+        typs: Vec<Ty>,
+    },
+    TEnum {
+        name: String,
+    },
+    TStruct {
+        name: String,
+    },
+    TDyn {
+        trait_name: String,
+    },
+    TProjection {
+        trait_ref: Option<TraitRef>,
+        for_ty: Box<Ty>,
+        name: TastIdent,
+    },
+    TApp {
+        ty: Box<Ty>,
+        args: Vec<Ty>,
+    },
+    TArray {
+        len: usize,
+        elem: Box<Ty>,
+    },
+    TSlice {
+        elem: Box<Ty>,
+    },
+    TVec {
+        elem: Box<Ty>,
+    },
+    TRef {
+        elem: Box<Ty>,
+    },
+    THashMap {
+        key: Box<Ty>,
+        value: Box<Ty>,
+    },
+    TParam {
+        name: String,
+    },
+    TFunc {
+        params: Vec<Ty>,
+        ret_ty: Box<Ty>,
+    },
 }
 
 impl std::fmt::Debug for Ty {
@@ -125,6 +158,11 @@ impl std::fmt::Debug for Ty {
             Self::TEnum { name } => write!(f, "TEnum({})", name),
             Self::TStruct { name } => write!(f, "TStruct({})", name),
             Self::TDyn { trait_name } => write!(f, "TDyn({})", trait_name),
+            Self::TProjection {
+                trait_ref,
+                for_ty,
+                name,
+            } => write!(f, "TProjection({:?}, {:?}, {})", trait_ref, for_ty, name.0),
             Self::TApp { ty, args } => write!(f, "TApp({:?}, {:?})", ty, args),
             Self::TArray { len, elem } => write!(f, "TArray({}, {:?})", len, elem),
             Self::TSlice { elem } => write!(f, "TSlice({:?})", elem),

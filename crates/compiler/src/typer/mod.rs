@@ -26,6 +26,7 @@ pub(crate) use obligations::{
     ArithmeticKind, CoercionGoal, MethodGoal, Obligation, ObligationCause, ObligationCauseKind,
     ObligationId, OperationGoal, Predicate, ProjectionGoal, TraitGoal,
 };
+pub(crate) use traits::matching::trait_impl_subst;
 
 pub use toplevel::check_file_with_env_and_results;
 pub use toplevel::{check_file, check_file_with_env, check_file_with_env_capability};
@@ -51,6 +52,7 @@ pub struct Typer {
     pub(crate) tparam_trait_bounds: HashMap<String, Vec<tast::TraitRef>>,
     pub(crate) param_env_predicates: Vec<crate::env::TypePredicate>,
     pub(crate) param_type_aliases: HashMap<String, tast::Ty>,
+    pub(crate) param_projection_aliases: HashMap<tast::Ty, tast::Ty>,
     pub(crate) array_wildcard_counter: usize,
     pub(crate) array_wildcard_resolutions: HashMap<usize, usize>,
 }
@@ -72,6 +74,7 @@ impl Typer {
             tparam_trait_bounds: HashMap::new(),
             param_env_predicates: Vec::new(),
             param_type_aliases: HashMap::new(),
+            param_projection_aliases: HashMap::new(),
             array_wildcard_counter: 0,
             array_wildcard_resolutions: HashMap::new(),
         }

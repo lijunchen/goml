@@ -959,6 +959,10 @@ pub enum TypeExpr {
     TCon {
         path: QualifiedPath,
     },
+    TProjection {
+        base: Box<TypeExpr>,
+        assoc: HirIdent,
+    },
     TDyn {
         trait_path: QualifiedPath,
     },
@@ -1153,6 +1157,7 @@ pub struct TraitDef {
     pub name: HirIdent,
     pub generics: Vec<HirIdent>,
     pub predicates: Vec<Predicate>,
+    pub associated_types: Vec<AssociatedType>,
     pub method_sigs: Vec<TraitMethodSignature>,
 }
 
@@ -1163,7 +1168,27 @@ impl From<&ast::TraitDef> for TraitDef {
             name: HirIdent::name(&t.name.0),
             generics: t.generics.iter().map(|g| HirIdent::name(&g.0)).collect(),
             predicates: t.predicates.iter().map(Predicate::from).collect(),
+            associated_types: t
+                .associated_types
+                .iter()
+                .map(AssociatedType::from)
+                .collect(),
             method_sigs: t.method_sigs.iter().map(|m| m.into()).collect(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct AssociatedType {
+    pub name: HirIdent,
+    pub bounds: Vec<TraitRef>,
+}
+
+impl From<&ast::AssociatedType> for AssociatedType {
+    fn from(associated: &ast::AssociatedType) -> Self {
+        Self {
+            name: HirIdent::name(&associated.name.0),
+            bounds: associated.bounds.iter().map(TraitRef::from).collect(),
         }
     }
 }
@@ -1227,6 +1252,7 @@ pub struct ImplBlock {
     pub generics: Vec<HirIdent>,
     pub generic_bounds: Vec<(HirIdent, Vec<TraitRef>)>,
     pub predicates: Vec<Predicate>,
+    pub associated_types: Vec<(HirIdent, TypeExpr)>,
     pub trait_ref: Option<TraitRef>,
     pub for_type: TypeExpr,
     pub methods: Vec<DefId>,

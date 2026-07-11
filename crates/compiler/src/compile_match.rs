@@ -364,6 +364,22 @@ fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
         Ty::TDyn { trait_name } => Ty::TDyn {
             trait_name: trait_name.clone(),
         },
+        Ty::TProjection {
+            trait_ref,
+            for_ty,
+            name,
+        } => Ty::TProjection {
+            trait_ref: trait_ref.as_ref().map(|trait_ref| tast::TraitRef {
+                name: trait_ref.name.clone(),
+                args: trait_ref
+                    .args
+                    .iter()
+                    .map(|ty| substitute_ty_params(ty, subst))
+                    .collect(),
+            }),
+            for_ty: Box::new(substitute_ty_params(for_ty, subst)),
+            name: name.clone(),
+        },
         Ty::TApp { ty, args } => Ty::TApp {
             ty: Box::new(substitute_ty_params(ty, subst)),
             args: args
@@ -2200,6 +2216,14 @@ fn compile_rows(
             push_compile_ice(
                 diagnostics,
                 "type parameter reached match compilation unexpectedly",
+                match_range,
+            );
+            emissing(ty)
+        }
+        Ty::TProjection { .. } => {
+            push_compile_ice(
+                diagnostics,
+                "associated type projection reached match compilation unexpectedly",
                 match_range,
             );
             emissing(ty)

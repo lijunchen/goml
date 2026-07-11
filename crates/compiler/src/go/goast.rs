@@ -372,6 +372,9 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
         tast::Ty::TDyn { trait_name } => goty::GoType::TName {
             name: dyn_struct_name(trait_name),
         },
+        tast::Ty::TProjection { .. } => goty::GoType::TName {
+            name: go_type_name_for(ty),
+        },
         tast::Ty::TApp { ty, args } => {
             if args.is_empty() {
                 return tast_ty_to_go_type(ty.as_ref());
@@ -439,6 +442,11 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
         tast::Ty::TChar => "char".to_string(),
         tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => go_user_type_name(name),
         tast::Ty::TDyn { trait_name } => dyn_struct_name(trait_name),
+        tast::Ty::TProjection { for_ty, name, .. } => go_generated_ident(&format!(
+            "Projection_{}_{}",
+            go_type_name_part(for_ty),
+            name.0
+        )),
         tast::Ty::TApp { ty, args } => {
             let mut s = go_type_name_for(ty.as_ref());
             for arg in args {

@@ -2215,6 +2215,12 @@ pub mod anf_verify {
             anf::Ty::TVar(id) => {
                 errors.push(format!("unresolved type variable {:?}", id));
             }
+            anf::Ty::TProjection { for_ty, name, .. } => {
+                errors.push(format!(
+                    "unresolved associated type projection {:?}::{}",
+                    for_ty, name.0
+                ));
+            }
             anf::Ty::TTuple { typs } => {
                 for t in typs {
                     verify_ty_is_value(errors, t);

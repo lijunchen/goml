@@ -173,6 +173,6 @@ pub(crate) fn type_head(ty: &tast::Ty) -> Option<TypeHead> {
         tast::Ty::TRef { .. } => Some(TypeHead::Ref),
         tast::Ty::THashMap { .. } => Some(TypeHead::HashMap),
         tast::Ty::TFunc { params, .. } => Some(TypeHead::Function(params.len())),
-        tast::Ty::TParam { .. } => None,
+        tast::Ty::TParam { .. } | tast::Ty::TProjection { .. } => None,
     }
 }

@@ -533,13 +533,13 @@ impl Typer {
             }),
             ObligationCause::new(range, ObligationCauseKind::MethodCall),
         );
-        let instantiated = self.instantiate_scheme(
+        let instantiated = self.instantiate_scheme_with_self(
             method_scheme,
+            &receiver_ty,
             ObligationCause::new(range, ObligationCauseKind::FunctionBound).with_parent(parent),
         );
         self.register_scheme_obligations(&instantiated);
-        let inst_method_ty = instantiated.ty;
-        let inst_method_ty_for_call = instantiate_self_ty(&inst_method_ty, &receiver_ty);
+        let inst_method_ty_for_call = instantiated.ty;
 
         let (params, ret_ty) = match &inst_method_ty_for_call {
             tast::Ty::TFunc { params, ret_ty } => (params.clone(), (**ret_ty).clone()),

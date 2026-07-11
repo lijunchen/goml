@@ -299,6 +299,10 @@ impl TraitMethodList {
     pub fn methods(&self) -> CstChildren<TraitMethod> {
         support::children(&self.syntax)
     }
+
+    pub fn associated_types(&self) -> CstChildren<TraitAssociatedType> {
+        support::children(&self.syntax)
+    }
 }
 
 impl_cst_node_simple!(TraitMethodList, MySyntaxKind::TRAIT_METHOD_SIG_LIST);
@@ -327,6 +331,26 @@ impl TraitMethod {
 
 impl_cst_node_simple!(TraitMethod, MySyntaxKind::TRAIT_METHOD_SIG);
 impl_display_via_syntax!(TraitMethod);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct TraitAssociatedType {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl TraitAssociatedType {
+    pub fn name(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::Ident)
+    }
+
+    pub fn trait_set(&self) -> Option<TraitSet> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(TraitAssociatedType, MySyntaxKind::TRAIT_ASSOCIATED_TYPE);
+impl_display_via_syntax!(TraitAssociatedType);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -364,10 +388,34 @@ impl Impl {
     pub fn functions(&self) -> CstChildren<Fn> {
         support::children(&self.syntax)
     }
+
+    pub fn associated_types(&self) -> CstChildren<ImplAssociatedType> {
+        support::children(&self.syntax)
+    }
 }
 
 impl_cst_node_simple!(Impl, MySyntaxKind::IMPL);
 impl_display_via_syntax!(Impl);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ImplAssociatedType {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl ImplAssociatedType {
+    pub fn name(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::Ident)
+    }
+
+    pub fn ty(&self) -> Option<Type> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(ImplAssociatedType, MySyntaxKind::IMPL_ASSOCIATED_TYPE);
+impl_display_via_syntax!(ImplAssociatedType);
 
 ////////////////////////////////////////////////////////////////////////////////
 

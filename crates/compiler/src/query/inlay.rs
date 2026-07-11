@@ -270,6 +270,14 @@ fn contains_type_var(ty: &tast::Ty) -> bool {
             params.iter().any(contains_type_var) || contains_type_var(ret_ty)
         }
         tast::Ty::TApp { ty, args } => contains_type_var(ty) || args.iter().any(contains_type_var),
+        tast::Ty::TProjection {
+            trait_ref, for_ty, ..
+        } => {
+            contains_type_var(for_ty)
+                || trait_ref
+                    .as_ref()
+                    .is_some_and(|trait_ref| trait_ref.args.iter().any(contains_type_var))
+        }
         tast::Ty::TArray { elem, .. } => contains_type_var(elem),
         tast::Ty::TSlice { elem } => contains_type_var(elem),
         tast::Ty::TVec { elem } => contains_type_var(elem),

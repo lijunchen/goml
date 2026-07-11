@@ -521,6 +521,22 @@ fn canonicalize_ty(
         tast::Ty::TDyn { trait_name } => tast::Ty::TDyn {
             trait_name: trait_name.clone(),
         },
+        tast::Ty::TProjection {
+            trait_ref,
+            for_ty,
+            name,
+        } => tast::Ty::TProjection {
+            trait_ref: trait_ref.as_ref().map(|trait_ref| tast::TraitRef {
+                name: trait_ref.name.clone(),
+                args: trait_ref
+                    .args
+                    .iter()
+                    .map(|ty| canonicalize_ty(ty, variables, next))
+                    .collect(),
+            }),
+            for_ty: Box::new(canonicalize_ty(for_ty, variables, next)),
+            name: name.clone(),
+        },
         tast::Ty::TApp { ty, args } => tast::Ty::TApp {
             ty: Box::new(canonicalize_ty(ty, variables, next)),
             args: args

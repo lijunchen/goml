@@ -15,8 +15,8 @@ use crate::{
         results::{CallElab, CalleeElab, Coercion, NameRefElab},
         traits::solver::{SelectionResult, SelectionSource, TraitSolver},
         type_ops::{
-            contains_tvar, decompose_struct_type, instantiate_self_ty, same_or_unresolved_ty,
-            substitute_ty_params, type_vars,
+            contains_tvar, decompose_struct_type, same_or_unresolved_ty, substitute_ty_params,
+            type_vars,
         },
     },
 };
@@ -93,6 +93,18 @@ impl Typer {
                 add(&goal.call_site_type, self);
             }
             Predicate::Projection(goal) => match goal {
+                ProjectionGoal::AssociatedType {
+                    trait_ref,
+                    for_ty,
+                    result_ty,
+                    ..
+                } => {
+                    add(for_ty, self);
+                    for arg in &trait_ref.args {
+                        add(arg, self);
+                    }
+                    add(result_ty, self);
+                }
                 ProjectionGoal::Field {
                     base_ty, result_ty, ..
                 } => {
@@ -406,16 +418,14 @@ impl Typer {
                 ObligationCauseKind::FunctionBound,
             ),
         };
-        let instantiated = self.instantiate_scheme_with_substitution(
-            &scheme,
-            substitution,
-            ObligationCause::new(cause.span, obligation_kind).with_parent(parent),
-        );
-        let method_ty = if instantiate_self {
-            instantiate_self_ty(&instantiated.ty, &goal.receiver_ty)
+        let obligation_cause =
+            ObligationCause::new(cause.span, obligation_kind).with_parent(parent);
+        let instantiated = if instantiate_self {
+            self.instantiate_scheme_with_self(&scheme, &goal.receiver_ty, obligation_cause)
         } else {
-            instantiated.ty.clone()
+            self.instantiate_scheme_with_substitution(&scheme, substitution, obligation_cause)
         };
+        let method_ty = instantiated.ty.clone();
         let generated = Self::scheme_obligations(&instantiated);
         let changed_variables =
             self.equate_and_collect(diagnostics, &goal.call_site_type, &method_ty, cause.span);
@@ -665,6 +675,200 @@ impl Typer {
                         }
                     }
                     Predicate::Projection(goal) => match goal {
+                        ProjectionGoal::AssociatedType {
+                            mut trait_ref,
+                            for_ty,
+                            name,
+                            result_ty,
+                        } => {
+                            let for_ty = self.norm(&for_ty);
+                            for arg in &mut trait_ref.args {
+                                *arg = self.norm(arg);
+                            }
+                            let unresolved =
+                                contains_tvar(&for_ty) || trait_ref.args.iter().any(contains_tvar);
+                            if unresolved && !allow_trait_inference {
+                                let predicate =
+                                    Predicate::Projection(ProjectionGoal::AssociatedType {
+                                        trait_ref,
+                                        for_ty,
+                                        name,
+                                        result_ty,
+                                    });
+                                let variables = self.predicate_type_vars(&predicate);
+                                worklist.defer(
+                                    Obligation {
+                                        id,
+                                        predicate,
+                                        cause,
+                                    },
+                                    variables,
+                                );
+                                continue;
+                            }
+                            let trait_goal = TraitGoal {
+                                trait_ref: trait_ref.clone(),
+                                for_ty: for_ty.clone(),
+                            };
+                            let selection = if unresolved {
+                                trait_solver.select(self, trait_goal)
+                            } else {
+                                trait_solver.select_ground(trait_goal)
+                            };
+                            match selection {
+                                SelectionResult::Unique(selection) => match selection.source {
+                                    SelectionSource::Impl {
+                                        definition,
+                                        substitution,
+                                        ..
+                                    } => {
+                                        let Some(binding) =
+                                            definition.associated_types.get(&name.0)
+                                        else {
+                                            self.push_obligation_error(
+                                                diagnostics,
+                                                &mut reported,
+                                                format!(
+                                                    "Selected implementation of {} for {} does not bind associated type {}",
+                                                    super::util::format_trait_ref_for_diag(
+                                                        &trait_ref
+                                                    ),
+                                                    super::util::format_ty_for_diag(&for_ty),
+                                                    name.0
+                                                ),
+                                                &cause,
+                                            );
+                                            continue;
+                                        };
+                                        let binding = substitute_ty_params(binding, &substitution);
+                                        let projection_cause = ObligationCause::new(
+                                            cause.span,
+                                            ObligationCauseKind::Projection,
+                                        )
+                                        .with_parent(id);
+                                        let mut generated = Vec::new();
+                                        let binding = self.lower_associated_projections(
+                                            &binding,
+                                            &projection_cause,
+                                            &mut generated,
+                                        );
+                                        self.equate_and_wake(
+                                            diagnostics,
+                                            &mut worklist,
+                                            &result_ty,
+                                            &binding,
+                                            cause.span,
+                                        );
+                                        worklist.wake(selection.changed_variables);
+                                        for (predicate, cause) in generated {
+                                            let obligation =
+                                                self.new_obligation(predicate, cause);
+                                            worklist.push(obligation);
+                                        }
+                                    }
+                                    SelectionSource::ParamEnv => {
+                                        let projection = tast::Ty::TProjection {
+                                            trait_ref: Some(trait_ref),
+                                            for_ty: Box::new(for_ty),
+                                            name,
+                                        };
+                                        let projection = self.norm(&projection);
+                                        self.equate_and_wake(
+                                            diagnostics,
+                                            &mut worklist,
+                                            &result_ty,
+                                            &projection,
+                                            cause.span,
+                                        );
+                                        worklist.wake(selection.changed_variables);
+                                    }
+                                    SelectionSource::Dyn => {
+                                        self.push_obligation_error(
+                                            diagnostics,
+                                            &mut reported,
+                                            format!(
+                                                "Associated type {} cannot be projected from a trait object",
+                                                name.0
+                                            ),
+                                            &cause,
+                                        );
+                                    }
+                                },
+                                SelectionResult::NoSolution if unresolved => {
+                                    let predicate = Predicate::Projection(
+                                        ProjectionGoal::AssociatedType {
+                                            trait_ref,
+                                            for_ty,
+                                            name,
+                                            result_ty,
+                                        },
+                                    );
+                                    let variables = self.predicate_type_vars(&predicate);
+                                    worklist.defer(
+                                        Obligation {
+                                            id,
+                                            predicate,
+                                            cause,
+                                        },
+                                        variables,
+                                    );
+                                }
+                                SelectionResult::NoSolution => self.push_obligation_error(
+                                    diagnostics,
+                                    &mut reported,
+                                    format!(
+                                        "Cannot resolve associated type {}::{} because {} does not implement {}",
+                                        super::util::format_ty_for_diag(&for_ty),
+                                        name.0,
+                                        super::util::format_ty_for_diag(&for_ty),
+                                        super::util::format_trait_ref_for_diag(&trait_ref)
+                                    ),
+                                    &cause,
+                                ),
+                                SelectionResult::Ambiguous(_) => {
+                                    if unresolved {
+                                        let predicate = Predicate::Projection(
+                                            ProjectionGoal::AssociatedType {
+                                                trait_ref,
+                                                for_ty,
+                                                name,
+                                                result_ty,
+                                            },
+                                        );
+                                        let variables = self.predicate_type_vars(&predicate);
+                                        worklist.defer(
+                                            Obligation {
+                                                id,
+                                                predicate,
+                                                cause,
+                                            },
+                                            variables,
+                                        );
+                                    } else {
+                                        self.push_obligation_error(
+                                            diagnostics,
+                                            &mut reported,
+                                            format!(
+                                                "Associated type {}::{} is ambiguous",
+                                                super::util::format_ty_for_diag(&for_ty),
+                                                name.0
+                                            ),
+                                            &cause,
+                                        );
+                                    }
+                                }
+                                SelectionResult::Overflow => self.push_obligation_error(
+                                    diagnostics,
+                                    &mut reported,
+                                    format!(
+                                        "Associated type resolution overflow for {}::{}",
+                                        super::util::format_ty_for_diag(&for_ty),
+                                        name.0
+                                    ),
+                                    &cause,
+                                ),
+                            }
+                        }
                         ProjectionGoal::Field {
                             base_ty,
                             field,
@@ -1077,6 +1281,13 @@ impl Typer {
                     Predicate::Method(goal) => format!(
                         "Could not infer the receiver type for method {}",
                         goal.method.0
+                    ),
+                    Predicate::Projection(ProjectionGoal::AssociatedType {
+                        for_ty, name, ..
+                    }) => format!(
+                        "Could not resolve associated type {}::{}",
+                        super::util::format_ty_for_diag(&self.norm(for_ty)),
+                        name.0
                     ),
                     Predicate::Projection(ProjectionGoal::Field { field, .. }) => {
                         format!("Could not infer the base type for field {}", field.0)

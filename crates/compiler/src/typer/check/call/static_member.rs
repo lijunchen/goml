@@ -150,59 +150,66 @@ impl Typer {
         let range = self.expr_range(call_expr_id);
         let parent = self
             .reserve_obligation_cause(ObligationCause::new(range, ObligationCauseKind::MethodCall));
-        let instantiated = self.instantiate_scheme(
+        let mut receiver_tast = args
+            .first()
+            .map(|receiver| self.infer_expr(genv, local_env, diagnostics, *receiver));
+        let receiver_ty = receiver_tast
+            .as_ref()
+            .map(tast::Expr::get_ty)
+            .unwrap_or(tast::Ty::TUnit);
+        let instantiated = self.instantiate_scheme_with_self(
             &method_scheme,
+            &receiver_ty,
             ObligationCause::new(range, ObligationCauseKind::FunctionBound).with_parent(parent),
         );
         self.register_scheme_obligations(&instantiated);
         let inst_method_ty = instantiated.ty;
 
         if let tast::Ty::TFunc { params, ret_ty } = &inst_method_ty
-            && !args.is_empty()
+            && let Some(receiver) = receiver_tast.as_ref()
+            && let tast::Ty::TDyn {
+                trait_name: recv_trait,
+            } = receiver.get_ty()
+            && trait_ref.args.is_empty()
+            && recv_trait == trait_ref.name.0
         {
-            let Some(receiver_arg) = args.first() else {
-                util::push_ice(diagnostics, "callee args missing receiver");
+            let Some(receiver) = receiver_tast.take() else {
+                util::push_ice(diagnostics, "trait method receiver is missing");
                 return self.error_expr(None);
             };
-            let receiver_tast = self.infer_expr(genv, local_env, diagnostics, *receiver_arg);
-            if let tast::Ty::TDyn {
-                trait_name: recv_trait,
-            } = receiver_tast.get_ty()
-                && trait_ref.args.is_empty()
-                && recv_trait == trait_ref.name.0
-            {
-                return self.infer_dyn_trait_method_call(
-                    genv,
-                    local_env,
-                    diagnostics,
-                    DynTraitMethodCall {
-                        call_expr_id,
-                        func_expr_id,
-                        astptr,
-                        args,
-                        receiver: receiver_tast,
-                        trait_name: &trait_ref.name,
-                        method_name: &member_ident,
-                        params,
-                        ret_ty,
-                    },
-                );
-            }
+            return self.infer_dyn_trait_method_call(
+                genv,
+                local_env,
+                diagnostics,
+                DynTraitMethodCall {
+                    call_expr_id,
+                    func_expr_id,
+                    astptr,
+                    args,
+                    receiver,
+                    trait_name: &trait_ref.name,
+                    method_name: &member_ident,
+                    params,
+                    ret_ty,
+                },
+            );
         }
 
         let mut args_tast = Vec::new();
         let mut arg_types = Vec::new();
-        for arg in args.iter() {
-            let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
+        for (index, arg) in args.iter().enumerate() {
+            let arg_tast = if index == 0 {
+                receiver_tast
+                    .take()
+                    .unwrap_or_else(|| self.infer_expr(genv, local_env, diagnostics, *arg))
+            } else {
+                self.infer_expr(genv, local_env, diagnostics, *arg)
+            };
             arg_types.push(arg_tast.get_ty());
             args_tast.push(arg_tast);
         }
 
-        let receiver_ty = args_tast
-            .first()
-            .map(|arg| arg.get_ty())
-            .unwrap_or(tast::Ty::TUnit);
-        let inst_method_ty_for_call = instantiate_self_ty(&inst_method_ty, &receiver_ty);
+        let inst_method_ty_for_call = inst_method_ty;
         let ret_ty_for_call = match &inst_method_ty_for_call {
             tast::Ty::TFunc { ret_ty, .. } => (**ret_ty).clone(),
             _ => self.fresh_ty_var(),

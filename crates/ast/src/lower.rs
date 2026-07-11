@@ -381,12 +381,35 @@ fn lower_trait(ctx: &mut LowerCtx, node: cst::Trait) -> Option<ast::TraitDef> {
         );
         Vec::new()
     };
+    let associated_types = node
+        .trait_method_list()
+        .map(|list| {
+            list.associated_types()
+                .filter_map(|associated| {
+                    let name = associated.name()?.to_string();
+                    let bounds = associated
+                        .trait_set()
+                        .map(|set| {
+                            set.traits()
+                                .filter_map(|trait_ref| lower_trait_ref(ctx, trait_ref))
+                                .collect()
+                        })
+                        .unwrap_or_default();
+                    Some(ast::AssociatedType {
+                        name: ast::AstIdent::new(&name),
+                        bounds,
+                    })
+                })
+                .collect()
+        })
+        .unwrap_or_default();
     Some(ast::TraitDef {
         attrs,
         visibility,
         name: ast::AstIdent::new(&name),
         generics,
         predicates: lower_where_clause(ctx, node.where_clause()),
+        associated_types,
         method_sigs: methods,
     })
 }
@@ -533,11 +556,20 @@ fn lower_impl_block(ctx: &mut LowerCtx, node: cst::Impl) -> Option<ast::ImplBloc
         .functions()
         .flat_map(|function| lower_fn(ctx, function))
         .collect();
+    let associated_types = node
+        .associated_types()
+        .filter_map(|associated| {
+            let name = associated.name()?.to_string();
+            let ty = associated.ty().and_then(|ty| lower_ty(ctx, ty))?;
+            Some((ast::AstIdent::new(&name), ty))
+        })
+        .collect();
     Some(ast::ImplBlock {
         attrs,
         generics,
         generic_bounds,
         predicates: lower_where_clause(ctx, node.where_clause()),
+        associated_types,
         trait_ref,
         for_type,
         methods,

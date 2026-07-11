@@ -698,13 +698,32 @@ fn parse_trait(parser: Parser, start: int32) -> ast::Node {
     while !at(parser, syntax::TokenKind::RBrace) && !eof(parser) {
         if at(parser, syntax::TokenKind::FnKeyword) {
             push_node(children, parse_trait_method(parser, current(parser).start));
+        } else if at(parser, syntax::TokenKind::TypeKeyword) {
+            push_node(children, parse_trait_associated_type(parser));
         } else {
-            push_node(children, unexpected(parser, "expected trait method"));
+            push_node(children, unexpected(parser, "expected trait method or associated type"));
         };
         let _ = eat(parser, syntax::TokenKind::Semi);
     };
     let _ = expect(parser, syntax::TokenKind::RBrace, "expected `}` after trait definition");
     ast::node(ast::NodeKind::TraitDef, name, children.get(), start, previous_end(parser))
+}
+
+fn parse_trait_associated_type(parser: Parser) -> ast::Node {
+    let start = expect(parser, syntax::TokenKind::TypeKeyword, "expected `type`").start;
+    let name = if at(parser, syntax::TokenKind::Ident) {
+        advance(parser).text
+    } else {
+        push_diagnostic(parser, current(parser).start, current(parser).end, "expected associated type name");
+        ""
+    };
+    let bounds = if eat(parser, syntax::TokenKind::Colon) {
+        parse_trait_bound_list(parser, "expected associated type bound")
+    } else {
+        ast::empty_nodes()
+    };
+    let _ = expect(parser, syntax::TokenKind::Semi, "expected `;` after associated type");
+    ast::node(ast::NodeKind::TraitAssociatedType, name, bounds, start, previous_end(parser))
 }
 
 fn parse_trait_method(parser: Parser, start: int32) -> ast::Node {
@@ -776,12 +795,29 @@ fn parse_impl(parser: Parser, start: int32) -> ast::Node {
     while !at(parser, syntax::TokenKind::RBrace) && !eof(parser) {
         if at(parser, syntax::TokenKind::FnKeyword) {
             push_node(children, parse_fn_with_start(parser, current(parser).start, false));
+        } else if at(parser, syntax::TokenKind::TypeKeyword) {
+            push_node(children, parse_impl_associated_type(parser));
         } else {
-            push_node(children, unexpected(parser, "expected impl method"));
+            push_node(children, unexpected(parser, "expected impl method or associated type"));
         };
     };
     let _ = expect(parser, syntax::TokenKind::RBrace, "expected `}` after impl definition");
     ast::node(ast::NodeKind::ImplDef, "", children.get(), start, previous_end(parser))
+}
+
+fn parse_impl_associated_type(parser: Parser) -> ast::Node {
+    let start = expect(parser, syntax::TokenKind::TypeKeyword, "expected `type`").start;
+    let name = if at(parser, syntax::TokenKind::Ident) {
+        advance(parser).text
+    } else {
+        push_diagnostic(parser, current(parser).start, current(parser).end, "expected associated type name");
+        ""
+    };
+    let _ = expect(parser, syntax::TokenKind::Eq, "expected `=` in associated type binding");
+    let children = Ref::new(Vec::new());
+    push_node(children, parse_type(parser));
+    let _ = expect(parser, syntax::TokenKind::Semi, "expected `;` after associated type binding");
+    ast::node(ast::NodeKind::ImplAssociatedType, name, children.get(), start, previous_end(parser))
 }
 
 fn parse_item(parser: Parser) -> ast::Node {

@@ -27,6 +27,10 @@ pub fn build_file(
                 &func,
                 &tparams_for(&func.generics),
                 None,
+                genv.current()
+                    .value_env
+                    .get_function_scheme(&func.name)
+                    .as_ref(),
             ))),
             hir::Def::EnumDef(..)
             | hir::Def::StructDef(..)
@@ -57,6 +61,21 @@ fn build_impl_block(
         };
         let mut all_generics = impl_block.generics.clone();
         all_generics.extend(func.generics.clone());
+        let scheme = match &trait_ref {
+            Some(trait_ref) => genv
+                .current()
+                .trait_env
+                .trait_impls
+                .get(&crate::env::TraitImplKey {
+                    trait_ref: trait_ref.clone(),
+                    for_ty: for_ty.clone(),
+                })
+                .and_then(|definition| definition.methods.get(&func.name))
+                .cloned(),
+            None => genv
+                .current()
+                .lookup_inherent_method_scheme(&for_ty, &tast::TastIdent::new(&func.name)),
+        };
         methods.push(build_fn(
             genv,
             hir_table,
@@ -64,6 +83,7 @@ fn build_impl_block(
             &func,
             &tparams_for(&all_generics),
             Some(&for_ty),
+            scheme.as_ref(),
         ));
     }
 
@@ -86,13 +106,22 @@ fn build_fn(
     func: &hir::Fn,
     tparams: &[tast::TastIdent],
     self_ty: Option<&tast::Ty>,
+    scheme: Option<&crate::env::FnScheme>,
 ) -> tast::Fn {
+    let scheme_signature = scheme.and_then(|scheme| match &scheme.ty {
+        tast::Ty::TFunc { params, ret_ty } => Some((params, ret_ty.as_ref())),
+        _ => None,
+    });
     let params = func
         .params
         .iter()
-        .map(|(name, ty)| {
+        .enumerate()
+        .map(|(index, (name, ty))| {
             let name_str = hir_table.local_ident_name(*name);
-            let mut ty = tast::Ty::from_hir(genv, ty, tparams);
+            let mut ty = scheme_signature
+                .and_then(|(params, _)| params.get(index))
+                .cloned()
+                .unwrap_or_else(|| tast::Ty::from_hir(genv, ty, tparams));
             if let Some(self_ty) = self_ty {
                 ty = instantiate_self_ty(&ty, self_ty);
             }
@@ -100,11 +129,14 @@ fn build_fn(
         })
         .collect::<Vec<_>>();
 
-    let mut ret_ty = func
-        .ret_ty
-        .as_ref()
-        .map(|ty| tast::Ty::from_hir(genv, ty, tparams))
-        .unwrap_or(tast::Ty::TUnit);
+    let mut ret_ty = scheme_signature
+        .map(|(_, ret_ty)| ret_ty.clone())
+        .unwrap_or_else(|| {
+            func.ret_ty
+                .as_ref()
+                .map(|ty| tast::Ty::from_hir(genv, ty, tparams))
+                .unwrap_or(tast::Ty::TUnit)
+        });
     if let Some(self_ty) = self_ty {
         ret_ty = instantiate_self_ty(&ret_ty, self_ty);
     }
