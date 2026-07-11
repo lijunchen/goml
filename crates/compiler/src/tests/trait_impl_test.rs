@@ -33,6 +33,239 @@ fn expect_diagnostics(src: &str, expected: Expect) {
     expected.assert_debug_eq(&diagnostics);
 }
 
+fn diagnostic_lines(src: &str) -> Vec<String> {
+    let (_, _genv, diagnostics) = typecheck(src);
+    format_typer_diagnostics(&diagnostics, src)
+}
+
+#[test]
+fn composite_type_parameter_trait_goal_requires_proof() {
+    let src = r#"
+trait Mark {
+    fn mark(Self) -> unit;
+}
+
+struct Box[T] {
+    value: T,
+}
+
+fn require_mark[T: Mark](value: T) -> unit {
+    ()
+}
+
+fn use_box[T](value: Box[T]) -> unit {
+    require_mark(value)
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("No instance found for trait Mark<Box[T]>")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn overlapping_generic_and_concrete_impls_are_rejected_at_definition() {
+    let src = r#"
+trait Label {
+    fn label(Self) -> string;
+}
+
+struct Box[T] {
+    value: T,
+}
+
+impl[T] Label for Box[T] {
+    fn label(self: Box[T]) -> string { "generic" }
+}
+
+impl Label for Box[int32] {
+    fn label(self: Box[int32]) -> string { "concrete" }
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("overlaps with implementation")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn invalid_impl_does_not_satisfy_trait_goal() {
+    let src = r#"
+trait Render {
+    fn render(Self) -> string;
+}
+
+struct Item {}
+
+impl Render for Item {}
+
+fn require_render[T: Render](value: T) -> unit {
+    ()
+}
+
+fn use_item(value: Item) -> unit {
+    require_render(value)
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("is missing method render")),
+        "{diagnostics:?}"
+    );
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("No instance found for trait Render<Item>")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn method_resolution_waits_for_receiver_inference() {
+    let src = r#"
+trait Alpha {
+    fn text(Self) -> string;
+}
+
+trait Beta {
+    fn text(Self) -> string;
+}
+
+struct A {}
+struct B {}
+
+impl Alpha for A {
+    fn text(self: A) -> string { "a" }
+}
+
+impl Beta for B {
+    fn text(self: B) -> string { "b" }
+}
+
+fn main() -> unit {
+    let render = |value| value.text();
+    println(render(A {}))
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
+fn unused_generic_bound_still_creates_an_obligation() {
+    let src = r#"
+trait Mark {
+    fn mark(Self) -> unit;
+}
+
+fn require_unused[T: Mark]() -> unit {
+    ()
+}
+
+fn main() -> unit {
+    require_unused()
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("Could not infer the type required to prove Mark<unknown>")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn unconstrained_impl_type_parameter_is_rejected() {
+    let src = r#"
+trait Mark {
+    fn mark(Self) -> unit;
+}
+
+impl[T] Mark for int32 {
+    fn mark(self: int32) -> unit { () }
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics.iter().any(|line| line
+            .contains("Implementation type parameter T is not constrained by type int32")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn nested_impl_bound_must_be_satisfied() {
+    let src = r#"
+trait Mark {
+    fn mark(Self) -> unit;
+}
+
+struct Wrap[T] {
+    value: T,
+}
+
+impl[T: Mark] Mark for Wrap[T] {
+    fn mark(self: Wrap[T]) -> unit { () }
+}
+
+fn require_mark[T: Mark](value: T) -> unit {
+    ()
+}
+
+fn use_wrap(value: Wrap[int32]) -> unit {
+    require_mark(value)
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("No instance found for trait Mark<Wrap[int32]>")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn coherence_is_rechecked_after_all_impls_are_collected() {
+    let src = r#"
+trait Show {
+    fn show(Self) -> string;
+}
+
+impl Hash for Ref[dyn Show] {
+    fn hash(self: Ref[dyn Show]) -> uint64 { 0u64 }
+}
+
+impl Hash for dyn Show {
+    fn hash(self: dyn Show) -> uint64 { 0u64 }
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("overlaps with implementation")),
+        "{diagnostics:?}"
+    );
+}
+
 #[test]
 fn builtin_generic_constraints_are_checked_at_call_site() {
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -58,7 +291,7 @@ fn builtin_generic_constraints_are_checked_at_call_site() {
 }
 
 #[test]
-fn generic_constraints_reject_overlapping_trait_impls() {
+fn generic_constraints_reject_overlapping_trait_impls_at_definition() {
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("src/tests/crashers/hashmap_ref_dyn_hash_overlapping_impl/main.gom");
     let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
@@ -72,8 +305,7 @@ fn generic_constraints_reject_overlapping_trait_impls() {
             assert!(
                 diagnostics
                     .iter()
-                    .any(|line| line
-                        .contains("Multiple instances found for trait Hash<Ref[dyn Hash]>")),
+                    .any(|line| line.contains("overlaps with implementation")),
                 "{diagnostics:?}"
             );
         }
