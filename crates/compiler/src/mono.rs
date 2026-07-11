@@ -557,7 +557,6 @@ fn subst_ty(ty: &Ty, s: &Subst) -> Ty {
 
 fn normalize_associated_ty(genv: &GlobalTypeEnv, ty: &Ty) -> Ty {
     fn normalize(
-        genv: &GlobalTypeEnv,
         trait_solver: &mut crate::typer::traits::solver::TraitSolver<'_>,
         ty: &Ty,
         active: &mut HashSet<(tast::TraitRef, Ty, String)>,
@@ -576,10 +575,10 @@ fn normalize_associated_ty(genv: &GlobalTypeEnv, ty: &Ty) -> Ty {
                 args: trait_ref
                     .args
                     .iter()
-                    .map(|arg| normalize(genv, trait_solver, arg, active))
+                    .map(|arg| normalize(trait_solver, arg, active))
                     .collect(),
             };
-            let for_ty = normalize(genv, trait_solver, for_ty, active);
+            let for_ty = normalize(trait_solver, for_ty, active);
             let key = (trait_ref.clone(), for_ty.clone(), name.0.clone());
             if !active.insert(key.clone()) {
                 return Some(Ty::TProjection {
@@ -602,7 +601,7 @@ fn normalize_associated_ty(genv: &GlobalTypeEnv, ty: &Ty) -> Ty {
                     } => definition.associated_types.get(&name.0).map(|binding| {
                         let binding =
                             crate::typer::type_ops::substitute_ty_params(binding, &substitution);
-                        normalize(genv, trait_solver, &binding, active)
+                        normalize(trait_solver, &binding, active)
                     }),
                     crate::typer::traits::solver::SelectionSource::ParamEnv
                     | crate::typer::traits::solver::SelectionSource::Dyn => None,
@@ -628,7 +627,7 @@ fn normalize_associated_ty(genv: &GlobalTypeEnv, ty: &Ty) -> Ty {
     );
     let param_env = crate::typer::ParamEnv::default();
     let mut trait_solver = crate::typer::traits::solver::TraitSolver::new(&package_env, &param_env);
-    normalize(genv, &mut trait_solver, ty, &mut HashSet::new())
+    normalize(&mut trait_solver, ty, &mut HashSet::new())
 }
 
 fn subst_trait_ref(trait_ref: &tast::TraitRef, s: &Subst) -> tast::TraitRef {

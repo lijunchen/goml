@@ -504,7 +504,7 @@ fn build_expr(
             let body = Box::new(build_expr(hir_table, results, body));
             let ty = results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit);
             tast::Expr::EFor {
-                pat,
+                pat: Box::new(pat),
                 iterator,
                 into_iter_trait_ref,
                 iterator_trait_ref,

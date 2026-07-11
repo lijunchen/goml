@@ -57,6 +57,13 @@ struct TypeMemberRequest<'a> {
     astptr: Option<MySyntaxNodePtr>,
 }
 
+struct ForRequest {
+    expr_id: hir::ExprId,
+    pat: hir::PatId,
+    iterator: hir::ExprId,
+    body: hir::ExprId,
+}
+
 impl Typer {
     fn with_expr_ty(&self, expr: tast::Expr, ty: tast::Ty) -> tast::Expr {
         match expr {
@@ -541,7 +548,17 @@ impl Typer {
                 pat,
                 iterator,
                 body,
-            } => self.infer_for_expr(genv, local_env, diagnostics, e, pat, iterator, body),
+            } => self.infer_for_expr(
+                genv,
+                local_env,
+                diagnostics,
+                ForRequest {
+                    expr_id: e,
+                    pat,
+                    iterator,
+                    body,
+                },
+            ),
             hir::Expr::EBreak => self.infer_break_expr(diagnostics, e),
             hir::Expr::EContinue => self.infer_continue_expr(diagnostics, e),
             hir::Expr::EReturn { expr } => {
@@ -1779,11 +1796,14 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        expr_id: hir::ExprId,
-        pat: hir::PatId,
-        iterator: hir::ExprId,
-        body: hir::ExprId,
+        request: ForRequest,
     ) -> tast::Expr {
+        let ForRequest {
+            expr_id,
+            pat,
+            iterator,
+            body,
+        } = request;
         let iterator_tast = self.infer_expr(genv, local_env, diagnostics, iterator);
         let source_ty = self.norm(&iterator_tast.get_ty());
         let item_ty = self.fresh_ty_var();
@@ -1871,7 +1891,7 @@ impl Typer {
         );
 
         tast::Expr::EFor {
-            pat: pat_tast,
+            pat: Box::new(pat_tast),
             iterator: Box::new(iterator_tast),
             into_iter_trait_ref,
             iterator_trait_ref,

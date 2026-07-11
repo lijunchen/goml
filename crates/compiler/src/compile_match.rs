@@ -3321,17 +3321,29 @@ fn compile_block_parts(
     }
 }
 
+struct ForCompileRequest<'a> {
+    pat: &'a Pat,
+    iterator: &'a Expr,
+    into_iter_trait_ref: &'a tast::TraitRef,
+    iterator_trait_ref: &'a tast::TraitRef,
+    iterator_ty: &'a Ty,
+    body: &'a Expr,
+}
+
 fn compile_for_expr(
-    pat: &Pat,
-    iterator: &Expr,
-    into_iter_trait_ref: &tast::TraitRef,
-    iterator_trait_ref: &tast::TraitRef,
-    iterator_ty: &Ty,
-    body: &Expr,
+    request: ForCompileRequest<'_>,
     genv: &GlobalTypeEnv,
     gensym: &Gensym,
     diagnostics: &mut Diagnostics,
 ) -> core::Expr {
+    let ForCompileRequest {
+        pat,
+        iterator,
+        into_iter_trait_ref,
+        iterator_trait_ref,
+        iterator_ty,
+        body,
+    } = request;
     let range = pat_range(pat).or_else(|| expr_range(iterator));
     let Some(option_name) = genv.lang_item(LangItemId::Option).cloned() else {
         push_compile_ice(diagnostics, "Option lang item is not registered", range);
@@ -3614,12 +3626,14 @@ fn compile_expr(
             body,
             ..
         } => compile_for_expr(
-            pat,
-            iterator,
-            into_iter_trait_ref,
-            iterator_trait_ref,
-            iterator_ty,
-            body,
+            ForCompileRequest {
+                pat,
+                iterator,
+                into_iter_trait_ref,
+                iterator_trait_ref,
+                iterator_ty,
+                body,
+            },
             genv,
             gensym,
             diagnostics,

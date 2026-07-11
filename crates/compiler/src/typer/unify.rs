@@ -1416,7 +1416,7 @@ impl Typer {
                     .or_else(|| expr_origin(iterator.as_ref()))
                     .or_else(|| expr_origin(body.as_ref()));
                 let ty = self.subst_ty(diagnostics, &ty, origin);
-                let pat = self.subst_pat(diagnostics, pat);
+                let pat = Box::new(self.subst_pat(diagnostics, *pat));
                 for arg in &mut into_iter_trait_ref.args {
                     *arg = self.subst_ty(diagnostics, arg, origin);
                 }

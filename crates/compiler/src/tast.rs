@@ -427,7 +427,7 @@ pub enum Expr {
         ty: Ty,
     },
     EFor {
-        pat: Pat,
+        pat: Box<Pat>,
         iterator: Box<Expr>,
         into_iter_trait_ref: TraitRef,
         iterator_trait_ref: TraitRef,
