@@ -187,6 +187,7 @@ pub struct Fn {
     pub name: AstIdent,
     pub generics: Vec<AstIdent>,
     pub generic_bounds: Vec<(AstIdent, Vec<TraitRef>)>,
+    pub predicates: Vec<Predicate>,
     pub params: Vec<(AstIdent, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
     pub body: Block,
@@ -199,6 +200,7 @@ pub struct ExternFn {
     pub name: AstIdent,
     pub generics: Vec<AstIdent>,
     pub generic_bounds: Vec<(AstIdent, Vec<TraitRef>)>,
+    pub predicates: Vec<Predicate>,
     pub params: Vec<(AstIdent, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
 }
@@ -227,6 +229,7 @@ pub struct TraitDef {
     pub visibility: Visibility,
     pub name: AstIdent,
     pub generics: Vec<AstIdent>,
+    pub predicates: Vec<Predicate>,
     pub method_sigs: Vec<TraitMethodSignature>,
 }
 
@@ -234,6 +237,12 @@ pub struct TraitDef {
 pub struct TraitRef {
     pub path: Path,
     pub args: Vec<TypeExpr>,
+}
+
+#[derive(Debug, Clone)]
+pub enum Predicate {
+    Trait { ty: TypeExpr, trait_ref: TraitRef },
+    Equality { lhs: TypeExpr, rhs: TypeExpr },
 }
 
 #[derive(Debug, Clone)]
@@ -248,6 +257,7 @@ pub struct ImplBlock {
     pub attrs: Vec<Attribute>,
     pub generics: Vec<AstIdent>,
     pub generic_bounds: Vec<(AstIdent, Vec<TraitRef>)>,
+    pub predicates: Vec<Predicate>,
     pub trait_ref: Option<TraitRef>,
     pub for_type: TypeExpr,
     pub methods: Vec<Fn>,

@@ -49,6 +49,8 @@ pub struct Typer {
     pub(crate) loop_control_context: LoopControlContext,
     pub(crate) return_ty_stack: Vec<tast::Ty>,
     pub(crate) tparam_trait_bounds: HashMap<String, Vec<tast::TraitRef>>,
+    pub(crate) param_env_predicates: Vec<crate::env::TypePredicate>,
+    pub(crate) param_type_aliases: HashMap<String, tast::Ty>,
     pub(crate) array_wildcard_counter: usize,
     pub(crate) array_wildcard_resolutions: HashMap<usize, usize>,
 }
@@ -68,6 +70,8 @@ impl Typer {
             loop_control_context: LoopControlContext::Disallowed,
             return_ty_stack: Vec::new(),
             tparam_trait_bounds: HashMap::new(),
+            param_env_predicates: Vec::new(),
+            param_type_aliases: HashMap::new(),
             array_wildcard_counter: 0,
             array_wildcard_resolutions: HashMap::new(),
         }

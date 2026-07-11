@@ -84,6 +84,10 @@ impl Typer {
                     add(arg, self);
                 }
             }
+            Predicate::TypeEquality(goal) => {
+                add(&goal.lhs, self);
+                add(&goal.rhs, self);
+            }
             Predicate::Method(goal) => {
                 add(&goal.receiver_ty, self);
                 add(&goal.call_site_type, self);
@@ -423,11 +427,7 @@ impl Typer {
     }
 
     fn scheme_obligations(instantiated: &InstantiatedScheme) -> Vec<(Predicate, ObligationCause)> {
-        instantiated
-            .obligations
-            .iter()
-            .map(|(goal, cause)| (Predicate::Trait(goal.clone()), cause.clone()))
-            .collect()
+        instantiated.obligations.clone()
     }
 
     fn record_inherent_method_resolution(&mut self, goal: &MethodGoal, method_ty: tast::Ty) {
@@ -493,7 +493,7 @@ impl Typer {
 
     pub fn solve(&mut self, genv: &PackageTypeEnv, diagnostics: &mut Diagnostics) {
         self.reported_unresolved_type_origins.clear();
-        let param_env = ParamEnv::from_bounds(&self.tparam_trait_bounds);
+        let param_env = ParamEnv::from_predicates(&self.param_env_predicates);
         let mut trait_solver = TraitSolver::new(genv, &param_env);
         let mut worklist = ObligationWorklist::new(std::mem::take(&mut self.obligations));
         let mut reported = HashSet::new();
@@ -624,6 +624,11 @@ impl Typer {
                                 &cause,
                             ),
                         }
+                    }
+                    Predicate::TypeEquality(goal) => {
+                        let changed_variables =
+                            self.equate_and_collect(diagnostics, &goal.lhs, &goal.rhs, cause.span);
+                        worklist.wake(changed_variables);
                     }
                     Predicate::Method(goal) => {
                         match self.solve_method_goal(
@@ -1063,6 +1068,11 @@ impl Typer {
                         "Could not infer the type required to prove {}<{}>",
                         super::util::format_trait_ref_for_diag(&goal.trait_ref),
                         super::util::format_ty_for_diag(&self.norm(&goal.for_ty))
+                    ),
+                    Predicate::TypeEquality(goal) => format!(
+                        "Could not infer whether {} equals {}",
+                        super::util::format_ty_for_diag(&self.norm(&goal.lhs)),
+                        super::util::format_ty_for_diag(&self.norm(&goal.rhs))
                     ),
                     Predicate::Method(goal) => format!(
                         "Could not infer the receiver type for method {}",

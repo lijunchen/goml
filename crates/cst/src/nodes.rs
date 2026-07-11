@@ -279,6 +279,10 @@ impl Trait {
     pub fn trait_method_list(&self) -> Option<TraitMethodList> {
         support::child(&self.syntax)
     }
+
+    pub fn where_clause(&self) -> Option<WhereClause> {
+        support::child(&self.syntax)
+    }
 }
 
 impl_cst_node_simple!(Trait, MySyntaxKind::TRAIT);
@@ -353,6 +357,10 @@ impl Impl {
         support::children(&self.syntax).last()
     }
 
+    pub fn where_clause(&self) -> Option<WhereClause> {
+        support::child(&self.syntax)
+    }
+
     pub fn functions(&self) -> CstChildren<Fn> {
         support::children(&self.syntax)
     }
@@ -395,6 +403,41 @@ impl TraitSet {
 
 impl_cst_node_simple!(TraitSet, MySyntaxKind::TRAIT_SET);
 impl_display_via_syntax!(TraitSet);
+
+////////////////////////////////////////////////////////////////////////////////
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct WhereClause {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl WhereClause {
+    pub fn predicates(&self) -> CstChildren<WherePredicate> {
+        support::children(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(WhereClause, MySyntaxKind::WHERE_CLAUSE);
+impl_display_via_syntax!(WhereClause);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct WherePredicate {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl WherePredicate {
+    pub fn types(&self) -> CstChildren<Type> {
+        support::children(&self.syntax)
+    }
+
+    pub fn trait_set(&self) -> Option<TraitSet> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(WherePredicate, MySyntaxKind::WHERE_PREDICATE);
+impl_display_via_syntax!(WherePredicate);
 
 ////////////////////////////////////////////////////////////////////////////////
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -527,6 +570,10 @@ impl Fn {
         support::child(&self.syntax)
     }
 
+    pub fn where_clause(&self) -> Option<WhereClause> {
+        support::child(&self.syntax)
+    }
+
     pub fn block(&self) -> Option<Block> {
         support::child(&self.syntax)
     }
@@ -598,6 +645,10 @@ impl Extern {
     }
 
     pub fn return_type(&self) -> Option<Type> {
+        support::child(&self.syntax)
+    }
+
+    pub fn where_clause(&self) -> Option<WhereClause> {
         support::child(&self.syntax)
     }
 }

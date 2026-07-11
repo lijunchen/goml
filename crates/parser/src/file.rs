@@ -246,6 +246,9 @@ fn extern_decl_with_marker(p: &mut Parser, m: MarkerOpened) {
     if p.eat(T![->]) {
         type_expr(p);
     }
+    if p.at(T![where]) {
+        where_clause(p);
+    }
     p.close(m, MySyntaxKind::EXTERN);
 }
 
@@ -267,6 +270,9 @@ fn func_with_marker(p: &mut Parser, m: MarkerOpened) {
     if p.eat(T![->]) {
         type_expr(p);
     }
+    if p.at(T![where]) {
+        where_clause(p);
+    }
     if p.at(T!['{']) {
         block(p);
     }
@@ -287,6 +293,9 @@ fn impl_block_with_marker(p: &mut Parser, m: MarkerOpened) {
     type_expr(p);
     if p.eat(T![for]) {
         type_expr(p);
+    }
+    if p.at(T![where]) {
+        where_clause(p);
     }
     if p.at(T!['{']) {
         p.advance();
@@ -313,6 +322,9 @@ fn trait_def_with_marker(p: &mut Parser, m: MarkerOpened) {
     p.expect(T![ident]);
     if p.at(T!['[']) {
         generic_list(p, false);
+    }
+    if p.at(T![where]) {
+        where_clause(p);
     }
     if p.at(T!['{']) {
         trait_method_list(p);
@@ -520,6 +532,42 @@ fn trait_ref(p: &mut Parser) {
         type_param_list(p);
     }
     p.close(m, MySyntaxKind::TYPE_TAPP);
+}
+
+fn where_clause(p: &mut Parser) {
+    assert!(p.at(T![where]));
+    let m = p.open();
+    p.expect(T![where]);
+    while !p.eof() && !p.at(T!['{']) && !p.at(T![;]) {
+        where_predicate(p);
+        if !p.eat(T![,]) {
+            break;
+        }
+    }
+    p.close(m, MySyntaxKind::WHERE_CLAUSE);
+}
+
+fn where_predicate(p: &mut Parser) {
+    let m = p.open();
+    if p.at_any(TYPE_FIRST) {
+        type_expr(p);
+    } else {
+        p.advance_with_error("expected a type in where predicate");
+        p.close(m, MySyntaxKind::WHERE_PREDICATE);
+        return;
+    }
+    if p.eat(T![:]) {
+        trait_set(p);
+    } else if p.eat(T![==]) {
+        if p.at_any(TYPE_FIRST) {
+            type_expr(p);
+        } else {
+            p.advance_with_error("expected a type after '=='");
+        }
+    } else {
+        p.error("expected ':' or '==' in where predicate");
+    }
+    p.close(m, MySyntaxKind::WHERE_PREDICATE);
 }
 
 fn generic_list(p: &mut Parser, allow_bounds: bool) {

@@ -3,7 +3,7 @@ use std::{
     ops::ControlFlow,
 };
 
-use crate::tast;
+use crate::{env, tast};
 
 fn rewrite_ty(ty: &tast::Ty, rewrite: &mut impl FnMut(&tast::Ty) -> Option<tast::Ty>) -> tast::Ty {
     if let Some(rewritten) = rewrite(ty) {
@@ -82,6 +82,22 @@ pub(crate) fn substitute_trait_ref(
     }
 }
 
+pub(crate) fn substitute_predicate(
+    predicate: &env::TypePredicate,
+    subst: &HashMap<String, tast::Ty>,
+) -> env::TypePredicate {
+    match predicate {
+        env::TypePredicate::Trait { for_ty, trait_ref } => env::TypePredicate::Trait {
+            for_ty: substitute_ty_params(for_ty, subst),
+            trait_ref: substitute_trait_ref(trait_ref, subst),
+        },
+        env::TypePredicate::Equality { lhs, rhs } => env::TypePredicate::Equality {
+            lhs: substitute_ty_params(lhs, subst),
+            rhs: substitute_ty_params(rhs, subst),
+        },
+    }
+}
+
 pub(crate) fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
     rewrite_ty(ty, &mut |ty| match ty {
         tast::Ty::TStruct { name } if name == "Self" => Some(self_ty.clone()),
@@ -106,6 +122,22 @@ pub(crate) fn rename_trait_params(trait_ref: &tast::TraitRef, prefix: &str) -> t
             .iter()
             .map(|arg| rename_type_params(arg, prefix))
             .collect(),
+    }
+}
+
+pub(crate) fn rename_predicate_params(
+    predicate: &env::TypePredicate,
+    prefix: &str,
+) -> env::TypePredicate {
+    match predicate {
+        env::TypePredicate::Trait { for_ty, trait_ref } => env::TypePredicate::Trait {
+            for_ty: rename_type_params(for_ty, prefix),
+            trait_ref: rename_trait_params(trait_ref, prefix),
+        },
+        env::TypePredicate::Equality { lhs, rhs } => env::TypePredicate::Equality {
+            lhs: rename_type_params(lhs, prefix),
+            rhs: rename_type_params(rhs, prefix),
+        },
     }
 }
 

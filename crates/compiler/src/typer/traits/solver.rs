@@ -10,8 +10,8 @@ use crate::{
         traits::index::{ImplCandidate, ImplId, ImplIndex},
         traits::matching::trait_impl_subst,
         type_ops::{
-            contains_tvar, substitute_trait_ref, substitute_ty_params, trait_ref_type_vars,
-            type_vars,
+            contains_tvar, substitute_predicate, substitute_trait_ref, substitute_ty_params,
+            trait_ref_type_vars, type_vars,
         },
     },
 };
@@ -89,30 +89,35 @@ impl<'a> TraitSolver<'a> {
     fn select_param_env(&self, typer: &mut Typer, goal: &TraitGoal) -> Option<SelectionResult> {
         let matching = self
             .param_env
-            .bounds_for(goal)
+            .predicates()
             .iter()
-            .filter(|bound| {
-                bound.name == goal.trait_ref.name && bound.args.len() == goal.trait_ref.args.len()
+            .filter_map(|predicate| {
+                let env::TypePredicate::Trait { for_ty, trait_ref } = predicate else {
+                    return None;
+                };
+                (trait_ref.name == goal.trait_ref.name
+                    && trait_ref.args.len() == goal.trait_ref.args.len())
+                .then_some((for_ty, trait_ref))
             })
-            .cloned()
             .collect::<Vec<_>>();
         if matching.is_empty() {
             return None;
         }
         let mut successful = Vec::new();
-        for bound in matching {
+        for (for_ty, bound) in matching {
             let snapshot = typer.snapshot_inference();
-            let matches = bound
-                .args
-                .iter()
-                .zip(goal.trait_ref.args.iter())
-                .all(|(bound, goal)| typer.try_unify_silent(bound, goal));
+            let matches = typer.try_unify_silent(for_ty, &goal.for_ty)
+                && bound
+                    .args
+                    .iter()
+                    .zip(goal.trait_ref.args.iter())
+                    .all(|(bound, goal)| typer.try_unify_silent(bound, goal));
             typer.rollback_inference(snapshot);
             if matches {
-                successful.push(bound);
+                successful.push((for_ty.clone(), bound.clone()));
             }
         }
-        let [bound] = successful.as_slice() else {
+        let [(for_ty, bound)] = successful.as_slice() else {
             return (!successful.is_empty()).then_some(SelectionResult::Ambiguous(Vec::new()));
         };
         let changed_variables = type_vars(&goal.for_ty)
@@ -120,11 +125,12 @@ impl<'a> TraitSolver<'a> {
             .chain(trait_ref_type_vars(&goal.trait_ref))
             .collect();
         let snapshot = typer.snapshot_inference();
-        let matches = bound
-            .args
-            .iter()
-            .zip(goal.trait_ref.args.iter())
-            .all(|(bound, goal)| typer.try_unify_silent(bound, goal));
+        let matches = typer.try_unify_silent(for_ty, &goal.for_ty)
+            && bound
+                .args
+                .iter()
+                .zip(goal.trait_ref.args.iter())
+                .all(|(bound, goal)| typer.try_unify_silent(bound, goal));
         if !matches {
             typer.rollback_inference(snapshot);
             return Some(SelectionResult::NoSolution);
@@ -292,29 +298,35 @@ impl<'a> TraitSolver<'a> {
         {
             return CandidateResult::Failure;
         }
-        for constraint in &candidate.definition.constraints {
-            let Some(for_ty) = substitution.get(&constraint.type_param) else {
-                return CandidateResult::Failure;
-            };
-            let nested = TraitGoal {
-                trait_ref: substitute_trait_ref(&constraint.trait_ref, &substitution),
-                for_ty: typer.norm(for_ty),
-            };
-            match self.select_at_depth(typer, nested.clone(), depth) {
-                SelectionResult::Unique(_) => {}
-                SelectionResult::NoSolution
-                    if contains_tvar(&typer.norm(&nested.for_ty))
-                        || nested
-                            .trait_ref
-                            .args
-                            .iter()
-                            .any(|arg| contains_tvar(&typer.norm(arg))) =>
-                {
-                    return CandidateResult::Ambiguous;
+        for predicate in &candidate.definition.constraints {
+            match substitute_predicate(predicate, &substitution) {
+                env::TypePredicate::Trait { for_ty, trait_ref } => {
+                    let nested = TraitGoal {
+                        trait_ref,
+                        for_ty: typer.norm(&for_ty),
+                    };
+                    match self.select_at_depth(typer, nested.clone(), depth) {
+                        SelectionResult::Unique(_) => {}
+                        SelectionResult::NoSolution
+                            if contains_tvar(&typer.norm(&nested.for_ty))
+                                || nested
+                                    .trait_ref
+                                    .args
+                                    .iter()
+                                    .any(|arg| contains_tvar(&typer.norm(arg))) =>
+                        {
+                            return CandidateResult::Ambiguous;
+                        }
+                        SelectionResult::NoSolution => return CandidateResult::Failure,
+                        SelectionResult::Ambiguous(_) => return CandidateResult::Ambiguous,
+                        SelectionResult::Overflow => return CandidateResult::Overflow,
+                    }
                 }
-                SelectionResult::NoSolution => return CandidateResult::Failure,
-                SelectionResult::Ambiguous(_) => return CandidateResult::Ambiguous,
-                SelectionResult::Overflow => return CandidateResult::Overflow,
+                env::TypePredicate::Equality { lhs, rhs } => {
+                    if !typer.try_unify_silent(&lhs, &rhs) {
+                        return CandidateResult::Failure;
+                    }
+                }
             }
         }
         CandidateResult::Success(
@@ -329,12 +341,13 @@ impl<'a> TraitSolver<'a> {
         if depth >= MAX_GOAL_DEPTH {
             return SelectionResult::Overflow;
         }
-        if self
-            .param_env
-            .bounds_for(&goal)
-            .iter()
-            .any(|bound| bound == &goal.trait_ref)
-        {
+        if self.param_env.predicates().iter().any(|predicate| {
+            matches!(
+                predicate,
+                env::TypePredicate::Trait { for_ty, trait_ref }
+                    if for_ty == &goal.for_ty && trait_ref == &goal.trait_ref
+            )
+        }) {
             return SelectionResult::Unique(Selection {
                 source: SelectionSource::ParamEnv,
                 changed_variables: HashSet::new(),
@@ -430,19 +443,22 @@ impl<'a> TraitSolver<'a> {
         {
             return CandidateResult::Failure;
         }
-        for constraint in &candidate.definition.constraints {
-            let Some(for_ty) = substitution.get(&constraint.type_param) else {
-                return CandidateResult::Failure;
-            };
-            let nested = TraitGoal {
-                trait_ref: substitute_trait_ref(&constraint.trait_ref, &substitution),
-                for_ty: for_ty.clone(),
-            };
-            match self.select_ground_at_depth(nested, depth) {
-                SelectionResult::Unique(_) => {}
-                SelectionResult::NoSolution => return CandidateResult::Failure,
-                SelectionResult::Ambiguous(_) => return CandidateResult::Ambiguous,
-                SelectionResult::Overflow => return CandidateResult::Overflow,
+        for predicate in &candidate.definition.constraints {
+            match substitute_predicate(predicate, &substitution) {
+                env::TypePredicate::Trait { for_ty, trait_ref } => {
+                    let nested = TraitGoal { trait_ref, for_ty };
+                    match self.select_ground_at_depth(nested, depth) {
+                        SelectionResult::Unique(_) => {}
+                        SelectionResult::NoSolution => return CandidateResult::Failure,
+                        SelectionResult::Ambiguous(_) => return CandidateResult::Ambiguous,
+                        SelectionResult::Overflow => return CandidateResult::Overflow,
+                    }
+                }
+                env::TypePredicate::Equality { lhs, rhs } => {
+                    if lhs != rhs {
+                        return CandidateResult::Failure;
+                    }
+                }
             }
         }
         CandidateResult::Success(substitution)

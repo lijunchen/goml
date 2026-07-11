@@ -838,7 +838,7 @@ fn infer_expr(ctx: CheckContext, node: ast::Node, bindings: Ref[Vec[Binding]]) -
 }
 
 fn check_fn(ctx: CheckContext, module: string, item: ast::Node) -> unit {
-    if item.children.len() > 3 {
+    if item.children.len() > 4 {
         ctx.current_module.set(module);
         let ret = type_text(module, child(item, 2));
         ctx.current_return.set(ret);
@@ -855,7 +855,7 @@ fn check_fn(ctx: CheckContext, module: string, item: ast::Node) -> unit {
             push_binding(bindings, param.text, ty);
             i.set(i.get() + 1);
         };
-        let actual = infer_expr(ctx, child(item, 3), bindings);
+        let actual = infer_expr(ctx, child(item, 4), bindings);
         check_expected(ctx, item, ret, actual, "function `" + item.text + "` return type mismatch");
     } else {
         ()

@@ -490,6 +490,7 @@ impl NameResolution {
                                 name: full_name.clone(),
                                 generics: Vec::new(),
                                 generic_bounds: Vec::new(),
+                                predicates: Vec::new(),
                                 params: Vec::new(),
                                 ret_ty: None,
                                 body: hir::Block {
@@ -559,6 +560,7 @@ impl NameResolution {
                             attrs: Vec::new(),
                             generics: Vec::new(),
                             generic_bounds: Vec::new(),
+                            predicates: Vec::new(),
                             trait_ref: None,
                             for_type: hir::TypeExpr::TUnit,
                             methods: Vec::new(),
@@ -643,6 +645,11 @@ impl NameResolution {
                             attrs: i.attrs.iter().map(|a| a.into()).collect(),
                             generics: i.generics.iter().map(|g| HirIdent::name(&g.0)).collect(),
                             generic_bounds,
+                            predicates: i
+                                .predicates
+                                .iter()
+                                .map(|predicate| self.lower_predicate(predicate, &tparams, &ctx))
+                                .collect(),
                             trait_ref,
                             for_type: self.lower_type_expr(
                                 &i.for_type,
@@ -754,6 +761,7 @@ impl NameResolution {
                 name: func.name.0.clone(),
                 generics: Vec::new(),
                 generic_bounds: Vec::new(),
+                predicates: Vec::new(),
                 params: Vec::new(),
                 ret_ty: None,
                 body: hir::Block {
@@ -779,6 +787,7 @@ impl NameResolution {
             attrs,
             generics,
             generic_bounds,
+            predicates,
             params,
             ret_ty,
             body,
@@ -824,6 +833,10 @@ impl NameResolution {
             name: resolved_name,
             generics: generics.iter().map(|g| HirIdent::name(&g.0)).collect(),
             generic_bounds: new_generic_bounds,
+            predicates: predicates
+                .iter()
+                .map(|predicate| self.lower_predicate(predicate, &tparams, ctx))
+                .collect(),
             params: new_params,
             ret_ty: ret_ty.as_ref().map(|t| {
                 self.lower_type_expr(
@@ -1883,6 +1896,19 @@ impl NameResolution {
             attrs: def.attrs.iter().map(|a| a.into()).collect(),
             name: HirIdent::name(&name),
             generics: def.generics.iter().map(|g| HirIdent::name(&g.0)).collect(),
+            predicates: def
+                .predicates
+                .iter()
+                .map(|predicate| {
+                    self.lower_predicate_without_context(
+                        predicate,
+                        &tparams,
+                        current_package,
+                        imports,
+                        use_aliases,
+                    )
+                })
+                .collect(),
             method_sigs,
         }
     }
@@ -1908,6 +1934,81 @@ impl NameResolution {
                     )
                 })
                 .collect(),
+        }
+    }
+
+    fn lower_predicate(
+        &mut self,
+        predicate: &ast::Predicate,
+        tparams: &HashSet<String>,
+        ctx: &ResolutionContext,
+    ) -> hir::Predicate {
+        match predicate {
+            ast::Predicate::Trait { ty, trait_ref } => hir::Predicate::Trait {
+                ty: self.lower_type_expr(
+                    ty,
+                    tparams,
+                    ctx.current_package,
+                    ctx.imports,
+                    ctx.use_aliases,
+                ),
+                trait_ref: self.lower_trait_ref(trait_ref, tparams, ctx),
+            },
+            ast::Predicate::Equality { lhs, rhs } => hir::Predicate::Equality {
+                lhs: self.lower_type_expr(
+                    lhs,
+                    tparams,
+                    ctx.current_package,
+                    ctx.imports,
+                    ctx.use_aliases,
+                ),
+                rhs: self.lower_type_expr(
+                    rhs,
+                    tparams,
+                    ctx.current_package,
+                    ctx.imports,
+                    ctx.use_aliases,
+                ),
+            },
+        }
+    }
+
+    fn lower_predicate_without_context(
+        &mut self,
+        predicate: &ast::Predicate,
+        tparams: &HashSet<String>,
+        current_package: &str,
+        imports: &HashSet<String>,
+        use_aliases: &UseAliases,
+    ) -> hir::Predicate {
+        match predicate {
+            ast::Predicate::Trait { ty, trait_ref } => {
+                let qualified =
+                    self.resolve_qualified_path_with_aliases(&trait_ref.path, use_aliases);
+                hir::Predicate::Trait {
+                    ty: self.lower_type_expr(ty, tparams, current_package, imports, use_aliases),
+                    trait_ref: hir::TraitRef {
+                        name: HirIdent::name(qualified.display()),
+                        args: trait_ref
+                            .args
+                            .iter()
+                            .map(|arg| {
+                                self.lower_type_expr(
+                                    arg,
+                                    tparams,
+                                    current_package,
+                                    imports,
+                                    use_aliases,
+                                )
+                            })
+                            .collect(),
+                    },
+                }
+            }
+            ast::Predicate::Equality { lhs, rhs } => hir::Predicate::Equality {
+                lhs: self.lower_type_expr(lhs, tparams, current_package, imports, use_aliases),
+                rhs: self.lower_type_expr(rhs, tparams, current_package, imports, use_aliases),
+            },
         }
     }
 
@@ -1993,6 +2094,19 @@ impl NameResolution {
             name: HirIdent::name(&name),
             generics: def.generics.iter().map(|g| HirIdent::name(&g.0)).collect(),
             generic_bounds,
+            predicates: def
+                .predicates
+                .iter()
+                .map(|predicate| {
+                    self.lower_predicate_without_context(
+                        predicate,
+                        &tparams,
+                        current_package,
+                        imports,
+                        use_aliases,
+                    )
+                })
+                .collect(),
             params: def
                 .params
                 .iter()

@@ -593,7 +593,7 @@ fn add_fn_constraints_from_bounds(
     known_type_params: &HashSet<String>,
     type_params: &[tast::TastIdent],
     bounds: &[(hir::HirIdent, Vec<hir::TraitRef>)],
-    constraints: &mut Vec<env::FnConstraint>,
+    constraints: &mut Vec<env::TypePredicate>,
 ) {
     for (param, traits) in bounds.iter() {
         let param_name = param.to_ident_name();
@@ -605,8 +605,10 @@ fn add_fn_constraints_from_bounds(
             else {
                 continue;
             };
-            let constraint = env::FnConstraint {
-                type_param: param_name.clone(),
+            let constraint = env::TypePredicate::Trait {
+                for_ty: tast::Ty::TParam {
+                    name: param_name.clone(),
+                },
                 trait_ref,
             };
             if !constraints.contains(&constraint) {
@@ -616,12 +618,68 @@ fn add_fn_constraints_from_bounds(
     }
 }
 
+fn add_type_predicates(
+    env: &PackageTypeEnv,
+    diagnostics: &mut Diagnostics,
+    known_type_params: &HashSet<String>,
+    type_params: &[tast::TastIdent],
+    predicates: &[hir::Predicate],
+    constraints: &mut Vec<env::TypePredicate>,
+) {
+    for predicate in predicates {
+        let predicate = match predicate {
+            hir::Predicate::Trait { ty, trait_ref } => {
+                let for_ty = tast::Ty::from_hir(env, ty, type_params);
+                validate_decl_ty(
+                    env,
+                    diagnostics,
+                    &for_ty,
+                    type_expr_range(ty),
+                    known_type_params,
+                );
+                let Some(trait_ref) =
+                    resolve_hir_trait_ref(env, diagnostics, trait_ref, type_params)
+                else {
+                    continue;
+                };
+                env::TypePredicate::Trait { for_ty, trait_ref }
+            }
+            hir::Predicate::Equality { lhs, rhs } => {
+                let lhs_ty = tast::Ty::from_hir(env, lhs, type_params);
+                let rhs_ty = tast::Ty::from_hir(env, rhs, type_params);
+                validate_decl_ty(
+                    env,
+                    diagnostics,
+                    &lhs_ty,
+                    type_expr_range(lhs),
+                    known_type_params,
+                );
+                validate_decl_ty(
+                    env,
+                    diagnostics,
+                    &rhs_ty,
+                    type_expr_range(rhs),
+                    known_type_params,
+                );
+                env::TypePredicate::Equality {
+                    lhs: lhs_ty,
+                    rhs: rhs_ty,
+                }
+            }
+        };
+        if !constraints.contains(&predicate) {
+            constraints.push(predicate);
+        }
+    }
+}
+
 fn build_fn_constraints(
     env: &PackageTypeEnv,
     diagnostics: &mut Diagnostics,
     generics: &[hir::HirIdent],
     bounds: &[(hir::HirIdent, Vec<hir::TraitRef>)],
-) -> Vec<env::FnConstraint> {
+    predicates: &[hir::Predicate],
+) -> Vec<env::TypePredicate> {
     let known_type_params = generics
         .iter()
         .map(|param| param.to_ident_name())
@@ -639,6 +697,14 @@ fn build_fn_constraints(
         bounds,
         &mut constraints,
     );
+    add_type_predicates(
+        env,
+        diagnostics,
+        &known_type_params,
+        &type_params,
+        predicates,
+        &mut constraints,
+    );
     constraints
 }
 
@@ -647,8 +713,10 @@ fn build_method_constraints(
     diagnostics: &mut Diagnostics,
     all_generics: &[hir::HirIdent],
     impl_bounds: &[(hir::HirIdent, Vec<hir::TraitRef>)],
+    impl_predicates: &[hir::Predicate],
     method_bounds: &[(hir::HirIdent, Vec<hir::TraitRef>)],
-) -> Vec<env::FnConstraint> {
+    method_predicates: &[hir::Predicate],
+) -> Vec<env::TypePredicate> {
     let known_type_params = all_generics
         .iter()
         .map(|param| param.to_ident_name())
@@ -666,12 +734,28 @@ fn build_method_constraints(
         impl_bounds,
         &mut constraints,
     );
+    add_type_predicates(
+        env,
+        diagnostics,
+        &known_type_params,
+        &type_params,
+        impl_predicates,
+        &mut constraints,
+    );
     add_fn_constraints_from_bounds(
         env,
         diagnostics,
         &known_type_params,
         &type_params,
         method_bounds,
+        &mut constraints,
+    );
+    add_type_predicates(
+        env,
+        diagnostics,
+        &known_type_params,
+        &type_params,
+        method_predicates,
         &mut constraints,
     );
     constraints
@@ -749,6 +833,7 @@ fn define_trait_impl(
         diagnostics,
         &impl_block.generics,
         &impl_block.generic_bounds,
+        &impl_block.predicates,
     );
     validate_decl_ty(
         env,
@@ -1012,8 +1097,13 @@ fn define_trait_impl(
 
         if method_ok {
             let type_params: Vec<String> = all_generics.iter().map(|g| g.to_ident_name()).collect();
-            let constraints =
-                build_fn_constraints(env, diagnostics, &all_generics, &m.generic_bounds);
+            let constraints = build_fn_constraints(
+                env,
+                diagnostics,
+                &all_generics,
+                &m.generic_bounds,
+                &m.predicates,
+            );
             impl_methods.insert(
                 method_name_str.clone(),
                 env::FnScheme {
@@ -1228,7 +1318,9 @@ fn define_inherent_impl(
             diagnostics,
             &all_generics,
             &impl_block.generic_bounds,
+            &impl_block.predicates,
             &m.generic_bounds,
+            &m.predicates,
         );
 
         methods_to_add.insert(
@@ -1305,8 +1397,13 @@ fn define_function(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, func
         }
         None => tast::Ty::TUnit,
     };
-    let fn_constraints =
-        build_fn_constraints(env, diagnostics, &func.generics, &func.generic_bounds);
+    let fn_constraints = build_fn_constraints(
+        env,
+        diagnostics,
+        &func.generics,
+        &func.generic_bounds,
+        &func.predicates,
+    );
     env.current_mut().value_env.funcs.insert(
         name,
         FnScheme {
@@ -1375,7 +1472,13 @@ fn define_extern_fn(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, ext
         }
         None => tast::Ty::TUnit,
     };
-    let fn_constraints = build_fn_constraints(env, diagnostics, &ext.generics, &ext.generic_bounds);
+    let fn_constraints = build_fn_constraints(
+        env,
+        diagnostics,
+        &ext.generics,
+        &ext.generic_bounds,
+        &ext.predicates,
+    );
     let type_params = ext
         .generics
         .iter()
@@ -1387,11 +1490,14 @@ fn define_extern_fn(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, ext
     };
     let contract_constraints = fn_constraints
         .iter()
-        .map(|constraint| {
-            (
-                constraint.type_param.clone(),
-                constraint.trait_ref.name.0.clone(),
-            )
+        .filter_map(|predicate| {
+            let env::TypePredicate::Trait { for_ty, trait_ref } = predicate else {
+                return None;
+            };
+            let tast::Ty::TParam { name } = for_ty else {
+                return None;
+            };
+            Some((name.clone(), trait_ref.name.0.clone()))
         })
         .collect::<Vec<_>>();
     if let Err(message) =
@@ -1922,6 +2028,100 @@ fn normalize_trait_bounds(bounds: &mut indexmap::IndexMap<String, Vec<tast::Trai
     }
 }
 
+fn build_param_env_predicates(
+    genv: &PackageTypeEnv,
+    tparams: &[tast::TastIdent],
+    bounds: &indexmap::IndexMap<String, Vec<tast::TraitRef>>,
+    predicates: &[hir::Predicate],
+    self_ty: Option<&tast::Ty>,
+) -> Vec<env::TypePredicate> {
+    let mut result = bounds
+        .iter()
+        .flat_map(|(name, traits)| {
+            traits
+                .iter()
+                .cloned()
+                .map(|trait_ref| env::TypePredicate::Trait {
+                    for_ty: tast::Ty::TParam { name: name.clone() },
+                    trait_ref,
+                })
+        })
+        .collect::<Vec<_>>();
+    for predicate in predicates {
+        let predicate = match predicate {
+            hir::Predicate::Trait { ty, trait_ref } => {
+                let Some(trait_ref) = resolve_hir_trait_ref_silent(genv, trait_ref, tparams) else {
+                    continue;
+                };
+                env::TypePredicate::Trait {
+                    for_ty: tast::Ty::from_hir(genv, ty, tparams),
+                    trait_ref,
+                }
+            }
+            hir::Predicate::Equality { lhs, rhs } => env::TypePredicate::Equality {
+                lhs: tast::Ty::from_hir(genv, lhs, tparams),
+                rhs: tast::Ty::from_hir(genv, rhs, tparams),
+            },
+        };
+        let predicate = match (predicate, self_ty) {
+            (env::TypePredicate::Trait { for_ty, trait_ref }, Some(self_ty)) => {
+                env::TypePredicate::Trait {
+                    for_ty: instantiate_self_ty(&for_ty, self_ty),
+                    trait_ref: tast::TraitRef {
+                        name: trait_ref.name,
+                        args: trait_ref
+                            .args
+                            .iter()
+                            .map(|arg| instantiate_self_ty(arg, self_ty))
+                            .collect(),
+                    },
+                }
+            }
+            (env::TypePredicate::Equality { lhs, rhs }, Some(self_ty)) => {
+                env::TypePredicate::Equality {
+                    lhs: instantiate_self_ty(&lhs, self_ty),
+                    rhs: instantiate_self_ty(&rhs, self_ty),
+                }
+            }
+            (predicate, None) => predicate,
+        };
+        if !result.contains(&predicate) {
+            result.push(predicate);
+        }
+    }
+    result
+}
+
+fn predicate_type_aliases(predicates: &[env::TypePredicate]) -> HashMap<String, tast::Ty> {
+    let mut aliases = HashMap::new();
+    for predicate in predicates {
+        let env::TypePredicate::Equality { lhs, rhs } = predicate else {
+            continue;
+        };
+        let _ = super::traits::coherence::unify(lhs, rhs, &mut aliases);
+    }
+    aliases
+}
+
+fn normalize_type_predicate(
+    typer: &mut Typer,
+    predicate: &env::TypePredicate,
+) -> env::TypePredicate {
+    match predicate {
+        env::TypePredicate::Trait { for_ty, trait_ref } => env::TypePredicate::Trait {
+            for_ty: typer.norm(for_ty),
+            trait_ref: tast::TraitRef {
+                name: trait_ref.name.clone(),
+                args: trait_ref.args.iter().map(|arg| typer.norm(arg)).collect(),
+            },
+        },
+        env::TypePredicate::Equality { lhs, rhs } => env::TypePredicate::Equality {
+            lhs: typer.norm(lhs),
+            rhs: typer.norm(rhs),
+        },
+    }
+}
+
 fn validate_function_parameter_names(
     diagnostics: &mut Diagnostics,
     hir_table: &hir::HirTable,
@@ -1964,6 +2164,7 @@ fn typecheck_fn(
             in_scope_traits,
             tparams: &tparams,
             bounds,
+            predicates: f.predicates.clone(),
             self_ty: None,
         },
     );
@@ -1998,6 +2199,8 @@ fn typecheck_impl_block(
         extend_trait_bounds(genv, &mut bounds, &impl_block.generic_bounds);
         extend_trait_bounds(genv, &mut bounds, &f.generic_bounds);
         normalize_trait_bounds(&mut bounds);
+        let mut predicates = impl_block.predicates.clone();
+        predicates.extend(f.predicates.clone());
         typecheck_function_body(
             genv,
             typer,
@@ -2007,6 +2210,7 @@ fn typecheck_impl_block(
                 in_scope_traits,
                 tparams: &tparams,
                 bounds,
+                predicates,
                 self_ty: Some(&for_ty),
             },
         );
@@ -2018,6 +2222,7 @@ struct FunctionCheck<'a> {
     in_scope_traits: &'a [tast::TastIdent],
     tparams: &'a [tast::TastIdent],
     bounds: IndexMap<String, Vec<tast::TraitRef>>,
+    predicates: Vec<hir::Predicate>,
     self_ty: Option<&'a tast::Ty>,
 }
 
@@ -2032,12 +2237,16 @@ fn typecheck_function_body(
         in_scope_traits,
         tparams,
         bounds,
+        predicates,
         self_ty,
     } = check;
     validate_function_parameter_names(diagnostics, &typer.hir_table, function);
     let mut local_env = LocalTypeEnv::new();
     local_env.set_in_scope_traits(in_scope_traits.to_vec());
+    let predicates = build_param_env_predicates(genv, tparams, &bounds, &predicates, self_ty);
+    typer.param_type_aliases = predicate_type_aliases(&predicates);
     local_env.set_tparam_trait_bounds(bounds);
+    local_env.set_predicates(predicates);
 
     let param_types = function
         .params
@@ -2079,7 +2288,15 @@ fn typecheck_function_body(
         .iter()
         .map(|(name, traits)| (name.clone(), traits.clone()))
         .collect();
+    typer.param_env_predicates = local_env
+        .predicates()
+        .iter()
+        .map(|predicate| normalize_type_predicate(typer, predicate))
+        .collect();
     local_env.clear_tparam_trait_bounds();
+    local_env.clear_predicates();
     typer.solve(genv, diagnostics);
     typer.tparam_trait_bounds.clear();
+    typer.param_env_predicates.clear();
+    typer.param_type_aliases.clear();
 }

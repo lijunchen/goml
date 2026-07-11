@@ -386,6 +386,7 @@ fn lower_trait(ctx: &mut LowerCtx, node: cst::Trait) -> Option<ast::TraitDef> {
         visibility,
         name: ast::AstIdent::new(&name),
         generics,
+        predicates: lower_where_clause(ctx, node.where_clause()),
         method_sigs: methods,
     })
 }
@@ -404,6 +405,46 @@ fn lower_trait_ref(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::TraitRef>
         .map(|list| list.types().filter_map(|ty| lower_ty(ctx, ty)).collect())
         .unwrap_or_default();
     Some(ast::TraitRef { path, args })
+}
+
+fn lower_where_clause(ctx: &mut LowerCtx, clause: Option<cst::WhereClause>) -> Vec<ast::Predicate> {
+    let Some(clause) = clause else {
+        return Vec::new();
+    };
+    let mut predicates = Vec::new();
+    for predicate in clause.predicates() {
+        let mut types = predicate.types();
+        let Some(lhs_node) = types.next() else {
+            ctx.push_error(
+                Some(predicate.syntax().text_range()),
+                "Where predicate is missing a type",
+            );
+            continue;
+        };
+        let Some(lhs) = lower_ty(ctx, lhs_node) else {
+            continue;
+        };
+        if let Some(trait_set) = predicate.trait_set() {
+            for trait_node in trait_set.traits() {
+                if let Some(trait_ref) = lower_trait_ref(ctx, trait_node) {
+                    predicates.push(ast::Predicate::Trait {
+                        ty: lhs.clone(),
+                        trait_ref,
+                    });
+                }
+            }
+        } else if let Some(rhs_node) = types.next() {
+            if let Some(rhs) = lower_ty(ctx, rhs_node) {
+                predicates.push(ast::Predicate::Equality { lhs, rhs });
+            }
+        } else {
+            ctx.push_error(
+                Some(predicate.syntax().text_range()),
+                "Equality predicate is missing its right-hand type",
+            );
+        }
+    }
+    predicates
 }
 
 fn lower_trait_method(
@@ -496,6 +537,7 @@ fn lower_impl_block(ctx: &mut LowerCtx, node: cst::Impl) -> Option<ast::ImplBloc
         attrs,
         generics,
         generic_bounds,
+        predicates: lower_where_clause(ctx, node.where_clause()),
         trait_ref,
         for_type,
         methods,
@@ -736,6 +778,7 @@ fn lower_fn(ctx: &mut LowerCtx, node: cst::Fn) -> Option<ast::Fn> {
         name: ast::AstIdent(name),
         generics,
         generic_bounds,
+        predicates: lower_where_clause(ctx, node.where_clause()),
         params,
         ret_ty,
         body,
@@ -814,6 +857,7 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
             name: ast::AstIdent(name),
             generics,
             generic_bounds,
+            predicates: lower_where_clause(ctx, node.where_clause()),
             params,
             ret_ty,
         }));

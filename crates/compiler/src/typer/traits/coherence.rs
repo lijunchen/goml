@@ -7,8 +7,8 @@ use crate::{
         obligations::{ParamEnv, TraitGoal},
         traits::solver::{SelectionResult, TraitSolver},
         type_ops::{
-            contains_tparam, rename_trait_params, rename_type_params, substitute_ty_params,
-            trait_ref_contains_tparam,
+            contains_tparam, rename_predicate_params, rename_trait_params, rename_type_params,
+            substitute_ty_params, trait_ref_contains_tparam,
         },
     },
 };
@@ -54,29 +54,32 @@ pub(crate) fn impls_overlap(
                 .iter()
                 .map(|constraint| ("right", constraint)),
         )
-        .all(|(prefix, constraint)| {
-            let for_ty = resolve(
-                &tast::Ty::TParam {
-                    name: format!("{prefix}::{}", constraint.type_param),
-                },
-                &subst,
-            );
-            let trait_ref = rename_trait_params(&constraint.trait_ref, prefix);
-            let trait_ref = tast::TraitRef {
-                name: trait_ref.name,
-                args: trait_ref
-                    .args
-                    .iter()
-                    .map(|arg| resolve(arg, &subst))
-                    .collect(),
-            };
-            contains_tparam(&for_ty)
-                || trait_ref_contains_tparam(&trait_ref)
-                || matches!(
-                    solver.select_ground(TraitGoal { trait_ref, for_ty }),
-                    SelectionResult::Unique(_)
-                )
-        })
+        .all(
+            |(prefix, predicate)| match rename_predicate_params(predicate, prefix) {
+                crate::env::TypePredicate::Trait { for_ty, trait_ref } => {
+                    let for_ty = resolve(&for_ty, &subst);
+                    let trait_ref = tast::TraitRef {
+                        name: trait_ref.name,
+                        args: trait_ref
+                            .args
+                            .iter()
+                            .map(|arg| resolve(arg, &subst))
+                            .collect(),
+                    };
+                    contains_tparam(&for_ty)
+                        || trait_ref_contains_tparam(&trait_ref)
+                        || matches!(
+                            solver.select_ground(TraitGoal { trait_ref, for_ty }),
+                            SelectionResult::Unique(_)
+                        )
+                }
+                crate::env::TypePredicate::Equality { lhs, rhs } => {
+                    let lhs = resolve(&lhs, &subst);
+                    let rhs = resolve(&rhs, &subst);
+                    contains_tparam(&lhs) || contains_tparam(&rhs) || lhs == rhs
+                }
+            },
+        )
 }
 
 fn resolve(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tast::Ty {
@@ -143,7 +146,11 @@ fn bind(name: &str, ty: &tast::Ty, subst: &mut HashMap<String, tast::Ty>) -> boo
     true
 }
 
-fn unify(left: &tast::Ty, right: &tast::Ty, subst: &mut HashMap<String, tast::Ty>) -> bool {
+pub(crate) fn unify(
+    left: &tast::Ty,
+    right: &tast::Ty,
+    subst: &mut HashMap<String, tast::Ty>,
+) -> bool {
     let left = resolve(left, subst);
     let right = resolve(right, subst);
     match (&left, &right) {

@@ -26,15 +26,21 @@ pub struct StructDef {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct FnConstraint {
-    pub type_param: String,
-    pub trait_ref: tast::TraitRef,
+pub enum TypePredicate {
+    Trait {
+        for_ty: tast::Ty,
+        trait_ref: tast::TraitRef,
+    },
+    Equality {
+        lhs: tast::Ty,
+        rhs: tast::Ty,
+    },
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct FnScheme {
     pub type_params: Vec<String>,
-    pub constraints: Vec<FnConstraint>,
+    pub constraints: Vec<TypePredicate>,
     pub ty: tast::Ty,
     #[serde(default)]
     pub body: CallableBody,
@@ -56,7 +62,7 @@ pub struct TraitImplKey {
 pub struct ImplDef {
     pub params: Vec<TastIdent>,
     #[serde(default)]
-    pub constraints: Vec<FnConstraint>,
+    pub constraints: Vec<TypePredicate>,
     pub methods: IndexMap<String, FnScheme>,
     #[serde(default = "impl_is_valid")]
     pub valid: bool,
@@ -323,9 +329,8 @@ impl TraitEnv {
             .collect::<HashMap<_, _>>();
         let mut scheme = trait_def.methods.get(&method_name.0)?.clone();
         scheme.ty = crate::typer::type_ops::substitute_ty_params(&scheme.ty, &substitution);
-        for constraint in &mut scheme.constraints {
-            constraint.trait_ref =
-                crate::typer::type_ops::substitute_trait_ref(&constraint.trait_ref, &substitution);
+        for predicate in &mut scheme.constraints {
+            *predicate = crate::typer::type_ops::substitute_predicate(predicate, &substitution);
         }
         Some(scheme)
     }

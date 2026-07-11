@@ -1059,6 +1059,7 @@ pub struct Fn {
     pub name: String,
     pub generics: Vec<HirIdent>,
     pub generic_bounds: Vec<(HirIdent, Vec<TraitRef>)>,
+    pub predicates: Vec<Predicate>,
     pub params: Vec<(LocalId, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
     pub body: Block,
@@ -1070,6 +1071,7 @@ pub struct ExternFn {
     pub name: HirIdent,
     pub generics: Vec<HirIdent>,
     pub generic_bounds: Vec<(HirIdent, Vec<TraitRef>)>,
+    pub predicates: Vec<Predicate>,
     pub params: Vec<(HirIdent, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
 }
@@ -1088,6 +1090,7 @@ impl From<&ast::ExternFn> for ExternFn {
                     (HirIdent::name(&param.0), traits)
                 })
                 .collect(),
+            predicates: ext.predicates.iter().map(Predicate::from).collect(),
             params: ext
                 .params
                 .iter()
@@ -1149,6 +1152,7 @@ pub struct TraitDef {
     pub attrs: Vec<Attribute>,
     pub name: HirIdent,
     pub generics: Vec<HirIdent>,
+    pub predicates: Vec<Predicate>,
     pub method_sigs: Vec<TraitMethodSignature>,
 }
 
@@ -1158,6 +1162,7 @@ impl From<&ast::TraitDef> for TraitDef {
             attrs: t.attrs.iter().map(|a| a.into()).collect(),
             name: HirIdent::name(&t.name.0),
             generics: t.generics.iter().map(|g| HirIdent::name(&g.0)).collect(),
+            predicates: t.predicates.iter().map(Predicate::from).collect(),
             method_sigs: t.method_sigs.iter().map(|m| m.into()).collect(),
         }
     }
@@ -1167,6 +1172,27 @@ impl From<&ast::TraitDef> for TraitDef {
 pub struct TraitRef {
     pub name: HirIdent,
     pub args: Vec<TypeExpr>,
+}
+
+#[derive(Debug, Clone)]
+pub enum Predicate {
+    Trait { ty: TypeExpr, trait_ref: TraitRef },
+    Equality { lhs: TypeExpr, rhs: TypeExpr },
+}
+
+impl From<&ast::Predicate> for Predicate {
+    fn from(predicate: &ast::Predicate) -> Self {
+        match predicate {
+            ast::Predicate::Trait { ty, trait_ref } => Self::Trait {
+                ty: ty.into(),
+                trait_ref: trait_ref.into(),
+            },
+            ast::Predicate::Equality { lhs, rhs } => Self::Equality {
+                lhs: lhs.into(),
+                rhs: rhs.into(),
+            },
+        }
+    }
 }
 
 impl From<&ast::TraitRef> for TraitRef {
@@ -1200,6 +1226,7 @@ pub struct ImplBlock {
     pub attrs: Vec<Attribute>,
     pub generics: Vec<HirIdent>,
     pub generic_bounds: Vec<(HirIdent, Vec<TraitRef>)>,
+    pub predicates: Vec<Predicate>,
     pub trait_ref: Option<TraitRef>,
     pub for_type: TypeExpr,
     pub methods: Vec<DefId>,

@@ -16,10 +16,17 @@ pub(crate) struct Obligation {
 #[derive(Debug, Clone)]
 pub(crate) enum Predicate {
     Trait(TraitGoal),
+    TypeEquality(TypeEqualityGoal),
     Method(MethodGoal),
     Projection(ProjectionGoal),
     Coerce(CoercionGoal),
     Operation(OperationGoal),
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct TypeEqualityGoal {
+    pub lhs: tast::Ty,
+    pub rhs: tast::Ty,
 }
 
 pub(crate) struct ObligationWorklist {
@@ -159,21 +166,18 @@ pub(crate) enum ProjectionGoal {
 
 #[derive(Debug, Clone, Default)]
 pub(crate) struct ParamEnv {
-    bounds: HashMap<String, Vec<tast::TraitRef>>,
+    predicates: Vec<crate::env::TypePredicate>,
 }
 
 impl ParamEnv {
-    pub(crate) fn from_bounds(bounds: &HashMap<String, Vec<tast::TraitRef>>) -> Self {
+    pub(crate) fn from_predicates(predicates: &[crate::env::TypePredicate]) -> Self {
         Self {
-            bounds: bounds.clone(),
+            predicates: predicates.to_vec(),
         }
     }
 
-    pub(crate) fn bounds_for(&self, goal: &TraitGoal) -> &[tast::TraitRef] {
-        let tast::Ty::TParam { name } = &goal.for_ty else {
-            return &[];
-        };
-        self.bounds.get(name).map_or(&[], Vec::as_slice)
+    pub(crate) fn predicates(&self) -> &[crate::env::TypePredicate] {
+        &self.predicates
     }
 }
 
@@ -227,8 +231,7 @@ impl ObligationCauseKind {
 #[derive(Debug, Clone)]
 pub(crate) struct InstantiatedScheme {
     pub ty: tast::Ty,
-    pub substitution: HashMap<String, tast::Ty>,
-    pub obligations: Vec<(TraitGoal, ObligationCause)>,
+    pub obligations: Vec<(Predicate, ObligationCause)>,
 }
 
 #[derive(Debug, Clone)]

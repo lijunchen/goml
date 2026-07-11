@@ -6,7 +6,9 @@ use crate::{
     tast::{self, TypeVar},
     typer::{
         Typer,
-        obligations::{InstantiatedScheme, ObligationCause, Predicate, TraitGoal},
+        obligations::{
+            InstantiatedScheme, ObligationCause, Predicate, TraitGoal, TypeEqualityGoal,
+        },
     },
 };
 use diagnostics::{Severity, Stage};
@@ -267,7 +269,10 @@ impl Typer {
                 let ret_ty = Box::new(self.norm(ret_ty));
                 tast::Ty::TFunc { params, ret_ty }
             }
-            tast::Ty::TParam { name } => tast::Ty::TParam { name: name.clone() },
+            tast::Ty::TParam { name } => match self.param_type_aliases.get(name).cloned() {
+                Some(alias) => self.norm(&alias),
+                None => tast::Ty::TParam { name: name.clone() },
+            },
         }
     }
 
@@ -650,47 +655,39 @@ impl Typer {
         let obligations = scheme
             .constraints
             .iter()
-            .filter_map(|constraint| {
-                substitution
-                    .get(&constraint.type_param)
-                    .cloned()
-                    .map(|for_ty| {
-                        (
-                            TraitGoal {
-                                trait_ref: tast::TraitRef {
-                                    name: constraint.trait_ref.name.clone(),
-                                    args: constraint
-                                        .trait_ref
-                                        .args
-                                        .iter()
-                                        .map(|arg| {
-                                            self._go_inst_ty(arg, &mut substitution, wildcard_len)
-                                        })
-                                        .collect(),
-                                },
-                                for_ty,
+            .map(|predicate| {
+                let predicate = match predicate {
+                    crate::env::TypePredicate::Trait { for_ty, trait_ref } => {
+                        Predicate::Trait(TraitGoal {
+                            trait_ref: tast::TraitRef {
+                                name: trait_ref.name.clone(),
+                                args: trait_ref
+                                    .args
+                                    .iter()
+                                    .map(|arg| {
+                                        self._go_inst_ty(arg, &mut substitution, wildcard_len)
+                                    })
+                                    .collect(),
                             },
-                            cause.clone(),
-                        )
-                    })
+                            for_ty: self._go_inst_ty(for_ty, &mut substitution, wildcard_len),
+                        })
+                    }
+                    crate::env::TypePredicate::Equality { lhs, rhs } => {
+                        Predicate::TypeEquality(TypeEqualityGoal {
+                            lhs: self._go_inst_ty(lhs, &mut substitution, wildcard_len),
+                            rhs: self._go_inst_ty(rhs, &mut substitution, wildcard_len),
+                        })
+                    }
+                };
+                (predicate, cause.clone())
             })
             .collect();
-        InstantiatedScheme {
-            ty,
-            substitution,
-            obligations,
-        }
+        InstantiatedScheme { ty, obligations }
     }
 
     pub(crate) fn register_scheme_obligations(&mut self, instantiated: &InstantiatedScheme) {
-        debug_assert!(instantiated.obligations.iter().all(|(goal, _)| {
-            instantiated
-                .substitution
-                .values()
-                .any(|ty| ty == &goal.for_ty)
-        }));
-        for (goal, cause) in &instantiated.obligations {
-            self.push_obligation(Predicate::Trait(goal.clone()), cause.clone());
+        for (predicate, cause) in &instantiated.obligations {
+            self.push_obligation(predicate.clone(), cause.clone());
         }
     }
 
