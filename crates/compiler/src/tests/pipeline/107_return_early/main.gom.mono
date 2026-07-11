@@ -1,5 +1,5 @@
 fn early(x/0: int32) -> int32 {
-  let _wild4 = if (x/0 < 0) {
+  let _wild7 = if (x/0 < 0) {
       {
         return 0
       }
@@ -8,7 +8,7 @@ fn early(x/0: int32) -> int32 {
         ()
       }
   } in
-  let _wild5 = if (x/0 == 0) {
+  let _wild8 = if (x/0 == 0) {
       {
         return 1
       }
@@ -22,7 +22,7 @@ fn early(x/0: int32) -> int32 {
 
 fn closure_early(x/1: int32) -> int32 {
   let f/3 = |y/2| {
-    let _wild6 = if (y/2 > 5) {
+    let _wild9 = if (y/2 > 5) {
         {
           return y/2
         }
@@ -37,7 +37,7 @@ fn closure_early(x/1: int32) -> int32 {
 }
 
 fn unit_ret(flag/4: bool) -> unit {
-  let _wild7 = if flag/4 {
+  let _wild10 = if flag/4 {
       {
         return
       }
@@ -46,35 +46,35 @@ fn unit_ret(flag/4: bool) -> unit {
         ()
       }
   } in
-  let mtmp8 = println__T_string("after") in
+  let mtmp11 = println__T_string("after") in
   {
     ()
   }
 }
 
 fn main() -> unit {
-  let mtmp9 = print__T_string("e-1: ") in
+  let mtmp12 = print__T_string("e-1: ") in
   {
-    let mtmp10 = println__T_int32(early((-1))) in
+    let mtmp13 = println__T_int32(early((-1))) in
     {
-      let mtmp11 = print__T_string("e0: ") in
+      let mtmp14 = print__T_string("e0: ") in
       {
-        let mtmp12 = println__T_int32(early(0)) in
+        let mtmp15 = println__T_int32(early(0)) in
         {
-          let mtmp13 = print__T_string("e3: ") in
+          let mtmp16 = print__T_string("e3: ") in
           {
-            let mtmp14 = println__T_int32(early(3)) in
+            let mtmp17 = println__T_int32(early(3)) in
             {
-              let mtmp15 = print__T_string("c7: ") in
+              let mtmp18 = print__T_string("c7: ") in
               {
-                let mtmp16 = println__T_int32(closure_early(7)) in
+                let mtmp19 = println__T_int32(closure_early(7)) in
                 {
-                  let mtmp17 = print__T_string("c2: ") in
+                  let mtmp20 = print__T_string("c2: ") in
                   {
-                    let mtmp18 = println__T_int32(closure_early(2)) in
+                    let mtmp21 = println__T_int32(closure_early(2)) in
                     {
-                      let _wild19 = unit_ret(true) in
-                      let _wild20 = unit_ret(false) in
+                      let _wild22 = unit_ret(true) in
+                      let _wild23 = unit_ret(false) in
                     }
                   }
                 }

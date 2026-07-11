@@ -214,107 +214,170 @@ fn trait_impl#ToString#Ref[T]#to_string(self/69: Ref[T]) -> string {
   (("ref(" + trait_call[ToString::to_string](v/70)) + ")")
 }
 
+fn inherent#Iterator#Iterator[T]#from_fn(next_fn/71: () -> Option[T]) -> Iterator[T] {
+  Iterator { next_fn: next_fn/71 }
+}
+
+fn inherent#Iterator#Iterator[T]#next(self/72: Iterator[T]) -> Option[T] {
+  Iterator.next_fn(self/72)()
+}
+
 fn inherent#Vec#Vec[T]#new() -> Vec[T] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push(self/71: Vec[T], elem/72: T) -> unit {
-  @intrinsic(vec.push)(self/71, elem/72)
+fn inherent#Vec#Vec[T]#push(self/73: Vec[T], elem/74: T) -> unit {
+  @intrinsic(vec.push)(self/73, elem/74)
 }
 
-fn inherent#Vec#Vec[T]#pushed(self/73: Vec[T], elem/74: T) -> Vec[T] {
-  let result/75 = inherent#Vec#Vec[T]#new() in
-  let index/76 = inherent#Ref#Ref[int32]#new(0) in
-  let _wild2 = while (inherent#Ref#Ref[int32]#get(index/76) < inherent#Vec#Vec[T]#len(self/73)) {
+fn inherent#Vec#Vec[T]#pushed(self/75: Vec[T], elem/76: T) -> Vec[T] {
+  let result/77 = inherent#Vec#Vec[T]#new() in
+  let index/78 = inherent#Ref#Ref[int32]#new(0) in
+  let _wild2 = while (inherent#Ref#Ref[int32]#get(index/78) < inherent#Vec#Vec[T]#len(self/75)) {
       {
-        let _wild0 = inherent#Vec#Vec[T]#push(result/75, inherent#Vec#Vec[T]#get(self/73, inherent#Ref#Ref[int32]#get(index/76))) in
-        let _wild1 = inherent#Ref#Ref[int32]#set(index/76, (inherent#Ref#Ref[int32]#get(index/76) + 1)) in
+        let _wild0 = inherent#Vec#Vec[T]#push(result/77, inherent#Vec#Vec[T]#get(self/75, inherent#Ref#Ref[int32]#get(index/78))) in
+        let _wild1 = inherent#Ref#Ref[int32]#set(index/78, (inherent#Ref#Ref[int32]#get(index/78) + 1)) in
       }
   } in
-  let _wild3 = inherent#Vec#Vec[T]#push(result/75, elem/74) in
-  result/75
+  let _wild3 = inherent#Vec#Vec[T]#push(result/77, elem/76) in
+  result/77
 }
 
-fn inherent#Vec#Vec[T]#get(self/77: Vec[T], index/78: int32) -> T {
-  @intrinsic(vec.get)(self/77, index/78)
+fn inherent#Vec#Vec[T]#get(self/79: Vec[T], index/80: int32) -> T {
+  @intrinsic(vec.get)(self/79, index/80)
 }
 
-fn inherent#Vec#Vec[T]#set(self/79: Vec[T], index/80: int32, elem/81: T) -> unit {
-  @intrinsic(vec.set)(self/79, index/80, elem/81)
+fn inherent#Vec#Vec[T]#set(self/81: Vec[T], index/82: int32, elem/83: T) -> unit {
+  @intrinsic(vec.set)(self/81, index/82, elem/83)
 }
 
-fn inherent#Vec#Vec[T]#len(self/82: Vec[T]) -> int32 {
-  @intrinsic(vec.len)(self/82)
+fn inherent#Vec#Vec[T]#len(self/84: Vec[T]) -> int32 {
+  @intrinsic(vec.len)(self/84)
 }
 
-fn inherent#Vec#Vec[T]#slice(self/83: Vec[T], start/84: int32, end/85: int32) -> Slice[T] {
-  @intrinsic(slice.new)(self/83, start/84, end/85)
+fn inherent#Vec#Vec[T]#slice(self/85: Vec[T], start/86: int32, end/87: int32) -> Slice[T] {
+  @intrinsic(slice.new)(self/85, start/86, end/87)
 }
 
-fn inherent#Slice#Slice[T]#get(self/86: Slice[T], index/87: int32) -> T {
-  @intrinsic(slice.get)(self/86, index/87)
+fn inherent#Vec#Vec[T]#iter(self/88: Vec[T]) -> Iterator[T] {
+  let index/89 = inherent#Ref#Ref[int32]#new(0) in
+  let len/90 = inherent#Vec#Vec[T]#len(self/88) in
+  inherent#Iterator#Iterator#from_fn(|| => {
+    let current/91 = inherent#Ref#Ref[int32]#get(index/89) in
+    if (current/91 < len/90) {
+        {
+          let value/92 = inherent#Vec#Vec[T]#get(self/88, current/91) in
+          let _wild4 = inherent#Ref#Ref[int32]#set(index/89, (current/91 + 1)) in
+          Option::Some(value/92)
+        }
+    } else {
+        {
+          Option::None
+        }
+    }
+  })
 }
 
-fn inherent#Slice#Slice[T]#len(self/88: Slice[T]) -> int32 {
-  @intrinsic(slice.len)(self/88)
+fn inherent#Slice#Slice[T]#get(self/93: Slice[T], index/94: int32) -> T {
+  @intrinsic(slice.get)(self/93, index/94)
 }
 
-fn inherent#Slice#Slice[T]#sub(self/89: Slice[T], start/90: int32, end/91: int32) -> Slice[T] {
-  @intrinsic(slice.sub)(self/89, start/90, end/91)
+fn inherent#Slice#Slice[T]#len(self/95: Slice[T]) -> int32 {
+  @intrinsic(slice.len)(self/95)
+}
+
+fn inherent#Slice#Slice[T]#sub(self/96: Slice[T], start/97: int32, end/98: int32) -> Slice[T] {
+  @intrinsic(slice.sub)(self/96, start/97, end/98)
+}
+
+fn inherent#Slice#Slice[T]#iter(self/99: Slice[T]) -> Iterator[T] {
+  let index/100 = inherent#Ref#Ref[int32]#new(0) in
+  let len/101 = inherent#Slice#Slice[T]#len(self/99) in
+  inherent#Iterator#Iterator#from_fn(|| => {
+    let current/102 = inherent#Ref#Ref[int32]#get(index/100) in
+    if (current/102 < len/101) {
+        {
+          let value/103 = inherent#Slice#Slice[T]#get(self/99, current/102) in
+          let _wild5 = inherent#Ref#Ref[int32]#set(index/100, (current/102 + 1)) in
+          Option::Some(value/103)
+        }
+    } else {
+        {
+          Option::None
+        }
+    }
+  })
 }
 
 fn inherent#HashMap#HashMap[K,V]#new() -> HashMap[K, V] {
   @intrinsic(hashmap.new)()
 }
 
-fn inherent#HashMap#HashMap[K,V]#get(self/92: HashMap[K, V], key/93: K) -> Option[V] {
-  @intrinsic(hashmap.get)(self/92, key/93)
+fn inherent#HashMap#HashMap[K,V]#get(self/104: HashMap[K, V], key/105: K) -> Option[V] {
+  @intrinsic(hashmap.get)(self/104, key/105)
 }
 
-fn inherent#HashMap#HashMap[K,V]#set(self/94: HashMap[K, V], key/95: K, value/96: V) -> unit {
-  @intrinsic(hashmap.set)(self/94, key/95, value/96)
+fn inherent#HashMap#HashMap[K,V]#set(self/106: HashMap[K, V], key/107: K, value/108: V) -> unit {
+  @intrinsic(hashmap.set)(self/106, key/107, value/108)
 }
 
-fn inherent#HashMap#HashMap[K,V]#remove(self/97: HashMap[K, V], key/98: K) -> unit {
-  @intrinsic(hashmap.remove)(self/97, key/98)
+fn inherent#HashMap#HashMap[K,V]#remove(self/109: HashMap[K, V], key/110: K) -> unit {
+  @intrinsic(hashmap.remove)(self/109, key/110)
 }
 
-fn inherent#HashMap#HashMap[K,V]#len(self/99: HashMap[K, V]) -> int32 {
-  @intrinsic(hashmap.len)(self/99)
+fn inherent#HashMap#HashMap[K,V]#len(self/111: HashMap[K, V]) -> int32 {
+  @intrinsic(hashmap.len)(self/111)
 }
 
-fn inherent#HashMap#HashMap[K,V]#contains(self/100: HashMap[K, V], key/101: K) -> bool {
-  @intrinsic(hashmap.contains)(self/100, key/101)
+fn inherent#HashMap#HashMap[K,V]#contains(self/112: HashMap[K, V], key/113: K) -> bool {
+  @intrinsic(hashmap.contains)(self/112, key/113)
 }
 
-fn inherent#Ref#Ref[T]#new(value/102: T) -> Ref[T] {
-  @intrinsic(ref.new)(value/102)
+fn inherent#Ref#Ref[T]#new(value/114: T) -> Ref[T] {
+  @intrinsic(ref.new)(value/114)
 }
 
-fn inherent#Ref#Ref[T]#get(self/103: Ref[T]) -> T {
-  @intrinsic(ref.get)(self/103)
+fn inherent#Ref#Ref[T]#get(self/115: Ref[T]) -> T {
+  @intrinsic(ref.get)(self/115)
 }
 
-fn inherent#Ref#Ref[T]#set(self/104: Ref[T], value/105: T) -> unit {
-  @intrinsic(ref.set)(self/104, value/105)
+fn inherent#Ref#Ref[T]#set(self/116: Ref[T], value/117: T) -> unit {
+  @intrinsic(ref.set)(self/116, value/117)
+}
+
+fn range(start/118: int32, end/119: int32) -> Iterator[int32] {
+  let current/120 = inherent#Ref#Ref[int32]#new(start/118) in
+  inherent#Iterator#Iterator#from_fn(|| => {
+    let value/121 = inherent#Ref#Ref[int32]#get(current/120) in
+    if (value/121 < end/119) {
+        {
+          let _wild6 = inherent#Ref#Ref[int32]#set(current/120, (value/121 + 1)) in
+          Option::Some(value/121)
+        }
+    } else {
+        {
+          Option::None
+        }
+    }
+  })
 }
 
 fn bounce_int(shape/0: Shape[int32]) -> Shape[int32] {
   match shape/0 {
-    Shape::Dot(x4) => {
+    Shape::Dot(x7) => {
       {
-        let x4 = Shape::Dot._0(shape/0) in
+        let x7 = Shape::Dot._0(shape/0) in
         {
-          let point/1 = x4 in
+          let point/1 = x7 in
           Shape::Dot(point/1)
         }
       }
     },
-    Shape::Wrapped(x5) => {
+    Shape::Wrapped(x8) => {
       {
-        let x5 = Shape::Wrapped._0(shape/0) in
+        let x8 = Shape::Wrapped._0(shape/0) in
         {
-          let inner/2 = x5 in
+          let inner/2 = x8 in
           Shape::Wrapped(inner/2)
         }
       }
@@ -342,15 +405,15 @@ fn pick(flag/4: bool, point/5: Point, wrapper/6: Wrapper[int32]) -> Shape[int32]
 
 fn describe(shape/7: Shape[T]) -> int32 {
   match shape/7 {
-    Shape::Dot(x6) => {
+    Shape::Dot(x9) => {
       {
-        let x6 = Shape::Dot._0(shape/7) in
+        let x9 = Shape::Dot._0(shape/7) in
         1
       }
     },
-    Shape::Wrapped(x7) => {
+    Shape::Wrapped(x10) => {
       {
-        let x7 = Shape::Wrapped._0(shape/7) in
+        let x10 = Shape::Wrapped._0(shape/7) in
         2
       }
     },
@@ -361,14 +424,14 @@ fn describe(shape/7: Shape[T]) -> int32 {
 }
 
 fn point32_to_string(point/8: Point) -> string {
-  let mtmp8 = point/8 in
+  let mtmp11 = point/8 in
   {
-    let x9 = Point.x(mtmp8) in
-    let x10 = Point.y(mtmp8) in
+    let x12 = Point.x(mtmp11) in
+    let x13 = Point.y(mtmp11) in
     {
-      let y/10 = x10 in
+      let y/10 = x13 in
       {
-        let x/9 = x9 in
+        let x/9 = x12 in
         {
           let with_x/11 = ("Point { x: " + inherent#int32#int32#to_string(x/9)) in
           let with_y_label/12 = (with_x/11 + ", y: ") in
@@ -381,11 +444,11 @@ fn point32_to_string(point/8: Point) -> string {
 }
 
 fn wrapper_int32_to_string(wrapper/14: Wrapper[int32]) -> string {
-  let mtmp11 = wrapper/14 in
+  let mtmp14 = wrapper/14 in
   {
-    let x12 = Wrapper.value(mtmp11) in
+    let x15 = Wrapper.value(mtmp14) in
     {
-      let value/15 = x12 in
+      let value/15 = x15 in
       {
         let prefix/16 = ("Wrapper[int32] { value: " + inherent#int32#int32#to_string(value/15)) in
         (prefix/16 + " }")
@@ -395,11 +458,11 @@ fn wrapper_int32_to_string(wrapper/14: Wrapper[int32]) -> string {
 }
 
 fn wrapper_unit_to_string(wrapper/17: Wrapper[unit]) -> string {
-  let mtmp13 = wrapper/17 in
+  let mtmp16 = wrapper/17 in
   {
-    let x14 = Wrapper.value(mtmp13) in
+    let x17 = Wrapper.value(mtmp16) in
     {
-      let value/18 = x14 in
+      let value/18 = x17 in
       {
         let prefix/19 = ("Wrapper[unit] { value: " + trait_impl#ToString#unit#to_string(value/18)) in
         (prefix/19 + " }")
@@ -410,11 +473,11 @@ fn wrapper_unit_to_string(wrapper/17: Wrapper[unit]) -> string {
 
 fn shape_int32_to_string(shape/20: Shape[int32]) -> string {
   match shape/20 {
-    Shape::Dot(x15) => {
+    Shape::Dot(x18) => {
       {
-        let x15 = Shape::Dot._0(shape/20) in
+        let x18 = Shape::Dot._0(shape/20) in
         {
-          let point/21 = x15 in
+          let point/21 = x18 in
           {
             let prefix/22 = ("Shape::Dot(" + point32_to_string(point/21)) in
             (prefix/22 + ")")
@@ -422,11 +485,11 @@ fn shape_int32_to_string(shape/20: Shape[int32]) -> string {
         }
       }
     },
-    Shape::Wrapped(x16) => {
+    Shape::Wrapped(x19) => {
       {
-        let x16 = Shape::Wrapped._0(shape/20) in
+        let x19 = Shape::Wrapped._0(shape/20) in
         {
-          let wrapper/23 = x16 in
+          let wrapper/23 = x19 in
           {
             let prefix/24 = ("Shape::Wrapped(" + wrapper_int32_to_string(wrapper/23)) in
             (prefix/24 + ")")
@@ -442,11 +505,11 @@ fn shape_int32_to_string(shape/20: Shape[int32]) -> string {
 
 fn shape_unit_to_string(shape/25: Shape[unit]) -> string {
   match shape/25 {
-    Shape::Dot(x17) => {
+    Shape::Dot(x20) => {
       {
-        let x17 = Shape::Dot._0(shape/25) in
+        let x20 = Shape::Dot._0(shape/25) in
         {
-          let point/26 = x17 in
+          let point/26 = x20 in
           {
             let prefix/27 = ("Shape::Dot(" + point32_to_string(point/26)) in
             (prefix/27 + ")")
@@ -454,11 +517,11 @@ fn shape_unit_to_string(shape/25: Shape[unit]) -> string {
         }
       }
     },
-    Shape::Wrapped(x18) => {
+    Shape::Wrapped(x21) => {
       {
-        let x18 = Shape::Wrapped._0(shape/25) in
+        let x21 = Shape::Wrapped._0(shape/25) in
         {
-          let wrapper/28 = x18 in
+          let wrapper/28 = x21 in
           {
             let prefix/29 = ("Shape::Wrapped(" + wrapper_unit_to_string(wrapper/28)) in
             (prefix/29 + ")")
@@ -473,26 +536,26 @@ fn shape_unit_to_string(shape/25: Shape[unit]) -> string {
 }
 
 fn main() -> unit {
-  let mtmp19 = println(point32_to_string(Point { x: 3, y: 4 })) in
+  let mtmp22 = println(point32_to_string(Point { x: 3, y: 4 })) in
   {
-    let mtmp20 = println(wrapper_int32_to_string(Wrapper { value: 7 })) in
+    let mtmp23 = println(wrapper_int32_to_string(Wrapper { value: 7 })) in
     {
-      let mtmp21 = println(wrapper_unit_to_string(Wrapper { value: () })) in
+      let mtmp24 = println(wrapper_unit_to_string(Wrapper { value: () })) in
       {
         let bounced_origin/30 = bounce_int(Shape::Origin) in
-        let mtmp22 = println(shape_int32_to_string(Shape::Dot(Point { x: 3, y: 4 }))) in
+        let mtmp25 = println(shape_int32_to_string(Shape::Dot(Point { x: 3, y: 4 }))) in
         {
-          let mtmp23 = println(shape_int32_to_string(Shape::Wrapped(Wrapper { value: 7 }))) in
+          let mtmp26 = println(shape_int32_to_string(Shape::Wrapped(Wrapper { value: 7 }))) in
           {
-            let mtmp24 = println(shape_int32_to_string(bounced_origin/30)) in
+            let mtmp27 = println(shape_int32_to_string(bounced_origin/30)) in
             {
-              let mtmp25 = println(shape_unit_to_string(Shape::Dot(Point { x: 3, y: 4 }))) in
+              let mtmp28 = println(shape_unit_to_string(Shape::Dot(Point { x: 3, y: 4 }))) in
               {
-                let mtmp26 = println(shape_unit_to_string(Shape::Wrapped(Wrapper { value: () }))) in
+                let mtmp29 = println(shape_unit_to_string(Shape::Wrapped(Wrapper { value: () }))) in
                 {
-                  let mtmp27 = println(shape_unit_to_string(Shape::Origin)) in
+                  let mtmp30 = println(shape_unit_to_string(Shape::Origin)) in
                   {
-                    let mtmp28 = describe(bounce_int(Shape::Origin)) in
+                    let mtmp31 = describe(bounce_int(Shape::Origin)) in
                     {
                       println("struct enums!")
                     }

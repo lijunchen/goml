@@ -1,74 +1,74 @@
 fn main() -> unit {
-  join ret8() -> unit {
+  join ret11() -> unit {
     ()
   } in
   let int_pairer/2 = make_pairer__T_int32(7) in
   let string_pairer/3 = make_pairer__T_string("ok") in
-  let t9 = int_pairer/2("a") in
-  let _wild4 = println__T_string(t9) in
-  let t10 = string_pairer/3("b") in
-  let _wild5 = println__T_string(t10) in
-  jump ret8()
+  let t12 = int_pairer/2("a") in
+  let _wild7 = println__T_string(t12) in
+  let t13 = string_pairer/3("b") in
+  let _wild8 = println__T_string(t13) in
+  jump ret11()
 }
 
 fn make_pairer__T_int32(x/0: int32) -> (string) -> string {
-  join ret11(retv12: (string) -> string) -> (string) -> string {
-    retv12
-  } in
-  let t13 = closure_env_make_pairer_T_int32_0 { x_0: x/0 } in
-  jump ret11(t13)
-}
-
-fn make_pairer__T_string(x/0: string) -> (string) -> string {
   join ret14(retv15: (string) -> string) -> (string) -> string {
     retv15
   } in
-  let t16 = closure_env_make_pairer_T_string_1 { x_0: x/0 } in
+  let t16 = closure_env_make_pairer_T_int32_0 { x_0: x/0 } in
   jump ret14(t16)
 }
 
+fn make_pairer__T_string(x/0: string) -> (string) -> string {
+  join ret17(retv18: (string) -> string) -> (string) -> string {
+    retv18
+  } in
+  let t19 = closure_env_make_pairer_T_string_1 { x_0: x/0 } in
+  jump ret17(t19)
+}
+
 fn println__T_string(value/1: string) -> unit {
-  join ret17() -> unit {
+  join ret20() -> unit {
     ()
   } in
-  let t18 = trait_impl#ToString#string#to_string(value/1) in
-  let t19 = @runtime(core.string_println)(t18) in
-  jump ret17()
+  let t21 = trait_impl#ToString#string#to_string(value/1) in
+  let t22 = @runtime(core.string_println)(t21) in
+  jump ret20()
 }
 
 fn trait_impl#ToString#int32#to_string(self/13: int32) -> string {
-  join ret20(retv21: string) -> string {
-    retv21
-  } in
-  let t22 = @runtime(core.int32_to_string)(self/13) in
-  jump ret20(t22)
-}
-
-fn trait_impl#ToString#string#to_string(self/9: string) -> string {
   join ret23(retv24: string) -> string {
     retv24
   } in
-  jump ret23(self/9)
+  let t25 = @runtime(core.int32_to_string)(self/13) in
+  jump ret23(t25)
 }
 
-fn inherent#closure_env_make_pairer_T_int32_0#closure_env_make_pairer_T_int32_0#apply(env6: closure_env_make_pairer_T_int32_0, tag/1: string) -> string {
-  join ret25(retv26: string) -> string {
-    retv26
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  join ret26(retv27: string) -> string {
+    retv27
   } in
-  let x/0 = closure_env_make_pairer_T_int32_0.x_0(env6) in
-  let t27 = (tag/1 + ":") in
-  let t28 = trait_impl#ToString#int32#to_string(x/0) in
-  let t29 = (t27 + t28) in
-  jump ret25(t29)
+  jump ret26(self/9)
 }
 
-fn inherent#closure_env_make_pairer_T_string_1#closure_env_make_pairer_T_string_1#apply(env7: closure_env_make_pairer_T_string_1, tag/1: string) -> string {
-  join ret30(retv31: string) -> string {
-    retv31
+fn inherent#closure_env_make_pairer_T_int32_0#closure_env_make_pairer_T_int32_0#apply(env9: closure_env_make_pairer_T_int32_0, tag/1: string) -> string {
+  join ret28(retv29: string) -> string {
+    retv29
   } in
-  let x/0 = closure_env_make_pairer_T_string_1.x_0(env7) in
-  let t32 = (tag/1 + ":") in
-  let t33 = trait_impl#ToString#string#to_string(x/0) in
-  let t34 = (t32 + t33) in
-  jump ret30(t34)
+  let x/0 = closure_env_make_pairer_T_int32_0.x_0(env9) in
+  let t30 = (tag/1 + ":") in
+  let t31 = trait_impl#ToString#int32#to_string(x/0) in
+  let t32 = (t30 + t31) in
+  jump ret28(t32)
+}
+
+fn inherent#closure_env_make_pairer_T_string_1#closure_env_make_pairer_T_string_1#apply(env10: closure_env_make_pairer_T_string_1, tag/1: string) -> string {
+  join ret33(retv34: string) -> string {
+    retv34
+  } in
+  let x/0 = closure_env_make_pairer_T_string_1.x_0(env10) in
+  let t35 = (tag/1 + ":") in
+  let t36 = trait_impl#ToString#string#to_string(x/0) in
+  let t37 = (t35 + t36) in
+  jump ret33(t37)
 }

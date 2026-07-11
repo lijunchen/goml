@@ -1,45 +1,45 @@
 fn main() -> unit {
-  join ret6() -> unit {
+  join ret9() -> unit {
     ()
   } in
   let a/0 = (true, true) in
-  let x4 = a/0.0 in
-  let x5 = a/0.1 in
-  join k7() -> unit {
-    jump ret6()
+  let x7 = a/0.0 in
+  let x8 = a/0.1 in
+  join k10() -> unit {
+    jump ret9()
   } in
-  match x5 {
+  match x8 {
     true => {
-      join k8() -> unit {
-        jump k7()
+      join k11() -> unit {
+        jump k10()
       } in
-      match x4 {
+      match x7 {
         true => {
-          let t9 = inherent#int32#int32#to_string(789) in
-          let t10 = println__T_string(t9) in
-          jump k8()
+          let t12 = inherent#int32#int32#to_string(789) in
+          let t13 = println__T_string(t12) in
+          jump k11()
         },
         false => {
-          let t11 = inherent#int32#int32#to_string(456) in
-          let t12 = println__T_string(t11) in
-          jump k8()
+          let t14 = inherent#int32#int32#to_string(456) in
+          let t15 = println__T_string(t14) in
+          jump k11()
         },
       }
     },
     false => {
-      join k13() -> unit {
-        jump k7()
+      join k16() -> unit {
+        jump k10()
       } in
-      match x4 {
+      match x7 {
         true => {
-          let t14 = inherent#int32#int32#to_string(123) in
-          let t15 = println__T_string(t14) in
-          jump k13()
+          let t17 = inherent#int32#int32#to_string(123) in
+          let t18 = println__T_string(t17) in
+          jump k16()
         },
         false => {
-          let t16 = inherent#int32#int32#to_string(789) in
-          let t17 = println__T_string(t16) in
-          jump k13()
+          let t19 = inherent#int32#int32#to_string(789) in
+          let t20 = println__T_string(t19) in
+          jump k16()
         },
       }
     },
@@ -47,25 +47,25 @@ fn main() -> unit {
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret18() -> unit {
+  join ret21() -> unit {
     ()
   } in
-  let t19 = trait_impl#ToString#string#to_string(value/1) in
-  let t20 = @runtime(core.string_println)(t19) in
-  jump ret18()
+  let t22 = trait_impl#ToString#string#to_string(value/1) in
+  let t23 = @runtime(core.string_println)(t22) in
+  jump ret21()
 }
 
 fn inherent#int32#int32#to_string(self/2: int32) -> string {
-  join ret21(retv22: string) -> string {
-    retv22
-  } in
-  let t23 = @runtime(core.int32_to_string)(self/2) in
-  jump ret21(t23)
-}
-
-fn trait_impl#ToString#string#to_string(self/9: string) -> string {
   join ret24(retv25: string) -> string {
     retv25
   } in
-  jump ret24(self/9)
+  let t26 = @runtime(core.int32_to_string)(self/2) in
+  jump ret24(t26)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  join ret27(retv28: string) -> string {
+    retv28
+  } in
+  jump ret27(self/9)
 }

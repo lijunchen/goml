@@ -39,57 +39,57 @@ func child(signal__0 *ref_int32_x) struct{} {
 
 func main0() struct{} {
     var signal__1 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(0)
-    var t11 closure_env_main_0 = closure_env_main_0{
+    var t14 closure_env_main_0 = closure_env_main_0{
         signal_0: signal__1,
     }
-    go _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t11)
-    Loop_loop13:
+    go _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t14)
+    Loop_loop16:
     for {
-        var t14 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(signal__1)
-        var t15 bool = t14 < 1
-        if t15 {
+        var t17 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(signal__1)
+        var t18 bool = t17 < 1
+        if t18 {
             continue
         } else {
-            break Loop_loop13
+            break Loop_loop16
         }
     }
     println__T_string("main")
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__104 *ref_int32_x, value__105 int32) struct{} {
-    ref_set__Ref_5int32(self__104, value__105)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__116 *ref_int32_x, value__117 int32) struct{} {
+    ref_set__Ref_5int32(self__116, value__117)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__102 int32) *ref_int32_x {
-    var retv19 *ref_int32_x
-    var t20 *ref_int32_x = ref__Ref_5int32(value__102)
-    retv19 = t20
-    return retv19
-}
-
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__103 *ref_int32_x) int32 {
-    var retv22 int32
-    var t23 int32 = ref_get__Ref_5int32(self__103)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__114 int32) *ref_int32_x {
+    var retv22 *ref_int32_x
+    var t23 *ref_int32_x = ref__Ref_5int32(value__114)
     retv22 = t23
     return retv22
 }
 
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__115 *ref_int32_x) int32 {
+    var retv25 int32
+    var t26 int32 = ref_get__Ref_5int32(self__115)
+    retv25 = t26
+    return retv25
+}
+
 func println__T_string(value__1 string) struct{} {
-    var t25 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t25)
+    var t28 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t28)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
-    var retv28 string
-    retv28 = self__9
-    return retv28
+    var retv31 string
+    retv31 = self__9
+    return retv31
 }
 
-func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env7 closure_env_main_0) struct{} {
-    var signal__1 *ref_int32_x = env7.signal_0
+func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(env10 closure_env_main_0) struct{} {
+    var signal__1 *ref_int32_x = env10.signal_0
     child(signal__1)
     return struct{}{}
 }

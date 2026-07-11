@@ -214,102 +214,165 @@ fn trait_impl#ToString#Ref[T]#to_string(self/69: Ref[T]) -> string {
   (("ref(" + trait_call[ToString::to_string](v/70)) + ")")
 }
 
+fn inherent#Iterator#Iterator[T]#from_fn(next_fn/71: () -> Option[T]) -> Iterator[T] {
+  Iterator { next_fn: next_fn/71 }
+}
+
+fn inherent#Iterator#Iterator[T]#next(self/72: Iterator[T]) -> Option[T] {
+  Iterator.next_fn(self/72)()
+}
+
 fn inherent#Vec#Vec[T]#new() -> Vec[T] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push(self/71: Vec[T], elem/72: T) -> unit {
-  @intrinsic(vec.push)(self/71, elem/72)
+fn inherent#Vec#Vec[T]#push(self/73: Vec[T], elem/74: T) -> unit {
+  @intrinsic(vec.push)(self/73, elem/74)
 }
 
-fn inherent#Vec#Vec[T]#pushed(self/73: Vec[T], elem/74: T) -> Vec[T] {
-  let result/75 = inherent#Vec#Vec[T]#new() in
-  let index/76 = inherent#Ref#Ref[int32]#new(0) in
-  let _wild2 = while (inherent#Ref#Ref[int32]#get(index/76) < inherent#Vec#Vec[T]#len(self/73)) {
+fn inherent#Vec#Vec[T]#pushed(self/75: Vec[T], elem/76: T) -> Vec[T] {
+  let result/77 = inherent#Vec#Vec[T]#new() in
+  let index/78 = inherent#Ref#Ref[int32]#new(0) in
+  let _wild2 = while (inherent#Ref#Ref[int32]#get(index/78) < inherent#Vec#Vec[T]#len(self/75)) {
       {
-        let _wild0 = inherent#Vec#Vec[T]#push(result/75, inherent#Vec#Vec[T]#get(self/73, inherent#Ref#Ref[int32]#get(index/76))) in
-        let _wild1 = inherent#Ref#Ref[int32]#set(index/76, (inherent#Ref#Ref[int32]#get(index/76) + 1)) in
+        let _wild0 = inherent#Vec#Vec[T]#push(result/77, inherent#Vec#Vec[T]#get(self/75, inherent#Ref#Ref[int32]#get(index/78))) in
+        let _wild1 = inherent#Ref#Ref[int32]#set(index/78, (inherent#Ref#Ref[int32]#get(index/78) + 1)) in
       }
   } in
-  let _wild3 = inherent#Vec#Vec[T]#push(result/75, elem/74) in
-  result/75
+  let _wild3 = inherent#Vec#Vec[T]#push(result/77, elem/76) in
+  result/77
 }
 
-fn inherent#Vec#Vec[T]#get(self/77: Vec[T], index/78: int32) -> T {
-  @intrinsic(vec.get)(self/77, index/78)
+fn inherent#Vec#Vec[T]#get(self/79: Vec[T], index/80: int32) -> T {
+  @intrinsic(vec.get)(self/79, index/80)
 }
 
-fn inherent#Vec#Vec[T]#set(self/79: Vec[T], index/80: int32, elem/81: T) -> unit {
-  @intrinsic(vec.set)(self/79, index/80, elem/81)
+fn inherent#Vec#Vec[T]#set(self/81: Vec[T], index/82: int32, elem/83: T) -> unit {
+  @intrinsic(vec.set)(self/81, index/82, elem/83)
 }
 
-fn inherent#Vec#Vec[T]#len(self/82: Vec[T]) -> int32 {
-  @intrinsic(vec.len)(self/82)
+fn inherent#Vec#Vec[T]#len(self/84: Vec[T]) -> int32 {
+  @intrinsic(vec.len)(self/84)
 }
 
-fn inherent#Vec#Vec[T]#slice(self/83: Vec[T], start/84: int32, end/85: int32) -> Slice[T] {
-  @intrinsic(slice.new)(self/83, start/84, end/85)
+fn inherent#Vec#Vec[T]#slice(self/85: Vec[T], start/86: int32, end/87: int32) -> Slice[T] {
+  @intrinsic(slice.new)(self/85, start/86, end/87)
 }
 
-fn inherent#Slice#Slice[T]#get(self/86: Slice[T], index/87: int32) -> T {
-  @intrinsic(slice.get)(self/86, index/87)
+fn inherent#Vec#Vec[T]#iter(self/88: Vec[T]) -> Iterator[T] {
+  let index/89 = inherent#Ref#Ref[int32]#new(0) in
+  let len/90 = inherent#Vec#Vec[T]#len(self/88) in
+  inherent#Iterator#Iterator#from_fn(|| => {
+    let current/91 = inherent#Ref#Ref[int32]#get(index/89) in
+    if (current/91 < len/90) {
+        {
+          let value/92 = inherent#Vec#Vec[T]#get(self/88, current/91) in
+          let _wild4 = inherent#Ref#Ref[int32]#set(index/89, (current/91 + 1)) in
+          Option::Some(value/92)
+        }
+    } else {
+        {
+          Option::None
+        }
+    }
+  })
 }
 
-fn inherent#Slice#Slice[T]#len(self/88: Slice[T]) -> int32 {
-  @intrinsic(slice.len)(self/88)
+fn inherent#Slice#Slice[T]#get(self/93: Slice[T], index/94: int32) -> T {
+  @intrinsic(slice.get)(self/93, index/94)
 }
 
-fn inherent#Slice#Slice[T]#sub(self/89: Slice[T], start/90: int32, end/91: int32) -> Slice[T] {
-  @intrinsic(slice.sub)(self/89, start/90, end/91)
+fn inherent#Slice#Slice[T]#len(self/95: Slice[T]) -> int32 {
+  @intrinsic(slice.len)(self/95)
+}
+
+fn inherent#Slice#Slice[T]#sub(self/96: Slice[T], start/97: int32, end/98: int32) -> Slice[T] {
+  @intrinsic(slice.sub)(self/96, start/97, end/98)
+}
+
+fn inherent#Slice#Slice[T]#iter(self/99: Slice[T]) -> Iterator[T] {
+  let index/100 = inherent#Ref#Ref[int32]#new(0) in
+  let len/101 = inherent#Slice#Slice[T]#len(self/99) in
+  inherent#Iterator#Iterator#from_fn(|| => {
+    let current/102 = inherent#Ref#Ref[int32]#get(index/100) in
+    if (current/102 < len/101) {
+        {
+          let value/103 = inherent#Slice#Slice[T]#get(self/99, current/102) in
+          let _wild5 = inherent#Ref#Ref[int32]#set(index/100, (current/102 + 1)) in
+          Option::Some(value/103)
+        }
+    } else {
+        {
+          Option::None
+        }
+    }
+  })
 }
 
 fn inherent#HashMap#HashMap[K,V]#new() -> HashMap[K, V] {
   @intrinsic(hashmap.new)()
 }
 
-fn inherent#HashMap#HashMap[K,V]#get(self/92: HashMap[K, V], key/93: K) -> Option[V] {
-  @intrinsic(hashmap.get)(self/92, key/93)
+fn inherent#HashMap#HashMap[K,V]#get(self/104: HashMap[K, V], key/105: K) -> Option[V] {
+  @intrinsic(hashmap.get)(self/104, key/105)
 }
 
-fn inherent#HashMap#HashMap[K,V]#set(self/94: HashMap[K, V], key/95: K, value/96: V) -> unit {
-  @intrinsic(hashmap.set)(self/94, key/95, value/96)
+fn inherent#HashMap#HashMap[K,V]#set(self/106: HashMap[K, V], key/107: K, value/108: V) -> unit {
+  @intrinsic(hashmap.set)(self/106, key/107, value/108)
 }
 
-fn inherent#HashMap#HashMap[K,V]#remove(self/97: HashMap[K, V], key/98: K) -> unit {
-  @intrinsic(hashmap.remove)(self/97, key/98)
+fn inherent#HashMap#HashMap[K,V]#remove(self/109: HashMap[K, V], key/110: K) -> unit {
+  @intrinsic(hashmap.remove)(self/109, key/110)
 }
 
-fn inherent#HashMap#HashMap[K,V]#len(self/99: HashMap[K, V]) -> int32 {
-  @intrinsic(hashmap.len)(self/99)
+fn inherent#HashMap#HashMap[K,V]#len(self/111: HashMap[K, V]) -> int32 {
+  @intrinsic(hashmap.len)(self/111)
 }
 
-fn inherent#HashMap#HashMap[K,V]#contains(self/100: HashMap[K, V], key/101: K) -> bool {
-  @intrinsic(hashmap.contains)(self/100, key/101)
+fn inherent#HashMap#HashMap[K,V]#contains(self/112: HashMap[K, V], key/113: K) -> bool {
+  @intrinsic(hashmap.contains)(self/112, key/113)
 }
 
-fn inherent#Ref#Ref[T]#new(value/102: T) -> Ref[T] {
-  @intrinsic(ref.new)(value/102)
+fn inherent#Ref#Ref[T]#new(value/114: T) -> Ref[T] {
+  @intrinsic(ref.new)(value/114)
 }
 
-fn inherent#Ref#Ref[T]#get(self/103: Ref[T]) -> T {
-  @intrinsic(ref.get)(self/103)
+fn inherent#Ref#Ref[T]#get(self/115: Ref[T]) -> T {
+  @intrinsic(ref.get)(self/115)
 }
 
-fn inherent#Ref#Ref[T]#set(self/104: Ref[T], value/105: T) -> unit {
-  @intrinsic(ref.set)(self/104, value/105)
+fn inherent#Ref#Ref[T]#set(self/116: Ref[T], value/117: T) -> unit {
+  @intrinsic(ref.set)(self/116, value/117)
+}
+
+fn range(start/118: int32, end/119: int32) -> Iterator[int32] {
+  let current/120 = inherent#Ref#Ref[int32]#new(start/118) in
+  inherent#Iterator#Iterator#from_fn(|| => {
+    let value/121 = inherent#Ref#Ref[int32]#get(current/120) in
+    if (value/121 < end/119) {
+        {
+          let _wild6 = inherent#Ref#Ref[int32]#set(current/120, (value/121 + 1)) in
+          Option::Some(value/121)
+        }
+    } else {
+        {
+          Option::None
+        }
+    }
+  })
 }
 
 fn make_counter() -> (() -> int32, () -> unit) {
   let cell/0 = inherent#Ref#Ref[int32]#new(0) in
   let next/2 = || => {
     let next/1 = (inherent#Ref#Ref[int32]#get(cell/0) + 1) in
-    let mtmp4 = inherent#Ref#Ref[int32]#set(cell/0, next/1) in
+    let mtmp7 = inherent#Ref#Ref[int32]#set(cell/0, next/1) in
     {
       next/1
     }
   } in
   let reset/3 = || => {
-    let mtmp5 = inherent#Ref#Ref[int32]#set(cell/0, 0) in
+    let mtmp8 = inherent#Ref#Ref[int32]#set(cell/0, 0) in
     {
       ()
     }
@@ -319,36 +382,36 @@ fn make_counter() -> (() -> int32, () -> unit) {
 
 fn main() -> unit {
   let counter/4 = make_counter() in
-  let mtmp6 = counter/4 in
+  let mtmp9 = counter/4 in
   {
-    let x7 = mtmp6.0 in
-    let x8 = mtmp6.1 in
+    let x10 = mtmp9.0 in
+    let x11 = mtmp9.1 in
     {
-      let reset/6 = x8 in
+      let reset/6 = x11 in
       {
-        let next/5 = x7 in
+        let next/5 = x10 in
         {
           let first/7 = next/5() in
           let second/8 = next/5() in
-          let mtmp9 = reset/6() in
+          let mtmp12 = reset/6() in
           {
             let third/9 = next/5() in
             let new_counter/10 = make_counter() in
-            let mtmp10 = new_counter/10 in
+            let mtmp13 = new_counter/10 in
             {
-              let x11 = mtmp10.0 in
-              let x12 = mtmp10.1 in
+              let x14 = mtmp13.0 in
+              let x15 = mtmp13.1 in
               {
-                let new_next/11 = x11 in
+                let new_next/11 = x14 in
                 {
                   let fourth/12 = new_next/11() in
-                  let mtmp13 = println(inherent#int32#int32#to_string(first/7)) in
+                  let mtmp16 = println(inherent#int32#int32#to_string(first/7)) in
                   {
-                    let mtmp14 = println(inherent#int32#int32#to_string(second/8)) in
+                    let mtmp17 = println(inherent#int32#int32#to_string(second/8)) in
                     {
-                      let mtmp15 = println(inherent#int32#int32#to_string(third/9)) in
+                      let mtmp18 = println(inherent#int32#int32#to_string(third/9)) in
                       {
-                        let mtmp16 = println(inherent#int32#int32#to_string(fourth/12)) in
+                        let mtmp19 = println(inherent#int32#int32#to_string(fourth/12)) in
                         {
                           ()
                         }

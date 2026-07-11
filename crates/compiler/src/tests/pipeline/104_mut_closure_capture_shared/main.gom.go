@@ -42,40 +42,40 @@ func main0() struct{} {
         x_0: x__0,
     }
     _goml_m_inherent_i_closure__env__inc__0_i_closure__env__inc__0_i_apply(inc__1)
-    var t9 int32 = ref_get__Ref_5int32(x__0)
-    var t10 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t9)
-    println__T_string(t10)
+    var t12 int32 = ref_get__Ref_5int32(x__0)
+    var t13 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t12)
+    println__T_string(t13)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t12 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t12)
+    var t15 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t15)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
-    var retv15 string
-    var t16 string = _goml_runtime_core_int32_to_string(self__2)
-    retv15 = t16
-    return retv15
-}
-
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
     var retv18 string
-    retv18 = self__9
+    var t19 string = _goml_runtime_core_int32_to_string(self__2)
+    retv18 = t19
     return retv18
 }
 
-func _goml_m_inherent_i_closure__env__inc__0_i_closure__env__inc__0_i_apply(env7 closure_env_inc_0) int32 {
-    var retv26 int32
-    var x__0 *ref_int32_x = env7.x_0
-    var t27 int32 = ref_get__Ref_5int32(x__0)
-    var t28 int32 = t27 + 1
-    ref_set__Ref_5int32(x__0, t28)
-    var t29 int32 = ref_get__Ref_5int32(x__0)
-    retv26 = t29
-    return retv26
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
+    var retv21 string
+    retv21 = self__9
+    return retv21
+}
+
+func _goml_m_inherent_i_closure__env__inc__0_i_closure__env__inc__0_i_apply(env10 closure_env_inc_0) int32 {
+    var retv29 int32
+    var x__0 *ref_int32_x = env10.x_0
+    var t30 int32 = ref_get__Ref_5int32(x__0)
+    var t31 int32 = t30 + 1
+    ref_set__Ref_5int32(x__0, t31)
+    var t32 int32 = ref_get__Ref_5int32(x__0)
+    retv29 = t32
+    return retv29
 }
 
 func main() {

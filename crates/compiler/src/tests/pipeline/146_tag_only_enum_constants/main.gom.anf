@@ -1,81 +1,81 @@
 fn light_code(light/0: Light) -> int32 {
-  join ret7(retv8: int32) -> int32 {
-    retv8
+  join ret10(retv11: int32) -> int32 {
+    retv11
   } in
-  join k9(jp10: int32) -> int32 {
-    jump ret7(jp10)
+  join k12(jp13: int32) -> int32 {
+    jump ret10(jp13)
   } in
   match light/0 {
     Tag_0 => {
-      jump k9(10)
+      jump k12(10)
     },
     Tag_1 => {
-      jump k9(20)
+      jump k12(20)
     },
     Tag_2 => {
-      jump k9(30)
+      jump k12(30)
     },
   }
 }
 
 fn paint_code(paint/1: Paint) -> int32 {
-  join ret11(retv12: int32) -> int32 {
-    retv12
+  join ret14(retv15: int32) -> int32 {
+    retv15
   } in
-  join k13(jp14: int32) -> int32 {
-    jump ret11(jp14)
+  join k16(jp17: int32) -> int32 {
+    jump ret14(jp17)
   } in
   match paint/1 {
     Tag_0 => {
-      jump k13(1)
+      jump k16(1)
     },
     Tag_1 => {
-      jump k13(2)
+      jump k16(2)
     },
   }
 }
 
 fn main() -> unit {
-  join ret15() -> unit {
+  join ret18() -> unit {
     ()
   } in
   let light/2 = Tag_0 in
   let paint/3 = Tag_0 in
-  let t16 = light_code(light/2) in
-  let t17 = inherent#int32#int32#to_string(t16) in
-  let mtmp4 = println__T_string(t17) in
-  let t18 = paint_code(paint/3) in
-  let t19 = inherent#int32#int32#to_string(t18) in
-  let mtmp5 = println__T_string(t19) in
-  let t20 = light_code(Tag_2) in
-  let t21 = inherent#int32#int32#to_string(t20) in
-  let mtmp6 = println__T_string(t21) in
-  let t22 = paint_code(Tag_1) in
-  let t23 = inherent#int32#int32#to_string(t22) in
-  let t24 = println__T_string(t23) in
-  jump ret15()
+  let t19 = light_code(light/2) in
+  let t20 = inherent#int32#int32#to_string(t19) in
+  let mtmp7 = println__T_string(t20) in
+  let t21 = paint_code(paint/3) in
+  let t22 = inherent#int32#int32#to_string(t21) in
+  let mtmp8 = println__T_string(t22) in
+  let t23 = light_code(Tag_2) in
+  let t24 = inherent#int32#int32#to_string(t23) in
+  let mtmp9 = println__T_string(t24) in
+  let t25 = paint_code(Tag_1) in
+  let t26 = inherent#int32#int32#to_string(t25) in
+  let t27 = println__T_string(t26) in
+  jump ret18()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret25() -> unit {
+  join ret28() -> unit {
     ()
   } in
-  let t26 = trait_impl#ToString#string#to_string(value/1) in
-  let t27 = @runtime(core.string_println)(t26) in
-  jump ret25()
+  let t29 = trait_impl#ToString#string#to_string(value/1) in
+  let t30 = @runtime(core.string_println)(t29) in
+  jump ret28()
 }
 
 fn inherent#int32#int32#to_string(self/2: int32) -> string {
-  join ret28(retv29: string) -> string {
-    retv29
-  } in
-  let t30 = @runtime(core.int32_to_string)(self/2) in
-  jump ret28(t30)
-}
-
-fn trait_impl#ToString#string#to_string(self/9: string) -> string {
   join ret31(retv32: string) -> string {
     retv32
   } in
-  jump ret31(self/9)
+  let t33 = @runtime(core.int32_to_string)(self/2) in
+  jump ret31(t33)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  join ret34(retv35: string) -> string {
+    retv35
+  } in
+  jump ret34(self/9)
 }

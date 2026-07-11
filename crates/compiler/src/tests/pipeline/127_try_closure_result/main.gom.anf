@@ -1,105 +1,105 @@
 fn parse_text(ok/0: bool) -> Result__string__string {
-  join ret12(retv13: Result__string__string) -> Result__string__string {
-    retv13
+  join ret15(retv16: Result__string__string) -> Result__string__string {
+    retv16
   } in
-  join k14(jp15: Result__string__string) -> Result__string__string {
-    jump ret12(jp15)
+  join k17(jp18: Result__string__string) -> Result__string__string {
+    jump ret15(jp18)
   } in
   if ok/0 {
-    let t16 = Result__string__string::Ok("body") in
-    jump k14(t16)
+    let t19 = Result__string__string::Ok("body") in
+    jump k17(t19)
   } else {
-    let t17 = Result__string__string::Err("parse failed") in
-    jump k14(t17)
+    let t20 = Result__string__string::Err("parse failed") in
+    jump k17(t20)
   }
 }
 
 fn decorate(prefix/1: string, ok/2: bool) -> Result__string__string {
-  join ret18(retv19: Result__string__string) -> Result__string__string {
-    retv19
+  join ret21(retv22: Result__string__string) -> Result__string__string {
+    retv22
   } in
   let run/4 = closure_env_run_0 { ok_0: ok/2, prefix_1: prefix/1 } in
-  let t20 = inherent#closure_env_run_0#closure_env_run_0#apply(run/4) in
-  jump ret18(t20)
+  let t23 = inherent#closure_env_run_0#closure_env_run_0#apply(run/4) in
+  jump ret21(t23)
 }
 
 fn show(res/5: Result__string__string) -> string {
-  join ret21(retv22: string) -> string {
-    retv22
+  join ret24(retv25: string) -> string {
+    retv25
   } in
-  join k23(jp24: string) -> string {
-    jump ret21(jp24)
+  join k26(jp27: string) -> string {
+    jump ret24(jp27)
   } in
   match res/5 {
     Tag_0 => {
-      let x7 = Result__string__string::Ok._0(res/5) in
-      let value/6 = x7 in
-      let t25 = ("ok " + value/6) in
-      jump k23(t25)
+      let x10 = Result__string__string::Ok._0(res/5) in
+      let value/6 = x10 in
+      let t28 = ("ok " + value/6) in
+      jump k26(t28)
     },
     Tag_1 => {
-      let x8 = Result__string__string::Err._0(res/5) in
-      let err/7 = x8 in
-      let t26 = ("err " + err/7) in
-      jump k23(t26)
+      let x11 = Result__string__string::Err._0(res/5) in
+      let err/7 = x11 in
+      let t29 = ("err " + err/7) in
+      jump k26(t29)
     },
   }
 }
 
 fn main() -> unit {
-  join ret27() -> unit {
+  join ret30() -> unit {
     ()
   } in
-  let t28 = decorate("outer", true) in
-  let t29 = show(t28) in
-  let _wild9 = println__T_string(t29) in
-  let t30 = decorate("outer", false) in
-  let t31 = show(t30) in
-  let _wild10 = println__T_string(t31) in
-  jump ret27()
+  let t31 = decorate("outer", true) in
+  let t32 = show(t31) in
+  let _wild12 = println__T_string(t32) in
+  let t33 = decorate("outer", false) in
+  let t34 = show(t33) in
+  let _wild13 = println__T_string(t34) in
+  jump ret30()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret32() -> unit {
+  join ret35() -> unit {
     ()
   } in
-  let t33 = trait_impl#ToString#string#to_string(value/1) in
-  let t34 = @runtime(core.string_println)(t33) in
-  jump ret32()
+  let t36 = trait_impl#ToString#string#to_string(value/1) in
+  let t37 = @runtime(core.string_println)(t36) in
+  jump ret35()
 }
 
 fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret35(retv36: string) -> string {
-    retv36
+  join ret38(retv39: string) -> string {
+    retv39
   } in
-  jump ret35(self/9)
+  jump ret38(self/9)
 }
 
-fn inherent#closure_env_run_0#closure_env_run_0#apply(env11: closure_env_run_0) -> Result__string__string {
-  join ret37(retv38: Result__string__string) -> Result__string__string {
-    retv38
+fn inherent#closure_env_run_0#closure_env_run_0#apply(env14: closure_env_run_0) -> Result__string__string {
+  join ret40(retv41: Result__string__string) -> Result__string__string {
+    retv41
   } in
-  let ok/2 = closure_env_run_0.ok_0(env11) in
-  let prefix/1 = closure_env_run_0.prefix_1(env11) in
-  let mtmp4 = parse_text(ok/2) in
-  join k39(jp40: string) -> Result__string__string {
-    let text/3 = jp40 in
-    let t41 = (prefix/1 + ":") in
-    let t42 = (t41 + text/3) in
-    let t43 = Result__string__string::Ok(t42) in
-    jump ret37(t43)
+  let ok/2 = closure_env_run_0.ok_0(env14) in
+  let prefix/1 = closure_env_run_0.prefix_1(env14) in
+  let mtmp7 = parse_text(ok/2) in
+  join k42(jp43: string) -> Result__string__string {
+    let text/3 = jp43 in
+    let t44 = (prefix/1 + ":") in
+    let t45 = (t44 + text/3) in
+    let t46 = Result__string__string::Ok(t45) in
+    jump ret40(t46)
   } in
-  match mtmp4 {
+  match mtmp7 {
     Tag_0 => {
-      let x5 = Result__string__string::Ok._0(mtmp4) in
-      let try_value/12 = x5 in
-      jump k39(try_value/12)
+      let x8 = Result__string__string::Ok._0(mtmp7) in
+      let try_value/12 = x8 in
+      jump k42(try_value/12)
     },
     Tag_1 => {
-      let x6 = Result__string__string::Err._0(mtmp4) in
-      let try_residual/12 = x6 in
-      let t44 = Result__string__string::Err(try_residual/12) in
-      jump ret37(t44)
+      let x9 = Result__string__string::Err._0(mtmp7) in
+      let try_residual/12 = x9 in
+      let t47 = Result__string__string::Err(try_residual/12) in
+      jump ret40(t47)
     },
   }
 }

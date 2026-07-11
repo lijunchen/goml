@@ -1,159 +1,159 @@
 fn bump(counter/0: Ref[int32], ok/1: bool) -> Result__int32__string {
-  join ret12(retv13: Result__int32__string) -> Result__int32__string {
-    retv13
+  join ret15(retv16: Result__int32__string) -> Result__int32__string {
+    retv16
   } in
-  let t14 = inherent#Ref#Ref[T]#get__T_int32(counter/0) in
-  let t15 = (t14 + 1) in
-  let _wild4 = inherent#Ref#Ref[T]#set__T_int32(counter/0, t15) in
-  join k16(jp17: Result__int32__string) -> Result__int32__string {
-    jump ret12(jp17)
+  let t17 = inherent#Ref#Ref[T]#get__T_int32(counter/0) in
+  let t18 = (t17 + 1) in
+  let _wild7 = inherent#Ref#Ref[T]#set__T_int32(counter/0, t18) in
+  join k19(jp20: Result__int32__string) -> Result__int32__string {
+    jump ret15(jp20)
   } in
   if ok/1 {
-    let t18 = inherent#Ref#Ref[T]#get__T_int32(counter/0) in
-    let t19 = Result__int32__string::Ok(t18) in
-    jump k16(t19)
+    let t21 = inherent#Ref#Ref[T]#get__T_int32(counter/0) in
+    let t22 = Result__int32__string::Ok(t21) in
+    jump k19(t22)
   } else {
-    let t20 = Result__int32__string::Err("bump failed") in
-    jump k16(t20)
+    let t23 = Result__int32__string::Err("bump failed") in
+    jump k19(t23)
   }
 }
 
 fn use_try(counter/2: Ref[int32], ok/3: bool) -> Result__int32__string {
-  join ret21(retv22: Result__int32__string) -> Result__int32__string {
-    retv22
+  join ret24(retv25: Result__int32__string) -> Result__int32__string {
+    retv25
   } in
-  let mtmp5 = bump(counter/2, ok/3) in
-  join k23(jp24: int32) -> Result__int32__string {
-    let value/4 = jp24 in
-    let t25 = inherent#Ref#Ref[T]#get__T_int32(counter/2) in
-    let t26 = (value/4 + t25) in
-    let t27 = Result__int32__string::Ok(t26) in
-    jump ret21(t27)
+  let mtmp8 = bump(counter/2, ok/3) in
+  join k26(jp27: int32) -> Result__int32__string {
+    let value/4 = jp27 in
+    let t28 = inherent#Ref#Ref[T]#get__T_int32(counter/2) in
+    let t29 = (value/4 + t28) in
+    let t30 = Result__int32__string::Ok(t29) in
+    jump ret24(t30)
   } in
-  match mtmp5 {
+  match mtmp8 {
     Tag_0 => {
-      let x6 = Result__int32__string::Ok._0(mtmp5) in
-      let try_value/23 = x6 in
-      jump k23(try_value/23)
+      let x9 = Result__int32__string::Ok._0(mtmp8) in
+      let try_value/23 = x9 in
+      jump k26(try_value/23)
     },
     Tag_1 => {
-      let x7 = Result__int32__string::Err._0(mtmp5) in
-      let try_residual/23 = x7 in
-      let t28 = Result__int32__string::Err(try_residual/23) in
-      jump ret21(t28)
+      let x10 = Result__int32__string::Err._0(mtmp8) in
+      let try_residual/23 = x10 in
+      let t31 = Result__int32__string::Err(try_residual/23) in
+      jump ret24(t31)
     },
   }
 }
 
 fn show(res/5: Result__int32__string) -> string {
-  join ret29(retv30: string) -> string {
-    retv30
+  join ret32(retv33: string) -> string {
+    retv33
   } in
-  join k31(jp32: string) -> string {
-    jump ret29(jp32)
+  join k34(jp35: string) -> string {
+    jump ret32(jp35)
   } in
   match res/5 {
     Tag_0 => {
-      let x8 = Result__int32__string::Ok._0(res/5) in
-      let value/6 = x8 in
-      let t33 = inherent#int32#int32#to_string(value/6) in
-      let t34 = ("ok " + t33) in
-      jump k31(t34)
+      let x11 = Result__int32__string::Ok._0(res/5) in
+      let value/6 = x11 in
+      let t36 = inherent#int32#int32#to_string(value/6) in
+      let t37 = ("ok " + t36) in
+      jump k34(t37)
     },
     Tag_1 => {
-      let x9 = Result__int32__string::Err._0(res/5) in
-      let err/7 = x9 in
-      let t35 = ("err " + err/7) in
-      jump k31(t35)
+      let x12 = Result__int32__string::Err._0(res/5) in
+      let err/7 = x12 in
+      let t38 = ("err " + err/7) in
+      jump k34(t38)
     },
   }
 }
 
 fn run(ok/8: bool) -> string {
-  join ret36(retv37: string) -> string {
-    retv37
+  join ret39(retv40: string) -> string {
+    retv40
   } in
   let counter/9 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let result/10 = use_try(counter/9, ok/8) in
-  let t38 = show(result/10) in
-  let t39 = (t38 + " count=") in
-  let t40 = inherent#Ref#Ref[T]#get__T_int32(counter/9) in
-  let t41 = inherent#int32#int32#to_string(t40) in
-  let t42 = (t39 + t41) in
-  jump ret36(t42)
+  let t41 = show(result/10) in
+  let t42 = (t41 + " count=") in
+  let t43 = inherent#Ref#Ref[T]#get__T_int32(counter/9) in
+  let t44 = inherent#int32#int32#to_string(t43) in
+  let t45 = (t42 + t44) in
+  jump ret39(t45)
 }
 
 fn main() -> unit {
-  join ret43() -> unit {
+  join ret46() -> unit {
     ()
   } in
-  let t44 = run(true) in
-  let _wild10 = println__T_string(t44) in
-  let t45 = run(false) in
-  let _wild11 = println__T_string(t45) in
-  jump ret43()
+  let t47 = run(true) in
+  let _wild13 = println__T_string(t47) in
+  let t48 = run(false) in
+  let _wild14 = println__T_string(t48) in
+  jump ret46()
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/103: Ref[int32]) -> int32 {
-  join ret46(retv47: int32) -> int32 {
-    retv47
+fn inherent#Ref#Ref[T]#get__T_int32(self/115: Ref[int32]) -> int32 {
+  join ret49(retv50: int32) -> int32 {
+    retv50
   } in
-  let t48 = @intrinsic(ref.get)(self/103) in
-  jump ret46(t48)
+  let t51 = @intrinsic(ref.get)(self/115) in
+  jump ret49(t51)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/104: Ref[int32], value/105: int32) -> unit {
-  join ret49() -> unit {
+fn inherent#Ref#Ref[T]#set__T_int32(self/116: Ref[int32], value/117: int32) -> unit {
+  join ret52() -> unit {
     ()
   } in
-  let t50 = @intrinsic(ref.set)(self/104, value/105) in
-  jump ret49()
+  let t53 = @intrinsic(ref.set)(self/116, value/117) in
+  jump ret52()
 }
 
 fn inherent#int32#int32#to_string(self/2: int32) -> string {
-  join ret51(retv52: string) -> string {
-    retv52
-  } in
-  let t53 = @runtime(core.int32_to_string)(self/2) in
-  jump ret51(t53)
-}
-
-fn inherent#Ref#Ref[T]#new__T_int32(value/102: int32) -> Ref[int32] {
-  join ret54(retv55: Ref[int32]) -> Ref[int32] {
+  join ret54(retv55: string) -> string {
     retv55
   } in
-  let t56 = @intrinsic(ref.new)(value/102) in
+  let t56 = @runtime(core.int32_to_string)(self/2) in
   jump ret54(t56)
 }
 
+fn inherent#Ref#Ref[T]#new__T_int32(value/114: int32) -> Ref[int32] {
+  join ret57(retv58: Ref[int32]) -> Ref[int32] {
+    retv58
+  } in
+  let t59 = @intrinsic(ref.new)(value/114) in
+  jump ret57(t59)
+}
+
 fn println__T_string(value/1: string) -> unit {
-  join ret57() -> unit {
+  join ret60() -> unit {
     ()
   } in
-  let t58 = trait_impl#ToString#string#to_string(value/1) in
-  let t59 = @runtime(core.string_println)(t58) in
-  jump ret57()
+  let t61 = trait_impl#ToString#string#to_string(value/1) in
+  let t62 = @runtime(core.string_println)(t61) in
+  jump ret60()
 }
 
 fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret60(retv61: string) -> string {
-    retv61
+  join ret63(retv64: string) -> string {
+    retv64
   } in
-  jump ret60(self/9)
+  jump ret63(self/9)
 }
 
 fn trait_impl#Eq#int32#eq(self/33: int32, other/34: int32) -> bool {
-  join ret62(retv63: bool) -> bool {
-    retv63
+  join ret65(retv66: bool) -> bool {
+    retv66
   } in
-  let t64 = (self/33 == other/34) in
-  jump ret62(t64)
+  let t67 = (self/33 == other/34) in
+  jump ret65(t67)
 }
 
 fn trait_impl#Hash#int32#hash(self/55: int32) -> uint64 {
-  join ret65(retv66: uint64) -> uint64 {
-    retv66
+  join ret68(retv69: uint64) -> uint64 {
+    retv69
   } in
-  let t67 = @runtime(core.int32_hash)(self/55) in
-  jump ret65(t67)
+  let t70 = @runtime(core.int32_hash)(self/55) in
+  jump ret68(t70)
 }

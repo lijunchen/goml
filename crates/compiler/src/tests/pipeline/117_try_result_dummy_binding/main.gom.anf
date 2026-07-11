@@ -1,137 +1,137 @@
 fn configure(ok/0: bool) -> Result__unit__string {
-  join ret16(retv17: Result__unit__string) -> Result__unit__string {
-    retv17
+  join ret19(retv20: Result__unit__string) -> Result__unit__string {
+    retv20
   } in
-  join k18(jp19: Result__unit__string) -> Result__unit__string {
-    jump ret16(jp19)
+  join k21(jp22: Result__unit__string) -> Result__unit__string {
+    jump ret19(jp22)
   } in
   if ok/0 {
-    let t20 = Result__unit__string::Ok(()) in
-    jump k18(t20)
+    let t23 = Result__unit__string::Ok(()) in
+    jump k21(t23)
   } else {
-    let t21 = Result__unit__string::Err("config failed") in
-    jump k18(t21)
+    let t24 = Result__unit__string::Err("config failed") in
+    jump k21(t24)
   }
 }
 
 fn read_duration(ok/1: bool) -> Result__string__string {
-  join ret22(retv23: Result__string__string) -> Result__string__string {
-    retv23
+  join ret25(retv26: Result__string__string) -> Result__string__string {
+    retv26
   } in
-  join k24(jp25: Result__string__string) -> Result__string__string {
-    jump ret22(jp25)
+  join k27(jp28: Result__string__string) -> Result__string__string {
+    jump ret25(jp28)
   } in
   if ok/1 {
-    let t26 = Result__string__string::Ok("2s") in
-    jump k24(t26)
+    let t29 = Result__string__string::Ok("2s") in
+    jump k27(t29)
   } else {
-    let t27 = Result__string__string::Err("duration failed") in
-    jump k24(t27)
+    let t30 = Result__string__string::Err("duration failed") in
+    jump k27(t30)
   }
 }
 
 fn format_duration(value/2: string) -> string {
-  join ret28(retv29: string) -> string {
-    retv29
+  join ret31(retv32: string) -> string {
+    retv32
   } in
-  let t30 = ("duration=" + value/2) in
-  jump ret28(t30)
+  let t33 = ("duration=" + value/2) in
+  jump ret31(t33)
 }
 
 fn configure_and_format(config_ok/3: bool, read_ok/4: bool) -> Result__string__string {
-  join ret31(retv32: Result__string__string) -> Result__string__string {
-    retv32
+  join ret34(retv35: Result__string__string) -> Result__string__string {
+    retv35
   } in
-  let mtmp4 = configure(config_ok/3) in
-  join k33() -> Result__string__string {
-    let _wild7 = () in
-    let mtmp8 = read_duration(read_ok/4) in
-    join k34(jp35: string) -> Result__string__string {
-      let value/5 = jp35 in
-      let t36 = format_duration(value/5) in
-      let t37 = Result__string__string::Ok(t36) in
-      jump ret31(t37)
+  let mtmp7 = configure(config_ok/3) in
+  join k36() -> Result__string__string {
+    let _wild10 = () in
+    let mtmp11 = read_duration(read_ok/4) in
+    join k37(jp38: string) -> Result__string__string {
+      let value/5 = jp38 in
+      let t39 = format_duration(value/5) in
+      let t40 = Result__string__string::Ok(t39) in
+      jump ret34(t40)
     } in
-    match mtmp8 {
+    match mtmp11 {
       Tag_0 => {
-        let x9 = Result__string__string::Ok._0(mtmp8) in
-        let try_value/27 = x9 in
-        jump k34(try_value/27)
+        let x12 = Result__string__string::Ok._0(mtmp11) in
+        let try_value/27 = x12 in
+        jump k37(try_value/27)
       },
       Tag_1 => {
-        let x10 = Result__string__string::Err._0(mtmp8) in
-        let try_residual/27 = x10 in
-        let t38 = Result__string__string::Err(try_residual/27) in
-        jump ret31(t38)
+        let x13 = Result__string__string::Err._0(mtmp11) in
+        let try_residual/27 = x13 in
+        let t41 = Result__string__string::Err(try_residual/27) in
+        jump ret34(t41)
       },
     }
   } in
-  match mtmp4 {
+  match mtmp7 {
     Tag_0 => {
-      let x5 = Result__unit__string::Ok._0(mtmp4) in
-      let try_value/23 = x5 in
-      jump k33()
+      let x8 = Result__unit__string::Ok._0(mtmp7) in
+      let try_value/23 = x8 in
+      jump k36()
     },
     Tag_1 => {
-      let x6 = Result__unit__string::Err._0(mtmp4) in
-      let try_residual/23 = x6 in
-      let t39 = Result__string__string::Err(try_residual/23) in
-      jump ret31(t39)
+      let x9 = Result__unit__string::Err._0(mtmp7) in
+      let try_residual/23 = x9 in
+      let t42 = Result__string__string::Err(try_residual/23) in
+      jump ret34(t42)
     },
   }
 }
 
 fn show(res/6: Result__string__string) -> string {
-  join ret40(retv41: string) -> string {
-    retv41
+  join ret43(retv44: string) -> string {
+    retv44
   } in
-  join k42(jp43: string) -> string {
-    jump ret40(jp43)
+  join k45(jp46: string) -> string {
+    jump ret43(jp46)
   } in
   match res/6 {
     Tag_0 => {
-      let x11 = Result__string__string::Ok._0(res/6) in
-      let value/7 = x11 in
-      let t44 = ("ok " + value/7) in
-      jump k42(t44)
+      let x14 = Result__string__string::Ok._0(res/6) in
+      let value/7 = x14 in
+      let t47 = ("ok " + value/7) in
+      jump k45(t47)
     },
     Tag_1 => {
-      let x12 = Result__string__string::Err._0(res/6) in
-      let err/8 = x12 in
-      let t45 = ("err " + err/8) in
-      jump k42(t45)
+      let x15 = Result__string__string::Err._0(res/6) in
+      let err/8 = x15 in
+      let t48 = ("err " + err/8) in
+      jump k45(t48)
     },
   }
 }
 
 fn main() -> unit {
-  join ret46() -> unit {
+  join ret49() -> unit {
     ()
   } in
-  let t47 = configure_and_format(true, true) in
-  let t48 = show(t47) in
-  let _wild13 = println__T_string(t48) in
-  let t49 = configure_and_format(true, false) in
-  let t50 = show(t49) in
-  let _wild14 = println__T_string(t50) in
-  let t51 = configure_and_format(false, true) in
-  let t52 = show(t51) in
-  let _wild15 = println__T_string(t52) in
-  jump ret46()
+  let t50 = configure_and_format(true, true) in
+  let t51 = show(t50) in
+  let _wild16 = println__T_string(t51) in
+  let t52 = configure_and_format(true, false) in
+  let t53 = show(t52) in
+  let _wild17 = println__T_string(t53) in
+  let t54 = configure_and_format(false, true) in
+  let t55 = show(t54) in
+  let _wild18 = println__T_string(t55) in
+  jump ret49()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret53() -> unit {
+  join ret56() -> unit {
     ()
   } in
-  let t54 = trait_impl#ToString#string#to_string(value/1) in
-  let t55 = @runtime(core.string_println)(t54) in
-  jump ret53()
+  let t57 = trait_impl#ToString#string#to_string(value/1) in
+  let t58 = @runtime(core.string_println)(t57) in
+  jump ret56()
 }
 
 fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret56(retv57: string) -> string {
-    retv57
+  join ret59(retv60: string) -> string {
+    retv60
   } in
-  jump ret56(self/9)
+  jump ret59(self/9)
 }

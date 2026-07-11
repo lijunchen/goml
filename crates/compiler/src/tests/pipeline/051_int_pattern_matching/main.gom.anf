@@ -1,213 +1,213 @@
 fn is_special8(value/0: int8) -> bool {
-  join ret9(retv10: bool) -> bool {
-    retv10
+  join ret12(retv13: bool) -> bool {
+    retv13
   } in
-  join k11(jp12: bool) -> bool {
-    jump ret9(jp12)
+  join k14(jp15: bool) -> bool {
+    jump ret12(jp15)
   } in
   match value/0 {
     5 => {
-      jump k11(true)
+      jump k14(true)
     },
     7 => {
-      jump k11(true)
+      jump k14(true)
     },
     _ => {
-      jump k11(false)
+      jump k14(false)
     },
   }
 }
 
 fn is_special16(value/1: int16) -> bool {
-  join ret13(retv14: bool) -> bool {
-    retv14
+  join ret16(retv17: bool) -> bool {
+    retv17
   } in
-  join k15(jp16: bool) -> bool {
-    jump ret13(jp16)
+  join k18(jp19: bool) -> bool {
+    jump ret16(jp19)
   } in
   match value/1 {
     1024 => {
-      jump k15(true)
+      jump k18(true)
     },
     2048 => {
-      jump k15(true)
+      jump k18(true)
     },
     _ => {
-      jump k15(false)
+      jump k18(false)
     },
   }
 }
 
 fn is_special32(value/2: int32) -> bool {
-  join ret17(retv18: bool) -> bool {
-    retv18
+  join ret20(retv21: bool) -> bool {
+    retv21
   } in
-  join k19(jp20: bool) -> bool {
-    jump ret17(jp20)
+  join k22(jp23: bool) -> bool {
+    jump ret20(jp23)
   } in
   match value/2 {
     4096 => {
-      jump k19(true)
+      jump k22(true)
     },
     8192 => {
-      jump k19(true)
+      jump k22(true)
     },
     _ => {
-      jump k19(false)
+      jump k22(false)
     },
   }
 }
 
 fn is_special64(value/3: int64) -> bool {
-  join ret21(retv22: bool) -> bool {
-    retv22
+  join ret24(retv25: bool) -> bool {
+    retv25
   } in
-  join k23(jp24: bool) -> bool {
-    jump ret21(jp24)
+  join k26(jp27: bool) -> bool {
+    jump ret24(jp27)
   } in
   match value/3 {
     16384 => {
-      jump k23(true)
+      jump k26(true)
     },
     32768 => {
-      jump k23(true)
+      jump k26(true)
     },
     _ => {
-      jump k23(false)
+      jump k26(false)
     },
   }
 }
 
 fn match_tuple(values/4: (int8, int16)) -> bool {
-  join ret25(retv26: bool) -> bool {
-    retv26
+  join ret28(retv29: bool) -> bool {
+    retv29
   } in
-  let x4 = values/4.0 in
-  let x5 = values/4.1 in
-  join k27(jp28: bool) -> bool {
-    jump ret25(jp28)
+  let x7 = values/4.0 in
+  let x8 = values/4.1 in
+  join k30(jp31: bool) -> bool {
+    jump ret28(jp31)
   } in
-  match x5 {
+  match x8 {
     2 => {
-      join k29(jp30: bool) -> bool {
-        jump k27(jp30)
+      join k32(jp33: bool) -> bool {
+        jump k30(jp33)
       } in
-      match x4 {
+      match x7 {
         1 => {
-          jump k29(true)
+          jump k32(true)
         },
         _ => {
-          jump k29(false)
+          jump k32(false)
         },
       }
     },
     _ => {
-      jump k27(false)
+      jump k30(false)
     },
   }
 }
 
 fn match_struct(pair/5: PairData) -> bool {
-  join ret31(retv32: bool) -> bool {
-    retv32
+  join ret34(retv35: bool) -> bool {
+    retv35
   } in
-  let x6 = PairData.head(pair/5) in
-  let x7 = PairData.tail(pair/5) in
-  join k33(jp34: bool) -> bool {
-    jump ret31(jp34)
+  let x9 = PairData.head(pair/5) in
+  let x10 = PairData.tail(pair/5) in
+  join k36(jp37: bool) -> bool {
+    jump ret34(jp37)
   } in
-  match x7 {
+  match x10 {
     200 => {
-      join k35(jp36: bool) -> bool {
-        jump k33(jp36)
+      join k38(jp39: bool) -> bool {
+        jump k36(jp39)
       } in
-      match x6 {
+      match x9 {
         100 => {
-          jump k35(true)
+          jump k38(true)
         },
         _ => {
-          jump k35(false)
+          jump k38(false)
         },
       }
     },
     300 => {
-      jump k33(true)
+      jump k36(true)
     },
     _ => {
-      jump k33(false)
+      jump k36(false)
     },
   }
 }
 
 fn report(label/6: string, value/7: bool) -> string {
-  join ret37(retv38: string) -> string {
-    retv38
+  join ret40(retv41: string) -> string {
+    retv41
   } in
-  let t39 = trait_impl#ToString#bool#to_string(value/7) in
-  let t40 = (label/6 + t39) in
-  jump ret37(t40)
+  let t42 = trait_impl#ToString#bool#to_string(value/7) in
+  let t43 = (label/6 + t42) in
+  jump ret40(t43)
 }
 
 fn main() -> unit {
-  join ret41() -> unit {
+  join ret44() -> unit {
     ()
   } in
   let tuple_first/8 = 1 in
   let tuple_second/9 = 2 in
-  let t42 = (tuple_first/8, tuple_second/9) in
-  let tuple_result_hit/10 = match_tuple(t42) in
-  let t43 = (3, 4) in
-  let tuple_result_miss/11 = match_tuple(t43) in
-  let t44 = PairData { head: 100, tail: 200 } in
-  let pair_first/12 = match_struct(t44) in
-  let t45 = PairData { head: 10, tail: 300 } in
-  let pair_second/13 = match_struct(t45) in
-  let t46 = is_special8(5) in
-  let part1/14 = report("int8=", t46) in
-  let t47 = is_special16(1024) in
-  let part2/15 = report(",int16=", t47) in
-  let t48 = is_special32(8192) in
-  let part3/16 = report(",int32=", t48) in
-  let t49 = is_special64(16384) in
-  let part4/17 = report(",int64_a=", t49) in
-  let t50 = is_special64(32768) in
-  let part5/18 = report(",int64_b=", t50) in
+  let t45 = (tuple_first/8, tuple_second/9) in
+  let tuple_result_hit/10 = match_tuple(t45) in
+  let t46 = (3, 4) in
+  let tuple_result_miss/11 = match_tuple(t46) in
+  let t47 = PairData { head: 100, tail: 200 } in
+  let pair_first/12 = match_struct(t47) in
+  let t48 = PairData { head: 10, tail: 300 } in
+  let pair_second/13 = match_struct(t48) in
+  let t49 = is_special8(5) in
+  let part1/14 = report("int8=", t49) in
+  let t50 = is_special16(1024) in
+  let part2/15 = report(",int16=", t50) in
+  let t51 = is_special32(8192) in
+  let part3/16 = report(",int32=", t51) in
+  let t52 = is_special64(16384) in
+  let part4/17 = report(",int64_a=", t52) in
+  let t53 = is_special64(32768) in
+  let part5/18 = report(",int64_b=", t53) in
   let part6/19 = report(",tuple_hit=", tuple_result_hit/10) in
   let part7/20 = report(",tuple_miss=", tuple_result_miss/11) in
   let part8/21 = report(",struct_first=", pair_first/12) in
   let part9/22 = report(",struct_second=", pair_second/13) in
-  let t51 = (part1/14 + part2/15) in
-  let t52 = (t51 + part3/16) in
-  let t53 = (t52 + part4/17) in
-  let t54 = (t53 + part5/18) in
-  let t55 = (t54 + part6/19) in
-  let t56 = (t55 + part7/20) in
-  let t57 = (t56 + part8/21) in
-  let message/23 = (t57 + part9/22) in
-  let mtmp8 = println__T_string(message/23) in
-  jump ret41()
+  let t54 = (part1/14 + part2/15) in
+  let t55 = (t54 + part3/16) in
+  let t56 = (t55 + part4/17) in
+  let t57 = (t56 + part5/18) in
+  let t58 = (t57 + part6/19) in
+  let t59 = (t58 + part7/20) in
+  let t60 = (t59 + part8/21) in
+  let message/23 = (t60 + part9/22) in
+  let mtmp11 = println__T_string(message/23) in
+  jump ret44()
 }
 
 fn trait_impl#ToString#bool#to_string(self/8: bool) -> string {
-  join ret58(retv59: string) -> string {
-    retv59
+  join ret61(retv62: string) -> string {
+    retv62
   } in
-  let t60 = @runtime(core.bool_to_string)(self/8) in
-  jump ret58(t60)
+  let t63 = @runtime(core.bool_to_string)(self/8) in
+  jump ret61(t63)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret61() -> unit {
+  join ret64() -> unit {
     ()
   } in
-  let t62 = trait_impl#ToString#string#to_string(value/1) in
-  let t63 = @runtime(core.string_println)(t62) in
-  jump ret61()
+  let t65 = trait_impl#ToString#string#to_string(value/1) in
+  let t66 = @runtime(core.string_println)(t65) in
+  jump ret64()
 }
 
 fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret64(retv65: string) -> string {
-    retv65
+  join ret67(retv68: string) -> string {
+    retv68
   } in
-  jump ret64(self/9)
+  jump ret67(self/9)
 }

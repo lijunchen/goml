@@ -1,130 +1,130 @@
 fn fetch(flag/0: bool) -> Option__int32 {
-  join ret11(retv12: Option__int32) -> Option__int32 {
-    retv12
+  join ret14(retv15: Option__int32) -> Option__int32 {
+    retv15
   } in
   let m/1 = inherent#HashMap#HashMap[K,V]#new__K_string__V_int32() in
-  join k13() -> Option__int32 {
-    let _wild5 = () in
-    let mtmp6 = inherent#HashMap#HashMap[K,V]#get__K_string__V_int32(m/1, "a") in
-    join k14(jp15: int32) -> Option__int32 {
-      let value/2 = jp15 in
-      let t16 = (value/2 + 1) in
-      let t17 = Option__int32::Some(t16) in
-      jump ret11(t17)
+  join k16() -> Option__int32 {
+    let _wild8 = () in
+    let mtmp9 = inherent#HashMap#HashMap[K,V]#get__K_string__V_int32(m/1, "a") in
+    join k17(jp18: int32) -> Option__int32 {
+      let value/2 = jp18 in
+      let t19 = (value/2 + 1) in
+      let t20 = Option__int32::Some(t19) in
+      jump ret14(t20)
     } in
-    match mtmp6 {
+    match mtmp9 {
       Tag_0 => {
-        jump ret11(Tag_0)
+        jump ret14(Tag_0)
       },
       Tag_1 => {
-        let x7 = Option__int32::Some._0(mtmp6) in
-        let try_value/18 = x7 in
-        jump k14(try_value/18)
+        let x10 = Option__int32::Some._0(mtmp9) in
+        let try_value/18 = x10 in
+        jump k17(try_value/18)
       },
     }
   } in
   if flag/0 {
-    let _wild4 = inherent#HashMap#HashMap[K,V]#set__K_string__V_int32(m/1, "a", 7) in
-    jump k13()
+    let _wild7 = inherent#HashMap#HashMap[K,V]#set__K_string__V_int32(m/1, "a", 7) in
+    jump k16()
   } else {
-    jump k13()
+    jump k16()
   }
 }
 
 fn show(opt/3: Option__int32) -> string {
-  join ret18(retv19: string) -> string {
-    retv19
+  join ret21(retv22: string) -> string {
+    retv22
   } in
-  join k20(jp21: string) -> string {
-    jump ret18(jp21)
+  join k23(jp24: string) -> string {
+    jump ret21(jp24)
   } in
   match opt/3 {
     Tag_0 => {
-      jump k20("none")
+      jump k23("none")
     },
     Tag_1 => {
-      let x8 = Option__int32::Some._0(opt/3) in
-      let value/4 = x8 in
-      let t22 = inherent#int32#int32#to_string(value/4) in
-      let t23 = ("some=" + t22) in
-      jump k20(t23)
+      let x11 = Option__int32::Some._0(opt/3) in
+      let value/4 = x11 in
+      let t25 = inherent#int32#int32#to_string(value/4) in
+      let t26 = ("some=" + t25) in
+      jump k23(t26)
     },
   }
 }
 
 fn main() -> unit {
-  join ret24() -> unit {
+  join ret27() -> unit {
     ()
   } in
-  let t25 = fetch(true) in
-  let t26 = show(t25) in
-  let _wild9 = println__T_string(t26) in
-  let t27 = fetch(false) in
-  let t28 = show(t27) in
-  let _wild10 = println__T_string(t28) in
-  jump ret24()
+  let t28 = fetch(true) in
+  let t29 = show(t28) in
+  let _wild12 = println__T_string(t29) in
+  let t30 = fetch(false) in
+  let t31 = show(t30) in
+  let _wild13 = println__T_string(t31) in
+  jump ret27()
 }
 
 fn inherent#HashMap#HashMap[K,V]#new__K_string__V_int32() -> HashMap[string, int32] {
-  join ret29(retv30: HashMap[string, int32]) -> HashMap[string, int32] {
-    retv30
+  join ret32(retv33: HashMap[string, int32]) -> HashMap[string, int32] {
+    retv33
   } in
-  let t31 = @intrinsic(hashmap.new)() in
-  jump ret29(t31)
+  let t34 = @intrinsic(hashmap.new)() in
+  jump ret32(t34)
 }
 
-fn inherent#HashMap#HashMap[K,V]#set__K_string__V_int32(self/94: HashMap[string, int32], key/95: string, value/96: int32) -> unit {
-  join ret32() -> unit {
+fn inherent#HashMap#HashMap[K,V]#set__K_string__V_int32(self/106: HashMap[string, int32], key/107: string, value/108: int32) -> unit {
+  join ret35() -> unit {
     ()
   } in
-  let t33 = @intrinsic(hashmap.set)(self/94, key/95, value/96) in
-  jump ret32()
+  let t36 = @intrinsic(hashmap.set)(self/106, key/107, value/108) in
+  jump ret35()
 }
 
-fn inherent#HashMap#HashMap[K,V]#get__K_string__V_int32(self/92: HashMap[string, int32], key/93: string) -> Option__int32 {
-  join ret34(retv35: Option__int32) -> Option__int32 {
-    retv35
-  } in
-  let t36 = @intrinsic(hashmap.get)(self/92, key/93) in
-  jump ret34(t36)
-}
-
-fn inherent#int32#int32#to_string(self/2: int32) -> string {
-  join ret37(retv38: string) -> string {
+fn inherent#HashMap#HashMap[K,V]#get__K_string__V_int32(self/104: HashMap[string, int32], key/105: string) -> Option__int32 {
+  join ret37(retv38: Option__int32) -> Option__int32 {
     retv38
   } in
-  let t39 = @runtime(core.int32_to_string)(self/2) in
+  let t39 = @intrinsic(hashmap.get)(self/104, key/105) in
   jump ret37(t39)
 }
 
+fn inherent#int32#int32#to_string(self/2: int32) -> string {
+  join ret40(retv41: string) -> string {
+    retv41
+  } in
+  let t42 = @runtime(core.int32_to_string)(self/2) in
+  jump ret40(t42)
+}
+
 fn println__T_string(value/1: string) -> unit {
-  join ret40() -> unit {
+  join ret43() -> unit {
     ()
   } in
-  let t41 = trait_impl#ToString#string#to_string(value/1) in
-  let t42 = @runtime(core.string_println)(t41) in
-  jump ret40()
+  let t44 = trait_impl#ToString#string#to_string(value/1) in
+  let t45 = @runtime(core.string_println)(t44) in
+  jump ret43()
 }
 
 fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret43(retv44: string) -> string {
-    retv44
+  join ret46(retv47: string) -> string {
+    retv47
   } in
-  jump ret43(self/9)
+  jump ret46(self/9)
 }
 
 fn trait_impl#Eq#string#eq(self/25: string, other/26: string) -> bool {
-  join ret45(retv46: bool) -> bool {
-    retv46
+  join ret48(retv49: bool) -> bool {
+    retv49
   } in
-  let t47 = (self/25 == other/26) in
-  jump ret45(t47)
+  let t50 = (self/25 == other/26) in
+  jump ret48(t50)
 }
 
 fn trait_impl#Hash#string#hash(self/51: string) -> uint64 {
-  join ret48(retv49: uint64) -> uint64 {
-    retv49
+  join ret51(retv52: uint64) -> uint64 {
+    retv52
   } in
-  let t50 = @runtime(core.string_hash)(self/51) in
-  jump ret48(t50)
+  let t53 = @runtime(core.string_hash)(self/51) in
+  jump ret51(t53)
 }

@@ -20,70 +20,70 @@ type none struct {}
 func (_ none) isoption__int32() {}
 
 func make_some(value__0 int32) option__int32 {
-    var retv12 option__int32
-    var t13 option__int32 = some{
+    var retv15 option__int32
+    var t16 option__int32 = some{
         _0: value__0,
-    }
-    retv12 = t13
-    return retv12
-}
-
-func build_point(x__1 int32, y__2 int32) point {
-    var retv15 point
-    var t16 point = point{
-        x: x__1,
-        y: y__2,
     }
     retv15 = t16
     return retv15
 }
 
-func magnitude(p__3 point) int32 {
-    var retv18 int32
-    var mtmp4 point = p__3
-    var x5 int32 = mtmp4.x
-    var x6 int32 = mtmp4.y
-    var y__5 int32 = x6
-    var x__4 int32 = x5
-    var t19 int32 = x__4 + y__5
+func build_point(x__1 int32, y__2 int32) point {
+    var retv18 point
+    var t19 point = point{
+        x: x__1,
+        y: y__2,
+    }
     retv18 = t19
     return retv18
 }
 
-func main0() int32 {
+func magnitude(p__3 point) int32 {
     var retv21 int32
-    var mtmp7 option__int32 = make_some(5)
-    var jp23 int32
-    switch mtmp7.(type) {
+    var mtmp7 point = p__3
+    var x8 int32 = mtmp7.x
+    var x9 int32 = mtmp7.y
+    var y__5 int32 = x9
+    var x__4 int32 = x8
+    var t22 int32 = x__4 + y__5
+    retv21 = t22
+    return retv21
+}
+
+func main0() int32 {
+    var retv24 int32
+    var mtmp10 option__int32 = make_some(5)
+    var jp26 int32
+    switch mtmp10.(type) {
     case some:
-        var x8 int32 = mtmp7.(some)._0
-        var result__6 int32 = x8
+        var x11 int32 = mtmp10.(some)._0
+        var result__6 int32 = x11
         var pt__7 point = build_point(result__6, 7)
-        var t24 int32 = pt__7.x
-        var mtmp9 option__int32 = some{
-            _0: t24,
+        var t27 int32 = pt__7.x
+        var mtmp12 option__int32 = some{
+            _0: t27,
         }
-        var jp26 int32
-        switch mtmp9.(type) {
+        var jp29 int32
+        switch mtmp12.(type) {
         case some:
-            var x10 int32 = mtmp9.(some)._0
-            var value__8 int32 = x10
-            var t27 int32 = magnitude(pt__7)
-            var t28 int32 = value__8 + t27
-            jp26 = t28
+            var x13 int32 = mtmp12.(some)._0
+            var value__8 int32 = x13
+            var t30 int32 = magnitude(pt__7)
+            var t31 int32 = value__8 + t30
+            jp29 = t31
         case none:
-            jp26 = 0
+            jp29 = 0
         default:
             panic("non-exhaustive match")
         }
-        jp23 = jp26
+        jp26 = jp29
     case none:
-        jp23 = 0
+        jp26 = 0
     default:
         panic("non-exhaustive match")
     }
-    retv21 = jp23
-    return retv21
+    retv24 = jp26
+    return retv24
 }
 
 func main() {

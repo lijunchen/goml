@@ -34,54 +34,54 @@ func main0() struct{} {
     var step64__9 int64 = 2000000000
     var remain64__10 int64 = big64__8 - step64__9
     var neg64__11 int64 = -step64__9
-    var t6 string = _goml_m_trait__impl_i_ToString_i_int16_i_to__string(sum16__2)
-    var t7 string = t6 + ", "
-    var t8 string = _goml_m_trait__impl_i_ToString_i_int16_i_to__string(flipped16__3)
-    var t9 string = t7 + t8
-    var t10 string = t9 + "; "
-    var t11 string = _goml_m_inherent_i_int32_i_int32_i_to__string(diff32__7)
+    var t9 string = _goml_m_trait__impl_i_ToString_i_int16_i_to__string(sum16__2)
+    var t10 string = t9 + ", "
+    var t11 string = _goml_m_trait__impl_i_ToString_i_int16_i_to__string(flipped16__3)
     var t12 string = t10 + t11
     var t13 string = t12 + "; "
-    var t14 string = _goml_m_trait__impl_i_ToString_i_int64_i_to__string(remain64__10)
+    var t14 string = _goml_m_inherent_i_int32_i_int32_i_to__string(diff32__7)
     var t15 string = t13 + t14
     var t16 string = t15 + "; "
-    var t17 string = _goml_m_trait__impl_i_ToString_i_int64_i_to__string(neg64__11)
-    var message__12 string = t16 + t17
+    var t17 string = _goml_m_trait__impl_i_ToString_i_int64_i_to__string(remain64__10)
+    var t18 string = t16 + t17
+    var t19 string = t18 + "; "
+    var t20 string = _goml_m_trait__impl_i_ToString_i_int64_i_to__string(neg64__11)
+    var message__12 string = t19 + t20
     println__T_string(message__12)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int16_i_to__string(self__12 int16) string {
-    var retv19 string
-    var t20 string = _goml_runtime_core_int16_to_string(self__12)
-    retv19 = t20
-    return retv19
-}
-
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
     var retv22 string
-    var t23 string = _goml_runtime_core_int32_to_string(self__2)
+    var t23 string = _goml_runtime_core_int16_to_string(self__12)
     retv22 = t23
     return retv22
 }
 
-func _goml_m_trait__impl_i_ToString_i_int64_i_to__string(self__14 int64) string {
+func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
     var retv25 string
-    var t26 string = _goml_runtime_core_int64_to_string(self__14)
+    var t26 string = _goml_runtime_core_int32_to_string(self__2)
     retv25 = t26
     return retv25
 }
 
+func _goml_m_trait__impl_i_ToString_i_int64_i_to__string(self__14 int64) string {
+    var retv28 string
+    var t29 string = _goml_runtime_core_int64_to_string(self__14)
+    retv28 = t29
+    return retv28
+}
+
 func println__T_string(value__1 string) struct{} {
-    var t28 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t28)
+    var t31 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t31)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
-    var retv31 string
-    retv31 = self__9
-    return retv31
+    var retv34 string
+    retv34 = self__9
+    return retv34
 }
 
 func main() {

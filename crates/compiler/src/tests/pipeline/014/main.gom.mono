@@ -1,15 +1,15 @@
 fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
   {
-    let x4 = x/0.0 in
-    let x5 = x/0.1 in
-    match x5 {
+    let x7 = x/0.0 in
+    let x8 = x/0.1 in
+    match x8 {
       true => {
         {
-          let x6 = y/1.0 in
-          let x7 = y/1.1 in
-          match x7 {
+          let x9 = y/1.0 in
+          let x10 = y/1.1 in
+          match x10 {
             true => {
-              match x6 {
+              match x9 {
                 true => {
                   println__T_string("case4")
                 },
@@ -25,14 +25,14 @@ fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
         }
       },
       false => {
-        match x4 {
+        match x7 {
           true => {
             {
-              let x8 = y/1.0 in
-              let x9 = y/1.1 in
-              match x9 {
+              let x11 = y/1.0 in
+              let x12 = y/1.1 in
+              match x12 {
                 true => {
-                  match x8 {
+                  match x11 {
                     true => {
                       println__T_string("case2")
                     },
@@ -49,11 +49,11 @@ fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
           },
           false => {
             {
-              let x10 = y/1.0 in
-              let x11 = y/1.1 in
-              match x11 {
+              let x13 = y/1.0 in
+              let x14 = y/1.1 in
+              match x14 {
                 true => {
-                  match x10 {
+                  match x13 {
                     true => {
                       println__T_string("case4")
                     },
@@ -75,13 +75,13 @@ fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
 }
 
 fn main() -> unit {
-  let mtmp12 = test_nested_match((true, false), (false, true)) in
+  let mtmp15 = test_nested_match((true, false), (false, true)) in
   {
-    let mtmp13 = test_nested_match((true, false), (true, false)) in
+    let mtmp16 = test_nested_match((true, false), (true, false)) in
     {
-      let mtmp14 = test_nested_match((false, true), (false, true)) in
+      let mtmp17 = test_nested_match((false, true), (false, true)) in
       {
-        let mtmp15 = test_nested_match((false, true), (true, false)) in
+        let mtmp18 = test_nested_match((false, true), (true, false)) in
         {
           ()
         }

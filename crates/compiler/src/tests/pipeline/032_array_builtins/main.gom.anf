@@ -1,58 +1,58 @@
 fn update_array(arr/0: [int32; 3]) -> [int32; 3] {
-  join ret10(retv11: [int32; 3]) -> [int32; 3] {
-    retv11
+  join ret13(retv14: [int32; 3]) -> [int32; 3] {
+    retv14
   } in
   let arr/1 = arr/0 in
-  let place_root4 = arr/1 in
-  let index5 = 1 in
-  let place6 = @intrinsic(array.get)(place_root4, index5) in
-  let value7 = 42 in
-  let t12 = @intrinsic(array.set)(place_root4, index5, value7) in
-  let t13 = arr/1 = t12 in
-  let _wild8 = t13 in
-  jump ret10(arr/1)
+  let place_root7 = arr/1 in
+  let index8 = 1 in
+  let place9 = @intrinsic(array.get)(place_root7, index8) in
+  let value10 = 42 in
+  let t15 = @intrinsic(array.set)(place_root7, index8, value10) in
+  let t16 = arr/1 = t15 in
+  let _wild11 = t16 in
+  jump ret13(arr/1)
 }
 
 fn read_array(arr/2: [int32; 3]) -> int32 {
-  join ret14(retv15: int32) -> int32 {
-    retv15
+  join ret17(retv18: int32) -> int32 {
+    retv18
   } in
-  let t16 = @intrinsic(array.get)(arr/2, 1) in
-  jump ret14(t16)
+  let t19 = @intrinsic(array.get)(arr/2, 1) in
+  jump ret17(t19)
 }
 
 fn main() -> unit {
-  join ret17() -> unit {
+  join ret20() -> unit {
     ()
   } in
   let arr/3 = [1, 2, 3] in
   let updated/4 = update_array(arr/3) in
   let value/5 = read_array(updated/4) in
-  let t18 = inherent#int32#int32#to_string(value/5) in
-  let mtmp9 = println__T_string(t18) in
-  jump ret17()
+  let t21 = inherent#int32#int32#to_string(value/5) in
+  let mtmp12 = println__T_string(t21) in
+  jump ret20()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret19() -> unit {
+  join ret22() -> unit {
     ()
   } in
-  let t20 = trait_impl#ToString#string#to_string(value/1) in
-  let t21 = @runtime(core.string_println)(t20) in
-  jump ret19()
+  let t23 = trait_impl#ToString#string#to_string(value/1) in
+  let t24 = @runtime(core.string_println)(t23) in
+  jump ret22()
 }
 
 fn inherent#int32#int32#to_string(self/2: int32) -> string {
-  join ret22(retv23: string) -> string {
-    retv23
-  } in
-  let t24 = @runtime(core.int32_to_string)(self/2) in
-  jump ret22(t24)
-}
-
-fn trait_impl#ToString#string#to_string(self/9: string) -> string {
   join ret25(retv26: string) -> string {
     retv26
   } in
-  jump ret25(self/9)
+  let t27 = @runtime(core.int32_to_string)(self/2) in
+  jump ret25(t27)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  join ret28(retv29: string) -> string {
+    retv29
+  } in
+  jump ret28(self/9)
 }

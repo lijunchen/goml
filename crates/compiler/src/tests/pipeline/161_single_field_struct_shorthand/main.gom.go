@@ -18,21 +18,21 @@ func main0() struct{} {
     var p__1 Person = Person{
         name: name__0,
     }
-    var t6 string = p__1.name
-    println__T_string(t6)
+    var t9 string = p__1.name
+    println__T_string(t9)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t8 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t8)
+    var t11 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t11)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
-    var retv11 string
-    retv11 = self__9
-    return retv11
+    var retv14 string
+    retv14 = self__9
+    return retv14
 }
 
 func main() {

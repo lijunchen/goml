@@ -1,38 +1,38 @@
 fn main() -> unit {
-  join ret5() -> unit {
+  join ret8() -> unit {
     ()
   } in
   let x/0 = 5 in
-  join k6(jp7: string) -> unit {
-    let y/1 = jp7 in
-    let _wild4 = println__T_string(y/1) in
-    jump ret5()
+  join k9(jp10: string) -> unit {
+    let y/1 = jp10 in
+    let _wild7 = println__T_string(y/1) in
+    jump ret8()
   } in
   match x/0 {
     0 => {
-      jump k6("zero")
+      jump k9("zero")
     },
     1 => {
-      jump k6("one")
+      jump k9("one")
     },
     _ => {
-      jump k6("other")
+      jump k9("other")
     },
   }
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret8() -> unit {
+  join ret11() -> unit {
     ()
   } in
-  let t9 = trait_impl#ToString#string#to_string(value/1) in
-  let t10 = @runtime(core.string_println)(t9) in
-  jump ret8()
+  let t12 = trait_impl#ToString#string#to_string(value/1) in
+  let t13 = @runtime(core.string_println)(t12) in
+  jump ret11()
 }
 
 fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret11(retv12: string) -> string {
-    retv12
+  join ret14(retv15: string) -> string {
+    retv15
   } in
-  jump ret11(self/9)
+  jump ret14(self/9)
 }

@@ -14,78 +14,78 @@ func _goml_runtime_core_string_println(s string) struct{} {
 }
 
 func match_string(s__0 string) int32 {
-    var retv10 int32
-    var jp12 int32
+    var retv13 int32
+    var jp15 int32
     switch s__0 {
     case "hello":
-        jp12 = 1
+        jp15 = 1
     case "world":
-        jp12 = 2
+        jp15 = 2
     default:
-        jp12 = 3
+        jp15 = 3
     }
-    retv10 = jp12
-    return retv10
+    retv13 = jp15
+    return retv13
 }
 
 func wildcard_position(s__1 string) int32 {
-    var retv14 int32
-    retv14 = 4
-    return retv14
+    var retv17 int32
+    retv17 = 4
+    return retv17
 }
 
 func repeated_string(s__2 string) int32 {
-    var retv16 int32
-    var jp18 int32
+    var retv19 int32
+    var jp21 int32
     switch s__2 {
     case "hello":
-        jp18 = 6
+        jp21 = 6
     default:
-        jp18 = 8
+        jp21 = 8
     }
-    retv16 = jp18
-    return retv16
+    retv19 = jp21
+    return retv19
 }
 
 func main0() struct{} {
-    var t20 int32 = match_string("hello")
-    var t21 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t20)
-    println__T_string(t21)
-    var t22 int32 = match_string("planet")
-    var t23 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t22)
-    println__T_string(t23)
-    var t24 int32 = wildcard_position("world")
-    var t25 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t24)
-    println__T_string(t25)
-    var t26 int32 = wildcard_position("sun")
-    var t27 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t26)
-    println__T_string(t27)
-    var t28 int32 = repeated_string("hello")
-    var t29 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t28)
-    println__T_string(t29)
-    var t30 int32 = repeated_string("mars")
-    var t31 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t30)
-    println__T_string(t31)
+    var t23 int32 = match_string("hello")
+    var t24 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t23)
+    println__T_string(t24)
+    var t25 int32 = match_string("planet")
+    var t26 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t25)
+    println__T_string(t26)
+    var t27 int32 = wildcard_position("world")
+    var t28 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t27)
+    println__T_string(t28)
+    var t29 int32 = wildcard_position("sun")
+    var t30 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t29)
+    println__T_string(t30)
+    var t31 int32 = repeated_string("hello")
+    var t32 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t31)
+    println__T_string(t32)
+    var t33 int32 = repeated_string("mars")
+    var t34 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t33)
+    println__T_string(t34)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t34 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t34)
+    var t37 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t37)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
-    var retv37 string
-    var t38 string = _goml_runtime_core_int32_to_string(self__2)
-    retv37 = t38
-    return retv37
+    var retv40 string
+    var t41 string = _goml_runtime_core_int32_to_string(self__2)
+    retv40 = t41
+    return retv40
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
-    var retv40 string
-    retv40 = self__9
-    return retv40
+    var retv43 string
+    retv43 = self__9
+    return retv43
 }
 
 func main() {

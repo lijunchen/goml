@@ -214,89 +214,152 @@ fn trait_impl#ToString#Ref[T]#to_string(self/69: Ref[T]) -> string {
   (("ref(" + trait_call[ToString::to_string](v/70)) + ")")
 }
 
+fn inherent#Iterator#Iterator[T]#from_fn(next_fn/71: () -> Option[T]) -> Iterator[T] {
+  Iterator { next_fn: next_fn/71 }
+}
+
+fn inherent#Iterator#Iterator[T]#next(self/72: Iterator[T]) -> Option[T] {
+  Iterator.next_fn(self/72)()
+}
+
 fn inherent#Vec#Vec[T]#new() -> Vec[T] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push(self/71: Vec[T], elem/72: T) -> unit {
-  @intrinsic(vec.push)(self/71, elem/72)
+fn inherent#Vec#Vec[T]#push(self/73: Vec[T], elem/74: T) -> unit {
+  @intrinsic(vec.push)(self/73, elem/74)
 }
 
-fn inherent#Vec#Vec[T]#pushed(self/73: Vec[T], elem/74: T) -> Vec[T] {
-  let result/75 = inherent#Vec#Vec[T]#new() in
-  let index/76 = inherent#Ref#Ref[int32]#new(0) in
-  let _wild2 = while (inherent#Ref#Ref[int32]#get(index/76) < inherent#Vec#Vec[T]#len(self/73)) {
+fn inherent#Vec#Vec[T]#pushed(self/75: Vec[T], elem/76: T) -> Vec[T] {
+  let result/77 = inherent#Vec#Vec[T]#new() in
+  let index/78 = inherent#Ref#Ref[int32]#new(0) in
+  let _wild2 = while (inherent#Ref#Ref[int32]#get(index/78) < inherent#Vec#Vec[T]#len(self/75)) {
       {
-        let _wild0 = inherent#Vec#Vec[T]#push(result/75, inherent#Vec#Vec[T]#get(self/73, inherent#Ref#Ref[int32]#get(index/76))) in
-        let _wild1 = inherent#Ref#Ref[int32]#set(index/76, (inherent#Ref#Ref[int32]#get(index/76) + 1)) in
+        let _wild0 = inherent#Vec#Vec[T]#push(result/77, inherent#Vec#Vec[T]#get(self/75, inherent#Ref#Ref[int32]#get(index/78))) in
+        let _wild1 = inherent#Ref#Ref[int32]#set(index/78, (inherent#Ref#Ref[int32]#get(index/78) + 1)) in
       }
   } in
-  let _wild3 = inherent#Vec#Vec[T]#push(result/75, elem/74) in
-  result/75
+  let _wild3 = inherent#Vec#Vec[T]#push(result/77, elem/76) in
+  result/77
 }
 
-fn inherent#Vec#Vec[T]#get(self/77: Vec[T], index/78: int32) -> T {
-  @intrinsic(vec.get)(self/77, index/78)
+fn inherent#Vec#Vec[T]#get(self/79: Vec[T], index/80: int32) -> T {
+  @intrinsic(vec.get)(self/79, index/80)
 }
 
-fn inherent#Vec#Vec[T]#set(self/79: Vec[T], index/80: int32, elem/81: T) -> unit {
-  @intrinsic(vec.set)(self/79, index/80, elem/81)
+fn inherent#Vec#Vec[T]#set(self/81: Vec[T], index/82: int32, elem/83: T) -> unit {
+  @intrinsic(vec.set)(self/81, index/82, elem/83)
 }
 
-fn inherent#Vec#Vec[T]#len(self/82: Vec[T]) -> int32 {
-  @intrinsic(vec.len)(self/82)
+fn inherent#Vec#Vec[T]#len(self/84: Vec[T]) -> int32 {
+  @intrinsic(vec.len)(self/84)
 }
 
-fn inherent#Vec#Vec[T]#slice(self/83: Vec[T], start/84: int32, end/85: int32) -> Slice[T] {
-  @intrinsic(slice.new)(self/83, start/84, end/85)
+fn inherent#Vec#Vec[T]#slice(self/85: Vec[T], start/86: int32, end/87: int32) -> Slice[T] {
+  @intrinsic(slice.new)(self/85, start/86, end/87)
 }
 
-fn inherent#Slice#Slice[T]#get(self/86: Slice[T], index/87: int32) -> T {
-  @intrinsic(slice.get)(self/86, index/87)
+fn inherent#Vec#Vec[T]#iter(self/88: Vec[T]) -> Iterator[T] {
+  let index/89 = inherent#Ref#Ref[int32]#new(0) in
+  let len/90 = inherent#Vec#Vec[T]#len(self/88) in
+  inherent#Iterator#Iterator#from_fn(|| => {
+    let current/91 = inherent#Ref#Ref[int32]#get(index/89) in
+    if (current/91 < len/90) {
+        {
+          let value/92 = inherent#Vec#Vec[T]#get(self/88, current/91) in
+          let _wild4 = inherent#Ref#Ref[int32]#set(index/89, (current/91 + 1)) in
+          Option::Some(value/92)
+        }
+    } else {
+        {
+          Option::None
+        }
+    }
+  })
 }
 
-fn inherent#Slice#Slice[T]#len(self/88: Slice[T]) -> int32 {
-  @intrinsic(slice.len)(self/88)
+fn inherent#Slice#Slice[T]#get(self/93: Slice[T], index/94: int32) -> T {
+  @intrinsic(slice.get)(self/93, index/94)
 }
 
-fn inherent#Slice#Slice[T]#sub(self/89: Slice[T], start/90: int32, end/91: int32) -> Slice[T] {
-  @intrinsic(slice.sub)(self/89, start/90, end/91)
+fn inherent#Slice#Slice[T]#len(self/95: Slice[T]) -> int32 {
+  @intrinsic(slice.len)(self/95)
+}
+
+fn inherent#Slice#Slice[T]#sub(self/96: Slice[T], start/97: int32, end/98: int32) -> Slice[T] {
+  @intrinsic(slice.sub)(self/96, start/97, end/98)
+}
+
+fn inherent#Slice#Slice[T]#iter(self/99: Slice[T]) -> Iterator[T] {
+  let index/100 = inherent#Ref#Ref[int32]#new(0) in
+  let len/101 = inherent#Slice#Slice[T]#len(self/99) in
+  inherent#Iterator#Iterator#from_fn(|| => {
+    let current/102 = inherent#Ref#Ref[int32]#get(index/100) in
+    if (current/102 < len/101) {
+        {
+          let value/103 = inherent#Slice#Slice[T]#get(self/99, current/102) in
+          let _wild5 = inherent#Ref#Ref[int32]#set(index/100, (current/102 + 1)) in
+          Option::Some(value/103)
+        }
+    } else {
+        {
+          Option::None
+        }
+    }
+  })
 }
 
 fn inherent#HashMap#HashMap[K,V]#new() -> HashMap[K, V] {
   @intrinsic(hashmap.new)()
 }
 
-fn inherent#HashMap#HashMap[K,V]#get(self/92: HashMap[K, V], key/93: K) -> Option[V] {
-  @intrinsic(hashmap.get)(self/92, key/93)
+fn inherent#HashMap#HashMap[K,V]#get(self/104: HashMap[K, V], key/105: K) -> Option[V] {
+  @intrinsic(hashmap.get)(self/104, key/105)
 }
 
-fn inherent#HashMap#HashMap[K,V]#set(self/94: HashMap[K, V], key/95: K, value/96: V) -> unit {
-  @intrinsic(hashmap.set)(self/94, key/95, value/96)
+fn inherent#HashMap#HashMap[K,V]#set(self/106: HashMap[K, V], key/107: K, value/108: V) -> unit {
+  @intrinsic(hashmap.set)(self/106, key/107, value/108)
 }
 
-fn inherent#HashMap#HashMap[K,V]#remove(self/97: HashMap[K, V], key/98: K) -> unit {
-  @intrinsic(hashmap.remove)(self/97, key/98)
+fn inherent#HashMap#HashMap[K,V]#remove(self/109: HashMap[K, V], key/110: K) -> unit {
+  @intrinsic(hashmap.remove)(self/109, key/110)
 }
 
-fn inherent#HashMap#HashMap[K,V]#len(self/99: HashMap[K, V]) -> int32 {
-  @intrinsic(hashmap.len)(self/99)
+fn inherent#HashMap#HashMap[K,V]#len(self/111: HashMap[K, V]) -> int32 {
+  @intrinsic(hashmap.len)(self/111)
 }
 
-fn inherent#HashMap#HashMap[K,V]#contains(self/100: HashMap[K, V], key/101: K) -> bool {
-  @intrinsic(hashmap.contains)(self/100, key/101)
+fn inherent#HashMap#HashMap[K,V]#contains(self/112: HashMap[K, V], key/113: K) -> bool {
+  @intrinsic(hashmap.contains)(self/112, key/113)
 }
 
-fn inherent#Ref#Ref[T]#new(value/102: T) -> Ref[T] {
-  @intrinsic(ref.new)(value/102)
+fn inherent#Ref#Ref[T]#new(value/114: T) -> Ref[T] {
+  @intrinsic(ref.new)(value/114)
 }
 
-fn inherent#Ref#Ref[T]#get(self/103: Ref[T]) -> T {
-  @intrinsic(ref.get)(self/103)
+fn inherent#Ref#Ref[T]#get(self/115: Ref[T]) -> T {
+  @intrinsic(ref.get)(self/115)
 }
 
-fn inherent#Ref#Ref[T]#set(self/104: Ref[T], value/105: T) -> unit {
-  @intrinsic(ref.set)(self/104, value/105)
+fn inherent#Ref#Ref[T]#set(self/116: Ref[T], value/117: T) -> unit {
+  @intrinsic(ref.set)(self/116, value/117)
+}
+
+fn range(start/118: int32, end/119: int32) -> Iterator[int32] {
+  let current/120 = inherent#Ref#Ref[int32]#new(start/118) in
+  inherent#Iterator#Iterator#from_fn(|| => {
+    let value/121 = inherent#Ref#Ref[int32]#get(current/120) in
+    if (value/121 < end/119) {
+        {
+          let _wild6 = inherent#Ref#Ref[int32]#set(current/120, (value/121 + 1)) in
+          Option::Some(value/121)
+        }
+    } else {
+        {
+          Option::None
+        }
+    }
+  })
 }
 
 fn print_opt_int(x/0: Option[int32]) -> unit {
@@ -304,11 +367,11 @@ fn print_opt_int(x/0: Option[int32]) -> unit {
     Option::None => {
       println("none")
     },
-    Option::Some(x4) => {
+    Option::Some(x7) => {
       {
-        let x4 = Option::Some._0(x/0) in
+        let x7 = Option::Some._0(x/0) in
         {
-          let v/1 = x4 in
+          let v/1 = x7 in
           println(v/1)
         }
       }
@@ -317,91 +380,91 @@ fn print_opt_int(x/0: Option[int32]) -> unit {
 }
 
 fn main() -> unit {
-  let _wild5 = println(@intrinsic(array.get)([31, 32], 1)) in
+  let _wild8 = println(@intrinsic(array.get)([31, 32], 1)) in
   let arr/2 = [1, 2, 3] in
-  let _wild6 = println(@intrinsic(array.get)(arr/2, 0)) in
+  let _wild9 = println(@intrinsic(array.get)(arr/2, 0)) in
   let arr2/3 = [4, 5, 6] in
-  let _wild11 = {
-    let place_root7 = arr2/3 in
-    let index8 = 1 in
-    let place9 = @intrinsic(array.get)(place_root7, index8) in
-    let value10 = 50 in
-    arr2/3 = @intrinsic(array.set)(place_root7, index8, value10)
+  let _wild14 = {
+    let place_root10 = arr2/3 in
+    let index11 = 1 in
+    let place12 = @intrinsic(array.get)(place_root10, index11) in
+    let value13 = 50 in
+    arr2/3 = @intrinsic(array.set)(place_root10, index11, value13)
   } in
-  let _wild12 = println(@intrinsic(array.get)(arr2/3, 1)) in
+  let _wild15 = println(@intrinsic(array.get)(arr2/3, 1)) in
   let vec/4 = inherent#Vec#Vec[int32]#pushed(inherent#Vec#Vec[int32]#pushed(inherent#Vec#Vec[int32]#pushed(inherent#Vec#Vec[int32]#new(), 7), 8), 9) in
-  let _wild13 = println(@intrinsic(vec.get)(vec/4, 2)) in
+  let _wild16 = println(@intrinsic(vec.get)(vec/4, 2)) in
   let vec2/5 = inherent#Vec#Vec[int32]#pushed(inherent#Vec#Vec[int32]#pushed(inherent#Vec#Vec[int32]#pushed(inherent#Vec#Vec[int32]#new(), 10), 11), 12) in
-  let _wild18 = {
-    let place_root14 = vec2/5 in
-    let index15 = 0 in
-    let place16 = @intrinsic(vec.get)(place_root14, index15) in
-    let value17 = 100 in
-    @intrinsic(vec.set)(place_root14, index15, value17)
+  let _wild21 = {
+    let place_root17 = vec2/5 in
+    let index18 = 0 in
+    let place19 = @intrinsic(vec.get)(place_root17, index18) in
+    let value20 = 100 in
+    @intrinsic(vec.set)(place_root17, index18, value20)
   } in
-  let _wild19 = println(@intrinsic(vec.get)(vec2/5, 0)) in
+  let _wild22 = println(@intrinsic(vec.get)(vec2/5, 0)) in
   let s/6 = inherent#Vec#Vec[int32]#slice(vec2/5, 0, 2) in
-  let _wild20 = println(@intrinsic(slice.get)(s/6, 1)) in
+  let _wild23 = println(@intrinsic(slice.get)(s/6, 1)) in
   let map/7 = inherent#HashMap#HashMap[string,int32]#new() in
-  let _wild25 = {
-    let place_root21 = map/7 in
-    let index22 = "a" in
-    let place23 = @intrinsic(hashmap.get)(place_root21, index22) in
-    let value24 = 13 in
-    @intrinsic(hashmap.set)(place_root21, index22, value24)
+  let _wild28 = {
+    let place_root24 = map/7 in
+    let index25 = "a" in
+    let place26 = @intrinsic(hashmap.get)(place_root24, index25) in
+    let value27 = 13 in
+    @intrinsic(hashmap.set)(place_root24, index25, value27)
   } in
-  let _wild26 = print_opt_int(@intrinsic(hashmap.get)(map/7, "a")) in
-  let _wild27 = print_opt_int(@intrinsic(hashmap.get)(map/7, "missing")) in
+  let _wild29 = print_opt_int(@intrinsic(hashmap.get)(map/7, "a")) in
+  let _wild30 = print_opt_int(@intrinsic(hashmap.get)(map/7, "missing")) in
   let matrix/8 = [[1, 2], [3, 4]] in
-  let _wild34 = {
-    let place_root28 = matrix/8 in
-    let index29 = 1 in
-    let place30 = @intrinsic(array.get)(place_root28, index29) in
-    let index31 = 0 in
-    let place32 = @intrinsic(array.get)(place30, index31) in
-    let value33 = 30 in
-    matrix/8 = @intrinsic(array.set)(place_root28, index29, @intrinsic(array.set)(place30, index31, value33))
+  let _wild37 = {
+    let place_root31 = matrix/8 in
+    let index32 = 1 in
+    let place33 = @intrinsic(array.get)(place_root31, index32) in
+    let index34 = 0 in
+    let place35 = @intrinsic(array.get)(place33, index34) in
+    let value36 = 30 in
+    matrix/8 = @intrinsic(array.set)(place_root31, index32, @intrinsic(array.set)(place33, index34, value36))
   } in
-  let _wild35 = println(@intrinsic(array.get)(@intrinsic(array.get)(matrix/8, 1), 0)) in
+  let _wild38 = println(@intrinsic(array.get)(@intrinsic(array.get)(matrix/8, 1), 0)) in
   let pair/9 = ([14, 15], 0) in
-  let _wild41 = {
-    let place_root36 = pair/9 in
-    let place37 = place_root36.0 in
-    let index38 = 1 in
-    let place39 = @intrinsic(array.get)(place37, index38) in
-    let value40 = 150 in
-    pair/9 = (@intrinsic(array.set)(place37, index38, value40), place_root36.1)
+  let _wild44 = {
+    let place_root39 = pair/9 in
+    let place40 = place_root39.0 in
+    let index41 = 1 in
+    let place42 = @intrinsic(array.get)(place40, index41) in
+    let value43 = 150 in
+    pair/9 = (@intrinsic(array.set)(place40, index41, value43), place_root39.1)
   } in
-  let _wild42 = println(@intrinsic(array.get)(pair/9.0, 1)) in
+  let _wild45 = println(@intrinsic(array.get)(pair/9.0, 1)) in
   let holder/10 = Holder { data: [16, 17], vecs: inherent#Vec#Vec[[int32;2]]#pushed(inherent#Vec#Vec[[int32;2]]#pushed(inherent#Vec#Vec[[int32;2]]#new(), [18, 19]), [20, 21]) } in
-  let _wild48 = {
-    let place_root43 = holder/10 in
-    let place44 = Holder.data(place_root43) in
-    let index45 = 0 in
-    let place46 = @intrinsic(array.get)(place44, index45) in
-    let value47 = 160 in
-    holder/10 = Holder { data: @intrinsic(array.set)(place44, index45, value47), vecs: Holder.vecs(place_root43) }
+  let _wild51 = {
+    let place_root46 = holder/10 in
+    let place47 = Holder.data(place_root46) in
+    let index48 = 0 in
+    let place49 = @intrinsic(array.get)(place47, index48) in
+    let value50 = 160 in
+    holder/10 = Holder { data: @intrinsic(array.set)(place47, index48, value50), vecs: Holder.vecs(place_root46) }
   } in
-  let _wild49 = println(@intrinsic(array.get)(Holder.data(holder/10), 0)) in
-  let _wild57 = {
-    let place_root50 = holder/10 in
-    let place51 = Holder.vecs(place_root50) in
-    let index52 = 1 in
-    let place53 = @intrinsic(vec.get)(place51, index52) in
-    let index54 = 0 in
-    let place55 = @intrinsic(array.get)(place53, index54) in
-    let value56 = 200 in
-    @intrinsic(vec.set)(place51, index52, @intrinsic(array.set)(place53, index54, value56))
+  let _wild52 = println(@intrinsic(array.get)(Holder.data(holder/10), 0)) in
+  let _wild60 = {
+    let place_root53 = holder/10 in
+    let place54 = Holder.vecs(place_root53) in
+    let index55 = 1 in
+    let place56 = @intrinsic(vec.get)(place54, index55) in
+    let index57 = 0 in
+    let place58 = @intrinsic(array.get)(place56, index57) in
+    let value59 = 200 in
+    @intrinsic(vec.set)(place54, index55, @intrinsic(array.set)(place56, index57, value59))
   } in
-  let _wild58 = println(@intrinsic(array.get)(@intrinsic(vec.get)(Holder.vecs(holder/10), 1), 0)) in
+  let _wild61 = println(@intrinsic(array.get)(@intrinsic(vec.get)(Holder.vecs(holder/10), 1), 0)) in
   let r/11 = inherent#Ref#Ref[[int32;2]]#new([22, 23]) in
-  let _wild64 = {
-    let place_ref59 = r/11 in
-    let place_root60 = @intrinsic(ref.get)(place_ref59) in
-    let index61 = 1 in
-    let place62 = @intrinsic(array.get)(place_root60, index61) in
-    let value63 = 230 in
-    @intrinsic(ref.set)(place_ref59, @intrinsic(array.set)(place_root60, index61, value63))
+  let _wild67 = {
+    let place_ref62 = r/11 in
+    let place_root63 = @intrinsic(ref.get)(place_ref62) in
+    let index64 = 1 in
+    let place65 = @intrinsic(array.get)(place_root63, index64) in
+    let value66 = 230 in
+    @intrinsic(ref.set)(place_ref62, @intrinsic(array.set)(place_root63, index64, value66))
   } in
-  let _wild65 = println(@intrinsic(array.get)(inherent#Ref#Ref[[int32;2]]#get(r/11), 1)) in
+  let _wild68 = println(@intrinsic(array.get)(inherent#Ref#Ref[[int32;2]]#get(r/11), 1)) in
 }

@@ -1,58 +1,58 @@
 fn packages_basic::main() -> unit {
-  join ret4() -> unit {
+  join ret7() -> unit {
     ()
   } in
-  let t5 = packages_basic::Lib::color_to_int(Tag_0) in
-  let t6 = inherent#int32#int32#to_string(t5) in
-  let t7 = println__T_string(t6) in
-  jump ret4()
+  let t8 = packages_basic::Lib::color_to_int(Tag_0) in
+  let t9 = inherent#int32#int32#to_string(t8) in
+  let t10 = println__T_string(t9) in
+  jump ret7()
 }
 
 fn packages_basic::Lib::color_to_int(c/0: packages_basic::Lib::Color) -> int32 {
-  join ret8(retv9: int32) -> int32 {
-    retv9
+  join ret11(retv12: int32) -> int32 {
+    retv12
   } in
-  join k10(jp11: int32) -> int32 {
-    jump ret8(jp11)
+  join k13(jp14: int32) -> int32 {
+    jump ret11(jp14)
   } in
   match c/0 {
     Tag_0 => {
-      jump k10(1)
+      jump k13(1)
     },
     Tag_1 => {
-      jump k10(2)
+      jump k13(2)
     },
   }
 }
 
 fn main() -> unit {
-  join ret12() -> unit {
+  join ret15() -> unit {
     ()
   } in
-  let t13 = packages_basic::main() in
-  jump ret12()
+  let t16 = packages_basic::main() in
+  jump ret15()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret14() -> unit {
+  join ret17() -> unit {
     ()
   } in
-  let t15 = trait_impl#ToString#string#to_string(value/1) in
-  let t16 = @runtime(core.string_println)(t15) in
-  jump ret14()
+  let t18 = trait_impl#ToString#string#to_string(value/1) in
+  let t19 = @runtime(core.string_println)(t18) in
+  jump ret17()
 }
 
 fn inherent#int32#int32#to_string(self/2: int32) -> string {
-  join ret17(retv18: string) -> string {
-    retv18
-  } in
-  let t19 = @runtime(core.int32_to_string)(self/2) in
-  jump ret17(t19)
-}
-
-fn trait_impl#ToString#string#to_string(self/9: string) -> string {
   join ret20(retv21: string) -> string {
     retv21
   } in
-  jump ret20(self/9)
+  let t22 = @runtime(core.int32_to_string)(self/2) in
+  jump ret20(t22)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  join ret23(retv24: string) -> string {
+    retv24
+  } in
+  jump ret23(self/9)
 }

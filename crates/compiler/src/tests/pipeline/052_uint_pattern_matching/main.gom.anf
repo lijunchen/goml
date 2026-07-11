@@ -1,183 +1,183 @@
 fn is_flag8(value/0: uint8) -> bool {
-  join ret7(retv8: bool) -> bool {
-    retv8
+  join ret10(retv11: bool) -> bool {
+    retv11
   } in
-  join k9(jp10: bool) -> bool {
-    jump ret7(jp10)
+  join k12(jp13: bool) -> bool {
+    jump ret10(jp13)
   } in
   match value/0 {
     0 => {
-      jump k9(true)
+      jump k12(true)
     },
     200 => {
-      jump k9(true)
+      jump k12(true)
     },
     _ => {
-      jump k9(false)
+      jump k12(false)
     },
   }
 }
 
 fn is_flag16(value/1: uint16) -> bool {
-  join ret11(retv12: bool) -> bool {
-    retv12
+  join ret14(retv15: bool) -> bool {
+    retv15
   } in
-  join k13(jp14: bool) -> bool {
-    jump ret11(jp14)
+  join k16(jp17: bool) -> bool {
+    jump ret14(jp17)
   } in
   match value/1 {
     1024 => {
-      jump k13(true)
+      jump k16(true)
     },
     65000 => {
-      jump k13(true)
+      jump k16(true)
     },
     _ => {
-      jump k13(false)
+      jump k16(false)
     },
   }
 }
 
 fn is_flag32(value/2: uint32) -> bool {
-  join ret15(retv16: bool) -> bool {
-    retv16
+  join ret18(retv19: bool) -> bool {
+    retv19
   } in
-  join k17(jp18: bool) -> bool {
-    jump ret15(jp18)
+  join k20(jp21: bool) -> bool {
+    jump ret18(jp21)
   } in
   match value/2 {
     4000000000 => {
-      jump k17(true)
+      jump k20(true)
     },
     1234567890 => {
-      jump k17(true)
+      jump k20(true)
     },
     _ => {
-      jump k17(false)
+      jump k20(false)
     },
   }
 }
 
 fn is_flag64(value/3: uint64) -> bool {
-  join ret19(retv20: bool) -> bool {
-    retv20
+  join ret22(retv23: bool) -> bool {
+    retv23
   } in
-  join k21(jp22: bool) -> bool {
-    jump ret19(jp22)
+  join k24(jp25: bool) -> bool {
+    jump ret22(jp25)
   } in
   match value/3 {
     900000000 => {
-      jump k21(true)
+      jump k24(true)
     },
     600000000 => {
-      jump k21(true)
+      jump k24(true)
     },
     _ => {
-      jump k21(false)
+      jump k24(false)
     },
   }
 }
 
 fn match_struct(counter/4: Counter) -> bool {
-  join ret23(retv24: bool) -> bool {
-    retv24
+  join ret26(retv27: bool) -> bool {
+    retv27
   } in
-  let x4 = Counter.start(counter/4) in
-  let x5 = Counter.end(counter/4) in
-  join k25(jp26: bool) -> bool {
-    jump ret23(jp26)
+  let x7 = Counter.start(counter/4) in
+  let x8 = Counter.end(counter/4) in
+  join k28(jp29: bool) -> bool {
+    jump ret26(jp29)
   } in
-  match x5 {
+  match x8 {
     900000000 => {
-      join k27(jp28: bool) -> bool {
-        jump k25(jp28)
+      join k30(jp31: bool) -> bool {
+        jump k28(jp31)
       } in
-      match x4 {
+      match x7 {
         4000000000 => {
-          jump k27(true)
+          jump k30(true)
         },
         _ => {
-          jump k27(false)
+          jump k30(false)
         },
       }
     },
     600000000 => {
-      jump k25(true)
+      jump k28(true)
     },
     _ => {
-      jump k25(false)
+      jump k28(false)
     },
   }
 }
 
 fn report(label/5: string, value/6: bool) -> string {
-  join ret29(retv30: string) -> string {
-    retv30
+  join ret32(retv33: string) -> string {
+    retv33
   } in
-  let t31 = trait_impl#ToString#bool#to_string(value/6) in
-  let t32 = (label/5 + t31) in
-  jump ret29(t32)
+  let t34 = trait_impl#ToString#bool#to_string(value/6) in
+  let t35 = (label/5 + t34) in
+  jump ret32(t35)
 }
 
 fn main() -> unit {
-  join ret33() -> unit {
+  join ret36() -> unit {
     ()
   } in
   let counter/7 = Counter { start: 4000000000, end: 900000000 } in
   let alt_counter/8 = Counter { start: 12, end: 600000000 } in
-  let t34 = is_flag8(200) in
-  let t35 = report("u8_hit=", t34) in
-  let t36 = is_flag8(15) in
-  let t37 = report(",u8_miss=", t36) in
-  let t38 = (t35 + t37) in
-  let t39 = is_flag16(65000) in
-  let t40 = report(",u16_hit=", t39) in
+  let t37 = is_flag8(200) in
+  let t38 = report("u8_hit=", t37) in
+  let t39 = is_flag8(15) in
+  let t40 = report(",u8_miss=", t39) in
   let t41 = (t38 + t40) in
-  let t42 = is_flag16(42) in
-  let t43 = report(",u16_miss=", t42) in
+  let t42 = is_flag16(65000) in
+  let t43 = report(",u16_hit=", t42) in
   let t44 = (t41 + t43) in
-  let t45 = is_flag32(1234567890) in
-  let t46 = report(",u32_hit=", t45) in
+  let t45 = is_flag16(42) in
+  let t46 = report(",u16_miss=", t45) in
   let t47 = (t44 + t46) in
-  let t48 = is_flag32(99) in
-  let t49 = report(",u32_miss=", t48) in
+  let t48 = is_flag32(1234567890) in
+  let t49 = report(",u32_hit=", t48) in
   let t50 = (t47 + t49) in
-  let t51 = is_flag64(900000000) in
-  let t52 = report(",u64_hit=", t51) in
+  let t51 = is_flag32(99) in
+  let t52 = report(",u32_miss=", t51) in
   let t53 = (t50 + t52) in
-  let t54 = is_flag64(700000000) in
-  let t55 = report(",u64_miss=", t54) in
+  let t54 = is_flag64(900000000) in
+  let t55 = report(",u64_hit=", t54) in
   let t56 = (t53 + t55) in
-  let t57 = match_struct(counter/7) in
-  let t58 = report(",struct_first=", t57) in
+  let t57 = is_flag64(700000000) in
+  let t58 = report(",u64_miss=", t57) in
   let t59 = (t56 + t58) in
-  let t60 = match_struct(alt_counter/8) in
-  let t61 = report(",struct_second=", t60) in
-  let message/9 = (t59 + t61) in
-  let mtmp6 = println__T_string(message/9) in
-  jump ret33()
+  let t60 = match_struct(counter/7) in
+  let t61 = report(",struct_first=", t60) in
+  let t62 = (t59 + t61) in
+  let t63 = match_struct(alt_counter/8) in
+  let t64 = report(",struct_second=", t63) in
+  let message/9 = (t62 + t64) in
+  let mtmp9 = println__T_string(message/9) in
+  jump ret36()
 }
 
 fn trait_impl#ToString#bool#to_string(self/8: bool) -> string {
-  join ret62(retv63: string) -> string {
-    retv63
+  join ret65(retv66: string) -> string {
+    retv66
   } in
-  let t64 = @runtime(core.bool_to_string)(self/8) in
-  jump ret62(t64)
+  let t67 = @runtime(core.bool_to_string)(self/8) in
+  jump ret65(t67)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret65() -> unit {
+  join ret68() -> unit {
     ()
   } in
-  let t66 = trait_impl#ToString#string#to_string(value/1) in
-  let t67 = @runtime(core.string_println)(t66) in
-  jump ret65()
+  let t69 = trait_impl#ToString#string#to_string(value/1) in
+  let t70 = @runtime(core.string_println)(t69) in
+  jump ret68()
 }
 
 fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret68(retv69: string) -> string {
-    retv69
+  join ret71(retv72: string) -> string {
+    retv72
   } in
-  jump ret68(self/9)
+  jump ret71(self/9)
 }

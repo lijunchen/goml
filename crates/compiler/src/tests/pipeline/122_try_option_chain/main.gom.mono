@@ -24,16 +24,16 @@ fn maybe_double(value/1: int32) -> Option__int32 {
 
 fn maybe_total(flag/2: bool) -> Option__int32 {
   let a/3 = {
-    let mtmp4 = maybe_seed(flag/2) in
-    match mtmp4 {
+    let mtmp7 = maybe_seed(flag/2) in
+    match mtmp7 {
       Option__int32::None => {
         return Option__int32::None
       },
-      Option__int32::Some(x5) => {
+      Option__int32::Some(x8) => {
         {
-          let x5 = Option__int32::Some._0(mtmp4) in
+          let x8 = Option__int32::Some._0(mtmp7) in
           {
-            let try_value/22 = x5 in
+            let try_value/22 = x8 in
             try_value/22
           }
         }
@@ -41,16 +41,16 @@ fn maybe_total(flag/2: bool) -> Option__int32 {
     }
   } in
   let b/4 = {
-    let mtmp6 = maybe_double(a/3) in
-    match mtmp6 {
+    let mtmp9 = maybe_double(a/3) in
+    match mtmp9 {
       Option__int32::None => {
         return Option__int32::None
       },
-      Option__int32::Some(x7) => {
+      Option__int32::Some(x10) => {
         {
-          let x7 = Option__int32::Some._0(mtmp6) in
+          let x10 = Option__int32::Some._0(mtmp9) in
           {
-            let try_value/26 = x7 in
+            let try_value/26 = x10 in
             try_value/26
           }
         }
@@ -65,11 +65,11 @@ fn show(opt/5: Option__int32) -> string {
     Option__int32::None => {
       "none"
     },
-    Option__int32::Some(x8) => {
+    Option__int32::Some(x11) => {
       {
-        let x8 = Option__int32::Some._0(opt/5) in
+        let x11 = Option__int32::Some._0(opt/5) in
         {
-          let value/6 = x8 in
+          let value/6 = x11 in
           ("some=" + inherent#int32#int32#to_string(value/6))
         }
       }
@@ -78,8 +78,8 @@ fn show(opt/5: Option__int32) -> string {
 }
 
 fn main() -> unit {
-  let _wild9 = println__T_string(show(maybe_total(true))) in
-  let _wild10 = println__T_string(show(maybe_total(false))) in
+  let _wild12 = println__T_string(show(maybe_total(true))) in
+  let _wild13 = println__T_string(show(maybe_total(false))) in
 }
 
 fn inherent#int32#int32#to_string(self/2: int32) -> string {

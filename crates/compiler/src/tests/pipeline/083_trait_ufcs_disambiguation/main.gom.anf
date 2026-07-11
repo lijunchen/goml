@@ -1,68 +1,68 @@
 fn trait_impl#A#S#pick(self/0: S) -> int32 {
-  join ret6(retv7: int32) -> int32 {
-    retv7
+  join ret9(retv10: int32) -> int32 {
+    retv10
   } in
-  jump ret6(10)
+  jump ret9(10)
 }
 
 fn trait_impl#B#S#pick(self/1: S) -> int32 {
-  join ret8(retv9: int32) -> int32 {
-    retv9
+  join ret11(retv12: int32) -> int32 {
+    retv12
   } in
-  jump ret8(20)
+  jump ret11(20)
 }
 
 fn main() -> unit {
-  join ret10() -> unit {
+  join ret13() -> unit {
     ()
   } in
-  let t11 = S {} in
-  let t12 = pick_a__T_S(t11) in
-  let t13 = inherent#int32#int32#to_string(t12) in
-  let _wild4 = println__T_string(t13) in
   let t14 = S {} in
-  let t15 = pick_b__T_S(t14) in
+  let t15 = pick_a__T_S(t14) in
   let t16 = inherent#int32#int32#to_string(t15) in
-  let _wild5 = println__T_string(t16) in
-  jump ret10()
+  let _wild7 = println__T_string(t16) in
+  let t17 = S {} in
+  let t18 = pick_b__T_S(t17) in
+  let t19 = inherent#int32#int32#to_string(t18) in
+  let _wild8 = println__T_string(t19) in
+  jump ret13()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret17() -> unit {
+  join ret20() -> unit {
     ()
   } in
-  let t18 = trait_impl#ToString#string#to_string(value/1) in
-  let t19 = @runtime(core.string_println)(t18) in
-  jump ret17()
+  let t21 = trait_impl#ToString#string#to_string(value/1) in
+  let t22 = @runtime(core.string_println)(t21) in
+  jump ret20()
 }
 
 fn pick_a__T_S(x/2: S) -> int32 {
-  join ret20(retv21: int32) -> int32 {
-    retv21
-  } in
-  let t22 = trait_impl#A#S#pick(x/2) in
-  jump ret20(t22)
-}
-
-fn inherent#int32#int32#to_string(self/2: int32) -> string {
-  join ret23(retv24: string) -> string {
+  join ret23(retv24: int32) -> int32 {
     retv24
   } in
-  let t25 = @runtime(core.int32_to_string)(self/2) in
+  let t25 = trait_impl#A#S#pick(x/2) in
   jump ret23(t25)
 }
 
-fn pick_b__T_S(x/3: S) -> int32 {
-  join ret26(retv27: int32) -> int32 {
+fn inherent#int32#int32#to_string(self/2: int32) -> string {
+  join ret26(retv27: string) -> string {
     retv27
   } in
-  let t28 = trait_impl#B#S#pick(x/3) in
+  let t28 = @runtime(core.int32_to_string)(self/2) in
   jump ret26(t28)
 }
 
-fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret29(retv30: string) -> string {
+fn pick_b__T_S(x/3: S) -> int32 {
+  join ret29(retv30: int32) -> int32 {
     retv30
   } in
-  jump ret29(self/9)
+  let t31 = trait_impl#B#S#pick(x/3) in
+  jump ret29(t31)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  join ret32(retv33: string) -> string {
+    retv33
+  } in
+  jump ret32(self/9)
 }

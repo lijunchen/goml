@@ -1,34 +1,34 @@
 fn main() -> unit {
-  join ret6() -> unit {
+  join ret9() -> unit {
     ()
   } in
   let s/0 = "abcde" in
-  let _wild4 = println__T_string(s/0) in
-  let _wild5 = print__T_string(s/0) in
-  jump ret6()
+  let _wild7 = println__T_string(s/0) in
+  let _wild8 = print__T_string(s/0) in
+  jump ret9()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret7() -> unit {
-    ()
-  } in
-  let t8 = trait_impl#ToString#string#to_string(value/1) in
-  let t9 = @runtime(core.string_println)(t8) in
-  jump ret7()
-}
-
-fn print__T_string(value/0: string) -> unit {
   join ret10() -> unit {
     ()
   } in
-  let t11 = trait_impl#ToString#string#to_string(value/0) in
-  let t12 = @runtime(core.string_print)(t11) in
+  let t11 = trait_impl#ToString#string#to_string(value/1) in
+  let t12 = @runtime(core.string_println)(t11) in
   jump ret10()
 }
 
-fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret13(retv14: string) -> string {
-    retv14
+fn print__T_string(value/0: string) -> unit {
+  join ret13() -> unit {
+    ()
   } in
-  jump ret13(self/9)
+  let t14 = trait_impl#ToString#string#to_string(value/0) in
+  let t15 = @runtime(core.string_print)(t14) in
+  jump ret13()
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  join ret16(retv17: string) -> string {
+    retv17
+  } in
+  jump ret16(self/9)
 }

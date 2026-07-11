@@ -1,45 +1,45 @@
 fn main() -> unit {
-  join ret6() -> unit {
+  join ret9() -> unit {
     ()
   } in
   let p/0 = Pair__uint8__float32 { first: 10, second: 3.14 } in
-  let t7 = Pair__uint8__float32.first(p/0) in
-  let t8 = trait_impl#ToString#uint8#to_string(t7) in
-  let _wild4 = println__T_string(t8) in
-  let t9 = Pair__uint8__float32.second(p/0) in
-  let t10 = trait_impl#ToString#float32#to_string(t9) in
-  let _wild5 = println__T_string(t10) in
-  jump ret6()
+  let t10 = Pair__uint8__float32.first(p/0) in
+  let t11 = trait_impl#ToString#uint8#to_string(t10) in
+  let _wild7 = println__T_string(t11) in
+  let t12 = Pair__uint8__float32.second(p/0) in
+  let t13 = trait_impl#ToString#float32#to_string(t12) in
+  let _wild8 = println__T_string(t13) in
+  jump ret9()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret11() -> unit {
+  join ret14() -> unit {
     ()
   } in
-  let t12 = trait_impl#ToString#string#to_string(value/1) in
-  let t13 = @runtime(core.string_println)(t12) in
-  jump ret11()
+  let t15 = trait_impl#ToString#string#to_string(value/1) in
+  let t16 = @runtime(core.string_println)(t15) in
+  jump ret14()
 }
 
 fn trait_impl#ToString#uint8#to_string(self/15: uint8) -> string {
-  join ret14(retv15: string) -> string {
-    retv15
-  } in
-  let t16 = @runtime(core.uint8_to_string)(self/15) in
-  jump ret14(t16)
-}
-
-fn trait_impl#ToString#float32#to_string(self/19: float32) -> string {
   join ret17(retv18: string) -> string {
     retv18
   } in
-  let t19 = @runtime(core.float32_to_string)(self/19) in
+  let t19 = @runtime(core.uint8_to_string)(self/15) in
   jump ret17(t19)
 }
 
-fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+fn trait_impl#ToString#float32#to_string(self/19: float32) -> string {
   join ret20(retv21: string) -> string {
     retv21
   } in
-  jump ret20(self/9)
+  let t22 = @runtime(core.float32_to_string)(self/19) in
+  jump ret20(t22)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  join ret23(retv24: string) -> string {
+    retv24
+  } in
+  jump ret23(self/9)
 }
