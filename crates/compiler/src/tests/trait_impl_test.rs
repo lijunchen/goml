@@ -164,6 +164,198 @@ fn main() -> unit {
 }
 
 #[test]
+fn trait_goal_infers_nested_type_from_unique_impl() {
+    let src = r#"
+trait Mark {
+    fn mark(Self) -> unit;
+}
+
+impl Mark for Vec[int32] {
+    fn mark(self: Vec[int32]) -> unit { () }
+}
+
+fn require_mark[T: Mark](value: T) -> unit {
+    ()
+}
+
+fn main() -> unit {
+    let values = vec_new();
+    require_mark(values)
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
+fn canonical_trait_cache_replays_unique_inference() {
+    let src = r#"
+trait Mark {
+    fn mark(Self) -> unit;
+}
+
+impl Mark for Vec[int32] {
+    fn mark(self: Vec[int32]) -> unit { () }
+}
+
+fn require_mark[T: Mark](value: T) -> unit {
+    ()
+}
+
+fn main() -> unit {
+    let first = vec_new();
+    require_mark(first);
+    let second = vec_new();
+    require_mark(second)
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
+fn ambiguous_trait_goal_does_not_commit_inference() {
+    let src = r#"
+trait Mark {
+    fn mark(Self) -> unit;
+}
+
+impl Mark for int32 {
+    fn mark(self: int32) -> unit { () }
+}
+
+impl Mark for string {
+    fn mark(self: string) -> unit { () }
+}
+
+fn require_mark[T: Mark](value: T) -> unit {
+    ()
+}
+
+fn main() -> unit {
+    let consume = |value| require_mark(value);
+    ()
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("Could not infer the type required to prove Mark<unknown>")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn ambiguous_trait_goal_is_retried_after_unique_inference() {
+    let src = r#"
+trait First {
+    fn first(Self) -> unit;
+}
+
+trait Second {
+    fn second(Self) -> unit;
+}
+
+impl First for int32 {
+    fn first(self: int32) -> unit { () }
+}
+
+impl First for string {
+    fn first(self: string) -> unit { () }
+}
+
+impl Second for string {
+    fn second(self: string) -> unit { () }
+}
+
+fn require_first[T: First](value: T) -> unit {
+    ()
+}
+
+fn require_second[T: Second](value: T) -> unit {
+    ()
+}
+
+fn main() -> unit {
+    let consume = |value| {
+        require_first(value);
+        require_second(value)
+    };
+    ()
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
+fn nested_impl_bound_can_drive_inference() {
+    let src = r#"
+trait Inner {
+    fn inner(Self) -> unit;
+}
+
+trait Outer {
+    fn outer(Self) -> unit;
+}
+
+impl Inner for int32 {
+    fn inner(self: int32) -> unit { () }
+}
+
+impl[T: Inner] Outer for Vec[T] {
+    fn outer(self: Vec[T]) -> unit { () }
+}
+
+fn require_outer[T: Outer](value: T) -> unit {
+    ()
+}
+
+fn main() -> unit {
+    let values = vec_new();
+    require_outer(values)
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
+fn deterministic_coercion_precedes_trait_inference() {
+    let src = r#"
+trait Mark {
+    fn mark(Self) -> unit;
+}
+
+impl Mark for int32 {
+    fn mark(self: int32) -> unit { () }
+}
+
+fn identity[T](value: T) -> T {
+    value
+}
+
+fn require_mark[T: Mark](value: T) -> unit {
+    ()
+}
+
+fn preserve[T: Mark](value: T) -> unit {
+    let copied = identity(value);
+    require_mark(copied)
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
 fn unused_generic_bound_still_creates_an_obligation() {
     let src = r#"
 trait Mark {
