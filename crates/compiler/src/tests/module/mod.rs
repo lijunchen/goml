@@ -127,6 +127,11 @@ fn multi_package_compile_project_027() -> anyhow::Result<()> {
     run_project("project027_generic_trait")
 }
 
+#[test]
+fn multi_package_compile_project_028() -> anyhow::Result<()> {
+    run_project("project028_where_predicates")
+}
+
 fn run_project(name: &str) -> anyhow::Result<()> {
     let name = name.to_string();
     let handle = std::thread::Builder::new()

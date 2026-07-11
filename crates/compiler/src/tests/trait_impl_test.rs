@@ -1135,3 +1135,211 @@ fn main() -> unit {
     let diagnostics = diagnostic_lines(src);
     assert!(diagnostics.is_empty(), "{diagnostics:?}");
 }
+
+#[test]
+fn where_predicate_accepts_constructed_trait_receiver() {
+    let src = r#"
+trait Render {
+    fn render(Self) -> string;
+}
+
+fn render_all[T](values: Vec[T]) -> string where Vec[T]: Render {
+    values.render()
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
+fn where_type_equality_is_available_in_generic_body() {
+    let src = r#"
+fn convert[T, U](value: T) -> U where T == U {
+    value
+}
+
+fn main() -> unit {
+    let value: int32 = convert(7);
+    ()
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
+fn where_constructed_bound_is_checked_at_call_site() {
+    let src = r#"
+trait Render {
+    fn render(Self) -> string;
+}
+
+fn require_render[T](values: Vec[T]) -> unit where Vec[T]: Render {
+    ()
+}
+
+fn main() -> unit {
+    let values: Vec[int32] = vec_new();
+    require_render(values)
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("No instance found for trait Render<Vec[int32]>")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn where_type_equality_is_checked_at_call_site() {
+    let src = r#"
+fn convert[T, U](value: T) -> U where T == U {
+    value
+}
+
+fn main() -> unit {
+    let value: string = convert(7);
+    ()
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("Type mismatch: expected int32, found string")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn impl_where_predicate_controls_trait_selection() {
+    let accepted = r#"
+trait Ready {
+    fn ready(Self) -> unit;
+}
+
+trait Selected {
+    fn selected(Self) -> unit;
+}
+
+struct Wrap[T] { value: T }
+
+impl Ready for Vec[int32] {
+    fn ready(self: Vec[int32]) -> unit { () }
+}
+
+impl[T] Selected for Wrap[T] where Vec[T]: Ready {
+    fn selected(self: Wrap[T]) -> unit { () }
+}
+
+fn require[T: Selected](value: T) -> unit { () }
+
+fn main() -> unit {
+    require(Wrap { value: 7 })
+}
+"#;
+    let rejected = r#"
+trait Ready {
+    fn ready(Self) -> unit;
+}
+
+trait Selected {
+    fn selected(Self) -> unit;
+}
+
+struct Wrap[T] { value: T }
+
+impl Ready for Vec[int32] {
+    fn ready(self: Vec[int32]) -> unit { () }
+}
+
+impl[T] Selected for Wrap[T] where Vec[T]: Ready {
+    fn selected(self: Wrap[T]) -> unit { () }
+}
+
+fn require[T: Selected](value: T) -> unit { () }
+
+fn main() -> unit {
+    require(Wrap { value: "no" })
+}
+"#;
+
+    let accepted_diagnostics = diagnostic_lines(accepted);
+    assert!(accepted_diagnostics.is_empty(), "{accepted_diagnostics:?}");
+    let rejected_diagnostics = diagnostic_lines(rejected);
+    assert!(
+        rejected_diagnostics
+            .iter()
+            .any(|line| line.contains("No instance found for trait Selected<Wrap[string]>")),
+        "{rejected_diagnostics:?}"
+    );
+}
+
+#[test]
+fn impl_equality_predicate_restricts_application() {
+    let src = r#"
+trait Selected {
+    fn selected(Self) -> unit;
+}
+
+struct Wrap[T] { value: T }
+
+impl[T] Selected for Wrap[T] where T == int32 {
+    fn selected(self: Wrap[T]) -> unit { () }
+}
+
+fn require[T: Selected](value: T) -> unit { () }
+
+fn main() -> unit {
+    require(Wrap { value: "no" })
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("No instance found for trait Selected<Wrap[string]>")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn structural_where_equality_relates_nested_type_parameters() {
+    let src = r#"
+fn convert[T, U](values: Vec[T]) -> Vec[U] where Vec[T] == Vec[U] {
+    values
+}
+
+fn main() -> unit {
+    let values: Vec[int32] = vec_new();
+    let converted: Vec[int32] = convert(values);
+    ()
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
+fn equality_predicate_transfers_trait_bound() {
+    let src = r#"
+trait Render {
+    fn render(Self) -> string;
+}
+
+fn render_equal[T: Render, U](value: U) -> string where T == U {
+    value.render()
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
