@@ -1765,3 +1765,273 @@ fn inherited[T: Child](value: T) -> string {
     let diagnostics = diagnostic_lines(src);
     assert!(diagnostics.is_empty(), "{diagnostics:?}");
 }
+
+#[test]
+fn trait_coverage_generic_parameter_bound_is_implied() {
+    let src = r#"
+trait Mark {
+    fn mark(Self) -> unit;
+}
+
+trait Container[T: Mark] {
+    fn value(Self) -> T;
+}
+
+fn require_mark[T: Mark](value: T) -> unit { () }
+
+fn consume[T, C: Container[T]](container: C) -> unit {
+    require_mark(Container[T]::value(container))
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
+fn trait_coverage_declaration_where_predicate_is_implied() {
+    let src = r#"
+trait Ready {
+    fn ready(Self) -> unit;
+}
+
+trait Service[T] where T: Ready {
+    fn serve(Self, T) -> unit;
+}
+
+fn require_ready[T: Ready](value: T) -> unit { () }
+
+fn consume[T, S: Service[T]](value: T) -> unit {
+    require_ready(value)
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
+fn trait_coverage_associated_type_bound_is_implied() {
+    let src = r#"
+trait Mark {
+    fn mark(Self) -> unit;
+}
+
+trait Source {
+    type Item: Mark;
+    fn get(Self) -> Self::Item;
+}
+
+fn require_mark[T: Mark](value: T) -> unit { () }
+
+fn consume[S: Source](source: S) -> unit {
+    require_mark(Source::get(source))
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
+fn trait_coverage_supertrait_associated_type_is_projectable() {
+    let src = r#"
+trait Child: Parent {
+    fn child(Self) -> unit;
+}
+
+trait Parent {
+    type Item;
+    fn get(Self) -> Self::Item;
+}
+
+fn get_from_child[C: Child](value: C) -> C::Item {
+    Parent::get(value)
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
+fn trait_coverage_projection_equality_transfers_bound() {
+    let src = r#"
+trait Mark {
+    fn mark(Self) -> unit;
+}
+
+trait Source {
+    type Item;
+    fn get(Self) -> Self::Item;
+}
+
+fn require_mark[T: Mark](value: T) -> unit { () }
+
+fn consume[A: Source, B: Source](left: A, right: B) -> unit
+where
+    A::Item == B::Item,
+    B::Item: Mark,
+{
+    let _ = right;
+    require_mark(Source::get(left))
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
+fn trait_coverage_constrained_blanket_is_disjoint_without_bound() {
+    let src = r#"
+trait Mark {
+    fn mark(Self) -> unit;
+}
+
+trait Label {
+    fn label(Self) -> string;
+}
+
+struct Box[T] {
+    value: T,
+}
+
+impl[T: Mark] Label for Box[T] {
+    fn label(self: Box[T]) -> string { "marked" }
+}
+
+impl Label for Box[string] {
+    fn label(self: Box[string]) -> string { self.value }
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
+fn trait_coverage_constrained_blanket_overlaps_when_bound_holds() {
+    let src = r#"
+trait Mark {
+    fn mark(Self) -> unit;
+}
+
+trait Label {
+    fn label(Self) -> string;
+}
+
+struct Box[T] {
+    value: T,
+}
+
+impl Mark for string {
+    fn mark(self: string) -> unit { () }
+}
+
+impl[T: Mark] Label for Box[T] {
+    fn label(self: Box[T]) -> string { "marked" }
+}
+
+impl Label for Box[string] {
+    fn label(self: Box[string]) -> string { self.value }
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("overlaps with implementation")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn trait_coverage_constrained_blanket_method_is_unavailable_without_bound() {
+    let src = r#"
+trait Mark {
+    fn mark(Self) -> unit;
+}
+
+trait Extra {
+    fn extra(Self) -> int32;
+}
+
+impl[T: Mark] Extra for T {
+    fn extra(self: T) -> int32 { 1 }
+}
+
+fn main() -> unit {
+    let _ = 1.extra();
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("Method extra not found for type int32")),
+        "{diagnostics:?}"
+    );
+}
+
+#[test]
+fn trait_coverage_constrained_blanket_method_is_available_with_bound() {
+    let src = r#"
+trait Mark {
+    fn mark(Self) -> unit;
+}
+
+trait Extra {
+    fn extra(Self) -> int32;
+}
+
+impl Mark for int32 {
+    fn mark(self: int32) -> unit { () }
+}
+
+impl[T: Mark] Extra for T {
+    fn extra(self: T) -> int32 { 1 }
+}
+
+fn main() -> unit {
+    let value: int32 = 1.extra();
+    let _ = value;
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
+fn trait_coverage_generic_applications_have_distinct_associated_types() {
+    let src = r#"
+trait Convert[T] {
+    type Output;
+    fn convert(Self) -> Self::Output;
+}
+
+struct Value {}
+
+impl Convert[int32] for Value {
+    type Output = string;
+    fn convert(self: Value) -> string { "int" }
+}
+
+impl Convert[string] for Value {
+    type Output = int32;
+    fn convert(self: Value) -> int32 { 7 }
+}
+
+fn main() -> unit {
+    let text: string = Convert[int32]::convert(Value {});
+    let number: int32 = Convert[string]::convert(Value {});
+    let _ = (text, number);
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
