@@ -51,6 +51,15 @@ fn assert_err(files: &[(&str, &str)]) {
     }
 }
 
+fn assert_err_contains(files: &[(&str, &str)], expected: &str) {
+    let diagnostics = match typecheck(files) {
+        Ok(diagnostics) => diagnostics,
+        Err(error) => error.diagnostics().clone(),
+    };
+    let actual = format!("{diagnostics:#?}");
+    assert!(actual.contains(expected), "{actual}");
+}
+
 #[test]
 fn public_function_is_visible() {
     assert_ok(&[
@@ -341,4 +350,46 @@ pub fn item() -> Item {
 "#,
         ),
     ]);
+}
+
+#[test]
+fn public_associated_type_cannot_expose_private_type() {
+    assert_err_contains(
+        &[
+            (
+                "main.gom",
+                r#"
+package main;
+
+use visibility_test::api;
+
+fn main() -> unit {
+    let _ = api::make();
+}
+"#,
+            ),
+            (
+                "api/api.gom",
+                r#"
+package api;
+
+pub trait Source {
+    type Item;
+    fn get(Self) -> Self::Item;
+}
+
+pub struct Public {}
+struct Hidden {}
+
+impl Source for Public {
+    type Item = Hidden;
+    fn get(self: Public) -> Hidden { Hidden {} }
+}
+
+pub fn make() -> Public { Public {} }
+"#,
+            ),
+        ],
+        "Public trait implementation visibility_test::api::Source exposes private type visibility_test::api::Hidden",
+    );
 }

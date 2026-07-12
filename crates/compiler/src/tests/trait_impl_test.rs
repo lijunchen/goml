@@ -2035,3 +2035,215 @@ fn main() -> unit {
     let diagnostics = diagnostic_lines(src);
     assert!(diagnostics.is_empty(), "{diagnostics:?}");
 }
+
+#[test]
+fn projected_trait_application_impl_is_selectable() {
+    let src = r#"
+trait Source {
+    type Item;
+    fn get(Self) -> Self::Item;
+}
+
+trait Pick[T] {
+    fn pick(Self) -> T;
+}
+
+impl[S: Source] Pick[S::Item] for S {
+    fn pick(self: S) -> S::Item { Source::get(self) }
+}
+
+struct Value { value: int32 }
+
+impl Source for Value {
+    type Item = int32;
+    fn get(self: Value) -> int32 { self.value }
+}
+
+fn main() -> unit {
+    let value: int32 = (Value { value: 1 }).pick();
+    let _ = value;
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
+fn symbolic_projection_equality_selects_single_impl() {
+    let src = r#"
+trait Source {
+    type Item;
+    fn get(Self) -> Self::Item;
+}
+
+trait Pick[T] {
+    fn pick(Self) -> T;
+}
+
+impl[S: Source, T] Pick[T] for S where S::Item == T {
+    fn pick(self: S) -> T { Source::get(self) }
+}
+
+fn invoke[T, S: Pick[T]](source: S) -> T {
+    source.pick()
+}
+
+fn generic_pick[S: Source](source: S) -> S::Item {
+    invoke(source)
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
+fn local_projection_type_positions_are_resolved() {
+    let src = r#"
+trait Source {
+    type Item;
+}
+
+trait Accept[T] {
+    fn accept(Self) -> T;
+}
+
+fn copy[S: Source + Accept[S::Item]](source: S) -> S::Item {
+    let value: S::Item = Accept[S::Item]::accept(source);
+    let identity = |item: S::Item| item;
+    identity(value)
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
+fn method_arguments_disambiguate_generic_trait_applications() {
+    let src = r#"
+trait Put[T] {
+    fn put(Self, T) -> string;
+}
+
+struct Value {}
+
+impl Put[int32] for Value {
+    fn put(self: Value, value: int32) -> string { value.to_string() }
+}
+
+impl Put[string] for Value {
+    fn put(self: Value, value: string) -> string { value }
+}
+
+fn main() -> unit {
+    let number = (Value {}).put(1);
+    let text = (Value {}).put("text");
+    let _ = (number, text);
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
+fn associated_outputs_disambiguate_generic_trait_methods() {
+    let src = r#"
+trait Convert[T] {
+    type Output;
+    fn convert(Self) -> Self::Output;
+}
+
+struct Value {}
+
+impl Convert[int32] for Value {
+    type Output = string;
+    fn convert(self: Value) -> string { "int" }
+}
+
+impl Convert[string] for Value {
+    type Output = int32;
+    fn convert(self: Value) -> int32 { 7 }
+}
+
+fn main() -> unit {
+    let text: string = (Value {}).convert();
+    let number: int32 = (Value {}).convert();
+    let _ = (text, number);
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(diagnostics.is_empty(), "{diagnostics:?}");
+}
+
+#[test]
+fn trait_self_predicates_are_resolved_and_enforced() {
+    let accepted = r#"
+trait Source[T] where Self::Item == T {
+    type Item;
+    fn get(Self) -> Self::Item;
+}
+
+struct Value { value: int32 }
+
+impl Source[int32] for Value {
+    type Item = int32;
+    fn get(self: Value) -> int32 { self.value }
+}
+
+fn read[T, S: Source[T]](source: S) -> T {
+    Source[T]::get(source)
+}
+"#;
+    let rejected = r#"
+trait Source[T] where Self::Item == T {
+    type Item;
+    fn get(Self) -> Self::Item;
+}
+
+struct Value {}
+
+impl Source[string] for Value {
+    type Item = int32;
+    fn get(self: Value) -> int32 { 1 }
+}
+"#;
+
+    let accepted_diagnostics = diagnostic_lines(accepted);
+    assert!(accepted_diagnostics.is_empty(), "{accepted_diagnostics:?}");
+    let rejected_diagnostics = diagnostic_lines(rejected);
+    assert!(
+        rejected_diagnostics
+            .iter()
+            .any(|line| line.contains("does not satisfy declared requirement int32 == string")),
+        "{rejected_diagnostics:?}"
+    );
+}
+
+#[test]
+fn projection_only_impl_parameter_is_rejected() {
+    let src = r#"
+trait Source {
+    type Item;
+}
+
+trait Mark {
+    fn mark(Self) -> unit;
+}
+
+impl[S: Source] Mark for S::Item {
+    fn mark(self: Self) -> unit { () }
+}
+"#;
+
+    let diagnostics = diagnostic_lines(src);
+    assert!(
+        diagnostics.iter().any(|line| {
+            line.contains("Implementation type parameter S is not constrained by type S::Item")
+        }),
+        "{diagnostics:?}"
+    );
+}

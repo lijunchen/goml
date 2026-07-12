@@ -1,0 +1,116 @@
+trait Put[T] {
+    fn put(Self, T) -> string;
+}
+
+struct Target {}
+
+impl Put[int32] for Target {
+    fn put(self: Target, value: int32) -> string {
+        "number:" + value.to_string()
+    }
+}
+
+impl Put[string] for Target {
+    fn put(self: Target, value: string) -> string {
+        "text:" + value
+    }
+}
+
+trait Convert[T] {
+    type Output;
+
+    fn convert(Self) -> Self::Output;
+}
+
+struct Convertible {}
+
+impl Convert[int32] for Convertible {
+    type Output = string;
+
+    fn convert(self: Convertible) -> string {
+        "converted"
+    }
+}
+
+impl Convert[string] for Convertible {
+    type Output = int32;
+
+    fn convert(self: Convertible) -> int32 {
+        7
+    }
+}
+
+trait Source[T]
+where
+    Self::Item == T,
+{
+    type Item;
+
+    fn get(Self) -> Self::Item;
+}
+
+struct Number {
+    value: int32,
+}
+
+impl Source[int32] for Number {
+    type Item = int32;
+
+    fn get(self: Number) -> int32 {
+        self.value
+    }
+}
+
+fn read[T, S: Source[T]](source: S) -> T {
+    Source[T]::get(source)
+}
+
+trait ItemSource {
+    type Item;
+
+    fn item(Self) -> Self::Item;
+}
+
+trait Select[T] {
+    fn select(Self) -> T;
+}
+
+impl[S: ItemSource, T] Select[T] for S
+where
+    S::Item == T,
+{
+    fn select(self: S) -> T {
+        ItemSource::item(self)
+    }
+}
+
+struct Selected {
+    value: int32,
+}
+
+impl ItemSource for Selected {
+    type Item = int32;
+
+    fn item(self: Selected) -> int32 {
+        self.value
+    }
+}
+
+fn invoke[T, S: Select[T]](source: S) -> T {
+    source.select()
+}
+
+fn select_item[S: ItemSource](source: S) -> S::Item {
+    invoke(source)
+}
+
+fn main() -> unit {
+    println((Target {}).put(3));
+    println((Target {}).put("goml"));
+    let text: string = (Convertible {}).convert();
+    let number: int32 = (Convertible {}).convert();
+    println(text);
+    println(number);
+    println(read(Number { value: 8 }));
+    println(select_item(Selected { value: 9 }));
+}
