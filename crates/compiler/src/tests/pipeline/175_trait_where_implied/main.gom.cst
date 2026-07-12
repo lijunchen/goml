@@ -1,0 +1,371 @@
+FILE@0..590
+  TRAIT@0..47
+    TraitKeyword@0..5 "trait"
+    Whitespace@5..6 " "
+    Ident@6..11 "Ready"
+    Whitespace@11..12 " "
+    LBrace@12..13 "{"
+    Whitespace@13..18 "\n    "
+    TRAIT_METHOD_SIG_LIST@18..47
+      TRAIT_METHOD_SIG@18..42
+        FnKeyword@18..20 "fn"
+        Whitespace@20..21 " "
+        Ident@21..26 "state"
+        TYPE_LIST@26..33
+          LParen@26..27 "("
+          TYPE_TAPP@27..31
+            PATH@27..31
+              Ident@27..31 "Self"
+          RParen@31..32 ")"
+          Whitespace@32..33 " "
+        Arrow@33..35 "->"
+        Whitespace@35..36 " "
+        TYPE_STRING@36..42
+          StringKeyword@36..42 "string"
+      Semi@42..43 ";"
+      Whitespace@43..44 "\n"
+      RBrace@44..45 "}"
+      Whitespace@45..47 "\n\n"
+  TRAIT@47..112
+    TraitKeyword@47..52 "trait"
+    Whitespace@52..53 " "
+    Ident@53..60 "Service"
+    GENERIC_LIST@60..64
+      LBracket@60..61 "["
+      GENERIC@61..62
+        Ident@61..62 "T"
+      RBracket@62..63 "]"
+      Whitespace@63..64 "\n"
+    WHERE_CLAUSE@64..84
+      WhereKeyword@64..69 "where"
+      Whitespace@69..74 "\n    "
+      WHERE_PREDICATE@74..82
+        TYPE_TAPP@74..75
+          PATH@74..75
+            Ident@74..75 "T"
+        Colon@75..76 ":"
+        Whitespace@76..77 " "
+        TRAIT_SET@77..82
+          TYPE_TAPP@77..82
+            PATH@77..82
+              Ident@77..82 "Ready"
+      Comma@82..83 ","
+      Whitespace@83..84 "\n"
+    LBrace@84..85 "{"
+    Whitespace@85..90 "\n    "
+    TRAIT_METHOD_SIG_LIST@90..112
+      TRAIT_METHOD_SIG@90..107
+        FnKeyword@90..92 "fn"
+        Whitespace@92..93 " "
+        Ident@93..96 "get"
+        TYPE_LIST@96..103
+          LParen@96..97 "("
+          TYPE_TAPP@97..101
+            PATH@97..101
+              Ident@97..101 "Self"
+          RParen@101..102 ")"
+          Whitespace@102..103 " "
+        Arrow@103..105 "->"
+        Whitespace@105..106 " "
+        TYPE_TAPP@106..107
+          PATH@106..107
+            Ident@106..107 "T"
+      Semi@107..108 ";"
+      Whitespace@108..109 "\n"
+      RBrace@109..110 "}"
+      Whitespace@110..112 "\n\n"
+  STRUCT@112..149
+    StructKeyword@112..118 "struct"
+    Whitespace@118..119 " "
+    Ident@119..125 "Worker"
+    Whitespace@125..126 " "
+    LBrace@126..127 "{"
+    Whitespace@127..132 "\n    "
+    STRUCT_FIELD_LIST@132..149
+      STRUCT_FIELD@132..144
+        Ident@132..136 "name"
+        Colon@136..137 ":"
+        Whitespace@137..138 " "
+        TYPE_STRING@138..144
+          StringKeyword@138..144 "string"
+      Comma@144..145 ","
+      Whitespace@145..146 "\n"
+      RBrace@146..147 "}"
+      Whitespace@147..149 "\n\n"
+  STRUCT@149..189
+    StructKeyword@149..155 "struct"
+    Whitespace@155..156 " "
+    Ident@156..163 "Station"
+    Whitespace@163..164 " "
+    LBrace@164..165 "{"
+    Whitespace@165..170 "\n    "
+    STRUCT_FIELD_LIST@170..189
+      STRUCT_FIELD@170..184
+        Ident@170..176 "worker"
+        Colon@176..177 ":"
+        Whitespace@177..178 " "
+        TYPE_TAPP@178..184
+          PATH@178..184
+            Ident@178..184 "Worker"
+      Comma@184..185 ","
+      Whitespace@185..186 "\n"
+      RBrace@186..187 "}"
+      Whitespace@187..189 "\n\n"
+  IMPL@189..290
+    ImplKeyword@189..193 "impl"
+    Whitespace@193..194 " "
+    TYPE_TAPP@194..200
+      PATH@194..200
+        Ident@194..199 "Ready"
+        Whitespace@199..200 " "
+    ForKeyword@200..203 "for"
+    Whitespace@203..204 " "
+    TYPE_TAPP@204..211
+      PATH@204..211
+        Ident@204..210 "Worker"
+        Whitespace@210..211 " "
+    LBrace@211..212 "{"
+    Whitespace@212..217 "\n    "
+    FN@217..287
+      FnKeyword@217..219 "fn"
+      Whitespace@219..220 " "
+      Ident@220..225 "state"
+      PARAM_LIST@225..240
+        LParen@225..226 "("
+        PARAM@226..238
+          Ident@226..230 "self"
+          Colon@230..231 ":"
+          Whitespace@231..232 " "
+          TYPE_TAPP@232..238
+            PATH@232..238
+              Ident@232..238 "Worker"
+        RParen@238..239 ")"
+        Whitespace@239..240 " "
+      Arrow@240..242 "->"
+      Whitespace@242..243 " "
+      TYPE_STRING@243..250
+        StringKeyword@243..249 "string"
+        Whitespace@249..250 " "
+      BLOCK@250..287
+        LBrace@250..251 "{"
+        Whitespace@251..260 "\n        "
+        EXPR_BINARY@260..285
+          EXPR_BINARY@260..270
+            EXPR_IDENT@260..264
+              PATH@260..264
+                Ident@260..264 "self"
+            Dot@264..265 "."
+            EXPR_IDENT@265..270
+              PATH@265..270
+                Ident@265..269 "name"
+                Whitespace@269..270 " "
+          Plus@270..271 "+"
+          Whitespace@271..272 " "
+          EXPR_STR@272..285
+            Str@272..280 "\":ready\""
+            Whitespace@280..285 "\n    "
+        RBrace@285..286 "}"
+        Whitespace@286..287 "\n"
+    RBrace@287..288 "}"
+    Whitespace@288..290 "\n\n"
+  IMPL@290..392
+    ImplKeyword@290..294 "impl"
+    Whitespace@294..295 " "
+    TYPE_TAPP@295..311
+      PATH@295..302
+        Ident@295..302 "Service"
+      TYPE_PARAM_LIST@302..311
+        LBracket@302..303 "["
+        TYPE_TAPP@303..309
+          PATH@303..309
+            Ident@303..309 "Worker"
+        RBracket@309..310 "]"
+        Whitespace@310..311 " "
+    ForKeyword@311..314 "for"
+    Whitespace@314..315 " "
+    TYPE_TAPP@315..323
+      PATH@315..323
+        Ident@315..322 "Station"
+        Whitespace@322..323 " "
+    LBrace@323..324 "{"
+    Whitespace@324..329 "\n    "
+    FN@329..389
+      FnKeyword@329..331 "fn"
+      Whitespace@331..332 " "
+      Ident@332..335 "get"
+      PARAM_LIST@335..351
+        LParen@335..336 "("
+        PARAM@336..349
+          Ident@336..340 "self"
+          Colon@340..341 ":"
+          Whitespace@341..342 " "
+          TYPE_TAPP@342..349
+            PATH@342..349
+              Ident@342..349 "Station"
+        RParen@349..350 ")"
+        Whitespace@350..351 " "
+      Arrow@351..353 "->"
+      Whitespace@353..354 " "
+      TYPE_TAPP@354..361
+        PATH@354..361
+          Ident@354..360 "Worker"
+          Whitespace@360..361 " "
+      BLOCK@361..389
+        LBrace@361..362 "{"
+        Whitespace@362..371 "\n        "
+        EXPR_BINARY@371..387
+          EXPR_IDENT@371..375
+            PATH@371..375
+              Ident@371..375 "self"
+          Dot@375..376 "."
+          EXPR_IDENT@376..387
+            PATH@376..387
+              Ident@376..382 "worker"
+              Whitespace@382..387 "\n    "
+        RBrace@387..388 "}"
+        Whitespace@388..389 "\n"
+    RBrace@389..390 "}"
+    Whitespace@390..392 "\n\n"
+  FN@392..486
+    FnKeyword@392..394 "fn"
+    Whitespace@394..395 " "
+    Ident@395..403 "describe"
+    GENERIC_LIST@403..421
+      LBracket@403..404 "["
+      GENERIC@404..405
+        Ident@404..405 "T"
+      Comma@405..406 ","
+      Whitespace@406..407 " "
+      GENERIC@407..420
+        Ident@407..408 "S"
+        Colon@408..409 ":"
+        Whitespace@409..410 " "
+        TRAIT_SET@410..420
+          TYPE_TAPP@410..420
+            PATH@410..417
+              Ident@410..417 "Service"
+            TYPE_PARAM_LIST@417..420
+              LBracket@417..418 "["
+              TYPE_TAPP@418..419
+                PATH@418..419
+                  Ident@418..419 "T"
+              RBracket@419..420 "]"
+      RBracket@420..421 "]"
+    PARAM_LIST@421..434
+      LParen@421..422 "("
+      PARAM@422..432
+        Ident@422..429 "service"
+        Colon@429..430 ":"
+        Whitespace@430..431 " "
+        TYPE_TAPP@431..432
+          PATH@431..432
+            Ident@431..432 "S"
+      RParen@432..433 ")"
+      Whitespace@433..434 " "
+    Arrow@434..436 "->"
+    Whitespace@436..437 " "
+    TYPE_STRING@437..444
+      StringKeyword@437..443 "string"
+      Whitespace@443..444 " "
+    BLOCK@444..486
+      LBrace@444..445 "{"
+      Whitespace@445..450 "\n    "
+      EXPR_CALL@450..483
+        EXPR_BINARY@450..480
+          EXPR_CALL@450..474
+            EXPR_IDENT@450..465
+              TYPE_TAPP@450..460
+                PATH@450..457
+                  Ident@450..457 "Service"
+                TYPE_PARAM_LIST@457..460
+                  LBracket@457..458 "["
+                  TYPE_TAPP@458..459
+                    PATH@458..459
+                      Ident@458..459 "T"
+                  RBracket@459..460 "]"
+              ColonColon@460..462 "::"
+              PATH@462..465
+                Ident@462..465 "get"
+            ARG_LIST@465..474
+              LParen@465..466 "("
+              ARG@466..473
+                EXPR_IDENT@466..473
+                  PATH@466..473
+                    Ident@466..473 "service"
+              RParen@473..474 ")"
+          Dot@474..475 "."
+          EXPR_IDENT@475..480
+            PATH@475..480
+              Ident@475..480 "state"
+        ARG_LIST@480..483
+          LParen@480..481 "("
+          RParen@481..482 ")"
+          Whitespace@482..483 "\n"
+      RBrace@483..484 "}"
+      Whitespace@484..486 "\n\n"
+  FN@486..590
+    FnKeyword@486..488 "fn"
+    Whitespace@488..489 " "
+    Ident@489..493 "main"
+    PARAM_LIST@493..496
+      LParen@493..494 "("
+      RParen@494..495 ")"
+      Whitespace@495..496 " "
+    Arrow@496..498 "->"
+    Whitespace@498..499 " "
+    TYPE_UNIT@499..504
+      UnitKeyword@499..503 "unit"
+      Whitespace@503..504 " "
+    BLOCK@504..590
+      LBrace@504..505 "{"
+      Whitespace@505..510 "\n    "
+      STMT_EXPR@510..588
+        EXPR_CALL@510..586
+          EXPR_IDENT@510..517
+            PATH@510..517
+              Ident@510..517 "println"
+          ARG_LIST@517..586
+            LParen@517..518 "("
+            ARG@518..585
+              EXPR_CALL@518..585
+                EXPR_IDENT@518..526
+                  PATH@518..526
+                    Ident@518..526 "describe"
+                ARG_LIST@526..585
+                  LParen@526..527 "("
+                  ARG@527..584
+                    EXPR_STRUCT_LITERAL@527..584
+                      PATH@527..535
+                        Ident@527..534 "Station"
+                        Whitespace@534..535 " "
+                      STRUCT_LITERAL_FIELD_LIST@535..584
+                        LBrace@535..536 "{"
+                        Whitespace@536..545 "\n        "
+                        STRUCT_LITERAL_FIELD@545..577
+                          Ident@545..551 "worker"
+                          Colon@551..552 ":"
+                          Whitespace@552..553 " "
+                          EXPR_STRUCT_LITERAL@553..577
+                            PATH@553..560
+                              Ident@553..559 "Worker"
+                              Whitespace@559..560 " "
+                            STRUCT_LITERAL_FIELD_LIST@560..577
+                              LBrace@560..561 "{"
+                              Whitespace@561..562 " "
+                              STRUCT_LITERAL_FIELD@562..576
+                                Ident@562..566 "name"
+                                Colon@566..567 ":"
+                                Whitespace@567..568 " "
+                                EXPR_STR@568..576
+                                  Str@568..575 "\"build\""
+                                  Whitespace@575..576 " "
+                              RBrace@576..577 "}"
+                        Comma@577..578 ","
+                        Whitespace@578..583 "\n    "
+                        RBrace@583..584 "}"
+                  RParen@584..585 ")"
+            RParen@585..586 ")"
+        Semi@586..587 ";"
+        Whitespace@587..588 "\n"
+      RBrace@588..589 "}"
+      Whitespace@589..590 "\n"

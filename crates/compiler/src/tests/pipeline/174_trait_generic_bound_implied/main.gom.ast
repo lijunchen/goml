@@ -1,0 +1,35 @@
+package main;
+trait Mark {
+  fn mark(Self) -> string;
+}
+
+trait Container[T: Mark] {
+  fn value(Self) -> T;
+}
+
+struct NumberBox {
+    value: int32,
+}
+
+impl Mark for int32 {
+  fn mark(self: int32) -> string {
+      "marked:" + self.to_string()
+  }
+}
+
+impl Container[int32] for NumberBox {
+  fn value(self: NumberBox) -> int32 {
+      self.value
+  }
+}
+
+fn describe(container: C) -> string {
+    Container[T]::value(container).mark()
+}
+
+fn main() -> unit {
+    println(describe(NumberBox {
+            value: 7
+        }));
+}
+

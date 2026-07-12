@@ -1,0 +1,50 @@
+package main
+file main.gom
+  trait Mark {
+      fn marked(Self) -> string;
+    }
+    
+    trait Source {
+      type Item;
+      fn get(Self) -> Self::Item;
+    }
+    
+    struct LeftSource {
+        value: int32,
+    }
+    
+    struct RightSource {
+        value: int32,
+    }
+    
+    impl Mark for int32 {
+      fn marked(local/1/0: int32) -> string {
+          "m" + self/0.to_string()
+      }
+    }
+    
+    impl Source for LeftSource {
+      type Item = int32;
+      fn get(local/1/1: LeftSource) -> int32 {
+          self/1.value
+      }
+    }
+    
+    impl Source for RightSource {
+      type Item = int32;
+      fn get(local/1/2: RightSource) -> int32 {
+          self/2.value
+      }
+    }
+    
+    fn combine(local/1/3: A, local/1/4: B) -> string {
+        Source::get(left/3).marked() + ":" + Source::get(right/4).marked()
+    }
+    
+    fn main() -> unit {
+        println(def/1/7(LeftSource {
+                value: 3
+            }, RightSource {
+                value: 4
+            }));
+    }

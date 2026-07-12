@@ -1,0 +1,18 @@
+impl Convert[int32] for Value{
+  fn convert(self/0: Value) -> string {
+      "int"
+  }
+}
+
+impl Convert[string] for Value{
+  fn convert(self/1: Value) -> int32 {
+      7
+  }
+}
+
+fn main() -> unit {
+    let text/2: string = (Convert[int32]::convert : (Value) -> string)(Value {});
+    let number/3: int32 = (Convert[string]::convert : (Value) -> int32)(Value {});
+    (println : (string) -> unit)((text/2 : string));
+    (println : (int32) -> unit)((number/3 : int32));
+}

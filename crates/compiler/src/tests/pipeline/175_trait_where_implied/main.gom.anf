@@ -1,0 +1,52 @@
+fn trait_impl#Ready#Worker#state(self/0: Worker) -> string {
+  join ret23(retv24: string) -> string {
+    retv24
+  } in
+  let t25 = Worker.name(self/0) in
+  let t26 = (t25 + ":ready") in
+  jump ret23(t26)
+}
+
+fn trait_impl#Service#[Worker]@Station#get(self/1: Station) -> Worker {
+  join ret27(retv28: Worker) -> Worker {
+    retv28
+  } in
+  let t29 = Station.worker(self/1) in
+  jump ret27(t29)
+}
+
+fn main() -> unit {
+  join ret30() -> unit {
+    ()
+  } in
+  let t31 = Worker { name: "build" } in
+  let t32 = Station { worker: t31 } in
+  let t33 = describe__S_Station__T_Worker(t32) in
+  let _wild22 = println__T_string(t33) in
+  jump ret30()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret34() -> unit {
+    ()
+  } in
+  let t35 = trait_impl#ToString#string#to_string(value/1) in
+  let t36 = @runtime(core.string_println)(t35) in
+  jump ret34()
+}
+
+fn describe__S_Station__T_Worker(service/2: Station) -> string {
+  join ret37(retv38: string) -> string {
+    retv38
+  } in
+  let t39 = trait_impl#Service#[Worker]@Station#get(service/2) in
+  let t40 = trait_impl#Ready#Worker#state(t39) in
+  jump ret37(t40)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  join ret41(retv42: string) -> string {
+    retv42
+  } in
+  jump ret41(self/9)
+}
