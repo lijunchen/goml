@@ -897,12 +897,7 @@ impl Ctx {
                 continue;
             }
             let mut trial_subst = Subst::new();
-            let mut ok = metadata
-                .trait_ref
-                .args
-                .iter()
-                .zip(trait_ref.args.iter())
-                .all(|(template, actual)| unify(template, actual, &mut trial_subst).is_ok());
+            let mut ok = true;
             if let Some(receiver_ty) = arg_tys.first() {
                 ok &= unify(&metadata.for_ty, receiver_ty, &mut trial_subst).is_ok();
             }
@@ -912,6 +907,20 @@ impl Ctx {
                     break;
                 }
             }
+            if !ok {
+                continue;
+            }
+            ok = metadata
+                .trait_ref
+                .args
+                .iter()
+                .zip(trait_ref.args.iter())
+                .all(|(template, actual)| {
+                    let template =
+                        normalize_associated_ty(&self.genv, &subst_ty(template, &trial_subst));
+                    let actual = normalize_associated_ty(&self.genv, actual);
+                    unify(&template, &actual, &mut trial_subst).is_ok()
+                });
             if !ok {
                 continue;
             }

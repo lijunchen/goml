@@ -18,27 +18,41 @@ pub struct NameResolution {
     diagnostics: Diagnostics,
 }
 
-#[derive(Debug)]
-struct ResolveLocalEnv(im::Vector<(ast::AstIdent, hir::LocalId)>);
+#[derive(Debug, Clone)]
+struct ResolveLocalEnv {
+    values: im::Vector<(ast::AstIdent, hir::LocalId)>,
+    type_params: HashSet<String>,
+}
 
 impl ResolveLocalEnv {
     fn new() -> Self {
-        Self(im::Vector::new())
+        Self {
+            values: im::Vector::new(),
+            type_params: HashSet::new(),
+        }
     }
 
     fn enter_scope(&self) -> Self {
-        Self(self.0.clone())
+        self.clone()
     }
 
     fn add(&mut self, name: &ast::AstIdent, new_name: hir::LocalId) {
-        self.0.push_back((name.clone(), new_name));
+        self.values.push_back((name.clone(), new_name));
     }
 
     fn rfind(&self, key: &ast::AstIdent) -> Option<hir::LocalId> {
-        self.0
+        self.values
             .iter()
             .rfind(|(name, _)| name == key)
             .map(|(_, new_name)| *new_name)
+    }
+
+    fn set_type_params(&mut self, type_params: HashSet<String>) {
+        self.type_params = type_params;
+    }
+
+    fn type_params(&self) -> &HashSet<String> {
+        &self.type_params
     }
 }
 
@@ -819,6 +833,7 @@ impl NameResolution {
         }
         let mut tparams = type_param_set(generics);
         tparams.extend(inherited_tparams.iter().cloned());
+        env.set_type_params(tparams.clone());
         let new_params = params
             .iter()
             .map(|param| {
@@ -916,7 +931,7 @@ impl NameResolution {
             annotation: stmt.annotation.as_ref().map(|t| {
                 self.lower_type_expr(
                     t,
-                    &HashSet::new(),
+                    env.type_params(),
                     ctx.current_package,
                     ctx.imports,
                     ctx.use_aliases,
@@ -992,7 +1007,7 @@ impl NameResolution {
                         .map(|arg| {
                             self.lower_type_expr(
                                 arg,
-                                &HashSet::new(),
+                                env.type_params(),
                                 ctx.current_package,
                                 ctx.imports,
                                 ctx.use_aliases,
@@ -2261,7 +2276,7 @@ impl NameResolution {
             ty: param.ty.as_ref().map(|t| {
                 self.lower_type_expr(
                     t,
-                    &HashSet::new(),
+                    env.type_params(),
                     ctx.current_package,
                     ctx.imports,
                     ctx.use_aliases,

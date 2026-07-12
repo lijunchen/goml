@@ -337,7 +337,8 @@ fn typecheck_package(
     );
     diagnostics.append(&mut hir_diagnostics);
     let full_exports = PackageExports::from_genv(&genv);
-    let exports = PackageExports::public_from_package(&package.name, &package.files, &genv);
+    let exports =
+        PackageExports::public_from_package(&package.name, &package.files, &genv, &mut diagnostics);
     let package_interface =
         interface::PackageInterface::from_package(&package.name, &package.declared_name, &exports);
 
@@ -784,7 +785,12 @@ pub fn typecheck_with_packages_and_results(
             package_diagnostics.append(&mut hir_diagnostics);
             diagnostics.append(&mut package_diagnostics);
 
-            let exports = PackageExports::public_from_package(name, &package.files, &package_genv);
+            let exports = PackageExports::public_from_package(
+                name,
+                &package.files,
+                &package_genv,
+                &mut diagnostics,
+            );
             report_duplicate_trait_impls(&mut diagnostics, &genv, &exports, name);
             exports.apply_to(&mut genv);
             let package_interface =

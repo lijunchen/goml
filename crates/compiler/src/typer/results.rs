@@ -247,6 +247,7 @@ pub struct ForElab {
     pub iterator_ty: tast::Ty,
 }
 
+#[derive(Clone)]
 pub struct TypeckResultsBuilder {
     results: TypeckResults,
 }

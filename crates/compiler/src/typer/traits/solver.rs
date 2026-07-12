@@ -86,6 +86,10 @@ impl<'a> TraitSolver<'a> {
         self.index.describe_candidate(id)
     }
 
+    pub(crate) fn normalize_ty(&mut self, typer: &mut Typer, ty: &tast::Ty) -> Option<tast::Ty> {
+        self.normalize_candidate_ty(typer, ty, 0).ok()
+    }
+
     fn select_param_env(&self, typer: &mut Typer, goal: &TraitGoal) -> Option<SelectionResult> {
         let matching = self
             .param_env
@@ -289,14 +293,50 @@ impl<'a> TraitSolver<'a> {
         let head = substitute_ty_params(&candidate.head, &substitution);
         if candidate_trait_ref.name != goal.trait_ref.name
             || candidate_trait_ref.args.len() != goal.trait_ref.args.len()
-            || !candidate_trait_ref
-                .args
-                .iter()
-                .zip(goal.trait_ref.args.iter())
-                .all(|(candidate, goal)| typer.try_unify_silent(candidate, goal))
-            || !typer.try_unify_silent(&head, &goal.for_ty)
         {
             return CandidateResult::Failure;
+        }
+        let head_shape = projection_match_shape(typer, &head);
+        if !typer.try_unify_silent(&head_shape, &goal.for_ty) {
+            return CandidateResult::Failure;
+        }
+        for (candidate, goal) in candidate_trait_ref.args.iter().zip(&goal.trait_ref.args) {
+            let candidate_shape = projection_match_shape(typer, candidate);
+            if !typer.try_unify_silent(&candidate_shape, goal) {
+                return CandidateResult::Failure;
+            }
+        }
+        let head = match self.normalize_candidate_ty(typer, &head, depth) {
+            Ok(ty) => ty,
+            Err(NormalizationFailure::Failure) => return CandidateResult::Failure,
+            Err(NormalizationFailure::Ambiguous) => return CandidateResult::Ambiguous,
+            Err(NormalizationFailure::Overflow) => return CandidateResult::Overflow,
+        };
+        let goal_head = match self.normalize_candidate_ty(typer, &goal.for_ty, depth) {
+            Ok(ty) => ty,
+            Err(NormalizationFailure::Failure) => return CandidateResult::Failure,
+            Err(NormalizationFailure::Ambiguous) => return CandidateResult::Ambiguous,
+            Err(NormalizationFailure::Overflow) => return CandidateResult::Overflow,
+        };
+        if !typer.try_unify_silent(&head, &goal_head) {
+            return CandidateResult::Failure;
+        }
+        for (candidate, goal) in candidate_trait_ref.args.iter().zip(&goal.trait_ref.args) {
+            let candidate = match self.normalize_candidate_ty(typer, candidate, depth) {
+                Ok(ty) => ty,
+                Err(NormalizationFailure::Failure) => return CandidateResult::Failure,
+                Err(NormalizationFailure::Ambiguous) => return CandidateResult::Ambiguous,
+                Err(NormalizationFailure::Overflow) => return CandidateResult::Overflow,
+            };
+            let goal = match self.normalize_candidate_ty(typer, goal, depth) {
+                Ok(ty) => ty,
+                Err(NormalizationFailure::Failure) => return CandidateResult::Failure,
+                Err(NormalizationFailure::Ambiguous) => return CandidateResult::Ambiguous,
+                Err(NormalizationFailure::Overflow) => return CandidateResult::Overflow,
+            };
+            if !typer.try_unify_silent(&candidate, &goal) {
+                return CandidateResult::Failure;
+            }
         }
         for predicate in &candidate.definition.constraints {
             match substitute_predicate(predicate, &substitution) {
@@ -323,6 +363,9 @@ impl<'a> TraitSolver<'a> {
                     }
                 }
                 env::TypePredicate::Equality { lhs, rhs } => {
+                    if typer.norm(&lhs) == typer.norm(&rhs) {
+                        continue;
+                    }
                     let lhs = match self.normalize_candidate_ty(typer, &lhs, depth) {
                         Ok(ty) => ty,
                         Err(NormalizationFailure::Failure) => return CandidateResult::Failure,
@@ -408,12 +451,7 @@ impl<'a> TraitSolver<'a> {
                                 name: name.clone(),
                             };
                             let normalized = typer.norm(&projection);
-                            if normalized == projection {
-                                failure = Some(NormalizationFailure::Ambiguous);
-                                None
-                            } else {
-                                Some(normalized)
-                            }
+                            (normalized != projection).then_some(normalized)
                         }
                         SelectionSource::Dyn => {
                             failure = Some(NormalizationFailure::Failure);
@@ -552,6 +590,24 @@ impl<'a> TraitSolver<'a> {
         {
             return CandidateResult::Failure;
         }
+        let head = substitute_ty_params(&candidate.head, &substitution);
+        match self.ground_candidate_types_match(&head, &goal.for_ty, depth) {
+            Ok(true) => {}
+            Ok(false) | Err(NormalizationFailure::Failure) => return CandidateResult::Failure,
+            Err(NormalizationFailure::Ambiguous) => return CandidateResult::Ambiguous,
+            Err(NormalizationFailure::Overflow) => return CandidateResult::Overflow,
+        }
+        let candidate_trait_ref = substitute_trait_ref(&candidate.trait_ref, &substitution);
+        for (candidate, goal) in candidate_trait_ref.args.iter().zip(&goal.trait_ref.args) {
+            match self.ground_candidate_types_match(candidate, goal, depth) {
+                Ok(true) => {}
+                Ok(false) | Err(NormalizationFailure::Failure) => {
+                    return CandidateResult::Failure;
+                }
+                Err(NormalizationFailure::Ambiguous) => return CandidateResult::Ambiguous,
+                Err(NormalizationFailure::Overflow) => return CandidateResult::Overflow,
+            }
+        }
         for predicate in &candidate.definition.constraints {
             match substitute_predicate(predicate, &substitution) {
                 env::TypePredicate::Trait { for_ty, trait_ref } => {
@@ -564,6 +620,9 @@ impl<'a> TraitSolver<'a> {
                     }
                 }
                 env::TypePredicate::Equality { lhs, rhs } => {
+                    if lhs == rhs {
+                        continue;
+                    }
                     let lhs = match self.normalize_ground_candidate_ty(&lhs, depth) {
                         Ok(ty) => ty,
                         Err(NormalizationFailure::Failure) => return CandidateResult::Failure,
@@ -587,6 +646,20 @@ impl<'a> TraitSolver<'a> {
             }
         }
         CandidateResult::Success(substitution)
+    }
+
+    fn ground_candidate_types_match(
+        &mut self,
+        candidate: &tast::Ty,
+        goal: &tast::Ty,
+        depth: usize,
+    ) -> Result<bool, NormalizationFailure> {
+        if candidate == goal {
+            return Ok(true);
+        }
+        let candidate = self.normalize_ground_candidate_ty(candidate, depth)?;
+        let goal = self.normalize_ground_candidate_ty(goal, depth)?;
+        Ok(candidate == goal)
     }
 
     fn normalize_ground_candidate_ty(
@@ -627,8 +700,13 @@ impl<'a> TraitSolver<'a> {
                                 None
                             }),
                         SelectionSource::ParamEnv => {
-                            failure = Some(NormalizationFailure::Ambiguous);
-                            None
+                            let projection = tast::Ty::TProjection {
+                                trait_ref: Some(trait_ref.clone()),
+                                for_ty: for_ty.clone(),
+                                name: name.clone(),
+                            };
+                            let normalized = self.param_env_equality_normal_form(&projection);
+                            (normalized != projection).then_some(normalized)
                         }
                         SelectionSource::Dyn => {
                             failure = Some(NormalizationFailure::Failure);
@@ -659,6 +737,41 @@ impl<'a> TraitSolver<'a> {
         }
         Err(NormalizationFailure::Overflow)
     }
+
+    fn param_env_equality_normal_form(&self, ty: &tast::Ty) -> tast::Ty {
+        let mut pending = vec![ty.clone()];
+        let mut seen = HashSet::new();
+        while let Some(current) = pending.pop() {
+            if !seen.insert(current.clone()) {
+                continue;
+            }
+            for predicate in self.param_env.predicates() {
+                let env::TypePredicate::Equality { lhs, rhs } = predicate else {
+                    continue;
+                };
+                if lhs == &current && !seen.contains(rhs) {
+                    pending.push(rhs.clone());
+                }
+                if rhs == &current && !seen.contains(lhs) {
+                    pending.push(lhs.clone());
+                }
+            }
+        }
+        seen.into_iter()
+            .min_by_key(|candidate| {
+                (
+                    matches!(candidate, tast::Ty::TProjection { .. }),
+                    format!("{candidate:?}"),
+                )
+            })
+            .unwrap_or_else(|| ty.clone())
+    }
+}
+
+fn projection_match_shape(typer: &mut Typer, ty: &tast::Ty) -> tast::Ty {
+    rewrite_ty(ty, &mut |ty| {
+        matches!(ty, tast::Ty::TProjection { .. }).then(|| typer.fresh_ty_var())
+    })
 }
 
 #[derive(Debug, Clone, Copy)]

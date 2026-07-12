@@ -391,6 +391,17 @@ fn projection_candidates_from_predicates(
         .collect()
 }
 
+pub(crate) fn resolve_ty_projections_from_predicates(
+    env: &PackageTypeEnv,
+    diagnostics: &mut Diagnostics,
+    ty: &tast::Ty,
+    predicates: &[env::TypePredicate],
+    range: Option<TextRange>,
+) -> tast::Ty {
+    let candidates = projection_candidates_from_predicates(env, predicates);
+    resolve_ty_projections(env, diagnostics, ty, &candidates, range)
+}
+
 fn resolve_trait_ref_projections(
     env: &PackageTypeEnv,
     diagnostics: &mut Diagnostics,
@@ -587,7 +598,17 @@ fn resolve_type_predicates(
     diagnostics: &mut Diagnostics,
     predicates: Vec<env::TypePredicate>,
 ) -> Vec<env::TypePredicate> {
-    let candidates = projection_candidates_from_predicates(env, &predicates);
+    resolve_type_predicates_with_candidates(env, diagnostics, predicates, &[])
+}
+
+fn resolve_type_predicates_with_candidates(
+    env: &PackageTypeEnv,
+    diagnostics: &mut Diagnostics,
+    predicates: Vec<env::TypePredicate>,
+    extra_candidates: &[ProjectionCandidate],
+) -> Vec<env::TypePredicate> {
+    let mut candidates = projection_candidates_from_predicates(env, &predicates);
+    candidates.extend_from_slice(extra_candidates);
     predicates
         .into_iter()
         .map(|predicate| match predicate {
@@ -945,12 +966,47 @@ fn define_trait(
         .iter()
         .map(|associated| associated.name.to_ident_name())
         .collect::<HashSet<_>>();
-    let mut predicates = build_fn_constraints(
+    let mut projection_candidates = vec![ProjectionCandidate {
+        for_ty: tast::Ty::TStruct {
+            name: "Self".to_string(),
+        },
+        trait_ref: trait_ref.clone(),
+        associated_types: associated_names,
+    }];
+    let mut supertraits = Vec::new();
+    for supertrait in &trait_def.supertraits {
+        let Some(supertrait) = resolve_hir_trait_ref(env, diagnostics, supertrait, &trait_params)
+        else {
+            continue;
+        };
+        let supertrait = resolve_trait_ref_projections(
+            env,
+            diagnostics,
+            &supertrait,
+            &projection_candidates,
+            None,
+        );
+        if let Some((resolved, supertrait_env)) =
+            super::util::resolve_trait_name(env, &supertrait.name.0)
+            && let Some(supertrait_def) = supertrait_env.trait_env.trait_defs.get(&resolved)
+        {
+            projection_candidates.push(ProjectionCandidate {
+                for_ty: tast::Ty::TStruct {
+                    name: "Self".to_string(),
+                },
+                trait_ref: supertrait.clone(),
+                associated_types: supertrait_def.associated_types.keys().cloned().collect(),
+            });
+        }
+        supertraits.push(supertrait);
+    }
+    let mut predicates = build_trait_constraints(
         env,
         diagnostics,
         &trait_def.generics,
         &trait_def.generic_bounds,
         &trait_def.predicates,
+        &projection_candidates,
     );
     if env.lang_item(LangItemId::IntoIterator) == Some(&trait_ref.name)
         && let Some(iterator) = env.lang_item(LangItemId::Iterator).cloned()
@@ -980,41 +1036,6 @@ fn define_trait(
             lhs: item,
             rhs: iterator_item,
         });
-    }
-    let mut projection_candidates = projection_candidates_from_predicates(env, &predicates);
-    projection_candidates.push(ProjectionCandidate {
-        for_ty: tast::Ty::TStruct {
-            name: "Self".to_string(),
-        },
-        trait_ref: trait_ref.clone(),
-        associated_types: associated_names,
-    });
-    let mut supertraits = Vec::new();
-    for supertrait in &trait_def.supertraits {
-        let Some(supertrait) = resolve_hir_trait_ref(env, diagnostics, supertrait, &trait_params)
-        else {
-            continue;
-        };
-        let supertrait = resolve_trait_ref_projections(
-            env,
-            diagnostics,
-            &supertrait,
-            &projection_candidates,
-            None,
-        );
-        if let Some((resolved, supertrait_env)) =
-            super::util::resolve_trait_name(env, &supertrait.name.0)
-            && let Some(supertrait_def) = supertrait_env.trait_env.trait_defs.get(&resolved)
-        {
-            projection_candidates.push(ProjectionCandidate {
-                for_ty: tast::Ty::TStruct {
-                    name: "Self".to_string(),
-                },
-                trait_ref: supertrait.clone(),
-                associated_types: supertrait_def.associated_types.keys().cloned().collect(),
-            });
-        }
-        supertraits.push(supertrait);
     }
     let mut associated_types = IndexMap::new();
     for associated in &trait_def.associated_types {
@@ -1241,18 +1262,29 @@ fn add_type_predicates(
     type_params: &[tast::TastIdent],
     predicates: &[hir::Predicate],
     constraints: &mut Vec<env::TypePredicate>,
+    allow_self: bool,
 ) {
     for predicate in predicates {
         let predicate = match predicate {
             hir::Predicate::Trait { ty, trait_ref } => {
                 let for_ty = tast::Ty::from_hir(env, ty, type_params);
-                validate_decl_ty(
-                    env,
-                    diagnostics,
-                    &for_ty,
-                    type_expr_range(ty),
-                    known_type_params,
-                );
+                if allow_self {
+                    validate_ty(
+                        env,
+                        diagnostics,
+                        &for_ty,
+                        type_expr_range(ty),
+                        known_type_params,
+                    );
+                } else {
+                    validate_decl_ty(
+                        env,
+                        diagnostics,
+                        &for_ty,
+                        type_expr_range(ty),
+                        known_type_params,
+                    );
+                }
                 let Some(trait_ref) =
                     resolve_hir_trait_ref(env, diagnostics, trait_ref, type_params)
                 else {
@@ -1263,20 +1295,37 @@ fn add_type_predicates(
             hir::Predicate::Equality { lhs, rhs } => {
                 let lhs_ty = tast::Ty::from_hir(env, lhs, type_params);
                 let rhs_ty = tast::Ty::from_hir(env, rhs, type_params);
-                validate_decl_ty(
-                    env,
-                    diagnostics,
-                    &lhs_ty,
-                    type_expr_range(lhs),
-                    known_type_params,
-                );
-                validate_decl_ty(
-                    env,
-                    diagnostics,
-                    &rhs_ty,
-                    type_expr_range(rhs),
-                    known_type_params,
-                );
+                if allow_self {
+                    validate_ty(
+                        env,
+                        diagnostics,
+                        &lhs_ty,
+                        type_expr_range(lhs),
+                        known_type_params,
+                    );
+                    validate_ty(
+                        env,
+                        diagnostics,
+                        &rhs_ty,
+                        type_expr_range(rhs),
+                        known_type_params,
+                    );
+                } else {
+                    validate_decl_ty(
+                        env,
+                        diagnostics,
+                        &lhs_ty,
+                        type_expr_range(lhs),
+                        known_type_params,
+                    );
+                    validate_decl_ty(
+                        env,
+                        diagnostics,
+                        &rhs_ty,
+                        type_expr_range(rhs),
+                        known_type_params,
+                    );
+                }
                 env::TypePredicate::Equality {
                     lhs: lhs_ty,
                     rhs: rhs_ty,
@@ -1320,8 +1369,52 @@ fn build_fn_constraints(
         &type_params,
         predicates,
         &mut constraints,
+        false,
     );
     let constraints = resolve_type_predicates(env, diagnostics, constraints);
+    expand_implied_predicates(env, constraints)
+}
+
+fn build_trait_constraints(
+    env: &PackageTypeEnv,
+    diagnostics: &mut Diagnostics,
+    generics: &[hir::HirIdent],
+    bounds: &[(hir::HirIdent, Vec<hir::TraitRef>)],
+    predicates: &[hir::Predicate],
+    projection_candidates: &[ProjectionCandidate],
+) -> Vec<env::TypePredicate> {
+    let known_type_params = generics
+        .iter()
+        .map(|param| param.to_ident_name())
+        .collect::<HashSet<_>>();
+    let type_params = generics
+        .iter()
+        .map(|param| tast::TastIdent(param.to_ident_name()))
+        .collect::<Vec<_>>();
+    let mut constraints = Vec::new();
+    add_fn_constraints_from_bounds(
+        env,
+        diagnostics,
+        &known_type_params,
+        &type_params,
+        bounds,
+        &mut constraints,
+    );
+    add_type_predicates(
+        env,
+        diagnostics,
+        &known_type_params,
+        &type_params,
+        predicates,
+        &mut constraints,
+        true,
+    );
+    let constraints = resolve_type_predicates_with_candidates(
+        env,
+        diagnostics,
+        constraints,
+        projection_candidates,
+    );
     expand_implied_predicates(env, constraints)
 }
 
@@ -1358,6 +1451,7 @@ fn build_method_constraints(
         &type_params,
         impl_predicates,
         &mut constraints,
+        false,
     );
     add_fn_constraints_from_bounds(
         env,
@@ -1374,6 +1468,7 @@ fn build_method_constraints(
         &type_params,
         method_predicates,
         &mut constraints,
+        false,
     );
     let constraints = resolve_type_predicates(env, diagnostics, constraints);
     expand_implied_predicates(env, constraints)
@@ -1468,9 +1563,9 @@ fn define_trait_impl(
         type_expr_range(&impl_block.for_type),
         &impl_tparams,
     );
-    let mut constrained_params = super::type_ops::type_params(&for_ty);
+    let mut constrained_params = super::type_ops::injective_type_params(&for_ty);
     for arg in &trait_ref.args {
-        constrained_params.extend(super::type_ops::type_params(arg));
+        constrained_params.extend(super::type_ops::injective_type_params(arg));
     }
     let mut unconstrained_impl_params = impl_tparams
         .difference(&constrained_params)

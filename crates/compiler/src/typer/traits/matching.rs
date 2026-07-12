@@ -2,7 +2,12 @@ use std::collections::HashMap;
 
 use crate::tast;
 
-fn match_ty(template: &tast::Ty, actual: &tast::Ty, subst: &mut HashMap<String, tast::Ty>) -> bool {
+fn match_ty_with_mode(
+    template: &tast::Ty,
+    actual: &tast::Ty,
+    subst: &mut HashMap<String, tast::Ty>,
+    erase_projections: bool,
+) -> bool {
     match template {
         tast::Ty::TParam { name } => match subst.get(name) {
             Some(bound) => bound == actual,
@@ -30,7 +35,9 @@ fn match_ty(template: &tast::Ty, actual: &tast::Ty, subst: &mut HashMap<String, 
             tast::Ty::TTuple { typs: actual_typs } if typs.len() == actual_typs.len() => typs
                 .iter()
                 .zip(actual_typs.iter())
-                .all(|(template, actual)| match_ty(template, actual, subst)),
+                .all(|(template, actual)| {
+                    match_ty_with_mode(template, actual, subst, erase_projections)
+                }),
             _ => false,
         },
         tast::Ty::TEnum { name } => {
@@ -42,6 +49,7 @@ fn match_ty(template: &tast::Ty, actual: &tast::Ty, subst: &mut HashMap<String, 
         tast::Ty::TDyn { trait_name } => {
             matches!(actual, tast::Ty::TDyn { trait_name: actual } if actual == trait_name)
         }
+        tast::Ty::TProjection { .. } if erase_projections => true,
         tast::Ty::TProjection {
             trait_ref,
             for_ty,
@@ -61,12 +69,14 @@ fn match_ty(template: &tast::Ty, actual: &tast::Ty, subst: &mut HashMap<String, 
                             .args
                             .iter()
                             .zip(actual.args.iter())
-                            .all(|(expected, actual)| match_ty(expected, actual, subst))
+                            .all(|(expected, actual)| {
+                                match_ty_with_mode(expected, actual, subst, erase_projections)
+                            })
                     }
                     (None, None) => true,
                     _ => false,
                 };
-                args_match && match_ty(for_ty, actual_for_ty, subst)
+                args_match && match_ty_with_mode(for_ty, actual_for_ty, subst, erase_projections)
             }
             _ => false,
         },
@@ -75,11 +85,13 @@ fn match_ty(template: &tast::Ty, actual: &tast::Ty, subst: &mut HashMap<String, 
                 ty: actual_ty,
                 args: actual_args,
             } if args.len() == actual_args.len() => {
-                match_ty(ty, actual_ty, subst)
+                match_ty_with_mode(ty, actual_ty, subst, erase_projections)
                     && args
                         .iter()
                         .zip(actual_args.iter())
-                        .all(|(template, actual)| match_ty(template, actual, subst))
+                        .all(|(template, actual)| {
+                            match_ty_with_mode(template, actual, subst, erase_projections)
+                        })
             }
             _ => false,
         },
@@ -87,26 +99,37 @@ fn match_ty(template: &tast::Ty, actual: &tast::Ty, subst: &mut HashMap<String, 
             tast::Ty::TArray {
                 len: actual_len,
                 elem: actual_elem,
-            } => len == actual_len && match_ty(elem, actual_elem, subst),
+            } => {
+                len == actual_len && match_ty_with_mode(elem, actual_elem, subst, erase_projections)
+            }
             _ => false,
         },
         tast::Ty::TSlice { elem } => match actual {
-            tast::Ty::TSlice { elem: actual_elem } => match_ty(elem, actual_elem, subst),
+            tast::Ty::TSlice { elem: actual_elem } => {
+                match_ty_with_mode(elem, actual_elem, subst, erase_projections)
+            }
             _ => false,
         },
         tast::Ty::TVec { elem } => match actual {
-            tast::Ty::TVec { elem: actual_elem } => match_ty(elem, actual_elem, subst),
+            tast::Ty::TVec { elem: actual_elem } => {
+                match_ty_with_mode(elem, actual_elem, subst, erase_projections)
+            }
             _ => false,
         },
         tast::Ty::TRef { elem } => match actual {
-            tast::Ty::TRef { elem: actual_elem } => match_ty(elem, actual_elem, subst),
+            tast::Ty::TRef { elem: actual_elem } => {
+                match_ty_with_mode(elem, actual_elem, subst, erase_projections)
+            }
             _ => false,
         },
         tast::Ty::THashMap { key, value } => match actual {
             tast::Ty::THashMap {
                 key: actual_key,
                 value: actual_value,
-            } => match_ty(key, actual_key, subst) && match_ty(value, actual_value, subst),
+            } => {
+                match_ty_with_mode(key, actual_key, subst, erase_projections)
+                    && match_ty_with_mode(value, actual_value, subst, erase_projections)
+            }
             _ => false,
         },
         tast::Ty::TFunc { params, ret_ty } => match actual {
@@ -117,12 +140,18 @@ fn match_ty(template: &tast::Ty, actual: &tast::Ty, subst: &mut HashMap<String, 
                 params
                     .iter()
                     .zip(actual_params.iter())
-                    .all(|(template, actual)| match_ty(template, actual, subst))
-                    && match_ty(ret_ty, actual_ret, subst)
+                    .all(|(template, actual)| {
+                        match_ty_with_mode(template, actual, subst, erase_projections)
+                    })
+                    && match_ty_with_mode(ret_ty, actual_ret, subst, erase_projections)
             }
             _ => false,
         },
     }
+}
+
+fn match_ty(template: &tast::Ty, actual: &tast::Ty, subst: &mut HashMap<String, tast::Ty>) -> bool {
+    match_ty_with_mode(template, actual, subst, false)
 }
 
 pub(crate) fn impl_self_subst(
@@ -145,11 +174,11 @@ pub(crate) fn trait_impl_subst(
         return None;
     }
     let mut substitution = HashMap::new();
+    let self_matches = match_ty_with_mode(template_self, actual_self, &mut substitution, true);
     let trait_args_match = template_trait_ref
         .args
         .iter()
         .zip(actual_trait_ref.args.iter())
-        .all(|(template, actual)| match_ty(template, actual, &mut substitution));
-    (trait_args_match && match_ty(template_self, actual_self, &mut substitution))
-        .then_some(substitution)
+        .all(|(template, actual)| match_ty_with_mode(template, actual, &mut substitution, true));
+    (self_matches && trait_args_match).then_some(substitution)
 }

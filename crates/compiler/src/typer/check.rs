@@ -1221,6 +1221,13 @@ impl Typer {
             let param_ty = match &param.ty {
                 Some(ty) => {
                     let param_ty = tast::Ty::from_hir(genv, ty, &current_tparams_env);
+                    let param_ty = super::toplevel::resolve_ty_projections_from_predicates(
+                        genv,
+                        diagnostics,
+                        &param_ty,
+                        local_env.predicates(),
+                        super::util::type_expr_range(ty),
+                    );
                     super::util::validate_dyn_object_safety_in_ty(genv, diagnostics, &param_ty);
                     param_ty
                 }
@@ -1287,6 +1294,13 @@ impl Typer {
                     let name_str = self.hir_table.local_ident_name(param.name);
                     let annotated_ty = param.ty.as_ref().map(|ty| {
                         let ann_ty = tast::Ty::from_hir(genv, ty, &current_tparams_env);
+                        let ann_ty = super::toplevel::resolve_ty_projections_from_predicates(
+                            genv,
+                            diagnostics,
+                            &ann_ty,
+                            local_env.predicates(),
+                            super::util::type_expr_range(ty),
+                        );
                         super::util::validate_dyn_object_safety_in_ty(genv, diagnostics, &ann_ty);
                         ann_ty
                     });
@@ -1343,6 +1357,13 @@ impl Typer {
         let current_tparams_env = local_env.current_tparams_env();
         let annotated_ty = stmt.annotation.as_ref().map(|ty| {
             let ann_ty = tast::Ty::from_hir(genv, ty, &current_tparams_env);
+            let ann_ty = super::toplevel::resolve_ty_projections_from_predicates(
+                genv,
+                diagnostics,
+                &ann_ty,
+                local_env.predicates(),
+                super::util::type_expr_range(ty),
+            );
             super::util::validate_dyn_object_safety_in_ty(genv, diagnostics, &ann_ty);
             ann_ty
         });

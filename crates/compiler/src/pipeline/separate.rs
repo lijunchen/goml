@@ -356,7 +356,7 @@ fn typecheck_single_package(
     );
     diagnostics.append(&mut hir_diagnostics);
     let full_exports = PackageExports::from_genv(&genv);
-    let exports = PackageExports::public_from_package(package, &files, &genv);
+    let exports = PackageExports::public_from_package(package, &files, &genv, &mut diagnostics);
     let pkg_interface = interface::PackageInterface::from_package(package, declared_name, &exports);
     (tast, full_exports, exports, pkg_interface, diagnostics)
 }

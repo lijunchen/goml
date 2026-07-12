@@ -41,6 +41,13 @@ pub(crate) fn resolve_explicit_trait_args(
         .iter()
         .map(|arg| {
             let ty = tast::Ty::from_hir(genv, arg, &tparams);
+            let ty = super::toplevel::resolve_ty_projections_from_predicates(
+                genv,
+                diagnostics,
+                &ty,
+                local_env.predicates(),
+                type_expr_range(arg),
+            );
             validate_ty(genv, diagnostics, &ty, type_expr_range(arg), &tparam_names);
             ty
         })

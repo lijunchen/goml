@@ -49,10 +49,23 @@ fn build_impl_block(
 ) -> tast::ImplBlock {
     let impl_tparams = tparams_for(&impl_block.generics);
     let for_ty = tast::Ty::from_hir(genv, &impl_block.for_type, &impl_tparams);
-    let trait_ref = impl_block
+    let raw_trait_ref = impl_block
         .trait_ref
         .as_ref()
         .map(|trait_ref| tast::TraitRef::from_hir(genv, trait_ref, &impl_tparams));
+    let trait_ref = raw_trait_ref.as_ref().map(|raw_trait_ref| {
+        genv.current()
+            .trait_env
+            .trait_impls
+            .keys()
+            .find(|key| {
+                erase_projection_qualifiers(&key.for_ty) == erase_projection_qualifiers(&for_ty)
+                    && erase_trait_ref_projection_qualifiers(&key.trait_ref)
+                        == erase_trait_ref_projection_qualifiers(raw_trait_ref)
+            })
+            .map(|key| key.trait_ref.clone())
+            .unwrap_or_else(|| raw_trait_ref.clone())
+    });
 
     let mut methods = Vec::new();
     for method_id in impl_block.methods.iter().copied() {
@@ -97,6 +110,30 @@ fn build_impl_block(
         for_type: for_ty,
         methods,
     }
+}
+
+fn erase_trait_ref_projection_qualifiers(trait_ref: &tast::TraitRef) -> tast::TraitRef {
+    tast::TraitRef {
+        name: trait_ref.name.clone(),
+        args: trait_ref
+            .args
+            .iter()
+            .map(erase_projection_qualifiers)
+            .collect(),
+    }
+}
+
+fn erase_projection_qualifiers(ty: &tast::Ty) -> tast::Ty {
+    crate::typer::type_ops::rewrite_ty(ty, &mut |ty| {
+        let tast::Ty::TProjection { for_ty, name, .. } = ty else {
+            return None;
+        };
+        Some(tast::Ty::TProjection {
+            trait_ref: None,
+            for_ty: for_ty.clone(),
+            name: name.clone(),
+        })
+    })
 }
 
 fn build_fn(

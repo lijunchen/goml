@@ -77,6 +77,62 @@ impl Typer {
         InferredArguments { exprs, types }
     }
 
+    fn trait_method_candidate_matches(
+        &mut self,
+        genv: &PackageTypeEnv,
+        local_env: &LocalTypeEnv,
+        receiver_ty: &tast::Ty,
+        args: &[hir::ExprId],
+        expected_ret_ty: Option<&tast::Ty>,
+        scheme: &crate::env::FnScheme,
+    ) -> bool {
+        let inference = self.snapshot_inference();
+        let saved_results = self.results.clone();
+        let saved_obligations = self.obligations.clone();
+        let saved_obligation_causes = self.obligation_causes.clone();
+        let saved_next_obligation_id = self.next_obligation_id;
+        let saved_reported_origins = self.reported_unresolved_type_origins.clone();
+        let saved_unresolved_origins = self.unresolved_type_var_origins.clone();
+        let saved_array_counter = self.array_wildcard_counter;
+        let saved_array_resolutions = self.array_wildcard_resolutions.clone();
+        let mut candidate_diagnostics = Diagnostics::new();
+        let mut candidate_env = local_env.clone();
+        let method_ty = instantiate_self_ty(&scheme.ty, receiver_ty);
+        let param_env = crate::typer::ParamEnv::from_predicates(local_env.predicates());
+        let mut solver = crate::typer::traits::solver::TraitSolver::new(genv, &param_env);
+        let method_ty = solver.normalize_ty(self, &method_ty).unwrap_or(method_ty);
+        let matches = if let tast::Ty::TFunc { params, ret_ty } = method_ty {
+            if params.len() != args.len() + 1 {
+                false
+            } else {
+                self.equate(&mut candidate_diagnostics, receiver_ty, &params[0], None);
+                let _ = self.check_method_arguments(
+                    genv,
+                    &mut candidate_env,
+                    &mut candidate_diagnostics,
+                    args,
+                    &params,
+                );
+                if let Some(expected) = expected_ret_ty {
+                    self.equate(&mut candidate_diagnostics, ret_ty.as_ref(), expected, None);
+                }
+                !candidate_diagnostics.has_errors()
+            }
+        } else {
+            false
+        };
+        self.rollback_inference(inference);
+        self.results = saved_results;
+        self.obligations = saved_obligations;
+        self.obligation_causes = saved_obligation_causes;
+        self.next_obligation_id = saved_next_obligation_id;
+        self.reported_unresolved_type_origins = saved_reported_origins;
+        self.unresolved_type_var_origins = saved_unresolved_origins;
+        self.array_wildcard_counter = saved_array_counter;
+        self.array_wildcard_resolutions = saved_array_resolutions;
+        matches
+    }
+
     fn infer_field_value_call(
         &mut self,
         genv: &PackageTypeEnv,
@@ -301,28 +357,25 @@ impl Typer {
         }
         let mut lookup =
             lookup_trait_method_candidates(self, genv, local_env, &receiver_ty, &method_name);
-        if lookup.candidates.len() > 1
-            && let Some(expected) = hint_ret_ty
-        {
-            lookup.candidates.retain(|(_, scheme)| {
-                let method_ty = instantiate_self_ty(&scheme.ty, &receiver_ty);
-                let tast::Ty::TFunc { params, ret_ty } = method_ty else {
-                    return false;
-                };
-                if params.len() != args.len() + 1 {
-                    return false;
-                }
-                let snapshot = self.snapshot_inference();
-                let mut candidate_diagnostics = Diagnostics::new();
-                let matches = self.unify(
-                    &mut candidate_diagnostics,
-                    &ret_ty,
-                    expected,
-                    self.expr_range(call_expr_id),
-                );
-                self.rollback_inference(snapshot);
-                matches
-            });
+        if lookup.candidates.len() > 1 {
+            let matching = lookup
+                .candidates
+                .iter()
+                .filter(|(_, scheme)| {
+                    self.trait_method_candidate_matches(
+                        genv,
+                        local_env,
+                        &receiver_ty,
+                        args,
+                        hint_ret_ty,
+                        scheme,
+                    )
+                })
+                .cloned()
+                .collect::<Vec<_>>();
+            if !matching.is_empty() {
+                lookup.candidates = matching;
+            }
         }
         match lookup.candidates.as_slice() {
             [(trait_ref, method_scheme)] => {

@@ -284,6 +284,64 @@ pub(crate) fn type_params(ty: &tast::Ty) -> HashSet<String> {
     parameters
 }
 
+pub(crate) fn injective_type_params(ty: &tast::Ty) -> HashSet<String> {
+    fn collect(ty: &tast::Ty, parameters: &mut HashSet<String>) {
+        match ty {
+            tast::Ty::TParam { name } => {
+                parameters.insert(name.clone());
+            }
+            tast::Ty::TTuple { typs } => {
+                for ty in typs {
+                    collect(ty, parameters);
+                }
+            }
+            tast::Ty::TApp { ty, args } => {
+                collect(ty, parameters);
+                for arg in args {
+                    collect(arg, parameters);
+                }
+            }
+            tast::Ty::TArray { elem, .. }
+            | tast::Ty::TSlice { elem }
+            | tast::Ty::TVec { elem }
+            | tast::Ty::TRef { elem } => collect(elem, parameters),
+            tast::Ty::THashMap { key, value } => {
+                collect(key, parameters);
+                collect(value, parameters);
+            }
+            tast::Ty::TFunc { params, ret_ty } => {
+                for param in params {
+                    collect(param, parameters);
+                }
+                collect(ret_ty, parameters);
+            }
+            tast::Ty::TProjection { .. }
+            | tast::Ty::TVar(_)
+            | tast::Ty::TUnit
+            | tast::Ty::TBool
+            | tast::Ty::TInt8
+            | tast::Ty::TInt16
+            | tast::Ty::TInt32
+            | tast::Ty::TInt64
+            | tast::Ty::TUint8
+            | tast::Ty::TUint16
+            | tast::Ty::TUint32
+            | tast::Ty::TUint64
+            | tast::Ty::TFloat32
+            | tast::Ty::TFloat64
+            | tast::Ty::TString
+            | tast::Ty::TChar
+            | tast::Ty::TEnum { .. }
+            | tast::Ty::TStruct { .. }
+            | tast::Ty::TDyn { .. } => {}
+        }
+    }
+
+    let mut parameters = HashSet::new();
+    collect(ty, &mut parameters);
+    parameters
+}
+
 pub(crate) fn same_or_unresolved_ty(lhs: &tast::Ty, rhs: &tast::Ty) -> bool {
     lhs == rhs || contains_tvar(lhs) || contains_tvar(rhs)
 }

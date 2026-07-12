@@ -1,6 +1,7 @@
 use std::collections::{BTreeMap, HashSet};
 
 use ast::ast;
+use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use sha2::Digest;
 
 use crate::env::{GlobalTypeEnv, TraitEnv, TypeEnv, ValueEnv};
@@ -31,6 +32,7 @@ impl PackageExports {
         package: &str,
         files: &[SourceFileAst],
         genv: &GlobalTypeEnv,
+        diagnostics: &mut Diagnostics,
     ) -> Self {
         if package == BUILTIN_PACKAGE || package == ROOT_PACKAGE {
             return Self::from_genv(genv);
@@ -50,6 +52,58 @@ impl PackageExports {
             .trait_env
             .trait_defs
             .retain(|name, _| public_names.contains(name));
+        exports.trait_env.trait_impls.retain(|key, definition| {
+            if !definition.valid
+                || !local_name_is_public(package, &public_names, &key.trait_ref.name.0)
+                || !ty_has_public_local_names(package, &public_names, &key.for_ty)
+            {
+                return false;
+            }
+            let mut private_names = HashSet::new();
+            for arg in &key.trait_ref.args {
+                collect_private_local_names(package, &public_names, arg, &mut private_names);
+            }
+            for ty in definition.associated_types.values() {
+                collect_private_local_names(package, &public_names, ty, &mut private_names);
+            }
+            for predicate in &definition.constraints {
+                collect_predicate_private_local_names(
+                    package,
+                    &public_names,
+                    predicate,
+                    &mut private_names,
+                );
+            }
+            for scheme in definition.methods.values() {
+                collect_private_local_names(package, &public_names, &scheme.ty, &mut private_names);
+                for predicate in &scheme.constraints {
+                    collect_predicate_private_local_names(
+                        package,
+                        &public_names,
+                        predicate,
+                        &mut private_names,
+                    );
+                }
+            }
+            if private_names.is_empty() {
+                return true;
+            }
+            let mut private_names = private_names.into_iter().collect::<Vec<_>>();
+            private_names.sort();
+            diagnostics.push(
+                Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!(
+                        "Public trait implementation {} exposes private type {}",
+                        key.trait_ref.name.0,
+                        private_names.join(", ")
+                    ),
+                )
+                .with_range(definition.origin),
+            );
+            false
+        });
         exports
             .value_env
             .funcs
@@ -89,6 +143,122 @@ impl PackageExports {
             value_env: self.value_env.clone(),
             lang_items: Default::default(),
         }
+    }
+}
+
+fn local_name_is_public(package: &str, public_names: &HashSet<String>, name: &str) -> bool {
+    let Some(rest) = name.strip_prefix(&format!("{package}::")) else {
+        return true;
+    };
+    rest.contains("::") || public_names.contains(name)
+}
+
+fn ty_has_public_local_names(
+    package: &str,
+    public_names: &HashSet<String>,
+    ty: &crate::tast::Ty,
+) -> bool {
+    let mut private_names = HashSet::new();
+    collect_private_local_names(package, public_names, ty, &mut private_names);
+    private_names.is_empty()
+}
+
+fn collect_predicate_private_local_names(
+    package: &str,
+    public_names: &HashSet<String>,
+    predicate: &crate::env::TypePredicate,
+    private_names: &mut HashSet<String>,
+) {
+    match predicate {
+        crate::env::TypePredicate::Trait { for_ty, trait_ref } => {
+            collect_private_local_names(package, public_names, for_ty, private_names);
+            if !local_name_is_public(package, public_names, &trait_ref.name.0) {
+                private_names.insert(trait_ref.name.0.clone());
+            }
+            for arg in &trait_ref.args {
+                collect_private_local_names(package, public_names, arg, private_names);
+            }
+        }
+        crate::env::TypePredicate::Equality { lhs, rhs } => {
+            collect_private_local_names(package, public_names, lhs, private_names);
+            collect_private_local_names(package, public_names, rhs, private_names);
+        }
+    }
+}
+
+fn collect_private_local_names(
+    package: &str,
+    public_names: &HashSet<String>,
+    ty: &crate::tast::Ty,
+    private_names: &mut HashSet<String>,
+) {
+    match ty {
+        crate::tast::Ty::TEnum { name } | crate::tast::Ty::TStruct { name } => {
+            if !local_name_is_public(package, public_names, name) {
+                private_names.insert(name.clone());
+            }
+        }
+        crate::tast::Ty::TDyn { trait_name } => {
+            if !local_name_is_public(package, public_names, trait_name) {
+                private_names.insert(trait_name.clone());
+            }
+        }
+        crate::tast::Ty::TTuple { typs } => {
+            for ty in typs {
+                collect_private_local_names(package, public_names, ty, private_names);
+            }
+        }
+        crate::tast::Ty::TProjection {
+            trait_ref, for_ty, ..
+        } => {
+            collect_private_local_names(package, public_names, for_ty, private_names);
+            if let Some(trait_ref) = trait_ref {
+                if !local_name_is_public(package, public_names, &trait_ref.name.0) {
+                    private_names.insert(trait_ref.name.0.clone());
+                }
+                for arg in &trait_ref.args {
+                    collect_private_local_names(package, public_names, arg, private_names);
+                }
+            }
+        }
+        crate::tast::Ty::TApp { ty, args } => {
+            collect_private_local_names(package, public_names, ty, private_names);
+            for arg in args {
+                collect_private_local_names(package, public_names, arg, private_names);
+            }
+        }
+        crate::tast::Ty::TArray { elem, .. }
+        | crate::tast::Ty::TSlice { elem }
+        | crate::tast::Ty::TVec { elem }
+        | crate::tast::Ty::TRef { elem } => {
+            collect_private_local_names(package, public_names, elem, private_names);
+        }
+        crate::tast::Ty::THashMap { key, value } => {
+            collect_private_local_names(package, public_names, key, private_names);
+            collect_private_local_names(package, public_names, value, private_names);
+        }
+        crate::tast::Ty::TFunc { params, ret_ty } => {
+            for param in params {
+                collect_private_local_names(package, public_names, param, private_names);
+            }
+            collect_private_local_names(package, public_names, ret_ty, private_names);
+        }
+        crate::tast::Ty::TVar(_)
+        | crate::tast::Ty::TParam { .. }
+        | crate::tast::Ty::TUnit
+        | crate::tast::Ty::TBool
+        | crate::tast::Ty::TInt8
+        | crate::tast::Ty::TInt16
+        | crate::tast::Ty::TInt32
+        | crate::tast::Ty::TInt64
+        | crate::tast::Ty::TUint8
+        | crate::tast::Ty::TUint16
+        | crate::tast::Ty::TUint32
+        | crate::tast::Ty::TUint64
+        | crate::tast::Ty::TFloat32
+        | crate::tast::Ty::TFloat64
+        | crate::tast::Ty::TString
+        | crate::tast::Ty::TChar => {}
     }
 }
 
