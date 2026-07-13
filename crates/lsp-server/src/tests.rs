@@ -1439,6 +1439,37 @@ fn main() {
     }
 
     #[test]
+    fn use_completion_ignores_configured_target_directory() {
+        let dir = tempdir().unwrap();
+        let root = dir.path();
+        std::fs::write(
+            root.join("goml.toml"),
+            "[module]\npath = \"demo\"\n\n[build]\ntarget-dir = \"out\"\n",
+        )
+        .unwrap();
+        std::fs::create_dir_all(root.join("util")).unwrap();
+        std::fs::create_dir_all(root.join("out")).unwrap();
+        std::fs::write(root.join("util/util.gom"), "package util;\n").unwrap();
+        std::fs::write(root.join("out/generated.gom"), "package generated;\n").unwrap();
+        let src = "package main;\n\nuse \n\nfn main() -> unit { () }\n";
+        let path = root.join("main.gom");
+        std::fs::write(&path, src).unwrap();
+
+        let Some(CompletionResponse::Array(items)) = handlers::completion(
+            &path,
+            src,
+            Position {
+                line: 2,
+                character: 4,
+            },
+        ) else {
+            panic!("expected completion items");
+        };
+        assert!(items.iter().any(|item| item.label == "demo::util"));
+        assert!(!items.iter().any(|item| item.label == "demo::out"));
+    }
+
+    #[test]
     fn use_completion_suggests_std() {
         let dir = tempdir().unwrap();
         let src = r#"package main;

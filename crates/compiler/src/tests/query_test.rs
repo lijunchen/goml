@@ -171,6 +171,7 @@ fn use_statement_package_completions() {
     write_cached_registry(&home);
 
     std::fs::create_dir_all(dir.path().join("util")).unwrap();
+    std::fs::create_dir_all(dir.path().join("out")).unwrap();
     std::fs::write(
         dir.path().join("util/util.gom"),
         r#"
@@ -182,11 +183,19 @@ pub fn ping() -> string {
 "#,
     )
     .unwrap();
+    std::fs::write(
+        dir.path().join("out/generated.gom"),
+        "package generated;\npub fn generated() -> unit { () }\n",
+    )
+    .unwrap();
 
     std::fs::write(
         dir.path().join("goml.toml"),
         r#"[module]
 path = "demo"
+
+[build]
+target-dir = "out"
 
 [dependencies]
 "alice::http" = "1.2.0"
