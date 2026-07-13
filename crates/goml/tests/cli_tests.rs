@@ -1545,3 +1545,398 @@ pub fn msg() -> string {
 
     Ok(())
 }
+
+#[test]
+fn project_test_runs_private_tests_and_ignores_test_sources_in_check() -> anyhow::Result<()> {
+    if !go_available() {
+        return Ok(());
+    }
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    fs::write(root.join("goml.toml"), "[module]\npath = \"demo\"\n")?;
+    fs::create_dir_all(root.join("math"))?;
+    fs::write(
+        root.join("math/math.gom"),
+        r#"
+package math;
+
+fn double(value: int32) -> int32 {
+    value * 2
+}
+
+pub fn add(left: int32, right: int32) -> int32 {
+    left + right
+}
+"#,
+    )?;
+    fs::write(
+        root.join("math/math_test.gom"),
+        r#"
+package math;
+
+use std::testing;
+
+#[test]
+fn add_works() -> unit {
+    string_println("captured marker");
+    testing::assert_eq(add(2, 3), 5)
+}
+
+#[test]
+fn private_helper_works() -> unit {
+    testing::assert_eq(double(4), 8)
+}
+
+#[test]
+#[ignore("later")]
+fn ignored_case() -> unit {
+    testing::assert(true)
+}
+"#,
+    )?;
+
+    let check = run_goml(&["check", "math", "--dry-run"], root)?;
+    assert!(check.status.success());
+    let check_stdout = String::from_utf8(check.stdout)?;
+    assert!(check_stdout.contains("--input math/math.gom"));
+    assert!(!check_stdout.contains("math_test.gom"));
+
+    let test = run_goml(&["test", "math", "--jobs", "2"], root)?;
+    let stdout = String::from_utf8(test.stdout)?;
+    let stderr = String::from_utf8(test.stderr)?;
+    assert!(test.status.success(), "stderr: {stderr}");
+    expect![[r#"
+        running 3 tests
+
+        test demo::math::add_works ... ok
+        test demo::math::ignored_case ... ignored: later
+        test demo::math::private_helper_works ... ok
+
+        result: ok. 2 passed; 0 failed; 1 ignored
+    "#]]
+    .assert_eq(&stdout);
+    expect![""].assert_eq(&stderr);
+
+    let list = run_goml(&["test", "math", "--list"], root)?;
+    assert!(list.status.success());
+    expect![[r#"
+        demo::math::add_works
+        demo::math::ignored_case: ignored
+        demo::math::private_helper_works
+    "#]]
+    .assert_eq(&String::from_utf8(list.stdout)?);
+
+    let included = run_goml(&["test", "math", "--include-ignored"], root)?;
+    assert!(included.status.success());
+    assert!(String::from_utf8(included.stdout)?.contains("3 passed; 0 failed; 0 ignored"));
+
+    let uncaptured = run_goml(&["test", "math", "add_works", "--nocapture"], root)?;
+    assert!(uncaptured.status.success());
+    assert!(String::from_utf8(uncaptured.stdout)?.contains("captured marker"));
+
+    let json = run_goml(&["test", "math", "add_works", "--format", "json"], root)?;
+    assert!(json.status.success());
+    let events = String::from_utf8(json.stdout)?
+        .lines()
+        .map(serde_json::from_str::<serde_json::Value>)
+        .collect::<Result<Vec<_>, _>>()?;
+    assert_eq!(events[0]["event"], "result");
+    assert_eq!(events[0]["status"], "passed");
+    assert_eq!(events[0]["stdout"], "captured marker\n");
+    assert_eq!(events[1]["event"], "summary");
+
+    Ok(())
+}
+
+#[test]
+fn project_check_selects_normal_internal_and_external_test_modes() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    fs::write(root.join("goml.toml"), "[module]\npath = \"demo\"\n")?;
+    fs::create_dir_all(root.join("math/tests/api"))?;
+    fs::create_dir_all(root.join("math/tests/smoke"))?;
+    fs::write(
+        root.join("math/math.gom"),
+        r#"
+package math;
+
+fn private_value() -> int32 {
+    41
+}
+
+pub fn public_value() -> int32 {
+    private_value() + 1
+}
+"#,
+    )?;
+    fs::write(
+        root.join("math/math_test.gom"),
+        r#"
+package math;
+
+use std::testing;
+
+#[test]
+fn white_box() -> unit {
+    testing::assert_eq(private_value(), 41)
+}
+"#,
+    )?;
+    fs::write(
+        root.join("math/tests/api/api_test.gom"),
+        r#"
+package api;
+
+use demo::math;
+use std::testing;
+
+#[test]
+fn black_box() -> unit {
+    testing::assert_eq(math::public_value(), 42)
+}
+"#,
+    )?;
+    fs::write(
+        root.join("math/tests/smoke/smoke_test.gom"),
+        r#"
+package smoke;
+
+use demo::math;
+use std::testing;
+
+#[test]
+fn second_black_box_suite() -> unit {
+    testing::assert_eq(math::public_value(), 42)
+}
+"#,
+    )?;
+
+    let normal = run_goml(&["check", "math"], root)?;
+    assert!(
+        normal.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&normal.stderr)
+    );
+    let all = run_goml(&["check", "math", "--tests"], root)?;
+    assert!(
+        all.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&all.stderr)
+    );
+    let internal = run_goml(&["check", "math/math_test.gom"], root)?;
+    assert!(
+        internal.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&internal.stderr)
+    );
+    let external = run_goml(&["check", "math/tests/api/api_test.gom"], root)?;
+    assert!(
+        external.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&external.stderr)
+    );
+
+    let dry_run = run_goml(&["test", "math", "--dry-run"], root)?;
+    assert!(dry_run.status.success());
+    let dry_run = String::from_utf8(dry_run.stdout)?;
+    assert!(dry_run.contains("gomlc check --package demo::math --input math/math.gom"));
+    assert!(dry_run.contains(
+        "gomlc test-build --package demo::math --input math/math.gom --input math/math_test.gom"
+    ));
+    assert!(dry_run.contains(
+        "gomlc build --package demo::math --input math/math.gom --output target/goml/test/external/pkg/demo/math/package"
+    ));
+    assert!(dry_run.contains("gomlc test-build --package demo::math::tests::api"));
+    assert!(dry_run.contains("gomlc test-build --package demo::math::tests::smoke"));
+    assert_eq!(dry_run.matches("gomlc test-link").count(), 2);
+
+    if go_available() {
+        let external_tests = run_goml(&["test", "math", "--kind", "external"], root)?;
+        assert!(
+            external_tests.status.success(),
+            "stderr: {}",
+            String::from_utf8_lossy(&external_tests.stderr)
+        );
+        let stdout = String::from_utf8(external_tests.stdout)?;
+        assert!(stdout.contains("demo::math::tests::api::black_box ... ok"));
+        assert!(stdout.contains("demo::math::tests::smoke::second_black_box_suite ... ok"));
+        assert!(!stdout.contains("white_box"));
+
+        let internal_tests = run_goml(&["test", "math", "--kind", "internal"], root)?;
+        assert!(
+            internal_tests.status.success(),
+            "stderr: {}",
+            String::from_utf8_lossy(&internal_tests.stderr)
+        );
+        let stdout = String::from_utf8(internal_tests.stdout)?;
+        assert!(stdout.contains("demo::math::white_box ... ok"));
+        assert!(!stdout.contains("black_box"));
+    }
+
+    fs::write(
+        root.join("math/tests/api/api_test.gom"),
+        r#"
+package api;
+
+use demo::math;
+
+#[test]
+fn cannot_see_private_items() -> unit {
+    let _ = math::private_value();
+    ()
+}
+"#,
+    )?;
+    let private = run_goml(&["check", "math/tests/api/api_test.gom"], root)?;
+    assert!(!private.status.success());
+    assert!(String::from_utf8(private.stderr)?.contains("private_value"));
+
+    fs::write(
+        root.join("math/math_test.gom"),
+        "package math;\n#[test]\nfn broken() -> unit { missing_test_value() }\n",
+    )?;
+    let normal = run_goml(&["check", "math"], root)?;
+    assert!(normal.status.success());
+    let tests = run_goml(&["check", "math", "--tests"], root)?;
+    assert!(!tests.status.success());
+    assert!(String::from_utf8(tests.stderr)?.contains("missing_test_value"));
+
+    Ok(())
+}
+
+#[test]
+fn test_sources_cannot_repair_a_broken_normal_package() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    std::fs::write(root.join("goml.toml"), "[module]\npath = \"demo\"\n")?;
+    std::fs::create_dir_all(root.join("value"))?;
+    std::fs::write(
+        root.join("value/value.gom"),
+        "package value;\npub fn value() -> int32 { test_only_value() }\n",
+    )?;
+    std::fs::write(
+        root.join("value/value_test.gom"),
+        r#"package value;
+
+fn test_only_value() -> int32 {
+    1
+}
+
+#[test]
+fn value_works() -> unit {
+    let _ = value();
+    ()
+}
+"#,
+    )?;
+
+    let checked = run_goml(&["check", "value", "--tests"], root)?;
+    assert!(!checked.status.success());
+    assert!(String::from_utf8(checked.stderr)?.contains("test_only_value"));
+    let tested = run_goml(&["test", "value"], root)?;
+    assert!(!tested.status.success());
+    assert!(String::from_utf8(tested.stderr)?.contains("test_only_value"));
+    Ok(())
+}
+
+#[test]
+fn project_test_reports_assertion_failures_and_timeouts() -> anyhow::Result<()> {
+    if !go_available() {
+        return Ok(());
+    }
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    fs::write(root.join("goml.toml"), "[module]\npath = \"demo\"\n")?;
+    fs::create_dir_all(root.join("checks"))?;
+    fs::write(
+        root.join("checks/checks.gom"),
+        "package checks;\npub fn value() -> int32 { 1 }\n",
+    )?;
+    fs::write(
+        root.join("checks/checks_test.gom"),
+        r#"
+package checks;
+
+use std::testing;
+
+#[test]
+#[ignore("failure case")]
+fn failure() -> unit {
+    testing::assert_eq(1, 2)
+}
+
+#[test]
+#[ignore("timeout case")]
+fn timeout() -> unit {
+    while true {
+        ()
+    }
+}
+"#,
+    )?;
+
+    let failure = run_goml(&["test", "checks", "failure", "--ignored"], root)?;
+    assert!(!failure.status.success());
+    let failure_stdout = String::from_utf8(failure.stdout)?;
+    assert!(failure_stdout.contains("FAILED (exit code 101)"));
+    assert!(failure_stdout.contains("actual: 1"));
+    assert!(failure_stdout.contains("expected: 2"));
+
+    let timeout = run_goml(
+        &[
+            "test",
+            "checks",
+            "timeout",
+            "--ignored",
+            "--timeout",
+            "20ms",
+        ],
+        root,
+    )?;
+    assert!(!timeout.status.success());
+    assert!(String::from_utf8(timeout.stdout)?.contains("FAILED (timed out)"));
+
+    Ok(())
+}
+
+#[test]
+fn project_test_dry_run_and_invalid_signature_diagnostics() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    fs::write(root.join("goml.toml"), "[module]\npath = \"demo\"\n")?;
+    fs::create_dir_all(root.join("value"))?;
+    fs::write(
+        root.join("value/value.gom"),
+        "package value;\npub fn value() -> int32 { 1 }\n",
+    )?;
+    fs::write(
+        root.join("value/value_test.gom"),
+        r#"
+package value;
+
+#[test]
+fn invalid[T](value: T) -> bool {
+    true
+}
+"#,
+    )?;
+
+    let dry_run = run_goml(&["test", "value", "--dry-run"], root)?;
+    assert!(dry_run.status.success());
+    let stdout = String::from_utf8(dry_run.stdout)?;
+    assert!(stdout.contains(
+        "gomlc test-build --package demo::value --input value/value.gom --input value/value_test.gom"
+    ));
+    assert!(stdout.contains(
+        "gomlc test-link --input target/goml/test/internal/pkg/demo/value/package.core --output target/goml/test/internal/main.go --manifest target/goml/test/internal/tests.json --package demo::value"
+    ));
+
+    let output = run_goml(&["test", "value"], root)?;
+    assert!(!output.status.success());
+    let stderr = String::from_utf8(output.stderr)?;
+    assert!(stderr.contains("must not have type parameters"));
+    assert!(stderr.contains("must not have parameters"));
+    assert!(stderr.contains("must return unit"));
+
+    Ok(())
+}

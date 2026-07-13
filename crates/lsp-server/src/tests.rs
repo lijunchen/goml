@@ -1,4 +1,4 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, HashMap};
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, OnceLock};
 
@@ -99,6 +99,221 @@ path = "demo"
     let main_path = root.join("main.gom");
     std::fs::write(&main_path, src).unwrap();
     main_path
+}
+
+mod project_test_support_tests {
+    use super::*;
+
+    #[test]
+    fn lsp_distinguishes_normal_internal_and_external_analysis() {
+        let dir = tempdir().unwrap();
+        let root = dir.path();
+        std::fs::write(root.join("goml.toml"), "[module]\npath = \"demo\"\n").unwrap();
+        std::fs::create_dir_all(root.join("math/tests/api")).unwrap();
+        let math_path = root.join("math/math.gom");
+        let sibling_path = root.join("math/sibling.gom");
+        let white_path = root.join("math/math_test.gom");
+        let helper_path = root.join("math/helper_test.gom");
+        let external_path = root.join("math/tests/api/api_test.gom");
+        let math_src = r#"package math;
+
+fn private_value() -> int32 {
+    41
+}
+
+pub fn public_value() -> int32 {
+    sibling_value()
+}
+"#;
+        let sibling_src = r#"package math;
+
+fn sibling_value() -> int32 {
+    42
+}
+"#;
+        let white_src = r#"package math;
+
+#[test]
+fn white_box() -> unit {
+    let value: string = test_helper();
+    let _ = private_value();
+    let _ = value;
+    ()
+}
+"#;
+        let helper_src = r#"package math;
+
+fn test_helper() -> int32 {
+    1
+}
+"#;
+        let helper_override = r#"package math;
+
+fn test_helper() -> string {
+    "ok"
+}
+"#;
+        let external_src = r#"package api;
+
+use demo::math;
+
+#[test]
+fn black_box() -> unit {
+    let _ = math::public_value();
+    ()
+}
+"#;
+        std::fs::write(&math_path, math_src).unwrap();
+        std::fs::write(&sibling_path, sibling_src).unwrap();
+        std::fs::write(&white_path, white_src).unwrap();
+        std::fs::write(&helper_path, helper_src).unwrap();
+        std::fs::write(&external_path, external_src).unwrap();
+
+        let math_doc = Document::new(math_src.to_string());
+        assert!(handlers::get_diagnostics(&math_path, math_src, &math_doc).is_empty());
+        let hover = handlers::hover(
+            &math_path,
+            math_src,
+            Position {
+                line: 7,
+                character: 6,
+            },
+        );
+        assert!(format_hover(hover).contains("int32"));
+
+        let white_doc = Document::new(white_src.to_string());
+        assert!(!handlers::get_diagnostics(&white_path, white_src, &white_doc).is_empty());
+        let overrides = HashMap::from([(helper_path.clone(), helper_override.to_string())]);
+        assert!(
+            handlers::get_diagnostics_with_overrides(
+                &white_path,
+                white_src,
+                &white_doc,
+                &overrides,
+            )
+            .is_empty()
+        );
+        let white_uri = Url::from_file_path(&white_path).unwrap();
+        let helper_line = white_src
+            .lines()
+            .position(|line| line.contains("test_helper"))
+            .unwrap() as u32;
+        let helper_character = white_src
+            .lines()
+            .nth(helper_line as usize)
+            .unwrap()
+            .find("test_helper")
+            .unwrap() as u32;
+        let definition = handlers::goto_definition_with_overrides(
+            &white_uri,
+            &white_path,
+            white_src,
+            Position {
+                line: helper_line,
+                character: helper_character,
+            },
+            &white_doc,
+            &overrides,
+        );
+        let Some(GotoDefinitionResponse::Scalar(definition)) = definition else {
+            panic!("expected one helper definition");
+        };
+        assert_eq!(definition.uri, Url::from_file_path(&helper_path).unwrap());
+
+        let completion_src = white_src.replace("test_helper()", "test_h");
+        let completion_line = completion_src
+            .lines()
+            .position(|line| line.contains("test_h"))
+            .unwrap() as u32;
+        let completion_character = completion_src
+            .lines()
+            .nth(completion_line as usize)
+            .unwrap()
+            .find("test_h")
+            .unwrap() as u32
+            + "test_h".len() as u32;
+        let completion = handlers::completion_with_overrides(
+            &white_path,
+            &completion_src,
+            Position {
+                line: completion_line,
+                character: completion_character,
+            },
+            &overrides,
+        );
+        let completion = format_completion(completion);
+        assert!(completion.contains("test_helper"), "{completion}");
+
+        let invalid_helper = r#"package math;
+
+fn test_helper() -> string {
+    missing_value()
+}
+"#;
+        let invalid_overrides = HashMap::from([(helper_path.clone(), invalid_helper.to_string())]);
+        assert!(
+            handlers::get_diagnostics_with_overrides(
+                &white_path,
+                white_src,
+                &white_doc,
+                &invalid_overrides,
+            )
+            .is_empty()
+        );
+        let helper_doc = Document::new(invalid_helper.to_string());
+        let helper_diagnostics = handlers::get_diagnostics_with_overrides(
+            &helper_path,
+            invalid_helper,
+            &helper_doc,
+            &invalid_overrides,
+        );
+        assert!(
+            helper_diagnostics
+                .iter()
+                .any(|diagnostic| diagnostic.message.contains("missing_value"))
+        );
+
+        let external_doc = Document::new(external_src.to_string());
+        assert!(handlers::get_diagnostics(&external_path, external_src, &external_doc).is_empty());
+        let private_external = external_src.replace("public_value", "private_value");
+        let private_doc = Document::new(private_external.clone());
+        let diagnostics =
+            handlers::get_diagnostics(&external_path, &private_external, &private_doc);
+        assert!(
+            diagnostics
+                .iter()
+                .any(|diagnostic| diagnostic.message.contains("private_value"))
+        );
+    }
+
+    #[test]
+    fn test_files_expose_run_test_code_lenses() {
+        let dir = tempdir().unwrap();
+        let internal_path = dir.path().join("value_test.gom");
+        let src = "package value;\n#[test]\nfn works() -> unit { () }\n";
+        let doc = Document::new(src.to_string());
+        let uri = Url::from_file_path(&internal_path).unwrap();
+        let lenses = handlers::code_lenses(&uri, &internal_path, src, &doc);
+        assert_eq!(lenses.len(), 1);
+        let command = lenses[0].command.as_ref().unwrap();
+        assert_eq!(command.command, "goml.runTest");
+        assert_eq!(command.arguments.as_ref().unwrap()[1], "works");
+        assert_eq!(command.arguments.as_ref().unwrap()[2], "internal");
+
+        let external_path = dir.path().join("tests/api/api_test.gom");
+        let external_uri = Url::from_file_path(&external_path).unwrap();
+        let lenses = handlers::code_lenses(&external_uri, &external_path, src, &doc);
+        assert_eq!(
+            lenses[0]
+                .command
+                .as_ref()
+                .unwrap()
+                .arguments
+                .as_ref()
+                .unwrap()[2],
+            "external"
+        );
+    }
 }
 
 mod robustness_tests {
