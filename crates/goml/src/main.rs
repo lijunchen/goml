@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::ffi::OsString;
 use std::fs;
 use std::io::{Read, Write};
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -13,8 +13,8 @@ use anyhow::{Context, anyhow, bail};
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use goml_project::ENTRY_FUNCTION;
 use goml_project::config::{
-    ensure_goml_home_layout, find_module_root, goml_bin_dir, goml_cache_dir, goml_home_dir,
-    goml_lib_dir, goml_std_dir, load_module_manifest,
+    DEFAULT_TARGET_DIR, ensure_goml_home_layout, find_module_root, goml_bin_dir, goml_cache_dir,
+    goml_home_dir, goml_lib_dir, goml_std_dir, load_module_manifest, validate_manifest_target_dir,
 };
 use goml_project::registry::{
     ModuleCoord, ModuleRequirement, Registry, cached_registry_dir, default_registry_url,
@@ -24,15 +24,6 @@ use toml_edit::{DocumentMut, Item, Table, value};
 
 mod gomlc;
 
-const PROJECT_GO_OUTPUT: &str = "target/goml/main.go";
-const PROJECT_CHECK_OUTPUT_DIR: &str = "target/goml/check";
-const PROJECT_BUILD_OUTPUT_DIR: &str = "target/goml/build";
-const PROJECT_TEST_INTERNAL_OUTPUT_DIR: &str = "target/goml/test/internal";
-const PROJECT_TEST_EXTERNAL_OUTPUT_DIR: &str = "target/goml/test/external";
-const PROJECT_TEST_INTERNAL_GO_OUTPUT: &str = "target/goml/test/internal/main.go";
-const PROJECT_TEST_EXTERNAL_GO_OUTPUT: &str = "target/goml/test/external/main.go";
-const PROJECT_TEST_INTERNAL_MANIFEST: &str = "target/goml/test/internal/tests.json";
-const PROJECT_TEST_EXTERNAL_MANIFEST: &str = "target/goml/test/external/tests.json";
 const DEFAULT_LIB_PACKAGE: &str = "lib";
 
 #[derive(Parser, Debug)]
@@ -81,6 +72,8 @@ struct RemoveArgs {
 struct ProjectCommandArgs {
     #[arg(default_value = ".")]
     target: PathBuf,
+    #[arg(long = "target-dir")]
+    target_dir: Option<PathBuf>,
     #[arg(long = "dry-run")]
     dry_run: bool,
     #[arg(long = "compiler")]
@@ -101,6 +94,8 @@ struct TestCommandArgs {
     target: PathBuf,
     #[arg(value_name = "FILTER")]
     filter: Option<String>,
+    #[arg(long = "target-dir")]
+    target_dir: Option<PathBuf>,
     #[arg(long = "dry-run")]
     dry_run: bool,
     #[arg(long = "compiler")]
@@ -155,6 +150,64 @@ struct ProjectContext {
     entry_path: PathBuf,
     target_role: ProjectTargetRole,
     dependencies: BTreeMap<String, String>,
+    artifacts: ArtifactLayout,
+}
+
+#[derive(Clone)]
+struct ArtifactLayout {
+    root: PathBuf,
+}
+
+impl ArtifactLayout {
+    fn new(root: PathBuf) -> Self {
+        Self { root }
+    }
+
+    fn check_root(&self) -> PathBuf {
+        self.root.join("check")
+    }
+
+    fn build_root(&self) -> PathBuf {
+        self.root.join("build")
+    }
+
+    fn test_internal_root(&self) -> PathBuf {
+        self.root.join("test").join("internal")
+    }
+
+    fn test_external_root(&self) -> PathBuf {
+        self.root.join("test").join("external")
+    }
+
+    fn main_go(&self) -> PathBuf {
+        self.root.join("main.go")
+    }
+
+    fn internal_test_go(&self) -> PathBuf {
+        self.test_internal_root().join("main.go")
+    }
+
+    fn external_test_go(&self) -> PathBuf {
+        self.test_external_root().join("main.go")
+    }
+
+    fn internal_test_manifest(&self) -> PathBuf {
+        self.test_internal_root().join("tests.json")
+    }
+
+    fn external_test_manifest(&self) -> PathBuf {
+        self.test_external_root().join("tests.json")
+    }
+
+    fn internal_test_runner(&self) -> PathBuf {
+        self.test_internal_root()
+            .join(format!("runner{}", std::env::consts::EXE_SUFFIX))
+    }
+
+    fn external_test_runner(&self) -> PathBuf {
+        self.test_external_root()
+            .join(format!("runner{}", std::env::consts::EXE_SUFFIX))
+    }
 }
 
 enum ProjectTargetRole {
@@ -223,11 +276,11 @@ enum ProjectStage {
 }
 
 impl ProjectStage {
-    fn output_root(self) -> &'static str {
+    fn output_root(self, artifacts: &ArtifactLayout) -> PathBuf {
         match self {
-            Self::Check | Self::TestCheck => PROJECT_CHECK_OUTPUT_DIR,
-            Self::Build => PROJECT_BUILD_OUTPUT_DIR,
-            Self::Test => PROJECT_TEST_INTERNAL_OUTPUT_DIR,
+            Self::Check | Self::TestCheck => artifacts.check_root(),
+            Self::Build => artifacts.build_root(),
+            Self::Test => artifacts.test_internal_root(),
         }
     }
 
@@ -395,6 +448,7 @@ fn execute_new(args: NewArgs) -> anyhow::Result<()> {
         &project_dir.join("goml.toml"),
         &render_root_goml_toml(&args.project_name),
     )?;
+    write_file_with_dirs(&project_dir.join(".gitignore"), &render_gitignore())?;
     write_file_with_dirs(
         &project_dir.join("main.gom"),
         &render_main_gom(&args.project_name),
@@ -633,6 +687,10 @@ fn render_root_goml_toml(project_name: &str) -> String {
     format!("[module]\npath = \"{project_name}\"\n")
 }
 
+fn render_gitignore() -> String {
+    format!("/{DEFAULT_TARGET_DIR}/\n")
+}
+
 fn render_main_gom(project_name: &str) -> String {
     format!(
         r#"package main;
@@ -668,7 +726,7 @@ fn execute_compiler_compat(args: CompilerCompatArgs) -> anyhow::Result<()> {
 }
 
 fn execute_project_check(args: CheckCommandArgs) -> anyhow::Result<()> {
-    let project = load_project(&args.project.target)?;
+    let project = load_project(&args.project.target, args.project.target_dir.as_deref())?;
     let plan = build_project_check_plan(&project, args.tests)?;
     execute_planned_commands(
         &project.module_dir,
@@ -679,7 +737,7 @@ fn execute_project_check(args: CheckCommandArgs) -> anyhow::Result<()> {
 }
 
 fn execute_project_build(args: ProjectCommandArgs) -> anyhow::Result<()> {
-    let project = load_project(&args.target)?;
+    let project = load_project(&args.target, args.target_dir.as_deref())?;
     if !matches!(&project.target_role, ProjectTargetRole::Production) {
         bail!("test-only targets cannot be built directly; use `goml test`");
     }
@@ -693,7 +751,7 @@ fn execute_project_build(args: ProjectCommandArgs) -> anyhow::Result<()> {
 }
 
 fn execute_project_test(args: TestCommandArgs) -> anyhow::Result<()> {
-    let project = load_project(&args.target)?;
+    let project = load_project(&args.target, args.target_dir.as_deref())?;
     let plan = build_project_test_plan(&project, args.kind)?;
     execute_planned_commands(
         &project.module_dir,
@@ -730,7 +788,8 @@ fn build_project_check_plan(
 fn build_all_test_check_commands(
     project: &ProjectContext,
 ) -> anyhow::Result<Vec<PlannedCompilerCommand>> {
-    let external = build_external_packages_plan(project, PROJECT_CHECK_OUTPUT_DIR)?;
+    let check_root = project.artifacts.check_root();
+    let external = build_external_packages_plan(project, &check_root)?;
     let external_imports =
         goml_project::package_graph::ExternalImports::new(external.declared_names.clone());
     let test_plan = goml_project::package_graph::discover_project_test_plan(
@@ -771,7 +830,8 @@ fn build_external_test_check_plan(
     project: &ProjectContext,
     suite_dir: &Path,
 ) -> anyhow::Result<ProjectCommandPlan> {
-    let external = build_external_packages_plan(project, PROJECT_CHECK_OUTPUT_DIR)?;
+    let check_root = project.artifacts.check_root();
+    let external = build_external_packages_plan(project, &check_root)?;
     let external_imports =
         goml_project::package_graph::ExternalImports::new(external.declared_names.clone());
     let external_test = goml_project::package_graph::discover_project_external_test_package(
@@ -809,7 +869,7 @@ fn build_project_test_plan(
     let mut groups = Vec::new();
     if run_internal && has_internal_test_sources(project)? {
         commands.extend(build_project_plan(project, ProjectStage::Test)?.commands);
-        groups.push(internal_test_run_group());
+        groups.push(internal_test_run_group(&project.artifacts));
     }
     if run_external {
         let suite_dir = match &project.target_role {
@@ -840,7 +900,8 @@ fn build_external_tests_plan(
     project: &ProjectContext,
     suite_dir: Option<&Path>,
 ) -> anyhow::Result<Option<ProjectTestCommandPlan>> {
-    let external = build_external_packages_plan(project, PROJECT_TEST_EXTERNAL_OUTPUT_DIR)?;
+    let external_root = project.artifacts.test_external_root();
+    let external = build_external_packages_plan(project, &external_root)?;
     let external_imports =
         goml_project::package_graph::ExternalImports::new(external.declared_names.clone());
     let tests = if let Some(suite_dir) = suite_dir {
@@ -938,6 +999,7 @@ fn build_external_test_graph_plan(
     test_packages: HashSet<String>,
     link_packages: Vec<String>,
 ) -> anyhow::Result<ProjectTestCommandPlan> {
+    let output_root = project.artifacts.test_external_root();
     let order = goml_project::package_graph::topo_sort_packages(&graph)
         .map_err(|err| anyhow!("project test failed: {}", err))?;
     let mut packages = external.packages;
@@ -958,7 +1020,7 @@ fn build_external_test_graph_plan(
             BuildPackage {
                 input_files: sorted_relative_inputs(&project.module_dir, &package.files),
                 imports: package.imports.clone(),
-                output: local_artifact_base(PROJECT_TEST_EXTERNAL_OUTPUT_DIR, &package_name),
+                output: local_artifact_base(&output_root, &package_name),
             },
         );
         build_order.push(package_name);
@@ -993,36 +1055,30 @@ fn build_external_test_graph_plan(
     commands.push(PlannedCompilerCommand::TestLink(TestLinkCompilerCommand {
         input_cores: core_outputs,
         packages: link_packages,
-        output: PathBuf::from(PROJECT_TEST_EXTERNAL_GO_OUTPUT),
-        manifest: PathBuf::from(PROJECT_TEST_EXTERNAL_MANIFEST),
+        output: project.artifacts.external_test_go(),
+        manifest: project.artifacts.external_test_manifest(),
     }));
     Ok(ProjectTestCommandPlan {
         commands,
-        groups: vec![external_test_run_group()],
+        groups: vec![external_test_run_group(&project.artifacts)],
     })
 }
 
-fn internal_test_run_group() -> TestRunGroup {
+fn internal_test_run_group(artifacts: &ArtifactLayout) -> TestRunGroup {
     TestRunGroup {
         kind: TestKind::Internal,
-        go_output: PathBuf::from(PROJECT_TEST_INTERNAL_GO_OUTPUT),
-        manifest: PathBuf::from(PROJECT_TEST_INTERNAL_MANIFEST),
-        runner: PathBuf::from(format!(
-            "target/goml/test/internal/runner{}",
-            std::env::consts::EXE_SUFFIX
-        )),
+        go_output: artifacts.internal_test_go(),
+        manifest: artifacts.internal_test_manifest(),
+        runner: artifacts.internal_test_runner(),
     }
 }
 
-fn external_test_run_group() -> TestRunGroup {
+fn external_test_run_group(artifacts: &ArtifactLayout) -> TestRunGroup {
     TestRunGroup {
         kind: TestKind::External,
-        go_output: PathBuf::from(PROJECT_TEST_EXTERNAL_GO_OUTPUT),
-        manifest: PathBuf::from(PROJECT_TEST_EXTERNAL_MANIFEST),
-        runner: PathBuf::from(format!(
-            "target/goml/test/external/runner{}",
-            std::env::consts::EXE_SUFFIX
-        )),
+        go_output: artifacts.external_test_go(),
+        manifest: artifacts.external_test_manifest(),
+        runner: artifacts.external_test_runner(),
     }
 }
 
@@ -1030,7 +1086,8 @@ fn build_project_plan(
     project: &ProjectContext,
     stage: ProjectStage,
 ) -> anyhow::Result<ProjectCommandPlan> {
-    let external = build_external_packages_plan(project, stage.output_root())?;
+    let output_root = stage.output_root(&project.artifacts);
+    let external = build_external_packages_plan(project, &output_root)?;
     let external_imports =
         goml_project::package_graph::ExternalImports::new(external.declared_names.clone());
     let graph = match stage {
@@ -1062,6 +1119,7 @@ fn build_graph_plan(
     external: ExternalPackagesPlan,
     graph: goml_project::package_graph::PackageGraph,
 ) -> anyhow::Result<ProjectCommandPlan> {
+    let output_root = stage.output_root(&project.artifacts);
     let local_order = goml_project::package_graph::topo_sort_packages(&graph)
         .map_err(|err| anyhow!("{} failed: {}", stage.label(), err))?;
 
@@ -1084,7 +1142,7 @@ fn build_graph_plan(
             BuildPackage {
                 input_files: sorted_relative_inputs(&project.module_dir, &package.files),
                 imports: package.imports.clone(),
-                output: local_artifact_base(stage.output_root(), &package_name),
+                output: local_artifact_base(&output_root, &package_name),
             },
         );
         order.push(package_name);
@@ -1132,14 +1190,14 @@ fn build_graph_plan(
         commands.push(PlannedCompilerCommand::Link(LinkCompilerCommand {
             input_cores: core_outputs,
             entry_package: graph.entry_package,
-            output: PathBuf::from(PROJECT_GO_OUTPUT),
+            output: project.artifacts.main_go(),
         }));
     } else if matches!(stage, ProjectStage::Test) {
         commands.push(PlannedCompilerCommand::TestLink(TestLinkCompilerCommand {
             input_cores: core_outputs,
             packages: vec![graph.entry_package],
-            output: PathBuf::from(PROJECT_TEST_INTERNAL_GO_OUTPUT),
-            manifest: PathBuf::from(PROJECT_TEST_INTERNAL_MANIFEST),
+            output: project.artifacts.internal_test_go(),
+            manifest: project.artifacts.internal_test_manifest(),
         }));
     }
     Ok(ProjectCommandPlan { commands })
@@ -1147,7 +1205,7 @@ fn build_graph_plan(
 
 fn build_external_packages_plan(
     project: &ProjectContext,
-    output_root: &str,
+    output_root: &Path,
 ) -> anyhow::Result<ExternalPackagesPlan> {
     if project.dependencies.is_empty() {
         return Ok(ExternalPackagesPlan::default());
@@ -1215,11 +1273,11 @@ fn build_external_packages_plan(
 }
 
 fn external_artifact_base(
-    output_root: &str,
+    output_root: &Path,
     module: &goml_project::registry::ResolvedModule,
     package: &str,
 ) -> PathBuf {
-    let mut path = PathBuf::from(output_root)
+    let mut path = output_root
         .join("deps")
         .join(&module.coord.owner)
         .join(&module.coord.module)
@@ -1231,8 +1289,8 @@ fn external_artifact_base(
     path.join("package")
 }
 
-fn local_artifact_base(output_root: &str, package: &str) -> PathBuf {
-    let mut path = PathBuf::from(output_root).join("pkg");
+fn local_artifact_base(output_root: &Path, package: &str) -> PathBuf {
+    let mut path = output_root.join("pkg");
     for segment in package.split("::") {
         path.push(segment);
     }
@@ -1755,7 +1813,10 @@ fn shell_escape(arg: &str) -> String {
     }
 }
 
-fn load_project(target: &Path) -> anyhow::Result<ProjectContext> {
+fn load_project(
+    target: &Path,
+    target_dir_override: Option<&Path>,
+) -> anyhow::Result<ProjectContext> {
     let cwd = std::env::current_dir().context("failed to read current directory")?;
     let target = if target.is_absolute() {
         target.to_path_buf()
@@ -1781,6 +1842,22 @@ fn load_project(target: &Path) -> anyhow::Result<ProjectContext> {
                 search_dir.display()
             )
         })?;
+    let manifest =
+        load_module_manifest(&module_dir.join("goml.toml")).map_err(anyhow::Error::msg)?;
+    let artifact_root =
+        resolve_artifact_root(&module_dir, &manifest.build.target_dir, target_dir_override)?;
+    let absolute_artifact_root = if artifact_root.is_absolute() {
+        artifact_root.clone()
+    } else {
+        module_dir.join(&artifact_root)
+    };
+    if target.starts_with(&absolute_artifact_root) {
+        bail!(
+            "target {} is inside build target directory {}",
+            target.display(),
+            absolute_artifact_root.display()
+        );
+    }
     let (target_dir, target_role) =
         match goml_project::package_graph::classify_project_path(&module_dir, &target)
             .map_err(anyhow::Error::msg)?
@@ -1816,14 +1893,42 @@ fn load_project(target: &Path) -> anyhow::Result<ProjectContext> {
     } else {
         first_production_source(&target_dir)?
     };
-    let manifest =
-        load_module_manifest(&module_dir.join("goml.toml")).map_err(anyhow::Error::msg)?;
     Ok(ProjectContext {
         module_dir,
         entry_path,
         target_role,
         dependencies: manifest.dependencies,
+        artifacts: ArtifactLayout::new(artifact_root),
     })
+}
+
+fn resolve_artifact_root(
+    module_dir: &Path,
+    configured: &Path,
+    target_dir_override: Option<&Path>,
+) -> anyhow::Result<PathBuf> {
+    let target_dir = target_dir_override.unwrap_or(configured);
+    if target_dir.is_absolute() {
+        let mut has_segment = false;
+        for component in target_dir.components() {
+            match component {
+                Component::Normal(_) => has_segment = true,
+                Component::ParentDir => {
+                    bail!("target-dir must not contain parent directory components")
+                }
+                Component::CurDir | Component::RootDir | Component::Prefix(_) => {}
+            }
+        }
+        if !has_segment {
+            bail!("target-dir must not be a filesystem root");
+        }
+        if target_dir == module_dir {
+            bail!("target-dir must not be the module root");
+        }
+        return Ok(target_dir.to_path_buf());
+    }
+    validate_manifest_target_dir(target_dir).map_err(anyhow::Error::msg)?;
+    Ok(target_dir.to_path_buf())
 }
 
 fn first_production_source(package_dir: &Path) -> anyhow::Result<PathBuf> {

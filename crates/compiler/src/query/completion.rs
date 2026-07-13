@@ -855,11 +855,13 @@ fn collect_local_package_names(root_dir: &Path, source_path: &Path, names: &mut 
     let Ok(manifest) = crate::config::load_module_manifest(&root_dir.join("goml.toml")) else {
         return;
     };
+    let artifact_dir = root_dir.join(&manifest.build.target_dir);
     let current_dir = source_path.parent().unwrap_or(root_dir);
     collect_local_package_names_inner(
         root_dir,
         root_dir,
         current_dir,
+        &artifact_dir,
         &manifest.module.path,
         names,
     );
@@ -869,6 +871,7 @@ fn collect_local_package_names_inner(
     root_dir: &Path,
     dir: &Path,
     current_dir: &Path,
+    artifact_dir: &Path,
     module_path: &str,
     names: &mut BTreeSet<String>,
 ) {
@@ -886,7 +889,7 @@ fn collect_local_package_names_inner(
             has_source = true;
         } else if path.is_dir()
             && !entry.file_name().to_string_lossy().starts_with('.')
-            && entry.file_name() != "target"
+            && path != artifact_dir
         {
             children.push(path);
         }
@@ -906,7 +909,14 @@ fn collect_local_package_names_inner(
     }
     children.sort();
     for child in children {
-        collect_local_package_names_inner(root_dir, &child, current_dir, module_path, names);
+        collect_local_package_names_inner(
+            root_dir,
+            &child,
+            current_dir,
+            artifact_dir,
+            module_path,
+            names,
+        );
     }
 }
 

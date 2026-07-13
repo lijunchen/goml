@@ -92,12 +92,14 @@ pub fn discover_project_packages(
 ) -> Result<PackageGraph, String> {
     let manifest = load_module_manifest(&module_dir.join("goml.toml"))?;
     validate_project_module_path(&manifest.module.path)?;
+    let artifact_dir = module_dir.join(&manifest.build.target_dir);
     let target_dir = normalized_parent(entry_path);
     reject_test_only_target(module_dir, target_dir)?;
     discover_reachable_module_packages(
         module_dir,
         &manifest.module.path,
         target_dir,
+        &artifact_dir,
         external_imports,
         false,
     )
@@ -110,12 +112,14 @@ pub fn discover_project_test_packages(
 ) -> Result<PackageGraph, String> {
     let manifest = load_module_manifest(&module_dir.join("goml.toml"))?;
     validate_project_module_path(&manifest.module.path)?;
+    let artifact_dir = module_dir.join(&manifest.build.target_dir);
     let target_dir = normalized_parent(entry_path);
     reject_test_only_target(module_dir, target_dir)?;
     discover_reachable_module_packages(
         module_dir,
         &manifest.module.path,
         target_dir,
+        &artifact_dir,
         external_imports,
         true,
     )
@@ -128,12 +132,14 @@ pub fn discover_project_test_plan(
 ) -> Result<ProjectTestPlan, String> {
     let manifest = load_module_manifest(&module_dir.join("goml.toml"))?;
     validate_project_module_path(&manifest.module.path)?;
+    let artifact_dir = module_dir.join(&manifest.build.target_dir);
     let target_dir = normalized_parent(entry_path);
     reject_test_only_target(module_dir, target_dir)?;
     let normal = discover_reachable_module_packages(
         module_dir,
         &manifest.module.path,
         target_dir,
+        &artifact_dir,
         external_imports,
         false,
     )?;
@@ -141,6 +147,7 @@ pub fn discover_project_test_plan(
         module_dir,
         &manifest.module.path,
         target_dir,
+        &artifact_dir,
         external_imports,
         true,
     )?;
@@ -148,6 +155,7 @@ pub fn discover_project_test_plan(
         module_dir,
         &manifest.module.path,
         target_dir,
+        &artifact_dir,
         &normal.entry_package,
         external_imports,
     )?;
@@ -166,6 +174,7 @@ pub fn discover_project_external_test_package(
 ) -> Result<ExternalTestGraph, String> {
     let manifest = load_module_manifest(&module_dir.join("goml.toml"))?;
     validate_project_module_path(&manifest.module.path)?;
+    let artifact_dir = module_dir.join(&manifest.build.target_dir);
     let target_dir = normalized_parent(entry_path);
     reject_test_only_target(module_dir, target_dir)?;
     let expected_parent = target_dir.join(TESTS_DIRECTORY);
@@ -181,6 +190,7 @@ pub fn discover_project_external_test_package(
         module_dir,
         &manifest.module.path,
         suite_dir,
+        &artifact_dir,
         external_imports,
         true,
     )?;
@@ -188,6 +198,7 @@ pub fn discover_project_external_test_package(
         module_dir,
         &manifest.module.path,
         target_dir,
+        &artifact_dir,
         external_imports,
         false,
     )?;
@@ -205,6 +216,7 @@ pub fn discover_project_external_test_packages(
 ) -> Result<Vec<ExternalTestGraph>, String> {
     let manifest = load_module_manifest(&module_dir.join("goml.toml"))?;
     validate_project_module_path(&manifest.module.path)?;
+    let artifact_dir = module_dir.join(&manifest.build.target_dir);
     let target_dir = normalized_parent(entry_path);
     reject_test_only_target(module_dir, target_dir)?;
     let target_package = package_import_path(&manifest.module.path, module_dir, target_dir)?;
@@ -212,12 +224,22 @@ pub fn discover_project_external_test_packages(
         module_dir,
         &manifest.module.path,
         target_dir,
+        &artifact_dir,
         &target_package,
         external_imports,
     )
 }
 
 pub fn classify_project_path(module_dir: &Path, path: &Path) -> Result<ProjectPathRole, String> {
+    let manifest = load_module_manifest(&module_dir.join("goml.toml"))?;
+    let artifact_dir = module_dir.join(&manifest.build.target_dir);
+    if path.starts_with(&artifact_dir) {
+        return Err(format!(
+            "path {} is inside build target directory {}",
+            path.display(),
+            artifact_dir.display()
+        ));
+    }
     let relative = path.strip_prefix(module_dir).map_err(|_| {
         format!(
             "path {} is outside module root {}",
@@ -265,16 +287,30 @@ pub fn discover_dependency_module_packages(
     external_imports: &ExternalImports,
 ) -> Result<PackageGraph, String> {
     let manifest = load_module_manifest(&module_dir.join("goml.toml"))?;
-    discover_all_module_packages(module_dir, &manifest.module.path, external_imports)
+    let artifact_dir = module_dir.join(&manifest.build.target_dir);
+    discover_all_module_packages(
+        module_dir,
+        &manifest.module.path,
+        &artifact_dir,
+        external_imports,
+    )
 }
 
 fn discover_reachable_module_packages(
     module_dir: &Path,
     module_path: &str,
     target_dir: &Path,
+    artifact_dir: &Path,
     external_imports: &ExternalImports,
     include_entry_tests: bool,
 ) -> Result<PackageGraph, String> {
+    if target_dir.starts_with(artifact_dir) {
+        return Err(format!(
+            "package directory {} is inside build target directory {}",
+            target_dir.display(),
+            artifact_dir.display()
+        ));
+    }
     let entry_package = package_import_path(module_path, module_dir, target_dir)?;
     let mut entry = load_package(
         target_dir,
@@ -296,6 +332,13 @@ fn discover_reachable_module_packages(
             continue;
         }
         if let Some(package_dir) = local_package_dir(module_path, module_dir, &import_path) {
+            if package_dir.starts_with(artifact_dir) {
+                return Err(format!(
+                    "package {} is inside build target directory {}",
+                    import_path,
+                    artifact_dir.display()
+                ));
+            }
             if !package_dir.is_dir() {
                 return Err(format!(
                     "package {} not found at {}",
@@ -339,6 +382,7 @@ fn discover_external_test_graphs(
     module_dir: &Path,
     module_path: &str,
     target_dir: &Path,
+    artifact_dir: &Path,
     target_package: &str,
     external_imports: &ExternalImports,
 ) -> Result<Vec<ExternalTestGraph>, String> {
@@ -380,6 +424,7 @@ fn discover_external_test_graphs(
             module_dir,
             module_path,
             &suite_dir,
+            artifact_dir,
             external_imports,
             true,
         )?;
@@ -387,6 +432,7 @@ fn discover_external_test_graphs(
             module_dir,
             module_path,
             target_dir,
+            artifact_dir,
             external_imports,
             false,
         )?;
@@ -459,10 +505,11 @@ fn import_path_is_test_only(module_path: &str, import_path: &str) -> bool {
 fn discover_all_module_packages(
     module_dir: &Path,
     module_path: &str,
+    artifact_dir: &Path,
     external_imports: &ExternalImports,
 ) -> Result<PackageGraph, String> {
     let mut dirs = Vec::new();
-    collect_package_dirs(module_dir, module_dir, &mut dirs)?;
+    collect_package_dirs(module_dir, module_dir, artifact_dir, &mut dirs)?;
     dirs.sort();
     if dirs.is_empty() {
         return Err(format!("module {} has no package directories", module_path));
@@ -825,6 +872,7 @@ pub fn is_internal_test_source(path: &Path) -> bool {
 fn collect_package_dirs(
     module_dir: &Path,
     dir: &Path,
+    artifact_dir: &Path,
     packages: &mut Vec<PathBuf>,
 ) -> Result<(), String> {
     if dir != module_dir && dir.join("goml.toml").is_file() {
@@ -846,7 +894,7 @@ fn collect_package_dirs(
         } else if path.is_dir() {
             let name = entry.file_name();
             let name = name.to_string_lossy();
-            if !name.starts_with('.') && name != "target" && name != TESTS_DIRECTORY {
+            if !name.starts_with('.') && path != artifact_dir && name != TESTS_DIRECTORY {
                 children.push(path);
             }
         }
@@ -856,7 +904,7 @@ fn collect_package_dirs(
     }
     children.sort();
     for child in children {
-        collect_package_dirs(module_dir, &child, packages)?;
+        collect_package_dirs(module_dir, &child, artifact_dir, packages)?;
     }
     Ok(())
 }
@@ -1000,9 +1048,10 @@ mod tests {
     fn discovers_all_dependency_packages() {
         let dir = tempfile::tempdir().unwrap();
         fs::create_dir_all(dir.path().join("unused")).unwrap();
+        fs::create_dir_all(dir.path().join("out")).unwrap();
         fs::write(
             dir.path().join("goml.toml"),
-            "[module]\npath = \"alice::dep\"\n",
+            "[module]\npath = \"alice::dep\"\n\n[build]\ntarget-dir = \"out\"\n",
         )
         .unwrap();
         fs::write(
@@ -1015,11 +1064,18 @@ mod tests {
             "package unused;\npub fn value() -> int32 { 2 }\n",
         )
         .unwrap();
+        fs::write(
+            dir.path().join("out/generated.gom"),
+            "package generated;\npub fn value() -> int32 { 3 }\n",
+        )
+        .unwrap();
 
         let graph =
             discover_dependency_module_packages(dir.path(), &ExternalImports::default()).unwrap();
         assert!(graph.packages.contains_key("alice::dep"));
         assert!(graph.packages.contains_key("alice::dep::unused"));
+        assert!(!graph.packages.contains_key("alice::dep::out"));
+        assert!(classify_project_path(dir.path(), &dir.path().join("out/generated.gom")).is_err());
     }
 
     #[test]

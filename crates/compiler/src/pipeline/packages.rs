@@ -397,10 +397,18 @@ fn discover_module_packages(
     module_dir: &Path,
     module_path: &str,
     target_dir: &Path,
+    artifact_dir: &Path,
     source_overrides: &SourceOverrides,
     mode: AnalysisMode,
     external_imports: &ExternalImports,
 ) -> Result<PackageGraph, CompilationError> {
+    if target_dir.starts_with(artifact_dir) {
+        return Err(compile_error(format!(
+            "package directory {} is inside build target directory {}",
+            target_dir.display(),
+            artifact_dir.display()
+        )));
+    }
     let entry_package = package_import_path(module_path, module_dir, target_dir)?;
     let mut entry = load_package(
         target_dir,
@@ -430,6 +438,13 @@ fn discover_module_packages(
             continue;
         }
         if let Some(package_dir) = local_package_dir(module_path, module_dir, &import_path) {
+            if package_dir.starts_with(artifact_dir) {
+                return Err(compile_error(format!(
+                    "package {} is inside build target directory {}",
+                    import_path,
+                    artifact_dir.display()
+                )));
+            }
             if !package_dir.is_dir() {
                 return Err(compile_error(format!(
                     "package {} not found at {}",
@@ -583,11 +598,13 @@ pub fn discover_packages_with_overrides_and_external_imports(
 ) -> Result<PackageGraph, CompilationError> {
     let manifest = load_module_manifest(&root_dir.join("goml.toml")).map_err(compile_error)?;
     validate_project_module_path(&manifest.module.path).map_err(compile_error)?;
+    let artifact_dir = root_dir.join(&manifest.build.target_dir);
     let target_dir = entry_path.map(normalized_parent).unwrap_or(root_dir);
     discover_module_packages(
         root_dir,
         &manifest.module.path,
         target_dir,
+        &artifact_dir,
         source_overrides,
         mode,
         external_imports,
@@ -625,16 +642,23 @@ pub fn discover_dependency_module_packages_with_external_imports(
     external_imports: &ExternalImports,
 ) -> Result<PackageGraph, CompilationError> {
     let manifest = load_module_manifest(&module_dir.join("goml.toml")).map_err(compile_error)?;
-    discover_all_module_packages(module_dir, &manifest.module.path, external_imports)
+    let artifact_dir = module_dir.join(&manifest.build.target_dir);
+    discover_all_module_packages(
+        module_dir,
+        &manifest.module.path,
+        &artifact_dir,
+        external_imports,
+    )
 }
 
 fn discover_all_module_packages(
     module_dir: &Path,
     module_path: &str,
+    artifact_dir: &Path,
     external_imports: &ExternalImports,
 ) -> Result<PackageGraph, CompilationError> {
     let mut dirs = Vec::new();
-    collect_package_dirs(module_dir, module_dir, &mut dirs)?;
+    collect_package_dirs(module_dir, module_dir, artifact_dir, &mut dirs)?;
     dirs.sort();
     if dirs.is_empty() {
         return Err(compile_error(format!(
@@ -705,6 +729,7 @@ fn discover_all_module_packages(
 fn collect_package_dirs(
     module_dir: &Path,
     dir: &Path,
+    artifact_dir: &Path,
     packages: &mut Vec<PathBuf>,
 ) -> Result<(), CompilationError> {
     if dir != module_dir && dir.join("goml.toml").is_file() {
@@ -740,7 +765,7 @@ fn collect_package_dirs(
         }
         let name = entry.file_name();
         let name = name.to_string_lossy();
-        if name.starts_with('.') || name == "target" || name == "tests" {
+        if name.starts_with('.') || path == artifact_dir || name == "tests" {
             continue;
         }
         children.push(path);
@@ -750,7 +775,7 @@ fn collect_package_dirs(
     }
     children.sort();
     for child in children {
-        collect_package_dirs(module_dir, &child, packages)?;
+        collect_package_dirs(module_dir, &child, artifact_dir, packages)?;
     }
     Ok(())
 }

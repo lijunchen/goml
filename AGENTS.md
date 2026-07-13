@@ -145,6 +145,9 @@ GoML projects use a `goml.toml` file for project configuration. A module owns a 
 [module]
 path = "alice::myapp"
 
+[build]
+target-dir = "artifact"
+
 [dependencies]
 "alice::http" = "1.2.0"
 ```
@@ -175,6 +178,7 @@ pub fn message() -> string {
 | Field          | Required | Default | Description |
 | -------------- | -------- | ------- | ----------- |
 | `module.path`  | Yes      | -       | Canonical module path |
+| `build.target-dir` | No   | `artifact` | Module-relative root for GoML build artifacts |
 | `dependencies` | No       | `{}`    | Third-party modules keyed by canonical path with minimum version `X.Y.Z` |
 
 ### Project Discovery
@@ -238,9 +242,9 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 ### Build, Check, And LSP Behavior
 - `goml check`, `goml build`, compiler queries, and LSP requests all resolve and typecheck third-party dependencies
 - Third-party source files remain in the registry cache under `~/.goml/cache/registry`
-- Project outputs continue to be written under the current project's `target/goml`
-- Local artifacts are materialized under `target/goml/{check|build}/pkg/<canonical-package-path>/package.*`.
-- External dependency artifacts are materialized under `target/goml/{check|build}/deps/<owner>/<module>/<version>/pkg/<canonical-package-path>/package.*`.
+- Project outputs are written under `[build].target-dir`, which defaults to `artifact` and can be overridden with `--target-dir`.
+- Local artifacts are materialized under `<target-dir>/{check|build}/pkg/<canonical-package-path>/package.*`.
+- External dependency artifacts are materialized under `<target-dir>/{check|build}/deps/<owner>/<module>/<version>/pkg/<canonical-package-path>/package.*`.
 - Interfaces and dependency environments expose only public top-level API; current-package codegen still uses the package's full internal environment so private helpers compile normally.
 - Go-to-definition, hover, completion, and other query features can resolve into cached third-party source files
 

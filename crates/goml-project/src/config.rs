@@ -4,15 +4,33 @@ use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
 
+pub const DEFAULT_TARGET_DIR: &str = "artifact";
+
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct ModuleConfig {
     pub path: String,
 }
 
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct BuildConfig {
+    #[serde(default = "default_target_dir", rename = "target-dir")]
+    pub target_dir: PathBuf,
+}
+
+impl Default for BuildConfig {
+    fn default() -> Self {
+        Self {
+            target_dir: default_target_dir(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ModuleManifest {
     pub module: ModuleConfig,
+    pub build: BuildConfig,
     pub dependencies: BTreeMap<String, String>,
 }
 
@@ -20,6 +38,8 @@ pub struct ModuleManifest {
 #[serde(deny_unknown_fields)]
 struct RawModuleManifest {
     module: ModuleConfig,
+    #[serde(default)]
+    build: BuildConfig,
     #[serde(default)]
     dependencies: BTreeMap<String, String>,
 }
@@ -42,14 +62,45 @@ pub fn load_module_manifest(path: &Path) -> Result<ModuleManifest, String> {
     let manifest: RawModuleManifest = toml::from_str(&content)
         .map_err(|err| format!("failed to parse {}: {}", path.display(), err))?;
     validate_module_path(&manifest.module.path)?;
+    validate_manifest_target_dir(&manifest.build.target_dir)?;
     for (path, version) in manifest.dependencies.iter() {
         crate::registry::ModuleCoord::parse(path)?;
         crate::registry::SemVer::parse(version)?;
     }
     Ok(ModuleManifest {
         module: manifest.module,
+        build: manifest.build,
         dependencies: manifest.dependencies,
     })
+}
+
+fn default_target_dir() -> PathBuf {
+    PathBuf::from(DEFAULT_TARGET_DIR)
+}
+
+pub fn validate_manifest_target_dir(path: &Path) -> Result<(), String> {
+    if path.as_os_str().is_empty() {
+        return Err("build target-dir must not be empty".to_string());
+    }
+    if path.is_absolute() {
+        return Err("build target-dir must be relative to the module root".to_string());
+    }
+    let mut has_segment = false;
+    for component in path.components() {
+        match component {
+            std::path::Component::Normal(_) => has_segment = true,
+            std::path::Component::CurDir => {}
+            std::path::Component::ParentDir
+            | std::path::Component::RootDir
+            | std::path::Component::Prefix(_) => {
+                return Err("build target-dir must not escape the module root".to_string());
+            }
+        }
+    }
+    if !has_segment {
+        return Err("build target-dir must not be the module root".to_string());
+    }
+    Ok(())
 }
 
 pub fn find_module_root(start_dir: &Path) -> Result<Option<(PathBuf, ModuleConfig)>, String> {
@@ -196,10 +247,55 @@ path = "acme::hello"
         .unwrap();
         let manifest = load_module_manifest(&path).unwrap();
         assert_eq!(manifest.module.path, "acme::hello");
+        assert_eq!(manifest.build.target_dir, PathBuf::from("artifact"));
         assert_eq!(
             manifest.dependencies.get("alice::http"),
             Some(&"1.2.3".to_string())
         );
+    }
+
+    #[test]
+    fn parses_custom_target_directory() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("goml.toml");
+        std::fs::write(
+            &path,
+            r#"[module]
+path = "acme::hello"
+
+[build]
+target-dir = "out/generated"
+"#,
+        )
+        .unwrap();
+        let manifest = load_module_manifest(&path).unwrap();
+        assert_eq!(manifest.build.target_dir, PathBuf::from("out/generated"));
+    }
+
+    #[test]
+    fn rejects_unsafe_target_directories() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("goml.toml");
+        for target_dir in ["", ".", "../out"] {
+            std::fs::write(
+                &path,
+                format!(
+                    "[module]\npath = \"acme::hello\"\n\n[build]\ntarget-dir = {target_dir:?}\n"
+                ),
+            )
+            .unwrap();
+            assert!(load_module_manifest(&path).is_err(), "{target_dir}");
+        }
+        let absolute = dir.path().join("out");
+        std::fs::write(
+            &path,
+            format!(
+                "[module]\npath = \"acme::hello\"\n\n[build]\ntarget-dir = {:?}\n",
+                absolute.to_string_lossy()
+            ),
+        )
+        .unwrap();
+        assert!(load_module_manifest(&path).is_err());
     }
 
     #[test]
