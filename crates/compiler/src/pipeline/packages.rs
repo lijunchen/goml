@@ -33,7 +33,19 @@ pub struct PackageGraph {
     pub external_root_packages: HashSet<String>,
 }
 
-fn read_gom_sources(dir: &Path) -> Result<Vec<PathBuf>, CompilationError> {
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AnalysisMode {
+    Normal,
+    InternalTest,
+    ExternalTest,
+}
+
+pub type SourceOverrides = HashMap<PathBuf, Result<ast::File, CompilationError>>;
+
+fn read_gom_sources(
+    dir: &Path,
+    include_internal_tests: bool,
+) -> Result<Vec<PathBuf>, CompilationError> {
     let mut files = Vec::new();
     let entries = fs::read_dir(dir).map_err(|err| {
         compile_error(format!(
@@ -51,7 +63,10 @@ fn read_gom_sources(dir: &Path) -> Result<Vec<PathBuf>, CompilationError> {
             ))
         })?;
         let path = entry.path();
-        if path.is_file() && path.extension().is_some_and(|ext| ext == "gom") {
+        if path.is_file()
+            && path.extension().is_some_and(|ext| ext == "gom")
+            && (include_internal_tests || !is_test_source(&path))
+        {
             files.push(path);
         }
     }
@@ -59,11 +74,27 @@ fn read_gom_sources(dir: &Path) -> Result<Vec<PathBuf>, CompilationError> {
     Ok(files)
 }
 
-fn source_override_for_dir<'a>(
+fn is_test_source(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| name.ends_with("_test.gom"))
+}
+
+fn source_overrides_for_dir<'a>(
     package_dir: &Path,
-    source_override: Option<(&'a Path, &'a ast::File)>,
-) -> Option<(&'a Path, &'a ast::File)> {
-    source_override.filter(|(path, _)| normalized_parent(path) == package_dir)
+    source_overrides: &'a SourceOverrides,
+    include_internal_tests: bool,
+) -> Vec<(&'a Path, &'a Result<ast::File, CompilationError>)> {
+    let mut overrides = source_overrides
+        .iter()
+        .filter(|(path, _)| {
+            normalized_parent(path) == package_dir
+                && (include_internal_tests || !is_test_source(path))
+        })
+        .map(|(path, ast)| (path.as_path(), ast))
+        .collect::<Vec<_>>();
+    overrides.sort_by(|left, right| left.0.cmp(right.0));
+    overrides
 }
 
 fn normalized_parent(path: &Path) -> &Path {
@@ -128,6 +159,16 @@ fn package_use_candidate(
     let Some((module_path, module_dir)) = module else {
         return Ok(None);
     };
+    if import_path
+        .strip_prefix(module_path)
+        .and_then(|suffix| suffix.strip_prefix("::"))
+        .is_some_and(|suffix| suffix.split("::").any(|segment| segment == "tests"))
+    {
+        return Err(compile_error(format!(
+            "test-only package {} cannot be imported",
+            import_path
+        )));
+    }
     let Some(package_dir) = local_package_dir(module_path, module_dir, import_path) else {
         return Ok(None);
     };
@@ -140,7 +181,7 @@ fn package_use_candidate(
                 exists: false,
             }));
     }
-    let Some(path) = read_gom_sources(&package_dir)?.into_iter().next() else {
+    let Some(path) = read_gom_sources(&package_dir, false)?.into_iter().next() else {
         return Ok(import_path
             .rsplit("::")
             .next()
@@ -225,17 +266,19 @@ fn set_package_identity(ast: &mut ast::File, import_path: &str) {
 fn load_package(
     package_dir: &Path,
     import_path: &str,
-    source_override: Option<(&Path, &ast::File)>,
+    source_overrides: &SourceOverrides,
+    include_internal_tests: bool,
     allow_implicit_package: bool,
 ) -> Result<PackageUnit, CompilationError> {
-    let source_override = source_override_for_dir(package_dir, source_override);
-    let mut paths = read_gom_sources(package_dir)?;
-    if let Some((override_path, _)) = source_override
-        && !paths.iter().any(|path| path == override_path)
-    {
-        paths.push(override_path.to_path_buf());
-        paths.sort();
+    let source_overrides =
+        source_overrides_for_dir(package_dir, source_overrides, include_internal_tests);
+    let mut paths = read_gom_sources(package_dir, include_internal_tests)?;
+    for (override_path, _) in &source_overrides {
+        if !paths.iter().any(|path| path == override_path) {
+            paths.push((*override_path).to_path_buf());
+        }
     }
+    paths.sort();
     if paths.is_empty() {
         return Err(compile_error(format!(
             "package directory {} has no .gom files",
@@ -246,10 +289,11 @@ fn load_package(
     let mut files = Vec::new();
     let mut declared_name = None::<String>;
     for path in paths {
-        let mut parsed = if let Some((override_path, override_ast)) = source_override
-            && path == override_path
+        let mut parsed = if let Some((_, override_ast)) = source_overrides
+            .iter()
+            .find(|(override_path, _)| path == *override_path)
         {
-            override_ast.clone()
+            (*override_ast).clone()?
         } else {
             let src = fs::read_to_string(&path).map_err(|err| {
                 compile_error(format!("failed to read {}: {}", path.display(), err))
@@ -353,11 +397,18 @@ fn discover_module_packages(
     module_dir: &Path,
     module_path: &str,
     target_dir: &Path,
-    source_override: Option<(&Path, &ast::File)>,
+    source_overrides: &SourceOverrides,
+    mode: AnalysisMode,
     external_imports: &ExternalImports,
 ) -> Result<PackageGraph, CompilationError> {
     let entry_package = package_import_path(module_path, module_dir, target_dir)?;
-    let mut entry = load_package(target_dir, &entry_package, source_override, false)?;
+    let mut entry = load_package(
+        target_dir,
+        &entry_package,
+        source_overrides,
+        !matches!(mode, AnalysisMode::Normal),
+        false,
+    )?;
     entry.imports = collect_imports(
         &entry.files,
         Some((module_path, module_dir)),
@@ -386,7 +437,8 @@ fn discover_module_packages(
                     package_dir.display()
                 )));
             }
-            let mut package = load_package(&package_dir, &import_path, source_override, false)?;
+            let mut package =
+                load_package(&package_dir, &import_path, source_overrides, false, false)?;
             package.imports = collect_imports(
                 &package.files,
                 Some((module_path, module_dir)),
@@ -433,7 +485,8 @@ fn discover_single_file_packages(
     let mut entry = load_package(
         normalized_parent(entry_path),
         ROOT_PACKAGE,
-        Some((entry_path, &entry_ast)),
+        &HashMap::from([(entry_path.to_path_buf(), Ok(entry_ast))]),
+        false,
         true,
     )?;
     entry.imports = collect_imports(&entry.files, None, external_imports)?;
@@ -504,17 +557,58 @@ pub fn discover_packages_with_external_imports(
     entry_ast: Option<ast::File>,
     external_imports: &ExternalImports,
 ) -> Result<PackageGraph, CompilationError> {
+    let mut source_overrides = HashMap::new();
+    if let Some((path, ast)) = entry_path.zip(entry_ast) {
+        source_overrides.insert(path.to_path_buf(), Ok(ast));
+    }
+    let mode = entry_path
+        .map(|path| analysis_mode_for_path(root_dir, path))
+        .transpose()?
+        .unwrap_or(AnalysisMode::Normal);
+    discover_packages_with_overrides_and_external_imports(
+        root_dir,
+        entry_path,
+        &source_overrides,
+        mode,
+        external_imports,
+    )
+}
+
+pub fn discover_packages_with_overrides_and_external_imports(
+    root_dir: &Path,
+    entry_path: Option<&Path>,
+    source_overrides: &SourceOverrides,
+    mode: AnalysisMode,
+    external_imports: &ExternalImports,
+) -> Result<PackageGraph, CompilationError> {
     let manifest = load_module_manifest(&root_dir.join("goml.toml")).map_err(compile_error)?;
     validate_project_module_path(&manifest.module.path).map_err(compile_error)?;
     let target_dir = entry_path.map(normalized_parent).unwrap_or(root_dir);
-    let source_override = entry_path.zip(entry_ast.as_ref());
     discover_module_packages(
         root_dir,
         &manifest.module.path,
         target_dir,
-        source_override,
+        source_overrides,
+        mode,
         external_imports,
     )
+}
+
+pub fn analysis_mode_for_path(
+    root_dir: &Path,
+    path: &Path,
+) -> Result<AnalysisMode, CompilationError> {
+    match goml_project::package_graph::classify_project_path(root_dir, path)
+        .map_err(compile_error)?
+    {
+        goml_project::package_graph::ProjectPathRole::Production => Ok(AnalysisMode::Normal),
+        goml_project::package_graph::ProjectPathRole::InternalTest => {
+            Ok(AnalysisMode::InternalTest)
+        }
+        goml_project::package_graph::ProjectPathRole::ExternalTest { .. } => {
+            Ok(AnalysisMode::ExternalTest)
+        }
+    }
 }
 
 pub fn discover_packages_single_file_with_external_imports(
@@ -555,7 +649,7 @@ fn discover_all_module_packages(
     let mut declared_package_names = HashMap::new();
     for dir in dirs {
         let import_path = package_import_path(module_path, module_dir, &dir)?;
-        let mut package = load_package(&dir, &import_path, None, false)?;
+        let mut package = load_package(&dir, &import_path, &HashMap::new(), false, false)?;
         package.imports = collect_imports(
             &package.files,
             Some((module_path, module_dir)),
@@ -634,7 +728,10 @@ fn collect_package_dirs(
             ))
         })?;
         let path = entry.path();
-        if path.is_file() && path.extension().is_some_and(|extension| extension == "gom") {
+        if path.is_file()
+            && path.extension().is_some_and(|extension| extension == "gom")
+            && !is_test_source(&path)
+        {
             has_source = true;
             continue;
         }
@@ -643,7 +740,7 @@ fn collect_package_dirs(
         }
         let name = entry.file_name();
         let name = name.to_string_lossy();
-        if name.starts_with('.') || name == "target" {
+        if name.starts_with('.') || name == "target" || name == "tests" {
             continue;
         }
         children.push(path);

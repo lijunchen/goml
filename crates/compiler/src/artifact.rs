@@ -9,7 +9,7 @@ use crate::hir::SourceFileAst;
 use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package};
 use crate::tast::TastIdent;
 
-pub const FORMAT_VERSION: u32 = 10;
+pub const FORMAT_VERSION: u32 = 11;
 pub const COMPILER_ABI: u32 = 2;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -370,6 +370,19 @@ impl InterfaceUnit {
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct TestDescriptor {
+    pub id: String,
+    pub package: String,
+    pub symbol: String,
+    pub display_name: String,
+    pub source_path: String,
+    pub start: u32,
+    pub end: u32,
+    pub ignored: bool,
+    pub ignore_reason: Option<String>,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct CoreUnit {
     pub format_version: u32,
     pub compiler_abi: u32,
@@ -379,6 +392,8 @@ pub struct CoreUnit {
     pub core_ir: crate::core::File,
     pub deps: BTreeMap<String, String>,
     pub sources: Vec<String>,
+    #[serde(default)]
+    pub tests: Vec<TestDescriptor>,
 }
 
 impl CoreUnit {
@@ -398,15 +413,27 @@ impl CoreUnit {
             core_ir,
             deps,
             sources: Vec::new(),
+            tests: Vec::new(),
         }
     }
 
     pub fn validate(&self) -> bool {
+        let mut test_ids = HashSet::new();
         self.format_version == FORMAT_VERSION
             && self.compiler_abi == COMPILER_ABI
             && crate::config::validate_module_path(&self.package).is_ok()
             && self.package == self.interface.package
             && self.interface.validate()
             && self.deps == self.interface.deps
+            && self.tests.iter().all(|test| {
+                test.package == self.package
+                    && !test.id.is_empty()
+                    && !test.symbol.is_empty()
+                    && !test.display_name.is_empty()
+                    && !test.source_path.is_empty()
+                    && test.start <= test.end
+                    && (test.ignored || test.ignore_reason.is_none())
+                    && test_ids.insert(test.id.as_str())
+            })
     }
 }

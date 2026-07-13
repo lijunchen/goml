@@ -2,7 +2,7 @@ use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use crate::artifact::{CoreUnit, InterfaceUnit, PackageExports};
+use crate::artifact::{CoreUnit, InterfaceUnit, PackageExports, TestDescriptor};
 use crate::builtins;
 use crate::env::{Gensym, GlobalTypeEnv};
 use crate::go::{self, compile::GlobalGoEnv, goast};
@@ -17,6 +17,7 @@ use crate::package_names::{
 use crate::pipeline::pipeline::{CompilationError, parse_ast_file, report_duplicate_trait_impls};
 use crate::pipeline::{compile_error, with_compiler_stack};
 use crate::stdlib;
+use crate::testing::{TestCandidate, collect_test_candidates, validate_test_candidates};
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use serde::Deserialize;
 
@@ -38,6 +39,12 @@ pub struct LinkOutput {
     pub liftenv: GlobalLiftEnv,
     pub anf: crate::anf::File,
     pub anfenv: crate::anf::GlobalAnfEnv,
+}
+
+#[derive(Debug)]
+pub struct TestLinkOutput {
+    pub link: LinkOutput,
+    pub tests: Vec<TestDescriptor>,
 }
 
 fn validate_interface_unit(path: &Path, unit: &InterfaceUnit) -> Result<(), CompilationError> {
@@ -315,11 +322,19 @@ fn read_source_files(
         files.push(hir::SourceFileAst::new(path, ast));
     }
 
+    let (test_candidates, attribute_diagnostics) = collect_test_candidates(&files);
+    if attribute_diagnostics.has_errors() {
+        return Err(CompilationError::Lower {
+            diagnostics: attribute_diagnostics,
+        });
+    }
+
     Ok((
         files,
         imports,
         source_list,
         declared_name.unwrap_or_else(|| package.rsplit("::").next().unwrap_or(package).to_string()),
+        test_candidates,
     ))
 }
 
@@ -328,6 +343,7 @@ type ReadSourceFilesResult = (
     HashSet<String>,
     Vec<String>,
     String,
+    Vec<TestCandidate>,
 );
 
 fn typecheck_single_package(
@@ -398,9 +414,20 @@ pub(crate) fn validate_entrypoint_scheme(
 }
 
 pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationError> {
+    check_package_inner(opts, true)
+}
+
+pub fn check_test_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationError> {
+    check_package_inner(opts, false)
+}
+
+fn check_package_inner(
+    opts: PackageInputs,
+    validate_entrypoint: bool,
+) -> Result<InterfaceUnit, CompilationError> {
     with_compiler_stack(|| {
         let interface_units = load_interface_files(&opts.interface_files)?;
-        let (files, imports, _sources, declared_name) =
+        let (files, imports, _sources, declared_name, test_candidates) =
             read_source_files(&opts.package, &opts.input_files, &interface_units)?;
 
         let direct_dependencies = imports.into_iter().collect::<BTreeSet<_>>();
@@ -439,8 +466,14 @@ pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationEr
                 deps_envs,
             );
         drop(tast);
+        drop(validate_test_candidates(
+            &opts.package,
+            test_candidates,
+            &full_exports,
+            &mut diagnostics,
+        ));
 
-        if declared_name == ROOT_PACKAGE {
+        if validate_entrypoint && declared_name == ROOT_PACKAGE {
             validate_entrypoint_scheme(&opts.package, &full_exports, &mut diagnostics);
         }
 
@@ -455,9 +488,21 @@ pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationEr
 }
 
 pub fn build_package(opts: PackageInputs) -> Result<CoreUnit, CompilationError> {
+    build_package_inner(opts, true, false)
+}
+
+pub fn build_test_package(opts: PackageInputs) -> Result<CoreUnit, CompilationError> {
+    build_package_inner(opts, false, true)
+}
+
+fn build_package_inner(
+    opts: PackageInputs,
+    validate_entrypoint: bool,
+    emit_tests: bool,
+) -> Result<CoreUnit, CompilationError> {
     with_compiler_stack(|| {
         let interface_units = load_interface_files(&opts.interface_files)?;
-        let (files, imports, sources, declared_name) =
+        let (files, imports, sources, declared_name, test_candidates) =
             read_source_files(&opts.package, &opts.input_files, &interface_units)?;
 
         let direct_dependencies = imports.into_iter().collect::<BTreeSet<_>>();
@@ -497,7 +542,13 @@ pub fn build_package(opts: PackageInputs) -> Result<CoreUnit, CompilationError> 
                 &deps_interfaces,
                 deps_envs,
             );
-        if declared_name == ROOT_PACKAGE {
+        let tests = validate_test_candidates(
+            &opts.package,
+            test_candidates,
+            &full_exports,
+            &mut diagnostics,
+        );
+        if validate_entrypoint && declared_name == ROOT_PACKAGE {
             validate_entrypoint_scheme(&opts.package, &full_exports, &mut diagnostics);
         }
         if diagnostics.has_errors() {
@@ -524,6 +575,9 @@ pub fn build_package(opts: PackageInputs) -> Result<CoreUnit, CompilationError> 
 
         let mut unit = CoreUnit::new(opts.package.clone(), interface, full_exports, core_ir);
         unit.sources = sources;
+        if emit_tests {
+            unit.tests = tests;
+        }
 
         Ok(unit)
     })
@@ -551,6 +605,31 @@ pub fn link_cores(
     entry_package: &str,
     cores: Vec<CoreUnit>,
 ) -> Result<LinkOutput, CompilationError> {
+    Ok(link_cores_inner(entry_package, cores, None)?.link)
+}
+
+pub fn link_test_cores(
+    package: &str,
+    cores: Vec<CoreUnit>,
+) -> Result<TestLinkOutput, CompilationError> {
+    link_test_cores_multi(&[package.to_string()], cores)
+}
+
+pub fn link_test_cores_multi(
+    packages: &[String],
+    cores: Vec<CoreUnit>,
+) -> Result<TestLinkOutput, CompilationError> {
+    let Some(entry_package) = packages.first() else {
+        return Err(compile_error("no test packages provided".to_string()));
+    };
+    link_cores_inner(entry_package, cores, Some(packages))
+}
+
+fn link_cores_inner(
+    entry_package: &str,
+    cores: Vec<CoreUnit>,
+    test_packages: Option<&[String]>,
+) -> Result<TestLinkOutput, CompilationError> {
     with_compiler_stack(|| {
         if cores.is_empty() {
             return Err(compile_error("no core inputs provided".to_string()));
@@ -567,56 +646,73 @@ pub fn link_cores(
             by_name.insert(core.package.clone(), core);
         }
 
-        if !by_name.contains_key(entry_package) {
-            return Err(compile_error(format!(
-                "missing entry package core for {}",
-                entry_package
-            )));
+        let roots = test_packages
+            .map(|packages| packages.to_vec())
+            .unwrap_or_else(|| vec![entry_package.to_string()]);
+        for root in &roots {
+            if !by_name.contains_key(root) {
+                return Err(compile_error(format!(
+                    "missing entry package core for {}",
+                    root
+                )));
+            }
         }
-        let reachable = reachable_core_packages(entry_package, &by_name)?;
+        let reachable = reachable_core_packages(&roots, &by_name)?;
         by_name.retain(|package, _| reachable.contains(package));
 
-        let Some((main_package, main)) = by_name.get_key_value(entry_package) else {
-            return Err(compile_error(format!(
-                "missing entry package core for {}",
-                entry_package
-            )));
-        };
-        if !main.interface.interface.name.is_empty()
-            && main.interface.interface.name != ROOT_PACKAGE
-        {
-            return Err(compile_error(format!(
-                "entry package {} declares package {}, expected main",
-                entry_package, main.interface.interface.name
-            )));
-        }
-        let entry_name = if is_special_unqualified_package(entry_package) {
-            ENTRY_FUNCTION.to_string()
+        let (entry, tests) = if let Some(test_packages) = test_packages {
+            let mut tests = Vec::new();
+            for package in test_packages {
+                let unit = by_name.get(package).ok_or_else(|| {
+                    compile_error(format!("missing test package core for {}", package))
+                })?;
+                tests.extend(unit.tests.clone());
+            }
+            (None, tests)
         } else {
-            format!("{entry_package}::{ENTRY_FUNCTION}")
+            let Some((main_package, main)) = by_name.get_key_value(entry_package) else {
+                return Err(compile_error(format!(
+                    "missing entry package core for {}",
+                    entry_package
+                )));
+            };
+            if !main.interface.interface.name.is_empty()
+                && main.interface.interface.name != ROOT_PACKAGE
+            {
+                return Err(compile_error(format!(
+                    "entry package {} declares package {}, expected main",
+                    entry_package, main.interface.interface.name
+                )));
+            }
+            let entry_name = if is_special_unqualified_package(entry_package) {
+                ENTRY_FUNCTION.to_string()
+            } else {
+                format!("{entry_package}::{ENTRY_FUNCTION}")
+            };
+            let Some(entry_fn) = main
+                .core_ir
+                .toplevels
+                .iter()
+                .find(|function| function.name == entry_name)
+                .cloned()
+            else {
+                return Err(compile_error(format!(
+                    "{} package missing main function",
+                    main_package
+                )));
+            };
+            if !entry_fn.params.is_empty() {
+                return Err(compile_error(
+                    "main function must not have parameters".to_string(),
+                ));
+            }
+            if !entry_fn.generics.is_empty() {
+                return Err(compile_error(
+                    "main function must not have type parameters".to_string(),
+                ));
+            }
+            (Some((entry_name, entry_fn)), Vec::new())
         };
-        let Some(entry_fn) = main
-            .core_ir
-            .toplevels
-            .iter()
-            .find(|function| function.name == entry_name)
-            .cloned()
-        else {
-            return Err(compile_error(format!(
-                "{} package missing main function",
-                main_package
-            )));
-        };
-        if !entry_fn.params.is_empty() {
-            return Err(compile_error(
-                "main function must not have parameters".to_string(),
-            ));
-        }
-        if !entry_fn.generics.is_empty() {
-            return Err(compile_error(
-                "main function must not have type parameters".to_string(),
-            ));
-        }
 
         let builtin_hash = builtins::builtin_interface_hash();
         let requested_std_packages = by_name
@@ -731,36 +827,46 @@ pub fn link_cores(
                 .ok_or_else(|| compile_error(format!("missing core for package {}", pkg)))?;
             linked.toplevels.extend(unit.core_ir.toplevels.clone());
         }
-        if entry_name != ENTRY_FUNCTION {
-            linked.toplevels.push(package_entry_wrapper(&entry_fn));
+        if let Some((entry_name, entry_fn)) = &entry
+            && entry_name != ENTRY_FUNCTION
+        {
+            linked.toplevels.push(package_entry_wrapper(entry_fn));
         }
 
         let (mono, monoenv) = mono::mono(genv.clone(), linked.clone()).map_err(compile_error)?;
         let (lifted, liftenv) = lift::lambda_lift(monoenv.clone(), &gensym, mono.clone());
         let (anf, anfenv) = crate::anf::anf_file(liftenv.clone(), &gensym, lifted.clone());
-        let (go, goenv) = go::compile::go_file(anfenv.clone(), &gensym, anf.clone());
+        let (go, goenv) = if test_packages.is_some() {
+            go::compile::go_test_file(anfenv.clone(), &gensym, anf.clone(), &tests)
+                .map_err(compile_error)?
+        } else {
+            go::compile::go_file(anfenv.clone(), &gensym, anf.clone())
+        };
 
-        Ok(LinkOutput {
-            go,
-            goenv,
-            core: linked,
-            genv,
-            mono,
-            monoenv,
-            lifted,
-            liftenv,
-            anf,
-            anfenv,
+        Ok(TestLinkOutput {
+            link: LinkOutput {
+                go,
+                goenv,
+                core: linked,
+                genv,
+                mono,
+                monoenv,
+                lifted,
+                liftenv,
+                anf,
+                anfenv,
+            },
+            tests,
         })
     })
 }
 
 fn reachable_core_packages(
-    entry_package: &str,
+    entry_packages: &[String],
     cores: &HashMap<String, CoreUnit>,
 ) -> Result<HashSet<String>, CompilationError> {
     let mut reachable = HashSet::new();
-    let mut pending = vec![entry_package.to_string()];
+    let mut pending = entry_packages.to_vec();
     while let Some(package) = pending.pop() {
         if !reachable.insert(package.clone()) {
             continue;

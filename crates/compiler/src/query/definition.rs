@@ -1,4 +1,7 @@
-use std::path::Path;
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+};
 
 use cst::cst::CstNode;
 use parser::syntax::{MySyntaxKind, MySyntaxToken};
@@ -13,10 +16,11 @@ use super::{
         HirResultsIndex, expr_ids_from_token, local_def_range_from_pats, pat_ids_from_token,
     },
     symbol_index::{
-        ProjectSymbolIndex, SymbolLookup, build_symbol_lookup, lookup_symbol_locations_for_path,
+        ProjectSymbolIndex, SymbolLookup, build_symbol_lookup_with_overrides,
+        lookup_symbol_locations_for_path,
     },
     syntax::{path_segments_from_token, token_segment_index, use_decl_from_token},
-    typecheck::typecheck_for_query,
+    typecheck::typecheck_for_query_with_overrides,
 };
 
 pub fn goto_definition(
@@ -25,8 +29,19 @@ pub fn goto_definition(
     line: u32,
     col: u32,
 ) -> Result<text_size::TextRange, String> {
+    goto_definition_with_overrides(path, src, line, col, &HashMap::new())
+}
+
+pub fn goto_definition_with_overrides(
+    path: &Path,
+    src: &str,
+    line: u32,
+    col: u32,
+    source_overrides: &HashMap<PathBuf, String>,
+) -> Result<text_size::TextRange, String> {
     crate::pipeline::with_compiler_stack(|| {
-        let locations = goto_definition_locations(path, src, line, col)?;
+        let locations =
+            goto_definition_locations_with_overrides(path, src, line, col, source_overrides)?;
         let mut same_file = locations
             .iter()
             .filter(|loc| loc.path == path)
@@ -44,6 +59,16 @@ pub fn goto_definition_locations(
     line: u32,
     col: u32,
 ) -> Result<Vec<DefinitionLocation>, String> {
+    goto_definition_locations_with_overrides(path, src, line, col, &HashMap::new())
+}
+
+pub fn goto_definition_locations_with_overrides(
+    path: &Path,
+    src: &str,
+    line: u32,
+    col: u32,
+    source_overrides: &HashMap<PathBuf, String>,
+) -> Result<Vec<DefinitionLocation>, String> {
     crate::pipeline::with_compiler_stack(|| {
         let context = QueryContext::from_position(path, src, line, col)?;
         let token = context
@@ -54,13 +79,15 @@ pub fn goto_definition_locations(
             return Ok(vec![location]);
         }
 
-        let symbol_lookup = build_symbol_lookup(path, src);
+        let symbol_lookup = build_symbol_lookup_with_overrides(path, src, source_overrides);
 
         if let Some(locations) = resolve_use_decl(&token, &symbol_lookup) {
             return Ok(locations);
         }
 
-        if let Some(locations) = resolve_semantic_definition(path, src, &token, &symbol_lookup) {
+        if let Some(locations) =
+            resolve_semantic_definition(path, src, &token, &symbol_lookup, source_overrides)
+        {
             return Ok(locations);
         }
 
@@ -131,8 +158,10 @@ fn resolve_semantic_definition(
     src: &str,
     token: &MySyntaxToken,
     symbols: &SymbolLookup,
+    source_overrides: &HashMap<PathBuf, String>,
 ) -> Option<Vec<DefinitionLocation>> {
-    let (hir_table, results, _genv, _diagnostics) = typecheck_for_query(path, src).ok()?;
+    let (hir_table, results, _genv, _diagnostics) =
+        typecheck_for_query_with_overrides(path, src, source_overrides).ok()?;
     let index = HirResultsIndex::new(&hir_table);
 
     let expr_ids = expr_ids_from_token(token, &index);

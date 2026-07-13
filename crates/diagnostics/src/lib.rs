@@ -1,4 +1,6 @@
 use std::borrow::Cow;
+use std::fmt;
+use std::path::{Path, PathBuf};
 
 use text_size::TextRange;
 
@@ -29,12 +31,25 @@ impl Stage {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Diagnostic {
     stage: Stage,
     severity: Severity,
     message: String,
     range: Option<TextRange>,
+    source: Option<PathBuf>,
+}
+
+impl fmt::Debug for Diagnostic {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("Diagnostic")
+            .field("stage", &self.stage)
+            .field("severity", &self.severity)
+            .field("message", &self.message)
+            .field("range", &self.range)
+            .finish()
+    }
 }
 
 impl Diagnostic {
@@ -44,6 +59,7 @@ impl Diagnostic {
             severity,
             message: message.into(),
             range: None,
+            source: None,
         }
     }
 
@@ -67,28 +83,72 @@ impl Diagnostic {
     pub fn range(&self) -> Option<TextRange> {
         self.range
     }
+
+    pub fn with_source(mut self, source: impl Into<PathBuf>) -> Self {
+        self.source = Some(source.into());
+        self
+    }
+
+    pub fn source(&self) -> Option<&Path> {
+        self.source.as_deref()
+    }
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Default, Clone)]
 pub struct Diagnostics {
     items: Vec<Diagnostic>,
+    source: Option<PathBuf>,
+}
+
+impl fmt::Debug for Diagnostics {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("Diagnostics")
+            .field("items", &self.items)
+            .finish()
+    }
 }
 
 impl Diagnostics {
     pub fn new() -> Self {
-        Self { items: Vec::new() }
+        Self {
+            items: Vec::new(),
+            source: None,
+        }
     }
 
-    pub fn push(&mut self, diagnostic: Diagnostic) {
+    pub fn push(&mut self, mut diagnostic: Diagnostic) {
+        if diagnostic.source.is_none() {
+            diagnostic.source.clone_from(&self.source);
+        }
         self.items.push(diagnostic);
     }
 
     pub fn extend(&mut self, diagnostics: impl IntoIterator<Item = Diagnostic>) {
-        self.items.extend(diagnostics);
+        for diagnostic in diagnostics {
+            self.push(diagnostic);
+        }
     }
 
     pub fn append(&mut self, other: &mut Diagnostics) {
         self.items.append(&mut other.items);
+    }
+
+    pub fn set_source(&mut self, source: impl Into<PathBuf>) {
+        self.source = Some(source.into());
+    }
+
+    pub fn clear_source(&mut self) {
+        self.source = None;
+    }
+
+    pub fn set_source_for_missing(&mut self, source: impl Into<PathBuf>) {
+        let source = source.into();
+        for diagnostic in &mut self.items {
+            if diagnostic.source.is_none() {
+                diagnostic.source = Some(source.clone());
+            }
+        }
     }
 
     pub fn iter(&self) -> impl Iterator<Item = &Diagnostic> {

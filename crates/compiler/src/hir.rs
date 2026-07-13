@@ -403,6 +403,7 @@ pub struct HirTable {
     def_interner: HashMap<DefKey, DefId>,
     def_data: Vec<Def>,
     def_paths: Vec<Path>,
+    def_sources: Vec<Option<PathBuf>>,
     local_interner: HashMap<LocalKey, LocalId>,
     local_info: Vec<LocalInfo>,
     local_counter: u32,
@@ -413,6 +414,7 @@ pub struct HirTable {
     dummy_expr: ExprId,
     dummy_pat: PatId,
     current_owner: Option<DefId>,
+    current_source: Option<PathBuf>,
 }
 
 #[derive(Debug, Clone)]
@@ -439,6 +441,7 @@ impl HirTable {
             def_interner: HashMap::new(),
             def_data: Vec::new(),
             def_paths: Vec::new(),
+            def_sources: Vec::new(),
             local_interner: HashMap::new(),
             local_info: Vec::new(),
             local_counter: 0,
@@ -449,6 +452,7 @@ impl HirTable {
             dummy_expr,
             dummy_pat,
             current_owner: None,
+            current_source: None,
         }
     }
 
@@ -478,6 +482,10 @@ impl HirTable {
 
     pub fn set_current_owner(&mut self, owner: DefId) {
         self.current_owner = Some(owner);
+    }
+
+    pub fn set_current_source(&mut self, source: PathBuf) {
+        self.current_source = Some(source);
     }
 
     fn fallback_owner(&self) -> DefId {
@@ -587,6 +595,7 @@ impl HirTable {
         self.def_interner.insert(key, id);
         self.def_data.push(def);
         self.def_paths.push(path);
+        self.def_sources.push(self.current_source.clone());
         id
     }
 
@@ -604,6 +613,7 @@ impl HirTable {
         self.def_interner.insert(key, id);
         self.def_data.push(def);
         self.def_paths.push(path);
+        self.def_sources.push(self.current_source.clone());
         id
     }
 
@@ -631,6 +641,13 @@ impl HirTable {
     pub fn def_path(&self, id: DefId) -> &Path {
         assert_eq!(id.pkg, self.package);
         &self.def_paths[id.idx as usize]
+    }
+
+    pub fn def_source(&self, id: DefId) -> Option<&std::path::Path> {
+        assert_eq!(id.pkg, self.package);
+        self.def_sources
+            .get(id.idx as usize)
+            .and_then(Option::as_deref)
     }
 
     pub fn alloc_expr(&mut self, expr: Expr) -> ExprId {

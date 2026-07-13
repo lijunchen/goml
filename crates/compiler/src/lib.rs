@@ -23,6 +23,7 @@ pub mod query;
 pub mod registry;
 pub mod stdlib;
 pub mod tast;
+pub mod testing;
 pub mod typer;
 
 #[cfg(test)]

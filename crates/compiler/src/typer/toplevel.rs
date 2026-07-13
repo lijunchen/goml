@@ -3004,9 +3004,33 @@ fn typecheck_package(
         .with_extern_capability(capability);
     let mut typer = Typer::new(hir_table);
     let mut diagnostics = Diagnostics::new();
+    let package_source = hir
+        .toplevels
+        .iter()
+        .filter_map(|item| typer.hir_table.def_source(*item))
+        .next()
+        .filter(|source| {
+            hir.toplevels
+                .iter()
+                .filter_map(|item| typer.hir_table.def_source(*item))
+                .all(|candidate| candidate == *source)
+        })
+        .map(std::path::Path::to_path_buf);
+    if let Some(source) = package_source {
+        diagnostics.set_source(source);
+    }
     collect_typedefs(&mut genv, &mut diagnostics, &hir, &typer.hir_table);
     let in_scope_traits = build_in_scope_traits(&genv, &hir, &mut diagnostics);
     for item in hir.toplevels.iter() {
+        if let Some(source) = typer
+            .hir_table
+            .def_source(*item)
+            .map(std::path::Path::to_path_buf)
+        {
+            diagnostics.set_source(source);
+        } else {
+            diagnostics.clear_source();
+        }
         match typer.hir_table.def(*item).clone() {
             hir::Def::ImplBlock(impl_block) => typecheck_impl_block(
                 &genv,
@@ -3024,6 +3048,7 @@ fn typecheck_package(
             | hir::Def::ExternFn(..) => {}
         }
     }
+    diagnostics.clear_source();
     let mut results = std::mem::replace(
         &mut typer.results,
         crate::typer::results::TypeckResultsBuilder::new(&typer.hir_table),

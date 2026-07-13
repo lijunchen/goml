@@ -1,4 +1,7 @@
-use std::{collections::HashMap, path::Path};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+};
 
 use cst::cst::CstNode;
 use parser::syntax::MySyntaxNode;
@@ -61,9 +64,30 @@ pub(crate) fn typecheck_single_file_for_query(
     ))
 }
 
-pub(crate) fn typecheck_for_query(path: &Path, src: &str) -> Result<QueryTypecheck, String> {
-    typecheck_single_file_for_query(path, src).or_else(|_| {
-        pipeline::pipeline::typecheck_with_packages_and_results(path, src)
-            .map_err(|e| format!("{:?}", e))
-    })
+pub(crate) fn typecheck_for_query_with_overrides(
+    path: &Path,
+    src: &str,
+    source_overrides: &HashMap<PathBuf, String>,
+) -> Result<QueryTypecheck, String> {
+    let package_dir = path.parent().unwrap_or_else(|| Path::new("."));
+    let in_project = crate::config::find_module_root(package_dir)
+        .map_err(|err| err.to_string())?
+        .is_some();
+    if in_project {
+        pipeline::pipeline::typecheck_with_packages_and_results_with_overrides(
+            path,
+            src,
+            source_overrides,
+        )
+        .map_err(|error| format!("{:?}", error))
+    } else {
+        typecheck_single_file_for_query(path, src).or_else(|_| {
+            pipeline::pipeline::typecheck_with_packages_and_results_with_overrides(
+                path,
+                src,
+                source_overrides,
+            )
+            .map_err(|error| format!("{:?}", error))
+        })
+    }
 }

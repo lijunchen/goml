@@ -1,7 +1,7 @@
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap, HashSet},
     fs,
-    path::Path,
+    path::{Path, PathBuf},
 };
 
 use cst::cst::CstNode;
@@ -16,12 +16,12 @@ use super::{
     ValueCompletionItem, ValueCompletionKind,
     hir_index::{ClosureParamIndex, HirResultsIndex},
     signature::{CallSignatureContext, call_signature_context_from_parts},
-    symbol_index::build_symbol_lookup,
+    symbol_index::{build_symbol_lookup, build_symbol_lookup_with_overrides},
     syntax::{
         ancestor_path_from_token, call_expr_and_active_parameter, ident_prefix_at_offset,
         token_at_offset_for_query, use_decl_from_token,
     },
-    typecheck::typecheck_for_query,
+    typecheck::typecheck_for_query_with_overrides,
 };
 
 const COMPLETION_PLACEHOLDER: &str = "completion_placeholder";
@@ -45,6 +45,16 @@ pub fn dot_completions(
     src: &str,
     line: u32,
     col: u32,
+) -> Option<Vec<DotCompletionItem>> {
+    dot_completions_with_overrides(path, src, line, col, &HashMap::new())
+}
+
+pub fn dot_completions_with_overrides(
+    path: &Path,
+    src: &str,
+    line: u32,
+    col: u32,
+    source_overrides: &HashMap<PathBuf, String>,
 ) -> Option<Vec<DotCompletionItem>> {
     crate::pipeline::with_compiler_stack(|| {
         let line_index = line_index::LineIndex::new(src);
@@ -106,7 +116,7 @@ pub fn dot_completions(
         let lhs_ptr = MySyntaxNodePtr::new(lhs_expr.syntax());
 
         let (hir_table, results, genv, _diagnostics) =
-            typecheck_for_query(path, &parse_src).ok()?;
+            typecheck_for_query_with_overrides(path, &parse_src, source_overrides).ok()?;
         let index = HirResultsIndex::new(&hir_table);
         let expr_id = index.expr_id(&lhs_ptr)?;
         let ty = normalize_completion_ty(results.expr_ty(expr_id)?.clone());
@@ -120,6 +130,16 @@ pub fn value_completions(
     src: &str,
     line: u32,
     col: u32,
+) -> Option<Vec<ValueCompletionItem>> {
+    value_completions_with_overrides(path, src, line, col, &HashMap::new())
+}
+
+pub fn value_completions_with_overrides(
+    path: &Path,
+    src: &str,
+    line: u32,
+    col: u32,
+    source_overrides: &HashMap<PathBuf, String>,
 ) -> Option<Vec<ValueCompletionItem>> {
     crate::pipeline::with_compiler_stack(|| {
         let line_index = line_index::LineIndex::new(src);
@@ -156,7 +176,12 @@ pub fn value_completions(
 
         let mut ranked_items = Vec::new();
         let mut call_context = None;
-        if let Ok((hir_table, results, genv, _diagnostics)) = typecheck_for_query(path, src) {
+        if let Ok((hir_table, results, genv, _diagnostics)) =
+            typecheck_for_query_with_overrides(path, src, source_overrides)
+        {
+            let current_package = build_symbol_lookup_with_overrides(path, src, source_overrides)
+                .graph
+                .map(|graph| graph.entry_package);
             let index = HirResultsIndex::new(&hir_table);
             let closure_params = ClosureParamIndex::new(&hir_table);
             call_context = call_expr_and_active_parameter(&root, offset).and_then(
@@ -179,22 +204,19 @@ pub fn value_completions(
                 &closure_params,
                 &results,
             ));
-            ranked_items.extend(
-                genv.value_env
-                    .funcs
-                    .iter()
-                    .filter(|(name, _)| !name.contains("::"))
-                    .map(|(name, scheme)| RankedValueItem {
-                        item: ValueCompletionItem {
-                            name: name.clone(),
-                            kind: ValueCompletionKind::Function,
-                            detail: Some(scheme.ty.to_pretty(80)),
-                        },
-                        ty_text: Some(scheme.ty.to_pretty(80)),
-                        kind_rank: 1,
-                        scope_rank: usize::MAX - 1,
-                    }),
-            );
+            ranked_items.extend(genv.value_env.funcs.iter().filter_map(|(name, scheme)| {
+                let name = local_completion_function_name(name, current_package.as_deref())?;
+                Some(RankedValueItem {
+                    item: ValueCompletionItem {
+                        name,
+                        kind: ValueCompletionKind::Function,
+                        detail: Some(scheme.ty.to_pretty(80)),
+                    },
+                    ty_text: Some(scheme.ty.to_pretty(80)),
+                    kind_rank: 1,
+                    scope_rank: usize::MAX - 1,
+                })
+            }));
         }
 
         ranked_items.extend(visible_import_namespace_items(path, src));
@@ -244,6 +266,16 @@ pub fn colon_colon_completions(
     src: &str,
     line: u32,
     col: u32,
+) -> Option<Vec<ColonColonCompletionItem>> {
+    colon_colon_completions_with_overrides(path, src, line, col, &HashMap::new())
+}
+
+pub fn colon_colon_completions_with_overrides(
+    path: &Path,
+    src: &str,
+    line: u32,
+    col: u32,
+    source_overrides: &HashMap<PathBuf, String>,
 ) -> Option<Vec<ColonColonCompletionItem>> {
     crate::pipeline::with_compiler_stack(|| {
         let line_index = line_index::LineIndex::new(src);
@@ -302,7 +334,7 @@ pub fn colon_colon_completions(
             return None;
         }
 
-        let genv = typecheck_for_query(path, &parse_src)
+        let genv = typecheck_for_query_with_overrides(path, &parse_src, source_overrides)
             .ok()
             .map(|(_hir_table, _results, genv, _diagnostics)| genv);
         let package_items = if use_decl_from_token(&token).is_some() {
@@ -321,6 +353,14 @@ pub fn colon_colon_completions(
         items.retain(|item| item.name.starts_with(&prefix));
         Some(items)
     })
+}
+
+fn local_completion_function_name(name: &str, current_package: Option<&str>) -> Option<String> {
+    if !name.contains("::") {
+        return Some(name.to_string());
+    }
+    let local = name.strip_prefix(&format!("{}::", current_package?))?;
+    (!local.contains("::")).then(|| local.to_string())
 }
 
 fn normalize_completion_ty(ty: tast::Ty) -> tast::Ty {

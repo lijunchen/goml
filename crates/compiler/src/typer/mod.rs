@@ -26,6 +26,7 @@ pub(crate) use obligations::{
     ObligationId, OperationGoal, ParamEnv, Predicate, ProjectionGoal, TraitGoal,
 };
 pub(crate) use traits::matching::impl_self_subst;
+pub(crate) use util::format_ty_for_diag;
 
 pub use toplevel::check_file_with_env_and_results;
 pub use toplevel::{check_file, check_file_with_env, check_file_with_env_capability};

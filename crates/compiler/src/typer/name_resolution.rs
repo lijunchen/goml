@@ -487,6 +487,8 @@ impl NameResolution {
         let mut per_file_defs = Vec::new();
 
         for file in files.iter() {
+            self.diagnostics.set_source(&file.path);
+            hir_table.set_current_source(file.path.clone());
             let package_name = file.ast.package.0.as_str();
             let imports = self.file_imports(file, deps, false);
             let use_aliases = self.file_use_aliases(&file.ast, deps, false);
@@ -591,6 +593,8 @@ impl NameResolution {
         }
 
         for (file_idx, file) in files.iter().enumerate() {
+            self.diagnostics.set_source(&file.path);
+            hir_table.set_current_source(file.path.clone());
             let package_name = file.ast.package.0.as_str();
             let imports = self.file_imports(file, deps, true);
             let use_aliases = self.file_use_aliases(&file.ast, deps, true);
@@ -705,6 +709,7 @@ impl NameResolution {
             .iter()
             .enumerate()
             .map(|(idx, file)| {
+                self.diagnostics.set_source(&file.path);
                 let package = file.ast.package.0.clone();
                 let file_name = file
                     .path

@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 
 use dashmap::DashMap;
 use lsp_server::{Document, handlers};
@@ -27,18 +27,52 @@ impl Backend {
         uri.to_file_path().ok()
     }
 
+    fn source_overrides(&self) -> HashMap<PathBuf, String> {
+        self.documents
+            .iter()
+            .filter_map(|entry| {
+                entry
+                    .key()
+                    .to_file_path()
+                    .ok()
+                    .map(|path| (path, entry.value().content.clone()))
+            })
+            .collect()
+    }
+
+    fn document_content(&self, uri: &Url) -> Option<String> {
+        self.documents.get(uri).map(|doc| doc.content.clone())
+    }
+
     async fn publish_diagnostics(&self, uri: Url) {
-        let Some(doc) = self.documents.get(&uri) else {
+        let Some(content) = self.document_content(&uri) else {
             return;
         };
         let Some(path) = self.get_file_path(&uri) else {
             return;
         };
 
-        let diagnostics = handlers::get_diagnostics(&path, &doc.content, &doc);
+        let doc = Document::new(content.clone());
+        let diagnostics = handlers::get_diagnostics_with_overrides(
+            &path,
+            &content,
+            &doc,
+            &self.source_overrides(),
+        );
         self.client
             .publish_diagnostics(uri, diagnostics, None)
             .await;
+    }
+
+    async fn publish_all_diagnostics(&self) {
+        let uris = self
+            .documents
+            .iter()
+            .map(|entry| entry.key().clone())
+            .collect::<Vec<_>>();
+        for uri in uris {
+            self.publish_diagnostics(uri).await;
+        }
     }
 }
 
@@ -71,6 +105,9 @@ impl LanguageServer for Backend {
                 }),
                 inlay_hint_provider: Some(OneOf::Left(true)),
                 definition_provider: Some(OneOf::Left(true)),
+                code_lens_provider: Some(CodeLensOptions {
+                    resolve_provider: Some(false),
+                }),
                 ..Default::default()
             },
             server_info: Some(ServerInfo {
@@ -92,7 +129,7 @@ impl LanguageServer for Backend {
         let uri = params.text_document.uri;
         let content = params.text_document.text;
         self.documents.insert(uri.clone(), Document::new(content));
-        self.publish_diagnostics(uri).await;
+        self.publish_all_diagnostics().await;
     }
 
     async fn did_change(&self, params: DidChangeTextDocumentParams) {
@@ -100,72 +137,98 @@ impl LanguageServer for Backend {
         if let Some(change) = params.content_changes.into_iter().last() {
             self.documents
                 .insert(uri.clone(), Document::new(change.text));
-            self.publish_diagnostics(uri).await;
+            self.publish_all_diagnostics().await;
         }
     }
 
     async fn did_close(&self, params: DidCloseTextDocumentParams) {
-        self.documents.remove(&params.text_document.uri);
+        let uri = params.text_document.uri;
+        self.documents.remove(&uri);
+        self.client.publish_diagnostics(uri, Vec::new(), None).await;
+        self.publish_all_diagnostics().await;
     }
 
     async fn did_save(&self, params: DidSaveTextDocumentParams) {
-        self.publish_diagnostics(params.text_document.uri).await;
+        let _ = params;
+        self.publish_all_diagnostics().await;
     }
 
     async fn hover(&self, params: HoverParams) -> Result<Option<Hover>> {
         let uri = &params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
 
-        let Some(doc) = self.documents.get(uri) else {
+        let Some(content) = self.document_content(uri) else {
             return Ok(None);
         };
         let Some(path) = self.get_file_path(uri) else {
             return Ok(None);
         };
 
-        Ok(handlers::hover(&path, &doc.content, position))
+        Ok(handlers::hover_with_overrides(
+            &path,
+            &content,
+            position,
+            &self.source_overrides(),
+        ))
     }
 
     async fn completion(&self, params: CompletionParams) -> Result<Option<CompletionResponse>> {
         let uri = &params.text_document_position.text_document.uri;
         let position = params.text_document_position.position;
 
-        let Some(doc) = self.documents.get(uri) else {
+        let Some(content) = self.document_content(uri) else {
             return Ok(None);
         };
         let Some(path) = self.get_file_path(uri) else {
             return Ok(None);
         };
 
-        Ok(handlers::completion(&path, &doc.content, position))
+        Ok(handlers::completion_with_overrides(
+            &path,
+            &content,
+            position,
+            &self.source_overrides(),
+        ))
     }
 
     async fn signature_help(&self, params: SignatureHelpParams) -> Result<Option<SignatureHelp>> {
         let uri = &params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
 
-        let Some(doc) = self.documents.get(uri) else {
+        let Some(content) = self.document_content(uri) else {
             return Ok(None);
         };
         let Some(path) = self.get_file_path(uri) else {
             return Ok(None);
         };
 
-        Ok(handlers::signature_help(&path, &doc.content, position))
+        Ok(handlers::signature_help_with_overrides(
+            &path,
+            &content,
+            position,
+            &self.source_overrides(),
+        ))
     }
 
     async fn inlay_hint(&self, params: InlayHintParams) -> Result<Option<Vec<InlayHint>>> {
         let uri = &params.text_document.uri;
         let range = params.range;
 
-        let Some(doc) = self.documents.get(uri) else {
+        let Some(content) = self.document_content(uri) else {
             return Ok(None);
         };
         let Some(path) = self.get_file_path(uri) else {
             return Ok(None);
         };
 
-        Ok(handlers::inlay_hints(&path, &doc.content, range, &doc))
+        let doc = Document::new(content.clone());
+        Ok(handlers::inlay_hints_with_overrides(
+            &path,
+            &content,
+            range,
+            &doc,
+            &self.source_overrides(),
+        ))
     }
 
     async fn goto_definition(
@@ -175,20 +238,34 @@ impl LanguageServer for Backend {
         let uri = &params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
 
-        let Some(doc) = self.documents.get(uri) else {
+        let Some(content) = self.document_content(uri) else {
             return Ok(None);
         };
         let Some(path) = self.get_file_path(uri) else {
             return Ok(None);
         };
 
-        Ok(handlers::goto_definition(
+        let doc = Document::new(content.clone());
+        Ok(handlers::goto_definition_with_overrides(
             uri,
             &path,
-            &doc.content,
+            &content,
             position,
             &doc,
+            &self.source_overrides(),
         ))
+    }
+
+    async fn code_lens(&self, params: CodeLensParams) -> Result<Option<Vec<CodeLens>>> {
+        let uri = params.text_document.uri;
+        let Some(content) = self.document_content(&uri) else {
+            return Ok(None);
+        };
+        let Some(path) = self.get_file_path(&uri) else {
+            return Ok(None);
+        };
+        let doc = Document::new(content.clone());
+        Ok(Some(handlers::code_lenses(&uri, &path, &content, &doc)))
     }
 }
 

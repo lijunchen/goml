@@ -1,5 +1,6 @@
 use crate::{
     anf::{self, GlobalAnfEnv},
+    artifact::TestDescriptor,
     common::{Constructor, Prim},
     env::{EnumDef, Gensym, GlobalTypeEnv, InherentImplKey, StructDef},
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
@@ -3960,6 +3961,25 @@ pub fn go_file(
     gensym: &Gensym,
     file: anf::File,
 ) -> (goast::File, GlobalGoEnv) {
+    go_file_with_tests(anfenv, gensym, file, None)
+        .unwrap_or_else(|error| panic!("failed to generate Go entry point: {error}"))
+}
+
+pub fn go_test_file(
+    anfenv: GlobalAnfEnv,
+    gensym: &Gensym,
+    file: anf::File,
+    tests: &[TestDescriptor],
+) -> Result<(goast::File, GlobalGoEnv), String> {
+    go_file_with_tests(anfenv, gensym, file, Some(tests))
+}
+
+fn go_file_with_tests(
+    anfenv: GlobalAnfEnv,
+    gensym: &Gensym,
+    file: anf::File,
+    tests: Option<&[TestDescriptor]>,
+) -> Result<(goast::File, GlobalGoEnv), String> {
     let mut goenv = GlobalGoEnv::from_anf_env(anfenv);
     goenv.toplevel_funcs = file.toplevels.iter().map(|f| f.name.clone()).collect();
     goenv.colliding_callable_idents = collect_colliding_callable_idents(&goenv);
@@ -4018,7 +4038,7 @@ pub fn go_file(
         )));
     }
     all.extend(toplevels);
-    all.push(goast::Item::Fn(goast::Fn {
+    let program_main = goast::Fn {
         name: ENTRY_FUNCTION.to_string(),
         params: vec![],
         ret_ty: None,
@@ -4035,10 +4055,88 @@ pub fn go_file(
                 ty: goty::GoType::TVoid,
             })],
         },
-    }));
-    // Run a simple DCE pass to drop unused local variables for Go
+    };
+    let main = match tests {
+        Some(tests) => test_main_function(&goenv, tests)?,
+        None => program_main,
+    };
+    all.push(goast::Item::Fn(main));
     let file = goast::File { toplevels: all };
-    (crate::go::dce::eliminate_dead_vars(file), goenv)
+    Ok((crate::go::dce::eliminate_dead_vars(file), goenv))
+}
+
+fn test_main_function(goenv: &GlobalGoEnv, tests: &[TestDescriptor]) -> Result<goast::Fn, String> {
+    let args_ty = goty::GoType::TSlice {
+        elem: Box::new(goty::GoType::TString),
+    };
+    let selector = goast::Expr::Index {
+        array: Box::new(goast::Expr::Var {
+            name: "_goml_os.Args".to_string(),
+            ty: args_ty,
+        }),
+        index: Box::new(goast::Expr::Int {
+            value: "1".to_string(),
+            ty: goty::GoType::TInt32,
+        }),
+        ty: goty::GoType::TString,
+    };
+    let mut cases = Vec::with_capacity(tests.len());
+    for test in tests {
+        if !goenv.toplevel_funcs.contains(&test.symbol) {
+            return Err(format!(
+                "test function `{}` is missing from linked output",
+                test.symbol
+            ));
+        }
+        let function_name = go_toplevel_func_name(goenv, &test.symbol);
+        cases.push((
+            goast::Expr::String {
+                value: test.id.clone(),
+                ty: goty::GoType::TString,
+            },
+            goast::Block {
+                stmts: vec![goast::Stmt::Expr(goast::Expr::Call {
+                    func: Box::new(goast::Expr::Var {
+                        name: function_name,
+                        ty: goty::GoType::TFunc {
+                            params: Vec::new(),
+                            ret_ty: Box::new(goty::GoType::TUnit),
+                        },
+                    }),
+                    args: Vec::new(),
+                    ty: goty::GoType::TUnit,
+                })],
+            },
+        ));
+    }
+    let default = goast::Block {
+        stmts: vec![goast::Stmt::Expr(goast::Expr::Call {
+            func: Box::new(goast::Expr::Var {
+                name: runtime_hook_go_name(RuntimeHookId::StdTestingFail),
+                ty: goty::GoType::TFunc {
+                    params: vec![goty::GoType::TString],
+                    ret_ty: Box::new(goty::GoType::TUnit),
+                },
+            }),
+            args: vec![goast::Expr::String {
+                value: "unknown test id".to_string(),
+                ty: goty::GoType::TString,
+            }],
+            ty: goty::GoType::TUnit,
+        })],
+    };
+    Ok(goast::Fn {
+        name: ENTRY_FUNCTION.to_string(),
+        params: Vec::new(),
+        ret_ty: None,
+        body: goast::Block {
+            stmts: vec![goast::Stmt::SwitchExpr {
+                expr: selector,
+                cases,
+                default: Some(default),
+            }],
+        },
+    })
 }
 
 fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {

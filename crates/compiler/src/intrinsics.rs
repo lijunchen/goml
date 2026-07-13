@@ -156,10 +156,11 @@ pub enum RuntimeHookId {
     StdIoPrintln,
     StdIoEprint,
     StdProcessExit,
+    StdTestingFail,
 }
 
 impl RuntimeHookId {
-    pub const ALL: [Self; 39] = [
+    pub const ALL: [Self; 40] = [
         Self::UnitToString,
         Self::BoolToString,
         Self::StringLen,
@@ -199,6 +200,7 @@ impl RuntimeHookId {
         Self::StdIoPrintln,
         Self::StdIoEprint,
         Self::StdProcessExit,
+        Self::StdTestingFail,
     ];
 
     pub const fn key(self) -> &'static str {
@@ -242,6 +244,7 @@ impl RuntimeHookId {
             Self::StdIoPrintln => "std.io.println",
             Self::StdIoEprint => "std.io.eprint",
             Self::StdProcessExit => "std.process.exit",
+            Self::StdTestingFail => "std.testing.fail",
         }
     }
 
@@ -437,7 +440,7 @@ impl RuntimeHookId {
             | Self::StdIoPrint
             | Self::StdIoPrintln
             | Self::StdIoEprint => CallEffect::Host,
-            Self::StdProcessExit => CallEffect::Diverges,
+            Self::StdProcessExit | Self::StdTestingFail => CallEffect::Diverges,
             _ => CallEffect::Pure,
         }
     }
@@ -850,6 +853,7 @@ impl RuntimeHookId {
                 signature(vec![Ty::TString], Ty::TUnit)
             }
             Self::StdProcessExit => signature(vec![Ty::TInt32], Ty::TUnit),
+            Self::StdTestingFail => signature(vec![Ty::TString], Ty::TUnit),
         }
     }
 }

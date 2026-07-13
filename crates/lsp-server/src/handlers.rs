@@ -1,5 +1,5 @@
-use std::collections::HashSet;
-use std::path::Path;
+use std::collections::{HashMap, HashSet};
+use std::path::{Path, PathBuf};
 
 use compiler::query::{
     self, ColonColonCompletionItem, ColonColonCompletionKind, DotCompletionItem, DotCompletionKind,
@@ -10,7 +10,20 @@ use tower_lsp::lsp_types::*;
 use crate::Document;
 
 pub fn get_diagnostics(path: &Path, src: &str, doc: &Document) -> Vec<Diagnostic> {
-    let result = compiler::pipeline::pipeline::compile_for_analysis(path, src);
+    get_diagnostics_with_overrides(path, src, doc, &HashMap::new())
+}
+
+pub fn get_diagnostics_with_overrides(
+    path: &Path,
+    src: &str,
+    doc: &Document,
+    source_overrides: &HashMap<PathBuf, String>,
+) -> Vec<Diagnostic> {
+    let result = compiler::pipeline::pipeline::compile_for_analysis_with_overrides(
+        path,
+        src,
+        source_overrides,
+    );
 
     match result {
         Ok(_) => Vec::new(),
@@ -18,6 +31,10 @@ pub fn get_diagnostics(path: &Path, src: &str, doc: &Document) -> Vec<Diagnostic
             let diags = err.diagnostics();
             diags
                 .iter()
+                .filter(|diagnostic| match diagnostic.source() {
+                    Some(source) => source == path,
+                    None => diagnostic.range().is_none(),
+                })
                 .map(|d| {
                     let range = d.range().and_then(|r| doc.range(r)).unwrap_or(Range {
                         start: Position {
@@ -49,8 +66,24 @@ pub fn get_diagnostics(path: &Path, src: &str, doc: &Document) -> Vec<Diagnostic
 }
 
 pub fn hover(path: &Path, src: &str, position: Position) -> Option<Hover> {
-    let type_info = query::hover_type(path, src, position.line, position.character).ok();
-    let diagnostics = diagnostics_for_hover(path, src, position);
+    hover_with_overrides(path, src, position, &HashMap::new())
+}
+
+pub fn hover_with_overrides(
+    path: &Path,
+    src: &str,
+    position: Position,
+    source_overrides: &HashMap<PathBuf, String>,
+) -> Option<Hover> {
+    let type_info = query::hover_type_with_overrides(
+        path,
+        src,
+        position.line,
+        position.character,
+        source_overrides,
+    )
+    .ok();
+    let diagnostics = diagnostics_for_hover(path, src, position, source_overrides);
     if type_info.is_none() && diagnostics.is_empty() {
         return None;
     }
@@ -87,16 +120,24 @@ fn diagnostics_for_hover(
     path: &Path,
     src: &str,
     position: Position,
+    source_overrides: &HashMap<PathBuf, String>,
 ) -> Vec<(diagnostics::Severity, String)> {
     let doc = Document::new(src.to_string());
     let mut messages = Vec::new();
     let mut seen: HashSet<(diagnostics::Severity, String)> = HashSet::new();
-    let result = compiler::pipeline::pipeline::compile_for_analysis(path, src);
+    let result = compiler::pipeline::pipeline::compile_for_analysis_with_overrides(
+        path,
+        src,
+        source_overrides,
+    );
     let diagnostics = match result {
         Ok(_) => return messages,
         Err(err) => err.into_diagnostics(),
     };
     for diagnostic in diagnostics.iter() {
+        if diagnostic.source() != Some(path) {
+            continue;
+        }
         let Some(text_range) = diagnostic.range() else {
             continue;
         };
@@ -126,20 +167,35 @@ fn position_in_range(position: Position, range: Range) -> bool {
 }
 
 pub fn completion(path: &Path, src: &str, position: Position) -> Option<CompletionResponse> {
+    completion_with_overrides(path, src, position, &HashMap::new())
+}
+
+pub fn completion_with_overrides(
+    path: &Path,
+    src: &str,
+    position: Position,
+    source_overrides: &HashMap<PathBuf, String>,
+) -> Option<CompletionResponse> {
     let line = position.line;
     let col = position.character;
 
-    if let Some(items) = query::dot_completions(path, src, line, col) {
+    if let Some(items) =
+        query::dot_completions_with_overrides(path, src, line, col, source_overrides)
+    {
         let completions = items.into_iter().map(dot_item_to_completion).collect();
         return Some(CompletionResponse::Array(completions));
     }
 
-    if let Some(items) = query::colon_colon_completions(path, src, line, col) {
+    if let Some(items) =
+        query::colon_colon_completions_with_overrides(path, src, line, col, source_overrides)
+    {
         let completions = items.into_iter().map(colon_item_to_completion).collect();
         return Some(CompletionResponse::Array(completions));
     }
 
-    if let Some(items) = query::value_completions(path, src, line, col) {
+    if let Some(items) =
+        query::value_completions_with_overrides(path, src, line, col, source_overrides)
+    {
         let completions = items.into_iter().map(value_item_to_completion).collect();
         return Some(CompletionResponse::Array(completions));
     }
@@ -148,12 +204,37 @@ pub fn completion(path: &Path, src: &str, position: Position) -> Option<Completi
 }
 
 pub fn signature_help(path: &Path, src: &str, position: Position) -> Option<SignatureHelp> {
-    let item = query::signature_help(path, src, position.line, position.character)?;
+    signature_help_with_overrides(path, src, position, &HashMap::new())
+}
+
+pub fn signature_help_with_overrides(
+    path: &Path,
+    src: &str,
+    position: Position,
+    source_overrides: &HashMap<PathBuf, String>,
+) -> Option<SignatureHelp> {
+    let item = query::signature_help_with_overrides(
+        path,
+        src,
+        position.line,
+        position.character,
+        source_overrides,
+    )?;
     Some(signature_item_to_lsp(item))
 }
 
 pub fn inlay_hints(path: &Path, src: &str, range: Range, doc: &Document) -> Option<Vec<InlayHint>> {
-    let items = query::inlay_hints(path, src)?;
+    inlay_hints_with_overrides(path, src, range, doc, &HashMap::new())
+}
+
+pub fn inlay_hints_with_overrides(
+    path: &Path,
+    src: &str,
+    range: Range,
+    doc: &Document,
+    source_overrides: &HashMap<PathBuf, String>,
+) -> Option<Vec<InlayHint>> {
+    let items = query::inlay_hints_with_overrides(path, src, source_overrides)?;
     let hints = items
         .into_iter()
         .filter_map(|item| inlay_item_to_lsp(item, range, doc))
@@ -270,8 +351,25 @@ pub fn goto_definition(
     position: Position,
     doc: &Document,
 ) -> Option<GotoDefinitionResponse> {
-    let locations =
-        query::goto_definition_locations(path, src, position.line, position.character).ok()?;
+    goto_definition_with_overrides(uri, path, src, position, doc, &HashMap::new())
+}
+
+pub fn goto_definition_with_overrides(
+    uri: &Url,
+    path: &Path,
+    src: &str,
+    position: Position,
+    doc: &Document,
+    source_overrides: &HashMap<PathBuf, String>,
+) -> Option<GotoDefinitionResponse> {
+    let locations = query::goto_definition_locations_with_overrides(
+        path,
+        src,
+        position.line,
+        position.character,
+        source_overrides,
+    )
+    .ok()?;
     if locations.is_empty() {
         return None;
     }
@@ -289,7 +387,11 @@ pub fn goto_definition(
         let range = if loc.path == path {
             doc.range(loc.range)
         } else {
-            let Some(target_src) = std::fs::read_to_string(&loc.path).ok() else {
+            let target_src = source_overrides
+                .get(&loc.path)
+                .cloned()
+                .or_else(|| std::fs::read_to_string(&loc.path).ok());
+            let Some(target_src) = target_src else {
                 continue;
             };
             let target_doc = Document::new(target_src);
@@ -318,4 +420,30 @@ pub fn goto_definition(
         )),
         _ => Some(GotoDefinitionResponse::Array(lsp_locations)),
     }
+}
+
+pub fn code_lenses(uri: &Url, path: &Path, src: &str, doc: &Document) -> Vec<CodeLens> {
+    query::test_items(path, src)
+        .into_iter()
+        .filter_map(|item| {
+            let range = doc.range(item.range)?;
+            let kind = match item.kind {
+                query::TestItemKind::Internal => "internal",
+                query::TestItemKind::External => "external",
+            };
+            Some(CodeLens {
+                range,
+                command: Some(Command {
+                    title: "Run Test".to_string(),
+                    command: "goml.runTest".to_string(),
+                    arguments: Some(vec![
+                        serde_json::json!(uri.as_str()),
+                        serde_json::json!(item.name),
+                        serde_json::json!(kind),
+                    ]),
+                }),
+                data: None,
+            })
+        })
+        .collect()
 }

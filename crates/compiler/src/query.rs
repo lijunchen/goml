@@ -7,17 +7,25 @@ mod inlay;
 mod signature;
 mod symbol_index;
 mod syntax;
+mod testing;
 mod typecheck;
 
 use std::path::PathBuf;
 
 use text_size::{TextRange, TextSize};
 
-pub use completion::{colon_colon_completions, dot_completions, value_completions};
-pub use definition::{goto_definition, goto_definition_locations};
-pub use hover::hover_type;
-pub use inlay::inlay_hints;
-pub use signature::signature_help;
+pub use completion::{
+    colon_colon_completions, colon_colon_completions_with_overrides, dot_completions,
+    dot_completions_with_overrides, value_completions, value_completions_with_overrides,
+};
+pub use definition::{
+    goto_definition, goto_definition_locations, goto_definition_locations_with_overrides,
+    goto_definition_with_overrides,
+};
+pub use hover::{hover_type, hover_type_with_overrides};
+pub use inlay::{inlay_hints, inlay_hints_with_overrides};
+pub use signature::{signature_help, signature_help_with_overrides};
+pub use testing::{TestItem, TestItemKind, test_items};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DotCompletionKind {

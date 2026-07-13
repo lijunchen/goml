@@ -1,4 +1,8 @@
-use std::{fs, path::Path};
+use std::{
+    collections::HashMap,
+    fs,
+    path::{Path, PathBuf},
+};
 
 use cst::cst::CstNode;
 use cst::nodes::{CallExpr, Extern, Fn, TraitMethod};
@@ -9,7 +13,7 @@ use crate::{hir, tast};
 use super::{
     SignatureHelpItem, context::QueryContext, hir_index::HirResultsIndex,
     symbol_index::build_symbol_lookup, syntax::call_expr_and_active_parameter,
-    typecheck::typecheck_for_query,
+    typecheck::typecheck_for_query_with_overrides,
 };
 
 #[derive(Debug, Clone)]
@@ -42,8 +46,19 @@ impl CallSignatureContext {
 }
 
 pub fn signature_help(path: &Path, src: &str, line: u32, col: u32) -> Option<SignatureHelpItem> {
+    signature_help_with_overrides(path, src, line, col, &HashMap::new())
+}
+
+pub fn signature_help_with_overrides(
+    path: &Path,
+    src: &str,
+    line: u32,
+    col: u32,
+    source_overrides: &HashMap<PathBuf, String>,
+) -> Option<SignatureHelpItem> {
     crate::pipeline::with_compiler_stack(|| {
-        let context = call_signature_context(path, src, line, col)?;
+        let context =
+            call_signature_context_with_overrides(path, src, line, col, source_overrides)?;
         let parameters = context
             .params
             .iter()
@@ -63,17 +78,19 @@ pub fn signature_help(path: &Path, src: &str, line: u32, col: u32) -> Option<Sig
     })
 }
 
-pub(crate) fn call_signature_context(
+fn call_signature_context_with_overrides(
     path: &Path,
     src: &str,
     line: u32,
     col: u32,
+    source_overrides: &HashMap<PathBuf, String>,
 ) -> Option<CallSignatureContext> {
     let context = QueryContext::from_position(path, src, line, col).ok()?;
     let (call_expr, active_parameter) =
         call_expr_and_active_parameter(context.root(), context.offset())?;
 
-    let (hir_table, results, _genv, _diagnostics) = typecheck_for_query(path, src).ok()?;
+    let (hir_table, results, _genv, _diagnostics) =
+        typecheck_for_query_with_overrides(path, src, source_overrides).ok()?;
     call_signature_context_from_parts(
         path,
         src,

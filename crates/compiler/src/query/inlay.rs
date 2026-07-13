@@ -1,14 +1,26 @@
-use std::path::Path;
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+};
 
 use parser::syntax::MySyntaxNodePtr;
 
 use crate::{hir, tast};
 
-use super::{InlayHintItem, InlayHintKind, typecheck::typecheck_for_query};
+use super::{InlayHintItem, InlayHintKind, typecheck::typecheck_for_query_with_overrides};
 
 pub fn inlay_hints(path: &Path, src: &str) -> Option<Vec<InlayHintItem>> {
+    inlay_hints_with_overrides(path, src, &HashMap::new())
+}
+
+pub fn inlay_hints_with_overrides(
+    path: &Path,
+    src: &str,
+    source_overrides: &HashMap<PathBuf, String>,
+) -> Option<Vec<InlayHintItem>> {
     crate::pipeline::with_compiler_stack(|| {
-        let (hir_table, results, _genv, _diagnostics) = typecheck_for_query(path, src).ok()?;
+        let (hir_table, results, _genv, _diagnostics) =
+            typecheck_for_query_with_overrides(path, src, source_overrides).ok()?;
 
         let mut hints = Vec::new();
         for idx in 0..hir_table.def_count() {

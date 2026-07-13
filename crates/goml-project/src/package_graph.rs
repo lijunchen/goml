@@ -50,6 +50,31 @@ pub struct PackageGraph {
     pub external_root_packages: HashSet<String>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ProjectPathRole {
+    Production,
+    InternalTest,
+    ExternalTest {
+        target_dir: PathBuf,
+        suite_dir: PathBuf,
+    },
+}
+
+#[derive(Debug, Clone)]
+pub struct ExternalTestGraph {
+    pub target_package: String,
+    pub graph: PackageGraph,
+}
+
+#[derive(Debug, Clone)]
+pub struct ProjectTestPlan {
+    pub normal: PackageGraph,
+    pub internal: PackageGraph,
+    pub external: Vec<ExternalTestGraph>,
+}
+
+const TESTS_DIRECTORY: &str = "tests";
+
 struct ParsedSource {
     path: PathBuf,
     ast: ast::File,
@@ -68,12 +93,171 @@ pub fn discover_project_packages(
     let manifest = load_module_manifest(&module_dir.join("goml.toml"))?;
     validate_project_module_path(&manifest.module.path)?;
     let target_dir = normalized_parent(entry_path);
+    reject_test_only_target(module_dir, target_dir)?;
     discover_reachable_module_packages(
         module_dir,
         &manifest.module.path,
         target_dir,
         external_imports,
+        false,
     )
+}
+
+pub fn discover_project_test_packages(
+    module_dir: &Path,
+    entry_path: &Path,
+    external_imports: &ExternalImports,
+) -> Result<PackageGraph, String> {
+    let manifest = load_module_manifest(&module_dir.join("goml.toml"))?;
+    validate_project_module_path(&manifest.module.path)?;
+    let target_dir = normalized_parent(entry_path);
+    reject_test_only_target(module_dir, target_dir)?;
+    discover_reachable_module_packages(
+        module_dir,
+        &manifest.module.path,
+        target_dir,
+        external_imports,
+        true,
+    )
+}
+
+pub fn discover_project_test_plan(
+    module_dir: &Path,
+    entry_path: &Path,
+    external_imports: &ExternalImports,
+) -> Result<ProjectTestPlan, String> {
+    let manifest = load_module_manifest(&module_dir.join("goml.toml"))?;
+    validate_project_module_path(&manifest.module.path)?;
+    let target_dir = normalized_parent(entry_path);
+    reject_test_only_target(module_dir, target_dir)?;
+    let normal = discover_reachable_module_packages(
+        module_dir,
+        &manifest.module.path,
+        target_dir,
+        external_imports,
+        false,
+    )?;
+    let internal = discover_reachable_module_packages(
+        module_dir,
+        &manifest.module.path,
+        target_dir,
+        external_imports,
+        true,
+    )?;
+    let external = discover_external_test_graphs(
+        module_dir,
+        &manifest.module.path,
+        target_dir,
+        &normal.entry_package,
+        external_imports,
+    )?;
+    Ok(ProjectTestPlan {
+        normal,
+        internal,
+        external,
+    })
+}
+
+pub fn discover_project_external_test_package(
+    module_dir: &Path,
+    entry_path: &Path,
+    suite_dir: &Path,
+    external_imports: &ExternalImports,
+) -> Result<ExternalTestGraph, String> {
+    let manifest = load_module_manifest(&module_dir.join("goml.toml"))?;
+    validate_project_module_path(&manifest.module.path)?;
+    let target_dir = normalized_parent(entry_path);
+    reject_test_only_target(module_dir, target_dir)?;
+    let expected_parent = target_dir.join(TESTS_DIRECTORY);
+    if suite_dir.parent() != Some(expected_parent.as_path()) {
+        return Err(format!(
+            "black-box test suite {} must be directly under {}",
+            suite_dir.display(),
+            expected_parent.display()
+        ));
+    }
+    let target_package = package_import_path(&manifest.module.path, module_dir, target_dir)?;
+    let mut graph = discover_reachable_module_packages(
+        module_dir,
+        &manifest.module.path,
+        suite_dir,
+        external_imports,
+        true,
+    )?;
+    let target_graph = discover_reachable_module_packages(
+        module_dir,
+        &manifest.module.path,
+        target_dir,
+        external_imports,
+        false,
+    )?;
+    merge_reachable_graph(&mut graph, target_graph)?;
+    Ok(ExternalTestGraph {
+        target_package,
+        graph,
+    })
+}
+
+pub fn discover_project_external_test_packages(
+    module_dir: &Path,
+    entry_path: &Path,
+    external_imports: &ExternalImports,
+) -> Result<Vec<ExternalTestGraph>, String> {
+    let manifest = load_module_manifest(&module_dir.join("goml.toml"))?;
+    validate_project_module_path(&manifest.module.path)?;
+    let target_dir = normalized_parent(entry_path);
+    reject_test_only_target(module_dir, target_dir)?;
+    let target_package = package_import_path(&manifest.module.path, module_dir, target_dir)?;
+    discover_external_test_graphs(
+        module_dir,
+        &manifest.module.path,
+        target_dir,
+        &target_package,
+        external_imports,
+    )
+}
+
+pub fn classify_project_path(module_dir: &Path, path: &Path) -> Result<ProjectPathRole, String> {
+    let relative = path.strip_prefix(module_dir).map_err(|_| {
+        format!(
+            "path {} is outside module root {}",
+            path.display(),
+            module_dir.display()
+        )
+    })?;
+    let components = relative
+        .components()
+        .filter_map(|component| match component {
+            Component::Normal(segment) => Some(segment.to_os_string()),
+            Component::CurDir => None,
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    if let Some(index) = components
+        .iter()
+        .position(|component| component == TESTS_DIRECTORY)
+    {
+        let Some(suite) = components.get(index + 1) else {
+            return Err(format!(
+                "test path {} must select a suite under a tests directory",
+                path.display()
+            ));
+        };
+        let mut target_dir = module_dir.to_path_buf();
+        for component in components.iter().take(index) {
+            target_dir.push(component);
+        }
+        let suite_dir = target_dir.join(TESTS_DIRECTORY).join(suite);
+        return Ok(ProjectPathRole::ExternalTest {
+            target_dir,
+            suite_dir,
+        });
+    }
+    if is_internal_test_source(path) {
+        Ok(ProjectPathRole::InternalTest)
+    } else {
+        Ok(ProjectPathRole::Production)
+    }
 }
 
 pub fn discover_dependency_module_packages(
@@ -89,9 +273,16 @@ fn discover_reachable_module_packages(
     module_path: &str,
     target_dir: &Path,
     external_imports: &ExternalImports,
+    include_entry_tests: bool,
 ) -> Result<PackageGraph, String> {
     let entry_package = package_import_path(module_path, module_dir, target_dir)?;
-    let mut entry = load_package(target_dir, &entry_package, module_path, external_imports)?;
+    let mut entry = load_package(
+        target_dir,
+        &entry_package,
+        module_path,
+        external_imports,
+        include_entry_tests,
+    )?;
     let mut packages = HashMap::new();
     let mut package_dirs = HashMap::new();
     let mut external_root_packages = HashSet::new();
@@ -112,7 +303,13 @@ fn discover_reachable_module_packages(
                     package_dir.display()
                 ));
             }
-            let package = load_package(&package_dir, &import_path, module_path, external_imports)?;
+            let package = load_package(
+                &package_dir,
+                &import_path,
+                module_path,
+                external_imports,
+                false,
+            )?;
             queue.extend(package.imports.iter().cloned());
             package_dirs.insert(import_path.clone(), package_dir);
             packages.insert(import_path, package);
@@ -138,6 +335,127 @@ fn discover_reachable_module_packages(
     })
 }
 
+fn discover_external_test_graphs(
+    module_dir: &Path,
+    module_path: &str,
+    target_dir: &Path,
+    target_package: &str,
+    external_imports: &ExternalImports,
+) -> Result<Vec<ExternalTestGraph>, String> {
+    let tests_dir = target_dir.join(TESTS_DIRECTORY);
+    if !tests_dir.exists() {
+        return Ok(Vec::new());
+    }
+    if !tests_dir.is_dir() {
+        return Err(format!(
+            "test path {} must be a directory",
+            tests_dir.display()
+        ));
+    }
+    let mut suites = Vec::new();
+    for entry in fs::read_dir(&tests_dir)
+        .map_err(|err| format!("failed to read {}: {}", tests_dir.display(), err))?
+    {
+        let entry =
+            entry.map_err(|err| format!("failed to read {}: {}", tests_dir.display(), err))?;
+        let path = entry.path();
+        if path.is_file() && path.extension().is_some_and(|extension| extension == "gom") {
+            return Err(format!(
+                "black-box test source {} must be placed in a suite directory",
+                path.display()
+            ));
+        }
+        if !path.is_dir() || entry.file_name().to_string_lossy().starts_with('.') {
+            continue;
+        }
+        if read_gom_sources(&path, true)?.is_empty() {
+            continue;
+        }
+        suites.push(path);
+    }
+    suites.sort();
+    let mut graphs = Vec::new();
+    for suite_dir in suites {
+        let mut graph = discover_reachable_module_packages(
+            module_dir,
+            module_path,
+            &suite_dir,
+            external_imports,
+            true,
+        )?;
+        let target_graph = discover_reachable_module_packages(
+            module_dir,
+            module_path,
+            target_dir,
+            external_imports,
+            false,
+        )?;
+        merge_reachable_graph(&mut graph, target_graph)?;
+        graphs.push(ExternalTestGraph {
+            target_package: target_package.to_string(),
+            graph,
+        });
+    }
+    Ok(graphs)
+}
+
+fn merge_reachable_graph(target: &mut PackageGraph, source: PackageGraph) -> Result<(), String> {
+    target
+        .external_root_packages
+        .extend(source.external_root_packages);
+    for (package, dir) in source.package_dirs {
+        if let Some(existing) = target.package_dirs.get(&package)
+            && existing != &dir
+        {
+            return Err(format!("package {} has multiple directories", package));
+        }
+        target.package_dirs.insert(package, dir);
+    }
+    for (package, unit) in source.packages {
+        if let Some(existing) = target.packages.get(&package) {
+            if existing.declared_name != unit.declared_name
+                || existing.files != unit.files
+                || existing.imports != unit.imports
+            {
+                return Err(format!("package {} has conflicting inputs", package));
+            }
+        } else {
+            target.packages.insert(package, unit);
+        }
+    }
+    Ok(())
+}
+
+fn reject_test_only_target(module_dir: &Path, target_dir: &Path) -> Result<(), String> {
+    if path_has_tests_component(module_dir, target_dir)? {
+        return Err(format!(
+            "test-only package {} cannot be used as a production target",
+            target_dir.display()
+        ));
+    }
+    Ok(())
+}
+
+fn path_has_tests_component(module_dir: &Path, path: &Path) -> Result<bool, String> {
+    let relative = path.strip_prefix(module_dir).map_err(|_| {
+        format!(
+            "path {} is outside module root {}",
+            path.display(),
+            module_dir.display()
+        )
+    })?;
+    Ok(relative.components().any(
+        |component| matches!(component, Component::Normal(segment) if segment == TESTS_DIRECTORY),
+    ))
+}
+
+fn import_path_is_test_only(module_path: &str, import_path: &str) -> bool {
+    import_path
+        .strip_prefix(module_path)
+        .and_then(|suffix| suffix.strip_prefix("::"))
+        .is_some_and(|suffix| suffix.split("::").any(|segment| segment == TESTS_DIRECTORY))
+}
+
 fn discover_all_module_packages(
     module_dir: &Path,
     module_path: &str,
@@ -154,7 +472,7 @@ fn discover_all_module_packages(
     let mut package_dirs = HashMap::new();
     for dir in dirs {
         let import_path = package_import_path(module_path, module_dir, &dir)?;
-        let package = load_package(&dir, &import_path, module_path, external_imports)?;
+        let package = load_package(&dir, &import_path, module_path, external_imports, false)?;
         package_dirs.insert(import_path.clone(), dir);
         packages.insert(import_path, package);
     }
@@ -202,8 +520,9 @@ fn load_package(
     import_path: &str,
     module_path: &str,
     external_imports: &ExternalImports,
+    include_tests: bool,
 ) -> Result<PackageUnit, String> {
-    let paths = read_gom_sources(package_dir)?;
+    let paths = read_gom_sources(package_dir, include_tests)?;
     if paths.is_empty() {
         return Err(format!(
             "package directory {} has no .gom files",
@@ -342,6 +661,12 @@ fn package_use_candidate(
     let Some((module_path, package_dir)) = module else {
         return Ok(None);
     };
+    if import_path_is_test_only(module_path, import_path) {
+        return Err(format!(
+            "test-only package {} cannot be imported",
+            import_path
+        ));
+    }
     let module_dir = find_module_dir(module_path, package_dir)?;
     let Some(candidate_dir) = local_package_dir(module_path, &module_dir, import_path) else {
         return Ok(None);
@@ -355,7 +680,7 @@ fn package_use_candidate(
                 exists: false,
             }));
     }
-    let Some(path) = read_gom_sources(&candidate_dir)?.into_iter().next() else {
+    let Some(path) = read_gom_sources(&candidate_dir, false)?.into_iter().next() else {
         return Ok(import_path
             .rsplit("::")
             .next()
@@ -462,7 +787,7 @@ fn local_package_dir(module_path: &str, module_dir: &Path, import_path: &str) ->
     Some(dir)
 }
 
-fn read_gom_sources(dir: &Path) -> Result<Vec<PathBuf>, String> {
+fn read_gom_sources(dir: &Path, include_tests: bool) -> Result<Vec<PathBuf>, String> {
     let entries = fs::read_dir(dir).map_err(|err| {
         format!(
             "failed to read package directory {}: {}",
@@ -480,12 +805,21 @@ fn read_gom_sources(dir: &Path) -> Result<Vec<PathBuf>, String> {
             )
         })?;
         let path = entry.path();
-        if path.is_file() && path.extension().is_some_and(|ext| ext == "gom") {
+        if path.is_file()
+            && path.extension().is_some_and(|ext| ext == "gom")
+            && (include_tests || !is_internal_test_source(&path))
+        {
             files.push(path);
         }
     }
     files.sort();
     Ok(files)
+}
+
+pub fn is_internal_test_source(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| name.ends_with("_test.gom"))
 }
 
 fn collect_package_dirs(
@@ -504,12 +838,15 @@ fn collect_package_dirs(
         let entry = entry
             .map_err(|err| format!("failed to read module directory {}: {}", dir.display(), err))?;
         let path = entry.path();
-        if path.is_file() && path.extension().is_some_and(|extension| extension == "gom") {
+        if path.is_file()
+            && path.extension().is_some_and(|extension| extension == "gom")
+            && !is_internal_test_source(&path)
+        {
             has_source = true;
         } else if path.is_dir() {
             let name = entry.file_name();
             let name = name.to_string_lossy();
-            if !name.starts_with('.') && name != "target" {
+            if !name.starts_with('.') && name != "target" && name != TESTS_DIRECTORY {
                 children.push(path);
             }
         }
@@ -683,5 +1020,131 @@ mod tests {
             discover_dependency_module_packages(dir.path(), &ExternalImports::default()).unwrap();
         assert!(graph.packages.contains_key("alice::dep"));
         assert!(graph.packages.contains_key("alice::dep::unused"));
+    }
+
+    #[test]
+    fn test_discovery_only_adds_test_sources_to_the_entry_package() {
+        let dir = tempfile::tempdir().unwrap();
+        fs::create_dir_all(dir.path().join("dep")).unwrap();
+        fs::write(dir.path().join("goml.toml"), "[module]\npath = \"demo\"\n").unwrap();
+        fs::write(
+            dir.path().join("main.gom"),
+            "package app;\nuse demo::dep;\npub fn value() -> int32 { dep::value() }\n",
+        )
+        .unwrap();
+        fs::write(
+            dir.path().join("main_test.gom"),
+            "package app;\nuse std::testing;\n#[test]\nfn works() -> unit { testing::assert(true) }\n",
+        )
+        .unwrap();
+        fs::write(
+            dir.path().join("dep/dep.gom"),
+            "package dep;\npub fn value() -> int32 { 1 }\n",
+        )
+        .unwrap();
+        fs::write(
+            dir.path().join("dep/dep_test.gom"),
+            "package dep;\nuse demo::missing;\n#[test]\nfn hidden() -> unit { () }\n",
+        )
+        .unwrap();
+
+        let normal = discover_project_packages(
+            dir.path(),
+            &dir.path().join("main.gom"),
+            &ExternalImports::default(),
+        )
+        .unwrap();
+        assert_eq!(normal.packages["demo"].files.len(), 1);
+        assert!(!normal.packages["demo"].imports.contains("std::testing"));
+
+        let test = discover_project_test_packages(
+            dir.path(),
+            &dir.path().join("main.gom"),
+            &ExternalImports::default(),
+        )
+        .unwrap();
+        assert_eq!(test.packages["demo"].files.len(), 2);
+        assert!(test.packages["demo"].imports.contains("std::testing"));
+        assert_eq!(test.packages["demo::dep"].files.len(), 1);
+    }
+
+    #[test]
+    fn discovers_internal_and_external_test_targets() {
+        let dir = tempfile::tempdir().unwrap();
+        fs::create_dir_all(dir.path().join("math/tests/api")).unwrap();
+        fs::write(dir.path().join("goml.toml"), "[module]\npath = \"demo\"\n").unwrap();
+        fs::write(
+            dir.path().join("math/math.gom"),
+            "package math;\npub fn add(a: int32, b: int32) -> int32 { a + b }\n",
+        )
+        .unwrap();
+        fs::write(
+            dir.path().join("math/math_test.gom"),
+            "package math;\n#[test]\nfn internal() -> unit { () }\n",
+        )
+        .unwrap();
+        fs::write(
+            dir.path().join("math/tests/api/api_test.gom"),
+            "package api;\nuse demo::math;\n#[test]\nfn external() -> unit { let _ = math::add(1, 2); () }\n",
+        )
+        .unwrap();
+
+        let plan = discover_project_test_plan(
+            dir.path(),
+            &dir.path().join("math/math.gom"),
+            &ExternalImports::default(),
+        )
+        .unwrap();
+        assert_eq!(plan.normal.packages["demo::math"].files.len(), 1);
+        assert_eq!(plan.internal.packages["demo::math"].files.len(), 2);
+        assert_eq!(plan.external.len(), 1);
+        assert_eq!(plan.external[0].target_package, "demo::math");
+        assert_eq!(
+            plan.external[0].graph.entry_package,
+            "demo::math::tests::api"
+        );
+        assert!(plan.external[0].graph.packages.contains_key("demo::math"));
+        assert_eq!(
+            classify_project_path(dir.path(), &dir.path().join("math/math_test.gom")).unwrap(),
+            ProjectPathRole::InternalTest
+        );
+        assert_eq!(
+            classify_project_path(dir.path(), &dir.path().join("math/tests/api/api_test.gom"))
+                .unwrap(),
+            ProjectPathRole::ExternalTest {
+                target_dir: dir.path().join("math"),
+                suite_dir: dir.path().join("math/tests/api"),
+            }
+        );
+    }
+
+    #[test]
+    fn production_packages_cannot_import_black_box_test_packages() {
+        let dir = tempfile::tempdir().unwrap();
+        fs::create_dir_all(dir.path().join("math/tests/api")).unwrap();
+        fs::write(dir.path().join("goml.toml"), "[module]\npath = \"demo\"\n").unwrap();
+        fs::write(
+            dir.path().join("main.gom"),
+            "package main;\nuse demo::math::tests::api;\nfn main() -> unit { () }\n",
+        )
+        .unwrap();
+        fs::write(
+            dir.path().join("math/math.gom"),
+            "package math;\npub fn value() -> int32 { 1 }\n",
+        )
+        .unwrap();
+        fs::write(
+            dir.path().join("math/tests/api/api.gom"),
+            "package api;\npub fn value() -> int32 { 1 }\n",
+        )
+        .unwrap();
+
+        let error = discover_project_packages(
+            dir.path(),
+            &dir.path().join("main.gom"),
+            &ExternalImports::default(),
+        )
+        .unwrap_err();
+        assert!(error.contains("test-only package demo::math::tests::api cannot be imported"));
     }
 }
