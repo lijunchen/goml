@@ -1,0 +1,53 @@
+const n = `trait Diamond: Left + Right {
+    fn diamond(Self) -> string;
+}
+
+trait Left: Base {
+    fn left(Self) -> string;
+}
+
+trait Right: Base {
+    fn right(Self) -> string;
+}
+
+trait Base {
+    fn base(Self) -> string;
+}
+
+struct Value {}
+
+impl Base for Value {
+    fn base(self: Value) -> string {
+        "B"
+    }
+}
+
+impl Left for Value {
+    fn left(self: Value) -> string {
+        "L"
+    }
+}
+
+impl Right for Value {
+    fn right(self: Value) -> string {
+        "R"
+    }
+}
+
+impl Diamond for Value {
+    fn diamond(self: Value) -> string {
+        "D"
+    }
+}
+
+fn describe[T: Diamond](value: T) -> string {
+    value.base() + value.left() + value.right() + value.diamond()
+}
+
+fn main() -> unit {
+    println(describe(Value {}));
+}
+`;
+export {
+  n as default
+};

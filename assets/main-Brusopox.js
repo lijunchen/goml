@@ -1,0 +1,10 @@
+const n = `fn main() {
+    let a: int8 = -128;
+    println(a.to_string());
+    let b: int16 = -32768;
+    println(b.to_string());
+}
+`;
+export {
+  n as default
+};

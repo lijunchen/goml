@@ -1,0 +1,25 @@
+const n = `enum T {
+    A,
+    B(bool, bool),
+}
+
+fn test(t: T) -> unit {
+    match t {
+        A => println((1).to_string()),
+        B(false, false) => println((2).to_string()),
+        B(false, true) => println((3).to_string()),
+        _ => println((4).to_string()),
+    }
+}
+
+fn main() {
+    let _ = test(B(true, true));
+    let _ = test(B(false, true));
+    let _ = test(B(false, false));
+    let _ = test(A);
+    ()
+}
+`;
+export {
+  n as default
+};

@@ -1,0 +1,34 @@
+const n = `struct Point { x: int32, y: int32 }
+
+struct Flag { value: bool }
+
+trait Display {
+    fn show(Self) -> string;
+}
+
+impl Display for Point {
+    fn show(self: Point) -> string {
+        "Point(" + self.x.to_string() + "," + self.y.to_string() + ")"
+    }
+}
+
+impl Display for Flag {
+    fn show(self: Flag) -> string {
+        if self.value { "Flag(true)" } else { "Flag(false)" }
+    }
+}
+
+fn main() {
+    let p = Point { x: 1, y: 2 };
+    let t = Flag { value: true };
+    let dp: dyn Display = p;
+    let dt: dyn Display = t;
+    let _ = println(Display::show(dp));
+    let _ = println(Display::show(dt));
+    ()
+}
+
+`;
+export {
+  n as default
+};

@@ -1,0 +1,28 @@
+const n = `fn parse_text(ok: bool) -> Result[string, string] {
+    if ok {
+        Result::Ok("ignored")
+    } else {
+        Result::Err("parse failed")
+    }
+}
+
+fn check(ok: bool) -> Result[string, string] {
+    let _ = parse_text(ok)?;
+    Result::Ok("ok")
+}
+
+fn show(res: Result[string, string]) -> string {
+    match res {
+        Result::Ok(value) => "ok " + value,
+        Result::Err(err) => "err " + err,
+    }
+}
+
+fn main() -> unit {
+    println(show(check(true)));
+    println(show(check(false)));
+}
+`;
+export {
+  n as default
+};

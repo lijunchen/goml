@@ -1,0 +1,17 @@
+const n = `fn main() {
+    let i = Ref::new(0i32);
+    while i.get() < 10i32 {
+        if i.get() == 5i32 {
+            break
+        } else {
+            ()
+        };
+        let _ = println(i.get());
+        i.set(i.get() + 1i32);
+    };
+    let _ = println("done");
+}
+`;
+export {
+  n as default
+};

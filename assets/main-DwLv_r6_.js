@@ -1,0 +1,39 @@
+const n = `trait Label {
+    fn label(Self) -> string;
+}
+
+trait Source {
+    type Item: Label;
+
+    fn get(Self) -> Self::Item;
+}
+
+struct TextSource {
+    value: string,
+}
+
+impl Label for string {
+    fn label(self: string) -> string {
+        "label:" + self
+    }
+}
+
+impl Source for TextSource {
+    type Item = string;
+
+    fn get(self: TextSource) -> string {
+        self.value
+    }
+}
+
+fn render[S: Source](source: S) -> string {
+    Source::get(source).label()
+}
+
+fn main() -> unit {
+    println(render(TextSource { value: "goml" }));
+}
+`;
+export {
+  n as default
+};

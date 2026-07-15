@@ -1,0 +1,13 @@
+const n = `fn main() {
+    let x: uint8 = 5;
+    let y: string = match x {
+        0 => "zero",
+        1 => "one",
+        _ => "other",
+    };
+    println(y);
+}
+`;
+export {
+  n as default
+};

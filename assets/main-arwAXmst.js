@@ -1,0 +1,16 @@
+const n = `enum Option[T] {
+    Some(T),
+    None,
+}
+
+fn main() {
+    let x: Option[uint8] = Option::Some(42);
+    match x {
+        Option::Some(v) => println(v.to_string()),
+        Option::None => println("none"),
+    };
+}
+`;
+export {
+  n as default
+};

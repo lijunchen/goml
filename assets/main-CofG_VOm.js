@@ -1,0 +1,33 @@
+const t = `fn parse_text(ok: bool) -> Result[string, string] {
+    if ok {
+        Result::Ok("goml")
+    } else {
+        Result::Err("parse failed")
+    }
+}
+
+fn normalize_text(ok: bool) -> Result[string, string] {
+    let text = parse_text(ok)?;
+    Result::Ok(text + "!")
+}
+
+fn decorate_text(ok: bool) -> Result[string, string] {
+    let text = normalize_text(ok)?;
+    Result::Ok("[" + text + "]")
+}
+
+fn show(res: Result[string, string]) -> string {
+    match res {
+        Result::Ok(value) => "ok " + value,
+        Result::Err(err) => "err " + err,
+    }
+}
+
+fn main() -> unit {
+    println(show(decorate_text(true)));
+    println(show(decorate_text(false)));
+}
+`;
+export {
+  t as default
+};

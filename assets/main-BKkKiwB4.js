@@ -1,0 +1,24 @@
+const n = `trait Display {
+    fn show(Self) -> string;
+}
+
+struct S {}
+
+impl Display for S {
+    fn show(self: S) -> string {
+        "ok"
+    }
+}
+
+fn to_dyn[T: Display](x: T) -> dyn Display {
+    x
+}
+
+fn main() {
+    let _ = to_dyn(S {});
+    println("ok");
+}
+`;
+export {
+  n as default
+};

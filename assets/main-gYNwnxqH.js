@@ -1,0 +1,43 @@
+const n = `trait Source {
+    type Item;
+
+    fn get(Self) -> Self::Item;
+}
+
+trait Pick[T] {
+    fn pick(Self) -> T;
+}
+
+impl[S: Source] Pick[S::Item] for S {
+    fn pick(self: S) -> S::Item {
+        Source::get(self)
+    }
+}
+
+struct Value {
+    value: int32,
+}
+
+impl Source for Value {
+    type Item = int32;
+
+    fn get(self: Value) -> int32 {
+        self.value
+    }
+}
+
+fn copy[S: Source + Pick[S::Item]](source: S) -> S::Item {
+    let value: S::Item = Pick[S::Item]::pick(source);
+    let identity = |item: S::Item| item;
+    identity(value)
+}
+
+fn main() -> unit {
+    let direct: int32 = (Value { value: 41 }).pick();
+    println(direct);
+    println(copy(Value { value: 42 }));
+}
+`;
+export {
+  n as default
+};

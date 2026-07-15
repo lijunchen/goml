@@ -1,0 +1,23 @@
+const n = `trait Display {
+    fn show(Self) -> string;
+}
+
+impl Display for int32 {
+    fn show(self: int32) -> string {
+        self.to_string()
+    }
+}
+
+fn mk_renderer[T: Display](x: T) -> () -> string {
+    let d: dyn Display = x;
+    || Display::show(d)
+}
+
+fn main() {
+    let f = mk_renderer(42);
+    println(f());
+}
+`;
+export {
+  n as default
+};

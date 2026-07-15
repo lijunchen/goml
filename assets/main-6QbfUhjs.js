@@ -1,0 +1,14 @@
+const n = `struct Pair[A, B] {
+    first: A,
+    second: B,
+}
+
+fn main() {
+    let p: Pair[uint8, float32] = Pair { first: 10, second: 3.14 };
+    println(p.first.to_string());
+    println(p.second.to_string());
+}
+`;
+export {
+  n as default
+};

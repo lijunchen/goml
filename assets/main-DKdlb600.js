@@ -1,0 +1,31 @@
+const n = `fn maybe_value(flag: bool) -> Option[int32] {
+    if flag {
+        Option::Some(4)
+    } else {
+        Option::None
+    }
+}
+
+fn with_base(base: int32, flag: bool) -> Option[int32] {
+    let run = || {
+        let value = maybe_value(flag)?;
+        Option::Some(value + base)
+    };
+    run()
+}
+
+fn show(opt: Option[int32]) -> string {
+    match opt {
+        Option::Some(value) => "some=" + value.to_string(),
+        Option::None => "none",
+    }
+}
+
+fn main() -> unit {
+    println(show(with_base(3, true)));
+    println(show(with_base(3, false)));
+}
+`;
+export {
+  n as default
+};

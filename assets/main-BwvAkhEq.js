@@ -1,0 +1,55 @@
+const n = `fn step_some(i: int32) -> Option[bool] {
+    if i < 3i32 {
+        Option::Some(true)
+    } else {
+        Option::Some(false)
+    }
+}
+
+fn step_none(i: int32) -> Option[bool] {
+    if i < 2i32 {
+        Option::Some(true)
+    } else {
+        Option::None
+    }
+}
+
+fn run_some() -> Option[int32] {
+    let i = Ref::new(0i32);
+    let total = Ref::new(0i32);
+
+    while step_some(i.get())? {
+        total.set(total.get() + i.get());
+        i.set(i.get() + 1i32);
+    };
+
+    Option::Some(total.get())
+}
+
+fn run_none() -> Option[int32] {
+    let i = Ref::new(0i32);
+    let total = Ref::new(0i32);
+
+    while step_none(i.get())? {
+        total.set(total.get() + i.get());
+        i.set(i.get() + 1i32);
+    };
+
+    Option::Some(total.get())
+}
+
+fn show(x: Option[int32]) -> string {
+    match x {
+        Option::Some(v) => "some=" + v.to_string(),
+        Option::None => "none",
+    }
+}
+
+fn main() -> unit {
+    println(show(run_some()));
+    println(show(run_none()));
+}
+`;
+export {
+  n as default
+};

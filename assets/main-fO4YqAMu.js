@@ -1,0 +1,26 @@
+const n = `trait Display {
+    fn show(Self) -> string;
+}
+
+impl Display for int32 {
+    fn show(self: int32) -> string {
+        self.to_string()
+    }
+}
+
+struct Holder[T] {
+    value: T,
+}
+
+fn render(x: dyn Display) -> string {
+    Display::show(x)
+}
+
+fn main() -> unit {
+    let holder: Holder[dyn Display] = Holder { value: 42i32 };
+    println(render(holder.value));
+}
+`;
+export {
+  n as default
+};

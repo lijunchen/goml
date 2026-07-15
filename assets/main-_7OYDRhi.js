@@ -1,0 +1,21 @@
+const r = `fn update_array(arr: [int32; 3]) -> [int32; 3] {
+    let mut arr = arr;
+    arr[1] = 42;
+    arr
+}
+
+fn read_array(arr: [int32; 3]) -> int32 {
+    arr[1]
+}
+
+fn main() {
+    let arr = [1, 2, 3];
+    let updated = update_array(arr);
+    let value = read_array(updated);
+    let _ = println(value.to_string());
+    ()
+}
+`;
+export {
+  r as default
+};

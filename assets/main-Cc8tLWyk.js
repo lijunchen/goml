@@ -1,0 +1,23 @@
+const n = `enum Expr {
+    Zero,
+    Succ(Expr),
+    Add(Expr, Expr),
+    Mul(Expr, Expr),
+}
+
+fn main() {
+    let a = Mul(Add(Zero,Zero),Zero);
+    match a {
+        Add(Zero,Zero) => print(0i32),
+        Mul(Zero,x) => print(1i32),
+        Add(Succ(x),y) => print(2i32),
+        Mul(x,Zero) => print(3i32),
+        Mul(Add(x,y),z) => print(4i32),
+        Add(x,Zero) => print(5i32),
+        x => print(6i32),
+    }
+}
+`;
+export {
+  n as default
+};

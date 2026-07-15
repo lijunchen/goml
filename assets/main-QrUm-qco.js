@@ -1,0 +1,18 @@
+const n = `fn identity[T](x: T) -> T {
+    x
+}
+
+fn main() {
+    let a: uint8 = identity(42);
+    println(a.to_string());
+    
+    let b: float32 = identity(3.14);
+    println(b.to_string());
+    
+    let c: int64 = identity(100);
+    println(c.to_string());
+}
+`;
+export {
+  n as default
+};

@@ -1,0 +1,24 @@
+const n = `fn main() {
+    let a = (true, false);
+    let b = match a {
+        (false, false) => (true, true),
+        (false, true) => (true, false),
+        (true, false) => (false, true),
+        (true, true) => (false, false),
+    };
+    let b_1 = match b {
+        (_, w) => w
+    };
+    let c = match (true, b_1) {
+        (false, false) => println((0).to_string()),
+        (false, true) => println((1).to_string()),
+        (true, false) => println((2).to_string()),
+        (true, true) => println((3).to_string()),
+    }
+ ;
+    println(c.to_string())
+}
+`;
+export {
+  n as default
+};

@@ -1,0 +1,34 @@
+const n = `fn take_u8(x: uint8) -> uint8 {
+    x
+}
+
+fn take_f32(x: float32) -> float32 {
+    x
+}
+
+fn main() {
+    let a: uint8 = 1;
+    let b: int8 = 2;
+    let c: int16 = 3;
+    let d: uint16 = 4;
+    let e: uint32 = 5;
+    let f: int64 = 6;
+    let g: uint64 = 7;
+    let h: float32 = 1.0;
+
+    println(a.to_string());
+    println(b.to_string());
+    println(c.to_string());
+    println(d.to_string());
+    println(e.to_string());
+    println(f.to_string());
+    println(g.to_string());
+    println(h.to_string());
+
+    println(take_u8(10).to_string());
+    println(take_f32(2.5).to_string());
+}
+`;
+export {
+  n as default
+};

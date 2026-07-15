@@ -1,0 +1,49 @@
+const e = `trait Render {
+    fn render(Self) -> string;
+}
+
+trait Selected {
+    fn selected(Self) -> string;
+}
+
+struct Wrap[T] {
+    value: T,
+}
+
+impl Render for Vec[int32] {
+    fn render(self: Vec[int32]) -> string {
+        "items=" + self.len().to_string()
+    }
+}
+
+impl[T] Selected for Wrap[T] where Vec[T]: Render {
+    fn selected(self: Wrap[T]) -> string {
+        "selected"
+    }
+}
+
+fn render_all[T](values: Vec[T]) -> string where Vec[T]: Render {
+    values.render()
+}
+
+fn same[T, U](value: T) -> U where T == U {
+    value
+}
+
+fn require[T: Selected](value: T) -> string {
+    value.selected()
+}
+
+fn main() -> unit {
+    let values: Vec[int32] = vec_new();
+    values.push(1);
+    values.push(2);
+    println(render_all(values));
+    let text: string = same("equal");
+    println(text);
+    println(require(Wrap { value: 7 }));
+}
+`;
+export {
+  e as default
+};

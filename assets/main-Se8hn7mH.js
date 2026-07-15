@@ -1,0 +1,38 @@
+const n = `trait Mark {
+    fn mark(Self) -> string;
+}
+
+trait Label {
+    fn label(Self) -> string;
+}
+
+struct Box[T] {
+    value: T,
+}
+
+impl Mark for int32 {
+    fn mark(self: int32) -> string {
+        self.to_string()
+    }
+}
+
+impl[T: Mark] Label for Box[T] {
+    fn label(self: Box[T]) -> string {
+        "blanket:" + self.value.mark()
+    }
+}
+
+impl Label for Box[string] {
+    fn label(self: Box[string]) -> string {
+        "string:" + self.value
+    }
+}
+
+fn main() -> unit {
+    println((Box { value: "text" }).label());
+    println((Box { value: 7 }).label());
+}
+`;
+export {
+  n as default
+};

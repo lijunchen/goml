@@ -1,0 +1,28 @@
+const n = `fn cut_prefix(case_id: int32) -> Option[string] {
+    if case_id == 0i32 {
+        Option::Some("ml")
+    } else {
+        Option::None
+    }
+}
+
+fn trim_go(case_id: int32) -> Option[string] {
+    let suffix = cut_prefix(case_id)?;
+    Option::Some(suffix + "!")
+}
+
+fn show(opt: Option[string]) -> string {
+    match opt {
+        Option::Some(value) => "some " + value,
+        Option::None => "none",
+    }
+}
+
+fn main() -> unit {
+    println(show(trim_go(0i32)));
+    println(show(trim_go(1i32)));
+}
+`;
+export {
+  n as default
+};

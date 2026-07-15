@@ -1,0 +1,10 @@
+const n = `use std::env;
+use std::io;
+
+fn main() -> unit {
+    io::println((env::args().len() > 0).to_string())
+}
+`;
+export {
+  n as default
+};

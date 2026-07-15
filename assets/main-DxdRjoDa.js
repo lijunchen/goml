@@ -1,0 +1,38 @@
+const n = `enum Light {
+    Red,
+    Yellow,
+    Green,
+}
+
+enum Paint {
+    Red,
+    Blue,
+}
+
+fn light_code(light: Light) -> int32 {
+    match light {
+        Light::Red => 10,
+        Light::Yellow => 20,
+        Light::Green => 30,
+    }
+}
+
+fn paint_code(paint: Paint) -> int32 {
+    match paint {
+        Paint::Red => 1,
+        Paint::Blue => 2,
+    }
+}
+
+fn main() {
+    let light = Light::Red;
+    let paint = Paint::Red;
+    let _ = println(light_code(light).to_string());
+    let _ = println(paint_code(paint).to_string());
+    let _ = println(light_code(Light::Green).to_string());
+    println(paint_code(Paint::Blue).to_string())
+}
+`;
+export {
+  n as default
+};

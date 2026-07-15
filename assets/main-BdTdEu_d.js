@@ -1,0 +1,63 @@
+const n = `fn test() {
+    let y = 3;
+    let z = 5;
+    let f = |x: int32| x * y * z;
+    let _ = println(f(2).to_string());
+    println(f(3).to_string())
+}
+
+fn call_int_id(f : (int32) -> int32, v: int32) -> int32 {
+    f(v)
+}
+
+enum IntList {
+    Nil,
+    Cons(int32, IntList),
+}
+
+struct Point {
+    x: int32,
+    y: int32,
+}
+
+fn main() {
+    let base = 5;
+    let add_base = |x: int32| x + base;
+    let result = add_base(7);
+    let printer = |prefix: string, value: int32| {
+        let message = prefix + value.to_string();
+        println(message)
+    };
+    let _ = printer("result: ", result);
+    let unused = |y: int32| y + result;
+    let no_capture = |z: int32| z * 2;
+    let doubled = no_capture(3);
+    let _ = println(doubled.to_string());
+    let _ = test();
+
+    let list123 = Cons(1, Cons(2, Cons(3, Nil)));
+
+    let point = Point { x: 10, y: 20 };
+
+    let play_list_and_point = || {
+        match list123 {
+            Nil => println("Empty list"),
+            Cons(head, tail) => {
+                let _ = println(head.to_string());
+                match point {
+                    Point { x: x, y: y } => {
+                        let _ = println("Point: (" + x.to_string() + ", " + y.to_string() + ")");
+                        ()
+                    }
+                }
+            }
+        }
+    };
+
+    let _ = play_list_and_point();
+    ()
+}
+`;
+export {
+  n as default
+};

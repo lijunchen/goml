@@ -1,0 +1,45 @@
+const n = `enum Mode {
+    Take,
+    Skip,
+}
+
+fn maybe_num(flag: bool) -> Option[int32] {
+    if flag {
+        Option::Some(8)
+    } else {
+        Option::None
+    }
+}
+
+fn nested(top: bool, mode: Mode, inner_flag: bool) -> Option[int32] {
+    let value = if top {
+        match mode {
+            Mode::Take => {
+                let inner = maybe_num(inner_flag)?;
+                inner + 1
+            },
+            Mode::Skip => 20,
+        }
+    } else {
+        let inner = maybe_num(inner_flag)?;
+        inner + 2
+    };
+    Option::Some(value)
+}
+
+fn show(opt: Option[int32]) -> string {
+    match opt {
+        Option::Some(value) => "some=" + value.to_string(),
+        Option::None => "none",
+    }
+}
+
+fn main() -> unit {
+    println(show(nested(true, Mode::Take, true)));
+    println(show(nested(true, Mode::Skip, false)));
+    println(show(nested(false, Mode::Take, false)));
+}
+`;
+export {
+  n as default
+};

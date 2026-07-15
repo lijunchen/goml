@@ -1,0 +1,37 @@
+const n = `trait Batch {
+    type Items: IntoIterator;
+
+    fn items(Self) -> Self::Items;
+}
+
+struct Numbers {
+    values: Vec[int32],
+}
+
+impl Batch for Numbers {
+    type Items = Vec[int32];
+
+    fn items(self: Numbers) -> Vec[int32] {
+        self.values
+    }
+}
+
+fn count[B: Batch](batch: B) -> int32 {
+    let total = Ref::new(0);
+    for _ in Batch::items(batch) {
+        total.set(total.get() + 1);
+    };
+    total.get()
+}
+
+fn main() -> unit {
+    let values: Vec[int32] = Vec::new();
+    values.push(10);
+    values.push(20);
+    values.push(30);
+    println(count(Numbers { values }));
+}
+`;
+export {
+  n as default
+};
