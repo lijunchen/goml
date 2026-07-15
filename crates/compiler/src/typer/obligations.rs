@@ -16,10 +16,17 @@ pub(crate) struct Obligation {
 #[derive(Debug, Clone)]
 pub(crate) enum Predicate {
     Trait(TraitGoal),
+    TypeEquality(TypeEqualityGoal),
     Method(MethodGoal),
     Projection(ProjectionGoal),
     Coerce(CoercionGoal),
     Operation(OperationGoal),
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct TypeEqualityGoal {
+    pub lhs: tast::Ty,
+    pub rhs: tast::Ty,
 }
 
 pub(crate) struct ObligationWorklist {
@@ -127,7 +134,7 @@ impl ObligationWorklist {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct TraitGoal {
-    pub trait_name: tast::TastIdent,
+    pub trait_ref: tast::TraitRef,
     pub for_ty: tast::Ty,
 }
 
@@ -145,6 +152,12 @@ pub(crate) struct MethodGoal {
 
 #[derive(Debug, Clone)]
 pub(crate) enum ProjectionGoal {
+    AssociatedType {
+        trait_ref: tast::TraitRef,
+        for_ty: tast::Ty,
+        name: tast::TastIdent,
+        result_ty: tast::Ty,
+    },
     Field {
         base_ty: tast::Ty,
         field: tast::TastIdent,
@@ -159,31 +172,18 @@ pub(crate) enum ProjectionGoal {
 
 #[derive(Debug, Clone, Default)]
 pub(crate) struct ParamEnv {
-    bounds: HashMap<String, HashSet<String>>,
+    predicates: Vec<crate::env::TypePredicate>,
 }
 
 impl ParamEnv {
-    pub(crate) fn from_bounds(bounds: &HashMap<String, Vec<String>>) -> Self {
+    pub(crate) fn from_predicates(predicates: &[crate::env::TypePredicate]) -> Self {
         Self {
-            bounds: bounds
-                .iter()
-                .map(|(param, traits)| {
-                    (
-                        param.clone(),
-                        traits.iter().cloned().collect::<HashSet<_>>(),
-                    )
-                })
-                .collect(),
+            predicates: predicates.to_vec(),
         }
     }
 
-    pub(crate) fn proves(&self, goal: &TraitGoal) -> bool {
-        let tast::Ty::TParam { name } = &goal.for_ty else {
-            return false;
-        };
-        self.bounds
-            .get(name)
-            .is_some_and(|bounds| bounds.contains(&goal.trait_name.0))
+    pub(crate) fn predicates(&self) -> &[crate::env::TypePredicate] {
+        &self.predicates
     }
 }
 
@@ -214,6 +214,7 @@ pub(crate) enum ObligationCauseKind {
     FunctionBound,
     ImplBound,
     MethodCall,
+    ForLoop,
     Coercion,
     Projection,
     Operation,
@@ -225,6 +226,7 @@ impl ObligationCauseKind {
             Self::FunctionBound => "a function bound",
             Self::ImplBound => "an implementation bound",
             Self::MethodCall => "a method call",
+            Self::ForLoop => "a for loop",
             Self::Coercion => "a trait-object coercion",
             Self::Projection => "a projection",
             Self::Operation => "an operator",
@@ -235,8 +237,7 @@ impl ObligationCauseKind {
 #[derive(Debug, Clone)]
 pub(crate) struct InstantiatedScheme {
     pub ty: tast::Ty,
-    pub substitution: HashMap<String, tast::Ty>,
-    pub obligations: Vec<(TraitGoal, ObligationCause)>,
+    pub obligations: Vec<(Predicate, ObligationCause)>,
 }
 
 #[derive(Debug, Clone)]

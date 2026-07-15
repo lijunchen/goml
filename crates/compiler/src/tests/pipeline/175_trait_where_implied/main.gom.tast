@@ -1,0 +1,19 @@
+impl Ready for Worker{
+  fn state(self/0: Worker) -> string {
+      (self/0 : Worker).name + ":ready"
+  }
+}
+
+impl Service[Worker] for Station{
+  fn get(self/1: Station) -> Worker {
+      (self/1 : Station).worker
+  }
+}
+
+fn describe(service/2: S) -> string {
+    (Ready::state : (T) -> string)((Service[T]::get : (S) -> T)((service/2 : S)))
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((describe : (Station) -> string)(Station { worker: Worker { name: "build" } }));
+}

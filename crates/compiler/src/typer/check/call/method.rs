@@ -16,6 +16,7 @@ pub(super) struct MethodCallRequest<'a> {
     pub(super) receiver_expr: hir::ExprId,
     pub(super) field: hir::HirIdent,
     pub(super) args: &'a [hir::ExprId],
+    pub(super) hint_ret_ty: Option<&'a tast::Ty>,
 }
 
 struct ReceiverCall<'a> {
@@ -26,6 +27,7 @@ struct ReceiverCall<'a> {
     receiver_ty: tast::Ty,
     method_name: tast::TastIdent,
     args: &'a [hir::ExprId],
+    hint_ret_ty: Option<&'a tast::Ty>,
 }
 
 struct TraitMethodCall<'a> {
@@ -34,7 +36,7 @@ struct TraitMethodCall<'a> {
     receiver_expr_id: hir::ExprId,
     receiver: tast::Expr,
     receiver_ty: tast::Ty,
-    trait_name: &'a tast::TastIdent,
+    trait_ref: &'a tast::TraitRef,
     method_name: &'a tast::TastIdent,
     method_scheme: &'a crate::env::FnScheme,
     args: &'a [hir::ExprId],
@@ -73,6 +75,62 @@ impl Typer {
             exprs.push(expr);
         }
         InferredArguments { exprs, types }
+    }
+
+    fn trait_method_candidate_matches(
+        &mut self,
+        genv: &PackageTypeEnv,
+        local_env: &LocalTypeEnv,
+        receiver_ty: &tast::Ty,
+        args: &[hir::ExprId],
+        expected_ret_ty: Option<&tast::Ty>,
+        scheme: &crate::env::FnScheme,
+    ) -> bool {
+        let inference = self.snapshot_inference();
+        let saved_results = self.results.clone();
+        let saved_obligations = self.obligations.clone();
+        let saved_obligation_causes = self.obligation_causes.clone();
+        let saved_next_obligation_id = self.next_obligation_id;
+        let saved_reported_origins = self.reported_unresolved_type_origins.clone();
+        let saved_unresolved_origins = self.unresolved_type_var_origins.clone();
+        let saved_array_counter = self.array_wildcard_counter;
+        let saved_array_resolutions = self.array_wildcard_resolutions.clone();
+        let mut candidate_diagnostics = Diagnostics::new();
+        let mut candidate_env = local_env.clone();
+        let method_ty = instantiate_self_ty(&scheme.ty, receiver_ty);
+        let param_env = crate::typer::ParamEnv::from_predicates(local_env.predicates());
+        let mut solver = crate::typer::traits::solver::TraitSolver::new(genv, &param_env);
+        let method_ty = solver.normalize_ty(self, &method_ty).unwrap_or(method_ty);
+        let matches = if let tast::Ty::TFunc { params, ret_ty } = method_ty {
+            if params.len() != args.len() + 1 {
+                false
+            } else {
+                self.equate(&mut candidate_diagnostics, receiver_ty, &params[0], None);
+                let _ = self.check_method_arguments(
+                    genv,
+                    &mut candidate_env,
+                    &mut candidate_diagnostics,
+                    args,
+                    &params,
+                );
+                if let Some(expected) = expected_ret_ty {
+                    self.equate(&mut candidate_diagnostics, ret_ty.as_ref(), expected, None);
+                }
+                !candidate_diagnostics.has_errors()
+            }
+        } else {
+            false
+        };
+        self.rollback_inference(inference);
+        self.results = saved_results;
+        self.obligations = saved_obligations;
+        self.obligation_causes = saved_obligation_causes;
+        self.next_obligation_id = saved_next_obligation_id;
+        self.reported_unresolved_type_origins = saved_reported_origins;
+        self.unresolved_type_var_origins = saved_unresolved_origins;
+        self.array_wildcard_counter = saved_array_counter;
+        self.array_wildcard_resolutions = saved_array_resolutions;
+        matches
     }
 
     fn infer_field_value_call(
@@ -126,6 +184,7 @@ impl Typer {
             receiver_expr,
             field,
             args,
+            hint_ret_ty,
         } = request;
         let receiver = self.infer_expr(genv, local_env, diagnostics, receiver_expr);
         let receiver_ty = receiver.get_ty();
@@ -139,6 +198,7 @@ impl Typer {
             receiver_ty,
             method_name,
             args,
+            hint_ret_ty,
         };
         match method_scheme {
             Some(method_scheme) => {
@@ -164,6 +224,7 @@ impl Typer {
             receiver_ty,
             method_name,
             args,
+            hint_ret_ty: _,
         } = call;
         let method_name_str = method_name.0;
         let range = self.expr_range(call_expr_id);
@@ -275,6 +336,7 @@ impl Typer {
             receiver_ty,
             method_name,
             args,
+            hint_ret_ty,
         } = call;
         let field_ty = resolve_field_ty_eager(genv, &receiver_ty, &method_name);
         if contains_tvar(&receiver_ty) || contains_tparam(&receiver_ty) {
@@ -293,9 +355,30 @@ impl Typer {
                 },
             );
         }
-        let lookup = lookup_trait_method_candidates(genv, local_env, &receiver_ty, &method_name);
+        let mut lookup =
+            lookup_trait_method_candidates(self, genv, local_env, &receiver_ty, &method_name);
+        if lookup.candidates.len() > 1 {
+            let matching = lookup
+                .candidates
+                .iter()
+                .filter(|(_, scheme)| {
+                    self.trait_method_candidate_matches(
+                        genv,
+                        local_env,
+                        &receiver_ty,
+                        args,
+                        hint_ret_ty,
+                        scheme,
+                    )
+                })
+                .cloned()
+                .collect::<Vec<_>>();
+            if !matching.is_empty() {
+                lookup.candidates = matching;
+            }
+        }
         match lookup.candidates.as_slice() {
-            [(trait_name, method_scheme)] => {
+            [(trait_ref, method_scheme)] => {
                 if let Some(field_ty) = field_ty.clone() {
                     return self.infer_field_value_call(
                         genv,
@@ -321,7 +404,7 @@ impl Typer {
                         receiver_expr_id: receiver_expr,
                         receiver: receiver_tast,
                         receiver_ty: receiver_ty.clone(),
-                        trait_name,
+                        trait_ref,
                         method_name: &method_name,
                         method_scheme,
                         args,
@@ -418,8 +501,8 @@ impl Typer {
             && let Some(bounds) = local_env.tparam_trait_bounds(name)
         {
             for bound in bounds {
-                if !candidate_traits.contains(bound) {
-                    candidate_traits.push(bound.clone());
+                if !candidate_traits.contains(&bound.name) {
+                    candidate_traits.push(bound.name.clone());
                 }
             }
         }
@@ -490,7 +573,7 @@ impl Typer {
             receiver_expr_id,
             receiver,
             receiver_ty,
-            trait_name,
+            trait_ref,
             method_name,
             method_scheme,
             args,
@@ -498,18 +581,18 @@ impl Typer {
         let range = self.expr_range(call_expr_id);
         let parent = self.push_obligation(
             Predicate::Trait(TraitGoal {
-                trait_name: trait_name.clone(),
+                trait_ref: trait_ref.clone(),
                 for_ty: receiver_ty.clone(),
             }),
             ObligationCause::new(range, ObligationCauseKind::MethodCall),
         );
-        let instantiated = self.instantiate_scheme(
+        let instantiated = self.instantiate_scheme_with_self(
             method_scheme,
+            &receiver_ty,
             ObligationCause::new(range, ObligationCauseKind::FunctionBound).with_parent(parent),
         );
         self.register_scheme_obligations(&instantiated);
-        let inst_method_ty = instantiated.ty;
-        let inst_method_ty_for_call = instantiate_self_ty(&inst_method_ty, &receiver_ty);
+        let inst_method_ty_for_call = instantiated.ty;
 
         let (params, ret_ty) = match &inst_method_ty_for_call {
             tast::Ty::TFunc { params, ret_ty } => (params.clone(), (**ret_ty).clone()),
@@ -518,7 +601,7 @@ impl Typer {
                     diagnostics,
                     format!(
                         "Expected trait method {}::{} to have a function type",
-                        trait_name.0, method_name.0
+                        trait_ref.name.0, method_name.0
                     ),
                 );
                 return self.error_expr(None);
@@ -530,7 +613,7 @@ impl Typer {
                 diagnostics,
                 format!(
                     "Trait method {}::{} expects {} arguments but got {}",
-                    trait_name.0,
+                    trait_ref.name.0,
                     method_name.0,
                     params.len(),
                     args.len() + 1
@@ -551,7 +634,7 @@ impl Typer {
                 diagnostics,
                 format!(
                     "trait method {}::{} missing receiver parameter",
-                    trait_name.0, method_name.0
+                    trait_ref.name.0, method_name.0
                 ),
             );
             self.fresh_ty_var()
@@ -567,7 +650,7 @@ impl Typer {
             call_expr_id,
             CallElab {
                 callee: CalleeElab::TraitMethod {
-                    trait_name: trait_name.clone(),
+                    trait_ref: trait_ref.clone(),
                     method_name: method_name.clone(),
                     ty: inst_method_ty_for_call.clone(),
                     astptr: None,
@@ -582,7 +665,7 @@ impl Typer {
         self.results.record_name_ref_elab(
             func_expr_id,
             NameRefElab::TraitMethod {
-                trait_name: trait_name.clone(),
+                trait_ref: trait_ref.clone(),
                 method_name: method_name.clone(),
                 ty: inst_method_ty_for_call.clone(),
                 astptr: None,
@@ -590,7 +673,7 @@ impl Typer {
         );
         tast::Expr::ECall {
             func: Box::new(tast::Expr::ETraitMethod {
-                trait_name: trait_name.clone(),
+                trait_ref: trait_ref.clone(),
                 method_name: method_name.clone(),
                 ty: inst_method_ty_for_call,
                 astptr: None,

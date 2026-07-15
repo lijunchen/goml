@@ -1,8 +1,8 @@
 use crate::common::{self, Constructor, Prim};
 use crate::core;
 use crate::env::{Gensym, GlobalTypeEnv, StructDef};
-use crate::intrinsics::{CallableBody, IntrinsicId};
-use crate::names::{inherent_method_fn_name, trait_impl_fn_name};
+use crate::intrinsics::{CallableBody, IntrinsicId, LangItemId};
+use crate::names::{inherent_method_fn_name, trait_impl_fn_name, trait_ref_impl_fn_name};
 use crate::tast::Arm;
 use crate::tast::Expr::{self, *};
 use crate::tast::Pat::{self, *};
@@ -102,6 +102,7 @@ fn expr_always_exits_control_flow(expr: &Expr) -> bool {
                 && expr_always_exits_control_flow(else_branch)
         }
         EWhile { cond, .. } => expr_always_exits_control_flow(cond),
+        EFor { iterator, .. } => expr_always_exits_control_flow(iterator),
         EMatch { arms, .. } => arms
             .iter()
             .all(|arm| expr_always_exits_control_flow(&arm.body)),
@@ -314,38 +315,6 @@ fn expr_range(expr: &Expr) -> Option<TextRange> {
     }
 }
 
-fn has_tparam(ty: &Ty) -> bool {
-    match ty {
-        Ty::TParam { .. } => true,
-        Ty::TVar(_) => false,
-        Ty::TUnit
-        | Ty::TBool
-        | Ty::TInt8
-        | Ty::TInt16
-        | Ty::TInt32
-        | Ty::TInt64
-        | Ty::TUint8
-        | Ty::TUint16
-        | Ty::TUint32
-        | Ty::TUint64
-        | Ty::TFloat32
-        | Ty::TFloat64
-        | Ty::TString
-        | Ty::TChar
-        | Ty::TEnum { .. }
-        | Ty::TStruct { .. }
-        | Ty::TDyn { .. } => false,
-        Ty::TTuple { typs } => typs.iter().any(has_tparam),
-        Ty::TApp { ty, args } => has_tparam(ty) || args.iter().any(has_tparam),
-        Ty::TArray { elem, .. } => has_tparam(elem),
-        Ty::TSlice { elem } => has_tparam(elem),
-        Ty::TVec { elem } => has_tparam(elem),
-        Ty::TRef { elem } => has_tparam(elem),
-        Ty::THashMap { key, value } => has_tparam(key) || has_tparam(value),
-        Ty::TFunc { params, ret_ty } => params.iter().any(has_tparam) || has_tparam(ret_ty),
-    }
-}
-
 fn branch_variable(rows: &[Row]) -> Variable {
     let mut counts = HashMap::new();
     let mut var_ty: HashMap<String, Ty> = HashMap::new();
@@ -394,6 +363,22 @@ fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
         Ty::TStruct { name } => Ty::TStruct { name: name.clone() },
         Ty::TDyn { trait_name } => Ty::TDyn {
             trait_name: trait_name.clone(),
+        },
+        Ty::TProjection {
+            trait_ref,
+            for_ty,
+            name,
+        } => Ty::TProjection {
+            trait_ref: trait_ref.as_ref().map(|trait_ref| tast::TraitRef {
+                name: trait_ref.name.clone(),
+                args: trait_ref
+                    .args
+                    .iter()
+                    .map(|ty| substitute_ty_params(ty, subst))
+                    .collect(),
+            }),
+            for_ty: Box::new(substitute_ty_params(for_ty, subst)),
+            name: name.clone(),
         },
         Ty::TApp { ty, args } => Ty::TApp {
             ty: Box::new(substitute_ty_params(ty, subst)),
@@ -513,7 +498,7 @@ enum PlaceStep {
     },
     Index {
         container_ty: Ty,
-        index: Expr,
+        index: Box<Expr>,
         item_ty: Ty,
         range: Option<TextRange>,
     },
@@ -606,7 +591,7 @@ fn decompose_place(expr: &Expr) -> Option<(PlaceRoot, Vec<PlaceStep>)> {
                 let root = go(base, steps)?;
                 steps.push(PlaceStep::Index {
                     container_ty: base.get_ty(),
-                    index: index.as_ref().clone(),
+                    index: index.clone(),
                     item_ty: ty.clone(),
                     range: astptr.as_ref().map(|ptr| ptr.text_range()),
                 });
@@ -2235,6 +2220,14 @@ fn compile_rows(
             );
             emissing(ty)
         }
+        Ty::TProjection { .. } => {
+            push_compile_ice(
+                diagnostics,
+                "associated type projection reached match compilation unexpectedly",
+                match_range,
+            );
+            emissing(ty)
+        }
         Ty::TRef { .. } => {
             push_compile_error(
                 diagnostics,
@@ -2355,6 +2348,10 @@ fn collect_mutable_bindings_expr(expr: &Expr, mutable_bindings: &mut HiddenMutCe
             collect_mutable_bindings_expr(cond, mutable_bindings);
             collect_mutable_bindings_expr(body, mutable_bindings);
         }
+        EFor { iterator, body, .. } => {
+            collect_mutable_bindings_expr(iterator, mutable_bindings);
+            collect_mutable_bindings_expr(body, mutable_bindings);
+        }
         EGo { expr, .. } => {
             collect_mutable_bindings_expr(expr, mutable_bindings);
         }
@@ -2453,6 +2450,10 @@ fn collect_captured_names_expr(expr: &Expr, captured: &mut HashSet<String>) {
         }
         EWhile { cond, body, .. } => {
             collect_captured_names_expr(cond, captured);
+            collect_captured_names_expr(body, captured);
+        }
+        EFor { iterator, body, .. } => {
+            collect_captured_names_expr(iterator, captured);
             collect_captured_names_expr(body, captured);
         }
         EGo { expr, .. } => {
@@ -2734,13 +2735,13 @@ fn lower_hidden_mut_expr(expr: core::Expr, hidden_mut_cells: &HiddenMutCells) ->
             ty,
         },
         core::Expr::ETraitCall {
-            trait_name,
+            trait_ref,
             method_name,
             receiver,
             args,
             ty,
         } => core::Expr::ETraitCall {
-            trait_name,
+            trait_ref,
             method_name,
             receiver: Box::new(lower_hidden_mut_expr(*receiver, hidden_mut_cells)),
             args: args
@@ -2770,8 +2771,8 @@ pub fn compile_file(
                 let for_ty = &impl_block.for_type;
                 for m in impl_block.methods.iter() {
                     let method_name = &m.name;
-                    let func_name = if let Some(trait_name) = &impl_block.trait_name {
-                        trait_impl_fn_name(trait_name, for_ty, method_name)
+                    let func_name = if let Some(trait_ref) = &impl_block.trait_ref {
+                        trait_ref_impl_fn_name(trait_ref, for_ty, method_name)
                     } else {
                         inherent_method_fn_name(for_ty, method_name)
                     };
@@ -2780,6 +2781,13 @@ pub fn compile_file(
                         name: func_name,
                         root: true,
                         generics: impl_block.generics.clone(),
+                        trait_impl: impl_block
+                            .trait_ref
+                            .clone()
+                            .map(|trait_ref| core::TraitImpl {
+                                trait_ref,
+                                for_ty: impl_block.for_type.clone(),
+                            }),
                         params: m
                             .params
                             .iter()
@@ -2805,6 +2813,7 @@ pub fn compile_file(
                     name: f.name.clone(),
                     root: true,
                     generics: vec![],
+                    trait_impl: None,
                     params: f
                         .params
                         .iter()
@@ -3312,6 +3321,157 @@ fn compile_block_parts(
     }
 }
 
+struct ForCompileRequest<'a> {
+    pat: &'a Pat,
+    iterator: &'a Expr,
+    into_iter_trait_ref: &'a tast::TraitRef,
+    iterator_trait_ref: &'a tast::TraitRef,
+    iterator_ty: &'a Ty,
+    body: &'a Expr,
+}
+
+fn compile_for_expr(
+    request: ForCompileRequest<'_>,
+    genv: &GlobalTypeEnv,
+    gensym: &Gensym,
+    diagnostics: &mut Diagnostics,
+) -> core::Expr {
+    let ForCompileRequest {
+        pat,
+        iterator,
+        into_iter_trait_ref,
+        iterator_trait_ref,
+        iterator_ty,
+        body,
+    } = request;
+    let range = pat_range(pat).or_else(|| expr_range(iterator));
+    let Some(option_name) = genv.lang_item(LangItemId::Option).cloned() else {
+        push_compile_ice(diagnostics, "Option lang item is not registered", range);
+        return emissing(&Ty::TUnit);
+    };
+    let Some((some_constructor, _)) =
+        genv.lookup_constructor_with_namespace(Some(&option_name), &TastIdent::new("Some"))
+    else {
+        push_compile_ice(diagnostics, "Option::Some is not registered", range);
+        return emissing(&Ty::TUnit);
+    };
+    let Some((none_constructor, _)) =
+        genv.lookup_constructor_with_namespace(Some(&option_name), &TastIdent::new("None"))
+    else {
+        push_compile_ice(diagnostics, "Option::None is not registered", range);
+        return emissing(&Ty::TUnit);
+    };
+
+    let source_ty = iterator.get_ty();
+    let item_ty = pat.get_ty();
+    let option_ty = Ty::TApp {
+        ty: Box::new(Ty::TEnum {
+            name: option_name.0,
+        }),
+        args: vec![item_ty],
+    };
+    let iterator_name = gensym.gensym("for_iter");
+    let next_name = gensym.gensym("for_next");
+    let method_ty = Ty::TFunc {
+        params: vec![iterator_ty.clone()],
+        ret_ty: Box::new(option_ty.clone()),
+    };
+    let next_call = Expr::ECall {
+        func: Box::new(Expr::ETraitMethod {
+            trait_ref: iterator_trait_ref.clone(),
+            method_name: TastIdent::new("next"),
+            ty: method_ty,
+            astptr: None,
+        }),
+        args: vec![Expr::EVar {
+            name: iterator_name.clone(),
+            ty: iterator_ty.clone(),
+            astptr: None,
+        }],
+        ty: option_ty.clone(),
+    };
+    let next_pat = Pat::PVar {
+        name: next_name.clone(),
+        ty: option_ty.clone(),
+        astptr: None,
+    };
+    let match_expr = Expr::EMatch {
+        expr: Box::new(Expr::EVar {
+            name: next_name,
+            ty: option_ty.clone(),
+            astptr: None,
+        }),
+        arms: vec![
+            Arm {
+                pat: Pat::PConstr {
+                    constructor: some_constructor,
+                    args: vec![pat.clone()],
+                    ty: option_ty.clone(),
+                    astptr: None,
+                },
+                body: body.clone(),
+            },
+            Arm {
+                pat: Pat::PConstr {
+                    constructor: none_constructor,
+                    args: Vec::new(),
+                    ty: option_ty.clone(),
+                    astptr: None,
+                },
+                body: Expr::EBreak { ty: Ty::TUnit },
+            },
+        ],
+        ty: Ty::TUnit,
+        astptr: None,
+    };
+    let loop_body = Expr::EBlock {
+        block: Box::new(tast::Block {
+            stmts: vec![tast::Stmt::Let(tast::LetStmt {
+                is_mut: false,
+                pat: next_pat,
+                value: Box::new(next_call),
+            })],
+            tail: Some(Box::new(match_expr)),
+        }),
+        ty: Ty::TUnit,
+    };
+    let loop_expr = Expr::EWhile {
+        cond: Box::new(Expr::EPrim {
+            value: Prim::boolean(true),
+            ty: Ty::TBool,
+        }),
+        body: Box::new(loop_body),
+        ty: Ty::TUnit,
+    };
+    let into_iter_call = Expr::ECall {
+        func: Box::new(Expr::ETraitMethod {
+            trait_ref: into_iter_trait_ref.clone(),
+            method_name: TastIdent::new("into_iter"),
+            ty: Ty::TFunc {
+                params: vec![source_ty],
+                ret_ty: Box::new(iterator_ty.clone()),
+            },
+            astptr: None,
+        }),
+        args: vec![iterator.clone()],
+        ty: iterator_ty.clone(),
+    };
+    let iterator_value = compile_expr(&into_iter_call, genv, gensym, diagnostics);
+    let loop_value = compile_expr(&loop_expr, genv, gensym, diagnostics);
+
+    core::Expr::EBlock {
+        block: Box::new(core::Block {
+            stmts: vec![core::LetStmt {
+                name: iterator_name,
+                value: iterator_value,
+                ty: iterator_ty.clone(),
+            }],
+            tail: Some(Box::new(loop_value)),
+        }),
+        ty: Ty::TUnit,
+    }
+}
+
 fn compile_expr(
     e: &Expr,
     genv: &GlobalTypeEnv,
@@ -3457,6 +3617,27 @@ fn compile_expr(
             body: Box::new(compile_expr(body, genv, gensym, diagnostics)),
             ty: ty.clone(),
         },
+        EFor {
+            pat,
+            iterator,
+            into_iter_trait_ref,
+            iterator_trait_ref,
+            iterator_ty,
+            body,
+            ..
+        } => compile_for_expr(
+            ForCompileRequest {
+                pat,
+                iterator,
+                into_iter_trait_ref,
+                iterator_trait_ref,
+                iterator_ty,
+                body,
+            },
+            genv,
+            gensym,
+            diagnostics,
+        ),
         EBreak { ty } => core::Expr::EBreak { ty: ty.clone() },
         EContinue { ty } => core::Expr::EContinue { ty: ty.clone() },
         EReturn { expr, ty } => core::Expr::EReturn {
@@ -3590,7 +3771,7 @@ fn compile_expr(
             }
 
             if let tast::Expr::ETraitMethod {
-                trait_name,
+                trait_ref,
                 method_name,
                 ..
             } = func.as_ref()
@@ -3603,39 +3784,16 @@ fn compile_expr(
                     );
                     return emissing(ty);
                 };
-                let for_ty = receiver.get_ty();
-                if has_tparam(&for_ty) {
-                    return core::Expr::ETraitCall {
-                        trait_name: trait_name.clone(),
-                        method_name: method_name.clone(),
-                        receiver: Box::new(receiver.clone()),
-                        args: other_args.to_vec(),
-                        ty: ty.clone(),
-                    };
-                }
+                return core::Expr::ETraitCall {
+                    trait_ref: trait_ref.clone(),
+                    method_name: method_name.clone(),
+                    receiver: Box::new(receiver.clone()),
+                    args: other_args.to_vec(),
+                    ty: ty.clone(),
+                };
             }
 
-            let func_expr = if let tast::Expr::ETraitMethod {
-                trait_name,
-                method_name,
-                ty: method_ty,
-                ..
-            } = func.as_ref()
-            {
-                let Some(receiver) = args.first() else {
-                    push_compile_ice(
-                        diagnostics,
-                        "trait call expects at least one argument",
-                        expr_range(func),
-                    );
-                    return emissing(ty);
-                };
-                let for_ty = receiver.get_ty();
-                core::Expr::EVar {
-                    name: trait_impl_fn_name(trait_name, &for_ty, &method_name.0),
-                    ty: method_ty.clone(),
-                }
-            } else if let tast::Expr::EInherentMethod {
+            let func_expr = if let tast::Expr::EInherentMethod {
                 receiver_ty,
                 method_name,
                 ty: method_ty,

@@ -12,11 +12,35 @@ pub fn trait_impl_fn_name(
     for_ty: &tast::Ty,
     method_name: &str,
 ) -> String {
+    trait_ref_impl_fn_name(
+        &tast::TraitRef::without_args(trait_name.clone()),
+        for_ty,
+        method_name,
+    )
+}
+
+pub fn trait_ref_impl_fn_name(
+    trait_ref: &tast::TraitRef,
+    for_ty: &tast::Ty,
+    method_name: &str,
+) -> String {
+    let dispatch_ty = if trait_ref.args.is_empty() {
+        ty_compact(for_ty)
+    } else {
+        format!(
+            "[{}]@{}",
+            trait_ref
+                .args
+                .iter()
+                .map(ty_compact)
+                .collect::<Vec<_>>()
+                .join(","),
+            ty_compact(for_ty)
+        )
+    };
     format!(
         "trait_impl#{}#{}#{}",
-        trait_name.0,
-        ty_compact(for_ty),
-        method_name
+        trait_ref.name.0, dispatch_ty, method_name
     )
 }
 

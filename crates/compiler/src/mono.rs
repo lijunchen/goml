@@ -1,13 +1,14 @@
 use crate::common::{self, Constructor, Prim};
 use crate::core::{self, Ty};
-use crate::env::{EnumDef, GlobalTypeEnv, StructDef};
+use crate::env::{EnumDef, GlobalTypeEnv, PackageTypeEnv, StructDef};
 use crate::intrinsics::{CallableBody, LangItemId};
 use crate::names::{
-    parse_inherent_method_fn_name, parse_trait_impl_fn_name, trait_impl_fn_name, ty_compact,
+    parse_inherent_method_fn_name, parse_trait_impl_fn_name, trait_impl_fn_name,
+    trait_ref_impl_fn_name, ty_compact,
 };
 use crate::tast::{self, TastIdent};
 use indexmap::{IndexMap, IndexSet};
-use std::collections::VecDeque;
+use std::collections::{HashSet, VecDeque};
 
 const MONO_INSTANCE_LIMIT: usize = 4096;
 
@@ -19,6 +20,7 @@ pub struct MonoFile {
 #[derive(Debug, Clone)]
 pub struct MonoFn {
     pub name: String,
+    pub trait_impl: Option<core::TraitImpl>,
     pub params: Vec<(String, Ty)>,
     pub ret_ty: Ty,
     pub body: MonoBlock,
@@ -320,6 +322,14 @@ impl GlobalMonoEnv {
 fn has_tparam(ty: &Ty) -> bool {
     match ty {
         Ty::TParam { .. } => true,
+        Ty::TProjection {
+            trait_ref, for_ty, ..
+        } => {
+            has_tparam(for_ty)
+                || trait_ref
+                    .as_ref()
+                    .is_some_and(|trait_ref| trait_ref.args.iter().any(has_tparam))
+        }
         Ty::TVar(..) => false,
         Ty::TUnit
         | Ty::TBool
@@ -405,6 +415,9 @@ fn format_ty_for_mono_diag(ty: &Ty) -> String {
         }
         Ty::TEnum { name } | Ty::TStruct { name } => name.clone(),
         Ty::TDyn { trait_name } => format!("dyn {}", trait_name),
+        Ty::TProjection { for_ty, name, .. } => {
+            format!("{}::{}", format_ty_for_mono_diag(for_ty), name.0)
+        }
         Ty::TApp { ty, args } => {
             let base = format_ty_for_mono_diag(ty.as_ref());
             if args.is_empty() {
@@ -502,6 +515,18 @@ fn subst_ty(ty: &Ty, s: &Subst) -> Ty {
         Ty::TDyn { trait_name } => Ty::TDyn {
             trait_name: trait_name.clone(),
         },
+        Ty::TProjection {
+            trait_ref,
+            for_ty,
+            name,
+        } => Ty::TProjection {
+            trait_ref: trait_ref.as_ref().map(|trait_ref| tast::TraitRef {
+                name: trait_ref.name.clone(),
+                args: trait_ref.args.iter().map(|arg| subst_ty(arg, s)).collect(),
+            }),
+            for_ty: Box::new(subst_ty(for_ty, s)),
+            name: name.clone(),
+        },
         Ty::TApp { ty, args } => Ty::TApp {
             ty: Box::new(subst_ty(ty, s)),
             args: args.iter().map(|t| subst_ty(t, s)).collect(),
@@ -530,11 +555,85 @@ fn subst_ty(ty: &Ty, s: &Subst) -> Ty {
     }
 }
 
-fn subst_closure_param(param: &tast::ClosureParam, s: &Subst) -> tast::ClosureParam {
-    tast::ClosureParam {
-        name: param.name.clone(),
-        ty: subst_ty(&param.ty, s),
-        astptr: param.astptr,
+fn normalize_associated_ty(genv: &GlobalTypeEnv, ty: &Ty) -> Ty {
+    fn normalize(
+        trait_solver: &mut crate::typer::traits::solver::TraitSolver<'_>,
+        ty: &Ty,
+        active: &mut HashSet<(tast::TraitRef, Ty, String)>,
+    ) -> Ty {
+        crate::typer::type_ops::rewrite_ty(ty, &mut |ty| {
+            let Ty::TProjection {
+                trait_ref: Some(trait_ref),
+                for_ty,
+                name,
+            } = ty
+            else {
+                return None;
+            };
+            let trait_ref = tast::TraitRef {
+                name: trait_ref.name.clone(),
+                args: trait_ref
+                    .args
+                    .iter()
+                    .map(|arg| normalize(trait_solver, arg, active))
+                    .collect(),
+            };
+            let for_ty = normalize(trait_solver, for_ty, active);
+            let key = (trait_ref.clone(), for_ty.clone(), name.0.clone());
+            if !active.insert(key.clone()) {
+                return Some(Ty::TProjection {
+                    trait_ref: Some(trait_ref),
+                    for_ty: Box::new(for_ty),
+                    name: name.clone(),
+                });
+            }
+            let normalized = match trait_solver.select_ground(crate::typer::TraitGoal {
+                trait_ref: trait_ref.clone(),
+                for_ty: for_ty.clone(),
+            }) {
+                crate::typer::traits::solver::SelectionResult::Unique(selection) => match selection
+                    .source
+                {
+                    crate::typer::traits::solver::SelectionSource::Impl {
+                        definition,
+                        substitution,
+                        ..
+                    } => definition.associated_types.get(&name.0).map(|binding| {
+                        let binding =
+                            crate::typer::type_ops::substitute_ty_params(binding, &substitution);
+                        normalize(trait_solver, &binding, active)
+                    }),
+                    crate::typer::traits::solver::SelectionSource::ParamEnv
+                    | crate::typer::traits::solver::SelectionSource::Dyn => None,
+                },
+                crate::typer::traits::solver::SelectionResult::NoSolution
+                | crate::typer::traits::solver::SelectionResult::Ambiguous(_)
+                | crate::typer::traits::solver::SelectionResult::Overflow => None,
+            };
+            active.remove(&key);
+            Some(normalized.unwrap_or(Ty::TProjection {
+                trait_ref: Some(trait_ref),
+                for_ty: Box::new(for_ty),
+                name: name.clone(),
+            }))
+        })
+    }
+
+    let package_env = PackageTypeEnv::new(
+        "mono".to_string(),
+        GlobalTypeEnv::default(),
+        genv.clone(),
+        Default::default(),
+    );
+    let param_env = crate::typer::ParamEnv::default();
+    let mut trait_solver = crate::typer::traits::solver::TraitSolver::new(&package_env, &param_env);
+    normalize(&mut trait_solver, ty, &mut HashSet::new())
+}
+
+fn subst_trait_ref(trait_ref: &tast::TraitRef, s: &Subst) -> tast::TraitRef {
+    tast::TraitRef {
+        name: trait_ref.name.clone(),
+        args: trait_ref.args.iter().map(|arg| subst_ty(arg, s)).collect(),
     }
 }
 
@@ -682,6 +781,7 @@ fn unify(template: &Ty, actual: &Ty, subst: &mut Subst) -> Result<(), String> {
 
 // State used during transformation
 struct Ctx {
+    genv: GlobalTypeEnv,
     orig_fns: IndexMap<String, core::Fn>,
     // map (orig_name, subst_key) -> spec_name
     instances: IndexMap<InstanceKey, String>,
@@ -701,8 +801,32 @@ struct Ctx {
     trait_impl_method_index: IndexMap<(String, String), Vec<String>>,
 }
 
+fn subst_ty_in_ctx(ctx: &Ctx, ty: &Ty, substitution: &Subst) -> Ty {
+    normalize_associated_ty(&ctx.genv, &subst_ty(ty, substitution))
+}
+
+fn subst_trait_ref_in_ctx(
+    ctx: &Ctx,
+    trait_ref: &tast::TraitRef,
+    substitution: &Subst,
+) -> tast::TraitRef {
+    let trait_ref = subst_trait_ref(trait_ref, substitution);
+    tast::TraitRef {
+        name: trait_ref.name,
+        args: trait_ref
+            .args
+            .iter()
+            .map(|arg| normalize_associated_ty(&ctx.genv, arg))
+            .collect(),
+    }
+}
+
 impl Ctx {
-    fn new(orig_fns: IndexMap<String, core::Fn>, used_names: IndexSet<String>) -> Self {
+    fn new(
+        genv: GlobalTypeEnv,
+        orig_fns: IndexMap<String, core::Fn>,
+        used_names: IndexSet<String>,
+    ) -> Self {
         let mut inherent_method_index = IndexMap::new();
         let mut trait_impl_method_index: IndexMap<(String, String), Vec<String>> = IndexMap::new();
 
@@ -729,6 +853,7 @@ impl Ctx {
         }
 
         Self {
+            genv,
             orig_fns,
             instances: IndexMap::new(),
             instance_orig_names: IndexMap::new(),
@@ -747,24 +872,35 @@ impl Ctx {
 
     fn find_generic_trait_impl(
         &self,
-        trait_name: &str,
+        trait_ref: &tast::TraitRef,
         method_name: &str,
         arg_tys: &[Ty],
         ret_ty: &Ty,
-    ) -> Option<String> {
+    ) -> Option<(String, Subst)> {
         let candidates = self
             .trait_impl_method_index
-            .get(&(trait_name.to_string(), method_name.to_string()))?;
-        let mut matched: Option<String> = None;
+            .get(&(trait_ref.name.0.clone(), method_name.to_string()))?;
+        let mut matched: Option<(String, Subst)> = None;
         for candidate_name in candidates {
             let Some(callee) = self.orig_fns.get(candidate_name) else {
+                continue;
+            };
+            let Some(metadata) = &callee.trait_impl else {
                 continue;
             };
             if callee.params.len() != arg_tys.len() {
                 continue;
             }
+            if metadata.trait_ref.name != trait_ref.name
+                || metadata.trait_ref.args.len() != trait_ref.args.len()
+            {
+                continue;
+            }
             let mut trial_subst = Subst::new();
             let mut ok = true;
+            if let Some(receiver_ty) = arg_tys.first() {
+                ok &= unify(&metadata.for_ty, receiver_ty, &mut trial_subst).is_ok();
+            }
             for ((_, param_ty), arg_ty) in callee.params.iter().zip(arg_tys.iter()) {
                 if unify(param_ty, arg_ty, &mut trial_subst).is_err() {
                     ok = false;
@@ -774,13 +910,29 @@ impl Ctx {
             if !ok {
                 continue;
             }
-            if unify(&callee.ret_ty, ret_ty, &mut trial_subst).is_err() {
+            ok = metadata
+                .trait_ref
+                .args
+                .iter()
+                .zip(trait_ref.args.iter())
+                .all(|(template, actual)| {
+                    let template =
+                        normalize_associated_ty(&self.genv, &subst_ty(template, &trial_subst));
+                    let actual = normalize_associated_ty(&self.genv, actual);
+                    unify(&template, &actual, &mut trial_subst).is_ok()
+                });
+            if !ok {
+                continue;
+            }
+            let candidate_ret =
+                normalize_associated_ty(&self.genv, &subst_ty(&callee.ret_ty, &trial_subst));
+            if unify(&candidate_ret, ret_ty, &mut trial_subst).is_err() {
                 continue;
             }
             if matched.is_some() {
                 return None;
             }
-            matched = Some(candidate_name.clone());
+            matched = Some((candidate_name.clone(), trial_subst));
         }
         matched
     }
@@ -802,7 +954,14 @@ impl Ctx {
             return Some(generic_fname.clone());
         }
         if let Some((trait_name, _, method_name)) = parse_trait_impl_fn_name(func_name) {
-            return self.find_generic_trait_impl(trait_name, method_name, arg_tys, ret_ty);
+            return self
+                .find_generic_trait_impl(
+                    &tast::TraitRef::without_args(TastIdent::new(trait_name)),
+                    method_name,
+                    arg_tys,
+                    ret_ty,
+                )
+                .map(|(name, _)| name);
         }
         None
     }
@@ -867,8 +1026,79 @@ impl Ctx {
         None
     }
 
+    fn complete_substitution(&self, name: &str, substitution: &mut Subst) {
+        let Some(scheme) = self.genv.value_env.get_function_scheme(name) else {
+            return;
+        };
+        for _ in 0..=scheme.type_params.len() {
+            let previous_len = substitution.len();
+            for predicate in &scheme.constraints {
+                match predicate {
+                    crate::env::TypePredicate::Trait { for_ty, trait_ref } => {
+                        let for_ty = subst_ty(for_ty, substitution);
+                        if has_tparam(&for_ty) {
+                            continue;
+                        }
+                        let trait_ref = subst_trait_ref(trait_ref, substitution);
+                        let mut applications = self
+                            .genv
+                            .trait_env
+                            .trait_impls
+                            .iter()
+                            .filter(|(candidate, definition)| {
+                                definition.valid && candidate.trait_ref.name == trait_ref.name
+                            })
+                            .filter_map(|(candidate, _)| {
+                                let impl_substitution =
+                                    crate::typer::impl_self_subst(&candidate.for_ty, &for_ty)?;
+                                Some(crate::typer::type_ops::substitute_trait_ref(
+                                    &candidate.trait_ref,
+                                    &impl_substitution,
+                                ))
+                            })
+                            .filter(|application| {
+                                application.args.len() == trait_ref.args.len()
+                                    && trait_ref.args.iter().zip(application.args.iter()).all(
+                                        |(expected, actual)| {
+                                            let mut trial = substitution.clone();
+                                            unify(expected, actual, &mut trial).is_ok()
+                                        },
+                                    )
+                            })
+                            .collect::<Vec<_>>();
+                        applications.sort_by_key(|application| {
+                            application
+                                .args
+                                .iter()
+                                .map(format_ty_for_mono_diag)
+                                .collect::<Vec<_>>()
+                                .join(",")
+                        });
+                        applications.dedup();
+                        let [application] = applications.as_slice() else {
+                            continue;
+                        };
+                        for (expected, actual) in trait_ref.args.iter().zip(application.args.iter())
+                        {
+                            let _ = unify(expected, actual, substitution);
+                        }
+                    }
+                    crate::env::TypePredicate::Equality { lhs, rhs } => {
+                        let lhs = subst_ty(lhs, substitution);
+                        let rhs = subst_ty(rhs, substitution);
+                        let _ = unify(&lhs, &rhs, substitution);
+                    }
+                }
+            }
+            if substitution.len() == previous_len {
+                break;
+            }
+        }
+    }
+
     // Ensure an instance exists (or is queued) and return its specialized name
-    fn ensure_instance(&mut self, name: &str, s: Subst) -> String {
+    fn ensure_instance(&mut self, name: &str, mut s: Subst) -> String {
+        self.complete_substitution(name, &mut s);
         let key = SubstKey::new(&s);
         let k = (name.to_string(), key.clone());
         if let Some(n) = self.instances.get(&k) {
@@ -968,7 +1198,7 @@ fn mono_block(ctx: &mut Ctx, block: &core::Block, s: &Subst) -> MonoBlock {
             .map(|stmt| MonoLetStmt {
                 name: stmt.name.clone(),
                 value: mono_expr(ctx, &stmt.value, s),
-                ty: subst_ty(&stmt.ty, s),
+                ty: subst_ty_in_ctx(ctx, &stmt.ty, s),
             })
             .collect(),
         tail: block
@@ -1015,20 +1245,25 @@ fn ensure_trait_impls_for_dyn(ctx: &mut Ctx, trait_name: &str, for_ty: &Ty) {
 
 fn process_worklist(ctx: &mut Ctx) -> Result<(), String> {
     while let Some((orig_name, s, spec_name)) = ctx.work.pop_front() {
-        let (orig_params, orig_ret, orig_body) = {
+        let (orig_params, orig_ret, orig_body, orig_trait_impl) = {
             let ofn = ctx
                 .orig_fns
                 .get(&orig_name)
                 .unwrap_or_else(|| panic!("unknown function: {}", orig_name));
-            (ofn.params.clone(), ofn.ret_ty.clone(), ofn.body.clone())
+            (
+                ofn.params.clone(),
+                ofn.ret_ty.clone(),
+                ofn.body.clone(),
+                ofn.trait_impl.clone(),
+            )
         };
 
         ctx.active_instances.push((orig_name.clone(), s.clone()));
         let new_params = orig_params
             .iter()
-            .map(|(n, t)| (n.clone(), subst_ty(t, &s)))
+            .map(|(n, t)| (n.clone(), subst_ty_in_ctx(ctx, t, &s)))
             .collect();
-        let new_ret = subst_ty(&orig_ret, &s);
+        let new_ret = subst_ty_in_ctx(ctx, &orig_ret, &s);
         let new_body = mono_block(ctx, &orig_body, &s);
         ctx.active_instances.pop();
         if let Some(error) = ctx.error.take() {
@@ -1037,6 +1272,10 @@ fn process_worklist(ctx: &mut Ctx) -> Result<(), String> {
 
         ctx.out.push(MonoFn {
             name: spec_name,
+            trait_impl: orig_trait_impl.map(|metadata| core::TraitImpl {
+                trait_ref: subst_trait_ref_in_ctx(ctx, &metadata.trait_ref, &s),
+                for_ty: subst_ty_in_ctx(ctx, &metadata.for_ty, &s),
+            }),
             params: new_params,
             ret_ty: new_ret,
             body: new_body,
@@ -1265,7 +1504,8 @@ fn ensure_trait_impl_for_ty(
             return;
         }
     }
-    if unify(&callee.ret_ty, &ret_ty, &mut subst).is_err() {
+    let candidate_ret = normalize_associated_ty(&ctx.genv, &subst_ty(&callee.ret_ty, &subst));
+    if unify(&candidate_ret, &ret_ty, &mut subst).is_err() {
         return;
     }
     if subst_is_fully_concrete(&callee.generics, &subst) {
@@ -1277,7 +1517,7 @@ fn ensure_trait_impl_for_ty(
 fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
     match e.clone() {
         core::Expr::EVar { name, ty } => {
-            let concrete_ty = subst_ty(&ty, s);
+            let concrete_ty = subst_ty_in_ctx(ctx, &ty, s);
             if let Some(callee) = ctx.orig_fns.get(&name).cloned()
                 && fn_is_generic(&callee)
                 && !has_tparam(&concrete_ty)
@@ -1305,10 +1545,10 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
         core::Expr::ECallable { name, body, ty } => MonoExpr::ECallable {
             name,
             body,
-            ty: subst_ty(&ty, s),
+            ty: subst_ty_in_ctx(ctx, &ty, s),
         },
         core::Expr::EPrim { value, ty } => {
-            let ty = subst_ty(&ty, s);
+            let ty = subst_ty_in_ctx(ctx, &ty, s);
             MonoExpr::EPrim { value, ty }
         }
         core::Expr::EConstr {
@@ -1316,7 +1556,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             args,
             ty,
         } => {
-            let new_ty = subst_ty(&ty, s);
+            let new_ty = subst_ty_in_ctx(ctx, &ty, s);
             let new_constructor = update_constructor_type(&constructor, &new_ty);
             MonoExpr::EConstr {
                 constructor: new_constructor,
@@ -1326,17 +1566,23 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
         }
         core::Expr::ETuple { items, ty } => MonoExpr::ETuple {
             items: items.iter().map(|a| mono_expr(ctx, a, s)).collect(),
-            ty: subst_ty(&ty, s),
+            ty: subst_ty_in_ctx(ctx, &ty, s),
         },
         core::Expr::EArray { items, ty } => MonoExpr::EArray {
             items: items.iter().map(|a| mono_expr(ctx, a, s)).collect(),
-            ty: subst_ty(&ty, s),
+            ty: subst_ty_in_ctx(ctx, &ty, s),
         },
         core::Expr::EClosure { params, body, ty } => {
-            let new_params: Vec<tast::ClosureParam> =
-                params.iter().map(|p| subst_closure_param(p, s)).collect();
+            let new_params = params
+                .iter()
+                .map(|param| tast::ClosureParam {
+                    name: param.name.clone(),
+                    ty: subst_ty_in_ctx(ctx, &param.ty, s),
+                    astptr: param.astptr,
+                })
+                .collect();
             let new_body = mono_expr(ctx, &body, s);
-            let new_ty = subst_ty(&ty, s);
+            let new_ty = subst_ty_in_ctx(ctx, &ty, s);
             MonoExpr::EClosure {
                 params: new_params,
                 body: Box::new(new_body),
@@ -1345,7 +1591,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
         }
         core::Expr::EBlock { block, ty } => MonoExpr::EBlock {
             block: Box::new(mono_block(ctx, &block, s)),
-            ty: subst_ty(&ty, s),
+            ty: subst_ty_in_ctx(ctx, &ty, s),
         },
         core::Expr::EMatch {
             expr,
@@ -1362,7 +1608,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                 })
                 .collect(),
             default: default.map(|d| Box::new(mono_expr(ctx, &d, s))),
-            ty: subst_ty(&ty, s),
+            ty: subst_ty_in_ctx(ctx, &ty, s),
         },
         core::Expr::EIf {
             cond,
@@ -1373,26 +1619,26 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             cond: Box::new(mono_expr(ctx, &cond, s)),
             then_branch: Box::new(mono_expr(ctx, &then_branch, s)),
             else_branch: Box::new(mono_expr(ctx, &else_branch, s)),
-            ty: subst_ty(&ty, s),
+            ty: subst_ty_in_ctx(ctx, &ty, s),
         },
         core::Expr::EWhile { cond, body, ty } => MonoExpr::EWhile {
             cond: Box::new(mono_expr(ctx, &cond, s)),
             body: Box::new(mono_expr(ctx, &body, s)),
-            ty: subst_ty(&ty, s),
+            ty: subst_ty_in_ctx(ctx, &ty, s),
         },
         core::Expr::EBreak { ty } => MonoExpr::EBreak {
-            ty: subst_ty(&ty, s),
+            ty: subst_ty_in_ctx(ctx, &ty, s),
         },
         core::Expr::EContinue { ty } => MonoExpr::EContinue {
-            ty: subst_ty(&ty, s),
+            ty: subst_ty_in_ctx(ctx, &ty, s),
         },
         core::Expr::EReturn { expr, ty } => MonoExpr::EReturn {
             expr: expr.map(|expr| Box::new(mono_expr(ctx, &expr, s))),
-            ty: subst_ty(&ty, s),
+            ty: subst_ty_in_ctx(ctx, &ty, s),
         },
         core::Expr::EGo { expr, ty } => MonoExpr::EGo {
             expr: Box::new(mono_expr(ctx, &expr, s)),
-            ty: subst_ty(&ty, s),
+            ty: subst_ty_in_ctx(ctx, &ty, s),
         },
         core::Expr::EConstrGet {
             expr,
@@ -1401,25 +1647,25 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             ty,
         } => {
             let new_expr = mono_expr(ctx, &expr, s);
-            let scrut_ty = subst_ty(&expr.get_ty(), s);
+            let scrut_ty = subst_ty_in_ctx(ctx, &expr.get_ty(), s);
             let new_constructor = update_constructor_type(&constructor, &scrut_ty);
             MonoExpr::EConstrGet {
                 expr: Box::new(new_expr),
                 constructor: new_constructor,
                 field_index,
-                ty: subst_ty(&ty, s),
+                ty: subst_ty_in_ctx(ctx, &ty, s),
             }
         }
         core::Expr::EUnary { op, expr, ty } => MonoExpr::EUnary {
             op,
             expr: Box::new(mono_expr(ctx, &expr, s)),
-            ty: subst_ty(&ty, s),
+            ty: subst_ty_in_ctx(ctx, &ty, s),
         },
         core::Expr::EBinary { op, lhs, rhs, ty } => MonoExpr::EBinary {
             op,
             lhs: Box::new(mono_expr(ctx, &lhs, s)),
             rhs: Box::new(mono_expr(ctx, &rhs, s)),
-            ty: subst_ty(&ty, s),
+            ty: subst_ty_in_ctx(ctx, &ty, s),
         },
         core::Expr::EAssign {
             name,
@@ -1429,13 +1675,13 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
         } => MonoExpr::EAssign {
             name: name.clone(),
             value: Box::new(mono_expr(ctx, &value, s)),
-            target_ty: subst_ty(&target_ty, s),
-            ty: subst_ty(&ty, s),
+            target_ty: subst_ty_in_ctx(ctx, &target_ty, s),
+            ty: subst_ty_in_ctx(ctx, &ty, s),
         },
         core::Expr::ECall { func, args, ty } => {
             let new_func = mono_expr(ctx, &func, s);
             let new_args: Vec<MonoExpr> = args.iter().map(|a| mono_expr(ctx, a, s)).collect();
-            let new_ty = subst_ty(&ty, s);
+            let new_ty = subst_ty_in_ctx(ctx, &ty, s);
             let arg_tys = new_args.iter().map(|a| a.get_ty()).collect::<Vec<_>>();
 
             let MonoExpr::EVar {
@@ -1513,7 +1759,9 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                     );
                 }
             }
-            if let Err(e) = unify(&callee.ret_ty, &new_ty, &mut call_subst) {
+            let candidate_ret =
+                normalize_associated_ty(&ctx.genv, &subst_ty(&callee.ret_ty, &call_subst));
+            if let Err(e) = unify(&candidate_ret, &new_ty, &mut call_subst) {
                 panic!(
                     "monomorphization return type unification failed for {}: {}",
                     generic_func_name, e
@@ -1547,13 +1795,13 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             expr,
             ty,
         } => {
-            let concrete_for_ty = subst_ty(&for_ty, s);
+            let concrete_for_ty = subst_ty_in_ctx(ctx, &for_ty, s);
             ensure_trait_impls_for_dyn(ctx, &trait_name.0, &concrete_for_ty);
             MonoExpr::EToDyn {
                 trait_name,
                 for_ty: concrete_for_ty,
                 expr: Box::new(mono_expr(ctx, &expr, s)),
-                ty: subst_ty(&ty, s),
+                ty: subst_ty_in_ctx(ctx, &ty, s),
             }
         }
         core::Expr::EDynCall {
@@ -1567,29 +1815,31 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             method_name,
             receiver: Box::new(mono_expr(ctx, &receiver, s)),
             args: args.iter().map(|a| mono_expr(ctx, a, s)).collect(),
-            ty: subst_ty(&ty, s),
+            ty: subst_ty_in_ctx(ctx, &ty, s),
         },
         core::Expr::ETraitCall {
-            trait_name,
+            trait_ref,
             method_name,
             receiver,
             args,
             ty,
         } => {
+            let trait_ref = subst_trait_ref_in_ctx(ctx, &trait_ref, s);
             let receiver = mono_expr(ctx, &receiver, s);
             let dyn_args = args
                 .iter()
                 .map(|arg| mono_expr(ctx, arg, s))
                 .collect::<Vec<_>>();
-            let new_ty = subst_ty(&ty, s);
+            let new_ty = subst_ty_in_ctx(ctx, &ty, s);
 
             if let Ty::TDyn {
                 trait_name: dyn_trait_name,
             } = receiver.get_ty()
-                && dyn_trait_name == trait_name.0
+                && trait_ref.args.is_empty()
+                && dyn_trait_name == trait_ref.name.0
             {
                 return MonoExpr::EDynCall {
-                    trait_name,
+                    trait_name: trait_ref.name,
                     method_name,
                     receiver: Box::new(receiver),
                     args: dyn_args,
@@ -1601,7 +1851,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             all_args.push(receiver);
             all_args.extend(dyn_args);
             let receiver_ty = all_args[0].get_ty();
-            let func_name = trait_impl_fn_name(&trait_name, &receiver_ty, &method_name.0);
+            let func_name = trait_ref_impl_fn_name(&trait_ref, &receiver_ty, &method_name.0);
             let param_tys = all_args.iter().map(|a| a.get_ty()).collect::<Vec<_>>();
             let func_ty = Ty::TFunc {
                 params: param_tys.clone(),
@@ -1614,6 +1864,22 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                 } else {
                     ctx.ensure_instance(&func_name, Subst::new())
                 }
+            } else if let Some((generic_name, call_subst)) =
+                ctx.find_generic_trait_impl(&trait_ref, &method_name.0, &param_tys, &new_ty)
+            {
+                if let Some(callee) = ctx.orig_fns.get(&generic_name).cloned()
+                    && fn_is_generic(&callee)
+                {
+                    if subst_is_fully_concrete(&callee.generics, &call_subst) {
+                        ctx.ensure_instance(&generic_name, call_subst)
+                    } else {
+                        func_name.clone()
+                    }
+                } else if ctx.orig_fns.contains_key(&generic_name) {
+                    ctx.ensure_instance(&generic_name, Subst::new())
+                } else {
+                    generic_name
+                }
             } else if let Some(generic_name) =
                 ctx.resolve_generic_callee_name(&func_name, &param_tys, &new_ty)
             {
@@ -1624,7 +1890,9 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                     for ((_, pt), at) in callee.params.iter().zip(param_tys.iter()) {
                         let _ = unify(pt, at, &mut call_subst);
                     }
-                    let _ = unify(&callee.ret_ty, &new_ty, &mut call_subst);
+                    let candidate_ret =
+                        normalize_associated_ty(&ctx.genv, &subst_ty(&callee.ret_ty, &call_subst));
+                    let _ = unify(&candidate_ret, &new_ty, &mut call_subst);
                     if subst_is_fully_concrete(&callee.generics, &call_subst) {
                         ctx.ensure_instance(&generic_name, call_subst)
                     } else {
@@ -1651,7 +1919,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
         core::Expr::EProj { tuple, index, ty } => MonoExpr::EProj {
             tuple: Box::new(mono_expr(ctx, &tuple, s)),
             index,
-            ty: subst_ty(&ty, s),
+            ty: subst_ty_in_ctx(ctx, &ty, s),
         },
     }
 }
@@ -1768,6 +2036,7 @@ impl<'a> TypeMono<'a> {
                 let mut fields2 = Vec::new();
                 for t in vfields.into_iter() {
                     let t1 = subst_ty(&t, &subst);
+                    let t1 = normalize_associated_ty(&self.monoenv.genv, &t1);
                     let t2 = self.collapse_type_apps(&t1);
                     fields2.push(t2);
                 }
@@ -1798,6 +2067,7 @@ impl<'a> TypeMono<'a> {
             let fields = generic_def.fields.clone();
             for (fname, fty) in fields.into_iter() {
                 let ty1 = subst_ty(&fty, &subst);
+                let ty1 = normalize_associated_ty(&self.monoenv.genv, &ty1);
                 let ty2 = self.collapse_type_apps(&ty1);
                 new_fields.push((fname.clone(), ty2));
             }
@@ -2187,7 +2457,8 @@ fn rewrite_expr_types(e: MonoExpr, m: &mut TypeMono<'_>) -> MonoExpr {
 }
 
 fn canonical_trait_impl_name(name: &str, ty: &Ty) -> String {
-    if let Some((trait_name, _, method_name)) = parse_trait_impl_fn_name(name)
+    if let Some((trait_name, for_ty, method_name)) = parse_trait_impl_fn_name(name)
+        && !for_ty.starts_with('[')
         && let Ty::TFunc { params, .. } = ty
         && let Some(receiver_ty) = params.first()
     {
@@ -2401,7 +2672,7 @@ pub fn mono(genv: GlobalTypeEnv, file: core::File) -> Result<(MonoFile, GlobalMo
     used_names.extend(monoenv.genv.structs().keys().map(|name| name.0.clone()));
     used_names.extend(monoenv.genv.enums().keys().map(|name| name.0.clone()));
 
-    let mut ctx = Ctx::new(orig_fns, used_names);
+    let mut ctx = Ctx::new(monoenv.genv.clone(), orig_fns, used_names);
 
     // Seed worklist with non-generic top-level functions
     // collect names first to avoid borrowing ctx immutably while mutating
@@ -2430,6 +2701,18 @@ pub fn mono(genv: GlobalTypeEnv, file: core::File) -> Result<(MonoFile, GlobalMo
     let mut new_fns = Vec::new();
     let instance_orig_names = ctx.instance_orig_names.clone();
     for f in ctx.out.into_iter() {
+        let trait_impl = f.trait_impl.map(|metadata| core::TraitImpl {
+            trait_ref: tast::TraitRef {
+                name: metadata.trait_ref.name,
+                args: metadata
+                    .trait_ref
+                    .args
+                    .iter()
+                    .map(|arg| m.collapse_type_apps(arg))
+                    .collect(),
+            },
+            for_ty: m.collapse_type_apps(&metadata.for_ty),
+        });
         let params: Vec<(String, Ty)> = f
             .params
             .into_iter()
@@ -2449,33 +2732,48 @@ pub fn mono(genv: GlobalTypeEnv, file: core::File) -> Result<(MonoFile, GlobalMo
             ret_ty: Box::new(ret_ty.clone()),
         };
 
-        let new_name =
-            if let Some((trait_name, _, method_name)) = parse_trait_impl_fn_name(orig_name) {
-                if let Some(self_param_ty) = params.first().map(|(_, t)| t.clone()) {
-                    let candidate = trait_impl_fn_name(
-                        &TastIdent(trait_name.to_string()),
-                        &self_param_ty,
-                        method_name,
-                    );
-                    if candidate != f.name {
-                        m.fn_renames.insert(f.name.clone(), candidate.clone());
-                    }
-                    let rewritten_name = canonical_trait_impl_name(&f.name, &fn_ty);
-                    if candidate != rewritten_name {
-                        m.fn_renames.insert(rewritten_name, candidate.clone());
-                    }
-                    candidate
-                } else {
-                    f.name.clone()
+        let new_name = if let Some(metadata) = &trait_impl {
+            if let Some((_, _, method_name)) = parse_trait_impl_fn_name(orig_name) {
+                let candidate =
+                    trait_ref_impl_fn_name(&metadata.trait_ref, &metadata.for_ty, method_name);
+                if candidate != f.name {
+                    m.fn_renames.insert(f.name.clone(), candidate.clone());
                 }
+                let rewritten_name = canonical_trait_impl_name(&f.name, &fn_ty);
+                if candidate != rewritten_name {
+                    m.fn_renames.insert(rewritten_name, candidate.clone());
+                }
+                candidate
             } else {
                 f.name.clone()
-            };
+            }
+        } else if let Some((trait_name, _, method_name)) = parse_trait_impl_fn_name(orig_name) {
+            if let Some(self_param_ty) = params.first().map(|(_, t)| t.clone()) {
+                let candidate = trait_impl_fn_name(
+                    &TastIdent(trait_name.to_string()),
+                    &self_param_ty,
+                    method_name,
+                );
+                if candidate != f.name {
+                    m.fn_renames.insert(f.name.clone(), candidate.clone());
+                }
+                let rewritten_name = canonical_trait_impl_name(&f.name, &fn_ty);
+                if candidate != rewritten_name {
+                    m.fn_renames.insert(rewritten_name, candidate.clone());
+                }
+                candidate
+            } else {
+                f.name.clone()
+            }
+        } else {
+            f.name.clone()
+        };
 
         m.monoenv.insert_func(new_name.clone(), fn_ty);
 
         new_fns.push(MonoFn {
             name: new_name,
+            trait_impl,
             params,
             ret_ty,
             body,

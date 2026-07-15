@@ -1,20 +1,78 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use parser::Diagnostics;
 use text_size::TextRange;
 
 use crate::{
     env::{FnScheme, PackageTypeEnv},
-    tast,
+    hir, tast,
 };
 
 use super::{
+    Typer,
     localenv::LocalTypeEnv,
     obligations::{ParamEnv, TraitGoal},
     traits::solver::{SelectionResult, TraitSolver},
-    type_ops::{contains_tvar, decompose_struct_type, substitute_ty_params},
-    util::{format_ty_for_diag, push_error_with_range, resolve_trait_name, resolve_type_name},
+    type_ops::{contains_tvar, decompose_struct_type, substitute_trait_ref, substitute_ty_params},
+    util::{
+        format_trait_ref_for_diag, format_ty_for_diag, push_error_with_range, resolve_trait_name,
+        resolve_type_name, type_expr_range, validate_ty,
+    },
 };
+
+pub(crate) fn resolve_explicit_trait_args(
+    genv: &PackageTypeEnv,
+    local_env: &LocalTypeEnv,
+    diagnostics: &mut Diagnostics,
+    trait_name: &str,
+    type_args: &[hir::TypeExpr],
+    range: Option<TextRange>,
+) -> Result<Option<Vec<tast::Ty>>, ()> {
+    if type_args.is_empty() {
+        return Ok(None);
+    }
+    let tparams = local_env.current_tparams_env();
+    let tparam_names = tparams
+        .iter()
+        .map(|param| param.0.clone())
+        .collect::<HashSet<_>>();
+    let diagnostic_count = diagnostics.len();
+    let args = type_args
+        .iter()
+        .map(|arg| {
+            let ty = tast::Ty::from_hir(genv, arg, &tparams);
+            let ty = super::toplevel::resolve_ty_projections_from_predicates(
+                genv,
+                diagnostics,
+                &ty,
+                local_env.predicates(),
+                type_expr_range(arg),
+            );
+            validate_ty(genv, diagnostics, &ty, type_expr_range(arg), &tparam_names);
+            ty
+        })
+        .collect::<Vec<_>>();
+    if diagnostics.len() != diagnostic_count {
+        return Err(());
+    }
+    if let Some((resolved, trait_env)) = resolve_trait_name(genv, trait_name)
+        && let Some(definition) = trait_env.trait_env.trait_defs.get(&resolved)
+        && definition.params.len() != args.len()
+    {
+        push_error_with_range(
+            diagnostics,
+            format!(
+                "Trait {} expects {} type arguments, but got {}",
+                trait_name,
+                definition.params.len(),
+                args.len()
+            ),
+            range,
+        );
+        return Err(());
+    }
+    Ok(Some(args))
+}
 
 pub(crate) fn resolve_field_ty_eager(
     genv: &PackageTypeEnv,
@@ -40,70 +98,151 @@ pub(crate) fn resolve_field_ty_eager(
 
 fn lookup_bound_trait_methods(
     genv: &PackageTypeEnv,
-    bounds: &[tast::TastIdent],
+    bounds: &[tast::TraitRef],
     method: &tast::TastIdent,
-) -> Vec<(tast::TastIdent, FnScheme)> {
-    lookup_trait_methods(genv, bounds, method, None)
+) -> Vec<(tast::TraitRef, FnScheme)> {
+    let mut result = bounds
+        .iter()
+        .flat_map(|trait_ref| super::util::trait_ref_closure(genv, trait_ref))
+        .filter_map(|trait_ref| {
+            let (_, trait_env) = resolve_trait_name(genv, &trait_ref.name.0)?;
+            let scheme = trait_env.lookup_trait_method_scheme(&trait_ref, method)?;
+            Some((trait_ref, scheme))
+        })
+        .collect::<Vec<_>>();
+    result.sort_by(|(left, _), (right, _)| {
+        format_trait_ref_for_diag(left).cmp(&format_trait_ref_for_diag(right))
+    });
+    result.dedup_by(|(left, _), (right, _)| left == right);
+    result
 }
 
 fn lookup_in_scope_trait_methods(
+    typer: &mut Typer,
     genv: &PackageTypeEnv,
     in_scope_traits: &[tast::TastIdent],
     receiver_ty: &tast::Ty,
     method: &tast::TastIdent,
-) -> Vec<(tast::TastIdent, FnScheme)> {
-    lookup_trait_methods(genv, in_scope_traits, method, Some(receiver_ty))
-}
-
-fn lookup_trait_methods(
-    genv: &PackageTypeEnv,
-    trait_names: &[tast::TastIdent],
-    method: &tast::TastIdent,
-    receiver_ty: Option<&tast::Ty>,
-) -> Vec<(tast::TastIdent, FnScheme)> {
+) -> Vec<(tast::TraitRef, FnScheme)> {
     let mut result = Vec::new();
     let param_env = ParamEnv::default();
-    let mut solver = TraitSolver::new(genv, &param_env);
-    for trait_name in trait_names {
+    for trait_name in in_scope_traits {
         let Some((resolved_trait, trait_env)) = resolve_trait_name(genv, &trait_name.0) else {
             continue;
         };
-        let resolved_ident = tast::TastIdent(resolved_trait);
-        if let Some(ty) = receiver_ty {
-            if matches!(ty, tast::Ty::TDyn { .. }) {
-                continue;
-            }
-            if !matches!(
-                solver.select_ground(TraitGoal {
-                    trait_name: resolved_ident.clone(),
-                    for_ty: ty.clone(),
-                }),
-                SelectionResult::Unique(_)
-            ) {
-                continue;
-            }
+        if matches!(receiver_ty, tast::Ty::TDyn { .. }) {
+            continue;
         }
-        if let Some(method_scheme) = trait_env.lookup_trait_method_scheme(&resolved_ident, method) {
-            result.push((resolved_ident, method_scheme));
+        if !trait_env.trait_env.trait_defs.contains_key(&resolved_trait) {
+            continue;
+        }
+        for (origin, _, impl_trait_ref, impl_ty, impl_def) in
+            genv.visible_trait_impls(&resolved_trait)
+        {
+            if !impl_def.valid
+                || origin == "builtin" && genv.shadows_builtin_nominal_type(receiver_ty)
+            {
+                continue;
+            }
+            let snapshot = typer.snapshot_inference();
+            let substitution = impl_def
+                .params
+                .iter()
+                .map(|param| (param.0.clone(), typer.fresh_ty_var()))
+                .collect::<HashMap<_, _>>();
+            let candidate_ty = substitute_ty_params(impl_ty, &substitution);
+            if !typer.try_unify_silent(&candidate_ty, receiver_ty) {
+                typer.rollback_inference(snapshot);
+                continue;
+            }
+            let mut trait_ref = substitute_trait_ref(impl_trait_ref, &substitution);
+            for arg in &mut trait_ref.args {
+                *arg = typer.norm(arg);
+            }
+            let mut solver = TraitSolver::new(genv, &param_env);
+            if matches!(
+                solver.select(
+                    typer,
+                    TraitGoal {
+                        trait_ref: trait_ref.clone(),
+                        for_ty: receiver_ty.clone(),
+                    }
+                ),
+                SelectionResult::NoSolution | SelectionResult::Overflow
+            ) {
+                typer.rollback_inference(snapshot);
+                continue;
+            }
+            for arg in &mut trait_ref.args {
+                *arg = typer.norm(arg);
+            }
+            typer.commit_inference(snapshot);
+            for method_trait_ref in super::util::trait_ref_closure(genv, &trait_ref) {
+                let Some((_, method_env)) = resolve_trait_name(genv, &method_trait_ref.name.0)
+                else {
+                    continue;
+                };
+                if let Some(method_scheme) =
+                    method_env.lookup_trait_method_scheme(&method_trait_ref, method)
+                {
+                    result.push((method_trait_ref, method_scheme));
+                }
+            }
         }
     }
+    result.sort_by(|(left, _), (right, _)| {
+        format_trait_ref_for_diag(left).cmp(&format_trait_ref_for_diag(right))
+    });
+    result.dedup_by(|(left, _), (right, _)| left == right);
     result
 }
 
 pub(crate) fn lookup_trait_method_from_type_name(
+    typer: &mut Typer,
     genv: &PackageTypeEnv,
     type_name: &str,
     method: &tast::TastIdent,
-) -> Option<(tast::TastIdent, FnScheme)> {
+    explicit_args: Option<Vec<tast::Ty>>,
+) -> Option<(tast::TraitRef, FnScheme)> {
     let (trait_name, trait_env) = resolve_trait_name(genv, type_name)?;
-    let trait_ident = tast::TastIdent(trait_name);
-    let method_scheme = trait_env.lookup_trait_method_scheme(&trait_ident, method)?;
-    Some((trait_ident, method_scheme))
+    let definition = trait_env.trait_env.trait_defs.get(&trait_name)?;
+    let args = explicit_args.unwrap_or_else(|| {
+        definition
+            .params
+            .iter()
+            .map(|_| typer.fresh_ty_var())
+            .collect()
+    });
+    if args.len() != definition.params.len() {
+        return None;
+    }
+    let trait_ref = tast::TraitRef {
+        name: tast::TastIdent(trait_name),
+        args,
+    };
+    let mut candidates = super::util::trait_ref_closure(genv, &trait_ref)
+        .into_iter()
+        .filter_map(|method_trait_ref| {
+            let (_, method_env) = resolve_trait_name(genv, &method_trait_ref.name.0)?;
+            let scheme = method_env.lookup_trait_method_scheme(&method_trait_ref, method)?;
+            Some((method_trait_ref, scheme))
+        })
+        .collect::<Vec<_>>();
+    if let Some(index) = candidates
+        .iter()
+        .position(|(candidate, _)| candidate == &trait_ref)
+    {
+        return Some(candidates.swap_remove(index));
+    }
+    let [candidate] = candidates.as_slice() else {
+        return None;
+    };
+    Some(candidate.clone())
 }
 
 pub(crate) struct TraitMethodLookup {
     pub receiver: MethodLookupReceiver,
-    pub candidates: Vec<(tast::TastIdent, FnScheme)>,
+    pub candidates: Vec<(tast::TraitRef, FnScheme)>,
 }
 
 pub(crate) enum MethodLookupReceiver {
@@ -113,6 +252,7 @@ pub(crate) enum MethodLookupReceiver {
 }
 
 pub(crate) fn lookup_trait_method_candidates(
+    typer: &mut Typer,
     genv: &PackageTypeEnv,
     local_env: &LocalTypeEnv,
     receiver_ty: &tast::Ty,
@@ -128,12 +268,13 @@ pub(crate) fn lookup_trait_method_candidates(
     if contains_tvar(receiver_ty) {
         return TraitMethodLookup {
             receiver: MethodLookupReceiver::Deferred(receiver_ty.clone()),
-            candidates: lookup_trait_methods(genv, local_env.in_scope_traits(), method, None),
+            candidates: Vec::new(),
         };
     }
     TraitMethodLookup {
         receiver: MethodLookupReceiver::Concrete(receiver_ty.clone()),
         candidates: lookup_in_scope_trait_methods(
+            typer,
             genv,
             local_env.in_scope_traits(),
             receiver_ty,
@@ -166,12 +307,12 @@ pub(crate) fn report_ambiguous_method(
     diagnostics: &mut Diagnostics,
     method_name: &tast::TastIdent,
     receiver: &MethodLookupReceiver,
-    candidates: &[(tast::TastIdent, FnScheme)],
+    candidates: &[(tast::TraitRef, FnScheme)],
     range: Option<TextRange>,
 ) {
     let trait_names = candidates
         .iter()
-        .map(|(trait_name, _)| trait_name.0.clone())
+        .map(|(trait_ref, _)| format_trait_ref_for_diag(trait_ref))
         .collect::<Vec<_>>()
         .join(", ");
     let receiver_label = match receiver {

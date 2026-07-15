@@ -272,7 +272,19 @@ impl Trait {
         support::token(&self.syntax, MySyntaxKind::Ident)
     }
 
+    pub fn generic_list(&self) -> Option<GenericList> {
+        support::child(&self.syntax)
+    }
+
     pub fn trait_method_list(&self) -> Option<TraitMethodList> {
+        support::child(&self.syntax)
+    }
+
+    pub fn where_clause(&self) -> Option<WhereClause> {
+        support::child(&self.syntax)
+    }
+
+    pub fn trait_set(&self) -> Option<TraitSet> {
         support::child(&self.syntax)
     }
 }
@@ -289,6 +301,10 @@ pub struct TraitMethodList {
 
 impl TraitMethodList {
     pub fn methods(&self) -> CstChildren<TraitMethod> {
+        support::children(&self.syntax)
+    }
+
+    pub fn associated_types(&self) -> CstChildren<TraitAssociatedType> {
         support::children(&self.syntax)
     }
 }
@@ -323,6 +339,26 @@ impl_display_via_syntax!(TraitMethod);
 ////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct TraitAssociatedType {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl TraitAssociatedType {
+    pub fn name(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::Ident)
+    }
+
+    pub fn trait_set(&self) -> Option<TraitSet> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(TraitAssociatedType, MySyntaxKind::TRAIT_ASSOCIATED_TYPE);
+impl_display_via_syntax!(TraitAssociatedType);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Impl {
     pub(crate) syntax: MySyntaxNode,
 }
@@ -340,21 +376,50 @@ impl Impl {
         support::token(&self.syntax, MySyntaxKind::Ident)
     }
 
-    pub fn trait_path(&self) -> Option<Path> {
-        support::child(&self.syntax)
+    pub fn trait_type(&self) -> Option<Type> {
+        support::token(&self.syntax, MySyntaxKind::ForKeyword)?;
+        support::children(&self.syntax).next()
     }
 
     pub fn for_type(&self) -> Option<Type> {
+        support::children(&self.syntax).last()
+    }
+
+    pub fn where_clause(&self) -> Option<WhereClause> {
         support::child(&self.syntax)
     }
 
     pub fn functions(&self) -> CstChildren<Fn> {
         support::children(&self.syntax)
     }
+
+    pub fn associated_types(&self) -> CstChildren<ImplAssociatedType> {
+        support::children(&self.syntax)
+    }
 }
 
 impl_cst_node_simple!(Impl, MySyntaxKind::IMPL);
 impl_display_via_syntax!(Impl);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ImplAssociatedType {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl ImplAssociatedType {
+    pub fn name(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::Ident)
+    }
+
+    pub fn ty(&self) -> Option<Type> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(ImplAssociatedType, MySyntaxKind::IMPL_ASSOCIATED_TYPE);
+impl_display_via_syntax!(ImplAssociatedType);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -383,13 +448,48 @@ pub struct TraitSet {
 }
 
 impl TraitSet {
-    pub fn traits(&self) -> CstChildren<Path> {
+    pub fn traits(&self) -> CstChildren<Type> {
         support::children(&self.syntax)
     }
 }
 
 impl_cst_node_simple!(TraitSet, MySyntaxKind::TRAIT_SET);
 impl_display_via_syntax!(TraitSet);
+
+////////////////////////////////////////////////////////////////////////////////
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct WhereClause {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl WhereClause {
+    pub fn predicates(&self) -> CstChildren<WherePredicate> {
+        support::children(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(WhereClause, MySyntaxKind::WHERE_CLAUSE);
+impl_display_via_syntax!(WhereClause);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct WherePredicate {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl WherePredicate {
+    pub fn types(&self) -> CstChildren<Type> {
+        support::children(&self.syntax)
+    }
+
+    pub fn trait_set(&self) -> Option<TraitSet> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(WherePredicate, MySyntaxKind::WHERE_PREDICATE);
+impl_display_via_syntax!(WherePredicate);
 
 ////////////////////////////////////////////////////////////////////////////////
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -522,6 +622,10 @@ impl Fn {
         support::child(&self.syntax)
     }
 
+    pub fn where_clause(&self) -> Option<WhereClause> {
+        support::child(&self.syntax)
+    }
+
     pub fn block(&self) -> Option<Block> {
         support::child(&self.syntax)
     }
@@ -593,6 +697,10 @@ impl Extern {
     }
 
     pub fn return_type(&self) -> Option<Type> {
+        support::child(&self.syntax)
+    }
+
+    pub fn where_clause(&self) -> Option<WhereClause> {
         support::child(&self.syntax)
     }
 }
@@ -785,6 +893,7 @@ pub enum Expr {
     MatchExpr(MatchExpr),
     IfExpr(IfExpr),
     WhileExpr(WhileExpr),
+    ForExpr(ForExpr),
     BreakExpr(BreakExpr),
     ContinueExpr(ContinueExpr),
     ReturnExpr(ReturnExpr),
@@ -833,6 +942,7 @@ impl CstNode for Expr {
                 | EXPR_TRY
                 | EXPR_CLOSURE
                 | EXPR_WHILE
+                | EXPR_FOR
                 | EXPR_BREAK
                 | EXPR_CONTINUE
                 | EXPR_RETURN
@@ -863,6 +973,7 @@ impl CstNode for Expr {
             EXPR_MATCH => Expr::MatchExpr(MatchExpr { syntax }),
             EXPR_IF => Expr::IfExpr(IfExpr { syntax }),
             EXPR_WHILE => Expr::WhileExpr(WhileExpr { syntax }),
+            EXPR_FOR => Expr::ForExpr(ForExpr { syntax }),
             EXPR_BREAK => Expr::BreakExpr(BreakExpr { syntax }),
             EXPR_CONTINUE => Expr::ContinueExpr(ContinueExpr { syntax }),
             EXPR_RETURN => Expr::ReturnExpr(ReturnExpr { syntax }),
@@ -905,6 +1016,7 @@ impl CstNode for Expr {
             Self::MatchExpr(it) => &it.syntax,
             Self::IfExpr(it) => &it.syntax,
             Self::WhileExpr(it) => &it.syntax,
+            Self::ForExpr(it) => &it.syntax,
             Self::BreakExpr(it) => &it.syntax,
             Self::ContinueExpr(it) => &it.syntax,
             Self::ReturnExpr(it) => &it.syntax,
@@ -1399,6 +1511,30 @@ impl_display_via_syntax!(WhileExprBody);
 ////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ForExpr {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl ForExpr {
+    pub fn pattern(&self) -> Option<Pattern> {
+        support::child(&self.syntax)
+    }
+
+    pub fn iterator(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+
+    pub fn body(&self) -> Option<Block> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(ForExpr, MySyntaxKind::EXPR_FOR);
+impl_display_via_syntax!(ForExpr);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct BreakExpr {
     pub(crate) syntax: MySyntaxNode,
 }
@@ -1546,6 +1682,10 @@ pub struct IdentExpr {
 
 impl IdentExpr {
     pub fn path(&self) -> Option<Path> {
+        support::child(&self.syntax)
+    }
+
+    pub fn type_app(&self) -> Option<TAppTy> {
         support::child(&self.syntax)
     }
 }

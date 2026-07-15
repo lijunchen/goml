@@ -8,7 +8,7 @@ use parser::{self, syntax::MySyntaxNode};
 
 use crate::{
     artifact::{InterfaceUnit, PackageExports},
-    env::{FnConstraint, FnScheme, GlobalTypeEnv, TraitEnv, TypeEnv, ValueEnv},
+    env::{FnScheme, GlobalTypeEnv, TraitEnv, TypeEnv, TypePredicate, ValueEnv},
     hir, interface,
     intrinsics::{CallableBody, ExternCapability, IntrinsicId, LangItemId, LangItemTable},
     package_names::BUILTIN_PACKAGE,
@@ -151,9 +151,9 @@ fn make_fn_scheme(intrinsic: IntrinsicId) -> FnScheme {
         constraints: signature
             .constraints
             .into_iter()
-            .map(|(type_param, trait_name)| FnConstraint {
-                type_param,
-                trait_name: tast::TastIdent::new(&trait_name),
+            .map(|(type_param, trait_name)| TypePredicate::Trait {
+                for_ty: tast::Ty::TParam { name: type_param },
+                trait_ref: tast::TraitRef::without_args(tast::TastIdent::new(&trait_name)),
             })
             .collect(),
         ty: signature.ty,

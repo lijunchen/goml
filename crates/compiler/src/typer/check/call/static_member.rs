@@ -5,6 +5,7 @@ pub(super) struct StaticMemberCall<'a> {
     pub(super) call_expr_id: hir::ExprId,
     pub(super) func_expr_id: hir::ExprId,
     pub(super) path: &'a hir::Path,
+    pub(super) type_args: &'a [hir::TypeExpr],
     pub(super) astptr: Option<MySyntaxNodePtr>,
     pub(super) args: &'a [hir::ExprId],
 }
@@ -18,7 +19,7 @@ struct StaticCallSite<'a> {
 
 struct StaticTraitMethodCall<'a> {
     site: StaticCallSite<'a>,
-    trait_name: tast::TastIdent,
+    trait_ref: tast::TraitRef,
     method_name: tast::TastIdent,
     method_scheme: crate::env::FnScheme,
 }
@@ -54,6 +55,7 @@ impl Typer {
             call_expr_id,
             func_expr_id,
             path,
+            type_args,
             astptr,
             args,
         } = call;
@@ -86,8 +88,19 @@ impl Typer {
             args,
         };
 
+        let explicit_args = match resolve_explicit_trait_args(
+            genv,
+            local_env,
+            diagnostics,
+            &type_name,
+            type_args,
+            astptr.map(|pointer| pointer.text_range()),
+        ) {
+            Ok(args) => args,
+            Err(()) => return self.error_expr(astptr),
+        };
         if let Some((trait_name, method_scheme)) =
-            lookup_trait_method_from_type_name(genv, &type_name, &member_ident)
+            lookup_trait_method_from_type_name(self, genv, &type_name, &member_ident, explicit_args)
         {
             self.infer_static_trait_method_call(
                 genv,
@@ -95,7 +108,7 @@ impl Typer {
                 diagnostics,
                 StaticTraitMethodCall {
                     site,
-                    trait_name,
+                    trait_ref: trait_name,
                     method_name: member_ident,
                     method_scheme,
                 },
@@ -124,7 +137,7 @@ impl Typer {
     ) -> tast::Expr {
         let StaticTraitMethodCall {
             site,
-            trait_name: type_ident,
+            trait_ref,
             method_name: member_ident,
             method_scheme,
         } = call;
@@ -137,58 +150,66 @@ impl Typer {
         let range = self.expr_range(call_expr_id);
         let parent = self
             .reserve_obligation_cause(ObligationCause::new(range, ObligationCauseKind::MethodCall));
-        let instantiated = self.instantiate_scheme(
+        let mut receiver_tast = args
+            .first()
+            .map(|receiver| self.infer_expr(genv, local_env, diagnostics, *receiver));
+        let receiver_ty = receiver_tast
+            .as_ref()
+            .map(tast::Expr::get_ty)
+            .unwrap_or(tast::Ty::TUnit);
+        let instantiated = self.instantiate_scheme_with_self(
             &method_scheme,
+            &receiver_ty,
             ObligationCause::new(range, ObligationCauseKind::FunctionBound).with_parent(parent),
         );
         self.register_scheme_obligations(&instantiated);
         let inst_method_ty = instantiated.ty;
 
         if let tast::Ty::TFunc { params, ret_ty } = &inst_method_ty
-            && !args.is_empty()
+            && let Some(receiver) = receiver_tast.as_ref()
+            && let tast::Ty::TDyn {
+                trait_name: recv_trait,
+            } = receiver.get_ty()
+            && trait_ref.args.is_empty()
+            && recv_trait == trait_ref.name.0
         {
-            let Some(receiver_arg) = args.first() else {
-                util::push_ice(diagnostics, "callee args missing receiver");
+            let Some(receiver) = receiver_tast.take() else {
+                util::push_ice(diagnostics, "trait method receiver is missing");
                 return self.error_expr(None);
             };
-            let receiver_tast = self.infer_expr(genv, local_env, diagnostics, *receiver_arg);
-            if let tast::Ty::TDyn {
-                trait_name: recv_trait,
-            } = receiver_tast.get_ty()
-                && recv_trait == type_ident.0
-            {
-                return self.infer_dyn_trait_method_call(
-                    genv,
-                    local_env,
-                    diagnostics,
-                    DynTraitMethodCall {
-                        call_expr_id,
-                        func_expr_id,
-                        astptr,
-                        args,
-                        receiver: receiver_tast,
-                        trait_name: &type_ident,
-                        method_name: &member_ident,
-                        params,
-                        ret_ty,
-                    },
-                );
-            }
+            return self.infer_dyn_trait_method_call(
+                genv,
+                local_env,
+                diagnostics,
+                DynTraitMethodCall {
+                    call_expr_id,
+                    func_expr_id,
+                    astptr,
+                    args,
+                    receiver,
+                    trait_name: &trait_ref.name,
+                    method_name: &member_ident,
+                    params,
+                    ret_ty,
+                },
+            );
         }
 
         let mut args_tast = Vec::new();
         let mut arg_types = Vec::new();
-        for arg in args.iter() {
-            let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
+        for (index, arg) in args.iter().enumerate() {
+            let arg_tast = if index == 0 {
+                receiver_tast
+                    .take()
+                    .unwrap_or_else(|| self.infer_expr(genv, local_env, diagnostics, *arg))
+            } else {
+                self.infer_expr(genv, local_env, diagnostics, *arg)
+            };
             arg_types.push(arg_tast.get_ty());
             args_tast.push(arg_tast);
         }
 
-        let receiver_ty = args_tast
-            .first()
-            .map(|arg| arg.get_ty())
-            .unwrap_or(tast::Ty::TUnit);
-        let inst_method_ty_for_call = instantiate_self_ty(&inst_method_ty, &receiver_ty);
+        let inst_method_ty_for_call = inst_method_ty;
         let ret_ty_for_call = match &inst_method_ty_for_call {
             tast::Ty::TFunc { ret_ty, .. } => (**ret_ty).clone(),
             _ => self.fresh_ty_var(),
@@ -207,7 +228,7 @@ impl Typer {
         self.push_reserved_obligation(
             parent,
             Predicate::Trait(TraitGoal {
-                trait_name: type_ident.clone(),
+                trait_ref: trait_ref.clone(),
                 for_ty: receiver_ty,
             }),
         );
@@ -216,7 +237,7 @@ impl Typer {
             call_expr_id,
             CallElab {
                 callee: CalleeElab::TraitMethod {
-                    trait_name: type_ident.clone(),
+                    trait_ref: trait_ref.clone(),
                     method_name: member_ident.clone(),
                     ty: inst_method_ty_for_call.clone(),
                     astptr: None,
@@ -229,7 +250,7 @@ impl Typer {
         self.results.record_name_ref_elab(
             func_expr_id,
             NameRefElab::TraitMethod {
-                trait_name: type_ident.clone(),
+                trait_ref: trait_ref.clone(),
                 method_name: member_ident.clone(),
                 ty: inst_method_ty_for_call.clone(),
                 astptr,
@@ -237,7 +258,7 @@ impl Typer {
         );
         tast::Expr::ECall {
             func: Box::new(tast::Expr::ETraitMethod {
-                trait_name: type_ident.clone(),
+                trait_ref: trait_ref.clone(),
                 method_name: member_ident.clone(),
                 ty: inst_method_ty_for_call,
                 astptr: None,

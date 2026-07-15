@@ -186,7 +186,8 @@ pub struct Fn {
     pub visibility: Visibility,
     pub name: AstIdent,
     pub generics: Vec<AstIdent>,
-    pub generic_bounds: Vec<(AstIdent, Vec<Path>)>,
+    pub generic_bounds: Vec<(AstIdent, Vec<TraitRef>)>,
+    pub predicates: Vec<Predicate>,
     pub params: Vec<(AstIdent, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
     pub body: Block,
@@ -198,7 +199,8 @@ pub struct ExternFn {
     pub visibility: Visibility,
     pub name: AstIdent,
     pub generics: Vec<AstIdent>,
-    pub generic_bounds: Vec<(AstIdent, Vec<Path>)>,
+    pub generic_bounds: Vec<(AstIdent, Vec<TraitRef>)>,
+    pub predicates: Vec<Predicate>,
     pub params: Vec<(AstIdent, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
 }
@@ -226,7 +228,30 @@ pub struct TraitDef {
     pub attrs: Vec<Attribute>,
     pub visibility: Visibility,
     pub name: AstIdent,
+    pub generics: Vec<AstIdent>,
+    pub generic_bounds: Vec<(AstIdent, Vec<TraitRef>)>,
+    pub predicates: Vec<Predicate>,
+    pub supertraits: Vec<TraitRef>,
+    pub associated_types: Vec<AssociatedType>,
     pub method_sigs: Vec<TraitMethodSignature>,
+}
+
+#[derive(Debug, Clone)]
+pub struct AssociatedType {
+    pub name: AstIdent,
+    pub bounds: Vec<TraitRef>,
+}
+
+#[derive(Debug, Clone)]
+pub struct TraitRef {
+    pub path: Path,
+    pub args: Vec<TypeExpr>,
+}
+
+#[derive(Debug, Clone)]
+pub enum Predicate {
+    Trait { ty: TypeExpr, trait_ref: TraitRef },
+    Equality { lhs: TypeExpr, rhs: TypeExpr },
 }
 
 #[derive(Debug, Clone)]
@@ -240,8 +265,10 @@ pub struct TraitMethodSignature {
 pub struct ImplBlock {
     pub attrs: Vec<Attribute>,
     pub generics: Vec<AstIdent>,
-    pub generic_bounds: Vec<(AstIdent, Vec<Path>)>,
-    pub trait_name: Option<Path>,
+    pub generic_bounds: Vec<(AstIdent, Vec<TraitRef>)>,
+    pub predicates: Vec<Predicate>,
+    pub associated_types: Vec<(AstIdent, TypeExpr)>,
+    pub trait_ref: Option<TraitRef>,
     pub for_type: TypeExpr,
     pub methods: Vec<Fn>,
 }
@@ -286,6 +313,7 @@ pub struct ExprStmt {
 pub enum Expr {
     EPath {
         path: Path,
+        type_args: Vec<TypeExpr>,
         astptr: MySyntaxNodePtr,
     },
     EUnit {
@@ -387,6 +415,12 @@ pub enum Expr {
     },
     EWhile {
         cond: Box<Expr>,
+        body: Box<Expr>,
+        astptr: MySyntaxNodePtr,
+    },
+    EFor {
+        pat: Pat,
+        iterator: Box<Expr>,
         body: Box<Expr>,
         astptr: MySyntaxNodePtr,
     },

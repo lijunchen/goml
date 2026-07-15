@@ -238,7 +238,11 @@ impl Typer {
                 );
                 self.error_expr(None)
             }
-            hir::Expr::EStaticMember { path, astptr } => self.infer_static_member_call_expr(
+            hir::Expr::EStaticMember {
+                path,
+                type_args,
+                astptr,
+            } => self.infer_static_member_call_expr(
                 genv,
                 local_env,
                 diagnostics,
@@ -246,6 +250,7 @@ impl Typer {
                     call_expr_id,
                     func_expr_id: func,
                     path: &path,
+                    type_args: &type_args,
                     astptr,
                     args,
                 },
@@ -263,6 +268,7 @@ impl Typer {
                     receiver_expr,
                     field,
                     args,
+                    hint_ret_ty,
                 },
             ),
             _ => {

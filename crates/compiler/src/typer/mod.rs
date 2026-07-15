@@ -16,15 +16,17 @@ pub mod results;
 mod solve;
 pub mod tast_builder;
 mod toplevel;
-mod traits;
-mod type_ops;
+pub(crate) mod traits;
+pub(crate) mod type_ops;
 mod unify;
 mod util;
 
 pub(crate) use obligations::{
     ArithmeticKind, CoercionGoal, MethodGoal, Obligation, ObligationCause, ObligationCauseKind,
-    ObligationId, OperationGoal, Predicate, ProjectionGoal, TraitGoal,
+    ObligationId, OperationGoal, ParamEnv, Predicate, ProjectionGoal, TraitGoal,
 };
+pub(crate) use traits::matching::impl_self_subst;
+pub(crate) use util::format_ty_for_diag;
 
 pub use toplevel::check_file_with_env_and_results;
 pub use toplevel::{check_file, check_file_with_env, check_file_with_env_capability};
@@ -47,7 +49,10 @@ pub struct Typer {
     pub results: TypeckResultsBuilder,
     pub(crate) loop_control_context: LoopControlContext,
     pub(crate) return_ty_stack: Vec<tast::Ty>,
-    pub(crate) tparam_trait_bounds: HashMap<String, Vec<String>>,
+    pub(crate) tparam_trait_bounds: HashMap<String, Vec<tast::TraitRef>>,
+    pub(crate) param_env_predicates: Vec<crate::env::TypePredicate>,
+    pub(crate) param_type_aliases: HashMap<String, tast::Ty>,
+    pub(crate) param_projection_aliases: HashMap<tast::Ty, tast::Ty>,
     pub(crate) array_wildcard_counter: usize,
     pub(crate) array_wildcard_resolutions: HashMap<usize, usize>,
 }
@@ -67,6 +72,9 @@ impl Typer {
             loop_control_context: LoopControlContext::Disallowed,
             return_ty_stack: Vec::new(),
             tparam_trait_bounds: HashMap::new(),
+            param_env_predicates: Vec::new(),
+            param_type_aliases: HashMap::new(),
+            param_projection_aliases: HashMap::new(),
             array_wildcard_counter: 0,
             array_wildcard_resolutions: HashMap::new(),
         }

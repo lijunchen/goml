@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use crate::{
     env::{GlobalTypeEnv, PackageTypeEnv},
@@ -53,6 +53,9 @@ pub(crate) fn format_ty_for_diag(ty: &tast::Ty) -> String {
         }
         tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => name.clone(),
         tast::Ty::TDyn { trait_name } => format!("dyn {}", trait_name),
+        tast::Ty::TProjection { for_ty, name, .. } => {
+            format!("{}::{}", format_ty_for_diag(for_ty), name.0)
+        }
         tast::Ty::TApp { ty, args } => {
             let base = format_ty_for_diag(ty.as_ref());
             if args.is_empty() {
@@ -91,6 +94,23 @@ pub(crate) fn format_ty_for_diag(ty: &tast::Ty) -> String {
                 .join(", ");
             format!("({}) -> {}", params, format_ty_for_diag(ret_ty.as_ref()))
         }
+    }
+}
+
+pub(crate) fn format_trait_ref_for_diag(trait_ref: &tast::TraitRef) -> String {
+    if trait_ref.args.is_empty() {
+        trait_ref.name.0.clone()
+    } else {
+        format!(
+            "{}[{}]",
+            trait_ref.name.0,
+            trait_ref
+                .args
+                .iter()
+                .map(format_ty_for_diag)
+                .collect::<Vec<_>>()
+                .join(", ")
+        )
     }
 }
 
@@ -157,6 +177,16 @@ pub(crate) fn validate_ty(
                     format!("Unknown type parameter {}", name),
                     range,
                 );
+            }
+        }
+        tast::Ty::TProjection {
+            trait_ref, for_ty, ..
+        } => {
+            validate_ty(genv, diagnostics, for_ty, range, tparams);
+            if let Some(trait_ref) = trait_ref {
+                for arg in &trait_ref.args {
+                    validate_ty(genv, diagnostics, arg, range, tparams);
+                }
             }
         }
         tast::Ty::TDyn { trait_name } => {
@@ -273,6 +303,14 @@ fn validate_dyn_trait(genv: &PackageTypeEnv, diagnostics: &mut Diagnostics, trai
         return;
     };
 
+    if !trait_def.params.is_empty() {
+        push_error(
+            diagnostics,
+            format!("Generic trait {} cannot be used as dyn", trait_name),
+        );
+        return;
+    }
+
     validate_dyn_trait_methods(diagnostics, &resolved, trait_def);
 }
 
@@ -285,6 +323,7 @@ pub(crate) fn validate_dyn_object_safety_in_ty(
         tast::Ty::TDyn { trait_name } => {
             if let Some((resolved, trait_env)) = resolve_trait_name(genv, trait_name)
                 && let Some(trait_def) = trait_env.trait_env.trait_defs.get(&resolved)
+                && trait_def.params.is_empty()
             {
                 validate_dyn_trait_methods(diagnostics, &resolved, trait_def);
             }
@@ -304,6 +343,16 @@ pub(crate) fn validate_dyn_object_safety_in_ty(
         | tast::Ty::TSlice { elem }
         | tast::Ty::TVec { elem }
         | tast::Ty::TRef { elem } => validate_dyn_object_safety_in_ty(genv, diagnostics, elem),
+        tast::Ty::TProjection {
+            trait_ref, for_ty, ..
+        } => {
+            validate_dyn_object_safety_in_ty(genv, diagnostics, for_ty);
+            if let Some(trait_ref) = trait_ref {
+                for arg in &trait_ref.args {
+                    validate_dyn_object_safety_in_ty(genv, diagnostics, arg);
+                }
+            }
+        }
         tast::Ty::THashMap { key, value } => {
             validate_dyn_object_safety_in_ty(genv, diagnostics, key);
             validate_dyn_object_safety_in_ty(genv, diagnostics, value);
@@ -414,6 +463,14 @@ fn ty_contains_self(ty: &tast::Ty) -> bool {
         tast::Ty::TFunc { params, ret_ty } => {
             params.iter().any(ty_contains_self) || ty_contains_self(ret_ty)
         }
+        tast::Ty::TProjection {
+            trait_ref, for_ty, ..
+        } => {
+            ty_contains_self(for_ty)
+                || trait_ref
+                    .as_ref()
+                    .is_some_and(|trait_ref| trait_ref.args.iter().any(ty_contains_self))
+        }
         tast::Ty::TEnum { .. }
         | tast::Ty::TDyn { .. }
         | tast::Ty::TVar(_)
@@ -482,6 +539,11 @@ impl tast::Ty {
                     }
                 }
             }
+            hir::TypeExpr::TProjection { base, assoc } => Self::TProjection {
+                trait_ref: None,
+                for_ty: Box::new(Self::from_hir(genv, base, tparams_env)),
+                name: tast::TastIdent(assoc.to_ident_name()),
+            },
             hir::TypeExpr::TDyn { trait_path } => {
                 let name = trait_path.display();
                 let (resolved, _env) = normalize_trait_name(genv, &name);
@@ -560,6 +622,27 @@ impl tast::Ty {
     }
 }
 
+impl tast::TraitRef {
+    pub(crate) fn from_hir(
+        genv: &PackageTypeEnv,
+        trait_ref: &hir::TraitRef,
+        tparams_env: &[tast::TastIdent],
+    ) -> Self {
+        let raw_name = trait_ref.name.to_ident_name();
+        let name = resolve_trait_name(genv, &raw_name)
+            .map(|(resolved, _)| resolved)
+            .unwrap_or(raw_name);
+        Self {
+            name: tast::TastIdent(name),
+            args: trait_ref
+                .args
+                .iter()
+                .map(|arg| tast::Ty::from_hir(genv, arg, tparams_env))
+                .collect(),
+        }
+    }
+}
+
 pub(crate) fn type_expr_range(ty: &hir::TypeExpr) -> Option<TextRange> {
     match ty {
         hir::TypeExpr::TCon { path } => path
@@ -572,6 +655,7 @@ pub(crate) fn type_expr_range(ty: &hir::TypeExpr) -> Option<TextRange> {
                     .iter()
                     .find_map(|segment| segment.range())
             }),
+        hir::TypeExpr::TProjection { base, .. } => type_expr_range(base),
         hir::TypeExpr::TDyn { trait_path } => trait_path
             .path
             .last()
@@ -662,6 +746,50 @@ pub(crate) fn resolve_trait_name<'a>(
         .trait_defs
         .contains_key(&resolved)
         .then_some((resolved, env))
+}
+
+pub(crate) fn trait_ref_closure(
+    env: &PackageTypeEnv,
+    trait_ref: &tast::TraitRef,
+) -> Vec<tast::TraitRef> {
+    fn collect(
+        env: &PackageTypeEnv,
+        trait_ref: tast::TraitRef,
+        seen: &mut HashSet<tast::TraitRef>,
+        result: &mut Vec<tast::TraitRef>,
+    ) {
+        if !seen.insert(trait_ref.clone()) {
+            return;
+        }
+        result.push(trait_ref.clone());
+        let Some((resolved, trait_env)) = resolve_trait_name(env, &trait_ref.name.0) else {
+            return;
+        };
+        let Some(definition) = trait_env.trait_env.trait_defs.get(&resolved) else {
+            return;
+        };
+        if definition.params.len() != trait_ref.args.len() {
+            return;
+        }
+        let substitution = definition
+            .params
+            .iter()
+            .zip(trait_ref.args.iter())
+            .map(|(param, arg)| (param.0.clone(), arg.clone()))
+            .collect::<HashMap<_, _>>();
+        for supertrait in &definition.supertraits {
+            collect(
+                env,
+                super::type_ops::substitute_trait_ref(supertrait, &substitution),
+                seen,
+                result,
+            );
+        }
+    }
+
+    let mut result = Vec::new();
+    collect(env, trait_ref.clone(), &mut HashSet::new(), &mut result);
+    result
 }
 
 pub(crate) fn normalize_trait_name<'a>(

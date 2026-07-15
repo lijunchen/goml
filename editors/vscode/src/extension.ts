@@ -1,6 +1,18 @@
 import * as path from 'path';
 import * as fs from 'fs';
-import { workspace, ExtensionContext, window } from 'vscode';
+import {
+    commands,
+    ExtensionContext,
+    ProcessExecution,
+    Task,
+    TaskPanelKind,
+    TaskRevealKind,
+    TaskScope,
+    tasks,
+    Uri,
+    window,
+    workspace,
+} from 'vscode';
 import {
     LanguageClient,
     LanguageClientOptions,
@@ -11,6 +23,41 @@ import {
 let client: LanguageClient | undefined;
 
 export function activate(context: ExtensionContext) {
+    context.subscriptions.push(
+        commands.registerCommand(
+            'goml.runTest',
+            async (uriText: string, testName: string, kind: string) => {
+                const uri = Uri.parse(uriText);
+                const document = workspace.textDocuments.find(
+                    candidate => candidate.uri.toString() === uri.toString()
+                );
+                if (document?.isDirty) {
+                    await document.save();
+                }
+                const folder = workspace.getWorkspaceFolder(uri);
+                const scope = folder ?? TaskScope.Workspace;
+                const cwd = folder?.uri.fsPath ?? path.dirname(uri.fsPath);
+                const task = new Task(
+                    { type: 'goml', task: 'test' },
+                    scope,
+                    `test ${testName}`,
+                    'goml',
+                    new ProcessExecution(
+                        'goml',
+                        ['test', uri.fsPath, testName, '--kind', kind],
+                        { cwd }
+                    )
+                );
+                task.presentationOptions = {
+                    reveal: TaskRevealKind.Always,
+                    panel: TaskPanelKind.Dedicated,
+                    clear: true,
+                };
+                await tasks.executeTask(task);
+            }
+        )
+    );
+
     const serverPath = findServerPath(context);
 
     if (!serverPath) {

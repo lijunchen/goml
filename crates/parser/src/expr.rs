@@ -1,5 +1,5 @@
 use crate::{
-    file::{block, type_expr},
+    file::{block, type_expr, type_param_list},
     parser::{MarkerClosed, Parser},
     path::parse_path_always,
     syntax::MySyntaxKind,
@@ -33,6 +33,7 @@ pub const EXPR_FIRST: &[TokenKind] = &[
     T![if],
     T![match],
     T![while],
+    T![for],
     T![break],
     T![continue],
     T![return],
@@ -128,6 +129,7 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
         T!['['] => {
             let m = p.open();
             p.expect(T!['[']);
+            let _struct_literals = p.with_struct_literals_allowed(true);
             if !p.at(T![']'])
                 && !p.eof()
                 && expect_expr_with_message(p, "expected an expression in array literal")
@@ -168,9 +170,17 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
         // ExprName = 'name'
         T![ident] => {
             let m = p.open();
-            // Always parse as a path - this creates a PATH node containing identifiers
-            parse_path_always(p);
-            if looks_like_struct_literal(p) {
+            if path_has_type_args(p) {
+                let owner = p.open();
+                parse_path_always(p);
+                type_param_list(p);
+                p.close(owner, MySyntaxKind::TYPE_TAPP);
+                p.expect(T![::]);
+                parse_path_always(p);
+            } else {
+                parse_path_always(p);
+            }
+            if p.struct_literals_allowed() && looks_like_struct_literal(p) {
                 struct_literal_field_list(p);
                 p.close(m, MySyntaxKind::EXPR_STRUCT_LITERAL)
             } else {
@@ -181,6 +191,7 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
         T!['('] => {
             let m = p.open();
             p.expect(T!['(']);
+            let _struct_literals = p.with_struct_literals_allowed(true);
             if p.at(T![')']) {
                 p.expect(T![')']);
                 p.close(m, MySyntaxKind::EXPR_UNIT)
@@ -206,11 +217,13 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
             p.expect(T![if]);
 
             let cond_marker = p.open();
+            let struct_literals = p.with_struct_literals_allowed(false);
             if p.at_any(EXPR_FIRST) {
                 expect_expr_with_message(p, "expected an expression after `if`");
             } else {
                 p.advance_with_error("expected an expression after `if`");
             }
+            drop(struct_literals);
             p.close(cond_marker, MySyntaxKind::EXPR_IF_COND);
 
             let then_marker = p.open();
@@ -243,7 +256,9 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
         T![match] => {
             let m = p.open();
             p.expect(T![match]);
+            let struct_literals = p.with_struct_literals_allowed(false);
             expect_expr_with_message(p, "expected a scrutinee expression for `match`");
+            drop(struct_literals);
             if p.at(T!['{']) {
                 match_arm_list(p);
             }
@@ -254,11 +269,13 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
             p.expect(T![while]);
 
             let cond_marker = p.open();
+            let struct_literals = p.with_struct_literals_allowed(false);
             if p.at_any(EXPR_FIRST) {
                 expect_expr_with_message(p, "expected an expression after `while`");
             } else {
                 p.advance_with_error("expected an expression after `while`");
             }
+            drop(struct_literals);
             p.close(cond_marker, MySyntaxKind::EXPR_WHILE_COND);
 
             let body_marker = p.open();
@@ -272,6 +289,32 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
             p.close(body_marker, MySyntaxKind::EXPR_WHILE_BODY);
 
             p.close(m, MySyntaxKind::EXPR_WHILE)
+        }
+        T![for] => {
+            let m = p.open();
+            p.expect(T![for]);
+
+            let _ = super::pattern::pattern(p);
+            if !p.eat(T![in]) {
+                p.error("expected `in` after `for` pattern");
+            }
+            let struct_literals = p.with_struct_literals_allowed(false);
+            if p.at_any(EXPR_FIRST) {
+                expect_expr_with_message(p, "expected an iterator expression after `in`");
+            } else {
+                p.error("expected an iterator expression after `in`");
+            }
+            drop(struct_literals);
+            if p.at(T!['{']) {
+                block(p);
+            } else {
+                p.error("expected a block for `for` loop body");
+                if p.at_any(EXPR_FIRST) {
+                    let _ = expr(p);
+                }
+            }
+
+            p.close(m, MySyntaxKind::EXPR_FOR)
         }
         T![break] => {
             let m = p.open();
@@ -313,6 +356,31 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
         }
     };
     Some(result)
+}
+
+fn path_has_type_args(p: &mut Parser) -> bool {
+    let mut index = 1;
+    while p.nth(index) == T![::] && p.nth(index + 1) == T![ident] {
+        index += 2;
+    }
+    if p.nth(index) != T!['['] {
+        return false;
+    }
+    let mut depth = 0;
+    loop {
+        match p.nth(index) {
+            T!['['] => depth += 1,
+            T![']'] => {
+                depth -= 1;
+                if depth == 0 {
+                    return p.nth(index + 1) == T![::];
+                }
+            }
+            T![eof] => return false,
+            _ => {}
+        }
+        index += 1;
+    }
 }
 
 fn closure_expr(p: &mut Parser) -> MarkerClosed {
@@ -405,6 +473,7 @@ fn struct_literal_field_list(p: &mut Parser) {
     assert!(p.at(T!['{']));
     let m = p.open();
     p.expect(T!['{']);
+    let _struct_literals = p.with_struct_literals_allowed(true);
     while !p.eof() && !p.at(T!['}']) {
         if p.at(T![ident]) {
             struct_literal_field(p);
@@ -509,6 +578,7 @@ fn expr_bp(p: &mut Parser, min_bp: u8) -> Option<MarkerClosed> {
             } else if p.at(T!['[']) {
                 let m = lhs.precede(p);
                 p.expect(T!['[']);
+                let _struct_literals = p.with_struct_literals_allowed(true);
                 if p.at_any(EXPR_FIRST) {
                     expect_expr_with_message(p, "expected an index expression");
                 } else if !p.at(T![']']) {
@@ -548,6 +618,7 @@ pub fn arg_list(p: &mut Parser) {
     assert!(p.at(T!['(']));
     let m = p.open();
     p.expect(T!['(']);
+    let _struct_literals = p.with_struct_literals_allowed(true);
     while !p.at(T![')']) && !p.eof() {
         if p.at_any(EXPR_FIRST) {
             arg(p);

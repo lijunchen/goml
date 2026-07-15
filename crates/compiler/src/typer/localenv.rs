@@ -11,7 +11,8 @@ use crate::typer::util::push_ice;
 pub struct LocalTypeEnv {
     scopes: Vec<ImHashMap<LocalId, tast::Ty>>,
     tparams_env: Vec<TastIdent>,
-    tparam_trait_bounds: IndexMap<String, Vec<TastIdent>>,
+    tparam_trait_bounds: IndexMap<String, Vec<tast::TraitRef>>,
+    predicates: Vec<crate::env::TypePredicate>,
     in_scope_traits: Vec<TastIdent>,
     capture_stack: Vec<IndexMap<LocalId, tast::Ty>>,
 }
@@ -28,6 +29,7 @@ impl LocalTypeEnv {
             scopes: vec![ImHashMap::new()],
             tparams_env: Vec::new(),
             tparam_trait_bounds: IndexMap::new(),
+            predicates: Vec::new(),
             in_scope_traits: Vec::new(),
             capture_stack: Vec::new(),
         }
@@ -80,7 +82,7 @@ impl LocalTypeEnv {
         self.tparams_env.clone()
     }
 
-    pub fn set_tparam_trait_bounds(&mut self, bounds: IndexMap<String, Vec<TastIdent>>) {
+    pub fn set_tparam_trait_bounds(&mut self, bounds: IndexMap<String, Vec<tast::TraitRef>>) {
         self.tparam_trait_bounds = bounds;
     }
 
@@ -88,12 +90,24 @@ impl LocalTypeEnv {
         self.tparam_trait_bounds.clear();
     }
 
-    pub fn tparam_trait_bounds(&self, name: &str) -> Option<&[TastIdent]> {
+    pub fn tparam_trait_bounds(&self, name: &str) -> Option<&[tast::TraitRef]> {
         self.tparam_trait_bounds.get(name).map(|v| v.as_slice())
     }
 
-    pub fn tparam_trait_bounds_map(&self) -> &IndexMap<String, Vec<TastIdent>> {
+    pub fn tparam_trait_bounds_map(&self) -> &IndexMap<String, Vec<tast::TraitRef>> {
         &self.tparam_trait_bounds
+    }
+
+    pub fn set_predicates(&mut self, predicates: Vec<crate::env::TypePredicate>) {
+        self.predicates = predicates;
+    }
+
+    pub fn clear_predicates(&mut self) {
+        self.predicates.clear();
+    }
+
+    pub fn predicates(&self) -> &[crate::env::TypePredicate] {
+        &self.predicates
     }
 
     pub fn set_in_scope_traits(&mut self, traits: Vec<TastIdent>) {

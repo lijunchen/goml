@@ -1,0 +1,27 @@
+package convert;
+
+pub trait Convert[T] {
+    fn convert(Self) -> T;
+}
+
+pub struct Token {}
+
+impl Convert[int32] for Token {
+    fn convert(self: Token) -> int32 {
+        27
+    }
+}
+
+impl Convert[string] for Token {
+    fn convert(self: Token) -> string {
+        "twenty-seven"
+    }
+}
+
+pub fn token() -> Token {
+    Token {}
+}
+
+pub fn convert_to[T, V: Convert[T]](value: V) -> T {
+    value.convert()
+}

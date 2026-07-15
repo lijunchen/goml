@@ -1,0 +1,41 @@
+package main;
+trait Ready {
+  fn state(Self) -> string;
+}
+
+trait Service[T] {
+  fn get(Self) -> T;
+}
+
+struct Worker {
+    name: string,
+}
+
+struct Station {
+    worker: Worker,
+}
+
+impl Ready for Worker {
+  fn state(self: Worker) -> string {
+      self.name + ":ready"
+  }
+}
+
+impl Service[Worker] for Station {
+  fn get(self: Station) -> Worker {
+      self.worker
+  }
+}
+
+fn describe(service: S) -> string {
+    Service[T]::get(service).state()
+}
+
+fn main() -> unit {
+    println(describe(Station {
+            worker: Worker {
+                name: "build"
+            }
+        }));
+}
+

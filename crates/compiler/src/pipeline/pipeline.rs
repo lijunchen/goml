@@ -21,7 +21,7 @@ use crate::{
     hir, interface,
     lift::{self, GlobalLiftEnv, LiftFile},
     mono::{self, GlobalMonoEnv},
-    stdlib, tast, typer,
+    stdlib, tast, testing, typer,
 };
 
 #[derive(Debug)]
@@ -105,14 +105,14 @@ fn genv_defines_nominal_type(genv: &GlobalTypeEnv, ty: &tast::Ty) -> bool {
 fn duplicate_trait_impl_shadows_builtin(
     genv: &GlobalTypeEnv,
     exports: &PackageExports,
-    key: &(String, tast::Ty),
+    key: &crate::env::TraitImplKey,
 ) -> bool {
     builtins::builtin_env()
         .trait_env
         .trait_impls
         .contains_key(key)
-        && exports_define_nominal_type(exports, &key.1)
-        && !genv_defines_nominal_type(genv, &key.1)
+        && exports_define_nominal_type(exports, &key.for_ty)
+        && !genv_defines_nominal_type(genv, &key.for_ty)
 }
 
 pub(super) fn report_duplicate_trait_impls(
@@ -130,7 +130,7 @@ pub(super) fn report_duplicate_trait_impls(
                 Severity::Error,
                 format!(
                     "Trait {} implementation for {:?} is defined in multiple packages (including {})",
-                    key.0, key.1, package_name
+                    key.trait_ref.name.0, key.for_ty, package_name
                 ),
             ));
         }
@@ -260,9 +260,9 @@ fn parse_ast_from_source(
 ) -> Result<(GreenNode, CstFile, ast::File), CompilationError> {
     let parse_result = parser::parse(path, src);
     if parse_result.has_errors() {
-        return Err(CompilationError::Parser {
-            diagnostics: parse_result.into_diagnostics(),
-        });
+        let mut diagnostics = parse_result.into_diagnostics();
+        diagnostics.set_source_for_missing(path);
+        return Err(CompilationError::Parser { diagnostics });
     }
 
     let green_node = parse_result.green_node.clone();
@@ -271,14 +271,16 @@ fn parse_ast_from_source(
     let lower = ::ast::lower::lower(cst.clone());
     let ast = match lower.into_result() {
         Ok(ast) => ast,
-        Err(diagnostics) => {
+        Err(mut diagnostics) => {
+            diagnostics.set_source_for_missing(path);
             return Err(CompilationError::Lower { diagnostics });
         }
     };
 
     let ast = match derive::expand(ast) {
         Ok(ast) => ast,
-        Err(diagnostics) => {
+        Err(mut diagnostics) => {
+            diagnostics.set_source_for_missing(path);
             return Err(CompilationError::Lower { diagnostics });
         }
     };
@@ -299,6 +301,7 @@ fn parse_ast_from_source_allow_parse_errors(
     let (ast, mut lower_diagnostics) = lower.into_parts();
     diagnostics.append(&mut lower_diagnostics);
     let Some(ast) = ast else {
+        diagnostics.set_source_for_missing(path);
         return Err(CompilationError::Lower { diagnostics });
     };
 
@@ -311,7 +314,23 @@ fn parse_ast_from_source_allow_parse_errors(
         }
     };
 
+    diagnostics.set_source_for_missing(path);
+
     Ok((green_node, cst, ast, diagnostics))
+}
+
+fn parse_source_overrides(
+    source_overrides: &HashMap<PathBuf, String>,
+) -> packages::SourceOverrides {
+    source_overrides
+        .iter()
+        .map(|(path, src)| {
+            (
+                path.clone(),
+                parse_ast_from_source(path, src).map(|(_, _, ast)| ast),
+            )
+        })
+        .collect()
 }
 
 pub fn parse_ast_file(path: &Path, src: &str) -> Result<ast::File, CompilationError> {
@@ -325,6 +344,8 @@ fn typecheck_package(
     deps_envs: HashMap<String, GlobalTypeEnv>,
     deps_interfaces: &HashMap<String, interface::PackageInterface>,
 ) -> PackageArtifact {
+    let (test_candidates, mut attribute_diagnostics) =
+        testing::collect_test_candidates(&package.files);
     let (hir, hir_table, mut hir_diagnostics) =
         hir::lower_to_hir_files_with_env(package_id, package.files.clone(), deps_interfaces);
     let (tast, genv, mut diagnostics) = typer::check_file_with_env(
@@ -335,9 +356,17 @@ fn typecheck_package(
         &package.name,
         deps_envs,
     );
+    diagnostics.append(&mut attribute_diagnostics);
     diagnostics.append(&mut hir_diagnostics);
     let full_exports = PackageExports::from_genv(&genv);
-    let exports = PackageExports::public_from_package(&package.name, &package.files, &genv);
+    drop(testing::validate_test_candidates(
+        &package.name,
+        test_candidates,
+        &full_exports,
+        &mut diagnostics,
+    ));
+    let exports =
+        PackageExports::public_from_package(&package.name, &package.files, &genv, &mut diagnostics);
     let package_interface =
         interface::PackageInterface::from_package(&package.name, &package.declared_name, &exports);
 
@@ -356,8 +385,10 @@ fn typecheck_packages_inner(
     path: &Path,
     entry_ast: ast::File,
     single_file: bool,
+    mut source_overrides: packages::SourceOverrides,
 ) -> Result<TypecheckPackagesResult, CompilationError> {
     let root = discovery_root_for_file(path)?;
+    source_overrides.insert(path.to_path_buf(), Ok(entry_ast.clone()));
     let mut external_deps = load_external_dependencies(&root)?;
     let external_imports = external_deps.external_imports();
     let mut graph = if single_file {
@@ -368,10 +399,12 @@ fn typecheck_packages_inner(
             &external_imports,
         )?
     } else {
-        packages::discover_packages_with_external_imports(
+        let mode = packages::analysis_mode_for_path(&root, path)?;
+        packages::discover_packages_with_overrides_and_external_imports(
             &root,
             Some(path),
-            Some(entry_ast),
+            &source_overrides,
+            mode,
             &external_imports,
         )?
     };
@@ -493,12 +526,24 @@ fn should_use_single_file_mode(path: &Path) -> Result<bool, CompilationError> {
 
 pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> {
     let single_file = should_use_single_file_mode(path)?;
-    super::with_src_compiler_stack(src, || compile_inner(path, src, single_file, true))
+    super::with_src_compiler_stack(src, || {
+        compile_inner(path, src, single_file, true, &HashMap::new())
+    })
 }
 
 pub fn compile_for_analysis(path: &Path, src: &str) -> Result<Compilation, CompilationError> {
+    compile_for_analysis_with_overrides(path, src, &HashMap::new())
+}
+
+pub fn compile_for_analysis_with_overrides(
+    path: &Path,
+    src: &str,
+    source_overrides: &HashMap<PathBuf, String>,
+) -> Result<Compilation, CompilationError> {
     let single_file = should_use_single_file_mode(path)?;
-    super::with_src_compiler_stack(src, || compile_inner(path, src, single_file, false))
+    super::with_src_compiler_stack(src, || {
+        compile_inner(path, src, single_file, false, source_overrides)
+    })
 }
 
 fn compile_inner(
@@ -506,10 +551,16 @@ fn compile_inner(
     src: &str,
     single_file: bool,
     validate_entrypoint: bool,
+    source_overrides: &HashMap<PathBuf, String>,
 ) -> Result<Compilation, CompilationError> {
     let (green_node, cst, entry_ast) = parse_ast_from_source(path, src)?;
 
-    let typecheck = typecheck_packages_inner(path, entry_ast.clone(), single_file)?;
+    let typecheck = typecheck_packages_inner(
+        path,
+        entry_ast.clone(),
+        single_file,
+        parse_source_overrides(source_overrides),
+    )?;
     let TypecheckPackagesResult {
         full_tast,
         mut diagnostics,
@@ -592,9 +643,15 @@ fn compile_inner(
             )));
         }
         artifact.full_exports.apply_to(&mut env);
+        if let [source] = package.files.as_slice() {
+            diagnostics.set_source(&source.path);
+        } else {
+            diagnostics.clear_source();
+        }
         let core = compile_match::compile_file(&env, &gensym, &mut diagnostics, &artifact.tast);
         package_cores.push(core);
     }
+    diagnostics.clear_source();
     let mut core = link_packages(package_cores);
     if validate_entrypoint && graph.entry_package != ROOT_PACKAGE {
         let entry_name = format!("{}::{}", graph.entry_package, ENTRY_FUNCTION);
@@ -651,7 +708,9 @@ fn compile_inner(
 }
 
 pub fn compile_single_file(path: &Path, src: &str) -> Result<Compilation, CompilationError> {
-    super::with_src_compiler_stack(src, || compile_inner(path, src, true, true))
+    super::with_src_compiler_stack(src, || {
+        compile_inner(path, src, true, true, &HashMap::new())
+    })
 }
 
 pub fn typecheck_with_packages(
@@ -661,7 +720,12 @@ pub fn typecheck_with_packages(
     let single_file = should_use_single_file_mode(path)?;
     super::with_src_compiler_stack(src, || {
         let (_green_node, _cst, entry_ast) = parse_ast_from_source(path, src)?;
-        let result = typecheck_packages_inner(path, entry_ast, single_file)?;
+        let result = typecheck_packages_inner(
+            path,
+            entry_ast,
+            single_file,
+            packages::SourceOverrides::new(),
+        )?;
         Ok((result.entry_tast, result.genv, result.diagnostics))
     })
 }
@@ -678,11 +742,29 @@ pub fn typecheck_with_packages_and_results(
     ),
     CompilationError,
 > {
+    typecheck_with_packages_and_results_with_overrides(path, src, &HashMap::new())
+}
+
+pub fn typecheck_with_packages_and_results_with_overrides(
+    path: &Path,
+    src: &str,
+    source_overrides: &HashMap<PathBuf, String>,
+) -> Result<
+    (
+        hir::HirTable,
+        typer::results::TypeckResults,
+        GlobalTypeEnv,
+        Diagnostics,
+    ),
+    CompilationError,
+> {
     let single_file = should_use_single_file_mode(path)?;
     super::with_src_compiler_stack(src, || {
         let (_green_node, _cst, entry_ast, mut diagnostics) =
             parse_ast_from_source_allow_parse_errors(path, src)?;
         let root = discovery_root_for_file(path)?;
+        let mut parsed_overrides = parse_source_overrides(source_overrides);
+        parsed_overrides.insert(path.to_path_buf(), Ok(entry_ast.clone()));
         let mut external_deps = load_external_dependencies(&root)?;
         let external_imports = external_deps.external_imports();
         let mut graph = if single_file {
@@ -693,10 +775,12 @@ pub fn typecheck_with_packages_and_results(
                 &external_imports,
             )?
         } else {
-            packages::discover_packages_with_external_imports(
+            let mode = packages::analysis_mode_for_path(&root, path)?;
+            packages::discover_packages_with_overrides_and_external_imports(
                 &root,
                 Some(path),
-                Some(entry_ast),
+                &parsed_overrides,
+                mode,
                 &external_imports,
             )?
         };
@@ -733,12 +817,16 @@ pub fn typecheck_with_packages_and_results(
 
         let mut entry_hir_table = None;
         let mut entry_results = None;
+        let mut entry_exports = None;
 
         for name in order.iter() {
             let package = graph
                 .packages
                 .get(name)
                 .ok_or_else(|| compile_error(format!("package {} not found", name)))?;
+            let (test_candidates, mut attribute_diagnostics) =
+                testing::collect_test_candidates(&package.files);
+            diagnostics.append(&mut attribute_diagnostics);
             let package_id = *package_ids
                 .get(name)
                 .unwrap_or_else(|| panic!("missing package id for {}", name));
@@ -784,7 +872,20 @@ pub fn typecheck_with_packages_and_results(
             package_diagnostics.append(&mut hir_diagnostics);
             diagnostics.append(&mut package_diagnostics);
 
-            let exports = PackageExports::public_from_package(name, &package.files, &package_genv);
+            let full_exports = PackageExports::from_genv(&package_genv);
+            drop(testing::validate_test_candidates(
+                name,
+                test_candidates,
+                &full_exports,
+                &mut diagnostics,
+            ));
+
+            let exports = PackageExports::public_from_package(
+                name,
+                &package.files,
+                &package_genv,
+                &mut diagnostics,
+            );
             report_duplicate_trait_impls(&mut diagnostics, &genv, &exports, name);
             exports.apply_to(&mut genv);
             let package_interface =
@@ -798,6 +899,7 @@ pub fn typecheck_with_packages_and_results(
             if name == &graph.entry_package {
                 entry_hir_table = Some(hir_table);
                 entry_results = Some(results);
+                entry_exports = Some(full_exports);
             }
 
             artifacts_by_name.insert(name.clone(), interface);
@@ -809,6 +911,9 @@ pub fn typecheck_with_packages_and_results(
         let Some(entry_results) = entry_results else {
             return Err(compile_error("entry package not found".to_string()));
         };
+        if let Some(entry_exports) = entry_exports {
+            entry_exports.apply_to(&mut genv);
+        }
 
         Ok((entry_hir_table, entry_results, genv, diagnostics))
     })

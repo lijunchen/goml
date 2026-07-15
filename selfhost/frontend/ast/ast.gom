@@ -10,6 +10,9 @@ pub enum NodeKind {
     ExternFn,
     FnDef,
     GenericList,
+    SupertraitList,
+    WhereClause,
+    WherePredicate,
     ParamList,
     Param,
     TypeMissing,
@@ -47,6 +50,7 @@ pub enum NodeKind {
     ExprMatch,
     MatchArm,
     ExprWhile,
+    ExprFor,
     ExprClosure,
     ExprReturn,
     ExprBreak,
@@ -57,7 +61,9 @@ pub enum NodeKind {
     EnumDef,
     EnumVariant,
     TraitDef,
+    TraitAssociatedType,
     ImplDef,
+    ImplAssociatedType,
 }
 
 pub struct Node {
@@ -138,6 +144,9 @@ pub fn node_kind_name(kind: NodeKind) -> string {
         NodeKind::ExternFn => "ExternFn",
         NodeKind::FnDef => "FnDef",
         NodeKind::GenericList => "GenericList",
+        NodeKind::SupertraitList => "SupertraitList",
+        NodeKind::WhereClause => "WhereClause",
+        NodeKind::WherePredicate => "WherePredicate",
         NodeKind::ParamList => "ParamList",
         NodeKind::Param => "Param",
         NodeKind::TypeMissing => "TypeMissing",
@@ -175,6 +184,7 @@ pub fn node_kind_name(kind: NodeKind) -> string {
         NodeKind::ExprMatch => "ExprMatch",
         NodeKind::MatchArm => "MatchArm",
         NodeKind::ExprWhile => "ExprWhile",
+        NodeKind::ExprFor => "ExprFor",
         NodeKind::ExprClosure => "ExprClosure",
         NodeKind::ExprReturn => "ExprReturn",
         NodeKind::ExprBreak => "ExprBreak",
@@ -185,7 +195,9 @@ pub fn node_kind_name(kind: NodeKind) -> string {
         NodeKind::EnumDef => "EnumDef",
         NodeKind::EnumVariant => "EnumVariant",
         NodeKind::TraitDef => "TraitDef",
+        NodeKind::TraitAssociatedType => "TraitAssociatedType",
         NodeKind::ImplDef => "ImplDef",
+        NodeKind::ImplAssociatedType => "ImplAssociatedType",
     }
 }
 

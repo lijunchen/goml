@@ -1,4 +1,7 @@
-use std::path::Path;
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+};
 
 use cst::cst::CstNode;
 use parser::syntax::{MySyntaxNodePtr, MySyntaxToken};
@@ -15,10 +18,20 @@ use super::{
         package_decl_from_token, path_segments_at_offset, path_segments_at_range,
         path_segments_from_token,
     },
-    typecheck::typecheck_for_query,
+    typecheck::typecheck_for_query_with_overrides,
 };
 
 pub fn hover_type(path: &Path, src: &str, line: u32, col: u32) -> Result<String, String> {
+    hover_type_with_overrides(path, src, line, col, &HashMap::new())
+}
+
+pub fn hover_type_with_overrides(
+    path: &Path,
+    src: &str,
+    line: u32,
+    col: u32,
+    source_overrides: &HashMap<PathBuf, String>,
+) -> Result<String, String> {
     crate::pipeline::with_compiler_stack(|| {
         let context = QueryContext::from_position(path, src, line, col)?;
         let token = context.token_prefer_ident();
@@ -31,7 +44,8 @@ pub fn hover_type(path: &Path, src: &str, line: u32, col: u32) -> Result<String,
         let range = token.as_ref().map(|tok| tok.text_range());
         let offset = context.offset();
 
-        let (hir_table, results, genv, _diagnostics) = typecheck_for_query(path, src)?;
+        let (hir_table, results, genv, _diagnostics) =
+            typecheck_for_query_with_overrides(path, src, source_overrides)?;
         let index = HirResultsIndex::new(&hir_table);
         let closure_params = ClosureParamIndex::new(&hir_table);
 

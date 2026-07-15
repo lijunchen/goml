@@ -256,8 +256,8 @@ func print_opt_int(x__0 Option__int32) struct{} {
     case None:
         println__T_string("none")
     case Some:
-        var x4 int32 = x__0.(Some)._0
-        var v__1 int32 = x4
+        var x22 int32 = x__0.(Some)._0
+        var v__1 int32 = x22
         println__T_int32(v__1)
     default:
         panic("non-exhaustive match")
@@ -266,327 +266,327 @@ func print_opt_int(x__0 Option__int32) struct{} {
 }
 
 func main0() struct{} {
-    var t71 [2]int32 = [2]int32{31, 32}
-    var t72 int32 = array_get__Array_2_5int32(t71, 1)
-    println__T_int32(t72)
+    var t89 [2]int32 = [2]int32{31, 32}
+    var t90 int32 = array_get__Array_2_5int32(t89, 1)
+    println__T_int32(t90)
     var arr__2 [3]int32 = [3]int32{1, 2, 3}
-    var t73 int32 = array_get__Array_3_5int32(arr__2, 0)
-    println__T_int32(t73)
+    var t91 int32 = array_get__Array_3_5int32(arr__2, 0)
+    println__T_int32(t91)
     var arr2__3 [3]int32 = [3]int32{4, 5, 6}
-    var place_root7 [3]int32 = arr2__3
-    var index8 int32 = 1
-    array_get__Array_3_5int32(place_root7, index8)
-    var value10 int32 = 50
-    var t74 [3]int32 = array_set__Array_3_5int32(place_root7, index8, value10)
-    arr2__3 = t74
-    var t76 int32 = array_get__Array_3_5int32(arr2__3, 1)
-    println__T_int32(t76)
-    var t77 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__int32()
-    var t78 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__int32(t77, 7)
-    var t79 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__int32(t78, 8)
-    var vec__4 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__int32(t79, 9)
-    var t80 int32 = vec_get__Vec_5int32(vec__4, 2)
-    println__T_int32(t80)
-    var t81 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__int32()
-    var t82 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__int32(t81, 10)
-    var t83 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__int32(t82, 11)
-    var vec2__5 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__int32(t83, 12)
-    var place_root14 *_goml_vec_int32 = vec2__5
-    var index15 int32 = 0
-    vec_get__Vec_5int32(place_root14, index15)
-    var value17 int32 = 100
-    vec_set__Vec_5int32(place_root14, index15, value17)
-    var t85 int32 = vec_get__Vec_5int32(vec2__5, 0)
-    println__T_int32(t85)
+    var place_root25 [3]int32 = arr2__3
+    var index26 int32 = 1
+    array_get__Array_3_5int32(place_root25, index26)
+    var value28 int32 = 50
+    var t92 [3]int32 = array_set__Array_3_5int32(place_root25, index26, value28)
+    arr2__3 = t92
+    var t94 int32 = array_get__Array_3_5int32(arr2__3, 1)
+    println__T_int32(t94)
+    var t95 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__int32()
+    var t96 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__int32(t95, 7)
+    var t97 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__int32(t96, 8)
+    var vec__4 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__int32(t97, 9)
+    var t98 int32 = vec_get__Vec_5int32(vec__4, 2)
+    println__T_int32(t98)
+    var t99 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__int32()
+    var t100 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__int32(t99, 10)
+    var t101 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__int32(t100, 11)
+    var vec2__5 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__int32(t101, 12)
+    var place_root32 *_goml_vec_int32 = vec2__5
+    var index33 int32 = 0
+    vec_get__Vec_5int32(place_root32, index33)
+    var value35 int32 = 100
+    vec_set__Vec_5int32(place_root32, index33, value35)
+    var t103 int32 = vec_get__Vec_5int32(vec2__5, 0)
+    println__T_int32(t103)
     var s__6 []int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_slice____T__int32(vec2__5, 0, 2)
-    var t86 int32 = s__6[1]
-    println__T_int32(t86)
+    var t104 int32 = s__6[1]
+    println__T_int32(t104)
     var map__7 *hashmap_string_int32_x = _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_new____K__string____V__int32()
-    var place_root21 *hashmap_string_int32_x = map__7
-    var index22 string = "a"
-    hashmap_get__HashMap_6string_5int32(place_root21, index22)
-    var value24 int32 = 13
-    hashmap_set__HashMap_6string_5int32(place_root21, index22, value24)
-    var t88 Option__int32 = hashmap_get__HashMap_6string_5int32(map__7, "a")
-    print_opt_int(t88)
-    var t89 Option__int32 = hashmap_get__HashMap_6string_5int32(map__7, "missing")
-    print_opt_int(t89)
-    var t90 [2]int32 = [2]int32{1, 2}
-    var t91 [2]int32 = [2]int32{3, 4}
-    var matrix__8 [2][2]int32 = [2][2]int32{t90, t91}
-    var place_root28 [2][2]int32 = matrix__8
-    var index29 int32 = 1
-    var place30 [2]int32 = array_get__Array_2_14Array_2_5int32(place_root28, index29)
-    var index31 int32 = 0
-    array_get__Array_2_5int32(place30, index31)
-    var value33 int32 = 30
-    var t92 [2]int32 = array_set__Array_2_5int32(place30, index31, value33)
-    var t93 [2][2]int32 = array_set__Array_2_14Array_2_5int32(place_root28, index29, t92)
-    matrix__8 = t93
-    var t95 [2]int32 = array_get__Array_2_14Array_2_5int32(matrix__8, 1)
-    var t96 int32 = array_get__Array_2_5int32(t95, 0)
-    println__T_int32(t96)
-    var t97 [2]int32 = [2]int32{14, 15}
+    var place_root39 *hashmap_string_int32_x = map__7
+    var index40 string = "a"
+    hashmap_get__HashMap_6string_5int32(place_root39, index40)
+    var value42 int32 = 13
+    hashmap_set__HashMap_6string_5int32(place_root39, index40, value42)
+    var t106 Option__int32 = hashmap_get__HashMap_6string_5int32(map__7, "a")
+    print_opt_int(t106)
+    var t107 Option__int32 = hashmap_get__HashMap_6string_5int32(map__7, "missing")
+    print_opt_int(t107)
+    var t108 [2]int32 = [2]int32{1, 2}
+    var t109 [2]int32 = [2]int32{3, 4}
+    var matrix__8 [2][2]int32 = [2][2]int32{t108, t109}
+    var place_root46 [2][2]int32 = matrix__8
+    var index47 int32 = 1
+    var place48 [2]int32 = array_get__Array_2_14Array_2_5int32(place_root46, index47)
+    var index49 int32 = 0
+    array_get__Array_2_5int32(place48, index49)
+    var value51 int32 = 30
+    var t110 [2]int32 = array_set__Array_2_5int32(place48, index49, value51)
+    var t111 [2][2]int32 = array_set__Array_2_14Array_2_5int32(place_root46, index47, t110)
+    matrix__8 = t111
+    var t113 [2]int32 = array_get__Array_2_14Array_2_5int32(matrix__8, 1)
+    var t114 int32 = array_get__Array_2_5int32(t113, 0)
+    println__T_int32(t114)
+    var t115 [2]int32 = [2]int32{14, 15}
     var pair__9 Tuple2_13Array2_5int32_5int32 = Tuple2_13Array2_5int32_5int32{
-        _0: t97,
+        _0: t115,
         _1: 0,
     }
-    var place_root36 Tuple2_13Array2_5int32_5int32 = pair__9
-    var place37 [2]int32 = place_root36._0
-    var index38 int32 = 1
-    array_get__Array_2_5int32(place37, index38)
-    var value40 int32 = 150
-    var t98 [2]int32 = array_set__Array_2_5int32(place37, index38, value40)
-    var t99 int32 = place_root36._1
-    var t100 Tuple2_13Array2_5int32_5int32 = Tuple2_13Array2_5int32_5int32{
-        _0: t98,
-        _1: t99,
+    var place_root54 Tuple2_13Array2_5int32_5int32 = pair__9
+    var place55 [2]int32 = place_root54._0
+    var index56 int32 = 1
+    array_get__Array_2_5int32(place55, index56)
+    var value58 int32 = 150
+    var t116 [2]int32 = array_set__Array_2_5int32(place55, index56, value58)
+    var t117 int32 = place_root54._1
+    var t118 Tuple2_13Array2_5int32_5int32 = Tuple2_13Array2_5int32_5int32{
+        _0: t116,
+        _1: t117,
     }
-    pair__9 = t100
-    var t102 [2]int32 = pair__9._0
-    var t103 int32 = array_get__Array_2_5int32(t102, 1)
-    println__T_int32(t103)
-    var t104 [2]int32 = [2]int32{16, 17}
-    var t105 *_goml_vec_Array_2_5int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T___l_int32_x3b_2_r_()
-    var t106 [2]int32 = [2]int32{18, 19}
-    var t107 *_goml_vec_Array_2_5int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T___l_int32_x3b_2_r_(t105, t106)
-    var t108 [2]int32 = [2]int32{20, 21}
-    var t109 *_goml_vec_Array_2_5int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T___l_int32_x3b_2_r_(t107, t108)
+    pair__9 = t118
+    var t120 [2]int32 = pair__9._0
+    var t121 int32 = array_get__Array_2_5int32(t120, 1)
+    println__T_int32(t121)
+    var t122 [2]int32 = [2]int32{16, 17}
+    var t123 *_goml_vec_Array_2_5int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T___l_int32_x3b_2_r_()
+    var t124 [2]int32 = [2]int32{18, 19}
+    var t125 *_goml_vec_Array_2_5int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T___l_int32_x3b_2_r_(t123, t124)
+    var t126 [2]int32 = [2]int32{20, 21}
+    var t127 *_goml_vec_Array_2_5int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T___l_int32_x3b_2_r_(t125, t126)
     var holder__10 Holder = Holder{
-        data: t104,
-        vecs: t109,
+        data: t122,
+        vecs: t127,
     }
-    var place_root43 Holder = holder__10
-    var place44 [2]int32 = place_root43.data
-    var index45 int32 = 0
-    array_get__Array_2_5int32(place44, index45)
-    var value47 int32 = 160
-    var t110 [2]int32 = array_set__Array_2_5int32(place44, index45, value47)
-    var t111 *_goml_vec_Array_2_5int32 = place_root43.vecs
-    var t112 Holder = Holder{
-        data: t110,
-        vecs: t111,
+    var place_root61 Holder = holder__10
+    var place62 [2]int32 = place_root61.data
+    var index63 int32 = 0
+    array_get__Array_2_5int32(place62, index63)
+    var value65 int32 = 160
+    var t128 [2]int32 = array_set__Array_2_5int32(place62, index63, value65)
+    var t129 *_goml_vec_Array_2_5int32 = place_root61.vecs
+    var t130 Holder = Holder{
+        data: t128,
+        vecs: t129,
     }
-    holder__10 = t112
-    var t114 [2]int32 = holder__10.data
-    var t115 int32 = array_get__Array_2_5int32(t114, 0)
-    println__T_int32(t115)
-    var place_root50 Holder = holder__10
-    var place51 *_goml_vec_Array_2_5int32 = place_root50.vecs
-    var index52 int32 = 1
-    var place53 [2]int32 = vec_get__Vec_14Array_2_5int32(place51, index52)
-    var index54 int32 = 0
-    array_get__Array_2_5int32(place53, index54)
-    var value56 int32 = 200
-    var t116 [2]int32 = array_set__Array_2_5int32(place53, index54, value56)
-    vec_set__Vec_14Array_2_5int32(place51, index52, t116)
-    var t118 *_goml_vec_Array_2_5int32 = holder__10.vecs
-    var t119 [2]int32 = vec_get__Vec_14Array_2_5int32(t118, 1)
-    var t120 int32 = array_get__Array_2_5int32(t119, 0)
-    println__T_int32(t120)
-    var t121 [2]int32 = [2]int32{22, 23}
-    var r__11 *ref_Array_2_5int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T___l_int32_x3b_2_r_(t121)
-    var place_ref59 *ref_Array_2_5int32_x = r__11
-    var place_root60 [2]int32 = ref_get__Ref_14Array_2_5int32(place_ref59)
-    var index61 int32 = 1
-    array_get__Array_2_5int32(place_root60, index61)
-    var value63 int32 = 230
-    var t122 [2]int32 = array_set__Array_2_5int32(place_root60, index61, value63)
-    ref_set__Ref_14Array_2_5int32(place_ref59, t122)
-    var t124 [2]int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T___l_int32_x3b_2_r_(r__11)
-    var t125 int32 = array_get__Array_2_5int32(t124, 1)
-    println__T_int32(t125)
+    holder__10 = t130
+    var t132 [2]int32 = holder__10.data
+    var t133 int32 = array_get__Array_2_5int32(t132, 0)
+    println__T_int32(t133)
+    var place_root68 Holder = holder__10
+    var place69 *_goml_vec_Array_2_5int32 = place_root68.vecs
+    var index70 int32 = 1
+    var place71 [2]int32 = vec_get__Vec_14Array_2_5int32(place69, index70)
+    var index72 int32 = 0
+    array_get__Array_2_5int32(place71, index72)
+    var value74 int32 = 200
+    var t134 [2]int32 = array_set__Array_2_5int32(place71, index72, value74)
+    vec_set__Vec_14Array_2_5int32(place69, index70, t134)
+    var t136 *_goml_vec_Array_2_5int32 = holder__10.vecs
+    var t137 [2]int32 = vec_get__Vec_14Array_2_5int32(t136, 1)
+    var t138 int32 = array_get__Array_2_5int32(t137, 0)
+    println__T_int32(t138)
+    var t139 [2]int32 = [2]int32{22, 23}
+    var r__11 *ref_Array_2_5int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T___l_int32_x3b_2_r_(t139)
+    var place_ref77 *ref_Array_2_5int32_x = r__11
+    var place_root78 [2]int32 = ref_get__Ref_14Array_2_5int32(place_ref77)
+    var index79 int32 = 1
+    array_get__Array_2_5int32(place_root78, index79)
+    var value81 int32 = 230
+    var t140 [2]int32 = array_set__Array_2_5int32(place_root78, index79, value81)
+    ref_set__Ref_14Array_2_5int32(place_ref77, t140)
+    var t142 [2]int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T___l_int32_x3b_2_r_(r__11)
+    var t143 int32 = array_get__Array_2_5int32(t142, 1)
+    println__T_int32(t143)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t127 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t127)
+    var t145 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t145)
     return struct{}{}
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t130 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t130)
+    var t148 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
+    _goml_runtime_core_string_println(t148)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__int32() *_goml_vec_int32 {
-    var retv133 *_goml_vec_int32
-    var t134 *_goml_vec_int32 = vec_new__Vec_5int32()
-    retv133 = t134
-    return retv133
+    var retv151 *_goml_vec_int32
+    var t152 *_goml_vec_int32 = vec_new__Vec_5int32()
+    retv151 = t152
+    return retv151
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__int32(self__73 *_goml_vec_int32, elem__74 int32) *_goml_vec_int32 {
-    var retv136 *_goml_vec_int32
-    var result__75 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__int32()
-    var index__76 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(0)
-    Loop_loop138:
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T__int32(self__99 *_goml_vec_int32, elem__100 int32) *_goml_vec_int32 {
+    var retv154 *_goml_vec_int32
+    var result__101 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__int32()
+    var index__102 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(0)
+    Loop_loop156:
     for {
-        var t139 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(index__76)
-        var t140 int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__73)
-        var t141 bool = t139 < t140
-        if t141 {
-            var t142 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(index__76)
-            var t143 int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__int32(self__73, t142)
-            _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(result__75, t143)
-            var t144 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(index__76)
-            var t145 int32 = t144 + 1
-            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(index__76, t145)
+        var t157 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(index__102)
+        var t158 int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__99)
+        var t159 bool = t157 < t158
+        if t159 {
+            var t160 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(index__102)
+            var t161 int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__int32(self__99, t160)
+            _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(result__101, t161)
+            var t162 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(index__102)
+            var t163 int32 = t162 + 1
+            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(index__102, t163)
             continue
         } else {
-            break Loop_loop138
+            break Loop_loop156
         }
     }
-    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(result__75, elem__74)
-    retv136 = result__75
-    return retv136
+    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(result__101, elem__100)
+    retv154 = result__101
+    return retv154
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_slice____T__int32(self__83 *_goml_vec_int32, start__84 int32, end__85 int32) []int32 {
-    var retv147 []int32
-    var t148 []int32 = self__83.items[start__84:end__85]
-    retv147 = t148
-    return retv147
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_slice____T__int32(self__109 *_goml_vec_int32, start__110 int32, end__111 int32) []int32 {
+    var retv165 []int32
+    var t166 []int32 = self__109.items[start__110:end__111]
+    retv165 = t166
+    return retv165
 }
 
 func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_new____K__string____V__int32() *hashmap_string_int32_x {
-    var retv150 *hashmap_string_int32_x
-    var t151 *hashmap_string_int32_x = hashmap_new__HashMap_6string_5int32()
-    retv150 = t151
-    return retv150
+    var retv168 *hashmap_string_int32_x
+    var t169 *hashmap_string_int32_x = hashmap_new__HashMap_6string_5int32()
+    retv168 = t169
+    return retv168
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T___l_int32_x3b_2_r_() *_goml_vec_Array_2_5int32 {
-    var retv153 *_goml_vec_Array_2_5int32
-    var t154 *_goml_vec_Array_2_5int32 = vec_new__Vec_14Array_2_5int32()
-    retv153 = t154
-    return retv153
+    var retv171 *_goml_vec_Array_2_5int32
+    var t172 *_goml_vec_Array_2_5int32 = vec_new__Vec_14Array_2_5int32()
+    retv171 = t172
+    return retv171
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T___l_int32_x3b_2_r_(self__73 *_goml_vec_Array_2_5int32, elem__74 [2]int32) *_goml_vec_Array_2_5int32 {
-    var retv156 *_goml_vec_Array_2_5int32
-    var result__75 *_goml_vec_Array_2_5int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T___l_int32_x3b_2_r_()
-    var index__76 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(0)
-    Loop_loop158:
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_pushed____T___l_int32_x3b_2_r_(self__99 *_goml_vec_Array_2_5int32, elem__100 [2]int32) *_goml_vec_Array_2_5int32 {
+    var retv174 *_goml_vec_Array_2_5int32
+    var result__101 *_goml_vec_Array_2_5int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T___l_int32_x3b_2_r_()
+    var index__102 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(0)
+    Loop_loop176:
     for {
-        var t159 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(index__76)
-        var t160 int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T___l_int32_x3b_2_r_(self__73)
-        var t161 bool = t159 < t160
-        if t161 {
-            var t162 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(index__76)
-            var t163 [2]int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T___l_int32_x3b_2_r_(self__73, t162)
-            _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T___l_int32_x3b_2_r_(result__75, t163)
-            var t164 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(index__76)
-            var t165 int32 = t164 + 1
-            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(index__76, t165)
+        var t177 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(index__102)
+        var t178 int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T___l_int32_x3b_2_r_(self__99)
+        var t179 bool = t177 < t178
+        if t179 {
+            var t180 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(index__102)
+            var t181 [2]int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T___l_int32_x3b_2_r_(self__99, t180)
+            _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T___l_int32_x3b_2_r_(result__101, t181)
+            var t182 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(index__102)
+            var t183 int32 = t182 + 1
+            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(index__102, t183)
             continue
         } else {
-            break Loop_loop158
+            break Loop_loop176
         }
     }
-    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T___l_int32_x3b_2_r_(result__75, elem__74)
-    retv156 = result__75
-    return retv156
+    _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T___l_int32_x3b_2_r_(result__101, elem__100)
+    retv174 = result__101
+    return retv174
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T___l_int32_x3b_2_r_(value__102 [2]int32) *ref_Array_2_5int32_x {
-    var retv167 *ref_Array_2_5int32_x
-    var t168 *ref_Array_2_5int32_x = ref__Ref_14Array_2_5int32(value__102)
-    retv167 = t168
-    return retv167
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T___l_int32_x3b_2_r_(value__140 [2]int32) *ref_Array_2_5int32_x {
+    var retv185 *ref_Array_2_5int32_x
+    var t186 *ref_Array_2_5int32_x = ref__Ref_14Array_2_5int32(value__140)
+    retv185 = t186
+    return retv185
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T___l_int32_x3b_2_r_(self__103 *ref_Array_2_5int32_x) [2]int32 {
-    var retv170 [2]int32
-    var t171 [2]int32 = ref_get__Ref_14Array_2_5int32(self__103)
-    retv170 = t171
-    return retv170
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T___l_int32_x3b_2_r_(self__141 *ref_Array_2_5int32_x) [2]int32 {
+    var retv188 [2]int32
+    var t189 [2]int32 = ref_get__Ref_14Array_2_5int32(self__141)
+    retv188 = t189
+    return retv188
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
-    var retv173 string
-    retv173 = self__9
-    return retv173
+    var retv191 string
+    retv191 = self__9
+    return retv191
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__13 int32) string {
-    var retv175 string
-    var t176 string = _goml_runtime_core_int32_to_string(self__13)
-    retv175 = t176
-    return retv175
+    var retv193 string
+    var t194 string = _goml_runtime_core_int32_to_string(self__13)
+    retv193 = t194
+    return retv193
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__102 int32) *ref_int32_x {
-    var retv178 *ref_int32_x
-    var t179 *ref_int32_x = ref__Ref_5int32(value__102)
-    retv178 = t179
-    return retv178
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__140 int32) *ref_int32_x {
+    var retv196 *ref_int32_x
+    var t197 *ref_int32_x = ref__Ref_5int32(value__140)
+    retv196 = t197
+    return retv196
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__103 *ref_int32_x) int32 {
-    var retv181 int32
-    var t182 int32 = ref_get__Ref_5int32(self__103)
-    retv181 = t182
-    return retv181
-}
-
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__82 *_goml_vec_int32) int32 {
-    var retv184 int32
-    var t185 int32 = vec_len__Vec_5int32(self__82)
-    retv184 = t185
-    return retv184
-}
-
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(self__71 *_goml_vec_int32, elem__72 int32) struct{} {
-    vec_push__Vec_5int32(self__71, elem__72)
-    return struct{}{}
-}
-
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__int32(self__77 *_goml_vec_int32, index__78 int32) int32 {
-    var retv189 int32
-    var t190 int32 = vec_get__Vec_5int32(self__77, index__78)
-    retv189 = t190
-    return retv189
-}
-
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__104 *ref_int32_x, value__105 int32) struct{} {
-    ref_set__Ref_5int32(self__104, value__105)
-    return struct{}{}
-}
-
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T___l_int32_x3b_2_r_(self__82 *_goml_vec_Array_2_5int32) int32 {
-    var retv194 int32
-    var t195 int32 = vec_len__Vec_14Array_2_5int32(self__82)
-    retv194 = t195
-    return retv194
-}
-
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T___l_int32_x3b_2_r_(self__71 *_goml_vec_Array_2_5int32, elem__72 [2]int32) struct{} {
-    vec_push__Vec_14Array_2_5int32(self__71, elem__72)
-    return struct{}{}
-}
-
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T___l_int32_x3b_2_r_(self__77 *_goml_vec_Array_2_5int32, index__78 int32) [2]int32 {
-    var retv199 [2]int32
-    var t200 [2]int32 = vec_get__Vec_14Array_2_5int32(self__77, index__78)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__141 *ref_int32_x) int32 {
+    var retv199 int32
+    var t200 int32 = ref_get__Ref_5int32(self__141)
     retv199 = t200
     return retv199
 }
 
-func _goml_m_trait__impl_i_Eq_i_string_i_eq(self__25 string, other__26 string) bool {
-    var retv202 bool
-    var t203 bool = self__25 == other__26
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__108 *_goml_vec_int32) int32 {
+    var retv202 int32
+    var t203 int32 = vec_len__Vec_5int32(self__108)
     retv202 = t203
     return retv202
 }
 
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(self__97 *_goml_vec_int32, elem__98 int32) struct{} {
+    vec_push__Vec_5int32(self__97, elem__98)
+    return struct{}{}
+}
+
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__int32(self__103 *_goml_vec_int32, index__104 int32) int32 {
+    var retv207 int32
+    var t208 int32 = vec_get__Vec_5int32(self__103, index__104)
+    retv207 = t208
+    return retv207
+}
+
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__142 *ref_int32_x, value__143 int32) struct{} {
+    ref_set__Ref_5int32(self__142, value__143)
+    return struct{}{}
+}
+
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T___l_int32_x3b_2_r_(self__108 *_goml_vec_Array_2_5int32) int32 {
+    var retv212 int32
+    var t213 int32 = vec_len__Vec_14Array_2_5int32(self__108)
+    retv212 = t213
+    return retv212
+}
+
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T___l_int32_x3b_2_r_(self__97 *_goml_vec_Array_2_5int32, elem__98 [2]int32) struct{} {
+    vec_push__Vec_14Array_2_5int32(self__97, elem__98)
+    return struct{}{}
+}
+
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T___l_int32_x3b_2_r_(self__103 *_goml_vec_Array_2_5int32, index__104 int32) [2]int32 {
+    var retv217 [2]int32
+    var t218 [2]int32 = vec_get__Vec_14Array_2_5int32(self__103, index__104)
+    retv217 = t218
+    return retv217
+}
+
+func _goml_m_trait__impl_i_Eq_i_string_i_eq(self__25 string, other__26 string) bool {
+    var retv220 bool
+    var t221 bool = self__25 == other__26
+    retv220 = t221
+    return retv220
+}
+
 func _goml_m_trait__impl_i_Hash_i_string_i_hash(self__51 string) uint64 {
-    var retv205 uint64
-    var t206 uint64 = _goml_runtime_core_string_hash(self__51)
-    retv205 = t206
-    return retv205
+    var retv223 uint64
+    var t224 uint64 = _goml_runtime_core_string_hash(self__51)
+    retv223 = t224
+    return retv223
 }
 
 func main() {

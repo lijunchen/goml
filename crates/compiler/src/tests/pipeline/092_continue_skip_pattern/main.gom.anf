@@ -1,121 +1,121 @@
 fn main() -> unit {
-  join ret10() -> unit {
+  join ret28() -> unit {
     ()
   } in
   let i/0 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  join exit11() -> unit {
-    let _wild8 = () in
-    let mtmp9 = println__T_string("done") in
-    jump ret10()
+  join exit29() -> unit {
+    let _wild26 = () in
+    let mtmp27 = println__T_string("done") in
+    jump ret28()
   } in
   joinrec {
-    join loop12() -> unit {
-      let t13 = inherent#Ref#Ref[T]#get__T_int32(i/0) in
-      let t14 = (t13 < 8) in
-      if t14 {
-        let t15 = inherent#Ref#Ref[T]#get__T_int32(i/0) in
-        let t16 = (t15 + 1) in
-        let _wild4 = inherent#Ref#Ref[T]#set__T_int32(i/0, t16) in
-        let t22 = inherent#Ref#Ref[T]#get__T_int32(i/0) in
-        let t23 = (t22 == 3) in
-        join k17() -> unit {
-          let _wild5 = () in
-          let t20 = inherent#Ref#Ref[T]#get__T_int32(i/0) in
-          let t21 = (t20 == 6) in
-          join k18() -> unit {
-            let _wild6 = () in
-            let t19 = inherent#Ref#Ref[T]#get__T_int32(i/0) in
-            let mtmp7 = println__T_int32(t19) in
-            jump loop12()
+    join loop30() -> unit {
+      let t31 = inherent#Ref#Ref[T]#get__T_int32(i/0) in
+      let t32 = (t31 < 8) in
+      if t32 {
+        let t33 = inherent#Ref#Ref[T]#get__T_int32(i/0) in
+        let t34 = (t33 + 1) in
+        let _wild22 = inherent#Ref#Ref[T]#set__T_int32(i/0, t34) in
+        let t40 = inherent#Ref#Ref[T]#get__T_int32(i/0) in
+        let t41 = (t40 == 3) in
+        join k35() -> unit {
+          let _wild23 = () in
+          let t38 = inherent#Ref#Ref[T]#get__T_int32(i/0) in
+          let t39 = (t38 == 6) in
+          join k36() -> unit {
+            let _wild24 = () in
+            let t37 = inherent#Ref#Ref[T]#get__T_int32(i/0) in
+            let mtmp25 = println__T_int32(t37) in
+            jump loop30()
           } in
-          if t21 {
-            jump loop12()
+          if t39 {
+            jump loop30()
           } else {
-            jump k18()
+            jump k36()
           }
         } in
-        if t23 {
-          jump loop12()
+        if t41 {
+          jump loop30()
         } else {
-          jump k17()
+          jump k35()
         }
       } else {
-        jump exit11()
+        jump exit29()
       }
     } in
   } in
-  jump loop12()
+  jump loop30()
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/102: int32) -> Ref[int32] {
-  join ret24(retv25: Ref[int32]) -> Ref[int32] {
-    retv25
+fn inherent#Ref#Ref[T]#new__T_int32(value/140: int32) -> Ref[int32] {
+  join ret42(retv43: Ref[int32]) -> Ref[int32] {
+    retv43
   } in
-  let t26 = @intrinsic(ref.new)(value/102) in
-  jump ret24(t26)
+  let t44 = @intrinsic(ref.new)(value/140) in
+  jump ret42(t44)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/103: Ref[int32]) -> int32 {
-  join ret27(retv28: int32) -> int32 {
-    retv28
+fn inherent#Ref#Ref[T]#get__T_int32(self/141: Ref[int32]) -> int32 {
+  join ret45(retv46: int32) -> int32 {
+    retv46
   } in
-  let t29 = @intrinsic(ref.get)(self/103) in
-  jump ret27(t29)
+  let t47 = @intrinsic(ref.get)(self/141) in
+  jump ret45(t47)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/104: Ref[int32], value/105: int32) -> unit {
-  join ret30() -> unit {
+fn inherent#Ref#Ref[T]#set__T_int32(self/142: Ref[int32], value/143: int32) -> unit {
+  join ret48() -> unit {
     ()
   } in
-  let t31 = @intrinsic(ref.set)(self/104, value/105) in
-  jump ret30()
+  let t49 = @intrinsic(ref.set)(self/142, value/143) in
+  jump ret48()
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join ret32() -> unit {
+  join ret50() -> unit {
     ()
   } in
-  let t33 = trait_impl#ToString#int32#to_string(value/1) in
-  let t34 = @runtime(core.string_println)(t33) in
-  jump ret32()
+  let t51 = trait_impl#ToString#int32#to_string(value/1) in
+  let t52 = @runtime(core.string_println)(t51) in
+  jump ret50()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret35() -> unit {
+  join ret53() -> unit {
     ()
   } in
-  let t36 = trait_impl#ToString#string#to_string(value/1) in
-  let t37 = @runtime(core.string_println)(t36) in
-  jump ret35()
+  let t54 = trait_impl#ToString#string#to_string(value/1) in
+  let t55 = @runtime(core.string_println)(t54) in
+  jump ret53()
 }
 
 fn trait_impl#ToString#int32#to_string(self/13: int32) -> string {
-  join ret38(retv39: string) -> string {
-    retv39
+  join ret56(retv57: string) -> string {
+    retv57
   } in
-  let t40 = @runtime(core.int32_to_string)(self/13) in
-  jump ret38(t40)
+  let t58 = @runtime(core.int32_to_string)(self/13) in
+  jump ret56(t58)
 }
 
 fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret41(retv42: string) -> string {
-    retv42
+  join ret59(retv60: string) -> string {
+    retv60
   } in
-  jump ret41(self/9)
+  jump ret59(self/9)
 }
 
 fn trait_impl#Eq#int32#eq(self/33: int32, other/34: int32) -> bool {
-  join ret43(retv44: bool) -> bool {
-    retv44
+  join ret61(retv62: bool) -> bool {
+    retv62
   } in
-  let t45 = (self/33 == other/34) in
-  jump ret43(t45)
+  let t63 = (self/33 == other/34) in
+  jump ret61(t63)
 }
 
 fn trait_impl#Hash#int32#hash(self/55: int32) -> uint64 {
-  join ret46(retv47: uint64) -> uint64 {
-    retv47
+  join ret64(retv65: uint64) -> uint64 {
+    retv65
   } in
-  let t48 = @runtime(core.int32_hash)(self/55) in
-  jump ret46(t48)
+  let t66 = @runtime(core.int32_hash)(self/55) in
+  jump ret64(t66)
 }

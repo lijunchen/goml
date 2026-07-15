@@ -1,47 +1,47 @@
 fn main() -> unit {
-  join ret6() -> unit {
+  join ret24() -> unit {
     ()
   } in
   let x/0 = Option__uint8::Some(42) in
-  join k7() -> unit {
-    let _wild5 = () in
-    jump ret6()
+  join k25() -> unit {
+    let _wild23 = () in
+    jump ret24()
   } in
   match x/0 {
     Tag_0 => {
-      let x4 = Option__uint8::Some._0(x/0) in
-      let v/1 = x4 in
-      let t8 = trait_impl#ToString#uint8#to_string(v/1) in
-      let t9 = println__T_string(t8) in
-      jump k7()
+      let x22 = Option__uint8::Some._0(x/0) in
+      let v/1 = x22 in
+      let t26 = trait_impl#ToString#uint8#to_string(v/1) in
+      let t27 = println__T_string(t26) in
+      jump k25()
     },
     Tag_1 => {
-      let t10 = println__T_string("none") in
-      jump k7()
+      let t28 = println__T_string("none") in
+      jump k25()
     },
   }
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret11() -> unit {
+  join ret29() -> unit {
     ()
   } in
-  let t12 = trait_impl#ToString#string#to_string(value/1) in
-  let t13 = @runtime(core.string_println)(t12) in
-  jump ret11()
+  let t30 = trait_impl#ToString#string#to_string(value/1) in
+  let t31 = @runtime(core.string_println)(t30) in
+  jump ret29()
 }
 
 fn trait_impl#ToString#uint8#to_string(self/15: uint8) -> string {
-  join ret14(retv15: string) -> string {
-    retv15
+  join ret32(retv33: string) -> string {
+    retv33
   } in
-  let t16 = @runtime(core.uint8_to_string)(self/15) in
-  jump ret14(t16)
+  let t34 = @runtime(core.uint8_to_string)(self/15) in
+  jump ret32(t34)
 }
 
 fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret17(retv18: string) -> string {
-    retv18
+  join ret35(retv36: string) -> string {
+    retv36
   } in
-  jump ret17(self/9)
+  jump ret35(self/9)
 }

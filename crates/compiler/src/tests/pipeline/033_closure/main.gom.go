@@ -62,12 +62,12 @@ func test() struct{} {
         y_0: y__0,
         z_1: z__1,
     }
-    var t22 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(f__3, 2)
-    var t23 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t22)
-    println__T_string(t23)
-    var t24 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(f__3, 3)
-    var t25 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t24)
-    println__T_string(t25)
+    var t40 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(f__3, 2)
+    var t41 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t40)
+    println__T_string(t41)
+    var t42 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(f__3, 3)
+    var t43 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t42)
+    println__T_string(t43)
     return struct{}{}
 }
 
@@ -81,20 +81,20 @@ func main0() struct{} {
     _goml_m_inherent_i_closure__env__printer__2_i_closure__env__printer__2_i_apply(printer__13, "result: ", result__9)
     var no_capture__17 closure_env_no_capture_4 = closure_env_no_capture_4{}
     var doubled__18 int32 = _goml_m_inherent_i_closure__en_ha32319a3d33750b05233a1c4e08c6ec1_ture__4_i_apply(no_capture__17, 3)
-    var t31 string = _goml_m_inherent_i_int32_i_int32_i_to__string(doubled__18)
-    println__T_string(t31)
+    var t49 string = _goml_m_inherent_i_int32_i_int32_i_to__string(doubled__18)
+    println__T_string(t49)
     test()
-    var t32 IntList = Cons{
+    var t50 IntList = Cons{
         _0: 3,
         _1: Nil{},
     }
-    var t33 IntList = Cons{
+    var t51 IntList = Cons{
         _0: 2,
-        _1: t32,
+        _1: t50,
     }
     var list123__19 IntList = Cons{
         _0: 1,
-        _1: t33,
+        _1: t51,
     }
     var point__20 Point = Point{
         x: 10,
@@ -109,78 +109,78 @@ func main0() struct{} {
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t35 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t35)
+    var t53 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t53)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
-    var retv38 string
-    var t39 string = _goml_runtime_core_int32_to_string(self__2)
-    retv38 = t39
-    return retv38
-}
-
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
-    var retv41 string
-    retv41 = self__9
-    return retv41
-}
-
-func _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(env15 closure_env_f_0, x__2 int32) int32 {
-    var retv43 int32
-    var y__0 int32 = env15.y_0
-    var z__1 int32 = env15.z_1
-    var t44 int32 = x__2 * y__0
-    var t45 int32 = t44 * z__1
-    retv43 = t45
-    return retv43
-}
-
-func _goml_m_inherent_i_closure__en_he0443db01d9642f998bbe31aa65b7a79_base__1_i_apply(env16 closure_env_add_base_1, x__7 int32) int32 {
-    var retv47 int32
-    var base__6 int32 = env16.base_0
-    var t48 int32 = x__7 + base__6
-    retv47 = t48
-    return retv47
-}
-
-func _goml_m_inherent_i_closure__env__printer__2_i_closure__env__printer__2_i_apply(env17 closure_env_printer_2, prefix__10 string, value__11 int32) struct{} {
-    var t50 string = _goml_m_inherent_i_int32_i_int32_i_to__string(value__11)
-    var message__12 string = prefix__10 + t50
-    println__T_string(message__12)
-    return struct{}{}
-}
-
-func _goml_m_inherent_i_closure__en_ha32319a3d33750b05233a1c4e08c6ec1_ture__4_i_apply(env19 closure_env_no_capture_4, z__16 int32) int32 {
-    var retv56 int32
-    var t57 int32 = z__16 * 2
+    var retv56 string
+    var t57 string = _goml_runtime_core_int32_to_string(self__2)
     retv56 = t57
     return retv56
 }
 
-func _goml_m_inherent_i_closure__en_h53641d12fbb745a3fbb1e4782f631152_oint__5_i_apply(env20 closure_env_play_list_and_point_5) struct{} {
-    var list123__19 IntList = env20.list123_0
-    var point__20 Point = env20.point_1
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
+    var retv59 string
+    retv59 = self__9
+    return retv59
+}
+
+func _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(env33 closure_env_f_0, x__2 int32) int32 {
+    var retv61 int32
+    var y__0 int32 = env33.y_0
+    var z__1 int32 = env33.z_1
+    var t62 int32 = x__2 * y__0
+    var t63 int32 = t62 * z__1
+    retv61 = t63
+    return retv61
+}
+
+func _goml_m_inherent_i_closure__en_he0443db01d9642f998bbe31aa65b7a79_base__1_i_apply(env34 closure_env_add_base_1, x__7 int32) int32 {
+    var retv65 int32
+    var base__6 int32 = env34.base_0
+    var t66 int32 = x__7 + base__6
+    retv65 = t66
+    return retv65
+}
+
+func _goml_m_inherent_i_closure__env__printer__2_i_closure__env__printer__2_i_apply(env35 closure_env_printer_2, prefix__10 string, value__11 int32) struct{} {
+    var t68 string = _goml_m_inherent_i_int32_i_int32_i_to__string(value__11)
+    var message__12 string = prefix__10 + t68
+    println__T_string(message__12)
+    return struct{}{}
+}
+
+func _goml_m_inherent_i_closure__en_ha32319a3d33750b05233a1c4e08c6ec1_ture__4_i_apply(env37 closure_env_no_capture_4, z__16 int32) int32 {
+    var retv74 int32
+    var t75 int32 = z__16 * 2
+    retv74 = t75
+    return retv74
+}
+
+func _goml_m_inherent_i_closure__en_h53641d12fbb745a3fbb1e4782f631152_oint__5_i_apply(env38 closure_env_play_list_and_point_5) struct{} {
+    var list123__19 IntList = env38.list123_0
+    var point__20 Point = env38.point_1
     switch list123__19.(type) {
     case Nil:
         println__T_string("Empty list")
     case Cons:
-        var x8 int32 = list123__19.(Cons)._0
-        var head__21 int32 = x8
-        var t61 string = _goml_m_inherent_i_int32_i_int32_i_to__string(head__21)
-        println__T_string(t61)
-        var x11 int32 = point__20.x
-        var x12 int32 = point__20.y
-        var y__24 int32 = x12
-        var x__23 int32 = x11
-        var t62 string = _goml_m_inherent_i_int32_i_int32_i_to__string(x__23)
-        var t63 string = "Point: (" + t62
-        var t64 string = t63 + ", "
-        var t65 string = _goml_m_inherent_i_int32_i_int32_i_to__string(y__24)
-        var t66 string = t64 + t65
-        var t67 string = t66 + ")"
-        println__T_string(t67)
+        var x26 int32 = list123__19.(Cons)._0
+        var head__21 int32 = x26
+        var t79 string = _goml_m_inherent_i_int32_i_int32_i_to__string(head__21)
+        println__T_string(t79)
+        var x29 int32 = point__20.x
+        var x30 int32 = point__20.y
+        var y__24 int32 = x30
+        var x__23 int32 = x29
+        var t80 string = _goml_m_inherent_i_int32_i_int32_i_to__string(x__23)
+        var t81 string = "Point: (" + t80
+        var t82 string = t81 + ", "
+        var t83 string = _goml_m_inherent_i_int32_i_int32_i_to__string(y__24)
+        var t84 string = t82 + t83
+        var t85 string = t84 + ")"
+        println__T_string(t85)
     default:
         panic("non-exhaustive match")
     }

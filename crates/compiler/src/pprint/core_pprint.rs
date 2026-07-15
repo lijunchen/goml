@@ -348,7 +348,7 @@ impl Expr {
                     .append(RcDoc::text(")"))
             }
             Expr::ETraitCall {
-                trait_name,
+                trait_ref,
                 method_name,
                 receiver,
                 args,
@@ -361,7 +361,7 @@ impl Expr {
                     RcDoc::text(", "),
                 );
                 RcDoc::text("trait_call[")
-                    .append(RcDoc::text(trait_name.0.clone()))
+                    .append(trait_ref.to_doc())
                     .append(RcDoc::text("::"))
                     .append(RcDoc::text(method_name.0.clone()))
                     .append(RcDoc::text("]("))

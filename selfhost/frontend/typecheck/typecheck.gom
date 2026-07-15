@@ -125,6 +125,8 @@ fn is_builtin_type_constructor(name: string) -> bool {
         || name == "Result"
         || name == "HashMap"
         || name == "Slice"
+        || name == "Iterator"
+        || name == "FnIterator"
         || name == "Hash"
         || name == "Eq"
         || name == "ToString"
@@ -291,6 +293,10 @@ fn add_builtin_functions(ctx: CheckContext) -> unit {
     push_function(ctx, fn_info("", "ref", one_unknown.get(), "Ref[unknown]"));
     push_function(ctx, fn_info("", "ref_get", one_unknown.get(), "unknown"));
     push_function(ctx, fn_info("", "ref_set", two_unknown.get(), "unit"));
+    let range_params = Ref::new(Vec::new());
+    range_params.set(range_params.get().pushed("int32"));
+    range_params.set(range_params.get().pushed("int32"));
+    push_function(ctx, fn_info("", "range", range_params.get(), "FnIterator[int32]"));
     push_function(ctx, fn_info("io", "println", one_unknown.get(), "unit"));
     push_function(ctx, fn_info("io", "print", one_unknown.get(), "unit"));
     let read_file_params = Ref::new(Vec::new());
@@ -445,6 +451,22 @@ fn bind_pattern(bindings: Ref[Vec[Binding]], pattern: ast::Node, ty: string) -> 
     }
 }
 
+fn pattern_is_irrefutable(pattern: ast::Node) -> bool {
+    if node_is(pattern, ast::NodeKind::PatternVar) || node_is(pattern, ast::NodeKind::PatternWildcard) {
+        true
+    } else if node_is(pattern, ast::NodeKind::PatternTuple) {
+        let irrefutable = Ref::new(true);
+        let i = Ref::new(0);
+        while irrefutable.get() && i.get() < pattern.children.len() {
+            irrefutable.set(pattern_is_irrefutable(pattern.children.get(i.get())));
+            i.set(i.get() + 1);
+        };
+        irrefutable.get()
+    } else {
+        false
+    }
+}
+
 fn type_arg(text: string) -> string {
     let result = Ref::new("");
     let open = Ref::new(false);
@@ -503,6 +525,18 @@ fn method_type(ctx: CheckContext, receiver_node: ast::Node, receiver: string, na
         "unit"
     } else if name == "sub" {
         receiver
+    } else if name == "iter" {
+        if starts_with(receiver, "Vec[") || starts_with(receiver, "Slice[") {
+            "FnIterator[" + type_arg(receiver) + "]"
+        } else {
+            "unknown"
+        }
+    } else if name == "next" {
+        if starts_with(receiver, "FnIterator[") {
+            "Option[" + type_arg(receiver) + "]"
+        } else {
+            "unknown"
+        }
     } else if name == "to_string" {
         "string"
     } else if name == "?" {
@@ -759,6 +793,23 @@ fn infer_expr(ctx: CheckContext, node: ast::Node, bindings: Ref[Vec[Binding]]) -
             ()
         };
         "unit"
+    } else if node_is(node, ast::NodeKind::ExprFor) {
+        let iterator = infer_expr(ctx, child(node, 1), bindings);
+        if starts_with(iterator, "FnIterator[") || starts_with(iterator, "Vec[") || starts_with(iterator, "Slice[") {
+            ()
+        } else {
+            push_diagnostic(ctx, child(node, 1), "for loop expects IntoIterator, got " + iterator);
+        };
+        let loop_bindings = Ref::new(bindings.get());
+        if pattern_is_irrefutable(child(node, 0)) {
+            ()
+        } else {
+            push_diagnostic(ctx, child(node, 0), "refutable pattern is not allowed in for loop");
+        };
+        bind_pattern(loop_bindings, child(node, 0), type_arg(iterator));
+        let body_ty = infer_expr(ctx, child(node, 2), loop_bindings);
+        check_expected(ctx, child(node, 2), "unit", body_ty, "for loop body type mismatch");
+        "unit"
     } else if node_is(node, ast::NodeKind::ExprClosure) {
         let last = if node.children.len() > 0 {
             infer_expr(ctx, node.children.get(node.children.len() - 1), Ref::new(bindings.get()))
@@ -787,7 +838,7 @@ fn infer_expr(ctx: CheckContext, node: ast::Node, bindings: Ref[Vec[Binding]]) -
 }
 
 fn check_fn(ctx: CheckContext, module: string, item: ast::Node) -> unit {
-    if item.children.len() > 3 {
+    if item.children.len() > 4 {
         ctx.current_module.set(module);
         let ret = type_text(module, child(item, 2));
         ctx.current_return.set(ret);
@@ -804,7 +855,7 @@ fn check_fn(ctx: CheckContext, module: string, item: ast::Node) -> unit {
             push_binding(bindings, param.text, ty);
             i.set(i.get() + 1);
         };
-        let actual = infer_expr(ctx, child(item, 3), bindings);
+        let actual = infer_expr(ctx, child(item, 4), bindings);
         check_expected(ctx, item, ret, actual, "function `" + item.text + "` return type mismatch");
     } else {
         ()

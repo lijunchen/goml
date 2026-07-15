@@ -171,6 +171,7 @@ fn use_statement_package_completions() {
     write_cached_registry(&home);
 
     std::fs::create_dir_all(dir.path().join("util")).unwrap();
+    std::fs::create_dir_all(dir.path().join("out")).unwrap();
     std::fs::write(
         dir.path().join("util/util.gom"),
         r#"
@@ -182,11 +183,19 @@ pub fn ping() -> string {
 "#,
     )
     .unwrap();
+    std::fs::write(
+        dir.path().join("out/generated.gom"),
+        "package generated;\npub fn generated() -> unit { () }\n",
+    )
+    .unwrap();
 
     std::fs::write(
         dir.path().join("goml.toml"),
         r#"[module]
 path = "demo"
+
+[build]
+target-dir = "out"
 
 [dependencies]
 "alice::http" = "1.2.0"
@@ -766,6 +775,34 @@ fn main() {
 
 #[test]
 #[rustfmt::skip]
+fn hover_and_inlay_hints_for_for_pattern() {
+    let src = r#"
+fn main() {
+    for value in range(0, 2) {
+        let _ = value;
+    };
+}
+"#;
+
+    check(src, 2, 9, expect![[r#"
+        "int32"
+    "#]]);
+    check(src, 3, 17, expect![[r#"
+        "int32"
+    "#]]);
+    check_inlay_hints(src, expect![[r#"
+        [
+            InlayHintItem {
+                offset: 27,
+                label: ": int32",
+                kind: Type,
+            },
+        ]
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
 fn hover_fn_params() {
     let src = r#"
 fn f(x: int32, y: string) -> int32 { x }
@@ -884,6 +921,20 @@ fn main() {
         expect![[r#"
             [
                 DotCompletionItem {
+                    name: "eq",
+                    kind: Method,
+                    detail: Some(
+                        "(int32, int32) -> bool",
+                    ),
+                },
+                DotCompletionItem {
+                    name: "hash",
+                    kind: Method,
+                    detail: Some(
+                        "(int32) -> uint64",
+                    ),
+                },
+                DotCompletionItem {
                     name: "to_string",
                     kind: Method,
                     detail: Some(
@@ -912,6 +963,8 @@ fn main() {
         expect![[r#"
             [
                 "get",
+                "into_iter",
+                "iter",
                 "len",
                 "new",
                 "push",
@@ -970,11 +1023,84 @@ fn main() {
         expect![[r#"
             [
                 "get",
+                "into_iter",
+                "iter",
                 "len",
                 "sub",
             ]
         "#]],
     );
+}
+
+#[test]
+#[rustfmt::skip]
+fn builtin_iterator_dot_method_completion() {
+    let src = r#"
+fn main() {
+    let iterator = range(0, 2);
+    iterator.
+}
+"#;
+
+    check_completion_labels(
+        src,
+        3,
+        13,
+        expect![[r#"
+            [
+                "from_fn",
+                "into_iter",
+                "next",
+                "next_fn",
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn generic_trait_dot_method_completion() {
+    let src = r#"
+trait Convert[T] {
+    fn convert(Self) -> T;
+}
+
+struct Token {}
+
+impl Convert[int32] for Token {
+    fn convert(self: Token) -> int32 { 7 }
+}
+
+fn main() {
+    let token = Token {};
+    token.
+}
+"#;
+
+    check_completion_labels(
+        src,
+        13,
+        10,
+        expect![[r#"
+            [
+                "convert",
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn hover_builtin_range() {
+    let src = r#"
+fn main() {
+    let iterator = range(0, 2);
+}
+"#;
+
+    check(src, 2, 21, expect![[r#"
+        "(int32, int32) -> FnIterator[int32]"
+    "#]]);
 }
 
 #[test]
@@ -1028,6 +1154,7 @@ fn main() {
         expect![[r#"
             [
                 "get",
+                "iter",
                 "len",
                 "new",
                 "push",
@@ -1081,8 +1208,30 @@ fn main() {
         expect![[r#"
             [
                 "get",
+                "iter",
                 "len",
                 "sub",
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn builtin_iterator_colon_colon_method_completion() {
+    let src = r#"
+fn main() {
+    let _ = Iterator::;
+}
+"#;
+
+    check_colon_colon_completion_labels(
+        src,
+        2,
+        22,
+        expect![[r#"
+            [
+                "next",
             ]
         "#]],
     );

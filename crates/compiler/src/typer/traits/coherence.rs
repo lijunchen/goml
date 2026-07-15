@@ -5,22 +5,41 @@ use crate::{
     tast,
     typer::{
         obligations::{ParamEnv, TraitGoal},
+        traits::index::ImplIndex,
         traits::solver::{SelectionResult, TraitSolver},
-        type_ops::{contains_tparam, rename_type_params},
+        type_ops::{
+            contains_tparam, rename_predicate_params, rename_trait_params, rename_type_params,
+            substitute_ty_params, trait_ref_contains_tparam,
+        },
     },
 };
 
 pub(crate) fn impls_overlap(
     env: &PackageTypeEnv,
-    left: &tast::Ty,
+    left_trait_ref: &tast::TraitRef,
+    left_self: &tast::Ty,
     left_def: &ImplDef,
-    right: &tast::Ty,
+    right_trait_ref: &tast::TraitRef,
+    right_self: &tast::Ty,
     right_def: &ImplDef,
 ) -> bool {
-    let left = rename_type_params(left, "left");
-    let right = rename_type_params(right, "right");
+    if left_trait_ref.name != right_trait_ref.name
+        || left_trait_ref.args.len() != right_trait_ref.args.len()
+    {
+        return false;
+    }
+    let left_trait_ref = rename_trait_params(left_trait_ref, "left");
+    let right_trait_ref = rename_trait_params(right_trait_ref, "right");
+    let left_self = rename_type_params(left_self, "left");
+    let right_self = rename_type_params(right_self, "right");
     let mut subst = HashMap::new();
-    if !unify(&left, &right, &mut subst) {
+    if !left_trait_ref
+        .args
+        .iter()
+        .zip(right_trait_ref.args.iter())
+        .all(|(left, right)| unify(left, right, &mut subst))
+        || !unify(&left_self, &right_self, &mut subst)
+    {
         return false;
     }
 
@@ -36,31 +55,77 @@ pub(crate) fn impls_overlap(
                 .iter()
                 .map(|constraint| ("right", constraint)),
         )
-        .all(|(prefix, constraint)| {
-            let for_ty = resolve(
-                &tast::Ty::TParam {
-                    name: format!("{prefix}::{}", constraint.type_param),
-                },
-                &subst,
-            );
-            contains_tparam(&for_ty)
-                || matches!(
-                    solver.select_ground(TraitGoal {
-                        trait_name: constraint.trait_name.clone(),
-                        for_ty,
-                    }),
-                    SelectionResult::Unique(_)
-                )
+        .all(
+            |(prefix, predicate)| match rename_predicate_params(predicate, prefix) {
+                crate::env::TypePredicate::Trait { for_ty, trait_ref } => {
+                    let for_ty = resolve(&for_ty, &subst);
+                    let trait_ref = tast::TraitRef {
+                        name: trait_ref.name,
+                        args: trait_ref
+                            .args
+                            .iter()
+                            .map(|arg| resolve(arg, &subst))
+                            .collect(),
+                    };
+                    if contains_tparam(&for_ty) || trait_ref_contains_tparam(&trait_ref) {
+                        trait_predicate_with_params_may_hold(env, &trait_ref, &for_ty)
+                    } else {
+                        matches!(
+                            solver.select_ground(TraitGoal { trait_ref, for_ty }),
+                            SelectionResult::Unique(_)
+                        )
+                    }
+                }
+                crate::env::TypePredicate::Equality { lhs, rhs } => {
+                    let lhs = resolve(&lhs, &subst);
+                    let rhs = resolve(&rhs, &subst);
+                    contains_tparam(&lhs) || contains_tparam(&rhs) || lhs == rhs
+                }
+            },
+        )
+}
+
+fn trait_predicate_with_params_may_hold(
+    env: &PackageTypeEnv,
+    trait_ref: &tast::TraitRef,
+    for_ty: &tast::Ty,
+) -> bool {
+    if matches!(
+        for_ty,
+        tast::Ty::TParam { .. } | tast::Ty::TProjection { .. }
+    ) {
+        return true;
+    }
+    ImplIndex::build(env)
+        .candidates(trait_ref, for_ty)
+        .into_iter()
+        .any(|candidate| {
+            if !candidate.definition.valid {
+                return false;
+            }
+            let prefix = format!("candidate{}{}", candidate.id.package, candidate.id.index);
+            let candidate_trait_ref = rename_trait_params(&candidate.trait_ref, &prefix);
+            let candidate_head = rename_type_params(&candidate.head, &prefix);
+            let mut subst = HashMap::new();
+            candidate_trait_ref.name == trait_ref.name
+                && candidate_trait_ref.args.len() == trait_ref.args.len()
+                && candidate_trait_ref
+                    .args
+                    .iter()
+                    .zip(&trait_ref.args)
+                    .all(|(candidate, goal)| unify(candidate, goal, &mut subst))
+                && unify(&candidate_head, for_ty, &mut subst)
         })
 }
 
 fn resolve(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tast::Ty {
-    match ty {
-        tast::Ty::TParam { name } => subst
-            .get(name)
-            .map(|ty| resolve(ty, subst))
-            .unwrap_or_else(|| ty.clone()),
-        _ => ty.clone(),
+    let mut current = ty.clone();
+    loop {
+        let next = substitute_ty_params(&current, subst);
+        if next == current {
+            return current;
+        }
+        current = next;
     }
 }
 
@@ -72,6 +137,17 @@ fn contains_param(ty: &tast::Ty, param: &str, subst: &HashMap<String, tast::Ty>)
         tast::Ty::TApp { ty, args } => {
             contains_param(ty, param, subst)
                 || args.iter().any(|ty| contains_param(ty, param, subst))
+        }
+        tast::Ty::TProjection {
+            trait_ref, for_ty, ..
+        } => {
+            contains_param(for_ty, param, subst)
+                || trait_ref.as_ref().is_some_and(|trait_ref| {
+                    trait_ref
+                        .args
+                        .iter()
+                        .any(|ty| contains_param(ty, param, subst))
+                })
         }
         tast::Ty::TArray { elem, .. }
         | tast::Ty::TSlice { elem }
@@ -117,7 +193,11 @@ fn bind(name: &str, ty: &tast::Ty, subst: &mut HashMap<String, tast::Ty>) -> boo
     true
 }
 
-fn unify(left: &tast::Ty, right: &tast::Ty, subst: &mut HashMap<String, tast::Ty>) -> bool {
+pub(crate) fn unify(
+    left: &tast::Ty,
+    right: &tast::Ty,
+    subst: &mut HashMap<String, tast::Ty>,
+) -> bool {
     let left = resolve(left, subst);
     let right = resolve(right, subst);
     match (&left, &right) {
@@ -146,6 +226,34 @@ fn unify(left: &tast::Ty, right: &tast::Ty, subst: &mut HashMap<String, tast::Ty
                     .iter()
                     .zip(right_args.iter())
                     .all(|(left, right)| unify(left, right, subst))
+        }
+        (
+            tast::Ty::TProjection {
+                trait_ref: left_trait,
+                for_ty: left_self,
+                name: left_name,
+            },
+            tast::Ty::TProjection {
+                trait_ref: right_trait,
+                for_ty: right_self,
+                name: right_name,
+            },
+        ) => {
+            left_name == right_name
+                && match (left_trait, right_trait) {
+                    (Some(left), Some(right)) => {
+                        left.name == right.name
+                            && left.args.len() == right.args.len()
+                            && left
+                                .args
+                                .iter()
+                                .zip(right.args.iter())
+                                .all(|(left, right)| unify(left, right, subst))
+                    }
+                    (None, None) => true,
+                    _ => false,
+                }
+                && unify(left_self, right_self, subst)
         }
         (
             tast::Ty::TArray {

@@ -18,6 +18,13 @@ const SUPPORTED_DERIVE_TARGETS: &[&str] = &[TO_STRING_TRAIT, HASH_TRAIT, EQ_TRAI
 const SELF_PARAM_NAME: &str = "self";
 const OTHER_PARAM_NAME: &str = "other";
 
+fn trait_ref(name: &str) -> ast::TraitRef {
+    ast::TraitRef {
+        path: Path::from_ident(AstIdent::new(name)),
+        args: Vec::new(),
+    }
+}
+
 pub fn expand(ast: ast::File) -> Result<ast::File, Diagnostics> {
     let mut diagnostics = Diagnostics::new();
     let mut toplevels = Vec::with_capacity(ast.toplevels.len());
@@ -187,6 +194,7 @@ fn derive_struct_tostring(
         name: AstIdent::new(TO_STRING_FN),
         generics: Vec::new(),
         generic_bounds: Vec::new(),
+        predicates: Vec::new(),
         params: vec![(
             AstIdent::new(SELF_PARAM_NAME),
             ty_for_ident(&struct_def.name),
@@ -199,7 +207,9 @@ fn derive_struct_tostring(
         attrs: Vec::new(),
         generics: Vec::new(),
         generic_bounds: Vec::new(),
-        trait_name: Some(Path::from_ident(AstIdent::new(TO_STRING_TRAIT))),
+        predicates: Vec::new(),
+        associated_types: Vec::new(),
+        trait_ref: Some(trait_ref(TO_STRING_TRAIT)),
         for_type: ty_for_ident(&struct_def.name),
         methods: vec![method],
     })
@@ -219,6 +229,7 @@ fn derive_enum_tostring(
         name: AstIdent::new(TO_STRING_FN),
         generics: Vec::new(),
         generic_bounds: Vec::new(),
+        predicates: Vec::new(),
         params: vec![(AstIdent::new(SELF_PARAM_NAME), ty_for_ident(&enum_def.name))],
         ret_ty: Some(ast::TypeExpr::TString),
         body: expr_as_fn_body(build_enum_body(enum_def, attr_ptr), attr_ptr),
@@ -228,7 +239,9 @@ fn derive_enum_tostring(
         attrs: Vec::new(),
         generics: Vec::new(),
         generic_bounds: Vec::new(),
-        trait_name: Some(Path::from_ident(AstIdent::new(TO_STRING_TRAIT))),
+        predicates: Vec::new(),
+        associated_types: Vec::new(),
+        trait_ref: Some(trait_ref(TO_STRING_TRAIT)),
         for_type: ty_for_ident(&enum_def.name),
         methods: vec![method],
     })
@@ -253,6 +266,7 @@ fn derive_struct_eq(
         name: AstIdent::new(EQ_FN),
         generics: Vec::new(),
         generic_bounds: Vec::new(),
+        predicates: Vec::new(),
         params: vec![
             (
                 AstIdent::new(SELF_PARAM_NAME),
@@ -271,7 +285,9 @@ fn derive_struct_eq(
         attrs: Vec::new(),
         generics: Vec::new(),
         generic_bounds: Vec::new(),
-        trait_name: Some(Path::from_ident(AstIdent::new(EQ_TRAIT))),
+        predicates: Vec::new(),
+        associated_types: Vec::new(),
+        trait_ref: Some(trait_ref(EQ_TRAIT)),
         for_type: ty_for_ident(&struct_def.name),
         methods: vec![method],
     })
@@ -293,6 +309,7 @@ fn derive_enum_eq(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Result<Impl
         name: AstIdent::new(EQ_FN),
         generics: Vec::new(),
         generic_bounds: Vec::new(),
+        predicates: Vec::new(),
         params: vec![
             (AstIdent::new(SELF_PARAM_NAME), ty_for_ident(&enum_def.name)),
             (
@@ -308,7 +325,9 @@ fn derive_enum_eq(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Result<Impl
         attrs: Vec::new(),
         generics: Vec::new(),
         generic_bounds: Vec::new(),
-        trait_name: Some(Path::from_ident(AstIdent::new(EQ_TRAIT))),
+        predicates: Vec::new(),
+        associated_types: Vec::new(),
+        trait_ref: Some(trait_ref(EQ_TRAIT)),
         for_type: ty_for_ident(&enum_def.name),
         methods: vec![method],
     })
@@ -333,6 +352,7 @@ fn derive_struct_hash(
         name: AstIdent::new(HASH_FN),
         generics: Vec::new(),
         generic_bounds: Vec::new(),
+        predicates: Vec::new(),
         params: vec![(
             AstIdent::new(SELF_PARAM_NAME),
             ty_for_ident(&struct_def.name),
@@ -345,7 +365,9 @@ fn derive_struct_hash(
         attrs: Vec::new(),
         generics: Vec::new(),
         generic_bounds: Vec::new(),
-        trait_name: Some(Path::from_ident(AstIdent::new(HASH_TRAIT))),
+        predicates: Vec::new(),
+        associated_types: Vec::new(),
+        trait_ref: Some(trait_ref(HASH_TRAIT)),
         for_type: ty_for_ident(&struct_def.name),
         methods: vec![method],
     })
@@ -370,6 +392,7 @@ fn derive_enum_hash(
         name: AstIdent::new(HASH_FN),
         generics: Vec::new(),
         generic_bounds: Vec::new(),
+        predicates: Vec::new(),
         params: vec![(AstIdent::new(SELF_PARAM_NAME), ty_for_ident(&enum_def.name))],
         ret_ty: Some(ast::TypeExpr::TUint64),
         body: expr_as_fn_body(build_enum_hash_body(enum_def, attr_ptr), attr_ptr),
@@ -379,7 +402,9 @@ fn derive_enum_hash(
         attrs: Vec::new(),
         generics: Vec::new(),
         generic_bounds: Vec::new(),
-        trait_name: Some(Path::from_ident(AstIdent::new(HASH_TRAIT))),
+        predicates: Vec::new(),
+        associated_types: Vec::new(),
+        trait_ref: Some(trait_ref(HASH_TRAIT)),
         for_type: ty_for_ident(&enum_def.name),
         methods: vec![method],
     })
@@ -826,6 +851,7 @@ fn trait_call(
                 AstIdent::new(trait_name),
                 AstIdent::new(method_name),
             ]),
+            type_args: Vec::new(),
             astptr: *attr_ptr,
         }),
         args,
@@ -836,6 +862,7 @@ fn trait_call(
 fn var_expr(name: &AstIdent, attr_ptr: &MySyntaxNodePtr) -> Expr {
     Expr::EPath {
         path: ast::Path::from_ident(name.clone()),
+        type_args: Vec::new(),
         astptr: *attr_ptr,
     }
 }

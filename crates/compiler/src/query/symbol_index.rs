@@ -159,7 +159,15 @@ impl SymbolLookup {
 }
 
 pub(crate) fn build_symbol_lookup(path: &Path, src: &str) -> SymbolLookup {
-    match build_symbol_index(path, src) {
+    build_symbol_lookup_with_overrides(path, src, &HashMap::new())
+}
+
+pub(crate) fn build_symbol_lookup_with_overrides(
+    path: &Path,
+    src: &str,
+    source_overrides: &HashMap<PathBuf, String>,
+) -> SymbolLookup {
+    match build_symbol_index_with_overrides(path, src, source_overrides) {
         Ok((graph, index)) => {
             let package_aliases = package_aliases(path, src, &graph);
             SymbolLookup {
@@ -214,13 +222,14 @@ fn package_aliases(
         .collect()
 }
 
-pub(crate) fn build_symbol_index(
+pub(crate) fn build_symbol_index_with_overrides(
     path: &Path,
     src: &str,
+    source_overrides: &HashMap<PathBuf, String>,
 ) -> Result<(crate::pipeline::packages::PackageGraph, ProjectSymbolIndex), String> {
-    let mut graph = discover_packages_for_query(path, src)?;
+    let mut graph = discover_packages_for_query(path, src, source_overrides)?;
     let mut index = ProjectSymbolIndex::default();
-    let mut overrides = HashMap::new();
+    let mut overrides = source_overrides.clone();
     overrides.insert(path.to_path_buf(), src.to_string());
 
     for (pkg_name, unit) in graph.packages.iter() {
@@ -540,6 +549,7 @@ fn parse_ast_for_discovery(path: &Path, src: &str) -> Result<::ast::ast::File, S
 fn discover_packages_for_query(
     path: &Path,
     src: &str,
+    source_overrides: &HashMap<PathBuf, String>,
 ) -> Result<crate::pipeline::packages::PackageGraph, String> {
     let entry_ast = parse_ast_for_discovery(path, src)?;
     let start_dir = path
@@ -552,13 +562,29 @@ fn discover_packages_for_query(
                 .map_err(|err| format!("{:?}", err))?;
         let external_deps = crate::external::resolve_dependency_versions(&dependencies)?;
         let external_imports = external_deps.external_imports();
-        let graph = crate::pipeline::packages::discover_packages_with_external_imports(
-            &module_dir,
-            Some(path),
-            Some(entry_ast),
-            &external_imports,
-        )
-        .map_err(|e| format!("{:?}", e))?;
+        let mut parsed_overrides = source_overrides
+            .iter()
+            .map(|(path, src)| {
+                (
+                    path.clone(),
+                    parse_ast_for_discovery(path, src).map_err(|message| {
+                        crate::pipeline::compile_error(format!("{}: {}", path.display(), message))
+                    }),
+                )
+            })
+            .collect::<crate::pipeline::packages::SourceOverrides>();
+        parsed_overrides.insert(path.to_path_buf(), Ok(entry_ast));
+        let mode = crate::pipeline::packages::analysis_mode_for_path(&module_dir, path)
+            .map_err(|error| format!("{:?}", error))?;
+        let graph =
+            crate::pipeline::packages::discover_packages_with_overrides_and_external_imports(
+                &module_dir,
+                Some(path),
+                &parsed_overrides,
+                mode,
+                &external_imports,
+            )
+            .map_err(|e| format!("{:?}", e))?;
         return Ok(graph);
     }
 

@@ -34,42 +34,42 @@ func main0() struct{} {
 }
 
 func print__T_unit(value__0 struct{}) struct{} {
-    var t10 string = _goml_m_trait__impl_i_ToString_i_unit_i_to__string(value__0)
-    _goml_runtime_core_string_print(t10)
+    var t28 string = _goml_m_trait__impl_i_ToString_i_unit_i_to__string(value__0)
+    _goml_runtime_core_string_print(t28)
     return struct{}{}
 }
 
 func print__T_bool(value__0 bool) struct{} {
-    var t13 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__0)
-    _goml_runtime_core_string_print(t13)
+    var t31 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(value__0)
+    _goml_runtime_core_string_print(t31)
     return struct{}{}
 }
 
 func print__T_int32(value__0 int32) struct{} {
-    var t16 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__0)
-    _goml_runtime_core_string_print(t16)
+    var t34 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__0)
+    _goml_runtime_core_string_print(t34)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_unit_i_to__string(self__7 struct{}) string {
-    var retv19 string
-    var t20 string = _goml_runtime_core_unit_to_string(self__7)
-    retv19 = t20
-    return retv19
+    var retv37 string
+    var t38 string = _goml_runtime_core_unit_to_string(self__7)
+    retv37 = t38
+    return retv37
 }
 
 func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__8 bool) string {
-    var retv22 string
-    var t23 string = _goml_runtime_core_bool_to_string(self__8)
-    retv22 = t23
-    return retv22
+    var retv40 string
+    var t41 string = _goml_runtime_core_bool_to_string(self__8)
+    retv40 = t41
+    return retv40
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__13 int32) string {
-    var retv25 string
-    var t26 string = _goml_runtime_core_int32_to_string(self__13)
-    retv25 = t26
-    return retv25
+    var retv43 string
+    var t44 string = _goml_runtime_core_int32_to_string(self__13)
+    retv43 = t44
+    return retv43
 }
 
 func main() {

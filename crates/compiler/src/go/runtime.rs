@@ -103,6 +103,7 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(std_io_println_raw()),
         Item::Fn(std_io_eprint_raw()),
         Item::Fn(std_process_exit_raw()),
+        Item::Fn(std_testing_fail_raw()),
         Item::Fn(missing()),
     ];
     items
@@ -810,6 +811,59 @@ fn std_process_exit_raw() -> goast::Fn {
                             name: "code".to_string(),
                             ty: goty::GoType::TInt32,
                         }],
+                        ty: goty::GoType::TInt32,
+                    }],
+                    ty: goty::GoType::TVoid,
+                }),
+                goast::Stmt::Return {
+                    expr: Some(goast::Expr::Unit {
+                        ty: goty::GoType::TUnit,
+                    }),
+                },
+            ],
+        },
+    }
+}
+
+fn std_testing_fail_raw() -> goast::Fn {
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::StdTestingFail),
+        params: vec![("message".to_string(), goty::GoType::TString)],
+        ret_ty: Some(goty::GoType::TUnit),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::Expr(goast::Expr::Call {
+                    func: Box::new(goast::Expr::Var {
+                        name: "_goml_fmt.Fprintln".to_string(),
+                        ty: goty::GoType::TFunc {
+                            params: vec![goty::GoType::TString, goty::GoType::TString],
+                            ret_ty: Box::new(goty::GoType::TVoid),
+                        },
+                    }),
+                    args: vec![
+                        goast::Expr::Var {
+                            name: "_goml_os.Stderr".to_string(),
+                            ty: goty::GoType::TName {
+                                name: "_goml_os.File".to_string(),
+                            },
+                        },
+                        goast::Expr::Var {
+                            name: "message".to_string(),
+                            ty: goty::GoType::TString,
+                        },
+                    ],
+                    ty: goty::GoType::TVoid,
+                }),
+                goast::Stmt::Expr(goast::Expr::Call {
+                    func: Box::new(goast::Expr::Var {
+                        name: "_goml_os.Exit".to_string(),
+                        ty: goty::GoType::TFunc {
+                            params: vec![goty::GoType::TInt32],
+                            ret_ty: Box::new(goty::GoType::TVoid),
+                        },
+                    }),
+                    args: vec![goast::Expr::Int {
+                        value: "101".to_string(),
                         ty: goty::GoType::TInt32,
                     }],
                     ty: goty::GoType::TVoid,

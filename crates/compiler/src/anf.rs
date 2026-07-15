@@ -842,7 +842,7 @@ fn lower<'a>(
                 .loop_ctx
                 .borrow()
                 .clone()
-                .expect("break outside while loop");
+                .expect("break outside loop");
             Block {
                 binds: Vec::new(),
                 term: Term::Jump {
@@ -857,7 +857,7 @@ fn lower<'a>(
                 .loop_ctx
                 .borrow()
                 .clone()
-                .expect("continue outside while loop");
+                .expect("continue outside loop");
             Block {
                 binds: Vec::new(),
                 term: Term::Jump {
@@ -2214,6 +2214,12 @@ pub mod anf_verify {
         match ty {
             anf::Ty::TVar(id) => {
                 errors.push(format!("unresolved type variable {:?}", id));
+            }
+            anf::Ty::TProjection { for_ty, name, .. } => {
+                errors.push(format!(
+                    "unresolved associated type projection {:?}::{}",
+                    for_ty, name.0
+                ));
             }
             anf::Ty::TTuple { typs } => {
                 for t in typs {

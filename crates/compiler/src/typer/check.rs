@@ -21,13 +21,13 @@ use crate::typer::literals::{
 use crate::typer::localenv::LocalTypeEnv;
 use crate::typer::member_lookup::{
     lookup_trait_method_candidates, lookup_trait_method_from_type_name, report_ambiguous_method,
-    report_method_not_found, resolve_field_ty_eager,
+    report_method_not_found, resolve_explicit_trait_args, resolve_field_ty_eager,
 };
 use crate::typer::operators::{
     integer_literal_target, is_float_ty, is_integer_ty, is_numeric_ty, is_signed_numeric_ty,
 };
 use crate::typer::results::{
-    CallElab, CalleeElab, NameRefElab, StructLitArgElab, StructLitElab, StructPatArgElab,
+    CallElab, CalleeElab, ForElab, NameRefElab, StructLitArgElab, StructLitElab, StructPatArgElab,
     StructPatElab, TryElab, TryKind,
 };
 use crate::typer::type_ops::{
@@ -48,6 +48,20 @@ use crate::{
 enum ArrayAssignRoot {
     Local(hir::LocalId),
     Ref,
+}
+
+struct TypeMemberRequest<'a> {
+    type_name: &'a str,
+    member: &'a str,
+    type_args: &'a [hir::TypeExpr],
+    astptr: Option<MySyntaxNodePtr>,
+}
+
+struct ForRequest {
+    expr_id: hir::ExprId,
+    pat: hir::PatId,
+    iterator: hir::ExprId,
+    body: hir::ExprId,
 }
 
 impl Typer {
@@ -104,6 +118,23 @@ impl Typer {
                 ty,
             },
             tast::Expr::EWhile { cond, body, .. } => tast::Expr::EWhile { cond, body, ty },
+            tast::Expr::EFor {
+                pat,
+                iterator,
+                into_iter_trait_ref,
+                iterator_trait_ref,
+                iterator_ty,
+                body,
+                ..
+            } => tast::Expr::EFor {
+                pat,
+                iterator,
+                into_iter_trait_ref,
+                iterator_trait_ref,
+                iterator_ty,
+                body,
+                ty,
+            },
             tast::Expr::EBreak { .. } => tast::Expr::EBreak { ty },
             tast::Expr::EContinue { .. } => tast::Expr::EContinue { ty },
             tast::Expr::EReturn { expr, .. } => tast::Expr::EReturn { expr, ty },
@@ -157,12 +188,12 @@ impl Typer {
                 resolution,
             },
             tast::Expr::ETraitMethod {
-                trait_name,
+                trait_ref,
                 method_name,
                 astptr,
                 ..
             } => tast::Expr::ETraitMethod {
-                trait_name,
+                trait_ref,
                 method_name,
                 ty,
                 astptr,
@@ -281,7 +312,7 @@ impl Typer {
                 );
             }
             tast::Expr::ETraitMethod {
-                trait_name,
+                trait_ref,
                 method_name,
                 ty,
                 astptr,
@@ -289,7 +320,7 @@ impl Typer {
                 self.results.record_name_ref_elab(
                     expr_id,
                     NameRefElab::TraitMethod {
-                        trait_name: trait_name.clone(),
+                        trait_ref: trait_ref.clone(),
                         method_name: method_name.clone(),
                         ty: ty.clone(),
                         astptr: *astptr,
@@ -344,9 +375,18 @@ impl Typer {
             hir::Expr::ENameRef { res, hint, astptr } => {
                 self.infer_res_expr(genv, local_env, diagnostics, &res, &hint, astptr)
             }
-            hir::Expr::EStaticMember { path, astptr } => {
-                self.infer_static_member_expr(genv, diagnostics, &path, astptr)
-            }
+            hir::Expr::EStaticMember {
+                path,
+                type_args,
+                astptr,
+            } => self.infer_static_member_expr(
+                genv,
+                local_env,
+                diagnostics,
+                &path,
+                &type_args,
+                astptr,
+            ),
             hir::Expr::EUnit => tast::Expr::EPrim {
                 value: Prim::unit(),
                 ty: tast::Ty::TUnit,
@@ -504,6 +544,21 @@ impl Typer {
             hir::Expr::EWhile { cond, body } => {
                 self.infer_while_expr(genv, local_env, diagnostics, cond, body)
             }
+            hir::Expr::EFor {
+                pat,
+                iterator,
+                body,
+            } => self.infer_for_expr(
+                genv,
+                local_env,
+                diagnostics,
+                ForRequest {
+                    expr_id: e,
+                    pat,
+                    iterator,
+                    body,
+                },
+            ),
             hir::Expr::EBreak => self.infer_break_expr(diagnostics, e),
             hir::Expr::EContinue => self.infer_continue_expr(diagnostics, e),
             hir::Expr::EReturn { expr } => {
@@ -906,8 +961,10 @@ impl Typer {
     fn infer_static_member_expr(
         &mut self,
         genv: &PackageTypeEnv,
+        local_env: &LocalTypeEnv,
         diagnostics: &mut Diagnostics,
         path: &hir::Path,
+        type_args: &[hir::TypeExpr],
         astptr: Option<MySyntaxNodePtr>,
     ) -> tast::Expr {
         if path.len() < 2 {
@@ -930,22 +987,48 @@ impl Typer {
             super::util::push_ice(diagnostics, "static member path missing final segment");
             return self.error_expr(astptr);
         };
-        self.infer_type_member_expr(genv, diagnostics, &type_name, member, astptr)
+        self.infer_type_member_expr(
+            genv,
+            local_env,
+            diagnostics,
+            TypeMemberRequest {
+                type_name: &type_name,
+                member,
+                type_args,
+                astptr,
+            },
+        )
     }
 
     fn infer_type_member_expr(
         &mut self,
         genv: &PackageTypeEnv,
+        local_env: &LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        type_name: &str,
-        member: &str,
-        astptr: Option<MySyntaxNodePtr>,
+        request: TypeMemberRequest<'_>,
     ) -> tast::Expr {
+        let TypeMemberRequest {
+            type_name,
+            member,
+            type_args,
+            astptr,
+        } = request;
         let (resolved_type_name, type_env) = super::util::resolve_type_name(genv, type_name);
         let type_ident = tast::TastIdent(resolved_type_name.clone());
         let member_ident = tast::TastIdent(member.to_string());
+        let explicit_args = match resolve_explicit_trait_args(
+            genv,
+            local_env,
+            diagnostics,
+            type_name,
+            type_args,
+            astptr.map(|pointer| pointer.text_range()),
+        ) {
+            Ok(args) => args,
+            Err(()) => return self.error_expr(astptr),
+        };
         if let Some((trait_ident, method_scheme)) =
-            lookup_trait_method_from_type_name(genv, type_name, &member_ident)
+            lookup_trait_method_from_type_name(self, genv, type_name, &member_ident, explicit_args)
         {
             let instantiated = self.instantiate_scheme(
                 &method_scheme,
@@ -956,7 +1039,7 @@ impl Typer {
             );
             self.register_scheme_obligations(&instantiated);
             return tast::Expr::ETraitMethod {
-                trait_name: trait_ident,
+                trait_ref: trait_ident,
                 method_name: member_ident.clone(),
                 ty: instantiated.ty,
                 astptr,
@@ -1138,6 +1221,13 @@ impl Typer {
             let param_ty = match &param.ty {
                 Some(ty) => {
                     let param_ty = tast::Ty::from_hir(genv, ty, &current_tparams_env);
+                    let param_ty = super::toplevel::resolve_ty_projections_from_predicates(
+                        genv,
+                        diagnostics,
+                        &param_ty,
+                        local_env.predicates(),
+                        super::util::type_expr_range(ty),
+                    );
                     super::util::validate_dyn_object_safety_in_ty(genv, diagnostics, &param_ty);
                     param_ty
                 }
@@ -1204,6 +1294,13 @@ impl Typer {
                     let name_str = self.hir_table.local_ident_name(param.name);
                     let annotated_ty = param.ty.as_ref().map(|ty| {
                         let ann_ty = tast::Ty::from_hir(genv, ty, &current_tparams_env);
+                        let ann_ty = super::toplevel::resolve_ty_projections_from_predicates(
+                            genv,
+                            diagnostics,
+                            &ann_ty,
+                            local_env.predicates(),
+                            super::util::type_expr_range(ty),
+                        );
                         super::util::validate_dyn_object_safety_in_ty(genv, diagnostics, &ann_ty);
                         ann_ty
                     });
@@ -1260,6 +1357,13 @@ impl Typer {
         let current_tparams_env = local_env.current_tparams_env();
         let annotated_ty = stmt.annotation.as_ref().map(|ty| {
             let ann_ty = tast::Ty::from_hir(genv, ty, &current_tparams_env);
+            let ann_ty = super::toplevel::resolve_ty_projections_from_predicates(
+                genv,
+                diagnostics,
+                &ann_ty,
+                local_env.predicates(),
+                super::util::type_expr_range(ty),
+            );
             super::util::validate_dyn_object_safety_in_ty(genv, diagnostics, &ann_ty);
             ann_ty
         });
@@ -1549,6 +1653,7 @@ impl Typer {
                         .all(|arm| self.expr_always_exits_loop_control(arm.body))
             }
             hir::Expr::EWhile { cond, .. } => self.expr_always_exits_loop_control(*cond),
+            hir::Expr::EFor { iterator, .. } => self.expr_always_exits_loop_control(*iterator),
             _ => false,
         }
     }
@@ -1688,20 +1793,130 @@ impl Typer {
         } else {
             self.equate(
                 diagnostics,
-                &cond_tast.get_ty(),
                 &tast::Ty::TBool,
+                &cond_tast.get_ty(),
                 self.expr_range(cond),
             );
         }
         self.equate(
             diagnostics,
-            &body_tast.get_ty(),
             &tast::Ty::TUnit,
+            &body_tast.get_ty(),
             self.expr_range(body),
         );
 
         tast::Expr::EWhile {
             cond: Box::new(cond_tast),
+            body: Box::new(body_tast),
+            ty: tast::Ty::TUnit,
+        }
+    }
+
+    fn infer_for_expr(
+        &mut self,
+        genv: &PackageTypeEnv,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        request: ForRequest,
+    ) -> tast::Expr {
+        let ForRequest {
+            expr_id,
+            pat,
+            iterator,
+            body,
+        } = request;
+        let iterator_tast = self.infer_expr(genv, local_env, diagnostics, iterator);
+        let source_ty = self.norm(&iterator_tast.get_ty());
+        let item_ty = self.fresh_ty_var();
+        let iterator_ty = self.fresh_ty_var();
+        let iterator_trait_ref = tast::TraitRef {
+            name: genv
+                .lang_item(LangItemId::Iterator)
+                .cloned()
+                .unwrap_or_else(|| tast::TastIdent::new(LangItemId::Iterator.source_name())),
+            args: Vec::new(),
+        };
+        let into_iter_trait_ref = tast::TraitRef {
+            name: genv
+                .lang_item(LangItemId::IntoIterator)
+                .cloned()
+                .unwrap_or_else(|| tast::TastIdent::new(LangItemId::IntoIterator.source_name())),
+            args: Vec::new(),
+        };
+        let into_iter_obligation = self.push_obligation(
+            Predicate::Trait(TraitGoal {
+                trait_ref: into_iter_trait_ref.clone(),
+                for_ty: source_ty.clone(),
+            }),
+            ObligationCause::new(self.expr_range(iterator), ObligationCauseKind::ForLoop),
+        );
+        let projection_cause =
+            ObligationCause::new(self.expr_range(iterator), ObligationCauseKind::Projection)
+                .with_parent(into_iter_obligation);
+        self.push_obligation(
+            Predicate::Projection(ProjectionGoal::AssociatedType {
+                trait_ref: into_iter_trait_ref.clone(),
+                for_ty: source_ty.clone(),
+                name: tast::TastIdent::new("Item"),
+                result_ty: item_ty.clone(),
+            }),
+            projection_cause.clone(),
+        );
+        self.push_obligation(
+            Predicate::Projection(ProjectionGoal::AssociatedType {
+                trait_ref: into_iter_trait_ref.clone(),
+                for_ty: source_ty,
+                name: tast::TastIdent::new("IntoIter"),
+                result_ty: iterator_ty.clone(),
+            }),
+            projection_cause.clone(),
+        );
+        self.push_obligation(
+            Predicate::Trait(TraitGoal {
+                trait_ref: iterator_trait_ref.clone(),
+                for_ty: iterator_ty.clone(),
+            }),
+            projection_cause.clone(),
+        );
+        self.push_obligation(
+            Predicate::Projection(ProjectionGoal::AssociatedType {
+                trait_ref: iterator_trait_ref.clone(),
+                for_ty: iterator_ty.clone(),
+                name: tast::TastIdent::new("Item"),
+                result_ty: item_ty.clone(),
+            }),
+            projection_cause,
+        );
+        self.results.record_for_elab(
+            expr_id,
+            ForElab {
+                into_iter_trait_ref: into_iter_trait_ref.clone(),
+                iterator_trait_ref: iterator_trait_ref.clone(),
+                iterator_ty: iterator_ty.clone(),
+            },
+        );
+
+        local_env.push_scope();
+        let pat_tast = self.check_pat(genv, local_env, diagnostics, pat, &item_ty);
+        self.check_irrefutable_for_pattern(diagnostics, pat);
+        let saved_loop_control_context = self.loop_control_context;
+        self.loop_control_context = LoopControlContext::Allowed;
+        let body_tast = self.infer_expr(genv, local_env, diagnostics, body);
+        self.loop_control_context = saved_loop_control_context;
+        local_env.pop_scope(diagnostics);
+        self.equate(
+            diagnostics,
+            &tast::Ty::TUnit,
+            &body_tast.get_ty(),
+            self.expr_range(body),
+        );
+
+        tast::Expr::EFor {
+            pat: Box::new(pat_tast),
+            iterator: Box::new(iterator_tast),
+            into_iter_trait_ref,
+            iterator_trait_ref,
+            iterator_ty,
             body: Box::new(body_tast),
             ty: tast::Ty::TUnit,
         }
@@ -1720,7 +1935,7 @@ impl Typer {
             LoopControlContext::Disallowed => {
                 super::util::push_error_with_range(
                     diagnostics,
-                    "`break` outside of a while loop",
+                    "`break` outside of a loop",
                     self.expr_range(e),
                 );
             }
@@ -1743,7 +1958,7 @@ impl Typer {
             LoopControlContext::Disallowed => {
                 super::util::push_error_with_range(
                     diagnostics,
-                    "`continue` outside of a while loop",
+                    "`continue` outside of a loop",
                     self.expr_range(e),
                 );
             }

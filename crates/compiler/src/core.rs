@@ -14,9 +14,17 @@ pub struct Fn {
     #[serde(default = "root_default")]
     pub root: bool,
     pub generics: Vec<String>,
+    #[serde(default)]
+    pub trait_impl: Option<TraitImpl>,
     pub params: Vec<(String, Ty)>,
     pub ret_ty: Ty,
     pub body: Block,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct TraitImpl {
+    pub trait_ref: tast::TraitRef,
+    pub for_ty: Ty,
 }
 
 fn root_default() -> bool {
@@ -146,7 +154,7 @@ pub enum Expr {
         ty: Ty,
     },
     ETraitCall {
-        trait_name: tast::TastIdent,
+        trait_ref: tast::TraitRef,
         method_name: tast::TastIdent,
         receiver: Box<Expr>,
         args: Vec<Expr>,

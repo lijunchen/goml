@@ -1,0 +1,35 @@
+package main
+file main.gom
+  trait Mark {
+      fn mark(Self) -> string;
+    }
+    
+    trait Container[T: Mark] {
+      fn value(Self) -> T;
+    }
+    
+    struct NumberBox {
+        value: int32,
+    }
+    
+    impl Mark for int32 {
+      fn mark(local/1/0: int32) -> string {
+          "marked:" + self/0.to_string()
+      }
+    }
+    
+    impl Container[int32] for NumberBox {
+      fn value(local/1/1: NumberBox) -> int32 {
+          self/1.value
+      }
+    }
+    
+    fn describe(local/1/2: C) -> string {
+        Container[T]::value(container/2).mark()
+    }
+    
+    fn main() -> unit {
+        println(def/1/5(NumberBox {
+                value: 7
+            }));
+    }

@@ -1,15 +1,20 @@
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::ffi::OsString;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::io::{Read, Write};
+use std::path::{Component, Path, PathBuf};
 use std::process::{Command, Stdio};
+use std::sync::Mutex;
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::thread;
+use std::time::{Duration, Instant};
 
 use anyhow::{Context, anyhow, bail};
-use clap::{Args, Parser, Subcommand};
+use clap::{Args, Parser, Subcommand, ValueEnum};
 use goml_project::ENTRY_FUNCTION;
 use goml_project::config::{
-    ensure_goml_home_layout, find_module_root, goml_bin_dir, goml_cache_dir, goml_home_dir,
-    goml_lib_dir, goml_std_dir, load_module_manifest,
+    DEFAULT_TARGET_DIR, ensure_goml_home_layout, find_module_root, goml_bin_dir, goml_cache_dir,
+    goml_home_dir, goml_lib_dir, goml_std_dir, load_module_manifest, validate_manifest_target_dir,
 };
 use goml_project::registry::{
     ModuleCoord, ModuleRequirement, Registry, cached_registry_dir, default_registry_url,
@@ -19,9 +24,6 @@ use toml_edit::{DocumentMut, Item, Table, value};
 
 mod gomlc;
 
-const PROJECT_GO_OUTPUT: &str = "target/goml/main.go";
-const PROJECT_CHECK_OUTPUT_DIR: &str = "target/goml/check";
-const PROJECT_BUILD_OUTPUT_DIR: &str = "target/goml/build";
 const DEFAULT_LIB_PACKAGE: &str = "lib";
 
 #[derive(Parser, Debug)]
@@ -34,8 +36,9 @@ struct Cli {
 #[derive(Subcommand, Debug)]
 enum Commands {
     New(NewArgs),
-    Check(ProjectCommandArgs),
+    Check(CheckCommandArgs),
     Build(ProjectCommandArgs),
+    Test(TestCommandArgs),
     Update(RegistryCommandArgs),
     Add(AddArgs),
     Remove(RemoveArgs),
@@ -69,10 +72,63 @@ struct RemoveArgs {
 struct ProjectCommandArgs {
     #[arg(default_value = ".")]
     target: PathBuf,
+    #[arg(long = "target-dir")]
+    target_dir: Option<PathBuf>,
     #[arg(long = "dry-run")]
     dry_run: bool,
     #[arg(long = "compiler")]
     compiler: Option<PathBuf>,
+}
+
+#[derive(Args, Debug, Clone)]
+struct CheckCommandArgs {
+    #[command(flatten)]
+    project: ProjectCommandArgs,
+    #[arg(long)]
+    tests: bool,
+}
+
+#[derive(Args, Debug, Clone)]
+struct TestCommandArgs {
+    #[arg(default_value = ".")]
+    target: PathBuf,
+    #[arg(value_name = "FILTER")]
+    filter: Option<String>,
+    #[arg(long = "target-dir")]
+    target_dir: Option<PathBuf>,
+    #[arg(long = "dry-run")]
+    dry_run: bool,
+    #[arg(long = "compiler")]
+    compiler: Option<PathBuf>,
+    #[arg(long)]
+    list: bool,
+    #[arg(long, conflicts_with = "include_ignored")]
+    ignored: bool,
+    #[arg(long)]
+    include_ignored: bool,
+    #[arg(long)]
+    nocapture: bool,
+    #[arg(long, value_enum, default_value_t = TestOutputFormat::Text)]
+    format: TestOutputFormat,
+    #[arg(long, default_value = "30s", value_parser = parse_duration)]
+    timeout: Duration,
+    #[arg(long, default_value_t = 1, value_parser = parse_positive_usize)]
+    jobs: usize,
+    #[arg(long, value_enum, default_value_t = TestKind::All)]
+    kind: TestKind,
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+enum TestOutputFormat {
+    Text,
+    Json,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
+enum TestKind {
+    Internal,
+    External,
+    All,
 }
 
 #[derive(Args, Debug)]
@@ -92,7 +148,72 @@ struct CompilerCompatArgs {
 struct ProjectContext {
     module_dir: PathBuf,
     entry_path: PathBuf,
+    target_role: ProjectTargetRole,
     dependencies: BTreeMap<String, String>,
+    artifacts: ArtifactLayout,
+}
+
+#[derive(Clone)]
+struct ArtifactLayout {
+    root: PathBuf,
+}
+
+impl ArtifactLayout {
+    fn new(root: PathBuf) -> Self {
+        Self { root }
+    }
+
+    fn check_root(&self) -> PathBuf {
+        self.root.join("check")
+    }
+
+    fn build_root(&self) -> PathBuf {
+        self.root.join("build")
+    }
+
+    fn test_internal_root(&self) -> PathBuf {
+        self.root.join("test").join("internal")
+    }
+
+    fn test_external_root(&self) -> PathBuf {
+        self.root.join("test").join("external")
+    }
+
+    fn main_go(&self) -> PathBuf {
+        self.root.join("main.go")
+    }
+
+    fn internal_test_go(&self) -> PathBuf {
+        self.test_internal_root().join("main.go")
+    }
+
+    fn external_test_go(&self) -> PathBuf {
+        self.test_external_root().join("main.go")
+    }
+
+    fn internal_test_manifest(&self) -> PathBuf {
+        self.test_internal_root().join("tests.json")
+    }
+
+    fn external_test_manifest(&self) -> PathBuf {
+        self.test_external_root().join("tests.json")
+    }
+
+    fn internal_test_runner(&self) -> PathBuf {
+        self.test_internal_root()
+            .join(format!("runner{}", std::env::consts::EXE_SUFFIX))
+    }
+
+    fn external_test_runner(&self) -> PathBuf {
+        self.test_external_root()
+            .join(format!("runner{}", std::env::consts::EXE_SUFFIX))
+    }
+}
+
+enum ProjectTargetRole {
+    Production,
+    InternalTest,
+    ExternalTest { suite_dir: PathBuf },
 }
 
 struct PackageCompilerCommand {
@@ -108,8 +229,28 @@ struct LinkCompilerCommand {
     output: PathBuf,
 }
 
+struct TestLinkCompilerCommand {
+    input_cores: Vec<PathBuf>,
+    packages: Vec<String>,
+    output: PathBuf,
+    manifest: PathBuf,
+}
+
 struct ProjectCommandPlan {
     commands: Vec<PlannedCompilerCommand>,
+}
+
+struct ProjectTestCommandPlan {
+    commands: Vec<PlannedCompilerCommand>,
+    groups: Vec<TestRunGroup>,
+}
+
+#[derive(Clone)]
+struct TestRunGroup {
+    kind: TestKind,
+    go_output: PathBuf,
+    manifest: PathBuf,
+    runner: PathBuf,
 }
 
 #[derive(Clone)]
@@ -119,7 +260,7 @@ struct BuildPackage {
     output: PathBuf,
 }
 
-#[derive(Default)]
+#[derive(Clone, Default)]
 struct ExternalPackagesPlan {
     packages: HashMap<String, BuildPackage>,
     order: Vec<String>,
@@ -129,36 +270,46 @@ struct ExternalPackagesPlan {
 #[derive(Clone, Copy)]
 enum ProjectStage {
     Check,
+    TestCheck,
     Build,
+    Test,
 }
 
 impl ProjectStage {
-    fn output_root(self) -> &'static str {
+    fn output_root(self, artifacts: &ArtifactLayout) -> PathBuf {
         match self {
-            Self::Check => PROJECT_CHECK_OUTPUT_DIR,
-            Self::Build => PROJECT_BUILD_OUTPUT_DIR,
+            Self::Check | Self::TestCheck => artifacts.check_root(),
+            Self::Build => artifacts.build_root(),
+            Self::Test => artifacts.test_internal_root(),
         }
     }
 
     fn label(self) -> &'static str {
         match self {
             Self::Check => "project check",
+            Self::TestCheck => "project test check",
             Self::Build => "project build",
+            Self::Test => "project test",
         }
     }
 }
 
 enum PlannedCompilerCommand {
     Check(PackageCompilerCommand),
+    TestCheck(PackageCompilerCommand),
     Build(PackageCompilerCommand),
+    TestBuild(PackageCompilerCommand),
     Link(LinkCompilerCommand),
+    TestLink(TestLinkCompilerCommand),
 }
 
 impl PlannedCompilerCommand {
     fn to_args(&self) -> Vec<OsString> {
         match self {
             PlannedCompilerCommand::Check(cmd) => package_command_args("check", cmd),
+            PlannedCompilerCommand::TestCheck(cmd) => package_command_args("test-check", cmd),
             PlannedCompilerCommand::Build(cmd) => package_command_args("build", cmd),
+            PlannedCompilerCommand::TestBuild(cmd) => package_command_args("test-build", cmd),
             PlannedCompilerCommand::Link(cmd) => {
                 let mut args = vec![OsString::from("link"), OsString::from("--input")];
                 args.extend(
@@ -170,6 +321,23 @@ impl PlannedCompilerCommand {
                 args.push(cmd.output.clone().into_os_string());
                 args.push(OsString::from("--entry"));
                 args.push(OsString::from(&cmd.entry_package));
+                args
+            }
+            PlannedCompilerCommand::TestLink(cmd) => {
+                let mut args = vec![OsString::from("test-link"), OsString::from("--input")];
+                args.extend(
+                    cmd.input_cores
+                        .iter()
+                        .map(|path| path.clone().into_os_string()),
+                );
+                args.push(OsString::from("--output"));
+                args.push(cmd.output.clone().into_os_string());
+                args.push(OsString::from("--manifest"));
+                args.push(cmd.manifest.clone().into_os_string());
+                for package in &cmd.packages {
+                    args.push(OsString::from("--package"));
+                    args.push(OsString::from(package));
+                }
                 args
             }
         }
@@ -217,6 +385,7 @@ fn run_cli() -> anyhow::Result<()> {
         Commands::New(args) => execute_new(args),
         Commands::Check(args) => execute_project_check(args),
         Commands::Build(args) => execute_project_build(args),
+        Commands::Test(args) => execute_project_test(args),
         Commands::Update(args) => execute_update(args),
         Commands::Add(args) => execute_add(args),
         Commands::Remove(args) => execute_remove(args),
@@ -279,6 +448,7 @@ fn execute_new(args: NewArgs) -> anyhow::Result<()> {
         &project_dir.join("goml.toml"),
         &render_root_goml_toml(&args.project_name),
     )?;
+    write_file_with_dirs(&project_dir.join(".gitignore"), &render_gitignore())?;
     write_file_with_dirs(
         &project_dir.join("main.gom"),
         &render_main_gom(&args.project_name),
@@ -517,6 +687,10 @@ fn render_root_goml_toml(project_name: &str) -> String {
     format!("[module]\npath = \"{project_name}\"\n")
 }
 
+fn render_gitignore() -> String {
+    format!("/{DEFAULT_TARGET_DIR}/\n")
+}
+
 fn render_main_gom(project_name: &str) -> String {
     format!(
         r#"package main;
@@ -551,19 +725,22 @@ fn execute_compiler_compat(args: CompilerCompatArgs) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn execute_project_check(args: ProjectCommandArgs) -> anyhow::Result<()> {
-    let project = load_project(&args.target)?;
-    let plan = build_project_check_plan(&project)?;
+fn execute_project_check(args: CheckCommandArgs) -> anyhow::Result<()> {
+    let project = load_project(&args.project.target, args.project.target_dir.as_deref())?;
+    let plan = build_project_check_plan(&project, args.tests)?;
     execute_planned_commands(
         &project.module_dir,
         plan.commands,
-        args.dry_run,
-        args.compiler.as_deref(),
+        args.project.dry_run,
+        args.project.compiler.as_deref(),
     )
 }
 
 fn execute_project_build(args: ProjectCommandArgs) -> anyhow::Result<()> {
-    let project = load_project(&args.target)?;
+    let project = load_project(&args.target, args.target_dir.as_deref())?;
+    if !matches!(&project.target_role, ProjectTargetRole::Production) {
+        bail!("test-only targets cannot be built directly; use `goml test`");
+    }
     let plan = build_project_build_plan(&project)?;
     execute_planned_commands(
         &project.module_dir,
@@ -573,27 +750,376 @@ fn execute_project_build(args: ProjectCommandArgs) -> anyhow::Result<()> {
     )
 }
 
-fn build_project_check_plan(project: &ProjectContext) -> anyhow::Result<ProjectCommandPlan> {
-    build_project_plan(project, ProjectStage::Check)
+fn execute_project_test(args: TestCommandArgs) -> anyhow::Result<()> {
+    let project = load_project(&args.target, args.target_dir.as_deref())?;
+    let plan = build_project_test_plan(&project, args.kind)?;
+    execute_planned_commands(
+        &project.module_dir,
+        plan.commands,
+        args.dry_run,
+        args.compiler.as_deref(),
+    )?;
+    if args.dry_run {
+        return Ok(());
+    }
+    execute_test_runner(&project.module_dir, &plan.groups, &args)
+}
+
+fn build_project_check_plan(
+    project: &ProjectContext,
+    include_all_tests: bool,
+) -> anyhow::Result<ProjectCommandPlan> {
+    let mut commands = build_project_plan(project, ProjectStage::Check)?.commands;
+    match &project.target_role {
+        ProjectTargetRole::Production if include_all_tests => {
+            commands.extend(build_all_test_check_commands(project)?);
+        }
+        ProjectTargetRole::InternalTest => {
+            commands.extend(build_project_plan(project, ProjectStage::TestCheck)?.commands);
+        }
+        ProjectTargetRole::ExternalTest { suite_dir } => {
+            commands.extend(build_external_test_check_plan(project, suite_dir)?.commands);
+        }
+        ProjectTargetRole::Production => {}
+    }
+    Ok(ProjectCommandPlan { commands })
+}
+
+fn build_all_test_check_commands(
+    project: &ProjectContext,
+) -> anyhow::Result<Vec<PlannedCompilerCommand>> {
+    let check_root = project.artifacts.check_root();
+    let external = build_external_packages_plan(project, &check_root)?;
+    let external_imports =
+        goml_project::package_graph::ExternalImports::new(external.declared_names.clone());
+    let test_plan = goml_project::package_graph::discover_project_test_plan(
+        &project.module_dir,
+        &project.entry_path,
+        &external_imports,
+    )
+    .map_err(|err| anyhow!("project test check failed: {}", err))?;
+    let mut commands = Vec::new();
+    let normal_files = &test_plan.normal.packages[&test_plan.normal.entry_package].files;
+    let internal_files = &test_plan.internal.packages[&test_plan.internal.entry_package].files;
+    if internal_files != normal_files {
+        commands.extend(
+            build_graph_plan(
+                project,
+                ProjectStage::TestCheck,
+                external.clone(),
+                test_plan.internal,
+            )?
+            .commands,
+        );
+    }
+    for external_test in test_plan.external {
+        commands.extend(
+            build_graph_plan(
+                project,
+                ProjectStage::TestCheck,
+                external.clone(),
+                external_test.graph,
+            )?
+            .commands,
+        );
+    }
+    Ok(commands)
+}
+
+fn build_external_test_check_plan(
+    project: &ProjectContext,
+    suite_dir: &Path,
+) -> anyhow::Result<ProjectCommandPlan> {
+    let check_root = project.artifacts.check_root();
+    let external = build_external_packages_plan(project, &check_root)?;
+    let external_imports =
+        goml_project::package_graph::ExternalImports::new(external.declared_names.clone());
+    let external_test = goml_project::package_graph::discover_project_external_test_package(
+        &project.module_dir,
+        &project.entry_path,
+        suite_dir,
+        &external_imports,
+    )
+    .map_err(|err| anyhow!("project test check failed: {}", err))?;
+    build_graph_plan(
+        project,
+        ProjectStage::TestCheck,
+        external,
+        external_test.graph,
+    )
 }
 
 fn build_project_build_plan(project: &ProjectContext) -> anyhow::Result<ProjectCommandPlan> {
     build_project_plan(project, ProjectStage::Build)
 }
 
+fn build_project_test_plan(
+    project: &ProjectContext,
+    requested_kind: TestKind,
+) -> anyhow::Result<ProjectTestCommandPlan> {
+    let (run_internal, run_external) = match &project.target_role {
+        ProjectTargetRole::Production => (
+            matches!(requested_kind, TestKind::Internal | TestKind::All),
+            matches!(requested_kind, TestKind::External | TestKind::All),
+        ),
+        ProjectTargetRole::InternalTest => (true, false),
+        ProjectTargetRole::ExternalTest { .. } => (false, true),
+    };
+    let mut commands = build_project_plan(project, ProjectStage::Check)?.commands;
+    let mut groups = Vec::new();
+    if run_internal && has_internal_test_sources(project)? {
+        commands.extend(build_project_plan(project, ProjectStage::Test)?.commands);
+        groups.push(internal_test_run_group(&project.artifacts));
+    }
+    if run_external {
+        let suite_dir = match &project.target_role {
+            ProjectTargetRole::ExternalTest { suite_dir } => Some(suite_dir.as_path()),
+            ProjectTargetRole::Production | ProjectTargetRole::InternalTest => None,
+        };
+        if let Some(plan) = build_external_tests_plan(project, suite_dir)? {
+            commands.extend(plan.commands);
+            groups.extend(plan.groups);
+        }
+    }
+    Ok(ProjectTestCommandPlan { commands, groups })
+}
+
+fn has_internal_test_sources(project: &ProjectContext) -> anyhow::Result<bool> {
+    let package_dir = project
+        .entry_path
+        .parent()
+        .unwrap_or_else(|| Path::new("."));
+    Ok(fs::read_dir(package_dir)
+        .with_context(|| format!("failed to read package directory {}", package_dir.display()))?
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
+        .any(|path| goml_project::package_graph::is_internal_test_source(&path)))
+}
+
+fn build_external_tests_plan(
+    project: &ProjectContext,
+    suite_dir: Option<&Path>,
+) -> anyhow::Result<Option<ProjectTestCommandPlan>> {
+    let external_root = project.artifacts.test_external_root();
+    let external = build_external_packages_plan(project, &external_root)?;
+    let external_imports =
+        goml_project::package_graph::ExternalImports::new(external.declared_names.clone());
+    let tests = if let Some(suite_dir) = suite_dir {
+        vec![
+            goml_project::package_graph::discover_project_external_test_package(
+                &project.module_dir,
+                &project.entry_path,
+                suite_dir,
+                &external_imports,
+            )
+            .map_err(|err| anyhow!("project test failed: {}", err))?,
+        ]
+    } else {
+        goml_project::package_graph::discover_project_external_test_packages(
+            &project.module_dir,
+            &project.entry_path,
+            &external_imports,
+        )
+        .map_err(|err| anyhow!("project test failed: {}", err))?
+    };
+    if tests.is_empty() {
+        return Ok(None);
+    }
+    let (graph, test_packages, link_packages) = merge_external_test_graphs(tests)?;
+    let plan =
+        build_external_test_graph_plan(project, external, graph, test_packages, link_packages)?;
+    Ok(Some(plan))
+}
+
+fn merge_external_test_graphs(
+    tests: Vec<goml_project::package_graph::ExternalTestGraph>,
+) -> anyhow::Result<(
+    goml_project::package_graph::PackageGraph,
+    HashSet<String>,
+    Vec<String>,
+)> {
+    let mut tests = tests.into_iter();
+    let first = tests
+        .next()
+        .ok_or_else(|| anyhow!("project test failed: no external test suites"))?;
+    let mut test_packages = HashSet::from([first.graph.entry_package.clone()]);
+    let mut target_packages = BTreeSet::from([first.target_package]);
+    let mut graph = first.graph;
+    for test in tests {
+        if test.graph.module_dir != graph.module_dir || test.graph.module_name != graph.module_name
+        {
+            bail!("project test failed: external test suites belong to different modules");
+        }
+        test_packages.insert(test.graph.entry_package.clone());
+        target_packages.insert(test.target_package);
+        graph
+            .external_root_packages
+            .extend(test.graph.external_root_packages);
+        for (package, dir) in test.graph.package_dirs {
+            if let Some(existing) = graph.package_dirs.get(&package)
+                && existing != &dir
+            {
+                bail!(
+                    "project test failed: package {} has multiple directories",
+                    package
+                );
+            }
+            graph.package_dirs.insert(package, dir);
+        }
+        for (package, unit) in test.graph.packages {
+            if let Some(existing) = graph.packages.get(&package) {
+                if existing.declared_name != unit.declared_name
+                    || existing.files != unit.files
+                    || existing.imports != unit.imports
+                {
+                    bail!(
+                        "project test failed: package {} has conflicting inputs",
+                        package
+                    );
+                }
+            } else {
+                graph.packages.insert(package, unit);
+            }
+        }
+    }
+    let mut link_packages = test_packages.iter().cloned().collect::<Vec<_>>();
+    link_packages.sort();
+    for package in target_packages {
+        if !test_packages.contains(&package) {
+            link_packages.push(package);
+        }
+    }
+    Ok((graph, test_packages, link_packages))
+}
+
+fn build_external_test_graph_plan(
+    project: &ProjectContext,
+    external: ExternalPackagesPlan,
+    graph: goml_project::package_graph::PackageGraph,
+    test_packages: HashSet<String>,
+    link_packages: Vec<String>,
+) -> anyhow::Result<ProjectTestCommandPlan> {
+    let output_root = project.artifacts.test_external_root();
+    let order = goml_project::package_graph::topo_sort_packages(&graph)
+        .map_err(|err| anyhow!("project test failed: {}", err))?;
+    let mut packages = external.packages;
+    let mut build_order = external.order;
+    for package_name in order {
+        if packages.contains_key(&package_name) {
+            bail!(
+                "project test failed: package {} conflicts with an external dependency",
+                package_name
+            );
+        }
+        let package = graph
+            .packages
+            .get(&package_name)
+            .ok_or_else(|| anyhow!("project test failed: missing package {}", package_name))?;
+        packages.insert(
+            package_name.clone(),
+            BuildPackage {
+                input_files: sorted_relative_inputs(&project.module_dir, &package.files),
+                imports: package.imports.clone(),
+                output: local_artifact_base(&output_root, &package_name),
+            },
+        );
+        build_order.push(package_name);
+    }
+    let mut commands = Vec::new();
+    let mut interface_outputs = HashMap::new();
+    let mut core_outputs = Vec::new();
+    for package_name in build_order {
+        let package = packages
+            .get(&package_name)
+            .ok_or_else(|| anyhow!("project test failed: missing package {}", package_name))?;
+        let command = PackageCompilerCommand {
+            package: package_name.clone(),
+            input_files: package.input_files.clone(),
+            interface_files: package_interface_inputs(
+                &package_name,
+                &package.imports,
+                &packages,
+                &interface_outputs,
+                "project test",
+            )?,
+            output: package.output.clone(),
+        };
+        if test_packages.contains(&package_name) {
+            commands.push(PlannedCompilerCommand::TestBuild(command));
+        } else {
+            commands.push(PlannedCompilerCommand::Build(command));
+        }
+        interface_outputs.insert(package_name, package.output.with_extension("interface"));
+        core_outputs.push(package.output.with_extension("core"));
+    }
+    commands.push(PlannedCompilerCommand::TestLink(TestLinkCompilerCommand {
+        input_cores: core_outputs,
+        packages: link_packages,
+        output: project.artifacts.external_test_go(),
+        manifest: project.artifacts.external_test_manifest(),
+    }));
+    Ok(ProjectTestCommandPlan {
+        commands,
+        groups: vec![external_test_run_group(&project.artifacts)],
+    })
+}
+
+fn internal_test_run_group(artifacts: &ArtifactLayout) -> TestRunGroup {
+    TestRunGroup {
+        kind: TestKind::Internal,
+        go_output: artifacts.internal_test_go(),
+        manifest: artifacts.internal_test_manifest(),
+        runner: artifacts.internal_test_runner(),
+    }
+}
+
+fn external_test_run_group(artifacts: &ArtifactLayout) -> TestRunGroup {
+    TestRunGroup {
+        kind: TestKind::External,
+        go_output: artifacts.external_test_go(),
+        manifest: artifacts.external_test_manifest(),
+        runner: artifacts.external_test_runner(),
+    }
+}
+
 fn build_project_plan(
     project: &ProjectContext,
     stage: ProjectStage,
 ) -> anyhow::Result<ProjectCommandPlan> {
-    let external = build_external_packages_plan(project, stage.output_root())?;
+    let output_root = stage.output_root(&project.artifacts);
+    let external = build_external_packages_plan(project, &output_root)?;
     let external_imports =
         goml_project::package_graph::ExternalImports::new(external.declared_names.clone());
-    let graph = goml_project::package_graph::discover_project_packages(
-        &project.module_dir,
-        &project.entry_path,
-        &external_imports,
-    )
+    let graph = match stage {
+        ProjectStage::Test => goml_project::package_graph::discover_project_test_packages(
+            &project.module_dir,
+            &project.entry_path,
+            &external_imports,
+        ),
+        ProjectStage::TestCheck => goml_project::package_graph::discover_project_test_packages(
+            &project.module_dir,
+            &project.entry_path,
+            &external_imports,
+        ),
+        ProjectStage::Check | ProjectStage::Build => {
+            goml_project::package_graph::discover_project_packages(
+                &project.module_dir,
+                &project.entry_path,
+                &external_imports,
+            )
+        }
+    }
     .map_err(|err| anyhow!("{} failed: {}", stage.label(), err))?;
+    build_graph_plan(project, stage, external, graph)
+}
+
+fn build_graph_plan(
+    project: &ProjectContext,
+    stage: ProjectStage,
+    external: ExternalPackagesPlan,
+    graph: goml_project::package_graph::PackageGraph,
+) -> anyhow::Result<ProjectCommandPlan> {
+    let output_root = stage.output_root(&project.artifacts);
     let local_order = goml_project::package_graph::topo_sort_packages(&graph)
         .map_err(|err| anyhow!("{} failed: {}", stage.label(), err))?;
 
@@ -616,7 +1142,7 @@ fn build_project_plan(
             BuildPackage {
                 input_files: sorted_relative_inputs(&project.module_dir, &package.files),
                 imports: package.imports.clone(),
-                output: local_artifact_base(stage.output_root(), &package_name),
+                output: local_artifact_base(&output_root, &package_name),
             },
         );
         order.push(package_name);
@@ -644,10 +1170,18 @@ fn build_project_plan(
         };
         commands.push(match stage {
             ProjectStage::Check => PlannedCompilerCommand::Check(command),
+            ProjectStage::TestCheck if package_name == graph.entry_package => {
+                PlannedCompilerCommand::TestCheck(command)
+            }
+            ProjectStage::TestCheck => PlannedCompilerCommand::Check(command),
             ProjectStage::Build => PlannedCompilerCommand::Build(command),
+            ProjectStage::Test if package_name == graph.entry_package => {
+                PlannedCompilerCommand::TestBuild(command)
+            }
+            ProjectStage::Test => PlannedCompilerCommand::Build(command),
         });
         interface_outputs.insert(package_name, package.output.with_extension("interface"));
-        if matches!(stage, ProjectStage::Build) {
+        if matches!(stage, ProjectStage::Build | ProjectStage::Test) {
             core_outputs.push(package.output.with_extension("core"));
         }
     }
@@ -656,7 +1190,14 @@ fn build_project_plan(
         commands.push(PlannedCompilerCommand::Link(LinkCompilerCommand {
             input_cores: core_outputs,
             entry_package: graph.entry_package,
-            output: PathBuf::from(PROJECT_GO_OUTPUT),
+            output: project.artifacts.main_go(),
+        }));
+    } else if matches!(stage, ProjectStage::Test) {
+        commands.push(PlannedCompilerCommand::TestLink(TestLinkCompilerCommand {
+            input_cores: core_outputs,
+            packages: vec![graph.entry_package],
+            output: project.artifacts.internal_test_go(),
+            manifest: project.artifacts.internal_test_manifest(),
         }));
     }
     Ok(ProjectCommandPlan { commands })
@@ -664,7 +1205,7 @@ fn build_project_plan(
 
 fn build_external_packages_plan(
     project: &ProjectContext,
-    output_root: &str,
+    output_root: &Path,
 ) -> anyhow::Result<ExternalPackagesPlan> {
     if project.dependencies.is_empty() {
         return Ok(ExternalPackagesPlan::default());
@@ -732,11 +1273,11 @@ fn build_external_packages_plan(
 }
 
 fn external_artifact_base(
-    output_root: &str,
+    output_root: &Path,
     module: &goml_project::registry::ResolvedModule,
     package: &str,
 ) -> PathBuf {
-    let mut path = PathBuf::from(output_root)
+    let mut path = output_root
         .join("deps")
         .join(&module.coord.owner)
         .join(&module.coord.module)
@@ -748,8 +1289,8 @@ fn external_artifact_base(
     path.join("package")
 }
 
-fn local_artifact_base(output_root: &str, package: &str) -> PathBuf {
-    let mut path = PathBuf::from(output_root).join("pkg");
+fn local_artifact_base(output_root: &Path, package: &str) -> PathBuf {
+    let mut path = output_root.join("pkg");
     for segment in package.split("::") {
         path.push(segment);
     }
@@ -820,6 +1361,420 @@ fn relative_to_module(module_dir: &Path, path: &Path) -> PathBuf {
         .unwrap_or_else(|_| path.to_path_buf())
 }
 
+#[derive(Debug, Clone, serde::Deserialize)]
+struct TestManifestEntry {
+    id: String,
+    display_name: String,
+    source_path: String,
+    ignored: bool,
+    ignore_reason: Option<String>,
+}
+
+#[derive(Clone)]
+struct ScheduledTest {
+    test: TestManifestEntry,
+    kind: TestKind,
+    runner: PathBuf,
+}
+
+enum TestExecutionStatus {
+    Passed,
+    Failed(Option<i32>),
+    TimedOut,
+    Ignored,
+}
+
+struct TestExecution {
+    test: TestManifestEntry,
+    kind: TestKind,
+    status: TestExecutionStatus,
+    stdout: Vec<u8>,
+    stderr: Vec<u8>,
+    duration: Duration,
+}
+
+fn execute_test_runner(
+    module_dir: &Path,
+    groups: &[TestRunGroup],
+    args: &TestCommandArgs,
+) -> anyhow::Result<()> {
+    if matches!(args.format, TestOutputFormat::Json) && args.nocapture {
+        bail!("--nocapture cannot be combined with --format json");
+    }
+    let mut tests = Vec::new();
+    for group in groups {
+        let manifest_path = module_dir.join(&group.manifest);
+        let manifest = fs::read_to_string(&manifest_path)
+            .with_context(|| format!("failed to read {}", manifest_path.display()))?;
+        let entries: Vec<TestManifestEntry> = serde_json::from_str(&manifest)
+            .with_context(|| format!("failed to parse {}", manifest_path.display()))?;
+        tests.extend(entries.into_iter().map(|test| ScheduledTest {
+            test,
+            kind: group.kind,
+            runner: module_dir.join(&group.runner),
+        }));
+    }
+    tests.retain(|test| {
+        args.filter
+            .as_ref()
+            .is_none_or(|filter| test.test.display_name.contains(filter))
+    });
+    if args.ignored {
+        tests.retain(|test| test.test.ignored);
+    }
+    tests.sort_by(|left, right| left.test.display_name.cmp(&right.test.display_name));
+
+    if args.list {
+        for test in tests {
+            match args.format {
+                TestOutputFormat::Text => {
+                    if test.test.ignored {
+                        println!("{}: ignored", test.test.display_name);
+                    } else {
+                        println!("{}", test.test.display_name);
+                    }
+                }
+                TestOutputFormat::Json => println!(
+                    "{}",
+                    serde_json::json!({
+                        "event": "test",
+                        "name": test.test.display_name,
+                        "kind": test_kind_name(test.kind),
+                        "ignored": test.test.ignored,
+                        "reason": test.test.ignore_reason,
+                    })
+                ),
+            }
+        }
+        return Ok(());
+    }
+
+    let runnable = tests
+        .iter()
+        .any(|test| !test.test.ignored || args.ignored || args.include_ignored);
+    if runnable {
+        for group in groups {
+            if tests.iter().any(|test| {
+                test.kind == group.kind
+                    && (!test.test.ignored || args.ignored || args.include_ignored)
+            }) {
+                build_test_runner(module_dir, group)?;
+            }
+        }
+    }
+    if matches!(args.format, TestOutputFormat::Text) {
+        println!("running {} tests\n", tests.len());
+        std::io::stdout().flush()?;
+    }
+    let executions = execute_tests(module_dir, tests, args)?;
+    report_test_executions(&executions, args.format)?;
+    let failures = executions
+        .iter()
+        .filter(|execution| {
+            matches!(
+                execution.status,
+                TestExecutionStatus::Failed(_) | TestExecutionStatus::TimedOut
+            )
+        })
+        .count();
+    if failures > 0 {
+        bail!("{failures} test(s) failed");
+    }
+    Ok(())
+}
+
+fn build_test_runner(module_dir: &Path, group: &TestRunGroup) -> anyhow::Result<()> {
+    let runner = module_dir.join(&group.runner);
+    let status = Command::new("go")
+        .args(["build", "-o"])
+        .arg(&runner)
+        .arg(&group.go_output)
+        .current_dir(module_dir)
+        .stdin(Stdio::null())
+        .status()
+        .context("failed to execute go build for test runner")?;
+    if !status.success() {
+        bail!("go build failed for test runner with status {status}");
+    }
+    Ok(())
+}
+
+fn execute_tests(
+    module_dir: &Path,
+    tests: Vec<ScheduledTest>,
+    args: &TestCommandArgs,
+) -> anyhow::Result<Vec<TestExecution>> {
+    let count = tests.len();
+    let next = AtomicUsize::new(0);
+    let results = Mutex::new(
+        (0..count)
+            .map(|_| None)
+            .collect::<Vec<Option<anyhow::Result<TestExecution>>>>(),
+    );
+    let worker_count = args.jobs.min(count.max(1));
+    thread::scope(|scope| {
+        for _ in 0..worker_count {
+            scope.spawn(|| {
+                loop {
+                    let index = next.fetch_add(1, Ordering::Relaxed);
+                    let Some(scheduled) = tests.get(index).cloned() else {
+                        break;
+                    };
+                    let execution =
+                        if scheduled.test.ignored && !args.ignored && !args.include_ignored {
+                            Ok(TestExecution {
+                                test: scheduled.test,
+                                kind: scheduled.kind,
+                                status: TestExecutionStatus::Ignored,
+                                stdout: Vec::new(),
+                                stderr: Vec::new(),
+                                duration: Duration::ZERO,
+                            })
+                        } else {
+                            run_test_case(module_dir, scheduled, args.timeout, args.nocapture)
+                        };
+                    if let Ok(mut results) = results.lock() {
+                        results[index] = Some(execution);
+                    }
+                }
+            });
+        }
+    });
+    let results = results
+        .into_inner()
+        .map_err(|_| anyhow!("test worker results were poisoned"))?;
+    results
+        .into_iter()
+        .map(|result| result.ok_or_else(|| anyhow!("test worker did not produce a result"))?)
+        .collect()
+}
+
+fn run_test_case(
+    module_dir: &Path,
+    scheduled: ScheduledTest,
+    timeout: Duration,
+    nocapture: bool,
+) -> anyhow::Result<TestExecution> {
+    let mut command = Command::new(&scheduled.runner);
+    command
+        .arg(&scheduled.test.id)
+        .current_dir(module_dir)
+        .env("TZ", "UTC")
+        .stdin(Stdio::null());
+    if nocapture {
+        command.stdout(Stdio::inherit()).stderr(Stdio::inherit());
+    } else {
+        command.stdout(Stdio::piped()).stderr(Stdio::piped());
+    }
+    let start = Instant::now();
+    let mut child = command
+        .spawn()
+        .with_context(|| format!("failed to run test {}", scheduled.test.display_name))?;
+    let stdout_reader = child.stdout.take().map(|mut stdout| {
+        thread::spawn(move || {
+            let mut bytes = Vec::new();
+            let _ = stdout.read_to_end(&mut bytes);
+            bytes
+        })
+    });
+    let stderr_reader = child.stderr.take().map(|mut stderr| {
+        thread::spawn(move || {
+            let mut bytes = Vec::new();
+            let _ = stderr.read_to_end(&mut bytes);
+            bytes
+        })
+    });
+    let mut timed_out = false;
+    let exit_status = loop {
+        if let Some(status) = child.try_wait().context("failed to poll test process")? {
+            break status;
+        }
+        if start.elapsed() >= timeout {
+            timed_out = true;
+            child.kill().context("failed to terminate timed out test")?;
+            break child.wait().context("failed to reap timed out test")?;
+        }
+        thread::sleep(Duration::from_millis(10));
+    };
+    let stdout = join_output_reader(stdout_reader)?;
+    let stderr = join_output_reader(stderr_reader)?;
+    let status = if timed_out {
+        TestExecutionStatus::TimedOut
+    } else if exit_status.success() {
+        TestExecutionStatus::Passed
+    } else {
+        TestExecutionStatus::Failed(exit_status.code())
+    };
+    Ok(TestExecution {
+        test: scheduled.test,
+        kind: scheduled.kind,
+        status,
+        stdout,
+        stderr,
+        duration: start.elapsed(),
+    })
+}
+
+fn join_output_reader(reader: Option<thread::JoinHandle<Vec<u8>>>) -> anyhow::Result<Vec<u8>> {
+    match reader {
+        Some(reader) => reader
+            .join()
+            .map_err(|_| anyhow!("test output reader panicked")),
+        None => Ok(Vec::new()),
+    }
+}
+
+fn report_test_executions(
+    executions: &[TestExecution],
+    format: TestOutputFormat,
+) -> anyhow::Result<()> {
+    let passed = executions
+        .iter()
+        .filter(|execution| matches!(execution.status, TestExecutionStatus::Passed))
+        .count();
+    let failed = executions
+        .iter()
+        .filter(|execution| {
+            matches!(
+                execution.status,
+                TestExecutionStatus::Failed(_) | TestExecutionStatus::TimedOut
+            )
+        })
+        .count();
+    let ignored = executions
+        .iter()
+        .filter(|execution| matches!(execution.status, TestExecutionStatus::Ignored))
+        .count();
+    match format {
+        TestOutputFormat::Text => {
+            for execution in executions {
+                report_text_test_execution(execution);
+            }
+            println!(
+                "\nresult: {}. {} passed; {} failed; {} ignored",
+                if failed == 0 { "ok" } else { "FAILED" },
+                passed,
+                failed,
+                ignored
+            );
+        }
+        TestOutputFormat::Json => {
+            for execution in executions {
+                println!(
+                    "{}",
+                    serde_json::json!({
+                        "event": "result",
+                        "id": execution.test.id,
+                        "name": execution.test.display_name,
+                        "kind": test_kind_name(execution.kind),
+                        "status": test_status_name(&execution.status),
+                        "reason": execution.test.ignore_reason,
+                        "exit_code": test_exit_code(&execution.status),
+                        "duration_ms": execution.duration.as_secs_f64() * 1000.0,
+                        "stdout": String::from_utf8_lossy(&execution.stdout),
+                        "stderr": String::from_utf8_lossy(&execution.stderr),
+                        "source": execution.test.source_path,
+                    })
+                );
+            }
+            println!(
+                "{}",
+                serde_json::json!({
+                    "event": "summary",
+                    "passed": passed,
+                    "failed": failed,
+                    "ignored": ignored,
+                })
+            );
+        }
+    }
+    Ok(())
+}
+
+fn report_text_test_execution(execution: &TestExecution) {
+    let status = match execution.status {
+        TestExecutionStatus::Passed => "ok".to_string(),
+        TestExecutionStatus::Ignored => execution.test.ignore_reason.as_ref().map_or_else(
+            || "ignored".to_string(),
+            |reason| format!("ignored: {reason}"),
+        ),
+        TestExecutionStatus::TimedOut => "FAILED (timed out)".to_string(),
+        TestExecutionStatus::Failed(Some(code)) => format!("FAILED (exit code {code})"),
+        TestExecutionStatus::Failed(None) => "FAILED (terminated by signal)".to_string(),
+    };
+    println!("test {} ... {}", execution.test.display_name, status);
+    if matches!(
+        execution.status,
+        TestExecutionStatus::Failed(_) | TestExecutionStatus::TimedOut
+    ) {
+        if !execution.stdout.is_empty() {
+            println!("---- stdout ----");
+            print!("{}", String::from_utf8_lossy(&execution.stdout));
+        }
+        if !execution.stderr.is_empty() {
+            println!("---- stderr ----");
+            print!("{}", String::from_utf8_lossy(&execution.stderr));
+        }
+        println!("at {}", execution.test.source_path);
+    }
+}
+
+fn test_status_name(status: &TestExecutionStatus) -> &'static str {
+    match status {
+        TestExecutionStatus::Passed => "passed",
+        TestExecutionStatus::Failed(_) => "failed",
+        TestExecutionStatus::TimedOut => "timed_out",
+        TestExecutionStatus::Ignored => "ignored",
+    }
+}
+
+fn test_exit_code(status: &TestExecutionStatus) -> Option<i32> {
+    match status {
+        TestExecutionStatus::Failed(code) => *code,
+        _ => None,
+    }
+}
+
+fn test_kind_name(kind: TestKind) -> &'static str {
+    match kind {
+        TestKind::Internal => "internal",
+        TestKind::External => "external",
+        TestKind::All => "all",
+    }
+}
+
+fn parse_duration(value: &str) -> Result<Duration, String> {
+    let (number, multiplier) = if let Some(value) = value.strip_suffix("ms") {
+        (value, 1u64)
+    } else if let Some(value) = value.strip_suffix('s') {
+        (value, 1_000)
+    } else if let Some(value) = value.strip_suffix('m') {
+        (value, 60_000)
+    } else {
+        return Err("duration must end in ms, s, or m".to_string());
+    };
+    let number = number
+        .parse::<u64>()
+        .map_err(|_| format!("invalid duration `{value}`"))?;
+    if number == 0 {
+        return Err("duration must be greater than zero".to_string());
+    }
+    number
+        .checked_mul(multiplier)
+        .map(Duration::from_millis)
+        .ok_or_else(|| "duration is too large".to_string())
+}
+
+fn parse_positive_usize(value: &str) -> Result<usize, String> {
+    let value = value
+        .parse::<usize>()
+        .map_err(|_| format!("invalid positive integer `{value}`"))?;
+    if value == 0 {
+        return Err("value must be greater than zero".to_string());
+    }
+    Ok(value)
+}
+
 fn execute_planned_commands(
     module_dir: &Path,
     commands: Vec<PlannedCompilerCommand>,
@@ -858,49 +1813,140 @@ fn shell_escape(arg: &str) -> String {
     }
 }
 
-fn load_project(target: &Path) -> anyhow::Result<ProjectContext> {
+fn load_project(
+    target: &Path,
+    target_dir_override: Option<&Path>,
+) -> anyhow::Result<ProjectContext> {
     let cwd = std::env::current_dir().context("failed to read current directory")?;
     let target = if target.is_absolute() {
         target.to_path_buf()
     } else {
         cwd.join(target)
     };
-    let (target_dir, entry_path) = if target.is_file() {
-        let dir = target
-            .parent()
-            .filter(|path| !path.as_os_str().is_empty())
-            .unwrap_or_else(|| Path::new("."))
-            .to_path_buf();
-        (dir, target)
-    } else if target.is_dir() {
-        let mut sources = fs::read_dir(&target)
-            .with_context(|| format!("failed to read package directory {}", target.display()))?
-            .filter_map(Result::ok)
-            .map(|entry| entry.path())
-            .filter(|path| path.is_file() && path.extension().is_some_and(|ext| ext == "gom"))
-            .collect::<Vec<_>>();
-        sources.sort();
-        let entry = sources
-            .first()
-            .cloned()
-            .ok_or_else(|| anyhow!("package directory {} has no .gom files", target.display()))?;
-        (target, entry)
+    if !target.exists() {
+        bail!("target {} does not exist", target.display());
+    }
+    let target = target
+        .canonicalize()
+        .with_context(|| format!("failed to resolve target {}", target.display()))?;
+    let search_dir = if target.is_file() {
+        target.parent().unwrap_or_else(|| Path::new("."))
     } else {
-        bail!("build target {} does not exist", target.display());
+        target.as_path()
     };
-    let (module_dir, _) = find_module_root(&target_dir)
+    let (module_dir, _) = find_module_root(search_dir)
         .map_err(anyhow::Error::msg)?
         .ok_or_else(|| {
             anyhow!(
                 "no goml.toml with [module] section found in ancestors of {}",
-                target_dir.display()
+                search_dir.display()
             )
         })?;
     let manifest =
         load_module_manifest(&module_dir.join("goml.toml")).map_err(anyhow::Error::msg)?;
+    let artifact_root =
+        resolve_artifact_root(&module_dir, &manifest.build.target_dir, target_dir_override)?;
+    let absolute_artifact_root = if artifact_root.is_absolute() {
+        artifact_root.clone()
+    } else {
+        module_dir.join(&artifact_root)
+    };
+    if target.starts_with(&absolute_artifact_root) {
+        bail!(
+            "target {} is inside build target directory {}",
+            target.display(),
+            absolute_artifact_root.display()
+        );
+    }
+    let (target_dir, target_role) =
+        match goml_project::package_graph::classify_project_path(&module_dir, &target)
+            .map_err(anyhow::Error::msg)?
+        {
+            goml_project::package_graph::ProjectPathRole::Production => {
+                let target_dir = if target.is_file() {
+                    target
+                        .parent()
+                        .unwrap_or_else(|| Path::new("."))
+                        .to_path_buf()
+                } else {
+                    target.clone()
+                };
+                (target_dir, ProjectTargetRole::Production)
+            }
+            goml_project::package_graph::ProjectPathRole::InternalTest => (
+                target
+                    .parent()
+                    .unwrap_or_else(|| Path::new("."))
+                    .to_path_buf(),
+                ProjectTargetRole::InternalTest,
+            ),
+            goml_project::package_graph::ProjectPathRole::ExternalTest {
+                target_dir,
+                suite_dir,
+            } => (target_dir, ProjectTargetRole::ExternalTest { suite_dir }),
+        };
+    let entry_path = if target.is_file()
+        && matches!(&target_role, ProjectTargetRole::Production)
+        && !goml_project::package_graph::is_internal_test_source(&target)
+    {
+        target
+    } else {
+        first_production_source(&target_dir)?
+    };
     Ok(ProjectContext {
         module_dir,
         entry_path,
+        target_role,
         dependencies: manifest.dependencies,
+        artifacts: ArtifactLayout::new(artifact_root),
+    })
+}
+
+fn resolve_artifact_root(
+    module_dir: &Path,
+    configured: &Path,
+    target_dir_override: Option<&Path>,
+) -> anyhow::Result<PathBuf> {
+    let target_dir = target_dir_override.unwrap_or(configured);
+    if target_dir.is_absolute() {
+        let mut has_segment = false;
+        for component in target_dir.components() {
+            match component {
+                Component::Normal(_) => has_segment = true,
+                Component::ParentDir => {
+                    bail!("target-dir must not contain parent directory components")
+                }
+                Component::CurDir | Component::RootDir | Component::Prefix(_) => {}
+            }
+        }
+        if !has_segment {
+            bail!("target-dir must not be a filesystem root");
+        }
+        if target_dir == module_dir {
+            bail!("target-dir must not be the module root");
+        }
+        return Ok(target_dir.to_path_buf());
+    }
+    validate_manifest_target_dir(target_dir).map_err(anyhow::Error::msg)?;
+    Ok(target_dir.to_path_buf())
+}
+
+fn first_production_source(package_dir: &Path) -> anyhow::Result<PathBuf> {
+    let mut sources = fs::read_dir(package_dir)
+        .with_context(|| format!("failed to read package directory {}", package_dir.display()))?
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
+        .filter(|path| {
+            path.is_file()
+                && path.extension().is_some_and(|extension| extension == "gom")
+                && !goml_project::package_graph::is_internal_test_source(path)
+        })
+        .collect::<Vec<_>>();
+    sources.sort();
+    sources.into_iter().next().ok_or_else(|| {
+        anyhow!(
+            "package directory {} has no .gom files",
+            package_dir.display()
+        )
     })
 }

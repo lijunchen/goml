@@ -112,20 +112,20 @@ fn std::fs::read_dir(path/12: string) -> Result__Vec[string]__string {
 
 fn show_read(res/0: Result__string__string) -> string {
   match res/0 {
-    Result__string__string::Ok(x4) => {
+    Result__string__string::Ok(x22) => {
       {
-        let x4 = Result__string__string::Ok._0(res/0) in
+        let x22 = Result__string__string::Ok._0(res/0) in
         {
-          let value/1 = x4 in
+          let value/1 = x22 in
           value/1
         }
       }
     },
-    Result__string__string::Err(x5) => {
+    Result__string__string::Err(x23) => {
       {
-        let x5 = Result__string__string::Err._0(res/0) in
+        let x23 = Result__string__string::Err._0(res/0) in
         {
-          let err/2 = x5 in
+          let err/2 = x23 in
           ("err " + err/2)
         }
       }
@@ -135,20 +135,20 @@ fn show_read(res/0: Result__string__string) -> string {
 
 fn show_dir(res/3: Result__Vec[string]__string) -> string {
   match res/3 {
-    Result__Vec[string]__string::Ok(x6) => {
+    Result__Vec[string]__string::Ok(x24) => {
       {
-        let x6 = Result__Vec[string]__string::Ok._0(res/3) in
+        let x24 = Result__Vec[string]__string::Ok._0(res/3) in
         {
-          let names/4 = x6 in
+          let names/4 = x24 in
           trait_impl#ToString#bool#to_string((inherent#Vec#Vec[T]#len__T_string(names/4) > 0))
         }
       }
     },
-    Result__Vec[string]__string::Err(x7) => {
+    Result__Vec[string]__string::Err(x25) => {
       {
-        let x7 = Result__Vec[string]__string::Err._0(res/3) in
+        let x25 = Result__Vec[string]__string::Err._0(res/3) in
         {
-          let err/5 = x7 in
+          let err/5 = x25 in
           ("err " + err/5)
         }
       }
@@ -157,16 +157,16 @@ fn show_dir(res/3: Result__Vec[string]__string) -> string {
 }
 
 fn main() -> unit {
-  let mtmp8 = std::fs::write_file("goml-std-test.txt", "std-ok") in
+  let mtmp26 = std::fs::write_file("goml-std-test.txt", "std-ok") in
   {
-    let _wild9 = std::io::println__T_string(show_read(std::fs::read_file("goml-std-test.txt"))) in
-    let _wild10 = std::io::println__T_string(trait_impl#ToString#bool#to_string(std::fs::exists("goml-std-test.txt"))) in
-    let _wild11 = std::io::println__T_string(show_dir(std::fs::read_dir("."))) in
+    let _wild27 = std::io::println__T_string(show_read(std::fs::read_file("goml-std-test.txt"))) in
+    let _wild28 = std::io::println__T_string(trait_impl#ToString#bool#to_string(std::fs::exists("goml-std-test.txt"))) in
+    let _wild29 = std::io::println__T_string(show_dir(std::fs::read_dir("."))) in
   }
 }
 
-fn inherent#Vec#Vec[T]#len__T_string(self/82: Vec[string]) -> int32 {
-  @intrinsic(vec.len)(self/82)
+fn inherent#Vec#Vec[T]#len__T_string(self/108: Vec[string]) -> int32 {
+  @intrinsic(vec.len)(self/108)
 }
 
 fn trait_impl#ToString#bool#to_string(self/8: bool) -> string {

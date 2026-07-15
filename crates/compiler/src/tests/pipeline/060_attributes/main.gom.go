@@ -40,53 +40,53 @@ type Write struct {
 func (_ Write) isMessage() {}
 
 func _goml_m_trait__impl_i_ToString_i_Point_i_to__string(self__0 Point) string {
-    var retv15 string
-    var mtmp4 Point = self__0
-    var x5 int32 = mtmp4.x
-    var x6 int32 = mtmp4.y
-    var y__2 int32 = x6
-    var x__1 int32 = x5
-    var t16 string = "Point { " + "x: "
-    var t17 string = _goml_m_inherent_i_int32_i_int32_i_to__string(x__1)
-    var t18 string = t16 + t17
-    var t19 string = t18 + ", "
-    var t20 string = t19 + "y: "
-    var t21 string = _goml_m_inherent_i_int32_i_int32_i_to__string(y__2)
-    var t22 string = t20 + t21
-    var t23 string = t22 + " }"
-    retv15 = t23
-    return retv15
+    var retv33 string
+    var mtmp22 Point = self__0
+    var x23 int32 = mtmp22.x
+    var x24 int32 = mtmp22.y
+    var y__2 int32 = x24
+    var x__1 int32 = x23
+    var t34 string = "Point { " + "x: "
+    var t35 string = _goml_m_inherent_i_int32_i_int32_i_to__string(x__1)
+    var t36 string = t34 + t35
+    var t37 string = t36 + ", "
+    var t38 string = t37 + "y: "
+    var t39 string = _goml_m_inherent_i_int32_i_int32_i_to__string(y__2)
+    var t40 string = t38 + t39
+    var t41 string = t40 + " }"
+    retv33 = t41
+    return retv33
 }
 
 func _goml_m_trait__impl_i_ToString_i_Message_i_to__string(self__3 Message) string {
-    var retv25 string
-    var jp27 string
+    var retv43 string
+    var jp45 string
     switch self__3.(type) {
     case Quit:
-        jp27 = "Message::Quit"
+        jp45 = "Message::Quit"
     case Move:
-        var x7 int32 = self__3.(Move)._0
-        var x8 int32 = self__3.(Move)._1
-        var __field1__5 int32 = x8
-        var __field0__4 int32 = x7
-        var t28 string = _goml_m_inherent_i_int32_i_int32_i_to__string(__field0__4)
-        var t29 string = "Message::Move(" + t28
-        var t30 string = t29 + ", "
-        var t31 string = _goml_m_inherent_i_int32_i_int32_i_to__string(__field1__5)
-        var t32 string = t30 + t31
-        var t33 string = t32 + ")"
-        jp27 = t33
+        var x25 int32 = self__3.(Move)._0
+        var x26 int32 = self__3.(Move)._1
+        var __field1__5 int32 = x26
+        var __field0__4 int32 = x25
+        var t46 string = _goml_m_inherent_i_int32_i_int32_i_to__string(__field0__4)
+        var t47 string = "Message::Move(" + t46
+        var t48 string = t47 + ", "
+        var t49 string = _goml_m_inherent_i_int32_i_int32_i_to__string(__field1__5)
+        var t50 string = t48 + t49
+        var t51 string = t50 + ")"
+        jp45 = t51
     case Write:
-        var x9 string = self__3.(Write)._0
-        var __field0__6 string = x9
-        var t34 string = "Message::Write(" + __field0__6
-        var t35 string = t34 + ")"
-        jp27 = t35
+        var x27 string = self__3.(Write)._0
+        var __field0__6 string = x27
+        var t52 string = "Message::Write(" + __field0__6
+        var t53 string = t52 + ")"
+        jp45 = t53
     default:
         panic("non-exhaustive match")
     }
-    retv25 = jp27
-    return retv25
+    retv43 = jp45
+    return retv43
 }
 
 func main0() struct{} {
@@ -95,15 +95,15 @@ func main0() struct{} {
         y: 7,
     }
     var summary__8 string = _goml_m_trait__impl_i_ToString_i_Point_i_to__string(point__7)
-    var t37 Message = Move{
+    var t55 Message = Move{
         _0: 1,
         _1: 2,
     }
-    var mv__9 string = _goml_m_trait__impl_i_ToString_i_Message_i_to__string(t37)
-    var t38 Message = Write{
+    var mv__9 string = _goml_m_trait__impl_i_ToString_i_Message_i_to__string(t55)
+    var t56 Message = Write{
         _0: "done",
     }
-    var text__10 string = _goml_m_trait__impl_i_ToString_i_Message_i_to__string(t38)
+    var text__10 string = _goml_m_trait__impl_i_ToString_i_Message_i_to__string(t56)
     var exit__11 string = _goml_m_trait__impl_i_ToString_i_Message_i_to__string(Quit{})
     println__T_string(summary__8)
     println__T_string(mv__9)
@@ -113,22 +113,22 @@ func main0() struct{} {
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
-    var retv40 string
-    var t41 string = _goml_runtime_core_int32_to_string(self__2)
-    retv40 = t41
-    return retv40
+    var retv58 string
+    var t59 string = _goml_runtime_core_int32_to_string(self__2)
+    retv58 = t59
+    return retv58
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t43 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t43)
+    var t61 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t61)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
-    var retv46 string
-    retv46 = self__9
-    return retv46
+    var retv64 string
+    retv64 = self__9
+    return retv64
 }
 
 func main() {

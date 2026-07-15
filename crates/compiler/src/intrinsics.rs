@@ -156,10 +156,11 @@ pub enum RuntimeHookId {
     StdIoPrintln,
     StdIoEprint,
     StdProcessExit,
+    StdTestingFail,
 }
 
 impl RuntimeHookId {
-    pub const ALL: [Self; 39] = [
+    pub const ALL: [Self; 40] = [
         Self::UnitToString,
         Self::BoolToString,
         Self::StringLen,
@@ -199,6 +200,7 @@ impl RuntimeHookId {
         Self::StdIoPrintln,
         Self::StdIoEprint,
         Self::StdProcessExit,
+        Self::StdTestingFail,
     ];
 
     pub const fn key(self) -> &'static str {
@@ -242,6 +244,7 @@ impl RuntimeHookId {
             Self::StdIoPrintln => "std.io.println",
             Self::StdIoEprint => "std.io.eprint",
             Self::StdProcessExit => "std.process.exit",
+            Self::StdTestingFail => "std.testing.fail",
         }
     }
 
@@ -437,7 +440,7 @@ impl RuntimeHookId {
             | Self::StdIoPrint
             | Self::StdIoPrintln
             | Self::StdIoEprint => CallEffect::Host,
-            Self::StdProcessExit => CallEffect::Diverges,
+            Self::StdProcessExit | Self::StdTestingFail => CallEffect::Diverges,
             _ => CallEffect::Pure,
         }
     }
@@ -452,6 +455,8 @@ pub enum LangItemId {
     Slice,
     Ref,
     HashMap,
+    Iterator,
+    IntoIterator,
     Eq,
     Hash,
     ToString,
@@ -498,11 +503,13 @@ impl LangItemTable {
 }
 
 impl LangItemId {
-    pub const ALL: [Self; 9] = [
+    pub const ALL: [Self; 11] = [
         Self::Vec,
         Self::Slice,
         Self::Ref,
         Self::HashMap,
+        Self::Iterator,
+        Self::IntoIterator,
         Self::Eq,
         Self::Hash,
         Self::ToString,
@@ -516,6 +523,8 @@ impl LangItemId {
             Self::Slice => "slice",
             Self::Ref => "ref",
             Self::HashMap => "hashmap",
+            Self::Iterator => "iterator",
+            Self::IntoIterator => "into_iterator",
             Self::Eq => "eq",
             Self::Hash => "hash",
             Self::ToString => "to_string",
@@ -534,6 +543,8 @@ impl LangItemId {
             Self::Slice => "Slice",
             Self::Ref => "Ref",
             Self::HashMap => "HashMap",
+            Self::Iterator => "Iterator",
+            Self::IntoIterator => "IntoIterator",
             Self::Eq => "Eq",
             Self::Hash => "Hash",
             Self::ToString => "ToString",
@@ -842,6 +853,7 @@ impl RuntimeHookId {
                 signature(vec![Ty::TString], Ty::TUnit)
             }
             Self::StdProcessExit => signature(vec![Ty::TInt32], Ty::TUnit),
+            Self::StdTestingFail => signature(vec![Ty::TString], Ty::TUnit),
         }
     }
 }

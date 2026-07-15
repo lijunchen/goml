@@ -246,6 +246,9 @@ fn extern_decl_with_marker(p: &mut Parser, m: MarkerOpened) {
     if p.eat(T![->]) {
         type_expr(p);
     }
+    if p.at(T![where]) {
+        where_clause(p);
+    }
     p.close(m, MySyntaxKind::EXTERN);
 }
 
@@ -267,6 +270,9 @@ fn func_with_marker(p: &mut Parser, m: MarkerOpened) {
     if p.eat(T![->]) {
         type_expr(p);
     }
+    if p.at(T![where]) {
+        where_clause(p);
+    }
     if p.at(T!['{']) {
         block(p);
     }
@@ -279,46 +285,27 @@ fn impl_block(p: &mut Parser) {
     impl_block_with_marker(p, m);
 }
 
-fn impl_has_trait(p: &mut Parser) -> bool {
-    let mut idx = 0;
-    let tok = p.nth(idx);
-    if !matches!(tok, T![ident]) {
-        return false;
-    }
-    idx += 1;
-    loop {
-        if p.nth(idx) == T![::] {
-            idx += 1;
-            if !matches!(p.nth(idx), T![ident]) {
-                return false;
-            }
-            idx += 1;
-            continue;
-        }
-        break;
-    }
-    p.nth(idx) == T![for]
-}
-
 fn impl_block_with_marker(p: &mut Parser, m: MarkerOpened) {
     p.expect(T![impl]);
     if p.at(T!['[']) {
         generic_list(p, true);
     }
-    if impl_has_trait(p) {
-        parse_path_always(p);
-        p.expect(T![for]);
+    type_expr(p);
+    if p.eat(T![for]) {
         type_expr(p);
-    } else {
-        type_expr(p);
+    }
+    if p.at(T![where]) {
+        where_clause(p);
     }
     if p.at(T!['{']) {
         p.advance();
         while !p.at(T!['}']) && !p.eof() {
             if p.at(T![fn]) {
                 func(p);
+            } else if p.at(T![type]) {
+                impl_associated_type(p);
             } else {
-                p.advance_with_error("expected a function");
+                p.advance_with_error("expected a function or associated type binding");
             }
         }
         p.expect(T!['}']);
@@ -336,7 +323,13 @@ fn trait_def_with_marker(p: &mut Parser, m: MarkerOpened) {
     p.expect(T![trait]);
     p.expect(T![ident]);
     if p.at(T!['[']) {
-        generic_list(p, false);
+        generic_list(p, true);
+    }
+    if p.eat(T![:]) {
+        trait_set(p);
+    }
+    if p.at(T![where]) {
+        where_clause(p);
     }
     if p.at(T!['{']) {
         trait_method_list(p);
@@ -357,8 +350,10 @@ fn trait_method_list(p: &mut Parser) {
         if p.at(T![fn]) {
             trait_method(p);
             p.eat(T![;]);
+        } else if p.at(T![type]) {
+            trait_associated_type(p);
         } else {
-            p.advance_with_error("expected a method");
+            p.advance_with_error("expected a method or associated type");
         }
     }
     p.expect(T!['}']);
@@ -377,6 +372,29 @@ fn trait_method(p: &mut Parser) {
         type_expr(p);
     }
     p.close(m, MySyntaxKind::TRAIT_METHOD_SIG);
+}
+
+fn trait_associated_type(p: &mut Parser) {
+    assert!(p.at(T![type]));
+    let m = p.open();
+    p.expect(T![type]);
+    p.expect(T![ident]);
+    if p.eat(T![:]) {
+        trait_set(p);
+    }
+    p.expect(T![;]);
+    p.close(m, MySyntaxKind::TRAIT_ASSOCIATED_TYPE);
+}
+
+fn impl_associated_type(p: &mut Parser) {
+    assert!(p.at(T![type]));
+    let m = p.open();
+    p.expect(T![type]);
+    p.expect(T![ident]);
+    p.expect(T![=]);
+    type_expr(p);
+    p.expect(T![;]);
+    p.close(m, MySyntaxKind::IMPL_ASSOCIATED_TYPE);
 }
 
 fn enum_def(p: &mut Parser) {
@@ -519,7 +537,7 @@ fn generic(p: &mut Parser, allow_bounds: bool) {
 fn trait_set(p: &mut Parser) {
     let m = p.open();
     if p.at_any(PATH_FIRST) {
-        parse_path_always(p);
+        trait_ref(p);
     } else {
         p.advance_with_error("expected a trait name");
         p.close(m, MySyntaxKind::TRAIT_SET);
@@ -528,13 +546,58 @@ fn trait_set(p: &mut Parser) {
 
     while p.eat(T![+]) {
         if p.at_any(PATH_FIRST) {
-            parse_path_always(p);
+            trait_ref(p);
         } else {
             p.advance_with_error("expected a trait name after '+'");
             break;
         }
     }
     p.close(m, MySyntaxKind::TRAIT_SET);
+}
+
+fn trait_ref(p: &mut Parser) {
+    let m = p.open();
+    parse_path_always(p);
+    if p.at(T!['[']) {
+        type_param_list(p);
+    }
+    p.close(m, MySyntaxKind::TYPE_TAPP);
+}
+
+fn where_clause(p: &mut Parser) {
+    assert!(p.at(T![where]));
+    let m = p.open();
+    p.expect(T![where]);
+    while !p.eof() && !p.at(T!['{']) && !p.at(T![;]) {
+        where_predicate(p);
+        if !p.eat(T![,]) {
+            break;
+        }
+    }
+    p.close(m, MySyntaxKind::WHERE_CLAUSE);
+}
+
+fn where_predicate(p: &mut Parser) {
+    let m = p.open();
+    if p.at_any(TYPE_FIRST) {
+        type_expr(p);
+    } else {
+        p.advance_with_error("expected a type in where predicate");
+        p.close(m, MySyntaxKind::WHERE_PREDICATE);
+        return;
+    }
+    if p.eat(T![:]) {
+        trait_set(p);
+    } else if p.eat(T![==]) {
+        if p.at_any(TYPE_FIRST) {
+            type_expr(p);
+        } else {
+            p.advance_with_error("expected a type after '=='");
+        }
+    } else {
+        p.error("expected ':' or '==' in where predicate");
+    }
+    p.close(m, MySyntaxKind::WHERE_PREDICATE);
 }
 
 fn generic_list(p: &mut Parser, allow_bounds: bool) {
@@ -753,7 +816,7 @@ fn type_atom(p: &mut Parser) -> Option<MarkerClosed> {
     Some(result)
 }
 
-fn type_param_list(p: &mut Parser) {
+pub(crate) fn type_param_list(p: &mut Parser) {
     assert!(p.at(T!['[']));
     let m = p.open();
     p.expect(T!['[']);
@@ -773,6 +836,7 @@ pub fn block(p: &mut Parser) {
     assert!(p.at(T!['{']));
     let m = p.open();
     p.expect(T!['{']);
+    let _struct_literals = p.with_struct_literals_allowed(true);
 
     let mut trailing_expr_seen = false;
 

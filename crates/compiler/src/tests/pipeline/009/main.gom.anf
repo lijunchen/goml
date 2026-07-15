@@ -1,54 +1,54 @@
 fn test(t/0: T) -> unit {
-  join ret10() -> unit {
+  join ret28() -> unit {
     ()
   } in
-  join k11() -> unit {
-    jump ret10()
+  join k29() -> unit {
+    jump ret28()
   } in
   match t/0 {
     Tag_0 => {
-      let t12 = inherent#int32#int32#to_string(1) in
-      let t13 = println__T_string(t12) in
-      jump k11()
+      let t30 = inherent#int32#int32#to_string(1) in
+      let t31 = println__T_string(t30) in
+      jump k29()
     },
     Tag_1 => {
-      let x4 = T::B._0(t/0) in
-      let x5 = T::B._1(t/0) in
-      join k14() -> unit {
-        jump k11()
+      let x22 = T::B._0(t/0) in
+      let x23 = T::B._1(t/0) in
+      join k32() -> unit {
+        jump k29()
       } in
-      match x5 {
+      match x23 {
         true => {
-          join k15() -> unit {
-            jump k14()
+          join k33() -> unit {
+            jump k32()
           } in
-          match x4 {
+          match x22 {
             true => {
-              let t16 = inherent#int32#int32#to_string(4) in
-              let t17 = println__T_string(t16) in
-              jump k15()
+              let t34 = inherent#int32#int32#to_string(4) in
+              let t35 = println__T_string(t34) in
+              jump k33()
             },
             false => {
-              let t18 = inherent#int32#int32#to_string(3) in
-              let t19 = println__T_string(t18) in
-              jump k15()
+              let t36 = inherent#int32#int32#to_string(3) in
+              let t37 = println__T_string(t36) in
+              jump k33()
             },
           }
         },
         false => {
-          join k20() -> unit {
-            jump k14()
+          join k38() -> unit {
+            jump k32()
           } in
-          match x4 {
+          match x22 {
             true => {
-              let t21 = inherent#int32#int32#to_string(4) in
-              let t22 = println__T_string(t21) in
-              jump k20()
+              let t39 = inherent#int32#int32#to_string(4) in
+              let t40 = println__T_string(t39) in
+              jump k38()
             },
             false => {
-              let t23 = inherent#int32#int32#to_string(2) in
-              let t24 = println__T_string(t23) in
-              jump k20()
+              let t41 = inherent#int32#int32#to_string(2) in
+              let t42 = println__T_string(t41) in
+              jump k38()
             },
           }
         },
@@ -58,39 +58,39 @@ fn test(t/0: T) -> unit {
 }
 
 fn main() -> unit {
-  join ret25() -> unit {
+  join ret43() -> unit {
     ()
   } in
-  let t26 = T::B(true, true) in
-  let mtmp6 = test(t26) in
-  let t27 = T::B(false, true) in
-  let mtmp7 = test(t27) in
-  let t28 = T::B(false, false) in
-  let mtmp8 = test(t28) in
-  let mtmp9 = test(Tag_0) in
-  jump ret25()
+  let t44 = T::B(true, true) in
+  let mtmp24 = test(t44) in
+  let t45 = T::B(false, true) in
+  let mtmp25 = test(t45) in
+  let t46 = T::B(false, false) in
+  let mtmp26 = test(t46) in
+  let mtmp27 = test(Tag_0) in
+  jump ret43()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret29() -> unit {
+  join ret47() -> unit {
     ()
   } in
-  let t30 = trait_impl#ToString#string#to_string(value/1) in
-  let t31 = @runtime(core.string_println)(t30) in
-  jump ret29()
+  let t48 = trait_impl#ToString#string#to_string(value/1) in
+  let t49 = @runtime(core.string_println)(t48) in
+  jump ret47()
 }
 
 fn inherent#int32#int32#to_string(self/2: int32) -> string {
-  join ret32(retv33: string) -> string {
-    retv33
+  join ret50(retv51: string) -> string {
+    retv51
   } in
-  let t34 = @runtime(core.int32_to_string)(self/2) in
-  jump ret32(t34)
+  let t52 = @runtime(core.int32_to_string)(self/2) in
+  jump ret50(t52)
 }
 
 fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret35(retv36: string) -> string {
-    retv36
+  join ret53(retv54: string) -> string {
+    retv54
   } in
-  jump ret35(self/9)
+  jump ret53(self/9)
 }

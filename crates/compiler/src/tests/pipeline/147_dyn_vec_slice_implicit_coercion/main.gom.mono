@@ -8,12 +8,12 @@ fn render(x/1: dyn Display) -> string {
 
 fn main() -> unit {
   let v/2 = inherent#Vec#Vec[T]#new__T_dynDisplay() in
-  let _wild4 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/2, to_dyn[Display]{int32}(10)) in
-  let _wild5 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/2, to_dyn[Display]{int32}(20)) in
+  let _wild22 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/2, to_dyn[Display]{int32}(10)) in
+  let _wild23 = inherent#Vec#Vec[T]#push__T_dynDisplay(v/2, to_dyn[Display]{int32}(20)) in
   let s/3 = inherent#Vec#Vec[T]#slice__T_dynDisplay(v/2, 0, 2) in
-  let _wild6 = println__T_string(render(@intrinsic(slice.get)(s/3, 0))) in
+  let _wild24 = println__T_string(render(@intrinsic(slice.get)(s/3, 0))) in
   let t/4 = inherent#Slice#Slice[T]#sub__T_dynDisplay(s/3, 1, 2) in
-  let _wild7 = println__T_string(render(@intrinsic(slice.get)(t/4, 0))) in
+  let _wild25 = println__T_string(render(@intrinsic(slice.get)(t/4, 0))) in
 }
 
 fn inherent#int32#int32#to_string(self/2: int32) -> string {
@@ -24,20 +24,20 @@ fn inherent#Vec#Vec[T]#new__T_dynDisplay() -> Vec[dyn Display] {
   @intrinsic(vec.new)()
 }
 
-fn inherent#Vec#Vec[T]#push__T_dynDisplay(self/71: Vec[dyn Display], elem/72: dyn Display) -> unit {
-  @intrinsic(vec.push)(self/71, elem/72)
+fn inherent#Vec#Vec[T]#push__T_dynDisplay(self/97: Vec[dyn Display], elem/98: dyn Display) -> unit {
+  @intrinsic(vec.push)(self/97, elem/98)
 }
 
-fn inherent#Vec#Vec[T]#slice__T_dynDisplay(self/83: Vec[dyn Display], start/84: int32, end/85: int32) -> Slice[dyn Display] {
-  @intrinsic(slice.new)(self/83, start/84, end/85)
+fn inherent#Vec#Vec[T]#slice__T_dynDisplay(self/109: Vec[dyn Display], start/110: int32, end/111: int32) -> Slice[dyn Display] {
+  @intrinsic(slice.new)(self/109, start/110, end/111)
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#Slice#Slice[T]#sub__T_dynDisplay(self/89: Slice[dyn Display], start/90: int32, end/91: int32) -> Slice[dyn Display] {
-  @intrinsic(slice.sub)(self/89, start/90, end/91)
+fn inherent#Slice#Slice[T]#sub__T_dynDisplay(self/121: Slice[dyn Display], start/122: int32, end/123: int32) -> Slice[dyn Display] {
+  @intrinsic(slice.sub)(self/121, start/122, end/123)
 }
 
 fn trait_impl#ToString#string#to_string(self/9: string) -> string {

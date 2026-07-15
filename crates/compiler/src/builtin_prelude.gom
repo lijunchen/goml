@@ -302,6 +302,140 @@ impl [T: ToString] ToString for Ref[T] {
     }
 }
 
+impl [T] FnIterator[T] {
+    fn from_fn(next_fn: () -> Option[T]) -> Self {
+        FnIterator { next_fn }
+    }
+}
+
+impl [T] Iterator for FnIterator[T] {
+    type Item = T;
+
+    fn next(self: Self) -> Option[T] {
+        self.next_fn()
+    }
+}
+
+impl [A, B, I: Iterator] Iterator for MapIterator[A, B, I]
+where
+    I::Item == A,
+{
+    type Item = B;
+
+    fn next(self: Self) -> Option[B] {
+        match Iterator::next(self.iterator) {
+            Option::Some(value) => Option::Some(self.map_fn(value)),
+            Option::None => Option::None,
+        }
+    }
+}
+
+impl [T, I: Iterator] Iterator for FilterIterator[T, I]
+where
+    I::Item == T,
+{
+    type Item = T;
+
+    fn next(self: Self) -> Option[T] {
+        while true {
+            match Iterator::next(self.iterator) {
+                Option::Some(value) => if self.predicate(value) {
+                    return Option::Some(value)
+                } else {
+                    ()
+                },
+                Option::None => return Option::None,
+            };
+        };
+        Option::None
+    }
+}
+
+impl [I: Iterator] Iterator for TakeIterator[I] {
+    type Item = I::Item;
+
+    fn next(self: Self) -> Option[I::Item] {
+        let remaining = self.remaining.get();
+        if remaining > 0 {
+            self.remaining.set(remaining - 1);
+            Iterator::next(self.iterator)
+        } else {
+            Option::None
+        }
+    }
+}
+
+impl [I: Iterator] IntoIterator for I {
+    type Item = I::Item;
+    type IntoIter = I;
+
+    fn into_iter(self: I) -> I {
+        self
+    }
+}
+
+fn iterator_map[A, B, I: Iterator](
+    iterator: I,
+    map_fn: (A) -> B,
+) -> MapIterator[A, B, I]
+where
+    I::Item == A,
+{
+    MapIterator { iterator, map_fn }
+}
+
+fn iterator_filter[T, I: Iterator](
+    iterator: I,
+    predicate: (T) -> bool,
+) -> FilterIterator[T, I]
+where
+    I::Item == T,
+{
+    FilterIterator { iterator, predicate }
+}
+
+fn iterator_take[I: Iterator](iterator: I, count: int32) -> TakeIterator[I] {
+    let remaining = if count > 0 { count } else { 0 };
+    TakeIterator {
+        iterator,
+        remaining: Ref::new(remaining),
+    }
+}
+
+fn iterator_fold[T, A, I: Iterator](
+    iterator: I,
+    initial: A,
+    combine: (A, T) -> A,
+) -> A
+where
+    I::Item == T,
+{
+    let accumulator = Ref::new(initial);
+    let running = Ref::new(true);
+    while running.get() {
+        match Iterator::next(iterator) {
+            Option::Some(value) => accumulator.set(combine(accumulator.get(), value)),
+            Option::None => running.set(false),
+        };
+    };
+    accumulator.get()
+}
+
+fn iterator_collect[T, I: Iterator](iterator: I) -> Vec[T]
+where
+    I::Item == T,
+{
+    let values: Vec[T] = Vec::new();
+    let running = Ref::new(true);
+    while running.get() {
+        match Iterator::next(iterator) {
+            Option::Some(value) => values.push(value),
+            Option::None => running.set(false),
+        };
+    };
+    values
+}
+
 impl [T] Vec[T] {
     fn new() -> Self {
         vec_new()
@@ -337,6 +471,30 @@ impl [T] Vec[T] {
     fn slice(self: Self, start: int32, end: int32) -> Slice[T] {
         slice(self, start, end)
     }
+
+    fn iter(self: Self) -> FnIterator[T] {
+        let index = Ref::new(0);
+        let len = self.len();
+        FnIterator::from_fn(|| {
+            let current = index.get();
+            if current < len {
+                let value = self.get(current);
+                index.set(current + 1);
+                Option::Some(value)
+            } else {
+                Option::None
+            }
+        })
+    }
+}
+
+impl [T] IntoIterator for Vec[T] {
+    type Item = T;
+    type IntoIter = FnIterator[T];
+
+    fn into_iter(self: Vec[T]) -> FnIterator[T] {
+        self.iter()
+    }
 }
 
 impl [T] Slice[T] {
@@ -350,6 +508,30 @@ impl [T] Slice[T] {
 
     fn sub(self: Self, start: int32, end: int32) -> Self {
         slice_sub(self, start, end)
+    }
+
+    fn iter(self: Self) -> FnIterator[T] {
+        let index = Ref::new(0);
+        let len = self.len();
+        FnIterator::from_fn(|| {
+            let current = index.get();
+            if current < len {
+                let value = self.get(current);
+                index.set(current + 1);
+                Option::Some(value)
+            } else {
+                Option::None
+            }
+        })
+    }
+}
+
+impl [T] IntoIterator for Slice[T] {
+    type Item = T;
+    type IntoIter = FnIterator[T];
+
+    fn into_iter(self: Slice[T]) -> FnIterator[T] {
+        self.iter()
     }
 }
 
@@ -391,4 +573,17 @@ impl [T] Ref[T] {
     fn set(self: Self, value: T) -> unit {
         ref_set(self, value)
     }
+}
+
+fn range(start: int32, end: int32) -> FnIterator[int32] {
+    let current = Ref::new(start);
+    FnIterator::from_fn(|| {
+        let value = current.get();
+        if value < end {
+            current.set(value + 1);
+            Option::Some(value)
+        } else {
+            Option::None
+        }
+    })
 }

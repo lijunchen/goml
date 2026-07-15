@@ -15,8 +15,8 @@ use crate::{
         results::{CallElab, CalleeElab, Coercion, NameRefElab},
         traits::solver::{SelectionResult, SelectionSource, TraitSolver},
         type_ops::{
-            contains_tvar, decompose_struct_type, instantiate_self_ty, same_or_unresolved_ty,
-            substitute_ty_params, type_vars,
+            contains_tvar, decompose_struct_type, same_or_unresolved_ty, substitute_ty_params,
+            type_vars,
         },
     },
 };
@@ -78,12 +78,33 @@ impl Typer {
             variables.extend(type_vars(&typer.norm(ty)));
         };
         match predicate {
-            Predicate::Trait(goal) => add(&goal.for_ty, self),
+            Predicate::Trait(goal) => {
+                add(&goal.for_ty, self);
+                for arg in &goal.trait_ref.args {
+                    add(arg, self);
+                }
+            }
+            Predicate::TypeEquality(goal) => {
+                add(&goal.lhs, self);
+                add(&goal.rhs, self);
+            }
             Predicate::Method(goal) => {
                 add(&goal.receiver_ty, self);
                 add(&goal.call_site_type, self);
             }
             Predicate::Projection(goal) => match goal {
+                ProjectionGoal::AssociatedType {
+                    trait_ref,
+                    for_ty,
+                    result_ty,
+                    ..
+                } => {
+                    add(for_ty, self);
+                    for arg in &trait_ref.args {
+                        add(arg, self);
+                    }
+                    add(result_ty, self);
+                }
                 ProjectionGoal::Field {
                     base_ty, result_ty, ..
                 } => {
@@ -157,6 +178,24 @@ impl Typer {
         } else {
             format!("; required by {}", contexts.join(", then "))
         }
+    }
+
+    fn depends_on_failed_obligation(
+        &self,
+        cause: &ObligationCause,
+        failed: &HashSet<ObligationId>,
+    ) -> bool {
+        let mut parent = cause.parent;
+        while let Some(id) = parent {
+            if failed.contains(&id) {
+                return true;
+            }
+            parent = self
+                .obligation_causes
+                .get(&id)
+                .and_then(|cause| cause.parent);
+        }
+        false
     }
 
     fn push_obligation_error(
@@ -258,19 +297,73 @@ impl Typer {
             else {
                 continue;
             };
-            let trait_name = tast::TastIdent(resolved);
-            let Some(trait_scheme) =
-                trait_env.lookup_trait_method_scheme(&trait_name, &goal.method)
-            else {
+            let Some(definition) = trait_env.trait_env.trait_defs.get(&resolved) else {
                 continue;
             };
+            let mut trait_ref = tast::TraitRef {
+                name: tast::TastIdent(resolved),
+                args: definition
+                    .params
+                    .iter()
+                    .map(|_| self.fresh_ty_var())
+                    .collect(),
+            };
             let trait_goal = TraitGoal {
-                trait_name: trait_name.clone(),
+                trait_ref: trait_ref.clone(),
                 for_ty: goal.receiver_ty.clone(),
             };
-            match trait_solver.select_ground(trait_goal) {
-                SelectionResult::Unique(selection) => {
-                    candidates.push((trait_name, trait_scheme, selection));
+            match trait_solver.select(self, trait_goal) {
+                SelectionResult::Unique(root_selection) => {
+                    for arg in &mut trait_ref.args {
+                        *arg = self.norm(arg);
+                    }
+                    for method_trait_ref in super::util::trait_ref_closure(genv, &trait_ref) {
+                        let Some((_, method_env)) =
+                            super::util::resolve_trait_name(genv, &method_trait_ref.name.0)
+                        else {
+                            continue;
+                        };
+                        let Some(trait_scheme) =
+                            method_env.lookup_trait_method_scheme(&method_trait_ref, &goal.method)
+                        else {
+                            continue;
+                        };
+                        let selection = if method_trait_ref == trait_ref {
+                            SelectionResult::Unique(root_selection.clone())
+                        } else {
+                            trait_solver.select(
+                                self,
+                                TraitGoal {
+                                    trait_ref: method_trait_ref.clone(),
+                                    for_ty: goal.receiver_ty.clone(),
+                                },
+                            )
+                        };
+                        match selection {
+                            SelectionResult::Unique(selection) => {
+                                candidates.push((method_trait_ref, trait_scheme, selection));
+                            }
+                            SelectionResult::Ambiguous(ids) => ambiguous_impls.extend(ids),
+                            SelectionResult::NoSolution => {}
+                            SelectionResult::Overflow => {
+                                diagnostics.push(
+                                    Diagnostic::new(
+                                        Stage::Typer,
+                                        Severity::Error,
+                                        format!(
+                                            "Trait resolution overflow while resolving method {} for {}",
+                                            goal.method.0,
+                                            super::util::format_ty_for_diag(
+                                                &goal.receiver_ty
+                                            )
+                                        ),
+                                    )
+                                    .with_range(cause.span),
+                                );
+                                return MethodGoalOutcome::Failed;
+                            }
+                        }
+                    }
                 }
                 SelectionResult::Ambiguous(ids) => ambiguous_impls.extend(ids),
                 SelectionResult::NoSolution => {}
@@ -291,6 +384,12 @@ impl Typer {
                 }
             }
         }
+
+        candidates.sort_by(|(left, _, _), (right, _, _)| {
+            super::util::format_trait_ref_for_diag(left)
+                .cmp(&super::util::format_trait_ref_for_diag(right))
+        });
+        candidates.dedup_by(|(left, _, _), (right, _, _)| left == right);
 
         if !ambiguous_impls.is_empty() {
             let impls = ambiguous_impls
@@ -314,7 +413,7 @@ impl Typer {
             return MethodGoalOutcome::Failed;
         }
 
-        let [(trait_name, trait_scheme, selection)] = candidates.as_slice() else {
+        let [(trait_ref, trait_scheme, selection)] = candidates.as_slice() else {
             if candidates.is_empty() {
                 super::util::push_error_with_range(
                     diagnostics,
@@ -328,7 +427,7 @@ impl Typer {
             } else {
                 let names = candidates
                     .iter()
-                    .map(|(trait_name, _, _)| trait_name.0.clone())
+                    .map(|(trait_ref, _, _)| super::util::format_trait_ref_for_diag(trait_ref))
                     .collect::<Vec<_>>()
                     .join(", ");
                 super::util::push_error_with_range(
@@ -381,20 +480,18 @@ impl Typer {
                 ObligationCauseKind::FunctionBound,
             ),
         };
-        let instantiated = self.instantiate_scheme_with_substitution(
-            &scheme,
-            substitution,
-            ObligationCause::new(cause.span, obligation_kind).with_parent(parent),
-        );
-        let method_ty = if instantiate_self {
-            instantiate_self_ty(&instantiated.ty, &goal.receiver_ty)
+        let obligation_cause =
+            ObligationCause::new(cause.span, obligation_kind).with_parent(parent);
+        let instantiated = if instantiate_self {
+            self.instantiate_scheme_with_self(&scheme, &goal.receiver_ty, obligation_cause)
         } else {
-            instantiated.ty.clone()
+            self.instantiate_scheme_with_substitution(&scheme, substitution, obligation_cause)
         };
+        let method_ty = instantiated.ty.clone();
         let generated = Self::scheme_obligations(&instantiated);
         let changed_variables =
             self.equate_and_collect(diagnostics, &goal.call_site_type, &method_ty, cause.span);
-        self.record_trait_method_resolution(&goal, trait_name, method_ty);
+        self.record_trait_method_resolution(&goal, trait_ref, method_ty);
         MethodGoalOutcome::Resolved {
             generated,
             changed_variables,
@@ -402,11 +499,7 @@ impl Typer {
     }
 
     fn scheme_obligations(instantiated: &InstantiatedScheme) -> Vec<(Predicate, ObligationCause)> {
-        instantiated
-            .obligations
-            .iter()
-            .map(|(goal, cause)| (Predicate::Trait(goal.clone()), cause.clone()))
-            .collect()
+        instantiated.obligations.clone()
     }
 
     fn record_inherent_method_resolution(&mut self, goal: &MethodGoal, method_ty: tast::Ty) {
@@ -440,7 +533,7 @@ impl Typer {
     fn record_trait_method_resolution(
         &mut self,
         goal: &MethodGoal,
-        trait_name: &tast::TastIdent,
+        trait_ref: &tast::TraitRef,
         method_ty: tast::Ty,
     ) {
         self.results
@@ -448,7 +541,7 @@ impl Typer {
         self.results.record_name_ref_elab(
             goal.func_expr_id,
             NameRefElab::TraitMethod {
-                trait_name: trait_name.clone(),
+                trait_ref: trait_ref.clone(),
                 method_name: goal.method.clone(),
                 ty: method_ty.clone(),
                 astptr: None,
@@ -458,7 +551,7 @@ impl Typer {
             goal.call_expr_id,
             CallElab {
                 callee: CalleeElab::TraitMethod {
-                    trait_name: trait_name.clone(),
+                    trait_ref: trait_ref.clone(),
                     method_name: goal.method.clone(),
                     ty: method_ty,
                     astptr: None,
@@ -472,10 +565,11 @@ impl Typer {
 
     pub fn solve(&mut self, genv: &PackageTypeEnv, diagnostics: &mut Diagnostics) {
         self.reported_unresolved_type_origins.clear();
-        let param_env = ParamEnv::from_bounds(&self.tparam_trait_bounds);
+        let param_env = ParamEnv::from_predicates(&self.param_env_predicates);
         let mut trait_solver = TraitSolver::new(genv, &param_env);
         let mut worklist = ObligationWorklist::new(std::mem::take(&mut self.obligations));
         let mut reported = HashSet::new();
+        let mut failed = HashSet::new();
         let mut allow_trait_inference = false;
 
         loop {
@@ -485,10 +579,27 @@ impl Typer {
                     predicate,
                     cause,
                 } = obligation;
+                if self.depends_on_failed_obligation(&cause, &failed) {
+                    if let Predicate::Projection(ProjectionGoal::AssociatedType {
+                        result_ty, ..
+                    }) = &predicate
+                    {
+                        let variables = type_vars(&self.norm(result_ty));
+                        if self.try_unify_silent(result_ty, &tast::Ty::TUnit) {
+                            worklist.wake(variables);
+                        }
+                    }
+                    continue;
+                }
                 match predicate {
                     Predicate::Trait(mut goal) => {
                         goal.for_ty = self.norm(&goal.for_ty);
-                        if contains_tvar(&goal.for_ty) && !allow_trait_inference {
+                        for arg in &mut goal.trait_ref.args {
+                            *arg = self.norm(arg);
+                        }
+                        let goal_has_tvar = contains_tvar(&goal.for_ty)
+                            || goal.trait_ref.args.iter().any(contains_tvar);
+                        if goal_has_tvar && !allow_trait_inference {
                             let predicate = Predicate::Trait(goal);
                             let variables = self.predicate_type_vars(&predicate);
                             worklist.defer(
@@ -501,19 +612,24 @@ impl Typer {
                             );
                             continue;
                         }
-                        let result = if contains_tvar(&goal.for_ty) {
+                        let result = if goal_has_tvar {
                             trait_solver.select(self, goal.clone())
                         } else {
                             trait_solver.select_ground(goal.clone())
                         };
                         goal.for_ty = self.norm(&goal.for_ty);
-                        let unresolved = contains_tvar(&goal.for_ty);
+                        for arg in &mut goal.trait_ref.args {
+                            *arg = self.norm(arg);
+                        }
+                        let unresolved = contains_tvar(&goal.for_ty)
+                            || goal.trait_ref.args.iter().any(contains_tvar);
                         match result {
                             SelectionResult::Unique(selection) => {
                                 worklist.wake(selection.changed_variables);
                             }
-                            SelectionResult::NoSolution | SelectionResult::Ambiguous(_)
-                                if unresolved =>
+                            SelectionResult::NoSolution
+                                if unresolved
+                                    && !matches!(cause.kind, ObligationCauseKind::ForLoop) =>
                             {
                                 let predicate = Predicate::Trait(goal);
                                 let variables = self.predicate_type_vars(&predicate);
@@ -526,17 +642,46 @@ impl Typer {
                                     variables,
                                 );
                             }
-                            SelectionResult::NoSolution => self.push_obligation_error(
-                                diagnostics,
-                                &mut reported,
-                                format!(
-                                    "No instance found for trait {}<{}>",
-                                    goal.trait_name.0,
-                                    super::util::format_ty_for_diag(&goal.for_ty)
-                                ),
-                                &cause,
-                            ),
+                            SelectionResult::Ambiguous(_) if unresolved => {
+                                let predicate = Predicate::Trait(goal);
+                                let variables = self.predicate_type_vars(&predicate);
+                                worklist.defer(
+                                    Obligation {
+                                        id,
+                                        predicate,
+                                        cause,
+                                    },
+                                    variables,
+                                );
+                            }
+                            SelectionResult::NoSolution => {
+                                if matches!(cause.kind, ObligationCauseKind::ForLoop) {
+                                    failed.insert(id);
+                                }
+                                let message = if matches!(cause.kind, ObligationCauseKind::ForLoop)
+                                {
+                                    format!(
+                                        "for loop expects a type implementing IntoIterator, got {}",
+                                        super::util::format_ty_for_diag(&goal.for_ty)
+                                    )
+                                } else {
+                                    format!(
+                                        "No instance found for trait {}<{}>",
+                                        super::util::format_trait_ref_for_diag(&goal.trait_ref),
+                                        super::util::format_ty_for_diag(&goal.for_ty)
+                                    )
+                                };
+                                self.push_obligation_error(
+                                    diagnostics,
+                                    &mut reported,
+                                    message,
+                                    &cause,
+                                );
+                            }
                             SelectionResult::Ambiguous(ids) => {
+                                if matches!(cause.kind, ObligationCauseKind::ForLoop) {
+                                    failed.insert(id);
+                                }
                                 let candidates = ids
                                     .iter()
                                     .map(|id| trait_solver.describe_candidate(id))
@@ -547,24 +692,34 @@ impl Typer {
                                     &mut reported,
                                     format!(
                                         "Multiple instances found for trait {}<{}> ({})",
-                                        goal.trait_name.0,
+                                        super::util::format_trait_ref_for_diag(&goal.trait_ref),
                                         super::util::format_ty_for_diag(&goal.for_ty),
                                         candidates
                                     ),
                                     &cause,
                                 );
                             }
-                            SelectionResult::Overflow => self.push_obligation_error(
-                                diagnostics,
-                                &mut reported,
-                                format!(
-                                    "Trait resolution overflow for {}<{}>",
-                                    goal.trait_name.0,
-                                    super::util::format_ty_for_diag(&goal.for_ty)
-                                ),
-                                &cause,
-                            ),
+                            SelectionResult::Overflow => {
+                                if matches!(cause.kind, ObligationCauseKind::ForLoop) {
+                                    failed.insert(id);
+                                }
+                                self.push_obligation_error(
+                                    diagnostics,
+                                    &mut reported,
+                                    format!(
+                                        "Trait resolution overflow for {}<{}>",
+                                        super::util::format_trait_ref_for_diag(&goal.trait_ref),
+                                        super::util::format_ty_for_diag(&goal.for_ty)
+                                    ),
+                                    &cause,
+                                )
+                            }
                         }
+                    }
+                    Predicate::TypeEquality(goal) => {
+                        let changed_variables =
+                            self.equate_and_collect(diagnostics, &goal.lhs, &goal.rhs, cause.span);
+                        worklist.wake(changed_variables);
                     }
                     Predicate::Method(goal) => {
                         match self.solve_method_goal(
@@ -601,6 +756,200 @@ impl Typer {
                         }
                     }
                     Predicate::Projection(goal) => match goal {
+                        ProjectionGoal::AssociatedType {
+                            mut trait_ref,
+                            for_ty,
+                            name,
+                            result_ty,
+                        } => {
+                            let for_ty = self.norm(&for_ty);
+                            for arg in &mut trait_ref.args {
+                                *arg = self.norm(arg);
+                            }
+                            let unresolved =
+                                contains_tvar(&for_ty) || trait_ref.args.iter().any(contains_tvar);
+                            if unresolved && !allow_trait_inference {
+                                let predicate =
+                                    Predicate::Projection(ProjectionGoal::AssociatedType {
+                                        trait_ref,
+                                        for_ty,
+                                        name,
+                                        result_ty,
+                                    });
+                                let variables = self.predicate_type_vars(&predicate);
+                                worklist.defer(
+                                    Obligation {
+                                        id,
+                                        predicate,
+                                        cause,
+                                    },
+                                    variables,
+                                );
+                                continue;
+                            }
+                            let trait_goal = TraitGoal {
+                                trait_ref: trait_ref.clone(),
+                                for_ty: for_ty.clone(),
+                            };
+                            let selection = if unresolved {
+                                trait_solver.select(self, trait_goal)
+                            } else {
+                                trait_solver.select_ground(trait_goal)
+                            };
+                            match selection {
+                                SelectionResult::Unique(selection) => match selection.source {
+                                    SelectionSource::Impl {
+                                        definition,
+                                        substitution,
+                                        ..
+                                    } => {
+                                        let Some(binding) =
+                                            definition.associated_types.get(&name.0)
+                                        else {
+                                            self.push_obligation_error(
+                                                diagnostics,
+                                                &mut reported,
+                                                format!(
+                                                    "Selected implementation of {} for {} does not bind associated type {}",
+                                                    super::util::format_trait_ref_for_diag(
+                                                        &trait_ref
+                                                    ),
+                                                    super::util::format_ty_for_diag(&for_ty),
+                                                    name.0
+                                                ),
+                                                &cause,
+                                            );
+                                            continue;
+                                        };
+                                        let binding = substitute_ty_params(binding, &substitution);
+                                        let projection_cause = ObligationCause::new(
+                                            cause.span,
+                                            ObligationCauseKind::Projection,
+                                        )
+                                        .with_parent(id);
+                                        let mut generated = Vec::new();
+                                        let binding = self.lower_associated_projections(
+                                            &binding,
+                                            &projection_cause,
+                                            &mut generated,
+                                        );
+                                        self.equate_and_wake(
+                                            diagnostics,
+                                            &mut worklist,
+                                            &result_ty,
+                                            &binding,
+                                            cause.span,
+                                        );
+                                        worklist.wake(selection.changed_variables);
+                                        for (predicate, cause) in generated {
+                                            let obligation =
+                                                self.new_obligation(predicate, cause);
+                                            worklist.push(obligation);
+                                        }
+                                    }
+                                    SelectionSource::ParamEnv => {
+                                        let projection = tast::Ty::TProjection {
+                                            trait_ref: Some(trait_ref),
+                                            for_ty: Box::new(for_ty),
+                                            name,
+                                        };
+                                        let projection = self.norm(&projection);
+                                        self.equate_and_wake(
+                                            diagnostics,
+                                            &mut worklist,
+                                            &result_ty,
+                                            &projection,
+                                            cause.span,
+                                        );
+                                        worklist.wake(selection.changed_variables);
+                                    }
+                                    SelectionSource::Dyn => {
+                                        self.push_obligation_error(
+                                            diagnostics,
+                                            &mut reported,
+                                            format!(
+                                                "Associated type {} cannot be projected from a trait object",
+                                                name.0
+                                            ),
+                                            &cause,
+                                        );
+                                    }
+                                },
+                                SelectionResult::NoSolution if unresolved => {
+                                    let predicate = Predicate::Projection(
+                                        ProjectionGoal::AssociatedType {
+                                            trait_ref,
+                                            for_ty,
+                                            name,
+                                            result_ty,
+                                        },
+                                    );
+                                    let variables = self.predicate_type_vars(&predicate);
+                                    worklist.defer(
+                                        Obligation {
+                                            id,
+                                            predicate,
+                                            cause,
+                                        },
+                                        variables,
+                                    );
+                                }
+                                SelectionResult::NoSolution => self.push_obligation_error(
+                                    diagnostics,
+                                    &mut reported,
+                                    format!(
+                                        "Cannot resolve associated type {}::{} because {} does not implement {}",
+                                        super::util::format_ty_for_diag(&for_ty),
+                                        name.0,
+                                        super::util::format_ty_for_diag(&for_ty),
+                                        super::util::format_trait_ref_for_diag(&trait_ref)
+                                    ),
+                                    &cause,
+                                ),
+                                SelectionResult::Ambiguous(_) => {
+                                    if unresolved {
+                                        let predicate = Predicate::Projection(
+                                            ProjectionGoal::AssociatedType {
+                                                trait_ref,
+                                                for_ty,
+                                                name,
+                                                result_ty,
+                                            },
+                                        );
+                                        let variables = self.predicate_type_vars(&predicate);
+                                        worklist.defer(
+                                            Obligation {
+                                                id,
+                                                predicate,
+                                                cause,
+                                            },
+                                            variables,
+                                        );
+                                    } else {
+                                        self.push_obligation_error(
+                                            diagnostics,
+                                            &mut reported,
+                                            format!(
+                                                "Associated type {}::{} is ambiguous",
+                                                super::util::format_ty_for_diag(&for_ty),
+                                                name.0
+                                            ),
+                                            &cause,
+                                        );
+                                    }
+                                }
+                                SelectionResult::Overflow => self.push_obligation_error(
+                                    diagnostics,
+                                    &mut reported,
+                                    format!(
+                                        "Associated type resolution overflow for {}::{}",
+                                        super::util::format_ty_for_diag(&for_ty),
+                                        name.0
+                                    ),
+                                    &cause,
+                                ),
+                            }
+                        }
                         ProjectionGoal::Field {
                             base_ty,
                             field,
@@ -796,7 +1145,9 @@ impl Typer {
                             continue;
                         };
                         let trait_goal = TraitGoal {
-                            trait_name: tast::TastIdent(resolved_trait.clone()),
+                            trait_ref: tast::TraitRef::without_args(tast::TastIdent(
+                                resolved_trait.clone(),
+                            )),
                             for_ty: from_ty.clone(),
                         };
                         match trait_solver.select_ground(trait_goal) {
@@ -983,14 +1334,34 @@ impl Typer {
                         .or_insert(obligation.cause.span);
                 }
                 let message = match &obligation.predicate {
+                    Predicate::Trait(goal)
+                        if matches!(obligation.cause.kind, ObligationCauseKind::ForLoop) =>
+                    {
+                        format!(
+                            "Could not infer the iterator type for for loop over {}",
+                            super::util::format_ty_for_diag(&self.norm(&goal.for_ty))
+                        )
+                    }
                     Predicate::Trait(goal) => format!(
                         "Could not infer the type required to prove {}<{}>",
-                        goal.trait_name.0,
+                        super::util::format_trait_ref_for_diag(&goal.trait_ref),
                         super::util::format_ty_for_diag(&self.norm(&goal.for_ty))
+                    ),
+                    Predicate::TypeEquality(goal) => format!(
+                        "Could not infer whether {} equals {}",
+                        super::util::format_ty_for_diag(&self.norm(&goal.lhs)),
+                        super::util::format_ty_for_diag(&self.norm(&goal.rhs))
                     ),
                     Predicate::Method(goal) => format!(
                         "Could not infer the receiver type for method {}",
                         goal.method.0
+                    ),
+                    Predicate::Projection(ProjectionGoal::AssociatedType {
+                        for_ty, name, ..
+                    }) => format!(
+                        "Could not resolve associated type {}::{}",
+                        super::util::format_ty_for_diag(&self.norm(for_ty)),
+                        name.0
                     ),
                     Predicate::Projection(ProjectionGoal::Field { field, .. }) => {
                         format!("Could not infer the base type for field {}", field.0)

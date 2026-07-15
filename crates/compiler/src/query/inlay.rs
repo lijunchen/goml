@@ -1,14 +1,26 @@
-use std::path::Path;
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+};
 
 use parser::syntax::MySyntaxNodePtr;
 
 use crate::{hir, tast};
 
-use super::{InlayHintItem, InlayHintKind, typecheck::typecheck_for_query};
+use super::{InlayHintItem, InlayHintKind, typecheck::typecheck_for_query_with_overrides};
 
 pub fn inlay_hints(path: &Path, src: &str) -> Option<Vec<InlayHintItem>> {
+    inlay_hints_with_overrides(path, src, &HashMap::new())
+}
+
+pub fn inlay_hints_with_overrides(
+    path: &Path,
+    src: &str,
+    source_overrides: &HashMap<PathBuf, String>,
+) -> Option<Vec<InlayHintItem>> {
     crate::pipeline::with_compiler_stack(|| {
-        let (hir_table, results, _genv, _diagnostics) = typecheck_for_query(path, src).ok()?;
+        let (hir_table, results, _genv, _diagnostics) =
+            typecheck_for_query_with_overrides(path, src, source_overrides).ok()?;
 
         let mut hints = Vec::new();
         for idx in 0..hir_table.def_count() {
@@ -119,6 +131,15 @@ fn collect_hints_from_expr(
         }
         hir::Expr::EWhile { cond, body } => {
             collect_hints_from_expr(hir_table, results, *cond, hints);
+            collect_hints_from_expr(hir_table, results, *body, hints);
+        }
+        hir::Expr::EFor {
+            pat,
+            iterator,
+            body,
+        } => {
+            emit_hints_for_pattern(hir_table, results, *pat, hints);
+            collect_hints_from_expr(hir_table, results, *iterator, hints);
             collect_hints_from_expr(hir_table, results, *body, hints);
         }
         hir::Expr::EGo { expr } | hir::Expr::EUnary { expr, .. } | hir::Expr::ETry { expr } => {
@@ -261,6 +282,14 @@ fn contains_type_var(ty: &tast::Ty) -> bool {
             params.iter().any(contains_type_var) || contains_type_var(ret_ty)
         }
         tast::Ty::TApp { ty, args } => contains_type_var(ty) || args.iter().any(contains_type_var),
+        tast::Ty::TProjection {
+            trait_ref, for_ty, ..
+        } => {
+            contains_type_var(for_ty)
+                || trait_ref
+                    .as_ref()
+                    .is_some_and(|trait_ref| trait_ref.args.iter().any(contains_type_var))
+        }
         tast::Ty::TArray { elem, .. } => contains_type_var(elem),
         tast::Ty::TSlice { elem } => contains_type_var(elem),
         tast::Ty::TVec { elem } => contains_type_var(elem),

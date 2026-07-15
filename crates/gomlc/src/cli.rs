@@ -12,8 +12,11 @@ pub(crate) struct Cli {
 #[derive(Subcommand, Debug)]
 pub(crate) enum Commands {
     Check(PackageCommandArgs),
+    TestCheck(PackageCommandArgs),
     Build(PackageCommandArgs),
+    TestBuild(PackageCommandArgs),
     Link(LinkArgs),
+    TestLink(TestLinkArgs),
     RunSingle(RunArgs),
     Version(VersionArgs),
 }
@@ -59,6 +62,18 @@ pub(crate) struct LinkArgs {
     pub entry: String,
     #[arg(long)]
     pub output: PathBuf,
+}
+
+#[derive(Args, Debug)]
+pub(crate) struct TestLinkArgs {
+    #[arg(long, required = true, num_args = 1..)]
+    pub input: Vec<PathBuf>,
+    #[arg(long, required = true)]
+    pub package: Vec<String>,
+    #[arg(long)]
+    pub output: PathBuf,
+    #[arg(long)]
+    pub manifest: PathBuf,
 }
 
 #[derive(Args, Debug)]

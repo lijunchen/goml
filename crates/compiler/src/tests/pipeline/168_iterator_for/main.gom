@@ -1,0 +1,79 @@
+fn countdown(start: int32) -> FnIterator[int32] {
+    let current = Ref::new(start);
+    FnIterator::from_fn(|| {
+        let value = current.get();
+        if value > 0 {
+            current.set(value - 1);
+            Option::Some(value)
+        } else {
+            Option::None
+        }
+    })
+}
+
+fn counted_range(calls: Ref[int32]) -> FnIterator[int32] {
+    calls.set(calls.get() + 1);
+    range(1, 5)
+}
+
+fn first_even(values: FnIterator[int32]) -> int32 {
+    for value in values {
+        if value / 2 * 2 == value {
+            return value
+        } else {
+            ()
+        };
+    };
+    -1
+}
+
+fn main() -> unit {
+    let values: Vec[int32] = Vec::new();
+    values.push(10);
+    values.push(20);
+    values.push(30);
+    let sum = Ref::new(0);
+    for value in values {
+        if value == 20 {
+            continue
+        } else {
+            ()
+        };
+        sum.set(sum.get() + value);
+    };
+    println(sum.get());
+
+    let pairs: Vec[(int32, string)] = Vec::new();
+    pairs.push((1, "a"));
+    pairs.push((2, "b"));
+    for (number, text) in pairs {
+        println(number.to_string() + text);
+    };
+
+    let calls = Ref::new(0);
+    let range_sum = Ref::new(0);
+    for value in counted_range(calls) {
+        range_sum.set(range_sum.get() + value);
+    };
+    println(calls.get());
+    println(range_sum.get());
+
+    let slice_sum = Ref::new(0);
+    for value in values.slice(1, 3) {
+        slice_sum.set(slice_sum.get() + value);
+    };
+    println(slice_sum.get());
+
+    for value in countdown(4) {
+        if value == 2 {
+            break
+        } else {
+            println(value);
+        };
+    };
+
+    let empty = range(0, 0);
+    for _ in empty {};
+    println(first_even(range(3, 8)));
+    println("done");
+}

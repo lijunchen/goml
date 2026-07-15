@@ -13,6 +13,22 @@ impl TastIdent {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+pub struct TraitRef {
+    pub name: TastIdent,
+    pub args: Vec<Ty>,
+}
+
+impl TraitRef {
+    pub fn new(name: TastIdent, args: Vec<Ty>) -> Self {
+        Self { name, args }
+    }
+
+    pub fn without_args(name: TastIdent) -> Self {
+        Self::new(name, Vec::new())
+    }
+}
+
 pub const ARRAY_WILDCARD_LEN: usize = usize::MAX;
 
 #[derive(Debug, Clone)]
@@ -29,7 +45,7 @@ pub enum Item {
 #[derive(Debug, Clone)]
 pub struct ImplBlock {
     pub generics: Vec<String>,
-    pub trait_name: Option<TastIdent>,
+    pub trait_ref: Option<TraitRef>,
     pub for_type: Ty,
     pub methods: Vec<Fn>,
 }
@@ -73,18 +89,51 @@ pub enum Ty {
     TFloat64,
     TString,
     TChar,
-    TTuple { typs: Vec<Ty> },
-    TEnum { name: String },
-    TStruct { name: String },
-    TDyn { trait_name: String },
-    TApp { ty: Box<Ty>, args: Vec<Ty> },
-    TArray { len: usize, elem: Box<Ty> },
-    TSlice { elem: Box<Ty> },
-    TVec { elem: Box<Ty> },
-    TRef { elem: Box<Ty> },
-    THashMap { key: Box<Ty>, value: Box<Ty> },
-    TParam { name: String },
-    TFunc { params: Vec<Ty>, ret_ty: Box<Ty> },
+    TTuple {
+        typs: Vec<Ty>,
+    },
+    TEnum {
+        name: String,
+    },
+    TStruct {
+        name: String,
+    },
+    TDyn {
+        trait_name: String,
+    },
+    TProjection {
+        trait_ref: Option<TraitRef>,
+        for_ty: Box<Ty>,
+        name: TastIdent,
+    },
+    TApp {
+        ty: Box<Ty>,
+        args: Vec<Ty>,
+    },
+    TArray {
+        len: usize,
+        elem: Box<Ty>,
+    },
+    TSlice {
+        elem: Box<Ty>,
+    },
+    TVec {
+        elem: Box<Ty>,
+    },
+    TRef {
+        elem: Box<Ty>,
+    },
+    THashMap {
+        key: Box<Ty>,
+        value: Box<Ty>,
+    },
+    TParam {
+        name: String,
+    },
+    TFunc {
+        params: Vec<Ty>,
+        ret_ty: Box<Ty>,
+    },
 }
 
 impl std::fmt::Debug for Ty {
@@ -109,6 +158,11 @@ impl std::fmt::Debug for Ty {
             Self::TEnum { name } => write!(f, "TEnum({})", name),
             Self::TStruct { name } => write!(f, "TStruct({})", name),
             Self::TDyn { trait_name } => write!(f, "TDyn({})", trait_name),
+            Self::TProjection {
+                trait_ref,
+                for_ty,
+                name,
+            } => write!(f, "TProjection({:?}, {:?}, {})", trait_ref, for_ty, name.0),
             Self::TApp { ty, args } => write!(f, "TApp({:?}, {:?})", ty, args),
             Self::TArray { len, elem } => write!(f, "TArray({}, {:?})", len, elem),
             Self::TSlice { elem } => write!(f, "TSlice({:?})", elem),
@@ -372,6 +426,15 @@ pub enum Expr {
         body: Box<Expr>,
         ty: Ty,
     },
+    EFor {
+        pat: Box<Pat>,
+        iterator: Box<Expr>,
+        into_iter_trait_ref: TraitRef,
+        iterator_trait_ref: TraitRef,
+        iterator_ty: Ty,
+        body: Box<Expr>,
+        ty: Ty,
+    },
     EBreak {
         ty: Ty,
     },
@@ -422,7 +485,7 @@ pub enum Expr {
         resolution: BinaryResolution,
     },
     ETraitMethod {
-        trait_name: TastIdent,
+        trait_ref: TraitRef,
         method_name: TastIdent,
         ty: Ty,
         astptr: Option<MySyntaxNodePtr>,
@@ -462,6 +525,7 @@ impl Expr {
             Self::EMatch { ty, .. } => ty.clone(),
             Self::EIf { ty, .. } => ty.clone(),
             Self::EWhile { ty, .. } => ty.clone(),
+            Self::EFor { ty, .. } => ty.clone(),
             Self::EBreak { ty, .. } => ty.clone(),
             Self::EContinue { ty, .. } => ty.clone(),
             Self::EReturn { ty, .. } => ty.clone(),

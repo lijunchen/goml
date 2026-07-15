@@ -12,7 +12,24 @@ use crate::tast::Item;
 use crate::tast::LetStmt;
 use crate::tast::Pat;
 use crate::tast::Stmt;
+use crate::tast::TraitRef;
 use crate::tast::Ty;
+
+impl TraitRef {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
+        let mut doc = RcDoc::text(self.name.0.clone());
+        if !self.args.is_empty() {
+            doc = doc
+                .append(RcDoc::text("["))
+                .append(RcDoc::intersperse(
+                    self.args.iter().map(Ty::to_doc),
+                    RcDoc::text(", "),
+                ))
+                .append(RcDoc::text("]"));
+        }
+        doc
+    }
+}
 
 impl File {
     pub fn to_doc(&self, genv: &GlobalTypeEnv) -> RcDoc<'_, ()> {
@@ -52,10 +69,10 @@ impl ImplBlock {
             RcDoc::hardline(),
         );
 
-        let header = if let Some(trait_name) = &self.trait_name {
+        let header = if let Some(trait_ref) = &self.trait_ref {
             RcDoc::text("impl")
                 .append(RcDoc::space())
-                .append(RcDoc::text(trait_name.0.clone()))
+                .append(trait_ref.to_doc())
                 .append(RcDoc::space())
                 .append(RcDoc::text("for"))
                 .append(RcDoc::space())
@@ -227,6 +244,10 @@ impl Ty {
             }
             Self::TEnum { name } | Self::TStruct { name } => RcDoc::text(name.clone()),
             Self::TDyn { trait_name } => RcDoc::text("dyn ").append(RcDoc::text(trait_name)),
+            Self::TProjection { for_ty, name, .. } => for_ty
+                .to_doc()
+                .append(RcDoc::text("::"))
+                .append(RcDoc::text(name.0.clone())),
             Self::TApp { ty, args } => {
                 let mut doc = ty.to_doc();
 
@@ -445,6 +466,21 @@ impl Expr {
                     .append(RcDoc::text("}"))
                     .group()
             }
+            Self::EFor {
+                pat,
+                iterator,
+                body,
+                ..
+            } => RcDoc::text("for")
+                .append(RcDoc::space())
+                .append(pat.to_doc(genv))
+                .append(RcDoc::space())
+                .append(RcDoc::text("in"))
+                .append(RcDoc::space())
+                .append(iterator.to_doc(genv))
+                .append(RcDoc::space())
+                .append(body.to_doc(genv))
+                .group(),
             Self::EGo { expr, .. } => RcDoc::text("go")
                 .append(RcDoc::space())
                 .append(expr.to_doc(genv)),
@@ -512,12 +548,12 @@ impl Expr {
                 .append(index.to_doc(genv))
                 .append(RcDoc::text("]")),
             Self::ETraitMethod {
-                trait_name,
+                trait_ref,
                 method_name,
                 ty,
                 ..
             } => RcDoc::text("(")
-                .append(RcDoc::text(trait_name.0.clone()))
+                .append(trait_ref.to_doc())
                 .append(RcDoc::text("::"))
                 .append(RcDoc::text(method_name.0.clone()))
                 .append(RcDoc::text(" : "))

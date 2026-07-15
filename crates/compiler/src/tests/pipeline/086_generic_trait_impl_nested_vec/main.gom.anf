@@ -1,52 +1,52 @@
 fn main() -> unit {
-  join ret6() -> unit {
+  join ret24() -> unit {
     ()
   } in
   let a/1 = Wrap__int32 { value: 1 } in
   let b/2 = Wrap__string { value: "x" } in
-  let t7 = trait_impl#Size#Wrap__int32#size(a/1) in
-  let t8 = inherent#int32#int32#to_string(t7) in
-  let _wild4 = println__T_string(t8) in
-  let t9 = trait_impl#Size#Wrap__string#size(b/2) in
-  let t10 = inherent#int32#int32#to_string(t9) in
-  let _wild5 = println__T_string(t10) in
-  jump ret6()
+  let t25 = trait_impl#Size#Wrap__int32#size(a/1) in
+  let t26 = inherent#int32#int32#to_string(t25) in
+  let _wild22 = println__T_string(t26) in
+  let t27 = trait_impl#Size#Wrap__string#size(b/2) in
+  let t28 = inherent#int32#int32#to_string(t27) in
+  let _wild23 = println__T_string(t28) in
+  jump ret24()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret11() -> unit {
+  join ret29() -> unit {
     ()
   } in
-  let t12 = trait_impl#ToString#string#to_string(value/1) in
-  let t13 = @runtime(core.string_println)(t12) in
-  jump ret11()
+  let t30 = trait_impl#ToString#string#to_string(value/1) in
+  let t31 = @runtime(core.string_println)(t30) in
+  jump ret29()
 }
 
 fn trait_impl#Size#Wrap__int32#size(self/0: Wrap__int32) -> int32 {
-  join ret14(retv15: int32) -> int32 {
-    retv15
+  join ret32(retv33: int32) -> int32 {
+    retv33
   } in
-  jump ret14(1)
+  jump ret32(1)
 }
 
 fn inherent#int32#int32#to_string(self/2: int32) -> string {
-  join ret16(retv17: string) -> string {
-    retv17
+  join ret34(retv35: string) -> string {
+    retv35
   } in
-  let t18 = @runtime(core.int32_to_string)(self/2) in
-  jump ret16(t18)
+  let t36 = @runtime(core.int32_to_string)(self/2) in
+  jump ret34(t36)
 }
 
 fn trait_impl#Size#Wrap__string#size(self/0: Wrap__string) -> int32 {
-  join ret19(retv20: int32) -> int32 {
-    retv20
+  join ret37(retv38: int32) -> int32 {
+    retv38
   } in
-  jump ret19(1)
+  jump ret37(1)
 }
 
 fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret21(retv22: string) -> string {
-    retv22
+  join ret39(retv40: string) -> string {
+    retv40
   } in
-  jump ret21(self/9)
+  jump ret39(self/9)
 }

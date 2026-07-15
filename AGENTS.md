@@ -145,6 +145,9 @@ GoML projects use a `goml.toml` file for project configuration. A module owns a 
 [module]
 path = "alice::myapp"
 
+[build]
+target-dir = "artifact"
+
 [dependencies]
 "alice::http" = "1.2.0"
 ```
@@ -175,6 +178,7 @@ pub fn message() -> string {
 | Field          | Required | Default | Description |
 | -------------- | -------- | ------- | ----------- |
 | `module.path`  | Yes      | -       | Canonical module path |
+| `build.target-dir` | No   | `artifact` | Module-relative root for GoML build artifacts |
 | `dependencies` | No       | `{}`    | Third-party modules keyed by canonical path with minimum version `X.Y.Z` |
 
 ### Project Discovery
@@ -238,9 +242,9 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 ### Build, Check, And LSP Behavior
 - `goml check`, `goml build`, compiler queries, and LSP requests all resolve and typecheck third-party dependencies
 - Third-party source files remain in the registry cache under `~/.goml/cache/registry`
-- Project outputs continue to be written under the current project's `target/goml`
-- Local artifacts are materialized under `target/goml/{check|build}/pkg/<canonical-package-path>/package.*`.
-- External dependency artifacts are materialized under `target/goml/{check|build}/deps/<owner>/<module>/<version>/pkg/<canonical-package-path>/package.*`.
+- Project outputs are written under `[build].target-dir`, which defaults to `artifact` and can be overridden with `--target-dir`.
+- Local artifacts are materialized under `<target-dir>/{check|build}/pkg/<canonical-package-path>/package.*`.
+- External dependency artifacts are materialized under `<target-dir>/{check|build}/deps/<owner>/<module>/<version>/pkg/<canonical-package-path>/package.*`.
 - Interfaces and dependency environments expose only public top-level API; current-package codegen still uses the package's full internal environment so private helpers compile normally.
 - Go-to-definition, hover, completion, and other query features can resolve into cached third-party source files
 
@@ -355,7 +359,7 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 * Top-level function declaration: `fn name(params) -> Ret { ... }`. Top-level functions must have explicit signatures; if the return type is omitted, it defaults to `unit`.
 * Only top-level functions may declare generic parameters, using square brackets, e.g. `fn id[T](x: T) -> T`.
-* Top-level function generics may add trait bounds per parameter: `fn f[T: A + B + C](x: T) -> ...`. `A + B` is only valid in these generic bounds (not in type annotations/param/return types, and not in `dyn`).
+* Top-level function generics may add trait bounds per parameter: `fn f[T: A + B + C](x: T) -> ...`. Associated types can be constrained with `where`, for example `fn drain[T, I: Iterator](iterator: I) -> unit where I::Item == T`. `A + B` is only valid in generic bounds (not in type annotations/param/return types, and not in `dyn`).
 * Function types are written as `(A, B) -> C` and can be stored in arrays, passed as arguments, or returned.
 * Closures are written as `|args| expr` or `|| { ... }`. They can capture outer variables, support multiple levels of nesting, and can return closures.
 
@@ -369,11 +373,14 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 
 * Fixed-length arrays `[T; N]`, literals `[1, 2, 3]`, accessed via `array_get/array_set`.
 * Mutable references `Ref[T]`: created with `Ref::new(x)`, accessed with `x.get()`, and updated with `x.set(value)`; nested references are supported.
-* Built-in growable vectors `Vec[T]`: `vec_new/vec_push/vec_get/vec_len`.
+* Built-in growable vectors `Vec[T]`: `vec_new/vec_push/vec_get/vec_len`; `v.iter()` creates a `FnIterator[T]` implementing `Iterator` with `Item = T`.
 * Built-in read-only slices `Slice[T]`: `slice/slice_get/slice_len/slice_sub`.
   * `slice(vec, start, end)` creates a bounded view over `Vec[T]`.
-  * `Slice[T]` methods: `get`, `len`, `sub`.
+  * `Slice[T]` methods: `get`, `len`, `sub`, `iter`.
   * Current model is read-only view type; no `slice_set`/`push` on `Slice[T]`.
+* Single-pass iterators implement `Iterator` and bind its associated `Item` type.
+  * `FnIterator::from_fn(|| Option[T])` creates a closure-backed iterator and `iterator.next()` advances it.
+  * `range(start, end)` creates a half-open `FnIterator[int32]` over increasing values.
 * Built-in `string` supports method syntax for common operations.
   * Prefer `s.len()` and `s.get(i)` over `string_len(s)` and `string_get(s, i)` in tests and examples.
   * Prefer method syntax such as `x.to_string()` when a builtin type or in-scope trait already exposes it.
@@ -381,21 +388,23 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 ### Control Flow and Expressions
 
 * `if ... else ...` is an expression; branches may be nested. `while cond { ... }` loops return `unit`.
+* `for pattern in source { ... }` accepts any value implementing `IntoIterator`, evaluates the source expression and `into_iter` conversion once, and returns `unit`. The pattern must be irrefutable and the body must return `unit`; `Vec[T]`, `Slice[T]`, and iterator values can be used directly.
 * Boolean and arithmetic operators: `+ - * /`, unary negation, logical `! && ||`, and comparisons `== != < > <= >=`.
 * `match expr { pattern => expr, ... }`: patterns are tried in order. Patterns include literals, tuples, structs, enums, bindings, and the wildcard `_`. Missing coverage results in an error (e.g., unmatched destructuring).
 
 ### Traits and `impl`
 
-* `trait T { fn method(Self, ...) -> ...; }` defines an interface. Implementations use `impl Trait for Type { ... }`, including for specific generic instances.
+* `trait T { fn method(Self, ...) -> ...; }` defines an interface. Traits may declare type parameters, for example `trait Convert[T] { fn convert(Self) -> T; }`.
+* Implementations use `impl Trait for Type { ... }`; generic applications are part of impl identity, so one concrete type may implement both `Convert[int32]` and `Convert[string]`.
 * Inherent implementations `impl Type { ... }` provide associated functions and methods.
-* Invocation styles: method syntax `value.method(...)`, or associated syntax `Type::method(value, ...)` / `Trait::method(value, ...)`.
+* Invocation styles: method syntax `value.method(...)`, or associated syntax `Type::method(value, ...)` / `Trait::method(value, ...)`. Generic trait UFCS uses explicit arguments, such as `Convert[int32]::convert(value)`.
   * For trait methods on non-`dyn` values, `x.method(...)` works when the trait is in scope via `use alias::Trait` after the defining package is imported (builtin traits like `Show` are in the prelude), otherwise use UFCS like `Trait::method(x, ...)`.
-* When multiple trait bounds provide the same method name for a type parameter, `x.foo()` is ambiguous and requires UFCS disambiguation (e.g. `A::foo(x)`).
+* When multiple trait bounds or applications provide the same method name, `x.foo()` is ambiguous and requires UFCS disambiguation (for example `A::foo(x)` or `Convert[int32]::convert(x)`).
 * Trait objects: `dyn Trait` is a first-class type for dynamic dispatch.
   * Coercion: when the expected type is `dyn Trait`, a value of concrete type `T` is implicitly converted if there is a visible `impl Trait for T`.
   * Calling: `Trait::method(x, ...)` works for both concrete `x: T` (static dispatch) and `x: dyn Trait` (dynamic dispatch).
   * Object safety (current): the receiver must be the first parameter and be exactly `Self`; `Self` is not allowed in other parameters or the return type.
-  * Limitations (current): trait method call via `x.method(...)` is not supported for `dyn Trait` (use `Trait::method(x, ...)`); pattern matching on `dyn Trait` is not supported; `dyn TraitA + TraitB` and explicit `as dyn Trait` syntax are not implemented.
+  * Limitations (current): generic traits are static-only and cannot be used as `dyn`; trait method call via `x.method(...)` is not supported for `dyn Trait` (use `Trait::method(x, ...)`); pattern matching on `dyn Trait` is not supported; `dyn TraitA + TraitB` and explicit `as dyn Trait` syntax are not implemented.
 
 ### Notes on `char`
 
@@ -428,6 +437,22 @@ GoML currently uses a mono-repo registry model for third-party dependencies.
 * Builtin type: `HashMap[K, V]`, backed by generated Go runtime code and Go `map` internally.
 * Builtin API: `hashmap_new`, `hashmap_get -> Option[V]`, `hashmap_set -> unit`, `hashmap_remove -> unit`, `hashmap_len -> int32`, `hashmap_contains -> bool`.
 * Key requirements: `K` must have both `Hash` and `Eq`.
+
+### Builtin `Iterator`
+
+* Builtin iterator protocol: `trait Iterator { type Item; fn next(Self) -> Option[Self::Item]; }`.
+* Builtin conversion protocol: `trait IntoIterator { type Item; type IntoIter: Iterator; fn into_iter(Self) -> Self::IntoIter; }`. The compiler enforces `IntoIterator::Item == IntoIterator::IntoIter::Item`.
+* `FnIterator[T]` is the standard closure-backed concrete iterator; user-defined stateful types can implement `Iterator` directly, and every iterator receives the identity `IntoIterator` implementation.
+* Builtin API:
+  * `FnIterator::from_fn(next_fn: () -> Option[T]) -> FnIterator[T]`
+  * `Iterator::next(iterator) -> Option[Iterator::Item]` or `iterator.next()`
+  * `Vec[T]::iter() -> FnIterator[T]`
+  * `Slice[T]::iter() -> FnIterator[T]`
+  * `range(start: int32, end: int32) -> FnIterator[int32]`
+  * `iterator_map`, `iterator_filter`, and `iterator_take` return concrete adapter iterator types
+  * `iterator_fold` reduces an iterator and `iterator_collect` materializes it as `Vec[T]`
+* `range` is half-open and increasing; `start >= end` produces an empty iterator.
+* `Vec[T]` and `Slice[T]` implement `IntoIterator`, so `for value in values` and `for value in slice` work without an explicit `.iter()` conversion.
 
 ### Builtin `Slice`
 

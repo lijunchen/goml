@@ -492,12 +492,12 @@ fn compile_module_package(
         package_extern_capability,
     );
     diagnostics.append(&mut hir_diagnostics);
+    let full_exports = PackageExports::from_genv(&genv);
+    let exports =
+        PackageExports::public_from_package(&package.name, &package.files, &genv, &mut diagnostics);
     if diagnostics.has_errors() {
         return Err(diagnostics_text(&diagnostics));
     }
-
-    let full_exports = PackageExports::from_genv(&genv);
-    let exports = PackageExports::public_from_package(&package.name, &package.files, &genv);
     let package_interface =
         interface::PackageInterface::from_package(&package.name, &package.declared_name, &exports);
     let interface =

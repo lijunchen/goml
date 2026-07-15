@@ -131,8 +131,8 @@ fn main() -> int32 {
     expect![[r#"
         expr_count=3
         expr0=let r = call new(1)
-        expr1=let _ = call EField { expr: EPath { path: Path { segments: [PathSegment { ident: AstIdent("r"), range: Some(59..60) }] }, astptr: SyntaxNodePtr { kind: EXPR_IDENT, range: 59..60 } }, field: AstIdent("set"), astptr: SyntaxNodePtr { kind: EXPR_BINARY, range: 59..64 } }(2)
-        expr2=call EField { expr: EPath { path: Path { segments: [PathSegment { ident: AstIdent("r"), range: Some(73..74) }] }, astptr: SyntaxNodePtr { kind: EXPR_IDENT, range: 73..74 } }, field: AstIdent("get"), astptr: SyntaxNodePtr { kind: EXPR_BINARY, range: 73..78 } }()
+        expr1=let _ = call EField { expr: EPath { path: Path { segments: [PathSegment { ident: AstIdent("r"), range: Some(59..60) }] }, type_args: [], astptr: SyntaxNodePtr { kind: EXPR_IDENT, range: 59..60 } }, field: AstIdent("set"), astptr: SyntaxNodePtr { kind: EXPR_BINARY, range: 59..64 } }(2)
+        expr2=call EField { expr: EPath { path: Path { segments: [PathSegment { ident: AstIdent("r"), range: Some(73..74) }] }, type_args: [], astptr: SyntaxNodePtr { kind: EXPR_IDENT, range: 73..74 } }, field: AstIdent("get"), astptr: SyntaxNodePtr { kind: EXPR_BINARY, range: 73..78 } }()
         diagnostics=[]
         ref_constr=Ref"#]]
     .assert_eq(&lines.join("\n"));

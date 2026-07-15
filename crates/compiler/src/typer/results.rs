@@ -17,6 +17,7 @@ pub struct TypeckResults {
     unary_res: Vec<Option<tast::UnaryResolution>>,
     binary_res: Vec<Option<tast::BinaryResolution>>,
     try_elab: Vec<Option<TryElab>>,
+    for_elab: Vec<Option<ForElab>>,
     coercions: Vec<Vec<Coercion>>,
     closure_captures: Vec<Option<Vec<(String, tast::Ty)>>>,
 }
@@ -96,6 +97,12 @@ impl TypeckResults {
             .and_then(|e| e.as_ref())
     }
 
+    pub fn for_elab(&self, expr: hir::ExprId) -> Option<&ForElab> {
+        self.for_elab
+            .get(expr.idx as usize)
+            .and_then(|e| e.as_ref())
+    }
+
     pub fn coercions(&self, expr: hir::ExprId) -> &[Coercion] {
         self.coercions.get(expr.idx as usize).map_or(&[], |v| v)
     }
@@ -121,7 +128,7 @@ pub enum NameRefElab {
         astptr: Option<MySyntaxNodePtr>,
     },
     TraitMethod {
-        trait_name: tast::TastIdent,
+        trait_ref: tast::TraitRef,
         method_name: tast::TastIdent,
         ty: tast::Ty,
         astptr: Option<MySyntaxNodePtr>,
@@ -161,7 +168,7 @@ pub enum CalleeElab {
         astptr: Option<MySyntaxNodePtr>,
     },
     TraitMethod {
-        trait_name: tast::TastIdent,
+        trait_ref: tast::TraitRef,
         method_name: tast::TastIdent,
         ty: tast::Ty,
         astptr: Option<MySyntaxNodePtr>,
@@ -233,6 +240,14 @@ pub struct TryElab {
     pub residual_index: usize,
 }
 
+#[derive(Debug, Clone)]
+pub struct ForElab {
+    pub into_iter_trait_ref: tast::TraitRef,
+    pub iterator_trait_ref: tast::TraitRef,
+    pub iterator_ty: tast::Ty,
+}
+
+#[derive(Clone)]
 pub struct TypeckResultsBuilder {
     results: TypeckResults,
 }
@@ -257,6 +272,7 @@ impl TypeckResultsBuilder {
                 unary_res: vec![None; expr_count],
                 binary_res: vec![None; expr_count],
                 try_elab: vec![None; expr_count],
+                for_elab: vec![None; expr_count],
                 coercions: vec![Vec::new(); expr_count],
                 closure_captures: vec![None; expr_count],
             },
@@ -343,6 +359,12 @@ impl TypeckResultsBuilder {
         }
     }
 
+    pub fn record_for_elab(&mut self, expr: hir::ExprId, elab: ForElab) {
+        if let Some(slot) = self.results.for_elab.get_mut(expr.idx as usize) {
+            *slot = Some(elab);
+        }
+    }
+
     pub fn push_coercion(&mut self, expr: hir::ExprId, coercion: Coercion) {
         if let Some(slot) = self.results.coercions.get_mut(expr.idx as usize) {
             let dominated = slot.iter().any(|existing| match (existing, &coercion) {
@@ -395,7 +417,12 @@ impl TypeckResultsBuilder {
                 NameRefElab::Var { ty, .. } | NameRefElab::Callable { ty, .. } => {
                     *ty = typer.subst_ty_silent(ty);
                 }
-                NameRefElab::TraitMethod { ty, .. } => *ty = typer.subst_ty_silent(ty),
+                NameRefElab::TraitMethod { trait_ref, ty, .. } => {
+                    for arg in &mut trait_ref.args {
+                        *arg = typer.subst_ty_silent(arg);
+                    }
+                    *ty = typer.subst_ty_silent(ty);
+                }
                 NameRefElab::DynTraitMethod { ty, .. } => *ty = typer.subst_ty_silent(ty),
                 NameRefElab::InherentMethod {
                     receiver_ty, ty, ..
@@ -405,7 +432,7 @@ impl TypeckResultsBuilder {
                 }
             }
             if let NameRefElab::TraitMethod {
-                trait_name,
+                trait_ref,
                 method_name,
                 ty,
                 astptr,
@@ -414,10 +441,11 @@ impl TypeckResultsBuilder {
                 && let Some(tast::Ty::TDyn {
                     trait_name: recv_trait,
                 }) = params.first()
-                && *recv_trait == trait_name.0
+                && trait_ref.args.is_empty()
+                && *recv_trait == trait_ref.name.0
             {
                 *elab = NameRefElab::DynTraitMethod {
-                    trait_name: trait_name.clone(),
+                    trait_name: trait_ref.name.clone(),
                     method_name: method_name.clone(),
                     ty: ty.clone(),
                     astptr: *astptr,
@@ -430,7 +458,12 @@ impl TypeckResultsBuilder {
                 CalleeElab::Var { ty, .. } | CalleeElab::Callable { ty, .. } => {
                     *ty = typer.subst_ty_silent(ty);
                 }
-                CalleeElab::TraitMethod { ty, .. } => *ty = typer.subst_ty_silent(ty),
+                CalleeElab::TraitMethod { trait_ref, ty, .. } => {
+                    for arg in &mut trait_ref.args {
+                        *arg = typer.subst_ty_silent(arg);
+                    }
+                    *ty = typer.subst_ty_silent(ty);
+                }
                 CalleeElab::DynTraitMethod { ty, .. } => *ty = typer.subst_ty_silent(ty),
                 CalleeElab::InherentMethod {
                     receiver_ty, ty, ..
@@ -441,7 +474,7 @@ impl TypeckResultsBuilder {
                 CalleeElab::Error { ty, .. } => *ty = typer.subst_ty_silent(ty),
             }
             if let CalleeElab::TraitMethod {
-                trait_name,
+                trait_ref,
                 method_name,
                 ty,
                 astptr,
@@ -450,10 +483,11 @@ impl TypeckResultsBuilder {
                 && let Some(tast::Ty::TDyn {
                     trait_name: recv_trait,
                 }) = params.first()
-                && *recv_trait == trait_name.0
+                && trait_ref.args.is_empty()
+                && *recv_trait == trait_ref.name.0
             {
                 elab.callee = CalleeElab::DynTraitMethod {
-                    trait_name: trait_name.clone(),
+                    trait_name: trait_ref.name.clone(),
                     method_name: method_name.clone(),
                     ty: ty.clone(),
                     astptr: *astptr,
@@ -496,6 +530,15 @@ impl TypeckResultsBuilder {
         }
         for elab in self.results.try_elab.iter_mut().filter_map(Option::as_mut) {
             elab.outer_ret_ty = typer.subst_ty_silent(&elab.outer_ret_ty);
+        }
+        for elab in self.results.for_elab.iter_mut().filter_map(Option::as_mut) {
+            for arg in &mut elab.into_iter_trait_ref.args {
+                *arg = typer.subst_ty_silent(arg);
+            }
+            for arg in &mut elab.iterator_trait_ref.args {
+                *arg = typer.subst_ty_silent(arg);
+            }
+            elab.iterator_ty = typer.subst_ty_silent(&elab.iterator_ty);
         }
         for captures in self
             .results

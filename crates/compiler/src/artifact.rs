@@ -1,6 +1,7 @@
 use std::collections::{BTreeMap, HashSet};
 
 use ast::ast;
+use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use sha2::Digest;
 
 use crate::env::{GlobalTypeEnv, TraitEnv, TypeEnv, ValueEnv};
@@ -8,8 +9,8 @@ use crate::hir::SourceFileAst;
 use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package};
 use crate::tast::TastIdent;
 
-pub const FORMAT_VERSION: u32 = 6;
-pub const COMPILER_ABI: u32 = 1;
+pub const FORMAT_VERSION: u32 = 11;
+pub const COMPILER_ABI: u32 = 2;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct PackageExports {
@@ -31,6 +32,7 @@ impl PackageExports {
         package: &str,
         files: &[SourceFileAst],
         genv: &GlobalTypeEnv,
+        diagnostics: &mut Diagnostics,
     ) -> Self {
         if package == BUILTIN_PACKAGE || package == ROOT_PACKAGE {
             return Self::from_genv(genv);
@@ -50,6 +52,58 @@ impl PackageExports {
             .trait_env
             .trait_defs
             .retain(|name, _| public_names.contains(name));
+        exports.trait_env.trait_impls.retain(|key, definition| {
+            if !definition.valid
+                || !local_name_is_public(package, &public_names, &key.trait_ref.name.0)
+                || !ty_has_public_local_names(package, &public_names, &key.for_ty)
+            {
+                return false;
+            }
+            let mut private_names = HashSet::new();
+            for arg in &key.trait_ref.args {
+                collect_private_local_names(package, &public_names, arg, &mut private_names);
+            }
+            for ty in definition.associated_types.values() {
+                collect_private_local_names(package, &public_names, ty, &mut private_names);
+            }
+            for predicate in &definition.constraints {
+                collect_predicate_private_local_names(
+                    package,
+                    &public_names,
+                    predicate,
+                    &mut private_names,
+                );
+            }
+            for scheme in definition.methods.values() {
+                collect_private_local_names(package, &public_names, &scheme.ty, &mut private_names);
+                for predicate in &scheme.constraints {
+                    collect_predicate_private_local_names(
+                        package,
+                        &public_names,
+                        predicate,
+                        &mut private_names,
+                    );
+                }
+            }
+            if private_names.is_empty() {
+                return true;
+            }
+            let mut private_names = private_names.into_iter().collect::<Vec<_>>();
+            private_names.sort();
+            diagnostics.push(
+                Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!(
+                        "Public trait implementation {} exposes private type {}",
+                        key.trait_ref.name.0,
+                        private_names.join(", ")
+                    ),
+                )
+                .with_range(definition.origin),
+            );
+            false
+        });
         exports
             .value_env
             .funcs
@@ -89,6 +143,122 @@ impl PackageExports {
             value_env: self.value_env.clone(),
             lang_items: Default::default(),
         }
+    }
+}
+
+fn local_name_is_public(package: &str, public_names: &HashSet<String>, name: &str) -> bool {
+    let Some(rest) = name.strip_prefix(&format!("{package}::")) else {
+        return true;
+    };
+    rest.contains("::") || public_names.contains(name)
+}
+
+fn ty_has_public_local_names(
+    package: &str,
+    public_names: &HashSet<String>,
+    ty: &crate::tast::Ty,
+) -> bool {
+    let mut private_names = HashSet::new();
+    collect_private_local_names(package, public_names, ty, &mut private_names);
+    private_names.is_empty()
+}
+
+fn collect_predicate_private_local_names(
+    package: &str,
+    public_names: &HashSet<String>,
+    predicate: &crate::env::TypePredicate,
+    private_names: &mut HashSet<String>,
+) {
+    match predicate {
+        crate::env::TypePredicate::Trait { for_ty, trait_ref } => {
+            collect_private_local_names(package, public_names, for_ty, private_names);
+            if !local_name_is_public(package, public_names, &trait_ref.name.0) {
+                private_names.insert(trait_ref.name.0.clone());
+            }
+            for arg in &trait_ref.args {
+                collect_private_local_names(package, public_names, arg, private_names);
+            }
+        }
+        crate::env::TypePredicate::Equality { lhs, rhs } => {
+            collect_private_local_names(package, public_names, lhs, private_names);
+            collect_private_local_names(package, public_names, rhs, private_names);
+        }
+    }
+}
+
+fn collect_private_local_names(
+    package: &str,
+    public_names: &HashSet<String>,
+    ty: &crate::tast::Ty,
+    private_names: &mut HashSet<String>,
+) {
+    match ty {
+        crate::tast::Ty::TEnum { name } | crate::tast::Ty::TStruct { name } => {
+            if !local_name_is_public(package, public_names, name) {
+                private_names.insert(name.clone());
+            }
+        }
+        crate::tast::Ty::TDyn { trait_name } => {
+            if !local_name_is_public(package, public_names, trait_name) {
+                private_names.insert(trait_name.clone());
+            }
+        }
+        crate::tast::Ty::TTuple { typs } => {
+            for ty in typs {
+                collect_private_local_names(package, public_names, ty, private_names);
+            }
+        }
+        crate::tast::Ty::TProjection {
+            trait_ref, for_ty, ..
+        } => {
+            collect_private_local_names(package, public_names, for_ty, private_names);
+            if let Some(trait_ref) = trait_ref {
+                if !local_name_is_public(package, public_names, &trait_ref.name.0) {
+                    private_names.insert(trait_ref.name.0.clone());
+                }
+                for arg in &trait_ref.args {
+                    collect_private_local_names(package, public_names, arg, private_names);
+                }
+            }
+        }
+        crate::tast::Ty::TApp { ty, args } => {
+            collect_private_local_names(package, public_names, ty, private_names);
+            for arg in args {
+                collect_private_local_names(package, public_names, arg, private_names);
+            }
+        }
+        crate::tast::Ty::TArray { elem, .. }
+        | crate::tast::Ty::TSlice { elem }
+        | crate::tast::Ty::TVec { elem }
+        | crate::tast::Ty::TRef { elem } => {
+            collect_private_local_names(package, public_names, elem, private_names);
+        }
+        crate::tast::Ty::THashMap { key, value } => {
+            collect_private_local_names(package, public_names, key, private_names);
+            collect_private_local_names(package, public_names, value, private_names);
+        }
+        crate::tast::Ty::TFunc { params, ret_ty } => {
+            for param in params {
+                collect_private_local_names(package, public_names, param, private_names);
+            }
+            collect_private_local_names(package, public_names, ret_ty, private_names);
+        }
+        crate::tast::Ty::TVar(_)
+        | crate::tast::Ty::TParam { .. }
+        | crate::tast::Ty::TUnit
+        | crate::tast::Ty::TBool
+        | crate::tast::Ty::TInt8
+        | crate::tast::Ty::TInt16
+        | crate::tast::Ty::TInt32
+        | crate::tast::Ty::TInt64
+        | crate::tast::Ty::TUint8
+        | crate::tast::Ty::TUint16
+        | crate::tast::Ty::TUint32
+        | crate::tast::Ty::TUint64
+        | crate::tast::Ty::TFloat32
+        | crate::tast::Ty::TFloat64
+        | crate::tast::Ty::TString
+        | crate::tast::Ty::TChar => {}
     }
 }
 
@@ -200,6 +370,19 @@ impl InterfaceUnit {
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct TestDescriptor {
+    pub id: String,
+    pub package: String,
+    pub symbol: String,
+    pub display_name: String,
+    pub source_path: String,
+    pub start: u32,
+    pub end: u32,
+    pub ignored: bool,
+    pub ignore_reason: Option<String>,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct CoreUnit {
     pub format_version: u32,
     pub compiler_abi: u32,
@@ -209,6 +392,8 @@ pub struct CoreUnit {
     pub core_ir: crate::core::File,
     pub deps: BTreeMap<String, String>,
     pub sources: Vec<String>,
+    #[serde(default)]
+    pub tests: Vec<TestDescriptor>,
 }
 
 impl CoreUnit {
@@ -228,15 +413,27 @@ impl CoreUnit {
             core_ir,
             deps,
             sources: Vec::new(),
+            tests: Vec::new(),
         }
     }
 
     pub fn validate(&self) -> bool {
+        let mut test_ids = HashSet::new();
         self.format_version == FORMAT_VERSION
             && self.compiler_abi == COMPILER_ABI
             && crate::config::validate_module_path(&self.package).is_ok()
             && self.package == self.interface.package
             && self.interface.validate()
             && self.deps == self.interface.deps
+            && self.tests.iter().all(|test| {
+                test.package == self.package
+                    && !test.id.is_empty()
+                    && !test.symbol.is_empty()
+                    && !test.display_name.is_empty()
+                    && !test.source_path.is_empty()
+                    && test.start <= test.end
+                    && (test.ignored || test.ignore_reason.is_none())
+                    && test_ids.insert(test.id.as_str())
+            })
     }
 }

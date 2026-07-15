@@ -82,6 +82,40 @@ enum Result[T, E] {
     Err(E),
 }
 
+#[lang("iterator")]
+trait Iterator {
+    type Item;
+
+    fn next(Self) -> Option[Self::Item];
+}
+
+#[lang("into_iterator")]
+trait IntoIterator {
+    type Item;
+    type IntoIter: Iterator;
+
+    fn into_iter(Self) -> Self::IntoIter;
+}
+
+struct FnIterator[T] {
+    next_fn: () -> Option[T],
+}
+
+struct MapIterator[A, B, I] {
+    iterator: I,
+    map_fn: (A) -> B,
+}
+
+struct FilterIterator[T, I] {
+    iterator: I,
+    predicate: (T) -> bool,
+}
+
+struct TakeIterator[I] {
+    iterator: I,
+    remaining: Ref[int32],
+}
+
 #[intrinsic("vec.new")]
 extern fn vec_new[T]() -> Vec[T]
 #[intrinsic("vec.push")]

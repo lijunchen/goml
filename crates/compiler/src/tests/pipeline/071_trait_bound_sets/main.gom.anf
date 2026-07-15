@@ -1,64 +1,64 @@
 fn trait_impl#A#S#foo(self/0: S) -> string {
-  join ret6(retv7: string) -> string {
-    retv7
-  } in
-  jump ret6("A")
-}
-
-fn trait_impl#B#S#foo(self/1: S) -> string {
-  join ret8(retv9: string) -> string {
-    retv9
-  } in
-  jump ret8("B")
-}
-
-fn trait_impl#C#S#bar(self/2: S) -> string {
-  join ret10(retv11: string) -> string {
-    retv11
-  } in
-  jump ret10("C")
-}
-
-fn main() -> unit {
-  join ret12() -> unit {
-    ()
-  } in
-  let s/5 = S {} in
-  let t13 = pick_a__T_S(s/5) in
-  let mtmp4 = println__T_string(t13) in
-  let t14 = bar_it__T_S(s/5) in
-  let mtmp5 = println__T_string(t14) in
-  jump ret12()
-}
-
-fn println__T_string(value/1: string) -> unit {
-  join ret15() -> unit {
-    ()
-  } in
-  let t16 = trait_impl#ToString#string#to_string(value/1) in
-  let t17 = @runtime(core.string_println)(t16) in
-  jump ret15()
-}
-
-fn pick_a__T_S(x/3: S) -> string {
-  join ret18(retv19: string) -> string {
-    retv19
-  } in
-  let t20 = trait_impl#A#S#foo(x/3) in
-  jump ret18(t20)
-}
-
-fn bar_it__T_S(x/4: S) -> string {
-  join ret21(retv22: string) -> string {
-    retv22
-  } in
-  let t23 = trait_impl#C#S#bar(x/4) in
-  jump ret21(t23)
-}
-
-fn trait_impl#ToString#string#to_string(self/9: string) -> string {
   join ret24(retv25: string) -> string {
     retv25
   } in
-  jump ret24(self/9)
+  jump ret24("A")
+}
+
+fn trait_impl#B#S#foo(self/1: S) -> string {
+  join ret26(retv27: string) -> string {
+    retv27
+  } in
+  jump ret26("B")
+}
+
+fn trait_impl#C#S#bar(self/2: S) -> string {
+  join ret28(retv29: string) -> string {
+    retv29
+  } in
+  jump ret28("C")
+}
+
+fn main() -> unit {
+  join ret30() -> unit {
+    ()
+  } in
+  let s/5 = S {} in
+  let t31 = pick_a__T_S(s/5) in
+  let mtmp22 = println__T_string(t31) in
+  let t32 = bar_it__T_S(s/5) in
+  let mtmp23 = println__T_string(t32) in
+  jump ret30()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret33() -> unit {
+    ()
+  } in
+  let t34 = trait_impl#ToString#string#to_string(value/1) in
+  let t35 = @runtime(core.string_println)(t34) in
+  jump ret33()
+}
+
+fn pick_a__T_S(x/3: S) -> string {
+  join ret36(retv37: string) -> string {
+    retv37
+  } in
+  let t38 = trait_impl#A#S#foo(x/3) in
+  jump ret36(t38)
+}
+
+fn bar_it__T_S(x/4: S) -> string {
+  join ret39(retv40: string) -> string {
+    retv40
+  } in
+  let t41 = trait_impl#C#S#bar(x/4) in
+  jump ret39(t41)
+}
+
+fn trait_impl#ToString#string#to_string(self/9: string) -> string {
+  join ret42(retv43: string) -> string {
+    retv43
+  } in
+  jump ret42(self/9)
 }

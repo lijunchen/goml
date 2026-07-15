@@ -26,6 +26,7 @@ pub struct Parser<'t> {
     expr_depth: Rc<Cell<usize>>,
     pattern_depth: Rc<Cell<usize>>,
     type_depth: Rc<Cell<usize>>,
+    struct_literals_allowed: Rc<Cell<bool>>,
 }
 
 pub struct ParseResult {
@@ -37,9 +38,20 @@ pub(crate) struct ParserDepthGuard {
     depth: Rc<Cell<usize>>,
 }
 
+pub(crate) struct StructLiteralGuard {
+    allowed: Rc<Cell<bool>>,
+    previous: bool,
+}
+
 impl Drop for ParserDepthGuard {
     fn drop(&mut self) {
         self.depth.set(self.depth.get().saturating_sub(1));
+    }
+}
+
+impl Drop for StructLiteralGuard {
+    fn drop(&mut self) {
+        self.allowed.set(self.previous);
     }
 }
 
@@ -128,6 +140,7 @@ impl<'t> Parser<'t> {
             expr_depth: Rc::new(Cell::new(0)),
             pattern_depth: Rc::new(Cell::new(0)),
             type_depth: Rc::new(Cell::new(0)),
+            struct_literals_allowed: Rc::new(Cell::new(true)),
         }
     }
 }
@@ -172,6 +185,18 @@ impl Parser<'_> {
             MAX_TYPE_PARSE_DEPTH,
             "type is too deeply nested",
         )
+    }
+
+    pub(crate) fn with_struct_literals_allowed(&self, allowed: bool) -> StructLiteralGuard {
+        let previous = self.struct_literals_allowed.replace(allowed);
+        StructLiteralGuard {
+            allowed: Rc::clone(&self.struct_literals_allowed),
+            previous,
+        }
+    }
+
+    pub(crate) fn struct_literals_allowed(&self) -> bool {
+        self.struct_literals_allowed.get()
     }
 
     pub fn peek(&mut self) -> TokenKind {

@@ -489,7 +489,7 @@ path = "wideproj"
         output.status.success(),
         "stdout: {stdout}\nstderr: {stderr}"
     );
-    assert!(dir.path().join("target/goml/main.go").exists());
+    assert!(dir.path().join("artifact/main.go").exists());
 
     Ok(())
 }
@@ -524,7 +524,7 @@ path = "iface_deep"
         output.status.success(),
         "stdout: {stdout}\nstderr: {stderr}"
     );
-    assert!(dir.path().join("target/goml/main.go").exists());
+    assert!(dir.path().join("artifact/main.go").exists());
 
     Ok(())
 }
@@ -583,7 +583,7 @@ fn main() -> unit {
     );
 
     if runtime_executor_available() {
-        let go_output = run_go_main(&dir.path().join("target/goml/main.go"), dir.path())?;
+        let go_output = run_go_main(&dir.path().join("artifact/main.go"), dir.path())?;
         assert!(
             go_output.status.success(),
             "stderr: {}",
@@ -666,6 +666,10 @@ fn add_with_explicit_version_and_remove_updates_manifest() -> anyhow::Result<()>
     let project_dir = dir.path().join("demo");
     fs::create_dir_all(&project_dir)?;
     write_project(&project_dir)?;
+    fs::write(
+        project_dir.join("goml.toml"),
+        "[module]\npath = \"demo\"\n\n[build]\ntarget-dir = \"out\"\n",
+    )?;
 
     let add_output = run_goml(
         &[
@@ -701,6 +705,9 @@ fn add_with_explicit_version_and_remove_updates_manifest() -> anyhow::Result<()>
     expect![[r#"
         [module]
         path = "demo"
+
+        [build]
+        target-dir = "out"
     "#]]
     .assert_eq(&manifest);
 
@@ -772,24 +779,24 @@ fn main() -> unit {
 
     assert!(
         project_dir
-            .join("target/goml/check/deps/alice/http/1.2.0/pkg/alice/http/package.interface")
+            .join("artifact/check/deps/alice/http/1.2.0/pkg/alice/http/package.interface")
             .exists()
     );
     assert!(
         project_dir
-            .join("target/goml/build/deps/alice/http/1.2.0/pkg/alice/http/package.core")
+            .join("artifact/build/deps/alice/http/1.2.0/pkg/alice/http/package.core")
             .exists()
     );
     assert!(
         project_dir
-            .join("target/goml/build/deps/alice/appdep/0.1.0/pkg/alice/appdep/package.core")
+            .join("artifact/build/deps/alice/appdep/0.1.0/pkg/alice/appdep/package.core")
             .exists()
     );
 
     if !runtime_executor_available() {
         return Ok(());
     }
-    let go_output = run_go_main(&project_dir.join("target/goml/main.go"), &project_dir)?;
+    let go_output = run_go_main(&project_dir.join("artifact/main.go"), &project_dir)?;
     let go_stdout = String::from_utf8_lossy(&go_output.stdout);
     let go_stderr = String::from_utf8_lossy(&go_output.stderr);
     assert!(go_output.status.success(), "stderr: {go_stderr}");
@@ -849,7 +856,7 @@ fn main() -> unit {
     );
 
     if runtime_executor_available() {
-        let go_output = run_go_main(&project_dir.join("target/goml/main.go"), &project_dir)?;
+        let go_output = run_go_main(&project_dir.join("artifact/main.go"), &project_dir)?;
         assert!(
             go_output.status.success(),
             "stderr: {}",
@@ -912,7 +919,7 @@ fn main() -> unit {
     );
 
     if runtime_executor_available() {
-        let go_output = run_go_main(&project_dir.join("target/goml/main.go"), &project_dir)?;
+        let go_output = run_go_main(&project_dir.join("artifact/main.go"), &project_dir)?;
         assert!(
             go_output.status.success(),
             "stderr: {}",
@@ -979,7 +986,7 @@ fn main() -> unit {
     if !runtime_executor_available() {
         return Ok(());
     }
-    let go_output = run_go_main(&project_dir.join("target/goml/main.go"), &project_dir)?;
+    let go_output = run_go_main(&project_dir.join("artifact/main.go"), &project_dir)?;
     assert!(
         go_output.status.success(),
         "stderr: {}",
@@ -1050,7 +1057,7 @@ fn main() -> unit {
     if !runtime_executor_available() {
         return Ok(());
     }
-    let go_output = run_go_main(&project_dir.join("target/goml/main.go"), &project_dir)?;
+    let go_output = run_go_main(&project_dir.join("artifact/main.go"), &project_dir)?;
     let go_stdout = String::from_utf8_lossy(&go_output.stdout);
     let go_stderr = String::from_utf8_lossy(&go_output.stderr);
     assert!(go_output.status.success(), "stderr: {go_stderr}");
@@ -1123,7 +1130,7 @@ fn project_check_checks_module_from_cwd() -> anyhow::Result<()> {
 }
 
 #[test]
-fn project_build_writes_target_goml_main_go() -> anyhow::Result<()> {
+fn project_build_writes_default_artifact_layout() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     write_project(dir.path())?;
 
@@ -1139,8 +1146,9 @@ fn project_build_writes_target_goml_main_go() -> anyhow::Result<()> {
     expect![""].assert_eq(&stdout);
     expect![""].assert_eq(&stderr);
 
-    let go_file = dir.path().join("target/goml/main.go");
+    let go_file = dir.path().join("artifact/main.go");
     assert!(go_file.exists());
+    assert!(!dir.path().join("target/goml").exists());
 
     if !runtime_executor_available() {
         return Ok(());
@@ -1152,6 +1160,103 @@ fn project_build_writes_target_goml_main_go() -> anyhow::Result<()> {
 
     assert!(go_output.status.success(), "stderr: {go_stderr}");
     expect!["hello\n"].assert_eq(&go_stdout);
+
+    Ok(())
+}
+
+#[test]
+fn project_uses_manifest_and_cli_target_directories() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    write_project(dir.path())?;
+    fs::write(
+        dir.path().join("goml.toml"),
+        "[module]\npath = \"demo\"\n\n[build]\ntarget-dir = \"out/generated\"\n",
+    )?;
+    fs::write(
+        dir.path().join("main_test.gom"),
+        "package main;\n#[test]\nfn works() -> unit { () }\n",
+    )?;
+    fs::create_dir_all(dir.path().join("tests/api"))?;
+    fs::write(
+        dir.path().join("tests/api/api_test.gom"),
+        "package api;\n#[test]\nfn external_works() -> unit { () }\n",
+    )?;
+
+    let build = run_goml(&["build"], dir.path())?;
+    assert!(
+        build.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&build.stderr)
+    );
+    assert!(dir.path().join("out/generated/main.go").exists());
+    assert!(
+        dir.path()
+            .join("out/generated/build/pkg/demo/package.core")
+            .exists()
+    );
+    assert!(!dir.path().join("artifact").exists());
+
+    let test = run_goml(&["test", "--dry-run"], dir.path())?;
+    assert!(test.status.success());
+    let test_stdout = String::from_utf8(test.stdout)?;
+    assert!(test_stdout.contains("out/generated/test/internal/pkg/demo/package.core"));
+    assert!(test_stdout.contains("out/generated/test/internal/tests.json"));
+    assert!(test_stdout.contains("out/generated/test/external/tests.json"));
+
+    if go_available() {
+        let test = run_goml(&["test"], dir.path())?;
+        assert!(
+            test.status.success(),
+            "stderr: {}",
+            String::from_utf8_lossy(&test.stderr)
+        );
+        let runner = format!("runner{}", std::env::consts::EXE_SUFFIX);
+        assert!(
+            dir.path()
+                .join("out/generated/test/internal")
+                .join(&runner)
+                .exists()
+        );
+        assert!(
+            dir.path()
+                .join("out/generated/test/external")
+                .join(runner)
+                .exists()
+        );
+    }
+
+    let check = run_goml(&["check", "--target-dir", "cli output"], dir.path())?;
+    assert!(
+        check.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&check.stderr)
+    );
+    assert!(
+        dir.path()
+            .join("cli output/check/pkg/demo/package.interface")
+            .exists()
+    );
+
+    let absolute_target = dir.path().join("absolute output");
+    let absolute_target_text = absolute_target.to_string_lossy();
+    let absolute = run_goml(
+        &["check", "--target-dir", absolute_target_text.as_ref()],
+        dir.path(),
+    )?;
+    assert!(
+        absolute.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&absolute.stderr)
+    );
+    assert!(
+        absolute_target
+            .join("check/pkg/demo/package.interface")
+            .exists()
+    );
+
+    let invalid = run_goml(&["check", "--target-dir", "."], dir.path())?;
+    assert!(!invalid.status.success());
+    assert!(String::from_utf8(invalid.stderr)?.contains("must not be the module root"));
 
     Ok(())
 }
@@ -1182,6 +1287,7 @@ fn new_creates_two_package_scaffold() -> anyhow::Result<()> {
 
     let project_dir = dir.path().join("demo");
     let root_toml = fs::read_to_string(project_dir.join("goml.toml"))?;
+    let gitignore = fs::read_to_string(project_dir.join(".gitignore"))?;
     let main_gom = fs::read_to_string(project_dir.join("main.gom"))?;
     let lib_gom = fs::read_to_string(project_dir.join("lib/lib.gom"))?;
 
@@ -1190,6 +1296,7 @@ fn new_creates_two_package_scaffold() -> anyhow::Result<()> {
         path = "demo"
     "#]]
     .assert_eq(&root_toml);
+    expect!["/artifact/\n"].assert_eq(&gitignore);
     expect![[r#"
         package main;
 
@@ -1260,26 +1367,26 @@ fn new_project_can_check_and_build() -> anyhow::Result<()> {
     let build_stderr = String::from_utf8_lossy(&build_output.stderr);
     assert!(build_output.status.success(), "stderr: {build_stderr}");
 
-    let go_file = project_dir.join("target/goml/main.go");
+    let go_file = project_dir.join("artifact/main.go");
     assert!(go_file.exists());
     assert!(
         project_dir
-            .join("target/goml/build/pkg/demo/package.core")
+            .join("artifact/build/pkg/demo/package.core")
             .exists()
     );
     assert!(
         project_dir
-            .join("target/goml/build/pkg/demo/package.interface")
+            .join("artifact/build/pkg/demo/package.interface")
             .exists()
     );
     assert!(
         project_dir
-            .join("target/goml/build/pkg/demo/lib/package.core")
+            .join("artifact/build/pkg/demo/lib/package.core")
             .exists()
     );
     assert!(
         project_dir
-            .join("target/goml/build/pkg/demo/lib/package.interface")
+            .join("artifact/build/pkg/demo/lib/package.interface")
             .exists()
     );
 
@@ -1321,7 +1428,7 @@ fn main() -> unit {
     let build_stderr = String::from_utf8_lossy(&build_output.stderr);
     assert!(build_output.status.success(), "stderr: {build_stderr}");
 
-    let go_file = dir.path().join("target/goml/main.go");
+    let go_file = dir.path().join("artifact/main.go");
     assert!(go_file.exists());
 
     if runtime_executor_available() {
@@ -1344,13 +1451,13 @@ fn project_check_dry_run_prints_compiler_check_commands() -> anyhow::Result<()> 
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(output.status.success(), "stderr: {stderr}");
     expect![[r#"
-        gomlc check --package project008::traitpkg --input traitpkg/traitpkg.gom --output target/goml/check/pkg/project008/traitpkg/package
-        gomlc check --package project008::datapkg --input datapkg/datapkg.gom --interface-path target/goml/check/pkg/project008/traitpkg/package.interface --output target/goml/check/pkg/project008/datapkg/package
-        gomlc check --package project008::usepkg --input usepkg/usepkg.gom --interface-path target/goml/check/pkg/project008/traitpkg/package.interface --output target/goml/check/pkg/project008/usepkg/package
-        gomlc check --package project008 --input main.gom --interface-path target/goml/check/pkg/project008/datapkg/package.interface --interface-path target/goml/check/pkg/project008/traitpkg/package.interface --interface-path target/goml/check/pkg/project008/usepkg/package.interface --output target/goml/check/pkg/project008/package
+        gomlc check --package project008::traitpkg --input traitpkg/traitpkg.gom --output artifact/check/pkg/project008/traitpkg/package
+        gomlc check --package project008::datapkg --input datapkg/datapkg.gom --interface-path artifact/check/pkg/project008/traitpkg/package.interface --output artifact/check/pkg/project008/datapkg/package
+        gomlc check --package project008::usepkg --input usepkg/usepkg.gom --interface-path artifact/check/pkg/project008/traitpkg/package.interface --output artifact/check/pkg/project008/usepkg/package
+        gomlc check --package project008 --input main.gom --interface-path artifact/check/pkg/project008/datapkg/package.interface --interface-path artifact/check/pkg/project008/traitpkg/package.interface --interface-path artifact/check/pkg/project008/usepkg/package.interface --output artifact/check/pkg/project008/package
     "#]]
     .assert_eq(&stdout);
-    assert!(!dir.path().join("target/goml/check/main.interface").exists());
+    assert!(!dir.path().join("artifact/check/main.interface").exists());
     expect![""].assert_eq(&stderr);
 
     Ok(())
@@ -1365,14 +1472,14 @@ fn project_build_dry_run_prints_compiler_build_and_link_commands() -> anyhow::Re
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(output.status.success(), "stderr: {stderr}");
     expect![[r#"
-        gomlc build --package project008::traitpkg --input traitpkg/traitpkg.gom --output target/goml/build/pkg/project008/traitpkg/package
-        gomlc build --package project008::datapkg --input datapkg/datapkg.gom --interface-path target/goml/build/pkg/project008/traitpkg/package.interface --output target/goml/build/pkg/project008/datapkg/package
-        gomlc build --package project008::usepkg --input usepkg/usepkg.gom --interface-path target/goml/build/pkg/project008/traitpkg/package.interface --output target/goml/build/pkg/project008/usepkg/package
-        gomlc build --package project008 --input main.gom --interface-path target/goml/build/pkg/project008/datapkg/package.interface --interface-path target/goml/build/pkg/project008/traitpkg/package.interface --interface-path target/goml/build/pkg/project008/usepkg/package.interface --output target/goml/build/pkg/project008/package
-        gomlc link --input target/goml/build/pkg/project008/traitpkg/package.core target/goml/build/pkg/project008/datapkg/package.core target/goml/build/pkg/project008/usepkg/package.core target/goml/build/pkg/project008/package.core --output target/goml/main.go --entry project008
+        gomlc build --package project008::traitpkg --input traitpkg/traitpkg.gom --output artifact/build/pkg/project008/traitpkg/package
+        gomlc build --package project008::datapkg --input datapkg/datapkg.gom --interface-path artifact/build/pkg/project008/traitpkg/package.interface --output artifact/build/pkg/project008/datapkg/package
+        gomlc build --package project008::usepkg --input usepkg/usepkg.gom --interface-path artifact/build/pkg/project008/traitpkg/package.interface --output artifact/build/pkg/project008/usepkg/package
+        gomlc build --package project008 --input main.gom --interface-path artifact/build/pkg/project008/datapkg/package.interface --interface-path artifact/build/pkg/project008/traitpkg/package.interface --interface-path artifact/build/pkg/project008/usepkg/package.interface --output artifact/build/pkg/project008/package
+        gomlc link --input artifact/build/pkg/project008/traitpkg/package.core artifact/build/pkg/project008/datapkg/package.core artifact/build/pkg/project008/usepkg/package.core artifact/build/pkg/project008/package.core --output artifact/main.go --entry project008
     "#]]
     .assert_eq(&stdout);
-    assert!(!dir.path().join("target/goml/main.go").exists());
+    assert!(!dir.path().join("artifact/main.go").exists());
     expect![""].assert_eq(&stderr);
 
     Ok(())
@@ -1409,7 +1516,7 @@ fn project_check_and_build_work_for_complex_dependency_fixtures() -> anyhow::Res
             "project={project}, stderr={build_stderr}"
         );
 
-        let go_file = dir.path().join("target/goml/main.go");
+        let go_file = dir.path().join("artifact/main.go");
         assert!(go_file.exists(), "project={project}");
 
         if !runtime_executor_available() {
@@ -1486,10 +1593,10 @@ pub fn value() -> int32 {
     assert!(!output.status.success());
     expect![[r#"
         build failed: Typer { diagnostics: Diagnostics { items: [Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(56..67) }, Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(56..67) }] } }
-        subcommand failed: gomlc build --package demo::A --input A/A.gom --interface-path target/goml/build/pkg/demo/B/package.interface --output target/goml/build/pkg/demo/A/package
+        subcommand failed: gomlc build --package demo::A --input A/A.gom --interface-path artifact/build/pkg/demo/B/package.interface --output artifact/build/pkg/demo/A/package
     "#]]
     .assert_eq(&stderr);
-    assert!(!root.join("target/goml/main.go").exists());
+    assert!(!root.join("artifact/main.go").exists());
 
     Ok(())
 }
@@ -1536,12 +1643,407 @@ pub fn msg() -> string {
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(output.status.success(), "stderr: {stderr}");
     expect![[r#"
-        gomlc build --package demo::src::Lib --input src/Lib/Lib.gom --output target/goml/build/pkg/demo/src/Lib/package
-        gomlc build --package demo::src --input src/main.gom --interface-path target/goml/build/pkg/demo/src/Lib/package.interface --output target/goml/build/pkg/demo/src/package
-        gomlc link --input target/goml/build/pkg/demo/src/Lib/package.core target/goml/build/pkg/demo/src/package.core --output target/goml/main.go --entry demo::src
+        gomlc build --package demo::src::Lib --input src/Lib/Lib.gom --output artifact/build/pkg/demo/src/Lib/package
+        gomlc build --package demo::src --input src/main.gom --interface-path artifact/build/pkg/demo/src/Lib/package.interface --output artifact/build/pkg/demo/src/package
+        gomlc link --input artifact/build/pkg/demo/src/Lib/package.core artifact/build/pkg/demo/src/package.core --output artifact/main.go --entry demo::src
     "#]]
     .assert_eq(&stdout);
     expect![""].assert_eq(&stderr);
+
+    Ok(())
+}
+
+#[test]
+fn project_test_runs_private_tests_and_ignores_test_sources_in_check() -> anyhow::Result<()> {
+    if !go_available() {
+        return Ok(());
+    }
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    fs::write(root.join("goml.toml"), "[module]\npath = \"demo\"\n")?;
+    fs::create_dir_all(root.join("math"))?;
+    fs::write(
+        root.join("math/math.gom"),
+        r#"
+package math;
+
+fn double(value: int32) -> int32 {
+    value * 2
+}
+
+pub fn add(left: int32, right: int32) -> int32 {
+    left + right
+}
+"#,
+    )?;
+    fs::write(
+        root.join("math/math_test.gom"),
+        r#"
+package math;
+
+use std::testing;
+
+#[test]
+fn add_works() -> unit {
+    string_println("captured marker");
+    testing::assert_eq(add(2, 3), 5)
+}
+
+#[test]
+fn private_helper_works() -> unit {
+    testing::assert_eq(double(4), 8)
+}
+
+#[test]
+#[ignore("later")]
+fn ignored_case() -> unit {
+    testing::assert(true)
+}
+"#,
+    )?;
+
+    let check = run_goml(&["check", "math", "--dry-run"], root)?;
+    assert!(check.status.success());
+    let check_stdout = String::from_utf8(check.stdout)?;
+    assert!(check_stdout.contains("--input math/math.gom"));
+    assert!(!check_stdout.contains("math_test.gom"));
+
+    let test = run_goml(&["test", "math", "--jobs", "2"], root)?;
+    let stdout = String::from_utf8(test.stdout)?;
+    let stderr = String::from_utf8(test.stderr)?;
+    assert!(test.status.success(), "stderr: {stderr}");
+    expect![[r#"
+        running 3 tests
+
+        test demo::math::add_works ... ok
+        test demo::math::ignored_case ... ignored: later
+        test demo::math::private_helper_works ... ok
+
+        result: ok. 2 passed; 0 failed; 1 ignored
+    "#]]
+    .assert_eq(&stdout);
+    expect![""].assert_eq(&stderr);
+
+    let list = run_goml(&["test", "math", "--list"], root)?;
+    assert!(list.status.success());
+    expect![[r#"
+        demo::math::add_works
+        demo::math::ignored_case: ignored
+        demo::math::private_helper_works
+    "#]]
+    .assert_eq(&String::from_utf8(list.stdout)?);
+
+    let included = run_goml(&["test", "math", "--include-ignored"], root)?;
+    assert!(included.status.success());
+    assert!(String::from_utf8(included.stdout)?.contains("3 passed; 0 failed; 0 ignored"));
+
+    let uncaptured = run_goml(&["test", "math", "add_works", "--nocapture"], root)?;
+    assert!(uncaptured.status.success());
+    assert!(String::from_utf8(uncaptured.stdout)?.contains("captured marker"));
+
+    let json = run_goml(&["test", "math", "add_works", "--format", "json"], root)?;
+    assert!(json.status.success());
+    let events = String::from_utf8(json.stdout)?
+        .lines()
+        .map(serde_json::from_str::<serde_json::Value>)
+        .collect::<Result<Vec<_>, _>>()?;
+    assert_eq!(events[0]["event"], "result");
+    assert_eq!(events[0]["status"], "passed");
+    assert_eq!(events[0]["stdout"], "captured marker\n");
+    assert_eq!(events[1]["event"], "summary");
+
+    Ok(())
+}
+
+#[test]
+fn project_check_selects_normal_internal_and_external_test_modes() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    fs::write(root.join("goml.toml"), "[module]\npath = \"demo\"\n")?;
+    fs::create_dir_all(root.join("math/tests/api"))?;
+    fs::create_dir_all(root.join("math/tests/smoke"))?;
+    fs::write(
+        root.join("math/math.gom"),
+        r#"
+package math;
+
+fn private_value() -> int32 {
+    41
+}
+
+pub fn public_value() -> int32 {
+    private_value() + 1
+}
+"#,
+    )?;
+    fs::write(
+        root.join("math/math_test.gom"),
+        r#"
+package math;
+
+use std::testing;
+
+#[test]
+fn white_box() -> unit {
+    testing::assert_eq(private_value(), 41)
+}
+"#,
+    )?;
+    fs::write(
+        root.join("math/tests/api/api_test.gom"),
+        r#"
+package api;
+
+use demo::math;
+use std::testing;
+
+#[test]
+fn black_box() -> unit {
+    testing::assert_eq(math::public_value(), 42)
+}
+"#,
+    )?;
+    fs::write(
+        root.join("math/tests/smoke/smoke_test.gom"),
+        r#"
+package smoke;
+
+use demo::math;
+use std::testing;
+
+#[test]
+fn second_black_box_suite() -> unit {
+    testing::assert_eq(math::public_value(), 42)
+}
+"#,
+    )?;
+
+    let normal = run_goml(&["check", "math"], root)?;
+    assert!(
+        normal.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&normal.stderr)
+    );
+    let all = run_goml(&["check", "math", "--tests"], root)?;
+    assert!(
+        all.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&all.stderr)
+    );
+    let internal = run_goml(&["check", "math/math_test.gom"], root)?;
+    assert!(
+        internal.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&internal.stderr)
+    );
+    let external = run_goml(&["check", "math/tests/api/api_test.gom"], root)?;
+    assert!(
+        external.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&external.stderr)
+    );
+
+    let dry_run = run_goml(&["test", "math", "--dry-run"], root)?;
+    assert!(dry_run.status.success());
+    let dry_run = String::from_utf8(dry_run.stdout)?;
+    assert!(dry_run.contains("gomlc check --package demo::math --input math/math.gom"));
+    assert!(dry_run.contains(
+        "gomlc test-build --package demo::math --input math/math.gom --input math/math_test.gom"
+    ));
+    assert!(dry_run.contains(
+        "gomlc build --package demo::math --input math/math.gom --output artifact/test/external/pkg/demo/math/package"
+    ));
+    assert!(dry_run.contains("gomlc test-build --package demo::math::tests::api"));
+    assert!(dry_run.contains("gomlc test-build --package demo::math::tests::smoke"));
+    assert_eq!(dry_run.matches("gomlc test-link").count(), 2);
+
+    if go_available() {
+        let external_tests = run_goml(&["test", "math", "--kind", "external"], root)?;
+        assert!(
+            external_tests.status.success(),
+            "stderr: {}",
+            String::from_utf8_lossy(&external_tests.stderr)
+        );
+        let stdout = String::from_utf8(external_tests.stdout)?;
+        assert!(stdout.contains("demo::math::tests::api::black_box ... ok"));
+        assert!(stdout.contains("demo::math::tests::smoke::second_black_box_suite ... ok"));
+        assert!(!stdout.contains("white_box"));
+
+        let internal_tests = run_goml(&["test", "math", "--kind", "internal"], root)?;
+        assert!(
+            internal_tests.status.success(),
+            "stderr: {}",
+            String::from_utf8_lossy(&internal_tests.stderr)
+        );
+        let stdout = String::from_utf8(internal_tests.stdout)?;
+        assert!(stdout.contains("demo::math::white_box ... ok"));
+        assert!(!stdout.contains("black_box"));
+    }
+
+    fs::write(
+        root.join("math/tests/api/api_test.gom"),
+        r#"
+package api;
+
+use demo::math;
+
+#[test]
+fn cannot_see_private_items() -> unit {
+    let _ = math::private_value();
+    ()
+}
+"#,
+    )?;
+    let private = run_goml(&["check", "math/tests/api/api_test.gom"], root)?;
+    assert!(!private.status.success());
+    assert!(String::from_utf8(private.stderr)?.contains("private_value"));
+
+    fs::write(
+        root.join("math/math_test.gom"),
+        "package math;\n#[test]\nfn broken() -> unit { missing_test_value() }\n",
+    )?;
+    let normal = run_goml(&["check", "math"], root)?;
+    assert!(normal.status.success());
+    let tests = run_goml(&["check", "math", "--tests"], root)?;
+    assert!(!tests.status.success());
+    assert!(String::from_utf8(tests.stderr)?.contains("missing_test_value"));
+
+    Ok(())
+}
+
+#[test]
+fn test_sources_cannot_repair_a_broken_normal_package() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    std::fs::write(root.join("goml.toml"), "[module]\npath = \"demo\"\n")?;
+    std::fs::create_dir_all(root.join("value"))?;
+    std::fs::write(
+        root.join("value/value.gom"),
+        "package value;\npub fn value() -> int32 { test_only_value() }\n",
+    )?;
+    std::fs::write(
+        root.join("value/value_test.gom"),
+        r#"package value;
+
+fn test_only_value() -> int32 {
+    1
+}
+
+#[test]
+fn value_works() -> unit {
+    let _ = value();
+    ()
+}
+"#,
+    )?;
+
+    let checked = run_goml(&["check", "value", "--tests"], root)?;
+    assert!(!checked.status.success());
+    assert!(String::from_utf8(checked.stderr)?.contains("test_only_value"));
+    let tested = run_goml(&["test", "value"], root)?;
+    assert!(!tested.status.success());
+    assert!(String::from_utf8(tested.stderr)?.contains("test_only_value"));
+    Ok(())
+}
+
+#[test]
+fn project_test_reports_assertion_failures_and_timeouts() -> anyhow::Result<()> {
+    if !go_available() {
+        return Ok(());
+    }
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    fs::write(root.join("goml.toml"), "[module]\npath = \"demo\"\n")?;
+    fs::create_dir_all(root.join("checks"))?;
+    fs::write(
+        root.join("checks/checks.gom"),
+        "package checks;\npub fn value() -> int32 { 1 }\n",
+    )?;
+    fs::write(
+        root.join("checks/checks_test.gom"),
+        r#"
+package checks;
+
+use std::testing;
+
+#[test]
+#[ignore("failure case")]
+fn failure() -> unit {
+    testing::assert_eq(1, 2)
+}
+
+#[test]
+#[ignore("timeout case")]
+fn timeout() -> unit {
+    while true {
+        ()
+    }
+}
+"#,
+    )?;
+
+    let failure = run_goml(&["test", "checks", "failure", "--ignored"], root)?;
+    assert!(!failure.status.success());
+    let failure_stdout = String::from_utf8(failure.stdout)?;
+    assert!(failure_stdout.contains("FAILED (exit code 101)"));
+    assert!(failure_stdout.contains("actual: 1"));
+    assert!(failure_stdout.contains("expected: 2"));
+
+    let timeout = run_goml(
+        &[
+            "test",
+            "checks",
+            "timeout",
+            "--ignored",
+            "--timeout",
+            "20ms",
+        ],
+        root,
+    )?;
+    assert!(!timeout.status.success());
+    assert!(String::from_utf8(timeout.stdout)?.contains("FAILED (timed out)"));
+
+    Ok(())
+}
+
+#[test]
+fn project_test_dry_run_and_invalid_signature_diagnostics() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    fs::write(root.join("goml.toml"), "[module]\npath = \"demo\"\n")?;
+    fs::create_dir_all(root.join("value"))?;
+    fs::write(
+        root.join("value/value.gom"),
+        "package value;\npub fn value() -> int32 { 1 }\n",
+    )?;
+    fs::write(
+        root.join("value/value_test.gom"),
+        r#"
+package value;
+
+#[test]
+fn invalid[T](value: T) -> bool {
+    true
+}
+"#,
+    )?;
+
+    let dry_run = run_goml(&["test", "value", "--dry-run"], root)?;
+    assert!(dry_run.status.success());
+    let stdout = String::from_utf8(dry_run.stdout)?;
+    assert!(stdout.contains(
+        "gomlc test-build --package demo::value --input value/value.gom --input value/value_test.gom"
+    ));
+    assert!(stdout.contains(
+        "gomlc test-link --input artifact/test/internal/pkg/demo/value/package.core --output artifact/test/internal/main.go --manifest artifact/test/internal/tests.json --package demo::value"
+    ));
+
+    let output = run_goml(&["test", "value"], root)?;
+    assert!(!output.status.success());
+    let stderr = String::from_utf8(output.stderr)?;
+    assert!(stderr.contains("must not have type parameters"));
+    assert!(stderr.contains("must not have parameters"));
+    assert!(stderr.contains("must return unit"));
 
     Ok(())
 }

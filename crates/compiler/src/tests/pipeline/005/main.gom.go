@@ -31,11 +31,11 @@ func main0() struct{} {
         _0: Blue,
         _1: Red,
     }
-    var x4 Color = a__0._0
-    var x5 Color = a__0._1
-    switch x5 {
+    var x22 Color = a__0._0
+    var x23 Color = a__0._1
+    switch x23 {
     case Red:
-        switch x4 {
+        switch x22 {
         case Red:
             print__T_int32(1)
         case Green:
@@ -46,7 +46,7 @@ func main0() struct{} {
             panic("non-exhaustive match")
         }
     case Green:
-        switch x4 {
+        switch x22 {
         case Red:
             print__T_int32(0)
         case Green:
@@ -57,7 +57,7 @@ func main0() struct{} {
             panic("non-exhaustive match")
         }
     case Blue:
-        switch x4 {
+        switch x22 {
         case Red:
             print__T_int32(3)
         case Green:
@@ -74,16 +74,16 @@ func main0() struct{} {
 }
 
 func print__T_int32(value__0 int32) struct{} {
-    var t21 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__0)
-    _goml_runtime_core_string_print(t21)
+    var t39 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__0)
+    _goml_runtime_core_string_print(t39)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__13 int32) string {
-    var retv24 string
-    var t25 string = _goml_runtime_core_int32_to_string(self__13)
-    retv24 = t25
-    return retv24
+    var retv42 string
+    var t43 string = _goml_runtime_core_int32_to_string(self__13)
+    retv42 = t43
+    return retv42
 }
 
 func main() {

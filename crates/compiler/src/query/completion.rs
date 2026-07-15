@@ -1,7 +1,7 @@
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap, HashSet},
     fs,
-    path::Path,
+    path::{Path, PathBuf},
 };
 
 use cst::cst::CstNode;
@@ -16,12 +16,12 @@ use super::{
     ValueCompletionItem, ValueCompletionKind,
     hir_index::{ClosureParamIndex, HirResultsIndex},
     signature::{CallSignatureContext, call_signature_context_from_parts},
-    symbol_index::build_symbol_lookup,
+    symbol_index::{build_symbol_lookup, build_symbol_lookup_with_overrides},
     syntax::{
         ancestor_path_from_token, call_expr_and_active_parameter, ident_prefix_at_offset,
         token_at_offset_for_query, use_decl_from_token,
     },
-    typecheck::typecheck_for_query,
+    typecheck::typecheck_for_query_with_overrides,
 };
 
 const COMPLETION_PLACEHOLDER: &str = "completion_placeholder";
@@ -45,6 +45,16 @@ pub fn dot_completions(
     src: &str,
     line: u32,
     col: u32,
+) -> Option<Vec<DotCompletionItem>> {
+    dot_completions_with_overrides(path, src, line, col, &HashMap::new())
+}
+
+pub fn dot_completions_with_overrides(
+    path: &Path,
+    src: &str,
+    line: u32,
+    col: u32,
+    source_overrides: &HashMap<PathBuf, String>,
 ) -> Option<Vec<DotCompletionItem>> {
     crate::pipeline::with_compiler_stack(|| {
         let line_index = line_index::LineIndex::new(src);
@@ -106,7 +116,7 @@ pub fn dot_completions(
         let lhs_ptr = MySyntaxNodePtr::new(lhs_expr.syntax());
 
         let (hir_table, results, genv, _diagnostics) =
-            typecheck_for_query(path, &parse_src).ok()?;
+            typecheck_for_query_with_overrides(path, &parse_src, source_overrides).ok()?;
         let index = HirResultsIndex::new(&hir_table);
         let expr_id = index.expr_id(&lhs_ptr)?;
         let ty = normalize_completion_ty(results.expr_ty(expr_id)?.clone());
@@ -120,6 +130,16 @@ pub fn value_completions(
     src: &str,
     line: u32,
     col: u32,
+) -> Option<Vec<ValueCompletionItem>> {
+    value_completions_with_overrides(path, src, line, col, &HashMap::new())
+}
+
+pub fn value_completions_with_overrides(
+    path: &Path,
+    src: &str,
+    line: u32,
+    col: u32,
+    source_overrides: &HashMap<PathBuf, String>,
 ) -> Option<Vec<ValueCompletionItem>> {
     crate::pipeline::with_compiler_stack(|| {
         let line_index = line_index::LineIndex::new(src);
@@ -156,7 +176,12 @@ pub fn value_completions(
 
         let mut ranked_items = Vec::new();
         let mut call_context = None;
-        if let Ok((hir_table, results, genv, _diagnostics)) = typecheck_for_query(path, src) {
+        if let Ok((hir_table, results, genv, _diagnostics)) =
+            typecheck_for_query_with_overrides(path, src, source_overrides)
+        {
+            let current_package = build_symbol_lookup_with_overrides(path, src, source_overrides)
+                .graph
+                .map(|graph| graph.entry_package);
             let index = HirResultsIndex::new(&hir_table);
             let closure_params = ClosureParamIndex::new(&hir_table);
             call_context = call_expr_and_active_parameter(&root, offset).and_then(
@@ -179,22 +204,19 @@ pub fn value_completions(
                 &closure_params,
                 &results,
             ));
-            ranked_items.extend(
-                genv.value_env
-                    .funcs
-                    .iter()
-                    .filter(|(name, _)| !name.contains("::"))
-                    .map(|(name, scheme)| RankedValueItem {
-                        item: ValueCompletionItem {
-                            name: name.clone(),
-                            kind: ValueCompletionKind::Function,
-                            detail: Some(scheme.ty.to_pretty(80)),
-                        },
-                        ty_text: Some(scheme.ty.to_pretty(80)),
-                        kind_rank: 1,
-                        scope_rank: usize::MAX - 1,
-                    }),
-            );
+            ranked_items.extend(genv.value_env.funcs.iter().filter_map(|(name, scheme)| {
+                let name = local_completion_function_name(name, current_package.as_deref())?;
+                Some(RankedValueItem {
+                    item: ValueCompletionItem {
+                        name,
+                        kind: ValueCompletionKind::Function,
+                        detail: Some(scheme.ty.to_pretty(80)),
+                    },
+                    ty_text: Some(scheme.ty.to_pretty(80)),
+                    kind_rank: 1,
+                    scope_rank: usize::MAX - 1,
+                })
+            }));
         }
 
         ranked_items.extend(visible_import_namespace_items(path, src));
@@ -244,6 +266,16 @@ pub fn colon_colon_completions(
     src: &str,
     line: u32,
     col: u32,
+) -> Option<Vec<ColonColonCompletionItem>> {
+    colon_colon_completions_with_overrides(path, src, line, col, &HashMap::new())
+}
+
+pub fn colon_colon_completions_with_overrides(
+    path: &Path,
+    src: &str,
+    line: u32,
+    col: u32,
+    source_overrides: &HashMap<PathBuf, String>,
 ) -> Option<Vec<ColonColonCompletionItem>> {
     crate::pipeline::with_compiler_stack(|| {
         let line_index = line_index::LineIndex::new(src);
@@ -302,7 +334,7 @@ pub fn colon_colon_completions(
             return None;
         }
 
-        let genv = typecheck_for_query(path, &parse_src)
+        let genv = typecheck_for_query_with_overrides(path, &parse_src, source_overrides)
             .ok()
             .map(|(_hir_table, _results, genv, _diagnostics)| genv);
         let package_items = if use_decl_from_token(&token).is_some() {
@@ -321,6 +353,14 @@ pub fn colon_colon_completions(
         items.retain(|item| item.name.starts_with(&prefix));
         Some(items)
     })
+}
+
+fn local_completion_function_name(name: &str, current_package: Option<&str>) -> Option<String> {
+    if !name.contains("::") {
+        return Some(name.to_string());
+    }
+    let local = name.strip_prefix(&format!("{}::", current_package?))?;
+    (!local.contains("::")).then(|| local.to_string())
 }
 
 fn normalize_completion_ty(ty: tast::Ty) -> tast::Ty {
@@ -346,13 +386,21 @@ fn completions_for_type(genv: &GlobalTypeEnv, ty: &tast::Ty) -> Vec<DotCompletio
         }
     }
 
-    items.extend(inherent_methods_for_receiver(genv, ty).into_iter().map(
-        |(method_name, method_ty)| DotCompletionItem {
-            name: method_name,
-            kind: DotCompletionKind::Method,
-            detail: Some(method_ty),
-        },
-    ));
+    let mut methods = inherent_methods_for_receiver(genv, ty)
+        .into_iter()
+        .collect::<BTreeMap<_, _>>();
+    for (method_name, method_ty) in trait_methods_for_receiver(genv, ty) {
+        methods.entry(method_name).or_insert(method_ty);
+    }
+    items.extend(
+        methods
+            .into_iter()
+            .map(|(method_name, method_ty)| DotCompletionItem {
+                name: method_name,
+                kind: DotCompletionKind::Method,
+                detail: Some(method_ty),
+            }),
+    );
 
     items
 }
@@ -807,11 +855,13 @@ fn collect_local_package_names(root_dir: &Path, source_path: &Path, names: &mut 
     let Ok(manifest) = crate::config::load_module_manifest(&root_dir.join("goml.toml")) else {
         return;
     };
+    let artifact_dir = root_dir.join(&manifest.build.target_dir);
     let current_dir = source_path.parent().unwrap_or(root_dir);
     collect_local_package_names_inner(
         root_dir,
         root_dir,
         current_dir,
+        &artifact_dir,
         &manifest.module.path,
         names,
     );
@@ -821,6 +871,7 @@ fn collect_local_package_names_inner(
     root_dir: &Path,
     dir: &Path,
     current_dir: &Path,
+    artifact_dir: &Path,
     module_path: &str,
     names: &mut BTreeSet<String>,
 ) {
@@ -838,7 +889,7 @@ fn collect_local_package_names_inner(
             has_source = true;
         } else if path.is_dir()
             && !entry.file_name().to_string_lossy().starts_with('.')
-            && entry.file_name() != "target"
+            && path != artifact_dir
         {
             children.push(path);
         }
@@ -858,7 +909,14 @@ fn collect_local_package_names_inner(
     }
     children.sort();
     for child in children {
-        collect_local_package_names_inner(root_dir, &child, current_dir, module_path, names);
+        collect_local_package_names_inner(
+            root_dir,
+            &child,
+            current_dir,
+            artifact_dir,
+            module_path,
+            names,
+        );
     }
 }
 
@@ -1079,6 +1137,56 @@ fn inherent_methods_for_receiver(
         }
     }
 
+    methods.into_iter().collect()
+}
+
+fn trait_methods_for_receiver(
+    genv: &GlobalTypeEnv,
+    receiver_ty: &tast::Ty,
+) -> Vec<(String, String)> {
+    let mut methods = BTreeMap::new();
+    let package_env = crate::env::PackageTypeEnv::new(
+        "completion".to_string(),
+        GlobalTypeEnv::default(),
+        genv.clone(),
+        Default::default(),
+    );
+    let param_env = crate::typer::ParamEnv::default();
+    let mut trait_solver = crate::typer::traits::solver::TraitSolver::new(&package_env, &param_env);
+    for (key, impl_def) in &genv.trait_env.trait_impls {
+        if !impl_def.valid {
+            continue;
+        }
+        let Some(substitution) = crate::typer::impl_self_subst(&key.for_ty, receiver_ty) else {
+            continue;
+        };
+        let trait_ref = crate::typer::type_ops::substitute_trait_ref(&key.trait_ref, &substitution);
+        if !crate::typer::type_ops::trait_ref_contains_tparam(&trait_ref)
+            && !matches!(
+                trait_solver.select_ground(crate::typer::TraitGoal {
+                    trait_ref: trait_ref.clone(),
+                    for_ty: receiver_ty.clone(),
+                }),
+                crate::typer::traits::solver::SelectionResult::Unique(_)
+            )
+        {
+            continue;
+        }
+        let Some(trait_def) = genv.trait_env.trait_defs.get(&trait_ref.name.0) else {
+            continue;
+        };
+        for method_name in trait_def.methods.keys() {
+            let method_name_ident = tast::TastIdent(method_name.clone());
+            let Some(scheme) = genv.lookup_trait_method_scheme(&trait_ref, &method_name_ident)
+            else {
+                continue;
+            };
+            let method_ty = crate::typer::type_ops::instantiate_self_ty(&scheme.ty, receiver_ty);
+            methods
+                .entry(method_name.clone())
+                .or_insert_with(|| method_ty.to_pretty(80));
+        }
+    }
     methods.into_iter().collect()
 }
 

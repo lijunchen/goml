@@ -403,6 +403,7 @@ pub struct HirTable {
     def_interner: HashMap<DefKey, DefId>,
     def_data: Vec<Def>,
     def_paths: Vec<Path>,
+    def_sources: Vec<Option<PathBuf>>,
     local_interner: HashMap<LocalKey, LocalId>,
     local_info: Vec<LocalInfo>,
     local_counter: u32,
@@ -413,6 +414,7 @@ pub struct HirTable {
     dummy_expr: ExprId,
     dummy_pat: PatId,
     current_owner: Option<DefId>,
+    current_source: Option<PathBuf>,
 }
 
 #[derive(Debug, Clone)]
@@ -439,6 +441,7 @@ impl HirTable {
             def_interner: HashMap::new(),
             def_data: Vec::new(),
             def_paths: Vec::new(),
+            def_sources: Vec::new(),
             local_interner: HashMap::new(),
             local_info: Vec::new(),
             local_counter: 0,
@@ -449,6 +452,7 @@ impl HirTable {
             dummy_expr,
             dummy_pat,
             current_owner: None,
+            current_source: None,
         }
     }
 
@@ -478,6 +482,10 @@ impl HirTable {
 
     pub fn set_current_owner(&mut self, owner: DefId) {
         self.current_owner = Some(owner);
+    }
+
+    pub fn set_current_source(&mut self, source: PathBuf) {
+        self.current_source = Some(source);
     }
 
     fn fallback_owner(&self) -> DefId {
@@ -587,6 +595,7 @@ impl HirTable {
         self.def_interner.insert(key, id);
         self.def_data.push(def);
         self.def_paths.push(path);
+        self.def_sources.push(self.current_source.clone());
         id
     }
 
@@ -604,6 +613,7 @@ impl HirTable {
         self.def_interner.insert(key, id);
         self.def_data.push(def);
         self.def_paths.push(path);
+        self.def_sources.push(self.current_source.clone());
         id
     }
 
@@ -631,6 +641,13 @@ impl HirTable {
     pub fn def_path(&self, id: DefId) -> &Path {
         assert_eq!(id.pkg, self.package);
         &self.def_paths[id.idx as usize]
+    }
+
+    pub fn def_source(&self, id: DefId) -> Option<&std::path::Path> {
+        assert_eq!(id.pkg, self.package);
+        self.def_sources
+            .get(id.idx as usize)
+            .and_then(Option::as_deref)
     }
 
     pub fn alloc_expr(&mut self, expr: Expr) -> ExprId {
@@ -959,6 +976,10 @@ pub enum TypeExpr {
     TCon {
         path: QualifiedPath,
     },
+    TProjection {
+        base: Box<TypeExpr>,
+        assoc: HirIdent,
+    },
     TDyn {
         trait_path: QualifiedPath,
     },
@@ -1058,7 +1079,8 @@ pub struct Fn {
     pub attrs: Vec<Attribute>,
     pub name: String,
     pub generics: Vec<HirIdent>,
-    pub generic_bounds: Vec<(HirIdent, Vec<Path>)>,
+    pub generic_bounds: Vec<(HirIdent, Vec<TraitRef>)>,
+    pub predicates: Vec<Predicate>,
     pub params: Vec<(LocalId, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
     pub body: Block,
@@ -1069,7 +1091,8 @@ pub struct ExternFn {
     pub attrs: Vec<Attribute>,
     pub name: HirIdent,
     pub generics: Vec<HirIdent>,
-    pub generic_bounds: Vec<(HirIdent, Vec<Path>)>,
+    pub generic_bounds: Vec<(HirIdent, Vec<TraitRef>)>,
+    pub predicates: Vec<Predicate>,
     pub params: Vec<(HirIdent, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
 }
@@ -1084,10 +1107,11 @@ impl From<&ast::ExternFn> for ExternFn {
                 .generic_bounds
                 .iter()
                 .map(|(param, traits)| {
-                    let traits = traits.iter().map(|p| p.into()).collect::<Vec<_>>();
+                    let traits = traits.iter().map(TraitRef::from).collect::<Vec<_>>();
                     (HirIdent::name(&param.0), traits)
                 })
                 .collect(),
+            predicates: ext.predicates.iter().map(Predicate::from).collect(),
             params: ext
                 .params
                 .iter()
@@ -1148,6 +1172,11 @@ impl From<&ast::StructDef> for StructDef {
 pub struct TraitDef {
     pub attrs: Vec<Attribute>,
     pub name: HirIdent,
+    pub generics: Vec<HirIdent>,
+    pub generic_bounds: Vec<(HirIdent, Vec<TraitRef>)>,
+    pub predicates: Vec<Predicate>,
+    pub supertraits: Vec<TraitRef>,
+    pub associated_types: Vec<AssociatedType>,
     pub method_sigs: Vec<TraitMethodSignature>,
 }
 
@@ -1156,7 +1185,76 @@ impl From<&ast::TraitDef> for TraitDef {
         TraitDef {
             attrs: t.attrs.iter().map(|a| a.into()).collect(),
             name: HirIdent::name(&t.name.0),
+            generics: t.generics.iter().map(|g| HirIdent::name(&g.0)).collect(),
+            generic_bounds: t
+                .generic_bounds
+                .iter()
+                .map(|(param, bounds)| {
+                    (
+                        HirIdent::name(&param.0),
+                        bounds.iter().map(TraitRef::from).collect(),
+                    )
+                })
+                .collect(),
+            predicates: t.predicates.iter().map(Predicate::from).collect(),
+            supertraits: t.supertraits.iter().map(TraitRef::from).collect(),
+            associated_types: t
+                .associated_types
+                .iter()
+                .map(AssociatedType::from)
+                .collect(),
             method_sigs: t.method_sigs.iter().map(|m| m.into()).collect(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct AssociatedType {
+    pub name: HirIdent,
+    pub bounds: Vec<TraitRef>,
+}
+
+impl From<&ast::AssociatedType> for AssociatedType {
+    fn from(associated: &ast::AssociatedType) -> Self {
+        Self {
+            name: HirIdent::name(&associated.name.0),
+            bounds: associated.bounds.iter().map(TraitRef::from).collect(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct TraitRef {
+    pub name: HirIdent,
+    pub args: Vec<TypeExpr>,
+}
+
+#[derive(Debug, Clone)]
+pub enum Predicate {
+    Trait { ty: TypeExpr, trait_ref: TraitRef },
+    Equality { lhs: TypeExpr, rhs: TypeExpr },
+}
+
+impl From<&ast::Predicate> for Predicate {
+    fn from(predicate: &ast::Predicate) -> Self {
+        match predicate {
+            ast::Predicate::Trait { ty, trait_ref } => Self::Trait {
+                ty: ty.into(),
+                trait_ref: trait_ref.into(),
+            },
+            ast::Predicate::Equality { lhs, rhs } => Self::Equality {
+                lhs: lhs.into(),
+                rhs: rhs.into(),
+            },
+        }
+    }
+}
+
+impl From<&ast::TraitRef> for TraitRef {
+    fn from(trait_ref: &ast::TraitRef) -> Self {
+        Self {
+            name: HirIdent::name(trait_ref.path.display()),
+            args: trait_ref.args.iter().map(TypeExpr::from).collect(),
         }
     }
 }
@@ -1182,8 +1280,10 @@ impl From<&ast::TraitMethodSignature> for TraitMethodSignature {
 pub struct ImplBlock {
     pub attrs: Vec<Attribute>,
     pub generics: Vec<HirIdent>,
-    pub generic_bounds: Vec<(HirIdent, Vec<Path>)>,
-    pub trait_name: Option<HirIdent>,
+    pub generic_bounds: Vec<(HirIdent, Vec<TraitRef>)>,
+    pub predicates: Vec<Predicate>,
+    pub associated_types: Vec<(HirIdent, TypeExpr)>,
+    pub trait_ref: Option<TraitRef>,
     pub for_type: TypeExpr,
     pub methods: Vec<DefId>,
 }
@@ -1229,6 +1329,7 @@ pub enum Expr {
     },
     EStaticMember {
         path: Path,
+        type_args: Vec<TypeExpr>,
         astptr: Option<MySyntaxNodePtr>,
     },
     EUnit,
@@ -1306,6 +1407,11 @@ pub enum Expr {
     },
     EWhile {
         cond: ExprId,
+        body: ExprId,
+    },
+    EFor {
+        pat: PatId,
+        iterator: ExprId,
         body: ExprId,
     },
     EBreak,
