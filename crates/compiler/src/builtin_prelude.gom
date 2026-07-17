@@ -624,9 +624,10 @@ impl [T] Vec[T] {
     }
 
     fn extend(self: Self, other: Vec[T]) -> unit {
-        self.reserve(other.len());
+        let len = other.len();
+        self.reserve(len);
         let index = Ref::new(0);
-        while index.get() < other.len() {
+        while index.get() < len {
             self.push(other.get(index.get()));
             index.set(index.get() + 1);
         }
