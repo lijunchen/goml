@@ -910,6 +910,17 @@ fn collect_package_dirs(
 }
 
 fn parse_ast_file(path: &Path, src: &str) -> Result<ast::File, String> {
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        stacker::grow(256 * 1024 * 1024, || parse_ast_file_inner(path, src))
+    }
+    #[cfg(target_arch = "wasm32")]
+    {
+        parse_ast_file_inner(path, src)
+    }
+}
+
+fn parse_ast_file_inner(path: &Path, src: &str) -> Result<ast::File, String> {
     let parsed = parser::parse(path, src);
     if parsed.has_errors() {
         return Err(parsed.format_errors(src).join("\n"));
