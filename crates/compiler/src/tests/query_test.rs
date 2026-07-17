@@ -13,6 +13,17 @@ fn check(src: &str, line: u32, col: u32, expected: Expect) {
     expected.assert_debug_eq(&result.unwrap_or("<None>".to_string()));
 }
 
+fn check_at(src: &str, needle: &str, delta: usize, expected: Expect) {
+    let offset = src.find(needle).unwrap() + delta;
+    let prefix = &src[..offset];
+    let line = prefix.bytes().filter(|byte| *byte == b'\n').count() as u32;
+    let col = prefix
+        .rsplit_once('\n')
+        .map_or(prefix.len(), |(_, line)| line.len()) as u32;
+    let result = hover_type(Path::new("dummy"), src, line, col);
+    expected.assert_eq(&result.unwrap_or("<None>".to_string()));
+}
+
 fn check_completions(src: &str, line: u32, col: u32, expected: Expect) {
     let result = dot_completions(Path::new("dummy"), src, line, col).unwrap_or_default();
     expected.assert_debug_eq(&result);
@@ -871,6 +882,130 @@ fn main() {
     check(src, 2, 13, expect![[r#"
         "int32"
     "#]]);
+}
+
+#[test]
+fn hover_declarations_and_type_positions() {
+    let src = r#"package main;
+
+trait Render {
+    type Output;
+    fn render(Self) -> string;
+}
+
+struct Point[T] {
+    x: T,
+    y: string,
+}
+
+enum Choice {
+    Some(int32),
+    None,
+}
+
+impl Render for Point[int32] {
+    type Output = string;
+
+    fn render(self: Point[int32]) -> string {
+        self.y
+    }
+}
+
+impl Point[int32] {
+    fn first(self: Point[int32]) -> int32 {
+        self.x
+    }
+}
+
+fn identity[T](value: T) -> T {
+    value
+}
+
+fn main() -> unit {
+    let point = Point { x: 1, y: "one" };
+    let value: int32 = point.first();
+    let choice = Choice::Some(value);
+    let closure = |item: int32| item + 1;
+    match choice {
+        Choice::Some(item) => closure(item),
+        Choice::None => 0,
+    };
+    ()
+}
+"#;
+
+    check_at(src, "package main", 8, expect!["package main"]);
+    check_at(src, "trait Render", 6, expect!["trait Render"]);
+    check_at(src, "type Output;", 5, expect!["type Output"]);
+    check_at(src, "fn render(Self)", 3, expect!["(Self) -> string"]);
+    check_at(src, "struct Point", 7, expect!["struct Point[T]"]);
+    check_at(src, "Point[T]", 6, expect!["T"]);
+    check_at(src, "    x: T", 4, expect!["T"]);
+    check_at(src, "    x: T", 7, expect!["T"]);
+    check_at(src, "enum Choice", 5, expect!["enum Choice"]);
+    check_at(src, "    Some(int32)", 4, expect!["(int32) -> Choice"]);
+    check_at(src, "impl Render", 5, expect!["Render"]);
+    check_at(src, "for Point[int32]", 4, expect!["Point[int32]"]);
+    check_at(src, "type Output =", 5, expect!["string"]);
+    check_at(
+        src,
+        "    fn render(self",
+        7,
+        expect!["(Point[int32]) -> string"],
+    );
+    check_at(
+        src,
+        "    fn first(self",
+        7,
+        expect!["(Point[int32]) -> int32"],
+    );
+    check_at(src, "fn identity", 3, expect!["(T) -> T"]);
+    check_at(src, "identity[T]", 9, expect!["T"]);
+    check_at(src, "identity[T](value: T) -> T", 25, expect!["T"]);
+    check_at(src, "let value: int32", 11, expect!["int32"]);
+    check_at(src, "Point { x: 1", 8, expect!["int32"]);
+    check_at(src, "Choice::Some(value)", 0, expect!["Choice"]);
+    check_at(src, "Choice::Some(value)", 8, expect!["(int32) -> Choice"]);
+    check_at(src, "|item: int32|", 0, expect!["(int32) -> int32"]);
+}
+
+#[test]
+fn hover_use_path_without_a_resolved_package() {
+    let src = "use demo::missing;\n\nfn main() -> unit { () }\n";
+    check_at(src, "demo::missing", 6, expect!["use demo::missing"]);
+}
+
+#[test]
+fn hover_isolated_by_source_file_within_a_package() {
+    let dir = tempdir().unwrap();
+    write_module_manifest(dir.path(), "hover_files");
+    let first =
+        "package main;\n\nfn alphaa() -> unit {\n    let value = 1;\n    let _ = value;\n}\n";
+    let second =
+        "package main;\n\nfn betaaa() -> unit {\n    let value = \"x\";\n    let _ = value;\n}\n";
+    let first_path = dir.path().join("a.gom");
+    let second_path = dir.path().join("b.gom");
+    std::fs::write(&first_path, first).unwrap();
+    std::fs::write(&second_path, second).unwrap();
+
+    check_with_path(
+        &first_path,
+        first,
+        3,
+        8,
+        expect![[r#"
+            "int32"
+        "#]],
+    );
+    check_with_path(
+        &second_path,
+        second,
+        3,
+        8,
+        expect![[r#"
+            "string"
+        "#]],
+    );
 }
 
 #[test]
