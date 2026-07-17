@@ -66,7 +66,7 @@ fn expr_origin(expr: &tast::Expr) -> Option<TextRange> {
             .or_else(|| args.first().and_then(expr_origin))
             .or_else(|| args.last().and_then(expr_origin)),
         tast::Expr::EBinary { lhs, rhs, .. } => expr_origin(lhs).or_else(|| expr_origin(rhs)),
-        tast::Expr::EUnary { expr, .. } => expr_origin(expr),
+        tast::Expr::EUnary { expr, .. } | tast::Expr::ECast { expr, .. } => expr_origin(expr),
         tast::Expr::EBlock { block, .. } => block
             .tail
             .as_ref()
@@ -1490,6 +1490,12 @@ impl Typer {
                     ty: ty.clone(),
                     resolution,
                 }
+            }
+            tast::Expr::ECast { expr, ty } => {
+                let origin = expr_origin(expr.as_ref());
+                let ty = self.subst_ty(diagnostics, &ty, origin);
+                let expr = Box::new(self.subst(diagnostics, *expr));
+                tast::Expr::ECast { expr, ty }
             }
             tast::Expr::EBinary {
                 op,

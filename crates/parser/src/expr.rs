@@ -28,6 +28,7 @@ pub const EXPR_FIRST: &[TokenKind] = &[
     T![false],
     T![-],
     T![!],
+    T![~],
     T!['('],
     T!['['],
     T![if],
@@ -527,7 +528,7 @@ fn postfix_binding_power(op: TokenKind) -> Option<(u8, ())> {
 
 fn prefix_binding_power(op: TokenKind) -> Option<u8> {
     match op {
-        T![-] | T![!] => Some(23),
+        T![-] | T![!] | T![~] => Some(23),
         _ => None,
     }
 }
@@ -536,10 +537,14 @@ fn infix_binding_power(op: TokenKind) -> Option<(u8, u8)> {
     match op {
         T![||] => Some((1, 2)),
         T![&&] => Some((3, 4)),
-        T![==] | T![!=] => Some((9, 10)),
-        T![<] | T![>] | T![<=] | T![>=] => Some((11, 12)),
+        T![==] | T![!=] => Some((5, 6)),
+        T![<] | T![>] | T![<=] | T![>=] => Some((6, 7)),
+        T![|] => Some((7, 8)),
+        T![^] => Some((8, 9)),
+        T![&] => Some((9, 10)),
+        T![<<] | T![>>] => Some((12, 13)),
         T![+] | T![-] => Some((13, 14)),
-        T![*] | T![/] => Some((15, 16)),
+        T![*] | T![/] | T![%] => Some((15, 16)),
         T![.] => Some((23, 24)),
         _ => None,
     }
@@ -566,6 +571,18 @@ fn expr_bp(p: &mut Parser, min_bp: u8) -> Option<MarkerClosed> {
         }
 
         let op = p.peek();
+
+        if op == T![as] {
+            let l_bp = 17;
+            if l_bp < min_bp {
+                break;
+            }
+            let m = lhs.precede(p);
+            p.advance();
+            type_expr(p);
+            lhs = m.completed(p, MySyntaxKind::EXPR_CAST);
+            continue;
+        }
 
         if let Some((l_bp, ())) = postfix_binding_power(op) {
             if l_bp < min_bp {

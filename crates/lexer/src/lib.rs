@@ -186,11 +186,17 @@ pub enum TokenKind {
     #[token("/")]
     Slash,
 
+    #[token("%")]
+    Percent,
+
     #[token(".")]
     Dot,
 
     #[token("&&")]
     AndAnd,
+
+    #[token("&")]
+    Amp,
 
     #[token("||")]
     OrOr,
@@ -198,14 +204,26 @@ pub enum TokenKind {
     #[token("|")]
     Pipe,
 
+    #[token("^")]
+    Caret,
+
+    #[token("~")]
+    Tilde,
+
     #[token("!")]
     Bang,
 
     #[token("<")]
     Less,
 
+    #[token("<<")]
+    LessLess,
+
     #[token(">")]
     Greater,
+
+    #[token(">>")]
+    GreaterGreater,
 
     #[token(">=")]
     GreaterEq,
@@ -451,13 +469,19 @@ impl std::fmt::Display for TokenKind {
             Self::Minus => "-",
             Self::Star => "*",
             Self::Slash => "/",
+            Self::Percent => "%",
             Self::Dot => ".",
             Self::AndAnd => "&&",
+            Self::Amp => "&",
             Self::OrOr => "||",
             Self::Pipe => "|",
+            Self::Caret => "^",
+            Self::Tilde => "~",
             Self::Bang => "!",
             Self::Less => "<",
+            Self::LessLess => "<<",
             Self::Greater => ">",
+            Self::GreaterGreater => ">>",
             Self::GreaterEq => ">=",
             Self::LessEq => "<=",
             Self::EqEq => "==",
@@ -554,13 +578,19 @@ macro_rules! T {
     [-] => { $crate::TokenKind::Minus };
     [*] => { $crate::TokenKind::Star };
     [/] => { $crate::TokenKind::Slash };
+    [%] => { $crate::TokenKind::Percent };
     [.] => { $crate::TokenKind::Dot };
     [&&] => { $crate::TokenKind::AndAnd };
+    [&] => { $crate::TokenKind::Amp };
     [||] => { $crate::TokenKind::OrOr };
     [|] => { $crate::TokenKind::Pipe };
+    [^] => { $crate::TokenKind::Caret };
+    [~] => { $crate::TokenKind::Tilde };
     [!] => { $crate::TokenKind::Bang };
     [<] => { $crate::TokenKind::Less };
+    [<<] => { $crate::TokenKind::LessLess };
     [>] => { $crate::TokenKind::Greater };
+    [>>] => { $crate::TokenKind::GreaterGreater };
     [>=] => { $crate::TokenKind::GreaterEq };
     [<=] => { $crate::TokenKind::LessEq };
     [==] => { $crate::TokenKind::EqEq };

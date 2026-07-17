@@ -513,6 +513,10 @@ impl Expr {
                 ty: _,
                 resolution: _,
             } => RcDoc::text(op.symbol()).append(expr.to_doc(genv)).group(),
+            Self::ECast { expr, ty } => expr
+                .to_doc(genv)
+                .append(RcDoc::text(" as "))
+                .append(ty.to_doc()),
 
             Self::ECall { func, args, ty: _ } => {
                 let args_doc =

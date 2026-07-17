@@ -294,6 +294,11 @@ impl LiftExpr {
                     .append(expr_doc)
                     .append(RcDoc::text(")"))
             }
+            LiftExpr::ECast { expr, ty } => RcDoc::text("(")
+                .append(expr.to_doc(liftenv))
+                .append(RcDoc::text(" as "))
+                .append(ty.to_doc())
+                .append(RcDoc::text(")")),
             LiftExpr::EBinary {
                 op,
                 lhs,

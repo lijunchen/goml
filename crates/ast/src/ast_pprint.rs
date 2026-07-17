@@ -456,6 +456,14 @@ impl Expr {
                 expr,
                 astptr: _,
             } => RcDoc::text(op.symbol()).append(expr.to_doc()).group(),
+            Self::ECast {
+                expr,
+                ty,
+                astptr: _,
+            } => expr
+                .to_doc()
+                .append(RcDoc::text(" as "))
+                .append(ty.to_doc()),
             Self::ETry { expr, astptr: _ } => expr.to_doc().append(RcDoc::text("?")),
             Self::EBinary {
                 op,

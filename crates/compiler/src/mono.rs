@@ -113,6 +113,10 @@ pub enum MonoExpr {
         expr: Box<MonoExpr>,
         ty: Ty,
     },
+    ECast {
+        expr: Box<MonoExpr>,
+        ty: Ty,
+    },
     EBinary {
         op: common_defs::BinaryOp,
         lhs: Box<MonoExpr>,
@@ -175,6 +179,7 @@ impl MonoExpr {
             MonoExpr::EGo { ty, .. } => ty.clone(),
             MonoExpr::EConstrGet { ty, .. } => ty.clone(),
             MonoExpr::EUnary { ty, .. } => ty.clone(),
+            MonoExpr::ECast { ty, .. } => ty.clone(),
             MonoExpr::EBinary { ty, .. } => ty.clone(),
             MonoExpr::EAssign { ty, .. } => ty.clone(),
             MonoExpr::ECall { ty, .. } => ty.clone(),
@@ -1368,6 +1373,7 @@ fn collect_mono_expr_tys(expr: &MonoExpr, out: &mut IndexSet<Ty>) {
         MonoExpr::EGo { expr, .. }
         | MonoExpr::EConstrGet { expr, .. }
         | MonoExpr::EUnary { expr, .. }
+        | MonoExpr::ECast { expr, .. }
         | MonoExpr::EToDyn { expr, .. } => collect_mono_expr_tys(expr, out),
         MonoExpr::EBinary { lhs, rhs, .. } => {
             collect_mono_expr_tys(lhs, out);
@@ -1658,6 +1664,10 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
         }
         core::Expr::EUnary { op, expr, ty } => MonoExpr::EUnary {
             op,
+            expr: Box::new(mono_expr(ctx, &expr, s)),
+            ty: subst_ty_in_ctx(ctx, &ty, s),
+        },
+        core::Expr::ECast { expr, ty } => MonoExpr::ECast {
             expr: Box::new(mono_expr(ctx, &expr, s)),
             ty: subst_ty_in_ctx(ctx, &ty, s),
         },
@@ -2402,6 +2412,10 @@ fn rewrite_expr_types(e: MonoExpr, m: &mut TypeMono<'_>) -> MonoExpr {
             expr: Box::new(rewrite_expr_types(*expr, m)),
             ty: m.collapse_type_apps(&ty),
         },
+        MonoExpr::ECast { expr, ty } => MonoExpr::ECast {
+            expr: Box::new(rewrite_expr_types(*expr, m)),
+            ty: m.collapse_type_apps(&ty),
+        },
         MonoExpr::EBinary { op, lhs, rhs, ty } => MonoExpr::EBinary {
             op,
             lhs: Box::new(rewrite_expr_types(*lhs, m)),
@@ -2580,6 +2594,10 @@ fn rename_expr_refs(e: MonoExpr, renames: &IndexMap<String, String>) -> MonoExpr
         },
         MonoExpr::EUnary { op, expr, ty } => MonoExpr::EUnary {
             op,
+            expr: Box::new(rename_expr_refs(*expr, renames)),
+            ty,
+        },
+        MonoExpr::ECast { expr, ty } => MonoExpr::ECast {
             expr: Box::new(rename_expr_refs(*expr, renames)),
             ty,
         },

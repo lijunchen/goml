@@ -54,6 +54,12 @@ pub(crate) fn comparison_operand_is_valid(
         | common_defs::BinaryOp::Sub
         | common_defs::BinaryOp::Mul
         | common_defs::BinaryOp::Div
+        | common_defs::BinaryOp::Rem
+        | common_defs::BinaryOp::BitAnd
+        | common_defs::BinaryOp::BitOr
+        | common_defs::BinaryOp::BitXor
+        | common_defs::BinaryOp::Shl
+        | common_defs::BinaryOp::Shr
         | common_defs::BinaryOp::And
         | common_defs::BinaryOp::Or => true,
     }
@@ -120,6 +126,12 @@ pub(crate) fn comparison_operator_text(op: common_defs::BinaryOp) -> &'static st
         common_defs::BinaryOp::Sub => "-",
         common_defs::BinaryOp::Mul => "*",
         common_defs::BinaryOp::Div => "/",
+        common_defs::BinaryOp::Rem => "%",
+        common_defs::BinaryOp::BitAnd => "&",
+        common_defs::BinaryOp::BitOr => "|",
+        common_defs::BinaryOp::BitXor => "^",
+        common_defs::BinaryOp::Shl => "<<",
+        common_defs::BinaryOp::Shr => ">>",
         common_defs::BinaryOp::And => "&&",
         common_defs::BinaryOp::Or => "||",
     }

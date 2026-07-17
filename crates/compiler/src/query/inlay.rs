@@ -142,7 +142,10 @@ fn collect_hints_from_expr(
             collect_hints_from_expr(hir_table, results, *iterator, hints);
             collect_hints_from_expr(hir_table, results, *body, hints);
         }
-        hir::Expr::EGo { expr } | hir::Expr::EUnary { expr, .. } | hir::Expr::ETry { expr } => {
+        hir::Expr::EGo { expr }
+        | hir::Expr::EUnary { expr, .. }
+        | hir::Expr::ECast { expr, .. }
+        | hir::Expr::ETry { expr } => {
             collect_hints_from_expr(hir_table, results, *expr, hints);
         }
         hir::Expr::EReturn { expr } => {

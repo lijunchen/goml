@@ -50,6 +50,7 @@ fn stmt_has_label_or_goto(stmt: &ast::Stmt) -> bool {
                 || default.as_ref().is_some_and(block_has_label_or_goto)
         }
         ast::Stmt::Loop { body, .. } => block_has_label_or_goto(body),
+        ast::Stmt::Range { .. } => true,
         ast::Stmt::Expr(e) => expr_has_label_or_goto(e),
         ast::Stmt::Go { call } => expr_has_label_or_goto(call),
         ast::Stmt::VarDecl { value, .. } => value.as_ref().is_some_and(expr_has_label_or_goto),
@@ -99,7 +100,9 @@ fn expr_has_label_or_goto(expr: &ast::Expr) -> bool {
                 || expr_has_label_or_goto(start)
                 || expr_has_label_or_goto(end)
         }
-        ast::Expr::Cast { expr, .. } => expr_has_label_or_goto(expr),
+        ast::Expr::Cast { expr, .. } | ast::Expr::Convert { expr, .. } => {
+            expr_has_label_or_goto(expr)
+        }
         ast::Expr::Spread { expr, .. } => expr_has_label_or_goto(expr),
         ast::Expr::StructLiteral { fields, .. } => {
             fields.iter().any(|(_n, e)| expr_has_label_or_goto(e))
@@ -307,6 +310,27 @@ fn dce_block_with_live(
                     label: label.clone(),
                 });
             }
+            ast::Stmt::Range {
+                key,
+                value,
+                expr,
+                body,
+            } => {
+                let expr = dce_expr(expr);
+                let mut body_live_out = live.clone();
+                body_live_out.remove(&key);
+                body_live_out.remove(&value);
+                let (body, body_live_in) = dce_block_with_live(body, &body_live_out);
+                live.extend(body_live_in);
+                add_uses_expr(&mut live, &expr);
+                needs_decl.extend(assigned_vars_in_block(&body));
+                out.push(ast::Stmt::Range {
+                    key,
+                    value,
+                    expr,
+                    body,
+                });
+            }
             ast::Stmt::Break => {
                 out.push(ast::Stmt::Break);
             }
@@ -443,6 +467,10 @@ fn dce_expr(expr: ast::Expr) -> ast::Expr {
             expr: Box::new(dce_expr(*expr)),
             ty,
         },
+        ast::Expr::Convert { expr, ty } => ast::Expr::Convert {
+            expr: Box::new(dce_expr(*expr)),
+            ty,
+        },
         ast::Expr::Spread { expr, ty } => ast::Expr::Spread {
             expr: Box::new(dce_expr(*expr)),
             ty,
@@ -542,6 +570,9 @@ fn assigned_vars_in_block(b: &ast::Block) -> HashSet<String> {
             ast::Stmt::Loop { body, .. } => {
                 s.extend(assigned_vars_in_block(body));
             }
+            ast::Stmt::Range { body, .. } => {
+                s.extend(assigned_vars_in_block(body));
+            }
             ast::Stmt::Break | ast::Stmt::Continue | ast::Stmt::BreakLabel(_) => {}
             _ => {}
         }
@@ -576,7 +607,7 @@ fn vars_used_in_expr(e: &ast::Expr) -> HashSet<String> {
             s.extend(vars_used_in_expr(lhs));
             s.extend(vars_used_in_expr(rhs));
         }
-        ast::Expr::Cast { expr, .. } => {
+        ast::Expr::Cast { expr, .. } | ast::Expr::Convert { expr, .. } => {
             s.extend(vars_used_in_expr(expr));
         }
         ast::Expr::Spread { expr, .. } => {
@@ -682,6 +713,18 @@ fn vars_used_in_expr(e: &ast::Expr) -> HashSet<String> {
                     }
                     ast::Stmt::Loop { body, .. } => {
                         used.extend(free_vars_in_block(body));
+                    }
+                    ast::Stmt::Range {
+                        key,
+                        value,
+                        expr,
+                        body,
+                    } => {
+                        used.extend(vars_used_in_expr(expr));
+                        let mut body_vars = free_vars_in_block(body);
+                        body_vars.remove(key);
+                        body_vars.remove(value);
+                        used.extend(body_vars);
                     }
                     ast::Stmt::Label { .. } | ast::Stmt::Goto { .. } => {}
                     ast::Stmt::Break | ast::Stmt::Continue | ast::Stmt::BreakLabel(_) => {}
@@ -806,6 +849,18 @@ fn free_vars_in_block(b: &ast::Block) -> HashSet<String> {
             ast::Stmt::Loop { body, .. } => {
                 used.extend(free_vars_in_block(body));
             }
+            ast::Stmt::Range {
+                key,
+                value,
+                expr,
+                body,
+            } => {
+                used.extend(vars_used_in_expr(expr));
+                let mut body_vars = free_vars_in_block(body);
+                body_vars.remove(key);
+                body_vars.remove(value);
+                used.extend(body_vars);
+            }
             ast::Stmt::Label { .. } | ast::Stmt::Goto { .. } => {}
             ast::Stmt::Break | ast::Stmt::Continue | ast::Stmt::BreakLabel(_) => {}
         }
@@ -880,7 +935,9 @@ fn expr_has_side_effects(e: &ast::Expr) -> bool {
         ast::Expr::BinaryOp { lhs, rhs, .. } => {
             expr_has_side_effects(lhs) || expr_has_side_effects(rhs)
         }
-        ast::Expr::Cast { expr, .. } => expr_has_side_effects(expr),
+        ast::Expr::Cast { expr, .. } | ast::Expr::Convert { expr, .. } => {
+            expr_has_side_effects(expr)
+        }
         ast::Expr::Spread { expr, .. } => expr_has_side_effects(expr),
         ast::Expr::StructLiteral { fields, .. } => {
             fields.iter().any(|(_, e)| expr_has_side_effects(e))
@@ -962,6 +1019,7 @@ fn stmt_has_side_effects(s: &ast::Stmt) -> bool {
         ast::Stmt::Return { expr } => expr.as_ref().map(expr_has_side_effects).unwrap_or(false),
         ast::Stmt::ReturnMulti { exprs } => exprs.iter().any(expr_has_side_effects),
         ast::Stmt::Loop { body, .. } => body.stmts.iter().any(stmt_has_side_effects),
+        ast::Stmt::Range { .. } => true,
         ast::Stmt::Break | ast::Stmt::Continue | ast::Stmt::BreakLabel(_) => false,
         ast::Stmt::If { cond, then, else_ } => {
             expr_has_side_effects(cond)
@@ -1146,6 +1204,10 @@ fn collect_called_in_stmt(
         ast::Stmt::Loop { body, .. } => {
             collect_called_in_block(body, calls, fn_names);
         }
+        ast::Stmt::Range { expr, body, .. } => {
+            collect_called_in_expr(expr, calls, fn_names);
+            collect_called_in_block(body, calls, fn_names);
+        }
         ast::Stmt::Break | ast::Stmt::Continue | ast::Stmt::BreakLabel(_) => {}
     }
 }
@@ -1174,7 +1236,9 @@ fn collect_called_in_expr(
             collect_called_in_expr(start, calls, fn_names);
             collect_called_in_expr(end, calls, fn_names);
         }
-        ast::Expr::Cast { expr, .. } => collect_called_in_expr(expr, calls, fn_names),
+        ast::Expr::Cast { expr, .. } | ast::Expr::Convert { expr, .. } => {
+            collect_called_in_expr(expr, calls, fn_names)
+        }
         ast::Expr::Spread { expr, .. } => collect_called_in_expr(expr, calls, fn_names),
         ast::Expr::StructLiteral { fields, .. } => {
             for (_, e) in fields {
@@ -1409,6 +1473,10 @@ fn collect_packages_in_stmt(
         ast::Stmt::Loop { body, .. } => {
             collect_packages_in_block(body, imports, used);
         }
+        ast::Stmt::Range { expr, body, .. } => {
+            collect_packages_in_expr(expr, imports, used);
+            collect_packages_in_block(body, imports, used);
+        }
         ast::Stmt::Break | ast::Stmt::Continue | ast::Stmt::BreakLabel(_) => {}
     }
 }
@@ -1446,7 +1514,9 @@ fn collect_packages_in_expr(
             collect_packages_in_expr(start, imports, used);
             collect_packages_in_expr(end, imports, used);
         }
-        ast::Expr::Cast { expr, .. } => collect_packages_in_expr(expr, imports, used),
+        ast::Expr::Cast { expr, .. } | ast::Expr::Convert { expr, .. } => {
+            collect_packages_in_expr(expr, imports, used)
+        }
         ast::Expr::Spread { expr, .. } => collect_packages_in_expr(expr, imports, used),
         ast::Expr::StructLiteral { fields, .. } => {
             for (_, e) in fields {

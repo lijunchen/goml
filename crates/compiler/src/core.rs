@@ -123,6 +123,10 @@ pub enum Expr {
         expr: Box<Expr>,
         ty: Ty,
     },
+    ECast {
+        expr: Box<Expr>,
+        ty: Ty,
+    },
     EBinary {
         op: common_defs::BinaryOp,
         lhs: Box<Expr>,
@@ -187,6 +191,7 @@ impl Expr {
             Expr::EGo { ty, .. } => ty.clone(),
             Expr::EConstrGet { ty, .. } => ty.clone(),
             Expr::EUnary { ty, .. } => ty.clone(),
+            Expr::ECast { ty, .. } => ty.clone(),
             Expr::EBinary { ty, .. } => ty.clone(),
             Expr::EAssign { ty, .. } => ty.clone(),
             Expr::ECall { ty, .. } => ty.clone(),

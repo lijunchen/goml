@@ -634,6 +634,20 @@ impl Stmt {
                     loop_doc
                 }
             }
+            Stmt::Range {
+                key,
+                value,
+                expr,
+                body,
+            } => RcDoc::text("for")
+                .append(RcDoc::space())
+                .append(RcDoc::text(key))
+                .append(RcDoc::text(", "))
+                .append(RcDoc::text(value))
+                .append(RcDoc::text(" := range "))
+                .append(expr.to_doc(goenv))
+                .append(RcDoc::space())
+                .append(body.to_doc(goenv)),
             Stmt::Break => RcDoc::text("break"),
             Stmt::BreakLabel(lbl) => RcDoc::text(format!("break {}", lbl)),
             Stmt::Continue => RcDoc::text("continue"),
@@ -855,6 +869,10 @@ impl Expr {
                 .append(RcDoc::text(".("))
                 .append(go_type_doc(ty))
                 .append(RcDoc::text(")")),
+            Expr::Convert { expr, ty } => go_type_doc(ty)
+                .append(RcDoc::text("("))
+                .append(expr.to_doc(goenv))
+                .append(RcDoc::text(")")),
             Expr::StructLiteral { ty, fields } => {
                 let fields_doc = if fields.is_empty() {
                     RcDoc::nil()
@@ -988,6 +1006,7 @@ impl GoUnaryOp {
         match self {
             GoUnaryOp::Neg => RcDoc::text("-"),
             GoUnaryOp::Not => RcDoc::text("!"),
+            GoUnaryOp::BitNot => RcDoc::text("^"),
             GoUnaryOp::AddrOf => RcDoc::text("&"),
             GoUnaryOp::Deref => RcDoc::text("*"),
         }
@@ -1001,6 +1020,12 @@ impl GoBinaryOp {
             GoBinaryOp::Sub => RcDoc::text("-"),
             GoBinaryOp::Mul => RcDoc::text("*"),
             GoBinaryOp::Div => RcDoc::text("/"),
+            GoBinaryOp::Rem => RcDoc::text("%"),
+            GoBinaryOp::BitAnd => RcDoc::text("&"),
+            GoBinaryOp::BitOr => RcDoc::text("|"),
+            GoBinaryOp::BitXor => RcDoc::text("^"),
+            GoBinaryOp::Shl => RcDoc::text("<<"),
+            GoBinaryOp::Shr => RcDoc::text(">>"),
             GoBinaryOp::Less => RcDoc::text("<"),
             GoBinaryOp::Greater => RcDoc::text(">"),
             GoBinaryOp::LessEq => RcDoc::text("<="),

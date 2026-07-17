@@ -189,6 +189,10 @@ pub enum Expr {
         expr: Box<Expr>,
         ty: goty::GoType,
     },
+    Convert {
+        expr: Box<Expr>,
+        ty: goty::GoType,
+    },
     StructLiteral {
         fields: Vec<(String, Expr)>,
         ty: goty::GoType,
@@ -229,6 +233,7 @@ impl Expr {
             | Expr::Index { ty, .. }
             | Expr::Slice { ty, .. }
             | Expr::Cast { ty, .. }
+            | Expr::Convert { ty, .. }
             | Expr::StructLiteral { ty, .. }
             | Expr::ArrayLiteral { ty, .. }
             | Expr::Block { ty, .. }
@@ -241,6 +246,7 @@ impl Expr {
 pub enum GoUnaryOp {
     Neg,
     Not,
+    BitNot,
     AddrOf,
     Deref,
 }
@@ -251,6 +257,12 @@ pub enum GoBinaryOp {
     Sub,
     Mul,
     Div,
+    Rem,
+    BitAnd,
+    BitOr,
+    BitXor,
+    Shl,
+    Shr,
     Less,
     Greater,
     LessEq,
@@ -313,6 +325,12 @@ pub enum Stmt {
     Loop {
         body: Block,
         label: Option<String>,
+    },
+    Range {
+        key: String,
+        value: String,
+        expr: Expr,
+        body: Block,
     },
     Break,
     BreakLabel(String),

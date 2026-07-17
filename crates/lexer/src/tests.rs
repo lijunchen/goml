@@ -143,6 +143,47 @@ fn lexes_logical_operators() {
 }
 
 #[test]
+fn lexes_numeric_bit_operators() {
+    check(
+        "a % b & c | d ^ ~e << f >> g as uint32",
+        expect![[r#"
+            [
+                {kind: Ident, text: "a"},
+                {kind: Whitespace, text: " "},
+                {kind: Percent, text: "%"},
+                {kind: Whitespace, text: " "},
+                {kind: Ident, text: "b"},
+                {kind: Whitespace, text: " "},
+                {kind: Amp, text: "&"},
+                {kind: Whitespace, text: " "},
+                {kind: Ident, text: "c"},
+                {kind: Whitespace, text: " "},
+                {kind: Pipe, text: "|"},
+                {kind: Whitespace, text: " "},
+                {kind: Ident, text: "d"},
+                {kind: Whitespace, text: " "},
+                {kind: Caret, text: "^"},
+                {kind: Whitespace, text: " "},
+                {kind: Tilde, text: "~"},
+                {kind: Ident, text: "e"},
+                {kind: Whitespace, text: " "},
+                {kind: LessLess, text: "<<"},
+                {kind: Whitespace, text: " "},
+                {kind: Ident, text: "f"},
+                {kind: Whitespace, text: " "},
+                {kind: GreaterGreater, text: ">>"},
+                {kind: Whitespace, text: " "},
+                {kind: Ident, text: "g"},
+                {kind: Whitespace, text: " "},
+                {kind: AsKeyword, text: "as"},
+                {kind: Whitespace, text: " "},
+                {kind: Uint32Keyword, text: "uint32"},
+            ]
+        "#]],
+    )
+}
+
+#[test]
 fn lexes_ref_builtins() {
     check(
         "r.set(a.get())",

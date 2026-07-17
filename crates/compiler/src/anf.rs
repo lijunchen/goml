@@ -149,6 +149,10 @@ pub enum ValueExpr {
         expr: ImmExpr,
         ty: Ty,
     },
+    Cast {
+        expr: ImmExpr,
+        ty: Ty,
+    },
     Binary {
         op: BinaryOp,
         lhs: ImmExpr,
@@ -264,6 +268,7 @@ fn value_expr_tast_ty(e: &ValueExpr) -> Ty {
         | ValueExpr::Array { ty, .. }
         | ValueExpr::ConstrGet { ty, .. }
         | ValueExpr::Unary { ty, .. }
+        | ValueExpr::Cast { ty, .. }
         | ValueExpr::Binary { ty, .. }
         | ValueExpr::Assign { ty, .. }
         | ValueExpr::Call { ty, .. }
@@ -418,6 +423,7 @@ fn lift_expr_always_exits_control_flow(expr: &LiftExpr) -> bool {
         LiftExpr::EGo { expr, .. }
         | LiftExpr::EConstrGet { expr, .. }
         | LiftExpr::EUnary { expr, .. }
+        | LiftExpr::ECast { expr, .. }
         | LiftExpr::EToDyn { expr, .. } => lift_expr_always_exits_control_flow(expr),
         LiftExpr::EBinary { op, lhs, rhs, .. } => {
             lift_expr_always_exits_control_flow(lhs)
@@ -951,6 +957,17 @@ fn lower_value<'a>(
                 })
             }),
         ),
+        LiftExpr::ECast { expr, ty: _ } => lower(
+            anfenv,
+            gensym,
+            *expr,
+            Box::new(move |imm| {
+                k(ValueExpr::Cast {
+                    expr: imm,
+                    ty: e_ty,
+                })
+            }),
+        ),
         LiftExpr::EBinary { op, lhs, rhs, .. } => lower(
             anfenv,
             gensym,
@@ -1247,6 +1264,10 @@ fn lower_linear_expr(gensym: &Gensym, expr: &LiftExpr) -> Option<(Vec<Bind>, Imm
                 binds,
                 ValueExpr::Unary { op: *op, expr, ty },
             ))
+        }
+        LiftExpr::ECast { expr, ty: _ } => {
+            let (binds, expr) = lower_linear_expr(gensym, expr)?;
+            Some(bind_value(gensym, binds, ValueExpr::Cast { expr, ty }))
         }
         LiftExpr::EBinary {
             op,
@@ -1614,6 +1635,10 @@ pub mod anf_renamer {
             },
             anf::ValueExpr::Unary { op, expr, ty } => anf::ValueExpr::Unary {
                 op,
+                expr: rename_imm(expr),
+                ty,
+            },
+            anf::ValueExpr::Cast { expr, ty } => anf::ValueExpr::Cast {
                 expr: rename_imm(expr),
                 ty,
             },
@@ -1997,6 +2022,10 @@ pub mod anf_verify {
                 verify_ty_is_value(errors, ty);
             }
             anf::ValueExpr::Unary { expr, ty, .. } => {
+                verify_imm(errors, locals, expr);
+                verify_ty_is_value(errors, ty);
+            }
+            anf::ValueExpr::Cast { expr, ty } => {
                 verify_imm(errors, locals, expr);
                 verify_ty_is_value(errors, ty);
             }

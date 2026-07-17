@@ -626,6 +626,11 @@ fn build_expr(
                 }
             }
         }
+        hir::Expr::ECast { expr, .. } => {
+            let expr = Box::new(build_expr(hir_table, results, expr));
+            let ty = results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit);
+            tast::Expr::ECast { expr, ty }
+        }
         hir::Expr::ETry { expr } => build_try_expr(hir_table, results, expr_id, expr),
         hir::Expr::EBinary { op, lhs, rhs } => {
             let lhs = Box::new(build_expr(hir_table, results, lhs));

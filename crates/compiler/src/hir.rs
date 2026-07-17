@@ -1430,6 +1430,10 @@ pub enum Expr {
         op: common_defs::UnaryOp,
         expr: ExprId,
     },
+    ECast {
+        expr: ExprId,
+        ty: TypeExpr,
+    },
     ETry {
         expr: ExprId,
     },

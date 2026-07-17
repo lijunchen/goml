@@ -902,6 +902,7 @@ pub enum Expr {
     ParenExpr(ParenExpr),
     BinaryExpr(BinaryExpr),
     PrefixExpr(PrefixExpr),
+    CastExpr(CastExpr),
     IndexExpr(IndexExpr),
     TryExpr(TryExpr),
     ClosureExpr(ClosureExpr),
@@ -938,6 +939,7 @@ impl CstNode for Expr {
                 | EXPR_PAREN
                 | EXPR_BINARY
                 | EXPR_PREFIX
+                | EXPR_CAST
                 | EXPR_INDEX
                 | EXPR_TRY
                 | EXPR_CLOSURE
@@ -982,6 +984,7 @@ impl CstNode for Expr {
             EXPR_PAREN => Expr::ParenExpr(ParenExpr { syntax }),
             EXPR_BINARY => Expr::BinaryExpr(BinaryExpr { syntax }),
             EXPR_PREFIX => Expr::PrefixExpr(PrefixExpr { syntax }),
+            EXPR_CAST => Expr::CastExpr(CastExpr { syntax }),
             EXPR_INDEX => Expr::IndexExpr(IndexExpr { syntax }),
             EXPR_TRY => Expr::TryExpr(TryExpr { syntax }),
             EXPR_ARRAY_LITERAL => Expr::ArrayLiteralExpr(ArrayLiteralExpr { syntax }),
@@ -1025,6 +1028,7 @@ impl CstNode for Expr {
             Self::ParenExpr(it) => &it.syntax,
             Self::BinaryExpr(it) => &it.syntax,
             Self::PrefixExpr(it) => &it.syntax,
+            Self::CastExpr(it) => &it.syntax,
             Self::IndexExpr(it) => &it.syntax,
             Self::TryExpr(it) => &it.syntax,
             Self::ClosureExpr(it) => &it.syntax,
@@ -1746,10 +1750,16 @@ impl BinaryExpr {
                         | MySyntaxKind::Minus
                         | MySyntaxKind::Star
                         | MySyntaxKind::Slash
+                        | MySyntaxKind::Percent
                         | MySyntaxKind::AndAnd
+                        | MySyntaxKind::Amp
                         | MySyntaxKind::OrOr
+                        | MySyntaxKind::Pipe
+                        | MySyntaxKind::Caret
                         | MySyntaxKind::Less
+                        | MySyntaxKind::LessLess
                         | MySyntaxKind::Greater
+                        | MySyntaxKind::GreaterGreater
                         | MySyntaxKind::LessEq
                         | MySyntaxKind::GreaterEq
                         | MySyntaxKind::EqEq
@@ -1781,7 +1791,10 @@ impl PrefixExpr {
     pub fn op(&self) -> Option<MySyntaxToken> {
         self.syntax.children_with_tokens().find_map(|element| {
             element.into_token().and_then(|token| {
-                if matches!(token.kind(), MySyntaxKind::Minus | MySyntaxKind::Bang) {
+                if matches!(
+                    token.kind(),
+                    MySyntaxKind::Minus | MySyntaxKind::Bang | MySyntaxKind::Tilde
+                ) {
                     Some(token)
                 } else {
                     None
@@ -1793,6 +1806,26 @@ impl PrefixExpr {
 
 impl_cst_node_simple!(PrefixExpr, MySyntaxKind::EXPR_PREFIX);
 impl_display_via_syntax!(PrefixExpr);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct CastExpr {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl CastExpr {
+    pub fn expr(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+
+    pub fn ty(&self) -> Option<Type> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(CastExpr, MySyntaxKind::EXPR_CAST);
+impl_display_via_syntax!(CastExpr);
 
 ////////////////////////////////////////////////////////////////////////////////
 

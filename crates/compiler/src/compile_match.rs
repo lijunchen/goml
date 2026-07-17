@@ -75,7 +75,7 @@ fn expr_always_exits_control_flow(expr: &Expr) -> bool {
         ETuple { items, .. } | EArray { items, .. } => {
             items.iter().any(expr_always_exits_control_flow)
         }
-        EUnary { expr, .. } | EGo { expr, .. } | EField { expr, .. } => {
+        EUnary { expr, .. } | ECast { expr, .. } | EGo { expr, .. } | EField { expr, .. } => {
             expr_always_exits_control_flow(expr)
         }
         ECall { func, args, .. } => {
@@ -2362,6 +2362,7 @@ fn collect_mutable_bindings_expr(expr: &Expr, mutable_bindings: &mut HiddenMutCe
             }
         }
         EUnary { expr, .. }
+        | ECast { expr, .. }
         | EProj { tuple: expr, .. }
         | EField { expr, .. }
         | EToDyn { expr, .. } => {
@@ -2466,6 +2467,7 @@ fn collect_captured_names_expr(expr: &Expr, captured: &mut HashSet<String>) {
             }
         }
         EUnary { expr, .. }
+        | ECast { expr, .. }
         | EProj { tuple: expr, .. }
         | EField { expr, .. }
         | EToDyn { expr, .. } => {
@@ -2672,6 +2674,10 @@ fn lower_hidden_mut_expr(expr: core::Expr, hidden_mut_cells: &HiddenMutCells) ->
         },
         core::Expr::EUnary { op, expr, ty } => core::Expr::EUnary {
             op,
+            expr: Box::new(lower_hidden_mut_expr(*expr, hidden_mut_cells)),
+            ty,
+        },
+        core::Expr::ECast { expr, ty } => core::Expr::ECast {
             expr: Box::new(lower_hidden_mut_expr(*expr, hidden_mut_cells)),
             ty,
         },
@@ -3682,6 +3688,10 @@ fn compile_expr(
                 }
             }
         }
+        ECast { expr, ty } => core::Expr::ECast {
+            expr: Box::new(compile_expr(expr, genv, gensym, diagnostics)),
+            ty: ty.clone(),
+        },
         EBinary {
             op,
             lhs,

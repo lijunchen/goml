@@ -11,10 +11,14 @@ pub enum IntrinsicId {
     RefPtrEq,
     RefPtrHash,
     VecNew,
+    VecWithCapacity,
     VecPush,
     VecGet,
     VecSet,
     VecLen,
+    VecCapacity,
+    VecReserve,
+    VecTruncate,
     SliceNew,
     SliceGet,
     SliceLen,
@@ -25,11 +29,12 @@ pub enum IntrinsicId {
     HashMapRemove,
     HashMapLen,
     HashMapContains,
+    HashMapEntries,
     Missing,
 }
 
 impl IntrinsicId {
-    pub const ALL: [Self; 23] = [
+    pub const ALL: [Self; 28] = [
         Self::ArrayGet,
         Self::ArraySet,
         Self::RefNew,
@@ -38,10 +43,14 @@ impl IntrinsicId {
         Self::RefPtrEq,
         Self::RefPtrHash,
         Self::VecNew,
+        Self::VecWithCapacity,
         Self::VecPush,
         Self::VecGet,
         Self::VecSet,
         Self::VecLen,
+        Self::VecCapacity,
+        Self::VecReserve,
+        Self::VecTruncate,
         Self::SliceNew,
         Self::SliceGet,
         Self::SliceLen,
@@ -52,6 +61,7 @@ impl IntrinsicId {
         Self::HashMapRemove,
         Self::HashMapLen,
         Self::HashMapContains,
+        Self::HashMapEntries,
         Self::Missing,
     ];
 
@@ -65,10 +75,14 @@ impl IntrinsicId {
             Self::RefPtrEq => "ref.ptr_eq",
             Self::RefPtrHash => "ref.ptr_hash",
             Self::VecNew => "vec.new",
+            Self::VecWithCapacity => "vec.with_capacity",
             Self::VecPush => "vec.push",
             Self::VecGet => "vec.get",
             Self::VecSet => "vec.set",
             Self::VecLen => "vec.len",
+            Self::VecCapacity => "vec.capacity",
+            Self::VecReserve => "vec.reserve",
+            Self::VecTruncate => "vec.truncate",
             Self::SliceNew => "slice.new",
             Self::SliceGet => "slice.get",
             Self::SliceLen => "slice.len",
@@ -79,6 +93,7 @@ impl IntrinsicId {
             Self::HashMapRemove => "hashmap.remove",
             Self::HashMapLen => "hashmap.len",
             Self::HashMapContains => "hashmap.contains",
+            Self::HashMapEntries => "hashmap.entries",
             Self::Missing => "compiler.missing",
         }
     }
@@ -93,10 +108,14 @@ impl IntrinsicId {
             Self::RefPtrEq => "ptr_eq",
             Self::RefPtrHash => "ptr_hash",
             Self::VecNew => "vec_new",
+            Self::VecWithCapacity => "vec_with_capacity",
             Self::VecPush => "vec_push",
             Self::VecGet => "vec_get",
             Self::VecSet => "vec_set",
             Self::VecLen => "vec_len",
+            Self::VecCapacity => "vec_capacity",
+            Self::VecReserve => "vec_reserve",
+            Self::VecTruncate => "vec_truncate",
             Self::SliceNew => "slice",
             Self::SliceGet => "slice_get",
             Self::SliceLen => "slice_len",
@@ -107,6 +126,7 @@ impl IntrinsicId {
             Self::HashMapRemove => "hashmap_remove",
             Self::HashMapLen => "hashmap_len",
             Self::HashMapContains => "hashmap_contains",
+            Self::HashMapEntries => "hashmap_entries",
             Self::Missing => "missing",
         }
     }
@@ -125,7 +145,13 @@ pub enum RuntimeHookId {
     BoolToString,
     StringLen,
     StringGet,
+    StringByteGet,
     StringByteSlice,
+    StringIsCharBoundary,
+    StringDecodeUtf8At,
+    StringToBytes,
+    StringFromUtf8,
+    StringConcat,
     StringPrint,
     StringPrintln,
     CharToString,
@@ -164,12 +190,18 @@ pub enum RuntimeHookId {
 }
 
 impl RuntimeHookId {
-    pub const ALL: [Self; 40] = [
+    pub const ALL: [Self; 46] = [
         Self::UnitToString,
         Self::BoolToString,
         Self::StringLen,
         Self::StringGet,
+        Self::StringByteGet,
         Self::StringByteSlice,
+        Self::StringIsCharBoundary,
+        Self::StringDecodeUtf8At,
+        Self::StringToBytes,
+        Self::StringFromUtf8,
+        Self::StringConcat,
         Self::StringPrint,
         Self::StringPrintln,
         Self::CharToString,
@@ -213,7 +245,13 @@ impl RuntimeHookId {
             Self::BoolToString => "core.bool_to_string",
             Self::StringLen => "core.string_len",
             Self::StringGet => "core.string_get",
+            Self::StringByteGet => "core.string_byte_get",
             Self::StringByteSlice => "core.string_byte_slice",
+            Self::StringIsCharBoundary => "core.string_is_char_boundary",
+            Self::StringDecodeUtf8At => "core.string_decode_utf8_at",
+            Self::StringToBytes => "core.string_to_bytes",
+            Self::StringFromUtf8 => "core.string_from_utf8",
+            Self::StringConcat => "core.string_concat",
             Self::StringPrint => "core.string_print",
             Self::StringPrintln => "core.string_println",
             Self::CharToString => "core.char_to_string",
@@ -263,7 +301,13 @@ impl RuntimeHookId {
                 | Self::BoolToString
                 | Self::StringLen
                 | Self::StringGet
+                | Self::StringByteGet
                 | Self::StringByteSlice
+                | Self::StringIsCharBoundary
+                | Self::StringDecodeUtf8At
+                | Self::StringToBytes
+                | Self::StringFromUtf8
+                | Self::StringConcat
                 | Self::StringPrint
                 | Self::StringPrintln
                 | Self::CharToString
@@ -413,19 +457,25 @@ impl IntrinsicId {
             | Self::RefPtrHash
             | Self::VecGet
             | Self::VecLen
+            | Self::VecCapacity
             | Self::SliceNew
             | Self::SliceGet
             | Self::SliceLen
             | Self::SliceSub
             | Self::HashMapGet
             | Self::HashMapLen
-            | Self::HashMapContains => CallEffect::Pure,
+            | Self::HashMapContains
+            | Self::HashMapEntries => CallEffect::Pure,
             Self::RefSet
             | Self::VecPush
             | Self::VecSet
+            | Self::VecReserve
+            | Self::VecTruncate
             | Self::HashMapSet
             | Self::HashMapRemove => CallEffect::MutatesArgument(0),
-            Self::RefNew | Self::VecNew | Self::HashMapNew => CallEffect::Pure,
+            Self::RefNew | Self::VecNew | Self::VecWithCapacity | Self::HashMapNew => {
+                CallEffect::Pure
+            }
             Self::Missing => CallEffect::Diverges,
         }
     }
@@ -718,6 +768,9 @@ impl IntrinsicId {
                 generic_signature(&["T"], &[], vec![ref_ty(t)], crate::tast::Ty::TUint64)
             }
             Self::VecNew => generic_signature(&["T"], &[], vec![], vec_ty(t)),
+            Self::VecWithCapacity => {
+                generic_signature(&["T"], &[], vec![crate::tast::Ty::TInt32], vec_ty(t))
+            }
             Self::VecPush => generic_signature(
                 &["T"],
                 &[],
@@ -739,6 +792,15 @@ impl IntrinsicId {
             Self::VecLen => {
                 generic_signature(&["T"], &[], vec![vec_ty(t)], crate::tast::Ty::TInt32)
             }
+            Self::VecCapacity => {
+                generic_signature(&["T"], &[], vec![vec_ty(t)], crate::tast::Ty::TInt32)
+            }
+            Self::VecReserve | Self::VecTruncate => generic_signature(
+                &["T"],
+                &[],
+                vec![vec_ty(t), crate::tast::Ty::TInt32],
+                crate::tast::Ty::TUnit,
+            ),
             Self::SliceNew => generic_signature(
                 &["T"],
                 &[],
@@ -801,6 +863,12 @@ impl IntrinsicId {
                 vec![hashmap_ty(k.clone(), v), k],
                 crate::tast::Ty::TBool,
             ),
+            Self::HashMapEntries => generic_signature(
+                &["K", "V"],
+                &map_constraints,
+                vec![hashmap_ty(k.clone(), v.clone())],
+                vec_ty(tuple_ty(vec![k, v])),
+            ),
             Self::Missing => generic_signature(&["T"], &[], vec![crate::tast::Ty::TString], t),
         }
     }
@@ -814,9 +882,21 @@ impl RuntimeHookId {
             Self::BoolToString => signature(vec![Ty::TBool], Ty::TString),
             Self::StringLen => signature(vec![Ty::TString], Ty::TInt32),
             Self::StringGet => signature(vec![Ty::TString, Ty::TInt32], Ty::TChar),
+            Self::StringByteGet => signature(vec![Ty::TString, Ty::TInt32], Ty::TUint8),
             Self::StringByteSlice => {
                 signature(vec![Ty::TString, Ty::TInt32, Ty::TInt32], Ty::TString)
             }
+            Self::StringIsCharBoundary => signature(vec![Ty::TString, Ty::TInt32], Ty::TBool),
+            Self::StringDecodeUtf8At => signature(
+                vec![Ty::TString, Ty::TInt32],
+                tuple_ty(vec![Ty::TBool, Ty::TChar, Ty::TInt32]),
+            ),
+            Self::StringToBytes => signature(vec![Ty::TString], vec_ty(Ty::TUint8)),
+            Self::StringFromUtf8 => signature(
+                vec![vec_ty(Ty::TUint8)],
+                tuple_ty(vec![Ty::TBool, Ty::TString]),
+            ),
+            Self::StringConcat => signature(vec![vec_ty(Ty::TString)], Ty::TString),
             Self::StringPrint | Self::StringPrintln => signature(vec![Ty::TString], Ty::TUnit),
             Self::CharToString => signature(vec![Ty::TChar], Ty::TString),
             Self::Int8ToString => signature(vec![Ty::TInt8], Ty::TString),

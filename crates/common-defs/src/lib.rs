@@ -4,6 +4,12 @@ pub enum BinaryOp {
     Sub,
     Mul,
     Div,
+    Rem,
+    BitAnd,
+    BitOr,
+    BitXor,
+    Shl,
+    Shr,
     And,
     Or,
     Less,
@@ -21,6 +27,12 @@ impl BinaryOp {
             Self::Sub => "-",
             Self::Mul => "*",
             Self::Div => "/",
+            Self::Rem => "%",
+            Self::BitAnd => "&",
+            Self::BitOr => "|",
+            Self::BitXor => "^",
+            Self::Shl => "<<",
+            Self::Shr => ">>",
             Self::And => "&&",
             Self::Or => "||",
             Self::Less => "<",
@@ -38,6 +50,12 @@ impl BinaryOp {
             Self::Sub => "sub",
             Self::Mul => "mul",
             Self::Div => "div",
+            Self::Rem => "rem",
+            Self::BitAnd => "bit_and",
+            Self::BitOr => "bit_or",
+            Self::BitXor => "bit_xor",
+            Self::Shl => "shl",
+            Self::Shr => "shr",
             Self::And => "and",
             Self::Or => "or",
             Self::Less => "less",
@@ -54,6 +72,7 @@ impl BinaryOp {
 pub enum UnaryOp {
     Neg,
     Not,
+    BitNot,
 }
 
 impl UnaryOp {
@@ -61,6 +80,7 @@ impl UnaryOp {
         match self {
             Self::Neg => "-",
             Self::Not => "!",
+            Self::BitNot => "~",
         }
     }
 
@@ -68,6 +88,7 @@ impl UnaryOp {
         match self {
             Self::Neg => "neg",
             Self::Not => "not",
+            Self::BitNot => "bit_not",
         }
     }
 }

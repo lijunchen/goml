@@ -182,6 +182,10 @@ pub enum LiftExpr {
         expr: Box<LiftExpr>,
         ty: Ty,
     },
+    ECast {
+        expr: Box<LiftExpr>,
+        ty: Ty,
+    },
     EBinary {
         op: common_defs::BinaryOp,
         lhs: Box<LiftExpr>,
@@ -238,6 +242,7 @@ impl LiftExpr {
             LiftExpr::EGo { ty, .. } => ty.clone(),
             LiftExpr::EConstrGet { ty, .. } => ty.clone(),
             LiftExpr::EUnary { ty, .. } => ty.clone(),
+            LiftExpr::ECast { ty, .. } => ty.clone(),
             LiftExpr::EBinary { ty, .. } => ty.clone(),
             LiftExpr::EAssign { ty, .. } => ty.clone(),
             LiftExpr::ECall { ty, .. } => ty.clone(),
@@ -655,6 +660,10 @@ fn rewrite_lift_expr_with_final_types(
             expr: Box::new(rewrite_lift_expr_with_final_types(state, scope, *expr)),
             ty,
         },
+        LiftExpr::ECast { expr, ty } => LiftExpr::ECast {
+            expr: Box::new(rewrite_lift_expr_with_final_types(state, scope, *expr)),
+            ty,
+        },
         LiftExpr::EBinary { op, lhs, rhs, ty } => LiftExpr::EBinary {
             op,
             lhs: Box::new(rewrite_lift_expr_with_final_types(state, scope, *lhs)),
@@ -919,6 +928,10 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: MonoExpr) -> L
         MonoExpr::EUnary { op, expr, ty } => {
             let expr = Box::new(transform_expr(state, scope, *expr));
             LiftExpr::EUnary { op, expr, ty }
+        }
+        MonoExpr::ECast { expr, ty } => {
+            let expr = Box::new(transform_expr(state, scope, *expr));
+            LiftExpr::ECast { expr, ty }
         }
         MonoExpr::EBinary { op, lhs, rhs, ty } => {
             let lhs = Box::new(transform_expr(state, scope, *lhs));
@@ -1310,6 +1323,9 @@ fn collect_captured(
             collect_captured(expr, bound, captured, scope);
         }
         LiftExpr::EUnary { expr, .. } => {
+            collect_captured(expr, bound, captured, scope);
+        }
+        LiftExpr::ECast { expr, .. } => {
             collect_captured(expr, bound, captured, scope);
         }
         LiftExpr::EBinary { lhs, rhs, .. } => {

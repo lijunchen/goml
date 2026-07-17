@@ -23,8 +23,66 @@ impl string {
         string_len(self)
     }
 
+    fn byte_len(self: string) -> int32 {
+        string_len(self)
+    }
+
     fn get(self: string, index: int32) -> char {
         string_get(self, index)
+    }
+
+    fn byte_get(self: string, index: int32) -> uint8 {
+        string_byte_get(self, index)
+    }
+
+    fn byte_slice(self: string, start: int32, end: int32) -> string {
+        string_byte_slice(self, start, end)
+    }
+
+    fn is_char_boundary(self: string, index: int32) -> bool {
+        string_is_char_boundary(self, index)
+    }
+
+    fn decode_at(self: string, index: int32) -> Option[(char, int32)] {
+        let (valid, value, width) = string_decode_utf8_at(self, index);
+        if valid {
+            Option::Some((value, width))
+        } else {
+            Option::None
+        }
+    }
+
+    fn to_bytes(self: string) -> Vec[uint8] {
+        string_to_bytes(self)
+    }
+
+    fn chars(self: string) -> FnIterator[char] {
+        let index = Ref::new(0);
+        FnIterator::from_fn(|| {
+            match self.decode_at(index.get()) {
+                Option::Some(decoded) => {
+                    let (value, width) = decoded;
+                    index.set(index.get() + width);
+                    Option::Some(value)
+                },
+                Option::None => Option::None,
+            }
+        })
+    }
+
+    fn char_indices(self: string) -> FnIterator[(int32, char)] {
+        let index = Ref::new(0);
+        FnIterator::from_fn(|| {
+            let current = index.get();
+            match self.decode_at(current) {
+                Option::Some(decoded) => {
+                    let (value, width) = decoded;
+                    index.set(current + width);
+                    Option::Some((current, value))
+                },
+                Option::None => Option::None,
+            }
+        })
     }
 }
 
@@ -438,6 +496,10 @@ impl [T] Vec[T] {
         vec_new()
     }
 
+    fn with_capacity(capacity: int32) -> Self {
+        vec_with_capacity(capacity)
+    }
+
     fn push(self: Self, elem: T) -> unit {
         vec_push(self, elem)
     }
@@ -463,6 +525,120 @@ impl [T] Vec[T] {
 
     fn len(self: Self) -> int32 {
         vec_len(self)
+    }
+
+    fn capacity(self: Self) -> int32 {
+        vec_capacity(self)
+    }
+
+    fn is_empty(self: Self) -> bool {
+        self.len() == 0
+    }
+
+    fn reserve(self: Self, additional: int32) -> unit {
+        vec_reserve(self, additional)
+    }
+
+    fn truncate(self: Self, len: int32) -> unit {
+        vec_truncate(self, len)
+    }
+
+    fn clear(self: Self) -> unit {
+        self.truncate(0)
+    }
+
+    fn last(self: Self) -> Option[T] {
+        let len = self.len();
+        if len == 0 {
+            Option::None
+        } else {
+            Option::Some(self.get(len - 1))
+        }
+    }
+
+    fn pop(self: Self) -> Option[T] {
+        let len = self.len();
+        if len == 0 {
+            Option::None
+        } else {
+            let value = self.get(len - 1);
+            self.truncate(len - 1);
+            Option::Some(value)
+        }
+    }
+
+    fn swap(self: Self, left: int32, right: int32) -> unit {
+        let value = self.get(left);
+        self.set(left, self.get(right));
+        self.set(right, value)
+    }
+
+    fn swap_remove(self: Self, index: int32) -> T {
+        let len = self.len();
+        if index < 0 || index >= len {
+            missing("vector index out of bounds")
+        } else {
+            let value = self.get(index);
+            if index + 1 < len {
+                self.set(index, self.get(len - 1));
+            } else {
+                ()
+            };
+            self.truncate(len - 1);
+            value
+        }
+    }
+
+    fn insert(self: Self, index: int32, value: T) -> unit {
+        let len = self.len();
+        if index < 0 || index > len {
+            missing("vector index out of bounds")
+        } else if index == len {
+            self.push(value)
+        } else {
+            self.push(self.get(len - 1));
+            let current = Ref::new(len - 1);
+            while current.get() > index {
+                self.set(current.get(), self.get(current.get() - 1));
+                current.set(current.get() - 1);
+            };
+            self.set(index, value)
+        }
+    }
+
+    fn remove(self: Self, index: int32) -> T {
+        let len = self.len();
+        if index < 0 || index >= len {
+            missing("vector index out of bounds")
+        } else {
+            let value = self.get(index);
+            let current = Ref::new(index);
+            while current.get() + 1 < len {
+                self.set(current.get(), self.get(current.get() + 1));
+                current.set(current.get() + 1);
+            };
+            self.truncate(len - 1);
+            value
+        }
+    }
+
+    fn reverse(self: Self) -> unit {
+        let left = Ref::new(0);
+        let right = Ref::new(self.len() - 1);
+        while left.get() < right.get() {
+            self.swap(left.get(), right.get());
+            left.set(left.get() + 1);
+            right.set(right.get() - 1);
+        }
+    }
+
+    fn extend(self: Self, other: Vec[T]) -> unit {
+        self.reserve(other.len());
+        let index = Ref::new(0);
+        while index.get() < other.len() {
+            self.push(other.get(index.get()));
+            index.set(index.get() + 1);
+        }
     }
 
     fn slice(self: Self, start: int32, end: int32) -> Slice[T] {
@@ -555,6 +731,10 @@ impl [K: Hash + Eq, V] HashMap[K, V] {
 
     fn contains(self: Self, key: K) -> bool {
         hashmap_contains(self, key)
+    }
+
+    fn entries(self: Self) -> Vec[(K, V)] {
+        hashmap_entries(self)
     }
 }
 

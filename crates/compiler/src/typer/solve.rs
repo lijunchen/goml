@@ -11,7 +11,9 @@ use crate::{
             ObligationCauseKind, ObligationId, ObligationWorklist, OperationGoal, ParamEnv,
             Predicate, ProjectionGoal, TraitGoal,
         },
-        operators::{comparison_operand_is_valid, comparison_operator_text, is_numeric_ty},
+        operators::{
+            comparison_operand_is_valid, comparison_operator_text, is_integer_ty, is_numeric_ty,
+        },
         results::{CallElab, CalleeElab, Coercion, NameRefElab},
         traits::solver::{SelectionResult, SelectionSource, TraitSolver},
         type_ops::{
@@ -1227,6 +1229,7 @@ impl Typer {
                                     is_numeric_ty(&ty) || matches!(ty, tast::Ty::TString)
                                 }
                                 ArithmeticKind::Numeric => is_numeric_ty(&ty),
+                                ArithmeticKind::Integer => is_integer_ty(&ty),
                             };
                             if !valid {
                                 self.push_obligation_error(

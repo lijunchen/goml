@@ -345,16 +345,23 @@ fn compile_intrinsic_callable(id: IntrinsicId, ty: &tast::Ty) -> goast::Expr {
         | IntrinsicId::RefSet
         | IntrinsicId::RefPtrEq
         | IntrinsicId::RefPtrHash => runtime::ref_helper_fn_name(id.source_name(), &params[0]),
-        IntrinsicId::VecNew => runtime::vec_helper_fn_name(id.source_name(), ret_ty),
-        IntrinsicId::VecPush | IntrinsicId::VecGet | IntrinsicId::VecSet | IntrinsicId::VecLen => {
-            runtime::vec_helper_fn_name(id.source_name(), &params[0])
+        IntrinsicId::VecNew | IntrinsicId::VecWithCapacity => {
+            runtime::vec_helper_fn_name(id.source_name(), ret_ty)
         }
+        IntrinsicId::VecPush
+        | IntrinsicId::VecGet
+        | IntrinsicId::VecSet
+        | IntrinsicId::VecLen
+        | IntrinsicId::VecCapacity
+        | IntrinsicId::VecReserve
+        | IntrinsicId::VecTruncate => runtime::vec_helper_fn_name(id.source_name(), &params[0]),
         IntrinsicId::HashMapNew => runtime::hashmap_helper_fn_name(id.source_name(), ret_ty),
         IntrinsicId::HashMapGet
         | IntrinsicId::HashMapSet
         | IntrinsicId::HashMapRemove
         | IntrinsicId::HashMapLen
-        | IntrinsicId::HashMapContains => {
+        | IntrinsicId::HashMapContains
+        | IntrinsicId::HashMapEntries => {
             runtime::hashmap_helper_fn_name(id.source_name(), &params[0])
         }
         IntrinsicId::Missing => runtime::missing_helper_fn_name(ret_ty),
@@ -969,6 +976,10 @@ fn collect_runtime_types(goenv: &GlobalGoEnv, file: &anf::File) -> RuntimeTypeSe
                     self.collect_imm(expr);
                     self.collect_type(ty);
                 }
+                anf::ValueExpr::Cast { expr, ty } => {
+                    self.collect_imm(expr);
+                    self.collect_type(ty);
+                }
                 anf::ValueExpr::Binary { lhs, rhs, ty, .. } => {
                     self.collect_imm(lhs);
                     self.collect_imm(rhs);
@@ -1284,6 +1295,10 @@ fn collect_dyn_requirements(goenv: &GlobalGoEnv, file: &anf::File) -> DynRequire
                 collect_ty(req, ty);
             }
             anf::ValueExpr::Unary { expr, ty, .. } => {
+                collect_imm(req, expr);
+                collect_ty(req, ty);
+            }
+            anf::ValueExpr::Cast { expr, ty } => {
                 collect_imm(req, expr);
                 collect_ty(req, ty);
             }
@@ -1987,7 +2002,8 @@ fn compile_intrinsic_call(
         | IntrinsicId::HashMapSet
         | IntrinsicId::HashMapRemove
         | IntrinsicId::HashMapLen
-        | IntrinsicId::HashMapContains => {
+        | IntrinsicId::HashMapContains
+        | IntrinsicId::HashMapEntries => {
             let name = id.source_name();
             let map_ty = if id == IntrinsicId::HashMapNew {
                 ty.clone()
@@ -2024,6 +2040,10 @@ fn compile_intrinsic_call(
                 IntrinsicId::HashMapContains => goty::GoType::TFunc {
                     params: vec![map_go_ty.clone(), key_go_ty],
                     ret_ty: Box::new(goty::GoType::TBool),
+                },
+                IntrinsicId::HashMapEntries => goty::GoType::TFunc {
+                    params: vec![map_go_ty.clone()],
+                    ret_ty: Box::new(tast_ty_to_go_type(ty)),
                 },
                 _ => unreachable!(),
             };
@@ -2100,11 +2120,15 @@ fn compile_intrinsic_call(
             }
         }
         IntrinsicId::VecNew
+        | IntrinsicId::VecWithCapacity
         | IntrinsicId::VecPush
         | IntrinsicId::VecGet
         | IntrinsicId::VecSet
-        | IntrinsicId::VecLen => {
-            let vec_ty = if id == IntrinsicId::VecNew {
+        | IntrinsicId::VecLen
+        | IntrinsicId::VecCapacity
+        | IntrinsicId::VecReserve
+        | IntrinsicId::VecTruncate => {
+            let vec_ty = if matches!(id, IntrinsicId::VecNew | IntrinsicId::VecWithCapacity) {
                 ty.clone()
             } else {
                 imm_ty(&args[0])
@@ -2197,7 +2221,31 @@ fn compile_call_args(
         .collect()
 }
 
-fn compile_value_expr(goenv: &GlobalGoEnv, expr: &anf::ValueExpr) -> CompiledValue {
+fn compile_runtime_imm(
+    goenv: &GlobalGoEnv,
+    imm: &anf::ImmExpr,
+    name: String,
+) -> (Vec<goast::Stmt>, goast::Expr) {
+    let compiled = compile_imm(goenv, imm);
+    if !matches!(imm, anf::ImmExpr::Prim { .. }) {
+        return (Vec::new(), compiled);
+    }
+    let ty = compiled.get_ty().clone();
+    (
+        vec![goast::Stmt::VarDecl {
+            name: name.clone(),
+            ty: ty.clone(),
+            value: Some(compiled),
+        }],
+        goast::Expr::Var { name, ty },
+    )
+}
+
+fn compile_value_expr(
+    goenv: &GlobalGoEnv,
+    bind_id: &anf::LocalId,
+    expr: &anf::ValueExpr,
+) -> CompiledValue {
     match expr {
         anf::ValueExpr::Imm(imm) => CompiledValue {
             stmts: Vec::new(),
@@ -2387,25 +2435,72 @@ fn compile_value_expr(goenv: &GlobalGoEnv, expr: &anf::ValueExpr) -> CompiledVal
             }
         }
         anf::ValueExpr::Unary { op, expr, ty } => {
+            let (stmts, expr) = if matches!(op, common_defs::UnaryOp::BitNot) {
+                compile_runtime_imm(goenv, expr, go_ident(&format!("{}_operand", bind_id.0)))
+            } else {
+                (Vec::new(), compile_imm(goenv, expr))
+            };
             let go_op = match op {
                 common_defs::UnaryOp::Neg => goast::GoUnaryOp::Neg,
                 common_defs::UnaryOp::Not => goast::GoUnaryOp::Not,
+                common_defs::UnaryOp::BitNot => goast::GoUnaryOp::BitNot,
             };
             CompiledValue {
-                stmts: Vec::new(),
+                stmts,
                 expr: goast::Expr::UnaryOp {
                     op: go_op,
-                    expr: Box::new(compile_imm(goenv, expr)),
+                    expr: Box::new(expr),
+                    ty: tast_ty_to_go_type(ty),
+                },
+            }
+        }
+        anf::ValueExpr::Cast { expr, ty } => {
+            let (stmts, source) =
+                compile_runtime_imm(goenv, expr, go_ident(&format!("{}_source", bind_id.0)));
+            let source_ty = source.get_ty().clone();
+            CompiledValue {
+                stmts,
+                expr: goast::Expr::Convert {
+                    expr: Box::new(goast::Expr::Convert {
+                        expr: Box::new(source),
+                        ty: source_ty,
+                    }),
                     ty: tast_ty_to_go_type(ty),
                 },
             }
         }
         anf::ValueExpr::Binary { op, lhs, rhs, ty } => {
+            let materialize = matches!(
+                op,
+                common_defs::BinaryOp::Rem
+                    | common_defs::BinaryOp::BitAnd
+                    | common_defs::BinaryOp::BitOr
+                    | common_defs::BinaryOp::BitXor
+                    | common_defs::BinaryOp::Shl
+                    | common_defs::BinaryOp::Shr
+            );
+            let (mut stmts, lhs) = if materialize {
+                compile_runtime_imm(goenv, lhs, go_ident(&format!("{}_lhs", bind_id.0)))
+            } else {
+                (Vec::new(), compile_imm(goenv, lhs))
+            };
+            let (rhs_stmts, rhs) = if materialize {
+                compile_runtime_imm(goenv, rhs, go_ident(&format!("{}_rhs", bind_id.0)))
+            } else {
+                (Vec::new(), compile_imm(goenv, rhs))
+            };
+            stmts.extend(rhs_stmts);
             let go_op = match op {
                 common_defs::BinaryOp::Add => goast::GoBinaryOp::Add,
                 common_defs::BinaryOp::Sub => goast::GoBinaryOp::Sub,
                 common_defs::BinaryOp::Mul => goast::GoBinaryOp::Mul,
                 common_defs::BinaryOp::Div => goast::GoBinaryOp::Div,
+                common_defs::BinaryOp::Rem => goast::GoBinaryOp::Rem,
+                common_defs::BinaryOp::BitAnd => goast::GoBinaryOp::BitAnd,
+                common_defs::BinaryOp::BitOr => goast::GoBinaryOp::BitOr,
+                common_defs::BinaryOp::BitXor => goast::GoBinaryOp::BitXor,
+                common_defs::BinaryOp::Shl => goast::GoBinaryOp::Shl,
+                common_defs::BinaryOp::Shr => goast::GoBinaryOp::Shr,
                 common_defs::BinaryOp::And => goast::GoBinaryOp::And,
                 common_defs::BinaryOp::Or => goast::GoBinaryOp::Or,
                 common_defs::BinaryOp::Less => goast::GoBinaryOp::Less,
@@ -2416,11 +2511,11 @@ fn compile_value_expr(goenv: &GlobalGoEnv, expr: &anf::ValueExpr) -> CompiledVal
                 common_defs::BinaryOp::NotEq => goast::GoBinaryOp::NotEq,
             };
             CompiledValue {
-                stmts: Vec::new(),
+                stmts,
                 expr: goast::Expr::BinaryOp {
                     op: go_op,
-                    lhs: Box::new(compile_imm(goenv, lhs)),
-                    rhs: Box::new(compile_imm(goenv, rhs)),
+                    lhs: Box::new(lhs),
+                    rhs: Box::new(rhs),
                     ty: tast_ty_to_go_type(ty),
                 },
             }
@@ -2909,7 +3004,7 @@ fn all_paths_reach_or_terminate_term(
 fn compile_let_bind(goenv: &GlobalGoEnv, bind: &anf::LetBind) -> Vec<goast::Stmt> {
     let discard = bind.id.0 == "_" || bind.id.0.starts_with("_wild");
 
-    let compiled = compile_value_expr(goenv, &bind.value);
+    let compiled = compile_value_expr(goenv, &bind.id, &bind.value);
     let mut stmts = compiled.stmts;
     if discard {
         if go_expr_can_be_statement(&compiled.expr) {

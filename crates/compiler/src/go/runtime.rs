@@ -63,6 +63,14 @@ pub fn make_runtime() -> Vec<goast::Item> {
                     path: "reflect".to_string(),
                 },
                 ImportSpec {
+                    alias: Some("_goml_slices".to_string()),
+                    path: "slices".to_string(),
+                },
+                ImportSpec {
+                    alias: Some("_goml_strings".to_string()),
+                    path: "strings".to_string(),
+                },
+                ImportSpec {
                     alias: Some("_goml_utf8".to_string()),
                     path: "unicode/utf8".to_string(),
                 },
@@ -72,7 +80,13 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(bool_to_string()),
         Item::Fn(string_len()),
         Item::Fn(string_get()),
+        Item::Fn(string_byte_get()),
         Item::Fn(string_byte_slice()),
+        Item::Fn(string_is_char_boundary()),
+        Item::Fn(string_decode_utf8_at()),
+        Item::Fn(string_to_bytes()),
+        Item::Fn(string_from_utf8()),
+        Item::Fn(string_concat()),
         Item::Fn(char_to_string()),
         Item::Fn(int8_to_string()),
         Item::Fn(int16_to_string()),
@@ -1196,7 +1210,57 @@ pub fn make_vec_runtime(vec_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
                                     ty: items_go_ty.clone(),
                                 },
                             )],
-                            ty: struct_go_ty,
+                            ty: struct_go_ty.clone(),
+                        }),
+                        ty: vec_go_ty.clone(),
+                    }),
+                }],
+            },
+        }));
+
+        items.push(goast::Item::Fn(goast::Fn {
+            name: vec_helper_fn_name(IntrinsicId::VecWithCapacity.source_name(), ty),
+            params: vec![("capacity".to_string(), goty::GoType::TInt32)],
+            ret_ty: Some(vec_go_ty.clone()),
+            body: goast::Block {
+                stmts: vec![goast::Stmt::Return {
+                    expr: Some(goast::Expr::UnaryOp {
+                        op: goast::GoUnaryOp::AddrOf,
+                        expr: Box::new(goast::Expr::StructLiteral {
+                            fields: vec![(
+                                "items".to_string(),
+                                goast::Expr::Call {
+                                    func: Box::new(goast::Expr::Var {
+                                        name: "_goml_slices.Grow".to_string(),
+                                        ty: goty::GoType::TFunc {
+                                            params: vec![items_go_ty.clone(), goty::GoType::TInt32],
+                                            ret_ty: Box::new(items_go_ty.clone()),
+                                        },
+                                    }),
+                                    args: vec![
+                                        goast::Expr::ArrayLiteral {
+                                            elems: vec![],
+                                            ty: items_go_ty.clone(),
+                                        },
+                                        goast::Expr::Call {
+                                            func: Box::new(goast::Expr::Var {
+                                                name: "int".to_string(),
+                                                ty: goty::GoType::TFunc {
+                                                    params: vec![goty::GoType::TInt32],
+                                                    ret_ty: Box::new(goty::GoType::TInt32),
+                                                },
+                                            }),
+                                            args: vec![goast::Expr::Var {
+                                                name: "capacity".to_string(),
+                                                ty: goty::GoType::TInt32,
+                                            }],
+                                            ty: goty::GoType::TInt32,
+                                        },
+                                    ],
+                                    ty: items_go_ty.clone(),
+                                },
+                            )],
+                            ty: struct_go_ty.clone(),
                         }),
                         ty: vec_go_ty.clone(),
                     }),
@@ -1321,6 +1385,205 @@ pub fn make_vec_runtime(vec_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
                         ty: goty::GoType::TInt32,
                     }),
                 }],
+            },
+        }));
+
+        items.push(goast::Item::Fn(goast::Fn {
+            name: vec_helper_fn_name(IntrinsicId::VecCapacity.source_name(), ty),
+            params: vec![("vec".to_string(), vec_go_ty.clone())],
+            ret_ty: Some(goty::GoType::TInt32),
+            body: goast::Block {
+                stmts: vec![goast::Stmt::Return {
+                    expr: Some(goast::Expr::Call {
+                        func: Box::new(goast::Expr::Var {
+                            name: "int32".to_string(),
+                            ty: goty::GoType::TFunc {
+                                params: vec![goty::GoType::TInt32],
+                                ret_ty: Box::new(goty::GoType::TInt32),
+                            },
+                        }),
+                        args: vec![goast::Expr::Call {
+                            func: Box::new(goast::Expr::Var {
+                                name: "cap".to_string(),
+                                ty: goty::GoType::TFunc {
+                                    params: vec![items_go_ty.clone()],
+                                    ret_ty: Box::new(goty::GoType::TInt32),
+                                },
+                            }),
+                            args: vec![vec_items_expr(&vec_go_ty, &items_go_ty)],
+                            ty: goty::GoType::TInt32,
+                        }],
+                        ty: goty::GoType::TInt32,
+                    }),
+                }],
+            },
+        }));
+
+        items.push(goast::Item::Fn(goast::Fn {
+            name: vec_helper_fn_name(IntrinsicId::VecReserve.source_name(), ty),
+            params: vec![
+                ("vec".to_string(), vec_go_ty.clone()),
+                ("additional".to_string(), goty::GoType::TInt32),
+            ],
+            ret_ty: Some(goty::GoType::TUnit),
+            body: goast::Block {
+                stmts: vec![
+                    goast::Stmt::FieldAssign {
+                        target: vec_items_expr(&vec_go_ty, &items_go_ty),
+                        value: goast::Expr::Call {
+                            func: Box::new(goast::Expr::Var {
+                                name: "_goml_slices.Grow".to_string(),
+                                ty: goty::GoType::TFunc {
+                                    params: vec![items_go_ty.clone(), goty::GoType::TInt32],
+                                    ret_ty: Box::new(items_go_ty.clone()),
+                                },
+                            }),
+                            args: vec![
+                                vec_items_expr(&vec_go_ty, &items_go_ty),
+                                goast::Expr::Call {
+                                    func: Box::new(goast::Expr::Var {
+                                        name: "int".to_string(),
+                                        ty: goty::GoType::TFunc {
+                                            params: vec![goty::GoType::TInt32],
+                                            ret_ty: Box::new(goty::GoType::TInt32),
+                                        },
+                                    }),
+                                    args: vec![goast::Expr::Var {
+                                        name: "additional".to_string(),
+                                        ty: goty::GoType::TInt32,
+                                    }],
+                                    ty: goty::GoType::TInt32,
+                                },
+                            ],
+                            ty: items_go_ty.clone(),
+                        },
+                    },
+                    goast::Stmt::Return {
+                        expr: Some(goast::Expr::Unit {
+                            ty: goty::GoType::TUnit,
+                        }),
+                    },
+                ],
+            },
+        }));
+
+        let current_len = || goast::Expr::Call {
+            func: Box::new(goast::Expr::Var {
+                name: "int32".to_string(),
+                ty: goty::GoType::TFunc {
+                    params: vec![goty::GoType::TInt32],
+                    ret_ty: Box::new(goty::GoType::TInt32),
+                },
+            }),
+            args: vec![goast::Expr::Call {
+                func: Box::new(goast::Expr::Var {
+                    name: "len".to_string(),
+                    ty: goty::GoType::TFunc {
+                        params: vec![items_go_ty.clone()],
+                        ret_ty: Box::new(goty::GoType::TInt32),
+                    },
+                }),
+                args: vec![vec_items_expr(&vec_go_ty, &items_go_ty)],
+                ty: goty::GoType::TInt32,
+            }],
+            ty: goty::GoType::TInt32,
+        };
+        items.push(goast::Item::Fn(goast::Fn {
+            name: vec_helper_fn_name(IntrinsicId::VecTruncate.source_name(), ty),
+            params: vec![
+                ("vec".to_string(), vec_go_ty.clone()),
+                ("new_len".to_string(), goty::GoType::TInt32),
+            ],
+            ret_ty: Some(goty::GoType::TUnit),
+            body: goast::Block {
+                stmts: vec![
+                    goast::Stmt::If {
+                        cond: goast::Expr::BinaryOp {
+                            op: GoBinaryOp::Less,
+                            lhs: Box::new(goast::Expr::Var {
+                                name: "new_len".to_string(),
+                                ty: goty::GoType::TInt32,
+                            }),
+                            rhs: Box::new(goast::Expr::Int {
+                                value: "0".to_string(),
+                                ty: goty::GoType::TInt32,
+                            }),
+                            ty: goty::GoType::TBool,
+                        },
+                        then: goast::Block {
+                            stmts: vec![goast::Stmt::Expr(goast::Expr::Call {
+                                func: Box::new(goast::Expr::Var {
+                                    name: "panic".to_string(),
+                                    ty: goty::GoType::TFunc {
+                                        params: vec![goty::GoType::TString],
+                                        ret_ty: Box::new(goty::GoType::TVoid),
+                                    },
+                                }),
+                                args: vec![goast::Expr::String {
+                                    value: "negative vector length".to_string(),
+                                    ty: goty::GoType::TString,
+                                }],
+                                ty: goty::GoType::TVoid,
+                            })],
+                        },
+                        else_: None,
+                    },
+                    goast::Stmt::If {
+                        cond: goast::Expr::BinaryOp {
+                            op: GoBinaryOp::Less,
+                            lhs: Box::new(goast::Expr::Var {
+                                name: "new_len".to_string(),
+                                ty: goty::GoType::TInt32,
+                            }),
+                            rhs: Box::new(current_len()),
+                            ty: goty::GoType::TBool,
+                        },
+                        then: goast::Block {
+                            stmts: vec![
+                                goast::Stmt::Expr(goast::Expr::Call {
+                                    func: Box::new(goast::Expr::Var {
+                                        name: "clear".to_string(),
+                                        ty: goty::GoType::TFunc {
+                                            params: vec![items_go_ty.clone()],
+                                            ret_ty: Box::new(goty::GoType::TVoid),
+                                        },
+                                    }),
+                                    args: vec![goast::Expr::Slice {
+                                        array: Box::new(vec_items_expr(&vec_go_ty, &items_go_ty)),
+                                        start: Box::new(goast::Expr::Var {
+                                            name: "new_len".to_string(),
+                                            ty: goty::GoType::TInt32,
+                                        }),
+                                        end: Box::new(current_len()),
+                                        ty: items_go_ty.clone(),
+                                    }],
+                                    ty: goty::GoType::TVoid,
+                                }),
+                                goast::Stmt::FieldAssign {
+                                    target: vec_items_expr(&vec_go_ty, &items_go_ty),
+                                    value: goast::Expr::Slice {
+                                        array: Box::new(vec_items_expr(&vec_go_ty, &items_go_ty)),
+                                        start: Box::new(goast::Expr::Int {
+                                            value: "0".to_string(),
+                                            ty: goty::GoType::TInt32,
+                                        }),
+                                        end: Box::new(goast::Expr::Var {
+                                            name: "new_len".to_string(),
+                                            ty: goty::GoType::TInt32,
+                                        }),
+                                        ty: items_go_ty.clone(),
+                                    },
+                                },
+                            ],
+                        },
+                        else_: None,
+                    },
+                    goast::Stmt::Return {
+                        expr: Some(goast::Expr::Unit {
+                            ty: goty::GoType::TUnit,
+                        }),
+                    },
+                ],
             },
         }));
     }
@@ -1718,6 +1981,9 @@ pub fn make_hashmap_runtime(
             key: Box::new(goty::GoType::TUint64),
             value: Box::new(bucket_slice_go_ty.clone()),
         };
+        let hashes_go_ty = goty::GoType::TSlice {
+            elem: Box::new(goty::GoType::TUint64),
+        };
 
         let map_struct_go_ty = goty::GoType::TName {
             name: map_struct_name.clone(),
@@ -1751,6 +2017,10 @@ pub fn make_hashmap_runtime(
                 goast::Field {
                     name: "buckets".to_string(),
                     ty: buckets_go_ty.clone(),
+                },
+                goast::Field {
+                    name: "hashes".to_string(),
+                    ty: hashes_go_ty.clone(),
                 },
                 goast::Field {
                     name: "len".to_string(),
@@ -1793,6 +2063,12 @@ pub fn make_hashmap_runtime(
                                     goast::Expr::Int {
                                         value: "0".to_string(),
                                         ty: goty::GoType::TInt32,
+                                    },
+                                ),
+                                (
+                                    "hashes".to_string(),
+                                    goast::Expr::Nil {
+                                        ty: hashes_go_ty.clone(),
                                     },
                                 ),
                             ],
@@ -2060,6 +2336,259 @@ pub fn make_hashmap_runtime(
 
                     stmts
                 },
+            },
+        };
+
+        let pair_ty = tast::Ty::TTuple {
+            typs: vec![key.as_ref().clone(), value.as_ref().clone()],
+        };
+        let pair_go_ty = goast::tast_ty_to_go_type(&pair_ty);
+        let pair_slice_go_ty = goty::GoType::TSlice {
+            elem: Box::new(pair_go_ty.clone()),
+        };
+        let entries_vec_ty = tast::Ty::TVec {
+            elem: Box::new(pair_ty.clone()),
+        };
+        let entries_fn = goast::Fn {
+            name: hashmap_helper_fn_name(IntrinsicId::HashMapEntries.source_name(), ty),
+            params: vec![("m".to_string(), map_ptr_go_ty.clone())],
+            ret_ty: Some(goast::tast_ty_to_go_type(&entries_vec_ty)),
+            body: goast::Block {
+                stmts: vec![
+                    goast::Stmt::VarDecl {
+                        name: "result".to_string(),
+                        ty: pair_slice_go_ty.clone(),
+                        value: None,
+                    },
+                    goast::Stmt::If {
+                        cond: goast::Expr::BinaryOp {
+                            op: GoBinaryOp::Eq,
+                            lhs: Box::new(goast::Expr::Var {
+                                name: "m".to_string(),
+                                ty: map_ptr_go_ty.clone(),
+                            }),
+                            rhs: Box::new(goast::Expr::Nil {
+                                ty: map_ptr_go_ty.clone(),
+                            }),
+                            ty: goty::GoType::TBool,
+                        },
+                        then: goast::Block {
+                            stmts: vec![goast::Stmt::Return {
+                                expr: Some(vec_from_slice_expr(
+                                    &pair_ty,
+                                    goast::Expr::Var {
+                                        name: "result".to_string(),
+                                        ty: pair_slice_go_ty.clone(),
+                                    },
+                                )),
+                            }],
+                        },
+                        else_: None,
+                    },
+                    goast::Stmt::Range {
+                        key: "_".to_string(),
+                        value: "h".to_string(),
+                        expr: goast::Expr::FieldAccess {
+                            obj: Box::new(goast::Expr::Var {
+                                name: "m".to_string(),
+                                ty: map_ptr_go_ty.clone(),
+                            }),
+                            field: "hashes".to_string(),
+                            ty: hashes_go_ty.clone(),
+                        },
+                        body: goast::Block {
+                            stmts: vec![
+                                goast::Stmt::VarDecl {
+                                    name: "bucket".to_string(),
+                                    ty: bucket_slice_go_ty.clone(),
+                                    value: Some(goast::Expr::Index {
+                                        array: Box::new(goast::Expr::FieldAccess {
+                                            obj: Box::new(goast::Expr::Var {
+                                                name: "m".to_string(),
+                                                ty: map_ptr_go_ty.clone(),
+                                            }),
+                                            field: "buckets".to_string(),
+                                            ty: buckets_go_ty.clone(),
+                                        }),
+                                        index: Box::new(goast::Expr::Var {
+                                            name: "h".to_string(),
+                                            ty: goty::GoType::TUint64,
+                                        }),
+                                        ty: bucket_slice_go_ty.clone(),
+                                    }),
+                                },
+                                goast::Stmt::VarDecl {
+                                    name: "i".to_string(),
+                                    ty: goty::GoType::TInt32,
+                                    value: Some(goast::Expr::Int {
+                                        value: "0".to_string(),
+                                        ty: goty::GoType::TInt32,
+                                    }),
+                                },
+                                goast::Stmt::Loop {
+                                    body: goast::Block {
+                                        stmts: vec![
+                                            goast::Stmt::If {
+                                                cond: goast::Expr::BinaryOp {
+                                                    op: GoBinaryOp::GreaterEq,
+                                                    lhs: Box::new(goast::Expr::Var {
+                                                        name: "i".to_string(),
+                                                        ty: goty::GoType::TInt32,
+                                                    }),
+                                                    rhs: Box::new(goast::Expr::Call {
+                                                        func: Box::new(goast::Expr::Var {
+                                                            name: "int32".to_string(),
+                                                            ty: goty::GoType::TFunc {
+                                                                params: vec![goty::GoType::TInt32],
+                                                                ret_ty: Box::new(
+                                                                    goty::GoType::TInt32,
+                                                                ),
+                                                            },
+                                                        }),
+                                                        args: vec![goast::Expr::Call {
+                                                            func: Box::new(goast::Expr::Var {
+                                                                name: "len".to_string(),
+                                                                ty: goty::GoType::TFunc {
+                                                                    params: vec![
+                                                                        bucket_slice_go_ty.clone(),
+                                                                    ],
+                                                                    ret_ty: Box::new(
+                                                                        goty::GoType::TInt32,
+                                                                    ),
+                                                                },
+                                                            }),
+                                                            args: vec![goast::Expr::Var {
+                                                                name: "bucket".to_string(),
+                                                                ty: bucket_slice_go_ty.clone(),
+                                                            }],
+                                                            ty: goty::GoType::TInt32,
+                                                        }],
+                                                        ty: goty::GoType::TInt32,
+                                                    }),
+                                                    ty: goty::GoType::TBool,
+                                                },
+                                                then: goast::Block {
+                                                    stmts: vec![goast::Stmt::Break],
+                                                },
+                                                else_: None,
+                                            },
+                                            goast::Stmt::VarDecl {
+                                                name: "entry".to_string(),
+                                                ty: entry_go_ty.clone(),
+                                                value: Some(goast::Expr::Index {
+                                                    array: Box::new(goast::Expr::Var {
+                                                        name: "bucket".to_string(),
+                                                        ty: bucket_slice_go_ty.clone(),
+                                                    }),
+                                                    index: Box::new(goast::Expr::Var {
+                                                        name: "i".to_string(),
+                                                        ty: goty::GoType::TInt32,
+                                                    }),
+                                                    ty: entry_go_ty.clone(),
+                                                }),
+                                            },
+                                            goast::Stmt::If {
+                                                cond: goast::Expr::FieldAccess {
+                                                    obj: Box::new(goast::Expr::Var {
+                                                        name: "entry".to_string(),
+                                                        ty: entry_go_ty.clone(),
+                                                    }),
+                                                    field: "active".to_string(),
+                                                    ty: goty::GoType::TBool,
+                                                },
+                                                then: goast::Block {
+                                                    stmts: vec![goast::Stmt::Assignment {
+                                                        name: "result".to_string(),
+                                                        value: goast::Expr::Call {
+                                                            func: Box::new(goast::Expr::Var {
+                                                                name: "append".to_string(),
+                                                                ty: goty::GoType::TFunc {
+                                                                    params: vec![
+                                                                        pair_slice_go_ty.clone(),
+                                                                        pair_go_ty.clone(),
+                                                                    ],
+                                                                    ret_ty: Box::new(
+                                                                        pair_slice_go_ty.clone(),
+                                                                    ),
+                                                                },
+                                                            }),
+                                                            args: vec![
+                                                                goast::Expr::Var {
+                                                                    name: "result".to_string(),
+                                                                    ty: pair_slice_go_ty.clone(),
+                                                                },
+                                                                tuple_literal(
+                                                                    &pair_ty,
+                                                                    vec![
+                                                                        goast::Expr::FieldAccess {
+                                                                            obj: Box::new(
+                                                                                goast::Expr::Var {
+                                                                                    name: "entry"
+                                                                                        .to_string(
+                                                                                        ),
+                                                                                    ty: entry_go_ty
+                                                                                        .clone(),
+                                                                                },
+                                                                            ),
+                                                                            field: "key"
+                                                                                .to_string(),
+                                                                            ty: key_go_ty.clone(),
+                                                                        },
+                                                                        goast::Expr::FieldAccess {
+                                                                            obj: Box::new(
+                                                                                goast::Expr::Var {
+                                                                                    name: "entry"
+                                                                                        .to_string(
+                                                                                        ),
+                                                                                    ty: entry_go_ty
+                                                                                        .clone(),
+                                                                                },
+                                                                            ),
+                                                                            field: "value"
+                                                                                .to_string(),
+                                                                            ty: value_go_ty.clone(),
+                                                                        },
+                                                                    ],
+                                                                ),
+                                                            ],
+                                                            ty: pair_slice_go_ty.clone(),
+                                                        },
+                                                    }],
+                                                },
+                                                else_: None,
+                                            },
+                                            goast::Stmt::Assignment {
+                                                name: "i".to_string(),
+                                                value: goast::Expr::BinaryOp {
+                                                    op: GoBinaryOp::Add,
+                                                    lhs: Box::new(goast::Expr::Var {
+                                                        name: "i".to_string(),
+                                                        ty: goty::GoType::TInt32,
+                                                    }),
+                                                    rhs: Box::new(goast::Expr::Int {
+                                                        value: "1".to_string(),
+                                                        ty: goty::GoType::TInt32,
+                                                    }),
+                                                    ty: goty::GoType::TInt32,
+                                                },
+                                            },
+                                        ],
+                                    },
+                                    label: None,
+                                },
+                            ],
+                        },
+                    },
+                    goast::Stmt::Return {
+                        expr: Some(vec_from_slice_expr(
+                            &pair_ty,
+                            goast::Expr::Var {
+                                name: "result".to_string(),
+                                ty: pair_slice_go_ty,
+                            },
+                        )),
+                    },
+                ],
             },
         };
 
@@ -2507,6 +3036,71 @@ pub fn make_hashmap_runtime(
                             }),
                             ty: bucket_slice_go_ty.clone(),
                         }),
+                    });
+
+                    stmts.push(goast::Stmt::If {
+                        cond: goast::Expr::BinaryOp {
+                            op: GoBinaryOp::Eq,
+                            lhs: Box::new(goast::Expr::Call {
+                                func: Box::new(goast::Expr::Var {
+                                    name: "len".to_string(),
+                                    ty: goty::GoType::TFunc {
+                                        params: vec![bucket_slice_go_ty.clone()],
+                                        ret_ty: Box::new(goty::GoType::TInt32),
+                                    },
+                                }),
+                                args: vec![goast::Expr::Var {
+                                    name: "bucket".to_string(),
+                                    ty: bucket_slice_go_ty.clone(),
+                                }],
+                                ty: goty::GoType::TInt32,
+                            }),
+                            rhs: Box::new(goast::Expr::Int {
+                                value: "0".to_string(),
+                                ty: goty::GoType::TInt32,
+                            }),
+                            ty: goty::GoType::TBool,
+                        },
+                        then: goast::Block {
+                            stmts: vec![goast::Stmt::FieldAssign {
+                                target: goast::Expr::FieldAccess {
+                                    obj: Box::new(goast::Expr::Var {
+                                        name: "m".to_string(),
+                                        ty: map_ptr_go_ty.clone(),
+                                    }),
+                                    field: "hashes".to_string(),
+                                    ty: hashes_go_ty.clone(),
+                                },
+                                value: goast::Expr::Call {
+                                    func: Box::new(goast::Expr::Var {
+                                        name: "append".to_string(),
+                                        ty: goty::GoType::TFunc {
+                                            params: vec![
+                                                hashes_go_ty.clone(),
+                                                goty::GoType::TUint64,
+                                            ],
+                                            ret_ty: Box::new(hashes_go_ty.clone()),
+                                        },
+                                    }),
+                                    args: vec![
+                                        goast::Expr::FieldAccess {
+                                            obj: Box::new(goast::Expr::Var {
+                                                name: "m".to_string(),
+                                                ty: map_ptr_go_ty.clone(),
+                                            }),
+                                            field: "hashes".to_string(),
+                                            ty: hashes_go_ty.clone(),
+                                        },
+                                        goast::Expr::Var {
+                                            name: "h".to_string(),
+                                            ty: goty::GoType::TUint64,
+                                        },
+                                    ],
+                                    ty: hashes_go_ty.clone(),
+                                },
+                            }],
+                        },
+                        else_: None,
                     });
 
                     stmts.push(goast::Stmt::VarDecl {
@@ -3072,6 +3666,7 @@ pub fn make_hashmap_runtime(
         items.push(goast::Item::Fn(set_fn));
         items.push(goast::Item::Fn(remove_fn));
         items.push(goast::Item::Fn(contains_fn));
+        items.push(goast::Item::Fn(entries_fn));
     }
     items
 }
@@ -3823,6 +4418,8 @@ fn string_len() -> goast::Fn {
 }
 
 fn string_get() -> goast::Fn {
+    let decoded_ty = tuple_ty(vec![tast::Ty::TBool, tast::Ty::TChar, tast::Ty::TInt32]);
+    let decoded_go_ty = goast::tast_ty_to_go_type(&decoded_ty);
     goast::Fn {
         name: runtime_hook_fn_name(RuntimeHookId::StringGet),
         params: vec![
@@ -3831,27 +4428,97 @@ fn string_get() -> goast::Fn {
         ],
         ret_ty: Some(goty::GoType::TChar),
         body: goast::Block {
-            stmts: vec![goast::Stmt::Return {
-                expr: Some(goast::Expr::Call {
-                    func: Box::new(goast::Expr::Var {
-                        name: "rune".to_string(),
-                        ty: goty::GoType::TFunc {
-                            params: vec![goty::GoType::TUint8],
-                            ret_ty: Box::new(goty::GoType::TChar),
-                        },
+            stmts: vec![
+                goast::Stmt::VarDecl {
+                    name: "decoded".to_string(),
+                    ty: decoded_go_ty.clone(),
+                    value: Some(goast::Expr::Call {
+                        func: Box::new(goast::Expr::Var {
+                            name: runtime_hook_fn_name(RuntimeHookId::StringDecodeUtf8At),
+                            ty: goty::GoType::TFunc {
+                                params: vec![goty::GoType::TString, goty::GoType::TInt32],
+                                ret_ty: Box::new(decoded_go_ty.clone()),
+                            },
+                        }),
+                        args: vec![
+                            goast::Expr::Var {
+                                name: "s".to_string(),
+                                ty: goty::GoType::TString,
+                            },
+                            goast::Expr::Var {
+                                name: "i".to_string(),
+                                ty: goty::GoType::TInt32,
+                            },
+                        ],
+                        ty: decoded_go_ty.clone(),
                     }),
-                    args: vec![goast::Expr::Index {
-                        array: Box::new(goast::Expr::Var {
-                            name: "s".to_string(),
-                            ty: goty::GoType::TString,
+                },
+                goast::Stmt::If {
+                    cond: goast::Expr::UnaryOp {
+                        op: goast::GoUnaryOp::Not,
+                        expr: Box::new(goast::Expr::FieldAccess {
+                            obj: Box::new(goast::Expr::Var {
+                                name: "decoded".to_string(),
+                                ty: decoded_go_ty.clone(),
+                            }),
+                            field: "_0".to_string(),
+                            ty: goty::GoType::TBool,
                         }),
-                        index: Box::new(goast::Expr::Var {
-                            name: "i".to_string(),
-                            ty: goty::GoType::TInt32,
+                        ty: goty::GoType::TBool,
+                    },
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Expr(goast::Expr::Call {
+                            func: Box::new(goast::Expr::Var {
+                                name: "panic".to_string(),
+                                ty: goty::GoType::TFunc {
+                                    params: vec![goty::GoType::TString],
+                                    ret_ty: Box::new(goty::GoType::TVoid),
+                                },
+                            }),
+                            args: vec![goast::Expr::String {
+                                value: "invalid string byte index".to_string(),
+                                ty: goty::GoType::TString,
+                            }],
+                            ty: goty::GoType::TVoid,
+                        })],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Return {
+                    expr: Some(goast::Expr::FieldAccess {
+                        obj: Box::new(goast::Expr::Var {
+                            name: "decoded".to_string(),
+                            ty: decoded_go_ty,
                         }),
-                        ty: goty::GoType::TUint8,
-                    }],
-                    ty: goty::GoType::TChar,
+                        field: "_1".to_string(),
+                        ty: goty::GoType::TChar,
+                    }),
+                },
+            ],
+        },
+    }
+}
+
+fn string_byte_get() -> goast::Fn {
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::StringByteGet),
+        params: vec![
+            ("s".to_string(), goty::GoType::TString),
+            ("i".to_string(), goty::GoType::TInt32),
+        ],
+        ret_ty: Some(goty::GoType::TUint8),
+        body: goast::Block {
+            stmts: vec![goast::Stmt::Return {
+                expr: Some(goast::Expr::Index {
+                    array: Box::new(goast::Expr::Var {
+                        name: "s".to_string(),
+                        ty: goty::GoType::TString,
+                    }),
+                    index: Box::new(goast::Expr::Var {
+                        name: "i".to_string(),
+                        ty: goty::GoType::TInt32,
+                    }),
+                    ty: goty::GoType::TUint8,
                 }),
             }],
         },
@@ -3868,20 +4535,577 @@ fn string_byte_slice() -> goast::Fn {
         ],
         ret_ty: Some(goty::GoType::TString),
         body: goast::Block {
-            stmts: vec![goast::Stmt::Return {
-                expr: Some(goast::Expr::Slice {
-                    array: Box::new(goast::Expr::Var {
-                        name: "s".to_string(),
+            stmts: vec![
+                goast::Stmt::If {
+                    cond: goast::Expr::UnaryOp {
+                        op: goast::GoUnaryOp::Not,
+                        expr: Box::new(goast::Expr::BinaryOp {
+                            op: GoBinaryOp::And,
+                            lhs: Box::new(goast::Expr::Call {
+                                func: Box::new(goast::Expr::Var {
+                                    name: runtime_hook_fn_name(RuntimeHookId::StringIsCharBoundary),
+                                    ty: goty::GoType::TFunc {
+                                        params: vec![goty::GoType::TString, goty::GoType::TInt32],
+                                        ret_ty: Box::new(goty::GoType::TBool),
+                                    },
+                                }),
+                                args: vec![
+                                    goast::Expr::Var {
+                                        name: "s".to_string(),
+                                        ty: goty::GoType::TString,
+                                    },
+                                    goast::Expr::Var {
+                                        name: "start".to_string(),
+                                        ty: goty::GoType::TInt32,
+                                    },
+                                ],
+                                ty: goty::GoType::TBool,
+                            }),
+                            rhs: Box::new(goast::Expr::Call {
+                                func: Box::new(goast::Expr::Var {
+                                    name: runtime_hook_fn_name(RuntimeHookId::StringIsCharBoundary),
+                                    ty: goty::GoType::TFunc {
+                                        params: vec![goty::GoType::TString, goty::GoType::TInt32],
+                                        ret_ty: Box::new(goty::GoType::TBool),
+                                    },
+                                }),
+                                args: vec![
+                                    goast::Expr::Var {
+                                        name: "s".to_string(),
+                                        ty: goty::GoType::TString,
+                                    },
+                                    goast::Expr::Var {
+                                        name: "end".to_string(),
+                                        ty: goty::GoType::TInt32,
+                                    },
+                                ],
+                                ty: goty::GoType::TBool,
+                            }),
+                            ty: goty::GoType::TBool,
+                        }),
+                        ty: goty::GoType::TBool,
+                    },
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Expr(goast::Expr::Call {
+                            func: Box::new(goast::Expr::Var {
+                                name: "panic".to_string(),
+                                ty: goty::GoType::TFunc {
+                                    params: vec![goty::GoType::TString],
+                                    ret_ty: Box::new(goty::GoType::TVoid),
+                                },
+                            }),
+                            args: vec![goast::Expr::String {
+                                value: "invalid string byte slice".to_string(),
+                                ty: goty::GoType::TString,
+                            }],
+                            ty: goty::GoType::TVoid,
+                        })],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Return {
+                    expr: Some(goast::Expr::Slice {
+                        array: Box::new(goast::Expr::Var {
+                            name: "s".to_string(),
+                            ty: goty::GoType::TString,
+                        }),
+                        start: Box::new(goast::Expr::Var {
+                            name: "start".to_string(),
+                            ty: goty::GoType::TInt32,
+                        }),
+                        end: Box::new(goast::Expr::Var {
+                            name: "end".to_string(),
+                            ty: goty::GoType::TInt32,
+                        }),
                         ty: goty::GoType::TString,
                     }),
-                    start: Box::new(goast::Expr::Var {
-                        name: "start".to_string(),
-                        ty: goty::GoType::TInt32,
+                },
+            ],
+        },
+    }
+}
+
+fn string_is_char_boundary() -> goast::Fn {
+    let len = || goast::Expr::Call {
+        func: Box::new(goast::Expr::Var {
+            name: "int32".to_string(),
+            ty: goty::GoType::TFunc {
+                params: vec![goty::GoType::TInt32],
+                ret_ty: Box::new(goty::GoType::TInt32),
+            },
+        }),
+        args: vec![goast::Expr::Call {
+            func: Box::new(goast::Expr::Var {
+                name: "len".to_string(),
+                ty: goty::GoType::TFunc {
+                    params: vec![goty::GoType::TString],
+                    ret_ty: Box::new(goty::GoType::TInt32),
+                },
+            }),
+            args: vec![goast::Expr::Var {
+                name: "s".to_string(),
+                ty: goty::GoType::TString,
+            }],
+            ty: goty::GoType::TInt32,
+        }],
+        ty: goty::GoType::TInt32,
+    };
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::StringIsCharBoundary),
+        params: vec![
+            ("s".to_string(), goty::GoType::TString),
+            ("i".to_string(), goty::GoType::TInt32),
+        ],
+        ret_ty: Some(goty::GoType::TBool),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::If {
+                    cond: goast::Expr::BinaryOp {
+                        op: GoBinaryOp::Or,
+                        lhs: Box::new(goast::Expr::BinaryOp {
+                            op: GoBinaryOp::Less,
+                            lhs: Box::new(goast::Expr::Var {
+                                name: "i".to_string(),
+                                ty: goty::GoType::TInt32,
+                            }),
+                            rhs: Box::new(goast::Expr::Int {
+                                value: "0".to_string(),
+                                ty: goty::GoType::TInt32,
+                            }),
+                            ty: goty::GoType::TBool,
+                        }),
+                        rhs: Box::new(goast::Expr::BinaryOp {
+                            op: GoBinaryOp::Greater,
+                            lhs: Box::new(goast::Expr::Var {
+                                name: "i".to_string(),
+                                ty: goty::GoType::TInt32,
+                            }),
+                            rhs: Box::new(len()),
+                            ty: goty::GoType::TBool,
+                        }),
+                        ty: goty::GoType::TBool,
+                    },
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(goast::Expr::Bool {
+                                value: false,
+                                ty: goty::GoType::TBool,
+                            }),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::If {
+                    cond: goast::Expr::BinaryOp {
+                        op: GoBinaryOp::Eq,
+                        lhs: Box::new(goast::Expr::Var {
+                            name: "i".to_string(),
+                            ty: goty::GoType::TInt32,
+                        }),
+                        rhs: Box::new(len()),
+                        ty: goty::GoType::TBool,
+                    },
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(goast::Expr::Bool {
+                                value: true,
+                                ty: goty::GoType::TBool,
+                            }),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Return {
+                    expr: Some(goast::Expr::Call {
+                        func: Box::new(goast::Expr::Var {
+                            name: "_goml_utf8.RuneStart".to_string(),
+                            ty: goty::GoType::TFunc {
+                                params: vec![goty::GoType::TUint8],
+                                ret_ty: Box::new(goty::GoType::TBool),
+                            },
+                        }),
+                        args: vec![goast::Expr::Index {
+                            array: Box::new(goast::Expr::Var {
+                                name: "s".to_string(),
+                                ty: goty::GoType::TString,
+                            }),
+                            index: Box::new(goast::Expr::Var {
+                                name: "i".to_string(),
+                                ty: goty::GoType::TInt32,
+                            }),
+                            ty: goty::GoType::TUint8,
+                        }],
+                        ty: goty::GoType::TBool,
                     }),
-                    end: Box::new(goast::Expr::Var {
-                        name: "end".to_string(),
-                        ty: goty::GoType::TInt32,
+                },
+            ],
+        },
+    }
+}
+
+fn string_decode_utf8_at() -> goast::Fn {
+    let result_ty = tuple_ty(vec![tast::Ty::TBool, tast::Ty::TChar, tast::Ty::TInt32]);
+    let result_go_ty = goast::tast_ty_to_go_type(&result_ty);
+    let native_int_ty = goty::GoType::TName {
+        name: "int".to_string(),
+    };
+    let len = || goast::Expr::Call {
+        func: Box::new(goast::Expr::Var {
+            name: "int32".to_string(),
+            ty: goty::GoType::TFunc {
+                params: vec![native_int_ty.clone()],
+                ret_ty: Box::new(goty::GoType::TInt32),
+            },
+        }),
+        args: vec![goast::Expr::Call {
+            func: Box::new(goast::Expr::Var {
+                name: "len".to_string(),
+                ty: goty::GoType::TFunc {
+                    params: vec![goty::GoType::TString],
+                    ret_ty: Box::new(native_int_ty.clone()),
+                },
+            }),
+            args: vec![goast::Expr::Var {
+                name: "s".to_string(),
+                ty: goty::GoType::TString,
+            }],
+            ty: native_int_ty.clone(),
+        }],
+        ty: goty::GoType::TInt32,
+    };
+    let invalid_result = || {
+        tuple_literal(
+            &result_ty,
+            vec![
+                goast::Expr::Bool {
+                    value: false,
+                    ty: goty::GoType::TBool,
+                },
+                goast::Expr::Int {
+                    value: "0".to_string(),
+                    ty: goty::GoType::TChar,
+                },
+                goast::Expr::Int {
+                    value: "0".to_string(),
+                    ty: goty::GoType::TInt32,
+                },
+            ],
+        )
+    };
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::StringDecodeUtf8At),
+        params: vec![
+            ("s".to_string(), goty::GoType::TString),
+            ("i".to_string(), goty::GoType::TInt32),
+        ],
+        ret_ty: Some(result_go_ty),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::If {
+                    cond: goast::Expr::BinaryOp {
+                        op: GoBinaryOp::Or,
+                        lhs: Box::new(goast::Expr::BinaryOp {
+                            op: GoBinaryOp::Less,
+                            lhs: Box::new(goast::Expr::Var {
+                                name: "i".to_string(),
+                                ty: goty::GoType::TInt32,
+                            }),
+                            rhs: Box::new(goast::Expr::Int {
+                                value: "0".to_string(),
+                                ty: goty::GoType::TInt32,
+                            }),
+                            ty: goty::GoType::TBool,
+                        }),
+                        rhs: Box::new(goast::Expr::BinaryOp {
+                            op: GoBinaryOp::GreaterEq,
+                            lhs: Box::new(goast::Expr::Var {
+                                name: "i".to_string(),
+                                ty: goty::GoType::TInt32,
+                            }),
+                            rhs: Box::new(len()),
+                            ty: goty::GoType::TBool,
+                        }),
+                        ty: goty::GoType::TBool,
+                    },
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(invalid_result()),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::VarDecl {
+                    name: "value".to_string(),
+                    ty: goty::GoType::TChar,
+                    value: None,
+                },
+                goast::Stmt::VarDecl {
+                    name: "width".to_string(),
+                    ty: native_int_ty.clone(),
+                    value: None,
+                },
+                goast::Stmt::MultiAssignment {
+                    names: vec!["value".to_string(), "width".to_string()],
+                    value: goast::Expr::Call {
+                        func: Box::new(goast::Expr::Var {
+                            name: "_goml_utf8.DecodeRuneInString".to_string(),
+                            ty: goty::GoType::TFunc {
+                                params: vec![goty::GoType::TString],
+                                ret_ty: Box::new(goty::GoType::TMulti {
+                                    elems: vec![goty::GoType::TChar, native_int_ty.clone()],
+                                }),
+                            },
+                        }),
+                        args: vec![goast::Expr::Slice {
+                            array: Box::new(goast::Expr::Var {
+                                name: "s".to_string(),
+                                ty: goty::GoType::TString,
+                            }),
+                            start: Box::new(goast::Expr::Var {
+                                name: "i".to_string(),
+                                ty: goty::GoType::TInt32,
+                            }),
+                            end: Box::new(len()),
+                            ty: goty::GoType::TString,
+                        }],
+                        ty: goty::GoType::TMulti {
+                            elems: vec![goty::GoType::TChar, native_int_ty.clone()],
+                        },
+                    },
+                },
+                goast::Stmt::If {
+                    cond: goast::Expr::BinaryOp {
+                        op: GoBinaryOp::And,
+                        lhs: Box::new(goast::Expr::BinaryOp {
+                            op: GoBinaryOp::Eq,
+                            lhs: Box::new(goast::Expr::Var {
+                                name: "value".to_string(),
+                                ty: goty::GoType::TChar,
+                            }),
+                            rhs: Box::new(goast::Expr::Var {
+                                name: "_goml_utf8.RuneError".to_string(),
+                                ty: goty::GoType::TChar,
+                            }),
+                            ty: goty::GoType::TBool,
+                        }),
+                        rhs: Box::new(goast::Expr::BinaryOp {
+                            op: GoBinaryOp::Eq,
+                            lhs: Box::new(goast::Expr::Var {
+                                name: "width".to_string(),
+                                ty: native_int_ty.clone(),
+                            }),
+                            rhs: Box::new(goast::Expr::Int {
+                                value: "1".to_string(),
+                                ty: native_int_ty.clone(),
+                            }),
+                            ty: goty::GoType::TBool,
+                        }),
+                        ty: goty::GoType::TBool,
+                    },
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(invalid_result()),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Return {
+                    expr: Some(tuple_literal(
+                        &result_ty,
+                        vec![
+                            goast::Expr::Bool {
+                                value: true,
+                                ty: goty::GoType::TBool,
+                            },
+                            goast::Expr::Var {
+                                name: "value".to_string(),
+                                ty: goty::GoType::TChar,
+                            },
+                            goast::Expr::Call {
+                                func: Box::new(goast::Expr::Var {
+                                    name: "int32".to_string(),
+                                    ty: goty::GoType::TFunc {
+                                        params: vec![native_int_ty.clone()],
+                                        ret_ty: Box::new(goty::GoType::TInt32),
+                                    },
+                                }),
+                                args: vec![goast::Expr::Var {
+                                    name: "width".to_string(),
+                                    ty: native_int_ty,
+                                }],
+                                ty: goty::GoType::TInt32,
+                            },
+                        ],
+                    )),
+                },
+            ],
+        },
+    }
+}
+
+fn string_to_bytes() -> goast::Fn {
+    let elem_ty = tast::Ty::TUint8;
+    let bytes_ty = tast::Ty::TVec {
+        elem: Box::new(elem_ty.clone()),
+    };
+    let byte_slice_ty = goty::GoType::TSlice {
+        elem: Box::new(goty::GoType::TUint8),
+    };
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::StringToBytes),
+        params: vec![("s".to_string(), goty::GoType::TString)],
+        ret_ty: Some(goast::tast_ty_to_go_type(&bytes_ty)),
+        body: goast::Block {
+            stmts: vec![goast::Stmt::Return {
+                expr: Some(vec_from_slice_expr(
+                    &elem_ty,
+                    goast::Expr::Call {
+                        func: Box::new(goast::Expr::Var {
+                            name: "[]byte".to_string(),
+                            ty: goty::GoType::TFunc {
+                                params: vec![goty::GoType::TString],
+                                ret_ty: Box::new(byte_slice_ty.clone()),
+                            },
+                        }),
+                        args: vec![goast::Expr::Var {
+                            name: "s".to_string(),
+                            ty: goty::GoType::TString,
+                        }],
+                        ty: byte_slice_ty,
+                    },
+                )),
+            }],
+        },
+    }
+}
+
+fn string_from_utf8() -> goast::Fn {
+    let bytes_ty = tast::Ty::TVec {
+        elem: Box::new(tast::Ty::TUint8),
+    };
+    let bytes_go_ty = goast::tast_ty_to_go_type(&bytes_ty);
+    let byte_slice_ty = goty::GoType::TSlice {
+        elem: Box::new(goty::GoType::TUint8),
+    };
+    let result_ty = tuple_ty(vec![tast::Ty::TBool, tast::Ty::TString]);
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::StringFromUtf8),
+        params: vec![("bytes".to_string(), bytes_go_ty.clone())],
+        ret_ty: Some(goast::tast_ty_to_go_type(&result_ty)),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::If {
+                    cond: goast::Expr::UnaryOp {
+                        op: goast::GoUnaryOp::Not,
+                        expr: Box::new(goast::Expr::Call {
+                            func: Box::new(goast::Expr::Var {
+                                name: "_goml_utf8.Valid".to_string(),
+                                ty: goty::GoType::TFunc {
+                                    params: vec![byte_slice_ty.clone()],
+                                    ret_ty: Box::new(goty::GoType::TBool),
+                                },
+                            }),
+                            args: vec![goast::Expr::FieldAccess {
+                                obj: Box::new(goast::Expr::Var {
+                                    name: "bytes".to_string(),
+                                    ty: bytes_go_ty.clone(),
+                                }),
+                                field: "items".to_string(),
+                                ty: byte_slice_ty.clone(),
+                            }],
+                            ty: goty::GoType::TBool,
+                        }),
+                        ty: goty::GoType::TBool,
+                    },
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(tuple_literal(
+                                &result_ty,
+                                vec![
+                                    goast::Expr::Bool {
+                                        value: false,
+                                        ty: goty::GoType::TBool,
+                                    },
+                                    goast::Expr::String {
+                                        value: String::new(),
+                                        ty: goty::GoType::TString,
+                                    },
+                                ],
+                            )),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Return {
+                    expr: Some(tuple_literal(
+                        &result_ty,
+                        vec![
+                            goast::Expr::Bool {
+                                value: true,
+                                ty: goty::GoType::TBool,
+                            },
+                            goast::Expr::Call {
+                                func: Box::new(goast::Expr::Var {
+                                    name: "string".to_string(),
+                                    ty: goty::GoType::TFunc {
+                                        params: vec![byte_slice_ty.clone()],
+                                        ret_ty: Box::new(goty::GoType::TString),
+                                    },
+                                }),
+                                args: vec![goast::Expr::FieldAccess {
+                                    obj: Box::new(goast::Expr::Var {
+                                        name: "bytes".to_string(),
+                                        ty: bytes_go_ty,
+                                    }),
+                                    field: "items".to_string(),
+                                    ty: byte_slice_ty,
+                                }],
+                                ty: goty::GoType::TString,
+                            },
+                        ],
+                    )),
+                },
+            ],
+        },
+    }
+}
+
+fn string_concat() -> goast::Fn {
+    let values_ty = tast::Ty::TVec {
+        elem: Box::new(tast::Ty::TString),
+    };
+    let values_go_ty = goast::tast_ty_to_go_type(&values_ty);
+    let slice_go_ty = goty::GoType::TSlice {
+        elem: Box::new(goty::GoType::TString),
+    };
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::StringConcat),
+        params: vec![("values".to_string(), values_go_ty.clone())],
+        ret_ty: Some(goty::GoType::TString),
+        body: goast::Block {
+            stmts: vec![goast::Stmt::Return {
+                expr: Some(goast::Expr::Call {
+                    func: Box::new(goast::Expr::Var {
+                        name: "_goml_strings.Join".to_string(),
+                        ty: goty::GoType::TFunc {
+                            params: vec![slice_go_ty.clone(), goty::GoType::TString],
+                            ret_ty: Box::new(goty::GoType::TString),
+                        },
                     }),
+                    args: vec![
+                        goast::Expr::FieldAccess {
+                            obj: Box::new(goast::Expr::Var {
+                                name: "values".to_string(),
+                                ty: values_go_ty,
+                            }),
+                            field: "items".to_string(),
+                            ty: slice_go_ty,
+                        },
+                        goast::Expr::String {
+                            value: String::new(),
+                            ty: goty::GoType::TString,
+                        },
+                    ],
                     ty: goty::GoType::TString,
                 }),
             }],

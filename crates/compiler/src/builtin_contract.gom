@@ -8,8 +8,20 @@ extern fn bool_to_string(value: bool) -> string
 extern fn string_len(value: string) -> int32
 #[runtime("core.string_get")]
 extern fn string_get(value: string, index: int32) -> char
+#[runtime("core.string_byte_get")]
+extern fn string_byte_get(value: string, index: int32) -> uint8
 #[runtime("core.string_byte_slice")]
 extern fn string_byte_slice(value: string, start: int32, end: int32) -> string
+#[runtime("core.string_is_char_boundary")]
+extern fn string_is_char_boundary(value: string, index: int32) -> bool
+#[runtime("core.string_decode_utf8_at")]
+extern fn string_decode_utf8_at(value: string, index: int32) -> (bool, char, int32)
+#[runtime("core.string_to_bytes")]
+extern fn string_to_bytes(value: string) -> Vec[uint8]
+#[runtime("core.string_from_utf8")]
+extern fn string_from_utf8(value: Vec[uint8]) -> (bool, string)
+#[runtime("core.string_concat")]
+extern fn string_concat(values: Vec[string]) -> string
 #[runtime("core.string_print")]
 extern fn string_print(value: string) -> unit
 #[runtime("core.string_println")]
@@ -118,6 +130,8 @@ struct TakeIterator[I] {
 
 #[intrinsic("vec.new")]
 extern fn vec_new[T]() -> Vec[T]
+#[intrinsic("vec.with_capacity")]
+extern fn vec_with_capacity[T](capacity: int32) -> Vec[T]
 #[intrinsic("vec.push")]
 extern fn vec_push[T](vec: Vec[T], elem: T) -> unit
 #[intrinsic("vec.get")]
@@ -126,6 +140,12 @@ extern fn vec_get[T](vec: Vec[T], index: int32) -> T
 extern fn vec_set[T](vec: Vec[T], index: int32, elem: T) -> unit
 #[intrinsic("vec.len")]
 extern fn vec_len[T](vec: Vec[T]) -> int32
+#[intrinsic("vec.capacity")]
+extern fn vec_capacity[T](vec: Vec[T]) -> int32
+#[intrinsic("vec.reserve")]
+extern fn vec_reserve[T](vec: Vec[T], additional: int32) -> unit
+#[intrinsic("vec.truncate")]
+extern fn vec_truncate[T](vec: Vec[T], len: int32) -> unit
 #[intrinsic("slice.new")]
 extern fn slice[T](vec: Vec[T], start: int32, end: int32) -> Slice[T]
 #[intrinsic("slice.get")]
@@ -157,6 +177,11 @@ extern fn hashmap_remove[K: Hash + Eq, V](m: HashMap[K, V], key: K) -> unit
 extern fn hashmap_len[K: Hash + Eq, V](m: HashMap[K, V]) -> int32
 #[intrinsic("hashmap.contains")]
 extern fn hashmap_contains[K: Hash + Eq, V](m: HashMap[K, V], key: K) -> bool
+#[intrinsic("hashmap.entries")]
+extern fn hashmap_entries[K: Hash + Eq, V](m: HashMap[K, V]) -> Vec[(K, V)]
+
+#[intrinsic("compiler.missing")]
+extern fn missing[T](message: string) -> T
 
 #[lang("to_string")]
 trait ToString {

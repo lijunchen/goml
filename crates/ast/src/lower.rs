@@ -1952,6 +1952,11 @@ fn lower_expr_with_args(
                     expr: Box::new(expr),
                     astptr,
                 },
+                MySyntaxKind::Tilde => ast::Expr::EUnary {
+                    op: common_defs::UnaryOp::BitNot,
+                    expr: Box::new(expr),
+                    astptr,
+                },
                 kind => {
                     ctx.push_error(
                         Some(op_token.text_range()),
@@ -1961,6 +1966,19 @@ fn lower_expr_with_args(
                 }
             };
             apply_trailing_args(ctx, unary, trailing_args, Some(it.syntax().text_range()))
+        }
+        cst::Expr::CastExpr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
+            let expr = it
+                .expr()
+                .and_then(|expr| lower_expr_with_args(ctx, expr, Vec::new()))?;
+            let ty = it.ty().and_then(|ty| lower_ty(ctx, ty))?;
+            let cast = ast::Expr::ECast {
+                expr: Box::new(expr),
+                ty,
+                astptr,
+            };
+            apply_trailing_args(ctx, cast, trailing_args, Some(it.syntax().text_range()))
         }
         cst::Expr::IndexExpr(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
@@ -2062,6 +2080,60 @@ fn lower_expr_with_args(
                     let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
                     Some(ast::Expr::EBinary {
                         op: common_defs::BinaryOp::Div,
+                        lhs: Box::new(lhs),
+                        rhs: Box::new(rhs),
+                        astptr,
+                    })
+                }
+                MySyntaxKind::Percent => {
+                    let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
+                    Some(ast::Expr::EBinary {
+                        op: common_defs::BinaryOp::Rem,
+                        lhs: Box::new(lhs),
+                        rhs: Box::new(rhs),
+                        astptr,
+                    })
+                }
+                MySyntaxKind::Amp => {
+                    let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
+                    Some(ast::Expr::EBinary {
+                        op: common_defs::BinaryOp::BitAnd,
+                        lhs: Box::new(lhs),
+                        rhs: Box::new(rhs),
+                        astptr,
+                    })
+                }
+                MySyntaxKind::Pipe => {
+                    let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
+                    Some(ast::Expr::EBinary {
+                        op: common_defs::BinaryOp::BitOr,
+                        lhs: Box::new(lhs),
+                        rhs: Box::new(rhs),
+                        astptr,
+                    })
+                }
+                MySyntaxKind::Caret => {
+                    let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
+                    Some(ast::Expr::EBinary {
+                        op: common_defs::BinaryOp::BitXor,
+                        lhs: Box::new(lhs),
+                        rhs: Box::new(rhs),
+                        astptr,
+                    })
+                }
+                MySyntaxKind::LessLess => {
+                    let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
+                    Some(ast::Expr::EBinary {
+                        op: common_defs::BinaryOp::Shl,
+                        lhs: Box::new(lhs),
+                        rhs: Box::new(rhs),
+                        astptr,
+                    })
+                }
+                MySyntaxKind::GreaterGreater => {
+                    let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
+                    Some(ast::Expr::EBinary {
+                        op: common_defs::BinaryOp::Shr,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
                         astptr,

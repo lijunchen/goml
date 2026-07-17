@@ -252,6 +252,11 @@ impl MonoExpr {
                     .append(expr_doc)
                     .append(RcDoc::text(")"))
             }
+            MonoExpr::ECast { expr, ty } => RcDoc::text("(")
+                .append(expr.to_doc(monoenv))
+                .append(RcDoc::text(" as "))
+                .append(ty.to_doc())
+                .append(RcDoc::text(")")),
             MonoExpr::EBinary {
                 op,
                 lhs,

@@ -1490,6 +1490,24 @@ impl NameResolution {
                     },
                 )
             }
+            ast::Expr::ECast { expr, ty, astptr } => {
+                let new_expr = self.resolve_expr(expr, env, ctx, hir_table);
+                let new_ty = self.lower_type_expr(
+                    ty,
+                    env.type_params(),
+                    ctx.current_package,
+                    ctx.imports,
+                    ctx.use_aliases,
+                );
+                self.alloc_expr_with_ptr(
+                    hir_table,
+                    *astptr,
+                    hir::Expr::ECast {
+                        expr: new_expr,
+                        ty: new_ty,
+                    },
+                )
+            }
             ast::Expr::ETry { expr, astptr } => {
                 let new_expr = self.resolve_expr(expr, env, ctx, hir_table);
                 self.alloc_expr_with_ptr(hir_table, *astptr, hir::Expr::ETry { expr: new_expr })

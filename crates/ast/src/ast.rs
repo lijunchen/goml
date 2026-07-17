@@ -448,6 +448,11 @@ pub enum Expr {
         expr: Box<Expr>,
         astptr: MySyntaxNodePtr,
     },
+    ECast {
+        expr: Box<Expr>,
+        ty: TypeExpr,
+        astptr: MySyntaxNodePtr,
+    },
     ETry {
         expr: Box<Expr>,
         astptr: MySyntaxNodePtr,

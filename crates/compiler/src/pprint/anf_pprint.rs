@@ -211,6 +211,11 @@ impl ValueExpr {
                     .append(expr_doc)
                     .append(RcDoc::text(")"))
             }
+            ValueExpr::Cast { expr, ty } => RcDoc::text("(")
+                .append(expr.to_doc())
+                .append(RcDoc::text(" as "))
+                .append(ty.to_doc())
+                .append(RcDoc::text(")")),
             ValueExpr::Binary {
                 op,
                 lhs,

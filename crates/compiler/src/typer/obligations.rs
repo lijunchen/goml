@@ -251,6 +251,7 @@ pub(crate) struct CoercionGoal {
 pub(crate) enum ArithmeticKind {
     NumericOrString,
     Numeric,
+    Integer,
 }
 
 #[derive(Debug, Clone)]

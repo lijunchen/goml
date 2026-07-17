@@ -151,6 +151,7 @@ impl Typer {
                 ty,
                 resolution,
             },
+            tast::Expr::ECast { expr, .. } => tast::Expr::ECast { expr, ty },
             tast::Expr::EProj { tuple, index, .. } => tast::Expr::EProj { tuple, index, ty },
             tast::Expr::EField {
                 expr,
@@ -580,6 +581,9 @@ impl Typer {
             hir::Expr::EUnary { op, expr } => {
                 self.infer_unary_expr(genv, local_env, diagnostics, op, expr)
             }
+            hir::Expr::ECast { expr, ty } => {
+                self.infer_cast_expr(genv, local_env, diagnostics, expr, &ty)
+            }
             hir::Expr::EBinary { op, lhs, rhs } => {
                 self.infer_binary_expr(genv, local_env, diagnostics, op, lhs, rhs)
             }
@@ -653,6 +657,18 @@ impl Typer {
                     }
                 }
             }
+            hir::Expr::EUnary {
+                op: common_defs::UnaryOp::BitNot,
+                expr: inner,
+            } if is_integer_ty(expected) => {
+                let operand = self.check_expr(genv, local_env, diagnostics, inner, expected);
+                tast::Expr::EUnary {
+                    op: common_defs::UnaryOp::BitNot,
+                    expr: Box::new(operand),
+                    ty: expected.clone(),
+                    resolution: tast::UnaryResolution::Builtin,
+                }
+            }
             hir::Expr::EInt { ref value } if is_integer_ty(expected) => {
                 let range = self.expr_range(e);
                 let prim = parse_integer_literal_with_ty(diagnostics, value, expected, range)
@@ -671,14 +687,44 @@ impl Typer {
                 }
             }
             hir::Expr::EBinary { op, lhs, rhs }
-                if is_numeric_ty(expected)
+                if is_integer_ty(expected)
+                    && matches!(op, common_defs::BinaryOp::Shl | common_defs::BinaryOp::Shr) =>
+            {
+                let lhs_tast = self.check_expr(genv, local_env, diagnostics, lhs, expected);
+                let rhs_tast = self.infer_expr(genv, local_env, diagnostics, rhs);
+                self.push_obligation(
+                    Predicate::Operation(OperationGoal::Arithmetic {
+                        kind: ArithmeticKind::Integer,
+                        ty: rhs_tast.get_ty(),
+                        operator: op.symbol(),
+                    }),
+                    ObligationCause::new(self.expr_range(rhs), ObligationCauseKind::Operation),
+                );
+                tast::Expr::EBinary {
+                    op,
+                    lhs: Box::new(lhs_tast),
+                    rhs: Box::new(rhs_tast),
+                    ty: expected.clone(),
+                    resolution: tast::BinaryResolution::Builtin,
+                }
+            }
+            hir::Expr::EBinary { op, lhs, rhs }
+                if (is_numeric_ty(expected)
                     && matches!(
                         op,
                         common_defs::BinaryOp::Add
                             | common_defs::BinaryOp::Sub
                             | common_defs::BinaryOp::Mul
                             | common_defs::BinaryOp::Div
-                    ) =>
+                    ))
+                    || (is_integer_ty(expected)
+                        && matches!(
+                            op,
+                            common_defs::BinaryOp::Rem
+                                | common_defs::BinaryOp::BitAnd
+                                | common_defs::BinaryOp::BitOr
+                                | common_defs::BinaryOp::BitXor
+                        )) =>
             {
                 let lhs_tast = self.check_expr(genv, local_env, diagnostics, lhs, expected);
                 let rhs_tast = self.check_expr(genv, local_env, diagnostics, rhs, expected);
@@ -1616,6 +1662,7 @@ impl Typer {
                         .any(|arg| self.expr_always_exits_loop_control(*arg))
             }
             hir::Expr::EUnary { expr, .. }
+            | hir::Expr::ECast { expr, .. }
             | hir::Expr::ETry { expr }
             | hir::Expr::EGo { expr }
             | hir::Expr::EField { expr, .. } => self.expr_always_exits_loop_control(*expr),
@@ -2316,6 +2363,64 @@ impl Typer {
                     resolution: tast::UnaryResolution::Builtin,
                 }
             }
+            common_defs::UnaryOp::BitNot => {
+                self.push_obligation(
+                    Predicate::Operation(OperationGoal::Arithmetic {
+                        kind: ArithmeticKind::Integer,
+                        ty: expr_ty.clone(),
+                        operator: "~",
+                    }),
+                    ObligationCause::new(self.expr_range(expr), ObligationCauseKind::Operation),
+                );
+                tast::Expr::EUnary {
+                    op,
+                    expr: Box::new(expr_tast),
+                    ty: expr_ty,
+                    resolution: tast::UnaryResolution::Builtin,
+                }
+            }
+        }
+    }
+
+    fn infer_cast_expr(
+        &mut self,
+        genv: &PackageTypeEnv,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        expr: hir::ExprId,
+        target: &hir::TypeExpr,
+    ) -> tast::Expr {
+        let expr_tast = self.infer_expr(genv, local_env, diagnostics, expr);
+        let source_ty = expr_tast.get_ty();
+        let target_ty = tast::Ty::from_hir(genv, target, &local_env.current_tparams_env());
+        let source_ty = self.norm(&source_ty);
+        let target_ty = self.norm(&target_ty);
+        let valid = (is_integer_ty(&source_ty) && is_integer_ty(&target_ty))
+            || matches!(
+                (&source_ty, &target_ty),
+                (tast::Ty::TChar, tast::Ty::TUint32)
+            )
+            || matches!(
+                (&source_ty, &target_ty),
+                (tast::Ty::TUint32, tast::Ty::TChar)
+            );
+        if !valid {
+            diagnostics.push(
+                Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!(
+                        "Invalid cast from {} to {}",
+                        super::util::format_ty_for_diag(&source_ty),
+                        super::util::format_ty_for_diag(&target_ty)
+                    ),
+                )
+                .with_range(self.expr_range(expr)),
+            );
+        }
+        tast::Expr::ECast {
+            expr: Box::new(expr_tast),
+            ty: target_ty,
         }
     }
 
@@ -2352,7 +2457,13 @@ impl Typer {
             }
             common_defs::BinaryOp::Sub
             | common_defs::BinaryOp::Mul
-            | common_defs::BinaryOp::Div => {
+            | common_defs::BinaryOp::Div
+            | common_defs::BinaryOp::Rem
+            | common_defs::BinaryOp::BitAnd
+            | common_defs::BinaryOp::BitOr
+            | common_defs::BinaryOp::BitXor
+            | common_defs::BinaryOp::Shl
+            | common_defs::BinaryOp::Shr => {
                 let norm_lhs = self.norm(&lhs_ty);
                 if matches!(norm_lhs, tast::Ty::TVar(..)) {
                     self.fresh_ty_var()
@@ -2366,7 +2477,11 @@ impl Typer {
             common_defs::BinaryOp::Add
             | common_defs::BinaryOp::Sub
             | common_defs::BinaryOp::Mul
-            | common_defs::BinaryOp::Div => {
+            | common_defs::BinaryOp::Div
+            | common_defs::BinaryOp::Rem
+            | common_defs::BinaryOp::BitAnd
+            | common_defs::BinaryOp::BitOr
+            | common_defs::BinaryOp::BitXor => {
                 self.equate(diagnostics, &lhs_ty, &ret_ty, self.expr_range(lhs));
                 self.equate(diagnostics, &rhs_ty, &ret_ty, self.expr_range(rhs));
                 let (kind, operator) = match op {
@@ -2374,6 +2489,10 @@ impl Typer {
                     common_defs::BinaryOp::Sub => (ArithmeticKind::Numeric, "-"),
                     common_defs::BinaryOp::Mul => (ArithmeticKind::Numeric, "*"),
                     common_defs::BinaryOp::Div => (ArithmeticKind::Numeric, "/"),
+                    common_defs::BinaryOp::Rem => (ArithmeticKind::Integer, "%"),
+                    common_defs::BinaryOp::BitAnd => (ArithmeticKind::Integer, "&"),
+                    common_defs::BinaryOp::BitOr => (ArithmeticKind::Integer, "|"),
+                    common_defs::BinaryOp::BitXor => (ArithmeticKind::Integer, "^"),
                     _ => unreachable!(),
                 };
                 self.push_obligation(
@@ -2383,6 +2502,24 @@ impl Typer {
                         operator,
                     }),
                     ObligationCause::new(self.expr_range(lhs), ObligationCauseKind::Operation),
+                );
+            }
+            common_defs::BinaryOp::Shl | common_defs::BinaryOp::Shr => {
+                self.push_obligation(
+                    Predicate::Operation(OperationGoal::Arithmetic {
+                        kind: ArithmeticKind::Integer,
+                        ty: lhs_ty.clone(),
+                        operator: op.symbol(),
+                    }),
+                    ObligationCause::new(self.expr_range(lhs), ObligationCauseKind::Operation),
+                );
+                self.push_obligation(
+                    Predicate::Operation(OperationGoal::Arithmetic {
+                        kind: ArithmeticKind::Integer,
+                        ty: rhs_ty.clone(),
+                        operator: op.symbol(),
+                    }),
+                    ObligationCause::new(self.expr_range(rhs), ObligationCauseKind::Operation),
                 );
             }
             common_defs::BinaryOp::And | common_defs::BinaryOp::Or => {

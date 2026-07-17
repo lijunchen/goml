@@ -460,6 +460,10 @@ pub enum Expr {
         ty: Ty,
         resolution: UnaryResolution,
     },
+    ECast {
+        expr: Box<Expr>,
+        ty: Ty,
+    },
     EProj {
         tuple: Box<Expr>,
         index: usize,
@@ -532,6 +536,7 @@ impl Expr {
             Self::EGo { ty, .. } => ty.clone(),
             Self::ECall { ty, .. } => ty.clone(),
             Self::EUnary { ty, .. } => ty.clone(),
+            Self::ECast { ty, .. } => ty.clone(),
             Self::EProj { ty, .. } => ty.clone(),
             Self::EField { ty, .. } => ty.clone(),
             Self::EIndex { ty, .. } => ty.clone(),
