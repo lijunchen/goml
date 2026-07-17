@@ -6,6 +6,15 @@ fn println[T: ToString](value: T) -> unit {
     string_println(ToString::to_string(value))
 }
 
+fn char_from_uint32(value: uint32) -> Option[char] {
+    let (valid, value) = char_from_uint32_raw(value);
+    if valid {
+        Option::Some(value)
+    } else {
+        Option::None
+    }
+}
+
 impl int32 {
     fn to_string(self: int32) -> string {
         int32_to_string(self)

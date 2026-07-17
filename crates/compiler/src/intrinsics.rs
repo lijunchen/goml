@@ -155,6 +155,7 @@ pub enum RuntimeHookId {
     StringPrint,
     StringPrintln,
     CharToString,
+    CharFromUint32,
     Int8ToString,
     Int16ToString,
     Int32ToString,
@@ -212,7 +213,7 @@ pub enum RuntimeHookId {
 }
 
 impl RuntimeHookId {
-    pub const ALL: [Self; 68] = [
+    pub const ALL: [Self; 69] = [
         Self::UnitToString,
         Self::BoolToString,
         Self::StringLen,
@@ -227,6 +228,7 @@ impl RuntimeHookId {
         Self::StringPrint,
         Self::StringPrintln,
         Self::CharToString,
+        Self::CharFromUint32,
         Self::Int8ToString,
         Self::Int16ToString,
         Self::Int32ToString,
@@ -299,6 +301,7 @@ impl RuntimeHookId {
             Self::StringPrint => "core.string_print",
             Self::StringPrintln => "core.string_println",
             Self::CharToString => "core.char_to_string",
+            Self::CharFromUint32 => "core.char_from_uint32",
             Self::Int8ToString => "core.int8_to_string",
             Self::Int16ToString => "core.int16_to_string",
             Self::Int32ToString => "core.int32_to_string",
@@ -377,6 +380,7 @@ impl RuntimeHookId {
                 | Self::StringPrint
                 | Self::StringPrintln
                 | Self::CharToString
+                | Self::CharFromUint32
                 | Self::Int8ToString
                 | Self::Int16ToString
                 | Self::Int32ToString
@@ -979,6 +983,9 @@ impl RuntimeHookId {
             Self::StringConcat => signature(vec![vec_ty(Ty::TString)], Ty::TString),
             Self::StringPrint | Self::StringPrintln => signature(vec![Ty::TString], Ty::TUnit),
             Self::CharToString => signature(vec![Ty::TChar], Ty::TString),
+            Self::CharFromUint32 => {
+                signature(vec![Ty::TUint32], tuple_ty(vec![Ty::TBool, Ty::TChar]))
+            }
             Self::Int8ToString => signature(vec![Ty::TInt8], Ty::TString),
             Self::Int16ToString => signature(vec![Ty::TInt16], Ty::TString),
             Self::Int32ToString => signature(vec![Ty::TInt32], Ty::TString),

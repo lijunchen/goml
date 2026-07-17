@@ -2399,10 +2399,6 @@ impl Typer {
             || matches!(
                 (&source_ty, &target_ty),
                 (tast::Ty::TChar, tast::Ty::TUint32)
-            )
-            || matches!(
-                (&source_ty, &target_ty),
-                (tast::Ty::TUint32, tast::Ty::TChar)
             );
         if !valid {
             diagnostics.push(

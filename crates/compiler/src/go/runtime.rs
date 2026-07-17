@@ -105,6 +105,7 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(string_from_utf8()),
         Item::Fn(string_concat()),
         Item::Fn(char_to_string()),
+        Item::Fn(char_from_uint32()),
         Item::Fn(int8_to_string()),
         Item::Fn(int16_to_string()),
         Item::Fn(int32_to_string()),
@@ -5614,6 +5615,88 @@ fn char_to_string() -> goast::Fn {
                         }],
                         ty: goty::GoType::TString,
                     }),
+                },
+            ],
+        },
+    }
+}
+
+fn char_from_uint32() -> goast::Fn {
+    let result_ty = tuple_ty(vec![tast::Ty::TBool, tast::Ty::TChar]);
+    let value = || goast::Expr::Var {
+        name: "value".to_string(),
+        ty: goty::GoType::TUint32,
+    };
+    let uint32_literal = |value: &str| goast::Expr::Int {
+        value: value.to_string(),
+        ty: goty::GoType::TUint32,
+    };
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::CharFromUint32),
+        params: vec![("value".to_string(), goty::GoType::TUint32)],
+        ret_ty: Some(goast::tast_ty_to_go_type(&result_ty)),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::If {
+                    cond: goast::Expr::BinaryOp {
+                        op: GoBinaryOp::Or,
+                        lhs: Box::new(goast::Expr::BinaryOp {
+                            op: GoBinaryOp::Greater,
+                            lhs: Box::new(value()),
+                            rhs: Box::new(uint32_literal("1114111")),
+                            ty: goty::GoType::TBool,
+                        }),
+                        rhs: Box::new(goast::Expr::BinaryOp {
+                            op: GoBinaryOp::And,
+                            lhs: Box::new(goast::Expr::BinaryOp {
+                                op: GoBinaryOp::GreaterEq,
+                                lhs: Box::new(value()),
+                                rhs: Box::new(uint32_literal("55296")),
+                                ty: goty::GoType::TBool,
+                            }),
+                            rhs: Box::new(goast::Expr::BinaryOp {
+                                op: GoBinaryOp::LessEq,
+                                lhs: Box::new(value()),
+                                rhs: Box::new(uint32_literal("57343")),
+                                ty: goty::GoType::TBool,
+                            }),
+                            ty: goty::GoType::TBool,
+                        }),
+                        ty: goty::GoType::TBool,
+                    },
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(tuple_literal(
+                                &result_ty,
+                                vec![
+                                    goast::Expr::Bool {
+                                        value: false,
+                                        ty: goty::GoType::TBool,
+                                    },
+                                    goast::Expr::Int {
+                                        value: "0".to_string(),
+                                        ty: goty::GoType::TChar,
+                                    },
+                                ],
+                            )),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Return {
+                    expr: Some(tuple_literal(
+                        &result_ty,
+                        vec![
+                            goast::Expr::Bool {
+                                value: true,
+                                ty: goty::GoType::TBool,
+                            },
+                            goast::Expr::Convert {
+                                expr: Box::new(value()),
+                                ty: goty::GoType::TChar,
+                            },
+                        ],
+                    )),
                 },
             ],
         },
