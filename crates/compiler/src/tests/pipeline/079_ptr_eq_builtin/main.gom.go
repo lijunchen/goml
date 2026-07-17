@@ -42,9 +42,9 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__200 int32) *ref_int32_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__201 int32) *ref_int32_x {
     var retv64 *ref_int32_x
-    var t65 *ref_int32_x = ref__Ref_5int32(value__200)
+    var t65 *ref_int32_x = ref__Ref_5int32(value__201)
     retv64 = t65
     return retv64
 }

@@ -416,21 +416,21 @@ func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_new____K__Key____V__int32
     return retv140
 }
 
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__Key____V__int32(self__191 *hashmap_Key_int32_x, key__192 Key, value__193 int32) struct{} {
-    hashmap_set__HashMap_3Key_5int32(self__191, key__192, value__193)
+func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__Key____V__int32(self__192 *hashmap_Key_int32_x, key__193 Key, value__194 int32) struct{} {
+    hashmap_set__HashMap_3Key_5int32(self__192, key__193, value__194)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_len____K__Key____V__int32(self__196 *hashmap_Key_int32_x) int32 {
+func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_len____K__Key____V__int32(self__197 *hashmap_Key_int32_x) int32 {
     var retv145 int32
-    var t146 int32 = hashmap_len__HashMap_3Key_5int32(self__196)
+    var t146 int32 = hashmap_len__HashMap_3Key_5int32(self__197)
     retv145 = t146
     return retv145
 }
 
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_get____K__Key____V__int32(self__189 *hashmap_Key_int32_x, key__190 Key) Option__int32 {
+func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_get____K__Key____V__int32(self__190 *hashmap_Key_int32_x, key__191 Key) Option__int32 {
     var retv148 Option__int32
-    var t149 Option__int32 = hashmap_get__HashMap_3Key_5int32(self__189, key__190)
+    var t149 Option__int32 = hashmap_get__HashMap_3Key_5int32(self__190, key__191)
     retv148 = t149
     return retv148
 }
@@ -441,15 +441,15 @@ func println__T_bool(value__1 bool) struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_contains____K__Key____V__int32(self__197 *hashmap_Key_int32_x, key__198 Key) bool {
+func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_contains____K__Key____V__int32(self__198 *hashmap_Key_int32_x, key__199 Key) bool {
     var retv154 bool
-    var t155 bool = hashmap_contains__HashMap_3Key_5int32(self__197, key__198)
+    var t155 bool = hashmap_contains__HashMap_3Key_5int32(self__198, key__199)
     retv154 = t155
     return retv154
 }
 
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_remove____K__Key____V__int32(self__194 *hashmap_Key_int32_x, key__195 Key) struct{} {
-    hashmap_remove__HashMap_3Key_5int32(self__194, key__195)
+func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_remove____K__Key____V__int32(self__195 *hashmap_Key_int32_x, key__196 Key) struct{} {
+    hashmap_remove__HashMap_3Key_5int32(self__195, key__196)
     return struct{}{}
 }
 

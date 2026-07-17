@@ -65,9 +65,9 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(self__120 *_goml_vec
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_slice____T__int32(self__168 *_goml_vec_int32, start__169 int32, end__170 int32) []int32 {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_slice____T__int32(self__169 *_goml_vec_int32, start__170 int32, end__171 int32) []int32 {
     var retv83 []int32
-    var t84 []int32 = self__168.items[start__169:end__170]
+    var t84 []int32 = self__169.items[start__170:end__171]
     retv83 = t84
     return retv83
 }
@@ -78,23 +78,23 @@ func println__T_int32(value__1 int32) struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_len____T__int32(self__179 []int32) int32 {
+func _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_len____T__int32(self__180 []int32) int32 {
     var retv89 int32
-    var t90 int32 = int32(len(self__179))
+    var t90 int32 = int32(len(self__180))
     retv89 = t90
     return retv89
 }
 
-func _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_get____T__int32(self__177 []int32, index__178 int32) int32 {
+func _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_get____T__int32(self__178 []int32, index__179 int32) int32 {
     var retv92 int32
-    var t93 int32 = self__177[index__178]
+    var t93 int32 = self__178[index__179]
     retv92 = t93
     return retv92
 }
 
-func _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_sub____T__int32(self__180 []int32, start__181 int32, end__182 int32) []int32 {
+func _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_sub____T__int32(self__181 []int32, start__182 int32, end__183 int32) []int32 {
     var retv95 []int32
-    var t96 []int32 = self__180[start__181:end__182]
+    var t96 []int32 = self__181[start__182:end__183]
     retv95 = t96
     return retv95
 }

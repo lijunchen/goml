@@ -1632,21 +1632,21 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__200 int32) *ref_int32_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__201 int32) *ref_int32_x {
     var retv708 *ref_int32_x
-    var t709 *ref_int32_x = ref__Ref_5int32(value__200)
+    var t709 *ref_int32_x = ref__Ref_5int32(value__201)
     retv708 = t709
     return retv708
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__202 *ref_int32_x, value__203 int32) struct{} {
-    ref_set__Ref_5int32(self__202, value__203)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__203 *ref_int32_x, value__204 int32) struct{} {
+    ref_set__Ref_5int32(self__203, value__204)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__201 *ref_int32_x) int32 {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__202 *ref_int32_x) int32 {
     var retv713 int32
-    var t714 int32 = ref_get__Ref_5int32(self__201)
+    var t714 int32 = ref_get__Ref_5int32(self__202)
     retv713 = t714
     return retv713
 }
@@ -1665,16 +1665,16 @@ func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
     return retv719
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Tv(value__200 Tv) *ref_Tv_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Tv(value__201 Tv) *ref_Tv_x {
     var retv722 *ref_Tv_x
-    var t723 *ref_Tv_x = ref__Ref_2Tv(value__200)
+    var t723 *ref_Tv_x = ref__Ref_2Tv(value__201)
     retv722 = t723
     return retv722
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(self__201 *ref_Tv_x) Tv {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Tv(self__202 *ref_Tv_x) Tv {
     var retv725 Tv
-    var t726 Tv = ref_get__Ref_2Tv(self__201)
+    var t726 Tv = ref_get__Ref_2Tv(self__202)
     retv725 = t726
     return retv725
 }
@@ -1693,40 +1693,40 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__EnvEntry(self__131 *_goml_v
     return retv731
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Option_l_Typ_r_(value__200 Option__Typ) *ref_Option__Typ_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Option_l_Typ_r_(value__201 Option__Typ) *ref_Option__Typ_x {
     var retv734 *ref_Option__Typ_x
-    var t735 *ref_Option__Typ_x = ref__Ref_11Option__Typ(value__200)
+    var t735 *ref_Option__Typ_x = ref__Ref_11Option__Typ(value__201)
     retv734 = t735
     return retv734
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(value__200 bool) *ref_bool_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(value__201 bool) *ref_bool_x {
     var retv737 *ref_bool_x
-    var t738 *ref_bool_x = ref__Ref_4bool(value__200)
+    var t738 *ref_bool_x = ref__Ref_4bool(value__201)
     retv737 = t738
     return retv737
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(self__201 *ref_bool_x) bool {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(self__202 *ref_bool_x) bool {
     var retv740 bool
-    var t741 bool = ref_get__Ref_4bool(self__201)
+    var t741 bool = ref_get__Ref_4bool(self__202)
     retv740 = t741
     return retv740
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Option_l_Typ_r_(self__202 *ref_Option__Typ_x, value__203 Option__Typ) struct{} {
-    ref_set__Ref_11Option__Typ(self__202, value__203)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Option_l_Typ_r_(self__203 *ref_Option__Typ_x, value__204 Option__Typ) struct{} {
+    ref_set__Ref_11Option__Typ(self__203, value__204)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(self__202 *ref_bool_x, value__203 bool) struct{} {
-    ref_set__Ref_4bool(self__202, value__203)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(self__203 *ref_bool_x, value__204 bool) struct{} {
+    ref_set__Ref_4bool(self__203, value__204)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Option_l_Typ_r_(self__201 *ref_Option__Typ_x) Option__Typ {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Option_l_Typ_r_(self__202 *ref_Option__Typ_x) Option__Typ {
     var retv747 Option__Typ
-    var t748 Option__Typ = ref_get__Ref_11Option__Typ(self__201)
+    var t748 Option__Typ = ref_get__Ref_11Option__Typ(self__202)
     retv747 = t748
     return retv747
 }
@@ -1738,8 +1738,8 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__SubstEntry(self__131 *_goml
     return retv750
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Tv(self__202 *ref_Tv_x, value__203 Tv) struct{} {
-    ref_set__Ref_2Tv(self__202, value__203)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Tv(self__203 *ref_Tv_x, value__204 Tv) struct{} {
+    ref_set__Ref_2Tv(self__203, value__204)
     return struct{}{}
 }
 

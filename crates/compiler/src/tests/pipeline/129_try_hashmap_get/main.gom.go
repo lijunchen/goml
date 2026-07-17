@@ -202,14 +202,14 @@ func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_new____K__string____V__in
     return retv84
 }
 
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__string____V__int32(self__191 *hashmap_string_int32_x, key__192 string, value__193 int32) struct{} {
-    hashmap_set__HashMap_6string_5int32(self__191, key__192, value__193)
+func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_set____K__string____V__int32(self__192 *hashmap_string_int32_x, key__193 string, value__194 int32) struct{} {
+    hashmap_set__HashMap_6string_5int32(self__192, key__193, value__194)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_get____K__string____V__int32(self__189 *hashmap_string_int32_x, key__190 string) Option__int32 {
+func _goml_m_inherent_i_HashMap_i_HashMap_l_K_c_V_r__i_get____K__string____V__int32(self__190 *hashmap_string_int32_x, key__191 string) Option__int32 {
     var retv89 Option__int32
-    var t90 Option__int32 = hashmap_get__HashMap_6string_5int32(self__189, key__190)
+    var t90 Option__int32 = hashmap_get__HashMap_6string_5int32(self__190, key__191)
     retv89 = t90
     return retv89
 }

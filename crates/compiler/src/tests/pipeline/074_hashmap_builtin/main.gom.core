@@ -651,30 +651,31 @@ fn inherent#Vec#Vec[T]#reverse(self/162: Vec[T]) -> unit {
 }
 
 fn inherent#Vec#Vec[T]#extend(self/165: Vec[T], other/166: Vec[T]) -> unit {
-  let _wild52 = inherent#Vec#Vec[T]#reserve(self/165, inherent#Vec#Vec[T]#len(other/166)) in
-  let index/167 = inherent#Ref#Ref[int32]#new(0) in
-  while (inherent#Ref#Ref[int32]#get(index/167) < inherent#Vec#Vec[T]#len(other/166)) {
+  let len/167 = inherent#Vec#Vec[T]#len(other/166) in
+  let _wild52 = inherent#Vec#Vec[T]#reserve(self/165, len/167) in
+  let index/168 = inherent#Ref#Ref[int32]#new(0) in
+  while (inherent#Ref#Ref[int32]#get(index/168) < len/167) {
       {
-        let _wild53 = inherent#Vec#Vec[T]#push(self/165, inherent#Vec#Vec[T]#get(other/166, inherent#Ref#Ref[int32]#get(index/167))) in
-        let _wild54 = inherent#Ref#Ref[int32]#set(index/167, (inherent#Ref#Ref[int32]#get(index/167) + 1)) in
+        let _wild53 = inherent#Vec#Vec[T]#push(self/165, inherent#Vec#Vec[T]#get(other/166, inherent#Ref#Ref[int32]#get(index/168))) in
+        let _wild54 = inherent#Ref#Ref[int32]#set(index/168, (inherent#Ref#Ref[int32]#get(index/168) + 1)) in
       }
   }
 }
 
-fn inherent#Vec#Vec[T]#slice(self/168: Vec[T], start/169: int32, end/170: int32) -> Slice[T] {
-  @intrinsic(slice.new)(self/168, start/169, end/170)
+fn inherent#Vec#Vec[T]#slice(self/169: Vec[T], start/170: int32, end/171: int32) -> Slice[T] {
+  @intrinsic(slice.new)(self/169, start/170, end/171)
 }
 
-fn inherent#Vec#Vec[T]#iter(self/171: Vec[T]) -> FnIterator[T] {
-  let index/172 = inherent#Ref#Ref[int32]#new(0) in
-  let len/173 = inherent#Vec#Vec[T]#len(self/171) in
+fn inherent#Vec#Vec[T]#iter(self/172: Vec[T]) -> FnIterator[T] {
+  let index/173 = inherent#Ref#Ref[int32]#new(0) in
+  let len/174 = inherent#Vec#Vec[T]#len(self/172) in
   inherent#FnIterator#FnIterator#from_fn(|| => {
-    let current/174 = inherent#Ref#Ref[int32]#get(index/172) in
-    if (current/174 < len/173) {
+    let current/175 = inherent#Ref#Ref[int32]#get(index/173) in
+    if (current/175 < len/174) {
         {
-          let value/175 = inherent#Vec#Vec[T]#get(self/171, current/174) in
-          let _wild55 = inherent#Ref#Ref[int32]#set(index/172, (current/174 + 1)) in
-          Option::Some(value/175)
+          let value/176 = inherent#Vec#Vec[T]#get(self/172, current/175) in
+          let _wild55 = inherent#Ref#Ref[int32]#set(index/173, (current/175 + 1)) in
+          Option::Some(value/176)
         }
     } else {
         {
@@ -684,32 +685,32 @@ fn inherent#Vec#Vec[T]#iter(self/171: Vec[T]) -> FnIterator[T] {
   })
 }
 
-fn trait_impl#IntoIterator#Vec[T]#into_iter(self/176: Vec[T]) -> FnIterator[T] {
-  inherent#Vec#Vec[T]#iter(self/176)
+fn trait_impl#IntoIterator#Vec[T]#into_iter(self/177: Vec[T]) -> FnIterator[T] {
+  inherent#Vec#Vec[T]#iter(self/177)
 }
 
-fn inherent#Slice#Slice[T]#get(self/177: Slice[T], index/178: int32) -> T {
-  @intrinsic(slice.get)(self/177, index/178)
+fn inherent#Slice#Slice[T]#get(self/178: Slice[T], index/179: int32) -> T {
+  @intrinsic(slice.get)(self/178, index/179)
 }
 
-fn inherent#Slice#Slice[T]#len(self/179: Slice[T]) -> int32 {
-  @intrinsic(slice.len)(self/179)
+fn inherent#Slice#Slice[T]#len(self/180: Slice[T]) -> int32 {
+  @intrinsic(slice.len)(self/180)
 }
 
-fn inherent#Slice#Slice[T]#sub(self/180: Slice[T], start/181: int32, end/182: int32) -> Slice[T] {
-  @intrinsic(slice.sub)(self/180, start/181, end/182)
+fn inherent#Slice#Slice[T]#sub(self/181: Slice[T], start/182: int32, end/183: int32) -> Slice[T] {
+  @intrinsic(slice.sub)(self/181, start/182, end/183)
 }
 
-fn inherent#Slice#Slice[T]#iter(self/183: Slice[T]) -> FnIterator[T] {
-  let index/184 = inherent#Ref#Ref[int32]#new(0) in
-  let len/185 = inherent#Slice#Slice[T]#len(self/183) in
+fn inherent#Slice#Slice[T]#iter(self/184: Slice[T]) -> FnIterator[T] {
+  let index/185 = inherent#Ref#Ref[int32]#new(0) in
+  let len/186 = inherent#Slice#Slice[T]#len(self/184) in
   inherent#FnIterator#FnIterator#from_fn(|| => {
-    let current/186 = inherent#Ref#Ref[int32]#get(index/184) in
-    if (current/186 < len/185) {
+    let current/187 = inherent#Ref#Ref[int32]#get(index/185) in
+    if (current/187 < len/186) {
         {
-          let value/187 = inherent#Slice#Slice[T]#get(self/183, current/186) in
-          let _wild56 = inherent#Ref#Ref[int32]#set(index/184, (current/186 + 1)) in
-          Option::Some(value/187)
+          let value/188 = inherent#Slice#Slice[T]#get(self/184, current/187) in
+          let _wild56 = inherent#Ref#Ref[int32]#set(index/185, (current/187 + 1)) in
+          Option::Some(value/188)
         }
     } else {
         {
@@ -719,58 +720,58 @@ fn inherent#Slice#Slice[T]#iter(self/183: Slice[T]) -> FnIterator[T] {
   })
 }
 
-fn trait_impl#IntoIterator#Slice[T]#into_iter(self/188: Slice[T]) -> FnIterator[T] {
-  inherent#Slice#Slice[T]#iter(self/188)
+fn trait_impl#IntoIterator#Slice[T]#into_iter(self/189: Slice[T]) -> FnIterator[T] {
+  inherent#Slice#Slice[T]#iter(self/189)
 }
 
 fn inherent#HashMap#HashMap[K,V]#new() -> HashMap[K, V] {
   @intrinsic(hashmap.new)()
 }
 
-fn inherent#HashMap#HashMap[K,V]#get(self/189: HashMap[K, V], key/190: K) -> Option[V] {
-  @intrinsic(hashmap.get)(self/189, key/190)
+fn inherent#HashMap#HashMap[K,V]#get(self/190: HashMap[K, V], key/191: K) -> Option[V] {
+  @intrinsic(hashmap.get)(self/190, key/191)
 }
 
-fn inherent#HashMap#HashMap[K,V]#set(self/191: HashMap[K, V], key/192: K, value/193: V) -> unit {
-  @intrinsic(hashmap.set)(self/191, key/192, value/193)
+fn inherent#HashMap#HashMap[K,V]#set(self/192: HashMap[K, V], key/193: K, value/194: V) -> unit {
+  @intrinsic(hashmap.set)(self/192, key/193, value/194)
 }
 
-fn inherent#HashMap#HashMap[K,V]#remove(self/194: HashMap[K, V], key/195: K) -> unit {
-  @intrinsic(hashmap.remove)(self/194, key/195)
+fn inherent#HashMap#HashMap[K,V]#remove(self/195: HashMap[K, V], key/196: K) -> unit {
+  @intrinsic(hashmap.remove)(self/195, key/196)
 }
 
-fn inherent#HashMap#HashMap[K,V]#len(self/196: HashMap[K, V]) -> int32 {
-  @intrinsic(hashmap.len)(self/196)
+fn inherent#HashMap#HashMap[K,V]#len(self/197: HashMap[K, V]) -> int32 {
+  @intrinsic(hashmap.len)(self/197)
 }
 
-fn inherent#HashMap#HashMap[K,V]#contains(self/197: HashMap[K, V], key/198: K) -> bool {
-  @intrinsic(hashmap.contains)(self/197, key/198)
+fn inherent#HashMap#HashMap[K,V]#contains(self/198: HashMap[K, V], key/199: K) -> bool {
+  @intrinsic(hashmap.contains)(self/198, key/199)
 }
 
-fn inherent#HashMap#HashMap[K,V]#entries(self/199: HashMap[K, V]) -> Vec[(K, V)] {
-  @intrinsic(hashmap.entries)(self/199)
+fn inherent#HashMap#HashMap[K,V]#entries(self/200: HashMap[K, V]) -> Vec[(K, V)] {
+  @intrinsic(hashmap.entries)(self/200)
 }
 
-fn inherent#Ref#Ref[T]#new(value/200: T) -> Ref[T] {
-  @intrinsic(ref.new)(value/200)
+fn inherent#Ref#Ref[T]#new(value/201: T) -> Ref[T] {
+  @intrinsic(ref.new)(value/201)
 }
 
-fn inherent#Ref#Ref[T]#get(self/201: Ref[T]) -> T {
-  @intrinsic(ref.get)(self/201)
+fn inherent#Ref#Ref[T]#get(self/202: Ref[T]) -> T {
+  @intrinsic(ref.get)(self/202)
 }
 
-fn inherent#Ref#Ref[T]#set(self/202: Ref[T], value/203: T) -> unit {
-  @intrinsic(ref.set)(self/202, value/203)
+fn inherent#Ref#Ref[T]#set(self/203: Ref[T], value/204: T) -> unit {
+  @intrinsic(ref.set)(self/203, value/204)
 }
 
-fn range(start/204: int32, end/205: int32) -> FnIterator[int32] {
-  let current/206 = inherent#Ref#Ref[int32]#new(start/204) in
+fn range(start/205: int32, end/206: int32) -> FnIterator[int32] {
+  let current/207 = inherent#Ref#Ref[int32]#new(start/205) in
   inherent#FnIterator#FnIterator#from_fn(|| => {
-    let value/207 = inherent#Ref#Ref[int32]#get(current/206) in
-    if (value/207 < end/205) {
+    let value/208 = inherent#Ref#Ref[int32]#get(current/207) in
+    if (value/208 < end/206) {
         {
-          let _wild57 = inherent#Ref#Ref[int32]#set(current/206, (value/207 + 1)) in
-          Option::Some(value/207)
+          let _wild57 = inherent#Ref#Ref[int32]#set(current/207, (value/208 + 1)) in
+          Option::Some(value/208)
         }
     } else {
         {

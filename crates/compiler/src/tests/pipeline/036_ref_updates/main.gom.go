@@ -186,54 +186,54 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__201 *ref_int32_x) int32 {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__202 *ref_int32_x) int32 {
     var retv118 int32
-    var t119 int32 = ref_get__Ref_5int32(self__201)
+    var t119 int32 = ref_get__Ref_5int32(self__202)
     retv118 = t119
     return retv118
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__202 *ref_int32_x, value__203 int32) struct{} {
-    ref_set__Ref_5int32(self__202, value__203)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__203 *ref_int32_x, value__204 int32) struct{} {
+    ref_set__Ref_5int32(self__203, value__204)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(self__201 *ref_bool_x) bool {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__bool(self__202 *ref_bool_x) bool {
     var retv123 bool
-    var t124 bool = ref_get__Ref_4bool(self__201)
+    var t124 bool = ref_get__Ref_4bool(self__202)
     retv123 = t124
     return retv123
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(self__202 *ref_bool_x, value__203 bool) struct{} {
-    ref_set__Ref_4bool(self__202, value__203)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__bool(self__203 *ref_bool_x, value__204 bool) struct{} {
+    ref_set__Ref_4bool(self__203, value__204)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Ref_l_int32_r_(self__201 *ref_Ref_5int32_x) *ref_int32_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Ref_l_int32_r_(self__202 *ref_Ref_5int32_x) *ref_int32_x {
     var retv128 *ref_int32_x
-    var t129 *ref_int32_x = ref_get__Ref_10Ref_5int32(self__201)
+    var t129 *ref_int32_x = ref_get__Ref_10Ref_5int32(self__202)
     retv128 = t129
     return retv128
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__200 int32) *ref_int32_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__201 int32) *ref_int32_x {
     var retv131 *ref_int32_x
-    var t132 *ref_int32_x = ref__Ref_5int32(value__200)
+    var t132 *ref_int32_x = ref__Ref_5int32(value__201)
     retv131 = t132
     return retv131
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(value__200 bool) *ref_bool_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__bool(value__201 bool) *ref_bool_x {
     var retv134 *ref_bool_x
-    var t135 *ref_bool_x = ref__Ref_4bool(value__200)
+    var t135 *ref_bool_x = ref__Ref_4bool(value__201)
     retv134 = t135
     return retv134
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Ref_l_int32_r_(value__200 *ref_int32_x) *ref_Ref_5int32_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__Ref_l_int32_r_(value__201 *ref_int32_x) *ref_Ref_5int32_x {
     var retv137 *ref_Ref_5int32_x
-    var t138 *ref_Ref_5int32_x = ref__Ref_10Ref_5int32(value__200)
+    var t138 *ref_Ref_5int32_x = ref__Ref_10Ref_5int32(value__201)
     retv137 = t138
     return retv137
 }
