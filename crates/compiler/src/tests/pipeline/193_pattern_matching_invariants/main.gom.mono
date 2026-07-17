@@ -1,0 +1,145 @@
+fn absurd(value/0: Never) -> int32 {
+  {
+    let _wild61 = value/0 in
+    @intrinsic(compiler.missing)("")
+  }
+}
+
+fn absurd_loop(value/1: Loop) -> int32 {
+  {
+    let _wild62 = value/1 in
+    @intrinsic(compiler.missing)("")
+  }
+}
+
+fn maybe_never(value/2: MaybeNever) -> int32 {
+  match value/2 {
+    MaybeNever::Empty => {
+      0
+    },
+    MaybeNever::Filled(x63) => {
+      {
+        let x63 = MaybeNever::Filled._0(value/2) in
+        @intrinsic(compiler.missing)("")
+      }
+    },
+  }
+}
+
+fn empty_never_vec(value/3: Vec[Never]) -> int32 {
+  {
+    let match64 = value/3 in
+    if (@intrinsic(vec.len)(match64) == 0) {
+        0
+    } else {
+        @intrinsic(compiler.missing)("")
+    }
+  }
+}
+
+fn sequence_coverage(value/4: Vec[bool]) -> int32 {
+  {
+    let match65 = value/4 in
+    if (@intrinsic(vec.len)(match65) == 0) {
+        0
+    } else {
+        if (@intrinsic(vec.len)(match65) == 1) {
+            1
+        } else {
+            if (@intrinsic(vec.len)(match65) >= 2) {
+                if (@intrinsic(vec.get)(match65, 0) == true) {
+                    2
+                } else {
+                    if (@intrinsic(vec.len)(match65) >= 2) {
+                        if (@intrinsic(vec.get)(match65, 0) == false) {
+                            3
+                        } else {
+                            @intrinsic(compiler.missing)("")
+                        }
+                    } else {
+                        @intrinsic(compiler.missing)("")
+                    }
+                }
+            } else {
+                if (@intrinsic(vec.len)(match65) >= 2) {
+                    if (@intrinsic(vec.get)(match65, 0) == false) {
+                        3
+                    } else {
+                        @intrinsic(compiler.missing)("")
+                    }
+                } else {
+                    @intrinsic(compiler.missing)("")
+                }
+            }
+        }
+    }
+  }
+}
+
+fn unwrap(value/5: Single) -> int32 {
+  let mtmp66 = value/5 in
+  match mtmp66 {
+    Single::Only(x67) => {
+      {
+        let x67 = Single::Only._0(mtmp66) in
+        {
+          let inner/6 = x67 in
+          {
+            inner/6
+          }
+        }
+      }
+    },
+  }
+}
+
+fn decide(flag/7: bool) -> int32 {
+  match flag/7 {
+    true => {
+      return 1
+    },
+    false => {
+      return 2
+    },
+  }
+}
+
+fn signed_zero(value/8: float64) -> string {
+  match value/8 {
+    -0 => {
+      "zero"
+    },
+    _ => "other",
+  }
+}
+
+fn main() -> unit {
+  let mtmp68 = (Single::Only(12)) in
+  {
+    let x69 = mtmp68.0 in
+    {
+      let single/9 = x69 in
+      {
+        let _wild70 = println__T_int32(unwrap(single/9)) in
+        let _wild71 = println__T_int32(decide(true)) in
+        let _wild72 = println__T_string(signed_zero(0)) in
+      }
+    }
+  }
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#int32#to_string(self/41: int32) -> string {
+  @runtime(core.int32_to_string)(self/41)
+}
+
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  self/37
+}

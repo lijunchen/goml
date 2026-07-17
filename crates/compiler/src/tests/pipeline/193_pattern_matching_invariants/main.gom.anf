@@ -1,0 +1,239 @@
+fn absurd(value/0: Never) -> int32 {
+  join ret73(retv74: int32) -> int32 {
+    retv74
+  } in
+  let _wild61 = value/0 in
+  let t75 = @intrinsic(compiler.missing)("") in
+  jump ret73(t75)
+}
+
+fn absurd_loop(value/1: Loop) -> int32 {
+  join ret76(retv77: int32) -> int32 {
+    retv77
+  } in
+  let _wild62 = value/1 in
+  let t78 = @intrinsic(compiler.missing)("") in
+  jump ret76(t78)
+}
+
+fn maybe_never(value/2: MaybeNever) -> int32 {
+  join ret79(retv80: int32) -> int32 {
+    retv80
+  } in
+  join k81(jp82: int32) -> int32 {
+    jump ret79(jp82)
+  } in
+  match value/2 {
+    Tag_0 => {
+      jump k81(0)
+    },
+    Tag_1 => {
+      let x63 = MaybeNever::Filled._0(value/2) in
+      let t83 = @intrinsic(compiler.missing)("") in
+      jump k81(t83)
+    },
+  }
+}
+
+fn empty_never_vec(value/3: Vec[Never]) -> int32 {
+  join ret84(retv85: int32) -> int32 {
+    retv85
+  } in
+  let match64 = value/3 in
+  let t88 = @intrinsic(vec.len)(match64) in
+  let t89 = (t88 == 0) in
+  join k86(jp87: int32) -> int32 {
+    jump ret84(jp87)
+  } in
+  if t89 {
+    jump k86(0)
+  } else {
+    let t90 = @intrinsic(compiler.missing)("") in
+    jump k86(t90)
+  }
+}
+
+fn sequence_coverage(value/4: Vec[bool]) -> int32 {
+  join ret91(retv92: int32) -> int32 {
+    retv92
+  } in
+  let match65 = value/4 in
+  let t95 = @intrinsic(vec.len)(match65) in
+  let t96 = (t95 == 0) in
+  join k93(jp94: int32) -> int32 {
+    jump ret91(jp94)
+  } in
+  if t96 {
+    jump k93(0)
+  } else {
+    let t99 = @intrinsic(vec.len)(match65) in
+    let t100 = (t99 == 1) in
+    join k97(jp98: int32) -> int32 {
+      jump k93(jp98)
+    } in
+    if t100 {
+      jump k97(1)
+    } else {
+      let t103 = @intrinsic(vec.len)(match65) in
+      let t104 = (t103 >= 2) in
+      join k101(jp102: int32) -> int32 {
+        jump k97(jp102)
+      } in
+      if t104 {
+        let t107 = @intrinsic(vec.get)(match65, 0) in
+        let t108 = (t107 == true) in
+        join k105(jp106: int32) -> int32 {
+          jump k101(jp106)
+        } in
+        if t108 {
+          jump k105(2)
+        } else {
+          let t111 = @intrinsic(vec.len)(match65) in
+          let t112 = (t111 >= 2) in
+          join k109(jp110: int32) -> int32 {
+            jump k105(jp110)
+          } in
+          if t112 {
+            let t115 = @intrinsic(vec.get)(match65, 0) in
+            let t116 = (t115 == false) in
+            join k113(jp114: int32) -> int32 {
+              jump k109(jp114)
+            } in
+            if t116 {
+              jump k113(3)
+            } else {
+              let t117 = @intrinsic(compiler.missing)("") in
+              jump k113(t117)
+            }
+          } else {
+            let t118 = @intrinsic(compiler.missing)("") in
+            jump k109(t118)
+          }
+        }
+      } else {
+        let t121 = @intrinsic(vec.len)(match65) in
+        let t122 = (t121 >= 2) in
+        join k119(jp120: int32) -> int32 {
+          jump k101(jp120)
+        } in
+        if t122 {
+          let t125 = @intrinsic(vec.get)(match65, 0) in
+          let t126 = (t125 == false) in
+          join k123(jp124: int32) -> int32 {
+            jump k119(jp124)
+          } in
+          if t126 {
+            jump k123(3)
+          } else {
+            let t127 = @intrinsic(compiler.missing)("") in
+            jump k123(t127)
+          }
+        } else {
+          let t128 = @intrinsic(compiler.missing)("") in
+          jump k119(t128)
+        }
+      }
+    }
+  }
+}
+
+fn unwrap(value/5: Single) -> int32 {
+  join ret129(retv130: int32) -> int32 {
+    retv130
+  } in
+  let mtmp66 = value/5 in
+  join k131(jp132: int32) -> int32 {
+    jump ret129(jp132)
+  } in
+  match mtmp66 {
+    Tag_0 => {
+      let x67 = Single::Only._0(mtmp66) in
+      let inner/6 = x67 in
+      jump k131(inner/6)
+    },
+  }
+}
+
+fn decide(flag/7: bool) -> int32 {
+  join ret133(retv134: int32) -> int32 {
+    retv134
+  } in
+  join k135(jp136: int32) -> int32 {
+    jump ret133(jp136)
+  } in
+  match flag/7 {
+    true => {
+      jump ret133(1)
+    },
+    false => {
+      jump ret133(2)
+    },
+  }
+}
+
+fn signed_zero(value/8: float64) -> string {
+  join ret137(retv138: string) -> string {
+    retv138
+  } in
+  join k139(jp140: string) -> string {
+    jump ret137(jp140)
+  } in
+  match value/8 {
+    -0 => {
+      jump k139("zero")
+    },
+    _ => {
+      jump k139("other")
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret141() -> unit {
+    ()
+  } in
+  let t142 = Single::Only(12) in
+  let mtmp68 = (t142) in
+  let x69 = mtmp68.0 in
+  let single/9 = x69 in
+  let t143 = unwrap(single/9) in
+  let _wild70 = println__T_int32(t143) in
+  let t144 = decide(true) in
+  let _wild71 = println__T_int32(t144) in
+  let t145 = signed_zero(0) in
+  let _wild72 = println__T_string(t145) in
+  jump ret141()
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  join ret146() -> unit {
+    ()
+  } in
+  let t147 = trait_impl#ToString#int32#to_string(value/1) in
+  let t148 = @runtime(core.string_println)(t147) in
+  jump ret146()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret149() -> unit {
+    ()
+  } in
+  let t150 = trait_impl#ToString#string#to_string(value/1) in
+  let t151 = @runtime(core.string_println)(t150) in
+  jump ret149()
+}
+
+fn trait_impl#ToString#int32#to_string(self/41: int32) -> string {
+  join ret152(retv153: string) -> string {
+    retv153
+  } in
+  let t154 = @runtime(core.int32_to_string)(self/41) in
+  jump ret152(t154)
+}
+
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  join ret155(retv156: string) -> string {
+    retv156
+  } in
+  jump ret155(self/37)
+}
