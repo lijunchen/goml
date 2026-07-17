@@ -22,6 +22,7 @@ use goml_project::registry::{
 };
 use toml_edit::{DocumentMut, Item, Table, value};
 
+mod build_cache;
 mod gomlc;
 
 const DEFAULT_LIB_PACKAGE: &str = "lib";
@@ -385,6 +386,71 @@ impl PlannedCompilerCommand {
         parts.push("gomlc".to_string());
         parts.extend(args.iter().map(|arg| shell_escape(&arg.to_string_lossy())));
         parts.join(" ")
+    }
+
+    fn cache_inputs(&self) -> Vec<build_cache::CacheInput<'_>> {
+        match self {
+            Self::Check(command)
+            | Self::TestCheck(command)
+            | Self::Build(command)
+            | Self::TestBuild(command) => command
+                .input_files
+                .iter()
+                .map(|path| build_cache::CacheInput::new("source", path))
+                .chain(
+                    command
+                        .interface_files
+                        .iter()
+                        .map(|path| build_cache::CacheInput::new("interface", path)),
+                )
+                .collect(),
+            Self::Link(command) => command
+                .input_cores
+                .iter()
+                .map(|path| build_cache::CacheInput::new("core", path))
+                .collect(),
+            Self::TestLink(command) => command
+                .input_cores
+                .iter()
+                .map(|path| build_cache::CacheInput::new("core", path))
+                .collect(),
+        }
+    }
+
+    fn cache_kind(&self) -> &'static str {
+        match self {
+            Self::Check(_) => "check",
+            Self::TestCheck(_) => "test-check",
+            Self::Build(_) => "build",
+            Self::TestBuild(_) => "test-build",
+            Self::Link(_) => "link",
+            Self::TestLink(_) => "test-link",
+        }
+    }
+
+    fn cache_outputs(&self) -> Vec<PathBuf> {
+        match self {
+            Self::Check(command) | Self::TestCheck(command) => {
+                vec![command.output.with_extension("interface")]
+            }
+            Self::Build(command) | Self::TestBuild(command) => vec![
+                command.output.with_extension("interface"),
+                command.output.with_extension("core"),
+            ],
+            Self::Link(command) => vec![command.output.clone()],
+            Self::TestLink(command) => vec![command.output.clone(), command.manifest.clone()],
+        }
+    }
+
+    fn cache_anchor(&self) -> &Path {
+        match self {
+            Self::Check(command)
+            | Self::TestCheck(command)
+            | Self::Build(command)
+            | Self::TestBuild(command) => &command.output,
+            Self::Link(command) => &command.output,
+            Self::TestLink(command) => &command.output,
+        }
     }
 }
 
@@ -1871,15 +1937,40 @@ fn execute_planned_commands(
     }
 
     let executable = gomlc::resolve(compiler)?;
+    let executable = executable
+        .canonicalize()
+        .with_context(|| format!("failed to resolve compiler {}", executable.display()))?;
+    let mut compiler_identity = build_cache::CompilerIdentity::read(&executable, module_dir)?;
     gomlc::verify(&executable)?;
+    compiler_identity.ensure_unchanged(&executable, module_dir)?;
     for command in commands {
+        compiler_identity.ensure_unchanged(&executable, module_dir)?;
         let display = command.display();
         let args = command.to_args();
+        let cache = build_cache::CommandCache::new(
+            module_dir,
+            &compiler_identity,
+            command.cache_kind(),
+            &args,
+            command.cache_inputs(),
+            command.cache_outputs(),
+            command.cache_anchor(),
+        );
+        let fingerprint = cache.fingerprint()?;
+        if cache.is_fresh(&fingerprint)? {
+            continue;
+        }
+        cache.prepare_for_execution()?;
         let status = gomlc::execute(&executable, &args, Some(module_dir))
             .with_context(|| format!("failed to execute {display}"))?;
         if !status.success() {
             bail!("subcommand failed: {}", display);
         }
+        if let Err(error) = compiler_identity.ensure_unchanged(&executable, module_dir) {
+            cache.prepare_for_execution()?;
+            return Err(error);
+        }
+        cache.store_if_unchanged(&fingerprint)?;
     }
     Ok(())
 }
