@@ -945,6 +945,121 @@ fn main() -> unit {
         assert!(formatted.contains("package demo::colors not found at"));
         assert!(!formatted.contains("failed to read package directory"));
     }
+
+    #[test]
+    fn diagnostics_use_utf16_columns_after_non_ascii_text() {
+        let dir = tempdir().unwrap();
+        let src = r#"package main;
+
+fn main() -> unit {
+    let marker = "🙂"; let _ = 7.5f64 % 2.0f64;
+}
+"#;
+        let path = write_minimal_project(dir.path(), src);
+        let doc = Document::new(src.to_string());
+        let diagnostics = handlers::get_diagnostics(&path, src, &doc);
+        let diagnostic = diagnostics
+            .iter()
+            .find(|diagnostic| diagnostic.message.contains("Operator %"))
+            .unwrap();
+        let line = src.lines().nth(3).unwrap();
+        let byte_column = line.find("7.5f64").unwrap();
+        let utf16_column = line[..byte_column].encode_utf16().count();
+
+        assert_eq!(diagnostic.range.start.line, 3);
+        assert_eq!(diagnostic.range.start.character, utf16_column as u32);
+        assert_ne!(diagnostic.range.start.character, byte_column as u32);
+    }
+
+    #[test]
+    fn rich_diagnostics_include_related_locations_and_quick_fixes() {
+        let dir = tempdir().unwrap();
+        let main_path = dir.path().join("main.gom");
+        let dependency_path = dir.path().join("dependency.gom");
+        let main_src = "let 名 = value;\n";
+        let dependency_src = "let old = 1;\n";
+        let mut sources = diagnostics::SourceMap::new();
+        let main_source = sources.add(&main_path, main_src);
+        let dependency_source = sources.add(&dependency_path, dependency_src);
+        let value_start = main_src.find("value").unwrap();
+        let old_start = dependency_src.find("old").unwrap();
+        let value_span = sources
+            .span(main_source, value_start, value_start + "value".len())
+            .unwrap();
+        let old_span = sources
+            .span(dependency_source, old_start, old_start + "old".len())
+            .unwrap();
+        let diagnostic = diagnostics::Diagnostic::new(
+            diagnostics::Stage::Typer,
+            diagnostics::Severity::Error,
+            "duplicate definition",
+        )
+        .with_primary_label(value_span, "new definition")
+        .with_secondary_label(old_span, "first definition")
+        .with_note("names must be unique")
+        .with_help("choose another name")
+        .with_fix(
+            diagnostics::FixIt::new(value_span, "renamed")
+                .with_message("Rename value")
+                .with_applicability(diagnostics::FixApplicability::MachineApplicable),
+        );
+        let doc = Document::new(main_src.to_string());
+        let diagnostic =
+            handlers::diagnostic_to_lsp(&main_path, &doc, &sources, &diagnostic).unwrap();
+
+        assert_eq!(diagnostic.range.start.character, 8);
+        assert_eq!(diagnostic.range.end.character, 13);
+        assert_eq!(
+            diagnostic.message,
+            "duplicate definition\nnew definition\nnote: names must be unique\nhelp: choose another name"
+        );
+        let related = diagnostic.related_information.as_ref().unwrap();
+        assert_eq!(related.len(), 1);
+        assert_eq!(related[0].message, "first definition");
+        assert_eq!(
+            related[0].location.uri,
+            Url::from_file_path(&dependency_path).unwrap()
+        );
+        assert_eq!(related[0].location.range.start.character, 4);
+
+        let context = CodeActionContext {
+            diagnostics: vec![diagnostic],
+            ..Default::default()
+        };
+        let actions = handlers::code_actions(&context).unwrap();
+        let CodeActionOrCommand::CodeAction(action) = &actions[0] else {
+            panic!("expected a code action")
+        };
+        assert_eq!(action.title, "Rename value");
+        assert_eq!(action.kind, Some(CodeActionKind::QUICKFIX));
+        assert_eq!(action.is_preferred, Some(true));
+        let changes = action.edit.as_ref().unwrap().changes.as_ref().unwrap();
+        let edits = changes
+            .get(&Url::from_file_path(&main_path).unwrap())
+            .unwrap();
+        assert_eq!(edits[0].new_text, "renamed");
+        assert_eq!(edits[0].range.start.character, 8);
+    }
+
+    #[test]
+    fn diagnostics_with_a_primary_label_in_another_file_are_not_reanchored() {
+        let dir = tempdir().unwrap();
+        let main_path = dir.path().join("main.gom");
+        let dependency_path = dir.path().join("dependency.gom");
+        let mut sources = diagnostics::SourceMap::new();
+        sources.add(&main_path, "fn main() -> unit { () }\n");
+        let dependency = sources.add(&dependency_path, "bad\n");
+        let span = sources.span(dependency, 0, 3).unwrap();
+        let diagnostic = diagnostics::Diagnostic::new(
+            diagnostics::Stage::Typer,
+            diagnostics::Severity::Error,
+            "dependency error",
+        )
+        .with_primary_label(span, "bad dependency");
+        let doc = Document::new("fn main() -> unit { () }\n".to_string());
+
+        assert!(handlers::diagnostic_to_lsp(&main_path, &doc, &sources, &diagnostic).is_none());
+    }
 }
 
 mod hover_tests {
@@ -1002,8 +1117,8 @@ fn main() {
 fn main() {
 }
 "#,
-            1,
-            9,
+            3,
+            3,
             expect![[r#"
                 ```goml
                 () -> unit
@@ -1233,7 +1348,9 @@ fn main() {
 "#,
             5,
             6,
-            expect!["capacity, clear, extend, get, insert, into_iter, is_empty, iter, last, len, new, pop, push, pushed, remove, reserve, reverse, set, slice, swap, swap_remove, truncate, with_capacity"],
+            expect![
+                "capacity, clear, extend, get, insert, into_iter, is_empty, iter, last, len, new, pop, push, pushed, remove, reserve, reverse, set, slice, swap, swap_remove, truncate, with_capacity"
+            ],
         );
     }
 
@@ -1266,7 +1383,9 @@ fn main() {
 "#,
             4,
             17,
-            expect!["capacity, clear, extend, get, insert, is_empty, iter, last, len, new, pop, push, pushed, remove, reserve, reverse, set, slice, swap, swap_remove, truncate, with_capacity"],
+            expect![
+                "capacity, clear, extend, get, insert, is_empty, iter, last, len, new, pop, push, pushed, remove, reserve, reverse, set, slice, swap, swap_remove, truncate, with_capacity"
+            ],
         );
     }
 
@@ -1535,7 +1654,8 @@ fn main() -> unit {
                 character: 8,
             },
         );
-        expect!["eprint, eprintln, print, println"].assert_eq(&format_completion(completion));
+        expect!["eprint, eprintln, print, println, read_stdin, write_stderr, write_stdout"]
+            .assert_eq(&format_completion(completion));
     }
 
     #[test]
@@ -1558,7 +1678,26 @@ fn main() -> unit {
                 character: 9,
             },
         );
-        expect!["args"].assert_eq(&format_completion(completion));
+        expect!["args, current_dir, current_exe, var"].assert_eq(&format_completion(completion));
+    }
+
+    #[test]
+    fn completion_accepts_utf16_positions_after_non_ascii_text() {
+        let src = r#"fn main() -> unit {
+    let values: Vec[int32] = vec_new(); let _ = "🙂"; values.
+}
+"#;
+        let path = PathBuf::from("test.gom");
+        let doc = Document::new(src.to_string());
+        let offset = src.find("values.\n").unwrap() + "values.".len();
+        let position = doc
+            .position(text_size::TextSize::from(offset as u32))
+            .unwrap();
+        let completion = handlers::completion(&path, src, position);
+        let formatted = format_completion(completion);
+
+        assert!(formatted.split(", ").any(|label| label == "len"));
+        assert!(formatted.split(", ").any(|label| label == "push"));
     }
 
     #[test]
@@ -2692,7 +2831,7 @@ fn main() -> unit {
             "main.gom",
             "io::println",
             "println",
-            expect!["io/io.gom:8:7"],
+            expect!["io/io.gom:9:7"],
         );
     }
 
@@ -2796,6 +2935,42 @@ mod document_tests {
     #[test]
     fn document_range_multiline() {
         check_range("hello\nworld", 0, 11, expect!["0:0-1:5"]);
+    }
+
+    #[test]
+    fn document_positions_are_utf16_code_units() {
+        check_position("a中🙂z", 1, expect!["0:1"]);
+        check_position("a中🙂z", 4, expect!["0:2"]);
+        check_position("a中🙂z", 8, expect!["0:4"]);
+        check_position("a中🙂z", 9, expect!["0:5"]);
+        check_range("a中🙂z", 1, 8, expect!["0:1-0:4"]);
+    }
+
+    #[test]
+    fn document_converts_valid_utf16_positions_to_utf8_columns() {
+        let doc = Document::new("a中🙂z".to_string());
+
+        assert_eq!(
+            doc.utf8_position(Position {
+                line: 0,
+                character: 4,
+            }),
+            Some((0, 8))
+        );
+        assert!(
+            doc.offset(Position {
+                line: 0,
+                character: 3,
+            })
+            .is_none()
+        );
+        assert!(
+            doc.offset(Position {
+                line: 0,
+                character: 6,
+            })
+            .is_none()
+        );
     }
 }
 
