@@ -2586,7 +2586,7 @@ path = "demo"
             "main.gom",
             "Option::Some",
             "Some",
-            expect!["src/builtin_contract.gom:87:4"],
+            expect!["src/builtin_contract.gom:89:4"],
         );
     }
 
@@ -2603,7 +2603,7 @@ fn main() -> unit {
 "#,
             "Vec::new()",
             "new",
-            expect!["src/builtin_prelude.gom:494:7"],
+            expect!["src/builtin_prelude.gom:503:7"],
         );
     }
 
@@ -2622,7 +2622,7 @@ fn main() -> unit {
 "#,
             "r.get()",
             "get",
-            expect!["src/builtin_prelude.gom:736:7"],
+            expect!["src/builtin_prelude.gom:746:7"],
         );
     }
 
@@ -2647,13 +2647,13 @@ fn main() -> unit {
             src,
             "HashMap::new()",
             "new",
-            expect!["src/builtin_prelude.gom:702:7"],
+            expect!["src/builtin_prelude.gom:712:7"],
         );
         check_goto_token(
             src,
             "m.set(Key::A, 1)",
             "set",
-            expect!["src/builtin_prelude.gom:710:7"],
+            expect!["src/builtin_prelude.gom:720:7"],
         );
     }
 
