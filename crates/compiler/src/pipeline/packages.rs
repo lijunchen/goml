@@ -289,16 +289,17 @@ fn load_package(
     let mut files = Vec::new();
     let mut declared_name = None::<String>;
     for path in paths {
-        let mut parsed = if let Some((_, override_ast)) = source_overrides
+        let (mut parsed, source) = if let Some((_, override_ast)) = source_overrides
             .iter()
             .find(|(override_path, _)| path == *override_path)
         {
-            (*override_ast).clone()?
+            ((*override_ast).clone()?, None)
         } else {
             let src = fs::read_to_string(&path).map_err(|err| {
                 compile_error(format!("failed to read {}: {}", path.display(), err))
             })?;
-            parse_ast_file(&path, &src)?
+            let parsed = parse_ast_file(&path, &src)?;
+            (parsed, Some(src))
         };
         if !parsed.package_explicit && !allow_implicit_package {
             return Err(compile_error(format!(
@@ -324,7 +325,10 @@ fn load_package(
             declared_name = Some(file_package);
         }
         set_package_identity(&mut parsed, import_path);
-        files.push(SourceFileAst::new(path, parsed));
+        files.push(match source {
+            Some(source) => SourceFileAst::with_source(path, parsed, source),
+            None => SourceFileAst::new(path, parsed),
+        });
     }
     Ok(PackageUnit {
         name: import_path.to_string(),

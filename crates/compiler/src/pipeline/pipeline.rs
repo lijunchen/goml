@@ -1,9 +1,11 @@
 use std::collections::{BTreeSet, HashMap};
+use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 use ast::ast;
 use cst::cst::{CstNode, File as CstFile};
-use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
+use diagnostics::{Diagnostic, Diagnostics, Severity, SourceMap, Stage};
 use parser::{self, syntax::MySyntaxNode};
 use rowan::GreenNode;
 
@@ -26,6 +28,7 @@ use crate::{
 
 #[derive(Debug)]
 pub struct Compilation {
+    pub source_map: Arc<SourceMap>,
     pub green_node: GreenNode,
     pub cst: CstFile,
     pub ast: ast::File,
@@ -69,6 +72,22 @@ impl CompilationError {
             | CompilationError::Typer { diagnostics }
             | CompilationError::Compile { diagnostics } => diagnostics,
         }
+    }
+
+    pub fn attach_source_map(&mut self, source_map: Arc<SourceMap>) {
+        match self {
+            CompilationError::Parser { diagnostics }
+            | CompilationError::Lower { diagnostics }
+            | CompilationError::Typer { diagnostics }
+            | CompilationError::Compile { diagnostics } => {
+                diagnostics.attach_source_map(source_map);
+            }
+        }
+    }
+
+    pub fn with_source_map(mut self, source_map: Arc<SourceMap>) -> Self {
+        self.attach_source_map(source_map);
+        self
     }
 }
 
@@ -249,9 +268,56 @@ struct TypecheckPackagesResult {
     full_tast: tast::File,
     genv: GlobalTypeEnv,
     diagnostics: Diagnostics,
+    source_map: Arc<SourceMap>,
     graph: packages::PackageGraph,
     artifacts: HashMap<String, PackageArtifact>,
     external_deps: ExternalDependencyArtifacts,
+}
+
+fn single_source_map(path: &Path, src: &str) -> Arc<SourceMap> {
+    let mut source_map = SourceMap::new();
+    source_map.add_file(path, src);
+    Arc::new(source_map)
+}
+
+fn source_texts(
+    path: &Path,
+    src: &str,
+    source_overrides: &HashMap<PathBuf, String>,
+) -> HashMap<PathBuf, String> {
+    let mut sources = source_overrides.clone();
+    sources.insert(path.to_path_buf(), src.to_string());
+    sources
+}
+
+fn source_map_for_graph(
+    graph: &packages::PackageGraph,
+    source_texts: &HashMap<PathBuf, String>,
+) -> Result<Arc<SourceMap>, CompilationError> {
+    let mut source_map = SourceMap::new();
+    let mut seen = BTreeSet::new();
+    for package_name in &graph.discovery_order {
+        let package = graph
+            .packages
+            .get(package_name)
+            .ok_or_else(|| compile_error(format!("package {} not found", package_name)))?;
+        for file in &package.files {
+            if !seen.insert(file.path.clone()) {
+                continue;
+            }
+            let source = if let Some(source) = source_texts.get(&file.path) {
+                source.clone()
+            } else if let Some(source) = &file.source {
+                source.to_string()
+            } else {
+                fs::read_to_string(&file.path).map_err(|error| {
+                    compile_error(format!("failed to read {}: {}", file.path.display(), error))
+                })?
+            };
+            source_map.add_file(&file.path, source);
+        }
+    }
+    Ok(Arc::new(source_map))
 }
 
 fn parse_ast_from_source(
@@ -262,7 +328,9 @@ fn parse_ast_from_source(
     if parse_result.has_errors() {
         let mut diagnostics = parse_result.into_diagnostics();
         diagnostics.set_source_for_missing(path);
-        return Err(CompilationError::Parser { diagnostics });
+        return Err(
+            CompilationError::Parser { diagnostics }.with_source_map(single_source_map(path, src))
+        );
     }
 
     let green_node = parse_result.green_node.clone();
@@ -273,7 +341,8 @@ fn parse_ast_from_source(
         Ok(ast) => ast,
         Err(mut diagnostics) => {
             diagnostics.set_source_for_missing(path);
-            return Err(CompilationError::Lower { diagnostics });
+            return Err(CompilationError::Lower { diagnostics }
+                .with_source_map(single_source_map(path, src)));
         }
     };
 
@@ -281,7 +350,8 @@ fn parse_ast_from_source(
         Ok(ast) => ast,
         Err(mut diagnostics) => {
             diagnostics.set_source_for_missing(path);
-            return Err(CompilationError::Lower { diagnostics });
+            return Err(CompilationError::Lower { diagnostics }
+                .with_source_map(single_source_map(path, src)));
         }
     };
 
@@ -302,7 +372,9 @@ fn parse_ast_from_source_allow_parse_errors(
     diagnostics.append(&mut lower_diagnostics);
     let Some(ast) = ast else {
         diagnostics.set_source_for_missing(path);
-        return Err(CompilationError::Lower { diagnostics });
+        return Err(
+            CompilationError::Lower { diagnostics }.with_source_map(single_source_map(path, src))
+        );
     };
 
     let original_ast = ast.clone();
@@ -343,6 +415,7 @@ fn typecheck_package(
     package: &packages::PackageUnit,
     deps_envs: HashMap<String, GlobalTypeEnv>,
     deps_interfaces: &HashMap<String, interface::PackageInterface>,
+    source_map: &SourceMap,
 ) -> PackageArtifact {
     let (test_candidates, mut attribute_diagnostics) =
         testing::collect_test_candidates(&package.files);
@@ -363,6 +436,7 @@ fn typecheck_package(
         &package.name,
         test_candidates,
         &full_exports,
+        source_map,
         &mut diagnostics,
     ));
     let exports =
@@ -386,6 +460,7 @@ fn typecheck_packages_inner(
     entry_ast: ast::File,
     single_file: bool,
     mut source_overrides: packages::SourceOverrides,
+    source_texts: &HashMap<PathBuf, String>,
 ) -> Result<TypecheckPackagesResult, CompilationError> {
     let root = discovery_root_for_file(path)?;
     source_overrides.insert(path.to_path_buf(), Ok(entry_ast.clone()));
@@ -412,12 +487,13 @@ fn typecheck_packages_inner(
     external_deps
         .augment_graph(&mut graph)
         .map_err(compile_error)?;
+    let source_map = source_map_for_graph(&graph, source_texts)?;
     let order = packages::topo_sort_packages(&graph)?;
     let reachable_external = external_deps
         .reachable_package_names(&graph)
         .map_err(compile_error)?;
 
-    let mut diagnostics = Diagnostics::new();
+    let mut diagnostics = Diagnostics::new().with_source_map(Arc::clone(&source_map));
     let mut genv = builtins::builtin_env();
     let external_interfaces = external_deps.package_interfaces();
     let external_envs = external_deps.package_envs();
@@ -469,7 +545,13 @@ fn typecheck_packages_inner(
             )));
         }
 
-        let artifact = typecheck_package(package_id, package, deps_envs, &deps_interfaces);
+        let artifact = typecheck_package(
+            package_id,
+            package,
+            deps_envs,
+            &deps_interfaces,
+            &source_map,
+        );
 
         let mut package_diagnostics = artifact.diagnostics.clone();
         diagnostics.append(&mut package_diagnostics);
@@ -497,6 +579,7 @@ fn typecheck_packages_inner(
         full_tast: tast::File { toplevels },
         genv,
         diagnostics,
+        source_map,
         graph,
         artifacts: artifacts_by_name,
         external_deps,
@@ -554,16 +637,19 @@ fn compile_inner(
     source_overrides: &HashMap<PathBuf, String>,
 ) -> Result<Compilation, CompilationError> {
     let (green_node, cst, entry_ast) = parse_ast_from_source(path, src)?;
+    let source_texts = source_texts(path, src, source_overrides);
 
     let typecheck = typecheck_packages_inner(
         path,
         entry_ast.clone(),
         single_file,
         parse_source_overrides(source_overrides),
+        &source_texts,
     )?;
     let TypecheckPackagesResult {
         full_tast,
         mut diagnostics,
+        source_map,
         graph,
         artifacts,
         external_deps,
@@ -688,6 +774,7 @@ fn compile_inner(
     let (go, goenv) = go::compile::go_file(anfenv.clone(), &gensym, anf.clone());
 
     Ok(Compilation {
+        source_map,
         green_node,
         cst,
         ast: entry_ast,
@@ -720,11 +807,13 @@ pub fn typecheck_with_packages(
     let single_file = should_use_single_file_mode(path)?;
     super::with_src_compiler_stack(src, || {
         let (_green_node, _cst, entry_ast) = parse_ast_from_source(path, src)?;
+        let source_texts = source_texts(path, src, &HashMap::new());
         let result = typecheck_packages_inner(
             path,
             entry_ast,
             single_file,
             packages::SourceOverrides::new(),
+            &source_texts,
         )?;
         Ok((result.entry_tast, result.genv, result.diagnostics))
     })
@@ -760,6 +849,7 @@ pub fn typecheck_with_packages_and_results_with_overrides(
 > {
     let single_file = should_use_single_file_mode(path)?;
     super::with_src_compiler_stack(src, || {
+        let source_texts = source_texts(path, src, source_overrides);
         let (_green_node, _cst, entry_ast, mut diagnostics) =
             parse_ast_from_source_allow_parse_errors(path, src)?;
         let root = discovery_root_for_file(path)?;
@@ -788,6 +878,8 @@ pub fn typecheck_with_packages_and_results_with_overrides(
         external_deps
             .augment_graph(&mut graph)
             .map_err(compile_error)?;
+        let source_map = source_map_for_graph(&graph, &source_texts)?;
+        diagnostics.attach_source_map(Arc::clone(&source_map));
         let order = packages::topo_sort_packages(&graph)?;
         let reachable_external = external_deps
             .reachable_package_names(&graph)
@@ -877,6 +969,7 @@ pub fn typecheck_with_packages_and_results_with_overrides(
                 name,
                 test_candidates,
                 &full_exports,
+                &source_map,
                 &mut diagnostics,
             ));
 

@@ -1,8 +1,8 @@
-use std::collections::HashSet;
+use std::collections::HashMap;
 use std::path::Path;
 
 use ::ast::ast::{self, Attribute, Item};
-use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
+use diagnostics::{Diagnostic, Diagnostics, Severity, SourceMap, Span, Stage};
 use text_size::TextRange;
 
 use crate::artifact::{PackageExports, TestDescriptor};
@@ -37,10 +37,11 @@ pub fn validate_test_candidates(
     package: &str,
     candidates: Vec<TestCandidate>,
     exports: &PackageExports,
+    source_map: &SourceMap,
     diagnostics: &mut Diagnostics,
 ) -> Vec<TestDescriptor> {
     let mut descriptors = Vec::new();
-    let mut ids = HashSet::new();
+    let mut ids = HashMap::<String, (String, TextRange)>::new();
     for candidate in candidates {
         diagnostics.set_source(&candidate.source_path);
         let symbol = if is_special_unqualified_package(package) {
@@ -115,12 +116,21 @@ pub fn validate_test_candidates(
             continue;
         }
         let id = symbol.clone();
-        if !ids.insert(id.clone()) {
-            diagnostics.push(
-                test_diagnostic(format!("duplicate test id `{id}`")).with_range(candidate.range),
-            );
+        if let Some((first_source, first_range)) = ids.get(&id) {
+            let mut diagnostic = test_diagnostic(format!("duplicate test id `{id}`"))
+                .with_source(&candidate.source_path)
+                .with_range(candidate.range);
+            if let Some(primary) = source_span(source_map, &candidate.source_path, candidate.range)
+            {
+                diagnostic = diagnostic.with_primary_label(primary, "duplicate test declared here");
+            }
+            if let Some(secondary) = source_span(source_map, first_source, *first_range) {
+                diagnostic = diagnostic.with_secondary_label(secondary, "first test declared here");
+            }
+            diagnostics.push(diagnostic);
             continue;
         }
+        ids.insert(id.clone(), (candidate.source_path.clone(), candidate.range));
         descriptors.push(TestDescriptor {
             id: id.clone(),
             package: package.to_string(),
@@ -136,6 +146,16 @@ pub fn validate_test_candidates(
     diagnostics.clear_source();
     descriptors.sort_by(|left, right| left.id.cmp(&right.id));
     descriptors
+}
+
+fn source_span(source_map: &SourceMap, source: &str, range: TextRange) -> Option<Span> {
+    let source = source_map.find(source)?;
+    let start = u32::from(range.start()) as usize;
+    let end = u32::from(range.end()) as usize;
+    let file = source_map.get(source)?;
+    let text = file.text().get(start..end)?;
+    let end = start + text.trim_end().len();
+    source_map.span(source, start, end).ok()
 }
 
 fn collect_file_tests(

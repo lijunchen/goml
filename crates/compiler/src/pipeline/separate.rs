@@ -1,6 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 use crate::artifact::{CoreUnit, InterfaceUnit, PackageExports, TestDescriptor};
 use crate::builtins;
@@ -18,7 +19,7 @@ use crate::pipeline::pipeline::{CompilationError, parse_ast_file, report_duplica
 use crate::pipeline::{compile_error, with_compiler_stack};
 use crate::stdlib;
 use crate::testing::{TestCandidate, collect_test_candidates, validate_test_candidates};
-use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
+use diagnostics::{Diagnostic, Diagnostics, Severity, SourceMap, Stage};
 use serde::Deserialize;
 
 pub struct PackageInputs {
@@ -257,10 +258,12 @@ fn read_source_files(
     let mut imports = HashSet::new();
     let mut source_list = Vec::new();
     let mut declared_name = None::<String>;
+    let mut source_map = SourceMap::new();
 
     for path in paths {
         let src = fs::read_to_string(&path)
             .map_err(|err| compile_error(format!("failed to read {}: {}", path.display(), err)))?;
+        source_map.add_file(&path, &src);
         let mut ast = parse_ast_file(&path, &src)?;
         if !ast.package_explicit {
             return Err(compile_error(format!(
@@ -319,13 +322,14 @@ fn read_source_files(
         }
         ast.package = ast::ast::AstIdent::new(package);
         source_list.push(path.display().to_string());
-        files.push(hir::SourceFileAst::new(path, ast));
+        files.push(hir::SourceFileAst::with_source(path, ast, src));
     }
 
+    let source_map = Arc::new(source_map);
     let (test_candidates, attribute_diagnostics) = collect_test_candidates(&files);
     if attribute_diagnostics.has_errors() {
         return Err(CompilationError::Lower {
-            diagnostics: attribute_diagnostics,
+            diagnostics: attribute_diagnostics.with_source_map(Arc::clone(&source_map)),
         });
     }
 
@@ -335,6 +339,7 @@ fn read_source_files(
         source_list,
         declared_name.unwrap_or_else(|| package.rsplit("::").next().unwrap_or(package).to_string()),
         test_candidates,
+        source_map,
     ))
 }
 
@@ -344,6 +349,7 @@ type ReadSourceFilesResult = (
     Vec<String>,
     String,
     Vec<TestCandidate>,
+    Arc<SourceMap>,
 );
 
 fn typecheck_single_package(
@@ -427,7 +433,7 @@ fn check_package_inner(
 ) -> Result<InterfaceUnit, CompilationError> {
     with_compiler_stack(|| {
         let interface_units = load_interface_files(&opts.interface_files)?;
-        let (files, imports, _sources, declared_name, test_candidates) =
+        let (files, imports, _sources, declared_name, test_candidates, source_map) =
             read_source_files(&opts.package, &opts.input_files, &interface_units)?;
 
         let direct_dependencies = imports.into_iter().collect::<BTreeSet<_>>();
@@ -465,11 +471,13 @@ fn check_package_inner(
                 &deps_interfaces,
                 deps_envs,
             );
+        diagnostics.attach_source_map(Arc::clone(&source_map));
         drop(tast);
         drop(validate_test_candidates(
             &opts.package,
             test_candidates,
             &full_exports,
+            &source_map,
             &mut diagnostics,
         ));
 
@@ -502,7 +510,7 @@ fn build_package_inner(
 ) -> Result<CoreUnit, CompilationError> {
     with_compiler_stack(|| {
         let interface_units = load_interface_files(&opts.interface_files)?;
-        let (files, imports, sources, declared_name, test_candidates) =
+        let (files, imports, sources, declared_name, test_candidates, source_map) =
             read_source_files(&opts.package, &opts.input_files, &interface_units)?;
 
         let direct_dependencies = imports.into_iter().collect::<BTreeSet<_>>();
@@ -542,10 +550,12 @@ fn build_package_inner(
                 &deps_interfaces,
                 deps_envs,
             );
+        diagnostics.attach_source_map(Arc::clone(&source_map));
         let tests = validate_test_candidates(
             &opts.package,
             test_candidates,
             &full_exports,
+            &source_map,
             &mut diagnostics,
         );
         if validate_entrypoint && declared_name == ROOT_PACKAGE {
@@ -564,7 +574,7 @@ fn build_package_inner(
             dep.exports.apply_to(&mut env);
         }
         full_exports.apply_to(&mut env);
-        let mut compile_diagnostics = Diagnostics::new();
+        let mut compile_diagnostics = Diagnostics::new().with_source_map(Arc::clone(&source_map));
         let core_ir =
             crate::compile_match::compile_file(&env, &gensym, &mut compile_diagnostics, &tast);
         if compile_diagnostics.has_errors() {

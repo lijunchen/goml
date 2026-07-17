@@ -5,6 +5,7 @@ use la_arena::{Arena, Idx};
 use parser::syntax::MySyntaxNodePtr;
 use std::collections::HashMap;
 use std::path::PathBuf;
+use std::sync::Arc;
 use text_size::TextRange;
 
 use crate::{
@@ -16,11 +17,24 @@ use crate::{
 pub struct SourceFileAst {
     pub path: PathBuf,
     pub ast: ast::File,
+    pub source: Option<Arc<str>>,
 }
 
 impl SourceFileAst {
     pub fn new(path: PathBuf, ast: ast::File) -> Self {
-        Self { path, ast }
+        Self {
+            path,
+            ast,
+            source: None,
+        }
+    }
+
+    pub fn with_source(path: PathBuf, ast: ast::File, source: impl Into<Arc<str>>) -> Self {
+        Self {
+            path,
+            ast,
+            source: Some(source.into()),
+        }
     }
 }
 
