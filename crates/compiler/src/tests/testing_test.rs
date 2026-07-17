@@ -1,5 +1,9 @@
+use std::collections::HashMap;
 use std::fs;
 
+use diagnostics::{LabelSeverity, Severity};
+
+use crate::pipeline::pipeline::compile_for_analysis_with_overrides;
 use crate::pipeline::separate::{
     PackageInputs, build_test_package, link_test_cores, link_test_cores_multi,
 };
@@ -202,6 +206,100 @@ fn invalid_ignore_reason() -> unit {
     assert!(error.contains("`#[test]` does not accept arguments"));
     assert!(error.contains("duplicate `#[test]` attribute"));
     assert!(error.contains("one string reason"));
+
+    Ok(())
+}
+
+#[test]
+fn duplicate_test_ids_have_cross_file_labels() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let first = dir.path().join("first.gom");
+    let second = dir.path().join("second.gom");
+    let first_source = "package tests;\n#[test]\nfn duplicate() -> unit { () }\n";
+    let second_source = "package tests;\n\n#[test]\nfn duplicate() -> unit { () }\n";
+    fs::write(&first, first_source)?;
+    fs::write(&second, second_source)?;
+
+    let error = build_test_package(PackageInputs {
+        package: "example::tests".to_string(),
+        input_files: vec![second.clone(), first.clone()],
+        interface_files: Vec::new(),
+    })
+    .unwrap_err();
+    let diagnostics = error.diagnostics();
+    let source_map = diagnostics.source_map().expect("source map");
+    assert_eq!(source_map.len(), 2);
+    assert_eq!(
+        source_map.file(source_map.find(&first).unwrap())?.text(),
+        first_source
+    );
+    assert_eq!(
+        source_map.file(source_map.find(&second).unwrap())?.text(),
+        second_source
+    );
+
+    let duplicate = diagnostics
+        .iter()
+        .find(|diagnostic| diagnostic.message().contains("duplicate test id"))
+        .expect("duplicate test diagnostic");
+    assert_eq!(duplicate.severity(), Severity::Error);
+    let primary = duplicate
+        .labels()
+        .iter()
+        .find(|label| label.severity() == LabelSeverity::Primary)
+        .expect("primary label");
+    let secondary = duplicate
+        .labels()
+        .iter()
+        .find(|label| label.severity() == LabelSeverity::Secondary)
+        .expect("secondary label");
+    assert_eq!(source_map.file(primary.span().source())?.path(), second);
+    assert_eq!(source_map.file(secondary.span().source())?.path(), first);
+    assert_eq!(source_map.slice(primary.span())?, "#[test]");
+    assert_eq!(source_map.slice(secondary.span())?, "#[test]");
+
+    Ok(())
+}
+
+#[test]
+fn analysis_compilation_retains_exact_override_sources() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let main_path = dir.path().join("main.gom");
+    let helper_path = dir.path().join("helper.gom");
+    fs::write(
+        dir.path().join("goml.toml"),
+        "[module]\npath = \"example::snapshot\"\n",
+    )?;
+    fs::write(
+        &main_path,
+        "package main;\nfn main() -> unit { string_println(\"disk\") }\n",
+    )?;
+    fs::write(
+        &helper_path,
+        "package main;\nfn message() -> string { \"disk\" }\n",
+    )?;
+    let main_source =
+        "package main;\nfn main() -> unit { string_println(message()) }\n".to_string();
+    let helper_source = "package main;\nfn message() -> string { \"unsaved 🦀\" }\n".to_string();
+    let overrides = HashMap::from([(helper_path.clone(), helper_source.clone())]);
+
+    let compilation = compile_for_analysis_with_overrides(&main_path, &main_source, &overrides)
+        .map_err(|error| anyhow::anyhow!("analysis compilation failed: {error:?}"))?;
+    assert_eq!(compilation.source_map.len(), 2);
+    assert_eq!(
+        compilation
+            .source_map
+            .file(compilation.source_map.find(&main_path).unwrap())?
+            .text(),
+        main_source
+    );
+    assert_eq!(
+        compilation
+            .source_map
+            .file(compilation.source_map.find(&helper_path).unwrap())?
+            .text(),
+        helper_source
+    );
 
     Ok(())
 }
