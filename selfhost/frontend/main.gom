@@ -8,6 +8,7 @@ use frontend::typecheck;
 use std::env;
 use std::fs;
 use std::io;
+use std::path;
 use std::process;
 
 fn usage() -> string {
@@ -66,26 +67,6 @@ fn run_parse(path: string) -> int32 {
     }
 }
 
-fn basename(path: string) -> string {
-    let start = Ref::new(0);
-    let i = Ref::new(0);
-    while i.get() < path.byte_len() {
-        match path.decode_at(i.get()) {
-            Option::Some(decoded) => {
-                let (value, width) = decoded;
-                if value == '/' {
-                    start.set(i.get() + width);
-                } else {
-                    ()
-                };
-                i.set(i.get() + width)
-            },
-            Option::None => i.set(path.byte_len()),
-        };
-    };
-    path.byte_slice(start.get(), path.byte_len())
-}
-
 fn strip_gom_suffix(name: string) -> string {
     let len = name.byte_len();
     if len >= 4 && name.get(len - 4) == '.' && name.get(len - 3) == 'g' && name.get(len - 2) == 'o' && name.get(len - 1) == 'm' {
@@ -95,7 +76,7 @@ fn strip_gom_suffix(name: string) -> string {
     }
 }
 
-fn source_package(path: string, root: ast::Node) -> string {
+fn source_package(file_path: string, root: ast::Node) -> string {
     let i = Ref::new(0);
     let result = Ref::new("");
     while result.get() == "" && i.get() < root.children.len() {
@@ -108,7 +89,10 @@ fn source_package(path: string, root: ast::Node) -> string {
         i.set(i.get() + 1);
     };
     if result.get() == "" {
-        strip_gom_suffix(basename(path))
+        match path::file_name(file_path) {
+            Option::Some(name) => strip_gom_suffix(name),
+            Option::None => strip_gom_suffix(file_path),
+        }
     } else {
         result.get()
     }
