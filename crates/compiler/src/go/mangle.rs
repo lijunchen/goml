@@ -214,6 +214,7 @@ fn has_generated_helper_prefix(name: &str) -> bool {
         "ref_get__",
         "ref_set__",
         "ptr_eq__",
+        "ptr_hash__",
         "hashmap_new__",
         "hashmap_len__",
         "hashmap_contains__",

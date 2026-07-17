@@ -282,16 +282,13 @@ impl Hash for float64 {
 
 impl [T: Eq] Eq for Ref[T] {
     fn eq(self: Ref[T], other: Ref[T]) -> bool {
-        let a: T = self.get();
-        let b: T = other.get();
-        Eq::eq(a, b)
+        ptr_eq(self, other)
     }
 }
 
 impl [T: Hash] Hash for Ref[T] {
     fn hash(self: Ref[T]) -> uint64 {
-        let v: T = self.get();
-        Hash::hash(v)
+        ptr_hash(self)
     }
 }
 

@@ -59,6 +59,10 @@ pub fn make_runtime() -> Vec<goast::Item> {
                     path: "os".to_string(),
                 },
                 ImportSpec {
+                    alias: Some("_goml_reflect".to_string()),
+                    path: "reflect".to_string(),
+                },
+                ImportSpec {
                     alias: Some("_goml_utf8".to_string()),
                     path: "unicode/utf8".to_string(),
                 },
@@ -1451,10 +1455,65 @@ pub fn make_ref_runtime(ref_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
             },
         };
 
+        let reflect_value_ty = goty::GoType::TName {
+            name: "_goml_reflect.Value".to_string(),
+        };
+        let ptr_hash_fn = goast::Fn {
+            name: ref_helper_fn_name(IntrinsicId::RefPtrHash.source_name(), ty),
+            params: vec![("reference".to_string(), ref_go_ty.clone())],
+            ret_ty: Some(goty::GoType::TUint64),
+            body: goast::Block {
+                stmts: vec![goast::Stmt::Return {
+                    expr: Some(goast::Expr::Call {
+                        func: Box::new(goast::Expr::Var {
+                            name: "uint64".to_string(),
+                            ty: goty::GoType::TFunc {
+                                params: vec![goty::GoType::TName {
+                                    name: "uintptr".to_string(),
+                                }],
+                                ret_ty: Box::new(goty::GoType::TUint64),
+                            },
+                        }),
+                        args: vec![goast::Expr::Call {
+                            func: Box::new(goast::Expr::FieldAccess {
+                                obj: Box::new(goast::Expr::Call {
+                                    func: Box::new(goast::Expr::Var {
+                                        name: "_goml_reflect.ValueOf".to_string(),
+                                        ty: goty::GoType::TFunc {
+                                            params: vec![ref_go_ty.clone()],
+                                            ret_ty: Box::new(reflect_value_ty.clone()),
+                                        },
+                                    }),
+                                    args: vec![goast::Expr::Var {
+                                        name: "reference".to_string(),
+                                        ty: ref_go_ty.clone(),
+                                    }],
+                                    ty: reflect_value_ty,
+                                }),
+                                field: "Pointer".to_string(),
+                                ty: goty::GoType::TFunc {
+                                    params: vec![],
+                                    ret_ty: Box::new(goty::GoType::TName {
+                                        name: "uintptr".to_string(),
+                                    }),
+                                },
+                            }),
+                            args: vec![],
+                            ty: goty::GoType::TName {
+                                name: "uintptr".to_string(),
+                            },
+                        }],
+                        ty: goty::GoType::TUint64,
+                    }),
+                }],
+            },
+        };
+
         items.push(goast::Item::Fn(new_fn));
         items.push(goast::Item::Fn(get_fn));
         items.push(goast::Item::Fn(set_fn));
         items.push(goast::Item::Fn(ptr_eq_fn));
+        items.push(goast::Item::Fn(ptr_hash_fn));
     }
 
     items
@@ -1559,6 +1618,68 @@ fn make_synthetic_option_runtime(option_name: &str, value_go_ty: goty::GoType) -
             }],
         }),
     ]
+}
+
+fn hashmap_entry_literal(
+    entry_go_ty: &goty::GoType,
+    key_go_ty: &goty::GoType,
+    value_go_ty: &goty::GoType,
+) -> goast::Expr {
+    goast::Expr::StructLiteral {
+        fields: vec![
+            (
+                "active".to_string(),
+                goast::Expr::Bool {
+                    value: true,
+                    ty: goty::GoType::TBool,
+                },
+            ),
+            (
+                "key".to_string(),
+                goast::Expr::Var {
+                    name: "key".to_string(),
+                    ty: key_go_ty.clone(),
+                },
+            ),
+            (
+                "value".to_string(),
+                goast::Expr::Var {
+                    name: "value".to_string(),
+                    ty: value_go_ty.clone(),
+                },
+            ),
+        ],
+        ty: entry_go_ty.clone(),
+    }
+}
+
+fn increment_hashmap_len(map_ptr_go_ty: &goty::GoType) -> goast::Stmt {
+    goast::Stmt::FieldAssign {
+        target: goast::Expr::FieldAccess {
+            obj: Box::new(goast::Expr::Var {
+                name: "m".to_string(),
+                ty: map_ptr_go_ty.clone(),
+            }),
+            field: "len".to_string(),
+            ty: goty::GoType::TInt32,
+        },
+        value: goast::Expr::BinaryOp {
+            op: GoBinaryOp::Add,
+            lhs: Box::new(goast::Expr::FieldAccess {
+                obj: Box::new(goast::Expr::Var {
+                    name: "m".to_string(),
+                    ty: map_ptr_go_ty.clone(),
+                }),
+                field: "len".to_string(),
+                ty: goty::GoType::TInt32,
+            }),
+            rhs: Box::new(goast::Expr::Int {
+                value: "1".to_string(),
+                ty: goty::GoType::TInt32,
+            }),
+            ty: goty::GoType::TInt32,
+        },
+    }
 }
 
 pub fn make_hashmap_runtime(
@@ -2324,7 +2445,14 @@ pub fn make_hashmap_runtime(
             ret_ty: Some(goty::GoType::TUnit),
             body: goast::Block {
                 stmts: {
-                    let mut stmts = Vec::new();
+                    let mut stmts = vec![goast::Stmt::VarDecl {
+                        name: "reuse_index".to_string(),
+                        ty: goty::GoType::TInt32,
+                        value: Some(goast::Expr::Int {
+                            value: "-1".to_string(),
+                            ty: goty::GoType::TInt32,
+                        }),
+                    }];
                     stmts.push(goast::Stmt::If {
                         cond: goast::Expr::BinaryOp {
                             op: GoBinaryOp::Eq,
@@ -2522,6 +2650,46 @@ pub fn make_hashmap_runtime(
                                 },
                                 else_: None,
                             },
+                            goast::Stmt::If {
+                                cond: goast::Expr::BinaryOp {
+                                    op: GoBinaryOp::And,
+                                    lhs: Box::new(goast::Expr::UnaryOp {
+                                        op: goast::GoUnaryOp::Not,
+                                        expr: Box::new(goast::Expr::FieldAccess {
+                                            obj: Box::new(goast::Expr::Var {
+                                                name: "entry".to_string(),
+                                                ty: entry_go_ty.clone(),
+                                            }),
+                                            field: "active".to_string(),
+                                            ty: goty::GoType::TBool,
+                                        }),
+                                        ty: goty::GoType::TBool,
+                                    }),
+                                    rhs: Box::new(goast::Expr::BinaryOp {
+                                        op: GoBinaryOp::Less,
+                                        lhs: Box::new(goast::Expr::Var {
+                                            name: "reuse_index".to_string(),
+                                            ty: goty::GoType::TInt32,
+                                        }),
+                                        rhs: Box::new(goast::Expr::Int {
+                                            value: "0".to_string(),
+                                            ty: goty::GoType::TInt32,
+                                        }),
+                                        ty: goty::GoType::TBool,
+                                    }),
+                                    ty: goty::GoType::TBool,
+                                },
+                                then: goast::Block {
+                                    stmts: vec![goast::Stmt::Assignment {
+                                        name: "reuse_index".to_string(),
+                                        value: goast::Expr::Var {
+                                            name: "i".to_string(),
+                                            ty: goty::GoType::TInt32,
+                                        },
+                                    }],
+                                },
+                                else_: None,
+                            },
                             goast::Stmt::Assignment {
                                 name: "i".to_string(),
                                 value: goast::Expr::BinaryOp {
@@ -2541,32 +2709,46 @@ pub fn make_hashmap_runtime(
                     };
                     stmts.push(goast::Stmt::Loop { body, label: None });
 
-                    let entry_lit = goast::Expr::StructLiteral {
-                        fields: vec![
-                            (
-                                "active".to_string(),
-                                goast::Expr::Bool {
-                                    value: true,
-                                    ty: goty::GoType::TBool,
+                    stmts.push(goast::Stmt::If {
+                        cond: goast::Expr::BinaryOp {
+                            op: GoBinaryOp::GreaterEq,
+                            lhs: Box::new(goast::Expr::Var {
+                                name: "reuse_index".to_string(),
+                                ty: goty::GoType::TInt32,
+                            }),
+                            rhs: Box::new(goast::Expr::Int {
+                                value: "0".to_string(),
+                                ty: goty::GoType::TInt32,
+                            }),
+                            ty: goty::GoType::TBool,
+                        },
+                        then: goast::Block {
+                            stmts: vec![
+                                goast::Stmt::IndexAssign {
+                                    array: goast::Expr::Var {
+                                        name: "bucket".to_string(),
+                                        ty: bucket_slice_go_ty.clone(),
+                                    },
+                                    index: goast::Expr::Var {
+                                        name: "reuse_index".to_string(),
+                                        ty: goty::GoType::TInt32,
+                                    },
+                                    value: hashmap_entry_literal(
+                                        &entry_go_ty,
+                                        &key_go_ty,
+                                        &value_go_ty,
+                                    ),
                                 },
-                            ),
-                            (
-                                "key".to_string(),
-                                goast::Expr::Var {
-                                    name: "key".to_string(),
-                                    ty: key_go_ty.clone(),
+                                increment_hashmap_len(&map_ptr_go_ty),
+                                goast::Stmt::Return {
+                                    expr: Some(goast::Expr::Unit {
+                                        ty: goty::GoType::TUnit,
+                                    }),
                                 },
-                            ),
-                            (
-                                "value".to_string(),
-                                goast::Expr::Var {
-                                    name: "value".to_string(),
-                                    ty: value_go_ty.clone(),
-                                },
-                            ),
-                        ],
-                        ty: entry_go_ty.clone(),
-                    };
+                            ],
+                        },
+                        else_: None,
+                    });
 
                     let append_fn_ty = goty::GoType::TFunc {
                         params: vec![bucket_slice_go_ty.clone(), entry_go_ty.clone()],
@@ -2585,7 +2767,7 @@ pub fn make_hashmap_runtime(
                                     name: "bucket".to_string(),
                                     ty: bucket_slice_go_ty.clone(),
                                 },
-                                entry_lit,
+                                hashmap_entry_literal(&entry_go_ty, &key_go_ty, &value_go_ty),
                             ],
                             ty: bucket_slice_go_ty.clone(),
                         },
@@ -2611,32 +2793,7 @@ pub fn make_hashmap_runtime(
                         },
                     });
 
-                    stmts.push(goast::Stmt::FieldAssign {
-                        target: goast::Expr::FieldAccess {
-                            obj: Box::new(goast::Expr::Var {
-                                name: "m".to_string(),
-                                ty: map_ptr_go_ty.clone(),
-                            }),
-                            field: "len".to_string(),
-                            ty: goty::GoType::TInt32,
-                        },
-                        value: goast::Expr::BinaryOp {
-                            op: GoBinaryOp::Add,
-                            lhs: Box::new(goast::Expr::FieldAccess {
-                                obj: Box::new(goast::Expr::Var {
-                                    name: "m".to_string(),
-                                    ty: map_ptr_go_ty.clone(),
-                                }),
-                                field: "len".to_string(),
-                                ty: goty::GoType::TInt32,
-                            }),
-                            rhs: Box::new(goast::Expr::Int {
-                                value: "1".to_string(),
-                                ty: goty::GoType::TInt32,
-                            }),
-                            ty: goty::GoType::TInt32,
-                        },
-                    });
+                    stmts.push(increment_hashmap_len(&map_ptr_go_ty));
 
                     stmts.push(goast::Stmt::Return {
                         expr: Some(goast::Expr::Unit {
@@ -2825,25 +2982,23 @@ pub fn make_hashmap_runtime(
                                 cond,
                                 then: goast::Block {
                                     stmts: vec![
-                                        goast::Stmt::FieldAssign {
-                                            target: goast::Expr::FieldAccess {
-                                                obj: Box::new(goast::Expr::Index {
-                                                    array: Box::new(goast::Expr::Var {
-                                                        name: "bucket".to_string(),
-                                                        ty: bucket_slice_go_ty.clone(),
-                                                    }),
-                                                    index: Box::new(goast::Expr::Var {
-                                                        name: "i".to_string(),
-                                                        ty: goty::GoType::TInt32,
-                                                    }),
-                                                    ty: entry_go_ty.clone(),
-                                                }),
-                                                field: "active".to_string(),
-                                                ty: goty::GoType::TBool,
+                                        goast::Stmt::VarDecl {
+                                            name: "zero".to_string(),
+                                            ty: entry_go_ty.clone(),
+                                            value: None,
+                                        },
+                                        goast::Stmt::IndexAssign {
+                                            array: goast::Expr::Var {
+                                                name: "bucket".to_string(),
+                                                ty: bucket_slice_go_ty.clone(),
                                             },
-                                            value: goast::Expr::Bool {
-                                                value: false,
-                                                ty: goty::GoType::TBool,
+                                            index: goast::Expr::Var {
+                                                name: "i".to_string(),
+                                                ty: goty::GoType::TInt32,
+                                            },
+                                            value: goast::Expr::Var {
+                                                name: "zero".to_string(),
+                                                ty: entry_go_ty.clone(),
                                             },
                                         },
                                         goast::Stmt::FieldAssign {
@@ -3385,32 +3540,57 @@ fn float32_hash() -> goast::Fn {
         params: vec![("x".to_string(), goty::GoType::TFloat32)],
         ret_ty: Some(goty::GoType::TUint64),
         body: goast::Block {
-            stmts: vec![goast::Stmt::Return {
-                expr: Some(goast::Expr::Call {
-                    func: Box::new(goast::Expr::Var {
-                        name: "uint64".to_string(),
-                        ty: goty::GoType::TFunc {
-                            params: vec![goty::GoType::TUint32],
-                            ret_ty: Box::new(goty::GoType::TUint64),
-                        },
-                    }),
-                    args: vec![goast::Expr::Call {
-                        func: Box::new(goast::Expr::Var {
-                            name: "_goml_math.Float32bits".to_string(),
-                            ty: goty::GoType::TFunc {
-                                params: vec![goty::GoType::TFloat32],
-                                ret_ty: Box::new(goty::GoType::TUint32),
-                            },
-                        }),
-                        args: vec![goast::Expr::Var {
+            stmts: vec![
+                goast::Stmt::If {
+                    cond: goast::Expr::BinaryOp {
+                        op: GoBinaryOp::Eq,
+                        lhs: Box::new(goast::Expr::Var {
                             name: "x".to_string(),
                             ty: goty::GoType::TFloat32,
+                        }),
+                        rhs: Box::new(goast::Expr::Float {
+                            value: 0.0,
+                            ty: goty::GoType::TFloat32,
+                        }),
+                        ty: goty::GoType::TBool,
+                    },
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(goast::Expr::Int {
+                                value: "0".to_string(),
+                                ty: goty::GoType::TUint64,
+                            }),
                         }],
-                        ty: goty::GoType::TUint32,
-                    }],
-                    ty: goty::GoType::TUint64,
-                }),
-            }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Return {
+                    expr: Some(goast::Expr::Call {
+                        func: Box::new(goast::Expr::Var {
+                            name: "uint64".to_string(),
+                            ty: goty::GoType::TFunc {
+                                params: vec![goty::GoType::TUint32],
+                                ret_ty: Box::new(goty::GoType::TUint64),
+                            },
+                        }),
+                        args: vec![goast::Expr::Call {
+                            func: Box::new(goast::Expr::Var {
+                                name: "_goml_math.Float32bits".to_string(),
+                                ty: goty::GoType::TFunc {
+                                    params: vec![goty::GoType::TFloat32],
+                                    ret_ty: Box::new(goty::GoType::TUint32),
+                                },
+                            }),
+                            args: vec![goast::Expr::Var {
+                                name: "x".to_string(),
+                                ty: goty::GoType::TFloat32,
+                            }],
+                            ty: goty::GoType::TUint32,
+                        }],
+                        ty: goty::GoType::TUint64,
+                    }),
+                },
+            ],
         },
     }
 }
@@ -3421,22 +3601,47 @@ fn float64_hash() -> goast::Fn {
         params: vec![("x".to_string(), goty::GoType::TFloat64)],
         ret_ty: Some(goty::GoType::TUint64),
         body: goast::Block {
-            stmts: vec![goast::Stmt::Return {
-                expr: Some(goast::Expr::Call {
-                    func: Box::new(goast::Expr::Var {
-                        name: "_goml_math.Float64bits".to_string(),
-                        ty: goty::GoType::TFunc {
-                            params: vec![goty::GoType::TFloat64],
-                            ret_ty: Box::new(goty::GoType::TUint64),
-                        },
+            stmts: vec![
+                goast::Stmt::If {
+                    cond: goast::Expr::BinaryOp {
+                        op: GoBinaryOp::Eq,
+                        lhs: Box::new(goast::Expr::Var {
+                            name: "x".to_string(),
+                            ty: goty::GoType::TFloat64,
+                        }),
+                        rhs: Box::new(goast::Expr::Float {
+                            value: 0.0,
+                            ty: goty::GoType::TFloat64,
+                        }),
+                        ty: goty::GoType::TBool,
+                    },
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(goast::Expr::Int {
+                                value: "0".to_string(),
+                                ty: goty::GoType::TUint64,
+                            }),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Return {
+                    expr: Some(goast::Expr::Call {
+                        func: Box::new(goast::Expr::Var {
+                            name: "_goml_math.Float64bits".to_string(),
+                            ty: goty::GoType::TFunc {
+                                params: vec![goty::GoType::TFloat64],
+                                ret_ty: Box::new(goty::GoType::TUint64),
+                            },
+                        }),
+                        args: vec![goast::Expr::Var {
+                            name: "x".to_string(),
+                            ty: goty::GoType::TFloat64,
+                        }],
+                        ty: goty::GoType::TUint64,
                     }),
-                    args: vec![goast::Expr::Var {
-                        name: "x".to_string(),
-                        ty: goty::GoType::TFloat64,
-                    }],
-                    ty: goty::GoType::TUint64,
-                }),
-            }],
+                },
+            ],
         },
     }
 }

@@ -341,9 +341,10 @@ fn compile_intrinsic_callable(id: IntrinsicId, ty: &tast::Ty) -> goast::Expr {
             runtime::array_helper_fn_name(id.source_name(), &params[0])
         }
         IntrinsicId::RefNew => runtime::ref_helper_fn_name(id.source_name(), ret_ty),
-        IntrinsicId::RefGet | IntrinsicId::RefSet | IntrinsicId::RefPtrEq => {
-            runtime::ref_helper_fn_name(id.source_name(), &params[0])
-        }
+        IntrinsicId::RefGet
+        | IntrinsicId::RefSet
+        | IntrinsicId::RefPtrEq
+        | IntrinsicId::RefPtrHash => runtime::ref_helper_fn_name(id.source_name(), &params[0]),
         IntrinsicId::VecNew => runtime::vec_helper_fn_name(id.source_name(), ret_ty),
         IntrinsicId::VecPush | IntrinsicId::VecGet | IntrinsicId::VecSet | IntrinsicId::VecLen => {
             runtime::vec_helper_fn_name(id.source_name(), &params[0])
@@ -1896,7 +1897,11 @@ fn compile_intrinsic_call(
                 ty: tast_ty_to_go_type(ty),
             }
         }
-        IntrinsicId::RefNew | IntrinsicId::RefGet | IntrinsicId::RefSet | IntrinsicId::RefPtrEq => {
+        IntrinsicId::RefNew
+        | IntrinsicId::RefGet
+        | IntrinsicId::RefSet
+        | IntrinsicId::RefPtrEq
+        | IntrinsicId::RefPtrHash => {
             let name = id.source_name();
             let (helper, helper_ty) = match id {
                 IntrinsicId::RefNew => {
@@ -1924,6 +1929,20 @@ fn compile_intrinsic_call(
                         goty::GoType::TFunc {
                             params: vec![ref_go_ty.clone(), ref_go_ty],
                             ret_ty: Box::new(goty::GoType::TBool),
+                        },
+                    )
+                }
+                IntrinsicId::RefPtrHash => {
+                    let ref_ty = imm_ty(&args[0]);
+                    let tast::Ty::TRef { .. } = &ref_ty else {
+                        panic!("ptr_hash expects reference argument, got {:?}", ref_ty);
+                    };
+                    let ref_go_ty = tast_ty_to_go_type(&ref_ty);
+                    (
+                        runtime::ref_helper_fn_name(name, &ref_ty),
+                        goty::GoType::TFunc {
+                            params: vec![ref_go_ty],
+                            ret_ty: Box::new(goty::GoType::TUint64),
                         },
                     )
                 }

@@ -9,6 +9,7 @@ pub enum IntrinsicId {
     RefGet,
     RefSet,
     RefPtrEq,
+    RefPtrHash,
     VecNew,
     VecPush,
     VecGet,
@@ -28,13 +29,14 @@ pub enum IntrinsicId {
 }
 
 impl IntrinsicId {
-    pub const ALL: [Self; 22] = [
+    pub const ALL: [Self; 23] = [
         Self::ArrayGet,
         Self::ArraySet,
         Self::RefNew,
         Self::RefGet,
         Self::RefSet,
         Self::RefPtrEq,
+        Self::RefPtrHash,
         Self::VecNew,
         Self::VecPush,
         Self::VecGet,
@@ -61,6 +63,7 @@ impl IntrinsicId {
             Self::RefGet => "ref.get",
             Self::RefSet => "ref.set",
             Self::RefPtrEq => "ref.ptr_eq",
+            Self::RefPtrHash => "ref.ptr_hash",
             Self::VecNew => "vec.new",
             Self::VecPush => "vec.push",
             Self::VecGet => "vec.get",
@@ -88,6 +91,7 @@ impl IntrinsicId {
             Self::RefGet => "ref_get",
             Self::RefSet => "ref_set",
             Self::RefPtrEq => "ptr_eq",
+            Self::RefPtrHash => "ptr_hash",
             Self::VecNew => "vec_new",
             Self::VecPush => "vec_push",
             Self::VecGet => "vec_get",
@@ -406,6 +410,7 @@ impl IntrinsicId {
             | Self::ArraySet
             | Self::RefGet
             | Self::RefPtrEq
+            | Self::RefPtrHash
             | Self::VecGet
             | Self::VecLen
             | Self::SliceNew
@@ -709,6 +714,9 @@ impl IntrinsicId {
                 vec![ref_ty(t.clone()), ref_ty(t)],
                 crate::tast::Ty::TBool,
             ),
+            Self::RefPtrHash => {
+                generic_signature(&["T"], &[], vec![ref_ty(t)], crate::tast::Ty::TUint64)
+            }
             Self::VecNew => generic_signature(&["T"], &[], vec![], vec_ty(t)),
             Self::VecPush => generic_signature(
                 &["T"],

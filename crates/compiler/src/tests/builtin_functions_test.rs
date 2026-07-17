@@ -25,6 +25,7 @@ fn env_registers_builtin_function_signatures() {
             "ref_get",
             "ref_set",
             "ptr_eq",
+            "ptr_hash",
             "slice",
             "slice_get",
             "slice_len",
@@ -41,6 +42,7 @@ fn env_registers_builtin_function_signatures() {
             ref_get: Some(TFunc([TRef(TParam(T))], TParam(T)))
             ref_set: Some(TFunc([TRef(TParam(T)), TParam(T)], TUnit))
             ptr_eq: Some(TFunc([TRef(TParam(T)), TRef(TParam(T))], TBool))
+            ptr_hash: Some(TFunc([TRef(TParam(T))], TUint64))
             slice: Some(TFunc([TVec(TParam(T)), TInt32, TInt32], TSlice(TParam(T))))
             slice_get: Some(TFunc([TSlice(TParam(T)), TInt32], TParam(T)))
             slice_len: Some(TFunc([TSlice(TParam(T))], TInt32))
@@ -315,6 +317,7 @@ fn builtin_function_names_include_container_and_iterator_builtins() {
     assert!(names.iter().any(|n| n == "ref_get"));
     assert!(names.iter().any(|n| n == "ref_set"));
     assert!(names.iter().any(|n| n == "ptr_eq"));
+    assert!(names.iter().any(|n| n == "ptr_hash"));
     assert!(names.iter().any(|n| n == "slice"));
     assert!(names.iter().any(|n| n == "slice_get"));
     assert!(names.iter().any(|n| n == "slice_len"));
