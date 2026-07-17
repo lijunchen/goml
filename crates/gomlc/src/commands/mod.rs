@@ -1,3 +1,4 @@
+mod diagnostics;
 mod package;
 mod run_single;
 mod version;

@@ -3,13 +3,13 @@ use std::path::Path;
 use std::process::{Command, Stdio};
 
 use anyhow::{Context, Result, bail};
-use compiler::env::{format_compile_diagnostics, format_typer_diagnostics};
 use compiler::pipeline::pipeline::{Compilation, CompilationError, compile_single_file};
 use compiler::pipeline::with_compiler_stack;
-use parser::format_parser_diagnostics;
 use tempfile::tempdir;
 
 use crate::cli::{DumpStage, RunArgs};
+
+use super::diagnostics::{render_compilation_error, source_map_from_source};
 
 const PRETTY_WIDTH: usize = 120;
 
@@ -63,32 +63,8 @@ fn print_dump(compilation: &Compilation, stage: DumpStage) {
 }
 
 fn report_compilation_error(file_path: &Path, src: &str, err: CompilationError) {
-    match &err {
-        CompilationError::Parser { diagnostics } => {
-            for error in format_parser_diagnostics(diagnostics, src) {
-                eprintln!("error: {}: {}", file_path.display(), error);
-            }
-        }
-        CompilationError::Lower { diagnostics } => {
-            for diagnostic in diagnostics.iter() {
-                eprintln!(
-                    "error (lower): {}: {}",
-                    file_path.display(),
-                    diagnostic.message()
-                );
-            }
-        }
-        CompilationError::Typer { diagnostics } => {
-            for error in format_typer_diagnostics(diagnostics, src) {
-                eprintln!("error (typer): {}: {}", file_path.display(), error);
-            }
-        }
-        CompilationError::Compile { diagnostics } => {
-            for error in format_compile_diagnostics(diagnostics, src) {
-                eprintln!("error (compile): {}: {}", file_path.display(), error);
-            }
-        }
-    }
+    let source_map = source_map_from_source(file_path, src);
+    eprintln!("{}", render_compilation_error(err, source_map));
 }
 
 fn execute_go_source(source: &str) -> Result<String> {

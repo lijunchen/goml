@@ -1,10 +1,12 @@
 use std::fs;
 use std::path::Path;
 
-use anyhow::{Context, Result, anyhow};
+use anyhow::{Context, Result};
 use compiler::pipeline::with_compiler_stack;
 
 use crate::cli::{LinkArgs, PackageCommandArgs, TestLinkArgs};
+
+use super::diagnostics::{compilation_error, source_map_from_paths};
 
 const PRETTY_WIDTH: usize = 120;
 
@@ -17,6 +19,7 @@ pub(crate) fn test_check(args: PackageCommandArgs) -> Result<()> {
 }
 
 fn write_check(args: PackageCommandArgs, test: bool) -> Result<()> {
+    let source_map = source_map_from_paths(&args.input);
     let inputs = compiler::pipeline::separate::PackageInputs {
         package: args.package,
         input_files: args.input,
@@ -27,7 +30,7 @@ fn write_check(args: PackageCommandArgs, test: bool) -> Result<()> {
     } else {
         compiler::pipeline::separate::check_package(inputs)
     }
-    .map_err(|err| anyhow!("check failed: {:?}", err))?;
+    .map_err(|error| compilation_error(error, source_map))?;
 
     write_json(
         &args.output.with_extension("interface"),
@@ -44,6 +47,7 @@ pub(crate) fn test_build(args: PackageCommandArgs) -> Result<()> {
 }
 
 fn write_build(args: PackageCommandArgs, test: bool) -> Result<()> {
+    let source_map = source_map_from_paths(&args.input);
     let inputs = compiler::pipeline::separate::PackageInputs {
         package: args.package,
         input_files: args.input,
@@ -54,7 +58,7 @@ fn write_build(args: PackageCommandArgs, test: bool) -> Result<()> {
     } else {
         compiler::pipeline::separate::build_package(inputs)
     }
-    .map_err(|err| anyhow!("build failed: {:?}", err))?;
+    .map_err(|error| compilation_error(error, source_map))?;
 
     write_json(
         &args.output.with_extension("interface"),
@@ -70,12 +74,14 @@ pub(crate) fn test_link(args: TestLinkArgs) -> Result<()> {
     let mut units = Vec::new();
     for path in args.input {
         let unit = compiler::pipeline::separate::read_core(&path)
-            .map_err(|err| anyhow!("test link failed: {:?} ({})", err, path.display()))?;
+            .map_err(|error| compilation_error(error, Default::default()))
+            .with_context(|| format!("test link failed to read {}", path.display()))?;
         units.push(unit);
     }
 
     let output = compiler::pipeline::separate::link_test_cores_multi(&args.package, units)
-        .map_err(|err| anyhow!("test link failed: {:?}", err))?;
+        .map_err(|error| compilation_error(error, Default::default()))
+        .context("test link failed")?;
     let go_source =
         with_compiler_stack(|| output.link.go.to_pretty(&output.link.goenv, PRETTY_WIDTH));
     if let Some(parent) = args.output.parent() {
@@ -94,12 +100,14 @@ pub(crate) fn link(args: LinkArgs) -> Result<()> {
     let mut units = Vec::new();
     for path in args.input {
         let unit = compiler::pipeline::separate::read_core(&path)
-            .map_err(|err| anyhow!("link failed: {:?} ({})", err, path.display()))?;
+            .map_err(|error| compilation_error(error, Default::default()))
+            .with_context(|| format!("link failed to read {}", path.display()))?;
         units.push(unit);
     }
 
     let linked = compiler::pipeline::separate::link_cores(&args.entry, units)
-        .map_err(|err| anyhow!("link failed: {:?}", err))?;
+        .map_err(|error| compilation_error(error, Default::default()))
+        .context("link failed")?;
     let go_source = with_compiler_stack(|| linked.go.to_pretty(&linked.goenv, PRETTY_WIDTH));
     if let Some(parent) = args.output.parent() {
         fs::create_dir_all(parent)
