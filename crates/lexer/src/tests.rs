@@ -98,6 +98,30 @@ fn test_error_token() {
 }
 
 #[test]
+fn pattern_operator_tokens() {
+    check(
+        "name @ 1..2 | 3..=4",
+        expect![[r#"
+            [
+                {kind: Ident, text: "name"},
+                {kind: Whitespace, text: " "},
+                {kind: At, text: "@"},
+                {kind: Whitespace, text: " "},
+                {kind: Int, text: "1"},
+                {kind: DotDot, text: ".."},
+                {kind: Int, text: "2"},
+                {kind: Whitespace, text: " "},
+                {kind: Pipe, text: "|"},
+                {kind: Whitespace, text: " "},
+                {kind: Int, text: "3"},
+                {kind: DotDotEq, text: "..="},
+                {kind: Int, text: "4"},
+            ]
+        "#]],
+    )
+}
+
+#[test]
 fn test_comment() {
     check(
         "// let a = $

@@ -162,6 +162,15 @@ fn deeply_nested_pattern_reports_an_error() {
 }
 
 #[test]
+fn deeply_nested_alias_pattern_reports_an_error() {
+    let source = format!(
+        "fn main() -> unit {{ let {}_ = 0i32; }}",
+        "value @ ".repeat(4096),
+    );
+    assert_depth_error(&source, "pattern is too deeply nested");
+}
+
+#[test]
 fn deeply_nested_type_reports_an_error() {
     let source = format!(
         "fn consume(value: {}int32{}) -> unit {{ () }}",

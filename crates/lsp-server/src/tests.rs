@@ -824,7 +824,8 @@ fn main() -> int32 {
 }
 "#,
             expect![[r#"
-                [11:8] error: Constructor Some expects 1 arguments, but got 2"#]],
+                [11:8] error: Constructor Some expects 1 arguments, but got 2
+                [12:8] warning: Unreachable match arm"#]],
         );
     }
 
@@ -2089,6 +2090,50 @@ fn main() {
             "println(x.to_string())",
             "x",
             expect!["goml_test.gom:4:8"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_alias_pattern_binding() {
+        check_goto_token(
+            r#"
+fn main() {
+    let values = vec_new();
+    vec_push(values, 1);
+    match values {
+        whole @ [_, tail @ ..] => {
+            let _ = whole;
+            let _ = tail;
+        },
+        _ => (),
+    };
+}
+"#,
+            "let _ = whole;",
+            "whole",
+            expect!["goml_test.gom:5:8"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_rest_pattern_binding() {
+        check_goto_token(
+            r#"
+fn main() {
+    let values = vec_new();
+    vec_push(values, 1);
+    match values {
+        whole @ [_, tail @ ..] => {
+            let _ = whole;
+            let _ = tail;
+        },
+        _ => (),
+    };
+}
+"#,
+            "let _ = tail;",
+            "tail",
+            expect!["goml_test.gom:5:20"],
         );
     }
 
@@ -3564,7 +3609,9 @@ fn main() -> int32 {
     }
 }
 "#,
-            expect!["[11:4] error: non-exhaustive match: missing patterns Green, Blue"],
+            expect![
+                "[11:4] error: non-exhaustive match: missing patterns Color::Green, Color::Blue"
+            ],
         );
     }
 
@@ -3633,7 +3680,7 @@ fn main() -> int32 {
     }
 }
 "#,
-            expect!["[10:4] error: non-exhaustive match: missing pattern None"],
+            expect!["[10:4] error: non-exhaustive match: missing pattern Option::None"],
         );
     }
 
@@ -3668,7 +3715,9 @@ fn main() -> int32 {
     }
 }
 "#,
-            expect!["[4:4] error: non-exhaustive match on int32 literal; add a wildcard arm `_`"],
+            expect![
+                "[4:4] error: non-exhaustive match: missing patterns -2147483648..=-1, 2..=2147483647"
+            ],
         );
     }
 
@@ -3702,7 +3751,7 @@ fn main() -> int32 {
     }
 }
 "#,
-            expect!["[4:4] error: non-exhaustive match on string literal; add a wildcard arm `_`"],
+            expect!["[4:4] error: non-exhaustive match: missing pattern _"],
         );
     }
 
@@ -3719,7 +3768,9 @@ fn main() -> int32 {
     }
 }
 "#,
-            expect!["[4:4] error: non-exhaustive match on char literal; add a wildcard arm `_`"],
+            expect![[
+                r#"[4:4] error: non-exhaustive match: missing patterns '\u0000'..='`', 'c'..='퟿', ''..='􏿿'"#
+            ]],
         );
     }
 
@@ -3738,7 +3789,212 @@ fn main() -> int32 {
     }
 }
 "#,
-            expect!["[5:4] error: non-exhaustive match: missing pattern false"],
+            expect!["[5:4] error: non-exhaustive match: missing pattern (false, false)"],
+        );
+    }
+
+    #[test]
+    fn unreachable_match_arm() {
+        check_diagnostics(
+            r#"
+fn main() -> int32 {
+    match true {
+        _ => 1,
+        false => 0,
+    }
+}
+"#,
+            expect!["[4:8] warning: Unreachable match arm"],
+        );
+    }
+
+    #[test]
+    fn overlapping_range_arm() {
+        check_diagnostics(
+            r#"
+fn classify(value: int32) -> int32 {
+    match value {
+        0..=10 => 1,
+        2..5 => 2,
+        _ => 3,
+    }
+}
+
+fn main() -> int32 {
+    classify(0)
+}
+"#,
+            expect!["[4:8] warning: Unreachable match arm"],
+        );
+    }
+
+    #[test]
+    fn exhaustive_sequence_with_suffix_rest() {
+        check_diagnostics(
+            r#"
+fn classify(value: Vec[bool]) -> int32 {
+    match value {
+        [] => 0,
+        [_] => 1,
+        [true, .., _] => 2,
+        [false, .., _] => 3,
+    }
+}
+
+fn main() -> unit {
+    ()
+}
+"#,
+            expect!["no diagnostics"],
+        );
+    }
+
+    #[test]
+    fn non_exhaustive_sequence_reports_a_witness() {
+        check_diagnostics(
+            r#"
+fn classify(value: Vec[int32]) -> int32 {
+    match value {
+        [] => 0,
+    }
+}
+
+fn main() -> unit {
+    ()
+}
+"#,
+            expect![
+                "[2:4] error: non-exhaustive match: missing pattern [-2147483648..=2147483647]"
+            ],
+        );
+    }
+
+    #[test]
+    fn overlapping_sequence_suffix_arm() {
+        check_diagnostics(
+            r#"
+fn classify(value: Vec[int32]) -> int32 {
+    match value {
+        [_, ..] => 1,
+        [_, .., _] => 2,
+        [] => 0,
+    }
+}
+
+fn main() -> unit {
+    ()
+}
+"#,
+            expect!["[4:8] warning: Unreachable match arm"],
+        );
+    }
+
+    #[test]
+    fn exact_sequence_lengths_leave_wildcard_useful() {
+        check_diagnostics(
+            r#"
+fn classify(value: Vec[int32]) -> int32 {
+    match value {
+        [] => 0,
+        [_] => 1,
+        [_, _] => 2,
+        _ => 3,
+    }
+}
+
+fn main() -> unit {
+    ()
+}
+"#,
+            expect!["no diagnostics"],
+        );
+    }
+
+    #[test]
+    fn irrefutable_if_and_while_let_hide_lowering_arms() {
+        check_diagnostics(
+            r#"
+fn main() -> unit {
+    if let value = 1 {
+        let _ = value;
+    };
+    while let value = 1 {
+        let _ = value;
+        break;
+    }
+}
+"#,
+            expect!["no diagnostics"],
+        );
+    }
+
+    #[test]
+    fn exhaustive_full_int8_range() {
+        check_diagnostics(
+            r#"
+fn classify(value: int8) -> int32 {
+    match value {
+        -128i8..=127i8 => 1,
+    }
+}
+
+fn main() -> int32 {
+    classify(0i8)
+}
+"#,
+            expect!["no diagnostics"],
+        );
+    }
+
+    #[test]
+    fn empty_enum_match() {
+        check_diagnostics(
+            r#"
+enum Never {}
+
+fn absurd(value: Never) -> int32 {
+    match value {}
+}
+"#,
+            expect!["no diagnostics"],
+        );
+    }
+
+    #[test]
+    fn guarded_wildcard_is_not_exhaustive() {
+        check_diagnostics(
+            r#"
+fn classify(value: bool) -> int32 {
+    match value {
+        _ if value => 1,
+    }
+}
+
+fn main() -> int32 {
+    classify(true)
+}
+"#,
+            expect!["[2:4] error: non-exhaustive match: missing patterns false, true"],
+        );
+    }
+
+    #[test]
+    fn signed_zero_duplicate_is_unreachable() {
+        check_diagnostics(
+            r#"
+fn classify(value: float64) -> int32 {
+    match value {
+        0.0 => 1,
+        -0.0 => 2,
+        _ => 3,
+    }
+}
+
+fn main() -> int32 {
+    classify(0.0)
+}
+"#,
+            expect!["[4:8] warning: Unreachable match arm"],
         );
     }
 }

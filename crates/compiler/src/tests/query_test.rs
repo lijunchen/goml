@@ -856,6 +856,59 @@ fn main() {
 
 #[test]
 #[rustfmt::skip]
+fn hover_and_inlay_hints_for_alias_and_rest_patterns() {
+    let src = r#"
+fn main() {
+    let values = vec_new();
+    vec_push(values, 1);
+    match values {
+        whole @ [first, tail @ ..] => {
+            let _ = whole;
+            let _ = first;
+            let _ = tail;
+        },
+        _ => (),
+    };
+}
+"#;
+
+    check(src, 5, 8, expect![[r#"
+        "Vec[int32]"
+    "#]]);
+    check(src, 5, 17, expect![[r#"
+        "int32"
+    "#]]);
+    check(src, 5, 24, expect![[r#"
+        "Slice[int32]"
+    "#]]);
+    check_inlay_hints(src, expect![[r#"
+        [
+            InlayHintItem {
+                offset: 28,
+                label: ": Vec[int32]",
+                kind: Type,
+            },
+            InlayHintItem {
+                offset: 98,
+                label: ": Vec[int32]",
+                kind: Type,
+            },
+            InlayHintItem {
+                offset: 107,
+                label: ": int32",
+                kind: Type,
+            },
+            InlayHintItem {
+                offset: 113,
+                label: ": Slice[int32]",
+                kind: Type,
+            },
+        ]
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
 fn hover_fn_params() {
     let src = r#"
 fn f(x: int32, y: string) -> int32 { x }

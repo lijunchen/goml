@@ -154,6 +154,11 @@ fn multi_package_compile_project_032() -> anyhow::Result<()> {
 }
 
 #[test]
+fn multi_package_compile_project_033() -> anyhow::Result<()> {
+    run_project("project033_cross_file_pattern_constructor")
+}
+
+#[test]
 fn std_host_binary_stdio_round_trip() -> anyhow::Result<()> {
     if !super::go_available() {
         return Ok(());
