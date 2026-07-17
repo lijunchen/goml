@@ -60,14 +60,14 @@ func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__int32() *_goml_vec_int32 {
     return retv42
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(self__97 *_goml_vec_int32, elem__98 int32) struct{} {
-    vec_push__Vec_5int32(self__97, elem__98)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(self__94 *_goml_vec_int32, elem__95 int32) struct{} {
+    vec_push__Vec_5int32(self__94, elem__95)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_slice____T__int32(self__109 *_goml_vec_int32, start__110 int32, end__111 int32) []int32 {
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_slice____T__int32(self__106 *_goml_vec_int32, start__107 int32, end__108 int32) []int32 {
     var retv47 []int32
-    var t48 []int32 = self__109.items[start__110:end__111]
+    var t48 []int32 = self__106.items[start__107:end__108]
     retv47 = t48
     return retv47
 }
@@ -78,23 +78,23 @@ func println__T_int32(value__1 int32) struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_len____T__int32(self__120 []int32) int32 {
+func _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_len____T__int32(self__117 []int32) int32 {
     var retv53 int32
-    var t54 int32 = int32(len(self__120))
+    var t54 int32 = int32(len(self__117))
     retv53 = t54
     return retv53
 }
 
-func _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_get____T__int32(self__118 []int32, index__119 int32) int32 {
+func _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_get____T__int32(self__115 []int32, index__116 int32) int32 {
     var retv56 int32
-    var t57 int32 = self__118[index__119]
+    var t57 int32 = self__115[index__116]
     retv56 = t57
     return retv56
 }
 
-func _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_sub____T__int32(self__121 []int32, start__122 int32, end__123 int32) []int32 {
+func _goml_m_inherent_i_Slice_i_Slice_l_T_r__i_sub____T__int32(self__118 []int32, start__119 int32, end__120 int32) []int32 {
     var retv59 []int32
-    var t60 []int32 = self__121[start__122:end__123]
+    var t60 []int32 = self__118[start__119:end__120]
     retv59 = t60
     return retv59
 }

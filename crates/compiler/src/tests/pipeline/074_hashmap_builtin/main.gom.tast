@@ -66,10 +66,14 @@ fn main() -> unit {
     let p1/24: Ref[Point] = (Ref[Point]::new : (Point) -> Ref[Point])(Point { x: 1, y: 2 });
     let p2/25: Ref[Point] = (Ref[Point]::new : (Point) -> Ref[Point])(Point { x: 1, y: 2 });
     (HashMap[Ref[Point], int32]::set : (HashMap[Ref[Point], int32], Ref[Point], int32) -> unit)((m2/23 : HashMap[Ref[Point], int32]), (p1/24 : Ref[Point]), 99);
+    (print_opt_int : (Option[int32]) -> unit)((HashMap[Ref[Point], int32]::get : (HashMap[Ref[Point], int32], Ref[Point]) -> Option[int32])((m2/23 : HashMap[Ref[Point], int32]), (p1/24 : Ref[Point])));
     (print_opt_int : (Option[int32]) -> unit)((HashMap[Ref[Point], int32]::get : (HashMap[Ref[Point], int32], Ref[Point]) -> Option[int32])((m2/23 : HashMap[Ref[Point], int32]), (p2/25 : Ref[Point])));
+    (Ref[Point]::set : (Ref[Point], Point) -> unit)((p1/24 : Ref[Point]), Point { x: 9, y: 8 });
+    (print_opt_int : (Option[int32]) -> unit)((HashMap[Ref[Point], int32]::get : (HashMap[Ref[Point], int32], Ref[Point]) -> Option[int32])((m2/23 : HashMap[Ref[Point], int32]), (p1/24 : Ref[Point])));
+    (println : (bool) -> unit)((Eq::eq : (Ref[Point], Ref[Point]) -> bool)((p1/24 : Ref[Point]), (p2/25 : Ref[Point])));
     let m3/26: HashMap[Ref[Key], int32] = (HashMap[Ref[Key], int32]::new : () -> HashMap[Ref[Key], int32])();
     let k1/27: Ref[Key] = (Ref[Key]::new : (Key) -> Ref[Key])(Key::B(7));
-    let k2/28: Ref[Key] = (Ref[Key]::new : (Key) -> Ref[Key])(Key::B(7));
+    let k2/28: Ref[Key] = (k1/27 : Ref[Key]);
     (HashMap[Ref[Key], int32]::set : (HashMap[Ref[Key], int32], Ref[Key], int32) -> unit)((m3/26 : HashMap[Ref[Key], int32]), (k1/27 : Ref[Key]), 123);
     (print_opt_int : (Option[int32]) -> unit)((HashMap[Ref[Key], int32]::get : (HashMap[Ref[Key], int32], Ref[Key]) -> Option[int32])((m3/26 : HashMap[Ref[Key], int32]), (k2/28 : Ref[Key])));
 }

@@ -57,21 +57,21 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__142 *ref_int32_x, value__143 int32) struct{} {
-    ref_set__Ref_5int32(self__142, value__143)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__139 *ref_int32_x, value__140 int32) struct{} {
+    ref_set__Ref_5int32(self__139, value__140)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__140 int32) *ref_int32_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__137 int32) *ref_int32_x {
     var retv37 *ref_int32_x
-    var t38 *ref_int32_x = ref__Ref_5int32(value__140)
+    var t38 *ref_int32_x = ref__Ref_5int32(value__137)
     retv37 = t38
     return retv37
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__141 *ref_int32_x) int32 {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__138 *ref_int32_x) int32 {
     var retv40 int32
-    var t41 int32 = ref_get__Ref_5int32(self__141)
+    var t41 int32 = ref_get__Ref_5int32(self__138)
     retv40 = t41
     return retv40
 }

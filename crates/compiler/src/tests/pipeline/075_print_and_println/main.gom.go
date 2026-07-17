@@ -152,9 +152,9 @@ func println__T_dynToString(value__1 dyn__ToString) struct{} {
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__140 int32) *ref_int32_x {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__137 int32) *ref_int32_x {
     var retv67 *ref_int32_x
-    var t68 *ref_int32_x = ref__Ref_5int32(value__140)
+    var t68 *ref_int32_x = ref__Ref_5int32(value__137)
     retv67 = t68
     return retv67
 }
@@ -191,19 +191,19 @@ func _goml_m_trait__impl_i_ToString_i_unit_i_to__string(self__7 struct{}) string
     return retv81
 }
 
-func _goml_m_trait__impl_i_ToString_i_Ref_l_int32_r__i_to__string(self__69 *ref_int32_x) string {
+func _goml_m_trait__impl_i_ToString_i_Ref_l_int32_r__i_to__string(self__66 *ref_int32_x) string {
     var retv84 string
-    var v__70 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__69)
-    var t85 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(v__70)
+    var v__67 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__66)
+    var t85 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(v__67)
     var t86 string = "ref(" + t85
     var t87 string = t86 + ")"
     retv84 = t87
     return retv84
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__141 *ref_int32_x) int32 {
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__138 *ref_int32_x) int32 {
     var retv89 int32
-    var t90 int32 = ref_get__Ref_5int32(self__141)
+    var t90 int32 = ref_get__Ref_5int32(self__138)
     retv89 = t90
     return retv89
 }

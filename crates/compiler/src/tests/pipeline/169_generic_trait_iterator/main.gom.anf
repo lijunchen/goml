@@ -138,27 +138,27 @@ fn main() -> unit {
   jump loop88()
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/140: int32) -> Ref[int32] {
+fn inherent#Ref#Ref[T]#new__T_int32(value/137: int32) -> Ref[int32] {
   join ret90(retv91: Ref[int32]) -> Ref[int32] {
     retv91
   } in
-  let t92 = @intrinsic(ref.new)(value/140) in
+  let t92 = @intrinsic(ref.new)(value/137) in
   jump ret90(t92)
 }
 
-fn inherent#Ref#Ref[T]#get__T_int32(self/141: Ref[int32]) -> int32 {
+fn inherent#Ref#Ref[T]#get__T_int32(self/138: Ref[int32]) -> int32 {
   join ret93(retv94: int32) -> int32 {
     retv94
   } in
-  let t95 = @intrinsic(ref.get)(self/141) in
+  let t95 = @intrinsic(ref.get)(self/138) in
   jump ret93(t95)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/142: Ref[int32], value/143: int32) -> unit {
+fn inherent#Ref#Ref[T]#set__T_int32(self/139: Ref[int32], value/140: int32) -> unit {
   join ret96() -> unit {
     ()
   } in
-  let t97 = @intrinsic(ref.set)(self/142, value/143) in
+  let t97 = @intrinsic(ref.set)(self/139, value/140) in
   jump ret96()
 }
 
@@ -209,62 +209,62 @@ fn trait_impl#Marker#[Vec[int32]]@Any#marker(self/3: Any) -> string {
   jump ret111("marked")
 }
 
-fn iterator_map__A_int32__B_int32__I_Counter(iterator/80: Counter, map_fn/81: (int32) -> int32) -> MapIterator__int32__int32__Counter {
+fn iterator_map__A_int32__B_int32__I_Counter(iterator/77: Counter, map_fn/78: (int32) -> int32) -> MapIterator__int32__int32__Counter {
   join ret113(retv114: MapIterator__int32__int32__Counter) -> MapIterator__int32__int32__Counter {
     retv114
   } in
-  let t115 = MapIterator__int32__int32__Counter { iterator: iterator/80, map_fn: map_fn/81 } in
+  let t115 = MapIterator__int32__int32__Counter { iterator: iterator/77, map_fn: map_fn/78 } in
   jump ret113(t115)
 }
 
-fn iterator_filter__I_MapIterator[int32,int32,Counter]__T_int32(iterator/82: MapIterator__int32__int32__Counter, predicate/83: (int32) -> bool) -> FilterIterator__int32__MapIterator__int32__int32__Counter {
+fn iterator_filter__I_MapIterator[int32,int32,Counter]__T_int32(iterator/79: MapIterator__int32__int32__Counter, predicate/80: (int32) -> bool) -> FilterIterator__int32__MapIterator__int32__int32__Counter {
   join ret116(retv117: FilterIterator__int32__MapIterator__int32__int32__Counter) -> FilterIterator__int32__MapIterator__int32__int32__Counter {
     retv117
   } in
-  let t118 = FilterIterator__int32__MapIterator__int32__int32__Counter { iterator: iterator/82, predicate: predicate/83 } in
+  let t118 = FilterIterator__int32__MapIterator__int32__int32__Counter { iterator: iterator/79, predicate: predicate/80 } in
   jump ret116(t118)
 }
 
-fn iterator_take__I_FilterIterator[int32,MapIterator[int32,int32,Counter]](iterator/84: FilterIterator__int32__MapIterator__int32__int32__Counter, count/85: int32) -> TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter {
+fn iterator_take__I_FilterIterator[int32,MapIterator[int32,int32,Counter]](iterator/81: FilterIterator__int32__MapIterator__int32__int32__Counter, count/82: int32) -> TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter {
   join ret119(retv120: TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter) -> TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter {
     retv120
   } in
-  let t125 = (count/85 > 0) in
+  let t125 = (count/82 > 0) in
   join k121(jp122: int32) -> TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter {
-    let remaining/86 = jp122 in
-    let t123 = inherent#Ref#Ref[T]#new__T_int32(remaining/86) in
-    let t124 = TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter { iterator: iterator/84, remaining: t123 } in
+    let remaining/83 = jp122 in
+    let t123 = inherent#Ref#Ref[T]#new__T_int32(remaining/83) in
+    let t124 = TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter { iterator: iterator/81, remaining: t123 } in
     jump ret119(t124)
   } in
   if t125 {
-    jump k121(count/85)
+    jump k121(count/82)
   } else {
     jump k121(0)
   }
 }
 
-fn trait_impl#IntoIterator#TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter#into_iter(self/79: TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter) -> TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter {
+fn trait_impl#IntoIterator#TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter#into_iter(self/76: TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter) -> TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter {
   join ret126(retv127: TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter) -> TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter {
     retv127
   } in
-  jump ret126(self/79)
+  jump ret126(self/76)
 }
 
-fn trait_impl#Iterator#TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter#next(self/77: TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter) -> Option__int32 {
+fn trait_impl#Iterator#TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter#next(self/74: TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter) -> Option__int32 {
   join ret128(retv129: Option__int32) -> Option__int32 {
     retv129
   } in
-  let t130 = TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter.remaining(self/77) in
-  let remaining/78 = inherent#Ref#Ref[T]#get__T_int32(t130) in
-  let t133 = (remaining/78 > 0) in
+  let t130 = TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter.remaining(self/74) in
+  let remaining/75 = inherent#Ref#Ref[T]#get__T_int32(t130) in
+  let t133 = (remaining/75 > 0) in
   join k131(jp132: Option__int32) -> Option__int32 {
     jump ret128(jp132)
   } in
   if t133 {
-    let t134 = TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter.remaining(self/77) in
-    let t135 = (remaining/78 - 1) in
+    let t134 = TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter.remaining(self/74) in
+    let t135 = (remaining/75 - 1) in
     let _wild6 = inherent#Ref#Ref[T]#set__T_int32(t134, t135) in
-    let t136 = TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter.iterator(self/77) in
+    let t136 = TakeIterator__FilterIterator__int32__MapIterator__int32__int32__Counter.iterator(self/74) in
     let t137 = trait_impl#Iterator#FilterIterator__int32__MapIterator__int32__int32__Counter#next(t136) in
     jump k131(t137)
   } else {
@@ -272,37 +272,37 @@ fn trait_impl#Iterator#TakeIterator__FilterIterator__int32__MapIterator__int32__
   }
 }
 
-fn iterator_fold__A_int32__I_FnIterator[int32]__T_int32(iterator/87: FnIterator__int32, initial/88: int32, combine/89: (int32, int32) -> int32) -> int32 {
+fn iterator_fold__A_int32__I_FnIterator[int32]__T_int32(iterator/84: FnIterator__int32, initial/85: int32, combine/86: (int32, int32) -> int32) -> int32 {
   join ret138(retv139: int32) -> int32 {
     retv139
   } in
-  let accumulator/90 = inherent#Ref#Ref[T]#new__T_int32(initial/88) in
-  let running/91 = inherent#Ref#Ref[T]#new__T_bool(true) in
+  let accumulator/87 = inherent#Ref#Ref[T]#new__T_int32(initial/85) in
+  let running/88 = inherent#Ref#Ref[T]#new__T_bool(true) in
   join exit140() -> int32 {
     let _wild10 = () in
-    let t141 = inherent#Ref#Ref[T]#get__T_int32(accumulator/90) in
+    let t141 = inherent#Ref#Ref[T]#get__T_int32(accumulator/87) in
     jump ret138(t141)
   } in
   joinrec {
     join loop142() -> int32 {
-      let t143 = inherent#Ref#Ref[T]#get__T_bool(running/91) in
+      let t143 = inherent#Ref#Ref[T]#get__T_bool(running/88) in
       if t143 {
-        let mtmp7 = trait_impl#Iterator#FnIterator__int32#next(iterator/87) in
+        let mtmp7 = trait_impl#Iterator#FnIterator__int32#next(iterator/84) in
         join k144() -> int32 {
           let _wild9 = () in
           jump loop142()
         } in
         match mtmp7 {
           Tag_0 => {
-            let t145 = inherent#Ref#Ref[T]#set__T_bool(running/91, false) in
+            let t145 = inherent#Ref#Ref[T]#set__T_bool(running/88, false) in
             jump k144()
           },
           Tag_1 => {
             let x8 = Option__int32::Some._0(mtmp7) in
-            let value/92 = x8 in
-            let t146 = inherent#Ref#Ref[T]#get__T_int32(accumulator/90) in
-            let t147 = combine/89(t146, value/92) in
-            let t148 = inherent#Ref#Ref[T]#set__T_int32(accumulator/90, t147) in
+            let value/89 = x8 in
+            let t146 = inherent#Ref#Ref[T]#get__T_int32(accumulator/87) in
+            let t147 = combine/86(t146, value/89) in
+            let t148 = inherent#Ref#Ref[T]#set__T_int32(accumulator/87, t147) in
             jump k144()
           },
         }
@@ -314,44 +314,44 @@ fn iterator_fold__A_int32__I_FnIterator[int32]__T_int32(iterator/87: FnIterator_
   jump loop142()
 }
 
-fn range(start/144: int32, end/145: int32) -> FnIterator__int32 {
+fn range(start/141: int32, end/142: int32) -> FnIterator__int32 {
   join ret149(retv150: FnIterator__int32) -> FnIterator__int32 {
     retv150
   } in
-  let current/146 = inherent#Ref#Ref[T]#new__T_int32(start/144) in
-  let t151 = closure_env_range_4 { current_0: current/146, end_1: end/145 } in
+  let current/143 = inherent#Ref#Ref[T]#new__T_int32(start/141) in
+  let t151 = closure_env_range_4 { current_0: current/143, end_1: end/142 } in
   let t152 = inherent#FnIterator#FnIterator[T]#from_fn__T_int32(t151) in
   jump ret149(t152)
 }
 
-fn iterator_collect__I_MapIterator[int32,string,FnIterator[int32]]__T_string(iterator/93: MapIterator__int32__string__FnIterator__int32) -> Vec[string] {
+fn iterator_collect__I_MapIterator[int32,string,FnIterator[int32]]__T_string(iterator/90: MapIterator__int32__string__FnIterator__int32) -> Vec[string] {
   join ret153(retv154: Vec[string]) -> Vec[string] {
     retv154
   } in
-  let values/94 = inherent#Vec#Vec[T]#new__T_string() in
-  let running/95 = inherent#Ref#Ref[T]#new__T_bool(true) in
+  let values/91 = inherent#Vec#Vec[T]#new__T_string() in
+  let running/92 = inherent#Ref#Ref[T]#new__T_bool(true) in
   join exit155() -> Vec[string] {
     let _wild14 = () in
-    jump ret153(values/94)
+    jump ret153(values/91)
   } in
   joinrec {
     join loop156() -> Vec[string] {
-      let t157 = inherent#Ref#Ref[T]#get__T_bool(running/95) in
+      let t157 = inherent#Ref#Ref[T]#get__T_bool(running/92) in
       if t157 {
-        let mtmp11 = trait_impl#Iterator#MapIterator__int32__string__FnIterator__int32#next(iterator/93) in
+        let mtmp11 = trait_impl#Iterator#MapIterator__int32__string__FnIterator__int32#next(iterator/90) in
         join k158() -> Vec[string] {
           let _wild13 = () in
           jump loop156()
         } in
         match mtmp11 {
           Tag_0 => {
-            let t159 = inherent#Ref#Ref[T]#set__T_bool(running/95, false) in
+            let t159 = inherent#Ref#Ref[T]#set__T_bool(running/92, false) in
             jump k158()
           },
           Tag_1 => {
             let x12 = Option__string::Some._0(mtmp11) in
-            let value/96 = x12 in
-            let t160 = inherent#Vec#Vec[T]#push__T_string(values/94, value/96) in
+            let value/93 = x12 in
+            let t160 = inherent#Vec#Vec[T]#push__T_string(values/91, value/93) in
             jump k158()
           },
         }
@@ -363,11 +363,11 @@ fn iterator_collect__I_MapIterator[int32,string,FnIterator[int32]]__T_string(ite
   jump loop156()
 }
 
-fn iterator_map__A_int32__B_string__I_FnIterator[int32](iterator/80: FnIterator__int32, map_fn/81: (int32) -> string) -> MapIterator__int32__string__FnIterator__int32 {
+fn iterator_map__A_int32__B_string__I_FnIterator[int32](iterator/77: FnIterator__int32, map_fn/78: (int32) -> string) -> MapIterator__int32__string__FnIterator__int32 {
   join ret161(retv162: MapIterator__int32__string__FnIterator__int32) -> MapIterator__int32__string__FnIterator__int32 {
     retv162
   } in
-  let t163 = MapIterator__int32__string__FnIterator__int32 { iterator: iterator/80, map_fn: map_fn/81 } in
+  let t163 = MapIterator__int32__string__FnIterator__int32 { iterator: iterator/77, map_fn: map_fn/78 } in
   jump ret161(t163)
 }
 
@@ -379,19 +379,19 @@ fn inherent#int32#int32#to_string(self/2: int32) -> string {
   jump ret164(t166)
 }
 
-fn trait_impl#IntoIterator#Vec[string]#into_iter(self/117: Vec[string]) -> FnIterator__string {
+fn trait_impl#IntoIterator#Vec[string]#into_iter(self/114: Vec[string]) -> FnIterator__string {
   join ret167(retv168: FnIterator__string) -> FnIterator__string {
     retv168
   } in
-  let t169 = inherent#Vec#Vec[T]#iter__T_string(self/117) in
+  let t169 = inherent#Vec#Vec[T]#iter__T_string(self/114) in
   jump ret167(t169)
 }
 
-fn trait_impl#Iterator#FnIterator__string#next(self/72: FnIterator__string) -> Option__string {
+fn trait_impl#Iterator#FnIterator__string#next(self/69: FnIterator__string) -> Option__string {
   join ret170(retv171: Option__string) -> Option__string {
     retv171
   } in
-  let t172 = FnIterator__string.next_fn(self/72) in
+  let t172 = FnIterator__string.next_fn(self/69) in
   let t173 = t172() in
   jump ret170(t173)
 }
@@ -411,7 +411,7 @@ fn trait_impl#ToString#string#to_string(self/9: string) -> string {
   jump ret177(self/9)
 }
 
-fn trait_impl#Iterator#FilterIterator__int32__MapIterator__int32__int32__Counter#next(self/75: FilterIterator__int32__MapIterator__int32__int32__Counter) -> Option__int32 {
+fn trait_impl#Iterator#FilterIterator__int32__MapIterator__int32__int32__Counter#next(self/72: FilterIterator__int32__MapIterator__int32__int32__Counter) -> Option__int32 {
   join ret179(retv180: Option__int32) -> Option__int32 {
     retv180
   } in
@@ -422,7 +422,7 @@ fn trait_impl#Iterator#FilterIterator__int32__MapIterator__int32__int32__Counter
   joinrec {
     join loop182() -> Option__int32 {
       if true {
-        let t183 = FilterIterator__int32__MapIterator__int32__int32__Counter.iterator(self/75) in
+        let t183 = FilterIterator__int32__MapIterator__int32__int32__Counter.iterator(self/72) in
         let mtmp2 = trait_impl#Iterator#MapIterator__int32__int32__Counter#next(t183) in
         join k184() -> Option__int32 {
           let _wild4 = () in
@@ -434,14 +434,14 @@ fn trait_impl#Iterator#FilterIterator__int32__MapIterator__int32__int32__Counter
           },
           Tag_1 => {
             let x3 = Option__int32::Some._0(mtmp2) in
-            let value/76 = x3 in
-            let t186 = FilterIterator__int32__MapIterator__int32__int32__Counter.predicate(self/75) in
-            let t187 = t186(value/76) in
+            let value/73 = x3 in
+            let t186 = FilterIterator__int32__MapIterator__int32__int32__Counter.predicate(self/72) in
+            let t187 = t186(value/73) in
             join k185() -> Option__int32 {
               jump k184()
             } in
             if t187 {
-              let t188 = Option__int32::Some(value/76) in
+              let t188 = Option__int32::Some(value/73) in
               jump ret179(t188)
             } else {
               jump k185()
@@ -456,44 +456,44 @@ fn trait_impl#Iterator#FilterIterator__int32__MapIterator__int32__int32__Counter
   jump loop182()
 }
 
-fn inherent#Ref#Ref[T]#new__T_bool(value/140: bool) -> Ref[bool] {
+fn inherent#Ref#Ref[T]#new__T_bool(value/137: bool) -> Ref[bool] {
   join ret189(retv190: Ref[bool]) -> Ref[bool] {
     retv190
   } in
-  let t191 = @intrinsic(ref.new)(value/140) in
+  let t191 = @intrinsic(ref.new)(value/137) in
   jump ret189(t191)
 }
 
-fn inherent#Ref#Ref[T]#get__T_bool(self/141: Ref[bool]) -> bool {
+fn inherent#Ref#Ref[T]#get__T_bool(self/138: Ref[bool]) -> bool {
   join ret192(retv193: bool) -> bool {
     retv193
   } in
-  let t194 = @intrinsic(ref.get)(self/141) in
+  let t194 = @intrinsic(ref.get)(self/138) in
   jump ret192(t194)
 }
 
-fn trait_impl#Iterator#FnIterator__int32#next(self/72: FnIterator__int32) -> Option__int32 {
+fn trait_impl#Iterator#FnIterator__int32#next(self/69: FnIterator__int32) -> Option__int32 {
   join ret195(retv196: Option__int32) -> Option__int32 {
     retv196
   } in
-  let t197 = FnIterator__int32.next_fn(self/72) in
+  let t197 = FnIterator__int32.next_fn(self/69) in
   let t198 = t197() in
   jump ret195(t198)
 }
 
-fn inherent#Ref#Ref[T]#set__T_bool(self/142: Ref[bool], value/143: bool) -> unit {
+fn inherent#Ref#Ref[T]#set__T_bool(self/139: Ref[bool], value/140: bool) -> unit {
   join ret199() -> unit {
     ()
   } in
-  let t200 = @intrinsic(ref.set)(self/142, value/143) in
+  let t200 = @intrinsic(ref.set)(self/139, value/140) in
   jump ret199()
 }
 
-fn inherent#FnIterator#FnIterator[T]#from_fn__T_int32(next_fn/71: () -> Option__int32) -> FnIterator__int32 {
+fn inherent#FnIterator#FnIterator[T]#from_fn__T_int32(next_fn/68: () -> Option__int32) -> FnIterator__int32 {
   join ret201(retv202: FnIterator__int32) -> FnIterator__int32 {
     retv202
   } in
-  let t203 = FnIterator__int32 { next_fn: next_fn/71 } in
+  let t203 = FnIterator__int32 { next_fn: next_fn/68 } in
   jump ret201(t203)
 }
 
@@ -505,11 +505,11 @@ fn inherent#Vec#Vec[T]#new__T_string() -> Vec[string] {
   jump ret204(t206)
 }
 
-fn trait_impl#Iterator#MapIterator__int32__string__FnIterator__int32#next(self/73: MapIterator__int32__string__FnIterator__int32) -> Option__string {
+fn trait_impl#Iterator#MapIterator__int32__string__FnIterator__int32#next(self/70: MapIterator__int32__string__FnIterator__int32) -> Option__string {
   join ret207(retv208: Option__string) -> Option__string {
     retv208
   } in
-  let t209 = MapIterator__int32__string__FnIterator__int32.iterator(self/73) in
+  let t209 = MapIterator__int32__string__FnIterator__int32.iterator(self/70) in
   let mtmp0 = trait_impl#Iterator#FnIterator__int32#next(t209) in
   join k210(jp211: Option__string) -> Option__string {
     jump ret207(jp211)
@@ -520,39 +520,39 @@ fn trait_impl#Iterator#MapIterator__int32__string__FnIterator__int32#next(self/7
     },
     Tag_1 => {
       let x1 = Option__int32::Some._0(mtmp0) in
-      let value/74 = x1 in
-      let t212 = MapIterator__int32__string__FnIterator__int32.map_fn(self/73) in
-      let t213 = t212(value/74) in
+      let value/71 = x1 in
+      let t212 = MapIterator__int32__string__FnIterator__int32.map_fn(self/70) in
+      let t213 = t212(value/71) in
       let t214 = Option__string::Some(t213) in
       jump k210(t214)
     },
   }
 }
 
-fn inherent#Vec#Vec[T]#push__T_string(self/97: Vec[string], elem/98: string) -> unit {
+fn inherent#Vec#Vec[T]#push__T_string(self/94: Vec[string], elem/95: string) -> unit {
   join ret215() -> unit {
     ()
   } in
-  let t216 = @intrinsic(vec.push)(self/97, elem/98) in
+  let t216 = @intrinsic(vec.push)(self/94, elem/95) in
   jump ret215()
 }
 
-fn inherent#Vec#Vec[T]#iter__T_string(self/112: Vec[string]) -> FnIterator__string {
+fn inherent#Vec#Vec[T]#iter__T_string(self/109: Vec[string]) -> FnIterator__string {
   join ret217(retv218: FnIterator__string) -> FnIterator__string {
     retv218
   } in
-  let index/113 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  let len/114 = inherent#Vec#Vec[T]#len__T_string(self/112) in
-  let t219 = closure_env_inherent_Vec_Vec_T_iter_T_string_5 { index_0: index/113, len_1: len/114, self_2: self/112 } in
+  let index/110 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let len/111 = inherent#Vec#Vec[T]#len__T_string(self/109) in
+  let t219 = closure_env_inherent_Vec_Vec_T_iter_T_string_5 { index_0: index/110, len_1: len/111, self_2: self/109 } in
   let t220 = inherent#FnIterator#FnIterator[T]#from_fn__T_string(t219) in
   jump ret217(t220)
 }
 
-fn trait_impl#Iterator#MapIterator__int32__int32__Counter#next(self/73: MapIterator__int32__int32__Counter) -> Option__int32 {
+fn trait_impl#Iterator#MapIterator__int32__int32__Counter#next(self/70: MapIterator__int32__int32__Counter) -> Option__int32 {
   join ret221(retv222: Option__int32) -> Option__int32 {
     retv222
   } in
-  let t223 = MapIterator__int32__int32__Counter.iterator(self/73) in
+  let t223 = MapIterator__int32__int32__Counter.iterator(self/70) in
   let mtmp0 = trait_impl#Iterator#Counter#next(t223) in
   join k224(jp225: Option__int32) -> Option__int32 {
     jump ret221(jp225)
@@ -563,36 +563,36 @@ fn trait_impl#Iterator#MapIterator__int32__int32__Counter#next(self/73: MapItera
     },
     Tag_1 => {
       let x1 = Option__int32::Some._0(mtmp0) in
-      let value/74 = x1 in
-      let t226 = MapIterator__int32__int32__Counter.map_fn(self/73) in
-      let t227 = t226(value/74) in
+      let value/71 = x1 in
+      let t226 = MapIterator__int32__int32__Counter.map_fn(self/70) in
+      let t227 = t226(value/71) in
       let t228 = Option__int32::Some(t227) in
       jump k224(t228)
     },
   }
 }
 
-fn inherent#Vec#Vec[T]#len__T_string(self/108: Vec[string]) -> int32 {
+fn inherent#Vec#Vec[T]#len__T_string(self/105: Vec[string]) -> int32 {
   join ret229(retv230: int32) -> int32 {
     retv230
   } in
-  let t231 = @intrinsic(vec.len)(self/108) in
+  let t231 = @intrinsic(vec.len)(self/105) in
   jump ret229(t231)
 }
 
-fn inherent#Vec#Vec[T]#get__T_string(self/103: Vec[string], index/104: int32) -> string {
+fn inherent#Vec#Vec[T]#get__T_string(self/100: Vec[string], index/101: int32) -> string {
   join ret232(retv233: string) -> string {
     retv233
   } in
-  let t234 = @intrinsic(vec.get)(self/103, index/104) in
+  let t234 = @intrinsic(vec.get)(self/100, index/101) in
   jump ret232(t234)
 }
 
-fn inherent#FnIterator#FnIterator[T]#from_fn__T_string(next_fn/71: () -> Option__string) -> FnIterator__string {
+fn inherent#FnIterator#FnIterator[T]#from_fn__T_string(next_fn/68: () -> Option__string) -> FnIterator__string {
   join ret235(retv236: FnIterator__string) -> FnIterator__string {
     retv236
   } in
-  let t237 = FnIterator__string { next_fn: next_fn/71 } in
+  let t237 = FnIterator__string { next_fn: next_fn/68 } in
   jump ret235(t237)
 }
 
@@ -671,17 +671,17 @@ fn inherent#closure_env_range_4#closure_env_range_4#apply(env44: closure_env_ran
   join ret264(retv265: Option__int32) -> Option__int32 {
     retv265
   } in
-  let current/146 = closure_env_range_4.current_0(env44) in
-  let end/145 = closure_env_range_4.end_1(env44) in
-  let value/147 = inherent#Ref#Ref[T]#get__T_int32(current/146) in
-  let t268 = (value/147 < end/145) in
+  let current/143 = closure_env_range_4.current_0(env44) in
+  let end/142 = closure_env_range_4.end_1(env44) in
+  let value/144 = inherent#Ref#Ref[T]#get__T_int32(current/143) in
+  let t268 = (value/144 < end/142) in
   join k266(jp267: Option__int32) -> Option__int32 {
     jump ret264(jp267)
   } in
   if t268 {
-    let t269 = (value/147 + 1) in
-    let _wild21 = inherent#Ref#Ref[T]#set__T_int32(current/146, t269) in
-    let t270 = Option__int32::Some(value/147) in
+    let t269 = (value/144 + 1) in
+    let _wild21 = inherent#Ref#Ref[T]#set__T_int32(current/143, t269) in
+    let t270 = Option__int32::Some(value/144) in
     jump k266(t270)
   } else {
     jump k266(Tag_0)
@@ -692,19 +692,19 @@ fn inherent#closure_env_inherent_Vec_Vec_T_iter_T_string_5#closure_env_inherent_
   join ret271(retv272: Option__string) -> Option__string {
     retv272
   } in
-  let index/113 = closure_env_inherent_Vec_Vec_T_iter_T_string_5.index_0(env45) in
-  let len/114 = closure_env_inherent_Vec_Vec_T_iter_T_string_5.len_1(env45) in
-  let self/112 = closure_env_inherent_Vec_Vec_T_iter_T_string_5.self_2(env45) in
-  let current/115 = inherent#Ref#Ref[T]#get__T_int32(index/113) in
-  let t275 = (current/115 < len/114) in
+  let index/110 = closure_env_inherent_Vec_Vec_T_iter_T_string_5.index_0(env45) in
+  let len/111 = closure_env_inherent_Vec_Vec_T_iter_T_string_5.len_1(env45) in
+  let self/109 = closure_env_inherent_Vec_Vec_T_iter_T_string_5.self_2(env45) in
+  let current/112 = inherent#Ref#Ref[T]#get__T_int32(index/110) in
+  let t275 = (current/112 < len/111) in
   join k273(jp274: Option__string) -> Option__string {
     jump ret271(jp274)
   } in
   if t275 {
-    let value/116 = inherent#Vec#Vec[T]#get__T_string(self/112, current/115) in
-    let t276 = (current/115 + 1) in
-    let _wild19 = inherent#Ref#Ref[T]#set__T_int32(index/113, t276) in
-    let t277 = Option__string::Some(value/116) in
+    let value/113 = inherent#Vec#Vec[T]#get__T_string(self/109, current/112) in
+    let t276 = (current/112 + 1) in
+    let _wild19 = inherent#Ref#Ref[T]#set__T_int32(index/110, t276) in
+    let t277 = Option__string::Some(value/113) in
     jump k273(t277)
   } else {
     jump k273(Tag_0)
