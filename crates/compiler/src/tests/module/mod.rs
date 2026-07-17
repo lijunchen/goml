@@ -164,10 +164,32 @@ fn std_host_binary_stdio_round_trip() -> anyhow::Result<()> {
 package main;
 
 use std::bytes;
+use std::env;
 use std::io;
 use std::process;
 
 fn main() -> unit {
+    match env::var("GOML_EMPTY") {
+        Option::Some(value) => {
+            if value != "" {
+                io::eprintln("empty environment value changed");
+                process::exit(1)
+            } else {
+                ()
+            }
+        },
+        Option::None => {
+            io::eprintln("empty environment value is missing");
+            process::exit(1)
+        },
+    };
+    match env::var("GOML_MISSING_ENVIRONMENT_VALUE") {
+        Option::Some(value) => {
+            io::eprintln("missing environment value exists: " + value);
+            process::exit(1)
+        },
+        Option::None => (),
+    };
     match io::read_stdin() {
         Result::Ok(data) => {
             match io::write_stdout(data) {
@@ -207,6 +229,8 @@ fn main() -> unit {
         .current_dir(dir.path())
         .env("GO111MODULE", "off")
         .env("GOWORK", "off")
+        .env("GOML_EMPTY", "")
+        .env_remove("GOML_MISSING_ENVIRONMENT_VALUE")
         .stdin(std::process::Stdio::piped())
         .stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::piped())
