@@ -1512,7 +1512,14 @@ pub enum Expr {
 #[derive(Debug, Clone)]
 pub struct Arm {
     pub pat: PatId,
+    pub guard: Option<ExprId>,
     pub body: ExprId,
+}
+
+#[derive(Debug, Clone)]
+pub struct ArrayPatRest {
+    pub binding: Option<LocalId>,
+    pub astptr: MySyntaxNodePtr,
 }
 
 #[derive(Debug, Clone)]
@@ -1574,9 +1581,28 @@ pub enum Pat {
     PStruct {
         name: QualifiedPath,
         fields: Vec<(HirIdent, PatId)>,
+        has_rest: bool,
     },
     PTuple {
         pats: Vec<PatId>,
+    },
+    PArray {
+        prefix: Vec<PatId>,
+        rest: Option<ArrayPatRest>,
+        suffix: Vec<PatId>,
+    },
+    PAlias {
+        name: LocalId,
+        pat: PatId,
+        astptr: MySyntaxNodePtr,
+    },
+    POr {
+        pats: Vec<PatId>,
+    },
+    PRange {
+        start: PatId,
+        end: PatId,
+        inclusive: bool,
     },
     PWild,
 }

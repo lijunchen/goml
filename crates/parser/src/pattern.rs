@@ -11,6 +11,7 @@ pub const PATTERN_FIRST: &[TokenKind] = &[
     T![false],
     T![ident],
     T!['('],
+    T!['['],
     T![_],
     T![-],
     T![int],
@@ -31,7 +32,55 @@ pub const PATTERN_FIRST: &[TokenKind] = &[
 
 pub fn pattern(p: &mut Parser) -> Option<MarkerClosed> {
     let _pattern_depth = p.enter_pattern()?;
-    simple_pattern(p)
+    or_pattern(p)
+}
+
+fn or_pattern(p: &mut Parser) -> Option<MarkerClosed> {
+    let mut pat = alias_pattern(p)?;
+    if !p.at(T![|]) {
+        return Some(pat);
+    }
+
+    let marker = pat.precede(p);
+    while p.eat(T![|]) {
+        if p.at_any(PATTERN_FIRST) {
+            let _ = alias_pattern(p);
+        } else {
+            p.error("expected a pattern after `|`");
+            break;
+        }
+    }
+    pat = marker.completed(p, MySyntaxKind::PATTERN_OR);
+    Some(pat)
+}
+
+fn alias_pattern(p: &mut Parser) -> Option<MarkerClosed> {
+    if p.at(T![ident]) && p.nth(1) == T![@] {
+        let marker = p.open();
+        p.expect(T![ident]);
+        p.expect(T![@]);
+        if let Some(_alias_depth) = p.enter_pattern()
+            && alias_pattern(p).is_none()
+        {
+            p.error("expected a pattern after `@`");
+        }
+        return Some(p.close(marker, MySyntaxKind::PATTERN_ALIAS));
+    }
+    range_pattern(p)
+}
+
+fn range_pattern(p: &mut Parser) -> Option<MarkerClosed> {
+    let pat = simple_pattern(p)?;
+    if !matches!(p.peek(), T![..] | T![..=]) {
+        return Some(pat);
+    }
+
+    let marker = pat.precede(p);
+    p.advance();
+    if simple_pattern(p).is_none() {
+        p.error("expected a range pattern endpoint");
+    }
+    Some(marker.completed(p, MySyntaxKind::PATTERN_RANGE))
 }
 
 fn parse_pattern_list(p: &mut Parser) {
@@ -207,18 +256,15 @@ fn simple_pattern(p: &mut Parser) -> Option<MarkerClosed> {
                 p.close(m, MySyntaxKind::PATTERN_TUPLE)
             }
         }
+        T!['['] => array_pattern(p),
         T![ident] => {
             let m = p.open();
-            // Check if this looks like a simple variable pattern before consuming the path
-            // A variable pattern is a single lowercase identifier with no following `(` or `{`
             let is_simple_var = p.at(T![ident]) && !matches!(p.nth(1), T![::] | T!['('] | T!['{']);
 
             if is_simple_var {
-                // Simple variable pattern - just the identifier
                 p.expect(T![ident]);
                 p.close(m, MySyntaxKind::PATTERN_VARIABLE)
             } else {
-                // Constructor pattern - always use PATH
                 parse_path_always(p);
                 if p.at(T!['(']) {
                     p.expect(T!['(']);
@@ -229,7 +275,6 @@ fn simple_pattern(p: &mut Parser) -> Option<MarkerClosed> {
                     struct_pattern_field_list(p);
                     p.close(m, MySyntaxKind::PATTERN_CONSTR)
                 } else {
-                    // Enum variant without arguments (like `Option::None`)
                     p.close(m, MySyntaxKind::PATTERN_CONSTR)
                 }
             }
@@ -238,12 +283,65 @@ fn simple_pattern(p: &mut Parser) -> Option<MarkerClosed> {
     })
 }
 
+fn array_pattern(p: &mut Parser) -> MarkerClosed {
+    let marker = p.open();
+    p.expect(T!['[']);
+    let mut has_rest = false;
+    while !p.eof() && !p.at(T![']']) {
+        let is_bound_rest = p.at(T![ident]) && p.nth(1) == T![@] && p.nth(2) == T![..];
+        if p.at(T![..]) || is_bound_rest {
+            if has_rest {
+                p.error("array pattern can contain at most one `..`");
+            }
+            rest_pattern(p);
+            has_rest = true;
+        } else if p.at_any(PATTERN_FIRST) {
+            let _ = pattern(p);
+        } else {
+            p.advance_with_error("expected an array pattern element");
+        }
+
+        if p.eat(T![,]) {
+            continue;
+        }
+        if !p.at(T![']']) {
+            p.error("expected `,` or `]` in array pattern");
+            if !p.eof() {
+                p.advance();
+            }
+        }
+    }
+    p.expect(T![']']);
+    p.close(marker, MySyntaxKind::PATTERN_ARRAY)
+}
+
+fn rest_pattern(p: &mut Parser) -> MarkerClosed {
+    let marker = p.open();
+    if p.at(T![ident]) {
+        p.expect(T![ident]);
+        p.expect(T![@]);
+    }
+    p.expect(T![..]);
+    p.close(marker, MySyntaxKind::PATTERN_REST)
+}
+
 fn struct_pattern_field_list(p: &mut Parser) {
     assert!(p.at(T!['{']));
     let m = p.open();
     p.expect(T!['{']);
+    let mut has_rest = false;
     while !p.eof() && !p.at(T!['}']) {
-        if p.at(T![ident]) {
+        if p.at(T![..]) {
+            if has_rest {
+                p.error("struct pattern can contain at most one `..`");
+            }
+            rest_pattern(p);
+            has_rest = true;
+            p.eat(T![,]);
+            if !p.at(T!['}']) {
+                p.error("`..` must be the last item in a struct pattern");
+            }
+        } else if p.at(T![ident]) {
             struct_pattern_field(p);
             p.eat(T![,]);
         } else {

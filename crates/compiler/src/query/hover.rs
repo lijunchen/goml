@@ -12,7 +12,7 @@ use super::{
     context::QueryContext,
     hir_index::{
         ClosureParamIndex, HirResultsIndex, find_mapped_expr_id_from_token,
-        find_mapped_local_id_from_token, find_mapped_pat_id_from_token,
+        find_mapped_local_id_from_token, find_mapped_pat_id_from_token, local_name_range,
     },
     syntax::{path_segments_at_offset, path_segments_at_range, path_segments_from_token},
     typecheck::{Analysis, analyze_for_query_with_overrides},
@@ -73,6 +73,10 @@ pub fn hover_type_with_analysis(
                 return Ok(ty);
             }
 
+            if let Some(ty) = pattern_binder_type(token, path, hir_table, results) {
+                return Ok(ty);
+            }
+
             if let Some(pat_id) = find_mapped_pat_id_from_token(token, &index)
                 && let Some(ty) = results.pat_ty(pat_id)
             {
@@ -115,6 +119,39 @@ pub fn hover_type_with_analysis(
 
         Err("no type information found".to_string())
     })
+}
+
+fn pattern_binder_type(
+    token: &MySyntaxToken,
+    source: &Path,
+    hir_table: &hir::HirTable,
+    results: &TypeckResults,
+) -> Option<String> {
+    for idx in 0..hir_table.pat_count() {
+        let pat_id = hir::PatId {
+            pkg: hir_table.package(),
+            idx: idx as u32,
+        };
+        if hir_table.pat_source(pat_id) != Some(source) {
+            continue;
+        }
+        let (local, astptr) = match hir_table.pat(pat_id) {
+            hir::Pat::PAlias { name, astptr, .. } => (*name, *astptr),
+            hir::Pat::PArray {
+                rest:
+                    Some(hir::ArrayPatRest {
+                        binding: Some(name),
+                        astptr,
+                    }),
+                ..
+            } => (*name, *astptr),
+            _ => continue,
+        };
+        if local_name_range(hir_table, local, astptr) == token.text_range() {
+            return results.local_ty(local).map(|ty| ty.to_pretty(80));
+        }
+    }
+    None
 }
 
 fn syntax_hover(token: &MySyntaxToken) -> Option<String> {

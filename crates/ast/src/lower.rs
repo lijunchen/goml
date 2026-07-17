@@ -1631,8 +1631,12 @@ fn lower_expr_with_args(
                 return None;
             }
 
-            let cond = it
-                .cond()
+            let condition = it.cond();
+            let let_pat = condition
+                .as_ref()
+                .and_then(|cond| cond.pattern())
+                .and_then(|pat| lower_pat(ctx, pat));
+            let cond = condition
                 .and_then(|cond| cond.expr())
                 .and_then(|expr| lower_expr(ctx, expr));
 
@@ -1695,20 +1699,43 @@ fn lower_expr_with_args(
                     }
                 }
                 None => {
-                    ctx.push_error(
-                        Some(it.syntax().text_range()),
-                        "If expression missing else branch",
-                    );
-                    None
+                    if let_pat.is_some() {
+                        Some(ast::Expr::EUnit { astptr })
+                    } else {
+                        ctx.push_error(
+                            Some(it.syntax().text_range()),
+                            "If expression missing else branch",
+                        );
+                        None
+                    }
                 }
             }?;
 
-            Some(ast::Expr::EIf {
-                cond: Box::new(cond),
-                then_branch: Box::new(then_branch),
-                else_branch: Box::new(else_branch),
-                astptr,
-            })
+            if let Some(pat) = let_pat {
+                Some(ast::Expr::EMatch {
+                    expr: Box::new(cond),
+                    arms: vec![
+                        ast::Arm {
+                            pat,
+                            guard: None,
+                            body: then_branch,
+                        },
+                        ast::Arm {
+                            pat: ast::Pat::PWild { astptr },
+                            guard: None,
+                            body: else_branch,
+                        },
+                    ],
+                    astptr,
+                })
+            } else {
+                Some(ast::Expr::EIf {
+                    cond: Box::new(cond),
+                    then_branch: Box::new(then_branch),
+                    else_branch: Box::new(else_branch),
+                    astptr,
+                })
+            }
         }
         cst::Expr::WhileExpr(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
@@ -1720,8 +1747,12 @@ fn lower_expr_with_args(
                 return None;
             }
 
-            let cond = it
-                .cond()
+            let condition = it.cond();
+            let let_pat = condition
+                .as_ref()
+                .and_then(|cond| cond.pattern())
+                .and_then(|pat| lower_pat(ctx, pat));
+            let cond = condition
                 .and_then(|cond| cond.expr())
                 .and_then(|expr| lower_expr(ctx, expr));
 
@@ -1764,11 +1795,38 @@ fn lower_expr_with_args(
                 }
             }?;
 
-            Some(ast::Expr::EWhile {
-                cond: Box::new(cond),
-                body: Box::new(body),
-                astptr,
-            })
+            if let Some(pat) = let_pat {
+                let match_expr = ast::Expr::EMatch {
+                    expr: Box::new(cond),
+                    arms: vec![
+                        ast::Arm {
+                            pat,
+                            guard: None,
+                            body,
+                        },
+                        ast::Arm {
+                            pat: ast::Pat::PWild { astptr },
+                            guard: None,
+                            body: ast::Expr::EBreak { astptr },
+                        },
+                    ],
+                    astptr,
+                };
+                Some(ast::Expr::EWhile {
+                    cond: Box::new(ast::Expr::EBool {
+                        value: true,
+                        astptr,
+                    }),
+                    body: Box::new(match_expr),
+                    astptr,
+                })
+            } else {
+                Some(ast::Expr::EWhile {
+                    cond: Box::new(cond),
+                    body: Box::new(body),
+                    astptr,
+                })
+            }
         }
         cst::Expr::ForExpr(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
@@ -2456,6 +2514,10 @@ fn lower_arg(ctx: &mut LowerCtx, node: cst::Arg) -> Option<ast::Expr> {
 
 fn lower_arm(ctx: &mut LowerCtx, node: cst::MatchArm) -> Option<ast::Arm> {
     let pat = node.pattern().and_then(|pat| lower_pat(ctx, pat))?;
+    let guard = node
+        .guard()
+        .and_then(|guard| guard.expr())
+        .and_then(|expr| lower_expr(ctx, expr));
     let body = if let Some(expr) = node.expr() {
         lower_expr(ctx, expr)
     } else if let Some(block) = support::child::<cst::Block>(node.syntax()) {
@@ -2469,7 +2531,7 @@ fn lower_arm(ctx: &mut LowerCtx, node: cst::MatchArm) -> Option<ast::Arm> {
         ctx.push_error(Some(node.syntax().text_range()), "Match arm has no body");
         None
     }?;
-    Some(ast::Arm { pat, body })
+    Some(ast::Arm { pat, guard, body })
 }
 
 fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
@@ -2704,6 +2766,7 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
                 Some(ast::Pat::PStruct {
                     name,
                     fields,
+                    has_rest: field_list.rest().is_some(),
                     astptr,
                 })
             } else {
@@ -2717,11 +2780,84 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
             }
         }
         cst::Pattern::TuplePat(it) => {
-            let items = it.patterns().flat_map(|pat| lower_pat(ctx, pat)).collect();
+            let mut items = it
+                .patterns()
+                .flat_map(|pat| lower_pat(ctx, pat))
+                .collect::<Vec<_>>();
+            if support::token(it.syntax(), MySyntaxKind::Comma).is_none() && items.len() == 1 {
+                return items.pop();
+            }
             Some(ast::Pat::PTuple {
                 pats: items,
                 astptr: MySyntaxNodePtr::new(it.syntax()),
             })
+        }
+        cst::Pattern::ArrayPat(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
+            let mut prefix = Vec::new();
+            let mut rest = None;
+            let mut suffix = Vec::new();
+            for pat in it.patterns() {
+                if let cst::Pattern::RestPat(rest_pat) = pat {
+                    rest = Some(ast::ArrayPatRest {
+                        binding: rest_pat
+                            .lident()
+                            .map(|name| ast::AstIdent(name.to_string())),
+                        astptr: MySyntaxNodePtr::new(rest_pat.syntax()),
+                    });
+                    continue;
+                }
+                let pat = lower_pat(ctx, pat)?;
+                if rest.is_some() {
+                    suffix.push(pat);
+                } else {
+                    prefix.push(pat);
+                }
+            }
+            Some(ast::Pat::PArray {
+                prefix,
+                rest,
+                suffix,
+                astptr,
+            })
+        }
+        cst::Pattern::AliasPat(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
+            let name = ast::AstIdent(it.lident()?.to_string());
+            let pat = lower_pat(ctx, it.pattern()?)?;
+            Some(ast::Pat::PAlias {
+                name,
+                pat: Box::new(pat),
+                astptr,
+            })
+        }
+        cst::Pattern::OrPat(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
+            let pats = it
+                .patterns()
+                .map(|pat| lower_pat(ctx, pat))
+                .collect::<Option<Vec<_>>>()?;
+            Some(ast::Pat::POr { pats, astptr })
+        }
+        cst::Pattern::RangePat(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
+            let inclusive = it.inclusive();
+            let mut pats = it.patterns();
+            let start = lower_pat(ctx, pats.next()?)?;
+            let end = lower_pat(ctx, pats.next()?)?;
+            Some(ast::Pat::PRange {
+                start: Box::new(start),
+                end: Box::new(end),
+                inclusive,
+                astptr,
+            })
+        }
+        cst::Pattern::RestPat(it) => {
+            ctx.push_error(
+                Some(it.syntax().text_range()),
+                "`..` is only allowed inside an array pattern",
+            );
+            None
         }
         cst::Pattern::WildPat(_) => Some(ast::Pat::PWild {
             astptr: node_astptr,

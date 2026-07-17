@@ -536,20 +536,28 @@ impl Pat {
                         .append(RcDoc::text(")"))
                 }
             }
-            hir::Pat::PStruct { name, fields } => {
-                if fields.is_empty() {
+            hir::Pat::PStruct {
+                name,
+                fields,
+                has_rest,
+            } => {
+                if fields.is_empty() && !has_rest {
                     RcDoc::text(name.display())
                         .append(RcDoc::space())
                         .append(RcDoc::text("{}"))
                 } else {
-                    let fields_doc = RcDoc::intersperse(
-                        fields.iter().map(|(fname, pat)| {
+                    let mut field_docs = fields
+                        .iter()
+                        .map(|(fname, pat)| {
                             RcDoc::text(fname.to_ident_name())
                                 .append(RcDoc::text(": "))
                                 .append(ctx.pat_to_doc(*pat))
-                        }),
-                        RcDoc::text(", "),
-                    );
+                        })
+                        .collect::<Vec<_>>();
+                    if *has_rest {
+                        field_docs.push(RcDoc::text(".."));
+                    }
+                    let fields_doc = RcDoc::intersperse(field_docs, RcDoc::text(", "));
                     RcDoc::text(name.display())
                         .append(RcDoc::space())
                         .append(RcDoc::text("{ "))
@@ -568,6 +576,54 @@ impl Pat {
                     RcDoc::text("(").append(items_doc).append(RcDoc::text(")"))
                 }
             }
+            hir::Pat::PArray {
+                prefix,
+                rest,
+                suffix,
+            } => {
+                let mut items = prefix
+                    .iter()
+                    .map(|pat| ctx.pat_to_doc(*pat))
+                    .collect::<Vec<_>>();
+                if let Some(rest) = rest {
+                    let text = rest
+                        .binding
+                        .map(|name| format!("{} @ ..", name.to_debug_string()))
+                        .unwrap_or_else(|| "..".to_string());
+                    items.push(RcDoc::text(text));
+                }
+                items.extend(suffix.iter().map(|pat| ctx.pat_to_doc(*pat)));
+                RcDoc::text("[")
+                    .append(RcDoc::intersperse(items, RcDoc::text(", ")))
+                    .append(RcDoc::text("]"))
+            }
+            hir::Pat::PAlias { name, pat, .. } => {
+                let table = ctx
+                    .hir_table
+                    .package(pat.pkg)
+                    .unwrap_or_else(|| panic!("missing HIR table for package {:?}", pat.pkg));
+                let inner = ctx.pat_to_doc(*pat);
+                let inner = if matches!(table.pat(*pat), hir::Pat::POr { .. }) {
+                    RcDoc::text("(").append(inner).append(RcDoc::text(")"))
+                } else {
+                    inner
+                };
+                RcDoc::text(name.to_debug_string())
+                    .append(RcDoc::text(" @ "))
+                    .append(inner)
+            }
+            hir::Pat::POr { pats } => RcDoc::intersperse(
+                pats.iter().map(|pat| ctx.pat_to_doc(*pat)),
+                RcDoc::text(" | "),
+            ),
+            hir::Pat::PRange {
+                start,
+                end,
+                inclusive,
+            } => ctx
+                .pat_to_doc(*start)
+                .append(RcDoc::text(if *inclusive { "..=" } else { ".." }))
+                .append(ctx.pat_to_doc(*end)),
             hir::Pat::PWild => RcDoc::text("_"),
         }
     }
@@ -581,7 +637,16 @@ impl Pat {
 
 impl Arm {
     pub fn to_doc<'a>(&'a self, ctx: &'a HirPrintCtx<'a>) -> RcDoc<'a, ()> {
+        let guard = self
+            .guard
+            .map(|guard| {
+                RcDoc::space()
+                    .append(RcDoc::text("if "))
+                    .append(ctx.expr_to_doc(guard))
+            })
+            .unwrap_or_else(RcDoc::nil);
         ctx.pat_to_doc(self.pat)
+            .append(guard)
             .append(RcDoc::space())
             .append(RcDoc::text("=>"))
             .append(RcDoc::space())

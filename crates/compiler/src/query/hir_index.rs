@@ -5,7 +5,7 @@ use std::{
 
 use cst::cst::CstNode;
 use parser::syntax::{MySyntaxNodePtr, MySyntaxToken};
-use text_size::TextRange;
+use text_size::{TextRange, TextSize};
 
 use crate::hir;
 
@@ -199,11 +199,35 @@ pub(crate) fn local_def_range_from_pats(
             pkg: hir_table.package(),
             idx: idx as u32,
         };
-        if let hir::Pat::PVar { name, astptr } = hir_table.pat(pat_id)
-            && *name == local
-        {
-            return Some(astptr.text_range());
+        match hir_table.pat(pat_id) {
+            hir::Pat::PVar { name, astptr } if *name == local => {
+                return Some(astptr.text_range());
+            }
+            hir::Pat::PAlias { name, astptr, .. } if *name == local => {
+                return Some(local_name_range(hir_table, local, *astptr));
+            }
+            hir::Pat::PArray {
+                rest:
+                    Some(hir::ArrayPatRest {
+                        binding: Some(name),
+                        astptr,
+                    }),
+                ..
+            } if *name == local => {
+                return Some(local_name_range(hir_table, local, *astptr));
+            }
+            _ => {}
         }
     }
     None
+}
+
+pub(crate) fn local_name_range(
+    hir_table: &hir::HirTable,
+    local: hir::LocalId,
+    astptr: MySyntaxNodePtr,
+) -> TextRange {
+    let start = astptr.text_range().start();
+    let len = TextSize::from(hir_table.local_hint(local).len() as u32);
+    TextRange::new(start, start + len)
 }

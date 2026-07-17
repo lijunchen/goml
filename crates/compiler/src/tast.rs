@@ -583,7 +583,15 @@ pub struct ExprStmt {
 #[derive(Debug, Clone)]
 pub struct Arm {
     pub pat: Pat,
+    pub guard: Option<Expr>,
     pub body: Expr,
+}
+
+#[derive(Debug, Clone)]
+pub struct ArrayPatRest {
+    pub binding: Option<String>,
+    pub ty: Ty,
+    pub astptr: Option<MySyntaxNodePtr>,
 }
 
 #[derive(Debug, Clone)]
@@ -609,6 +617,31 @@ pub enum Pat {
         ty: Ty,
         astptr: Option<MySyntaxNodePtr>,
     },
+    PArray {
+        prefix: Vec<Pat>,
+        rest: Option<ArrayPatRest>,
+        suffix: Vec<Pat>,
+        ty: Ty,
+        astptr: Option<MySyntaxNodePtr>,
+    },
+    PAlias {
+        name: String,
+        pat: Box<Pat>,
+        ty: Ty,
+        astptr: Option<MySyntaxNodePtr>,
+    },
+    POr {
+        pats: Vec<Pat>,
+        ty: Ty,
+        astptr: Option<MySyntaxNodePtr>,
+    },
+    PRange {
+        start: Prim,
+        end: Prim,
+        inclusive: bool,
+        ty: Ty,
+        astptr: Option<MySyntaxNodePtr>,
+    },
     PWild {
         ty: Ty,
         astptr: Option<MySyntaxNodePtr>,
@@ -622,6 +655,10 @@ impl Pat {
             Self::PPrim { ty, .. } => ty.clone(),
             Self::PConstr { ty, .. } => ty.clone(),
             Self::PTuple { ty, .. } => ty.clone(),
+            Self::PArray { ty, .. } => ty.clone(),
+            Self::PAlias { ty, .. } => ty.clone(),
+            Self::POr { ty, .. } => ty.clone(),
+            Self::PRange { ty, .. } => ty.clone(),
             Self::PWild { ty, .. } => ty.clone(),
         }
     }

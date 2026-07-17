@@ -18,6 +18,7 @@ pub struct TypeckResults {
     binary_res: Vec<Option<tast::BinaryResolution>>,
     try_elab: Vec<Option<TryElab>>,
     for_elab: Vec<Option<ForElab>>,
+    match_exhaustive: Vec<Option<bool>>,
     coercions: Vec<Vec<Coercion>>,
     closure_captures: Vec<Option<Vec<(String, tast::Ty)>>>,
 }
@@ -101,6 +102,12 @@ impl TypeckResults {
         self.for_elab
             .get(expr.idx as usize)
             .and_then(|e| e.as_ref())
+    }
+
+    pub fn match_exhaustive(&self, expr: hir::ExprId) -> Option<bool> {
+        self.match_exhaustive
+            .get(expr.idx as usize)
+            .and_then(|value| *value)
     }
 
     pub fn coercions(&self, expr: hir::ExprId) -> &[Coercion] {
@@ -273,6 +280,7 @@ impl TypeckResultsBuilder {
                 binary_res: vec![None; expr_count],
                 try_elab: vec![None; expr_count],
                 for_elab: vec![None; expr_count],
+                match_exhaustive: vec![None; expr_count],
                 coercions: vec![Vec::new(); expr_count],
                 closure_captures: vec![None; expr_count],
             },
@@ -362,6 +370,12 @@ impl TypeckResultsBuilder {
     pub fn record_for_elab(&mut self, expr: hir::ExprId, elab: ForElab) {
         if let Some(slot) = self.results.for_elab.get_mut(expr.idx as usize) {
             *slot = Some(elab);
+        }
+    }
+
+    pub fn record_match_exhaustive(&mut self, expr: hir::ExprId, exhaustive: bool) {
+        if let Some(slot) = self.results.match_exhaustive.get_mut(expr.idx as usize) {
+            *slot = Some(exhaustive);
         }
     }
 

@@ -8,6 +8,7 @@ use crate::typer::results::TypeckResultsBuilder;
 mod check;
 mod literals;
 mod localenv;
+mod match_analysis;
 mod member_lookup;
 pub mod name_resolution;
 mod obligations;

@@ -222,3 +222,102 @@ pub fn ebool(value: bool) -> Expr {
         ty: Ty::TBool,
     }
 }
+
+pub fn verify_let_types(file: &File) -> Vec<String> {
+    let mut errors = Vec::new();
+    for function in &file.toplevels {
+        verify_block_let_types(&function.body, &mut errors);
+    }
+    errors
+}
+
+fn verify_block_let_types(block: &Block, errors: &mut Vec<String>) {
+    for stmt in &block.stmts {
+        let value_ty = stmt.value.get_ty();
+        if stmt.ty != value_ty {
+            errors.push(format!(
+                "let {} has declared type {:?}, but its value has type {:?}",
+                stmt.name, stmt.ty, value_ty
+            ));
+        }
+        verify_expr_let_types(&stmt.value, errors);
+    }
+    if let Some(tail) = &block.tail {
+        verify_expr_let_types(tail, errors);
+    }
+}
+
+fn verify_expr_list_let_types(exprs: &[Expr], errors: &mut Vec<String>) {
+    for expr in exprs {
+        verify_expr_let_types(expr, errors);
+    }
+}
+
+fn verify_expr_let_types(expr: &Expr, errors: &mut Vec<String>) {
+    match expr {
+        Expr::EVar { .. }
+        | Expr::ECallable { .. }
+        | Expr::EPrim { .. }
+        | Expr::EBreak { .. }
+        | Expr::EContinue { .. } => {}
+        Expr::EConstr { args, .. }
+        | Expr::ETuple { items: args, .. }
+        | Expr::EArray { items: args, .. } => verify_expr_list_let_types(args, errors),
+        Expr::EClosure { body, .. }
+        | Expr::EGo { expr: body, .. }
+        | Expr::EConstrGet { expr: body, .. }
+        | Expr::EUnary { expr: body, .. }
+        | Expr::ECast { expr: body, .. }
+        | Expr::EToDyn { expr: body, .. }
+        | Expr::EProj { tuple: body, .. } => verify_expr_let_types(body, errors),
+        Expr::EBlock { block, .. } => verify_block_let_types(block, errors),
+        Expr::EMatch {
+            expr,
+            arms,
+            default,
+            ..
+        } => {
+            verify_expr_let_types(expr, errors);
+            for arm in arms {
+                verify_expr_let_types(&arm.lhs, errors);
+                verify_expr_let_types(&arm.body, errors);
+            }
+            if let Some(default) = default {
+                verify_expr_let_types(default, errors);
+            }
+        }
+        Expr::EIf {
+            cond,
+            then_branch,
+            else_branch,
+            ..
+        } => {
+            verify_expr_let_types(cond, errors);
+            verify_expr_let_types(then_branch, errors);
+            verify_expr_let_types(else_branch, errors);
+        }
+        Expr::EWhile { cond, body, .. }
+        | Expr::EBinary {
+            lhs: cond,
+            rhs: body,
+            ..
+        } => {
+            verify_expr_let_types(cond, errors);
+            verify_expr_let_types(body, errors);
+        }
+        Expr::EReturn { expr, .. } => {
+            if let Some(expr) = expr {
+                verify_expr_let_types(expr, errors);
+            }
+        }
+        Expr::EAssign { value, .. } => verify_expr_let_types(value, errors),
+        Expr::ECall { func, args, .. } => {
+            verify_expr_let_types(func, errors);
+            verify_expr_list_let_types(args, errors);
+        }
+        Expr::EDynCall { receiver, args, .. } | Expr::ETraitCall { receiver, args, .. } => {
+            verify_expr_let_types(receiver, errors);
+            verify_expr_list_let_types(args, errors);
+        }
+    }
+}

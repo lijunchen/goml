@@ -473,6 +473,7 @@ fn build_expr(
                 .iter()
                 .map(|arm| tast::Arm {
                     pat: build_pat(hir_table, results, arm.pat),
+                    guard: arm.guard.map(|guard| build_expr(hir_table, results, guard)),
                     body: build_expr(hir_table, results, arm.body),
                 })
                 .collect::<Vec<_>>();
@@ -752,6 +753,7 @@ fn build_try_expr(
                         ty: inner_ty.clone(),
                         astptr: None,
                     },
+                    guard: None,
                     body: tast::Expr::EVar {
                         name: value_name,
                         ty: ok_ty.clone(),
@@ -769,6 +771,7 @@ fn build_try_expr(
                         ty: inner_ty,
                         astptr: None,
                     },
+                    guard: None,
                     body: tast::Expr::EReturn {
                         expr: Some(Box::new(tast::Expr::EConstr {
                             constructor: enum_constructor(
@@ -816,6 +819,7 @@ fn build_try_expr(
                         ty: inner_ty.clone(),
                         astptr: None,
                     },
+                    guard: None,
                     body: tast::Expr::EVar {
                         name: value_name,
                         ty: ok_ty.clone(),
@@ -829,6 +833,7 @@ fn build_try_expr(
                         ty: inner_ty,
                         astptr: None,
                     },
+                    guard: None,
                     body: tast::Expr::EReturn {
                         expr: Some(Box::new(tast::Expr::EConstr {
                             constructor: enum_constructor(
@@ -1347,6 +1352,89 @@ fn build_pat(hir_table: &hir::HirTable, results: &TypeckResults, pat_id: hir::Pa
                 .collect::<Vec<_>>();
             let ty = results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TUnit);
             tast::Pat::PTuple { items, ty, astptr }
+        }
+        hir::Pat::PArray {
+            prefix,
+            rest,
+            suffix,
+        } => {
+            let prefix = prefix
+                .iter()
+                .map(|pat| build_pat(hir_table, results, *pat))
+                .collect::<Vec<_>>();
+            let suffix = suffix
+                .iter()
+                .map(|pat| build_pat(hir_table, results, *pat))
+                .collect::<Vec<_>>();
+            let ty = results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TUnit);
+            let rest = rest.map(|rest| {
+                let rest_ty = rest
+                    .binding
+                    .and_then(|name| results.local_ty(name).cloned())
+                    .unwrap_or_else(|| match &ty {
+                        tast::Ty::TArray { len, elem } => tast::Ty::TArray {
+                            len: len.saturating_sub(prefix.len() + suffix.len()),
+                            elem: elem.clone(),
+                        },
+                        tast::Ty::TVec { elem } | tast::Ty::TSlice { elem } => {
+                            tast::Ty::TSlice { elem: elem.clone() }
+                        }
+                        _ => tast::Ty::TUnit,
+                    });
+                tast::ArrayPatRest {
+                    binding: rest.binding.map(|name| hir_table.local_ident_name(name)),
+                    ty: rest_ty,
+                    astptr: Some(rest.astptr),
+                }
+            });
+            tast::Pat::PArray {
+                prefix,
+                rest,
+                suffix,
+                ty,
+                astptr,
+            }
+        }
+        hir::Pat::PAlias { name, pat, .. } => {
+            let ty = results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TUnit);
+            tast::Pat::PAlias {
+                name: hir_table.local_ident_name(name),
+                pat: Box::new(build_pat(hir_table, results, pat)),
+                ty,
+                astptr,
+            }
+        }
+        hir::Pat::POr { pats } => {
+            let ty = results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TUnit);
+            tast::Pat::POr {
+                pats: pats
+                    .iter()
+                    .map(|pat| build_pat(hir_table, results, *pat))
+                    .collect(),
+                ty,
+                astptr,
+            }
+        }
+        hir::Pat::PRange {
+            start,
+            end,
+            inclusive,
+        } => {
+            let start = match build_pat(hir_table, results, start) {
+                tast::Pat::PPrim { value, .. } => value,
+                _ => Prim::unit(),
+            };
+            let end = match build_pat(hir_table, results, end) {
+                tast::Pat::PPrim { value, .. } => value,
+                _ => Prim::unit(),
+            };
+            tast::Pat::PRange {
+                start,
+                end,
+                inclusive,
+                ty: results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TUnit),
+                astptr,
+            }
         }
         hir::Pat::PWild => tast::Pat::PWild {
             ty: results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TUnit),

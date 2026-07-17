@@ -646,6 +646,51 @@ impl Pat {
                     RcDoc::text("(").append(items_doc).append(RcDoc::text(")"))
                 }
             }
+            Pat::PArray {
+                prefix,
+                rest,
+                suffix,
+                ..
+            } => {
+                let mut items = prefix
+                    .iter()
+                    .map(|pat| pat.to_doc(genv))
+                    .collect::<Vec<_>>();
+                if let Some(rest) = rest {
+                    items.push(RcDoc::text(
+                        rest.binding
+                            .as_ref()
+                            .map(|name| format!("{name} @ .."))
+                            .unwrap_or_else(|| "..".to_string()),
+                    ));
+                }
+                items.extend(suffix.iter().map(|pat| pat.to_doc(genv)));
+                RcDoc::text("[")
+                    .append(RcDoc::intersperse(items, RcDoc::text(", ")))
+                    .append(RcDoc::text("]"))
+            }
+            Pat::PAlias { name, pat, .. } => {
+                let inner = pat.to_doc(genv);
+                let inner = if matches!(pat.as_ref(), Pat::POr { .. }) {
+                    RcDoc::text("(").append(inner).append(RcDoc::text(")"))
+                } else {
+                    inner
+                };
+                RcDoc::text(name.clone())
+                    .append(RcDoc::text(" @ "))
+                    .append(inner)
+            }
+            Pat::POr { pats, .. } => {
+                RcDoc::intersperse(pats.iter().map(|pat| pat.to_doc(genv)), RcDoc::text(" | "))
+            }
+            Pat::PRange {
+                start,
+                end,
+                inclusive,
+                ..
+            } => RcDoc::text(start.to_string())
+                .append(RcDoc::text(if *inclusive { "..=" } else { ".." }))
+                .append(RcDoc::text(end.to_string())),
             Pat::PWild { ty, .. } => RcDoc::text("_")
                 .append(RcDoc::text(" : "))
                 .append(ty.to_doc()),
@@ -660,8 +705,18 @@ impl Pat {
 
 impl crate::tast::Arm {
     pub fn to_doc(&self, genv: &GlobalTypeEnv) -> RcDoc<'_, ()> {
+        let guard = self
+            .guard
+            .as_ref()
+            .map(|guard| {
+                RcDoc::space()
+                    .append(RcDoc::text("if "))
+                    .append(guard.to_doc(genv))
+            })
+            .unwrap_or_else(RcDoc::nil);
         self.pat
             .to_doc(genv)
+            .append(guard)
             .append(RcDoc::space())
             .append(RcDoc::text("=>"))
             .append(RcDoc::space())

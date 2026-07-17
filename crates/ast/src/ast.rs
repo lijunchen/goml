@@ -487,7 +487,14 @@ pub enum Expr {
 #[derive(Debug, Clone)]
 pub struct Arm {
     pub pat: Pat,
+    pub guard: Option<Expr>,
     pub body: Expr,
+}
+
+#[derive(Debug, Clone)]
+pub struct ArrayPatRest {
+    pub binding: Option<AstIdent>,
+    pub astptr: MySyntaxNodePtr,
 }
 
 #[derive(Debug, Clone)]
@@ -567,10 +574,32 @@ pub enum Pat {
     PStruct {
         name: Path,
         fields: Vec<(AstIdent, Pat)>,
+        has_rest: bool,
         astptr: MySyntaxNodePtr,
     },
     PTuple {
         pats: Vec<Pat>,
+        astptr: MySyntaxNodePtr,
+    },
+    PArray {
+        prefix: Vec<Pat>,
+        rest: Option<ArrayPatRest>,
+        suffix: Vec<Pat>,
+        astptr: MySyntaxNodePtr,
+    },
+    PAlias {
+        name: AstIdent,
+        pat: Box<Pat>,
+        astptr: MySyntaxNodePtr,
+    },
+    POr {
+        pats: Vec<Pat>,
+        astptr: MySyntaxNodePtr,
+    },
+    PRange {
+        start: Box<Pat>,
+        end: Box<Pat>,
+        inclusive: bool,
         astptr: MySyntaxNodePtr,
     },
     PWild {

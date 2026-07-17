@@ -19,6 +19,7 @@ use crate::typer::literals::{
     parse_integer_literal_with_ty,
 };
 use crate::typer::localenv::LocalTypeEnv;
+use crate::typer::match_analysis;
 use crate::typer::member_lookup::{
     lookup_trait_method_candidates, lookup_trait_method_from_type_name, report_ambiguous_method,
     report_method_not_found, resolve_explicit_trait_args, resolve_field_ty_eager,
@@ -43,6 +44,20 @@ use crate::{
         ObligationCauseKind, OperationGoal, Predicate, ProjectionGoal, TraitGoal, Typer,
     },
 };
+
+fn tast_pat_range(pat: &tast::Pat) -> Option<TextRange> {
+    match pat {
+        tast::Pat::PVar { astptr, .. }
+        | tast::Pat::PPrim { astptr, .. }
+        | tast::Pat::PConstr { astptr, .. }
+        | tast::Pat::PTuple { astptr, .. }
+        | tast::Pat::PArray { astptr, .. }
+        | tast::Pat::PAlias { astptr, .. }
+        | tast::Pat::POr { astptr, .. }
+        | tast::Pat::PRange { astptr, .. }
+        | tast::Pat::PWild { astptr, .. } => astptr.map(|ptr| ptr.text_range()),
+    }
+}
 
 #[derive(Clone, Copy)]
 enum ArrayAssignRoot {
@@ -533,6 +548,7 @@ impl Typer {
                 genv,
                 local_env,
                 diagnostics,
+                e,
                 expr,
                 &arms,
                 self.hir_table.expr_ptr(e),
@@ -823,15 +839,27 @@ impl Typer {
                 for arm in arms.iter() {
                     local_env.push_scope();
                     let arm_tast = self.check_pat(genv, local_env, diagnostics, arm.pat, &expr_ty);
+                    let guard_tast = arm.guard.map(|guard| {
+                        self.check_expr(genv, local_env, diagnostics, guard, &tast::Ty::TBool)
+                    });
                     let arm_body_tast =
                         self.check_expr(genv, local_env, diagnostics, arm.body, expected);
                     local_env.pop_scope(diagnostics);
 
                     arms_tast.push(tast::Arm {
                         pat: arm_tast,
+                        guard: guard_tast,
                         body: arm_body_tast,
                     });
                 }
+                self.analyze_match(
+                    genv,
+                    diagnostics,
+                    e,
+                    &expr_ty,
+                    &arms_tast,
+                    self.hir_table.expr_ptr(e),
+                );
                 tast::Expr::EMatch {
                     expr: Box::new(expr_tast),
                     arms: arms_tast,
@@ -1426,7 +1454,7 @@ impl Typer {
         };
 
         let pat_tast = self.check_pat(genv, local_env, diagnostics, stmt.pat, &value_ty);
-        self.check_irrefutable_let_pattern(diagnostics, stmt.pat);
+        self.check_irrefutable_let_pattern(genv, diagnostics, stmt.pat, &pat_tast);
         tast::LetStmt {
             is_mut: stmt.is_mut,
             pat: pat_tast,
@@ -1612,13 +1640,11 @@ impl Typer {
                 ..
             } => self.expr_always_returns(*then_branch) && self.expr_always_returns(*else_branch),
             hir::Expr::EMatch { arms, .. } => {
-                let has_catch_all = arms.iter().any(|arm| {
-                    matches!(
-                        self.hir_table.pat(arm.pat),
-                        hir::Pat::PWild | hir::Pat::PVar { .. }
-                    )
-                });
-                has_catch_all && arms.iter().all(|arm| self.expr_always_returns(arm.body))
+                self.results
+                    .results()
+                    .match_exhaustive(expr_id)
+                    .unwrap_or(false)
+                    && arms.iter().all(|arm| self.expr_always_returns(arm.body))
             }
             _ => false,
         }
@@ -1688,13 +1714,19 @@ impl Typer {
                     && self.expr_always_exits_loop_control(*else_branch)
             }
             hir::Expr::EMatch { arms, .. } => {
-                let has_catch_all = arms.iter().any(|arm| {
-                    matches!(
-                        self.hir_table.pat(arm.pat),
-                        hir::Pat::PWild | hir::Pat::PVar { .. }
-                    )
-                });
-                has_catch_all
+                let exhaustive = self
+                    .results
+                    .results()
+                    .match_exhaustive(expr_id)
+                    .unwrap_or_else(|| {
+                        arms.iter().any(|arm| {
+                            matches!(
+                                self.hir_table.pat(arm.pat),
+                                hir::Pat::PWild | hir::Pat::PVar { .. }
+                            )
+                        })
+                    });
+                exhaustive
                     && arms
                         .iter()
                         .all(|arm| self.expr_always_exits_loop_control(arm.body))
@@ -1705,11 +1737,13 @@ impl Typer {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn infer_match_expr(
         &mut self,
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
+        match_expr: hir::ExprId,
         expr: hir::ExprId,
         arms: &[hir::Arm],
         astptr: Option<MySyntaxNodePtr>,
@@ -1728,6 +1762,9 @@ impl Typer {
         for arm in arms.iter() {
             local_env.push_scope();
             let arm_tast = self.check_pat(genv, local_env, diagnostics, arm.pat, &expr_ty);
+            let guard_tast = arm.guard.map(|guard| {
+                self.check_expr(genv, local_env, diagnostics, guard, &tast::Ty::TBool)
+            });
             let arm_exits = self.expr_always_exits_loop_control(arm.body);
             let mut arm_body_tast = self.infer_expr(genv, local_env, diagnostics, arm.body);
             local_env.pop_scope(diagnostics);
@@ -1745,9 +1782,11 @@ impl Typer {
 
             arms_tast.push(tast::Arm {
                 pat: arm_tast,
+                guard: guard_tast,
                 body: arm_body_tast,
             });
         }
+        self.analyze_match(genv, diagnostics, match_expr, &expr_ty, &arms_tast, astptr);
         tast::Expr::EMatch {
             expr: Box::new(expr_tast),
             arms: arms_tast,
@@ -1757,6 +1796,159 @@ impl Typer {
                 tast::Ty::TUnit
             },
             astptr,
+        }
+    }
+
+    fn analyze_match(
+        &mut self,
+        genv: &PackageTypeEnv,
+        diagnostics: &mut Diagnostics,
+        match_expr: hir::ExprId,
+        scrutinee_ty: &tast::Ty,
+        arms: &[tast::Arm],
+        astptr: Option<MySyntaxNodePtr>,
+    ) {
+        let scrutinee_ty = self.norm(scrutinee_ty);
+        let normalized_arms = arms
+            .iter()
+            .map(|arm| tast::Arm {
+                pat: self.normalize_match_pat(&arm.pat),
+                guard: arm.guard.clone(),
+                body: arm.body.clone(),
+            })
+            .collect::<Vec<_>>();
+        let analysis = match_analysis::analyze(genv, &scrutinee_ty, &normalized_arms);
+        self.results
+            .record_match_exhaustive(match_expr, analysis.exhaustive);
+
+        let match_range = astptr.map(|ptr| ptr.text_range());
+        for (arm, useful) in arms.iter().zip(analysis.useful_arms.iter()) {
+            let arm_range = tast_pat_range(&arm.pat);
+            let synthesized = matches!(&arm.pat, tast::Pat::PWild { .. })
+                && arm_range.is_some()
+                && arm_range == match_range;
+            if !useful && !synthesized {
+                diagnostics.push(
+                    Diagnostic::new(Stage::Typer, Severity::Warning, "Unreachable match arm")
+                        .with_range(arm_range),
+                );
+            }
+        }
+
+        if !analysis.exhaustive {
+            let witnesses = analysis
+                .witnesses
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<_>>();
+            diagnostics.push(
+                Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!(
+                        "non-exhaustive match: missing pattern{} {}",
+                        if witnesses.len() == 1 { "" } else { "s" },
+                        witnesses.join(", ")
+                    ),
+                )
+                .with_range(match_range),
+            );
+        }
+    }
+
+    fn normalize_match_pat(&mut self, pat: &tast::Pat) -> tast::Pat {
+        match pat {
+            tast::Pat::PVar { name, ty, astptr } => tast::Pat::PVar {
+                name: name.clone(),
+                ty: self.norm(ty),
+                astptr: *astptr,
+            },
+            tast::Pat::PPrim { value, ty, astptr } => tast::Pat::PPrim {
+                value: value.clone(),
+                ty: self.norm(ty),
+                astptr: *astptr,
+            },
+            tast::Pat::PConstr {
+                constructor,
+                args,
+                ty,
+                astptr,
+            } => tast::Pat::PConstr {
+                constructor: constructor.clone(),
+                args: args
+                    .iter()
+                    .map(|arg| self.normalize_match_pat(arg))
+                    .collect(),
+                ty: self.norm(ty),
+                astptr: *astptr,
+            },
+            tast::Pat::PTuple { items, ty, astptr } => tast::Pat::PTuple {
+                items: items
+                    .iter()
+                    .map(|item| self.normalize_match_pat(item))
+                    .collect(),
+                ty: self.norm(ty),
+                astptr: *astptr,
+            },
+            tast::Pat::PArray {
+                prefix,
+                rest,
+                suffix,
+                ty,
+                astptr,
+            } => tast::Pat::PArray {
+                prefix: prefix
+                    .iter()
+                    .map(|pat| self.normalize_match_pat(pat))
+                    .collect(),
+                rest: rest.as_ref().map(|rest| tast::ArrayPatRest {
+                    binding: rest.binding.clone(),
+                    ty: self.norm(&rest.ty),
+                    astptr: rest.astptr,
+                }),
+                suffix: suffix
+                    .iter()
+                    .map(|pat| self.normalize_match_pat(pat))
+                    .collect(),
+                ty: self.norm(ty),
+                astptr: *astptr,
+            },
+            tast::Pat::PAlias {
+                name,
+                pat,
+                ty,
+                astptr,
+            } => tast::Pat::PAlias {
+                name: name.clone(),
+                pat: Box::new(self.normalize_match_pat(pat)),
+                ty: self.norm(ty),
+                astptr: *astptr,
+            },
+            tast::Pat::POr { pats, ty, astptr } => tast::Pat::POr {
+                pats: pats
+                    .iter()
+                    .map(|pat| self.normalize_match_pat(pat))
+                    .collect(),
+                ty: self.norm(ty),
+                astptr: *astptr,
+            },
+            tast::Pat::PRange {
+                start,
+                end,
+                inclusive,
+                ty,
+                astptr,
+            } => tast::Pat::PRange {
+                start: start.clone(),
+                end: end.clone(),
+                inclusive: *inclusive,
+                ty: self.norm(ty),
+                astptr: *astptr,
+            },
+            tast::Pat::PWild { ty, astptr } => tast::Pat::PWild {
+                ty: self.norm(ty),
+                astptr: *astptr,
+            },
         }
     }
 
@@ -1945,7 +2137,7 @@ impl Typer {
 
         local_env.push_scope();
         let pat_tast = self.check_pat(genv, local_env, diagnostics, pat, &item_ty);
-        self.check_irrefutable_for_pattern(diagnostics, pat);
+        self.check_irrefutable_for_pattern(genv, diagnostics, pat, &pat_tast);
         let saved_loop_control_context = self.loop_control_context;
         self.loop_control_context = LoopControlContext::Allowed;
         let body_tast = self.infer_expr(genv, local_env, diagnostics, body);

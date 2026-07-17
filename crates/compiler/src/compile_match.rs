@@ -130,7 +130,7 @@ fn match_result_ty(rows: &[Row], expected_ty: &Ty) -> Ty {
 
 fn make_rows(name: &str, arms: &[Arm]) -> Vec<Row> {
     let mut result = Vec::new();
-    for Arm { pat, body } in arms.iter() {
+    for Arm { pat, body, .. } in arms.iter() {
         result.push(Row {
             columns: vec![Column {
                 var: name.to_string(),
@@ -297,6 +297,10 @@ fn pat_range(pat: &Pat) -> Option<TextRange> {
         | Pat::PPrim { astptr, .. }
         | Pat::PConstr { astptr, .. }
         | Pat::PTuple { astptr, .. }
+        | Pat::PArray { astptr, .. }
+        | Pat::PAlias { astptr, .. }
+        | Pat::POr { astptr, .. }
+        | Pat::PRange { astptr, .. }
         | Pat::PWild { astptr, .. } => astptr.as_ref().map(|ptr| ptr.text_range()),
     }
 }
@@ -908,9 +912,7 @@ fn compile_constructor_cases(
     mut cases: Vec<ConstructorCase>,
     ty: &Ty,
     match_range: Option<TextRange>,
-    variant_names: &[String],
 ) -> Vec<core::Arm> {
-    let mut has_wildcard = false;
     for mut row in rows {
         if let Some(col) = row.remove_column(&bvar.name) {
             let col_range = pat_range(&col.pat).or(match_range);
@@ -927,7 +929,6 @@ fn compile_constructor_cases(
                         "expected enum constructor while compiling match arms",
                         col_range,
                     );
-                    has_wildcard = true;
                     for ConstructorCase { rows, .. } in &mut cases {
                         rows.push(row.clone());
                     }
@@ -943,7 +944,6 @@ fn compile_constructor_cases(
                         ),
                         col_range,
                     );
-                    has_wildcard = true;
                     for ConstructorCase { rows, .. } in &mut cases {
                         rows.push(row.clone());
                     }
@@ -979,34 +979,14 @@ fn compile_constructor_cases(
                     "expected constructor pattern while compiling enum match",
                     col_range,
                 );
-                has_wildcard = true;
                 for ConstructorCase { rows, .. } in &mut cases {
                     rows.push(row.clone());
                 }
             }
         } else {
-            has_wildcard = true;
             for ConstructorCase { rows, .. } in &mut cases {
                 rows.push(row.clone());
             }
-        }
-    }
-
-    if !has_wildcard {
-        let missing: Vec<&str> = cases
-            .iter()
-            .enumerate()
-            .filter(|(_, case)| case.rows.is_empty())
-            .map(|(i, _)| variant_names[i].as_str())
-            .collect();
-
-        if !missing.is_empty() {
-            let message = format!(
-                "non-exhaustive match: missing pattern{} {}",
-                if missing.len() > 1 { "s" } else { "" },
-                missing.join(", ")
-            );
-            push_compile_error(diagnostics, message, match_range);
         }
     }
 
@@ -1055,12 +1035,6 @@ fn compile_enum_case(
         subst.insert(param.0.clone(), arg.clone());
     }
 
-    let variant_names: Vec<String> = tydef
-        .variants
-        .iter()
-        .map(|(variant, _)| variant.0.clone())
-        .collect();
-
     let cases: Vec<ConstructorCase> = tydef
         .variants
         .iter()
@@ -1096,7 +1070,7 @@ fn compile_enum_case(
                         field_index,
                         ty: var.ty.clone(),
                     },
-                    ty: ty.clone(),
+                    ty: var.ty.clone(),
                 })
                 .collect::<Vec<_>>()
         })
@@ -1111,7 +1085,6 @@ fn compile_enum_case(
         cases,
         ty,
         match_range,
-        &variant_names,
     );
 
     let mut new_arms = vec![];
@@ -1239,7 +1212,7 @@ fn compile_struct_case(
                 field_index,
                 ty: var.ty.clone(),
             },
-            ty: ty.clone(),
+            ty: var.ty.clone(),
         })
         .collect();
     prepend_lets_to_expr(let_stmts, inner, ty)
@@ -1311,7 +1284,7 @@ fn compile_tuple_case(
                 index: i,
                 ty: typs[i].clone(),
             },
-            ty: ty.clone(),
+            ty: typs[i].clone(),
         })
         .collect();
     prepend_lets_to_expr(let_stmts, inner, ty)
@@ -1361,7 +1334,6 @@ fn compile_bool_case(
 
     let mut true_rows = vec![];
     let mut false_rows = vec![];
-    let mut has_wildcard = false;
     for mut r in rows {
         if let Some(col) = r.remove_column(&bvar.name) {
             let col_range = pat_range(&col.pat).or(match_range);
@@ -1379,13 +1351,11 @@ fn compile_bool_case(
                             "expected boolean literal pattern while compiling bool match",
                             col_range,
                         );
-                        has_wildcard = true;
                         true_rows.push(r.clone());
                         false_rows.push(r);
                     }
                 }
                 Pat::PWild { .. } => {
-                    has_wildcard = true;
                     true_rows.push(r.clone());
                     false_rows.push(r);
                 }
@@ -1395,36 +1365,14 @@ fn compile_bool_case(
                         "expected bool pattern while compiling bool match",
                         col_range,
                     );
-                    has_wildcard = true;
                     true_rows.push(r.clone());
                     false_rows.push(r);
                 }
             }
         } else {
-            has_wildcard = true;
             true_rows.push(r.clone());
             false_rows.push(r);
         }
-    }
-
-    let missing_true = true_rows.is_empty();
-    let missing_false = false_rows.is_empty();
-
-    if !has_wildcard && (missing_true || missing_false) {
-        let missing: Vec<&str> = [
-            if missing_true { Some("true") } else { None },
-            if missing_false { Some("false") } else { None },
-        ]
-        .into_iter()
-        .flatten()
-        .collect();
-
-        let message = format!(
-            "non-exhaustive match: missing pattern{}{}",
-            if missing.len() > 1 { "s " } else { " " },
-            missing.join(", ")
-        );
-        push_compile_error(diagnostics, message, match_range);
     }
 
     core::Expr::EMatch {
@@ -1678,27 +1626,6 @@ where
         }
     }
 
-    if default_rows.is_empty() {
-        let type_name = match &literal_ty {
-            Ty::TInt8 => "int8",
-            Ty::TInt16 => "int16",
-            Ty::TInt32 => "int32",
-            Ty::TInt64 => "int64",
-            Ty::TUint8 => "uint8",
-            Ty::TUint16 => "uint16",
-            Ty::TUint32 => "uint32",
-            Ty::TUint64 => "uint64",
-            Ty::TChar => "char",
-            _ => "integer",
-        };
-        let message = format!(
-            "non-exhaustive match on {} literal; add a wildcard arm `_`",
-            type_name
-        );
-        push_compile_error(diagnostics, message, match_range);
-        return emissing(ty);
-    }
-
     let arms = value_rows
         .into_iter()
         .map(|(value, rows)| core::Arm {
@@ -1756,8 +1683,12 @@ fn compile_float_case(
                     ref value, ty: _, ..
                 } => {
                     let bits = match &literal_ty {
-                        Ty::TFloat32 => value.as_float32().map(|v| v.to_bits() as u64),
-                        Ty::TFloat64 => value.as_float64().map(|v| v.to_bits()),
+                        Ty::TFloat32 => value
+                            .as_float32()
+                            .map(|v| if v == 0.0 { 0 } else { v.to_bits() as u64 }),
+                        Ty::TFloat64 => value
+                            .as_float64()
+                            .map(|v| if v == 0.0 { 0 } else { v.to_bits() }),
                         _ => None,
                     };
                     if let Some(key) = bits {
@@ -1809,20 +1740,6 @@ fn compile_float_case(
             fallback_rows.push(row_clone.clone());
             default_rows.push(row);
         }
-    }
-
-    if default_rows.is_empty() {
-        let type_name = match &literal_ty {
-            Ty::TFloat32 => "float32",
-            Ty::TFloat64 => "float64",
-            _ => "float",
-        };
-        let message = format!(
-            "non-exhaustive match on {} literal; add a wildcard arm `_`",
-            type_name
-        );
-        push_compile_error(diagnostics, message, match_range);
-        return emissing(ty);
     }
 
     let arms = value_rows
@@ -1928,12 +1845,6 @@ fn compile_string_case(
         }
     }
 
-    if default_rows.is_empty() {
-        let message = "non-exhaustive match on string literal; add a wildcard arm `_`".to_string();
-        push_compile_error(diagnostics, message, match_range);
-        return emissing(ty);
-    }
-
     let arms = value_rows
         .into_iter()
         .map(|(value, rows)| core::Arm {
@@ -1945,14 +1856,18 @@ fn compile_string_case(
         })
         .collect();
 
-    let default = Some(Box::new(compile_rows(
-        genv,
-        gensym,
-        diagnostics,
-        default_rows,
-        ty,
-        match_range,
-    )));
+    let default = if default_rows.is_empty() {
+        None
+    } else {
+        Some(Box::new(compile_rows(
+            genv,
+            gensym,
+            diagnostics,
+            default_rows,
+            ty,
+            match_range,
+        )))
+    };
 
     core::Expr::EMatch {
         expr: Box::new(bvar.to_core()),
@@ -1960,6 +1875,500 @@ fn compile_string_case(
         default,
         ty: body_ty,
     }
+}
+
+fn pat_requires_ordered_compilation(pat: &Pat) -> bool {
+    match pat {
+        Pat::PArray { .. } | Pat::PAlias { .. } | Pat::POr { .. } | Pat::PRange { .. } => true,
+        Pat::PConstr { args, .. } => args.iter().any(pat_requires_ordered_compilation),
+        Pat::PTuple { items, .. } => items.iter().any(pat_requires_ordered_compilation),
+        Pat::PVar { .. } | Pat::PPrim { .. } | Pat::PWild { .. } => false,
+    }
+}
+
+fn core_prim(value: Prim, ty: &Ty) -> core::Expr {
+    core::Expr::EPrim {
+        value,
+        ty: ty.clone(),
+    }
+}
+
+fn core_binary(op: common_defs::BinaryOp, lhs: core::Expr, rhs: core::Expr, ty: Ty) -> core::Expr {
+    core::Expr::EBinary {
+        op,
+        lhs: Box::new(lhs),
+        rhs: Box::new(rhs),
+        ty,
+    }
+}
+
+fn core_if(
+    cond: core::Expr,
+    then_branch: core::Expr,
+    else_branch: core::Expr,
+    ty: &Ty,
+) -> core::Expr {
+    core::Expr::EIf {
+        cond: Box::new(cond),
+        then_branch: Box::new(then_branch),
+        else_branch: Box::new(else_branch),
+        ty: ty.clone(),
+    }
+}
+
+fn bind_core_value(name: String, value: core::Expr, body: core::Expr, ty: &Ty) -> core::Expr {
+    let value_ty = value.get_ty();
+    prepend_lets_to_expr(
+        vec![core::LetStmt {
+            name,
+            value,
+            ty: value_ty,
+        }],
+        body,
+        ty,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn compile_ordered_pattern(
+    genv: &GlobalTypeEnv,
+    gensym: &Gensym,
+    diagnostics: &mut Diagnostics,
+    pat: &Pat,
+    value: core::Expr,
+    success: core::Expr,
+    failure: core::Expr,
+    result_ty: &Ty,
+    match_range: Option<TextRange>,
+) -> core::Expr {
+    match pat {
+        Pat::PWild { .. } => success,
+        Pat::PVar { name, .. } => bind_core_value(name.clone(), value, success, result_ty),
+        Pat::PAlias { name, pat, ty, .. } => {
+            let alias = core_var(name.clone(), ty);
+            let inner = compile_ordered_pattern(
+                genv,
+                gensym,
+                diagnostics,
+                pat,
+                alias,
+                success,
+                failure,
+                result_ty,
+                match_range,
+            );
+            bind_core_value(name.clone(), value, inner, result_ty)
+        }
+        Pat::POr { pats, .. } => {
+            let mut next = failure;
+            for alternative in pats.iter().rev() {
+                next = compile_ordered_pattern(
+                    genv,
+                    gensym,
+                    diagnostics,
+                    alternative,
+                    value.clone(),
+                    success.clone(),
+                    next,
+                    result_ty,
+                    match_range,
+                );
+            }
+            next
+        }
+        Pat::PPrim {
+            value: expected,
+            ty,
+            ..
+        } => {
+            let cond = core_binary(
+                common_defs::BinaryOp::Eq,
+                value,
+                core_prim(expected.clone(), ty),
+                Ty::TBool,
+            );
+            core_if(cond, success, failure, result_ty)
+        }
+        Pat::PRange {
+            start,
+            end,
+            inclusive,
+            ty,
+            ..
+        } => {
+            let lower = core_binary(
+                common_defs::BinaryOp::GreaterEq,
+                value.clone(),
+                core_prim(start.clone(), ty),
+                Ty::TBool,
+            );
+            let upper = core_binary(
+                if *inclusive {
+                    common_defs::BinaryOp::LessEq
+                } else {
+                    common_defs::BinaryOp::Less
+                },
+                value,
+                core_prim(end.clone(), ty),
+                Ty::TBool,
+            );
+            let upper = core_if(upper, success, failure.clone(), result_ty);
+            core_if(lower, upper, failure, result_ty)
+        }
+        Pat::PTuple { items, ty, .. } => {
+            let Ty::TTuple { typs } = ty else {
+                push_compile_ice(
+                    diagnostics,
+                    "tuple pattern has a non-tuple type during ordered match compilation",
+                    pat_range(pat).or(match_range),
+                );
+                return failure;
+            };
+            let mut next = success;
+            for (index, item) in items.iter().enumerate().rev() {
+                let item_ty = typs.get(index).cloned().unwrap_or_else(|| item.get_ty());
+                let projection = core::Expr::EProj {
+                    tuple: Box::new(value.clone()),
+                    index,
+                    ty: item_ty,
+                };
+                next = compile_ordered_pattern(
+                    genv,
+                    gensym,
+                    diagnostics,
+                    item,
+                    projection,
+                    next,
+                    failure.clone(),
+                    result_ty,
+                    match_range,
+                );
+            }
+            next
+        }
+        Pat::PConstr {
+            constructor,
+            args,
+            ty,
+            ..
+        } => {
+            let mut next = success;
+            for (field_index, arg) in args.iter().enumerate().rev() {
+                let field = core::Expr::EConstrGet {
+                    expr: Box::new(value.clone()),
+                    constructor: constructor.clone(),
+                    field_index,
+                    ty: arg.get_ty(),
+                };
+                next = compile_ordered_pattern(
+                    genv,
+                    gensym,
+                    diagnostics,
+                    arg,
+                    field,
+                    next,
+                    failure.clone(),
+                    result_ty,
+                    match_range,
+                );
+            }
+            if constructor.is_struct() {
+                return next;
+            }
+            let lhs_args = args
+                .iter()
+                .map(|arg| core::Expr::EVar {
+                    name: gensym.gensym("p"),
+                    ty: arg.get_ty(),
+                })
+                .collect();
+            core::Expr::EMatch {
+                expr: Box::new(value),
+                arms: vec![core::Arm {
+                    lhs: core::Expr::EConstr {
+                        constructor: constructor.clone(),
+                        args: lhs_args,
+                        ty: ty.clone(),
+                    },
+                    body: next,
+                }],
+                default: Some(Box::new(failure)),
+                ty: result_ty.clone(),
+            }
+        }
+        Pat::PArray {
+            prefix,
+            rest,
+            suffix,
+            ty,
+            ..
+        } => compile_ordered_array_pattern(
+            genv,
+            gensym,
+            diagnostics,
+            prefix,
+            rest.as_ref(),
+            suffix,
+            ty,
+            value,
+            success,
+            failure,
+            result_ty,
+            match_range,
+        ),
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn compile_ordered_array_pattern(
+    genv: &GlobalTypeEnv,
+    gensym: &Gensym,
+    diagnostics: &mut Diagnostics,
+    prefix: &[Pat],
+    rest: Option<&tast::ArrayPatRest>,
+    suffix: &[Pat],
+    container_ty: &Ty,
+    value: core::Expr,
+    success: core::Expr,
+    failure: core::Expr,
+    result_ty: &Ty,
+    match_range: Option<TextRange>,
+) -> core::Expr {
+    let (elem_ty, fixed_len) = match container_ty {
+        Ty::TArray { len, elem } => (elem.as_ref().clone(), Some(*len)),
+        Ty::TVec { elem } | Ty::TSlice { elem } => (elem.as_ref().clone(), None),
+        _ => {
+            push_compile_ice(
+                diagnostics,
+                "array pattern has an unsupported type during ordered match compilation",
+                match_range,
+            );
+            return failure;
+        }
+    };
+
+    let len_expr = match container_ty {
+        Ty::TArray { len, .. } => core_prim(Prim::Int32 { value: *len as i32 }, &Ty::TInt32),
+        Ty::TVec { .. } => intrinsic_call(
+            IntrinsicId::VecLen,
+            vec![container_ty.clone()],
+            Ty::TInt32,
+            vec![value.clone()],
+        ),
+        Ty::TSlice { .. } => intrinsic_call(
+            IntrinsicId::SliceLen,
+            vec![container_ty.clone()],
+            Ty::TInt32,
+            vec![value.clone()],
+        ),
+        _ => unreachable!(),
+    };
+
+    let mut next = success;
+    if let Some(rest) = rest
+        && let Some(binding) = &rest.binding
+    {
+        let start = core_prim(
+            Prim::Int32 {
+                value: prefix.len() as i32,
+            },
+            &Ty::TInt32,
+        );
+        let end = if suffix.is_empty() {
+            len_expr.clone()
+        } else {
+            core_binary(
+                common_defs::BinaryOp::Sub,
+                len_expr.clone(),
+                core_prim(
+                    Prim::Int32 {
+                        value: suffix.len() as i32,
+                    },
+                    &Ty::TInt32,
+                ),
+                Ty::TInt32,
+            )
+        };
+        let rest_value = match container_ty {
+            Ty::TArray { .. } => {
+                let start_index = prefix.len();
+                let end_index = fixed_len.unwrap_or(0).saturating_sub(suffix.len());
+                let items = (start_index..end_index)
+                    .map(|index| {
+                        compile_index_read_core(
+                            diagnostics,
+                            value.clone(),
+                            container_ty,
+                            core_prim(
+                                Prim::Int32 {
+                                    value: index as i32,
+                                },
+                                &Ty::TInt32,
+                            ),
+                            &elem_ty,
+                            match_range,
+                        )
+                    })
+                    .collect();
+                core::Expr::EArray {
+                    items,
+                    ty: rest.ty.clone(),
+                }
+            }
+            Ty::TVec { .. } => intrinsic_call(
+                IntrinsicId::SliceNew,
+                vec![container_ty.clone(), Ty::TInt32, Ty::TInt32],
+                rest.ty.clone(),
+                vec![value.clone(), start, end],
+            ),
+            Ty::TSlice { .. } => intrinsic_call(
+                IntrinsicId::SliceSub,
+                vec![container_ty.clone(), Ty::TInt32, Ty::TInt32],
+                rest.ty.clone(),
+                vec![value.clone(), start, end],
+            ),
+            _ => unreachable!(),
+        };
+        next = bind_core_value(binding.clone(), rest_value, next, result_ty);
+    }
+
+    let suffix_start = fixed_len.map(|len| len.saturating_sub(suffix.len()));
+    for (offset, pat) in suffix.iter().enumerate().rev() {
+        let index = if let Some(start) = suffix_start {
+            core_prim(
+                Prim::Int32 {
+                    value: (start + offset) as i32,
+                },
+                &Ty::TInt32,
+            )
+        } else {
+            core_binary(
+                common_defs::BinaryOp::Add,
+                core_binary(
+                    common_defs::BinaryOp::Sub,
+                    len_expr.clone(),
+                    core_prim(
+                        Prim::Int32 {
+                            value: suffix.len() as i32,
+                        },
+                        &Ty::TInt32,
+                    ),
+                    Ty::TInt32,
+                ),
+                core_prim(
+                    Prim::Int32 {
+                        value: offset as i32,
+                    },
+                    &Ty::TInt32,
+                ),
+                Ty::TInt32,
+            )
+        };
+        let item = compile_index_read_core(
+            diagnostics,
+            value.clone(),
+            container_ty,
+            index,
+            &elem_ty,
+            match_range,
+        );
+        next = compile_ordered_pattern(
+            genv,
+            gensym,
+            diagnostics,
+            pat,
+            item,
+            next,
+            failure.clone(),
+            result_ty,
+            match_range,
+        );
+    }
+    for (index, pat) in prefix.iter().enumerate().rev() {
+        let item = compile_index_read_core(
+            diagnostics,
+            value.clone(),
+            container_ty,
+            core_prim(
+                Prim::Int32 {
+                    value: index as i32,
+                },
+                &Ty::TInt32,
+            ),
+            &elem_ty,
+            match_range,
+        );
+        next = compile_ordered_pattern(
+            genv,
+            gensym,
+            diagnostics,
+            pat,
+            item,
+            next,
+            failure.clone(),
+            result_ty,
+            match_range,
+        );
+    }
+
+    if fixed_len.is_some() {
+        return next;
+    }
+    let required = prefix.len() + suffix.len();
+    let len_test = core_binary(
+        if rest.is_some() {
+            common_defs::BinaryOp::GreaterEq
+        } else {
+            common_defs::BinaryOp::Eq
+        },
+        len_expr,
+        core_prim(
+            Prim::Int32 {
+                value: required as i32,
+            },
+            &Ty::TInt32,
+        ),
+        Ty::TBool,
+    );
+    core_if(len_test, next, failure, result_ty)
+}
+
+#[allow(clippy::too_many_arguments)]
+fn compile_ordered_match(
+    expr: &Expr,
+    arms: &[Arm],
+    ty: &Ty,
+    genv: &GlobalTypeEnv,
+    gensym: &Gensym,
+    diagnostics: &mut Diagnostics,
+    match_range: Option<TextRange>,
+) -> core::Expr {
+    let value = compile_expr(expr, genv, gensym, diagnostics);
+    let value_ty = value.get_ty();
+    let name = gensym.gensym("match");
+    let variable = core_var(name.clone(), &value_ty);
+    let mut next = emissing(ty);
+    for arm in arms.iter().rev() {
+        let body = compile_expr(&arm.body, genv, gensym, diagnostics);
+        let success = if let Some(guard) = &arm.guard {
+            let guard = compile_expr(guard, genv, gensym, diagnostics);
+            core_if(guard, body, next.clone(), ty)
+        } else {
+            body
+        };
+        next = compile_ordered_pattern(
+            genv,
+            gensym,
+            diagnostics,
+            &arm.pat,
+            variable.clone(),
+            success,
+            next,
+            ty,
+            match_range,
+        );
+    }
+    bind_core_value(name, value, next, ty)
 }
 
 fn compile_rows(
@@ -2331,6 +2740,9 @@ fn collect_mutable_bindings_expr(expr: &Expr, mutable_bindings: &mut HiddenMutCe
         EMatch { expr, arms, .. } => {
             collect_mutable_bindings_expr(expr, mutable_bindings);
             for arm in arms {
+                if let Some(guard) = &arm.guard {
+                    collect_mutable_bindings_expr(guard, mutable_bindings);
+                }
                 collect_mutable_bindings_expr(&arm.body, mutable_bindings);
             }
         }
@@ -2436,6 +2848,9 @@ fn collect_captured_names_expr(expr: &Expr, captured: &mut HashSet<String>) {
         EMatch { expr, arms, .. } => {
             collect_captured_names_expr(expr, captured);
             for arm in arms {
+                if let Some(guard) = &arm.guard {
+                    collect_captured_names_expr(guard, captured);
+                }
                 collect_captured_names_expr(&arm.body, captured);
             }
         }
@@ -2839,7 +3254,11 @@ pub fn compile_file(
             }
         }
     }
-    core::File { toplevels }
+    let file = core::File { toplevels };
+    for error in core::verify_let_types(&file) {
+        push_compile_ice(diagnostics, error, None);
+    }
+    file
 }
 
 fn block_expr_from_parts(stmts: &[tast::Stmt], tail: Option<&Expr>, ty: &Ty) -> Expr {
@@ -3239,9 +3658,32 @@ fn compile_block_parts(
             }
         }
         tast::Stmt::Let(tast::LetStmt { pat, value, .. }) => {
+            let value_ty = value.get_ty();
             let core_value = compile_expr(value, genv, gensym, diagnostics);
             let x = gensym.gensym("mtmp");
             let body_expr = block_expr_from_parts(rest, tail, ty);
+            if pat_requires_ordered_compilation(pat) {
+                let body = compile_expr(&body_expr, genv, gensym, diagnostics);
+                let matched = compile_ordered_pattern(
+                    genv,
+                    gensym,
+                    diagnostics,
+                    pat,
+                    core_var(x.clone(), &value_ty),
+                    body,
+                    emissing(ty),
+                    ty,
+                    pat_range(pat),
+                );
+                return core::Block {
+                    stmts: vec![core::LetStmt {
+                        name: x,
+                        value: core_value,
+                        ty: value_ty,
+                    }],
+                    tail: Some(Box::new(matched)),
+                };
+            }
             let rows = vec![
                 Row {
                     columns: vec![Column {
@@ -3280,7 +3722,7 @@ fn compile_block_parts(
                 stmts: vec![core::LetStmt {
                     name: x,
                     value: core_value,
-                    ty: ty.clone(),
+                    ty: value_ty,
                 }],
                 tail: Some(Box::new(compile_rows(
                     genv,
@@ -3415,6 +3857,7 @@ fn compile_for_expr(
                     ty: option_ty.clone(),
                     astptr: None,
                 },
+                guard: None,
                 body: body.clone(),
             },
             Arm {
@@ -3424,6 +3867,7 @@ fn compile_for_expr(
                     ty: option_ty.clone(),
                     astptr: None,
                 },
+                guard: None,
                 body: Expr::EBreak { ty: Ty::TUnit },
             },
         ],
@@ -3566,14 +4010,22 @@ fn compile_expr(
             ty,
             astptr,
         } => match expr.as_ref() {
-            _ if arms.is_empty() => {
-                let match_range = astptr.as_ref().map(|ptr| ptr.text_range());
-                push_compile_error(
+            _ if arms
+                .iter()
+                .any(|arm| arm.guard.is_some() || pat_requires_ordered_compilation(&arm.pat)) =>
+            {
+                compile_ordered_match(
+                    expr,
+                    arms,
+                    ty,
+                    genv,
+                    gensym,
                     diagnostics,
-                    "match expression must have at least one arm".to_string(),
-                    match_range,
-                );
-                emissing(ty)
+                    astptr.as_ref().map(|ptr| ptr.text_range()),
+                )
+            }
+            _ if arms.is_empty() => {
+                exit_expr_as(compile_expr(expr, genv, gensym, diagnostics), ty, gensym)
             }
             EVar {
                 name,
@@ -3585,10 +4037,7 @@ fn compile_expr(
                 compile_rows(genv, gensym, diagnostics, rows, ty, match_range)
             }
             _ => {
-                // create a new variable
-                // match (a, b, c) { .. }
-                // =>
-                // let tmp = (a, b, c) in match tmp { ... }
+                let expr_ty = expr.get_ty();
                 let mtmp = gensym.gensym("mtmp");
                 let rows = make_rows(mtmp.as_str(), arms);
                 let core_expr = compile_expr(expr, genv, gensym, diagnostics);
@@ -3599,7 +4048,7 @@ fn compile_expr(
                         stmts: vec![core::LetStmt {
                             name: mtmp,
                             value: core_expr,
-                            ty: ty.clone(),
+                            ty: expr_ty,
                         }],
                         tail: Some(Box::new(core_rows)),
                     }),

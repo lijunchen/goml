@@ -1362,9 +1362,14 @@ impl NameResolution {
                     .map(|arm| {
                         let mut arm_env = env.enter_scope();
                         let new_pat = self.resolve_pat(&arm.pat, &mut arm_env, ctx, hir_table);
+                        let new_guard = arm
+                            .guard
+                            .as_ref()
+                            .map(|guard| self.resolve_expr(guard, &mut arm_env, ctx, hir_table));
                         let new_body = self.resolve_expr(&arm.body, &mut arm_env, ctx, hir_table);
                         hir::Arm {
                             pat: new_pat,
+                            guard: new_guard,
                             body: new_body,
                         }
                     })
@@ -1583,10 +1588,34 @@ impl NameResolution {
         ctx: &ResolutionContext,
         hir_table: &mut HirTable,
     ) -> hir::PatId {
+        let mut bindings = HashMap::new();
+        self.resolve_pat_inner(pat, env, ctx, hir_table, &mut bindings, None)
+    }
+
+    fn resolve_pat_inner(
+        &mut self,
+        pat: &ast::Pat,
+        env: &mut ResolveLocalEnv,
+        ctx: &ResolutionContext,
+        hir_table: &mut HirTable,
+        bindings: &mut HashMap<String, hir::LocalId>,
+        preferred: Option<&HashMap<String, hir::LocalId>>,
+    ) -> hir::PatId {
         match pat {
             ast::Pat::PVar { name, astptr } => {
-                let newname = self.fresh_name(&name.0, hir_table);
-                env.add(name, newname);
+                let path = ast::Path::from_ident(name.clone());
+                if let Some(constructor) = self.constructor_path_for(&path, ctx) {
+                    return self.alloc_pat_with_ptr(
+                        hir_table,
+                        *astptr,
+                        hir::Pat::PConstr {
+                            constructor: hir::ConstructorRef::Unresolved(constructor),
+                            args: Vec::new(),
+                        },
+                    );
+                }
+                let newname =
+                    self.bind_pattern_name(name, *astptr, env, hir_table, bindings, preferred);
                 self.alloc_pat_with_ptr(
                     hir_table,
                     *astptr,
@@ -1707,7 +1736,9 @@ impl NameResolution {
             } => {
                 let new_args = args
                     .iter()
-                    .map(|arg| self.resolve_pat(arg, env, ctx, hir_table))
+                    .map(|arg| {
+                        self.resolve_pat_inner(arg, env, ctx, hir_table, bindings, preferred)
+                    })
                     .collect();
                 let constructor = self.normalize_constructor_path(constructor, ctx);
                 self.alloc_pat_with_ptr(
@@ -1722,6 +1753,7 @@ impl NameResolution {
             ast::Pat::PStruct {
                 name,
                 fields,
+                has_rest,
                 astptr,
             } => {
                 let new_fields = fields
@@ -1729,7 +1761,7 @@ impl NameResolution {
                     .map(|(fname, pat)| {
                         (
                             HirIdent::name(&fname.0),
-                            self.resolve_pat(pat, env, ctx, hir_table),
+                            self.resolve_pat_inner(pat, env, ctx, hir_table, bindings, preferred),
                         )
                     })
                     .collect();
@@ -1748,20 +1780,191 @@ impl NameResolution {
                     hir::Pat::PStruct {
                         name: qualified,
                         fields: new_fields,
+                        has_rest: *has_rest,
                     },
                 )
             }
             ast::Pat::PTuple { pats, astptr } => {
                 let new_pats = pats
                     .iter()
-                    .map(|pat| self.resolve_pat(pat, env, ctx, hir_table))
+                    .map(|pat| {
+                        self.resolve_pat_inner(pat, env, ctx, hir_table, bindings, preferred)
+                    })
                     .collect();
                 self.alloc_pat_with_ptr(hir_table, *astptr, hir::Pat::PTuple { pats: new_pats })
+            }
+            ast::Pat::PArray {
+                prefix,
+                rest,
+                suffix,
+                astptr,
+            } => {
+                let prefix = prefix
+                    .iter()
+                    .map(|pat| {
+                        self.resolve_pat_inner(pat, env, ctx, hir_table, bindings, preferred)
+                    })
+                    .collect();
+                let rest = rest.as_ref().map(|rest| hir::ArrayPatRest {
+                    binding: rest.binding.as_ref().map(|name| {
+                        self.bind_pattern_name(
+                            name,
+                            rest.astptr,
+                            env,
+                            hir_table,
+                            bindings,
+                            preferred,
+                        )
+                    }),
+                    astptr: rest.astptr,
+                });
+                let suffix = suffix
+                    .iter()
+                    .map(|pat| {
+                        self.resolve_pat_inner(pat, env, ctx, hir_table, bindings, preferred)
+                    })
+                    .collect();
+                self.alloc_pat_with_ptr(
+                    hir_table,
+                    *astptr,
+                    hir::Pat::PArray {
+                        prefix,
+                        rest,
+                        suffix,
+                    },
+                )
+            }
+            ast::Pat::PAlias { name, pat, astptr } => {
+                let name =
+                    self.bind_pattern_name(name, *astptr, env, hir_table, bindings, preferred);
+                let pat = self.resolve_pat_inner(pat, env, ctx, hir_table, bindings, preferred);
+                self.alloc_pat_with_ptr(
+                    hir_table,
+                    *astptr,
+                    hir::Pat::PAlias {
+                        name,
+                        pat,
+                        astptr: *astptr,
+                    },
+                )
+            }
+            ast::Pat::POr { pats, astptr } => {
+                let base_env = env.clone();
+                let base_bindings = bindings.clone();
+                let mut resolved = Vec::with_capacity(pats.len());
+                if let Some(first) = pats.first() {
+                    resolved.push(
+                        self.resolve_pat_inner(first, env, ctx, hir_table, bindings, preferred),
+                    );
+                }
+                let expected = bindings
+                    .iter()
+                    .filter(|(name, _)| !base_bindings.contains_key(*name))
+                    .map(|(name, id)| (name.clone(), *id))
+                    .collect::<HashMap<_, _>>();
+                for alternative in pats.iter().skip(1) {
+                    let mut branch_env = base_env.clone();
+                    let mut branch_bindings = base_bindings.clone();
+                    resolved.push(self.resolve_pat_inner(
+                        alternative,
+                        &mut branch_env,
+                        ctx,
+                        hir_table,
+                        &mut branch_bindings,
+                        Some(&expected),
+                    ));
+                    let actual = branch_bindings
+                        .keys()
+                        .filter(|name| !base_bindings.contains_key(*name))
+                        .cloned()
+                        .collect::<HashSet<_>>();
+                    let expected_names = expected.keys().cloned().collect::<HashSet<_>>();
+                    if actual != expected_names {
+                        let mut missing = expected_names
+                            .difference(&actual)
+                            .cloned()
+                            .collect::<Vec<_>>();
+                        let mut extra = actual
+                            .difference(&expected_names)
+                            .cloned()
+                            .collect::<Vec<_>>();
+                        missing.sort();
+                        extra.sort();
+                        let mut details = Vec::new();
+                        if !missing.is_empty() {
+                            details.push(format!("missing {}", missing.join(", ")));
+                        }
+                        if !extra.is_empty() {
+                            details.push(format!("extra {}", extra.join(", ")));
+                        }
+                        self.diagnostics.push(
+                            Diagnostic::new(
+                                Stage::Typer,
+                                Severity::Error,
+                                format!(
+                                    "Or-pattern alternatives must bind the same variables: {}",
+                                    details.join("; ")
+                                ),
+                            )
+                            .with_range(Some(astptr.text_range())),
+                        );
+                    }
+                }
+                self.alloc_pat_with_ptr(hir_table, *astptr, hir::Pat::POr { pats: resolved })
+            }
+            ast::Pat::PRange {
+                start,
+                end,
+                inclusive,
+                astptr,
+            } => {
+                let start = self.resolve_pat_inner(start, env, ctx, hir_table, bindings, preferred);
+                let end = self.resolve_pat_inner(end, env, ctx, hir_table, bindings, preferred);
+                self.alloc_pat_with_ptr(
+                    hir_table,
+                    *astptr,
+                    hir::Pat::PRange {
+                        start,
+                        end,
+                        inclusive: *inclusive,
+                    },
+                )
             }
             ast::Pat::PWild { astptr } => {
                 self.alloc_pat_with_ptr(hir_table, *astptr, hir::Pat::PWild)
             }
         }
+    }
+
+    fn bind_pattern_name(
+        &mut self,
+        name: &ast::AstIdent,
+        astptr: MySyntaxNodePtr,
+        env: &mut ResolveLocalEnv,
+        hir_table: &mut HirTable,
+        bindings: &mut HashMap<String, hir::LocalId>,
+        preferred: Option<&HashMap<String, hir::LocalId>>,
+    ) -> hir::LocalId {
+        if let Some(existing) = bindings.get(&name.0) {
+            self.diagnostics.push(
+                Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!(
+                        "Variable {} is bound more than once in the same pattern",
+                        name.0
+                    ),
+                )
+                .with_range(Some(astptr.text_range())),
+            );
+            return *existing;
+        }
+        let new_name = preferred
+            .and_then(|preferred| preferred.get(&name.0).copied())
+            .unwrap_or_else(|| self.fresh_name(&name.0, hir_table));
+        bindings.insert(name.0.clone(), new_name);
+        env.add(name, new_name);
+        new_name
     }
 
     fn lower_type_expr(

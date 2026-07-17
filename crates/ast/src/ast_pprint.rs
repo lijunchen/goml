@@ -555,21 +555,26 @@ impl Pat {
             Pat::PStruct {
                 name,
                 fields,
+                has_rest,
                 astptr: _,
             } => {
-                if fields.is_empty() {
+                if fields.is_empty() && !has_rest {
                     RcDoc::text(name.display())
                         .append(RcDoc::space())
                         .append(RcDoc::text("{}"))
                 } else {
-                    let fields_doc = RcDoc::intersperse(
-                        fields.iter().map(|(fname, pat)| {
+                    let mut field_docs = fields
+                        .iter()
+                        .map(|(fname, pat)| {
                             RcDoc::text(fname.0.clone())
                                 .append(RcDoc::text(": "))
                                 .append(pat.to_doc())
-                        }),
-                        RcDoc::text(", "),
-                    );
+                        })
+                        .collect::<Vec<_>>();
+                    if *has_rest {
+                        field_docs.push(RcDoc::text(".."));
+                    }
+                    let fields_doc = RcDoc::intersperse(field_docs, RcDoc::text(", "));
                     RcDoc::text(name.display())
                         .append(RcDoc::space())
                         .append(RcDoc::text("{ "))
@@ -588,6 +593,53 @@ impl Pat {
                     RcDoc::text("(").append(items_doc).append(RcDoc::text(")"))
                 }
             }
+            Pat::PArray {
+                prefix,
+                rest,
+                suffix,
+                astptr: _,
+            } => {
+                let mut items = prefix.iter().map(Pat::to_doc).collect::<Vec<_>>();
+                if let Some(rest) = rest {
+                    let rest = rest
+                        .binding
+                        .as_ref()
+                        .map(|name| format!("{} @ ..", name.0))
+                        .unwrap_or_else(|| "..".to_string());
+                    items.push(RcDoc::text(rest));
+                }
+                items.extend(suffix.iter().map(Pat::to_doc));
+                RcDoc::text("[")
+                    .append(RcDoc::intersperse(items, RcDoc::text(", ")))
+                    .append(RcDoc::text("]"))
+            }
+            Pat::PAlias {
+                name,
+                pat,
+                astptr: _,
+            } => {
+                let inner = pat.to_doc();
+                let inner = if matches!(pat.as_ref(), Pat::POr { .. }) {
+                    RcDoc::text("(").append(inner).append(RcDoc::text(")"))
+                } else {
+                    inner
+                };
+                RcDoc::text(name.0.clone())
+                    .append(RcDoc::text(" @ "))
+                    .append(inner)
+            }
+            Pat::POr { pats, astptr: _ } => {
+                RcDoc::intersperse(pats.iter().map(Pat::to_doc), RcDoc::text(" | "))
+            }
+            Pat::PRange {
+                start,
+                end,
+                inclusive,
+                astptr: _,
+            } => start
+                .to_doc()
+                .append(RcDoc::text(if *inclusive { "..=" } else { ".." }))
+                .append(end.to_doc()),
             Pat::PWild { astptr: _ } => RcDoc::text("_"),
         }
     }
@@ -601,14 +653,22 @@ impl Pat {
 
 impl Arm {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
+        let guard = self
+            .guard
+            .as_ref()
+            .map(|guard| {
+                RcDoc::space()
+                    .append(RcDoc::text("if "))
+                    .append(guard.to_doc())
+            })
+            .unwrap_or_else(RcDoc::nil);
         self.pat
             .to_doc()
+            .append(guard)
             .append(RcDoc::space())
             .append(RcDoc::text("=>"))
             .append(RcDoc::space())
-            .append(
-                self.body.to_doc().nest(2), // Properly indent the body of the arm
-            )
+            .append(self.body.to_doc().nest(2))
             .append(RcDoc::text(","))
     }
 

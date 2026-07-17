@@ -3,11 +3,14 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use parser::syntax::MySyntaxNodePtr;
+use text_size::TextRange;
 
 use crate::{hir, tast};
 
-use super::{InlayHintItem, InlayHintKind, typecheck::typecheck_for_query_with_overrides};
+use super::{
+    InlayHintItem, InlayHintKind, hir_index::local_name_range,
+    typecheck::typecheck_for_query_with_overrides,
+};
 
 pub fn inlay_hints(path: &Path, src: &str) -> Option<Vec<InlayHintItem>> {
     inlay_hints_with_overrides(path, src, &HashMap::new())
@@ -120,6 +123,10 @@ fn collect_hints_from_expr(
         hir::Expr::EMatch { expr, arms } => {
             collect_hints_from_expr(hir_table, results, *expr, hints);
             for arm in arms {
+                emit_hints_for_pattern(hir_table, results, arm.pat, hints);
+                if let Some(guard) = arm.guard {
+                    collect_hints_from_expr(hir_table, results, guard, hints);
+                }
                 collect_hints_from_expr(hir_table, results, arm.body, hints);
             }
         }
@@ -216,7 +223,7 @@ fn emit_hints_for_pattern(
 ) {
     let mut local_defs = Vec::new();
     collect_pattern_locals(hir_table, pat, &mut local_defs);
-    for (local_id, astptr) in local_defs {
+    for (local_id, range) in local_defs {
         if !should_emit_type_inlay_hint(hir_table, local_id) {
             continue;
         }
@@ -227,7 +234,7 @@ fn emit_hints_for_pattern(
             continue;
         }
         hints.push(InlayHintItem {
-            offset: astptr.text_range().end(),
+            offset: range.end(),
             label: format!(": {}", ty.to_pretty(80)),
             kind: InlayHintKind::Type,
         });
@@ -237,10 +244,10 @@ fn emit_hints_for_pattern(
 fn collect_pattern_locals(
     hir_table: &hir::HirTable,
     pat_id: hir::PatId,
-    out: &mut Vec<(hir::LocalId, MySyntaxNodePtr)>,
+    out: &mut Vec<(hir::LocalId, TextRange)>,
 ) {
     match hir_table.pat(pat_id) {
-        hir::Pat::PVar { name, astptr } => out.push((*name, *astptr)),
+        hir::Pat::PVar { name, astptr } => out.push((*name, astptr.text_range())),
         hir::Pat::PConstr { args, .. } => {
             for arg in args {
                 collect_pattern_locals(hir_table, *arg, out);
@@ -255,6 +262,35 @@ fn collect_pattern_locals(
             for pat in pats {
                 collect_pattern_locals(hir_table, *pat, out);
             }
+        }
+        hir::Pat::PArray {
+            prefix,
+            rest,
+            suffix,
+        } => {
+            for pat in prefix.iter().chain(suffix.iter()) {
+                collect_pattern_locals(hir_table, *pat, out);
+            }
+            if let Some(hir::ArrayPatRest {
+                binding: Some(name),
+                astptr,
+            }) = rest
+            {
+                out.push((*name, local_name_range(hir_table, *name, *astptr)));
+            }
+        }
+        hir::Pat::PAlias { name, pat, astptr } => {
+            out.push((*name, local_name_range(hir_table, *name, *astptr)));
+            collect_pattern_locals(hir_table, *pat, out);
+        }
+        hir::Pat::POr { pats } => {
+            for pat in pats {
+                collect_pattern_locals(hir_table, *pat, out);
+            }
+        }
+        hir::Pat::PRange { start, end, .. } => {
+            collect_pattern_locals(hir_table, *start, out);
+            collect_pattern_locals(hir_table, *end, out);
         }
         hir::Pat::PUnit
         | hir::Pat::PBool { .. }

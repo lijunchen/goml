@@ -192,6 +192,15 @@ pub enum TokenKind {
     #[token(".")]
     Dot,
 
+    #[token("..=")]
+    DotDotEq,
+
+    #[token("..")]
+    DotDot,
+
+    #[token("@")]
+    At,
+
     #[token("&&")]
     AndAnd,
 
@@ -471,6 +480,9 @@ impl std::fmt::Display for TokenKind {
             Self::Slash => "/",
             Self::Percent => "%",
             Self::Dot => ".",
+            Self::DotDotEq => "..=",
+            Self::DotDot => "..",
+            Self::At => "@",
             Self::AndAnd => "&&",
             Self::Amp => "&",
             Self::OrOr => "||",
@@ -580,6 +592,9 @@ macro_rules! T {
     [/] => { $crate::TokenKind::Slash };
     [%] => { $crate::TokenKind::Percent };
     [.] => { $crate::TokenKind::Dot };
+    [..=] => { $crate::TokenKind::DotDotEq };
+    [..] => { $crate::TokenKind::DotDot };
+    [@] => { $crate::TokenKind::At };
     [&&] => { $crate::TokenKind::AndAnd };
     [&] => { $crate::TokenKind::Amp };
     [||] => { $crate::TokenKind::OrOr };

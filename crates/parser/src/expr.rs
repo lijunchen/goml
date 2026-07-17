@@ -219,7 +219,12 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
 
             let cond_marker = p.open();
             let struct_literals = p.with_struct_literals_allowed(false);
-            if p.at_any(EXPR_FIRST) {
+            let is_let_condition = p.at(T![let]);
+            if p.eat(T![let]) {
+                let _ = super::pattern::pattern(p);
+                p.expect(T![=]);
+                expect_expr_with_message(p, "expected an expression after `=` in `if let`");
+            } else if p.at_any(EXPR_FIRST) {
                 expect_expr_with_message(p, "expected an expression after `if`");
             } else {
                 p.advance_with_error("expected an expression after `if`");
@@ -248,7 +253,7 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
                     p.advance_with_error("expected an else-branch expression for `if`");
                 }
                 p.close(else_marker, MySyntaxKind::EXPR_IF_ELSE);
-            } else {
+            } else if !is_let_condition {
                 p.advance_with_error("expected `else` in `if` expression");
             }
 
@@ -271,7 +276,11 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
 
             let cond_marker = p.open();
             let struct_literals = p.with_struct_literals_allowed(false);
-            if p.at_any(EXPR_FIRST) {
+            if p.eat(T![let]) {
+                let _ = super::pattern::pattern(p);
+                p.expect(T![=]);
+                expect_expr_with_message(p, "expected an expression after `=` in `while let`");
+            } else if p.at_any(EXPR_FIRST) {
                 expect_expr_with_message(p, "expected an expression after `while`");
             } else {
                 p.advance_with_error("expected an expression after `while`");
@@ -461,6 +470,12 @@ pub fn match_arm_list(p: &mut Parser) {
 fn match_arm(p: &mut Parser) {
     let m = p.open();
     let _ = super::pattern::pattern(p);
+    if p.at(T![if]) {
+        let guard = p.open();
+        p.expect(T![if]);
+        expect_expr_with_message(p, "expected an expression after match guard `if`");
+        p.close(guard, MySyntaxKind::MATCH_ARM_GUARD);
+    }
     p.expect(T![=>]);
     if p.at(T!['{']) {
         block(p);

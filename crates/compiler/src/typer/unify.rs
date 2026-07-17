@@ -28,6 +28,10 @@ fn pat_origin(pat: &tast::Pat) -> Option<TextRange> {
         | tast::Pat::PPrim { astptr, .. }
         | tast::Pat::PConstr { astptr, .. }
         | tast::Pat::PTuple { astptr, .. }
+        | tast::Pat::PArray { astptr, .. }
+        | tast::Pat::PAlias { astptr, .. }
+        | tast::Pat::POr { astptr, .. }
+        | tast::Pat::PRange { astptr, .. }
         | tast::Pat::PWild { astptr, .. } => astptr.as_ref().map(|ptr| ptr.text_range()),
     }
 }
@@ -1187,6 +1191,77 @@ impl Typer {
                     astptr,
                 }
             }
+            tast::Pat::PArray {
+                prefix,
+                rest,
+                suffix,
+                ty,
+                astptr,
+            } => {
+                let origin = astptr.as_ref().map(|ptr| ptr.text_range());
+                let ty = self.subst_ty(diagnostics, &ty, origin);
+                let prefix = prefix
+                    .into_iter()
+                    .map(|pat| self.subst_pat(diagnostics, pat))
+                    .collect();
+                let suffix = suffix
+                    .into_iter()
+                    .map(|pat| self.subst_pat(diagnostics, pat))
+                    .collect();
+                let rest = rest.map(|rest| tast::ArrayPatRest {
+                    binding: rest.binding,
+                    ty: self.subst_ty(diagnostics, &rest.ty, origin),
+                    astptr: rest.astptr,
+                });
+                tast::Pat::PArray {
+                    prefix,
+                    rest,
+                    suffix,
+                    ty,
+                    astptr,
+                }
+            }
+            tast::Pat::PAlias {
+                name,
+                pat,
+                ty,
+                astptr,
+            } => {
+                let origin = astptr.as_ref().map(|ptr| ptr.text_range());
+                tast::Pat::PAlias {
+                    name,
+                    pat: Box::new(self.subst_pat(diagnostics, *pat)),
+                    ty: self.subst_ty(diagnostics, &ty, origin),
+                    astptr,
+                }
+            }
+            tast::Pat::POr { pats, ty, astptr } => {
+                let origin = astptr.as_ref().map(|ptr| ptr.text_range());
+                tast::Pat::POr {
+                    pats: pats
+                        .into_iter()
+                        .map(|pat| self.subst_pat(diagnostics, pat))
+                        .collect(),
+                    ty: self.subst_ty(diagnostics, &ty, origin),
+                    astptr,
+                }
+            }
+            tast::Pat::PRange {
+                start,
+                end,
+                inclusive,
+                ty,
+                astptr,
+            } => {
+                let origin = astptr.as_ref().map(|ptr| ptr.text_range());
+                tast::Pat::PRange {
+                    start,
+                    end,
+                    inclusive,
+                    ty: self.subst_ty(diagnostics, &ty, origin),
+                    astptr,
+                }
+            }
             tast::Pat::PWild { ty, astptr } => {
                 let origin = astptr.as_ref().map(|ptr| ptr.text_range());
                 let ty = self.subst_ty(diagnostics, &ty, origin);
@@ -1362,6 +1437,7 @@ impl Typer {
                     .into_iter()
                     .map(|arm| tast::Arm {
                         pat: self.subst_pat(diagnostics, arm.pat),
+                        guard: arm.guard.map(|guard| self.subst(diagnostics, guard)),
                         body: self.subst(diagnostics, arm.body),
                     })
                     .collect::<Vec<_>>();

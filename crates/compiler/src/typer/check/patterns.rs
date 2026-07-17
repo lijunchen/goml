@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, hash_map::Entry};
 
 use super::*;
 use crate::typer::util;
@@ -95,6 +95,33 @@ impl Typer {
             hir::Pat::PTuple { pats } => {
                 self.check_pat_tuple(genv, local_env, diagnostics, pat, &pats, ty)
             }
+            hir::Pat::PArray {
+                prefix,
+                rest,
+                suffix,
+            } => self.check_pat_array(
+                genv,
+                local_env,
+                diagnostics,
+                pat,
+                &prefix,
+                rest.as_ref(),
+                &suffix,
+                ty,
+            ),
+            hir::Pat::PAlias {
+                name,
+                pat: inner,
+                astptr,
+            } => self.check_pat_alias(genv, local_env, diagnostics, name, inner, astptr, ty),
+            hir::Pat::POr { pats } => {
+                self.check_pat_or(genv, local_env, diagnostics, pat, &pats, ty)
+            }
+            hir::Pat::PRange {
+                start,
+                end,
+                inclusive,
+            } => self.check_pat_range(genv, local_env, diagnostics, pat, start, end, inclusive, ty),
             hir::Pat::PWild => self.check_pat_wild(ty, astptr),
         };
         self.results.record_pat_ty(pat, out.get_ty());
@@ -405,7 +432,11 @@ impl Typer {
                     astptr: self.pat_astptr(pat),
                 }
             }
-            hir::Pat::PStruct { name, fields } => {
+            hir::Pat::PStruct {
+                name,
+                fields,
+                has_rest,
+            } => {
                 let name_display = name.display();
                 let (type_name, type_env) = util::resolve_type_name(genv, &name_display);
                 let struct_def = type_env.structs().get(&tast::TastIdent(type_name.clone()));
@@ -418,31 +449,24 @@ impl Typer {
                     return self.check_pat_wild(ty, self.pat_astptr(pat));
                 };
                 let struct_fields = struct_def.fields.clone();
-                if struct_fields.len() != fields.len() {
-                    util::push_error_with_range(
-                        diagnostics,
-                        format!(
-                            "Struct pattern {} expects {} fields, but got {}",
-                            type_name,
-                            struct_fields.len(),
-                            fields.len()
-                        ),
-                        self.pat_range(pat),
-                    );
-                }
-
                 let mut field_map: HashMap<String, hir::PatId> = HashMap::new();
                 for (fname, pat_id) in fields.iter() {
-                    if field_map.insert(fname.to_ident_name(), *pat_id).is_some() {
-                        util::push_error_with_range(
-                            diagnostics,
-                            format!(
-                                "Struct pattern {} has duplicate field {}",
-                                type_name,
-                                fname.to_ident_name()
-                            ),
-                            self.pat_range(pat),
-                        );
+                    let field_name = fname.to_ident_name();
+                    match field_map.entry(field_name) {
+                        Entry::Occupied(field) => {
+                            util::push_error_with_range(
+                                diagnostics,
+                                format!(
+                                    "Struct pattern {} has duplicate field {}",
+                                    type_name,
+                                    field.key()
+                                ),
+                                self.pat_range(pat),
+                            );
+                        }
+                        Entry::Vacant(field) => {
+                            field.insert(*pat_id);
+                        }
                     }
                 }
 
@@ -487,14 +511,16 @@ impl Typer {
                             self.check_pat(genv, local_env, diagnostics, pat_id, &expected_ty)
                         }
                         None => {
-                            util::push_error_with_range(
-                                diagnostics,
-                                format!(
-                                    "Struct pattern {} missing field {}",
-                                    name_display, field_name.0
-                                ),
-                                self.pat_range(pat),
-                            );
+                            if !has_rest {
+                                util::push_error_with_range(
+                                    diagnostics,
+                                    format!(
+                                        "Struct pattern {} missing field {}",
+                                        name_display, field_name.0
+                                    ),
+                                    self.pat_range(pat),
+                                );
+                            }
                             let wild = self.check_pat_wild(&expected_ty, None);
                             elab_args.push(StructPatArgElab::MissingWild {
                                 expected_ty: wild.get_ty(),
@@ -506,12 +532,14 @@ impl Typer {
                 }
 
                 if !field_map.is_empty() {
-                    let extra = field_map.keys().cloned().collect::<Vec<_>>().join(", ");
+                    let mut extra = field_map.keys().cloned().collect::<Vec<_>>();
+                    extra.sort();
                     util::push_error_with_range(
                         diagnostics,
                         format!(
                             "Struct pattern {} has unknown fields: {}",
-                            name_display, extra
+                            name_display,
+                            extra.join(", ")
                         ),
                         self.pat_range(pat),
                     );
@@ -542,27 +570,34 @@ impl Typer {
 
     pub(super) fn check_irrefutable_let_pattern(
         &mut self,
+        genv: &PackageTypeEnv,
         diagnostics: &mut Diagnostics,
         pat_id: hir::PatId,
+        pat: &tast::Pat,
     ) {
-        self.check_irrefutable_pattern(diagnostics, pat_id, "let binding");
+        self.check_irrefutable_pattern(genv, diagnostics, pat_id, pat, "let binding");
     }
 
     pub(super) fn check_irrefutable_for_pattern(
         &mut self,
+        genv: &PackageTypeEnv,
         diagnostics: &mut Diagnostics,
         pat_id: hir::PatId,
+        pat: &tast::Pat,
     ) {
-        self.check_irrefutable_pattern(diagnostics, pat_id, "for loop");
+        self.check_irrefutable_pattern(genv, diagnostics, pat_id, pat, "for loop");
     }
 
     fn check_irrefutable_pattern(
         &mut self,
+        genv: &PackageTypeEnv,
         diagnostics: &mut Diagnostics,
         pat_id: hir::PatId,
+        pat: &tast::Pat,
         context: &str,
     ) {
-        if self.is_irrefutable_pat(pat_id) {
+        let pat = self.normalize_match_pat(pat);
+        if crate::typer::match_analysis::is_irrefutable(genv, &pat) {
             return;
         }
         diagnostics.push(
@@ -573,32 +608,6 @@ impl Typer {
             )
             .with_range(self.pat_range(pat_id)),
         );
-    }
-
-    fn is_irrefutable_pat(&self, pat_id: hir::PatId) -> bool {
-        match self.hir_table.pat(pat_id) {
-            hir::Pat::PVar { .. } | hir::Pat::PWild | hir::Pat::PUnit => true,
-            hir::Pat::PTuple { pats } => pats.iter().all(|pat| self.is_irrefutable_pat(*pat)),
-            hir::Pat::PStruct { fields, .. } => {
-                fields.iter().all(|(_, pat)| self.is_irrefutable_pat(*pat))
-            }
-            hir::Pat::PBool { .. }
-            | hir::Pat::PInt { .. }
-            | hir::Pat::PInt8 { .. }
-            | hir::Pat::PInt16 { .. }
-            | hir::Pat::PInt32 { .. }
-            | hir::Pat::PInt64 { .. }
-            | hir::Pat::PUInt8 { .. }
-            | hir::Pat::PUInt16 { .. }
-            | hir::Pat::PUInt32 { .. }
-            | hir::Pat::PUInt64 { .. }
-            | hir::Pat::PFloat { .. }
-            | hir::Pat::PFloat32 { .. }
-            | hir::Pat::PFloat64 { .. }
-            | hir::Pat::PString { .. }
-            | hir::Pat::PChar { .. }
-            | hir::Pat::PConstr { .. } => false,
-        }
     }
 
     fn check_pat_tuple(
@@ -631,10 +640,222 @@ impl Typer {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
+    fn check_pat_array(
+        &mut self,
+        genv: &PackageTypeEnv,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        pat_id: hir::PatId,
+        prefix: &[hir::PatId],
+        rest: Option<&hir::ArrayPatRest>,
+        suffix: &[hir::PatId],
+        ty: &tast::Ty,
+    ) -> tast::Pat {
+        let container_ty = self.norm(ty);
+        let item_count = prefix.len() + suffix.len();
+        let (elem_ty, rest_ty) = match &container_ty {
+            tast::Ty::TArray { len, elem } => {
+                let valid = if rest.is_some() {
+                    item_count <= *len
+                } else {
+                    item_count == *len
+                };
+                if !valid {
+                    util::push_error_with_range(
+                        diagnostics,
+                        if rest.is_some() {
+                            format!(
+                                "Array pattern requires at least {} elements, but the array has length {}",
+                                item_count, len
+                            )
+                        } else {
+                            format!(
+                                "Array pattern has {} elements, but the array has length {}",
+                                item_count, len
+                            )
+                        },
+                        self.pat_range(pat_id),
+                    );
+                }
+                (
+                    elem.as_ref().clone(),
+                    tast::Ty::TArray {
+                        len: len.saturating_sub(item_count),
+                        elem: elem.clone(),
+                    },
+                )
+            }
+            tast::Ty::TVec { elem } | tast::Ty::TSlice { elem } => (
+                elem.as_ref().clone(),
+                tast::Ty::TSlice { elem: elem.clone() },
+            ),
+            _ => {
+                util::push_error_with_range(
+                    diagnostics,
+                    format!(
+                        "Array pattern requires an array, Vec, or Slice, but found {}",
+                        util::format_ty_for_diag(&container_ty)
+                    ),
+                    self.pat_range(pat_id),
+                );
+                return self.check_pat_wild(ty, self.pat_astptr(pat_id));
+            }
+        };
+
+        let prefix = prefix
+            .iter()
+            .map(|pat| self.check_pat(genv, local_env, diagnostics, *pat, &elem_ty))
+            .collect();
+        let suffix = suffix
+            .iter()
+            .map(|pat| self.check_pat(genv, local_env, diagnostics, *pat, &elem_ty))
+            .collect();
+        let rest = rest.map(|rest| {
+            let binding = rest.binding.map(|name| {
+                local_env.insert_var(name, rest_ty.clone());
+                self.results.record_local_ty(name, rest_ty.clone());
+                self.hir_table.local_ident_name(name)
+            });
+            tast::ArrayPatRest {
+                binding,
+                ty: rest_ty,
+                astptr: Some(rest.astptr),
+            }
+        });
+
+        self.equate(diagnostics, &container_ty, ty, self.pat_range(pat_id));
+        tast::Pat::PArray {
+            prefix,
+            rest,
+            suffix,
+            ty: container_ty,
+            astptr: self.pat_astptr(pat_id),
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn check_pat_alias(
+        &mut self,
+        genv: &PackageTypeEnv,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        name: hir::LocalId,
+        pat: hir::PatId,
+        astptr: MySyntaxNodePtr,
+        ty: &tast::Ty,
+    ) -> tast::Pat {
+        local_env.insert_var(name, ty.clone());
+        self.results.record_local_ty(name, ty.clone());
+        let inner = self.check_pat(genv, local_env, diagnostics, pat, ty);
+        tast::Pat::PAlias {
+            name: self.hir_table.local_ident_name(name),
+            pat: Box::new(inner),
+            ty: ty.clone(),
+            astptr: Some(astptr),
+        }
+    }
+
+    fn check_pat_or(
+        &mut self,
+        genv: &PackageTypeEnv,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        pat_id: hir::PatId,
+        pats: &[hir::PatId],
+        ty: &tast::Ty,
+    ) -> tast::Pat {
+        if pats.is_empty() {
+            util::push_error_with_range(
+                diagnostics,
+                "Or-pattern must contain at least one alternative",
+                self.pat_range(pat_id),
+            );
+            return self.check_pat_wild(ty, self.pat_astptr(pat_id));
+        }
+        let pats = pats
+            .iter()
+            .map(|pat| self.check_pat(genv, local_env, diagnostics, *pat, ty))
+            .collect();
+        tast::Pat::POr {
+            pats,
+            ty: ty.clone(),
+            astptr: self.pat_astptr(pat_id),
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn check_pat_range(
+        &mut self,
+        genv: &PackageTypeEnv,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        pat_id: hir::PatId,
+        start: hir::PatId,
+        end: hir::PatId,
+        inclusive: bool,
+        ty: &tast::Ty,
+    ) -> tast::Pat {
+        let start = self.check_pat(genv, local_env, diagnostics, start, ty);
+        let end = self.check_pat(genv, local_env, diagnostics, end, ty);
+        let (tast::Pat::PPrim { value: start, .. }, tast::Pat::PPrim { value: end, .. }) =
+            (start, end)
+        else {
+            util::push_error_with_range(
+                diagnostics,
+                "Range pattern endpoints must be integer or char literals",
+                self.pat_range(pat_id),
+            );
+            return self.check_pat_wild(ty, self.pat_astptr(pat_id));
+        };
+        let Some(ordering) = compare_range_prims(&start, &end) else {
+            util::push_error_with_range(
+                diagnostics,
+                "Range patterns only support integer and char literals of the same type",
+                self.pat_range(pat_id),
+            );
+            return self.check_pat_wild(ty, self.pat_astptr(pat_id));
+        };
+        let valid = if inclusive {
+            ordering != std::cmp::Ordering::Greater
+        } else {
+            ordering == std::cmp::Ordering::Less
+        };
+        if !valid {
+            util::push_error_with_range(
+                diagnostics,
+                "Range pattern lower bound must be less than its upper bound",
+                self.pat_range(pat_id),
+            );
+        }
+        tast::Pat::PRange {
+            start,
+            end,
+            inclusive,
+            ty: ty.clone(),
+            astptr: self.pat_astptr(pat_id),
+        }
+    }
+
     fn check_pat_wild(&mut self, ty: &tast::Ty, astptr: Option<MySyntaxNodePtr>) -> tast::Pat {
         tast::Pat::PWild {
             ty: ty.clone(),
             astptr,
         }
+    }
+}
+
+fn compare_range_prims(start: &Prim, end: &Prim) -> Option<std::cmp::Ordering> {
+    match (start, end) {
+        (Prim::Int8 { value: left }, Prim::Int8 { value: right }) => left.partial_cmp(right),
+        (Prim::Int16 { value: left }, Prim::Int16 { value: right }) => left.partial_cmp(right),
+        (Prim::Int32 { value: left }, Prim::Int32 { value: right }) => left.partial_cmp(right),
+        (Prim::Int64 { value: left }, Prim::Int64 { value: right }) => left.partial_cmp(right),
+        (Prim::UInt8 { value: left }, Prim::UInt8 { value: right }) => left.partial_cmp(right),
+        (Prim::UInt16 { value: left }, Prim::UInt16 { value: right }) => left.partial_cmp(right),
+        (Prim::UInt32 { value: left }, Prim::UInt32 { value: right }) => left.partial_cmp(right),
+        (Prim::UInt64 { value: left }, Prim::UInt64 { value: right }) => left.partial_cmp(right),
+        (Prim::Char { value: left }, Prim::Char { value: right }) => left.partial_cmp(right),
+        _ => None,
     }
 }

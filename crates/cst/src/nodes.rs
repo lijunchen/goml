@@ -1411,6 +1411,10 @@ impl IfExprCond {
     pub fn expr(&self) -> Option<Expr> {
         support::child(&self.syntax)
     }
+
+    pub fn pattern(&self) -> Option<Pattern> {
+        support::child(&self.syntax)
+    }
 }
 
 impl_cst_node_simple!(IfExprCond, MySyntaxKind::EXPR_IF_COND);
@@ -1485,6 +1489,10 @@ pub struct WhileExprCond {
 
 impl WhileExprCond {
     pub fn expr(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+
+    pub fn pattern(&self) -> Option<Pattern> {
         support::child(&self.syntax)
     }
 }
@@ -1623,12 +1631,30 @@ impl MatchArm {
     pub fn expr(&self) -> Option<Expr> {
         support::child(&self.syntax)
     }
+
+    pub fn guard(&self) -> Option<MatchArmGuard> {
+        support::child(&self.syntax)
+    }
 }
 
 impl_cst_node_simple!(MatchArm, MySyntaxKind::MATCH_ARM);
 impl_display_via_syntax!(MatchArm);
 
 ////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct MatchArmGuard {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl MatchArmGuard {
+    pub fn expr(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(MatchArmGuard, MySyntaxKind::MATCH_ARM_GUARD);
+impl_display_via_syntax!(MatchArmGuard);
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct CallExpr {
@@ -1978,7 +2004,12 @@ pub enum Pattern {
     Float64Pat(Float64Pat),
     ConstrPat(ConstrPat),
     TuplePat(TuplePat),
+    ArrayPat(ArrayPat),
     WildPat(WildPat),
+    AliasPat(AliasPat),
+    OrPat(OrPat),
+    RangePat(RangePat),
+    RestPat(RestPat),
 }
 
 impl CstNode for Pattern {
@@ -2004,7 +2035,12 @@ impl CstNode for Pattern {
                 | PATTERN_FLOAT64
                 | PATTERN_CONSTR
                 | PATTERN_TUPLE
+                | PATTERN_ARRAY
                 | PATTERN_WILDCARD
+                | PATTERN_ALIAS
+                | PATTERN_OR
+                | PATTERN_RANGE
+                | PATTERN_REST
         )
     }
     fn cast(syntax: MySyntaxNode) -> Option<Self> {
@@ -2028,7 +2064,12 @@ impl CstNode for Pattern {
             PATTERN_FLOAT64 => Pattern::Float64Pat(Float64Pat { syntax }),
             PATTERN_CONSTR => Pattern::ConstrPat(ConstrPat { syntax }),
             PATTERN_TUPLE => Pattern::TuplePat(TuplePat { syntax }),
+            PATTERN_ARRAY => Pattern::ArrayPat(ArrayPat { syntax }),
             PATTERN_WILDCARD => Pattern::WildPat(WildPat { syntax }),
+            PATTERN_ALIAS => Pattern::AliasPat(AliasPat { syntax }),
+            PATTERN_OR => Pattern::OrPat(OrPat { syntax }),
+            PATTERN_RANGE => Pattern::RangePat(RangePat { syntax }),
+            PATTERN_REST => Pattern::RestPat(RestPat { syntax }),
             _ => return None,
         };
         Some(res)
@@ -2054,7 +2095,12 @@ impl CstNode for Pattern {
             Self::Float64Pat(it) => &it.syntax,
             Self::ConstrPat(it) => &it.syntax,
             Self::TuplePat(it) => &it.syntax,
+            Self::ArrayPat(it) => &it.syntax,
             Self::WildPat(it) => &it.syntax,
+            Self::AliasPat(it) => &it.syntax,
+            Self::OrPat(it) => &it.syntax,
+            Self::RangePat(it) => &it.syntax,
+            Self::RestPat(it) => &it.syntax,
         }
     }
 }
@@ -2392,6 +2438,84 @@ impl_display_via_syntax!(TuplePat);
 ////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ArrayPat {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl ArrayPat {
+    pub fn patterns(&self) -> CstChildren<Pattern> {
+        support::children(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(ArrayPat, MySyntaxKind::PATTERN_ARRAY);
+impl_display_via_syntax!(ArrayPat);
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct AliasPat {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl AliasPat {
+    pub fn lident(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::Ident)
+    }
+
+    pub fn pattern(&self) -> Option<Pattern> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(AliasPat, MySyntaxKind::PATTERN_ALIAS);
+impl_display_via_syntax!(AliasPat);
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct OrPat {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl OrPat {
+    pub fn patterns(&self) -> CstChildren<Pattern> {
+        support::children(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(OrPat, MySyntaxKind::PATTERN_OR);
+impl_display_via_syntax!(OrPat);
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct RangePat {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl RangePat {
+    pub fn patterns(&self) -> CstChildren<Pattern> {
+        support::children(&self.syntax)
+    }
+
+    pub fn inclusive(&self) -> bool {
+        support::token(&self.syntax, MySyntaxKind::DotDotEq).is_some()
+    }
+}
+
+impl_cst_node_simple!(RangePat, MySyntaxKind::PATTERN_RANGE);
+impl_display_via_syntax!(RangePat);
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct RestPat {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl RestPat {
+    pub fn lident(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::Ident)
+    }
+}
+
+impl_cst_node_simple!(RestPat, MySyntaxKind::PATTERN_REST);
+impl_display_via_syntax!(RestPat);
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct StructPatternFieldList {
     pub(crate) syntax: MySyntaxNode,
 }
@@ -2399,6 +2523,10 @@ pub struct StructPatternFieldList {
 impl StructPatternFieldList {
     pub fn fields(&self) -> CstChildren<StructPatternField> {
         support::children(&self.syntax)
+    }
+
+    pub fn rest(&self) -> Option<RestPat> {
+        support::child(&self.syntax)
     }
 }
 

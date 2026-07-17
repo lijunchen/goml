@@ -465,6 +465,7 @@ fn build_struct_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) -> Expr
                         )
                     })
                     .collect(),
+                has_rest: false,
                 astptr: *attr_ptr,
             },
             None,
@@ -490,6 +491,7 @@ fn build_enum_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
                         args: Vec::new(),
                         astptr: *attr_ptr,
                     },
+                    guard: None,
                     body: Expr::EString {
                         value: format!("{}::{}", enum_def.name.0, variant_name.0),
                         astptr: *attr_ptr,
@@ -534,6 +536,7 @@ fn build_enum_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
                         args,
                         astptr: *attr_ptr,
                     },
+                    guard: None,
                     body: concat_parts(parts, attr_ptr),
                 }
             }
@@ -645,11 +648,16 @@ fn build_enum_eq_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
             };
         }
 
-        arms.push(Arm { pat, body });
+        arms.push(Arm {
+            pat,
+            guard: None,
+            body,
+        });
     }
 
     arms.push(Arm {
         pat: Pat::PWild { astptr: *attr_ptr },
+        guard: None,
         body: Expr::EBool {
             value: false,
             astptr: *attr_ptr,
@@ -795,6 +803,7 @@ fn build_enum_hash_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr 
                 args,
                 astptr: *attr_ptr,
             },
+            guard: None,
             body,
         });
     }
