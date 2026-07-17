@@ -1,0 +1,75 @@
+package collections;
+
+pub struct Index[T] {
+    value: int32,
+}
+
+impl[T] Index[T] {
+    fn value(self: Index[T]) -> int32 {
+        self.value
+    }
+}
+
+impl[T] Eq for Index[T] {
+    fn eq(self: Index[T], other: Index[T]) -> bool {
+        self.value == other.value
+    }
+}
+
+impl[T] Hash for Index[T] {
+    fn hash(self: Index[T]) -> uint64 {
+        Hash::hash(self.value)
+    }
+}
+
+pub struct IndexVec[T] {
+    values: Vec[T],
+}
+
+impl[T] IndexVec[T] {
+    fn new() -> IndexVec[T] {
+        IndexVec { values: Vec::new() }
+    }
+
+    fn with_capacity(capacity: int32) -> IndexVec[T] {
+        IndexVec {
+            values: Vec::with_capacity(capacity),
+        }
+    }
+
+    fn len(self: IndexVec[T]) -> int32 {
+        self.values.len()
+    }
+
+    fn is_empty(self: IndexVec[T]) -> bool {
+        self.values.is_empty()
+    }
+
+    fn push(self: IndexVec[T], value: T) -> Index[T] {
+        let index = Index {
+            value: self.values.len(),
+        };
+        self.values.push(value);
+        index
+    }
+
+    fn contains(self: IndexVec[T], index: Index[T]) -> bool {
+        index.value >= 0 && index.value < self.values.len()
+    }
+
+    fn get(self: IndexVec[T], index: Index[T]) -> T {
+        self.values.get(index.value)
+    }
+
+    fn try_get(self: IndexVec[T], index: Index[T]) -> Option[T] {
+        if self.contains(index) {
+            Option::Some(self.values.get(index.value))
+        } else {
+            Option::None
+        }
+    }
+
+    fn set(self: IndexVec[T], index: Index[T], value: T) -> unit {
+        self.values.set(index.value, value)
+    }
+}

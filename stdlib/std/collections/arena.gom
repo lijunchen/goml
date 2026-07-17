@@ -1,0 +1,67 @@
+package collections;
+
+pub struct ArenaId[T] {
+    index: int32,
+}
+
+impl[T] ArenaId[T] {
+    fn index(self: ArenaId[T]) -> int32 {
+        self.index
+    }
+}
+
+impl[T] Eq for ArenaId[T] {
+    fn eq(self: ArenaId[T], other: ArenaId[T]) -> bool {
+        self.index == other.index
+    }
+}
+
+impl[T] Hash for ArenaId[T] {
+    fn hash(self: ArenaId[T]) -> uint64 {
+        Hash::hash(self.index)
+    }
+}
+
+pub struct Arena[T] {
+    values: Vec[T],
+}
+
+impl[T] Arena[T] {
+    fn new() -> Arena[T] {
+        Arena { values: Vec::new() }
+    }
+
+    fn len(self: Arena[T]) -> int32 {
+        self.values.len()
+    }
+
+    fn is_empty(self: Arena[T]) -> bool {
+        self.values.len() == 0
+    }
+
+    fn alloc(self: Arena[T], value: T) -> ArenaId[T] {
+        let index = self.values.len();
+        self.values.push(value);
+        ArenaId { index }
+    }
+
+    fn contains_id(self: Arena[T], id: ArenaId[T]) -> bool {
+        id.index >= 0 && id.index < self.values.len()
+    }
+
+    fn get(self: Arena[T], id: ArenaId[T]) -> T {
+        self.values.get(id.index)
+    }
+
+    fn try_get(self: Arena[T], id: ArenaId[T]) -> Option[T] {
+        if self.contains_id(id) {
+            Option::Some(self.values.get(id.index))
+        } else {
+            Option::None
+        }
+    }
+
+    fn set(self: Arena[T], id: ArenaId[T], value: T) -> unit {
+        self.values.set(id.index, value)
+    }
+}

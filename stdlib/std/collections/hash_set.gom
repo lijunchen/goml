@@ -1,0 +1,43 @@
+package collections;
+
+pub struct HashSet[K] {
+    entries: HashMap[K, unit],
+}
+
+impl[K: Eq + Hash] HashSet[K] {
+    fn new() -> HashSet[K] {
+        HashSet {
+            entries: HashMap::new(),
+        }
+    }
+
+    fn len(self: HashSet[K]) -> int32 {
+        self.entries.len()
+    }
+
+    fn is_empty(self: HashSet[K]) -> bool {
+        self.entries.len() == 0
+    }
+
+    fn contains(self: HashSet[K], value: K) -> bool {
+        self.entries.contains(value)
+    }
+
+    fn insert(self: HashSet[K], value: K) -> bool {
+        if self.entries.contains(value) {
+            false
+        } else {
+            self.entries.set(value, ());
+            true
+        }
+    }
+
+    fn remove(self: HashSet[K], value: K) -> bool {
+        if self.entries.contains(value) {
+            self.entries.remove(value);
+            true
+        } else {
+            false
+        }
+    }
+}

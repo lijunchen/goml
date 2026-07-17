@@ -1,0 +1,84 @@
+package bytes;
+
+pub struct Bytes {
+    values: Vec[uint8],
+}
+
+impl Bytes {
+    fn new() -> Bytes {
+        Bytes { values: Vec::new() }
+    }
+
+    fn with_capacity(capacity: int32) -> Bytes {
+        Bytes {
+            values: Vec::with_capacity(capacity),
+        }
+    }
+
+    fn from_vec(values: Vec[uint8]) -> Bytes {
+        Bytes { values }
+    }
+
+    fn from_string(value: string) -> Bytes {
+        Bytes {
+            values: value.to_bytes(),
+        }
+    }
+
+    fn len(self: Bytes) -> int32 {
+        self.values.len()
+    }
+
+    fn capacity(self: Bytes) -> int32 {
+        self.values.capacity()
+    }
+
+    fn is_empty(self: Bytes) -> bool {
+        self.values.is_empty()
+    }
+
+    fn get(self: Bytes, index: int32) -> uint8 {
+        self.values.get(index)
+    }
+
+    fn set(self: Bytes, index: int32, value: uint8) -> unit {
+        self.values.set(index, value)
+    }
+
+    fn push(self: Bytes, value: uint8) -> unit {
+        self.values.push(value)
+    }
+
+    fn pop(self: Bytes) -> Option[uint8] {
+        self.values.pop()
+    }
+
+    fn reserve(self: Bytes, additional: int32) -> unit {
+        self.values.reserve(additional)
+    }
+
+    fn truncate(self: Bytes, len: int32) -> unit {
+        self.values.truncate(len)
+    }
+
+    fn clear(self: Bytes) -> unit {
+        self.values.clear()
+    }
+
+    fn slice(self: Bytes, start: int32, end: int32) -> Slice[uint8] {
+        self.values.slice(start, end)
+    }
+
+    fn to_vec(self: Bytes) -> Vec[uint8] {
+        self.values
+    }
+
+    fn to_string(self: Bytes) -> Result[string, string] {
+        let (valid, value) = string_from_utf8(self.values);
+        if valid {
+            Result::Ok(value)
+        } else {
+            Result::Err("invalid UTF-8")
+        }
+    }
+}
