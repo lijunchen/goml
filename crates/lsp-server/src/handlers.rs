@@ -1,10 +1,13 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 use compiler::query::{
     self, ColonColonCompletionItem, ColonColonCompletionKind, DotCompletionItem, DotCompletionKind,
     InlayHintItem, InlayHintKind as QueryInlayHintKind, SignatureHelpItem, ValueCompletionItem,
 };
+use diagnostics::{FixApplicability, LabelSeverity, SourceMap, Span};
+use serde::{Deserialize, Serialize};
 use tower_lsp::lsp_types::*;
 
 use crate::Document;
@@ -28,41 +31,182 @@ pub fn get_diagnostics_with_overrides(
     match result {
         Ok(_) => Vec::new(),
         Err(err) => {
-            let diags = err.diagnostics();
-            diags
+            let mut diagnostics = err.into_diagnostics();
+            let sources = diagnostics.source_map_arc().cloned().unwrap_or_else(|| {
+                Arc::new(source_map_for_diagnostics(
+                    path,
+                    src,
+                    source_overrides,
+                    &diagnostics,
+                ))
+            });
+            diagnostics.attach_source_map(Arc::clone(&sources));
+            diagnostics
                 .iter()
-                .filter(|diagnostic| match diagnostic.source() {
-                    Some(source) => source == path,
-                    None => diagnostic.range().is_none(),
-                })
-                .map(|d| {
-                    let range = d.range().and_then(|r| doc.range(r)).unwrap_or(Range {
-                        start: Position {
-                            line: 0,
-                            character: 0,
-                        },
-                        end: Position {
-                            line: 0,
-                            character: 0,
-                        },
-                    });
-
-                    let severity = match d.severity() {
-                        diagnostics::Severity::Error => DiagnosticSeverity::ERROR,
-                        diagnostics::Severity::Warning => DiagnosticSeverity::WARNING,
-                    };
-
-                    Diagnostic {
-                        range,
-                        severity: Some(severity),
-                        source: Some("goml".to_string()),
-                        message: d.message().to_string(),
-                        ..Default::default()
-                    }
-                })
+                .filter_map(|diagnostic| diagnostic_to_lsp(path, doc, &sources, diagnostic))
                 .collect()
         }
     }
+}
+
+fn source_map_for_diagnostics(
+    path: &Path,
+    src: &str,
+    source_overrides: &HashMap<PathBuf, String>,
+    diagnostics: &diagnostics::Diagnostics,
+) -> SourceMap {
+    let mut source_texts = BTreeMap::new();
+    for (source_path, source) in source_overrides {
+        source_texts.insert(source_path.clone(), source.clone());
+    }
+    for diagnostic in diagnostics {
+        let Some(source_path) = diagnostic.source() else {
+            continue;
+        };
+        if source_texts.contains_key(source_path) {
+            continue;
+        }
+        if let Ok(source) = std::fs::read_to_string(source_path) {
+            source_texts.insert(source_path.to_path_buf(), source);
+        }
+    }
+    source_texts.insert(path.to_path_buf(), src.to_string());
+
+    let mut sources = SourceMap::new();
+    for (source_path, source) in source_texts {
+        sources.add(source_path, source);
+    }
+    sources
+}
+
+pub(crate) fn diagnostic_to_lsp(
+    path: &Path,
+    doc: &Document,
+    sources: &SourceMap,
+    diagnostic: &diagnostics::Diagnostic,
+) -> Option<Diagnostic> {
+    let anchor = diagnostic
+        .labels()
+        .iter()
+        .enumerate()
+        .filter(|(_, label)| label.severity() == LabelSeverity::Primary)
+        .find_map(|(index, label)| {
+            let file = sources.get(label.span().source())?;
+            if file.path() != path {
+                return None;
+            }
+            span_range(label.span(), doc).map(|range| (index, range))
+        });
+    let (anchor_index, range) = match anchor {
+        Some(anchor) => anchor,
+        None if diagnostic.labels().is_empty()
+            && diagnostic.range().is_none()
+            && diagnostic.source().is_none_or(|source| source == path) =>
+        {
+            (usize::MAX, Range::default())
+        }
+        None => return None,
+    };
+
+    let mut message = diagnostic.message().to_string();
+    if let Some(label_message) = diagnostic
+        .labels()
+        .get(anchor_index)
+        .and_then(|label| label.message())
+    {
+        message.push('\n');
+        message.push_str(label_message);
+    }
+    for note in diagnostic.notes() {
+        message.push_str("\nnote: ");
+        message.push_str(note.text());
+    }
+    for help in diagnostic.helps() {
+        message.push_str("\nhelp: ");
+        message.push_str(help.text());
+    }
+
+    let related_information = diagnostic
+        .labels()
+        .iter()
+        .enumerate()
+        .filter(|(index, _)| *index != anchor_index)
+        .filter_map(|(_, label)| related_information(sources, label))
+        .collect::<Vec<_>>();
+    let fixes = diagnostic
+        .fixes()
+        .iter()
+        .filter_map(|fix| fix_data(sources, fix))
+        .collect::<Vec<_>>();
+    let data = if fixes.is_empty() {
+        None
+    } else {
+        serde_json::to_value(DiagnosticData { fixes }).ok()
+    };
+
+    Some(Diagnostic {
+        range,
+        severity: Some(match diagnostic.severity() {
+            diagnostics::Severity::Error => DiagnosticSeverity::ERROR,
+            diagnostics::Severity::Warning => DiagnosticSeverity::WARNING,
+        }),
+        source: Some("goml".to_string()),
+        message,
+        related_information: (!related_information.is_empty()).then_some(related_information),
+        data,
+        ..Default::default()
+    })
+}
+
+fn span_range(span: Span, doc: &Document) -> Option<Range> {
+    let start = u32::try_from(span.start()).ok()?;
+    let end = u32::try_from(span.end()).ok()?;
+    doc.range(text_size::TextRange::new(start.into(), end.into()))
+}
+
+fn related_information(
+    sources: &SourceMap,
+    label: &diagnostics::Label,
+) -> Option<DiagnosticRelatedInformation> {
+    let file = sources.get(label.span().source())?;
+    let uri = Url::from_file_path(file.path()).ok()?;
+    let doc = Document::new(file.text().to_string());
+    let range = span_range(label.span(), &doc)?;
+    let message = label.message().unwrap_or(match label.severity() {
+        LabelSeverity::Primary => "related primary location",
+        LabelSeverity::Secondary => "related location",
+    });
+    Some(DiagnosticRelatedInformation {
+        location: Location { uri, range },
+        message: message.to_string(),
+    })
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct DiagnosticData {
+    fixes: Vec<FixData>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct FixData {
+    uri: Url,
+    range: Range,
+    replacement: String,
+    title: String,
+    preferred: bool,
+}
+
+fn fix_data(sources: &SourceMap, fix: &diagnostics::FixIt) -> Option<FixData> {
+    let file = sources.get(fix.span().source())?;
+    let uri = Url::from_file_path(file.path()).ok()?;
+    let doc = Document::new(file.text().to_string());
+    Some(FixData {
+        uri,
+        range: span_range(fix.span(), &doc)?,
+        replacement: fix.replacement().to_string(),
+        title: fix.message().unwrap_or("Apply suggested fix").to_string(),
+        preferred: fix.applicability() == FixApplicability::MachineApplicable,
+    })
 }
 
 pub fn hover(path: &Path, src: &str, position: Position) -> Option<Hover> {
@@ -75,14 +219,10 @@ pub fn hover_with_overrides(
     position: Position,
     source_overrides: &HashMap<PathBuf, String>,
 ) -> Option<Hover> {
-    let type_info = query::hover_type_with_overrides(
-        path,
-        src,
-        position.line,
-        position.character,
-        source_overrides,
-    )
-    .ok();
+    let doc = Document::new(src.to_string());
+    let (line, character) = doc.utf8_position(position)?;
+    let type_info =
+        query::hover_type_with_overrides(path, src, line, character, source_overrides).ok();
     let diagnostics = diagnostics_for_hover(path, src, position, source_overrides);
     if type_info.is_none() && diagnostics.is_empty() {
         return None;
@@ -125,29 +265,15 @@ fn diagnostics_for_hover(
     let doc = Document::new(src.to_string());
     let mut messages = Vec::new();
     let mut seen: HashSet<(diagnostics::Severity, String)> = HashSet::new();
-    let result = compiler::pipeline::pipeline::compile_for_analysis_with_overrides(
-        path,
-        src,
-        source_overrides,
-    );
-    let diagnostics = match result {
-        Ok(_) => return messages,
-        Err(err) => err.into_diagnostics(),
-    };
-    for diagnostic in diagnostics.iter() {
-        if diagnostic.source() != Some(path) {
+    for diagnostic in get_diagnostics_with_overrides(path, src, &doc, source_overrides) {
+        if !position_in_range(position, diagnostic.range) {
             continue;
         }
-        let Some(text_range) = diagnostic.range() else {
-            continue;
+        let severity = match diagnostic.severity {
+            Some(DiagnosticSeverity::WARNING) => diagnostics::Severity::Warning,
+            _ => diagnostics::Severity::Error,
         };
-        let Some(range) = doc.range(text_range) else {
-            continue;
-        };
-        if !position_in_range(position, range) {
-            continue;
-        }
-        let item = (diagnostic.severity(), diagnostic.message().to_string());
+        let item = (severity, diagnostic.message);
         if seen.insert(item.clone()) {
             messages.push(item);
         }
@@ -176,8 +302,8 @@ pub fn completion_with_overrides(
     position: Position,
     source_overrides: &HashMap<PathBuf, String>,
 ) -> Option<CompletionResponse> {
-    let line = position.line;
-    let col = position.character;
+    let doc = Document::new(src.to_string());
+    let (line, col) = doc.utf8_position(position)?;
 
     if let Some(items) =
         query::dot_completions_with_overrides(path, src, line, col, source_overrides)
@@ -213,13 +339,9 @@ pub fn signature_help_with_overrides(
     position: Position,
     source_overrides: &HashMap<PathBuf, String>,
 ) -> Option<SignatureHelp> {
-    let item = query::signature_help_with_overrides(
-        path,
-        src,
-        position.line,
-        position.character,
-        source_overrides,
-    )?;
+    let doc = Document::new(src.to_string());
+    let (line, character) = doc.utf8_position(position)?;
+    let item = query::signature_help_with_overrides(path, src, line, character, source_overrides)?;
     Some(signature_item_to_lsp(item))
 }
 
@@ -362,11 +484,12 @@ pub fn goto_definition_with_overrides(
     doc: &Document,
     source_overrides: &HashMap<PathBuf, String>,
 ) -> Option<GotoDefinitionResponse> {
+    let (line, character) = doc.utf8_position(position)?;
     let locations = query::goto_definition_locations_with_overrides(
         path,
         src,
-        position.line,
-        position.character,
+        line,
+        character,
         source_overrides,
     )
     .ok()?;
@@ -446,4 +569,37 @@ pub fn code_lenses(uri: &Url, path: &Path, src: &str, doc: &Document) -> Vec<Cod
             })
         })
         .collect()
+}
+
+pub fn code_actions(context: &CodeActionContext) -> Option<CodeActionResponse> {
+    let mut actions = Vec::new();
+    for diagnostic in &context.diagnostics {
+        let Some(data) = diagnostic.data.clone() else {
+            continue;
+        };
+        let Ok(data) = serde_json::from_value::<DiagnosticData>(data) else {
+            continue;
+        };
+        for fix in data.fixes {
+            let changes = HashMap::from([(
+                fix.uri,
+                vec![TextEdit {
+                    range: fix.range,
+                    new_text: fix.replacement,
+                }],
+            )]);
+            actions.push(CodeActionOrCommand::CodeAction(CodeAction {
+                title: fix.title,
+                kind: Some(CodeActionKind::QUICKFIX),
+                diagnostics: Some(vec![diagnostic.clone()]),
+                edit: Some(WorkspaceEdit {
+                    changes: Some(changes),
+                    ..Default::default()
+                }),
+                is_preferred: Some(fix.preferred),
+                ..Default::default()
+            }));
+        }
+    }
+    (!actions.is_empty()).then_some(actions)
 }
