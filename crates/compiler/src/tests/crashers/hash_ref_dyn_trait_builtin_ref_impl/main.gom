@@ -17,5 +17,9 @@ impl Hash for dyn Display {
 fn main() -> unit {
     let inner: dyn Display = 1i32;
     let r = Ref::new(inner);
-    println((Hash::hash(r) == string_hash("1")).to_string());
+    let alias = r;
+    let before = Hash::hash(r);
+    let replacement: dyn Display = 2i32;
+    r.set(replacement);
+    println((before == Hash::hash(alias)).to_string());
 }
