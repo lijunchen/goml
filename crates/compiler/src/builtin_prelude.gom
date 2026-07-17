@@ -338,13 +338,13 @@ impl Hash for float64 {
     }
 }
 
-impl [T: Eq] Eq for Ref[T] {
+impl [T] Eq for Ref[T] {
     fn eq(self: Ref[T], other: Ref[T]) -> bool {
         ptr_eq(self, other)
     }
 }
 
-impl [T: Hash] Hash for Ref[T] {
+impl [T] Hash for Ref[T] {
     fn hash(self: Ref[T]) -> uint64 {
         ptr_hash(self)
     }
