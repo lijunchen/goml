@@ -42,135 +42,135 @@ type Result__string__string_Err struct {
 func (_ Result__string__string_Err) isResult__string__string() {}
 
 func configure(ok__0 bool) Result__unit__string {
-    var retv35 Result__unit__string
-    var jp37 Result__unit__string
+    var retv71 Result__unit__string
+    var jp73 Result__unit__string
     if ok__0 {
-        var t38 Result__unit__string = Result__unit__string_Ok{
+        var t74 Result__unit__string = Result__unit__string_Ok{
             _0: struct{}{},
         }
-        jp37 = t38
+        jp73 = t74
     } else {
-        var t39 Result__unit__string = Result__unit__string_Err{
+        var t75 Result__unit__string = Result__unit__string_Err{
             _0: "config failed",
         }
-        jp37 = t39
+        jp73 = t75
     }
-    retv35 = jp37
-    return retv35
+    retv71 = jp73
+    return retv71
 }
 
 func read_duration(ok__1 bool) Result__string__string {
-    var retv41 Result__string__string
-    var jp43 Result__string__string
+    var retv77 Result__string__string
+    var jp79 Result__string__string
     if ok__1 {
-        var t44 Result__string__string = Result__string__string_Ok{
+        var t80 Result__string__string = Result__string__string_Ok{
             _0: "2s",
         }
-        jp43 = t44
+        jp79 = t80
     } else {
-        var t45 Result__string__string = Result__string__string_Err{
+        var t81 Result__string__string = Result__string__string_Err{
             _0: "duration failed",
         }
-        jp43 = t45
+        jp79 = t81
     }
-    retv41 = jp43
-    return retv41
+    retv77 = jp79
+    return retv77
 }
 
 func format_duration(value__2 string) string {
-    var retv47 string
-    var t48 string = "duration=" + value__2
-    retv47 = t48
-    return retv47
+    var retv83 string
+    var t84 string = "duration=" + value__2
+    retv83 = t84
+    return retv83
 }
 
 func configure_and_format(config_ok__3 bool, read_ok__4 bool) Result__string__string {
-    var retv50 Result__string__string
-    var mtmp22 Result__unit__string = configure(config_ok__3)
-    switch mtmp22.(type) {
+    var retv86 Result__string__string
+    var mtmp58 Result__unit__string = configure(config_ok__3)
+    switch mtmp58.(type) {
     case Result__unit__string_Ok:
-        var mtmp26 Result__string__string = read_duration(read_ok__4)
-        var jp53 string
-        switch mtmp26.(type) {
+        var mtmp62 Result__string__string = read_duration(read_ok__4)
+        var jp89 string
+        switch mtmp62.(type) {
         case Result__string__string_Ok:
-            var x27 string = mtmp26.(Result__string__string_Ok)._0
-            var try_value__27 string = x27
-            jp53 = try_value__27
-            var value__5 string = jp53
-            var t54 string = format_duration(value__5)
-            var t55 Result__string__string = Result__string__string_Ok{
-                _0: t54,
+            var x63 string = mtmp62.(Result__string__string_Ok)._0
+            var try_value__27 string = x63
+            jp89 = try_value__27
+            var value__5 string = jp89
+            var t90 string = format_duration(value__5)
+            var t91 Result__string__string = Result__string__string_Ok{
+                _0: t90,
             }
-            retv50 = t55
-            return retv50
+            retv86 = t91
+            return retv86
         case Result__string__string_Err:
-            var x28 string = mtmp26.(Result__string__string_Err)._0
-            var try_residual__27 string = x28
-            var t56 Result__string__string = Result__string__string_Err{
+            var x64 string = mtmp62.(Result__string__string_Err)._0
+            var try_residual__27 string = x64
+            var t92 Result__string__string = Result__string__string_Err{
                 _0: try_residual__27,
             }
-            retv50 = t56
-            return retv50
+            retv86 = t92
+            return retv86
         default:
             panic("non-exhaustive match")
         }
     case Result__unit__string_Err:
-        var x24 string = mtmp22.(Result__unit__string_Err)._0
-        var try_residual__23 string = x24
-        var t57 Result__string__string = Result__string__string_Err{
+        var x60 string = mtmp58.(Result__unit__string_Err)._0
+        var try_residual__23 string = x60
+        var t93 Result__string__string = Result__string__string_Err{
             _0: try_residual__23,
         }
-        retv50 = t57
-        return retv50
+        retv86 = t93
+        return retv86
     default:
         panic("non-exhaustive match")
     }
 }
 
 func show(res__6 Result__string__string) string {
-    var retv59 string
-    var jp61 string
+    var retv95 string
+    var jp97 string
     switch res__6.(type) {
     case Result__string__string_Ok:
-        var x29 string = res__6.(Result__string__string_Ok)._0
-        var value__7 string = x29
-        var t62 string = "ok " + value__7
-        jp61 = t62
+        var x65 string = res__6.(Result__string__string_Ok)._0
+        var value__7 string = x65
+        var t98 string = "ok " + value__7
+        jp97 = t98
     case Result__string__string_Err:
-        var x30 string = res__6.(Result__string__string_Err)._0
-        var err__8 string = x30
-        var t63 string = "err " + err__8
-        jp61 = t63
+        var x66 string = res__6.(Result__string__string_Err)._0
+        var err__8 string = x66
+        var t99 string = "err " + err__8
+        jp97 = t99
     default:
         panic("non-exhaustive match")
     }
-    retv59 = jp61
-    return retv59
+    retv95 = jp97
+    return retv95
 }
 
 func main0() struct{} {
-    var t65 Result__string__string = configure_and_format(true, true)
-    var t66 string = show(t65)
-    println__T_string(t66)
-    var t67 Result__string__string = configure_and_format(true, false)
-    var t68 string = show(t67)
-    println__T_string(t68)
-    var t69 Result__string__string = configure_and_format(false, true)
-    var t70 string = show(t69)
-    println__T_string(t70)
+    var t101 Result__string__string = configure_and_format(true, true)
+    var t102 string = show(t101)
+    println__T_string(t102)
+    var t103 Result__string__string = configure_and_format(true, false)
+    var t104 string = show(t103)
+    println__T_string(t104)
+    var t105 Result__string__string = configure_and_format(false, true)
+    var t106 string = show(t105)
+    println__T_string(t106)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t72 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t72)
+    var t108 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t108)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
-    var retv75 string
-    retv75 = self__9
-    return retv75
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__34 string) string {
+    var retv111 string
+    retv111 = self__34
+    return retv111
 }
 
 func main() {

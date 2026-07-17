@@ -452,10 +452,38 @@ fn main() {
                 ),
             },
             ValueCompletionItem {
+                name: "string_byte_get",
+                kind: Function,
+                detail: Some(
+                    "(string, int32) -> uint8",
+                ),
+            },
+            ValueCompletionItem {
                 name: "string_byte_slice",
                 kind: Function,
                 detail: Some(
                     "(string, int32, int32) -> string",
+                ),
+            },
+            ValueCompletionItem {
+                name: "string_concat",
+                kind: Function,
+                detail: Some(
+                    "(Vec[string]) -> string",
+                ),
+            },
+            ValueCompletionItem {
+                name: "string_decode_utf8_at",
+                kind: Function,
+                detail: Some(
+                    "(string, int32) -> (bool, char, int32)",
+                ),
+            },
+            ValueCompletionItem {
+                name: "string_from_utf8",
+                kind: Function,
+                detail: Some(
+                    "(Vec[uint8]) -> (bool, string)",
                 ),
             },
             ValueCompletionItem {
@@ -470,6 +498,13 @@ fn main() {
                 kind: Function,
                 detail: Some(
                     "(string) -> uint64",
+                ),
+            },
+            ValueCompletionItem {
+                name: "string_is_char_boundary",
+                kind: Function,
+                detail: Some(
+                    "(string, int32) -> bool",
                 ),
             },
             ValueCompletionItem {
@@ -491,6 +526,13 @@ fn main() {
                 kind: Function,
                 detail: Some(
                     "(string) -> unit",
+                ),
+            },
+            ValueCompletionItem {
+                name: "string_to_bytes",
+                kind: Function,
+                detail: Some(
+                    "(string) -> Vec[uint8]",
                 ),
             },
             ValueCompletionItem {
@@ -962,15 +1004,29 @@ fn main() {
         6,
         expect![[r#"
             [
+                "capacity",
+                "clear",
+                "extend",
                 "get",
+                "insert",
                 "into_iter",
+                "is_empty",
                 "iter",
+                "last",
                 "len",
                 "new",
+                "pop",
                 "push",
                 "pushed",
+                "remove",
+                "reserve",
+                "reverse",
                 "set",
                 "slice",
+                "swap",
+                "swap_remove",
+                "truncate",
+                "with_capacity",
             ]
         "#]],
     );
@@ -993,6 +1049,7 @@ fn main() {
         expect![[r#"
             [
                 "contains",
+                "entries",
                 "get",
                 "len",
                 "new",
@@ -1153,14 +1210,28 @@ fn main() {
         17,
         expect![[r#"
             [
+                "capacity",
+                "clear",
+                "extend",
                 "get",
+                "insert",
+                "is_empty",
                 "iter",
+                "last",
                 "len",
                 "new",
+                "pop",
                 "push",
                 "pushed",
+                "remove",
+                "reserve",
+                "reverse",
                 "set",
                 "slice",
+                "swap",
+                "swap_remove",
+                "truncate",
+                "with_capacity",
             ]
         "#]],
     );
@@ -1182,6 +1253,7 @@ fn main() {
         expect![[r#"
             [
                 "contains",
+                "entries",
                 "get",
                 "len",
                 "new",

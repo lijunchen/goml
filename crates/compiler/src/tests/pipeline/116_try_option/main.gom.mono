@@ -16,16 +16,16 @@ fn add(a/1: int32, b/2: int32) -> int32 {
 
 fn plus_two(flag/3: bool) -> Option__int32 {
   Option__int32::Some(add({
-    let mtmp22 = maybe_value(flag/3) in
-    match mtmp22 {
+    let mtmp58 = maybe_value(flag/3) in
+    match mtmp58 {
       Option__int32::None => {
         return Option__int32::None
       },
-      Option__int32::Some(x23) => {
+      Option__int32::Some(x59) => {
         {
-          let x23 = Option__int32::Some._0(mtmp22) in
+          let x59 = Option__int32::Some._0(mtmp58) in
           {
-            let try_value/15 = x23 in
+            let try_value/15 = x59 in
             try_value/15
           }
         }
@@ -39,11 +39,11 @@ fn show(opt/4: Option__int32) -> string {
     Option__int32::None => {
       "none"
     },
-    Option__int32::Some(x24) => {
+    Option__int32::Some(x60) => {
       {
-        let x24 = Option__int32::Some._0(opt/4) in
+        let x60 = Option__int32::Some._0(opt/4) in
         {
-          let value/5 = x24 in
+          let value/5 = x60 in
           ("some=" + inherent#int32#int32#to_string(value/5))
         }
       }
@@ -52,8 +52,8 @@ fn show(opt/4: Option__int32) -> string {
 }
 
 fn main() -> unit {
-  let _wild25 = println__T_string(show(plus_two(true))) in
-  let _wild26 = println__T_string(show(plus_two(false))) in
+  let _wild61 = println__T_string(show(plus_two(true))) in
+  let _wild62 = println__T_string(show(plus_two(false))) in
 }
 
 fn inherent#int32#int32#to_string(self/2: int32) -> string {
@@ -64,6 +64,6 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  self/9
+fn trait_impl#ToString#string#to_string(self/34: string) -> string {
+  self/34
 }

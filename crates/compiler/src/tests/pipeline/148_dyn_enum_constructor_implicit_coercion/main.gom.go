@@ -50,82 +50,82 @@ func dyn__Display__vtable__int32() *dyn__Display_vtable {
 }
 
 func _goml_m_trait__impl_i_Display_i_int32_i_show(self__0 int32) string {
-    var retv28 string
-    var t29 string = _goml_m_inherent_i_int32_i_int32_i_to__string(self__0)
-    retv28 = t29
-    return retv28
+    var retv64 string
+    var t65 string = _goml_m_inherent_i_int32_i_int32_i_to__string(self__0)
+    retv64 = t65
+    return retv64
 }
 
 func render(value__1 Boxed) string {
-    var retv31 string
-    var jp33 string
+    var retv67 string
+    var jp69 string
     switch value__1.(type) {
     case One:
-        var x22 dyn__Display = value__1.(One)._0
-        var inner__2 dyn__Display = x22
-        var t34 string = inner__2.vtable.show(inner__2.data)
-        jp33 = t34
+        var x58 dyn__Display = value__1.(One)._0
+        var inner__2 dyn__Display = x58
+        var t70 string = inner__2.vtable.show(inner__2.data)
+        jp69 = t70
     case Pair:
-        var x23 dyn__Display = value__1.(Pair)._0
-        var x24 dyn__Display = value__1.(Pair)._1
-        var right__4 dyn__Display = x24
-        var left__3 dyn__Display = x23
-        var t35 string = left__3.vtable.show(left__3.data)
-        var t36 string = t35 + "-"
-        var t37 string = right__4.vtable.show(right__4.data)
-        var t38 string = t36 + t37
-        jp33 = t38
+        var x59 dyn__Display = value__1.(Pair)._0
+        var x60 dyn__Display = value__1.(Pair)._1
+        var right__4 dyn__Display = x60
+        var left__3 dyn__Display = x59
+        var t71 string = left__3.vtable.show(left__3.data)
+        var t72 string = t71 + "-"
+        var t73 string = right__4.vtable.show(right__4.data)
+        var t74 string = t72 + t73
+        jp69 = t74
     default:
         panic("non-exhaustive match")
     }
-    retv31 = jp33
-    return retv31
+    retv67 = jp69
+    return retv67
 }
 
 func main0() struct{} {
-    var t40 dyn__Display = dyn__Display{
+    var t76 dyn__Display = dyn__Display{
         data: int32(42),
         vtable: dyn__Display__vtable__int32(),
     }
-    var t41 Boxed = One{
-        _0: t40,
+    var t77 Boxed = One{
+        _0: t76,
     }
-    var t42 string = render(t41)
-    println__T_string(t42)
-    var t43 dyn__Display = dyn__Display{
+    var t78 string = render(t77)
+    println__T_string(t78)
+    var t79 dyn__Display = dyn__Display{
         data: int32(7),
         vtable: dyn__Display__vtable__int32(),
     }
-    var t44 dyn__Display = dyn__Display{
+    var t80 dyn__Display = dyn__Display{
         data: int32(9),
         vtable: dyn__Display__vtable__int32(),
     }
-    var t45 Boxed = Pair{
-        _0: t43,
-        _1: t44,
+    var t81 Boxed = Pair{
+        _0: t79,
+        _1: t80,
     }
-    var t46 string = render(t45)
-    println__T_string(t46)
+    var t82 string = render(t81)
+    println__T_string(t82)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
-    var retv48 string
-    var t49 string = _goml_runtime_core_int32_to_string(self__2)
-    retv48 = t49
-    return retv48
+    var retv84 string
+    var t85 string = _goml_runtime_core_int32_to_string(self__2)
+    retv84 = t85
+    return retv84
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t51 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t51)
+    var t87 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t87)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
-    var retv54 string
-    retv54 = self__9
-    return retv54
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__34 string) string {
+    var retv90 string
+    retv90 = self__34
+    return retv90
 }
 
 func main() {

@@ -33,10 +33,10 @@ func main0() struct{} {
     }
     switch x__0.(type) {
     case Some:
-        var x22 uint8 = x__0.(Some)._0
-        var v__1 uint8 = x22
-        var t26 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(v__1)
-        println__T_string(t26)
+        var x58 uint8 = x__0.(Some)._0
+        var v__1 uint8 = x58
+        var t62 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(v__1)
+        println__T_string(t62)
     case None:
         println__T_string("none")
     default:
@@ -46,22 +46,22 @@ func main0() struct{} {
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t30 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t30)
+    var t66 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t66)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(self__15 uint8) string {
-    var retv33 string
-    var t34 string = _goml_runtime_core_uint8_to_string(self__15)
-    retv33 = t34
-    return retv33
+func _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(self__40 uint8) string {
+    var retv69 string
+    var t70 string = _goml_runtime_core_uint8_to_string(self__40)
+    retv69 = t70
+    return retv69
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
-    var retv36 string
-    retv36 = self__9
-    return retv36
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__34 string) string {
+    var retv72 string
+    retv72 = self__34
+    return retv72
 }
 
 func main() {

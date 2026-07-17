@@ -18,50 +18,50 @@ type Boxed struct {
 }
 
 func _goml_m_inherent_i_Boxed_i_Boxed_i_format(self__0 Boxed) string {
-    var retv25 string
-    retv25 = "inherent"
-    return retv25
+    var retv61 string
+    retv61 = "inherent"
+    return retv61
 }
 
 func _goml_m_trait__impl_i_Render_i_Boxed_i_format(self__1 Boxed) string {
-    var retv27 string
-    var t28 int32 = self__1.value
-    var t29 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t28)
-    retv27 = t29
-    return retv27
+    var retv63 string
+    var t64 int32 = self__1.value
+    var t65 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t64)
+    retv63 = t65
+    return retv63
 }
 
 func main0() struct{} {
-    var t31 Boxed = Boxed{
+    var t67 Boxed = Boxed{
         value: 9,
     }
-    var t32 string = _goml_m_inherent_i_Boxed_i_Boxed_i_format(t31)
-    println__T_string(t32)
-    var t33 Boxed = Boxed{
+    var t68 string = _goml_m_inherent_i_Boxed_i_Boxed_i_format(t67)
+    println__T_string(t68)
+    var t69 Boxed = Boxed{
         value: 9,
     }
-    var t34 string = _goml_m_trait__impl_i_Render_i_Boxed_i_format(t33)
-    println__T_string(t34)
+    var t70 string = _goml_m_trait__impl_i_Render_i_Boxed_i_format(t69)
+    println__T_string(t70)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
-    var retv36 string
-    var t37 string = _goml_runtime_core_int32_to_string(self__2)
-    retv36 = t37
-    return retv36
+    var retv72 string
+    var t73 string = _goml_runtime_core_int32_to_string(self__2)
+    retv72 = t73
+    return retv72
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t39 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t39)
+    var t75 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t75)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
-    var retv42 string
-    retv42 = self__9
-    return retv42
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__34 string) string {
+    var retv78 string
+    retv78 = self__34
+    return retv78
 }
 
 func main() {

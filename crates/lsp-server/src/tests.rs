@@ -1233,7 +1233,7 @@ fn main() {
 "#,
             5,
             6,
-            expect!["get, into_iter, iter, len, new, push, pushed, set, slice"],
+            expect!["capacity, clear, extend, get, insert, into_iter, is_empty, iter, last, len, new, pop, push, pushed, remove, reserve, reverse, set, slice, swap, swap_remove, truncate, with_capacity"],
         );
     }
 
@@ -1250,7 +1250,7 @@ fn main() {
 "#,
             5,
             6,
-            expect!["contains, get, len, new, remove, set"],
+            expect!["contains, entries, get, len, new, remove, set"],
         );
     }
 
@@ -1266,7 +1266,7 @@ fn main() {
 "#,
             4,
             17,
-            expect!["get, iter, len, new, push, pushed, set, slice"],
+            expect!["capacity, clear, extend, get, insert, is_empty, iter, last, len, new, pop, push, pushed, remove, reserve, reverse, set, slice, swap, swap_remove, truncate, with_capacity"],
         );
     }
 
@@ -1282,7 +1282,7 @@ fn main() {
 "#,
             4,
             21,
-            expect!["contains, get, len, new, remove, set"],
+            expect!["contains, entries, get, len, new, remove, set"],
         );
     }
 
@@ -2447,7 +2447,7 @@ path = "demo"
             "main.gom",
             "Option::Some",
             "Some",
-            expect!["src/builtin_contract.gom:75:4"],
+            expect!["src/builtin_contract.gom:87:4"],
         );
     }
 
@@ -2464,7 +2464,7 @@ fn main() -> unit {
 "#,
             "Vec::new()",
             "new",
-            expect!["src/builtin_prelude.gom:436:7"],
+            expect!["src/builtin_prelude.gom:494:7"],
         );
     }
 
@@ -2483,7 +2483,7 @@ fn main() -> unit {
 "#,
             "r.get()",
             "get",
-            expect!["src/builtin_prelude.gom:565:7"],
+            expect!["src/builtin_prelude.gom:736:7"],
         );
     }
 
@@ -2508,13 +2508,13 @@ fn main() -> unit {
             src,
             "HashMap::new()",
             "new",
-            expect!["src/builtin_prelude.gom:535:7"],
+            expect!["src/builtin_prelude.gom:702:7"],
         );
         check_goto_token(
             src,
             "m.set(Key::A, 1)",
             "set",
-            expect!["src/builtin_prelude.gom:543:7"],
+            expect!["src/builtin_prelude.gom:710:7"],
         );
     }
 

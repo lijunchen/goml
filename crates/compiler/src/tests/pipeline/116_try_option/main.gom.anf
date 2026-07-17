@@ -1,102 +1,102 @@
 fn maybe_value(flag/0: bool) -> Option__int32 {
-  join ret27(retv28: Option__int32) -> Option__int32 {
-    retv28
+  join ret63(retv64: Option__int32) -> Option__int32 {
+    retv64
   } in
-  join k29(jp30: Option__int32) -> Option__int32 {
-    jump ret27(jp30)
+  join k65(jp66: Option__int32) -> Option__int32 {
+    jump ret63(jp66)
   } in
   if flag/0 {
-    let t31 = Option__int32::Some(4) in
-    jump k29(t31)
+    let t67 = Option__int32::Some(4) in
+    jump k65(t67)
   } else {
-    jump k29(Tag_0)
+    jump k65(Tag_0)
   }
 }
 
 fn add(a/1: int32, b/2: int32) -> int32 {
-  join ret32(retv33: int32) -> int32 {
-    retv33
+  join ret68(retv69: int32) -> int32 {
+    retv69
   } in
-  let t34 = (a/1 + b/2) in
-  jump ret32(t34)
+  let t70 = (a/1 + b/2) in
+  jump ret68(t70)
 }
 
 fn plus_two(flag/3: bool) -> Option__int32 {
-  join ret35(retv36: Option__int32) -> Option__int32 {
-    retv36
+  join ret71(retv72: Option__int32) -> Option__int32 {
+    retv72
   } in
-  let mtmp22 = maybe_value(flag/3) in
-  join k37(jp38: int32) -> Option__int32 {
-    let t39 = add(jp38, 2) in
-    let t40 = Option__int32::Some(t39) in
-    jump ret35(t40)
+  let mtmp58 = maybe_value(flag/3) in
+  join k73(jp74: int32) -> Option__int32 {
+    let t75 = add(jp74, 2) in
+    let t76 = Option__int32::Some(t75) in
+    jump ret71(t76)
   } in
-  match mtmp22 {
+  match mtmp58 {
     Tag_0 => {
-      jump ret35(Tag_0)
+      jump ret71(Tag_0)
     },
     Tag_1 => {
-      let x23 = Option__int32::Some._0(mtmp22) in
-      let try_value/15 = x23 in
-      jump k37(try_value/15)
+      let x59 = Option__int32::Some._0(mtmp58) in
+      let try_value/15 = x59 in
+      jump k73(try_value/15)
     },
   }
 }
 
 fn show(opt/4: Option__int32) -> string {
-  join ret41(retv42: string) -> string {
-    retv42
+  join ret77(retv78: string) -> string {
+    retv78
   } in
-  join k43(jp44: string) -> string {
-    jump ret41(jp44)
+  join k79(jp80: string) -> string {
+    jump ret77(jp80)
   } in
   match opt/4 {
     Tag_0 => {
-      jump k43("none")
+      jump k79("none")
     },
     Tag_1 => {
-      let x24 = Option__int32::Some._0(opt/4) in
-      let value/5 = x24 in
-      let t45 = inherent#int32#int32#to_string(value/5) in
-      let t46 = ("some=" + t45) in
-      jump k43(t46)
+      let x60 = Option__int32::Some._0(opt/4) in
+      let value/5 = x60 in
+      let t81 = inherent#int32#int32#to_string(value/5) in
+      let t82 = ("some=" + t81) in
+      jump k79(t82)
     },
   }
 }
 
 fn main() -> unit {
-  join ret47() -> unit {
+  join ret83() -> unit {
     ()
   } in
-  let t48 = plus_two(true) in
-  let t49 = show(t48) in
-  let _wild25 = println__T_string(t49) in
-  let t50 = plus_two(false) in
-  let t51 = show(t50) in
-  let _wild26 = println__T_string(t51) in
-  jump ret47()
+  let t84 = plus_two(true) in
+  let t85 = show(t84) in
+  let _wild61 = println__T_string(t85) in
+  let t86 = plus_two(false) in
+  let t87 = show(t86) in
+  let _wild62 = println__T_string(t87) in
+  jump ret83()
 }
 
 fn inherent#int32#int32#to_string(self/2: int32) -> string {
-  join ret52(retv53: string) -> string {
-    retv53
+  join ret88(retv89: string) -> string {
+    retv89
   } in
-  let t54 = @runtime(core.int32_to_string)(self/2) in
-  jump ret52(t54)
+  let t90 = @runtime(core.int32_to_string)(self/2) in
+  jump ret88(t90)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret55() -> unit {
+  join ret91() -> unit {
     ()
   } in
-  let t56 = trait_impl#ToString#string#to_string(value/1) in
-  let t57 = @runtime(core.string_println)(t56) in
-  jump ret55()
+  let t92 = trait_impl#ToString#string#to_string(value/1) in
+  let t93 = @runtime(core.string_println)(t92) in
+  jump ret91()
 }
 
-fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret58(retv59: string) -> string {
-    retv59
+fn trait_impl#ToString#string#to_string(self/34: string) -> string {
+  join ret94(retv95: string) -> string {
+    retv95
   } in
-  jump ret58(self/9)
+  jump ret94(self/34)
 }

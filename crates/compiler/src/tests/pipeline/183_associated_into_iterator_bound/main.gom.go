@@ -84,10 +84,10 @@ type Some struct {
 func (_ Some) isOption__int32() {}
 
 func _goml_m_trait__impl_i_Batch_i_Numbers_i_items(self__0 Numbers) *_goml_vec_int32 {
-    var retv33 *_goml_vec_int32
-    var t34 *_goml_vec_int32 = self__0.values
-    retv33 = t34
-    return retv33
+    var retv69 *_goml_vec_int32
+    var t70 *_goml_vec_int32 = self__0.values
+    retv69 = t70
+    return retv69
 }
 
 func main0() struct{} {
@@ -95,162 +95,162 @@ func main0() struct{} {
     _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(values__3, 10)
     _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(values__3, 20)
     _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(values__3, 30)
-    var t36 Numbers = Numbers{
+    var t72 Numbers = Numbers{
         values: values__3,
     }
-    var t37 int32 = count__B_Numbers(t36)
-    println__T_int32(t37)
+    var t73 int32 = count__B_Numbers(t72)
+    println__T_int32(t73)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__int32() *_goml_vec_int32 {
-    var retv39 *_goml_vec_int32
-    var t40 *_goml_vec_int32 = vec_new__Vec_5int32()
-    retv39 = t40
-    return retv39
+    var retv75 *_goml_vec_int32
+    var t76 *_goml_vec_int32 = vec_new__Vec_5int32()
+    retv75 = t76
+    return retv75
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(self__94 *_goml_vec_int32, elem__95 int32) struct{} {
-    vec_push__Vec_5int32(self__94, elem__95)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(self__120 *_goml_vec_int32, elem__121 int32) struct{} {
+    vec_push__Vec_5int32(self__120, elem__121)
     return struct{}{}
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t44 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t44)
+    var t80 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
+    _goml_runtime_core_string_println(t80)
     return struct{}{}
 }
 
 func count__B_Numbers(batch__1 Numbers) int32 {
-    var retv47 int32
+    var retv83 int32
     var total__2 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(0)
-    var t48 *_goml_vec_int32 = _goml_m_trait__impl_i_Batch_i_Numbers_i_items(batch__1)
-    var for_iter22 FnIterator__int32 = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_int32_r__i_into__iter(t48)
-    Loop_loop51:
+    var t84 *_goml_vec_int32 = _goml_m_trait__impl_i_Batch_i_Numbers_i_items(batch__1)
+    var for_iter58 FnIterator__int32 = _goml_m_trait__impl_i_IntoIterator_i_Vec_l_int32_r__i_into__iter(t84)
+    Loop_loop87:
     for {
         if true {
-            var for_next23 Option__int32 = _goml_m_trait__impl_i_Iterator_i_FnIterator____int32_i_next(for_iter22)
-            switch for_next23.(type) {
+            var for_next59 Option__int32 = _goml_m_trait__impl_i_Iterator_i_FnIterator____int32_i_next(for_iter58)
+            switch for_next59.(type) {
             case None:
-                break Loop_loop51
+                break Loop_loop87
             case Some:
-                var t53 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(total__2)
-                var t54 int32 = t53 + 1
-                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(total__2, t54)
+                var t89 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(total__2)
+                var t90 int32 = t89 + 1
+                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(total__2, t90)
                 continue
             default:
                 panic("non-exhaustive match")
             }
         } else {
-            break Loop_loop51
+            break Loop_loop87
         }
     }
-    var t50 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(total__2)
-    retv47 = t50
-    return retv47
+    var t86 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(total__2)
+    retv83 = t86
+    return retv83
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__13 int32) string {
-    var retv56 string
-    var t57 string = _goml_runtime_core_int32_to_string(self__13)
-    retv56 = t57
-    return retv56
+func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__38 int32) string {
+    var retv92 string
+    var t93 string = _goml_runtime_core_int32_to_string(self__38)
+    retv92 = t93
+    return retv92
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__137 int32) *ref_int32_x {
-    var retv59 *ref_int32_x
-    var t60 *ref_int32_x = ref__Ref_5int32(value__137)
-    retv59 = t60
-    return retv59
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__200 int32) *ref_int32_x {
+    var retv95 *ref_int32_x
+    var t96 *ref_int32_x = ref__Ref_5int32(value__200)
+    retv95 = t96
+    return retv95
 }
 
-func _goml_m_trait__impl_i_IntoIterator_i_Vec_l_int32_r__i_into__iter(self__114 *_goml_vec_int32) FnIterator__int32 {
-    var retv62 FnIterator__int32
-    var t63 FnIterator__int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_iter____T__int32(self__114)
-    retv62 = t63
-    return retv62
+func _goml_m_trait__impl_i_IntoIterator_i_Vec_l_int32_r__i_into__iter(self__176 *_goml_vec_int32) FnIterator__int32 {
+    var retv98 FnIterator__int32
+    var t99 FnIterator__int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_iter____T__int32(self__176)
+    retv98 = t99
+    return retv98
 }
 
-func _goml_m_trait__impl_i_Iterator_i_FnIterator____int32_i_next(self__69 FnIterator__int32) Option__int32 {
-    var retv65 Option__int32
-    var t66 func() Option__int32 = self__69.next_fn
-    var t67 Option__int32 = t66()
-    retv65 = t67
-    return retv65
+func _goml_m_trait__impl_i_Iterator_i_FnIterator____int32_i_next(self__94 FnIterator__int32) Option__int32 {
+    var retv101 Option__int32
+    var t102 func() Option__int32 = self__94.next_fn
+    var t103 Option__int32 = t102()
+    retv101 = t103
+    return retv101
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__138 *ref_int32_x) int32 {
-    var retv69 int32
-    var t70 int32 = ref_get__Ref_5int32(self__138)
-    retv69 = t70
-    return retv69
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__201 *ref_int32_x) int32 {
+    var retv105 int32
+    var t106 int32 = ref_get__Ref_5int32(self__201)
+    retv105 = t106
+    return retv105
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__139 *ref_int32_x, value__140 int32) struct{} {
-    ref_set__Ref_5int32(self__139, value__140)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__202 *ref_int32_x, value__203 int32) struct{} {
+    ref_set__Ref_5int32(self__202, value__203)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_iter____T__int32(self__109 *_goml_vec_int32) FnIterator__int32 {
-    var retv74 FnIterator__int32
-    var index__110 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(0)
-    var len__111 int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__109)
-    var t75 closure_env_inherent_Vec_Vec_T_iter_T_int32_0 = closure_env_inherent_Vec_Vec_T_iter_T_int32_0{
-        index_0: index__110,
-        len_1: len__111,
-        self_2: self__109,
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_iter____T__int32(self__171 *_goml_vec_int32) FnIterator__int32 {
+    var retv110 FnIterator__int32
+    var index__172 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(0)
+    var len__173 int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__171)
+    var t111 closure_env_inherent_Vec_Vec_T_iter_T_int32_0 = closure_env_inherent_Vec_Vec_T_iter_T_int32_0{
+        index_0: index__172,
+        len_1: len__173,
+        self_2: self__171,
     }
-    var t76 FnIterator__int32 = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int32(func() Option__int32 {
-        return _goml_m_inherent_i_closure__en_hc2f7b05843f81f2ab8cf844432967a9e_nt32__0_i_apply(t75)
+    var t112 FnIterator__int32 = _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int32(func() Option__int32 {
+        return _goml_m_inherent_i_closure__en_hc2f7b05843f81f2ab8cf844432967a9e_nt32__0_i_apply(t111)
     })
-    retv74 = t76
-    return retv74
+    retv110 = t112
+    return retv110
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__105 *_goml_vec_int32) int32 {
-    var retv78 int32
-    var t79 int32 = vec_len__Vec_5int32(self__105)
-    retv78 = t79
-    return retv78
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__131 *_goml_vec_int32) int32 {
+    var retv114 int32
+    var t115 int32 = vec_len__Vec_5int32(self__131)
+    retv114 = t115
+    return retv114
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__int32(self__100 *_goml_vec_int32, index__101 int32) int32 {
-    var retv81 int32
-    var t82 int32 = vec_get__Vec_5int32(self__100, index__101)
-    retv81 = t82
-    return retv81
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__int32(self__126 *_goml_vec_int32, index__127 int32) int32 {
+    var retv117 int32
+    var t118 int32 = vec_get__Vec_5int32(self__126, index__127)
+    retv117 = t118
+    return retv117
 }
 
-func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int32(next_fn__68 func() Option__int32) FnIterator__int32 {
-    var retv84 FnIterator__int32
-    var t85 FnIterator__int32 = FnIterator__int32{
-        next_fn: next_fn__68,
+func _goml_m_inherent_i_FnIterator_i_FnIterator_l_T_r__i_from__fn____T__int32(next_fn__93 func() Option__int32) FnIterator__int32 {
+    var retv120 FnIterator__int32
+    var t121 FnIterator__int32 = FnIterator__int32{
+        next_fn: next_fn__93,
     }
-    retv84 = t85
-    return retv84
+    retv120 = t121
+    return retv120
 }
 
-func _goml_m_inherent_i_closure__en_hc2f7b05843f81f2ab8cf844432967a9e_nt32__0_i_apply(env31 closure_env_inherent_Vec_Vec_T_iter_T_int32_0) Option__int32 {
-    var retv93 Option__int32
-    var index__110 *ref_int32_x = env31.index_0
-    var len__111 int32 = env31.len_1
-    var self__109 *_goml_vec_int32 = env31.self_2
-    var current__112 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(index__110)
-    var t96 bool = current__112 < len__111
-    var jp95 Option__int32
-    if t96 {
-        var value__113 int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__int32(self__109, current__112)
-        var t97 int32 = current__112 + 1
-        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(index__110, t97)
-        var t98 Option__int32 = Some{
-            _0: value__113,
+func _goml_m_inherent_i_closure__en_hc2f7b05843f81f2ab8cf844432967a9e_nt32__0_i_apply(env67 closure_env_inherent_Vec_Vec_T_iter_T_int32_0) Option__int32 {
+    var retv129 Option__int32
+    var index__172 *ref_int32_x = env67.index_0
+    var len__173 int32 = env67.len_1
+    var self__171 *_goml_vec_int32 = env67.self_2
+    var current__174 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(index__172)
+    var t132 bool = current__174 < len__173
+    var jp131 Option__int32
+    if t132 {
+        var value__175 int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_get____T__int32(self__171, current__174)
+        var t133 int32 = current__174 + 1
+        _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(index__172, t133)
+        var t134 Option__int32 = Some{
+            _0: value__175,
         }
-        jp95 = t98
+        jp131 = t134
     } else {
-        jp95 = None{}
+        jp131 = None{}
     }
-    retv93 = jp95
-    return retv93
+    retv129 = jp131
+    return retv129
 }
 
 func main() {

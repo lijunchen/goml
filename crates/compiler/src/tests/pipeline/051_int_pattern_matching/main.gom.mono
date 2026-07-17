@@ -48,11 +48,11 @@ fn is_special64(value/3: int64) -> bool {
 
 fn match_tuple(values/4: (int8, int16)) -> bool {
   {
-    let x22 = values/4.0 in
-    let x23 = values/4.1 in
-    match x23 {
+    let x58 = values/4.0 in
+    let x59 = values/4.1 in
+    match x59 {
       2 => {
-        match x22 {
+        match x58 {
           1 => {
             true
           },
@@ -66,11 +66,11 @@ fn match_tuple(values/4: (int8, int16)) -> bool {
 
 fn match_struct(pair/5: PairData) -> bool {
   {
-    let x24 = PairData.head(pair/5) in
-    let x25 = PairData.tail(pair/5) in
-    match x25 {
+    let x60 = PairData.head(pair/5) in
+    let x61 = PairData.tail(pair/5) in
+    match x61 {
       200 => {
-        match x24 {
+        match x60 {
           100 => {
             true
           },
@@ -106,20 +106,20 @@ fn main() -> unit {
   let part8/21 = report(",struct_first=", pair_first/12) in
   let part9/22 = report(",struct_second=", pair_second/13) in
   let message/23 = ((((((((part1/14 + part2/15) + part3/16) + part4/17) + part5/18) + part6/19) + part7/20) + part8/21) + part9/22) in
-  let mtmp26 = println__T_string(message/23) in
+  let mtmp62 = println__T_string(message/23) in
   {
     ()
   }
 }
 
-fn trait_impl#ToString#bool#to_string(self/8: bool) -> string {
-  @runtime(core.bool_to_string)(self/8)
+fn trait_impl#ToString#bool#to_string(self/33: bool) -> string {
+  @runtime(core.bool_to_string)(self/33)
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  self/9
+fn trait_impl#ToString#string#to_string(self/34: string) -> string {
+  self/34
 }

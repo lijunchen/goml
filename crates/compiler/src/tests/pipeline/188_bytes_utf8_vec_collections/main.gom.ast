@@ -1,0 +1,117 @@
+package main;
+fn print_chars(value: string) -> unit {
+    for character in value.chars() {
+        println(character)
+    }
+}
+
+fn print_char_indices(value: string) -> unit {
+    for item in value.char_indices() {
+        let (index, character) = item;
+        println(index.to_string() + ":" + character.to_string())
+    }
+}
+
+fn main() {
+    let value = "a你好😀z";
+    println(value.byte_len());
+    println(value.len());
+    println(value.get(0));
+    println(value.get(1));
+    println(value.get(4));
+    println(value.get(7));
+    println(value.get(11));
+    println(value.is_char_boundary(0));
+    println(value.is_char_boundary(2));
+    println(value.is_char_boundary(7));
+    println(value.is_char_boundary(12));
+    println(value.byte_slice(1, 7));
+    match value.decode_at(7) {
+        Option::Some(decoded) => {
+              let (character, width) = decoded;
+              println(character);
+              println(width)
+          },
+        Option::None => println("missing"),
+    };
+    print_chars(value);
+    print_char_indices(value);
+    let bytes = value.to_bytes();
+    println(bytes.len());
+    println(bytes.get(0));
+    println(bytes.get(1));
+    let (roundtrip_valid, roundtrip) = string_from_utf8(bytes);
+    println(roundtrip_valid);
+    println(roundtrip);
+    let invalid: Vec[uint8] = Vec::new();
+    invalid.push(255u8);
+    invalid.push(254u8);
+    let (invalid_valid, invalid_text) = string_from_utf8(invalid);
+    println(invalid_valid);
+    println(invalid_text == "");
+    let parts: Vec[string] = Vec::with_capacity(3);
+    parts.push("hello");
+    parts.push("，");
+    parts.push("世界");
+    println(parts.capacity() >= 3);
+    println(string_concat(parts));
+    let values: Vec[int32] = Vec::with_capacity(1);
+    println(values.len());
+    println(values.capacity() >= 1);
+    values.reserve(100);
+    println(values.capacity() >= 100);
+    values.push(1);
+    values.push(2);
+    values.push(3);
+    values.insert(1, 9);
+    println(values.len());
+    println(values.remove(2));
+    println(values.swap_remove(0));
+    values.reverse();
+    println(values.get(0));
+    println(values.get(1));
+    match values.last() {
+        Option::Some(value) => println(value),
+        Option::None => println(-1),
+    };
+    match values.pop() {
+        Option::Some(value) => println(value),
+        Option::None => println(-1),
+    };
+    values.truncate(0);
+    println(values.is_empty());
+    values.push(42);
+    values.clear();
+    println(values.len());
+    let map: HashMap[string, int32] = HashMap::new();
+    map.set("a", 1);
+    map.set("b", 2);
+    let entries = map.entries();
+    println(entries.len());
+    map.set("c", 3);
+    map.remove("a");
+    println(entries.len());
+    let seen_a = Ref::new(false);
+    let seen_b = Ref::new(false);
+    for entry in entries {
+        let (key, item_value) = entry;
+        if key == "a" && item_value == 1 {
+            {
+                seen_a.set(true)
+            }
+        } else {
+            if key == "b" && item_value == 2 {
+                {
+                    seen_b.set(true)
+                }
+            } else {
+                {
+                    ()
+                }
+            }
+        }
+    };
+    println(seen_a.get());
+    println(seen_b.get())
+}
+

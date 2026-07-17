@@ -42,125 +42,125 @@ type Option__string_Some struct {
 func (_ Option__string_Some) isOption__string() {}
 
 func maybe_primary(flag__0 bool) Option__int32 {
-    var retv31 Option__int32
-    var jp33 Option__int32
+    var retv67 Option__int32
+    var jp69 Option__int32
     if flag__0 {
-        var t34 Option__int32 = Option__int32_Some{
+        var t70 Option__int32 = Option__int32_Some{
             _0: 4,
         }
-        jp33 = t34
+        jp69 = t70
     } else {
-        jp33 = Option__int32_None{}
+        jp69 = Option__int32_None{}
     }
-    retv31 = jp33
-    return retv31
+    retv67 = jp69
+    return retv67
 }
 
 func maybe_secondary(flag__1 bool) Option__int32 {
-    var retv36 Option__int32
-    var jp38 Option__int32
+    var retv72 Option__int32
+    var jp74 Option__int32
     if flag__1 {
-        var t39 Option__int32 = Option__int32_Some{
+        var t75 Option__int32 = Option__int32_Some{
             _0: 9,
         }
-        jp38 = t39
+        jp74 = t75
     } else {
-        jp38 = Option__int32_None{}
+        jp74 = Option__int32_None{}
     }
-    retv36 = jp38
-    return retv36
+    retv72 = jp74
+    return retv72
 }
 
 func mixed(primary__2 bool, secondary__3 bool) Option__string {
-    var retv41 Option__string
-    var mtmp22 Option__int32 = maybe_primary(primary__2)
-    var jp43 int32
-    switch mtmp22.(type) {
+    var retv77 Option__string
+    var mtmp58 Option__int32 = maybe_primary(primary__2)
+    var jp79 int32
+    switch mtmp58.(type) {
     case Option__int32_None:
-        retv41 = Option__string_None{}
-        return retv41
+        retv77 = Option__string_None{}
+        return retv77
     case Option__int32_Some:
-        var x23 int32 = mtmp22.(Option__int32_Some)._0
-        var try_value__18 int32 = x23
-        jp43 = try_value__18
-        var value__4 int32 = jp43
-        var mtmp24 Option__int32 = maybe_secondary(secondary__3)
-        var jp45 string
-        switch mtmp24.(type) {
+        var x59 int32 = mtmp58.(Option__int32_Some)._0
+        var try_value__18 int32 = x59
+        jp79 = try_value__18
+        var value__4 int32 = jp79
+        var mtmp60 Option__int32 = maybe_secondary(secondary__3)
+        var jp81 string
+        switch mtmp60.(type) {
         case Option__int32_None:
-            jp45 = "extra=none"
+            jp81 = "extra=none"
         case Option__int32_Some:
-            var x25 int32 = mtmp24.(Option__int32_Some)._0
-            var extra__5 int32 = x25
-            var t51 string = _goml_m_inherent_i_int32_i_int32_i_to__string(extra__5)
-            var t52 string = "extra=" + t51
-            jp45 = t52
+            var x61 int32 = mtmp60.(Option__int32_Some)._0
+            var extra__5 int32 = x61
+            var t87 string = _goml_m_inherent_i_int32_i_int32_i_to__string(extra__5)
+            var t88 string = "extra=" + t87
+            jp81 = t88
         default:
             panic("non-exhaustive match")
         }
-        var label__6 string = jp45
-        var t46 string = _goml_m_inherent_i_int32_i_int32_i_to__string(value__4)
-        var t47 string = "value=" + t46
-        var t48 string = t47 + ","
-        var t49 string = t48 + label__6
-        var t50 Option__string = Option__string_Some{
-            _0: t49,
+        var label__6 string = jp81
+        var t82 string = _goml_m_inherent_i_int32_i_int32_i_to__string(value__4)
+        var t83 string = "value=" + t82
+        var t84 string = t83 + ","
+        var t85 string = t84 + label__6
+        var t86 Option__string = Option__string_Some{
+            _0: t85,
         }
-        retv41 = t50
-        return retv41
+        retv77 = t86
+        return retv77
     default:
         panic("non-exhaustive match")
     }
 }
 
 func show(opt__7 Option__string) string {
-    var retv54 string
-    var jp56 string
+    var retv90 string
+    var jp92 string
     switch opt__7.(type) {
     case Option__string_None:
-        jp56 = "none"
+        jp92 = "none"
     case Option__string_Some:
-        var x26 string = opt__7.(Option__string_Some)._0
-        var value__8 string = x26
-        var t57 string = "some=" + value__8
-        jp56 = t57
+        var x62 string = opt__7.(Option__string_Some)._0
+        var value__8 string = x62
+        var t93 string = "some=" + value__8
+        jp92 = t93
     default:
         panic("non-exhaustive match")
     }
-    retv54 = jp56
-    return retv54
+    retv90 = jp92
+    return retv90
 }
 
 func main0() struct{} {
-    var t59 Option__string = mixed(true, true)
-    var t60 string = show(t59)
-    println__T_string(t60)
-    var t61 Option__string = mixed(true, false)
-    var t62 string = show(t61)
-    println__T_string(t62)
-    var t63 Option__string = mixed(false, true)
-    var t64 string = show(t63)
-    println__T_string(t64)
+    var t95 Option__string = mixed(true, true)
+    var t96 string = show(t95)
+    println__T_string(t96)
+    var t97 Option__string = mixed(true, false)
+    var t98 string = show(t97)
+    println__T_string(t98)
+    var t99 Option__string = mixed(false, true)
+    var t100 string = show(t99)
+    println__T_string(t100)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
-    var retv66 string
-    var t67 string = _goml_runtime_core_int32_to_string(self__2)
-    retv66 = t67
-    return retv66
+    var retv102 string
+    var t103 string = _goml_runtime_core_int32_to_string(self__2)
+    retv102 = t103
+    return retv102
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t69 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t69)
+    var t105 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t105)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
-    var retv72 string
-    retv72 = self__9
-    return retv72
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__34 string) string {
+    var retv108 string
+    retv108 = self__34
+    return retv108
 }
 
 func main() {

@@ -1,68 +1,68 @@
 fn trait_impl#Display#Point#show(self/0: Point) -> string {
-  join ret24(retv25: string) -> string {
-    retv25
+  join ret60(retv61: string) -> string {
+    retv61
   } in
-  let t26 = Point.x(self/0) in
-  let t27 = inherent#int32#int32#to_string(t26) in
-  let t28 = ("Point(" + t27) in
-  let t29 = (t28 + ",") in
-  let t30 = Point.y(self/0) in
-  let t31 = inherent#int32#int32#to_string(t30) in
-  let t32 = (t29 + t31) in
-  let t33 = (t32 + ")") in
-  jump ret24(t33)
+  let t62 = Point.x(self/0) in
+  let t63 = inherent#int32#int32#to_string(t62) in
+  let t64 = ("Point(" + t63) in
+  let t65 = (t64 + ",") in
+  let t66 = Point.y(self/0) in
+  let t67 = inherent#int32#int32#to_string(t66) in
+  let t68 = (t65 + t67) in
+  let t69 = (t68 + ")") in
+  jump ret60(t69)
 }
 
 fn trait_impl#Display#Flag#show(self/1: Flag) -> string {
-  join ret34(retv35: string) -> string {
-    retv35
+  join ret70(retv71: string) -> string {
+    retv71
   } in
-  let t38 = Flag.value(self/1) in
-  join k36(jp37: string) -> string {
-    jump ret34(jp37)
+  let t74 = Flag.value(self/1) in
+  join k72(jp73: string) -> string {
+    jump ret70(jp73)
   } in
-  if t38 {
-    jump k36("Flag(true)")
+  if t74 {
+    jump k72("Flag(true)")
   } else {
-    jump k36("Flag(false)")
+    jump k72("Flag(false)")
   }
 }
 
 fn main() -> unit {
-  join ret39() -> unit {
+  join ret75() -> unit {
     ()
   } in
   let p/2 = Point { x: 1, y: 2 } in
   let t/3 = Flag { value: true } in
   let dp/4 = to_dyn[Display]{Point}(p/2) in
   let dt/5 = to_dyn[Display]{Flag}(t/3) in
-  let t40 = dyn_call[Display::show](dp/4) in
-  let mtmp22 = println__T_string(t40) in
-  let t41 = dyn_call[Display::show](dt/5) in
-  let mtmp23 = println__T_string(t41) in
-  jump ret39()
+  let t76 = dyn_call[Display::show](dp/4) in
+  let mtmp58 = println__T_string(t76) in
+  let t77 = dyn_call[Display::show](dt/5) in
+  let mtmp59 = println__T_string(t77) in
+  jump ret75()
 }
 
 fn inherent#int32#int32#to_string(self/2: int32) -> string {
-  join ret42(retv43: string) -> string {
-    retv43
+  join ret78(retv79: string) -> string {
+    retv79
   } in
-  let t44 = @runtime(core.int32_to_string)(self/2) in
-  jump ret42(t44)
+  let t80 = @runtime(core.int32_to_string)(self/2) in
+  jump ret78(t80)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret45() -> unit {
+  join ret81() -> unit {
     ()
   } in
-  let t46 = trait_impl#ToString#string#to_string(value/1) in
-  let t47 = @runtime(core.string_println)(t46) in
-  jump ret45()
+  let t82 = trait_impl#ToString#string#to_string(value/1) in
+  let t83 = @runtime(core.string_println)(t82) in
+  jump ret81()
 }
 
-fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret48(retv49: string) -> string {
-    retv49
+fn trait_impl#ToString#string#to_string(self/34: string) -> string {
+  join ret84(retv85: string) -> string {
+    retv85
   } in
-  jump ret48(self/9)
+  jump ret84(self/34)
 }

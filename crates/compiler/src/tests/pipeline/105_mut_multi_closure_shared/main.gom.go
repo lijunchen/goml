@@ -49,48 +49,48 @@ func main0() struct{} {
         x_0: x__0,
     }
     _goml_m_inherent_i_closure__env__inc__0_i_closure__env__inc__0_i_apply(inc__1)
-    var t28 int32 = _goml_m_inherent_i_closure__env__get__1_i_closure__env__get__1_i_apply(get__2)
-    var t29 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t28)
-    println__T_string(t29)
+    var t64 int32 = _goml_m_inherent_i_closure__env__get__1_i_closure__env__get__1_i_apply(get__2)
+    var t65 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t64)
+    println__T_string(t65)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t31 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t31)
+    var t67 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t67)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
-    var retv34 string
-    var t35 string = _goml_runtime_core_int32_to_string(self__2)
-    retv34 = t35
-    return retv34
+    var retv70 string
+    var t71 string = _goml_runtime_core_int32_to_string(self__2)
+    retv70 = t71
+    return retv70
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
-    var retv37 string
-    retv37 = self__9
-    return retv37
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__34 string) string {
+    var retv73 string
+    retv73 = self__34
+    return retv73
 }
 
-func _goml_m_inherent_i_closure__env__inc__0_i_closure__env__inc__0_i_apply(env25 closure_env_inc_0) int32 {
-    var retv45 int32
-    var x__0 *ref_int32_x = env25.x_0
-    var t46 int32 = ref_get__Ref_5int32(x__0)
-    var t47 int32 = t46 + 1
-    ref_set__Ref_5int32(x__0, t47)
-    var t48 int32 = ref_get__Ref_5int32(x__0)
-    retv45 = t48
-    return retv45
+func _goml_m_inherent_i_closure__env__inc__0_i_closure__env__inc__0_i_apply(env61 closure_env_inc_0) int32 {
+    var retv81 int32
+    var x__0 *ref_int32_x = env61.x_0
+    var t82 int32 = ref_get__Ref_5int32(x__0)
+    var t83 int32 = t82 + 1
+    ref_set__Ref_5int32(x__0, t83)
+    var t84 int32 = ref_get__Ref_5int32(x__0)
+    retv81 = t84
+    return retv81
 }
 
-func _goml_m_inherent_i_closure__env__get__1_i_closure__env__get__1_i_apply(env26 closure_env_get_1) int32 {
-    var retv50 int32
-    var x__0 *ref_int32_x = env26.x_0
-    var t51 int32 = ref_get__Ref_5int32(x__0)
-    retv50 = t51
-    return retv50
+func _goml_m_inherent_i_closure__env__get__1_i_closure__env__get__1_i_apply(env62 closure_env_get_1) int32 {
+    var retv86 int32
+    var x__0 *ref_int32_x = env62.x_0
+    var t87 int32 = ref_get__Ref_5int32(x__0)
+    retv86 = t87
+    return retv86
 }
 
 func main() {

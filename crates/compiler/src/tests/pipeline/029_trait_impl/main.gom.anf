@@ -1,83 +1,83 @@
 fn trait_impl#Display#Point#show(self/0: Point) -> string {
-  join ret26(retv27: string) -> string {
-    retv27
+  join ret62(retv63: string) -> string {
+    retv63
   } in
-  jump ret26("Point")
+  jump ret62("Point")
 }
 
 fn trait_impl#Display#Maybe__int32#show(self/1: Maybe__int32) -> string {
-  join ret28(retv29: string) -> string {
-    retv29
+  join ret64(retv65: string) -> string {
+    retv65
   } in
-  join k30(jp31: string) -> string {
-    jump ret28(jp31)
+  join k66(jp67: string) -> string {
+    jump ret64(jp67)
   } in
   match self/1 {
     Tag_0 => {
-      let x22 = Maybe__int32::Just._0(self/1) in
-      let value/2 = x22 in
-      let t32 = inherent#int32#int32#to_string(value/2) in
-      let t33 = ("Just(" + t32) in
-      let t34 = (t33 + ")") in
-      jump k30(t34)
+      let x58 = Maybe__int32::Just._0(self/1) in
+      let value/2 = x58 in
+      let t68 = inherent#int32#int32#to_string(value/2) in
+      let t69 = ("Just(" + t68) in
+      let t70 = (t69 + ")") in
+      jump k66(t70)
     },
     Tag_1 => {
-      jump k30("Nothing")
+      jump k66("Nothing")
     },
   }
 }
 
 fn make_maybe(flag/3: bool) -> Maybe__int32 {
-  join ret35(retv36: Maybe__int32) -> Maybe__int32 {
-    retv36
+  join ret71(retv72: Maybe__int32) -> Maybe__int32 {
+    retv72
   } in
-  join k37(jp38: Maybe__int32) -> Maybe__int32 {
-    jump ret35(jp38)
+  join k73(jp74: Maybe__int32) -> Maybe__int32 {
+    jump ret71(jp74)
   } in
   if flag/3 {
-    let t39 = Maybe__int32::Just(42) in
-    jump k37(t39)
+    let t75 = Maybe__int32::Just(42) in
+    jump k73(t75)
   } else {
-    jump k37(Tag_1)
+    jump k73(Tag_1)
   }
 }
 
 fn main() -> unit {
-  join ret40() -> unit {
+  join ret76() -> unit {
     ()
   } in
   let point/4 = Point { x: 1, y: 2 } in
   let some_number/5 = make_maybe(true) in
   let none_number/6 = make_maybe(false) in
-  let t41 = trait_impl#Display#Point#show(point/4) in
-  let mtmp23 = println__T_string(t41) in
-  let t42 = trait_impl#Display#Maybe__int32#show(some_number/5) in
-  let mtmp24 = println__T_string(t42) in
-  let t43 = trait_impl#Display#Maybe__int32#show(none_number/6) in
-  let mtmp25 = println__T_string(t43) in
-  jump ret40()
+  let t77 = trait_impl#Display#Point#show(point/4) in
+  let mtmp59 = println__T_string(t77) in
+  let t78 = trait_impl#Display#Maybe__int32#show(some_number/5) in
+  let mtmp60 = println__T_string(t78) in
+  let t79 = trait_impl#Display#Maybe__int32#show(none_number/6) in
+  let mtmp61 = println__T_string(t79) in
+  jump ret76()
 }
 
 fn inherent#int32#int32#to_string(self/2: int32) -> string {
-  join ret44(retv45: string) -> string {
-    retv45
+  join ret80(retv81: string) -> string {
+    retv81
   } in
-  let t46 = @runtime(core.int32_to_string)(self/2) in
-  jump ret44(t46)
+  let t82 = @runtime(core.int32_to_string)(self/2) in
+  jump ret80(t82)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret47() -> unit {
+  join ret83() -> unit {
     ()
   } in
-  let t48 = trait_impl#ToString#string#to_string(value/1) in
-  let t49 = @runtime(core.string_println)(t48) in
-  jump ret47()
+  let t84 = trait_impl#ToString#string#to_string(value/1) in
+  let t85 = @runtime(core.string_println)(t84) in
+  jump ret83()
 }
 
-fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret50(retv51: string) -> string {
-    retv51
+fn trait_impl#ToString#string#to_string(self/34: string) -> string {
+  join ret86(retv87: string) -> string {
+    retv87
   } in
-  jump ret50(self/9)
+  jump ret86(self/34)
 }

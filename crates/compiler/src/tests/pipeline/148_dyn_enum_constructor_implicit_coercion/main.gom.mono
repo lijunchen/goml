@@ -4,23 +4,23 @@ fn trait_impl#Display#int32#show(self/0: int32) -> string {
 
 fn render(value/1: Boxed) -> string {
   match value/1 {
-    Boxed::One(x22) => {
+    Boxed::One(x58) => {
       {
-        let x22 = Boxed::One._0(value/1) in
+        let x58 = Boxed::One._0(value/1) in
         {
-          let inner/2 = x22 in
+          let inner/2 = x58 in
           dyn_call[Display::show](inner/2)
         }
       }
     },
-    Boxed::Pair(x23, x24) => {
+    Boxed::Pair(x59, x60) => {
       {
-        let x23 = Boxed::Pair._0(value/1) in
-        let x24 = Boxed::Pair._1(value/1) in
+        let x59 = Boxed::Pair._0(value/1) in
+        let x60 = Boxed::Pair._1(value/1) in
         {
-          let right/4 = x24 in
+          let right/4 = x60 in
           {
-            let left/3 = x23 in
+            let left/3 = x59 in
             ((dyn_call[Display::show](left/3) + "-") + dyn_call[Display::show](right/4))
           }
         }
@@ -30,8 +30,8 @@ fn render(value/1: Boxed) -> string {
 }
 
 fn main() -> unit {
-  let _wild25 = println__T_string(render(Boxed::One(to_dyn[Display]{int32}(42)))) in
-  let _wild26 = println__T_string(render(Boxed::Pair(to_dyn[Display]{int32}(7), to_dyn[Display]{int32}(9)))) in
+  let _wild61 = println__T_string(render(Boxed::One(to_dyn[Display]{int32}(42)))) in
+  let _wild62 = println__T_string(render(Boxed::Pair(to_dyn[Display]{int32}(7), to_dyn[Display]{int32}(9)))) in
 }
 
 fn inherent#int32#int32#to_string(self/2: int32) -> string {
@@ -42,6 +42,6 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  self/9
+fn trait_impl#ToString#string#to_string(self/34: string) -> string {
+  self/34
 }

@@ -1,0 +1,121 @@
+fn show_u8(value/0: uint8) -> unit {
+    (println : (uint8) -> unit)((value/0 : uint8))
+}
+
+fn show_u16(value/1: uint16) -> unit {
+    (println : (uint16) -> unit)((value/1 : uint16))
+}
+
+fn show_u32(value/2: uint32) -> unit {
+    (println : (uint32) -> unit)((value/2 : uint32))
+}
+
+fn show_u64(value/3: uint64) -> unit {
+    (println : (uint64) -> unit)((value/3 : uint64))
+}
+
+fn show_i8(value/4: int8) -> unit {
+    (println : (int8) -> unit)((value/4 : int8))
+}
+
+fn show_i16(value/5: int16) -> unit {
+    (println : (int16) -> unit)((value/5 : int16))
+}
+
+fn show_i32(value/6: int32) -> unit {
+    (println : (int32) -> unit)((value/6 : int32))
+}
+
+fn show_i64(value/7: int64) -> unit {
+    (println : (int64) -> unit)((value/7 : int64))
+}
+
+fn unsigned_ops() -> unit {
+    (show_u8 : (uint8) -> unit)(13 % 5);
+    (show_u8 : (uint8) -> unit)(12 & 10);
+    (show_u8 : (uint8) -> unit)(12 | 3);
+    (show_u8 : (uint8) -> unit)(12 ^ 10);
+    (show_u8 : (uint8) -> unit)(1 << 7);
+    (show_u8 : (uint8) -> unit)(128 >> 7);
+    (show_u8 : (uint8) -> unit)(~0);
+    (show_u8 : (uint8) -> unit)(1 << 8);
+    (show_u16 : (uint16) -> unit)(513 % 256);
+    (show_u16 : (uint16) -> unit)(3855 & 255);
+    (show_u16 : (uint16) -> unit)(3840 | 15);
+    (show_u16 : (uint16) -> unit)(43690 ^ 3855);
+    (show_u16 : (uint16) -> unit)(1 << 15);
+    (show_u16 : (uint16) -> unit)(32768 >> 15);
+    (show_u16 : (uint16) -> unit)(~0);
+    (show_u32 : (uint32) -> unit)(1000000001 % 1000);
+    (show_u32 : (uint32) -> unit)(4042322160 & 252645135);
+    (show_u32 : (uint32) -> unit)(4042322160 | 252645135);
+    (show_u32 : (uint32) -> unit)(4042322160 ^ 252645135);
+    (show_u32 : (uint32) -> unit)(1 << 31);
+    (show_u32 : (uint32) -> unit)(2147483648 >> 31);
+    (show_u32 : (uint32) -> unit)(~0);
+    (show_u64 : (uint64) -> unit)(1000000000001 % 1000);
+    (show_u64 : (uint64) -> unit)(17361641481138401520 & 1085102592571150095);
+    (show_u64 : (uint64) -> unit)(17361641481138401520 | 1085102592571150095);
+    (show_u64 : (uint64) -> unit)(17361641481138401520 ^ 1085102592571150095);
+    (show_u64 : (uint64) -> unit)(1 << 63);
+    (show_u64 : (uint64) -> unit)(9223372036854775808 >> 63);
+    (show_u64 : (uint64) -> unit)(~0)
+}
+
+fn signed_ops() -> unit {
+    (show_i8 : (int8) -> unit)(-13 % 5);
+    (show_i8 : (int8) -> unit)(-8 >> 2);
+    (show_i8 : (int8) -> unit)(1 << 6);
+    (show_i8 : (int8) -> unit)(~0);
+    (show_i8 : (int8) -> unit)(-1 >> 7);
+    (show_i16 : (int16) -> unit)(-513 % 256);
+    (show_i16 : (int16) -> unit)(-32767 - 1 >> 15);
+    (show_i16 : (int16) -> unit)(1 << 14);
+    (show_i16 : (int16) -> unit)(~255);
+    (show_i32 : (int32) -> unit)(-1000000001 % 1000);
+    (show_i32 : (int32) -> unit)(-2147483647 - 1 >> 31);
+    (show_i32 : (int32) -> unit)(1 << 30);
+    (show_i32 : (int32) -> unit)(~65535);
+    (show_i64 : (int64) -> unit)(-1000000000001 % 1000);
+    (show_i64 : (int64) -> unit)(-9223372036854775807 >> 62);
+    (show_i64 : (int64) -> unit)(1 << 62);
+    (show_i64 : (int64) -> unit)(~4294967295)
+}
+
+fn precedence() -> unit {
+    (show_u8 : (uint8) -> unit)(1 | 2 ^ 3 & 1);
+    (show_u8 : (uint8) -> unit)(1 << 2 + 1);
+    (println : (string) -> unit)((ToString::to_string : (bool) -> string)(1 | 2 == 3));
+    (println : (string) -> unit)((ToString::to_string : (bool) -> string)(8 >> 1 < 5));
+    (show_u8 : (uint8) -> unit)(~1 & 15)
+}
+
+fn casts() -> unit {
+    (show_u8 : (uint8) -> unit)(511 as uint8);
+    (show_u8 : (uint8) -> unit)(256 as uint8);
+    (show_u8 : (uint8) -> unit)(-1 as uint8);
+    (show_i8 : (int8) -> unit)(255 as int8);
+    (show_i8 : (int8) -> unit)(128 as int8);
+    (show_i8 : (int8) -> unit)(-129 as int8);
+    (show_i16 : (int16) -> unit)(65535 as int16);
+    (show_u16 : (uint16) -> unit)(-1 as uint16);
+    (show_u64 : (uint64) -> unit)(-1 as uint64);
+    (show_i32 : (int32) -> unit)(18446744073709551615 as int32);
+    (show_u32 : (uint32) -> unit)(65 as uint32);
+    (show_i64 : (int64) -> unit)(4294967295 as int64);
+    (show_u32 : (uint32) -> unit)('A' as uint32);
+    (println : (string) -> unit)((char::to_string : (char) -> string)(128512 as char));
+    (show_u32 : (uint32) -> unit)(300 as uint8 as uint32)
+}
+
+fn contextual(value/8: uint8) -> uint8 {
+    ~(value/8 : uint8) & 15 | 1 << 4 % 31
+}
+
+fn main() -> unit {
+    (unsigned_ops : () -> unit)();
+    (signed_ops : () -> unit)();
+    (precedence : () -> unit)();
+    (casts : () -> unit)();
+    (show_u8 : (uint8) -> unit)((contextual : (uint8) -> uint8)(10))
+}

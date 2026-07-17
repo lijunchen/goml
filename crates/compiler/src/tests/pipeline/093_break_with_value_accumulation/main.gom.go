@@ -40,80 +40,80 @@ func ref_set__Ref_5int32(reference *ref_int32_x, value int32) struct{} {
 func main0() struct{} {
     var sum__0 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(0)
     var i__1 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(0)
-    Loop_loop34:
+    Loop_loop70:
     for {
-        var t35 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__1)
-        var t36 bool = t35 < 20
-        if t36 {
-            var t37 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__1)
-            var t38 int32 = t37 + 1
-            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(i__1, t38)
-            var t43 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__1)
-            var t44 bool = t43 > 5
-            if t44 {
-                break Loop_loop34
+        var t71 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__1)
+        var t72 bool = t71 < 20
+        if t72 {
+            var t73 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__1)
+            var t74 int32 = t73 + 1
+            _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(i__1, t74)
+            var t79 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__1)
+            var t80 bool = t79 > 5
+            if t80 {
+                break Loop_loop70
             } else {
-                var t40 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(sum__0)
-                var t41 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__1)
-                var t42 int32 = t40 + t41
-                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(sum__0, t42)
+                var t76 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(sum__0)
+                var t77 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__1)
+                var t78 int32 = t76 + t77
+                _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(sum__0, t78)
                 continue
             }
         } else {
-            break Loop_loop34
+            break Loop_loop70
         }
     }
     print__T_string("sum: ")
-    var t32 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(sum__0)
-    println__T_int32(t32)
+    var t68 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(sum__0)
+    println__T_int32(t68)
     print__T_string("i at break: ")
-    var t33 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__1)
-    println__T_int32(t33)
+    var t69 int32 = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(i__1)
+    println__T_int32(t69)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__137 int32) *ref_int32_x {
-    var retv46 *ref_int32_x
-    var t47 *ref_int32_x = ref__Ref_5int32(value__137)
-    retv46 = t47
-    return retv46
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_new____T__int32(value__200 int32) *ref_int32_x {
+    var retv82 *ref_int32_x
+    var t83 *ref_int32_x = ref__Ref_5int32(value__200)
+    retv82 = t83
+    return retv82
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__138 *ref_int32_x) int32 {
-    var retv49 int32
-    var t50 int32 = ref_get__Ref_5int32(self__138)
-    retv49 = t50
-    return retv49
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__int32(self__201 *ref_int32_x) int32 {
+    var retv85 int32
+    var t86 int32 = ref_get__Ref_5int32(self__201)
+    retv85 = t86
+    return retv85
 }
 
-func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__139 *ref_int32_x, value__140 int32) struct{} {
-    ref_set__Ref_5int32(self__139, value__140)
+func _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__int32(self__202 *ref_int32_x, value__203 int32) struct{} {
+    ref_set__Ref_5int32(self__202, value__203)
     return struct{}{}
 }
 
 func print__T_string(value__0 string) struct{} {
-    var t54 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__0)
-    _goml_runtime_core_string_print(t54)
+    var t90 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__0)
+    _goml_runtime_core_string_print(t90)
     return struct{}{}
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t57 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t57)
+    var t93 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
+    _goml_runtime_core_string_println(t93)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
-    var retv60 string
-    retv60 = self__9
-    return retv60
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__34 string) string {
+    var retv96 string
+    retv96 = self__34
+    return retv96
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__13 int32) string {
-    var retv62 string
-    var t63 string = _goml_runtime_core_int32_to_string(self__13)
-    retv62 = t63
-    return retv62
+func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__38 int32) string {
+    var retv98 string
+    var t99 string = _goml_runtime_core_int32_to_string(self__38)
+    retv98 = t99
+    return retv98
 }
 
 func main() {

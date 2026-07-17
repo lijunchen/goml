@@ -1,64 +1,64 @@
 fn trait_impl#A#S#foo(self/0: S) -> string {
-  join ret24(retv25: string) -> string {
-    retv25
+  join ret60(retv61: string) -> string {
+    retv61
   } in
-  jump ret24("A")
+  jump ret60("A")
 }
 
 fn trait_impl#B#S#foo(self/1: S) -> string {
-  join ret26(retv27: string) -> string {
-    retv27
+  join ret62(retv63: string) -> string {
+    retv63
   } in
-  jump ret26("B")
+  jump ret62("B")
 }
 
 fn trait_impl#C#S#bar(self/2: S) -> string {
-  join ret28(retv29: string) -> string {
-    retv29
+  join ret64(retv65: string) -> string {
+    retv65
   } in
-  jump ret28("C")
+  jump ret64("C")
 }
 
 fn main() -> unit {
-  join ret30() -> unit {
+  join ret66() -> unit {
     ()
   } in
   let s/5 = S {} in
-  let t31 = pick_a__T_S(s/5) in
-  let mtmp22 = println__T_string(t31) in
-  let t32 = bar_it__T_S(s/5) in
-  let mtmp23 = println__T_string(t32) in
-  jump ret30()
+  let t67 = pick_a__T_S(s/5) in
+  let mtmp58 = println__T_string(t67) in
+  let t68 = bar_it__T_S(s/5) in
+  let mtmp59 = println__T_string(t68) in
+  jump ret66()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret33() -> unit {
+  join ret69() -> unit {
     ()
   } in
-  let t34 = trait_impl#ToString#string#to_string(value/1) in
-  let t35 = @runtime(core.string_println)(t34) in
-  jump ret33()
+  let t70 = trait_impl#ToString#string#to_string(value/1) in
+  let t71 = @runtime(core.string_println)(t70) in
+  jump ret69()
 }
 
 fn pick_a__T_S(x/3: S) -> string {
-  join ret36(retv37: string) -> string {
-    retv37
+  join ret72(retv73: string) -> string {
+    retv73
   } in
-  let t38 = trait_impl#A#S#foo(x/3) in
-  jump ret36(t38)
+  let t74 = trait_impl#A#S#foo(x/3) in
+  jump ret72(t74)
 }
 
 fn bar_it__T_S(x/4: S) -> string {
-  join ret39(retv40: string) -> string {
-    retv40
+  join ret75(retv76: string) -> string {
+    retv76
   } in
-  let t41 = trait_impl#C#S#bar(x/4) in
-  jump ret39(t41)
+  let t77 = trait_impl#C#S#bar(x/4) in
+  jump ret75(t77)
 }
 
-fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret42(retv43: string) -> string {
-    retv43
+fn trait_impl#ToString#string#to_string(self/34: string) -> string {
+  join ret78(retv79: string) -> string {
+    retv79
   } in
-  jump ret42(self/9)
+  jump ret78(self/34)
 }

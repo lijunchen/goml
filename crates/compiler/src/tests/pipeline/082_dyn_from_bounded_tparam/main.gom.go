@@ -31,38 +31,38 @@ func dyn__Display__vtable__S() *dyn__Display_vtable {
 }
 
 func _goml_m_trait__impl_i_Display_i_S_i_show(self__0 S) string {
-    var retv25 string
-    retv25 = "ok"
-    return retv25
+    var retv61 string
+    retv61 = "ok"
+    return retv61
 }
 
 func main0() struct{} {
-    var t27 S = S{}
-    to_dyn__T_S(t27)
+    var t63 S = S{}
+    to_dyn__T_S(t63)
     println__T_string("ok")
     return struct{}{}
 }
 
 func to_dyn__T_S(x__1 S) dyn__Display {
-    var retv29 dyn__Display
-    var t30 dyn__Display = dyn__Display{
+    var retv65 dyn__Display
+    var t66 dyn__Display = dyn__Display{
         data: x__1,
         vtable: dyn__Display__vtable__S(),
     }
-    retv29 = t30
-    return retv29
+    retv65 = t66
+    return retv65
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t32 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t32)
+    var t68 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t68)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
-    var retv35 string
-    retv35 = self__9
-    return retv35
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__34 string) string {
+    var retv71 string
+    retv71 = self__34
+    return retv71
 }
 
 func main() {

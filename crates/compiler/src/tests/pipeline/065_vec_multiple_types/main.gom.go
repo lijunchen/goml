@@ -105,101 +105,101 @@ func main0() struct{} {
     _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__bool(vb__6, false)
     var val_b__7 bool = vec_get__Vec_4bool(vb__6, 0)
     var len_b__8 int32 = _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__bool(vb__6)
-    var t34 string = _goml_m_inherent_i_int32_i_int32_i_to__string(val_i__1)
-    println__T_string(t34)
-    var t35 string = _goml_m_inherent_i_int32_i_int32_i_to__string(len_i__2)
-    println__T_string(t35)
+    var t70 string = _goml_m_inherent_i_int32_i_int32_i_to__string(val_i__1)
+    println__T_string(t70)
+    var t71 string = _goml_m_inherent_i_int32_i_int32_i_to__string(len_i__2)
+    println__T_string(t71)
     println__T_string(val_s__4)
-    var t36 string = _goml_m_inherent_i_int32_i_int32_i_to__string(len_s__5)
-    println__T_string(t36)
-    var t37 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(val_b__7)
-    println__T_string(t37)
-    var t38 string = _goml_m_inherent_i_int32_i_int32_i_to__string(len_b__8)
-    println__T_string(t38)
+    var t72 string = _goml_m_inherent_i_int32_i_int32_i_to__string(len_s__5)
+    println__T_string(t72)
+    var t73 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(val_b__7)
+    println__T_string(t73)
+    var t74 string = _goml_m_inherent_i_int32_i_int32_i_to__string(len_b__8)
+    println__T_string(t74)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__int32() *_goml_vec_int32 {
-    var retv40 *_goml_vec_int32
-    var t41 *_goml_vec_int32 = vec_new__Vec_5int32()
-    retv40 = t41
-    return retv40
+    var retv76 *_goml_vec_int32
+    var t77 *_goml_vec_int32 = vec_new__Vec_5int32()
+    retv76 = t77
+    return retv76
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(self__94 *_goml_vec_int32, elem__95 int32) struct{} {
-    vec_push__Vec_5int32(self__94, elem__95)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__int32(self__120 *_goml_vec_int32, elem__121 int32) struct{} {
+    vec_push__Vec_5int32(self__120, elem__121)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__105 *_goml_vec_int32) int32 {
-    var retv45 int32
-    var t46 int32 = vec_len__Vec_5int32(self__105)
-    retv45 = t46
-    return retv45
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__int32(self__131 *_goml_vec_int32) int32 {
+    var retv81 int32
+    var t82 int32 = vec_len__Vec_5int32(self__131)
+    retv81 = t82
+    return retv81
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__string() *_goml_vec_string {
-    var retv48 *_goml_vec_string
-    var t49 *_goml_vec_string = vec_new__Vec_6string()
-    retv48 = t49
-    return retv48
+    var retv84 *_goml_vec_string
+    var t85 *_goml_vec_string = vec_new__Vec_6string()
+    retv84 = t85
+    return retv84
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(self__94 *_goml_vec_string, elem__95 string) struct{} {
-    vec_push__Vec_6string(self__94, elem__95)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__string(self__120 *_goml_vec_string, elem__121 string) struct{} {
+    vec_push__Vec_6string(self__120, elem__121)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(self__105 *_goml_vec_string) int32 {
-    var retv53 int32
-    var t54 int32 = vec_len__Vec_6string(self__105)
-    retv53 = t54
-    return retv53
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__string(self__131 *_goml_vec_string) int32 {
+    var retv89 int32
+    var t90 int32 = vec_len__Vec_6string(self__131)
+    retv89 = t90
+    return retv89
 }
 
 func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_new____T__bool() *_goml_vec_bool {
-    var retv56 *_goml_vec_bool
-    var t57 *_goml_vec_bool = vec_new__Vec_4bool()
-    retv56 = t57
-    return retv56
+    var retv92 *_goml_vec_bool
+    var t93 *_goml_vec_bool = vec_new__Vec_4bool()
+    retv92 = t93
+    return retv92
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__bool(self__94 *_goml_vec_bool, elem__95 bool) struct{} {
-    vec_push__Vec_4bool(self__94, elem__95)
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_push____T__bool(self__120 *_goml_vec_bool, elem__121 bool) struct{} {
+    vec_push__Vec_4bool(self__120, elem__121)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__bool(self__105 *_goml_vec_bool) int32 {
-    var retv61 int32
-    var t62 int32 = vec_len__Vec_4bool(self__105)
-    retv61 = t62
-    return retv61
+func _goml_m_inherent_i_Vec_i_Vec_l_T_r__i_len____T__bool(self__131 *_goml_vec_bool) int32 {
+    var retv97 int32
+    var t98 int32 = vec_len__Vec_4bool(self__131)
+    retv97 = t98
+    return retv97
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t64 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t64)
+    var t100 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t100)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
-    var retv67 string
-    var t68 string = _goml_runtime_core_int32_to_string(self__2)
-    retv67 = t68
-    return retv67
+    var retv103 string
+    var t104 string = _goml_runtime_core_int32_to_string(self__2)
+    retv103 = t104
+    return retv103
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__8 bool) string {
-    var retv70 string
-    var t71 string = _goml_runtime_core_bool_to_string(self__8)
-    retv70 = t71
-    return retv70
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__33 bool) string {
+    var retv106 string
+    var t107 string = _goml_runtime_core_bool_to_string(self__33)
+    retv106 = t107
+    return retv106
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
-    var retv73 string
-    retv73 = self__9
-    return retv73
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__34 string) string {
+    var retv109 string
+    retv109 = self__34
+    return retv109
 }
 
 func main() {

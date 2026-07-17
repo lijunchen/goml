@@ -14,46 +14,46 @@ func _goml_runtime_core_string_println(s string) struct{} {
 }
 
 func choose(flag__0 bool, x__1 int32, y__2 int32) int32 {
-    var retv25 int32
-    var jp27 int32
+    var retv61 int32
+    var jp63 int32
     if flag__0 {
-        jp27 = x__1
+        jp63 = x__1
     } else {
-        jp27 = y__2
+        jp63 = y__2
     }
-    retv25 = jp27
-    return retv25
+    retv61 = jp63
+    return retv61
 }
 
 func main0() struct{} {
     var yes__3 int32 = choose(true, 10, 99)
     var no__4 int32 = choose(false, 10, 99)
-    var t29 string = _goml_m_inherent_i_int32_i_int32_i_to__string(yes__3)
-    var t30 string = "yes=" + t29
-    println__T_string(t30)
-    var t31 string = _goml_m_inherent_i_int32_i_int32_i_to__string(no__4)
-    var t32 string = "no=" + t31
-    println__T_string(t32)
+    var t65 string = _goml_m_inherent_i_int32_i_int32_i_to__string(yes__3)
+    var t66 string = "yes=" + t65
+    println__T_string(t66)
+    var t67 string = _goml_m_inherent_i_int32_i_int32_i_to__string(no__4)
+    var t68 string = "no=" + t67
+    println__T_string(t68)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t34 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t34)
+    var t70 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t70)
     return struct{}{}
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
-    var retv37 string
-    var t38 string = _goml_runtime_core_int32_to_string(self__2)
-    retv37 = t38
-    return retv37
+    var retv73 string
+    var t74 string = _goml_runtime_core_int32_to_string(self__2)
+    retv73 = t74
+    return retv73
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
-    var retv40 string
-    retv40 = self__9
-    return retv40
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__34 string) string {
+    var retv76 string
+    retv76 = self__34
+    return retv76
 }
 
 func main() {

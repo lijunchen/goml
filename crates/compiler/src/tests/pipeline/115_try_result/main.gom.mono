@@ -17,22 +17,22 @@ fn add(a/1: int32, b/2: int32) -> int32 {
 fn plus_one(flag/3: bool) -> Result__int32__string {
   let run/5 = || {
     let value/4 = {
-      let mtmp22 = parse_flag(flag/3) in
-      match mtmp22 {
-        Result__int32__string::Ok(x23) => {
+      let mtmp58 = parse_flag(flag/3) in
+      match mtmp58 {
+        Result__int32__string::Ok(x59) => {
           {
-            let x23 = Result__int32__string::Ok._0(mtmp22) in
+            let x59 = Result__int32__string::Ok._0(mtmp58) in
             {
-              let try_value/15 = x23 in
+              let try_value/15 = x59 in
               try_value/15
             }
           }
         },
-        Result__int32__string::Err(x24) => {
+        Result__int32__string::Err(x60) => {
           {
-            let x24 = Result__int32__string::Err._0(mtmp22) in
+            let x60 = Result__int32__string::Err._0(mtmp58) in
             {
-              let try_residual/15 = x24 in
+              let try_residual/15 = x60 in
               return Result__int32__string::Err(try_residual/15)
             }
           }
@@ -46,20 +46,20 @@ fn plus_one(flag/3: bool) -> Result__int32__string {
 
 fn show(res/6: Result__int32__string) -> string {
   match res/6 {
-    Result__int32__string::Ok(x25) => {
+    Result__int32__string::Ok(x61) => {
       {
-        let x25 = Result__int32__string::Ok._0(res/6) in
+        let x61 = Result__int32__string::Ok._0(res/6) in
         {
-          let value/7 = x25 in
+          let value/7 = x61 in
           ("ok=" + inherent#int32#int32#to_string(value/7))
         }
       }
     },
-    Result__int32__string::Err(x26) => {
+    Result__int32__string::Err(x62) => {
       {
-        let x26 = Result__int32__string::Err._0(res/6) in
+        let x62 = Result__int32__string::Err._0(res/6) in
         {
-          let err/8 = x26 in
+          let err/8 = x62 in
           ("err=" + err/8)
         }
       }
@@ -68,8 +68,8 @@ fn show(res/6: Result__int32__string) -> string {
 }
 
 fn main() -> unit {
-  let _wild27 = println__T_string(show(plus_one(true))) in
-  let _wild28 = println__T_string(show(plus_one(false))) in
+  let _wild63 = println__T_string(show(plus_one(true))) in
+  let _wild64 = println__T_string(show(plus_one(false))) in
 }
 
 fn inherent#int32#int32#to_string(self/2: int32) -> string {
@@ -80,6 +80,6 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  self/9
+fn trait_impl#ToString#string#to_string(self/34: string) -> string {
+  self/34
 }

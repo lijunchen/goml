@@ -1,54 +1,54 @@
 fn test(t/0: T) -> unit {
-  join ret28() -> unit {
+  join ret64() -> unit {
     ()
   } in
-  join k29() -> unit {
-    jump ret28()
+  join k65() -> unit {
+    jump ret64()
   } in
   match t/0 {
     Tag_0 => {
-      let t30 = inherent#int32#int32#to_string(1) in
-      let t31 = println__T_string(t30) in
-      jump k29()
+      let t66 = inherent#int32#int32#to_string(1) in
+      let t67 = println__T_string(t66) in
+      jump k65()
     },
     Tag_1 => {
-      let x22 = T::B._0(t/0) in
-      let x23 = T::B._1(t/0) in
-      join k32() -> unit {
-        jump k29()
+      let x58 = T::B._0(t/0) in
+      let x59 = T::B._1(t/0) in
+      join k68() -> unit {
+        jump k65()
       } in
-      match x23 {
+      match x59 {
         true => {
-          join k33() -> unit {
-            jump k32()
+          join k69() -> unit {
+            jump k68()
           } in
-          match x22 {
+          match x58 {
             true => {
-              let t34 = inherent#int32#int32#to_string(4) in
-              let t35 = println__T_string(t34) in
-              jump k33()
+              let t70 = inherent#int32#int32#to_string(4) in
+              let t71 = println__T_string(t70) in
+              jump k69()
             },
             false => {
-              let t36 = inherent#int32#int32#to_string(3) in
-              let t37 = println__T_string(t36) in
-              jump k33()
+              let t72 = inherent#int32#int32#to_string(3) in
+              let t73 = println__T_string(t72) in
+              jump k69()
             },
           }
         },
         false => {
-          join k38() -> unit {
-            jump k32()
+          join k74() -> unit {
+            jump k68()
           } in
-          match x22 {
+          match x58 {
             true => {
-              let t39 = inherent#int32#int32#to_string(4) in
-              let t40 = println__T_string(t39) in
-              jump k38()
+              let t75 = inherent#int32#int32#to_string(4) in
+              let t76 = println__T_string(t75) in
+              jump k74()
             },
             false => {
-              let t41 = inherent#int32#int32#to_string(2) in
-              let t42 = println__T_string(t41) in
-              jump k38()
+              let t77 = inherent#int32#int32#to_string(2) in
+              let t78 = println__T_string(t77) in
+              jump k74()
             },
           }
         },
@@ -58,39 +58,39 @@ fn test(t/0: T) -> unit {
 }
 
 fn main() -> unit {
-  join ret43() -> unit {
+  join ret79() -> unit {
     ()
   } in
-  let t44 = T::B(true, true) in
-  let mtmp24 = test(t44) in
-  let t45 = T::B(false, true) in
-  let mtmp25 = test(t45) in
-  let t46 = T::B(false, false) in
-  let mtmp26 = test(t46) in
-  let mtmp27 = test(Tag_0) in
-  jump ret43()
+  let t80 = T::B(true, true) in
+  let mtmp60 = test(t80) in
+  let t81 = T::B(false, true) in
+  let mtmp61 = test(t81) in
+  let t82 = T::B(false, false) in
+  let mtmp62 = test(t82) in
+  let mtmp63 = test(Tag_0) in
+  jump ret79()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret47() -> unit {
+  join ret83() -> unit {
     ()
   } in
-  let t48 = trait_impl#ToString#string#to_string(value/1) in
-  let t49 = @runtime(core.string_println)(t48) in
-  jump ret47()
+  let t84 = trait_impl#ToString#string#to_string(value/1) in
+  let t85 = @runtime(core.string_println)(t84) in
+  jump ret83()
 }
 
 fn inherent#int32#int32#to_string(self/2: int32) -> string {
-  join ret50(retv51: string) -> string {
-    retv51
+  join ret86(retv87: string) -> string {
+    retv87
   } in
-  let t52 = @runtime(core.int32_to_string)(self/2) in
-  jump ret50(t52)
+  let t88 = @runtime(core.int32_to_string)(self/2) in
+  jump ret86(t88)
 }
 
-fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret53(retv54: string) -> string {
-    retv54
+fn trait_impl#ToString#string#to_string(self/34: string) -> string {
+  join ret89(retv90: string) -> string {
+    retv90
   } in
-  jump ret53(self/9)
+  jump ret89(self/34)
 }

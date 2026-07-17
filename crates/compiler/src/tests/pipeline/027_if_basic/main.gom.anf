@@ -1,52 +1,52 @@
 fn choose(flag/0: bool, x/1: int32, y/2: int32) -> int32 {
-  join ret24(retv25: int32) -> int32 {
-    retv25
+  join ret60(retv61: int32) -> int32 {
+    retv61
   } in
-  join k26(jp27: int32) -> int32 {
-    jump ret24(jp27)
+  join k62(jp63: int32) -> int32 {
+    jump ret60(jp63)
   } in
   if flag/0 {
-    jump k26(x/1)
+    jump k62(x/1)
   } else {
-    jump k26(y/2)
+    jump k62(y/2)
   }
 }
 
 fn main() -> unit {
-  join ret28() -> unit {
+  join ret64() -> unit {
     ()
   } in
   let yes/3 = choose(true, 10, 99) in
   let no/4 = choose(false, 10, 99) in
-  let t29 = inherent#int32#int32#to_string(yes/3) in
-  let t30 = ("yes=" + t29) in
-  let mtmp22 = println__T_string(t30) in
-  let t31 = inherent#int32#int32#to_string(no/4) in
-  let t32 = ("no=" + t31) in
-  let mtmp23 = println__T_string(t32) in
-  jump ret28()
+  let t65 = inherent#int32#int32#to_string(yes/3) in
+  let t66 = ("yes=" + t65) in
+  let mtmp58 = println__T_string(t66) in
+  let t67 = inherent#int32#int32#to_string(no/4) in
+  let t68 = ("no=" + t67) in
+  let mtmp59 = println__T_string(t68) in
+  jump ret64()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret33() -> unit {
+  join ret69() -> unit {
     ()
   } in
-  let t34 = trait_impl#ToString#string#to_string(value/1) in
-  let t35 = @runtime(core.string_println)(t34) in
-  jump ret33()
+  let t70 = trait_impl#ToString#string#to_string(value/1) in
+  let t71 = @runtime(core.string_println)(t70) in
+  jump ret69()
 }
 
 fn inherent#int32#int32#to_string(self/2: int32) -> string {
-  join ret36(retv37: string) -> string {
-    retv37
+  join ret72(retv73: string) -> string {
+    retv73
   } in
-  let t38 = @runtime(core.int32_to_string)(self/2) in
-  jump ret36(t38)
+  let t74 = @runtime(core.int32_to_string)(self/2) in
+  jump ret72(t74)
 }
 
-fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret39(retv40: string) -> string {
-    retv40
+fn trait_impl#ToString#string#to_string(self/34: string) -> string {
+  join ret75(retv76: string) -> string {
+    retv76
   } in
-  jump ret39(self/9)
+  jump ret75(self/34)
 }

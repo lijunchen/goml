@@ -1,51 +1,51 @@
 fn trait_impl#Display#int32#show(self/0: int32) -> string {
-  join ret23(retv24: string) -> string {
-    retv24
+  join ret59(retv60: string) -> string {
+    retv60
   } in
-  let t25 = inherent#int32#int32#to_string(self/0) in
-  jump ret23(t25)
+  let t61 = inherent#int32#int32#to_string(self/0) in
+  jump ret59(t61)
 }
 
 fn render(x/1: dyn Display) -> string {
-  join ret26(retv27: string) -> string {
-    retv27
+  join ret62(retv63: string) -> string {
+    retv63
   } in
-  let t28 = dyn_call[Display::show](x/1) in
-  jump ret26(t28)
+  let t64 = dyn_call[Display::show](x/1) in
+  jump ret62(t64)
 }
 
 fn main() -> unit {
-  join ret29() -> unit {
+  join ret65() -> unit {
     ()
   } in
-  let t30 = to_dyn[Display]{int32}(42) in
-  let holder/2 = Holder__dynDisplay { value: t30 } in
-  let t31 = Holder__dynDisplay.value(holder/2) in
-  let t32 = render(t31) in
-  let _wild22 = println__T_string(t32) in
-  jump ret29()
+  let t66 = to_dyn[Display]{int32}(42) in
+  let holder/2 = Holder__dynDisplay { value: t66 } in
+  let t67 = Holder__dynDisplay.value(holder/2) in
+  let t68 = render(t67) in
+  let _wild58 = println__T_string(t68) in
+  jump ret65()
 }
 
 fn inherent#int32#int32#to_string(self/2: int32) -> string {
-  join ret33(retv34: string) -> string {
-    retv34
+  join ret69(retv70: string) -> string {
+    retv70
   } in
-  let t35 = @runtime(core.int32_to_string)(self/2) in
-  jump ret33(t35)
+  let t71 = @runtime(core.int32_to_string)(self/2) in
+  jump ret69(t71)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret36() -> unit {
+  join ret72() -> unit {
     ()
   } in
-  let t37 = trait_impl#ToString#string#to_string(value/1) in
-  let t38 = @runtime(core.string_println)(t37) in
-  jump ret36()
+  let t73 = trait_impl#ToString#string#to_string(value/1) in
+  let t74 = @runtime(core.string_println)(t73) in
+  jump ret72()
 }
 
-fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret39(retv40: string) -> string {
-    retv40
+fn trait_impl#ToString#string#to_string(self/34: string) -> string {
+  join ret75(retv76: string) -> string {
+    retv76
   } in
-  jump ret39(self/9)
+  jump ret75(self/34)
 }

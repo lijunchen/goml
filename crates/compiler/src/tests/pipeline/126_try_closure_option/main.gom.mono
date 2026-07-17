@@ -13,16 +13,16 @@ fn maybe_value(flag/0: bool) -> Option__int32 {
 fn with_base(base/1: int32, flag/2: bool) -> Option__int32 {
   let run/4 = || {
     let value/3 = {
-      let mtmp22 = maybe_value(flag/2) in
-      match mtmp22 {
+      let mtmp58 = maybe_value(flag/2) in
+      match mtmp58 {
         Option__int32::None => {
           return Option__int32::None
         },
-        Option__int32::Some(x23) => {
+        Option__int32::Some(x59) => {
           {
-            let x23 = Option__int32::Some._0(mtmp22) in
+            let x59 = Option__int32::Some._0(mtmp58) in
             {
-              let try_value/11 = x23 in
+              let try_value/11 = x59 in
               try_value/11
             }
           }
@@ -39,11 +39,11 @@ fn show(opt/5: Option__int32) -> string {
     Option__int32::None => {
       "none"
     },
-    Option__int32::Some(x24) => {
+    Option__int32::Some(x60) => {
       {
-        let x24 = Option__int32::Some._0(opt/5) in
+        let x60 = Option__int32::Some._0(opt/5) in
         {
-          let value/6 = x24 in
+          let value/6 = x60 in
           ("some=" + inherent#int32#int32#to_string(value/6))
         }
       }
@@ -52,8 +52,8 @@ fn show(opt/5: Option__int32) -> string {
 }
 
 fn main() -> unit {
-  let _wild25 = println__T_string(show(with_base(3, true))) in
-  let _wild26 = println__T_string(show(with_base(3, false))) in
+  let _wild61 = println__T_string(show(with_base(3, true))) in
+  let _wild62 = println__T_string(show(with_base(3, false))) in
 }
 
 fn inherent#int32#int32#to_string(self/2: int32) -> string {
@@ -64,6 +64,6 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  self/9
+fn trait_impl#ToString#string#to_string(self/34: string) -> string {
+  self/34
 }

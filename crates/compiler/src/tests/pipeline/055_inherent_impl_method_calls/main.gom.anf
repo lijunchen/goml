@@ -1,61 +1,61 @@
 fn inherent#Shape#Shape#name(self/0: Shape) -> string {
-  join ret24(retv25: string) -> string {
-    retv25
+  join ret60(retv61: string) -> string {
+    retv61
   } in
-  jump ret24("Shape")
+  jump ret60("Shape")
 }
 
 fn inherent#Shape#Shape#rename(self/1: Shape, suffix/2: string) -> string {
-  join ret26(retv27: string) -> string {
-    retv27
+  join ret62(retv63: string) -> string {
+    retv63
   } in
-  let t28 = inherent#Shape#Shape#name(self/1) in
-  let t29 = (t28 + suffix/2) in
-  jump ret26(t29)
+  let t64 = inherent#Shape#Shape#name(self/1) in
+  let t65 = (t64 + suffix/2) in
+  jump ret62(t65)
 }
 
 fn inherent#Shape#Shape#join(self/3: Shape, left/4: string, right/5: string) -> string {
-  join ret30(retv31: string) -> string {
-    retv31
+  join ret66(retv67: string) -> string {
+    retv67
   } in
-  let t32 = inherent#Shape#Shape#name(self/3) in
-  let t33 = (left/4 + t32) in
-  let t34 = (t33 + right/5) in
-  jump ret30(t34)
+  let t68 = inherent#Shape#Shape#name(self/3) in
+  let t69 = (left/4 + t68) in
+  let t70 = (t69 + right/5) in
+  jump ret66(t70)
 }
 
 fn announce(shape/6: Shape) -> unit {
-  join ret35() -> unit {
+  join ret71() -> unit {
     ()
   } in
   let base/7 = inherent#Shape#Shape#name(shape/6) in
   let with_suffix/8 = inherent#Shape#Shape#rename(shape/6, "!") in
   let combined/9 = inherent#Shape#Shape#join(shape/6, base/7, with_suffix/8) in
-  let mtmp22 = println__T_string(combined/9) in
-  jump ret35()
+  let mtmp58 = println__T_string(combined/9) in
+  jump ret71()
 }
 
 fn main() -> unit {
-  join ret36() -> unit {
+  join ret72() -> unit {
     ()
   } in
   let shape/10 = Shape {} in
-  let _wild23 = announce(shape/10) in
-  jump ret36()
+  let _wild59 = announce(shape/10) in
+  jump ret72()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret37() -> unit {
+  join ret73() -> unit {
     ()
   } in
-  let t38 = trait_impl#ToString#string#to_string(value/1) in
-  let t39 = @runtime(core.string_println)(t38) in
-  jump ret37()
+  let t74 = trait_impl#ToString#string#to_string(value/1) in
+  let t75 = @runtime(core.string_println)(t74) in
+  jump ret73()
 }
 
-fn trait_impl#ToString#string#to_string(self/9: string) -> string {
-  join ret40(retv41: string) -> string {
-    retv41
+fn trait_impl#ToString#string#to_string(self/34: string) -> string {
+  join ret76(retv77: string) -> string {
+    retv77
   } in
-  jump ret40(self/9)
+  jump ret76(self/34)
 }

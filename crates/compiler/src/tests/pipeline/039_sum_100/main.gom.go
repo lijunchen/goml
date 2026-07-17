@@ -14,54 +14,54 @@ func _goml_runtime_core_string_println(s string) struct{} {
 }
 
 func my_int_equal(x__0 int32, y__1 int32) bool {
-    var retv23 bool
-    var t26 bool = x__0 < y__1
-    var t27 bool = !t26
-    var jp25 bool
-    if t27 {
-        var t28 bool = y__1 < x__0
-        var t29 bool = !t28
-        jp25 = t29
+    var retv59 bool
+    var t62 bool = x__0 < y__1
+    var t63 bool = !t62
+    var jp61 bool
+    if t63 {
+        var t64 bool = y__1 < x__0
+        var t65 bool = !t64
+        jp61 = t65
     } else {
-        jp25 = false
+        jp61 = false
     }
-    retv23 = jp25
-    return retv23
+    retv59 = jp61
+    return retv59
 }
 
 func sum(n__2 int32) int32 {
-    var retv31 int32
-    var t34 bool = my_int_equal(n__2, 1)
-    var jp33 int32
-    if t34 {
-        jp33 = 1
+    var retv67 int32
+    var t70 bool = my_int_equal(n__2, 1)
+    var jp69 int32
+    if t70 {
+        jp69 = 1
     } else {
-        var t35 int32 = n__2 - 1
-        var t36 int32 = sum(t35)
-        var t37 int32 = n__2 + t36
-        jp33 = t37
+        var t71 int32 = n__2 - 1
+        var t72 int32 = sum(t71)
+        var t73 int32 = n__2 + t72
+        jp69 = t73
     }
-    retv31 = jp33
-    return retv31
+    retv67 = jp69
+    return retv67
 }
 
 func main0() struct{} {
-    var t39 int32 = sum(100)
-    println__T_int32(t39)
+    var t75 int32 = sum(100)
+    println__T_int32(t75)
     return struct{}{}
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t42 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t42)
+    var t78 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
+    _goml_runtime_core_string_println(t78)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__13 int32) string {
-    var retv45 string
-    var t46 string = _goml_runtime_core_int32_to_string(self__13)
-    retv45 = t46
-    return retv45
+func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__38 int32) string {
+    var retv81 string
+    var t82 string = _goml_runtime_core_int32_to_string(self__38)
+    retv81 = t82
+    return retv81
 }
 
 func main() {

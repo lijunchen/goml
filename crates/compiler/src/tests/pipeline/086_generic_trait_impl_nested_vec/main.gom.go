@@ -28,44 +28,44 @@ func main0() struct{} {
     var b__2 Wrap__string = Wrap__string{
         value: "x",
     }
-    var t25 int32 = _goml_m_trait__impl_i_Size_i_Wrap____int32_i_size(a__1)
-    var t26 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t25)
-    println__T_string(t26)
-    var t27 int32 = _goml_m_trait__impl_i_Size_i_Wrap____string_i_size(b__2)
-    var t28 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t27)
-    println__T_string(t28)
+    var t61 int32 = _goml_m_trait__impl_i_Size_i_Wrap____int32_i_size(a__1)
+    var t62 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t61)
+    println__T_string(t62)
+    var t63 int32 = _goml_m_trait__impl_i_Size_i_Wrap____string_i_size(b__2)
+    var t64 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t63)
+    println__T_string(t64)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t30 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t30)
+    var t66 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t66)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_Size_i_Wrap____int32_i_size(self__0 Wrap__int32) int32 {
-    var retv33 int32
-    retv33 = 1
-    return retv33
+    var retv69 int32
+    retv69 = 1
+    return retv69
 }
 
 func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
-    var retv35 string
-    var t36 string = _goml_runtime_core_int32_to_string(self__2)
-    retv35 = t36
-    return retv35
+    var retv71 string
+    var t72 string = _goml_runtime_core_int32_to_string(self__2)
+    retv71 = t72
+    return retv71
 }
 
 func _goml_m_trait__impl_i_Size_i_Wrap____string_i_size(self__0 Wrap__string) int32 {
-    var retv38 int32
-    retv38 = 1
-    return retv38
+    var retv74 int32
+    retv74 = 1
+    return retv74
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__9 string) string {
-    var retv40 string
-    retv40 = self__9
-    return retv40
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__34 string) string {
+    var retv76 string
+    retv76 = self__34
+    return retv76
 }
 
 func main() {
