@@ -1,6 +1,9 @@
 use std::path::PathBuf;
 
-use crate::pipeline::pipeline::{compile, compile_single_file};
+use crate::{
+    env::format_typer_diagnostics,
+    pipeline::pipeline::{CompilationError, compile, compile_single_file},
+};
 
 fn compile_go(src: &str, name: &str) -> String {
     let path = PathBuf::from(name);
@@ -18,6 +21,29 @@ fn compile_single_file_go(path: PathBuf) -> String {
         panic!("compilation failed for {}: {:?}", path.display(), err);
     });
     compilation.go.to_pretty(&compilation.goenv, 120)
+}
+
+fn assert_ref_identity_impl_overlap(name: &str) {
+    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src/tests/crashers")
+        .join(name)
+        .join("main.gom");
+    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!("failed to read {}: {err}", path.display());
+    });
+    let err = compile_single_file(&path, &src).expect_err("expected overlapping implementation");
+    match err {
+        CompilationError::Typer { diagnostics } => {
+            let diagnostics = format_typer_diagnostics(&diagnostics, &src);
+            assert!(
+                diagnostics
+                    .iter()
+                    .any(|line| line.contains("overlaps with implementation")),
+                "{diagnostics:?}"
+            );
+        }
+        other => panic!("expected typer error, got {other:?}"),
+    }
 }
 
 #[test]
@@ -218,19 +244,8 @@ fn dyn_hash_ref_dyn_impl_executes() {
 }
 
 #[test]
-fn direct_ref_dyn_show_hash_impl_executes() {
-    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("src/tests/crashers/direct_ref_dyn_show_hash_impl/main.gom");
-    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
-        panic!("failed to read {}: {err}", path.display());
-    });
-    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
-        panic!("compilation failed for {}: {:?}", path.display(), err);
-    });
-    let go = compilation.go.to_pretty(&compilation.goenv, 120);
-    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
-
-    assert_eq!(output, "");
+fn direct_ref_dyn_show_hash_impl_is_rejected() {
+    assert_ref_identity_impl_overlap("direct_ref_dyn_show_hash_impl");
 }
 
 #[test]
@@ -250,19 +265,8 @@ fn hash_ref_dyn_trait_builtin_ref_impl_executes() {
 }
 
 #[test]
-fn hashmap_ref_dyn_hash_explicit_eq_executes() {
-    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("src/tests/crashers/hashmap_ref_dyn_hash_explicit_eq/main.gom");
-    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
-        panic!("failed to read {}: {err}", path.display());
-    });
-    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
-        panic!("compilation failed for {}: {:?}", path.display(), err);
-    });
-    let go = compilation.go.to_pretty(&compilation.goenv, 120);
-    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
-
-    assert_eq!(output, "true\n");
+fn hashmap_ref_dyn_hash_explicit_eq_is_rejected() {
+    assert_ref_identity_impl_overlap("hashmap_ref_dyn_hash_explicit_eq");
 }
 
 #[test]
@@ -282,19 +286,8 @@ fn hashmap_ref_dyn_hash_builtin_ref_impl_executes() {
 }
 
 #[test]
-fn hashmap_ref_dyn_show_explicit_eq_hash_executes() {
-    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("src/tests/crashers/hashmap_ref_dyn_show_explicit_eq_hash/main.gom");
-    let src = std::fs::read_to_string(&path).unwrap_or_else(|err| {
-        panic!("failed to read {}: {err}", path.display());
-    });
-    let compilation = compile_single_file(&path, &src).unwrap_or_else(|err| {
-        panic!("compilation failed for {}: {:?}", path.display(), err);
-    });
-    let go = compilation.go.to_pretty(&compilation.goenv, 120);
-    let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
-
-    assert_eq!(output, "true\n");
+fn hashmap_ref_dyn_show_explicit_eq_hash_is_rejected() {
+    assert_ref_identity_impl_overlap("hashmap_ref_dyn_show_explicit_eq_hash");
 }
 
 #[test]
