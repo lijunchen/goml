@@ -4,10 +4,144 @@ use std::path::{Path, PathBuf};
 
 use text_size::TextRange;
 
+mod render;
+mod source;
+
+pub use render::TextRenderer;
+pub use source::{Position, SourceError, SourceFile, SourceId, SourceMap, Span};
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Severity {
     Error,
     Warning,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum LabelSeverity {
+    Primary,
+    Secondary,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Label {
+    severity: LabelSeverity,
+    span: Span,
+    message: Option<String>,
+}
+
+impl Label {
+    pub fn new(severity: LabelSeverity, span: Span) -> Self {
+        Self {
+            severity,
+            span,
+            message: None,
+        }
+    }
+
+    pub fn primary(span: Span) -> Self {
+        Self::new(LabelSeverity::Primary, span)
+    }
+
+    pub fn secondary(span: Span) -> Self {
+        Self::new(LabelSeverity::Secondary, span)
+    }
+
+    pub fn with_message(mut self, message: impl Into<String>) -> Self {
+        self.message = Some(message.into());
+        self
+    }
+
+    pub const fn severity(&self) -> LabelSeverity {
+        self.severity
+    }
+
+    pub const fn span(&self) -> Span {
+        self.span
+    }
+
+    pub fn message(&self) -> Option<&str> {
+        self.message.as_deref()
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Note(String);
+
+impl Note {
+    pub fn new(text: impl Into<String>) -> Self {
+        Self(text.into())
+    }
+
+    pub fn text(&self) -> &str {
+        &self.0
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Help(String);
+
+impl Help {
+    pub fn new(text: impl Into<String>) -> Self {
+        Self(text.into())
+    }
+
+    pub fn text(&self) -> &str {
+        &self.0
+    }
+}
+
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum FixApplicability {
+    MachineApplicable,
+    MaybeIncorrect,
+    HasPlaceholders,
+    #[default]
+    Unspecified,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct FixIt {
+    span: Span,
+    replacement: String,
+    message: Option<String>,
+    applicability: FixApplicability,
+}
+
+impl FixIt {
+    pub fn new(span: Span, replacement: impl Into<String>) -> Self {
+        Self {
+            span,
+            replacement: replacement.into(),
+            message: None,
+            applicability: FixApplicability::Unspecified,
+        }
+    }
+
+    pub fn with_message(mut self, message: impl Into<String>) -> Self {
+        self.message = Some(message.into());
+        self
+    }
+
+    pub fn with_applicability(mut self, applicability: FixApplicability) -> Self {
+        self.applicability = applicability;
+        self
+    }
+
+    pub const fn span(&self) -> Span {
+        self.span
+    }
+
+    pub fn replacement(&self) -> &str {
+        &self.replacement
+    }
+
+    pub fn message(&self) -> Option<&str> {
+        self.message.as_deref()
+    }
+
+    pub const fn applicability(&self) -> FixApplicability {
+        self.applicability
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -38,6 +172,10 @@ pub struct Diagnostic {
     message: String,
     range: Option<TextRange>,
     source: Option<PathBuf>,
+    labels: Vec<Label>,
+    notes: Vec<Note>,
+    helps: Vec<Help>,
+    fixes: Vec<FixIt>,
 }
 
 impl fmt::Debug for Diagnostic {
@@ -60,6 +198,10 @@ impl Diagnostic {
             message: message.into(),
             range: None,
             source: None,
+            labels: Vec::new(),
+            notes: Vec::new(),
+            helps: Vec::new(),
+            fixes: Vec::new(),
         }
     }
 
@@ -91,6 +233,66 @@ impl Diagnostic {
 
     pub fn source(&self) -> Option<&Path> {
         self.source.as_deref()
+    }
+
+    pub fn with_label(mut self, label: Label) -> Self {
+        self.labels.push(label);
+        self
+    }
+
+    pub fn with_primary_label(self, span: Span, message: impl Into<String>) -> Self {
+        self.with_label(Label::primary(span).with_message(message))
+    }
+
+    pub fn with_secondary_label(self, span: Span, message: impl Into<String>) -> Self {
+        self.with_label(Label::secondary(span).with_message(message))
+    }
+
+    pub fn add_label(&mut self, label: Label) {
+        self.labels.push(label);
+    }
+
+    pub fn labels(&self) -> &[Label] {
+        &self.labels
+    }
+
+    pub fn with_note(mut self, note: impl Into<String>) -> Self {
+        self.notes.push(Note::new(note));
+        self
+    }
+
+    pub fn add_note(&mut self, note: impl Into<String>) {
+        self.notes.push(Note::new(note));
+    }
+
+    pub fn notes(&self) -> &[Note] {
+        &self.notes
+    }
+
+    pub fn with_help(mut self, help: impl Into<String>) -> Self {
+        self.helps.push(Help::new(help));
+        self
+    }
+
+    pub fn add_help(&mut self, help: impl Into<String>) {
+        self.helps.push(Help::new(help));
+    }
+
+    pub fn helps(&self) -> &[Help] {
+        &self.helps
+    }
+
+    pub fn with_fix(mut self, fix: FixIt) -> Self {
+        self.fixes.push(fix);
+        self
+    }
+
+    pub fn add_fix(&mut self, fix: FixIt) {
+        self.fixes.push(fix);
+    }
+
+    pub fn fixes(&self) -> &[FixIt] {
+        &self.fixes
     }
 }
 
