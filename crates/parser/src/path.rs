@@ -8,8 +8,6 @@ fn is_path_segment(kind: TokenKind) -> bool {
 }
 
 pub fn parse_path_always(p: &mut Parser) {
-    debug_assert!(is_path_segment(p.peek()));
-
     let marker = p.open();
 
     if !is_path_segment(p.peek()) {
