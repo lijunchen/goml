@@ -1,49 +1,49 @@
 fn main() -> unit {
-  join ret60() -> unit {
+  join ret63() -> unit {
     ()
   } in
   let c/0 = 'A' in
-  let t61 = inherent#char#char#to_string(c/0) in
-  let _wild58 = println__T_string(t61) in
+  let t64 = inherent#char#char#to_string(c/0) in
+  let _wild61 = println__T_string(t64) in
   let d/1 = 'b' in
-  join k62(jp63: string) -> unit {
-    let out/2 = jp63 in
-    let _wild59 = println__T_string(out/2) in
-    jump ret60()
+  join k65(jp66: string) -> unit {
+    let out/2 = jp66 in
+    let _wild62 = println__T_string(out/2) in
+    jump ret63()
   } in
   match d/1 {
     'a' => {
-      jump k62("A")
+      jump k65("A")
     },
     'b' => {
-      jump k62("B")
+      jump k65("B")
     },
     _ => {
-      jump k62("?")
+      jump k65("?")
     },
   }
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret64() -> unit {
+  join ret67() -> unit {
     ()
   } in
-  let t65 = trait_impl#ToString#string#to_string(value/1) in
-  let t66 = @runtime(core.string_println)(t65) in
-  jump ret64()
+  let t68 = trait_impl#ToString#string#to_string(value/1) in
+  let t69 = @runtime(core.string_println)(t68) in
+  jump ret67()
 }
 
-fn inherent#char#char#to_string(self/3: char) -> string {
-  join ret67(retv68: string) -> string {
-    retv68
-  } in
-  let t69 = @runtime(core.char_to_string)(self/3) in
-  jump ret67(t69)
-}
-
-fn trait_impl#ToString#string#to_string(self/34: string) -> string {
+fn inherent#char#char#to_string(self/6: char) -> string {
   join ret70(retv71: string) -> string {
     retv71
   } in
-  jump ret70(self/34)
+  let t72 = @runtime(core.char_to_string)(self/6) in
+  jump ret70(t72)
+}
+
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  join ret73(retv74: string) -> string {
+    retv74
+  } in
+  jump ret73(self/37)
 }

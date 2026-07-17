@@ -1,105 +1,105 @@
 fn parse_text(ok/0: bool) -> Result__string__string {
-  join ret66(retv67: Result__string__string) -> Result__string__string {
-    retv67
+  join ret69(retv70: Result__string__string) -> Result__string__string {
+    retv70
   } in
-  join k68(jp69: Result__string__string) -> Result__string__string {
-    jump ret66(jp69)
+  join k71(jp72: Result__string__string) -> Result__string__string {
+    jump ret69(jp72)
   } in
   if ok/0 {
-    let t70 = Result__string__string::Ok("body") in
-    jump k68(t70)
+    let t73 = Result__string__string::Ok("body") in
+    jump k71(t73)
   } else {
-    let t71 = Result__string__string::Err("parse failed") in
-    jump k68(t71)
+    let t74 = Result__string__string::Err("parse failed") in
+    jump k71(t74)
   }
 }
 
 fn decorate(prefix/1: string, ok/2: bool) -> Result__string__string {
-  join ret72(retv73: Result__string__string) -> Result__string__string {
-    retv73
+  join ret75(retv76: Result__string__string) -> Result__string__string {
+    retv76
   } in
   let run/4 = closure_env_run_0 { ok_0: ok/2, prefix_1: prefix/1 } in
-  let t74 = inherent#closure_env_run_0#closure_env_run_0#apply(run/4) in
-  jump ret72(t74)
+  let t77 = inherent#closure_env_run_0#closure_env_run_0#apply(run/4) in
+  jump ret75(t77)
 }
 
 fn show(res/5: Result__string__string) -> string {
-  join ret75(retv76: string) -> string {
-    retv76
+  join ret78(retv79: string) -> string {
+    retv79
   } in
-  join k77(jp78: string) -> string {
-    jump ret75(jp78)
+  join k80(jp81: string) -> string {
+    jump ret78(jp81)
   } in
   match res/5 {
     Tag_0 => {
-      let x61 = Result__string__string::Ok._0(res/5) in
-      let value/6 = x61 in
-      let t79 = ("ok " + value/6) in
-      jump k77(t79)
+      let x64 = Result__string__string::Ok._0(res/5) in
+      let value/6 = x64 in
+      let t82 = ("ok " + value/6) in
+      jump k80(t82)
     },
     Tag_1 => {
-      let x62 = Result__string__string::Err._0(res/5) in
-      let err/7 = x62 in
-      let t80 = ("err " + err/7) in
-      jump k77(t80)
+      let x65 = Result__string__string::Err._0(res/5) in
+      let err/7 = x65 in
+      let t83 = ("err " + err/7) in
+      jump k80(t83)
     },
   }
 }
 
 fn main() -> unit {
-  join ret81() -> unit {
+  join ret84() -> unit {
     ()
   } in
-  let t82 = decorate("outer", true) in
-  let t83 = show(t82) in
-  let _wild63 = println__T_string(t83) in
-  let t84 = decorate("outer", false) in
-  let t85 = show(t84) in
-  let _wild64 = println__T_string(t85) in
-  jump ret81()
+  let t85 = decorate("outer", true) in
+  let t86 = show(t85) in
+  let _wild66 = println__T_string(t86) in
+  let t87 = decorate("outer", false) in
+  let t88 = show(t87) in
+  let _wild67 = println__T_string(t88) in
+  jump ret84()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret86() -> unit {
+  join ret89() -> unit {
     ()
   } in
-  let t87 = trait_impl#ToString#string#to_string(value/1) in
-  let t88 = @runtime(core.string_println)(t87) in
-  jump ret86()
+  let t90 = trait_impl#ToString#string#to_string(value/1) in
+  let t91 = @runtime(core.string_println)(t90) in
+  jump ret89()
 }
 
-fn trait_impl#ToString#string#to_string(self/34: string) -> string {
-  join ret89(retv90: string) -> string {
-    retv90
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  join ret92(retv93: string) -> string {
+    retv93
   } in
-  jump ret89(self/34)
+  jump ret92(self/37)
 }
 
-fn inherent#closure_env_run_0#closure_env_run_0#apply(env65: closure_env_run_0) -> Result__string__string {
-  join ret91(retv92: Result__string__string) -> Result__string__string {
-    retv92
+fn inherent#closure_env_run_0#closure_env_run_0#apply(env68: closure_env_run_0) -> Result__string__string {
+  join ret94(retv95: Result__string__string) -> Result__string__string {
+    retv95
   } in
-  let ok/2 = closure_env_run_0.ok_0(env65) in
-  let prefix/1 = closure_env_run_0.prefix_1(env65) in
-  let mtmp58 = parse_text(ok/2) in
-  join k93(jp94: string) -> Result__string__string {
-    let text/3 = jp94 in
-    let t95 = (prefix/1 + ":") in
-    let t96 = (t95 + text/3) in
-    let t97 = Result__string__string::Ok(t96) in
-    jump ret91(t97)
+  let ok/2 = closure_env_run_0.ok_0(env68) in
+  let prefix/1 = closure_env_run_0.prefix_1(env68) in
+  let mtmp61 = parse_text(ok/2) in
+  join k96(jp97: string) -> Result__string__string {
+    let text/3 = jp97 in
+    let t98 = (prefix/1 + ":") in
+    let t99 = (t98 + text/3) in
+    let t100 = Result__string__string::Ok(t99) in
+    jump ret94(t100)
   } in
-  match mtmp58 {
+  match mtmp61 {
     Tag_0 => {
-      let x59 = Result__string__string::Ok._0(mtmp58) in
-      let try_value/12 = x59 in
-      jump k93(try_value/12)
+      let x62 = Result__string__string::Ok._0(mtmp61) in
+      let try_value/12 = x62 in
+      jump k96(try_value/12)
     },
     Tag_1 => {
-      let x60 = Result__string__string::Err._0(mtmp58) in
-      let try_residual/12 = x60 in
-      let t98 = Result__string__string::Err(try_residual/12) in
-      jump ret91(t98)
+      let x63 = Result__string__string::Err._0(mtmp61) in
+      let try_residual/12 = x63 in
+      let t101 = Result__string__string::Err(try_residual/12) in
+      jump ret94(t101)
     },
   }
 }

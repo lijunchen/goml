@@ -31,104 +31,104 @@ type Err struct {
 func (_ Err) isResult__string__string() {}
 
 func parse_text(ok__0 bool) Result__string__string {
-    var retv67 Result__string__string
-    var jp69 Result__string__string
+    var retv70 Result__string__string
+    var jp72 Result__string__string
     if ok__0 {
-        var t70 Result__string__string = Ok{
+        var t73 Result__string__string = Ok{
             _0: "body",
         }
-        jp69 = t70
+        jp72 = t73
     } else {
-        var t71 Result__string__string = Err{
+        var t74 Result__string__string = Err{
             _0: "parse failed",
         }
-        jp69 = t71
+        jp72 = t74
     }
-    retv67 = jp69
-    return retv67
+    retv70 = jp72
+    return retv70
 }
 
 func decorate(prefix__1 string, ok__2 bool) Result__string__string {
-    var retv73 Result__string__string
+    var retv76 Result__string__string
     var run__4 closure_env_run_0 = closure_env_run_0{
         ok_0: ok__2,
         prefix_1: prefix__1,
     }
-    var t74 Result__string__string = _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(run__4)
-    retv73 = t74
-    return retv73
-}
-
-func show(res__5 Result__string__string) string {
-    var retv76 string
-    var jp78 string
-    switch res__5.(type) {
-    case Ok:
-        var x61 string = res__5.(Ok)._0
-        var value__6 string = x61
-        var t79 string = "ok " + value__6
-        jp78 = t79
-    case Err:
-        var x62 string = res__5.(Err)._0
-        var err__7 string = x62
-        var t80 string = "err " + err__7
-        jp78 = t80
-    default:
-        panic("non-exhaustive match")
-    }
-    retv76 = jp78
+    var t77 Result__string__string = _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(run__4)
+    retv76 = t77
     return retv76
 }
 
+func show(res__5 Result__string__string) string {
+    var retv79 string
+    var jp81 string
+    switch res__5.(type) {
+    case Ok:
+        var x64 string = res__5.(Ok)._0
+        var value__6 string = x64
+        var t82 string = "ok " + value__6
+        jp81 = t82
+    case Err:
+        var x65 string = res__5.(Err)._0
+        var err__7 string = x65
+        var t83 string = "err " + err__7
+        jp81 = t83
+    default:
+        panic("non-exhaustive match")
+    }
+    retv79 = jp81
+    return retv79
+}
+
 func main0() struct{} {
-    var t82 Result__string__string = decorate("outer", true)
-    var t83 string = show(t82)
-    println__T_string(t83)
-    var t84 Result__string__string = decorate("outer", false)
-    var t85 string = show(t84)
-    println__T_string(t85)
+    var t85 Result__string__string = decorate("outer", true)
+    var t86 string = show(t85)
+    println__T_string(t86)
+    var t87 Result__string__string = decorate("outer", false)
+    var t88 string = show(t87)
+    println__T_string(t88)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t87 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t87)
+    var t90 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t90)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__34 string) string {
-    var retv90 string
-    retv90 = self__34
-    return retv90
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
+    var retv93 string
+    retv93 = self__37
+    return retv93
 }
 
-func _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(env65 closure_env_run_0) Result__string__string {
-    var retv92 Result__string__string
-    var ok__2 bool = env65.ok_0
-    var prefix__1 string = env65.prefix_1
-    var mtmp58 Result__string__string = parse_text(ok__2)
-    var jp94 string
-    switch mtmp58.(type) {
+func _goml_m_inherent_i_closure__env__run__0_i_closure__env__run__0_i_apply(env68 closure_env_run_0) Result__string__string {
+    var retv95 Result__string__string
+    var ok__2 bool = env68.ok_0
+    var prefix__1 string = env68.prefix_1
+    var mtmp61 Result__string__string = parse_text(ok__2)
+    var jp97 string
+    switch mtmp61.(type) {
     case Ok:
-        var x59 string = mtmp58.(Ok)._0
-        var try_value__12 string = x59
-        jp94 = try_value__12
-        var text__3 string = jp94
-        var t95 string = prefix__1 + ":"
-        var t96 string = t95 + text__3
-        var t97 Result__string__string = Ok{
-            _0: t96,
+        var x62 string = mtmp61.(Ok)._0
+        var try_value__12 string = x62
+        jp97 = try_value__12
+        var text__3 string = jp97
+        var t98 string = prefix__1 + ":"
+        var t99 string = t98 + text__3
+        var t100 Result__string__string = Ok{
+            _0: t99,
         }
-        retv92 = t97
-        return retv92
+        retv95 = t100
+        return retv95
     case Err:
-        var x60 string = mtmp58.(Err)._0
-        var try_residual__12 string = x60
-        var t98 Result__string__string = Err{
+        var x63 string = mtmp61.(Err)._0
+        var try_residual__12 string = x63
+        var t101 Result__string__string = Err{
             _0: try_residual__12,
         }
-        retv92 = t98
-        return retv92
+        retv95 = t101
+        return retv95
     default:
         panic("non-exhaustive match")
     }

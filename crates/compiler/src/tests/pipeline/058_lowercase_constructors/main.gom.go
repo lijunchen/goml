@@ -20,70 +20,70 @@ type none struct {}
 func (_ none) isoption__int32() {}
 
 func make_some(value__0 int32) option__int32 {
-    var retv66 option__int32
-    var t67 option__int32 = some{
+    var retv69 option__int32
+    var t70 option__int32 = some{
         _0: value__0,
-    }
-    retv66 = t67
-    return retv66
-}
-
-func build_point(x__1 int32, y__2 int32) point {
-    var retv69 point
-    var t70 point = point{
-        x: x__1,
-        y: y__2,
     }
     retv69 = t70
     return retv69
 }
 
-func magnitude(p__3 point) int32 {
-    var retv72 int32
-    var mtmp58 point = p__3
-    var x59 int32 = mtmp58.x
-    var x60 int32 = mtmp58.y
-    var y__5 int32 = x60
-    var x__4 int32 = x59
-    var t73 int32 = x__4 + y__5
+func build_point(x__1 int32, y__2 int32) point {
+    var retv72 point
+    var t73 point = point{
+        x: x__1,
+        y: y__2,
+    }
     retv72 = t73
     return retv72
 }
 
-func main0() int32 {
+func magnitude(p__3 point) int32 {
     var retv75 int32
-    var mtmp61 option__int32 = make_some(5)
-    var jp77 int32
-    switch mtmp61.(type) {
+    var mtmp61 point = p__3
+    var x62 int32 = mtmp61.x
+    var x63 int32 = mtmp61.y
+    var y__5 int32 = x63
+    var x__4 int32 = x62
+    var t76 int32 = x__4 + y__5
+    retv75 = t76
+    return retv75
+}
+
+func main0() int32 {
+    var retv78 int32
+    var mtmp64 option__int32 = make_some(5)
+    var jp80 int32
+    switch mtmp64.(type) {
     case some:
-        var x62 int32 = mtmp61.(some)._0
-        var result__6 int32 = x62
+        var x65 int32 = mtmp64.(some)._0
+        var result__6 int32 = x65
         var pt__7 point = build_point(result__6, 7)
-        var t78 int32 = pt__7.x
-        var mtmp63 option__int32 = some{
-            _0: t78,
+        var t81 int32 = pt__7.x
+        var mtmp66 option__int32 = some{
+            _0: t81,
         }
-        var jp80 int32
-        switch mtmp63.(type) {
+        var jp83 int32
+        switch mtmp66.(type) {
         case some:
-            var x64 int32 = mtmp63.(some)._0
-            var value__8 int32 = x64
-            var t81 int32 = magnitude(pt__7)
-            var t82 int32 = value__8 + t81
-            jp80 = t82
+            var x67 int32 = mtmp66.(some)._0
+            var value__8 int32 = x67
+            var t84 int32 = magnitude(pt__7)
+            var t85 int32 = value__8 + t84
+            jp83 = t85
         case none:
-            jp80 = 0
+            jp83 = 0
         default:
             panic("non-exhaustive match")
         }
-        jp77 = jp80
+        jp80 = jp83
     case none:
-        jp77 = 0
+        jp80 = 0
     default:
         panic("non-exhaustive match")
     }
-    retv75 = jp77
-    return retv75
+    retv78 = jp80
+    return retv78
 }
 
 func main() {

@@ -22,45 +22,45 @@ func test_int_comparisons() struct{} {
     var b__1 int32 = 20
     var c__2 int32 = 10
     var less__3 bool = a__0 < b__1
-    var t84 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(less__3)
-    var t85 string = "10 < 20: " + t84
-    println__T_string(t85)
+    var t87 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(less__3)
+    var t88 string = "10 < 20: " + t87
+    println__T_string(t88)
     var greater__4 bool = b__1 > a__0
-    var t86 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(greater__4)
-    var t87 string = "20 > 10: " + t86
-    println__T_string(t87)
+    var t89 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(greater__4)
+    var t90 string = "20 > 10: " + t89
+    println__T_string(t90)
     var less_eq1__5 bool = a__0 <= b__1
-    var t88 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(less_eq1__5)
-    var t89 string = "10 <= 20: " + t88
-    println__T_string(t89)
+    var t91 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(less_eq1__5)
+    var t92 string = "10 <= 20: " + t91
+    println__T_string(t92)
     var less_eq2__6 bool = a__0 <= c__2
-    var t90 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(less_eq2__6)
-    var t91 string = "10 <= 10: " + t90
-    println__T_string(t91)
+    var t93 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(less_eq2__6)
+    var t94 string = "10 <= 10: " + t93
+    println__T_string(t94)
     var greater_eq1__7 bool = b__1 >= a__0
-    var t92 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(greater_eq1__7)
-    var t93 string = "20 >= 10: " + t92
-    println__T_string(t93)
+    var t95 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(greater_eq1__7)
+    var t96 string = "20 >= 10: " + t95
+    println__T_string(t96)
     var greater_eq2__8 bool = c__2 >= a__0
-    var t94 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(greater_eq2__8)
-    var t95 string = "10 >= 10: " + t94
-    println__T_string(t95)
+    var t97 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(greater_eq2__8)
+    var t98 string = "10 >= 10: " + t97
+    println__T_string(t98)
     var eq1__9 bool = a__0 == c__2
-    var t96 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(eq1__9)
-    var t97 string = "10 == 10: " + t96
-    println__T_string(t97)
+    var t99 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(eq1__9)
+    var t100 string = "10 == 10: " + t99
+    println__T_string(t100)
     var eq2__10 bool = a__0 == b__1
-    var t98 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(eq2__10)
-    var t99 string = "10 == 20: " + t98
-    println__T_string(t99)
+    var t101 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(eq2__10)
+    var t102 string = "10 == 20: " + t101
+    println__T_string(t102)
     var neq1__11 bool = a__0 != b__1
-    var t100 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(neq1__11)
-    var t101 string = "10 != 20: " + t100
-    println__T_string(t101)
+    var t103 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(neq1__11)
+    var t104 string = "10 != 20: " + t103
+    println__T_string(t104)
     var neq2__12 bool = a__0 != c__2
-    var t102 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(neq2__12)
-    var t103 string = "10 != 10: " + t102
-    println__T_string(t103)
+    var t105 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(neq2__12)
+    var t106 string = "10 != 10: " + t105
+    println__T_string(t106)
     return struct{}{}
 }
 
@@ -69,45 +69,45 @@ func test_float_comparisons() struct{} {
     var y__14 float64 = 2.71
     var z__15 float64 = 3.14
     var less__16 bool = y__14 < x__13
-    var t105 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(less__16)
-    var t106 string = "2.71 < 3.14: " + t105
-    println__T_string(t106)
+    var t108 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(less__16)
+    var t109 string = "2.71 < 3.14: " + t108
+    println__T_string(t109)
     var greater__17 bool = x__13 > y__14
-    var t107 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(greater__17)
-    var t108 string = "3.14 > 2.71: " + t107
-    println__T_string(t108)
+    var t110 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(greater__17)
+    var t111 string = "3.14 > 2.71: " + t110
+    println__T_string(t111)
     var less_eq1__18 bool = y__14 <= x__13
-    var t109 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(less_eq1__18)
-    var t110 string = "2.71 <= 3.14: " + t109
-    println__T_string(t110)
+    var t112 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(less_eq1__18)
+    var t113 string = "2.71 <= 3.14: " + t112
+    println__T_string(t113)
     var less_eq2__19 bool = x__13 <= z__15
-    var t111 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(less_eq2__19)
-    var t112 string = "3.14 <= 3.14: " + t111
-    println__T_string(t112)
+    var t114 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(less_eq2__19)
+    var t115 string = "3.14 <= 3.14: " + t114
+    println__T_string(t115)
     var greater_eq1__20 bool = x__13 >= y__14
-    var t113 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(greater_eq1__20)
-    var t114 string = "3.14 >= 2.71: " + t113
-    println__T_string(t114)
+    var t116 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(greater_eq1__20)
+    var t117 string = "3.14 >= 2.71: " + t116
+    println__T_string(t117)
     var greater_eq2__21 bool = z__15 >= x__13
-    var t115 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(greater_eq2__21)
-    var t116 string = "3.14 >= 3.14: " + t115
-    println__T_string(t116)
+    var t118 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(greater_eq2__21)
+    var t119 string = "3.14 >= 3.14: " + t118
+    println__T_string(t119)
     var eq1__22 bool = x__13 == z__15
-    var t117 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(eq1__22)
-    var t118 string = "3.14 == 3.14: " + t117
-    println__T_string(t118)
+    var t120 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(eq1__22)
+    var t121 string = "3.14 == 3.14: " + t120
+    println__T_string(t121)
     var eq2__23 bool = x__13 == y__14
-    var t119 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(eq2__23)
-    var t120 string = "3.14 == 2.71: " + t119
-    println__T_string(t120)
+    var t122 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(eq2__23)
+    var t123 string = "3.14 == 2.71: " + t122
+    println__T_string(t123)
     var neq1__24 bool = x__13 != y__14
-    var t121 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(neq1__24)
-    var t122 string = "3.14 != 2.71: " + t121
-    println__T_string(t122)
+    var t124 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(neq1__24)
+    var t125 string = "3.14 != 2.71: " + t124
+    println__T_string(t125)
     var neq2__25 bool = x__13 != z__15
-    var t123 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(neq2__25)
-    var t124 string = "3.14 != 3.14: " + t123
-    println__T_string(t124)
+    var t126 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(neq2__25)
+    var t127 string = "3.14 != 3.14: " + t126
+    println__T_string(t127)
     return struct{}{}
 }
 
@@ -121,22 +121,22 @@ func main0() struct{} {
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t127 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t127)
+    var t130 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t130)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__33 bool) string {
-    var retv130 string
-    var t131 string = _goml_runtime_core_bool_to_string(self__33)
-    retv130 = t131
-    return retv130
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__36 bool) string {
+    var retv133 string
+    var t134 string = _goml_runtime_core_bool_to_string(self__36)
+    retv133 = t134
+    return retv133
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__34 string) string {
-    var retv133 string
-    retv133 = self__34
-    return retv133
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
+    var retv136 string
+    retv136 = self__37
+    return retv136
 }
 
 func main() {

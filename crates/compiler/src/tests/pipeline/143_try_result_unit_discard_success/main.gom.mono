@@ -11,23 +11,23 @@ fn step(ok/0: bool) -> Result__unit__string {
 }
 
 fn run(ok/1: bool) -> Result__unit__string {
-  let mtmp61 = {
-    let mtmp58 = step(ok/1) in
-    match mtmp58 {
-      Result__unit__string::Ok(x59) => {
+  let mtmp64 = {
+    let mtmp61 = step(ok/1) in
+    match mtmp61 {
+      Result__unit__string::Ok(x62) => {
         {
-          let x59 = Result__unit__string::Ok._0(mtmp58) in
+          let x62 = Result__unit__string::Ok._0(mtmp61) in
           {
-            let try_value/12 = x59 in
+            let try_value/12 = x62 in
             try_value/12
           }
         }
       },
-      Result__unit__string::Err(x60) => {
+      Result__unit__string::Err(x63) => {
         {
-          let x60 = Result__unit__string::Err._0(mtmp58) in
+          let x63 = Result__unit__string::Err._0(mtmp61) in
           {
-            let try_residual/12 = x60 in
+            let try_residual/12 = x63 in
             return Result__unit__string::Err(try_residual/12)
           }
         }
@@ -41,21 +41,21 @@ fn run(ok/1: bool) -> Result__unit__string {
 
 fn show(res/2: Result__unit__string) -> string {
   match res/2 {
-    Result__unit__string::Ok(x62) => {
+    Result__unit__string::Ok(x65) => {
       {
-        let x62 = Result__unit__string::Ok._0(res/2) in
-        match x62 {
+        let x65 = Result__unit__string::Ok._0(res/2) in
+        match x65 {
           () => {
             "ok unit"
           },
         }
       }
     },
-    Result__unit__string::Err(x63) => {
+    Result__unit__string::Err(x66) => {
       {
-        let x63 = Result__unit__string::Err._0(res/2) in
+        let x66 = Result__unit__string::Err._0(res/2) in
         {
-          let err/3 = x63 in
+          let err/3 = x66 in
           ("err " + err/3)
         }
       }
@@ -64,14 +64,14 @@ fn show(res/2: Result__unit__string) -> string {
 }
 
 fn main() -> unit {
-  let _wild64 = println__T_string(show(run(true))) in
-  let _wild65 = println__T_string(show(run(false))) in
+  let _wild67 = println__T_string(show(run(true))) in
+  let _wild68 = println__T_string(show(run(false))) in
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#string#to_string(self/34: string) -> string {
-  self/34
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  self/37
 }

@@ -1,92 +1,92 @@
 fn main() -> unit {
-  join ret69() -> unit {
+  join ret72() -> unit {
     ()
   } in
   let v/0 = inherent#Vec#Vec[T]#new__T_int32() in
-  let _wild58 = inherent#Vec#Vec[T]#push__T_int32(v/0, 10) in
-  let _wild59 = inherent#Vec#Vec[T]#push__T_int32(v/0, 20) in
-  let _wild60 = inherent#Vec#Vec[T]#push__T_int32(v/0, 30) in
-  let _wild61 = inherent#Vec#Vec[T]#push__T_int32(v/0, 40) in
+  let _wild61 = inherent#Vec#Vec[T]#push__T_int32(v/0, 10) in
+  let _wild62 = inherent#Vec#Vec[T]#push__T_int32(v/0, 20) in
+  let _wild63 = inherent#Vec#Vec[T]#push__T_int32(v/0, 30) in
+  let _wild64 = inherent#Vec#Vec[T]#push__T_int32(v/0, 40) in
   let s/1 = inherent#Vec#Vec[T]#slice__T_int32(v/0, 1, 4) in
-  let t70 = inherent#Slice#Slice[T]#len__T_int32(s/1) in
-  let _wild62 = println__T_int32(t70) in
-  let t71 = inherent#Slice#Slice[T]#get__T_int32(s/1, 0) in
-  let _wild63 = println__T_int32(t71) in
-  let t72 = inherent#Slice#Slice[T]#get__T_int32(s/1, 1) in
-  let _wild64 = println__T_int32(t72) in
-  let t73 = inherent#Slice#Slice[T]#get__T_int32(s/1, 2) in
+  let t73 = inherent#Slice#Slice[T]#len__T_int32(s/1) in
   let _wild65 = println__T_int32(t73) in
-  let t/2 = inherent#Slice#Slice[T]#sub__T_int32(s/1, 1, 3) in
-  let t74 = inherent#Slice#Slice[T]#len__T_int32(t/2) in
+  let t74 = inherent#Slice#Slice[T]#get__T_int32(s/1, 0) in
   let _wild66 = println__T_int32(t74) in
-  let t75 = inherent#Slice#Slice[T]#get__T_int32(t/2, 0) in
+  let t75 = inherent#Slice#Slice[T]#get__T_int32(s/1, 1) in
   let _wild67 = println__T_int32(t75) in
-  let t76 = inherent#Slice#Slice[T]#get__T_int32(t/2, 1) in
+  let t76 = inherent#Slice#Slice[T]#get__T_int32(s/1, 2) in
   let _wild68 = println__T_int32(t76) in
-  jump ret69()
+  let t/2 = inherent#Slice#Slice[T]#sub__T_int32(s/1, 1, 3) in
+  let t77 = inherent#Slice#Slice[T]#len__T_int32(t/2) in
+  let _wild69 = println__T_int32(t77) in
+  let t78 = inherent#Slice#Slice[T]#get__T_int32(t/2, 0) in
+  let _wild70 = println__T_int32(t78) in
+  let t79 = inherent#Slice#Slice[T]#get__T_int32(t/2, 1) in
+  let _wild71 = println__T_int32(t79) in
+  jump ret72()
 }
 
 fn inherent#Vec#Vec[T]#new__T_int32() -> Vec[int32] {
-  join ret77(retv78: Vec[int32]) -> Vec[int32] {
-    retv78
+  join ret80(retv81: Vec[int32]) -> Vec[int32] {
+    retv81
   } in
-  let t79 = @intrinsic(vec.new)() in
-  jump ret77(t79)
+  let t82 = @intrinsic(vec.new)() in
+  jump ret80(t82)
 }
 
-fn inherent#Vec#Vec[T]#push__T_int32(self/120: Vec[int32], elem/121: int32) -> unit {
-  join ret80() -> unit {
+fn inherent#Vec#Vec[T]#push__T_int32(self/123: Vec[int32], elem/124: int32) -> unit {
+  join ret83() -> unit {
     ()
   } in
-  let t81 = @intrinsic(vec.push)(self/120, elem/121) in
-  jump ret80()
+  let t84 = @intrinsic(vec.push)(self/123, elem/124) in
+  jump ret83()
 }
 
-fn inherent#Vec#Vec[T]#slice__T_int32(self/169: Vec[int32], start/170: int32, end/171: int32) -> Slice[int32] {
-  join ret82(retv83: Slice[int32]) -> Slice[int32] {
-    retv83
+fn inherent#Vec#Vec[T]#slice__T_int32(self/172: Vec[int32], start/173: int32, end/174: int32) -> Slice[int32] {
+  join ret85(retv86: Slice[int32]) -> Slice[int32] {
+    retv86
   } in
-  let t84 = @intrinsic(slice.new)(self/169, start/170, end/171) in
-  jump ret82(t84)
+  let t87 = @intrinsic(slice.new)(self/172, start/173, end/174) in
+  jump ret85(t87)
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  join ret85() -> unit {
+  join ret88() -> unit {
     ()
   } in
-  let t86 = trait_impl#ToString#int32#to_string(value/1) in
-  let t87 = @runtime(core.string_println)(t86) in
-  jump ret85()
+  let t89 = trait_impl#ToString#int32#to_string(value/1) in
+  let t90 = @runtime(core.string_println)(t89) in
+  jump ret88()
 }
 
-fn inherent#Slice#Slice[T]#len__T_int32(self/180: Slice[int32]) -> int32 {
-  join ret88(retv89: int32) -> int32 {
-    retv89
-  } in
-  let t90 = @intrinsic(slice.len)(self/180) in
-  jump ret88(t90)
-}
-
-fn inherent#Slice#Slice[T]#get__T_int32(self/178: Slice[int32], index/179: int32) -> int32 {
+fn inherent#Slice#Slice[T]#len__T_int32(self/183: Slice[int32]) -> int32 {
   join ret91(retv92: int32) -> int32 {
     retv92
   } in
-  let t93 = @intrinsic(slice.get)(self/178, index/179) in
+  let t93 = @intrinsic(slice.len)(self/183) in
   jump ret91(t93)
 }
 
-fn inherent#Slice#Slice[T]#sub__T_int32(self/181: Slice[int32], start/182: int32, end/183: int32) -> Slice[int32] {
-  join ret94(retv95: Slice[int32]) -> Slice[int32] {
+fn inherent#Slice#Slice[T]#get__T_int32(self/181: Slice[int32], index/182: int32) -> int32 {
+  join ret94(retv95: int32) -> int32 {
     retv95
   } in
-  let t96 = @intrinsic(slice.sub)(self/181, start/182, end/183) in
+  let t96 = @intrinsic(slice.get)(self/181, index/182) in
   jump ret94(t96)
 }
 
-fn trait_impl#ToString#int32#to_string(self/38: int32) -> string {
-  join ret97(retv98: string) -> string {
+fn inherent#Slice#Slice[T]#sub__T_int32(self/184: Slice[int32], start/185: int32, end/186: int32) -> Slice[int32] {
+  join ret97(retv98: Slice[int32]) -> Slice[int32] {
     retv98
   } in
-  let t99 = @runtime(core.int32_to_string)(self/38) in
+  let t99 = @intrinsic(slice.sub)(self/184, start/185, end/186) in
   jump ret97(t99)
+}
+
+fn trait_impl#ToString#int32#to_string(self/41: int32) -> string {
+  join ret100(retv101: string) -> string {
+    retv101
+  } in
+  let t102 = @runtime(core.int32_to_string)(self/41) in
+  jump ret100(t102)
 }

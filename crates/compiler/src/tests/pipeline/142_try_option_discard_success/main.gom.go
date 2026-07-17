@@ -43,80 +43,80 @@ type Option__string_Some struct {
 func (_ Option__string_Some) isOption__string() {}
 
 func cut_pair(ok__0 bool) _goml_m_Option_____o_string_c_string_q_ {
-    var retv65 _goml_m_Option_____o_string_c_string_q_
-    var jp67 _goml_m_Option_____o_string_c_string_q_
+    var retv68 _goml_m_Option_____o_string_c_string_q_
+    var jp70 _goml_m_Option_____o_string_c_string_q_
     if ok__0 {
-        var t68 Tuple2_6string_6string = Tuple2_6string_6string{
+        var t71 Tuple2_6string_6string = Tuple2_6string_6string{
             _0: "left",
             _1: "right",
         }
-        var t69 _goml_m_Option_____o_string_c_string_q_ = _goml_m_Option_____o_string_c_string_q__Some{
-            _0: t68,
+        var t72 _goml_m_Option_____o_string_c_string_q_ = _goml_m_Option_____o_string_c_string_q__Some{
+            _0: t71,
         }
-        jp67 = t69
+        jp70 = t72
     } else {
-        jp67 = _goml_m_Option_____o_string_c_string_q__None{}
+        jp70 = _goml_m_Option_____o_string_c_string_q__None{}
     }
-    retv65 = jp67
-    return retv65
+    retv68 = jp70
+    return retv68
 }
 
 func check(ok__1 bool) Option__string {
-    var retv71 Option__string
-    var mtmp58 _goml_m_Option_____o_string_c_string_q_ = cut_pair(ok__1)
-    switch mtmp58.(type) {
+    var retv74 Option__string
+    var mtmp61 _goml_m_Option_____o_string_c_string_q_ = cut_pair(ok__1)
+    switch mtmp61.(type) {
     case _goml_m_Option_____o_string_c_string_q__None:
-        retv71 = Option__string_None{}
-        return retv71
+        retv74 = Option__string_None{}
+        return retv74
     case _goml_m_Option_____o_string_c_string_q__Some:
-        var t74 Option__string = Option__string_Some{
+        var t77 Option__string = Option__string_Some{
             _0: "ok",
         }
-        retv71 = t74
-        return retv71
+        retv74 = t77
+        return retv74
     default:
         panic("non-exhaustive match")
     }
 }
 
 func show(opt__2 Option__string) string {
-    var retv76 string
-    var jp78 string
+    var retv79 string
+    var jp81 string
     switch opt__2.(type) {
     case Option__string_None:
-        jp78 = "none"
+        jp81 = "none"
     case Option__string_Some:
-        var x61 string = opt__2.(Option__string_Some)._0
-        var value__3 string = x61
-        var t79 string = "some " + value__3
-        jp78 = t79
+        var x64 string = opt__2.(Option__string_Some)._0
+        var value__3 string = x64
+        var t82 string = "some " + value__3
+        jp81 = t82
     default:
         panic("non-exhaustive match")
     }
-    retv76 = jp78
-    return retv76
+    retv79 = jp81
+    return retv79
 }
 
 func main0() struct{} {
-    var t81 Option__string = check(true)
-    var t82 string = show(t81)
-    println__T_string(t82)
-    var t83 Option__string = check(false)
-    var t84 string = show(t83)
-    println__T_string(t84)
+    var t84 Option__string = check(true)
+    var t85 string = show(t84)
+    println__T_string(t85)
+    var t86 Option__string = check(false)
+    var t87 string = show(t86)
+    println__T_string(t87)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t86 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t86)
+    var t89 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t89)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__34 string) string {
-    var retv89 string
-    retv89 = self__34
-    return retv89
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
+    var retv92 string
+    retv92 = self__37
+    return retv92
 }
 
 func main() {

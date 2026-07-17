@@ -1,64 +1,64 @@
 fn trait_impl#A#S#foo(self/0: S) -> string {
-  join ret60(retv61: string) -> string {
-    retv61
+  join ret63(retv64: string) -> string {
+    retv64
   } in
-  jump ret60("A")
+  jump ret63("A")
 }
 
 fn trait_impl#B#S#foo(self/1: S) -> string {
-  join ret62(retv63: string) -> string {
-    retv63
+  join ret65(retv66: string) -> string {
+    retv66
   } in
-  jump ret62("B")
+  jump ret65("B")
 }
 
 fn trait_impl#C#S#bar(self/2: S) -> string {
-  join ret64(retv65: string) -> string {
-    retv65
+  join ret67(retv68: string) -> string {
+    retv68
   } in
-  jump ret64("C")
+  jump ret67("C")
 }
 
 fn main() -> unit {
-  join ret66() -> unit {
-    ()
-  } in
-  let s/5 = S {} in
-  let t67 = pick_a__T_S(s/5) in
-  let mtmp58 = println__T_string(t67) in
-  let t68 = bar_it__T_S(s/5) in
-  let mtmp59 = println__T_string(t68) in
-  jump ret66()
-}
-
-fn println__T_string(value/1: string) -> unit {
   join ret69() -> unit {
     ()
   } in
-  let t70 = trait_impl#ToString#string#to_string(value/1) in
-  let t71 = @runtime(core.string_println)(t70) in
+  let s/5 = S {} in
+  let t70 = pick_a__T_S(s/5) in
+  let mtmp61 = println__T_string(t70) in
+  let t71 = bar_it__T_S(s/5) in
+  let mtmp62 = println__T_string(t71) in
   jump ret69()
 }
 
-fn pick_a__T_S(x/3: S) -> string {
-  join ret72(retv73: string) -> string {
-    retv73
+fn println__T_string(value/1: string) -> unit {
+  join ret72() -> unit {
+    ()
   } in
-  let t74 = trait_impl#A#S#foo(x/3) in
-  jump ret72(t74)
+  let t73 = trait_impl#ToString#string#to_string(value/1) in
+  let t74 = @runtime(core.string_println)(t73) in
+  jump ret72()
 }
 
-fn bar_it__T_S(x/4: S) -> string {
+fn pick_a__T_S(x/3: S) -> string {
   join ret75(retv76: string) -> string {
     retv76
   } in
-  let t77 = trait_impl#C#S#bar(x/4) in
+  let t77 = trait_impl#A#S#foo(x/3) in
   jump ret75(t77)
 }
 
-fn trait_impl#ToString#string#to_string(self/34: string) -> string {
+fn bar_it__T_S(x/4: S) -> string {
   join ret78(retv79: string) -> string {
     retv79
   } in
-  jump ret78(self/34)
+  let t80 = trait_impl#C#S#bar(x/4) in
+  jump ret78(t80)
+}
+
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  join ret81(retv82: string) -> string {
+    retv82
+  } in
+  jump ret81(self/37)
 }

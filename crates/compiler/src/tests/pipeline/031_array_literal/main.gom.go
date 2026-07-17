@@ -10,10 +10,10 @@ func _goml_runtime_core_string_print(s string) struct{} {
 }
 
 func make_array() [3]int32 {
-    var retv62 [3]int32
-    var t63 [3]int32 = [3]int32{1, 2, 3}
-    retv62 = t63
-    return retv62
+    var retv65 [3]int32
+    var t66 [3]int32 = [3]int32{1, 2, 3}
+    retv65 = t66
+    return retv65
 }
 
 func main0() struct{} {
@@ -23,15 +23,15 @@ func main0() struct{} {
 }
 
 func print__T_string(value__0 string) struct{} {
-    var t66 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__0)
-    _goml_runtime_core_string_print(t66)
+    var t69 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__0)
+    _goml_runtime_core_string_print(t69)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__34 string) string {
-    var retv69 string
-    retv69 = self__34
-    return retv69
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
+    var retv72 string
+    retv72 = self__37
+    return retv72
 }
 
 func main() {

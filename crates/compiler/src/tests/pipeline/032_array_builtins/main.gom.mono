@@ -1,11 +1,11 @@
 fn update_array(arr/0: [int32; 3]) -> [int32; 3] {
   let arr/1 = arr/0 in
-  let _wild62 = {
-    let place_root58 = arr/1 in
-    let index59 = 1 in
-    let place60 = @intrinsic(array.get)(place_root58, index59) in
-    let value61 = 42 in
-    arr/1 = @intrinsic(array.set)(place_root58, index59, value61)
+  let _wild65 = {
+    let place_root61 = arr/1 in
+    let index62 = 1 in
+    let place63 = @intrinsic(array.get)(place_root61, index62) in
+    let value64 = 42 in
+    arr/1 = @intrinsic(array.set)(place_root61, index62, value64)
   } in
   arr/1
 }
@@ -18,7 +18,7 @@ fn main() -> unit {
   let arr/3 = [1, 2, 3] in
   let updated/4 = update_array(arr/3) in
   let value/5 = read_array(updated/4) in
-  let mtmp63 = println__T_string(inherent#int32#int32#to_string(value/5)) in
+  let mtmp66 = println__T_string(inherent#int32#int32#to_string(value/5)) in
   {
     ()
   }
@@ -28,10 +28,10 @@ fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn inherent#int32#int32#to_string(self/2: int32) -> string {
-  @runtime(core.int32_to_string)(self/2)
+fn inherent#int32#int32#to_string(self/5: int32) -> string {
+  @runtime(core.int32_to_string)(self/5)
 }
 
-fn trait_impl#ToString#string#to_string(self/34: string) -> string {
-  self/34
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  self/37
 }

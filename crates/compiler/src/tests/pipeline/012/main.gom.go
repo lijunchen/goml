@@ -14,43 +14,43 @@ func _goml_runtime_core_string_print(s string) struct{} {
 }
 
 func fib(x__0 int32) int32 {
-    var retv61 int32
-    var mtmp58 bool = x__0 < 2
-    var jp63 int32
-    switch mtmp58 {
+    var retv64 int32
+    var mtmp61 bool = x__0 < 2
+    var jp66 int32
+    switch mtmp61 {
     case true:
-        jp63 = 1
+        jp66 = 1
     case false:
-        var t64 int32 = x__0 - 1
-        var t65 int32 = fib(t64)
-        var t66 int32 = x__0 - 2
-        var t67 int32 = fib(t66)
-        var t68 int32 = t65 + t67
-        jp63 = t68
+        var t67 int32 = x__0 - 1
+        var t68 int32 = fib(t67)
+        var t69 int32 = x__0 - 2
+        var t70 int32 = fib(t69)
+        var t71 int32 = t68 + t70
+        jp66 = t71
     default:
         panic("non-exhaustive match")
     }
-    retv61 = jp63
-    return retv61
+    retv64 = jp66
+    return retv64
 }
 
 func main0() struct{} {
-    var t70 int32 = fib(10)
-    print__T_int32(t70)
+    var t73 int32 = fib(10)
+    print__T_int32(t73)
     return struct{}{}
 }
 
 func print__T_int32(value__0 int32) struct{} {
-    var t72 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__0)
-    _goml_runtime_core_string_print(t72)
+    var t75 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__0)
+    _goml_runtime_core_string_print(t75)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__38 int32) string {
-    var retv75 string
-    var t76 string = _goml_runtime_core_int32_to_string(self__38)
-    retv75 = t76
-    return retv75
+func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__41 int32) string {
+    var retv78 string
+    var t79 string = _goml_runtime_core_int32_to_string(self__41)
+    retv78 = t79
+    return retv78
 }
 
 func main() {

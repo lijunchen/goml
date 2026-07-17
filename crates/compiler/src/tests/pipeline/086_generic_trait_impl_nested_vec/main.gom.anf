@@ -1,52 +1,52 @@
 fn main() -> unit {
-  join ret60() -> unit {
+  join ret63() -> unit {
     ()
   } in
   let a/1 = Wrap__int32 { value: 1 } in
   let b/2 = Wrap__string { value: "x" } in
-  let t61 = trait_impl#Size#Wrap__int32#size(a/1) in
-  let t62 = inherent#int32#int32#to_string(t61) in
-  let _wild58 = println__T_string(t62) in
-  let t63 = trait_impl#Size#Wrap__string#size(b/2) in
-  let t64 = inherent#int32#int32#to_string(t63) in
-  let _wild59 = println__T_string(t64) in
-  jump ret60()
+  let t64 = trait_impl#Size#Wrap__int32#size(a/1) in
+  let t65 = inherent#int32#int32#to_string(t64) in
+  let _wild61 = println__T_string(t65) in
+  let t66 = trait_impl#Size#Wrap__string#size(b/2) in
+  let t67 = inherent#int32#int32#to_string(t66) in
+  let _wild62 = println__T_string(t67) in
+  jump ret63()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret65() -> unit {
+  join ret68() -> unit {
     ()
   } in
-  let t66 = trait_impl#ToString#string#to_string(value/1) in
-  let t67 = @runtime(core.string_println)(t66) in
-  jump ret65()
+  let t69 = trait_impl#ToString#string#to_string(value/1) in
+  let t70 = @runtime(core.string_println)(t69) in
+  jump ret68()
 }
 
 fn trait_impl#Size#Wrap__int32#size(self/0: Wrap__int32) -> int32 {
-  join ret68(retv69: int32) -> int32 {
-    retv69
+  join ret71(retv72: int32) -> int32 {
+    retv72
   } in
-  jump ret68(1)
+  jump ret71(1)
 }
 
-fn inherent#int32#int32#to_string(self/2: int32) -> string {
-  join ret70(retv71: string) -> string {
-    retv71
+fn inherent#int32#int32#to_string(self/5: int32) -> string {
+  join ret73(retv74: string) -> string {
+    retv74
   } in
-  let t72 = @runtime(core.int32_to_string)(self/2) in
-  jump ret70(t72)
+  let t75 = @runtime(core.int32_to_string)(self/5) in
+  jump ret73(t75)
 }
 
 fn trait_impl#Size#Wrap__string#size(self/0: Wrap__string) -> int32 {
-  join ret73(retv74: int32) -> int32 {
-    retv74
+  join ret76(retv77: int32) -> int32 {
+    retv77
   } in
-  jump ret73(1)
+  jump ret76(1)
 }
 
-fn trait_impl#ToString#string#to_string(self/34: string) -> string {
-  join ret75(retv76: string) -> string {
-    retv76
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  join ret78(retv79: string) -> string {
+    retv79
   } in
-  jump ret75(self/34)
+  jump ret78(self/37)
 }

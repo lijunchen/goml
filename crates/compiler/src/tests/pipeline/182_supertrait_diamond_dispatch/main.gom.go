@@ -12,59 +12,59 @@ func _goml_runtime_core_string_println(s string) struct{} {
 type Value struct {}
 
 func _goml_m_trait__impl_i_Base_i_Value_i_base(self__0 Value) string {
-    var retv60 string
-    retv60 = "B"
-    return retv60
+    var retv63 string
+    retv63 = "B"
+    return retv63
 }
 
 func _goml_m_trait__impl_i_Left_i_Value_i_left(self__1 Value) string {
-    var retv62 string
-    retv62 = "L"
-    return retv62
+    var retv65 string
+    retv65 = "L"
+    return retv65
 }
 
 func _goml_m_trait__impl_i_Right_i_Value_i_right(self__2 Value) string {
-    var retv64 string
-    retv64 = "R"
-    return retv64
+    var retv67 string
+    retv67 = "R"
+    return retv67
 }
 
 func _goml_m_trait__impl_i_Diamond_i_Value_i_diamond(self__3 Value) string {
-    var retv66 string
-    retv66 = "D"
-    return retv66
+    var retv69 string
+    retv69 = "D"
+    return retv69
 }
 
 func main0() struct{} {
-    var t68 Value = Value{}
-    var t69 string = describe__T_Value(t68)
-    println__T_string(t69)
+    var t71 Value = Value{}
+    var t72 string = describe__T_Value(t71)
+    println__T_string(t72)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t71 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t71)
+    var t74 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t74)
     return struct{}{}
 }
 
 func describe__T_Value(value__4 Value) string {
-    var retv74 string
-    var t75 string = _goml_m_trait__impl_i_Base_i_Value_i_base(value__4)
-    var t76 string = _goml_m_trait__impl_i_Left_i_Value_i_left(value__4)
-    var t77 string = t75 + t76
-    var t78 string = _goml_m_trait__impl_i_Right_i_Value_i_right(value__4)
-    var t79 string = t77 + t78
-    var t80 string = _goml_m_trait__impl_i_Diamond_i_Value_i_diamond(value__4)
-    var t81 string = t79 + t80
-    retv74 = t81
-    return retv74
+    var retv77 string
+    var t78 string = _goml_m_trait__impl_i_Base_i_Value_i_base(value__4)
+    var t79 string = _goml_m_trait__impl_i_Left_i_Value_i_left(value__4)
+    var t80 string = t78 + t79
+    var t81 string = _goml_m_trait__impl_i_Right_i_Value_i_right(value__4)
+    var t82 string = t80 + t81
+    var t83 string = _goml_m_trait__impl_i_Diamond_i_Value_i_diamond(value__4)
+    var t84 string = t82 + t83
+    retv77 = t84
+    return retv77
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__34 string) string {
-    var retv83 string
-    retv83 = self__34
-    return retv83
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
+    var retv86 string
+    retv86 = self__37
+    return retv86
 }
 
 func main() {

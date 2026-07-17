@@ -1,92 +1,92 @@
 fn parse_text(ok/0: bool) -> Result__string__string {
-  join ret66(retv67: Result__string__string) -> Result__string__string {
-    retv67
+  join ret69(retv70: Result__string__string) -> Result__string__string {
+    retv70
   } in
-  join k68(jp69: Result__string__string) -> Result__string__string {
-    jump ret66(jp69)
+  join k71(jp72: Result__string__string) -> Result__string__string {
+    jump ret69(jp72)
   } in
   if ok/0 {
-    let t70 = Result__string__string::Ok("ignored") in
-    jump k68(t70)
+    let t73 = Result__string__string::Ok("ignored") in
+    jump k71(t73)
   } else {
-    let t71 = Result__string__string::Err("parse failed") in
-    jump k68(t71)
+    let t74 = Result__string__string::Err("parse failed") in
+    jump k71(t74)
   }
 }
 
 fn check(ok/1: bool) -> Result__string__string {
-  join ret72(retv73: Result__string__string) -> Result__string__string {
-    retv73
+  join ret75(retv76: Result__string__string) -> Result__string__string {
+    retv76
   } in
-  let mtmp58 = parse_text(ok/1) in
-  join k74(jp75: string) -> Result__string__string {
-    let mtmp61 = jp75 in
-    let t76 = Result__string__string::Ok("ok") in
-    jump ret72(t76)
+  let mtmp61 = parse_text(ok/1) in
+  join k77(jp78: string) -> Result__string__string {
+    let mtmp64 = jp78 in
+    let t79 = Result__string__string::Ok("ok") in
+    jump ret75(t79)
   } in
-  match mtmp58 {
+  match mtmp61 {
     Tag_0 => {
-      let x59 = Result__string__string::Ok._0(mtmp58) in
-      let try_value/12 = x59 in
-      jump k74(try_value/12)
+      let x62 = Result__string__string::Ok._0(mtmp61) in
+      let try_value/12 = x62 in
+      jump k77(try_value/12)
     },
     Tag_1 => {
-      let x60 = Result__string__string::Err._0(mtmp58) in
-      let try_residual/12 = x60 in
-      let t77 = Result__string__string::Err(try_residual/12) in
-      jump ret72(t77)
+      let x63 = Result__string__string::Err._0(mtmp61) in
+      let try_residual/12 = x63 in
+      let t80 = Result__string__string::Err(try_residual/12) in
+      jump ret75(t80)
     },
   }
 }
 
 fn show(res/2: Result__string__string) -> string {
-  join ret78(retv79: string) -> string {
-    retv79
+  join ret81(retv82: string) -> string {
+    retv82
   } in
-  join k80(jp81: string) -> string {
-    jump ret78(jp81)
+  join k83(jp84: string) -> string {
+    jump ret81(jp84)
   } in
   match res/2 {
     Tag_0 => {
-      let x62 = Result__string__string::Ok._0(res/2) in
-      let value/3 = x62 in
-      let t82 = ("ok " + value/3) in
-      jump k80(t82)
+      let x65 = Result__string__string::Ok._0(res/2) in
+      let value/3 = x65 in
+      let t85 = ("ok " + value/3) in
+      jump k83(t85)
     },
     Tag_1 => {
-      let x63 = Result__string__string::Err._0(res/2) in
-      let err/4 = x63 in
-      let t83 = ("err " + err/4) in
-      jump k80(t83)
+      let x66 = Result__string__string::Err._0(res/2) in
+      let err/4 = x66 in
+      let t86 = ("err " + err/4) in
+      jump k83(t86)
     },
   }
 }
 
 fn main() -> unit {
-  join ret84() -> unit {
+  join ret87() -> unit {
     ()
   } in
-  let t85 = check(true) in
-  let t86 = show(t85) in
-  let _wild64 = println__T_string(t86) in
-  let t87 = check(false) in
-  let t88 = show(t87) in
-  let _wild65 = println__T_string(t88) in
-  jump ret84()
+  let t88 = check(true) in
+  let t89 = show(t88) in
+  let _wild67 = println__T_string(t89) in
+  let t90 = check(false) in
+  let t91 = show(t90) in
+  let _wild68 = println__T_string(t91) in
+  jump ret87()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret89() -> unit {
+  join ret92() -> unit {
     ()
   } in
-  let t90 = trait_impl#ToString#string#to_string(value/1) in
-  let t91 = @runtime(core.string_println)(t90) in
-  jump ret89()
+  let t93 = trait_impl#ToString#string#to_string(value/1) in
+  let t94 = @runtime(core.string_println)(t93) in
+  jump ret92()
 }
 
-fn trait_impl#ToString#string#to_string(self/34: string) -> string {
-  join ret92(retv93: string) -> string {
-    retv93
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  join ret95(retv96: string) -> string {
+    retv96
   } in
-  jump ret92(self/34)
+  jump ret95(self/37)
 }

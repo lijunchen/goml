@@ -1,54 +1,54 @@
 fn main() -> unit {
-  join ret60() -> unit {
+  join ret63() -> unit {
     ()
   } in
   let a/0 = inherent#Ref#Ref[T]#new__T_int32(1) in
   let b/1 = a/0 in
   let c/2 = inherent#Ref#Ref[T]#new__T_int32(1) in
-  let t61 = @intrinsic(ref.ptr_eq)(a/0, b/1) in
-  let _wild58 = println__T_bool(t61) in
-  let t62 = @intrinsic(ref.ptr_eq)(a/0, c/2) in
-  let _wild59 = println__T_bool(t62) in
-  jump ret60()
+  let t64 = @intrinsic(ref.ptr_eq)(a/0, b/1) in
+  let _wild61 = println__T_bool(t64) in
+  let t65 = @intrinsic(ref.ptr_eq)(a/0, c/2) in
+  let _wild62 = println__T_bool(t65) in
+  jump ret63()
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/201: int32) -> Ref[int32] {
-  join ret63(retv64: Ref[int32]) -> Ref[int32] {
-    retv64
+fn inherent#Ref#Ref[T]#new__T_int32(value/204: int32) -> Ref[int32] {
+  join ret66(retv67: Ref[int32]) -> Ref[int32] {
+    retv67
   } in
-  let t65 = @intrinsic(ref.new)(value/201) in
-  jump ret63(t65)
+  let t68 = @intrinsic(ref.new)(value/204) in
+  jump ret66(t68)
 }
 
 fn println__T_bool(value/1: bool) -> unit {
-  join ret66() -> unit {
+  join ret69() -> unit {
     ()
   } in
-  let t67 = trait_impl#ToString#bool#to_string(value/1) in
-  let t68 = @runtime(core.string_println)(t67) in
-  jump ret66()
+  let t70 = trait_impl#ToString#bool#to_string(value/1) in
+  let t71 = @runtime(core.string_println)(t70) in
+  jump ret69()
 }
 
-fn trait_impl#ToString#bool#to_string(self/33: bool) -> string {
-  join ret69(retv70: string) -> string {
-    retv70
-  } in
-  let t71 = @runtime(core.bool_to_string)(self/33) in
-  jump ret69(t71)
-}
-
-fn trait_impl#Eq#int32#eq(self/58: int32, other/59: int32) -> bool {
-  join ret72(retv73: bool) -> bool {
+fn trait_impl#ToString#bool#to_string(self/36: bool) -> string {
+  join ret72(retv73: string) -> string {
     retv73
   } in
-  let t74 = (self/58 == other/59) in
+  let t74 = @runtime(core.bool_to_string)(self/36) in
   jump ret72(t74)
 }
 
-fn trait_impl#Hash#int32#hash(self/80: int32) -> uint64 {
-  join ret75(retv76: uint64) -> uint64 {
+fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
+  join ret75(retv76: bool) -> bool {
     retv76
   } in
-  let t77 = @runtime(core.int32_hash)(self/80) in
+  let t77 = (self/61 == other/62) in
   jump ret75(t77)
+}
+
+fn trait_impl#Hash#int32#hash(self/83: int32) -> uint64 {
+  join ret78(retv79: uint64) -> uint64 {
+    retv79
+  } in
+  let t80 = @runtime(core.int32_hash)(self/83) in
+  jump ret78(t80)
 }

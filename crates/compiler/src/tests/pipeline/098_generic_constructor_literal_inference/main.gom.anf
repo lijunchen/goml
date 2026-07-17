@@ -1,47 +1,47 @@
 fn main() -> unit {
-  join ret60() -> unit {
+  join ret63() -> unit {
     ()
   } in
   let x/0 = Option__uint8::Some(42) in
-  join k61() -> unit {
-    let _wild59 = () in
-    jump ret60()
+  join k64() -> unit {
+    let _wild62 = () in
+    jump ret63()
   } in
   match x/0 {
     Tag_0 => {
-      let x58 = Option__uint8::Some._0(x/0) in
-      let v/1 = x58 in
-      let t62 = trait_impl#ToString#uint8#to_string(v/1) in
-      let t63 = println__T_string(t62) in
-      jump k61()
+      let x61 = Option__uint8::Some._0(x/0) in
+      let v/1 = x61 in
+      let t65 = trait_impl#ToString#uint8#to_string(v/1) in
+      let t66 = println__T_string(t65) in
+      jump k64()
     },
     Tag_1 => {
-      let t64 = println__T_string("none") in
-      jump k61()
+      let t67 = println__T_string("none") in
+      jump k64()
     },
   }
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret65() -> unit {
+  join ret68() -> unit {
     ()
   } in
-  let t66 = trait_impl#ToString#string#to_string(value/1) in
-  let t67 = @runtime(core.string_println)(t66) in
-  jump ret65()
+  let t69 = trait_impl#ToString#string#to_string(value/1) in
+  let t70 = @runtime(core.string_println)(t69) in
+  jump ret68()
 }
 
-fn trait_impl#ToString#uint8#to_string(self/40: uint8) -> string {
-  join ret68(retv69: string) -> string {
-    retv69
-  } in
-  let t70 = @runtime(core.uint8_to_string)(self/40) in
-  jump ret68(t70)
-}
-
-fn trait_impl#ToString#string#to_string(self/34: string) -> string {
+fn trait_impl#ToString#uint8#to_string(self/43: uint8) -> string {
   join ret71(retv72: string) -> string {
     retv72
   } in
-  jump ret71(self/34)
+  let t73 = @runtime(core.uint8_to_string)(self/43) in
+  jump ret71(t73)
+}
+
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  join ret74(retv75: string) -> string {
+    retv75
+  } in
+  jump ret74(self/37)
 }

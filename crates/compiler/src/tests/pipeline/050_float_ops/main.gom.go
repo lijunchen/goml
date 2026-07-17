@@ -26,36 +26,36 @@ func _goml_runtime_core_string_println(s string) struct{} {
 }
 
 func show32(label__0 string, value__1 float32) struct{} {
-    var t69 string = _goml_m_trait__impl_i_ToString_i_float32_i_to__string(value__1)
-    var message__2 string = label__0 + t69
+    var t72 string = _goml_m_trait__impl_i_ToString_i_float32_i_to__string(value__1)
+    var message__2 string = label__0 + t72
     println__T_string(message__2)
     return struct{}{}
 }
 
 func show64(label__3 string, value__4 float64) struct{} {
-    var t71 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(value__4)
-    var message__5 string = label__3 + t71
+    var t74 string = _goml_m_trait__impl_i_ToString_i_float64_i_to__string(value__4)
+    var message__5 string = label__3 + t74
     println__T_string(message__5)
     return struct{}{}
 }
 
 func lerp32(a__6 float32, b__7 float32, weight__8 float32) float32 {
-    var retv73 float32
+    var retv76 float32
     var delta__9 float32 = b__7 - a__6
-    var t74 float32 = delta__9 * weight__8
-    var t75 float32 = a__6 + t74
-    retv73 = t75
-    return retv73
+    var t77 float32 = delta__9 * weight__8
+    var t78 float32 = a__6 + t77
+    retv76 = t78
+    return retv76
 }
 
 func midpoint_energy(x__10 float64, y__11 float64) float64 {
-    var retv77 float64
-    var t78 float64 = x__10 * x__10
-    var t79 float64 = y__11 * y__11
-    var sum__12 float64 = t78 + t79
-    var t80 float64 = sum__12 / 2
-    retv77 = t80
-    return retv77
+    var retv80 float64
+    var t81 float64 = x__10 * x__10
+    var t82 float64 = y__11 * y__11
+    var sum__12 float64 = t81 + t82
+    var t83 float64 = sum__12 / 2
+    retv80 = t83
+    return retv80
 }
 
 func main0() struct{} {
@@ -72,57 +72,57 @@ func main0() struct{} {
     var quarter__23 float64 = 0.25
     var energy__24 float64 = midpoint_energy(dx__21, dy__22)
     var neg_dx__25 float64 = -dx__21
-    var t82 float64 = energy__24 + dy__22
-    var t83 float64 = dx__21 * quarter__23
-    var adjusted__26 float64 = t82 - t83
+    var t85 float64 = energy__24 + dy__22
+    var t86 float64 = dx__21 * quarter__23
+    var adjusted__26 float64 = t85 - t86
     var threshold__27 float64 = 4
     var less64__28 bool = adjusted__26 < threshold__27
     show32("mid32=", mid32__17)
     show32("neg_end32=", neg_end32__18)
     show32("ratio32=", ratio32__19)
-    var t84 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(less32__20)
-    var t85 string = "less32=" + t84
-    println__T_string(t85)
+    var t87 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(less32__20)
+    var t88 string = "less32=" + t87
+    println__T_string(t88)
     show64("energy=", energy__24)
     show64("neg_dx=", neg_dx__25)
     show64("adjusted=", adjusted__26)
-    var t86 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(less64__28)
-    var t87 string = "less64=" + t86
-    println__T_string(t87)
+    var t89 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(less64__28)
+    var t90 string = "less64=" + t89
+    println__T_string(t90)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_float32_i_to__string(self__44 float32) string {
-    var retv89 string
-    var t90 string = _goml_runtime_core_float32_to_string(self__44)
-    retv89 = t90
-    return retv89
+func _goml_m_trait__impl_i_ToString_i_float32_i_to__string(self__47 float32) string {
+    var retv92 string
+    var t93 string = _goml_runtime_core_float32_to_string(self__47)
+    retv92 = t93
+    return retv92
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t92 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t92)
+    var t95 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t95)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__45 float64) string {
-    var retv95 string
-    var t96 string = _goml_runtime_core_float64_to_string(self__45)
-    retv95 = t96
-    return retv95
-}
-
-func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__33 bool) string {
+func _goml_m_trait__impl_i_ToString_i_float64_i_to__string(self__48 float64) string {
     var retv98 string
-    var t99 string = _goml_runtime_core_bool_to_string(self__33)
+    var t99 string = _goml_runtime_core_float64_to_string(self__48)
     retv98 = t99
     return retv98
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__34 string) string {
+func _goml_m_trait__impl_i_ToString_i_bool_i_to__string(self__36 bool) string {
     var retv101 string
-    retv101 = self__34
+    var t102 string = _goml_runtime_core_bool_to_string(self__36)
+    retv101 = t102
     return retv101
+}
+
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
+    var retv104 string
+    retv104 = self__37
+    return retv104
 }
 
 func main() {

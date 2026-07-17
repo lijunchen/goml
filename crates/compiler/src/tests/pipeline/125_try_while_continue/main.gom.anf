@@ -1,169 +1,169 @@
 fn step(i/0: int32) -> Option__int32 {
-  join ret67(retv68: Option__int32) -> Option__int32 {
-    retv68
+  join ret70(retv71: Option__int32) -> Option__int32 {
+    retv71
   } in
-  let t71 = (i/0 == 2) in
-  join k69(jp70: Option__int32) -> Option__int32 {
-    jump ret67(jp70)
+  let t74 = (i/0 == 2) in
+  join k72(jp73: Option__int32) -> Option__int32 {
+    jump ret70(jp73)
   } in
-  if t71 {
-    jump k69(Tag_0)
+  if t74 {
+    jump k72(Tag_0)
   } else {
-    let t72 = (i/0 + 10) in
-    let t73 = Option__int32::Some(t72) in
-    jump k69(t73)
+    let t75 = (i/0 + 10) in
+    let t76 = Option__int32::Some(t75) in
+    jump k72(t76)
   }
 }
 
 fn accumulate(limit/1: int32) -> Option__int32 {
-  join ret74(retv75: Option__int32) -> Option__int32 {
-    retv75
+  join ret77(retv78: Option__int32) -> Option__int32 {
+    retv78
   } in
   let sum/2 = inherent#Ref#Ref[T]#new__T_int32(0) in
   let i/3 = inherent#Ref#Ref[T]#new__T_int32(0) in
-  join exit76() -> Option__int32 {
-    let _wild63 = () in
-    let t77 = inherent#Ref#Ref[T]#get__T_int32(sum/2) in
-    let t78 = Option__int32::Some(t77) in
-    jump ret74(t78)
+  join exit79() -> Option__int32 {
+    let _wild66 = () in
+    let t80 = inherent#Ref#Ref[T]#get__T_int32(sum/2) in
+    let t81 = Option__int32::Some(t80) in
+    jump ret77(t81)
   } in
   joinrec {
-    join loop79() -> Option__int32 {
-      let t80 = inherent#Ref#Ref[T]#get__T_int32(i/3) in
-      let t81 = (t80 < limit/1) in
-      if t81 {
+    join loop82() -> Option__int32 {
+      let t83 = inherent#Ref#Ref[T]#get__T_int32(i/3) in
+      let t84 = (t83 < limit/1) in
+      if t84 {
         let cur/4 = inherent#Ref#Ref[T]#get__T_int32(i/3) in
-        let t82 = (cur/4 + 1) in
-        let _wild58 = inherent#Ref#Ref[T]#set__T_int32(i/3, t82) in
-        let t88 = (cur/4 == 1) in
-        join k83() -> Option__int32 {
-          let _wild59 = () in
-          let mtmp60 = step(cur/4) in
-          join k84(jp85: int32) -> Option__int32 {
-            let value/5 = jp85 in
-            let t86 = inherent#Ref#Ref[T]#get__T_int32(sum/2) in
-            let t87 = (t86 + value/5) in
-            let _wild62 = inherent#Ref#Ref[T]#set__T_int32(sum/2, t87) in
-            jump loop79()
+        let t85 = (cur/4 + 1) in
+        let _wild61 = inherent#Ref#Ref[T]#set__T_int32(i/3, t85) in
+        let t91 = (cur/4 == 1) in
+        join k86() -> Option__int32 {
+          let _wild62 = () in
+          let mtmp63 = step(cur/4) in
+          join k87(jp88: int32) -> Option__int32 {
+            let value/5 = jp88 in
+            let t89 = inherent#Ref#Ref[T]#get__T_int32(sum/2) in
+            let t90 = (t89 + value/5) in
+            let _wild65 = inherent#Ref#Ref[T]#set__T_int32(sum/2, t90) in
+            jump loop82()
           } in
-          match mtmp60 {
+          match mtmp63 {
             Tag_0 => {
-              jump ret74(Tag_0)
+              jump ret77(Tag_0)
             },
             Tag_1 => {
-              let x61 = Option__int32::Some._0(mtmp60) in
-              let try_value/43 = x61 in
-              jump k84(try_value/43)
+              let x64 = Option__int32::Some._0(mtmp63) in
+              let try_value/43 = x64 in
+              jump k87(try_value/43)
             },
           }
         } in
-        if t88 {
-          jump loop79()
+        if t91 {
+          jump loop82()
         } else {
-          jump k83()
+          jump k86()
         }
       } else {
-        jump exit76()
+        jump exit79()
       }
     } in
   } in
-  jump loop79()
+  jump loop82()
 }
 
 fn show(opt/6: Option__int32) -> string {
-  join ret89(retv90: string) -> string {
-    retv90
+  join ret92(retv93: string) -> string {
+    retv93
   } in
-  join k91(jp92: string) -> string {
-    jump ret89(jp92)
+  join k94(jp95: string) -> string {
+    jump ret92(jp95)
   } in
   match opt/6 {
     Tag_0 => {
-      jump k91("none")
+      jump k94("none")
     },
     Tag_1 => {
-      let x64 = Option__int32::Some._0(opt/6) in
-      let value/7 = x64 in
-      let t93 = inherent#int32#int32#to_string(value/7) in
-      let t94 = ("some=" + t93) in
-      jump k91(t94)
+      let x67 = Option__int32::Some._0(opt/6) in
+      let value/7 = x67 in
+      let t96 = inherent#int32#int32#to_string(value/7) in
+      let t97 = ("some=" + t96) in
+      jump k94(t97)
     },
   }
 }
 
 fn main() -> unit {
-  join ret95() -> unit {
+  join ret98() -> unit {
     ()
   } in
-  let t96 = accumulate(2) in
-  let t97 = show(t96) in
-  let _wild65 = println__T_string(t97) in
-  let t98 = accumulate(4) in
-  let t99 = show(t98) in
-  let _wild66 = println__T_string(t99) in
-  jump ret95()
+  let t99 = accumulate(2) in
+  let t100 = show(t99) in
+  let _wild68 = println__T_string(t100) in
+  let t101 = accumulate(4) in
+  let t102 = show(t101) in
+  let _wild69 = println__T_string(t102) in
+  jump ret98()
 }
 
-fn inherent#Ref#Ref[T]#new__T_int32(value/201: int32) -> Ref[int32] {
-  join ret100(retv101: Ref[int32]) -> Ref[int32] {
-    retv101
-  } in
-  let t102 = @intrinsic(ref.new)(value/201) in
-  jump ret100(t102)
-}
-
-fn inherent#Ref#Ref[T]#get__T_int32(self/202: Ref[int32]) -> int32 {
-  join ret103(retv104: int32) -> int32 {
+fn inherent#Ref#Ref[T]#new__T_int32(value/204: int32) -> Ref[int32] {
+  join ret103(retv104: Ref[int32]) -> Ref[int32] {
     retv104
   } in
-  let t105 = @intrinsic(ref.get)(self/202) in
+  let t105 = @intrinsic(ref.new)(value/204) in
   jump ret103(t105)
 }
 
-fn inherent#Ref#Ref[T]#set__T_int32(self/203: Ref[int32], value/204: int32) -> unit {
-  join ret106() -> unit {
-    ()
+fn inherent#Ref#Ref[T]#get__T_int32(self/205: Ref[int32]) -> int32 {
+  join ret106(retv107: int32) -> int32 {
+    retv107
   } in
-  let t107 = @intrinsic(ref.set)(self/203, value/204) in
-  jump ret106()
+  let t108 = @intrinsic(ref.get)(self/205) in
+  jump ret106(t108)
 }
 
-fn inherent#int32#int32#to_string(self/2: int32) -> string {
-  join ret108(retv109: string) -> string {
-    retv109
+fn inherent#Ref#Ref[T]#set__T_int32(self/206: Ref[int32], value/207: int32) -> unit {
+  join ret109() -> unit {
+    ()
   } in
-  let t110 = @runtime(core.int32_to_string)(self/2) in
-  jump ret108(t110)
+  let t110 = @intrinsic(ref.set)(self/206, value/207) in
+  jump ret109()
+}
+
+fn inherent#int32#int32#to_string(self/5: int32) -> string {
+  join ret111(retv112: string) -> string {
+    retv112
+  } in
+  let t113 = @runtime(core.int32_to_string)(self/5) in
+  jump ret111(t113)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret111() -> unit {
+  join ret114() -> unit {
     ()
   } in
-  let t112 = trait_impl#ToString#string#to_string(value/1) in
-  let t113 = @runtime(core.string_println)(t112) in
-  jump ret111()
+  let t115 = trait_impl#ToString#string#to_string(value/1) in
+  let t116 = @runtime(core.string_println)(t115) in
+  jump ret114()
 }
 
-fn trait_impl#ToString#string#to_string(self/34: string) -> string {
-  join ret114(retv115: string) -> string {
-    retv115
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  join ret117(retv118: string) -> string {
+    retv118
   } in
-  jump ret114(self/34)
+  jump ret117(self/37)
 }
 
-fn trait_impl#Eq#int32#eq(self/58: int32, other/59: int32) -> bool {
-  join ret116(retv117: bool) -> bool {
-    retv117
-  } in
-  let t118 = (self/58 == other/59) in
-  jump ret116(t118)
-}
-
-fn trait_impl#Hash#int32#hash(self/80: int32) -> uint64 {
-  join ret119(retv120: uint64) -> uint64 {
+fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
+  join ret119(retv120: bool) -> bool {
     retv120
   } in
-  let t121 = @runtime(core.int32_hash)(self/80) in
+  let t121 = (self/61 == other/62) in
   jump ret119(t121)
+}
+
+fn trait_impl#Hash#int32#hash(self/83: int32) -> uint64 {
+  join ret122(retv123: uint64) -> uint64 {
+    retv123
+  } in
+  let t124 = @runtime(core.int32_hash)(self/83) in
+  jump ret122(t124)
 }

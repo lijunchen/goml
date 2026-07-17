@@ -104,12 +104,15 @@ fn casts() -> unit {
     (show_u32 : (uint32) -> unit)(65 as uint32);
     (show_i64 : (int64) -> unit)(4294967295 as int64);
     (show_u32 : (uint32) -> unit)('A' as uint32);
-    (println : (string) -> unit)((char::to_string : (char) -> string)(128512 as char));
+    match (char_from_uint32 : (uint32) -> Option[char])(128512) {
+        Option::Some(value/8: char) => (println : (string) -> unit)((char::to_string : (char) -> string)((value/8 : char))),
+        Option::None => (println : (string) -> unit)("invalid"),
+    };
     (show_u32 : (uint32) -> unit)(300 as uint8 as uint32)
 }
 
-fn contextual(value/8: uint8) -> uint8 {
-    ~(value/8 : uint8) & 15 | 1 << 4 % 31
+fn contextual(value/9: uint8) -> uint8 {
+    ~(value/9 : uint8) & 15 | 1 << 4 % 31
 }
 
 fn main() -> unit {

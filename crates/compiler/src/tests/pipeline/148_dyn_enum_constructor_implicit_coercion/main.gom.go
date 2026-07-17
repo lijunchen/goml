@@ -50,82 +50,82 @@ func dyn__Display__vtable__int32() *dyn__Display_vtable {
 }
 
 func _goml_m_trait__impl_i_Display_i_int32_i_show(self__0 int32) string {
-    var retv64 string
-    var t65 string = _goml_m_inherent_i_int32_i_int32_i_to__string(self__0)
-    retv64 = t65
-    return retv64
-}
-
-func render(value__1 Boxed) string {
     var retv67 string
-    var jp69 string
-    switch value__1.(type) {
-    case One:
-        var x58 dyn__Display = value__1.(One)._0
-        var inner__2 dyn__Display = x58
-        var t70 string = inner__2.vtable.show(inner__2.data)
-        jp69 = t70
-    case Pair:
-        var x59 dyn__Display = value__1.(Pair)._0
-        var x60 dyn__Display = value__1.(Pair)._1
-        var right__4 dyn__Display = x60
-        var left__3 dyn__Display = x59
-        var t71 string = left__3.vtable.show(left__3.data)
-        var t72 string = t71 + "-"
-        var t73 string = right__4.vtable.show(right__4.data)
-        var t74 string = t72 + t73
-        jp69 = t74
-    default:
-        panic("non-exhaustive match")
-    }
-    retv67 = jp69
+    var t68 string = _goml_m_inherent_i_int32_i_int32_i_to__string(self__0)
+    retv67 = t68
     return retv67
 }
 
+func render(value__1 Boxed) string {
+    var retv70 string
+    var jp72 string
+    switch value__1.(type) {
+    case One:
+        var x61 dyn__Display = value__1.(One)._0
+        var inner__2 dyn__Display = x61
+        var t73 string = inner__2.vtable.show(inner__2.data)
+        jp72 = t73
+    case Pair:
+        var x62 dyn__Display = value__1.(Pair)._0
+        var x63 dyn__Display = value__1.(Pair)._1
+        var right__4 dyn__Display = x63
+        var left__3 dyn__Display = x62
+        var t74 string = left__3.vtable.show(left__3.data)
+        var t75 string = t74 + "-"
+        var t76 string = right__4.vtable.show(right__4.data)
+        var t77 string = t75 + t76
+        jp72 = t77
+    default:
+        panic("non-exhaustive match")
+    }
+    retv70 = jp72
+    return retv70
+}
+
 func main0() struct{} {
-    var t76 dyn__Display = dyn__Display{
+    var t79 dyn__Display = dyn__Display{
         data: int32(42),
         vtable: dyn__Display__vtable__int32(),
     }
-    var t77 Boxed = One{
-        _0: t76,
+    var t80 Boxed = One{
+        _0: t79,
     }
-    var t78 string = render(t77)
-    println__T_string(t78)
-    var t79 dyn__Display = dyn__Display{
+    var t81 string = render(t80)
+    println__T_string(t81)
+    var t82 dyn__Display = dyn__Display{
         data: int32(7),
         vtable: dyn__Display__vtable__int32(),
     }
-    var t80 dyn__Display = dyn__Display{
+    var t83 dyn__Display = dyn__Display{
         data: int32(9),
         vtable: dyn__Display__vtable__int32(),
     }
-    var t81 Boxed = Pair{
-        _0: t79,
-        _1: t80,
+    var t84 Boxed = Pair{
+        _0: t82,
+        _1: t83,
     }
-    var t82 string = render(t81)
-    println__T_string(t82)
+    var t85 string = render(t84)
+    println__T_string(t85)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
-    var retv84 string
-    var t85 string = _goml_runtime_core_int32_to_string(self__2)
-    retv84 = t85
-    return retv84
+func _goml_m_inherent_i_int32_i_int32_i_to__string(self__5 int32) string {
+    var retv87 string
+    var t88 string = _goml_runtime_core_int32_to_string(self__5)
+    retv87 = t88
+    return retv87
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t87 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t87)
+    var t90 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t90)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__34 string) string {
-    var retv90 string
-    retv90 = self__34
-    return retv90
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
+    var retv93 string
+    retv93 = self__37
+    return retv93
 }
 
 func main() {

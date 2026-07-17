@@ -18,39 +18,39 @@ type Count struct {
 }
 
 func _goml_m_trait__impl_i_Parent_i_Count_i_get(self__0 Count) int32 {
-    var retv60 int32
-    var t61 int32 = self__0.value
-    retv60 = t61
-    return retv60
+    var retv63 int32
+    var t64 int32 = self__0.value
+    retv63 = t64
+    return retv63
 }
 
 func main0() struct{} {
-    var t64 Count = Count{
+    var t67 Count = Count{
         value: 42,
     }
-    var t65 int32 = get_from_child__C_Count(t64)
-    println__T_int32(t65)
+    var t68 int32 = get_from_child__C_Count(t67)
+    println__T_int32(t68)
     return struct{}{}
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t67 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t67)
+    var t70 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
+    _goml_runtime_core_string_println(t70)
     return struct{}{}
 }
 
 func get_from_child__C_Count(value__2 Count) int32 {
-    var retv70 int32
-    var t71 int32 = _goml_m_trait__impl_i_Parent_i_Count_i_get(value__2)
-    retv70 = t71
-    return retv70
-}
-
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__38 int32) string {
-    var retv73 string
-    var t74 string = _goml_runtime_core_int32_to_string(self__38)
+    var retv73 int32
+    var t74 int32 = _goml_m_trait__impl_i_Parent_i_Count_i_get(value__2)
     retv73 = t74
     return retv73
+}
+
+func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__41 int32) string {
+    var retv76 string
+    var t77 string = _goml_runtime_core_int32_to_string(self__41)
+    retv76 = t77
+    return retv76
 }
 
 func main() {

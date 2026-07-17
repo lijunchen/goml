@@ -52,45 +52,45 @@ func main0() struct{} {
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t65 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t65)
+    var t68 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
+    _goml_runtime_core_string_println(t68)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__38 int32) string {
-    var retv68 string
-    var t69 string = _goml_runtime_core_int32_to_string(self__38)
-    retv68 = t69
-    return retv68
-}
-
-func _goml_m_inherent_i_closure__env__f4__0_i_closure__env__f4__0_i_apply(env58 closure_env_f4_0, w__7 int32) int32 {
-    var retv71 int32
-    var a__0 int32 = env58.a_0
-    var b__2 int32 = env58.b_1
-    var c__4 int32 = env58.c_2
-    var d__6 int32 = env58.d_3
-    var x__1 int32 = env58.x_4
-    var y__3 int32 = env58.y_5
-    var z__5 int32 = env58.z_6
-    var t72 int32 = a__0 + b__2
-    var t73 int32 = t72 + c__4
-    var t74 int32 = t73 + d__6
-    var t75 int32 = t74 + x__1
-    var t76 int32 = t75 + y__3
-    var t77 int32 = t76 + z__5
-    var t78 int32 = t77 + w__7
-    retv71 = t78
+func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__41 int32) string {
+    var retv71 string
+    var t72 string = _goml_runtime_core_int32_to_string(self__41)
+    retv71 = t72
     return retv71
 }
 
-func _goml_m_inherent_i_closure__env__f3__1_i_closure__env__f3__1_i_apply(env59 closure_env_f3_1, z__5 int32) int32 {
-    var retv80 int32
-    var a__0 int32 = env59.a_0
-    var b__2 int32 = env59.b_1
-    var c__4 int32 = env59.c_2
-    var x__1 int32 = env59.x_3
-    var y__3 int32 = env59.y_4
+func _goml_m_inherent_i_closure__env__f4__0_i_closure__env__f4__0_i_apply(env61 closure_env_f4_0, w__7 int32) int32 {
+    var retv74 int32
+    var a__0 int32 = env61.a_0
+    var b__2 int32 = env61.b_1
+    var c__4 int32 = env61.c_2
+    var d__6 int32 = env61.d_3
+    var x__1 int32 = env61.x_4
+    var y__3 int32 = env61.y_5
+    var z__5 int32 = env61.z_6
+    var t75 int32 = a__0 + b__2
+    var t76 int32 = t75 + c__4
+    var t77 int32 = t76 + d__6
+    var t78 int32 = t77 + x__1
+    var t79 int32 = t78 + y__3
+    var t80 int32 = t79 + z__5
+    var t81 int32 = t80 + w__7
+    retv74 = t81
+    return retv74
+}
+
+func _goml_m_inherent_i_closure__env__f3__1_i_closure__env__f3__1_i_apply(env62 closure_env_f3_1, z__5 int32) int32 {
+    var retv83 int32
+    var a__0 int32 = env62.a_0
+    var b__2 int32 = env62.b_1
+    var c__4 int32 = env62.c_2
+    var x__1 int32 = env62.x_3
+    var y__3 int32 = env62.y_4
     var d__6 int32 = 40
     var f4__8 closure_env_f4_0 = closure_env_f4_0{
         a_0: a__0,
@@ -101,16 +101,16 @@ func _goml_m_inherent_i_closure__env__f3__1_i_closure__env__f3__1_i_apply(env59 
         y_5: y__3,
         z_6: z__5,
     }
-    var t81 int32 = _goml_m_inherent_i_closure__env__f4__0_i_closure__env__f4__0_i_apply(f4__8, 4)
-    retv80 = t81
-    return retv80
+    var t84 int32 = _goml_m_inherent_i_closure__env__f4__0_i_closure__env__f4__0_i_apply(f4__8, 4)
+    retv83 = t84
+    return retv83
 }
 
-func _goml_m_inherent_i_closure__env__f2__2_i_closure__env__f2__2_i_apply(env60 closure_env_f2_2, y__3 int32) int32 {
-    var retv83 int32
-    var a__0 int32 = env60.a_0
-    var b__2 int32 = env60.b_1
-    var x__1 int32 = env60.x_2
+func _goml_m_inherent_i_closure__env__f2__2_i_closure__env__f2__2_i_apply(env63 closure_env_f2_2, y__3 int32) int32 {
+    var retv86 int32
+    var a__0 int32 = env63.a_0
+    var b__2 int32 = env63.b_1
+    var x__1 int32 = env63.x_2
     var c__4 int32 = 30
     var f3__9 closure_env_f3_1 = closure_env_f3_1{
         a_0: a__0,
@@ -119,23 +119,23 @@ func _goml_m_inherent_i_closure__env__f2__2_i_closure__env__f2__2_i_apply(env60 
         x_3: x__1,
         y_4: y__3,
     }
-    var t84 int32 = _goml_m_inherent_i_closure__env__f3__1_i_closure__env__f3__1_i_apply(f3__9, 3)
-    retv83 = t84
-    return retv83
+    var t87 int32 = _goml_m_inherent_i_closure__env__f3__1_i_closure__env__f3__1_i_apply(f3__9, 3)
+    retv86 = t87
+    return retv86
 }
 
-func _goml_m_inherent_i_closure__env__f1__3_i_closure__env__f1__3_i_apply(env61 closure_env_f1_3, x__1 int32) int32 {
-    var retv86 int32
-    var a__0 int32 = env61.a_0
+func _goml_m_inherent_i_closure__env__f1__3_i_closure__env__f1__3_i_apply(env64 closure_env_f1_3, x__1 int32) int32 {
+    var retv89 int32
+    var a__0 int32 = env64.a_0
     var b__2 int32 = 20
     var f2__10 closure_env_f2_2 = closure_env_f2_2{
         a_0: a__0,
         b_1: b__2,
         x_2: x__1,
     }
-    var t87 int32 = _goml_m_inherent_i_closure__env__f2__2_i_closure__env__f2__2_i_apply(f2__10, 2)
-    retv86 = t87
-    return retv86
+    var t90 int32 = _goml_m_inherent_i_closure__env__f2__2_i_closure__env__f2__2_i_apply(f2__10, 2)
+    retv89 = t90
+    return retv89
 }
 
 func main() {

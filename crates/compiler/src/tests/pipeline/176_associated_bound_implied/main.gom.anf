@@ -1,50 +1,50 @@
 fn trait_impl#Label#string#label(self/0: string) -> string {
-  join ret59(retv60: string) -> string {
-    retv60
-  } in
-  let t61 = ("label:" + self/0) in
-  jump ret59(t61)
-}
-
-fn trait_impl#Source#TextSource#get(self/1: TextSource) -> string {
   join ret62(retv63: string) -> string {
     retv63
   } in
-  let t64 = TextSource.value(self/1) in
+  let t64 = ("label:" + self/0) in
   jump ret62(t64)
 }
 
-fn main() -> unit {
-  join ret65() -> unit {
-    ()
+fn trait_impl#Source#TextSource#get(self/1: TextSource) -> string {
+  join ret65(retv66: string) -> string {
+    retv66
   } in
-  let t66 = TextSource { value: "goml" } in
-  let t67 = render__S_TextSource(t66) in
-  let _wild58 = println__T_string(t67) in
-  jump ret65()
+  let t67 = TextSource.value(self/1) in
+  jump ret65(t67)
 }
 
-fn println__T_string(value/1: string) -> unit {
+fn main() -> unit {
   join ret68() -> unit {
     ()
   } in
-  let t69 = trait_impl#ToString#string#to_string(value/1) in
-  let t70 = @runtime(core.string_println)(t69) in
+  let t69 = TextSource { value: "goml" } in
+  let t70 = render__S_TextSource(t69) in
+  let _wild61 = println__T_string(t70) in
   jump ret68()
 }
 
-fn render__S_TextSource(source/2: TextSource) -> string {
-  join ret71(retv72: string) -> string {
-    retv72
+fn println__T_string(value/1: string) -> unit {
+  join ret71() -> unit {
+    ()
   } in
-  let t73 = trait_impl#Source#TextSource#get(source/2) in
-  let t74 = trait_impl#Label#string#label(t73) in
-  jump ret71(t74)
+  let t72 = trait_impl#ToString#string#to_string(value/1) in
+  let t73 = @runtime(core.string_println)(t72) in
+  jump ret71()
 }
 
-fn trait_impl#ToString#string#to_string(self/34: string) -> string {
-  join ret75(retv76: string) -> string {
-    retv76
+fn render__S_TextSource(source/2: TextSource) -> string {
+  join ret74(retv75: string) -> string {
+    retv75
   } in
-  jump ret75(self/34)
+  let t76 = trait_impl#Source#TextSource#get(source/2) in
+  let t77 = trait_impl#Label#string#label(t76) in
+  jump ret74(t77)
+}
+
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  join ret78(retv79: string) -> string {
+    retv79
+  } in
+  jump ret78(self/37)
 }

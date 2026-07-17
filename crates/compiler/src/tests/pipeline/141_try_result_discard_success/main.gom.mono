@@ -11,23 +11,23 @@ fn parse_text(ok/0: bool) -> Result__string__string {
 }
 
 fn check(ok/1: bool) -> Result__string__string {
-  let mtmp61 = {
-    let mtmp58 = parse_text(ok/1) in
-    match mtmp58 {
-      Result__string__string::Ok(x59) => {
+  let mtmp64 = {
+    let mtmp61 = parse_text(ok/1) in
+    match mtmp61 {
+      Result__string__string::Ok(x62) => {
         {
-          let x59 = Result__string__string::Ok._0(mtmp58) in
+          let x62 = Result__string__string::Ok._0(mtmp61) in
           {
-            let try_value/12 = x59 in
+            let try_value/12 = x62 in
             try_value/12
           }
         }
       },
-      Result__string__string::Err(x60) => {
+      Result__string__string::Err(x63) => {
         {
-          let x60 = Result__string__string::Err._0(mtmp58) in
+          let x63 = Result__string__string::Err._0(mtmp61) in
           {
-            let try_residual/12 = x60 in
+            let try_residual/12 = x63 in
             return Result__string__string::Err(try_residual/12)
           }
         }
@@ -41,20 +41,20 @@ fn check(ok/1: bool) -> Result__string__string {
 
 fn show(res/2: Result__string__string) -> string {
   match res/2 {
-    Result__string__string::Ok(x62) => {
+    Result__string__string::Ok(x65) => {
       {
-        let x62 = Result__string__string::Ok._0(res/2) in
+        let x65 = Result__string__string::Ok._0(res/2) in
         {
-          let value/3 = x62 in
+          let value/3 = x65 in
           ("ok " + value/3)
         }
       }
     },
-    Result__string__string::Err(x63) => {
+    Result__string__string::Err(x66) => {
       {
-        let x63 = Result__string__string::Err._0(res/2) in
+        let x66 = Result__string__string::Err._0(res/2) in
         {
-          let err/4 = x63 in
+          let err/4 = x66 in
           ("err " + err/4)
         }
       }
@@ -63,14 +63,14 @@ fn show(res/2: Result__string__string) -> string {
 }
 
 fn main() -> unit {
-  let _wild64 = println__T_string(show(check(true))) in
-  let _wild65 = println__T_string(show(check(false))) in
+  let _wild67 = println__T_string(show(check(true))) in
+  let _wild68 = println__T_string(show(check(false))) in
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#string#to_string(self/34: string) -> string {
-  self/34
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  self/37
 }

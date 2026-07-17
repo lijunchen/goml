@@ -14,46 +14,46 @@ func _goml_runtime_core_string_println(s string) struct{} {
 }
 
 func choose(flag__0 bool, x__1 int32, y__2 int32) int32 {
-    var retv61 int32
-    var jp63 int32
+    var retv64 int32
+    var jp66 int32
     if flag__0 {
-        jp63 = x__1
+        jp66 = x__1
     } else {
-        jp63 = y__2
+        jp66 = y__2
     }
-    retv61 = jp63
-    return retv61
+    retv64 = jp66
+    return retv64
 }
 
 func main0() struct{} {
     var yes__3 int32 = choose(true, 10, 99)
     var no__4 int32 = choose(false, 10, 99)
-    var t65 string = _goml_m_inherent_i_int32_i_int32_i_to__string(yes__3)
-    var t66 string = "yes=" + t65
-    println__T_string(t66)
-    var t67 string = _goml_m_inherent_i_int32_i_int32_i_to__string(no__4)
-    var t68 string = "no=" + t67
-    println__T_string(t68)
+    var t68 string = _goml_m_inherent_i_int32_i_int32_i_to__string(yes__3)
+    var t69 string = "yes=" + t68
+    println__T_string(t69)
+    var t70 string = _goml_m_inherent_i_int32_i_int32_i_to__string(no__4)
+    var t71 string = "no=" + t70
+    println__T_string(t71)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t70 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t70)
+    var t73 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t73)
     return struct{}{}
 }
 
-func _goml_m_inherent_i_int32_i_int32_i_to__string(self__2 int32) string {
-    var retv73 string
-    var t74 string = _goml_runtime_core_int32_to_string(self__2)
-    retv73 = t74
-    return retv73
+func _goml_m_inherent_i_int32_i_int32_i_to__string(self__5 int32) string {
+    var retv76 string
+    var t77 string = _goml_runtime_core_int32_to_string(self__5)
+    retv76 = t77
+    return retv76
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__34 string) string {
-    var retv76 string
-    retv76 = self__34
-    return retv76
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
+    var retv79 string
+    retv79 = self__37
+    return retv79
 }
 
 func main() {

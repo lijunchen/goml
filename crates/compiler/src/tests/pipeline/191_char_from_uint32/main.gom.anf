@@ -1,0 +1,114 @@
+fn show_scalar(value/0: uint32) -> unit {
+  join ret73() -> unit {
+    ()
+  } in
+  let mtmp61 = char_from_uint32(value/0) in
+  join k74() -> unit {
+    jump ret73()
+  } in
+  match mtmp61 {
+    Tag_0 => {
+      let t75 = println__T_string("none") in
+      jump k74()
+    },
+    Tag_1 => {
+      let x62 = Option__char::Some._0(mtmp61) in
+      let result/1 = x62 in
+      let t76 = (result/1 as uint32) in
+      let t77 = println__T_uint32(t76) in
+      jump k74()
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret78() -> unit {
+    ()
+  } in
+  let _wild63 = show_scalar(0) in
+  let _wild64 = show_scalar(65) in
+  let _wild65 = show_scalar(55295) in
+  let _wild66 = show_scalar(55296) in
+  let _wild67 = show_scalar(57343) in
+  let _wild68 = show_scalar(57344) in
+  let _wild69 = show_scalar(1114111) in
+  let _wild70 = show_scalar(1114112) in
+  let mtmp71 = char_from_uint32(128512) in
+  join k79() -> unit {
+    jump ret78()
+  } in
+  match mtmp71 {
+    Tag_0 => {
+      let t80 = println__T_string("none") in
+      jump k79()
+    },
+    Tag_1 => {
+      let x72 = Option__char::Some._0(mtmp71) in
+      let result/2 = x72 in
+      let t81 = inherent#char#char#to_string(result/2) in
+      let t82 = println__T_string(t81) in
+      jump k79()
+    },
+  }
+}
+
+fn char_from_uint32(value/2: uint32) -> Option__char {
+  join ret83(retv84: Option__char) -> Option__char {
+    retv84
+  } in
+  let mtmp0 = @runtime(core.char_from_uint32)(value/2) in
+  let x1 = mtmp0.0 in
+  let x2 = mtmp0.1 in
+  let value/4 = x2 in
+  let valid/3 = x1 in
+  join k85(jp86: Option__char) -> Option__char {
+    jump ret83(jp86)
+  } in
+  if valid/3 {
+    let t87 = Option__char::Some(value/4) in
+    jump k85(t87)
+  } else {
+    jump k85(Tag_0)
+  }
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret88() -> unit {
+    ()
+  } in
+  let t89 = trait_impl#ToString#string#to_string(value/1) in
+  let t90 = @runtime(core.string_println)(t89) in
+  jump ret88()
+}
+
+fn println__T_uint32(value/1: uint32) -> unit {
+  join ret91() -> unit {
+    ()
+  } in
+  let t92 = trait_impl#ToString#uint32#to_string(value/1) in
+  let t93 = @runtime(core.string_println)(t92) in
+  jump ret91()
+}
+
+fn inherent#char#char#to_string(self/6: char) -> string {
+  join ret94(retv95: string) -> string {
+    retv95
+  } in
+  let t96 = @runtime(core.char_to_string)(self/6) in
+  jump ret94(t96)
+}
+
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  join ret97(retv98: string) -> string {
+    retv98
+  } in
+  jump ret97(self/37)
+}
+
+fn trait_impl#ToString#uint32#to_string(self/45: uint32) -> string {
+  join ret99(retv100: string) -> string {
+    retv100
+  } in
+  let t101 = @runtime(core.uint32_to_string)(self/45) in
+  jump ret99(t101)
+}

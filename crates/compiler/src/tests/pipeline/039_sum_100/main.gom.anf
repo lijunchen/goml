@@ -1,61 +1,61 @@
 fn my_int_equal(x/0: int32, y/1: int32) -> bool {
-  join ret58(retv59: bool) -> bool {
-    retv59
+  join ret61(retv62: bool) -> bool {
+    retv62
   } in
-  let t62 = (x/0 < y/1) in
-  let t63 = (!t62) in
-  join k60(jp61: bool) -> bool {
-    jump ret58(jp61)
+  let t65 = (x/0 < y/1) in
+  let t66 = (!t65) in
+  join k63(jp64: bool) -> bool {
+    jump ret61(jp64)
   } in
-  if t63 {
-    let t64 = (y/1 < x/0) in
-    let t65 = (!t64) in
-    jump k60(t65)
+  if t66 {
+    let t67 = (y/1 < x/0) in
+    let t68 = (!t67) in
+    jump k63(t68)
   } else {
-    jump k60(false)
+    jump k63(false)
   }
 }
 
 fn sum(n/2: int32) -> int32 {
-  join ret66(retv67: int32) -> int32 {
-    retv67
+  join ret69(retv70: int32) -> int32 {
+    retv70
   } in
-  let t70 = my_int_equal(n/2, 1) in
-  join k68(jp69: int32) -> int32 {
-    jump ret66(jp69)
+  let t73 = my_int_equal(n/2, 1) in
+  join k71(jp72: int32) -> int32 {
+    jump ret69(jp72)
   } in
-  if t70 {
-    jump k68(1)
+  if t73 {
+    jump k71(1)
   } else {
-    let t71 = (n/2 - 1) in
-    let t72 = sum(t71) in
-    let t73 = (n/2 + t72) in
-    jump k68(t73)
+    let t74 = (n/2 - 1) in
+    let t75 = sum(t74) in
+    let t76 = (n/2 + t75) in
+    jump k71(t76)
   }
 }
 
 fn main() -> unit {
-  join ret74() -> unit {
-    ()
-  } in
-  let t75 = sum(100) in
-  let t76 = println__T_int32(t75) in
-  jump ret74()
-}
-
-fn println__T_int32(value/1: int32) -> unit {
   join ret77() -> unit {
     ()
   } in
-  let t78 = trait_impl#ToString#int32#to_string(value/1) in
-  let t79 = @runtime(core.string_println)(t78) in
+  let t78 = sum(100) in
+  let t79 = println__T_int32(t78) in
   jump ret77()
 }
 
-fn trait_impl#ToString#int32#to_string(self/38: int32) -> string {
-  join ret80(retv81: string) -> string {
-    retv81
+fn println__T_int32(value/1: int32) -> unit {
+  join ret80() -> unit {
+    ()
   } in
-  let t82 = @runtime(core.int32_to_string)(self/38) in
-  jump ret80(t82)
+  let t81 = trait_impl#ToString#int32#to_string(value/1) in
+  let t82 = @runtime(core.string_println)(t81) in
+  jump ret80()
+}
+
+fn trait_impl#ToString#int32#to_string(self/41: int32) -> string {
+  join ret83(retv84: string) -> string {
+    retv84
+  } in
+  let t85 = @runtime(core.int32_to_string)(self/41) in
+  jump ret83(t85)
 }

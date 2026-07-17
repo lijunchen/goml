@@ -1,64 +1,64 @@
 fn main() -> unit {
-  join ret62() -> unit {
+  join ret65() -> unit {
     ()
   } in
   let x/0 = @intrinsic(ref.new)(0) in
   let inc/1 = closure_env_inc_0 { x_0: x/0 } in
-  let mtmp59 = inherent#closure_env_inc_0#closure_env_inc_0#apply(inc/1) in
-  let t63 = @intrinsic(ref.get)(x/0) in
-  let t64 = inherent#int32#int32#to_string(t63) in
-  let _wild60 = println__T_string(t64) in
-  jump ret62()
-}
-
-fn println__T_string(value/1: string) -> unit {
-  join ret65() -> unit {
-    ()
-  } in
-  let t66 = trait_impl#ToString#string#to_string(value/1) in
-  let t67 = @runtime(core.string_println)(t66) in
+  let mtmp62 = inherent#closure_env_inc_0#closure_env_inc_0#apply(inc/1) in
+  let t66 = @intrinsic(ref.get)(x/0) in
+  let t67 = inherent#int32#int32#to_string(t66) in
+  let _wild63 = println__T_string(t67) in
   jump ret65()
 }
 
-fn inherent#int32#int32#to_string(self/2: int32) -> string {
-  join ret68(retv69: string) -> string {
-    retv69
+fn println__T_string(value/1: string) -> unit {
+  join ret68() -> unit {
+    ()
   } in
-  let t70 = @runtime(core.int32_to_string)(self/2) in
-  jump ret68(t70)
+  let t69 = trait_impl#ToString#string#to_string(value/1) in
+  let t70 = @runtime(core.string_println)(t69) in
+  jump ret68()
 }
 
-fn trait_impl#ToString#string#to_string(self/34: string) -> string {
+fn inherent#int32#int32#to_string(self/5: int32) -> string {
   join ret71(retv72: string) -> string {
     retv72
   } in
-  jump ret71(self/34)
+  let t73 = @runtime(core.int32_to_string)(self/5) in
+  jump ret71(t73)
 }
 
-fn trait_impl#Eq#int32#eq(self/58: int32, other/59: int32) -> bool {
-  join ret73(retv74: bool) -> bool {
-    retv74
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  join ret74(retv75: string) -> string {
+    retv75
   } in
-  let t75 = (self/58 == other/59) in
-  jump ret73(t75)
+  jump ret74(self/37)
 }
 
-fn trait_impl#Hash#int32#hash(self/80: int32) -> uint64 {
-  join ret76(retv77: uint64) -> uint64 {
+fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
+  join ret76(retv77: bool) -> bool {
     retv77
   } in
-  let t78 = @runtime(core.int32_hash)(self/80) in
+  let t78 = (self/61 == other/62) in
   jump ret76(t78)
 }
 
-fn inherent#closure_env_inc_0#closure_env_inc_0#apply(env61: closure_env_inc_0) -> int32 {
-  join ret79(retv80: int32) -> int32 {
+fn trait_impl#Hash#int32#hash(self/83: int32) -> uint64 {
+  join ret79(retv80: uint64) -> uint64 {
     retv80
   } in
-  let x/0 = closure_env_inc_0.x_0(env61) in
-  let t81 = @intrinsic(ref.get)(x/0) in
-  let t82 = (t81 + 1) in
-  let _wild58 = @intrinsic(ref.set)(x/0, t82) in
-  let t83 = @intrinsic(ref.get)(x/0) in
-  jump ret79(t83)
+  let t81 = @runtime(core.int32_hash)(self/83) in
+  jump ret79(t81)
+}
+
+fn inherent#closure_env_inc_0#closure_env_inc_0#apply(env64: closure_env_inc_0) -> int32 {
+  join ret82(retv83: int32) -> int32 {
+    retv83
+  } in
+  let x/0 = closure_env_inc_0.x_0(env64) in
+  let t84 = @intrinsic(ref.get)(x/0) in
+  let t85 = (t84 + 1) in
+  let _wild61 = @intrinsic(ref.set)(x/0, t85) in
+  let t86 = @intrinsic(ref.get)(x/0) in
+  jump ret82(t86)
 }

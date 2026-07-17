@@ -1,63 +1,63 @@
 fn trait_impl#Mark#int32#mark(self/0: int32) -> string {
-  join ret60(retv61: string) -> string {
-    retv61
-  } in
-  let t62 = inherent#int32#int32#to_string(self/0) in
-  jump ret60(t62)
-}
-
-fn trait_impl#Label#Box__string#label(self/2: Box__string) -> string {
   join ret63(retv64: string) -> string {
     retv64
   } in
-  let t65 = Box__string.value(self/2) in
-  let t66 = ("string:" + t65) in
-  jump ret63(t66)
+  let t65 = inherent#int32#int32#to_string(self/0) in
+  jump ret63(t65)
+}
+
+fn trait_impl#Label#Box__string#label(self/2: Box__string) -> string {
+  join ret66(retv67: string) -> string {
+    retv67
+  } in
+  let t68 = Box__string.value(self/2) in
+  let t69 = ("string:" + t68) in
+  jump ret66(t69)
 }
 
 fn main() -> unit {
-  join ret67() -> unit {
+  join ret70() -> unit {
     ()
   } in
-  let t68 = Box__string { value: "text" } in
-  let t69 = trait_impl#Label#Box__string#label(t68) in
-  let _wild58 = println__T_string(t69) in
-  let t70 = Box__int32 { value: 7 } in
-  let t71 = trait_impl#Label#Box__int32#label(t70) in
-  let _wild59 = println__T_string(t71) in
-  jump ret67()
+  let t71 = Box__string { value: "text" } in
+  let t72 = trait_impl#Label#Box__string#label(t71) in
+  let _wild61 = println__T_string(t72) in
+  let t73 = Box__int32 { value: 7 } in
+  let t74 = trait_impl#Label#Box__int32#label(t73) in
+  let _wild62 = println__T_string(t74) in
+  jump ret70()
 }
 
-fn inherent#int32#int32#to_string(self/2: int32) -> string {
-  join ret72(retv73: string) -> string {
-    retv73
+fn inherent#int32#int32#to_string(self/5: int32) -> string {
+  join ret75(retv76: string) -> string {
+    retv76
   } in
-  let t74 = @runtime(core.int32_to_string)(self/2) in
-  jump ret72(t74)
+  let t77 = @runtime(core.int32_to_string)(self/5) in
+  jump ret75(t77)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  join ret75() -> unit {
+  join ret78() -> unit {
     ()
   } in
-  let t76 = trait_impl#ToString#string#to_string(value/1) in
-  let t77 = @runtime(core.string_println)(t76) in
-  jump ret75()
+  let t79 = trait_impl#ToString#string#to_string(value/1) in
+  let t80 = @runtime(core.string_println)(t79) in
+  jump ret78()
 }
 
 fn trait_impl#Label#Box__int32#label(self/1: Box__int32) -> string {
-  join ret78(retv79: string) -> string {
-    retv79
+  join ret81(retv82: string) -> string {
+    retv82
   } in
-  let t80 = Box__int32.value(self/1) in
-  let t81 = trait_impl#Mark#int32#mark(t80) in
-  let t82 = ("blanket:" + t81) in
-  jump ret78(t82)
+  let t83 = Box__int32.value(self/1) in
+  let t84 = trait_impl#Mark#int32#mark(t83) in
+  let t85 = ("blanket:" + t84) in
+  jump ret81(t85)
 }
 
-fn trait_impl#ToString#string#to_string(self/34: string) -> string {
-  join ret83(retv84: string) -> string {
-    retv84
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  join ret86(retv87: string) -> string {
+    retv87
   } in
-  jump ret83(self/34)
+  jump ret86(self/37)
 }

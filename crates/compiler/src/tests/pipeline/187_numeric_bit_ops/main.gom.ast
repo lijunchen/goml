@@ -105,7 +105,10 @@ fn casts() -> unit {
     show_u32(65u8 as uint32);
     show_i64(4294967295u32 as int64);
     show_u32('A' as uint32);
-    println(128512u32 as char.to_string());
+    match char_from_uint32(128512u32) {
+        Option::Some(value) => println(value.to_string()),
+        Option::None => println("invalid"),
+    };
     show_u32(300u16 as uint8 as uint32)
 }
 

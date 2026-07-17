@@ -1,0 +1,23 @@
+package main
+file main.gom
+  fn show_scalar(local/1/0: uint32) -> unit {
+        match char_from_uint32(value/0) {
+            Option::Some(local/1/1) => println(result/1 as uint32),
+            Option::None => println("none"),
+        }
+    }
+    
+    fn main() -> unit {
+        def/1/0(0u32);
+        def/1/0(65u32);
+        def/1/0(55295u32);
+        def/1/0(55296u32);
+        def/1/0(57343u32);
+        def/1/0(57344u32);
+        def/1/0(1114111u32);
+        def/1/0(1114112u32);
+        match char_from_uint32(128512u32) {
+            Option::Some(local/1/2) => println(result/2.to_string()),
+            Option::None => println("none"),
+        }
+    }

@@ -1,65 +1,65 @@
 fn make_some(value/0: int32) -> option__int32 {
-  join ret65(retv66: option__int32) -> option__int32 {
-    retv66
-  } in
-  let t67 = option__int32::some(value/0) in
-  jump ret65(t67)
-}
-
-fn build_point(x/1: int32, y/2: int32) -> point {
-  join ret68(retv69: point) -> point {
+  join ret68(retv69: option__int32) -> option__int32 {
     retv69
   } in
-  let t70 = point { x: x/1, y: y/2 } in
+  let t70 = option__int32::some(value/0) in
   jump ret68(t70)
 }
 
-fn magnitude(p/3: point) -> int32 {
-  join ret71(retv72: int32) -> int32 {
+fn build_point(x/1: int32, y/2: int32) -> point {
+  join ret71(retv72: point) -> point {
     retv72
   } in
-  let mtmp58 = p/3 in
-  let x59 = point.x(mtmp58) in
-  let x60 = point.y(mtmp58) in
-  let y/5 = x60 in
-  let x/4 = x59 in
-  let t73 = (x/4 + y/5) in
+  let t73 = point { x: x/1, y: y/2 } in
   jump ret71(t73)
 }
 
-fn main() -> int32 {
+fn magnitude(p/3: point) -> int32 {
   join ret74(retv75: int32) -> int32 {
     retv75
   } in
-  let mtmp61 = make_some(5) in
-  join k76(jp77: int32) -> int32 {
-    jump ret74(jp77)
+  let mtmp61 = p/3 in
+  let x62 = point.x(mtmp61) in
+  let x63 = point.y(mtmp61) in
+  let y/5 = x63 in
+  let x/4 = x62 in
+  let t76 = (x/4 + y/5) in
+  jump ret74(t76)
+}
+
+fn main() -> int32 {
+  join ret77(retv78: int32) -> int32 {
+    retv78
   } in
-  match mtmp61 {
+  let mtmp64 = make_some(5) in
+  join k79(jp80: int32) -> int32 {
+    jump ret77(jp80)
+  } in
+  match mtmp64 {
     Tag_0 => {
-      let x62 = option__int32::some._0(mtmp61) in
-      let result/6 = x62 in
+      let x65 = option__int32::some._0(mtmp64) in
+      let result/6 = x65 in
       let pt/7 = build_point(result/6, 7) in
-      let t78 = point.x(pt/7) in
-      let mtmp63 = option__int32::some(t78) in
-      join k79(jp80: int32) -> int32 {
-        jump k76(jp80)
+      let t81 = point.x(pt/7) in
+      let mtmp66 = option__int32::some(t81) in
+      join k82(jp83: int32) -> int32 {
+        jump k79(jp83)
       } in
-      match mtmp63 {
+      match mtmp66 {
         Tag_0 => {
-          let x64 = option__int32::some._0(mtmp63) in
-          let value/8 = x64 in
-          let t81 = magnitude(pt/7) in
-          let t82 = (value/8 + t81) in
-          jump k79(t82)
+          let x67 = option__int32::some._0(mtmp66) in
+          let value/8 = x67 in
+          let t84 = magnitude(pt/7) in
+          let t85 = (value/8 + t84) in
+          jump k82(t85)
         },
         Tag_1 => {
-          jump k79(0)
+          jump k82(0)
         },
       }
     },
     Tag_1 => {
-      jump k76(0)
+      jump k79(0)
     },
   }
 }

@@ -13,16 +13,16 @@ fn maybe_value(flag/0: bool) -> Option__int32 {
 fn with_base(base/1: int32, flag/2: bool) -> Option__int32 {
   let run/4 = || {
     let value/3 = {
-      let mtmp58 = maybe_value(flag/2) in
-      match mtmp58 {
+      let mtmp61 = maybe_value(flag/2) in
+      match mtmp61 {
         Option__int32::None => {
           return Option__int32::None
         },
-        Option__int32::Some(x59) => {
+        Option__int32::Some(x62) => {
           {
-            let x59 = Option__int32::Some._0(mtmp58) in
+            let x62 = Option__int32::Some._0(mtmp61) in
             {
-              let try_value/11 = x59 in
+              let try_value/11 = x62 in
               try_value/11
             }
           }
@@ -39,11 +39,11 @@ fn show(opt/5: Option__int32) -> string {
     Option__int32::None => {
       "none"
     },
-    Option__int32::Some(x60) => {
+    Option__int32::Some(x63) => {
       {
-        let x60 = Option__int32::Some._0(opt/5) in
+        let x63 = Option__int32::Some._0(opt/5) in
         {
-          let value/6 = x60 in
+          let value/6 = x63 in
           ("some=" + inherent#int32#int32#to_string(value/6))
         }
       }
@@ -52,18 +52,18 @@ fn show(opt/5: Option__int32) -> string {
 }
 
 fn main() -> unit {
-  let _wild61 = println__T_string(show(with_base(3, true))) in
-  let _wild62 = println__T_string(show(with_base(3, false))) in
+  let _wild64 = println__T_string(show(with_base(3, true))) in
+  let _wild65 = println__T_string(show(with_base(3, false))) in
 }
 
-fn inherent#int32#int32#to_string(self/2: int32) -> string {
-  @runtime(core.int32_to_string)(self/2)
+fn inherent#int32#int32#to_string(self/5: int32) -> string {
+  @runtime(core.int32_to_string)(self/5)
 }
 
 fn println__T_string(value/1: string) -> unit {
   @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
 }
 
-fn trait_impl#ToString#string#to_string(self/34: string) -> string {
-  self/34
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  self/37
 }
