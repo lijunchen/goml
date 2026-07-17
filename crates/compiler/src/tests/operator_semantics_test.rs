@@ -57,7 +57,10 @@ fn main() -> unit {
     println(511u16 as uint8);
     println(-1i16 as uint8);
     println(('A' as uint32).to_string());
-    println((128512u32 as char).to_string())
+    match char_from_uint32(128512u32) {
+        Option::Some(value) => println(value.to_string()),
+        Option::None => println("invalid"),
+    }
 }
 "#;
     let compilation = compile_single_file(&path, src).expect("expected compilation to succeed");
@@ -143,7 +146,7 @@ fn casts_reject_bool_to_integer() {
 }
 
 #[test]
-fn casts_restrict_char_to_uint32() {
+fn casts_only_allow_char_to_uint32() {
     let diagnostics = typer_errors("numeric_cast_invalid_char_width");
 
     assert!(
@@ -156,6 +159,12 @@ fn casts_restrict_char_to_uint32() {
         diagnostics
             .iter()
             .any(|line| line.contains("Invalid cast from uint16 to char")),
+        "{diagnostics:?}"
+    );
+    assert!(
+        diagnostics
+            .iter()
+            .any(|line| line.contains("Invalid cast from uint32 to char")),
         "{diagnostics:?}"
     );
 }
