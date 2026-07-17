@@ -1,6 +1,7 @@
 use std::borrow::Cow;
 use std::fmt;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 use text_size::TextRange;
 
@@ -302,6 +303,7 @@ impl Diagnostic {
 pub struct Diagnostics {
     items: Vec<Diagnostic>,
     source: Option<PathBuf>,
+    source_map: Option<Arc<SourceMap>>,
 }
 
 impl fmt::Debug for Diagnostics {
@@ -318,6 +320,7 @@ impl Diagnostics {
         Self {
             items: Vec::new(),
             source: None,
+            source_map: None,
         }
     }
 
@@ -325,6 +328,7 @@ impl Diagnostics {
         if diagnostic.source.is_none() {
             diagnostic.source.clone_from(&self.source);
         }
+        materialize_primary_label(self.source_map.as_deref(), &mut diagnostic);
         self.items.push(diagnostic);
     }
 
@@ -335,7 +339,18 @@ impl Diagnostics {
     }
 
     pub fn append(&mut self, other: &mut Diagnostics) {
+        if self.source_map.is_none()
+            && let Some(source_map) = other.source_map.clone()
+        {
+            self.attach_source_map(source_map);
+        }
+        let appended_at = self.items.len();
         self.items.append(&mut other.items);
+        if let Some(source_map) = self.source_map.as_deref() {
+            for diagnostic in &mut self.items[appended_at..] {
+                materialize_primary_label(Some(source_map), diagnostic);
+            }
+        }
     }
 
     pub fn set_source(&mut self, source: impl Into<PathBuf>) {
@@ -352,7 +367,28 @@ impl Diagnostics {
             if diagnostic.source.is_none() {
                 diagnostic.source = Some(source.clone());
             }
+            materialize_primary_label(self.source_map.as_deref(), diagnostic);
         }
+    }
+
+    pub fn attach_source_map(&mut self, source_map: Arc<SourceMap>) {
+        for diagnostic in &mut self.items {
+            materialize_primary_label(Some(&source_map), diagnostic);
+        }
+        self.source_map = Some(source_map);
+    }
+
+    pub fn with_source_map(mut self, source_map: Arc<SourceMap>) -> Self {
+        self.attach_source_map(source_map);
+        self
+    }
+
+    pub fn source_map(&self) -> Option<&SourceMap> {
+        self.source_map.as_deref()
+    }
+
+    pub fn source_map_arc(&self) -> Option<&Arc<SourceMap>> {
+        self.source_map.as_ref()
     }
 
     pub fn iter(&self) -> impl Iterator<Item = &Diagnostic> {
@@ -376,6 +412,30 @@ impl Diagnostics {
             .iter()
             .any(|diagnostic| diagnostic.severity == Severity::Error)
     }
+}
+
+fn materialize_primary_label(source_map: Option<&SourceMap>, diagnostic: &mut Diagnostic) {
+    if diagnostic
+        .labels()
+        .iter()
+        .any(|label| label.severity() == LabelSeverity::Primary)
+    {
+        return;
+    }
+    let (Some(source_map), Some(source), Some(range)) =
+        (source_map, diagnostic.source(), diagnostic.range())
+    else {
+        return;
+    };
+    let Some(source_id) = source_map.find(source) else {
+        return;
+    };
+    let start = u32::from(range.start()) as usize;
+    let end = u32::from(range.end()) as usize;
+    let Ok(span) = source_map.span(source_id, start, end) else {
+        return;
+    };
+    diagnostic.details.labels.insert(0, Label::primary(span));
 }
 
 impl IntoIterator for Diagnostics {
