@@ -780,8 +780,180 @@ fn range(start/204: int32, end/205: int32) -> FnIterator[int32] {
   })
 }
 
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#new() -> std::bytes::Bytes {
+  std::bytes::Bytes { values: inherent#Vec#Vec[uint8]#new() }
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#with_capacity(capacity/0: int32) -> std::bytes::Bytes {
+  std::bytes::Bytes { values: inherent#Vec#Vec[uint8]#with_capacity(capacity/0) }
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(values/1: Vec[uint8]) -> std::bytes::Bytes {
+  std::bytes::Bytes { values: values/1 }
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#from_string(value/2: string) -> std::bytes::Bytes {
+  std::bytes::Bytes { values: inherent#string#string#to_bytes(value/2) }
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#len(self/3: std::bytes::Bytes) -> int32 {
+  inherent#Vec#Vec[uint8]#len(std::bytes::Bytes.values(self/3))
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#capacity(self/4: std::bytes::Bytes) -> int32 {
+  inherent#Vec#Vec[uint8]#capacity(std::bytes::Bytes.values(self/4))
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#is_empty(self/5: std::bytes::Bytes) -> bool {
+  inherent#Vec#Vec[uint8]#is_empty(std::bytes::Bytes.values(self/5))
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#get(self/6: std::bytes::Bytes, index/7: int32) -> uint8 {
+  inherent#Vec#Vec[uint8]#get(std::bytes::Bytes.values(self/6), index/7)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#set(self/8: std::bytes::Bytes, index/9: int32, value/10: uint8) -> unit {
+  inherent#Vec#Vec[uint8]#set(std::bytes::Bytes.values(self/8), index/9, value/10)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#push(self/11: std::bytes::Bytes, value/12: uint8) -> unit {
+  inherent#Vec#Vec[uint8]#push(std::bytes::Bytes.values(self/11), value/12)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#pop(self/13: std::bytes::Bytes) -> Option[uint8] {
+  inherent#Vec#Vec[uint8]#pop(std::bytes::Bytes.values(self/13))
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#reserve(self/14: std::bytes::Bytes, additional/15: int32) -> unit {
+  inherent#Vec#Vec[uint8]#reserve(std::bytes::Bytes.values(self/14), additional/15)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#truncate(self/16: std::bytes::Bytes, len/17: int32) -> unit {
+  inherent#Vec#Vec[uint8]#truncate(std::bytes::Bytes.values(self/16), len/17)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#clear(self/18: std::bytes::Bytes) -> unit {
+  inherent#Vec#Vec[uint8]#clear(std::bytes::Bytes.values(self/18))
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#slice(self/19: std::bytes::Bytes, start/20: int32, end/21: int32) -> Slice[uint8] {
+  inherent#Vec#Vec[uint8]#slice(std::bytes::Bytes.values(self/19), start/20, end/21)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(self/22: std::bytes::Bytes) -> Vec[uint8] {
+  std::bytes::Bytes.values(self/22)
+}
+
+fn inherent#std::bytes::Bytes#std::bytes::Bytes#to_string(self/23: std::bytes::Bytes) -> Result[string, string] {
+  let mtmp0 = @runtime(core.string_from_utf8)(std::bytes::Bytes.values(self/23)) in
+  {
+    let x1 = mtmp0.0 in
+    let x2 = mtmp0.1 in
+    {
+      let value/25 = x2 in
+      {
+        let valid/24 = x1 in
+        {
+          if valid/24 {
+              {
+                Result::Ok(value/25)
+              }
+          } else {
+              {
+                Result::Err("invalid UTF-8")
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
 fn std::env::args() -> Vec[string] {
   @runtime(std.env.args)()
+}
+
+fn std::env::current_dir() -> Result[string, string] {
+  let mtmp0 = @runtime(std.env.current_dir)() in
+  {
+    let x1 = mtmp0.0 in
+    let x2 = mtmp0.1 in
+    let x3 = mtmp0.2 in
+    {
+      let err/2 = x3 in
+      {
+        let value/1 = x2 in
+        {
+          let ok/0 = x1 in
+          {
+            if ok/0 {
+                {
+                  Result::Ok(value/1)
+                }
+            } else {
+                {
+                  Result::Err(err/2)
+                }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::env::current_exe() -> Result[string, string] {
+  let mtmp4 = @runtime(std.env.current_exe)() in
+  {
+    let x5 = mtmp4.0 in
+    let x6 = mtmp4.1 in
+    let x7 = mtmp4.2 in
+    {
+      let err/5 = x7 in
+      {
+        let value/4 = x6 in
+        {
+          let ok/3 = x5 in
+          {
+            if ok/3 {
+                {
+                  Result::Ok(value/4)
+                }
+            } else {
+                {
+                  Result::Err(err/5)
+                }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::env::var(name/6: string) -> Option[string] {
+  let mtmp8 = @runtime(std.env.var)(name/6) in
+  {
+    let x9 = mtmp8.0 in
+    let x10 = mtmp8.1 in
+    {
+      let value/8 = x10 in
+      {
+        let found/7 = x9 in
+        {
+          if found/7 {
+              {
+                Option::Some(value/8)
+              }
+          } else {
+              {
+                Option::None
+              }
+          }
+        }
+      }
+    }
+  }
 }
 
 fn std::io::print(value/0: T) -> unit {
@@ -798,6 +970,85 @@ fn std::io::eprint(value/2: T) -> unit {
 
 fn std::io::eprintln(value/3: T) -> unit {
   @runtime(std.io.eprint)((trait_call[ToString::to_string](value/3) + "\n"))
+}
+
+fn std::io::read_stdin() -> Result[std::bytes::Bytes, string] {
+  let mtmp0 = @runtime(std.io.read_stdin)() in
+  {
+    let x1 = mtmp0.0 in
+    let x2 = mtmp0.1 in
+    let x3 = mtmp0.2 in
+    {
+      let err/6 = x3 in
+      {
+        let data/5 = x2 in
+        {
+          let ok/4 = x1 in
+          {
+            if ok/4 {
+                {
+                  Result::Ok(inherent#std::bytes::Bytes#std::bytes::Bytes#from_vec(data/5))
+                }
+            } else {
+                {
+                  Result::Err(err/6)
+                }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::io::write_stdout(data/7: std::bytes::Bytes) -> Result[unit, string] {
+  let mtmp4 = @runtime(std.io.write_stdout)(inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/7)) in
+  {
+    let x5 = mtmp4.0 in
+    let x6 = mtmp4.1 in
+    {
+      let err/9 = x6 in
+      {
+        let ok/8 = x5 in
+        {
+          if ok/8 {
+              {
+                Result::Ok(())
+              }
+          } else {
+              {
+                Result::Err(err/9)
+              }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn std::io::write_stderr(data/10: std::bytes::Bytes) -> Result[unit, string] {
+  let mtmp7 = @runtime(std.io.write_stderr)(inherent#std::bytes::Bytes#std::bytes::Bytes#to_vec(data/10)) in
+  {
+    let x8 = mtmp7.0 in
+    let x9 = mtmp7.1 in
+    {
+      let err/12 = x9 in
+      {
+        let ok/11 = x8 in
+        {
+          if ok/11 {
+              {
+                Result::Ok(())
+              }
+          } else {
+              {
+                Result::Err(err/12)
+              }
+          }
+        }
+      }
+    }
+  }
 }
 
 fn main() -> unit {
