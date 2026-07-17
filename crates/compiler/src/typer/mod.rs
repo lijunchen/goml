@@ -28,8 +28,8 @@ pub(crate) use obligations::{
 pub(crate) use traits::matching::impl_self_subst;
 pub(crate) use util::format_ty_for_diag;
 
-pub use toplevel::check_file_with_env_and_results;
 pub use toplevel::{check_file, check_file_with_env, check_file_with_env_capability};
+pub use toplevel::{check_file_with_env_and_results, check_file_with_env_tast_and_results};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum LoopControlContext {

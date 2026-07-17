@@ -25,6 +25,9 @@ pub fn inlay_hints_with_overrides(
         let mut hints = Vec::new();
         for idx in 0..hir_table.def_count() {
             let def_id = hir_table.def_id_at(idx);
+            if hir_table.def_source(def_id) != Some(path) {
+                continue;
+            }
             match hir_table.def(def_id) {
                 hir::Def::Fn(func) => {
                     collect_hints_from_block(&hir_table, &results, &func.body, &mut hints);

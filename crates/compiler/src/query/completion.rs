@@ -117,7 +117,7 @@ pub fn dot_completions_with_overrides(
 
         let (hir_table, results, genv, _diagnostics) =
             typecheck_for_query_with_overrides(path, &parse_src, source_overrides).ok()?;
-        let index = HirResultsIndex::new(&hir_table);
+        let index = HirResultsIndex::new(&hir_table, path);
         let expr_id = index.expr_id(&lhs_ptr)?;
         let ty = normalize_completion_ty(results.expr_ty(expr_id)?.clone());
         let items = completions_for_type(&genv, &ty);
@@ -182,8 +182,8 @@ pub fn value_completions_with_overrides(
             let current_package = build_symbol_lookup_with_overrides(path, src, source_overrides)
                 .graph
                 .map(|graph| graph.entry_package);
-            let index = HirResultsIndex::new(&hir_table);
-            let closure_params = ClosureParamIndex::new(&hir_table);
+            let index = HirResultsIndex::new(&hir_table, path);
+            let closure_params = ClosureParamIndex::new(&hir_table, path);
             call_context = call_expr_and_active_parameter(&root, offset).and_then(
                 |(call_expr, active_parameter)| {
                     call_signature_context_from_parts(

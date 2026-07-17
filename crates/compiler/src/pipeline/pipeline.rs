@@ -97,6 +97,12 @@ struct PackageInterface {
     package_interface: interface::PackageInterface,
 }
 
+#[derive(Debug)]
+struct AnalysisPackageArtifact {
+    tast: tast::File,
+    full_exports: PackageExports,
+}
+
 fn nominal_impl_type_name(ty: &tast::Ty) -> Option<&str> {
     match ty {
         tast::Ty::TStruct { name } | tast::Ty::TEnum { name } => Some(name),
@@ -847,11 +853,60 @@ pub fn typecheck_with_packages_and_results_with_overrides(
     ),
     CompilationError,
 > {
+    typecheck_with_packages_and_results_inner(path, src, source_overrides, false)
+}
+
+pub fn analyze_with_packages_and_results_with_overrides(
+    path: &Path,
+    src: &str,
+    source_overrides: &HashMap<PathBuf, String>,
+) -> Result<
+    (
+        hir::HirTable,
+        typer::results::TypeckResults,
+        GlobalTypeEnv,
+        Diagnostics,
+    ),
+    CompilationError,
+> {
+    typecheck_with_packages_and_results_inner(path, src, source_overrides, true)
+}
+
+fn typecheck_with_packages_and_results_inner(
+    path: &Path,
+    src: &str,
+    source_overrides: &HashMap<PathBuf, String>,
+    check_matches: bool,
+) -> Result<
+    (
+        hir::HirTable,
+        typer::results::TypeckResults,
+        GlobalTypeEnv,
+        Diagnostics,
+    ),
+    CompilationError,
+> {
     let single_file = should_use_single_file_mode(path)?;
     super::with_src_compiler_stack(src, || {
         let source_texts = source_texts(path, src, source_overrides);
         let (_green_node, _cst, entry_ast, mut diagnostics) =
             parse_ast_from_source_allow_parse_errors(path, src)?;
+        let syntax_diagnostics = if check_matches && diagnostics.has_errors() {
+            let mut parser_diagnostics = Diagnostics::new();
+            parser_diagnostics.extend(
+                diagnostics
+                    .iter()
+                    .filter(|diagnostic| diagnostic.stage() == &Stage::Parser)
+                    .cloned(),
+            );
+            if parser_diagnostics.has_errors() {
+                Some(parser_diagnostics)
+            } else {
+                Some(diagnostics.clone())
+            }
+        } else {
+            None
+        };
         let root = discovery_root_for_file(path)?;
         let mut parsed_overrides = parse_source_overrides(source_overrides);
         parsed_overrides.insert(path.to_path_buf(), Ok(entry_ast.clone()));
@@ -903,6 +958,7 @@ pub fn typecheck_with_packages_and_results_with_overrides(
             }
         }
         let mut artifacts_by_name: HashMap<String, PackageInterface> = HashMap::new();
+        let mut analysis_artifacts = HashMap::new();
         let mut package_names: Vec<String> = graph.packages.keys().cloned().collect();
         package_names.sort();
         let package_ids = package_id_map(&package_names);
@@ -952,19 +1008,43 @@ pub fn typecheck_with_packages_and_results_with_overrides(
                 package.files.clone(),
                 &deps_interfaces,
             );
-            let (hir_table, results, package_genv, mut package_diagnostics) =
-                typer::check_file_with_env_and_results(
-                    hir,
-                    hir_table,
-                    GlobalTypeEnv::new(),
-                    builtins::builtin_env(),
-                    &package.name,
-                    deps_envs,
-                );
+            let (package_tast, hir_table, results, package_genv, mut package_diagnostics) =
+                if check_matches {
+                    let (tast, hir_table, results, package_genv, diagnostics) =
+                        typer::check_file_with_env_tast_and_results(
+                            hir,
+                            hir_table,
+                            GlobalTypeEnv::new(),
+                            builtins::builtin_env(),
+                            &package.name,
+                            deps_envs,
+                        );
+                    (Some(tast), hir_table, results, package_genv, diagnostics)
+                } else {
+                    let (hir_table, results, package_genv, diagnostics) =
+                        typer::check_file_with_env_and_results(
+                            hir,
+                            hir_table,
+                            GlobalTypeEnv::new(),
+                            builtins::builtin_env(),
+                            &package.name,
+                            deps_envs,
+                        );
+                    (None, hir_table, results, package_genv, diagnostics)
+                };
             package_diagnostics.append(&mut hir_diagnostics);
             diagnostics.append(&mut package_diagnostics);
 
             let full_exports = PackageExports::from_genv(&package_genv);
+            if let Some(tast) = package_tast {
+                analysis_artifacts.insert(
+                    name.clone(),
+                    AnalysisPackageArtifact {
+                        tast,
+                        full_exports: full_exports.clone(),
+                    },
+                );
+            }
             drop(testing::validate_test_candidates(
                 name,
                 test_candidates,
@@ -998,6 +1078,15 @@ pub fn typecheck_with_packages_and_results_with_overrides(
             artifacts_by_name.insert(name.clone(), interface);
         }
 
+        if check_matches && !diagnostics.has_errors() {
+            add_match_diagnostics(
+                &mut diagnostics,
+                &graph,
+                &analysis_artifacts,
+                &external_deps,
+            )?;
+        }
+
         let Some(entry_hir_table) = entry_hir_table else {
             return Err(compile_error("entry package not found".to_string()));
         };
@@ -1007,9 +1096,66 @@ pub fn typecheck_with_packages_and_results_with_overrides(
         if let Some(entry_exports) = entry_exports {
             entry_exports.apply_to(&mut genv);
         }
+        if let Some(mut syntax_diagnostics) = syntax_diagnostics {
+            syntax_diagnostics.attach_source_map(source_map);
+            diagnostics = syntax_diagnostics;
+        }
 
         Ok((entry_hir_table, entry_results, genv, diagnostics))
     })
+}
+
+fn add_match_diagnostics(
+    diagnostics: &mut Diagnostics,
+    graph: &packages::PackageGraph,
+    artifacts: &HashMap<String, AnalysisPackageArtifact>,
+    external_deps: &ExternalDependencyArtifacts,
+) -> Result<(), CompilationError> {
+    let reachable_external = external_deps
+        .reachable_package_names(graph)
+        .map_err(compile_error)?;
+    let gensym = Gensym::new();
+    for name in graph.discovery_order.iter() {
+        let package = graph
+            .packages
+            .get(name)
+            .ok_or_else(|| compile_error(format!("package {} not found", name)))?;
+        let artifact = artifacts
+            .get(name)
+            .ok_or_else(|| compile_error(format!("missing package artifact for {}", name)))?;
+        let mut env = builtins::builtin_env();
+        let dependencies = package_dependency_closure(package, graph, external_deps)?;
+        for dependency in dependencies {
+            if let Some(dependency_artifact) = artifacts.get(&dependency) {
+                dependency_artifact.full_exports.apply_to(&mut env);
+                continue;
+            }
+            if let Some(external) = external_deps.package(&dependency)
+                && reachable_external.contains(&dependency)
+            {
+                external.core.exports.apply_to(&mut env);
+                continue;
+            }
+            return Err(compile_error(format!(
+                "missing package artifact for {}",
+                dependency
+            )));
+        }
+        artifact.full_exports.apply_to(&mut env);
+        if let [source] = package.files.as_slice() {
+            diagnostics.set_source(&source.path);
+        } else {
+            diagnostics.clear_source();
+        }
+        drop(compile_match::compile_file(
+            &env,
+            &gensym,
+            diagnostics,
+            &artifact.tast,
+        ));
+    }
+    diagnostics.clear_source();
+    Ok(())
 }
 
 fn validate_entrypoint_for_compile(

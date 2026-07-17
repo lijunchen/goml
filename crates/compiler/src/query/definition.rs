@@ -162,7 +162,7 @@ fn resolve_semantic_definition(
 ) -> Option<Vec<DefinitionLocation>> {
     let (hir_table, results, _genv, _diagnostics) =
         typecheck_for_query_with_overrides(path, src, source_overrides).ok()?;
-    let index = HirResultsIndex::new(&hir_table);
+    let index = HirResultsIndex::new(&hir_table, path);
 
     let expr_ids = expr_ids_from_token(token, &index);
     for expr_id in expr_ids {

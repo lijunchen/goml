@@ -1,4 +1,7 @@
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    path::Path,
+};
 
 use cst::cst::CstNode;
 use parser::syntax::{MySyntaxNodePtr, MySyntaxToken};
@@ -14,7 +17,7 @@ pub(crate) struct HirResultsIndex {
 }
 
 impl HirResultsIndex {
-    pub(crate) fn new(hir_table: &hir::HirTable) -> Self {
+    pub(crate) fn new(hir_table: &hir::HirTable, source: &Path) -> Self {
         let mut expr_by_ptr = HashMap::new();
         let mut pat_by_ptr = HashMap::new();
         let mut local_by_ptr = HashMap::new();
@@ -24,7 +27,9 @@ impl HirResultsIndex {
                 pkg: hir_table.package(),
                 idx: idx as u32,
             };
-            if let Some(ptr) = hir_table.expr_ptr(expr_id) {
+            if hir_table.expr_source(expr_id) == Some(source)
+                && let Some(ptr) = hir_table.expr_ptr(expr_id)
+            {
                 expr_by_ptr.insert(ptr, expr_id);
             }
         }
@@ -34,13 +39,17 @@ impl HirResultsIndex {
                 pkg: hir_table.package(),
                 idx: idx as u32,
             };
-            if let Some(ptr) = hir_table.pat_ptr(pat_id) {
+            if hir_table.pat_source(pat_id) == Some(source)
+                && let Some(ptr) = hir_table.pat_ptr(pat_id)
+            {
                 pat_by_ptr.insert(ptr, pat_id);
             }
         }
 
         for (local_id, _) in hir_table.iter_locals() {
-            if let Some(ptr) = hir_table.local_origin_ptr(local_id) {
+            if hir_table.local_source(local_id) == Some(source)
+                && let Some(ptr) = hir_table.local_origin_ptr(local_id)
+            {
                 local_by_ptr.insert(ptr, local_id);
             }
         }
@@ -71,14 +80,16 @@ pub(crate) struct ClosureParamIndex {
 }
 
 impl ClosureParamIndex {
-    pub(crate) fn new(hir_table: &hir::HirTable) -> Self {
+    pub(crate) fn new(hir_table: &hir::HirTable, source: &Path) -> Self {
         let mut local_by_ptr = HashMap::new();
         for idx in 0..hir_table.expr_count() {
             let expr_id = hir::ExprId {
                 pkg: hir_table.package(),
                 idx: idx as u32,
             };
-            if let hir::Expr::EClosure { params, .. } = hir_table.expr(expr_id) {
+            if hir_table.expr_source(expr_id) == Some(source)
+                && let hir::Expr::EClosure { params, .. } = hir_table.expr(expr_id)
+            {
                 for param in params {
                     local_by_ptr.insert(param.astptr, param.name);
                 }

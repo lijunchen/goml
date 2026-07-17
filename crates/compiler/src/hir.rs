@@ -423,8 +423,10 @@ pub struct HirTable {
     local_counter: u32,
     exprs: Arena<Expr>,
     expr_ptrs: Vec<Option<MySyntaxNodePtr>>,
+    expr_sources: Vec<Option<PathBuf>>,
     pats: Arena<Pat>,
     pat_ptrs: Vec<Option<MySyntaxNodePtr>>,
+    pat_sources: Vec<Option<PathBuf>>,
     dummy_expr: ExprId,
     dummy_pat: PatId,
     current_owner: Option<DefId>,
@@ -436,6 +438,7 @@ pub struct LocalInfo {
     pub hint: String,
     pub origin: LocalKey,
     pub mutable: bool,
+    pub source: Option<PathBuf>,
 }
 
 impl HirTable {
@@ -461,8 +464,10 @@ impl HirTable {
             local_counter: 0,
             exprs,
             expr_ptrs: vec![None],
+            expr_sources: vec![None],
             pats,
             pat_ptrs: vec![None],
+            pat_sources: vec![None],
             dummy_expr,
             dummy_pat,
             current_owner: None,
@@ -527,6 +532,7 @@ impl HirTable {
             hint: hint.to_string(),
             origin: key,
             mutable: false,
+            source: self.current_source.clone(),
         });
         id
     }
@@ -546,6 +552,7 @@ impl HirTable {
             hint: hint.to_string(),
             origin: key,
             mutable: false,
+            source: self.current_source.clone(),
         });
         id
     }
@@ -577,6 +584,13 @@ impl HirTable {
             LocalKey::AstBinder { ptr, .. } => Some(*ptr),
             LocalKey::Synthetic { .. } => None,
         }
+    }
+
+    pub fn local_source(&self, id: LocalId) -> Option<&std::path::Path> {
+        assert_eq!(id.pkg, self.package);
+        self.local_info
+            .get(id.idx as usize)
+            .and_then(|info| info.source.as_deref())
     }
 
     pub fn set_local_mutable(&mut self, id: LocalId, mutable: bool) {
@@ -670,6 +684,10 @@ impl HirTable {
         if raw as usize >= self.expr_ptrs.len() {
             self.expr_ptrs.resize(raw as usize + 1, None);
         }
+        if raw as usize >= self.expr_sources.len() {
+            self.expr_sources.resize(raw as usize + 1, None);
+        }
+        self.expr_sources[raw as usize] = self.current_source.clone();
         ExprId {
             pkg: self.package,
             idx: raw,
@@ -698,12 +716,23 @@ impl HirTable {
             .copied()
     }
 
+    pub fn expr_source(&self, id: ExprId) -> Option<&std::path::Path> {
+        assert_eq!(id.pkg, self.package);
+        self.expr_sources
+            .get(id.idx as usize)
+            .and_then(Option::as_deref)
+    }
+
     pub fn alloc_pat(&mut self, pat: Pat) -> PatId {
         let idx = self.pats.alloc(pat);
         let raw = idx.into_raw().into_u32();
         if raw as usize >= self.pat_ptrs.len() {
             self.pat_ptrs.resize(raw as usize + 1, None);
         }
+        if raw as usize >= self.pat_sources.len() {
+            self.pat_sources.resize(raw as usize + 1, None);
+        }
+        self.pat_sources[raw as usize] = self.current_source.clone();
         PatId {
             pkg: self.package,
             idx: raw,
@@ -730,6 +759,13 @@ impl HirTable {
             .get(id.idx as usize)
             .and_then(|ptr| ptr.as_ref())
             .copied()
+    }
+
+    pub fn pat_source(&self, id: PatId) -> Option<&std::path::Path> {
+        assert_eq!(id.pkg, self.package);
+        self.pat_sources
+            .get(id.idx as usize)
+            .and_then(Option::as_deref)
     }
 
     pub fn iter_defs(&self) -> impl Iterator<Item = (DefId, &Def)> {

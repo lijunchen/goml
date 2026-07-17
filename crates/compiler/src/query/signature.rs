@@ -109,7 +109,7 @@ pub(crate) fn call_signature_context_from_parts(
     call_expr: &CallExpr,
     active_parameter: u32,
 ) -> Option<CallSignatureContext> {
-    let index = HirResultsIndex::new(hir_table);
+    let index = HirResultsIndex::new(hir_table, path);
     let call_expr_id = index.expr_id(&MySyntaxNodePtr::new(call_expr.syntax()))?;
     let call_elab = results.call_elab(call_expr_id)?;
     let (mut params, return_type, hide_receiver) =

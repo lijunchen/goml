@@ -22,31 +22,31 @@ pub fn get_diagnostics_with_overrides(
     doc: &Document,
     source_overrides: &HashMap<PathBuf, String>,
 ) -> Vec<Diagnostic> {
-    let result = compiler::pipeline::pipeline::compile_for_analysis_with_overrides(
-        path,
-        src,
-        source_overrides,
-    );
+    let analysis = query::analyze_with_overrides(path, src, source_overrides);
+    get_diagnostics_from_analysis(path, src, doc, source_overrides, &analysis)
+}
 
-    match result {
-        Ok(_) => Vec::new(),
-        Err(err) => {
-            let mut diagnostics = err.into_diagnostics();
-            let sources = diagnostics.source_map_arc().cloned().unwrap_or_else(|| {
-                Arc::new(source_map_for_diagnostics(
-                    path,
-                    src,
-                    source_overrides,
-                    &diagnostics,
-                ))
-            });
-            diagnostics.attach_source_map(Arc::clone(&sources));
-            diagnostics
-                .iter()
-                .filter_map(|diagnostic| diagnostic_to_lsp(path, doc, &sources, diagnostic))
-                .collect()
-        }
-    }
+pub fn get_diagnostics_from_analysis(
+    path: &Path,
+    src: &str,
+    doc: &Document,
+    source_overrides: &HashMap<PathBuf, String>,
+    analysis: &query::Analysis,
+) -> Vec<Diagnostic> {
+    let mut diagnostics = analysis.diagnostics().clone();
+    let sources = diagnostics.source_map_arc().cloned().unwrap_or_else(|| {
+        Arc::new(source_map_for_diagnostics(
+            path,
+            src,
+            source_overrides,
+            &diagnostics,
+        ))
+    });
+    diagnostics.attach_source_map(Arc::clone(&sources));
+    diagnostics
+        .iter()
+        .filter_map(|diagnostic| diagnostic_to_lsp(path, doc, &sources, diagnostic))
+        .collect()
 }
 
 fn source_map_for_diagnostics(
@@ -219,11 +219,21 @@ pub fn hover_with_overrides(
     position: Position,
     source_overrides: &HashMap<PathBuf, String>,
 ) -> Option<Hover> {
+    let analysis = query::analyze_with_overrides(path, src, source_overrides);
+    hover_with_analysis(path, src, position, source_overrides, &analysis)
+}
+
+pub fn hover_with_analysis(
+    path: &Path,
+    src: &str,
+    position: Position,
+    source_overrides: &HashMap<PathBuf, String>,
+    analysis: &query::Analysis,
+) -> Option<Hover> {
     let doc = Document::new(src.to_string());
     let (line, character) = doc.utf8_position(position)?;
-    let type_info =
-        query::hover_type_with_overrides(path, src, line, character, source_overrides).ok();
-    let diagnostics = diagnostics_for_hover(path, src, position, source_overrides);
+    let type_info = query::hover_type_with_analysis(path, src, line, character, analysis).ok();
+    let diagnostics = diagnostics_for_hover(path, src, position, source_overrides, analysis);
     if type_info.is_none() && diagnostics.is_empty() {
         return None;
     }
@@ -261,11 +271,12 @@ fn diagnostics_for_hover(
     src: &str,
     position: Position,
     source_overrides: &HashMap<PathBuf, String>,
+    analysis: &query::Analysis,
 ) -> Vec<(diagnostics::Severity, String)> {
     let doc = Document::new(src.to_string());
     let mut messages = Vec::new();
     let mut seen: HashSet<(diagnostics::Severity, String)> = HashSet::new();
-    for diagnostic in get_diagnostics_with_overrides(path, src, &doc, source_overrides) {
+    for diagnostic in get_diagnostics_from_analysis(path, src, &doc, source_overrides, analysis) {
         if !position_in_range(position, diagnostic.range) {
             continue;
         }

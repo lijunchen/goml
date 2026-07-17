@@ -3097,6 +3097,48 @@ pub fn check_file_with_env_and_results(
     (hir_table, results.finish(), genv.current, diagnostics)
 }
 
+pub fn check_file_with_env_tast_and_results(
+    hir: hir::PackageHir,
+    hir_table: name_resolution::HirTable,
+    genv: env::GlobalTypeEnv,
+    builtins: env::GlobalTypeEnv,
+    package: &str,
+    deps: HashMap<String, env::GlobalTypeEnv>,
+) -> (
+    tast::File,
+    name_resolution::HirTable,
+    crate::typer::results::TypeckResults,
+    env::GlobalTypeEnv,
+    Diagnostics,
+) {
+    let TypecheckedPackage {
+        hir,
+        mut typer,
+        genv,
+        mut diagnostics,
+    } = typecheck_package(
+        hir,
+        hir_table,
+        genv,
+        builtins,
+        package,
+        deps,
+        ExternCapability::None,
+    );
+    let file = crate::typer::tast_builder::build_file(
+        &genv,
+        &hir,
+        &typer.hir_table,
+        typer.results.results(),
+    );
+    let file = subst_file(&mut typer, &mut diagnostics, file);
+    let Typer {
+        hir_table, results, ..
+    } = typer;
+
+    (file, hir_table, results.finish(), genv.current, diagnostics)
+}
+
 fn subst_file(typer: &mut Typer, diagnostics: &mut Diagnostics, file: tast::File) -> tast::File {
     let toplevels = file
         .toplevels

@@ -22,10 +22,11 @@ pub use definition::{
     goto_definition, goto_definition_locations, goto_definition_locations_with_overrides,
     goto_definition_with_overrides,
 };
-pub use hover::{hover_type, hover_type_with_overrides};
+pub use hover::{hover_type, hover_type_with_analysis, hover_type_with_overrides};
 pub use inlay::{inlay_hints, inlay_hints_with_overrides};
 pub use signature::{signature_help, signature_help_with_overrides};
 pub use testing::{TestItem, TestItemKind, test_items};
+pub use typecheck::{Analysis, analyze, analyze_with_overrides};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DotCompletionKind {

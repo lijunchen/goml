@@ -1,4 +1,12 @@
-use std::{collections::HashMap, path::PathBuf};
+use std::{
+    collections::HashMap,
+    path::PathBuf,
+    sync::{
+        Arc,
+        atomic::{AtomicU64, Ordering},
+    },
+    time::Duration,
+};
 
 use dashmap::DashMap;
 use lsp_server::{Document, handlers};
@@ -7,19 +15,33 @@ use tower_lsp::lsp_types::*;
 use tower_lsp::{Client, LanguageServer, LspService, Server};
 use tracing::info;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
+struct CachedAnalysis {
+    revision: u64,
+    analysis: Arc<compiler::query::Analysis>,
+}
+
+#[derive(Debug, Clone)]
 struct Backend {
     client: Client,
-    documents: DashMap<Url, Document>,
-    root_uri: tokio::sync::RwLock<Option<Url>>,
+    documents: Arc<DashMap<Url, Document>>,
+    analyses: Arc<DashMap<PathBuf, CachedAnalysis>>,
+    analysis_locks: Arc<DashMap<PathBuf, Arc<tokio::sync::Mutex<()>>>>,
+    analysis_revision: Arc<AtomicU64>,
+    diagnostic_generation: Arc<AtomicU64>,
+    root_uri: Arc<tokio::sync::RwLock<Option<Url>>>,
 }
 
 impl Backend {
     fn new(client: Client) -> Self {
         Self {
             client,
-            documents: DashMap::new(),
-            root_uri: tokio::sync::RwLock::new(None),
+            documents: Arc::new(DashMap::new()),
+            analyses: Arc::new(DashMap::new()),
+            analysis_locks: Arc::new(DashMap::new()),
+            analysis_revision: Arc::new(AtomicU64::new(0)),
+            diagnostic_generation: Arc::new(AtomicU64::new(0)),
+            root_uri: Arc::new(tokio::sync::RwLock::new(None)),
         }
     }
 
@@ -44,7 +66,65 @@ impl Backend {
         self.documents.get(uri).map(|doc| doc.content.clone())
     }
 
-    async fn publish_diagnostics(&self, uri: Url) {
+    fn invalidate_analyses(&self) {
+        self.analysis_revision.fetch_add(1, Ordering::AcqRel);
+        self.analyses.clear();
+    }
+
+    async fn analysis(
+        &self,
+        path: &std::path::Path,
+        src: &str,
+        source_overrides: &HashMap<PathBuf, String>,
+    ) -> Option<Arc<compiler::query::Analysis>> {
+        let revision = self.analysis_revision.load(Ordering::Acquire);
+        if let Some(cached) = self.analyses.get(path)
+            && cached.revision == revision
+        {
+            return Some(Arc::clone(&cached.analysis));
+        }
+
+        let cache_path = path.to_path_buf();
+        let analysis_lock = Arc::clone(
+            self.analysis_locks
+                .entry(cache_path.clone())
+                .or_insert_with(|| Arc::new(tokio::sync::Mutex::new(())))
+                .value(),
+        );
+        let _guard = analysis_lock.lock().await;
+        if self.analysis_revision.load(Ordering::Acquire) != revision {
+            return None;
+        }
+        if let Some(cached) = self.analyses.get(path)
+            && cached.revision == revision
+        {
+            return Some(Arc::clone(&cached.analysis));
+        }
+
+        let analysis_path = cache_path.clone();
+        let src = src.to_string();
+        let source_overrides = source_overrides.clone();
+        let analysis = tokio::task::spawn_blocking(move || {
+            compiler::query::analyze_with_overrides(&analysis_path, &src, &source_overrides)
+        })
+        .await
+        .ok()
+        .map(Arc::new)?;
+
+        if self.analysis_revision.load(Ordering::Acquire) != revision {
+            return None;
+        }
+        self.analyses.insert(
+            cache_path,
+            CachedAnalysis {
+                revision,
+                analysis: Arc::clone(&analysis),
+            },
+        );
+        Some(analysis)
+    }
+
+    async fn publish_diagnostics(&self, uri: Url, generation: u64) {
         let Some(content) = self.document_content(&uri) else {
             return;
         };
@@ -53,26 +133,48 @@ impl Backend {
         };
 
         let doc = Document::new(content.clone());
-        let diagnostics = handlers::get_diagnostics_with_overrides(
+        let source_overrides = self.source_overrides();
+        let Some(analysis) = self.analysis(&path, &content, &source_overrides).await else {
+            return;
+        };
+        if self.diagnostic_generation.load(Ordering::Acquire) != generation {
+            return;
+        }
+        let diagnostics = handlers::get_diagnostics_from_analysis(
             &path,
             &content,
             &doc,
-            &self.source_overrides(),
+            &source_overrides,
+            &analysis,
         );
         self.client
             .publish_diagnostics(uri, diagnostics, None)
             .await;
     }
 
-    async fn publish_all_diagnostics(&self) {
+    async fn publish_all_diagnostics(&self, generation: u64) {
         let uris = self
             .documents
             .iter()
             .map(|entry| entry.key().clone())
             .collect::<Vec<_>>();
         for uri in uris {
-            self.publish_diagnostics(uri).await;
+            if self.diagnostic_generation.load(Ordering::Acquire) != generation {
+                return;
+            }
+            self.publish_diagnostics(uri, generation).await;
         }
+    }
+
+    fn schedule_all_diagnostics(&self) {
+        let generation = self.diagnostic_generation.fetch_add(1, Ordering::AcqRel) + 1;
+        let backend = self.clone();
+        tokio::spawn(async move {
+            tokio::time::sleep(Duration::from_millis(150)).await;
+            if backend.diagnostic_generation.load(Ordering::Acquire) == generation {
+                backend.publish_all_diagnostics(generation).await;
+            }
+        });
     }
 }
 
@@ -131,7 +233,8 @@ impl LanguageServer for Backend {
         let uri = params.text_document.uri;
         let content = params.text_document.text;
         self.documents.insert(uri.clone(), Document::new(content));
-        self.publish_all_diagnostics().await;
+        self.invalidate_analyses();
+        self.schedule_all_diagnostics();
     }
 
     async fn did_change(&self, params: DidChangeTextDocumentParams) {
@@ -139,20 +242,23 @@ impl LanguageServer for Backend {
         if let Some(change) = params.content_changes.into_iter().last() {
             self.documents
                 .insert(uri.clone(), Document::new(change.text));
-            self.publish_all_diagnostics().await;
+            self.invalidate_analyses();
+            self.schedule_all_diagnostics();
         }
     }
 
     async fn did_close(&self, params: DidCloseTextDocumentParams) {
         let uri = params.text_document.uri;
         self.documents.remove(&uri);
+        self.invalidate_analyses();
         self.client.publish_diagnostics(uri, Vec::new(), None).await;
-        self.publish_all_diagnostics().await;
+        self.schedule_all_diagnostics();
     }
 
     async fn did_save(&self, params: DidSaveTextDocumentParams) {
         let _ = params;
-        self.publish_all_diagnostics().await;
+        self.invalidate_analyses();
+        self.schedule_all_diagnostics();
     }
 
     async fn hover(&self, params: HoverParams) -> Result<Option<Hover>> {
@@ -166,11 +272,16 @@ impl LanguageServer for Backend {
             return Ok(None);
         };
 
-        Ok(handlers::hover_with_overrides(
+        let source_overrides = self.source_overrides();
+        let Some(analysis) = self.analysis(&path, &content, &source_overrides).await else {
+            return Ok(None);
+        };
+        Ok(handlers::hover_with_analysis(
             &path,
             &content,
             position,
-            &self.source_overrides(),
+            &source_overrides,
+            &analysis,
         ))
     }
 
