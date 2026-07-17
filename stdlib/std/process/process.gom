@@ -1,6 +1,126 @@
 package process;
 
+use std::bytes;
 use std::internal::host;
+
+pub struct ExitStatus {
+    code_value: int32,
+}
+
+impl ExitStatus {
+    fn success(self: ExitStatus) -> bool {
+        self.code_value == 0
+    }
+
+    fn code(self: ExitStatus) -> Option[int32] {
+        if self.code_value < 0 {
+            Option::None
+        } else {
+            Option::Some(self.code_value)
+        }
+    }
+}
+
+pub struct Output {
+    status_value: ExitStatus,
+    stdout_value: bytes::Bytes,
+    stderr_value: bytes::Bytes,
+}
+
+impl Output {
+    fn status(self: Output) -> ExitStatus {
+        self.status_value
+    }
+
+    fn stdout(self: Output) -> bytes::Bytes {
+        self.stdout_value
+    }
+
+    fn stderr(self: Output) -> bytes::Bytes {
+        self.stderr_value
+    }
+}
+
+pub struct Command {
+    program: string,
+    arguments: Vec[string],
+    has_directory: bool,
+    directory: string,
+    environment: Vec[(string, string)],
+}
+
+impl Command {
+    fn new(program: string) -> Command {
+        Command {
+            program,
+            arguments: Vec::new(),
+            has_directory: false,
+            directory: "",
+            environment: Vec::new(),
+        }
+    }
+
+    fn arg(self: Command, argument: string) -> Command {
+        self.arguments.push(argument);
+        self
+    }
+
+    fn args(self: Command, arguments: Vec[string]) -> Command {
+        for argument in arguments {
+            self.arguments.push(argument)
+        };
+        self
+    }
+
+    fn current_dir(self: Command, directory: string) -> Command {
+        Command {
+            program: self.program,
+            arguments: self.arguments,
+            has_directory: true,
+            directory,
+            environment: self.environment,
+        }
+    }
+
+    fn env(self: Command, key: string, value: string) -> Command {
+        self.environment.push((key, value));
+        self
+    }
+
+    fn output(self: Command) -> Result[Output, string] {
+        let (ok, code, stdout, stderr, err) = host::process_output(
+            self.program,
+            self.arguments,
+            self.has_directory,
+            self.directory,
+            self.environment,
+        );
+        if ok {
+            Result::Ok(Output {
+                status_value: ExitStatus { code_value: code },
+                stdout_value: bytes::Bytes::from_vec(stdout),
+                stderr_value: bytes::Bytes::from_vec(stderr),
+            })
+        } else {
+            Result::Err(err)
+        }
+    }
+
+    fn status(self: Command) -> Result[ExitStatus, string] {
+        let (ok, code, err) = host::process_status(
+            self.program,
+            self.arguments,
+            self.has_directory,
+            self.directory,
+            self.environment,
+        );
+        if ok {
+            Result::Ok(ExitStatus { code_value: code })
+        } else {
+            Result::Err(err)
+        }
+    }
+}
 
 pub fn exit(code: int32) -> unit {
     host::exit(code)

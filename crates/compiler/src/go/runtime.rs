@@ -47,8 +47,16 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Import(ImportDecl {
             specs: vec![
                 ImportSpec {
+                    alias: Some("_goml_bytes".to_string()),
+                    path: "bytes".to_string(),
+                },
+                ImportSpec {
                     alias: Some("_goml_fmt".to_string()),
                     path: "fmt".to_string(),
+                },
+                ImportSpec {
+                    alias: Some("_goml_io".to_string()),
+                    path: "io".to_string(),
                 },
                 ImportSpec {
                     alias: Some("_goml_math".to_string()),
@@ -57,6 +65,14 @@ pub fn make_runtime() -> Vec<goast::Item> {
                 ImportSpec {
                     alias: Some("_goml_os".to_string()),
                     path: "os".to_string(),
+                },
+                ImportSpec {
+                    alias: Some("_goml_exec".to_string()),
+                    path: "os/exec".to_string(),
+                },
+                ImportSpec {
+                    alias: Some("_goml_filepath".to_string()),
+                    path: "path/filepath".to_string(),
                 },
                 ImportSpec {
                     alias: Some("_goml_reflect".to_string()),
@@ -113,15 +129,37 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(string_print()),
         Item::Fn(string_println()),
         Item::Fn(std_env_args_raw()),
+        Item::Fn(std_env_current_dir_raw()),
+        Item::Fn(std_env_current_exe_raw()),
+        Item::Fn(std_env_var_raw()),
         Item::Fn(std_fs_read_file_raw()),
         Item::Fn(std_fs_write_file_raw()),
+        Item::Fn(std_fs_read_bytes_raw()),
+        Item::Fn(std_fs_write_bytes_raw()),
         Item::Fn(std_fs_create_dir_all_raw()),
         Item::Fn(std_fs_file_exists_raw()),
+        Item::Fn(std_fs_is_file_raw()),
+        Item::Fn(std_fs_is_dir_raw()),
+        Item::Fn(std_fs_canonicalize_raw()),
         Item::Fn(std_fs_read_dir_raw()),
         Item::Fn(std_io_print_raw()),
         Item::Fn(std_io_println_raw()),
         Item::Fn(std_io_eprint_raw()),
+        Item::Fn(std_io_read_stdin_raw()),
+        Item::Fn(std_io_write_stdout_raw()),
+        Item::Fn(std_io_write_stderr_raw()),
+        Item::Fn(std_path_join_raw()),
+        Item::Fn(std_path_clean_raw()),
+        Item::Fn(std_path_is_absolute_raw()),
+        Item::Fn(std_path_parent_raw()),
+        Item::Fn(std_path_file_name_raw()),
+        Item::Fn(std_path_extension_raw()),
+        Item::Fn(std_path_file_stem_raw()),
+        Item::Fn(std_path_with_extension_raw()),
+        Item::Fn(std_path_absolute_raw()),
         Item::Fn(std_process_exit_raw()),
+        Item::Fn(std_process_output_raw()),
+        Item::Fn(std_process_status_raw()),
         Item::Fn(std_testing_fail_raw()),
         Item::Fn(missing()),
     ];
@@ -204,6 +242,189 @@ fn error_string_expr(err_name: &str) -> goast::Expr {
     }
 }
 
+fn runtime_var(name: &str, ty: goty::GoType) -> goast::Expr {
+    goast::Expr::Var {
+        name: name.to_string(),
+        ty,
+    }
+}
+
+fn runtime_bool(value: bool) -> goast::Expr {
+    goast::Expr::Bool {
+        value,
+        ty: goty::GoType::TBool,
+    }
+}
+
+fn runtime_string(value: &str) -> goast::Expr {
+    goast::Expr::String {
+        value: value.to_string(),
+        ty: goty::GoType::TString,
+    }
+}
+
+fn runtime_int32(value: &str) -> goast::Expr {
+    goast::Expr::Int {
+        value: value.to_string(),
+        ty: goty::GoType::TInt32,
+    }
+}
+
+fn runtime_call(
+    name: &str,
+    params: Vec<goty::GoType>,
+    ret_ty: goty::GoType,
+    args: Vec<goast::Expr>,
+) -> goast::Expr {
+    goast::Expr::Call {
+        func: Box::new(runtime_var(
+            name,
+            goty::GoType::TFunc {
+                params,
+                ret_ty: Box::new(ret_ty.clone()),
+            },
+        )),
+        args,
+        ty: ret_ty,
+    }
+}
+
+fn runtime_field(obj: goast::Expr, field: &str, ty: goty::GoType) -> goast::Expr {
+    goast::Expr::FieldAccess {
+        obj: Box::new(obj),
+        field: field.to_string(),
+        ty,
+    }
+}
+
+fn runtime_method_call(
+    obj: goast::Expr,
+    name: &str,
+    params: Vec<goty::GoType>,
+    ret_ty: goty::GoType,
+    args: Vec<goast::Expr>,
+) -> goast::Expr {
+    goast::Expr::Call {
+        func: Box::new(runtime_field(
+            obj,
+            name,
+            goty::GoType::TFunc {
+                params,
+                ret_ty: Box::new(ret_ty.clone()),
+            },
+        )),
+        args,
+        ty: ret_ty,
+    }
+}
+
+fn runtime_error_cond(err_name: &str) -> goast::Expr {
+    let err_ty = go_error_ty();
+    goast::Expr::BinaryOp {
+        op: GoBinaryOp::NotEq,
+        lhs: Box::new(runtime_var(err_name, err_ty.clone())),
+        rhs: Box::new(goast::Expr::Nil { ty: err_ty }),
+        ty: goty::GoType::TBool,
+    }
+}
+
+fn byte_vec_ty() -> tast::Ty {
+    tast::Ty::TVec {
+        elem: Box::new(tast::Ty::TUint8),
+    }
+}
+
+fn string_vec_ty() -> tast::Ty {
+    tast::Ty::TVec {
+        elem: Box::new(tast::Ty::TString),
+    }
+}
+
+fn byte_slice_go_ty() -> goty::GoType {
+    goty::GoType::TSlice {
+        elem: Box::new(goty::GoType::TUint8),
+    }
+}
+
+fn string_slice_go_ty() -> goty::GoType {
+    goty::GoType::TSlice {
+        elem: Box::new(goty::GoType::TString),
+    }
+}
+
+fn byte_vec_items(name: &str) -> goast::Expr {
+    runtime_field(
+        runtime_var(name, goast::tast_ty_to_go_type(&byte_vec_ty())),
+        "items",
+        byte_slice_go_ty(),
+    )
+}
+
+fn string_vec_items(name: &str) -> goast::Expr {
+    runtime_field(
+        runtime_var(name, goast::tast_ty_to_go_type(&string_vec_ty())),
+        "items",
+        string_slice_go_ty(),
+    )
+}
+
+fn string_result_runtime_fn(id: RuntimeHookId, go_name: &str) -> goast::Fn {
+    let err_ty = go_error_ty();
+    let multi_ty = goty::GoType::TMulti {
+        elems: vec![goty::GoType::TString, err_ty.clone()],
+    };
+    let ret_ty = tuple_ty(vec![tast::Ty::TBool, tast::Ty::TString, tast::Ty::TString]);
+    goast::Fn {
+        name: runtime_hook_fn_name(id),
+        params: vec![],
+        ret_ty: Some(goast::tast_ty_to_go_type(&ret_ty)),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::VarDecl {
+                    name: "value".to_string(),
+                    ty: goty::GoType::TString,
+                    value: None,
+                },
+                goast::Stmt::VarDecl {
+                    name: "err".to_string(),
+                    ty: err_ty.clone(),
+                    value: None,
+                },
+                goast::Stmt::MultiAssignment {
+                    names: vec!["value".to_string(), "err".to_string()],
+                    value: runtime_call(go_name, vec![], multi_ty, vec![]),
+                },
+                goast::Stmt::If {
+                    cond: runtime_error_cond("err"),
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(tuple_literal(
+                                &ret_ty,
+                                vec![
+                                    runtime_bool(false),
+                                    runtime_string(""),
+                                    error_string_expr("err"),
+                                ],
+                            )),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Return {
+                    expr: Some(tuple_literal(
+                        &ret_ty,
+                        vec![
+                            runtime_bool(true),
+                            runtime_var("value", goty::GoType::TString),
+                            runtime_string(""),
+                        ],
+                    )),
+                },
+            ],
+        },
+    }
+}
+
 fn std_env_args_raw() -> goast::Fn {
     let elem = tast::Ty::TString;
     let vec_ty = tast::Ty::TVec {
@@ -226,6 +447,58 @@ fn std_env_args_raw() -> goast::Fn {
                     },
                 )),
             }],
+        },
+    }
+}
+
+fn std_env_current_dir_raw() -> goast::Fn {
+    string_result_runtime_fn(RuntimeHookId::StdEnvCurrentDir, "_goml_os.Getwd")
+}
+
+fn std_env_current_exe_raw() -> goast::Fn {
+    string_result_runtime_fn(RuntimeHookId::StdEnvCurrentExe, "_goml_os.Executable")
+}
+
+fn std_env_var_raw() -> goast::Fn {
+    let multi_ty = goty::GoType::TMulti {
+        elems: vec![goty::GoType::TString, goty::GoType::TBool],
+    };
+    let ret_ty = tuple_ty(vec![tast::Ty::TBool, tast::Ty::TString]);
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::StdEnvVar),
+        params: vec![("name".to_string(), goty::GoType::TString)],
+        ret_ty: Some(goast::tast_ty_to_go_type(&ret_ty)),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::VarDecl {
+                    name: "value".to_string(),
+                    ty: goty::GoType::TString,
+                    value: None,
+                },
+                goast::Stmt::VarDecl {
+                    name: "found".to_string(),
+                    ty: goty::GoType::TBool,
+                    value: None,
+                },
+                goast::Stmt::MultiAssignment {
+                    names: vec!["value".to_string(), "found".to_string()],
+                    value: runtime_call(
+                        "_goml_os.LookupEnv",
+                        vec![goty::GoType::TString],
+                        multi_ty,
+                        vec![runtime_var("name", goty::GoType::TString)],
+                    ),
+                },
+                goast::Stmt::Return {
+                    expr: Some(tuple_literal(
+                        &ret_ty,
+                        vec![
+                            runtime_var("found", goty::GoType::TBool),
+                            runtime_var("value", goty::GoType::TString),
+                        ],
+                    )),
+                },
+            ],
         },
     }
 }
@@ -442,6 +715,131 @@ fn std_fs_write_file_raw() -> goast::Fn {
     }
 }
 
+fn std_fs_read_bytes_raw() -> goast::Fn {
+    let data_ty = byte_slice_go_ty();
+    let err_ty = go_error_ty();
+    let multi_ty = goty::GoType::TMulti {
+        elems: vec![data_ty.clone(), err_ty.clone()],
+    };
+    let ret_ty = tuple_ty(vec![tast::Ty::TBool, byte_vec_ty(), tast::Ty::TString]);
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::StdFsReadBytes),
+        params: vec![("path".to_string(), goty::GoType::TString)],
+        ret_ty: Some(goast::tast_ty_to_go_type(&ret_ty)),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::VarDecl {
+                    name: "data".to_string(),
+                    ty: data_ty.clone(),
+                    value: None,
+                },
+                goast::Stmt::VarDecl {
+                    name: "err".to_string(),
+                    ty: err_ty,
+                    value: None,
+                },
+                goast::Stmt::MultiAssignment {
+                    names: vec!["data".to_string(), "err".to_string()],
+                    value: runtime_call(
+                        "_goml_os.ReadFile",
+                        vec![goty::GoType::TString],
+                        multi_ty,
+                        vec![runtime_var("path", goty::GoType::TString)],
+                    ),
+                },
+                goast::Stmt::If {
+                    cond: runtime_error_cond("err"),
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(tuple_literal(
+                                &ret_ty,
+                                vec![
+                                    runtime_bool(false),
+                                    vec_from_slice_expr(
+                                        &tast::Ty::TUint8,
+                                        goast::Expr::Nil {
+                                            ty: data_ty.clone(),
+                                        },
+                                    ),
+                                    error_string_expr("err"),
+                                ],
+                            )),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Return {
+                    expr: Some(tuple_literal(
+                        &ret_ty,
+                        vec![
+                            runtime_bool(true),
+                            vec_from_slice_expr(&tast::Ty::TUint8, runtime_var("data", data_ty)),
+                            runtime_string(""),
+                        ],
+                    )),
+                },
+            ],
+        },
+    }
+}
+
+fn std_fs_write_bytes_raw() -> goast::Fn {
+    let bytes_go_ty = goast::tast_ty_to_go_type(&byte_vec_ty());
+    let err_ty = go_error_ty();
+    let ret_ty = tuple_ty(vec![tast::Ty::TBool, tast::Ty::TString]);
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::StdFsWriteBytes),
+        params: vec![
+            ("path".to_string(), goty::GoType::TString),
+            ("data".to_string(), bytes_go_ty),
+        ],
+        ret_ty: Some(goast::tast_ty_to_go_type(&ret_ty)),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::VarDecl {
+                    name: "err".to_string(),
+                    ty: err_ty.clone(),
+                    value: Some(runtime_call(
+                        "_goml_os.WriteFile",
+                        vec![
+                            goty::GoType::TString,
+                            byte_slice_go_ty(),
+                            goty::GoType::TUint32,
+                        ],
+                        err_ty,
+                        vec![
+                            runtime_var("path", goty::GoType::TString),
+                            byte_vec_items("data"),
+                            goast::Expr::Int {
+                                value: "0644".to_string(),
+                                ty: goty::GoType::TUint32,
+                            },
+                        ],
+                    )),
+                },
+                goast::Stmt::If {
+                    cond: runtime_error_cond("err"),
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(tuple_literal(
+                                &ret_ty,
+                                vec![runtime_bool(false), error_string_expr("err")],
+                            )),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Return {
+                    expr: Some(tuple_literal(
+                        &ret_ty,
+                        vec![runtime_bool(true), runtime_string("")],
+                    )),
+                },
+            ],
+        },
+    }
+}
+
 fn std_fs_create_dir_all_raw() -> goast::Fn {
     let err_ty = go_error_ty();
     let ret_ty = tuple_ty(vec![tast::Ty::TBool, tast::Ty::TString]);
@@ -566,6 +964,175 @@ fn std_fs_file_exists_raw() -> goast::Fn {
                         rhs: Box::new(goast::Expr::Nil { ty: err_ty }),
                         ty: goty::GoType::TBool,
                     }),
+                },
+            ],
+        },
+    }
+}
+
+fn std_fs_is_file_raw() -> goast::Fn {
+    std_fs_stat_kind_raw(RuntimeHookId::StdFsIsFile, false)
+}
+
+fn std_fs_is_dir_raw() -> goast::Fn {
+    std_fs_stat_kind_raw(RuntimeHookId::StdFsIsDir, true)
+}
+
+fn std_fs_stat_kind_raw(id: RuntimeHookId, directory: bool) -> goast::Fn {
+    let info_ty = os_file_info_ty();
+    let err_ty = go_error_ty();
+    let multi_ty = goty::GoType::TMulti {
+        elems: vec![info_ty.clone(), err_ty.clone()],
+    };
+    let predicate = if directory {
+        runtime_method_call(
+            runtime_var("info", info_ty.clone()),
+            "IsDir",
+            vec![],
+            goty::GoType::TBool,
+            vec![],
+        )
+    } else {
+        let mode_ty = goty::GoType::TName {
+            name: "_goml_os.FileMode".to_string(),
+        };
+        let mode = runtime_method_call(
+            runtime_var("info", info_ty.clone()),
+            "Mode",
+            vec![],
+            mode_ty.clone(),
+            vec![],
+        );
+        runtime_method_call(mode, "IsRegular", vec![], goty::GoType::TBool, vec![])
+    };
+    goast::Fn {
+        name: runtime_hook_fn_name(id),
+        params: vec![("path".to_string(), goty::GoType::TString)],
+        ret_ty: Some(goty::GoType::TBool),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::VarDecl {
+                    name: "info".to_string(),
+                    ty: info_ty,
+                    value: None,
+                },
+                goast::Stmt::VarDecl {
+                    name: "err".to_string(),
+                    ty: err_ty,
+                    value: None,
+                },
+                goast::Stmt::MultiAssignment {
+                    names: vec!["info".to_string(), "err".to_string()],
+                    value: runtime_call(
+                        "_goml_os.Stat",
+                        vec![goty::GoType::TString],
+                        multi_ty,
+                        vec![runtime_var("path", goty::GoType::TString)],
+                    ),
+                },
+                goast::Stmt::If {
+                    cond: runtime_error_cond("err"),
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(runtime_bool(false)),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Return {
+                    expr: Some(predicate),
+                },
+            ],
+        },
+    }
+}
+
+fn std_fs_canonicalize_raw() -> goast::Fn {
+    let err_ty = go_error_ty();
+    let multi_ty = goty::GoType::TMulti {
+        elems: vec![goty::GoType::TString, err_ty.clone()],
+    };
+    let ret_ty = tuple_ty(vec![tast::Ty::TBool, tast::Ty::TString, tast::Ty::TString]);
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::StdFsCanonicalize),
+        params: vec![("path".to_string(), goty::GoType::TString)],
+        ret_ty: Some(goast::tast_ty_to_go_type(&ret_ty)),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::VarDecl {
+                    name: "absolute".to_string(),
+                    ty: goty::GoType::TString,
+                    value: None,
+                },
+                goast::Stmt::VarDecl {
+                    name: "result".to_string(),
+                    ty: goty::GoType::TString,
+                    value: None,
+                },
+                goast::Stmt::VarDecl {
+                    name: "err".to_string(),
+                    ty: err_ty,
+                    value: None,
+                },
+                goast::Stmt::MultiAssignment {
+                    names: vec!["absolute".to_string(), "err".to_string()],
+                    value: runtime_call(
+                        "_goml_filepath.Abs",
+                        vec![goty::GoType::TString],
+                        multi_ty.clone(),
+                        vec![runtime_var("path", goty::GoType::TString)],
+                    ),
+                },
+                goast::Stmt::If {
+                    cond: runtime_error_cond("err"),
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(tuple_literal(
+                                &ret_ty,
+                                vec![
+                                    runtime_bool(false),
+                                    runtime_string(""),
+                                    error_string_expr("err"),
+                                ],
+                            )),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::MultiAssignment {
+                    names: vec!["result".to_string(), "err".to_string()],
+                    value: runtime_call(
+                        "_goml_filepath.EvalSymlinks",
+                        vec![goty::GoType::TString],
+                        multi_ty,
+                        vec![runtime_var("absolute", goty::GoType::TString)],
+                    ),
+                },
+                goast::Stmt::If {
+                    cond: runtime_error_cond("err"),
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(tuple_literal(
+                                &ret_ty,
+                                vec![
+                                    runtime_bool(false),
+                                    runtime_string(""),
+                                    error_string_expr("err"),
+                                ],
+                            )),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Return {
+                    expr: Some(tuple_literal(
+                        &ret_ty,
+                        vec![
+                            runtime_bool(true),
+                            runtime_var("result", goty::GoType::TString),
+                            runtime_string(""),
+                        ],
+                    )),
                 },
             ],
         },
@@ -807,6 +1374,273 @@ fn std_fs_read_dir_raw() -> goast::Fn {
     }
 }
 
+fn process_environment_ty() -> tast::Ty {
+    tast::Ty::TVec {
+        elem: Box::new(tuple_ty(vec![tast::Ty::TString, tast::Ty::TString])),
+    }
+}
+
+fn process_command_go_ty() -> goty::GoType {
+    goty::GoType::TPointer {
+        elem: Box::new(goty::GoType::TName {
+            name: "_goml_exec.Cmd".to_string(),
+        }),
+    }
+}
+
+fn process_runtime_params() -> Vec<(String, goty::GoType)> {
+    vec![
+        ("program".to_string(), goty::GoType::TString),
+        (
+            "arguments".to_string(),
+            goast::tast_ty_to_go_type(&string_vec_ty()),
+        ),
+        ("has_directory".to_string(), goty::GoType::TBool),
+        ("directory".to_string(), goty::GoType::TString),
+        (
+            "environment".to_string(),
+            goast::tast_ty_to_go_type(&process_environment_ty()),
+        ),
+    ]
+}
+
+fn process_environment_items() -> goast::Expr {
+    let env_ty = process_environment_ty();
+    let tast::Ty::TVec { elem } = &env_ty else {
+        unreachable!()
+    };
+    runtime_field(
+        runtime_var("environment", goast::tast_ty_to_go_type(&env_ty)),
+        "items",
+        goty::GoType::TSlice {
+            elem: Box::new(goast::tast_ty_to_go_type(elem)),
+        },
+    )
+}
+
+fn process_cmd_env() -> goast::Expr {
+    runtime_field(
+        runtime_var("cmd", process_command_go_ty()),
+        "Env",
+        string_slice_go_ty(),
+    )
+}
+
+fn process_state() -> goast::Expr {
+    runtime_field(
+        runtime_var("cmd", process_command_go_ty()),
+        "ProcessState",
+        goty::GoType::TPointer {
+            elem: Box::new(goty::GoType::TName {
+                name: "_goml_os.ProcessState".to_string(),
+            }),
+        },
+    )
+}
+
+fn process_command_setup() -> Vec<goast::Stmt> {
+    let cmd_ty = process_command_go_ty();
+    let env_ty = process_environment_ty();
+    let tast::Ty::TVec { elem: env_elem } = &env_ty else {
+        unreachable!()
+    };
+    let env_slice_go_ty = goty::GoType::TSlice {
+        elem: Box::new(goast::tast_ty_to_go_type(env_elem)),
+    };
+    vec![
+        goast::Stmt::VarDecl {
+            name: "cmd".to_string(),
+            ty: cmd_ty.clone(),
+            value: Some(runtime_call(
+                "_goml_exec.Command",
+                vec![goty::GoType::TString, string_slice_go_ty()],
+                cmd_ty.clone(),
+                vec![
+                    runtime_var("program", goty::GoType::TString),
+                    goast::Expr::Spread {
+                        expr: Box::new(string_vec_items("arguments")),
+                        ty: string_slice_go_ty(),
+                    },
+                ],
+            )),
+        },
+        goast::Stmt::If {
+            cond: runtime_var("has_directory", goty::GoType::TBool),
+            then: goast::Block {
+                stmts: vec![goast::Stmt::FieldAssign {
+                    target: runtime_field(
+                        runtime_var("cmd", cmd_ty.clone()),
+                        "Dir",
+                        goty::GoType::TString,
+                    ),
+                    value: runtime_var("directory", goty::GoType::TString),
+                }],
+            },
+            else_: None,
+        },
+        goast::Stmt::If {
+            cond: goast::Expr::BinaryOp {
+                op: GoBinaryOp::Greater,
+                lhs: Box::new(runtime_call(
+                    "len",
+                    vec![env_slice_go_ty.clone()],
+                    goty::GoType::TInt32,
+                    vec![process_environment_items()],
+                )),
+                rhs: Box::new(runtime_int32("0")),
+                ty: goty::GoType::TBool,
+            },
+            then: goast::Block {
+                stmts: vec![
+                    goast::Stmt::FieldAssign {
+                        target: process_cmd_env(),
+                        value: runtime_call(
+                            "_goml_os.Environ",
+                            vec![],
+                            string_slice_go_ty(),
+                            vec![],
+                        ),
+                    },
+                    goast::Stmt::Range {
+                        key: "_".to_string(),
+                        value: "entry".to_string(),
+                        expr: process_environment_items(),
+                        body: goast::Block {
+                            stmts: vec![goast::Stmt::FieldAssign {
+                                target: process_cmd_env(),
+                                value: runtime_call(
+                                    "append",
+                                    vec![string_slice_go_ty(), goty::GoType::TString],
+                                    string_slice_go_ty(),
+                                    vec![
+                                        process_cmd_env(),
+                                        goast::Expr::BinaryOp {
+                                            op: GoBinaryOp::Add,
+                                            lhs: Box::new(goast::Expr::BinaryOp {
+                                                op: GoBinaryOp::Add,
+                                                lhs: Box::new(runtime_field(
+                                                    runtime_var(
+                                                        "entry",
+                                                        goast::tast_ty_to_go_type(env_elem),
+                                                    ),
+                                                    "_0",
+                                                    goty::GoType::TString,
+                                                )),
+                                                rhs: Box::new(runtime_string("=")),
+                                                ty: goty::GoType::TString,
+                                            }),
+                                            rhs: Box::new(runtime_field(
+                                                runtime_var(
+                                                    "entry",
+                                                    goast::tast_ty_to_go_type(env_elem),
+                                                ),
+                                                "_1",
+                                                goty::GoType::TString,
+                                            )),
+                                            ty: goty::GoType::TString,
+                                        },
+                                    ],
+                                ),
+                            }],
+                        },
+                    },
+                ],
+            },
+            else_: None,
+        },
+    ]
+}
+
+fn process_run_error_stmts(ret_ty: &tast::Ty, output: bool) -> Vec<goast::Stmt> {
+    let state_ty = goty::GoType::TPointer {
+        elem: Box::new(goty::GoType::TName {
+            name: "_goml_os.ProcessState".to_string(),
+        }),
+    };
+    let failure_fields = if output {
+        vec![
+            runtime_bool(false),
+            runtime_int32("-1"),
+            vec_from_slice_expr(
+                &tast::Ty::TUint8,
+                runtime_method_call(
+                    runtime_var(
+                        "stdout",
+                        goty::GoType::TName {
+                            name: "_goml_bytes.Buffer".to_string(),
+                        },
+                    ),
+                    "Bytes",
+                    vec![],
+                    byte_slice_go_ty(),
+                    vec![],
+                ),
+            ),
+            vec_from_slice_expr(
+                &tast::Ty::TUint8,
+                runtime_method_call(
+                    runtime_var(
+                        "stderr",
+                        goty::GoType::TName {
+                            name: "_goml_bytes.Buffer".to_string(),
+                        },
+                    ),
+                    "Bytes",
+                    vec![],
+                    byte_slice_go_ty(),
+                    vec![],
+                ),
+            ),
+            error_string_expr("err"),
+        ]
+    } else {
+        vec![
+            runtime_bool(false),
+            runtime_int32("-1"),
+            error_string_expr("err"),
+        ]
+    };
+    vec![goast::Stmt::If {
+        cond: runtime_error_cond("err"),
+        then: goast::Block {
+            stmts: vec![
+                goast::Stmt::If {
+                    cond: goast::Expr::BinaryOp {
+                        op: GoBinaryOp::Eq,
+                        lhs: Box::new(process_state()),
+                        rhs: Box::new(goast::Expr::Nil {
+                            ty: state_ty.clone(),
+                        }),
+                        ty: goty::GoType::TBool,
+                    },
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(tuple_literal(ret_ty, failure_fields)),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Assignment {
+                    name: "code".to_string(),
+                    value: runtime_call(
+                        "int32",
+                        vec![goty::GoType::TInt32],
+                        goty::GoType::TInt32,
+                        vec![runtime_method_call(
+                            process_state(),
+                            "ExitCode",
+                            vec![],
+                            goty::GoType::TInt32,
+                            vec![],
+                        )],
+                    ),
+                },
+            ],
+        },
+        else_: None,
+    }]
+}
+
 fn std_process_exit_raw() -> goast::Fn {
     goast::Fn {
         name: runtime_hook_fn_name(RuntimeHookId::StdProcessExit),
@@ -845,6 +1679,188 @@ fn std_process_exit_raw() -> goast::Fn {
                 },
             ],
         },
+    }
+}
+
+fn process_buffer_bytes(name: &str) -> goast::Expr {
+    runtime_method_call(
+        runtime_var(
+            name,
+            goty::GoType::TName {
+                name: "_goml_bytes.Buffer".to_string(),
+            },
+        ),
+        "Bytes",
+        vec![],
+        byte_slice_go_ty(),
+        vec![],
+    )
+}
+
+fn std_process_output_raw() -> goast::Fn {
+    let buffer_ty = goty::GoType::TName {
+        name: "_goml_bytes.Buffer".to_string(),
+    };
+    let writer_ty = goty::GoType::TName {
+        name: "any".to_string(),
+    };
+    let ret_ty = tuple_ty(vec![
+        tast::Ty::TBool,
+        tast::Ty::TInt32,
+        byte_vec_ty(),
+        byte_vec_ty(),
+        tast::Ty::TString,
+    ]);
+    let mut stmts = process_command_setup();
+    stmts.extend([
+        goast::Stmt::VarDecl {
+            name: "stdout".to_string(),
+            ty: buffer_ty.clone(),
+            value: None,
+        },
+        goast::Stmt::VarDecl {
+            name: "stderr".to_string(),
+            ty: buffer_ty.clone(),
+            value: None,
+        },
+        goast::Stmt::FieldAssign {
+            target: runtime_field(
+                runtime_var("cmd", process_command_go_ty()),
+                "Stdout",
+                writer_ty.clone(),
+            ),
+            value: goast::Expr::UnaryOp {
+                op: goast::GoUnaryOp::AddrOf,
+                expr: Box::new(runtime_var("stdout", buffer_ty.clone())),
+                ty: goty::GoType::TPointer {
+                    elem: Box::new(buffer_ty.clone()),
+                },
+            },
+        },
+        goast::Stmt::FieldAssign {
+            target: runtime_field(
+                runtime_var("cmd", process_command_go_ty()),
+                "Stderr",
+                writer_ty,
+            ),
+            value: goast::Expr::UnaryOp {
+                op: goast::GoUnaryOp::AddrOf,
+                expr: Box::new(runtime_var("stderr", buffer_ty)),
+                ty: goty::GoType::TPointer {
+                    elem: Box::new(goty::GoType::TName {
+                        name: "_goml_bytes.Buffer".to_string(),
+                    }),
+                },
+            },
+        },
+        goast::Stmt::VarDecl {
+            name: "err".to_string(),
+            ty: go_error_ty(),
+            value: Some(runtime_method_call(
+                runtime_var("cmd", process_command_go_ty()),
+                "Run",
+                vec![],
+                go_error_ty(),
+                vec![],
+            )),
+        },
+        goast::Stmt::VarDecl {
+            name: "code".to_string(),
+            ty: goty::GoType::TInt32,
+            value: Some(runtime_int32("0")),
+        },
+    ]);
+    stmts.extend(process_run_error_stmts(&ret_ty, true));
+    stmts.push(goast::Stmt::Return {
+        expr: Some(tuple_literal(
+            &ret_ty,
+            vec![
+                runtime_bool(true),
+                runtime_var("code", goty::GoType::TInt32),
+                vec_from_slice_expr(&tast::Ty::TUint8, process_buffer_bytes("stdout")),
+                vec_from_slice_expr(&tast::Ty::TUint8, process_buffer_bytes("stderr")),
+                runtime_string(""),
+            ],
+        )),
+    });
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::StdProcessOutput),
+        params: process_runtime_params(),
+        ret_ty: Some(goast::tast_ty_to_go_type(&ret_ty)),
+        body: goast::Block { stmts },
+    }
+}
+
+fn std_process_status_raw() -> goast::Fn {
+    let reader_ty = goty::GoType::TName {
+        name: "any".to_string(),
+    };
+    let writer_ty = goty::GoType::TName {
+        name: "any".to_string(),
+    };
+    let file_ty = goty::GoType::TName {
+        name: "_goml_os.File".to_string(),
+    };
+    let ret_ty = tuple_ty(vec![tast::Ty::TBool, tast::Ty::TInt32, tast::Ty::TString]);
+    let mut stmts = process_command_setup();
+    stmts.extend([
+        goast::Stmt::FieldAssign {
+            target: runtime_field(
+                runtime_var("cmd", process_command_go_ty()),
+                "Stdin",
+                reader_ty,
+            ),
+            value: runtime_var("_goml_os.Stdin", file_ty.clone()),
+        },
+        goast::Stmt::FieldAssign {
+            target: runtime_field(
+                runtime_var("cmd", process_command_go_ty()),
+                "Stdout",
+                writer_ty.clone(),
+            ),
+            value: runtime_var("_goml_os.Stdout", file_ty.clone()),
+        },
+        goast::Stmt::FieldAssign {
+            target: runtime_field(
+                runtime_var("cmd", process_command_go_ty()),
+                "Stderr",
+                writer_ty,
+            ),
+            value: runtime_var("_goml_os.Stderr", file_ty),
+        },
+        goast::Stmt::VarDecl {
+            name: "err".to_string(),
+            ty: go_error_ty(),
+            value: Some(runtime_method_call(
+                runtime_var("cmd", process_command_go_ty()),
+                "Run",
+                vec![],
+                go_error_ty(),
+                vec![],
+            )),
+        },
+        goast::Stmt::VarDecl {
+            name: "code".to_string(),
+            ty: goty::GoType::TInt32,
+            value: Some(runtime_int32("0")),
+        },
+    ]);
+    stmts.extend(process_run_error_stmts(&ret_ty, false));
+    stmts.push(goast::Stmt::Return {
+        expr: Some(tuple_literal(
+            &ret_ty,
+            vec![
+                runtime_bool(true),
+                runtime_var("code", goty::GoType::TInt32),
+                runtime_string(""),
+            ],
+        )),
+    });
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::StdProcessStatus),
+        params: process_runtime_params(),
+        ret_ty: Some(goast::tast_ty_to_go_type(&ret_ty)),
+        body: goast::Block { stmts },
     }
 }
 
@@ -1001,6 +2017,684 @@ fn std_io_eprint_raw() -> goast::Fn {
                     expr: Some(goast::Expr::Unit {
                         ty: goty::GoType::TUnit,
                     }),
+                },
+            ],
+        },
+    }
+}
+
+fn std_io_read_stdin_raw() -> goast::Fn {
+    let data_ty = byte_slice_go_ty();
+    let err_ty = go_error_ty();
+    let multi_ty = goty::GoType::TMulti {
+        elems: vec![data_ty.clone(), err_ty.clone()],
+    };
+    let ret_ty = tuple_ty(vec![tast::Ty::TBool, byte_vec_ty(), tast::Ty::TString]);
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::StdIoReadStdin),
+        params: vec![],
+        ret_ty: Some(goast::tast_ty_to_go_type(&ret_ty)),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::VarDecl {
+                    name: "data".to_string(),
+                    ty: data_ty.clone(),
+                    value: None,
+                },
+                goast::Stmt::VarDecl {
+                    name: "err".to_string(),
+                    ty: err_ty,
+                    value: None,
+                },
+                goast::Stmt::MultiAssignment {
+                    names: vec!["data".to_string(), "err".to_string()],
+                    value: runtime_call(
+                        "_goml_io.ReadAll",
+                        vec![goty::GoType::TName {
+                            name: "_goml_io.Reader".to_string(),
+                        }],
+                        multi_ty,
+                        vec![runtime_var(
+                            "_goml_os.Stdin",
+                            goty::GoType::TName {
+                                name: "_goml_os.File".to_string(),
+                            },
+                        )],
+                    ),
+                },
+                goast::Stmt::If {
+                    cond: runtime_error_cond("err"),
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(tuple_literal(
+                                &ret_ty,
+                                vec![
+                                    runtime_bool(false),
+                                    vec_from_slice_expr(
+                                        &tast::Ty::TUint8,
+                                        goast::Expr::Nil {
+                                            ty: data_ty.clone(),
+                                        },
+                                    ),
+                                    error_string_expr("err"),
+                                ],
+                            )),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Return {
+                    expr: Some(tuple_literal(
+                        &ret_ty,
+                        vec![
+                            runtime_bool(true),
+                            vec_from_slice_expr(&tast::Ty::TUint8, runtime_var("data", data_ty)),
+                            runtime_string(""),
+                        ],
+                    )),
+                },
+            ],
+        },
+    }
+}
+
+fn std_io_write_stdout_raw() -> goast::Fn {
+    std_io_write_bytes_raw(RuntimeHookId::StdIoWriteStdout, "_goml_os.Stdout")
+}
+
+fn std_io_write_stderr_raw() -> goast::Fn {
+    std_io_write_bytes_raw(RuntimeHookId::StdIoWriteStderr, "_goml_os.Stderr")
+}
+
+fn std_io_write_bytes_raw(id: RuntimeHookId, stream: &str) -> goast::Fn {
+    let err_ty = go_error_ty();
+    let multi_ty = goty::GoType::TMulti {
+        elems: vec![goty::GoType::TInt32, err_ty.clone()],
+    };
+    let ret_ty = tuple_ty(vec![tast::Ty::TBool, tast::Ty::TString]);
+    let file_ty = goty::GoType::TName {
+        name: "_goml_os.File".to_string(),
+    };
+    goast::Fn {
+        name: runtime_hook_fn_name(id),
+        params: vec![(
+            "data".to_string(),
+            goast::tast_ty_to_go_type(&byte_vec_ty()),
+        )],
+        ret_ty: Some(goast::tast_ty_to_go_type(&ret_ty)),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::VarDecl {
+                    name: "err".to_string(),
+                    ty: err_ty,
+                    value: None,
+                },
+                goast::Stmt::MultiAssignment {
+                    names: vec!["_".to_string(), "err".to_string()],
+                    value: runtime_method_call(
+                        runtime_var(stream, file_ty),
+                        "Write",
+                        vec![byte_slice_go_ty()],
+                        multi_ty,
+                        vec![byte_vec_items("data")],
+                    ),
+                },
+                goast::Stmt::If {
+                    cond: runtime_error_cond("err"),
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(tuple_literal(
+                                &ret_ty,
+                                vec![runtime_bool(false), error_string_expr("err")],
+                            )),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Return {
+                    expr: Some(tuple_literal(
+                        &ret_ty,
+                        vec![runtime_bool(true), runtime_string("")],
+                    )),
+                },
+            ],
+        },
+    }
+}
+
+fn std_path_join_raw() -> goast::Fn {
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::StdPathJoin),
+        params: vec![
+            ("base".to_string(), goty::GoType::TString),
+            ("child".to_string(), goty::GoType::TString),
+        ],
+        ret_ty: Some(goty::GoType::TString),
+        body: goast::Block {
+            stmts: vec![goast::Stmt::Return {
+                expr: Some(runtime_call(
+                    "_goml_filepath.Join",
+                    vec![goty::GoType::TString, goty::GoType::TString],
+                    goty::GoType::TString,
+                    vec![
+                        runtime_var("base", goty::GoType::TString),
+                        runtime_var("child", goty::GoType::TString),
+                    ],
+                )),
+            }],
+        },
+    }
+}
+
+fn std_path_clean_raw() -> goast::Fn {
+    std_path_unary_raw(
+        RuntimeHookId::StdPathClean,
+        "_goml_filepath.Clean",
+        goty::GoType::TString,
+    )
+}
+
+fn std_path_is_absolute_raw() -> goast::Fn {
+    std_path_unary_raw(
+        RuntimeHookId::StdPathIsAbsolute,
+        "_goml_filepath.IsAbs",
+        goty::GoType::TBool,
+    )
+}
+
+fn std_path_unary_raw(id: RuntimeHookId, go_name: &str, ret_ty: goty::GoType) -> goast::Fn {
+    goast::Fn {
+        name: runtime_hook_fn_name(id),
+        params: vec![("path".to_string(), goty::GoType::TString)],
+        ret_ty: Some(ret_ty.clone()),
+        body: goast::Block {
+            stmts: vec![goast::Stmt::Return {
+                expr: Some(runtime_call(
+                    go_name,
+                    vec![goty::GoType::TString],
+                    ret_ty,
+                    vec![runtime_var("path", goty::GoType::TString)],
+                )),
+            }],
+        },
+    }
+}
+
+fn std_path_parent_raw() -> goast::Fn {
+    let ret_ty = tuple_ty(vec![tast::Ty::TBool, tast::Ty::TString]);
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::StdPathParent),
+        params: vec![("path".to_string(), goty::GoType::TString)],
+        ret_ty: Some(goast::tast_ty_to_go_type(&ret_ty)),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::VarDecl {
+                    name: "cleaned".to_string(),
+                    ty: goty::GoType::TString,
+                    value: Some(runtime_call(
+                        "_goml_filepath.Clean",
+                        vec![goty::GoType::TString],
+                        goty::GoType::TString,
+                        vec![runtime_var("path", goty::GoType::TString)],
+                    )),
+                },
+                goast::Stmt::VarDecl {
+                    name: "parent".to_string(),
+                    ty: goty::GoType::TString,
+                    value: Some(runtime_call(
+                        "_goml_filepath.Dir",
+                        vec![goty::GoType::TString],
+                        goty::GoType::TString,
+                        vec![runtime_var("cleaned", goty::GoType::TString)],
+                    )),
+                },
+                goast::Stmt::If {
+                    cond: goast::Expr::BinaryOp {
+                        op: GoBinaryOp::Eq,
+                        lhs: Box::new(runtime_var("cleaned", goty::GoType::TString)),
+                        rhs: Box::new(runtime_var("parent", goty::GoType::TString)),
+                        ty: goty::GoType::TBool,
+                    },
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(tuple_literal(
+                                &ret_ty,
+                                vec![runtime_bool(false), runtime_string("")],
+                            )),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Return {
+                    expr: Some(tuple_literal(
+                        &ret_ty,
+                        vec![
+                            runtime_bool(true),
+                            runtime_var("parent", goty::GoType::TString),
+                        ],
+                    )),
+                },
+            ],
+        },
+    }
+}
+
+fn std_path_file_name_raw() -> goast::Fn {
+    let ret_ty = tuple_ty(vec![tast::Ty::TBool, tast::Ty::TString]);
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::StdPathFileName),
+        params: vec![("path".to_string(), goty::GoType::TString)],
+        ret_ty: Some(goast::tast_ty_to_go_type(&ret_ty)),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::VarDecl {
+                    name: "cleaned".to_string(),
+                    ty: goty::GoType::TString,
+                    value: Some(runtime_call(
+                        "_goml_filepath.Clean",
+                        vec![goty::GoType::TString],
+                        goty::GoType::TString,
+                        vec![runtime_var("path", goty::GoType::TString)],
+                    )),
+                },
+                goast::Stmt::VarDecl {
+                    name: "parent".to_string(),
+                    ty: goty::GoType::TString,
+                    value: Some(runtime_call(
+                        "_goml_filepath.Dir",
+                        vec![goty::GoType::TString],
+                        goty::GoType::TString,
+                        vec![runtime_var("cleaned", goty::GoType::TString)],
+                    )),
+                },
+                goast::Stmt::VarDecl {
+                    name: "base".to_string(),
+                    ty: goty::GoType::TString,
+                    value: Some(runtime_call(
+                        "_goml_filepath.Base",
+                        vec![goty::GoType::TString],
+                        goty::GoType::TString,
+                        vec![runtime_var("cleaned", goty::GoType::TString)],
+                    )),
+                },
+                goast::Stmt::If {
+                    cond: goast::Expr::BinaryOp {
+                        op: GoBinaryOp::Or,
+                        lhs: Box::new(goast::Expr::BinaryOp {
+                            op: GoBinaryOp::Eq,
+                            lhs: Box::new(runtime_var("cleaned", goty::GoType::TString)),
+                            rhs: Box::new(runtime_var("parent", goty::GoType::TString)),
+                            ty: goty::GoType::TBool,
+                        }),
+                        rhs: Box::new(goast::Expr::BinaryOp {
+                            op: GoBinaryOp::Or,
+                            lhs: Box::new(goast::Expr::BinaryOp {
+                                op: GoBinaryOp::Eq,
+                                lhs: Box::new(runtime_var("base", goty::GoType::TString)),
+                                rhs: Box::new(runtime_string(".")),
+                                ty: goty::GoType::TBool,
+                            }),
+                            rhs: Box::new(goast::Expr::BinaryOp {
+                                op: GoBinaryOp::Eq,
+                                lhs: Box::new(runtime_var("base", goty::GoType::TString)),
+                                rhs: Box::new(runtime_string("..")),
+                                ty: goty::GoType::TBool,
+                            }),
+                            ty: goty::GoType::TBool,
+                        }),
+                        ty: goty::GoType::TBool,
+                    },
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(tuple_literal(
+                                &ret_ty,
+                                vec![runtime_bool(false), runtime_string("")],
+                            )),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Return {
+                    expr: Some(tuple_literal(
+                        &ret_ty,
+                        vec![
+                            runtime_bool(true),
+                            runtime_var("base", goty::GoType::TString),
+                        ],
+                    )),
+                },
+            ],
+        },
+    }
+}
+
+fn std_path_extension_raw() -> goast::Fn {
+    let ret_ty = tuple_ty(vec![tast::Ty::TBool, tast::Ty::TString]);
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::StdPathExtension),
+        params: vec![("path".to_string(), goty::GoType::TString)],
+        ret_ty: Some(goast::tast_ty_to_go_type(&ret_ty)),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::VarDecl {
+                    name: "base".to_string(),
+                    ty: goty::GoType::TString,
+                    value: Some(runtime_call(
+                        "_goml_filepath.Base",
+                        vec![goty::GoType::TString],
+                        goty::GoType::TString,
+                        vec![runtime_var("path", goty::GoType::TString)],
+                    )),
+                },
+                goast::Stmt::VarDecl {
+                    name: "extension".to_string(),
+                    ty: goty::GoType::TString,
+                    value: Some(runtime_call(
+                        "_goml_filepath.Ext",
+                        vec![goty::GoType::TString],
+                        goty::GoType::TString,
+                        vec![runtime_var("base", goty::GoType::TString)],
+                    )),
+                },
+                goast::Stmt::If {
+                    cond: goast::Expr::BinaryOp {
+                        op: GoBinaryOp::Or,
+                        lhs: Box::new(goast::Expr::BinaryOp {
+                            op: GoBinaryOp::Eq,
+                            lhs: Box::new(runtime_var("extension", goty::GoType::TString)),
+                            rhs: Box::new(runtime_string("")),
+                            ty: goty::GoType::TBool,
+                        }),
+                        rhs: Box::new(goast::Expr::BinaryOp {
+                            op: GoBinaryOp::Eq,
+                            lhs: Box::new(runtime_var("extension", goty::GoType::TString)),
+                            rhs: Box::new(runtime_var("base", goty::GoType::TString)),
+                            ty: goty::GoType::TBool,
+                        }),
+                        ty: goty::GoType::TBool,
+                    },
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(tuple_literal(
+                                &ret_ty,
+                                vec![runtime_bool(false), runtime_string("")],
+                            )),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Return {
+                    expr: Some(tuple_literal(
+                        &ret_ty,
+                        vec![
+                            runtime_bool(true),
+                            runtime_call(
+                                "_goml_strings.TrimPrefix",
+                                vec![goty::GoType::TString, goty::GoType::TString],
+                                goty::GoType::TString,
+                                vec![
+                                    runtime_var("extension", goty::GoType::TString),
+                                    runtime_string("."),
+                                ],
+                            ),
+                        ],
+                    )),
+                },
+            ],
+        },
+    }
+}
+
+fn std_path_file_stem_raw() -> goast::Fn {
+    let ret_ty = tuple_ty(vec![tast::Ty::TBool, tast::Ty::TString]);
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::StdPathFileStem),
+        params: vec![("path".to_string(), goty::GoType::TString)],
+        ret_ty: Some(goast::tast_ty_to_go_type(&ret_ty)),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::VarDecl {
+                    name: "base".to_string(),
+                    ty: goty::GoType::TString,
+                    value: Some(runtime_call(
+                        "_goml_filepath.Base",
+                        vec![goty::GoType::TString],
+                        goty::GoType::TString,
+                        vec![runtime_var("path", goty::GoType::TString)],
+                    )),
+                },
+                goast::Stmt::If {
+                    cond: goast::Expr::BinaryOp {
+                        op: GoBinaryOp::Or,
+                        lhs: Box::new(goast::Expr::BinaryOp {
+                            op: GoBinaryOp::Eq,
+                            lhs: Box::new(runtime_var("base", goty::GoType::TString)),
+                            rhs: Box::new(runtime_string(".")),
+                            ty: goty::GoType::TBool,
+                        }),
+                        rhs: Box::new(goast::Expr::BinaryOp {
+                            op: GoBinaryOp::Eq,
+                            lhs: Box::new(runtime_var("base", goty::GoType::TString)),
+                            rhs: Box::new(runtime_string("..")),
+                            ty: goty::GoType::TBool,
+                        }),
+                        ty: goty::GoType::TBool,
+                    },
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(tuple_literal(
+                                &ret_ty,
+                                vec![runtime_bool(false), runtime_string("")],
+                            )),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::VarDecl {
+                    name: "extension".to_string(),
+                    ty: goty::GoType::TString,
+                    value: Some(runtime_call(
+                        "_goml_filepath.Ext",
+                        vec![goty::GoType::TString],
+                        goty::GoType::TString,
+                        vec![runtime_var("base", goty::GoType::TString)],
+                    )),
+                },
+                goast::Stmt::If {
+                    cond: goast::Expr::BinaryOp {
+                        op: GoBinaryOp::Eq,
+                        lhs: Box::new(runtime_var("extension", goty::GoType::TString)),
+                        rhs: Box::new(runtime_var("base", goty::GoType::TString)),
+                        ty: goty::GoType::TBool,
+                    },
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Assignment {
+                            name: "extension".to_string(),
+                            value: runtime_string(""),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Return {
+                    expr: Some(tuple_literal(
+                        &ret_ty,
+                        vec![
+                            runtime_bool(true),
+                            runtime_call(
+                                "_goml_strings.TrimSuffix",
+                                vec![goty::GoType::TString, goty::GoType::TString],
+                                goty::GoType::TString,
+                                vec![
+                                    runtime_var("base", goty::GoType::TString),
+                                    runtime_var("extension", goty::GoType::TString),
+                                ],
+                            ),
+                        ],
+                    )),
+                },
+            ],
+        },
+    }
+}
+
+fn std_path_with_extension_raw() -> goast::Fn {
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::StdPathWithExtension),
+        params: vec![
+            ("path".to_string(), goty::GoType::TString),
+            ("extension".to_string(), goty::GoType::TString),
+        ],
+        ret_ty: Some(goty::GoType::TString),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::VarDecl {
+                    name: "base".to_string(),
+                    ty: goty::GoType::TString,
+                    value: Some(runtime_call(
+                        "_goml_filepath.Base",
+                        vec![goty::GoType::TString],
+                        goty::GoType::TString,
+                        vec![runtime_var("path", goty::GoType::TString)],
+                    )),
+                },
+                goast::Stmt::VarDecl {
+                    name: "current".to_string(),
+                    ty: goty::GoType::TString,
+                    value: Some(runtime_call(
+                        "_goml_filepath.Ext",
+                        vec![goty::GoType::TString],
+                        goty::GoType::TString,
+                        vec![runtime_var("path", goty::GoType::TString)],
+                    )),
+                },
+                goast::Stmt::If {
+                    cond: goast::Expr::BinaryOp {
+                        op: GoBinaryOp::Eq,
+                        lhs: Box::new(runtime_var("current", goty::GoType::TString)),
+                        rhs: Box::new(runtime_var("base", goty::GoType::TString)),
+                        ty: goty::GoType::TBool,
+                    },
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Assignment {
+                            name: "current".to_string(),
+                            value: runtime_string(""),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::VarDecl {
+                    name: "without".to_string(),
+                    ty: goty::GoType::TString,
+                    value: Some(runtime_call(
+                        "_goml_strings.TrimSuffix",
+                        vec![goty::GoType::TString, goty::GoType::TString],
+                        goty::GoType::TString,
+                        vec![
+                            runtime_var("path", goty::GoType::TString),
+                            runtime_var("current", goty::GoType::TString),
+                        ],
+                    )),
+                },
+                goast::Stmt::If {
+                    cond: goast::Expr::BinaryOp {
+                        op: GoBinaryOp::Eq,
+                        lhs: Box::new(runtime_var("extension", goty::GoType::TString)),
+                        rhs: Box::new(runtime_string("")),
+                        ty: goty::GoType::TBool,
+                    },
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(runtime_var("without", goty::GoType::TString)),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Assignment {
+                    name: "extension".to_string(),
+                    value: runtime_call(
+                        "_goml_strings.TrimPrefix",
+                        vec![goty::GoType::TString, goty::GoType::TString],
+                        goty::GoType::TString,
+                        vec![
+                            runtime_var("extension", goty::GoType::TString),
+                            runtime_string("."),
+                        ],
+                    ),
+                },
+                goast::Stmt::Return {
+                    expr: Some(goast::Expr::BinaryOp {
+                        op: GoBinaryOp::Add,
+                        lhs: Box::new(goast::Expr::BinaryOp {
+                            op: GoBinaryOp::Add,
+                            lhs: Box::new(runtime_var("without", goty::GoType::TString)),
+                            rhs: Box::new(runtime_string(".")),
+                            ty: goty::GoType::TString,
+                        }),
+                        rhs: Box::new(runtime_var("extension", goty::GoType::TString)),
+                        ty: goty::GoType::TString,
+                    }),
+                },
+            ],
+        },
+    }
+}
+
+fn std_path_absolute_raw() -> goast::Fn {
+    let err_ty = go_error_ty();
+    let multi_ty = goty::GoType::TMulti {
+        elems: vec![goty::GoType::TString, err_ty.clone()],
+    };
+    let ret_ty = tuple_ty(vec![tast::Ty::TBool, tast::Ty::TString, tast::Ty::TString]);
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::StdPathAbsolute),
+        params: vec![("path".to_string(), goty::GoType::TString)],
+        ret_ty: Some(goast::tast_ty_to_go_type(&ret_ty)),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::VarDecl {
+                    name: "value".to_string(),
+                    ty: goty::GoType::TString,
+                    value: None,
+                },
+                goast::Stmt::VarDecl {
+                    name: "err".to_string(),
+                    ty: err_ty,
+                    value: None,
+                },
+                goast::Stmt::MultiAssignment {
+                    names: vec!["value".to_string(), "err".to_string()],
+                    value: runtime_call(
+                        "_goml_filepath.Abs",
+                        vec![goty::GoType::TString],
+                        multi_ty,
+                        vec![runtime_var("path", goty::GoType::TString)],
+                    ),
+                },
+                goast::Stmt::If {
+                    cond: runtime_error_cond("err"),
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(tuple_literal(
+                                &ret_ty,
+                                vec![
+                                    runtime_bool(false),
+                                    runtime_string(""),
+                                    error_string_expr("err"),
+                                ],
+                            )),
+                        }],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Return {
+                    expr: Some(tuple_literal(
+                        &ret_ty,
+                        vec![
+                            runtime_bool(true),
+                            runtime_var("value", goty::GoType::TString),
+                            runtime_string(""),
+                        ],
+                    )),
                 },
             ],
         },

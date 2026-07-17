@@ -177,20 +177,42 @@ pub enum RuntimeHookId {
     StringHash,
     CharHash,
     StdEnvArgs,
+    StdEnvCurrentDir,
+    StdEnvCurrentExe,
+    StdEnvVar,
     StdFsReadFile,
     StdFsWriteFile,
+    StdFsReadBytes,
+    StdFsWriteBytes,
     StdFsCreateDirAll,
     StdFsFileExists,
+    StdFsIsFile,
+    StdFsIsDir,
+    StdFsCanonicalize,
     StdFsReadDir,
     StdIoPrint,
     StdIoPrintln,
     StdIoEprint,
+    StdIoReadStdin,
+    StdIoWriteStdout,
+    StdIoWriteStderr,
+    StdPathJoin,
+    StdPathClean,
+    StdPathIsAbsolute,
+    StdPathParent,
+    StdPathFileName,
+    StdPathExtension,
+    StdPathFileStem,
+    StdPathWithExtension,
+    StdPathAbsolute,
     StdProcessExit,
+    StdProcessOutput,
+    StdProcessStatus,
     StdTestingFail,
 }
 
 impl RuntimeHookId {
-    pub const ALL: [Self; 46] = [
+    pub const ALL: [Self; 68] = [
         Self::UnitToString,
         Self::BoolToString,
         Self::StringLen,
@@ -227,15 +249,37 @@ impl RuntimeHookId {
         Self::StringHash,
         Self::CharHash,
         Self::StdEnvArgs,
+        Self::StdEnvCurrentDir,
+        Self::StdEnvCurrentExe,
+        Self::StdEnvVar,
         Self::StdFsReadFile,
         Self::StdFsWriteFile,
+        Self::StdFsReadBytes,
+        Self::StdFsWriteBytes,
         Self::StdFsCreateDirAll,
         Self::StdFsFileExists,
+        Self::StdFsIsFile,
+        Self::StdFsIsDir,
+        Self::StdFsCanonicalize,
         Self::StdFsReadDir,
         Self::StdIoPrint,
         Self::StdIoPrintln,
         Self::StdIoEprint,
+        Self::StdIoReadStdin,
+        Self::StdIoWriteStdout,
+        Self::StdIoWriteStderr,
+        Self::StdPathJoin,
+        Self::StdPathClean,
+        Self::StdPathIsAbsolute,
+        Self::StdPathParent,
+        Self::StdPathFileName,
+        Self::StdPathExtension,
+        Self::StdPathFileStem,
+        Self::StdPathWithExtension,
+        Self::StdPathAbsolute,
         Self::StdProcessExit,
+        Self::StdProcessOutput,
+        Self::StdProcessStatus,
         Self::StdTestingFail,
     ];
 
@@ -277,15 +321,37 @@ impl RuntimeHookId {
             Self::StringHash => "core.string_hash",
             Self::CharHash => "core.char_hash",
             Self::StdEnvArgs => "std.env.args",
+            Self::StdEnvCurrentDir => "std.env.current_dir",
+            Self::StdEnvCurrentExe => "std.env.current_exe",
+            Self::StdEnvVar => "std.env.var",
             Self::StdFsReadFile => "std.fs.read_file",
             Self::StdFsWriteFile => "std.fs.write_file",
+            Self::StdFsReadBytes => "std.fs.read_bytes",
+            Self::StdFsWriteBytes => "std.fs.write_bytes",
             Self::StdFsCreateDirAll => "std.fs.create_dir_all",
             Self::StdFsFileExists => "std.fs.file_exists",
+            Self::StdFsIsFile => "std.fs.is_file",
+            Self::StdFsIsDir => "std.fs.is_dir",
+            Self::StdFsCanonicalize => "std.fs.canonicalize",
             Self::StdFsReadDir => "std.fs.read_dir",
             Self::StdIoPrint => "std.io.print",
             Self::StdIoPrintln => "std.io.println",
             Self::StdIoEprint => "std.io.eprint",
+            Self::StdIoReadStdin => "std.io.read_stdin",
+            Self::StdIoWriteStdout => "std.io.write_stdout",
+            Self::StdIoWriteStderr => "std.io.write_stderr",
+            Self::StdPathJoin => "std.path.join",
+            Self::StdPathClean => "std.path.clean",
+            Self::StdPathIsAbsolute => "std.path.is_absolute",
+            Self::StdPathParent => "std.path.parent",
+            Self::StdPathFileName => "std.path.file_name",
+            Self::StdPathExtension => "std.path.extension",
+            Self::StdPathFileStem => "std.path.file_stem",
+            Self::StdPathWithExtension => "std.path.with_extension",
+            Self::StdPathAbsolute => "std.path.absolute",
             Self::StdProcessExit => "std.process.exit",
+            Self::StdProcessOutput => "std.process.output",
+            Self::StdProcessStatus => "std.process.status",
             Self::StdTestingFail => "std.testing.fail",
         }
     }
@@ -487,14 +553,28 @@ impl RuntimeHookId {
             Self::StringPrint
             | Self::StringPrintln
             | Self::StdEnvArgs
+            | Self::StdEnvCurrentDir
+            | Self::StdEnvCurrentExe
+            | Self::StdEnvVar
             | Self::StdFsReadFile
             | Self::StdFsWriteFile
+            | Self::StdFsReadBytes
+            | Self::StdFsWriteBytes
             | Self::StdFsCreateDirAll
             | Self::StdFsFileExists
+            | Self::StdFsIsFile
+            | Self::StdFsIsDir
+            | Self::StdFsCanonicalize
             | Self::StdFsReadDir
             | Self::StdIoPrint
             | Self::StdIoPrintln
-            | Self::StdIoEprint => CallEffect::Host,
+            | Self::StdIoEprint
+            | Self::StdIoReadStdin
+            | Self::StdIoWriteStdout
+            | Self::StdIoWriteStderr
+            | Self::StdPathAbsolute
+            | Self::StdProcessOutput
+            | Self::StdProcessStatus => CallEffect::Host,
             Self::StdProcessExit | Self::StdTestingFail => CallEffect::Diverges,
             _ => CallEffect::Pure,
         }
@@ -921,6 +1001,10 @@ impl RuntimeHookId {
             Self::StringHash => signature(vec![Ty::TString], Ty::TUint64),
             Self::CharHash => signature(vec![Ty::TChar], Ty::TUint64),
             Self::StdEnvArgs => signature(vec![], vec_ty(Ty::TString)),
+            Self::StdEnvCurrentDir | Self::StdEnvCurrentExe => {
+                signature(vec![], tuple_ty(vec![Ty::TBool, Ty::TString, Ty::TString]))
+            }
+            Self::StdEnvVar => signature(vec![Ty::TString], tuple_ty(vec![Ty::TBool, Ty::TString])),
             Self::StdFsReadFile => signature(
                 vec![Ty::TString],
                 tuple_ty(vec![Ty::TBool, Ty::TString, Ty::TString]),
@@ -929,10 +1013,27 @@ impl RuntimeHookId {
                 vec![Ty::TString, Ty::TString],
                 tuple_ty(vec![Ty::TBool, Ty::TString]),
             ),
+            Self::StdFsReadBytes => signature(
+                vec![Ty::TString],
+                tuple_ty(vec![Ty::TBool, vec_ty(Ty::TUint8), Ty::TString]),
+            ),
+            Self::StdIoReadStdin => signature(
+                vec![],
+                tuple_ty(vec![Ty::TBool, vec_ty(Ty::TUint8), Ty::TString]),
+            ),
+            Self::StdFsWriteBytes => signature(
+                vec![Ty::TString, vec_ty(Ty::TUint8)],
+                tuple_ty(vec![Ty::TBool, Ty::TString]),
+            ),
             Self::StdFsCreateDirAll => {
                 signature(vec![Ty::TString], tuple_ty(vec![Ty::TBool, Ty::TString]))
             }
             Self::StdFsFileExists => signature(vec![Ty::TString], Ty::TBool),
+            Self::StdFsIsFile | Self::StdFsIsDir => signature(vec![Ty::TString], Ty::TBool),
+            Self::StdFsCanonicalize | Self::StdPathAbsolute => signature(
+                vec![Ty::TString],
+                tuple_ty(vec![Ty::TBool, Ty::TString, Ty::TString]),
+            ),
             Self::StdFsReadDir => signature(
                 vec![Ty::TString],
                 tuple_ty(vec![Ty::TBool, vec_ty(Ty::TString), Ty::TString]),
@@ -940,7 +1041,53 @@ impl RuntimeHookId {
             Self::StdIoPrint | Self::StdIoPrintln | Self::StdIoEprint => {
                 signature(vec![Ty::TString], Ty::TUnit)
             }
+            Self::StdIoWriteStdout | Self::StdIoWriteStderr => signature(
+                vec![vec_ty(Ty::TUint8)],
+                tuple_ty(vec![Ty::TBool, Ty::TString]),
+            ),
+            Self::StdPathJoin => signature(vec![Ty::TString, Ty::TString], Ty::TString),
+            Self::StdPathClean => signature(vec![Ty::TString], Ty::TString),
+            Self::StdPathWithExtension => signature(vec![Ty::TString, Ty::TString], Ty::TString),
+            Self::StdPathIsAbsolute => signature(vec![Ty::TString], Ty::TBool),
+            Self::StdPathFileName
+            | Self::StdPathParent
+            | Self::StdPathExtension
+            | Self::StdPathFileStem => {
+                signature(vec![Ty::TString], tuple_ty(vec![Ty::TBool, Ty::TString]))
+            }
             Self::StdProcessExit => signature(vec![Ty::TInt32], Ty::TUnit),
+            Self::StdProcessOutput => {
+                let env_ty = vec_ty(tuple_ty(vec![Ty::TString, Ty::TString]));
+                signature(
+                    vec![
+                        Ty::TString,
+                        vec_ty(Ty::TString),
+                        Ty::TBool,
+                        Ty::TString,
+                        env_ty,
+                    ],
+                    tuple_ty(vec![
+                        Ty::TBool,
+                        Ty::TInt32,
+                        vec_ty(Ty::TUint8),
+                        vec_ty(Ty::TUint8),
+                        Ty::TString,
+                    ]),
+                )
+            }
+            Self::StdProcessStatus => {
+                let env_ty = vec_ty(tuple_ty(vec![Ty::TString, Ty::TString]));
+                signature(
+                    vec![
+                        Ty::TString,
+                        vec_ty(Ty::TString),
+                        Ty::TBool,
+                        Ty::TString,
+                        env_ty,
+                    ],
+                    tuple_ty(vec![Ty::TBool, Ty::TInt32, Ty::TString]),
+                )
+            }
             Self::StdTestingFail => signature(vec![Ty::TString], Ty::TUnit),
         }
     }

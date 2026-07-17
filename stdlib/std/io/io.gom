@@ -1,5 +1,6 @@
 package io;
 
+use std::bytes;
 use std::internal::host;
 
 pub fn print[T: ToString](value: T) -> unit {
@@ -16,4 +17,31 @@ pub fn eprint[T: ToString](value: T) -> unit {
 
 pub fn eprintln[T: ToString](value: T) -> unit {
     host::eprint(ToString::to_string(value) + "\n")
+}
+
+pub fn read_stdin() -> Result[bytes::Bytes, string] {
+    let (ok, data, err) = host::read_stdin();
+    if ok {
+        Result::Ok(bytes::Bytes::from_vec(data))
+    } else {
+        Result::Err(err)
+    }
+}
+
+pub fn write_stdout(data: bytes::Bytes) -> Result[unit, string] {
+    let (ok, err) = host::write_stdout(data.to_vec());
+    if ok {
+        Result::Ok(())
+    } else {
+        Result::Err(err)
+    }
+}
+
+pub fn write_stderr(data: bytes::Bytes) -> Result[unit, string] {
+    let (ok, err) = host::write_stderr(data.to_vec());
+    if ok {
+        Result::Ok(())
+    } else {
+        Result::Err(err)
+    }
 }

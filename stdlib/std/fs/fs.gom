@@ -1,18 +1,30 @@
 package fs;
 
+use std::bytes;
 use std::internal::host;
 
 pub fn read_file(path: string) -> Result[string, string] {
-    let (ok, data, err) = host::read_file(path);
+    match read_bytes(path) {
+        Result::Ok(data) => data.to_string(),
+        Result::Err(error) => Result::Err(error),
+    }
+}
+
+pub fn write_file(path: string, content: string) -> Result[unit, string] {
+    write_bytes(path, bytes::Bytes::from_string(content))
+}
+
+pub fn read_bytes(path: string) -> Result[bytes::Bytes, string] {
+    let (ok, data, err) = host::read_bytes(path);
     if ok {
-        Result::Ok(data)
+        Result::Ok(bytes::Bytes::from_vec(data))
     } else {
         Result::Err(err)
     }
 }
 
-pub fn write_file(path: string, content: string) -> Result[unit, string] {
-    let (ok, err) = host::write_file(path, content);
+pub fn write_bytes(path: string, data: bytes::Bytes) -> Result[unit, string] {
+    let (ok, err) = host::write_bytes(path, data.to_vec());
     if ok {
         Result::Ok(())
     } else {
@@ -31,6 +43,23 @@ pub fn create_dir_all(path: string) -> Result[unit, string] {
 
 pub fn exists(path: string) -> bool {
     host::file_exists(path)
+}
+
+pub fn is_file(path: string) -> bool {
+    host::is_file(path)
+}
+
+pub fn is_dir(path: string) -> bool {
+    host::is_dir(path)
+}
+
+pub fn canonicalize(path: string) -> Result[string, string] {
+    let (ok, result, err) = host::canonicalize(path);
+    if ok {
+        Result::Ok(result)
+    } else {
+        Result::Err(err)
+    }
 }
 
 pub fn read_dir(path: string) -> Result[Vec[string], string] {
