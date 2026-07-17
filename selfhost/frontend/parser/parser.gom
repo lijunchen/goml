@@ -12,7 +12,7 @@ pub struct Parser {
 }
 
 fn push_node(nodes: Ref[Vec[ast::Node]], value: ast::Node) -> unit {
-    nodes.set(nodes.get().pushed(value))
+    nodes.get().push(value)
 }
 
 fn push_nodes(nodes: Ref[Vec[ast::Node]], values: Vec[ast::Node]) -> unit {
@@ -24,7 +24,7 @@ fn push_nodes(nodes: Ref[Vec[ast::Node]], values: Vec[ast::Node]) -> unit {
 }
 
 fn push_diagnostic(parser: Parser, start: int32, end: int32, message: string) -> unit {
-    parser.diagnostics.set(parser.diagnostics.get().pushed(ast::diagnostic(start, end, message)))
+    parser.diagnostics.get().push(ast::diagnostic(start, end, message))
 }
 
 fn current(parser: Parser) -> syntax::Token {
@@ -99,11 +99,11 @@ fn filtered_tokens(tokens: Vec[syntax::Token], source_len: int32) -> Vec[syntax:
         if syntax::is_trivia(token.kind) {
             ()
         } else {
-            result.set(result.get().pushed(token));
+            result.get().push(token);
         };
         i.set(i.get() + 1);
     };
-    result.set(result.get().pushed(syntax::token(syntax::TokenKind::Eof, "", source_len, source_len)));
+    result.get().push(syntax::token(syntax::TokenKind::Eof, "", source_len, source_len));
     result.get()
 }
 
@@ -1364,8 +1364,8 @@ fn parse_pattern(parser: Parser) -> ast::Node {
 fn contains_colon_colon(text: string) -> bool {
     let i = Ref::new(0);
     let found = Ref::new(false);
-    while !(found.get()) && i.get() + 1 < text.len() {
-        if text.get(i.get()) == ':' && text.get(i.get() + 1) == ':' {
+    while !(found.get()) && i.get() + 1 < text.byte_len() {
+        if text.byte_get(i.get()) == 58u8 && text.byte_get(i.get() + 1) == 58u8 {
             found.set(true);
         } else {
             i.set(i.get() + 1);

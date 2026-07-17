@@ -34,7 +34,7 @@ pub fn source_file(module: string, root: ast::Node) -> SourceFile {
 }
 
 fn push_diagnostic(ctx: CheckContext, node: ast::Node, message: string) -> unit {
-    ctx.diagnostics.set(ctx.diagnostics.get().pushed(ast::diagnostic(node.start, node.end, message)))
+    ctx.diagnostics.get().push(ast::diagnostic(node.start, node.end, message))
 }
 
 fn node_is(node: ast::Node, kind: ast::NodeKind) -> bool {
@@ -52,14 +52,14 @@ fn child(node: ast::Node, index: int32) -> ast::Node {
 fn has_text(text: string, needle: string) -> bool {
     let found = Ref::new(false);
     let i = Ref::new(0);
-    if needle.len() == 0 {
+    if needle.byte_len() == 0 {
         true
     } else {
-        while !(found.get()) && i.get() + needle.len() <= text.len() {
+        while !(found.get()) && i.get() + needle.byte_len() <= text.byte_len() {
             let ok = Ref::new(true);
             let j = Ref::new(0);
-            while ok.get() && j.get() < needle.len() {
-                if text.get(i.get() + j.get()) == needle.get(j.get()) {
+            while ok.get() && j.get() < needle.byte_len() {
+                if text.byte_get(i.get() + j.get()) == needle.byte_get(j.get()) {
                     ()
                 } else {
                     ok.set(false);
@@ -77,13 +77,13 @@ fn has_text(text: string, needle: string) -> bool {
 }
 
 fn starts_with(text: string, prefix: string) -> bool {
-    if prefix.len() > text.len() {
+    if prefix.byte_len() > text.byte_len() {
         false
     } else {
         let ok = Ref::new(true);
         let i = Ref::new(0);
-        while ok.get() && i.get() < prefix.len() {
-            if text.get(i.get()) == prefix.get(i.get()) {
+        while ok.get() && i.get() < prefix.byte_len() {
+            if text.byte_get(i.get()) == prefix.byte_get(i.get()) {
                 ()
             } else {
                 ok.set(false);
@@ -101,21 +101,15 @@ fn normalize_path(path: string) -> string {
 fn last_segment(path: string) -> string {
     let start = Ref::new(0);
     let i = Ref::new(0);
-    while i.get() + 1 < path.len() {
-        if path.get(i.get()) == ':' && path.get(i.get() + 1) == ':' {
+    while i.get() + 1 < path.byte_len() {
+        if path.byte_get(i.get()) == 58u8 && path.byte_get(i.get() + 1) == 58u8 {
             start.set(i.get() + 2);
             i.set(i.get() + 2);
         } else {
             i.set(i.get() + 1);
         };
     };
-    let result = Ref::new("");
-    let j = Ref::new(start.get());
-    while j.get() < path.len() {
-        result.set(result.get() + path.get(j.get()).to_string());
-        j.set(j.get() + 1);
-    };
-    result.get()
+    path.byte_slice(start.get(), path.byte_len())
 }
 
 fn is_builtin_type_constructor(name: string) -> bool {
@@ -235,10 +229,10 @@ fn compatible(expected: string, actual: string) -> bool {
 }
 
 fn push_binding(bindings: Ref[Vec[Binding]], name: string, ty: string) -> unit {
-    bindings.set(bindings.get().pushed(Binding {
+    bindings.get().push(Binding {
         name: name,
         ty: ty,
-    }))
+    })
 }
 
 fn lookup_binding(bindings: Vec[Binding], name: string) -> string {
@@ -281,33 +275,33 @@ fn fn_info(module: string, name: string, params: Vec[string], ret: string) -> Fn
 }
 
 fn push_function(ctx: CheckContext, info: FnInfo) -> unit {
-    ctx.functions.set(ctx.functions.get().pushed(info))
+    ctx.functions.get().push(info)
 }
 
 fn add_builtin_functions(ctx: CheckContext) -> unit {
     let one_unknown = Ref::new(Vec::new());
-    one_unknown.set(one_unknown.get().pushed("unknown"));
+    one_unknown.get().push("unknown");
     let two_unknown = Ref::new(Vec::new());
-    two_unknown.set(two_unknown.get().pushed("unknown"));
-    two_unknown.set(two_unknown.get().pushed("unknown"));
+    two_unknown.get().push("unknown");
+    two_unknown.get().push("unknown");
     push_function(ctx, fn_info("", "ref", one_unknown.get(), "Ref[unknown]"));
     push_function(ctx, fn_info("", "ref_get", one_unknown.get(), "unknown"));
     push_function(ctx, fn_info("", "ref_set", two_unknown.get(), "unit"));
     let range_params = Ref::new(Vec::new());
-    range_params.set(range_params.get().pushed("int32"));
-    range_params.set(range_params.get().pushed("int32"));
+    range_params.get().push("int32");
+    range_params.get().push("int32");
     push_function(ctx, fn_info("", "range", range_params.get(), "FnIterator[int32]"));
     push_function(ctx, fn_info("io", "println", one_unknown.get(), "unit"));
     push_function(ctx, fn_info("io", "print", one_unknown.get(), "unit"));
     let read_file_params = Ref::new(Vec::new());
-    read_file_params.set(read_file_params.get().pushed("string"));
+    read_file_params.get().push("string");
     push_function(ctx, fn_info("fs", "read_file", read_file_params.get(), "Result[string,string]"));
     push_function(ctx, fn_info("fs", "write_file", two_unknown.get(), "Result[unit,string]"));
     push_function(ctx, fn_info("fs", "exists", read_file_params.get(), "bool"));
     let no_params: Vec[string] = Vec::new();
     push_function(ctx, fn_info("env", "args", no_params, "Vec[string]"));
     let exit_params = Ref::new(Vec::new());
-    exit_params.set(exit_params.get().pushed("int32"));
+    exit_params.get().push("int32");
     push_function(ctx, fn_info("process", "exit", exit_params.get(), "unit"));
 }
 
@@ -318,9 +312,9 @@ fn collect_fn(ctx: CheckContext, module: string, item: ast::Node) -> unit {
     while i.get() < param_list.children.len() {
         let param = param_list.children.get(i.get());
         if param.children.len() > 0 {
-            params.set(params.get().pushed(type_text(module, param.children.get(0))));
+            params.get().push(type_text(module, param.children.get(0)));
         } else {
-            params.set(params.get().pushed("unknown"));
+            params.get().push("unknown");
         };
         i.set(i.get() + 1);
     };
@@ -336,7 +330,7 @@ fn collect_enum(ctx: CheckContext, module: string, item: ast::Node) -> unit {
         let params = Ref::new(Vec::new());
         let j = Ref::new(0);
         while j.get() < variant.children.len() {
-            params.set(params.get().pushed(type_text(module, variant.children.get(j.get()))));
+            params.get().push(type_text(module, variant.children.get(j.get())));
             j.set(j.get() + 1);
         };
         push_function(ctx, fn_info(module + "::" + item.text, variant.text, params.get(), enum_name));
@@ -589,19 +583,16 @@ fn infer_call(ctx: CheckContext, node: ast::Node, bindings: Ref[Vec[Binding]]) -
 }
 
 fn literal_ty(text: string) -> string {
-    let result = Ref::new("");
     let i = Ref::new(0);
     let done = Ref::new(false);
-    while !(done.get()) && i.get() < text.len() {
-        let ch = text.get(i.get());
-        if ch == ':' {
+    while !(done.get()) && i.get() < text.byte_len() {
+        if text.byte_get(i.get()) == 58u8 {
             done.set(true);
         } else {
-            result.set(result.get() + ch.to_string());
             i.set(i.get() + 1);
         };
     };
-    result.get()
+    text.byte_slice(0, i.get())
 }
 
 fn infer_binary(ctx: CheckContext, node: ast::Node, bindings: Ref[Vec[Binding]]) -> string {
@@ -736,7 +727,7 @@ fn infer_expr(ctx: CheckContext, node: ast::Node, bindings: Ref[Vec[Binding]]) -
         let args = Ref::new(Vec::new());
         let i = Ref::new(1);
         while i.get() < node.children.len() {
-            args.set(args.get().pushed(node.children.get(i.get())));
+            args.get().push(node.children.get(i.get()));
             i.set(i.get() + 1);
         };
         method_type(ctx, child(node, 0), receiver, node.text, args.get(), bindings)
