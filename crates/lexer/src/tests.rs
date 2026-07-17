@@ -326,3 +326,61 @@ fn lexes_underscore_prefixed_identifiers() {
         "#]],
     )
 }
+
+fn assert_token_partition(input: &str) {
+    let tokens = lex(input);
+    let mut cursor = 0usize;
+
+    for token in tokens {
+        let start = u32::from(token.range.start()) as usize;
+        let end = u32::from(token.range.end()) as usize;
+        assert_eq!(start, cursor, "gap before {token:?} in {input:?}");
+        assert!(end > start, "empty token {token:?} in {input:?}");
+        assert!(input.is_char_boundary(start));
+        assert!(input.is_char_boundary(end));
+        assert_eq!(token.text, &input[start..end]);
+        cursor = end;
+    }
+
+    assert_eq!(cursor, input.len(), "unlexed suffix in {input:?}");
+}
+
+fn next_noise(state: &mut u64) -> u64 {
+    *state ^= *state << 13;
+    *state ^= *state >> 7;
+    *state ^= *state << 17;
+    *state
+}
+
+#[test]
+fn token_ranges_partition_generated_utf8_inputs() {
+    let fragments = [
+        "fn", "let", "::", "->", "=>", "&&", "||", "<<", ">>", "(", ")", "{", "}", "[", "]", "'",
+        "\"", "\\", "//", "\n", "\r\n", "\t", "0", "9i32", "_name", "é", "中", "🦀", "\u{301}",
+        "\0",
+    ];
+    let mut state = 0x4d59_5df4_d0f3_3173u64;
+
+    for _ in 0..4096 {
+        let count = (next_noise(&mut state) % 48) as usize;
+        let mut input = String::new();
+        for _ in 0..count {
+            let index = (next_noise(&mut state) as usize) % fragments.len();
+            input.push_str(fragments[index]);
+        }
+        assert_token_partition(&input);
+    }
+}
+
+#[test]
+fn token_ranges_partition_every_valid_prefix() {
+    let input = "package main;\nfn main() -> unit {\n    let text = \"héllo 🦀\";\n    let code = '中';\n    // λ\n    text\n}\n";
+
+    for end in input
+        .char_indices()
+        .map(|(index, _)| index)
+        .chain(std::iter::once(input.len()))
+    {
+        assert_token_partition(&input[..end]);
+    }
+}
