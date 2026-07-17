@@ -1,4 +1,6 @@
 use std::fs;
+#[cfg(unix)]
+use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 use std::sync::OnceLock;
@@ -92,6 +94,56 @@ fn run_goml(args: &[&str], cwd: &Path) -> anyhow::Result<std::process::Output> {
         .args(args)
         .current_dir(cwd)
         .output()?)
+}
+
+#[cfg(unix)]
+fn write_executable(path: &Path, source: &str) -> anyhow::Result<()> {
+    fs::write(path, source)?;
+    let mut permissions = fs::metadata(path)?.permissions();
+    permissions.set_mode(0o755);
+    fs::set_permissions(path, permissions)?;
+    Ok(())
+}
+
+#[cfg(unix)]
+fn path_with_first(first: &Path) -> anyhow::Result<std::ffi::OsString> {
+    let mut paths = vec![first.to_path_buf()];
+    if let Some(path) = std::env::var_os("PATH") {
+        paths.extend(std::env::split_paths(&path));
+    }
+    Ok(std::env::join_paths(paths)?)
+}
+
+#[cfg(unix)]
+fn write_fake_go(root: &Path) -> anyhow::Result<(PathBuf, PathBuf)> {
+    let bin = root.join("fake-bin");
+    fs::create_dir_all(&bin)?;
+    let runner = root.join("fake-runner");
+    write_executable(
+        &runner,
+        r#"#!/bin/sh
+if [ -n "$RUN_CWD_LOG" ]; then printf '%s\n' "$PWD" > "$RUN_CWD_LOG"; fi
+if [ -n "$RUN_ENV_LOG" ]; then printf '%s\n' "$RUN_MARKER" > "$RUN_ENV_LOG"; fi
+if [ -n "$RUN_ARGS_LOG" ]; then printf '%s\n' "$@" > "$RUN_ARGS_LOG"; fi
+if [ -n "$RUN_STDOUT" ]; then printf '%s' "$RUN_STDOUT"; fi
+if [ -n "$RUN_STDERR" ]; then printf '%s' "$RUN_STDERR" >&2; fi
+exit "${RUN_EXIT:-0}"
+"#,
+    )?;
+    write_executable(
+        &bin.join("go"),
+        r#"#!/bin/sh
+if [ "$GOWORK" != "off" ] || [ "$GO111MODULE" != "off" ]; then exit 91; fi
+if [ "$1" != "build" ] || [ "$2" != "-o" ]; then exit 92; fi
+if [ -n "$FAKE_GO_ENV_LOG" ]; then printf '%s\n%s\n' "$GOWORK" "$GO111MODULE" > "$FAKE_GO_ENV_LOG"; fi
+if [ -n "$FAKE_GO_ARGS_LOG" ]; then printf '%s\n' "$@" > "$FAKE_GO_ARGS_LOG"; fi
+if [ -n "$FAKE_GO_EXIT" ]; then exit "$FAKE_GO_EXIT"; fi
+mkdir -p "$(dirname "$3")"
+cp "$FAKE_RUNNER" "$3"
+chmod +x "$3"
+"#,
+    )?;
+    Ok((bin, runner))
 }
 
 fn run_goml_with_home(
@@ -1148,6 +1200,12 @@ fn project_build_writes_default_artifact_layout() -> anyhow::Result<()> {
 
     let go_file = dir.path().join("artifact/main.go");
     assert!(go_file.exists());
+    assert!(
+        dir.path()
+            .join("artifact/bin")
+            .join(format!("demo{}", std::env::consts::EXE_SUFFIX))
+            .exists()
+    );
     assert!(!dir.path().join("target/goml").exists());
 
     if !runtime_executor_available() {
@@ -1189,6 +1247,12 @@ fn project_uses_manifest_and_cli_target_directories() -> anyhow::Result<()> {
         String::from_utf8_lossy(&build.stderr)
     );
     assert!(dir.path().join("out/generated/main.go").exists());
+    assert!(
+        dir.path()
+            .join("out/generated/bin")
+            .join(format!("demo{}", std::env::consts::EXE_SUFFIX))
+            .exists()
+    );
     assert!(
         dir.path()
             .join("out/generated/build/pkg/demo/package.core")
@@ -1477,10 +1541,177 @@ fn project_build_dry_run_prints_compiler_build_and_link_commands() -> anyhow::Re
         gomlc build --package project008::usepkg --input usepkg/usepkg.gom --interface-path artifact/build/pkg/project008/traitpkg/package.interface --output artifact/build/pkg/project008/usepkg/package
         gomlc build --package project008 --input main.gom --interface-path artifact/build/pkg/project008/datapkg/package.interface --interface-path artifact/build/pkg/project008/traitpkg/package.interface --interface-path artifact/build/pkg/project008/usepkg/package.interface --output artifact/build/pkg/project008/package
         gomlc link --input artifact/build/pkg/project008/traitpkg/package.core artifact/build/pkg/project008/datapkg/package.core artifact/build/pkg/project008/usepkg/package.core artifact/build/pkg/project008/package.core --output artifact/main.go --entry project008
+        go build -o artifact/bin/project008 artifact/main.go
     "#]]
     .assert_eq(&stdout);
     assert!(!dir.path().join("artifact/main.go").exists());
     expect![""].assert_eq(&stderr);
+
+    Ok(())
+}
+
+#[test]
+fn project_run_dry_run_prints_the_complete_plan_without_tools() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    write_project(dir.path())?;
+    let missing = dir.path().join("missing-gomlc");
+    let output = Command::new(goml_bin())
+        .args(["run", "--dry-run", "--compiler"])
+        .arg(&missing)
+        .args(["--", "alpha", "--flag", "two words"])
+        .current_dir(dir.path())
+        .env("PATH", "")
+        .env("GOMLC", &missing)
+        .output()?;
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(output.status.success(), "stderr: {stderr}");
+    expect![[r#"
+        gomlc build --package demo --input main.gom --output artifact/build/pkg/demo/package
+        gomlc link --input artifact/build/pkg/demo/package.core --output artifact/main.go --entry demo
+        go build -o artifact/bin/demo artifact/main.go
+        artifact/bin/demo alpha --flag "two words"
+    "#]]
+    .assert_eq(&stdout);
+    assert!(!dir.path().join("artifact").exists());
+    expect![""].assert_eq(&stderr);
+
+    Ok(())
+}
+
+#[test]
+fn project_build_creates_and_runs_the_native_binary() -> anyhow::Result<()> {
+    if !go_available() {
+        return Ok(());
+    }
+    let dir = tempfile::tempdir()?;
+    write_project(dir.path())?;
+    let output = run_goml(&["build"], dir.path())?;
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(output.status.success(), "stderr: {stderr}");
+    let binary = dir
+        .path()
+        .join("artifact/bin")
+        .join(format!("demo{}", std::env::consts::EXE_SUFFIX));
+    assert!(binary.is_file());
+    let execution = Command::new(binary).output()?;
+    assert!(execution.status.success());
+    expect!["hello\n"].assert_eq(&String::from_utf8_lossy(&execution.stdout));
+
+    Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn project_build_isolates_go_and_writes_the_expected_binary() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    write_project(dir.path())?;
+    let (fake_bin, runner) = write_fake_go(dir.path())?;
+    let env_log = dir.path().join("go-env.log");
+    let args_log = dir.path().join("go-args.log");
+    let output = Command::new(goml_bin())
+        .arg("build")
+        .current_dir(dir.path())
+        .env("PATH", path_with_first(&fake_bin)?)
+        .env("FAKE_RUNNER", &runner)
+        .env("FAKE_GO_ENV_LOG", &env_log)
+        .env("FAKE_GO_ARGS_LOG", &args_log)
+        .env("GOWORK", "unexpected")
+        .env("GO111MODULE", "unexpected")
+        .output()?;
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(output.status.success(), "stderr: {stderr}");
+    expect!["off\noff\n"].assert_eq(&fs::read_to_string(env_log)?);
+    let binary = dir.path().join("artifact/bin/demo");
+    assert!(binary.is_file());
+    expect!["build\n-o\nartifact/bin/demo\nartifact/main.go\n"]
+        .assert_eq(&fs::read_to_string(args_log)?);
+
+    Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn project_run_forwards_args_env_io_and_preserves_the_callers_cwd() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let project = dir.path().join("project");
+    let caller = dir.path().join("caller");
+    fs::create_dir_all(&project)?;
+    fs::create_dir_all(&caller)?;
+    write_project(&project)?;
+    let (fake_bin, runner) = write_fake_go(dir.path())?;
+    let cwd_log = dir.path().join("run-cwd.log");
+    let env_log = dir.path().join("run-env.log");
+    let args_log = dir.path().join("run-args.log");
+    let output = Command::new(goml_bin())
+        .arg("run")
+        .arg(&project)
+        .args(["--", "alpha", "--flag", "two words"])
+        .current_dir(&caller)
+        .env("PATH", path_with_first(&fake_bin)?)
+        .env("FAKE_RUNNER", &runner)
+        .env("RUN_CWD_LOG", &cwd_log)
+        .env("RUN_ENV_LOG", &env_log)
+        .env("RUN_ARGS_LOG", &args_log)
+        .env("RUN_MARKER", "inherited")
+        .env("RUN_STDOUT", "program stdout\n")
+        .env("RUN_STDERR", "program stderr\n")
+        .output()?;
+
+    assert!(output.status.success());
+    expect!["program stdout\n"].assert_eq(&String::from_utf8_lossy(&output.stdout));
+    expect!["program stderr\n"].assert_eq(&String::from_utf8_lossy(&output.stderr));
+    assert_eq!(
+        fs::read_to_string(cwd_log)?,
+        format!("{}\n", caller.display())
+    );
+    expect!["inherited\n"].assert_eq(&fs::read_to_string(env_log)?);
+    expect!["alpha\n--flag\ntwo words\n"].assert_eq(&fs::read_to_string(args_log)?);
+
+    Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn project_run_propagates_the_program_exit_code() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    write_project(dir.path())?;
+    let (fake_bin, runner) = write_fake_go(dir.path())?;
+    let output = Command::new(goml_bin())
+        .arg("run")
+        .current_dir(dir.path())
+        .env("PATH", path_with_first(&fake_bin)?)
+        .env("FAKE_RUNNER", &runner)
+        .env("RUN_EXIT", "37")
+        .output()?;
+
+    assert_eq!(output.status.code(), Some(37));
+    expect![""].assert_eq(&String::from_utf8_lossy(&output.stderr));
+
+    Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn project_build_reports_go_build_failures() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    write_project(dir.path())?;
+    let (fake_bin, runner) = write_fake_go(dir.path())?;
+    let output = Command::new(goml_bin())
+        .arg("build")
+        .current_dir(dir.path())
+        .env("PATH", path_with_first(&fake_bin)?)
+        .env("FAKE_RUNNER", &runner)
+        .env("FAKE_GO_EXIT", "23")
+        .output()?;
+
+    assert_eq!(output.status.code(), Some(1));
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("go build failed with status"));
+    assert!(!dir.path().join("artifact/bin/demo").exists());
 
     Ok(())
 }
@@ -1646,9 +1877,29 @@ pub fn msg() -> string {
         gomlc build --package demo::src::Lib --input src/Lib/Lib.gom --output artifact/build/pkg/demo/src/Lib/package
         gomlc build --package demo::src --input src/main.gom --interface-path artifact/build/pkg/demo/src/Lib/package.interface --output artifact/build/pkg/demo/src/package
         gomlc link --input artifact/build/pkg/demo/src/Lib/package.core artifact/build/pkg/demo/src/package.core --output artifact/main.go --entry demo::src
+        go build -o artifact/bin/src artifact/main.go
     "#]]
     .assert_eq(&stdout);
     expect![""].assert_eq(&stderr);
+
+    let output = run_goml(
+        &[
+            "run",
+            "src",
+            "--target-dir",
+            "output",
+            "--dry-run",
+            "--",
+            "value",
+        ],
+        root,
+    )?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(output.status.success(), "stderr: {stderr}");
+    assert!(stdout.contains("go build -o output/bin/src output/main.go\n"));
+    assert!(stdout.ends_with("output/bin/src value\n"));
+    assert!(!root.join("output").exists());
 
     Ok(())
 }
