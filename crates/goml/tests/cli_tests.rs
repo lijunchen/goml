@@ -146,6 +146,151 @@ chmod +x "$3"
     Ok((bin, runner))
 }
 
+#[cfg(unix)]
+fn write_fake_gomlc(path: &Path, identity: &str) -> anyhow::Result<()> {
+    write_executable(
+        path,
+        &format!(
+            r#"#!/bin/sh
+identity={identity}
+if [ "$1" = "version" ]; then
+    printf '%s\n' '{{"driver_protocol":1}}'
+    exit 0
+fi
+kind=$1
+shift
+inputs=
+output=
+manifest=
+package=
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --input)
+            shift
+            while [ "$#" -gt 0 ]; do
+                case "$1" in --*) break ;; esac
+                inputs="$inputs $1"
+                shift
+            done
+            ;;
+        --interface-path)
+            inputs="$inputs $2"
+            shift 2
+            ;;
+        --output)
+            output=$2
+            shift 2
+            ;;
+        --manifest)
+            manifest=$2
+            shift 2
+            ;;
+        --package)
+            package=$2
+            shift 2
+            ;;
+        --entry)
+            shift 2
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+if [ -n "$FAKE_GOMLC_LOG" ]; then
+    printf '%s:%s\n' "$kind" "$package" >> "$FAKE_GOMLC_LOG"
+fi
+if [ "$FAKE_GOMLC_FAIL_BEFORE" = "$kind" ]; then
+    exit 71
+fi
+if [ "$FAKE_GOMLC_OMIT_OUTPUT" != "$kind" ]; then
+    case "$kind" in
+        check|test-check)
+            mkdir -p "$(dirname "$output")"
+            {{
+                printf '%s:%s\n' "$identity" "$kind"
+                for input in $inputs; do
+                    case "$input" in
+                        *.gom) sed -n '/^[[:space:]]*pub /p' "$input" ;;
+                        *) cat "$input" ;;
+                    esac
+                done
+            }} > "$output.interface"
+            ;;
+        build|test-build)
+            mkdir -p "$(dirname "$output")"
+            {{
+                printf '%s:%s\n' "$identity" "$kind"
+                for input in $inputs; do
+                    case "$input" in
+                        *.gom) sed -n '/^[[:space:]]*pub /p' "$input" ;;
+                        *) cat "$input" ;;
+                    esac
+                done
+            }} > "$output.interface"
+            {{
+                printf '%s:%s\n' "$identity" "$kind"
+                for input in $inputs; do cat "$input"; done
+            }} > "$output.core"
+            ;;
+        link)
+            mkdir -p "$(dirname "$output")"
+            {{
+                printf 'package main\nfunc main() {{}}\n'
+                for input in $inputs; do cat "$input"; done
+            }} > "$output"
+            ;;
+        test-link)
+            mkdir -p "$(dirname "$output")"
+            printf 'package main\nfunc main() {{}}\n' > "$output"
+            printf '[]\n' > "$manifest"
+            ;;
+    esac
+fi
+if [ "$FAKE_GOMLC_FAIL_AFTER_OUTPUT" = "$kind" ]; then
+    exit 72
+fi
+if [ "$FAKE_GOMLC_MUTATE" = "$kind" ]; then
+    printf '\n' >> "$0"
+fi
+if [ "$FAKE_GOMLC_MUTATE_INPUT" = "$kind" ]; then
+    set -- $inputs
+    printf '\n' >> "$1"
+fi
+"#
+        ),
+    )
+}
+
+#[cfg(unix)]
+fn fake_compiler_command(args: &[&str], cwd: &Path, compiler: &Path, log: &Path) -> Command {
+    let mut command = Command::new(goml_bin());
+    command
+        .args(args)
+        .arg("--compiler")
+        .arg(compiler)
+        .current_dir(cwd)
+        .env("FAKE_GOMLC_LOG", log);
+    command
+}
+
+#[cfg(unix)]
+fn invocation_log(path: &Path) -> anyhow::Result<Vec<String>> {
+    match fs::read_to_string(path) {
+        Ok(log) => Ok(log.lines().map(str::to_string).collect()),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(Vec::new()),
+        Err(error) => Err(error.into()),
+    }
+}
+
+#[cfg(unix)]
+fn clear_invocation_log(path: &Path) -> anyhow::Result<()> {
+    if path.exists() {
+        fs::remove_file(path)?;
+    }
+    Ok(())
+}
+
 fn run_goml_with_home(
     args: &[&str],
     cwd: &Path,
@@ -2295,6 +2440,332 @@ fn invalid[T](value: T) -> bool {
     assert!(stderr.contains("must not have type parameters"));
     assert!(stderr.contains("must not have parameters"));
     assert!(stderr.contains("must return unit"));
+
+    Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn incremental_build_recompiles_only_changed_packages_and_dependents() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    fs::write(root.join("goml.toml"), "[module]\npath = \"demo\"\n")?;
+    fs::create_dir_all(root.join("dep"))?;
+    fs::write(
+        root.join("dep/dep.gom"),
+        "package dep;\n\npub fn value() -> int32 {\n    private_value()\n}\n\nfn private_value() -> int32 {\n    1\n}\n",
+    )?;
+    fs::write(
+        root.join("main.gom"),
+        "package main;\n\nuse demo::dep;\n\nfn main() -> unit {\n    println(dep::value().to_string())\n}\n",
+    )?;
+    let compiler = root.join("fake-gomlc");
+    let log = root.join("gomlc.log");
+    write_fake_gomlc(&compiler, "first")?;
+    let (fake_bin, runner) = write_fake_go(root)?;
+
+    let mut build = fake_compiler_command(&["build"], root, &compiler, &log);
+    let first = build
+        .env("PATH", path_with_first(&fake_bin)?)
+        .env("FAKE_RUNNER", &runner)
+        .output()?;
+    assert!(
+        first.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&first.stderr)
+    );
+    assert_eq!(
+        invocation_log(&log)?,
+        ["build:demo::dep", "build:demo", "link:"]
+    );
+
+    clear_invocation_log(&log)?;
+    let second = build.output()?;
+    assert!(second.status.success());
+    assert!(invocation_log(&log)?.is_empty());
+
+    fs::write(
+        root.join("dep/dep.gom"),
+        "package dep;\n\npub fn value() -> int32 {\n    private_value()\n}\n\nfn private_value() -> int32 {\n    2\n}\n",
+    )?;
+    clear_invocation_log(&log)?;
+    let private_change = build.output()?;
+    assert!(private_change.status.success());
+    assert_eq!(invocation_log(&log)?, ["build:demo::dep", "link:"]);
+
+    fs::write(
+        root.join("dep/dep.gom"),
+        "package dep;\n\npub fn value() -> int64 {\n    private_value()\n}\n\nfn private_value() -> int64 {\n    2i64\n}\n",
+    )?;
+    clear_invocation_log(&log)?;
+    let public_change = build.output()?;
+    assert!(public_change.status.success());
+    assert_eq!(
+        invocation_log(&log)?,
+        ["build:demo::dep", "build:demo", "link:"]
+    );
+
+    Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn incremental_cache_invalidates_missing_corrupt_and_compiler_changed_outputs() -> anyhow::Result<()>
+{
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    write_project(root)?;
+    let compiler = root.join("fake-gomlc");
+    let log = root.join("gomlc.log");
+    write_fake_gomlc(&compiler, "first")?;
+
+    let mut check = fake_compiler_command(&["check"], root, &compiler, &log);
+    let first = check.output()?;
+    assert!(first.status.success());
+    assert_eq!(invocation_log(&log)?, ["check:demo"]);
+
+    clear_invocation_log(&log)?;
+    let hit = check.output()?;
+    assert!(hit.status.success());
+    assert!(invocation_log(&log)?.is_empty());
+
+    let interface = root.join("artifact/check/pkg/demo/package.interface");
+    fs::remove_file(&interface)?;
+    clear_invocation_log(&log)?;
+    let missing = check.output()?;
+    assert!(missing.status.success());
+    assert_eq!(invocation_log(&log)?, ["check:demo"]);
+
+    fs::write(&interface, "corrupt")?;
+    clear_invocation_log(&log)?;
+    let corrupt = check.output()?;
+    assert!(corrupt.status.success());
+    assert_eq!(invocation_log(&log)?, ["check:demo"]);
+
+    write_fake_gomlc(&compiler, "second")?;
+    clear_invocation_log(&log)?;
+    let changed_compiler = check.output()?;
+    assert!(changed_compiler.status.success());
+    assert_eq!(invocation_log(&log)?, ["check:demo"]);
+
+    let stdlib = root.join("stdlib");
+    fs::create_dir_all(&stdlib)?;
+    fs::write(stdlib.join("goml.toml"), "[module]\npath = \"std\"\n")?;
+    fs::write(stdlib.join("lib.gom"), "first")?;
+    check.env("GOML_STD_PATH", "stdlib");
+    clear_invocation_log(&log)?;
+    assert!(check.output()?.status.success());
+    assert_eq!(invocation_log(&log)?, ["check:demo"]);
+    clear_invocation_log(&log)?;
+    assert!(check.output()?.status.success());
+    assert!(invocation_log(&log)?.is_empty());
+    fs::write(stdlib.join("README.md"), "ignored")?;
+    fs::create_dir_all(stdlib.join("artifact/cache"))?;
+    fs::write(stdlib.join("artifact/cache/data"), "ignored")?;
+    clear_invocation_log(&log)?;
+    assert!(check.output()?.status.success());
+    assert!(invocation_log(&log)?.is_empty());
+    fs::write(stdlib.join("lib.gom"), "second")?;
+    clear_invocation_log(&log)?;
+    assert!(check.output()?.status.success());
+    assert_eq!(invocation_log(&log)?, ["check:demo"]);
+    fs::write(
+        stdlib.join("goml.toml"),
+        "[module]\npath = \"std_changed\"\n",
+    )?;
+    clear_invocation_log(&log)?;
+    assert!(check.output()?.status.success());
+    assert_eq!(invocation_log(&log)?, ["check:demo"]);
+
+    Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn incremental_build_invalidates_each_missing_expected_output() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    write_project(root)?;
+    let compiler = root.join("fake-gomlc");
+    let log = root.join("gomlc.log");
+    write_fake_gomlc(&compiler, "first")?;
+    let (fake_bin, runner) = write_fake_go(root)?;
+    let mut build = fake_compiler_command(&["build"], root, &compiler, &log);
+    build
+        .env("PATH", path_with_first(&fake_bin)?)
+        .env("FAKE_RUNNER", &runner);
+
+    assert!(build.output()?.status.success());
+    clear_invocation_log(&log)?;
+    assert!(build.output()?.status.success());
+    assert!(invocation_log(&log)?.is_empty());
+
+    fs::remove_file(root.join("artifact/build/pkg/demo/package.interface"))?;
+    clear_invocation_log(&log)?;
+    assert!(build.output()?.status.success());
+    assert_eq!(invocation_log(&log)?, ["build:demo"]);
+
+    fs::remove_file(root.join("artifact/build/pkg/demo/package.core"))?;
+    clear_invocation_log(&log)?;
+    assert!(build.output()?.status.success());
+    assert_eq!(invocation_log(&log)?, ["build:demo"]);
+
+    fs::remove_file(root.join("artifact/main.go"))?;
+    clear_invocation_log(&log)?;
+    assert!(build.output()?.status.success());
+    assert_eq!(invocation_log(&log)?, ["link:"]);
+
+    Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn failed_or_incomplete_commands_never_leave_valid_fingerprints() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    write_project(root)?;
+    let compiler = root.join("fake-gomlc");
+    let log = root.join("gomlc.log");
+    write_fake_gomlc(&compiler, "first")?;
+    let fingerprint = root.join("artifact/check/pkg/demo/package.goml-check-fingerprint");
+
+    let mut check = fake_compiler_command(&["check"], root, &compiler, &log);
+    assert!(check.output()?.status.success());
+    assert!(fingerprint.is_file());
+
+    fs::write(
+        root.join("main.gom"),
+        "package main;\nfn main() -> unit { println(\"changed\") }\n",
+    )?;
+    let failed = check
+        .env("FAKE_GOMLC_FAIL_AFTER_OUTPUT", "check")
+        .output()?;
+    assert!(!failed.status.success());
+    assert!(!fingerprint.exists());
+
+    clear_invocation_log(&log)?;
+    check.env_remove("FAKE_GOMLC_FAIL_AFTER_OUTPUT");
+    assert!(check.output()?.status.success());
+    assert_eq!(invocation_log(&log)?, ["check:demo"]);
+    assert!(fingerprint.is_file());
+
+    fs::write(
+        root.join("main.gom"),
+        "package main;\nfn main() -> unit { println(\"changed again\") }\n",
+    )?;
+    let incomplete = check.env("FAKE_GOMLC_OMIT_OUTPUT", "check").output()?;
+    assert!(!incomplete.status.success());
+    assert!(!fingerprint.exists());
+    assert!(
+        !root
+            .join("artifact/check/pkg/demo/package.interface")
+            .exists()
+    );
+
+    clear_invocation_log(&log)?;
+    check.env_remove("FAKE_GOMLC_OMIT_OUTPUT");
+    assert!(check.output()?.status.success());
+    assert_eq!(invocation_log(&log)?, ["check:demo"]);
+
+    fs::write(
+        root.join("main.gom"),
+        "package main;\nfn main() -> unit { println(\"toolchain race\") }\n",
+    )?;
+    let changed_during_plan = check.env("FAKE_GOMLC_MUTATE", "check").output()?;
+    assert!(!changed_during_plan.status.success());
+    assert!(
+        String::from_utf8(changed_during_plan.stderr)?
+            .contains("compiler or standard library changed while executing the command plan")
+    );
+    assert!(!fingerprint.exists());
+    assert!(
+        !root
+            .join("artifact/check/pkg/demo/package.interface")
+            .exists()
+    );
+
+    clear_invocation_log(&log)?;
+    check.env_remove("FAKE_GOMLC_MUTATE");
+    assert!(check.output()?.status.success());
+    assert_eq!(invocation_log(&log)?, ["check:demo"]);
+
+    fs::write(
+        root.join("main.gom"),
+        "package main;\nfn main() -> unit { println(\"input race\") }\n",
+    )?;
+    let changed_input = check.env("FAKE_GOMLC_MUTATE_INPUT", "check").output()?;
+    assert!(!changed_input.status.success());
+    assert!(
+        String::from_utf8(changed_input.stderr)?
+            .contains("cache input changed while executing subcommand")
+    );
+    assert!(!fingerprint.exists());
+    assert!(
+        !root
+            .join("artifact/check/pkg/demo/package.interface")
+            .exists()
+    );
+
+    clear_invocation_log(&log)?;
+    check.env_remove("FAKE_GOMLC_MUTATE_INPUT");
+    assert!(check.output()?.status.success());
+    assert_eq!(invocation_log(&log)?, ["check:demo"]);
+
+    Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn incremental_cache_isolates_check_build_and_test_commands() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    write_project(root)?;
+    fs::write(
+        root.join("main_test.gom"),
+        "package main;\n#[test]\nfn works() -> unit { () }\n",
+    )?;
+    let compiler = root.join("fake-gomlc");
+    let log = root.join("gomlc.log");
+    write_fake_gomlc(&compiler, "first")?;
+
+    let mut check = fake_compiler_command(&["check"], root, &compiler, &log);
+    assert!(check.output()?.status.success());
+    assert_eq!(invocation_log(&log)?, ["check:demo"]);
+
+    let (fake_bin, runner) = write_fake_go(root)?;
+    clear_invocation_log(&log)?;
+    let mut build = fake_compiler_command(&["build"], root, &compiler, &log);
+    build
+        .env("PATH", path_with_first(&fake_bin)?)
+        .env("FAKE_RUNNER", &runner);
+    assert!(build.output()?.status.success());
+    assert_eq!(invocation_log(&log)?, ["build:demo", "link:"]);
+
+    clear_invocation_log(&log)?;
+    let mut test = fake_compiler_command(
+        &["test", "--list", "--kind", "internal"],
+        root,
+        &compiler,
+        &log,
+    );
+    assert!(test.output()?.status.success());
+    assert_eq!(invocation_log(&log)?, ["test-build:demo", "test-link:demo"]);
+
+    clear_invocation_log(&log)?;
+    assert!(test.output()?.status.success());
+    assert!(invocation_log(&log)?.is_empty());
+
+    clear_invocation_log(&log)?;
+    let mut tests_check = fake_compiler_command(&["check", "--tests"], root, &compiler, &log);
+    assert!(tests_check.output()?.status.success());
+    assert_eq!(invocation_log(&log)?, ["test-check:demo"]);
+    let anchor = root.join("artifact/check/pkg/demo/package");
+    assert!(PathBuf::from(format!("{}.goml-check-fingerprint", anchor.display())).is_file());
+    assert!(PathBuf::from(format!("{}.goml-test-check-fingerprint", anchor.display())).is_file());
+
+    clear_invocation_log(&log)?;
+    assert!(check.output()?.status.success());
+    assert_eq!(invocation_log(&log)?, ["check:demo"]);
 
     Ok(())
 }
