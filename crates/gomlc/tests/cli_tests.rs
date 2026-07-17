@@ -1,6 +1,6 @@
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
+use std::process::{Command, Output, Stdio};
 use std::sync::OnceLock;
 
 use expect_test::expect;
@@ -25,6 +25,13 @@ fn main() -> unit {
     fs.push(dec);
     let f = fs[0];
     println(f(10));
+}
+"#;
+
+const INVALID_NUMERIC_PROGRAM: &str = r#"package main;
+
+fn invalid() -> unit {
+    println(7.5f64 % 2.0f64)
 }
 "#;
 
@@ -135,6 +142,72 @@ fn run_goml_with_goml_home(
         .current_dir(cwd)
         .env("GOML_HOME", home)
         .output()?)
+}
+
+fn assert_rich_numeric_diagnostic(output: &Output, path: &Path) {
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "stdout: {stdout}\nstderr: {stderr}"
+    );
+    assert!(stdout.is_empty(), "stdout: {stdout}");
+    assert!(
+        stderr.contains("error[typer]: Operator % is not defined for type float64"),
+        "stderr: {stderr}"
+    );
+    assert!(
+        stderr.contains(&format!("primary: {}:4:13-4:20", path.display())),
+        "stderr: {stderr}"
+    );
+    assert!(stderr.contains("4 |     println(7.5f64 % 2.0f64)"));
+    assert!(stderr.contains("  |             ^^^^^^^"));
+    assert!(!stderr.contains("Diagnostics {"), "stderr: {stderr}");
+}
+
+#[test]
+fn gomlc_run_single_renders_rich_source_diagnostics() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let path = dir.path().join("main.gom");
+    fs::write(&path, INVALID_NUMERIC_PROGRAM)?;
+
+    let output = Command::new(gomlc_bin())
+        .arg("run-single")
+        .arg(&path)
+        .output()?;
+
+    assert_rich_numeric_diagnostic(&output, &path);
+    Ok(())
+}
+
+#[test]
+fn gomlc_package_commands_render_the_failing_source_file() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let main_path = dir.path().join("main.gom");
+    let invalid_path = dir.path().join("invalid.gom");
+    fs::write(
+        &main_path,
+        "package main;\n\nfn main() -> unit {\n    ()\n}\n",
+    )?;
+    fs::write(&invalid_path, INVALID_NUMERIC_PROGRAM)?;
+
+    for command in ["check", "build"] {
+        let output = Command::new(gomlc_bin())
+            .arg(command)
+            .arg("--package")
+            .arg("main")
+            .arg("--input")
+            .arg(&main_path)
+            .arg(&invalid_path)
+            .arg("--output")
+            .arg(dir.path().join(command))
+            .output()?;
+
+        assert_rich_numeric_diagnostic(&output, &invalid_path);
+    }
+
+    Ok(())
 }
 
 #[test]
