@@ -38,6 +38,7 @@ enum Commands {
     New(NewArgs),
     Check(CheckCommandArgs),
     Build(ProjectCommandArgs),
+    Run(RunCommandArgs),
     Test(TestCommandArgs),
     Update(RegistryCommandArgs),
     Add(AddArgs),
@@ -86,6 +87,14 @@ struct CheckCommandArgs {
     project: ProjectCommandArgs,
     #[arg(long)]
     tests: bool,
+}
+
+#[derive(Args, Debug, Clone)]
+struct RunCommandArgs {
+    #[command(flatten)]
+    project: ProjectCommandArgs,
+    #[arg(last = true, allow_hyphen_values = true, value_name = "ARGS")]
+    args: Vec<OsString>,
 }
 
 #[derive(Args, Debug, Clone)]
@@ -183,6 +192,13 @@ impl ArtifactLayout {
         self.root.join("main.go")
     }
 
+    fn binary(&self, entry_package: &str) -> PathBuf {
+        let name = entry_package.rsplit("::").next().unwrap_or(entry_package);
+        self.root
+            .join("bin")
+            .join(format!("{name}{}", std::env::consts::EXE_SUFFIX))
+    }
+
     fn internal_test_go(&self) -> PathBuf {
         self.test_internal_root().join("main.go")
     }
@@ -238,6 +254,26 @@ struct TestLinkCompilerCommand {
 
 struct ProjectCommandPlan {
     commands: Vec<PlannedCompilerCommand>,
+}
+
+struct ProjectBuildCommandPlan {
+    compiler: ProjectCommandPlan,
+    go: GoBuildCommand,
+}
+
+struct GoBuildCommand {
+    input: PathBuf,
+    output: PathBuf,
+}
+
+impl GoBuildCommand {
+    fn display(&self) -> String {
+        format!(
+            "go build -o {} {}",
+            shell_escape(&self.output.to_string_lossy()),
+            shell_escape(&self.input.to_string_lossy())
+        )
+    }
 }
 
 struct ProjectTestCommandPlan {
@@ -385,6 +421,7 @@ fn run_cli() -> anyhow::Result<()> {
         Commands::New(args) => execute_new(args),
         Commands::Check(args) => execute_project_check(args),
         Commands::Build(args) => execute_project_build(args),
+        Commands::Run(args) => execute_project_run(args),
         Commands::Test(args) => execute_project_test(args),
         Commands::Update(args) => execute_update(args),
         Commands::Add(args) => execute_add(args),
@@ -730,7 +767,7 @@ fn execute_project_check(args: CheckCommandArgs) -> anyhow::Result<()> {
     let plan = build_project_check_plan(&project, args.tests)?;
     execute_planned_commands(
         &project.module_dir,
-        plan.commands,
+        &plan.commands,
         args.project.dry_run,
         args.project.compiler.as_deref(),
     )
@@ -742,12 +779,42 @@ fn execute_project_build(args: ProjectCommandArgs) -> anyhow::Result<()> {
         bail!("test-only targets cannot be built directly; use `goml test`");
     }
     let plan = build_project_build_plan(&project)?;
-    execute_planned_commands(
+    execute_project_build_plan(
         &project.module_dir,
-        plan.commands,
-        args.dry_run,
+        &plan,
         args.compiler.as_deref(),
+        args.dry_run,
     )
+}
+
+fn execute_project_run(args: RunCommandArgs) -> anyhow::Result<()> {
+    let project = load_project(&args.project.target, args.project.target_dir.as_deref())?;
+    if !matches!(&project.target_role, ProjectTargetRole::Production) {
+        bail!("test-only targets cannot be run directly; use `goml test`");
+    }
+    let plan = build_project_build_plan(&project)?;
+    execute_project_build_plan(
+        &project.module_dir,
+        &plan,
+        args.project.compiler.as_deref(),
+        args.project.dry_run,
+    )?;
+    if args.project.dry_run {
+        println!(
+            "{}",
+            display_command_path_and_args(&plan.go.output, &args.args)
+        );
+        return Ok(());
+    }
+    let executable = absolute_from_module(&project.module_dir, &plan.go.output);
+    let status = Command::new(&executable)
+        .args(&args.args)
+        .status()
+        .with_context(|| format!("failed to execute {}", executable.display()))?;
+    if !status.success() {
+        std::process::exit(status.code().unwrap_or(1));
+    }
+    Ok(())
 }
 
 fn execute_project_test(args: TestCommandArgs) -> anyhow::Result<()> {
@@ -755,7 +822,7 @@ fn execute_project_test(args: TestCommandArgs) -> anyhow::Result<()> {
     let plan = build_project_test_plan(&project, args.kind)?;
     execute_planned_commands(
         &project.module_dir,
-        plan.commands,
+        &plan.commands,
         args.dry_run,
         args.compiler.as_deref(),
     )?;
@@ -849,8 +916,21 @@ fn build_external_test_check_plan(
     )
 }
 
-fn build_project_build_plan(project: &ProjectContext) -> anyhow::Result<ProjectCommandPlan> {
-    build_project_plan(project, ProjectStage::Build)
+fn build_project_build_plan(project: &ProjectContext) -> anyhow::Result<ProjectBuildCommandPlan> {
+    let compiler = build_project_plan(project, ProjectStage::Build)?;
+    let entry_package = compiler
+        .commands
+        .iter()
+        .find_map(|command| match command {
+            PlannedCompilerCommand::Link(command) => Some(command.entry_package.as_str()),
+            _ => None,
+        })
+        .ok_or_else(|| anyhow!("project build plan is missing a link command"))?;
+    let go = GoBuildCommand {
+        input: project.artifacts.main_go(),
+        output: project.artifacts.binary(entry_package),
+    };
+    Ok(ProjectBuildCommandPlan { compiler, go })
 }
 
 fn build_project_test_plan(
@@ -1490,6 +1570,8 @@ fn build_test_runner(module_dir: &Path, group: &TestRunGroup) -> anyhow::Result<
         .arg(&runner)
         .arg(&group.go_output)
         .current_dir(module_dir)
+        .env("GOWORK", "off")
+        .env("GO111MODULE", "off")
         .stdin(Stdio::null())
         .status()
         .context("failed to execute go build for test runner")?;
@@ -1777,12 +1859,12 @@ fn parse_positive_usize(value: &str) -> Result<usize, String> {
 
 fn execute_planned_commands(
     module_dir: &Path,
-    commands: Vec<PlannedCompilerCommand>,
+    commands: &[PlannedCompilerCommand],
     dry_run: bool,
     compiler: Option<&Path>,
 ) -> anyhow::Result<()> {
     if dry_run {
-        for command in commands.iter() {
+        for command in commands {
             println!("{}", command.display());
         }
         return Ok(());
@@ -1800,6 +1882,53 @@ fn execute_planned_commands(
         }
     }
     Ok(())
+}
+
+fn execute_project_build_plan(
+    module_dir: &Path,
+    plan: &ProjectBuildCommandPlan,
+    compiler: Option<&Path>,
+    dry_run: bool,
+) -> anyhow::Result<()> {
+    execute_planned_commands(module_dir, &plan.compiler.commands, dry_run, compiler)?;
+    if dry_run {
+        println!("{}", plan.go.display());
+        return Ok(());
+    }
+    let output = absolute_from_module(module_dir, &plan.go.output);
+    let output_dir = output
+        .parent()
+        .ok_or_else(|| anyhow!("binary output {} has no parent directory", output.display()))?;
+    fs::create_dir_all(output_dir)
+        .with_context(|| format!("failed to create {}", output_dir.display()))?;
+    let status = Command::new("go")
+        .args(["build", "-o"])
+        .arg(&plan.go.output)
+        .arg(&plan.go.input)
+        .current_dir(module_dir)
+        .env("GOWORK", "off")
+        .env("GO111MODULE", "off")
+        .status()
+        .context("failed to execute go build")?;
+    if !status.success() {
+        bail!("go build failed with status {status}");
+    }
+    Ok(())
+}
+
+fn absolute_from_module(module_dir: &Path, path: &Path) -> PathBuf {
+    if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        module_dir.join(path)
+    }
+}
+
+fn display_command_path_and_args(path: &Path, args: &[OsString]) -> String {
+    let mut parts = Vec::with_capacity(args.len() + 1);
+    parts.push(shell_escape(&path.to_string_lossy()));
+    parts.extend(args.iter().map(|arg| shell_escape(&arg.to_string_lossy())));
+    parts.join(" ")
 }
 
 fn shell_escape(arg: &str) -> String {
