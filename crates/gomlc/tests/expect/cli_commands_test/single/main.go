@@ -15,15 +15,15 @@ func main0() struct{} {
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t61 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t61)
+    var t64 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t64)
     return struct{}{}
 }
 
-func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__34 string) string {
-    var retv64 string
-    retv64 = self__34
-    return retv64
+func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
+    var retv67 string
+    retv67 = self__37
+    return retv67
 }
 
 func main() {
