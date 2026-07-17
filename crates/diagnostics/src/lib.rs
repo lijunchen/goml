@@ -172,6 +172,11 @@ pub struct Diagnostic {
     message: String,
     range: Option<TextRange>,
     source: Option<PathBuf>,
+    details: Box<DiagnosticDetails>,
+}
+
+#[derive(Default, Clone)]
+struct DiagnosticDetails {
     labels: Vec<Label>,
     notes: Vec<Note>,
     helps: Vec<Help>,
@@ -198,10 +203,7 @@ impl Diagnostic {
             message: message.into(),
             range: None,
             source: None,
-            labels: Vec::new(),
-            notes: Vec::new(),
-            helps: Vec::new(),
-            fixes: Vec::new(),
+            details: Box::default(),
         }
     }
 
@@ -236,7 +238,7 @@ impl Diagnostic {
     }
 
     pub fn with_label(mut self, label: Label) -> Self {
-        self.labels.push(label);
+        self.details.labels.push(label);
         self
     }
 
@@ -249,50 +251,50 @@ impl Diagnostic {
     }
 
     pub fn add_label(&mut self, label: Label) {
-        self.labels.push(label);
+        self.details.labels.push(label);
     }
 
     pub fn labels(&self) -> &[Label] {
-        &self.labels
+        &self.details.labels
     }
 
     pub fn with_note(mut self, note: impl Into<String>) -> Self {
-        self.notes.push(Note::new(note));
+        self.details.notes.push(Note::new(note));
         self
     }
 
     pub fn add_note(&mut self, note: impl Into<String>) {
-        self.notes.push(Note::new(note));
+        self.details.notes.push(Note::new(note));
     }
 
     pub fn notes(&self) -> &[Note] {
-        &self.notes
+        &self.details.notes
     }
 
     pub fn with_help(mut self, help: impl Into<String>) -> Self {
-        self.helps.push(Help::new(help));
+        self.details.helps.push(Help::new(help));
         self
     }
 
     pub fn add_help(&mut self, help: impl Into<String>) {
-        self.helps.push(Help::new(help));
+        self.details.helps.push(Help::new(help));
     }
 
     pub fn helps(&self) -> &[Help] {
-        &self.helps
+        &self.details.helps
     }
 
     pub fn with_fix(mut self, fix: FixIt) -> Self {
-        self.fixes.push(fix);
+        self.details.fixes.push(fix);
         self
     }
 
     pub fn add_fix(&mut self, fix: FixIt) {
-        self.fixes.push(fix);
+        self.details.fixes.push(fix);
     }
 
     pub fn fixes(&self) -> &[FixIt] {
-        &self.fixes
+        &self.details.fixes
     }
 }
 
