@@ -79,6 +79,7 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(unit_to_string()),
         Item::Fn(bool_to_string()),
         Item::Fn(string_len()),
+        Item::Fn(string_decode_utf8_at_native()),
         Item::Fn(string_get()),
         Item::Fn(string_byte_get()),
         Item::Fn(string_byte_slice()),
@@ -129,6 +130,10 @@ pub fn make_runtime() -> Vec<goast::Item> {
 
 pub fn runtime_hook_fn_name(id: RuntimeHookId) -> String {
     go_generated_ident(&format!("_goml_runtime_{}", id.key().replace('.', "_")))
+}
+
+fn string_decode_utf8_at_native_fn_name() -> String {
+    go_generated_ident("_goml_runtime_string_decode_utf8_at_native")
 }
 
 fn go_error_ty() -> goty::GoType {
@@ -4418,8 +4423,13 @@ fn string_len() -> goast::Fn {
 }
 
 fn string_get() -> goast::Fn {
-    let decoded_ty = tuple_ty(vec![tast::Ty::TBool, tast::Ty::TChar, tast::Ty::TInt32]);
-    let decoded_go_ty = goast::tast_ty_to_go_type(&decoded_ty);
+    let native_ret_ty = goty::GoType::TMulti {
+        elems: vec![
+            goty::GoType::TBool,
+            goty::GoType::TChar,
+            goty::GoType::TInt32,
+        ],
+    };
     goast::Fn {
         name: runtime_hook_fn_name(RuntimeHookId::StringGet),
         params: vec![
@@ -4430,14 +4440,23 @@ fn string_get() -> goast::Fn {
         body: goast::Block {
             stmts: vec![
                 goast::Stmt::VarDecl {
-                    name: "decoded".to_string(),
-                    ty: decoded_go_ty.clone(),
-                    value: Some(goast::Expr::Call {
+                    name: "valid".to_string(),
+                    ty: goty::GoType::TBool,
+                    value: None,
+                },
+                goast::Stmt::VarDecl {
+                    name: "value".to_string(),
+                    ty: goty::GoType::TChar,
+                    value: None,
+                },
+                goast::Stmt::MultiAssignment {
+                    names: vec!["valid".to_string(), "value".to_string(), "_".to_string()],
+                    value: goast::Expr::Call {
                         func: Box::new(goast::Expr::Var {
-                            name: runtime_hook_fn_name(RuntimeHookId::StringDecodeUtf8At),
+                            name: string_decode_utf8_at_native_fn_name(),
                             ty: goty::GoType::TFunc {
                                 params: vec![goty::GoType::TString, goty::GoType::TInt32],
-                                ret_ty: Box::new(decoded_go_ty.clone()),
+                                ret_ty: Box::new(native_ret_ty.clone()),
                             },
                         }),
                         args: vec![
@@ -4450,18 +4469,14 @@ fn string_get() -> goast::Fn {
                                 ty: goty::GoType::TInt32,
                             },
                         ],
-                        ty: decoded_go_ty.clone(),
-                    }),
+                        ty: native_ret_ty,
+                    },
                 },
                 goast::Stmt::If {
                     cond: goast::Expr::UnaryOp {
                         op: goast::GoUnaryOp::Not,
-                        expr: Box::new(goast::Expr::FieldAccess {
-                            obj: Box::new(goast::Expr::Var {
-                                name: "decoded".to_string(),
-                                ty: decoded_go_ty.clone(),
-                            }),
-                            field: "_0".to_string(),
+                        expr: Box::new(goast::Expr::Var {
+                            name: "valid".to_string(),
                             ty: goty::GoType::TBool,
                         }),
                         ty: goty::GoType::TBool,
@@ -4485,12 +4500,8 @@ fn string_get() -> goast::Fn {
                     else_: None,
                 },
                 goast::Stmt::Return {
-                    expr: Some(goast::Expr::FieldAccess {
-                        obj: Box::new(goast::Expr::Var {
-                            name: "decoded".to_string(),
-                            ty: decoded_go_ty,
-                        }),
-                        field: "_1".to_string(),
+                    expr: Some(goast::Expr::Var {
+                        name: "value".to_string(),
                         ty: goty::GoType::TChar,
                     }),
                 },
@@ -4743,9 +4754,7 @@ fn string_is_char_boundary() -> goast::Fn {
     }
 }
 
-fn string_decode_utf8_at() -> goast::Fn {
-    let result_ty = tuple_ty(vec![tast::Ty::TBool, tast::Ty::TChar, tast::Ty::TInt32]);
-    let result_go_ty = goast::tast_ty_to_go_type(&result_ty);
+fn string_decode_utf8_at_native() -> goast::Fn {
     let native_int_ty = goty::GoType::TName {
         name: "int".to_string(),
     };
@@ -4774,31 +4783,34 @@ fn string_decode_utf8_at() -> goast::Fn {
         ty: goty::GoType::TInt32,
     };
     let invalid_result = || {
-        tuple_literal(
-            &result_ty,
-            vec![
-                goast::Expr::Bool {
-                    value: false,
-                    ty: goty::GoType::TBool,
-                },
-                goast::Expr::Int {
-                    value: "0".to_string(),
-                    ty: goty::GoType::TChar,
-                },
-                goast::Expr::Int {
-                    value: "0".to_string(),
-                    ty: goty::GoType::TInt32,
-                },
-            ],
-        )
+        vec![
+            goast::Expr::Bool {
+                value: false,
+                ty: goty::GoType::TBool,
+            },
+            goast::Expr::Int {
+                value: "0".to_string(),
+                ty: goty::GoType::TChar,
+            },
+            goast::Expr::Int {
+                value: "0".to_string(),
+                ty: goty::GoType::TInt32,
+            },
+        ]
     };
     goast::Fn {
-        name: runtime_hook_fn_name(RuntimeHookId::StringDecodeUtf8At),
+        name: string_decode_utf8_at_native_fn_name(),
         params: vec![
             ("s".to_string(), goty::GoType::TString),
             ("i".to_string(), goty::GoType::TInt32),
         ],
-        ret_ty: Some(result_go_ty),
+        ret_ty: Some(goty::GoType::TMulti {
+            elems: vec![
+                goty::GoType::TBool,
+                goty::GoType::TChar,
+                goty::GoType::TInt32,
+            ],
+        }),
         body: goast::Block {
             stmts: vec![
                 goast::Stmt::If {
@@ -4828,8 +4840,8 @@ fn string_decode_utf8_at() -> goast::Fn {
                         ty: goty::GoType::TBool,
                     },
                     then: goast::Block {
-                        stmts: vec![goast::Stmt::Return {
-                            expr: Some(invalid_result()),
+                        stmts: vec![goast::Stmt::ReturnMulti {
+                            exprs: invalid_result(),
                         }],
                     },
                     else_: None,
@@ -4903,36 +4915,117 @@ fn string_decode_utf8_at() -> goast::Fn {
                         ty: goty::GoType::TBool,
                     },
                     then: goast::Block {
-                        stmts: vec![goast::Stmt::Return {
-                            expr: Some(invalid_result()),
+                        stmts: vec![goast::Stmt::ReturnMulti {
+                            exprs: invalid_result(),
                         }],
                     },
                     else_: None,
+                },
+                goast::Stmt::ReturnMulti {
+                    exprs: vec![
+                        goast::Expr::Bool {
+                            value: true,
+                            ty: goty::GoType::TBool,
+                        },
+                        goast::Expr::Var {
+                            name: "value".to_string(),
+                            ty: goty::GoType::TChar,
+                        },
+                        goast::Expr::Call {
+                            func: Box::new(goast::Expr::Var {
+                                name: "int32".to_string(),
+                                ty: goty::GoType::TFunc {
+                                    params: vec![native_int_ty.clone()],
+                                    ret_ty: Box::new(goty::GoType::TInt32),
+                                },
+                            }),
+                            args: vec![goast::Expr::Var {
+                                name: "width".to_string(),
+                                ty: native_int_ty,
+                            }],
+                            ty: goty::GoType::TInt32,
+                        },
+                    ],
+                },
+            ],
+        },
+    }
+}
+
+fn string_decode_utf8_at() -> goast::Fn {
+    let result_ty = tuple_ty(vec![tast::Ty::TBool, tast::Ty::TChar, tast::Ty::TInt32]);
+    let native_ret_ty = goty::GoType::TMulti {
+        elems: vec![
+            goty::GoType::TBool,
+            goty::GoType::TChar,
+            goty::GoType::TInt32,
+        ],
+    };
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::StringDecodeUtf8At),
+        params: vec![
+            ("s".to_string(), goty::GoType::TString),
+            ("i".to_string(), goty::GoType::TInt32),
+        ],
+        ret_ty: Some(goast::tast_ty_to_go_type(&result_ty)),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::VarDecl {
+                    name: "valid".to_string(),
+                    ty: goty::GoType::TBool,
+                    value: None,
+                },
+                goast::Stmt::VarDecl {
+                    name: "value".to_string(),
+                    ty: goty::GoType::TChar,
+                    value: None,
+                },
+                goast::Stmt::VarDecl {
+                    name: "width".to_string(),
+                    ty: goty::GoType::TInt32,
+                    value: None,
+                },
+                goast::Stmt::MultiAssignment {
+                    names: vec![
+                        "valid".to_string(),
+                        "value".to_string(),
+                        "width".to_string(),
+                    ],
+                    value: goast::Expr::Call {
+                        func: Box::new(goast::Expr::Var {
+                            name: string_decode_utf8_at_native_fn_name(),
+                            ty: goty::GoType::TFunc {
+                                params: vec![goty::GoType::TString, goty::GoType::TInt32],
+                                ret_ty: Box::new(native_ret_ty.clone()),
+                            },
+                        }),
+                        args: vec![
+                            goast::Expr::Var {
+                                name: "s".to_string(),
+                                ty: goty::GoType::TString,
+                            },
+                            goast::Expr::Var {
+                                name: "i".to_string(),
+                                ty: goty::GoType::TInt32,
+                            },
+                        ],
+                        ty: native_ret_ty,
+                    },
                 },
                 goast::Stmt::Return {
                     expr: Some(tuple_literal(
                         &result_ty,
                         vec![
-                            goast::Expr::Bool {
-                                value: true,
+                            goast::Expr::Var {
+                                name: "valid".to_string(),
                                 ty: goty::GoType::TBool,
                             },
                             goast::Expr::Var {
                                 name: "value".to_string(),
                                 ty: goty::GoType::TChar,
                             },
-                            goast::Expr::Call {
-                                func: Box::new(goast::Expr::Var {
-                                    name: "int32".to_string(),
-                                    ty: goty::GoType::TFunc {
-                                        params: vec![native_int_ty.clone()],
-                                        ret_ty: Box::new(goty::GoType::TInt32),
-                                    },
-                                }),
-                                args: vec![goast::Expr::Var {
-                                    name: "width".to_string(),
-                                    ty: native_int_ty,
-                                }],
+                            goast::Expr::Var {
+                                name: "width".to_string(),
                                 ty: goty::GoType::TInt32,
                             },
                         ],

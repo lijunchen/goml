@@ -575,27 +575,22 @@ impl [T] Vec[T] {
 
     fn swap_remove(self: Self, index: int32) -> T {
         let len = self.len();
-        if index < 0 || index >= len {
-            missing("vector index out of bounds")
+        let value = self.get(index);
+        if index + 1 < len {
+            self.set(index, self.get(len - 1));
         } else {
-            let value = self.get(index);
-            if index + 1 < len {
-                self.set(index, self.get(len - 1));
-            } else {
-                ()
-            };
-            self.truncate(len - 1);
-            value
-        }
+            ()
+        };
+        self.truncate(len - 1);
+        value
     }
 
     fn insert(self: Self, index: int32, value: T) -> unit {
         let len = self.len();
-        if index < 0 || index > len {
-            missing("vector index out of bounds")
-        } else if index == len {
+        if index == len {
             self.push(value)
         } else {
+            let _ = self.get(index);
             self.push(self.get(len - 1));
             let current = Ref::new(len - 1);
             while current.get() > index {
@@ -608,18 +603,14 @@ impl [T] Vec[T] {
 
     fn remove(self: Self, index: int32) -> T {
         let len = self.len();
-        if index < 0 || index >= len {
-            missing("vector index out of bounds")
-        } else {
-            let value = self.get(index);
-            let current = Ref::new(index);
-            while current.get() + 1 < len {
-                self.set(current.get(), self.get(current.get() + 1));
-                current.set(current.get() + 1);
-            };
-            self.truncate(len - 1);
-            value
-        }
+        let value = self.get(index);
+        let current = Ref::new(index);
+        while current.get() + 1 < len {
+            self.set(current.get(), self.get(current.get() + 1));
+            current.set(current.get() + 1);
+        };
+        self.truncate(len - 1);
+        value
     }
 
     fn reverse(self: Self) -> unit {
