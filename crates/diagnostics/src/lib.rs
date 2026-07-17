@@ -464,3 +464,99 @@ impl<'a> IntoIterator for &'a mut Diagnostics {
         self.items.iter_mut()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use text_size::{TextRange, TextSize};
+
+    fn range(start: u32, end: u32) -> TextRange {
+        TextRange::new(TextSize::from(start), TextSize::from(end))
+    }
+
+    #[test]
+    fn attached_sources_materialize_legacy_ranges_as_primary_labels() {
+        let mut diagnostics = Diagnostics::new();
+        diagnostics.set_source("main.gom");
+        diagnostics.push(
+            Diagnostic::new(Stage::Typer, Severity::Error, "bad value").with_range(range(4, 9)),
+        );
+        assert!(diagnostics.iter().next().unwrap().labels().is_empty());
+
+        let mut sources = SourceMap::new();
+        let source = sources.add("main.gom", "let value\n");
+        diagnostics.attach_source_map(Arc::new(sources));
+
+        let diagnostic = diagnostics.iter().next().unwrap();
+        assert_eq!(diagnostic.labels().len(), 1);
+        assert_eq!(diagnostic.labels()[0].severity(), LabelSeverity::Primary);
+        assert_eq!(diagnostic.labels()[0].span().source(), source);
+        assert_eq!(diagnostic.labels()[0].span().range(), 4..9);
+    }
+
+    #[test]
+    fn attached_sources_materialize_new_and_backfilled_diagnostics() {
+        let mut sources = SourceMap::new();
+        sources.add("main.gom", "abc\n");
+        let mut diagnostics = Diagnostics::new().with_source_map(Arc::new(sources));
+        diagnostics.set_source("main.gom");
+        diagnostics
+            .push(Diagnostic::new(Stage::Parser, Severity::Error, "first").with_range(range(0, 1)));
+        diagnostics.clear_source();
+        diagnostics.push(
+            Diagnostic::new(Stage::Parser, Severity::Error, "second").with_range(range(1, 2)),
+        );
+        diagnostics.set_source_for_missing("main.gom");
+
+        assert!(diagnostics.iter().all(|diagnostic| {
+            diagnostic
+                .labels()
+                .iter()
+                .any(|label| label.severity() == LabelSeverity::Primary)
+        }));
+    }
+
+    #[test]
+    fn attaching_sources_preserves_existing_primary_labels() {
+        let mut sources = SourceMap::new();
+        let source = sources.add("main.gom", "abc");
+        let span = sources.span(source, 1, 2).unwrap();
+        let mut diagnostics = Diagnostics::new();
+        diagnostics.push(
+            Diagnostic::new(Stage::Typer, Severity::Error, "bad value")
+                .with_source("main.gom")
+                .with_range(range(0, 1))
+                .with_primary_label(span, "specific value"),
+        );
+
+        diagnostics.attach_source_map(Arc::new(sources));
+
+        let labels = diagnostics.iter().next().unwrap().labels();
+        assert_eq!(labels.len(), 1);
+        assert_eq!(labels[0].span(), span);
+        assert_eq!(labels[0].message(), Some("specific value"));
+    }
+
+    #[test]
+    fn append_adopts_sources_and_materializes_appended_ranges() {
+        let mut sources = SourceMap::new();
+        sources.add("dependency.gom", "abc");
+        let mut dependency = Diagnostics::new().with_source_map(Arc::new(sources));
+        dependency.push(
+            Diagnostic::new(Stage::Parser, Severity::Error, "bad dependency")
+                .with_source("dependency.gom")
+                .with_range(range(1, 2)),
+        );
+        let mut combined = Diagnostics::new();
+        combined.set_source("main.gom");
+
+        combined.append(&mut dependency);
+
+        assert!(dependency.is_empty());
+        assert!(combined.source_map().is_some());
+        let diagnostic = combined.iter().next().unwrap();
+        assert_eq!(diagnostic.source(), Some(Path::new("dependency.gom")));
+        assert_eq!(diagnostic.labels().len(), 1);
+        assert_eq!(diagnostic.labels()[0].span().range(), 1..2);
+    }
+}
