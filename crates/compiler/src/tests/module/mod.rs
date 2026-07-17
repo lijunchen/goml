@@ -1,4 +1,5 @@
 use expect_test::expect_file;
+use std::io::Write;
 
 use crate::pipeline;
 
@@ -145,6 +146,82 @@ fn multi_package_compile_project_030() -> anyhow::Result<()> {
 #[test]
 fn multi_package_compile_project_031() -> anyhow::Result<()> {
     run_project("project031_into_iterator")
+}
+
+#[test]
+fn multi_package_compile_project_032() -> anyhow::Result<()> {
+    run_project("project032_std_host_api")
+}
+
+#[test]
+fn std_host_binary_stdio_round_trip() -> anyhow::Result<()> {
+    if !super::go_available() {
+        return Ok(());
+    }
+    let dir = tempfile::tempdir()?;
+    let main_path = dir.path().join("main.gom");
+    let source = r#"
+package main;
+
+use std::bytes;
+use std::io;
+use std::process;
+
+fn main() -> unit {
+    match io::read_stdin() {
+        Result::Ok(data) => {
+            match io::write_stdout(data) {
+                Result::Ok(value) => value,
+                Result::Err(error) => {
+                    io::eprintln(error);
+                    process::exit(1)
+                },
+            };
+            match io::write_stderr(bytes::Bytes::from_string("binary stderr")) {
+                Result::Ok(value) => value,
+                Result::Err(error) => {
+                    io::eprintln(error);
+                    process::exit(1)
+                },
+            }
+        },
+        Result::Err(error) => {
+            io::eprintln(error);
+            process::exit(1)
+        },
+    }
+}
+"#;
+    std::fs::write(
+        dir.path().join("goml.toml"),
+        "[module]\npath = \"stdio_test\"\n",
+    )?;
+    std::fs::write(&main_path, source)?;
+    let compilation = pipeline::pipeline::compile(&main_path, source)
+        .map_err(|error| anyhow::anyhow!("compilation failed: {error:?}"))?;
+    let go_source = compilation.go.to_pretty(&compilation.goenv, 120);
+    std::fs::write(dir.path().join("main.go"), go_source)?;
+    let mut child = std::process::Command::new("go")
+        .arg("run")
+        .arg("main.go")
+        .current_dir(dir.path())
+        .env("GO111MODULE", "off")
+        .env("GOWORK", "off")
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()?;
+    let input = [0u8, 127, 128, 255];
+    child.stdin.take().unwrap().write_all(&input)?;
+    let output = child.wait_with_output()?;
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert_eq!(output.stdout, input);
+    assert_eq!(output.stderr, b"binary stderr");
+    Ok(())
 }
 
 fn run_project(name: &str) -> anyhow::Result<()> {

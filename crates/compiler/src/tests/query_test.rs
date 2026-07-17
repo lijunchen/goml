@@ -1704,6 +1704,9 @@ fn main() -> unit {
         expect![[r#"
             [
                 "args",
+                "current_dir",
+                "current_exe",
+                "var",
             ]
         "#]],
     );
