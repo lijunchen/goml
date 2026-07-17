@@ -214,7 +214,7 @@ fn dyn_hash_ref_dyn_impl_executes() {
     let go = compilation.go.to_pretty(&compilation.goenv, 120);
     let output = super::execute_go_source(&go, &path.to_string_lossy()).unwrap();
 
-    assert_eq!(output, "1\n");
+    assert_eq!(output, "true\n");
 }
 
 #[test]
