@@ -169,6 +169,20 @@ fn primitive_expr(ctx: Checker, value: hir::Expr) -> Option[Expr] {
     }
 }
 
+fn function_scheme_for_name_ref(
+    ctx: Checker,
+    value: hir::NameRef,
+) -> Option[FunctionScheme] {
+    match value {
+        hir::NameRef::Local(_) => Option::None,
+        hir::NameRef::Def(definition) => find_function_by_def(ctx, definition),
+        hir::NameRef::Other(name) => match find_function_by_name(ctx, name) {
+            Option::Some(value) => Option::Some(value),
+            Option::None => builtin_function_scheme(name),
+        },
+    }
+}
+
 fn check_name_ref(ctx: Checker, value: hir::NameRef) -> Expr {
     match value {
         hir::NameRef::Local(local) => match find_local(ctx, local) {
@@ -613,6 +627,29 @@ fn check_call_expr(
     let result = match function {
         hir::Expr::Field(receiver, name) => {
             check_method_call(ctx, receiver, name, args, expected)
+        },
+        hir::Expr::NameRef(reference) => match function_scheme_for_name_ref(ctx, reference) {
+            Option::Some(scheme) => {
+                let candidate = instantiate_scheme_candidate(ctx, scheme, Vec::new());
+                let result = coerce_expr(
+                    ctx,
+                    apply_call(
+                        ctx,
+                        Expr::Callable(candidate.callable, candidate.ty),
+                        Vec::new(),
+                        args,
+                    ),
+                    expected,
+                );
+                let _ = predicates_satisfied_at(ctx, candidate.predicates, 0);
+                result
+            },
+            Option::None => apply_call(
+                ctx,
+                check_name_ref(ctx, reference),
+                Vec::new(),
+                args,
+            ),
         },
         _ => apply_call(
             ctx,
