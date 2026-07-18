@@ -1521,10 +1521,10 @@ fn ensure_trait_impl_for_ty(
 
 // Transform an expression under a given substitution; queue any needed instances
 fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
-    match e.clone() {
+    match e {
         core::Expr::EVar { name, ty } => {
-            let concrete_ty = subst_ty_in_ctx(ctx, &ty, s);
-            if let Some(callee) = ctx.orig_fns.get(&name).cloned()
+            let concrete_ty = subst_ty_in_ctx(ctx, ty, s);
+            if let Some(callee) = ctx.orig_fns.get(name).cloned()
                 && fn_is_generic(&callee)
                 && !has_tparam(&concrete_ty)
             {
@@ -1536,7 +1536,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                 if unify(&generic_ty, &concrete_ty, &mut call_subst).is_ok()
                     && !call_subst.values().any(has_tparam)
                 {
-                    let spec = ctx.ensure_instance(&name, call_subst);
+                    let spec = ctx.ensure_instance(name, call_subst);
                     return MonoExpr::EVar {
                         name: spec,
                         ty: concrete_ty,
@@ -1544,26 +1544,29 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                 }
             }
             MonoExpr::EVar {
-                name,
+                name: name.clone(),
                 ty: concrete_ty,
             }
         }
         core::Expr::ECallable { name, body, ty } => MonoExpr::ECallable {
-            name,
-            body,
-            ty: subst_ty_in_ctx(ctx, &ty, s),
+            name: name.clone(),
+            body: *body,
+            ty: subst_ty_in_ctx(ctx, ty, s),
         },
         core::Expr::EPrim { value, ty } => {
-            let ty = subst_ty_in_ctx(ctx, &ty, s);
-            MonoExpr::EPrim { value, ty }
+            let ty = subst_ty_in_ctx(ctx, ty, s);
+            MonoExpr::EPrim {
+                value: value.clone(),
+                ty,
+            }
         }
         core::Expr::EConstr {
             constructor,
             args,
             ty,
         } => {
-            let new_ty = subst_ty_in_ctx(ctx, &ty, s);
-            let new_constructor = update_constructor_type(&constructor, &new_ty);
+            let new_ty = subst_ty_in_ctx(ctx, ty, s);
+            let new_constructor = update_constructor_type(constructor, &new_ty);
             MonoExpr::EConstr {
                 constructor: new_constructor,
                 args: args.iter().map(|a| mono_expr(ctx, a, s)).collect(),
@@ -1572,11 +1575,11 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
         }
         core::Expr::ETuple { items, ty } => MonoExpr::ETuple {
             items: items.iter().map(|a| mono_expr(ctx, a, s)).collect(),
-            ty: subst_ty_in_ctx(ctx, &ty, s),
+            ty: subst_ty_in_ctx(ctx, ty, s),
         },
         core::Expr::EArray { items, ty } => MonoExpr::EArray {
             items: items.iter().map(|a| mono_expr(ctx, a, s)).collect(),
-            ty: subst_ty_in_ctx(ctx, &ty, s),
+            ty: subst_ty_in_ctx(ctx, ty, s),
         },
         core::Expr::EClosure { params, body, ty } => {
             let new_params = params
@@ -1587,8 +1590,8 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                     astptr: param.astptr,
                 })
                 .collect();
-            let new_body = mono_expr(ctx, &body, s);
-            let new_ty = subst_ty_in_ctx(ctx, &ty, s);
+            let new_body = mono_expr(ctx, body, s);
+            let new_ty = subst_ty_in_ctx(ctx, ty, s);
             MonoExpr::EClosure {
                 params: new_params,
                 body: Box::new(new_body),
@@ -1596,8 +1599,8 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             }
         }
         core::Expr::EBlock { block, ty } => MonoExpr::EBlock {
-            block: Box::new(mono_block(ctx, &block, s)),
-            ty: subst_ty_in_ctx(ctx, &ty, s),
+            block: Box::new(mono_block(ctx, block, s)),
+            ty: subst_ty_in_ctx(ctx, ty, s),
         },
         core::Expr::EMatch {
             expr,
@@ -1605,7 +1608,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             default,
             ty,
         } => MonoExpr::EMatch {
-            expr: Box::new(mono_expr(ctx, &expr, s)),
+            expr: Box::new(mono_expr(ctx, expr, s)),
             arms: arms
                 .iter()
                 .map(|arm| MonoArm {
@@ -1613,8 +1616,8 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                     body: mono_expr(ctx, &arm.body, s),
                 })
                 .collect(),
-            default: default.map(|d| Box::new(mono_expr(ctx, &d, s))),
-            ty: subst_ty_in_ctx(ctx, &ty, s),
+            default: default.as_ref().map(|d| Box::new(mono_expr(ctx, d, s))),
+            ty: subst_ty_in_ctx(ctx, ty, s),
         },
         core::Expr::EIf {
             cond,
@@ -1622,29 +1625,29 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             else_branch,
             ty,
         } => MonoExpr::EIf {
-            cond: Box::new(mono_expr(ctx, &cond, s)),
-            then_branch: Box::new(mono_expr(ctx, &then_branch, s)),
-            else_branch: Box::new(mono_expr(ctx, &else_branch, s)),
-            ty: subst_ty_in_ctx(ctx, &ty, s),
+            cond: Box::new(mono_expr(ctx, cond, s)),
+            then_branch: Box::new(mono_expr(ctx, then_branch, s)),
+            else_branch: Box::new(mono_expr(ctx, else_branch, s)),
+            ty: subst_ty_in_ctx(ctx, ty, s),
         },
         core::Expr::EWhile { cond, body, ty } => MonoExpr::EWhile {
-            cond: Box::new(mono_expr(ctx, &cond, s)),
-            body: Box::new(mono_expr(ctx, &body, s)),
-            ty: subst_ty_in_ctx(ctx, &ty, s),
+            cond: Box::new(mono_expr(ctx, cond, s)),
+            body: Box::new(mono_expr(ctx, body, s)),
+            ty: subst_ty_in_ctx(ctx, ty, s),
         },
         core::Expr::EBreak { ty } => MonoExpr::EBreak {
-            ty: subst_ty_in_ctx(ctx, &ty, s),
+            ty: subst_ty_in_ctx(ctx, ty, s),
         },
         core::Expr::EContinue { ty } => MonoExpr::EContinue {
-            ty: subst_ty_in_ctx(ctx, &ty, s),
+            ty: subst_ty_in_ctx(ctx, ty, s),
         },
         core::Expr::EReturn { expr, ty } => MonoExpr::EReturn {
-            expr: expr.map(|expr| Box::new(mono_expr(ctx, &expr, s))),
-            ty: subst_ty_in_ctx(ctx, &ty, s),
+            expr: expr.as_ref().map(|expr| Box::new(mono_expr(ctx, expr, s))),
+            ty: subst_ty_in_ctx(ctx, ty, s),
         },
         core::Expr::EGo { expr, ty } => MonoExpr::EGo {
-            expr: Box::new(mono_expr(ctx, &expr, s)),
-            ty: subst_ty_in_ctx(ctx, &ty, s),
+            expr: Box::new(mono_expr(ctx, expr, s)),
+            ty: subst_ty_in_ctx(ctx, ty, s),
         },
         core::Expr::EConstrGet {
             expr,
@@ -1652,30 +1655,30 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             field_index,
             ty,
         } => {
-            let new_expr = mono_expr(ctx, &expr, s);
+            let new_expr = mono_expr(ctx, expr, s);
             let scrut_ty = subst_ty_in_ctx(ctx, &expr.get_ty(), s);
-            let new_constructor = update_constructor_type(&constructor, &scrut_ty);
+            let new_constructor = update_constructor_type(constructor, &scrut_ty);
             MonoExpr::EConstrGet {
                 expr: Box::new(new_expr),
                 constructor: new_constructor,
-                field_index,
-                ty: subst_ty_in_ctx(ctx, &ty, s),
+                field_index: *field_index,
+                ty: subst_ty_in_ctx(ctx, ty, s),
             }
         }
         core::Expr::EUnary { op, expr, ty } => MonoExpr::EUnary {
-            op,
-            expr: Box::new(mono_expr(ctx, &expr, s)),
-            ty: subst_ty_in_ctx(ctx, &ty, s),
+            op: *op,
+            expr: Box::new(mono_expr(ctx, expr, s)),
+            ty: subst_ty_in_ctx(ctx, ty, s),
         },
         core::Expr::ECast { expr, ty } => MonoExpr::ECast {
-            expr: Box::new(mono_expr(ctx, &expr, s)),
-            ty: subst_ty_in_ctx(ctx, &ty, s),
+            expr: Box::new(mono_expr(ctx, expr, s)),
+            ty: subst_ty_in_ctx(ctx, ty, s),
         },
         core::Expr::EBinary { op, lhs, rhs, ty } => MonoExpr::EBinary {
-            op,
-            lhs: Box::new(mono_expr(ctx, &lhs, s)),
-            rhs: Box::new(mono_expr(ctx, &rhs, s)),
-            ty: subst_ty_in_ctx(ctx, &ty, s),
+            op: *op,
+            lhs: Box::new(mono_expr(ctx, lhs, s)),
+            rhs: Box::new(mono_expr(ctx, rhs, s)),
+            ty: subst_ty_in_ctx(ctx, ty, s),
         },
         core::Expr::EAssign {
             name,
@@ -1684,14 +1687,14 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             ty,
         } => MonoExpr::EAssign {
             name: name.clone(),
-            value: Box::new(mono_expr(ctx, &value, s)),
-            target_ty: subst_ty_in_ctx(ctx, &target_ty, s),
-            ty: subst_ty_in_ctx(ctx, &ty, s),
+            value: Box::new(mono_expr(ctx, value, s)),
+            target_ty: subst_ty_in_ctx(ctx, target_ty, s),
+            ty: subst_ty_in_ctx(ctx, ty, s),
         },
         core::Expr::ECall { func, args, ty } => {
-            let new_func = mono_expr(ctx, &func, s);
+            let new_func = mono_expr(ctx, func, s);
             let new_args: Vec<MonoExpr> = args.iter().map(|a| mono_expr(ctx, a, s)).collect();
-            let new_ty = subst_ty_in_ctx(ctx, &ty, s);
+            let new_ty = subst_ty_in_ctx(ctx, ty, s);
             let arg_tys = new_args.iter().map(|a| a.get_ty()).collect::<Vec<_>>();
 
             let MonoExpr::EVar {
@@ -1805,13 +1808,13 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             expr,
             ty,
         } => {
-            let concrete_for_ty = subst_ty_in_ctx(ctx, &for_ty, s);
+            let concrete_for_ty = subst_ty_in_ctx(ctx, for_ty, s);
             ensure_trait_impls_for_dyn(ctx, &trait_name.0, &concrete_for_ty);
             MonoExpr::EToDyn {
-                trait_name,
+                trait_name: trait_name.clone(),
                 for_ty: concrete_for_ty,
-                expr: Box::new(mono_expr(ctx, &expr, s)),
-                ty: subst_ty_in_ctx(ctx, &ty, s),
+                expr: Box::new(mono_expr(ctx, expr, s)),
+                ty: subst_ty_in_ctx(ctx, ty, s),
             }
         }
         core::Expr::EDynCall {
@@ -1821,11 +1824,11 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             args,
             ty,
         } => MonoExpr::EDynCall {
-            trait_name,
-            method_name,
-            receiver: Box::new(mono_expr(ctx, &receiver, s)),
+            trait_name: trait_name.clone(),
+            method_name: method_name.clone(),
+            receiver: Box::new(mono_expr(ctx, receiver, s)),
             args: args.iter().map(|a| mono_expr(ctx, a, s)).collect(),
-            ty: subst_ty_in_ctx(ctx, &ty, s),
+            ty: subst_ty_in_ctx(ctx, ty, s),
         },
         core::Expr::ETraitCall {
             trait_ref,
@@ -1834,13 +1837,13 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             args,
             ty,
         } => {
-            let trait_ref = subst_trait_ref_in_ctx(ctx, &trait_ref, s);
-            let receiver = mono_expr(ctx, &receiver, s);
+            let trait_ref = subst_trait_ref_in_ctx(ctx, trait_ref, s);
+            let receiver = mono_expr(ctx, receiver, s);
             let dyn_args = args
                 .iter()
                 .map(|arg| mono_expr(ctx, arg, s))
                 .collect::<Vec<_>>();
-            let new_ty = subst_ty_in_ctx(ctx, &ty, s);
+            let new_ty = subst_ty_in_ctx(ctx, ty, s);
 
             if let Ty::TDyn {
                 trait_name: dyn_trait_name,
@@ -1850,7 +1853,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             {
                 return MonoExpr::EDynCall {
                     trait_name: trait_ref.name,
-                    method_name,
+                    method_name: method_name.clone(),
                     receiver: Box::new(receiver),
                     args: dyn_args,
                     ty: new_ty,
@@ -1927,9 +1930,9 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             }
         }
         core::Expr::EProj { tuple, index, ty } => MonoExpr::EProj {
-            tuple: Box::new(mono_expr(ctx, &tuple, s)),
-            index,
-            ty: subst_ty_in_ctx(ctx, &ty, s),
+            tuple: Box::new(mono_expr(ctx, tuple, s)),
+            index: *index,
+            ty: subst_ty_in_ctx(ctx, ty, s),
         },
     }
 }
