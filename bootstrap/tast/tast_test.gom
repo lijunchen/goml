@@ -145,6 +145,29 @@ fn checks_extended_builtin_method_catalog() -> unit {
 }
 
 #[test]
+fn checks_char_from_uint32_builtin() -> unit {
+    let file = checked_file("fn decode(value: uint32) -> Option[char] { char_from_uint32(value) }");
+    match file.items.get(0) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Call(
+                Expr::Callable(Callable::Function(name), _),
+                _,
+                Type::App(Type::Con(option), args),
+            )) => {
+                testing::assert_eq(name, "char_from_uint32");
+                testing::assert_eq(option, "Option");
+                match args.get(0) {
+                    Type::Char => (),
+                    _ => testing::fail("expected char option"),
+                }
+            },
+            _ => testing::fail("expected char conversion call"),
+        },
+        _ => testing::fail("expected decode function"),
+    }
+}
+
+#[test]
 fn preserves_fn_iterator_static_owner() -> unit {
     let file = checked_file("fn iterator() -> FnIterator[int32] { FnIterator::from_fn(|| Option::None) }");
     match file.items.get(0) {
