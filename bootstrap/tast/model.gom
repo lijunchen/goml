@@ -168,8 +168,27 @@ pub enum Item {
     Function(Function),
 }
 
+pub struct EnumVariantDef {
+    name: string,
+    fields: Vec[Type],
+}
+
+pub struct EnumDef {
+    name: string,
+    generics: Vec[string],
+    variants: Vec[EnumVariantDef],
+}
+
+pub struct StructDef {
+    name: string,
+    generics: Vec[string],
+    fields: Vec[(string, Type)],
+}
+
 pub struct File {
     items: Vec[Item],
+    enums: Vec[EnumDef],
+    structs: Vec[StructDef],
 }
 
 pub struct CheckResult {

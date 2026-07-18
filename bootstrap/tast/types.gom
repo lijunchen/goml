@@ -627,6 +627,21 @@ fn substitute_type(value: Type, substitutions: Vec[TypeSubst]) -> Type {
     }
 }
 
+pub fn substitute_params(value: Type, names: Vec[string], args: Vec[Type]) -> Type {
+    let substitutions: Vec[TypeSubst] = Vec::new();
+    for index in range(0, names.len()) {
+        if index < args.len() {
+            substitutions.push(TypeSubst {
+                name: names.get(index),
+                ty: args.get(index),
+            })
+        } else {
+            ()
+        }
+    };
+    substitute_type(value, substitutions)
+}
+
 fn instantiate_substitutions(
     counter: Ref[int32],
     params: Vec[string],

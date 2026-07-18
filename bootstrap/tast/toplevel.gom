@@ -114,8 +114,35 @@ fn check_file(value: hir::File) -> CheckResult {
             _ => (),
         }
     };
+    let enums: Vec[EnumDef] = Vec::new();
+    for value in ctx.enums {
+        let variants: Vec[EnumVariantDef] = Vec::new();
+        for variant in value.variants {
+            variants.push(EnumVariantDef {
+                name: variant.name,
+                fields: variant.fields,
+            })
+        };
+        enums.push(EnumDef {
+            name: value.name,
+            generics: value.generics,
+            variants,
+        })
+    };
+    let structs: Vec[StructDef] = Vec::new();
+    for value in ctx.structs {
+        structs.push(StructDef {
+            name: value.name,
+            generics: value.generics,
+            fields: value.fields,
+        })
+    };
     CheckResult {
-        tast: Option::Some(File { items }),
+        tast: Option::Some(File {
+            items,
+            enums,
+            structs,
+        }),
         diagnostics: ctx.diagnostics,
     }
 }

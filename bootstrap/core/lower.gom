@@ -6,6 +6,15 @@ use std::text;
 
 struct Lowerer {
     counter: Ref[int32],
+    enums: Vec[tast::EnumDef],
+    structs: Vec[tast::StructDef],
+}
+
+struct EnumCase {
+    constructor: tast::Constructor,
+    variables: Vec[(string, tast::Type)],
+    patterns: Vec[tast::Pat],
+    body: tast::Expr,
 }
 
 fn gensym(ctx: Lowerer, prefix: string) -> string {
@@ -64,6 +73,38 @@ fn inherent_base(value: tast::Type) -> string {
 
 fn inherent_method_name(owner: tast::Type, name: string) -> string {
     "inherent#" + inherent_base(owner) + "#" + compact_type(owner) + "#" + name
+}
+
+fn nominal_parts(value: tast::Type) -> Option[(string, Vec[tast::Type])] {
+    match tast::resolve_type(value) {
+        tast::Type::Con(name) => Option::Some((name, Vec::new())),
+        tast::Type::App(tast::Type::Con(name), args) => Option::Some((name, args)),
+        _ => Option::None,
+    }
+}
+
+fn find_enum(ctx: Lowerer, name: string) -> Option[tast::EnumDef] {
+    let result: Ref[Option[tast::EnumDef]] = Ref::new(Option::None);
+    for value in ctx.enums {
+        if value.name == name {
+            result.set(Option::Some(value))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn find_struct(ctx: Lowerer, name: string) -> Option[tast::StructDef] {
+    let result: Ref[Option[tast::StructDef]] = Ref::new(Option::None);
+    for value in ctx.structs {
+        if value.name == name {
+            result.set(Option::Some(value))
+        } else {
+            ()
+        }
+    };
+    result.get()
 }
 
 fn trait_impl_method_name(
@@ -192,7 +233,7 @@ fn lower_pattern_expr(value: tast::Pat) -> Option[Expr] {
     }
 }
 
-fn lower_match(
+fn lower_simple_match(
     ctx: Lowerer,
     source: tast::Expr,
     arms: Vec[tast::Arm],
@@ -222,6 +263,222 @@ fn lower_match(
     Expr::Match(lower_expr(ctx, source), result, default.get(), ty)
 }
 
+fn enum_arm_for_variant(
+    arms: Vec[tast::Arm],
+    constructor_name: string,
+) -> Option[tast::Arm] {
+    let result: Ref[Option[tast::Arm]] = Ref::new(Option::None);
+    for arm in arms {
+        match arm.pat {
+            tast::Pat::Constr(constructor, _, _) => if constructor.name == constructor_name {
+                result.set(Option::Some(arm))
+            } else {
+                ()
+            },
+            _ => (),
+        }
+    };
+    result.get()
+}
+
+fn enum_match_cases(
+    ctx: Lowerer,
+    definition: tast::EnumDef,
+    type_args: Vec[tast::Type],
+    arms: Vec[tast::Arm],
+) -> Option[Vec[EnumCase]] {
+    let cases: Vec[EnumCase] = Vec::new();
+    let valid = Ref::new(true);
+    for variant in definition.variants {
+        let constructor_name = definition.name + "::" + variant.name;
+        match enum_arm_for_variant(arms, constructor_name) {
+            Option::Some(arm) => match arm.guard {
+                Option::Some(_) => valid.set(false),
+                Option::None => match arm.pat {
+                    tast::Pat::Constr(_, patterns, _) => {
+                        let variables: Vec[(string, tast::Type)] = Vec::new();
+                        for field in variant.fields {
+                            variables.push((
+                                gensym(ctx, "x"),
+                                tast::substitute_params(
+                                    field,
+                                    definition.generics,
+                                    type_args,
+                                ),
+                            ))
+                        };
+                        if variables.len() != patterns.len() {
+                            valid.set(false)
+                        } else {
+                            ()
+                        };
+                        cases.push(EnumCase {
+                            constructor: tast::Constructor {
+                                name: constructor_name,
+                                fields: Vec::new(),
+                                is_struct: false,
+                            },
+                            variables,
+                            patterns,
+                            body: arm.body,
+                        })
+                    },
+                    _ => valid.set(false),
+                },
+            },
+            Option::None => valid.set(false),
+        }
+    };
+    if valid.get() {
+        Option::Some(cases)
+    } else {
+        Option::None
+    }
+}
+
+fn bind_case_patterns(
+    patterns: Vec[tast::Pat],
+    variables: Vec[(string, tast::Type)],
+    ty: tast::Type,
+    body: Expr,
+) -> Expr {
+    let result = Ref::new(body);
+    for index in range(0, patterns.len()) {
+        match patterns.get(index) {
+            tast::Pat::Var(name, pat_ty) => {
+                let variable = variables.get(index);
+                let stmts: Vec[LetStmt] = Vec::new();
+                stmts.push(LetStmt {
+                    name,
+                    value: Expr::Var(variable.0, variable.1),
+                    ty: pat_ty,
+                });
+                result.set(Expr::Block(
+                    Block {
+                        stmts,
+                        tail: Option::Some(result.get()),
+                    },
+                    ty,
+                ))
+            },
+            tast::Pat::Wild(_) => (),
+            _ => (),
+        }
+    };
+    result.get()
+}
+
+fn lower_enum_cases(
+    ctx: Lowerer,
+    source_name: string,
+    source_ty: tast::Type,
+    cases: Vec[EnumCase],
+    ty: tast::Type,
+) -> Expr {
+    let result: Vec[Arm] = Vec::new();
+    for case in cases {
+        let args: Vec[Expr] = Vec::new();
+        let extractions: Vec[LetStmt] = Vec::new();
+        for index in range(0, case.variables.len()) {
+            let variable = case.variables.get(index);
+            args.push(Expr::Var(variable.0, variable.1));
+            extractions.push(LetStmt {
+                name: variable.0,
+                value: Expr::ConstrGet(
+                    Expr::Var(source_name, source_ty),
+                    case.constructor,
+                    index,
+                    variable.1,
+                ),
+                ty: variable.1,
+            })
+        };
+        let body = bind_case_patterns(
+            case.patterns,
+            case.variables,
+            ty,
+            lower_expr(ctx, case.body),
+        );
+        let body = if extractions.len() > 0 {
+            Expr::Block(
+                Block {
+                    stmts: extractions,
+                    tail: Option::Some(body),
+                },
+                ty,
+            )
+        } else {
+            body
+        };
+        result.push(Arm {
+            lhs: Expr::Constr(case.constructor, args, source_ty),
+            body,
+        })
+    };
+    Expr::Match(
+        Expr::Var(source_name, source_ty),
+        result,
+        Option::None,
+        ty,
+    )
+}
+
+fn lower_match(
+    ctx: Lowerer,
+    source: tast::Expr,
+    arms: Vec[tast::Arm],
+    ty: tast::Type,
+) -> Expr {
+    let source_ty = tast::expr_type(source);
+    match nominal_parts(source_ty) {
+        Option::Some((name, type_args)) => match find_enum(ctx, name) {
+            Option::Some(definition) => match source {
+                tast::Expr::Var(source_name, _) => match enum_match_cases(
+                    ctx,
+                    definition,
+                    type_args,
+                    arms,
+                ) {
+                    Option::Some(cases) => {
+                        lower_enum_cases(ctx, source_name, source_ty, cases, ty)
+                    },
+                    Option::None => lower_simple_match(ctx, source, arms, ty),
+                },
+                other => {
+                    let source_name = gensym(ctx, "mtmp");
+                    let source_value = lower_expr(ctx, other);
+                    match enum_match_cases(ctx, definition, type_args, arms) {
+                        Option::Some(cases) => {
+                            let stmts: Vec[LetStmt] = Vec::new();
+                            stmts.push(LetStmt {
+                                name: source_name,
+                                value: source_value,
+                                ty: source_ty,
+                            });
+                            Expr::Block(
+                                Block {
+                                    stmts,
+                                    tail: Option::Some(lower_enum_cases(
+                                        ctx,
+                                        source_name,
+                                        source_ty,
+                                        cases,
+                                        ty,
+                                    )),
+                                },
+                                ty,
+                            )
+                        },
+                        Option::None => lower_simple_match(ctx, other, arms, ty),
+                    }
+                },
+            },
+            Option::None => lower_simple_match(ctx, source, arms, ty),
+        },
+        Option::None => lower_simple_match(ctx, source, arms, ty),
+    }
+}
+
 fn lower_index(ctx: Lowerer, base: tast::Expr, index: tast::Expr, ty: tast::Type) -> Expr {
     let key = match tast::resolve_type(tast::expr_type(base)) {
         tast::Type::Array(_, _) => "array.get",
@@ -242,18 +499,45 @@ fn lower_index(ctx: Lowerer, base: tast::Expr, index: tast::Expr, ty: tast::Type
 
 fn lower_field(ctx: Lowerer, value: tast::Expr, name: string, ty: tast::Type) -> Expr {
     let owner = inherent_base(tast::expr_type(value));
-    let fields: Vec[string] = Vec::new();
-    fields.push(name);
-    Expr::ConstrGet(
-        lower_expr(ctx, value),
-        tast::Constructor {
-            name: owner,
-            fields,
-            is_struct: true,
+    match find_struct(ctx, owner) {
+        Option::Some(definition) => {
+            let fields: Vec[string] = Vec::new();
+            let field_index = Ref::new(0);
+            for index in range(0, definition.fields.len()) {
+                let field = definition.fields.get(index);
+                fields.push(field.0);
+                if field.0 == name {
+                    field_index.set(index)
+                } else {
+                    ()
+                }
+            };
+            Expr::ConstrGet(
+                lower_expr(ctx, value),
+                tast::Constructor {
+                    name: owner,
+                    fields,
+                    is_struct: true,
+                },
+                field_index.get(),
+                ty,
+            )
         },
-        0,
-        ty,
-    )
+        Option::None => {
+            let fields: Vec[string] = Vec::new();
+            fields.push(name);
+            Expr::ConstrGet(
+                lower_expr(ctx, value),
+                tast::Constructor {
+                    name: owner,
+                    fields,
+                    is_struct: true,
+                },
+                0,
+                ty,
+            )
+        },
+    }
 }
 
 fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
@@ -445,6 +729,8 @@ fn lower_function(
 fn lower_file(value: tast::File) -> File {
     let ctx = Lowerer {
         counter: Ref::new(0),
+        enums: value.enums,
+        structs: value.structs,
     };
     let functions: Vec[Function] = Vec::new();
     for item in value.items {
