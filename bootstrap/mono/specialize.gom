@@ -275,6 +275,65 @@ fn find_function(ctx: SpecializeCtx, name: string) -> Option[core::Function] {
     result.get()
 }
 
+fn hash_segments(value: string) -> Vec[string] {
+    let result = Vec::new();
+    let start = Ref::new(0);
+    for index in range(0, value.byte_len()) {
+        if value.byte_slice(index, index + 1) == "#" {
+            result.push(value.byte_slice(start.get(), index));
+            start.set(index + 1)
+        } else {
+            ()
+        }
+    };
+    result.push(value.byte_slice(start.get(), value.byte_len()));
+    result
+}
+
+fn inherent_method_key(name: string) -> Option[(string, string)] {
+    let segments = hash_segments(name);
+    if segments.len() == 4 && segments.get(0) == "inherent" {
+        Option::Some((segments.get(1), segments.get(3)))
+    } else {
+        Option::None
+    }
+}
+
+fn find_generic_inherent_function(
+    ctx: SpecializeCtx,
+    name: string,
+) -> Option[core::Function] {
+    match inherent_method_key(name) {
+        Option::Some(key) => {
+            let result: Ref[Option[core::Function]] = Ref::new(Option::None);
+            for function in ctx.functions {
+                match inherent_method_key(function.name) {
+                    Option::Some(candidate) => {
+                        if candidate.0 == key.0
+                            && candidate.1 == key.1
+                            && function_is_generic(function)
+                        {
+                            result.set(Option::Some(function))
+                        } else {
+                            ()
+                        }
+                    },
+                    Option::None => (),
+                }
+            };
+            result.get()
+        },
+        Option::None => Option::None,
+    }
+}
+
+fn find_callee_function(ctx: SpecializeCtx, name: string) -> Option[core::Function] {
+    match find_function(ctx, name) {
+        Option::Some(function) => Option::Some(function),
+        Option::None => find_generic_inherent_function(ctx, name),
+    }
+}
+
 fn same_bindings(left: Vec[TypeBinding], right: Vec[TypeBinding]) -> bool {
     if left.len() != right.len() {
         false
@@ -493,13 +552,16 @@ fn specialize_var(
     ty: tast::Type,
 ) -> core::Expr {
     let ty = substitute_type(ty, bindings);
-    match find_function(ctx, name) {
+    match find_callee_function(ctx, name) {
         Option::Some(function) => if function_is_generic(function) && type_is_concrete(ty) {
             let call_bindings = Vec::new();
             if unify_type(function_type(function), ty, call_bindings)
                 && complete_bindings(function, call_bindings)
             {
-                core::Expr::Var(ensure_instance(ctx, name, call_bindings), ty)
+                core::Expr::Var(
+                    ensure_instance(ctx, function.name, call_bindings),
+                    ty,
+                )
             } else {
                 core::Expr::Var(name, ty)
             }
