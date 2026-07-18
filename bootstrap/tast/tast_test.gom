@@ -198,6 +198,56 @@ fn resolves_generic_trait_associated_applications() -> unit {
 }
 
 #[test]
+fn resolves_trait_methods_from_call_context() -> unit {
+    let source = "trait Put[T] { fn put(Self, T) -> string; } struct Target {} impl Put[int32] for Target { fn put(self: Target, value: int32) -> string { value.to_string() } } impl Put[string] for Target { fn put(self: Target, value: string) -> string { value } } trait Convert[T] { type Output; fn convert(Self) -> Self::Output; } struct Convertible {} impl Convert[int32] for Convertible { type Output = string; fn convert(self: Convertible) -> string { \"text\" } } impl Convert[string] for Convertible { type Output = int32; fn convert(self: Convertible) -> int32 { 7 } } trait Source[T] where Self::Item == T { type Item; fn get(Self) -> Self::Item; } struct Number { value: int32 } impl Source[int32] for Number { type Item = int32; fn get(self: Number) -> int32 { self.value } } fn read[T, S: Source[T]](source: S) -> T { Source[T]::get(source) } trait ItemSource { type Item; fn item(Self) -> Self::Item; } trait Select[T] { fn select(Self) -> T; } impl[S: ItemSource, T] Select[T] for S where S::Item == T { fn select(self: S) -> T { ItemSource::item(self) } } fn invoke[T, S: Select[T]](source: S) -> T { source.select() } fn main() -> unit { let numeric: string = (Target {}).put(1); let textual: string = (Target {}).put(\"goml\"); let text: string = (Convertible {}).convert(); let number: int32 = (Convertible {}).convert(); let value: int32 = read(Number { value: 8 }); }";
+    let file = checked_file(source);
+    match file.items.get(7) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Call(
+                Expr::Callable(Callable::TraitMethod(reference, name), _),
+                _,
+                Type::Param(result),
+            )) => {
+                testing::assert_eq(reference.name, "Select");
+                testing::assert_eq(name, "select");
+                match reference.args.get(0) {
+                    Type::Param(arg) => testing::assert_eq(arg, "T"),
+                    _ => testing::fail("expected contextual trait argument"),
+                };
+                testing::assert_eq(result, "T")
+            },
+            _ => testing::fail("expected contextual bound method"),
+        },
+        _ => testing::fail("expected invoke function"),
+    };
+    match file.items.get(8) {
+        Item::Function(value) => {
+            match value.body.stmts.get(0) {
+                Stmt::Let(_, Pat::Var(_, Type::String), Expr::Call(_, _, Type::String)) => (),
+                _ => testing::fail("expected integer overload"),
+            };
+            match value.body.stmts.get(1) {
+                Stmt::Let(_, Pat::Var(_, Type::String), Expr::Call(_, _, Type::String)) => (),
+                _ => testing::fail("expected string overload"),
+            };
+            match value.body.stmts.get(2) {
+                Stmt::Let(_, Pat::Var(_, Type::String), Expr::Call(_, _, Type::String)) => (),
+                _ => testing::fail("expected string return overload"),
+            };
+            match value.body.stmts.get(3) {
+                Stmt::Let(_, Pat::Var(_, Type::Int32), Expr::Call(_, _, Type::Int32)) => (),
+                _ => testing::fail("expected int32 return overload"),
+            };
+            match value.body.stmts.get(4) {
+                Stmt::Let(_, Pat::Var(_, Type::Int32), Expr::Call(_, _, Type::Int32)) => (),
+                _ => testing::fail("expected implied equality result"),
+            }
+        },
+        _ => testing::fail("expected main function"),
+    }
+}
+
+#[test]
 fn normalizes_float_pattern_literals() -> unit {
     let file = checked_file("fn signed_zero(value: float64) -> string { match value { -0.0 => \"zero\", _ => \"other\" } }");
     match file.items.get(0) {
