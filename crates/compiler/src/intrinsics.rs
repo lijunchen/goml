@@ -166,6 +166,7 @@ pub enum RuntimeHookId {
     Uint64ToString,
     Float32ToString,
     Float64ToString,
+    StringParseFloat64,
     Int8Hash,
     Int16Hash,
     Int32Hash,
@@ -213,7 +214,7 @@ pub enum RuntimeHookId {
 }
 
 impl RuntimeHookId {
-    pub const ALL: [Self; 69] = [
+    pub const ALL: [Self; 70] = [
         Self::UnitToString,
         Self::BoolToString,
         Self::StringLen,
@@ -239,6 +240,7 @@ impl RuntimeHookId {
         Self::Uint64ToString,
         Self::Float32ToString,
         Self::Float64ToString,
+        Self::StringParseFloat64,
         Self::Int8Hash,
         Self::Int16Hash,
         Self::Int32Hash,
@@ -312,6 +314,7 @@ impl RuntimeHookId {
             Self::Uint64ToString => "core.uint64_to_string",
             Self::Float32ToString => "core.float32_to_string",
             Self::Float64ToString => "core.float64_to_string",
+            Self::StringParseFloat64 => "core.string_parse_float64",
             Self::Int8Hash => "core.int8_hash",
             Self::Int16Hash => "core.int16_hash",
             Self::Int32Hash => "core.int32_hash",
@@ -391,6 +394,7 @@ impl RuntimeHookId {
                 | Self::Uint64ToString
                 | Self::Float32ToString
                 | Self::Float64ToString
+                | Self::StringParseFloat64
                 | Self::Int8Hash
                 | Self::Int16Hash
                 | Self::Int32Hash
@@ -996,6 +1000,9 @@ impl RuntimeHookId {
             Self::Uint64ToString => signature(vec![Ty::TUint64], Ty::TString),
             Self::Float32ToString => signature(vec![Ty::TFloat32], Ty::TString),
             Self::Float64ToString => signature(vec![Ty::TFloat64], Ty::TString),
+            Self::StringParseFloat64 => {
+                signature(vec![Ty::TString], tuple_ty(vec![Ty::TBool, Ty::TFloat64]))
+            }
             Self::Int8Hash => signature(vec![Ty::TInt8], Ty::TUint64),
             Self::Int16Hash => signature(vec![Ty::TInt16], Ty::TUint64),
             Self::Int32Hash => signature(vec![Ty::TInt32], Ty::TUint64),

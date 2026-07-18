@@ -83,6 +83,10 @@ pub fn make_runtime() -> Vec<goast::Item> {
                     path: "slices".to_string(),
                 },
                 ImportSpec {
+                    alias: Some("_goml_strconv".to_string()),
+                    path: "strconv".to_string(),
+                },
+                ImportSpec {
                     alias: Some("_goml_strings".to_string()),
                     path: "strings".to_string(),
                 },
@@ -116,6 +120,7 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(uint64_to_string()),
         Item::Fn(float32_to_string()),
         Item::Fn(float64_to_string()),
+        Item::Fn(string_parse_float64()),
         Item::Fn(int8_hash()),
         Item::Fn(int16_hash()),
         Item::Fn(int32_hash()),
@@ -5554,6 +5559,59 @@ fn float32_to_string() -> goast::Fn {
 
 fn float64_to_string() -> goast::Fn {
     to_string_fn(RuntimeHookId::Float64ToString, goty::GoType::TFloat64)
+}
+
+fn string_parse_float64() -> goast::Fn {
+    let err_ty = go_error_ty();
+    let multi_ty = goty::GoType::TMulti {
+        elems: vec![goty::GoType::TFloat64, err_ty.clone()],
+    };
+    let ret_ty = tuple_ty(vec![tast::Ty::TBool, tast::Ty::TFloat64]);
+    goast::Fn {
+        name: runtime_hook_fn_name(RuntimeHookId::StringParseFloat64),
+        params: vec![("value".to_string(), goty::GoType::TString)],
+        ret_ty: Some(goast::tast_ty_to_go_type(&ret_ty)),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::VarDecl {
+                    name: "parsed".to_string(),
+                    ty: goty::GoType::TFloat64,
+                    value: None,
+                },
+                goast::Stmt::VarDecl {
+                    name: "err".to_string(),
+                    ty: err_ty,
+                    value: None,
+                },
+                goast::Stmt::MultiAssignment {
+                    names: vec!["parsed".to_string(), "err".to_string()],
+                    value: runtime_call(
+                        "_goml_strconv.ParseFloat",
+                        vec![goty::GoType::TString, goty::GoType::TInt32],
+                        multi_ty,
+                        vec![
+                            runtime_var("value", goty::GoType::TString),
+                            runtime_int32("64"),
+                        ],
+                    ),
+                },
+                goast::Stmt::Return {
+                    expr: Some(tuple_literal(
+                        &ret_ty,
+                        vec![
+                            goast::Expr::BinaryOp {
+                                op: GoBinaryOp::Eq,
+                                lhs: Box::new(runtime_var("err", go_error_ty())),
+                                rhs: Box::new(goast::Expr::Nil { ty: go_error_ty() }),
+                                ty: goty::GoType::TBool,
+                            },
+                            runtime_var("parsed", goty::GoType::TFloat64),
+                        ],
+                    )),
+                },
+            ],
+        },
+    }
 }
 
 fn char_to_string() -> goast::Fn {
