@@ -14,7 +14,14 @@ func _goml_runtime_core_bool_to_string(x bool) string {
 }
 
 func _goml_runtime_core_float64_to_string(x float64) string {
-    return _goml_fmt.Sprintf("%g", x)
+    var formatted string = _goml_strconv.FormatFloat(x, 102, -1, 64)
+    if formatted == "+Inf" {
+        return "inf"
+    }
+    if formatted == "-Inf" {
+        return "-inf"
+    }
+    return formatted
 }
 
 func _goml_runtime_core_string_parse_float64(value string) Tuple2_4bool_7float64 {
