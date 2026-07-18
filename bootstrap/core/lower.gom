@@ -614,7 +614,16 @@ fn lower_match_on_variable(
                 Option::Some(rows) => lower_pattern_rows(ctx, rows, ty),
                 Option::None => lower_generic_match(ctx, source_name, source_ty, arms, ty),
             },
-            _ => lower_generic_match(ctx, source_name, source_ty, arms, ty),
+            _ => if primitive_pattern_type(source_ty) {
+                match pattern_rows_from_arms(source_name, source_ty, arms) {
+                    Option::Some(rows) => lower_pattern_rows(ctx, rows, ty),
+                    Option::None => {
+                        lower_generic_match(ctx, source_name, source_ty, arms, ty)
+                    },
+                }
+            } else {
+                lower_generic_match(ctx, source_name, source_ty, arms, ty)
+            },
         },
     }
 }
