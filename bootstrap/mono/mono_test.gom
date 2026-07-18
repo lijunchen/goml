@@ -56,3 +56,12 @@ fn prints_monomorphic_closures_without_parameter_types() -> unit {
         "fn next(flag/0: bool) -> MaybeFn {\n  if flag/0 {\n      {\n        MaybeFn::Some(|x/1| (x/1 + 1))\n      }\n  } else {\n      {\n        MaybeFn::None\n      }\n  }\n}\n\nfn main() -> unit {\n  {\n    let mtmp0 = next(true) in\n    match mtmp0 {\n      MaybeFn::Some(x1) => {\n        {\n          let x1 = MaybeFn::Some._0(mtmp0) in\n          {\n            let f/2 = x1 in\n            println(inherent#int32#int32#to_string(f/2(41)))\n          }\n        }\n      },\n      MaybeFn::None => {\n        println(\"none\")\n      },\n    }\n  }\n}",
     )
 }
+
+#[test]
+fn specializes_generic_types_with_collision_safe_names() -> unit {
+    let source = "struct Box[T] { value: T } struct Box__int32 { value: int32 } fn main() -> unit { let a = Box { value: 10i32 }; let b = Box__int32 { value: 20i32 }; println(a.value + b.value) }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "fn main() -> unit {\n  let a/0 = Box__int32__mono1 { value: 10 } in\n  let b/1 = Box__int32 { value: 20 } in\n  println((Box__int32__mono1.value(a/0) + Box__int32.value(b/1)))\n}",
+    )
+}
