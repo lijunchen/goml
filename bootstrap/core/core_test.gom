@@ -174,3 +174,12 @@ fn lowers_nested_boolean_enum_payload_patterns() -> unit {
         "fn choose(value/0: Pair) -> int32 {\n  match value/0 {\n    Pair::Values(x0, x1) => {\n      {\n        let x0 = Pair::Values._0(value/0) in\n        let x1 = Pair::Values._1(value/0) in\n        match x1 {\n          true => {\n            match x0 {\n              true => {\n                4\n              },\n              false => {\n                3\n              },\n            }\n          },\n          false => {\n            match x0 {\n              true => {\n                4\n              },\n              false => {\n                2\n              },\n            }\n          },\n        }\n      }\n    },\n  }\n}",
     )
 }
+
+#[test]
+fn lowers_for_loops_through_iterator_protocols() -> unit {
+    let source = "fn each(values: Vec[int32]) -> unit { for value in values { println(value) } }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "fn each(values/0: Vec[int32]) -> unit {\n  {\n    let for_iter0 = trait_call[IntoIterator::into_iter](values/0) in\n    while true {\n        {\n          let for_next1 = trait_call[Iterator::next](for_iter0) in\n          match for_next1 {\n            Option::None => {\n              break\n            },\n            Option::Some(x2) => {\n              {\n                let x2 = Option::Some._0(for_next1) in\n                {\n                  let value/1 = x2 in\n                  {\n                    println(value/1)\n                  }\n                }\n              }\n            },\n          }\n        }\n    }\n  }\n}",
+    )
+}
