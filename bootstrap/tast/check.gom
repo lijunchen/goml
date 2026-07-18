@@ -225,6 +225,19 @@ fn check_static_member(
     }
 }
 
+fn missing_constructor_expr(ctx: Checker) -> Expr {
+    ctx.diagnostics.push("constructor not found");
+    Expr::Constr(
+        Constructor {
+            name: "<error>",
+            fields: Vec::new(),
+            is_struct: false,
+        },
+        Vec::new(),
+        Type::Error,
+    )
+}
+
 fn check_constructor_expr(
     ctx: Checker,
     constructor: hir::ConstructorRef,
@@ -258,17 +271,14 @@ fn check_constructor_expr(
                 expected,
             )
         },
-        Option::None => {
-            ctx.diagnostics.push("constructor not found");
-            Expr::Constr(
-                Constructor {
-                    name: "<error>",
-                    fields: Vec::new(),
-                    is_struct: false,
+        Option::None => match constructor {
+            hir::ConstructorRef::Unresolved(name) => match resolve_struct(ctx, name) {
+                Option::Some(info) => {
+                    check_positional_struct_expr(ctx, info, args, expected)
                 },
-                Vec::new(),
-                Type::Error,
-            )
+                Option::None => missing_constructor_expr(ctx),
+            },
+            hir::ConstructorRef::Resolved(_, _) => missing_constructor_expr(ctx),
         },
     }
 }
@@ -318,6 +328,38 @@ fn check_struct_expr(
             )
         },
     }
+}
+
+fn check_positional_struct_expr(
+    ctx: Checker,
+    info: ResolvedStruct,
+    args: Vec[hir::Expr],
+    expected: Option[Type],
+) -> Expr {
+    match propagated_expected(expected) {
+        Option::Some(ty) => expect_type(ctx, info.ty, ty),
+        Option::None => (),
+    };
+    let values: Vec[Expr] = Vec::new();
+    for index in range(0, args.len()) {
+        let expected = if index < info.fields.len() {
+            Option::Some(info.fields.get(index).1)
+        } else {
+            ctx.diagnostics.push("too many constructor arguments");
+            Option::None
+        };
+        values.push(check_expr(ctx, args.get(index), expected))
+    };
+    if values.len() != info.fields.len() {
+        ctx.diagnostics.push("constructor arity mismatch")
+    } else {
+        ()
+    };
+    coerce_expr(
+        ctx,
+        Expr::Constr(info.constructor, values, info.ty),
+        expected,
+    )
 }
 
 fn check_tuple_expr(ctx: Checker, values: Vec[hir::Expr], expected: Option[Type]) -> Expr {
