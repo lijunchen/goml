@@ -60,6 +60,43 @@ fn infers_generic_function_calls() -> unit {
 }
 
 #[test]
+fn infers_trait_goals_from_function_calls() -> unit {
+    let source = "trait Measure { fn measure(Self) -> int32; } impl Measure for Vec[int32] { fn measure(self: Vec[int32]) -> int32 { self.len() } } fn read_measure[T: Measure](value: T) -> int32 { Measure::measure(value) } fn main() -> int32 { let values = vec_new(); read_measure(values) }";
+    let file = checked_file(source);
+    match file.items.get(2) {
+        Item::Function(value) => {
+            match value.body.stmts.get(0) {
+                Stmt::Let(_, Pat::Var(_, pattern_ty), expression) => {
+                    match (resolve_type(pattern_ty), resolve_type(expr_type(expression))) {
+                        (Type::VecType(Type::Int32), Type::VecType(Type::Int32)) => (),
+                        _ => testing::fail("expected inferred Vec[int32] binding"),
+                    }
+                },
+                _ => testing::fail("expected inferred vector binding"),
+            };
+            match value.body.tail {
+                Option::Some(Expr::Call(
+                    Expr::Callable(Callable::Function(name), Type::Func(params, Type::Int32)),
+                    args,
+                    Type::Int32,
+                )) => {
+                    testing::assert_eq(name, "read_measure");
+                    match (
+                        resolve_type(params.get(0)),
+                        resolve_type(expr_type(args.get(0))),
+                    ) {
+                        (Type::VecType(Type::Int32), Type::VecType(Type::Int32)) => (),
+                        _ => testing::fail("expected inferred trait goal argument"),
+                    }
+                },
+                _ => testing::fail("expected trait constrained function call"),
+            }
+        },
+        _ => testing::fail("expected main function"),
+    }
+}
+
+#[test]
 fn checks_positional_struct_constructors() -> unit {
     let source = "struct Point { x: int32, y: int32 } struct Wrapper[T] { value: T } fn point() -> Point { Point(1, 2) } fn wrapper() -> Wrapper[string] { Wrapper(\"ok\") }";
     let file = checked_file(source);
