@@ -353,6 +353,48 @@ fn resolves_projected_trait_impls() -> unit {
 }
 
 #[test]
+fn resolves_constrained_blanket_methods() -> unit {
+    let source = "trait Mark { fn mark(Self) -> string; } trait Label { fn label(Self) -> string; } struct Box[T] { value: T } impl Mark for int32 { fn mark(self: int32) -> string { self.to_string() } } impl[T: Mark] Label for Box[T] { fn label(self: Box[T]) -> string { self.value.mark() } } impl Label for Box[string] { fn label(self: Box[string]) -> string { self.value } } fn string_label() -> string { (Box { value: \"text\" }).label() } fn marked_label() -> string { (Box { value: 7 }).label() }";
+    let file = checked_file(source);
+    for index in range(3, 5) {
+        match file.items.get(index) {
+            Item::Function(value) => match value.body.tail {
+                Option::Some(Expr::Call(
+                    Expr::Callable(
+                        Callable::TraitMethod(reference, name),
+                        Type::Func(params, Type::String),
+                    ),
+                    _,
+                    Type::String,
+                )) => {
+                    testing::assert_eq(reference.name, "Label");
+                    testing::assert_eq(name, "label");
+                    match resolve_type(params.get(0)) {
+                        Type::App(Type::Con(owner), args) => {
+                            testing::assert_eq(owner, "Box");
+                            if index == 3 {
+                                match resolve_type(args.get(0)) {
+                                    Type::String => (),
+                                    _ => testing::fail("expected string impl"),
+                                }
+                            } else {
+                                match resolve_type(args.get(0)) {
+                                    Type::Int32 => (),
+                                    _ => testing::fail("expected constrained blanket impl"),
+                                }
+                            }
+                        },
+                        _ => testing::fail("expected instantiated Box receiver"),
+                    }
+                },
+                _ => testing::fail("expected constrained trait method call"),
+            },
+            _ => testing::fail("expected label function"),
+        }
+    }
+}
+
+#[test]
 fn normalizes_float_pattern_literals() -> unit {
     let file = checked_file("fn signed_zero(value: float64) -> string { match value { -0.0 => \"zero\", _ => \"other\" } }");
     match file.items.get(0) {
