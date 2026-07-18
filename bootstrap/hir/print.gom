@@ -1,0 +1,1032 @@
+package hir;
+
+use gomlang::parser::ast;
+use std::text;
+
+fn write_spaces(builder: text::StringBuilder, count: int32) -> unit {
+    for _ in range(0, count) {
+        builder.write_char(' ')
+    }
+}
+
+fn newline(builder: text::StringBuilder, indent: int32) -> unit {
+    builder.write_char('\n');
+    write_spaces(builder, indent)
+}
+
+fn write_joined_strings(
+    builder: text::StringBuilder,
+    values: Vec[string],
+    separator: string,
+) -> unit {
+    let index = Ref::new(0);
+    for value in values {
+        if index.get() > 0 {
+            builder.write_string(separator)
+        } else {
+            ()
+        };
+        builder.write_string(value);
+        index.set(index.get() + 1)
+    }
+}
+
+fn write_types(
+    builder: text::StringBuilder,
+    values: Vec[TypeExpr],
+    separator: string,
+) -> unit {
+    let index = Ref::new(0);
+    for value in values {
+        if index.get() > 0 {
+            builder.write_string(separator)
+        } else {
+            ()
+        };
+        write_type(builder, value);
+        index.set(index.get() + 1)
+    }
+}
+
+fn write_type(builder: text::StringBuilder, value: TypeExpr) -> unit {
+    match value {
+        TypeExpr::Unit => builder.write_string("unit"),
+        TypeExpr::Bool => builder.write_string("bool"),
+        TypeExpr::Int8 => builder.write_string("int8"),
+        TypeExpr::Int16 => builder.write_string("int16"),
+        TypeExpr::Int32 => builder.write_string("int32"),
+        TypeExpr::Int64 => builder.write_string("int64"),
+        TypeExpr::Uint8 => builder.write_string("uint8"),
+        TypeExpr::Uint16 => builder.write_string("uint16"),
+        TypeExpr::Uint32 => builder.write_string("uint32"),
+        TypeExpr::Uint64 => builder.write_string("uint64"),
+        TypeExpr::Float32 => builder.write_string("float32"),
+        TypeExpr::Float64 => builder.write_string("float64"),
+        TypeExpr::String => builder.write_string("string"),
+        TypeExpr::Char => builder.write_string("char"),
+        TypeExpr::Tuple(values) => {
+            builder.write_char('(');
+            write_types(builder, values, ", ");
+            builder.write_char(')')
+        },
+        TypeExpr::Con(name) => builder.write_string(name),
+        TypeExpr::Projection(base, associated) => {
+            write_type(builder, base);
+            builder.write_string("::");
+            builder.write_string(associated)
+        },
+        TypeExpr::Dyn(name) => {
+            builder.write_string("dyn ");
+            builder.write_string(name)
+        },
+        TypeExpr::App(base, args) => {
+            write_type(builder, base);
+            if args.len() > 0 {
+                builder.write_char('[');
+                write_types(builder, args, ", ");
+                builder.write_char(']')
+            } else {
+                ()
+            }
+        },
+        TypeExpr::Array(length, element) => {
+            builder.write_char('[');
+            write_type(builder, element);
+            builder.write_string("; ");
+            builder.write_string(length);
+            builder.write_char(']')
+        },
+        TypeExpr::Func(params, ret_ty) => {
+            builder.write_char('(');
+            write_types(builder, params, ", ");
+            builder.write_string(") -> ");
+            write_type(builder, ret_ty)
+        },
+    }
+}
+
+fn write_trait_ref(builder: text::StringBuilder, value: TraitRef) -> unit {
+    builder.write_string(value.name);
+    if value.args.len() > 0 {
+        builder.write_char('[');
+        write_types(builder, value.args, ", ");
+        builder.write_char(']')
+    } else {
+        ()
+    }
+}
+
+fn write_trait_refs(
+    builder: text::StringBuilder,
+    values: Vec[TraitRef],
+    separator: string,
+) -> unit {
+    let index = Ref::new(0);
+    for value in values {
+        if index.get() > 0 {
+            builder.write_string(separator)
+        } else {
+            ()
+        };
+        write_trait_ref(builder, value);
+        index.set(index.get() + 1)
+    }
+}
+
+fn write_generics(builder: text::StringBuilder, values: Vec[string]) -> unit {
+    if values.len() > 0 {
+        builder.write_char('[');
+        write_joined_strings(builder, values, ", ");
+        builder.write_char(']')
+    } else {
+        ()
+    }
+}
+
+fn find_bounds(
+    values: Vec[(string, Vec[TraitRef])],
+    name: string,
+) -> Option[Vec[TraitRef]] {
+    let result = Ref::new(Option::None);
+    for value in values {
+        if value.0 == name {
+            result.set(Option::Some(value.1))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn write_bounded_generics(
+    builder: text::StringBuilder,
+    generics: Vec[string],
+    bounds: Vec[(string, Vec[TraitRef])],
+) -> unit {
+    if generics.len() > 0 {
+        builder.write_char('[');
+        let index = Ref::new(0);
+        for generic in generics {
+            if index.get() > 0 {
+                builder.write_string(", ")
+            } else {
+                ()
+            };
+            builder.write_string(generic);
+            match find_bounds(bounds, generic) {
+                Option::Some(values) => {
+                    if values.len() > 0 {
+                        builder.write_string(": ");
+                        write_trait_refs(builder, values, " + ")
+                    } else {
+                        ()
+                    }
+                },
+                Option::None => (),
+            };
+            index.set(index.get() + 1)
+        };
+        builder.write_char(']')
+    } else {
+        ()
+    }
+}
+
+fn write_attributes(builder: text::StringBuilder, values: Vec[ast::Attribute]) -> unit {
+    for value in values {
+        builder.write_string(value.text)
+    }
+}
+
+fn write_local_debug(builder: text::StringBuilder, value: LocalId) -> unit {
+    builder.write_string("local/");
+    builder.write_string(value.pkg.to_string());
+    builder.write_char('/');
+    builder.write_string(value.index.to_string())
+}
+
+fn write_local_name(builder: text::StringBuilder, value: LocalId) -> unit {
+    builder.write_string(value.hint);
+    builder.write_char('/');
+    builder.write_string(value.index.to_string())
+}
+
+fn write_def(builder: text::StringBuilder, value: DefId) -> unit {
+    builder.write_string("def/");
+    builder.write_string(value.pkg.to_string());
+    builder.write_char('/');
+    builder.write_string(value.index.to_string())
+}
+
+fn write_name_ref(builder: text::StringBuilder, value: NameRef) -> unit {
+    match value {
+        NameRef::Local(local) => write_local_name(builder, local),
+        NameRef::Def(def_id) => write_def(builder, def_id),
+        NameRef::Other(name) => builder.write_string(name),
+    }
+}
+
+fn write_constructor(builder: text::StringBuilder, value: ConstructorRef) -> unit {
+    match value {
+        ConstructorRef::Resolved(def_id, variant) => {
+            builder.write_string("ctor(");
+            write_def(builder, def_id);
+            builder.write_string("::v");
+            builder.write_string(variant.to_string());
+            builder.write_char(')')
+        },
+        ConstructorRef::Unresolved(name) => builder.write_string(name),
+    }
+}
+
+fn utf8_width(value: uint8) -> int32 {
+    if value < 128u8 {
+        1
+    } else if value < 224u8 {
+        2
+    } else if value < 240u8 {
+        3
+    } else {
+        4
+    }
+}
+
+fn hex_digit(value: uint8) -> char {
+    match value {
+        0u8 => '0',
+        1u8 => '1',
+        2u8 => '2',
+        3u8 => '3',
+        4u8 => '4',
+        5u8 => '5',
+        6u8 => '6',
+        7u8 => '7',
+        8u8 => '8',
+        9u8 => '9',
+        10u8 => 'a',
+        11u8 => 'b',
+        12u8 => 'c',
+        13u8 => 'd',
+        14u8 => 'e',
+        _ => 'f',
+    }
+}
+
+fn write_control_escape(builder: text::StringBuilder, value: uint8) -> unit {
+    builder.write_string("\\u{");
+    if value >= 16u8 {
+        builder.write_char(hex_digit(value / 16u8))
+    } else {
+        ()
+    };
+    builder.write_char(hex_digit(value % 16u8));
+    builder.write_char('}')
+}
+
+fn write_quoted_string(builder: text::StringBuilder, value: string) -> unit {
+    builder.write_char('"');
+    let index = Ref::new(0);
+    while index.get() < value.byte_len() {
+        let byte = value.byte_get(index.get());
+        if byte == 34u8 {
+            builder.write_string("\\\"")
+        } else if byte == 92u8 {
+            builder.write_string("\\\\")
+        } else if byte == 10u8 {
+            builder.write_string("\\n")
+        } else if byte == 13u8 {
+            builder.write_string("\\r")
+        } else if byte == 9u8 {
+            builder.write_string("\\t")
+        } else if byte == 0u8 {
+            builder.write_string("\\0")
+        } else if byte < 32u8 || byte == 127u8 {
+            write_control_escape(builder, byte)
+        } else {
+            let width = utf8_width(byte);
+            builder.write_string(value.byte_slice(index.get(), index.get() + width))
+        };
+        index.set(index.get() + utf8_width(byte))
+    };
+    builder.write_char('"')
+}
+
+fn unary_symbol(value: ast::UnaryOp) -> string {
+    match value {
+        ast::UnaryOp::Neg => "-",
+        ast::UnaryOp::Not => "!",
+        ast::UnaryOp::BitNot => "~",
+    }
+}
+
+fn binary_symbol(value: ast::BinaryOp) -> string {
+    match value {
+        ast::BinaryOp::Add => "+",
+        ast::BinaryOp::Sub => "-",
+        ast::BinaryOp::Mul => "*",
+        ast::BinaryOp::Div => "/",
+        ast::BinaryOp::Rem => "%",
+        ast::BinaryOp::BitAnd => "&",
+        ast::BinaryOp::BitOr => "|",
+        ast::BinaryOp::BitXor => "^",
+        ast::BinaryOp::Shl => "<<",
+        ast::BinaryOp::Shr => ">>",
+        ast::BinaryOp::And => "&&",
+        ast::BinaryOp::Or => "||",
+        ast::BinaryOp::Less => "<",
+        ast::BinaryOp::Greater => ">",
+        ast::BinaryOp::LessEq => "<=",
+        ast::BinaryOp::GreaterEq => ">=",
+        ast::BinaryOp::Eq => "==",
+        ast::BinaryOp::NotEq => "!=",
+    }
+}
+
+fn write_exprs(
+    builder: text::StringBuilder,
+    values: Vec[Expr],
+    separator: string,
+    indent: int32,
+) -> unit {
+    let index = Ref::new(0);
+    for value in values {
+        if index.get() > 0 {
+            builder.write_string(separator)
+        } else {
+            ()
+        };
+        write_expr(builder, value, indent);
+        index.set(index.get() + 1)
+    }
+}
+
+fn write_block(builder: text::StringBuilder, value: Block, indent: int32) -> unit {
+    if value.stmts.len() == 0 {
+        match value.tail {
+            Option::None => builder.write_string("{}"),
+            Option::Some(tail) => {
+                builder.write_char('{');
+                newline(builder, indent + 4);
+                write_expr(builder, tail, indent + 4);
+                newline(builder, indent);
+                builder.write_char('}')
+            },
+        }
+    } else {
+        builder.write_char('{');
+        for stmt in value.stmts {
+            newline(builder, indent + 4);
+            write_stmt(builder, stmt, indent + 4);
+            builder.write_char(';')
+        };
+        match value.tail {
+            Option::Some(tail) => {
+                newline(builder, indent + 4);
+                write_expr(builder, tail, indent + 4)
+            },
+            Option::None => (),
+        };
+        newline(builder, indent);
+        builder.write_char('}')
+    }
+}
+
+fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int32) -> unit {
+    match value {
+        Stmt::Let(is_mut, pat, annotation, expr) => {
+            builder.write_string("let ");
+            if is_mut {
+                builder.write_string("mut ")
+            } else {
+                ()
+            };
+            write_pat(builder, pat, indent);
+            match annotation {
+                Option::Some(ty) => {
+                    builder.write_string(": ");
+                    write_type(builder, ty)
+                },
+                Option::None => (),
+            };
+            builder.write_string(" = ");
+            write_expr(builder, expr, indent)
+        },
+        Stmt::Assign(target, expr) => {
+            write_expr(builder, target, indent);
+            builder.write_string(" = ");
+            write_expr(builder, expr, indent)
+        },
+        Stmt::Expr(expr) => write_expr(builder, expr, indent),
+    }
+}
+
+fn write_static_member(
+    builder: text::StringBuilder,
+    owner: string,
+    member: string,
+    type_args: Vec[TypeExpr],
+) -> unit {
+    if type_args.len() == 0 {
+        if owner != "" {
+            builder.write_string(owner);
+            builder.write_string("::")
+        } else {
+            ()
+        };
+        builder.write_string(member)
+    } else {
+        builder.write_string(owner);
+        builder.write_char('[');
+        write_types(builder, type_args, ", ");
+        builder.write_string("]::");
+        builder.write_string(member)
+    }
+}
+
+fn write_expr(builder: text::StringBuilder, value: Expr, indent: int32) -> unit {
+    match value {
+        Expr::NameRef(value) => write_name_ref(builder, value),
+        Expr::StaticMember(owner, member, type_args) => {
+            write_static_member(builder, owner, member, type_args)
+        },
+        Expr::Unit => builder.write_string("()"),
+        Expr::Bool(value) => builder.write_string(if value { "true" } else { "false" }),
+        Expr::Int(value) => builder.write_string(value),
+        Expr::Int8(value) => builder.write_string(value + "i8"),
+        Expr::Int16(value) => builder.write_string(value + "i16"),
+        Expr::Int32(value) => builder.write_string(value + "i32"),
+        Expr::Int64(value) => builder.write_string(value + "i64"),
+        Expr::UInt8(value) => builder.write_string(value + "u8"),
+        Expr::UInt16(value) => builder.write_string(value + "u16"),
+        Expr::UInt32(value) => builder.write_string(value + "u32"),
+        Expr::UInt64(value) => builder.write_string(value + "u64"),
+        Expr::Float(value) => builder.write_string(value.to_string()),
+        Expr::Float32(value) => builder.write_string(value + "f32"),
+        Expr::Float64(value) => builder.write_string(value + "f64"),
+        Expr::String(value) => write_quoted_string(builder, value),
+        Expr::Char(value) => {
+            builder.write_char('\'');
+            builder.write_string(value);
+            builder.write_char('\'')
+        },
+        Expr::Constr(constructor, args) => {
+            write_constructor(builder, constructor);
+            if args.len() > 0 {
+                builder.write_char('(');
+                write_exprs(builder, args, ", ", indent);
+                builder.write_char(')')
+            } else {
+                ()
+            }
+        },
+        Expr::StructLiteral(name, fields) => {
+            builder.write_string(name);
+            builder.write_string(" {");
+            if fields.len() == 0 {
+                builder.write_char('}')
+            } else {
+                let index = Ref::new(0);
+                for field in fields {
+                    if index.get() > 0 {
+                        builder.write_char(',')
+                    } else {
+                        ()
+                    };
+                    newline(builder, indent + 4);
+                    builder.write_string(field.0);
+                    builder.write_string(": ");
+                    write_expr(builder, field.1, indent + 4);
+                    index.set(index.get() + 1)
+                };
+                newline(builder, indent);
+                builder.write_char('}')
+            }
+        },
+        Expr::Tuple(values) => {
+            builder.write_char('(');
+            write_exprs(builder, values, ", ", indent);
+            builder.write_char(')')
+        },
+        Expr::Array(values) => {
+            builder.write_char('[');
+            write_exprs(builder, values, ", ", indent);
+            builder.write_char(']')
+        },
+        Expr::Closure(params, body) => {
+            builder.write_char('|');
+            let index = Ref::new(0);
+            for param in params {
+                if index.get() > 0 {
+                    builder.write_string(", ")
+                } else {
+                    ()
+                };
+                write_local_debug(builder, param.name);
+                match param.ty {
+                    Option::Some(ty) => {
+                        builder.write_string(": ");
+                        write_type(builder, ty)
+                    },
+                    Option::None => (),
+                };
+                index.set(index.get() + 1)
+            };
+            builder.write_string("| ");
+            write_expr(builder, body, indent)
+        },
+        Expr::Match(expr, arms) => {
+            builder.write_string("match ");
+            write_expr(builder, expr, indent);
+            builder.write_string(" {");
+            for arm in arms {
+                newline(builder, indent + 4);
+                write_arm(builder, arm, indent + 4)
+            };
+            newline(builder, indent);
+            builder.write_char('}')
+        },
+        Expr::If(cond, then_branch, else_branch) => {
+            builder.write_string("if ");
+            write_expr(builder, cond, indent);
+            builder.write_char(' ');
+            write_expr(builder, then_branch, indent);
+            builder.write_string(" else ");
+            write_expr(builder, else_branch, indent)
+        },
+        Expr::While(cond, body) => {
+            builder.write_string("while ");
+            write_expr(builder, cond, indent);
+            builder.write_string(" {");
+            newline(builder, indent + 4);
+            write_expr(builder, body, indent + 4);
+            newline(builder, indent);
+            builder.write_char('}')
+        },
+        Expr::For(pat, iterator, body) => {
+            builder.write_string("for ");
+            write_pat(builder, pat, indent);
+            builder.write_string(" in ");
+            write_expr(builder, iterator, indent);
+            builder.write_char(' ');
+            write_expr(builder, body, indent)
+        },
+        Expr::Break => builder.write_string("break"),
+        Expr::Continue => builder.write_string("continue"),
+        Expr::Return(expr) => {
+            builder.write_string("return");
+            match expr {
+                Option::Some(value) => {
+                    builder.write_char(' ');
+                    write_expr(builder, value, indent)
+                },
+                Option::None => (),
+            }
+        },
+        Expr::Go(expr) => {
+            builder.write_string("go ");
+            write_expr(builder, expr, indent)
+        },
+        Expr::Call(func, args) => {
+            write_expr(builder, func, indent);
+            builder.write_char('(');
+            write_exprs(builder, args, ", ", indent + 2);
+            builder.write_char(')')
+        },
+        Expr::Unary(op, expr) => {
+            builder.write_string(unary_symbol(op));
+            write_expr(builder, expr, indent)
+        },
+        Expr::Cast(expr, ty) => {
+            write_expr(builder, expr, indent);
+            builder.write_string(" as ");
+            write_type(builder, ty)
+        },
+        Expr::Try(expr) => {
+            write_expr(builder, expr, indent);
+            builder.write_char('?')
+        },
+        Expr::Binary(op, lhs, rhs) => {
+            write_expr(builder, lhs, indent);
+            builder.write_char(' ');
+            builder.write_string(binary_symbol(op));
+            builder.write_char(' ');
+            write_expr(builder, rhs, indent)
+        },
+        Expr::Proj(expr, index) => {
+            write_expr(builder, expr, indent);
+            builder.write_char('.');
+            builder.write_string(index.to_string())
+        },
+        Expr::Field(expr, field) => {
+            write_expr(builder, expr, indent);
+            builder.write_char('.');
+            builder.write_string(field)
+        },
+        Expr::Index(base, index) => {
+            write_expr(builder, base, indent);
+            builder.write_char('[');
+            write_expr(builder, index, indent);
+            builder.write_char(']')
+        },
+        Expr::Block(block) => write_block(builder, block, indent),
+    }
+}
+
+fn write_arm(builder: text::StringBuilder, value: Arm, indent: int32) -> unit {
+    write_pat(builder, value.pat, indent);
+    match value.guard {
+        Option::Some(guard) => {
+            builder.write_string(" if ");
+            write_expr(builder, guard, indent)
+        },
+        Option::None => (),
+    };
+    builder.write_string(" => ");
+    write_expr(builder, value.body, indent + 2);
+    builder.write_char(',')
+}
+
+fn pat_is_or(value: Pat) -> bool {
+    match value {
+        Pat::Or(_) => true,
+        _ => false,
+    }
+}
+
+fn write_pats(
+    builder: text::StringBuilder,
+    values: Vec[Pat],
+    separator: string,
+    indent: int32,
+) -> unit {
+    let index = Ref::new(0);
+    for value in values {
+        if index.get() > 0 {
+            builder.write_string(separator)
+        } else {
+            ()
+        };
+        write_pat(builder, value, indent);
+        index.set(index.get() + 1)
+    }
+}
+
+fn write_pat(builder: text::StringBuilder, value: Pat, indent: int32) -> unit {
+    match value {
+        Pat::Var(local) => write_local_debug(builder, local),
+        Pat::Unit => builder.write_string("()"),
+        Pat::Bool(value) => builder.write_string(if value { "true" } else { "false" }),
+        Pat::Int(value) => builder.write_string(value),
+        Pat::Int8(value) => builder.write_string(value + "i8"),
+        Pat::Int16(value) => builder.write_string(value + "i16"),
+        Pat::Int32(value) => builder.write_string(value + "i32"),
+        Pat::Int64(value) => builder.write_string(value + "i64"),
+        Pat::UInt8(value) => builder.write_string(value + "u8"),
+        Pat::UInt16(value) => builder.write_string(value + "u16"),
+        Pat::UInt32(value) => builder.write_string(value + "u32"),
+        Pat::UInt64(value) => builder.write_string(value + "u64"),
+        Pat::Float(value) => builder.write_string(value),
+        Pat::Float32(value) => builder.write_string(value + "f32"),
+        Pat::Float64(value) => builder.write_string(value + "f64"),
+        Pat::String(value) => write_quoted_string(builder, value),
+        Pat::Char(value) => {
+            builder.write_char('\'');
+            builder.write_string(value);
+            builder.write_char('\'')
+        },
+        Pat::Constr(constructor, args) => {
+            write_constructor(builder, constructor);
+            if args.len() > 0 {
+                builder.write_char('(');
+                write_pats(builder, args, ", ", indent);
+                builder.write_char(')')
+            } else {
+                ()
+            }
+        },
+        Pat::Struct(name, fields, has_rest) => {
+            builder.write_string(name);
+            if fields.len() == 0 && !has_rest {
+                builder.write_string(" {}")
+            } else {
+                builder.write_string(" { ");
+                let index = Ref::new(0);
+                for field in fields {
+                    if index.get() > 0 {
+                        builder.write_string(", ")
+                    } else {
+                        ()
+                    };
+                    builder.write_string(field.0);
+                    builder.write_string(": ");
+                    write_pat(builder, field.1, indent);
+                    index.set(index.get() + 1)
+                };
+                if has_rest {
+                    if index.get() > 0 {
+                        builder.write_string(", ")
+                    } else {
+                        ()
+                    };
+                    builder.write_string("..")
+                } else {
+                    ()
+                };
+                builder.write_string(" }")
+            }
+        },
+        Pat::Tuple(values) => {
+            builder.write_char('(');
+            write_pats(builder, values, ", ", indent);
+            builder.write_char(')')
+        },
+        Pat::Array(prefix, rest, suffix) => {
+            builder.write_char('[');
+            let count = Ref::new(0);
+            for value in prefix {
+                if count.get() > 0 {
+                    builder.write_string(", ")
+                } else {
+                    ()
+                };
+                write_pat(builder, value, indent);
+                count.set(count.get() + 1)
+            };
+            match rest {
+                Option::Some(value) => {
+                    if count.get() > 0 {
+                        builder.write_string(", ")
+                    } else {
+                        ()
+                    };
+                    match value.binding {
+                        Option::Some(local) => {
+                            write_local_debug(builder, local);
+                            builder.write_string(" @ ..")
+                        },
+                        Option::None => builder.write_string(".."),
+                    };
+                    count.set(count.get() + 1)
+                },
+                Option::None => (),
+            };
+            for value in suffix {
+                if count.get() > 0 {
+                    builder.write_string(", ")
+                } else {
+                    ()
+                };
+                write_pat(builder, value, indent);
+                count.set(count.get() + 1)
+            };
+            builder.write_char(']')
+        },
+        Pat::Alias(local, pat) => {
+            write_local_debug(builder, local);
+            builder.write_string(" @ ");
+            if pat_is_or(pat) {
+                builder.write_char('(');
+                write_pat(builder, pat, indent);
+                builder.write_char(')')
+            } else {
+                write_pat(builder, pat, indent)
+            }
+        },
+        Pat::Or(values) => write_pats(builder, values, " | ", indent),
+        Pat::Range(start, end, inclusive) => {
+            write_pat(builder, start, indent);
+            builder.write_string(if inclusive { "..=" } else { ".." });
+            write_pat(builder, end, indent)
+        },
+        Pat::Wild => builder.write_char('_'),
+    }
+}
+
+fn write_enum(builder: text::StringBuilder, value: EnumDef, indent: int32) -> unit {
+    write_attributes(builder, value.attrs);
+    builder.write_string("enum ");
+    builder.write_string(value.name);
+    write_generics(builder, value.generics);
+    builder.write_string(" {");
+    let index = Ref::new(0);
+    for variant in value.variants {
+        if index.get() > 0 {
+            builder.write_char(',')
+        } else {
+            ()
+        };
+        newline(builder, indent + 4);
+        builder.write_string(variant.0);
+        if variant.1.len() > 0 {
+            builder.write_char('(');
+            write_types(builder, variant.1, ", ");
+            builder.write_char(')')
+        } else {
+            ()
+        };
+        index.set(index.get() + 1)
+    };
+    newline(builder, indent);
+    builder.write_char('}')
+}
+
+fn write_struct(builder: text::StringBuilder, value: StructDef, indent: int32) -> unit {
+    write_attributes(builder, value.attrs);
+    builder.write_string("struct ");
+    builder.write_string(value.name);
+    write_generics(builder, value.generics);
+    builder.write_string(" {");
+    for field in value.fields {
+        newline(builder, indent + 4);
+        builder.write_string(field.0);
+        builder.write_string(": ");
+        write_type(builder, field.1);
+        builder.write_char(',')
+    };
+    newline(builder, indent);
+    builder.write_char('}')
+}
+
+fn write_trait_method(
+    builder: text::StringBuilder,
+    value: TraitMethodSignature,
+) -> unit {
+    builder.write_string("fn ");
+    builder.write_string(value.name);
+    builder.write_char('(');
+    write_types(builder, value.params, ", ");
+    builder.write_string(") -> ");
+    write_type(builder, value.ret_ty);
+    builder.write_char(';')
+}
+
+fn write_trait(builder: text::StringBuilder, value: TraitDef, indent: int32) -> unit {
+    write_attributes(builder, value.attrs);
+    builder.write_string("trait ");
+    builder.write_string(value.name);
+    write_bounded_generics(builder, value.generics, value.generic_bounds);
+    if value.supertraits.len() > 0 {
+        builder.write_string(": ");
+        write_trait_refs(builder, value.supertraits, " + ")
+    } else {
+        ()
+    };
+    builder.write_string(" {");
+    for associated in value.associated_types {
+        newline(builder, indent + 2);
+        builder.write_string("type ");
+        builder.write_string(associated.name);
+        if associated.bounds.len() > 0 {
+            builder.write_string(": ");
+            write_trait_refs(builder, associated.bounds, " + ")
+        } else {
+            ()
+        };
+        builder.write_char(';')
+    };
+    for method in value.method_sigs {
+        newline(builder, indent + 2);
+        write_trait_method(builder, method)
+    };
+    newline(builder, indent);
+    builder.write_char('}')
+}
+
+fn write_function(builder: text::StringBuilder, value: Function, indent: int32) -> unit {
+    write_attributes(builder, value.attrs);
+    builder.write_string("fn ");
+    builder.write_string(value.name);
+    builder.write_char('(');
+    let index = Ref::new(0);
+    for param in value.params {
+        if index.get() > 0 {
+            builder.write_string(", ")
+        } else {
+            ()
+        };
+        write_local_debug(builder, param.0);
+        builder.write_string(": ");
+        write_type(builder, param.1);
+        index.set(index.get() + 1)
+    };
+    builder.write_char(')');
+    match value.ret_ty {
+        Option::Some(ty) => {
+            builder.write_string(" -> ");
+            write_type(builder, ty)
+        },
+        Option::None => (),
+    };
+    builder.write_char(' ');
+    write_block(builder, value.body, indent)
+}
+
+fn write_extern(builder: text::StringBuilder, value: ExternFunction) -> unit {
+    write_attributes(builder, value.attrs);
+    builder.write_string("extern fn ");
+    builder.write_string(value.name);
+    builder.write_char('(');
+    let index = Ref::new(0);
+    for param in value.params {
+        if index.get() > 0 {
+            builder.write_string(", ")
+        } else {
+            ()
+        };
+        builder.write_string(param.0);
+        builder.write_string(": ");
+        write_type(builder, param.1);
+        index.set(index.get() + 1)
+    };
+    builder.write_char(')');
+    match value.ret_ty {
+        Option::Some(ty) => {
+            builder.write_string(" -> ");
+            write_type(builder, ty)
+        },
+        Option::None => (),
+    }
+}
+
+fn write_impl(builder: text::StringBuilder, value: ImplBlock, indent: int32) -> unit {
+    write_attributes(builder, value.attrs);
+    builder.write_string("impl");
+    write_bounded_generics(builder, value.generics, value.generic_bounds);
+    builder.write_char(' ');
+    match value.trait_ref {
+        Option::Some(trait_ref) => {
+            write_trait_ref(builder, trait_ref);
+            builder.write_string(" for ")
+        },
+        Option::None => (),
+    };
+    write_type(builder, value.for_type);
+    builder.write_string(" {");
+    for associated in value.associated_types {
+        newline(builder, indent + 2);
+        builder.write_string("type ");
+        builder.write_string(associated.0);
+        builder.write_string(" = ");
+        write_type(builder, associated.1);
+        builder.write_char(';')
+    };
+    for method in value.methods {
+        newline(builder, indent + 2);
+        write_function(builder, method, indent + 2)
+    };
+    newline(builder, indent);
+    builder.write_char('}')
+}
+
+fn write_item(builder: text::StringBuilder, value: Item, indent: int32) -> unit {
+    match value {
+        Item::EnumDef(value) => write_enum(builder, value, indent),
+        Item::StructDef(value) => write_struct(builder, value, indent),
+        Item::TraitDef(value) => write_trait(builder, value, indent),
+        Item::ImplBlock(value) => write_impl(builder, value, indent),
+        Item::Function(value) => write_function(builder, value, indent),
+        Item::ExternFunction(value) => write_extern(builder, value),
+    }
+}
+
+fn encode_file(value: File) -> string {
+    let builder = text::StringBuilder::new();
+    builder.write_string("package ");
+    builder.write_string(value.package_name);
+    if value.imports.len() > 0 {
+        newline(builder, 2);
+        builder.write_string("imports ");
+        write_joined_strings(builder, value.imports, ", ")
+    } else {
+        ()
+    };
+    newline(builder, 0);
+    builder.write_string("file ");
+    builder.write_string(value.path);
+    let index = Ref::new(0);
+    for item in value.items {
+        if index.get() == 0 {
+            newline(builder, 2)
+        } else {
+            newline(builder, 4);
+            newline(builder, 4)
+        };
+        write_item(builder, item, 4);
+        index.set(index.get() + 1)
+    };
+    builder.finish()
+}
+
+pub fn encode(value: LowerResult) -> string {
+    match value.hir {
+        Option::Some(file) => encode_file(file),
+        Option::None => {
+            let builder = text::StringBuilder::new();
+            for diagnostic in value.diagnostics {
+                builder.write_string(diagnostic);
+                builder.write_char('\n')
+            };
+            builder.finish()
+        },
+    }
+}
