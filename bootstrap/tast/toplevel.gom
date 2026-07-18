@@ -98,6 +98,37 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
     }
 }
 
+fn builtin_enum_definitions() -> Vec[EnumDef] {
+    let result: Vec[EnumDef] = Vec::new();
+    result.push(EnumDef {
+        name: "Option",
+        generics: Vec::new().pushed("T"),
+        variants: Vec::new()
+            .pushed(EnumVariantDef {
+                name: "None",
+                fields: Vec::new(),
+            })
+            .pushed(EnumVariantDef {
+                name: "Some",
+                fields: Vec::new().pushed(Type::Param("T")),
+            }),
+    });
+    result.push(EnumDef {
+        name: "Result",
+        generics: Vec::new().pushed("T").pushed("E"),
+        variants: Vec::new()
+            .pushed(EnumVariantDef {
+                name: "Ok",
+                fields: Vec::new().pushed(Type::Param("T")),
+            })
+            .pushed(EnumVariantDef {
+                name: "Err",
+                fields: Vec::new().pushed(Type::Param("E")),
+            }),
+    });
+    result
+}
+
 fn check_file(value: hir::File) -> CheckResult {
     let ctx = collect_environment(value);
     let items: Vec[Item] = Vec::new();
@@ -114,7 +145,7 @@ fn check_file(value: hir::File) -> CheckResult {
             _ => (),
         }
     };
-    let enums: Vec[EnumDef] = Vec::new();
+    let enums = builtin_enum_definitions();
     for value in ctx.enums {
         let variants: Vec[EnumVariantDef] = Vec::new();
         for variant in value.variants {
