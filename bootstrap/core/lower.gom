@@ -721,6 +721,8 @@ fn lower_function(
     trait_impl: Option[TraitImpl],
     value: tast::Function,
 ) -> Function {
+    let hidden_cells = hidden_mutable_cells(value.body);
+    let body = lower_block(ctx, value.body, value.ret_ty);
     Function {
         name,
         root: true,
@@ -728,7 +730,11 @@ fn lower_function(
         trait_impl,
         params: value.params,
         ret_ty: value.ret_ty,
-        body: lower_block(ctx, value.body, value.ret_ty),
+        body: if hidden_cells.len() == 0 {
+            body
+        } else {
+            lower_hidden_block(body, hidden_cells)
+        },
     }
 }
 
