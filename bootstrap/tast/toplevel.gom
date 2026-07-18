@@ -1,0 +1,109 @@
+package tast;
+
+use gomlang::parser::hir;
+
+fn function_context(
+    base: Checker,
+    ret_ty: Type,
+    self_ty: Option[Type],
+    type_params: Vec[string],
+) -> Checker {
+    Checker {
+        counter: base.counter,
+        diagnostics: base.diagnostics,
+        enums: base.enums,
+        structs: base.structs,
+        traits: base.traits,
+        functions: base.functions,
+        methods: base.methods,
+        locals: Vec::new(),
+        return_ty: ret_ty,
+        self_ty,
+        type_params,
+    }
+}
+
+fn check_function(
+    base: Checker,
+    value: hir::Function,
+    inherited_generics: Vec[string],
+    self_ty: Option[Type],
+) -> Function {
+    let type_params = append_names(inherited_generics, value.generics);
+    let ret_ty = match value.ret_ty {
+        Option::Some(ty) => type_from_hir(ty, type_params, self_ty),
+        Option::None => Type::Unit,
+    };
+    let ctx = function_context(base, ret_ty, self_ty, type_params);
+    let params: Vec[(string, Type)] = Vec::new();
+    for param in value.params {
+        let ty = type_from_hir(param.1, type_params, self_ty);
+        insert_local(ctx, param.0, ty);
+        params.push((local_name(param.0), ty))
+    };
+    let body = check_block(ctx, value.body, Option::Some(ret_ty));
+    Function {
+        name: value.name,
+        params,
+        ret_ty,
+        body: body.0,
+    }
+}
+
+fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
+    let for_type = type_from_hir(value.for_type, value.generics, Option::None);
+    let trait_ref = match value.trait_ref {
+        Option::Some(reference) => Option::Some(trait_ref_from_hir(
+            reference,
+            value.generics,
+            Option::Some(for_type),
+        )),
+        Option::None => Option::None,
+    };
+    let methods: Vec[Function] = Vec::new();
+    for method in value.methods {
+        methods.push(check_function(
+            base,
+            method,
+            value.generics,
+            Option::Some(for_type),
+        ))
+    };
+    ImplBlock {
+        generics: value.generics,
+        trait_ref,
+        for_type,
+        methods,
+    }
+}
+
+fn check_file(value: hir::File) -> CheckResult {
+    let ctx = collect_environment(value);
+    let items: Vec[Item] = Vec::new();
+    for item in value.items {
+        match item {
+            hir::Item::ImplBlock(value) => items.push(Item::ImplBlock(check_impl(ctx, value))),
+            hir::Item::Function(value) => items.push(Item::Function(check_function(
+                ctx,
+                value,
+                Vec::new(),
+                Option::None,
+            ))),
+            _ => (),
+        }
+    };
+    CheckResult {
+        tast: Option::Some(File { items }),
+        diagnostics: ctx.diagnostics,
+    }
+}
+
+pub fn check(value: hir::LowerResult) -> CheckResult {
+    match value.hir {
+        Option::Some(file) => check_file(file),
+        Option::None => CheckResult {
+            tast: Option::None,
+            diagnostics: value.diagnostics,
+        },
+    }
+}

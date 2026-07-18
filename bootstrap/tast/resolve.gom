@@ -1,0 +1,697 @@
+package tast;
+
+use gomlang::parser::hir;
+
+struct ResolvedConstructor {
+    constructor: Constructor,
+    fields: Vec[Type],
+    ty: Type,
+}
+
+struct ResolvedStruct {
+    constructor: Constructor,
+    fields: Vec[(string, Type)],
+    ty: Type,
+}
+
+struct ResolvedCallable {
+    callable: Callable,
+    ty: Type,
+}
+
+fn short_name(value: string) -> string {
+    let start = Ref::new(0);
+    let index = Ref::new(0);
+    while index.get() + 1 < value.byte_len() {
+        if value.byte_get(index.get()) == 58u8 && value.byte_get(index.get() + 1) == 58u8 {
+            start.set(index.get() + 2);
+            index.set(index.get() + 2)
+        } else {
+            index.set(index.get() + 1)
+        }
+    };
+    value.byte_slice(start.get(), value.byte_len())
+}
+
+fn names_match(left: string, right: string) -> bool {
+    left == right || short_name(left) == short_name(right)
+}
+
+fn find_enum_by_def(ctx: Checker, id: hir::DefId) -> Option[EnumInfo] {
+    let result = Ref::new(Option::None);
+    for value in ctx.enums {
+        if same_def(value.def_id, id) {
+            result.set(Option::Some(value))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn find_enum_by_name(ctx: Checker, name: string) -> Option[EnumInfo] {
+    let result = Ref::new(Option::None);
+    for value in ctx.enums {
+        if names_match(value.name, name) {
+            result.set(Option::Some(value))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn find_struct_by_name(ctx: Checker, name: string) -> Option[StructInfo] {
+    let result = Ref::new(Option::None);
+    for value in ctx.structs {
+        if names_match(value.name, name) {
+            result.set(Option::Some(value))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn find_variant(value: EnumInfo, index: int32) -> Option[EnumVariantInfo] {
+    if index >= 0 && index < value.variants.len() {
+        Option::Some(value.variants.get(index))
+    } else {
+        Option::None
+    }
+}
+
+fn instantiate_enum(ctx: Checker, value: EnumInfo) -> (Type, Vec[TypeSubst]) {
+    let substitutions = instantiate_substitutions(ctx.counter, value.generics, Vec::new());
+    let args: Vec[Type] = Vec::new();
+    for generic in value.generics {
+        match find_substitution(substitutions, generic) {
+            Option::Some(ty) => args.push(ty),
+            Option::None => (),
+        }
+    };
+    (nominal_type(value.name, args), substitutions)
+}
+
+fn resolve_user_constructor(
+    ctx: Checker,
+    value: EnumInfo,
+    variant_index: int32,
+) -> Option[ResolvedConstructor] {
+    match find_variant(value, variant_index) {
+        Option::Some(variant) => {
+            let (ty, substitutions) = instantiate_enum(ctx, value);
+            let fields: Vec[Type] = Vec::new();
+            for field in variant.fields {
+                fields.push(substitute_type(field, substitutions))
+            };
+            Option::Some(ResolvedConstructor {
+                constructor: Constructor {
+                    name: value.name + "::" + variant.name,
+                    fields: Vec::new(),
+                    is_struct: false,
+                },
+                fields,
+                ty,
+            })
+        },
+        Option::None => Option::None,
+    }
+}
+
+fn resolve_builtin_constructor(ctx: Checker, name: string) -> Option[ResolvedConstructor] {
+    let t = fresh_type(ctx.counter, VarKind::Any);
+    let e = fresh_type(ctx.counter, VarKind::Any);
+    let fields: Vec[Type] = Vec::new();
+    let ty = if name == "Option::None" {
+        nominal_type("Option", one_type(t))
+    } else if name == "Option::Some" {
+        fields.push(t);
+        nominal_type("Option", one_type(t))
+    } else if name == "Result::Ok" {
+        fields.push(t);
+        nominal_type("Result", two_types(t, e))
+    } else if name == "Result::Err" {
+        fields.push(e);
+        nominal_type("Result", two_types(t, e))
+    } else {
+        Type::Error
+    };
+    if name == "Option::None"
+        || name == "Option::Some"
+        || name == "Result::Ok"
+        || name == "Result::Err" {
+        Option::Some(ResolvedConstructor {
+            constructor: Constructor {
+                name,
+                fields: Vec::new(),
+                is_struct: false,
+            },
+            fields,
+            ty,
+        })
+    } else {
+        Option::None
+    }
+}
+
+fn resolve_constructor(ctx: Checker, value: hir::ConstructorRef) -> Option[ResolvedConstructor] {
+    match value {
+        hir::ConstructorRef::Resolved(id, variant) => match find_enum_by_def(ctx, id) {
+            Option::Some(info) => resolve_user_constructor(ctx, info, variant),
+            Option::None => Option::None,
+        },
+        hir::ConstructorRef::Unresolved(name) => resolve_builtin_constructor(ctx, name),
+    }
+}
+
+fn instantiate_struct(ctx: Checker, value: StructInfo) -> ResolvedStruct {
+    let substitutions = instantiate_substitutions(ctx.counter, value.generics, Vec::new());
+    let args: Vec[Type] = Vec::new();
+    for generic in value.generics {
+        match find_substitution(substitutions, generic) {
+            Option::Some(ty) => args.push(ty),
+            Option::None => (),
+        }
+    };
+    let fields: Vec[(string, Type)] = Vec::new();
+    let names: Vec[string] = Vec::new();
+    for field in value.fields {
+        fields.push((field.0, substitute_type(field.1, substitutions)));
+        names.push(field.0)
+    };
+    ResolvedStruct {
+        constructor: Constructor {
+            name: value.name,
+            fields: names,
+            is_struct: true,
+        },
+        fields,
+        ty: nominal_type(value.name, args),
+    }
+}
+
+fn resolve_struct(ctx: Checker, name: string) -> Option[ResolvedStruct] {
+    match find_struct_by_name(ctx, name) {
+        Option::Some(value) => Option::Some(instantiate_struct(ctx, value)),
+        Option::None => Option::None,
+    }
+}
+
+fn nominal_arguments(value: Type) -> Vec[Type] {
+    match prune(value) {
+        Type::App(_, args) => args,
+        Type::VecType(elem) | Type::Slice(elem) | Type::RefType(elem) => one_type(elem),
+        Type::HashMap(key, item) => two_types(key, item),
+        _ => Vec::new(),
+    }
+}
+
+fn substitutions_for_nominal(
+    params: Vec[string],
+    value: Type,
+) -> Vec[TypeSubst] {
+    let args = nominal_arguments(value);
+    let result: Vec[TypeSubst] = Vec::new();
+    for index in range(0, params.len()) {
+        if index < args.len() {
+            result.push(TypeSubst {
+                name: params.get(index),
+                ty: args.get(index),
+            })
+        } else {
+            ()
+        }
+    };
+    result
+}
+
+fn resolve_field_type(ctx: Checker, receiver: Type, name: string) -> Option[Type] {
+    match type_constructor_name(receiver) {
+        Option::Some(owner) => match find_struct_by_name(ctx, owner) {
+            Option::Some(info) => {
+                let substitutions = substitutions_for_nominal(info.generics, receiver);
+                let result = Ref::new(Option::None);
+                for field in info.fields {
+                    if field.0 == name {
+                        result.set(Option::Some(substitute_type(field.1, substitutions)))
+                    } else {
+                        ()
+                    }
+                };
+                result.get()
+            },
+            Option::None => Option::None,
+        },
+        Option::None => Option::None,
+    }
+}
+
+fn find_named_field(values: Vec[(string, hir::Expr)], name: string) -> Option[hir::Expr] {
+    let result = Ref::new(Option::None);
+    for value in values {
+        if value.0 == name {
+            result.set(Option::Some(value.1))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn find_named_pattern(values: Vec[(string, hir::Pat)], name: string) -> Option[hir::Pat] {
+    let result = Ref::new(Option::None);
+    for value in values {
+        if value.0 == name {
+            result.set(Option::Some(value.1))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn receiver_matches(owner: Type, receiver: Type) -> bool {
+    match (type_constructor_name(owner), type_constructor_name(receiver)) {
+        (Option::Some(first), Option::Some(second)) => names_match(first, second),
+        _ => match prune(owner) {
+            Type::Param(_) => true,
+            _ => false,
+        },
+    }
+}
+
+fn instantiate_method(ctx: Checker, value: MethodInfo) -> (Type, ResolvedCallable) {
+    let substitutions = instantiate_substitutions(ctx.counter, value.generics, Vec::new());
+    let owner = substitute_type(value.for_type, substitutions);
+    let params: Vec[Type] = Vec::new();
+    for param in value.function.params {
+        params.push(substitute_type(param, substitutions))
+    };
+    (
+        owner,
+        ResolvedCallable {
+            callable: substitute_callable(value.function.callable, substitutions),
+            ty: Type::Func(
+                params,
+                substitute_type(value.function.ret_ty, substitutions),
+            ),
+        },
+    )
+}
+
+fn resolve_user_method(
+    ctx: Checker,
+    receiver: Type,
+    name: string,
+    trait_name: Option[string],
+    allow_bare_owner: bool,
+) -> Option[ResolvedCallable] {
+    let result = Ref::new(Option::None);
+    let found = Ref::new(false);
+    for value in ctx.methods {
+        let trait_matches = match (trait_name, value.trait_ref) {
+            (Option::Some(expected), Option::Some(reference)) => {
+                names_match(expected, reference.name)
+            },
+            (Option::None, _) => true,
+            _ => false,
+        };
+        if !(found.get()) && trait_matches && value.function.name == name
+            && receiver_matches(value.for_type, receiver) {
+            let (owner, callable) = instantiate_method(ctx, value);
+            if (allow_bare_owner && match prune(receiver) {
+                Type::Con(_) => true,
+                _ => false,
+            }) || unify(owner, receiver) {
+                result.set(Option::Some(callable));
+                found.set(true)
+            } else {
+                ()
+            }
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn callable_type(params: Vec[Type], ret_ty: Type) -> Type {
+    Type::Func(params, ret_ty)
+}
+
+fn inherent_callable(owner: Type, name: string, params: Vec[Type], ret_ty: Type) -> ResolvedCallable {
+    ResolvedCallable {
+        callable: Callable::InherentMethod(owner, name),
+        ty: callable_type(params, ret_ty),
+    }
+}
+
+fn trait_callable(
+    trait_name: string,
+    args: Vec[Type],
+    name: string,
+    params: Vec[Type],
+    ret_ty: Type,
+) -> ResolvedCallable {
+    ResolvedCallable {
+        callable: Callable::TraitMethod(
+            TraitRef {
+                name: trait_name,
+                args,
+            },
+            name,
+        ),
+        ty: callable_type(params, ret_ty),
+    }
+}
+
+fn resolve_builtin_method(ctx: Checker, receiver: Type, name: string) -> Option[ResolvedCallable] {
+    let receiver = prune(receiver);
+    if name == "to_string" {
+        if is_integer_type(receiver) {
+            if match receiver {
+                Type::Var(_) => true,
+                _ => false,
+            } {
+                expect_type(ctx, receiver, Type::Int32)
+            } else {
+                ()
+            };
+            let owner = resolve_type(receiver);
+            if match owner {
+                Type::Int32 => true,
+                _ => false,
+            } {
+                Option::Some(inherent_callable(
+                    owner,
+                    name,
+                    one_type(owner),
+                    Type::String,
+                ))
+            } else {
+                Option::Some(trait_callable(
+                    "ToString",
+                    Vec::new(),
+                    name,
+                    one_type(owner),
+                    Type::String,
+                ))
+            }
+        } else if match receiver {
+            Type::Char => true,
+            _ => false,
+        } {
+            Option::Some(inherent_callable(
+                Type::Char,
+                name,
+                one_type(Type::Char),
+                Type::String,
+            ))
+        } else {
+            Option::Some(trait_callable(
+                "ToString",
+                Vec::new(),
+                name,
+                one_type(receiver),
+                Type::String,
+            ))
+        }
+    } else {
+        resolve_builtin_container_method(ctx, receiver, name)
+    }
+}
+
+fn resolve_builtin_container_method(
+    ctx: Checker,
+    receiver: Type,
+    name: string,
+) -> Option[ResolvedCallable] {
+    match receiver {
+        Type::VecType(elem) => if name == "push" {
+            Option::Some(inherent_callable(receiver, name, two_types(receiver, elem), Type::Unit))
+        } else if name == "get" {
+            Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int32), elem))
+        } else if name == "set" {
+            Option::Some(inherent_callable(
+                receiver,
+                name,
+                three_types(receiver, Type::Int32, elem),
+                Type::Unit,
+            ))
+        } else if name == "len" || name == "capacity" {
+            Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Int32))
+        } else if name == "is_empty" {
+            Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Bool))
+        } else if name == "pushed" {
+            Option::Some(inherent_callable(receiver, name, two_types(receiver, elem), receiver))
+        } else if name == "slice" {
+            Option::Some(inherent_callable(
+                receiver,
+                name,
+                three_types(receiver, Type::Int32, Type::Int32),
+                Type::Slice(elem),
+            ))
+        } else {
+            Option::None
+        },
+        Type::Slice(elem) => if name == "get" {
+            Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int32), elem))
+        } else if name == "len" {
+            Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Int32))
+        } else if name == "sub" {
+            Option::Some(inherent_callable(
+                receiver,
+                name,
+                three_types(receiver, Type::Int32, Type::Int32),
+                receiver,
+            ))
+        } else {
+            Option::None
+        },
+        Type::RefType(elem) => if name == "get" {
+            Option::Some(inherent_callable(receiver, name, one_type(receiver), elem))
+        } else if name == "set" {
+            Option::Some(inherent_callable(receiver, name, two_types(receiver, elem), Type::Unit))
+        } else {
+            Option::None
+        },
+        Type::HashMap(key, value) => if name == "get" {
+            Option::Some(inherent_callable(
+                receiver,
+                name,
+                two_types(receiver, key),
+                nominal_type("Option", one_type(value)),
+            ))
+        } else if name == "set" {
+            Option::Some(inherent_callable(
+                receiver,
+                name,
+                three_types(receiver, key, value),
+                Type::Unit,
+            ))
+        } else if name == "len" {
+            Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Int32))
+        } else if name == "contains" {
+            Option::Some(inherent_callable(receiver, name, two_types(receiver, key), Type::Bool))
+        } else if name == "remove" {
+            Option::Some(inherent_callable(receiver, name, two_types(receiver, key), Type::Unit))
+        } else {
+            Option::None
+        },
+        Type::String => if name == "len" || name == "byte_len" {
+            Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Int32))
+        } else if name == "get" {
+            Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int32), Type::Char))
+        } else if name == "byte_get" {
+            Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int32), Type::Uint8))
+        } else if name == "byte_slice" {
+            Option::Some(inherent_callable(
+                receiver,
+                name,
+                three_types(receiver, Type::Int32, Type::Int32),
+                Type::String,
+            ))
+        } else if name == "is_char_boundary" {
+            Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int32), Type::Bool))
+        } else {
+            Option::None
+        },
+        _ => Option::None,
+    }
+}
+
+fn resolve_method(ctx: Checker, receiver: Type, name: string) -> Option[ResolvedCallable] {
+    match resolve_user_method(ctx, receiver, name, Option::None, false) {
+        Option::Some(value) => Option::Some(value),
+        Option::None => resolve_builtin_method(ctx, receiver, name),
+    }
+}
+
+fn find_trait(ctx: Checker, name: string) -> Option[TraitInfo] {
+    let result = Ref::new(Option::None);
+    for value in ctx.traits {
+        if names_match(value.name, name) {
+            result.set(Option::Some(value))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn find_trait_method(value: TraitInfo, name: string) -> Option[TraitMethodInfo] {
+    let result = Ref::new(Option::None);
+    for method in value.methods {
+        if method.name == name {
+            result.set(Option::Some(method))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn resolve_trait_static(
+    ctx: Checker,
+    owner: string,
+    name: string,
+    explicit: Vec[Type],
+) -> Option[ResolvedCallable] {
+    if owner == "ToString" && name == "to_string" {
+        let receiver = fresh_type(ctx.counter, VarKind::Any);
+        Option::Some(trait_callable(
+            owner,
+            explicit,
+            name,
+            one_type(receiver),
+            Type::String,
+        ))
+    } else if owner == "Eq" && name == "eq" {
+        let receiver = fresh_type(ctx.counter, VarKind::Any);
+        Option::Some(trait_callable(
+            owner,
+            explicit,
+            name,
+            two_types(receiver, receiver),
+            Type::Bool,
+        ))
+    } else if owner == "Hash" && name == "hash" {
+        let receiver = fresh_type(ctx.counter, VarKind::Any);
+        Option::Some(trait_callable(
+            owner,
+            explicit,
+            name,
+            one_type(receiver),
+            Type::Uint64,
+        ))
+    } else {
+        match find_trait(ctx, owner) {
+            Option::Some(info) => match find_trait_method(info, name) {
+                Option::Some(method) => {
+                    let params = append_names(info.generics, Vec::new().pushed("Self"));
+                    let substitutions = instantiate_substitutions(ctx.counter, params, explicit);
+                    let method_params: Vec[Type] = Vec::new();
+                    for param in method.params {
+                        method_params.push(substitute_type(param, substitutions))
+                    };
+                    let trait_args: Vec[Type] = Vec::new();
+                    for generic in info.generics {
+                        match find_substitution(substitutions, generic) {
+                            Option::Some(ty) => trait_args.push(ty),
+                            Option::None => (),
+                        }
+                    };
+                    Option::Some(trait_callable(
+                        info.name,
+                        trait_args,
+                        name,
+                        method_params,
+                        substitute_type(method.ret_ty, substitutions),
+                    ))
+                },
+                Option::None => Option::None,
+            },
+            Option::None => Option::None,
+        }
+    }
+}
+
+fn explicit_types(ctx: Checker, values: Vec[hir::TypeExpr]) -> Vec[Type] {
+    let result: Vec[Type] = Vec::new();
+    for value in values {
+        result.push(type_from_hir(value, ctx.type_params, ctx.self_ty))
+    };
+    result
+}
+
+fn resolve_static_member(
+    ctx: Checker,
+    owner: string,
+    member: string,
+    type_args: Vec[hir::TypeExpr],
+) -> Option[ResolvedCallable] {
+    let explicit = explicit_types(ctx, type_args);
+    match resolve_trait_static(ctx, owner, member, explicit) {
+        Option::Some(value) => Option::Some(value),
+        Option::None => {
+            let owner_ty = nominal_type(owner, explicit);
+            match resolve_user_method(ctx, owner_ty, member, Option::None, true) {
+                Option::Some(value) => Option::Some(ResolvedCallable {
+                    callable: match value.callable {
+                        Callable::InherentMethod(_, name) => {
+                            Callable::InherentMethod(owner_ty, name)
+                        },
+                        other => other,
+                    },
+                    ty: value.ty,
+                }),
+                Option::None => resolve_builtin_static(ctx, owner_ty, member),
+            }
+        },
+    }
+}
+
+fn resolve_builtin_static(
+    ctx: Checker,
+    owner: Type,
+    name: string,
+) -> Option[ResolvedCallable] {
+    let owner = match prune(owner) {
+        Type::Con(owner_name) => if owner_name == "Vec" {
+            Type::VecType(fresh_type(ctx.counter, VarKind::Any))
+        } else if owner_name == "Ref" {
+            Type::RefType(fresh_type(ctx.counter, VarKind::Any))
+        } else if owner_name == "Slice" {
+            Type::Slice(fresh_type(ctx.counter, VarKind::Any))
+        } else if owner_name == "HashMap" {
+            Type::HashMap(
+                fresh_type(ctx.counter, VarKind::Any),
+                fresh_type(ctx.counter, VarKind::Any),
+            )
+        } else {
+            Type::Con(owner_name)
+        },
+        other => other,
+    };
+    match owner {
+        Type::VecType(elem) => if name == "new" {
+            Option::Some(inherent_callable(owner, name, Vec::new(), owner))
+        } else if name == "with_capacity" {
+            Option::Some(inherent_callable(owner, name, one_type(Type::Int32), owner))
+        } else {
+            Option::None
+        },
+        Type::RefType(elem) => if name == "new" {
+            Option::Some(inherent_callable(owner, name, one_type(elem), owner))
+        } else {
+            Option::None
+        },
+        Type::HashMap(_, _) => if name == "new" {
+            Option::Some(inherent_callable(owner, name, Vec::new(), owner))
+        } else {
+            Option::None
+        },
+        _ => Option::None,
+    }
+}

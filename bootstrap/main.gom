@@ -5,6 +5,7 @@ use gomlang::parser::cst;
 use gomlang::parser::hir;
 use gomlang::parser::lexer;
 use gomlang::parser::parser;
+use gomlang::parser::tast;
 use std::env;
 use std::fs;
 use std::io;
@@ -28,7 +29,7 @@ fn read_source(path: string) -> string {
 fn main() -> unit {
     let args = env::args();
     if args.len() != 3 {
-        fail("usage: gomlang-parser <lex|cst|ast|hir> <file>")
+        fail("usage: gomlang-parser <lex|cst|ast|hir|tast> <file>")
     } else if args.get(1) == "lex" {
         io::print(lexer::encode_tokens(lexer::lex(read_source(args.get(2)))))
     } else if args.get(1) == "cst" {
@@ -41,6 +42,12 @@ fn main() -> unit {
             ast::lower(parser::parse(source)),
             args.get(2),
         )))
+    } else if args.get(1) == "tast" {
+        let source = read_source(args.get(2));
+        io::print(tast::encode(tast::check(hir::lower(
+            ast::lower(parser::parse(source)),
+            args.get(2),
+        ))))
     } else {
         fail("unknown mode: " + args.get(1))
     }
