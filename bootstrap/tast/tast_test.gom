@@ -107,7 +107,7 @@ fn resolves_associated_types_and_bound_methods() -> unit {
             Option::Some(Expr::Call(
                 Expr::Callable(Callable::TraitMethod(reference, name), _),
                 _,
-                Type::Projection(Type::Param(owner), associated),
+                Type::Projection(Type::Param(owner), associated, _),
             )) => {
                 testing::assert_eq(reference.name, "Provider");
                 testing::assert_eq(name, "get");
@@ -153,4 +153,27 @@ fn normalizes_and_escapes_char_literals() -> unit {
     testing::assert_eq(primitive_text(Primitive::Char('A')), "'A'");
     testing::assert_eq(primitive_text(Primitive::Char('\n')), "'\\n'");
     testing::assert_eq(primitive_text(Primitive::Char('\\')), "'\\\\'")
+}
+
+#[test]
+fn resolves_generic_trait_associated_applications() -> unit {
+    let source = "trait Convert[T] { type Output; fn convert(Self) -> Self::Output; } struct Value {} struct Wrapped[T] { value: T } impl Convert[int32] for Value { type Output = string; fn convert(self: Value) -> string { \"int\" } } impl Convert[string] for Value { type Output = int32; fn convert(self: Value) -> int32 { 7 } } impl[T] Convert[T] for Wrapped[T] { type Output = T; fn convert(self: Wrapped[T]) -> T { self.value } } fn main() -> unit { let text: string = Convert[int32]::convert(Value {}); let number: int32 = Convert[string]::convert(Value {}); let generic: string = Convert[string]::convert(Wrapped { value: \"ok\" }); }";
+    let file = checked_file(source);
+    match file.items.get(3) {
+        Item::Function(value) => {
+            match value.body.stmts.get(0) {
+                Stmt::Let(_, Pat::Var(_, Type::String), Expr::Call(_, _, Type::String)) => (),
+                _ => testing::fail("expected string associated output"),
+            };
+            match value.body.stmts.get(1) {
+                Stmt::Let(_, Pat::Var(_, Type::Int32), Expr::Call(_, _, Type::Int32)) => (),
+                _ => testing::fail("expected int32 associated output"),
+            };
+            match value.body.stmts.get(2) {
+                Stmt::Let(_, Pat::Var(_, Type::String), Expr::Call(_, _, Type::String)) => (),
+                _ => testing::fail("expected generic associated output"),
+            }
+        },
+        _ => testing::fail("expected main function"),
+    }
 }
