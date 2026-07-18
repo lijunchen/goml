@@ -65,3 +65,12 @@ fn specializes_generic_types_with_collision_safe_names() -> unit {
         "fn main() -> unit {\n  let a/0 = Box__int32__mono1 { value: 10 } in\n  let b/1 = Box__int32 { value: 20 } in\n  println((Box__int32__mono1.value(a/0) + Box__int32.value(b/1)))\n}",
     )
 }
+
+#[test]
+fn specializes_generic_inherent_methods() -> unit {
+    let source = "struct Point[U, V] { x: U, y: V } impl[U, V] Point[U, V] { fn new(x: U, y: V) -> Point[U, V] { Point { x, y } } fn swap(self: Point[U, V]) -> Point[V, U] { Point { x: self.y, y: self.x } } fn get_x(self: Point[U, V]) -> U { self.x } } fn main() -> unit { let p1: Point[int32, string] = Point::new(10, \"hello\"); let p2: Point[string, string] = Point::new(\"goml\", \"lang\"); let p3: Point[string, int32] = p1.swap(); let x: int32 = p3.y; println(x.to_string()); let x2: string = p2.get_x(); println(x2) }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "fn main() -> unit {\n  let p1/4 = inherent#Point#Point[U,V]#new__U_int32__V_string(10, \"hello\") in\n  let p2/5 = inherent#Point#Point[U,V]#new__U_string__V_string(\"goml\", \"lang\") in\n  let p3/6 = inherent#Point#Point[U,V]#swap__U_int32__V_string(p1/4) in\n  let x/7 = Point__string__int32.y(p3/6) in\n  let _wild0 = println(inherent#int32#int32#to_string(x/7)) in\n  let x2/8 = inherent#Point#Point[U,V]#get_x__U_string__V_string(p2/5) in\n  println(x2/8)\n}\n\nfn inherent#Point#Point[U,V]#new__U_int32__V_string(x/0: int32, y/1: string) -> Point__int32__string {\n  Point__int32__string { x: x/0, y: y/1 }\n}\n\nfn inherent#Point#Point[U,V]#new__U_string__V_string(x/0: string, y/1: string) -> Point__string__string {\n  Point__string__string { x: x/0, y: y/1 }\n}\n\nfn inherent#Point#Point[U,V]#swap__U_int32__V_string(self/2: Point__int32__string) -> Point__string__int32 {\n  Point__string__int32 { x: Point__int32__string.y(self/2), y: Point__int32__string.x(self/2) }\n}\n\nfn inherent#Point#Point[U,V]#get_x__U_string__V_string(self/3: Point__string__string) -> string {\n  Point__string__string.x(self/3)\n}",
+    )
+}
