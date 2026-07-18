@@ -39,6 +39,15 @@ fn preserves_suffixed_negative_integer_unaries() -> unit {
 }
 
 #[test]
+fn preserves_exiting_accessor_subexpressions() -> unit {
+    let source = "fn proj_case() -> int32 { let _: int32 = (return 1i32).0; 0i32 } fn index_case() -> int32 { let _: int32 = (return 1i32)[0i32]; 0i32 } fn field_case() -> int32 { let _: int32 = (return 1i32).value; 0i32 }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "fn proj_case() -> int32 {\n  let mtmp1 = {\n    let _wild0 = return 1 in\n    @intrinsic(compiler.missing)(\"\")\n  } in\n  {\n    0\n  }\n}\n\nfn index_case() -> int32 {\n  let mtmp3 = {\n    let _wild2 = return 1 in\n    @intrinsic(compiler.missing)(\"\")\n  } in\n  {\n    0\n  }\n}\n\nfn field_case() -> int32 {\n  let mtmp5 = {\n    let _wild4 = return 1 in\n    @intrinsic(compiler.missing)(\"\")\n  } in\n  {\n    0\n  }\n}",
+    )
+}
+
+#[test]
 fn nests_discard_patterns_around_the_continuation() -> unit {
     testing::assert_eq(
         encode(lower_source("fn main() -> unit { let _ = (); () }")),
