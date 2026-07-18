@@ -177,3 +177,20 @@ fn resolves_generic_trait_associated_applications() -> unit {
         _ => testing::fail("expected main function"),
     }
 }
+
+#[test]
+fn normalizes_float_pattern_literals() -> unit {
+    let file = checked_file("fn signed_zero(value: float64) -> string { match value { -0.0 => \"zero\", _ => \"other\" } }");
+    match file.items.get(0) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Match(_, arms, Type::String)) => match arms.get(0).pat {
+                Pat::Prim(Primitive::Float(literal), Type::Float64) => {
+                    testing::assert_eq(literal, "-0")
+                },
+                _ => testing::fail("expected normalized float pattern"),
+            },
+            _ => testing::fail("expected float match"),
+        },
+        _ => testing::fail("expected function"),
+    }
+}
