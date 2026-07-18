@@ -60,6 +60,57 @@ fn infers_generic_function_calls() -> unit {
 }
 
 #[test]
+fn checks_closures_with_call_context() -> unit {
+    let source = "fn zip_with[A, B, C](a: A, b: B, f: (A, B) -> C) -> C { f(a, b) } fn main() -> string { zip_with(10, \"hello\", |number, text| text + \"=\" + number.to_string()) }";
+    let file = checked_file(source);
+    match file.items.get(1) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Call(_, args, Type::String)) => match args.get(2) {
+                Expr::Closure(params, body, closure_ty) => {
+                    match resolve_type(closure_ty) {
+                        Type::Func(_, Type::String) => (),
+                        _ => testing::fail("expected contextual closure return"),
+                    };
+                    match (resolve_type(params.get(0).ty), resolve_type(params.get(1).ty)) {
+                        (Type::Int32, Type::String) => (),
+                        _ => testing::fail("expected contextual closure parameters"),
+                    };
+                    match body {
+                        Expr::Binary(
+                            _,
+                            _,
+                            Expr::Call(
+                                Expr::Callable(
+                                    Callable::InherentMethod(owner, name),
+                                    _,
+                                ),
+                                _,
+                                call_ty,
+                            ),
+                            body_ty,
+                        ) => {
+                            testing::assert_eq(name, "to_string");
+                            match (
+                                resolve_type(owner),
+                                resolve_type(call_ty),
+                                resolve_type(body_ty),
+                            ) {
+                                (Type::Int32, Type::String, Type::String) => (),
+                                _ => testing::fail("expected contextual int32 method types"),
+                            }
+                        },
+                        _ => testing::fail("expected contextual int32 method"),
+                    }
+                },
+                _ => testing::fail("expected contextual closure argument"),
+            },
+            _ => testing::fail("expected zip_with call"),
+        },
+        _ => testing::fail("expected main function"),
+    }
+}
+
+#[test]
 fn infers_trait_goals_from_function_calls() -> unit {
     let source = "trait Measure { fn measure(Self) -> int32; } impl Measure for Vec[int32] { fn measure(self: Vec[int32]) -> int32 { self.len() } } fn read_measure[T: Measure](value: T) -> int32 { Measure::measure(value) } fn main() -> int32 { let values = vec_new(); read_measure(values) }";
     let file = checked_file(source);
