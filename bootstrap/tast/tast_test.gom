@@ -60,6 +60,46 @@ fn infers_generic_function_calls() -> unit {
 }
 
 #[test]
+fn checks_positional_struct_constructors() -> unit {
+    let source = "struct Point { x: int32, y: int32 } struct Wrapper[T] { value: T } fn point() -> Point { Point(1, 2) } fn wrapper() -> Wrapper[string] { Wrapper(\"ok\") }";
+    let file = checked_file(source);
+    match file.items.get(0) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Constr(constructor, values, Type::Con(owner))) => {
+                testing::assert_eq(owner, "Point");
+                testing::assert_eq(constructor.name, "Point");
+                testing::assert_eq(constructor.fields.get(0), "x");
+                testing::assert_eq(constructor.fields.get(1), "y");
+                match (resolve_type(expr_type(values.get(0))), resolve_type(expr_type(values.get(1)))) {
+                    (Type::Int32, Type::Int32) => (),
+                    _ => testing::fail("expected int32 positional fields"),
+                }
+            },
+            _ => testing::fail("expected positional Point constructor"),
+        },
+        _ => testing::fail("expected point function"),
+    };
+    match file.items.get(1) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Constr(
+                constructor,
+                values,
+                Type::App(Type::Con(owner), args),
+            )) => {
+                testing::assert_eq(owner, "Wrapper");
+                testing::assert_eq(constructor.name, "Wrapper");
+                match (resolve_type(args.get(0)), resolve_type(expr_type(values.get(0)))) {
+                    (Type::String, Type::String) => (),
+                    _ => testing::fail("expected string Wrapper field"),
+                }
+            },
+            _ => testing::fail("expected positional Wrapper constructor"),
+        },
+        _ => testing::fail("expected wrapper function"),
+    }
+}
+
+#[test]
 fn checks_enum_patterns_and_default_integer_literals() -> unit {
     let source = "enum Choice { None, Some(int32) } fn unwrap(value: Choice) -> int32 { match value { Choice::Some(item) => item, Choice::None => 0 } }";
     let file = checked_file(source);
