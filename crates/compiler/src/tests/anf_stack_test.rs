@@ -76,6 +76,16 @@ fn wide_or_pattern_source(alternative_count: usize) -> String {
     )
 }
 
+fn wide_if_chain_source(branch_count: usize) -> String {
+    let branches = (0..branch_count)
+        .map(|index| format!("if value == {index}i32 {{ {index}i32 }} else "))
+        .collect::<String>();
+
+    format!(
+        "fn choose(value: int32) -> int32 {{ {branches}{{ -1i32 }} }}\nfn main() -> unit {{ println(choose(0i32).to_string()) }}\n"
+    )
+}
+
 #[test]
 fn wide_call_argument_list_compiles_without_crashing_anf() {
     let src = wide_call_source(1500);
@@ -120,6 +130,14 @@ fn very_wide_match_call_argument_list_compiles_without_crashing_anf() {
 fn wide_or_pattern_compiles_without_exponential_growth() {
     let src = wide_or_pattern_source(24);
     let path = PathBuf::from("wide_or_pattern.gom");
+
+    compile_single_file(&path, &src).unwrap();
+}
+
+#[test]
+fn wide_if_chain_compiles_without_quadratic_join_resolution() {
+    let src = wide_if_chain_source(128);
+    let path = PathBuf::from("wide_if_chain.gom");
 
     compile_single_file(&path, &src).unwrap();
 }
