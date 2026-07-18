@@ -87,3 +87,12 @@ fn lowers_builtin_option_matches_with_nonvariable_sources() -> unit {
         _ => testing::fail("expected scrutinee binding block"),
     }
 }
+
+#[test]
+fn boxes_mutable_locals_captured_by_closures() -> unit {
+    let source = "fn main() -> int32 { let mut x = 0; let inc = || { x = x + 1; x }; inc() }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "fn main() -> int32 {\n  let x/0 = @intrinsic(ref.new)(0) in\n  let inc/1 = || => {\n    let _wild0 = @intrinsic(ref.set)(x/0, (@intrinsic(ref.get)(x/0) + 1)) in\n    @intrinsic(ref.get)(x/0)\n  } in\n  inc/1()\n}",
+    )
+}
