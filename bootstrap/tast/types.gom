@@ -503,7 +503,7 @@ fn normalize_trait_ref(ctx: Checker, value: TraitRef) -> TraitRef {
 fn normalize_callable(ctx: Checker, value: Callable) -> Callable {
     match value {
         Callable::TraitMethod(reference, name) => {
-            Callable::TraitMethod(normalize_trait_ref(ctx, reference), name)
+            Callable::TraitMethod(reference, name)
         },
         Callable::InherentMethod(owner, name) => {
             Callable::InherentMethod(normalize_type(ctx, owner), name)

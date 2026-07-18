@@ -273,10 +273,10 @@ fn find_named_pattern(values: Vec[(string, hir::Pat)], name: string) -> Option[h
 }
 
 fn receiver_matches(owner: Type, receiver: Type) -> bool {
-    match (type_constructor_name(owner), type_constructor_name(receiver)) {
-        (Option::Some(first), Option::Some(second)) => names_match(first, second),
-        _ => match prune(owner) {
-            Type::Param(_) => true,
+    match prune(owner) {
+        Type::Param(_) | Type::Var(_) => true,
+        owner => match (type_constructor_name(owner), type_constructor_name(receiver)) {
+            (Option::Some(first), Option::Some(second)) => names_match(first, second),
             _ => false,
         },
     }
