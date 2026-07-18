@@ -156,3 +156,12 @@ fn evaluates_index_assignment_places_once() -> unit {
         _ => testing::fail("expected indexed place block"),
     }
 }
+
+#[test]
+fn lowers_flat_tuple_bindings_in_matrix_order() -> unit {
+    let source = "fn split(pair: (int32, string)) -> string { let (left, right) = pair; right }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "fn split(pair/0: (int32, string)) -> string {\n  let mtmp0 = pair/0 in\n  {\n    let x1 = mtmp0.0 in\n    let x2 = mtmp0.1 in\n    {\n      let right/2 = x2 in\n      {\n        let left/1 = x1 in\n        {\n          right/2\n        }\n      }\n    }\n  }\n}",
+    )
+}
