@@ -645,22 +645,24 @@ fn lower_block_from(
         }
     } else {
         match stmts.get(index) {
-            tast::Stmt::Let(_, tast::Pat::Var(name, pat_ty), value) => prepend_stmt(
-                LetStmt {
+            tast::Stmt::Let(_, tast::Pat::Var(name, pat_ty), value) => {
+                let core_value = lower_expr(ctx, value);
+                let rest = lower_block_from(ctx, stmts, index + 1, tail, ty);
+                prepend_stmt(LetStmt {
                     name,
-                    value: lower_expr(ctx, value),
+                    value: core_value,
                     ty: pat_ty,
-                },
-                lower_block_from(ctx, stmts, index + 1, tail, ty),
-            ),
+                }, rest)
+            },
             tast::Stmt::Let(_, _, value) => {
                 let value_ty = tast::expr_type(value);
+                let core_value = lower_expr(ctx, value);
                 let name = gensym(ctx, "mtmp");
                 let rest = lower_block_from(ctx, stmts, index + 1, tail, ty);
                 let result: Vec[LetStmt] = Vec::new();
                 result.push(LetStmt {
                     name,
-                    value: lower_expr(ctx, value),
+                    value: core_value,
                     ty: value_ty,
                 });
                 Block {
@@ -670,36 +672,40 @@ fn lower_block_from(
             },
             tast::Stmt::Expr(value) => {
                 let value_ty = tast::expr_type(value);
-                prepend_stmt(
-                    LetStmt {
-                        name: gensym(ctx, "_wild"),
-                        value: lower_expr(ctx, value),
-                        ty: value_ty,
-                    },
-                    lower_block_from(ctx, stmts, index + 1, tail, ty),
-                )
+                let core_value = lower_expr(ctx, value);
+                let name = gensym(ctx, "_wild");
+                let rest = lower_block_from(ctx, stmts, index + 1, tail, ty);
+                prepend_stmt(LetStmt {
+                    name,
+                    value: core_value,
+                    ty: value_ty,
+                }, rest)
             },
-            tast::Stmt::Assign(tast::Expr::Var(name, target_ty), value) => prepend_stmt(
-                LetStmt {
-                    name: gensym(ctx, "_wild"),
-                    value: Expr::Assign(
-                        name,
-                        lower_expr(ctx, value),
-                        target_ty,
-                        tast::Type::Unit,
-                    ),
+            tast::Stmt::Assign(tast::Expr::Var(name, target_ty), value) => {
+                let action = Expr::Assign(
+                    name,
+                    lower_expr(ctx, value),
+                    target_ty,
+                    tast::Type::Unit,
+                );
+                let binding = gensym(ctx, "_wild");
+                let rest = lower_block_from(ctx, stmts, index + 1, tail, ty);
+                prepend_stmt(LetStmt {
+                    name: binding,
+                    value: action,
                     ty: tast::Type::Unit,
-                },
-                lower_block_from(ctx, stmts, index + 1, tail, ty),
-            ),
-            tast::Stmt::Assign(_, value) => prepend_stmt(
-                LetStmt {
-                    name: gensym(ctx, "_wild"),
-                    value: lower_expr(ctx, value),
+                }, rest)
+            },
+            tast::Stmt::Assign(_, value) => {
+                let action = lower_expr(ctx, value);
+                let binding = gensym(ctx, "_wild");
+                let rest = lower_block_from(ctx, stmts, index + 1, tail, ty);
+                prepend_stmt(LetStmt {
+                    name: binding,
+                    value: action,
                     ty: tast::Type::Unit,
-                },
-                lower_block_from(ctx, stmts, index + 1, tail, ty),
-            ),
+                }, rest)
+            },
         }
     }
 }
