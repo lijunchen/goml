@@ -1,0 +1,497 @@
+package core;
+
+use gomlang::parser::ast;
+use gomlang::parser::tast;
+
+fn pattern_requires_ordered(value: tast::Pat) -> bool {
+    match value {
+        tast::Pat::Array(_, _, _, _) | tast::Pat::Alias(_, _, _) | tast::Pat::Range(_, _, _, _) => true,
+        tast::Pat::Or(patterns, _) => {
+            let result = Ref::new(false);
+            for pattern in patterns {
+                if pattern_requires_ordered(pattern) {
+                    result.set(true)
+                } else {
+                    ()
+                }
+            };
+            result.get()
+        },
+        tast::Pat::Constr(_, patterns, _) | tast::Pat::Tuple(patterns, _) => {
+            let result = Ref::new(false);
+            for pattern in patterns {
+                if pattern_requires_ordered(pattern) {
+                    result.set(true)
+                } else {
+                    ()
+                }
+            };
+            result.get()
+        },
+        _ => false,
+    }
+}
+
+fn arms_require_ordered(arms: Vec[tast::Arm]) -> bool {
+    let result = Ref::new(false);
+    for arm in arms {
+        match arm.guard {
+            Option::Some(_) => result.set(true),
+            Option::None => if pattern_requires_ordered(arm.pat) {
+                result.set(true)
+            } else {
+                ()
+            },
+        }
+    };
+    result.get()
+}
+
+fn ordered_int(value: int32) -> Expr {
+    Expr::Prim(tast::Primitive::Int32(value.to_string()), tast::Type::Int32)
+}
+
+fn ordered_binary(op: ast::BinaryOp, left: Expr, right: Expr, ty: tast::Type) -> Expr {
+    Expr::Binary(op, left, right, ty)
+}
+
+fn ordered_if(cond: Expr, then_branch: Expr, else_branch: Expr, ty: tast::Type) -> Expr {
+    Expr::If(cond, then_branch, else_branch, ty)
+}
+
+fn bind_ordered_value(name: string, value: Expr, body: Expr, ty: tast::Type) -> Expr {
+    let stmts: Vec[LetStmt] = Vec::new();
+    stmts.push(LetStmt {
+        name,
+        ty: expr_type(value),
+        value,
+    });
+    Expr::Block(
+        Block {
+            stmts,
+            tail: Option::Some(body),
+        },
+        ty,
+    )
+}
+
+fn ordered_len(value: Expr, container_ty: tast::Type) -> Option[Expr] {
+    match tast::resolve_type(container_ty) {
+        tast::Type::Array(length, _) => Option::Some(ordered_int(length)),
+        tast::Type::VecType(_) => {
+            let params: Vec[tast::Type] = Vec::new();
+            params.push(container_ty);
+            let args: Vec[Expr] = Vec::new();
+            args.push(value);
+            Option::Some(place_intrinsic_call(
+                "vec.len",
+                params,
+                tast::Type::Int32,
+                args,
+            ))
+        },
+        tast::Type::Slice(_) => {
+            let params: Vec[tast::Type] = Vec::new();
+            params.push(container_ty);
+            let args: Vec[Expr] = Vec::new();
+            args.push(value);
+            Option::Some(place_intrinsic_call(
+                "slice.len",
+                params,
+                tast::Type::Int32,
+                args,
+            ))
+        },
+        _ => Option::None,
+    }
+}
+
+fn ordered_container_parts(
+    container_ty: tast::Type,
+) -> Option[(tast::Type, Option[int32])] {
+    match tast::resolve_type(container_ty) {
+        tast::Type::Array(length, elem) => Option::Some((elem, Option::Some(length))),
+        tast::Type::VecType(elem) | tast::Type::Slice(elem) => {
+            Option::Some((elem, Option::None))
+        },
+        _ => Option::None,
+    }
+}
+
+fn ordered_rest_value(
+    value: Expr,
+    container_ty: tast::Type,
+    elem_ty: tast::Type,
+    fixed_len: Option[int32],
+    prefix_len: int32,
+    suffix_len: int32,
+    len_expr: Expr,
+    rest_ty: tast::Type,
+) -> Expr {
+    match tast::resolve_type(container_ty) {
+        tast::Type::Array(_, _) => {
+            let items: Vec[Expr] = Vec::new();
+            let end = match fixed_len {
+                Option::Some(length) => length - suffix_len,
+                Option::None => prefix_len,
+            };
+            for index in range(prefix_len, end) {
+                items.push(place_index_read(
+                    value,
+                    container_ty,
+                    ordered_int(index),
+                    elem_ty,
+                ))
+            };
+            Expr::Array(items, rest_ty)
+        },
+        tast::Type::VecType(_) => {
+            let end = if suffix_len == 0 {
+                len_expr
+            } else {
+                ordered_binary(
+                    ast::BinaryOp::Sub,
+                    len_expr,
+                    ordered_int(suffix_len),
+                    tast::Type::Int32,
+                )
+            };
+            let params: Vec[tast::Type] = Vec::new();
+            params.push(container_ty);
+            params.push(tast::Type::Int32);
+            params.push(tast::Type::Int32);
+            let args: Vec[Expr] = Vec::new();
+            args.push(value);
+            args.push(ordered_int(prefix_len));
+            args.push(end);
+            place_intrinsic_call("slice.new", params, rest_ty, args)
+        },
+        tast::Type::Slice(_) => {
+            let end = if suffix_len == 0 {
+                len_expr
+            } else {
+                ordered_binary(
+                    ast::BinaryOp::Sub,
+                    len_expr,
+                    ordered_int(suffix_len),
+                    tast::Type::Int32,
+                )
+            };
+            let params: Vec[tast::Type] = Vec::new();
+            params.push(container_ty);
+            params.push(tast::Type::Int32);
+            params.push(tast::Type::Int32);
+            let args: Vec[Expr] = Vec::new();
+            args.push(value);
+            args.push(ordered_int(prefix_len));
+            args.push(end);
+            place_intrinsic_call("slice.sub", params, rest_ty, args)
+        },
+        _ => missing_expr(rest_ty),
+    }
+}
+
+fn ordered_suffix_index(
+    fixed_len: Option[int32],
+    len_expr: Expr,
+    suffix_len: int32,
+    offset: int32,
+) -> Expr {
+    match fixed_len {
+        Option::Some(length) => ordered_int(length - suffix_len + offset),
+        Option::None => ordered_binary(
+            ast::BinaryOp::Add,
+            ordered_binary(
+                ast::BinaryOp::Sub,
+                len_expr,
+                ordered_int(suffix_len),
+                tast::Type::Int32,
+            ),
+            ordered_int(offset),
+            tast::Type::Int32,
+        ),
+    }
+}
+
+fn lower_ordered_array_pattern(
+    ctx: Lowerer,
+    prefix: Vec[tast::Pat],
+    rest: Option[tast::ArrayPatRest],
+    suffix: Vec[tast::Pat],
+    container_ty: tast::Type,
+    value: Expr,
+    success: Expr,
+    failure: Expr,
+    result_ty: tast::Type,
+) -> Expr {
+    match ordered_container_parts(container_ty) {
+        Option::Some((elem_ty, fixed_len)) => match ordered_len(value, container_ty) {
+            Option::Some(len_expr) => {
+                let next = Ref::new(success);
+                match rest {
+                    Option::Some(rest_value) => match rest_value.binding {
+                        Option::Some(binding) => next.set(bind_ordered_value(
+                            binding,
+                            ordered_rest_value(
+                                value,
+                                container_ty,
+                                elem_ty,
+                                fixed_len,
+                                prefix.len(),
+                                suffix.len(),
+                                len_expr,
+                                rest_value.ty,
+                            ),
+                            next.get(),
+                            result_ty,
+                        )),
+                        Option::None => (),
+                    },
+                    Option::None => (),
+                };
+                for offset in range(0, suffix.len()) {
+                    let index = suffix.len() - 1 - offset;
+                    let item = place_index_read(
+                        value,
+                        container_ty,
+                        ordered_suffix_index(
+                            fixed_len,
+                            len_expr,
+                            suffix.len(),
+                            index,
+                        ),
+                        elem_ty,
+                    );
+                    next.set(lower_ordered_pattern(
+                        ctx,
+                        suffix.get(index),
+                        item,
+                        next.get(),
+                        failure,
+                        result_ty,
+                    ))
+                };
+                for offset in range(0, prefix.len()) {
+                    let index = prefix.len() - 1 - offset;
+                    let item = place_index_read(
+                        value,
+                        container_ty,
+                        ordered_int(index),
+                        elem_ty,
+                    );
+                    next.set(lower_ordered_pattern(
+                        ctx,
+                        prefix.get(index),
+                        item,
+                        next.get(),
+                        failure,
+                        result_ty,
+                    ))
+                };
+                match fixed_len {
+                    Option::Some(_) => next.get(),
+                    Option::None => {
+                        let op = match rest {
+                            Option::Some(_) => ast::BinaryOp::GreaterEq,
+                            Option::None => ast::BinaryOp::Eq,
+                        };
+                        ordered_if(
+                            ordered_binary(
+                                op,
+                                len_expr,
+                                ordered_int(prefix.len() + suffix.len()),
+                                tast::Type::Bool,
+                            ),
+                            next.get(),
+                            failure,
+                            result_ty,
+                        )
+                    },
+                }
+            },
+            Option::None => failure,
+        },
+        Option::None => failure,
+    }
+}
+
+fn lower_ordered_pattern(
+    ctx: Lowerer,
+    pattern: tast::Pat,
+    value: Expr,
+    success: Expr,
+    failure: Expr,
+    result_ty: tast::Type,
+) -> Expr {
+    match pattern {
+        tast::Pat::Wild(_) => success,
+        tast::Pat::Var(name, _) => bind_ordered_value(name, value, success, result_ty),
+        tast::Pat::Alias(name, inner, ty) => {
+            let matched = lower_ordered_pattern(
+                ctx,
+                inner,
+                Expr::Var(name, ty),
+                success,
+                failure,
+                result_ty,
+            );
+            bind_ordered_value(name, value, matched, result_ty)
+        },
+        tast::Pat::Or(patterns, _) => {
+            let next = Ref::new(failure);
+            for offset in range(0, patterns.len()) {
+                let index = patterns.len() - 1 - offset;
+                next.set(lower_ordered_pattern(
+                    ctx,
+                    patterns.get(index),
+                    value,
+                    success,
+                    next.get(),
+                    result_ty,
+                ))
+            };
+            next.get()
+        },
+        tast::Pat::Prim(expected, ty) => ordered_if(
+            ordered_binary(
+                ast::BinaryOp::Eq,
+                value,
+                Expr::Prim(expected, ty),
+                tast::Type::Bool,
+            ),
+            success,
+            failure,
+            result_ty,
+        ),
+        tast::Pat::Range(start, end, inclusive, ty) => {
+            let upper_op = if inclusive {
+                ast::BinaryOp::LessEq
+            } else {
+                ast::BinaryOp::Less
+            };
+            let upper = ordered_if(
+                ordered_binary(
+                    upper_op,
+                    value,
+                    Expr::Prim(end, ty),
+                    tast::Type::Bool,
+                ),
+                success,
+                failure,
+                result_ty,
+            );
+            ordered_if(
+                ordered_binary(
+                    ast::BinaryOp::GreaterEq,
+                    value,
+                    Expr::Prim(start, ty),
+                    tast::Type::Bool,
+                ),
+                upper,
+                failure,
+                result_ty,
+            )
+        },
+        tast::Pat::Tuple(items, tuple_ty) => match tast::resolve_type(tuple_ty) {
+            tast::Type::Tuple(types) => {
+                let next = Ref::new(success);
+                for offset in range(0, items.len()) {
+                    let index = items.len() - 1 - offset;
+                    next.set(lower_ordered_pattern(
+                        ctx,
+                        items.get(index),
+                        Expr::Proj(value, index, types.get(index)),
+                        next.get(),
+                        failure,
+                        result_ty,
+                    ))
+                };
+                next.get()
+            },
+            _ => failure,
+        },
+        tast::Pat::Constr(constructor, args, pattern_ty) => {
+            let next = Ref::new(success);
+            for offset in range(0, args.len()) {
+                let index = args.len() - 1 - offset;
+                let arg = args.get(index);
+                next.set(lower_ordered_pattern(
+                    ctx,
+                    arg,
+                    Expr::ConstrGet(
+                        value,
+                        constructor,
+                        index,
+                        tast::pat_type(arg),
+                    ),
+                    next.get(),
+                    failure,
+                    result_ty,
+                ))
+            };
+            if constructor.is_struct {
+                next.get()
+            } else {
+                let lhs_args: Vec[Expr] = Vec::new();
+                for arg in args {
+                    lhs_args.push(Expr::Var(gensym(ctx, "p"), tast::pat_type(arg)))
+                };
+                let arms: Vec[Arm] = Vec::new();
+                arms.push(Arm {
+                    lhs: Expr::Constr(constructor, lhs_args, pattern_ty),
+                    body: next.get(),
+                });
+                Expr::Match(value, arms, Option::Some(failure), result_ty)
+            }
+        },
+        tast::Pat::Array(prefix, rest, suffix, container_ty) => {
+            lower_ordered_array_pattern(
+                ctx,
+                prefix,
+                rest,
+                suffix,
+                container_ty,
+                value,
+                success,
+                failure,
+                result_ty,
+            )
+        },
+    }
+}
+
+fn lower_ordered_match(
+    ctx: Lowerer,
+    source: tast::Expr,
+    arms: Vec[tast::Arm],
+    ty: tast::Type,
+) -> Expr {
+    let source_ty = tast::expr_type(source);
+    let source_value = lower_expr(ctx, source);
+    let source_name = gensym(ctx, "match");
+    let source_var = Expr::Var(source_name, source_ty);
+    let next = Ref::new(missing_expr(ty));
+    for offset in range(0, arms.len()) {
+        let index = arms.len() - 1 - offset;
+        let arm = arms.get(index);
+        let body = lower_expr(ctx, arm.body);
+        let success = match arm.guard {
+            Option::Some(guard) => ordered_if(
+                lower_expr(ctx, guard),
+                body,
+                next.get(),
+                ty,
+            ),
+            Option::None => body,
+        };
+        next.set(lower_ordered_pattern(
+            ctx,
+            arm.pat,
+            source_var,
+            success,
+            next.get(),
+            ty,
+        ))
+    };
+    bind_ordered_value(source_name, source_value, next.get(), ty)
+}

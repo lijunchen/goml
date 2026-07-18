@@ -587,17 +587,12 @@ fn lower_match_on_variable(
 ) -> Expr {
     match nominal_parts(source_ty) {
         Option::Some((name, type_args)) => match find_enum(ctx, name) {
-            Option::Some(definition) => match enum_match_cases(
-                ctx,
-                definition,
-                type_args,
-                arms,
+            Option::Some(_) => match pattern_rows_from_arms(
                 source_name,
                 source_ty,
+                arms,
             ) {
-                Option::Some(cases) => {
-                    lower_enum_cases(ctx, source_name, source_ty, cases, ty)
-                },
+                Option::Some(rows) => lower_pattern_rows(ctx, rows, ty),
                 Option::None => lower_generic_match(
                     ctx,
                     source_name,
@@ -631,28 +626,48 @@ fn lower_match(
     ty: tast::Type,
 ) -> Expr {
     let source_ty = tast::expr_type(source);
-    match source {
-        tast::Expr::Var(source_name, _) => {
-            lower_match_on_variable(ctx, source_name, source_ty, arms, ty)
-        },
-        other => {
-            let source_name = gensym(ctx, "mtmp");
-            let source_value = lower_expr(ctx, other);
-            let body = lower_match_on_variable(ctx, source_name, source_ty, arms, ty);
-            let stmts: Vec[LetStmt] = Vec::new();
-            stmts.push(LetStmt {
-                name: source_name,
-                value: source_value,
-                ty: source_ty,
-            });
-            Expr::Block(
-                Block {
-                    stmts,
-                    tail: Option::Some(body),
-                },
-                ty,
-            )
-        },
+    if arms_require_ordered(arms) {
+        lower_ordered_match(ctx, source, arms, ty)
+    } else if arms.len() == 0 {
+        let source_value = lower_expr(ctx, source);
+        let source_name = gensym(ctx, "_wild");
+        let stmts: Vec[LetStmt] = Vec::new();
+        stmts.push(LetStmt {
+            name: source_name,
+            value: source_value,
+            ty: source_ty,
+        });
+        Expr::Block(
+            Block {
+                stmts,
+                tail: Option::Some(missing_expr(ty)),
+            },
+            ty,
+        )
+    } else {
+        match source {
+            tast::Expr::Var(source_name, _) => {
+                lower_match_on_variable(ctx, source_name, source_ty, arms, ty)
+            },
+            other => {
+                let source_name = gensym(ctx, "mtmp");
+                let source_value = lower_expr(ctx, other);
+                let body = lower_match_on_variable(ctx, source_name, source_ty, arms, ty);
+                let stmts: Vec[LetStmt] = Vec::new();
+                stmts.push(LetStmt {
+                    name: source_name,
+                    value: source_value,
+                    ty: source_ty,
+                });
+                Expr::Block(
+                    Block {
+                        stmts,
+                        tail: Option::Some(body),
+                    },
+                    ty,
+                )
+            },
+        }
     }
 }
 
@@ -913,6 +928,56 @@ fn prepend_stmt(value: LetStmt, rest: Block) -> Block {
     }
 }
 
+fn remaining_tast_block(
+    stmts: Vec[tast::Stmt],
+    index: int32,
+    tail: Option[tast::Expr],
+    ty: tast::Type,
+) -> tast::Expr {
+    let remaining: Vec[tast::Stmt] = Vec::new();
+    for current in range(index, stmts.len()) {
+        remaining.push(stmts.get(current))
+    };
+    tast::Expr::Block(tast::Block {
+        stmts: remaining,
+        tail,
+    }, ty)
+}
+
+fn lower_pattern_continuation(
+    ctx: Lowerer,
+    source_name: string,
+    source_ty: tast::Type,
+    pattern: tast::Pat,
+    body: tast::Expr,
+    ty: tast::Type,
+) -> Expr {
+    if pattern_requires_ordered(pattern) {
+        lower_ordered_pattern(
+            ctx,
+            pattern,
+            Expr::Var(source_name, source_ty),
+            lower_expr(ctx, body),
+            missing_expr(ty),
+            ty,
+        )
+    } else {
+        let columns: Vec[PatternColumn] = Vec::new();
+        columns.push(PatternColumn {
+            source: source_name,
+            source_ty,
+            pattern,
+        });
+        let rows: Vec[PatternRow] = Vec::new();
+        rows.push(PatternRow {
+            columns,
+            bindings: Vec::new(),
+            body,
+        });
+        lower_pattern_rows(ctx, rows, ty)
+    }
+}
+
 fn lower_block_from(
     ctx: Lowerer,
     stmts: Vec[tast::Stmt],
@@ -962,7 +1027,20 @@ fn lower_block_from(
                         }
                     },
                     Option::None => {
-                        let rest = lower_block_from(ctx, stmts, index + 1, tail, ty);
+                        let body = remaining_tast_block(
+                            stmts,
+                            index + 1,
+                            tail,
+                            ty,
+                        );
+                        let matched = lower_pattern_continuation(
+                            ctx,
+                            name,
+                            value_ty,
+                            pattern,
+                            body,
+                            ty,
+                        );
                         let result: Vec[LetStmt] = Vec::new();
                         result.push(LetStmt {
                             name,
@@ -971,7 +1049,7 @@ fn lower_block_from(
                         });
                         Block {
                             stmts: result,
-                            tail: Option::Some(Expr::Block(rest, ty)),
+                            tail: Option::Some(matched),
                         }
                     },
                 }
