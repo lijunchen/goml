@@ -228,3 +228,12 @@ fn lowers_unit_columns_inside_enum_patterns() -> unit {
         "fn main() -> unit {\n  let value/0 = T::B(true, ()) in\n  match value/0 {\n    T::A => {\n      println(1)\n    },\n    T::B(x0, x1) => {\n      {\n        let x0 = T::B._0(value/0) in\n        let x1 = T::B._1(value/0) in\n        match x1 {\n          () => {\n            match x0 {\n              true => {\n                println(2)\n              },\n              false => {\n                println(3)\n              },\n            }\n          },\n        }\n      }\n    },\n  }\n}",
     )
 }
+
+#[test]
+fn lowers_struct_pattern_matrices_by_field_order() -> unit {
+    let source = "struct Pair { left: int32, right: int32 } fn matches(value: Pair) -> bool { match value { Pair { left: 4, right: 9 } => true, Pair { left: _, right: 6 } => true, _ => false, } }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "fn matches(value/0: Pair) -> bool {\n  {\n    let x0 = Pair.left(value/0) in\n    let x1 = Pair.right(value/0) in\n    match x1 {\n      9 => {\n        match x0 {\n          4 => {\n            true\n          },\n          _ => false,\n        }\n      },\n      6 => {\n        true\n      },\n      _ => false,\n    }\n  }\n}",
+    )
+}
