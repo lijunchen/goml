@@ -154,10 +154,6 @@ fn bool_expr(value: bool) -> Expr {
 fn negated_integer(value: tast::Primitive) -> Option[tast::Primitive] {
     match value {
         tast::Primitive::Int(value) => Option::Some(tast::Primitive::Int("-" + value)),
-        tast::Primitive::Int8(value) => Option::Some(tast::Primitive::Int8("-" + value)),
-        tast::Primitive::Int16(value) => Option::Some(tast::Primitive::Int16("-" + value)),
-        tast::Primitive::Int32(value) => Option::Some(tast::Primitive::Int32("-" + value)),
-        tast::Primitive::Int64(value) => Option::Some(tast::Primitive::Int64("-" + value)),
         _ => Option::None,
     }
 }
