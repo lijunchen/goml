@@ -282,11 +282,97 @@ fn receiver_matches(owner: Type, receiver: Type) -> bool {
     }
 }
 
+fn call_type_lists_compatible(left: Vec[Type], right: Vec[Type]) -> bool {
+    if left.len() != right.len() {
+        false
+    } else {
+        let compatible = Ref::new(true);
+        for index in range(0, left.len()) {
+            if !call_types_compatible(left.get(index), right.get(index)) {
+                compatible.set(false)
+            } else {
+                ()
+            }
+        };
+        compatible.get()
+    }
+}
+
+fn variable_accepts_type(variable: Ref[TypeVar], value: Type) -> bool {
+    match variable.get() {
+        TypeVar::Link(inner) => call_types_compatible(inner, value),
+        TypeVar::Unbound(_, kind) => match prune(value) {
+            Type::Var(other) => match other.get() {
+                TypeVar::Link(inner) => variable_accepts_type(variable, inner),
+                TypeVar::Unbound(_, other_kind) => match merge_var_kind(kind, other_kind) {
+                    Option::Some(_) => true,
+                    Option::None => false,
+                },
+            },
+            Type::Param(_) | Type::Projection(_, _, _) => true,
+            other => kind_accepts(kind, other),
+        },
+    }
+}
+
+fn call_types_compatible(left: Type, right: Type) -> bool {
+    match (prune(left), prune(right)) {
+        (Type::Error, _) | (_, Type::Error) => true,
+        (Type::Var(variable), value) => variable_accepts_type(variable, value),
+        (value, Type::Var(variable)) => variable_accepts_type(variable, value),
+        (Type::Param(_), _) | (_, Type::Param(_)) => true,
+        (Type::Projection(_, _, _), _) | (_, Type::Projection(_, _, _)) => true,
+        (Type::Unit, Type::Unit)
+        | (Type::Bool, Type::Bool)
+        | (Type::Int8, Type::Int8)
+        | (Type::Int16, Type::Int16)
+        | (Type::Int32, Type::Int32)
+        | (Type::Int64, Type::Int64)
+        | (Type::Uint8, Type::Uint8)
+        | (Type::Uint16, Type::Uint16)
+        | (Type::Uint32, Type::Uint32)
+        | (Type::Uint64, Type::Uint64)
+        | (Type::Float32, Type::Float32)
+        | (Type::Float64, Type::Float64)
+        | (Type::String, Type::String)
+        | (Type::Char, Type::Char) => true,
+        (Type::Tuple(left), Type::Tuple(right)) => {
+            call_type_lists_compatible(left, right)
+        },
+        (Type::Con(left), Type::Con(right)) | (Type::Dyn(left), Type::Dyn(right)) => {
+            names_match(left, right)
+        },
+        (Type::App(left_base, left_args), Type::App(right_base, right_args)) => {
+            call_types_compatible(left_base, right_base)
+                && call_type_lists_compatible(left_args, right_args)
+        },
+        (Type::Array(left_len, left_elem), Type::Array(right_len, right_elem)) => {
+            (left_len < 0 || right_len < 0 || left_len == right_len)
+                && call_types_compatible(left_elem, right_elem)
+        },
+        (Type::Slice(left), Type::Slice(right))
+        | (Type::VecType(left), Type::VecType(right))
+        | (Type::RefType(left), Type::RefType(right)) => call_types_compatible(left, right),
+        (
+            Type::HashMap(left_key, left_value),
+            Type::HashMap(right_key, right_value),
+        ) => {
+            call_types_compatible(left_key, right_key)
+                && call_types_compatible(left_value, right_value)
+        },
+        (Type::Func(left_params, left_ret), Type::Func(right_params, right_ret)) => {
+            call_type_lists_compatible(left_params, right_params)
+                && call_types_compatible(left_ret, right_ret)
+        },
+        _ => false,
+    }
+}
+
 fn instantiate_method(ctx: Checker, value: MethodInfo) -> (Type, ResolvedCallable) {
     let substitutions = instantiate_substitutions(ctx.counter, value.generics, Vec::new());
-    apply_predicate_equalities(substitute_predicates(
-        value.function.predicates,
-        substitutions,
+    apply_predicate_equalities(expand_implied_predicates(
+        ctx,
+        substitute_predicates(value.function.predicates, substitutions),
     ));
     let owner = substitute_type(value.for_type, substitutions);
     let params: Vec[Type] = Vec::new();
@@ -339,6 +425,101 @@ fn resolve_user_method(
         }
     };
     result.get()
+}
+
+fn method_matches_call(
+    ctx: Checker,
+    value: ResolvedCallable,
+    receiver: Type,
+    args: Vec[Type],
+    expected: Option[Type],
+) -> bool {
+    match prune(value.ty) {
+        Type::Func(params, ret_ty) => if params.len() == args.len() + 1 {
+            let matches = Ref::new(call_types_compatible(
+                normalize_type(ctx, params.get(0)),
+                normalize_type(ctx, receiver),
+            ));
+            for index in range(0, args.len()) {
+                if !call_types_compatible(
+                    normalize_type(ctx, params.get(index + 1)),
+                    normalize_type(ctx, args.get(index)),
+                ) {
+                    matches.set(false)
+                } else {
+                    ()
+                }
+            };
+            match expected {
+                Option::Some(ty) => if !call_types_compatible(
+                    normalize_type(ctx, ret_ty),
+                    normalize_type(ctx, ty),
+                ) {
+                    matches.set(false)
+                } else {
+                    ()
+                },
+                Option::None => (),
+            };
+            matches.get()
+        } else {
+            false
+        },
+        _ => false,
+    }
+}
+
+fn resolve_user_method_for_call(
+    ctx: Checker,
+    receiver: Type,
+    name: string,
+    args: Vec[Type],
+    expected: Option[Type],
+) -> Option[ResolvedCallable] {
+    let inherent = Ref::new(Option::None);
+    let inherent_matches = Ref::new(0);
+    let trait_method = Ref::new(Option::None);
+    let trait_matches = Ref::new(0);
+    for value in ctx.methods {
+        if value.function.name == name && receiver_matches(value.for_type, receiver) {
+            let (_, callable) = instantiate_method(ctx, value);
+            if method_matches_call(ctx, callable, receiver, args, expected) {
+                match value.trait_ref {
+                    Option::Some(_) => {
+                        trait_matches.set(trait_matches.get() + 1);
+                        trait_method.set(Option::Some(callable))
+                    },
+                    Option::None => {
+                        inherent_matches.set(inherent_matches.get() + 1);
+                        inherent.set(Option::Some(callable))
+                    },
+                }
+            } else {
+                ()
+            }
+        } else {
+            ()
+        }
+    };
+    let matches = if inherent_matches.get() > 0 {
+        inherent_matches.get()
+    } else {
+        trait_matches.get()
+    };
+    if matches == 1 {
+        if inherent_matches.get() == 1 {
+            inherent.get()
+        } else {
+            trait_method.get()
+        }
+    } else {
+        if matches > 1 {
+            ctx.diagnostics.push("ambiguous method: " + name)
+        } else {
+            ()
+        };
+        Option::None
+    }
 }
 
 fn callable_type(params: Vec[Type], ret_ty: Type) -> Type {
@@ -662,11 +843,23 @@ fn resolve_string_method(receiver: Type, name: string) -> Option[ResolvedCallabl
         }
 }
 
-fn resolve_method(ctx: Checker, receiver: Type, name: string) -> Option[ResolvedCallable] {
+fn resolve_method(
+    ctx: Checker,
+    receiver: Type,
+    name: string,
+    args: Vec[Type],
+    expected: Option[Type],
+) -> Option[ResolvedCallable] {
     let receiver = normalize_type(ctx, receiver);
-    match resolve_user_method(ctx, receiver, name, Option::None, false) {
+    match resolve_predicate_method(ctx, receiver, name) {
         Option::Some(value) => Option::Some(value),
-        Option::None => match resolve_predicate_method(ctx, receiver, name) {
+        Option::None => match resolve_user_method_for_call(
+            ctx,
+            receiver,
+            name,
+            args,
+            expected,
+        ) {
             Option::Some(value) => Option::Some(value),
             Option::None => resolve_builtin_method(ctx, receiver, name),
         },

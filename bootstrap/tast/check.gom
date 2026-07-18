@@ -411,17 +411,15 @@ fn normalize_function_expr(ctx: Checker, value: Expr) -> Expr {
     }
 }
 
-fn apply_call(
+fn apply_typed_call(
     ctx: Checker,
     function: Expr,
-    prefix: Vec[Expr],
-    args: Vec[hir::Expr],
+    raw_values: Vec[Expr],
+    is_static: bool,
 ) -> Expr {
-    let is_static = prefix.len() == 0;
-    let arity = prefix.len() + args.len();
-    let (params, ret_ty) = callable_parts(ctx, expr_type(function), arity);
+    let (params, ret_ty) = callable_parts(ctx, expr_type(function), raw_values.len());
     let values: Vec[Expr] = Vec::new();
-    for value in prefix {
+    for value in raw_values {
         let index = values.len();
         let expected = if index < params.len() {
             Option::Some(params.get(index))
@@ -429,15 +427,6 @@ fn apply_call(
             Option::None
         };
         values.push(coerce_expr(ctx, value, expected))
-    };
-    for value in args {
-        let index = values.len();
-        let expected = if index < params.len() {
-            Option::Some(params.get(index))
-        } else {
-            Option::None
-        };
-        values.push(check_expr(ctx, value, expected))
     };
     if values.len() != params.len() {
         ctx.diagnostics.push("call arity mismatch")
@@ -475,14 +464,45 @@ fn apply_call(
     )
 }
 
+fn apply_call(
+    ctx: Checker,
+    function: Expr,
+    prefix: Vec[Expr],
+    args: Vec[hir::Expr],
+) -> Expr {
+    let is_static = prefix.len() == 0;
+    let arity = prefix.len() + args.len();
+    let (params, _) = callable_parts(ctx, expr_type(function), arity);
+    let values: Vec[Expr] = Vec::new();
+    for value in prefix {
+        values.push(value)
+    };
+    for value in args {
+        let index = values.len();
+        let expected = if index < params.len() {
+            Option::Some(params.get(index))
+        } else {
+            Option::None
+        };
+        values.push(check_expr(ctx, value, expected))
+    };
+    apply_typed_call(ctx, function, values, is_static)
+}
+
 fn check_method_call(
     ctx: Checker,
     receiver_source: hir::Expr,
     name: string,
     args: Vec[hir::Expr],
+    expected: Option[Type],
 ) -> Expr {
     let receiver = check_expr(ctx, receiver_source, Option::None);
-    match resolve_method(ctx, expr_type(receiver), name) {
+    let arg_types: Vec[Type] = Vec::new();
+    for source in args {
+        let value = check_expr(ctx, source, Option::None);
+        arg_types.push(expr_type(value))
+    };
+    match resolve_method(ctx, expr_type(receiver), name, arg_types, expected) {
         Option::Some(value) => {
             let function = Expr::Callable(value.callable, value.ty);
             apply_call(ctx, function, one_expr(receiver), args)
@@ -511,16 +531,24 @@ fn one_expr(value: Expr) -> Vec[Expr] {
     result
 }
 
-fn check_call_expr(ctx: Checker, function: hir::Expr, args: Vec[hir::Expr]) -> Expr {
-    match function {
-        hir::Expr::Field(receiver, name) => check_method_call(ctx, receiver, name, args),
+fn check_call_expr(
+    ctx: Checker,
+    function: hir::Expr,
+    args: Vec[hir::Expr],
+    expected: Option[Type],
+) -> Expr {
+    let result = match function {
+        hir::Expr::Field(receiver, name) => {
+            check_method_call(ctx, receiver, name, args, expected)
+        },
         _ => apply_call(
             ctx,
             check_expr(ctx, function, Option::None),
             Vec::new(),
             args,
         ),
-    }
+    };
+    coerce_expr(ctx, result, expected)
 }
 
 fn is_arithmetic_op(value: ast::BinaryOp) -> bool {
@@ -981,7 +1009,9 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
                 ),
                 Type::Unit,
             ),
-            hir::Expr::Call(function, args) => check_call_expr(ctx, function, args),
+            hir::Expr::Call(function, args) => {
+                check_call_expr(ctx, function, args, Option::None)
+            },
             hir::Expr::Unary(op, value) => check_unary_expr(ctx, op, value),
             hir::Expr::Cast(value, ty) => {
                 let target = type_from_hir(ty, ctx.type_params, ctx.self_ty);
@@ -1006,6 +1036,7 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
 
 fn check_expr(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> Expr {
     match value {
+        hir::Expr::Call(function, args) => check_call_expr(ctx, function, args, expected),
         hir::Expr::Constr(constructor, args) => {
             check_constructor_expr(ctx, constructor, args, expected)
         },
