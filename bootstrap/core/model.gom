@@ -1,0 +1,97 @@
+package core;
+
+use gomlang::parser::ast;
+use gomlang::parser::tast;
+
+pub struct File {
+    functions: Vec[Function],
+}
+
+pub struct Function {
+    name: string,
+    root: bool,
+    generics: Vec[string],
+    trait_impl: Option[TraitImpl],
+    params: Vec[(string, tast::Type)],
+    ret_ty: tast::Type,
+    body: Block,
+}
+
+pub struct TraitImpl {
+    trait_ref: tast::TraitRef,
+    for_ty: tast::Type,
+}
+
+pub struct LetStmt {
+    name: string,
+    value: Expr,
+    ty: tast::Type,
+}
+
+pub struct Block {
+    stmts: Vec[LetStmt],
+    tail: Option[Expr],
+}
+
+pub enum Expr {
+    Var(string, tast::Type),
+    Callable(tast::Callable, tast::Type),
+    Prim(tast::Primitive, tast::Type),
+    Constr(tast::Constructor, Vec[Expr], tast::Type),
+    Tuple(Vec[Expr], tast::Type),
+    Array(Vec[Expr], tast::Type),
+    Closure(Vec[tast::ClosureParam], Expr, tast::Type),
+    Block(Block, tast::Type),
+    Match(Expr, Vec[Arm], Option[Expr], tast::Type),
+    If(Expr, Expr, Expr, tast::Type),
+    While(Expr, Expr, tast::Type),
+    Break(tast::Type),
+    Continue(tast::Type),
+    Return(Option[Expr], tast::Type),
+    Go(Expr, tast::Type),
+    ConstrGet(Expr, tast::Constructor, int32, tast::Type),
+    Unary(ast::UnaryOp, Expr, tast::Type),
+    Cast(Expr, tast::Type),
+    Binary(ast::BinaryOp, Expr, Expr, tast::Type),
+    Assign(string, Expr, tast::Type, tast::Type),
+    Call(Expr, Vec[Expr], tast::Type),
+    ToDyn(string, tast::Type, Expr, tast::Type),
+    DynCall(string, string, Expr, Vec[Expr], tast::Type),
+    TraitCall(tast::TraitRef, string, Expr, Vec[Expr], tast::Type),
+    Proj(Expr, int32, tast::Type),
+}
+
+pub struct Arm {
+    lhs: Expr,
+    body: Expr,
+}
+
+pub fn expr_type(value: Expr) -> tast::Type {
+    match value {
+        Expr::Var(_, ty) => ty,
+        Expr::Callable(_, ty) => ty,
+        Expr::Prim(_, ty) => ty,
+        Expr::Constr(_, _, ty) => ty,
+        Expr::Tuple(_, ty) => ty,
+        Expr::Array(_, ty) => ty,
+        Expr::Closure(_, _, ty) => ty,
+        Expr::Block(_, ty) => ty,
+        Expr::Match(_, _, _, ty) => ty,
+        Expr::If(_, _, _, ty) => ty,
+        Expr::While(_, _, ty) => ty,
+        Expr::Break(ty) => ty,
+        Expr::Continue(ty) => ty,
+        Expr::Return(_, ty) => ty,
+        Expr::Go(_, ty) => ty,
+        Expr::ConstrGet(_, _, _, ty) => ty,
+        Expr::Unary(_, _, ty) => ty,
+        Expr::Cast(_, ty) => ty,
+        Expr::Binary(_, _, _, ty) => ty,
+        Expr::Assign(_, _, _, ty) => ty,
+        Expr::Call(_, _, ty) => ty,
+        Expr::ToDyn(_, _, _, ty) => ty,
+        Expr::DynCall(_, _, _, _, ty) => ty,
+        Expr::TraitCall(_, _, _, _, ty) => ty,
+        Expr::Proj(_, _, ty) => ty,
+    }
+}

@@ -9,6 +9,7 @@ The implementation provides:
 - CST-to-AST lowering with the same AST variants, normalized values, source spans, constructor classification, desugaring, and lower diagnostics as `crates/ast`
 - AST-to-HIR lowering with the same definitions, local resolution, constructor resolution, derive expansion, and canonical HIR output as `crates/compiler`
 - HIR-to-TAST checking with type inference, callable resolution, coercions, pattern checking, and canonical typed output
+- TAST-to-Core lowering with explicit calls, let chains, structured control flow, and canonical Core output
 
 Build the command-line tool with:
 
@@ -24,6 +25,7 @@ artifact/bin/parser cst path/to/file.gom
 artifact/bin/parser ast path/to/file.gom
 artifact/bin/parser hir path/to/file.gom
 artifact/bin/parser tast path/to/file.gom
+artifact/bin/parser core path/to/file.gom
 ```
 
 Run the package tests serially:
@@ -44,6 +46,7 @@ tools/diff-cst-corpus.sh
 tools/diff-ast-corpus.sh
 tools/diff-hir-corpus.sh
 tools/diff-tast-corpus.sh
+tools/diff-core-corpus.sh
 tools/diff-generated.sh
 ```
 
