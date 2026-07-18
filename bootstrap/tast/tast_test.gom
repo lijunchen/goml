@@ -1,0 +1,91 @@
+package tast;
+
+use gomlang::parser::ast;
+use gomlang::parser::hir;
+use gomlang::parser::parser;
+use std::testing;
+
+fn checked_file(source: string) -> File {
+    let result = check(hir::lower(ast::lower(parser::parse(source)), "main.gom"));
+    testing::assert_eq(result.diagnostics.len(), 0);
+    match result.tast {
+        Option::Some(file) => file,
+        Option::None => {
+            testing::fail("expected TAST");
+            File { items: Vec::new() }
+        },
+    }
+}
+
+#[test]
+fn infers_generic_function_calls() -> unit {
+    let source = "fn id[T](value: T) -> T { value } fn main() -> string { id(\"ok\") }";
+    let file = checked_file(source);
+    testing::assert_eq(file.items.len(), 2);
+    match file.items.get(1) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Call(function, args, ty)) => {
+                testing::assert_eq(args.len(), 1);
+                match resolve_type(ty) {
+                    Type::String => (),
+                    _ => testing::fail("expected string call result"),
+                };
+                match function {
+                    Expr::Callable(Callable::Function(name), Type::Func(params, ret_ty)) => {
+                        testing::assert_eq(name, "id");
+                        testing::assert_eq(params.len(), 1);
+                        match resolve_type(params.get(0)) {
+                            Type::String => (),
+                            _ => testing::fail("expected instantiated string parameter"),
+                        };
+                        match resolve_type(ret_ty) {
+                            Type::String => (),
+                            _ => testing::fail("expected instantiated string return"),
+                        }
+                    },
+                    _ => testing::fail("expected function callable"),
+                }
+            },
+            _ => testing::fail("expected call tail"),
+        },
+        _ => testing::fail("expected function"),
+    }
+}
+
+#[test]
+fn checks_enum_patterns_and_default_integer_literals() -> unit {
+    let source = "enum Choice { None, Some(int32) } fn unwrap(value: Choice) -> int32 { match value { Choice::Some(item) => item, Choice::None => 0 } }";
+    let file = checked_file(source);
+    testing::assert_eq(file.items.len(), 1);
+    match file.items.get(0) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Match(_, arms, ty)) => {
+                testing::assert_eq(arms.len(), 2);
+                match ty {
+                    Type::Int32 => (),
+                    _ => testing::fail("expected int32 match result"),
+                };
+                match arms.get(0).pat {
+                    Pat::Constr(constructor, args, Type::Con(name)) => {
+                        testing::assert_eq(constructor.name, "Choice::Some");
+                        testing::assert_eq(args.len(), 1);
+                        testing::assert_eq(name, "Choice")
+                    },
+                    _ => testing::fail("expected constructor pattern"),
+                };
+                match arms.get(1).body {
+                    Expr::Prim(Primitive::Int(value), literal_ty) => {
+                        testing::assert_eq(value, "0");
+                        match resolve_type(literal_ty) {
+                            Type::Int32 => (),
+                            _ => testing::fail("expected defaulted int32 literal"),
+                        }
+                    },
+                    _ => testing::fail("expected defaulted int32 literal"),
+                }
+            },
+            _ => testing::fail("expected match tail"),
+        },
+        _ => testing::fail("expected function"),
+    }
+}

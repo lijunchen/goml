@@ -131,20 +131,49 @@ fn valid_source(state: &mut u64) -> String {
     )
 }
 
+fn typed_source(state: &mut u64) -> String {
+    let value = next_noise(state) % 1000;
+    match next_noise(state) % 14 {
+        0 => format!("fn generated() -> int32 {{ {value} }}\n"),
+        1 => "fn id[T](value: T) -> T { value }\nfn generated() -> string { id(\"text\") }\n"
+            .to_string(),
+        2 => "struct Point { x: int32, y: int32 }\nfn generated(value: int32) -> Point { Point { x: value, y: 2 } }\n"
+            .to_string(),
+        3 => "enum Choice[T] { None, Some(T) }\nfn generated(value: Choice[int32]) -> int32 { match value { Choice::Some(item) => item, Choice::None => 0 } }\n"
+            .to_string(),
+        4 => "fn generated(flag: bool, left: int32, right: int32) -> int32 { if flag { left } else { right } }\n"
+            .to_string(),
+        5 => "fn generated(value: int32) -> (int32, string) { (value, \"text\") }\n"
+            .to_string(),
+        6 => "fn generated() -> [int32; 3] { [1, 2, 3] }\n".to_string(),
+        7 => "fn generated(value: int32) -> int32 { let add = |item: int32| item + 1; add(value) }\n"
+            .to_string(),
+        8 => "fn generated(value: int32) -> int32 { match value { 0..=2 => 1, _ => value } }\n"
+            .to_string(),
+        9 => "fn generated(value: int32) -> int32 { let nested = value; nested }\n"
+            .to_string(),
+        10 => "fn generated(left: bool, right: bool) -> bool { left && !right }\n".to_string(),
+        11 => "fn generated() -> char { 'λ' }\n".to_string(),
+        12 => "struct Point[T] { value: T }\nimpl[T] Point[T] { fn new(value: T) -> Point[T] { Point { value } } }\nfn generated() -> Point[int32] { Point::new(1) }\n"
+            .to_string(),
+        _ => "fn generated(values: [int32; 3]) -> int32 { values[0] }\n".to_string(),
+    }
+}
+
 fn main() {
     let parser = env::args_os()
         .nth(1)
         .map(PathBuf::from)
-        .expect("usage: diff_parser <gomlang-parser> <cst|ast|hir> [iterations]");
+        .expect("usage: diff_parser <gomlang-parser> <cst|ast|hir|tast> [iterations]");
     let mode = env::args()
         .nth(2)
-        .expect("usage: diff_parser <gomlang-parser> <cst|ast|hir> [iterations]");
+        .expect("usage: diff_parser <gomlang-parser> <cst|ast|hir|tast> [iterations]");
     let iterations = env::args()
         .nth(3)
         .map(|value| value.parse::<usize>().expect("invalid iteration count"))
         .unwrap_or(2048);
     assert!(
-        mode == "cst" || mode == "ast" || mode == "hir",
+        mode == "cst" || mode == "ast" || mode == "hir" || mode == "tast",
         "invalid mode"
     );
     let directory =
@@ -152,9 +181,12 @@ fn main() {
     fs::create_dir_all(&directory).unwrap();
     let input_path = directory.join("input.gom");
     let mut state = 0x6a09_e667_f3bc_c909u64;
+    let mut matched = 0;
     for iteration in 0..iterations {
         let source = if mode == "cst" {
             random_source(&mut state)
+        } else if mode == "tast" {
+            typed_source(&mut state)
         } else {
             valid_source(&mut state)
         };
@@ -163,9 +195,14 @@ fn main() {
             gomlang_parser_rust_oracle::encode_parse(&input_path, &source)
         } else if mode == "hir" {
             gomlang_parser_rust_oracle::encode_hir(&input_path, &source)
+        } else if mode == "tast" {
+            gomlang_parser_rust_oracle::encode_tast(&input_path, &source)
         } else {
             gomlang_parser_rust_oracle::encode_ast(&input_path, &source)
         };
+        if mode == "tast" && expected.is_empty() {
+            panic!("Rust TAST oracle rejected iteration {iteration} for {source:?}");
+        }
         if mode == "hir" && expected.is_empty() {
             continue;
         }
@@ -185,7 +222,8 @@ fn main() {
             actual, expected,
             "{mode} mismatch at iteration {iteration} for {source:?}"
         );
+        matched += 1;
     }
     fs::remove_dir_all(&directory).unwrap();
-    println!("matched {iterations} generated {mode} inputs");
+    println!("matched {matched} of {iterations} generated {mode} inputs");
 }

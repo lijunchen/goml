@@ -14,3 +14,4 @@ CARGO_TARGET_DIR="$target_dir" cargo build \
 "$target_dir/debug/diff_parser" "$parser" cst 2048
 "$target_dir/debug/diff_parser" "$parser" ast 2048
 "$target_dir/debug/diff_parser" "$parser" hir 2048
+"$target_dir/debug/diff_parser" "$parser" tast 2048
