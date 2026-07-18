@@ -13,7 +13,11 @@ fn checked_file(source: string) -> File {
         Option::Some(file) => file,
         Option::None => {
             testing::fail("expected TAST");
-            File { items: Vec::new() }
+            File {
+                items: Vec::new(),
+                enums: Vec::new(),
+                structs: Vec::new(),
+            }
         },
     }
 }
