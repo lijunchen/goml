@@ -31,6 +31,14 @@ fn folds_negative_integer_primitives() -> unit {
 }
 
 #[test]
+fn preserves_suffixed_negative_integer_unaries() -> unit {
+    testing::assert_eq(
+        encode(lower_source("fn main() -> int32 { -1i32 }")),
+        "fn main() -> int32 {\n  (-1)\n}",
+    )
+}
+
+#[test]
 fn nests_discard_patterns_around_the_continuation() -> unit {
     testing::assert_eq(
         encode(lower_source("fn main() -> unit { let _ = (); () }")),
