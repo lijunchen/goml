@@ -1108,15 +1108,16 @@ fn resolve_builtin_static(
                 && args.len() == 1
                 && name == "from_fn" {
                 let item = args.get(0);
-                Option::Some(inherent_callable(
-                    owner,
-                    name,
-                    one_type(Type::Func(
-                        Vec::new(),
-                        nominal_type("Option", one_type(item)),
-                    )),
-                    owner,
-                ))
+                Option::Some(ResolvedCallable {
+                    callable: Callable::InherentMethod(Type::Con(owner_name), name),
+                    ty: callable_type(
+                        one_type(Type::Func(
+                            Vec::new(),
+                            nominal_type("Option", one_type(item)),
+                        )),
+                        owner,
+                    ),
+                })
             } else {
                 Option::None
             },
