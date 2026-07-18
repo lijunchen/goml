@@ -233,9 +233,55 @@ fn lower_pattern_expr(value: tast::Pat) -> Option[Expr] {
     }
 }
 
-fn lower_simple_match(
+fn missing_expr(ty: tast::Type) -> Expr {
+    let params: Vec[tast::Type] = Vec::new();
+    params.push(tast::Type::String);
+    let args: Vec[Expr] = Vec::new();
+    args.push(Expr::Prim(
+        tast::Primitive::String(""),
+        tast::Type::String,
+    ));
+    Expr::Call(
+        Expr::Callable(
+            tast::Callable::Intrinsic("compiler.missing"),
+            tast::Type::Func(params, ty),
+        ),
+        args,
+        ty,
+    )
+}
+
+fn bind_match_pattern(
+    source_name: string,
+    source_ty: tast::Type,
+    pattern: tast::Pat,
+    ty: tast::Type,
+    body: Expr,
+) -> Expr {
+    match pattern {
+        tast::Pat::Var(name, pat_ty) => {
+            let stmts: Vec[LetStmt] = Vec::new();
+            stmts.push(LetStmt {
+                name,
+                value: Expr::Var(source_name, source_ty),
+                ty: pat_ty,
+            });
+            Expr::Block(
+                Block {
+                    stmts,
+                    tail: Option::Some(body),
+                },
+                ty,
+            )
+        },
+        _ => body,
+    }
+}
+
+fn lower_generic_match(
     ctx: Lowerer,
-    source: tast::Expr,
+    source_name: string,
+    source_ty: tast::Type,
     arms: Vec[tast::Arm],
     ty: tast::Type,
 ) -> Expr {
@@ -243,7 +289,15 @@ fn lower_simple_match(
     let default: Ref[Option[Expr]] = Ref::new(Option::None);
     for arm in arms {
         match arm.pat {
-            tast::Pat::Wild(_) => default.set(Option::Some(lower_expr(ctx, arm.body))),
+            tast::Pat::Wild(_) | tast::Pat::Var(_, _) => default.set(Option::Some(
+                bind_match_pattern(
+                    source_name,
+                    source_ty,
+                    arm.pat,
+                    ty,
+                    lower_expr(ctx, arm.body),
+                ),
+            )),
             pattern => match lower_pattern_expr(pattern) {
                 Option::Some(lhs) => result.push(Arm {
                     lhs,
@@ -260,7 +314,106 @@ fn lower_simple_match(
             },
         }
     };
-    Expr::Match(lower_expr(ctx, source), result, default.get(), ty)
+    Expr::Match(
+        Expr::Var(source_name, source_ty),
+        result,
+        default.get(),
+        ty,
+    )
+}
+
+fn pattern_matches_bool(value: tast::Pat, expected: bool) -> bool {
+    match value {
+        tast::Pat::Prim(tast::Primitive::Bool(value), _) => value == expected,
+        tast::Pat::Wild(_) | tast::Pat::Var(_, _) => true,
+        _ => false,
+    }
+}
+
+fn bool_arm(arms: Vec[tast::Arm], expected: bool) -> Option[tast::Arm] {
+    let result: Ref[Option[tast::Arm]] = Ref::new(Option::None);
+    for arm in arms {
+        if pattern_matches_bool(arm.pat, expected) && match result.get() {
+            Option::Some(_) => false,
+            Option::None => true,
+        } {
+            result.set(Option::Some(arm))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn lower_bool_match(
+    ctx: Lowerer,
+    source_name: string,
+    arms: Vec[tast::Arm],
+    ty: tast::Type,
+) -> Expr {
+    let result: Vec[Arm] = Vec::new();
+    for expected in Vec::new().pushed(true).pushed(false) {
+        let body = match bool_arm(arms, expected) {
+            Option::Some(arm) => bind_match_pattern(
+                source_name,
+                tast::Type::Bool,
+                arm.pat,
+                ty,
+                lower_expr(ctx, arm.body),
+            ),
+            Option::None => missing_expr(ty),
+        };
+        result.push(Arm {
+            lhs: bool_expr(expected),
+            body,
+        })
+    };
+    Expr::Match(
+        Expr::Var(source_name, tast::Type::Bool),
+        result,
+        Option::None,
+        ty,
+    )
+}
+
+fn lower_unit_match(
+    ctx: Lowerer,
+    source_name: string,
+    arms: Vec[tast::Arm],
+    ty: tast::Type,
+) -> Expr {
+    let selected: Ref[Option[tast::Arm]] = Ref::new(Option::None);
+    for arm in arms {
+        if match selected.get() {
+            Option::Some(_) => false,
+            Option::None => true,
+        } {
+            selected.set(Option::Some(arm))
+        } else {
+            ()
+        }
+    };
+    let body = match selected.get() {
+        Option::Some(arm) => bind_match_pattern(
+            source_name,
+            tast::Type::Unit,
+            arm.pat,
+            ty,
+            lower_expr(ctx, arm.body),
+        ),
+        Option::None => missing_expr(ty),
+    };
+    let result: Vec[Arm] = Vec::new();
+    result.push(Arm {
+        lhs: Expr::Prim(tast::Primitive::Unit, tast::Type::Unit),
+        body,
+    });
+    Expr::Match(
+        Expr::Var(source_name, tast::Type::Unit),
+        result,
+        Option::None,
+        ty,
+    )
 }
 
 fn enum_arm_for_variant(
@@ -423,6 +576,42 @@ fn lower_enum_cases(
     )
 }
 
+fn lower_match_on_variable(
+    ctx: Lowerer,
+    source_name: string,
+    source_ty: tast::Type,
+    arms: Vec[tast::Arm],
+    ty: tast::Type,
+) -> Expr {
+    match nominal_parts(source_ty) {
+        Option::Some((name, type_args)) => match find_enum(ctx, name) {
+            Option::Some(definition) => match enum_match_cases(
+                ctx,
+                definition,
+                type_args,
+                arms,
+            ) {
+                Option::Some(cases) => {
+                    lower_enum_cases(ctx, source_name, source_ty, cases, ty)
+                },
+                Option::None => lower_generic_match(
+                    ctx,
+                    source_name,
+                    source_ty,
+                    arms,
+                    ty,
+                ),
+            },
+            Option::None => lower_generic_match(ctx, source_name, source_ty, arms, ty),
+        },
+        Option::None => match tast::resolve_type(source_ty) {
+            tast::Type::Bool => lower_bool_match(ctx, source_name, arms, ty),
+            tast::Type::Unit => lower_unit_match(ctx, source_name, arms, ty),
+            _ => lower_generic_match(ctx, source_name, source_ty, arms, ty),
+        },
+    }
+}
+
 fn lower_match(
     ctx: Lowerer,
     source: tast::Expr,
@@ -430,52 +619,28 @@ fn lower_match(
     ty: tast::Type,
 ) -> Expr {
     let source_ty = tast::expr_type(source);
-    match nominal_parts(source_ty) {
-        Option::Some((name, type_args)) => match find_enum(ctx, name) {
-            Option::Some(definition) => match source {
-                tast::Expr::Var(source_name, _) => match enum_match_cases(
-                    ctx,
-                    definition,
-                    type_args,
-                    arms,
-                ) {
-                    Option::Some(cases) => {
-                        lower_enum_cases(ctx, source_name, source_ty, cases, ty)
-                    },
-                    Option::None => lower_simple_match(ctx, source, arms, ty),
-                },
-                other => {
-                    let source_name = gensym(ctx, "mtmp");
-                    let source_value = lower_expr(ctx, other);
-                    match enum_match_cases(ctx, definition, type_args, arms) {
-                        Option::Some(cases) => {
-                            let stmts: Vec[LetStmt] = Vec::new();
-                            stmts.push(LetStmt {
-                                name: source_name,
-                                value: source_value,
-                                ty: source_ty,
-                            });
-                            Expr::Block(
-                                Block {
-                                    stmts,
-                                    tail: Option::Some(lower_enum_cases(
-                                        ctx,
-                                        source_name,
-                                        source_ty,
-                                        cases,
-                                        ty,
-                                    )),
-                                },
-                                ty,
-                            )
-                        },
-                        Option::None => lower_simple_match(ctx, other, arms, ty),
-                    }
-                },
-            },
-            Option::None => lower_simple_match(ctx, source, arms, ty),
+    match source {
+        tast::Expr::Var(source_name, _) => {
+            lower_match_on_variable(ctx, source_name, source_ty, arms, ty)
         },
-        Option::None => lower_simple_match(ctx, source, arms, ty),
+        other => {
+            let source_name = gensym(ctx, "mtmp");
+            let source_value = lower_expr(ctx, other);
+            let body = lower_match_on_variable(ctx, source_name, source_ty, arms, ty);
+            let stmts: Vec[LetStmt] = Vec::new();
+            stmts.push(LetStmt {
+                name: source_name,
+                value: source_value,
+                ty: source_ty,
+            });
+            Expr::Block(
+                Block {
+                    stmts,
+                    tail: Option::Some(body),
+                },
+                ty,
+            )
+        },
     }
 }
 
