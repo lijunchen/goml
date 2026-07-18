@@ -13,8 +13,7 @@ struct Lowerer {
 struct EnumCase {
     constructor: tast::Constructor,
     variables: Vec[(string, tast::Type)],
-    patterns: Vec[tast::Pat],
-    body: tast::Expr,
+    rows: Vec[PatternRow],
 }
 
 fn gensym(ctx: Lowerer, prefix: string) -> string {
@@ -416,22 +415,68 @@ fn lower_unit_match(
     )
 }
 
-fn enum_arm_for_variant(
+fn enum_rows_for_variant(
     arms: Vec[tast::Arm],
     constructor_name: string,
-) -> Option[tast::Arm] {
-    let result: Ref[Option[tast::Arm]] = Ref::new(Option::None);
+    variables: Vec[(string, tast::Type)],
+    source_name: string,
+    source_ty: tast::Type,
+) -> Option[Vec[PatternRow]] {
+    let rows: Vec[PatternRow] = Vec::new();
+    let valid = Ref::new(true);
     for arm in arms {
-        match arm.pat {
-            tast::Pat::Constr(constructor, _, _) => if constructor.name == constructor_name {
-                result.set(Option::Some(arm))
-            } else {
-                ()
+        match arm.guard {
+            Option::Some(_) => valid.set(false),
+            Option::None => match arm.pat {
+                tast::Pat::Constr(constructor, patterns, _) => if constructor.name == constructor_name {
+                    if patterns.len() == variables.len() {
+                        let columns: Vec[PatternColumn] = Vec::new();
+                        for index in range(0, patterns.len()) {
+                            let variable = variables.get(index);
+                            columns.push(PatternColumn {
+                                source: variable.0,
+                                source_ty: variable.1,
+                                pattern: patterns.get(index),
+                            })
+                        };
+                        rows.push(PatternRow {
+                            columns,
+                            bindings: Vec::new(),
+                            body: arm.body,
+                        })
+                    } else {
+                        valid.set(false)
+                    }
+                } else {
+                    ()
+                },
+                tast::Pat::Wild(_) => rows.push(PatternRow {
+                    columns: Vec::new(),
+                    bindings: Vec::new(),
+                    body: arm.body,
+                }),
+                tast::Pat::Var(name, ty) => {
+                    let bindings: Vec[PatternBinding] = Vec::new();
+                    bindings.push(PatternBinding {
+                        name,
+                        source: source_name,
+                        ty,
+                    });
+                    rows.push(PatternRow {
+                        columns: Vec::new(),
+                        bindings,
+                        body: arm.body,
+                    })
+                },
+                _ => valid.set(false),
             },
-            _ => (),
         }
     };
-    result.get()
+    if valid.get() && rows.len() > 0 {
+        Option::Some(rows)
+    } else {
+        Option::None
+    }
 }
 
 fn enum_match_cases(
@@ -439,46 +484,40 @@ fn enum_match_cases(
     definition: tast::EnumDef,
     type_args: Vec[tast::Type],
     arms: Vec[tast::Arm],
+    source_name: string,
+    source_ty: tast::Type,
 ) -> Option[Vec[EnumCase]] {
     let cases: Vec[EnumCase] = Vec::new();
     let valid = Ref::new(true);
     for variant in definition.variants {
         let constructor_name = definition.name + "::" + variant.name;
-        match enum_arm_for_variant(arms, constructor_name) {
-            Option::Some(arm) => match arm.guard {
-                Option::Some(_) => valid.set(false),
-                Option::None => match arm.pat {
-                    tast::Pat::Constr(_, patterns, _) => {
-                        let variables: Vec[(string, tast::Type)] = Vec::new();
-                        for field in variant.fields {
-                            variables.push((
-                                gensym(ctx, "x"),
-                                tast::substitute_params(
-                                    field,
-                                    definition.generics,
-                                    type_args,
-                                ),
-                            ))
-                        };
-                        if variables.len() != patterns.len() {
-                            valid.set(false)
-                        } else {
-                            ()
-                        };
-                        cases.push(EnumCase {
-                            constructor: tast::Constructor {
-                                name: constructor_name,
-                                fields: Vec::new(),
-                                is_struct: false,
-                            },
-                            variables,
-                            patterns,
-                            body: arm.body,
-                        })
-                    },
-                    _ => valid.set(false),
+        let variables: Vec[(string, tast::Type)] = Vec::new();
+        for field in variant.fields {
+            variables.push((
+                gensym(ctx, "x"),
+                tast::substitute_params(
+                    field,
+                    definition.generics,
+                    type_args,
+                ),
+            ))
+        };
+        match enum_rows_for_variant(
+            arms,
+            constructor_name,
+            variables,
+            source_name,
+            source_ty,
+        ) {
+            Option::Some(rows) => cases.push(EnumCase {
+                constructor: tast::Constructor {
+                    name: constructor_name,
+                    fields: Vec::new(),
+                    is_struct: false,
                 },
-            },
+                variables,
+                rows,
+            }),
             Option::None => valid.set(false),
         }
     };
@@ -487,38 +526,6 @@ fn enum_match_cases(
     } else {
         Option::None
     }
-}
-
-fn bind_case_patterns(
-    patterns: Vec[tast::Pat],
-    variables: Vec[(string, tast::Type)],
-    ty: tast::Type,
-    body: Expr,
-) -> Expr {
-    let result = Ref::new(body);
-    for index in range(0, patterns.len()) {
-        match patterns.get(index) {
-            tast::Pat::Var(name, pat_ty) => {
-                let variable = variables.get(index);
-                let stmts: Vec[LetStmt] = Vec::new();
-                stmts.push(LetStmt {
-                    name,
-                    value: Expr::Var(variable.0, variable.1),
-                    ty: pat_ty,
-                });
-                result.set(Expr::Block(
-                    Block {
-                        stmts,
-                        tail: Option::Some(result.get()),
-                    },
-                    ty,
-                ))
-            },
-            tast::Pat::Wild(_) => (),
-            _ => (),
-        }
-    };
-    result.get()
 }
 
 fn lower_enum_cases(
@@ -546,12 +553,7 @@ fn lower_enum_cases(
                 ty: variable.1,
             })
         };
-        let body = bind_case_patterns(
-            case.patterns,
-            case.variables,
-            ty,
-            lower_expr(ctx, case.body),
-        );
+        let body = lower_pattern_rows(ctx, case.rows, ty);
         let body = if extractions.len() > 0 {
             Expr::Block(
                 Block {
@@ -590,6 +592,8 @@ fn lower_match_on_variable(
                 definition,
                 type_args,
                 arms,
+                source_name,
+                source_ty,
             ) {
                 Option::Some(cases) => {
                     lower_enum_cases(ctx, source_name, source_ty, cases, ty)
