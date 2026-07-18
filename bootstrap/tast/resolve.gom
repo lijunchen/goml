@@ -19,6 +19,12 @@ struct ResolvedCallable {
     ty: Type,
 }
 
+struct MethodCandidate {
+    owner: Type,
+    callable: ResolvedCallable,
+    predicates: Vec[TypePredicate],
+}
+
 fn short_name(value: string) -> string {
     let start = Ref::new(0);
     let index = Ref::new(0);
@@ -368,27 +374,34 @@ fn call_types_compatible(left: Type, right: Type) -> bool {
     }
 }
 
-fn instantiate_method(ctx: Checker, value: MethodInfo) -> (Type, ResolvedCallable) {
+fn instantiate_method_candidate(ctx: Checker, value: MethodInfo) -> MethodCandidate {
     let substitutions = instantiate_substitutions(ctx.counter, value.generics, Vec::new());
-    apply_predicate_equalities(expand_implied_predicates(
+    let predicates = expand_implied_predicates(
         ctx,
         substitute_predicates(value.function.predicates, substitutions),
-    ));
+    );
+    apply_predicate_equalities(predicates);
     let owner = substitute_type(value.for_type, substitutions);
     let params: Vec[Type] = Vec::new();
     for param in value.function.params {
         params.push(substitute_type(param, substitutions))
     };
-    (
+    MethodCandidate {
         owner,
-        ResolvedCallable {
+        callable: ResolvedCallable {
             callable: substitute_callable(value.function.callable, substitutions),
             ty: Type::Func(
                 params,
                 substitute_type(value.function.ret_ty, substitutions),
             ),
         },
-    )
+        predicates,
+    }
+}
+
+fn instantiate_method(ctx: Checker, value: MethodInfo) -> (Type, ResolvedCallable) {
+    let candidate = instantiate_method_candidate(ctx, value);
+    (candidate.owner, candidate.callable)
 }
 
 fn resolve_user_method(
@@ -469,6 +482,108 @@ fn method_matches_call(
     }
 }
 
+fn context_trait_bound_satisfied(
+    ctx: Checker,
+    bound_ty: Type,
+    reference: TraitRef,
+) -> bool {
+    let found = Ref::new(false);
+    let bound_ty = normalize_type(ctx, bound_ty);
+    let reference = normalize_trait_ref(ctx, reference);
+    for predicate in ctx.predicates {
+        match predicate {
+            TypePredicate::Trait(candidate_ty, candidate_ref) => {
+                if types_equal(normalize_type(ctx, candidate_ty), bound_ty)
+                    && trait_ref_equal(normalize_trait_ref(ctx, candidate_ref), reference) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            },
+            TypePredicate::Equality(_, _) => (),
+        }
+    };
+    found.get()
+}
+
+fn predicates_satisfied_at(
+    ctx: Checker,
+    predicates: Vec[TypePredicate],
+    depth: int32,
+) -> bool {
+    let satisfied = Ref::new(true);
+    for predicate in predicates {
+        if satisfied.get() {
+            match predicate {
+                TypePredicate::Trait(bound_ty, reference) => {
+                    if !trait_bound_satisfied_at(ctx, bound_ty, reference, depth) {
+                        satisfied.set(false)
+                    } else {
+                        ()
+                    }
+                },
+                TypePredicate::Equality(left, right) => {
+                    if !unify(normalize_type(ctx, left), normalize_type(ctx, right)) {
+                        satisfied.set(false)
+                    } else {
+                        ()
+                    }
+                },
+            }
+        } else {
+            ()
+        }
+    };
+    satisfied.get()
+}
+
+fn trait_bound_satisfied_at(
+    ctx: Checker,
+    bound_ty: Type,
+    reference: TraitRef,
+    depth: int32,
+) -> bool {
+    if context_trait_bound_satisfied(ctx, bound_ty, reference) {
+        true
+    } else if depth >= 16 {
+        false
+    } else {
+        let found = Ref::new(false);
+        for impl_info in ctx.impls {
+            if !(found.get()) && names_match(impl_info.trait_ref.name, reference.name) {
+                let substitutions = instantiate_substitutions(
+                    ctx.counter,
+                    impl_info.generics,
+                    Vec::new(),
+                );
+                let owner = substitute_type(impl_info.for_type, substitutions);
+                let application = substitute_trait_ref(impl_info.trait_ref, substitutions);
+                if unify(owner, bound_ty) && unify_types(application.args, reference.args) {
+                    let predicates = expand_implied_predicates(
+                        ctx,
+                        substitute_predicates(impl_info.predicates, substitutions),
+                    );
+                    apply_predicate_equalities(predicates);
+                    if predicates_satisfied_at(ctx, predicates, depth + 1) {
+                        found.set(true)
+                    } else {
+                        ()
+                    }
+                } else {
+                    ()
+                }
+            } else {
+                ()
+            }
+        };
+        found.get()
+    }
+}
+
+fn method_predicates_satisfied(ctx: Checker, predicates: Vec[TypePredicate]) -> bool {
+    predicates_satisfied_at(ctx, predicates, 0)
+}
+
 fn resolve_user_method_for_call(
     ctx: Checker,
     receiver: Type,
@@ -482,16 +597,18 @@ fn resolve_user_method_for_call(
     let trait_matches = Ref::new(0);
     for value in ctx.methods {
         if value.function.name == name && receiver_matches(value.for_type, receiver) {
-            let (_, callable) = instantiate_method(ctx, value);
-            if method_matches_call(ctx, callable, receiver, args, expected) {
+            let candidate = instantiate_method_candidate(ctx, value);
+            if method_matches_call(ctx, candidate.callable, receiver, args, expected)
+                && unify(candidate.owner, receiver)
+                && method_predicates_satisfied(ctx, candidate.predicates) {
                 match value.trait_ref {
                     Option::Some(_) => {
                         trait_matches.set(trait_matches.get() + 1);
-                        trait_method.set(Option::Some(callable))
+                        trait_method.set(Option::Some(candidate.callable))
                     },
                     Option::None => {
                         inherent_matches.set(inherent_matches.get() + 1);
-                        inherent.set(Option::Some(callable))
+                        inherent.set(Option::Some(candidate.callable))
                     },
                 }
             } else {
