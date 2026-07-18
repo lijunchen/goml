@@ -5,6 +5,58 @@ mod ast_encode;
 
 pub use ast_encode::encode_ast;
 
+pub fn encode_mono(path: &Path, source: &str) -> String {
+    let path = path.to_owned();
+    let source = source.to_owned();
+    std::thread::Builder::new()
+        .stack_size(64 * 1024 * 1024)
+        .spawn(move || encode_mono_inner(&path, &source))
+        .unwrap()
+        .join()
+        .unwrap()
+}
+
+fn encode_mono_inner(path: &Path, source: &str) -> String {
+    use cst::cst::CstNode;
+    use parser::syntax::MySyntaxNode;
+
+    let parsed = parser::parse(path, source);
+    if !parsed.diagnostics.is_empty() {
+        return String::new();
+    }
+    let root = MySyntaxNode::new_root(parsed.green_node);
+    let file = cst::cst::File::cast(root).unwrap();
+    let (file, _) = ast::lower::lower(file).into_parts();
+    let Some(file) = file else {
+        return String::new();
+    };
+    let original = file.clone();
+    let file = compiler::derive::expand(file).unwrap_or(original);
+    let source_file = compiler::hir::SourceFileAst::new(path.to_owned(), file);
+    let (hir, table, diagnostics) = compiler::hir::lower_to_hir_files(vec![source_file]);
+    if diagnostics.has_errors() {
+        return String::new();
+    }
+    let (tast, genv, mut diagnostics) = compiler::typer::check_file(hir, table);
+    if diagnostics.has_errors() {
+        return String::new();
+    }
+    let genv = compiler::builtins::merge_with_builtin_env(&genv);
+    let core = compiler::compile_match::compile_file(
+        &genv,
+        &compiler::env::Gensym::new(),
+        &mut diagnostics,
+        &tast,
+    );
+    if diagnostics.has_errors() {
+        return String::new();
+    }
+    let Ok((mono, monoenv)) = compiler::mono::mono(genv, core) else {
+        return String::new();
+    };
+    mono.to_pretty(&monoenv, 120)
+}
+
 pub fn encode_core(path: &Path, source: &str) -> String {
     let path = path.to_owned();
     let source = source.to_owned();
