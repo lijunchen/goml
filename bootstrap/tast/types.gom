@@ -386,6 +386,56 @@ fn associated_binding(value: ImplInfo, name: string) -> Option[Type] {
     result.get()
 }
 
+fn builtin_iterator_item(base: Type) -> Option[Type] {
+    match prune(base) {
+        Type::App(Type::Con(owner), args) => if owner == "FnIterator" && args.len() == 1 {
+            Option::Some(args.get(0))
+        } else if owner == "MapIterator" && args.len() == 3 {
+            Option::Some(args.get(1))
+        } else if owner == "FilterIterator" && args.len() == 2 {
+            Option::Some(args.get(0))
+        } else if owner == "TakeIterator" && args.len() == 1 {
+            Option::Some(Type::Projection(
+                args.get(0),
+                "Item",
+                Option::Some(TraitRef {
+                    name: "Iterator",
+                    args: Vec::new(),
+                }),
+            ))
+        } else {
+            Option::None
+        },
+        _ => Option::None,
+    }
+}
+
+fn projection_trait_matches(qualifier: Option[TraitRef], expected: string) -> bool {
+    match qualifier {
+        Option::Some(reference) => names_match(reference.name, expected),
+        Option::None => true,
+    }
+}
+
+fn builtin_projection(
+    base: Type,
+    name: string,
+    qualifier: Option[TraitRef],
+) -> Option[Type] {
+    if name == "Item"
+        && (projection_trait_matches(qualifier, "Iterator")
+            || projection_trait_matches(qualifier, "IntoIterator")) {
+        builtin_iterator_item(base)
+    } else if name == "IntoIter" && projection_trait_matches(qualifier, "IntoIterator") {
+        match builtin_iterator_item(base) {
+            Option::Some(_) => Option::Some(base),
+            Option::None => Option::None,
+        }
+    } else {
+        Option::None
+    }
+}
+
 fn impl_projection(
     ctx: Checker,
     base: Type,
@@ -462,9 +512,12 @@ fn normalize_type(ctx: Checker, value: Type) -> Type {
             let projection = Type::Projection(base, name, qualifier);
             let candidate = match projection_equality(ctx, base, name, qualifier) {
                 Option::Some(value) => Option::Some(value),
-                Option::None => match base {
-                    Type::Param(_) | Type::Var(_) => Option::None,
-                    _ => impl_projection(ctx, base, name, qualifier),
+                Option::None => match builtin_projection(base, name, qualifier) {
+                    Option::Some(value) => Option::Some(value),
+                    Option::None => match base {
+                        Type::Param(_) | Type::Var(_) => Option::None,
+                        _ => impl_projection(ctx, base, name, qualifier),
+                    },
                 },
             };
             match candidate {
