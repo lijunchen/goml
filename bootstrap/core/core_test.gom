@@ -46,3 +46,44 @@ fn lowers_enum_payload_patterns_in_definition_order() -> unit {
         "fn main() -> unit {\n  let x/0 = Weird::Done(1) in\n  match x/0 {\n    Weird::Next(x0) => {\n      {\n        let x0 = Weird::Next._0(x/0) in\n        println(\"next\")\n      }\n    },\n    Weird::Done(x1) => {\n      {\n        let x1 = Weird::Done._0(x/0) in\n        {\n          let v/1 = x1 in\n          println(inherent#int32#int32#to_string(v/1))\n        }\n      }\n    },\n  }\n}",
     )
 }
+
+#[test]
+fn allocates_statement_names_after_lowering_the_value() -> unit {
+    let file = lower_source("fn f(flag: bool) -> int32 { while true { if flag { return 1 } else { break }; }; 2 }");
+    match file.functions.get(0).body.stmts.get(0) {
+        LetStmt { name, value: Expr::While(_, Expr::Block(body, _), _), ty: _ } => {
+            testing::assert_eq(name, "_wild1");
+            testing::assert_eq(body.stmts.get(0).name, "_wild0")
+        },
+        _ => testing::fail("expected nested while statement bindings"),
+    }
+}
+
+#[test]
+fn lowers_builtin_option_matches_with_nonvariable_sources() -> unit {
+    let source = "fn build() -> Option[() -> int32] { Option::Some(|| 1i32) } fn main() -> unit { match build() { Option::Some(f) => println(f()), Option::None => println(0i32), } }";
+    let file = lower_source(source);
+    match file.functions.get(1).body.tail {
+        Option::Some(Expr::Block(block, _)) => {
+            testing::assert_eq(block.stmts.get(0).name, "mtmp0");
+            match block.tail {
+                Option::Some(Expr::Match(_, arms, Option::None, _)) => {
+                    match arms.get(0).lhs {
+                        Expr::Constr(constructor, _, _) => {
+                            testing::assert_eq(constructor.name, "Option::None")
+                        },
+                        _ => testing::fail("expected None arm"),
+                    };
+                    match arms.get(1).lhs {
+                        Expr::Constr(constructor, _, _) => {
+                            testing::assert_eq(constructor.name, "Option::Some")
+                        },
+                        _ => testing::fail("expected Some arm"),
+                    }
+                },
+                _ => testing::fail("expected Option match"),
+            }
+        },
+        _ => testing::fail("expected scrutinee binding block"),
+    }
+}
