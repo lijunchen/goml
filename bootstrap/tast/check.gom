@@ -70,6 +70,24 @@ fn checked_char_literal(ctx: Checker, value: string) -> char {
     }
 }
 
+fn normalized_float32_literal(value: string) -> string {
+    let (valid, parsed) = string_parse_float64(value);
+    if valid {
+        parsed.to_string()
+    } else {
+        value
+    }
+}
+
+fn normalized_float64_literal(value: string) -> string {
+    let (valid, parsed) = string_parse_float64(value);
+    if valid {
+        parsed.to_string()
+    } else {
+        value
+    }
+}
+
 fn coerce_expr(ctx: Checker, value: Expr, expected: Option[Type]) -> Expr {
     match value {
         Expr::Break(_) | Expr::Continue(_) | Expr::Return(_, _) => value,
@@ -132,11 +150,11 @@ fn primitive_expr(ctx: Checker, value: hir::Expr) -> Option[Expr] {
             fresh_type(ctx.counter, VarKind::Float),
         )),
         hir::Expr::Float32(value) => Option::Some(Expr::Prim(
-            Primitive::Float32(value),
+            Primitive::Float32(normalized_float32_literal(value)),
             Type::Float32,
         )),
         hir::Expr::Float64(value) => Option::Some(Expr::Prim(
-            Primitive::Float64(value),
+            Primitive::Float64(normalized_float64_literal(value)),
             Type::Float64,
         )),
         hir::Expr::String(value) => Option::Some(Expr::Prim(
@@ -1028,8 +1046,14 @@ fn primitive_pattern(ctx: Checker, value: hir::Pat) -> Option[(Primitive, Type)]
             Primitive::Float(value),
             fresh_type(ctx.counter, VarKind::Float),
         )),
-        hir::Pat::Float32(value) => Option::Some((Primitive::Float32(value), Type::Float32)),
-        hir::Pat::Float64(value) => Option::Some((Primitive::Float64(value), Type::Float64)),
+        hir::Pat::Float32(value) => Option::Some((
+            Primitive::Float32(normalized_float32_literal(value)),
+            Type::Float32,
+        )),
+        hir::Pat::Float64(value) => Option::Some((
+            Primitive::Float64(normalized_float64_literal(value)),
+            Type::Float64,
+        )),
         hir::Pat::String(value) => Option::Some((Primitive::String(value), Type::String)),
         hir::Pat::Char(value) => Option::Some((
             Primitive::Char(checked_char_literal(ctx, value)),
@@ -1157,11 +1181,21 @@ fn primitive_from_pattern(value: Pat) -> Primitive {
     }
 }
 
+fn normalize_pattern_primitive(value: Primitive, expected: Type) -> Primitive {
+    match value {
+        Primitive::Float(raw) => match prune(expected) {
+            Type::Float32 => Primitive::Float(normalized_float32_literal(raw)),
+            _ => Primitive::Float(normalized_float64_literal(raw)),
+        },
+        other => other,
+    }
+}
+
 fn check_pattern(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
     match primitive_pattern(ctx, value) {
         Option::Some(result) => {
             expect_type(ctx, result.1, expected);
-            Pat::Prim(result.0, expected)
+            Pat::Prim(normalize_pattern_primitive(result.0, expected), expected)
         },
         Option::None => match value {
             hir::Pat::Var(local) => {
