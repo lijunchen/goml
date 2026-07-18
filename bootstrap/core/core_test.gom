@@ -201,3 +201,12 @@ fn lowers_nested_tuple_and_enum_pattern_matrices() -> unit {
         "fn equal_pair(left/0: Key, right/1: Key) -> bool {\n  {\n    let mtmp0 = (left/0, right/1) in\n    {\n      let x1 = mtmp0.0 in\n      let x2 = mtmp0.1 in\n      match x2 {\n        Key::A => {\n          match x1 {\n            Key::A => {\n              true\n            },\n            Key::B(x4) => {\n              {\n                let x4 = Key::B._0(x1) in\n                false\n              }\n            },\n          }\n        },\n        Key::B(x3) => {\n          {\n            let x3 = Key::B._0(x2) in\n            match x1 {\n              Key::A => {\n                false\n              },\n              Key::B(x5) => {\n                {\n                  let x5 = Key::B._0(x1) in\n                  {\n                    let x/2 = x5 in\n                    {\n                      let y/3 = x3 in\n                      (x/2 == y/3)\n                    }\n                  }\n                }\n              },\n            }\n          }\n        },\n      }\n    }\n  }\n}",
     )
 }
+
+#[test]
+fn lowers_ordered_and_uninhabited_patterns() -> unit {
+    let source = "enum Never {} enum Single { Only(int32) } fn absurd(value: Never) -> int32 { match value {} } fn unwrap(value: Single) -> int32 { let (Single::Only(inner)) = value; inner } fn classify(values: Vec[bool]) -> int32 { match values { [] => 0, [true, .., _] => 1, _ => 2, } }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "fn absurd(value/0: Never) -> int32 {\n  {\n    let _wild0 = value/0 in\n    @intrinsic(compiler.missing)(\"\")\n  }\n}\n\nfn unwrap(value/1: Single) -> int32 {\n  let mtmp1 = value/1 in\n  match mtmp1 {\n    Single::Only(x2) => {\n      {\n        let x2 = Single::Only._0(mtmp1) in\n        {\n          let inner/2 = x2 in\n          {\n            inner/2\n          }\n        }\n      }\n    },\n  }\n}\n\nfn classify(values/3: Vec[bool]) -> int32 {\n  {\n    let match3 = values/3 in\n    if (@intrinsic(vec.len)(match3) == 0) {\n        0\n    } else {\n        if (@intrinsic(vec.len)(match3) >= 2) {\n            if (@intrinsic(vec.get)(match3, 0) == true) {\n                1\n            } else {\n                2\n            }\n        } else {\n            2\n        }\n    }\n  }\n}",
+    )
+}
