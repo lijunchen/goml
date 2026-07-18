@@ -845,51 +845,74 @@ fn check_try_expr(ctx: Checker, index: int32, source: hir::Expr) -> Expr {
     }
 }
 
+fn is_control_flow_expr(value: Expr) -> bool {
+    match value {
+        Expr::Break(_) | Expr::Continue(_) | Expr::Return(_, _) => true,
+        _ => false,
+    }
+}
+
 fn check_field_expr(ctx: Checker, source: hir::Expr, name: string) -> Expr {
     let value = check_expr(ctx, source, Option::None);
-    match resolve_field_type(ctx, expr_type(value), name) {
-        Option::Some(ty) => Expr::Field(value, name, ty),
-        Option::None => {
-            ctx.diagnostics.push("field not found: " + name);
-            Expr::Field(value, name, Type::Error)
-        },
+    if is_control_flow_expr(value) {
+        Expr::Field(value, name, fresh_type(ctx.counter, VarKind::Any))
+    } else {
+        match resolve_field_type(ctx, expr_type(value), name) {
+            Option::Some(ty) => Expr::Field(value, name, ty),
+            Option::None => {
+                ctx.diagnostics.push("field not found: " + name);
+                Expr::Field(value, name, Type::Error)
+            },
+        }
     }
 }
 
 fn check_projection_expr(ctx: Checker, source: hir::Expr, index: int32) -> Expr {
     let value = check_expr(ctx, source, Option::None);
-    match prune(expr_type(value)) {
-        Type::Tuple(types) => if index >= 0 && index < types.len() {
-            Expr::Proj(value, index, types.get(index))
-        } else {
-            ctx.diagnostics.push("tuple index out of bounds");
-            Expr::Proj(value, index, Type::Error)
-        },
-        _ => {
-            ctx.diagnostics.push("tuple required");
-            Expr::Proj(value, index, Type::Error)
-        },
+    if is_control_flow_expr(value) {
+        Expr::Proj(value, index, fresh_type(ctx.counter, VarKind::Any))
+    } else {
+        match prune(expr_type(value)) {
+            Type::Tuple(types) => if index >= 0 && index < types.len() {
+                Expr::Proj(value, index, types.get(index))
+            } else {
+                ctx.diagnostics.push("tuple index out of bounds");
+                Expr::Proj(value, index, Type::Error)
+            },
+            _ => {
+                ctx.diagnostics.push("tuple required");
+                Expr::Proj(value, index, Type::Error)
+            },
+        }
     }
 }
 
 fn check_index_expr(ctx: Checker, base_source: hir::Expr, index_source: hir::Expr) -> Expr {
     let base = check_expr(ctx, base_source, Option::None);
-    let parts = match prune(expr_type(base)) {
-        Type::Array(_, elem) | Type::VecType(elem) | Type::Slice(elem) => {
-            (Type::Int32, elem)
-        },
-        Type::HashMap(key, value) => (
-            key,
-            nominal_type("Option", one_type(value)),
-        ),
-        Type::String => (Type::Int32, Type::Char),
-        _ => {
-            ctx.diagnostics.push("indexable value required");
-            (Type::Error, Type::Error)
-        },
-    };
-    let index = check_expr(ctx, index_source, Option::Some(parts.0));
-    Expr::Index(base, index, parts.1)
+    if is_control_flow_expr(base) {
+        Expr::Index(
+            base,
+            check_expr(ctx, index_source, Option::Some(Type::Int32)),
+            fresh_type(ctx.counter, VarKind::Any),
+        )
+    } else {
+        let parts = match prune(expr_type(base)) {
+            Type::Array(_, elem) | Type::VecType(elem) | Type::Slice(elem) => {
+                (Type::Int32, elem)
+            },
+            Type::HashMap(key, value) => (
+                key,
+                nominal_type("Option", one_type(value)),
+            ),
+            Type::String => (Type::Int32, Type::Char),
+            _ => {
+                ctx.diagnostics.push("indexable value required");
+                (Type::Error, Type::Error)
+            },
+        };
+        let index = check_expr(ctx, index_source, Option::Some(parts.0));
+        Expr::Index(base, index, parts.1)
+    }
 }
 
 fn check_assign_target(ctx: Checker, target: hir::Expr) -> (Expr, Type) {
