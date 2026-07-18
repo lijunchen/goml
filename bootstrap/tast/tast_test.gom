@@ -89,3 +89,50 @@ fn checks_enum_patterns_and_default_integer_literals() -> unit {
         _ => testing::fail("expected function"),
     }
 }
+
+#[test]
+fn resolves_associated_types_and_bound_methods() -> unit {
+    let source = "trait Provider { type Item; fn get(Self) -> Self::Item; } struct Number { value: int32 } impl Provider for Number { type Item = int32; fn get(self: Number) -> int32 { self.value } } fn read[P: Provider](provider: P) -> P::Item { provider.get() } fn main() -> int32 { read(Number { value: 42 }) }";
+    let file = checked_file(source);
+    testing::assert_eq(file.items.len(), 3);
+    match file.items.get(1) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Call(
+                Expr::Callable(Callable::TraitMethod(reference, name), _),
+                _,
+                Type::Projection(Type::Param(owner), associated),
+            )) => {
+                testing::assert_eq(reference.name, "Provider");
+                testing::assert_eq(name, "get");
+                testing::assert_eq(owner, "P");
+                testing::assert_eq(associated, "Item")
+            },
+            _ => testing::fail("expected bound trait method call"),
+        },
+        _ => testing::fail("expected read function"),
+    };
+    match file.items.get(2) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Call(
+                Expr::Callable(Callable::Function(name), Type::Func(_, ret_ty)),
+                _,
+                ty,
+            )) => {
+                testing::assert_eq(name, "read");
+                match (resolve_type(ret_ty), resolve_type(ty)) {
+                    (Type::Int32, Type::Int32) => (),
+                    _ => testing::fail("expected normalized associated type"),
+                }
+            },
+            _ => testing::fail("expected read call"),
+        },
+        _ => testing::fail("expected main function"),
+    }
+}
+
+#[test]
+fn checks_extended_builtin_method_catalog() -> unit {
+    let source = "fn exercise(text: string, values: Vec[int32], map: HashMap[string, int32]) -> unit { let _ = text.decode_at(0); let _ = text.to_bytes(); let _ = text.chars(); let _ = text.char_indices(); values.reserve(1); values.insert(0, 1); let _ = values.remove(0); let _ = values.swap_remove(0); values.reverse(); let _ = values.last(); let _ = values.pop(); values.truncate(0); values.clear(); let _ = map.entries(); }";
+    let file = checked_file(source);
+    testing::assert_eq(file.items.len(), 1)
+}
