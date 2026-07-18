@@ -299,6 +299,29 @@ fn checks_extended_builtin_method_catalog() -> unit {
 }
 
 #[test]
+fn prefers_builtin_inherent_methods() -> unit {
+    let source = "trait Container { fn is_empty(Self) -> bool; } impl Container for Vec[int32] { fn is_empty(self: Vec[int32]) -> bool { false } } fn main() -> bool { let values: Vec[int32] = Vec::new(); values.is_empty() }";
+    let file = checked_file(source);
+    match file.items.get(1) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Call(
+                Expr::Callable(Callable::InherentMethod(owner, name), _),
+                _,
+                Type::Bool,
+            )) => {
+                testing::assert_eq(name, "is_empty");
+                match resolve_type(owner) {
+                    Type::VecType(Type::Int32) => (),
+                    _ => testing::fail("expected Vec[int32] inherent owner"),
+                }
+            },
+            _ => testing::fail("expected builtin inherent method call"),
+        },
+        _ => testing::fail("expected main function"),
+    }
+}
+
+#[test]
 fn specializes_array_builtin_lengths() -> unit {
     let file = checked_file("fn exercise(values: [int32; 2]) -> int32 { array_set(values, 0, 7); array_get(values, 0) }");
     match file.items.get(0) {
