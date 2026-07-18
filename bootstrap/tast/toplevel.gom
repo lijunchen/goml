@@ -7,6 +7,7 @@ fn function_context(
     ret_ty: Type,
     self_ty: Option[Type],
     type_params: Vec[string],
+    predicates: Vec[TypePredicate],
 ) -> Checker {
     Checker {
         counter: base.counter,
@@ -16,6 +17,8 @@ fn function_context(
         traits: base.traits,
         functions: base.functions,
         methods: base.methods,
+        impls: base.impls,
+        predicates,
         locals: Vec::new(),
         return_ty: ret_ty,
         self_ty,
@@ -27,6 +30,7 @@ fn check_function(
     base: Checker,
     value: hir::Function,
     inherited_generics: Vec[string],
+    inherited_predicates: Vec[TypePredicate],
     self_ty: Option[Type],
 ) -> Function {
     let type_params = append_names(inherited_generics, value.generics);
@@ -34,7 +38,16 @@ fn check_function(
         Option::Some(ty) => type_from_hir(ty, type_params, self_ty),
         Option::None => Type::Unit,
     };
-    let ctx = function_context(base, ret_ty, self_ty, type_params);
+    let predicates = append_predicates(
+        inherited_predicates,
+        predicates_from_hir(
+            value.generic_bounds,
+            value.predicates,
+            type_params,
+            self_ty,
+        ),
+    );
+    let ctx = function_context(base, ret_ty, self_ty, type_params, predicates);
     let params: Vec[(string, Type)] = Vec::new();
     for param in value.params {
         let ty = type_from_hir(param.1, type_params, self_ty);
@@ -52,6 +65,12 @@ fn check_function(
 
 fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
     let for_type = type_from_hir(value.for_type, value.generics, Option::None);
+    let predicates = predicates_from_hir(
+        value.generic_bounds,
+        value.predicates,
+        value.generics,
+        Option::Some(for_type),
+    );
     let trait_ref = match value.trait_ref {
         Option::Some(reference) => Option::Some(trait_ref_from_hir(
             reference,
@@ -66,6 +85,7 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
             base,
             method,
             value.generics,
+            predicates,
             Option::Some(for_type),
         ))
     };
@@ -86,6 +106,7 @@ fn check_file(value: hir::File) -> CheckResult {
             hir::Item::Function(value) => items.push(Item::Function(check_function(
                 ctx,
                 value,
+                Vec::new(),
                 Vec::new(),
                 Option::None,
             ))),

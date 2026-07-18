@@ -313,6 +313,16 @@ fn callable_parts(ctx: Checker, value: Type, arity: int32) -> (Vec[Type], Type) 
     }
 }
 
+fn normalize_function_expr(ctx: Checker, value: Expr) -> Expr {
+    match value {
+        Expr::Callable(callable, ty) => Expr::Callable(
+            normalize_callable(ctx, callable),
+            normalize_type(ctx, ty),
+        ),
+        other => other,
+    }
+}
+
 fn apply_call(
     ctx: Checker,
     function: Expr,
@@ -370,7 +380,11 @@ fn apply_call(
     } else {
         function
     };
-    Expr::Call(function, values, ret_ty)
+    Expr::Call(
+        normalize_function_expr(ctx, function),
+        values,
+        normalize_type(ctx, ret_ty),
+    )
 }
 
 fn check_method_call(

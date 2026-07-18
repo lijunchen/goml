@@ -222,6 +222,223 @@ fn unify(left: Type, right: Type) -> bool {
     }
 }
 
+fn type_lists_equal(left: Vec[Type], right: Vec[Type]) -> bool {
+    if left.len() != right.len() {
+        false
+    } else {
+        let equal = Ref::new(true);
+        for index in range(0, left.len()) {
+            if !types_equal(left.get(index), right.get(index)) {
+                equal.set(false)
+            } else {
+                ()
+            }
+        };
+        equal.get()
+    }
+}
+
+fn types_equal(left: Type, right: Type) -> bool {
+    match (prune(left), prune(right)) {
+        (Type::Var(first), Type::Var(second)) => ptr_eq(first, second),
+        (Type::Unit, Type::Unit)
+        | (Type::Bool, Type::Bool)
+        | (Type::Int8, Type::Int8)
+        | (Type::Int16, Type::Int16)
+        | (Type::Int32, Type::Int32)
+        | (Type::Int64, Type::Int64)
+        | (Type::Uint8, Type::Uint8)
+        | (Type::Uint16, Type::Uint16)
+        | (Type::Uint32, Type::Uint32)
+        | (Type::Uint64, Type::Uint64)
+        | (Type::Float32, Type::Float32)
+        | (Type::Float64, Type::Float64)
+        | (Type::String, Type::String)
+        | (Type::Char, Type::Char)
+        | (Type::Error, Type::Error) => true,
+        (Type::Tuple(first), Type::Tuple(second)) => type_lists_equal(first, second),
+        (Type::Con(first), Type::Con(second))
+        | (Type::Dyn(first), Type::Dyn(second))
+        | (Type::Param(first), Type::Param(second)) => first == second,
+        (Type::Projection(first_base, first_name), Type::Projection(second_base, second_name)) => {
+            first_name == second_name && types_equal(first_base, second_base)
+        },
+        (Type::App(first_base, first_args), Type::App(second_base, second_args)) => {
+            types_equal(first_base, second_base) && type_lists_equal(first_args, second_args)
+        },
+        (Type::Array(first_len, first_elem), Type::Array(second_len, second_elem)) => {
+            first_len == second_len && types_equal(first_elem, second_elem)
+        },
+        (Type::Slice(first), Type::Slice(second))
+        | (Type::VecType(first), Type::VecType(second))
+        | (Type::RefType(first), Type::RefType(second)) => types_equal(first, second),
+        (Type::HashMap(first_key, first_value), Type::HashMap(second_key, second_value)) => {
+            types_equal(first_key, second_key) && types_equal(first_value, second_value)
+        },
+        (Type::Func(first_params, first_ret), Type::Func(second_params, second_ret)) => {
+            type_lists_equal(first_params, second_params) && types_equal(first_ret, second_ret)
+        },
+        _ => false,
+    }
+}
+
+fn projection_equality(
+    ctx: Checker,
+    base: Type,
+    name: string,
+) -> Option[Type] {
+    let result = Ref::new(Option::None);
+    let matches = Ref::new(0);
+    for predicate in ctx.predicates {
+        let candidate = match predicate {
+            TypePredicate::Equality(Type::Projection(left_base, left_name), right) => {
+                if left_name == name && types_equal(left_base, base) {
+                    Option::Some(right)
+                } else {
+                    Option::None
+                }
+            },
+            TypePredicate::Equality(left, Type::Projection(right_base, right_name)) => {
+                if right_name == name && types_equal(right_base, base) {
+                    Option::Some(left)
+                } else {
+                    Option::None
+                }
+            },
+            _ => Option::None,
+        };
+        match candidate {
+            Option::Some(value) => {
+                matches.set(matches.get() + 1);
+                result.set(Option::Some(value))
+            },
+            Option::None => (),
+        }
+    };
+    if matches.get() == 1 {
+        result.get()
+    } else {
+        Option::None
+    }
+}
+
+fn associated_binding(value: ImplInfo, name: string) -> Option[Type] {
+    let result = Ref::new(Option::None);
+    for associated in value.associated_types {
+        if associated.0 == name {
+            result.set(Option::Some(associated.1))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn impl_projection(ctx: Checker, base: Type, name: string) -> Option[Type] {
+    let result = Ref::new(Option::None);
+    let matches = Ref::new(0);
+    for impl_info in ctx.impls {
+        match associated_binding(impl_info, name) {
+            Option::Some(associated) => {
+                let substitutions = instantiate_substitutions(
+                    ctx.counter,
+                    impl_info.generics,
+                    Vec::new(),
+                );
+                let owner = substitute_type(impl_info.for_type, substitutions);
+                if unify(owner, base) {
+                    let candidate = substitute_type(associated, substitutions);
+                    match result.get() {
+                        Option::Some(previous) => if !types_equal(previous, candidate) {
+                            matches.set(matches.get() + 1)
+                        } else {
+                            ()
+                        },
+                        Option::None => {
+                            matches.set(1);
+                            result.set(Option::Some(candidate))
+                        },
+                    }
+                } else {
+                    ()
+                }
+            },
+            Option::None => (),
+        }
+    };
+    if matches.get() == 1 {
+        result.get()
+    } else {
+        Option::None
+    }
+}
+
+fn normalize_types(ctx: Checker, values: Vec[Type]) -> Vec[Type] {
+    let result: Vec[Type] = Vec::new();
+    for value in values {
+        result.push(normalize_type(ctx, value))
+    };
+    result
+}
+
+fn normalize_type(ctx: Checker, value: Type) -> Type {
+    match prune(value) {
+        Type::Tuple(values) => Type::Tuple(normalize_types(ctx, values)),
+        Type::Projection(base, name) => {
+            let base = normalize_type(ctx, base);
+            let projection = Type::Projection(base, name);
+            let candidate = match projection_equality(ctx, base, name) {
+                Option::Some(value) => Option::Some(value),
+                Option::None => match base {
+                    Type::Param(_) | Type::Var(_) => Option::None,
+                    _ => impl_projection(ctx, base, name),
+                },
+            };
+            match candidate {
+                Option::Some(value) => if types_equal(value, projection) {
+                    projection
+                } else {
+                    normalize_type(ctx, value)
+                },
+                Option::None => projection,
+            }
+        },
+        Type::App(base, args) => {
+            Type::App(normalize_type(ctx, base), normalize_types(ctx, args))
+        },
+        Type::Array(length, elem) => Type::Array(length, normalize_type(ctx, elem)),
+        Type::Slice(elem) => Type::Slice(normalize_type(ctx, elem)),
+        Type::VecType(elem) => Type::VecType(normalize_type(ctx, elem)),
+        Type::RefType(elem) => Type::RefType(normalize_type(ctx, elem)),
+        Type::HashMap(key, item) => {
+            Type::HashMap(normalize_type(ctx, key), normalize_type(ctx, item))
+        },
+        Type::Func(params, ret_ty) => {
+            Type::Func(normalize_types(ctx, params), normalize_type(ctx, ret_ty))
+        },
+        other => other,
+    }
+}
+
+fn normalize_trait_ref(ctx: Checker, value: TraitRef) -> TraitRef {
+    TraitRef {
+        name: value.name,
+        args: normalize_types(ctx, value.args),
+    }
+}
+
+fn normalize_callable(ctx: Checker, value: Callable) -> Callable {
+    match value {
+        Callable::TraitMethod(reference, name) => {
+            Callable::TraitMethod(normalize_trait_ref(ctx, reference), name)
+        },
+        Callable::InherentMethod(owner, name) => {
+            Callable::InherentMethod(normalize_type(ctx, owner), name)
+        },
+        other => other,
+    }
+}
+
 fn find_substitution(values: Vec[TypeSubst], name: string) -> Option[Type] {
     let result = Ref::new(Option::None);
     for value in values {

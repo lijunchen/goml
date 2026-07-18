@@ -227,6 +227,7 @@ fn substitutions_for_nominal(
 }
 
 fn resolve_field_type(ctx: Checker, receiver: Type, name: string) -> Option[Type] {
+    let receiver = normalize_type(ctx, receiver);
     match type_constructor_name(receiver) {
         Option::Some(owner) => match find_struct_by_name(ctx, owner) {
             Option::Some(info) => {
@@ -283,6 +284,10 @@ fn receiver_matches(owner: Type, receiver: Type) -> bool {
 
 fn instantiate_method(ctx: Checker, value: MethodInfo) -> (Type, ResolvedCallable) {
     let substitutions = instantiate_substitutions(ctx.counter, value.generics, Vec::new());
+    apply_predicate_equalities(substitute_predicates(
+        value.function.predicates,
+        substitutions,
+    ));
     let owner = substitute_type(value.for_type, substitutions);
     let params: Vec[Type] = Vec::new();
     for param in value.function.params {
@@ -367,7 +372,7 @@ fn trait_callable(
 }
 
 fn resolve_builtin_method(ctx: Checker, receiver: Type, name: string) -> Option[ResolvedCallable] {
-    let receiver = prune(receiver);
+    let receiver = prune(normalize_type(ctx, receiver));
     if name == "to_string" {
         if is_integer_type(receiver) {
             if match receiver {
@@ -428,7 +433,21 @@ fn resolve_builtin_container_method(
     name: string,
 ) -> Option[ResolvedCallable] {
     match receiver {
-        Type::VecType(elem) => if name == "push" {
+        Type::VecType(elem) => resolve_vec_method(receiver, elem, name),
+        Type::Slice(elem) => resolve_slice_method(receiver, elem, name),
+        Type::RefType(elem) => resolve_ref_method(receiver, elem, name),
+        Type::HashMap(key, value) => resolve_hashmap_method(receiver, key, value, name),
+        Type::String => resolve_string_method(receiver, name),
+        _ => Option::None,
+    }
+}
+
+fn resolve_vec_method(
+    receiver: Type,
+    elem: Type,
+    name: string,
+) -> Option[ResolvedCallable] {
+    if name == "push" {
             Option::Some(inherent_callable(receiver, name, two_types(receiver, elem), Type::Unit))
         } else if name == "get" {
             Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int32), elem))
@@ -443,6 +462,50 @@ fn resolve_builtin_container_method(
             Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Int32))
         } else if name == "is_empty" {
             Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Bool))
+        } else if name == "reserve" || name == "truncate" {
+            Option::Some(inherent_callable(
+                receiver,
+                name,
+                two_types(receiver, Type::Int32),
+                Type::Unit,
+            ))
+        } else if name == "clear" || name == "reverse" {
+            Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Unit))
+        } else if name == "last" || name == "pop" {
+            Option::Some(inherent_callable(
+                receiver,
+                name,
+                one_type(receiver),
+                nominal_type("Option", one_type(elem)),
+            ))
+        } else if name == "swap" {
+            Option::Some(inherent_callable(
+                receiver,
+                name,
+                three_types(receiver, Type::Int32, Type::Int32),
+                Type::Unit,
+            ))
+        } else if name == "swap_remove" || name == "remove" {
+            Option::Some(inherent_callable(
+                receiver,
+                name,
+                two_types(receiver, Type::Int32),
+                elem,
+            ))
+        } else if name == "insert" {
+            Option::Some(inherent_callable(
+                receiver,
+                name,
+                three_types(receiver, Type::Int32, elem),
+                Type::Unit,
+            ))
+        } else if name == "extend" {
+            Option::Some(inherent_callable(
+                receiver,
+                name,
+                two_types(receiver, receiver),
+                Type::Unit,
+            ))
         } else if name == "pushed" {
             Option::Some(inherent_callable(receiver, name, two_types(receiver, elem), receiver))
         } else if name == "slice" {
@@ -452,10 +515,24 @@ fn resolve_builtin_container_method(
                 three_types(receiver, Type::Int32, Type::Int32),
                 Type::Slice(elem),
             ))
+        } else if name == "iter" {
+            Option::Some(inherent_callable(
+                receiver,
+                name,
+                one_type(receiver),
+                nominal_type("FnIterator", one_type(elem)),
+            ))
         } else {
             Option::None
-        },
-        Type::Slice(elem) => if name == "get" {
+        }
+}
+
+fn resolve_slice_method(
+    receiver: Type,
+    elem: Type,
+    name: string,
+) -> Option[ResolvedCallable] {
+    if name == "get" {
             Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int32), elem))
         } else if name == "len" {
             Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Int32))
@@ -466,17 +543,39 @@ fn resolve_builtin_container_method(
                 three_types(receiver, Type::Int32, Type::Int32),
                 receiver,
             ))
+        } else if name == "iter" {
+            Option::Some(inherent_callable(
+                receiver,
+                name,
+                one_type(receiver),
+                nominal_type("FnIterator", one_type(elem)),
+            ))
         } else {
             Option::None
-        },
-        Type::RefType(elem) => if name == "get" {
+        }
+}
+
+fn resolve_ref_method(
+    receiver: Type,
+    elem: Type,
+    name: string,
+) -> Option[ResolvedCallable] {
+    if name == "get" {
             Option::Some(inherent_callable(receiver, name, one_type(receiver), elem))
         } else if name == "set" {
             Option::Some(inherent_callable(receiver, name, two_types(receiver, elem), Type::Unit))
         } else {
             Option::None
-        },
-        Type::HashMap(key, value) => if name == "get" {
+        }
+}
+
+fn resolve_hashmap_method(
+    receiver: Type,
+    key: Type,
+    value: Type,
+    name: string,
+) -> Option[ResolvedCallable] {
+    if name == "get" {
             Option::Some(inherent_callable(
                 receiver,
                 name,
@@ -496,10 +595,20 @@ fn resolve_builtin_container_method(
             Option::Some(inherent_callable(receiver, name, two_types(receiver, key), Type::Bool))
         } else if name == "remove" {
             Option::Some(inherent_callable(receiver, name, two_types(receiver, key), Type::Unit))
+        } else if name == "entries" {
+            Option::Some(inherent_callable(
+                receiver,
+                name,
+                one_type(receiver),
+                Type::VecType(Type::Tuple(two_types(key, value))),
+            ))
         } else {
             Option::None
-        },
-        Type::String => if name == "len" || name == "byte_len" {
+        }
+}
+
+fn resolve_string_method(receiver: Type, name: string) -> Option[ResolvedCallable] {
+    if name == "len" || name == "byte_len" {
             Option::Some(inherent_callable(receiver, name, one_type(receiver), Type::Int32))
         } else if name == "get" {
             Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int32), Type::Char))
@@ -514,17 +623,53 @@ fn resolve_builtin_container_method(
             ))
         } else if name == "is_char_boundary" {
             Option::Some(inherent_callable(receiver, name, two_types(receiver, Type::Int32), Type::Bool))
+        } else if name == "decode_at" {
+            Option::Some(inherent_callable(
+                receiver,
+                name,
+                two_types(receiver, Type::Int32),
+                nominal_type(
+                    "Option",
+                    one_type(Type::Tuple(two_types(Type::Char, Type::Int32))),
+                ),
+            ))
+        } else if name == "to_bytes" {
+            Option::Some(inherent_callable(
+                receiver,
+                name,
+                one_type(receiver),
+                Type::VecType(Type::Uint8),
+            ))
+        } else if name == "chars" {
+            Option::Some(inherent_callable(
+                receiver,
+                name,
+                one_type(receiver),
+                nominal_type("FnIterator", one_type(Type::Char)),
+            ))
+        } else if name == "char_indices" {
+            Option::Some(inherent_callable(
+                receiver,
+                name,
+                one_type(receiver),
+                nominal_type(
+                    "FnIterator",
+                    one_type(Type::Tuple(two_types(Type::Int32, Type::Char))),
+                ),
+            ))
         } else {
             Option::None
-        },
-        _ => Option::None,
-    }
+        }
 }
 
 fn resolve_method(ctx: Checker, receiver: Type, name: string) -> Option[ResolvedCallable] {
+    let receiver = normalize_type(ctx, receiver);
     match resolve_user_method(ctx, receiver, name, Option::None, false) {
         Option::Some(value) => Option::Some(value),
-        Option::None => resolve_builtin_method(ctx, receiver, name),
+        Option::None => match resolve_predicate_method(ctx, receiver, name) {
+            Option::Some(value) => Option::Some(value),
+            Option::None => resolve_builtin_method(ctx, receiver, name),
+        },
     }
 }
 
@@ -550,6 +695,70 @@ fn find_trait_method(value: TraitInfo, name: string) -> Option[TraitMethodInfo] 
         }
     };
     result.get()
+}
+
+fn resolve_predicate_method(
+    ctx: Checker,
+    receiver: Type,
+    name: string,
+) -> Option[ResolvedCallable] {
+    let result = Ref::new(Option::None);
+    let matches = Ref::new(0);
+    for predicate in ctx.predicates {
+        match predicate {
+            TypePredicate::Trait(bound_ty, reference) => {
+                if types_equal(normalize_type(ctx, bound_ty), receiver) {
+                    match find_trait(ctx, reference.name) {
+                        Option::Some(info) => match find_trait_method(info, name) {
+                            Option::Some(method) => {
+                                let params = append_names(
+                                    info.generics,
+                                    Vec::new().pushed("Self"),
+                                );
+                                let explicit: Vec[Type] = Vec::new();
+                                for arg in reference.args {
+                                    explicit.push(arg)
+                                };
+                                explicit.push(receiver);
+                                let substitutions = instantiate_substitutions(
+                                    ctx.counter,
+                                    params,
+                                    explicit,
+                                );
+                                let method_params: Vec[Type] = Vec::new();
+                                for param in method.params {
+                                    method_params.push(substitute_type(param, substitutions))
+                                };
+                                matches.set(matches.get() + 1);
+                                result.set(Option::Some(trait_callable(
+                                    reference.name,
+                                    reference.args,
+                                    name,
+                                    method_params,
+                                    substitute_type(method.ret_ty, substitutions),
+                                )))
+                            },
+                            Option::None => (),
+                        },
+                        Option::None => (),
+                    }
+                } else {
+                    ()
+                }
+            },
+            TypePredicate::Equality(_, _) => (),
+        }
+    };
+    if matches.get() == 1 {
+        result.get()
+    } else {
+        if matches.get() > 1 {
+            ctx.diagnostics.push("ambiguous method: " + name)
+        } else {
+            ()
+        };
+        Option::None
+    }
 }
 
 fn resolve_trait_static(
@@ -669,6 +878,11 @@ fn resolve_builtin_static(
                 fresh_type(ctx.counter, VarKind::Any),
                 fresh_type(ctx.counter, VarKind::Any),
             )
+        } else if owner_name == "FnIterator" {
+            nominal_type(
+                owner_name,
+                one_type(fresh_type(ctx.counter, VarKind::Any)),
+            )
         } else {
             Type::Con(owner_name)
         },
@@ -691,6 +905,25 @@ fn resolve_builtin_static(
             Option::Some(inherent_callable(owner, name, Vec::new(), owner))
         } else {
             Option::None
+        },
+        Type::App(base, args) => match type_constructor_name(base) {
+            Option::Some(owner_name) => if owner_name == "FnIterator"
+                && args.len() == 1
+                && name == "from_fn" {
+                let item = args.get(0);
+                Option::Some(inherent_callable(
+                    owner,
+                    name,
+                    one_type(Type::Func(
+                        Vec::new(),
+                        nominal_type("Option", one_type(item)),
+                    )),
+                    owner,
+                ))
+            } else {
+                Option::None
+            },
+            Option::None => Option::None,
         },
         _ => Option::None,
     }
