@@ -8,6 +8,7 @@ The implementation provides:
 - event-based parsing with the same lossless CST shape and recoverable diagnostics as `crates/parser` and `crates/cst`
 - CST-to-AST lowering with the same AST variants, normalized values, source spans, constructor classification, desugaring, and lower diagnostics as `crates/ast`
 - AST-to-HIR lowering with the same definitions, local resolution, constructor resolution, derive expansion, and canonical HIR output as `crates/compiler`
+- HIR-to-TAST checking with type inference, callable resolution, coercions, pattern checking, and canonical typed output
 
 Build the command-line tool with:
 
@@ -22,6 +23,7 @@ artifact/bin/parser lex path/to/file.gom
 artifact/bin/parser cst path/to/file.gom
 artifact/bin/parser ast path/to/file.gom
 artifact/bin/parser hir path/to/file.gom
+artifact/bin/parser tast path/to/file.gom
 ```
 
 Run the package tests serially:
@@ -31,6 +33,7 @@ goml test lexer
 goml test parser
 goml test ast
 goml test hir
+goml test tast
 ```
 
 The differential tools build a Rust oracle from the sibling `goml` checkout and compare canonical outputs byte for byte:
@@ -40,6 +43,7 @@ tools/diff-lexer-corpus.sh
 tools/diff-cst-corpus.sh
 tools/diff-ast-corpus.sh
 tools/diff-hir-corpus.sh
+tools/diff-tast-corpus.sh
 tools/diff-generated.sh
 ```
 
