@@ -654,6 +654,23 @@ fn normalizes_float_pattern_literals() -> unit {
 }
 
 #[test]
+fn indents_array_control_flow_expressions() -> unit {
+    let file = checked_file("fn choose(flag: bool) -> [int32; 1] { [if flag { 1 } else { 2 }] }");
+    let expected = "fn choose(flag/0: bool) -> [int32; 1] {\n"
+        + "    [if (flag/0 : bool) {\n"
+        + "          {\n"
+        + "              1\n"
+        + "          }\n"
+        + "      } else {\n"
+        + "          {\n"
+        + "              2\n"
+        + "          }\n"
+        + "      }]\n"
+        + "}";
+    testing::assert_eq(encode_file(file), expected)
+}
+
+#[test]
 fn resolves_supertraits_and_implied_predicates() -> unit {
     let source = "trait Parent[T] { fn parent(Self) -> T; } trait Render { fn render(Self) -> string; } trait Label { fn label(Self) -> string; } trait Marker { fn marker(Self) -> string; } trait Child[T: Label]: Parent[T] + Render where T: Marker { fn child(Self) -> string; } fn describe[T, B: Child[T]](value: B) -> string { value.parent().label() + value.parent().marker() + value.render() + value.child() } fn inherited[T, B: Child[T]](value: B) -> T { Child[T]::parent(value) }";
     let file = checked_file(source);
