@@ -183,3 +183,12 @@ fn lowers_for_loops_through_iterator_protocols() -> unit {
         "fn each(values/0: Vec[int32]) -> unit {\n  {\n    let for_iter0 = trait_call[IntoIterator::into_iter](values/0) in\n    while true {\n        {\n          let for_next1 = trait_call[Iterator::next](for_iter0) in\n          match for_next1 {\n            Option::None => {\n              break\n            },\n            Option::Some(x2) => {\n              {\n                let x2 = Option::Some._0(for_next1) in\n                {\n                  let value/1 = x2 in\n                  {\n                    println(value/1)\n                  }\n                }\n              }\n            },\n          }\n        }\n    }\n  }\n}",
     )
 }
+
+#[test]
+fn lowers_flat_struct_bindings_in_field_order() -> unit {
+    let source = "struct Pair { left: int32, right: string } fn right(pair: Pair) -> string { let Pair { left: _, right } = pair; right }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "fn right(pair/0: Pair) -> string {\n  let mtmp0 = pair/0 in\n  {\n    let x1 = Pair.left(mtmp0) in\n    let x2 = Pair.right(mtmp0) in\n    {\n      let right/1 = x2 in\n      {\n        right/1\n      }\n    }\n  }\n}",
+    )
+}
