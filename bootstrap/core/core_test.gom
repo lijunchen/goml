@@ -219,3 +219,12 @@ fn preserves_scalar_pattern_precedence() -> unit {
         "fn choose(value/0: int32) -> int32 {\n  match value/0 {\n    1 => {\n      10\n    },\n    2 => {\n      20\n    },\n    _ => 20,\n  }\n}\n\nfn first(value/1: int32) -> int32 {\n  50\n}",
     )
 }
+
+#[test]
+fn lowers_unit_columns_inside_enum_patterns() -> unit {
+    let source = "enum T { A, B(bool, unit) } fn main() -> unit { let value = T::B(true, ()); match value { T::A => println(1), T::B(true, ()) => println(2), T::B(false, ()) => println(3), } }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "fn main() -> unit {\n  let value/0 = T::B(true, ()) in\n  match value/0 {\n    T::A => {\n      println(1)\n    },\n    T::B(x0, x1) => {\n      {\n        let x0 = T::B._0(value/0) in\n        let x1 = T::B._1(value/0) in\n        match x1 {\n          () => {\n            match x0 {\n              true => {\n                println(2)\n              },\n              false => {\n                println(3)\n              },\n            }\n          },\n        }\n      }\n    },\n  }\n}",
+    )
+}
