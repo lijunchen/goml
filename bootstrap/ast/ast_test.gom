@@ -1,0 +1,83 @@
+package ast;
+
+use gomlang::parser::parser;
+use std::testing;
+
+fn lowered_file(source: string) -> File {
+    let result = lower(parser::parse(source));
+    testing::assert_eq(result.diagnostics.len(), 0);
+    match result.ast {
+        Option::Some(file) => file,
+        Option::None => {
+            testing::fail("expected AST");
+            File {
+                package_name: "",
+                package_explicit: false,
+                uses: Vec::new(),
+                items: Vec::new(),
+            }
+        },
+    }
+}
+
+#[test]
+fn lowers_items_types_and_float_values() -> unit {
+    let source = "package sample; pub enum Choice[T] { None, Some(T) } struct Pair { left: int32, right: float64 } fn value() -> float64 { 3.140 }";
+    let file = lowered_file(source);
+    testing::assert_eq(file.package_name, "sample");
+    testing::assert(file.package_explicit);
+    testing::assert_eq(file.items.len(), 3);
+    match file.items.get(0) {
+        Item::EnumDef(value) => {
+            testing::assert_eq(value.name, "Choice");
+            testing::assert_eq(value.generics.len(), 1);
+            testing::assert_eq(value.variants.len(), 2)
+        },
+        _ => testing::fail("expected enum"),
+    };
+    match file.items.get(2) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Float(number, _)) => testing::assert(number == 3.14),
+            _ => testing::fail("expected float tail"),
+        },
+        _ => testing::fail("expected function"),
+    }
+}
+
+#[test]
+fn lowers_unicode_strings_and_constructor_patterns() -> unit {
+    let source = "enum Choice { Empty, Text(string) } fn read(value: Choice) -> string { let prefix = \"λ\\u0041🙂\"; match value { Choice::Text(text) => prefix + text, Choice::Empty => prefix } }";
+    let file = lowered_file(source);
+    match file.items.get(1) {
+        Item::Function(value) => {
+            match value.body.stmts.get(0) {
+                Stmt::Let(_, _, _, Expr::String(text_value, _), _) => testing::assert_eq(text_value, "λA🙂"),
+                _ => testing::fail("expected string binding"),
+            };
+            match value.body.tail {
+                Option::Some(Expr::Match(_, arms, _)) => {
+                    testing::assert_eq(arms.len(), 2);
+                    match arms.get(0).pat {
+                        Pat::Constr(path, args, _) => {
+                            testing::assert_eq(path.segments.len(), 2);
+                            testing::assert_eq(args.len(), 1)
+                        },
+                        _ => testing::fail("expected constructor pattern"),
+                    }
+                },
+                _ => testing::fail("expected match tail"),
+            }
+        },
+        _ => testing::fail("expected function"),
+    }
+}
+
+#[test]
+fn parser_diagnostics_prevent_ast_creation() -> unit {
+    let result = lower(parser::parse("fn broken( {"));
+    testing::assert(result.diagnostics.len() > 0);
+    match result.ast {
+        Option::Some(_) => testing::fail("unexpected AST"),
+        Option::None => (),
+    }
+}
