@@ -454,6 +454,7 @@ fn lower_expr(value: core::Expr) -> core::Expr {
 }
 
 pub fn lower(value: core::File) -> core::File {
+    let value = specialize(value);
     let functions = Vec::new();
     for function in value.functions {
         functions.push(core::Function {

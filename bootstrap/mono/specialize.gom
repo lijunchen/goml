@@ -1,0 +1,699 @@
+package mono;
+
+use gomlang::parser::core;
+use gomlang::parser::tast;
+
+struct TypeBinding {
+    name: string,
+    ty: tast::Type,
+}
+
+struct Instance {
+    original_name: string,
+    name: string,
+    bindings: Vec[TypeBinding],
+}
+
+struct SpecializeCtx {
+    functions: Vec[core::Function],
+    instances: Vec[Instance],
+    work: Vec[Instance],
+    used_names: Vec[string],
+}
+
+fn find_binding(values: Vec[TypeBinding], name: string) -> Option[tast::Type] {
+    let result: Ref[Option[tast::Type]] = Ref::new(Option::None);
+    for value in values {
+        if value.name == name {
+            result.set(Option::Some(value.ty))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn bind_type(values: Vec[TypeBinding], name: string, ty: tast::Type) -> bool {
+    match find_binding(values, name) {
+        Option::Some(previous) => compact_type(previous) == compact_type(ty),
+        Option::None => {
+            values.push(TypeBinding { name, ty });
+            true
+        },
+    }
+}
+
+fn unify_types(
+    templates: Vec[tast::Type],
+    actuals: Vec[tast::Type],
+    bindings: Vec[TypeBinding],
+) -> bool {
+    if templates.len() != actuals.len() {
+        false
+    } else {
+        let valid = Ref::new(true);
+        for index in range(0, templates.len()) {
+            if unify_type(templates.get(index), actuals.get(index), bindings) {
+                ()
+            } else {
+                valid.set(false)
+            }
+        };
+        valid.get()
+    }
+}
+
+fn unify_optional_trait_refs(
+    templates: Option[tast::TraitRef],
+    actuals: Option[tast::TraitRef],
+    bindings: Vec[TypeBinding],
+) -> bool {
+    match (templates, actuals) {
+        (Option::Some(template), Option::Some(actual)) => {
+            template.name == actual.name && unify_types(template.args, actual.args, bindings)
+        },
+        (Option::None, Option::None) => true,
+        _ => false,
+    }
+}
+
+fn unify_type(
+    template: tast::Type,
+    actual: tast::Type,
+    bindings: Vec[TypeBinding],
+) -> bool {
+    match (tast::resolve_type(template), tast::resolve_type(actual)) {
+        (tast::Type::Param(name), value) => bind_type(bindings, name, value),
+        (tast::Type::Unit, tast::Type::Unit)
+        | (tast::Type::Bool, tast::Type::Bool)
+        | (tast::Type::Int8, tast::Type::Int8)
+        | (tast::Type::Int16, tast::Type::Int16)
+        | (tast::Type::Int32, tast::Type::Int32)
+        | (tast::Type::Int64, tast::Type::Int64)
+        | (tast::Type::Uint8, tast::Type::Uint8)
+        | (tast::Type::Uint16, tast::Type::Uint16)
+        | (tast::Type::Uint32, tast::Type::Uint32)
+        | (tast::Type::Uint64, tast::Type::Uint64)
+        | (tast::Type::Float32, tast::Type::Float32)
+        | (tast::Type::Float64, tast::Type::Float64)
+        | (tast::Type::String, tast::Type::String)
+        | (tast::Type::Char, tast::Type::Char)
+        | (tast::Type::Error, tast::Type::Error) => true,
+        (tast::Type::Tuple(templates), tast::Type::Tuple(actuals)) => {
+            unify_types(templates, actuals, bindings)
+        },
+        (tast::Type::Con(template), tast::Type::Con(actual)) => template == actual,
+        (tast::Type::Dyn(template), tast::Type::Dyn(actual)) => template == actual,
+        (
+            tast::Type::Projection(template_base, template_name, template_ref),
+            tast::Type::Projection(actual_base, actual_name, actual_ref),
+        ) => {
+            template_name == actual_name
+                && unify_type(template_base, actual_base, bindings)
+                && unify_optional_trait_refs(template_ref, actual_ref, bindings)
+        },
+        (
+            tast::Type::App(template_base, template_args),
+            tast::Type::App(actual_base, actual_args),
+        ) => {
+            unify_type(template_base, actual_base, bindings)
+                && unify_types(template_args, actual_args, bindings)
+        },
+        (
+            tast::Type::Array(template_length, template_elem),
+            tast::Type::Array(actual_length, actual_elem),
+        ) => {
+            template_length == actual_length
+                && unify_type(template_elem, actual_elem, bindings)
+        },
+        (tast::Type::Slice(template), tast::Type::Slice(actual))
+        | (tast::Type::VecType(template), tast::Type::VecType(actual))
+        | (tast::Type::RefType(template), tast::Type::RefType(actual)) => {
+            unify_type(template, actual, bindings)
+        },
+        (
+            tast::Type::HashMap(template_key, template_value),
+            tast::Type::HashMap(actual_key, actual_value),
+        ) => {
+            unify_type(template_key, actual_key, bindings)
+                && unify_type(template_value, actual_value, bindings)
+        },
+        (
+            tast::Type::Func(template_params, template_ret),
+            tast::Type::Func(actual_params, actual_ret),
+        ) => {
+            unify_types(template_params, actual_params, bindings)
+                && unify_type(template_ret, actual_ret, bindings)
+        },
+        _ => false,
+    }
+}
+
+fn substitute_types(
+    values: Vec[tast::Type],
+    bindings: Vec[TypeBinding],
+) -> Vec[tast::Type] {
+    let result = Vec::new();
+    for value in values {
+        result.push(substitute_type(value, bindings))
+    };
+    result
+}
+
+fn substitute_optional_trait_ref(
+    value: Option[tast::TraitRef],
+    bindings: Vec[TypeBinding],
+) -> Option[tast::TraitRef] {
+    match value {
+        Option::Some(reference) => Option::Some(substitute_trait_ref(reference, bindings)),
+        Option::None => Option::None,
+    }
+}
+
+fn substitute_trait_ref(
+    value: tast::TraitRef,
+    bindings: Vec[TypeBinding],
+) -> tast::TraitRef {
+    tast::TraitRef {
+        name: value.name,
+        args: substitute_types(value.args, bindings),
+    }
+}
+
+fn substitute_type(value: tast::Type, bindings: Vec[TypeBinding]) -> tast::Type {
+    match tast::resolve_type(value) {
+        tast::Type::Var(variable) => tast::Type::Var(variable),
+        tast::Type::Unit => tast::Type::Unit,
+        tast::Type::Bool => tast::Type::Bool,
+        tast::Type::Int8 => tast::Type::Int8,
+        tast::Type::Int16 => tast::Type::Int16,
+        tast::Type::Int32 => tast::Type::Int32,
+        tast::Type::Int64 => tast::Type::Int64,
+        tast::Type::Uint8 => tast::Type::Uint8,
+        tast::Type::Uint16 => tast::Type::Uint16,
+        tast::Type::Uint32 => tast::Type::Uint32,
+        tast::Type::Uint64 => tast::Type::Uint64,
+        tast::Type::Float32 => tast::Type::Float32,
+        tast::Type::Float64 => tast::Type::Float64,
+        tast::Type::String => tast::Type::String,
+        tast::Type::Char => tast::Type::Char,
+        tast::Type::Tuple(items) => {
+            tast::Type::Tuple(substitute_types(items, bindings))
+        },
+        tast::Type::Con(name) => tast::Type::Con(name),
+        tast::Type::Dyn(name) => tast::Type::Dyn(name),
+        tast::Type::Projection(base, name, reference) => tast::Type::Projection(
+            substitute_type(base, bindings),
+            name,
+            substitute_optional_trait_ref(reference, bindings),
+        ),
+        tast::Type::App(base, args) => tast::Type::App(
+            substitute_type(base, bindings),
+            substitute_types(args, bindings),
+        ),
+        tast::Type::Array(length, elem) => {
+            tast::Type::Array(length, substitute_type(elem, bindings))
+        },
+        tast::Type::Slice(elem) => {
+            tast::Type::Slice(substitute_type(elem, bindings))
+        },
+        tast::Type::VecType(elem) => {
+            tast::Type::VecType(substitute_type(elem, bindings))
+        },
+        tast::Type::RefType(elem) => {
+            tast::Type::RefType(substitute_type(elem, bindings))
+        },
+        tast::Type::HashMap(key, value) => tast::Type::HashMap(
+            substitute_type(key, bindings),
+            substitute_type(value, bindings),
+        ),
+        tast::Type::Param(name) => match find_binding(bindings, name) {
+            Option::Some(ty) => ty,
+            Option::None => tast::Type::Param(name),
+        },
+        tast::Type::Func(params, ret_ty) => tast::Type::Func(
+            substitute_types(params, bindings),
+            substitute_type(ret_ty, bindings),
+        ),
+        tast::Type::Error => tast::Type::Error,
+    }
+}
+
+fn function_type(value: core::Function) -> tast::Type {
+    let params = Vec::new();
+    for param in value.params {
+        params.push(param.1)
+    };
+    tast::Type::Func(params, value.ret_ty)
+}
+
+fn function_is_generic(value: core::Function) -> bool {
+    if value.generics.len() > 0 {
+        true
+    } else {
+        let generic = Ref::new(!type_is_concrete(value.ret_ty));
+        for param in value.params {
+            if type_is_concrete(param.1) {
+                ()
+            } else {
+                generic.set(true)
+            }
+        };
+        generic.get()
+    }
+}
+
+fn find_function(ctx: SpecializeCtx, name: string) -> Option[core::Function] {
+    let result: Ref[Option[core::Function]] = Ref::new(Option::None);
+    for value in ctx.functions {
+        if value.name == name {
+            result.set(Option::Some(value))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn same_bindings(left: Vec[TypeBinding], right: Vec[TypeBinding]) -> bool {
+    if left.len() != right.len() {
+        false
+    } else {
+        let equal = Ref::new(true);
+        for value in left {
+            match find_binding(right, value.name) {
+                Option::Some(ty) => if compact_type(value.ty) == compact_type(ty) {
+                    ()
+                } else {
+                    equal.set(false)
+                },
+                Option::None => equal.set(false),
+            }
+        };
+        equal.get()
+    }
+}
+
+fn find_instance(
+    ctx: SpecializeCtx,
+    original_name: string,
+    bindings: Vec[TypeBinding],
+) -> Option[Instance] {
+    let result: Ref[Option[Instance]] = Ref::new(Option::None);
+    for value in ctx.instances {
+        if value.original_name == original_name && same_bindings(value.bindings, bindings) {
+            result.set(Option::Some(value))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn name_is_used(ctx: SpecializeCtx, name: string) -> bool {
+    let found = Ref::new(false);
+    for value in ctx.used_names {
+        if value == name {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+fn instance_base_name(original_name: string, bindings: Vec[TypeBinding]) -> string {
+    if bindings.len() == 0 {
+        original_name
+    } else {
+        let builder = std::text::StringBuilder::new();
+        builder.write_string(original_name);
+        for binding in bindings {
+            builder.write_string("__");
+            builder.write_string(binding.name);
+            builder.write_char('_');
+            builder.write_string(compact_type(binding.ty))
+        };
+        builder.finish()
+    }
+}
+
+fn unique_instance_name(ctx: SpecializeCtx, base: string) -> string {
+    if !name_is_used(ctx, base) {
+        ctx.used_names.push(base);
+        base
+    } else {
+        let index = Ref::new(1);
+        let candidate = Ref::new(base + "__mono1");
+        while name_is_used(ctx, candidate.get()) {
+            index.set(index.get() + 1);
+            candidate.set(base + "__mono" + index.get().to_string())
+        };
+        ctx.used_names.push(candidate.get());
+        candidate.get()
+    }
+}
+
+fn ensure_instance(
+    ctx: SpecializeCtx,
+    original_name: string,
+    bindings: Vec[TypeBinding],
+) -> string {
+    match find_instance(ctx, original_name, bindings) {
+        Option::Some(instance) => instance.name,
+        Option::None => {
+            let base = instance_base_name(original_name, bindings);
+            let name = if bindings.len() == 0 {
+                base
+            } else {
+                unique_instance_name(ctx, base)
+            };
+            let instance = Instance {
+                original_name,
+                name,
+                bindings,
+            };
+            ctx.instances.push(instance);
+            ctx.work.push(instance);
+            instance.name
+        },
+    }
+}
+
+fn complete_bindings(value: core::Function, bindings: Vec[TypeBinding]) -> bool {
+    let complete = Ref::new(true);
+    for generic in value.generics {
+        match find_binding(bindings, generic) {
+            Option::Some(ty) => if type_is_concrete(ty) {
+                ()
+            } else {
+                complete.set(false)
+            },
+            Option::None => complete.set(false),
+        }
+    };
+    complete.get()
+}
+
+fn specialize_callable(
+    value: tast::Callable,
+    bindings: Vec[TypeBinding],
+) -> tast::Callable {
+    match value {
+        tast::Callable::Function(name) => tast::Callable::Function(name),
+        tast::Callable::Runtime(name) => tast::Callable::Runtime(name),
+        tast::Callable::Intrinsic(name) => tast::Callable::Intrinsic(name),
+        tast::Callable::TraitMethod(reference, name) => {
+            tast::Callable::TraitMethod(substitute_trait_ref(reference, bindings), name)
+        },
+        tast::Callable::DynTraitMethod(owner, name) => {
+            tast::Callable::DynTraitMethod(owner, name)
+        },
+        tast::Callable::InherentMethod(owner, name) => {
+            tast::Callable::InherentMethod(substitute_type(owner, bindings), name)
+        },
+    }
+}
+
+fn specialize_closure_params(
+    values: Vec[tast::ClosureParam],
+    bindings: Vec[TypeBinding],
+) -> Vec[tast::ClosureParam] {
+    let result = Vec::new();
+    for value in values {
+        result.push(tast::ClosureParam {
+            name: value.name,
+            ty: substitute_type(value.ty, bindings),
+        })
+    };
+    result
+}
+
+fn specialize_exprs(
+    ctx: SpecializeCtx,
+    bindings: Vec[TypeBinding],
+    values: Vec[core::Expr],
+) -> Vec[core::Expr] {
+    let result = Vec::new();
+    for value in values {
+        result.push(specialize_expr(ctx, bindings, value))
+    };
+    result
+}
+
+fn specialize_optional_expr(
+    ctx: SpecializeCtx,
+    bindings: Vec[TypeBinding],
+    value: Option[core::Expr],
+) -> Option[core::Expr] {
+    match value {
+        Option::Some(expr) => Option::Some(specialize_expr(ctx, bindings, expr)),
+        Option::None => Option::None,
+    }
+}
+
+fn specialize_arms(
+    ctx: SpecializeCtx,
+    bindings: Vec[TypeBinding],
+    values: Vec[core::Arm],
+) -> Vec[core::Arm] {
+    let result = Vec::new();
+    for value in values {
+        result.push(core::Arm {
+            lhs: specialize_expr(ctx, bindings, value.lhs),
+            body: specialize_expr(ctx, bindings, value.body),
+        })
+    };
+    result
+}
+
+fn specialize_block(
+    ctx: SpecializeCtx,
+    bindings: Vec[TypeBinding],
+    value: core::Block,
+) -> core::Block {
+    let stmts = Vec::new();
+    for stmt in value.stmts {
+        stmts.push(core::LetStmt {
+            name: stmt.name,
+            value: specialize_expr(ctx, bindings, stmt.value),
+            ty: substitute_type(stmt.ty, bindings),
+        })
+    };
+    core::Block {
+        stmts,
+        tail: specialize_optional_expr(ctx, bindings, value.tail),
+    }
+}
+
+fn specialize_var(
+    ctx: SpecializeCtx,
+    bindings: Vec[TypeBinding],
+    name: string,
+    ty: tast::Type,
+) -> core::Expr {
+    let ty = substitute_type(ty, bindings);
+    match find_function(ctx, name) {
+        Option::Some(function) => if function_is_generic(function) && type_is_concrete(ty) {
+            let call_bindings = Vec::new();
+            if unify_type(function_type(function), ty, call_bindings)
+                && complete_bindings(function, call_bindings)
+            {
+                core::Expr::Var(ensure_instance(ctx, name, call_bindings), ty)
+            } else {
+                core::Expr::Var(name, ty)
+            }
+        } else {
+            core::Expr::Var(name, ty)
+        },
+        Option::None => core::Expr::Var(name, ty),
+    }
+}
+
+fn specialize_expr(
+    ctx: SpecializeCtx,
+    bindings: Vec[TypeBinding],
+    value: core::Expr,
+) -> core::Expr {
+    match value {
+        core::Expr::Var(name, ty) => specialize_var(ctx, bindings, name, ty),
+        core::Expr::Callable(callable, ty) => core::Expr::Callable(
+            specialize_callable(callable, bindings),
+            substitute_type(ty, bindings),
+        ),
+        core::Expr::Prim(value, ty) => {
+            core::Expr::Prim(value, substitute_type(ty, bindings))
+        },
+        core::Expr::Constr(constructor, args, ty) => core::Expr::Constr(
+            constructor,
+            specialize_exprs(ctx, bindings, args),
+            substitute_type(ty, bindings),
+        ),
+        core::Expr::Tuple(items, ty) => core::Expr::Tuple(
+            specialize_exprs(ctx, bindings, items),
+            substitute_type(ty, bindings),
+        ),
+        core::Expr::Array(items, ty) => core::Expr::Array(
+            specialize_exprs(ctx, bindings, items),
+            substitute_type(ty, bindings),
+        ),
+        core::Expr::Closure(params, body, ty) => core::Expr::Closure(
+            specialize_closure_params(params, bindings),
+            specialize_expr(ctx, bindings, body),
+            substitute_type(ty, bindings),
+        ),
+        core::Expr::Block(block, ty) => core::Expr::Block(
+            specialize_block(ctx, bindings, block),
+            substitute_type(ty, bindings),
+        ),
+        core::Expr::Match(expr, arms, default, ty) => core::Expr::Match(
+            specialize_expr(ctx, bindings, expr),
+            specialize_arms(ctx, bindings, arms),
+            specialize_optional_expr(ctx, bindings, default),
+            substitute_type(ty, bindings),
+        ),
+        core::Expr::If(cond, then_branch, else_branch, ty) => core::Expr::If(
+            specialize_expr(ctx, bindings, cond),
+            specialize_expr(ctx, bindings, then_branch),
+            specialize_expr(ctx, bindings, else_branch),
+            substitute_type(ty, bindings),
+        ),
+        core::Expr::While(cond, body, ty) => core::Expr::While(
+            specialize_expr(ctx, bindings, cond),
+            specialize_expr(ctx, bindings, body),
+            substitute_type(ty, bindings),
+        ),
+        core::Expr::Break(ty) => core::Expr::Break(substitute_type(ty, bindings)),
+        core::Expr::Continue(ty) => core::Expr::Continue(substitute_type(ty, bindings)),
+        core::Expr::Return(expr, ty) => core::Expr::Return(
+            specialize_optional_expr(ctx, bindings, expr),
+            substitute_type(ty, bindings),
+        ),
+        core::Expr::Go(expr, ty) => core::Expr::Go(
+            specialize_expr(ctx, bindings, expr),
+            substitute_type(ty, bindings),
+        ),
+        core::Expr::ConstrGet(expr, constructor, field_index, ty) => {
+            core::Expr::ConstrGet(
+                specialize_expr(ctx, bindings, expr),
+                constructor,
+                field_index,
+                substitute_type(ty, bindings),
+            )
+        },
+        core::Expr::Unary(op, expr, ty) => core::Expr::Unary(
+            op,
+            specialize_expr(ctx, bindings, expr),
+            substitute_type(ty, bindings),
+        ),
+        core::Expr::Cast(expr, ty) => core::Expr::Cast(
+            specialize_expr(ctx, bindings, expr),
+            substitute_type(ty, bindings),
+        ),
+        core::Expr::Binary(op, lhs, rhs, ty) => core::Expr::Binary(
+            op,
+            specialize_expr(ctx, bindings, lhs),
+            specialize_expr(ctx, bindings, rhs),
+            substitute_type(ty, bindings),
+        ),
+        core::Expr::Assign(name, value, target_ty, ty) => core::Expr::Assign(
+            name,
+            specialize_expr(ctx, bindings, value),
+            substitute_type(target_ty, bindings),
+            substitute_type(ty, bindings),
+        ),
+        core::Expr::Call(func, args, ty) => core::Expr::Call(
+            specialize_expr(ctx, bindings, func),
+            specialize_exprs(ctx, bindings, args),
+            substitute_type(ty, bindings),
+        ),
+        core::Expr::ToDyn(trait_name, for_ty, expr, ty) => core::Expr::ToDyn(
+            trait_name,
+            substitute_type(for_ty, bindings),
+            specialize_expr(ctx, bindings, expr),
+            substitute_type(ty, bindings),
+        ),
+        core::Expr::DynCall(trait_name, method_name, receiver, args, ty) => {
+            core::Expr::DynCall(
+                trait_name,
+                method_name,
+                specialize_expr(ctx, bindings, receiver),
+                specialize_exprs(ctx, bindings, args),
+                substitute_type(ty, bindings),
+            )
+        },
+        core::Expr::TraitCall(reference, method_name, receiver, args, ty) => {
+            core::Expr::TraitCall(
+                substitute_trait_ref(reference, bindings),
+                method_name,
+                specialize_expr(ctx, bindings, receiver),
+                specialize_exprs(ctx, bindings, args),
+                substitute_type(ty, bindings),
+            )
+        },
+        core::Expr::Proj(tuple, index, ty) => core::Expr::Proj(
+            specialize_expr(ctx, bindings, tuple),
+            index,
+            substitute_type(ty, bindings),
+        ),
+    }
+}
+
+fn specialize_function(
+    ctx: SpecializeCtx,
+    instance: Instance,
+    value: core::Function,
+) -> core::Function {
+    let params = Vec::new();
+    for param in value.params {
+        params.push((param.0, substitute_type(param.1, instance.bindings)))
+    };
+    core::Function {
+        name: instance.name,
+        root: true,
+        generics: Vec::new(),
+        trait_impl: match value.trait_impl {
+            Option::Some(metadata) => Option::Some(core::TraitImpl {
+                trait_ref: substitute_trait_ref(metadata.trait_ref, instance.bindings),
+                for_ty: substitute_type(metadata.for_ty, instance.bindings),
+            }),
+            Option::None => Option::None,
+        },
+        params,
+        ret_ty: substitute_type(value.ret_ty, instance.bindings),
+        body: specialize_block(ctx, instance.bindings, value.body),
+    }
+}
+
+fn specialize(value: core::File) -> core::File {
+    let ctx = SpecializeCtx {
+        functions: value.functions,
+        instances: Vec::new(),
+        work: Vec::new(),
+        used_names: Vec::new(),
+    };
+    for function in ctx.functions {
+        ctx.used_names.push(function.name)
+    };
+    for function in ctx.functions {
+        if function.root && !function_is_generic(function) {
+            ensure_instance(ctx, function.name, Vec::new());
+            ()
+        } else {
+            ()
+        }
+    };
+    let output = Vec::new();
+    let index = Ref::new(0);
+    while index.get() < ctx.work.len() {
+        let instance = ctx.work.get(index.get());
+        index.set(index.get() + 1);
+        match find_function(ctx, instance.original_name) {
+            Option::Some(function) => {
+                output.push(specialize_function(ctx, instance, function))
+            },
+            Option::None => (),
+        }
+    };
+    core::File { functions: output }
+}
