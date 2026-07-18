@@ -23,6 +23,7 @@ struct LowerCtx {
     aliases: Vec[AliasEntry],
     local_counter: Ref[int32],
     method_counter: Ref[int32],
+    expr_counter: Ref[int32],
 }
 
 struct PatternState {
@@ -646,7 +647,7 @@ fn lower_block(
     }
 }
 
-fn lower_expr(
+fn lower_expr_value(
     ctx: LowerCtx,
     value: ast::Expr,
     env: Vec[(string, LocalId)],
@@ -797,19 +798,32 @@ fn lower_expr(
         }),
         ast::Expr::Go(expr, _) => Expr::Go(lower_expr(ctx, expr, env, type_params)),
         ast::Expr::Call(func, args, _) => {
-            let result: Vec[Expr] = Vec::new();
-            for arg in args {
-                result.push(lower_expr(ctx, arg, env, type_params))
-            };
             match func {
                 ast::Expr::Path(path, _, _) => match constructor_ref(ctx, path) {
-                    Option::Some(constructor) => Expr::Constr(constructor, result),
-                    Option::None => Expr::Call(
-                        lower_expr(ctx, func, env, type_params),
-                        result,
-                    ),
+                    Option::Some(constructor) => {
+                        let result: Vec[Expr] = Vec::new();
+                        for arg in args {
+                            result.push(lower_expr(ctx, arg, env, type_params))
+                        };
+                        Expr::Constr(constructor, result)
+                    },
+                    Option::None => {
+                        let lowered_func = lower_expr(ctx, func, env, type_params);
+                        let result: Vec[Expr] = Vec::new();
+                        for arg in args {
+                            result.push(lower_expr(ctx, arg, env, type_params))
+                        };
+                        Expr::Call(lowered_func, result)
+                    },
                 },
-                _ => Expr::Call(lower_expr(ctx, func, env, type_params), result),
+                _ => {
+                    let lowered_func = lower_expr(ctx, func, env, type_params);
+                    let result: Vec[Expr] = Vec::new();
+                    for arg in args {
+                        result.push(lower_expr(ctx, arg, env, type_params))
+                    };
+                    Expr::Call(lowered_func, result)
+                },
             }
         },
         ast::Expr::Unary(op, expr, _) => {
@@ -819,7 +833,7 @@ fn lower_expr(
             lower_expr(ctx, expr, env, type_params),
             lower_type(ctx, ty, type_params),
         ),
-        ast::Expr::Try(expr, _) => Expr::Try(lower_expr(ctx, expr, env, type_params)),
+        ast::Expr::Try(expr, _) => Expr::Try(0, lower_expr(ctx, expr, env, type_params)),
         ast::Expr::Binary(op, lhs, rhs, _) => Expr::Binary(
             op,
             lower_expr(ctx, lhs, env, type_params),
@@ -836,6 +850,21 @@ fn lower_expr(
             lower_expr(ctx, index, env, type_params),
         ),
         ast::Expr::Block(block, _) => Expr::Block(lower_block(ctx, block, env, type_params)),
+    }
+}
+
+fn lower_expr(
+    ctx: LowerCtx,
+    value: ast::Expr,
+    env: Vec[(string, LocalId)],
+    type_params: Vec[string],
+) -> Expr {
+    let result = lower_expr_value(ctx, value, env, type_params);
+    let index = ctx.expr_counter.get();
+    ctx.expr_counter.set(index + 1);
+    match result {
+        Expr::Try(_, expr) => Expr::Try(index, expr),
+        _ => result,
     }
 }
 
@@ -1085,6 +1114,7 @@ fn make_context(file: ast::File) -> LowerCtx {
         aliases: aliases_from_file(file),
         local_counter: Ref::new(0),
         method_counter: Ref::new(file.items.len()),
+        expr_counter: Ref::new(1),
     }
 }
 

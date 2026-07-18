@@ -601,7 +601,7 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int32) -> unit 
             builder.write_string(" as ");
             write_type(builder, ty)
         },
-        Expr::Try(expr) => {
+        Expr::Try(_, expr) => {
             write_expr(builder, expr, indent);
             builder.write_char('?')
         },
