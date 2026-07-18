@@ -210,3 +210,12 @@ fn lowers_ordered_and_uninhabited_patterns() -> unit {
         "fn absurd(value/0: Never) -> int32 {\n  {\n    let _wild0 = value/0 in\n    @intrinsic(compiler.missing)(\"\")\n  }\n}\n\nfn unwrap(value/1: Single) -> int32 {\n  let mtmp1 = value/1 in\n  match mtmp1 {\n    Single::Only(x2) => {\n      {\n        let x2 = Single::Only._0(mtmp1) in\n        {\n          let inner/2 = x2 in\n          {\n            inner/2\n          }\n        }\n      }\n    },\n  }\n}\n\nfn classify(values/3: Vec[bool]) -> int32 {\n  {\n    let match3 = values/3 in\n    if (@intrinsic(vec.len)(match3) == 0) {\n        0\n    } else {\n        if (@intrinsic(vec.len)(match3) >= 2) {\n            if (@intrinsic(vec.get)(match3, 0) == true) {\n                1\n            } else {\n                2\n            }\n        } else {\n            2\n        }\n    }\n  }\n}",
     )
 }
+
+#[test]
+fn preserves_scalar_pattern_precedence() -> unit {
+    let source = "fn choose(value: int32) -> int32 { match value { 1 => 10, _ => 20, 1 => 30, 2 => 40, } } fn first(value: int32) -> int32 { match value { _ => 50, 0 => 60, } }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "fn choose(value/0: int32) -> int32 {\n  match value/0 {\n    1 => {\n      10\n    },\n    2 => {\n      20\n    },\n    _ => 20,\n  }\n}\n\nfn first(value/1: int32) -> int32 {\n  50\n}",
+    )
+}
