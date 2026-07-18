@@ -5,6 +5,41 @@ mod ast_encode;
 
 pub use ast_encode::encode_ast;
 
+pub fn encode_hir(path: &Path, source: &str) -> String {
+    let path = path.to_owned();
+    let source = source.to_owned();
+    std::thread::Builder::new()
+        .stack_size(64 * 1024 * 1024)
+        .spawn(move || encode_hir_inner(&path, &source))
+        .unwrap()
+        .join()
+        .unwrap()
+}
+
+fn encode_hir_inner(path: &Path, source: &str) -> String {
+    use cst::cst::CstNode;
+    use parser::syntax::MySyntaxNode;
+
+    let parsed = parser::parse(path, source);
+    if !parsed.diagnostics.is_empty() {
+        return String::new();
+    }
+    let root = MySyntaxNode::new_root(parsed.green_node);
+    let file = cst::cst::File::cast(root).unwrap();
+    let (file, _) = ast::lower::lower(file).into_parts();
+    let Some(file) = file else {
+        return String::new();
+    };
+    let original = file.clone();
+    let file = compiler::derive::expand(file).unwrap_or(original);
+    let source_file = compiler::hir::SourceFileAst::new(path.to_owned(), file);
+    let (package, table, _) = compiler::hir::lower_to_hir_files(vec![source_file]);
+    let mut project_table = compiler::hir::ProjectHirTable::new();
+    project_table.insert(package.id, table);
+    let context = compiler::pprint::hir_pprint::HirPrintCtx::new(&project_table);
+    package.to_pretty(&context, 120)
+}
+
 pub fn encode(source: &str) -> String {
     let mut output = String::new();
     for token in lexer::lex(source) {

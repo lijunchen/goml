@@ -1,0 +1,93 @@
+package hir;
+
+use gomlang::parser::ast;
+use gomlang::parser::parser;
+use std::testing;
+
+fn lowered_file(source: string) -> File {
+    let result = lower(ast::lower(parser::parse(source)), "main.gom");
+    testing::assert_eq(result.diagnostics.len(), 0);
+    match result.hir {
+        Option::Some(file) => file,
+        Option::None => {
+            testing::fail("expected HIR");
+            File {
+                package_name: "",
+                path: "",
+                imports: Vec::new(),
+                items: Vec::new(),
+            }
+        },
+    }
+}
+
+#[test]
+fn resolves_definitions_and_shadowed_locals() -> unit {
+    let source = "fn id(value: int32) -> int32 { value } fn main() -> int32 { let value = 1; id(value) }";
+    let file = lowered_file(source);
+    testing::assert_eq(file.items.len(), 2);
+    match file.items.get(1) {
+        Item::Function(value) => {
+            match value.body.stmts.get(0) {
+                Stmt::Let(_, Pat::Var(local), _, Expr::Int(number)) => {
+                    testing::assert_eq(local.pkg, 1);
+                    testing::assert_eq(local.index, 1);
+                    testing::assert_eq(number, "1")
+                },
+                _ => testing::fail("expected local binding"),
+            };
+            match value.body.tail {
+                Option::Some(Expr::Call(function, args)) => {
+                    match function {
+                        Expr::NameRef(NameRef::Def(definition)) => {
+                            testing::assert_eq(definition.pkg, 1);
+                            testing::assert_eq(definition.index, 0)
+                        },
+                        _ => testing::fail("expected definition reference"),
+                    };
+                    testing::assert_eq(args.len(), 1);
+                    match args.get(0) {
+                        Expr::NameRef(NameRef::Local(local)) => {
+                            testing::assert_eq(local.pkg, 1);
+                            testing::assert_eq(local.index, 1)
+                        },
+                        _ => testing::fail("expected local reference"),
+                    }
+                },
+                _ => testing::fail("expected function call"),
+            }
+        },
+        _ => testing::fail("expected function"),
+    }
+}
+
+#[test]
+fn resolves_enum_constructors_and_pattern_bindings() -> unit {
+    let source = "enum Choice { None, Some(int32) } fn unwrap(value: Choice) -> int32 { match value { Choice::Some(item) => item, Choice::None => 0 } }";
+    let file = lowered_file(source);
+    match file.items.get(1) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Match(_, arms)) => {
+                testing::assert_eq(arms.len(), 2);
+                match arms.get(0).pat {
+                    Pat::Constr(ConstructorRef::Resolved(definition, variant), args) => {
+                        testing::assert_eq(definition.pkg, 1);
+                        testing::assert_eq(definition.index, 0);
+                        testing::assert_eq(variant, 1);
+                        testing::assert_eq(args.len(), 1)
+                    },
+                    _ => testing::fail("expected resolved constructor pattern"),
+                };
+                match arms.get(0).body {
+                    Expr::NameRef(NameRef::Local(local)) => {
+                        testing::assert_eq(local.pkg, 1);
+                        testing::assert_eq(local.index, 1)
+                    },
+                    _ => testing::fail("expected pattern local reference"),
+                }
+            },
+            _ => testing::fail("expected match expression"),
+        },
+        _ => testing::fail("expected function"),
+    }
+}

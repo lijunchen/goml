@@ -135,15 +135,18 @@ fn main() {
     let parser = env::args_os()
         .nth(1)
         .map(PathBuf::from)
-        .expect("usage: diff_parser <gomlang-parser> <cst|ast> [iterations]");
+        .expect("usage: diff_parser <gomlang-parser> <cst|ast|hir> [iterations]");
     let mode = env::args()
         .nth(2)
-        .expect("usage: diff_parser <gomlang-parser> <cst|ast> [iterations]");
+        .expect("usage: diff_parser <gomlang-parser> <cst|ast|hir> [iterations]");
     let iterations = env::args()
         .nth(3)
         .map(|value| value.parse::<usize>().expect("invalid iteration count"))
         .unwrap_or(2048);
-    assert!(mode == "cst" || mode == "ast", "invalid mode");
+    assert!(
+        mode == "cst" || mode == "ast" || mode == "hir",
+        "invalid mode"
+    );
     let directory =
         env::temp_dir().join(format!("gomlang-parser-{mode}-diff-{}", std::process::id()));
     fs::create_dir_all(&directory).unwrap();
@@ -158,9 +161,14 @@ fn main() {
         fs::write(&input_path, &source).unwrap();
         let expected = if mode == "cst" {
             gomlang_parser_rust_oracle::encode_parse(&input_path, &source)
+        } else if mode == "hir" {
+            gomlang_parser_rust_oracle::encode_hir(&input_path, &source)
         } else {
             gomlang_parser_rust_oracle::encode_ast(&input_path, &source)
         };
+        if mode == "hir" && expected.is_empty() {
+            continue;
+        }
         let output = Command::new(&parser)
             .arg(&mode)
             .arg(&input_path)
