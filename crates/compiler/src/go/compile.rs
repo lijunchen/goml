@@ -16,7 +16,9 @@ use crate::{
 };
 
 use indexmap::IndexSet;
+use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
+use std::rc::Rc;
 
 use super::goty;
 use super::runtime;
@@ -3880,7 +3882,7 @@ fn compile_joinrec(
 }
 
 fn compile_while_loop(goenv: &GlobalGoEnv, wl: &WhileLoop, join_env: &JoinEnv) -> Vec<goast::Stmt> {
-    let loop_label = go_generated_ident(&format!("Loop_{}", go_ident(&wl.loop_id.0)));
+    let loop_label = join_env.fresh_loop_label(&wl.loop_id);
 
     let mut inner_env = join_env.clone();
     inner_env.continue_targets.insert(wl.loop_id.clone());
@@ -3952,11 +3954,28 @@ struct JoinEnv {
     continue_targets: HashSet<anf::JoinId>,
     break_targets: HashSet<anf::JoinId>,
     break_labels: HashMap<anf::JoinId, String>,
+    emitted_loop_labels: Rc<RefCell<HashSet<String>>>,
 }
 
 impl JoinEnv {
     fn get(&self, id: &anf::JoinId) -> Option<&anf::JoinBind> {
         self.joins.get(id)
+    }
+
+    fn fresh_loop_label(&self, id: &anf::JoinId) -> String {
+        let base = go_generated_ident(&format!("Loop_{}", go_ident(&id.0)));
+        let mut emitted = self.emitted_loop_labels.borrow_mut();
+        if emitted.insert(base.clone()) {
+            return base;
+        }
+        let mut suffix = 2usize;
+        loop {
+            let candidate = go_generated_ident(&format!("{}__{}", base, suffix));
+            if emitted.insert(candidate.clone()) {
+                return candidate;
+            }
+            suffix += 1;
+        }
     }
 }
 
