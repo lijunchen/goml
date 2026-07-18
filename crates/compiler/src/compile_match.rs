@@ -237,6 +237,21 @@ mod tests {
         }
     }
 
+    fn bool_pat(value: bool) -> Pat {
+        Pat::PPrim {
+            value: Prim::Bool { value },
+            ty: Ty::TBool,
+            astptr: None,
+        }
+    }
+
+    fn unit_expr() -> Expr {
+        Expr::EPrim {
+            value: Prim::unit(),
+            ty: Ty::TUnit,
+        }
+    }
+
     #[test]
     fn return_always_exits_control_flow() {
         let expr = Expr::EReturn {
@@ -261,6 +276,71 @@ mod tests {
         ];
 
         assert_eq!(rows_body_ty(&rows), Ty::TInt32);
+    }
+
+    #[test]
+    fn pure_or_patterns_expand_in_the_selected_column() {
+        let pat = Pat::POr {
+            pats: vec![bool_pat(true), bool_pat(false)],
+            ty: Ty::TBool,
+            astptr: None,
+        };
+        let rows = make_rows(
+            "value",
+            &[Arm {
+                pat,
+                guard: None,
+                body: unit_expr(),
+            }],
+        );
+        let rows = expand_or_column(&rows, "value").unwrap();
+
+        assert_eq!(rows.len(), 2);
+        assert!(rows.iter().all(|row| !matches!(
+            row.columns.as_slice(),
+            [Column {
+                pat: Pat::POr { .. },
+                ..
+            }]
+        )));
+    }
+
+    #[test]
+    fn or_pattern_columns_expand_lazily() {
+        let item = Pat::POr {
+            pats: vec![bool_pat(true), bool_pat(false)],
+            ty: Ty::TBool,
+            astptr: None,
+        };
+        let rows = vec![Row {
+            columns: vec![
+                Column {
+                    var: "first".to_string(),
+                    pat: item.clone(),
+                },
+                Column {
+                    var: "second".to_string(),
+                    pat: item,
+                },
+            ],
+            body: unit_expr(),
+        }];
+        let rows = expand_or_column(&rows, "first").unwrap();
+
+        assert_eq!(rows.len(), 2);
+        assert!(rows.iter().all(|row| matches!(
+            row.columns.as_slice(),
+            [
+                Column {
+                    pat: Pat::PPrim { .. },
+                    ..
+                },
+                Column {
+                    pat: Pat::POr { .. },
+                    ..
+                }
+            ]
+        )));
     }
 }
 

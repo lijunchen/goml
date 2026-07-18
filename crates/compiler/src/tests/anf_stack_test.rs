@@ -59,6 +59,23 @@ fn wide_match_call_source(arg_count: usize) -> String {
     )
 }
 
+fn wide_or_pattern_source(alternative_count: usize) -> String {
+    let alternatives = (0..alternative_count)
+        .map(|index| {
+            if index % 2 == 0 {
+                "(true, true)"
+            } else {
+                "(false, false)"
+            }
+        })
+        .collect::<Vec<_>>()
+        .join(" | ");
+
+    format!(
+        "fn classify(value: (bool, bool)) -> int32 {{ match value {{ {alternatives} => 1, _ => 0 }} }}\nfn main() -> unit {{ println(classify((true, true)).to_string()) }}\n"
+    )
+}
+
 #[test]
 fn wide_call_argument_list_compiles_without_crashing_anf() {
     let src = wide_call_source(1500);
@@ -95,6 +112,14 @@ fn wide_match_call_argument_list_compiles_without_crashing_anf() {
 fn very_wide_match_call_argument_list_compiles_without_crashing_anf() {
     let src = wide_match_call_source(2000);
     let path = PathBuf::from("very_wide_match_call_argument_list.gom");
+
+    compile_single_file(&path, &src).unwrap();
+}
+
+#[test]
+fn wide_or_pattern_compiles_without_exponential_growth() {
+    let src = wide_or_pattern_source(24);
+    let path = PathBuf::from("wide_or_pattern.gom");
 
     compile_single_file(&path, &src).unwrap();
 }
