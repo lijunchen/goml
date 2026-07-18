@@ -414,13 +414,37 @@ fn check_closure_expr(
     ctx: Checker,
     params: Vec[hir::ClosureParam],
     body: hir::Expr,
+    expected: Option[Type],
 ) -> Expr {
+    let expected_parts: (Vec[Type], Option[Type]) = match propagated_expected(expected) {
+        Option::Some(ty) => match prune(ty) {
+            Type::Func(params, ret_ty) => (params, Option::Some(ret_ty)),
+            _ => (Vec::new(), Option::None),
+        },
+        Option::None => (Vec::new(), Option::None),
+    };
     let typed_params: Vec[ClosureParam] = Vec::new();
     let param_types: Vec[Type] = Vec::new();
     for param in params {
+        let index = typed_params.len();
+        let contextual = if index < expected_parts.0.len() {
+            Option::Some(expected_parts.0.get(index))
+        } else {
+            Option::None
+        };
         let ty = match param.ty {
-            Option::Some(value) => type_from_hir(value, ctx.type_params, ctx.self_ty),
-            Option::None => fresh_type(ctx.counter, VarKind::Any),
+            Option::Some(value) => {
+                let declared = type_from_hir(value, ctx.type_params, ctx.self_ty);
+                match contextual {
+                    Option::Some(expected) => expect_type(ctx, declared, expected),
+                    Option::None => (),
+                };
+                declared
+            },
+            Option::None => match contextual {
+                Option::Some(ty) => ty,
+                Option::None => fresh_type(ctx.counter, VarKind::Any),
+            },
         };
         insert_local(ctx, param.name, ty);
         typed_params.push(ClosureParam {
@@ -429,7 +453,10 @@ fn check_closure_expr(
         });
         param_types.push(ty)
     };
-    let ret_ty = fresh_type(ctx.counter, VarKind::Any);
+    let ret_ty = match expected_parts.1 {
+        Option::Some(ty) => ty,
+        Option::None => fresh_type(ctx.counter, VarKind::Any),
+    };
     let typed_body = check_expr(ctx, body, Option::Some(ret_ty));
     Expr::Closure(
         typed_params,
@@ -1144,7 +1171,9 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
             },
             hir::Expr::Tuple(values) => check_tuple_expr(ctx, values, Option::None),
             hir::Expr::Array(values) => check_array_expr(ctx, values, Option::None),
-            hir::Expr::Closure(params, body) => check_closure_expr(ctx, params, body),
+            hir::Expr::Closure(params, body) => {
+                check_closure_expr(ctx, params, body, Option::None)
+            },
             hir::Expr::Match(source, arms) => {
                 check_match_expr(ctx, source, arms, Option::None)
             },
@@ -1217,6 +1246,11 @@ fn check_expr(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> Expr {
         },
         hir::Expr::Tuple(values) => check_tuple_expr(ctx, values, expected),
         hir::Expr::Array(values) => check_array_expr(ctx, values, expected),
+        hir::Expr::Closure(params, body) => coerce_expr(
+            ctx,
+            check_closure_expr(ctx, params, body, expected),
+            expected,
+        ),
         hir::Expr::Match(source, arms) => check_match_expr(ctx, source, arms, expected),
         hir::Expr::If(cond, then_branch, else_branch) => {
             check_if_expr(ctx, cond, then_branch, else_branch, expected)
