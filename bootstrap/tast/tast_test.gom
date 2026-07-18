@@ -248,6 +248,41 @@ fn resolves_trait_methods_from_call_context() -> unit {
 }
 
 #[test]
+fn preserves_associated_into_iterator_item_projection() -> unit {
+    let file = checked_file("trait Batch { type Items: IntoIterator; fn items(Self) -> Self::Items; } fn iterate[B: Batch](batch: B) -> unit { for _ in Batch::items(batch) {} }");
+    match file.items.get(0) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::For(
+                Pat::Wild(
+                    Type::Projection(
+                        Type::Projection(
+                            Type::Projection(Type::Param(owner), items, _),
+                            into_iter,
+                            _,
+                        ),
+                        item,
+                        _,
+                    ),
+                ),
+                _,
+                _,
+                _,
+                _,
+                _,
+                Type::Unit,
+            )) => {
+                testing::assert_eq(owner, "B");
+                testing::assert_eq(items, "Items");
+                testing::assert_eq(into_iter, "IntoIter");
+                testing::assert_eq(item, "Item")
+            },
+            _ => testing::fail("expected associated iterator projection"),
+        },
+        _ => testing::fail("expected iterate function"),
+    }
+}
+
+#[test]
 fn normalizes_float_pattern_literals() -> unit {
     let file = checked_file("fn signed_zero(value: float64) -> string { match value { -0.0 => \"zero\", _ => \"other\" } }");
     match file.items.get(0) {
