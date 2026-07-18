@@ -142,6 +142,40 @@ fn make_rows(name: &str, arms: &[Arm]) -> Vec<Row> {
     result
 }
 
+fn expand_or_column(rows: &[Row], var: &str) -> Option<Vec<Row>> {
+    if !rows.iter().any(|row| {
+        row.columns
+            .iter()
+            .any(|column| column.var == var && matches!(column.pat, Pat::POr { .. }))
+    }) {
+        return None;
+    }
+    let mut expanded = Vec::new();
+    for row in rows {
+        let Some(index) = row
+            .columns
+            .iter()
+            .position(|column| column.var == var && matches!(column.pat, Pat::POr { .. }))
+        else {
+            expanded.push(row.clone());
+            continue;
+        };
+        let pats = match &row.columns[index].pat {
+            Pat::POr { pats, .. } => pats.clone(),
+            _ => {
+                expanded.push(row.clone());
+                continue;
+            }
+        };
+        for pat in pats {
+            let mut alternative = row.clone();
+            alternative.columns[index].pat = pat;
+            expanded.push(alternative);
+        }
+    }
+    Some(expanded)
+}
+
 fn move_variable_patterns(row: &mut Row) {
     row.columns.retain(|col| match &col.pat {
         Pat::PVar {
@@ -1879,7 +1913,8 @@ fn compile_string_case(
 
 fn pat_requires_ordered_compilation(pat: &Pat) -> bool {
     match pat {
-        Pat::PArray { .. } | Pat::PAlias { .. } | Pat::POr { .. } | Pat::PRange { .. } => true,
+        Pat::PArray { .. } | Pat::PAlias { .. } | Pat::PRange { .. } => true,
+        Pat::POr { pats, .. } => pats.iter().any(pat_requires_ordered_compilation),
         Pat::PConstr { args, .. } => args.iter().any(pat_requires_ordered_compilation),
         Pat::PTuple { items, .. } => items.iter().any(pat_requires_ordered_compilation),
         Pat::PVar { .. } | Pat::PPrim { .. } | Pat::PWild { .. } => false,
@@ -2392,6 +2427,9 @@ fn compile_rows(
     }
 
     let bvar = branch_variable(&rows);
+    if let Some(rows) = expand_or_column(&rows, &bvar.name) {
+        return compile_rows(genv, gensym, diagnostics, rows, ty, match_range);
+    }
     match &bvar.ty {
         Ty::TVar(..) => {
             push_compile_ice(
