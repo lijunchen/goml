@@ -96,3 +96,36 @@ fn boxes_mutable_locals_captured_by_closures() -> unit {
         "fn main() -> int32 {\n  let x/0 = @intrinsic(ref.new)(0) in\n  let inc/1 = || => {\n    let _wild0 = @intrinsic(ref.set)(x/0, (@intrinsic(ref.get)(x/0) + 1)) in\n    @intrinsic(ref.get)(x/0)\n  } in\n  inc/1()\n}",
     )
 }
+
+#[test]
+fn binds_nested_match_sources_before_lowering_them() -> unit {
+    let source = "fn main() -> bool { match match Option::Some(true) { Option::Some(value) => value, Option::None => false, } { false => false, true => true, } }";
+    let file = lower_source(source);
+    match file.functions.get(0).body.tail {
+        Option::Some(Expr::Block(outer, _)) => {
+            testing::assert_eq(outer.stmts.get(0).name, "mtmp0");
+            match outer.stmts.get(0).value {
+                Expr::Block(inner, _) => testing::assert_eq(inner.stmts.get(0).name, "mtmp1"),
+                _ => testing::fail("expected inner match binding"),
+            };
+            match outer.tail {
+                Option::Some(Expr::Match(_, arms, Option::None, _)) => {
+                    match arms.get(0).lhs {
+                        Expr::Prim(tast::Primitive::Bool(value), _) => {
+                            testing::assert_eq(value, true)
+                        },
+                        _ => testing::fail("expected true arm"),
+                    };
+                    match arms.get(1).lhs {
+                        Expr::Prim(tast::Primitive::Bool(value), _) => {
+                            testing::assert_eq(value, false)
+                        },
+                        _ => testing::fail("expected false arm"),
+                    }
+                },
+                _ => testing::fail("expected outer bool match"),
+            }
+        },
+        _ => testing::fail("expected outer match binding"),
+    }
+}
