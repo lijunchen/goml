@@ -386,6 +386,102 @@ fn lower_tuple_pattern_rows(
     )
 }
 
+fn struct_pattern_row(
+    row: PatternRow,
+    source: string,
+    names: Vec[string],
+    fields: Vec[(string, tast::Type)],
+) -> Option[PatternRow] {
+    let columns: Vec[PatternColumn] = Vec::new();
+    let valid = Ref::new(true);
+    for column in row.columns {
+        if column.source == source {
+            match column.pattern {
+                tast::Pat::Constr(constructor, patterns, _) => {
+                    if constructor.is_struct && patterns.len() == names.len() {
+                        for index in range(0, patterns.len()) {
+                            columns.push(PatternColumn {
+                                source: names.get(index),
+                                source_ty: fields.get(index).1,
+                                pattern: patterns.get(index),
+                            })
+                        }
+                    } else {
+                        valid.set(false)
+                    }
+                },
+                _ => valid.set(false),
+            }
+        } else {
+            columns.push(column)
+        }
+    };
+    if valid.get() {
+        Option::Some(PatternRow {
+            columns,
+            bindings: row.bindings,
+            body: row.body,
+        })
+    } else {
+        Option::None
+    }
+}
+
+fn struct_pattern_rows(
+    rows: Vec[PatternRow],
+    source: string,
+    names: Vec[string],
+    fields: Vec[(string, tast::Type)],
+) -> Vec[PatternRow] {
+    let result: Vec[PatternRow] = Vec::new();
+    for row in rows {
+        match struct_pattern_row(row, source, names, fields) {
+            Option::Some(value) => result.push(value),
+            Option::None => (),
+        }
+    };
+    result
+}
+
+fn lower_struct_pattern_rows(
+    ctx: Lowerer,
+    rows: Vec[PatternRow],
+    column: PatternColumn,
+    constructor: tast::Constructor,
+    fields: Vec[(string, tast::Type)],
+    ty: tast::Type,
+) -> Expr {
+    let names: Vec[string] = Vec::new();
+    for _ in fields {
+        names.push(gensym(ctx, "x"))
+    };
+    let inner = lower_pattern_rows(
+        ctx,
+        struct_pattern_rows(rows, column.source, names, fields),
+        ty,
+    );
+    let stmts: Vec[LetStmt] = Vec::new();
+    for index in range(0, fields.len()) {
+        stmts.push(LetStmt {
+            name: names.get(index),
+            value: Expr::ConstrGet(
+                Expr::Var(column.source, column.source_ty),
+                constructor,
+                index,
+                fields.get(index).1,
+            ),
+            ty: fields.get(index).1,
+        })
+    };
+    Expr::Block(
+        Block {
+            stmts,
+            tail: Option::Some(inner),
+        },
+        ty,
+    )
+}
+
 fn enum_pattern_row(
     row: PatternRow,
     source: string,
@@ -772,7 +868,17 @@ fn lower_pattern_rows(ctx: Lowerer, values: Vec[PatternRow], ty: tast::Type) -> 
                         type_args,
                         ty,
                     ),
-                    Option::None => lower_pattern_row_body(ctx, rows.get(0), ty),
+                    Option::None => match struct_place_details(ctx, column.source_ty) {
+                        Option::Some((constructor, fields)) => lower_struct_pattern_rows(
+                            ctx,
+                            rows,
+                            column,
+                            constructor,
+                            fields,
+                            ty,
+                        ),
+                        Option::None => lower_pattern_row_body(ctx, rows.get(0), ty),
+                    },
                 },
                 Option::None => match tast::resolve_type(column.source_ty) {
                     tast::Type::Unit => lower_unit_pattern_rows(ctx, rows, column, ty),

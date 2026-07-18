@@ -601,7 +601,19 @@ fn lower_match_on_variable(
                     ty,
                 ),
             },
-            Option::None => lower_generic_match(ctx, source_name, source_ty, arms, ty),
+            Option::None => match find_struct(ctx, name) {
+                Option::Some(_) => match pattern_rows_from_arms(
+                    source_name,
+                    source_ty,
+                    arms,
+                ) {
+                    Option::Some(rows) => lower_pattern_rows(ctx, rows, ty),
+                    Option::None => {
+                        lower_generic_match(ctx, source_name, source_ty, arms, ty)
+                    },
+                },
+                Option::None => lower_generic_match(ctx, source_name, source_ty, arms, ty),
+            },
         },
         Option::None => match tast::resolve_type(source_ty) {
             tast::Type::Bool => lower_bool_match(ctx, source_name, arms, ty),
