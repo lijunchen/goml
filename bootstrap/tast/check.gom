@@ -920,6 +920,53 @@ fn check_assign_target(ctx: Checker, target: hir::Expr) -> (Expr, Type) {
     }
 }
 
+fn trait_projection(base: Type, name: string, trait_name: string) -> Type {
+    Type::Projection(
+        base,
+        name,
+        Option::Some(TraitRef {
+            name: trait_name,
+            args: Vec::new(),
+        }),
+    )
+}
+
+fn projected_into_iterator_item(
+    ctx: Checker,
+    iterator_ty: Type,
+    preserve_projection: bool,
+) -> Type {
+    let direct = trait_projection(iterator_ty, "Item", "IntoIterator");
+    let normalized = normalize_type(ctx, direct);
+    if !types_equal(normalized, direct) {
+        normalized
+    } else if preserve_projection {
+        trait_projection(
+            trait_projection(iterator_ty, "IntoIter", "IntoIterator"),
+            "Item",
+            "Iterator",
+        )
+    } else {
+        fresh_type(ctx.counter, VarKind::Any)
+    }
+}
+
+fn into_iterator_item_type(ctx: Checker, iterator_ty: Type) -> Type {
+    let iterator_ty = normalize_type(ctx, iterator_ty);
+    match prune(iterator_ty) {
+        Type::Array(_, elem) | Type::VecType(elem) | Type::Slice(elem) => elem,
+        Type::App(Type::Con(name), args) => if name == "FnIterator" && args.len() == 1 {
+            args.get(0)
+        } else {
+            projected_into_iterator_item(ctx, iterator_ty, false)
+        },
+        Type::Param(_) | Type::Projection(_, _, _) => {
+            projected_into_iterator_item(ctx, iterator_ty, true)
+        },
+        _ => projected_into_iterator_item(ctx, iterator_ty, false),
+    }
+}
+
 fn check_for_expr(
     ctx: Checker,
     pat: hir::Pat,
@@ -927,15 +974,7 @@ fn check_for_expr(
     body_source: hir::Expr,
 ) -> Expr {
     let iterator = check_expr(ctx, iterator_source, Option::None);
-    let item = match prune(expr_type(iterator)) {
-        Type::Array(_, elem) | Type::VecType(elem) | Type::Slice(elem) => elem,
-        Type::App(Type::Con(name), args) => if name == "FnIterator" && args.len() == 1 {
-            args.get(0)
-        } else {
-            fresh_type(ctx.counter, VarKind::Any)
-        },
-        _ => fresh_type(ctx.counter, VarKind::Any),
-    };
+    let item = into_iterator_item_type(ctx, expr_type(iterator));
     let typed_pat = check_pattern(ctx, pat, item);
     let body = check_expr(ctx, body_source, Option::Some(Type::Unit));
     let iterator_ty = expr_type(iterator);
