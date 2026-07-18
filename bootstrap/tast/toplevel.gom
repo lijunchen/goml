@@ -9,6 +9,7 @@ fn function_context(
     type_params: Vec[string],
     predicates: Vec[TypePredicate],
 ) -> Checker {
+    let predicates = expand_implied_predicates(base, predicates);
     Checker {
         counter: base.counter,
         diagnostics: base.diagnostics,

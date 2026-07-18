@@ -697,6 +697,192 @@ fn find_trait_method(value: TraitInfo, name: string) -> Option[TraitMethodInfo] 
     result.get()
 }
 
+fn trait_ref_equal(left: TraitRef, right: TraitRef) -> bool {
+    names_match(left.name, right.name) && type_lists_equal(left.args, right.args)
+}
+
+fn contains_trait_ref(values: Vec[TraitRef], expected: TraitRef) -> bool {
+    let found = Ref::new(false);
+    for value in values {
+        if trait_ref_equal(value, expected) {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+fn predicate_equal(left: TypePredicate, right: TypePredicate) -> bool {
+    match (left, right) {
+        (
+            TypePredicate::Trait(left_ty, left_ref),
+            TypePredicate::Trait(right_ty, right_ref),
+        ) => types_equal(left_ty, right_ty) && trait_ref_equal(left_ref, right_ref),
+        (
+            TypePredicate::Equality(left_lhs, left_rhs),
+            TypePredicate::Equality(right_lhs, right_rhs),
+        ) => types_equal(left_lhs, right_lhs) && types_equal(left_rhs, right_rhs),
+        _ => false,
+    }
+}
+
+fn push_predicate(values: Vec[TypePredicate], value: TypePredicate) -> unit {
+    let found = Ref::new(false);
+    for existing in values {
+        if predicate_equal(existing, value) {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    if found.get() {
+        ()
+    } else {
+        values.push(value)
+    }
+}
+
+fn trait_ref_closure(ctx: Checker, reference: TraitRef) -> Vec[TraitRef] {
+    let result: Vec[TraitRef] = Vec::new();
+    result.push(reference);
+    let index = Ref::new(0);
+    while index.get() < result.len() {
+        let current = result.get(index.get());
+        index.set(index.get() + 1);
+        match find_trait(ctx, current.name) {
+            Option::Some(info) => if info.generics.len() == current.args.len() {
+                let substitutions = instantiate_substitutions(
+                    ctx.counter,
+                    info.generics,
+                    current.args,
+                );
+                for supertrait in info.supertraits {
+                    let resolved = substitute_trait_ref(supertrait, substitutions);
+                    if contains_trait_ref(result, resolved) {
+                        ()
+                    } else {
+                        result.push(resolved)
+                    }
+                }
+            } else {
+                ()
+            },
+            Option::None => (),
+        }
+    };
+    result
+}
+
+fn trait_substitutions(
+    ctx: Checker,
+    info: TraitInfo,
+    reference: TraitRef,
+    self_ty: Option[Type],
+) -> Vec[TypeSubst] {
+    let params = append_names(info.generics, Vec::new().pushed("Self"));
+    let explicit: Vec[Type] = Vec::new();
+    for arg in reference.args {
+        explicit.push(arg)
+    };
+    match self_ty {
+        Option::Some(ty) => explicit.push(ty),
+        Option::None => (),
+    };
+    instantiate_substitutions(ctx.counter, params, explicit)
+}
+
+fn resolve_trait_reference_method(
+    ctx: Checker,
+    reference: TraitRef,
+    name: string,
+    self_ty: Option[Type],
+) -> Option[ResolvedCallable] {
+    match find_trait(ctx, reference.name) {
+        Option::Some(info) => if info.generics.len() == reference.args.len() {
+            match find_trait_method(info, name) {
+                Option::Some(method) => {
+                    let substitutions = trait_substitutions(ctx, info, reference, self_ty);
+                    let params: Vec[Type] = Vec::new();
+                    for param in method.params {
+                        params.push(substitute_type(param, substitutions))
+                    };
+                    Option::Some(trait_callable(
+                        reference.name,
+                        reference.args,
+                        name,
+                        params,
+                        substitute_type(method.ret_ty, substitutions),
+                    ))
+                },
+                Option::None => Option::None,
+            }
+        } else {
+            Option::None
+        },
+        Option::None => Option::None,
+    }
+}
+
+fn expand_implied_predicates(
+    ctx: Checker,
+    predicates: Vec[TypePredicate],
+) -> Vec[TypePredicate] {
+    let result: Vec[TypePredicate] = Vec::new();
+    for predicate in predicates {
+        push_predicate(result, predicate)
+    };
+    let index = Ref::new(0);
+    while index.get() < result.len() {
+        let predicate = result.get(index.get());
+        index.set(index.get() + 1);
+        match predicate {
+            TypePredicate::Trait(for_ty, reference) => {
+                for application in trait_ref_closure(ctx, reference) {
+                    push_predicate(result, TypePredicate::Trait(for_ty, application));
+                    match find_trait(ctx, application.name) {
+                        Option::Some(info) => if info.generics.len() == application.args.len() {
+                            let substitutions = trait_substitutions(
+                                ctx,
+                                info,
+                                application,
+                                Option::Some(for_ty),
+                            );
+                            for declared in info.predicates {
+                                push_predicate(
+                                    result,
+                                    substitute_predicate(declared, substitutions),
+                                )
+                            };
+                            for associated in info.associated_types {
+                                let projection = Type::Projection(
+                                    for_ty,
+                                    associated.name,
+                                    Option::Some(application),
+                                );
+                                for bound in associated.bounds {
+                                    push_predicate(
+                                        result,
+                                        TypePredicate::Trait(
+                                            projection,
+                                            substitute_trait_ref(bound, substitutions),
+                                        ),
+                                    )
+                                }
+                            }
+                        } else {
+                            ()
+                        },
+                        Option::None => (),
+                    }
+                }
+            },
+            TypePredicate::Equality(_, _) => (),
+        }
+    };
+    result
+}
+
 fn resolve_predicate_method(
     ctx: Checker,
     receiver: Type,
@@ -708,37 +894,15 @@ fn resolve_predicate_method(
         match predicate {
             TypePredicate::Trait(bound_ty, reference) => {
                 if types_equal(normalize_type(ctx, bound_ty), receiver) {
-                    match find_trait(ctx, reference.name) {
-                        Option::Some(info) => match find_trait_method(info, name) {
-                            Option::Some(method) => {
-                                let params = append_names(
-                                    info.generics,
-                                    Vec::new().pushed("Self"),
-                                );
-                                let explicit: Vec[Type] = Vec::new();
-                                for arg in reference.args {
-                                    explicit.push(arg)
-                                };
-                                explicit.push(receiver);
-                                let substitutions = instantiate_substitutions(
-                                    ctx.counter,
-                                    params,
-                                    explicit,
-                                );
-                                let method_params: Vec[Type] = Vec::new();
-                                for param in method.params {
-                                    method_params.push(substitute_type(param, substitutions))
-                                };
-                                matches.set(matches.get() + 1);
-                                result.set(Option::Some(trait_callable(
-                                    reference.name,
-                                    reference.args,
-                                    name,
-                                    method_params,
-                                    substitute_type(method.ret_ty, substitutions),
-                                )))
-                            },
-                            Option::None => (),
+                    match resolve_trait_reference_method(
+                        ctx,
+                        reference,
+                        name,
+                        Option::Some(receiver),
+                    ) {
+                        Option::Some(value) => {
+                            matches.set(matches.get() + 1);
+                            result.set(Option::Some(value))
                         },
                         Option::None => (),
                     }
@@ -796,30 +960,63 @@ fn resolve_trait_static(
         ))
     } else {
         match find_trait(ctx, owner) {
-            Option::Some(info) => match find_trait_method(info, name) {
-                Option::Some(method) => {
-                    let params = append_names(info.generics, Vec::new().pushed("Self"));
-                    let substitutions = instantiate_substitutions(ctx.counter, params, explicit);
-                    let method_params: Vec[Type] = Vec::new();
-                    for param in method.params {
-                        method_params.push(substitute_type(param, substitutions))
-                    };
-                    let trait_args: Vec[Type] = Vec::new();
-                    for generic in info.generics {
-                        match find_substitution(substitutions, generic) {
-                            Option::Some(ty) => trait_args.push(ty),
-                            Option::None => (),
+            Option::Some(info) => {
+                let substitutions = instantiate_substitutions(
+                    ctx.counter,
+                    info.generics,
+                    explicit,
+                );
+                let args: Vec[Type] = Vec::new();
+                for generic in info.generics {
+                    match find_substitution(substitutions, generic) {
+                        Option::Some(ty) => args.push(ty),
+                        Option::None => (),
+                    }
+                };
+                let reference = TraitRef {
+                    name: info.name,
+                    args,
+                };
+                match resolve_trait_reference_method(
+                    ctx,
+                    reference,
+                    name,
+                    Option::None,
+                ) {
+                    Option::Some(value) => Option::Some(value),
+                    Option::None => {
+                        let result = Ref::new(Option::None);
+                        let matches = Ref::new(0);
+                        for candidate in trait_ref_closure(ctx, reference) {
+                            if trait_ref_equal(candidate, reference) {
+                                ()
+                            } else {
+                                match resolve_trait_reference_method(
+                                    ctx,
+                                    candidate,
+                                    name,
+                                    Option::None,
+                                ) {
+                                    Option::Some(value) => {
+                                        matches.set(matches.get() + 1);
+                                        result.set(Option::Some(value))
+                                    },
+                                    Option::None => (),
+                                }
+                            }
+                        };
+                        if matches.get() == 1 {
+                            result.get()
+                        } else {
+                            if matches.get() > 1 {
+                                ctx.diagnostics.push("ambiguous method: " + name)
+                            } else {
+                                ()
+                            };
+                            Option::None
                         }
-                    };
-                    Option::Some(trait_callable(
-                        info.name,
-                        trait_args,
-                        name,
-                        method_params,
-                        substitute_type(method.ret_ty, substitutions),
-                    ))
-                },
-                Option::None => Option::None,
+                    },
+                }
             },
             Option::None => Option::None,
         }
