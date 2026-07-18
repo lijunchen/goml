@@ -846,23 +846,8 @@ fn lower_block_from(
                     ty: value_ty,
                 }, rest)
             },
-            tast::Stmt::Assign(tast::Expr::Var(name, target_ty), value) => {
-                let action = Expr::Assign(
-                    name,
-                    lower_expr(ctx, value),
-                    target_ty,
-                    tast::Type::Unit,
-                );
-                let binding = gensym(ctx, "_wild");
-                let rest = lower_block_from(ctx, stmts, index + 1, tail, ty);
-                prepend_stmt(LetStmt {
-                    name: binding,
-                    value: action,
-                    ty: tast::Type::Unit,
-                }, rest)
-            },
-            tast::Stmt::Assign(_, value) => {
-                let action = lower_expr(ctx, value);
+            tast::Stmt::Assign(target, value) => {
+                let action = lower_assignment(ctx, target, value);
                 let binding = gensym(ctx, "_wild");
                 let rest = lower_block_from(ctx, stmts, index + 1, tail, ty);
                 prepend_stmt(LetStmt {
