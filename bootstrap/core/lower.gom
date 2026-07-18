@@ -909,9 +909,38 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
         },
         tast::Expr::Unary(op, value, ty) => Expr::Unary(op, lower_expr(ctx, value), ty),
         tast::Expr::Cast(value, ty) => Expr::Cast(lower_expr(ctx, value), ty),
-        tast::Expr::Proj(value, index, ty) => Expr::Proj(lower_expr(ctx, value), index, ty),
-        tast::Expr::Field(value, name, ty) => lower_field(ctx, value, name, ty),
-        tast::Expr::Index(base, index, ty) => lower_index(ctx, base, index, ty),
+        tast::Expr::Proj(value, index, ty) => if tast_expr_exits(value) {
+            exit_expr_as(ctx, lower_expr(ctx, value), ty)
+        } else {
+            Expr::Proj(lower_expr(ctx, value), index, ty)
+        },
+        tast::Expr::Field(value, name, ty) => if tast_expr_exits(value) {
+            exit_expr_as(ctx, lower_expr(ctx, value), ty)
+        } else {
+            lower_field(ctx, value, name, ty)
+        },
+        tast::Expr::Index(base, index, ty) => if tast_expr_exits(base) {
+            exit_expr_as(ctx, lower_expr(ctx, base), ty)
+        } else if tast_expr_exits(index) {
+            let base_ty = tast::expr_type(base);
+            let base_value = lower_expr(ctx, base);
+            let index_value = lower_expr(ctx, index);
+            let stmts: Vec[LetStmt] = Vec::new();
+            stmts.push(LetStmt {
+                name: gensym(ctx, "_wild"),
+                value: base_value,
+                ty: base_ty,
+            });
+            Expr::Block(
+                Block {
+                    stmts,
+                    tail: Option::Some(exit_expr_as(ctx, index_value, ty)),
+                },
+                ty,
+            )
+        } else {
+            lower_index(ctx, base, index, ty)
+        },
         tast::Expr::Binary(ast::BinaryOp::And, left, right, ty) => Expr::If(
             lower_expr(ctx, left),
             lower_expr(ctx, right),

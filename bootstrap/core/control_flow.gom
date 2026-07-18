@@ -1,0 +1,105 @@
+package core;
+
+use gomlang::parser::ast;
+use gomlang::parser::tast;
+
+fn tast_exprs_exit(values: Vec[tast::Expr]) -> bool {
+    let result = Ref::new(false);
+    for value in values {
+        if tast_expr_exits(value) {
+            result.set(true)
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn tast_stmt_exits(value: tast::Stmt) -> bool {
+    match value {
+        tast::Stmt::Expr(expr) => tast_expr_exits(expr),
+        tast::Stmt::Let(_, _, _) | tast::Stmt::Assign(_, _) => false,
+    }
+}
+
+fn tast_block_exits(value: tast::Block) -> bool {
+    let result = Ref::new(false);
+    for stmt in value.stmts {
+        if tast_stmt_exits(stmt) {
+            result.set(true)
+        } else {
+            ()
+        }
+    };
+    match value.tail {
+        Option::Some(tail) => if tast_expr_exits(tail) {
+            result.set(true)
+        } else {
+            ()
+        },
+        Option::None => (),
+    };
+    result.get()
+}
+
+fn tast_match_arms_exit(arms: Vec[tast::Arm]) -> bool {
+    let result = Ref::new(true);
+    for arm in arms {
+        if tast_expr_exits(arm.body) {
+            ()
+        } else {
+            result.set(false)
+        }
+    };
+    result.get()
+}
+
+fn tast_expr_exits(value: tast::Expr) -> bool {
+    match value {
+        tast::Expr::Break(_) | tast::Expr::Continue(_) | tast::Expr::Return(_, _) => true,
+        tast::Expr::Constr(_, args, _)
+        | tast::Expr::Tuple(args, _)
+        | tast::Expr::Array(args, _) => tast_exprs_exit(args),
+        tast::Expr::Unary(_, expr, _)
+        | tast::Expr::Cast(expr, _)
+        | tast::Expr::Go(expr, _)
+        | tast::Expr::Field(expr, _, _) => tast_expr_exits(expr),
+        tast::Expr::Call(function, args, _) => {
+            tast_expr_exits(function) || tast_exprs_exit(args)
+        },
+        tast::Expr::Proj(tuple, _, _) => tast_expr_exits(tuple),
+        tast::Expr::Index(base, index, _) => {
+            tast_expr_exits(base) || tast_expr_exits(index)
+        },
+        tast::Expr::Binary(op, left, right, _) => {
+            tast_expr_exits(left) || match op {
+                ast::BinaryOp::And | ast::BinaryOp::Or => false,
+                _ => tast_expr_exits(right),
+            }
+        },
+        tast::Expr::Block(block, _) => tast_block_exits(block),
+        tast::Expr::If(_, then_branch, else_branch, _) => {
+            tast_expr_exits(then_branch) && tast_expr_exits(else_branch)
+        },
+        tast::Expr::While(cond, _, _) => tast_expr_exits(cond),
+        tast::Expr::For(_, iterator, _, _, _, _, _) => tast_expr_exits(iterator),
+        tast::Expr::Match(_, arms, _) => tast_match_arms_exit(arms),
+        _ => false,
+    }
+}
+
+fn exit_expr_as(ctx: Lowerer, value: Expr, ty: tast::Type) -> Expr {
+    let stmts: Vec[LetStmt] = Vec::new();
+    stmts.push(LetStmt {
+        name: gensym(ctx, "_wild"),
+        ty: expr_type(value),
+        value,
+    });
+    Expr::Block(
+        Block {
+            stmts,
+            tail: Option::Some(missing_expr(ty)),
+        },
+        ty,
+    )
+}
