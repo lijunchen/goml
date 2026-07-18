@@ -5554,11 +5554,97 @@ fn uint64_to_string() -> goast::Fn {
 }
 
 fn float32_to_string() -> goast::Fn {
-    to_string_fn(RuntimeHookId::Float32ToString, goty::GoType::TFloat32)
+    float_to_string_fn(RuntimeHookId::Float32ToString, goty::GoType::TFloat32, "32")
 }
 
 fn float64_to_string() -> goast::Fn {
-    to_string_fn(RuntimeHookId::Float64ToString, goty::GoType::TFloat64)
+    float_to_string_fn(RuntimeHookId::Float64ToString, goty::GoType::TFloat64, "64")
+}
+
+fn float_to_string_fn(id: RuntimeHookId, ty: goty::GoType, bit_size: &str) -> goast::Fn {
+    let float64_value = match &ty {
+        goty::GoType::TFloat32 => goast::Expr::Convert {
+            expr: Box::new(goast::Expr::Var {
+                name: "x".to_string(),
+                ty: goty::GoType::TFloat32,
+            }),
+            ty: goty::GoType::TFloat64,
+        },
+        _ => goast::Expr::Var {
+            name: "x".to_string(),
+            ty: goty::GoType::TFloat64,
+        },
+    };
+    let formatted = || goast::Expr::Var {
+        name: "formatted".to_string(),
+        ty: goty::GoType::TString,
+    };
+    let string_literal = |value: &str| goast::Expr::String {
+        value: value.to_string(),
+        ty: goty::GoType::TString,
+    };
+    let infinity_case = |source: &str, result: &str| goast::Stmt::If {
+        cond: goast::Expr::BinaryOp {
+            op: goast::GoBinaryOp::Eq,
+            lhs: Box::new(formatted()),
+            rhs: Box::new(string_literal(source)),
+            ty: goty::GoType::TBool,
+        },
+        then: goast::Block {
+            stmts: vec![goast::Stmt::Return {
+                expr: Some(string_literal(result)),
+            }],
+        },
+        else_: None,
+    };
+    goast::Fn {
+        name: runtime_hook_fn_name(id),
+        params: vec![("x".to_string(), ty)],
+        ret_ty: Some(goty::GoType::TString),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::VarDecl {
+                    name: "formatted".to_string(),
+                    ty: goty::GoType::TString,
+                    value: Some(goast::Expr::Call {
+                        func: Box::new(goast::Expr::Var {
+                            name: "_goml_strconv.FormatFloat".to_string(),
+                            ty: goty::GoType::TFunc {
+                                params: vec![
+                                    goty::GoType::TFloat64,
+                                    goty::GoType::TUint8,
+                                    goty::GoType::TInt32,
+                                    goty::GoType::TInt32,
+                                ],
+                                ret_ty: Box::new(goty::GoType::TString),
+                            },
+                        }),
+                        args: vec![
+                            float64_value,
+                            goast::Expr::Int {
+                                value: "102".to_string(),
+                                ty: goty::GoType::TUint8,
+                            },
+                            goast::Expr::Int {
+                                value: "-1".to_string(),
+                                ty: goty::GoType::TInt32,
+                            },
+                            goast::Expr::Int {
+                                value: bit_size.to_string(),
+                                ty: goty::GoType::TInt32,
+                            },
+                        ],
+                        ty: goty::GoType::TString,
+                    }),
+                },
+                infinity_case("+Inf", "inf"),
+                infinity_case("-Inf", "-inf"),
+                goast::Stmt::Return {
+                    expr: Some(formatted()),
+                },
+            ],
+        },
+    }
 }
 
 fn string_parse_float64() -> goast::Fn {
