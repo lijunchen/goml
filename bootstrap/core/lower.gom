@@ -709,6 +709,104 @@ fn lower_field(ctx: Lowerer, value: tast::Expr, name: string, ty: tast::Type) ->
     }
 }
 
+fn lower_for(
+    ctx: Lowerer,
+    pattern: tast::Pat,
+    iterator: tast::Expr,
+    into_iterator: tast::TraitRef,
+    iterator_trait: tast::TraitRef,
+    iterator_ty: tast::Type,
+    body: tast::Expr,
+) -> Expr {
+    let item_ty = tast::pat_type(pattern);
+    let option_args: Vec[tast::Type] = Vec::new();
+    option_args.push(item_ty);
+    let option_ty = tast::Type::App(tast::Type::Con("Option"), option_args);
+    let iterator_name = gensym(ctx, "for_iter");
+    let next_name = gensym(ctx, "for_next");
+    let no_args: Vec[Expr] = Vec::new();
+    let iterator_value = Expr::TraitCall(
+        into_iterator,
+        "into_iter",
+        lower_expr(ctx, iterator),
+        no_args,
+        iterator_ty,
+    );
+    let next_args: Vec[Expr] = Vec::new();
+    let next_value = Expr::TraitCall(
+        iterator_trait,
+        "next",
+        Expr::Var(iterator_name, iterator_ty),
+        next_args,
+        option_ty,
+    );
+    let some_patterns: Vec[tast::Pat] = Vec::new();
+    some_patterns.push(pattern);
+    let arms: Vec[tast::Arm] = Vec::new();
+    arms.push(tast::Arm {
+        pat: tast::Pat::Constr(
+            tast::Constructor {
+                name: "Option::Some",
+                fields: Vec::new(),
+                is_struct: false,
+            },
+            some_patterns,
+            option_ty,
+        ),
+        guard: Option::None,
+        body,
+    });
+    arms.push(tast::Arm {
+        pat: tast::Pat::Constr(
+            tast::Constructor {
+                name: "Option::None",
+                fields: Vec::new(),
+                is_struct: false,
+            },
+            Vec::new(),
+            option_ty,
+        ),
+        guard: Option::None,
+        body: tast::Expr::Break(tast::Type::Unit),
+    });
+    let loop_stmts: Vec[LetStmt] = Vec::new();
+    loop_stmts.push(LetStmt {
+        name: next_name,
+        value: next_value,
+        ty: option_ty,
+    });
+    let loop_body = Expr::Block(
+        Block {
+            stmts: loop_stmts,
+            tail: Option::Some(lower_match_on_variable(
+                ctx,
+                next_name,
+                option_ty,
+                arms,
+                tast::Type::Unit,
+            )),
+        },
+        tast::Type::Unit,
+    );
+    let stmts: Vec[LetStmt] = Vec::new();
+    stmts.push(LetStmt {
+        name: iterator_name,
+        value: iterator_value,
+        ty: iterator_ty,
+    });
+    Expr::Block(
+        Block {
+            stmts,
+            tail: Option::Some(Expr::While(
+                bool_expr(true),
+                loop_body,
+                tast::Type::Unit,
+            )),
+        },
+        tast::Type::Unit,
+    )
+}
+
 fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
     match value {
         tast::Expr::Var(name, ty) => Expr::Var(name, ty),
@@ -734,12 +832,22 @@ fn lower_expr(ctx: Lowerer, value: tast::Expr) -> Expr {
         tast::Expr::While(cond, body, ty) => {
             Expr::While(lower_expr(ctx, cond), lower_expr(ctx, body), ty)
         },
-        tast::Expr::For(_, iterator, _, _, _, body, ty) => Expr::Block(
-            Block {
-                stmts: Vec::new(),
-                tail: Option::Some(Expr::While(bool_expr(true), lower_expr(ctx, body), ty)),
-            },
-            tast::expr_type(iterator),
+        tast::Expr::For(
+            pattern,
+            iterator,
+            into_iterator,
+            iterator_trait,
+            iterator_ty,
+            body,
+            _,
+        ) => lower_for(
+            ctx,
+            pattern,
+            iterator,
+            into_iterator,
+            iterator_trait,
+            iterator_ty,
+            body,
         ),
         tast::Expr::Break(ty) => Expr::Break(ty),
         tast::Expr::Continue(ty) => Expr::Continue(ty),
