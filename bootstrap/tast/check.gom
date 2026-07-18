@@ -3,6 +3,73 @@ package tast;
 use gomlang::parser::ast;
 use gomlang::parser::hir;
 
+fn char_hex_value(value: uint8) -> Option[uint32] {
+    if value >= 48u8 && value <= 57u8 {
+        Option::Some((value - 48u8) as uint32)
+    } else if value >= 65u8 && value <= 70u8 {
+        Option::Some((value - 55u8) as uint32)
+    } else if value >= 97u8 && value <= 102u8 {
+        Option::Some((value - 87u8) as uint32)
+    } else {
+        Option::None
+    }
+}
+
+fn parse_char_literal(value: string) -> Option[char] {
+    if value.byte_len() == 0 {
+        Option::None
+    } else if value.byte_get(0) != 92u8 {
+        let character = value.get(0);
+        if character.to_string().byte_len() == value.byte_len() {
+            Option::Some(character)
+        } else {
+            Option::None
+        }
+    } else if value.byte_len() == 2 {
+        match value.byte_get(1) {
+            39u8 => Option::Some('\''),
+            34u8 => Option::Some('"'),
+            92u8 => Option::Some('\\'),
+            47u8 => Option::Some('/'),
+            98u8 => char_from_uint32(8u32),
+            102u8 => char_from_uint32(12u32),
+            110u8 => Option::Some('\n'),
+            114u8 => Option::Some('\r'),
+            116u8 => Option::Some('\t'),
+            _ => Option::None,
+        }
+    } else if value.byte_len() == 6 && value.byte_get(1) == 117u8 {
+        let code = Ref::new(0u32);
+        let valid = Ref::new(true);
+        for index in range(2, 6) {
+            match char_hex_value(value.byte_get(index)) {
+                Option::Some(digit) => code.set(code.get() * 16u32 + digit),
+                Option::None => valid.set(false),
+            }
+        };
+        if valid.get() {
+            char_from_uint32(code.get())
+        } else {
+            Option::None
+        }
+    } else {
+        Option::None
+    }
+}
+
+fn checked_char_literal(ctx: Checker, value: string) -> char {
+    match parse_char_literal(value) {
+        Option::Some(character) => character,
+        Option::None => {
+            ctx.diagnostics.push("invalid char literal");
+            match char_from_uint32(0u32) {
+                Option::Some(character) => character,
+                Option::None => ' ',
+            }
+        },
+    }
+}
+
 fn coerce_expr(ctx: Checker, value: Expr, expected: Option[Type]) -> Expr {
     match value {
         Expr::Break(_) | Expr::Continue(_) | Expr::Return(_, _) => value,
@@ -76,7 +143,10 @@ fn primitive_expr(ctx: Checker, value: hir::Expr) -> Option[Expr] {
             Primitive::String(value),
             Type::String,
         )),
-        hir::Expr::Char(value) => Option::Some(Expr::Prim(Primitive::Char(value), Type::Char)),
+        hir::Expr::Char(value) => Option::Some(Expr::Prim(
+            Primitive::Char(checked_char_literal(ctx, value)),
+            Type::Char,
+        )),
         _ => Option::None,
     }
 }
@@ -961,7 +1031,10 @@ fn primitive_pattern(ctx: Checker, value: hir::Pat) -> Option[(Primitive, Type)]
         hir::Pat::Float32(value) => Option::Some((Primitive::Float32(value), Type::Float32)),
         hir::Pat::Float64(value) => Option::Some((Primitive::Float64(value), Type::Float64)),
         hir::Pat::String(value) => Option::Some((Primitive::String(value), Type::String)),
-        hir::Pat::Char(value) => Option::Some((Primitive::Char(value), Type::Char)),
+        hir::Pat::Char(value) => Option::Some((
+            Primitive::Char(checked_char_literal(ctx, value)),
+            Type::Char,
+        )),
         _ => Option::None,
     }
 }

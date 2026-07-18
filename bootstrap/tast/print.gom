@@ -86,6 +86,29 @@ fn write_quoted_string(builder: text::StringBuilder, value: string) -> unit {
     builder.write_char('"')
 }
 
+fn write_quoted_char(builder: text::StringBuilder, value: char) -> unit {
+    builder.write_char('\'');
+    let code = value as uint32;
+    if value == '\'' {
+        builder.write_string("\\'")
+    } else if value == '\\' {
+        builder.write_string("\\\\")
+    } else if value == '\n' {
+        builder.write_string("\\n")
+    } else if value == '\r' {
+        builder.write_string("\\r")
+    } else if value == '\t' {
+        builder.write_string("\\t")
+    } else if code == 0u32 {
+        builder.write_string("\\0")
+    } else if code < 32u32 || code == 127u32 {
+        write_control_escape(builder, code as uint8)
+    } else {
+        builder.write_char(value)
+    };
+    builder.write_char('\'')
+}
+
 fn write_types(builder: text::StringBuilder, values: Vec[Type]) -> unit {
     let index = Ref::new(0);
     for value in values {
@@ -216,11 +239,7 @@ fn write_primitive(builder: text::StringBuilder, value: Primitive) -> unit {
         | Primitive::Float32(value)
         | Primitive::Float64(value) => builder.write_string(value),
         Primitive::String(value) => write_quoted_string(builder, value),
-        Primitive::Char(value) => {
-            builder.write_char('\'');
-            builder.write_string(value);
-            builder.write_char('\'')
-        },
+        Primitive::Char(value) => write_quoted_char(builder, value),
     }
 }
 
