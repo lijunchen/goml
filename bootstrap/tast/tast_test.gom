@@ -398,6 +398,53 @@ fn resolves_trait_methods_from_call_context() -> unit {
 }
 
 #[test]
+fn infers_iterator_adapter_builtins() -> unit {
+    let source = "fn exercise() -> Vec[string] { let mapped = iterator_map(range(0, 4), |value: int32| value + 1); let filtered = iterator_filter(mapped, |value: int32| value > 1); let limited = iterator_take(filtered, 2); for value in limited { let _: int32 = value; }; let _: int32 = iterator_fold(range(0, 4), 0, |total: int32, value: int32| total + value); iterator_collect(iterator_map(range(0, 2), |value: int32| value.to_string())) }";
+    let file = checked_file(source);
+    match file.items.get(0) {
+        Item::Function(value) => {
+            let expected: Vec[string] = Vec::new();
+            expected.push("MapIterator");
+            expected.push("FilterIterator");
+            expected.push("TakeIterator");
+            for index in range(0, 3) {
+                match value.body.stmts.get(index) {
+                    Stmt::Let(_, _, expression) => match type_constructor_name(
+                        resolve_type(expr_type(expression)),
+                    ) {
+                        Option::Some(name) => testing::assert_eq(name, expected.get(index)),
+                        Option::None => testing::fail("expected iterator adapter type"),
+                    },
+                    _ => testing::fail("expected iterator adapter binding"),
+                }
+            };
+            match value.body.stmts.get(3) {
+                Stmt::Expr(Expr::For(Pat::Var(_, Type::Int32), _, _, _, _, _, Type::Unit)) => (),
+                _ => testing::fail("expected int32 adapter iteration"),
+            };
+            match value.body.stmts.get(4) {
+                Stmt::Let(_, Pat::Wild(pattern_ty), expression) => {
+                    match (resolve_type(pattern_ty), resolve_type(expr_type(expression))) {
+                        (Type::Int32, Type::Int32) => (),
+                        _ => testing::fail("expected int32 iterator fold"),
+                    }
+                },
+                _ => testing::fail("expected iterator fold binding"),
+            };
+            match value.body.tail {
+                Option::Some(Expr::Call(
+                    Expr::Callable(Callable::Function(name), _),
+                    _,
+                    Type::VecType(Type::String),
+                )) => testing::assert_eq(name, "iterator_collect"),
+                _ => testing::fail("expected string iterator collection"),
+            }
+        },
+        _ => testing::fail("expected iterator exercise function"),
+    }
+}
+
+#[test]
 fn preserves_associated_into_iterator_item_projection() -> unit {
     let file = checked_file("trait Batch { type Items: IntoIterator; fn items(Self) -> Self::Items; } fn iterate[B: Batch](batch: B) -> unit { for _ in Batch::items(batch) {} }");
     match file.items.get(0) {
