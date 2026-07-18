@@ -1,0 +1,40 @@
+package mono;
+
+use gomlang::parser::ast;
+use gomlang::parser::core;
+use gomlang::parser::hir;
+use gomlang::parser::parser;
+use gomlang::parser::tast;
+use std::testing;
+
+fn lower_source(source: string) -> core::File {
+    lower(core::lower(tast::check(hir::lower(
+        ast::lower(parser::parse(source)),
+        "main.gom",
+    ))))
+}
+
+#[test]
+fn preserves_monomorphic_core_programs() -> unit {
+    testing::assert_eq(
+        encode(lower_source("fn main() -> int32 { 1 }")),
+        "fn main() -> int32 {\n  1\n}",
+    )
+}
+
+#[test]
+fn resolves_static_trait_calls() -> unit {
+    testing::assert_eq(
+        encode(lower_source("fn main() -> string { true.to_string() }")),
+        "fn main() -> string {\n  trait_impl#ToString#bool#to_string(true)\n}",
+    )
+}
+
+#[test]
+fn specializes_generic_enum_constructors() -> unit {
+    let source = "enum Weird[T] { Next(Ref[Weird[(int32) -> int32]]), Done(T) } fn main() -> unit { let x: Weird[int32] = Weird::Done(1i32); match x { Weird::Done(v) => println(v.to_string()), Weird::Next(_) => println(\"next\"), } }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "fn main() -> unit {\n  let x/0 = Weird__int32::Done(1) in\n  match x/0 {\n    Weird__int32::Next(x0) => {\n      {\n        let x0 = Weird__int32::Next._0(x/0) in\n        println(\"next\")\n      }\n    },\n    Weird__int32::Done(x1) => {\n      {\n        let x1 = Weird__int32::Done._0(x/0) in\n        {\n          let v/1 = x1 in\n          println(inherent#int32#int32#to_string(v/1))\n        }\n      }\n    },\n  }\n}",
+    )
+}
