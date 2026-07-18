@@ -165,3 +165,12 @@ fn lowers_flat_tuple_bindings_in_matrix_order() -> unit {
         "fn split(pair/0: (int32, string)) -> string {\n  let mtmp0 = pair/0 in\n  {\n    let x1 = mtmp0.0 in\n    let x2 = mtmp0.1 in\n    {\n      let right/2 = x2 in\n      {\n        let left/1 = x1 in\n        {\n          right/2\n        }\n      }\n    }\n  }\n}",
     )
 }
+
+#[test]
+fn lowers_nested_boolean_enum_payload_patterns() -> unit {
+    let source = "enum Pair { Values(bool, bool) } fn choose(value: Pair) -> int32 { match value { Pair::Values(false, false) => 2, Pair::Values(false, true) => 3, _ => 4, } }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "fn choose(value/0: Pair) -> int32 {\n  match value/0 {\n    Pair::Values(x0, x1) => {\n      {\n        let x0 = Pair::Values._0(value/0) in\n        let x1 = Pair::Values._1(value/0) in\n        match x1 {\n          true => {\n            match x0 {\n              true => {\n                4\n              },\n              false => {\n                3\n              },\n            }\n          },\n          false => {\n            match x0 {\n              true => {\n                4\n              },\n              false => {\n                2\n              },\n            }\n          },\n        }\n      }\n    },\n  }\n}",
+    )
+}
