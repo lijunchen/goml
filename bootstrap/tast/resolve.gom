@@ -970,15 +970,18 @@ fn resolve_method(
     let receiver = normalize_type(ctx, receiver);
     match resolve_predicate_method(ctx, receiver, name) {
         Option::Some(value) => Option::Some(value),
-        Option::None => match resolve_user_method_for_call(
-            ctx,
-            receiver,
-            name,
-            args,
-            expected,
-        ) {
+        Option::None => match resolve_builtin_container_method(ctx, receiver, name) {
             Option::Some(value) => Option::Some(value),
-            Option::None => resolve_builtin_method(ctx, receiver, name),
+            Option::None => match resolve_user_method_for_call(
+                ctx,
+                receiver,
+                name,
+                args,
+                expected,
+            ) {
+                Option::Some(value) => Option::Some(value),
+                Option::None => resolve_builtin_method(ctx, receiver, name),
+            },
         },
     }
 }
