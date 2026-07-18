@@ -1,0 +1,39 @@
+package core;
+
+use gomlang::parser::ast;
+use gomlang::parser::hir;
+use gomlang::parser::parser;
+use gomlang::parser::tast;
+use std::testing;
+
+fn lower_source(source: string) -> File {
+    lower(tast::check(hir::lower(
+        ast::lower(parser::parse(source)),
+        "main.gom",
+    )))
+}
+
+#[test]
+fn lowers_basic_functions_and_let_chains() -> unit {
+    let source = "fn take(value: uint16) -> uint16 { value } fn main() -> uint16 { let value = take(1000); value }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "fn take(value/0: uint16) -> uint16 {\n  value/0\n}\n\nfn main() -> uint16 {\n  let value/1 = take(1000) in\n  value/1\n}",
+    )
+}
+
+#[test]
+fn folds_negative_integer_primitives() -> unit {
+    testing::assert_eq(
+        encode(lower_source("fn main() -> int32 { -1 }")),
+        "fn main() -> int32 {\n  -1\n}",
+    )
+}
+
+#[test]
+fn nests_discard_patterns_around_the_continuation() -> unit {
+    testing::assert_eq(
+        encode(lower_source("fn main() -> unit { let _ = (); () }")),
+        "fn main() -> unit {\n  let mtmp0 = () in\n  {\n    ()\n  }\n}",
+    )
+}
