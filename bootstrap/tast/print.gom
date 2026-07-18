@@ -148,7 +148,7 @@ fn write_type(builder: text::StringBuilder, value: Type) -> unit {
             builder.write_string("dyn ");
             builder.write_string(name)
         },
-        Type::Projection(base, name) => {
+        Type::Projection(base, name, _) => {
             write_type(builder, base);
             builder.write_string("::");
             builder.write_string(name)

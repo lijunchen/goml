@@ -92,7 +92,20 @@ fn occurs(variable: Ref[TypeVar], value: Type) -> bool {
             };
             found.get()
         },
-        Type::Projection(base, _) => occurs(variable, base),
+        Type::Projection(base, _, qualifier) => {
+            let found = Ref::new(occurs(variable, base));
+            match qualifier {
+                Option::Some(reference) => for arg in reference.args {
+                    if occurs(variable, arg) {
+                        found.set(true)
+                    } else {
+                        ()
+                    }
+                },
+                Option::None => (),
+            };
+            found.get()
+        },
         Type::App(base, args) => {
             let found = Ref::new(occurs(variable, base));
             for arg in args {
@@ -156,6 +169,15 @@ fn unify_types(left: Vec[Type], right: Vec[Type]) -> bool {
     }
 }
 
+fn unify_trait_refs(left: Option[TraitRef], right: Option[TraitRef]) -> bool {
+    match (left, right) {
+        (Option::Some(first), Option::Some(second)) => {
+            names_match(first.name, second.name) && unify_types(first.args, second.args)
+        },
+        _ => true,
+    }
+}
+
 fn unify(left: Type, right: Type) -> bool {
     let left = prune(left);
     let right = prune(right);
@@ -198,8 +220,13 @@ fn unify(left: Type, right: Type) -> bool {
         (Type::Tuple(first), Type::Tuple(second)) => unify_types(first, second),
         (Type::Con(first), Type::Con(second)) => first == second,
         (Type::Dyn(first), Type::Dyn(second)) => first == second,
-        (Type::Projection(first_base, first_name), Type::Projection(second_base, second_name)) => {
-            first_name == second_name && unify(first_base, second_base)
+        (
+            Type::Projection(first_base, first_name, first_trait),
+            Type::Projection(second_base, second_name, second_trait),
+        ) => {
+            first_name == second_name
+                && unify_trait_refs(first_trait, second_trait)
+                && unify(first_base, second_base)
         },
         (Type::App(first_base, first_args), Type::App(second_base, second_args)) => {
             unify(first_base, second_base) && unify_types(first_args, second_args)
@@ -238,6 +265,15 @@ fn type_lists_equal(left: Vec[Type], right: Vec[Type]) -> bool {
     }
 }
 
+fn trait_refs_equal(left: Option[TraitRef], right: Option[TraitRef]) -> bool {
+    match (left, right) {
+        (Option::Some(first), Option::Some(second)) => {
+            names_match(first.name, second.name) && type_lists_equal(first.args, second.args)
+        },
+        _ => true,
+    }
+}
+
 fn types_equal(left: Type, right: Type) -> bool {
     match (prune(left), prune(right)) {
         (Type::Var(first), Type::Var(second)) => ptr_eq(first, second),
@@ -260,8 +296,13 @@ fn types_equal(left: Type, right: Type) -> bool {
         (Type::Con(first), Type::Con(second))
         | (Type::Dyn(first), Type::Dyn(second))
         | (Type::Param(first), Type::Param(second)) => first == second,
-        (Type::Projection(first_base, first_name), Type::Projection(second_base, second_name)) => {
-            first_name == second_name && types_equal(first_base, second_base)
+        (
+            Type::Projection(first_base, first_name, first_trait),
+            Type::Projection(second_base, second_name, second_trait),
+        ) => {
+            first_name == second_name
+                && trait_refs_equal(first_trait, second_trait)
+                && types_equal(first_base, second_base)
         },
         (Type::App(first_base, first_args), Type::App(second_base, second_args)) => {
             types_equal(first_base, second_base) && type_lists_equal(first_args, second_args)
@@ -286,20 +327,31 @@ fn projection_equality(
     ctx: Checker,
     base: Type,
     name: string,
+    qualifier: Option[TraitRef],
 ) -> Option[Type] {
     let result = Ref::new(Option::None);
     let matches = Ref::new(0);
     for predicate in ctx.predicates {
         let candidate = match predicate {
-            TypePredicate::Equality(Type::Projection(left_base, left_name), right) => {
-                if left_name == name && types_equal(left_base, base) {
+            TypePredicate::Equality(
+                Type::Projection(left_base, left_name, left_trait),
+                right,
+            ) => {
+                if left_name == name
+                    && trait_refs_equal(left_trait, qualifier)
+                    && types_equal(left_base, base) {
                     Option::Some(right)
                 } else {
                     Option::None
                 }
             },
-            TypePredicate::Equality(left, Type::Projection(right_base, right_name)) => {
-                if right_name == name && types_equal(right_base, base) {
+            TypePredicate::Equality(
+                left,
+                Type::Projection(right_base, right_name, right_trait),
+            ) => {
+                if right_name == name
+                    && trait_refs_equal(right_trait, qualifier)
+                    && types_equal(right_base, base) {
                     Option::Some(left)
                 } else {
                     Option::None
@@ -334,7 +386,12 @@ fn associated_binding(value: ImplInfo, name: string) -> Option[Type] {
     result.get()
 }
 
-fn impl_projection(ctx: Checker, base: Type, name: string) -> Option[Type] {
+fn impl_projection(
+    ctx: Checker,
+    base: Type,
+    name: string,
+    qualifier: Option[TraitRef],
+) -> Option[Type] {
     let result = Ref::new(Option::None);
     let matches = Ref::new(0);
     for impl_info in ctx.impls {
@@ -346,18 +403,30 @@ fn impl_projection(ctx: Checker, base: Type, name: string) -> Option[Type] {
                     Vec::new(),
                 );
                 let owner = substitute_type(impl_info.for_type, substitutions);
+                let application = substitute_trait_ref(impl_info.trait_ref, substitutions);
                 if unify(owner, base) {
-                    let candidate = substitute_type(associated, substitutions);
-                    match result.get() {
-                        Option::Some(previous) => if !types_equal(previous, candidate) {
-                            matches.set(matches.get() + 1)
-                        } else {
-                            ()
-                        },
-                        Option::None => {
-                            matches.set(1);
-                            result.set(Option::Some(candidate))
-                        },
+                    let trait_matches = match qualifier {
+                        Option::Some(reference) => trait_refs_equal(
+                            Option::Some(reference),
+                            Option::Some(application),
+                        ),
+                        Option::None => true,
+                    };
+                    if trait_matches {
+                        let candidate = substitute_type(associated, substitutions);
+                        match result.get() {
+                            Option::Some(previous) => if !types_equal(previous, candidate) {
+                                matches.set(matches.get() + 1)
+                            } else {
+                                ()
+                            },
+                            Option::None => {
+                                matches.set(1);
+                                result.set(Option::Some(candidate))
+                            },
+                        }
+                    } else {
+                        ()
                     }
                 } else {
                     ()
@@ -384,14 +453,18 @@ fn normalize_types(ctx: Checker, values: Vec[Type]) -> Vec[Type] {
 fn normalize_type(ctx: Checker, value: Type) -> Type {
     match prune(value) {
         Type::Tuple(values) => Type::Tuple(normalize_types(ctx, values)),
-        Type::Projection(base, name) => {
+        Type::Projection(base, name, qualifier) => {
             let base = normalize_type(ctx, base);
-            let projection = Type::Projection(base, name);
-            let candidate = match projection_equality(ctx, base, name) {
+            let qualifier = match qualifier {
+                Option::Some(reference) => Option::Some(normalize_trait_ref(ctx, reference)),
+                Option::None => Option::None,
+            };
+            let projection = Type::Projection(base, name, qualifier);
+            let candidate = match projection_equality(ctx, base, name, qualifier) {
                 Option::Some(value) => Option::Some(value),
                 Option::None => match base {
                     Type::Param(_) | Type::Var(_) => Option::None,
-                    _ => impl_projection(ctx, base, name),
+                    _ => impl_projection(ctx, base, name, qualifier),
                 },
             };
             match candidate {
@@ -464,8 +537,14 @@ fn substitute_type(value: Type, substitutions: Vec[TypeSubst]) -> Type {
             };
             Type::Tuple(result)
         },
-        Type::Projection(base, name) => {
-            Type::Projection(substitute_type(base, substitutions), name)
+        Type::Projection(base, name, qualifier) => {
+            let qualifier = match qualifier {
+                Option::Some(reference) => {
+                    Option::Some(substitute_trait_ref(reference, substitutions))
+                },
+                Option::None => Option::None,
+            };
+            Type::Projection(substitute_type(base, substitutions), name, qualifier)
         },
         Type::App(base, args) => {
             let result: Vec[Type] = Vec::new();
@@ -535,7 +614,22 @@ fn resolve_type(value: Type) -> Type {
             };
             Type::Tuple(result)
         },
-        Type::Projection(base, name) => Type::Projection(resolve_type(base), name),
+        Type::Projection(base, name, qualifier) => {
+            let qualifier = match qualifier {
+                Option::Some(reference) => {
+                    let args: Vec[Type] = Vec::new();
+                    for arg in reference.args {
+                        args.push(resolve_type(arg))
+                    };
+                    Option::Some(TraitRef {
+                        name: reference.name,
+                        args,
+                    })
+                },
+                Option::None => Option::None,
+            };
+            Type::Projection(resolve_type(base), name, qualifier)
+        },
         Type::App(base, args) => {
             let result: Vec[Type] = Vec::new();
             for arg in args {
