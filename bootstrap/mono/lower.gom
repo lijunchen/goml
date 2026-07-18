@@ -1,0 +1,480 @@
+package mono;
+
+use gomlang::parser::core;
+use gomlang::parser::tast;
+use std::text;
+
+fn types_are_concrete(values: Vec[tast::Type]) -> bool {
+    let concrete = Ref::new(true);
+    for value in values {
+        if type_is_concrete(value) {
+            ()
+        } else {
+            concrete.set(false)
+        }
+    };
+    concrete.get()
+}
+
+fn optional_trait_ref_is_concrete(value: Option[tast::TraitRef]) -> bool {
+    match value {
+        Option::Some(reference) => types_are_concrete(reference.args),
+        Option::None => true,
+    }
+}
+
+fn type_is_concrete(value: tast::Type) -> bool {
+    match tast::resolve_type(value) {
+        tast::Type::Var(_) => false,
+        tast::Type::Unit
+        | tast::Type::Bool
+        | tast::Type::Int8
+        | tast::Type::Int16
+        | tast::Type::Int32
+        | tast::Type::Int64
+        | tast::Type::Uint8
+        | tast::Type::Uint16
+        | tast::Type::Uint32
+        | tast::Type::Uint64
+        | tast::Type::Float32
+        | tast::Type::Float64
+        | tast::Type::String
+        | tast::Type::Char
+        | tast::Type::Con(_)
+        | tast::Type::Dyn(_)
+        | tast::Type::Error => true,
+        tast::Type::Tuple(items) => types_are_concrete(items),
+        tast::Type::Projection(base, _, reference) => {
+            type_is_concrete(base) && optional_trait_ref_is_concrete(reference)
+        },
+        tast::Type::App(base, args) => {
+            type_is_concrete(base) && types_are_concrete(args)
+        },
+        tast::Type::Array(_, elem)
+        | tast::Type::Slice(elem)
+        | tast::Type::VecType(elem)
+        | tast::Type::RefType(elem) => type_is_concrete(elem),
+        tast::Type::HashMap(key, value) => {
+            type_is_concrete(key) && type_is_concrete(value)
+        },
+        tast::Type::Param(_) => false,
+        tast::Type::Func(params, ret_ty) => {
+            types_are_concrete(params) && type_is_concrete(ret_ty)
+        },
+    }
+}
+
+fn compact_type(value: tast::Type) -> string {
+    let type_builder = text::StringBuilder::new();
+    tast::write_type(type_builder, value);
+    let builder = text::StringBuilder::new();
+    for character in type_builder.finish().chars() {
+        if character == ' ' || character == '\n' || character == '\r' || character == '\t' {
+            ()
+        } else {
+            builder.write_char(character)
+        }
+    };
+    builder.finish()
+}
+
+fn specialized_type_name(name: string, args: Vec[tast::Type]) -> string {
+    let builder = text::StringBuilder::new();
+    builder.write_string(name);
+    for arg in args {
+        builder.write_string("__");
+        builder.write_string(compact_type(arg))
+    };
+    builder.finish()
+}
+
+fn collapse_types(values: Vec[tast::Type]) -> Vec[tast::Type] {
+    let result = Vec::new();
+    for value in values {
+        result.push(collapse_type(value))
+    };
+    result
+}
+
+fn collapse_optional_trait_ref(
+    value: Option[tast::TraitRef],
+) -> Option[tast::TraitRef] {
+    match value {
+        Option::Some(reference) => Option::Some(collapse_trait_ref(reference)),
+        Option::None => Option::None,
+    }
+}
+
+fn collapse_trait_ref(value: tast::TraitRef) -> tast::TraitRef {
+    tast::TraitRef {
+        name: value.name,
+        args: collapse_types(value.args),
+    }
+}
+
+fn collapse_type(value: tast::Type) -> tast::Type {
+    match tast::resolve_type(value) {
+        tast::Type::Var(variable) => tast::Type::Var(variable),
+        tast::Type::Unit => tast::Type::Unit,
+        tast::Type::Bool => tast::Type::Bool,
+        tast::Type::Int8 => tast::Type::Int8,
+        tast::Type::Int16 => tast::Type::Int16,
+        tast::Type::Int32 => tast::Type::Int32,
+        tast::Type::Int64 => tast::Type::Int64,
+        tast::Type::Uint8 => tast::Type::Uint8,
+        tast::Type::Uint16 => tast::Type::Uint16,
+        tast::Type::Uint32 => tast::Type::Uint32,
+        tast::Type::Uint64 => tast::Type::Uint64,
+        tast::Type::Float32 => tast::Type::Float32,
+        tast::Type::Float64 => tast::Type::Float64,
+        tast::Type::String => tast::Type::String,
+        tast::Type::Char => tast::Type::Char,
+        tast::Type::Tuple(items) => tast::Type::Tuple(collapse_types(items)),
+        tast::Type::Con(name) => tast::Type::Con(name),
+        tast::Type::Dyn(name) => tast::Type::Dyn(name),
+        tast::Type::Projection(base, name, reference) => tast::Type::Projection(
+            collapse_type(base),
+            name,
+            collapse_optional_trait_ref(reference),
+        ),
+        tast::Type::App(base, args) => {
+            let base = collapse_type(base);
+            let args = collapse_types(args);
+            match base {
+                tast::Type::Con(name) => {
+                    if args.len() > 0 && types_are_concrete(args) {
+                        tast::Type::Con(specialized_type_name(name, args))
+                    } else {
+                        tast::Type::App(tast::Type::Con(name), args)
+                    }
+                },
+                other => tast::Type::App(other, args),
+            }
+        },
+        tast::Type::Array(length, elem) => {
+            tast::Type::Array(length, collapse_type(elem))
+        },
+        tast::Type::Slice(elem) => tast::Type::Slice(collapse_type(elem)),
+        tast::Type::VecType(elem) => tast::Type::VecType(collapse_type(elem)),
+        tast::Type::RefType(elem) => tast::Type::RefType(collapse_type(elem)),
+        tast::Type::HashMap(key, value) => {
+            tast::Type::HashMap(collapse_type(key), collapse_type(value))
+        },
+        tast::Type::Param(name) => tast::Type::Param(name),
+        tast::Type::Func(params, ret_ty) => {
+            tast::Type::Func(collapse_types(params), collapse_type(ret_ty))
+        },
+        tast::Type::Error => tast::Type::Error,
+    }
+}
+
+fn constructor_variant(name: string) -> string {
+    let separator = Ref::new(-1);
+    if name.byte_len() > 1 {
+        for index in range(0, name.byte_len() - 1) {
+            if name.byte_slice(index, index + 2) == "::" {
+                separator.set(index)
+            } else {
+                ()
+            }
+        }
+    } else {
+        ()
+    };
+    if separator.get() < 0 {
+        ""
+    } else {
+        name.byte_slice(separator.get(), name.byte_len())
+    }
+}
+
+fn update_constructor(
+    value: tast::Constructor,
+    owner_type: tast::Type,
+) -> tast::Constructor {
+    match tast::resolve_type(owner_type) {
+        tast::Type::Con(name) => {
+            let constructor_name = if value.is_struct {
+                name
+            } else {
+                let variant = constructor_variant(value.name);
+                if variant.byte_len() == 0 { value.name } else { name + variant }
+            };
+            tast::Constructor {
+                name: constructor_name,
+                fields: value.fields,
+                is_struct: value.is_struct,
+            }
+        },
+        _ => value,
+    }
+}
+
+fn collapse_closure_params(
+    values: Vec[tast::ClosureParam],
+) -> Vec[tast::ClosureParam] {
+    let result = Vec::new();
+    for value in values {
+        result.push(tast::ClosureParam {
+            name: value.name,
+            ty: collapse_type(value.ty),
+        })
+    };
+    result
+}
+
+fn collapse_function_params(
+    values: Vec[(string, tast::Type)],
+) -> Vec[(string, tast::Type)] {
+    let result = Vec::new();
+    for value in values {
+        result.push((value.0, collapse_type(value.1)))
+    };
+    result
+}
+
+fn trait_impl_name(
+    reference: tast::TraitRef,
+    for_type: tast::Type,
+    method_name: string,
+) -> string {
+    let dispatch = if reference.args.len() == 0 {
+        compact_type(for_type)
+    } else {
+        let builder = text::StringBuilder::new();
+        builder.write_char('[');
+        for index in range(0, reference.args.len()) {
+            if index > 0 {
+                builder.write_char(',')
+            } else {
+                ()
+            };
+            builder.write_string(compact_type(reference.args.get(index)))
+        };
+        builder.write_string("]@");
+        builder.write_string(compact_type(for_type));
+        builder.finish()
+    };
+    "trait_impl#" + reference.name + "#" + dispatch + "#" + method_name
+}
+
+fn lower_exprs(values: Vec[core::Expr]) -> Vec[core::Expr] {
+    let result = Vec::new();
+    for value in values {
+        result.push(lower_expr(value))
+    };
+    result
+}
+
+fn lower_optional_expr(value: Option[core::Expr]) -> Option[core::Expr] {
+    match value {
+        Option::Some(expr) => Option::Some(lower_expr(expr)),
+        Option::None => Option::None,
+    }
+}
+
+fn lower_arms(values: Vec[core::Arm]) -> Vec[core::Arm] {
+    let result = Vec::new();
+    for value in values {
+        result.push(core::Arm {
+            lhs: lower_expr(value.lhs),
+            body: lower_expr(value.body),
+        })
+    };
+    result
+}
+
+fn lower_block(value: core::Block) -> core::Block {
+    let stmts = Vec::new();
+    for stmt in value.stmts {
+        stmts.push(core::LetStmt {
+            name: stmt.name,
+            value: lower_expr(stmt.value),
+            ty: collapse_type(stmt.ty),
+        })
+    };
+    core::Block {
+        stmts,
+        tail: lower_optional_expr(value.tail),
+    }
+}
+
+fn lower_trait_call(
+    reference: tast::TraitRef,
+    method_name: string,
+    receiver: core::Expr,
+    args: Vec[core::Expr],
+    ty: tast::Type,
+) -> core::Expr {
+    let reference = collapse_trait_ref(reference);
+    let ty = collapse_type(ty);
+    let receiver = lower_expr(receiver);
+    let args = lower_exprs(args);
+    let receiver_ty = core::expr_type(receiver);
+    match tast::resolve_type(receiver_ty) {
+        tast::Type::Dyn(name) => {
+            if reference.args.len() == 0 && reference.name == name {
+                core::Expr::DynCall(name, method_name, receiver, args, ty)
+            } else {
+                lower_static_trait_call(reference, method_name, receiver, args, ty)
+            }
+        },
+        _ => lower_static_trait_call(reference, method_name, receiver, args, ty),
+    }
+}
+
+fn lower_static_trait_call(
+    reference: tast::TraitRef,
+    method_name: string,
+    receiver: core::Expr,
+    args: Vec[core::Expr],
+    ty: tast::Type,
+) -> core::Expr {
+    let receiver_ty = core::expr_type(receiver);
+    let params = Vec::new();
+    let call_args = Vec::new();
+    params.push(receiver_ty);
+    call_args.push(receiver);
+    for arg in args {
+        params.push(core::expr_type(arg));
+        call_args.push(arg)
+    };
+    let name = trait_impl_name(reference, receiver_ty, method_name);
+    core::Expr::Call(
+        core::Expr::Var(name, tast::Type::Func(params, ty)),
+        call_args,
+        ty,
+    )
+}
+
+fn lower_expr(value: core::Expr) -> core::Expr {
+    match value {
+        core::Expr::Var(name, ty) => core::Expr::Var(name, collapse_type(ty)),
+        core::Expr::Callable(callable, ty) => {
+            core::Expr::Callable(callable, collapse_type(ty))
+        },
+        core::Expr::Prim(primitive, ty) => {
+            core::Expr::Prim(primitive, collapse_type(ty))
+        },
+        core::Expr::Constr(constructor, args, ty) => {
+            let ty = collapse_type(ty);
+            core::Expr::Constr(update_constructor(constructor, ty), lower_exprs(args), ty)
+        },
+        core::Expr::Tuple(items, ty) => {
+            core::Expr::Tuple(lower_exprs(items), collapse_type(ty))
+        },
+        core::Expr::Array(items, ty) => {
+            core::Expr::Array(lower_exprs(items), collapse_type(ty))
+        },
+        core::Expr::Closure(params, body, ty) => {
+            core::Expr::Closure(
+                collapse_closure_params(params),
+                lower_expr(body),
+                collapse_type(ty),
+            )
+        },
+        core::Expr::Block(block, ty) => {
+            core::Expr::Block(lower_block(block), collapse_type(ty))
+        },
+        core::Expr::Match(expr, arms, default, ty) => core::Expr::Match(
+            lower_expr(expr),
+            lower_arms(arms),
+            lower_optional_expr(default),
+            collapse_type(ty),
+        ),
+        core::Expr::If(cond, then_branch, else_branch, ty) => core::Expr::If(
+            lower_expr(cond),
+            lower_expr(then_branch),
+            lower_expr(else_branch),
+            collapse_type(ty),
+        ),
+        core::Expr::While(cond, body, ty) => {
+            core::Expr::While(lower_expr(cond), lower_expr(body), collapse_type(ty))
+        },
+        core::Expr::Break(ty) => core::Expr::Break(collapse_type(ty)),
+        core::Expr::Continue(ty) => core::Expr::Continue(collapse_type(ty)),
+        core::Expr::Return(expr, ty) => {
+            core::Expr::Return(lower_optional_expr(expr), collapse_type(ty))
+        },
+        core::Expr::Go(expr, ty) => core::Expr::Go(lower_expr(expr), collapse_type(ty)),
+        core::Expr::ConstrGet(expr, constructor, field_index, ty) => {
+            let expr = lower_expr(expr);
+            let constructor = update_constructor(constructor, core::expr_type(expr));
+            core::Expr::ConstrGet(expr, constructor, field_index, collapse_type(ty))
+        },
+        core::Expr::Unary(op, expr, ty) => {
+            core::Expr::Unary(op, lower_expr(expr), collapse_type(ty))
+        },
+        core::Expr::Cast(expr, ty) => {
+            core::Expr::Cast(lower_expr(expr), collapse_type(ty))
+        },
+        core::Expr::Binary(op, lhs, rhs, ty) => {
+            core::Expr::Binary(
+                op,
+                lower_expr(lhs),
+                lower_expr(rhs),
+                collapse_type(ty),
+            )
+        },
+        core::Expr::Assign(name, value, target_ty, ty) => {
+            core::Expr::Assign(
+                name,
+                lower_expr(value),
+                collapse_type(target_ty),
+                collapse_type(ty),
+            )
+        },
+        core::Expr::Call(func, args, ty) => {
+            core::Expr::Call(lower_expr(func), lower_exprs(args), collapse_type(ty))
+        },
+        core::Expr::ToDyn(trait_name, for_ty, expr, ty) => {
+            core::Expr::ToDyn(
+                trait_name,
+                collapse_type(for_ty),
+                lower_expr(expr),
+                collapse_type(ty),
+            )
+        },
+        core::Expr::DynCall(trait_name, method_name, receiver, args, ty) => {
+            core::Expr::DynCall(
+                trait_name,
+                method_name,
+                lower_expr(receiver),
+                lower_exprs(args),
+                collapse_type(ty),
+            )
+        },
+        core::Expr::TraitCall(reference, method_name, receiver, args, ty) => {
+            lower_trait_call(reference, method_name, receiver, args, ty)
+        },
+        core::Expr::Proj(tuple, index, ty) => {
+            core::Expr::Proj(lower_expr(tuple), index, collapse_type(ty))
+        },
+    }
+}
+
+pub fn lower(value: core::File) -> core::File {
+    let functions = Vec::new();
+    for function in value.functions {
+        functions.push(core::Function {
+            name: function.name,
+            root: function.root,
+            generics: function.generics,
+            trait_impl: match function.trait_impl {
+                Option::Some(metadata) => Option::Some(core::TraitImpl {
+                    trait_ref: collapse_trait_ref(metadata.trait_ref),
+                    for_ty: collapse_type(metadata.for_ty),
+                }),
+                Option::None => Option::None,
+            },
+            params: collapse_function_params(function.params),
+            ret_ty: collapse_type(function.ret_ty),
+            body: lower_block(function.body),
+        })
+    };
+    core::File { functions }
+}
+
+pub fn encode(value: core::File) -> string {
+    core::encode(value)
+}

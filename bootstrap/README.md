@@ -10,6 +10,7 @@ The implementation provides:
 - AST-to-HIR lowering with the same definitions, local resolution, constructor resolution, derive expansion, and canonical HIR output as `crates/compiler`
 - HIR-to-TAST checking with type inference, callable resolution, coercions, pattern checking, and canonical typed output
 - TAST-to-Core lowering with explicit calls, let chains, structured control flow, and canonical Core output
+- Core-to-Mono lowering with a canonical Mono output stage
 
 Build the command-line tool with:
 
@@ -26,6 +27,7 @@ artifact/bin/parser ast path/to/file.gom
 artifact/bin/parser hir path/to/file.gom
 artifact/bin/parser tast path/to/file.gom
 artifact/bin/parser core path/to/file.gom
+artifact/bin/parser mono path/to/file.gom
 ```
 
 Run the package tests serially:
@@ -36,6 +38,8 @@ goml test parser
 goml test ast
 goml test hir
 goml test tast
+goml test core
+goml test mono
 ```
 
 The differential tools build a Rust oracle from the sibling `goml` checkout and compare canonical outputs byte for byte:
@@ -47,6 +51,7 @@ tools/diff-ast-corpus.sh
 tools/diff-hir-corpus.sh
 tools/diff-tast-corpus.sh
 tools/diff-core-corpus.sh
+tools/diff-mono-corpus.sh
 tools/diff-generated.sh
 ```
 
