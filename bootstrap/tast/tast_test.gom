@@ -145,6 +145,25 @@ fn checks_extended_builtin_method_catalog() -> unit {
 }
 
 #[test]
+fn preserves_fn_iterator_static_owner() -> unit {
+    let file = checked_file("fn iterator() -> FnIterator[int32] { FnIterator::from_fn(|| Option::None) }");
+    match file.items.get(0) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Call(
+                Expr::Callable(Callable::InherentMethod(Type::Con(owner), name), _),
+                _,
+                _,
+            )) => {
+                testing::assert_eq(owner, "FnIterator");
+                testing::assert_eq(name, "from_fn")
+            },
+            _ => testing::fail("expected FnIterator static call"),
+        },
+        _ => testing::fail("expected iterator function"),
+    }
+}
+
+#[test]
 fn normalizes_and_escapes_char_literals() -> unit {
     match parse_char_literal("\\u0041") {
         Option::Some(value) => testing::assert(value == 'A'),
