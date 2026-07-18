@@ -8,7 +8,7 @@ struct PatternBinding {
     ty: tast::Type,
 }
 
-struct TuplePatternPlan {
+struct PatternPlan {
     projections: Vec[LetStmt],
     bindings: Vec[PatternBinding],
 }
@@ -25,7 +25,7 @@ struct PatternRow {
     body: tast::Expr,
 }
 
-fn flat_tuple_items(items: Vec[tast::Pat]) -> bool {
+fn flat_pattern_items(items: Vec[tast::Pat]) -> bool {
     let valid = Ref::new(true);
     for item in items {
         match item {
@@ -36,14 +36,14 @@ fn flat_tuple_items(items: Vec[tast::Pat]) -> bool {
     valid.get()
 }
 
-fn plan_flat_tuple_pattern(
+fn plan_flat_pattern(
     ctx: Lowerer,
     source: string,
     pattern: tast::Pat,
-) -> Option[TuplePatternPlan] {
+) -> Option[PatternPlan] {
     match pattern {
         tast::Pat::Tuple(items, tuple_ty) => match tast::resolve_type(tuple_ty) {
-            tast::Type::Tuple(types) => if items.len() == types.len() && flat_tuple_items(items) {
+            tast::Type::Tuple(types) => if items.len() == types.len() && flat_pattern_items(items) {
                 let names: Vec[string] = Vec::new();
                 for _ in types {
                     names.push(gensym(ctx, "x"))
@@ -72,7 +72,7 @@ fn plan_flat_tuple_pattern(
                         _ => (),
                     }
                 };
-                Option::Some(TuplePatternPlan {
+                Option::Some(PatternPlan {
                     projections,
                     bindings,
                 })
@@ -81,12 +81,50 @@ fn plan_flat_tuple_pattern(
             },
             _ => Option::None,
         },
+        tast::Pat::Constr(constructor, items, struct_ty) => if constructor.is_struct && flat_pattern_items(items) {
+            let names: Vec[string] = Vec::new();
+            for _ in items {
+                names.push(gensym(ctx, "x"))
+            };
+            let projections: Vec[LetStmt] = Vec::new();
+            let bindings: Vec[PatternBinding] = Vec::new();
+            for index in range(0, items.len()) {
+                let item = items.get(index);
+                let item_ty = tast::pat_type(item);
+                let projection_name = names.get(index);
+                projections.push(LetStmt {
+                    name: projection_name,
+                    value: Expr::ConstrGet(
+                        Expr::Var(source, struct_ty),
+                        constructor,
+                        index,
+                        item_ty,
+                    ),
+                    ty: item_ty,
+                });
+                match item {
+                    tast::Pat::Var(name, ty) => bindings.push(PatternBinding {
+                        name,
+                        source: projection_name,
+                        ty,
+                    }),
+                    tast::Pat::Wild(_) => (),
+                    _ => (),
+                }
+            };
+            Option::Some(PatternPlan {
+                projections,
+                bindings,
+            })
+        } else {
+            Option::None
+        },
         _ => Option::None,
     }
 }
 
-fn apply_tuple_pattern_plan(
-    plan: TuplePatternPlan,
+fn apply_pattern_plan(
+    plan: PatternPlan,
     body: Expr,
     body_ty: tast::Type,
 ) -> Expr {

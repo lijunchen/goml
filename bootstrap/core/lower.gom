@@ -935,7 +935,7 @@ fn lower_block_from(
                 let value_ty = tast::expr_type(value);
                 let core_value = lower_expr(ctx, value);
                 let name = gensym(ctx, "mtmp");
-                match plan_flat_tuple_pattern(ctx, name, pattern) {
+                match plan_flat_pattern(ctx, name, pattern) {
                     Option::Some(plan) => {
                         let rest = lower_block_from(ctx, stmts, index + 1, tail, ty);
                         let result: Vec[LetStmt] = Vec::new();
@@ -946,7 +946,7 @@ fn lower_block_from(
                         });
                         Block {
                             stmts: result,
-                            tail: Option::Some(apply_tuple_pattern_plan(
+                            tail: Option::Some(apply_pattern_plan(
                                 plan,
                                 Expr::Block(rest, ty),
                                 ty,
