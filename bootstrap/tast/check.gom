@@ -453,6 +453,36 @@ fn normalize_function_expr(ctx: Checker, value: Expr) -> Expr {
     }
 }
 
+fn specialize_array_param(param: Type, actual: Type) -> Type {
+    match (prune(param), prune(actual)) {
+        (Type::Array(length, elem), Type::Array(actual_length, _)) => {
+            if length < 0 {
+                Type::Array(actual_length, elem)
+            } else {
+                Type::Array(length, elem)
+            }
+        },
+        (param, _) => param,
+    }
+}
+
+fn specialize_array_callable(function: Expr, values: Vec[Expr]) -> Expr {
+    match function {
+        Expr::Callable(callable, Type::Func(params, ret_ty)) => {
+            let specialized: Vec[Type] = Vec::new();
+            for index in range(0, params.len()) {
+                specialized.push(if index < values.len() {
+                    specialize_array_param(params.get(index), expr_type(values.get(index)))
+                } else {
+                    params.get(index)
+                })
+            };
+            Expr::Callable(callable, Type::Func(specialized, ret_ty))
+        },
+        other => other,
+    }
+}
+
 fn apply_typed_call(
     ctx: Checker,
     function: Expr,
@@ -475,6 +505,7 @@ fn apply_typed_call(
     } else {
         ()
     };
+    let function = specialize_array_callable(function, values);
     let function = if is_static && values.len() > 0 {
         match function {
             Expr::Callable(Callable::TraitMethod(reference, name), ty) => {
