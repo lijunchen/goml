@@ -129,3 +129,30 @@ fn binds_nested_match_sources_before_lowering_them() -> unit {
         _ => testing::fail("expected outer match binding"),
     }
 }
+
+#[test]
+fn evaluates_index_assignment_places_once() -> unit {
+    let file = lower_source("fn main() -> unit { let mut values = [1, 2]; values[0] = 3; }");
+    let body = file.functions.get(0).body;
+    testing::assert_eq(body.stmts.get(1).name, "_wild4");
+    match body.stmts.get(1).value {
+        Expr::Block(place, _) => {
+            testing::assert_eq(place.stmts.get(0).name, "place_root0");
+            testing::assert_eq(place.stmts.get(1).name, "index1");
+            testing::assert_eq(place.stmts.get(2).name, "place2");
+            testing::assert_eq(place.stmts.get(3).name, "value3");
+            match place.tail {
+                Option::Some(Expr::Assign(name, Expr::Call(
+                    Expr::Callable(tast::Callable::Intrinsic(intrinsic), _),
+                    _,
+                    _,
+                ), _, _)) => {
+                    testing::assert_eq(name, "values/0");
+                    testing::assert_eq(intrinsic, "array.set")
+                },
+                _ => testing::fail("expected array writeback"),
+            }
+        },
+        _ => testing::fail("expected indexed place block"),
+    }
+}
