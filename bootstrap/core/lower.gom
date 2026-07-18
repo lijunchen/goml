@@ -819,20 +819,41 @@ fn lower_block_from(
                     ty: pat_ty,
                 }, rest)
             },
-            tast::Stmt::Let(_, _, value) => {
+            tast::Stmt::Let(_, pattern, value) => {
                 let value_ty = tast::expr_type(value);
                 let core_value = lower_expr(ctx, value);
                 let name = gensym(ctx, "mtmp");
-                let rest = lower_block_from(ctx, stmts, index + 1, tail, ty);
-                let result: Vec[LetStmt] = Vec::new();
-                result.push(LetStmt {
-                    name,
-                    value: core_value,
-                    ty: value_ty,
-                });
-                Block {
-                    stmts: result,
-                    tail: Option::Some(Expr::Block(rest, ty)),
+                match plan_flat_tuple_pattern(ctx, name, pattern) {
+                    Option::Some(plan) => {
+                        let rest = lower_block_from(ctx, stmts, index + 1, tail, ty);
+                        let result: Vec[LetStmt] = Vec::new();
+                        result.push(LetStmt {
+                            name,
+                            value: core_value,
+                            ty: value_ty,
+                        });
+                        Block {
+                            stmts: result,
+                            tail: Option::Some(apply_tuple_pattern_plan(
+                                plan,
+                                Expr::Block(rest, ty),
+                                ty,
+                            )),
+                        }
+                    },
+                    Option::None => {
+                        let rest = lower_block_from(ctx, stmts, index + 1, tail, ty);
+                        let result: Vec[LetStmt] = Vec::new();
+                        result.push(LetStmt {
+                            name,
+                            value: core_value,
+                            ty: value_ty,
+                        });
+                        Block {
+                            stmts: result,
+                            tail: Option::Some(Expr::Block(rest, ty)),
+                        }
+                    },
                 }
             },
             tast::Stmt::Expr(value) => {

@@ -1,0 +1,104 @@
+package core;
+
+use gomlang::parser::tast;
+
+struct PatternBinding {
+    name: string,
+    source: string,
+    ty: tast::Type,
+}
+
+struct TuplePatternPlan {
+    projections: Vec[LetStmt],
+    bindings: Vec[PatternBinding],
+}
+
+fn flat_tuple_items(items: Vec[tast::Pat]) -> bool {
+    let valid = Ref::new(true);
+    for item in items {
+        match item {
+            tast::Pat::Var(_, _) | tast::Pat::Wild(_) => (),
+            _ => valid.set(false),
+        }
+    };
+    valid.get()
+}
+
+fn plan_flat_tuple_pattern(
+    ctx: Lowerer,
+    source: string,
+    pattern: tast::Pat,
+) -> Option[TuplePatternPlan] {
+    match pattern {
+        tast::Pat::Tuple(items, tuple_ty) => match tast::resolve_type(tuple_ty) {
+            tast::Type::Tuple(types) => if items.len() == types.len() && flat_tuple_items(items) {
+                let names: Vec[string] = Vec::new();
+                for _ in types {
+                    names.push(gensym(ctx, "x"))
+                };
+                let projections: Vec[LetStmt] = Vec::new();
+                let bindings: Vec[PatternBinding] = Vec::new();
+                for index in range(0, items.len()) {
+                    let item_ty = types.get(index);
+                    let projection_name = names.get(index);
+                    projections.push(LetStmt {
+                        name: projection_name,
+                        value: Expr::Proj(
+                            Expr::Var(source, tuple_ty),
+                            index,
+                            item_ty,
+                        ),
+                        ty: item_ty,
+                    });
+                    match items.get(index) {
+                        tast::Pat::Var(name, ty) => bindings.push(PatternBinding {
+                            name,
+                            source: projection_name,
+                            ty,
+                        }),
+                        tast::Pat::Wild(_) => (),
+                        _ => (),
+                    }
+                };
+                Option::Some(TuplePatternPlan {
+                    projections,
+                    bindings,
+                })
+            } else {
+                Option::None
+            },
+            _ => Option::None,
+        },
+        _ => Option::None,
+    }
+}
+
+fn apply_tuple_pattern_plan(
+    plan: TuplePatternPlan,
+    body: Expr,
+    body_ty: tast::Type,
+) -> Expr {
+    let result = Ref::new(body);
+    for binding in plan.bindings {
+        let stmts: Vec[LetStmt] = Vec::new();
+        stmts.push(LetStmt {
+            name: binding.name,
+            value: Expr::Var(binding.source, binding.ty),
+            ty: binding.ty,
+        });
+        result.set(Expr::Block(
+            Block {
+                stmts,
+                tail: Option::Some(result.get()),
+            },
+            body_ty,
+        ))
+    };
+    Expr::Block(
+        Block {
+            stmts: plan.projections,
+            tail: Option::Some(result.get()),
+        },
+        body_ty,
+    )
+}
