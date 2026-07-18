@@ -1,0 +1,438 @@
+package ast;
+
+use gomlang::parser::lexer;
+use std::text;
+
+fn encode_open(builder: text::StringBuilder, tag: string) -> unit {
+    builder.write_string("O\t");
+    builder.write_string(tag);
+    builder.write_string("\n")
+}
+
+fn encode_close(builder: text::StringBuilder) -> unit {
+    builder.write_string("C\n")
+}
+
+fn encode_string_value(builder: text::StringBuilder, value: string) -> unit {
+    builder.write_string("S\t");
+    builder.write_string(lexer::encode_text_hex(value));
+    builder.write_string("\n")
+}
+
+fn encode_bool_value(builder: text::StringBuilder, value: bool) -> unit {
+    builder.write_string(if value { "B\t1\n" } else { "B\t0\n" })
+}
+
+fn encode_int_value(builder: text::StringBuilder, value: int32) -> unit {
+    builder.write_string("I\t");
+    builder.write_string(value.to_string());
+    builder.write_string("\n")
+}
+
+fn encode_list(builder: text::StringBuilder, length: int32) -> unit {
+    builder.write_string("L\t");
+    builder.write_string(length.to_string());
+    builder.write_string("\n")
+}
+
+fn encode_none(builder: text::StringBuilder) -> unit {
+    builder.write_string("N\n")
+}
+
+fn encode_some(builder: text::StringBuilder) -> unit {
+    builder.write_string("Y\n")
+}
+
+fn encode_span(builder: text::StringBuilder, value: Span) -> unit {
+    builder.write_string("R\t");
+    builder.write_string(value.start.to_string());
+    builder.write_string("\t");
+    builder.write_string(value.end.to_string());
+    builder.write_string("\n")
+}
+
+fn encode_path(builder: text::StringBuilder, value: Path) -> unit {
+    encode_open(builder, "Path");
+    encode_list(builder, value.segments.len());
+    for segment in value.segments {
+        encode_open(builder, "Segment");
+        encode_string_value(builder, segment.ident);
+        encode_span(builder, segment.span);
+        encode_close(builder)
+    };
+    encode_close(builder)
+}
+
+fn encode_type(builder: text::StringBuilder, value: TypeExpr) -> unit {
+    match value {
+        TypeExpr::Unit => encode_open(builder, "Type.Unit"),
+        TypeExpr::Bool => encode_open(builder, "Type.Bool"),
+        TypeExpr::Int8 => encode_open(builder, "Type.Int8"),
+        TypeExpr::Int16 => encode_open(builder, "Type.Int16"),
+        TypeExpr::Int32 => encode_open(builder, "Type.Int32"),
+        TypeExpr::Int64 => encode_open(builder, "Type.Int64"),
+        TypeExpr::Uint8 => encode_open(builder, "Type.Uint8"),
+        TypeExpr::Uint16 => encode_open(builder, "Type.Uint16"),
+        TypeExpr::Uint32 => encode_open(builder, "Type.Uint32"),
+        TypeExpr::Uint64 => encode_open(builder, "Type.Uint64"),
+        TypeExpr::Float32 => encode_open(builder, "Type.Float32"),
+        TypeExpr::Float64 => encode_open(builder, "Type.Float64"),
+        TypeExpr::String => encode_open(builder, "Type.String"),
+        TypeExpr::Char => encode_open(builder, "Type.Char"),
+        TypeExpr::Tuple(types) => {
+            encode_open(builder, "Type.Tuple");
+            encode_list(builder, types.len());
+            for ty in types {
+                encode_type(builder, ty)
+            }
+        },
+        TypeExpr::Con(path) => {
+            encode_open(builder, "Type.Con");
+            encode_path(builder, path)
+        },
+        TypeExpr::Dyn(path) => {
+            encode_open(builder, "Type.Dyn");
+            encode_path(builder, path)
+        },
+        TypeExpr::App(ty, args) => {
+            encode_open(builder, "Type.App");
+            encode_type(builder, ty);
+            encode_list(builder, args.len());
+            for arg in args {
+                encode_type(builder, arg)
+            }
+        },
+        TypeExpr::Array(length, element) => {
+            encode_open(builder, "Type.Array");
+            encode_string_value(builder, length);
+            encode_type(builder, element)
+        },
+        TypeExpr::Func(params, ret_ty) => {
+            encode_open(builder, "Type.Func");
+            encode_list(builder, params.len());
+            for param in params {
+                encode_type(builder, param)
+            };
+            encode_type(builder, ret_ty)
+        },
+    };
+    encode_close(builder)
+}
+
+fn encode_attribute(builder: text::StringBuilder, value: Attribute) -> unit {
+    encode_open(builder, "Attribute");
+    encode_span(builder, value.span);
+    encode_string_value(builder, value.text);
+    encode_close(builder)
+}
+
+fn encode_attributes(builder: text::StringBuilder, values: Vec[Attribute]) -> unit {
+    encode_list(builder, values.len());
+    for value in values {
+        encode_attribute(builder, value)
+    }
+}
+
+fn encode_visibility(builder: text::StringBuilder, value: Visibility) -> unit {
+    encode_string_value(builder, match value {
+        Visibility::Private => "Private",
+        Visibility::Public => "Public",
+    })
+}
+
+fn encode_trait_ref(builder: text::StringBuilder, value: TraitRef) -> unit {
+    encode_open(builder, "TraitRef");
+    encode_path(builder, value.path);
+    encode_list(builder, value.args.len());
+    for arg in value.args {
+        encode_type(builder, arg)
+    };
+    encode_close(builder)
+}
+
+fn encode_trait_refs(builder: text::StringBuilder, values: Vec[TraitRef]) -> unit {
+    encode_list(builder, values.len());
+    for value in values {
+        encode_trait_ref(builder, value)
+    }
+}
+
+fn encode_generics(builder: text::StringBuilder, values: Vec[string]) -> unit {
+    encode_list(builder, values.len());
+    for value in values {
+        encode_string_value(builder, value)
+    }
+}
+
+fn encode_generic_bounds(
+    builder: text::StringBuilder,
+    values: Vec[(string, Vec[TraitRef])],
+) -> unit {
+    encode_list(builder, values.len());
+    for value in values {
+        let (name, bounds) = value;
+        encode_open(builder, "GenericBound");
+        encode_string_value(builder, name);
+        encode_trait_refs(builder, bounds);
+        encode_close(builder)
+    }
+}
+
+fn encode_predicates(builder: text::StringBuilder, values: Vec[Predicate]) -> unit {
+    encode_list(builder, values.len());
+    for value in values {
+        match value {
+            Predicate::Trait(ty, trait_ref) => {
+                encode_open(builder, "Predicate.Trait");
+                encode_type(builder, ty);
+                encode_trait_ref(builder, trait_ref)
+            },
+            Predicate::Equality(lhs, rhs) => {
+                encode_open(builder, "Predicate.Equality");
+                encode_type(builder, lhs);
+                encode_type(builder, rhs)
+            },
+        };
+        encode_close(builder)
+    }
+}
+
+fn encode_params(builder: text::StringBuilder, values: Vec[(string, TypeExpr)]) -> unit {
+    encode_list(builder, values.len());
+    for value in values {
+        let (name, ty) = value;
+        encode_open(builder, "Param");
+        encode_string_value(builder, name);
+        encode_type(builder, ty);
+        encode_close(builder)
+    }
+}
+
+fn encode_optional_type(builder: text::StringBuilder, value: Option[TypeExpr]) -> unit {
+    match value {
+        Option::Some(ty) => {
+            encode_some(builder);
+            encode_type(builder, ty)
+        },
+        Option::None => encode_none(builder),
+    }
+}
+
+fn encode_function(builder: text::StringBuilder, value: Function) -> unit {
+    encode_open(builder, "Function");
+    encode_attributes(builder, value.attrs);
+    encode_visibility(builder, value.visibility);
+    encode_string_value(builder, value.name);
+    encode_generics(builder, value.generics);
+    encode_generic_bounds(builder, value.generic_bounds);
+    encode_predicates(builder, value.predicates);
+    encode_params(builder, value.params);
+    encode_optional_type(builder, value.ret_ty);
+    encode_block(builder, value.body);
+    encode_close(builder)
+}
+
+fn encode_extern_function(builder: text::StringBuilder, value: ExternFunction) -> unit {
+    encode_open(builder, "ExternFunction");
+    encode_attributes(builder, value.attrs);
+    encode_visibility(builder, value.visibility);
+    encode_string_value(builder, value.name);
+    encode_generics(builder, value.generics);
+    encode_generic_bounds(builder, value.generic_bounds);
+    encode_predicates(builder, value.predicates);
+    encode_params(builder, value.params);
+    encode_optional_type(builder, value.ret_ty);
+    encode_close(builder)
+}
+
+fn encode_enum(builder: text::StringBuilder, value: EnumDef) -> unit {
+    encode_open(builder, "Enum");
+    encode_attributes(builder, value.attrs);
+    encode_visibility(builder, value.visibility);
+    encode_string_value(builder, value.name);
+    encode_generics(builder, value.generics);
+    encode_list(builder, value.variants.len());
+    for variant in value.variants {
+        let (name, types) = variant;
+        encode_open(builder, "Variant");
+        encode_string_value(builder, name);
+        encode_list(builder, types.len());
+        for ty in types {
+            encode_type(builder, ty)
+        };
+        encode_close(builder)
+    };
+    encode_close(builder)
+}
+
+fn encode_struct(builder: text::StringBuilder, value: StructDef) -> unit {
+    encode_open(builder, "Struct");
+    encode_attributes(builder, value.attrs);
+    encode_visibility(builder, value.visibility);
+    encode_string_value(builder, value.name);
+    encode_generics(builder, value.generics);
+    encode_list(builder, value.fields.len());
+    for field in value.fields {
+        let (name, ty) = field;
+        encode_open(builder, "Field");
+        encode_string_value(builder, name);
+        encode_type(builder, ty);
+        encode_close(builder)
+    };
+    encode_close(builder)
+}
+
+fn encode_trait(builder: text::StringBuilder, value: TraitDef) -> unit {
+    encode_open(builder, "Trait");
+    encode_attributes(builder, value.attrs);
+    encode_visibility(builder, value.visibility);
+    encode_string_value(builder, value.name);
+    encode_generics(builder, value.generics);
+    encode_generic_bounds(builder, value.generic_bounds);
+    encode_predicates(builder, value.predicates);
+    encode_trait_refs(builder, value.supertraits);
+    encode_list(builder, value.associated_types.len());
+    for associated in value.associated_types {
+        encode_open(builder, "AssociatedType");
+        encode_string_value(builder, associated.name);
+        encode_trait_refs(builder, associated.bounds);
+        encode_close(builder)
+    };
+    encode_list(builder, value.method_sigs.len());
+    for method in value.method_sigs {
+        encode_open(builder, "TraitMethod");
+        encode_string_value(builder, method.name);
+        encode_list(builder, method.params.len());
+        for param in method.params {
+            encode_type(builder, param)
+        };
+        encode_type(builder, method.ret_ty);
+        encode_close(builder)
+    };
+    encode_close(builder)
+}
+
+fn encode_impl(builder: text::StringBuilder, value: ImplBlock) -> unit {
+    encode_open(builder, "Impl");
+    encode_attributes(builder, value.attrs);
+    encode_generics(builder, value.generics);
+    encode_generic_bounds(builder, value.generic_bounds);
+    encode_predicates(builder, value.predicates);
+    encode_list(builder, value.associated_types.len());
+    for associated in value.associated_types {
+        let (name, ty) = associated;
+        encode_open(builder, "ImplAssociatedType");
+        encode_string_value(builder, name);
+        encode_type(builder, ty);
+        encode_close(builder)
+    };
+    match value.trait_ref {
+        Option::Some(trait_ref) => {
+            encode_some(builder);
+            encode_trait_ref(builder, trait_ref)
+        },
+        Option::None => encode_none(builder),
+    };
+    encode_type(builder, value.for_type);
+    encode_list(builder, value.methods.len());
+    for method in value.methods {
+        encode_function(builder, method)
+    };
+    encode_close(builder)
+}
+
+fn encode_item(builder: text::StringBuilder, value: Item) -> unit {
+    match value {
+        Item::EnumDef(item) => encode_enum(builder, item),
+        Item::StructDef(item) => encode_struct(builder, item),
+        Item::TraitDef(item) => encode_trait(builder, item),
+        Item::ImplBlock(item) => encode_impl(builder, item),
+        Item::Function(item) => encode_function(builder, item),
+        Item::ExternFunction(item) => encode_extern_function(builder, item),
+    }
+}
+
+fn encode_block(builder: text::StringBuilder, value: Block) -> unit {
+    encode_open(builder, "Block");
+    encode_span(builder, value.span);
+    encode_list(builder, value.stmts.len());
+    for stmt in value.stmts {
+        encode_stmt(builder, stmt)
+    };
+    match value.tail {
+        Option::Some(expr) => {
+            encode_some(builder);
+            encode_expr(builder, expr)
+        },
+        Option::None => encode_none(builder),
+    };
+    encode_close(builder)
+}
+
+fn encode_stmt(builder: text::StringBuilder, value: Stmt) -> unit {
+    match value {
+        Stmt::Let(is_mut, pat, annotation, expr, value_span) => {
+            encode_open(builder, "Stmt.Let");
+            encode_span(builder, value_span);
+            encode_bool_value(builder, is_mut);
+            encode_pat(builder, pat);
+            encode_optional_type(builder, annotation);
+            encode_expr(builder, expr)
+        },
+        Stmt::Assign(target, expr, value_span) => {
+            encode_open(builder, "Stmt.Assign");
+            encode_span(builder, value_span);
+            encode_expr(builder, target);
+            encode_expr(builder, expr)
+        },
+        Stmt::Expr(expr, value_span) => {
+            encode_open(builder, "Stmt.Expr");
+            encode_span(builder, value_span);
+            encode_expr(builder, expr)
+        },
+    };
+    encode_close(builder)
+}
+
+fn encode_file(builder: text::StringBuilder, value: File) -> unit {
+    encode_open(builder, "File");
+    encode_string_value(builder, value.package_name);
+    encode_bool_value(builder, value.package_explicit);
+    encode_list(builder, value.uses.len());
+    for use_decl in value.uses {
+        encode_open(builder, "Use");
+        encode_path(builder, use_decl.path);
+        match use_decl.alias {
+            Option::Some(alias) => {
+                encode_some(builder);
+                encode_string_value(builder, alias)
+            },
+            Option::None => encode_none(builder),
+        };
+        encode_close(builder)
+    };
+    encode_list(builder, value.items.len());
+    for item in value.items {
+        encode_item(builder, item)
+    };
+    encode_close(builder)
+}
+
+pub fn encode(value: LowerResult) -> string {
+    let builder = text::StringBuilder::new();
+    match value.ast {
+        Option::Some(file) => {
+            encode_some(builder);
+            encode_file(builder, file)
+        },
+        Option::None => encode_none(builder),
+    };
+    encode_list(builder, value.diagnostics.len());
+    for diagnostic in value.diagnostics {
+        encode_open(builder, "Diagnostic");
+        encode_span(builder, span(diagnostic.start, diagnostic.end));
+        encode_string_value(builder, diagnostic.message);
+        encode_close(builder)
+    };
+    builder.finish()
+}

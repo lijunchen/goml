@@ -1,0 +1,321 @@
+package ast;
+
+use gomlang::parser::cst;
+
+fn lower_wrapped_branch(
+    ctx: LowerCtx,
+    node: LocatedNode,
+    missing_message: string,
+) -> Option[Expr] {
+    match first_child(node, cst::NodeKind::BLOCK) {
+        Option::Some(block_node) => match lower_block(ctx, block_node) {
+            Option::Some(block) => Option::Some(Expr::Block(block, node_span(block_node))),
+            Option::None => Option::None,
+        },
+        Option::None => {
+            let values = expr_children(node);
+            if values.len() > 0 {
+                lower_expr(ctx, values.get(0))
+            } else {
+                push_error(ctx, node_span(node), missing_message);
+                Option::None
+            }
+        },
+    }
+}
+
+fn lower_match_arm(ctx: LowerCtx, node: LocatedNode) -> Option[Arm] {
+    let patterns = pattern_children(node);
+    if patterns.len() == 0 {
+        Option::None
+    } else {
+        match lower_pat(ctx, patterns.get(0)) {
+            Option::Some(pat) => {
+                let guard = match first_child(node, cst::NodeKind::MATCH_ARM_GUARD) {
+                    Option::Some(guard_node) => {
+                        let values = expr_children(guard_node);
+                        if values.len() > 0 {
+                            lower_expr(ctx, values.get(0))
+                        } else {
+                            Option::None
+                        }
+                    },
+                    Option::None => Option::None,
+                };
+                let values = expr_children(node);
+                let body = if values.len() > 0 {
+                    lower_expr(ctx, values.get(0))
+                } else {
+                    match first_child(node, cst::NodeKind::BLOCK) {
+                        Option::Some(block_node) => match lower_block(ctx, block_node) {
+                            Option::Some(block) => Option::Some(Expr::Block(block, node_span(block_node))),
+                            Option::None => Option::None,
+                        },
+                        Option::None => {
+                            push_error(ctx, node_span(node), "Match arm has no body");
+                            Option::None
+                        },
+                    }
+                };
+                match body {
+                    Option::Some(value) => Option::Some(Arm {
+                        pat,
+                        guard,
+                        body: value,
+                    }),
+                    Option::None => Option::None,
+                }
+            },
+            Option::None => Option::None,
+        }
+    }
+}
+
+fn lower_match_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
+    if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to match expression") {
+        Option::None
+    } else {
+        let values = expr_children(node);
+        if values.len() == 0 {
+            push_error(ctx, node_span(node), "MatchExpr has no expr");
+            Option::None
+        } else {
+            match lower_expr(ctx, values.get(0)) {
+                Option::Some(scrutinee) => match first_child(node, cst::NodeKind::MATCH_ARM_LIST) {
+                    Option::Some(list) => {
+                        let arms: Vec[Arm] = Vec::new();
+                        for arm in children_of_kind(list, cst::NodeKind::MATCH_ARM) {
+                            match lower_match_arm(ctx, arm) {
+                                Option::Some(value) => arms.push(value),
+                                Option::None => (),
+                            }
+                        };
+                        Option::Some(Expr::Match(scrutinee, arms, node_span(node)))
+                    },
+                    Option::None => {
+                        push_error(ctx, node_span(node), "MatchExpr has no arms");
+                        Option::None
+                    },
+                },
+                Option::None => Option::None,
+            }
+        }
+    }
+}
+
+fn lower_if_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
+    if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to if expression") {
+        Option::None
+    } else {
+        match first_child(node, cst::NodeKind::EXPR_IF_COND) {
+            Option::Some(condition_node) => {
+                let patterns = pattern_children(condition_node);
+                let let_pat = if patterns.len() > 0 {
+                    lower_pat(ctx, patterns.get(0))
+                } else {
+                    Option::None
+                };
+                let values = expr_children(condition_node);
+                if values.len() == 0 {
+                    push_error(ctx, node_span(node), "If expression missing condition");
+                    Option::None
+                } else {
+                    match lower_expr(ctx, values.get(0)) {
+                        Option::Some(cond) => match first_child(node, cst::NodeKind::EXPR_IF_THEN) {
+                            Option::Some(then_node) => match lower_wrapped_branch(
+                                ctx,
+                                then_node,
+                                "If expression then-branch missing body",
+                            ) {
+                                Option::Some(then_branch) => {
+                                    let else_branch = match first_child(node, cst::NodeKind::EXPR_IF_ELSE) {
+                                        Option::Some(else_node) => lower_wrapped_branch(
+                                            ctx,
+                                            else_node,
+                                            "If expression else-branch missing body",
+                                        ),
+                                        Option::None => match let_pat {
+                                            Option::Some(_) => Option::Some(Expr::Unit(node_span(node))),
+                                            Option::None => {
+                                                push_error(ctx, node_span(node), "If expression missing else branch");
+                                                Option::None
+                                            },
+                                        },
+                                    };
+                                    match else_branch {
+                                        Option::Some(else_value) => match let_pat {
+                                            Option::Some(pat) => {
+                                                let arms: Vec[Arm] = Vec::new();
+                                                arms.push(Arm {
+                                                    pat,
+                                                    guard: Option::None,
+                                                    body: then_branch,
+                                                });
+                                                arms.push(Arm {
+                                                    pat: Pat::Wild(node_span(node)),
+                                                    guard: Option::None,
+                                                    body: else_value,
+                                                });
+                                                Option::Some(Expr::Match(cond, arms, node_span(node)))
+                                            },
+                                            Option::None => Option::Some(Expr::If(
+                                                cond,
+                                                then_branch,
+                                                else_value,
+                                                node_span(node),
+                                            )),
+                                        },
+                                        Option::None => Option::None,
+                                    }
+                                },
+                                Option::None => Option::None,
+                            },
+                            Option::None => {
+                                push_error(ctx, node_span(node), "If expression missing then branch");
+                                Option::None
+                            },
+                        },
+                        Option::None => Option::None,
+                    }
+                }
+            },
+            Option::None => {
+                push_error(ctx, node_span(node), "If expression missing condition");
+                Option::None
+            },
+        }
+    }
+}
+
+fn lower_while_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
+    if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to while expression") {
+        Option::None
+    } else {
+        match first_child(node, cst::NodeKind::EXPR_WHILE_COND) {
+            Option::Some(condition_node) => {
+                let patterns = pattern_children(condition_node);
+                let let_pat = if patterns.len() > 0 {
+                    lower_pat(ctx, patterns.get(0))
+                } else {
+                    Option::None
+                };
+                let values = expr_children(condition_node);
+                if values.len() == 0 {
+                    push_error(ctx, node_span(node), "While expression missing condition");
+                    Option::None
+                } else {
+                    match lower_expr(ctx, values.get(0)) {
+                        Option::Some(cond) => match first_child(node, cst::NodeKind::EXPR_WHILE_BODY) {
+                            Option::Some(body_node) => match lower_wrapped_branch(
+                                ctx,
+                                body_node,
+                                "While expression body missing expression",
+                            ) {
+                                Option::Some(body) => match let_pat {
+                                    Option::Some(pat) => {
+                                        let arms: Vec[Arm] = Vec::new();
+                                        arms.push(Arm {
+                                            pat,
+                                            guard: Option::None,
+                                            body,
+                                        });
+                                        arms.push(Arm {
+                                            pat: Pat::Wild(node_span(node)),
+                                            guard: Option::None,
+                                            body: Expr::Break(node_span(node)),
+                                        });
+                                        Option::Some(Expr::While(
+                                            Expr::Bool(true, node_span(node)),
+                                            Expr::Match(cond, arms, node_span(node)),
+                                            node_span(node),
+                                        ))
+                                    },
+                                    Option::None => Option::Some(Expr::While(cond, body, node_span(node))),
+                                },
+                                Option::None => Option::None,
+                            },
+                            Option::None => {
+                                push_error(ctx, node_span(node), "While expression missing body");
+                                Option::None
+                            },
+                        },
+                        Option::None => Option::None,
+                    }
+                }
+            },
+            Option::None => {
+                push_error(ctx, node_span(node), "While expression missing condition");
+                Option::None
+            },
+        }
+    }
+}
+
+fn lower_for_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
+    if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to for expression") {
+        Option::None
+    } else {
+        let patterns = pattern_children(node);
+        let values = expr_children(node);
+        if patterns.len() == 0 {
+            push_error(ctx, node_span(node), "For expression missing pattern");
+            Option::None
+        } else if values.len() == 0 {
+            push_error(ctx, node_span(node), "For expression missing iterator");
+            Option::None
+        } else {
+            match lower_pat(ctx, patterns.get(0)) {
+                Option::Some(pat) => match lower_expr(ctx, values.get(0)) {
+                    Option::Some(iterator) => match first_child(node, cst::NodeKind::BLOCK) {
+                        Option::Some(block_node) => match lower_block(ctx, block_node) {
+                            Option::Some(block) => Option::Some(Expr::For(
+                                pat,
+                                iterator,
+                                Expr::Block(block, node_span(block_node)),
+                                node_span(node),
+                            )),
+                            Option::None => Option::None,
+                        },
+                        Option::None => {
+                            push_error(ctx, node_span(node), "For expression missing body");
+                            Option::None
+                        },
+                    },
+                    Option::None => Option::None,
+                },
+                Option::None => Option::None,
+            }
+        }
+    }
+}
+
+fn lower_return_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
+    if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to return expression") {
+        Option::None
+    } else {
+        let values = expr_children(node);
+        let value = if values.len() > 0 {
+            lower_expr(ctx, values.get(0))
+        } else {
+            Option::None
+        };
+        Option::Some(Expr::Return(value, node_span(node)))
+    }
+}
+
+fn lower_go_expr(ctx: LowerCtx, node: LocatedNode, trailing_args: Vec[Expr]) -> Option[Expr] {
+    if reject_trailing(ctx, node, trailing_args, "Cannot apply arguments to go expression") {
+        Option::None
+    } else {
+        let values = expr_children(node);
+        if values.len() == 0 {
+            push_error(ctx, node_span(node), "go statement missing expression");
+            Option::None
+        } else {
+            match lower_expr(ctx, values.get(0)) {
+                Option::Some(value) => Option::Some(Expr::Go(value, node_span(node))),
+                Option::None => Option::None,
+            }
+        }
+    }
+}

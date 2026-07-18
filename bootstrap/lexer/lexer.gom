@@ -1,0 +1,741 @@
+package lexer;
+
+use std::text;
+
+#[derive(Eq, ToString)]
+pub enum TokenKind {
+    LParen,
+    RParen,
+    LBrace,
+    RBrace,
+    LBracket,
+    RBracket,
+    Eq,
+    Semi,
+    Comma,
+    ColonColon,
+    Colon,
+    Arrow,
+    FatArrow,
+    Plus,
+    Minus,
+    Star,
+    Slash,
+    Percent,
+    Dot,
+    DotDotEq,
+    DotDot,
+    At,
+    AndAnd,
+    Amp,
+    OrOr,
+    Pipe,
+    Caret,
+    Tilde,
+    Bang,
+    Less,
+    LessLess,
+    Greater,
+    GreaterGreater,
+    GreaterEq,
+    LessEq,
+    EqEq,
+    NotEq,
+    Question,
+    Pound,
+    ExternKeyword,
+    PackageKeyword,
+    UseKeyword,
+    ImportKeyword,
+    AsKeyword,
+    PubKeyword,
+    ModKeyword,
+    CrateKeyword,
+    SuperKeyword,
+    FnKeyword,
+    TraitKeyword,
+    ImplKeyword,
+    ForKeyword,
+    EnumKeyword,
+    StructKeyword,
+    TypeKeyword,
+    WhereKeyword,
+    MatchKeyword,
+    IfKeyword,
+    ElseKeyword,
+    LetKeyword,
+    MutKeyword,
+    InKeyword,
+    ReturnKeyword,
+    GoKeyword,
+    WhileKeyword,
+    BreakKeyword,
+    ContinueKeyword,
+    DynKeyword,
+    TrueKeyword,
+    FalseKeyword,
+    WildcardKeyword,
+    UnitKeyword,
+    BoolKeyword,
+    Int8Keyword,
+    Int16Keyword,
+    Int32Keyword,
+    Int64Keyword,
+    Uint8Keyword,
+    Uint16Keyword,
+    Uint32Keyword,
+    Uint64Keyword,
+    Float32Keyword,
+    Float64Keyword,
+    StringKeyword,
+    CharKeyword,
+    ArrayKeyword,
+    Ident,
+    Float32Lit,
+    Float64Lit,
+    Float,
+    Int8Lit,
+    Int16Lit,
+    Int32Lit,
+    Int64Lit,
+    UInt8Lit,
+    UInt16Lit,
+    UInt32Lit,
+    UInt64Lit,
+    Int,
+    Str,
+    MultilineStr,
+    CharLit,
+    Whitespace,
+    Comment,
+    Error,
+    Eof,
+}
+
+pub struct Token {
+    kind: TokenKind,
+    text: string,
+    start: int32,
+    end: int32,
+}
+
+fn byte_at(source: string, index: int32) -> uint8 {
+    source.byte_get(index)
+}
+
+fn starts_with(source: string, index: int32, expected: string) -> bool {
+    let end = index + expected.byte_len();
+    end <= source.byte_len() && source.byte_slice(index, end) == expected
+}
+
+fn is_ascii_lower(value: uint8) -> bool {
+    value >= 97u8 && value <= 122u8
+}
+
+fn is_ascii_upper(value: uint8) -> bool {
+    value >= 65u8 && value <= 90u8
+}
+
+fn is_ascii_letter(value: uint8) -> bool {
+    is_ascii_lower(value) || is_ascii_upper(value)
+}
+
+fn is_ascii_digit(value: uint8) -> bool {
+    value >= 48u8 && value <= 57u8
+}
+
+fn is_ident_continue(value: uint8) -> bool {
+    is_ascii_letter(value) || is_ascii_digit(value) || value == 95u8
+}
+
+fn is_whitespace(value: uint8) -> bool {
+    value == 32u8 || value == 9u8 || value == 13u8 || value == 10u8
+}
+
+fn is_hex_digit(value: uint8) -> bool {
+    is_ascii_digit(value)
+        || (value >= 65u8 && value <= 70u8)
+        || (value >= 97u8 && value <= 102u8)
+}
+
+fn utf8_width(value: uint8) -> int32 {
+    if value < 128u8 {
+        1
+    } else if value < 224u8 {
+        2
+    } else if value < 240u8 {
+        3
+    } else {
+        4
+    }
+}
+
+fn option_int_is_none(value: Option[int32]) -> bool {
+    match value {
+        Option::Some(_) => false,
+        Option::None => true,
+    }
+}
+
+fn keyword_kind(text_value: string) -> TokenKind {
+    match text_value {
+        "extern" => TokenKind::ExternKeyword,
+        "package" => TokenKind::PackageKeyword,
+        "use" => TokenKind::UseKeyword,
+        "import" => TokenKind::ImportKeyword,
+        "as" => TokenKind::AsKeyword,
+        "pub" => TokenKind::PubKeyword,
+        "mod" => TokenKind::ModKeyword,
+        "crate" => TokenKind::CrateKeyword,
+        "super" => TokenKind::SuperKeyword,
+        "fn" => TokenKind::FnKeyword,
+        "trait" => TokenKind::TraitKeyword,
+        "impl" => TokenKind::ImplKeyword,
+        "for" => TokenKind::ForKeyword,
+        "enum" => TokenKind::EnumKeyword,
+        "struct" => TokenKind::StructKeyword,
+        "type" => TokenKind::TypeKeyword,
+        "where" => TokenKind::WhereKeyword,
+        "match" => TokenKind::MatchKeyword,
+        "if" => TokenKind::IfKeyword,
+        "else" => TokenKind::ElseKeyword,
+        "let" => TokenKind::LetKeyword,
+        "mut" => TokenKind::MutKeyword,
+        "in" => TokenKind::InKeyword,
+        "return" => TokenKind::ReturnKeyword,
+        "go" => TokenKind::GoKeyword,
+        "while" => TokenKind::WhileKeyword,
+        "break" => TokenKind::BreakKeyword,
+        "continue" => TokenKind::ContinueKeyword,
+        "dyn" => TokenKind::DynKeyword,
+        "true" => TokenKind::TrueKeyword,
+        "false" => TokenKind::FalseKeyword,
+        "_" => TokenKind::WildcardKeyword,
+        "unit" => TokenKind::UnitKeyword,
+        "bool" => TokenKind::BoolKeyword,
+        "int8" => TokenKind::Int8Keyword,
+        "int16" => TokenKind::Int16Keyword,
+        "int32" => TokenKind::Int32Keyword,
+        "int64" => TokenKind::Int64Keyword,
+        "uint8" => TokenKind::Uint8Keyword,
+        "uint16" => TokenKind::Uint16Keyword,
+        "uint32" => TokenKind::Uint32Keyword,
+        "uint64" => TokenKind::Uint64Keyword,
+        "float32" => TokenKind::Float32Keyword,
+        "float64" => TokenKind::Float64Keyword,
+        "string" => TokenKind::StringKeyword,
+        "char" => TokenKind::CharKeyword,
+        "array" => TokenKind::ArrayKeyword,
+        _ => TokenKind::Ident,
+    }
+}
+
+fn scan_ident_end(source: string, start: int32) -> int32 {
+    let index = Ref::new(start);
+    while index.get() < source.byte_len() && is_ident_continue(byte_at(source, index.get())) {
+        index.set(index.get() + 1)
+    };
+    index.get()
+}
+
+fn scan_digits_end(source: string, start: int32) -> int32 {
+    let index = Ref::new(start);
+    while index.get() < source.byte_len() && is_ascii_digit(byte_at(source, index.get())) {
+        index.set(index.get() + 1)
+    };
+    index.get()
+}
+
+fn scan_number(source: string, start: int32) -> (TokenKind, int32) {
+    let integer_end = scan_digits_end(source, start);
+    if integer_end + 1 < source.byte_len()
+        && byte_at(source, integer_end) == 46u8
+        && is_ascii_digit(byte_at(source, integer_end + 1))
+    {
+        let fraction_end = scan_digits_end(source, integer_end + 1);
+        if starts_with(source, fraction_end, "f32") {
+            (TokenKind::Float32Lit, fraction_end + 3)
+        } else if starts_with(source, fraction_end, "f64") {
+            (TokenKind::Float64Lit, fraction_end + 3)
+        } else {
+            (TokenKind::Float, fraction_end)
+        }
+    } else if starts_with(source, integer_end, "i16") {
+        (TokenKind::Int16Lit, integer_end + 3)
+    } else if starts_with(source, integer_end, "i32") {
+        (TokenKind::Int32Lit, integer_end + 3)
+    } else if starts_with(source, integer_end, "i64") {
+        (TokenKind::Int64Lit, integer_end + 3)
+    } else if starts_with(source, integer_end, "u16") {
+        (TokenKind::UInt16Lit, integer_end + 3)
+    } else if starts_with(source, integer_end, "u32") {
+        (TokenKind::UInt32Lit, integer_end + 3)
+    } else if starts_with(source, integer_end, "u64") {
+        (TokenKind::UInt64Lit, integer_end + 3)
+    } else if starts_with(source, integer_end, "i8") {
+        (TokenKind::Int8Lit, integer_end + 2)
+    } else if starts_with(source, integer_end, "u8") {
+        (TokenKind::UInt8Lit, integer_end + 2)
+    } else {
+        (TokenKind::Int, integer_end)
+    }
+}
+
+fn scan_escape_end(source: string, slash: int32, quote: uint8) -> Option[int32] {
+    if slash + 1 >= source.byte_len() {
+        Option::None
+    } else {
+        let escaped = byte_at(source, slash + 1);
+        if escaped == quote
+            || escaped == 92u8
+            || escaped == 98u8
+            || escaped == 110u8
+            || escaped == 102u8
+            || escaped == 114u8
+            || escaped == 116u8
+            || escaped == 47u8
+        {
+            Option::Some(slash + 2)
+        } else if escaped == 117u8 && slash + 5 < source.byte_len() {
+            if is_hex_digit(byte_at(source, slash + 2))
+                && is_hex_digit(byte_at(source, slash + 3))
+                && is_hex_digit(byte_at(source, slash + 4))
+                && is_hex_digit(byte_at(source, slash + 5))
+            {
+                Option::Some(slash + 6)
+            } else {
+                Option::None
+            }
+        } else {
+            Option::None
+        }
+    }
+}
+
+fn scan_string(source: string, start: int32) -> (bool, int32) {
+    let index = Ref::new(start + 1);
+    let success = Ref::new(false);
+    let finished = Ref::new(false);
+    while finished.get() == false && index.get() < source.byte_len() {
+        let value = byte_at(source, index.get());
+        if value == 34u8 {
+            index.set(index.get() + 1);
+            success.set(true);
+            finished.set(true)
+        } else if value < 32u8 {
+            finished.set(true)
+        } else if value == 92u8 {
+            match scan_escape_end(source, index.get(), 34u8) {
+                Option::Some(next) => index.set(next),
+                Option::None => finished.set(true),
+            }
+        } else {
+            index.set(index.get() + utf8_width(value))
+        }
+    };
+    (success.get(), index.get())
+}
+
+fn scan_char_end(source: string, start: int32) -> Option[int32] {
+    let content = start + 1;
+    if content >= source.byte_len() {
+        Option::None
+    } else {
+        let value = byte_at(source, content);
+        let content_end = if value < 32u8 || value == 39u8 {
+            Option::None
+        } else if value == 92u8 {
+            scan_escape_end(source, content, 39u8)
+        } else {
+            Option::Some(content + utf8_width(value))
+        };
+        match content_end {
+            Option::Some(end) => {
+                if end < source.byte_len() && byte_at(source, end) == 39u8 {
+                    Option::Some(end + 1)
+                } else {
+                    Option::None
+                }
+            },
+            Option::None => Option::None,
+        }
+    }
+}
+
+fn scan_multiline_string_end(source: string, start: int32) -> Option[int32] {
+    let cursor = Ref::new(start + 2);
+    while cursor.get() < source.byte_len() && byte_at(source, cursor.get()) != 10u8 {
+        cursor.set(cursor.get() + 1)
+    };
+    if cursor.get() >= source.byte_len() {
+        Option::None
+    } else {
+        cursor.set(cursor.get() + 1);
+        let lines = Ref::new(1);
+        let result = Ref::new(Option::None);
+        let failed = Ref::new(false);
+        while option_int_is_none(result.get()) && failed.get() == false && cursor.get() < source.byte_len() {
+            let line_start = cursor.get();
+            let index = Ref::new(line_start);
+            while index.get() < source.byte_len()
+                && (byte_at(source, index.get()) == 32u8 || byte_at(source, index.get()) == 9u8)
+            {
+                index.set(index.get() + 1)
+            };
+            if index.get() + 1 >= source.byte_len()
+                || byte_at(source, index.get()) != 92u8
+                || byte_at(source, index.get() + 1) != 92u8
+            {
+                if lines.get() >= 2 {
+                    result.set(Option::Some(line_start - 1))
+                } else {
+                    failed.set(true)
+                }
+            } else {
+                index.set(index.get() + 2);
+                while index.get() < source.byte_len() && byte_at(source, index.get()) != 10u8 {
+                    index.set(index.get() + 1)
+                };
+                lines.set(lines.get() + 1);
+                if index.get() >= source.byte_len() {
+                    result.set(Option::Some(index.get()))
+                } else {
+                    cursor.set(index.get() + 1)
+                }
+            }
+        };
+        if failed.get() || lines.get() < 2 {
+            Option::None
+        } else {
+            match result.get() {
+                Option::Some(end) => Option::Some(end),
+                Option::None => Option::Some(cursor.get()),
+            }
+        }
+    }
+}
+
+fn scan_symbol(source: string, start: int32) -> Option[(TokenKind, int32)] {
+    if starts_with(source, start, "..=") {
+        Option::Some((TokenKind::DotDotEq, start + 3))
+    } else if starts_with(source, start, "::") {
+        Option::Some((TokenKind::ColonColon, start + 2))
+    } else if starts_with(source, start, "->") {
+        Option::Some((TokenKind::Arrow, start + 2))
+    } else if starts_with(source, start, "=>") {
+        Option::Some((TokenKind::FatArrow, start + 2))
+    } else if starts_with(source, start, "..") {
+        Option::Some((TokenKind::DotDot, start + 2))
+    } else if starts_with(source, start, "&&") {
+        Option::Some((TokenKind::AndAnd, start + 2))
+    } else if starts_with(source, start, "||") {
+        Option::Some((TokenKind::OrOr, start + 2))
+    } else if starts_with(source, start, "<<") {
+        Option::Some((TokenKind::LessLess, start + 2))
+    } else if starts_with(source, start, ">>") {
+        Option::Some((TokenKind::GreaterGreater, start + 2))
+    } else if starts_with(source, start, ">=") {
+        Option::Some((TokenKind::GreaterEq, start + 2))
+    } else if starts_with(source, start, "<=") {
+        Option::Some((TokenKind::LessEq, start + 2))
+    } else if starts_with(source, start, "==") {
+        Option::Some((TokenKind::EqEq, start + 2))
+    } else if starts_with(source, start, "!=") {
+        Option::Some((TokenKind::NotEq, start + 2))
+    } else {
+        let kind = match byte_at(source, start) {
+            40u8 => Option::Some(TokenKind::LParen),
+            41u8 => Option::Some(TokenKind::RParen),
+            123u8 => Option::Some(TokenKind::LBrace),
+            125u8 => Option::Some(TokenKind::RBrace),
+            91u8 => Option::Some(TokenKind::LBracket),
+            93u8 => Option::Some(TokenKind::RBracket),
+            61u8 => Option::Some(TokenKind::Eq),
+            59u8 => Option::Some(TokenKind::Semi),
+            44u8 => Option::Some(TokenKind::Comma),
+            58u8 => Option::Some(TokenKind::Colon),
+            43u8 => Option::Some(TokenKind::Plus),
+            45u8 => Option::Some(TokenKind::Minus),
+            42u8 => Option::Some(TokenKind::Star),
+            47u8 => Option::Some(TokenKind::Slash),
+            37u8 => Option::Some(TokenKind::Percent),
+            46u8 => Option::Some(TokenKind::Dot),
+            64u8 => Option::Some(TokenKind::At),
+            38u8 => Option::Some(TokenKind::Amp),
+            124u8 => Option::Some(TokenKind::Pipe),
+            94u8 => Option::Some(TokenKind::Caret),
+            126u8 => Option::Some(TokenKind::Tilde),
+            33u8 => Option::Some(TokenKind::Bang),
+            60u8 => Option::Some(TokenKind::Less),
+            62u8 => Option::Some(TokenKind::Greater),
+            63u8 => Option::Some(TokenKind::Question),
+            35u8 => Option::Some(TokenKind::Pound),
+            _ => Option::None,
+        };
+        match kind {
+            Option::Some(value) => Option::Some((value, start + 1)),
+            Option::None => Option::None,
+        }
+    }
+}
+
+fn push_token(tokens: Vec[Token], source: string, kind: TokenKind, start: int32, end: int32) -> unit {
+    tokens.push(Token {
+        kind,
+        text: source.byte_slice(start, end),
+        start,
+        end,
+    })
+}
+
+pub fn lex(source: string) -> Vec[Token] {
+    let tokens: Vec[Token] = Vec::new();
+    let index = Ref::new(0);
+    while index.get() < source.byte_len() {
+        let start = index.get();
+        let value = byte_at(source, start);
+        if is_whitespace(value) {
+            index.set(start + 1);
+            while index.get() < source.byte_len() && is_whitespace(byte_at(source, index.get())) {
+                index.set(index.get() + 1)
+            };
+            push_token(tokens, source, TokenKind::Whitespace, start, index.get())
+        } else if starts_with(source, start, "//") {
+            index.set(start + 2);
+            while index.get() < source.byte_len() && byte_at(source, index.get()) != 10u8 {
+                index.set(index.get() + 1)
+            };
+            push_token(tokens, source, TokenKind::Comment, start, index.get())
+        } else if starts_with(source, start, "\\\\") {
+            match scan_multiline_string_end(source, start) {
+                Option::Some(end) => {
+                    index.set(end);
+                    push_token(tokens, source, TokenKind::MultilineStr, start, end)
+                },
+                Option::None => {
+                    index.set(start + 2);
+                    push_token(tokens, source, TokenKind::Error, start, start + 2)
+                },
+            }
+        } else if value == 34u8 {
+            let (valid, end) = scan_string(source, start);
+            index.set(end);
+            if valid {
+                push_token(tokens, source, TokenKind::Str, start, end)
+            } else {
+                push_token(tokens, source, TokenKind::Error, start, end)
+            }
+        } else if value == 39u8 {
+            match scan_char_end(source, start) {
+                Option::Some(end) => {
+                    index.set(end);
+                    push_token(tokens, source, TokenKind::CharLit, start, end)
+                },
+                Option::None => {
+                    index.set(start + 1);
+                    push_token(tokens, source, TokenKind::Error, start, start + 1)
+                },
+            }
+        } else if is_ascii_letter(value) || value == 95u8 {
+            let end = if value == 95u8
+                && (start + 1 >= source.byte_len() || !is_ident_continue(byte_at(source, start + 1)))
+            {
+                start + 1
+            } else {
+                scan_ident_end(source, start + 1)
+            };
+            let text_value = source.byte_slice(start, end);
+            index.set(end);
+            push_token(tokens, source, keyword_kind(text_value), start, end)
+        } else if is_ascii_digit(value) {
+            let (kind, end) = scan_number(source, start);
+            index.set(end);
+            push_token(tokens, source, kind, start, end)
+        } else {
+            match scan_symbol(source, start) {
+                Option::Some((kind, end)) => {
+                    index.set(end);
+                    push_token(tokens, source, kind, start, end)
+                },
+                Option::None => {
+                    let end = start + utf8_width(value);
+                    index.set(end);
+                    push_token(tokens, source, TokenKind::Error, start, end)
+                },
+            }
+        }
+    };
+    tokens
+}
+
+pub fn token_kind_name(kind: TokenKind) -> string {
+    let rendered = kind.to_string();
+    rendered.byte_slice(11, rendered.byte_len())
+}
+
+pub fn token_kind_display(kind: TokenKind) -> string {
+    match kind {
+        TokenKind::LParen => "(",
+        TokenKind::RParen => ")",
+        TokenKind::LBrace => "{",
+        TokenKind::RBrace => "}",
+        TokenKind::LBracket => "[",
+        TokenKind::RBracket => "]",
+        TokenKind::Eq => "=",
+        TokenKind::Semi => ";",
+        TokenKind::Comma => ",",
+        TokenKind::ColonColon => "::",
+        TokenKind::Colon => ":",
+        TokenKind::Arrow => "->",
+        TokenKind::FatArrow => "=>",
+        TokenKind::Plus => "+",
+        TokenKind::Minus => "-",
+        TokenKind::Star => "*",
+        TokenKind::Slash => "/",
+        TokenKind::Percent => "%",
+        TokenKind::Dot => ".",
+        TokenKind::DotDotEq => "..=",
+        TokenKind::DotDot => "..",
+        TokenKind::At => "@",
+        TokenKind::AndAnd => "&&",
+        TokenKind::Amp => "&",
+        TokenKind::OrOr => "||",
+        TokenKind::Pipe => "|",
+        TokenKind::Caret => "^",
+        TokenKind::Tilde => "~",
+        TokenKind::Bang => "!",
+        TokenKind::Less => "<",
+        TokenKind::LessLess => "<<",
+        TokenKind::Greater => ">",
+        TokenKind::GreaterGreater => ">>",
+        TokenKind::GreaterEq => ">=",
+        TokenKind::LessEq => "<=",
+        TokenKind::EqEq => "==",
+        TokenKind::NotEq => "!=",
+        TokenKind::Question => "?",
+        TokenKind::Pound => "#",
+        TokenKind::ExternKeyword => "extern",
+        TokenKind::PackageKeyword => "package",
+        TokenKind::UseKeyword => "use",
+        TokenKind::ImportKeyword => "import",
+        TokenKind::AsKeyword => "as",
+        TokenKind::PubKeyword => "pub",
+        TokenKind::ModKeyword => "mod",
+        TokenKind::CrateKeyword => "crate",
+        TokenKind::SuperKeyword => "super",
+        TokenKind::FnKeyword => "fn",
+        TokenKind::TraitKeyword => "trait",
+        TokenKind::ImplKeyword => "impl",
+        TokenKind::ForKeyword => "for",
+        TokenKind::EnumKeyword => "enum",
+        TokenKind::StructKeyword => "struct",
+        TokenKind::TypeKeyword => "type",
+        TokenKind::WhereKeyword => "where",
+        TokenKind::MatchKeyword => "match",
+        TokenKind::IfKeyword => "if",
+        TokenKind::ElseKeyword => "else",
+        TokenKind::LetKeyword => "let",
+        TokenKind::MutKeyword => "mut",
+        TokenKind::InKeyword => "in",
+        TokenKind::ReturnKeyword => "return",
+        TokenKind::GoKeyword => "go",
+        TokenKind::WhileKeyword => "while",
+        TokenKind::BreakKeyword => "break",
+        TokenKind::ContinueKeyword => "continue",
+        TokenKind::DynKeyword => "dyn",
+        TokenKind::TrueKeyword => "true",
+        TokenKind::FalseKeyword => "false",
+        TokenKind::WildcardKeyword => "_",
+        TokenKind::UnitKeyword => "unit",
+        TokenKind::BoolKeyword => "bool",
+        TokenKind::Int8Keyword => "int8",
+        TokenKind::Int16Keyword => "int16",
+        TokenKind::Int32Keyword => "int32",
+        TokenKind::Int64Keyword => "int64",
+        TokenKind::Uint8Keyword => "uint8",
+        TokenKind::Uint16Keyword => "uint16",
+        TokenKind::Uint32Keyword => "uint32",
+        TokenKind::Uint64Keyword => "uint64",
+        TokenKind::Float32Keyword => "float32",
+        TokenKind::Float64Keyword => "float64",
+        TokenKind::StringKeyword => "string",
+        TokenKind::CharKeyword => "char",
+        TokenKind::ArrayKeyword => "array",
+        TokenKind::Ident => "ident",
+        TokenKind::Float32Lit => "float32_lit",
+        TokenKind::Float64Lit => "float64_lit",
+        TokenKind::Float => "float",
+        TokenKind::Int8Lit => "int8_lit",
+        TokenKind::Int16Lit => "int16_lit",
+        TokenKind::Int32Lit => "int32_lit",
+        TokenKind::Int64Lit => "int64_lit",
+        TokenKind::UInt8Lit => "uint8_lit",
+        TokenKind::UInt16Lit => "uint16_lit",
+        TokenKind::UInt32Lit => "uint32_lit",
+        TokenKind::UInt64Lit => "uint64_lit",
+        TokenKind::Int => "int",
+        TokenKind::Str => "str",
+        TokenKind::MultilineStr => "multiline_str",
+        TokenKind::CharLit => "char_lit",
+        TokenKind::Whitespace => "whitespace",
+        TokenKind::Comment => "comment",
+        TokenKind::Error => "unknown token",
+        TokenKind::Eof => "end of file",
+    }
+}
+
+pub fn token_kind_equal(left: TokenKind, right: TokenKind) -> bool {
+    Eq::eq(left, right)
+}
+
+pub fn token_is_trivia(kind: TokenKind) -> bool {
+    token_kind_equal(kind, TokenKind::Whitespace) || token_kind_equal(kind, TokenKind::Comment)
+}
+
+fn hex_digit(value: uint8) -> string {
+    match value {
+        0u8 => "0",
+        1u8 => "1",
+        2u8 => "2",
+        3u8 => "3",
+        4u8 => "4",
+        5u8 => "5",
+        6u8 => "6",
+        7u8 => "7",
+        8u8 => "8",
+        9u8 => "9",
+        10u8 => "a",
+        11u8 => "b",
+        12u8 => "c",
+        13u8 => "d",
+        14u8 => "e",
+        _ => "f",
+    }
+}
+
+pub fn encode_text_hex(value: string) -> string {
+    let builder = text::StringBuilder::with_capacity(value.byte_len() * 2);
+    let index = Ref::new(0);
+    while index.get() < value.byte_len() {
+        let byte = value.byte_get(index.get());
+        builder.write_string(hex_digit(byte >> 4u8));
+        builder.write_string(hex_digit(byte & 15u8));
+        index.set(index.get() + 1)
+    };
+    builder.finish()
+}
+
+pub fn encode_tokens(tokens: Vec[Token]) -> string {
+    let builder = text::StringBuilder::with_capacity(tokens.len() * 8);
+    for token in tokens {
+        builder.write_string(token_kind_name(token.kind));
+        builder.write_string("\t");
+        builder.write_string(token.start.to_string());
+        builder.write_string("\t");
+        builder.write_string(token.end.to_string());
+        builder.write_string("\t");
+        builder.write_string(encode_text_hex(token.text));
+        builder.write_string("\n")
+    };
+    builder.finish()
+}

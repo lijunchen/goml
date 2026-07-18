@@ -1,0 +1,251 @@
+package cst;
+
+use gomlang::parser::lexer;
+use std::text;
+
+#[derive(Eq, ToString)]
+pub enum NodeKind {
+    TombStone,
+    ErrorTree,
+    EXTERN,
+    PACKAGE,
+    USE,
+    FN,
+    ENUM,
+    TRAIT,
+    TRAIT_METHOD_SIG_LIST,
+    TRAIT_METHOD_SIG,
+    TRAIT_ASSOCIATED_TYPE,
+    IMPL,
+    IMPL_ASSOCIATED_TYPE,
+    STRUCT,
+    STRUCT_FIELD_LIST,
+    STRUCT_FIELD,
+    TYPE_LIST,
+    TYPE_UNIT,
+    TYPE_BOOL,
+    TYPE_INT8,
+    TYPE_INT16,
+    TYPE_INT32,
+    TYPE_INT64,
+    TYPE_UINT8,
+    TYPE_UINT16,
+    TYPE_UINT32,
+    TYPE_UINT64,
+    TYPE_FLOAT32,
+    TYPE_FLOAT64,
+    TYPE_STRING,
+    TYPE_CHAR,
+    TYPE_TUPLE,
+    TYPE_TAPP,
+    TYPE_DYN,
+    TYPE_ARRAY,
+    TYPE_FUNC,
+    EXPR_LITERAL,
+    EXPR_IDENT,
+    PATH,
+    EXPR_PAREN,
+    EXPR_BINARY,
+    EXPR_PREFIX,
+    EXPR_CAST,
+    EXPR_IF,
+    EXPR_IF_COND,
+    EXPR_IF_THEN,
+    EXPR_IF_ELSE,
+    EXPR_WHILE,
+    EXPR_WHILE_COND,
+    EXPR_WHILE_BODY,
+    EXPR_FOR,
+    EXPR_BREAK,
+    EXPR_CONTINUE,
+    EXPR_MATCH,
+    EXPR_GO,
+    EXPR_RETURN,
+    EXPR_UNIT,
+    EXPR_BOOL,
+    EXPR_INT,
+    EXPR_INT8,
+    EXPR_INT16,
+    EXPR_INT32,
+    EXPR_INT64,
+    EXPR_UINT8,
+    EXPR_UINT16,
+    EXPR_UINT32,
+    EXPR_UINT64,
+    EXPR_FLOAT,
+    EXPR_FLOAT32,
+    EXPR_FLOAT64,
+    EXPR_CHAR,
+    EXPR_STR,
+    EXPR_MULTILINE_STR,
+    EXPR_ARRAY_LITERAL,
+    EXPR_TUPLE,
+    EXPR_CALL,
+    EXPR_INDEX,
+    EXPR_TRY,
+    EXPR_STRUCT_LITERAL,
+    ARG_LIST,
+    ARG,
+    STRUCT_LITERAL_FIELD_LIST,
+    STRUCT_LITERAL_FIELD,
+    EXPR_CLOSURE,
+    EXPR_CLOSURE_BODY,
+    CLOSURE_PARAM_LIST,
+    CLOSURE_PARAM,
+    STMT_LET,
+    STMT_ASSIGN,
+    STMT_EXPR,
+    STRUCT_PATTERN_FIELD_LIST,
+    STRUCT_PATTERN_FIELD,
+    VARIANT_LIST,
+    VARIANT,
+    PATTERN,
+    PATTERN_UNIT,
+    PATTERN_BOOL,
+    PATTERN_STRING,
+    PATTERN_INT,
+    PATTERN_INT8,
+    PATTERN_INT16,
+    PATTERN_INT32,
+    PATTERN_INT64,
+    PATTERN_UINT8,
+    PATTERN_UINT16,
+    PATTERN_UINT32,
+    PATTERN_UINT64,
+    PATTERN_FLOAT,
+    PATTERN_FLOAT32,
+    PATTERN_FLOAT64,
+    PATTERN_CHAR,
+    PATTERN_TUPLE,
+    PATTERN_ARRAY,
+    PATTERN_CONSTR,
+    PATTERN_VARIABLE,
+    PATTERN_WILDCARD,
+    PATTERN_ALIAS,
+    PATTERN_OR,
+    PATTERN_RANGE,
+    PATTERN_REST,
+    MATCH_ARM_LIST,
+    MATCH_ARM,
+    MATCH_ARM_GUARD,
+    PARAM,
+    PARAM_LIST,
+    GENERIC,
+    GENERIC_LIST,
+    TRAIT_SET,
+    WHERE_CLAUSE,
+    WHERE_PREDICATE,
+    TYPE_PARAM_LIST,
+    BLOCK,
+    FILE,
+    ATTRIBUTE_LIST,
+    ATTRIBUTE,
+}
+
+pub struct CstNode {
+    kind: NodeKind,
+    children: Vec[CstElement],
+    byte_len: int32,
+}
+
+pub enum CstElement {
+    Node(CstNode),
+    Token(lexer::Token),
+}
+
+pub struct Diagnostic {
+    message: string,
+    start: int32,
+    end: int32,
+}
+
+pub struct ParseResult {
+    root: CstNode,
+    diagnostics: Vec[Diagnostic],
+}
+
+pub fn node(kind: NodeKind, children: Vec[CstElement], byte_len: int32) -> CstNode {
+    CstNode { kind, children, byte_len }
+}
+
+pub fn diagnostic(message: string, start: int32, end: int32) -> Diagnostic {
+    Diagnostic { message, start, end }
+}
+
+pub fn parse_result(root: CstNode, diagnostics: Vec[Diagnostic]) -> ParseResult {
+    ParseResult { root, diagnostics }
+}
+
+pub fn node_kind(value: CstNode) -> NodeKind {
+    value.kind
+}
+
+pub fn node_children(value: CstNode) -> Vec[CstElement] {
+    value.children
+}
+
+pub fn node_byte_len(value: CstNode) -> int32 {
+    value.byte_len
+}
+
+pub fn element_byte_len(value: CstElement) -> int32 {
+    match value {
+        CstElement::Node(node_value) => node_value.byte_len,
+        CstElement::Token(token) => token.text.byte_len(),
+    }
+}
+
+pub fn node_kind_name(kind: NodeKind) -> string {
+    let rendered = kind.to_string();
+    rendered.byte_slice(10, rendered.byte_len())
+}
+
+pub fn node_kind_equal(left: NodeKind, right: NodeKind) -> bool {
+    Eq::eq(left, right)
+}
+
+fn encode_node(value: CstNode, start: int32, builder: text::StringBuilder) -> int32 {
+    let end = start + value.byte_len;
+    builder.write_string("N\t");
+    builder.write_string(node_kind_name(value.kind));
+    builder.write_string("\t");
+    builder.write_string(start.to_string());
+    builder.write_string("\t");
+    builder.write_string(end.to_string());
+    builder.write_string("\n");
+    let cursor = Ref::new(start);
+    for child in value.children {
+        match child {
+            CstElement::Node(child_node) => cursor.set(encode_node(child_node, cursor.get(), builder)),
+            CstElement::Token(token) => {
+                builder.write_string("T\t");
+                builder.write_string(lexer::token_kind_name(token.kind));
+                builder.write_string("\t");
+                builder.write_string(cursor.get().to_string());
+                builder.write_string("\t");
+                builder.write_string((cursor.get() + token.text.byte_len()).to_string());
+                builder.write_string("\t");
+                builder.write_string(lexer::encode_text_hex(token.text));
+                builder.write_string("\n");
+                cursor.set(cursor.get() + token.text.byte_len())
+            },
+        }
+    };
+    builder.write_string("E\n");
+    end
+}
+
+pub fn encode(result: ParseResult) -> string {
+    let builder = text::StringBuilder::new();
+    let _ = encode_node(result.root, 0, builder);
+    for item in result.diagnostics {
+        builder.write_string("D\t");
+        builder.write_string(item.start.to_string());
+        builder.write_string("\t");
+        builder.write_string(item.end.to_string());
+        builder.write_string("\t");
+        builder.write_string(lexer::encode_text_hex(item.message));
+        builder.write_string("\n")
+    };
+    builder.finish()
+}

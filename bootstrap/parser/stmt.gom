@@ -1,0 +1,50 @@
+package parser;
+
+use gomlang::parser::cst;
+use gomlang::parser::lexer;
+
+fn let_stmt(parser: Parser) -> Option[MarkerClosed] {
+    if parser.at(lexer::TokenKind::LetKeyword) == false {
+        Option::None
+    } else {
+        let marker = parser.open();
+        parser.expect(lexer::TokenKind::LetKeyword);
+        parser.eat(lexer::TokenKind::MutKeyword);
+        if marker_is_none(pattern(parser)) {
+            parser.advance_with_error("expected a pattern in let statement")
+        } else {
+            ()
+        };
+        if parser.at(lexer::TokenKind::Colon) {
+            parser.expect(lexer::TokenKind::Colon);
+            type_expr(parser)
+        } else {
+            ()
+        };
+        parser.expect(lexer::TokenKind::Eq);
+        if marker_is_none(expr(parser)) {
+            parser.advance_with_error("let statement expected an expression")
+        } else {
+            ()
+        };
+        parser.expect(lexer::TokenKind::Semi);
+        Option::Some(parser.close(marker, cst::NodeKind::STMT_LET))
+    }
+}
+
+fn finish_assign_stmt(parser: Parser, target: MarkerClosed) -> MarkerClosed {
+    let marker = target.precede(parser);
+    parser.expect(lexer::TokenKind::Eq);
+    if marker_is_none(expr(parser)) {
+        parser.advance_with_error("assignment statement expected an expression")
+    } else {
+        ()
+    };
+    parser.expect(lexer::TokenKind::Semi);
+    parser.close(marker, cst::NodeKind::STMT_ASSIGN)
+}
+
+fn wrap_expr_stmt(parser: Parser, expression: MarkerClosed) -> MarkerClosed {
+    let marker = expression.precede(parser);
+    parser.close(marker, cst::NodeKind::STMT_EXPR)
+}

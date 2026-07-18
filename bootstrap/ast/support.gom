@@ -1,0 +1,304 @@
+package ast;
+
+use gomlang::parser::cst;
+use gomlang::parser::lexer;
+use std::text;
+
+struct LocatedNode {
+    node: cst::CstNode,
+    start: int32,
+}
+
+struct LocatedToken {
+    token: lexer::Token,
+    start: int32,
+}
+
+fn root_node(result: cst::ParseResult) -> LocatedNode {
+    LocatedNode { node: result.root, start: 0 }
+}
+
+fn node_kind(value: LocatedNode) -> cst::NodeKind {
+    cst::node_kind(value.node)
+}
+
+fn node_span(value: LocatedNode) -> Span {
+    span(value.start, value.start + cst::node_byte_len(value.node))
+}
+
+fn direct_nodes(value: LocatedNode) -> Vec[LocatedNode] {
+    let result: Vec[LocatedNode] = Vec::new();
+    let cursor = Ref::new(value.start);
+    for element in cst::node_children(value.node) {
+        match element {
+            cst::CstElement::Node(child) => result.push(LocatedNode {
+                node: child,
+                start: cursor.get(),
+            }),
+            cst::CstElement::Token(_) => (),
+        };
+        cursor.set(cursor.get() + cst::element_byte_len(element))
+    };
+    result
+}
+
+fn direct_tokens(value: LocatedNode) -> Vec[LocatedToken] {
+    let result: Vec[LocatedToken] = Vec::new();
+    let cursor = Ref::new(value.start);
+    for element in cst::node_children(value.node) {
+        match element {
+            cst::CstElement::Node(_) => (),
+            cst::CstElement::Token(token) => result.push(LocatedToken {
+                token,
+                start: cursor.get(),
+            }),
+        };
+        cursor.set(cursor.get() + cst::element_byte_len(element))
+    };
+    result
+}
+
+fn children_of_kind(value: LocatedNode, kind: cst::NodeKind) -> Vec[LocatedNode] {
+    let result: Vec[LocatedNode] = Vec::new();
+    for child in direct_nodes(value) {
+        if cst::node_kind_equal(node_kind(child), kind) {
+            result.push(child)
+        } else {
+            ()
+        }
+    };
+    result
+}
+
+fn first_child(value: LocatedNode, kind: cst::NodeKind) -> Option[LocatedNode] {
+    let result = Ref::new(Option::None);
+    let found = Ref::new(false);
+    for child in direct_nodes(value) {
+        if found.get() == false && cst::node_kind_equal(node_kind(child), kind) {
+            result.set(Option::Some(child));
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn tokens_of_kind(value: LocatedNode, kind: lexer::TokenKind) -> Vec[LocatedToken] {
+    let result: Vec[LocatedToken] = Vec::new();
+    for token in direct_tokens(value) {
+        if lexer::token_kind_equal(token.token.kind, kind) {
+            result.push(token)
+        } else {
+            ()
+        }
+    };
+    result
+}
+
+fn first_token(value: LocatedNode, kind: lexer::TokenKind) -> Option[LocatedToken] {
+    let result = Ref::new(Option::None);
+    let found = Ref::new(false);
+    for token in direct_tokens(value) {
+        if found.get() == false && lexer::token_kind_equal(token.token.kind, kind) {
+            result.set(Option::Some(token));
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn has_token(value: LocatedNode, kind: lexer::TokenKind) -> bool {
+    match first_token(value, kind) {
+        Option::Some(_) => true,
+        Option::None => false,
+    }
+}
+
+fn token_span(value: LocatedToken) -> Span {
+    span(value.start, value.start + value.token.text.byte_len())
+}
+
+fn write_node_text(value: LocatedNode, builder: text::StringBuilder) -> unit {
+    let cursor = Ref::new(value.start);
+    for element in cst::node_children(value.node) {
+        match element {
+            cst::CstElement::Node(child) => write_node_text(
+                LocatedNode {
+                    node: child,
+                    start: cursor.get(),
+                },
+                builder,
+            ),
+            cst::CstElement::Token(token) => builder.write_string(token.text),
+        };
+        cursor.set(cursor.get() + cst::element_byte_len(element))
+    }
+}
+
+fn node_text(value: LocatedNode) -> string {
+    let builder = text::StringBuilder::with_capacity(cst::node_byte_len(value.node));
+    write_node_text(value, builder);
+    builder.finish()
+}
+
+fn is_item_kind(kind: cst::NodeKind) -> bool {
+    match kind {
+        cst::NodeKind::ENUM
+        | cst::NodeKind::STRUCT
+        | cst::NodeKind::TRAIT
+        | cst::NodeKind::IMPL
+        | cst::NodeKind::FN
+        | cst::NodeKind::EXTERN => true,
+        _ => false,
+    }
+}
+
+fn is_stmt_kind(kind: cst::NodeKind) -> bool {
+    match kind {
+        cst::NodeKind::STMT_LET
+        | cst::NodeKind::STMT_ASSIGN
+        | cst::NodeKind::STMT_EXPR => true,
+        _ => false,
+    }
+}
+
+fn is_expr_kind(kind: cst::NodeKind) -> bool {
+    match kind {
+        cst::NodeKind::EXPR_IDENT
+        | cst::NodeKind::EXPR_PAREN
+        | cst::NodeKind::EXPR_BINARY
+        | cst::NodeKind::EXPR_PREFIX
+        | cst::NodeKind::EXPR_CAST
+        | cst::NodeKind::EXPR_IF
+        | cst::NodeKind::EXPR_WHILE
+        | cst::NodeKind::EXPR_FOR
+        | cst::NodeKind::EXPR_BREAK
+        | cst::NodeKind::EXPR_CONTINUE
+        | cst::NodeKind::EXPR_MATCH
+        | cst::NodeKind::EXPR_GO
+        | cst::NodeKind::EXPR_RETURN
+        | cst::NodeKind::EXPR_UNIT
+        | cst::NodeKind::EXPR_BOOL
+        | cst::NodeKind::EXPR_INT
+        | cst::NodeKind::EXPR_INT8
+        | cst::NodeKind::EXPR_INT16
+        | cst::NodeKind::EXPR_INT32
+        | cst::NodeKind::EXPR_INT64
+        | cst::NodeKind::EXPR_UINT8
+        | cst::NodeKind::EXPR_UINT16
+        | cst::NodeKind::EXPR_UINT32
+        | cst::NodeKind::EXPR_UINT64
+        | cst::NodeKind::EXPR_FLOAT
+        | cst::NodeKind::EXPR_FLOAT32
+        | cst::NodeKind::EXPR_FLOAT64
+        | cst::NodeKind::EXPR_CHAR
+        | cst::NodeKind::EXPR_STR
+        | cst::NodeKind::EXPR_MULTILINE_STR
+        | cst::NodeKind::EXPR_ARRAY_LITERAL
+        | cst::NodeKind::EXPR_TUPLE
+        | cst::NodeKind::EXPR_CALL
+        | cst::NodeKind::EXPR_INDEX
+        | cst::NodeKind::EXPR_TRY
+        | cst::NodeKind::EXPR_STRUCT_LITERAL
+        | cst::NodeKind::EXPR_CLOSURE => true,
+        _ => false,
+    }
+}
+
+fn is_pattern_kind(kind: cst::NodeKind) -> bool {
+    match kind {
+        cst::NodeKind::PATTERN_UNIT
+        | cst::NodeKind::PATTERN_BOOL
+        | cst::NodeKind::PATTERN_STRING
+        | cst::NodeKind::PATTERN_INT
+        | cst::NodeKind::PATTERN_INT8
+        | cst::NodeKind::PATTERN_INT16
+        | cst::NodeKind::PATTERN_INT32
+        | cst::NodeKind::PATTERN_INT64
+        | cst::NodeKind::PATTERN_UINT8
+        | cst::NodeKind::PATTERN_UINT16
+        | cst::NodeKind::PATTERN_UINT32
+        | cst::NodeKind::PATTERN_UINT64
+        | cst::NodeKind::PATTERN_FLOAT
+        | cst::NodeKind::PATTERN_FLOAT32
+        | cst::NodeKind::PATTERN_FLOAT64
+        | cst::NodeKind::PATTERN_CHAR
+        | cst::NodeKind::PATTERN_TUPLE
+        | cst::NodeKind::PATTERN_ARRAY
+        | cst::NodeKind::PATTERN_CONSTR
+        | cst::NodeKind::PATTERN_VARIABLE
+        | cst::NodeKind::PATTERN_WILDCARD
+        | cst::NodeKind::PATTERN_ALIAS
+        | cst::NodeKind::PATTERN_OR
+        | cst::NodeKind::PATTERN_RANGE
+        | cst::NodeKind::PATTERN_REST => true,
+        _ => false,
+    }
+}
+
+fn is_type_kind(kind: cst::NodeKind) -> bool {
+    match kind {
+        cst::NodeKind::TYPE_UNIT
+        | cst::NodeKind::TYPE_BOOL
+        | cst::NodeKind::TYPE_INT8
+        | cst::NodeKind::TYPE_INT16
+        | cst::NodeKind::TYPE_INT32
+        | cst::NodeKind::TYPE_INT64
+        | cst::NodeKind::TYPE_UINT8
+        | cst::NodeKind::TYPE_UINT16
+        | cst::NodeKind::TYPE_UINT32
+        | cst::NodeKind::TYPE_UINT64
+        | cst::NodeKind::TYPE_FLOAT32
+        | cst::NodeKind::TYPE_FLOAT64
+        | cst::NodeKind::TYPE_STRING
+        | cst::NodeKind::TYPE_CHAR
+        | cst::NodeKind::TYPE_TUPLE
+        | cst::NodeKind::TYPE_TAPP
+        | cst::NodeKind::TYPE_DYN
+        | cst::NodeKind::TYPE_ARRAY
+        | cst::NodeKind::TYPE_FUNC => true,
+        _ => false,
+    }
+}
+
+fn filtered_children(value: LocatedNode, selector: (cst::NodeKind) -> bool) -> Vec[LocatedNode] {
+    let result: Vec[LocatedNode] = Vec::new();
+    for child in direct_nodes(value) {
+        if selector(node_kind(child)) {
+            result.push(child)
+        } else {
+            ()
+        }
+    };
+    result
+}
+
+fn expr_children(value: LocatedNode) -> Vec[LocatedNode] {
+    filtered_children(value, is_expr_kind)
+}
+
+fn pattern_children(value: LocatedNode) -> Vec[LocatedNode] {
+    filtered_children(value, is_pattern_kind)
+}
+
+fn type_children(value: LocatedNode) -> Vec[LocatedNode] {
+    filtered_children(value, is_type_kind)
+}
+
+fn item_children(value: LocatedNode) -> Vec[LocatedNode] {
+    filtered_children(value, is_item_kind)
+}
+
+fn stmt_children(value: LocatedNode) -> Vec[LocatedNode] {
+    filtered_children(value, is_stmt_kind)
+}
+
+fn option_node_is_none(value: Option[LocatedNode]) -> bool {
+    match value {
+        Option::Some(_) => false,
+        Option::None => true,
+    }
+}
