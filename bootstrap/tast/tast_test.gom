@@ -4,6 +4,7 @@ use gomlang::parser::ast;
 use gomlang::parser::hir;
 use gomlang::parser::parser;
 use std::testing;
+use std::text;
 
 fn checked_file(source: string) -> File {
     let result = check(hir::lower(ast::lower(parser::parse(source)), "main.gom"));
@@ -15,6 +16,12 @@ fn checked_file(source: string) -> File {
             File { items: Vec::new() }
         },
     }
+}
+
+fn primitive_text(value: Primitive) -> string {
+    let builder = text::StringBuilder::new();
+    write_primitive(builder, value);
+    builder.finish()
 }
 
 #[test]
@@ -135,4 +142,15 @@ fn checks_extended_builtin_method_catalog() -> unit {
     let source = "fn exercise(text: string, values: Vec[int32], map: HashMap[string, int32]) -> unit { let _ = text.decode_at(0); let _ = text.to_bytes(); let _ = text.chars(); let _ = text.char_indices(); values.reserve(1); values.insert(0, 1); let _ = values.remove(0); let _ = values.swap_remove(0); values.reverse(); let _ = values.last(); let _ = values.pop(); values.truncate(0); values.clear(); let _ = map.entries(); }";
     let file = checked_file(source);
     testing::assert_eq(file.items.len(), 1)
+}
+
+#[test]
+fn normalizes_and_escapes_char_literals() -> unit {
+    match parse_char_literal("\\u0041") {
+        Option::Some(value) => testing::assert(value == 'A'),
+        Option::None => testing::fail("expected unicode char literal"),
+    };
+    testing::assert_eq(primitive_text(Primitive::Char('A')), "'A'");
+    testing::assert_eq(primitive_text(Primitive::Char('\n')), "'\\n'");
+    testing::assert_eq(primitive_text(Primitive::Char('\\')), "'\\\\'")
 }
