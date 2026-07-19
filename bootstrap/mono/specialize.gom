@@ -601,12 +601,23 @@ fn matching_trait_selections(
             {
                 let impl_bindings = Vec::new();
                 if unify_type(metadata.for_ty, for_ty, impl_bindings) {
+                    let candidate = substitute_trait_ref(
+                        metadata.trait_ref,
+                        impl_bindings,
+                    );
+                    let candidate_matches = if types_are_concrete(reference.args) {
+                        unify_types(candidate.args, reference.args, impl_bindings)
+                    } else {
+                        true
+                    };
                     let application = substitute_trait_ref(
                         metadata.trait_ref,
                         impl_bindings,
                     );
                     let trial = copy_bindings(bindings);
-                    if unify_types(reference.args, application.args, trial) {
+                    if candidate_matches
+                        && unify_types(reference.args, application.args, trial)
+                    {
                         let selection = TraitSelection {
                             reference: application,
                             associated_types: substitute_named_types(
