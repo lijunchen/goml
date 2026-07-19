@@ -457,6 +457,21 @@ fn ref_runtime_items(ref_ty: tast::Type) -> Vec[Item] {
                 params: set_params,
                 ret_ty: Option::Some(Type::Unit),
                 body: Block { stmts: set_stmts },
+            }));
+            let ptr_eq_params: Vec[(string, Type)] = Vec::new();
+            ptr_eq_params.push(("a", lowered_ref_ty));
+            ptr_eq_params.push(("b", lowered_ref_ty));
+            let ptr_eq_stmts: Vec[Stmt] = Vec::new();
+            ptr_eq_stmts.push(Stmt::Return(Option::Some(Expr::Binary(
+                BinaryOp::Eq,
+                Expr::Var("a"),
+                Expr::Var("b"),
+            ))));
+            result.push(Item::Function(Function {
+                name: ref_helper_name("ptr_eq", ref_ty),
+                params: ptr_eq_params,
+                ret_ty: Option::Some(Type::Bool),
+                body: Block { stmts: ptr_eq_stmts },
             }))
         },
         _ => (),
