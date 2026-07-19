@@ -1,0 +1,913 @@
+package lift;
+
+use gomlang::parser::core;
+use gomlang::parser::tast;
+use std::text;
+
+struct ScopeEntry {
+    name: string,
+    ty: tast::Type,
+    closure_struct: Option[string],
+}
+
+struct ClosureInfo {
+    struct_name: string,
+    apply_name: string,
+    apply_ty: tast::Type,
+}
+
+struct Capture {
+    name: string,
+    ty: tast::Type,
+}
+
+struct State {
+    next_env: Ref[int32],
+    next_name: Ref[int32],
+    generated: Vec[core::Function],
+    closures: Vec[ClosureInfo],
+    used_types: Vec[string],
+}
+
+fn copy_scope(values: Vec[ScopeEntry]) -> Vec[ScopeEntry] {
+    let result = Vec::new();
+    for value in values {
+        result.push(value)
+    };
+    result
+}
+
+fn find_scope(values: Vec[ScopeEntry], name: string) -> Option[ScopeEntry] {
+    let result: Ref[Option[ScopeEntry]] = Ref::new(Option::None);
+    for value in values {
+        if value.name == name {
+            result.set(Option::Some(value))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn find_closure(state: State, name: string) -> Option[ClosureInfo] {
+    let result: Ref[Option[ClosureInfo]] = Ref::new(Option::None);
+    for value in state.closures {
+        if value.struct_name == name {
+            result.set(Option::Some(value))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn closure_for_type(state: State, ty: tast::Type) -> Option[ClosureInfo] {
+    match tast::resolve_type(ty) {
+        tast::Type::Con(name) => find_closure(state, name),
+        _ => Option::None,
+    }
+}
+
+fn string_contains(values: Vec[string], expected: string) -> bool {
+    let found = Ref::new(false);
+    for value in values {
+        if value == expected {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+fn ascii_alphanumeric(value: uint8) -> bool {
+    (value >= 48u8 && value <= 57u8)
+        || (value >= 65u8 && value <= 90u8)
+        || (value >= 97u8 && value <= 122u8)
+}
+
+fn primary_name(value: string) -> string {
+    let end = Ref::new(value.byte_len());
+    let found = Ref::new(false);
+    for index in range(0, value.byte_len()) {
+        if found.get() == false && value.byte_get(index) == 47u8 {
+            end.set(index);
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    value.byte_slice(0, end.get())
+}
+
+fn sanitize_name(value: string) -> Option[string] {
+    let value = primary_name(value);
+    let builder = text::StringBuilder::new();
+    let pending_separator = Ref::new(false);
+    let wrote = Ref::new(false);
+    for index in range(0, value.byte_len()) {
+        let byte = value.byte_get(index);
+        if ascii_alphanumeric(byte) {
+            if pending_separator.get() && wrote.get() {
+                builder.write_char('_')
+            } else {
+                ()
+            };
+            if wrote.get() == false && byte >= 48u8 && byte <= 57u8 {
+                builder.write_char('_')
+            } else {
+                ()
+            };
+            builder.write_string(value.byte_slice(index, index + 1));
+            pending_separator.set(false);
+            wrote.set(true)
+        } else if wrote.get() {
+            pending_separator.set(true)
+        } else {
+            ()
+        }
+    };
+    if wrote.get() {
+        Option::Some(builder.finish())
+    } else {
+        Option::None
+    }
+}
+
+fn fresh_struct_name(state: State, hint: Option[string]) -> string {
+    let result = Ref::new("");
+    let found = Ref::new(false);
+    while found.get() == false {
+        let index = state.next_env.get();
+        state.next_env.set(index + 1);
+        let candidate = match hint {
+            Option::Some(name) => "closure_env_" + name + "_" + index.to_string(),
+            Option::None => "closure_env_" + index.to_string(),
+        };
+        if string_contains(state.used_types, candidate) {
+            ()
+        } else {
+            state.used_types.push(candidate);
+            result.set(candidate);
+            found.set(true)
+        }
+    };
+    result.get()
+}
+
+fn fresh_name(state: State, prefix: string) -> string {
+    let index = state.next_name.get();
+    state.next_name.set(index + 1);
+    prefix + index.to_string()
+}
+
+fn trailing_number(value: string) -> Option[int32] {
+    let slash = Ref::new(false);
+    for index in range(0, value.byte_len()) {
+        if value.byte_get(index) == 47u8 {
+            slash.set(true)
+        } else {
+            ()
+        }
+    };
+    if slash.get() || value.byte_len() == 0 {
+        Option::None
+    } else {
+        let start = Ref::new(value.byte_len());
+        let scanning = Ref::new(true);
+        let index = Ref::new(value.byte_len());
+        while scanning.get() && index.get() > 0 {
+            let next = index.get() - 1;
+            let byte = value.byte_get(next);
+            if byte >= 48u8 && byte <= 57u8 {
+                start.set(next);
+                index.set(next)
+            } else {
+                scanning.set(false)
+            }
+        };
+        if start.get() == value.byte_len() {
+            Option::None
+        } else {
+            Option::Some(parse_digits(value, start.get()))
+        }
+    }
+}
+
+fn parse_digits(value: string, start: int32) -> int32 {
+    let result = Ref::new(0);
+    for index in range(start, value.byte_len()) {
+        let byte = value.byte_get(index);
+        let digit = if byte == 48u8 {
+            0
+        } else if byte == 49u8 {
+            1
+        } else if byte == 50u8 {
+            2
+        } else if byte == 51u8 {
+            3
+        } else if byte == 52u8 {
+            4
+        } else if byte == 53u8 {
+            5
+        } else if byte == 54u8 {
+            6
+        } else if byte == 55u8 {
+            7
+        } else if byte == 56u8 {
+            8
+        } else {
+            9
+        };
+        result.set(result.get() * 10 + digit)
+    };
+    result.get()
+}
+
+fn observe_name(maximum: Ref[int32], name: string) -> unit {
+    match trailing_number(name) {
+        Option::Some(value) => if value > maximum.get() {
+            maximum.set(value)
+        } else {
+            ()
+        },
+        Option::None => (),
+    }
+}
+
+fn observe_exprs(maximum: Ref[int32], values: Vec[core::Expr]) -> unit {
+    for value in values {
+        observe_expr(maximum, value)
+    }
+}
+
+fn observe_optional_expr(maximum: Ref[int32], value: Option[core::Expr]) -> unit {
+    match value {
+        Option::Some(value) => observe_expr(maximum, value),
+        Option::None => (),
+    }
+}
+
+fn observe_block(maximum: Ref[int32], value: core::Block) -> unit {
+    for stmt in value.stmts {
+        observe_name(maximum, stmt.name);
+        observe_expr(maximum, stmt.value)
+    };
+    observe_optional_expr(maximum, value.tail)
+}
+
+fn observe_expr(maximum: Ref[int32], value: core::Expr) -> unit {
+    match value {
+        core::Expr::Var(_, _) => (),
+        core::Expr::Constr(_, args, _) => observe_exprs(maximum, args),
+        core::Expr::Tuple(items, _) | core::Expr::Array(items, _) => {
+            observe_exprs(maximum, items)
+        },
+        core::Expr::Closure(params, body, _) => {
+            for param in params {
+                observe_name(maximum, param.name)
+            };
+            observe_expr(maximum, body)
+        },
+        core::Expr::Block(block, _) => observe_block(maximum, block),
+        core::Expr::Match(expr, arms, default, _) => {
+            observe_expr(maximum, expr);
+            for arm in arms {
+                observe_expr(maximum, arm.lhs);
+                observe_expr(maximum, arm.body)
+            };
+            observe_optional_expr(maximum, default)
+        },
+        core::Expr::If(cond, then_, else_, _) => {
+            observe_expr(maximum, cond);
+            observe_expr(maximum, then_);
+            observe_expr(maximum, else_)
+        },
+        core::Expr::While(cond, body, _) | core::Expr::Binary(_, cond, body, _) => {
+            observe_expr(maximum, cond);
+            observe_expr(maximum, body)
+        },
+        core::Expr::Return(expr, _) => observe_optional_expr(maximum, expr),
+        core::Expr::Go(expr, _)
+        | core::Expr::ConstrGet(expr, _, _, _)
+        | core::Expr::Unary(_, expr, _)
+        | core::Expr::Cast(expr, _)
+        | core::Expr::ToDyn(_, _, expr, _)
+        | core::Expr::Proj(expr, _, _) => observe_expr(maximum, expr),
+        core::Expr::Assign(_, expr, _, _) => observe_expr(maximum, expr),
+        core::Expr::Call(func, args, _) => {
+            observe_expr(maximum, func);
+            observe_exprs(maximum, args)
+        },
+        core::Expr::DynCall(_, _, receiver, args, _)
+        | core::Expr::TraitCall(_, _, receiver, args, _) => {
+            observe_expr(maximum, receiver);
+            observe_exprs(maximum, args)
+        },
+        core::Expr::Callable(_, _)
+        | core::Expr::Prim(_, _)
+        | core::Expr::Break(_)
+        | core::Expr::Continue(_) => (),
+    }
+}
+
+fn initial_name_counter(value: core::File) -> int32 {
+    let maximum = Ref::new(-1);
+    for function in value.functions {
+        for param in function.params {
+            observe_name(maximum, param.0)
+        };
+        observe_block(maximum, function.body)
+    };
+    maximum.get() + 1
+}
+
+fn transform_exprs(
+    state: State,
+    scope: Vec[ScopeEntry],
+    values: Vec[core::Expr],
+    context: Option[string],
+) -> Vec[core::Expr] {
+    let result = Vec::new();
+    for value in values {
+        result.push(transform_expr(state, scope, value, context))
+    };
+    result
+}
+
+fn transform_optional_expr(
+    state: State,
+    scope: Vec[ScopeEntry],
+    value: Option[core::Expr],
+    context: Option[string],
+) -> Option[core::Expr] {
+    match value {
+        Option::Some(value) => {
+            Option::Some(transform_expr(state, scope, value, context))
+        },
+        Option::None => Option::None,
+    }
+}
+
+fn block_type(value: core::Block) -> tast::Type {
+    match value.tail {
+        Option::Some(value) => core::expr_type(value),
+        Option::None => tast::Type::Unit,
+    }
+}
+
+fn transform_block(
+    state: State,
+    outer_scope: Vec[ScopeEntry],
+    value: core::Block,
+    context: Option[string],
+) -> core::Block {
+    let scope = copy_scope(outer_scope);
+    let stmts = Vec::new();
+    for stmt in value.stmts {
+        let transformed = match stmt.value {
+            core::Expr::Closure(params, body, ty) => transform_closure(
+                state,
+                scope,
+                params,
+                body,
+                ty,
+                Option::Some(stmt.name),
+                context,
+            ),
+            other => transform_expr(state, scope, other, context),
+        };
+        let ty = core::expr_type(transformed);
+        let closure_struct = match closure_for_type(state, ty) {
+            Option::Some(info) => Option::Some(info.struct_name),
+            Option::None => Option::None,
+        };
+        stmts.push(core::LetStmt {
+            name: stmt.name,
+            value: transformed,
+            ty,
+        });
+        scope.push(ScopeEntry {
+            name: stmt.name,
+            ty,
+            closure_struct,
+        })
+    };
+    core::Block {
+        stmts,
+        tail: transform_optional_expr(state, scope, value.tail, context),
+    }
+}
+
+fn transform_arm(
+    state: State,
+    scope: Vec[ScopeEntry],
+    value: core::Arm,
+    context: Option[string],
+) -> core::Arm {
+    core::Arm {
+        lhs: transform_expr(state, scope, value.lhs, context),
+        body: transform_expr(state, scope, value.body, context),
+    }
+}
+
+fn transform_arms(
+    state: State,
+    scope: Vec[ScopeEntry],
+    values: Vec[core::Arm],
+    context: Option[string],
+) -> Vec[core::Arm] {
+    let result = Vec::new();
+    for value in values {
+        result.push(transform_arm(state, scope, value, context))
+    };
+    result
+}
+
+fn transform_call(
+    state: State,
+    scope: Vec[ScopeEntry],
+    func: core::Expr,
+    args: Vec[core::Expr],
+    ty: tast::Type,
+    context: Option[string],
+) -> core::Expr {
+    let func = transform_expr(state, scope, func, context);
+    let args = transform_exprs(state, scope, args, context);
+    let closure = match func {
+        core::Expr::Var(name, _) => match find_scope(scope, name) {
+            Option::Some(entry) => match entry.closure_struct {
+                Option::Some(name) => find_closure(state, name),
+                Option::None => closure_for_type(state, entry.ty),
+            },
+            Option::None => Option::None,
+        },
+        _ => Option::None,
+    };
+    match closure {
+        Option::Some(info) => {
+            let call_args = Vec::new();
+            call_args.push(func);
+            for arg in args {
+                call_args.push(arg)
+            };
+            core::Expr::Call(
+                core::Expr::Var(info.apply_name, info.apply_ty),
+                call_args,
+                ty,
+            )
+        },
+        Option::None => core::Expr::Call(func, args, ty),
+    }
+}
+
+fn transform_expr(
+    state: State,
+    scope: Vec[ScopeEntry],
+    value: core::Expr,
+    context: Option[string],
+) -> core::Expr {
+    match value {
+        core::Expr::Var(name, ty) => match find_scope(scope, name) {
+            Option::Some(entry) => core::Expr::Var(name, entry.ty),
+            Option::None => core::Expr::Var(name, ty),
+        },
+        core::Expr::Callable(callable, ty) => core::Expr::Callable(callable, ty),
+        core::Expr::Prim(value, ty) => core::Expr::Prim(value, ty),
+        core::Expr::Constr(constructor, args, ty) => core::Expr::Constr(
+            constructor,
+            transform_exprs(state, scope, args, context),
+            ty,
+        ),
+        core::Expr::Tuple(items, ty) => core::Expr::Tuple(
+            transform_exprs(state, scope, items, context),
+            ty,
+        ),
+        core::Expr::Array(items, ty) => core::Expr::Array(
+            transform_exprs(state, scope, items, context),
+            ty,
+        ),
+        core::Expr::Closure(params, body, ty) => transform_closure(
+            state,
+            scope,
+            params,
+            body,
+            ty,
+            Option::None,
+            context,
+        ),
+        core::Expr::Block(block, _) => {
+            let block = transform_block(state, scope, block, context);
+            core::Expr::Block(block, block_type(block))
+        },
+        core::Expr::Match(expr, arms, default, ty) => core::Expr::Match(
+            transform_expr(state, scope, expr, context),
+            transform_arms(state, scope, arms, context),
+            transform_optional_expr(state, scope, default, context),
+            ty,
+        ),
+        core::Expr::If(cond, then_, else_, ty) => core::Expr::If(
+            transform_expr(state, scope, cond, context),
+            transform_expr(state, scope, then_, context),
+            transform_expr(state, scope, else_, context),
+            ty,
+        ),
+        core::Expr::While(cond, body, ty) => core::Expr::While(
+            transform_expr(state, scope, cond, context),
+            transform_expr(state, scope, body, context),
+            ty,
+        ),
+        core::Expr::Break(ty) => core::Expr::Break(ty),
+        core::Expr::Continue(ty) => core::Expr::Continue(ty),
+        core::Expr::Return(expr, ty) => core::Expr::Return(
+            transform_optional_expr(state, scope, expr, context),
+            ty,
+        ),
+        core::Expr::Go(expr, ty) => core::Expr::Go(
+            transform_expr(state, scope, expr, context),
+            ty,
+        ),
+        core::Expr::ConstrGet(expr, constructor, index, ty) => core::Expr::ConstrGet(
+            transform_expr(state, scope, expr, context),
+            constructor,
+            index,
+            ty,
+        ),
+        core::Expr::Unary(op, expr, ty) => core::Expr::Unary(
+            op,
+            transform_expr(state, scope, expr, context),
+            ty,
+        ),
+        core::Expr::Cast(expr, ty) => core::Expr::Cast(
+            transform_expr(state, scope, expr, context),
+            ty,
+        ),
+        core::Expr::Binary(op, lhs, rhs, ty) => core::Expr::Binary(
+            op,
+            transform_expr(state, scope, lhs, context),
+            transform_expr(state, scope, rhs, context),
+            ty,
+        ),
+        core::Expr::Assign(name, expr, target_ty, ty) => core::Expr::Assign(
+            name,
+            transform_expr(state, scope, expr, context),
+            target_ty,
+            ty,
+        ),
+        core::Expr::Call(func, args, ty) => {
+            transform_call(state, scope, func, args, ty, context)
+        },
+        core::Expr::ToDyn(trait_name, for_ty, expr, ty) => core::Expr::ToDyn(
+            trait_name,
+            for_ty,
+            transform_expr(state, scope, expr, context),
+            ty,
+        ),
+        core::Expr::DynCall(trait_name, method_name, receiver, args, ty) => {
+            core::Expr::DynCall(
+                trait_name,
+                method_name,
+                transform_expr(state, scope, receiver, context),
+                transform_exprs(state, scope, args, context),
+                ty,
+            )
+        },
+        core::Expr::TraitCall(reference, method_name, receiver, args, ty) => {
+            core::Expr::TraitCall(
+                reference,
+                method_name,
+                transform_expr(state, scope, receiver, context),
+                transform_exprs(state, scope, args, context),
+                ty,
+            )
+        },
+        core::Expr::Proj(expr, index, ty) => core::Expr::Proj(
+            transform_expr(state, scope, expr, context),
+            index,
+            ty,
+        ),
+    }
+}
+
+fn capture_exists(values: Vec[Capture], name: string) -> bool {
+    let found = Ref::new(false);
+    for value in values {
+        if value.name == name {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+fn bound_contains(values: Vec[string], name: string) -> bool {
+    string_contains(values, name)
+}
+
+fn collect_captured_exprs(
+    values: Vec[core::Expr],
+    bound: Vec[string],
+    captured: Vec[Capture],
+    scope: Vec[ScopeEntry],
+) -> unit {
+    for value in values {
+        collect_captured(value, bound, captured, scope)
+    }
+}
+
+fn collect_captured_optional(
+    value: Option[core::Expr],
+    bound: Vec[string],
+    captured: Vec[Capture],
+    scope: Vec[ScopeEntry],
+) -> unit {
+    match value {
+        Option::Some(value) => collect_captured(value, bound, captured, scope),
+        Option::None => (),
+    }
+}
+
+fn collect_captured_block(
+    value: core::Block,
+    bound: Vec[string],
+    captured: Vec[Capture],
+    scope: Vec[ScopeEntry],
+) -> unit {
+    let added = Ref::new(0);
+    for stmt in value.stmts {
+        collect_captured(stmt.value, bound, captured, scope);
+        bound.push(stmt.name);
+        added.set(added.get() + 1)
+    };
+    collect_captured_optional(value.tail, bound, captured, scope);
+    for _ in range(0, added.get()) {
+        let _ = bound.pop();
+    }
+}
+
+fn collect_captured(
+    value: core::Expr,
+    bound: Vec[string],
+    captured: Vec[Capture],
+    scope: Vec[ScopeEntry],
+) -> unit {
+    match value {
+        core::Expr::Var(name, _) => if bound_contains(bound, name) {
+            ()
+        } else {
+            match find_scope(scope, name) {
+                Option::Some(entry) => if capture_exists(captured, name) {
+                    ()
+                } else {
+                    captured.push(Capture {
+                        name,
+                        ty: entry.ty,
+                    })
+                },
+                Option::None => (),
+            }
+        },
+        core::Expr::Constr(_, args, _) => {
+            collect_captured_exprs(args, bound, captured, scope)
+        },
+        core::Expr::Tuple(items, _) | core::Expr::Array(items, _) => {
+            collect_captured_exprs(items, bound, captured, scope)
+        },
+        core::Expr::Closure(_, body, _) => {
+            collect_captured(body, bound, captured, scope)
+        },
+        core::Expr::Block(block, _) => {
+            collect_captured_block(block, bound, captured, scope)
+        },
+        core::Expr::Match(expr, arms, default, _) => {
+            collect_captured(expr, bound, captured, scope);
+            for arm in arms {
+                collect_captured(arm.lhs, bound, captured, scope);
+                collect_captured(arm.body, bound, captured, scope)
+            };
+            collect_captured_optional(default, bound, captured, scope)
+        },
+        core::Expr::If(cond, then_, else_, _) => {
+            collect_captured(cond, bound, captured, scope);
+            collect_captured(then_, bound, captured, scope);
+            collect_captured(else_, bound, captured, scope)
+        },
+        core::Expr::While(cond, body, _) | core::Expr::Binary(_, cond, body, _) => {
+            collect_captured(cond, bound, captured, scope);
+            collect_captured(body, bound, captured, scope)
+        },
+        core::Expr::Return(expr, _) => {
+            collect_captured_optional(expr, bound, captured, scope)
+        },
+        core::Expr::Go(expr, _)
+        | core::Expr::ConstrGet(expr, _, _, _)
+        | core::Expr::Unary(_, expr, _)
+        | core::Expr::Cast(expr, _)
+        | core::Expr::ToDyn(_, _, expr, _)
+        | core::Expr::Proj(expr, _, _) => {
+            collect_captured(expr, bound, captured, scope)
+        },
+        core::Expr::Assign(_, expr, _, _) => {
+            collect_captured(expr, bound, captured, scope)
+        },
+        core::Expr::Call(func, args, _) => {
+            collect_captured(func, bound, captured, scope);
+            collect_captured_exprs(args, bound, captured, scope)
+        },
+        core::Expr::DynCall(_, _, receiver, args, _)
+        | core::Expr::TraitCall(_, _, receiver, args, _) => {
+            collect_captured(receiver, bound, captured, scope);
+            collect_captured_exprs(args, bound, captured, scope)
+        },
+        core::Expr::Callable(_, _)
+        | core::Expr::Prim(_, _)
+        | core::Expr::Break(_)
+        | core::Expr::Continue(_) => (),
+    }
+}
+
+fn make_field_name(name: string, index: int32) -> string {
+    match sanitize_name(name) {
+        Option::Some(name) => name + "_" + index.to_string(),
+        Option::None => "field_" + index.to_string(),
+    }
+}
+
+fn closure_body_block(value: core::Expr) -> core::Block {
+    match value {
+        core::Expr::Block(block, _) => block,
+        other => core::Block {
+            stmts: Vec::new(),
+            tail: Option::Some(other),
+        },
+    }
+}
+
+fn prepend_captures(
+    body: core::Block,
+    captures: Vec[Capture],
+    env_name: string,
+    env_ty: tast::Type,
+    constructor: tast::Constructor,
+) -> core::Block {
+    let stmts = Vec::new();
+    for index in range(0, captures.len()) {
+        let capture = captures.get(index);
+        stmts.push(core::LetStmt {
+            name: capture.name,
+            value: core::Expr::ConstrGet(
+                core::Expr::Var(env_name, env_ty),
+                constructor,
+                index,
+                capture.ty,
+            ),
+            ty: capture.ty,
+        })
+    };
+    for stmt in body.stmts {
+        stmts.push(stmt)
+    };
+    core::Block {
+        stmts,
+        tail: body.tail,
+    }
+}
+
+fn transform_closure(
+    state: State,
+    outer_scope: Vec[ScopeEntry],
+    params: Vec[tast::ClosureParam],
+    body: core::Expr,
+    ty: tast::Type,
+    name_hint: Option[string],
+    context: Option[string],
+) -> core::Expr {
+    let signature = match tast::resolve_type(ty) {
+        tast::Type::Func(param_tys, ret_ty) => Option::Some((param_tys, ret_ty)),
+        _ => Option::None,
+    };
+    match signature {
+        Option::Some(signature) => {
+            let closure_scope = copy_scope(outer_scope);
+            let lowered_params = Vec::new();
+            let bound = Vec::new();
+            for index in range(0, params.len()) {
+                let param = params.get(index);
+                let param_ty = signature.0.get(index);
+                closure_scope.push(ScopeEntry {
+                    name: param.name,
+                    ty: param_ty,
+                    closure_struct: match closure_for_type(state, param_ty) {
+                        Option::Some(info) => Option::Some(info.struct_name),
+                        Option::None => Option::None,
+                    },
+                });
+                lowered_params.push((param.name, param_ty));
+                bound.push(param.name)
+            };
+            let hint = match name_hint {
+                Option::Some(name) => match sanitize_name(name) {
+                    Option::Some(name) => Option::Some(name),
+                    Option::None => context,
+                },
+                Option::None => context,
+            };
+            let body = transform_expr(state, closure_scope, body, hint);
+            let captures = Vec::new();
+            collect_captured(body, bound, captures, outer_scope);
+            let struct_name = fresh_struct_name(state, hint);
+            let env_ty = tast::Type::Con(struct_name);
+            let fields = Vec::new();
+            let captured_args = Vec::new();
+            for index in range(0, captures.len()) {
+                let capture = captures.get(index);
+                fields.push(make_field_name(capture.name, index));
+                captured_args.push(core::Expr::Var(capture.name, capture.ty))
+            };
+            let constructor = tast::Constructor {
+                name: struct_name,
+                fields,
+                is_struct: true,
+            };
+            let apply_name = "inherent#" + struct_name + "#" + struct_name + "#apply";
+            let env_name = fresh_name(state, "env");
+            let fn_params = Vec::new();
+            fn_params.push((env_name, env_ty));
+            let apply_param_types = Vec::new();
+            apply_param_types.push(env_ty);
+            for param in lowered_params {
+                fn_params.push(param);
+                apply_param_types.push(param.1)
+            };
+            let apply_ty = tast::Type::Func(apply_param_types, signature.1);
+            state.closures.push(ClosureInfo {
+                struct_name,
+                apply_name,
+                apply_ty,
+            });
+            let fn_body = prepend_captures(
+                closure_body_block(body),
+                captures,
+                env_name,
+                env_ty,
+                constructor,
+            );
+            state.generated.push(core::Function {
+                name: apply_name,
+                root: true,
+                generics: Vec::new(),
+                predicates: Vec::new(),
+                trait_impl: Option::None,
+                params: fn_params,
+                ret_ty: signature.1,
+                body: fn_body,
+            });
+            core::Expr::Constr(constructor, captured_args, env_ty)
+        },
+        Option::None => core::Expr::Closure(params, body, ty),
+    }
+}
+
+fn transform_function(state: State, value: core::Function) -> core::Function {
+    let scope = Vec::new();
+    for param in value.params {
+        scope.push(ScopeEntry {
+            name: param.0,
+            ty: param.1,
+            closure_struct: match closure_for_type(state, param.1) {
+                Option::Some(info) => Option::Some(info.struct_name),
+                Option::None => Option::None,
+            },
+        })
+    };
+    let context = sanitize_name(value.name);
+    core::Function {
+        name: value.name,
+        root: value.root,
+        generics: value.generics,
+        predicates: value.predicates,
+        trait_impl: value.trait_impl,
+        params: value.params,
+        ret_ty: value.ret_ty,
+        body: transform_block(state, scope, value.body, context),
+    }
+}
+
+fn lambda_lift(value: core::File) -> core::File {
+    let state = State {
+        next_env: Ref::new(0),
+        next_name: Ref::new(initial_name_counter(value)),
+        generated: Vec::new(),
+        closures: Vec::new(),
+        used_types: Vec::new(),
+    };
+    let functions = Vec::new();
+    for function in value.functions {
+        functions.push(transform_function(state, function))
+    };
+    for function in state.generated {
+        functions.push(function)
+    };
+    core::File { functions }
+}
