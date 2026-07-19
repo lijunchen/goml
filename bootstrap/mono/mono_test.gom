@@ -62,6 +62,21 @@ fn resolves_vec_for_loop_iterator_receiver() -> unit {
 }
 
 #[test]
+fn infers_generic_arguments_from_trait_predicates() -> unit {
+    let source = "trait Parent[T] { fn parent(Self) -> T; } trait Child[T: ToString]: Parent[T] { fn child(Self) -> string; } struct Box[T] { value: T } impl[T] Parent[T] for Box[T] { fn parent(self: Box[T]) -> T { self.value } } impl[T: ToString] Child[T] for Box[T] { fn child(self: Box[T]) -> string { \"child\" } } fn describe[T, B: Child[T]](value: B) -> string { value.parent().to_string() + value.child() } fn main() -> unit { println(describe(Box { value: 5 })) }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(
+        output,
+        "describe__B_Box[int32]__T_int32",
+    ));
+    testing::assert(string_contains(
+        output,
+        "trait_impl#Child#[int32]@Box__int32#child",
+    ));
+    testing::assert(!string_contains(output, "trait_impl#Child#[T]"))
+}
+
+#[test]
 fn specializes_generic_enum_constructors() -> unit {
     let source = "enum Weird[T] { Next(Ref[Weird[(int32) -> int32]]), Done(T) } fn main() -> unit { let x: Weird[int32] = Weird::Done(1i32); match x { Weird::Done(v) => println(v.to_string()), Weird::Next(_) => println(\"next\"), } }";
     testing::assert_eq(
