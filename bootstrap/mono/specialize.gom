@@ -725,7 +725,7 @@ fn predicates_are_satisfied(
                 let for_ty = substitute_type(for_ty, bindings);
                 let reference = substitute_trait_ref(reference, bindings);
                 if type_is_concrete(for_ty)
-                    && (builtin_scalar_trait_satisfied(for_ty, reference)
+                    && (builtin_trait_satisfied(for_ty, reference)
                         || matching_trait_selections(
                             ctx,
                             for_ty,
@@ -772,15 +772,38 @@ fn builtin_scalar_type(value: tast::Type) -> bool {
     }
 }
 
-fn builtin_scalar_trait_satisfied(
+fn builtin_iterator_type(value: tast::Type) -> bool {
+    match tast::resolve_type(value) {
+        tast::Type::App(tast::Type::Con(name), args) => {
+            (name == "FnIterator" && args.len() == 1)
+                || (name == "MapIterator" && args.len() == 3)
+                || (name == "FilterIterator" && args.len() == 2)
+                || (name == "TakeIterator" && args.len() == 1)
+        },
+        _ => false,
+    }
+}
+
+fn builtin_trait_satisfied(
     for_ty: tast::Type,
     reference: tast::TraitRef,
 ) -> bool {
     reference.args.len() == 0
-        && (reference.name == "ToString"
+        && if reference.name == "ToString"
             || reference.name == "Eq"
-            || reference.name == "Hash")
-        && builtin_scalar_type(for_ty)
+            || reference.name == "Hash"
+        {
+            builtin_scalar_type(for_ty)
+        } else if reference.name == "Iterator" {
+            builtin_iterator_type(for_ty)
+        } else if reference.name == "IntoIterator" {
+            match tast::resolve_type(for_ty) {
+                tast::Type::VecType(_) | tast::Type::Slice(_) => true,
+                other => builtin_iterator_type(other),
+            }
+        } else {
+            false
+        }
 }
 
 fn complete_bindings(
