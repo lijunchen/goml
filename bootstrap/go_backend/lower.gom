@@ -1877,19 +1877,13 @@ pub fn lower(value: anf::File) -> File {
     let types: Vec[tast::Type] = Vec::new();
     let coercions: Vec[DynCoercion] = Vec::new();
     let variants: Vec[VariantInfo] = Vec::new();
-    let has_main = Ref::new(false);
     for function in value.functions {
         for param in function.params {
             collect_type(types, param.1)
         };
         collect_type(types, function.ret_ty);
         collect_block_types(types, function.body);
-        collect_dyn_block(coercions, function.body);
-        if function.name == "main" {
-            has_main.set(true)
-        } else {
-            ()
-        }
+        collect_dyn_block(coercions, function.body)
     };
     collect_type_definition_fields(types, enums, structs, type_instances);
     emit_builtin_runtime_items(items, types);
@@ -1910,17 +1904,13 @@ pub fn lower(value: anf::File) -> File {
             structs,
         )))
     };
-    if has_main.get() {
-        let stmts: Vec[Stmt] = Vec::new();
-        stmts.push(Stmt::Expr(Expr::Call(Expr::Var("main0"), Vec::new())));
-        items.push(Item::Function(Function {
-            name: "main",
-            params: Vec::new(),
-            ret_ty: Option::None,
-            body: Block { stmts },
-        }))
-    } else {
-        ()
-    };
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Expr(Expr::Call(Expr::Var("main0"), Vec::new())));
+    items.push(Item::Function(Function {
+        name: "main",
+        params: Vec::new(),
+        ret_ty: Option::None,
+        body: Block { stmts },
+    }));
     prune_functions(File { items })
 }
