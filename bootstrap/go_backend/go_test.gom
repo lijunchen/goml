@@ -325,3 +325,11 @@ fn protects_index_intrinsics_from_user_functions() -> unit {
     testing::assert(!string_contains(output, "_goml_m_vec_t_get"));
     testing::assert(!string_contains(output, "_goml_m_hashmap_t_get"))
 }
+
+#[test]
+fn emits_unused_non_generic_enums() -> unit {
+    testing::assert_eq(
+        encode(lower_source("enum Status { Idle, Busy(int32), }")),
+        "package main\n\ntype Status interface {\n    isStatus()\n}\n\ntype Idle struct {}\n\nfunc (_ Idle) isStatus() {}\n\ntype Busy struct {\n    _0 int32\n}\n\nfunc (_ Busy) isStatus() {}\n\nfunc main() {\n    main0()\n}\n",
+    )
+}
