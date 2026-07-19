@@ -1132,7 +1132,6 @@ fn lower_block(ctx: Lowerer, value: tast::Block, ty: tast::Type) -> Block {
 fn lower_function(
     ctx: Lowerer,
     name: string,
-    generics: Vec[string],
     trait_impl: Option[TraitImpl],
     value: tast::Function,
 ) -> Function {
@@ -1141,7 +1140,8 @@ fn lower_function(
     Function {
         name,
         root: true,
-        generics,
+        generics: value.generics,
+        predicates: value.predicates,
         trait_impl,
         params: value.params,
         ret_ty: value.ret_ty,
@@ -1165,7 +1165,6 @@ fn lower_file(value: tast::File) -> File {
             tast::Item::Function(function) => functions.push(lower_function(
                 ctx,
                 function.name,
-                Vec::new(),
                 Option::None,
                 function,
             )),
@@ -1188,7 +1187,6 @@ fn lower_file(value: tast::File) -> File {
                 functions.push(lower_function(
                     ctx,
                     name,
-                    block.generics,
                     trait_impl,
                     method,
                 ))

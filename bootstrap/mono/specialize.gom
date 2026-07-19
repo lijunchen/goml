@@ -525,7 +525,138 @@ fn ensure_instance(
     }
 }
 
-fn complete_bindings(value: core::Function, bindings: Vec[TypeBinding]) -> bool {
+fn copy_bindings(values: Vec[TypeBinding]) -> Vec[TypeBinding] {
+    let result = Vec::new();
+    for value in values {
+        result.push(value)
+    };
+    result
+}
+
+fn trait_ref_key(value: tast::TraitRef) -> string {
+    let builder = std::text::StringBuilder::new();
+    builder.write_string(value.name);
+    for arg in value.args {
+        builder.write_char('#');
+        builder.write_string(compact_type(arg))
+    };
+    builder.finish()
+}
+
+fn contains_string(values: Vec[string], expected: string) -> bool {
+    let found = Ref::new(false);
+    for value in values {
+        if value == expected {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+fn matching_trait_applications(
+    ctx: SpecializeCtx,
+    for_ty: tast::Type,
+    reference: tast::TraitRef,
+    bindings: Vec[TypeBinding],
+) -> Vec[tast::TraitRef] {
+    let applications = Vec::new();
+    let keys = Vec::new();
+    for function in ctx.functions {
+        match function.trait_impl {
+            Option::Some(metadata) => if metadata.trait_ref.name == reference.name
+                && metadata.trait_ref.args.len() == reference.args.len()
+            {
+                let impl_bindings = Vec::new();
+                if unify_type(metadata.for_ty, for_ty, impl_bindings) {
+                    let application = substitute_trait_ref(
+                        metadata.trait_ref,
+                        impl_bindings,
+                    );
+                    let trial = copy_bindings(bindings);
+                    if unify_types(reference.args, application.args, trial) {
+                        let key = trait_ref_key(application);
+                        if contains_string(keys, key) {
+                            ()
+                        } else {
+                            keys.push(key);
+                            applications.push(application)
+                        }
+                    } else {
+                        ()
+                    }
+                } else {
+                    ()
+                }
+            } else {
+                ()
+            },
+            Option::None => (),
+        }
+    };
+    applications
+}
+
+fn complete_function_bindings(
+    ctx: SpecializeCtx,
+    value: core::Function,
+    bindings: Vec[TypeBinding],
+) -> unit {
+    for _ in range(0, value.generics.len() + 1) {
+        let previous_len = bindings.len();
+        for predicate in value.predicates {
+            match predicate {
+                tast::TypePredicate::Trait(for_ty, reference) => {
+                    let for_ty = substitute_type(for_ty, bindings);
+                    if type_is_concrete(for_ty) {
+                        let reference = substitute_trait_ref(reference, bindings);
+                        let applications = matching_trait_applications(
+                            ctx,
+                            for_ty,
+                            reference,
+                            bindings,
+                        );
+                        if applications.len() == 1 {
+                            unify_types(
+                                reference.args,
+                                applications.get(0).args,
+                                bindings,
+                            );
+                            ()
+                        } else {
+                            ()
+                        }
+                    } else {
+                        ()
+                    }
+                },
+                tast::TypePredicate::Equality(lhs, rhs) => {
+                    let lhs = substitute_type(lhs, bindings);
+                    let rhs = substitute_type(rhs, bindings);
+                    if unify_type(lhs, rhs, bindings) {
+                        ()
+                    } else {
+                        unify_type(rhs, lhs, bindings);
+                        ()
+                    }
+                },
+            }
+        };
+        if bindings.len() == previous_len {
+            break
+        } else {
+            ()
+        }
+    }
+}
+
+fn complete_bindings(
+    ctx: SpecializeCtx,
+    value: core::Function,
+    bindings: Vec[TypeBinding],
+) -> bool {
+    complete_function_bindings(ctx, value, bindings);
     let complete = Ref::new(true);
     for generic in value.generics {
         match find_binding(bindings, generic) {
@@ -688,7 +819,7 @@ fn ensure_trait_call_instance(
                 Option::None => valid.set(false),
             };
             if valid.get()
-                && complete_bindings(function, bindings)
+                && complete_bindings(ctx, function, bindings)
             {
                 ensure_instance(ctx, function.name, bindings);
                 ()
@@ -712,7 +843,7 @@ fn specialize_var(
         Option::Some(function) => if function_is_generic(function) && type_is_concrete(ty) {
             let call_bindings = Vec::new();
             if unify_type(function_type(function), ty, call_bindings)
-                && complete_bindings(function, call_bindings)
+                && complete_bindings(ctx, function, call_bindings)
             {
                 core::Expr::Var(
                     ensure_instance(ctx, function.name, call_bindings),
@@ -875,6 +1006,7 @@ fn specialize_function(
         name: instance.name,
         root: true,
         generics: Vec::new(),
+        predicates: Vec::new(),
         trait_impl: match value.trait_impl {
             Option::Some(metadata) => Option::Some(core::TraitImpl {
                 trait_ref: substitute_trait_ref(metadata.trait_ref, instance.bindings),

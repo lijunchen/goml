@@ -58,6 +58,8 @@ fn check_function(
     let body = check_block(ctx, value.body, Option::Some(ret_ty));
     Function {
         name: value.name,
+        generics: type_params,
+        predicates,
         params,
         ret_ty,
         body: body.0,
