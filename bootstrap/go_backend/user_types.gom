@@ -27,6 +27,34 @@ fn find_struct(values: Vec[tast::StructDef], name: string) -> Option[tast::Struc
     result.get()
 }
 
+fn builtin_struct_instance(
+    value: core::TypeInstance,
+    instances: Vec[core::TypeInstance],
+) -> Option[StructDef] {
+    if value.base_name == "FnIterator" && value.args.len() == 1 {
+        let result_ty = match find_instance(instances, "Option", value.args) {
+            Option::Some(instance) => Type::Named(go_user_type_name(instance.name)),
+            Option::None => {
+                let option_args: Vec[tast::Type] = Vec::new();
+                option_args.push(value.args.get(0));
+                lower_type(tast::Type::App(
+                    tast::Type::Con("Option"),
+                    option_args,
+                ))
+            },
+        };
+        let params: Vec[Type] = Vec::new();
+        let fields: Vec[(string, Type)] = Vec::new();
+        fields.push(("next_fn", Type::Func(params, result_ty)));
+        Option::Some(StructDef {
+            name: go_user_type_name(value.name),
+            fields,
+        })
+    } else {
+        Option::None
+    }
+}
+
 fn type_lists_match(left: Vec[tast::Type], right: Vec[tast::Type]) -> bool {
     if left.len() != right.len() {
         false
@@ -559,7 +587,17 @@ pub fn emit_user_type_items(
                     ()
                 }
             },
-            Option::None => (),
+            Option::None => match builtin_struct_instance(instance, instances) {
+                Option::Some(definition) => {
+                    if contains_text(emitted, instance.name) == false {
+                        items.push(Item::Struct(definition));
+                        emitted.push(instance.name)
+                    } else {
+                        ()
+                    }
+                },
+                Option::None => (),
+            },
         }
     };
     for definition in structs {
