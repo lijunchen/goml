@@ -2,6 +2,7 @@ package go_backend;
 
 use gomlang::parser::anf;
 use gomlang::parser::ast;
+use gomlang::parser::core;
 use gomlang::parser::tast;
 
 struct LowerEnv {
@@ -1320,6 +1321,63 @@ fn collect_block_types(result: Vec[tast::Type], value: anf::Block) -> unit {
     }
 }
 
+fn collect_type_definition_fields(
+    result: Vec[tast::Type],
+    enums: Vec[tast::EnumDef],
+    structs: Vec[tast::StructDef],
+    instances: Vec[core::TypeInstance],
+) -> unit {
+    for definition in structs {
+        if definition.generics.len() == 0 {
+            for field in definition.fields {
+                collect_type(result, field.1)
+            }
+        } else {
+            ()
+        }
+    };
+    for definition in enums {
+        if definition.generics.len() == 0 {
+            for variant in definition.variants {
+                for field in variant.fields {
+                    collect_type(result, field)
+                }
+            }
+        } else {
+            ()
+        }
+    };
+    for instance in instances {
+        match find_struct(structs, instance.base_name) {
+            Option::Some(definition) => {
+                for field in definition.fields {
+                    collect_type(result, instantiate_type(
+                        field.1,
+                        definition.generics,
+                        instance.args,
+                        instances,
+                    ))
+                }
+            },
+            Option::None => match find_enum(enums, instance.base_name) {
+                Option::Some(definition) => {
+                    for variant in definition.variants {
+                        for field in variant.fields {
+                            collect_type(result, instantiate_type(
+                                field,
+                                definition.generics,
+                                instance.args,
+                                instances,
+                            ))
+                        }
+                    }
+                },
+                Option::None => (),
+            },
+        }
+    }
+}
+
 fn runtime_struct(value: tast::Type) -> StructDef {
     match tast::resolve_type(value) {
         tast::Type::Tuple(values) => {
@@ -1454,6 +1512,7 @@ pub fn lower(value: anf::File) -> File {
             ()
         }
     };
+    collect_type_definition_fields(types, enums, structs, type_instances);
     emit_builtin_runtime_items(items, types);
     emit_user_type_items(
         items,
