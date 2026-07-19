@@ -860,15 +860,15 @@ fn term_target(value: anf::Term) -> Option[string] {
     match value {
         anf::Term::Jump(target, _, _) => Option::Some(target),
         anf::Term::If(_, then_, else_, _) => {
-            same_target(term_target(then_.term), term_target(else_.term))
+            same_target(block_target(then_), block_target(else_))
         },
         anf::Term::Match(_, arms, default, _) => {
             let result: Ref[Option[string]] = Ref::new(Option::None);
             let valid = Ref::new(true);
             for arm in arms {
                 match result.get() {
-                    Option::None => result.set(term_target(arm.body.term)),
-                    Option::Some(current) => match term_target(arm.body.term) {
+                    Option::None => result.set(block_target(arm.body)),
+                    Option::Some(current) => match block_target(arm.body) {
                         Option::Some(target) => {
                             if current != target {
                                 valid.set(false)
@@ -882,8 +882,8 @@ fn term_target(value: anf::Term) -> Option[string] {
             };
             match default {
                 Option::Some(body) => match result.get() {
-                    Option::None => result.set(term_target(body.term)),
-                    Option::Some(current) => match term_target(body.term) {
+                    Option::None => result.set(block_target(body)),
+                    Option::Some(current) => match block_target(body) {
                         Option::Some(target) => {
                             if current != target {
                                 valid.set(false)
@@ -900,6 +900,49 @@ fn term_target(value: anf::Term) -> Option[string] {
         },
         anf::Term::Return(_) | anf::Term::Unreachable(_) => Option::None,
     }
+}
+
+fn find_block_join(value: anf::Block, name: string) -> Option[anf::JoinBind] {
+    let result: Ref[Option[anf::JoinBind]] = Ref::new(Option::None);
+    for bind in value.binds {
+        match bind {
+            anf::Bind::Join(join) => {
+                if join.name == name {
+                    result.set(Option::Some(join))
+                } else {
+                    ()
+                }
+            },
+            anf::Bind::Let(_) | anf::Bind::JoinRec(_) => (),
+        }
+    };
+    result.get()
+}
+
+fn block_target(value: anf::Block) -> Option[string] {
+    let result = Ref::new(term_target(value.term));
+    let visited: Vec[string] = Vec::new();
+    let done = Ref::new(false);
+    while done.get() == false {
+        match result.get() {
+            Option::Some(target) => {
+                if contains_string(visited, target) {
+                    result.set(Option::None);
+                    done.set(true)
+                } else {
+                    match find_block_join(value, target) {
+                        Option::Some(join) => {
+                            visited.push(target);
+                            result.set(block_target(join.body))
+                        },
+                        Option::None => done.set(true),
+                    }
+                }
+            },
+            Option::None => done.set(true),
+        }
+    };
+    result.get()
 }
 
 fn compile_jump_args(
@@ -928,6 +971,7 @@ fn compile_branch_to_join(
     join: anf::JoinBind,
 ) -> Block {
     let stmts: Vec[Stmt] = Vec::new();
+    let pending: Vec[anf::JoinBind] = Vec::new();
     for bind in value.binds {
         match bind {
             anf::Bind::Let(value) => append_stmts(stmts, compile_let(env, value)),
@@ -938,27 +982,43 @@ fn compile_branch_to_join(
                     } else {
                         ()
                     }
-                }
+                };
+                pending.push(value)
             },
             anf::Bind::JoinRec(_) => (),
         }
     };
-    match value.term {
-        anf::Term::Jump(name, args, _) => {
-            if name == target {
-                append_stmts(stmts, compile_jump_args(env, join, args))
+    match term_target(value.term) {
+        Option::Some(inner_target) => {
+            if inner_target == target {
+                append_stmts(stmts, compile_term_to_join(env, value.term, target, join))
             } else {
-                append_stmts(stmts, compile_term_leaf(env, value.term))
+                match find_join(pending, inner_target) {
+                    Option::Some(inner_join) => {
+                        append_stmts(stmts, compile_term_to_join(
+                            env,
+                            value.term,
+                            inner_target,
+                            inner_join,
+                        ));
+                        append_stmts(stmts, compile_branch_to_join(
+                            env,
+                            inner_join.body,
+                            target,
+                            join,
+                        ).stmts)
+                    },
+                    Option::None => append_stmts(
+                        stmts,
+                        compile_term_with_pending(env, value.term, pending),
+                    ),
+                }
             }
         },
-        anf::Term::If(cond, then_, else_, _) => {
-            stmts.push(Stmt::If(
-                compile_imm(env, cond),
-                compile_branch_to_join(env, then_, target, join),
-                Option::Some(compile_branch_to_join(env, else_, target, join)),
-            ))
-        },
-        _ => append_stmts(stmts, compile_term_leaf(env, value.term)),
+        Option::None => append_stmts(
+            stmts,
+            compile_term_with_pending(env, value.term, pending),
+        ),
     };
     Block { stmts }
 }
@@ -987,7 +1047,6 @@ fn compile_match_leaf(
         };
         result.push(Stmt::TypeSwitch(compile_imm(env, scrut), cases, lowered_default))
     } else {
-        let require_default = match_uses_tag_values(env, arms);
         let cases: Vec[SwitchCase] = Vec::new();
         for arm in arms {
             cases.push(SwitchCase {
@@ -997,13 +1056,7 @@ fn compile_match_leaf(
         };
         let lowered_default = match default {
             Option::Some(body) => Option::Some(compile_block(env, body)),
-            Option::None => {
-                if require_default {
-                    Option::Some(non_exhaustive_block())
-                } else {
-                    Option::None
-                }
-            },
+            Option::None => Option::Some(non_exhaustive_block()),
         };
         result.push(Stmt::Switch(compile_imm(env, scrut), cases, lowered_default))
     };
@@ -1023,28 +1076,6 @@ fn match_uses_types(env: LowerEnv, values: Vec[anf::Arm]) -> bool {
         match arm_type(env, value.lhs) {
             Option::Some(_) => found.set(true),
             Option::None => (),
-        }
-    };
-    found.get()
-}
-
-fn match_uses_tag_values(env: LowerEnv, values: Vec[anf::Arm]) -> bool {
-    let found = Ref::new(false);
-    for value in values {
-        match value.lhs {
-            anf::Imm::Tag(tag, owner_ty) => {
-                match find_variant_info(env.variants, owner_ty, tag) {
-                    Option::Some(info) => {
-                        if info.tag_only {
-                            found.set(true)
-                        } else {
-                            ()
-                        }
-                    },
-                    Option::None => (),
-                }
-            },
-            _ => (),
         }
     };
     found.get()
@@ -1082,6 +1113,77 @@ fn compile_term_leaf(env: LowerEnv, value: anf::Term) -> Vec[Stmt] {
     result
 }
 
+fn compile_term_to_join(
+    env: LowerEnv,
+    value: anf::Term,
+    target: string,
+    join: anf::JoinBind,
+) -> Vec[Stmt] {
+    let result: Vec[Stmt] = Vec::new();
+    match value {
+        anf::Term::Jump(_, args, _) => {
+            append_stmts(result, compile_jump_args(env, join, args))
+        },
+        anf::Term::If(cond, then_, else_, _) => result.push(Stmt::If(
+            compile_imm(env, cond),
+            compile_branch_to_join(env, then_, target, join),
+            Option::Some(compile_branch_to_join(env, else_, target, join)),
+        )),
+        anf::Term::Match(scrut, arms, default, _) => {
+            if match_uses_types(env, arms) {
+                let cases: Vec[TypeSwitchCase] = Vec::new();
+                for arm in arms {
+                    match arm_type(env, arm.lhs) {
+                        Option::Some(ty) => cases.push(TypeSwitchCase {
+                            ty,
+                            body: compile_branch_to_join(env, arm.body, target, join),
+                        }),
+                        Option::None => (),
+                    }
+                };
+                let lowered_default = match default {
+                    Option::Some(body) => Option::Some(compile_branch_to_join(
+                        env,
+                        body,
+                        target,
+                        join,
+                    )),
+                    Option::None => Option::Some(non_exhaustive_block()),
+                };
+                result.push(Stmt::TypeSwitch(
+                    compile_imm(env, scrut),
+                    cases,
+                    lowered_default,
+                ))
+            } else {
+                let cases: Vec[SwitchCase] = Vec::new();
+                for arm in arms {
+                    cases.push(SwitchCase {
+                        value: compile_imm(env, arm.lhs),
+                        body: compile_branch_to_join(env, arm.body, target, join),
+                    })
+                };
+                let lowered_default = match default {
+                    Option::Some(body) => Option::Some(compile_branch_to_join(
+                        env,
+                        body,
+                        target,
+                        join,
+                    )),
+                    Option::None => Option::Some(non_exhaustive_block()),
+                };
+                result.push(Stmt::Switch(
+                    compile_imm(env, scrut),
+                    cases,
+                    lowered_default,
+                ))
+            }
+        },
+        _ => append_stmts(result, compile_term_leaf(env, value)),
+    };
+    result
+}
+
 fn compile_term_with_pending(
     env: LowerEnv,
     value: anf::Term,
@@ -1091,79 +1193,7 @@ fn compile_term_with_pending(
         Option::Some(target) => match find_join(pending, target) {
             Option::Some(join) => {
                 let result: Vec[Stmt] = Vec::new();
-                match value {
-                    anf::Term::Jump(_, args, _) => {
-                        append_stmts(result, compile_jump_args(env, join, args))
-                    },
-                    anf::Term::If(cond, then_, else_, _) => result.push(Stmt::If(
-                        compile_imm(env, cond),
-                        compile_branch_to_join(env, then_, target, join),
-                        Option::Some(compile_branch_to_join(env, else_, target, join)),
-                    )),
-                    anf::Term::Match(scrut, arms, default, _) => {
-                        if match_uses_types(env, arms) {
-                            let cases: Vec[TypeSwitchCase] = Vec::new();
-                            for arm in arms {
-                                match arm_type(env, arm.lhs) {
-                                    Option::Some(ty) => cases.push(TypeSwitchCase {
-                                        ty,
-                                        body: compile_branch_to_join(
-                                            env,
-                                            arm.body,
-                                            target,
-                                            join,
-                                        ),
-                                    }),
-                                    Option::None => (),
-                                }
-                            };
-                            let lowered_default = match default {
-                                Option::Some(body) => Option::Some(compile_branch_to_join(
-                                    env,
-                                    body,
-                                    target,
-                                    join,
-                                )),
-                                Option::None => Option::Some(non_exhaustive_block()),
-                            };
-                            result.push(Stmt::TypeSwitch(
-                                compile_imm(env, scrut),
-                                cases,
-                                lowered_default,
-                            ))
-                        } else {
-                            let require_default = match_uses_tag_values(env, arms);
-                            let cases: Vec[SwitchCase] = Vec::new();
-                            for arm in arms {
-                                cases.push(SwitchCase {
-                                    value: compile_imm(env, arm.lhs),
-                                    body: compile_branch_to_join(env, arm.body, target, join),
-                                })
-                            };
-                            let lowered_default = match default {
-                                Option::Some(body) => Option::Some(compile_branch_to_join(
-                                    env,
-                                    body,
-                                    target,
-                                    join,
-                                )),
-                                Option::None => {
-                                    if require_default {
-                                        Option::Some(non_exhaustive_block())
-                                    } else {
-                                        Option::None
-                                    }
-                                },
-                            };
-                            result.push(Stmt::Switch(
-                                compile_imm(env, scrut),
-                                cases,
-                                lowered_default,
-                            ))
-                        }
-                    },
-                    _ => append_stmts(result, compile_term_leaf(env, value)),
-                };
+                append_stmts(result, compile_term_to_join(env, value, target, join));
                 append_stmts(result, compile_block(env, join.body).stmts);
                 result
             },
@@ -1480,6 +1510,7 @@ fn compile_loop_branch_to_join(
     label: string,
 ) -> Block {
     let stmts: Vec[Stmt] = Vec::new();
+    let pending: Vec[anf::JoinBind] = Vec::new();
     for bind in value.binds {
         match bind {
             anf::Bind::Let(value) => append_stmts(stmts, compile_let(env, value)),
@@ -1490,47 +1521,65 @@ fn compile_loop_branch_to_join(
                     } else {
                         ()
                     }
-                }
+                };
+                pending.push(value)
             },
             anf::Bind::JoinRec(_) => (),
         }
     };
-    match value.term {
-        anf::Term::Jump(name, args, _) => {
-            if name == target {
-                append_stmts(stmts, compile_jump_args(env, join, args))
+    match term_target(value.term) {
+        Option::Some(inner_target) => {
+            if inner_target == target {
+                append_stmts(stmts, compile_loop_term_to_join(
+                    env,
+                    value.term,
+                    target,
+                    join,
+                    loop_name,
+                    exit_name,
+                    label,
+                ))
             } else {
-                append_stmts(
-                    stmts,
-                    compile_loop_term_leaf(env, value.term, loop_name, exit_name, label),
-                )
+                match find_join(pending, inner_target) {
+                    Option::Some(inner_join) => {
+                        append_stmts(stmts, compile_loop_term_to_join(
+                            env,
+                            value.term,
+                            inner_target,
+                            inner_join,
+                            loop_name,
+                            exit_name,
+                            label,
+                        ));
+                        append_stmts(stmts, compile_loop_branch_to_join(
+                            env,
+                            inner_join.body,
+                            target,
+                            join,
+                            loop_name,
+                            exit_name,
+                            label,
+                        ).stmts)
+                    },
+                    Option::None => append_stmts(stmts, compile_loop_term_with_pending(
+                        env,
+                        value.term,
+                        pending,
+                        loop_name,
+                        exit_name,
+                        label,
+                    )),
+                }
             }
         },
-        anf::Term::If(cond, then_, else_, _) => stmts.push(Stmt::If(
-            compile_imm(env, cond),
-            compile_loop_branch_to_join(
-                env,
-                then_,
-                target,
-                join,
-                loop_name,
-                exit_name,
-                label,
-            ),
-            Option::Some(compile_loop_branch_to_join(
-                env,
-                else_,
-                target,
-                join,
-                loop_name,
-                exit_name,
-                label,
-            )),
+        Option::None => append_stmts(stmts, compile_loop_term_with_pending(
+            env,
+            value.term,
+            pending,
+            loop_name,
+            exit_name,
+            label,
         )),
-        _ => append_stmts(
-            stmts,
-            compile_loop_term_leaf(env, value.term, loop_name, exit_name, label),
-        ),
     };
     Block { stmts }
 }
@@ -1641,6 +1690,121 @@ fn compile_loop_term_leaf(
     result
 }
 
+fn compile_loop_term_to_join(
+    env: LowerEnv,
+    value: anf::Term,
+    target: string,
+    join: anf::JoinBind,
+    loop_name: string,
+    exit_name: string,
+    label: string,
+) -> Vec[Stmt] {
+    let result: Vec[Stmt] = Vec::new();
+    match value {
+        anf::Term::Jump(_, args, _) => {
+            append_stmts(result, compile_jump_args(env, join, args))
+        },
+        anf::Term::If(cond, then_, else_, _) => result.push(Stmt::If(
+            compile_imm(env, cond),
+            compile_loop_branch_to_join(
+                env,
+                then_,
+                target,
+                join,
+                loop_name,
+                exit_name,
+                label,
+            ),
+            Option::Some(compile_loop_branch_to_join(
+                env,
+                else_,
+                target,
+                join,
+                loop_name,
+                exit_name,
+                label,
+            )),
+        )),
+        anf::Term::Match(scrut, arms, default, _) => {
+            if match_uses_types(env, arms) {
+                let cases: Vec[TypeSwitchCase] = Vec::new();
+                for arm in arms {
+                    match arm_type(env, arm.lhs) {
+                        Option::Some(ty) => cases.push(TypeSwitchCase {
+                            ty,
+                            body: compile_loop_branch_to_join(
+                                env,
+                                arm.body,
+                                target,
+                                join,
+                                loop_name,
+                                exit_name,
+                                label,
+                            ),
+                        }),
+                        Option::None => (),
+                    }
+                };
+                let lowered_default = match default {
+                    Option::Some(body) => Option::Some(compile_loop_branch_to_join(
+                        env,
+                        body,
+                        target,
+                        join,
+                        loop_name,
+                        exit_name,
+                        label,
+                    )),
+                    Option::None => Option::Some(non_exhaustive_block()),
+                };
+                result.push(Stmt::TypeSwitch(
+                    compile_imm(env, scrut),
+                    cases,
+                    lowered_default,
+                ))
+            } else {
+                let cases: Vec[SwitchCase] = Vec::new();
+                for arm in arms {
+                    cases.push(SwitchCase {
+                        value: compile_imm(env, arm.lhs),
+                        body: compile_loop_branch_to_join(
+                            env,
+                            arm.body,
+                            target,
+                            join,
+                            loop_name,
+                            exit_name,
+                            label,
+                        ),
+                    })
+                };
+                let lowered_default = match default {
+                    Option::Some(body) => Option::Some(compile_loop_branch_to_join(
+                        env,
+                        body,
+                        target,
+                        join,
+                        loop_name,
+                        exit_name,
+                        label,
+                    )),
+                    Option::None => Option::Some(non_exhaustive_block()),
+                };
+                result.push(Stmt::Switch(
+                    compile_imm(env, scrut),
+                    cases,
+                    lowered_default,
+                ))
+            }
+        },
+        _ => append_stmts(
+            result,
+            compile_loop_term_leaf(env, value, loop_name, exit_name, label),
+        ),
+    };
+    result
+}
+
 fn compile_loop_term_with_pending(
     env: LowerEnv,
     value: anf::Term,
@@ -1653,112 +1817,15 @@ fn compile_loop_term_with_pending(
         Option::Some(target) => match find_join(pending, target) {
             Option::Some(join) => {
                 let result: Vec[Stmt] = Vec::new();
-                match value {
-                    anf::Term::Jump(_, args, _) => {
-                        append_stmts(result, compile_jump_args(env, join, args))
-                    },
-                    anf::Term::If(cond, then_, else_, _) => result.push(Stmt::If(
-                        compile_imm(env, cond),
-                        compile_loop_branch_to_join(
-                            env,
-                            then_,
-                            target,
-                            join,
-                            loop_name,
-                            exit_name,
-                            label,
-                        ),
-                        Option::Some(compile_loop_branch_to_join(
-                            env,
-                            else_,
-                            target,
-                            join,
-                            loop_name,
-                            exit_name,
-                            label,
-                        )),
-                    )),
-                    anf::Term::Match(scrut, arms, default, _) => {
-                        if match_uses_types(env, arms) {
-                            let cases: Vec[TypeSwitchCase] = Vec::new();
-                            for arm in arms {
-                                match arm_type(env, arm.lhs) {
-                                    Option::Some(ty) => cases.push(TypeSwitchCase {
-                                        ty,
-                                        body: compile_loop_branch_to_join(
-                                            env,
-                                            arm.body,
-                                            target,
-                                            join,
-                                            loop_name,
-                                            exit_name,
-                                            label,
-                                        ),
-                                    }),
-                                    Option::None => (),
-                                }
-                            };
-                            let lowered_default = match default {
-                                Option::Some(body) => Option::Some(
-                                    compile_loop_branch_to_join(
-                                        env,
-                                        body,
-                                        target,
-                                        join,
-                                        loop_name,
-                                        exit_name,
-                                        label,
-                                    ),
-                                ),
-                                Option::None => Option::Some(non_exhaustive_block()),
-                            };
-                            result.push(Stmt::TypeSwitch(
-                                compile_imm(env, scrut),
-                                cases,
-                                lowered_default,
-                            ))
-                        } else {
-                            let cases: Vec[SwitchCase] = Vec::new();
-                            for arm in arms {
-                                cases.push(SwitchCase {
-                                    value: compile_imm(env, arm.lhs),
-                                    body: compile_loop_branch_to_join(
-                                        env,
-                                        arm.body,
-                                        target,
-                                        join,
-                                        loop_name,
-                                        exit_name,
-                                        label,
-                                    ),
-                                })
-                            };
-                            let lowered_default = match default {
-                                Option::Some(body) => Option::Some(
-                                    compile_loop_branch_to_join(
-                                        env,
-                                        body,
-                                        target,
-                                        join,
-                                        loop_name,
-                                        exit_name,
-                                        label,
-                                    ),
-                                ),
-                                Option::None => Option::Some(non_exhaustive_block()),
-                            };
-                            result.push(Stmt::Switch(
-                                compile_imm(env, scrut),
-                                cases,
-                                lowered_default,
-                            ))
-                        }
-                    },
-                    _ => append_stmts(
-                        result,
-                        compile_loop_term_leaf(env, value, loop_name, exit_name, label),
-                    ),
-                };
+                append_stmts(result, compile_loop_term_to_join(
+                    env,
+                    value,
+                    target,
+                    join,
+                    loop_name,
+                    exit_name,
+                    label,
+                ));
                 append_stmts(
                     result,
                     compile_loop_block(env, join.body, loop_name, exit_name, label).stmts,
