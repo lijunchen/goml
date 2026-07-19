@@ -14,6 +14,24 @@ fn lower_source(source: string) -> core::File {
     ))))
 }
 
+fn string_contains(value: string, expected: string) -> bool {
+    if expected.byte_len() == 0 {
+        true
+    } else if value.byte_len() < expected.byte_len() {
+        false
+    } else {
+        let found = Ref::new(false);
+        for index in range(0, value.byte_len() - expected.byte_len() + 1) {
+            if value.byte_slice(index, index + expected.byte_len()) == expected {
+                found.set(true)
+            } else {
+                ()
+            }
+        };
+        found.get()
+    }
+}
+
 #[test]
 fn preserves_monomorphic_core_programs() -> unit {
     testing::assert_eq(
@@ -28,6 +46,19 @@ fn resolves_static_trait_calls() -> unit {
         encode(lower_source("fn main() -> string { true.to_string() }")),
         "fn main() -> string {\n  trait_impl#ToString#bool#to_string(true)\n}",
     )
+}
+
+#[test]
+fn resolves_vec_for_loop_iterator_receiver() -> unit {
+    let output = encode(lower_source("fn iterate(values: Vec[int32]) -> unit { for value in values { println(value.to_string()) } }"));
+    testing::assert(string_contains(
+        output,
+        "trait_impl#Iterator#FnIterator__int32#next",
+    ));
+    testing::assert(!string_contains(
+        output,
+        "trait_impl#Iterator#Vec[int32]#next",
+    ))
 }
 
 #[test]

@@ -560,6 +560,53 @@ fn infers_iterator_adapter_builtins() -> unit {
 }
 
 #[test]
+fn resolves_builtin_for_iterator_types() -> unit {
+    let source = "fn iterate(numbers: Vec[int32], words: Slice[string]) -> unit { for _ in numbers {}; for _ in words {}; }";
+    let file = checked_file(source);
+    match file.items.get(0) {
+        Item::Function(value) => {
+            match value.body.stmts.get(0) {
+                Stmt::Expr(Expr::For(
+                    _,
+                    _,
+                    _,
+                    _,
+                    Type::App(Type::Con(owner), args),
+                    _,
+                    _,
+                )) => {
+                    testing::assert_eq(owner, "FnIterator");
+                    match args.get(0) {
+                        Type::Int32 => (),
+                        _ => testing::fail("expected int32 vector iterator"),
+                    }
+                },
+                _ => testing::fail("expected vector for loop"),
+            };
+            match value.body.stmts.get(1) {
+                Stmt::Expr(Expr::For(
+                    _,
+                    _,
+                    _,
+                    _,
+                    Type::App(Type::Con(owner), args),
+                    _,
+                    _,
+                )) => {
+                    testing::assert_eq(owner, "FnIterator");
+                    match args.get(0) {
+                        Type::String => (),
+                        _ => testing::fail("expected string slice iterator"),
+                    }
+                },
+                _ => testing::fail("expected slice for loop"),
+            }
+        },
+        _ => testing::fail("expected iterate function"),
+    }
+}
+
+#[test]
 fn preserves_associated_into_iterator_item_projection() -> unit {
     let file = checked_file("trait Batch { type Items: IntoIterator; fn items(Self) -> Self::Items; } fn iterate[B: Batch](batch: B) -> unit { for _ in Batch::items(batch) {} }");
     match file.items.get(0) {
