@@ -778,26 +778,44 @@ fn type_ctx(value: core::File) -> TypeCtx {
     ctx
 }
 
+fn lower_trait_impl(
+    ctx: TypeCtx,
+    value: Option[core::TraitImpl],
+) -> Option[core::TraitImpl] {
+    match value {
+        Option::Some(metadata) => Option::Some(core::TraitImpl {
+            trait_ref: collapse_trait_ref(ctx, metadata.trait_ref),
+            for_ty: collapse_type(ctx, metadata.for_ty),
+        }),
+        Option::None => Option::None,
+    }
+}
+
+fn lower_function(ctx: TypeCtx, function: core::Function) -> core::Function {
+    let trait_impl = lower_trait_impl(ctx, function.trait_impl);
+    let name = match (trait_impl, trait_impl_method_name(function.name)) {
+        (Option::Some(metadata), Option::Some(method_name)) => {
+            trait_impl_name(metadata.trait_ref, metadata.for_ty, method_name)
+        },
+        _ => function.name,
+    };
+    core::Function {
+        name,
+        root: function.root,
+        generics: function.generics,
+        trait_impl,
+        params: collapse_function_params(ctx, function.params),
+        ret_ty: collapse_type(ctx, function.ret_ty),
+        body: lower_block(ctx, function.body),
+    }
+}
+
 pub fn lower(value: core::File) -> core::File {
     let value = specialize(value);
     let ctx = type_ctx(value);
     let functions = Vec::new();
     for function in value.functions {
-        functions.push(core::Function {
-            name: function.name,
-            root: function.root,
-            generics: function.generics,
-            trait_impl: match function.trait_impl {
-                Option::Some(metadata) => Option::Some(core::TraitImpl {
-                    trait_ref: collapse_trait_ref(ctx, metadata.trait_ref),
-                    for_ty: collapse_type(ctx, metadata.for_ty),
-                }),
-                Option::None => Option::None,
-            },
-            params: collapse_function_params(ctx, function.params),
-            ret_ty: collapse_type(ctx, function.ret_ty),
-            body: lower_block(ctx, function.body),
-        })
+        functions.push(lower_function(ctx, function))
     };
     core::File { functions }
 }
