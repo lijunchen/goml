@@ -103,6 +103,18 @@ fn normalizes_projected_trait_impl_calls() -> unit {
 }
 
 #[test]
+fn filters_unsatisfied_blanket_impls() -> unit {
+    let source = "trait Mark { fn mark(Self) -> string; } trait Label { fn label(Self) -> string; } struct Box[T] { value: T } impl Mark for int32 { fn mark(self: int32) -> string { self.to_string() } } impl[T: Mark] Label for Box[T] { fn label(self: Box[T]) -> string { \"blanket:\" + self.value.mark() } } impl Label for Box[string] { fn label(self: Box[string]) -> string { \"string:\" + self.value } } fn main() -> unit { println((Box { value: \"text\" }).label()); println((Box { value: 7 }).label()) }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(
+        output,
+        "trait_impl#Label#Box__int32#label",
+    ));
+    testing::assert(!string_contains(output, "trait_impl#Mark#string#mark"));
+    testing::assert(!string_contains(output, "label__mono"))
+}
+
+#[test]
 fn specializes_generic_enum_constructors() -> unit {
     let source = "enum Weird[T] { Next(Ref[Weird[(int32) -> int32]]), Done(T) } fn main() -> unit { let x: Weird[int32] = Weird::Done(1i32); match x { Weird::Done(v) => println(v.to_string()), Weird::Next(_) => println(\"next\"), } }";
     testing::assert_eq(
