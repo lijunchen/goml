@@ -77,6 +77,21 @@ fn infers_generic_arguments_from_trait_predicates() -> unit {
 }
 
 #[test]
+fn normalizes_nested_associated_iterator_types() -> unit {
+    let source = "trait Batch { type Items: IntoIterator; fn items(Self) -> Self::Items; } struct Numbers { values: Vec[int32] } impl Batch for Numbers { type Items = Vec[int32]; fn items(self: Numbers) -> Vec[int32] { self.values } } fn count[B: Batch](batch: B) -> int32 { let total = Ref::new(0); for _ in Batch::items(batch) { total.set(total.get() + 1); }; total.get() } fn main() -> unit { let values: Vec[int32] = Vec::new(); println(count(Numbers { values })) }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(
+        output,
+        "trait_impl#IntoIterator#Vec[int32]#into_iter",
+    ));
+    testing::assert(string_contains(
+        output,
+        "trait_impl#Iterator#FnIterator__int32#next",
+    ));
+    testing::assert(!string_contains(output, "Numbers::Items"))
+}
+
+#[test]
 fn specializes_generic_enum_constructors() -> unit {
     let source = "enum Weird[T] { Next(Ref[Weird[(int32) -> int32]]), Done(T) } fn main() -> unit { let x: Weird[int32] = Weird::Done(1i32); match x { Weird::Done(v) => println(v.to_string()), Weird::Next(_) => println(\"next\"), } }";
     testing::assert_eq(
