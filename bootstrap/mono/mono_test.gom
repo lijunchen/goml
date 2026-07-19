@@ -106,6 +106,28 @@ fn normalizes_nested_associated_iterator_types() -> unit {
 }
 
 #[test]
+fn normalizes_supertrait_associated_projections() -> unit {
+    let source = "trait Child: Parent { fn child(Self) -> unit; } trait Parent { type Item; fn get(Self) -> Self::Item; } struct Count { value: int32, } impl Parent for Count { type Item = int32; fn get(self: Count) -> int32 { self.value } } impl Child for Count { fn child(self: Count) -> unit { () } } fn get_from_child[C: Child](value: C) -> C::Item { Parent::get(value) } fn main() -> unit { println(get_from_child(Count { value: 42 })); }";
+    let file = lower_source(source);
+    let found = Ref::new(false);
+    for function in file.functions {
+        if function.name == "get_from_child__C_Count" {
+            found.set(true);
+            match function.body.tail {
+                Option::Some(expr) => match tast::resolve_type(core::expr_type(expr)) {
+                    tast::Type::Int32 => (),
+                    _ => testing::fail("expected normalized associated type"),
+                },
+                Option::None => testing::fail("expected function tail"),
+            }
+        } else {
+            ()
+        }
+    };
+    testing::assert(found.get())
+}
+
+#[test]
 fn transfers_projection_equalities_between_generic_parameters() -> unit {
     let source = "trait Mark { fn marked(Self) -> string; } trait Source { type Item; fn get(Self) -> Self::Item; } struct Left { value: int32 } struct Right { value: int32 } impl Mark for int32 { fn marked(self: int32) -> string { self.to_string() } } impl Source for Left { type Item = int32; fn get(self: Left) -> int32 { self.value } } impl Source for Right { type Item = int32; fn get(self: Right) -> int32 { self.value } } fn combine[A: Source, B: Source](left: A, right: B) -> string where A::Item == B::Item, B::Item: Mark { Source::get(left).marked() + Source::get(right).marked() } fn main() -> unit { println(combine(Left { value: 1 }, Right { value: 2 })) }";
     let output = encode(lower_source(source));
