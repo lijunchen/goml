@@ -269,3 +269,12 @@ fn preserves_user_structs_before_mono_instances() -> unit {
         "package main\n\ntype Box__int32 struct {\n    value int32\n}\n\ntype Box__int32__mono1 struct {\n    value int32\n}\n\nfunc main0() struct{} {\n    var a__0 Box__int32__mono1 = Box__int32__mono1{\n        value: 10,\n    }\n    var b__1 Box__int32 = Box__int32{\n        value: 20,\n    }\n    var t1 int32 = a__0.value\n    var t2 int32 = b__1.value\n    var t3 int32 = t1 + t2\n    _goml_m_println(t3)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
     )
 }
+
+#[test]
+fn disambiguates_enum_variants_from_user_types() -> unit {
+    let source = "struct E__int32_A { value: int32, } enum E[T] { A(T), B, } fn main() -> unit { let c = E__int32_A { value: 3i32 }; let _: E[string] = E::A(\"x\"); let y: E[int32] = E::A(4i32); match y { E::A(v) => println(v + c.value), E::B => println(0i32), } }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "package main\n\ntype E__int32_A struct {\n    value int32\n}\n\ntype E__string interface {\n    isE__string()\n}\n\ntype E__string_A struct {\n    _0 string\n}\n\nfunc (_ E__string_A) isE__string() {}\n\ntype E__string_B struct {}\n\nfunc (_ E__string_B) isE__string() {}\n\ntype E__int32 interface {\n    isE__int32()\n}\n\ntype E__int32_A__variant1 struct {\n    _0 int32\n}\n\nfunc (_ E__int32_A__variant1) isE__int32() {}\n\ntype E__int32_B struct {}\n\nfunc (_ E__int32_B) isE__int32() {}\n\nfunc main0() struct{} {\n    var c__0 E__int32_A = E__int32_A{\n        value: 3,\n    }\n    var y__1 E__int32 = E__int32_A__variant1{\n        _0: 4,\n    }\n    switch y__1.(type) {\n    case E__int32_A__variant1:\n        var x1 int32 = y__1.(E__int32_A__variant1)._0\n        var v__2 int32 = x1\n        var t4 int32 = c__0.value\n        var t5 int32 = v__2 + t4\n        _goml_m_println(t5)\n    case E__int32_B:\n        _goml_m_println(0)\n    default:\n        panic(\"non-exhaustive match\")\n    }\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
+    )
+}
