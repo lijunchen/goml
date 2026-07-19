@@ -92,6 +92,17 @@ fn normalizes_nested_associated_iterator_types() -> unit {
 }
 
 #[test]
+fn normalizes_projected_trait_impl_calls() -> unit {
+    let source = "trait Source { type Item; fn get(Self) -> Self::Item; } trait Pick[T] { fn pick(Self) -> T; } impl[S: Source] Pick[S::Item] for S { fn pick(self: S) -> S::Item { Source::get(self) } } struct Value { value: int32 } impl Source for Value { type Item = int32; fn get(self: Value) -> int32 { self.value } } fn main() -> unit { let direct: int32 = (Value { value: 41 }).pick(); println(direct) }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(
+        output,
+        "trait_impl#Pick#[int32]@Value#pick",
+    ));
+    testing::assert(!string_contains(output, "Value::Item"))
+}
+
+#[test]
 fn specializes_generic_enum_constructors() -> unit {
     let source = "enum Weird[T] { Next(Ref[Weird[(int32) -> int32]]), Done(T) } fn main() -> unit { let x: Weird[int32] = Weird::Done(1i32); match x { Weird::Done(v) => println(v.to_string()), Weird::Next(_) => println(\"next\"), } }";
     testing::assert_eq(
