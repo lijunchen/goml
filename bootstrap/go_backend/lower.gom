@@ -212,12 +212,16 @@ fn compile_value(value: anf::Value) -> CompiledValue {
             Expr::StructLiteral(lower_type(ty), fields)
         },
         anf::Value::DynCall(_, method, receiver, args, _) => {
+            let receiver = compile_imm(receiver);
             let values: Vec[Expr] = Vec::new();
-            values.push(compile_imm(receiver));
+            values.push(Expr::Field(receiver, "data"));
             for arg in args {
                 values.push(compile_imm(arg))
             };
-            Expr::Call(Expr::Var(go_ident(method)), values)
+            Expr::Call(
+                Expr::Field(Expr::Field(receiver, "vtable"), go_ident(method)),
+                values,
+            )
         },
         anf::Value::Go(value, _) => {
             let call = Expr::Call(compile_imm(value), Vec::new());
@@ -897,6 +901,7 @@ fn collect_type(result: Vec[tast::Type], value: tast::Type) -> unit {
             };
             add_collected_type(result, value)
         },
+        tast::Type::Con(_) => add_collected_type(result, value),
         tast::Type::Dyn(_) => add_collected_type(result, value),
         tast::Type::Projection(base, _, _) => collect_type(result, base),
         tast::Type::App(base, args) => {
@@ -1157,8 +1162,15 @@ pub fn lower(value: anf::File) -> File {
         }
     };
     emit_builtin_runtime_items(items, types);
-    emit_user_type_items(items, variants, enums, types, type_instances);
-    emit_dyn_runtime_items(items, types, coercions);
+    emit_user_type_items(
+        items,
+        variants,
+        enums,
+        value.structs,
+        types,
+        type_instances,
+    );
+    emit_dyn_runtime_items(items, types, coercions, value.functions);
     for function in value.functions {
         items.push(Item::Function(compile_function(function, variants)))
     };

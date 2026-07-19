@@ -15,6 +15,18 @@ fn find_enum(values: Vec[tast::EnumDef], name: string) -> Option[tast::EnumDef] 
     result.get()
 }
 
+fn find_struct(values: Vec[tast::StructDef], name: string) -> Option[tast::StructDef] {
+    let result: Ref[Option[tast::StructDef]] = Ref::new(Option::None);
+    for value in values {
+        if value.name == name {
+            result.set(Option::Some(value))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
 fn type_lists_match(left: Vec[tast::Type], right: Vec[tast::Type]) -> bool {
     if left.len() != right.len() {
         false
@@ -279,12 +291,41 @@ pub fn emit_user_type_items(
     items: Vec[Item],
     variants: Vec[VariantInfo],
     enums: Vec[tast::EnumDef],
+    structs: Vec[tast::StructDef],
     types: Vec[tast::Type],
     instances: Vec[core::TypeInstance],
 ) -> unit {
     let emitted: Vec[string] = Vec::new();
     for instance in instances {
         emit_enum_instance(items, emitted, variants, enums, instances, instance)
+    };
+    for instance in instances {
+        match find_struct(structs, instance.base_name) {
+            Option::Some(definition) => {
+                if contains_text(emitted, instance.name) == false {
+                    let fields: Vec[(string, Type)] = Vec::new();
+                    for field in definition.fields {
+                        fields.push((
+                            go_ident(field.0),
+                            lower_type(instantiate_type(
+                                field.1,
+                                definition.generics,
+                                instance.args,
+                                instances,
+                            )),
+                        ))
+                    };
+                    items.push(Item::Struct(StructDef {
+                        name: go_user_type_name(instance.name),
+                        fields,
+                    }));
+                    emitted.push(instance.name)
+                } else {
+                    ()
+                }
+            },
+            Option::None => (),
+        }
     };
     for ty in types {
         match tast::resolve_type(ty) {
@@ -303,6 +344,29 @@ pub fn emit_user_type_items(
                                 name,
                             },
                         )
+                    } else {
+                        ()
+                    }
+                },
+                Option::None => (),
+            },
+            _ => (),
+        }
+    };
+    for ty in types {
+        match tast::resolve_type(ty) {
+            tast::Type::Con(name) => match find_struct(structs, name) {
+                Option::Some(definition) => {
+                    if definition.generics.len() == 0 && contains_text(emitted, name) == false {
+                        let fields: Vec[(string, Type)] = Vec::new();
+                        for field in definition.fields {
+                            fields.push((go_ident(field.0), lower_type(field.1)))
+                        };
+                        items.push(Item::Struct(StructDef {
+                            name: go_user_type_name(name),
+                            fields,
+                        }));
+                        emitted.push(name)
                     } else {
                         ()
                     }

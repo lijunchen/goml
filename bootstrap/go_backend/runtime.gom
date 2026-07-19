@@ -1,6 +1,13 @@
 package go_backend;
 
+use gomlang::parser::anf;
 use gomlang::parser::tast;
+
+struct DynMethod {
+    name: string,
+    params: Vec[tast::Type],
+    ret_ty: tast::Type,
+}
 
 fn hashmap_name(key: tast::Type, value: tast::Type) -> string {
     go_generated_ident(
@@ -87,52 +94,184 @@ pub fn dyn_factory_name(trait_name: string, for_ty: tast::Type) -> string {
     go_generated_ident(dyn_object_name(trait_name) + "__vtable__" + encode_type(for_ty))
 }
 
-fn dyn_hash_type_items() -> Vec[Item] {
+fn hash_segments(value: string) -> Vec[string] {
+    let result: Vec[string] = Vec::new();
+    let start = Ref::new(0);
+    for index in range(0, value.byte_len()) {
+        if value.byte_slice(index, index + 1) == "#" {
+            result.push(value.byte_slice(start.get(), index));
+            start.set(index + 1)
+        } else {
+            ()
+        }
+    };
+    result.push(value.byte_slice(start.get(), value.byte_len()));
+    result
+}
+
+fn trait_impl_method_name(value: string) -> Option[string] {
+    let segments = hash_segments(value);
+    if segments.len() == 4 && segments.get(0) == "trait_impl" {
+        Option::Some(segments.get(3))
+    } else {
+        Option::None
+    }
+}
+
+fn contains_method(values: Vec[DynMethod], expected: string) -> bool {
+    let found = Ref::new(false);
+    for value in values {
+        if value.name == expected {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+fn dyn_methods(functions: Vec[anf::Function], trait_name: string) -> Vec[DynMethod] {
+    let result: Vec[DynMethod] = Vec::new();
+    for function in functions {
+        match (function.trait_impl, trait_impl_method_name(function.name)) {
+            (Option::Some(metadata), Option::Some(method_name)) => {
+                if metadata.trait_ref.name == trait_name
+                    && contains_method(result, method_name) == false
+                {
+                    let params: Vec[tast::Type] = Vec::new();
+                    for index in range(1, function.params.len()) {
+                        params.push(function.params.get(index).1)
+                    };
+                    result.push(DynMethod {
+                        name: method_name,
+                        params,
+                        ret_ty: function.ret_ty,
+                    })
+                } else {
+                    ()
+                }
+            },
+            _ => (),
+        }
+    };
+    if trait_name == "Hash" && contains_method(result, "hash") == false {
+        result.push(DynMethod {
+            name: "hash",
+            params: Vec::new(),
+            ret_ty: tast::Type::Uint64,
+        })
+    } else {
+        ()
+    };
+    result
+}
+
+fn dyn_type_items(trait_name: string, methods: Vec[DynMethod]) -> Vec[Item] {
     let result: Vec[Item] = Vec::new();
     let fields: Vec[(string, Type)] = Vec::new();
-    let params: Vec[Type] = Vec::new();
-    params.push(Type::Any);
-    fields.push(("hash", Type::Func(params, Type::Uint64)));
-    result.push(Item::Struct(StructDef { name: dyn_vtable_name("Hash"), fields }));
+    for method in methods {
+        let params: Vec[Type] = Vec::new();
+        params.push(Type::Any);
+        for param in method.params {
+            params.push(lower_type(param))
+        };
+        fields.push((go_ident(method.name), Type::Func(params, lower_type(method.ret_ty))))
+    };
+    result.push(Item::Struct(StructDef { name: dyn_vtable_name(trait_name), fields }));
     let object_fields: Vec[(string, Type)] = Vec::new();
     object_fields.push(("data", Type::Any));
     object_fields.push((
         "vtable",
-        Type::Pointer(Type::Named(dyn_vtable_name("Hash"))),
+        Type::Pointer(Type::Named(dyn_vtable_name(trait_name))),
     ));
-    result.push(Item::Struct(StructDef { name: dyn_object_name("Hash"), fields: object_fields }));
+    result.push(Item::Struct(StructDef { name: dyn_object_name(trait_name), fields: object_fields }));
     result
 }
 
-fn dyn_hash_coercion_items(for_ty: tast::Type) -> Vec[Item] {
+fn find_dyn_impl_name(
+    functions: Vec[anf::Function],
+    trait_name: string,
+    for_ty: tast::Type,
+    method_name: string,
+) -> string {
+    let result: Ref[Option[string]] = Ref::new(Option::None);
+    for function in functions {
+        match (function.trait_impl, trait_impl_method_name(function.name)) {
+            (Option::Some(metadata), Option::Some(candidate_method)) => {
+                if metadata.trait_ref.name == trait_name
+                    && encode_type(metadata.for_ty) == encode_type(for_ty)
+                    && candidate_method == method_name
+                {
+                    result.set(Option::Some(go_ident(function.name)))
+                } else {
+                    ()
+                }
+            },
+            _ => (),
+        }
+    };
+    match result.get() {
+        Option::Some(name) => name,
+        Option::None => go_ident(
+            "trait_impl#" + trait_name + "#" + encode_type(for_ty) + "#" + method_name,
+        ),
+    }
+}
+
+fn dyn_coercion_items(
+    functions: Vec[anf::Function],
+    coercion: DynCoercion,
+    methods: Vec[DynMethod],
+) -> Vec[Item] {
     let result: Vec[Item] = Vec::new();
-    let wrapper = dyn_wrapper_name("Hash", for_ty, "hash");
-    let wrapper_params: Vec[(string, Type)] = Vec::new();
-    wrapper_params.push(("self", Type::Any));
-    let wrapper_args: Vec[Expr] = Vec::new();
-    wrapper_args.push(Expr::Cast(Expr::Var("self"), lower_type(for_ty)));
-    let wrapper_stmts: Vec[Stmt] = Vec::new();
-    wrapper_stmts.push(Stmt::Return(Option::Some(Expr::Call(
-        Expr::Var(go_ident("trait_impl#Hash#" + encode_type(for_ty) + "#hash")),
-        wrapper_args,
-    ))));
-    result.push(Item::Function(Function {
-        name: wrapper,
-        params: wrapper_params,
-        ret_ty: Option::Some(Type::Uint64),
-        body: Block { stmts: wrapper_stmts },
-    }));
+    for method in methods {
+        let wrapper = dyn_wrapper_name(coercion.trait_name, coercion.for_ty, method.name);
+        let wrapper_params: Vec[(string, Type)] = Vec::new();
+        wrapper_params.push(("self", Type::Any));
+        let wrapper_args: Vec[Expr] = Vec::new();
+        wrapper_args.push(Expr::Cast(Expr::Var("self"), lower_type(coercion.for_ty)));
+        for index in range(0, method.params.len()) {
+            let name = "p" + index.to_string();
+            wrapper_params.push((name, lower_type(method.params.get(index))));
+            wrapper_args.push(Expr::Var(name))
+        };
+        let wrapper_stmts: Vec[Stmt] = Vec::new();
+        wrapper_stmts.push(Stmt::Return(Option::Some(Expr::Call(
+            Expr::Var(find_dyn_impl_name(
+                functions,
+                coercion.trait_name,
+                coercion.for_ty,
+                method.name,
+            )),
+            wrapper_args,
+        ))));
+        result.push(Item::Function(Function {
+            name: wrapper,
+            params: wrapper_params,
+            ret_ty: Option::Some(lower_type(method.ret_ty)),
+            body: Block { stmts: wrapper_stmts },
+        }))
+    };
     let factory_stmts: Vec[Stmt] = Vec::new();
     let factory_fields: Vec[(string, Expr)] = Vec::new();
-    factory_fields.push(("hash", Expr::Var(wrapper)));
+    for method in methods {
+        factory_fields.push((
+            go_ident(method.name),
+            Expr::Var(dyn_wrapper_name(
+                coercion.trait_name,
+                coercion.for_ty,
+                method.name,
+            )),
+        ))
+    };
     factory_stmts.push(Stmt::Return(Option::Some(Expr::Unary(
         UnaryOp::Address,
-        Expr::StructLiteral(Type::Named(dyn_vtable_name("Hash")), factory_fields),
+        Expr::StructLiteral(Type::Named(dyn_vtable_name(coercion.trait_name)), factory_fields),
     ))));
     result.push(Item::Function(Function {
-        name: dyn_factory_name("Hash", for_ty),
+        name: dyn_factory_name(coercion.trait_name, coercion.for_ty),
         params: Vec::new(),
-        ret_ty: Option::Some(Type::Pointer(Type::Named(dyn_vtable_name("Hash")))),
+        ret_ty: Option::Some(Type::Pointer(Type::Named(dyn_vtable_name(coercion.trait_name)))),
         body: Block { stmts: factory_stmts },
     }));
     result
@@ -203,13 +342,14 @@ pub fn emit_dyn_runtime_items(
     items: Vec[Item],
     types: Vec[tast::Type],
     coercions: Vec[DynCoercion],
+    functions: Vec[anf::Function],
 ) -> unit {
     let dyn_traits: Vec[string] = Vec::new();
     for ty in types {
         match tast::resolve_type(ty) {
             tast::Type::Dyn(name) => {
-                if name == "Hash" && contains_text(dyn_traits, name) == false {
-                    for item in dyn_hash_type_items() {
+                if contains_text(dyn_traits, name) == false {
+                    for item in dyn_type_items(name, dyn_methods(functions, name)) {
                         items.push(item)
                     };
                     dyn_traits.push(name)
@@ -221,12 +361,12 @@ pub fn emit_dyn_runtime_items(
         }
     };
     for coercion in coercions {
-        if coercion.trait_name == "Hash" {
-            for item in dyn_hash_coercion_items(coercion.for_ty) {
-                items.push(item)
-            }
-        } else {
-            ()
+        for item in dyn_coercion_items(
+            functions,
+            coercion,
+            dyn_methods(functions, coercion.trait_name),
+        ) {
+            items.push(item)
         }
     }
 }
