@@ -702,6 +702,76 @@ fn complete_function_bindings(
     }
 }
 
+fn predicates_are_satisfied(
+    ctx: SpecializeCtx,
+    value: core::Function,
+    bindings: Vec[TypeBinding],
+) -> bool {
+    let satisfied = Ref::new(true);
+    for predicate in value.predicates {
+        match predicate {
+            tast::TypePredicate::Trait(for_ty, reference) => {
+                let for_ty = substitute_type(for_ty, bindings);
+                let reference = substitute_trait_ref(reference, bindings);
+                if type_is_concrete(for_ty)
+                    && (builtin_scalar_trait_satisfied(for_ty, reference)
+                        || matching_trait_selections(
+                            ctx,
+                            for_ty,
+                            reference,
+                            bindings,
+                        ).len() == 1)
+                {
+                    ()
+                } else {
+                    satisfied.set(false)
+                }
+            },
+            tast::TypePredicate::Equality(lhs, rhs) => {
+                let lhs = substitute_type(lhs, bindings);
+                let rhs = substitute_type(rhs, bindings);
+                if compact_type(lhs) == compact_type(rhs) {
+                    ()
+                } else {
+                    satisfied.set(false)
+                }
+            },
+        }
+    };
+    satisfied.get()
+}
+
+fn builtin_scalar_type(value: tast::Type) -> bool {
+    match tast::resolve_type(value) {
+        tast::Type::Unit
+        | tast::Type::Bool
+        | tast::Type::Int8
+        | tast::Type::Int16
+        | tast::Type::Int32
+        | tast::Type::Int64
+        | tast::Type::Uint8
+        | tast::Type::Uint16
+        | tast::Type::Uint32
+        | tast::Type::Uint64
+        | tast::Type::Float32
+        | tast::Type::Float64
+        | tast::Type::String
+        | tast::Type::Char => true,
+        _ => false,
+    }
+}
+
+fn builtin_scalar_trait_satisfied(
+    for_ty: tast::Type,
+    reference: tast::TraitRef,
+) -> bool {
+    reference.args.len() == 0
+        && (reference.name == "ToString"
+            || reference.name == "Eq"
+            || reference.name == "Hash")
+        && builtin_scalar_type(for_ty)
+}
+
 fn complete_bindings(
     ctx: SpecializeCtx,
     value: core::Function,
@@ -719,7 +789,7 @@ fn complete_bindings(
             Option::None => complete.set(false),
         }
     };
-    complete.get()
+    complete.get() && predicates_are_satisfied(ctx, value, bindings)
 }
 
 fn specialize_callable(
