@@ -410,6 +410,25 @@ fn builtin_iterator_item(base: Type) -> Option[Type] {
     }
 }
 
+fn builtin_into_iterator_item(base: Type) -> Option[Type] {
+    match prune(base) {
+        Type::VecType(elem) | Type::Slice(elem) => Option::Some(elem),
+        other => builtin_iterator_item(other),
+    }
+}
+
+fn builtin_into_iterator_type(base: Type) -> Option[Type] {
+    match prune(base) {
+        Type::VecType(elem) | Type::Slice(elem) => {
+            Option::Some(nominal_type("FnIterator", one_type(elem)))
+        },
+        other => match builtin_iterator_item(other) {
+            Option::Some(_) => Option::Some(other),
+            Option::None => Option::None,
+        },
+    }
+}
+
 fn projection_trait_matches(qualifier: Option[TraitRef], expected: string) -> bool {
     match qualifier {
         Option::Some(reference) => names_match(reference.name, expected),
@@ -423,14 +442,13 @@ fn builtin_projection(
     qualifier: Option[TraitRef],
 ) -> Option[Type] {
     if name == "Item"
-        && (projection_trait_matches(qualifier, "Iterator")
-            || projection_trait_matches(qualifier, "IntoIterator")) {
+        && projection_trait_matches(qualifier, "Iterator") {
         builtin_iterator_item(base)
+    } else if name == "Item"
+        && projection_trait_matches(qualifier, "IntoIterator") {
+        builtin_into_iterator_item(base)
     } else if name == "IntoIter" && projection_trait_matches(qualifier, "IntoIterator") {
-        match builtin_iterator_item(base) {
-            Option::Some(_) => Option::Some(base),
-            Option::None => Option::None,
-        }
+        builtin_into_iterator_type(base)
     } else {
         Option::None
     }

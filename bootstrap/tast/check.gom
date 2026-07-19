@@ -1134,10 +1134,14 @@ fn check_for_expr(
     body_source: hir::Expr,
 ) -> Expr {
     let iterator = check_expr(ctx, iterator_source, Option::None);
-    let item = into_iterator_item_type(ctx, expr_type(iterator));
+    let source_ty = expr_type(iterator);
+    let item = into_iterator_item_type(ctx, source_ty);
     let typed_pat = check_pattern(ctx, pat, item);
     let body = check_expr(ctx, body_source, Option::Some(Type::Unit));
-    let iterator_ty = expr_type(iterator);
+    let iterator_ty = normalize_type(
+        ctx,
+        trait_projection(source_ty, "IntoIter", "IntoIterator"),
+    );
     Expr::For(
         typed_pat,
         iterator,
