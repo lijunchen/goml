@@ -333,3 +333,12 @@ fn emits_unused_non_generic_enums() -> unit {
         "package main\n\ntype Status interface {\n    isStatus()\n}\n\ntype Idle struct {}\n\nfunc (_ Idle) isStatus() {}\n\ntype Busy struct {\n    _0 int32\n}\n\nfunc (_ Busy) isStatus() {}\n\nfunc main() {\n    main0()\n}\n",
     )
 }
+
+#[test]
+fn orders_runtime_types_before_tuples() -> unit {
+    let source = "fn make_counter() -> (() -> int32, () -> unit) { let cell = Ref::new(0); let next = || cell.get(); let reset = || cell.set(0); (next, reset) } fn main() -> unit { let _ = make_counter(); }";
+    testing::assert(string_contains(
+        encode(lower_source(source)),
+        "type ref_int32_x struct {\n    value int32\n}\n\ntype Tuple2_17TFunc0_ret_5int32_16TFunc0_ret_4unit struct",
+    ))
+}
