@@ -25,6 +25,7 @@ struct State {
     next_env: Ref[int32],
     next_name: Ref[int32],
     generated: Vec[core::Function],
+    generated_structs: Vec[tast::StructDef],
     closures: Vec[ClosureInfo],
     used_types: Vec[string],
 }
@@ -967,10 +968,13 @@ fn transform_closure(
             let struct_name = fresh_struct_name(state, hint);
             let env_ty = tast::Type::Con(struct_name);
             let fields = Vec::new();
+            let struct_fields: Vec[(string, tast::Type)] = Vec::new();
             let captured_args = Vec::new();
             for index in range(0, captures.len()) {
                 let capture = captures.get(index);
-                fields.push(make_field_name(capture.name, index));
+                let field_name = make_field_name(capture.name, index);
+                fields.push(field_name);
+                struct_fields.push((field_name, capture.ty));
                 captured_args.push(core::Expr::Var(capture.name, capture.ty))
             };
             let constructor = tast::Constructor {
@@ -994,6 +998,11 @@ fn transform_closure(
                 struct_name,
                 apply_name,
                 apply_ty,
+            });
+            state.generated_structs.push(tast::StructDef {
+                name: struct_name,
+                generics: Vec::new(),
+                fields: struct_fields,
             });
             let fn_body = prepend_captures(
                 closure_body_block(body),
@@ -1051,6 +1060,7 @@ fn lambda_lift(value: core::File) -> core::File {
         next_env: Ref::new(0),
         next_name: Ref::new(initial_name_counter(value)),
         generated: Vec::new(),
+        generated_structs: Vec::new(),
         closures: Vec::new(),
         used_types: initial_used_types(value),
     };
@@ -1060,6 +1070,9 @@ fn lambda_lift(value: core::File) -> core::File {
     };
     for function in state.generated {
         functions.push(function)
+    };
+    for generated_struct in state.generated_structs {
+        structs.push(generated_struct)
     };
     core::File { functions, enums, structs, type_instances }
 }
