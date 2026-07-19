@@ -219,6 +219,39 @@ fn compile_imms_expected(
     result
 }
 
+fn ref_intrinsic_call_name(
+    key: string,
+    function_ty: tast::Type,
+    args: Vec[anf::Imm],
+) -> Option[string] {
+    if key == "ref.new" {
+        match tast::resolve_type(function_ty) {
+            tast::Type::Func(_, ret_ty) => {
+                Option::Some(ref_helper_name("ref", ret_ty))
+            },
+            _ => Option::None,
+        }
+    } else if key == "ref.get" && args.len() > 0 {
+        Option::Some(ref_helper_name("ref_get", anf::imm_type(args.get(0))))
+    } else if key == "ref.set" && args.len() > 0 {
+        Option::Some(ref_helper_name("ref_set", anf::imm_type(args.get(0))))
+    } else {
+        Option::None
+    }
+}
+
+fn compile_callable(func: anf::Imm, args: Vec[anf::Imm]) -> Expr {
+    match func {
+        anf::Imm::Callable(tast::Callable::Intrinsic(key), function_ty) => {
+            match ref_intrinsic_call_name(key, function_ty, args) {
+                Option::Some(name) => Expr::Var(name),
+                Option::None => compile_imm(func),
+            }
+        },
+        _ => compile_imm(func),
+    }
+}
+
 fn compile_call(env: LowerEnv, func: anf::Imm, args: Vec[anf::Imm]) -> Expr {
     match find_closure_info(env.closures, anf::imm_type(func)) {
         Option::Some(info) => {
@@ -234,7 +267,7 @@ fn compile_call(env: LowerEnv, func: anf::Imm, args: Vec[anf::Imm]) -> Expr {
                 tast::Type::Func(params, _) => params,
                 _ => Vec::new(),
             };
-            Expr::Call(compile_imm(func), compile_imms_expected(env, args, expected))
+            Expr::Call(compile_callable(func, args), compile_imms_expected(env, args, expected))
         },
     }
 }

@@ -73,6 +73,10 @@ fn collect_stmt_names(result: Vec[string], value: Stmt) -> unit {
             Option::None => (),
         },
         Stmt::Assign(_, expr) => collect_expr_names(result, expr),
+        Stmt::FieldAssign(target, _, expr) => {
+            collect_expr_names(result, target);
+            collect_expr_names(result, expr)
+        },
         Stmt::Return(expr) => match expr {
             Option::Some(expr) => collect_expr_names(result, expr),
             Option::None => (),

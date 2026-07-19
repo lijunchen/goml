@@ -15,6 +15,71 @@ fn hashmap_name(key: tast::Type, value: tast::Type) -> string {
     )
 }
 
+fn ref_struct_name(elem: tast::Type) -> string {
+    go_generated_ident("ref_" + go_ident(encode_type(elem)) + "_x")
+}
+
+pub fn ref_helper_name(prefix: string, ref_ty: tast::Type) -> string {
+    go_generated_ident(prefix + "__" + go_ident(encode_type(ref_ty)))
+}
+
+fn ref_runtime_items(ref_ty: tast::Type) -> Vec[Item] {
+    let result: Vec[Item] = Vec::new();
+    match tast::resolve_type(ref_ty) {
+        tast::Type::RefType(elem) => {
+            let elem_ty = lower_type(elem);
+            let lowered_ref_ty = lower_type(ref_ty);
+            let struct_ty = Type::Named(ref_struct_name(elem));
+            let new_fields: Vec[(string, Expr)] = Vec::new();
+            new_fields.push(("value", Expr::Var("value")));
+            let new_stmts: Vec[Stmt] = Vec::new();
+            new_stmts.push(Stmt::Return(Option::Some(Expr::Unary(
+                UnaryOp::Address,
+                Expr::StructLiteral(struct_ty, new_fields),
+            ))));
+            let new_params: Vec[(string, Type)] = Vec::new();
+            new_params.push(("value", elem_ty));
+            result.push(Item::Function(Function {
+                name: ref_helper_name("ref", ref_ty),
+                params: new_params,
+                ret_ty: Option::Some(lowered_ref_ty),
+                body: Block { stmts: new_stmts },
+            }));
+            let get_params: Vec[(string, Type)] = Vec::new();
+            get_params.push(("reference", lowered_ref_ty));
+            let get_stmts: Vec[Stmt] = Vec::new();
+            get_stmts.push(Stmt::Return(Option::Some(Expr::Field(
+                Expr::Var("reference"),
+                "value",
+            ))));
+            result.push(Item::Function(Function {
+                name: ref_helper_name("ref_get", ref_ty),
+                params: get_params,
+                ret_ty: Option::Some(elem_ty),
+                body: Block { stmts: get_stmts },
+            }));
+            let set_params: Vec[(string, Type)] = Vec::new();
+            set_params.push(("reference", lowered_ref_ty));
+            set_params.push(("value", elem_ty));
+            let set_stmts: Vec[Stmt] = Vec::new();
+            set_stmts.push(Stmt::FieldAssign(
+                Expr::Var("reference"),
+                "value",
+                Expr::Var("value"),
+            ));
+            set_stmts.push(Stmt::Return(Option::Some(Expr::Unit)));
+            result.push(Item::Function(Function {
+                name: ref_helper_name("ref_set", ref_ty),
+                params: set_params,
+                ret_ty: Option::Some(Type::Unit),
+                body: Block { stmts: set_stmts },
+            }))
+        },
+        _ => (),
+    };
+    result
+}
+
 fn synthetic_option_base(value: tast::Type) -> string {
     "_goml_option__" + compact_type(value)
 }
@@ -307,7 +372,12 @@ pub fn emit_builtin_runtime_items(
     };
     for ty in types {
         match tast::resolve_type(ty) {
-            tast::Type::RefType(_) => items.push(Item::Struct(runtime_struct(ty))),
+            tast::Type::RefType(_) => {
+                items.push(Item::Struct(runtime_struct(ty)));
+                for item in ref_runtime_items(ty) {
+                    items.push(item)
+                }
+            },
             _ => (),
         }
     };

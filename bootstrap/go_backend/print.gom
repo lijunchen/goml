@@ -318,6 +318,13 @@ fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int32) -> unit 
             builder.write_string(" = ");
             write_expr(builder, expr, indent)
         },
+        Stmt::FieldAssign(target, field, expr) => {
+            write_expr(builder, target, indent);
+            builder.write_char('.');
+            builder.write_string(field);
+            builder.write_string(" = ");
+            write_expr(builder, expr, indent)
+        },
         Stmt::Return(expr) => {
             builder.write_string("return");
             match expr {

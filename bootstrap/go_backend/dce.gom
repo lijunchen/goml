@@ -113,6 +113,10 @@ fn add_stmt_uses(values: Vec[string], value: Stmt) -> unit {
             Option::None => (),
         },
         Stmt::Assign(_, expr) => add_expr_uses(values, expr),
+        Stmt::FieldAssign(target, _, expr) => {
+            add_expr_uses(values, target);
+            add_expr_uses(values, expr)
+        },
         Stmt::Return(expr) => match expr {
             Option::Some(expr) => add_expr_uses(values, expr),
             Option::None => (),
@@ -331,6 +335,11 @@ fn dce_block_with_live(value: Block, live_out: Vec[string]) -> DceResult {
                 } else {
                     ()
                 }
+            },
+            Stmt::FieldAssign(target, field, expr) => {
+                add_expr_uses(live, target);
+                add_expr_uses(live, expr);
+                output.push(Stmt::FieldAssign(target, field, expr))
             },
             Stmt::Return(expr) => {
                 match expr {
