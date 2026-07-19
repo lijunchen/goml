@@ -296,7 +296,14 @@ fn dce_block_with_live(value: Block, live_out: Vec[string]) -> DceResult {
                 add_names(needs_decl, result.needs_decl);
                 output.push(Stmt::Loop(result.block))
             },
+            Stmt::LabeledLoop(label, body) => {
+                let result = dce_block_with_live(body, live);
+                add_names(live, result.live);
+                add_names(needs_decl, result.needs_decl);
+                output.push(Stmt::LabeledLoop(label, result.block))
+            },
             Stmt::Break => output.push(Stmt::Break),
+            Stmt::BreakLabel(label) => output.push(Stmt::BreakLabel(label)),
             Stmt::Continue => output.push(Stmt::Continue),
             Stmt::Switch(expr, cases, default) => {
                 let lowered_cases: Vec[SwitchCase] = Vec::new();

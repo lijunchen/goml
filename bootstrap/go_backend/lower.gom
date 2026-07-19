@@ -13,6 +13,11 @@ struct CompiledValue {
     expr: Expr,
 }
 
+struct JoinRecResult {
+    stmts: Vec[Stmt],
+    loop_names: Vec[string],
+}
+
 fn append_stmts(target: Vec[Stmt], values: Vec[Stmt]) -> unit {
     for value in values {
         target.push(value)
@@ -23,6 +28,18 @@ fn append_items(target: Vec[Item], values: Vec[Item]) -> unit {
     for value in values {
         target.push(value)
     }
+}
+
+fn contains_string(values: Vec[string], expected: string) -> bool {
+    let found = Ref::new(false);
+    for value in values {
+        if value == expected {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
 }
 
 fn function_name(value: string) -> string {
@@ -452,7 +469,215 @@ fn compile_term_with_pending(
     }
 }
 
-fn compile_block(env: LowerEnv, value: anf::Block) -> Block {
+fn loop_label(value: string) -> string {
+    "Loop_" + go_local_ident(value)
+}
+
+fn find_loop_exit(value: anf::Term, loop_name: string) -> Option[string] {
+    match value {
+        anf::Term::If(_, then_, else_, _) => {
+            match term_target(else_.term) {
+                Option::Some(target) => {
+                    if target != loop_name { Option::Some(target) } else { term_target(then_.term) }
+                },
+                Option::None => match term_target(then_.term) {
+                    Option::Some(target) => {
+                        if target != loop_name { Option::Some(target) } else { Option::None }
+                    },
+                    Option::None => Option::None,
+                },
+            }
+        },
+        _ => Option::None,
+    }
+}
+
+fn compile_loop_branch_to_join(
+    env: LowerEnv,
+    value: anf::Block,
+    target: string,
+    join: anf::JoinBind,
+    loop_name: string,
+    exit_name: string,
+    label: string,
+) -> Block {
+    let stmts: Vec[Stmt] = Vec::new();
+    for bind in value.binds {
+        match bind {
+            anf::Bind::Let(value) => append_stmts(stmts, compile_let(value)),
+            anf::Bind::Join(value) => {
+                for param in value.params {
+                    if param.0 != "_" {
+                        stmts.push(Stmt::Var(go_local_ident(param.0), lower_type(param.1), Option::None))
+                    } else {
+                        ()
+                    }
+                }
+            },
+            anf::Bind::JoinRec(_) => (),
+        }
+    };
+    match value.term {
+        anf::Term::Jump(name, args, _) => {
+            if name == target {
+                append_stmts(stmts, compile_jump_args(join, args))
+            } else {
+                append_stmts(
+                    stmts,
+                    compile_loop_term_leaf(env, value.term, loop_name, exit_name, label),
+                )
+            }
+        },
+        anf::Term::If(cond, then_, else_, _) => stmts.push(Stmt::If(
+            compile_imm(cond),
+            compile_loop_branch_to_join(
+                env,
+                then_,
+                target,
+                join,
+                loop_name,
+                exit_name,
+                label,
+            ),
+            Option::Some(compile_loop_branch_to_join(
+                env,
+                else_,
+                target,
+                join,
+                loop_name,
+                exit_name,
+                label,
+            )),
+        )),
+        _ => append_stmts(
+            stmts,
+            compile_loop_term_leaf(env, value.term, loop_name, exit_name, label),
+        ),
+    };
+    Block { stmts }
+}
+
+fn compile_loop_term_leaf(
+    env: LowerEnv,
+    value: anf::Term,
+    loop_name: string,
+    exit_name: string,
+    label: string,
+) -> Vec[Stmt] {
+    let result: Vec[Stmt] = Vec::new();
+    match value {
+        anf::Term::Jump(target, _, _) => {
+            if target == loop_name {
+                result.push(Stmt::Continue)
+            } else if target == exit_name {
+                result.push(Stmt::BreakLabel(label))
+            } else {
+                match find_join(env.joins, target) {
+                    Option::Some(join) => {
+                        match value {
+                            anf::Term::Jump(_, args, _) => {
+                                append_stmts(result, compile_jump_args(join, args))
+                            },
+                            _ => (),
+                        };
+                        append_stmts(
+                            result,
+                            compile_loop_block(env, join.body, loop_name, exit_name, label).stmts,
+                        )
+                    },
+                    Option::None => append_stmts(result, compile_term_leaf(env, value)),
+                }
+            }
+        },
+        anf::Term::If(cond, then_, else_, _) => result.push(Stmt::If(
+            compile_imm(cond),
+            compile_loop_block(env, then_, loop_name, exit_name, label),
+            Option::Some(compile_loop_block(env, else_, loop_name, exit_name, label)),
+        )),
+        anf::Term::Match(scrut, arms, default, _) => {
+            let cases: Vec[SwitchCase] = Vec::new();
+            for arm in arms {
+                cases.push(SwitchCase {
+                    value: compile_imm(arm.lhs),
+                    body: compile_loop_block(env, arm.body, loop_name, exit_name, label),
+                })
+            };
+            let lowered_default = match default {
+                Option::Some(body) => Option::Some(compile_loop_block(
+                    env,
+                    body,
+                    loop_name,
+                    exit_name,
+                    label,
+                )),
+                Option::None => Option::None,
+            };
+            result.push(Stmt::Switch(compile_imm(scrut), cases, lowered_default))
+        },
+        _ => append_stmts(result, compile_term_leaf(env, value)),
+    };
+    result
+}
+
+fn compile_loop_term_with_pending(
+    env: LowerEnv,
+    value: anf::Term,
+    pending: Vec[anf::JoinBind],
+    loop_name: string,
+    exit_name: string,
+    label: string,
+) -> Vec[Stmt] {
+    match term_target(value) {
+        Option::Some(target) => match find_join(pending, target) {
+            Option::Some(join) => {
+                let result: Vec[Stmt] = Vec::new();
+                match value {
+                    anf::Term::Jump(_, args, _) => append_stmts(result, compile_jump_args(join, args)),
+                    anf::Term::If(cond, then_, else_, _) => result.push(Stmt::If(
+                        compile_imm(cond),
+                        compile_loop_branch_to_join(
+                            env,
+                            then_,
+                            target,
+                            join,
+                            loop_name,
+                            exit_name,
+                            label,
+                        ),
+                        Option::Some(compile_loop_branch_to_join(
+                            env,
+                            else_,
+                            target,
+                            join,
+                            loop_name,
+                            exit_name,
+                            label,
+                        )),
+                    )),
+                    _ => append_stmts(
+                        result,
+                        compile_loop_term_leaf(env, value, loop_name, exit_name, label),
+                    ),
+                };
+                append_stmts(
+                    result,
+                    compile_loop_block(env, join.body, loop_name, exit_name, label).stmts,
+                );
+                result
+            },
+            Option::None => compile_loop_term_leaf(env, value, loop_name, exit_name, label),
+        },
+        Option::None => compile_loop_term_leaf(env, value, loop_name, exit_name, label),
+    }
+}
+
+fn compile_loop_block(
+    env: LowerEnv,
+    value: anf::Block,
+    loop_name: string,
+    exit_name: string,
+    label: string,
+) -> Block {
     let stmts: Vec[Stmt] = Vec::new();
     let pending: Vec[anf::JoinBind] = Vec::new();
     for bind in value.binds {
@@ -471,8 +696,91 @@ fn compile_block(env: LowerEnv, value: anf::Block) -> Block {
             anf::Bind::JoinRec(_) => (),
         }
     };
-    append_stmts(stmts, compile_term_with_pending(env, value.term, pending));
+    append_stmts(
+        stmts,
+        compile_loop_term_with_pending(env, value.term, pending, loop_name, exit_name, label),
+    );
     Block { stmts }
+}
+
+fn compile_joinrec(env: LowerEnv, values: Vec[anf::JoinBind]) -> JoinRecResult {
+    let stmts: Vec[Stmt] = Vec::new();
+    let loop_names: Vec[string] = Vec::new();
+    for value in values {
+        match find_loop_exit(value.body.term, value.name) {
+            Option::Some(exit_name) => {
+                let label = loop_label(value.name);
+                stmts.push(Stmt::LabeledLoop(
+                    label,
+                    compile_loop_block(env, value.body, value.name, exit_name, label),
+                ));
+                match find_join(env.joins, exit_name) {
+                    Option::Some(exit) => append_stmts(stmts, compile_block(env, exit.body).stmts),
+                    Option::None => (),
+                };
+                loop_names.push(value.name)
+            },
+            Option::None => stmts.push(Stmt::Unreachable),
+        }
+    };
+    JoinRecResult { stmts, loop_names }
+}
+
+fn compile_block(env: LowerEnv, value: anf::Block) -> Block {
+    let stmts: Vec[Stmt] = Vec::new();
+    let pending: Vec[anf::JoinBind] = Vec::new();
+    let loop_names: Vec[string] = Vec::new();
+    for bind in value.binds {
+        match bind {
+            anf::Bind::Let(value) => append_stmts(stmts, compile_let(value)),
+            anf::Bind::Join(value) => {
+                for param in value.params {
+                    if param.0 != "_" {
+                        stmts.push(Stmt::Var(go_local_ident(param.0), lower_type(param.1), Option::None))
+                    } else {
+                        ()
+                    }
+                };
+                pending.push(value)
+            },
+            anf::Bind::JoinRec(values) => {
+                let compiled = compile_joinrec(env, values);
+                append_stmts(stmts, compiled.stmts);
+                for name in compiled.loop_names {
+                    loop_names.push(name)
+                }
+            },
+        }
+    };
+    let suppress = match value.term {
+        anf::Term::Jump(target, args, _) => {
+            args.len() == 0 && contains_string(loop_names, target)
+        },
+        _ => false,
+    };
+    if !suppress {
+        append_stmts(stmts, compile_term_with_pending(env, value.term, pending))
+    } else {
+        ()
+    };
+    Block { stmts }
+}
+
+fn add_collected_type(result: Vec[tast::Type], value: tast::Type) -> unit {
+    let name = type_name(value);
+    let found = Ref::new(false);
+    for previous in result {
+        if type_name(previous) == name {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    if found.get() == false {
+        result.push(value)
+    } else {
+        ()
+    }
 }
 
 fn collect_type(result: Vec[tast::Type], value: tast::Type) -> unit {
@@ -481,20 +789,7 @@ fn collect_type(result: Vec[tast::Type], value: tast::Type) -> unit {
             for inner in values {
                 collect_type(result, inner)
             };
-            let name = type_name(value);
-            let found = Ref::new(false);
-            for previous in result {
-                if type_name(previous) == name {
-                    found.set(true)
-                } else {
-                    ()
-                }
-            };
-            if found.get() == false {
-                result.push(value)
-            } else {
-                ()
-            }
+            add_collected_type(result, value)
         },
         tast::Type::Projection(base, _, _) => collect_type(result, base),
         tast::Type::App(base, args) => {
@@ -505,8 +800,11 @@ fn collect_type(result: Vec[tast::Type], value: tast::Type) -> unit {
         },
         tast::Type::Array(_, elem)
         | tast::Type::Slice(elem)
-        | tast::Type::VecType(elem)
-        | tast::Type::RefType(elem) => collect_type(result, elem),
+        | tast::Type::VecType(elem) => collect_type(result, elem),
+        tast::Type::RefType(elem) => {
+            collect_type(result, elem);
+            add_collected_type(result, value)
+        },
         tast::Type::HashMap(key, value) => {
             collect_type(result, key);
             collect_type(result, value)
@@ -623,7 +921,7 @@ fn collect_block_types(result: Vec[tast::Type], value: anf::Block) -> unit {
     }
 }
 
-fn tuple_struct(value: tast::Type) -> StructDef {
+fn runtime_struct(value: tast::Type) -> StructDef {
     match tast::resolve_type(value) {
         tast::Type::Tuple(values) => {
             let fields: Vec[(string, Type)] = Vec::new();
@@ -631,6 +929,14 @@ fn tuple_struct(value: tast::Type) -> StructDef {
                 fields.push(("_" + index.to_string(), lower_type(values.get(index))))
             };
             StructDef { name: type_name(value), fields }
+        },
+        tast::Type::RefType(elem) => {
+            let fields: Vec[(string, Type)] = Vec::new();
+            fields.push(("value", lower_type(elem)));
+            StructDef {
+                name: go_generated_ident("ref_" + go_ident(encode_type(elem)) + "_x"),
+                fields,
+            }
         },
         _ => StructDef { name: "Error", fields: Vec::new() },
     }
@@ -668,7 +974,7 @@ pub fn lower(value: anf::File) -> File {
         }
     };
     for ty in types {
-        items.push(Item::Struct(tuple_struct(ty)))
+        items.push(Item::Struct(runtime_struct(ty)))
     };
     for function in value.functions {
         items.push(Item::Function(compile_function(function)))

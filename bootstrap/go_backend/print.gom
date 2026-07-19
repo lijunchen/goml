@@ -326,29 +326,40 @@ fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int32) -> unit 
             builder.write_string("for ");
             write_block(builder, body, indent)
         },
+        Stmt::LabeledLoop(label, body) => {
+            builder.write_string(label);
+            builder.write_string(":\n");
+            write_spaces(builder, indent);
+            builder.write_string("for ");
+            write_block(builder, body, indent)
+        },
         Stmt::Break => builder.write_string("break"),
+        Stmt::BreakLabel(label) => {
+            builder.write_string("break ");
+            builder.write_string(label)
+        },
         Stmt::Continue => builder.write_string("continue"),
         Stmt::Switch(expr, cases, default) => {
             builder.write_string("switch ");
             write_expr(builder, expr, indent);
             builder.write_string(" {");
             for case in cases {
-                newline(builder, indent + 4);
+                newline(builder, indent);
                 builder.write_string("case ");
-                write_expr(builder, case.value, indent + 4);
+                write_expr(builder, case.value, indent);
                 builder.write_char(':');
                 for stmt in case.body.stmts {
-                    newline(builder, indent + 8);
-                    write_stmt(builder, stmt, indent + 8)
+                    newline(builder, indent + 4);
+                    write_stmt(builder, stmt, indent + 4)
                 }
             };
             match default {
                 Option::Some(body) => {
-                    newline(builder, indent + 4);
+                    newline(builder, indent);
                     builder.write_string("default:");
                     for stmt in body.stmts {
-                        newline(builder, indent + 8);
-                        write_stmt(builder, stmt, indent + 8)
+                        newline(builder, indent + 4);
+                        write_stmt(builder, stmt, indent + 4)
                     }
                 },
                 Option::None => (),
