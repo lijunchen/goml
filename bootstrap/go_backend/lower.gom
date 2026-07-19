@@ -864,35 +864,50 @@ fn term_target(value: anf::Term) -> Option[string] {
         },
         anf::Term::Match(_, arms, default, _) => {
             let result: Ref[Option[string]] = Ref::new(Option::None);
+            let initialized = Ref::new(false);
             let valid = Ref::new(true);
             for arm in arms {
-                match result.get() {
-                    Option::None => result.set(block_target(arm.body)),
-                    Option::Some(current) => match block_target(arm.body) {
-                        Option::Some(target) => {
-                            if current != target {
-                                valid.set(false)
-                            } else {
-                                ()
+                match block_target(arm.body) {
+                    Option::Some(target) => {
+                        if initialized.get() {
+                            match result.get() {
+                                Option::Some(current) => {
+                                    if current != target {
+                                        valid.set(false)
+                                    } else {
+                                        ()
+                                    }
+                                },
+                                Option::None => valid.set(false),
                             }
-                        },
-                        Option::None => valid.set(false),
+                        } else {
+                            result.set(Option::Some(target));
+                            initialized.set(true)
+                        }
                     },
+                    Option::None => valid.set(false),
                 }
             };
             match default {
-                Option::Some(body) => match result.get() {
-                    Option::None => result.set(block_target(body)),
-                    Option::Some(current) => match block_target(body) {
-                        Option::Some(target) => {
-                            if current != target {
-                                valid.set(false)
-                            } else {
-                                ()
+                Option::Some(body) => match block_target(body) {
+                    Option::Some(target) => {
+                        if initialized.get() {
+                            match result.get() {
+                                Option::Some(current) => {
+                                    if current != target {
+                                        valid.set(false)
+                                    } else {
+                                        ()
+                                    }
+                                },
+                                Option::None => valid.set(false),
                             }
-                        },
-                        Option::None => valid.set(false),
+                        } else {
+                            result.set(Option::Some(target));
+                            initialized.set(true)
+                        }
                     },
+                    Option::None => valid.set(false),
                 },
                 Option::None => (),
             };
