@@ -3,6 +3,7 @@ package go_backend;
 use gomlang::parser::anf;
 use gomlang::parser::core;
 use gomlang::parser::tast;
+use std::text;
 
 struct DynMethod {
     name: string,
@@ -22,6 +23,108 @@ fn ref_struct_name(elem: tast::Type) -> string {
 
 pub fn runtime_helper_name(prefix: string, ty: tast::Type) -> string {
     go_generated_ident(prefix + "__" + go_ident(encode_type(ty)))
+}
+
+pub fn runtime_hook_name(key: string) -> string {
+    let builder = text::StringBuilder::new();
+    builder.write_string("_goml_runtime_");
+    for character in key.chars() {
+        if character == '.' {
+            builder.write_char('_')
+        } else {
+            builder.write_char(character)
+        }
+    };
+    go_generated_ident(builder.finish())
+}
+
+fn contains_runtime_hook(values: Vec[string], expected: string) -> bool {
+    let found = Ref::new(false);
+    for value in values {
+        if value == expected {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+fn integer_to_string_hook_type(key: string) -> Option[Type] {
+    if key == "core.int8_to_string" {
+        Option::Some(Type::Int8)
+    } else if key == "core.int16_to_string" {
+        Option::Some(Type::Int16)
+    } else if key == "core.int32_to_string" {
+        Option::Some(Type::Int32)
+    } else if key == "core.int64_to_string" {
+        Option::Some(Type::Int64)
+    } else if key == "core.uint8_to_string" {
+        Option::Some(Type::Uint8)
+    } else if key == "core.uint16_to_string" {
+        Option::Some(Type::Uint16)
+    } else if key == "core.uint32_to_string" {
+        Option::Some(Type::Uint32)
+    } else if key == "core.uint64_to_string" {
+        Option::Some(Type::Uint64)
+    } else {
+        Option::None
+    }
+}
+
+fn integer_to_string_hook_item(key: string, ty: Type) -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("x", ty));
+    let args: Vec[Expr] = Vec::new();
+    args.push(Expr::String("%d"));
+    args.push(Expr::Var("x"));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Return(Option::Some(Expr::Call(
+        Expr::Var("_goml_fmt.Sprintf"),
+        args,
+    ))));
+    Item::Function(Function {
+        name: runtime_hook_name(key),
+        params,
+        ret_ty: Option::Some(Type::String),
+        body: Block { stmts },
+    })
+}
+
+pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string]) -> unit {
+    let uses_fmt = Ref::new(false);
+    for hook in hooks {
+        match integer_to_string_hook_type(hook) {
+            Option::Some(_) => uses_fmt.set(true),
+            Option::None => (),
+        }
+    };
+    if uses_fmt.get() {
+        let imports: Vec[(string, string)] = Vec::new();
+        imports.push(("_goml_fmt", "fmt"));
+        items.push(Item::ImportGroup(imports))
+    } else {
+        ()
+    };
+    let ordered: Vec[string] = Vec::new();
+    ordered.push("core.int8_to_string");
+    ordered.push("core.int16_to_string");
+    ordered.push("core.int32_to_string");
+    ordered.push("core.int64_to_string");
+    ordered.push("core.uint8_to_string");
+    ordered.push("core.uint16_to_string");
+    ordered.push("core.uint32_to_string");
+    ordered.push("core.uint64_to_string");
+    for key in ordered {
+        if contains_runtime_hook(hooks, key) {
+            match integer_to_string_hook_type(key) {
+                Option::Some(ty) => items.push(integer_to_string_hook_item(key, ty)),
+                Option::None => (),
+            }
+        } else {
+            ()
+        }
+    }
 }
 
 pub fn ref_helper_name(prefix: string, ref_ty: tast::Type) -> string {
@@ -77,6 +180,25 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
         tast::Type::VecType(elem) => {
             let lowered_vec = lower_type(vec_ty);
             let lowered_elem = lower_type(elem);
+            let push_params: Vec[(string, Type)] = Vec::new();
+            push_params.push(("vec", lowered_vec));
+            push_params.push(("elem", lowered_elem));
+            let append_args: Vec[Expr] = Vec::new();
+            append_args.push(Expr::Field(Expr::Var("vec"), "items"));
+            append_args.push(Expr::Var("elem"));
+            let push_stmts: Vec[Stmt] = Vec::new();
+            push_stmts.push(Stmt::FieldAssign(
+                Expr::Var("vec"),
+                "items",
+                Expr::Call(Expr::Var("append"), append_args),
+            ));
+            push_stmts.push(Stmt::Return(Option::Some(Expr::Unit)));
+            result.push(Item::Function(Function {
+                name: runtime_helper_name("vec_push", vec_ty),
+                params: push_params,
+                ret_ty: Option::Some(Type::Unit),
+                body: Block { stmts: push_stmts },
+            }));
             let get_params: Vec[(string, Type)] = Vec::new();
             get_params.push(("vec", lowered_vec));
             get_params.push(("index", Type::Int32));

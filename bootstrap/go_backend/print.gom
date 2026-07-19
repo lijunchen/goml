@@ -537,6 +537,18 @@ fn write_const_group(builder: text::StringBuilder, value: ConstGroup) -> unit {
     builder.write_char(')')
 }
 
+fn write_import_group(builder: text::StringBuilder, values: Vec[(string, string)]) -> unit {
+    builder.write_string("import (");
+    for value in values {
+        newline(builder, 4);
+        builder.write_string(value.0);
+        builder.write_char(' ');
+        write_string_literal(builder, value.1)
+    };
+    newline(builder, 0);
+    builder.write_char(')')
+}
+
 fn write_function(builder: text::StringBuilder, value: Function) -> unit {
     builder.write_string("func ");
     builder.write_string(value.name);
@@ -597,6 +609,7 @@ fn write_method(builder: text::StringBuilder, value: Method) -> unit {
 
 fn write_item(builder: text::StringBuilder, value: Item) -> unit {
     match value {
+        Item::ImportGroup(value) => write_import_group(builder, value),
         Item::TypeDef(value) => write_type_def(builder, value),
         Item::ConstGroup(value) => write_const_group(builder, value),
         Item::Interface(value) => write_interface(builder, value),

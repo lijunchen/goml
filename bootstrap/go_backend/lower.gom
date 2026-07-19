@@ -148,7 +148,8 @@ fn build_function_names(
 fn callable_name(env: LowerEnv, value: tast::Callable) -> string {
     match value {
         tast::Callable::Function(name) => env_function_name(env, name),
-        tast::Callable::Runtime(name) | tast::Callable::Intrinsic(name) => go_ident(name),
+        tast::Callable::Runtime(name) => runtime_hook_name(name),
+        tast::Callable::Intrinsic(name) => go_ident(name),
         tast::Callable::TraitMethod(reference, name) => {
             go_ident(reference.name + "#" + name)
         },
@@ -187,6 +188,9 @@ fn compile_imm(env: LowerEnv, value: anf::Imm) -> Expr {
                 Option::Some(value) => Expr::Var(value),
                 Option::None => Expr::Var(go_local_ident(name)),
             }
+        },
+        anf::Imm::Callable(tast::Callable::Intrinsic(key), function_ty) => {
+            compile_intrinsic_callable(key, function_ty)
         },
         anf::Imm::Callable(value, _) => Expr::Var(callable_name(env, value)),
         anf::Imm::Prim(value, _) => compile_primitive(value),
@@ -450,6 +454,54 @@ fn intrinsic_helper_call_name(
         }
     } else {
         Option::None
+    }
+}
+
+fn compile_slice_callable(key: string, function_ty: tast::Type) -> Expr {
+    match tast::resolve_type(function_ty) {
+        tast::Type::Func(param_types, ret_ty) => {
+            let params: Vec[(string, Type)] = Vec::new();
+            let vars: Vec[Expr] = Vec::new();
+            for index in range(0, param_types.len()) {
+                let name = "p" + index.to_string();
+                params.push((name, lower_type(param_types.get(index))));
+                vars.push(Expr::Var(name))
+            };
+            let value = if key == "slice.new" {
+                Expr::Slice(
+                    Expr::Field(vars.get(0), "items"),
+                    vars.get(1),
+                    vars.get(2),
+                )
+            } else if key == "slice.get" {
+                Expr::Index(vars.get(0), vars.get(1))
+            } else if key == "slice.len" {
+                let args: Vec[Expr] = Vec::new();
+                args.push(vars.get(0));
+                Expr::Convert(Type::Int32, Expr::Call(Expr::Var("len"), args))
+            } else {
+                Expr::Slice(vars.get(0), vars.get(1), vars.get(2))
+            };
+            let stmts: Vec[Stmt] = Vec::new();
+            stmts.push(Stmt::Return(Option::Some(value)));
+            Expr::FuncLit(params, lower_type(ret_ty), Block { stmts })
+        },
+        _ => Expr::Var(go_ident(key)),
+    }
+}
+
+fn compile_intrinsic_callable(key: string, function_ty: tast::Type) -> Expr {
+    if key == "slice.new"
+        || key == "slice.get"
+        || key == "slice.len"
+        || key == "slice.sub"
+    {
+        compile_slice_callable(key, function_ty)
+    } else {
+        match intrinsic_helper_call_name(key, function_ty, Vec::new()) {
+            Option::Some(name) => Expr::Var(name),
+            Option::None => Expr::Var(go_ident(key)),
+        }
     }
 }
 
@@ -1888,6 +1940,94 @@ fn collect_imm_type(result: Vec[tast::Type], value: anf::Imm) -> unit {
     collect_type(result, anf::imm_type(value))
 }
 
+fn collect_runtime_imm(result: Vec[string], value: anf::Imm) -> unit {
+    match value {
+        anf::Imm::Callable(tast::Callable::Runtime(key), _) => {
+            if contains_string(result, key) == false {
+                result.push(key)
+            } else {
+                ()
+            }
+        },
+        _ => (),
+    }
+}
+
+fn collect_runtime_value(result: Vec[string], value: anf::Value) -> unit {
+    match value {
+        anf::Value::Imm(value) => collect_runtime_imm(result, value),
+        anf::Value::Constr(_, args, _)
+        | anf::Value::Tuple(args, _)
+        | anf::Value::Array(args, _) => {
+            for arg in args {
+                collect_runtime_imm(result, arg)
+            }
+        },
+        anf::Value::ConstrGet(expr, _, _, _)
+        | anf::Value::Unary(_, expr, _)
+        | anf::Value::Cast(expr, _)
+        | anf::Value::Go(expr, _)
+        | anf::Value::Proj(expr, _, _) => collect_runtime_imm(result, expr),
+        anf::Value::Binary(_, lhs, rhs, _) => {
+            collect_runtime_imm(result, lhs);
+            collect_runtime_imm(result, rhs)
+        },
+        anf::Value::Assign(_, expr, _, _) => collect_runtime_imm(result, expr),
+        anf::Value::Call(func, args, _) => {
+            collect_runtime_imm(result, func);
+            for arg in args {
+                collect_runtime_imm(result, arg)
+            }
+        },
+        anf::Value::ToDyn(_, _, expr, _) => collect_runtime_imm(result, expr),
+        anf::Value::DynCall(_, _, receiver, args, _) => {
+            collect_runtime_imm(result, receiver);
+            for arg in args {
+                collect_runtime_imm(result, arg)
+            }
+        },
+    }
+}
+
+fn collect_runtime_block(result: Vec[string], value: anf::Block) -> unit {
+    for bind in value.binds {
+        match bind {
+            anf::Bind::Let(value) => collect_runtime_value(result, value.value),
+            anf::Bind::Join(value) => collect_runtime_block(result, value.body),
+            anf::Bind::JoinRec(values) => {
+                for value in values {
+                    collect_runtime_block(result, value.body)
+                }
+            },
+        }
+    };
+    match value.term {
+        anf::Term::Return(value) => collect_runtime_imm(result, value),
+        anf::Term::Jump(_, args, _) => {
+            for arg in args {
+                collect_runtime_imm(result, arg)
+            }
+        },
+        anf::Term::If(cond, then_, else_, _) => {
+            collect_runtime_imm(result, cond);
+            collect_runtime_block(result, then_);
+            collect_runtime_block(result, else_)
+        },
+        anf::Term::Match(scrut, arms, default, _) => {
+            collect_runtime_imm(result, scrut);
+            for arm in arms {
+                collect_runtime_imm(result, arm.lhs);
+                collect_runtime_block(result, arm.body)
+            };
+            match default {
+                Option::Some(body) => collect_runtime_block(result, body),
+                Option::None => (),
+            }
+        },
+        anf::Term::Unreachable(_) => (),
+    }
+}
+
 fn collect_value_type(result: Vec[tast::Type], value: anf::Value) -> unit {
     collect_type(result, anf::value_type(value));
     match value {
@@ -2174,6 +2314,7 @@ pub fn lower(value: anf::File) -> File {
     );
     let items: Vec[Item] = Vec::new();
     let types: Vec[tast::Type] = Vec::new();
+    let runtime_hooks: Vec[string] = Vec::new();
     let coercions: Vec[DynCoercion] = Vec::new();
     let variants: Vec[VariantInfo] = Vec::new();
     for function in value.functions {
@@ -2182,10 +2323,12 @@ pub fn lower(value: anf::File) -> File {
         };
         collect_type(types, function.ret_ty);
         collect_block_types(types, function.body);
+        collect_runtime_block(runtime_hooks, function.body);
         collect_dyn_block(coercions, function.body)
     };
     let dyn_helper_names = build_dyn_helper_names(coercions, value.functions);
     collect_type_definition_fields(types, enums, structs, type_instances);
+    emit_runtime_hook_items(items, runtime_hooks);
     emit_builtin_runtime_items(
         items,
         types,
