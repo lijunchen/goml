@@ -244,6 +244,19 @@ pub fn go_dyn_struct_name(trait_name: string) -> string {
     }
 }
 
+pub fn is_generated_tuple_type_name(value: string) -> bool {
+    if !has_prefix(value, "Tuple") {
+        false
+    } else {
+        let index = Ref::new(5);
+        while index.get() < value.len() && is_ascii_digit(value.get(index.get())) {
+            index.set(index.get() + 1)
+        };
+        index.get() > 5
+            && (index.get() == value.len() || value.get(index.get()) == '_')
+    }
+}
+
 fn generated_type_name(value: string) -> bool {
     has_prefix(value, "Tuple")
         || has_prefix(value, "Array")
