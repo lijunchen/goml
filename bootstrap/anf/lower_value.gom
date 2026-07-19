@@ -84,6 +84,16 @@ fn lower_list(
     values: Vec[core::Expr],
     k: (Vec[Imm]) -> Block,
 ) -> Block {
+    if all_immediate(values) {
+        ()
+    } else {
+        let start = state.counter.get();
+        if probe_linear_list(state, values) {
+            state.counter.set(start)
+        } else {
+            ()
+        }
+    };
     lower_list_from(state, values, 0, Vec::new(), k)
 }
 
