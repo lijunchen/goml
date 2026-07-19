@@ -150,14 +150,49 @@ fn dyn_object_name(trait_name: string) -> string {
     go_dyn_struct_name(trait_name)
 }
 
-fn dyn_wrapper_name(trait_name: string, for_ty: tast::Type, method: string) -> string {
+fn raw_dyn_wrapper_name(trait_name: string, for_ty: tast::Type, method: string) -> string {
     go_generated_ident(
         "dyn__" + trait_name + "__wrap__" + encode_type(for_ty) + "__" + method,
     )
 }
 
-pub fn dyn_factory_name(trait_name: string, for_ty: tast::Type) -> string {
+fn dyn_wrapper_name(
+    names: DynHelperNames,
+    trait_name: string,
+    for_ty: tast::Type,
+    method: string,
+) -> string {
+    let key = compact_type(for_ty);
+    let result = Ref::new(raw_dyn_wrapper_name(trait_name, for_ty, method));
+    for entry in names.wrappers {
+        if entry.0 == trait_name && entry.1 == key && entry.2 == method {
+            result.set(entry.3)
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn raw_dyn_factory_name(trait_name: string, for_ty: tast::Type) -> string {
     go_generated_ident("dyn__" + trait_name + "__vtable__" + encode_type(for_ty))
+}
+
+pub fn dyn_factory_name(
+    names: DynHelperNames,
+    trait_name: string,
+    for_ty: tast::Type,
+) -> string {
+    let key = compact_type(for_ty);
+    let result = Ref::new(raw_dyn_factory_name(trait_name, for_ty));
+    for entry in names.factories {
+        if entry.0 == trait_name && entry.1 == key {
+            result.set(entry.2)
+        } else {
+            ()
+        }
+    };
+    result.get()
 }
 
 fn hash_segments(value: string) -> Vec[string] {
@@ -238,6 +273,91 @@ fn dyn_methods(functions: Vec[anf::Function], trait_name: string) -> Vec[DynMeth
         ()
     };
     result
+}
+
+fn dyn_factory_name_count(coercions: Vec[DynCoercion], expected: string) -> int32 {
+    let count = Ref::new(0);
+    for coercion in coercions {
+        if raw_dyn_factory_name(coercion.trait_name, coercion.for_ty) == expected {
+            count.set(count.get() + 1)
+        } else {
+            ()
+        }
+    };
+    count.get()
+}
+
+fn dyn_wrapper_name_count(
+    coercions: Vec[DynCoercion],
+    functions: Vec[anf::Function],
+    expected: string,
+) -> int32 {
+    let count = Ref::new(0);
+    for coercion in coercions {
+        for method in dyn_methods(functions, coercion.trait_name) {
+            if raw_dyn_wrapper_name(
+                coercion.trait_name,
+                coercion.for_ty,
+                method.name,
+            ) == expected
+            {
+                count.set(count.get() + 1)
+            } else {
+                ()
+            }
+        }
+    };
+    count.get()
+}
+
+pub fn build_dyn_helper_names(
+    coercions: Vec[DynCoercion],
+    functions: Vec[anf::Function],
+) -> DynHelperNames {
+    let factories: Vec[(string, string, string)] = Vec::new();
+    let wrappers: Vec[(string, string, string, string)] = Vec::new();
+    for coercion in coercions {
+        let key = compact_type(coercion.for_ty);
+        let raw_factory = raw_dyn_factory_name(coercion.trait_name, coercion.for_ty);
+        if dyn_factory_name_count(coercions, raw_factory) > 1 {
+            factories.push((
+                coercion.trait_name,
+                key,
+                go_hashed_ident(
+                    "fn",
+                    "dyn_vtable#" + coercion.trait_name + "#" + key,
+                ),
+            ))
+        } else {
+            ()
+        };
+        for method in dyn_methods(functions, coercion.trait_name) {
+            let raw_wrapper = raw_dyn_wrapper_name(
+                coercion.trait_name,
+                coercion.for_ty,
+                method.name,
+            );
+            if dyn_wrapper_name_count(coercions, functions, raw_wrapper) > 1 {
+                wrappers.push((
+                    coercion.trait_name,
+                    key,
+                    method.name,
+                    go_hashed_ident(
+                        "fn",
+                        "dyn_wrap#"
+                            + coercion.trait_name
+                            + "#"
+                            + key
+                            + "#"
+                            + method.name,
+                    ),
+                ))
+            } else {
+                ()
+            }
+        }
+    };
+    DynHelperNames { factories, wrappers }
 }
 
 fn dyn_type_items(trait_name: string, methods: Vec[DynMethod]) -> Vec[Item] {
@@ -337,10 +457,16 @@ fn dyn_coercion_items(
     functions: Vec[anf::Function],
     coercion: DynCoercion,
     methods: Vec[DynMethod],
+    names: DynHelperNames,
 ) -> Vec[Item] {
     let result: Vec[Item] = Vec::new();
     for method in methods {
-        let wrapper = dyn_wrapper_name(coercion.trait_name, coercion.for_ty, method.name);
+        let wrapper = dyn_wrapper_name(
+            names,
+            coercion.trait_name,
+            coercion.for_ty,
+            method.name,
+        );
         let wrapper_params: Vec[(string, Type)] = Vec::new();
         wrapper_params.push(("self", Type::Any));
         let wrapper_args: Vec[Expr] = Vec::new();
@@ -373,6 +499,7 @@ fn dyn_coercion_items(
         factory_fields.push((
             go_ident(method.name),
             Expr::Var(dyn_wrapper_name(
+                names,
                 coercion.trait_name,
                 coercion.for_ty,
                 method.name,
@@ -384,7 +511,7 @@ fn dyn_coercion_items(
         Expr::StructLiteral(Type::Named(dyn_vtable_name(coercion.trait_name)), factory_fields),
     ))));
     result.push(Item::Function(Function {
-        name: dyn_factory_name(coercion.trait_name, coercion.for_ty),
+        name: dyn_factory_name(names, coercion.trait_name, coercion.for_ty),
         params: Vec::new(),
         ret_ty: Option::Some(Type::Pointer(Type::Named(dyn_vtable_name(coercion.trait_name)))),
         body: Block { stmts: factory_stmts },
@@ -470,6 +597,7 @@ pub fn emit_dyn_runtime_items(
     types: Vec[tast::Type],
     coercions: Vec[DynCoercion],
     functions: Vec[anf::Function],
+    names: DynHelperNames,
 ) -> unit {
     let dyn_traits: Vec[string] = Vec::new();
     for ty in types {
@@ -492,6 +620,7 @@ pub fn emit_dyn_runtime_items(
             functions,
             coercion,
             dyn_methods(functions, coercion.trait_name),
+            names,
         ) {
             items.push(item)
         }

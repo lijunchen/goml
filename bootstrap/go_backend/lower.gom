@@ -11,6 +11,7 @@ struct LowerEnv {
     closures: Vec[ClosureInfo],
     structs: Vec[tast::StructDef],
     function_names: Vec[(string, string)],
+    dyn_helper_names: DynHelperNames,
 }
 
 struct CompiledValue {
@@ -571,7 +572,11 @@ fn compile_value(env: LowerEnv, value: anf::Value, expected_ty: tast::Type) -> C
             fields.push(("data", data));
             fields.push((
                 "vtable",
-                Expr::Call(Expr::Var(dyn_factory_name(trait_name, for_ty)), Vec::new()),
+                Expr::Call(Expr::Var(dyn_factory_name(
+                    env.dyn_helper_names,
+                    trait_name,
+                    for_ty,
+                )), Vec::new()),
             ));
             Expr::StructLiteral(lower_type(ty), fields)
         },
@@ -2004,6 +2009,7 @@ fn compile_function(
     closures: Vec[ClosureInfo],
     structs: Vec[tast::StructDef],
     function_names: Vec[(string, string)],
+    dyn_helper_names: DynHelperNames,
 ) -> Function {
     let joins: Vec[anf::JoinBind] = Vec::new();
     collect_joins_block(joins, value.body);
@@ -2011,7 +2017,14 @@ fn compile_function(
     for param in value.params {
         params.push((go_local_ident(param.0), lower_type(param.1)))
     };
-    let env = LowerEnv { joins, variants, closures, structs, function_names };
+    let env = LowerEnv {
+        joins,
+        variants,
+        closures,
+        structs,
+        function_names,
+        dyn_helper_names,
+    };
     Function {
         name: env_function_name(env, value.name),
         params,
@@ -2043,6 +2056,7 @@ pub fn lower(value: anf::File) -> File {
         collect_block_types(types, function.body);
         collect_dyn_block(coercions, function.body)
     };
+    let dyn_helper_names = build_dyn_helper_names(coercions, value.functions);
     collect_type_definition_fields(types, enums, structs, type_instances);
     emit_builtin_runtime_items(items, types, type_instances);
     emit_user_type_items(
@@ -2054,7 +2068,13 @@ pub fn lower(value: anf::File) -> File {
         type_instances,
         function_names,
     );
-    emit_dyn_runtime_items(items, types, coercions, value.functions);
+    emit_dyn_runtime_items(
+        items,
+        types,
+        coercions,
+        value.functions,
+        dyn_helper_names,
+    );
     for function in value.functions {
         items.push(Item::Function(compile_function(
             function,
@@ -2062,6 +2082,7 @@ pub fn lower(value: anf::File) -> File {
             closures,
             structs,
             function_names,
+            dyn_helper_names,
         )))
     };
     let stmts: Vec[Stmt] = Vec::new();

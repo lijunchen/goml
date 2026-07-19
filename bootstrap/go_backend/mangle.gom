@@ -203,6 +203,27 @@ fn compact_ident(value: string) -> string {
     }
 }
 
+fn bounded_hint(value: string, budget: int32) -> string {
+    if value.byte_len() <= budget {
+        value
+    } else {
+        let content_budget = budget - 1;
+        let head_len = content_budget * 2 / 3;
+        let tail_len = content_budget - head_len;
+        value.byte_slice(0, head_len)
+            + "_"
+            + value.byte_slice(value.byte_len() - tail_len, value.byte_len())
+    }
+}
+
+pub fn go_hashed_ident(kind: string, value: string) -> string {
+    let prefix = "_goml_" + kind + "_";
+    let digest = sha256_prefix(kind + "\u0000" + value);
+    let suffix = "_h" + digest;
+    let budget = 80 - prefix.byte_len() - suffix.byte_len();
+    prefix + bounded_hint(encode_name(value), budget) + suffix
+}
+
 fn go_ident_impl(value: string, protect_generated: bool) -> string {
     if is_valid_ident(value) && !is_keyword(value) && !is_predeclared(value) {
         if protect_generated && is_generated_value(value) {
