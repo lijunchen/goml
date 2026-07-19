@@ -91,22 +91,130 @@ fn integer_to_string_hook_item(key: string, ty: Type) -> Item {
     })
 }
 
+fn string_output_hook_item(key: string, go_name: string) -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("s", Type::String));
+    let args: Vec[Expr] = Vec::new();
+    args.push(Expr::Var("s"));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Expr(Expr::Call(Expr::Var(go_name), args)));
+    stmts.push(Stmt::Return(Option::Some(Expr::Unit)));
+    Item::Function(Function {
+        name: runtime_hook_name(key),
+        params,
+        ret_ty: Option::Some(Type::Unit),
+        body: Block { stmts },
+    })
+}
+
+fn string_from_utf8_hook_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    let byte_vec = tast::Type::VecType(tast::Type::Uint8);
+    params.push(("bytes", lower_type(byte_vec)));
+    let tuple_items: Vec[tast::Type] = Vec::new();
+    tuple_items.push(tast::Type::Bool);
+    tuple_items.push(tast::Type::String);
+    let tuple_ty = lower_type(tast::Type::Tuple(tuple_items));
+    let invalid_fields: Vec[(string, Expr)] = Vec::new();
+    invalid_fields.push(("_0", Expr::Bool(false)));
+    invalid_fields.push(("_1", Expr::String("")));
+    let invalid_stmts: Vec[Stmt] = Vec::new();
+    invalid_stmts.push(Stmt::Return(Option::Some(Expr::StructLiteral(
+        tuple_ty,
+        invalid_fields,
+    ))));
+    let valid_args: Vec[Expr] = Vec::new();
+    valid_args.push(Expr::Field(Expr::Var("bytes"), "items"));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::If(
+        Expr::Unary(
+            UnaryOp::Not,
+            Expr::Call(Expr::Var("_goml_utf8.Valid"), valid_args),
+        ),
+        Block { stmts: invalid_stmts },
+        Option::None,
+    ));
+    let result_fields: Vec[(string, Expr)] = Vec::new();
+    result_fields.push(("_0", Expr::Bool(true)));
+    result_fields.push(("_1", Expr::Convert(
+        Type::String,
+        Expr::Field(Expr::Var("bytes"), "items"),
+    )));
+    stmts.push(Stmt::Return(Option::Some(Expr::StructLiteral(
+        tuple_ty,
+        result_fields,
+    ))));
+    Item::Function(Function {
+        name: runtime_hook_name("core.string_from_utf8"),
+        params,
+        ret_ty: Option::Some(tuple_ty),
+        body: Block { stmts },
+    })
+}
+
+fn string_concat_hook_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("values", lower_type(tast::Type::VecType(tast::Type::String))));
+    let args: Vec[Expr] = Vec::new();
+    args.push(Expr::Field(Expr::Var("values"), "items"));
+    args.push(Expr::String(""));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Return(Option::Some(Expr::Call(
+        Expr::Var("_goml_strings.Join"),
+        args,
+    ))));
+    Item::Function(Function {
+        name: runtime_hook_name("core.string_concat"),
+        params,
+        ret_ty: Option::Some(Type::String),
+        body: Block { stmts },
+    })
+}
+
 pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string]) -> unit {
     let uses_fmt = Ref::new(false);
+    let uses_strings = Ref::new(false);
+    let uses_utf8 = Ref::new(false);
     for hook in hooks {
         match integer_to_string_hook_type(hook) {
             Option::Some(_) => uses_fmt.set(true),
-            Option::None => (),
+            Option::None => {
+                if hook == "core.string_print" || hook == "core.string_println" {
+                    uses_fmt.set(true)
+                } else if hook == "core.string_concat" {
+                    uses_strings.set(true)
+                } else if hook == "core.string_from_utf8" {
+                    uses_utf8.set(true)
+                } else {
+                    ()
+                }
+            },
         }
     };
-    if uses_fmt.get() {
+    if uses_fmt.get() || uses_strings.get() || uses_utf8.get() {
         let imports: Vec[(string, string)] = Vec::new();
-        imports.push(("_goml_fmt", "fmt"));
+        if uses_fmt.get() {
+            imports.push(("_goml_fmt", "fmt"))
+        } else {
+            ()
+        };
+        if uses_strings.get() {
+            imports.push(("_goml_strings", "strings"))
+        } else {
+            ()
+        };
+        if uses_utf8.get() {
+            imports.push(("_goml_utf8", "unicode/utf8"))
+        } else {
+            ()
+        };
         items.push(Item::ImportGroup(imports))
     } else {
         ()
     };
     let ordered: Vec[string] = Vec::new();
+    ordered.push("core.string_from_utf8");
+    ordered.push("core.string_concat");
     ordered.push("core.int8_to_string");
     ordered.push("core.int16_to_string");
     ordered.push("core.int32_to_string");
@@ -115,11 +223,25 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string]) -> unit {
     ordered.push("core.uint16_to_string");
     ordered.push("core.uint32_to_string");
     ordered.push("core.uint64_to_string");
+    ordered.push("core.string_print");
+    ordered.push("core.string_println");
     for key in ordered {
         if contains_runtime_hook(hooks, key) {
             match integer_to_string_hook_type(key) {
                 Option::Some(ty) => items.push(integer_to_string_hook_item(key, ty)),
-                Option::None => (),
+                Option::None => {
+                    if key == "core.string_from_utf8" {
+                        items.push(string_from_utf8_hook_item())
+                    } else if key == "core.string_concat" {
+                        items.push(string_concat_hook_item())
+                    } else if key == "core.string_print" {
+                        items.push(string_output_hook_item(key, "_goml_fmt.Print"))
+                    } else if key == "core.string_println" {
+                        items.push(string_output_hook_item(key, "_goml_fmt.Println"))
+                    } else {
+                        ()
+                    }
+                },
             }
         } else {
             ()
@@ -180,6 +302,25 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
         tast::Type::VecType(elem) => {
             let lowered_vec = lower_type(vec_ty);
             let lowered_elem = lower_type(elem);
+            let new_fields: Vec[(string, Expr)] = Vec::new();
+            new_fields.push(("items", Expr::Nil));
+            let new_stmts: Vec[Stmt] = Vec::new();
+            new_stmts.push(Stmt::Return(Option::Some(Expr::Unary(
+                UnaryOp::Address,
+                Expr::StructLiteral(
+                    Type::Named(go_generated_ident(
+                        "_goml_vec_" + go_ident(encode_type(elem)),
+                    )),
+                    new_fields,
+                ),
+            ))));
+            let new_params: Vec[(string, Type)] = Vec::new();
+            result.push(Item::Function(Function {
+                name: runtime_helper_name("vec_new", vec_ty),
+                params: new_params,
+                ret_ty: Option::Some(lowered_vec),
+                body: Block { stmts: new_stmts },
+            }));
             let push_params: Vec[(string, Type)] = Vec::new();
             push_params.push(("vec", lowered_vec));
             push_params.push(("elem", lowered_elem));
@@ -229,6 +370,36 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
                 params: set_params,
                 ret_ty: Option::Some(Type::Unit),
                 body: Block { stmts: set_stmts },
+            }));
+            let len_params: Vec[(string, Type)] = Vec::new();
+            len_params.push(("vec", lowered_vec));
+            let len_args: Vec[Expr] = Vec::new();
+            len_args.push(Expr::Field(Expr::Var("vec"), "items"));
+            let len_stmts: Vec[Stmt] = Vec::new();
+            len_stmts.push(Stmt::Return(Option::Some(Expr::Convert(
+                Type::Int32,
+                Expr::Call(Expr::Var("len"), len_args),
+            ))));
+            result.push(Item::Function(Function {
+                name: runtime_helper_name("vec_len", vec_ty),
+                params: len_params,
+                ret_ty: Option::Some(Type::Int32),
+                body: Block { stmts: len_stmts },
+            }));
+            let capacity_params: Vec[(string, Type)] = Vec::new();
+            capacity_params.push(("vec", lowered_vec));
+            let capacity_args: Vec[Expr] = Vec::new();
+            capacity_args.push(Expr::Field(Expr::Var("vec"), "items"));
+            let capacity_stmts: Vec[Stmt] = Vec::new();
+            capacity_stmts.push(Stmt::Return(Option::Some(Expr::Convert(
+                Type::Int32,
+                Expr::Call(Expr::Var("cap"), capacity_args),
+            ))));
+            result.push(Item::Function(Function {
+                name: runtime_helper_name("vec_capacity", vec_ty),
+                params: capacity_params,
+                ret_ty: Option::Some(Type::Int32),
+                body: Block { stmts: capacity_stmts },
             }))
         },
         _ => (),
