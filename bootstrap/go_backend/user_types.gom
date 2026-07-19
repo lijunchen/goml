@@ -422,6 +422,24 @@ pub fn emit_user_type_items(
     instances: Vec[core::TypeInstance],
 ) -> unit {
     let emitted: Vec[string] = Vec::new();
+    for definition in structs {
+        if definition.generics.len() == 0
+            && !is_closure_struct_name(definition.name)
+            && contains_text(emitted, definition.name) == false
+        {
+            let fields: Vec[(string, Type)] = Vec::new();
+            for field in definition.fields {
+                fields.push((go_ident(field.0), lower_type(field.1)))
+            };
+            items.push(Item::Struct(StructDef {
+                name: go_user_type_name(definition.name),
+                fields,
+            }));
+            emitted.push(definition.name)
+        } else {
+            ()
+        }
+    };
     for instance in instances {
         match find_struct(structs, instance.base_name) {
             Option::Some(definition) => {
@@ -452,6 +470,7 @@ pub fn emit_user_type_items(
     };
     for definition in structs {
         if definition.generics.len() == 0
+            && is_closure_struct_name(definition.name)
             && contains_text(emitted, definition.name) == false
         {
             let fields: Vec[(string, Type)] = Vec::new();
