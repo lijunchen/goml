@@ -142,3 +142,14 @@ fn preserves_user_struct_order_before_closure_environments() -> unit {
         "package main\n\ntype _goml_user__goml_inherent_closure_env_f_0_closure_env_f_0_apply struct {\n    value int32\n}\n\ntype closure_env_f_0 struct {\n    y_0 int32\n}\n\nfunc main0() struct{} {\n    var y__0 int32 = 1\n    var f__2 closure_env_f_0 = closure_env_f_0{\n        y_0: y__0,\n    }\n    var c__3 _goml_user__goml_inherent_closure_env_f_0_closure_env_f_0_apply = _goml_user__goml_inherent_closure_env_f_0_closure_env_f_0_apply{\n        value: 2,\n    }\n    var t2 int32 = _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(f__2, 3)\n    var t3 int32 = c__3.value\n    var t4 int32 = t2 + t3\n    var t5 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t4)\n    _goml_m_println(t5)\n    return struct{}{}\n}\n\nfunc _goml_m_inherent_i_closure__env__f__0_i_closure__env__f__0_i_apply(env0 closure_env_f_0, x__1 int32) int32 {\n    var retv8 int32\n    var y__0 int32 = env0.y_0\n    var t9 int32 = x__1 + y__0\n    retv8 = t9\n    return retv8\n}\n\nfunc main() {\n    main0()\n}\n",
     )
 }
+
+#[test]
+fn hashes_and_compacts_long_go_identifiers() -> unit {
+    testing::assert_eq(sha256_prefix("abc"), "ba7816bf8f01cfea414140de5dae2223");
+    testing::assert_eq(
+        go_ident(
+            "inherent#closure_env_grow_T_int32_0#closure_env_grow_T_int32_0#apply",
+        ),
+        "_goml_m_inherent_i_closure__en_hc8c2267ce73456d4efdb3aa5198c65a2_nt32__0_i_apply",
+    )
+}
