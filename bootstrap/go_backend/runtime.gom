@@ -278,9 +278,50 @@ fn find_dyn_impl_name(
     match result.get() {
         Option::Some(name) => name,
         Option::None => go_ident(
-            "trait_impl#" + trait_name + "#" + encode_type(for_ty) + "#" + method_name,
+            "trait_impl#" + trait_name + "#" + compact_type(for_ty) + "#" + method_name,
         ),
     }
+}
+
+fn runtime_string_precedes(left: string, right: string) -> bool {
+    let length = if left.byte_len() < right.byte_len() {
+        left.byte_len()
+    } else {
+        right.byte_len()
+    };
+    let index = Ref::new(0);
+    while index.get() < length
+        && left.byte_get(index.get()) == right.byte_get(index.get())
+    {
+        index.set(index.get() + 1)
+    };
+    if index.get() == length {
+        left.byte_len() < right.byte_len()
+    } else {
+        left.byte_get(index.get()) < right.byte_get(index.get())
+    }
+}
+
+fn dyn_coercion_precedes(left: DynCoercion, right: DynCoercion) -> bool {
+    if left.trait_name == right.trait_name {
+        runtime_string_precedes(encode_type(left.for_ty), encode_type(right.for_ty))
+    } else {
+        runtime_string_precedes(left.trait_name, right.trait_name)
+    }
+}
+
+fn sorted_dyn_coercions(values: Vec[DynCoercion]) -> Vec[DynCoercion] {
+    let result = Vec::new();
+    for value in values {
+        let index = Ref::new(0);
+        while index.get() < result.len()
+            && !dyn_coercion_precedes(value, result.get(index.get()))
+        {
+            index.set(index.get() + 1)
+        };
+        result.insert(index.get(), value)
+    };
+    result
 }
 
 fn dyn_coercion_items(
@@ -430,7 +471,7 @@ pub fn emit_dyn_runtime_items(
             _ => (),
         }
     };
-    for coercion in coercions {
+    for coercion in sorted_dyn_coercions(coercions) {
         for item in dyn_coercion_items(
             functions,
             coercion,
