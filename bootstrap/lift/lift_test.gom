@@ -58,3 +58,12 @@ fn preserves_immediate_closure_calls() -> unit {
         "fn main() -> unit {\n  let result/1 = closure_env_main_0 {}(41) in\n  let _wild0 = println(inherent#int32#int32#to_string(result/1)) in\n  ()\n}\n\nfn inherent#closure_env_main_0#closure_env_main_0#apply(env1: closure_env_main_0, x/0: int32) -> int32 {\n  (x/0 + 1)\n}",
     )
 }
+
+#[test]
+fn avoids_existing_closure_environment_names() -> unit {
+    let source = "struct closure_env_f_0 { value: int32 } fn main() -> unit { let _ = closure_env_f_0 { value: 1i32 }; let f = |x: int32| x + 1i32; println(f(2i32).to_string()); }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "fn main() -> unit {\n  let mtmp0 = closure_env_f_0 { value: 1 } in\n  let f/1 = closure_env_f_1 {} in\n  let _wild1 = println(inherent#int32#int32#to_string(inherent#closure_env_f_1#closure_env_f_1#apply(f/1, 2))) in\n  ()\n}\n\nfn inherent#closure_env_f_1#closure_env_f_1#apply(env2: closure_env_f_1, x/0: int32) -> int32 {\n  (x/0 + 1)\n}",
+    )
+}
