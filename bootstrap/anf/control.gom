@@ -38,7 +38,11 @@ fn reify_k_for_expr(
     value: core::Expr,
     k: (Imm) -> Block,
 ) -> (JoinBind, tast::Type) {
-    let value_ty = core::expr_type(value);
+    let value_ty = if expr_always_exits(value) {
+        tast::Type::Unit
+    } else {
+        core::expr_type(value)
+    };
     if type_is_unit(value_ty) && expr_always_exits(value) {
         let name = fresh(state, "k");
         let ret_ty = block_type(k(unit_imm()));
