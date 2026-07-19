@@ -236,6 +236,14 @@ pub fn go_generated_ident(value: string) -> string {
     go_ident_impl(value, false)
 }
 
+pub fn go_dyn_struct_name(trait_name: string) -> string {
+    if has_suffix(trait_name, "_vtable") {
+        go_generated_ident("_goml_dyn_object_" + trait_name)
+    } else {
+        go_generated_ident("dyn__" + trait_name)
+    }
+}
+
 fn generated_type_name(value: string) -> bool {
     has_prefix(value, "Tuple")
         || has_prefix(value, "Array")

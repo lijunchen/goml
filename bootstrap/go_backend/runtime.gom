@@ -81,17 +81,17 @@ fn dyn_vtable_name(trait_name: string) -> string {
 }
 
 fn dyn_object_name(trait_name: string) -> string {
-    go_generated_ident("dyn__" + trait_name)
+    go_dyn_struct_name(trait_name)
 }
 
 fn dyn_wrapper_name(trait_name: string, for_ty: tast::Type, method: string) -> string {
     go_generated_ident(
-        dyn_object_name(trait_name) + "__wrap__" + encode_type(for_ty) + "__" + method,
+        "dyn__" + trait_name + "__wrap__" + encode_type(for_ty) + "__" + method,
     )
 }
 
 pub fn dyn_factory_name(trait_name: string, for_ty: tast::Type) -> string {
-    go_generated_ident(dyn_object_name(trait_name) + "__vtable__" + encode_type(for_ty))
+    go_generated_ident("dyn__" + trait_name + "__vtable__" + encode_type(for_ty))
 }
 
 fn hash_segments(value: string) -> Vec[string] {

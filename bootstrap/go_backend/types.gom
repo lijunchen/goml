@@ -141,7 +141,7 @@ pub fn type_name(value: tast::Type) -> string {
             go_generated_ident(builder.finish())
         },
         tast::Type::Con(name) => go_user_type_name(name),
-        tast::Type::Dyn(name) => go_generated_ident("dyn__" + name),
+        tast::Type::Dyn(name) => go_dyn_struct_name(name),
         tast::Type::Projection(base, name, _) => {
             go_generated_ident("Projection_" + type_name_part(base) + "_" + name)
         },
@@ -199,7 +199,7 @@ pub fn lower_type(value: tast::Type) -> Type {
         tast::Type::Char => Type::Char,
         tast::Type::Tuple(_) => Type::Named(type_name(value)),
         tast::Type::Con(name) => Type::Named(go_user_type_name(name)),
-        tast::Type::Dyn(name) => Type::Named(go_generated_ident("dyn__" + name)),
+        tast::Type::Dyn(name) => Type::Named(go_dyn_struct_name(name)),
         tast::Type::Projection(_, _, _) => Type::Named(type_name(value)),
         tast::Type::App(_, _) => Type::Named(type_name(value)),
         tast::Type::Array(length, elem) => Type::Array(length, lower_type(elem)),
