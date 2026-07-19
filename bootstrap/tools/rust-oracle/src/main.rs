@@ -4,11 +4,15 @@ fn main() {
     let mut args = env::args_os();
     let _ = args.next();
     let Some(mode) = args.next() else {
-        eprintln!("usage: gomlang-parser-rust-oracle <lex|cst|ast|hir|tast|core|mono|lift> <file>");
+        eprintln!(
+            "usage: gomlang-parser-rust-oracle <lex|cst|ast|hir|tast|core|mono|lift|anf> <file>"
+        );
         process::exit(2);
     };
     let Some(path) = args.next() else {
-        eprintln!("usage: gomlang-parser-rust-oracle <lex|cst|ast|hir|tast|core|mono|lift> <file>");
+        eprintln!(
+            "usage: gomlang-parser-rust-oracle <lex|cst|ast|hir|tast|core|mono|lift|anf> <file>"
+        );
         process::exit(2);
     };
     let source = match fs::read_to_string(&path) {
@@ -54,6 +58,11 @@ fn main() {
         print!(
             "{}",
             gomlang_parser_rust_oracle::encode_lift(path.as_ref(), &source)
+        );
+    } else if mode == "anf" {
+        print!(
+            "{}",
+            gomlang_parser_rust_oracle::encode_anf(path.as_ref(), &source)
         );
     } else {
         eprintln!("unknown mode: {}", mode.to_string_lossy());
