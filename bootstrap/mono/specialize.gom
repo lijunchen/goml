@@ -680,6 +680,237 @@ fn matching_trait_selections(
     selections
 }
 
+fn active_types_with(values: Vec[string], value: string) -> Vec[string] {
+    let result = Vec::new();
+    for item in values {
+        result.push(item)
+    };
+    result.push(value);
+    result
+}
+
+fn normalize_types(
+    ctx: SpecializeCtx,
+    values: Vec[tast::Type],
+    active: Vec[string],
+) -> Vec[tast::Type] {
+    let result = Vec::new();
+    for value in values {
+        result.push(normalize_type(ctx, value, active))
+    };
+    result
+}
+
+fn normalize_trait_ref(
+    ctx: SpecializeCtx,
+    value: tast::TraitRef,
+    active: Vec[string],
+) -> tast::TraitRef {
+    tast::TraitRef {
+        name: value.name,
+        args: normalize_types(ctx, value.args, active),
+    }
+}
+
+fn normalize_optional_trait_ref(
+    ctx: SpecializeCtx,
+    value: Option[tast::TraitRef],
+    active: Vec[string],
+) -> Option[tast::TraitRef] {
+    match value {
+        Option::Some(reference) => {
+            Option::Some(normalize_trait_ref(ctx, reference, active))
+        },
+        Option::None => Option::None,
+    }
+}
+
+fn matching_projection_types(
+    ctx: SpecializeCtx,
+    base: tast::Type,
+    name: string,
+    reference: tast::TraitRef,
+) -> Vec[tast::Type] {
+    let result = Vec::new();
+    let keys = Vec::new();
+    for function in ctx.functions {
+        match function.trait_impl {
+            Option::Some(metadata) => {
+                if metadata.trait_ref.name == reference.name
+                    && metadata.trait_ref.args.len() == reference.args.len()
+                {
+                    let bindings = Vec::new();
+                    if unify_type(metadata.for_ty, base, bindings)
+                        && unify_types(
+                            metadata.trait_ref.args,
+                            reference.args,
+                            bindings,
+                        )
+                        && complete_bindings(ctx, function, bindings)
+                    {
+                        for associated in metadata.associated_types {
+                            if associated.0 == name {
+                                let value = substitute_type(associated.1, bindings);
+                                let key = compact_type(value);
+                                if contains_string(keys, key) {
+                                    ()
+                                } else {
+                                    keys.push(key);
+                                    result.push(value)
+                                }
+                            } else {
+                                ()
+                            }
+                        }
+                    } else {
+                        ()
+                    }
+                } else {
+                    ()
+                }
+            },
+            Option::None => (),
+        }
+    };
+    result
+}
+
+fn normalize_projection(
+    ctx: SpecializeCtx,
+    base: tast::Type,
+    name: string,
+    reference: Option[tast::TraitRef],
+    active: Vec[string],
+) -> tast::Type {
+    let projection = tast::Type::Projection(base, name, reference);
+    let key = projection_binding_name(base, name, reference);
+    if contains_string(active, key) {
+        projection
+    } else {
+        let normalized = match tast::builtin_projection(base, name, reference) {
+            Option::Some(value) => Option::Some(value),
+            Option::None => match reference {
+                Option::Some(reference) => {
+                    if type_is_concrete(base) && types_are_concrete(reference.args) {
+                        let values = matching_projection_types(
+                            ctx,
+                            base,
+                            name,
+                            reference,
+                        );
+                        if values.len() == 1 {
+                            Option::Some(values.get(0))
+                        } else {
+                            Option::None
+                        }
+                    } else {
+                        Option::None
+                    }
+                },
+                Option::None => Option::None,
+            },
+        };
+        match normalized {
+            Option::Some(value) => {
+                normalize_type(ctx, value, active_types_with(active, key))
+            },
+            Option::None => projection,
+        }
+    }
+}
+
+fn normalize_type(
+    ctx: SpecializeCtx,
+    value: tast::Type,
+    active: Vec[string],
+) -> tast::Type {
+    match tast::resolve_type(value) {
+        tast::Type::Var(variable) => tast::Type::Var(variable),
+        tast::Type::Unit => tast::Type::Unit,
+        tast::Type::Bool => tast::Type::Bool,
+        tast::Type::Int8 => tast::Type::Int8,
+        tast::Type::Int16 => tast::Type::Int16,
+        tast::Type::Int32 => tast::Type::Int32,
+        tast::Type::Int64 => tast::Type::Int64,
+        tast::Type::Uint8 => tast::Type::Uint8,
+        tast::Type::Uint16 => tast::Type::Uint16,
+        tast::Type::Uint32 => tast::Type::Uint32,
+        tast::Type::Uint64 => tast::Type::Uint64,
+        tast::Type::Float32 => tast::Type::Float32,
+        tast::Type::Float64 => tast::Type::Float64,
+        tast::Type::String => tast::Type::String,
+        tast::Type::Char => tast::Type::Char,
+        tast::Type::Tuple(items) => {
+            tast::Type::Tuple(normalize_types(ctx, items, active))
+        },
+        tast::Type::Con(name) => tast::Type::Con(name),
+        tast::Type::Dyn(name) => tast::Type::Dyn(name),
+        tast::Type::Projection(base, name, reference) => {
+            let base = normalize_type(ctx, base, active);
+            let reference = normalize_optional_trait_ref(ctx, reference, active);
+            normalize_projection(ctx, base, name, reference, active)
+        },
+        tast::Type::App(base, args) => tast::Type::App(
+            normalize_type(ctx, base, active),
+            normalize_types(ctx, args, active),
+        ),
+        tast::Type::Array(length, elem) => {
+            tast::Type::Array(length, normalize_type(ctx, elem, active))
+        },
+        tast::Type::Slice(elem) => {
+            tast::Type::Slice(normalize_type(ctx, elem, active))
+        },
+        tast::Type::VecType(elem) => {
+            tast::Type::VecType(normalize_type(ctx, elem, active))
+        },
+        tast::Type::RefType(elem) => {
+            tast::Type::RefType(normalize_type(ctx, elem, active))
+        },
+        tast::Type::HashMap(key, value) => tast::Type::HashMap(
+            normalize_type(ctx, key, active),
+            normalize_type(ctx, value, active),
+        ),
+        tast::Type::Param(name) => tast::Type::Param(name),
+        tast::Type::Func(params, ret_ty) => tast::Type::Func(
+            normalize_types(ctx, params, active),
+            normalize_type(ctx, ret_ty, active),
+        ),
+        tast::Type::Error => tast::Type::Error,
+    }
+}
+
+fn specialize_type(
+    ctx: SpecializeCtx,
+    value: tast::Type,
+    bindings: Vec[TypeBinding],
+) -> tast::Type {
+    normalize_type(ctx, substitute_type(value, bindings), Vec::new())
+}
+
+fn specialize_trait_ref(
+    ctx: SpecializeCtx,
+    value: tast::TraitRef,
+    bindings: Vec[TypeBinding],
+) -> tast::TraitRef {
+    normalize_trait_ref(
+        ctx,
+        substitute_trait_ref(value, bindings),
+        Vec::new(),
+    )
+}
+
+fn specialize_named_types(
+    ctx: SpecializeCtx,
+    values: Vec[(string, tast::Type)],
+    bindings: Vec[TypeBinding],
+) -> Vec[(string, tast::Type)] {
+    let result = Vec::new();
+    for value in values {
+        result.push((value.0, specialize_type(ctx, value.1, bindings)))
+    };
+    result
+}
+
 fn complete_function_bindings(
     ctx: SpecializeCtx,
     value: core::Function,
@@ -869,6 +1100,7 @@ fn complete_bindings(
 }
 
 fn specialize_callable(
+    ctx: SpecializeCtx,
     value: tast::Callable,
     bindings: Vec[TypeBinding],
 ) -> tast::Callable {
@@ -877,18 +1109,25 @@ fn specialize_callable(
         tast::Callable::Runtime(name) => tast::Callable::Runtime(name),
         tast::Callable::Intrinsic(name) => tast::Callable::Intrinsic(name),
         tast::Callable::TraitMethod(reference, name) => {
-            tast::Callable::TraitMethod(substitute_trait_ref(reference, bindings), name)
+            tast::Callable::TraitMethod(
+                specialize_trait_ref(ctx, reference, bindings),
+                name,
+            )
         },
         tast::Callable::DynTraitMethod(owner, name) => {
             tast::Callable::DynTraitMethod(owner, name)
         },
         tast::Callable::InherentMethod(owner, name) => {
-            tast::Callable::InherentMethod(substitute_type(owner, bindings), name)
+            tast::Callable::InherentMethod(
+                specialize_type(ctx, owner, bindings),
+                name,
+            )
         },
     }
 }
 
 fn specialize_closure_params(
+    ctx: SpecializeCtx,
     values: Vec[tast::ClosureParam],
     bindings: Vec[TypeBinding],
 ) -> Vec[tast::ClosureParam] {
@@ -896,7 +1135,7 @@ fn specialize_closure_params(
     for value in values {
         result.push(tast::ClosureParam {
             name: value.name,
-            ty: substitute_type(value.ty, bindings),
+            ty: specialize_type(ctx, value.ty, bindings),
         })
     };
     result
@@ -950,7 +1189,7 @@ fn specialize_block(
         stmts.push(core::LetStmt {
             name: stmt.name,
             value: specialize_expr(ctx, bindings, stmt.value),
-            ty: substitute_type(stmt.ty, bindings),
+            ty: specialize_type(ctx, stmt.ty, bindings),
         })
     };
     core::Block {
@@ -1034,7 +1273,11 @@ fn ensure_trait_method_instance(
                 && complete_bindings(ctx, function, bindings)
             {
                 ensure_instance(ctx, function.name, bindings);
-                resolved.set(Option::Some(substitute_trait_ref(reference, bindings)))
+                resolved.set(Option::Some(specialize_trait_ref(
+                    ctx,
+                    reference,
+                    bindings,
+                )))
             } else {
                 ()
             }
@@ -1098,7 +1341,7 @@ fn specialize_var(
     name: string,
     ty: tast::Type,
 ) -> core::Expr {
-    let ty = substitute_type(ty, bindings);
+    let ty = specialize_type(ctx, ty, bindings);
     match find_callee_function(ctx, name) {
         Option::Some(function) => if function_is_generic(function) && type_is_concrete(ty) {
             let call_bindings = Vec::new();
@@ -1127,103 +1370,105 @@ fn specialize_expr(
     match value {
         core::Expr::Var(name, ty) => specialize_var(ctx, bindings, name, ty),
         core::Expr::Callable(callable, ty) => core::Expr::Callable(
-            specialize_callable(callable, bindings),
-            substitute_type(ty, bindings),
+            specialize_callable(ctx, callable, bindings),
+            specialize_type(ctx, ty, bindings),
         ),
         core::Expr::Prim(value, ty) => {
-            core::Expr::Prim(value, substitute_type(ty, bindings))
+            core::Expr::Prim(value, specialize_type(ctx, ty, bindings))
         },
         core::Expr::Constr(constructor, args, ty) => core::Expr::Constr(
             constructor,
             specialize_exprs(ctx, bindings, args),
-            substitute_type(ty, bindings),
+            specialize_type(ctx, ty, bindings),
         ),
         core::Expr::Tuple(items, ty) => core::Expr::Tuple(
             specialize_exprs(ctx, bindings, items),
-            substitute_type(ty, bindings),
+            specialize_type(ctx, ty, bindings),
         ),
         core::Expr::Array(items, ty) => core::Expr::Array(
             specialize_exprs(ctx, bindings, items),
-            substitute_type(ty, bindings),
+            specialize_type(ctx, ty, bindings),
         ),
         core::Expr::Closure(params, body, ty) => core::Expr::Closure(
-            specialize_closure_params(params, bindings),
+            specialize_closure_params(ctx, params, bindings),
             specialize_expr(ctx, bindings, body),
-            substitute_type(ty, bindings),
+            specialize_type(ctx, ty, bindings),
         ),
         core::Expr::Block(block, ty) => core::Expr::Block(
             specialize_block(ctx, bindings, block),
-            substitute_type(ty, bindings),
+            specialize_type(ctx, ty, bindings),
         ),
         core::Expr::Match(expr, arms, default, ty) => core::Expr::Match(
             specialize_expr(ctx, bindings, expr),
             specialize_arms(ctx, bindings, arms),
             specialize_optional_expr(ctx, bindings, default),
-            substitute_type(ty, bindings),
+            specialize_type(ctx, ty, bindings),
         ),
         core::Expr::If(cond, then_branch, else_branch, ty) => core::Expr::If(
             specialize_expr(ctx, bindings, cond),
             specialize_expr(ctx, bindings, then_branch),
             specialize_expr(ctx, bindings, else_branch),
-            substitute_type(ty, bindings),
+            specialize_type(ctx, ty, bindings),
         ),
         core::Expr::While(cond, body, ty) => core::Expr::While(
             specialize_expr(ctx, bindings, cond),
             specialize_expr(ctx, bindings, body),
-            substitute_type(ty, bindings),
+            specialize_type(ctx, ty, bindings),
         ),
-        core::Expr::Break(ty) => core::Expr::Break(substitute_type(ty, bindings)),
-        core::Expr::Continue(ty) => core::Expr::Continue(substitute_type(ty, bindings)),
+        core::Expr::Break(ty) => core::Expr::Break(specialize_type(ctx, ty, bindings)),
+        core::Expr::Continue(ty) => {
+            core::Expr::Continue(specialize_type(ctx, ty, bindings))
+        },
         core::Expr::Return(expr, ty) => core::Expr::Return(
             specialize_optional_expr(ctx, bindings, expr),
-            substitute_type(ty, bindings),
+            specialize_type(ctx, ty, bindings),
         ),
         core::Expr::Go(expr, ty) => core::Expr::Go(
             specialize_expr(ctx, bindings, expr),
-            substitute_type(ty, bindings),
+            specialize_type(ctx, ty, bindings),
         ),
         core::Expr::ConstrGet(expr, constructor, field_index, ty) => {
             core::Expr::ConstrGet(
                 specialize_expr(ctx, bindings, expr),
                 constructor,
                 field_index,
-                substitute_type(ty, bindings),
+                specialize_type(ctx, ty, bindings),
             )
         },
         core::Expr::Unary(op, expr, ty) => core::Expr::Unary(
             op,
             specialize_expr(ctx, bindings, expr),
-            substitute_type(ty, bindings),
+            specialize_type(ctx, ty, bindings),
         ),
         core::Expr::Cast(expr, ty) => core::Expr::Cast(
             specialize_expr(ctx, bindings, expr),
-            substitute_type(ty, bindings),
+            specialize_type(ctx, ty, bindings),
         ),
         core::Expr::Binary(op, lhs, rhs, ty) => core::Expr::Binary(
             op,
             specialize_expr(ctx, bindings, lhs),
             specialize_expr(ctx, bindings, rhs),
-            substitute_type(ty, bindings),
+            specialize_type(ctx, ty, bindings),
         ),
         core::Expr::Assign(name, value, target_ty, ty) => core::Expr::Assign(
             name,
             specialize_expr(ctx, bindings, value),
-            substitute_type(target_ty, bindings),
-            substitute_type(ty, bindings),
+            specialize_type(ctx, target_ty, bindings),
+            specialize_type(ctx, ty, bindings),
         ),
         core::Expr::Call(func, args, ty) => core::Expr::Call(
             specialize_expr(ctx, bindings, func),
             specialize_exprs(ctx, bindings, args),
-            substitute_type(ty, bindings),
+            specialize_type(ctx, ty, bindings),
         ),
         core::Expr::ToDyn(trait_name, for_ty, expr, ty) => {
-            let for_ty = substitute_type(for_ty, bindings);
+            let for_ty = specialize_type(ctx, for_ty, bindings);
             ensure_dyn_trait_impls(ctx, trait_name, for_ty);
             core::Expr::ToDyn(
                 trait_name,
                 for_ty,
                 specialize_expr(ctx, bindings, expr),
-                substitute_type(ty, bindings),
+                specialize_type(ctx, ty, bindings),
             )
         },
         core::Expr::DynCall(trait_name, method_name, receiver, args, ty) => {
@@ -1232,14 +1477,14 @@ fn specialize_expr(
                 method_name,
                 specialize_expr(ctx, bindings, receiver),
                 specialize_exprs(ctx, bindings, args),
-                substitute_type(ty, bindings),
+                specialize_type(ctx, ty, bindings),
             )
         },
         core::Expr::TraitCall(reference, method_name, receiver, args, ty) => {
-            let reference = substitute_trait_ref(reference, bindings);
+            let reference = specialize_trait_ref(ctx, reference, bindings);
             let receiver = specialize_expr(ctx, bindings, receiver);
             let args = specialize_exprs(ctx, bindings, args);
-            let ty = substitute_type(ty, bindings);
+            let ty = specialize_type(ctx, ty, bindings);
             let reference = ensure_trait_call_instance(
                 ctx,
                 reference,
@@ -1253,7 +1498,7 @@ fn specialize_expr(
         core::Expr::Proj(tuple, index, ty) => core::Expr::Proj(
             specialize_expr(ctx, bindings, tuple),
             index,
-            substitute_type(ty, bindings),
+            specialize_type(ctx, ty, bindings),
         ),
     }
 }
@@ -1461,7 +1706,10 @@ fn specialize_function(
 ) -> core::Function {
     let params = Vec::new();
     for param in value.params {
-        params.push((param.0, substitute_type(param.1, instance.bindings)))
+        params.push((
+            param.0,
+            specialize_type(ctx, param.1, instance.bindings),
+        ))
     };
     core::Function {
         name: instance.name,
@@ -1470,9 +1718,14 @@ fn specialize_function(
         predicates: Vec::new(),
         trait_impl: match value.trait_impl {
             Option::Some(metadata) => Option::Some(core::TraitImpl {
-                trait_ref: substitute_trait_ref(metadata.trait_ref, instance.bindings),
-                for_ty: substitute_type(metadata.for_ty, instance.bindings),
-                associated_types: substitute_named_types(
+                trait_ref: specialize_trait_ref(
+                    ctx,
+                    metadata.trait_ref,
+                    instance.bindings,
+                ),
+                for_ty: specialize_type(ctx, metadata.for_ty, instance.bindings),
+                associated_types: specialize_named_types(
+                    ctx,
                     metadata.associated_types,
                     instance.bindings,
                 ),
@@ -1480,7 +1733,7 @@ fn specialize_function(
             Option::None => Option::None,
         },
         params,
-        ret_ty: substitute_type(value.ret_ty, instance.bindings),
+        ret_ty: specialize_type(ctx, value.ret_ty, instance.bindings),
         body: specialize_block(ctx, instance.bindings, value.body),
     }
 }
