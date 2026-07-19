@@ -80,6 +80,154 @@ fn string_contains(values: Vec[string], expected: string) -> bool {
     found.get()
 }
 
+fn record_used_type(values: Vec[string], name: string) -> unit {
+    if string_contains(values, name) {
+        ()
+    } else {
+        values.push(name)
+    }
+}
+
+fn collect_used_types(values: Vec[string], ty: tast::Type) -> unit {
+    match tast::resolve_type(ty) {
+        tast::Type::Con(name) => record_used_type(values, name),
+        tast::Type::Tuple(items) => {
+            for item in items {
+                collect_used_types(values, item)
+            }
+        },
+        tast::Type::Projection(base, _, _) => collect_used_types(values, base),
+        tast::Type::App(base, args) => {
+            collect_used_types(values, base);
+            for arg in args {
+                collect_used_types(values, arg)
+            }
+        },
+        tast::Type::Array(_, elem)
+        | tast::Type::Slice(elem)
+        | tast::Type::VecType(elem)
+        | tast::Type::RefType(elem) => collect_used_types(values, elem),
+        tast::Type::HashMap(key, value) => {
+            collect_used_types(values, key);
+            collect_used_types(values, value)
+        },
+        tast::Type::Func(params, ret_ty) => {
+            for param in params {
+                collect_used_types(values, param)
+            };
+            collect_used_types(values, ret_ty)
+        },
+        _ => (),
+    }
+}
+
+fn collect_used_exprs(values: Vec[string], exprs: Vec[core::Expr]) -> unit {
+    for expr in exprs {
+        collect_used_expr(values, expr)
+    }
+}
+
+fn collect_used_optional_expr(
+    values: Vec[string],
+    expr: Option[core::Expr],
+) -> unit {
+    match expr {
+        Option::Some(expr) => collect_used_expr(values, expr),
+        Option::None => (),
+    }
+}
+
+fn collect_used_block(values: Vec[string], block: core::Block) -> unit {
+    for stmt in block.stmts {
+        collect_used_types(values, stmt.ty);
+        collect_used_expr(values, stmt.value)
+    };
+    collect_used_optional_expr(values, block.tail)
+}
+
+fn collect_used_expr(values: Vec[string], expr: core::Expr) -> unit {
+    collect_used_types(values, core::expr_type(expr));
+    match expr {
+        core::Expr::Constr(_, args, _) => collect_used_exprs(values, args),
+        core::Expr::Tuple(items, _) | core::Expr::Array(items, _) => {
+            collect_used_exprs(values, items)
+        },
+        core::Expr::Closure(params, body, _) => {
+            for param in params {
+                collect_used_types(values, param.ty)
+            };
+            collect_used_expr(values, body)
+        },
+        core::Expr::Block(block, _) => collect_used_block(values, block),
+        core::Expr::Match(scrutinee, arms, default, _) => {
+            collect_used_expr(values, scrutinee);
+            for arm in arms {
+                collect_used_expr(values, arm.lhs);
+                collect_used_expr(values, arm.body)
+            };
+            collect_used_optional_expr(values, default)
+        },
+        core::Expr::If(cond, then_, else_, _) => {
+            collect_used_expr(values, cond);
+            collect_used_expr(values, then_);
+            collect_used_expr(values, else_)
+        },
+        core::Expr::While(cond, body, _) | core::Expr::Binary(_, cond, body, _) => {
+            collect_used_expr(values, cond);
+            collect_used_expr(values, body)
+        },
+        core::Expr::Return(expr, _) => collect_used_optional_expr(values, expr),
+        core::Expr::Go(expr, _)
+        | core::Expr::ConstrGet(expr, _, _, _)
+        | core::Expr::Unary(_, expr, _)
+        | core::Expr::Cast(expr, _)
+        | core::Expr::Proj(expr, _, _) => collect_used_expr(values, expr),
+        core::Expr::Assign(_, expr, target_ty, _) => {
+            collect_used_types(values, target_ty);
+            collect_used_expr(values, expr)
+        },
+        core::Expr::Call(func, args, _) => {
+            collect_used_expr(values, func);
+            collect_used_exprs(values, args)
+        },
+        core::Expr::ToDyn(_, for_ty, expr, _) => {
+            collect_used_types(values, for_ty);
+            collect_used_expr(values, expr)
+        },
+        core::Expr::DynCall(_, _, receiver, args, _)
+        | core::Expr::TraitCall(_, _, receiver, args, _) => {
+            collect_used_expr(values, receiver);
+            collect_used_exprs(values, args)
+        },
+        core::Expr::Var(_, _)
+        | core::Expr::Callable(_, _)
+        | core::Expr::Prim(_, _)
+        | core::Expr::Break(_)
+        | core::Expr::Continue(_) => (),
+    }
+}
+
+fn initial_used_types(value: core::File) -> Vec[string] {
+    let result = Vec::new();
+    for function in value.functions {
+        for param in function.params {
+            collect_used_types(result, param.1)
+        };
+        collect_used_types(result, function.ret_ty);
+        match function.trait_impl {
+            Option::Some(value) => {
+                collect_used_types(result, value.for_ty);
+                for associated in value.associated_types {
+                    collect_used_types(result, associated.1)
+                }
+            },
+            Option::None => (),
+        };
+        collect_used_block(result, function.body)
+    };
+    result
+}
+
 fn ascii_alphanumeric(value: uint8) -> bool {
     (value >= 48u8 && value <= 57u8)
         || (value >= 65u8 && value <= 90u8)
@@ -900,7 +1048,7 @@ fn lambda_lift(value: core::File) -> core::File {
         next_name: Ref::new(initial_name_counter(value)),
         generated: Vec::new(),
         closures: Vec::new(),
-        used_types: Vec::new(),
+        used_types: initial_used_types(value),
     };
     let functions = Vec::new();
     for function in value.functions {
