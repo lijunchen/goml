@@ -47,14 +47,19 @@ fn contains_string(values: Vec[string], expected: string) -> bool {
 }
 
 fn function_name(value: string) -> string {
-    if value == "main" { "main0" } else { go_ident(value) }
+    if value == "main" {
+        "main0"
+    } else if value == "init" {
+        go_generated_ident("_goml_user_init")
+    } else {
+        go_ident(value)
+    }
 }
 
 fn callable_name(value: tast::Callable) -> string {
     match value {
-        tast::Callable::Function(name)
-        | tast::Callable::Runtime(name)
-        | tast::Callable::Intrinsic(name) => function_name(name),
+        tast::Callable::Function(name) => function_name(name),
+        tast::Callable::Runtime(name) | tast::Callable::Intrinsic(name) => go_ident(name),
         tast::Callable::TraitMethod(reference, name) => {
             go_ident(reference.name + "#" + name)
         },
@@ -88,7 +93,13 @@ fn compile_primitive(value: tast::Primitive) -> Expr {
 
 fn compile_imm(value: anf::Imm) -> Expr {
     match value {
-        anf::Imm::Var(name, _) => Expr::Var(go_local_ident(name)),
+        anf::Imm::Var(name, _) => {
+            if name == "init" || name == "main" {
+                Expr::Var(function_name(name))
+            } else {
+                Expr::Var(go_local_ident(name))
+            }
+        },
         anf::Imm::Callable(value, _) => Expr::Var(callable_name(value)),
         anf::Imm::Prim(value, _) => compile_primitive(value),
         anf::Imm::Tag(index, _) => Expr::Int(index.to_string()),
