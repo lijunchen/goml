@@ -1160,10 +1160,12 @@ fn lower_function(
 }
 
 fn lower_file(value: tast::File) -> File {
+    let enums = value.enums;
+    let structs = value.structs;
     let ctx = Lowerer {
         counter: Ref::new(0),
-        enums: value.enums,
-        structs: value.structs,
+        enums,
+        structs,
     };
     let functions: Vec[Function] = Vec::new();
     for item in value.items {
@@ -1200,7 +1202,7 @@ fn lower_file(value: tast::File) -> File {
             },
         }
     };
-    File { functions }
+    File { functions, enums, structs, type_instances: Vec::new() }
 }
 
 pub fn lower(value: tast::CheckResult) -> File {
@@ -1208,6 +1210,9 @@ pub fn lower(value: tast::CheckResult) -> File {
         Option::Some(file) => lower_file(file),
         Option::None => File {
             functions: Vec::new(),
+            enums: Vec::new(),
+            structs: Vec::new(),
+            type_instances: Vec::new(),
         },
     }
 }

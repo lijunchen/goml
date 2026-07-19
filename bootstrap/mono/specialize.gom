@@ -1486,6 +1486,9 @@ fn specialize_function(
 }
 
 fn specialize(value: core::File) -> core::File {
+    let enums = value.enums;
+    let structs = value.structs;
+    let type_instances = value.type_instances;
     let ctx = SpecializeCtx {
         functions: value.functions,
         instances: Vec::new(),
@@ -1521,5 +1524,5 @@ fn specialize(value: core::File) -> core::File {
         ensure_runtime_trait_impls(ctx, output);
         complete.set(ctx.work.len() == previous_len)
     };
-    core::File { functions: output }
+    core::File { functions: output, enums, structs, type_instances }
 }

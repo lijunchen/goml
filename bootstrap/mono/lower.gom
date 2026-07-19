@@ -828,13 +828,23 @@ fn lower_function(ctx: TypeCtx, function: core::Function) -> core::Function {
 }
 
 pub fn lower(value: core::File) -> core::File {
+    let enums = value.enums;
+    let structs = value.structs;
     let value = specialize(value);
     let ctx = type_ctx(value);
     let functions = Vec::new();
     for function in value.functions {
         functions.push(lower_function(ctx, function))
     };
-    core::File { functions }
+    let type_instances: Vec[core::TypeInstance] = Vec::new();
+    for instance in ctx.instances {
+        type_instances.push(core::TypeInstance {
+            base_name: instance.base_name,
+            args: instance.args,
+            name: instance.name,
+        })
+    };
+    core::File { functions, enums, structs, type_instances }
 }
 
 pub fn encode(value: core::File) -> string {

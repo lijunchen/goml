@@ -1,10 +1,14 @@
 package anf;
 
 use gomlang::parser::ast;
+use gomlang::parser::core;
 use gomlang::parser::tast;
 
 pub struct File {
     functions: Vec[Function],
+    enums: Vec[tast::EnumDef],
+    structs: Vec[tast::StructDef],
+    type_instances: Vec[core::TypeInstance],
 }
 
 pub struct Function {
