@@ -106,3 +106,12 @@ fn emits_closures_inside_enum_payloads() -> unit {
         "package main\n\ntype closure_env_next_0 struct {}\n\ntype MaybeFn interface {\n    isMaybeFn()\n}\n\ntype Some struct {\n    _0 func(int32) int32\n}\n\nfunc (_ Some) isMaybeFn() {}\n\ntype None struct {}\n\nfunc (_ None) isMaybeFn() {}\n\nfunc next(flag__0 bool) MaybeFn {\n    var retv4 MaybeFn\n    var jp6 MaybeFn\n    if flag__0 {\n        var t7 closure_env_next_0 = closure_env_next_0{}\n        var t8 MaybeFn = Some{\n            _0: func(p0 int32) int32 {\n                return _goml_m_inherent_i_closure__env__next__0_i_closure__env__next__0_i_apply(t7, p0)\n            },\n        }\n        jp6 = t8\n    } else {\n        jp6 = None{}\n    }\n    retv4 = jp6\n    return retv4\n}\n\nfunc main0() struct{} {\n    var mtmp0 MaybeFn = next(true)\n    switch mtmp0.(type) {\n    case Some:\n        var x1 func(int32) int32 = mtmp0.(Some)._0\n        var f__2 func(int32) int32 = x1\n        var t11 int32 = f__2(41)\n        var t12 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t11)\n        _goml_m_println(t12)\n    case None:\n        _goml_m_println(\"none\")\n    default:\n        panic(\"non-exhaustive match\")\n    }\n    return struct{}{}\n}\n\nfunc _goml_m_inherent_i_closure__env__next__0_i_closure__env__next__0_i_apply(env2 closure_env_next_0, x__1 int32) int32 {\n    var retv16 int32\n    var t17 int32 = x__1 + 1\n    retv16 = t17\n    return retv16\n}\n\nfunc main() {\n    main0()\n}\n",
     )
 }
+
+#[test]
+fn protects_user_types_from_ref_runtime_names() -> unit {
+    let source = "struct ref_int32_x { value: int32, } fn main() -> unit { let c = ref_int32_x { value: 2i32 }; let r = Ref::new(3i32); println(c.value + r.get()); }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "package main\n\ntype ref_int32_x struct {\n    value int32\n}\n\ntype _goml_user_ref_int32_x struct {\n    value int32\n}\n\nfunc main0() struct{} {\n    var c__0 _goml_user_ref_int32_x = _goml_user_ref_int32_x{\n        value: 2,\n    }\n    var r__1 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_int32_r__i_new(3)\n    var t2 int32 = c__0.value\n    var t3 int32 = _goml_m_inherent_i_Ref_i_Ref_l_int32_r__i_get(r__1)\n    var t4 int32 = t2 + t3\n    _goml_m_println(t4)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
+    )
+}
