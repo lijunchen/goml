@@ -7,6 +7,8 @@ use gomlang::parser::tast;
 
 struct LowerEnv {
     joins: Vec[anf::JoinBind],
+    analysis_joins: Vec[anf::JoinBind],
+    emitted_loop_labels: Vec[string],
     variants: Vec[VariantInfo],
     closures: Vec[ClosureInfo],
     structs: Vec[tast::StructDef],
@@ -884,18 +886,22 @@ fn compile_let(env: LowerEnv, value: anf::LetBind) -> Vec[Stmt] {
     result
 }
 
-fn collect_joins_term(result: Vec[anf::JoinBind], value: anf::Term) -> unit {
+fn collect_joins_term(
+    result: Vec[anf::JoinBind],
+    value: anf::Term,
+    include_recursive: bool,
+) -> unit {
     match value {
         anf::Term::If(_, then_, else_, _) => {
-            collect_joins_block(result, then_);
-            collect_joins_block(result, else_)
+            collect_joins_block(result, then_, include_recursive);
+            collect_joins_block(result, else_, include_recursive)
         },
         anf::Term::Match(_, arms, default, _) => {
             for arm in arms {
-                collect_joins_block(result, arm.body)
+                collect_joins_block(result, arm.body, include_recursive)
             };
             match default {
-                Option::Some(body) => collect_joins_block(result, body),
+                Option::Some(body) => collect_joins_block(result, body, include_recursive),
                 Option::None => (),
             }
         },
@@ -905,22 +911,31 @@ fn collect_joins_term(result: Vec[anf::JoinBind], value: anf::Term) -> unit {
     }
 }
 
-fn collect_joins_block(result: Vec[anf::JoinBind], value: anf::Block) -> unit {
+fn collect_joins_block(
+    result: Vec[anf::JoinBind],
+    value: anf::Block,
+    include_recursive: bool,
+) -> unit {
     for bind in value.binds {
         match bind {
             anf::Bind::Let(_) => (),
             anf::Bind::Join(join) => {
                 result.push(join);
-                collect_joins_block(result, join.body)
+                collect_joins_block(result, join.body, include_recursive)
             },
             anf::Bind::JoinRec(joins) => {
                 for join in joins {
-                    collect_joins_block(result, join.body)
+                    if include_recursive {
+                        result.push(join)
+                    } else {
+                        ()
+                    };
+                    collect_joins_block(result, join.body, include_recursive)
                 }
             },
         }
     };
-    collect_joins_term(result, value.term)
+    collect_joins_term(result, value.term, include_recursive)
 }
 
 fn find_join(values: Vec[anf::JoinBind], name: string) -> Option[anf::JoinBind] {
@@ -1344,6 +1359,28 @@ fn loop_label(value: string) -> string {
     "Loop_" + go_local_ident(value)
 }
 
+fn fresh_loop_label_with_suffix(
+    emitted: Vec[string],
+    base: string,
+    suffix: int32,
+) -> string {
+    let candidate = if suffix == 1 {
+        base
+    } else {
+        base + "__" + suffix.to_string()
+    };
+    if contains_string(emitted, candidate) {
+        fresh_loop_label_with_suffix(emitted, base, suffix + 1)
+    } else {
+        emitted.push(candidate);
+        candidate
+    }
+}
+
+fn fresh_loop_label(env: LowerEnv, value: string) -> string {
+    fresh_loop_label_with_suffix(env.emitted_loop_labels, loop_label(value), 1)
+}
+
 fn term_reaches_target(
     env: LowerEnv,
     value: anf::Term,
@@ -1357,7 +1394,7 @@ fn term_reaches_target(
             } else if contains_string(visited, name) {
                 false
             } else {
-                match find_join(env.joins, name) {
+                match find_join(env.analysis_joins, name) {
                     Option::Some(join) => {
                         visited.push(name);
                         term_reaches_target(env, join.body.term, target, visited)
@@ -1407,7 +1444,7 @@ fn term_tail_target_through_joins(
             } else if contains_string(visited, target) {
                 Option::None
             } else {
-                match find_join(env.joins, target) {
+                match find_join(env.analysis_joins, target) {
                     Option::Some(join) => {
                         visited.push(target);
                         let result = term_tail_target_through_joins(
@@ -1483,7 +1520,7 @@ fn all_paths_reach_or_terminate(
             } else if contains_string(visited, name) {
                 false
             } else {
-                match find_join(env.joins, name) {
+                match find_join(env.analysis_joins, name) {
                     Option::Some(join) => {
                         visited.push(name);
                         let result = all_paths_reach_or_terminate(
@@ -2042,7 +2079,7 @@ fn compile_joinrec(env: LowerEnv, values: Vec[anf::JoinBind]) -> JoinRecResult {
         } else {
             match find_loop_exit(env, value.body, value.name) {
                 Option::Some(exit_name) => {
-                    let label = loop_label(value.name);
+                    let label = fresh_loop_label(env, value.name);
                     stmts.push(Stmt::LabeledLoop(
                         label,
                         compile_loop_block(env, value.body, value.name, exit_name, label),
@@ -2508,13 +2545,17 @@ fn compile_function(
     dyn_helper_names: DynHelperNames,
 ) -> Function {
     let joins: Vec[anf::JoinBind] = Vec::new();
-    collect_joins_block(joins, value.body);
+    collect_joins_block(joins, value.body, false);
+    let analysis_joins: Vec[anf::JoinBind] = Vec::new();
+    collect_joins_block(analysis_joins, value.body, true);
     let params: Vec[(string, Type)] = Vec::new();
     for param in value.params {
         params.push((go_local_ident(param.0), lower_type(param.1)))
     };
     let env = LowerEnv {
         joins,
+        analysis_joins,
+        emitted_loop_labels: Vec::new(),
         variants,
         closures,
         structs,
