@@ -731,6 +731,13 @@ fn is_bitwise_op(value: ast::BinaryOp) -> bool {
     }
 }
 
+fn is_shift_op(value: ast::BinaryOp) -> bool {
+    match value {
+        ast::BinaryOp::Shl | ast::BinaryOp::Shr => true,
+        _ => false,
+    }
+}
+
 fn check_binary_expr(
     ctx: Checker,
     op: ast::BinaryOp,
@@ -743,8 +750,14 @@ fn check_binary_expr(
         Expr::Binary(op, left, right, Type::Bool)
     } else {
         let left = check_expr(ctx, left_source, Option::None);
-        let right = check_expr(ctx, right_source, Option::Some(expr_type(left)));
+        let right = if is_shift_op(op) {
+            check_expr(ctx, right_source, Option::None)
+        } else {
+            check_expr(ctx, right_source, Option::Some(expr_type(left)))
+        };
         if is_bitwise_op(op) && !is_integer_type(expr_type(left)) {
+            ctx.diagnostics.push("integer operand required")
+        } else if is_shift_op(op) && !is_integer_type(expr_type(right)) {
             ctx.diagnostics.push("integer operand required")
         } else if is_arithmetic_op(op)
             && !is_numeric_type(expr_type(left))
