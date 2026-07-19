@@ -7,6 +7,11 @@ fn has_prefix(value: string, prefix: string) -> bool {
         && value.byte_slice(0, prefix.byte_len()) == prefix
 }
 
+fn has_suffix(value: string, suffix: string) -> bool {
+    value.byte_len() >= suffix.byte_len()
+        && value.byte_slice(value.byte_len() - suffix.byte_len(), value.byte_len()) == suffix
+}
+
 fn is_ascii_letter(value: char) -> bool {
     (value >= 'a' && value <= 'z') || (value >= 'A' && value <= 'Z')
 }
@@ -92,6 +97,9 @@ fn is_predeclared(value: string) -> bool {
 fn is_generated_value(value: string) -> bool {
     has_prefix(value, "_goml_")
         || has_prefix(value, "dyn__")
+        || (has_prefix(value, "ref_") && has_suffix(value, "_x"))
+        || (has_prefix(value, "hashmap_")
+            && (has_suffix(value, "_x") || has_suffix(value, "_x_entry")))
         || has_prefix(value, "array_get__")
         || has_prefix(value, "array_set__")
         || has_prefix(value, "vec_new__")
