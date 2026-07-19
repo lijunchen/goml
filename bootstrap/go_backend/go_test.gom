@@ -260,3 +260,12 @@ fn lowers_tag_only_enums_as_constants() -> unit {
         "package main\n\ntype Tuple2_5int32_5int32 struct {\n    _0 int32\n    _1 int32\n}\n\ntype E int32\n\nconst (\n    _goml_user_Tuple2_int32_int32 E = 0\n)\n\nfunc main0() struct{} {\n    var t__0 Tuple2_5int32_5int32 = Tuple2_5int32_5int32{\n        _0: 10,\n        _1: 13,\n    }\n    var tag__1 E = _goml_user_Tuple2_int32_int32\n    switch tag__1 {\n    case _goml_user_Tuple2_int32_int32:\n        var t3 int32 = t__0._0\n        var t4 int32 = t__0._1\n        var t5 int32 = t3 + t4\n        _goml_m_println(t5)\n    default:\n        panic(\"non-exhaustive match\")\n    }\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
     )
 }
+
+#[test]
+fn preserves_user_structs_before_mono_instances() -> unit {
+    let source = "struct Box[T] { value: T, } struct Box__int32 { value: int32, } fn main() -> unit { let a = Box { value: 10i32 }; let b = Box__int32 { value: 20i32 }; println(a.value + b.value) }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "package main\n\ntype Box__int32 struct {\n    value int32\n}\n\ntype Box__int32__mono1 struct {\n    value int32\n}\n\nfunc main0() struct{} {\n    var a__0 Box__int32__mono1 = Box__int32__mono1{\n        value: 10,\n    }\n    var b__1 Box__int32 = Box__int32{\n        value: 20,\n    }\n    var t1 int32 = a__0.value\n    var t2 int32 = b__1.value\n    var t3 int32 = t1 + t2\n    _goml_m_println(t3)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
+    )
+}
