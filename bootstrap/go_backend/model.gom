@@ -126,6 +126,21 @@ pub struct InterfaceDef {
     methods: Vec[InterfaceMethod],
 }
 
+pub struct TypeDef {
+    name: string,
+    ty: Type,
+}
+
+pub struct ConstSpec {
+    name: string,
+    ty: Type,
+    value: Expr,
+}
+
+pub struct ConstGroup {
+    specs: Vec[ConstSpec],
+}
+
 pub struct Function {
     name: string,
     params: Vec[(string, Type)],
@@ -142,6 +157,8 @@ pub struct Method {
 }
 
 pub enum Item {
+    TypeDef(TypeDef),
+    ConstGroup(ConstGroup),
     Interface(InterfaceDef),
     Struct(StructDef),
     Function(Function),
@@ -162,6 +179,7 @@ pub struct VariantInfo {
     tag: int32,
     variant_name: string,
     field_types: Vec[tast::Type],
+    tag_only: bool,
 }
 
 pub struct ClosureInfo {

@@ -481,6 +481,27 @@ fn write_interface(builder: text::StringBuilder, value: InterfaceDef) -> unit {
     builder.write_char('}')
 }
 
+fn write_type_def(builder: text::StringBuilder, value: TypeDef) -> unit {
+    builder.write_string("type ");
+    builder.write_string(value.name);
+    builder.write_char(' ');
+    write_type(builder, value.ty)
+}
+
+fn write_const_group(builder: text::StringBuilder, value: ConstGroup) -> unit {
+    builder.write_string("const (");
+    for spec in value.specs {
+        newline(builder, 4);
+        builder.write_string(spec.name);
+        builder.write_char(' ');
+        write_type(builder, spec.ty);
+        builder.write_string(" = ");
+        write_expr(builder, spec.value, 4)
+    };
+    newline(builder, 0);
+    builder.write_char(')')
+}
+
 fn write_function(builder: text::StringBuilder, value: Function) -> unit {
     builder.write_string("func ");
     builder.write_string(value.name);
@@ -541,6 +562,8 @@ fn write_method(builder: text::StringBuilder, value: Method) -> unit {
 
 fn write_item(builder: text::StringBuilder, value: Item) -> unit {
     match value {
+        Item::TypeDef(value) => write_type_def(builder, value),
+        Item::ConstGroup(value) => write_const_group(builder, value),
         Item::Interface(value) => write_interface(builder, value),
         Item::Struct(value) => write_struct(builder, value),
         Item::Function(value) => write_function(builder, value),

@@ -189,7 +189,18 @@ fn compile_imm(env: LowerEnv, value: anf::Imm) -> Expr {
         },
         anf::Imm::Callable(value, _) => Expr::Var(callable_name(env, value)),
         anf::Imm::Prim(value, _) => compile_primitive(value),
-        anf::Imm::Tag(index, _) => Expr::Int(index.to_string()),
+        anf::Imm::Tag(index, owner_ty) => {
+            match find_variant_info(env.variants, owner_ty, index) {
+                Option::Some(info) => {
+                    if info.tag_only {
+                        Expr::Var(info.variant_name)
+                    } else {
+                        Expr::Int(index.to_string())
+                    }
+                },
+                Option::None => Expr::Int(index.to_string()),
+            }
+        },
     }
 }
 
@@ -794,6 +805,7 @@ fn compile_match_leaf(
         };
         result.push(Stmt::TypeSwitch(compile_imm(env, scrut), cases, lowered_default))
     } else {
+        let require_default = match_uses_tag_values(env, arms);
         let cases: Vec[SwitchCase] = Vec::new();
         for arm in arms {
             cases.push(SwitchCase {
@@ -803,7 +815,13 @@ fn compile_match_leaf(
         };
         let lowered_default = match default {
             Option::Some(body) => Option::Some(compile_block(env, body)),
-            Option::None => Option::None,
+            Option::None => {
+                if require_default {
+                    Option::Some(non_exhaustive_block())
+                } else {
+                    Option::None
+                }
+            },
         };
         result.push(Stmt::Switch(compile_imm(env, scrut), cases, lowered_default))
     };
@@ -823,6 +841,28 @@ fn match_uses_types(env: LowerEnv, values: Vec[anf::Arm]) -> bool {
         match arm_type(env, value.lhs) {
             Option::Some(_) => found.set(true),
             Option::None => (),
+        }
+    };
+    found.get()
+}
+
+fn match_uses_tag_values(env: LowerEnv, values: Vec[anf::Arm]) -> bool {
+    let found = Ref::new(false);
+    for value in values {
+        match value.lhs {
+            anf::Imm::Tag(tag, owner_ty) => {
+                match find_variant_info(env.variants, owner_ty, tag) {
+                    Option::Some(info) => {
+                        if info.tag_only {
+                            found.set(true)
+                        } else {
+                            ()
+                        }
+                    },
+                    Option::None => (),
+                }
+            },
+            _ => (),
         }
     };
     found.get()
@@ -910,6 +950,7 @@ fn compile_term_with_pending(
                                 lowered_default,
                             ))
                         } else {
+                            let require_default = match_uses_tag_values(env, arms);
                             let cases: Vec[SwitchCase] = Vec::new();
                             for arm in arms {
                                 cases.push(SwitchCase {
@@ -924,7 +965,13 @@ fn compile_term_with_pending(
                                     target,
                                     join,
                                 )),
-                                Option::None => Option::None,
+                                Option::None => {
+                                    if require_default {
+                                        Option::Some(non_exhaustive_block())
+                                    } else {
+                                        Option::None
+                                    }
+                                },
                             };
                             result.push(Stmt::Switch(
                                 compile_imm(env, scrut),
