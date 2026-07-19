@@ -39,6 +39,13 @@ fn type_is_unit(value: tast::Type) -> bool {
     }
 }
 
+fn type_is_error(value: tast::Type) -> bool {
+    match tast::resolve_type(value) {
+        tast::Type::Error => true,
+        _ => false,
+    }
+}
+
 fn no_imms() -> Vec[Imm] {
     Vec::new()
 }

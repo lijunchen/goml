@@ -38,7 +38,8 @@ fn reify_k_for_expr(
     value: core::Expr,
     k: (Imm) -> Block,
 ) -> (JoinBind, tast::Type) {
-    let value_ty = if expr_always_exits(value) {
+    let value_ty = if type_is_error(core::expr_type(value))
+        && expr_always_exits(value) {
         tast::Type::Unit
     } else {
         core::expr_type(value)
