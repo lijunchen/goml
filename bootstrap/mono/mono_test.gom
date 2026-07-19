@@ -130,6 +130,14 @@ fn resolves_trait_arguments_from_generic_impls() -> unit {
 }
 
 #[test]
+fn satisfies_builtin_into_iterator_predicates() -> unit {
+    let source = "fn consume[S: IntoIterator](source: S) -> unit { for _ in source {} } fn main() -> unit { let values: Vec[int32] = Vec::new(); consume(values); consume(values.slice(0, 0)) }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(output, "consume__S_Vec[int32]"));
+    testing::assert(string_contains(output, "consume__S_Slice[int32]"))
+}
+
+#[test]
 fn specializes_generic_enum_constructors() -> unit {
     let source = "enum Weird[T] { Next(Ref[Weird[(int32) -> int32]]), Done(T) } fn main() -> unit { let x: Weird[int32] = Weird::Done(1i32); match x { Weird::Done(v) => println(v.to_string()), Weird::Next(_) => println(\"next\"), } }";
     testing::assert_eq(
