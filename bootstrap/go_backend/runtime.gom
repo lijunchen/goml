@@ -226,6 +226,14 @@ fn dyn_methods(functions: Vec[anf::Function], trait_name: string) -> Vec[DynMeth
             params: Vec::new(),
             ret_ty: tast::Type::Uint64,
         })
+    } else if trait_name == "ToString"
+        && contains_method(result, "to_string") == false
+    {
+        result.push(DynMethod {
+            name: "to_string",
+            params: Vec::new(),
+            ret_ty: tast::Type::String,
+        })
     } else {
         ()
     };
