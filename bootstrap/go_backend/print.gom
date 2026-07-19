@@ -132,6 +132,18 @@ fn write_type(builder: text::StringBuilder, value: Type) -> unit {
                 },
             }
         },
+        Type::Multi(values) => {
+            builder.write_char('(');
+            for index in range(0, values.len()) {
+                if index > 0 {
+                    builder.write_string(", ")
+                } else {
+                    ()
+                };
+                write_type(builder, values.get(index))
+            };
+            builder.write_char(')')
+        },
     }
 }
 
@@ -325,6 +337,25 @@ fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int32) -> unit 
             builder.write_string(" = ");
             write_expr(builder, expr, indent)
         },
+        Stmt::IndexAssign(target, index, expr) => {
+            write_expr(builder, target, indent);
+            builder.write_char('[');
+            write_expr(builder, index, indent);
+            builder.write_string("] = ");
+            write_expr(builder, expr, indent)
+        },
+        Stmt::MultiAssign(names, expr) => {
+            for index in range(0, names.len()) {
+                if index > 0 {
+                    builder.write_string(", ")
+                } else {
+                    ()
+                };
+                builder.write_string(names.get(index))
+            };
+            builder.write_string(" = ");
+            write_expr(builder, expr, indent)
+        },
         Stmt::Return(expr) => {
             builder.write_string("return");
             match expr {
@@ -334,6 +365,10 @@ fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int32) -> unit 
                 },
                 Option::None => (),
             }
+        },
+        Stmt::ReturnMulti(values) => {
+            builder.write_string("return ");
+            write_exprs(builder, values, indent)
         },
         Stmt::If(cond, then_, else_) => {
             builder.write_string("if ");

@@ -25,6 +25,7 @@ pub enum Type {
     Slice(Type),
     Map(Type, Type),
     Func(Vec[Type], Type),
+    Multi(Vec[Type]),
 }
 
 pub enum UnaryOp {
@@ -97,7 +98,10 @@ pub enum Stmt {
     Var(string, Type, Option[Expr]),
     Assign(string, Expr),
     FieldAssign(Expr, string, Expr),
+    IndexAssign(Expr, Expr, Expr),
+    MultiAssign(Vec[string], Expr),
     Return(Option[Expr]),
+    ReturnMulti(Vec[Expr]),
     If(Expr, Block, Option[Block]),
     Loop(Block),
     LabeledLoop(string, Block),

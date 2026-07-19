@@ -117,9 +117,20 @@ fn add_stmt_uses(values: Vec[string], value: Stmt) -> unit {
             add_expr_uses(values, target);
             add_expr_uses(values, expr)
         },
+        Stmt::IndexAssign(target, index, expr) => {
+            add_expr_uses(values, target);
+            add_expr_uses(values, index);
+            add_expr_uses(values, expr)
+        },
+        Stmt::MultiAssign(_, expr) => add_expr_uses(values, expr),
         Stmt::Return(expr) => match expr {
             Option::Some(expr) => add_expr_uses(values, expr),
             Option::None => (),
+        },
+        Stmt::ReturnMulti(exprs) => {
+            for expr in exprs {
+                add_expr_uses(values, expr)
+            }
         },
         Stmt::If(cond, then_, else_) => {
             add_expr_uses(values, cond);
@@ -341,12 +352,32 @@ fn dce_block_with_live(value: Block, live_out: Vec[string]) -> DceResult {
                 add_expr_uses(live, expr);
                 output.push(Stmt::FieldAssign(target, field, expr))
             },
+            Stmt::IndexAssign(target, target_index, expr) => {
+                add_expr_uses(live, target);
+                add_expr_uses(live, target_index);
+                add_expr_uses(live, expr);
+                output.push(Stmt::IndexAssign(target, target_index, expr))
+            },
+            Stmt::MultiAssign(names, expr) => {
+                for name in names {
+                    remove_name(live, name);
+                    add_name(needs_decl, name)
+                };
+                add_expr_uses(live, expr);
+                output.push(Stmt::MultiAssign(names, expr))
+            },
             Stmt::Return(expr) => {
                 match expr {
                     Option::Some(value) => add_expr_uses(live, value),
                     Option::None => (),
                 };
                 output.push(Stmt::Return(expr))
+            },
+            Stmt::ReturnMulti(exprs) => {
+                for expr in exprs {
+                    add_expr_uses(live, expr)
+                };
+                output.push(Stmt::ReturnMulti(exprs))
             },
             Stmt::If(cond, then_, else_) => {
                 let then_result = dce_block_with_live(then_, live);
