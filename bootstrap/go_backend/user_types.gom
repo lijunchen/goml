@@ -512,7 +512,6 @@ pub fn emit_user_type_items(
     variants: Vec[VariantInfo],
     enums: Vec[tast::EnumDef],
     structs: Vec[tast::StructDef],
-    types: Vec[tast::Type],
     instances: Vec[core::TypeInstance],
     function_names: Vec[(string, string)],
 ) -> unit {
@@ -581,6 +580,26 @@ pub fn emit_user_type_items(
             ()
         }
     };
+    for definition in enums {
+        if definition.generics.len() == 0 {
+            emit_enum_instance(
+                items,
+                emitted,
+                variants,
+                enums,
+                structs,
+                instances,
+                function_names,
+                core::TypeInstance {
+                    base_name: definition.name,
+                    args: Vec::new(),
+                    name: definition.name,
+                },
+            )
+        } else {
+            ()
+        }
+    };
     for instance in instances {
         emit_enum_instance(
             items,
@@ -592,34 +611,6 @@ pub fn emit_user_type_items(
             function_names,
             instance,
         )
-    };
-    for ty in types {
-        match tast::resolve_type(ty) {
-            tast::Type::Con(name) => match find_enum(enums, name) {
-                Option::Some(definition) => {
-                    if definition.generics.len() == 0 {
-                        emit_enum_instance(
-                            items,
-                            emitted,
-                            variants,
-                            enums,
-                            structs,
-                            instances,
-                            function_names,
-                            core::TypeInstance {
-                                base_name: name,
-                                args: Vec::new(),
-                                name,
-                            },
-                        )
-                    } else {
-                        ()
-                    }
-                },
-                Option::None => (),
-            },
-            _ => (),
-        }
     }
 }
 
