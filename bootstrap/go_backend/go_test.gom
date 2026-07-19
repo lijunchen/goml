@@ -251,3 +251,12 @@ fn emits_builtin_tostring_vtables() -> unit {
         "package main\n\ntype ref_Dyn_ToString_x struct {\n    value dyn__ToString\n}\n\ntype dyn__ToString_vtable struct {\n    to_string func(any) string\n}\n\ntype dyn__ToString struct {\n    data any\n    vtable *dyn__ToString_vtable\n}\n\nfunc dyn__ToString__wrap__Ref_12Dyn_ToString__to_string(self any) string {\n    return _goml_m_trait__impl_i_ToString_i_Ref_l_dynToString_r__i_to__string(self.(*ref_Dyn_ToString_x))\n}\n\nfunc dyn__ToString__vtable__Ref_12Dyn_ToString() *dyn__ToString_vtable {\n    return &dyn__ToString_vtable{\n        to_string: dyn__ToString__wrap__Ref_12Dyn_ToString__to_string,\n    }\n}\n\nfunc dyn__ToString__wrap__int32__to_string(self any) string {\n    return _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self.(int32))\n}\n\nfunc dyn__ToString__vtable__int32() *dyn__ToString_vtable {\n    return &dyn__ToString_vtable{\n        to_string: dyn__ToString__wrap__int32__to_string,\n    }\n}\n\nfunc main0() struct{} {\n    var inner__0 dyn__ToString = dyn__ToString{\n        data: int32(1),\n        vtable: dyn__ToString__vtable__int32(),\n    }\n    var r__1 *ref_Dyn_ToString_x = _goml_m_inherent_i_Ref_i_Ref_l_dynToString_r__i_new(inner__0)\n    var value__2 dyn__ToString = dyn__ToString{\n        data: r__1,\n        vtable: dyn__ToString__vtable__Ref_12Dyn_ToString(),\n    }\n    var t2 string = value__2.vtable.to_string(value__2.data)\n    _goml_m_println(t2)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
     )
 }
+
+#[test]
+fn lowers_tag_only_enums_as_constants() -> unit {
+    let source = "enum E { Tuple2_int32_int32, } fn main() -> unit { let t = (10i32, 13i32); let tag = E::Tuple2_int32_int32; match tag { E::Tuple2_int32_int32 => println(t.0 + t.1), }; }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "package main\n\ntype Tuple2_5int32_5int32 struct {\n    _0 int32\n    _1 int32\n}\n\ntype E int32\n\nconst (\n    _goml_user_Tuple2_int32_int32 E = 0\n)\n\nfunc main0() struct{} {\n    var t__0 Tuple2_5int32_5int32 = Tuple2_5int32_5int32{\n        _0: 10,\n        _1: 13,\n    }\n    var tag__1 E = _goml_user_Tuple2_int32_int32\n    switch tag__1 {\n    case _goml_user_Tuple2_int32_int32:\n        var t3 int32 = t__0._0\n        var t4 int32 = t__0._1\n        var t5 int32 = t3 + t4\n        _goml_m_println(t5)\n    default:\n        panic(\"non-exhaustive match\")\n    }\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
+    )
+}
