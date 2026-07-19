@@ -1,0 +1,203 @@
+package go_backend;
+
+use std::text;
+
+fn sha256_constants() -> [uint32; 64] {
+    [
+        1116352408u32,
+        1899447441u32,
+        3049323471u32,
+        3921009573u32,
+        961987163u32,
+        1508970993u32,
+        2453635748u32,
+        2870763221u32,
+        3624381080u32,
+        310598401u32,
+        607225278u32,
+        1426881987u32,
+        1925078388u32,
+        2162078206u32,
+        2614888103u32,
+        3248222580u32,
+        3835390401u32,
+        4022224774u32,
+        264347078u32,
+        604807628u32,
+        770255983u32,
+        1249150122u32,
+        1555081692u32,
+        1996064986u32,
+        2554220882u32,
+        2821834349u32,
+        2952996808u32,
+        3210313671u32,
+        3336571891u32,
+        3584528711u32,
+        113926993u32,
+        338241895u32,
+        666307205u32,
+        773529912u32,
+        1294757372u32,
+        1396182291u32,
+        1695183700u32,
+        1986661051u32,
+        2177026350u32,
+        2456956037u32,
+        2730485921u32,
+        2820302411u32,
+        3259730800u32,
+        3345764771u32,
+        3516065817u32,
+        3600352804u32,
+        4094571909u32,
+        275423344u32,
+        430227734u32,
+        506948616u32,
+        659060556u32,
+        883997877u32,
+        958139571u32,
+        1322822218u32,
+        1537002063u32,
+        1747873779u32,
+        1955562222u32,
+        2024104815u32,
+        2227730452u32,
+        2361852424u32,
+        2428436474u32,
+        2756734187u32,
+        3204031479u32,
+        3329325298u32,
+    ]
+}
+
+fn rotate_right(value: uint32, count: uint32) -> uint32 {
+    (value >> count) | (value << (32u32 - count))
+}
+
+fn padded_byte(
+    value: string,
+    index: int32,
+    padded_len: int32,
+    bit_len: uint64,
+) -> uint8 {
+    if index < value.byte_len() {
+        value.byte_get(index)
+    } else if index == value.byte_len() {
+        128u8
+    } else if index >= padded_len - 8 {
+        let shift = ((padded_len - 1 - index) * 8) as uint64;
+        ((bit_len >> shift) & 255u64) as uint8
+    } else {
+        0u8
+    }
+}
+
+fn message_word(
+    value: string,
+    offset: int32,
+    padded_len: int32,
+    bit_len: uint64,
+) -> uint32 {
+    ((padded_byte(value, offset, padded_len, bit_len) as uint32) << 24u32)
+        | ((padded_byte(value, offset + 1, padded_len, bit_len) as uint32) << 16u32)
+        | ((padded_byte(value, offset + 2, padded_len, bit_len) as uint32) << 8u32)
+        | (padded_byte(value, offset + 3, padded_len, bit_len) as uint32)
+}
+
+fn write_hex_word(builder: text::StringBuilder, value: uint32) -> unit {
+    let digits = "0123456789abcdef";
+    for index in range(0, 8) {
+        let shift = ((7 - index) * 4) as uint32;
+        builder.write_char(digits.get(((value >> shift) & 15u32) as int32))
+    }
+}
+
+pub fn sha256_prefix(value: string) -> string {
+    let constants = sha256_constants();
+    let padded_len = Ref::new(value.byte_len() + 9);
+    while padded_len.get() % 64 != 0 {
+        padded_len.set(padded_len.get() + 1)
+    };
+    let bit_len = (value.byte_len() as uint64) * 8u64;
+    let h0 = Ref::new(1779033703u32);
+    let h1 = Ref::new(3144134277u32);
+    let h2 = Ref::new(1013904242u32);
+    let h3 = Ref::new(2773480762u32);
+    let h4 = Ref::new(1359893119u32);
+    let h5 = Ref::new(2600822924u32);
+    let h6 = Ref::new(528734635u32);
+    let h7 = Ref::new(1541459225u32);
+    for chunk in range(0, padded_len.get() / 64) {
+        let words: Vec[uint32] = Vec::new();
+        for index in range(0, 16) {
+            words.push(message_word(
+                value,
+                chunk * 64 + index * 4,
+                padded_len.get(),
+                bit_len,
+            ))
+        };
+        for index in range(16, 64) {
+            let first = words.get(index - 15);
+            let second = words.get(index - 2);
+            let sigma0 = rotate_right(first, 7u32)
+                ^ rotate_right(first, 18u32)
+                ^ (first >> 3u32);
+            let sigma1 = rotate_right(second, 17u32)
+                ^ rotate_right(second, 19u32)
+                ^ (second >> 10u32);
+            words.push(
+                words.get(index - 16) + sigma0 + words.get(index - 7) + sigma1,
+            )
+        };
+        let a = Ref::new(h0.get());
+        let b = Ref::new(h1.get());
+        let c = Ref::new(h2.get());
+        let d = Ref::new(h3.get());
+        let e = Ref::new(h4.get());
+        let f = Ref::new(h5.get());
+        let g = Ref::new(h6.get());
+        let h = Ref::new(h7.get());
+        for index in range(0, 64) {
+            let sigma1 = rotate_right(e.get(), 6u32)
+                ^ rotate_right(e.get(), 11u32)
+                ^ rotate_right(e.get(), 25u32);
+            let choice = (e.get() & f.get()) ^ (~(e.get()) & g.get());
+            let temp1 = h.get()
+                + sigma1
+                + choice
+                + array_get(constants, index)
+                + words.get(index);
+            let sigma0 = rotate_right(a.get(), 2u32)
+                ^ rotate_right(a.get(), 13u32)
+                ^ rotate_right(a.get(), 22u32);
+            let majority = (a.get() & b.get())
+                ^ (a.get() & c.get())
+                ^ (b.get() & c.get());
+            let temp2 = sigma0 + majority;
+            h.set(g.get());
+            g.set(f.get());
+            f.set(e.get());
+            e.set(d.get() + temp1);
+            d.set(c.get());
+            c.set(b.get());
+            b.set(a.get());
+            a.set(temp1 + temp2)
+        };
+        h0.set(h0.get() + a.get());
+        h1.set(h1.get() + b.get());
+        h2.set(h2.get() + c.get());
+        h3.set(h3.get() + d.get());
+        h4.set(h4.get() + e.get());
+        h5.set(h5.get() + f.get());
+        h6.set(h6.get() + g.get());
+        h7.set(h7.get() + h.get())
+    };
+    let builder = text::StringBuilder::new();
+    write_hex_word(builder, h0.get());
+    write_hex_word(builder, h1.get());
+    write_hex_word(builder, h2.get());
+    write_hex_word(builder, h3.get());
+    builder.finish()
+}

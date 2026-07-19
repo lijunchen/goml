@@ -189,15 +189,29 @@ fn encode_name(value: string) -> string {
     builder.finish()
 }
 
+fn compact_ident(value: string) -> string {
+    if value.byte_len() <= 80 {
+        value
+    } else {
+        let marker = "_h" + sha256_prefix(value) + "_";
+        let budget = 80 - marker.byte_len();
+        let head_len = budget * 2 / 3;
+        let tail_len = budget - head_len;
+        value.byte_slice(0, head_len)
+            + marker
+            + value.byte_slice(value.byte_len() - tail_len, value.byte_len())
+    }
+}
+
 fn go_ident_impl(value: string, protect_generated: bool) -> string {
     if is_valid_ident(value) && !is_keyword(value) && !is_predeclared(value) {
         if protect_generated && is_generated_value(value) {
-            "_goml_user_" + value
+            compact_ident("_goml_user_" + value)
         } else {
-            value
+            compact_ident(value)
         }
     } else {
-        "_goml_m_" + encode_name(value)
+        compact_ident("_goml_m_" + encode_name(value))
     }
 }
 
