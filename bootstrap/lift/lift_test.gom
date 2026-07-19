@@ -1,0 +1,33 @@
+package lift;
+
+use gomlang::parser::ast;
+use gomlang::parser::core;
+use gomlang::parser::hir;
+use gomlang::parser::mono;
+use gomlang::parser::parser;
+use gomlang::parser::tast;
+use std::testing;
+
+fn lower_source(source: string) -> core::File {
+    lower(mono::lower(core::lower(tast::check(hir::lower(
+        ast::lower(parser::parse(source)),
+        "main.gom",
+    )))))
+}
+
+#[test]
+fn flattens_monomorphic_blocks() -> unit {
+    let source = "fn main() { let _ = (); let a = (true, false, (true, false)); let b = match a { (x, y, (z, w)) => w }; let _ = print(b); () }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "fn main() -> unit {\n  let mtmp0 = () in\n  let a/0 = (true, false, (true, false)) in\n  let b/5 = let x1 = a/0.0 in\n  let x2 = a/0.1 in\n  let x3 = a/0.2 in\n  let x4 = x3.0 in\n  let x5 = x3.1 in\n  let w/4 = x5 in\n  let z/3 = x4 in\n  let y/2 = x2 in\n  let x/1 = x1 in\n  w/4 in\n  let mtmp6 = print(b/5) in\n  ()\n}",
+    )
+}
+
+#[test]
+fn fills_empty_block_tails() -> unit {
+    testing::assert_eq(
+        encode(lower_source("fn main() -> unit { let value = 1; }")),
+        "fn main() -> unit {\n  let value/0 = 1 in\n  ()\n}",
+    )
+}
