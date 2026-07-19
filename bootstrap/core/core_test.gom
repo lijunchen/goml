@@ -87,13 +87,21 @@ fn lowers_builtin_option_matches_with_nonvariable_sources() -> unit {
                 Option::Some(Expr::Match(_, arms, Option::None, _)) => {
                     match arms.get(0).lhs {
                         Expr::Constr(constructor, _, _) => {
-                            testing::assert_eq(constructor.name, "Option::None")
+                            testing::assert_eq(constructor.name, "Option::None");
+                            match constructor.tag {
+                                Option::Some(tag) => testing::assert_eq(tag, 0),
+                                Option::None => testing::fail("expected None tag"),
+                            }
                         },
                         _ => testing::fail("expected None arm"),
                     };
                     match arms.get(1).lhs {
                         Expr::Constr(constructor, _, _) => {
-                            testing::assert_eq(constructor.name, "Option::Some")
+                            testing::assert_eq(constructor.name, "Option::Some");
+                            match constructor.tag {
+                                Option::Some(tag) => testing::assert_eq(tag, 1),
+                                Option::None => testing::fail("expected Some tag"),
+                            }
                         },
                         _ => testing::fail("expected Some arm"),
                     }
