@@ -85,6 +85,11 @@ pub struct SwitchCase {
     body: Block,
 }
 
+pub struct TypeSwitchCase {
+    ty: Type,
+    body: Block,
+}
+
 pub enum Stmt {
     Expr(Expr),
     Go(Expr),
@@ -98,6 +103,8 @@ pub enum Stmt {
     BreakLabel(string),
     Continue,
     Switch(Expr, Vec[SwitchCase], Option[Block]),
+    TypeSwitch(Expr, Vec[TypeSwitchCase], Option[Block]),
+    Panic(string),
     Unreachable,
 }
 
@@ -146,4 +153,10 @@ pub struct File {
 pub struct DynCoercion {
     trait_name: string,
     for_ty: tast::Type,
+}
+
+pub struct VariantInfo {
+    owner_name: string,
+    tag: int32,
+    variant_name: string,
 }

@@ -150,10 +150,9 @@ fn contains_text(values: Vec[string], expected: string) -> bool {
     found.get()
 }
 
-pub fn emit_runtime_items(
+pub fn emit_builtin_runtime_items(
     items: Vec[Item],
     types: Vec[tast::Type],
-    coercions: Vec[DynCoercion],
 ) -> unit {
     for ty in types {
         match tast::resolve_type(ty) {
@@ -198,6 +197,13 @@ pub fn emit_runtime_items(
             _ => (),
         }
     };
+}
+
+pub fn emit_dyn_runtime_items(
+    items: Vec[Item],
+    types: Vec[tast::Type],
+    coercions: Vec[DynCoercion],
+) -> unit {
     let dyn_traits: Vec[string] = Vec::new();
     for ty in types {
         match tast::resolve_type(ty) {

@@ -6,6 +6,7 @@ use gomlang::parser::tast;
 
 struct LowerEnv {
     joins: Vec[anf::JoinBind],
+    variants: Vec[VariantInfo],
 }
 
 struct CompiledValue {
@@ -144,7 +145,10 @@ fn compile_constructor(
         };
         fields.push((name, compile_imm(args.get(index))))
     };
-    Expr::StructLiteral(lower_type(ty), fields)
+    Expr::StructLiteral(
+        if constructor.is_struct { lower_type(ty) } else { constructor_type(constructor) },
+        fields,
+    )
 }
 
 fn compile_value(value: anf::Value) -> CompiledValue {
@@ -166,7 +170,12 @@ fn compile_value(value: anf::Value) -> CompiledValue {
             } else {
                 "_" + index.to_string()
             };
-            Expr::Field(compile_imm(expr), field)
+            let target = if constructor.is_struct {
+                compile_imm(expr)
+            } else {
+                Expr::Cast(compile_imm(expr), constructor_type(constructor))
+            };
+            Expr::Field(target, field)
         },
         anf::Value::Unary(op, expr, _) => Expr::Unary(compile_unary(op), compile_imm(expr)),
         anf::Value::Cast(expr, ty) => Expr::Convert(lower_type(ty), compile_imm(expr)),
@@ -406,20 +415,62 @@ fn compile_match_leaf(
     arms: Vec[anf::Arm],
     default: Option[anf::Block],
 ) -> Vec[Stmt] {
-    let cases: Vec[SwitchCase] = Vec::new();
-    for arm in arms {
-        cases.push(SwitchCase {
-            value: compile_imm(arm.lhs),
-            body: compile_block(env, arm.body),
-        })
-    };
-    let lowered_default = match default {
-        Option::Some(body) => Option::Some(compile_block(env, body)),
-        Option::None => Option::None,
-    };
     let result: Vec[Stmt] = Vec::new();
-    result.push(Stmt::Switch(compile_imm(scrut), cases, lowered_default));
+    if match_uses_types(env, arms) {
+        let cases: Vec[TypeSwitchCase] = Vec::new();
+        for arm in arms {
+            match arm_type(env, arm.lhs) {
+                Option::Some(ty) => cases.push(TypeSwitchCase {
+                    ty,
+                    body: compile_block(env, arm.body),
+                }),
+                Option::None => (),
+            }
+        };
+        let lowered_default = match default {
+            Option::Some(body) => Option::Some(compile_block(env, body)),
+            Option::None => Option::Some(non_exhaustive_block()),
+        };
+        result.push(Stmt::TypeSwitch(compile_imm(scrut), cases, lowered_default))
+    } else {
+        let cases: Vec[SwitchCase] = Vec::new();
+        for arm in arms {
+            cases.push(SwitchCase {
+                value: compile_imm(arm.lhs),
+                body: compile_block(env, arm.body),
+            })
+        };
+        let lowered_default = match default {
+            Option::Some(body) => Option::Some(compile_block(env, body)),
+            Option::None => Option::None,
+        };
+        result.push(Stmt::Switch(compile_imm(scrut), cases, lowered_default))
+    };
     result
+}
+
+fn arm_type(env: LowerEnv, value: anf::Imm) -> Option[Type] {
+    match value {
+        anf::Imm::Tag(tag, owner_ty) => variant_type(env.variants, owner_ty, tag),
+        _ => Option::None,
+    }
+}
+
+fn match_uses_types(env: LowerEnv, values: Vec[anf::Arm]) -> bool {
+    let found = Ref::new(false);
+    for value in values {
+        match arm_type(env, value.lhs) {
+            Option::Some(_) => found.set(true),
+            Option::None => (),
+        }
+    };
+    found.get()
+}
+
+fn non_exhaustive_block() -> Block {
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Panic("non-exhaustive match"));
+    Block { stmts }
 }
 
 fn compile_term_leaf(env: LowerEnv, value: anf::Term) -> Vec[Stmt] {
@@ -463,23 +514,55 @@ fn compile_term_with_pending(
                         Option::Some(compile_branch_to_join(env, else_, target, join)),
                     )),
                     anf::Term::Match(scrut, arms, default, _) => {
-                        let cases: Vec[SwitchCase] = Vec::new();
-                        for arm in arms {
-                            cases.push(SwitchCase {
-                                value: compile_imm(arm.lhs),
-                                body: compile_branch_to_join(env, arm.body, target, join),
-                            })
-                        };
-                        let lowered_default = match default {
-                            Option::Some(body) => Option::Some(compile_branch_to_join(
-                                env,
-                                body,
-                                target,
-                                join,
-                            )),
-                            Option::None => Option::None,
-                        };
-                        result.push(Stmt::Switch(compile_imm(scrut), cases, lowered_default))
+                        if match_uses_types(env, arms) {
+                            let cases: Vec[TypeSwitchCase] = Vec::new();
+                            for arm in arms {
+                                match arm_type(env, arm.lhs) {
+                                    Option::Some(ty) => cases.push(TypeSwitchCase {
+                                        ty,
+                                        body: compile_branch_to_join(
+                                            env,
+                                            arm.body,
+                                            target,
+                                            join,
+                                        ),
+                                    }),
+                                    Option::None => (),
+                                }
+                            };
+                            let lowered_default = match default {
+                                Option::Some(body) => Option::Some(compile_branch_to_join(
+                                    env,
+                                    body,
+                                    target,
+                                    join,
+                                )),
+                                Option::None => Option::Some(non_exhaustive_block()),
+                            };
+                            result.push(Stmt::TypeSwitch(
+                                compile_imm(scrut),
+                                cases,
+                                lowered_default,
+                            ))
+                        } else {
+                            let cases: Vec[SwitchCase] = Vec::new();
+                            for arm in arms {
+                                cases.push(SwitchCase {
+                                    value: compile_imm(arm.lhs),
+                                    body: compile_branch_to_join(env, arm.body, target, join),
+                                })
+                            };
+                            let lowered_default = match default {
+                                Option::Some(body) => Option::Some(compile_branch_to_join(
+                                    env,
+                                    body,
+                                    target,
+                                    join,
+                                )),
+                                Option::None => Option::None,
+                            };
+                            result.push(Stmt::Switch(compile_imm(scrut), cases, lowered_default))
+                        }
                     },
                     _ => append_stmts(result, compile_term_leaf(env, value)),
                 };
@@ -1037,7 +1120,7 @@ fn collect_dyn_block(result: Vec[DynCoercion], value: anf::Block) -> unit {
     }
 }
 
-fn compile_function(value: anf::Function) -> Function {
+fn compile_function(value: anf::Function, variants: Vec[VariantInfo]) -> Function {
     let joins: Vec[anf::JoinBind] = Vec::new();
     collect_joins_block(joins, value.body);
     let params: Vec[(string, Type)] = Vec::new();
@@ -1048,14 +1131,17 @@ fn compile_function(value: anf::Function) -> Function {
         name: function_name(value.name),
         params,
         ret_ty: Option::Some(lower_type(value.ret_ty)),
-        body: eliminate_dead_vars(compile_block(LowerEnv { joins }, value.body)),
+        body: eliminate_dead_vars(compile_block(LowerEnv { joins, variants }, value.body)),
     }
 }
 
 pub fn lower(value: anf::File) -> File {
+    let enums = value.enums;
+    let type_instances = value.type_instances;
     let items: Vec[Item] = Vec::new();
     let types: Vec[tast::Type] = Vec::new();
     let coercions: Vec[DynCoercion] = Vec::new();
+    let variants: Vec[VariantInfo] = Vec::new();
     let has_main = Ref::new(false);
     for function in value.functions {
         for param in function.params {
@@ -1070,9 +1156,11 @@ pub fn lower(value: anf::File) -> File {
             ()
         }
     };
-    emit_runtime_items(items, types, coercions);
+    emit_builtin_runtime_items(items, types);
+    emit_user_type_items(items, variants, enums, types, type_instances);
+    emit_dyn_runtime_items(items, types, coercions);
     for function in value.functions {
-        items.push(Item::Function(compile_function(function)))
+        items.push(Item::Function(compile_function(function, variants)))
     };
     if has_main.get() {
         let stmts: Vec[Stmt] = Vec::new();

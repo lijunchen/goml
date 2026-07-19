@@ -1,0 +1,364 @@
+package go_backend;
+
+use gomlang::parser::core;
+use gomlang::parser::tast;
+
+fn find_enum(values: Vec[tast::EnumDef], name: string) -> Option[tast::EnumDef] {
+    let result: Ref[Option[tast::EnumDef]] = Ref::new(Option::None);
+    for value in values {
+        if value.name == name {
+            result.set(Option::Some(value))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn type_lists_match(left: Vec[tast::Type], right: Vec[tast::Type]) -> bool {
+    if left.len() != right.len() {
+        false
+    } else {
+        let equal = Ref::new(true);
+        for index in range(0, left.len()) {
+            if encode_type(left.get(index)) != encode_type(right.get(index)) {
+                equal.set(false)
+            } else {
+                ()
+            }
+        };
+        equal.get()
+    }
+}
+
+fn find_instance(
+    values: Vec[core::TypeInstance],
+    base_name: string,
+    args: Vec[tast::Type],
+) -> Option[core::TypeInstance] {
+    let result: Ref[Option[core::TypeInstance]] = Ref::new(Option::None);
+    for value in values {
+        if value.base_name == base_name && type_lists_match(value.args, args) {
+            result.set(Option::Some(value))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn lookup_binding(
+    generics: Vec[string],
+    args: Vec[tast::Type],
+    name: string,
+) -> Option[tast::Type] {
+    let result: Ref[Option[tast::Type]] = Ref::new(Option::None);
+    for index in range(0, generics.len()) {
+        if index < args.len() && generics.get(index) == name {
+            result.set(Option::Some(args.get(index)))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn instantiate_types(
+    values: Vec[tast::Type],
+    generics: Vec[string],
+    args: Vec[tast::Type],
+    instances: Vec[core::TypeInstance],
+) -> Vec[tast::Type] {
+    let result: Vec[tast::Type] = Vec::new();
+    for value in values {
+        result.push(instantiate_type(value, generics, args, instances))
+    };
+    result
+}
+
+fn instantiate_type(
+    value: tast::Type,
+    generics: Vec[string],
+    args: Vec[tast::Type],
+    instances: Vec[core::TypeInstance],
+) -> tast::Type {
+    match tast::resolve_type(value) {
+        tast::Type::Param(name) => match lookup_binding(generics, args, name) {
+            Option::Some(value) => value,
+            Option::None => tast::Type::Param(name),
+        },
+        tast::Type::Tuple(values) => {
+            tast::Type::Tuple(instantiate_types(values, generics, args, instances))
+        },
+        tast::Type::Projection(base, name, reference) => tast::Type::Projection(
+            instantiate_type(base, generics, args, instances),
+            name,
+            reference,
+        ),
+        tast::Type::App(base, values) => {
+            let base = instantiate_type(base, generics, args, instances);
+            let values = instantiate_types(values, generics, args, instances);
+            match base {
+                tast::Type::Con(name) => match find_instance(instances, name, values) {
+                    Option::Some(instance) => tast::Type::Con(instance.name),
+                    Option::None => tast::Type::App(tast::Type::Con(name), values),
+                },
+                _ => tast::Type::App(base, values),
+            }
+        },
+        tast::Type::Array(length, elem) => tast::Type::Array(
+            length,
+            instantiate_type(elem, generics, args, instances),
+        ),
+        tast::Type::Slice(elem) => {
+            tast::Type::Slice(instantiate_type(elem, generics, args, instances))
+        },
+        tast::Type::VecType(elem) => {
+            tast::Type::VecType(instantiate_type(elem, generics, args, instances))
+        },
+        tast::Type::RefType(elem) => {
+            tast::Type::RefType(instantiate_type(elem, generics, args, instances))
+        },
+        tast::Type::HashMap(key, value) => tast::Type::HashMap(
+            instantiate_type(key, generics, args, instances),
+            instantiate_type(value, generics, args, instances),
+        ),
+        tast::Type::Func(params, ret_ty) => tast::Type::Func(
+            instantiate_types(params, generics, args, instances),
+            instantiate_type(ret_ty, generics, args, instances),
+        ),
+        _ => value,
+    }
+}
+
+fn collect_con_names(result: Vec[string], value: tast::Type) -> unit {
+    match tast::resolve_type(value) {
+        tast::Type::Con(name) => {
+            if contains_text(result, name) == false {
+                result.push(name)
+            } else {
+                ()
+            }
+        },
+        tast::Type::Tuple(values) => {
+            for value in values {
+                collect_con_names(result, value)
+            }
+        },
+        tast::Type::Projection(base, _, _) => collect_con_names(result, base),
+        tast::Type::App(base, args) => {
+            collect_con_names(result, base);
+            for value in args {
+                collect_con_names(result, value)
+            }
+        },
+        tast::Type::Array(_, elem)
+        | tast::Type::Slice(elem)
+        | tast::Type::VecType(elem)
+        | tast::Type::RefType(elem) => collect_con_names(result, elem),
+        tast::Type::HashMap(key, value) => {
+            collect_con_names(result, key);
+            collect_con_names(result, value)
+        },
+        tast::Type::Func(params, ret_ty) => {
+            for value in params {
+                collect_con_names(result, value)
+            };
+            collect_con_names(result, ret_ty)
+        },
+        _ => (),
+    }
+}
+
+fn instance_by_name(
+    values: Vec[core::TypeInstance],
+    name: string,
+) -> Option[core::TypeInstance] {
+    let result: Ref[Option[core::TypeInstance]] = Ref::new(Option::None);
+    for value in values {
+        if value.name == name {
+            result.set(Option::Some(value))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn enum_marker_name(go_name: string) -> string {
+    go_generated_ident("is" + go_name)
+}
+
+fn variant_go_name(owner_name: string, variant_name: string) -> string {
+    go_user_type_name(owner_name) + "_" + go_ident(variant_name)
+}
+
+fn emit_enum_instance(
+    items: Vec[Item],
+    emitted: Vec[string],
+    variants: Vec[VariantInfo],
+    enums: Vec[tast::EnumDef],
+    instances: Vec[core::TypeInstance],
+    instance: core::TypeInstance,
+) -> unit {
+    if contains_text(emitted, instance.name) {
+        ()
+    } else {
+        match find_enum(enums, instance.base_name) {
+            Option::Some(definition) => {
+                emitted.push(instance.name);
+                let fields_by_variant: Vec[Vec[tast::Type]] = Vec::new();
+                for variant in definition.variants {
+                    fields_by_variant.push(instantiate_types(
+                        variant.fields,
+                        definition.generics,
+                        instance.args,
+                        instances,
+                    ))
+                };
+                for fields in fields_by_variant {
+                    for field in fields {
+                        let dependencies: Vec[string] = Vec::new();
+                        collect_con_names(dependencies, field);
+                        for dependency in dependencies {
+                            match instance_by_name(instances, dependency) {
+                                Option::Some(value) => emit_enum_instance(
+                                    items,
+                                    emitted,
+                                    variants,
+                                    enums,
+                                    instances,
+                                    value,
+                                ),
+                                Option::None => (),
+                            }
+                        }
+                    }
+                };
+                let owner_go_name = go_user_type_name(instance.name);
+                let marker = enum_marker_name(owner_go_name);
+                let methods: Vec[InterfaceMethod] = Vec::new();
+                methods.push(InterfaceMethod {
+                    name: marker,
+                    params: Vec::new(),
+                    ret_ty: Option::None,
+                });
+                items.push(Item::Interface(InterfaceDef { name: owner_go_name, methods }));
+                for index in range(0, definition.variants.len()) {
+                    let variant = definition.variants.get(index);
+                    let fields: Vec[(string, Type)] = Vec::new();
+                    let field_types = fields_by_variant.get(index);
+                    for field_index in range(0, field_types.len()) {
+                        fields.push((
+                            "_" + field_index.to_string(),
+                            lower_type(field_types.get(field_index)),
+                        ))
+                    };
+                    let variant_name = variant_go_name(instance.name, variant.name);
+                    items.push(Item::Struct(StructDef { name: variant_name, fields }));
+                    items.push(Item::Method(Method {
+                        receiver: ("_", Type::Named(variant_name)),
+                        name: marker,
+                        params: Vec::new(),
+                        ret_ty: Option::None,
+                        body: Block { stmts: Vec::new() },
+                    }));
+                    variants.push(VariantInfo {
+                        owner_name: instance.name,
+                        tag: index,
+                        variant_name,
+                    })
+                }
+            },
+            Option::None => (),
+        }
+    }
+}
+
+pub fn emit_user_type_items(
+    items: Vec[Item],
+    variants: Vec[VariantInfo],
+    enums: Vec[tast::EnumDef],
+    types: Vec[tast::Type],
+    instances: Vec[core::TypeInstance],
+) -> unit {
+    let emitted: Vec[string] = Vec::new();
+    for instance in instances {
+        emit_enum_instance(items, emitted, variants, enums, instances, instance)
+    };
+    for ty in types {
+        match tast::resolve_type(ty) {
+            tast::Type::Con(name) => match find_enum(enums, name) {
+                Option::Some(definition) => {
+                    if definition.generics.len() == 0 {
+                        emit_enum_instance(
+                            items,
+                            emitted,
+                            variants,
+                            enums,
+                            instances,
+                            core::TypeInstance {
+                                base_name: name,
+                                args: Vec::new(),
+                                name,
+                            },
+                        )
+                    } else {
+                        ()
+                    }
+                },
+                Option::None => (),
+            },
+            _ => (),
+        }
+    }
+}
+
+pub fn variant_type(
+    variants: Vec[VariantInfo],
+    owner_ty: tast::Type,
+    tag: int32,
+) -> Option[Type] {
+    match tast::resolve_type(owner_ty) {
+        tast::Type::Con(owner_name) => {
+            let result: Ref[Option[Type]] = Ref::new(Option::None);
+            for value in variants {
+                if value.owner_name == owner_name && value.tag == tag {
+                    result.set(Option::Some(Type::Named(value.variant_name)))
+                } else {
+                    ()
+                }
+            };
+            result.get()
+        },
+        _ => Option::None,
+    }
+}
+
+fn last_separator(value: string) -> int32 {
+    let result = Ref::new(-1);
+    if value.byte_len() > 1 {
+        for index in range(0, value.byte_len() - 1) {
+            if value.byte_slice(index, index + 2) == "::" {
+                result.set(index)
+            } else {
+                ()
+            }
+        }
+    } else {
+        ()
+    };
+    result.get()
+}
+
+pub fn constructor_type(value: tast::Constructor) -> Type {
+    let separator = last_separator(value.name);
+    if value.is_struct || separator < 0 {
+        Type::Named(go_user_type_name(value.name))
+    } else {
+        Type::Named(variant_go_name(
+            value.name.byte_slice(0, separator),
+            value.name.byte_slice(separator + 2, value.name.byte_len()),
+        ))
+    }
+}

@@ -368,6 +368,39 @@ fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int32) -> unit 
             newline(builder, indent);
             builder.write_char('}')
         },
+        Stmt::TypeSwitch(expr, cases, default) => {
+            builder.write_string("switch ");
+            write_expr(builder, expr, indent);
+            builder.write_string(".(type) {");
+            for case in cases {
+                newline(builder, indent);
+                builder.write_string("case ");
+                write_type(builder, case.ty);
+                builder.write_char(':');
+                for stmt in case.body.stmts {
+                    newline(builder, indent + 4);
+                    write_stmt(builder, stmt, indent + 4)
+                }
+            };
+            match default {
+                Option::Some(body) => {
+                    newline(builder, indent);
+                    builder.write_string("default:");
+                    for stmt in body.stmts {
+                        newline(builder, indent + 4);
+                        write_stmt(builder, stmt, indent + 4)
+                    }
+                },
+                Option::None => (),
+            };
+            newline(builder, indent);
+            builder.write_char('}')
+        },
+        Stmt::Panic(message) => {
+            builder.write_string("panic(");
+            write_string_literal(builder, message);
+            builder.write_char(')')
+        },
         Stmt::Unreachable => builder.write_string("panic(\"unreachable\")"),
     }
 }

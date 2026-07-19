@@ -326,6 +326,27 @@ fn dce_block_with_live(value: Block, live_out: Vec[string]) -> DceResult {
                 add_expr_uses(live, expr);
                 output.push(Stmt::Switch(expr, lowered_cases, lowered_default))
             },
+            Stmt::TypeSwitch(expr, cases, default) => {
+                let lowered_cases: Vec[TypeSwitchCase] = Vec::new();
+                for case in cases {
+                    let result = dce_block_with_live(case.body, live);
+                    add_names(live, result.live);
+                    add_names(needs_decl, result.needs_decl);
+                    lowered_cases.push(TypeSwitchCase { ty: case.ty, body: result.block })
+                };
+                let lowered_default = match default {
+                    Option::Some(body) => {
+                        let result = dce_block_with_live(body, live);
+                        add_names(live, result.live);
+                        add_names(needs_decl, result.needs_decl);
+                        Option::Some(result.block)
+                    },
+                    Option::None => Option::None,
+                };
+                add_expr_uses(live, expr);
+                output.push(Stmt::TypeSwitch(expr, lowered_cases, lowered_default))
+            },
+            Stmt::Panic(message) => output.push(Stmt::Panic(message)),
             Stmt::Unreachable => output.push(Stmt::Unreachable),
         }
     };
