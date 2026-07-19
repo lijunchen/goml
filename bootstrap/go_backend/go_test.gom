@@ -224,3 +224,12 @@ fn protects_functions_from_tuple_type_names() -> unit {
         "package main\n\ntype Tuple2_5int32_5int32 struct {\n    _0 int32\n    _1 int32\n}\n\nfunc _goml_user_Tuple2_int32_int32() int32 {\n    var retv2 int32\n    retv2 = 26\n    return retv2\n}\n\nfunc main0() struct{} {\n    var t__0 Tuple2_5int32_5int32 = Tuple2_5int32_5int32{\n        _0: 1,\n        _1: 2,\n    }\n    var t4 int32 = t__0._0\n    var t5 int32 = t__0._1\n    var t6 int32 = t4 + t5\n    var t7 int32 = _goml_user_Tuple2_int32_int32()\n    var t8 int32 = t6 + t7\n    _goml_m_println(t8)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
     )
 }
+
+#[test]
+fn sorts_dyn_helpers_and_compacts_builtin_impl_names() -> unit {
+    let source = "fn main() { let inner: dyn Hash = 1; let r = Ref::new(inner); let alias = r; let value: dyn Hash = r; println((Hash::hash(value) == Hash::hash(alias)).to_string()); }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "package main\n\ntype ref_Dyn_Hash_x struct {\n    value dyn__Hash\n}\n\ntype dyn__Hash_vtable struct {\n    hash func(any) uint64\n}\n\ntype dyn__Hash struct {\n    data any\n    vtable *dyn__Hash_vtable\n}\n\nfunc dyn__Hash__wrap__Ref_8Dyn_Hash__hash(self any) uint64 {\n    return _goml_m_trait__impl_i_Hash_i_Ref_l_dynHash_r__i_hash(self.(*ref_Dyn_Hash_x))\n}\n\nfunc dyn__Hash__vtable__Ref_8Dyn_Hash() *dyn__Hash_vtable {\n    return &dyn__Hash_vtable{\n        hash: dyn__Hash__wrap__Ref_8Dyn_Hash__hash,\n    }\n}\n\nfunc dyn__Hash__wrap__int32__hash(self any) uint64 {\n    return _goml_m_trait__impl_i_Hash_i_int32_i_hash(self.(int32))\n}\n\nfunc dyn__Hash__vtable__int32() *dyn__Hash_vtable {\n    return &dyn__Hash_vtable{\n        hash: dyn__Hash__wrap__int32__hash,\n    }\n}\n\nfunc main0() struct{} {\n    var inner__0 dyn__Hash = dyn__Hash{\n        data: int32(1),\n        vtable: dyn__Hash__vtable__int32(),\n    }\n    var r__1 *ref_Dyn_Hash_x = _goml_m_inherent_i_Ref_i_Ref_l_dynHash_r__i_new(inner__0)\n    var alias__2 *ref_Dyn_Hash_x = r__1\n    var value__3 dyn__Hash = dyn__Hash{\n        data: r__1,\n        vtable: dyn__Hash__vtable__Ref_8Dyn_Hash(),\n    }\n    var t2 uint64 = value__3.vtable.hash(value__3.data)\n    var t3 uint64 = _goml_m_trait__impl_i_Hash_i_Ref_l_dynHash_r__i_hash(alias__2)\n    var t4 bool = t2 == t3\n    var t5 string = _goml_m_trait__impl_i_ToString_i_bool_i_to__string(t4)\n    _goml_m_println(t5)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
+    )
+}
