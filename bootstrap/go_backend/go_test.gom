@@ -52,3 +52,12 @@ fn emits_breaking_while_loops() -> unit {
         "package main\n\ntype ref_int32_x struct {\n    value int32\n}\n\nfunc main0() struct{} {\n    var i__0 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_int32_r__i_new(0)\n    Loop_loop7:\n    for {\n        var t8 int32 = _goml_m_inherent_i_Ref_i_Ref_l_int32_r__i_get(i__0)\n        var t9 bool = t8 < 10\n        if t9 {\n            var t14 int32 = _goml_m_inherent_i_Ref_i_Ref_l_int32_r__i_get(i__0)\n            var t15 bool = t14 == 5\n            if t15 {\n                break Loop_loop7\n            } else {\n                var t11 int32 = _goml_m_inherent_i_Ref_i_Ref_l_int32_r__i_get(i__0)\n                _goml_m_println(t11)\n                var t12 int32 = _goml_m_inherent_i_Ref_i_Ref_l_int32_r__i_get(i__0)\n                var t13 int32 = t12 + 1\n                _goml_m_inherent_i_Ref_i_Ref_l_int32_r__i_set(i__0, t13)\n                continue\n            }\n        } else {\n            break Loop_loop7\n        }\n    }\n    _goml_m_println(\"done\")\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
     )
 }
+
+#[test]
+fn emits_vec_runtime_structs() -> unit {
+    let source = "fn one() -> Vec[int32] { let v: Vec[int32] = Vec::new(); v.push(1i32); v } fn main() -> unit { let xs: Vec[int32] = one(); xs.push(2i32); println(xs.len()); }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "package main\n\ntype _goml_vec_int32 struct {\n    items []int32\n}\n\nfunc one() *_goml_vec_int32 {\n    var retv4 *_goml_vec_int32\n    var v__0 *_goml_vec_int32 = _goml_m_inherent_i_Vec_i_Vec_l_int32_r__i_new()\n    _goml_m_inherent_i_Vec_i_Vec_l_int32_r__i_push(v__0, 1)\n    retv4 = v__0\n    return retv4\n}\n\nfunc main0() struct{} {\n    var xs__1 *_goml_vec_int32 = one()\n    _goml_m_inherent_i_Vec_i_Vec_l_int32_r__i_push(xs__1, 2)\n    var t6 int32 = _goml_m_inherent_i_Vec_i_Vec_l_int32_r__i_len(xs__1)\n    _goml_m_println(t6)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
+    )
+}
