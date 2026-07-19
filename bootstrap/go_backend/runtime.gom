@@ -1068,12 +1068,6 @@ pub fn emit_builtin_runtime_items(
 ) -> unit {
     for ty in types {
         match tast::resolve_type(ty) {
-            tast::Type::Tuple(_) => items.push(Item::Struct(runtime_struct(ty))),
-            _ => (),
-        }
-    };
-    for ty in types {
-        match tast::resolve_type(ty) {
             tast::Type::Array(_, _) => {
                 for item in array_runtime_items(ty) {
                     items.push(item)
@@ -1128,6 +1122,12 @@ pub fn emit_builtin_runtime_items(
                     ()
                 }
             },
+            _ => (),
+        }
+    };
+    for ty in types {
+        match tast::resolve_type(ty) {
+            tast::Type::Tuple(_) => items.push(Item::Struct(runtime_struct(ty))),
             _ => (),
         }
     };
