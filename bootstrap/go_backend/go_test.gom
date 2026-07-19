@@ -153,3 +153,12 @@ fn hashes_and_compacts_long_go_identifiers() -> unit {
         "_goml_m_inherent_i_closure__en_hc8c2267ce73456d4efdb3aa5198c65a2_nt32__0_i_apply",
     )
 }
+
+#[test]
+fn emits_structs_before_generic_enums() -> unit {
+    let source = "fn build() -> Option[() -> int32] { let _: Option[int32] = Option::Some(1i32); Option::Some(|| 1i32) } fn main() -> unit { match build() { Option::Some(f) => println(f()), Option::None => println(0i32), } }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "package main\n\ntype closure_env_build_0 struct {}\n\ntype _goml_m_Option_____o__q__m__z_int32 interface {\n    is_goml_m_Option_____o__q__m__z_int32()\n}\n\ntype _goml_m_Option_____o__q__m__z_int32_None struct {}\n\nfunc (_ _goml_m_Option_____o__q__m__z_int32_None) is_goml_m_Option_____o__q__m__z_int32() {}\n\ntype _goml_m_Option_____o__q__m__z_int32_Some struct {\n    _0 func() int32\n}\n\nfunc (_ _goml_m_Option_____o__q__m__z_int32_Some) is_goml_m_Option_____o__q__m__z_int32() {}\n\ntype Option__int32 interface {\n    isOption__int32()\n}\n\ntype Option__int32_None struct {}\n\nfunc (_ Option__int32_None) isOption__int32() {}\n\ntype Option__int32_Some struct {\n    _0 int32\n}\n\nfunc (_ Option__int32_Some) isOption__int32() {}\n\nfunc build() _goml_m_Option_____o__q__m__z_int32 {\n    var retv5 _goml_m_Option_____o__q__m__z_int32\n    var t6 closure_env_build_0 = closure_env_build_0{}\n    var t7 _goml_m_Option_____o__q__m__z_int32 = _goml_m_Option_____o__q__m__z_int32_Some{\n        _0: func() int32 {\n            return _goml_m_inherent_i_closure__env__build__0_i_closure__env__build__0_i_apply(t6)\n        },\n    }\n    retv5 = t7\n    return retv5\n}\n\nfunc main0() struct{} {\n    var mtmp1 _goml_m_Option_____o__q__m__z_int32 = build()\n    switch mtmp1.(type) {\n    case _goml_m_Option_____o__q__m__z_int32_None:\n        _goml_m_println(0)\n    case _goml_m_Option_____o__q__m__z_int32_Some:\n        var x2 func() int32 = mtmp1.(_goml_m_Option_____o__q__m__z_int32_Some)._0\n        var f__0 func() int32 = x2\n        var t11 int32 = f__0()\n        _goml_m_println(t11)\n    default:\n        panic(\"non-exhaustive match\")\n    }\n    return struct{}{}\n}\n\nfunc _goml_m_inherent_i_closure__env__build__0_i_closure__env__build__0_i_apply(env3 closure_env_build_0) int32 {\n    var retv14 int32\n    retv14 = 1\n    return retv14\n}\n\nfunc main() {\n    main0()\n}\n",
+    )
+}
