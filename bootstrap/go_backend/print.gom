@@ -77,6 +77,7 @@ fn write_string_literal(builder: text::StringBuilder, value: string) -> unit {
 fn write_type(builder: text::StringBuilder, value: Type) -> unit {
     match value {
         Type::Void => builder.write_string("void"),
+        Type::Any => builder.write_string("any"),
         Type::Unit => builder.write_string("struct{}"),
         Type::Bool => builder.write_string("bool"),
         Type::Int8 => builder.write_string("int8"),
@@ -389,6 +390,39 @@ fn write_struct(builder: text::StringBuilder, value: StructDef) -> unit {
     builder.write_char('}')
 }
 
+fn write_interface(builder: text::StringBuilder, value: InterfaceDef) -> unit {
+    builder.write_string("type ");
+    builder.write_string(value.name);
+    builder.write_string(" interface {");
+    for method in value.methods {
+        newline(builder, 4);
+        builder.write_string(method.name);
+        builder.write_char('(');
+        for index in range(0, method.params.len()) {
+            if index > 0 {
+                builder.write_string(", ")
+            } else {
+                ()
+            };
+            write_type(builder, method.params.get(index))
+        };
+        builder.write_char(')');
+        match method.ret_ty {
+            Option::Some(ty) => {
+                builder.write_char(' ');
+                write_type(builder, ty)
+            },
+            Option::None => (),
+        }
+    };
+    if value.methods.len() > 0 {
+        newline(builder, 0)
+    } else {
+        ()
+    };
+    builder.write_char('}')
+}
+
 fn write_function(builder: text::StringBuilder, value: Function) -> unit {
     builder.write_string("func ");
     builder.write_string(value.name);
@@ -416,10 +450,43 @@ fn write_function(builder: text::StringBuilder, value: Function) -> unit {
     write_block(builder, value.body, 0)
 }
 
+fn write_method(builder: text::StringBuilder, value: Method) -> unit {
+    builder.write_string("func (");
+    builder.write_string(value.receiver.0);
+    builder.write_char(' ');
+    write_type(builder, value.receiver.1);
+    builder.write_string(") ");
+    builder.write_string(value.name);
+    builder.write_char('(');
+    for index in range(0, value.params.len()) {
+        if index > 0 {
+            builder.write_string(", ")
+        } else {
+            ()
+        };
+        let param = value.params.get(index);
+        builder.write_string(param.0);
+        builder.write_char(' ');
+        write_type(builder, param.1)
+    };
+    builder.write_char(')');
+    match value.ret_ty {
+        Option::Some(ty) => {
+            builder.write_char(' ');
+            write_type(builder, ty)
+        },
+        Option::None => (),
+    };
+    builder.write_char(' ');
+    write_block(builder, value.body, 0)
+}
+
 fn write_item(builder: text::StringBuilder, value: Item) -> unit {
     match value {
+        Item::Interface(value) => write_interface(builder, value),
         Item::Struct(value) => write_struct(builder, value),
         Item::Function(value) => write_function(builder, value),
+        Item::Method(value) => write_method(builder, value),
     }
 }
 

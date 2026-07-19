@@ -1,0 +1,226 @@
+package go_backend;
+
+use gomlang::parser::tast;
+
+fn hashmap_name(key: tast::Type, value: tast::Type) -> string {
+    go_generated_ident(
+        "hashmap_" + go_ident(encode_type(key) + "_" + encode_type(value)) + "_x",
+    )
+}
+
+fn synthetic_option_base(value: tast::Type) -> string {
+    "_goml_option__" + encode_type(value)
+}
+
+fn synthetic_option_items(value: tast::Type) -> Vec[Item] {
+    let result: Vec[Item] = Vec::new();
+    let option_name = go_generated_ident("_goml_synthetic_" + synthetic_option_base(value));
+    let method_name = go_generated_ident("is" + option_name);
+    let some_name = go_generated_ident(option_name + "_Some");
+    let none_name = go_generated_ident(option_name + "_None");
+    let methods: Vec[InterfaceMethod] = Vec::new();
+    methods.push(InterfaceMethod {
+        name: method_name,
+        params: Vec::new(),
+        ret_ty: Option::None,
+    });
+    result.push(Item::Interface(InterfaceDef { name: option_name, methods }));
+    let some_fields: Vec[(string, Type)] = Vec::new();
+    some_fields.push(("_0", lower_type(value)));
+    result.push(Item::Struct(StructDef { name: some_name, fields: some_fields }));
+    result.push(Item::Method(Method {
+        receiver: ("_", Type::Named(some_name)),
+        name: method_name,
+        params: Vec::new(),
+        ret_ty: Option::None,
+        body: Block { stmts: Vec::new() },
+    }));
+    result.push(Item::Struct(StructDef { name: none_name, fields: Vec::new() }));
+    result.push(Item::Method(Method {
+        receiver: ("_", Type::Named(none_name)),
+        name: method_name,
+        params: Vec::new(),
+        ret_ty: Option::None,
+        body: Block { stmts: Vec::new() },
+    }));
+    result
+}
+
+fn hashmap_items(key: tast::Type, value: tast::Type) -> Vec[Item] {
+    let result: Vec[Item] = Vec::new();
+    let name = hashmap_name(key, value);
+    let entry_name = go_generated_ident(name + "_entry");
+    let entry_fields: Vec[(string, Type)] = Vec::new();
+    entry_fields.push(("active", Type::Bool));
+    entry_fields.push(("key", lower_type(key)));
+    entry_fields.push(("value", lower_type(value)));
+    result.push(Item::Struct(StructDef { name: entry_name, fields: entry_fields }));
+    let fields: Vec[(string, Type)] = Vec::new();
+    fields.push((
+        "buckets",
+        Type::Map(Type::Uint64, Type::Slice(Type::Named(entry_name))),
+    ));
+    fields.push(("hashes", Type::Slice(Type::Uint64)));
+    fields.push(("len", Type::Int32));
+    result.push(Item::Struct(StructDef { name, fields }));
+    for item in synthetic_option_items(value) {
+        result.push(item)
+    };
+    result
+}
+
+fn dyn_vtable_name(trait_name: string) -> string {
+    go_generated_ident("dyn__" + trait_name + "_vtable")
+}
+
+fn dyn_object_name(trait_name: string) -> string {
+    go_generated_ident("dyn__" + trait_name)
+}
+
+fn dyn_wrapper_name(trait_name: string, for_ty: tast::Type, method: string) -> string {
+    go_generated_ident(
+        dyn_object_name(trait_name) + "__wrap__" + encode_type(for_ty) + "__" + method,
+    )
+}
+
+pub fn dyn_factory_name(trait_name: string, for_ty: tast::Type) -> string {
+    go_generated_ident(dyn_object_name(trait_name) + "__vtable__" + encode_type(for_ty))
+}
+
+fn dyn_hash_type_items() -> Vec[Item] {
+    let result: Vec[Item] = Vec::new();
+    let fields: Vec[(string, Type)] = Vec::new();
+    let params: Vec[Type] = Vec::new();
+    params.push(Type::Any);
+    fields.push(("hash", Type::Func(params, Type::Uint64)));
+    result.push(Item::Struct(StructDef { name: dyn_vtable_name("Hash"), fields }));
+    let object_fields: Vec[(string, Type)] = Vec::new();
+    object_fields.push(("data", Type::Any));
+    object_fields.push((
+        "vtable",
+        Type::Pointer(Type::Named(dyn_vtable_name("Hash"))),
+    ));
+    result.push(Item::Struct(StructDef { name: dyn_object_name("Hash"), fields: object_fields }));
+    result
+}
+
+fn dyn_hash_coercion_items(for_ty: tast::Type) -> Vec[Item] {
+    let result: Vec[Item] = Vec::new();
+    let wrapper = dyn_wrapper_name("Hash", for_ty, "hash");
+    let wrapper_params: Vec[(string, Type)] = Vec::new();
+    wrapper_params.push(("self", Type::Any));
+    let wrapper_args: Vec[Expr] = Vec::new();
+    wrapper_args.push(Expr::Cast(Expr::Var("self"), lower_type(for_ty)));
+    let wrapper_stmts: Vec[Stmt] = Vec::new();
+    wrapper_stmts.push(Stmt::Return(Option::Some(Expr::Call(
+        Expr::Var(go_ident("trait_impl#Hash#" + encode_type(for_ty) + "#hash")),
+        wrapper_args,
+    ))));
+    result.push(Item::Function(Function {
+        name: wrapper,
+        params: wrapper_params,
+        ret_ty: Option::Some(Type::Uint64),
+        body: Block { stmts: wrapper_stmts },
+    }));
+    let factory_stmts: Vec[Stmt] = Vec::new();
+    let factory_fields: Vec[(string, Expr)] = Vec::new();
+    factory_fields.push(("hash", Expr::Var(wrapper)));
+    factory_stmts.push(Stmt::Return(Option::Some(Expr::Unary(
+        UnaryOp::Address,
+        Expr::StructLiteral(Type::Named(dyn_vtable_name("Hash")), factory_fields),
+    ))));
+    result.push(Item::Function(Function {
+        name: dyn_factory_name("Hash", for_ty),
+        params: Vec::new(),
+        ret_ty: Option::Some(Type::Pointer(Type::Named(dyn_vtable_name("Hash")))),
+        body: Block { stmts: factory_stmts },
+    }));
+    result
+}
+
+fn contains_text(values: Vec[string], expected: string) -> bool {
+    let found = Ref::new(false);
+    for value in values {
+        if value == expected {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+pub fn emit_runtime_items(
+    items: Vec[Item],
+    types: Vec[tast::Type],
+    coercions: Vec[DynCoercion],
+) -> unit {
+    for ty in types {
+        match tast::resolve_type(ty) {
+            tast::Type::Tuple(_) => items.push(Item::Struct(runtime_struct(ty))),
+            _ => (),
+        }
+    };
+    for ty in types {
+        match tast::resolve_type(ty) {
+            tast::Type::VecType(_) => items.push(Item::Struct(runtime_struct(ty))),
+            _ => (),
+        }
+    };
+    for ty in types {
+        match tast::resolve_type(ty) {
+            tast::Type::RefType(_) => items.push(Item::Struct(runtime_struct(ty))),
+            _ => (),
+        }
+    };
+    let options: Vec[string] = Vec::new();
+    for ty in types {
+        match tast::resolve_type(ty) {
+            tast::Type::HashMap(key, value) => {
+                let generated = hashmap_items(key, value);
+                let option = synthetic_option_base(value);
+                let include_option = contains_text(options, option) == false;
+                for index in range(0, generated.len()) {
+                    let item = generated.get(index);
+                    let keep = index < 2 || include_option;
+                    if keep {
+                        items.push(item)
+                    } else {
+                        ()
+                    }
+                };
+                if include_option {
+                    options.push(option)
+                } else {
+                    ()
+                }
+            },
+            _ => (),
+        }
+    };
+    let dyn_traits: Vec[string] = Vec::new();
+    for ty in types {
+        match tast::resolve_type(ty) {
+            tast::Type::Dyn(name) => {
+                if name == "Hash" && contains_text(dyn_traits, name) == false {
+                    for item in dyn_hash_type_items() {
+                        items.push(item)
+                    };
+                    dyn_traits.push(name)
+                } else {
+                    ()
+                }
+            },
+            _ => (),
+        }
+    };
+    for coercion in coercions {
+        if coercion.trait_name == "Hash" {
+            for item in dyn_hash_coercion_items(coercion.for_ty) {
+                items.push(item)
+            }
+        } else {
+            ()
+        }
+    }
+}

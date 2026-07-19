@@ -178,7 +178,30 @@ fn compile_value(value: anf::Value) -> CompiledValue {
             Expr::Unit
         },
         anf::Value::Call(func, args, _) => Expr::Call(compile_imm(func), compile_imms(args)),
-        anf::Value::ToDyn(_, _, expr, _) => compile_imm(expr),
+        anf::Value::ToDyn(trait_name, for_ty, expr, ty) => {
+            let fields: Vec[(string, Expr)] = Vec::new();
+            let data = match tast::resolve_type(for_ty) {
+                tast::Type::Bool
+                | tast::Type::Int8
+                | tast::Type::Int16
+                | tast::Type::Int32
+                | tast::Type::Int64
+                | tast::Type::Uint8
+                | tast::Type::Uint16
+                | tast::Type::Uint32
+                | tast::Type::Uint64
+                | tast::Type::Float32
+                | tast::Type::Float64
+                | tast::Type::Char => Expr::Convert(lower_type(for_ty), compile_imm(expr)),
+                _ => compile_imm(expr),
+            };
+            fields.push(("data", data));
+            fields.push((
+                "vtable",
+                Expr::Call(Expr::Var(dyn_factory_name(trait_name, for_ty)), Vec::new()),
+            ));
+            Expr::StructLiteral(lower_type(ty), fields)
+        },
         anf::Value::DynCall(_, method, receiver, args, _) => {
             let values: Vec[Expr] = Vec::new();
             values.push(compile_imm(receiver));
@@ -791,6 +814,7 @@ fn collect_type(result: Vec[tast::Type], value: tast::Type) -> unit {
             };
             add_collected_type(result, value)
         },
+        tast::Type::Dyn(_) => add_collected_type(result, value),
         tast::Type::Projection(base, _, _) => collect_type(result, base),
         tast::Type::App(base, args) => {
             collect_type(result, base);
@@ -810,7 +834,8 @@ fn collect_type(result: Vec[tast::Type], value: tast::Type) -> unit {
         },
         tast::Type::HashMap(key, value) => {
             collect_type(result, key);
-            collect_type(result, value)
+            collect_type(result, value);
+            add_collected_type(result, tast::Type::HashMap(key, value))
         },
         tast::Type::Func(params, ret_ty) => {
             for param in params {
@@ -953,6 +978,65 @@ fn runtime_struct(value: tast::Type) -> StructDef {
     }
 }
 
+fn add_dyn_coercion(
+    result: Vec[DynCoercion],
+    trait_name: string,
+    for_ty: tast::Type,
+) -> unit {
+    let found = Ref::new(false);
+    for value in result {
+        if value.trait_name == trait_name && encode_type(value.for_ty) == encode_type(for_ty) {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    if found.get() == false {
+        result.push(DynCoercion { trait_name, for_ty })
+    } else {
+        ()
+    }
+}
+
+fn collect_dyn_value(result: Vec[DynCoercion], value: anf::Value) -> unit {
+    match value {
+        anf::Value::ToDyn(trait_name, for_ty, _, _) => {
+            add_dyn_coercion(result, trait_name, for_ty)
+        },
+        _ => (),
+    }
+}
+
+fn collect_dyn_block(result: Vec[DynCoercion], value: anf::Block) -> unit {
+    for bind in value.binds {
+        match bind {
+            anf::Bind::Let(value) => collect_dyn_value(result, value.value),
+            anf::Bind::Join(value) => collect_dyn_block(result, value.body),
+            anf::Bind::JoinRec(values) => {
+                for value in values {
+                    collect_dyn_block(result, value.body)
+                }
+            },
+        }
+    };
+    match value.term {
+        anf::Term::If(_, then_, else_, _) => {
+            collect_dyn_block(result, then_);
+            collect_dyn_block(result, else_)
+        },
+        anf::Term::Match(_, arms, default, _) => {
+            for arm in arms {
+                collect_dyn_block(result, arm.body)
+            };
+            match default {
+                Option::Some(body) => collect_dyn_block(result, body),
+                Option::None => (),
+            }
+        },
+        _ => (),
+    }
+}
+
 fn compile_function(value: anf::Function) -> Function {
     let joins: Vec[anf::JoinBind] = Vec::new();
     collect_joins_block(joins, value.body);
@@ -971,6 +1055,7 @@ fn compile_function(value: anf::Function) -> Function {
 pub fn lower(value: anf::File) -> File {
     let items: Vec[Item] = Vec::new();
     let types: Vec[tast::Type] = Vec::new();
+    let coercions: Vec[DynCoercion] = Vec::new();
     let has_main = Ref::new(false);
     for function in value.functions {
         for param in function.params {
@@ -978,15 +1063,14 @@ pub fn lower(value: anf::File) -> File {
         };
         collect_type(types, function.ret_ty);
         collect_block_types(types, function.body);
+        collect_dyn_block(coercions, function.body);
         if function.name == "main" {
             has_main.set(true)
         } else {
             ()
         }
     };
-    for ty in types {
-        items.push(Item::Struct(runtime_struct(ty)))
-    };
+    emit_runtime_items(items, types, coercions);
     for function in value.functions {
         items.push(Item::Function(compile_function(function)))
     };
@@ -1002,5 +1086,5 @@ pub fn lower(value: anf::File) -> File {
     } else {
         ()
     };
-    File { items }
+    prune_functions(File { items })
 }

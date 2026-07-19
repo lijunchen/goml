@@ -1,7 +1,10 @@
 package go_backend;
 
+use gomlang::parser::tast;
+
 pub enum Type {
     Void,
+    Any,
     Unit,
     Bool,
     Int8,
@@ -103,6 +106,17 @@ pub struct StructDef {
     fields: Vec[(string, Type)],
 }
 
+pub struct InterfaceMethod {
+    name: string,
+    params: Vec[Type],
+    ret_ty: Option[Type],
+}
+
+pub struct InterfaceDef {
+    name: string,
+    methods: Vec[InterfaceMethod],
+}
+
 pub struct Function {
     name: string,
     params: Vec[(string, Type)],
@@ -110,11 +124,26 @@ pub struct Function {
     body: Block,
 }
 
+pub struct Method {
+    receiver: (string, Type),
+    name: string,
+    params: Vec[(string, Type)],
+    ret_ty: Option[Type],
+    body: Block,
+}
+
 pub enum Item {
+    Interface(InterfaceDef),
     Struct(StructDef),
     Function(Function),
+    Method(Method),
 }
 
 pub struct File {
     items: Vec[Item],
+}
+
+pub struct DynCoercion {
+    trait_name: string,
+    for_ty: tast::Type,
 }

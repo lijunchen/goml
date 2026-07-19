@@ -1,0 +1,150 @@
+package go_backend;
+
+fn name_present(values: Vec[string], expected: string) -> bool {
+    let found = Ref::new(false);
+    for value in values {
+        if value == expected {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+fn add_reachable(values: Vec[string], value: string) -> unit {
+    if name_present(values, value) == false {
+        values.push(value)
+    } else {
+        ()
+    }
+}
+
+fn collect_expr_names(result: Vec[string], value: Expr) -> unit {
+    match value {
+        Expr::Var(name) => add_reachable(result, name),
+        Expr::Call(func, args) => {
+            collect_expr_names(result, func);
+            for arg in args {
+                collect_expr_names(result, arg)
+            }
+        },
+        Expr::Unary(_, expr) => collect_expr_names(result, expr),
+        Expr::Binary(_, lhs, rhs) => {
+            collect_expr_names(result, lhs);
+            collect_expr_names(result, rhs)
+        },
+        Expr::Field(expr, _) => collect_expr_names(result, expr),
+        Expr::Index(expr, index) => {
+            collect_expr_names(result, expr);
+            collect_expr_names(result, index)
+        },
+        Expr::Slice(expr, start, end) => {
+            collect_expr_names(result, expr);
+            collect_expr_names(result, start);
+            collect_expr_names(result, end)
+        },
+        Expr::Cast(expr, _) | Expr::Convert(_, expr) => collect_expr_names(result, expr),
+        Expr::StructLiteral(_, fields) => {
+            for field in fields {
+                collect_expr_names(result, field.1)
+            }
+        },
+        Expr::ArrayLiteral(_, values) => {
+            for value in values {
+                collect_expr_names(result, value)
+            }
+        },
+        Expr::Nil
+        | Expr::Unit
+        | Expr::Bool(_)
+        | Expr::Int(_)
+        | Expr::Float(_)
+        | Expr::String(_) => (),
+    }
+}
+
+fn collect_stmt_names(result: Vec[string], value: Stmt) -> unit {
+    match value {
+        Stmt::Expr(expr) | Stmt::Go(expr) => collect_expr_names(result, expr),
+        Stmt::Var(_, _, initial) => match initial {
+            Option::Some(expr) => collect_expr_names(result, expr),
+            Option::None => (),
+        },
+        Stmt::Assign(_, expr) => collect_expr_names(result, expr),
+        Stmt::Return(expr) => match expr {
+            Option::Some(expr) => collect_expr_names(result, expr),
+            Option::None => (),
+        },
+        Stmt::If(cond, then_, else_) => {
+            collect_expr_names(result, cond);
+            collect_block_names(result, then_);
+            match else_ {
+                Option::Some(body) => collect_block_names(result, body),
+                Option::None => (),
+            }
+        },
+        Stmt::Loop(body) | Stmt::LabeledLoop(_, body) => collect_block_names(result, body),
+        Stmt::Switch(expr, cases, default) => {
+            collect_expr_names(result, expr);
+            for case in cases {
+                collect_expr_names(result, case.value);
+                collect_block_names(result, case.body)
+            };
+            match default {
+                Option::Some(body) => collect_block_names(result, body),
+                Option::None => (),
+            }
+        },
+        Stmt::Break
+        | Stmt::BreakLabel(_)
+        | Stmt::Continue
+        | Stmt::Unreachable => (),
+    }
+}
+
+fn collect_block_names(result: Vec[string], value: Block) -> unit {
+    for stmt in value.stmts {
+        collect_stmt_names(result, stmt)
+    }
+}
+
+pub fn prune_functions(value: File) -> File {
+    let reachable: Vec[string] = Vec::new();
+    let expanded: Vec[string] = Vec::new();
+    add_reachable(reachable, "main");
+    let changed = Ref::new(true);
+    while changed.get() {
+        changed.set(false);
+        for item in value.items {
+            match item {
+                Item::Function(function) => {
+                    if name_present(reachable, function.name)
+                        && name_present(expanded, function.name) == false
+                    {
+                        add_reachable(expanded, function.name);
+                        collect_block_names(reachable, function.body);
+                        changed.set(true)
+                    } else {
+                        ()
+                    }
+                },
+                _ => (),
+            }
+        }
+    };
+    let items: Vec[Item] = Vec::new();
+    for item in value.items {
+        match item {
+            Item::Function(function) => {
+                if name_present(reachable, function.name) {
+                    items.push(Item::Function(function))
+                } else {
+                    ()
+                }
+            },
+            _ => items.push(item),
+        }
+    };
+    File { items }
+}
