@@ -1023,6 +1023,24 @@ fn compile_branch_to_join(
     Block { stmts }
 }
 
+fn match_scrutinee_is_unit(value: anf::Imm) -> bool {
+    match tast::resolve_type(anf::imm_type(value)) {
+        tast::Type::Unit => true,
+        _ => false,
+    }
+}
+
+fn first_match_body(
+    arms: Vec[anf::Arm],
+    default: Option[anf::Block],
+) -> Option[anf::Block] {
+    if arms.len() > 0 {
+        Option::Some(arms.get(0).body)
+    } else {
+        default
+    }
+}
+
 fn compile_match_leaf(
     env: LowerEnv,
     scrut: anf::Imm,
@@ -1030,7 +1048,12 @@ fn compile_match_leaf(
     default: Option[anf::Block],
 ) -> Vec[Stmt] {
     let result: Vec[Stmt] = Vec::new();
-    if match_uses_types(env, arms) {
+    if match_scrutinee_is_unit(scrut) {
+        match first_match_body(arms, default) {
+            Option::Some(body) => append_stmts(result, compile_block(env, body).stmts),
+            Option::None => append_stmts(result, non_exhaustive_block().stmts),
+        }
+    } else if match_uses_types(env, arms) {
         let cases: Vec[TypeSwitchCase] = Vec::new();
         for arm in arms {
             match arm_type(env, arm.lhs) {
@@ -1130,7 +1153,15 @@ fn compile_term_to_join(
             Option::Some(compile_branch_to_join(env, else_, target, join)),
         )),
         anf::Term::Match(scrut, arms, default, _) => {
-            if match_uses_types(env, arms) {
+            if match_scrutinee_is_unit(scrut) {
+                match first_match_body(arms, default) {
+                    Option::Some(body) => append_stmts(
+                        result,
+                        compile_branch_to_join(env, body, target, join).stmts,
+                    ),
+                    Option::None => append_stmts(result, non_exhaustive_block().stmts),
+                }
+            } else if match_uses_types(env, arms) {
                 let cases: Vec[TypeSwitchCase] = Vec::new();
                 for arm in arms {
                     match arm_type(env, arm.lhs) {
@@ -1622,7 +1653,15 @@ fn compile_loop_term_leaf(
             Option::Some(compile_loop_block(env, else_, loop_name, exit_name, label)),
         )),
         anf::Term::Match(scrut, arms, default, _) => {
-            if match_uses_types(env, arms) {
+            if match_scrutinee_is_unit(scrut) {
+                match first_match_body(arms, default) {
+                    Option::Some(body) => append_stmts(
+                        result,
+                        compile_loop_block(env, body, loop_name, exit_name, label).stmts,
+                    ),
+                    Option::None => append_stmts(result, non_exhaustive_block().stmts),
+                }
+            } else if match_uses_types(env, arms) {
                 let cases: Vec[TypeSwitchCase] = Vec::new();
                 for arm in arms {
                     match arm_type(env, arm.lhs) {
@@ -1726,7 +1765,23 @@ fn compile_loop_term_to_join(
             )),
         )),
         anf::Term::Match(scrut, arms, default, _) => {
-            if match_uses_types(env, arms) {
+            if match_scrutinee_is_unit(scrut) {
+                match first_match_body(arms, default) {
+                    Option::Some(body) => append_stmts(
+                        result,
+                        compile_loop_branch_to_join(
+                            env,
+                            body,
+                            target,
+                            join,
+                            loop_name,
+                            exit_name,
+                            label,
+                        ).stmts,
+                    ),
+                    Option::None => append_stmts(result, non_exhaustive_block().stmts),
+                }
+            } else if match_uses_types(env, arms) {
                 let cases: Vec[TypeSwitchCase] = Vec::new();
                 for arm in arms {
                     match arm_type(env, arm.lhs) {
