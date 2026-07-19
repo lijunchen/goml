@@ -92,6 +92,15 @@ fn normalizes_nested_associated_iterator_types() -> unit {
 }
 
 #[test]
+fn transfers_projection_equalities_between_generic_parameters() -> unit {
+    let source = "trait Mark { fn marked(Self) -> string; } trait Source { type Item; fn get(Self) -> Self::Item; } struct Left { value: int32 } struct Right { value: int32 } impl Mark for int32 { fn marked(self: int32) -> string { self.to_string() } } impl Source for Left { type Item = int32; fn get(self: Left) -> int32 { self.value } } impl Source for Right { type Item = int32; fn get(self: Right) -> int32 { self.value } } fn combine[A: Source, B: Source](left: A, right: B) -> string where A::Item == B::Item, B::Item: Mark { Source::get(left).marked() + Source::get(right).marked() } fn main() -> unit { println(combine(Left { value: 1 }, Right { value: 2 })) }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(output, "combine__A_Left__B_Right"));
+    testing::assert(string_contains(output, "trait_impl#Mark#int32#marked"));
+    testing::assert(!string_contains(output, "combine(Left"))
+}
+
+#[test]
 fn normalizes_projected_trait_impl_calls() -> unit {
     let source = "trait Source { type Item; fn get(Self) -> Self::Item; } trait Pick[T] { fn pick(Self) -> T; } impl[S: Source] Pick[S::Item] for S { fn pick(self: S) -> S::Item { Source::get(self) } } struct Value { value: int32 } impl Source for Value { type Item = int32; fn get(self: Value) -> int32 { self.value } } fn main() -> unit { let direct: int32 = (Value { value: 41 }).pick(); println(direct) }";
     let output = encode(lower_source(source));
