@@ -115,3 +115,12 @@ fn protects_user_types_from_ref_runtime_names() -> unit {
         "package main\n\ntype ref_int32_x struct {\n    value int32\n}\n\ntype _goml_user_ref_int32_x struct {\n    value int32\n}\n\nfunc main0() struct{} {\n    var c__0 _goml_user_ref_int32_x = _goml_user_ref_int32_x{\n        value: 2,\n    }\n    var r__1 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_int32_r__i_new(3)\n    var t2 int32 = c__0.value\n    var t3 int32 = _goml_m_inherent_i_Ref_i_Ref_l_int32_r__i_get(r__1)\n    var t4 int32 = t2 + t3\n    _goml_m_println(t4)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
     )
 }
+
+#[test]
+fn emits_runtime_types_nested_in_enum_fields() -> unit {
+    let source = "trait Display { fn show(Self) -> string; } impl Display for int32 { fn show(self: int32) -> string { self.to_string() } } enum Boxed[T] { One((T, int32)), } fn build() -> int32 { let _: Boxed[dyn Display] = Boxed::One((return 7i32, 0i32)); 0i32 } fn main() -> unit { println(build().to_string()) }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "package main\n\ntype Tuple2_12dyn__Display_5int32 struct {\n    _0 dyn__Display\n    _1 int32\n}\n\ntype Boxed__dynDisplay interface {\n    isBoxed__dynDisplay()\n}\n\ntype One struct {\n    _0 Tuple2_12dyn__Display_5int32\n}\n\nfunc (_ One) isBoxed__dynDisplay() {}\n\ntype dyn__Display_vtable struct {\n    show func(any) string\n}\n\ntype dyn__Display struct {\n    data any\n    vtable *dyn__Display_vtable\n}\n\nfunc build() int32 {\n    var retv5 int32\n    retv5 = 7\n    return retv5\n}\n\nfunc main0() struct{} {\n    var t7 int32 = build()\n    var t8 string = _goml_m_inherent_i_int32_i_int32_i_to__string(t7)\n    _goml_m_println(t8)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
+    )
+}
