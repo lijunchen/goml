@@ -29,6 +29,31 @@ fn primitive_text(value: Primitive) -> string {
 }
 
 #[test]
+fn infers_shift_operands_independently() -> unit {
+    let file = checked_file("fn shift(value: uint8) -> uint8 { value << 4 }");
+    match file.items.get(0) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Binary(ast::BinaryOp::Shl, left, right, ty)) => {
+                match resolve_type(expr_type(left)) {
+                    Type::Uint8 => (),
+                    _ => testing::fail("expected uint8 left operand"),
+                };
+                match resolve_type(expr_type(right)) {
+                    Type::Int32 => (),
+                    _ => testing::fail("expected int32 shift count"),
+                };
+                match resolve_type(ty) {
+                    Type::Uint8 => (),
+                    _ => testing::fail("expected uint8 shift result"),
+                }
+            },
+            _ => testing::fail("expected shift expression"),
+        },
+        _ => testing::fail("expected function"),
+    }
+}
+
+#[test]
 fn infers_generic_function_calls() -> unit {
     let source = "fn id[T](value: T) -> T { value } fn main() -> string { id(\"ok\") }";
     let file = checked_file(source);
