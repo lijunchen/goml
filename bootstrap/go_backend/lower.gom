@@ -583,6 +583,57 @@ fn loop_label(value: string) -> string {
     "Loop_" + go_local_ident(value)
 }
 
+fn term_reaches_target(
+    env: LowerEnv,
+    value: anf::Term,
+    target: string,
+    visited: Vec[string],
+) -> bool {
+    match value {
+        anf::Term::Jump(name, _, _) => {
+            if name == target {
+                true
+            } else if contains_string(visited, name) {
+                false
+            } else {
+                match find_join(env.joins, name) {
+                    Option::Some(join) => {
+                        visited.push(name);
+                        term_reaches_target(env, join.body.term, target, visited)
+                    },
+                    Option::None => false,
+                }
+            }
+        },
+        anf::Term::If(_, then_, else_, _) => {
+            term_reaches_target(env, then_.term, target, visited)
+                || term_reaches_target(env, else_.term, target, visited)
+        },
+        anf::Term::Match(_, arms, default, _) => {
+            let reaches = Ref::new(false);
+            for arm in arms {
+                if term_reaches_target(env, arm.body.term, target, visited) {
+                    reaches.set(true)
+                } else {
+                    ()
+                }
+            };
+            match default {
+                Option::Some(body) => {
+                    if term_reaches_target(env, body.term, target, visited) {
+                        reaches.set(true)
+                    } else {
+                        ()
+                    }
+                },
+                Option::None => (),
+            };
+            reaches.get()
+        },
+        anf::Term::Return(_) | anf::Term::Unreachable(_) => false,
+    }
+}
+
 fn find_loop_exit(value: anf::Term, loop_name: string) -> Option[string] {
     match value {
         anf::Term::If(_, then_, else_, _) => {
@@ -816,21 +867,29 @@ fn compile_loop_block(
 fn compile_joinrec(env: LowerEnv, values: Vec[anf::JoinBind]) -> JoinRecResult {
     let stmts: Vec[Stmt] = Vec::new();
     let loop_names: Vec[string] = Vec::new();
+    let single = values.len() == 1;
     for value in values {
-        match find_loop_exit(value.body.term, value.name) {
-            Option::Some(exit_name) => {
-                let label = loop_label(value.name);
-                stmts.push(Stmt::LabeledLoop(
-                    label,
-                    compile_loop_block(env, value.body, value.name, exit_name, label),
-                ));
-                match find_join(env.joins, exit_name) {
-                    Option::Some(exit) => append_stmts(stmts, compile_block(env, exit.body).stmts),
-                    Option::None => (),
-                };
-                loop_names.push(value.name)
-            },
-            Option::None => stmts.push(Stmt::Unreachable),
+        if single && term_reaches_target(env, value.body.term, value.name, Vec::new()) == false {
+            append_stmts(stmts, compile_block(env, value.body).stmts);
+            loop_names.push(value.name)
+        } else {
+            match find_loop_exit(value.body.term, value.name) {
+                Option::Some(exit_name) => {
+                    let label = loop_label(value.name);
+                    stmts.push(Stmt::LabeledLoop(
+                        label,
+                        compile_loop_block(env, value.body, value.name, exit_name, label),
+                    ));
+                    match find_join(env.joins, exit_name) {
+                        Option::Some(exit) => {
+                            append_stmts(stmts, compile_block(env, exit.body).stmts)
+                        },
+                        Option::None => (),
+                    };
+                    loop_names.push(value.name)
+                },
+                Option::None => stmts.push(Stmt::Unreachable),
+            }
         }
     };
     JoinRecResult { stmts, loop_names }
