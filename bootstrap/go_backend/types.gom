@@ -3,6 +3,20 @@ package go_backend;
 use gomlang::parser::tast;
 use std::text;
 
+pub fn compact_type(value: tast::Type) -> string {
+    let type_builder = text::StringBuilder::new();
+    tast::write_type(type_builder, value);
+    let builder = text::StringBuilder::new();
+    for character in type_builder.finish().chars() {
+        if character == ' ' || character == '\n' || character == '\r' || character == '\t' {
+            ()
+        } else {
+            builder.write_char(character)
+        }
+    };
+    builder.finish()
+}
+
 fn join_type_parts(values: Vec[tast::Type]) -> string {
     let builder = text::StringBuilder::new();
     for index in range(0, values.len()) {
