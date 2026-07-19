@@ -1065,6 +1065,33 @@ fn ensure_trait_call_instance(
     )
 }
 
+fn ensure_dyn_trait_impls(
+    ctx: SpecializeCtx,
+    trait_name: string,
+    for_ty: tast::Type,
+) -> unit {
+    for function in ctx.functions {
+        match function.trait_impl {
+            Option::Some(metadata) => if function.generics.len() > 0
+                && metadata.trait_ref.name == trait_name
+            {
+                let bindings = Vec::new();
+                if unify_type(metadata.for_ty, for_ty, bindings)
+                    && complete_bindings(ctx, function, bindings)
+                {
+                    ensure_instance(ctx, function.name, bindings);
+                    ()
+                } else {
+                    ()
+                }
+            } else {
+                ()
+            },
+            Option::None => (),
+        }
+    }
+}
+
 fn specialize_var(
     ctx: SpecializeCtx,
     bindings: Vec[TypeBinding],
@@ -1189,12 +1216,16 @@ fn specialize_expr(
             specialize_exprs(ctx, bindings, args),
             substitute_type(ty, bindings),
         ),
-        core::Expr::ToDyn(trait_name, for_ty, expr, ty) => core::Expr::ToDyn(
-            trait_name,
-            substitute_type(for_ty, bindings),
-            specialize_expr(ctx, bindings, expr),
-            substitute_type(ty, bindings),
-        ),
+        core::Expr::ToDyn(trait_name, for_ty, expr, ty) => {
+            let for_ty = substitute_type(for_ty, bindings);
+            ensure_dyn_trait_impls(ctx, trait_name, for_ty);
+            core::Expr::ToDyn(
+                trait_name,
+                for_ty,
+                specialize_expr(ctx, bindings, expr),
+                substitute_type(ty, bindings),
+            )
+        },
         core::Expr::DynCall(trait_name, method_name, receiver, args, ty) => {
             core::Expr::DynCall(
                 trait_name,
