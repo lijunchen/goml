@@ -55,6 +55,7 @@ fn collect_expr_names(result: Vec[string], value: Expr) -> unit {
                 collect_expr_names(result, value)
             }
         },
+        Expr::FuncLit(_, _, body) => collect_block_names(result, body),
         Expr::Nil
         | Expr::Unit
         | Expr::Bool(_)

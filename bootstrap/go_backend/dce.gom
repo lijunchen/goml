@@ -88,12 +88,76 @@ fn add_expr_uses(values: Vec[string], value: Expr) -> unit {
                 add_expr_uses(values, item)
             }
         },
+        Expr::FuncLit(params, _, body) => {
+            let uses: Vec[string] = Vec::new();
+            add_block_uses(uses, body);
+            for param in params {
+                remove_name(uses, param.0)
+            };
+            add_names(values, uses)
+        },
         Expr::Nil
         | Expr::Unit
         | Expr::Bool(_)
         | Expr::Int(_)
         | Expr::Float(_)
         | Expr::String(_) => (),
+    }
+}
+
+fn add_stmt_uses(values: Vec[string], value: Stmt) -> unit {
+    match value {
+        Stmt::Expr(expr) | Stmt::Go(expr) => add_expr_uses(values, expr),
+        Stmt::Var(_, _, initial) => match initial {
+            Option::Some(expr) => add_expr_uses(values, expr),
+            Option::None => (),
+        },
+        Stmt::Assign(_, expr) => add_expr_uses(values, expr),
+        Stmt::Return(expr) => match expr {
+            Option::Some(expr) => add_expr_uses(values, expr),
+            Option::None => (),
+        },
+        Stmt::If(cond, then_, else_) => {
+            add_expr_uses(values, cond);
+            add_block_uses(values, then_);
+            match else_ {
+                Option::Some(body) => add_block_uses(values, body),
+                Option::None => (),
+            }
+        },
+        Stmt::Loop(body) | Stmt::LabeledLoop(_, body) => add_block_uses(values, body),
+        Stmt::Switch(expr, cases, default) => {
+            add_expr_uses(values, expr);
+            for case in cases {
+                add_expr_uses(values, case.value);
+                add_block_uses(values, case.body)
+            };
+            match default {
+                Option::Some(body) => add_block_uses(values, body),
+                Option::None => (),
+            }
+        },
+        Stmt::TypeSwitch(expr, cases, default) => {
+            add_expr_uses(values, expr);
+            for case in cases {
+                add_block_uses(values, case.body)
+            };
+            match default {
+                Option::Some(body) => add_block_uses(values, body),
+                Option::None => (),
+            }
+        },
+        Stmt::Break
+        | Stmt::BreakLabel(_)
+        | Stmt::Continue
+        | Stmt::Panic(_)
+        | Stmt::Unreachable => (),
+    }
+}
+
+fn add_block_uses(values: Vec[string], value: Block) -> unit {
+    for stmt in value.stmts {
+        add_stmt_uses(values, stmt)
     }
 }
 
@@ -179,6 +243,7 @@ fn expr_has_side_effects(value: Expr) -> bool {
             };
             found.get()
         },
+        Expr::FuncLit(_, _, _) => false,
         Expr::Nil
         | Expr::Unit
         | Expr::Var(_)

@@ -201,8 +201,59 @@ fn enum_marker_name(go_name: string) -> string {
     go_generated_ident("is" + go_name)
 }
 
-fn variant_go_name(owner_name: string, variant_name: string) -> string {
+fn qualified_variant_go_name(owner_name: string, variant_name: string) -> string {
     go_user_type_name(owner_name) + "_" + go_ident(variant_name)
+}
+
+fn enum_has_variant(value: tast::EnumDef, variant_name: string) -> bool {
+    let found = Ref::new(false);
+    for variant in value.variants {
+        if variant.name == variant_name {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+fn variant_instance_count(
+    enums: Vec[tast::EnumDef],
+    instances: Vec[core::TypeInstance],
+    variant_name: string,
+) -> int32 {
+    let count = Ref::new(0);
+    for definition in enums {
+        if enum_has_variant(definition, variant_name) {
+            if definition.generics.len() == 0 {
+                count.set(count.get() + 1)
+            } else {
+                for instance in instances {
+                    if instance.base_name == definition.name {
+                        count.set(count.get() + 1)
+                    } else {
+                        ()
+                    }
+                }
+            }
+        } else {
+            ()
+        }
+    };
+    count.get()
+}
+
+fn variant_go_name(
+    owner_name: string,
+    variant_name: string,
+    enums: Vec[tast::EnumDef],
+    instances: Vec[core::TypeInstance],
+) -> string {
+    if variant_instance_count(enums, instances, variant_name) > 1 {
+        qualified_variant_go_name(owner_name, variant_name)
+    } else {
+        go_ident(variant_name)
+    }
 }
 
 fn emit_enum_instance(
@@ -266,7 +317,12 @@ fn emit_enum_instance(
                             lower_type(field_types.get(field_index)),
                         ))
                     };
-                    let variant_name = variant_go_name(instance.name, variant.name);
+                    let variant_name = variant_go_name(
+                        instance.name,
+                        variant.name,
+                        enums,
+                        instances,
+                    );
                     items.push(Item::Struct(StructDef { name: variant_name, fields }));
                     items.push(Item::Method(Method {
                         receiver: ("_", Type::Named(variant_name)),
@@ -279,6 +335,7 @@ fn emit_enum_instance(
                         owner_name: instance.name,
                         tag: index,
                         variant_name,
+                        field_types,
                     })
                 }
             },
@@ -329,6 +386,29 @@ pub fn emit_user_type_items(
     };
     for ty in types {
         match tast::resolve_type(ty) {
+            tast::Type::Con(name) => match find_struct(structs, name) {
+                Option::Some(definition) => {
+                    if definition.generics.len() == 0 && contains_text(emitted, name) == false {
+                        let fields: Vec[(string, Type)] = Vec::new();
+                        for field in definition.fields {
+                            fields.push((go_ident(field.0), lower_type(field.1)))
+                        };
+                        items.push(Item::Struct(StructDef {
+                            name: go_user_type_name(name),
+                            fields,
+                        }));
+                        emitted.push(name)
+                    } else {
+                        ()
+                    }
+                },
+                Option::None => (),
+            },
+            _ => (),
+        }
+    };
+    for ty in types {
+        match tast::resolve_type(ty) {
             tast::Type::Con(name) => match find_enum(enums, name) {
                 Option::Some(definition) => {
                     if definition.generics.len() == 0 {
@@ -352,29 +432,6 @@ pub fn emit_user_type_items(
             },
             _ => (),
         }
-    };
-    for ty in types {
-        match tast::resolve_type(ty) {
-            tast::Type::Con(name) => match find_struct(structs, name) {
-                Option::Some(definition) => {
-                    if definition.generics.len() == 0 && contains_text(emitted, name) == false {
-                        let fields: Vec[(string, Type)] = Vec::new();
-                        for field in definition.fields {
-                            fields.push((go_ident(field.0), lower_type(field.1)))
-                        };
-                        items.push(Item::Struct(StructDef {
-                            name: go_user_type_name(name),
-                            fields,
-                        }));
-                        emitted.push(name)
-                    } else {
-                        ()
-                    }
-                },
-                Option::None => (),
-            },
-            _ => (),
-        }
     }
 }
 
@@ -383,12 +440,23 @@ pub fn variant_type(
     owner_ty: tast::Type,
     tag: int32,
 ) -> Option[Type] {
+    match find_variant_info(variants, owner_ty, tag) {
+        Option::Some(value) => Option::Some(Type::Named(value.variant_name)),
+        Option::None => Option::None,
+    }
+}
+
+pub fn find_variant_info(
+    variants: Vec[VariantInfo],
+    owner_ty: tast::Type,
+    tag: int32,
+) -> Option[VariantInfo] {
     match tast::resolve_type(owner_ty) {
         tast::Type::Con(owner_name) => {
-            let result: Ref[Option[Type]] = Ref::new(Option::None);
+            let result: Ref[Option[VariantInfo]] = Ref::new(Option::None);
             for value in variants {
                 if value.owner_name == owner_name && value.tag == tag {
-                    result.set(Option::Some(Type::Named(value.variant_name)))
+                    result.set(Option::Some(value))
                 } else {
                     ()
                 }
@@ -420,7 +488,7 @@ pub fn constructor_type(value: tast::Constructor) -> Type {
     if value.is_struct || separator < 0 {
         Type::Named(go_user_type_name(value.name))
     } else {
-        Type::Named(variant_go_name(
+        Type::Named(qualified_variant_go_name(
             value.name.byte_slice(0, separator),
             value.name.byte_slice(separator + 2, value.name.byte_len()),
         ))

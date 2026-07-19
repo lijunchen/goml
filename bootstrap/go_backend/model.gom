@@ -74,6 +74,7 @@ pub enum Expr {
     Convert(Type, Expr),
     StructLiteral(Type, Vec[(string, Expr)]),
     ArrayLiteral(Type, Vec[Expr]),
+    FuncLit(Vec[(string, Type)], Type, Block),
 }
 
 pub struct Block {
@@ -159,4 +160,12 @@ pub struct VariantInfo {
     owner_name: string,
     tag: int32,
     variant_name: string,
+    field_types: Vec[tast::Type],
+}
+
+pub struct ClosureInfo {
+    struct_name: string,
+    apply_name: string,
+    params: Vec[tast::Type],
+    ret_ty: tast::Type,
 }

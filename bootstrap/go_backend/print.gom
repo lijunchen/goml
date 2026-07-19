@@ -258,6 +258,24 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int32) -> unit 
             write_exprs(builder, values, indent);
             builder.write_char('}')
         },
+        Expr::FuncLit(params, ret_ty, body) => {
+            builder.write_string("func(");
+            for index in range(0, params.len()) {
+                if index > 0 {
+                    builder.write_string(", ")
+                } else {
+                    ()
+                };
+                let param = params.get(index);
+                builder.write_string(param.0);
+                builder.write_char(' ');
+                write_type(builder, param.1)
+            };
+            builder.write_string(") ");
+            write_type(builder, ret_ty);
+            builder.write_char(' ');
+            write_block(builder, body, indent)
+        },
     }
 }
 
