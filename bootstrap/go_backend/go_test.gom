@@ -360,3 +360,18 @@ fn hoists_continuations_through_nested_matches() -> unit {
         "package main\n\ntype T interface {\n    isT()\n}\n\ntype A struct {}\n\nfunc (_ A) isT() {}\n\ntype B struct {\n    _0 bool\n    _1 bool\n}\n\nfunc (_ B) isT() {}\n\nfunc test(t__0 T) struct{} {\n    switch t__0.(type) {\n    case A:\n        var t8 string = _goml_m_inherent_i_int32_i_int32_i_to__string(1)\n        _goml_m_println(t8)\n    case B:\n        var x0 bool = t__0.(B)._0\n        var x1 bool = t__0.(B)._1\n        switch x1 {\n        case true:\n            switch x0 {\n            case true:\n                var t12 string = _goml_m_inherent_i_int32_i_int32_i_to__string(4)\n                _goml_m_println(t12)\n            case false:\n                var t14 string = _goml_m_inherent_i_int32_i_int32_i_to__string(3)\n                _goml_m_println(t14)\n            default:\n                panic(\"non-exhaustive match\")\n            }\n        case false:\n            switch x0 {\n            case true:\n                var t17 string = _goml_m_inherent_i_int32_i_int32_i_to__string(4)\n                _goml_m_println(t17)\n            case false:\n                var t19 string = _goml_m_inherent_i_int32_i_int32_i_to__string(2)\n                _goml_m_println(t19)\n            default:\n                panic(\"non-exhaustive match\")\n            }\n        default:\n            panic(\"non-exhaustive match\")\n        }\n    default:\n        panic(\"non-exhaustive match\")\n    }\n    return struct{}{}\n}\n\nfunc main0() struct{} {\n    var t22 T = B{\n        _0: true,\n        _1: true,\n    }\n    test(t22)\n    var t23 T = B{\n        _0: false,\n        _1: true,\n    }\n    test(t23)\n    var t24 T = B{\n        _0: false,\n        _1: false,\n    }\n    test(t24)\n    test(A{})\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
     )
 }
+
+#[test]
+fn emits_string_hooks_and_vec_new_helpers() -> unit {
+    let source = "fn main() -> unit { let values: Vec[int32] = vec_new(); string_print(values.len().to_string()); string_println(\"!\"); let bytes: Vec[uint8] = Vec::new(); let (_, text) = string_from_utf8(bytes); string_print(text); let parts: Vec[string] = Vec::new(); string_println(string_concat(parts)); }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(
+        output,
+        "import (\n    _goml_fmt \"fmt\"\n    _goml_strings \"strings\"\n    _goml_utf8 \"unicode/utf8\"\n)",
+    ));
+    testing::assert(string_contains(output, "func _goml_runtime_core_string_from_utf8("));
+    testing::assert(string_contains(output, "func _goml_runtime_core_string_concat("));
+    testing::assert(string_contains(output, "func _goml_runtime_core_string_print("));
+    testing::assert(string_contains(output, "func _goml_runtime_core_string_println("));
+    testing::assert(string_contains(output, "func vec_new__Vec_5int32()"))
+}
