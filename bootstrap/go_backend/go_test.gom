@@ -307,6 +307,15 @@ fn deduplicates_shadowed_enum_variant_owners() -> unit {
 }
 
 #[test]
+fn materializes_numeric_runtime_operands() -> unit {
+    let source = "fn main() -> unit { let a: uint8 = 13u8 % 5u8; let b: uint8 = 1u8 << 7u32; let c: uint8 = ~0u8; let d: uint8 = 511u16 as uint8; println(a); println(b); println(c); println(d); }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "package main\n\nfunc main0() struct{} {\n    var a__0_lhs uint8 = 13\n    var a__0_rhs uint8 = 5\n    var a__0 uint8 = a__0_lhs % a__0_rhs\n    var b__1_lhs uint8 = 1\n    var b__1_rhs uint32 = 7\n    var b__1 uint8 = b__1_lhs << b__1_rhs\n    var c__2_operand uint8 = 0\n    var c__2 uint8 = ^c__2_operand\n    var d__3_source uint16 = 511\n    var d__3 uint8 = uint8(uint16(d__3_source))\n    _goml_m_println(a__0)\n    _goml_m_println(b__1)\n    _goml_m_println(c__2)\n    _goml_m_println(d__3)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
+    )
+}
+
+#[test]
 fn disambiguates_dyn_helper_names() -> unit {
     let source = "trait A { fn foo(Self) -> int32; fn B__foo(Self) -> int32; } struct C {} struct C__B {} impl A for C { fn foo(self: C) -> int32 { 1i32 } fn B__foo(self: C) -> int32 { 2i32 } } impl A for C__B { fn foo(self: C__B) -> int32 { 10i32 } fn B__foo(self: C__B) -> int32 { 20i32 } } fn main() -> unit { let left: dyn A = C {}; let right: dyn A = C__B {}; println(A::B__foo(left)); println(A::foo(right)); }";
     testing::assert_eq(
