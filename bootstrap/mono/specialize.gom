@@ -983,15 +983,13 @@ fn trait_call_types(receiver: core::Expr, args: Vec[core::Expr]) -> Vec[tast::Ty
     result
 }
 
-fn ensure_trait_call_instance(
+fn ensure_trait_method_instance(
     ctx: SpecializeCtx,
     reference: tast::TraitRef,
     method_name: string,
-    receiver: core::Expr,
-    args: Vec[core::Expr],
+    actual_types: Vec[tast::Type],
     ret_ty: tast::Type,
 ) -> tast::TraitRef {
-    let actual_types = trait_call_types(receiver, args);
     let resolved: Ref[Option[tast::TraitRef]] = Ref::new(Option::None);
     for function in ctx.functions {
         if function.generics.len() > 0
@@ -1048,6 +1046,23 @@ fn ensure_trait_call_instance(
         Option::Some(reference) => reference,
         Option::None => reference,
     }
+}
+
+fn ensure_trait_call_instance(
+    ctx: SpecializeCtx,
+    reference: tast::TraitRef,
+    method_name: string,
+    receiver: core::Expr,
+    args: Vec[core::Expr],
+    ret_ty: tast::Type,
+) -> tast::TraitRef {
+    ensure_trait_method_instance(
+        ctx,
+        reference,
+        method_name,
+        trait_call_types(receiver, args),
+        ret_ty,
+    )
 }
 
 fn specialize_var(
@@ -1212,6 +1227,202 @@ fn specialize_expr(
     }
 }
 
+fn ensure_runtime_trait_impl(
+    ctx: SpecializeCtx,
+    trait_name: string,
+    method_name: string,
+    params: Vec[tast::Type],
+    ret_ty: tast::Type,
+) -> unit {
+    let _ = ensure_trait_method_instance(
+        ctx,
+        tast::TraitRef {
+            name: trait_name,
+            args: Vec::new(),
+        },
+        method_name,
+        params,
+        ret_ty,
+    );
+}
+
+fn ensure_eq_hash_impls(ctx: SpecializeCtx, ty: tast::Type) -> unit {
+    ensure_runtime_trait_impl(
+        ctx,
+        "Eq",
+        "eq",
+        Vec::new().pushed(ty).pushed(ty),
+        tast::Type::Bool,
+    );
+    ensure_runtime_trait_impl(
+        ctx,
+        "Hash",
+        "hash",
+        Vec::new().pushed(ty),
+        tast::Type::Uint64,
+    )
+}
+
+fn ensure_runtime_trait_impls_for_types(
+    ctx: SpecializeCtx,
+    values: Vec[tast::Type],
+) -> unit {
+    for value in values {
+        ensure_runtime_trait_impls_for_type(ctx, value)
+    }
+}
+
+fn ensure_runtime_trait_impls_for_type(
+    ctx: SpecializeCtx,
+    value: tast::Type,
+) -> unit {
+    match tast::resolve_type(value) {
+        tast::Type::Tuple(items) => ensure_runtime_trait_impls_for_types(ctx, items),
+        tast::Type::Projection(base, _, reference) => {
+            ensure_runtime_trait_impls_for_type(ctx, base);
+            match reference {
+                Option::Some(reference) => {
+                    ensure_runtime_trait_impls_for_types(ctx, reference.args)
+                },
+                Option::None => (),
+            }
+        },
+        tast::Type::App(base, args) => {
+            ensure_runtime_trait_impls_for_type(ctx, base);
+            ensure_runtime_trait_impls_for_types(ctx, args)
+        },
+        tast::Type::Array(_, elem)
+        | tast::Type::Slice(elem)
+        | tast::Type::VecType(elem) => ensure_runtime_trait_impls_for_type(ctx, elem),
+        tast::Type::RefType(elem) => {
+            ensure_eq_hash_impls(ctx, elem);
+            ensure_runtime_trait_impls_for_type(ctx, elem)
+        },
+        tast::Type::HashMap(key, value) => {
+            ensure_eq_hash_impls(ctx, key);
+            ensure_runtime_trait_impls_for_type(ctx, key);
+            ensure_runtime_trait_impls_for_type(ctx, value)
+        },
+        tast::Type::Func(params, ret_ty) => {
+            ensure_runtime_trait_impls_for_types(ctx, params);
+            ensure_runtime_trait_impls_for_type(ctx, ret_ty)
+        },
+        _ => (),
+    }
+}
+
+fn ensure_runtime_trait_impls_for_optional_expr(
+    ctx: SpecializeCtx,
+    value: Option[core::Expr],
+) -> unit {
+    match value {
+        Option::Some(value) => ensure_runtime_trait_impls_for_expr(ctx, value),
+        Option::None => (),
+    }
+}
+
+fn ensure_runtime_trait_impls_for_exprs(
+    ctx: SpecializeCtx,
+    values: Vec[core::Expr],
+) -> unit {
+    for value in values {
+        ensure_runtime_trait_impls_for_expr(ctx, value)
+    }
+}
+
+fn ensure_runtime_trait_impls_for_block(
+    ctx: SpecializeCtx,
+    value: core::Block,
+) -> unit {
+    for stmt in value.stmts {
+        ensure_runtime_trait_impls_for_type(ctx, stmt.ty);
+        ensure_runtime_trait_impls_for_expr(ctx, stmt.value)
+    };
+    ensure_runtime_trait_impls_for_optional_expr(ctx, value.tail)
+}
+
+fn ensure_runtime_trait_impls_for_expr(
+    ctx: SpecializeCtx,
+    value: core::Expr,
+) -> unit {
+    ensure_runtime_trait_impls_for_type(ctx, core::expr_type(value));
+    match value {
+        core::Expr::Constr(_, args, _) => ensure_runtime_trait_impls_for_exprs(ctx, args),
+        core::Expr::Tuple(items, _) | core::Expr::Array(items, _) => {
+            ensure_runtime_trait_impls_for_exprs(ctx, items)
+        },
+        core::Expr::Closure(params, body, _) => {
+            for param in params {
+                ensure_runtime_trait_impls_for_type(ctx, param.ty)
+            };
+            ensure_runtime_trait_impls_for_expr(ctx, body)
+        },
+        core::Expr::Block(block, _) => ensure_runtime_trait_impls_for_block(ctx, block),
+        core::Expr::Match(expr, arms, default, _) => {
+            ensure_runtime_trait_impls_for_expr(ctx, expr);
+            for arm in arms {
+                ensure_runtime_trait_impls_for_expr(ctx, arm.lhs);
+                ensure_runtime_trait_impls_for_expr(ctx, arm.body)
+            };
+            ensure_runtime_trait_impls_for_optional_expr(ctx, default)
+        },
+        core::Expr::If(cond, then_, else_, _) => {
+            ensure_runtime_trait_impls_for_expr(ctx, cond);
+            ensure_runtime_trait_impls_for_expr(ctx, then_);
+            ensure_runtime_trait_impls_for_expr(ctx, else_)
+        },
+        core::Expr::While(cond, body, _) => {
+            ensure_runtime_trait_impls_for_expr(ctx, cond);
+            ensure_runtime_trait_impls_for_expr(ctx, body)
+        },
+        core::Expr::Return(expr, _) => ensure_runtime_trait_impls_for_optional_expr(ctx, expr),
+        core::Expr::Go(expr, _)
+        | core::Expr::ConstrGet(expr, _, _, _)
+        | core::Expr::Unary(_, expr, _)
+        | core::Expr::Cast(expr, _)
+        | core::Expr::Proj(expr, _, _) => ensure_runtime_trait_impls_for_expr(ctx, expr),
+        core::Expr::Binary(_, lhs, rhs, _) => {
+            ensure_runtime_trait_impls_for_expr(ctx, lhs);
+            ensure_runtime_trait_impls_for_expr(ctx, rhs)
+        },
+        core::Expr::Assign(_, expr, target_ty, _) => {
+            ensure_runtime_trait_impls_for_type(ctx, target_ty);
+            ensure_runtime_trait_impls_for_expr(ctx, expr)
+        },
+        core::Expr::Call(func, args, _) => {
+            ensure_runtime_trait_impls_for_expr(ctx, func);
+            ensure_runtime_trait_impls_for_exprs(ctx, args)
+        },
+        core::Expr::ToDyn(_, for_ty, expr, _) => {
+            ensure_runtime_trait_impls_for_type(ctx, for_ty);
+            ensure_runtime_trait_impls_for_expr(ctx, expr)
+        },
+        core::Expr::DynCall(_, _, receiver, args, _)
+        | core::Expr::TraitCall(_, _, receiver, args, _) => {
+            ensure_runtime_trait_impls_for_expr(ctx, receiver);
+            ensure_runtime_trait_impls_for_exprs(ctx, args)
+        },
+        core::Expr::Var(_, _)
+        | core::Expr::Callable(_, _)
+        | core::Expr::Prim(_, _)
+        | core::Expr::Break(_)
+        | core::Expr::Continue(_) => (),
+    }
+}
+
+fn ensure_runtime_trait_impls(
+    ctx: SpecializeCtx,
+    functions: Vec[core::Function],
+) -> unit {
+    for function in functions {
+        for param in function.params {
+            ensure_runtime_trait_impls_for_type(ctx, param.1)
+        };
+        ensure_runtime_trait_impls_for_type(ctx, function.ret_ty);
+        ensure_runtime_trait_impls_for_block(ctx, function.body)
+    }
+}
+
 fn specialize_function(
     ctx: SpecializeCtx,
     instance: Instance,
@@ -1263,15 +1474,21 @@ fn specialize(value: core::File) -> core::File {
     };
     let output = Vec::new();
     let index = Ref::new(0);
-    while index.get() < ctx.work.len() {
-        let instance = ctx.work.get(index.get());
-        index.set(index.get() + 1);
-        match find_function(ctx, instance.original_name) {
-            Option::Some(function) => {
-                output.push(specialize_function(ctx, instance, function))
-            },
-            Option::None => (),
-        }
+    let complete = Ref::new(false);
+    while complete.get() == false {
+        while index.get() < ctx.work.len() {
+            let instance = ctx.work.get(index.get());
+            index.set(index.get() + 1);
+            match find_function(ctx, instance.original_name) {
+                Option::Some(function) => {
+                    output.push(specialize_function(ctx, instance, function))
+                },
+                Option::None => (),
+            }
+        };
+        let previous_len = ctx.work.len();
+        ensure_runtime_trait_impls(ctx, output);
+        complete.set(ctx.work.len() == previous_len)
     };
     core::File { functions: output }
 }
