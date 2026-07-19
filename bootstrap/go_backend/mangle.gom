@@ -103,10 +103,14 @@ fn is_generated_value(value: string) -> bool {
         || has_prefix(value, "array_get__")
         || has_prefix(value, "array_set__")
         || has_prefix(value, "vec_new__")
+        || has_prefix(value, "vec_with_capacity__")
         || has_prefix(value, "vec_push__")
         || has_prefix(value, "vec_get__")
         || has_prefix(value, "vec_set__")
         || has_prefix(value, "vec_len__")
+        || has_prefix(value, "vec_capacity__")
+        || has_prefix(value, "vec_reserve__")
+        || has_prefix(value, "vec_truncate__")
         || has_prefix(value, "ref__")
         || has_prefix(value, "ref_get__")
         || has_prefix(value, "ref_set__")
@@ -119,7 +123,33 @@ fn is_generated_value(value: string) -> bool {
         || has_prefix(value, "hashmap_get__")
         || has_prefix(value, "hashmap_set__")
         || has_prefix(value, "hashmap_remove__")
+        || has_prefix(value, "hashmap_entries__")
         || has_prefix(value, "missing__")
+}
+
+fn write_hex_byte(builder: text::StringBuilder, value: uint8) -> unit {
+    let digits = "0123456789abcdef";
+    builder.write_char(digits.get((value / 16u8) as int32));
+    builder.write_char(digits.get((value % 16u8) as int32))
+}
+
+fn write_utf8_hex(builder: text::StringBuilder, value: char) -> unit {
+    let code = value as uint32;
+    if code <= 127u32 {
+        write_hex_byte(builder, code as uint8)
+    } else if code <= 2047u32 {
+        write_hex_byte(builder, (192u32 | (code >> 6u32)) as uint8);
+        write_hex_byte(builder, (128u32 | (code & 63u32)) as uint8)
+    } else if code <= 65535u32 {
+        write_hex_byte(builder, (224u32 | (code >> 12u32)) as uint8);
+        write_hex_byte(builder, (128u32 | ((code >> 6u32) & 63u32)) as uint8);
+        write_hex_byte(builder, (128u32 | (code & 63u32)) as uint8)
+    } else {
+        write_hex_byte(builder, (240u32 | (code >> 18u32)) as uint8);
+        write_hex_byte(builder, (128u32 | ((code >> 12u32) & 63u32)) as uint8);
+        write_hex_byte(builder, (128u32 | ((code >> 6u32) & 63u32)) as uint8);
+        write_hex_byte(builder, (128u32 | (code & 63u32)) as uint8)
+    }
 }
 
 fn write_encoded_char(builder: text::StringBuilder, value: char) -> unit {
@@ -165,7 +195,7 @@ fn write_encoded_char(builder: text::StringBuilder, value: char) -> unit {
         builder.write_string("_z_")
     } else {
         builder.write_string("_x");
-        builder.write_string((value as uint32).to_string());
+        write_utf8_hex(builder, value);
         builder.write_char('_')
     }
 }
