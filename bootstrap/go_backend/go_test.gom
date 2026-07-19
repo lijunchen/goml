@@ -298,6 +298,15 @@ fn disambiguates_enum_variants_from_user_types() -> unit {
 }
 
 #[test]
+fn deduplicates_shadowed_enum_variant_owners() -> unit {
+    let source = "enum Option[T] { Some(T), None, } fn main() -> unit { let x: Option[uint8] = Option::Some(42); match x { Option::Some(v) => println(v.to_string()), Option::None => println(\"none\"), }; }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "package main\n\ntype Option__uint8 interface {\n    isOption__uint8()\n}\n\ntype Some struct {\n    _0 uint8\n}\n\nfunc (_ Some) isOption__uint8() {}\n\ntype None struct {}\n\nfunc (_ None) isOption__uint8() {}\n\nfunc main0() struct{} {\n    var x__0 Option__uint8 = Some{\n        _0: 42,\n    }\n    switch x__0.(type) {\n    case Some:\n        var x0 uint8 = x__0.(Some)._0\n        var v__1 uint8 = x0\n        var t4 string = _goml_m_trait__impl_i_ToString_i_uint8_i_to__string(v__1)\n        _goml_m_println(t4)\n    case None:\n        _goml_m_println(\"none\")\n    default:\n        panic(\"non-exhaustive match\")\n    }\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
+    )
+}
+
+#[test]
 fn disambiguates_dyn_helper_names() -> unit {
     let source = "trait A { fn foo(Self) -> int32; fn B__foo(Self) -> int32; } struct C {} struct C__B {} impl A for C { fn foo(self: C) -> int32 { 1i32 } fn B__foo(self: C) -> int32 { 2i32 } } impl A for C__B { fn foo(self: C__B) -> int32 { 10i32 } fn B__foo(self: C__B) -> int32 { 20i32 } } fn main() -> unit { let left: dyn A = C {}; let right: dyn A = C__B {}; println(A::B__foo(left)); println(A::foo(right)); }";
     testing::assert_eq(
