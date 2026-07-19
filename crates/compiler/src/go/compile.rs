@@ -3243,11 +3243,6 @@ fn all_branches_jump_to_resolved(term: &anf::Term, join_env: &JoinEnv) -> Option
 }
 
 fn block_tail_target_resolved(block: &anf::Block, join_env: &JoinEnv) -> Option<anf::JoinId> {
-    let key = block as *const anf::Block as usize;
-    if let Some(target) = join_env.resolved_tail_targets.borrow().get(&key) {
-        return target.clone();
-    }
-
     let mut joins = HashMap::new();
     for bind in &block.binds {
         if let anf::Bind::Join(join_bind) = bind {
@@ -3265,10 +3260,6 @@ fn block_tail_target_resolved(block: &anf::Block, join_env: &JoinEnv) -> Option<
         }
         target = block_tail_target_resolved(&join_bind.body, join_env);
     }
-    join_env
-        .resolved_tail_targets
-        .borrow_mut()
-        .insert(key, target.clone());
     target
 }
 
@@ -3901,7 +3892,6 @@ fn build_join_env(block: &anf::Block) -> JoinEnv {
 #[derive(Default, Clone)]
 struct JoinEnv {
     joins: HashMap<anf::JoinId, anf::JoinBind>,
-    resolved_tail_targets: Rc<RefCell<HashMap<usize, Option<anf::JoinId>>>>,
     continue_targets: HashSet<anf::JoinId>,
     break_targets: HashSet<anf::JoinId>,
     break_labels: HashMap<anf::JoinId, String>,
