@@ -34,3 +34,21 @@ fn emits_tuple_types_and_prunes_dead_bindings() -> unit {
         "package main\n\ntype Tuple2_4bool_4bool struct {\n    _0 bool\n    _1 bool\n}\n\ntype Tuple3_4bool_4bool_18Tuple2_4bool_4bool struct {\n    _0 bool\n    _1 bool\n    _2 Tuple2_4bool_4bool\n}\n\nfunc main0() struct{} {\n    var t8 Tuple2_4bool_4bool = Tuple2_4bool_4bool{\n        _0: true,\n        _1: false,\n    }\n    var a__0 Tuple3_4bool_4bool_18Tuple2_4bool_4bool = Tuple3_4bool_4bool_18Tuple2_4bool_4bool{\n        _0: true,\n        _1: false,\n        _2: t8,\n    }\n    var x3 Tuple2_4bool_4bool = a__0._2\n    var x5 bool = x3._1\n    var w__4 bool = x5\n    var b__5 bool = w__4\n    _goml_m_print(b__5)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
     )
 }
+
+#[test]
+fn emits_primitive_matches() -> unit {
+    let source = "fn main() { let x: uint8 = 5; let y: string = match x { 0 => \"zero\", 1 => \"one\", _ => \"other\", }; println(y); }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "package main\n\nfunc main0() struct{} {\n    var x__0 uint8 = 5\n    var jp3 string\n    switch x__0 {\n    case 0:\n        jp3 = \"zero\"\n    case 1:\n        jp3 = \"one\"\n    default:\n        jp3 = \"other\"\n    }\n    var y__1 string = jp3\n    _goml_m_println(y__1)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
+    )
+}
+
+#[test]
+fn emits_breaking_while_loops() -> unit {
+    let source = "fn main() { let i = Ref::new(0i32); while i.get() < 10i32 { if i.get() == 5i32 { break } else { () }; let _ = println(i.get()); i.set(i.get() + 1i32); }; let _ = println(\"done\"); }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "package main\n\ntype ref_int32_x struct {\n    value int32\n}\n\nfunc main0() struct{} {\n    var i__0 *ref_int32_x = _goml_m_inherent_i_Ref_i_Ref_l_int32_r__i_new(0)\n    Loop_loop7:\n    for {\n        var t8 int32 = _goml_m_inherent_i_Ref_i_Ref_l_int32_r__i_get(i__0)\n        var t9 bool = t8 < 10\n        if t9 {\n            var t14 int32 = _goml_m_inherent_i_Ref_i_Ref_l_int32_r__i_get(i__0)\n            var t15 bool = t14 == 5\n            if t15 {\n                break Loop_loop7\n            } else {\n                var t11 int32 = _goml_m_inherent_i_Ref_i_Ref_l_int32_r__i_get(i__0)\n                _goml_m_println(t11)\n                var t12 int32 = _goml_m_inherent_i_Ref_i_Ref_l_int32_r__i_get(i__0)\n                var t13 int32 = t12 + 1\n                _goml_m_inherent_i_Ref_i_Ref_l_int32_r__i_set(i__0, t13)\n                continue\n            }\n        } else {\n            break Loop_loop7\n        }\n    }\n    _goml_m_println(\"done\")\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
+    )
+}
