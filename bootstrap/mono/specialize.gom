@@ -468,6 +468,39 @@ fn name_is_used(ctx: SpecializeCtx, name: string) -> bool {
     found.get()
 }
 
+fn string_precedes(left: string, right: string) -> bool {
+    let length = if left.byte_len() < right.byte_len() {
+        left.byte_len()
+    } else {
+        right.byte_len()
+    };
+    let index = Ref::new(0);
+    while index.get() < length
+        && left.byte_get(index.get()) == right.byte_get(index.get())
+    {
+        index.set(index.get() + 1)
+    };
+    if index.get() == length {
+        left.byte_len() < right.byte_len()
+    } else {
+        left.byte_get(index.get()) < right.byte_get(index.get())
+    }
+}
+
+fn sorted_bindings(values: Vec[TypeBinding]) -> Vec[TypeBinding] {
+    let result = Vec::new();
+    for value in values {
+        let index = Ref::new(0);
+        while index.get() < result.len()
+            && !string_precedes(value.name, result.get(index.get()).name)
+        {
+            index.set(index.get() + 1)
+        };
+        result.insert(index.get(), value)
+    };
+    result
+}
+
 fn instance_base_name(
     ctx: SpecializeCtx,
     original_name: string,
@@ -482,7 +515,7 @@ fn instance_base_name(
                 Option::None => {
                     let builder = std::text::StringBuilder::new();
                     builder.write_string(original_name);
-                    for binding in bindings {
+                    for binding in sorted_bindings(bindings) {
                         if binding.name.byte_len() >= 11
                             && binding.name.byte_slice(0, 11) == "projection#"
                         {
