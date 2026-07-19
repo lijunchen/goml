@@ -1,0 +1,335 @@
+package go_backend;
+
+struct DceResult {
+    block: Block,
+    live: Vec[string],
+    needs_decl: Vec[string],
+}
+
+fn contains_name(values: Vec[string], expected: string) -> bool {
+    let found = Ref::new(false);
+    for value in values {
+        if value == expected {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+fn add_name(values: Vec[string], value: string) -> unit {
+    if !contains_name(values, value) {
+        values.push(value)
+    } else {
+        ()
+    }
+}
+
+fn add_names(target: Vec[string], values: Vec[string]) -> unit {
+    for value in values {
+        add_name(target, value)
+    }
+}
+
+fn copy_names(values: Vec[string]) -> Vec[string] {
+    let result: Vec[string] = Vec::new();
+    for value in values {
+        result.push(value)
+    };
+    result
+}
+
+fn remove_name(values: Vec[string], expected: string) -> unit {
+    let index = Ref::new(0);
+    let found = Ref::new(false);
+    while index.get() < values.len() && found.get() == false {
+        if values.get(index.get()) == expected {
+            let _ = values.remove(index.get());
+            found.set(true)
+        } else {
+            index.set(index.get() + 1)
+        }
+    }
+}
+
+fn add_expr_uses(values: Vec[string], value: Expr) -> unit {
+    match value {
+        Expr::Var(name) => add_name(values, name),
+        Expr::Call(func, args) => {
+            add_expr_uses(values, func);
+            for arg in args {
+                add_expr_uses(values, arg)
+            }
+        },
+        Expr::Unary(_, expr) => add_expr_uses(values, expr),
+        Expr::Binary(_, lhs, rhs) => {
+            add_expr_uses(values, lhs);
+            add_expr_uses(values, rhs)
+        },
+        Expr::Field(expr, _) => add_expr_uses(values, expr),
+        Expr::Index(expr, index) => {
+            add_expr_uses(values, expr);
+            add_expr_uses(values, index)
+        },
+        Expr::Slice(expr, start, end) => {
+            add_expr_uses(values, expr);
+            add_expr_uses(values, start);
+            add_expr_uses(values, end)
+        },
+        Expr::Cast(expr, _) | Expr::Convert(_, expr) => add_expr_uses(values, expr),
+        Expr::StructLiteral(_, fields) => {
+            for field in fields {
+                add_expr_uses(values, field.1)
+            }
+        },
+        Expr::ArrayLiteral(_, items) => {
+            for item in items {
+                add_expr_uses(values, item)
+            }
+        },
+        Expr::Nil
+        | Expr::Unit
+        | Expr::Bool(_)
+        | Expr::Int(_)
+        | Expr::Float(_)
+        | Expr::String(_) => (),
+    }
+}
+
+fn call_result_must_be_used(value: Expr) -> bool {
+    match value {
+        Expr::Var(name) => {
+            name == "append"
+                || name == "cap"
+                || name == "complex"
+                || name == "imag"
+                || name == "len"
+                || name == "make"
+                || name == "max"
+                || name == "min"
+                || name == "new"
+                || name == "real"
+                || name == "bool"
+                || name == "byte"
+                || name == "rune"
+                || name == "string"
+                || name == "int"
+                || name == "int8"
+                || name == "int16"
+                || name == "int32"
+                || name == "int64"
+                || name == "uint"
+                || name == "uint8"
+                || name == "uint16"
+                || name == "uint32"
+                || name == "uint64"
+                || name == "uintptr"
+                || name == "float32"
+                || name == "float64"
+                || name == "complex64"
+                || name == "complex128"
+        },
+        _ => false,
+    }
+}
+
+fn expr_has_side_effects(value: Expr) -> bool {
+    match value {
+        Expr::Call(func, args) => {
+            let nested = Ref::new(false);
+            for arg in args {
+                if expr_has_side_effects(arg) {
+                    nested.set(true)
+                } else {
+                    ()
+                }
+            };
+            !call_result_must_be_used(func) || nested.get()
+        },
+        Expr::Unary(_, expr) => expr_has_side_effects(expr),
+        Expr::Binary(_, lhs, rhs) => expr_has_side_effects(lhs) || expr_has_side_effects(rhs),
+        Expr::Field(expr, _) => expr_has_side_effects(expr),
+        Expr::Index(expr, index) => expr_has_side_effects(expr) || expr_has_side_effects(index),
+        Expr::Slice(expr, start, end) => {
+            expr_has_side_effects(expr)
+                || expr_has_side_effects(start)
+                || expr_has_side_effects(end)
+        },
+        Expr::Cast(expr, _) | Expr::Convert(_, expr) => expr_has_side_effects(expr),
+        Expr::StructLiteral(_, fields) => {
+            let found = Ref::new(false);
+            for field in fields {
+                if expr_has_side_effects(field.1) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Expr::ArrayLiteral(_, items) => {
+            let found = Ref::new(false);
+            for item in items {
+                if expr_has_side_effects(item) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Expr::Nil
+        | Expr::Unit
+        | Expr::Var(_)
+        | Expr::Bool(_)
+        | Expr::Int(_)
+        | Expr::Float(_)
+        | Expr::String(_) => false,
+    }
+}
+
+fn reversed(values: Vec[Stmt]) -> Vec[Stmt] {
+    let result: Vec[Stmt] = Vec::new();
+    for index in range(0, values.len()) {
+        result.push(values.get(values.len() - index - 1))
+    };
+    result
+}
+
+fn dce_block_with_live(value: Block, live_out: Vec[string]) -> DceResult {
+    let live = copy_names(live_out);
+    let needs_decl: Vec[string] = Vec::new();
+    let output: Vec[Stmt] = Vec::new();
+    let index = Ref::new(value.stmts.len());
+    while index.get() > 0 {
+        index.set(index.get() - 1);
+        match value.stmts.get(index.get()) {
+            Stmt::Expr(expr) => {
+                if expr_has_side_effects(expr) {
+                    add_expr_uses(live, expr);
+                    output.push(Stmt::Expr(expr))
+                } else {
+                    ()
+                }
+            },
+            Stmt::Go(expr) => {
+                add_expr_uses(live, expr);
+                output.push(Stmt::Go(expr))
+            },
+            Stmt::Var(name, ty, initial) => {
+                if contains_name(live, name) {
+                    remove_name(live, name);
+                    remove_name(needs_decl, name);
+                    match initial {
+                        Option::Some(expr) => add_expr_uses(live, expr),
+                        Option::None => (),
+                    };
+                    output.push(Stmt::Var(name, ty, initial))
+                } else if contains_name(needs_decl, name) {
+                    remove_name(needs_decl, name);
+                    match initial {
+                        Option::Some(expr) => {
+                            if expr_has_side_effects(expr) {
+                                add_expr_uses(live, expr);
+                                output.push(Stmt::Expr(expr))
+                            } else {
+                                ()
+                            };
+                            output.push(Stmt::Var(name, ty, Option::None))
+                        },
+                        Option::None => output.push(Stmt::Var(name, ty, Option::None)),
+                    }
+                } else {
+                    match initial {
+                        Option::Some(expr) => {
+                            if expr_has_side_effects(expr) {
+                                add_expr_uses(live, expr);
+                                output.push(Stmt::Expr(expr))
+                            } else {
+                                ()
+                            }
+                        },
+                        Option::None => (),
+                    }
+                }
+            },
+            Stmt::Assign(name, expr) => {
+                if name == "_" || contains_name(live, name) {
+                    remove_name(live, name);
+                    add_expr_uses(live, expr);
+                    add_name(needs_decl, name);
+                    output.push(Stmt::Assign(name, expr))
+                } else if expr_has_side_effects(expr) {
+                    add_expr_uses(live, expr);
+                    output.push(Stmt::Expr(expr))
+                } else {
+                    ()
+                }
+            },
+            Stmt::Return(expr) => {
+                match expr {
+                    Option::Some(value) => add_expr_uses(live, value),
+                    Option::None => (),
+                };
+                output.push(Stmt::Return(expr))
+            },
+            Stmt::If(cond, then_, else_) => {
+                let then_result = dce_block_with_live(then_, live);
+                let lowered_else = match else_ {
+                    Option::Some(body) => {
+                        let result = dce_block_with_live(body, live);
+                        add_names(live, result.live);
+                        add_names(needs_decl, result.needs_decl);
+                        Option::Some(result.block)
+                    },
+                    Option::None => Option::None,
+                };
+                add_names(live, then_result.live);
+                add_names(needs_decl, then_result.needs_decl);
+                add_expr_uses(live, cond);
+                output.push(Stmt::If(cond, then_result.block, lowered_else))
+            },
+            Stmt::Loop(body) => {
+                let result = dce_block_with_live(body, live);
+                add_names(live, result.live);
+                add_names(needs_decl, result.needs_decl);
+                output.push(Stmt::Loop(result.block))
+            },
+            Stmt::Break => output.push(Stmt::Break),
+            Stmt::Continue => output.push(Stmt::Continue),
+            Stmt::Switch(expr, cases, default) => {
+                let lowered_cases: Vec[SwitchCase] = Vec::new();
+                for case in cases {
+                    let result = dce_block_with_live(case.body, live);
+                    add_expr_uses(live, case.value);
+                    add_names(live, result.live);
+                    add_names(needs_decl, result.needs_decl);
+                    lowered_cases.push(SwitchCase { value: case.value, body: result.block })
+                };
+                let lowered_default = match default {
+                    Option::Some(body) => {
+                        let result = dce_block_with_live(body, live);
+                        add_names(live, result.live);
+                        add_names(needs_decl, result.needs_decl);
+                        Option::Some(result.block)
+                    },
+                    Option::None => Option::None,
+                };
+                add_expr_uses(live, expr);
+                output.push(Stmt::Switch(expr, lowered_cases, lowered_default))
+            },
+            Stmt::Unreachable => output.push(Stmt::Unreachable),
+        }
+    };
+    DceResult {
+        block: Block { stmts: reversed(output) },
+        live,
+        needs_decl,
+    }
+}
+
+pub fn eliminate_dead_vars(value: Block) -> Block {
+    let live: Vec[string] = Vec::new();
+    dce_block_with_live(value, live).block
+}

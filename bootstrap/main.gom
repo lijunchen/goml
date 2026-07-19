@@ -4,6 +4,7 @@ use gomlang::parser::ast;
 use gomlang::parser::anf;
 use gomlang::parser::cst;
 use gomlang::parser::core;
+use gomlang::parser::go_backend;
 use gomlang::parser::hir;
 use gomlang::parser::lexer;
 use gomlang::parser::lift;
@@ -33,7 +34,7 @@ fn read_source(path: string) -> string {
 fn main() -> unit {
     let args = env::args();
     if args.len() != 3 {
-        fail("usage: gomlang-parser <lex|cst|ast|hir|tast|core|mono|lift|anf> <file>")
+        fail("usage: gomlang-parser <lex|cst|ast|hir|tast|core|mono|lift|anf|go> <file>")
     } else if args.get(1) == "lex" {
         io::print(lexer::encode_tokens(lexer::lex(read_source(args.get(2)))))
     } else if args.get(1) == "cst" {
@@ -80,6 +81,14 @@ fn main() -> unit {
                 args.get(2),
             )),
         ))))))
+    } else if args.get(1) == "go" {
+        let source = read_source(args.get(2));
+        io::print(go_backend::encode(go_backend::lower(anf::lower(lift::lower(
+            mono::lower(core::lower(tast::check(hir::lower(
+                ast::lower(parser::parse(source)),
+                args.get(2),
+            )))),
+        )))))
     } else {
         fail("unknown mode: " + args.get(1))
     }

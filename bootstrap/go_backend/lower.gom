@@ -1,0 +1,689 @@
+package go_backend;
+
+use gomlang::parser::anf;
+use gomlang::parser::ast;
+use gomlang::parser::tast;
+
+struct LowerEnv {
+    joins: Vec[anf::JoinBind],
+}
+
+struct CompiledValue {
+    stmts: Vec[Stmt],
+    expr: Expr,
+}
+
+fn append_stmts(target: Vec[Stmt], values: Vec[Stmt]) -> unit {
+    for value in values {
+        target.push(value)
+    }
+}
+
+fn append_items(target: Vec[Item], values: Vec[Item]) -> unit {
+    for value in values {
+        target.push(value)
+    }
+}
+
+fn function_name(value: string) -> string {
+    if value == "main" { "main0" } else { go_ident(value) }
+}
+
+fn callable_name(value: tast::Callable) -> string {
+    match value {
+        tast::Callable::Function(name)
+        | tast::Callable::Runtime(name)
+        | tast::Callable::Intrinsic(name) => function_name(name),
+        tast::Callable::TraitMethod(reference, name) => {
+            go_ident(reference.name + "#" + name)
+        },
+        tast::Callable::DynTraitMethod(owner, name) => go_ident("dyn#" + owner + "#" + name),
+        tast::Callable::InherentMethod(owner, name) => {
+            go_ident("inherent#" + encode_type(owner) + "#" + name)
+        },
+    }
+}
+
+fn compile_primitive(value: tast::Primitive) -> Expr {
+    match value {
+        tast::Primitive::Unit => Expr::Unit,
+        tast::Primitive::Bool(value) => Expr::Bool(value),
+        tast::Primitive::Int(value)
+        | tast::Primitive::Int8(value)
+        | tast::Primitive::Int16(value)
+        | tast::Primitive::Int32(value)
+        | tast::Primitive::Int64(value)
+        | tast::Primitive::Uint8(value)
+        | tast::Primitive::Uint16(value)
+        | tast::Primitive::Uint32(value)
+        | tast::Primitive::Uint64(value) => Expr::Int(value),
+        tast::Primitive::Float(value)
+        | tast::Primitive::Float32(value)
+        | tast::Primitive::Float64(value) => Expr::Float(value),
+        tast::Primitive::String(value) => Expr::String(value),
+        tast::Primitive::Char(value) => Expr::Int((value as uint32).to_string()),
+    }
+}
+
+fn compile_imm(value: anf::Imm) -> Expr {
+    match value {
+        anf::Imm::Var(name, _) => Expr::Var(go_local_ident(name)),
+        anf::Imm::Callable(value, _) => Expr::Var(callable_name(value)),
+        anf::Imm::Prim(value, _) => compile_primitive(value),
+        anf::Imm::Tag(index, _) => Expr::Int(index.to_string()),
+    }
+}
+
+fn compile_imms(values: Vec[anf::Imm]) -> Vec[Expr] {
+    let result: Vec[Expr] = Vec::new();
+    for value in values {
+        result.push(compile_imm(value))
+    };
+    result
+}
+
+fn compile_unary(value: ast::UnaryOp) -> UnaryOp {
+    match value {
+        ast::UnaryOp::Neg => UnaryOp::Neg,
+        ast::UnaryOp::Not => UnaryOp::Not,
+        ast::UnaryOp::BitNot => UnaryOp::BitNot,
+    }
+}
+
+fn compile_binary(value: ast::BinaryOp) -> BinaryOp {
+    match value {
+        ast::BinaryOp::Add => BinaryOp::Add,
+        ast::BinaryOp::Sub => BinaryOp::Sub,
+        ast::BinaryOp::Mul => BinaryOp::Mul,
+        ast::BinaryOp::Div => BinaryOp::Div,
+        ast::BinaryOp::Rem => BinaryOp::Rem,
+        ast::BinaryOp::BitAnd => BinaryOp::BitAnd,
+        ast::BinaryOp::BitOr => BinaryOp::BitOr,
+        ast::BinaryOp::BitXor => BinaryOp::BitXor,
+        ast::BinaryOp::Shl => BinaryOp::Shl,
+        ast::BinaryOp::Shr => BinaryOp::Shr,
+        ast::BinaryOp::And => BinaryOp::And,
+        ast::BinaryOp::Or => BinaryOp::Or,
+        ast::BinaryOp::Less => BinaryOp::Less,
+        ast::BinaryOp::Greater => BinaryOp::Greater,
+        ast::BinaryOp::LessEq => BinaryOp::LessEq,
+        ast::BinaryOp::GreaterEq => BinaryOp::GreaterEq,
+        ast::BinaryOp::Eq => BinaryOp::Eq,
+        ast::BinaryOp::NotEq => BinaryOp::NotEq,
+    }
+}
+
+fn compile_constructor(
+    constructor: tast::Constructor,
+    args: Vec[anf::Imm],
+    ty: tast::Type,
+) -> Expr {
+    let fields: Vec[(string, Expr)] = Vec::new();
+    for index in range(0, args.len()) {
+        let name = if constructor.is_struct && index < constructor.fields.len() {
+            go_ident(constructor.fields.get(index))
+        } else {
+            "_" + index.to_string()
+        };
+        fields.push((name, compile_imm(args.get(index))))
+    };
+    Expr::StructLiteral(lower_type(ty), fields)
+}
+
+fn compile_value(value: anf::Value) -> CompiledValue {
+    let stmts: Vec[Stmt] = Vec::new();
+    let expr = match value {
+        anf::Value::Imm(value) => compile_imm(value),
+        anf::Value::Constr(constructor, args, ty) => compile_constructor(constructor, args, ty),
+        anf::Value::Tuple(items, ty) => {
+            let fields: Vec[(string, Expr)] = Vec::new();
+            for index in range(0, items.len()) {
+                fields.push(("_" + index.to_string(), compile_imm(items.get(index))))
+            };
+            Expr::StructLiteral(lower_type(ty), fields)
+        },
+        anf::Value::Array(items, ty) => Expr::ArrayLiteral(lower_type(ty), compile_imms(items)),
+        anf::Value::ConstrGet(expr, constructor, index, _) => {
+            let field = if constructor.is_struct && index < constructor.fields.len() {
+                go_ident(constructor.fields.get(index))
+            } else {
+                "_" + index.to_string()
+            };
+            Expr::Field(compile_imm(expr), field)
+        },
+        anf::Value::Unary(op, expr, _) => Expr::Unary(compile_unary(op), compile_imm(expr)),
+        anf::Value::Cast(expr, ty) => Expr::Convert(lower_type(ty), compile_imm(expr)),
+        anf::Value::Binary(op, lhs, rhs, _) => {
+            Expr::Binary(compile_binary(op), compile_imm(lhs), compile_imm(rhs))
+        },
+        anf::Value::Assign(name, value, _, _) => {
+            stmts.push(Stmt::Assign(go_local_ident(name), compile_imm(value)));
+            Expr::Unit
+        },
+        anf::Value::Call(func, args, _) => Expr::Call(compile_imm(func), compile_imms(args)),
+        anf::Value::ToDyn(_, _, expr, _) => compile_imm(expr),
+        anf::Value::DynCall(_, method, receiver, args, _) => {
+            let values: Vec[Expr] = Vec::new();
+            values.push(compile_imm(receiver));
+            for arg in args {
+                values.push(compile_imm(arg))
+            };
+            Expr::Call(Expr::Var(go_ident(method)), values)
+        },
+        anf::Value::Go(value, _) => {
+            let call = Expr::Call(compile_imm(value), Vec::new());
+            stmts.push(Stmt::Go(call));
+            Expr::Unit
+        },
+        anf::Value::Proj(tuple, index, _) => {
+            Expr::Field(compile_imm(tuple), "_" + index.to_string())
+        },
+    };
+    CompiledValue { stmts, expr }
+}
+
+fn compile_let(value: anf::LetBind) -> Vec[Stmt] {
+    let result: Vec[Stmt] = Vec::new();
+    let compiled = compile_value(value.value);
+    append_stmts(result, compiled.stmts);
+    result.push(Stmt::Var(
+        go_local_ident(value.name),
+        lower_type(value.ty),
+        Option::Some(compiled.expr),
+    ));
+    result
+}
+
+fn collect_joins_term(result: Vec[anf::JoinBind], value: anf::Term) -> unit {
+    match value {
+        anf::Term::If(_, then_, else_, _) => {
+            collect_joins_block(result, then_);
+            collect_joins_block(result, else_)
+        },
+        anf::Term::Match(_, arms, default, _) => {
+            for arm in arms {
+                collect_joins_block(result, arm.body)
+            };
+            match default {
+                Option::Some(body) => collect_joins_block(result, body),
+                Option::None => (),
+            }
+        },
+        anf::Term::Return(_)
+        | anf::Term::Jump(_, _, _)
+        | anf::Term::Unreachable(_) => (),
+    }
+}
+
+fn collect_joins_block(result: Vec[anf::JoinBind], value: anf::Block) -> unit {
+    for bind in value.binds {
+        match bind {
+            anf::Bind::Let(_) => (),
+            anf::Bind::Join(join) => {
+                result.push(join);
+                collect_joins_block(result, join.body)
+            },
+            anf::Bind::JoinRec(joins) => {
+                for join in joins {
+                    collect_joins_block(result, join.body)
+                }
+            },
+        }
+    };
+    collect_joins_term(result, value.term)
+}
+
+fn find_join(values: Vec[anf::JoinBind], name: string) -> Option[anf::JoinBind] {
+    let result: Ref[Option[anf::JoinBind]] = Ref::new(Option::None);
+    for value in values {
+        if value.name == name {
+            result.set(Option::Some(value))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn same_target(lhs: Option[string], rhs: Option[string]) -> Option[string] {
+    match lhs {
+        Option::Some(left) => match rhs {
+            Option::Some(right) => {
+                if left == right { Option::Some(left) } else { Option::None }
+            },
+            Option::None => Option::None,
+        },
+        Option::None => Option::None,
+    }
+}
+
+fn term_target(value: anf::Term) -> Option[string] {
+    match value {
+        anf::Term::Jump(target, _, _) => Option::Some(target),
+        anf::Term::If(_, then_, else_, _) => {
+            same_target(term_target(then_.term), term_target(else_.term))
+        },
+        anf::Term::Match(_, arms, default, _) => {
+            let result: Ref[Option[string]] = Ref::new(Option::None);
+            let valid = Ref::new(true);
+            for arm in arms {
+                match result.get() {
+                    Option::None => result.set(term_target(arm.body.term)),
+                    Option::Some(current) => match term_target(arm.body.term) {
+                        Option::Some(target) => {
+                            if current != target {
+                                valid.set(false)
+                            } else {
+                                ()
+                            }
+                        },
+                        Option::None => valid.set(false),
+                    },
+                }
+            };
+            match default {
+                Option::Some(body) => match result.get() {
+                    Option::None => result.set(term_target(body.term)),
+                    Option::Some(current) => match term_target(body.term) {
+                        Option::Some(target) => {
+                            if current != target {
+                                valid.set(false)
+                            } else {
+                                ()
+                            }
+                        },
+                        Option::None => valid.set(false),
+                    },
+                },
+                Option::None => (),
+            };
+            if valid.get() { result.get() } else { Option::None }
+        },
+        anf::Term::Return(_) | anf::Term::Unreachable(_) => Option::None,
+    }
+}
+
+fn compile_jump_args(value: anf::JoinBind, args: Vec[anf::Imm]) -> Vec[Stmt] {
+    let result: Vec[Stmt] = Vec::new();
+    for index in range(0, args.len()) {
+        if index < value.params.len() && value.params.get(index).0 != "_" {
+            result.push(Stmt::Assign(
+                go_local_ident(value.params.get(index).0),
+                compile_imm(args.get(index)),
+            ))
+        } else {
+            ()
+        }
+    };
+    result
+}
+
+fn compile_branch_to_join(
+    env: LowerEnv,
+    value: anf::Block,
+    target: string,
+    join: anf::JoinBind,
+) -> Block {
+    let stmts: Vec[Stmt] = Vec::new();
+    for bind in value.binds {
+        match bind {
+            anf::Bind::Let(value) => append_stmts(stmts, compile_let(value)),
+            anf::Bind::Join(value) => {
+                for param in value.params {
+                    if param.0 != "_" {
+                        stmts.push(Stmt::Var(go_local_ident(param.0), lower_type(param.1), Option::None))
+                    } else {
+                        ()
+                    }
+                }
+            },
+            anf::Bind::JoinRec(_) => (),
+        }
+    };
+    match value.term {
+        anf::Term::Jump(name, args, _) => {
+            if name == target {
+                append_stmts(stmts, compile_jump_args(join, args))
+            } else {
+                append_stmts(stmts, compile_term_leaf(env, value.term))
+            }
+        },
+        anf::Term::If(cond, then_, else_, _) => {
+            stmts.push(Stmt::If(
+                compile_imm(cond),
+                compile_branch_to_join(env, then_, target, join),
+                Option::Some(compile_branch_to_join(env, else_, target, join)),
+            ))
+        },
+        _ => append_stmts(stmts, compile_term_leaf(env, value.term)),
+    };
+    Block { stmts }
+}
+
+fn compile_match_leaf(
+    env: LowerEnv,
+    scrut: anf::Imm,
+    arms: Vec[anf::Arm],
+    default: Option[anf::Block],
+) -> Vec[Stmt] {
+    let cases: Vec[SwitchCase] = Vec::new();
+    for arm in arms {
+        cases.push(SwitchCase {
+            value: compile_imm(arm.lhs),
+            body: compile_block(env, arm.body),
+        })
+    };
+    let lowered_default = match default {
+        Option::Some(body) => Option::Some(compile_block(env, body)),
+        Option::None => Option::None,
+    };
+    let result: Vec[Stmt] = Vec::new();
+    result.push(Stmt::Switch(compile_imm(scrut), cases, lowered_default));
+    result
+}
+
+fn compile_term_leaf(env: LowerEnv, value: anf::Term) -> Vec[Stmt] {
+    let result: Vec[Stmt] = Vec::new();
+    match value {
+        anf::Term::Return(value) => result.push(Stmt::Return(Option::Some(compile_imm(value)))),
+        anf::Term::Jump(target, args, _) => match find_join(env.joins, target) {
+            Option::Some(join) => {
+                append_stmts(result, compile_jump_args(join, args));
+                append_stmts(result, compile_block(env, join.body).stmts)
+            },
+            Option::None => result.push(Stmt::Unreachable),
+        },
+        anf::Term::If(cond, then_, else_, _) => result.push(Stmt::If(
+            compile_imm(cond),
+            compile_block(env, then_),
+            Option::Some(compile_block(env, else_)),
+        )),
+        anf::Term::Match(scrut, arms, default, _) => {
+            append_stmts(result, compile_match_leaf(env, scrut, arms, default))
+        },
+        anf::Term::Unreachable(_) => result.push(Stmt::Unreachable),
+    };
+    result
+}
+
+fn compile_term_with_pending(
+    env: LowerEnv,
+    value: anf::Term,
+    pending: Vec[anf::JoinBind],
+) -> Vec[Stmt] {
+    match term_target(value) {
+        Option::Some(target) => match find_join(pending, target) {
+            Option::Some(join) => {
+                let result: Vec[Stmt] = Vec::new();
+                match value {
+                    anf::Term::Jump(_, args, _) => append_stmts(result, compile_jump_args(join, args)),
+                    anf::Term::If(cond, then_, else_, _) => result.push(Stmt::If(
+                        compile_imm(cond),
+                        compile_branch_to_join(env, then_, target, join),
+                        Option::Some(compile_branch_to_join(env, else_, target, join)),
+                    )),
+                    anf::Term::Match(scrut, arms, default, _) => {
+                        let cases: Vec[SwitchCase] = Vec::new();
+                        for arm in arms {
+                            cases.push(SwitchCase {
+                                value: compile_imm(arm.lhs),
+                                body: compile_branch_to_join(env, arm.body, target, join),
+                            })
+                        };
+                        let lowered_default = match default {
+                            Option::Some(body) => Option::Some(compile_branch_to_join(
+                                env,
+                                body,
+                                target,
+                                join,
+                            )),
+                            Option::None => Option::None,
+                        };
+                        result.push(Stmt::Switch(compile_imm(scrut), cases, lowered_default))
+                    },
+                    _ => append_stmts(result, compile_term_leaf(env, value)),
+                };
+                append_stmts(result, compile_block(env, join.body).stmts);
+                result
+            },
+            Option::None => compile_term_leaf(env, value),
+        },
+        Option::None => compile_term_leaf(env, value),
+    }
+}
+
+fn compile_block(env: LowerEnv, value: anf::Block) -> Block {
+    let stmts: Vec[Stmt] = Vec::new();
+    let pending: Vec[anf::JoinBind] = Vec::new();
+    for bind in value.binds {
+        match bind {
+            anf::Bind::Let(value) => append_stmts(stmts, compile_let(value)),
+            anf::Bind::Join(value) => {
+                for param in value.params {
+                    if param.0 != "_" {
+                        stmts.push(Stmt::Var(go_local_ident(param.0), lower_type(param.1), Option::None))
+                    } else {
+                        ()
+                    }
+                };
+                pending.push(value)
+            },
+            anf::Bind::JoinRec(_) => (),
+        }
+    };
+    append_stmts(stmts, compile_term_with_pending(env, value.term, pending));
+    Block { stmts }
+}
+
+fn collect_type(result: Vec[tast::Type], value: tast::Type) -> unit {
+    match tast::resolve_type(value) {
+        tast::Type::Tuple(values) => {
+            for inner in values {
+                collect_type(result, inner)
+            };
+            let name = type_name(value);
+            let found = Ref::new(false);
+            for previous in result {
+                if type_name(previous) == name {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            if found.get() == false {
+                result.push(value)
+            } else {
+                ()
+            }
+        },
+        tast::Type::Projection(base, _, _) => collect_type(result, base),
+        tast::Type::App(base, args) => {
+            collect_type(result, base);
+            for arg in args {
+                collect_type(result, arg)
+            }
+        },
+        tast::Type::Array(_, elem)
+        | tast::Type::Slice(elem)
+        | tast::Type::VecType(elem)
+        | tast::Type::RefType(elem) => collect_type(result, elem),
+        tast::Type::HashMap(key, value) => {
+            collect_type(result, key);
+            collect_type(result, value)
+        },
+        tast::Type::Func(params, ret_ty) => {
+            for param in params {
+                collect_type(result, param)
+            };
+            collect_type(result, ret_ty)
+        },
+        _ => (),
+    }
+}
+
+fn collect_imm_type(result: Vec[tast::Type], value: anf::Imm) -> unit {
+    collect_type(result, anf::imm_type(value))
+}
+
+fn collect_value_type(result: Vec[tast::Type], value: anf::Value) -> unit {
+    collect_type(result, anf::value_type(value));
+    match value {
+        anf::Value::Imm(value) => collect_imm_type(result, value),
+        anf::Value::Constr(_, args, _)
+        | anf::Value::Tuple(args, _)
+        | anf::Value::Array(args, _) => {
+            for arg in args {
+                collect_imm_type(result, arg)
+            }
+        },
+        anf::Value::ConstrGet(expr, _, _, _)
+        | anf::Value::Unary(_, expr, _)
+        | anf::Value::Cast(expr, _)
+        | anf::Value::Go(expr, _)
+        | anf::Value::Proj(expr, _, _) => collect_imm_type(result, expr),
+        anf::Value::Binary(_, lhs, rhs, _) => {
+            collect_imm_type(result, lhs);
+            collect_imm_type(result, rhs)
+        },
+        anf::Value::Assign(_, expr, target_ty, _) => {
+            collect_imm_type(result, expr);
+            collect_type(result, target_ty)
+        },
+        anf::Value::Call(func, args, _) => {
+            collect_imm_type(result, func);
+            for arg in args {
+                collect_imm_type(result, arg)
+            }
+        },
+        anf::Value::ToDyn(_, for_ty, expr, _) => {
+            collect_type(result, for_ty);
+            collect_imm_type(result, expr)
+        },
+        anf::Value::DynCall(_, _, receiver, args, _) => {
+            collect_imm_type(result, receiver);
+            for arg in args {
+                collect_imm_type(result, arg)
+            }
+        },
+    }
+}
+
+fn collect_block_types(result: Vec[tast::Type], value: anf::Block) -> unit {
+    for bind in value.binds {
+        match bind {
+            anf::Bind::Let(value) => {
+                collect_type(result, value.ty);
+                collect_value_type(result, value.value)
+            },
+            anf::Bind::Join(value) => {
+                for param in value.params {
+                    collect_type(result, param.1)
+                };
+                collect_type(result, value.ret_ty);
+                collect_block_types(result, value.body)
+            },
+            anf::Bind::JoinRec(values) => {
+                for value in values {
+                    for param in value.params {
+                        collect_type(result, param.1)
+                    };
+                    collect_type(result, value.ret_ty);
+                    collect_block_types(result, value.body)
+                }
+            },
+        }
+    };
+    match value.term {
+        anf::Term::Return(value) => collect_imm_type(result, value),
+        anf::Term::Jump(_, args, ty) => {
+            collect_type(result, ty);
+            for arg in args {
+                collect_imm_type(result, arg)
+            }
+        },
+        anf::Term::If(cond, then_, else_, ty) => {
+            collect_imm_type(result, cond);
+            collect_type(result, ty);
+            collect_block_types(result, then_);
+            collect_block_types(result, else_)
+        },
+        anf::Term::Match(scrut, arms, default, ty) => {
+            collect_imm_type(result, scrut);
+            collect_type(result, ty);
+            for arm in arms {
+                collect_imm_type(result, arm.lhs);
+                collect_block_types(result, arm.body)
+            };
+            match default {
+                Option::Some(body) => collect_block_types(result, body),
+                Option::None => (),
+            }
+        },
+        anf::Term::Unreachable(ty) => collect_type(result, ty),
+    }
+}
+
+fn tuple_struct(value: tast::Type) -> StructDef {
+    match tast::resolve_type(value) {
+        tast::Type::Tuple(values) => {
+            let fields: Vec[(string, Type)] = Vec::new();
+            for index in range(0, values.len()) {
+                fields.push(("_" + index.to_string(), lower_type(values.get(index))))
+            };
+            StructDef { name: type_name(value), fields }
+        },
+        _ => StructDef { name: "Error", fields: Vec::new() },
+    }
+}
+
+fn compile_function(value: anf::Function) -> Function {
+    let joins: Vec[anf::JoinBind] = Vec::new();
+    collect_joins_block(joins, value.body);
+    let params: Vec[(string, Type)] = Vec::new();
+    for param in value.params {
+        params.push((go_local_ident(param.0), lower_type(param.1)))
+    };
+    Function {
+        name: function_name(value.name),
+        params,
+        ret_ty: Option::Some(lower_type(value.ret_ty)),
+        body: eliminate_dead_vars(compile_block(LowerEnv { joins }, value.body)),
+    }
+}
+
+pub fn lower(value: anf::File) -> File {
+    let items: Vec[Item] = Vec::new();
+    let types: Vec[tast::Type] = Vec::new();
+    let has_main = Ref::new(false);
+    for function in value.functions {
+        for param in function.params {
+            collect_type(types, param.1)
+        };
+        collect_type(types, function.ret_ty);
+        collect_block_types(types, function.body);
+        if function.name == "main" {
+            has_main.set(true)
+        } else {
+            ()
+        }
+    };
+    for ty in types {
+        items.push(Item::Struct(tuple_struct(ty)))
+    };
+    for function in value.functions {
+        items.push(Item::Function(compile_function(function)))
+    };
+    if has_main.get() {
+        let stmts: Vec[Stmt] = Vec::new();
+        stmts.push(Stmt::Expr(Expr::Call(Expr::Var("main0"), Vec::new())));
+        items.push(Item::Function(Function {
+            name: "main",
+            params: Vec::new(),
+            ret_ty: Option::None,
+            body: Block { stmts },
+        }))
+    } else {
+        ()
+    };
+    File { items }
+}

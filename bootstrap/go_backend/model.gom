@@ -1,0 +1,118 @@
+package go_backend;
+
+pub enum Type {
+    Void,
+    Unit,
+    Bool,
+    Int8,
+    Int16,
+    Int32,
+    Int64,
+    Uint8,
+    Uint16,
+    Uint32,
+    Uint64,
+    Float32,
+    Float64,
+    String,
+    Char,
+    Named(string),
+    Pointer(Type),
+    Array(int32, Type),
+    Slice(Type),
+    Map(Type, Type),
+    Func(Vec[Type], Type),
+}
+
+pub enum UnaryOp {
+    Neg,
+    Not,
+    BitNot,
+    Address,
+    Deref,
+}
+
+pub enum BinaryOp {
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Rem,
+    BitAnd,
+    BitOr,
+    BitXor,
+    Shl,
+    Shr,
+    Less,
+    Greater,
+    LessEq,
+    GreaterEq,
+    Eq,
+    NotEq,
+    And,
+    Or,
+}
+
+pub enum Expr {
+    Nil,
+    Unit,
+    Var(string),
+    Bool(bool),
+    Int(string),
+    Float(string),
+    String(string),
+    Call(Expr, Vec[Expr]),
+    Unary(UnaryOp, Expr),
+    Binary(BinaryOp, Expr, Expr),
+    Field(Expr, string),
+    Index(Expr, Expr),
+    Slice(Expr, Expr, Expr),
+    Cast(Expr, Type),
+    Convert(Type, Expr),
+    StructLiteral(Type, Vec[(string, Expr)]),
+    ArrayLiteral(Type, Vec[Expr]),
+}
+
+pub struct Block {
+    stmts: Vec[Stmt],
+}
+
+pub struct SwitchCase {
+    value: Expr,
+    body: Block,
+}
+
+pub enum Stmt {
+    Expr(Expr),
+    Go(Expr),
+    Var(string, Type, Option[Expr]),
+    Assign(string, Expr),
+    Return(Option[Expr]),
+    If(Expr, Block, Option[Block]),
+    Loop(Block),
+    Break,
+    Continue,
+    Switch(Expr, Vec[SwitchCase], Option[Block]),
+    Unreachable,
+}
+
+pub struct StructDef {
+    name: string,
+    fields: Vec[(string, Type)],
+}
+
+pub struct Function {
+    name: string,
+    params: Vec[(string, Type)],
+    ret_ty: Option[Type],
+    body: Block,
+}
+
+pub enum Item {
+    Struct(StructDef),
+    Function(Function),
+}
+
+pub struct File {
+    items: Vec[Item],
+}
