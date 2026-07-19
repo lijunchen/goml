@@ -209,6 +209,28 @@ fn compile_imm(env: LowerEnv, value: anf::Imm) -> Expr {
     }
 }
 
+fn compile_runtime_imm(
+    env: LowerEnv,
+    value: anf::Imm,
+    name: string,
+) -> CompiledValue {
+    let expr = compile_imm(env, value);
+    match value {
+        anf::Imm::Prim(_, ty) => {
+            let stmts = Vec::new();
+            stmts.push(Stmt::Var(name, lower_type(ty), Option::Some(expr)));
+            CompiledValue {
+                stmts,
+                expr: Expr::Var(name),
+            }
+        },
+        _ => CompiledValue {
+            stmts: Vec::new(),
+            expr,
+        },
+    }
+}
+
 fn is_closure_struct_name(value: string) -> bool {
     value.byte_len() >= 12 && value.byte_slice(0, 12) == "closure_env_"
 }
@@ -593,6 +615,18 @@ fn compile_binary(value: ast::BinaryOp) -> BinaryOp {
     }
 }
 
+fn materializes_binary_operands(value: ast::BinaryOp) -> bool {
+    match value {
+        ast::BinaryOp::Rem
+        | ast::BinaryOp::BitAnd
+        | ast::BinaryOp::BitOr
+        | ast::BinaryOp::BitXor
+        | ast::BinaryOp::Shl
+        | ast::BinaryOp::Shr => true,
+        _ => false,
+    }
+}
+
 fn compile_constructor(
     env: LowerEnv,
     constructor: tast::Constructor,
@@ -653,7 +687,12 @@ fn compile_constructor(
     Expr::StructLiteral(go_ty, fields)
 }
 
-fn compile_value(env: LowerEnv, value: anf::Value, expected_ty: tast::Type) -> CompiledValue {
+fn compile_value(
+    env: LowerEnv,
+    bind_name: string,
+    value: anf::Value,
+    expected_ty: tast::Type,
+) -> CompiledValue {
     let stmts: Vec[Stmt] = Vec::new();
     let expr = match value {
         anf::Value::Imm(value) => compile_imm_expected(env, value, expected_ty),
@@ -711,13 +750,65 @@ fn compile_value(env: LowerEnv, value: anf::Value, expected_ty: tast::Type) -> C
             };
             Expr::Field(target, field)
         },
-        anf::Value::Unary(op, expr, _) => Expr::Unary(compile_unary(op), compile_imm(env, expr)),
-        anf::Value::Cast(expr, ty) => Expr::Convert(lower_type(ty), compile_imm(env, expr)),
+        anf::Value::Unary(op, operand, _) => {
+            let compiled = match op {
+                ast::UnaryOp::BitNot => compile_runtime_imm(
+                    env,
+                    operand,
+                    go_local_ident(bind_name) + "_operand",
+                ),
+                _ => CompiledValue {
+                    stmts: Vec::new(),
+                    expr: compile_imm(env, operand),
+                },
+            };
+            append_stmts(stmts, compiled.stmts);
+            Expr::Unary(compile_unary(op), compiled.expr)
+        },
+        anf::Value::Cast(source, ty) => {
+            let source_ty = lower_type(anf::imm_type(source));
+            let compiled = compile_runtime_imm(
+                env,
+                source,
+                go_local_ident(bind_name) + "_source",
+            );
+            append_stmts(stmts, compiled.stmts);
+            Expr::Convert(
+                lower_type(ty),
+                Expr::Convert(source_ty, compiled.expr),
+            )
+        },
         anf::Value::Binary(op, lhs, rhs, _) => {
+            let compiled_lhs = if materializes_binary_operands(op) {
+                compile_runtime_imm(
+                    env,
+                    lhs,
+                    go_local_ident(bind_name) + "_lhs",
+                )
+            } else {
+                CompiledValue {
+                    stmts: Vec::new(),
+                    expr: compile_imm(env, lhs),
+                }
+            };
+            let compiled_rhs = if materializes_binary_operands(op) {
+                compile_runtime_imm(
+                    env,
+                    rhs,
+                    go_local_ident(bind_name) + "_rhs",
+                )
+            } else {
+                CompiledValue {
+                    stmts: Vec::new(),
+                    expr: compile_imm(env, rhs),
+                }
+            };
+            append_stmts(stmts, compiled_lhs.stmts);
+            append_stmts(stmts, compiled_rhs.stmts);
             Expr::Binary(
                 compile_binary(op),
-                compile_imm(env, lhs),
-                compile_imm(env, rhs),
+                compiled_lhs.expr,
+                compiled_rhs.expr,
             )
         },
         anf::Value::Assign(name, value, target_ty, _) => {
@@ -783,7 +874,7 @@ fn compile_value(env: LowerEnv, value: anf::Value, expected_ty: tast::Type) -> C
 
 fn compile_let(env: LowerEnv, value: anf::LetBind) -> Vec[Stmt] {
     let result: Vec[Stmt] = Vec::new();
-    let compiled = compile_value(env, value.value, value.ty);
+    let compiled = compile_value(env, value.name, value.value, value.ty);
     append_stmts(result, compiled.stmts);
     result.push(Stmt::Var(
         go_local_ident(value.name),
