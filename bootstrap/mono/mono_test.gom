@@ -115,6 +115,21 @@ fn filters_unsatisfied_blanket_impls() -> unit {
 }
 
 #[test]
+fn resolves_trait_arguments_from_generic_impls() -> unit {
+    let source = "trait ItemSource { type Item; fn item(Self) -> Self::Item; } trait Select[T] { fn select(Self) -> T; } impl[S: ItemSource, T] Select[T] for S where S::Item == T { fn select(self: S) -> T { ItemSource::item(self) } } struct Selected { value: int32 } impl ItemSource for Selected { type Item = int32; fn item(self: Selected) -> int32 { self.value } } fn invoke[T, S: Select[T]](source: S) -> T { source.select() } fn select_item[S: ItemSource](source: S) -> S::Item { invoke(source) } fn main() -> unit { println(select_item(Selected { value: 9 })) }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(
+        output,
+        "invoke__S_Selected__T_int32",
+    ));
+    testing::assert(string_contains(
+        output,
+        "trait_impl#Select#[int32]@Selected#select",
+    ));
+    testing::assert(!string_contains(output, "invoke(source"))
+}
+
+#[test]
 fn specializes_generic_enum_constructors() -> unit {
     let source = "enum Weird[T] { Next(Ref[Weird[(int32) -> int32]]), Done(T) } fn main() -> unit { let x: Weird[int32] = Weird::Done(1i32); match x { Weird::Done(v) => println(v.to_string()), Weird::Next(_) => println(\"next\"), } }";
     testing::assert_eq(
