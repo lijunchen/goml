@@ -51,6 +51,7 @@ fn write_exprs(
     values: Vec[Expr],
     indent: int32,
     mono_style: bool,
+    flatten_blocks: bool,
 ) -> unit {
     for index in range(0, values.len()) {
         if index > 0 {
@@ -58,7 +59,7 @@ fn write_exprs(
         } else {
             ()
         };
-        write_expr(builder, values.get(index), indent, mono_style)
+        write_expr(builder, values.get(index), indent, mono_style, flatten_blocks)
     }
 }
 
@@ -68,6 +69,7 @@ fn write_constructor(
     args: Vec[Expr],
     indent: int32,
     mono_style: bool,
+    flatten_blocks: bool,
 ) -> unit {
     builder.write_string(constructor.name);
     if constructor.is_struct {
@@ -83,19 +85,25 @@ fn write_constructor(
                 };
                 builder.write_string(constructor.fields.get(index));
                 builder.write_string(": ");
-                write_expr(builder, args.get(index), indent, mono_style)
+                write_expr(
+                    builder,
+                    args.get(index),
+                    indent,
+                    mono_style,
+                    flatten_blocks,
+                )
             };
             builder.write_string(" }")
         } else if args.len() > 0 {
             builder.write_char('(');
-            write_exprs(builder, args, indent, mono_style);
+            write_exprs(builder, args, indent, mono_style, flatten_blocks);
             builder.write_char(')')
         } else {
             ()
         }
     } else if args.len() > 0 {
         builder.write_char('(');
-        write_exprs(builder, args, indent, mono_style);
+        write_exprs(builder, args, indent, mono_style, flatten_blocks);
         builder.write_char(')')
     } else {
         ()
@@ -107,10 +115,13 @@ fn write_block_contents(
     value: Block,
     indent: int32,
     mono_style: bool,
+    flatten_blocks: bool,
 ) -> unit {
     if value.stmts.len() == 0 {
         match value.tail {
-            Option::Some(tail) => write_expr(builder, tail, indent, mono_style),
+            Option::Some(tail) => {
+                write_expr(builder, tail, indent, mono_style, flatten_blocks)
+            },
             Option::None => builder.write_string("()"),
         }
     } else {
@@ -124,15 +135,20 @@ fn write_block_contents(
             builder.write_string("let ");
             builder.write_string(stmt.name);
             builder.write_string(" = ");
-            write_expr(builder, stmt.value, indent, mono_style);
+            write_expr(builder, stmt.value, indent, mono_style, flatten_blocks);
             builder.write_string(" in")
         };
         match value.tail {
             Option::Some(tail) => {
                 newline(builder, indent);
-                write_expr(builder, tail, indent, mono_style)
+                write_expr(builder, tail, indent, mono_style, flatten_blocks)
             },
-            Option::None => (),
+            Option::None => if flatten_blocks {
+                newline(builder, indent);
+                builder.write_string("()")
+            } else {
+                ()
+            },
         }
     }
 }
@@ -142,10 +158,11 @@ fn write_block_expr(
     value: Block,
     indent: int32,
     mono_style: bool,
+    flatten_blocks: bool,
 ) -> unit {
     builder.write_char('{');
     newline(builder, indent + 2);
-    write_block_contents(builder, value, indent + 2, mono_style);
+    write_block_contents(builder, value, indent + 2, mono_style, flatten_blocks);
     newline(builder, indent);
     builder.write_char('}')
 }
@@ -155,11 +172,18 @@ fn write_arm(
     value: Arm,
     indent: int32,
     mono_style: bool,
+    flatten_blocks: bool,
 ) -> unit {
-    write_expr(builder, value.lhs, indent, mono_style);
+    write_expr(builder, value.lhs, indent, mono_style, flatten_blocks);
     builder.write_string(" => {");
     newline(builder, indent + 2);
-    write_expr(builder, value.body, indent + 2, mono_style);
+    write_expr(
+        builder,
+        value.body,
+        indent + 2,
+        mono_style,
+        flatten_blocks,
+    );
     newline(builder, indent);
     builder.write_string("},")
 }
@@ -169,22 +193,30 @@ fn write_expr(
     value: Expr,
     indent: int32,
     mono_style: bool,
+    flatten_blocks: bool,
 ) -> unit {
     match value {
         Expr::Var(name, _) => builder.write_string(name),
         Expr::Callable(callable, _) => write_callable(builder, callable),
         Expr::Prim(value, _) => tast::write_primitive(builder, value),
         Expr::Constr(constructor, args, _) => {
-            write_constructor(builder, constructor, args, indent, mono_style)
+            write_constructor(
+                builder,
+                constructor,
+                args,
+                indent,
+                mono_style,
+                flatten_blocks,
+            )
         },
         Expr::Tuple(values, _) => {
             builder.write_char('(');
-            write_exprs(builder, values, indent, mono_style);
+            write_exprs(builder, values, indent, mono_style, flatten_blocks);
             builder.write_char(')')
         },
         Expr::Array(values, _) => {
             builder.write_char('[');
-            write_exprs(builder, values, indent, mono_style);
+            write_exprs(builder, values, indent, mono_style, flatten_blocks);
             builder.write_char(']')
         },
         Expr::Closure(params, body, _) => {
@@ -215,22 +247,32 @@ fn write_expr(
             } else {
                 builder.write_string("=> ")
             };
-            write_expr(builder, body, indent, mono_style)
+            write_expr(builder, body, indent, mono_style, flatten_blocks)
         },
-        Expr::Block(block, _) => write_block_expr(builder, block, indent, mono_style),
+        Expr::Block(block, _) => if flatten_blocks {
+            write_block_contents(builder, block, indent, mono_style, flatten_blocks)
+        } else {
+            write_block_expr(builder, block, indent, mono_style, flatten_blocks)
+        },
         Expr::Match(source, arms, default, _) => {
             builder.write_string("match ");
-            write_expr(builder, source, indent, mono_style);
+            write_expr(builder, source, indent, mono_style, flatten_blocks);
             builder.write_string(" {");
             for arm in arms {
                 newline(builder, indent + 2);
-                write_arm(builder, arm, indent + 2, mono_style)
+                write_arm(builder, arm, indent + 2, mono_style, flatten_blocks)
             };
             match default {
                 Option::Some(value) => {
                     newline(builder, indent + 2);
                     builder.write_string("_ => ");
-                    write_expr(builder, value, indent + 2, mono_style);
+                    write_expr(
+                        builder,
+                        value,
+                        indent + 2,
+                        mono_style,
+                        flatten_blocks,
+                    );
                     builder.write_char(',')
                 },
                 Option::None => (),
@@ -240,23 +282,41 @@ fn write_expr(
         },
         Expr::If(cond, then_branch, else_branch, _) => {
             builder.write_string("if ");
-            write_expr(builder, cond, indent, mono_style);
+            write_expr(builder, cond, indent, mono_style, flatten_blocks);
             builder.write_string(" {");
             newline(builder, indent + 4);
-            write_expr(builder, then_branch, indent + 4, mono_style);
+            write_expr(
+                builder,
+                then_branch,
+                indent + 4,
+                mono_style,
+                flatten_blocks,
+            );
             newline(builder, indent);
             builder.write_string("} else {");
             newline(builder, indent + 4);
-            write_expr(builder, else_branch, indent + 4, mono_style);
+            write_expr(
+                builder,
+                else_branch,
+                indent + 4,
+                mono_style,
+                flatten_blocks,
+            );
             newline(builder, indent);
             builder.write_char('}')
         },
         Expr::While(cond, body, _) => {
             builder.write_string("while ");
-            write_expr(builder, cond, indent, mono_style);
+            write_expr(builder, cond, indent, mono_style, flatten_blocks);
             builder.write_string(" {");
             newline(builder, indent + 4);
-            write_expr(builder, body, indent + 4, mono_style);
+            write_expr(
+                builder,
+                body,
+                indent + 4,
+                mono_style,
+                flatten_blocks,
+            );
             newline(builder, indent);
             builder.write_char('}')
         },
@@ -267,14 +327,14 @@ fn write_expr(
             match value {
                 Option::Some(expr) => {
                     builder.write_char(' ');
-                    write_expr(builder, expr, indent, mono_style)
+                    write_expr(builder, expr, indent, mono_style, flatten_blocks)
                 },
                 Option::None => (),
             }
         },
         Expr::Go(value, _) => {
             builder.write_string("go ");
-            write_expr(builder, value, indent, mono_style)
+            write_expr(builder, value, indent, mono_style, flatten_blocks)
         },
         Expr::ConstrGet(value, constructor, field_index, _) => {
             builder.write_string(constructor.name);
@@ -286,40 +346,40 @@ fn write_expr(
                 builder.write_string(field_index.to_string())
             };
             builder.write_char('(');
-            write_expr(builder, value, indent, mono_style);
+            write_expr(builder, value, indent, mono_style, flatten_blocks);
             builder.write_char(')')
         },
         Expr::Unary(op, value, _) => {
             builder.write_char('(');
             builder.write_string(tast::unary_symbol(op));
-            write_expr(builder, value, indent, mono_style);
+            write_expr(builder, value, indent, mono_style, flatten_blocks);
             builder.write_char(')')
         },
         Expr::Cast(value, ty) => {
             builder.write_char('(');
-            write_expr(builder, value, indent, mono_style);
+            write_expr(builder, value, indent, mono_style, flatten_blocks);
             builder.write_string(" as ");
             tast::write_type(builder, ty);
             builder.write_char(')')
         },
         Expr::Binary(op, left, right, _) => {
             builder.write_char('(');
-            write_expr(builder, left, indent, mono_style);
+            write_expr(builder, left, indent, mono_style, flatten_blocks);
             builder.write_char(' ');
             builder.write_string(tast::binary_symbol(op));
             builder.write_char(' ');
-            write_expr(builder, right, indent, mono_style);
+            write_expr(builder, right, indent, mono_style, flatten_blocks);
             builder.write_char(')')
         },
         Expr::Assign(name, value, _, _) => {
             builder.write_string(name);
             builder.write_string(" = ");
-            write_expr(builder, value, indent, mono_style)
+            write_expr(builder, value, indent, mono_style, flatten_blocks)
         },
         Expr::Call(function, args, _) => {
-            write_expr(builder, function, indent, mono_style);
+            write_expr(builder, function, indent, mono_style, flatten_blocks);
             builder.write_char('(');
-            write_exprs(builder, args, indent, mono_style);
+            write_exprs(builder, args, indent, mono_style, flatten_blocks);
             builder.write_char(')')
         },
         Expr::ToDyn(trait_name, for_ty, value, _) => {
@@ -328,7 +388,7 @@ fn write_expr(
             builder.write_string("]{");
             tast::write_type(builder, for_ty);
             builder.write_string("}(");
-            write_expr(builder, value, indent, mono_style);
+            write_expr(builder, value, indent, mono_style, flatten_blocks);
             builder.write_char(')')
         },
         Expr::DynCall(trait_name, method_name, receiver, args, _) => {
@@ -337,10 +397,10 @@ fn write_expr(
             builder.write_string("::");
             builder.write_string(method_name);
             builder.write_string("](");
-            write_expr(builder, receiver, indent, mono_style);
+            write_expr(builder, receiver, indent, mono_style, flatten_blocks);
             if args.len() > 0 {
                 builder.write_string(", ");
-                write_exprs(builder, args, indent, mono_style)
+                write_exprs(builder, args, indent, mono_style, flatten_blocks)
             } else {
                 ()
             };
@@ -352,17 +412,17 @@ fn write_expr(
             builder.write_string("::");
             builder.write_string(method_name);
             builder.write_string("](");
-            write_expr(builder, receiver, indent, mono_style);
+            write_expr(builder, receiver, indent, mono_style, flatten_blocks);
             if args.len() > 0 {
                 builder.write_string(", ");
-                write_exprs(builder, args, indent, mono_style)
+                write_exprs(builder, args, indent, mono_style, flatten_blocks)
             } else {
                 ()
             };
             builder.write_char(')')
         },
         Expr::Proj(value, index, _) => {
-            write_expr(builder, value, indent, mono_style);
+            write_expr(builder, value, indent, mono_style, flatten_blocks);
             builder.write_char('.');
             builder.write_string(index.to_string())
         },
@@ -373,6 +433,7 @@ fn write_function(
     builder: text::StringBuilder,
     value: Function,
     mono_style: bool,
+    flatten_blocks: bool,
 ) -> unit {
     builder.write_string("fn ");
     builder.write_string(value.name);
@@ -392,12 +453,12 @@ fn write_function(
     tast::write_type(builder, value.ret_ty);
     builder.write_string(" {");
     newline(builder, 2);
-    write_block_contents(builder, value.body, 2, mono_style);
+    write_block_contents(builder, value.body, 2, mono_style, flatten_blocks);
     newline(builder, 0);
     builder.write_char('}')
 }
 
-fn encode_with_style(value: File, mono_style: bool) -> string {
+fn encode_with_style(value: File, mono_style: bool, flatten_blocks: bool) -> string {
     let builder = text::StringBuilder::new();
     for index in range(0, value.functions.len()) {
         if index > 0 {
@@ -405,15 +466,24 @@ fn encode_with_style(value: File, mono_style: bool) -> string {
         } else {
             ()
         };
-        write_function(builder, value.functions.get(index), mono_style)
+        write_function(
+            builder,
+            value.functions.get(index),
+            mono_style,
+            flatten_blocks,
+        )
     };
     builder.finish()
 }
 
 pub fn encode(value: File) -> string {
-    encode_with_style(value, false)
+    encode_with_style(value, false, false)
 }
 
 pub fn encode_mono(value: File) -> string {
-    encode_with_style(value, true)
+    encode_with_style(value, true, false)
+}
+
+pub fn encode_lift(value: File) -> string {
+    encode_with_style(value, true, true)
 }
