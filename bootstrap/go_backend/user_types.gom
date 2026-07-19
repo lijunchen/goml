@@ -354,9 +354,6 @@ pub fn emit_user_type_items(
 ) -> unit {
     let emitted: Vec[string] = Vec::new();
     for instance in instances {
-        emit_enum_instance(items, emitted, variants, enums, instances, instance)
-    };
-    for instance in instances {
         match find_struct(structs, instance.base_name) {
             Option::Some(definition) => {
                 if contains_text(emitted, instance.name) == false {
@@ -400,6 +397,9 @@ pub fn emit_user_type_items(
         } else {
             ()
         }
+    };
+    for instance in instances {
+        emit_enum_instance(items, emitted, variants, enums, instances, instance)
     };
     for ty in types {
         match tast::resolve_type(ty) {
