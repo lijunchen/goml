@@ -14,6 +14,11 @@ struct Instance {
     bindings: Vec[TypeBinding],
 }
 
+struct TraitSelection {
+    reference: tast::TraitRef,
+    associated_types: Vec[(string, tast::Type)],
+}
+
 struct SpecializeCtx {
     functions: Vec[core::Function],
     instances: Vec[Instance],
@@ -197,6 +202,17 @@ fn substitute_types(
     result
 }
 
+fn substitute_named_types(
+    values: Vec[(string, tast::Type)],
+    bindings: Vec[TypeBinding],
+) -> Vec[(string, tast::Type)] {
+    let result = Vec::new();
+    for value in values {
+        result.push((value.0, substitute_type(value.1, bindings)))
+    };
+    result
+}
+
 fn substitute_optional_trait_ref(
     value: Option[tast::TraitRef],
     bindings: Vec[TypeBinding],
@@ -247,7 +263,10 @@ fn substitute_type(value: tast::Type, bindings: Vec[TypeBinding]) -> tast::Type 
                 projection_binding_name(base, name, reference),
             ) {
                 Option::Some(ty) => ty,
-                Option::None => tast::Type::Projection(base, name, reference),
+                Option::None => match tast::builtin_projection(base, name, reference) {
+                    Option::Some(ty) => substitute_type(ty, bindings),
+                    Option::None => tast::Type::Projection(base, name, reference),
+                },
             }
         },
         tast::Type::App(base, args) => tast::Type::App(
@@ -543,6 +562,18 @@ fn trait_ref_key(value: tast::TraitRef) -> string {
     builder.finish()
 }
 
+fn trait_selection_key(value: TraitSelection) -> string {
+    let builder = std::text::StringBuilder::new();
+    builder.write_string(trait_ref_key(value.reference));
+    for associated in value.associated_types {
+        builder.write_char('#');
+        builder.write_string(associated.0);
+        builder.write_char('=');
+        builder.write_string(compact_type(associated.1))
+    };
+    builder.finish()
+}
+
 fn contains_string(values: Vec[string], expected: string) -> bool {
     let found = Ref::new(false);
     for value in values {
@@ -555,13 +586,13 @@ fn contains_string(values: Vec[string], expected: string) -> bool {
     found.get()
 }
 
-fn matching_trait_applications(
+fn matching_trait_selections(
     ctx: SpecializeCtx,
     for_ty: tast::Type,
     reference: tast::TraitRef,
     bindings: Vec[TypeBinding],
-) -> Vec[tast::TraitRef] {
-    let applications = Vec::new();
+) -> Vec[TraitSelection] {
+    let selections = Vec::new();
     let keys = Vec::new();
     for function in ctx.functions {
         match function.trait_impl {
@@ -576,12 +607,19 @@ fn matching_trait_applications(
                     );
                     let trial = copy_bindings(bindings);
                     if unify_types(reference.args, application.args, trial) {
-                        let key = trait_ref_key(application);
+                        let selection = TraitSelection {
+                            reference: application,
+                            associated_types: substitute_named_types(
+                                metadata.associated_types,
+                                impl_bindings,
+                            ),
+                        };
+                        let key = trait_selection_key(selection);
                         if contains_string(keys, key) {
                             ()
                         } else {
                             keys.push(key);
-                            applications.push(application)
+                            selections.push(selection)
                         }
                     } else {
                         ()
@@ -595,7 +633,7 @@ fn matching_trait_applications(
             Option::None => (),
         }
     };
-    applications
+    selections
 }
 
 fn complete_function_bindings(
@@ -611,18 +649,31 @@ fn complete_function_bindings(
                     let for_ty = substitute_type(for_ty, bindings);
                     if type_is_concrete(for_ty) {
                         let reference = substitute_trait_ref(reference, bindings);
-                        let applications = matching_trait_applications(
+                        let selections = matching_trait_selections(
                             ctx,
                             for_ty,
                             reference,
                             bindings,
                         );
-                        if applications.len() == 1 {
+                        if selections.len() == 1 {
+                            let selection = selections.get(0);
                             unify_types(
                                 reference.args,
-                                applications.get(0).args,
+                                selection.reference.args,
                                 bindings,
                             );
+                            for associated in selection.associated_types {
+                                bind_type(
+                                    bindings,
+                                    projection_binding_name(
+                                        for_ty,
+                                        associated.0,
+                                        Option::Some(selection.reference),
+                                    ),
+                                    associated.1,
+                                );
+                                ()
+                            };
                             ()
                         } else {
                             ()
@@ -1011,6 +1062,10 @@ fn specialize_function(
             Option::Some(metadata) => Option::Some(core::TraitImpl {
                 trait_ref: substitute_trait_ref(metadata.trait_ref, instance.bindings),
                 for_ty: substitute_type(metadata.for_ty, instance.bindings),
+                associated_types: substitute_named_types(
+                    metadata.associated_types,
+                    instance.bindings,
+                ),
             }),
             Option::None => Option::None,
         },

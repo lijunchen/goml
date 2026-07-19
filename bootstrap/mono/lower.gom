@@ -194,6 +194,17 @@ fn collapse_types(ctx: TypeCtx, values: Vec[tast::Type]) -> Vec[tast::Type] {
     result
 }
 
+fn collapse_named_types(
+    ctx: TypeCtx,
+    values: Vec[(string, tast::Type)],
+) -> Vec[(string, tast::Type)] {
+    let result = Vec::new();
+    for value in values {
+        result.push((value.0, collapse_type(ctx, value.1)))
+    };
+    result
+}
+
 fn collapse_optional_trait_ref(
     ctx: TypeCtx,
     value: Option[tast::TraitRef],
@@ -769,7 +780,10 @@ fn type_ctx(value: core::File) -> TypeCtx {
         match function.trait_impl {
             Option::Some(metadata) => {
                 collect_trait_ref_type_names(ctx, metadata.trait_ref);
-                collect_type_names(ctx, metadata.for_ty)
+                collect_type_names(ctx, metadata.for_ty);
+                for associated in metadata.associated_types {
+                    collect_type_names(ctx, associated.1)
+                }
             },
             Option::None => (),
         };
@@ -786,6 +800,7 @@ fn lower_trait_impl(
         Option::Some(metadata) => Option::Some(core::TraitImpl {
             trait_ref: collapse_trait_ref(ctx, metadata.trait_ref),
             for_ty: collapse_type(ctx, metadata.for_ty),
+            associated_types: collapse_named_types(ctx, metadata.associated_types),
         }),
         Option::None => Option::None,
     }

@@ -82,6 +82,17 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
         )),
         Option::None => Option::None,
     };
+    let associated_types: Vec[(string, Type)] = Vec::new();
+    for associated in value.associated_types {
+        associated_types.push((
+            associated.0,
+            type_from_hir(
+                associated.1,
+                value.generics,
+                Option::Some(for_type),
+            ),
+        ))
+    };
     let methods: Vec[Function] = Vec::new();
     for method in value.methods {
         methods.push(check_function(
@@ -96,6 +107,7 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
         generics: value.generics,
         trait_ref,
         for_type,
+        associated_types,
         methods,
     }
 }
