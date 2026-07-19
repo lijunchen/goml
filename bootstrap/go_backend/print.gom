@@ -525,6 +525,7 @@ fn write_type_def(builder: text::StringBuilder, value: TypeDef) -> unit {
 
 fn write_const_group(builder: text::StringBuilder, value: ConstGroup) -> unit {
     builder.write_string("const (");
+    let empty = value.specs.len() == 0;
     for spec in value.specs {
         newline(builder, 4);
         builder.write_string(spec.name);
@@ -532,6 +533,11 @@ fn write_const_group(builder: text::StringBuilder, value: ConstGroup) -> unit {
         write_type(builder, spec.ty);
         builder.write_string(" = ");
         write_expr(builder, spec.value, 4)
+    };
+    if empty {
+        newline(builder, 0)
+    } else {
+        ()
     };
     newline(builder, 0);
     builder.write_char(')')
