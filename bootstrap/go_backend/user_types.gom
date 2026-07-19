@@ -384,27 +384,21 @@ pub fn emit_user_type_items(
             Option::None => (),
         }
     };
-    for ty in types {
-        match tast::resolve_type(ty) {
-            tast::Type::Con(name) => match find_struct(structs, name) {
-                Option::Some(definition) => {
-                    if definition.generics.len() == 0 && contains_text(emitted, name) == false {
-                        let fields: Vec[(string, Type)] = Vec::new();
-                        for field in definition.fields {
-                            fields.push((go_ident(field.0), lower_type(field.1)))
-                        };
-                        items.push(Item::Struct(StructDef {
-                            name: go_user_type_name(name),
-                            fields,
-                        }));
-                        emitted.push(name)
-                    } else {
-                        ()
-                    }
-                },
-                Option::None => (),
-            },
-            _ => (),
+    for definition in structs {
+        if definition.generics.len() == 0
+            && contains_text(emitted, definition.name) == false
+        {
+            let fields: Vec[(string, Type)] = Vec::new();
+            for field in definition.fields {
+                fields.push((go_ident(field.0), lower_type(field.1)))
+            };
+            items.push(Item::Struct(StructDef {
+                name: go_user_type_name(definition.name),
+                fields,
+            }));
+            emitted.push(definition.name)
+        } else {
+            ()
         }
     };
     for ty in types {
