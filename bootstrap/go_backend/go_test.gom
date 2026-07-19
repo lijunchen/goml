@@ -206,3 +206,21 @@ fn emits_entry_wrapper_without_main() -> unit {
         "package main\n\nfunc main() {\n    main0()\n}\n",
     )
 }
+
+#[test]
+fn protects_functions_from_closure_environment_types() -> unit {
+    let source = "fn closure_env_add_0() -> int32 { 35i32 } fn main() -> unit { let add = |x: int32| x + 1i32; println(add(1i32) + closure_env_add_0()); }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "package main\n\ntype closure_env_add_0 struct {}\n\nfunc _goml_user_closure_env_add_0() int32 {\n    var retv3 int32\n    retv3 = 35\n    return retv3\n}\n\nfunc main0() struct{} {\n    var add__1 closure_env_add_0 = closure_env_add_0{}\n    var t5 int32 = _goml_m_inherent_i_closure__env__add__0_i_closure__env__add__0_i_apply(add__1, 1)\n    var t6 int32 = _goml_user_closure_env_add_0()\n    var t7 int32 = t5 + t6\n    _goml_m_println(t7)\n    return struct{}{}\n}\n\nfunc _goml_m_inherent_i_closure__env__add__0_i_closure__env__add__0_i_apply(env1 closure_env_add_0, x__0 int32) int32 {\n    var retv9 int32\n    var t10 int32 = x__0 + 1\n    retv9 = t10\n    return retv9\n}\n\nfunc main() {\n    main0()\n}\n",
+    )
+}
+
+#[test]
+fn protects_functions_from_tuple_type_names() -> unit {
+    let source = "fn Tuple2_int32_int32() -> int32 { 26i32 } fn main() -> unit { let t = (1i32, 2i32); println(t.0 + t.1 + Tuple2_int32_int32()); }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "package main\n\ntype Tuple2_5int32_5int32 struct {\n    _0 int32\n    _1 int32\n}\n\nfunc _goml_user_Tuple2_int32_int32() int32 {\n    var retv2 int32\n    retv2 = 26\n    return retv2\n}\n\nfunc main0() struct{} {\n    var t__0 Tuple2_5int32_5int32 = Tuple2_5int32_5int32{\n        _0: 1,\n        _1: 2,\n    }\n    var t4 int32 = t__0._0\n    var t5 int32 = t__0._1\n    var t6 int32 = t4 + t5\n    var t7 int32 = _goml_user_Tuple2_int32_int32()\n    var t8 int32 = t6 + t7\n    _goml_m_println(t8)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
+    )
+}
