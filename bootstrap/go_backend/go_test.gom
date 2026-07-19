@@ -1,0 +1,36 @@
+package go_backend;
+
+use gomlang::parser::anf;
+use gomlang::parser::ast;
+use gomlang::parser::core;
+use gomlang::parser::hir;
+use gomlang::parser::lift;
+use gomlang::parser::mono;
+use gomlang::parser::parser;
+use gomlang::parser::tast;
+use std::testing;
+
+fn lower_source(source: string) -> File {
+    lower(anf::lower(lift::lower(mono::lower(core::lower(tast::check(hir::lower(
+        ast::lower(parser::parse(source)),
+        "main.gom",
+    )))))))
+}
+
+#[test]
+fn emits_if_continuations() -> unit {
+    let source = "fn choose(flag: bool, x: int32, y: int32) -> int32 { if flag { x } else { y } } fn main() { let yes = choose(true, 10, 99); let no = choose(false, 10, 99); let _ = println(\"yes=\" + yes.to_string()); let _ = println(\"no=\" + no.to_string()); () }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "package main\n\nfunc choose(flag__0 bool, x__1 int32, y__2 int32) int32 {\n    var retv3 int32\n    var jp5 int32\n    if flag__0 {\n        jp5 = x__1\n    } else {\n        jp5 = y__2\n    }\n    retv3 = jp5\n    return retv3\n}\n\nfunc main0() struct{} {\n    var yes__3 int32 = choose(true, 10, 99)\n    var no__4 int32 = choose(false, 10, 99)\n    var t7 string = _goml_m_inherent_i_int32_i_int32_i_to__string(yes__3)\n    var t8 string = \"yes=\" + t7\n    _goml_m_println(t8)\n    var t9 string = _goml_m_inherent_i_int32_i_int32_i_to__string(no__4)\n    var t10 string = \"no=\" + t9\n    _goml_m_println(t10)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
+    )
+}
+
+#[test]
+fn emits_tuple_types_and_prunes_dead_bindings() -> unit {
+    let source = "fn main() { let _ = (); let a = (true, false, (true, false)); let b = match a { (x, y, (z, w)) => w }; let _ = print(b); () }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "package main\n\ntype Tuple2_4bool_4bool struct {\n    _0 bool\n    _1 bool\n}\n\ntype Tuple3_4bool_4bool_18Tuple2_4bool_4bool struct {\n    _0 bool\n    _1 bool\n    _2 Tuple2_4bool_4bool\n}\n\nfunc main0() struct{} {\n    var t8 Tuple2_4bool_4bool = Tuple2_4bool_4bool{\n        _0: true,\n        _1: false,\n    }\n    var a__0 Tuple3_4bool_4bool_18Tuple2_4bool_4bool = Tuple3_4bool_4bool_18Tuple2_4bool_4bool{\n        _0: true,\n        _1: false,\n        _2: t8,\n    }\n    var x3 Tuple2_4bool_4bool = a__0._2\n    var x5 bool = x3._1\n    var w__4 bool = x5\n    var b__5 bool = w__4\n    _goml_m_print(b__5)\n    return struct{}{}\n}\n\nfunc main() {\n    main0()\n}\n",
+    )
+}
