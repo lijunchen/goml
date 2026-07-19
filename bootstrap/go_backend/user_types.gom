@@ -250,15 +250,23 @@ fn variant_instance_count(
     instances: Vec[core::TypeInstance],
     variant_name: string,
 ) -> int32 {
-    let count = Ref::new(0);
+    let owners = Vec::new();
     for definition in enums {
         if enum_has_variant(definition, variant_name) {
             if definition.generics.len() == 0 {
-                count.set(count.get() + 1)
+                if contains_text(owners, definition.name) {
+                    ()
+                } else {
+                    owners.push(definition.name)
+                }
             } else {
                 for instance in instances {
                     if instance.base_name == definition.name {
-                        count.set(count.get() + 1)
+                        if contains_text(owners, instance.name) {
+                            ()
+                        } else {
+                            owners.push(instance.name)
+                        }
                     } else {
                         ()
                     }
@@ -268,7 +276,7 @@ fn variant_instance_count(
             ()
         }
     };
-    count.get()
+    owners.len()
 }
 
 fn variant_go_name(
