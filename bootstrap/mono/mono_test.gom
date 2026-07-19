@@ -196,6 +196,20 @@ fn prints_monomorphic_closures_without_parameter_types() -> unit {
 }
 
 #[test]
+fn retains_generic_trait_impls_for_dyn_coercions() -> unit {
+    let source = "struct Box[T] { value: T } trait Printable { fn print_me(Self) -> string; } impl Printable for int32 { fn print_me(self: int32) -> string { self.to_string() } } impl[T: Printable] Printable for Box[T] { fn print_me(self: Box[T]) -> string { \"Box(\" + Printable::print_me(self.value) + \")\" } } fn show(value: dyn Printable) -> string { Printable::print_me(value) } fn main() -> unit { let value: Box[int32] = Box { value: 42 }; println(show(value)) }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(
+        output,
+        "trait_impl#Printable#Box__int32#print_me",
+    ));
+    testing::assert(string_contains(
+        output,
+        "trait_impl#Printable#int32#print_me",
+    ))
+}
+
+#[test]
 fn specializes_generic_types_with_collision_safe_names() -> unit {
     let source = "struct Box[T] { value: T } struct Box__int32 { value: int32 } fn main() -> unit { let a = Box { value: 10i32 }; let b = Box__int32 { value: 20i32 }; println(a.value + b.value) }";
     testing::assert_eq(
