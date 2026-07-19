@@ -1,6 +1,7 @@
 package main;
 
 use gomlang::parser::ast;
+use gomlang::parser::anf;
 use gomlang::parser::cst;
 use gomlang::parser::core;
 use gomlang::parser::hir;
@@ -32,7 +33,7 @@ fn read_source(path: string) -> string {
 fn main() -> unit {
     let args = env::args();
     if args.len() != 3 {
-        fail("usage: gomlang-parser <lex|cst|ast|hir|tast|core|mono|lift> <file>")
+        fail("usage: gomlang-parser <lex|cst|ast|hir|tast|core|mono|lift|anf> <file>")
     } else if args.get(1) == "lex" {
         io::print(lexer::encode_tokens(lexer::lex(read_source(args.get(2)))))
     } else if args.get(1) == "cst" {
@@ -70,6 +71,14 @@ fn main() -> unit {
                 ast::lower(parser::parse(source)),
                 args.get(2),
             ),
+        ))))))
+    } else if args.get(1) == "anf" {
+        let source = read_source(args.get(2));
+        io::print(anf::encode(anf::lower(lift::lower(mono::lower(core::lower(
+            tast::check(hir::lower(
+                ast::lower(parser::parse(source)),
+                args.get(2),
+            )),
         ))))))
     } else {
         fail("unknown mode: " + args.get(1))

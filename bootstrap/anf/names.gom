@@ -1,0 +1,167 @@
+package anf;
+
+use gomlang::parser::core;
+
+fn parse_digits(value: string, start: int32) -> int32 {
+    let result = Ref::new(0);
+    for index in range(start, value.byte_len()) {
+        let byte = value.byte_get(index);
+        let digit = if byte == 48u8 {
+            0
+        } else if byte == 49u8 {
+            1
+        } else if byte == 50u8 {
+            2
+        } else if byte == 51u8 {
+            3
+        } else if byte == 52u8 {
+            4
+        } else if byte == 53u8 {
+            5
+        } else if byte == 54u8 {
+            6
+        } else if byte == 55u8 {
+            7
+        } else if byte == 56u8 {
+            8
+        } else {
+            9
+        };
+        result.set(result.get() * 10 + digit)
+    };
+    result.get()
+}
+
+fn trailing_number(value: string) -> Option[int32] {
+    let slash = Ref::new(false);
+    for index in range(0, value.byte_len()) {
+        if value.byte_get(index) == 47u8 {
+            slash.set(true)
+        } else {
+            ()
+        }
+    };
+    if slash.get() || value.byte_len() == 0 {
+        Option::None
+    } else {
+        let start = Ref::new(value.byte_len());
+        let scanning = Ref::new(true);
+        let index = Ref::new(value.byte_len());
+        while scanning.get() && index.get() > 0 {
+            let next = index.get() - 1;
+            let byte = value.byte_get(next);
+            if byte >= 48u8 && byte <= 57u8 {
+                start.set(next);
+                index.set(next)
+            } else {
+                scanning.set(false)
+            }
+        };
+        if start.get() == value.byte_len() {
+            Option::None
+        } else {
+            Option::Some(parse_digits(value, start.get()))
+        }
+    }
+}
+
+fn observe_name(maximum: Ref[int32], name: string) -> unit {
+    match trailing_number(name) {
+        Option::Some(value) => if value > maximum.get() {
+            maximum.set(value)
+        } else {
+            ()
+        },
+        Option::None => (),
+    }
+}
+
+fn observe_exprs(maximum: Ref[int32], values: Vec[core::Expr]) -> unit {
+    for value in values {
+        observe_expr(maximum, value)
+    }
+}
+
+fn observe_optional_expr(
+    maximum: Ref[int32],
+    value: Option[core::Expr],
+) -> unit {
+    match value {
+        Option::Some(value) => observe_expr(maximum, value),
+        Option::None => (),
+    }
+}
+
+fn observe_block(maximum: Ref[int32], value: core::Block) -> unit {
+    for stmt in value.stmts {
+        observe_name(maximum, stmt.name);
+        observe_expr(maximum, stmt.value)
+    };
+    observe_optional_expr(maximum, value.tail)
+}
+
+fn observe_expr(maximum: Ref[int32], value: core::Expr) -> unit {
+    match value {
+        core::Expr::Constr(_, args, _) => observe_exprs(maximum, args),
+        core::Expr::Tuple(items, _) | core::Expr::Array(items, _) => {
+            observe_exprs(maximum, items)
+        },
+        core::Expr::Closure(params, body, _) => {
+            for param in params {
+                observe_name(maximum, param.name)
+            };
+            observe_expr(maximum, body)
+        },
+        core::Expr::Block(block, _) => observe_block(maximum, block),
+        core::Expr::Match(expr, arms, default, _) => {
+            observe_expr(maximum, expr);
+            for arm in arms {
+                observe_expr(maximum, arm.lhs);
+                observe_expr(maximum, arm.body)
+            };
+            observe_optional_expr(maximum, default)
+        },
+        core::Expr::If(cond, then_, else_, _) => {
+            observe_expr(maximum, cond);
+            observe_expr(maximum, then_);
+            observe_expr(maximum, else_)
+        },
+        core::Expr::While(cond, body, _) | core::Expr::Binary(_, cond, body, _) => {
+            observe_expr(maximum, cond);
+            observe_expr(maximum, body)
+        },
+        core::Expr::Return(expr, _) => observe_optional_expr(maximum, expr),
+        core::Expr::Go(expr, _)
+        | core::Expr::ConstrGet(expr, _, _, _)
+        | core::Expr::Unary(_, expr, _)
+        | core::Expr::Cast(expr, _)
+        | core::Expr::ToDyn(_, _, expr, _)
+        | core::Expr::Proj(expr, _, _) => observe_expr(maximum, expr),
+        core::Expr::Assign(_, expr, _, _) => observe_expr(maximum, expr),
+        core::Expr::Call(func, args, _) => {
+            observe_expr(maximum, func);
+            observe_exprs(maximum, args)
+        },
+        core::Expr::DynCall(_, _, receiver, args, _)
+        | core::Expr::TraitCall(_, _, receiver, args, _) => {
+            observe_expr(maximum, receiver);
+            observe_exprs(maximum, args)
+        },
+        core::Expr::Var(_, _)
+        | core::Expr::Callable(_, _)
+        | core::Expr::Prim(_, _)
+        | core::Expr::Break(_)
+        | core::Expr::Continue(_) => (),
+    }
+}
+
+fn initial_counter(value: core::File) -> int32 {
+    let maximum = Ref::new(-1);
+    for function in value.functions {
+        for param in function.params {
+            observe_name(maximum, param.0)
+        };
+        observe_block(maximum, function.body)
+    };
+    maximum.get() + 1
+}

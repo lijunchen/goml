@@ -1,0 +1,118 @@
+package anf;
+
+use gomlang::parser::ast;
+use gomlang::parser::tast;
+
+pub struct File {
+    functions: Vec[Function],
+}
+
+pub struct Function {
+    name: string,
+    params: Vec[(string, tast::Type)],
+    ret_ty: tast::Type,
+    body: Block,
+}
+
+pub struct Block {
+    binds: Vec[Bind],
+    term: Term,
+}
+
+pub enum Imm {
+    Var(string, tast::Type),
+    Callable(tast::Callable, tast::Type),
+    Prim(tast::Primitive, tast::Type),
+    Tag(int32, tast::Type),
+}
+
+pub struct LetBind {
+    name: string,
+    value: Value,
+    ty: tast::Type,
+}
+
+pub struct JoinBind {
+    name: string,
+    params: Vec[(string, tast::Type)],
+    ret_ty: tast::Type,
+    body: Block,
+}
+
+pub enum Bind {
+    Let(LetBind),
+    Join(JoinBind),
+    JoinRec(Vec[JoinBind]),
+}
+
+pub enum Value {
+    Imm(Imm),
+    Constr(tast::Constructor, Vec[Imm], tast::Type),
+    Tuple(Vec[Imm], tast::Type),
+    Array(Vec[Imm], tast::Type),
+    ConstrGet(Imm, tast::Constructor, int32, tast::Type),
+    Unary(ast::UnaryOp, Imm, tast::Type),
+    Cast(Imm, tast::Type),
+    Binary(ast::BinaryOp, Imm, Imm, tast::Type),
+    Assign(string, Imm, tast::Type, tast::Type),
+    Call(Imm, Vec[Imm], tast::Type),
+    ToDyn(string, tast::Type, Imm, tast::Type),
+    DynCall(string, string, Imm, Vec[Imm], tast::Type),
+    Go(Imm, tast::Type),
+    Proj(Imm, int32, tast::Type),
+}
+
+pub struct Arm {
+    lhs: Imm,
+    body: Block,
+}
+
+pub enum Term {
+    Return(Imm),
+    Jump(string, Vec[Imm], tast::Type),
+    If(Imm, Block, Block, tast::Type),
+    Match(Imm, Vec[Arm], Option[Block], tast::Type),
+    Unreachable(tast::Type),
+}
+
+pub fn imm_type(value: Imm) -> tast::Type {
+    match value {
+        Imm::Var(_, ty)
+        | Imm::Callable(_, ty)
+        | Imm::Prim(_, ty)
+        | Imm::Tag(_, ty) => ty,
+    }
+}
+
+pub fn value_type(value: Value) -> tast::Type {
+    match value {
+        Value::Imm(value) => imm_type(value),
+        Value::Constr(_, _, ty)
+        | Value::Tuple(_, ty)
+        | Value::Array(_, ty)
+        | Value::ConstrGet(_, _, _, ty)
+        | Value::Unary(_, _, ty)
+        | Value::Cast(_, ty)
+        | Value::Binary(_, _, _, ty)
+        | Value::Assign(_, _, _, ty)
+        | Value::Call(_, _, ty)
+        | Value::ToDyn(_, _, _, ty)
+        | Value::DynCall(_, _, _, _, ty)
+        | Value::Go(_, ty)
+        | Value::Proj(_, _, ty) => ty,
+    }
+}
+
+pub fn term_type(value: Term) -> tast::Type {
+    match value {
+        Term::Return(value) => imm_type(value),
+        Term::Jump(_, _, ty)
+        | Term::If(_, _, _, ty)
+        | Term::Match(_, _, _, ty)
+        | Term::Unreachable(ty) => ty,
+    }
+}
+
+pub fn block_type(value: Block) -> tast::Type {
+    term_type(value.term)
+}

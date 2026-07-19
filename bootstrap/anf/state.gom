@@ -1,0 +1,194 @@
+package anf;
+
+use gomlang::parser::ast;
+use gomlang::parser::core;
+use gomlang::parser::tast;
+
+struct LoopCtx {
+    loop_id: string,
+    exit_id: string,
+    exit_ret_ty: tast::Type,
+}
+
+struct ReturnCtx {
+    join_id: string,
+    ret_ty: tast::Type,
+    takes_arg: bool,
+}
+
+struct State {
+    counter: Ref[int32],
+    loop_ctx: Ref[Option[LoopCtx]],
+    return_ctx: Ref[Option[ReturnCtx]],
+}
+
+fn fresh(state: State, prefix: string) -> string {
+    let index = state.counter.get();
+    state.counter.set(index + 1);
+    prefix + index.to_string()
+}
+
+fn unit_imm() -> Imm {
+    Imm::Prim(tast::Primitive::Unit, tast::Type::Unit)
+}
+
+fn type_is_unit(value: tast::Type) -> bool {
+    match tast::resolve_type(value) {
+        tast::Type::Unit => true,
+        _ => false,
+    }
+}
+
+fn no_imms() -> Vec[Imm] {
+    Vec::new()
+}
+
+fn one_imm(value: Imm) -> Vec[Imm] {
+    let result = Vec::new();
+    result.push(value);
+    result
+}
+
+fn no_binds() -> Vec[Bind] {
+    Vec::new()
+}
+
+fn one_bind(value: Bind) -> Vec[Bind] {
+    let result = Vec::new();
+    result.push(value);
+    result
+}
+
+fn prepend_bind(value: Bind, block: Block) -> Block {
+    let binds = Vec::new();
+    binds.push(value);
+    for bind in block.binds {
+        binds.push(bind)
+    };
+    Block {
+        binds,
+        term: block.term,
+    }
+}
+
+fn jump_block(
+    target: string,
+    value: Imm,
+    takes_arg: bool,
+    ret_ty: tast::Type,
+) -> Block {
+    Block {
+        binds: no_binds(),
+        term: Term::Jump(
+            target,
+            if takes_arg { one_imm(value) } else { no_imms() },
+            ret_ty,
+        ),
+    }
+}
+
+fn expr_is_control(value: core::Expr) -> bool {
+    match value {
+        core::Expr::Block(_, _)
+        | core::Expr::If(_, _, _, _)
+        | core::Expr::Match(_, _, _, _)
+        | core::Expr::While(_, _, _)
+        | core::Expr::Break(_)
+        | core::Expr::Continue(_)
+        | core::Expr::Return(_, _) => true,
+        _ => false,
+    }
+}
+
+fn expr_always_exits(value: core::Expr) -> bool {
+    match value {
+        core::Expr::Break(_) | core::Expr::Continue(_) | core::Expr::Return(_, _) => true,
+        core::Expr::Constr(_, args, _) => exprs_always_exit(args),
+        core::Expr::Tuple(items, _) | core::Expr::Array(items, _) => {
+            exprs_always_exit(items)
+        },
+        core::Expr::Closure(_, body, _) => expr_always_exits(body),
+        core::Expr::Block(block, _) => block_always_exits(block),
+        core::Expr::If(_, then_, else_, _) => {
+            expr_always_exits(then_) && expr_always_exits(else_)
+        },
+        core::Expr::Match(_, arms, default, _) => {
+            let has_catch_all = Ref::new(match default {
+                Option::Some(_) => true,
+                Option::None => false,
+            });
+            let exits = Ref::new(true);
+            for arm in arms {
+                match arm.lhs {
+                    core::Expr::Var(_, _) => has_catch_all.set(true),
+                    _ => (),
+                };
+                if expr_always_exits(arm.body) {
+                    ()
+                } else {
+                    exits.set(false)
+                }
+            };
+            match default {
+                Option::Some(value) => if expr_always_exits(value) {
+                    ()
+                } else {
+                    exits.set(false)
+                },
+                Option::None => (),
+            };
+            has_catch_all.get() && exits.get()
+        },
+        core::Expr::While(cond, _, _) => expr_always_exits(cond),
+        core::Expr::Go(expr, _)
+        | core::Expr::ConstrGet(expr, _, _, _)
+        | core::Expr::Unary(_, expr, _)
+        | core::Expr::Cast(expr, _)
+        | core::Expr::ToDyn(_, _, expr, _)
+        | core::Expr::Proj(expr, _, _) => expr_always_exits(expr),
+        core::Expr::Binary(op, lhs, rhs, _) => {
+            expr_always_exits(lhs) || match op {
+                ast::BinaryOp::And | ast::BinaryOp::Or => false,
+                _ => expr_always_exits(rhs),
+            }
+        },
+        core::Expr::Assign(_, expr, _, _) => expr_always_exits(expr),
+        core::Expr::Call(func, args, _) => {
+            expr_always_exits(func) || exprs_always_exit(args)
+        },
+        core::Expr::DynCall(_, _, receiver, args, _)
+        | core::Expr::TraitCall(_, _, receiver, args, _) => {
+            expr_always_exits(receiver) || exprs_always_exit(args)
+        },
+        core::Expr::Var(_, _)
+        | core::Expr::Callable(_, _)
+        | core::Expr::Prim(_, _) => false,
+    }
+}
+
+fn exprs_always_exit(values: Vec[core::Expr]) -> bool {
+    let result = Ref::new(false);
+    for value in values {
+        if expr_always_exits(value) {
+            result.set(true)
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn block_always_exits(value: core::Block) -> bool {
+    let result = Ref::new(false);
+    for stmt in value.stmts {
+        if expr_always_exits(stmt.value) {
+            result.set(true)
+        } else {
+            ()
+        }
+    };
+    match value.tail {
+        Option::Some(value) => result.get() || expr_always_exits(value),
+        Option::None => result.get(),
+    }
+}
