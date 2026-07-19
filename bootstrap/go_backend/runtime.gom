@@ -1,6 +1,7 @@
 package go_backend;
 
 use gomlang::parser::anf;
+use gomlang::parser::core;
 use gomlang::parser::tast;
 
 struct DynMethod {
@@ -398,6 +399,7 @@ fn contains_text(values: Vec[string], expected: string) -> bool {
 pub fn emit_builtin_runtime_items(
     items: Vec[Item],
     types: Vec[tast::Type],
+    instances: Vec[core::TypeInstance],
 ) -> unit {
     for ty in types {
         match tast::resolve_type(ty) {
@@ -428,7 +430,13 @@ pub fn emit_builtin_runtime_items(
             tast::Type::HashMap(key, value) => {
                 let generated = hashmap_items(key, value);
                 let option = synthetic_option_base(value);
-                let include_option = contains_text(options, option) == false;
+                let args: Vec[tast::Type] = Vec::new();
+                args.push(value);
+                let include_option = contains_text(options, option) == false
+                    && match find_instance(instances, "Option", args) {
+                        Option::Some(_) => false,
+                        Option::None => true,
+                    };
                 for index in range(0, generated.len()) {
                     let item = generated.get(index);
                     let keep = index < 2 || include_option;

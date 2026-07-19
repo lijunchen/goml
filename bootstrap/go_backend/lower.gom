@@ -1997,7 +1997,7 @@ pub fn lower(value: anf::File) -> File {
         collect_dyn_block(coercions, function.body)
     };
     collect_type_definition_fields(types, enums, structs, type_instances);
-    emit_builtin_runtime_items(items, types);
+    emit_builtin_runtime_items(items, types, type_instances);
     emit_user_type_items(
         items,
         variants,
