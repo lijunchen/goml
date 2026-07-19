@@ -246,6 +246,7 @@ fn missing_constructor_expr(ctx: Checker) -> Expr {
             name: "<error>",
             fields: Vec::new(),
             is_struct: false,
+            tag: Option::None,
         },
         Vec::new(),
         Type::Error,
@@ -336,6 +337,7 @@ fn check_struct_expr(
                     name,
                     fields: Vec::new(),
                     is_struct: true,
+                    tag: Option::None,
                 },
                 Vec::new(),
                 Type::Error,
@@ -861,6 +863,11 @@ fn try_constructor(name: string, variant: string) -> Constructor {
         name: name + "::" + variant,
         fields: Vec::new(),
         is_struct: false,
+        tag: if variant == "None" || variant == "Ok" {
+            Option::Some(0)
+        } else {
+            Option::Some(1)
+        },
     }
 }
 

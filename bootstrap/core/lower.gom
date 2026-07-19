@@ -485,7 +485,8 @@ fn enum_match_cases(
 ) -> Option[Vec[EnumCase]] {
     let cases: Vec[EnumCase] = Vec::new();
     let valid = Ref::new(true);
-    for variant in definition.variants {
+    for variant_index in range(0, definition.variants.len()) {
+        let variant = definition.variants.get(variant_index);
         let constructor_name = definition.name + "::" + variant.name;
         let variables: Vec[(string, tast::Type)] = Vec::new();
         for field in variant.fields {
@@ -510,6 +511,7 @@ fn enum_match_cases(
                     name: constructor_name,
                     fields: Vec::new(),
                     is_struct: false,
+                    tag: Option::Some(variant_index),
                 },
                 variables,
                 rows,
@@ -727,6 +729,7 @@ fn lower_field(ctx: Lowerer, value: tast::Expr, name: string, ty: tast::Type) ->
                     name: owner,
                     fields,
                     is_struct: true,
+                    tag: Option::None,
                 },
                 field_index.get(),
                 ty,
@@ -741,6 +744,7 @@ fn lower_field(ctx: Lowerer, value: tast::Expr, name: string, ty: tast::Type) ->
                     name: owner,
                     fields,
                     is_struct: true,
+                    tag: Option::None,
                 },
                 0,
                 ty,
@@ -789,6 +793,7 @@ fn lower_for(
                 name: "Option::Some",
                 fields: Vec::new(),
                 is_struct: false,
+                tag: Option::Some(1),
             },
             some_patterns,
             option_ty,
@@ -802,6 +807,7 @@ fn lower_for(
                 name: "Option::None",
                 fields: Vec::new(),
                 is_struct: false,
+                tag: Option::Some(0),
             },
             Vec::new(),
             option_ty,

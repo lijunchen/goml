@@ -549,7 +549,8 @@ fn lower_enum_pattern_rows(
     ty: tast::Type,
 ) -> Expr {
     let cases: Vec[PatternEnumCase] = Vec::new();
-    for variant in definition.variants {
+    for variant_index in range(0, definition.variants.len()) {
+        let variant = definition.variants.get(variant_index);
         let constructor_name = definition.name + "::" + variant.name;
         let variables: Vec[(string, tast::Type)] = Vec::new();
         for field in variant.fields {
@@ -563,6 +564,7 @@ fn lower_enum_pattern_rows(
                 name: constructor_name,
                 fields: Vec::new(),
                 is_struct: false,
+                tag: Option::Some(variant_index),
             },
             variables,
             rows: enum_pattern_rows(

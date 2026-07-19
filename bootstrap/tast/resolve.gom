@@ -116,6 +116,7 @@ fn resolve_user_constructor(
                     name: value.name + "::" + variant.name,
                     fields: Vec::new(),
                     is_struct: false,
+                    tag: Option::Some(variant_index),
                 },
                 fields,
                 ty,
@@ -152,6 +153,11 @@ fn resolve_builtin_constructor(ctx: Checker, name: string) -> Option[ResolvedCon
                 name,
                 fields: Vec::new(),
                 is_struct: false,
+                tag: if name == "Option::None" || name == "Result::Ok" {
+                    Option::Some(0)
+                } else {
+                    Option::Some(1)
+                },
             },
             fields,
             ty,
@@ -191,6 +197,7 @@ fn instantiate_struct(ctx: Checker, value: StructInfo) -> ResolvedStruct {
             name: value.name,
             fields: names,
             is_struct: true,
+            tag: Option::None,
         },
         fields,
         ty: nominal_type(value.name, args),
