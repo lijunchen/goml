@@ -72,6 +72,17 @@ fn emits_breaking_while_loops() -> unit {
 }
 
 #[test]
+fn preserves_reused_loop_labels() -> unit {
+    let source = "enum Event { Open, Close, Advance, Error, } fn main() -> unit { let running = Ref::new(true); while running.get() { let event = Event::Open; match event { Event::Open => { let scanning = Ref::new(false); while scanning.get() {} }, Event::Close => (), Event::Advance => (), Event::Error => (), }; let scanning = Ref::new(false); while scanning.get() {}; running.set(false) }; string_println(\"ok\") }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(output, "Loop_loop6:\n    for {"));
+    testing::assert(string_contains(output, "Loop_loop11__2:"));
+    testing::assert(string_contains(output, "Loop_loop11__3:"));
+    testing::assert(string_contains(output, "Loop_loop11__4:"));
+    testing::assert(!string_contains(output, "panic(\"unreachable\")"))
+}
+
+#[test]
 fn emits_vec_runtime_structs() -> unit {
     let source = "fn one() -> Vec[int32] { let v: Vec[int32] = Vec::new(); v.push(1i32); v } fn main() -> unit { let xs: Vec[int32] = one(); xs.push(2i32); println(xs.len()); }";
     testing::assert_eq(
