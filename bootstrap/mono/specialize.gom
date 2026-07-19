@@ -843,8 +843,10 @@ fn ensure_trait_call_instance(
     method_name: string,
     receiver: core::Expr,
     args: Vec[core::Expr],
-) -> unit {
+    ret_ty: tast::Type,
+) -> tast::TraitRef {
     let actual_types = trait_call_types(receiver, args);
+    let resolved: Ref[Option[tast::TraitRef]] = Ref::new(Option::None);
     for function in ctx.functions {
         if function.generics.len() > 0
             && trait_impl_matches(function, reference, method_name)
@@ -869,17 +871,36 @@ fn ensure_trait_call_instance(
                 },
                 Option::None => valid.set(false),
             };
+            if valid.get() {
+                let param_types = Vec::new();
+                for param in function.params {
+                    param_types.push(param.1)
+                };
+                if unify_types(param_types, actual_types, bindings)
+                    && unify_type(function.ret_ty, ret_ty, bindings)
+                {
+                    ()
+                } else {
+                    valid.set(false)
+                }
+            } else {
+                ()
+            };
             if valid.get()
                 && complete_bindings(ctx, function, bindings)
             {
                 ensure_instance(ctx, function.name, bindings);
-                ()
+                resolved.set(Option::Some(substitute_trait_ref(reference, bindings)))
             } else {
                 ()
             }
         } else {
             ()
         }
+    };
+    match resolved.get() {
+        Option::Some(reference) => reference,
+        Option::None => reference,
     }
 }
 
@@ -1027,12 +1048,13 @@ fn specialize_expr(
             let receiver = specialize_expr(ctx, bindings, receiver);
             let args = specialize_exprs(ctx, bindings, args);
             let ty = substitute_type(ty, bindings);
-            ensure_trait_call_instance(
+            let reference = ensure_trait_call_instance(
                 ctx,
                 reference,
                 method_name,
                 receiver,
                 args,
+                ty,
             );
             core::Expr::TraitCall(reference, method_name, receiver, args, ty)
         },
