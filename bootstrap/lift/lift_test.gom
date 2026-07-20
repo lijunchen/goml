@@ -16,6 +16,20 @@ fn lower_source(source: string) -> core::File {
 }
 
 #[test]
+fn consumes_shared_names_for_lifted_parameters() -> unit {
+    let value = mono::lower(core::lower(tast::check(hir::lower(
+        ast::lower(parser::parse(
+            "fn main() { let result = (|x| x + 1)(41); println(result); }",
+        )),
+        "main.gom",
+    ))));
+    let counter = Ref::new(61);
+    let file = lower_with_counter(value, counter);
+    testing::assert_eq(counter.get(), 62);
+    testing::assert_eq(file.functions.get(1).params.get(0).0, "env61")
+}
+
+#[test]
 fn flattens_monomorphic_blocks() -> unit {
     let source = "fn main() { let _ = (); let a = (true, false, (true, false)); let b = match a { (x, y, (z, w)) => w }; let _ = print(b); () }";
     testing::assert_eq(

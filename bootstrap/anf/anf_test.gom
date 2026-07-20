@@ -17,6 +17,20 @@ fn lower_source(source: string) -> File {
 }
 
 #[test]
+fn starts_fresh_names_from_shared_counter() -> unit {
+    let lowered = lift::lower(mono::lower(core::lower(tast::check(hir::lower(
+        ast::lower(parser::parse("fn main() -> unit { println(1) }")),
+        "main.gom",
+    )))));
+    let counter = Ref::new(61);
+    let file = lower_with_counter(lowered, counter);
+    match file.functions.get(0).body.binds.get(0) {
+        Bind::Join(value) => testing::assert_eq(value.name, "ret61"),
+        _ => testing::fail("expected return join"),
+    }
+}
+
+#[test]
 fn lowers_linear_values_and_return_join() -> unit {
     let source = "fn main() { let _ = (); let a = (true, false, (true, false)); let b = match a { (x, y, (z, w)) => w }; let _ = print(b); () }";
     testing::assert_eq(
