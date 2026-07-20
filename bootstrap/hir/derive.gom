@@ -583,7 +583,7 @@ fn derived_enum_impls(value: ast::EnumDef) -> Vec[ast::ImplBlock] {
     result
 }
 
-fn expand_derives(value: ast::File) -> ast::File {
+fn expand_file_derives(value: ast::File) -> ast::File {
     let items: Vec[ast::Item] = Vec::new();
     for item in value.items {
         items.push(item);
@@ -606,5 +606,16 @@ fn expand_derives(value: ast::File) -> ast::File {
         package_explicit: value.package_explicit,
         uses: value.uses,
         items,
+    }
+}
+
+pub fn expand_derives(value: ast::LowerResult) -> ast::LowerResult {
+    let expanded = match value.ast {
+        Option::Some(file) => Option::Some(expand_file_derives(file)),
+        Option::None => Option::None,
+    };
+    ast::LowerResult {
+        ast: expanded,
+        diagnostics: value.diagnostics,
     }
 }

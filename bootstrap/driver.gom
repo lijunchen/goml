@@ -28,8 +28,8 @@ struct Compilation {
 }
 
 fn compile_source(source_path: string, source: string) -> Compilation {
-    let ast_value = ast::lower(parser::parse(source));
-    let hir_value = hir::lower(ast_value, source_path);
+    let ast_value = hir::expand_derives(ast::lower(parser::parse(source)));
+    let hir_value = hir::lower_expanded(ast_value, source_path);
     let tast_value = tast::check_for_link(hir_value);
     let counter = Ref::new(0);
     let builtins = core::lower_builtins(counter);

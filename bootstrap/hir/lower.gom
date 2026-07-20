@@ -1163,10 +1163,10 @@ fn lower_file(file: ast::File, source_path: string) -> File {
     }
 }
 
-pub fn lower(value: ast::LowerResult, source_path: string) -> LowerResult {
+pub fn lower_expanded(value: ast::LowerResult, source_path: string) -> LowerResult {
     match value.ast {
         Option::Some(file) => LowerResult {
-            hir: Option::Some(lower_file(expand_derives(file), source_path)),
+            hir: Option::Some(lower_file(file, source_path)),
             diagnostics: Vec::new(),
         },
         Option::None => {
@@ -1178,4 +1178,8 @@ pub fn lower(value: ast::LowerResult, source_path: string) -> LowerResult {
             }
         },
     }
+}
+
+pub fn lower(value: ast::LowerResult, source_path: string) -> LowerResult {
+    lower_expanded(expand_derives(value), source_path)
 }
