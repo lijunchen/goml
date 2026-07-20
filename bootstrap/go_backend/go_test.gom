@@ -166,6 +166,82 @@ fn emits_every_core_runtime_hook() -> unit {
     ))
 }
 
+fn all_standard_runtime_hooks() -> Vec[string] {
+    let hooks: Vec[string] = Vec::new();
+    hooks.push("std.env.args");
+    hooks.push("std.env.current_dir");
+    hooks.push("std.env.current_exe");
+    hooks.push("std.env.var");
+    hooks.push("std.fs.read_file");
+    hooks.push("std.fs.write_file");
+    hooks.push("std.fs.read_bytes");
+    hooks.push("std.fs.write_bytes");
+    hooks.push("std.fs.create_dir_all");
+    hooks.push("std.fs.file_exists");
+    hooks.push("std.fs.is_file");
+    hooks.push("std.fs.is_dir");
+    hooks.push("std.fs.canonicalize");
+    hooks.push("std.fs.read_dir");
+    hooks.push("std.io.print");
+    hooks.push("std.io.println");
+    hooks.push("std.io.eprint");
+    hooks.push("std.io.read_stdin");
+    hooks.push("std.io.write_stdout");
+    hooks.push("std.io.write_stderr");
+    hooks
+}
+
+#[test]
+fn emits_every_standard_runtime_hook() -> unit {
+    let hooks = all_standard_runtime_hooks();
+    let items: Vec[Item] = Vec::new();
+    emit_runtime_hook_items(items, hooks, Vec::new());
+    let output = encode(File { items });
+    testing::assert(string_contains(
+        output,
+        "import (\n"
+            + "    _goml_fmt \"fmt\"\n"
+            + "    _goml_io \"io\"\n"
+            + "    _goml_os \"os\"\n"
+            + "    _goml_filepath \"path/filepath\"\n"
+            + ")",
+    ));
+    for key in hooks {
+        testing::assert(string_contains(
+            output,
+            "func " + runtime_hook_name(key) + "(",
+        ))
+    };
+    testing::assert(string_contains(
+        output,
+        "data, err = _goml_os.ReadFile(path)",
+    ));
+    testing::assert(string_contains(
+        output,
+        "var err error = _goml_os.WriteFile(path, data.items, 0644)",
+    ));
+    testing::assert(string_contains(
+        output,
+        "var err error = _goml_os.MkdirAll(path, 0755)",
+    ));
+    testing::assert(string_contains(
+        output,
+        "result, err = _goml_filepath.EvalSymlinks(absolute)",
+    ));
+    testing::assert(string_contains(
+        output,
+        "names = append(names, entry.Name())",
+    ));
+    testing::assert(string_contains(
+        output,
+        "_goml_fmt.Fprint(_goml_os.Stderr, value)",
+    ));
+    testing::assert(string_contains(
+        output,
+        "data, err = _goml_io.ReadAll(_goml_os.Stdin)",
+    ))
+}
+
 #[test]
 fn closes_string_runtime_dependencies() -> unit {
     let hooks: Vec[string] = Vec::new();
