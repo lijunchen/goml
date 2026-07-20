@@ -1,0 +1,578 @@
+package go_backend;
+
+use gomlang::parser::tast;
+
+fn core_function_item(
+    key: string,
+    params: Vec[(string, Type)],
+    ret_ty: Type,
+    stmts: Vec[Stmt],
+) -> Item {
+    Item::Function(Function {
+        name: runtime_hook_name(key),
+        params,
+        ret_ty: Option::Some(ret_ty),
+        body: Block { stmts },
+    })
+}
+
+fn core_call(name: string, args: Vec[Expr]) -> Expr {
+    Expr::Call(Expr::Var(name), args)
+}
+
+fn core_len(value: Expr) -> Expr {
+    let args: Vec[Expr] = Vec::new();
+    args.push(value);
+    core_call("len", args)
+}
+
+fn core_int32(value: Expr) -> Expr {
+    Expr::Convert(Type::Int32, value)
+}
+
+fn core_tuple_type2(first: tast::Type, second: tast::Type) -> Type {
+    let values: Vec[tast::Type] = Vec::new();
+    values.push(first);
+    values.push(second);
+    lower_type(tast::Type::Tuple(values))
+}
+
+fn core_tuple_type3(first: tast::Type, second: tast::Type, third: tast::Type) -> Type {
+    let values: Vec[tast::Type] = Vec::new();
+    values.push(first);
+    values.push(second);
+    values.push(third);
+    lower_type(tast::Type::Tuple(values))
+}
+
+fn core_tuple_expr(ty: Type, values: Vec[Expr]) -> Expr {
+    let fields: Vec[(string, Expr)] = Vec::new();
+    for index in range(0, values.len()) {
+        fields.push(("_" + index.to_string(), values.get(index)))
+    };
+    Expr::StructLiteral(ty, fields)
+}
+
+fn string_len_hook_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("s", Type::String));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Return(Option::Some(core_int32(core_len(Expr::Var("s"))))));
+    core_function_item("core.string_len", params, Type::Int32, stmts)
+}
+
+fn string_decode_utf8_at_native_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("s", Type::String));
+    params.push(("i", Type::Int32));
+    let returns: Vec[Type] = Vec::new();
+    returns.push(Type::Bool);
+    returns.push(Type::Char);
+    returns.push(Type::Int32);
+    let invalid: Vec[Expr] = Vec::new();
+    invalid.push(Expr::Bool(false));
+    invalid.push(Expr::Int("0"));
+    invalid.push(Expr::Int("0"));
+    let invalid_index_stmts: Vec[Stmt] = Vec::new();
+    invalid_index_stmts.push(Stmt::ReturnMulti(invalid));
+    let length = core_int32(core_len(Expr::Var("s")));
+    let invalid_index = Expr::Binary(
+        BinaryOp::Or,
+        Expr::Binary(BinaryOp::Less, Expr::Var("i"), Expr::Int("0")),
+        Expr::Binary(BinaryOp::GreaterEq, Expr::Var("i"), length),
+    );
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::If(
+        invalid_index,
+        Block { stmts: invalid_index_stmts },
+        Option::None,
+    ));
+    stmts.push(Stmt::Var("value", Type::Char, Option::None));
+    stmts.push(Stmt::Var("width", Type::Named("int"), Option::None));
+    let decode_args: Vec[Expr] = Vec::new();
+    decode_args.push(Expr::Slice(
+        Expr::Var("s"),
+        Expr::Var("i"),
+        core_int32(core_len(Expr::Var("s"))),
+    ));
+    let names: Vec[string] = Vec::new();
+    names.push("value");
+    names.push("width");
+    stmts.push(Stmt::MultiAssign(
+        names,
+        core_call("_goml_utf8.DecodeRuneInString", decode_args),
+    ));
+    let invalid_rune_stmts: Vec[Stmt] = Vec::new();
+    let invalid_rune: Vec[Expr] = Vec::new();
+    invalid_rune.push(Expr::Bool(false));
+    invalid_rune.push(Expr::Int("0"));
+    invalid_rune.push(Expr::Int("0"));
+    invalid_rune_stmts.push(Stmt::ReturnMulti(invalid_rune));
+    stmts.push(Stmt::If(
+        Expr::Binary(
+            BinaryOp::And,
+            Expr::Binary(
+                BinaryOp::Eq,
+                Expr::Var("value"),
+                Expr::Var("_goml_utf8.RuneError"),
+            ),
+            Expr::Binary(BinaryOp::Eq, Expr::Var("width"), Expr::Int("1")),
+        ),
+        Block { stmts: invalid_rune_stmts },
+        Option::None,
+    ));
+    let valid: Vec[Expr] = Vec::new();
+    valid.push(Expr::Bool(true));
+    valid.push(Expr::Var("value"));
+    valid.push(core_int32(Expr::Var("width")));
+    stmts.push(Stmt::ReturnMulti(valid));
+    Item::Function(Function {
+        name: go_generated_ident("_goml_runtime_string_decode_utf8_at_native"),
+        params,
+        ret_ty: Option::Some(Type::Multi(returns)),
+        body: Block { stmts },
+    })
+}
+
+fn string_get_hook_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("s", Type::String));
+    params.push(("i", Type::Int32));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Var("valid", Type::Bool, Option::None));
+    stmts.push(Stmt::Var("value", Type::Char, Option::None));
+    let names: Vec[string] = Vec::new();
+    names.push("valid");
+    names.push("value");
+    names.push("_");
+    let args: Vec[Expr] = Vec::new();
+    args.push(Expr::Var("s"));
+    args.push(Expr::Var("i"));
+    stmts.push(Stmt::MultiAssign(
+        names,
+        core_call(
+            go_generated_ident("_goml_runtime_string_decode_utf8_at_native"),
+            args,
+        ),
+    ));
+    let invalid_stmts: Vec[Stmt] = Vec::new();
+    invalid_stmts.push(Stmt::Panic("invalid string byte index"));
+    stmts.push(Stmt::If(
+        Expr::Unary(UnaryOp::Not, Expr::Var("valid")),
+        Block { stmts: invalid_stmts },
+        Option::None,
+    ));
+    stmts.push(Stmt::Return(Option::Some(Expr::Var("value"))));
+    core_function_item("core.string_get", params, Type::Char, stmts)
+}
+
+fn string_byte_get_hook_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("s", Type::String));
+    params.push(("i", Type::Int32));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Return(Option::Some(Expr::Index(
+        Expr::Var("s"),
+        Expr::Var("i"),
+    ))));
+    core_function_item("core.string_byte_get", params, Type::Uint8, stmts)
+}
+
+fn string_boundary_call(index: string) -> Expr {
+    let args: Vec[Expr] = Vec::new();
+    args.push(Expr::Var("s"));
+    args.push(Expr::Var(index));
+    core_call(runtime_hook_name("core.string_is_char_boundary"), args)
+}
+
+fn string_byte_slice_hook_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("s", Type::String));
+    params.push(("start", Type::Int32));
+    params.push(("end", Type::Int32));
+    let invalid_stmts: Vec[Stmt] = Vec::new();
+    invalid_stmts.push(Stmt::Panic("invalid string byte slice"));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::If(
+        Expr::Unary(
+            UnaryOp::Not,
+            Expr::Binary(
+                BinaryOp::And,
+                string_boundary_call("start"),
+                string_boundary_call("end"),
+            ),
+        ),
+        Block { stmts: invalid_stmts },
+        Option::None,
+    ));
+    stmts.push(Stmt::Return(Option::Some(Expr::Slice(
+        Expr::Var("s"),
+        Expr::Var("start"),
+        Expr::Var("end"),
+    ))));
+    core_function_item("core.string_byte_slice", params, Type::String, stmts)
+}
+
+fn string_is_char_boundary_hook_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("s", Type::String));
+    params.push(("i", Type::Int32));
+    let out_of_range_stmts: Vec[Stmt] = Vec::new();
+    out_of_range_stmts.push(Stmt::Return(Option::Some(Expr::Bool(false))));
+    let at_end_stmts: Vec[Stmt] = Vec::new();
+    at_end_stmts.push(Stmt::Return(Option::Some(Expr::Bool(true))));
+    let length = core_int32(core_len(Expr::Var("s")));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::If(
+        Expr::Binary(
+            BinaryOp::Or,
+            Expr::Binary(BinaryOp::Less, Expr::Var("i"), Expr::Int("0")),
+            Expr::Binary(BinaryOp::Greater, Expr::Var("i"), length),
+        ),
+        Block { stmts: out_of_range_stmts },
+        Option::None,
+    ));
+    stmts.push(Stmt::If(
+        Expr::Binary(
+            BinaryOp::Eq,
+            Expr::Var("i"),
+            core_int32(core_len(Expr::Var("s"))),
+        ),
+        Block { stmts: at_end_stmts },
+        Option::None,
+    ));
+    let args: Vec[Expr] = Vec::new();
+    args.push(Expr::Index(Expr::Var("s"), Expr::Var("i")));
+    stmts.push(Stmt::Return(Option::Some(core_call(
+        "_goml_utf8.RuneStart",
+        args,
+    ))));
+    core_function_item(
+        "core.string_is_char_boundary",
+        params,
+        Type::Bool,
+        stmts,
+    )
+}
+
+fn string_decode_utf8_at_hook_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("s", Type::String));
+    params.push(("i", Type::Int32));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Var("valid", Type::Bool, Option::None));
+    stmts.push(Stmt::Var("value", Type::Char, Option::None));
+    stmts.push(Stmt::Var("width", Type::Int32, Option::None));
+    let names: Vec[string] = Vec::new();
+    names.push("valid");
+    names.push("value");
+    names.push("width");
+    let args: Vec[Expr] = Vec::new();
+    args.push(Expr::Var("s"));
+    args.push(Expr::Var("i"));
+    stmts.push(Stmt::MultiAssign(
+        names,
+        core_call(
+            go_generated_ident("_goml_runtime_string_decode_utf8_at_native"),
+            args,
+        ),
+    ));
+    let ret_ty = core_tuple_type3(
+        tast::Type::Bool,
+        tast::Type::Char,
+        tast::Type::Int32,
+    );
+    let values: Vec[Expr] = Vec::new();
+    values.push(Expr::Var("valid"));
+    values.push(Expr::Var("value"));
+    values.push(Expr::Var("width"));
+    stmts.push(Stmt::Return(Option::Some(core_tuple_expr(ret_ty, values))));
+    core_function_item("core.string_decode_utf8_at", params, ret_ty, stmts)
+}
+
+fn string_to_bytes_hook_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("s", Type::String));
+    let elem = tast::Type::Uint8;
+    let vec_ty = tast::Type::VecType(elem);
+    let fields: Vec[(string, Expr)] = Vec::new();
+    fields.push((
+        "items",
+        Expr::Convert(Type::Named("[]byte"), Expr::Var("s")),
+    ));
+    let value = Expr::Unary(
+        UnaryOp::Address,
+        Expr::StructLiteral(
+            Type::Named(go_generated_ident(
+                "_goml_vec_" + go_ident(encode_type(elem)),
+            )),
+            fields,
+        ),
+    );
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Return(Option::Some(value)));
+    core_function_item("core.string_to_bytes", params, lower_type(vec_ty), stmts)
+}
+
+fn char_to_string_hook_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("x", Type::Char));
+    let valid_args: Vec[Expr] = Vec::new();
+    valid_args.push(Expr::Var("x"));
+    let invalid_stmts: Vec[Stmt] = Vec::new();
+    invalid_stmts.push(Stmt::Panic("invalid char"));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::If(
+        Expr::Unary(
+            UnaryOp::Not,
+            core_call("_goml_utf8.ValidRune", valid_args),
+        ),
+        Block { stmts: invalid_stmts },
+        Option::None,
+    ));
+    stmts.push(Stmt::Return(Option::Some(Expr::Convert(
+        Type::String,
+        Expr::Var("x"),
+    ))));
+    core_function_item("core.char_to_string", params, Type::String, stmts)
+}
+
+fn char_from_uint32_hook_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("value", Type::Uint32));
+    let ret_ty = core_tuple_type2(tast::Type::Bool, tast::Type::Char);
+    let invalid_values: Vec[Expr] = Vec::new();
+    invalid_values.push(Expr::Bool(false));
+    invalid_values.push(Expr::Int("0"));
+    let invalid_stmts: Vec[Stmt] = Vec::new();
+    invalid_stmts.push(Stmt::Return(Option::Some(core_tuple_expr(
+        ret_ty,
+        invalid_values,
+    ))));
+    let invalid = Expr::Binary(
+        BinaryOp::Or,
+        Expr::Binary(
+            BinaryOp::Greater,
+            Expr::Var("value"),
+            Expr::Int("1114111"),
+        ),
+        Expr::Binary(
+            BinaryOp::And,
+            Expr::Binary(
+                BinaryOp::GreaterEq,
+                Expr::Var("value"),
+                Expr::Int("55296"),
+            ),
+            Expr::Binary(
+                BinaryOp::LessEq,
+                Expr::Var("value"),
+                Expr::Int("57343"),
+            ),
+        ),
+    );
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::If(
+        invalid,
+        Block { stmts: invalid_stmts },
+        Option::None,
+    ));
+    let values: Vec[Expr] = Vec::new();
+    values.push(Expr::Bool(true));
+    values.push(Expr::Convert(Type::Char, Expr::Var("value")));
+    stmts.push(Stmt::Return(Option::Some(core_tuple_expr(ret_ty, values))));
+    core_function_item("core.char_from_uint32", params, ret_ty, stmts)
+}
+
+fn float_to_string_hook_item(key: string, ty: Type, bit_size: string) -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("x", ty));
+    let args: Vec[Expr] = Vec::new();
+    args.push(if key == "core.float32_to_string" {
+        Expr::Convert(Type::Float64, Expr::Var("x"))
+    } else {
+        Expr::Var("x")
+    });
+    args.push(Expr::Int("102"));
+    args.push(Expr::Int("-1"));
+    args.push(Expr::Int(bit_size));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Var(
+        "formatted",
+        Type::String,
+        Option::Some(core_call("_goml_strconv.FormatFloat", args)),
+    ));
+    let positive_stmts: Vec[Stmt] = Vec::new();
+    positive_stmts.push(Stmt::Return(Option::Some(Expr::String("inf"))));
+    stmts.push(Stmt::If(
+        Expr::Binary(
+            BinaryOp::Eq,
+            Expr::Var("formatted"),
+            Expr::String("+Inf"),
+        ),
+        Block { stmts: positive_stmts },
+        Option::None,
+    ));
+    let negative_stmts: Vec[Stmt] = Vec::new();
+    negative_stmts.push(Stmt::Return(Option::Some(Expr::String("-inf"))));
+    stmts.push(Stmt::If(
+        Expr::Binary(
+            BinaryOp::Eq,
+            Expr::Var("formatted"),
+            Expr::String("-Inf"),
+        ),
+        Block { stmts: negative_stmts },
+        Option::None,
+    ));
+    stmts.push(Stmt::Return(Option::Some(Expr::Var("formatted"))));
+    core_function_item(key, params, Type::String, stmts)
+}
+
+fn integer_hash_hook_type(key: string) -> Option[Type] {
+    if key == "core.int8_hash" {
+        Option::Some(Type::Int8)
+    } else if key == "core.int16_hash" {
+        Option::Some(Type::Int16)
+    } else if key == "core.int32_hash" {
+        Option::Some(Type::Int32)
+    } else if key == "core.int64_hash" {
+        Option::Some(Type::Int64)
+    } else if key == "core.uint8_hash" {
+        Option::Some(Type::Uint8)
+    } else if key == "core.uint16_hash" {
+        Option::Some(Type::Uint16)
+    } else if key == "core.uint32_hash" {
+        Option::Some(Type::Uint32)
+    } else if key == "core.char_hash" {
+        Option::Some(Type::Char)
+    } else {
+        Option::None
+    }
+}
+
+fn integer_hash_hook_item(key: string, ty: Type) -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("x", ty));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Return(Option::Some(Expr::Convert(
+        Type::Uint64,
+        Expr::Var("x"),
+    ))));
+    core_function_item(key, params, Type::Uint64, stmts)
+}
+
+fn float_hash_hook_item(key: string, ty: Type, go_name: string) -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("x", ty));
+    let zero_stmts: Vec[Stmt] = Vec::new();
+    zero_stmts.push(Stmt::Return(Option::Some(Expr::Int("0"))));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::If(
+        Expr::Binary(BinaryOp::Eq, Expr::Var("x"), Expr::Int("0")),
+        Block { stmts: zero_stmts },
+        Option::None,
+    ));
+    let args: Vec[Expr] = Vec::new();
+    args.push(Expr::Var("x"));
+    let bits = core_call(go_name, args);
+    stmts.push(Stmt::Return(Option::Some(if key == "core.float32_hash" {
+        Expr::Convert(Type::Uint64, bits)
+    } else {
+        bits
+    })));
+    core_function_item(key, params, Type::Uint64, stmts)
+}
+
+fn string_hash_hook_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("s", Type::String));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Var(
+        "h",
+        Type::Uint64,
+        Option::Some(Expr::Int("14695981039346656037")),
+    ));
+    stmts.push(Stmt::Var(
+        "i",
+        Type::Int32,
+        Option::Some(Expr::Int("0")),
+    ));
+    let loop_stmts: Vec[Stmt] = Vec::new();
+    let break_stmts: Vec[Stmt] = Vec::new();
+    break_stmts.push(Stmt::Break);
+    loop_stmts.push(Stmt::If(
+        Expr::Binary(
+            BinaryOp::GreaterEq,
+            Expr::Var("i"),
+            core_int32(core_len(Expr::Var("s"))),
+        ),
+        Block { stmts: break_stmts },
+        Option::None,
+    ));
+    loop_stmts.push(Stmt::Assign(
+        "h",
+        Expr::Binary(
+            BinaryOp::Add,
+            Expr::Binary(
+                BinaryOp::Mul,
+                Expr::Var("h"),
+                Expr::Int("1099511628211"),
+            ),
+            Expr::Convert(
+                Type::Uint64,
+                Expr::Index(Expr::Var("s"), Expr::Var("i")),
+            ),
+        ),
+    ));
+    loop_stmts.push(Stmt::Assign(
+        "i",
+        Expr::Binary(BinaryOp::Add, Expr::Var("i"), Expr::Int("1")),
+    ));
+    stmts.push(Stmt::Loop(Block { stmts: loop_stmts }));
+    stmts.push(Stmt::Return(Option::Some(Expr::Var("h"))));
+    core_function_item("core.string_hash", params, Type::Uint64, stmts)
+}
+
+fn extra_core_runtime_hook_item(key: string) -> Option[Item] {
+    match integer_hash_hook_type(key) {
+        Option::Some(ty) => Option::Some(integer_hash_hook_item(key, ty)),
+        Option::None => if key == "core.string_len" {
+            Option::Some(string_len_hook_item())
+        } else if key == "core.string_get" {
+            Option::Some(string_get_hook_item())
+        } else if key == "core.string_byte_get" {
+            Option::Some(string_byte_get_hook_item())
+        } else if key == "core.string_byte_slice" {
+            Option::Some(string_byte_slice_hook_item())
+        } else if key == "core.string_is_char_boundary" {
+            Option::Some(string_is_char_boundary_hook_item())
+        } else if key == "core.string_decode_utf8_at" {
+            Option::Some(string_decode_utf8_at_hook_item())
+        } else if key == "core.string_to_bytes" {
+            Option::Some(string_to_bytes_hook_item())
+        } else if key == "core.char_to_string" {
+            Option::Some(char_to_string_hook_item())
+        } else if key == "core.char_from_uint32" {
+            Option::Some(char_from_uint32_hook_item())
+        } else if key == "core.float32_to_string" {
+            Option::Some(float_to_string_hook_item(key, Type::Float32, "32"))
+        } else if key == "core.float64_to_string" {
+            Option::Some(float_to_string_hook_item(key, Type::Float64, "64"))
+        } else if key == "core.float32_hash" {
+            Option::Some(float_hash_hook_item(
+                key,
+                Type::Float32,
+                "_goml_math.Float32bits",
+            ))
+        } else if key == "core.float64_hash" {
+            Option::Some(float_hash_hook_item(
+                key,
+                Type::Float64,
+                "_goml_math.Float64bits",
+            ))
+        } else if key == "core.string_hash" {
+            Option::Some(string_hash_hook_item())
+        } else {
+            Option::None
+        },
+    }
+}

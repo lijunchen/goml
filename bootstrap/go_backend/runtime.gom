@@ -298,6 +298,7 @@ fn string_parse_float_hook_item(key: string, bit_size: string) -> Item {
 
 pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string]) -> unit {
     let uses_fmt = Ref::new(false);
+    let uses_math = Ref::new(false);
     let uses_strconv = Ref::new(false);
     let uses_strings = Ref::new(false);
     let uses_utf8 = Ref::new(false);
@@ -309,11 +310,22 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string]) -> unit {
                     uses_fmt.set(true)
                 } else if hook == "core.string_parse_float32"
                     || hook == "core.string_parse_float64"
+                    || hook == "core.float32_to_string"
+                    || hook == "core.float64_to_string"
                 {
                     uses_strconv.set(true)
+                } else if hook == "core.float32_hash" || hook == "core.float64_hash" {
+                    uses_math.set(true)
                 } else if hook == "core.string_concat" {
                     uses_strings.set(true)
                 } else if hook == "core.string_from_utf8" {
+                    uses_utf8.set(true)
+                } else if hook == "core.string_get"
+                    || hook == "core.string_is_char_boundary"
+                    || hook == "core.string_decode_utf8_at"
+                    || hook == "core.char_to_string"
+                    || hook == "core.string_byte_slice"
+                {
                     uses_utf8.set(true)
                 } else {
                     ()
@@ -321,10 +333,20 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string]) -> unit {
             },
         }
     };
-    if uses_fmt.get() || uses_strconv.get() || uses_strings.get() || uses_utf8.get() {
+    if uses_fmt.get()
+        || uses_math.get()
+        || uses_strconv.get()
+        || uses_strings.get()
+        || uses_utf8.get()
+    {
         let imports: Vec[(string, string)] = Vec::new();
         if uses_fmt.get() {
             imports.push(("_goml_fmt", "fmt"))
+        } else {
+            ()
+        };
+        if uses_math.get() {
+            imports.push(("_goml_math", "math"))
         } else {
             ()
         };
@@ -350,8 +372,18 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string]) -> unit {
     let ordered: Vec[string] = Vec::new();
     ordered.push("core.unit_to_string");
     ordered.push("core.bool_to_string");
+    ordered.push("core.string_len");
+    ordered.push("internal.string_decode_utf8_at_native");
+    ordered.push("core.string_get");
+    ordered.push("core.string_byte_get");
+    ordered.push("core.string_byte_slice");
+    ordered.push("core.string_is_char_boundary");
+    ordered.push("core.string_decode_utf8_at");
+    ordered.push("core.string_to_bytes");
     ordered.push("core.string_from_utf8");
     ordered.push("core.string_concat");
+    ordered.push("core.char_to_string");
+    ordered.push("core.char_from_uint32");
     ordered.push("core.int8_to_string");
     ordered.push("core.int16_to_string");
     ordered.push("core.int32_to_string");
@@ -360,16 +392,40 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string]) -> unit {
     ordered.push("core.uint16_to_string");
     ordered.push("core.uint32_to_string");
     ordered.push("core.uint64_to_string");
+    ordered.push("core.float32_to_string");
+    ordered.push("core.float64_to_string");
     ordered.push("core.string_parse_float32");
     ordered.push("core.string_parse_float64");
+    ordered.push("core.int8_hash");
+    ordered.push("core.int16_hash");
+    ordered.push("core.int32_hash");
+    ordered.push("core.int64_hash");
+    ordered.push("core.char_hash");
+    ordered.push("core.uint8_hash");
+    ordered.push("core.uint16_hash");
+    ordered.push("core.uint32_hash");
+    ordered.push("core.float32_hash");
+    ordered.push("core.float64_hash");
+    ordered.push("core.string_hash");
     ordered.push("core.string_print");
     ordered.push("core.string_println");
     for key in ordered {
-        if contains_runtime_hook(hooks, key) {
+        let needed = if key == "internal.string_decode_utf8_at_native" {
+            contains_runtime_hook(hooks, "core.string_get")
+                || contains_runtime_hook(hooks, "core.string_decode_utf8_at")
+        } else if key == "core.string_is_char_boundary" {
+            contains_runtime_hook(hooks, key)
+                || contains_runtime_hook(hooks, "core.string_byte_slice")
+        } else {
+            contains_runtime_hook(hooks, key)
+        };
+        if needed {
             match integer_to_string_hook_type(key) {
                 Option::Some(ty) => items.push(integer_to_string_hook_item(key, ty)),
                 Option::None => {
-                    if key == "core.unit_to_string" {
+                    if key == "internal.string_decode_utf8_at_native" {
+                        items.push(string_decode_utf8_at_native_item())
+                    } else if key == "core.unit_to_string" {
                         items.push(unit_to_string_hook_item())
                     } else if key == "core.bool_to_string" {
                         items.push(bool_to_string_hook_item())
@@ -386,7 +442,10 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string]) -> unit {
                     } else if key == "core.string_println" {
                         items.push(string_output_hook_item(key, "_goml_fmt.Println"))
                     } else {
-                        ()
+                        match extra_core_runtime_hook_item(key) {
+                            Option::Some(item) => items.push(item),
+                            Option::None => (),
+                        }
                     }
                 },
             }
