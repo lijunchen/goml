@@ -22,6 +22,33 @@ fn lowered_file(source: string) -> File {
 }
 
 #[test]
+fn exposes_derived_impls_without_lowering_them_twice() -> unit {
+    let expanded = expand_derives(ast::lower(parser::parse(
+        "#[derive(Eq, Hash)] struct Key { value: int32 }",
+    )));
+    match expanded.ast {
+        Option::Some(file) => {
+            testing::assert_eq(file.items.len(), 3);
+            match file.items.get(1) {
+                ast::Item::ImplBlock(_) => (),
+                _ => testing::fail("expected derived Eq impl"),
+            };
+            match file.items.get(2) {
+                ast::Item::ImplBlock(_) => (),
+                _ => testing::fail("expected derived Hash impl"),
+            }
+        },
+        Option::None => testing::fail("expected expanded AST"),
+    };
+    let result = lower_expanded(expanded, "main.gom");
+    testing::assert_eq(result.diagnostics.len(), 0);
+    match result.hir {
+        Option::Some(file) => testing::assert_eq(file.items.len(), 3),
+        Option::None => testing::fail("expected HIR"),
+    }
+}
+
+#[test]
 fn resolves_definitions_and_shadowed_locals() -> unit {
     let source = "fn id(value: int32) -> int32 { value } fn main() -> int32 { let value = 1; id(value) }";
     let file = lowered_file(source);
