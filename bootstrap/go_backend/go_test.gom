@@ -206,6 +206,21 @@ fn imports_intrinsic_runtime_dependencies() -> unit {
 }
 
 #[test]
+fn prunes_imports_used_only_by_dead_helpers() -> unit {
+    let output = encode(lower_linked_source(
+        "fn main() -> unit { let cell = Ref::new(1i32); cell.set(cell.get() + 1i32); let values: Vec[int32] = Vec::new(); values.push(cell.get()); println(values.len()); }",
+    ));
+    testing::assert(!string_contains(
+        output,
+        "_goml_reflect \"reflect\"",
+    ));
+    testing::assert(!string_contains(
+        output,
+        "_goml_slices \"slices\"",
+    ))
+}
+
+#[test]
 fn emits_complete_vec_runtime_helpers() -> unit {
     let ty = tast::Type::VecType(tast::Type::Int32);
     let output = encode(File { items: vec_runtime_items(ty) });
