@@ -151,6 +151,15 @@ fn emits_generic_enum_instances_and_type_switches() -> unit {
 }
 
 #[test]
+fn dispatches_trait_objects_for_enum_receivers() -> unit {
+    let source = "trait Area { fn area(Self) -> int32; } enum Shape { Circle(int32), } impl Area for Shape { fn area(self: Shape) -> int32 { match self { Shape::Circle(radius) => radius * radius, } } } fn main() -> unit { let shape: dyn Area = Shape::Circle(3i32); println(Area::area(shape)); }";
+    testing::assert(string_contains(
+        encode(lower_source(source)),
+        "func dyn__Area__wrap__Shape__area(self any) int32 {\n    switch v := self.(type) {\n    case Shape:\n        return _goml_m_trait__impl_i_Area_i_Shape_i_area(v)\n    default:\n        panic(\"unexpected type\")\n    }\n}",
+    ))
+}
+
+#[test]
 fn emits_user_trait_objects_without_name_collisions() -> unit {
     let source = "trait Display { fn display(Self) -> string; } fn dyn__Display() -> int32 { 1i32 } struct Box { text: string, } impl Display for Box { fn display(self: Self) -> string { self.text } } fn main() -> unit { let d: dyn Display = Box { text: \"ok\" }; println(Display::display(d) + dyn__Display().to_string()); }";
     testing::assert_eq(
