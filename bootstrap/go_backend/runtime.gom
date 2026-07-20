@@ -38,6 +38,58 @@ pub fn runtime_hook_name(key: string) -> string {
     go_generated_ident(builder.finish())
 }
 
+fn missing_base_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("s", Type::String));
+    let print_args: Vec[Expr] = Vec::new();
+    print_args.push(Expr::Binary(
+        BinaryOp::Add,
+        Expr::String("missing: "),
+        Expr::Var("s"),
+    ));
+    let panic_args: Vec[Expr] = Vec::new();
+    panic_args.push(Expr::String(""));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Expr(Expr::Call(Expr::Var("println"), print_args)));
+    stmts.push(Stmt::Expr(Expr::Call(Expr::Var("panic"), panic_args)));
+    stmts.push(Stmt::Return(Option::Some(Expr::Unit)));
+    Item::Function(Function {
+        name: go_generated_ident("_goml_intrinsic_missing"),
+        params,
+        ret_ty: Option::Some(Type::Unit),
+        body: Block { stmts },
+    })
+}
+
+fn missing_runtime_item(ty: tast::Type) -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("s", Type::String));
+    let args: Vec[Expr] = Vec::new();
+    args.push(Expr::Var("s"));
+    let ret_ty = lower_type(ty);
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Expr(Expr::Call(
+        Expr::Var(go_generated_ident("_goml_intrinsic_missing")),
+        args,
+    )));
+    stmts.push(Stmt::Var("ret", ret_ty, Option::None));
+    stmts.push(Stmt::Return(Option::Some(Expr::Var("ret"))));
+    Item::Function(Function {
+        name: runtime_helper_name("missing", ty),
+        params,
+        ret_ty: Option::Some(ret_ty),
+        body: Block { stmts },
+    })
+}
+
+pub fn emit_missing_base_item(items: Vec[Item], missing_types: Vec[tast::Type]) -> unit {
+    if missing_types.len() > 0 {
+        items.push(missing_base_item())
+    } else {
+        ()
+    }
+}
+
 fn contains_runtime_hook(values: Vec[string], expected: string) -> bool {
     let found = Ref::new(false);
     for value in values {
@@ -1424,6 +1476,7 @@ fn contains_text(values: Vec[string], expected: string) -> bool {
 pub fn emit_builtin_runtime_items(
     items: Vec[Item],
     types: Vec[tast::Type],
+    missing_types: Vec[tast::Type],
     instances: Vec[core::TypeInstance],
     enums: Vec[tast::EnumDef],
     structs: Vec[tast::StructDef],
@@ -1487,6 +1540,9 @@ pub fn emit_builtin_runtime_items(
             },
             _ => (),
         }
+    };
+    for ty in missing_types {
+        items.push(missing_runtime_item(ty))
     };
     for ty in types {
         match tast::resolve_type(ty) {
