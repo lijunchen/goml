@@ -12,6 +12,7 @@ struct LowerEnv {
     closures: Vec[ClosureInfo],
     structs: Vec[tast::StructDef],
     instances: Vec[core::TypeInstance],
+    functions: Vec[anf::Function],
     function_names: Vec[(string, string)],
     dyn_helper_names: DynHelperNames,
 }
@@ -488,6 +489,22 @@ fn compile_imms_expected(
         }
     };
     result
+}
+
+fn find_dyn_method(
+    functions: Vec[anf::Function],
+    trait_name: string,
+    method_name: string,
+) -> Option[DynMethod] {
+    let result: Ref[Option[DynMethod]] = Ref::new(Option::None);
+    for method in dyn_methods(functions, trait_name) {
+        if method.name == method_name {
+            result.set(Option::Some(method))
+        } else {
+            ()
+        }
+    };
+    result.get()
 }
 
 fn intrinsic_source_name(key: string) -> string {
@@ -1030,12 +1047,16 @@ fn compile_value(
             ));
             Expr::StructLiteral(lower_type(ty), fields)
         },
-        anf::Value::DynCall(_, method, receiver, args, _) => {
+        anf::Value::DynCall(trait_name, method, receiver, args, _) => {
             let receiver = compile_imm(env, receiver);
             let values: Vec[Expr] = Vec::new();
             values.push(Expr::Field(receiver, "data"));
-            for arg in args {
-                values.push(compile_imm(env, arg))
+            let expected = match find_dyn_method(env.functions, trait_name, method) {
+                Option::Some(info) => info.params,
+                Option::None => Vec::new(),
+            };
+            for arg in compile_imms_expected(env, args, expected) {
+                values.push(arg)
             };
             Expr::Call(
                 Expr::Field(Expr::Field(receiver, "vtable"), go_ident(method)),
@@ -2973,6 +2994,7 @@ fn compile_function(
     closures: Vec[ClosureInfo],
     structs: Vec[tast::StructDef],
     instances: Vec[core::TypeInstance],
+    functions: Vec[anf::Function],
     function_names: Vec[(string, string)],
     dyn_helper_names: DynHelperNames,
 ) -> Function {
@@ -2989,6 +3011,7 @@ fn compile_function(
         closures,
         structs,
         instances,
+        functions,
         function_names,
         dyn_helper_names,
     };
@@ -3063,6 +3086,7 @@ pub fn lower(value: anf::File) -> File {
             closures,
             structs,
             type_instances,
+            value.functions,
             function_names,
             dyn_helper_names,
         )))
