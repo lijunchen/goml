@@ -81,3 +81,19 @@ fn parser_diagnostics_prevent_ast_creation() -> unit {
         Option::None => (),
     }
 }
+
+#[test]
+fn pretty_prints_run_single_ast_dump() -> unit {
+    let source = "fn main() { let _ = (); let a = (true, false, (true, false)); let b = match a { (x, y, (z, w)) => w }; let _ = print(b); () }";
+    let expected = "package main;\n"
+        + "fn main() {\n"
+        + "    let _ = ();\n"
+        + "    let a = (true, false, (true, false));\n"
+        + "    let b = match a {\n"
+        + "        (x, y, (z, w)) => w,\n"
+        + "    };\n"
+        + "    let _ = print(b);\n"
+        + "    ()\n"
+        + "}\n\n";
+    testing::assert_eq(pretty(lower(parser::parse(source))), expected)
+}
