@@ -539,6 +539,28 @@ fn preserves_bare_generic_static_owner() -> unit {
 }
 
 #[test]
+fn specializes_constructor_only_static_owner() -> unit {
+    let file = checked_file("fn make() -> Ref[int32] { Ref::new(1i32) }");
+    match file.items.get(0) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Call(
+                Expr::Callable(Callable::InherentMethod(owner, name), _),
+                _,
+                _,
+            )) => {
+                testing::assert_eq(name, "new");
+                match resolve_type(owner) {
+                    Type::RefType(Type::Int32) => (),
+                    _ => testing::fail("expected specialized Ref owner"),
+                }
+            },
+            _ => testing::fail("expected Ref static call"),
+        },
+        _ => testing::fail("expected make function"),
+    }
+}
+
+#[test]
 fn normalizes_and_escapes_char_literals() -> unit {
     match parse_char_literal("\\u0041") {
         Option::Some(value) => testing::assert(value == 'A'),
