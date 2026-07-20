@@ -2417,10 +2417,10 @@ fn add_collected_type(result: Vec[tast::Type], value: tast::Type) -> unit {
 fn collect_type(result: Vec[tast::Type], value: tast::Type) -> unit {
     match tast::resolve_type(value) {
         tast::Type::Tuple(values) => {
+            add_collected_type(result, value);
             for inner in values {
                 collect_type(result, inner)
-            };
-            add_collected_type(result, value)
+            }
         },
         tast::Type::Con(_) => add_collected_type(result, value),
         tast::Type::Dyn(_) => add_collected_type(result, value),
@@ -2432,22 +2432,22 @@ fn collect_type(result: Vec[tast::Type], value: tast::Type) -> unit {
             }
         },
         tast::Type::Array(_, elem) => {
+            add_collected_type(result, value);
             collect_type(result, elem);
-            add_collected_type(result, value)
         },
         tast::Type::Slice(elem) => collect_type(result, elem),
         tast::Type::VecType(elem) => {
+            add_collected_type(result, value);
             collect_type(result, elem);
-            add_collected_type(result, value)
         },
         tast::Type::RefType(elem) => {
+            add_collected_type(result, value);
             collect_type(result, elem);
-            add_collected_type(result, value)
         },
         tast::Type::HashMap(key, value) => {
+            add_collected_type(result, tast::Type::HashMap(key, value));
             collect_type(result, key);
             collect_type(result, value);
-            add_collected_type(result, tast::Type::HashMap(key, value))
         },
         tast::Type::Func(params, ret_ty) => {
             for param in params {
