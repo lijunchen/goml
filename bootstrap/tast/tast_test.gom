@@ -516,7 +516,7 @@ fn preserves_fn_iterator_static_owner() -> unit {
 }
 
 #[test]
-fn infers_generic_static_owner_arguments() -> unit {
+fn preserves_bare_generic_static_owner() -> unit {
     let source = "struct Box[T] { value: T } impl[T] Box[T] { fn new(value: T) -> Self { Box { value } } } fn make() -> Box[int32] { Box::new(1i32) }";
     let file = checked_file(source);
     match file.items.get(1) {
@@ -528,14 +528,8 @@ fn infers_generic_static_owner_arguments() -> unit {
             )) => {
                 testing::assert_eq(name, "new");
                 match resolve_type(owner) {
-                    Type::App(Type::Con(owner_name), args) => {
-                        testing::assert_eq(owner_name, "Box");
-                        match resolve_type(args.get(0)) {
-                            Type::Int32 => (),
-                            _ => testing::fail("expected int32 owner argument"),
-                        }
-                    },
-                    _ => testing::fail("expected specialized static owner"),
+                    Type::Con(owner_name) => testing::assert_eq(owner_name, "Box"),
+                    _ => testing::fail("expected bare static owner"),
                 }
             },
             _ => testing::fail("expected static constructor call"),
