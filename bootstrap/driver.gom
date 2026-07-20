@@ -1,0 +1,240 @@
+package main;
+
+use gomlang::parser::anf;
+use gomlang::parser::ast;
+use gomlang::parser::core;
+use gomlang::parser::go_backend;
+use gomlang::parser::hir;
+use gomlang::parser::lift;
+use gomlang::parser::mono;
+use gomlang::parser::parser;
+use gomlang::parser::tast;
+use std::bytes;
+use std::env;
+use std::fs;
+use std::io;
+use std::path;
+use std::process;
+
+struct Compilation {
+    ast_value: ast::LowerResult,
+    hir_value: hir::LowerResult,
+    tast_value: tast::CheckResult,
+    core_value: core::File,
+    mono_value: core::File,
+    lift_value: core::File,
+    anf_value: anf::File,
+    go_value: go_backend::File,
+}
+
+fn compile_source(source_path: string, source: string) -> Compilation {
+    let ast_value = ast::lower(parser::parse(source));
+    let hir_value = hir::lower(ast_value, source_path);
+    let tast_value = tast::check(hir_value);
+    let core_value = core::lower(tast_value);
+    let mono_value = mono::lower(core_value);
+    let lift_value = lift::lower(mono_value);
+    let anf_value = anf::lower(lift_value);
+    let go_value = go_backend::lower(anf_value);
+    Compilation {
+        ast_value,
+        hir_value,
+        tast_value,
+        core_value,
+        mono_value,
+        lift_value,
+        anf_value,
+        go_value,
+    }
+}
+
+fn print_dump(printed: Ref[bool], label: string, content: string) -> unit {
+    if printed.get() {
+        io::println("")
+    } else {
+        ()
+    };
+    io::println("== " + label + " ==");
+    io::println(content);
+    printed.set(true)
+}
+
+fn print_dumps(compilation: Compilation, args: RunArgs, go_source: string) -> unit {
+    let printed = Ref::new(false);
+    if args.dump_ast {
+        print_dump(printed, "AST", ast::encode(compilation.ast_value))
+    } else {
+        ()
+    };
+    if args.dump_hir {
+        print_dump(printed, "HIR", hir::encode(compilation.hir_value))
+    } else {
+        ()
+    };
+    if args.dump_tast {
+        print_dump(printed, "Typed AST", tast::encode(compilation.tast_value))
+    } else {
+        ()
+    };
+    if args.dump_core {
+        print_dump(printed, "Core", core::encode(compilation.core_value))
+    } else {
+        ()
+    };
+    if args.dump_mono {
+        print_dump(printed, "Mono", mono::encode(compilation.mono_value))
+    } else {
+        ()
+    };
+    if args.dump_lift {
+        print_dump(printed, "Lifted", lift::encode(compilation.lift_value))
+    } else {
+        ()
+    };
+    if args.dump_anf {
+        print_dump(printed, "ANF", anf::encode(compilation.anf_value))
+    } else {
+        ()
+    };
+    if args.dump_go {
+        print_dump(printed, "Go", go_source)
+    } else {
+        ()
+    }
+}
+
+fn write_stdout(data: bytes::Bytes) -> unit {
+    match io::write_stdout(data) {
+        Result::Ok(()) => (),
+        Result::Err(error) => fail(error),
+    }
+}
+
+fn bytes_to_string(data: bytes::Bytes) -> string {
+    match data.to_string() {
+        Result::Ok(value) => value,
+        Result::Err(error) => fail_string(error),
+    }
+}
+
+fn fail_string(message: string) -> string {
+    fail(message);
+    ""
+}
+
+fn ascii_whitespace_at(value: string, index: int32) -> bool {
+    let character = value.byte_slice(index, index + 1);
+    character == " " || character == "\n" || character == "\r" || character == "\t"
+}
+
+fn trim_ascii(value: string) -> string {
+    let start = Ref::new(0);
+    let end = Ref::new(value.byte_len());
+    while start.get() < end.get() && ascii_whitespace_at(value, start.get()) {
+        start.set(start.get() + 1)
+    };
+    while end.get() > start.get() && ascii_whitespace_at(value, end.get() - 1) {
+        end.set(end.get() - 1)
+    };
+    value.byte_slice(start.get(), end.get())
+}
+
+fn temp_root() -> string {
+    match env::var("TMPDIR") {
+        Option::Some(value) => if value == "" { "/tmp" } else { value },
+        Option::None => "/tmp",
+    }
+}
+
+fn temp_go_path(source_path: string, source: string) -> string {
+    let directory = path::join(temp_root(), "gomlc-selfhost");
+    match fs::create_dir_all(directory) {
+        Result::Ok(()) => (),
+        Result::Err(error) => fail(error),
+    };
+    let name = Hash::hash(source_path + "\n" + source).to_string() + ".go";
+    path::join(directory, name)
+}
+
+fn command_succeeded(output: process::Output) -> bool {
+    process::ExitStatus::success(process::Output::status(output))
+}
+
+fn try_execute_with_yaegi(directory: string, go_file: string) -> bool {
+    let available = match process::Command::new("yaegi").arg("help").output() {
+        Result::Ok(output) => command_succeeded(output),
+        Result::Err(_) => false,
+    };
+    if !available {
+        false
+    } else {
+        match process::Command::new("yaegi")
+            .arg("run")
+            .arg(go_file)
+            .current_dir(directory)
+            .env("TZ", "UTC")
+            .output()
+        {
+            Result::Ok(output) => if command_succeeded(output) {
+                write_stdout(process::Output::stdout(output));
+                true
+            } else {
+                false
+            },
+            Result::Err(_) => false,
+        }
+    }
+}
+
+fn cleanup_temp_file(go_file: string) -> unit {
+    let _ = process::Command::new("rm").arg("-f").arg(go_file).output();
+    ()
+}
+
+fn execute_with_go_run(directory: string, go_file: string) -> unit {
+    match process::Command::new("go")
+        .arg("run")
+        .arg(go_file)
+        .current_dir(directory)
+        .env("TZ", "UTC")
+        .env("GOWORK", "off")
+        .env("GO111MODULE", "off")
+        .output()
+    {
+        Result::Ok(output) => if command_succeeded(output) {
+            write_stdout(process::Output::stdout(output))
+        } else {
+            fail(
+                "go run failed: "
+                    + trim_ascii(bytes_to_string(process::Output::stderr(output))),
+            )
+        },
+        Result::Err(error) => fail("failed to execute go run: " + error),
+    }
+}
+
+fn execute_go_source(source_path: string, source: string) -> unit {
+    let go_file = temp_go_path(source_path, source);
+    match fs::write_file(go_file, source) {
+        Result::Ok(()) => (),
+        Result::Err(error) => fail(error),
+    };
+    let directory = match path::parent(go_file) {
+        Option::Some(value) => value,
+        Option::None => temp_root(),
+    };
+    if try_execute_with_yaegi(directory, go_file) {
+        ()
+    } else {
+        execute_with_go_run(directory, go_file)
+    };
+    cleanup_temp_file(go_file)
+}
+
+fn run_single(args: RunArgs) -> unit {
+    let source = read_source(args.file);
+    let compilation = compile_source(args.file, source);
+    let go_source = go_backend::encode(compilation.go_value);
+    print_dumps(compilation, args, go_source);
+    execute_go_source(args.file, go_source)
+}
