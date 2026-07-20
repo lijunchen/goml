@@ -220,6 +220,11 @@ fn lowers_flat_struct_bindings_in_field_order() -> unit {
 
 #[test]
 fn links_builtin_core_before_user_core() -> unit {
+    let checked = tast::check(hir::lower(
+        ast::lower(parser::parse(builtin_source())),
+        "builtin_contract.gom",
+    ));
+    testing::assert_eq(checked.diagnostics.len(), 0);
     let counter = Ref::new(0);
     let builtins = lower_builtins(counter);
     testing::assert(builtins.functions.len() > 20);
