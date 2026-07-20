@@ -899,16 +899,39 @@ fn try_type_parts(value: Type) -> Option[(string, Vec[Type])] {
     }
 }
 
-fn try_constructor(name: string, variant: string) -> Constructor {
-    Constructor {
-        name: name + "::" + variant,
-        fields: Vec::new(),
-        is_struct: false,
-        tag: if variant == "None" || variant == "Ok" {
+fn user_try_variant_tag(ctx: Checker, name: string, variant: string) -> Option[int32] {
+    match find_enum_by_name(ctx, name) {
+        Option::Some(definition) => {
+            let result = Ref::new(Option::None);
+            let found = Ref::new(false);
+            for index in range(0, definition.variants.len()) {
+                if found.get() == false && definition.variants.get(index).name == variant {
+                    result.set(Option::Some(index));
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            result.get()
+        },
+        Option::None => Option::None,
+    }
+}
+
+fn try_constructor(ctx: Checker, name: string, variant: string) -> Constructor {
+    let tag = match find_enum_by_name(ctx, name) {
+        Option::Some(_) => user_try_variant_tag(ctx, name, variant),
+        Option::None => if variant == "None" || variant == "Ok" {
             Option::Some(0)
         } else {
             Option::Some(1)
         },
+    };
+    Constructor {
+        name: name + "::" + variant,
+        fields: Vec::new(),
+        is_struct: false,
+        tag,
     }
 }
 
@@ -928,7 +951,7 @@ fn check_option_try(
     success_args.push(Pat::Var(value_name, ok_ty));
     let success = Arm {
         pat: Pat::Constr(
-            try_constructor(name, "Some"),
+            try_constructor(ctx, name, "Some"),
             success_args,
             inner_ty,
         ),
@@ -937,14 +960,14 @@ fn check_option_try(
     };
     let failure = Arm {
         pat: Pat::Constr(
-            try_constructor(name, "None"),
+            try_constructor(ctx, name, "None"),
             Vec::new(),
             inner_ty,
         ),
         guard: Option::None,
         body: Expr::Return(
             Option::Some(Expr::Constr(
-                try_constructor(name, "None"),
+                try_constructor(ctx, name, "None"),
                 Vec::new(),
                 ctx.return_ty,
             )),
@@ -979,7 +1002,7 @@ fn check_result_try(
     success_args.push(Pat::Var(value_name, ok_ty));
     let success = Arm {
         pat: Pat::Constr(
-            try_constructor(name, "Ok"),
+            try_constructor(ctx, name, "Ok"),
             success_args,
             inner_ty,
         ),
@@ -992,14 +1015,14 @@ fn check_result_try(
     return_args.push(Expr::Var(residual_name, error_ty));
     let failure = Arm {
         pat: Pat::Constr(
-            try_constructor(name, "Err"),
+            try_constructor(ctx, name, "Err"),
             residual_args,
             inner_ty,
         ),
         guard: Option::None,
         body: Expr::Return(
             Option::Some(Expr::Constr(
-                try_constructor(name, "Err"),
+                try_constructor(ctx, name, "Err"),
                 return_args,
                 ctx.return_ty,
             )),
