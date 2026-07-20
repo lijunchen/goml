@@ -587,7 +587,15 @@ pub fn emit_user_type_items(
         {
             let fields: Vec[(string, Type)] = Vec::new();
             for field in definition.fields {
-                fields.push((go_ident(field.0), lower_type(field.1)))
+                fields.push((
+                    go_ident(field.0),
+                    lower_type(instantiate_type(
+                        field.1,
+                        definition.generics,
+                        Vec::new(),
+                        instances,
+                    )),
+                ))
             };
             items.push(Item::Struct(StructDef {
                 name: go_user_type_name(definition.name),
@@ -643,7 +651,15 @@ pub fn emit_user_type_items(
         {
             let fields: Vec[(string, Type)] = Vec::new();
             for field in definition.fields {
-                fields.push((go_ident(field.0), lower_type(field.1)))
+                fields.push((
+                    go_ident(field.0),
+                    lower_type(instantiate_type(
+                        field.1,
+                        definition.generics,
+                        Vec::new(),
+                        instances,
+                    )),
+                ))
             };
             items.push(Item::Struct(StructDef {
                 name: go_user_type_name(definition.name),
