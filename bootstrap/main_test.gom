@@ -1,0 +1,82 @@
+package main;
+
+use std::testing;
+
+fn args_with(values: Vec[string]) -> Vec[string] {
+    let args = Vec::new();
+    args.push("gomlc");
+    args.push("run-single");
+    for value in values {
+        args.push(value)
+    };
+    args
+}
+
+fn parse_ok(values: Vec[string]) -> RunArgs {
+    match parse_run_args(args_with(values)) {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            testing::fail(error);
+            parse_ok(Vec::new())
+        },
+    }
+}
+
+fn assert_parse_error(values: Vec[string], expected: string) -> unit {
+    match parse_run_args(args_with(values)) {
+        Result::Ok(_) => testing::fail("expected argument error"),
+        Result::Err(error) => testing::assert_eq(error, expected),
+    }
+}
+
+#[test]
+fn parses_run_single_dump_flags() -> unit {
+    let values = Vec::new();
+    values.push("--dump-go");
+    values.push("main.gom");
+    values.push("--dump-ast");
+    values.push("--dump-tast");
+    values.push("--dump-core");
+    values.push("--dump-mono");
+    values.push("--dump-lift");
+    values.push("--dump-anf");
+    values.push("--dump-hir");
+    let args = parse_ok(values);
+    testing::assert_eq(args.file, "main.gom");
+    testing::assert(args.dump_ast);
+    testing::assert(args.dump_hir);
+    testing::assert(args.dump_tast);
+    testing::assert(args.dump_core);
+    testing::assert(args.dump_mono);
+    testing::assert(args.dump_lift);
+    testing::assert(args.dump_anf);
+    testing::assert(args.dump_go)
+}
+
+#[test]
+fn parses_run_single_without_dumps() -> unit {
+    let values = Vec::new();
+    values.push("main.gom");
+    let args = parse_ok(values);
+    testing::assert_eq(args.file, "main.gom");
+    testing::assert(!args.dump_ast);
+    testing::assert(!args.dump_hir);
+    testing::assert(!args.dump_tast);
+    testing::assert(!args.dump_core);
+    testing::assert(!args.dump_mono);
+    testing::assert(!args.dump_lift);
+    testing::assert(!args.dump_anf);
+    testing::assert(!args.dump_go)
+}
+
+#[test]
+fn rejects_invalid_run_single_arguments() -> unit {
+    assert_parse_error(Vec::new(), "missing input file");
+    let unknown = Vec::new();
+    unknown.push("--unknown");
+    assert_parse_error(unknown, "unknown argument: --unknown");
+    let multiple = Vec::new();
+    multiple.push("one.gom");
+    multiple.push("two.gom");
+    assert_parse_error(multiple, "multiple input files")
+}
