@@ -182,6 +182,96 @@ fn add_block_uses(values: Vec[string], value: Block) -> unit {
     }
 }
 
+fn free_vars_in_block(value: Block) -> Vec[string] {
+    let used: Vec[string] = Vec::new();
+    let declared: Vec[string] = Vec::new();
+    for stmt in value.stmts {
+        match stmt {
+            Stmt::Expr(expr) | Stmt::Go(expr) => add_expr_uses(used, expr),
+            Stmt::Var(name, _, initial) => {
+                add_name(declared, name);
+                match initial {
+                    Option::Some(expr) => add_expr_uses(used, expr),
+                    Option::None => (),
+                }
+            },
+            Stmt::Assign(_, expr) => add_expr_uses(used, expr),
+            Stmt::FieldAssign(target, _, expr) => {
+                add_expr_uses(used, target);
+                add_expr_uses(used, expr)
+            },
+            Stmt::IndexAssign(target, index, expr) => {
+                add_expr_uses(used, target);
+                add_expr_uses(used, index);
+                add_expr_uses(used, expr)
+            },
+            Stmt::MultiAssign(_, expr) => add_expr_uses(used, expr),
+            Stmt::Return(expr) => match expr {
+                Option::Some(expr) => add_expr_uses(used, expr),
+                Option::None => (),
+            },
+            Stmt::ReturnMulti(exprs) => {
+                for expr in exprs {
+                    add_expr_uses(used, expr)
+                }
+            },
+            Stmt::If(cond, then_, else_) => {
+                add_expr_uses(used, cond);
+                add_names(used, free_vars_in_block(then_));
+                match else_ {
+                    Option::Some(body) => add_names(used, free_vars_in_block(body)),
+                    Option::None => (),
+                }
+            },
+            Stmt::Loop(body) | Stmt::LabeledLoop(_, body) => {
+                add_names(used, free_vars_in_block(body))
+            },
+            Stmt::Switch(expr, cases, default) => {
+                add_expr_uses(used, expr);
+                for case in cases {
+                    add_expr_uses(used, case.value);
+                    add_names(used, free_vars_in_block(case.body))
+                };
+                match default {
+                    Option::Some(body) => add_names(used, free_vars_in_block(body)),
+                    Option::None => (),
+                }
+            },
+            Stmt::TypeSwitch(bind, expr, cases, default) => {
+                add_expr_uses(used, expr);
+                for case in cases {
+                    let case_uses = free_vars_in_block(case.body);
+                    match bind {
+                        Option::Some(name) => remove_name(case_uses, name),
+                        Option::None => (),
+                    };
+                    add_names(used, case_uses)
+                };
+                match default {
+                    Option::Some(body) => {
+                        let default_uses = free_vars_in_block(body);
+                        match bind {
+                            Option::Some(name) => remove_name(default_uses, name),
+                            Option::None => (),
+                        };
+                        add_names(used, default_uses)
+                    },
+                    Option::None => (),
+                }
+            },
+            Stmt::Break
+            | Stmt::BreakLabel(_)
+            | Stmt::Continue
+            | Stmt::Panic(_)
+            | Stmt::Unreachable => (),
+        }
+    };
+    for name in declared {
+        remove_name(used, name)
+    };
+    used
+}
+
 fn call_result_must_be_used(value: Expr) -> bool {
     match value {
         Expr::Var(name) => {
@@ -402,13 +492,17 @@ fn dce_block_with_live(value: Block, live_out: Vec[string]) -> DceResult {
                 output.push(Stmt::If(cond, then_result.block, lowered_else))
             },
             Stmt::Loop(body) => {
-                let result = dce_block_with_live(body, live);
+                let loop_live = copy_names(live);
+                add_names(loop_live, free_vars_in_block(body));
+                let result = dce_block_with_live(body, loop_live);
                 add_names(live, result.live);
                 add_names(needs_decl, result.needs_decl);
                 output.push(Stmt::Loop(result.block))
             },
             Stmt::LabeledLoop(label, body) => {
-                let result = dce_block_with_live(body, live);
+                let loop_live = copy_names(live);
+                add_names(loop_live, free_vars_in_block(body));
+                let result = dce_block_with_live(body, loop_live);
                 add_names(live, result.live);
                 add_names(needs_decl, result.needs_decl);
                 output.push(Stmt::LabeledLoop(label, result.block))
