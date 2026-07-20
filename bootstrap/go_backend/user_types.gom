@@ -50,6 +50,34 @@ fn builtin_struct_instance(
             name: go_user_type_name(value.name),
             fields,
         })
+    } else if value.base_name == "MapIterator" && value.args.len() == 3 {
+        let params: Vec[Type] = Vec::new();
+        params.push(lower_type(value.args.get(0)));
+        let fields: Vec[(string, Type)] = Vec::new();
+        fields.push(("iterator", lower_type(value.args.get(2))));
+        fields.push(("map_fn", Type::Func(params, lower_type(value.args.get(1)))));
+        Option::Some(StructDef {
+            name: go_user_type_name(value.name),
+            fields,
+        })
+    } else if value.base_name == "FilterIterator" && value.args.len() == 2 {
+        let params: Vec[Type] = Vec::new();
+        params.push(lower_type(value.args.get(0)));
+        let fields: Vec[(string, Type)] = Vec::new();
+        fields.push(("iterator", lower_type(value.args.get(1))));
+        fields.push(("predicate", Type::Func(params, Type::Bool)));
+        Option::Some(StructDef {
+            name: go_user_type_name(value.name),
+            fields,
+        })
+    } else if value.base_name == "TakeIterator" && value.args.len() == 1 {
+        let fields: Vec[(string, Type)] = Vec::new();
+        fields.push(("iterator", lower_type(value.args.get(0))));
+        fields.push(("remaining", lower_type(tast::Type::RefType(tast::Type::Int32))));
+        Option::Some(StructDef {
+            name: go_user_type_name(value.name),
+            fields,
+        })
     } else {
         Option::None
     }
