@@ -78,6 +78,11 @@ fn add_expr_uses(values: Vec[string], value: Expr) -> unit {
             add_expr_uses(values, end)
         },
         Expr::Cast(expr, _) | Expr::Convert(_, expr) => add_expr_uses(values, expr),
+        Expr::Make(_, args) => {
+            for arg in args {
+                add_expr_uses(values, arg)
+            }
+        },
         Expr::StructLiteral(_, fields) => {
             for field in fields {
                 add_expr_uses(values, field.1)
@@ -141,6 +146,15 @@ fn add_stmt_uses(values: Vec[string], value: Stmt) -> unit {
             }
         },
         Stmt::Loop(body) | Stmt::LabeledLoop(_, body) => add_block_uses(values, body),
+        Stmt::Range(names, expr, body) => {
+            add_expr_uses(values, expr);
+            let body_uses: Vec[string] = Vec::new();
+            add_block_uses(body_uses, body);
+            for name in names {
+                remove_name(body_uses, name)
+            };
+            add_names(values, body_uses)
+        },
         Stmt::Switch(expr, cases, default) => {
             add_expr_uses(values, expr);
             for case in cases {
@@ -225,6 +239,14 @@ fn free_vars_in_block(value: Block) -> Vec[string] {
             },
             Stmt::Loop(body) | Stmt::LabeledLoop(_, body) => {
                 add_names(used, free_vars_in_block(body))
+            },
+            Stmt::Range(names, expr, body) => {
+                add_expr_uses(used, expr);
+                let body_uses = free_vars_in_block(body);
+                for name in names {
+                    remove_name(body_uses, name)
+                };
+                add_names(used, body_uses)
             },
             Stmt::Switch(expr, cases, default) => {
                 add_expr_uses(used, expr);
@@ -332,6 +354,17 @@ fn expr_has_side_effects(value: Expr) -> bool {
                 || expr_has_side_effects(end)
         },
         Expr::Cast(expr, _) | Expr::Convert(_, expr) => expr_has_side_effects(expr),
+        Expr::Make(_, args) => {
+            let found = Ref::new(false);
+            for arg in args {
+                if expr_has_side_effects(arg) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
         Expr::StructLiteral(_, fields) => {
             let found = Ref::new(false);
             for field in fields {
@@ -506,6 +539,23 @@ fn dce_block_with_live(value: Block, live_out: Vec[string]) -> DceResult {
                 add_names(live, result.live);
                 add_names(needs_decl, result.needs_decl);
                 output.push(Stmt::LabeledLoop(label, result.block))
+            },
+            Stmt::Range(names, expr, body) => {
+                let loop_live = copy_names(live);
+                let body_uses = free_vars_in_block(body);
+                for name in names {
+                    remove_name(body_uses, name)
+                };
+                add_names(loop_live, body_uses);
+                let result = dce_block_with_live(body, loop_live);
+                for name in names {
+                    remove_name(result.live, name);
+                    remove_name(result.needs_decl, name)
+                };
+                add_names(live, result.live);
+                add_names(needs_decl, result.needs_decl);
+                add_expr_uses(live, expr);
+                output.push(Stmt::Range(names, expr, result.block))
             },
             Stmt::Break => output.push(Stmt::Break),
             Stmt::BreakLabel(label) => output.push(Stmt::BreakLabel(label)),

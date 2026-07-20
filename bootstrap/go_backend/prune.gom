@@ -45,6 +45,11 @@ fn collect_expr_names(result: Vec[string], value: Expr) -> unit {
             collect_expr_names(result, end)
         },
         Expr::Cast(expr, _) | Expr::Convert(_, expr) => collect_expr_names(result, expr),
+        Expr::Make(_, args) => {
+            for arg in args {
+                collect_expr_names(result, arg)
+            }
+        },
         Expr::StructLiteral(_, fields) => {
             for field in fields {
                 collect_expr_names(result, field.1)
@@ -101,6 +106,10 @@ fn collect_stmt_names(result: Vec[string], value: Stmt) -> unit {
             }
         },
         Stmt::Loop(body) | Stmt::LabeledLoop(_, body) => collect_block_names(result, body),
+        Stmt::Range(_, expr, body) => {
+            collect_expr_names(result, expr);
+            collect_block_names(result, body)
+        },
         Stmt::Switch(expr, cases, default) => {
             collect_expr_names(result, expr);
             for case in cases {

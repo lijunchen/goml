@@ -2628,6 +2628,7 @@ fn collect_imm_type(result: Vec[tast::Type], value: anf::Imm) -> unit {
 fn collect_runtime_imm(
     result: Vec[string],
     missing_types: Vec[tast::Type],
+    intrinsics: Vec[string],
     value: anf::Imm,
 ) -> unit {
     match value {
@@ -2639,6 +2640,11 @@ fn collect_runtime_imm(
             }
         },
         anf::Imm::Callable(tast::Callable::Intrinsic(key), function_ty) => {
+            if contains_string(intrinsics, key) == false {
+                intrinsics.push(key)
+            } else {
+                ()
+            };
             if key == "compiler.missing" {
                 match tast::resolve_type(function_ty) {
                     tast::Type::Func(_, ret_ty) => add_collected_type(missing_types, ret_ty),
@@ -2655,38 +2661,47 @@ fn collect_runtime_imm(
 fn collect_runtime_value(
     result: Vec[string],
     missing_types: Vec[tast::Type],
+    intrinsics: Vec[string],
     value: anf::Value,
 ) -> unit {
     match value {
-        anf::Value::Imm(value) => collect_runtime_imm(result, missing_types, value),
+        anf::Value::Imm(value) => {
+            collect_runtime_imm(result, missing_types, intrinsics, value)
+        },
         anf::Value::Constr(_, args, _)
         | anf::Value::Tuple(args, _)
         | anf::Value::Array(args, _) => {
             for arg in args {
-                collect_runtime_imm(result, missing_types, arg)
+                collect_runtime_imm(result, missing_types, intrinsics, arg)
             }
         },
         anf::Value::ConstrGet(expr, _, _, _)
         | anf::Value::Unary(_, expr, _)
         | anf::Value::Cast(expr, _)
         | anf::Value::Go(expr, _)
-        | anf::Value::Proj(expr, _, _) => collect_runtime_imm(result, missing_types, expr),
-        anf::Value::Binary(_, lhs, rhs, _) => {
-            collect_runtime_imm(result, missing_types, lhs);
-            collect_runtime_imm(result, missing_types, rhs)
+        | anf::Value::Proj(expr, _, _) => {
+            collect_runtime_imm(result, missing_types, intrinsics, expr)
         },
-        anf::Value::Assign(_, expr, _, _) => collect_runtime_imm(result, missing_types, expr),
+        anf::Value::Binary(_, lhs, rhs, _) => {
+            collect_runtime_imm(result, missing_types, intrinsics, lhs);
+            collect_runtime_imm(result, missing_types, intrinsics, rhs)
+        },
+        anf::Value::Assign(_, expr, _, _) => {
+            collect_runtime_imm(result, missing_types, intrinsics, expr)
+        },
         anf::Value::Call(func, args, _) => {
-            collect_runtime_imm(result, missing_types, func);
+            collect_runtime_imm(result, missing_types, intrinsics, func);
             for arg in args {
-                collect_runtime_imm(result, missing_types, arg)
+                collect_runtime_imm(result, missing_types, intrinsics, arg)
             }
         },
-        anf::Value::ToDyn(_, _, expr, _) => collect_runtime_imm(result, missing_types, expr),
+        anf::Value::ToDyn(_, _, expr, _) => {
+            collect_runtime_imm(result, missing_types, intrinsics, expr)
+        },
         anf::Value::DynCall(_, _, receiver, args, _) => {
-            collect_runtime_imm(result, missing_types, receiver);
+            collect_runtime_imm(result, missing_types, intrinsics, receiver);
             for arg in args {
-                collect_runtime_imm(result, missing_types, arg)
+                collect_runtime_imm(result, missing_types, intrinsics, arg)
             }
         },
     }
@@ -2695,39 +2710,48 @@ fn collect_runtime_value(
 fn collect_runtime_block(
     result: Vec[string],
     missing_types: Vec[tast::Type],
+    intrinsics: Vec[string],
     value: anf::Block,
 ) -> unit {
     for bind in value.binds {
         match bind {
-            anf::Bind::Let(value) => collect_runtime_value(result, missing_types, value.value),
-            anf::Bind::Join(value) => collect_runtime_block(result, missing_types, value.body),
+            anf::Bind::Let(value) => {
+                collect_runtime_value(result, missing_types, intrinsics, value.value)
+            },
+            anf::Bind::Join(value) => {
+                collect_runtime_block(result, missing_types, intrinsics, value.body)
+            },
             anf::Bind::JoinRec(values) => {
                 for value in values {
-                    collect_runtime_block(result, missing_types, value.body)
+                    collect_runtime_block(result, missing_types, intrinsics, value.body)
                 }
             },
         }
     };
     match value.term {
-        anf::Term::Return(value) => collect_runtime_imm(result, missing_types, value),
+        anf::Term::Return(value) => {
+            collect_runtime_imm(result, missing_types, intrinsics, value)
+        },
         anf::Term::Jump(_, args, _) => {
             for arg in args {
-                collect_runtime_imm(result, missing_types, arg)
+                collect_runtime_imm(result, missing_types, intrinsics, arg)
             }
         },
         anf::Term::If(cond, then_, else_, _) => {
-            collect_runtime_imm(result, missing_types, cond);
-            collect_runtime_block(result, missing_types, then_);
-            collect_runtime_block(result, missing_types, else_)
+            collect_runtime_imm(result, missing_types, intrinsics, cond);
+            collect_runtime_block(result, missing_types, intrinsics, then_);
+            collect_runtime_block(result, missing_types, intrinsics, else_)
         },
         anf::Term::Match(scrut, arms, default, _) => {
-            collect_runtime_imm(result, missing_types, scrut);
+            collect_runtime_imm(result, missing_types, intrinsics, scrut);
             for arm in arms {
-                collect_runtime_imm(result, missing_types, arm.lhs);
-                collect_runtime_block(result, missing_types, arm.body)
+                collect_runtime_imm(result, missing_types, intrinsics, arm.lhs);
+                collect_runtime_block(result, missing_types, intrinsics, arm.body)
             };
             match default {
-                Option::Some(body) => collect_runtime_block(result, missing_types, body),
+                Option::Some(body) => {
+                    collect_runtime_block(result, missing_types, intrinsics, body)
+                },
                 Option::None => (),
             }
         },
@@ -3037,6 +3061,7 @@ pub fn lower(value: anf::File) -> File {
     let items: Vec[Item] = Vec::new();
     let types: Vec[tast::Type] = Vec::new();
     let runtime_hooks: Vec[string] = Vec::new();
+    let intrinsics: Vec[string] = Vec::new();
     let missing_types: Vec[tast::Type] = Vec::new();
     let coercions: Vec[DynCoercion] = Vec::new();
     let variants: Vec[VariantInfo] = Vec::new();
@@ -3046,12 +3071,17 @@ pub fn lower(value: anf::File) -> File {
         };
         collect_type(types, function.ret_ty);
         collect_block_types(types, function.body);
-        collect_runtime_block(runtime_hooks, missing_types, function.body);
+        collect_runtime_block(
+            runtime_hooks,
+            missing_types,
+            intrinsics,
+            function.body,
+        );
         collect_dyn_block(coercions, function.body)
     };
     let dyn_helper_names = build_dyn_helper_names(coercions, value.functions);
     collect_type_definition_fields(types, enums, structs, type_instances);
-    emit_runtime_hook_items(items, runtime_hooks);
+    emit_runtime_hook_items(items, runtime_hooks, intrinsics);
     emit_missing_base_item(items, missing_types);
     emit_builtin_runtime_items(
         items,

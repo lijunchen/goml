@@ -122,7 +122,7 @@ fn all_core_runtime_hooks() -> Vec[string] {
 fn emits_every_core_runtime_hook() -> unit {
     let hooks = all_core_runtime_hooks();
     let items: Vec[Item] = Vec::new();
-    emit_runtime_hook_items(items, hooks);
+    emit_runtime_hook_items(items, hooks, Vec::new());
     let output = encode(File { items });
     testing::assert(string_contains(
         output,
@@ -172,7 +172,7 @@ fn closes_string_runtime_dependencies() -> unit {
     hooks.push("core.string_get");
     hooks.push("core.string_byte_slice");
     let items: Vec[Item] = Vec::new();
-    emit_runtime_hook_items(items, hooks);
+    emit_runtime_hook_items(items, hooks, Vec::new());
     let output = encode(File { items });
     testing::assert(string_contains(
         output,

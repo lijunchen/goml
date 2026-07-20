@@ -247,6 +247,17 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int32) -> unit 
             write_expr(builder, expr, indent);
             builder.write_char(')')
         },
+        Expr::Make(ty, args) => {
+            builder.write_string("make(");
+            write_type(builder, ty);
+            if args.len() > 0 {
+                builder.write_string(", ");
+                write_exprs(builder, args, indent)
+            } else {
+                ()
+            };
+            builder.write_char(')')
+        },
         Expr::StructLiteral(ty, fields) => {
             write_type(builder, ty);
             builder.write_char('{');
@@ -392,6 +403,21 @@ fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int32) -> unit 
             builder.write_string(":\n");
             write_spaces(builder, indent);
             builder.write_string("for ");
+            write_block(builder, body, indent)
+        },
+        Stmt::Range(names, expr, body) => {
+            builder.write_string("for ");
+            for index in range(0, names.len()) {
+                if index > 0 {
+                    builder.write_string(", ")
+                } else {
+                    ()
+                };
+                builder.write_string(names.get(index))
+            };
+            builder.write_string(" := range ");
+            write_expr(builder, expr, indent);
+            builder.write_char(' ');
             write_block(builder, body, indent)
         },
         Stmt::Break => builder.write_string("break"),

@@ -296,9 +296,15 @@ fn string_parse_float_hook_item(key: string, bit_size: string) -> Item {
     })
 }
 
-pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string]) -> unit {
+pub fn emit_runtime_hook_items(
+    items: Vec[Item],
+    hooks: Vec[string],
+    intrinsics: Vec[string],
+) -> unit {
     let uses_fmt = Ref::new(false);
     let uses_math = Ref::new(false);
+    let uses_reflect = Ref::new(false);
+    let uses_slices = Ref::new(false);
     let uses_strconv = Ref::new(false);
     let uses_strings = Ref::new(false);
     let uses_utf8 = Ref::new(false);
@@ -333,8 +339,19 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string]) -> unit {
             },
         }
     };
+    for intrinsic in intrinsics {
+        if intrinsic == "ref.ptr_hash" {
+            uses_reflect.set(true)
+        } else if intrinsic == "vec.with_capacity" || intrinsic == "vec.reserve" {
+            uses_slices.set(true)
+        } else {
+            ()
+        }
+    };
     if uses_fmt.get()
         || uses_math.get()
+        || uses_reflect.get()
+        || uses_slices.get()
         || uses_strconv.get()
         || uses_strings.get()
         || uses_utf8.get()
@@ -347,6 +364,16 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string]) -> unit {
         };
         if uses_math.get() {
             imports.push(("_goml_math", "math"))
+        } else {
+            ()
+        };
+        if uses_reflect.get() {
+            imports.push(("_goml_reflect", "reflect"))
+        } else {
+            ()
+        };
+        if uses_slices.get() {
+            imports.push(("_goml_slices", "slices"))
         } else {
             ()
         };
@@ -527,6 +554,38 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
                 ret_ty: Option::Some(lowered_vec),
                 body: Block { stmts: new_stmts },
             }));
+            let with_capacity_params: Vec[(string, Type)] = Vec::new();
+            with_capacity_params.push(("capacity", Type::Int32));
+            let grow_args: Vec[Expr] = Vec::new();
+            grow_args.push(Expr::ArrayLiteral(
+                Type::Slice(lowered_elem),
+                Vec::new(),
+            ));
+            grow_args.push(Expr::Convert(
+                Type::Named("int"),
+                Expr::Var("capacity"),
+            ));
+            let with_capacity_fields: Vec[(string, Expr)] = Vec::new();
+            with_capacity_fields.push((
+                "items",
+                Expr::Call(Expr::Var("_goml_slices.Grow"), grow_args),
+            ));
+            let with_capacity_stmts: Vec[Stmt] = Vec::new();
+            with_capacity_stmts.push(Stmt::Return(Option::Some(Expr::Unary(
+                UnaryOp::Address,
+                Expr::StructLiteral(
+                    Type::Named(go_generated_ident(
+                        "_goml_vec_" + go_ident(encode_type(elem)),
+                    )),
+                    with_capacity_fields,
+                ),
+            ))));
+            result.push(Item::Function(Function {
+                name: runtime_helper_name("vec_with_capacity", vec_ty),
+                params: with_capacity_params,
+                ret_ty: Option::Some(lowered_vec),
+                body: Block { stmts: with_capacity_stmts },
+            }));
             let push_params: Vec[(string, Type)] = Vec::new();
             push_params.push(("vec", lowered_vec));
             push_params.push(("elem", lowered_elem));
@@ -606,6 +665,90 @@ fn vec_runtime_items(vec_ty: tast::Type) -> Vec[Item] {
                 params: capacity_params,
                 ret_ty: Option::Some(Type::Int32),
                 body: Block { stmts: capacity_stmts },
+            }));
+            let reserve_params: Vec[(string, Type)] = Vec::new();
+            reserve_params.push(("vec", lowered_vec));
+            reserve_params.push(("additional", Type::Int32));
+            let reserve_args: Vec[Expr] = Vec::new();
+            reserve_args.push(Expr::Field(Expr::Var("vec"), "items"));
+            reserve_args.push(Expr::Convert(
+                Type::Named("int"),
+                Expr::Var("additional"),
+            ));
+            let reserve_stmts: Vec[Stmt] = Vec::new();
+            reserve_stmts.push(Stmt::FieldAssign(
+                Expr::Var("vec"),
+                "items",
+                Expr::Call(Expr::Var("_goml_slices.Grow"), reserve_args),
+            ));
+            reserve_stmts.push(Stmt::Return(Option::Some(Expr::Unit)));
+            result.push(Item::Function(Function {
+                name: runtime_helper_name("vec_reserve", vec_ty),
+                params: reserve_params,
+                ret_ty: Option::Some(Type::Unit),
+                body: Block { stmts: reserve_stmts },
+            }));
+            let truncate_params: Vec[(string, Type)] = Vec::new();
+            truncate_params.push(("vec", lowered_vec));
+            truncate_params.push(("new_len", Type::Int32));
+            let truncate_stmts: Vec[Stmt] = Vec::new();
+            let negative_stmts: Vec[Stmt] = Vec::new();
+            negative_stmts.push(Stmt::Panic("negative vector length"));
+            truncate_stmts.push(Stmt::If(
+                Expr::Binary(
+                    BinaryOp::Less,
+                    Expr::Var("new_len"),
+                    Expr::Int("0"),
+                ),
+                Block { stmts: negative_stmts },
+                Option::None,
+            ));
+            let current_len_args: Vec[Expr] = Vec::new();
+            current_len_args.push(Expr::Field(Expr::Var("vec"), "items"));
+            let current_len = Expr::Convert(
+                Type::Int32,
+                Expr::Call(Expr::Var("len"), current_len_args),
+            );
+            let shorten_stmts: Vec[Stmt] = Vec::new();
+            let clear_len_args: Vec[Expr] = Vec::new();
+            clear_len_args.push(Expr::Field(Expr::Var("vec"), "items"));
+            let clear_args: Vec[Expr] = Vec::new();
+            clear_args.push(Expr::Slice(
+                Expr::Field(Expr::Var("vec"), "items"),
+                Expr::Var("new_len"),
+                Expr::Convert(
+                    Type::Int32,
+                    Expr::Call(Expr::Var("len"), clear_len_args),
+                ),
+            ));
+            shorten_stmts.push(Stmt::Expr(Expr::Call(
+                Expr::Var("clear"),
+                clear_args,
+            )));
+            shorten_stmts.push(Stmt::FieldAssign(
+                Expr::Var("vec"),
+                "items",
+                Expr::Slice(
+                    Expr::Field(Expr::Var("vec"), "items"),
+                    Expr::Int("0"),
+                    Expr::Var("new_len"),
+                ),
+            ));
+            truncate_stmts.push(Stmt::If(
+                Expr::Binary(
+                    BinaryOp::Less,
+                    Expr::Var("new_len"),
+                    current_len,
+                ),
+                Block { stmts: shorten_stmts },
+                Option::None,
+            ));
+            truncate_stmts.push(Stmt::Return(Option::Some(Expr::Unit)));
+            result.push(Item::Function(Function {
+                name: runtime_helper_name("vec_truncate", vec_ty),
+                params: truncate_params,
+                ret_ty: Option::Some(Type::Unit),
+                body: Block { stmts: truncate_stmts },
             }))
         },
         _ => (),
@@ -678,6 +821,31 @@ fn ref_runtime_items(ref_ty: tast::Type) -> Vec[Item] {
                 params: ptr_eq_params,
                 ret_ty: Option::Some(Type::Bool),
                 body: Block { stmts: ptr_eq_stmts },
+            }));
+            let ptr_hash_params: Vec[(string, Type)] = Vec::new();
+            ptr_hash_params.push(("reference", lowered_ref_ty));
+            let value_of_args: Vec[Expr] = Vec::new();
+            value_of_args.push(Expr::Var("reference"));
+            let pointer_args: Vec[Expr] = Vec::new();
+            let ptr_hash_stmts: Vec[Stmt] = Vec::new();
+            ptr_hash_stmts.push(Stmt::Return(Option::Some(Expr::Convert(
+                Type::Uint64,
+                Expr::Call(
+                    Expr::Field(
+                        Expr::Call(
+                            Expr::Var("_goml_reflect.ValueOf"),
+                            value_of_args,
+                        ),
+                        "Pointer",
+                    ),
+                    pointer_args,
+                ),
+            ))));
+            result.push(Item::Function(Function {
+                name: ref_helper_name("ptr_hash", ref_ty),
+                params: ptr_hash_params,
+                ret_ty: Option::Some(Type::Uint64),
+                body: Block { stmts: ptr_hash_stmts },
             }))
         },
         _ => (),
@@ -769,6 +937,52 @@ fn hashmap_option_info(
 
 fn hashmap_trait_impl_name(trait_name: string, key: tast::Type, method: string) -> string {
     go_ident("trait_impl#" + trait_name + "#" + compact_type(key) + "#" + method)
+}
+
+fn hashmap_new_item(key: tast::Type, value: tast::Type) -> Item {
+    let map_ty = tast::Type::HashMap(key, value);
+    let name = hashmap_name(key, value);
+    let entry_ty = Type::Named(go_generated_ident(name + "_entry"));
+    let buckets_ty = Type::Map(Type::Uint64, Type::Slice(entry_ty));
+    let fields: Vec[(string, Expr)] = Vec::new();
+    fields.push(("buckets", Expr::Make(buckets_ty, Vec::new())));
+    fields.push(("len", Expr::Int("0")));
+    fields.push(("hashes", Expr::Nil));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Return(Option::Some(Expr::Unary(
+        UnaryOp::Address,
+        Expr::StructLiteral(Type::Named(name), fields),
+    ))));
+    Item::Function(Function {
+        name: runtime_helper_name("hashmap_new", map_ty),
+        params: Vec::new(),
+        ret_ty: Option::Some(lower_type(map_ty)),
+        body: Block { stmts },
+    })
+}
+
+fn hashmap_len_item(key: tast::Type, value: tast::Type) -> Item {
+    let map_ty = tast::Type::HashMap(key, value);
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("m", lower_type(map_ty)));
+    let stmts: Vec[Stmt] = Vec::new();
+    let nil_stmts: Vec[Stmt] = Vec::new();
+    nil_stmts.push(Stmt::Return(Option::Some(Expr::Int("0"))));
+    stmts.push(Stmt::If(
+        Expr::Binary(BinaryOp::Eq, Expr::Var("m"), Expr::Nil),
+        Block { stmts: nil_stmts },
+        Option::None,
+    ));
+    stmts.push(Stmt::Return(Option::Some(Expr::Field(
+        Expr::Var("m"),
+        "len",
+    ))));
+    Item::Function(Function {
+        name: runtime_helper_name("hashmap_len", map_ty),
+        params,
+        ret_ty: Option::Some(Type::Int32),
+        body: Block { stmts },
+    })
 }
 
 fn hashmap_lookup_item(key: tast::Type, value: tast::Type) -> Item {
@@ -1129,6 +1343,313 @@ fn hashmap_set_item(key: tast::Type, value: tast::Type) -> Item {
     })
 }
 
+fn hashmap_remove_item(key: tast::Type, value: tast::Type) -> Item {
+    let map_ty = tast::Type::HashMap(key, value);
+    let lowered_map = lower_type(map_ty);
+    let lowered_key = lower_type(key);
+    let entry_ty = Type::Named(go_generated_ident(hashmap_name(key, value) + "_entry"));
+    let bucket_ty = Type::Slice(entry_ty);
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("m", lowered_map));
+    params.push(("key", lowered_key));
+    let stmts: Vec[Stmt] = Vec::new();
+    let nil_stmts: Vec[Stmt] = Vec::new();
+    nil_stmts.push(Stmt::Return(Option::Some(Expr::Unit)));
+    stmts.push(Stmt::If(
+        Expr::Binary(BinaryOp::Eq, Expr::Var("m"), Expr::Nil),
+        Block { stmts: nil_stmts },
+        Option::None,
+    ));
+    let hash_args: Vec[Expr] = Vec::new();
+    hash_args.push(Expr::Var("key"));
+    stmts.push(Stmt::Var(
+        "h",
+        Type::Uint64,
+        Option::Some(Expr::Call(
+            Expr::Var(hashmap_trait_impl_name("Hash", key, "hash")),
+            hash_args,
+        )),
+    ));
+    stmts.push(Stmt::Var(
+        "bucket",
+        bucket_ty,
+        Option::Some(Expr::Index(
+            Expr::Field(Expr::Var("m"), "buckets"),
+            Expr::Var("h"),
+        )),
+    ));
+    stmts.push(Stmt::Var("i", Type::Int32, Option::Some(Expr::Int("0"))));
+    let loop_stmts: Vec[Stmt] = Vec::new();
+    let len_args: Vec[Expr] = Vec::new();
+    len_args.push(Expr::Var("bucket"));
+    let break_stmts: Vec[Stmt] = Vec::new();
+    break_stmts.push(Stmt::Break);
+    loop_stmts.push(Stmt::If(
+        Expr::Binary(
+            BinaryOp::GreaterEq,
+            Expr::Var("i"),
+            Expr::Convert(
+                Type::Int32,
+                Expr::Call(Expr::Var("len"), len_args),
+            ),
+        ),
+        Block { stmts: break_stmts },
+        Option::None,
+    ));
+    loop_stmts.push(Stmt::Var(
+        "entry",
+        entry_ty,
+        Option::Some(Expr::Index(
+            Expr::Var("bucket"),
+            Expr::Var("i"),
+        )),
+    ));
+    let eq_args: Vec[Expr] = Vec::new();
+    eq_args.push(Expr::Field(Expr::Var("entry"), "key"));
+    eq_args.push(Expr::Var("key"));
+    let found_stmts: Vec[Stmt] = Vec::new();
+    found_stmts.push(Stmt::Var("zero", entry_ty, Option::None));
+    found_stmts.push(Stmt::IndexAssign(
+        Expr::Var("bucket"),
+        Expr::Var("i"),
+        Expr::Var("zero"),
+    ));
+    found_stmts.push(Stmt::FieldAssign(
+        Expr::Var("m"),
+        "len",
+        Expr::Binary(
+            BinaryOp::Sub,
+            Expr::Field(Expr::Var("m"), "len"),
+            Expr::Int("1"),
+        ),
+    ));
+    found_stmts.push(Stmt::Return(Option::Some(Expr::Unit)));
+    loop_stmts.push(Stmt::If(
+        Expr::Binary(
+            BinaryOp::And,
+            Expr::Field(Expr::Var("entry"), "active"),
+            Expr::Call(
+                Expr::Var(hashmap_trait_impl_name("Eq", key, "eq")),
+                eq_args,
+            ),
+        ),
+        Block { stmts: found_stmts },
+        Option::None,
+    ));
+    loop_stmts.push(Stmt::Assign(
+        "i",
+        Expr::Binary(BinaryOp::Add, Expr::Var("i"), Expr::Int("1")),
+    ));
+    stmts.push(Stmt::Loop(Block { stmts: loop_stmts }));
+    stmts.push(Stmt::Return(Option::Some(Expr::Unit)));
+    Item::Function(Function {
+        name: runtime_helper_name("hashmap_remove", map_ty),
+        params,
+        ret_ty: Option::Some(Type::Unit),
+        body: Block { stmts },
+    })
+}
+
+fn hashmap_contains_item(key: tast::Type, value: tast::Type) -> Item {
+    let map_ty = tast::Type::HashMap(key, value);
+    let lowered_map = lower_type(map_ty);
+    let lowered_key = lower_type(key);
+    let entry_ty = Type::Named(go_generated_ident(hashmap_name(key, value) + "_entry"));
+    let bucket_ty = Type::Slice(entry_ty);
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("m", lowered_map));
+    params.push(("key", lowered_key));
+    let stmts: Vec[Stmt] = Vec::new();
+    let nil_stmts: Vec[Stmt] = Vec::new();
+    nil_stmts.push(Stmt::Return(Option::Some(Expr::Bool(false))));
+    stmts.push(Stmt::If(
+        Expr::Binary(BinaryOp::Eq, Expr::Var("m"), Expr::Nil),
+        Block { stmts: nil_stmts },
+        Option::None,
+    ));
+    let hash_args: Vec[Expr] = Vec::new();
+    hash_args.push(Expr::Var("key"));
+    stmts.push(Stmt::Var(
+        "h",
+        Type::Uint64,
+        Option::Some(Expr::Call(
+            Expr::Var(hashmap_trait_impl_name("Hash", key, "hash")),
+            hash_args,
+        )),
+    ));
+    stmts.push(Stmt::Var(
+        "bucket",
+        bucket_ty,
+        Option::Some(Expr::Index(
+            Expr::Field(Expr::Var("m"), "buckets"),
+            Expr::Var("h"),
+        )),
+    ));
+    stmts.push(Stmt::Var("i", Type::Int32, Option::Some(Expr::Int("0"))));
+    let loop_stmts: Vec[Stmt] = Vec::new();
+    let len_args: Vec[Expr] = Vec::new();
+    len_args.push(Expr::Var("bucket"));
+    let break_stmts: Vec[Stmt] = Vec::new();
+    break_stmts.push(Stmt::Break);
+    loop_stmts.push(Stmt::If(
+        Expr::Binary(
+            BinaryOp::GreaterEq,
+            Expr::Var("i"),
+            Expr::Convert(
+                Type::Int32,
+                Expr::Call(Expr::Var("len"), len_args),
+            ),
+        ),
+        Block { stmts: break_stmts },
+        Option::None,
+    ));
+    loop_stmts.push(Stmt::Var(
+        "entry",
+        entry_ty,
+        Option::Some(Expr::Index(
+            Expr::Var("bucket"),
+            Expr::Var("i"),
+        )),
+    ));
+    let eq_args: Vec[Expr] = Vec::new();
+    eq_args.push(Expr::Field(Expr::Var("entry"), "key"));
+    eq_args.push(Expr::Var("key"));
+    let found_stmts: Vec[Stmt] = Vec::new();
+    found_stmts.push(Stmt::Return(Option::Some(Expr::Bool(true))));
+    loop_stmts.push(Stmt::If(
+        Expr::Binary(
+            BinaryOp::And,
+            Expr::Field(Expr::Var("entry"), "active"),
+            Expr::Call(
+                Expr::Var(hashmap_trait_impl_name("Eq", key, "eq")),
+                eq_args,
+            ),
+        ),
+        Block { stmts: found_stmts },
+        Option::None,
+    ));
+    loop_stmts.push(Stmt::Assign(
+        "i",
+        Expr::Binary(BinaryOp::Add, Expr::Var("i"), Expr::Int("1")),
+    ));
+    stmts.push(Stmt::Loop(Block { stmts: loop_stmts }));
+    stmts.push(Stmt::Return(Option::Some(Expr::Bool(false))));
+    Item::Function(Function {
+        name: runtime_helper_name("hashmap_contains", map_ty),
+        params,
+        ret_ty: Option::Some(Type::Bool),
+        body: Block { stmts },
+    })
+}
+
+fn hashmap_entries_item(key: tast::Type, value: tast::Type) -> Item {
+    let map_ty = tast::Type::HashMap(key, value);
+    let entry_ty = Type::Named(go_generated_ident(hashmap_name(key, value) + "_entry"));
+    let bucket_ty = Type::Slice(entry_ty);
+    let pair_types: Vec[tast::Type] = Vec::new();
+    pair_types.push(key);
+    pair_types.push(value);
+    let pair_ty = tast::Type::Tuple(pair_types);
+    let lowered_pair = lower_type(pair_ty);
+    let result_slice_ty = Type::Slice(lowered_pair);
+    let result_vec_ty = tast::Type::VecType(pair_ty);
+    let result_vec_struct = Type::Named(go_generated_ident(
+        "_goml_vec_" + go_ident(encode_type(pair_ty)),
+    ));
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("m", lower_type(map_ty)));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Var("result", result_slice_ty, Option::None));
+    let nil_fields: Vec[(string, Expr)] = Vec::new();
+    nil_fields.push(("items", Expr::Var("result")));
+    let nil_stmts: Vec[Stmt] = Vec::new();
+    nil_stmts.push(Stmt::Return(Option::Some(Expr::Unary(
+        UnaryOp::Address,
+        Expr::StructLiteral(result_vec_struct, nil_fields),
+    ))));
+    stmts.push(Stmt::If(
+        Expr::Binary(BinaryOp::Eq, Expr::Var("m"), Expr::Nil),
+        Block { stmts: nil_stmts },
+        Option::None,
+    ));
+    let range_stmts: Vec[Stmt] = Vec::new();
+    range_stmts.push(Stmt::Var(
+        "bucket",
+        bucket_ty,
+        Option::Some(Expr::Index(
+            Expr::Field(Expr::Var("m"), "buckets"),
+            Expr::Var("h"),
+        )),
+    ));
+    range_stmts.push(Stmt::Var("i", Type::Int32, Option::Some(Expr::Int("0"))));
+    let loop_stmts: Vec[Stmt] = Vec::new();
+    let len_args: Vec[Expr] = Vec::new();
+    len_args.push(Expr::Var("bucket"));
+    let break_stmts: Vec[Stmt] = Vec::new();
+    break_stmts.push(Stmt::Break);
+    loop_stmts.push(Stmt::If(
+        Expr::Binary(
+            BinaryOp::GreaterEq,
+            Expr::Var("i"),
+            Expr::Convert(
+                Type::Int32,
+                Expr::Call(Expr::Var("len"), len_args),
+            ),
+        ),
+        Block { stmts: break_stmts },
+        Option::None,
+    ));
+    loop_stmts.push(Stmt::Var(
+        "entry",
+        entry_ty,
+        Option::Some(Expr::Index(
+            Expr::Var("bucket"),
+            Expr::Var("i"),
+        )),
+    ));
+    let pair_fields: Vec[(string, Expr)] = Vec::new();
+    pair_fields.push(("_0", Expr::Field(Expr::Var("entry"), "key")));
+    pair_fields.push(("_1", Expr::Field(Expr::Var("entry"), "value")));
+    let append_args: Vec[Expr] = Vec::new();
+    append_args.push(Expr::Var("result"));
+    append_args.push(Expr::StructLiteral(lowered_pair, pair_fields));
+    let active_stmts: Vec[Stmt] = Vec::new();
+    active_stmts.push(Stmt::Assign(
+        "result",
+        Expr::Call(Expr::Var("append"), append_args),
+    ));
+    loop_stmts.push(Stmt::If(
+        Expr::Field(Expr::Var("entry"), "active"),
+        Block { stmts: active_stmts },
+        Option::None,
+    ));
+    loop_stmts.push(Stmt::Assign(
+        "i",
+        Expr::Binary(BinaryOp::Add, Expr::Var("i"), Expr::Int("1")),
+    ));
+    range_stmts.push(Stmt::Loop(Block { stmts: loop_stmts }));
+    let range_names: Vec[string] = Vec::new();
+    range_names.push("_");
+    range_names.push("h");
+    stmts.push(Stmt::Range(
+        range_names,
+        Expr::Field(Expr::Var("m"), "hashes"),
+        Block { stmts: range_stmts },
+    ));
+    let result_fields: Vec[(string, Expr)] = Vec::new();
+    result_fields.push(("items", Expr::Var("result")));
+    stmts.push(Stmt::Return(Option::Some(Expr::Unary(
+        UnaryOp::Address,
+        Expr::StructLiteral(result_vec_struct, result_fields),
+    ))));
+    Item::Function(Function {
+        name: runtime_helper_name("hashmap_entries", map_ty),
+        params,
+        ret_ty: Option::Some(lower_type(result_vec_ty)),
+        body: Block { stmts },
+    })
+}
+
 fn hashmap_items(
     key: tast::Type,
     value: tast::Type,
@@ -1168,9 +1689,14 @@ fn hashmap_items(
     } else {
         ()
     };
+    result.push(hashmap_new_item(key, value));
+    result.push(hashmap_len_item(key, value));
     result.push(hashmap_lookup_item(key, value));
     result.push(hashmap_get_item(key, value, option.0, option.1, option.2));
     result.push(hashmap_set_item(key, value));
+    result.push(hashmap_remove_item(key, value));
+    result.push(hashmap_contains_item(key, value));
+    result.push(hashmap_entries_item(key, value));
     result
 }
 
