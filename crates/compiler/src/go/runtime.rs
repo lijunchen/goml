@@ -120,6 +120,7 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(uint64_to_string()),
         Item::Fn(float32_to_string()),
         Item::Fn(float64_to_string()),
+        Item::Fn(string_parse_float32()),
         Item::Fn(string_parse_float64()),
         Item::Fn(int8_hash()),
         Item::Fn(int16_hash()),
@@ -5647,14 +5648,14 @@ fn float_to_string_fn(id: RuntimeHookId, ty: goty::GoType, bit_size: &str) -> go
     }
 }
 
-fn string_parse_float64() -> goast::Fn {
+fn string_parse_float(bit_size: &str, hook: RuntimeHookId) -> goast::Fn {
     let err_ty = go_error_ty();
     let multi_ty = goty::GoType::TMulti {
         elems: vec![goty::GoType::TFloat64, err_ty.clone()],
     };
     let ret_ty = tuple_ty(vec![tast::Ty::TBool, tast::Ty::TFloat64]);
     goast::Fn {
-        name: runtime_hook_fn_name(RuntimeHookId::StringParseFloat64),
+        name: runtime_hook_fn_name(hook),
         params: vec![("value".to_string(), goty::GoType::TString)],
         ret_ty: Some(goast::tast_ty_to_go_type(&ret_ty)),
         body: goast::Block {
@@ -5677,7 +5678,7 @@ fn string_parse_float64() -> goast::Fn {
                         multi_ty,
                         vec![
                             runtime_var("value", goty::GoType::TString),
-                            runtime_int32("64"),
+                            runtime_int32(bit_size),
                         ],
                     ),
                 },
@@ -5698,6 +5699,14 @@ fn string_parse_float64() -> goast::Fn {
             ],
         },
     }
+}
+
+fn string_parse_float32() -> goast::Fn {
+    string_parse_float("32", RuntimeHookId::StringParseFloat32)
+}
+
+fn string_parse_float64() -> goast::Fn {
+    string_parse_float("64", RuntimeHookId::StringParseFloat64)
 }
 
 fn char_to_string() -> goast::Fn {
