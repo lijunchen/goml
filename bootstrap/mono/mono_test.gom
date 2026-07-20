@@ -269,6 +269,18 @@ fn satisfies_builtin_into_iterator_predicates() -> unit {
 }
 
 #[test]
+fn filters_unsatisfied_blanket_into_iterator_impls() -> unit {
+    let source = "struct Numbers { values: Vec[int32] } impl IntoIterator for Numbers { type Item = int32; type IntoIter = FnIterator[int32]; fn into_iter(self: Numbers) -> FnIterator[int32] { self.values.iter() } } fn consume[S: IntoIterator](source: S) -> unit where S::Item == int32 { for _ in source {} } fn main() -> unit { let values: Vec[int32] = Vec::new(); consume(Numbers { values }) }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(output, "consume__S_Numbers"));
+    testing::assert(string_contains(
+        output,
+        "trait_impl#IntoIterator#Numbers#into_iter",
+    ));
+    testing::assert(!string_contains(output, "consume(Numbers"))
+}
+
+#[test]
 fn retains_generic_eq_hash_impls_for_runtime_keys() -> unit {
     let source = "struct Wrap[T] { value: T } impl[T: Eq] Eq for Wrap[T] { fn eq(self: Wrap[T], other: Wrap[T]) -> bool { Eq::eq(self.value, other.value) } } impl[T: Hash] Hash for Wrap[T] { fn hash(self: Wrap[T]) -> uint64 { Hash::hash(self.value) } } fn main() -> unit { let map: HashMap[Ref[Wrap[int32]], string] = HashMap::new(); let _ = map; }";
     let output = encode(lower_source(source));
