@@ -79,6 +79,16 @@ fn find_struct_by_name(ctx: Checker, name: string) -> Option[StructInfo] {
     result.get()
 }
 
+fn nominal_type_is_defined(ctx: Checker, name: string) -> bool {
+    match find_struct_by_name(ctx, name) {
+        Option::Some(_) => true,
+        Option::None => match find_enum_by_name(ctx, name) {
+            Option::Some(_) => true,
+            Option::None => false,
+        },
+    }
+}
+
 fn find_variant(value: EnumInfo, index: int32) -> Option[EnumVariantInfo] {
     if index >= 0 && index < value.variants.len() {
         Option::Some(value.variants.get(index))
@@ -1364,7 +1374,7 @@ fn resolve_static_member(
         Option::None => {
             let owner_ty = nominal_type(owner, explicit);
             match resolve_user_method(ctx, owner_ty, member, Option::None, true) {
-                Option::Some(value) => if bare_owner || owner == "FnIterator" {
+                Option::Some(value) => if bare_owner && nominal_type_is_defined(ctx, owner) {
                     Option::Some(ResolvedCallable {
                         callable: match value.callable {
                             Callable::InherentMethod(_, name) => {
