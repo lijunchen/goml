@@ -7,7 +7,6 @@ use gomlang::parser::tast;
 
 struct LowerEnv {
     joins: Vec[anf::JoinBind],
-    analysis_joins: Vec[anf::JoinBind],
     emitted_loop_labels: Vec[string],
     variants: Vec[VariantInfo],
     closures: Vec[ClosureInfo],
@@ -886,22 +885,18 @@ fn compile_let(env: LowerEnv, value: anf::LetBind) -> Vec[Stmt] {
     result
 }
 
-fn collect_joins_term(
-    result: Vec[anf::JoinBind],
-    value: anf::Term,
-    include_recursive: bool,
-) -> unit {
+fn collect_joins_term(result: Vec[anf::JoinBind], value: anf::Term) -> unit {
     match value {
         anf::Term::If(_, then_, else_, _) => {
-            collect_joins_block(result, then_, include_recursive);
-            collect_joins_block(result, else_, include_recursive)
+            collect_joins_block(result, then_);
+            collect_joins_block(result, else_)
         },
         anf::Term::Match(_, arms, default, _) => {
             for arm in arms {
-                collect_joins_block(result, arm.body, include_recursive)
+                collect_joins_block(result, arm.body)
             };
             match default {
-                Option::Some(body) => collect_joins_block(result, body, include_recursive),
+                Option::Some(body) => collect_joins_block(result, body),
                 Option::None => (),
             }
         },
@@ -911,31 +906,22 @@ fn collect_joins_term(
     }
 }
 
-fn collect_joins_block(
-    result: Vec[anf::JoinBind],
-    value: anf::Block,
-    include_recursive: bool,
-) -> unit {
+fn collect_joins_block(result: Vec[anf::JoinBind], value: anf::Block) -> unit {
     for bind in value.binds {
         match bind {
             anf::Bind::Let(_) => (),
             anf::Bind::Join(join) => {
                 result.push(join);
-                collect_joins_block(result, join.body, include_recursive)
+                collect_joins_block(result, join.body)
             },
             anf::Bind::JoinRec(joins) => {
                 for join in joins {
-                    if include_recursive {
-                        result.push(join)
-                    } else {
-                        ()
-                    };
-                    collect_joins_block(result, join.body, include_recursive)
+                    collect_joins_block(result, join.body)
                 }
             },
         }
     };
-    collect_joins_term(result, value.term, include_recursive)
+    collect_joins_term(result, value.term)
 }
 
 fn find_join(values: Vec[anf::JoinBind], name: string) -> Option[anf::JoinBind] {
@@ -1381,36 +1367,65 @@ fn fresh_loop_label(env: LowerEnv, value: string) -> string {
     fresh_loop_label_with_suffix(env.emitted_loop_labels, loop_label(value), 1)
 }
 
+fn scoped_joins(parent: Vec[anf::JoinBind], value: anf::Block) -> Vec[anf::JoinBind] {
+    let result: Vec[anf::JoinBind] = Vec::new();
+    for join in parent {
+        result.push(join)
+    };
+    for bind in value.binds {
+        match bind {
+            anf::Bind::Join(join) => result.push(join),
+            anf::Bind::JoinRec(joins) => {
+                for join in joins {
+                    result.push(join)
+                }
+            },
+            anf::Bind::Let(_) => (),
+        }
+    };
+    result
+}
+
+fn block_reaches_target(
+    value: anf::Block,
+    target: string,
+    parent: Vec[anf::JoinBind],
+    visited: Vec[string],
+) -> bool {
+    let joins = scoped_joins(parent, value);
+    term_reaches_target(value.term, target, joins, visited)
+}
+
 fn term_reaches_target(
-    env: LowerEnv,
     value: anf::Term,
     target: string,
+    joins: Vec[anf::JoinBind],
     visited: Vec[string],
 ) -> bool {
     match value {
-        anf::Term::Jump(name, _, _) => {
-            if name == target {
+        anf::Term::Jump(name, args, _) => {
+            if name == target && args.len() == 0 {
                 true
             } else if contains_string(visited, name) {
                 false
             } else {
-                match find_join(env.analysis_joins, name) {
+                match find_join(joins, name) {
                     Option::Some(join) => {
                         visited.push(name);
-                        term_reaches_target(env, join.body.term, target, visited)
+                        block_reaches_target(join.body, target, joins, visited)
                     },
                     Option::None => false,
                 }
             }
         },
         anf::Term::If(_, then_, else_, _) => {
-            term_reaches_target(env, then_.term, target, visited)
-                || term_reaches_target(env, else_.term, target, visited)
+            block_reaches_target(then_, target, joins, visited)
+                || block_reaches_target(else_, target, joins, visited)
         },
         anf::Term::Match(_, arms, default, _) => {
             let reaches = Ref::new(false);
             for arm in arms {
-                if term_reaches_target(env, arm.body.term, target, visited) {
+                if block_reaches_target(arm.body, target, joins, visited) {
                     reaches.set(true)
                 } else {
                     ()
@@ -1418,7 +1433,7 @@ fn term_reaches_target(
             };
             match default {
                 Option::Some(body) => {
-                    if term_reaches_target(env, body.term, target, visited) {
+                    if block_reaches_target(body, target, joins, visited) {
                         reaches.set(true)
                     } else {
                         ()
@@ -1432,9 +1447,18 @@ fn term_reaches_target(
     }
 }
 
+fn block_tail_target_through_joins(
+    value: anf::Block,
+    parent: Vec[anf::JoinBind],
+    visited: Vec[string],
+) -> Option[string] {
+    let joins = scoped_joins(parent, value);
+    term_tail_target_through_joins(value.term, joins, visited)
+}
+
 fn term_tail_target_through_joins(
-    env: LowerEnv,
     value: anf::Term,
+    joins: Vec[anf::JoinBind],
     visited: Vec[string],
 ) -> Option[string] {
     match value {
@@ -1444,12 +1468,12 @@ fn term_tail_target_through_joins(
             } else if contains_string(visited, target) {
                 Option::None
             } else {
-                match find_join(env.analysis_joins, target) {
+                match find_join(joins, target) {
                     Option::Some(join) => {
                         visited.push(target);
-                        let result = term_tail_target_through_joins(
-                            env,
-                            join.body.term,
+                        let result = block_tail_target_through_joins(
+                            join.body,
+                            joins,
                             visited,
                         );
                         let _ = visited.remove(visited.len() - 1);
@@ -1461,15 +1485,15 @@ fn term_tail_target_through_joins(
         },
         anf::Term::If(_, then_, else_, _) => {
             same_target(
-                term_tail_target_through_joins(env, then_.term, visited),
-                term_tail_target_through_joins(env, else_.term, visited),
+                block_tail_target_through_joins(then_, joins, visited),
+                block_tail_target_through_joins(else_, joins, visited),
             )
         },
         anf::Term::Match(_, arms, default, _) => {
             let result: Ref[Option[string]] = Ref::new(Option::None);
             let valid = Ref::new(true);
             for arm in arms {
-                match term_tail_target_through_joins(env, arm.body.term, visited) {
+                match block_tail_target_through_joins(arm.body, joins, visited) {
                     Option::Some(target) => match result.get() {
                         Option::Some(current) => {
                             if current != target {
@@ -1485,7 +1509,7 @@ fn term_tail_target_through_joins(
             };
             match default {
                 Option::Some(body) => {
-                    match term_tail_target_through_joins(env, body.term, visited) {
+                    match block_tail_target_through_joins(body, joins, visited) {
                         Option::Some(target) => match result.get() {
                             Option::Some(current) => {
                                 if current != target {
@@ -1507,10 +1531,20 @@ fn term_tail_target_through_joins(
     }
 }
 
-fn all_paths_reach_or_terminate(
-    env: LowerEnv,
+fn block_all_paths_reach_or_terminate(
+    value: anf::Block,
+    target: string,
+    parent: Vec[anf::JoinBind],
+    visited: Vec[string],
+) -> bool {
+    let joins = scoped_joins(parent, value);
+    term_all_paths_reach_or_terminate(value.term, target, joins, visited)
+}
+
+fn term_all_paths_reach_or_terminate(
     value: anf::Term,
     target: string,
+    joins: Vec[anf::JoinBind],
     visited: Vec[string],
 ) -> bool {
     match value {
@@ -1520,13 +1554,13 @@ fn all_paths_reach_or_terminate(
             } else if contains_string(visited, name) {
                 false
             } else {
-                match find_join(env.analysis_joins, name) {
+                match find_join(joins, name) {
                     Option::Some(join) => {
                         visited.push(name);
-                        let result = all_paths_reach_or_terminate(
-                            env,
-                            join.body.term,
+                        let result = block_all_paths_reach_or_terminate(
+                            join.body,
                             target,
+                            joins,
                             visited,
                         );
                         let _ = visited.remove(visited.len() - 1);
@@ -1537,13 +1571,13 @@ fn all_paths_reach_or_terminate(
             }
         },
         anf::Term::If(_, then_, else_, _) => {
-            all_paths_reach_or_terminate(env, then_.term, target, visited)
-                && all_paths_reach_or_terminate(env, else_.term, target, visited)
+            block_all_paths_reach_or_terminate(then_, target, joins, visited)
+                && block_all_paths_reach_or_terminate(else_, target, joins, visited)
         },
         anf::Term::Match(_, arms, default, _) => {
             let result = Ref::new(true);
             for arm in arms {
-                if !all_paths_reach_or_terminate(env, arm.body.term, target, visited) {
+                if !block_all_paths_reach_or_terminate(arm.body, target, joins, visited) {
                     result.set(false)
                 } else {
                     ()
@@ -1551,7 +1585,7 @@ fn all_paths_reach_or_terminate(
             };
             match default {
                 Option::Some(body) => {
-                    if !all_paths_reach_or_terminate(env, body.term, target, visited) {
+                    if !block_all_paths_reach_or_terminate(body, target, joins, visited) {
                         result.set(false)
                     } else {
                         ()
@@ -1565,19 +1599,20 @@ fn all_paths_reach_or_terminate(
     }
 }
 
-fn loop_exit_target(
-    env: LowerEnv,
-    value: anf::Term,
-    loop_name: string,
-) -> Option[string] {
-    match value {
+fn all_paths_reach_or_terminate(value: anf::Block, target: string) -> bool {
+    block_all_paths_reach_or_terminate(value, target, Vec::new(), Vec::new())
+}
+
+fn loop_exit_target(value: anf::Block, loop_name: string) -> Option[string] {
+    let joins = scoped_joins(Vec::new(), value);
+    match value.term {
         anf::Term::If(_, then_, else_, _) => {
-            let then_reaches = term_reaches_target(env, then_.term, loop_name, Vec::new());
-            let else_reaches = term_reaches_target(env, else_.term, loop_name, Vec::new());
+            let then_reaches = block_reaches_target(then_, loop_name, joins, Vec::new());
+            let else_reaches = block_reaches_target(else_, loop_name, joins, Vec::new());
             if then_reaches && !else_reaches {
-                term_tail_target_through_joins(env, else_.term, Vec::new())
+                block_tail_target_through_joins(else_, joins, Vec::new())
             } else if else_reaches && !then_reaches {
-                term_tail_target_through_joins(env, then_.term, Vec::new())
+                block_tail_target_through_joins(then_, joins, Vec::new())
             } else {
                 Option::None
             }
@@ -1587,10 +1622,10 @@ fn loop_exit_target(
             let exit_target: Ref[Option[string]] = Ref::new(Option::None);
             let valid = Ref::new(true);
             for arm in arms {
-                if term_reaches_target(env, arm.body.term, loop_name, Vec::new()) {
+                if block_reaches_target(arm.body, loop_name, joins, Vec::new()) {
                     saw_continue.set(true)
                 } else {
-                    match term_tail_target_through_joins(env, arm.body.term, Vec::new()) {
+                    match block_tail_target_through_joins(arm.body, joins, Vec::new()) {
                         Option::Some(target) => match exit_target.get() {
                             Option::Some(current) => {
                                 if current != target {
@@ -1607,10 +1642,10 @@ fn loop_exit_target(
             };
             match default {
                 Option::Some(body) => {
-                    if term_reaches_target(env, body.term, loop_name, Vec::new()) {
+                    if block_reaches_target(body, loop_name, joins, Vec::new()) {
                         saw_continue.set(true)
                     } else {
-                        match term_tail_target_through_joins(env, body.term, Vec::new()) {
+                        match block_tail_target_through_joins(body, joins, Vec::new()) {
                             Option::Some(target) => match exit_target.get() {
                                 Option::Some(current) => {
                                     if current != target {
@@ -1637,12 +1672,8 @@ fn loop_exit_target(
     }
 }
 
-fn find_loop_exit(
-    env: LowerEnv,
-    value: anf::Block,
-    loop_name: string,
-) -> Option[string] {
-    match loop_exit_target(env, value.term, loop_name) {
+fn find_loop_exit(value: anf::Block, loop_name: string) -> Option[string] {
+    match loop_exit_target(value, loop_name) {
         Option::Some(target) => Option::Some(target),
         Option::None => {
             let result: Ref[Option[string]] = Ref::new(Option::None);
@@ -1653,15 +1684,8 @@ fn find_loop_exit(
                             Option::Some(_) => false,
                             Option::None => true,
                         };
-                        if pending
-                            && all_paths_reach_or_terminate(
-                                env,
-                                value.term,
-                                dispatch.name,
-                                Vec::new(),
-                            )
-                        {
-                            result.set(find_loop_exit(env, dispatch.body, loop_name))
+                        if pending && all_paths_reach_or_terminate(value, dispatch.name) {
+                            result.set(find_loop_exit(dispatch.body, loop_name))
                         } else {
                             ()
                         }
@@ -2073,11 +2097,13 @@ fn compile_joinrec(env: LowerEnv, values: Vec[anf::JoinBind]) -> JoinRecResult {
     let loop_names: Vec[string] = Vec::new();
     let single = values.len() == 1;
     for value in values {
-        if single && term_reaches_target(env, value.body.term, value.name, Vec::new()) == false {
+        if single
+            && block_reaches_target(value.body, value.name, Vec::new(), Vec::new()) == false
+        {
             append_stmts(stmts, compile_block(env, value.body).stmts);
             loop_names.push(value.name)
         } else {
-            match find_loop_exit(env, value.body, value.name) {
+            match find_loop_exit(value.body, value.name) {
                 Option::Some(exit_name) => {
                     let label = fresh_loop_label(env, value.name);
                     stmts.push(Stmt::LabeledLoop(
@@ -2545,16 +2571,13 @@ fn compile_function(
     dyn_helper_names: DynHelperNames,
 ) -> Function {
     let joins: Vec[anf::JoinBind] = Vec::new();
-    collect_joins_block(joins, value.body, false);
-    let analysis_joins: Vec[anf::JoinBind] = Vec::new();
-    collect_joins_block(analysis_joins, value.body, true);
+    collect_joins_block(joins, value.body);
     let params: Vec[(string, Type)] = Vec::new();
     for param in value.params {
         params.push((go_local_ident(param.0), lower_type(param.1)))
     };
     let env = LowerEnv {
         joins,
-        analysis_joins,
         emitted_loop_labels: Vec::new(),
         variants,
         closures,
