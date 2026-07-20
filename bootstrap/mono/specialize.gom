@@ -1331,6 +1331,33 @@ fn ensure_dyn_trait_impls(
     }
 }
 
+fn specialize_found_var(
+    ctx: SpecializeCtx,
+    function: core::Function,
+    name: string,
+    ty: tast::Type,
+) -> core::Expr {
+    if function_is_generic(function) {
+        if type_is_concrete(ty) {
+            let call_bindings = Vec::new();
+            if unify_type(function_type(function), ty, call_bindings)
+                && complete_bindings(ctx, function, call_bindings)
+            {
+                core::Expr::Var(
+                    ensure_instance(ctx, function.name, call_bindings),
+                    ty,
+                )
+            } else {
+                core::Expr::Var(name, ty)
+            }
+        } else {
+            core::Expr::Var(name, ty)
+        }
+    } else {
+        core::Expr::Var(name, ty)
+    }
+}
+
 fn specialize_var(
     ctx: SpecializeCtx,
     bindings: Vec[TypeBinding],
@@ -1338,31 +1365,37 @@ fn specialize_var(
     ty: tast::Type,
 ) -> core::Expr {
     let ty = specialize_type(ctx, ty, bindings);
-    match find_callee_function(ctx, name) {
-        Option::Some(function) => if function_is_generic(function) {
-            if type_is_concrete(ty) {
-                let call_bindings = Vec::new();
-                if unify_type(function_type(function), ty, call_bindings)
-                    && complete_bindings(ctx, function, call_bindings)
-                {
-                    core::Expr::Var(
-                        ensure_instance(ctx, function.name, call_bindings),
-                        ty,
-                    )
-                } else {
-                    core::Expr::Var(name, ty)
-                }
-            } else {
-                core::Expr::Var(name, ty)
-            }
-        } else {
-            core::Expr::Var(
-                ensure_instance(ctx, function.name, Vec::new()),
-                ty,
-            )
-        },
+    match find_function(ctx, name) {
+        Option::Some(function) => specialize_found_var(ctx, function, name, ty),
         Option::None => core::Expr::Var(name, ty),
     }
+}
+
+fn specialize_call(
+    ctx: SpecializeCtx,
+    bindings: Vec[TypeBinding],
+    func: core::Expr,
+    args: Vec[core::Expr],
+    ty: tast::Type,
+) -> core::Expr {
+    let func = specialize_expr(ctx, bindings, func);
+    let args = specialize_exprs(ctx, bindings, args);
+    let ty = specialize_type(ctx, ty, bindings);
+    let func = match func {
+        core::Expr::Var(name, func_ty) => match find_callee_function(ctx, name) {
+            Option::Some(function) => if function_is_generic(function) {
+                specialize_found_var(ctx, function, name, func_ty)
+            } else {
+                core::Expr::Var(
+                    ensure_instance(ctx, function.name, Vec::new()),
+                    func_ty,
+                )
+            },
+            Option::None => core::Expr::Var(name, func_ty),
+        },
+        other => other,
+    };
+    core::Expr::Call(func, args, ty)
 }
 
 fn specialize_expr(
@@ -1459,11 +1492,9 @@ fn specialize_expr(
             specialize_type(ctx, target_ty, bindings),
             specialize_type(ctx, ty, bindings),
         ),
-        core::Expr::Call(func, args, ty) => core::Expr::Call(
-            specialize_expr(ctx, bindings, func),
-            specialize_exprs(ctx, bindings, args),
-            specialize_type(ctx, ty, bindings),
-        ),
+        core::Expr::Call(func, args, ty) => {
+            specialize_call(ctx, bindings, func, args, ty)
+        },
         core::Expr::ToDyn(trait_name, for_ty, expr, ty) => {
             let for_ty = specialize_type(ctx, for_ty, bindings);
             ensure_dyn_trait_impls(ctx, trait_name, for_ty);
