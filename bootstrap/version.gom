@@ -1,0 +1,47 @@
+package main;
+
+use std::io;
+
+enum VersionFormat {
+    Text,
+    Json,
+}
+
+fn parse_version_format(value: string) -> Result[VersionFormat, string] {
+    if value == "text" {
+        Result::Ok(VersionFormat::Text)
+    } else if value == "json" {
+        Result::Ok(VersionFormat::Json)
+    } else {
+        Result::Err("invalid version format: " + value)
+    }
+}
+
+fn parse_version_args(args: Vec[string]) -> Result[VersionFormat, string] {
+    if args.len() == 2 {
+        Result::Ok(VersionFormat::Text)
+    } else if args.len() == 4 && args.get(2) == "--format" {
+        parse_version_format(args.get(3))
+    } else if args.len() == 3
+        && args.get(2).byte_len() > 9
+        && args.get(2).byte_slice(0, 9) == "--format="
+    {
+        parse_version_format(args.get(2).byte_slice(9, args.get(2).byte_len()))
+    } else {
+        Result::Err("usage: gomlc version [--format <text|json>]")
+    }
+}
+
+fn version_output(format: VersionFormat) -> string {
+    match format {
+        VersionFormat::Text => "gomlc 0.0.0",
+        VersionFormat::Json => "{\"artifact_format\":11,\"compiler_abi\":2,\"driver_protocol\":1,\"git_date\":null,\"git_hash\":null,\"tool\":\"gomlc\",\"version\":\"0.0.0\"}",
+    }
+}
+
+fn run_version(args: Vec[string]) -> unit {
+    match parse_version_args(args) {
+        Result::Ok(format) => io::println(version_output(format)),
+        Result::Err(error) => fail(error),
+    }
+}
