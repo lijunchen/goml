@@ -336,7 +336,9 @@ fn variant_name_reserved(
     instances: Vec[core::TypeInstance],
     function_names: Vec[(string, string)],
 ) -> bool {
-    let result = Ref::new(candidate == "init" || is_generated_tuple_type_name(candidate));
+    let result = Ref::new(
+        candidate == "main" || candidate == "init" || is_generated_tuple_type_name(candidate),
+    );
     for definition in enums {
         if go_user_type_name(definition.name) == candidate {
             result.set(true)
