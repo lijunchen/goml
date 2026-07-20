@@ -54,6 +54,15 @@ fn emits_tuple_types_and_prunes_dead_bindings() -> unit {
 }
 
 #[test]
+fn preserves_nested_tuple_discovery_order() -> unit {
+    let source = "fn classify(p: ((int32, int32), string)) -> string { p.1 } fn main() -> unit { println(classify(((1i32, 2i32), \"value\"))); }";
+    testing::assert(string_contains(
+        encode(lower_source(source)),
+        "type Tuple2_20Tuple2_5int32_5int32_6string struct {\n    _0 Tuple2_5int32_5int32\n    _1 string\n}\n\ntype Tuple2_5int32_5int32 struct",
+    ))
+}
+
+#[test]
 fn emits_primitive_matches() -> unit {
     let source = "fn main() { let x: uint8 = 5; let y: string = match x { 0 => \"zero\", 1 => \"one\", _ => \"other\", }; println(y); }";
     testing::assert_eq(
