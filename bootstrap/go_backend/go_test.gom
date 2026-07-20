@@ -72,6 +72,16 @@ fn emits_breaking_while_loops() -> unit {
 }
 
 #[test]
+fn preserves_all_exit_while_conditions() -> unit {
+    let source = "fn loop_return_unit(flag: bool) -> unit { while if flag { return } else { return } { println(\"unreachable\"); }; }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(
+        output,
+        "func loop_return_unit(flag__0 bool) struct{} {\n    for {\n        if flag__0 {\n            return struct{}{}\n        } else {\n            return struct{}{}\n        }\n    }\n    return struct{}{}\n}",
+    ))
+}
+
+#[test]
 fn preserves_reused_loop_labels() -> unit {
     let source = "enum Event { Open, Close, Advance, Error, } fn main() -> unit { let running = Ref::new(true); while running.get() { let event = Event::Open; match event { Event::Open => { let scanning = Ref::new(false); while scanning.get() {} }, Event::Close => (), Event::Advance => (), Event::Error => (), }; let scanning = Ref::new(false); while scanning.get() {}; running.set(false) }; string_println(\"ok\") }";
     let output = encode(lower_source(source));
