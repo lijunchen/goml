@@ -29,6 +29,27 @@ fn primitive_text(value: Primitive) -> string {
 }
 
 #[test]
+fn erases_indexed_assignment_read_types() -> unit {
+    let file = checked_file("fn main() -> unit { let map: HashMap[int32, string] = HashMap::new(); map[1] = \"ok\"; }");
+    match file.items.get(0) {
+        Item::Function(value) => match value.body.stmts.get(1) {
+            Stmt::Assign(Expr::Index(_, _, target_ty), value) => {
+                match resolve_type(target_ty) {
+                    Type::Unit => (),
+                    _ => testing::fail("expected unit assignment target read type"),
+                };
+                match resolve_type(expr_type(value)) {
+                    Type::String => (),
+                    _ => testing::fail("expected string assignment value type"),
+                }
+            },
+            _ => testing::fail("expected indexed assignment"),
+        },
+        _ => testing::fail("expected function"),
+    }
+}
+
+#[test]
 fn infers_shift_operands_independently() -> unit {
     let file = checked_file("fn shift(value: uint8) -> uint8 { value << 4 }");
     match file.items.get(0) {
