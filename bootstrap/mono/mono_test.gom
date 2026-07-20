@@ -14,6 +14,19 @@ fn lower_source(source: string) -> core::File {
     ))))
 }
 
+fn lower_linked_source(source: string) -> core::File {
+    let counter = Ref::new(0);
+    let builtins = core::lower_builtins(counter);
+    let user = core::lower_with_counter(
+        tast::check_for_link(hir::lower(
+            ast::lower(parser::parse(source)),
+            "main.gom",
+        )),
+        counter,
+    );
+    lower(core::link_with_builtins(builtins, user))
+}
+
 fn string_contains(value: string, expected: string) -> bool {
     if expected.byte_len() == 0 {
         true
@@ -46,6 +59,16 @@ fn resolves_static_trait_calls() -> unit {
         encode(lower_source("fn main() -> string { true.to_string() }")),
         "fn main() -> string {\n  trait_impl#ToString#bool#to_string(true)\n}",
     )
+}
+
+#[test]
+fn retains_linked_monomorphic_trait_impls() -> unit {
+    let output = encode(lower_linked_source("fn main() -> unit { print(true) }"));
+    testing::assert(string_contains(output, "fn print__T_bool"));
+    testing::assert(string_contains(
+        output,
+        "fn trait_impl#ToString#bool#to_string",
+    ))
 }
 
 #[test]
