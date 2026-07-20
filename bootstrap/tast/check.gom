@@ -88,6 +88,23 @@ fn normalized_float64_literal(value: string) -> string {
     }
 }
 
+fn normalize_float_expr(value: Expr, expected: Type) -> Expr {
+    match value {
+        Expr::Prim(Primitive::Float(raw), ty) => match prune(expected) {
+            Type::Float32 => Expr::Prim(
+                Primitive::Float(normalized_float32_literal(raw)),
+                ty,
+            ),
+            Type::Float64 => Expr::Prim(
+                Primitive::Float(normalized_float64_literal(raw)),
+                ty,
+            ),
+            _ => Expr::Prim(Primitive::Float(raw), ty),
+        },
+        other => other,
+    }
+}
+
 fn coerce_expr(ctx: Checker, value: Expr, expected: Option[Type]) -> Expr {
     match value {
         Expr::Break(_) | Expr::Continue(_) | Expr::Return(_, _) => value,
@@ -111,11 +128,21 @@ fn coerce_expr(ctx: Checker, value: Expr, expected: Option[Type]) -> Expr {
                 },
                 _ => {
                     expect_type(ctx, expr_type(value), expected_ty);
-                    value
+                    normalize_float_expr(value, expected_ty)
                 },
             },
             Option::None => value,
         },
+    }
+}
+
+fn constrain_callable_return(ctx: Checker, callable_ty: Type, expected: Option[Type]) -> unit {
+    match propagated_expected(expected) {
+        Option::Some(expected_ty) => match prune(callable_ty) {
+            Type::Func(_, ret_ty) => expect_type(ctx, ret_ty, expected_ty),
+            _ => (),
+        },
+        Option::None => (),
     }
 }
 
@@ -660,6 +687,7 @@ fn check_call_expr(
         hir::Expr::NameRef(reference) => match function_scheme_for_name_ref(ctx, reference) {
             Option::Some(scheme) => {
                 let candidate = instantiate_scheme_candidate(ctx, scheme, Vec::new());
+                constrain_callable_return(ctx, candidate.ty, expected);
                 let result = coerce_expr(
                     ctx,
                     apply_call(
