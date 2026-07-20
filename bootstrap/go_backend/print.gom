@@ -428,8 +428,15 @@ fn write_stmt(builder: text::StringBuilder, value: Stmt, indent: int32) -> unit 
             newline(builder, indent);
             builder.write_char('}')
         },
-        Stmt::TypeSwitch(expr, cases, default) => {
+        Stmt::TypeSwitch(bind, expr, cases, default) => {
             builder.write_string("switch ");
+            match bind {
+                Option::Some(name) => {
+                    builder.write_string(name);
+                    builder.write_string(" := ")
+                },
+                Option::None => (),
+            };
             write_expr(builder, expr, indent);
             builder.write_string(".(type) {");
             for case in cases {

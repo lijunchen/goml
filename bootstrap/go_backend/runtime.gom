@@ -1395,13 +1395,36 @@ fn sorted_dyn_coercions(values: Vec[DynCoercion]) -> Vec[DynCoercion] {
     result
 }
 
+fn is_enum_dyn_receiver(
+    enums: Vec[tast::EnumDef],
+    instances: Vec[core::TypeInstance],
+    value: tast::Type,
+) -> bool {
+    match tast::resolve_type(value) {
+        tast::Type::Con(name) => match find_enum(enums, name) {
+            Option::Some(_) => true,
+            Option::None => match instance_by_name(instances, name) {
+                Option::Some(instance) => match find_enum(enums, instance.base_name) {
+                    Option::Some(_) => true,
+                    Option::None => false,
+                },
+                Option::None => false,
+            },
+        },
+        _ => false,
+    }
+}
+
 fn dyn_coercion_items(
     functions: Vec[anf::Function],
+    enums: Vec[tast::EnumDef],
+    instances: Vec[core::TypeInstance],
     coercion: DynCoercion,
     methods: Vec[DynMethod],
     names: DynHelperNames,
 ) -> Vec[Item] {
     let result: Vec[Item] = Vec::new();
+    let enum_receiver = is_enum_dyn_receiver(enums, instances, coercion.for_ty);
     for method in methods {
         let wrapper = dyn_wrapper_name(
             names,
@@ -1412,14 +1435,18 @@ fn dyn_coercion_items(
         let wrapper_params: Vec[(string, Type)] = Vec::new();
         wrapper_params.push(("self", Type::Any));
         let wrapper_args: Vec[Expr] = Vec::new();
-        wrapper_args.push(Expr::Cast(Expr::Var("self"), lower_type(coercion.for_ty)));
+        wrapper_args.push(if enum_receiver {
+            Expr::Var("v")
+        } else {
+            Expr::Cast(Expr::Var("self"), lower_type(coercion.for_ty))
+        });
         for index in range(0, method.params.len()) {
             let name = "p" + index.to_string();
             wrapper_params.push((name, lower_type(method.params.get(index))));
             wrapper_args.push(Expr::Var(name))
         };
         let wrapper_stmts: Vec[Stmt] = Vec::new();
-        wrapper_stmts.push(Stmt::Return(Option::Some(Expr::Call(
+        let wrapper_call = Expr::Call(
             Expr::Var(find_dyn_impl_name(
                 functions,
                 coercion.trait_name,
@@ -1427,7 +1454,26 @@ fn dyn_coercion_items(
                 method.name,
             )),
             wrapper_args,
-        ))));
+        );
+        if enum_receiver {
+            let cases: Vec[TypeSwitchCase] = Vec::new();
+            let case_stmts: Vec[Stmt] = Vec::new();
+            case_stmts.push(Stmt::Return(Option::Some(wrapper_call)));
+            cases.push(TypeSwitchCase {
+                ty: lower_type(coercion.for_ty),
+                body: Block { stmts: case_stmts },
+            });
+            let default_stmts: Vec[Stmt] = Vec::new();
+            default_stmts.push(Stmt::Panic("unexpected type"));
+            wrapper_stmts.push(Stmt::TypeSwitch(
+                Option::Some("v"),
+                Expr::Var("self"),
+                cases,
+                Option::Some(Block { stmts: default_stmts }),
+            ))
+        } else {
+            wrapper_stmts.push(Stmt::Return(Option::Some(wrapper_call)))
+        };
         result.push(Item::Function(Function {
             name: wrapper,
             params: wrapper_params,
@@ -1556,6 +1602,8 @@ pub fn emit_dyn_runtime_items(
     items: Vec[Item],
     types: Vec[tast::Type],
     coercions: Vec[DynCoercion],
+    enums: Vec[tast::EnumDef],
+    instances: Vec[core::TypeInstance],
     functions: Vec[anf::Function],
     names: DynHelperNames,
 ) -> unit {
@@ -1578,6 +1626,8 @@ pub fn emit_dyn_runtime_items(
     for coercion in sorted_dyn_coercions(coercions) {
         for item in dyn_coercion_items(
             functions,
+            enums,
+            instances,
             coercion,
             dyn_methods(functions, coercion.trait_name),
             names,

@@ -1240,7 +1240,12 @@ fn compile_match_leaf(
             Option::Some(body) => Option::Some(compile_block(env, body)),
             Option::None => Option::Some(non_exhaustive_block()),
         };
-        result.push(Stmt::TypeSwitch(compile_imm(env, scrut), cases, lowered_default))
+        result.push(Stmt::TypeSwitch(
+            Option::None,
+            compile_imm(env, scrut),
+            cases,
+            lowered_default,
+        ))
     } else {
         let cases: Vec[SwitchCase] = Vec::new();
         for arm in arms {
@@ -1354,6 +1359,7 @@ fn compile_term_to_join(
                     Option::None => Option::Some(non_exhaustive_block()),
                 };
                 result.push(Stmt::TypeSwitch(
+                    Option::None,
                     compile_imm(env, scrut),
                     cases,
                     lowered_default,
@@ -1944,6 +1950,7 @@ fn compile_loop_term_leaf(
                     Option::None => Option::Some(non_exhaustive_block()),
                 };
                 result.push(Stmt::TypeSwitch(
+                    Option::None,
                     compile_imm(env, scrut),
                     cases,
                     lowered_default,
@@ -2068,6 +2075,7 @@ fn compile_loop_term_to_join(
                     Option::None => Option::Some(non_exhaustive_block()),
                 };
                 result.push(Stmt::TypeSwitch(
+                    Option::None,
                     compile_imm(env, scrut),
                     cases,
                     lowered_default,
@@ -2295,7 +2303,7 @@ fn stmt_contains_break_label(value: Stmt, label: string) -> bool {
             };
             found.get()
         },
-        Stmt::TypeSwitch(_, cases, default) => {
+        Stmt::TypeSwitch(_, _, cases, default) => {
             let found = Ref::new(false);
             for case in cases {
                 if block_contains_break_label(case.body, label) {
@@ -2910,6 +2918,8 @@ pub fn lower(value: anf::File) -> File {
         items,
         types,
         coercions,
+        enums,
+        type_instances,
         value.functions,
         dyn_helper_names,
     );

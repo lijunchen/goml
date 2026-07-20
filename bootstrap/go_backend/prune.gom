@@ -112,7 +112,7 @@ fn collect_stmt_names(result: Vec[string], value: Stmt) -> unit {
                 Option::None => (),
             }
         },
-        Stmt::TypeSwitch(expr, cases, default) => {
+        Stmt::TypeSwitch(_, expr, cases, default) => {
             collect_expr_names(result, expr);
             for case in cases {
                 collect_block_names(result, case.body)
