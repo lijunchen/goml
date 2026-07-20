@@ -22,6 +22,105 @@ fn checked_file(source: string) -> File {
     }
 }
 
+fn dependency_hir(source: string, package_name: string) -> hir::File {
+    let result = hir::lower_package(
+        ast::lower(parser::parse(source)),
+        "package.gom",
+        package_name,
+    );
+    testing::assert_eq(result.diagnostics.len(), 0);
+    match result.hir {
+        Option::Some(file) => file,
+        Option::None => {
+            testing::fail("expected dependency HIR");
+            hir::File {
+                package_name: "",
+                path: "",
+                imports: Vec::new(),
+                import_aliases: Vec::new(),
+                items: Vec::new(),
+            }
+        },
+    }
+}
+
+fn checked_file_with_dependencies(source: string, dependencies: Vec[hir::File]) -> File {
+    let result = check_for_link_with_dependencies(
+        hir::lower(ast::lower(parser::parse(source)), "main.gom"),
+        dependencies,
+    );
+    testing::assert_eq(result.diagnostics.len(), 0);
+    match result.tast {
+        Option::Some(file) => file,
+        Option::None => {
+            testing::fail("expected TAST");
+            File {
+                items: Vec::new(),
+                enums: Vec::new(),
+                structs: Vec::new(),
+            }
+        },
+    }
+}
+
+#[test]
+fn resolves_generic_functions_from_package_interfaces() -> unit {
+    let dependencies: Vec[hir::File] = Vec::new();
+    dependencies.push(dependency_hir(
+        "package api; pub fn identity[T: ToString](value: T) -> T { value }",
+        "vendor::api",
+    ));
+    let file = checked_file_with_dependencies(
+        "use vendor::api as service; fn main() -> string { service::identity(\"ok\") }",
+        dependencies,
+    );
+    match file.items.get(0) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Call(
+                Expr::Callable(Callable::Function(name), Type::Func(params, ret_ty)),
+                _,
+                Type::String,
+            )) => {
+                testing::assert_eq(name, "vendor::api::identity");
+                match resolve_type(params.get(0)) {
+                    Type::String => (),
+                    _ => testing::fail("expected string package parameter"),
+                };
+                match resolve_type(ret_ty) {
+                    Type::String => (),
+                    _ => testing::fail("expected string package return"),
+                }
+            },
+            _ => testing::fail("expected package function call"),
+        },
+        _ => testing::fail("expected main function"),
+    }
+}
+
+#[test]
+fn resolves_runtime_externs_from_package_interfaces() -> unit {
+    let dependencies: Vec[hir::File] = Vec::new();
+    dependencies.push(dependency_hir(
+        "package host; #[runtime(\"std.io.println\")] pub extern fn output(value: string) -> unit",
+        "std::internal::host",
+    ));
+    let file = checked_file_with_dependencies(
+        "use std::internal::host; fn main() -> unit { host::output(\"ok\") }",
+        dependencies,
+    );
+    match file.items.get(0) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Call(
+                Expr::Callable(Callable::Runtime(name), _),
+                _,
+                Type::Unit,
+            )) => testing::assert_eq(name, "std.io.println"),
+            _ => testing::fail("expected runtime package call"),
+        },
+        _ => testing::fail("expected main function"),
+    }
+}
+
 fn primitive_text(value: Primitive) -> string {
     let builder = text::StringBuilder::new();
     write_primitive(builder, value);

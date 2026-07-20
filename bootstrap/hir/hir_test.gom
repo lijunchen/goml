@@ -15,9 +15,65 @@ fn lowered_file(source: string) -> File {
                 package_name: "",
                 path: "",
                 imports: Vec::new(),
+                import_aliases: Vec::new(),
                 items: Vec::new(),
             }
         },
+    }
+}
+
+fn lowered_package_file(source: string, package_name: string) -> File {
+    let result = lower_package(
+        ast::lower(parser::parse(source)),
+        "package.gom",
+        package_name,
+    );
+    testing::assert_eq(result.diagnostics.len(), 0);
+    match result.hir {
+        Option::Some(file) => file,
+        Option::None => {
+            testing::fail("expected package HIR");
+            File {
+                package_name: "",
+                path: "",
+                imports: Vec::new(),
+                import_aliases: Vec::new(),
+                items: Vec::new(),
+            }
+        },
+    }
+}
+
+#[test]
+fn qualifies_package_items_types_and_import_aliases() -> unit {
+    let source = "package sample; use std::io as output; struct Value { field: int32 } fn emit(value: Value) -> Value { output::println(\"ok\"); Value { field: value.field } }";
+    let file = lowered_package_file(source, "std::sample");
+    testing::assert_eq(file.package_name, "std::sample");
+    testing::assert_eq(file.import_aliases.len(), 1);
+    testing::assert_eq(file.import_aliases.get(0).alias, "output");
+    testing::assert_eq(file.import_aliases.get(0).package_name, "std::io");
+    match file.items.get(1) {
+        Item::Function(value) => {
+            testing::assert_eq(value.name, "std::sample::emit");
+            match value.params.get(0).1 {
+                TypeExpr::Con(name) => testing::assert_eq(name, "std::sample::Value"),
+                _ => testing::fail("expected qualified parameter type"),
+            };
+            match value.body.stmts.get(0) {
+                Stmt::Expr(Expr::Call(Expr::StaticMember(owner, member, _), _)) => {
+                    testing::assert_eq(owner, "std::io");
+                    testing::assert_eq(member, "println")
+                },
+                _ => testing::fail("expected qualified package call"),
+            };
+            match value.body.tail {
+                Option::Some(Expr::StructLiteral(name, _)) => {
+                    testing::assert_eq(name, "std::sample::Value")
+                },
+                _ => testing::fail("expected qualified struct literal"),
+            }
+        },
+        _ => testing::fail("expected package function"),
     }
 }
 
