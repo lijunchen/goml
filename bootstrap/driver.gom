@@ -27,8 +27,54 @@ struct Compilation {
     go_value: go_backend::File,
 }
 
+fn import_path_text(value: ast::Path) -> string {
+    let result = Ref::new("");
+    let index = Ref::new(0);
+    for segment in value.segments {
+        if index.get() > 0 {
+            result.set(result.get() + "::")
+        } else {
+            ()
+        };
+        result.set(result.get() + segment.ident);
+        index.set(index.get() + 1)
+    };
+    result.get()
+}
+
+fn std_import(value: string) -> bool {
+    value == "std" || (value.byte_len() >= 5 && value.byte_slice(0, 5) == "std::")
+}
+
+fn single_file_project_import(value: ast::LowerResult) -> Option[string] {
+    match value.ast {
+        Option::Some(file) => {
+            let result = Ref::new(Option::None);
+            let found = Ref::new(false);
+            for use_decl in file.uses {
+                let package_path = import_path_text(use_decl.path);
+                if !(found.get()) && !(std_import(package_path)) {
+                    result.set(Option::Some(package_path));
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            result.get()
+        },
+        Option::None => Option::None,
+    }
+}
+
 fn compile_source(source_path: string, source: string) -> Compilation {
-    let ast_value = hir::expand_derives(ast::lower(parser::parse(source)));
+    let ast_value = ast::lower(parser::parse(source));
+    match single_file_project_import(ast_value) {
+        Option::Some(package_path) => fail(
+            "error[compile]: single-file compilation cannot use project package " + package_path,
+        ),
+        Option::None => (),
+    };
+    let ast_value = hir::expand_derives(ast_value);
     let hir_value = hir::lower_expanded(ast_value, source_path);
     let tast_value = tast::check_for_link(hir_value);
     let counter = Ref::new(0);
