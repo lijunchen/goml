@@ -15,6 +15,16 @@ fn args_with(values: Vec[string]) -> Vec[string] {
     args
 }
 
+fn version_args_with(values: Vec[string]) -> Vec[string] {
+    let args = Vec::new();
+    args.push("gomlc");
+    args.push("version");
+    for value in values {
+        args.push(value)
+    };
+    args
+}
+
 fn parse_ok(values: Vec[string]) -> RunArgs {
     match parse_run_args(args_with(values)) {
         Result::Ok(value) => value,
@@ -103,6 +113,40 @@ fn parses_run_single_without_dumps() -> unit {
     testing::assert(!args.dump_lift);
     testing::assert(!args.dump_anf);
     testing::assert(!args.dump_go)
+}
+
+#[test]
+fn parses_version_formats() -> unit {
+    match parse_version_args(version_args_with(Vec::new())) {
+        Result::Ok(VersionFormat::Text) => (),
+        _ => testing::fail("expected default text version format"),
+    };
+    let json_args = Vec::new();
+    json_args.push("--format");
+    json_args.push("json");
+    match parse_version_args(version_args_with(json_args)) {
+        Result::Ok(VersionFormat::Json) => (),
+        _ => testing::fail("expected json version format"),
+    };
+    let inline_args = Vec::new();
+    inline_args.push("--format=text");
+    match parse_version_args(version_args_with(inline_args)) {
+        Result::Ok(VersionFormat::Text) => (),
+        _ => testing::fail("expected inline text version format"),
+    }
+}
+
+#[test]
+fn reports_driver_protocol_version() -> unit {
+    testing::assert_eq(version_output(VersionFormat::Text), "gomlc 0.0.0");
+    testing::assert_eq(
+        version_output(VersionFormat::Json),
+        "{\"artifact_format\":11,\"compiler_abi\":2,\"driver_protocol\":1,\"git_date\":null,\"git_hash\":null,\"tool\":\"gomlc\",\"version\":\"0.0.0\"}",
+    );
+    match parse_version_format("yaml") {
+        Result::Err(error) => testing::assert_eq(error, "invalid version format: yaml"),
+        Result::Ok(_) => testing::fail("expected invalid version format"),
+    }
 }
 
 #[test]
