@@ -28,25 +28,62 @@ pub fn lower_builtins(counter: Ref[int32]) -> File {
     )
 }
 
-pub fn link_with_builtins(builtins: File, user: File) -> File {
+pub fn link_with_dependencies(
+    builtins: File,
+    dependencies: Vec[File],
+    user: File,
+) -> File {
     let functions: Vec[Function] = Vec::new();
     for function in builtins.functions {
         functions.push(non_root(function))
     };
+    for dependency in dependencies {
+        for function in dependency.functions {
+            functions.push(function)
+        }
+    };
     for function in user.functions {
         functions.push(function)
     };
-    let enums = builtins.enums;
+    let enums: Vec[tast::EnumDef] = Vec::new();
+    for value in builtins.enums {
+        enums.push(value)
+    };
+    for dependency in dependencies {
+        for value in dependency.enums {
+            enums.push(value)
+        }
+    };
     for value in user.enums {
         enums.push(value)
     };
-    let structs = builtins.structs;
+    let structs: Vec[tast::StructDef] = Vec::new();
+    for value in builtins.structs {
+        structs.push(value)
+    };
+    for dependency in dependencies {
+        for value in dependency.structs {
+            structs.push(value)
+        }
+    };
     for value in user.structs {
         structs.push(value)
     };
-    let type_instances = builtins.type_instances;
+    let type_instances: Vec[TypeInstance] = Vec::new();
+    for value in builtins.type_instances {
+        type_instances.push(value)
+    };
+    for dependency in dependencies {
+        for value in dependency.type_instances {
+            type_instances.push(value)
+        }
+    };
     for value in user.type_instances {
         type_instances.push(value)
     };
     File { functions, enums, structs, type_instances }
+}
+
+pub fn link_with_builtins(builtins: File, user: File) -> File {
+    link_with_dependencies(builtins, Vec::new(), user)
 }

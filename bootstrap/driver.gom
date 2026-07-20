@@ -8,6 +8,7 @@ use gomlang::parser::hir;
 use gomlang::parser::lift;
 use gomlang::parser::mono;
 use gomlang::parser::parser;
+use gomlang::parser::stdlib;
 use gomlang::parser::tast;
 use std::bytes;
 use std::env;
@@ -25,6 +26,18 @@ struct Compilation {
     lift_value: core::File,
     anf_value: anf::File,
     go_value: go_backend::File,
+}
+
+struct PackageCompilation {
+    hir_file: hir::File,
+    core_value: core::File,
+}
+
+struct StandardLibrary {
+    bytes: PackageCompilation,
+    env: PackageCompilation,
+    fs: PackageCompilation,
+    io: PackageCompilation,
 }
 
 fn import_path_text(value: ast::Path) -> string {
@@ -66,6 +79,244 @@ fn single_file_project_import(value: ast::LowerResult) -> Option[string] {
     }
 }
 
+fn imports_package(value: ast::LowerResult, expected: string) -> bool {
+    match value.ast {
+        Option::Some(file) => {
+            let found = Ref::new(false);
+            for use_decl in file.uses {
+                if found.get() == false && import_path_text(use_decl.path) == expected {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Option::None => false,
+    }
+}
+
+fn has_standard_import(value: ast::LowerResult) -> bool {
+    match value.ast {
+        Option::Some(file) => {
+            let found = Ref::new(false);
+            for use_decl in file.uses {
+                if found.get() == false && std_import(import_path_text(use_decl.path)) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Option::None => false,
+    }
+}
+
+fn dependency_enums(
+    builtins: core::File,
+    dependencies: Vec[core::File],
+) -> Vec[tast::EnumDef] {
+    let result: Vec[tast::EnumDef] = Vec::new();
+    for value in builtins.enums {
+        result.push(value)
+    };
+    for dependency in dependencies {
+        for value in dependency.enums {
+            result.push(value)
+        }
+    };
+    result
+}
+
+fn dependency_structs(
+    builtins: core::File,
+    dependencies: Vec[core::File],
+) -> Vec[tast::StructDef] {
+    let result: Vec[tast::StructDef] = Vec::new();
+    for value in builtins.structs {
+        result.push(value)
+    };
+    for dependency in dependencies {
+        for value in dependency.structs {
+            result.push(value)
+        }
+    };
+    result
+}
+
+fn compile_standard_package(
+    source: string,
+    source_path: string,
+    package_name: string,
+    hir_dependencies: Vec[hir::File],
+    core_dependencies: Vec[core::File],
+    builtins: core::File,
+) -> PackageCompilation {
+    let hir_value = hir::lower_package(
+        ast::lower(parser::parse(source)),
+        source_path,
+        package_name,
+    );
+    if hir_value.diagnostics.len() > 0 {
+        fail("error[compile]: failed to lower standard package " + package_name)
+    } else {
+        ()
+    };
+    let hir_file = match hir_value.hir {
+        Option::Some(file) => file,
+        Option::None => {
+            fail("error[compile]: missing standard package " + package_name);
+            hir::File {
+                package_name,
+                path: source_path,
+                imports: Vec::new(),
+                import_aliases: Vec::new(),
+                items: Vec::new(),
+            }
+        },
+    };
+    let tast_value = tast::check_for_link_with_dependencies(
+        hir_value,
+        hir_dependencies,
+    );
+    if tast_value.diagnostics.len() > 0 {
+        fail(
+            "error[compile]: failed to typecheck standard package "
+                + package_name
+                + ": "
+                + tast_value.diagnostics.get(0),
+        )
+    } else {
+        ()
+    };
+    let core_value = core::lower_with_counter_and_types(
+        tast_value,
+        Ref::new(0),
+        dependency_enums(builtins, core_dependencies),
+        dependency_structs(builtins, core_dependencies),
+    );
+    PackageCompilation { hir_file, core_value }
+}
+
+fn compile_standard_library(builtins: core::File) -> StandardLibrary {
+    let host = compile_standard_package(
+        stdlib::host_source(),
+        "host.gom",
+        "std::internal::host",
+        Vec::new(),
+        Vec::new(),
+        builtins,
+    );
+    let bytes = compile_standard_package(
+        stdlib::bytes_source(),
+        "bytes.gom",
+        "std::bytes",
+        Vec::new(),
+        Vec::new(),
+        builtins,
+    );
+    let env_hir_dependencies: Vec[hir::File] = Vec::new();
+    env_hir_dependencies.push(host.hir_file);
+    let env = compile_standard_package(
+        stdlib::env_source(),
+        "env.gom",
+        "std::env",
+        env_hir_dependencies,
+        Vec::new(),
+        builtins,
+    );
+    let fs_hir_dependencies: Vec[hir::File] = Vec::new();
+    fs_hir_dependencies.push(host.hir_file);
+    fs_hir_dependencies.push(bytes.hir_file);
+    let fs_core_dependencies: Vec[core::File] = Vec::new();
+    fs_core_dependencies.push(bytes.core_value);
+    let fs = compile_standard_package(
+        stdlib::fs_source(),
+        "fs.gom",
+        "std::fs",
+        fs_hir_dependencies,
+        fs_core_dependencies,
+        builtins,
+    );
+    let io_hir_dependencies: Vec[hir::File] = Vec::new();
+    io_hir_dependencies.push(host.hir_file);
+    io_hir_dependencies.push(bytes.hir_file);
+    let io_core_dependencies: Vec[core::File] = Vec::new();
+    io_core_dependencies.push(bytes.core_value);
+    let io = compile_standard_package(
+        stdlib::io_source(),
+        "io.gom",
+        "std::io",
+        io_hir_dependencies,
+        io_core_dependencies,
+        builtins,
+    );
+    StandardLibrary { bytes, env, fs, io }
+}
+
+fn selected_standard_hir(
+    ast_value: ast::LowerResult,
+    standard: StandardLibrary,
+) -> Vec[hir::File] {
+    let needs_fs = imports_package(ast_value, "std::fs");
+    let needs_io = imports_package(ast_value, "std::io");
+    let needs_bytes = imports_package(ast_value, "std::bytes") || needs_fs || needs_io;
+    let result: Vec[hir::File] = Vec::new();
+    if needs_bytes {
+        result.push(standard.bytes.hir_file)
+    } else {
+        ()
+    };
+    if imports_package(ast_value, "std::env") {
+        result.push(standard.env.hir_file)
+    } else {
+        ()
+    };
+    if needs_fs {
+        result.push(standard.fs.hir_file)
+    } else {
+        ()
+    };
+    if needs_io {
+        result.push(standard.io.hir_file)
+    } else {
+        ()
+    };
+    result
+}
+
+fn selected_standard_core(
+    ast_value: ast::LowerResult,
+    standard: StandardLibrary,
+) -> Vec[core::File] {
+    let needs_fs = imports_package(ast_value, "std::fs");
+    let needs_io = imports_package(ast_value, "std::io");
+    let needs_bytes = imports_package(ast_value, "std::bytes") || needs_fs || needs_io;
+    let result: Vec[core::File] = Vec::new();
+    if needs_bytes {
+        result.push(standard.bytes.core_value)
+    } else {
+        ()
+    };
+    if imports_package(ast_value, "std::env") {
+        result.push(standard.env.core_value)
+    } else {
+        ()
+    };
+    if needs_fs {
+        result.push(standard.fs.core_value)
+    } else {
+        ()
+    };
+    if needs_io {
+        result.push(standard.io.core_value)
+    } else {
+        ()
+    };
+    result
+}
+
 fn compile_source(source_path: string, source: string) -> Compilation {
     let ast_value = ast::lower(parser::parse(source));
     match single_file_project_import(ast_value) {
@@ -76,16 +327,33 @@ fn compile_source(source_path: string, source: string) -> Compilation {
     };
     let ast_value = hir::expand_derives(ast_value);
     let hir_value = hir::lower_expanded(ast_value, source_path);
-    let tast_value = tast::check_for_link(hir_value);
     let counter = Ref::new(0);
     let builtins = core::lower_builtins(counter);
-    let core_value = core::link_with_builtins(
+    let standard = if has_standard_import(ast_value) {
+        Option::Some(compile_standard_library(builtins))
+    } else {
+        Option::None
+    };
+    let hir_dependencies = match standard {
+        Option::Some(value) => selected_standard_hir(ast_value, value),
+        Option::None => Vec::new(),
+    };
+    let core_dependencies = match standard {
+        Option::Some(value) => selected_standard_core(ast_value, value),
+        Option::None => Vec::new(),
+    };
+    let tast_value = tast::check_for_link_with_dependencies(
+        hir_value,
+        hir_dependencies,
+    );
+    let core_value = core::link_with_dependencies(
         builtins,
+        core_dependencies,
         core::lower_with_counter_and_types(
             tast_value,
             counter,
-            builtins.enums,
-            builtins.structs,
+            dependency_enums(builtins, core_dependencies),
+            dependency_structs(builtins, core_dependencies),
         ),
     );
     let mono_value = mono::lower(core_value);
