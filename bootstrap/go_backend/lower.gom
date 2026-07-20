@@ -1079,6 +1079,7 @@ fn compile_branch_to_join(
 ) -> Block {
     let stmts: Vec[Stmt] = Vec::new();
     let pending: Vec[anf::JoinBind] = Vec::new();
+    let loop_names: Vec[string] = Vec::new();
     for bind in value.binds {
         match bind {
             anf::Bind::Let(value) => append_stmts(stmts, compile_let(env, value)),
@@ -1092,40 +1093,56 @@ fn compile_branch_to_join(
                 };
                 pending.push(value)
             },
-            anf::Bind::JoinRec(_) => (),
+            anf::Bind::JoinRec(values) => {
+                let compiled = compile_joinrec(env, values);
+                append_stmts(stmts, compiled.stmts);
+                for name in compiled.loop_names {
+                    loop_names.push(name)
+                }
+            },
         }
     };
-    match term_target(value.term) {
-        Option::Some(inner_target) => {
-            if inner_target == target {
-                append_stmts(stmts, compile_term_to_join(env, value.term, target, join))
-            } else {
-                match find_join(pending, inner_target) {
-                    Option::Some(inner_join) => {
-                        append_stmts(stmts, compile_term_to_join(
-                            env,
-                            value.term,
-                            inner_target,
-                            inner_join,
-                        ));
-                        append_stmts(stmts, compile_branch_to_join(
-                            env,
-                            inner_join.body,
-                            target,
-                            join,
-                        ).stmts)
-                    },
-                    Option::None => append_stmts(
-                        stmts,
-                        compile_term_with_pending(env, value.term, pending),
-                    ),
-                }
-            }
+    let suppress = match value.term {
+        anf::Term::Jump(target, args, _) => {
+            args.len() == 0 && contains_string(loop_names, target)
         },
-        Option::None => append_stmts(
-            stmts,
-            compile_term_with_pending(env, value.term, pending),
-        ),
+        _ => false,
+    };
+    if !suppress {
+        match term_target(value.term) {
+            Option::Some(inner_target) => {
+                if inner_target == target {
+                    append_stmts(stmts, compile_term_to_join(env, value.term, target, join))
+                } else {
+                    match find_join(pending, inner_target) {
+                        Option::Some(inner_join) => {
+                            append_stmts(stmts, compile_term_to_join(
+                                env,
+                                value.term,
+                                inner_target,
+                                inner_join,
+                            ));
+                            append_stmts(stmts, compile_branch_to_join(
+                                env,
+                                inner_join.body,
+                                target,
+                                join,
+                            ).stmts)
+                        },
+                        Option::None => append_stmts(
+                            stmts,
+                            compile_term_with_pending(env, value.term, pending),
+                        ),
+                    }
+                }
+            },
+            Option::None => append_stmts(
+                stmts,
+                compile_term_with_pending(env, value.term, pending),
+            ),
+        }
+    } else {
+        ()
     };
     Block { stmts }
 }
@@ -1709,6 +1726,7 @@ fn compile_loop_branch_to_join(
 ) -> Block {
     let stmts: Vec[Stmt] = Vec::new();
     let pending: Vec[anf::JoinBind] = Vec::new();
+    let loop_names: Vec[string] = Vec::new();
     for bind in value.binds {
         match bind {
             anf::Bind::Let(value) => append_stmts(stmts, compile_let(env, value)),
@@ -1722,62 +1740,84 @@ fn compile_loop_branch_to_join(
                 };
                 pending.push(value)
             },
-            anf::Bind::JoinRec(_) => (),
-        }
-    };
-    match term_target(value.term) {
-        Option::Some(inner_target) => {
-            if inner_target == target {
-                append_stmts(stmts, compile_loop_term_to_join(
+            anf::Bind::JoinRec(values) => {
+                let compiled = compile_joinrec_in_loop(
                     env,
-                    value.term,
-                    target,
-                    join,
+                    values,
                     loop_name,
                     exit_name,
                     label,
-                ))
-            } else {
-                match find_join(pending, inner_target) {
-                    Option::Some(inner_join) => {
-                        append_stmts(stmts, compile_loop_term_to_join(
-                            env,
-                            value.term,
-                            inner_target,
-                            inner_join,
-                            loop_name,
-                            exit_name,
-                            label,
-                        ));
-                        append_stmts(stmts, compile_loop_branch_to_join(
-                            env,
-                            inner_join.body,
-                            target,
-                            join,
-                            loop_name,
-                            exit_name,
-                            label,
-                        ).stmts)
-                    },
-                    Option::None => append_stmts(stmts, compile_loop_term_with_pending(
+                );
+                append_stmts(stmts, compiled.stmts);
+                for name in compiled.loop_names {
+                    loop_names.push(name)
+                }
+            },
+        }
+    };
+    let suppress = match value.term {
+        anf::Term::Jump(target, args, _) => {
+            args.len() == 0 && contains_string(loop_names, target)
+        },
+        _ => false,
+    };
+    if !suppress {
+        match term_target(value.term) {
+            Option::Some(inner_target) => {
+                if inner_target == target {
+                    append_stmts(stmts, compile_loop_term_to_join(
                         env,
                         value.term,
-                        pending,
+                        target,
+                        join,
                         loop_name,
                         exit_name,
                         label,
-                    )),
+                    ))
+                } else {
+                    match find_join(pending, inner_target) {
+                        Option::Some(inner_join) => {
+                            append_stmts(stmts, compile_loop_term_to_join(
+                                env,
+                                value.term,
+                                inner_target,
+                                inner_join,
+                                loop_name,
+                                exit_name,
+                                label,
+                            ));
+                            append_stmts(stmts, compile_loop_branch_to_join(
+                                env,
+                                inner_join.body,
+                                target,
+                                join,
+                                loop_name,
+                                exit_name,
+                                label,
+                            ).stmts)
+                        },
+                        Option::None => append_stmts(stmts, compile_loop_term_with_pending(
+                            env,
+                            value.term,
+                            pending,
+                            loop_name,
+                            exit_name,
+                            label,
+                        )),
+                    }
                 }
-            }
-        },
-        Option::None => append_stmts(stmts, compile_loop_term_with_pending(
-            env,
-            value.term,
-            pending,
-            loop_name,
-            exit_name,
-            label,
-        )),
+            },
+            Option::None => append_stmts(stmts, compile_loop_term_with_pending(
+                env,
+                value.term,
+                pending,
+                loop_name,
+                exit_name,
+                label,
+            )),
+        }
+    } else {
+        ()
     };
     Block { stmts }
 }
@@ -2069,6 +2109,7 @@ fn compile_loop_block(
 ) -> Block {
     let stmts: Vec[Stmt] = Vec::new();
     let pending: Vec[anf::JoinBind] = Vec::new();
+    let loop_names: Vec[string] = Vec::new();
     for bind in value.binds {
         match bind {
             anf::Bind::Let(value) => append_stmts(stmts, compile_let(env, value)),
@@ -2082,14 +2123,87 @@ fn compile_loop_block(
                 };
                 pending.push(value)
             },
-            anf::Bind::JoinRec(_) => (),
+            anf::Bind::JoinRec(values) => {
+                let compiled = compile_joinrec_in_loop(
+                    env,
+                    values,
+                    loop_name,
+                    exit_name,
+                    label,
+                );
+                append_stmts(stmts, compiled.stmts);
+                for name in compiled.loop_names {
+                    loop_names.push(name)
+                }
+            },
         }
     };
-    append_stmts(
-        stmts,
-        compile_loop_term_with_pending(env, value.term, pending, loop_name, exit_name, label),
-    );
+    let suppress = match value.term {
+        anf::Term::Jump(target, args, _) => {
+            args.len() == 0 && contains_string(loop_names, target)
+        },
+        _ => false,
+    };
+    if !suppress {
+        append_stmts(
+            stmts,
+            compile_loop_term_with_pending(env, value.term, pending, loop_name, exit_name, label),
+        )
+    } else {
+        ()
+    };
     Block { stmts }
+}
+
+fn compile_joinrec_in_loop(
+    env: LowerEnv,
+    values: Vec[anf::JoinBind],
+    outer_loop_name: string,
+    outer_exit_name: string,
+    outer_label: string,
+) -> JoinRecResult {
+    let stmts: Vec[Stmt] = Vec::new();
+    let loop_names: Vec[string] = Vec::new();
+    let single = values.len() == 1;
+    for value in values {
+        if single
+            && block_reaches_target(value.body, value.name, Vec::new(), Vec::new()) == false
+        {
+            append_stmts(stmts, compile_loop_block(
+                env,
+                value.body,
+                outer_loop_name,
+                outer_exit_name,
+                outer_label,
+            ).stmts);
+            loop_names.push(value.name)
+        } else {
+            match find_loop_exit(value.body, value.name) {
+                Option::Some(exit_name) => {
+                    let label = fresh_loop_label(env, value.name);
+                    stmts.push(Stmt::LabeledLoop(
+                        label,
+                        compile_loop_block(env, value.body, value.name, exit_name, label),
+                    ));
+                    match find_join(env.joins, exit_name) {
+                        Option::Some(exit) => {
+                            append_stmts(stmts, compile_loop_block(
+                                env,
+                                exit.body,
+                                outer_loop_name,
+                                outer_exit_name,
+                                outer_label,
+                            ).stmts)
+                        },
+                        Option::None => (),
+                    };
+                    loop_names.push(value.name)
+                },
+                Option::None => stmts.push(Stmt::Unreachable),
+            }
+        }
+    };
+    JoinRecResult { stmts, loop_names }
 }
 
 fn compile_joinrec(env: LowerEnv, values: Vec[anf::JoinBind]) -> JoinRecResult {
