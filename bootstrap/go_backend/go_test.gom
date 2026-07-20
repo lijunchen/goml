@@ -169,6 +169,24 @@ fn dispatches_trait_objects_for_enum_receivers() -> unit {
 }
 
 #[test]
+fn adapts_closures_for_dynamic_call_function_parameters() -> unit {
+    let source = "trait Mapper { fn map(Self, (int32) -> int32) -> int32; } struct Boxed { value: int32, } impl Mapper for Boxed { fn map(self: Boxed, f: (int32) -> int32) -> int32 { f(self.value) } } fn main() -> unit { let x: dyn Mapper = Boxed { value: 1i32 }; println(Mapper::map(x, |n| n + 1i32)); }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(
+        output,
+        "vtable._goml_m_map(x__2.data, func(p0 int32) int32 {",
+    ));
+    testing::assert(string_contains(
+        output,
+        "return _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(t8, p0)",
+    ));
+    testing::assert(string_contains(
+        output,
+        "func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(",
+    ))
+}
+
+#[test]
 fn emits_user_trait_objects_without_name_collisions() -> unit {
     let source = "trait Display { fn display(Self) -> string; } fn dyn__Display() -> int32 { 1i32 } struct Box { text: string, } impl Display for Box { fn display(self: Self) -> string { self.text } } fn main() -> unit { let d: dyn Display = Box { text: \"ok\" }; println(Display::display(d) + dyn__Display().to_string()); }";
     testing::assert_eq(
