@@ -11,6 +11,7 @@ struct LowerEnv {
     variants: Vec[VariantInfo],
     closures: Vec[ClosureInfo],
     structs: Vec[tast::StructDef],
+    instances: Vec[core::TypeInstance],
     function_names: Vec[(string, string)],
     dyn_helper_names: DynHelperNames,
 }
@@ -628,6 +629,61 @@ fn materializes_binary_operands(value: ast::BinaryOp) -> bool {
     }
 }
 
+fn append_struct_field_types(
+    result: Vec[tast::Type],
+    definition: tast::StructDef,
+    args: Vec[tast::Type],
+    instances: Vec[core::TypeInstance],
+) -> unit {
+    for field in definition.fields {
+        result.push(instantiate_type(
+            field.1,
+            definition.generics,
+            args,
+            instances,
+        ))
+    }
+}
+
+fn struct_field_types(env: LowerEnv, value: tast::Type) -> Vec[tast::Type] {
+    let result: Vec[tast::Type] = Vec::new();
+    match tast::resolve_type(value) {
+        tast::Type::Con(name) => match find_struct(env.structs, name) {
+            Option::Some(definition) => append_struct_field_types(
+                result,
+                definition,
+                Vec::new(),
+                env.instances,
+            ),
+            Option::None => match instance_by_name(env.instances, name) {
+                Option::Some(instance) => match find_struct(env.structs, instance.base_name) {
+                    Option::Some(definition) => append_struct_field_types(
+                        result,
+                        definition,
+                        instance.args,
+                        env.instances,
+                    ),
+                    Option::None => (),
+                },
+                Option::None => (),
+            },
+        },
+        tast::Type::App(tast::Type::Con(name), args) => {
+            match find_struct(env.structs, name) {
+                Option::Some(definition) => append_struct_field_types(
+                    result,
+                    definition,
+                    args,
+                    env.instances,
+                ),
+                Option::None => (),
+            }
+        },
+        _ => (),
+    };
+    result
+}
+
 fn compile_constructor(
     env: LowerEnv,
     constructor: tast::Constructor,
@@ -636,16 +692,8 @@ fn compile_constructor(
 ) -> Expr {
     let expected: Vec[tast::Type] = Vec::new();
     if constructor.is_struct {
-        match tast::resolve_type(ty) {
-            tast::Type::Con(name) => match find_struct(env.structs, name) {
-                Option::Some(definition) => {
-                    for field in definition.fields {
-                        expected.push(field.1)
-                    }
-                },
-                Option::None => (),
-            },
-            _ => (),
+        for field_ty in struct_field_types(env, ty) {
+            expected.push(field_ty)
         }
     } else {
         match constructor.tag {
@@ -2783,6 +2831,7 @@ fn compile_function(
     variants: Vec[VariantInfo],
     closures: Vec[ClosureInfo],
     structs: Vec[tast::StructDef],
+    instances: Vec[core::TypeInstance],
     function_names: Vec[(string, string)],
     dyn_helper_names: DynHelperNames,
 ) -> Function {
@@ -2798,6 +2847,7 @@ fn compile_function(
         variants,
         closures,
         structs,
+        instances,
         function_names,
         dyn_helper_names,
     };
@@ -2869,6 +2919,7 @@ pub fn lower(value: anf::File) -> File {
             variants,
             closures,
             structs,
+            type_instances,
             function_names,
             dyn_helper_names,
         )))
