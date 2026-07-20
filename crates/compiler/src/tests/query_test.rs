@@ -526,6 +526,13 @@ fn main() {
                 ),
             },
             ValueCompletionItem {
+                name: "string_parse_float32",
+                kind: Function,
+                detail: Some(
+                    "(string) -> (bool, float64)",
+                ),
+            },
+            ValueCompletionItem {
                 name: "string_parse_float64",
                 kind: Function,
                 detail: Some(
