@@ -406,6 +406,21 @@ fn sorts_dyn_helpers_and_compacts_builtin_impl_names() -> unit {
 }
 
 #[test]
+fn uses_synthetic_hashmap_options_when_unmaterialized() -> unit {
+    let source = "fn main() -> unit { let map: HashMap[int32, string] = HashMap::new(); map[1i32] = \"ok\"; println(\"ok\"); }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(
+        output,
+        "type _goml_synthetic__goml_option__string interface",
+    ));
+    testing::assert(string_contains(
+        output,
+        "func hashmap_get__HashMap_5int32_6string(m *hashmap_int32_string_x, key int32) _goml_synthetic__goml_option__string",
+    ));
+    testing::assert(!string_contains(output, "type Option__string interface"))
+}
+
+#[test]
 fn reuses_materialized_hashmap_option_types() -> unit {
     let source = "struct hashmap_int32_int32_x { value: int32, } fn main() -> unit { let c = hashmap_int32_int32_x { value: 4i32 }; let m: HashMap[int32, int32] = HashMap::new(); m.set(1i32, 5i32); match m.get(1i32) { Option::Some(v) => println(c.value + v), Option::None => println(0i32), } }";
     testing::assert_eq(
