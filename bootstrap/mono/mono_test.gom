@@ -17,12 +17,14 @@ fn lower_source(source: string) -> core::File {
 fn lower_linked_source(source: string) -> core::File {
     let counter = Ref::new(0);
     let builtins = core::lower_builtins(counter);
-    let user = core::lower_with_counter(
+    let user = core::lower_with_counter_and_types(
         tast::check_for_link(hir::lower(
             ast::lower(parser::parse(source)),
             "main.gom",
         )),
         counter,
+        builtins.enums,
+        builtins.structs,
     );
     lower(core::link_with_builtins(builtins, user))
 }

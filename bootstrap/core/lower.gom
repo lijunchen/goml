@@ -1159,13 +1159,32 @@ fn lower_function(
     }
 }
 
-fn lower_file(value: tast::File, counter: Ref[int32]) -> File {
+fn lower_file_with_types(
+    value: tast::File,
+    counter: Ref[int32],
+    dependency_enums: Vec[tast::EnumDef],
+    dependency_structs: Vec[tast::StructDef],
+) -> File {
     let enums = value.enums;
     let structs = value.structs;
+    let all_enums: Vec[tast::EnumDef] = Vec::new();
+    for definition in dependency_enums {
+        all_enums.push(definition)
+    };
+    for definition in enums {
+        all_enums.push(definition)
+    };
+    let all_structs: Vec[tast::StructDef] = Vec::new();
+    for definition in dependency_structs {
+        all_structs.push(definition)
+    };
+    for definition in structs {
+        all_structs.push(definition)
+    };
     let ctx = Lowerer {
         counter,
-        enums,
-        structs,
+        enums: all_enums,
+        structs: all_structs,
     };
     let functions: Vec[Function] = Vec::new();
     for item in value.items {
@@ -1203,6 +1222,32 @@ fn lower_file(value: tast::File, counter: Ref[int32]) -> File {
         }
     };
     File { functions, enums, structs, type_instances: Vec::new() }
+}
+
+fn lower_file(value: tast::File, counter: Ref[int32]) -> File {
+    lower_file_with_types(value, counter, Vec::new(), Vec::new())
+}
+
+pub fn lower_with_counter_and_types(
+    value: tast::CheckResult,
+    counter: Ref[int32],
+    dependency_enums: Vec[tast::EnumDef],
+    dependency_structs: Vec[tast::StructDef],
+) -> File {
+    match value.tast {
+        Option::Some(file) => lower_file_with_types(
+            file,
+            counter,
+            dependency_enums,
+            dependency_structs,
+        ),
+        Option::None => File {
+            functions: Vec::new(),
+            enums: Vec::new(),
+            structs: Vec::new(),
+            type_instances: Vec::new(),
+        },
+    }
 }
 
 pub fn lower_with_counter(value: tast::CheckResult, counter: Ref[int32]) -> File {

@@ -35,7 +35,12 @@ fn compile_source(source_path: string, source: string) -> Compilation {
     let builtins = core::lower_builtins(counter);
     let core_value = core::link_with_builtins(
         builtins,
-        core::lower_with_counter(tast_value, counter),
+        core::lower_with_counter_and_types(
+            tast_value,
+            counter,
+            builtins.enums,
+            builtins.structs,
+        ),
     );
     let mono_value = mono::lower(core_value);
     let lift_value = lift::lower(mono_value);
