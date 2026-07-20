@@ -3,6 +3,12 @@ package tast;
 use gomlang::parser::ast;
 use gomlang::parser::hir;
 
+struct FloatDecimal {
+    negative: bool,
+    digits: string,
+    exponent: int32,
+}
+
 fn char_hex_value(value: uint8) -> Option[uint32] {
     if value >= 48u8 && value <= 57u8 {
         Option::Some((value - 48u8) as uint32)
@@ -70,13 +76,230 @@ fn checked_char_literal(ctx: Checker, value: string) -> char {
     }
 }
 
+fn decimal_digit(value: uint8) -> string {
+    match value {
+        0u8 => "0",
+        1u8 => "1",
+        2u8 => "2",
+        3u8 => "3",
+        4u8 => "4",
+        5u8 => "5",
+        6u8 => "6",
+        7u8 => "7",
+        8u8 => "8",
+        _ => "9",
+    }
+}
+
+fn increment_decimal(value: string) -> string {
+    let result = Ref::new("");
+    let carry = Ref::new(true);
+    let offset = Ref::new(0);
+    while offset.get() < value.byte_len() {
+        let index = value.byte_len() - offset.get() - 1;
+        let byte = value.byte_get(index);
+        if carry.get() {
+            if byte == 57u8 {
+                result.set("0" + result.get())
+            } else {
+                result.set(decimal_digit(byte - 47u8) + result.get());
+                carry.set(false)
+            }
+        } else {
+            result.set(value.byte_slice(index, index + 1) + result.get())
+        };
+        offset.set(offset.get() + 1)
+    };
+    if carry.get() { "1" + result.get() } else { result.get() }
+}
+
+fn repeated_zeros(count: int32) -> string {
+    let result = Ref::new("");
+    for _ in range(0, count) {
+        result.set(result.get() + "0")
+    };
+    result.get()
+}
+
+fn trim_fractional_zeros(value: string) -> string {
+    let has_decimal = Ref::new(false);
+    for index in range(0, value.byte_len()) {
+        if value.byte_get(index) == 46u8 {
+            has_decimal.set(true)
+        } else {
+            ()
+        }
+    };
+    if !(has_decimal.get()) {
+        value
+    } else {
+        let end = Ref::new(value.byte_len());
+        while end.get() > 0 && value.byte_get(end.get() - 1) == 48u8 {
+            end.set(end.get() - 1)
+        };
+        if end.get() > 0 && value.byte_get(end.get() - 1) == 46u8 {
+            end.set(end.get() - 1)
+        } else {
+            ()
+        };
+        value.byte_slice(0, end.get())
+    }
+}
+
+fn fixed_decimal(coefficient: string, power: int32) -> string {
+    let decimal_position = coefficient.byte_len() + power;
+    let value = if decimal_position <= 0 {
+        "0." + repeated_zeros(-decimal_position) + coefficient
+    } else if decimal_position >= coefficient.byte_len() {
+        coefficient + repeated_zeros(decimal_position - coefficient.byte_len())
+    } else {
+        coefficient.byte_slice(0, decimal_position)
+            + "."
+            + coefficient.byte_slice(decimal_position, coefficient.byte_len())
+    };
+    trim_fractional_zeros(value)
+}
+
+fn float_decimal(value: string) -> Option[FloatDecimal] {
+    let negative = value.byte_len() > 0 && value.byte_get(0) == 45u8;
+    let start = if negative { 1 } else { 0 };
+    let digits = Ref::new("");
+    let decimal_position = Ref::new(-1);
+    let valid = Ref::new(true);
+    for index in range(start, value.byte_len()) {
+        let byte = value.byte_get(index);
+        if byte == 46u8 && decimal_position.get() < 0 {
+            decimal_position.set(digits.get().byte_len())
+        } else if byte >= 48u8 && byte <= 57u8 {
+            digits.set(digits.get() + value.byte_slice(index, index + 1))
+        } else {
+            valid.set(false)
+        }
+    };
+    if decimal_position.get() < 0 {
+        decimal_position.set(digits.get().byte_len())
+    } else {
+        ()
+    };
+    let first = Ref::new(0);
+    while first.get() < digits.get().byte_len()
+        && digits.get().byte_get(first.get()) == 48u8
+    {
+        first.set(first.get() + 1)
+    };
+    if !(valid.get()) || first.get() == digits.get().byte_len() {
+        Option::None
+    } else {
+        Option::Some(FloatDecimal {
+            negative,
+            digits: digits.get().byte_slice(first.get(), digits.get().byte_len()),
+            exponent: decimal_position.get() - first.get(),
+        })
+    }
+}
+
+fn signed_decimal(negative: bool, value: string) -> string {
+    if negative { "-" + value } else { value }
+}
+
+fn float32_literal_matches(value: string, expected: float64) -> bool {
+    let (valid, parsed) = string_parse_float32(value);
+    valid && parsed == expected
+}
+
+fn absolute_float64(value: float64) -> float64 {
+    if value < 0.0 { -value } else { value }
+}
+
+fn decimal_coefficient_even(value: string) -> bool {
+    let digit = value.byte_get(value.byte_len() - 1) - 48u8;
+    digit % 2u8 == 0u8
+}
+
+fn closer_float_literal(
+    expected: float64,
+    left: string,
+    left_coefficient: string,
+    right: string,
+    right_coefficient: string,
+) -> string {
+    let (_, left_value) = string_parse_float64(left);
+    let (_, right_value) = string_parse_float64(right);
+    let left_distance = absolute_float64(left_value - expected);
+    let right_distance = absolute_float64(right_value - expected);
+    if left_distance < right_distance {
+        left
+    } else if right_distance < left_distance {
+        right
+    } else if decimal_coefficient_even(left_coefficient) {
+        left
+    } else if decimal_coefficient_even(right_coefficient) {
+        right
+    } else {
+        left
+    }
+}
+
+fn shortest_float32_literal(value: float64) -> string {
+    let full = value.to_string();
+    match float_decimal(full) {
+        Option::Some(parts) => {
+            let limit = if parts.digits.byte_len() < 9 {
+                parts.digits.byte_len()
+            } else {
+                9
+            };
+            let result: Ref[Option[string]] = Ref::new(Option::None);
+            let found = Ref::new(false);
+            for precision in range(1, limit + 1) {
+                if found.get() {
+                    ()
+                } else {
+                    let coefficient = parts.digits.byte_slice(0, precision);
+                    let rounded_coefficient = increment_decimal(coefficient);
+                    let power = parts.exponent - precision;
+                    let truncated = signed_decimal(
+                        parts.negative,
+                        fixed_decimal(coefficient, power),
+                    );
+                    let rounded = signed_decimal(
+                        parts.negative,
+                        fixed_decimal(rounded_coefficient, power),
+                    );
+                    let truncated_matches = float32_literal_matches(truncated, value);
+                    let rounded_matches = float32_literal_matches(rounded, value);
+                    if truncated_matches && rounded_matches {
+                        result.set(Option::Some(closer_float_literal(
+                            value,
+                            truncated,
+                            coefficient,
+                            rounded,
+                            rounded_coefficient,
+                        )));
+                        found.set(true)
+                    } else if truncated_matches {
+                        result.set(Option::Some(truncated));
+                        found.set(true)
+                    } else if rounded_matches {
+                        result.set(Option::Some(rounded));
+                        found.set(true)
+                    } else {
+                        ()
+                    }
+                }
+            };
+            match result.get() {
+                Option::Some(value) => value,
+                Option::None => full,
+            }
+        },
+        Option::None => full,
+    }
+}
+
 fn normalized_float32_literal(value: string) -> string {
     let (valid, parsed) = string_parse_float32(value);
-    if valid {
-        parsed.to_string()
-    } else {
-        value
-    }
+    if valid { shortest_float32_literal(parsed) } else { value }
 }
 
 fn normalized_float64_literal(value: string) -> string {
