@@ -296,7 +296,17 @@ fn callable_name(env: LowerEnv, value: tast::Callable) -> string {
     }
 }
 
-fn compile_primitive(value: tast::Primitive) -> Expr {
+fn go_float_literal(value: string, ty: tast::Type) -> string {
+    match tast::resolve_type(ty) {
+        tast::Type::Float32 => {
+            let (valid, parsed) = string_parse_float32(value);
+            if valid { parsed.to_string() } else { value }
+        },
+        _ => value,
+    }
+}
+
+fn compile_primitive(value: tast::Primitive, ty: tast::Type) -> Expr {
     match value {
         tast::Primitive::Unit => Expr::Unit,
         tast::Primitive::Bool(value) => Expr::Bool(value),
@@ -311,7 +321,7 @@ fn compile_primitive(value: tast::Primitive) -> Expr {
         | tast::Primitive::Uint64(value) => Expr::Int(value),
         tast::Primitive::Float(value)
         | tast::Primitive::Float32(value)
-        | tast::Primitive::Float64(value) => Expr::Float(value),
+        | tast::Primitive::Float64(value) => Expr::Float(go_float_literal(value, ty)),
         tast::Primitive::String(value) => Expr::String(value),
         tast::Primitive::Char(value) => Expr::Int((value as uint32).to_string()),
     }
@@ -329,7 +339,7 @@ fn compile_imm(env: LowerEnv, value: anf::Imm) -> Expr {
             compile_intrinsic_callable(key, function_ty)
         },
         anf::Imm::Callable(value, _) => Expr::Var(callable_name(env, value)),
-        anf::Imm::Prim(value, _) => compile_primitive(value),
+        anf::Imm::Prim(value, ty) => compile_primitive(value, ty),
         anf::Imm::Tag(index, owner_ty) => {
             match find_variant_info(env.variants, owner_ty, index) {
                 Option::Some(info) => {
