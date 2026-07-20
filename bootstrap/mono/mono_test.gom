@@ -72,6 +72,21 @@ fn retains_linked_monomorphic_trait_impls() -> unit {
 }
 
 #[test]
+fn retains_linked_monomorphic_inherent_methods() -> unit {
+    let output = encode(lower_linked_source(
+        "fn main() -> string { let value: int32 = 42; value.to_string() }",
+    ));
+    testing::assert(string_contains(
+        output,
+        "fn inherent#int32#int32#to_string",
+    ));
+    testing::assert(string_contains(
+        output,
+        "@runtime(core.int32_to_string)",
+    ))
+}
+
+#[test]
 fn resolves_vec_for_loop_iterator_receiver() -> unit {
     let output = encode(lower_source("fn iterate(values: Vec[int32]) -> unit { for value in values { println(value.to_string()) } }"));
     testing::assert(string_contains(
