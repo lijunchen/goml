@@ -198,6 +198,17 @@ fn resolves_generic_types_in_struct_fields() -> unit {
 }
 
 #[test]
+fn resolves_runtime_types_in_recursive_struct_fields() -> unit {
+    let source = "enum Maybe[T] { None, Some(T), } struct Node { next: Ref[Maybe[Node]], } fn main() -> unit { let node: Node = Node { next: Ref::new(Maybe::None) }; let _ = node; }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(
+        output,
+        "type ref_Maybe__Node_x struct {\n    value Maybe__Node\n}",
+    ));
+    testing::assert(!string_contains(output, "type ref_App_"))
+}
+
+#[test]
 fn compacts_dyn_names_in_synthetic_options() -> unit {
     let source = "trait Display { fn show(Self) -> string; } impl Display for int32 { fn show(self: int32) -> string { self.to_string() } } fn build() -> int32 { let m: HashMap[int32, dyn Display] = HashMap::new(); m.set(1i32, if true { return 7i32 } else { 1i32 }); 0i32 } fn main() -> unit { println(build().to_string()) }";
     testing::assert_eq(
