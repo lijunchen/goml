@@ -47,6 +47,26 @@ fn string_contains(value: string, expected: string) -> bool {
     }
 }
 
+fn string_index(value: string, expected: string) -> int32 {
+    if expected.byte_len() == 0 {
+        0
+    } else if value.byte_len() < expected.byte_len() {
+        -1
+    } else {
+        let result = Ref::new(-1);
+        for index in range(0, value.byte_len() - expected.byte_len() + 1) {
+            if result.get() < 0
+                && value.byte_slice(index, index + expected.byte_len()) == expected
+            {
+                result.set(index)
+            } else {
+                ()
+            }
+        };
+        result.get()
+    }
+}
+
 #[test]
 fn preserves_monomorphic_core_programs() -> unit {
     testing::assert_eq(
@@ -86,6 +106,23 @@ fn retains_linked_monomorphic_inherent_methods() -> unit {
         output,
         "@runtime(core.int32_to_string)",
     ))
+}
+
+#[test]
+fn queues_inherent_callees_after_call_arguments() -> unit {
+    let output = encode(lower_linked_source(
+        "fn main() -> unit { for character in \"x\".chars() { println(character) } }",
+    ));
+    let get_index = string_index(
+        output,
+        "fn inherent#Ref#Ref[T]#get__T_int32",
+    );
+    let from_fn_index = string_index(
+        output,
+        "fn inherent#FnIterator#FnIterator[T]#from_fn__T_char",
+    );
+    testing::assert(get_index >= 0);
+    testing::assert(from_fn_index > get_index)
 }
 
 #[test]
