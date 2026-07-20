@@ -753,6 +753,29 @@ fn normalizes_float_pattern_literals() -> unit {
 }
 
 #[test]
+fn rounds_float32_literals() -> unit {
+    let file = checked_file("fn inferred() -> float32 { 3.14 } fn explicit() -> float32 { 3.14f32 }");
+    match file.items.get(0) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Prim(Primitive::Float(literal), Type::Float32)) => {
+                testing::assert_eq(literal, "3.140000104904175")
+            },
+            _ => testing::fail("expected rounded inferred float32 literal"),
+        },
+        _ => testing::fail("expected inferred function"),
+    };
+    match file.items.get(1) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Prim(Primitive::Float32(literal), Type::Float32)) => {
+                testing::assert_eq(literal, "3.140000104904175")
+            },
+            _ => testing::fail("expected rounded explicit float32 literal"),
+        },
+        _ => testing::fail("expected explicit function"),
+    }
+}
+
+#[test]
 fn indents_array_control_flow_expressions() -> unit {
     let file = checked_file("fn choose(flag: bool) -> [int32; 1] { [if flag { 1 } else { 2 }] }");
     let expected = "fn choose(flag/0: bool) -> [int32; 1] {\n"

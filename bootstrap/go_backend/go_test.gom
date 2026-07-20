@@ -336,6 +336,16 @@ fn materializes_numeric_runtime_operands() -> unit {
 }
 
 #[test]
+fn emits_rounded_float32_literals() -> unit {
+    let source = "fn identity[T](x: T) -> T { x } fn main() -> unit { let value: float32 = identity(3.14); println(value.to_string()) }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(
+        output,
+        "identity__T_float32(3.140000104904175)",
+    ))
+}
+
+#[test]
 fn disambiguates_dyn_helper_names() -> unit {
     let source = "trait A { fn foo(Self) -> int32; fn B__foo(Self) -> int32; } struct C {} struct C__B {} impl A for C { fn foo(self: C) -> int32 { 1i32 } fn B__foo(self: C) -> int32 { 2i32 } } impl A for C__B { fn foo(self: C__B) -> int32 { 10i32 } fn B__foo(self: C__B) -> int32 { 20i32 } } fn main() -> unit { let left: dyn A = C {}; let right: dyn A = C__B {}; println(A::B__foo(left)); println(A::foo(right)); }";
     testing::assert_eq(
