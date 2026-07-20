@@ -1231,9 +1231,7 @@ fn ensure_trait_method_instance(
 ) -> tast::TraitRef {
     let resolved: Ref[Option[tast::TraitRef]] = Ref::new(Option::None);
     for function in ctx.functions {
-        if function.generics.len() > 0
-            && trait_impl_matches(function, reference, method_name)
-        {
+        if trait_impl_matches(function, reference, method_name) {
             let bindings = Vec::new();
             let valid = Ref::new(true);
             match function.trait_impl {
@@ -1315,9 +1313,7 @@ fn ensure_dyn_trait_impls(
 ) -> unit {
     for function in ctx.functions {
         match function.trait_impl {
-            Option::Some(metadata) => if function.generics.len() > 0
-                && metadata.trait_ref.name == trait_name
-            {
+            Option::Some(metadata) => if metadata.trait_ref.name == trait_name {
                 let bindings = Vec::new();
                 if unify_type(metadata.for_ty, for_ty, bindings)
                     && complete_bindings(ctx, function, bindings)
