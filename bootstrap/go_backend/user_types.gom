@@ -238,6 +238,14 @@ fn collect_con_names(result: Vec[string], value: tast::Type) -> unit {
     }
 }
 
+fn collected_type_name(values: Vec[tast::Type], expected: string) -> bool {
+    let names: Vec[string] = Vec::new();
+    for value in values {
+        collect_con_names(names, value)
+    };
+    contains_text(names, expected)
+}
+
 fn instance_by_name(
     values: Vec[core::TypeInstance],
     name: string,
@@ -580,6 +588,7 @@ fn emit_enum_instance(
 pub fn emit_user_type_items(
     items: Vec[Item],
     variants: Vec[VariantInfo],
+    types: Vec[tast::Type],
     enums: Vec[tast::EnumDef],
     structs: Vec[tast::StructDef],
     instances: Vec[core::TypeInstance],
@@ -697,16 +706,20 @@ pub fn emit_user_type_items(
         }
     };
     for instance in instances {
-        emit_enum_instance(
-            items,
-            emitted,
-            variants,
-            enums,
-            structs,
-            instances,
-            function_names,
-            instance,
-        )
+        if collected_type_name(types, instance.name) {
+            emit_enum_instance(
+                items,
+                emitted,
+                variants,
+                enums,
+                structs,
+                instances,
+                function_names,
+                instance,
+            )
+        } else {
+            ()
+        }
     }
 }
 

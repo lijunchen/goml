@@ -630,10 +630,16 @@ fn hashmap_option_info(
     enums: Vec[tast::EnumDef],
     structs: Vec[tast::StructDef],
     function_names: Vec[(string, string)],
+    available: bool,
 ) -> (Type, Type, Type, bool) {
     let args: Vec[tast::Type] = Vec::new();
     args.push(value);
-    match find_instance(instances, "Option", args) {
+    let instance = if available {
+        find_instance(instances, "Option", args)
+    } else {
+        Option::None
+    };
+    match instance {
         Option::Some(instance) => (
             Type::Named(go_user_type_name(instance.name)),
             Type::Named(variant_go_name(
@@ -1038,6 +1044,7 @@ fn hashmap_items(
     structs: Vec[tast::StructDef],
     function_names: Vec[(string, string)],
     include_option: bool,
+    option_available: bool,
 ) -> Vec[Item] {
     let result: Vec[Item] = Vec::new();
     let name = hashmap_name(key, value);
@@ -1061,6 +1068,7 @@ fn hashmap_items(
         enums,
         structs,
         function_names,
+        option_available,
     );
     if include_option && option.3 {
         for item in synthetic_option_items(value) {
@@ -1075,11 +1083,15 @@ fn hashmap_items(
     result
 }
 
-fn option_available(instances: Vec[core::TypeInstance], value: tast::Type) -> bool {
+fn option_available(
+    types: Vec[tast::Type],
+    instances: Vec[core::TypeInstance],
+    value: tast::Type,
+) -> bool {
     let args: Vec[tast::Type] = Vec::new();
     args.push(value);
     match find_instance(instances, "Option", args) {
-        Option::Some(_) => true,
+        Option::Some(instance) => collected_type_name(types, instance.name),
         Option::None => false,
     }
 }
@@ -1565,8 +1577,9 @@ pub fn emit_builtin_runtime_items(
         match tast::resolve_type(ty) {
             tast::Type::HashMap(key, value) => {
                 let option = synthetic_option_base(value);
+                let has_option = option_available(types, instances, value);
                 let include_option = contains_text(options, option) == false
-                    && option_available(instances, value) == false;
+                    && has_option == false;
                 for item in hashmap_items(
                     key,
                     value,
@@ -1575,6 +1588,7 @@ pub fn emit_builtin_runtime_items(
                     structs,
                     function_names,
                     include_option,
+                    has_option,
                 ) {
                     items.push(item)
                 };
