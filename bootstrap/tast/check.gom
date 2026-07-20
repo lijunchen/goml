@@ -1129,11 +1129,11 @@ fn check_assign_target(ctx: Checker, target: hir::Expr) -> (Expr, Type) {
             let base = check_expr(ctx, base_source, Option::None);
             let parts = match prune(expr_type(base)) {
                 Type::Array(_, elem) | Type::VecType(elem) | Type::Slice(elem) => {
-                    (Type::Int32, elem, elem)
+                    (Type::Int32, Type::Unit, elem)
                 },
                 Type::HashMap(key, value) => (
                     key,
-                    nominal_type("Option", one_type(value)),
+                    Type::Unit,
                     value,
                 ),
                 _ => {
