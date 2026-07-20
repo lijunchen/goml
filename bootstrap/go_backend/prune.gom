@@ -145,6 +145,71 @@ fn collect_block_names(result: Vec[string], value: Block) -> unit {
     }
 }
 
+fn name_uses_import(name: string, alias: string) -> bool {
+    if name == alias {
+        true
+    } else if name.byte_len() <= alias.byte_len() {
+        false
+    } else {
+        name.byte_slice(0, alias.byte_len()) == alias
+            && name.byte_get(alias.byte_len()) == 46u8
+    }
+}
+
+fn import_is_used(names: Vec[string], alias: string) -> bool {
+    let used = Ref::new(false);
+    for name in names {
+        if name_uses_import(name, alias) {
+            used.set(true)
+        } else {
+            ()
+        }
+    };
+    used.get()
+}
+
+fn collect_item_names(result: Vec[string], value: Item) -> unit {
+    match value {
+        Item::ConstGroup(group) => {
+            for spec in group.specs {
+                collect_expr_names(result, spec.value)
+            }
+        },
+        Item::Function(function) => collect_block_names(result, function.body),
+        Item::Method(method) => collect_block_names(result, method.body),
+        _ => (),
+    }
+}
+
+fn prune_imports(values: Vec[Item]) -> Vec[Item] {
+    let names: Vec[string] = Vec::new();
+    for value in values {
+        collect_item_names(names, value)
+    };
+    let result: Vec[Item] = Vec::new();
+    for value in values {
+        match value {
+            Item::ImportGroup(imports) => {
+                let retained: Vec[(string, string)] = Vec::new();
+                for entry in imports {
+                    if import_is_used(names, entry.0) {
+                        retained.push(entry)
+                    } else {
+                        ()
+                    }
+                };
+                if retained.len() > 0 {
+                    result.push(Item::ImportGroup(retained))
+                } else {
+                    ()
+                }
+            },
+            other => result.push(other),
+        }
+    };
+    result
+}
+
 pub fn prune_functions(value: File) -> File {
     let reachable: Vec[string] = Vec::new();
     let expanded: Vec[string] = Vec::new();
@@ -182,5 +247,5 @@ pub fn prune_functions(value: File) -> File {
             _ => items.push(item),
         }
     };
-    File { items }
+    File { items: prune_imports(items) }
 }
