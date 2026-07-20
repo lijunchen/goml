@@ -13,6 +13,7 @@ fn function_context(
     Checker {
         counter: base.counter,
         diagnostics: base.diagnostics,
+        package_aliases: base.package_aliases,
         enums: base.enums,
         structs: base.structs,
         traits: base.traits,
@@ -143,8 +144,17 @@ fn builtin_enum_definitions() -> Vec[EnumDef] {
     result
 }
 
-fn check_file(value: hir::File, include_builtin_types: bool) -> CheckResult {
+fn check_file(
+    value: hir::File,
+    dependencies: Vec[hir::File],
+    include_builtin_types: bool,
+) -> CheckResult {
     let ctx = collect_environment(value);
+    let local_enum_count = ctx.enums.len();
+    let local_struct_count = ctx.structs.len();
+    for dependency in dependencies {
+        append_dependency_environment(ctx, dependency)
+    };
     let items: Vec[Item] = Vec::new();
     for item in value.items {
         match item {
@@ -164,7 +174,8 @@ fn check_file(value: hir::File, include_builtin_types: bool) -> CheckResult {
     } else {
         Vec::new()
     };
-    for value in ctx.enums {
+    for index in range(0, local_enum_count) {
+        let value = ctx.enums.get(index);
         let variants: Vec[EnumVariantDef] = Vec::new();
         for variant in value.variants {
             variants.push(EnumVariantDef {
@@ -179,7 +190,8 @@ fn check_file(value: hir::File, include_builtin_types: bool) -> CheckResult {
         })
     };
     let structs: Vec[StructDef] = Vec::new();
-    for value in ctx.structs {
+    for index in range(0, local_struct_count) {
+        let value = ctx.structs.get(index);
         structs.push(StructDef {
             name: value.name,
             generics: value.generics,
@@ -198,7 +210,7 @@ fn check_file(value: hir::File, include_builtin_types: bool) -> CheckResult {
 
 pub fn check(value: hir::LowerResult) -> CheckResult {
     match value.hir {
-        Option::Some(file) => check_file(file, true),
+        Option::Some(file) => check_file(file, Vec::new(), true),
         Option::None => CheckResult {
             tast: Option::None,
             diagnostics: value.diagnostics,
@@ -208,7 +220,20 @@ pub fn check(value: hir::LowerResult) -> CheckResult {
 
 pub fn check_for_link(value: hir::LowerResult) -> CheckResult {
     match value.hir {
-        Option::Some(file) => check_file(file, false),
+        Option::Some(file) => check_file(file, Vec::new(), false),
+        Option::None => CheckResult {
+            tast: Option::None,
+            diagnostics: value.diagnostics,
+        },
+    }
+}
+
+pub fn check_for_link_with_dependencies(
+    value: hir::LowerResult,
+    dependencies: Vec[hir::File],
+) -> CheckResult {
+    match value.hir {
+        Option::Some(file) => check_file(file, dependencies, false),
         Option::None => CheckResult {
             tast: Option::None,
             diagnostics: value.diagnostics,

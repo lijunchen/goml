@@ -19,8 +19,10 @@ struct LowerCtx {
     package_id: int32,
     definitions: Vec[(string, DefId)],
     enums: Vec[EnumInfo],
+    nominal_types: Vec[string],
     traits: Vec[string],
     aliases: Vec[AliasEntry],
+    qualify_imports: bool,
     local_counter: Ref[int32],
     method_counter: Ref[int32],
     expr_counter: Ref[int32],
@@ -128,7 +130,30 @@ fn starts_with_std(values: Vec[string]) -> bool {
 
 fn aliases_from_file(file: ast::File) -> Vec[AliasEntry] {
     let result: Vec[AliasEntry] = Vec::new();
-    let _ = file;
+    for use_decl in file.uses {
+        let target = path_segments(use_decl.path);
+        match last_string(target) {
+            Option::Some(default_alias) => result.push(AliasEntry {
+                alias: match use_decl.alias {
+                    Option::Some(alias) => alias,
+                    Option::None => default_alias,
+                },
+                target,
+            }),
+            Option::None => (),
+        }
+    };
+    result
+}
+
+fn import_aliases_from_file(file: ast::File) -> Vec[ImportAlias] {
+    let result: Vec[ImportAlias] = Vec::new();
+    for entry in aliases_from_file(file) {
+        result.push(ImportAlias {
+            alias: entry.alias,
+            package_name: join_segments(entry.target),
+        })
+    };
     result
 }
 
@@ -140,7 +165,7 @@ fn imports_from_file(file: ast::File) -> Vec[string] {
 
 fn expand_segments(ctx: LowerCtx, path: ast::Path) -> Vec[string] {
     let values = path_segments(path);
-    if values.len() < 2 {
+    if values.len() < 2 || !ctx.qualify_imports {
         values
     } else {
         let result: Vec[string] = Vec::new();
@@ -162,8 +187,25 @@ fn expand_segments(ctx: LowerCtx, path: ast::Path) -> Vec[string] {
     }
 }
 
+fn qualified_segments(ctx: LowerCtx, path: ast::Path) -> Vec[string] {
+    let values = expand_segments(ctx, path);
+    if ctx.qualify_imports
+        && values.len() > 0
+        && contains_string(ctx.nominal_types, values.get(0))
+    {
+        let result: Vec[string] = Vec::new();
+        result.push(full_name(ctx.package_name, values.get(0)));
+        for index in range(1, values.len()) {
+            result.push(values.get(index))
+        };
+        result
+    } else {
+        values
+    }
+}
+
 fn path_text(ctx: LowerCtx, path: ast::Path) -> string {
-    join_segments(expand_segments(ctx, path))
+    join_segments(qualified_segments(ctx, path))
 }
 
 fn static_member(parts: Vec[string], type_args: Vec[TypeExpr]) -> Expr {
@@ -361,7 +403,7 @@ fn lower_type(ctx: LowerCtx, value: ast::TypeExpr, type_params: Vec[string]) -> 
             TypeExpr::Tuple(result)
         },
         ast::TypeExpr::Con(path) => {
-            let parts = expand_segments(ctx, path);
+            let parts = qualified_segments(ctx, path);
             if parts.len() == 2
                 && (parts.get(0) == "Self" || contains_string(type_params, parts.get(0))) {
                 TypeExpr::Projection(TypeExpr::Con(parts.get(0)), parts.get(1))
@@ -660,12 +702,12 @@ fn lower_expr_value(
                 for arg in type_args {
                     args.push(lower_type(ctx, arg, type_params))
                 };
-                static_member(expand_segments(ctx, path), args)
+                static_member(qualified_segments(ctx, path), args)
             } else {
                 match constructor_ref(ctx, path) {
                     Option::Some(constructor) => Expr::Constr(constructor, Vec::new()),
                     Option::None => {
-                        let parts = expand_segments(ctx, path);
+                        let parts = qualified_segments(ctx, path);
                         if parts.len() == 1 {
                             let name = parts.get(0);
                             Expr::NameRef(match find_binding(env, name) {
@@ -1073,10 +1115,15 @@ fn item_name(package_name: string, value: ast::Item) -> Option[string] {
     }
 }
 
-fn make_context(file: ast::File) -> LowerCtx {
-    let id = package_id(file.package_name);
+fn make_context(
+    file: ast::File,
+    canonical_package_name: string,
+    qualify_imports: bool,
+) -> LowerCtx {
+    let id = package_id(canonical_package_name);
     let definitions: Vec[(string, DefId)] = Vec::new();
     let enums: Vec[EnumInfo] = Vec::new();
+    let nominal_types: Vec[string] = Vec::new();
     let traits: Vec[string] = Vec::new();
     let index = Ref::new(0);
     for item in file.items {
@@ -1084,12 +1131,13 @@ fn make_context(file: ast::File) -> LowerCtx {
             pkg: id,
             index: index.get(),
         };
-        match item_name(file.package_name, item) {
+        match item_name(canonical_package_name, item) {
             Option::Some(name) => definitions.push((name, def_id)),
             Option::None => (),
         };
         match item {
             ast::Item::EnumDef(value) => {
+                nominal_types.push(value.name);
                 let variants: Vec[string] = Vec::new();
                 for variant in value.variants {
                     variants.push(variant.0)
@@ -1100,26 +1148,34 @@ fn make_context(file: ast::File) -> LowerCtx {
                     variants,
                 })
             },
+            ast::Item::StructDef(value) => nominal_types.push(value.name),
             ast::Item::TraitDef(value) => traits.push(value.name),
             _ => (),
         };
         index.set(index.get() + 1)
     };
     LowerCtx {
-        package_name: file.package_name,
+        package_name: canonical_package_name,
         package_id: id,
         definitions,
         enums,
+        nominal_types,
         traits,
         aliases: aliases_from_file(file),
+        qualify_imports,
         local_counter: Ref::new(0),
         method_counter: Ref::new(file.items.len()),
         expr_counter: Ref::new(1),
     }
 }
 
-fn lower_file(file: ast::File, source_path: string) -> File {
-    let ctx = make_context(file);
+fn lower_file(
+    file: ast::File,
+    source_path: string,
+    canonical_package_name: string,
+    qualify_imports: bool,
+) -> File {
+    let ctx = make_context(file, canonical_package_name, qualify_imports);
     let items: Vec[Item] = Vec::new();
     let index = Ref::new(0);
     for item in file.items {
@@ -1152,13 +1208,14 @@ fn lower_file(file: ast::File, source_path: string) -> File {
         index.set(index.get() + 1)
     };
     File {
-        package_name: file.package_name,
-        path: if is_special_package(file.package_name) {
+        package_name: canonical_package_name,
+        path: if is_special_package(canonical_package_name) {
             basename(source_path)
         } else {
-            file.package_name + "/" + basename(source_path)
+            canonical_package_name + "/" + basename(source_path)
         },
         imports: imports_from_file(file),
+        import_aliases: import_aliases_from_file(file),
         items,
     }
 }
@@ -1166,7 +1223,38 @@ fn lower_file(file: ast::File, source_path: string) -> File {
 pub fn lower_expanded(value: ast::LowerResult, source_path: string) -> LowerResult {
     match value.ast {
         Option::Some(file) => LowerResult {
-            hir: Option::Some(lower_file(file, source_path)),
+            hir: Option::Some(lower_file(
+                file,
+                source_path,
+                file.package_name,
+                false,
+            )),
+            diagnostics: Vec::new(),
+        },
+        Option::None => {
+            let diagnostics: Vec[string] = Vec::new();
+            diagnostics.push("AST lowering failed");
+            LowerResult {
+                hir: Option::None,
+                diagnostics,
+            }
+        },
+    }
+}
+
+pub fn lower_expanded_package(
+    value: ast::LowerResult,
+    source_path: string,
+    canonical_package_name: string,
+) -> LowerResult {
+    match value.ast {
+        Option::Some(file) => LowerResult {
+            hir: Option::Some(lower_file(
+                file,
+                source_path,
+                canonical_package_name,
+                true,
+            )),
             diagnostics: Vec::new(),
         },
         Option::None => {
@@ -1182,4 +1270,12 @@ pub fn lower_expanded(value: ast::LowerResult, source_path: string) -> LowerResu
 
 pub fn lower(value: ast::LowerResult, source_path: string) -> LowerResult {
     lower_expanded(expand_derives(value), source_path)
+}
+
+pub fn lower_package(
+    value: ast::LowerResult,
+    source_path: string,
+    canonical_package_name: string,
+) -> LowerResult {
+    lower_expanded_package(expand_derives(value), source_path, canonical_package_name)
 }

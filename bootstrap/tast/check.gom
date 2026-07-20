@@ -931,6 +931,40 @@ fn check_call_expr(
                 args,
             ),
         },
+        hir::Expr::StaticMember(owner, member, type_args) => {
+            match package_function_scheme(ctx, owner, member) {
+                Option::Some(scheme) => {
+                    let candidate = instantiate_scheme_candidate(
+                        ctx,
+                        scheme,
+                        explicit_types(ctx, type_args),
+                    );
+                    constrain_callable_return(ctx, candidate.ty, expected);
+                    let result = coerce_expr(
+                        ctx,
+                        apply_call(
+                            ctx,
+                            Expr::Callable(candidate.callable, candidate.ty),
+                            Vec::new(),
+                            args,
+                        ),
+                        expected,
+                    );
+                    let _ = predicates_satisfied_at(ctx, candidate.predicates, 0);
+                    result
+                },
+                Option::None => apply_call(
+                    ctx,
+                    check_expr(
+                        ctx,
+                        hir::Expr::StaticMember(owner, member, type_args),
+                        Option::None,
+                    ),
+                    Vec::new(),
+                    args,
+                ),
+            }
+        },
         _ => apply_call(
             ctx,
             check_expr(ctx, function, Option::None),

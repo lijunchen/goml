@@ -13,6 +13,11 @@ pub struct DefId {
     index: int32,
 }
 
+pub struct ImportAlias {
+    alias: string,
+    package_name: string,
+}
+
 pub enum NameRef {
     Local(LocalId),
     Def(DefId),
@@ -150,6 +155,7 @@ pub struct File {
     package_name: string,
     path: string,
     imports: Vec[string],
+    import_aliases: Vec[ImportAlias],
     items: Vec[Item],
 }
 
