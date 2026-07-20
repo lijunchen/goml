@@ -114,6 +114,47 @@ fn lowers_builtin_option_matches_with_nonvariable_sources() -> unit {
 }
 
 #[test]
+fn lowers_linked_builtin_option_payload_patterns() -> unit {
+    let counter = Ref::new(0);
+    let builtins = lower_builtins(counter);
+    let user = lower_with_counter_and_types(
+        tast::check_for_link(hir::lower(
+            ast::lower(parser::parse("fn unwrap(input: Option[char]) -> char { match input { Option::Some(value) => value, Option::None => '?' } }")),
+            "main.gom",
+        )),
+        counter,
+        builtins.enums,
+        builtins.structs,
+    );
+    match user.functions.get(0).body.tail {
+        Option::Some(Expr::Match(_, arms, Option::None, _)) => {
+            match arms.get(1).lhs {
+                Expr::Constr(constructor, _, _) => {
+                    testing::assert_eq(constructor.name, "Option::Some")
+                },
+                _ => testing::fail("expected Some arm"),
+            };
+            match arms.get(1).body {
+                Expr::Block(extraction, _) => match extraction.tail {
+                    Option::Some(Expr::Block(binding, _)) => {
+                        testing::assert_eq(binding.stmts.get(0).name, "value/1");
+                        match binding.tail {
+                            Option::Some(Expr::Var(name, _)) => {
+                                testing::assert_eq(name, "value/1")
+                            },
+                            _ => testing::fail("expected bound payload result"),
+                        }
+                    },
+                    _ => testing::fail("expected payload binding block"),
+                },
+                _ => testing::fail("expected payload extraction block"),
+            }
+        },
+        _ => testing::fail("expected Option match"),
+    }
+}
+
+#[test]
 fn boxes_mutable_locals_captured_by_closures() -> unit {
     let source = "fn main() -> int32 { let mut x = 0; let inc = || { x = x + 1; x }; inc() }";
     testing::assert_eq(
