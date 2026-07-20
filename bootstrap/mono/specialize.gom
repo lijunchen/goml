@@ -1339,20 +1339,27 @@ fn specialize_var(
 ) -> core::Expr {
     let ty = specialize_type(ctx, ty, bindings);
     match find_callee_function(ctx, name) {
-        Option::Some(function) => if function_is_generic(function) && type_is_concrete(ty) {
-            let call_bindings = Vec::new();
-            if unify_type(function_type(function), ty, call_bindings)
-                && complete_bindings(ctx, function, call_bindings)
-            {
-                core::Expr::Var(
-                    ensure_instance(ctx, function.name, call_bindings),
-                    ty,
-                )
+        Option::Some(function) => if function_is_generic(function) {
+            if type_is_concrete(ty) {
+                let call_bindings = Vec::new();
+                if unify_type(function_type(function), ty, call_bindings)
+                    && complete_bindings(ctx, function, call_bindings)
+                {
+                    core::Expr::Var(
+                        ensure_instance(ctx, function.name, call_bindings),
+                        ty,
+                    )
+                } else {
+                    core::Expr::Var(name, ty)
+                }
             } else {
                 core::Expr::Var(name, ty)
             }
         } else {
-            core::Expr::Var(name, ty)
+            core::Expr::Var(
+                ensure_instance(ctx, function.name, Vec::new()),
+                ty,
+            )
         },
         Option::None => core::Expr::Var(name, ty),
     }
