@@ -73,6 +73,119 @@ fn emits_linked_bool_to_string_runtime() -> unit {
     ))
 }
 
+fn all_core_runtime_hooks() -> Vec[string] {
+    let hooks: Vec[string] = Vec::new();
+    hooks.push("core.unit_to_string");
+    hooks.push("core.bool_to_string");
+    hooks.push("core.string_len");
+    hooks.push("core.string_get");
+    hooks.push("core.string_byte_get");
+    hooks.push("core.string_byte_slice");
+    hooks.push("core.string_is_char_boundary");
+    hooks.push("core.string_decode_utf8_at");
+    hooks.push("core.string_to_bytes");
+    hooks.push("core.string_from_utf8");
+    hooks.push("core.string_concat");
+    hooks.push("core.string_print");
+    hooks.push("core.string_println");
+    hooks.push("core.char_to_string");
+    hooks.push("core.char_from_uint32");
+    hooks.push("core.int8_to_string");
+    hooks.push("core.int16_to_string");
+    hooks.push("core.int32_to_string");
+    hooks.push("core.int64_to_string");
+    hooks.push("core.uint8_to_string");
+    hooks.push("core.uint16_to_string");
+    hooks.push("core.uint32_to_string");
+    hooks.push("core.uint64_to_string");
+    hooks.push("core.float32_to_string");
+    hooks.push("core.float64_to_string");
+    hooks.push("core.string_parse_float32");
+    hooks.push("core.string_parse_float64");
+    hooks.push("core.int8_hash");
+    hooks.push("core.int16_hash");
+    hooks.push("core.int32_hash");
+    hooks.push("core.int64_hash");
+    hooks.push("core.uint8_hash");
+    hooks.push("core.uint16_hash");
+    hooks.push("core.uint32_hash");
+    hooks.push("core.float32_hash");
+    hooks.push("core.float64_hash");
+    hooks.push("core.string_hash");
+    hooks.push("core.char_hash");
+    hooks
+}
+
+#[test]
+fn emits_every_core_runtime_hook() -> unit {
+    let hooks = all_core_runtime_hooks();
+    let items: Vec[Item] = Vec::new();
+    emit_runtime_hook_items(items, hooks);
+    let output = encode(File { items });
+    testing::assert(string_contains(
+        output,
+        "import (\n"
+            + "    _goml_fmt \"fmt\"\n"
+            + "    _goml_math \"math\"\n"
+            + "    _goml_strconv \"strconv\"\n"
+            + "    _goml_strings \"strings\"\n"
+            + "    _goml_utf8 \"unicode/utf8\"\n"
+            + ")",
+    ));
+    for key in hooks {
+        testing::assert(string_contains(
+            output,
+            "func " + runtime_hook_name(key) + "(",
+        ))
+    };
+    testing::assert(string_contains(
+        output,
+        "func _goml_runtime_string_decode_utf8_at_native(",
+    ));
+    testing::assert(string_contains(
+        output,
+        "if !_goml_runtime_core_string_is_char_boundary(s, start) && _goml_runtime_core_string_is_char_boundary(s, end) {\n        panic(\"invalid string byte slice\")\n    }",
+    ));
+    testing::assert(string_contains(
+        output,
+        "items: []byte(s),",
+    ));
+    testing::assert(string_contains(
+        output,
+        "var formatted string = _goml_strconv.FormatFloat(float64(x), 102, -1, 32)",
+    ));
+    testing::assert(string_contains(
+        output,
+        "return uint64(_goml_math.Float32bits(x))",
+    ));
+    testing::assert(string_contains(
+        output,
+        "h = h * 1099511628211 + uint64(s[i])",
+    ))
+}
+
+#[test]
+fn closes_string_runtime_dependencies() -> unit {
+    let hooks: Vec[string] = Vec::new();
+    hooks.push("core.string_get");
+    hooks.push("core.string_byte_slice");
+    let items: Vec[Item] = Vec::new();
+    emit_runtime_hook_items(items, hooks);
+    let output = encode(File { items });
+    testing::assert(string_contains(
+        output,
+        "func _goml_runtime_string_decode_utf8_at_native(",
+    ));
+    testing::assert(string_contains(
+        output,
+        "func _goml_runtime_core_string_is_char_boundary(",
+    ));
+    testing::assert(string_contains(
+        output,
+        "_goml_utf8 \"unicode/utf8\"",
+    ))
+}
+
 #[test]
 fn emits_tuple_types_and_prunes_dead_bindings() -> unit {
     let source = "fn main() { let _ = (); let a = (true, false, (true, false)); let b = match a { (x, y, (z, w)) => w }; let _ = print(b); () }";
