@@ -30,8 +30,13 @@ struct Compilation {
 fn compile_source(source_path: string, source: string) -> Compilation {
     let ast_value = ast::lower(parser::parse(source));
     let hir_value = hir::lower(ast_value, source_path);
-    let tast_value = tast::check(hir_value);
-    let core_value = core::lower(tast_value);
+    let tast_value = tast::check_for_link(hir_value);
+    let counter = Ref::new(0);
+    let builtins = core::lower_builtins(counter);
+    let core_value = core::link_with_builtins(
+        builtins,
+        core::lower_with_counter(tast_value, counter),
+    );
     let mono_value = mono::lower(core_value);
     let lift_value = lift::lower(mono_value);
     let anf_value = anf::lower(lift_value);

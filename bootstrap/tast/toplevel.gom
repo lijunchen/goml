@@ -143,7 +143,7 @@ fn builtin_enum_definitions() -> Vec[EnumDef] {
     result
 }
 
-fn check_file(value: hir::File) -> CheckResult {
+fn check_file(value: hir::File, include_builtin_types: bool) -> CheckResult {
     let ctx = collect_environment(value);
     let items: Vec[Item] = Vec::new();
     for item in value.items {
@@ -159,7 +159,11 @@ fn check_file(value: hir::File) -> CheckResult {
             _ => (),
         }
     };
-    let enums = builtin_enum_definitions();
+    let enums = if include_builtin_types {
+        builtin_enum_definitions()
+    } else {
+        Vec::new()
+    };
     for value in ctx.enums {
         let variants: Vec[EnumVariantDef] = Vec::new();
         for variant in value.variants {
@@ -194,7 +198,17 @@ fn check_file(value: hir::File) -> CheckResult {
 
 pub fn check(value: hir::LowerResult) -> CheckResult {
     match value.hir {
-        Option::Some(file) => check_file(file),
+        Option::Some(file) => check_file(file, true),
+        Option::None => CheckResult {
+            tast: Option::None,
+            diagnostics: value.diagnostics,
+        },
+    }
+}
+
+pub fn check_for_link(value: hir::LowerResult) -> CheckResult {
+    match value.hir {
+        Option::Some(file) => check_file(file, false),
         Option::None => CheckResult {
             tast: Option::None,
             diagnostics: value.diagnostics,

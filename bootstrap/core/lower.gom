@@ -1159,11 +1159,11 @@ fn lower_function(
     }
 }
 
-fn lower_file(value: tast::File) -> File {
+fn lower_file(value: tast::File, counter: Ref[int32]) -> File {
     let enums = value.enums;
     let structs = value.structs;
     let ctx = Lowerer {
-        counter: Ref::new(0),
+        counter,
         enums,
         structs,
     };
@@ -1205,9 +1205,9 @@ fn lower_file(value: tast::File) -> File {
     File { functions, enums, structs, type_instances: Vec::new() }
 }
 
-pub fn lower(value: tast::CheckResult) -> File {
+pub fn lower_with_counter(value: tast::CheckResult, counter: Ref[int32]) -> File {
     match value.tast {
-        Option::Some(file) => lower_file(file),
+        Option::Some(file) => lower_file(file, counter),
         Option::None => File {
             functions: Vec::new(),
             enums: Vec::new(),
@@ -1215,4 +1215,8 @@ pub fn lower(value: tast::CheckResult) -> File {
             type_instances: Vec::new(),
         },
     }
+}
+
+pub fn lower(value: tast::CheckResult) -> File {
+    lower_with_counter(value, Ref::new(0))
 }

@@ -1,0 +1,52 @@
+package core;
+
+use gomlang::parser::ast;
+use gomlang::parser::hir;
+use gomlang::parser::parser;
+use gomlang::parser::tast;
+
+fn non_root(value: Function) -> Function {
+    Function {
+        name: value.name,
+        root: false,
+        generics: value.generics,
+        predicates: value.predicates,
+        trait_impl: value.trait_impl,
+        params: value.params,
+        ret_ty: value.ret_ty,
+        body: value.body,
+    }
+}
+
+pub fn lower_builtins(counter: Ref[int32]) -> File {
+    lower_with_counter(
+        tast::check(hir::lower(
+            ast::lower(parser::parse(builtin_source())),
+            "builtin_contract.gom",
+        )),
+        counter,
+    )
+}
+
+pub fn link_with_builtins(builtins: File, user: File) -> File {
+    let functions: Vec[Function] = Vec::new();
+    for function in builtins.functions {
+        functions.push(non_root(function))
+    };
+    for function in user.functions {
+        functions.push(function)
+    };
+    let enums = builtins.enums;
+    for value in user.enums {
+        enums.push(value)
+    };
+    let structs = builtins.structs;
+    for value in user.structs {
+        structs.push(value)
+    };
+    let type_instances = builtins.type_instances;
+    for value in user.type_instances {
+        type_instances.push(value)
+    };
+    File { functions, enums, structs, type_instances }
+}
