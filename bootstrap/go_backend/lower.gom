@@ -2166,41 +2166,41 @@ fn compile_joinrec_in_loop(
     let loop_names: Vec[string] = Vec::new();
     let single = values.len() == 1;
     for value in values {
-        if single
-            && block_reaches_target(value.body, value.name, Vec::new(), Vec::new()) == false
-        {
-            append_stmts(stmts, compile_loop_block(
-                env,
-                value.body,
-                outer_loop_name,
-                outer_exit_name,
-                outer_label,
-            ).stmts);
-            loop_names.push(value.name)
-        } else {
-            match find_loop_exit(value.body, value.name) {
-                Option::Some(exit_name) => {
-                    let label = fresh_loop_label(env, value.name);
-                    stmts.push(Stmt::LabeledLoop(
-                        label,
-                        compile_loop_block(env, value.body, value.name, exit_name, label),
-                    ));
-                    match find_join(env.joins, exit_name) {
-                        Option::Some(exit) => {
-                            append_stmts(stmts, compile_loop_block(
-                                env,
-                                exit.body,
-                                outer_loop_name,
-                                outer_exit_name,
-                                outer_label,
-                            ).stmts)
-                        },
-                        Option::None => (),
-                    };
-                    loop_names.push(value.name)
-                },
-                Option::None => stmts.push(Stmt::Unreachable),
-            }
+        match find_loop_exit(value.body, value.name) {
+            Option::Some(exit_name) => {
+                let label = fresh_loop_label(env, value.name);
+                stmts.push(Stmt::LabeledLoop(
+                    label,
+                    compile_loop_block(env, value.body, value.name, exit_name, label),
+                ));
+                match find_join(env.joins, exit_name) {
+                    Option::Some(exit) => {
+                        append_stmts(stmts, compile_loop_block(
+                            env,
+                            exit.body,
+                            outer_loop_name,
+                            outer_exit_name,
+                            outer_label,
+                        ).stmts)
+                    },
+                    Option::None => (),
+                };
+                loop_names.push(value.name)
+            },
+            Option::None => if single
+                && block_reaches_target(value.body, value.name, Vec::new(), Vec::new()) == false
+            {
+                append_stmts(stmts, compile_loop_block(
+                    env,
+                    value.body,
+                    outer_loop_name,
+                    outer_exit_name,
+                    outer_label,
+                ).stmts);
+                loop_names.push(value.name)
+            } else {
+                stmts.push(Stmt::Unreachable)
+            },
         }
     };
     JoinRecResult { stmts, loop_names }
@@ -2211,29 +2211,29 @@ fn compile_joinrec(env: LowerEnv, values: Vec[anf::JoinBind]) -> JoinRecResult {
     let loop_names: Vec[string] = Vec::new();
     let single = values.len() == 1;
     for value in values {
-        if single
-            && block_reaches_target(value.body, value.name, Vec::new(), Vec::new()) == false
-        {
-            append_stmts(stmts, compile_block(env, value.body).stmts);
-            loop_names.push(value.name)
-        } else {
-            match find_loop_exit(value.body, value.name) {
-                Option::Some(exit_name) => {
-                    let label = fresh_loop_label(env, value.name);
-                    stmts.push(Stmt::LabeledLoop(
-                        label,
-                        compile_loop_block(env, value.body, value.name, exit_name, label),
-                    ));
-                    match find_join(env.joins, exit_name) {
-                        Option::Some(exit) => {
-                            append_stmts(stmts, compile_block(env, exit.body).stmts)
-                        },
-                        Option::None => (),
-                    };
-                    loop_names.push(value.name)
-                },
-                Option::None => stmts.push(Stmt::Unreachable),
-            }
+        match find_loop_exit(value.body, value.name) {
+            Option::Some(exit_name) => {
+                let label = fresh_loop_label(env, value.name);
+                stmts.push(Stmt::LabeledLoop(
+                    label,
+                    compile_loop_block(env, value.body, value.name, exit_name, label),
+                ));
+                match find_join(env.joins, exit_name) {
+                    Option::Some(exit) => {
+                        append_stmts(stmts, compile_block(env, exit.body).stmts)
+                    },
+                    Option::None => (),
+                };
+                loop_names.push(value.name)
+            },
+            Option::None => if single
+                && block_reaches_target(value.body, value.name, Vec::new(), Vec::new()) == false
+            {
+                append_stmts(stmts, compile_block(env, value.body).stmts);
+                loop_names.push(value.name)
+            } else {
+                stmts.push(Stmt::Unreachable)
+            },
         }
     };
     JoinRecResult { stmts, loop_names }
