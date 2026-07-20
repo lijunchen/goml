@@ -861,11 +861,23 @@ fn normalizes_float_pattern_literals() -> unit {
 
 #[test]
 fn rounds_float32_literals() -> unit {
+    testing::assert_eq(normalized_float32_literal("3.1400001"), "3.14");
+    testing::assert_eq(normalized_float32_literal("16777217"), "16777216");
+    testing::assert_eq(normalized_float32_literal("1.23456789"), "1.2345679");
+    testing::assert_eq(
+        normalized_float32_literal("1e20"),
+        "100000000000000000000",
+    );
+    testing::assert_eq(
+        normalized_float32_literal("1e-20"),
+        "0.00000000000000000001",
+    );
+    testing::assert_eq(normalized_float32_literal("-0.0"), "-0");
     let file = checked_file("fn inferred() -> float32 { 3.14 } fn explicit() -> float32 { 3.14f32 }");
     match file.items.get(0) {
         Item::Function(value) => match value.body.tail {
             Option::Some(Expr::Prim(Primitive::Float(literal), ty)) => {
-                testing::assert_eq(literal, "3.140000104904175");
+                testing::assert_eq(literal, "3.14");
                 match resolve_type(ty) {
                     Type::Float32 => (),
                     _ => testing::fail("expected inferred float32 literal type"),
@@ -878,11 +890,30 @@ fn rounds_float32_literals() -> unit {
     match file.items.get(1) {
         Item::Function(value) => match value.body.tail {
             Option::Some(Expr::Prim(Primitive::Float32(literal), Type::Float32)) => {
-                testing::assert_eq(literal, "3.140000104904175")
+                testing::assert_eq(literal, "3.14")
             },
             _ => testing::fail("expected rounded explicit float32 literal"),
         },
         _ => testing::fail("expected explicit function"),
+    };
+    let generic = checked_file(
+        "fn identity[T](value: T) -> T { value } fn inferred() -> float32 { identity(3.14) }",
+    );
+    match generic.items.get(1) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Call(_, args, Type::Float32)) => match args.get(0) {
+                Expr::Prim(Primitive::Float(literal), ty) => {
+                    testing::assert_eq(literal, "3.14");
+                    match resolve_type(ty) {
+                        Type::Float32 => (),
+                        _ => testing::fail("expected generic float32 argument type"),
+                    }
+                },
+                _ => testing::fail("expected generic float literal argument"),
+            },
+            _ => testing::fail("expected generic float call"),
+        },
+        _ => testing::fail("expected generic inferred function"),
     }
 }
 
