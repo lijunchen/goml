@@ -187,6 +187,17 @@ fn emits_runtime_types_nested_in_enum_fields() -> unit {
 }
 
 #[test]
+fn resolves_generic_types_in_struct_fields() -> unit {
+    let source = "struct Container { value: Option[int32], label: string, } fn main() -> unit { let c = Container { value: Option::Some(42), label: \"test\" }; match c.value { Option::Some(value) => println(value), Option::None => (), } }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(
+        output,
+        "type Container struct {\n    value Option__int32\n    label string\n}",
+    ));
+    testing::assert(!string_contains(output, "value Option_5int32"))
+}
+
+#[test]
 fn compacts_dyn_names_in_synthetic_options() -> unit {
     let source = "trait Display { fn show(Self) -> string; } impl Display for int32 { fn show(self: int32) -> string { self.to_string() } } fn build() -> int32 { let m: HashMap[int32, dyn Display] = HashMap::new(); m.set(1i32, if true { return 7i32 } else { 1i32 }); 0i32 } fn main() -> unit { println(build().to_string()) }";
     testing::assert_eq(
