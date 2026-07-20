@@ -81,6 +81,15 @@ fn emits_breaking_while_loops() -> unit {
 }
 
 #[test]
+fn preserves_loop_carried_assignments() -> unit {
+    let source = "fn main() -> unit { let mut i = 0i32; while i < 3i32 { println(i); i = i + 1i32; } }";
+    testing::assert(string_contains(
+        encode(lower_source(source)),
+        "\n            i__0 = ",
+    ))
+}
+
+#[test]
 fn preserves_all_exit_while_conditions() -> unit {
     let source = "fn loop_return_unit(flag: bool) -> unit { while if flag { return } else { return } { println(\"unreachable\"); }; }";
     let output = encode(lower_source(source));
