@@ -189,6 +189,101 @@ fn closes_string_runtime_dependencies() -> unit {
 }
 
 #[test]
+fn imports_intrinsic_runtime_dependencies() -> unit {
+    let intrinsics: Vec[string] = Vec::new();
+    intrinsics.push("ref.ptr_hash");
+    intrinsics.push("vec.reserve");
+    let items: Vec[Item] = Vec::new();
+    emit_runtime_hook_items(items, Vec::new(), intrinsics);
+    let output = encode(File { items });
+    testing::assert(string_contains(
+        output,
+        "import (\n"
+            + "    _goml_reflect \"reflect\"\n"
+            + "    _goml_slices \"slices\"\n"
+            + ")",
+    ))
+}
+
+#[test]
+fn emits_complete_vec_runtime_helpers() -> unit {
+    let ty = tast::Type::VecType(tast::Type::Int32);
+    let output = encode(File { items: vec_runtime_items(ty) });
+    testing::assert(string_contains(
+        output,
+        "func vec_with_capacity__Vec_5int32(capacity int32) *_goml_vec_int32",
+    ));
+    testing::assert(string_contains(
+        output,
+        "items: _goml_slices.Grow([]int32{}, int(capacity)),",
+    ));
+    testing::assert(string_contains(
+        output,
+        "func vec_reserve__Vec_5int32(vec *_goml_vec_int32, additional int32) struct{}",
+    ));
+    testing::assert(string_contains(
+        output,
+        "clear(vec.items[new_len:int32(len(vec.items))])",
+    ));
+    testing::assert(string_contains(
+        output,
+        "vec.items = vec.items[0:new_len]",
+    ))
+}
+
+#[test]
+fn emits_complete_hashmap_and_ref_runtime_helpers() -> unit {
+    let key = tast::Type::String;
+    let value = tast::Type::Int32;
+    let map_output = encode(File {
+        items: hashmap_items(
+            key,
+            value,
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            true,
+        ),
+    });
+    testing::assert(string_contains(
+        map_output,
+        "func hashmap_new__HashMap_6string_5int32() *hashmap_string_int32_x",
+    ));
+    testing::assert(string_contains(
+        map_output,
+        "buckets: make(map[uint64][]hashmap_string_int32_x_entry),",
+    ));
+    testing::assert(string_contains(
+        map_output,
+        "func hashmap_len__HashMap_6string_5int32(",
+    ));
+    testing::assert(string_contains(
+        map_output,
+        "func hashmap_remove__HashMap_6string_5int32(",
+    ));
+    testing::assert(string_contains(
+        map_output,
+        "func hashmap_contains__HashMap_6string_5int32(",
+    ));
+    testing::assert(string_contains(
+        map_output,
+        "func hashmap_entries__HashMap_6string_5int32(",
+    ));
+    testing::assert(string_contains(
+        map_output,
+        "for _, h := range m.hashes {",
+    ));
+    let ref_output = encode(File {
+        items: ref_runtime_items(tast::Type::RefType(tast::Type::Int32)),
+    });
+    testing::assert(string_contains(
+        ref_output,
+        "return uint64(_goml_reflect.ValueOf(reference).Pointer())",
+    ))
+}
+
+#[test]
 fn emits_tuple_types_and_prunes_dead_bindings() -> unit {
     let source = "fn main() { let _ = (); let a = (true, false, (true, false)); let b = match a { (x, y, (z, w)) => w }; let _ = print(b); () }";
     testing::assert_eq(
