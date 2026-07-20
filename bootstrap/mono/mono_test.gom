@@ -94,6 +94,15 @@ fn retains_linked_monomorphic_trait_impls() -> unit {
 }
 
 #[test]
+fn specializes_generic_functions_for_matching_dyn_bounds() -> unit {
+    let output = encode(lower_linked_source(
+        "fn main() -> unit { let value: dyn ToString = 1i32; println(value) }",
+    ));
+    testing::assert(string_contains(output, "fn println__T_dynToString"));
+    testing::assert(string_contains(output, "dyn_call[ToString::to_string]"))
+}
+
+#[test]
 fn retains_linked_monomorphic_inherent_methods() -> unit {
     let output = encode(lower_linked_source(
         "fn main() -> string { let value: int32 = 42; value.to_string() }",
