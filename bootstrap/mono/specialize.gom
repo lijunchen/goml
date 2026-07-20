@@ -643,27 +643,31 @@ fn matching_trait_selections(
                     } else {
                         true
                     };
-                    let application = substitute_trait_ref(
-                        metadata.trait_ref,
-                        impl_bindings,
-                    );
-                    let trial = copy_bindings(bindings);
                     if candidate_matches
-                        && unify_types(reference.args, application.args, trial)
+                        && complete_bindings(ctx, function, impl_bindings)
                     {
-                        let selection = TraitSelection {
-                            reference: application,
-                            associated_types: substitute_named_types(
-                                metadata.associated_types,
-                                impl_bindings,
-                            ),
-                        };
-                        let key = trait_selection_key(selection);
-                        if contains_string(keys, key) {
-                            ()
+                        let application = substitute_trait_ref(
+                            metadata.trait_ref,
+                            impl_bindings,
+                        );
+                        let trial = copy_bindings(bindings);
+                        if unify_types(reference.args, application.args, trial) {
+                            let selection = TraitSelection {
+                                reference: application,
+                                associated_types: substitute_named_types(
+                                    metadata.associated_types,
+                                    impl_bindings,
+                                ),
+                            };
+                            let key = trait_selection_key(selection);
+                            if contains_string(keys, key) {
+                                ()
+                            } else {
+                                keys.push(key);
+                                selections.push(selection)
+                            }
                         } else {
-                            keys.push(key);
-                            selections.push(selection)
+                            ()
                         }
                     } else {
                         ()
