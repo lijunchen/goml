@@ -818,17 +818,32 @@ fn main() -> unit {
         {
           let _wild64 = @runtime(core.string_println)(trait_call[ToString::to_string](valid/0)) in
           let _wild65 = @runtime(core.string_println)(trait_call[ToString::to_string](value/1)) in
-          let mtmp66 = @runtime(core.string_parse_float64)("not-a-number") in
+          let mtmp66 = @runtime(core.string_parse_float32)("3.14") in
           {
             let x67 = mtmp66.0 in
             let x68 = mtmp66.1 in
             {
-              let fallback/3 = x68 in
+              let rounded/3 = x68 in
               {
-                let invalid/2 = x67 in
+                let rounded_valid/2 = x67 in
                 {
-                  let _wild69 = @runtime(core.string_println)(trait_call[ToString::to_string](invalid/2)) in
-                  @runtime(core.string_println)(trait_call[ToString::to_string](fallback/3))
+                  let _wild69 = @runtime(core.string_println)(trait_call[ToString::to_string](rounded_valid/2)) in
+                  let _wild70 = @runtime(core.string_println)(trait_call[ToString::to_string](rounded/3)) in
+                  let mtmp71 = @runtime(core.string_parse_float64)("not-a-number") in
+                  {
+                    let x72 = mtmp71.0 in
+                    let x73 = mtmp71.1 in
+                    {
+                      let fallback/5 = x73 in
+                      {
+                        let invalid/4 = x72 in
+                        {
+                          let _wild74 = @runtime(core.string_println)(trait_call[ToString::to_string](invalid/4)) in
+                          @runtime(core.string_println)(trait_call[ToString::to_string](fallback/5))
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }

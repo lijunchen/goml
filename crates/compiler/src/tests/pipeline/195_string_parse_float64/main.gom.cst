@@ -1,5 +1,5 @@
-FILE@0..306
-  FN@0..306
+FILE@0..459
+  FN@0..459
     FnKeyword@0..2 "fn"
     Whitespace@2..3 " "
     Ident@3..7 "main"
@@ -12,7 +12,7 @@ FILE@0..306
     TYPE_UNIT@13..18
       UnitKeyword@13..17 "unit"
       Whitespace@17..18 " "
-    BLOCK@18..306
+    BLOCK@18..459
       LBrace@18..19 "{"
       Whitespace@19..24 "\n    "
       STMT_LET@24..80
@@ -88,76 +88,149 @@ FILE@0..306
             RParen@151..152 ")"
         Semi@152..153 ";"
         Whitespace@153..158 "\n    "
-      STMT_LET@158..226
+      STMT_LET@158..223
         LetKeyword@158..161 "let"
         Whitespace@161..162 " "
-        PATTERN_TUPLE@162..182
+        PATTERN_TUPLE@162..187
           LParen@162..163 "("
-          PATTERN_VARIABLE@163..170
-            Ident@163..170 "invalid"
-          Comma@170..171 ","
-          Whitespace@171..172 " "
-          PATTERN_VARIABLE@172..180
-            Ident@172..180 "fallback"
-          RParen@180..181 ")"
-          Whitespace@181..182 " "
-        Eq@182..183 "="
-        Whitespace@183..184 " "
-        EXPR_CALL@184..220
-          EXPR_IDENT@184..204
-            PATH@184..204
-              Ident@184..204 "string_parse_float64"
-          ARG_LIST@204..220
-            LParen@204..205 "("
-            ARG@205..219
-              EXPR_STR@205..219
-                Str@205..219 "\"not-a-number\""
-            RParen@219..220 ")"
-        Semi@220..221 ";"
-        Whitespace@221..226 "\n    "
-      STMT_EXPR@226..267
-        EXPR_CALL@226..261
-          EXPR_IDENT@226..240
-            PATH@226..240
-              Ident@226..240 "string_println"
-          ARG_LIST@240..261
-            LParen@240..241 "("
-            ARG@241..260
-              EXPR_CALL@241..260
-                EXPR_BINARY@241..258
-                  EXPR_IDENT@241..248
-                    PATH@241..248
-                      Ident@241..248 "invalid"
-                  Dot@248..249 "."
-                  EXPR_IDENT@249..258
-                    PATH@249..258
-                      Ident@249..258 "to_string"
-                ARG_LIST@258..260
-                  LParen@258..259 "("
-                  RParen@259..260 ")"
-            RParen@260..261 ")"
-        Semi@261..262 ";"
-        Whitespace@262..267 "\n    "
-      EXPR_CALL@267..304
-        EXPR_IDENT@267..281
-          PATH@267..281
-            Ident@267..281 "string_println"
-        ARG_LIST@281..304
-          LParen@281..282 "("
-          ARG@282..302
-            EXPR_CALL@282..302
-              EXPR_BINARY@282..300
-                EXPR_IDENT@282..290
-                  PATH@282..290
-                    Ident@282..290 "fallback"
-                Dot@290..291 "."
-                EXPR_IDENT@291..300
-                  PATH@291..300
-                    Ident@291..300 "to_string"
-              ARG_LIST@300..302
-                LParen@300..301 "("
-                RParen@301..302 ")"
-          RParen@302..303 ")"
-          Whitespace@303..304 "\n"
-      RBrace@304..305 "}"
-      Whitespace@305..306 "\n"
+          PATTERN_VARIABLE@163..176
+            Ident@163..176 "rounded_valid"
+          Comma@176..177 ","
+          Whitespace@177..178 " "
+          PATTERN_VARIABLE@178..185
+            Ident@178..185 "rounded"
+          RParen@185..186 ")"
+          Whitespace@186..187 " "
+        Eq@187..188 "="
+        Whitespace@188..189 " "
+        EXPR_CALL@189..217
+          EXPR_IDENT@189..209
+            PATH@189..209
+              Ident@189..209 "string_parse_float32"
+          ARG_LIST@209..217
+            LParen@209..210 "("
+            ARG@210..216
+              EXPR_STR@210..216
+                Str@210..216 "\"3.14\""
+            RParen@216..217 ")"
+        Semi@217..218 ";"
+        Whitespace@218..223 "\n    "
+      STMT_EXPR@223..270
+        EXPR_CALL@223..264
+          EXPR_IDENT@223..237
+            PATH@223..237
+              Ident@223..237 "string_println"
+          ARG_LIST@237..264
+            LParen@237..238 "("
+            ARG@238..263
+              EXPR_CALL@238..263
+                EXPR_BINARY@238..261
+                  EXPR_IDENT@238..251
+                    PATH@238..251
+                      Ident@238..251 "rounded_valid"
+                  Dot@251..252 "."
+                  EXPR_IDENT@252..261
+                    PATH@252..261
+                      Ident@252..261 "to_string"
+                ARG_LIST@261..263
+                  LParen@261..262 "("
+                  RParen@262..263 ")"
+            RParen@263..264 ")"
+        Semi@264..265 ";"
+        Whitespace@265..270 "\n    "
+      STMT_EXPR@270..311
+        EXPR_CALL@270..305
+          EXPR_IDENT@270..284
+            PATH@270..284
+              Ident@270..284 "string_println"
+          ARG_LIST@284..305
+            LParen@284..285 "("
+            ARG@285..304
+              EXPR_CALL@285..304
+                EXPR_BINARY@285..302
+                  EXPR_IDENT@285..292
+                    PATH@285..292
+                      Ident@285..292 "rounded"
+                  Dot@292..293 "."
+                  EXPR_IDENT@293..302
+                    PATH@293..302
+                      Ident@293..302 "to_string"
+                ARG_LIST@302..304
+                  LParen@302..303 "("
+                  RParen@303..304 ")"
+            RParen@304..305 ")"
+        Semi@305..306 ";"
+        Whitespace@306..311 "\n    "
+      STMT_LET@311..379
+        LetKeyword@311..314 "let"
+        Whitespace@314..315 " "
+        PATTERN_TUPLE@315..335
+          LParen@315..316 "("
+          PATTERN_VARIABLE@316..323
+            Ident@316..323 "invalid"
+          Comma@323..324 ","
+          Whitespace@324..325 " "
+          PATTERN_VARIABLE@325..333
+            Ident@325..333 "fallback"
+          RParen@333..334 ")"
+          Whitespace@334..335 " "
+        Eq@335..336 "="
+        Whitespace@336..337 " "
+        EXPR_CALL@337..373
+          EXPR_IDENT@337..357
+            PATH@337..357
+              Ident@337..357 "string_parse_float64"
+          ARG_LIST@357..373
+            LParen@357..358 "("
+            ARG@358..372
+              EXPR_STR@358..372
+                Str@358..372 "\"not-a-number\""
+            RParen@372..373 ")"
+        Semi@373..374 ";"
+        Whitespace@374..379 "\n    "
+      STMT_EXPR@379..420
+        EXPR_CALL@379..414
+          EXPR_IDENT@379..393
+            PATH@379..393
+              Ident@379..393 "string_println"
+          ARG_LIST@393..414
+            LParen@393..394 "("
+            ARG@394..413
+              EXPR_CALL@394..413
+                EXPR_BINARY@394..411
+                  EXPR_IDENT@394..401
+                    PATH@394..401
+                      Ident@394..401 "invalid"
+                  Dot@401..402 "."
+                  EXPR_IDENT@402..411
+                    PATH@402..411
+                      Ident@402..411 "to_string"
+                ARG_LIST@411..413
+                  LParen@411..412 "("
+                  RParen@412..413 ")"
+            RParen@413..414 ")"
+        Semi@414..415 ";"
+        Whitespace@415..420 "\n    "
+      EXPR_CALL@420..457
+        EXPR_IDENT@420..434
+          PATH@420..434
+            Ident@420..434 "string_println"
+        ARG_LIST@434..457
+          LParen@434..435 "("
+          ARG@435..455
+            EXPR_CALL@435..455
+              EXPR_BINARY@435..453
+                EXPR_IDENT@435..443
+                  PATH@435..443
+                    Ident@435..443 "fallback"
+                Dot@443..444 "."
+                EXPR_IDENT@444..453
+                  PATH@444..453
+                    Ident@444..453 "to_string"
+              ARG_LIST@453..455
+                LParen@453..454 "("
+                RParen@454..455 ")"
+          RParen@455..456 ")"
+          Whitespace@456..457 "\n"
+      RBrace@457..458 "}"
+      Whitespace@458..459 "\n"

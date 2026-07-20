@@ -1,5 +1,5 @@
 fn main() -> unit {
-  join ret70() -> unit {
+  join ret75() -> unit {
     ()
   } in
   let mtmp61 = @runtime(core.string_parse_float64)("3.125") in
@@ -7,34 +7,43 @@ fn main() -> unit {
   let x63 = mtmp61.1 in
   let value/1 = x63 in
   let valid/0 = x62 in
-  let t71 = trait_impl#ToString#bool#to_string(valid/0) in
-  let _wild64 = @runtime(core.string_println)(t71) in
-  let t72 = trait_impl#ToString#float64#to_string(value/1) in
-  let _wild65 = @runtime(core.string_println)(t72) in
-  let mtmp66 = @runtime(core.string_parse_float64)("not-a-number") in
+  let t76 = trait_impl#ToString#bool#to_string(valid/0) in
+  let _wild64 = @runtime(core.string_println)(t76) in
+  let t77 = trait_impl#ToString#float64#to_string(value/1) in
+  let _wild65 = @runtime(core.string_println)(t77) in
+  let mtmp66 = @runtime(core.string_parse_float32)("3.14") in
   let x67 = mtmp66.0 in
   let x68 = mtmp66.1 in
-  let fallback/3 = x68 in
-  let invalid/2 = x67 in
-  let t73 = trait_impl#ToString#bool#to_string(invalid/2) in
-  let _wild69 = @runtime(core.string_println)(t73) in
-  let t74 = trait_impl#ToString#float64#to_string(fallback/3) in
-  let t75 = @runtime(core.string_println)(t74) in
-  jump ret70()
+  let rounded/3 = x68 in
+  let rounded_valid/2 = x67 in
+  let t78 = trait_impl#ToString#bool#to_string(rounded_valid/2) in
+  let _wild69 = @runtime(core.string_println)(t78) in
+  let t79 = trait_impl#ToString#float64#to_string(rounded/3) in
+  let _wild70 = @runtime(core.string_println)(t79) in
+  let mtmp71 = @runtime(core.string_parse_float64)("not-a-number") in
+  let x72 = mtmp71.0 in
+  let x73 = mtmp71.1 in
+  let fallback/5 = x73 in
+  let invalid/4 = x72 in
+  let t80 = trait_impl#ToString#bool#to_string(invalid/4) in
+  let _wild74 = @runtime(core.string_println)(t80) in
+  let t81 = trait_impl#ToString#float64#to_string(fallback/5) in
+  let t82 = @runtime(core.string_println)(t81) in
+  jump ret75()
 }
 
 fn trait_impl#ToString#bool#to_string(self/36: bool) -> string {
-  join ret76(retv77: string) -> string {
-    retv77
+  join ret83(retv84: string) -> string {
+    retv84
   } in
-  let t78 = @runtime(core.bool_to_string)(self/36) in
-  jump ret76(t78)
+  let t85 = @runtime(core.bool_to_string)(self/36) in
+  jump ret83(t85)
 }
 
 fn trait_impl#ToString#float64#to_string(self/48: float64) -> string {
-  join ret79(retv80: string) -> string {
-    retv80
+  join ret86(retv87: string) -> string {
+    retv87
   } in
-  let t81 = @runtime(core.float64_to_string)(self/48) in
-  jump ret79(t81)
+  let t88 = @runtime(core.float64_to_string)(self/48) in
+  jump ret86(t88)
 }
