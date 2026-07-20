@@ -219,6 +219,25 @@ fn lowers_flat_struct_bindings_in_field_order() -> unit {
 }
 
 #[test]
+fn links_builtin_core_before_user_core() -> unit {
+    let counter = Ref::new(0);
+    let builtins = lower_builtins(counter);
+    testing::assert(builtins.functions.len() > 20);
+    testing::assert_eq(builtins.functions.get(0).name, "print");
+    let user = lower_with_counter(
+        tast::check_for_link(hir::lower(
+            ast::lower(parser::parse("fn main() -> unit { print(true) }")),
+            "main.gom",
+        )),
+        counter,
+    );
+    let linked = link_with_builtins(builtins, user);
+    testing::assert(linked.functions.get(0).root == false);
+    testing::assert_eq(linked.functions.get(linked.functions.len() - 1).name, "main");
+    testing::assert(counter.get() > 50)
+}
+
+#[test]
 fn lowers_nested_tuple_and_enum_pattern_matrices() -> unit {
     let source = "enum Key { A, B(int32) } fn equal_pair(left: Key, right: Key) -> bool { match (left, right) { (Key::A, Key::A) => true, (Key::B(x), Key::B(y)) => x == y, _ => false, } }";
     testing::assert_eq(
