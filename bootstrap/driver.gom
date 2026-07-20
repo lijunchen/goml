@@ -67,7 +67,7 @@ fn print_dump(printed: Ref[bool], label: string, content: string) -> unit {
 fn print_dumps(compilation: Compilation, args: RunArgs, go_source: string) -> unit {
     let printed = Ref::new(false);
     if args.dump_ast {
-        print_dump(printed, "AST", ast::encode(compilation.ast_value))
+        print_dump(printed, "AST", ast::pretty(compilation.ast_value))
     } else {
         ()
     };
