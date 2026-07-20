@@ -169,6 +169,21 @@ fn emits_closures_inside_enum_payloads() -> unit {
 }
 
 #[test]
+fn contextualizes_closures_in_generic_struct_fields() -> unit {
+    let source = "struct Wrapper[T] { value: T, transform: (T) -> string, } fn show_wrapper[T](wrapper: Wrapper[T]) -> string { wrapper.transform(wrapper.value) } fn main() -> unit { let wrapper = if true { Wrapper { value: 42, transform: |value: int32| value.to_string() } } else { Wrapper { value: 0, transform: |value: int32| \"zero\" } }; println(show_wrapper(wrapper)); }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(
+        output,
+        "transform: func(p0 int32) string {",
+    ));
+    testing::assert(string_contains(
+        output,
+        "func _goml_m_inherent_i_closure__env__main__0_i_closure__env__main__0_i_apply(",
+    ));
+    testing::assert(!string_contains(output, "transform: t"))
+}
+
+#[test]
 fn protects_user_types_from_ref_runtime_names() -> unit {
     let source = "struct ref_int32_x { value: int32, } fn main() -> unit { let c = ref_int32_x { value: 2i32 }; let r = Ref::new(3i32); println(c.value + r.get()); }";
     testing::assert_eq(
