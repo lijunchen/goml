@@ -102,6 +102,40 @@ fn contains_runtime_hook(values: Vec[string], expected: string) -> bool {
     found.get()
 }
 
+fn unit_to_string_hook_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("x", Type::Unit));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Return(Option::Some(Expr::String("()"))));
+    Item::Function(Function {
+        name: runtime_hook_name("core.unit_to_string"),
+        params,
+        ret_ty: Option::Some(Type::String),
+        body: Block { stmts },
+    })
+}
+
+fn bool_to_string_hook_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("x", Type::Bool));
+    let then_stmts: Vec[Stmt] = Vec::new();
+    then_stmts.push(Stmt::Return(Option::Some(Expr::String("true"))));
+    let else_stmts: Vec[Stmt] = Vec::new();
+    else_stmts.push(Stmt::Return(Option::Some(Expr::String("false"))));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::If(
+        Expr::Var("x"),
+        Block { stmts: then_stmts },
+        Option::Some(Block { stmts: else_stmts }),
+    ));
+    Item::Function(Function {
+        name: runtime_hook_name("core.bool_to_string"),
+        params,
+        ret_ty: Option::Some(Type::String),
+        body: Block { stmts },
+    })
+}
+
 fn integer_to_string_hook_type(key: string) -> Option[Type] {
     if key == "core.int8_to_string" {
         Option::Some(Type::Int8)
@@ -314,6 +348,8 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string]) -> unit {
         ()
     };
     let ordered: Vec[string] = Vec::new();
+    ordered.push("core.unit_to_string");
+    ordered.push("core.bool_to_string");
     ordered.push("core.string_from_utf8");
     ordered.push("core.string_concat");
     ordered.push("core.int8_to_string");
@@ -333,7 +369,11 @@ pub fn emit_runtime_hook_items(items: Vec[Item], hooks: Vec[string]) -> unit {
             match integer_to_string_hook_type(key) {
                 Option::Some(ty) => items.push(integer_to_string_hook_item(key, ty)),
                 Option::None => {
-                    if key == "core.string_from_utf8" {
+                    if key == "core.unit_to_string" {
+                        items.push(unit_to_string_hook_item())
+                    } else if key == "core.bool_to_string" {
+                        items.push(bool_to_string_hook_item())
+                    } else if key == "core.string_from_utf8" {
                         items.push(string_from_utf8_hook_item())
                     } else if key == "core.string_concat" {
                         items.push(string_concat_hook_item())
