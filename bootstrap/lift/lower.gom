@@ -6,6 +6,13 @@ pub fn lower(value: core::File) -> core::File {
     lambda_lift(value)
 }
 
+pub fn lower_with_counter(
+    value: core::File,
+    counter: Ref[int32],
+) -> core::File {
+    lambda_lift_with_counter(value, counter)
+}
+
 pub fn encode(value: core::File) -> string {
     core::encode_lift(value)
 }

@@ -58,12 +58,12 @@ fn lower_function(state: State, value: core::Function) -> Function {
     }
 }
 
-pub fn lower(value: core::File) -> File {
+pub fn lower_with_counter(value: core::File, counter: Ref[int32]) -> File {
     let enums = value.enums;
     let structs = value.structs;
     let type_instances = value.type_instances;
     let state = State {
-        counter: Ref::new(initial_counter(value)),
+        counter,
         loop_ctx: Ref::new(Option::None),
         return_ctx: Ref::new(Option::None),
     };
@@ -72,4 +72,9 @@ pub fn lower(value: core::File) -> File {
         functions.push(lower_function(state, function))
     };
     File { functions, enums, structs, type_instances }
+}
+
+pub fn lower(value: core::File) -> File {
+    let counter = Ref::new(initial_counter(value));
+    lower_with_counter(value, counter)
 }

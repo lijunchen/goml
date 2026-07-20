@@ -43,8 +43,8 @@ fn compile_source(source_path: string, source: string) -> Compilation {
         ),
     );
     let mono_value = mono::lower(core_value);
-    let lift_value = lift::lower(mono_value);
-    let anf_value = anf::lower(lift_value);
+    let lift_value = lift::lower_with_counter(mono_value, counter);
+    let anf_value = anf::lower_with_counter(lift_value, counter);
     let go_value = go_backend::lower(anf_value);
     Compilation {
         ast_value,
