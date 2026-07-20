@@ -211,6 +211,24 @@ fn emits_pointer_equality_helpers() -> unit {
 }
 
 #[test]
+fn emits_missing_runtime_helpers() -> unit {
+    let source = "enum Never {} fn missing_int(value: Never) -> int32 { match value {} } fn missing_string(value: Never) -> string { match value {} }";
+    let output = encode(lower_source(source));
+    testing::assert(string_contains(
+        output,
+        "func _goml_intrinsic_missing(s string) struct{} {\n    println(\"missing: \" + s)\n    panic(\"\")\n    return struct{}{}\n}",
+    ));
+    testing::assert(string_contains(
+        output,
+        "func missing__int32(s string) int32 {\n    _goml_intrinsic_missing(s)\n    var ret int32\n    return ret\n}",
+    ));
+    testing::assert(string_contains(
+        output,
+        "func missing__string(s string) string {\n    _goml_intrinsic_missing(s)\n    var ret string\n    return ret\n}",
+    ))
+}
+
+#[test]
 fn emits_hidden_ref_intrinsic_helpers() -> unit {
     let source = "fn ref(x: int32) -> Ref[int32] { println(\"user ref \" + x.to_string()); Ref::new(x + 10) } fn ref_get(r: Ref[int32]) -> int32 { println(\"user get\"); 100 } fn ref_set(r: Ref[int32], x: int32) -> unit { println(\"user set \" + x.to_string()); } fn main() -> unit { let mut x = 0; let inc = || { x = x + 1; x }; println(inc().to_string()); println(x.to_string()); }";
     testing::assert_eq(
