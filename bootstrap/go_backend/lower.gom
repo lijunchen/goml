@@ -2632,7 +2632,12 @@ fn collect_type_definition_fields(
     for definition in structs {
         if definition.generics.len() == 0 {
             for field in definition.fields {
-                collect_type(result, field.1)
+                collect_type(result, instantiate_type(
+                    field.1,
+                    definition.generics,
+                    Vec::new(),
+                    instances,
+                ))
             }
         } else {
             ()
@@ -2642,7 +2647,12 @@ fn collect_type_definition_fields(
         if definition.generics.len() == 0 {
             for variant in definition.variants {
                 for field in variant.fields {
-                    collect_type(result, field)
+                    collect_type(result, instantiate_type(
+                        field,
+                        definition.generics,
+                        Vec::new(),
+                        instances,
+                    ))
                 }
             }
         } else {
