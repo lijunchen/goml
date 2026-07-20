@@ -262,6 +262,16 @@ fn emits_structs_before_generic_enums() -> unit {
 }
 
 #[test]
+fn preserves_enums_before_field_instances() -> unit {
+    let output = encode(lower_source(
+        "enum Expr { Num(int32), Add(Option[Expr]), }",
+    ));
+    let prefix = "package main\n\ntype Expr interface {\n    isExpr()\n}";
+    testing::assert_eq(output.byte_slice(0, prefix.byte_len()), prefix);
+    testing::assert(string_contains(output, "type Option__Expr interface"))
+}
+
+#[test]
 fn protects_dyn_object_names_from_vtable_collisions() -> unit {
     let source = "trait A { fn f(Self) -> int32; } trait A_vtable { fn g(Self) -> int32; } struct S {} impl A for S { fn f(self: S) -> int32 { 3i32 } } impl A_vtable for S { fn g(self: S) -> int32 { 4i32 } } fn main() -> unit { let left: dyn A = S {}; let right: dyn A_vtable = S {}; println(A::f(left) + A_vtable::g(right)); }";
     testing::assert_eq(
