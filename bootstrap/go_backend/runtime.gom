@@ -302,7 +302,10 @@ pub fn emit_runtime_hook_items(
     intrinsics: Vec[string],
 ) -> unit {
     let uses_fmt = Ref::new(false);
+    let uses_io = Ref::new(false);
     let uses_math = Ref::new(false);
+    let uses_os = Ref::new(false);
+    let uses_filepath = Ref::new(false);
     let uses_reflect = Ref::new(false);
     let uses_slices = Ref::new(false);
     let uses_strconv = Ref::new(false);
@@ -333,6 +336,24 @@ pub fn emit_runtime_hook_items(
                     || hook == "core.string_byte_slice"
                 {
                     uses_utf8.set(true)
+                } else if hook == "std.io.print" || hook == "std.io.println" {
+                    uses_fmt.set(true)
+                } else if hook == "std.io.eprint" {
+                    uses_fmt.set(true);
+                    uses_os.set(true)
+                } else if hook == "std.io.read_stdin" {
+                    uses_io.set(true);
+                    uses_os.set(true)
+                } else if hook == "std.io.write_stdout"
+                    || hook == "std.io.write_stderr"
+                    || (hook.byte_len() >= 8 && hook.byte_slice(0, 8) == "std.env.")
+                    || (hook.byte_len() >= 7
+                        && hook.byte_slice(0, 7) == "std.fs."
+                        && hook != "std.fs.canonicalize")
+                {
+                    uses_os.set(true)
+                } else if hook == "std.fs.canonicalize" {
+                    uses_filepath.set(true)
                 } else {
                     ()
                 }
@@ -350,6 +371,9 @@ pub fn emit_runtime_hook_items(
     };
     if uses_fmt.get()
         || uses_math.get()
+        || uses_io.get()
+        || uses_os.get()
+        || uses_filepath.get()
         || uses_reflect.get()
         || uses_slices.get()
         || uses_strconv.get()
@@ -362,8 +386,23 @@ pub fn emit_runtime_hook_items(
         } else {
             ()
         };
+        if uses_io.get() {
+            imports.push(("_goml_io", "io"))
+        } else {
+            ()
+        };
         if uses_math.get() {
             imports.push(("_goml_math", "math"))
+        } else {
+            ()
+        };
+        if uses_os.get() {
+            imports.push(("_goml_os", "os"))
+        } else {
+            ()
+        };
+        if uses_filepath.get() {
+            imports.push(("_goml_filepath", "path/filepath"))
         } else {
             ()
         };
@@ -436,6 +475,26 @@ pub fn emit_runtime_hook_items(
     ordered.push("core.string_hash");
     ordered.push("core.string_print");
     ordered.push("core.string_println");
+    ordered.push("std.env.args");
+    ordered.push("std.env.current_dir");
+    ordered.push("std.env.current_exe");
+    ordered.push("std.env.var");
+    ordered.push("std.fs.read_file");
+    ordered.push("std.fs.write_file");
+    ordered.push("std.fs.read_bytes");
+    ordered.push("std.fs.write_bytes");
+    ordered.push("std.fs.create_dir_all");
+    ordered.push("std.fs.file_exists");
+    ordered.push("std.fs.is_file");
+    ordered.push("std.fs.is_dir");
+    ordered.push("std.fs.canonicalize");
+    ordered.push("std.fs.read_dir");
+    ordered.push("std.io.print");
+    ordered.push("std.io.println");
+    ordered.push("std.io.eprint");
+    ordered.push("std.io.read_stdin");
+    ordered.push("std.io.write_stdout");
+    ordered.push("std.io.write_stderr");
     for key in ordered {
         let needed = if key == "internal.string_decode_utf8_at_native" {
             contains_runtime_hook(hooks, "core.string_get")
@@ -471,7 +530,10 @@ pub fn emit_runtime_hook_items(
                     } else {
                         match extra_core_runtime_hook_item(key) {
                             Option::Some(item) => items.push(item),
-                            Option::None => (),
+                            Option::None => match standard_runtime_hook_item(key) {
+                                Option::Some(item) => items.push(item),
+                                Option::None => (),
+                            },
                         }
                     }
                 },
