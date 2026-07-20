@@ -353,6 +353,15 @@ fn protects_go_init_from_user_functions() -> unit {
 }
 
 #[test]
+fn protects_entry_wrapper_from_user_main0() -> unit {
+    let source = "fn main0() -> unit { println(\"user\") } fn main() -> unit { main0() }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "package main\n\nfunc main0() struct{} {\n    _goml_m_println(\"user\")\n    return struct{}{}\n}\n\nfunc main0__1() struct{} {\n    main0()\n    return struct{}{}\n}\n\nfunc main() {\n    main0__1()\n}\n",
+    )
+}
+
+#[test]
 fn emits_while_conditions_with_try_matches() -> unit {
     let source = "fn step(i: int32) -> Option[bool] { match i { 0i32 => Option::Some(true), 1i32 => Option::Some(true), 2i32 => Option::Some(false), _ => Option::None, } } fn main() -> Option[unit] { let i = Ref::new(0i32); while match step(i.get())? { true => { i.set(i.get() + 1i32); true }, false => false, } { () }; Option::Some(()) }";
     testing::assert_eq(
