@@ -3,6 +3,19 @@ package core;
 pub fn builtin_source() -> string {
     let source = \\package builtin;
         \\
+        \\trait Iterator {
+        \\    type Item;
+        \\
+        \\    fn next(Self) -> Option[Self::Item];
+        \\}
+        \\
+        \\trait IntoIterator {
+        \\    type Item;
+        \\    type IntoIter: Iterator;
+        \\
+        \\    fn into_iter(Self) -> Self::IntoIter;
+        \\}
+        \\
         \\struct FnIterator[T] {
         \\    next_fn: () -> Option[T],
         \\}

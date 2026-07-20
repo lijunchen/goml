@@ -1363,15 +1363,19 @@ fn resolve_static_member(
         Option::None => {
             let owner_ty = nominal_type(owner, explicit);
             match resolve_user_method(ctx, owner_ty, member, Option::None, true) {
-                Option::Some(value) => Option::Some(ResolvedCallable {
-                    callable: match value.callable {
-                        Callable::InherentMethod(_, name) => {
-                            Callable::InherentMethod(owner_ty, name)
+                Option::Some(value) => if owner == "FnIterator" {
+                    Option::Some(ResolvedCallable {
+                        callable: match value.callable {
+                            Callable::InherentMethod(_, name) => {
+                                Callable::InherentMethod(owner_ty, name)
+                            },
+                            other => other,
                         },
-                        other => other,
-                    },
-                    ty: value.ty,
-                }),
+                        ty: value.ty,
+                    })
+                } else {
+                    Option::Some(value)
+                },
                 Option::None => resolve_builtin_static(ctx, owner_ty, member),
             }
         },
