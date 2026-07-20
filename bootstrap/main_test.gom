@@ -1,6 +1,7 @@
 package main;
 
 use gomlang::parser::ast;
+use gomlang::parser::core;
 use gomlang::parser::parser;
 use std::testing;
 
@@ -29,6 +30,39 @@ fn assert_parse_error(values: Vec[string], expected: string) -> unit {
         Result::Ok(_) => testing::fail("expected argument error"),
         Result::Err(error) => testing::assert_eq(error, expected),
     }
+}
+
+fn core_function_index(value: core::File, expected: string) -> int32 {
+    let result = Ref::new(-1);
+    for index in range(0, value.functions.len()) {
+        if value.functions.get(index).name == expected {
+            result.set(index)
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+#[test]
+fn links_imported_standard_package_closure() -> unit {
+    let source = "use std::fs; use std::io; fn main() -> unit { let _ = fs::write_file(\"out.txt\", \"ok\"); io::println(\"done\") }";
+    let compilation = compile_source("main.gom", source);
+    let bytes = core_function_index(
+        compilation.core_value,
+        "inherent#std::bytes::Bytes#std::bytes::Bytes#from_string",
+    );
+    let fs = core_function_index(compilation.core_value, "std::fs::read_file");
+    let io = core_function_index(compilation.core_value, "std::io::println");
+    let main = core_function_index(compilation.core_value, "main");
+    testing::assert(bytes >= 0);
+    testing::assert(bytes < fs);
+    testing::assert(fs < io);
+    testing::assert(io < main);
+    testing::assert_eq(
+        core_function_index(compilation.core_value, "std::env::args"),
+        -1,
+    )
 }
 
 #[test]
