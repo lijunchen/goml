@@ -757,8 +757,12 @@ fn rounds_float32_literals() -> unit {
     let file = checked_file("fn inferred() -> float32 { 3.14 } fn explicit() -> float32 { 3.14f32 }");
     match file.items.get(0) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Prim(Primitive::Float(literal), Type::Float32)) => {
-                testing::assert_eq(literal, "3.140000104904175")
+            Option::Some(Expr::Prim(Primitive::Float(literal), ty)) => {
+                testing::assert_eq(literal, "3.140000104904175");
+                match resolve_type(ty) {
+                    Type::Float32 => (),
+                    _ => testing::fail("expected inferred float32 literal type"),
+                }
             },
             _ => testing::fail("expected rounded inferred float32 literal"),
         },
