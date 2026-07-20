@@ -199,45 +199,6 @@ fn instantiate_type(
     }
 }
 
-fn collect_con_names(result: Vec[string], value: tast::Type) -> unit {
-    match tast::resolve_type(value) {
-        tast::Type::Con(name) => {
-            if contains_text(result, name) == false {
-                result.push(name)
-            } else {
-                ()
-            }
-        },
-        tast::Type::Tuple(values) => {
-            for value in values {
-                collect_con_names(result, value)
-            }
-        },
-        tast::Type::Projection(base, _, _) => collect_con_names(result, base),
-        tast::Type::App(base, args) => {
-            collect_con_names(result, base);
-            for value in args {
-                collect_con_names(result, value)
-            }
-        },
-        tast::Type::Array(_, elem)
-        | tast::Type::Slice(elem)
-        | tast::Type::VecType(elem)
-        | tast::Type::RefType(elem) => collect_con_names(result, elem),
-        tast::Type::HashMap(key, value) => {
-            collect_con_names(result, key);
-            collect_con_names(result, value)
-        },
-        tast::Type::Func(params, ret_ty) => {
-            for value in params {
-                collect_con_names(result, value)
-            };
-            collect_con_names(result, ret_ty)
-        },
-        _ => (),
-    }
-}
-
 fn instance_by_name(
     values: Vec[core::TypeInstance],
     name: string,
@@ -481,27 +442,6 @@ fn emit_enum_instance(
                         instance.args,
                         instances,
                     ))
-                };
-                for fields in fields_by_variant {
-                    for field in fields {
-                        let dependencies: Vec[string] = Vec::new();
-                        collect_con_names(dependencies, field);
-                        for dependency in dependencies {
-                            match instance_by_name(instances, dependency) {
-                                Option::Some(value) => emit_enum_instance(
-                                    items,
-                                    emitted,
-                                    variants,
-                                    enums,
-                                    structs,
-                                    instances,
-                                    function_names,
-                                    value,
-                                ),
-                                Option::None => (),
-                            }
-                        }
-                    }
                 };
                 let owner_go_name = go_user_type_name(instance.name);
                 if tag_only_variant_fields(fields_by_variant) {
