@@ -801,14 +801,19 @@ fn trait_bound_satisfied_at(
                 );
                 let owner = substitute_type(impl_info.for_type, substitutions);
                 let application = substitute_trait_ref(impl_info.trait_ref, substitutions);
-                if unify(owner, bound_ty) && unify_types(application.args, reference.args) {
-                    let predicates = expand_implied_predicates(
-                        ctx,
-                        substitute_predicates(impl_info.predicates, substitutions),
-                    );
-                    apply_predicate_equalities(predicates);
-                    if predicates_satisfied_at(ctx, predicates, depth + 1) {
-                        found.set(true)
+                if unify(owner, bound_ty) {
+                    let application = normalize_trait_ref(ctx, application);
+                    if unify_types(application.args, reference.args) {
+                        let predicates = expand_implied_predicates(
+                            ctx,
+                            substitute_predicates(impl_info.predicates, substitutions),
+                        );
+                        apply_predicate_equalities(predicates);
+                        if predicates_satisfied_at(ctx, predicates, depth + 1) {
+                            found.set(true)
+                        } else {
+                            ()
+                        }
                     } else {
                         ()
                     }

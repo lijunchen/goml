@@ -2034,6 +2034,45 @@ fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
     }
 }
 
+fn hir_expr_always_returns(value: hir::Expr) -> bool {
+    match value {
+        hir::Expr::Return(_) => true,
+        hir::Expr::Block(block) => hir_block_always_returns(block),
+        hir::Expr::If(_, then_branch, else_branch) => {
+            hir_expr_always_returns(then_branch)
+                && hir_expr_always_returns(else_branch)
+        },
+        _ => false,
+    }
+}
+
+fn hir_stmt_always_returns(value: hir::Stmt) -> bool {
+    match value {
+        hir::Stmt::Expr(expr) => hir_expr_always_returns(expr),
+        _ => false,
+    }
+}
+
+fn hir_block_always_returns(value: hir::Block) -> bool {
+    let result = Ref::new(false);
+    for stmt in value.stmts {
+        if hir_stmt_always_returns(stmt) {
+            result.set(true)
+        } else {
+            ()
+        }
+    };
+    match value.tail {
+        Option::Some(expr) => if hir_expr_always_returns(expr) {
+            result.set(true)
+        } else {
+            ()
+        },
+        Option::None => (),
+    };
+    result.get()
+}
+
 fn check_block(
     ctx: Checker,
     value: hir::Block,
@@ -2046,9 +2085,13 @@ fn check_block(
     let tail = match value.tail {
         Option::Some(expr) => Option::Some(check_expr(ctx, expr, expected)),
         Option::None => {
-            match expected {
-                Option::Some(ty) => expect_type(ctx, Type::Unit, ty),
-                Option::None => (),
+            if !hir_block_always_returns(value) {
+                match expected {
+                    Option::Some(ty) => expect_type(ctx, Type::Unit, ty),
+                    Option::None => (),
+                }
+            } else {
+                ()
             };
             Option::None
         },

@@ -264,6 +264,16 @@ fn rejects_mismatched_let_annotations() -> unit {
 }
 
 #[test]
+fn accepts_blocks_terminated_by_return() -> unit {
+    let source = "fn direct() -> int32 { return 1; } fn branch(flag: bool) -> int32 { if flag { return 1; } else { return 2; }; }";
+    let result = check(hir::lower(
+        ast::lower(parser::parse(source)),
+        "main.gom",
+    ));
+    testing::assert_eq(result.diagnostics.len(), 0)
+}
+
+#[test]
 fn resolves_enum_constructors_from_package_interfaces() -> unit {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(dependency_hir(
@@ -1137,6 +1147,16 @@ fn preserves_associated_into_iterator_item_projection() -> unit {
 }
 
 #[test]
+fn accepts_builtin_into_iterator_predicates() -> unit {
+    let source = "fn sum[S: IntoIterator](source: S) -> int32 where S::Item == int32 { let total = Ref::new(0); for value in source { total.set(total.get() + value); }; total.get() } fn use_values(values: Vec[int32], slice: Slice[int32]) -> unit { let _ = sum(values); let _ = sum(slice); }";
+    let result = check(hir::lower(
+        ast::lower(parser::parse(source)),
+        "main.gom",
+    ));
+    testing::assert_eq(result.diagnostics.len(), 0)
+}
+
+#[test]
 fn resolves_projected_trait_impls() -> unit {
     let source = "trait Source { type Item; fn get(Self) -> Self::Item; } trait Pick[T] { fn pick(Self) -> T; } impl[S: Source] Pick[S::Item] for S { fn pick(self: S) -> S::Item { Source::get(self) } } struct Value { value: int32 } impl Source for Value { type Item = int32; fn get(self: Value) -> int32 { self.value } } fn main() -> int32 { (Value { value: 41 }).pick() }";
     let file = checked_file(source);
@@ -1161,6 +1181,16 @@ fn resolves_projected_trait_impls() -> unit {
         },
         _ => testing::fail("expected main function"),
     }
+}
+
+#[test]
+fn accepts_projected_trait_predicates() -> unit {
+    let source = "trait Source { type Item; fn get(Self) -> Self::Item; } trait Pick[T] { fn pick(Self) -> T; } impl[S: Source] Pick[S::Item] for S { fn pick(self: S) -> S::Item { Source::get(self) } } struct Value { value: int32 } impl Source for Value { type Item = int32; fn get(self: Value) -> int32 { self.value } } fn copy[S: Source + Pick[S::Item]](source: S) -> S::Item { Pick[S::Item]::pick(source) } fn main() -> int32 { copy(Value { value: 42 }) }";
+    let result = check(hir::lower(
+        ast::lower(parser::parse(source)),
+        "main.gom",
+    ));
+    testing::assert_eq(result.diagnostics.len(), 0)
 }
 
 #[test]
