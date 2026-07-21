@@ -110,6 +110,26 @@ fn parser_diagnostics_prevent_ast_creation() -> unit {
 }
 
 #[test]
+fn preserves_inconsistent_and_duplicate_pattern_bindings() -> unit {
+    let inconsistent = lower(parser::parse(
+        "enum Flag { On, Off } fn main() -> unit { let value = Flag::On; let _ = match value { whole @ Flag::On | Flag::Off => () }; }",
+    ));
+    testing::assert_eq(inconsistent.diagnostics.len(), 0);
+    match inconsistent.ast {
+        Option::Some(_) => (),
+        Option::None => testing::fail("expected inconsistent pattern AST"),
+    };
+    let duplicate = lower(parser::parse(
+        "fn main() -> unit { let (value, value) = (1, 2); }",
+    ));
+    testing::assert_eq(duplicate.diagnostics.len(), 0);
+    match duplicate.ast {
+        Option::Some(_) => (),
+        Option::None => testing::fail("expected duplicate pattern AST"),
+    }
+}
+
+#[test]
 fn pretty_prints_run_single_ast_dump() -> unit {
     let source = "fn main() { let _ = (); let a = (true, false, (true, false)); let b = match a { (x, y, (z, w)) => w }; let _ = print(b); () }";
     let expected = "package main;\n"

@@ -47,6 +47,49 @@ fn lowered_package_file(source: string, package_name: string) -> File {
 }
 
 #[test]
+fn reports_pattern_binding_errors_during_resolution() -> unit {
+    let duplicate = lower(
+        ast::lower(parser::parse(
+            "fn main() -> unit { let (value, value) = (1, 2); }",
+        )),
+        "main.gom",
+    );
+    testing::assert_eq(duplicate.diagnostics.len(), 1);
+    testing::assert_eq(
+        duplicate.diagnostics.get(0),
+        "Variable value is bound more than once in the same pattern",
+    );
+    match duplicate.hir {
+        Option::Some(_) => (),
+        Option::None => testing::fail("expected duplicate pattern HIR"),
+    };
+    let inconsistent = lower(
+        ast::lower(parser::parse(
+            "enum Maybe { None, Some(int32) } fn main() -> unit { let value = Maybe::Some(1); let _ = match value { Maybe::Some(inner) | Maybe::None => inner, _ => 0 }; }",
+        )),
+        "main.gom",
+    );
+    testing::assert_eq(inconsistent.diagnostics.len(), 1);
+    testing::assert_eq(
+        inconsistent.diagnostics.get(0),
+        "Or-pattern alternatives must bind the same variables: missing inner",
+    );
+    match inconsistent.hir {
+        Option::Some(_) => (),
+        Option::None => testing::fail("expected inconsistent pattern HIR"),
+    }
+}
+
+#[test]
+fn indents_multiline_calls_like_rust() -> unit {
+    let source = "struct Box { value: int32 } fn make(value: Box) -> Box { value } fn main() -> unit { let values = Vec::new().pushed(make(Box { value: 1 })).pushed(make(Box { value: 2 })); }";
+    testing::assert_eq(
+        encode(lower(ast::lower(parser::parse(source)), "main.gom")),
+        "package main\nfile main.gom\n  struct Box {\n        value: int32,\n    }\n    \n    fn make(local/1/0: Box) -> Box {\n        value/0\n    }\n    \n    fn main() -> unit {\n        let local/1/1 = Vec::new().pushed(def/1/1(Box {\n                  value: 1\n              })).pushed(def/1/1(Box {\n                value: 2\n            }));\n    }",
+    )
+}
+
+#[test]
 fn qualifies_package_items_types_and_import_aliases() -> unit {
     let source = "package sample; use std::io as output; struct Value { field: int32 } fn emit(value: Value) -> Value { output::println(\"ok\"); Value { field: value.field } }";
     let file = lowered_package_file(source, "std::sample");
@@ -230,4 +273,30 @@ fn resolves_cross_file_constructor_patterns() -> unit {
         },
         Option::None => testing::fail("expected cross-file HIR"),
     }
+}
+
+#[test]
+fn rejects_invalid_derives() -> unit {
+    let unsupported = lower(
+        ast::lower(parser::parse(
+            "#[derive(ToJson)] struct User { name: string }",
+        )),
+        "main.gom",
+    );
+    testing::assert_eq(unsupported.diagnostics.len(), 1);
+    testing::assert_eq(
+        unsupported.diagnostics.get(0),
+        "unsupported derive target `ToJson`",
+    );
+    let generic = lower(
+        ast::lower(parser::parse(
+            "#[derive(ToString)] struct Box[T] { value: T }",
+        )),
+        "main.gom",
+    );
+    testing::assert_eq(generic.diagnostics.len(), 1);
+    testing::assert_eq(
+        generic.diagnostics.get(0),
+        "`#[derive(ToString)]` is not supported for generic struct `Box`",
+    )
 }

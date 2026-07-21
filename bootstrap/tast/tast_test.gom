@@ -22,6 +22,25 @@ fn checked_file(source: string) -> File {
     }
 }
 
+fn checked_diagnostics(source: string) -> Vec[string] {
+    check(hir::lower(
+        ast::lower(parser::parse(source)),
+        "main.gom",
+    )).diagnostics
+}
+
+fn has_diagnostic(values: Vec[string], expected: string) -> bool {
+    let found = Ref::new(false);
+    for value in values {
+        if value == expected {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
 fn dependency_hir(source: string, package_name: string) -> hir::File {
     let result = hir::lower_package(
         ast::lower(parser::parse(source)),
@@ -261,6 +280,315 @@ fn rejects_mismatched_let_annotations() -> unit {
     ));
     testing::assert_eq(result.diagnostics.len(), 1);
     testing::assert_eq(result.diagnostics.get(0), "type mismatch")
+}
+
+#[test]
+fn rejects_float_remainder_operands() -> unit {
+    let result = check(hir::lower(
+        ast::lower(parser::parse(
+            "fn main() -> unit { let _ = 5.0 % 2.0; }",
+        )),
+        "main.gom",
+    ));
+    testing::assert_eq(result.diagnostics.len(), 1);
+    testing::assert_eq(result.diagnostics.get(0), "integer operand required")
+}
+
+#[test]
+fn rejects_missing_dyn_impls_and_noncomparable_equality() -> unit {
+    let dyn_result = check(hir::lower(
+        ast::lower(parser::parse(
+            "trait Display { fn display(Self) -> string; } fn convert(value: int32) -> dyn Display { value }",
+        )),
+        "main.gom",
+    ));
+    testing::assert_eq(dyn_result.diagnostics.len(), 1);
+    testing::assert_eq(
+        dyn_result.diagnostics.get(0),
+        "type does not implement trait Display",
+    );
+    let equality_result = check(hir::lower(
+        ast::lower(parser::parse(
+            "fn main() -> unit { let left: Vec[int32] = Vec::new(); let right: Vec[int32] = Vec::new(); let _ = left == right; }",
+        )),
+        "main.gom",
+    ));
+    testing::assert_eq(equality_result.diagnostics.len(), 1);
+    testing::assert_eq(
+        equality_result.diagnostics.get(0),
+        "equality operand is not comparable",
+    )
+}
+
+#[test]
+fn rejects_non_function_go_operands() -> unit {
+    let result = check(hir::lower(
+        ast::lower(parser::parse(
+            "fn main() -> unit { while true { go break; } }",
+        )),
+        "main.gom",
+    ));
+    testing::assert_eq(result.diagnostics.len(), 1);
+    testing::assert_eq(result.diagnostics.get(0), "type mismatch")
+}
+
+#[test]
+fn rejects_invalid_signature_names_and_integer_literals() -> unit {
+    let unknown_trait = check(hir::lower(
+        ast::lower(parser::parse(
+            "fn use_value[T: Missing](value: T) -> unit { () }",
+        )),
+        "main.gom",
+    ));
+    testing::assert_eq(unknown_trait.diagnostics.len(), 1);
+    testing::assert_eq(unknown_trait.diagnostics.get(0), "unknown trait Missing");
+    let bad_application = check(hir::lower(
+        ast::lower(parser::parse(
+            "fn use_value[T](value: T[int32]) -> unit { () }",
+        )),
+        "main.gom",
+    ));
+    testing::assert(bad_application.diagnostics.len() > 0);
+    testing::assert_eq(
+        bad_application.diagnostics.get(0),
+        "expected a type constructor",
+    );
+    let overflow = check(hir::lower(
+        ast::lower(parser::parse(
+            "fn main() -> unit { let value: int8 = 999; }",
+        )),
+        "main.gom",
+    ));
+    testing::assert_eq(overflow.diagnostics.len(), 1);
+    testing::assert_eq(overflow.diagnostics.get(0), "integer literal out of range");
+    let negative_unsigned = check(hir::lower(
+        ast::lower(parser::parse(
+            "fn main() -> unit { let value: uint8 = -1; }",
+        )),
+        "main.gom",
+    ));
+    testing::assert_eq(negative_unsigned.diagnostics.len(), 1);
+    testing::assert_eq(
+        negative_unsigned.diagnostics.get(0),
+        "type mismatch",
+    )
+}
+
+#[test]
+fn checks_match_exhaustiveness_and_irrefutable_bindings() -> unit {
+    let exhaustive = check(hir::lower(
+        ast::lower(parser::parse(
+            "fn choose(value: bool) -> int32 { match value { true => 1, false => 0 } }",
+        )),
+        "main.gom",
+    ));
+    testing::assert_eq(exhaustive.diagnostics.len(), 0);
+    let tuple_gap = check(hir::lower(
+        ast::lower(parser::parse(
+            "fn choose(value: (bool, bool)) -> int32 { match value { (true, true) => 1, (true, false) => 2, (false, true) => 3 } }",
+        )),
+        "main.gom",
+    ));
+    testing::assert_eq(tuple_gap.diagnostics.len(), 1);
+    testing::assert_eq(tuple_gap.diagnostics.get(0), "non-exhaustive match");
+    let refutable = check(hir::lower(
+        ast::lower(parser::parse(
+            "enum Choice { None, Some(int32) } fn make() -> Choice { Choice::None } fn main() -> unit { let Choice::Some(value) = make(); }",
+        )),
+        "main.gom",
+    ));
+    testing::assert_eq(refutable.diagnostics.len(), 1);
+    testing::assert_eq(
+        refutable.diagnostics.get(0),
+        "refutable pattern is not allowed in let binding",
+    )
+}
+
+#[test]
+fn checks_sequence_range_and_uninhabited_exhaustiveness() -> unit {
+    let sequence_gap = check(hir::lower(
+        ast::lower(parser::parse(
+            "fn choose(values: Vec[bool]) -> int32 { match values { [] => 0 } }",
+        )),
+        "main.gom",
+    ));
+    testing::assert_eq(sequence_gap.diagnostics.len(), 1);
+    testing::assert_eq(sequence_gap.diagnostics.get(0), "non-exhaustive match");
+    let sequence_complete = check(hir::lower(
+        ast::lower(parser::parse(
+            "fn choose(values: Vec[bool]) -> int32 { match values { [] => 0, [true, ..] => 1, [false, ..] => 2 } }",
+        )),
+        "main.gom",
+    ));
+    testing::assert_eq(sequence_complete.diagnostics.len(), 0);
+    let range_complete = check(hir::lower(
+        ast::lower(parser::parse(
+            "fn choose(value: uint8) -> int32 { match value { 0u8..=127u8 => 0, 128u8..=255u8 => 1 } }",
+        )),
+        "main.gom",
+    ));
+    testing::assert_eq(range_complete.diagnostics.len(), 0);
+    let range_gap = check(hir::lower(
+        ast::lower(parser::parse(
+            "fn choose(value: uint8) -> int32 { match value { 0u8..=126u8 => 0, 128u8..=255u8 => 1 } }",
+        )),
+        "main.gom",
+    ));
+    testing::assert_eq(range_gap.diagnostics.len(), 1);
+    testing::assert_eq(range_gap.diagnostics.get(0), "non-exhaustive match");
+    let uninhabited = check(hir::lower(
+        ast::lower(parser::parse(
+            "enum Never {} enum MaybeNever { Empty, Filled(Never) } fn absurd(value: Never) -> int32 { match value {} } fn maybe(value: MaybeNever) -> int32 { match value { MaybeNever::Empty => 0 } } fn empty_vec(value: Vec[Never]) -> int32 { match value { [] => 0 } }",
+        )),
+        "main.gom",
+    ));
+    testing::assert_eq(uninhabited.diagnostics.len(), 0)
+}
+
+#[test]
+fn checks_loop_control_contexts_and_impl_overlap() -> unit {
+    let condition = check(hir::lower(
+        ast::lower(parser::parse(
+            "fn main() -> unit { while if true { break } else { false } {} }",
+        )),
+        "main.gom",
+    ));
+    testing::assert_eq(condition.diagnostics.len(), 1);
+    testing::assert_eq(
+        condition.diagnostics.get(0),
+        "`break` is not allowed in a while condition",
+    );
+    let nested = check(hir::lower(
+        ast::lower(parser::parse(
+            "fn main() -> unit { while true { break; } }",
+        )),
+        "main.gom",
+    ));
+    testing::assert_eq(nested.diagnostics.len(), 0);
+    let overlap = check(hir::lower(
+        ast::lower(parser::parse(
+            "trait Pick { fn pick(Self) -> int32; } impl Pick for int32 { fn pick(self: int32) -> int32 { 1 } } impl[T] Pick for T { fn pick(self: T) -> int32 { 2 } }",
+        )),
+        "main.gom",
+    ));
+    testing::assert(overlap.diagnostics.len() > 0);
+    testing::assert_eq(overlap.diagnostics.get(0), "overlapping trait implementations")
+}
+
+#[test]
+fn rejects_invalid_for_sources_and_patterns() -> unit {
+    let non_iterator = checked_diagnostics(
+        "fn main() -> unit { for _ in 1 {} }",
+    );
+    testing::assert(has_diagnostic(
+        non_iterator,
+        "for loop expects a type implementing IntoIterator, got int32",
+    ));
+    let refutable = checked_diagnostics(
+        "fn main() -> unit { for 1 in range(0, 3) {} }",
+    );
+    testing::assert(has_diagnostic(
+        refutable,
+        "Refutable pattern is not allowed in for loop; use match instead",
+    ))
+}
+
+#[test]
+fn checks_indexed_assignment_roots() -> unit {
+    let temporary = checked_diagnostics(
+        "fn make() -> [int32; 2] { [1, 2] } fn main() -> unit { make()[0] = 3; }",
+    );
+    testing::assert(has_diagnostic(
+        temporary,
+        "array indexed assignment requires a writable root such as a mutable local or `ref.get()`",
+    ));
+    let readonly = checked_diagnostics(
+        "fn main() -> unit { let values = Vec::new().pushed(1); let view = values.slice(0, 1); view[0] = 2; }",
+    );
+    testing::assert(has_diagnostic(
+        readonly,
+        "cannot assign through Slice indexing; Slice is read-only",
+    ));
+    let writable = checked_diagnostics(
+        "fn main() -> unit { let mut values = [1, 2]; values[0] = 3; let cell = Ref::new([1, 2]); cell.get()[0] = 4; }",
+    );
+    testing::assert_eq(writable.len(), 0)
+}
+
+#[test]
+fn validates_trait_impl_contracts() -> unit {
+    let duplicate = checked_diagnostics(
+        "trait Display { fn show(Self) -> string; } impl Display for int32 { fn show(self: int32) -> string { \"a\" } fn show(self: int32) -> string { \"b\" } }",
+    );
+    testing::assert(has_diagnostic(
+        duplicate,
+        "Method show implemented multiple times in impl of trait Display",
+    ));
+    let extra = checked_diagnostics(
+        "trait Display { fn show(Self) -> string; } impl Display for int32 { fn show(self: int32) -> string { \"a\" } fn extra(self: int32) -> string { \"b\" } }",
+    );
+    testing::assert(has_diagnostic(
+        extra,
+        "Method extra is not declared in trait Display",
+    ));
+    let missing = checked_diagnostics(
+        "trait Display { fn show(Self) -> string; fn debug(Self) -> string; } impl Display for int32 { fn show(self: int32) -> string { \"a\" } }",
+    );
+    testing::assert(has_diagnostic(
+        missing,
+        "Trait Display implementation for int32 is missing method debug",
+    ));
+    let arity = checked_diagnostics(
+        "trait Format { fn format(Self, string) -> string; } impl Format for int32 { fn format(self: int32) -> string { \"a\" } }",
+    );
+    testing::assert(has_diagnostic(
+        arity,
+        "Trait Format::format expects 2 parameters but impl has 1",
+    ));
+    let parameter = checked_diagnostics(
+        "trait Format { fn format(Self, string) -> string; } impl Format for int32 { fn format(self: int32, value: int32) -> string { value.to_string() } }",
+    );
+    testing::assert(has_diagnostic(
+        parameter,
+        "Trait Format::format parameter 1 expected type string but found int32",
+    ));
+    let result = checked_diagnostics(
+        "trait Display { fn show(Self) -> string; } impl Display for int32 { fn show(self: int32) -> bool { true } }",
+    );
+    testing::assert(has_diagnostic(
+        result,
+        "Trait Display::show expected return type string but found bool",
+    ))
+}
+
+#[test]
+fn validates_declared_types_and_tostring_requirements() -> unit {
+    let declarations = checked_diagnostics(
+        "enum Maybe[T] { Just(T), Nothing } struct UseMaybe { value: Maybe, missing: Unknown[int32] } struct Generic[T] { field: V }",
+    );
+    testing::assert(has_diagnostic(
+        declarations,
+        "type argument count mismatch for Maybe",
+    ));
+    testing::assert(has_diagnostic(
+        declarations,
+        "unknown type constructor Unknown",
+    ));
+    testing::assert(has_diagnostic(
+        declarations,
+        "unknown type constructor V",
+    ));
+    let println_error = checked_diagnostics(
+        "struct Value {} fn main() -> unit { println(Value {}) }",
+    );
+    testing::assert(has_diagnostic(
+        println_error,
+        "type predicate not satisfied",
+    ));
+    let method_error = checked_diagnostics(
+        "struct Value {} fn main() -> unit { let _ = (Value {}).to_string(); }",
+    );
+    testing::assert(has_diagnostic(method_error, "method not found: to_string"))
 }
 
 #[test]
@@ -1153,7 +1481,82 @@ fn accepts_builtin_into_iterator_predicates() -> unit {
         ast::lower(parser::parse(source)),
         "main.gom",
     ));
-    testing::assert_eq(result.diagnostics.len(), 0)
+    testing::assert_eq(result.diagnostics.len(), 0);
+    match result.tast {
+        Option::Some(file) => match file.items.get(0) {
+            Item::Function(value) => {
+                testing::assert_eq(value.predicates.len(), 4);
+                match value.predicates.get(0) {
+                    TypePredicate::Trait(Type::Param(param), reference) => {
+                        testing::assert_eq(param, "S");
+                        testing::assert_eq(reference.name, "IntoIterator")
+                    },
+                    _ => testing::fail("expected IntoIterator predicate"),
+                };
+                match value.predicates.get(1) {
+                    TypePredicate::Equality(
+                        Type::Projection(
+                            Type::Param(param),
+                            name,
+                            Option::Some(reference),
+                        ),
+                        Type::Int32,
+                    ) => {
+                        testing::assert_eq(param, "S");
+                        testing::assert_eq(name, "Item");
+                        testing::assert_eq(reference.name, "IntoIterator")
+                    },
+                    _ => testing::fail("expected explicit Item equality"),
+                };
+                match value.predicates.get(2) {
+                    TypePredicate::Equality(
+                        Type::Projection(
+                            Type::Param(item_param),
+                            item_name,
+                            Option::Some(into_iterator),
+                        ),
+                        Type::Projection(
+                            Type::Projection(
+                                Type::Param(iter_param),
+                                iter_name,
+                                Option::Some(iter_owner),
+                            ),
+                            iterator_item_name,
+                            Option::Some(iterator),
+                        ),
+                    ) => {
+                        testing::assert_eq(item_param, "S");
+                        testing::assert_eq(item_name, "Item");
+                        testing::assert_eq(into_iterator.name, "IntoIterator");
+                        testing::assert_eq(iter_param, "S");
+                        testing::assert_eq(iter_name, "IntoIter");
+                        testing::assert_eq(iter_owner.name, "IntoIterator");
+                        testing::assert_eq(iterator_item_name, "Item");
+                        testing::assert_eq(iterator.name, "Iterator")
+                    },
+                    _ => testing::fail("expected implied Item equality"),
+                };
+                match value.predicates.get(3) {
+                    TypePredicate::Trait(
+                        Type::Projection(
+                            Type::Param(param),
+                            name,
+                            Option::Some(owner),
+                        ),
+                        reference,
+                    ) => {
+                        testing::assert_eq(param, "S");
+                        testing::assert_eq(name, "IntoIter");
+                        testing::assert_eq(owner.name, "IntoIterator");
+                        testing::assert_eq(reference.name, "Iterator")
+                    },
+                    _ => testing::fail("expected IntoIter Iterator predicate"),
+                }
+            },
+            _ => testing::fail("expected sum function"),
+        },
+        Option::None => testing::fail("expected TAST"),
+    }
 }
 
 #[test]
@@ -1352,4 +1755,63 @@ fn resolves_supertraits_and_implied_predicates() -> unit {
         },
         _ => testing::fail("expected inherited function"),
     }
+}
+
+#[test]
+fn rejects_unsafe_dyn_body_annotations() -> unit {
+    let diagnostics = checked_diagnostics(
+        "trait Cloneish { fn clone(Self) -> Self; } struct Value { value: int32 } impl Cloneish for Value { fn clone(self: Value) -> Value { self } } fn main() -> unit { let _value: dyn Cloneish = Value { value: 1 }; }",
+    );
+    testing::assert(has_diagnostic(
+        diagnostics,
+        "Trait Cloneish::clone is not dyn-safe: Self is not allowed in return type",
+    ))
+}
+
+#[test]
+fn rejects_recursive_struct_layouts() -> unit {
+    let direct = checked_diagnostics(
+        "struct Tree { left: Tree } fn main() -> unit {}",
+    );
+    testing::assert(has_diagnostic(
+        direct,
+        "Struct Tree has infinite size due to recursive field; use Ref[Tree] for indirection",
+    ));
+    let generic = checked_diagnostics(
+        "struct Wrap[T] { value: T } struct Loop { value: Wrap[Loop] } fn main() -> unit {}",
+    );
+    testing::assert(has_diagnostic(
+        generic,
+        "Struct Loop has infinite size due to recursive field; use Ref[Loop] for indirection",
+    ))
+}
+
+#[test]
+fn defaults_literals_before_generic_result_constraints() -> unit {
+    let diagnostics = checked_diagnostics(
+        "fn main() -> unit { let value: Ref[uint8] = Ref::new(10); }",
+    );
+    testing::assert(has_diagnostic(diagnostics, "type mismatch"))
+}
+
+#[test]
+fn prefers_user_nominal_arities() -> unit {
+    let diagnostics = checked_diagnostics(
+        "enum Result { Ok(string), Err(string) } fn parse(value: bool) -> Result { if value { Result::Ok(\"ok\") } else { Result::Err(\"error\") } }",
+    );
+    testing::assert_eq(diagnostics.len(), 0)
+}
+
+#[test]
+fn infers_nested_builtin_method_receivers() -> unit {
+    let _ = checked_file(
+        "fn main() -> unit { let log = Ref::new(Vec::new()); log.set(log.get().pushed(\"x\")); }",
+    );
+}
+
+#[test]
+fn checks_contextual_numeric_expressions_and_inherent_arguments() -> unit {
+    let _ = checked_file(
+        "struct Counter { value: uint8 } impl Counter { fn add(self: Counter, value: uint8) -> Counter { Counter { value: self.value + value } } } fn main() -> unit { let negative: int8 = -128; let total: uint8 = 10 + 20; let counter = Counter { value: total }.add(5); println(counter.value.to_string()) }",
+    );
 }
