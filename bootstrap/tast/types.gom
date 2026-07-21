@@ -726,6 +726,8 @@ fn normalize_types(ctx: Checker, values: Vec[Type]) -> Vec[Type] {
 
 fn normalize_type(ctx: Checker, value: Type) -> Type {
     match prune(value) {
+        Type::Con(name) => Type::Con(canonical_imported_name(ctx, name)),
+        Type::Dyn(name) => Type::Dyn(canonical_imported_name(ctx, name)),
         Type::Tuple(values) => Type::Tuple(normalize_types(ctx, values)),
         Type::Projection(base, name, qualifier) => {
             let base = normalize_type(ctx, base);
@@ -781,7 +783,7 @@ fn normalize_type(ctx: Checker, value: Type) -> Type {
 
 fn normalize_trait_ref(ctx: Checker, value: TraitRef) -> TraitRef {
     TraitRef {
-        name: value.name,
+        name: canonical_imported_name(ctx, value.name),
         args: normalize_types(ctx, value.args),
     }
 }
