@@ -39,6 +39,9 @@ struct StandardLibrary {
     env: PackageCompilation,
     fs: PackageCompilation,
     io: PackageCompilation,
+    path: PackageCompilation,
+    process: PackageCompilation,
+    testing: PackageCompilation,
     text: PackageCompilation,
 }
 
@@ -263,6 +266,39 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         io_core_dependencies,
         builtins,
     );
+    let path_hir_dependencies: Vec[hir::File] = Vec::new();
+    path_hir_dependencies.push(host.hir_file);
+    let path = compile_standard_package(
+        stdlib::path_source(),
+        "path.gom",
+        "std::path",
+        path_hir_dependencies,
+        Vec::new(),
+        builtins,
+    );
+    let process_hir_dependencies: Vec[hir::File] = Vec::new();
+    process_hir_dependencies.push(host.hir_file);
+    process_hir_dependencies.push(bytes.hir_file);
+    let process_core_dependencies: Vec[core::File] = Vec::new();
+    process_core_dependencies.push(bytes.core_value);
+    let process = compile_standard_package(
+        stdlib::process_source(),
+        "process.gom",
+        "std::process",
+        process_hir_dependencies,
+        process_core_dependencies,
+        builtins,
+    );
+    let testing_hir_dependencies: Vec[hir::File] = Vec::new();
+    testing_hir_dependencies.push(host.hir_file);
+    let testing = compile_standard_package(
+        stdlib::testing_source(),
+        "testing.gom",
+        "std::testing",
+        testing_hir_dependencies,
+        Vec::new(),
+        builtins,
+    );
     let text_hir_dependencies: Vec[hir::File] = Vec::new();
     text_hir_dependencies.push(bytes.hir_file);
     let text_core_dependencies: Vec[core::File] = Vec::new();
@@ -281,6 +317,9 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         env,
         fs,
         io,
+        path,
+        process,
+        testing,
         text,
     }
 }
@@ -291,10 +330,12 @@ fn selected_standard_hir(
 ) -> Vec[hir::File] {
     let needs_fs = imports_package(ast_value, "std::fs");
     let needs_io = imports_package(ast_value, "std::io");
+    let needs_process = imports_package(ast_value, "std::process");
     let needs_text = imports_package(ast_value, "std::text");
     let needs_bytes = imports_package(ast_value, "std::bytes")
         || needs_fs
         || needs_io
+        || needs_process
         || needs_text;
     let result: Vec[hir::File] = Vec::new();
     if needs_bytes {
@@ -322,6 +363,21 @@ fn selected_standard_hir(
     } else {
         ()
     };
+    if imports_package(ast_value, "std::path") {
+        result.push(standard.path.hir_file)
+    } else {
+        ()
+    };
+    if needs_process {
+        result.push(standard.process.hir_file)
+    } else {
+        ()
+    };
+    if imports_package(ast_value, "std::testing") {
+        result.push(standard.testing.hir_file)
+    } else {
+        ()
+    };
     if needs_text {
         result.push(standard.text.hir_file)
     } else {
@@ -336,10 +392,12 @@ fn selected_standard_core(
 ) -> Vec[core::File] {
     let needs_fs = imports_package(ast_value, "std::fs");
     let needs_io = imports_package(ast_value, "std::io");
+    let needs_process = imports_package(ast_value, "std::process");
     let needs_text = imports_package(ast_value, "std::text");
     let needs_bytes = imports_package(ast_value, "std::bytes")
         || needs_fs
         || needs_io
+        || needs_process
         || needs_text;
     let result: Vec[core::File] = Vec::new();
     if needs_bytes {
@@ -364,6 +422,21 @@ fn selected_standard_core(
     };
     if needs_io {
         result.push(standard.io.core_value)
+    } else {
+        ()
+    };
+    if imports_package(ast_value, "std::path") {
+        result.push(standard.path.core_value)
+    } else {
+        ()
+    };
+    if needs_process {
+        result.push(standard.process.core_value)
+    } else {
+        ()
+    };
+    if imports_package(ast_value, "std::testing") {
+        result.push(standard.testing.core_value)
     } else {
         ()
     };

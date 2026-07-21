@@ -62,6 +62,57 @@ pub fn host_source() -> string {
         \\
         \\#[runtime("std.io.write_stderr")]
         \\pub extern fn write_stderr(data: Vec[uint8]) -> (bool, string)
+        \\
+        \\#[runtime("std.path.join")]
+        \\pub extern fn path_join(base: string, child: string) -> string
+        \\
+        \\#[runtime("std.path.clean")]
+        \\pub extern fn path_clean(path: string) -> string
+        \\
+        \\#[runtime("std.path.is_absolute")]
+        \\pub extern fn path_is_absolute(path: string) -> bool
+        \\
+        \\#[runtime("std.path.parent")]
+        \\pub extern fn path_parent(path: string) -> (bool, string)
+        \\
+        \\#[runtime("std.path.file_name")]
+        \\pub extern fn path_file_name(path: string) -> (bool, string)
+        \\
+        \\#[runtime("std.path.extension")]
+        \\pub extern fn path_extension(path: string) -> (bool, string)
+        \\
+        \\#[runtime("std.path.file_stem")]
+        \\pub extern fn path_file_stem(path: string) -> (bool, string)
+        \\
+        \\#[runtime("std.path.with_extension")]
+        \\pub extern fn path_with_extension(path: string, extension: string) -> string
+        \\
+        \\#[runtime("std.path.absolute")]
+        \\pub extern fn path_absolute(path: string) -> (bool, string, string)
+        \\
+        \\#[runtime("std.process.exit")]
+        \\pub extern fn exit(code: int32) -> unit
+        \\
+        \\#[runtime("std.process.output")]
+        \\pub extern fn process_output(
+        \\    program: string,
+        \\    arguments: Vec[string],
+        \\    has_directory: bool,
+        \\    directory: string,
+        \\    environment: Vec[(string, string)],
+        \\) -> (bool, int32, Vec[uint8], Vec[uint8], string)
+        \\
+        \\#[runtime("std.process.status")]
+        \\pub extern fn process_status(
+        \\    program: string,
+        \\    arguments: Vec[string],
+        \\    has_directory: bool,
+        \\    directory: string,
+        \\    environment: Vec[(string, string)],
+        \\) -> (bool, int32, string)
+        \\
+        \\#[runtime("std.testing.fail")]
+        \\pub extern fn test_fail(message: string) -> unit
     ;
     source
 }
@@ -317,6 +368,251 @@ pub fn env_source() -> string {
         \\        Option::Some(value)
         \\    } else {
         \\        Option::None
+        \\    }
+        \\}
+    ;
+    source
+}
+
+pub fn path_source() -> string {
+    let source = \\package path;
+        \\
+        \\use std::internal::host;
+        \\
+        \\pub fn join(base: string, child: string) -> string {
+        \\    host::path_join(base, child)
+        \\}
+        \\
+        \\pub fn clean(path: string) -> string {
+        \\    host::path_clean(path)
+        \\}
+        \\
+        \\pub fn is_absolute(path: string) -> bool {
+        \\    host::path_is_absolute(path)
+        \\}
+        \\
+        \\pub fn parent(path: string) -> Option[string] {
+        \\    let (found, value) = host::path_parent(path);
+        \\    if found {
+        \\        Option::Some(value)
+        \\    } else {
+        \\        Option::None
+        \\    }
+        \\}
+        \\
+        \\pub fn file_name(path: string) -> Option[string] {
+        \\    let (found, value) = host::path_file_name(path);
+        \\    if found {
+        \\        Option::Some(value)
+        \\    } else {
+        \\        Option::None
+        \\    }
+        \\}
+        \\
+        \\pub fn extension(path: string) -> Option[string] {
+        \\    let (found, value) = host::path_extension(path);
+        \\    if found {
+        \\        Option::Some(value)
+        \\    } else {
+        \\        Option::None
+        \\    }
+        \\}
+        \\
+        \\pub fn file_stem(path: string) -> Option[string] {
+        \\    let (found, value) = host::path_file_stem(path);
+        \\    if found {
+        \\        Option::Some(value)
+        \\    } else {
+        \\        Option::None
+        \\    }
+        \\}
+        \\
+        \\pub fn with_extension(path: string, extension: string) -> string {
+        \\    host::path_with_extension(path, extension)
+        \\}
+        \\
+        \\pub fn absolute(path: string) -> Result[string, string] {
+        \\    let (ok, value, err) = host::path_absolute(path);
+        \\    if ok {
+        \\        Result::Ok(value)
+        \\    } else {
+        \\        Result::Err(err)
+        \\    }
+        \\}
+    ;
+    source
+}
+
+pub fn process_source() -> string {
+    let source = \\package process;
+        \\
+        \\use std::bytes;
+        \\use std::internal::host;
+        \\
+        \\pub struct ExitStatus {
+        \\    code_value: int32,
+        \\}
+        \\
+        \\impl ExitStatus {
+        \\    fn success(self: ExitStatus) -> bool {
+        \\        self.code_value == 0
+        \\    }
+        \\
+        \\    fn code(self: ExitStatus) -> Option[int32] {
+        \\        if self.code_value < 0 {
+        \\            Option::None
+        \\        } else {
+        \\            Option::Some(self.code_value)
+        \\        }
+        \\    }
+        \\}
+        \\
+        \\pub struct Output {
+        \\    status_value: ExitStatus,
+        \\    stdout_value: bytes::Bytes,
+        \\    stderr_value: bytes::Bytes,
+        \\}
+        \\
+        \\impl Output {
+        \\    fn status(self: Output) -> ExitStatus {
+        \\        self.status_value
+        \\    }
+        \\
+        \\    fn stdout(self: Output) -> bytes::Bytes {
+        \\        self.stdout_value
+        \\    }
+        \\
+        \\    fn stderr(self: Output) -> bytes::Bytes {
+        \\        self.stderr_value
+        \\    }
+        \\}
+        \\
+        \\pub struct Command {
+        \\    program: string,
+        \\    arguments: Vec[string],
+        \\    has_directory: bool,
+        \\    directory: string,
+        \\    environment: Vec[(string, string)],
+        \\}
+        \\
+        \\impl Command {
+        \\    fn new(program: string) -> Command {
+        \\        Command {
+        \\            program,
+        \\            arguments: Vec::new(),
+        \\            has_directory: false,
+        \\            directory: "",
+        \\            environment: Vec::new(),
+        \\        }
+        \\    }
+        \\
+        \\    fn arg(self: Command, argument: string) -> Command {
+        \\        self.arguments.push(argument);
+        \\        self
+        \\    }
+        \\
+        \\    fn args(self: Command, arguments: Vec[string]) -> Command {
+        \\        for argument in arguments {
+        \\            self.arguments.push(argument)
+        \\        };
+        \\        self
+        \\    }
+        \\
+        \\    fn current_dir(self: Command, directory: string) -> Command {
+        \\        Command {
+        \\            program: self.program,
+        \\            arguments: self.arguments,
+        \\            has_directory: true,
+        \\            directory,
+        \\            environment: self.environment,
+        \\        }
+        \\    }
+        \\
+        \\    fn env(self: Command, key: string, value: string) -> Command {
+        \\        self.environment.push((key, value));
+        \\        self
+        \\    }
+        \\
+        \\    fn output(self: Command) -> Result[Output, string] {
+        \\        let (ok, code, stdout, stderr, err) = host::process_output(
+        \\            self.program,
+        \\            self.arguments,
+        \\            self.has_directory,
+        \\            self.directory,
+        \\            self.environment,
+        \\        );
+        \\        if ok {
+        \\            Result::Ok(Output {
+        \\                status_value: ExitStatus { code_value: code },
+        \\                stdout_value: bytes::Bytes::from_vec(stdout),
+        \\                stderr_value: bytes::Bytes::from_vec(stderr),
+        \\            })
+        \\        } else {
+        \\            Result::Err(err)
+        \\        }
+        \\    }
+        \\
+        \\    fn status(self: Command) -> Result[ExitStatus, string] {
+        \\        let (ok, code, err) = host::process_status(
+        \\            self.program,
+        \\            self.arguments,
+        \\            self.has_directory,
+        \\            self.directory,
+        \\            self.environment,
+        \\        );
+        \\        if ok {
+        \\            Result::Ok(ExitStatus { code_value: code })
+        \\        } else {
+        \\            Result::Err(err)
+        \\        }
+        \\    }
+        \\}
+        \\
+        \\pub fn exit(code: int32) -> unit {
+        \\    host::exit(code)
+        \\}
+    ;
+    source
+}
+
+pub fn testing_source() -> string {
+    let source = \\package testing;
+        \\
+        \\use std::internal::host;
+        \\
+        \\pub fn fail(message: string) -> unit {
+        \\    host::test_fail(message)
+        \\}
+        \\
+        \\pub fn assert(condition: bool) -> unit {
+        \\    if condition {
+        \\        ()
+        \\    } else {
+        \\        fail("assertion failed")
+        \\    }
+        \\}
+        \\
+        \\pub fn assert_eq[T: Eq + ToString](actual: T, expected: T) -> unit {
+        \\    if Eq::eq(actual, expected) {
+        \\        ()
+        \\    } else {
+        \\        fail(
+        \\            "assertion failed: values are not equal\n  actual: "
+        \\                + ToString::to_string(actual)
+        \\                + "\nexpected: "
+        \\                + ToString::to_string(expected),
+        \\        )
+        \\    }
+        \\}
+        \\
+        \\pub fn assert_ne[T: Eq + ToString](actual: T, expected: T) -> unit {
+        \\    if Eq::eq(actual, expected) {
+        \\        fail(
+        \\            "assertion failed: values are equal\nvalue: "
+        \\                + ToString::to_string(actual),
+        \\        )
+        \\    } else {
+        \\        ()
         \\    }
         \\}
     ;
