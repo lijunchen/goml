@@ -14,6 +14,15 @@ struct TypeCtx {
     instances: Vec[TypeInstance],
     instance_index: HashMap[string, TypeInstance],
     used_names: HashMap[string, unit],
+    enums: Vec[tast::EnumDef],
+    structs: Vec[tast::StructDef],
+    active_instances: Vec[TypeInstance],
+    error: Ref[Option[string]],
+}
+
+pub struct LowerResult {
+    file: core::File,
+    error: Option[string],
 }
 
 fn types_are_concrete(values: Vec[tast::Type]) -> bool {
@@ -112,6 +121,18 @@ fn find_type_instance(
     ctx.instance_index.get(type_instance_lookup_key(base_name, args))
 }
 
+fn find_type_instance_by_name(ctx: TypeCtx, name: string) -> Option[TypeInstance] {
+    let result = Ref::new(Option::None);
+    for instance in ctx.instances {
+        if instance.name == name {
+            result.set(Option::Some(instance))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
 fn type_name_is_used(ctx: TypeCtx, name: string) -> bool {
     ctx.used_names.contains(name)
 }
@@ -155,9 +176,20 @@ fn ensure_type_instance(
     base_name: string,
     args: Vec[tast::Type],
 ) -> string {
+    match ctx.error.get() {
+        Option::Some(_) => return base_name,
+        Option::None => (),
+    };
     match find_type_instance(ctx, base_name, args) {
         Option::Some(instance) => instance.name,
         Option::None => {
+            match recursive_type_specialization_message(ctx, base_name, args) {
+                Option::Some(message) => {
+                    ctx.error.set(Option::Some(message));
+                    return base_name
+                },
+                Option::None => (),
+            };
             let name = unique_type_name(ctx, type_instance_base_name(base_name, args));
             let instance = TypeInstance {
                 base_name,
@@ -169,9 +201,253 @@ fn ensure_type_instance(
                 type_instance_lookup_key(instance.base_name, instance.args),
                 instance,
             );
+            ctx.active_instances.push(instance);
+            discover_type_instance_dependencies(ctx, instance);
+            let _ = ctx.active_instances.pop();
             name
         },
     }
+}
+
+fn type_name_in_path(values: Vec[string], name: string) -> bool {
+    let found = Ref::new(false);
+    for value in values {
+        if value == name {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+fn expand_specialized_type_aliases_list(
+    ctx: TypeCtx,
+    values: Vec[tast::Type],
+    path: Vec[string],
+) -> Vec[tast::Type] {
+    let result: Vec[tast::Type] = Vec::new();
+    for value in values {
+        result.push(expand_specialized_type_aliases_from(ctx, value, path))
+    };
+    result
+}
+
+fn expand_specialized_trait_ref(
+    ctx: TypeCtx,
+    value: tast::TraitRef,
+    path: Vec[string],
+) -> tast::TraitRef {
+    tast::TraitRef {
+        name: value.name,
+        args: expand_specialized_type_aliases_list(ctx, value.args, path),
+    }
+}
+
+fn expand_specialized_optional_trait_ref(
+    ctx: TypeCtx,
+    value: Option[tast::TraitRef],
+    path: Vec[string],
+) -> Option[tast::TraitRef] {
+    match value {
+        Option::Some(reference) => Option::Some(expand_specialized_trait_ref(
+            ctx,
+            reference,
+            path,
+        )),
+        Option::None => Option::None,
+    }
+}
+
+fn expand_specialized_type_aliases_from(
+    ctx: TypeCtx,
+    value: tast::Type,
+    path: Vec[string],
+) -> tast::Type {
+    match tast::resolve_type(value) {
+        tast::Type::Con(name) => if type_name_in_path(path, name) {
+            tast::Type::Con(name)
+        } else {
+            match find_type_instance_by_name(ctx, name) {
+                Option::Some(instance) => {
+                    path.push(name);
+                    let args = expand_specialized_type_aliases_list(
+                        ctx,
+                        instance.args,
+                        path,
+                    );
+                    let _ = path.pop();
+                    tast::Type::App(tast::Type::Con(instance.base_name), args)
+                },
+                Option::None => tast::Type::Con(name),
+            }
+        },
+        tast::Type::Tuple(values) => tast::Type::Tuple(
+            expand_specialized_type_aliases_list(ctx, values, path),
+        ),
+        tast::Type::Projection(base, name, reference) => tast::Type::Projection(
+            expand_specialized_type_aliases_from(ctx, base, path),
+            name,
+            expand_specialized_optional_trait_ref(ctx, reference, path),
+        ),
+        tast::Type::App(base, args) => tast::Type::App(
+            expand_specialized_type_aliases_from(ctx, base, path),
+            expand_specialized_type_aliases_list(ctx, args, path),
+        ),
+        tast::Type::Array(length, elem) => tast::Type::Array(
+            length,
+            expand_specialized_type_aliases_from(ctx, elem, path),
+        ),
+        tast::Type::Slice(elem) => tast::Type::Slice(
+            expand_specialized_type_aliases_from(ctx, elem, path),
+        ),
+        tast::Type::VecType(elem) => tast::Type::VecType(
+            expand_specialized_type_aliases_from(ctx, elem, path),
+        ),
+        tast::Type::RefType(elem) => tast::Type::RefType(
+            expand_specialized_type_aliases_from(ctx, elem, path),
+        ),
+        tast::Type::HashMap(key, value) => tast::Type::HashMap(
+            expand_specialized_type_aliases_from(ctx, key, path),
+            expand_specialized_type_aliases_from(ctx, value, path),
+        ),
+        tast::Type::Func(params, ret_ty) => tast::Type::Func(
+            expand_specialized_type_aliases_list(ctx, params, path),
+            expand_specialized_type_aliases_from(ctx, ret_ty, path),
+        ),
+        other => other,
+    }
+}
+
+fn expand_specialized_type_aliases(ctx: TypeCtx, value: tast::Type) -> tast::Type {
+    expand_specialized_type_aliases_from(ctx, value, Vec::new())
+}
+
+fn find_generic_enum(ctx: TypeCtx, name: string) -> Option[tast::EnumDef] {
+    let result = Ref::new(Option::None);
+    for value in ctx.enums {
+        if value.name == name {
+            result.set(Option::Some(value))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn find_generic_struct(ctx: TypeCtx, name: string) -> Option[tast::StructDef] {
+    let result = Ref::new(Option::None);
+    for value in ctx.structs {
+        if value.name == name {
+            result.set(Option::Some(value))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn type_instance_parameters(ctx: TypeCtx, name: string) -> Vec[string] {
+    match find_generic_enum(ctx, name) {
+        Option::Some(value) => value.generics,
+        Option::None => match find_generic_struct(ctx, name) {
+            Option::Some(value) => value.generics,
+            Option::None => Vec::new(),
+        },
+    }
+}
+
+fn type_instance_bindings(
+    ctx: TypeCtx,
+    name: string,
+    args: Vec[tast::Type],
+) -> Vec[TypeBinding] {
+    let result: Vec[TypeBinding] = Vec::new();
+    let params = type_instance_parameters(ctx, name);
+    for index in range(0, params.len()) {
+        if index < args.len() {
+            result.push(TypeBinding {
+                name: params.get(index),
+                ty: args.get(index),
+            })
+        } else {
+            ()
+        }
+    };
+    result
+}
+
+fn discover_type_instance_dependencies(
+    ctx: TypeCtx,
+    instance: TypeInstance,
+) -> unit {
+    let bindings = type_instance_bindings(
+        ctx,
+        instance.base_name,
+        instance.args,
+    );
+    match find_generic_enum(ctx, instance.base_name) {
+        Option::Some(value) => for variant in value.variants {
+            for field in variant.fields {
+                let _ = collapse_type(ctx, substitute_type(field, bindings));
+            }
+        },
+        Option::None => match find_generic_struct(ctx, instance.base_name) {
+            Option::Some(value) => for field in value.fields {
+                let _ = collapse_type(ctx, substitute_type(field.1, bindings));
+            },
+            Option::None => (),
+        },
+    }
+}
+
+fn recursive_type_specialization_message(
+    ctx: TypeCtx,
+    name: string,
+    args: Vec[tast::Type],
+) -> Option[string] {
+    let params = type_instance_parameters(ctx, name);
+    for offset in range(0, ctx.active_instances.len()) {
+        let active = ctx.active_instances.get(
+            ctx.active_instances.len() - offset - 1,
+        );
+        if active.base_name == name {
+            let common = if active.args.len() < args.len() {
+                active.args.len()
+            } else {
+                args.len()
+            };
+            for index in range(0, common) {
+                let previous = expand_specialized_type_aliases(
+                    ctx,
+                    active.args.get(index),
+                );
+                let next = expand_specialized_type_aliases(ctx, args.get(index));
+                if mono_type_contains_recursive_growth(next, previous) {
+                    let parameter = if index < params.len() {
+                        params.get(index)
+                    } else {
+                        "#" + index.to_string()
+                    };
+                    return Option::Some(
+                        "Infinite monomorphization detected for generic type "
+                            + name
+                            + ": recursive specialization grows type parameter "
+                            + parameter
+                            + " from "
+                            + mono_type_text(previous)
+                            + " to "
+                            + mono_type_text(next),
+                    )
+                } else {
+                    ()
+                }
+            }
+        } else {
+            ()
+        }
+    };
+    Option::None
 }
 
 fn collapse_types(ctx: TypeCtx, values: Vec[tast::Type]) -> Vec[tast::Type] {
@@ -755,11 +1031,15 @@ fn collect_expr_type_names(ctx: TypeCtx, value: core::Expr) -> unit {
     }
 }
 
-fn type_ctx(value: core::File) -> TypeCtx {
+fn type_ctx(value: core::File, error: Ref[Option[string]]) -> TypeCtx {
     let ctx = TypeCtx {
         instances: Vec::new(),
         instance_index: HashMap::new(),
         used_names: HashMap::new(),
+        enums: value.enums,
+        structs: value.structs,
+        active_instances: Vec::new(),
+        error,
     };
     for function in value.functions {
         add_used_type_name(ctx, function.name);
@@ -816,11 +1096,12 @@ fn lower_function(ctx: TypeCtx, function: core::Function) -> core::Function {
     }
 }
 
-pub fn lower(value: core::File) -> core::File {
+pub fn lower_checked(value: core::File) -> LowerResult {
     let enums = value.enums;
     let structs = value.structs;
-    let value = specialize(value);
-    let ctx = type_ctx(value);
+    let error = Ref::new(Option::None);
+    let value = specialize(value, error);
+    let ctx = type_ctx(value, error);
     let functions = Vec::new();
     for function in value.functions {
         functions.push(lower_function(ctx, function))
@@ -833,7 +1114,14 @@ pub fn lower(value: core::File) -> core::File {
             name: instance.name,
         })
     };
-    core::File { functions, enums, structs, type_instances }
+    LowerResult {
+        file: core::File { functions, enums, structs, type_instances },
+        error: error.get(),
+    }
+}
+
+pub fn lower(value: core::File) -> core::File {
+    lower_checked(value).file
 }
 
 pub fn encode(value: core::File) -> string {
