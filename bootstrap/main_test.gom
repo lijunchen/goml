@@ -2,6 +2,7 @@ package main;
 
 use gomlang::parser::ast;
 use gomlang::parser::core;
+use gomlang::parser::hir;
 use gomlang::parser::parser;
 use gomlang::parser::tast;
 use std::testing;
@@ -505,5 +506,189 @@ fn rejects_project_imports_in_single_file_mode() -> unit {
     ))) {
         Option::Some(_) => testing::fail("expected standard imports to be accepted"),
         Option::None => (),
+    }
+}
+
+#[test]
+fn filters_private_dependency_items() -> unit {
+    let source = "package api; fn secret() -> int32 { 7 } pub fn answer() -> int32 { secret() + 35 }";
+    let ast_values = Vec::new();
+    ast_values.push(ast::lower(parser::parse(source)));
+    let names = public_item_names(ast_values, "visibility_audit::api");
+    testing::assert_eq(names.len(), 1);
+    testing::assert_eq(names.get(0), "visibility_audit::api::answer");
+    let lowered = hir::lower_package(
+        ast::lower(parser::parse(source)),
+        "api/api.gom",
+        "visibility_audit::api",
+    );
+    let file = match lowered.hir {
+        Option::Some(value) => value,
+        Option::None => {
+            testing::fail("expected dependency HIR");
+            hir::File {
+                package_name: "visibility_audit::api",
+                path: "api/api.gom",
+                imports: Vec::new(),
+                import_aliases: Vec::new(),
+                use_traits: Vec::new(),
+                items: Vec::new(),
+            }
+        },
+    };
+    let exported = exported_hir_file(file, names);
+    testing::assert_eq(exported.items.len(), 1);
+    match exported.items.get(0) {
+        hir::Item::Function(value) => testing::assert_eq(
+            value.name,
+            "visibility_audit::api::answer",
+        ),
+        _ => testing::fail("expected public function"),
+    };
+    let dependencies = Vec::new();
+    dependencies.push(exported);
+    let rejected = tast::check_for_link_with_dependencies(
+        hir::lower_package(
+            ast::lower(parser::parse(
+                "package main; use visibility_audit::api; fn main() -> unit { let _ = api::secret(); }",
+            )),
+            "main.gom",
+            "visibility_audit",
+        ),
+        dependencies,
+    );
+    testing::assert(rejected.diagnostics.len() > 0);
+    testing::assert(main_string_contains(
+        rejected.diagnostics.get(0),
+        "visibility_audit::api::secret",
+    ));
+    let dependencies = Vec::new();
+    dependencies.push(exported);
+    let accepted = tast::check_for_link_with_dependencies(
+        hir::lower_package(
+            ast::lower(parser::parse(
+                "package main; use visibility_audit::api; fn main() -> unit { let _ = api::answer(); }",
+            )),
+            "main.gom",
+            "visibility_audit",
+        ),
+        dependencies,
+    );
+    testing::assert_eq(accepted.diagnostics.len(), 0)
+}
+
+#[test]
+fn rejects_private_types_exposed_by_public_trait_impls() -> unit {
+    let source = "package api; pub trait Source { type Item; fn get(Self) -> Self::Item; } pub struct Public {} struct Hidden {} impl Source for Public { type Item = Hidden; fn get(self: Public) -> Hidden { Hidden {} } }";
+    let ast_values = Vec::new();
+    ast_values.push(ast::lower(parser::parse(source)));
+    let public_names = public_item_names(ast_values, "visibility_impl_audit::api");
+    let lowered = hir::lower_package(
+        ast::lower(parser::parse(source)),
+        "api/api.gom",
+        "visibility_impl_audit::api",
+    );
+    let file = match lowered.hir {
+        Option::Some(value) => value,
+        Option::None => {
+            testing::fail("expected public impl HIR");
+            hir::File {
+                package_name: "visibility_impl_audit::api",
+                path: "api/api.gom",
+                imports: Vec::new(),
+                import_aliases: Vec::new(),
+                use_traits: Vec::new(),
+                items: Vec::new(),
+            }
+        },
+    };
+    match validate_public_trait_impls(
+        file,
+        "visibility_impl_audit::api",
+        public_names,
+    ) {
+        Result::Err(error) => testing::assert_eq(
+            error,
+            "Public trait implementation visibility_impl_audit::api::Source exposes private type visibility_impl_audit::api::Hidden",
+        ),
+        Result::Ok(()) => testing::fail("expected private type exposure error"),
+    }
+}
+
+#[test]
+fn filters_private_types_traits_and_trait_impls() -> unit {
+    let source = "package api; enum HiddenEnum { A } struct HiddenStruct {} trait HiddenTrait { fn hidden(Self) -> int32; } pub struct Item {} impl HiddenTrait for Item { fn hidden(self: Item) -> int32 { 1 } } pub fn item() -> Item { Item {} }";
+    let ast_values = Vec::new();
+    ast_values.push(ast::lower(parser::parse(source)));
+    let public_names = public_item_names(ast_values, "visibility_audit::api");
+    let lowered = hir::lower_package(
+        ast::lower(parser::parse(source)),
+        "api/api.gom",
+        "visibility_audit::api",
+    );
+    let file = match lowered.hir {
+        Option::Some(value) => value,
+        Option::None => {
+            testing::fail("expected private item HIR");
+            hir::File {
+                package_name: "visibility_audit::api",
+                path: "api/api.gom",
+                imports: Vec::new(),
+                import_aliases: Vec::new(),
+                use_traits: Vec::new(),
+                items: Vec::new(),
+            }
+        },
+    };
+    let exported = exported_hir_file(file, public_names);
+    testing::assert_eq(exported.items.len(), 2);
+    match exported.items.get(0) {
+        hir::Item::StructDef(value) => testing::assert_eq(
+            value.name,
+            "visibility_audit::api::Item",
+        ),
+        _ => testing::fail("expected public struct"),
+    };
+    match exported.items.get(1) {
+        hir::Item::Function(value) => testing::assert_eq(
+            value.name,
+            "visibility_audit::api::item",
+        ),
+        _ => testing::fail("expected public function"),
+    }
+}
+
+#[test]
+fn orders_link_inputs_by_dependencies_and_name() -> unit {
+    let nodes = Vec::new();
+    nodes.push(PackageOrderNode {
+        name: "z",
+        dependencies: Vec::new(),
+        position: 0,
+    });
+    nodes.push(PackageOrderNode {
+        name: "c",
+        dependencies: Vec::new().pushed("a"),
+        position: 1,
+    });
+    nodes.push(PackageOrderNode {
+        name: "a",
+        dependencies: Vec::new(),
+        position: 2,
+    });
+    nodes.push(PackageOrderNode {
+        name: "b",
+        dependencies: Vec::new().pushed("a"),
+        position: 3,
+    });
+    match order_package_nodes(nodes) {
+        Result::Ok(order) => {
+            testing::assert_eq(order.len(), 4);
+            testing::assert_eq(order.get(0), 2);
+            testing::assert_eq(order.get(1), 3);
+            testing::assert_eq(order.get(2), 1);
+            testing::assert_eq(order.get(3), 0)
+        },
+        Result::Err(error) => testing::fail(error),
     }
 }

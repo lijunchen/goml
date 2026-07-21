@@ -25,7 +25,9 @@ struct StandardNeeds {
 
 struct ArtifactCompilation {
     package_name: string,
+    dependency_names: Vec[string],
     hir_file: hir::File,
+    public_hir_file: hir::File,
     core_value: core::File,
     standard_needs: StandardNeeds,
     tests: Vec[TestDescriptor],
@@ -133,6 +135,476 @@ fn merge_hir_files(values: Vec[hir::File], package_name: string) -> hir::File {
         imports: Vec::new(),
         import_aliases: Vec::new(),
         use_traits: Vec::new(),
+        items,
+    }
+}
+
+fn package_item_name(package_name: string, name: string) -> string {
+    if package_name == "main" || package_name == "builtin" {
+        name
+    } else {
+        package_name + "::" + name
+    }
+}
+
+fn public_ast_item_name(package_name: string, value: ast::Item) -> Option[string] {
+    match value {
+        ast::Item::EnumDef(value) => match value.visibility {
+            ast::Visibility::Public => Option::Some(package_item_name(package_name, value.name)),
+            ast::Visibility::Private => Option::None,
+        },
+        ast::Item::StructDef(value) => match value.visibility {
+            ast::Visibility::Public => Option::Some(package_item_name(package_name, value.name)),
+            ast::Visibility::Private => Option::None,
+        },
+        ast::Item::TraitDef(value) => match value.visibility {
+            ast::Visibility::Public => Option::Some(package_item_name(package_name, value.name)),
+            ast::Visibility::Private => Option::None,
+        },
+        ast::Item::Function(value) => match value.visibility {
+            ast::Visibility::Public => Option::Some(package_item_name(package_name, value.name)),
+            ast::Visibility::Private => Option::None,
+        },
+        ast::Item::ExternFunction(value) => match value.visibility {
+            ast::Visibility::Public => Option::Some(package_item_name(package_name, value.name)),
+            ast::Visibility::Private => Option::None,
+        },
+        ast::Item::ImplBlock(_) => Option::None,
+    }
+}
+
+fn public_item_names(
+    values: Vec[ast::LowerResult],
+    package_name: string,
+) -> Vec[string] {
+    let result = Vec::new();
+    for value in values {
+        match value.ast {
+            Option::Some(file) => for item in file.items {
+                match public_ast_item_name(package_name, item) {
+                    Option::Some(name) => result.push(name),
+                    Option::None => (),
+                }
+            },
+            Option::None => (),
+        }
+    };
+    result
+}
+
+fn public_names_contain(values: Vec[string], expected: string) -> bool {
+    let found = Ref::new(false);
+    for value in values {
+        if value == expected {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+fn artifact_string_starts_with(value: string, prefix: string) -> bool {
+    value.byte_len() >= prefix.byte_len()
+        && value.byte_slice(0, prefix.byte_len()) == prefix
+}
+
+fn artifact_string_contains(value: string, expected: string) -> bool {
+    if expected.byte_len() == 0 {
+        true
+    } else if value.byte_len() < expected.byte_len() {
+        false
+    } else {
+        let found = Ref::new(false);
+        for index in range(0, value.byte_len() - expected.byte_len() + 1) {
+            if value.byte_slice(index, index + expected.byte_len()) == expected {
+                found.set(true)
+            } else {
+                ()
+            }
+        };
+        found.get()
+    }
+}
+
+fn local_item_is_public(
+    package_name: string,
+    public_names: Vec[string],
+    name: string,
+) -> bool {
+    let prefix = package_name + "::";
+    if !artifact_string_starts_with(name, prefix) {
+        true
+    } else {
+        let relative = name.byte_slice(prefix.byte_len(), name.byte_len());
+        artifact_string_contains(relative, "::")
+            || public_names_contain(public_names, name)
+    }
+}
+
+fn add_private_local_name(
+    result: Vec[string],
+    package_name: string,
+    public_names: Vec[string],
+    name: string,
+) -> unit {
+    if !local_item_is_public(package_name, public_names, name)
+        && !public_names_contain(result, name)
+    {
+        result.push(name)
+    } else {
+        ()
+    }
+}
+
+fn collect_private_type_names(
+    result: Vec[string],
+    package_name: string,
+    public_names: Vec[string],
+    value: hir::TypeExpr,
+) -> unit {
+    match value {
+        hir::TypeExpr::Con(name) => add_private_local_name(
+            result,
+            package_name,
+            public_names,
+            name,
+        ),
+        hir::TypeExpr::Dyn(name) => add_private_local_name(
+            result,
+            package_name,
+            public_names,
+            name,
+        ),
+        hir::TypeExpr::Tuple(values) => for value in values {
+            collect_private_type_names(result, package_name, public_names, value)
+        },
+        hir::TypeExpr::Projection(base, _) => collect_private_type_names(
+            result,
+            package_name,
+            public_names,
+            base,
+        ),
+        hir::TypeExpr::App(base, args) => {
+            collect_private_type_names(result, package_name, public_names, base);
+            for arg in args {
+                collect_private_type_names(result, package_name, public_names, arg)
+            }
+        },
+        hir::TypeExpr::Array(_, element) => collect_private_type_names(
+            result,
+            package_name,
+            public_names,
+            element,
+        ),
+        hir::TypeExpr::Func(params, ret_ty) => {
+            for param in params {
+                collect_private_type_names(result, package_name, public_names, param)
+            };
+            collect_private_type_names(result, package_name, public_names, ret_ty)
+        },
+        hir::TypeExpr::Unit
+        | hir::TypeExpr::Bool
+        | hir::TypeExpr::Int8
+        | hir::TypeExpr::Int16
+        | hir::TypeExpr::Int32
+        | hir::TypeExpr::Int64
+        | hir::TypeExpr::Uint8
+        | hir::TypeExpr::Uint16
+        | hir::TypeExpr::Uint32
+        | hir::TypeExpr::Uint64
+        | hir::TypeExpr::Float32
+        | hir::TypeExpr::Float64
+        | hir::TypeExpr::String
+        | hir::TypeExpr::Char => (),
+    }
+}
+
+fn collect_private_trait_ref_names(
+    result: Vec[string],
+    package_name: string,
+    public_names: Vec[string],
+    value: hir::TraitRef,
+) -> unit {
+    add_private_local_name(result, package_name, public_names, value.name);
+    for arg in value.args {
+        collect_private_type_names(result, package_name, public_names, arg)
+    }
+}
+
+fn collect_private_predicate_names(
+    result: Vec[string],
+    package_name: string,
+    public_names: Vec[string],
+    value: hir::Predicate,
+) -> unit {
+    match value {
+        hir::Predicate::Trait(for_ty, trait_ref) => {
+            collect_private_type_names(result, package_name, public_names, for_ty);
+            collect_private_trait_ref_names(
+                result,
+                package_name,
+                public_names,
+                trait_ref,
+            )
+        },
+        hir::Predicate::Equality(left, right) => {
+            collect_private_type_names(result, package_name, public_names, left);
+            collect_private_type_names(result, package_name, public_names, right)
+        },
+    }
+}
+
+fn collect_private_bounds_names(
+    result: Vec[string],
+    package_name: string,
+    public_names: Vec[string],
+    values: Vec[(string, Vec[hir::TraitRef])],
+) -> unit {
+    for value in values {
+        for trait_ref in value.1 {
+            collect_private_trait_ref_names(
+                result,
+                package_name,
+                public_names,
+                trait_ref,
+            )
+        }
+    }
+}
+
+fn trait_impl_header_is_public(
+    value: hir::ImplBlock,
+    package_name: string,
+    public_names: Vec[string],
+) -> bool {
+    match value.trait_ref {
+        Option::Some(trait_ref) => {
+            let private_names = Vec::new();
+            collect_private_type_names(
+                private_names,
+                package_name,
+                public_names,
+                value.for_type,
+            );
+            local_item_is_public(package_name, public_names, trait_ref.name)
+                && private_names.len() == 0
+        },
+        Option::None => true,
+    }
+}
+
+fn trait_impl_exposed_private_names(
+    value: hir::ImplBlock,
+    package_name: string,
+    public_names: Vec[string],
+) -> Vec[string] {
+    let result = Vec::new();
+    match value.trait_ref {
+        Option::Some(trait_ref) => for arg in trait_ref.args {
+            collect_private_type_names(result, package_name, public_names, arg)
+        },
+        Option::None => (),
+    };
+    collect_private_bounds_names(
+        result,
+        package_name,
+        public_names,
+        value.generic_bounds,
+    );
+    for predicate in value.predicates {
+        collect_private_predicate_names(
+            result,
+            package_name,
+            public_names,
+            predicate,
+        )
+    };
+    for associated in value.associated_types {
+        collect_private_type_names(
+            result,
+            package_name,
+            public_names,
+            associated.1,
+        )
+    };
+    for method in value.methods {
+        collect_private_bounds_names(
+            result,
+            package_name,
+            public_names,
+            method.generic_bounds,
+        );
+        for predicate in method.predicates {
+            collect_private_predicate_names(
+                result,
+                package_name,
+                public_names,
+                predicate,
+            )
+        };
+        for param in method.params {
+            collect_private_type_names(
+                result,
+                package_name,
+                public_names,
+                param.1,
+            )
+        };
+        match method.ret_ty {
+            Option::Some(ret_ty) => collect_private_type_names(
+                result,
+                package_name,
+                public_names,
+                ret_ty,
+            ),
+            Option::None => (),
+        }
+    };
+    result
+}
+
+fn artifact_string_less(left: string, right: string) -> bool {
+    let common = if left.byte_len() < right.byte_len() {
+        left.byte_len()
+    } else {
+        right.byte_len()
+    };
+    for index in range(0, common) {
+        if left.byte_get(index) < right.byte_get(index) {
+            return true
+        } else if left.byte_get(index) > right.byte_get(index) {
+            return false
+        } else {
+            ()
+        }
+    };
+    left.byte_len() < right.byte_len()
+}
+
+fn sort_artifact_names(values: Vec[string]) -> Vec[string] {
+    for index in range(1, values.len()) {
+        let current = values.get(index);
+        let destination = Ref::new(index);
+        while destination.get() > 0
+            && artifact_string_less(current, values.get(destination.get() - 1))
+        {
+            values.set(destination.get(), values.get(destination.get() - 1));
+            destination.set(destination.get() - 1)
+        };
+        values.set(destination.get(), current)
+    };
+    values
+}
+
+fn join_artifact_names(values: Vec[string]) -> string {
+    let result = Ref::new("");
+    for index in range(0, values.len()) {
+        if index > 0 {
+            result.set(result.get() + ", ")
+        } else {
+            ()
+        };
+        result.set(result.get() + values.get(index))
+    };
+    result.get()
+}
+
+fn validate_public_trait_impls(
+    value: hir::File,
+    package_name: string,
+    public_names: Vec[string],
+) -> Result[unit, string] {
+    for item in value.items {
+        match item {
+            hir::Item::ImplBlock(value) => match value.trait_ref {
+                Option::Some(trait_ref) => if trait_impl_header_is_public(
+                    value,
+                    package_name,
+                    public_names,
+                ) {
+                    let private_names = sort_artifact_names(
+                        trait_impl_exposed_private_names(
+                            value,
+                            package_name,
+                            public_names,
+                        ),
+                    );
+                    if private_names.len() > 0 {
+                        return Result::Err(
+                            "Public trait implementation "
+                                + trait_ref.name
+                                + " exposes private type "
+                                + join_artifact_names(private_names),
+                        )
+                    } else {
+                        ()
+                    }
+                } else {
+                    ()
+                },
+                Option::None => (),
+            },
+            _ => (),
+        }
+    };
+    Result::Ok(())
+}
+
+fn exported_hir_file(value: hir::File, public_names: Vec[string]) -> hir::File {
+    let items = Vec::new();
+    let package_name = value.package_name;
+    for item in value.items {
+        match item {
+            hir::Item::EnumDef(value) => if public_names_contain(public_names, value.name) {
+                items.push(hir::Item::EnumDef(value))
+            } else {
+                ()
+            },
+            hir::Item::StructDef(value) => if public_names_contain(public_names, value.name) {
+                items.push(hir::Item::StructDef(value))
+            } else {
+                ()
+            },
+            hir::Item::TraitDef(value) => if public_names_contain(public_names, value.name) {
+                items.push(hir::Item::TraitDef(value))
+            } else {
+                ()
+            },
+            hir::Item::Function(value) => if public_names_contain(public_names, value.name) {
+                items.push(hir::Item::Function(value))
+            } else {
+                ()
+            },
+            hir::Item::ExternFunction(value) => if public_names_contain(public_names, value.name) {
+                items.push(hir::Item::ExternFunction(value))
+            } else {
+                ()
+            },
+            hir::Item::ImplBlock(value) => match value.trait_ref {
+                Option::Some(_) => if trait_impl_header_is_public(
+                    value,
+                    package_name,
+                    public_names,
+                ) && trait_impl_exposed_private_names(
+                    value,
+                    package_name,
+                    public_names,
+                ).len() == 0 {
+                    items.push(hir::Item::ImplBlock(value))
+                } else {
+                    ()
+                },
+                Option::None => items.push(hir::Item::ImplBlock(value)),
+            },
+        }
+    };
+    hir::File {
+        package_name: value.package_name,
+        path: value.path,
+        imports: value.imports,
+        import_aliases: value.import_aliases,
+        use_traits: value.use_traits,
         items,
     }
 }
@@ -260,7 +732,7 @@ fn compile_source_artifact(
             },
         };
         let dependency = compile_source_artifact(world, dependency_artifact);
-        dependency_hir.push(dependency.hir_file);
+        dependency_hir.push(dependency.public_hir_file);
         dependency_core.push(dependency.core_value)
     };
     let parsed = Vec::new();
@@ -268,6 +740,7 @@ fn compile_source_artifact(
         parsed.push(parser::parse(read_source(source_path)))
     };
     let ast_values = ast::lower_package(parsed);
+    let public_names = public_item_names(ast_values, artifact.package_name);
     let tests = match collect_package_tests(
         artifact.package_name,
         ast_values,
@@ -308,6 +781,7 @@ fn compile_source_artifact(
         hir_files.push(checked_hir_file(hir_value, artifact.package_name))
     };
     let hir_file = merge_hir_files(hir_files, artifact.package_name);
+    let dependency_names = direct_hir_dependencies(hir_files);
     let tast_value = checked_tast(
         tast::check_package_files_for_link_with_dependencies(
             hir_files,
@@ -315,6 +789,14 @@ fn compile_source_artifact(
         ),
         artifact.package_name,
     );
+    match validate_public_trait_impls(
+        hir_file,
+        artifact.package_name,
+        public_names,
+    ) {
+        Result::Ok(()) => (),
+        Result::Err(error) => fail("error[typer]: " + error),
+    };
     let core_value = core::lower_with_counter_and_types(
         tast_value,
         Ref::new(0),
@@ -323,7 +805,9 @@ fn compile_source_artifact(
     );
     let compilation = ArtifactCompilation {
         package_name: artifact.package_name,
+        dependency_names,
         hir_file,
+        public_hir_file: exported_hir_file(hir_file, public_names),
         core_value,
         standard_needs: needs.get(),
         tests,
@@ -516,6 +1000,7 @@ fn run_link_command(args: Vec[string]) -> unit {
     };
     let world = package_world();
     let dependencies = Vec::new();
+    let compilations = Vec::new();
     let entry: Ref[Option[ArtifactCompilation]] = Ref::new(Option::None);
     let needs = Ref::new(no_standard_needs());
     for input in command.inputs {
@@ -533,6 +1018,16 @@ fn run_link_command(args: Vec[string]) -> unit {
         };
         let compilation = compile_source_artifact(world, artifact);
         needs.set(merge_standard_needs(needs.get(), compilation.standard_needs));
+        compilations.push(compilation)
+    };
+    let compilations = match order_artifact_compilations(compilations) {
+        Result::Ok(values) => values,
+        Result::Err(error) => {
+            fail("error[compile]: " + error);
+            Vec::new()
+        },
+    };
+    for compilation in compilations {
         if compilation.package_name == command.entry {
             entry.set(Option::Some(compilation))
         } else {
@@ -545,7 +1040,16 @@ fn run_link_command(args: Vec[string]) -> unit {
             fail("error[compile]: missing entry package " + command.entry);
             ArtifactCompilation {
                 package_name: command.entry,
+                dependency_names: Vec::new(),
                 hir_file: hir::File {
+                    package_name: command.entry,
+                    path: "<unknown>",
+                    imports: Vec::new(),
+                    import_aliases: Vec::new(),
+                    use_traits: Vec::new(),
+                    items: Vec::new(),
+                },
+                public_hir_file: hir::File {
                     package_name: command.entry,
                     path: "<unknown>",
                     imports: Vec::new(),
@@ -608,6 +1112,7 @@ fn run_test_link_command(args: Vec[string]) -> unit {
     };
     let world = package_world();
     let package_cores = Vec::new();
+    let compilations = Vec::new();
     let needs = Ref::new(no_standard_needs());
     for input in command.inputs {
         let artifact = match read_source_artifact(input) {
@@ -624,6 +1129,16 @@ fn run_test_link_command(args: Vec[string]) -> unit {
         };
         let compilation = compile_source_artifact(world, artifact);
         needs.set(merge_standard_needs(needs.get(), compilation.standard_needs));
+        compilations.push(compilation)
+    };
+    let compilations = match order_artifact_compilations(compilations) {
+        Result::Ok(values) => values,
+        Result::Err(error) => {
+            fail("error[compile]: " + error);
+            Vec::new()
+        },
+    };
+    for compilation in compilations {
         package_cores.push(compilation.core_value)
     };
     let tests = Vec::new();
