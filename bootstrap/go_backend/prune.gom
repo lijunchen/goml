@@ -1,26 +1,31 @@
 package go_backend;
 
-fn name_present(values: Vec[string], expected: string) -> bool {
-    let found = Ref::new(false);
-    for value in values {
-        if value == expected {
-            found.set(true)
-        } else {
-            ()
-        }
-    };
-    found.get()
+struct NameSet {
+    values: Vec[string],
+    present: HashMap[string, unit],
 }
 
-fn add_reachable(values: Vec[string], value: string) -> unit {
-    if name_present(values, value) == false {
-        values.push(value)
+fn new_name_set() -> NameSet {
+    NameSet {
+        values: Vec::new(),
+        present: HashMap::new(),
+    }
+}
+
+fn name_present(values: NameSet, expected: string) -> bool {
+    values.present.contains(expected)
+}
+
+fn add_reachable(values: NameSet, value: string) -> unit {
+    if values.present.contains(value) == false {
+        values.present.set(value, ());
+        values.values.push(value)
     } else {
         ()
     }
 }
 
-fn collect_type_names(result: Vec[string], value: Type) -> unit {
+fn collect_type_names(result: NameSet, value: Type) -> unit {
     match value {
         Type::Named(name) => add_reachable(result, name),
         Type::Pointer(inner) | Type::Array(_, inner) | Type::Slice(inner) => {
@@ -60,7 +65,7 @@ fn collect_type_names(result: Vec[string], value: Type) -> unit {
     }
 }
 
-fn collect_expr_names(result: Vec[string], value: Expr) -> unit {
+fn collect_expr_names(result: NameSet, value: Expr) -> unit {
     match value {
         Expr::Var(name) => add_reachable(result, name),
         Expr::Call(func, args) => {
@@ -122,7 +127,7 @@ fn collect_expr_names(result: Vec[string], value: Expr) -> unit {
     }
 }
 
-fn collect_stmt_names(result: Vec[string], value: Stmt) -> unit {
+fn collect_stmt_names(result: NameSet, value: Stmt) -> unit {
     match value {
         Stmt::Expr(expr) | Stmt::Go(expr) => collect_expr_names(result, expr),
         Stmt::Var(_, ty, initial) => {
@@ -195,7 +200,7 @@ fn collect_stmt_names(result: Vec[string], value: Stmt) -> unit {
     }
 }
 
-fn collect_block_names(result: Vec[string], value: Block) -> unit {
+fn collect_block_names(result: NameSet, value: Block) -> unit {
     for stmt in value.stmts {
         collect_stmt_names(result, stmt)
     }
@@ -212,9 +217,9 @@ fn name_uses_import(name: string, alias: string) -> bool {
     }
 }
 
-fn import_is_used(names: Vec[string], alias: string) -> bool {
+fn import_is_used(names: NameSet, alias: string) -> bool {
     let used = Ref::new(false);
-    for name in names {
+    for name in names.values {
         if name_uses_import(name, alias) {
             used.set(true)
         } else {
@@ -224,7 +229,7 @@ fn import_is_used(names: Vec[string], alias: string) -> bool {
     used.get()
 }
 
-fn collect_item_names(result: Vec[string], value: Item) -> unit {
+fn collect_item_names(result: NameSet, value: Item) -> unit {
     match value {
         Item::TypeDef(definition) => collect_type_names(result, definition.ty),
         Item::ConstGroup(group) => {
@@ -275,7 +280,7 @@ fn collect_item_names(result: Vec[string], value: Item) -> unit {
 }
 
 fn prune_imports(values: Vec[Item]) -> Vec[Item] {
-    let names: Vec[string] = Vec::new();
+    let names = new_name_set();
     for value in values {
         collect_item_names(names, value)
     };
@@ -304,8 +309,8 @@ fn prune_imports(values: Vec[Item]) -> Vec[Item] {
 }
 
 pub fn prune_functions(value: File) -> File {
-    let reachable: Vec[string] = Vec::new();
-    let expanded: Vec[string] = Vec::new();
+    let reachable = new_name_set();
+    let expanded = new_name_set();
     add_reachable(reachable, "main");
     let changed = Ref::new(true);
     while changed.get() {
