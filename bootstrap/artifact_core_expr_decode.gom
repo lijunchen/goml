@@ -1,0 +1,728 @@
+package main;
+
+use gomlang::parser::core;
+use gomlang::parser::tast;
+
+fn artifact_decode_core_type_field(
+    context: ArtifactCoreDecodeContext,
+    object: Vec[(string, ArtifactJsonValue)],
+    name: string,
+) -> Result[tast::Type, string] {
+    match artifact_json_required_field(object, name) {
+        Result::Ok(value) => artifact_decode_type(context.types, value),
+        Result::Err(error) => Result::Err(error),
+    }
+}
+
+fn artifact_decode_core_expr_field(
+    context: ArtifactCoreDecodeContext,
+    object: Vec[(string, ArtifactJsonValue)],
+    name: string,
+) -> Result[core::Expr, string] {
+    match artifact_json_required_field(object, name) {
+        Result::Ok(value) => artifact_decode_core_expr(context, value),
+        Result::Err(error) => Result::Err(error),
+    }
+}
+
+fn artifact_decode_core_exprs(
+    context: ArtifactCoreDecodeContext,
+    value: ArtifactJsonValue,
+    expected: string,
+) -> Result[Vec[core::Expr], string] {
+    let values = match artifact_json_array(value, expected) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let result = Vec::new();
+    for value in values {
+        match artifact_decode_core_expr(context, value) {
+            Result::Ok(value) => result.push(value),
+            Result::Err(error) => return Result::Err(error),
+        }
+    };
+    Result::Ok(result)
+}
+
+fn artifact_decode_core_expr_array_field(
+    context: ArtifactCoreDecodeContext,
+    object: Vec[(string, ArtifactJsonValue)],
+    name: string,
+) -> Result[Vec[core::Expr], string] {
+    match artifact_json_required_field(object, name) {
+        Result::Ok(value) => artifact_decode_core_exprs(context, value, name),
+        Result::Err(error) => Result::Err(error),
+    }
+}
+
+fn artifact_decode_optional_core_expr(
+    context: ArtifactCoreDecodeContext,
+    value: ArtifactJsonValue,
+) -> Result[Option[core::Expr], string] {
+    match value {
+        ArtifactJsonValue::Null => Result::Ok(Option::None),
+        other => match artifact_decode_core_expr(context, other) {
+            Result::Ok(value) => Result::Ok(Option::Some(value)),
+            Result::Err(error) => Result::Err(error),
+        },
+    }
+}
+
+fn artifact_decode_closure_params(
+    context: ArtifactCoreDecodeContext,
+    value: ArtifactJsonValue,
+) -> Result[Vec[tast::ClosureParam], string] {
+    let values = match artifact_json_array(value, "closure parameters") {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let result = Vec::new();
+    for value in values {
+        let object = match artifact_json_object(value, "closure parameter") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let name = match artifact_json_field_string(object, "name") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let ty = match artifact_decode_core_type_field(context, object, "ty") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        result.push(tast::ClosureParam { name, ty })
+    };
+    Result::Ok(result)
+}
+
+fn artifact_decode_core_arms(
+    context: ArtifactCoreDecodeContext,
+    value: ArtifactJsonValue,
+) -> Result[Vec[core::Arm], string] {
+    let values = match artifact_json_array(value, "match arms") {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let result = Vec::new();
+    for value in values {
+        let object = match artifact_json_object(value, "match arm") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let lhs = match artifact_decode_core_expr_field(context, object, "lhs") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let body = match artifact_decode_core_expr_field(context, object, "body") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        result.push(core::Arm { lhs, body })
+    };
+    Result::Ok(result)
+}
+
+fn artifact_decode_core_expr(
+    context: ArtifactCoreDecodeContext,
+    value: ArtifactJsonValue,
+) -> Result[core::Expr, string] {
+    let variant = match artifact_json_object(value, "Core expression") {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    if variant.len() != 1 {
+        return Result::Err(artifact_decode_error("Core expression variant"))
+    } else {
+        ()
+    };
+    let kind = variant.get(0).0;
+    let object = match artifact_json_object(variant.get(0).1, "Core expression payload") {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    if kind == "EVar" {
+        let name = match artifact_json_field_string(object, "name") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_decode_core_type_field(context, object, "ty") {
+            Result::Ok(ty) => Result::Ok(core::Expr::Var(name, ty)),
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if kind == "ECallable" {
+        let name = match artifact_json_field_string(object, "name") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let callable = match artifact_json_required_field(object, "body") {
+            Result::Ok(value) => match artifact_decode_callable_body(name, value) {
+                Result::Ok(value) => value,
+                Result::Err(error) => return Result::Err(error),
+            },
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_decode_core_type_field(context, object, "ty") {
+            Result::Ok(ty) => Result::Ok(core::Expr::Callable(callable, ty)),
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if kind == "EPrim" {
+        let primitive = match artifact_json_required_field(object, "value") {
+            Result::Ok(value) => match artifact_decode_primitive(value) {
+                Result::Ok(value) => value,
+                Result::Err(error) => return Result::Err(error),
+            },
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_decode_core_type_field(context, object, "ty") {
+            Result::Ok(ty) => Result::Ok(core::Expr::Prim(primitive, ty)),
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if kind == "EConstr" {
+        let constructor = match artifact_json_required_field(object, "constructor") {
+            Result::Ok(value) => match artifact_decode_constructor(context, value) {
+                Result::Ok(value) => value,
+                Result::Err(error) => return Result::Err(error),
+            },
+            Result::Err(error) => return Result::Err(error),
+        };
+        let args = match artifact_decode_core_expr_array_field(context, object, "args") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_decode_core_type_field(context, object, "ty") {
+            Result::Ok(ty) => Result::Ok(core::Expr::Constr(constructor, args, ty)),
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if kind == "ETuple" || kind == "EArray" {
+        let items = match artifact_decode_core_expr_array_field(context, object, "items") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_decode_core_type_field(context, object, "ty") {
+            Result::Ok(ty) => if kind == "ETuple" {
+                Result::Ok(core::Expr::Tuple(items, ty))
+            } else {
+                Result::Ok(core::Expr::Array(items, ty))
+            },
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if kind == "EClosure" {
+        let params = match artifact_json_required_field(object, "params") {
+            Result::Ok(value) => match artifact_decode_closure_params(context, value) {
+                Result::Ok(value) => value,
+                Result::Err(error) => return Result::Err(error),
+            },
+            Result::Err(error) => return Result::Err(error),
+        };
+        let body = match artifact_decode_core_expr_field(context, object, "body") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_decode_core_type_field(context, object, "ty") {
+            Result::Ok(ty) => Result::Ok(core::Expr::Closure(params, body, ty)),
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if kind == "EBlock" {
+        let block = match artifact_json_required_field(object, "block") {
+            Result::Ok(value) => match artifact_decode_core_block(context, value) {
+                Result::Ok(value) => value,
+                Result::Err(error) => return Result::Err(error),
+            },
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_decode_core_type_field(context, object, "ty") {
+            Result::Ok(ty) => Result::Ok(core::Expr::Block(block, ty)),
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if kind == "EMatch" {
+        let expr = match artifact_decode_core_expr_field(context, object, "expr") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let arms = match artifact_json_required_field(object, "arms") {
+            Result::Ok(value) => match artifact_decode_core_arms(context, value) {
+                Result::Ok(value) => value,
+                Result::Err(error) => return Result::Err(error),
+            },
+            Result::Err(error) => return Result::Err(error),
+        };
+        let default = match artifact_json_required_field(object, "default") {
+            Result::Ok(value) => match artifact_decode_optional_core_expr(context, value) {
+                Result::Ok(value) => value,
+                Result::Err(error) => return Result::Err(error),
+            },
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_decode_core_type_field(context, object, "ty") {
+            Result::Ok(ty) => Result::Ok(core::Expr::Match(expr, arms, default, ty)),
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if kind == "EIf" {
+        let cond = match artifact_decode_core_expr_field(context, object, "cond") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let then_branch = match artifact_decode_core_expr_field(context, object, "then_branch") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let else_branch = match artifact_decode_core_expr_field(context, object, "else_branch") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_decode_core_type_field(context, object, "ty") {
+            Result::Ok(ty) => Result::Ok(core::Expr::If(cond, then_branch, else_branch, ty)),
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if kind == "EWhile" {
+        let cond = match artifact_decode_core_expr_field(context, object, "cond") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let body = match artifact_decode_core_expr_field(context, object, "body") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_decode_core_type_field(context, object, "ty") {
+            Result::Ok(ty) => Result::Ok(core::Expr::While(cond, body, ty)),
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if kind == "EBreak" || kind == "EContinue" {
+        match artifact_decode_core_type_field(context, object, "ty") {
+            Result::Ok(ty) => if kind == "EBreak" {
+                Result::Ok(core::Expr::Break(ty))
+            } else {
+                Result::Ok(core::Expr::Continue(ty))
+            },
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if kind == "EReturn" {
+        let expr = match artifact_json_required_field(object, "expr") {
+            Result::Ok(value) => match artifact_decode_optional_core_expr(context, value) {
+                Result::Ok(value) => value,
+                Result::Err(error) => return Result::Err(error),
+            },
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_decode_core_type_field(context, object, "ty") {
+            Result::Ok(ty) => Result::Ok(core::Expr::Return(expr, ty)),
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if kind == "EGo" {
+        let expr = match artifact_decode_core_expr_field(context, object, "expr") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_decode_core_type_field(context, object, "ty") {
+            Result::Ok(ty) => Result::Ok(core::Expr::Go(expr, ty)),
+            Result::Err(error) => Result::Err(error),
+        }
+    } else {
+        artifact_decode_core_expr_tail(context, kind, object)
+    }
+}
+
+fn artifact_decode_core_index_field(
+    object: Vec[(string, ArtifactJsonValue)],
+    name: string,
+) -> Result[int32, string] {
+    match artifact_json_required_field(object, name) {
+        Result::Ok(value) => match artifact_json_number_value(value, name) {
+            Result::Ok(value) => artifact_parse_nonnegative_int(value),
+            Result::Err(error) => Result::Err(error),
+        },
+        Result::Err(error) => Result::Err(error),
+    }
+}
+
+fn artifact_decode_core_expr_tail(
+    context: ArtifactCoreDecodeContext,
+    kind: string,
+    object: Vec[(string, ArtifactJsonValue)],
+) -> Result[core::Expr, string] {
+    if kind == "EConstrGet" {
+        let expr = match artifact_decode_core_expr_field(context, object, "expr") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let constructor = match artifact_json_required_field(object, "constructor") {
+            Result::Ok(value) => match artifact_decode_constructor(context, value) {
+                Result::Ok(value) => value,
+                Result::Err(error) => return Result::Err(error),
+            },
+            Result::Err(error) => return Result::Err(error),
+        };
+        let field_index = match artifact_decode_core_index_field(object, "field_index") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_decode_core_type_field(context, object, "ty") {
+            Result::Ok(ty) => Result::Ok(core::Expr::ConstrGet(
+                expr,
+                constructor,
+                field_index,
+                ty,
+            )),
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if kind == "EUnary" {
+        let op = match artifact_json_field_string(object, "op") {
+            Result::Ok(value) => match artifact_decode_unary(value) {
+                Result::Ok(value) => value,
+                Result::Err(error) => return Result::Err(error),
+            },
+            Result::Err(error) => return Result::Err(error),
+        };
+        let expr = match artifact_decode_core_expr_field(context, object, "expr") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_decode_core_type_field(context, object, "ty") {
+            Result::Ok(ty) => Result::Ok(core::Expr::Unary(op, expr, ty)),
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if kind == "ECast" {
+        let expr = match artifact_decode_core_expr_field(context, object, "expr") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_decode_core_type_field(context, object, "ty") {
+            Result::Ok(ty) => Result::Ok(core::Expr::Cast(expr, ty)),
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if kind == "EBinary" {
+        let op = match artifact_json_field_string(object, "op") {
+            Result::Ok(value) => match artifact_decode_binary(value) {
+                Result::Ok(value) => value,
+                Result::Err(error) => return Result::Err(error),
+            },
+            Result::Err(error) => return Result::Err(error),
+        };
+        let lhs = match artifact_decode_core_expr_field(context, object, "lhs") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let rhs = match artifact_decode_core_expr_field(context, object, "rhs") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_decode_core_type_field(context, object, "ty") {
+            Result::Ok(ty) => Result::Ok(core::Expr::Binary(op, lhs, rhs, ty)),
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if kind == "EAssign" {
+        let name = match artifact_json_field_string(object, "name") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let value = match artifact_decode_core_expr_field(context, object, "value") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let target_ty = match artifact_decode_core_type_field(context, object, "target_ty") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_decode_core_type_field(context, object, "ty") {
+            Result::Ok(ty) => Result::Ok(core::Expr::Assign(name, value, target_ty, ty)),
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if kind == "ECall" {
+        let func = match artifact_decode_core_expr_field(context, object, "func") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let args = match artifact_decode_core_expr_array_field(context, object, "args") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_decode_core_type_field(context, object, "ty") {
+            Result::Ok(ty) => Result::Ok(core::Expr::Call(func, args, ty)),
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if kind == "EToDyn" {
+        let trait_name = match artifact_json_field_string(object, "trait_name") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let for_ty = match artifact_decode_core_type_field(context, object, "for_ty") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let expr = match artifact_decode_core_expr_field(context, object, "expr") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_decode_core_type_field(context, object, "ty") {
+            Result::Ok(ty) => Result::Ok(core::Expr::ToDyn(trait_name, for_ty, expr, ty)),
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if kind == "EDynCall" {
+        let trait_name = match artifact_json_field_string(object, "trait_name") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let method_name = match artifact_json_field_string(object, "method_name") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let receiver = match artifact_decode_core_expr_field(context, object, "receiver") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let args = match artifact_decode_core_expr_array_field(context, object, "args") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_decode_core_type_field(context, object, "ty") {
+            Result::Ok(ty) => Result::Ok(core::Expr::DynCall(
+                trait_name,
+                method_name,
+                receiver,
+                args,
+                ty,
+            )),
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if kind == "ETraitCall" {
+        let trait_ref = match artifact_json_required_field(object, "trait_ref") {
+            Result::Ok(value) => match artifact_decode_trait_ref(context.types, value) {
+                Result::Ok(value) => value,
+                Result::Err(error) => return Result::Err(error),
+            },
+            Result::Err(error) => return Result::Err(error),
+        };
+        let method_name = match artifact_json_field_string(object, "method_name") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let receiver = match artifact_decode_core_expr_field(context, object, "receiver") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let args = match artifact_decode_core_expr_array_field(context, object, "args") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_decode_core_type_field(context, object, "ty") {
+            Result::Ok(ty) => Result::Ok(core::Expr::TraitCall(
+                trait_ref,
+                method_name,
+                receiver,
+                args,
+                ty,
+            )),
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if kind == "EProj" {
+        let tuple = match artifact_decode_core_expr_field(context, object, "tuple") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let index = match artifact_decode_core_index_field(object, "index") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_decode_core_type_field(context, object, "ty") {
+            Result::Ok(ty) => Result::Ok(core::Expr::Proj(tuple, index, ty)),
+            Result::Err(error) => Result::Err(error),
+        }
+    } else {
+        Result::Err(artifact_decode_error("Core expression kind"))
+    }
+}
+
+fn artifact_decode_core_block(
+    context: ArtifactCoreDecodeContext,
+    value: ArtifactJsonValue,
+) -> Result[core::Block, string] {
+    let object = match artifact_json_object(value, "Core block") {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let values = match artifact_json_field_array(object, "stmts") {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let stmts = Vec::new();
+    for value in values {
+        let statement = match artifact_json_object(value, "Core let statement") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let name = match artifact_json_field_string(statement, "name") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let value = match artifact_decode_core_expr_field(context, statement, "value") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let ty = match artifact_decode_core_type_field(context, statement, "ty") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        stmts.push(core::LetStmt { name, value, ty })
+    };
+    let tail = match artifact_json_required_field(object, "tail") {
+        Result::Ok(value) => match artifact_decode_optional_core_expr(context, value) {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        },
+        Result::Err(error) => return Result::Err(error),
+    };
+    Result::Ok(core::Block { stmts, tail })
+}
+
+fn artifact_decode_core_trait_impl(
+    context: ArtifactCoreDecodeContext,
+    value: ArtifactJsonValue,
+) -> Result[Option[core::TraitImpl], string] {
+    match value {
+        ArtifactJsonValue::Null => Result::Ok(Option::None),
+        other => {
+            let object = match artifact_json_object(other, "Core trait implementation") {
+                Result::Ok(value) => value,
+                Result::Err(error) => return Result::Err(error),
+            };
+            let trait_ref = match artifact_json_required_field(object, "trait_ref") {
+                Result::Ok(value) => match artifact_decode_trait_ref(context.types, value) {
+                    Result::Ok(value) => value,
+                    Result::Err(error) => return Result::Err(error),
+                },
+                Result::Err(error) => return Result::Err(error),
+            };
+            let for_ty = match artifact_decode_core_type_field(context, object, "for_ty") {
+                Result::Ok(value) => value,
+                Result::Err(error) => return Result::Err(error),
+            };
+            Result::Ok(Option::Some(core::TraitImpl {
+                trait_ref,
+                for_ty,
+                associated_types: Vec::new(),
+            }))
+        },
+    }
+}
+
+fn artifact_decode_core_params(
+    context: ArtifactCoreDecodeContext,
+    value: ArtifactJsonValue,
+) -> Result[Vec[(string, tast::Type)], string] {
+    let values = match artifact_json_array(value, "Core function parameters") {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let result = Vec::new();
+    for value in values {
+        let pair = match artifact_json_array(value, "Core function parameter") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        if pair.len() != 2 {
+            return Result::Err(artifact_decode_error("Core function parameter"))
+        } else {
+            ()
+        };
+        let name = match artifact_json_string_value(pair.get(0), "Core parameter name") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let ty = match artifact_decode_type(context.types, pair.get(1)) {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        result.push((name, ty))
+    };
+    Result::Ok(result)
+}
+
+fn artifact_decode_core_function(
+    context: ArtifactCoreDecodeContext,
+    value: ArtifactJsonValue,
+) -> Result[core::Function, string] {
+    let object = match artifact_json_object(value, "Core function") {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let name = match artifact_json_field_string(object, "name") {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let root = match artifact_json_required_field(object, "root") {
+        Result::Ok(value) => match artifact_json_bool_value(value, "Core function root") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        },
+        Result::Err(error) => return Result::Err(error),
+    };
+    let generics = match artifact_json_required_field(object, "generics") {
+        Result::Ok(value) => match artifact_decode_string_array(value, "Core function generics") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        },
+        Result::Err(error) => return Result::Err(error),
+    };
+    let trait_impl = match artifact_json_required_field(object, "trait_impl") {
+        Result::Ok(value) => match artifact_decode_core_trait_impl(context, value) {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        },
+        Result::Err(error) => return Result::Err(error),
+    };
+    let params = match artifact_json_required_field(object, "params") {
+        Result::Ok(value) => match artifact_decode_core_params(context, value) {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        },
+        Result::Err(error) => return Result::Err(error),
+    };
+    let ret_ty = match artifact_decode_core_type_field(context, object, "ret_ty") {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let body = match artifact_json_required_field(object, "body") {
+        Result::Ok(value) => match artifact_decode_core_block(context, value) {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        },
+        Result::Err(error) => return Result::Err(error),
+    };
+    Result::Ok(core::Function {
+        name,
+        root,
+        generics,
+        predicates: Vec::new(),
+        trait_impl,
+        params,
+        ret_ty,
+        body,
+    })
+}
+
+fn artifact_decode_core_file(
+    context: ArtifactCoreDecodeContext,
+    value: ArtifactJsonValue,
+) -> Result[core::File, string] {
+    let object = match artifact_json_object(value, "Core file") {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let values = match artifact_json_field_array(object, "toplevels") {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let functions = Vec::new();
+    for value in values {
+        match artifact_decode_core_function(context, value) {
+            Result::Ok(value) => functions.push(value),
+            Result::Err(error) => return Result::Err(error),
+        }
+    };
+    Result::Ok(core::File {
+        functions,
+        enums: context.enums,
+        structs: context.structs,
+        type_instances: Vec::new(),
+    })
+}

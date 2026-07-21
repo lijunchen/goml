@@ -1,0 +1,229 @@
+package main;
+
+use gomlang::parser::ast;
+use gomlang::parser::core;
+use gomlang::parser::tast;
+
+struct ArtifactCoreDecodeContext {
+    types: ArtifactDecodeContext,
+    struct_fields: Vec[(string, Vec[string])],
+    enums: Vec[tast::EnumDef],
+    structs: Vec[tast::StructDef],
+}
+
+fn artifact_core_decode_context(value: ArtifactPackageExports) -> ArtifactCoreDecodeContext {
+    let types = ArtifactDecodeContext {
+        enum_names: value.enum_type_names,
+        struct_names: value.struct_type_names,
+    };
+    let struct_fields = Vec::new();
+    for definition in value.structs {
+        let fields = Vec::new();
+        for field in definition.fields {
+            fields.push(field.0)
+        };
+        struct_fields.push((definition.name, fields))
+    };
+    ArtifactCoreDecodeContext {
+        types,
+        struct_fields,
+        enums: value.enums,
+        structs: value.structs,
+    }
+}
+
+fn artifact_decode_struct_fields(
+    context: ArtifactCoreDecodeContext,
+    name: string,
+) -> Vec[string] {
+    let result = Vec::new();
+    for value in context.struct_fields {
+        if value.0 == name {
+            for field in value.1 {
+                result.push(field)
+            }
+        } else {
+            ()
+        }
+    };
+    result
+}
+
+fn artifact_decode_primitive_payload(
+    value: ArtifactJsonValue,
+) -> Result[ArtifactJsonValue, string] {
+    let object = match artifact_json_object(value, "primitive payload") {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    artifact_json_required_field(object, "value")
+}
+
+fn artifact_decode_numeric_primitive(
+    kind: string,
+    value: ArtifactJsonValue,
+) -> Result[tast::Primitive, string] {
+    let value = match artifact_decode_primitive_payload(value) {
+        Result::Ok(value) => match artifact_json_number_value(value, "numeric primitive") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        },
+        Result::Err(error) => return Result::Err(error),
+    };
+    match kind {
+        "Int8" => Result::Ok(tast::Primitive::Int8(value)),
+        "Int16" => Result::Ok(tast::Primitive::Int16(value)),
+        "Int32" => Result::Ok(tast::Primitive::Int32(value)),
+        "Int64" => Result::Ok(tast::Primitive::Int64(value)),
+        "UInt8" => Result::Ok(tast::Primitive::Uint8(value)),
+        "UInt16" => Result::Ok(tast::Primitive::Uint16(value)),
+        "UInt32" => Result::Ok(tast::Primitive::Uint32(value)),
+        "UInt64" => Result::Ok(tast::Primitive::Uint64(value)),
+        "Float32" => Result::Ok(tast::Primitive::Float32(value)),
+        "Float64" => Result::Ok(tast::Primitive::Float64(value)),
+        _ => Result::Err(artifact_decode_error("numeric primitive kind")),
+    }
+}
+
+fn artifact_decode_primitive(value: ArtifactJsonValue) -> Result[tast::Primitive, string] {
+    let object = match artifact_json_object(value, "primitive") {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    if object.len() != 1 {
+        return Result::Err(artifact_decode_error("primitive variant"))
+    } else {
+        ()
+    };
+    let kind = object.get(0).0;
+    let payload = object.get(0).1;
+    if kind == "Unit" {
+        match artifact_decode_primitive_payload(payload) {
+            Result::Ok(ArtifactJsonValue::Null) => Result::Ok(tast::Primitive::Unit),
+            Result::Ok(_) => Result::Err(artifact_decode_error("unit primitive")),
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if kind == "Bool" {
+        match artifact_decode_primitive_payload(payload) {
+            Result::Ok(value) => match artifact_json_bool_value(value, "boolean primitive") {
+                Result::Ok(value) => Result::Ok(tast::Primitive::Bool(value)),
+                Result::Err(error) => Result::Err(error),
+            },
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if kind == "String" {
+        match artifact_decode_primitive_payload(payload) {
+            Result::Ok(value) => match artifact_json_string_value(value, "string primitive") {
+                Result::Ok(value) => Result::Ok(tast::Primitive::String(value)),
+                Result::Err(error) => Result::Err(error),
+            },
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if kind == "Char" {
+        let value = match artifact_decode_primitive_payload(payload) {
+            Result::Ok(value) => match artifact_json_string_value(value, "character primitive") {
+                Result::Ok(value) => value,
+                Result::Err(error) => return Result::Err(error),
+            },
+            Result::Err(error) => return Result::Err(error),
+        };
+        if value.len() != 1 {
+            Result::Err(artifact_decode_error("single character primitive"))
+        } else {
+            Result::Ok(tast::Primitive::Char(value.get(0)))
+        }
+    } else {
+        artifact_decode_numeric_primitive(kind, payload)
+    }
+}
+
+fn artifact_decode_constructor(
+    context: ArtifactCoreDecodeContext,
+    value: ArtifactJsonValue,
+) -> Result[tast::Constructor, string] {
+    let object = match artifact_json_object(value, "constructor") {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    if object.len() != 1 {
+        Result::Err(artifact_decode_error("constructor variant"))
+    } else if object.get(0).0 == "Struct" {
+        let payload = match artifact_json_object(object.get(0).1, "struct constructor") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        match artifact_json_field_string(payload, "type_name") {
+            Result::Ok(name) => Result::Ok(tast::Constructor {
+                name,
+                fields: artifact_decode_struct_fields(context, name),
+                is_struct: true,
+                tag: Option::None,
+            }),
+            Result::Err(error) => Result::Err(error),
+        }
+    } else if object.get(0).0 == "Enum" {
+        let payload = match artifact_json_object(object.get(0).1, "enum constructor") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let type_name = match artifact_json_field_string(payload, "type_name") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let variant = match artifact_json_field_string(payload, "variant") {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(error),
+        };
+        let index = match artifact_json_required_field(payload, "index") {
+            Result::Ok(value) => match artifact_json_number_value(value, "enum constructor index") {
+                Result::Ok(value) => match artifact_parse_nonnegative_int(value) {
+                    Result::Ok(value) => value,
+                    Result::Err(error) => return Result::Err(error),
+                },
+                Result::Err(error) => return Result::Err(error),
+            },
+            Result::Err(error) => return Result::Err(error),
+        };
+        Result::Ok(tast::Constructor {
+            name: type_name + "::" + variant,
+            fields: Vec::new(),
+            is_struct: false,
+            tag: Option::Some(index),
+        })
+    } else {
+        Result::Err(artifact_decode_error("constructor kind"))
+    }
+}
+
+fn artifact_decode_unary(value: string) -> Result[ast::UnaryOp, string] {
+    match value {
+        "Neg" => Result::Ok(ast::UnaryOp::Neg),
+        "Not" => Result::Ok(ast::UnaryOp::Not),
+        "BitNot" => Result::Ok(ast::UnaryOp::BitNot),
+        _ => Result::Err(artifact_decode_error("unary operator")),
+    }
+}
+
+fn artifact_decode_binary(value: string) -> Result[ast::BinaryOp, string] {
+    match value {
+        "Add" => Result::Ok(ast::BinaryOp::Add),
+        "Sub" => Result::Ok(ast::BinaryOp::Sub),
+        "Mul" => Result::Ok(ast::BinaryOp::Mul),
+        "Div" => Result::Ok(ast::BinaryOp::Div),
+        "Rem" => Result::Ok(ast::BinaryOp::Rem),
+        "BitAnd" => Result::Ok(ast::BinaryOp::BitAnd),
+        "BitOr" => Result::Ok(ast::BinaryOp::BitOr),
+        "BitXor" => Result::Ok(ast::BinaryOp::BitXor),
+        "Shl" => Result::Ok(ast::BinaryOp::Shl),
+        "Shr" => Result::Ok(ast::BinaryOp::Shr),
+        "And" => Result::Ok(ast::BinaryOp::And),
+        "Or" => Result::Ok(ast::BinaryOp::Or),
+        "Less" => Result::Ok(ast::BinaryOp::Less),
+        "Greater" => Result::Ok(ast::BinaryOp::Greater),
+        "LessEq" => Result::Ok(ast::BinaryOp::LessEq),
+        "GreaterEq" => Result::Ok(ast::BinaryOp::GreaterEq),
+        "Eq" => Result::Ok(ast::BinaryOp::Eq),
+        "NotEq" => Result::Ok(ast::BinaryOp::NotEq),
+        _ => Result::Err(artifact_decode_error("binary operator")),
+    }
+}

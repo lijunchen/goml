@@ -28,6 +28,11 @@ struct RunArgs {
     dump_go: bool,
 }
 
+struct CoreStage {
+    file: core::File,
+    counter: Ref[int32],
+}
+
 fn fail(message: string) -> unit {
     io::eprintln(message);
     process::exit(1)
@@ -239,6 +244,18 @@ fn parse_run_args(args: Vec[string]) -> Result[RunArgs, string] {
     }
 }
 
+fn lower_core_stage(source_path: string, source: string) -> CoreStage {
+    let counter = Ref::new(0);
+    let file = core::lower_with_counter(
+        tast::check(hir::lower(
+            ast::lower(parser::parse(source)),
+            source_path,
+        )),
+        counter,
+    );
+    CoreStage { file, counter }
+}
+
 fn run_stage(args: Vec[string]) -> unit {
     if args.len() != 3 {
         fail("usage: gomlang-parser <lex|cst|ast|hir|tast|core|mono|lift|anf|go> <file>")
@@ -262,40 +279,36 @@ fn run_stage(args: Vec[string]) -> unit {
         ))))
     } else if args.get(1) == "core" {
         let source = read_source(args.get(2));
-        io::print(core::encode(core::lower(tast::check(hir::lower(
-            ast::lower(parser::parse(source)),
-            args.get(2),
-        )))))
+        let stage = lower_core_stage(args.get(2), source);
+        io::print(core::encode(stage.file))
     } else if args.get(1) == "mono" {
         let source = read_source(args.get(2));
-        io::print(mono::encode(mono::lower(core::lower(tast::check(hir::lower(
-            ast::lower(parser::parse(source)),
-            args.get(2),
-        ))))))
+        let stage = lower_core_stage(args.get(2), source);
+        io::print(mono::encode(lower_mono_or_fail(stage.file)))
     } else if args.get(1) == "lift" {
         let source = read_source(args.get(2));
-        io::print(lift::encode(lift::lower(mono::lower(core::lower(tast::check(
-            hir::lower(
-                ast::lower(parser::parse(source)),
-                args.get(2),
-            ),
-        ))))))
+        let stage = lower_core_stage(args.get(2), source);
+        let mono_value = lower_mono_or_fail(stage.file);
+        io::print(lift::encode(lift::lower_with_counter(
+            mono_value,
+            stage.counter,
+        )))
     } else if args.get(1) == "anf" {
         let source = read_source(args.get(2));
-        io::print(anf::encode(anf::lower(lift::lower(mono::lower(core::lower(
-            tast::check(hir::lower(
-                ast::lower(parser::parse(source)),
-                args.get(2),
-            )),
-        ))))))
+        let stage = lower_core_stage(args.get(2), source);
+        let mono_value = lower_mono_or_fail(stage.file);
+        let lift_value = lift::lower_with_counter(mono_value, stage.counter);
+        io::print(anf::encode(anf::lower_with_counter(
+            lift_value,
+            stage.counter,
+        )))
     } else if args.get(1) == "go" {
         let source = read_source(args.get(2));
-        io::print(go_backend::encode(go_backend::lower(anf::lower(lift::lower(
-            mono::lower(core::lower(tast::check(hir::lower(
-                ast::lower(parser::parse(source)),
-                args.get(2),
-            )))),
-        )))))
+        let stage = lower_core_stage(args.get(2), source);
+        let mono_value = lower_mono_or_fail(stage.file);
+        let lift_value = lift::lower_with_counter(mono_value, stage.counter);
+        let anf_value = anf::lower_with_counter(lift_value, stage.counter);
+        io::print(go_backend::encode(go_backend::lower(anf_value)))
     } else {
         fail("unknown mode: " + args.get(1))
     }
@@ -328,13 +341,13 @@ fn main() -> unit {
     } else if args.get(1) == "version" {
         run_version(args)
     } else if args.get(1) == "check" {
-        run_package_command(args, false)
+        run_package_command(args, false, false)
     } else if args.get(1) == "test-check" {
-        run_package_command(args, false)
+        run_package_command(args, false, true)
     } else if args.get(1) == "build" {
-        run_package_command(args, true)
+        run_package_command(args, true, false)
     } else if args.get(1) == "test-build" {
-        run_package_command(args, true)
+        run_package_command(args, true, true)
     } else if args.get(1) == "link" {
         run_link_command(args)
     } else if args.get(1) == "test-link" {

@@ -32,9 +32,13 @@ struct Compilation {
 struct PackageCompilation {
     hir_file: hir::File,
     core_value: core::File,
+    interface_unit: ArtifactInterfaceUnit,
+    exports: ArtifactPackageExports,
 }
 
 struct StandardLibrary {
+    root: PackageCompilation,
+    host: PackageCompilation,
     bytes: PackageCompilation,
     collections: PackageCompilation,
     env: PackageCompilation,
@@ -155,12 +159,18 @@ fn compile_standard_package(
     source: string,
     source_path: string,
     package_name: string,
+    declared_name: string,
     hir_dependencies: Vec[hir::File],
     core_dependencies: Vec[core::File],
     builtins: core::File,
+    deps: Vec[(string, string)],
 ) -> PackageCompilation {
+    let ast_value = ast::lower(parser::parse(source));
+    let ast_values = Vec::new();
+    ast_values.push(ast_value);
+    let public_names = public_item_names(ast_values, package_name);
     let hir_value = hir::lower_package(
-        ast::lower(parser::parse(source)),
+        ast_value,
         source_path,
         package_name,
     );
@@ -197,13 +207,83 @@ fn compile_standard_package(
     } else {
         ()
     };
+    let signatures = tast::package_signatures(hir_file);
+    let tast_file = match tast_value.tast {
+        Option::Some(value) => value,
+        Option::None => {
+            fail("error[compile]: missing typed standard package " + package_name);
+            tast::File {
+                items: Vec::new(),
+                enums: Vec::new(),
+                structs: Vec::new(),
+            }
+        },
+    };
+    let enum_names = Vec::new();
+    for definition in dependency_enums(builtins, core_dependencies) {
+        enum_names.push(definition.name)
+    };
+    let struct_names = Vec::new();
+    for definition in dependency_structs(builtins, core_dependencies) {
+        struct_names.push(definition.name)
+    };
+    let public_exports = artifact_package_exports(
+        tast_file,
+        signatures,
+        package_name,
+        public_names,
+        true,
+        enum_names,
+        struct_names,
+    );
+    let exports = artifact_package_exports(
+        tast_file,
+        signatures,
+        package_name,
+        public_names,
+        false,
+        enum_names,
+        struct_names,
+    );
+    let interface_unit = new_artifact_interface_unit(
+        package_name,
+        public_exports,
+        artifact_package_interface(package_name, declared_name, public_exports),
+        deps,
+    );
     let core_value = core::lower_with_counter_and_types(
         tast_value,
         Ref::new(0),
         dependency_enums(builtins, core_dependencies),
         dependency_structs(builtins, core_dependencies),
     );
-    PackageCompilation { hir_file, core_value }
+    PackageCompilation {
+        hir_file,
+        core_value,
+        interface_unit,
+        exports,
+    }
+}
+
+fn builtin_artifact_dependency() -> (string, string) {
+    (
+        "builtin",
+        "ce6423fcfff3e823c1555e9ef6adfaceb30ee8c2d6edb627413245095e9eb91d",
+    )
+}
+
+fn standard_artifact_deps(
+    dependencies: Vec[PackageCompilation],
+) -> Vec[(string, string)] {
+    let result = Vec::new();
+    result.push(builtin_artifact_dependency());
+    for dependency in dependencies {
+        result.push((
+            dependency.interface_unit.package_name,
+            dependency.interface_unit.interface_hash,
+        ))
+    };
+    result
 }
 
 fn compile_standard_library(builtins: core::File) -> StandardLibrary {
@@ -211,25 +291,31 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         stdlib::host_source(),
         "host.gom",
         "std::internal::host",
+        "host",
         Vec::new(),
         Vec::new(),
         builtins,
+        standard_artifact_deps(Vec::new()),
     );
     let bytes = compile_standard_package(
         stdlib::bytes_source(),
         "bytes.gom",
         "std::bytes",
+        "bytes",
         Vec::new(),
         Vec::new(),
         builtins,
+        standard_artifact_deps(Vec::new()),
     );
     let collections = compile_standard_package(
         stdlib::collections_source(),
         "collections.gom",
         "std::collections",
+        "collections",
         Vec::new(),
         Vec::new(),
         builtins,
+        standard_artifact_deps(Vec::new()),
     );
     let env_hir_dependencies: Vec[hir::File] = Vec::new();
     env_hir_dependencies.push(host.hir_file);
@@ -237,9 +323,11 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         stdlib::env_source(),
         "env.gom",
         "std::env",
+        "env",
         env_hir_dependencies,
         Vec::new(),
         builtins,
+        standard_artifact_deps(Vec::new().pushed(host)),
     );
     let fs_hir_dependencies: Vec[hir::File] = Vec::new();
     fs_hir_dependencies.push(host.hir_file);
@@ -250,9 +338,11 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         stdlib::fs_source(),
         "fs.gom",
         "std::fs",
+        "fs",
         fs_hir_dependencies,
         fs_core_dependencies,
         builtins,
+        standard_artifact_deps(Vec::new().pushed(bytes).pushed(host)),
     );
     let io_hir_dependencies: Vec[hir::File] = Vec::new();
     io_hir_dependencies.push(host.hir_file);
@@ -263,9 +353,11 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         stdlib::io_source(),
         "io.gom",
         "std::io",
+        "io",
         io_hir_dependencies,
         io_core_dependencies,
         builtins,
+        standard_artifact_deps(Vec::new().pushed(bytes).pushed(host)),
     );
     let path_hir_dependencies: Vec[hir::File] = Vec::new();
     path_hir_dependencies.push(host.hir_file);
@@ -273,9 +365,11 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         stdlib::path_source(),
         "path.gom",
         "std::path",
+        "path",
         path_hir_dependencies,
         Vec::new(),
         builtins,
+        standard_artifact_deps(Vec::new().pushed(host)),
     );
     let process_hir_dependencies: Vec[hir::File] = Vec::new();
     process_hir_dependencies.push(host.hir_file);
@@ -286,9 +380,11 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         stdlib::process_source(),
         "process.gom",
         "std::process",
+        "process",
         process_hir_dependencies,
         process_core_dependencies,
         builtins,
+        standard_artifact_deps(Vec::new().pushed(bytes).pushed(host)),
     );
     let testing_hir_dependencies: Vec[hir::File] = Vec::new();
     testing_hir_dependencies.push(host.hir_file);
@@ -296,9 +392,11 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         stdlib::testing_source(),
         "testing.gom",
         "std::testing",
+        "testing",
         testing_hir_dependencies,
         Vec::new(),
         builtins,
+        standard_artifact_deps(Vec::new().pushed(host)),
     );
     let text_hir_dependencies: Vec[hir::File] = Vec::new();
     text_hir_dependencies.push(bytes.hir_file);
@@ -308,11 +406,53 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         stdlib::text_source(),
         "string_builder.gom",
         "std::text",
+        "text",
         text_hir_dependencies,
         text_core_dependencies,
         builtins,
+        standard_artifact_deps(Vec::new().pushed(bytes)),
+    );
+    let root_hir_dependencies = Vec::new()
+        .pushed(bytes.hir_file)
+        .pushed(collections.hir_file)
+        .pushed(env.hir_file)
+        .pushed(fs.hir_file)
+        .pushed(io.hir_file)
+        .pushed(path.hir_file)
+        .pushed(process.hir_file)
+        .pushed(text.hir_file);
+    let root_core_dependencies = Vec::new()
+        .pushed(bytes.core_value)
+        .pushed(collections.core_value)
+        .pushed(env.core_value)
+        .pushed(fs.core_value)
+        .pushed(io.core_value)
+        .pushed(path.core_value)
+        .pushed(process.core_value)
+        .pushed(text.core_value);
+    let root = compile_standard_package(
+        stdlib::root_source(),
+        "lib.gom",
+        "std",
+        "std",
+        root_hir_dependencies,
+        root_core_dependencies,
+        builtins,
+        standard_artifact_deps(
+            Vec::new()
+                .pushed(bytes)
+                .pushed(collections)
+                .pushed(env)
+                .pushed(fs)
+                .pushed(io)
+                .pushed(path)
+                .pushed(process)
+                .pushed(text),
+        ),
     );
     StandardLibrary {
+        root,
+        host,
         bytes,
         collections,
         env,
@@ -329,11 +469,13 @@ fn selected_standard_hir(
     ast_value: ast::LowerResult,
     standard: StandardLibrary,
 ) -> Vec[hir::File] {
-    let needs_fs = imports_package(ast_value, "std::fs");
-    let needs_io = imports_package(ast_value, "std::io");
-    let needs_process = imports_package(ast_value, "std::process");
-    let needs_text = imports_package(ast_value, "std::text");
+    let needs_root = imports_package(ast_value, "std");
+    let needs_fs = needs_root || imports_package(ast_value, "std::fs");
+    let needs_io = needs_root || imports_package(ast_value, "std::io");
+    let needs_process = needs_root || imports_package(ast_value, "std::process");
+    let needs_text = needs_root || imports_package(ast_value, "std::text");
     let needs_bytes = imports_package(ast_value, "std::bytes")
+        || needs_root
         || needs_fs
         || needs_io
         || needs_process
@@ -344,12 +486,12 @@ fn selected_standard_hir(
     } else {
         ()
     };
-    if imports_package(ast_value, "std::collections") {
+    if needs_root || imports_package(ast_value, "std::collections") {
         result.push(standard.collections.hir_file)
     } else {
         ()
     };
-    if imports_package(ast_value, "std::env") {
+    if needs_root || imports_package(ast_value, "std::env") {
         result.push(standard.env.hir_file)
     } else {
         ()
@@ -364,7 +506,7 @@ fn selected_standard_hir(
     } else {
         ()
     };
-    if imports_package(ast_value, "std::path") {
+    if needs_root || imports_package(ast_value, "std::path") {
         result.push(standard.path.hir_file)
     } else {
         ()
@@ -384,6 +526,11 @@ fn selected_standard_hir(
     } else {
         ()
     };
+    if needs_root {
+        result.push(standard.root.hir_file)
+    } else {
+        ()
+    };
     result
 }
 
@@ -391,11 +538,13 @@ fn selected_standard_core(
     ast_value: ast::LowerResult,
     standard: StandardLibrary,
 ) -> Vec[core::File] {
-    let needs_fs = imports_package(ast_value, "std::fs");
-    let needs_io = imports_package(ast_value, "std::io");
-    let needs_process = imports_package(ast_value, "std::process");
-    let needs_text = imports_package(ast_value, "std::text");
+    let needs_root = imports_package(ast_value, "std");
+    let needs_fs = needs_root || imports_package(ast_value, "std::fs");
+    let needs_io = needs_root || imports_package(ast_value, "std::io");
+    let needs_process = needs_root || imports_package(ast_value, "std::process");
+    let needs_text = needs_root || imports_package(ast_value, "std::text");
     let needs_bytes = imports_package(ast_value, "std::bytes")
+        || needs_root
         || needs_fs
         || needs_io
         || needs_process
@@ -406,12 +555,12 @@ fn selected_standard_core(
     } else {
         ()
     };
-    if imports_package(ast_value, "std::collections") {
+    if needs_root || imports_package(ast_value, "std::collections") {
         result.push(standard.collections.core_value)
     } else {
         ()
     };
-    if imports_package(ast_value, "std::env") {
+    if needs_root || imports_package(ast_value, "std::env") {
         result.push(standard.env.core_value)
     } else {
         ()
@@ -426,7 +575,7 @@ fn selected_standard_core(
     } else {
         ()
     };
-    if imports_package(ast_value, "std::path") {
+    if needs_root || imports_package(ast_value, "std::path") {
         result.push(standard.path.core_value)
     } else {
         ()
@@ -446,6 +595,11 @@ fn selected_standard_core(
     } else {
         ()
     };
+    if needs_root {
+        result.push(standard.root.core_value)
+    } else {
+        ()
+    };
     result
 }
 
@@ -462,6 +616,17 @@ fn fail_on_ast_diagnostics(diagnostics: Vec[cst::Diagnostic]) -> unit {
         fail("error[compile]: " + diagnostics.get(0).message)
     } else {
         ()
+    }
+}
+
+fn lower_mono_or_fail(value: core::File) -> core::File {
+    let result = mono::lower_checked(value);
+    match result.error {
+        Option::Some(error) => {
+            fail("error[compile]: " + error);
+            result.file
+        },
+        Option::None => result.file,
     }
 }
 
@@ -508,7 +673,7 @@ fn compile_source(source_path: string, source: string) -> Compilation {
             dependency_structs(builtins, core_dependencies),
         ),
     );
-    let mono_value = mono::lower(core_value);
+    let mono_value = lower_mono_or_fail(core_value);
     let lift_value = lift::lower_with_counter(mono_value, counter);
     let anf_value = anf::lower_with_counter(lift_value, counter);
     let go_value = go_backend::lower(anf_value);

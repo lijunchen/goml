@@ -12,6 +12,7 @@ use gomlang::parser::tast;
 use std::fs;
 
 struct StandardNeeds {
+    root: bool,
     bytes: bool,
     collections: bool,
     env: bool,
@@ -26,22 +27,18 @@ struct StandardNeeds {
 struct ArtifactCompilation {
     package_name: string,
     dependency_names: Vec[string],
-    hir_file: hir::File,
-    public_hir_file: hir::File,
     core_value: core::File,
-    standard_needs: StandardNeeds,
-    tests: Vec[TestDescriptor],
 }
 
 struct PackageWorld {
     counter: Ref[int32],
     builtins: core::File,
     standard: StandardLibrary,
-    compilations: Vec[ArtifactCompilation],
 }
 
 fn no_standard_needs() -> StandardNeeds {
     StandardNeeds {
+        root: false,
         bytes: false,
         collections: false,
         env: false,
@@ -55,21 +52,24 @@ fn no_standard_needs() -> StandardNeeds {
 }
 
 fn source_standard_needs(value: ast::LowerResult) -> StandardNeeds {
-    let needs_fs = imports_package(value, "std::fs");
-    let needs_io = imports_package(value, "std::io");
-    let needs_process = imports_package(value, "std::process");
-    let needs_text = imports_package(value, "std::text");
+    let needs_root = imports_package(value, "std");
+    let needs_fs = needs_root || imports_package(value, "std::fs");
+    let needs_io = needs_root || imports_package(value, "std::io");
+    let needs_process = needs_root || imports_package(value, "std::process");
+    let needs_text = needs_root || imports_package(value, "std::text");
     StandardNeeds {
+        root: needs_root,
         bytes: imports_package(value, "std::bytes")
+            || needs_root
             || needs_fs
             || needs_io
             || needs_process
             || needs_text,
-        collections: imports_package(value, "std::collections"),
-        env: imports_package(value, "std::env"),
+        collections: needs_root || imports_package(value, "std::collections"),
+        env: needs_root || imports_package(value, "std::env"),
         fs: needs_fs,
         io: needs_io,
-        path: imports_package(value, "std::path"),
+        path: needs_root || imports_package(value, "std::path"),
         process: needs_process,
         testing: imports_package(value, "std::testing"),
         text: needs_text,
@@ -78,6 +78,7 @@ fn source_standard_needs(value: ast::LowerResult) -> StandardNeeds {
 
 fn merge_standard_needs(left: StandardNeeds, right: StandardNeeds) -> StandardNeeds {
     StandardNeeds {
+        root: left.root || right.root,
         bytes: left.bytes || right.bytes,
         collections: left.collections || right.collections,
         env: left.env || right.env,
@@ -98,13 +99,6 @@ fn package_world() -> PackageWorld {
         counter,
         builtins,
         standard,
-        compilations: Vec::new(),
-    }
-}
-
-fn append_hir_files(target: Vec[hir::File], values: Vec[hir::File]) -> unit {
-    for value in values {
-        target.push(value)
     }
 }
 
@@ -551,64 +545,6 @@ fn validate_public_trait_impls(
     Result::Ok(())
 }
 
-fn exported_hir_file(value: hir::File, public_names: Vec[string]) -> hir::File {
-    let items = Vec::new();
-    let package_name = value.package_name;
-    for item in value.items {
-        match item {
-            hir::Item::EnumDef(value) => if public_names_contain(public_names, value.name) {
-                items.push(hir::Item::EnumDef(value))
-            } else {
-                ()
-            },
-            hir::Item::StructDef(value) => if public_names_contain(public_names, value.name) {
-                items.push(hir::Item::StructDef(value))
-            } else {
-                ()
-            },
-            hir::Item::TraitDef(value) => if public_names_contain(public_names, value.name) {
-                items.push(hir::Item::TraitDef(value))
-            } else {
-                ()
-            },
-            hir::Item::Function(value) => if public_names_contain(public_names, value.name) {
-                items.push(hir::Item::Function(value))
-            } else {
-                ()
-            },
-            hir::Item::ExternFunction(value) => if public_names_contain(public_names, value.name) {
-                items.push(hir::Item::ExternFunction(value))
-            } else {
-                ()
-            },
-            hir::Item::ImplBlock(value) => match value.trait_ref {
-                Option::Some(_) => if trait_impl_header_is_public(
-                    value,
-                    package_name,
-                    public_names,
-                ) && trait_impl_exposed_private_names(
-                    value,
-                    package_name,
-                    public_names,
-                ).len() == 0 {
-                    items.push(hir::Item::ImplBlock(value))
-                } else {
-                    ()
-                },
-                Option::None => items.push(hir::Item::ImplBlock(value)),
-            },
-        }
-    };
-    hir::File {
-        package_name: value.package_name,
-        path: value.path,
-        imports: value.imports,
-        import_aliases: value.import_aliases,
-        use_traits: value.use_traits,
-        items,
-    }
-}
-
 fn selected_standard_hir_for_needs(
     standard: StandardLibrary,
     needs: StandardNeeds,
@@ -659,6 +595,11 @@ fn selected_standard_hir_for_needs(
     } else {
         ()
     };
+    if needs.root {
+        result.push(standard.root.hir_file)
+    } else {
+        ()
+    };
     result
 }
 
@@ -696,124 +637,6 @@ fn checked_tast(value: tast::CheckResult, package_name: string) -> tast::CheckRe
         ()
     };
     value
-}
-
-fn find_artifact_compilation(
-    world: PackageWorld,
-    package_name: string,
-) -> Option[ArtifactCompilation] {
-    let result: Ref[Option[ArtifactCompilation]] = Ref::new(Option::None);
-    for compilation in world.compilations {
-        if compilation.package_name == package_name {
-            result.set(Option::Some(compilation))
-        } else {
-            ()
-        }
-    };
-    result.get()
-}
-
-fn compile_source_artifact(
-    world: PackageWorld,
-    artifact: SourceArtifact,
-) -> ArtifactCompilation {
-    match find_artifact_compilation(world, artifact.package_name) {
-        Option::Some(compilation) => return compilation,
-        Option::None => (),
-    };
-    let dependency_hir = Vec::new();
-    let dependency_core = Vec::new();
-    for dependency_path in artifact.dependencies {
-        let dependency_artifact = match read_source_artifact(dependency_path) {
-            Result::Ok(value) => value,
-            Result::Err(error) => {
-                fail("error[compile]: failed to read dependency artifact: " + error);
-                artifact
-            },
-        };
-        let dependency = compile_source_artifact(world, dependency_artifact);
-        dependency_hir.push(dependency.public_hir_file);
-        dependency_core.push(dependency.core_value)
-    };
-    let parsed = Vec::new();
-    for source_path in artifact.sources {
-        parsed.push(parser::parse(read_source(source_path)))
-    };
-    let ast_values = ast::lower_package(parsed);
-    let public_names = public_item_names(ast_values, artifact.package_name);
-    let tests = match collect_package_tests(
-        artifact.package_name,
-        ast_values,
-        artifact.source_paths,
-    ) {
-        Result::Ok(values) => values,
-        Result::Err(error) => {
-            fail("error[compile]: " + error);
-            Vec::new()
-        },
-    };
-    let hir_inputs: Vec[(ast::LowerResult, string)] = Vec::new();
-    let needs = Ref::new(no_standard_needs());
-    for index in range(0, ast_values.len()) {
-        let ast_value = ast_values.get(index);
-        needs.set(merge_standard_needs(
-            needs.get(),
-            source_standard_needs(ast_value),
-        ));
-        hir_inputs.push((
-            hir::expand_derives(ast_value),
-            artifact.sources.get(index),
-        ))
-    };
-    append_hir_files(
-        dependency_hir,
-        selected_standard_hir_for_needs(world.standard, needs.get()),
-    );
-    append_core_files(
-        dependency_core,
-        selected_link_standard_core(world.standard, needs.get()),
-    );
-    let hir_files: Vec[hir::File] = Vec::new();
-    for hir_value in hir::lower_expanded_package_files(
-        hir_inputs,
-        artifact.package_name,
-    ) {
-        hir_files.push(checked_hir_file(hir_value, artifact.package_name))
-    };
-    let hir_file = merge_hir_files(hir_files, artifact.package_name);
-    let dependency_names = direct_hir_dependencies(hir_files);
-    let tast_value = checked_tast(
-        tast::check_package_files_for_link_with_dependencies(
-            hir_files,
-            dependency_hir,
-        ),
-        artifact.package_name,
-    );
-    match validate_public_trait_impls(
-        hir_file,
-        artifact.package_name,
-        public_names,
-    ) {
-        Result::Ok(()) => (),
-        Result::Err(error) => fail("error[typer]: " + error),
-    };
-    let core_value = core::lower_with_counter_and_types(
-        tast_value,
-        Ref::new(0),
-        dependency_enums(world.builtins, dependency_core),
-        dependency_structs(world.builtins, dependency_core),
-    );
-    let compilation = ArtifactCompilation {
-        package_name: artifact.package_name,
-        dependency_names,
-        hir_file,
-        public_hir_file: exported_hir_file(hir_file, public_names),
-        core_value,
-        standard_needs: needs.get(),
-        tests,
-    };
-    world.compilations.push(compilation);
-    compilation
 }
 
 fn add_entry_wrapper(value: core::File, package_name: string) -> core::File {
@@ -943,10 +766,19 @@ fn selected_link_standard_core(
     } else {
         ()
     };
+    if needs.root {
+        result.push(standard.root.core_value)
+    } else {
+        ()
+    };
     result
 }
 
-fn run_package_command(args: Vec[string], build: bool) -> unit {
+fn run_package_command(
+    args: Vec[string],
+    build: bool,
+    emit_tests: bool,
+) -> unit {
     let command = match parse_package_command_args(args) {
         Result::Ok(value) => value,
         Result::Err(error) => {
@@ -959,26 +791,55 @@ fn run_package_command(args: Vec[string], build: bool) -> unit {
             }
         },
     };
-    let artifact = match source_artifact(command) {
+    let artifact = match compile_artifact_package(
+        package_world(),
+        command,
+        build,
+        emit_tests,
+    ) {
         Result::Ok(value) => value,
         Result::Err(error) => {
-            fail(error);
-            SourceArtifact {
+            fail("error[compile]: " + error);
+            ArtifactCoreUnit {
                 package_name: command.package_name,
+                interface_unit: new_artifact_interface_unit(
+                    command.package_name,
+                    empty_artifact_package_exports(),
+                    ArtifactPackageInterface {
+                        package_name: command.package_name,
+                        name: "main",
+                        value_exports: Vec::new(),
+                        enum_variants: Vec::new(),
+                    },
+                    Vec::new().pushed(builtin_artifact_dependency()),
+                ),
+                exports: empty_artifact_package_exports(),
+                core_ir: empty_core_file(),
+                deps: Vec::new().pushed(builtin_artifact_dependency()),
                 sources: Vec::new(),
-                source_paths: Vec::new(),
-                dependencies: Vec::new(),
+                tests: Vec::new(),
             }
         },
     };
-    let _ = compile_source_artifact(package_world(), artifact);
-    match write_artifact(interface_output_path(command.output), artifact) {
-        Result::Ok(()) => (),
+    match ensure_parent(interface_output_path(command.output)) {
+        Result::Ok(()) => match fs::write_file(
+            interface_output_path(command.output),
+            encode_artifact_interface_unit(artifact.interface_unit, true),
+        ) {
+            Result::Ok(()) => (),
+            Result::Err(error) => fail(error),
+        },
         Result::Err(error) => fail(error),
     };
     if build {
-        match write_artifact(core_output_path(command.output), artifact) {
-            Result::Ok(()) => (),
+        match ensure_parent(core_output_path(command.output)) {
+            Result::Ok(()) => match fs::write_file(
+                core_output_path(command.output),
+                encode_artifact_core_unit(artifact, true),
+            ) {
+                Result::Ok(()) => (),
+                Result::Err(error) => fail(error),
+            },
             Result::Err(error) => fail(error),
         }
     } else {
@@ -999,28 +860,46 @@ fn run_link_command(args: Vec[string]) -> unit {
         },
     };
     let world = package_world();
-    let dependencies = Vec::new();
-    let compilations = Vec::new();
-    let entry: Ref[Option[ArtifactCompilation]] = Ref::new(Option::None);
-    let needs = Ref::new(no_standard_needs());
-    for input in command.inputs {
-        let artifact = match read_source_artifact(input) {
-            Result::Ok(value) => value,
-            Result::Err(error) => {
-                fail("error[compile]: failed to read core artifact: " + error);
-                SourceArtifact {
-                    package_name: "main",
-                    sources: Vec::new(),
-                    source_paths: Vec::new(),
-                    dependencies: Vec::new(),
-                }
-            },
-        };
-        let compilation = compile_source_artifact(world, artifact);
-        needs.set(merge_standard_needs(needs.get(), compilation.standard_needs));
-        compilations.push(compilation)
+    let core_units = match artifact_read_core_units(command.inputs) {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            fail("error[compile]: " + error);
+            Vec::new()
+        },
     };
-    let compilations = match order_artifact_compilations(compilations) {
+    let roots = Vec::new().pushed(command.entry);
+    let core_units = match artifact_reachable_core_units(roots, core_units) {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            fail("error[compile]: " + error);
+            Vec::new()
+        },
+    };
+    match artifact_validate_link_core_units(world, core_units) {
+        Result::Ok(()) => (),
+        Result::Err(error) => fail("error[compile]: " + error),
+    };
+    artifact_prepare_core_units(world, core_units);
+    match artifact_find_core_unit(core_units, command.entry) {
+        Option::Some(value) => if value.interface_unit.package_interface.name == ""
+            || value.interface_unit.package_interface.name == "main"
+        {
+            ()
+        } else {
+            fail(
+                "error[compile]: entry package "
+                    + command.entry
+                    + " declares package "
+                    + value.interface_unit.package_interface.name
+                    + ", expected main",
+            )
+        },
+        Option::None => fail("error[compile]: missing entry package " + command.entry),
+    };
+    let dependencies = Vec::new();
+    let entry: Ref[Option[ArtifactCompilation]] = Ref::new(Option::None);
+    let needs = artifact_core_standard_needs(core_units);
+    let compilations = match artifact_core_compilations(core_units) {
         Result::Ok(values) => values,
         Result::Err(error) => {
             fail("error[compile]: " + error);
@@ -1041,41 +920,23 @@ fn run_link_command(args: Vec[string]) -> unit {
             ArtifactCompilation {
                 package_name: command.entry,
                 dependency_names: Vec::new(),
-                hir_file: hir::File {
-                    package_name: command.entry,
-                    path: "<unknown>",
-                    imports: Vec::new(),
-                    import_aliases: Vec::new(),
-                    use_traits: Vec::new(),
-                    items: Vec::new(),
-                },
-                public_hir_file: hir::File {
-                    package_name: command.entry,
-                    path: "<unknown>",
-                    imports: Vec::new(),
-                    import_aliases: Vec::new(),
-                    use_traits: Vec::new(),
-                    items: Vec::new(),
-                },
                 core_value: core::File {
                     functions: Vec::new(),
                     enums: Vec::new(),
                     structs: Vec::new(),
                     type_instances: Vec::new(),
                 },
-                standard_needs: no_standard_needs(),
-                tests: Vec::new(),
             }
         },
     };
-    let linked_dependencies = selected_link_standard_core(world.standard, needs.get());
+    let linked_dependencies = selected_link_standard_core(world.standard, needs);
     append_core_files(linked_dependencies, dependencies);
     let linked = core::link_with_dependencies(
         world.builtins,
         linked_dependencies,
         entry_core(entry.core_value, command.entry),
     );
-    let mono_value = mono::lower(linked);
+    let mono_value = lower_mono_or_fail(linked);
     let lift_value = lift::lower_with_counter(mono_value, world.counter);
     let anf_value = anf::lower_with_counter(lift_value, world.counter);
     let go_source = go_backend::encode(go_backend::lower(anf_value));
@@ -1111,27 +972,31 @@ fn run_test_link_command(args: Vec[string]) -> unit {
         },
     };
     let world = package_world();
-    let package_cores = Vec::new();
-    let compilations = Vec::new();
-    let needs = Ref::new(no_standard_needs());
-    for input in command.inputs {
-        let artifact = match read_source_artifact(input) {
-            Result::Ok(value) => value,
-            Result::Err(error) => {
-                fail("error[compile]: failed to read core artifact: " + error);
-                SourceArtifact {
-                    package_name: "main",
-                    sources: Vec::new(),
-                    source_paths: Vec::new(),
-                    dependencies: Vec::new(),
-                }
-            },
-        };
-        let compilation = compile_source_artifact(world, artifact);
-        needs.set(merge_standard_needs(needs.get(), compilation.standard_needs));
-        compilations.push(compilation)
+    let core_units = match artifact_read_core_units(command.inputs) {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            fail("error[compile]: " + error);
+            Vec::new()
+        },
     };
-    let compilations = match order_artifact_compilations(compilations) {
+    let core_units = match artifact_reachable_core_units(
+        command.packages,
+        core_units,
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            fail("error[compile]: " + error);
+            Vec::new()
+        },
+    };
+    match artifact_validate_link_core_units(world, core_units) {
+        Result::Ok(()) => (),
+        Result::Err(error) => fail("error[compile]: " + error),
+    };
+    artifact_prepare_core_units(world, core_units);
+    let package_cores = Vec::new();
+    let needs = artifact_core_standard_needs(core_units);
+    let compilations = match artifact_core_compilations(core_units) {
         Result::Ok(values) => values,
         Result::Err(error) => {
             fail("error[compile]: " + error);
@@ -1143,8 +1008,8 @@ fn run_test_link_command(args: Vec[string]) -> unit {
     };
     let tests = Vec::new();
     for package_name in command.packages {
-        match find_artifact_compilation(world, package_name) {
-            Option::Some(compilation) => for test in compilation.tests {
+        match artifact_find_core_unit(core_units, package_name) {
+            Option::Some(core_unit) => for test in core_unit.tests {
                 tests.push(test)
             },
             Option::None => fail(
@@ -1152,14 +1017,14 @@ fn run_test_link_command(args: Vec[string]) -> unit {
             ),
         }
     };
-    let linked_dependencies = selected_link_standard_core(world.standard, needs.get());
+    let linked_dependencies = selected_link_standard_core(world.standard, needs);
     append_core_files(linked_dependencies, package_cores);
     let linked = core::link_with_dependencies(
         world.builtins,
         linked_dependencies,
         empty_core_file(),
     );
-    let mono_value = mono::lower(linked);
+    let mono_value = lower_mono_or_fail(linked);
     let lift_value = lift::lower_with_counter(mono_value, world.counter);
     let anf_value = anf::lower_with_counter(lift_value, world.counter);
     let go_source = go_backend::encode(go_backend::lower_tests(

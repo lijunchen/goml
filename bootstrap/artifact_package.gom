@@ -1,0 +1,898 @@
+package main;
+
+use gomlang::parser::ast;
+use gomlang::parser::core;
+use gomlang::parser::hir;
+use gomlang::parser::parser;
+use gomlang::parser::tast;
+use std::fs;
+
+struct ArtifactDependencyRequest {
+    package_name: string,
+    parent: string,
+    expected_hash: Option[string],
+}
+
+fn artifact_builtin_interface_hash() -> string {
+    builtin_artifact_dependency().1
+}
+
+fn artifact_find_interface_unit(
+    values: Vec[ArtifactInterfaceUnit],
+    package_name: string,
+) -> Option[ArtifactInterfaceUnit] {
+    let result: Ref[Option[ArtifactInterfaceUnit]] = Ref::new(Option::None);
+    for value in values {
+        if value.package_name == package_name {
+            result.set(Option::Some(value))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn artifact_read_interface_units(
+    paths: Vec[string],
+) -> Result[Vec[ArtifactInterfaceUnit], string] {
+    let result = Vec::new();
+    let names = Vec::new();
+    for path_value in paths {
+        let source = match fs::read_file(path_value) {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(
+                "failed to read interface " + path_value + ": " + error,
+            ),
+        };
+        let interface = match decode_artifact_interface_unit(source) {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(
+                "failed to parse interface " + path_value + ": " + error,
+            ),
+        };
+        if public_names_contain(names, interface.package_name) {
+            return Result::Err(
+                "multiple interface files provided for package " + interface.package_name,
+            )
+        } else {
+            names.push(interface.package_name);
+            result.push(interface)
+        }
+    };
+    Result::Ok(result)
+}
+
+fn artifact_standard_package(
+    standard: StandardLibrary,
+    package_name: string,
+) -> Option[PackageCompilation] {
+    match package_name {
+        "std" => Option::Some(standard.root),
+        "std::internal::host" => Option::Some(standard.host),
+        "std::bytes" => Option::Some(standard.bytes),
+        "std::collections" => Option::Some(standard.collections),
+        "std::env" => Option::Some(standard.env),
+        "std::fs" => Option::Some(standard.fs),
+        "std::io" => Option::Some(standard.io),
+        "std::path" => Option::Some(standard.path),
+        "std::process" => Option::Some(standard.process),
+        "std::testing" => Option::Some(standard.testing),
+        "std::text" => Option::Some(standard.text),
+        _ => Option::None,
+    }
+}
+
+fn artifact_interface_builtin_valid(value: ArtifactInterfaceUnit) -> bool {
+    if value.package_name == "builtin" {
+        true
+    } else {
+        let valid = Ref::new(false);
+        for dependency in value.deps {
+            if dependency.0 == "builtin"
+                && dependency.1 == artifact_builtin_interface_hash()
+            {
+                valid.set(true)
+            } else {
+                ()
+            }
+        };
+        valid.get()
+    }
+}
+
+fn artifact_dependency_hash_matches(
+    expected: Option[string],
+    actual: string,
+) -> bool {
+    match expected {
+        Option::Some(value) => value == actual,
+        Option::None => true,
+    }
+}
+
+fn artifact_resolve_interface_units(
+    world: PackageWorld,
+    current_package: string,
+    direct_dependencies: Vec[string],
+    provided: Vec[ArtifactInterfaceUnit],
+) -> Result[Vec[ArtifactInterfaceUnit], string] {
+    let pending = Vec::new();
+    for package_name in direct_dependencies {
+        pending.push(ArtifactDependencyRequest {
+            package_name,
+            parent: current_package,
+            expected_hash: Option::None,
+        })
+    };
+    let resolved_names = Vec::new();
+    let resolved = Vec::new();
+    while pending.len() > 0 {
+        let request = pending.remove(pending.len() - 1);
+        if request.package_name == "builtin" {
+            if artifact_dependency_hash_matches(
+                request.expected_hash,
+                artifact_builtin_interface_hash(),
+            ) {
+                ()
+            } else {
+                return Result::Err(
+                    "interface "
+                        + request.parent
+                        + " expects a different builtin interface_hash",
+                )
+            }
+        } else if request.package_name == current_package {
+            return Result::Err("package " + current_package + " cannot use itself")
+        } else if public_names_contain(resolved_names, request.package_name) {
+            let actual = match artifact_standard_package(
+                world.standard,
+                request.package_name,
+            ) {
+                Option::Some(value) => value.interface_unit.interface_hash,
+                Option::None => match artifact_find_interface_unit(
+                    resolved,
+                    request.package_name,
+                ) {
+                    Option::Some(value) => value.interface_hash,
+                    Option::None => "",
+                },
+            };
+            if artifact_dependency_hash_matches(request.expected_hash, actual) {
+                ()
+            } else {
+                return Result::Err(
+                    "interface "
+                        + request.parent
+                        + " expects a different interface_hash for "
+                        + request.package_name,
+                )
+            }
+        } else {
+            let interface = match artifact_standard_package(
+                world.standard,
+                request.package_name,
+            ) {
+                Option::Some(value) => value.interface_unit,
+                Option::None => match artifact_find_interface_unit(
+                    provided,
+                    request.package_name,
+                ) {
+                    Option::Some(value) => value,
+                    Option::None => return Result::Err(
+                        "missing interface file for package " + request.package_name,
+                    ),
+                },
+            };
+            if !artifact_interface_builtin_valid(interface) {
+                return Result::Err(
+                    "interface "
+                        + interface.package_name
+                        + " is missing the current builtin dependency",
+                )
+            } else if !artifact_dependency_hash_matches(
+                request.expected_hash,
+                interface.interface_hash,
+            ) {
+                return Result::Err(
+                    "interface "
+                        + request.parent
+                        + " expects a different interface_hash for "
+                        + request.package_name,
+                )
+            } else {
+                ()
+            };
+            resolved_names.push(interface.package_name);
+            match artifact_standard_package(world.standard, interface.package_name) {
+                Option::Some(_) => (),
+                Option::None => resolved.push(interface),
+            };
+            for dependency in interface.deps {
+                pending.push(ArtifactDependencyRequest {
+                    package_name: dependency.0,
+                    parent: interface.package_name,
+                    expected_hash: Option::Some(dependency.1),
+                })
+            }
+        }
+    };
+    Result::Ok(resolved)
+}
+
+fn artifact_standard_needs_for_package(package_name: string) -> StandardNeeds {
+    match package_name {
+        "std" => StandardNeeds {
+            root: true,
+            bytes: true,
+            collections: true,
+            env: true,
+            fs: true,
+            io: true,
+            path: true,
+            process: true,
+            testing: false,
+            text: true,
+        },
+        "std::bytes" => StandardNeeds {
+            root: false,
+            bytes: true,
+            collections: false,
+            env: false,
+            fs: false,
+            io: false,
+            path: false,
+            process: false,
+            testing: false,
+            text: false,
+        },
+        "std::collections" => StandardNeeds {
+            root: false,
+            bytes: false,
+            collections: true,
+            env: false,
+            fs: false,
+            io: false,
+            path: false,
+            process: false,
+            testing: false,
+            text: false,
+        },
+        "std::env" => StandardNeeds {
+            root: false,
+            bytes: false,
+            collections: false,
+            env: true,
+            fs: false,
+            io: false,
+            path: false,
+            process: false,
+            testing: false,
+            text: false,
+        },
+        "std::fs" => StandardNeeds {
+            root: false,
+            bytes: true,
+            collections: false,
+            env: false,
+            fs: true,
+            io: false,
+            path: false,
+            process: false,
+            testing: false,
+            text: false,
+        },
+        "std::io" => StandardNeeds {
+            root: false,
+            bytes: true,
+            collections: false,
+            env: false,
+            fs: false,
+            io: true,
+            path: false,
+            process: false,
+            testing: false,
+            text: false,
+        },
+        "std::path" => StandardNeeds {
+            root: false,
+            bytes: false,
+            collections: false,
+            env: false,
+            fs: false,
+            io: false,
+            path: true,
+            process: false,
+            testing: false,
+            text: false,
+        },
+        "std::process" => StandardNeeds {
+            root: false,
+            bytes: true,
+            collections: false,
+            env: false,
+            fs: false,
+            io: false,
+            path: false,
+            process: true,
+            testing: false,
+            text: false,
+        },
+        "std::testing" => StandardNeeds {
+            root: false,
+            bytes: false,
+            collections: false,
+            env: false,
+            fs: false,
+            io: false,
+            path: false,
+            process: false,
+            testing: true,
+            text: false,
+        },
+        "std::text" => StandardNeeds {
+            root: false,
+            bytes: true,
+            collections: false,
+            env: false,
+            fs: false,
+            io: false,
+            path: false,
+            process: false,
+            testing: false,
+            text: true,
+        },
+        _ => no_standard_needs(),
+    }
+}
+
+fn artifact_standard_needs_from_units(
+    direct_dependencies: Vec[string],
+    units: Vec[ArtifactInterfaceUnit],
+) -> StandardNeeds {
+    let needs = Ref::new(no_standard_needs());
+    for package_name in direct_dependencies {
+        needs.set(merge_standard_needs(
+            needs.get(),
+            artifact_standard_needs_for_package(package_name),
+        ))
+    };
+    for interface in units {
+        for dependency in interface.deps {
+            needs.set(merge_standard_needs(
+                needs.get(),
+                artifact_standard_needs_for_package(dependency.0),
+            ))
+        }
+    };
+    needs.get()
+}
+
+fn artifact_dependency_environments(
+    standard: StandardLibrary,
+    needs: StandardNeeds,
+    units: Vec[ArtifactInterfaceUnit],
+) -> Result[Vec[tast::DependencyEnvironment], string] {
+    let result = tast::dependency_environments(
+        selected_standard_hir_for_needs(standard, needs),
+    );
+    for interface in units {
+        match artifact_dependency_environment_from_exports(interface.exports) {
+            Result::Ok(value) => result.push(value),
+            Result::Err(error) => return Result::Err(error),
+        }
+    };
+    Result::Ok(result)
+}
+
+fn artifact_dependency_core_types(
+    units: Vec[ArtifactInterfaceUnit],
+) -> Vec[core::File] {
+    let result = Vec::new();
+    for interface in units {
+        result.push(core::File {
+            functions: Vec::new(),
+            enums: interface.exports.enums,
+            structs: interface.exports.structs,
+            type_instances: Vec::new(),
+        })
+    };
+    result
+}
+
+fn artifact_direct_dependency_hashes(
+    world: PackageWorld,
+    names: Vec[string],
+    units: Vec[ArtifactInterfaceUnit],
+) -> Result[Vec[(string, string)], string] {
+    let result = Vec::new();
+    result.push(builtin_artifact_dependency());
+    let names = sort_artifact_names(names);
+    for name in names {
+        if name == "builtin" {
+            ()
+        } else {
+            match artifact_standard_package(world.standard, name) {
+                Option::Some(value) => result.push((
+                    name,
+                    value.interface_unit.interface_hash,
+                )),
+                Option::None => match artifact_find_interface_unit(units, name) {
+                    Option::Some(value) => result.push((name, value.interface_hash)),
+                    Option::None => return Result::Err(
+                        "missing interface file for package " + name,
+                    ),
+                },
+            }
+        }
+    };
+    Result::Ok(result)
+}
+
+fn artifact_declared_package_name(
+    values: Vec[ast::LowerResult],
+    paths: Vec[string],
+) -> Result[string, string] {
+    let result: Ref[Option[string]] = Ref::new(Option::None);
+    for index in range(0, values.len()) {
+        let value = values.get(index);
+        match value.ast {
+            Option::Some(file) => if !file.package_explicit {
+                return Result::Err(
+                    paths.get(index) + " must declare `package <name>;`",
+                )
+            } else {
+                match result.get() {
+                    Option::Some(name) => if name != file.package_name {
+                        return Result::Err(
+                            "package mismatch in "
+                                + paths.get(index)
+                                + ": expected "
+                                + name
+                                + ", found "
+                                + file.package_name,
+                        )
+                    } else {
+                        ()
+                    },
+                    Option::None => result.set(Option::Some(file.package_name)),
+                }
+            },
+            Option::None => (),
+        }
+    };
+    match result.get() {
+        Option::Some(value) => Result::Ok(value),
+        Option::None => Result::Err("package has no valid source files"),
+    }
+}
+
+fn artifact_validate_entrypoint(
+    package_name: string,
+    declared_name: string,
+    exports: ArtifactPackageExports,
+) -> Result[unit, string] {
+    if declared_name != "main" {
+        return Result::Ok(())
+    } else {
+        ()
+    };
+    let expected = package_item_name(package_name, "main");
+    let found: Ref[Option[ArtifactFnScheme]] = Ref::new(Option::None);
+    for function in exports.functions {
+        if function.name == expected {
+            found.set(Option::Some(function))
+        } else {
+            ()
+        }
+    };
+    match found.get() {
+        Option::Some(function) => if function.type_params.len() > 0 {
+            Result::Err("main function must not have type parameters")
+        } else {
+            match tast::resolve_type(function.ty) {
+                tast::Type::Func(params, _) => if params.len() > 0 {
+                    Result::Err("main function must not have parameters")
+                } else {
+                    Result::Ok(())
+                },
+                _ => Result::Ok(()),
+            }
+        },
+        Option::None => Result::Err("main function is required"),
+    }
+}
+
+fn artifact_dependency_type_names(
+    builtins: core::File,
+    dependencies: Vec[core::File],
+    enums: bool,
+) -> Vec[string] {
+    let result = Vec::new();
+    if enums {
+        for definition in dependency_enums(builtins, dependencies) {
+            result.push(definition.name)
+        }
+    } else {
+        for definition in dependency_structs(builtins, dependencies) {
+            result.push(definition.name)
+        }
+    };
+    result
+}
+
+fn compile_artifact_package(
+    world: PackageWorld,
+    command: PackageCommandArgs,
+    build: bool,
+    emit_tests: bool,
+) -> Result[ArtifactCoreUnit, string] {
+    let parsed = Vec::new();
+    for source_path in command.inputs {
+        parsed.push(parser::parse(read_source(source_path)))
+    };
+    let ast_values = ast::lower_package(parsed);
+    let declared_name = match artifact_declared_package_name(
+        ast_values,
+        command.inputs,
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let public_names = public_item_names(ast_values, command.package_name);
+    let tests = match collect_package_tests(
+        command.package_name,
+        ast_values,
+        command.inputs,
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let hir_inputs: Vec[(ast::LowerResult, string)] = Vec::new();
+    let source_needs = Ref::new(no_standard_needs());
+    for index in range(0, ast_values.len()) {
+        let ast_value = ast_values.get(index);
+        source_needs.set(merge_standard_needs(
+            source_needs.get(),
+            source_standard_needs(ast_value),
+        ));
+        hir_inputs.push((
+            hir::expand_derives(ast_value),
+            command.inputs.get(index),
+        ))
+    };
+    let hir_files = Vec::new();
+    for lowered in hir::lower_expanded_package_files(
+        hir_inputs,
+        command.package_name,
+    ) {
+        hir_files.push(checked_hir_file(lowered, command.package_name))
+    };
+    let dependency_names = direct_hir_dependencies(hir_files);
+    let provided = match artifact_read_interface_units(command.interface_paths) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let dependency_units = match artifact_resolve_interface_units(
+        world,
+        command.package_name,
+        dependency_names,
+        provided,
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let needs = merge_standard_needs(
+        source_needs.get(),
+        artifact_standard_needs_from_units(dependency_names, dependency_units),
+    );
+    let environments = match artifact_dependency_environments(
+        world.standard,
+        needs,
+        dependency_units,
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let checked = checked_tast(
+        tast::check_package_files_for_link_with_environments(
+            hir_files,
+            environments,
+        ),
+        command.package_name,
+    );
+    let hir_file = merge_hir_files(hir_files, command.package_name);
+    match validate_public_trait_impls(
+        hir_file,
+        command.package_name,
+        public_names,
+    ) {
+        Result::Ok(()) => (),
+        Result::Err(error) => return Result::Err("error[typer]: " + error),
+    };
+    let signatures = tast::package_signatures(hir_file);
+    let tast_file = match checked.tast {
+        Option::Some(value) => value,
+        Option::None => return Result::Err("failed to typecheck package " + command.package_name),
+    };
+    let dependency_core = selected_link_standard_core(world.standard, needs);
+    append_core_files(
+        dependency_core,
+        artifact_dependency_core_types(dependency_units),
+    );
+    let enum_names = artifact_dependency_type_names(
+        world.builtins,
+        dependency_core,
+        true,
+    );
+    let struct_names = artifact_dependency_type_names(
+        world.builtins,
+        dependency_core,
+        false,
+    );
+    let public_exports = artifact_package_exports(
+        tast_file,
+        signatures,
+        command.package_name,
+        public_names,
+        true,
+        enum_names,
+        struct_names,
+    );
+    let exports = artifact_package_exports(
+        tast_file,
+        signatures,
+        command.package_name,
+        public_names,
+        false,
+        enum_names,
+        struct_names,
+    );
+    if emit_tests {
+        ()
+    } else {
+        match artifact_validate_entrypoint(
+            command.package_name,
+            declared_name,
+            exports,
+        ) {
+            Result::Ok(()) => (),
+            Result::Err(error) => return Result::Err(error),
+        }
+    };
+    let deps = match artifact_direct_dependency_hashes(
+        world,
+        dependency_names,
+        dependency_units,
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(error) => return Result::Err(error),
+    };
+    let interface_unit = new_artifact_interface_unit(
+        command.package_name,
+        public_exports,
+        artifact_package_interface(
+            command.package_name,
+            declared_name,
+            public_exports,
+        ),
+        deps,
+    );
+    let core_ir = if build {
+        core::lower_with_counter_and_types(
+            checked,
+            Ref::new(0),
+            dependency_enums(world.builtins, dependency_core),
+            dependency_structs(world.builtins, dependency_core),
+        )
+    } else {
+        empty_core_file()
+    };
+    Result::Ok(ArtifactCoreUnit {
+        package_name: command.package_name,
+        interface_unit,
+        exports,
+        core_ir,
+        deps,
+        sources: command.inputs,
+        tests: if emit_tests { tests } else { Vec::new() },
+    })
+}
+
+fn artifact_read_core_units(
+    paths: Vec[string],
+) -> Result[Vec[ArtifactCoreUnit], string] {
+    let result = Vec::new();
+    let names = Vec::new();
+    for path_value in paths {
+        let source = match fs::read_file(path_value) {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(
+                "failed to read core " + path_value + ": " + error,
+            ),
+        };
+        let core_unit = match decode_artifact_core_unit(source) {
+            Result::Ok(value) => value,
+            Result::Err(error) => return Result::Err(
+                "failed to parse core " + path_value + ": " + error,
+            ),
+        };
+        if public_names_contain(names, core_unit.package_name) {
+            return Result::Err(
+                "duplicate core provided for package " + core_unit.package_name,
+            )
+        } else {
+            names.push(core_unit.package_name);
+            result.push(core_unit)
+        }
+    };
+    Result::Ok(result)
+}
+
+fn artifact_find_core_unit(
+    values: Vec[ArtifactCoreUnit],
+    package_name: string,
+) -> Option[ArtifactCoreUnit] {
+    let result: Ref[Option[ArtifactCoreUnit]] = Ref::new(Option::None);
+    for value in values {
+        if value.package_name == package_name {
+            result.set(Option::Some(value))
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn artifact_link_dependency_name(package_name: string) -> bool {
+    package_name != "builtin"
+        && package_name != "std"
+        && !artifact_string_starts_with(package_name, "std::")
+}
+
+fn artifact_reachable_core_units(
+    roots: Vec[string],
+    values: Vec[ArtifactCoreUnit],
+) -> Result[Vec[ArtifactCoreUnit], string] {
+    let pending = Vec::new();
+    for root in roots {
+        pending.push(root)
+    };
+    let names = Vec::new();
+    while pending.len() > 0 {
+        let package_name = pending.remove(pending.len() - 1);
+        if public_names_contain(names, package_name) {
+            ()
+        } else {
+            let core_unit = match artifact_find_core_unit(values, package_name) {
+                Option::Some(value) => value,
+                Option::None => return Result::Err(
+                    "missing core for package " + package_name,
+                ),
+            };
+            names.push(package_name);
+            for dependency in core_unit.deps {
+                if artifact_link_dependency_name(dependency.0) {
+                    pending.push(dependency.0)
+                } else {
+                    ()
+                }
+            }
+        }
+    };
+    let result = Vec::new();
+    for value in values {
+        if public_names_contain(names, value.package_name) {
+            result.push(value)
+        } else {
+            ()
+        }
+    };
+    Result::Ok(result)
+}
+
+fn artifact_validate_link_core_units(
+    world: PackageWorld,
+    values: Vec[ArtifactCoreUnit],
+) -> Result[unit, string] {
+    for value in values {
+        if !artifact_interface_builtin_valid(value.interface_unit) {
+            return Result::Err(
+                "package "
+                    + value.package_name
+                    + " is missing the current builtin dependency",
+            )
+        } else {
+            ()
+        };
+        for dependency in value.deps {
+            if dependency.0 == "builtin" {
+                if dependency.1 != artifact_builtin_interface_hash() {
+                    return Result::Err(
+                        "package "
+                            + value.package_name
+                            + " expects a different builtin interface_hash",
+                    )
+                } else {
+                    ()
+                }
+            } else {
+                match artifact_standard_package(world.standard, dependency.0) {
+                    Option::Some(standard) => if dependency.1
+                        != standard.interface_unit.interface_hash
+                    {
+                        return Result::Err(
+                            "package "
+                                + value.package_name
+                                + " expects a different interface_hash for "
+                                + dependency.0,
+                        )
+                    } else {
+                        ()
+                    },
+                    Option::None => match artifact_find_core_unit(values, dependency.0) {
+                        Option::Some(actual) => if dependency.1
+                            != actual.interface_unit.interface_hash
+                        {
+                            return Result::Err(
+                                "package "
+                                    + value.package_name
+                                    + " expects a different interface_hash for "
+                                    + dependency.0,
+                            )
+                        } else {
+                            ()
+                        },
+                        Option::None => return Result::Err(
+                            "package "
+                                + value.package_name
+                                + " depends on missing package "
+                                + dependency.0,
+                        ),
+                    },
+                }
+            }
+        }
+    };
+    Result::Ok(())
+}
+
+fn artifact_core_standard_needs(
+    values: Vec[ArtifactCoreUnit],
+) -> StandardNeeds {
+    let needs = Ref::new(no_standard_needs());
+    for value in values {
+        for dependency in value.deps {
+            needs.set(merge_standard_needs(
+                needs.get(),
+                artifact_standard_needs_for_package(dependency.0),
+            ))
+        }
+    };
+    needs.get()
+}
+
+fn artifact_core_compilation(value: ArtifactCoreUnit) -> ArtifactCompilation {
+    let dependency_names = Vec::new();
+    for dependency in value.deps {
+        if artifact_link_dependency_name(dependency.0) {
+            dependency_names.push(dependency.0)
+        } else {
+            ()
+        }
+    };
+    ArtifactCompilation {
+        package_name: value.package_name,
+        dependency_names,
+        core_value: value.core_ir,
+    }
+}
+
+fn artifact_core_compilations(
+    values: Vec[ArtifactCoreUnit],
+) -> Result[Vec[ArtifactCompilation], string] {
+    let result = Vec::new();
+    for value in values {
+        result.push(artifact_core_compilation(value))
+    };
+    order_artifact_compilations(result)
+}
