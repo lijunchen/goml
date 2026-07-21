@@ -279,7 +279,8 @@ fn branch_pattern_column(rows: Vec[PatternRow]) -> Option[PatternColumn] {
     }
 }
 
-fn lower_pattern_row_body(ctx: Lowerer, row: PatternRow, ty: tast::Type) -> Expr {
+fn lower_pattern_row_body(ctx: Lowerer, row: PatternRow) -> Expr {
+    let body_ty = tast::expr_type(row.body);
     let result = Ref::new(lower_expr(ctx, row.body));
     for binding in row.bindings {
         let stmts: Vec[LetStmt] = Vec::new();
@@ -293,7 +294,7 @@ fn lower_pattern_row_body(ctx: Lowerer, row: PatternRow, ty: tast::Type) -> Expr
                 stmts,
                 tail: Option::Some(result.get()),
             },
-            ty,
+            body_ty,
         ))
     };
     result.get()
@@ -592,6 +593,53 @@ fn enum_pattern_rows(
     result
 }
 
+fn enum_pattern_present(
+    rows: Vec[PatternRow],
+    source: string,
+    constructor_name: string,
+) -> bool {
+    let present = Ref::new(false);
+    for row in rows {
+        for column in row.columns {
+            if column.source == source {
+                match column.pattern {
+                    tast::Pat::Constr(constructor, _, _) => {
+                        if constructor.name == constructor_name {
+                            present.set(true)
+                        } else {
+                            ()
+                        }
+                    },
+                    _ => (),
+                }
+            } else {
+                ()
+            }
+        }
+    };
+    present.get()
+}
+
+fn pattern_default_rows(rows: Vec[PatternRow], source: string) -> Vec[PatternRow] {
+    let result: Vec[PatternRow] = Vec::new();
+    for row in rows {
+        let contains = Ref::new(false);
+        for column in row.columns {
+            if column.source == source {
+                contains.set(true)
+            } else {
+                ()
+            }
+        };
+        if contains.get() {
+            ()
+        } else {
+            result.push(row)
+        }
+    };
+    result
+}
+
 fn lower_enum_pattern_rows(
     ctx: Lowerer,
     rows: Vec[PatternRow],
@@ -611,22 +659,27 @@ fn lower_enum_pattern_rows(
                 tast::substitute_params(field, definition.generics, type_args),
             ))
         };
-        cases.push(PatternEnumCase {
-            constructor: tast::Constructor {
-                name: constructor_name,
-                fields: Vec::new(),
-                is_struct: false,
-                tag: Option::Some(variant_index),
-            },
-            variables,
-            rows: enum_pattern_rows(
-                rows,
-                column.source,
-                constructor_name,
+        if enum_pattern_present(rows, column.source, constructor_name) {
+            cases.push(PatternEnumCase {
+                constructor: tast::Constructor {
+                    name: constructor_name,
+                    fields: Vec::new(),
+                    is_struct: false,
+                    tag: Option::Some(variant_index),
+                },
                 variables,
-            ),
-        })
+                rows: enum_pattern_rows(
+                    rows,
+                    column.source,
+                    constructor_name,
+                    variables,
+                ),
+            })
+        } else {
+            ()
+        }
     };
+    let complete = cases.len() == definition.variants.len();
     let arms: Vec[Arm] = Vec::new();
     for case in cases {
         let args: Vec[Expr] = Vec::new();
@@ -662,10 +715,16 @@ fn lower_enum_pattern_rows(
             body,
         })
     };
+    let defaults = pattern_default_rows(rows, column.source);
+    let default = if complete || defaults.len() == 0 {
+        Option::None
+    } else {
+        Option::Some(lower_pattern_rows(ctx, defaults, ty))
+    };
     Expr::Match(
         Expr::Var(column.source, column.source_ty),
         arms,
-        Option::None,
+        default,
         ty,
     )
 }
@@ -835,26 +894,6 @@ fn primitive_pattern_rows(
     result
 }
 
-fn primitive_default_rows(rows: Vec[PatternRow], source: string) -> Vec[PatternRow] {
-    let result: Vec[PatternRow] = Vec::new();
-    for row in rows {
-        let contains = Ref::new(false);
-        for column in row.columns {
-            if column.source == source {
-                contains.set(true)
-            } else {
-                ()
-            }
-        };
-        if contains.get() {
-            ()
-        } else {
-            result.push(row)
-        }
-    };
-    result
-}
-
 fn lower_primitive_pattern_rows(
     ctx: Lowerer,
     rows: Vec[PatternRow],
@@ -872,7 +911,7 @@ fn lower_primitive_pattern_rows(
             ),
         })
     };
-    let defaults = primitive_default_rows(rows, column.source);
+    let defaults = pattern_default_rows(rows, column.source);
     let default = if defaults.len() == 0 {
         Option::None
     } else {
@@ -909,7 +948,7 @@ fn lower_pattern_rows(ctx: Lowerer, values: Vec[PatternRow], ty: tast::Type) -> 
     if rows.len() == 0 {
         missing_expr(ty)
     } else if rows.get(0).columns.len() == 0 {
-        lower_pattern_row_body(ctx, rows.get(0), ty)
+        lower_pattern_row_body(ctx, rows.get(0))
     } else {
         match branch_pattern_column(rows) {
             Option::Some(column) => match expand_or_pattern_rows(rows, column.source) {
@@ -933,7 +972,7 @@ fn lower_pattern_rows(ctx: Lowerer, values: Vec[PatternRow], ty: tast::Type) -> 
                                 fields,
                                 ty,
                             ),
-                            Option::None => lower_pattern_row_body(ctx, rows.get(0), ty),
+                            Option::None => lower_pattern_row_body(ctx, rows.get(0)),
                         },
                     },
                     Option::None => match tast::resolve_type(column.source_ty) {
@@ -945,7 +984,7 @@ fn lower_pattern_rows(ctx: Lowerer, values: Vec[PatternRow], ty: tast::Type) -> 
                         _ => if primitive_pattern_type(column.source_ty) {
                             lower_primitive_pattern_rows(ctx, rows, column, ty)
                         } else {
-                            lower_pattern_row_body(ctx, rows.get(0), ty)
+                            lower_pattern_row_body(ctx, rows.get(0))
                         },
                     },
                 },

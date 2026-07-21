@@ -1140,13 +1140,14 @@ fn lower_function(
     name: string,
     trait_impl: Option[TraitImpl],
     value: tast::Function,
+    retain_generics: bool,
 ) -> Function {
     let hidden_cells = hidden_mutable_cells(value.body);
     let body = lower_block(ctx, value.body, value.ret_ty);
     Function {
         name,
         root: true,
-        generics: value.generics,
+        generics: if retain_generics { value.generics } else { Vec::new() },
         predicates: value.predicates,
         trait_impl,
         params: value.params,
@@ -1194,6 +1195,7 @@ fn lower_file_with_types(
                 function.name,
                 Option::None,
                 function,
+                false,
             )),
             tast::Item::ImplBlock(block) => for method in block.methods {
                 let trait_impl = match block.trait_ref {
@@ -1217,6 +1219,7 @@ fn lower_file_with_types(
                     name,
                     trait_impl,
                     method,
+                    true,
                 ))
             },
         }
