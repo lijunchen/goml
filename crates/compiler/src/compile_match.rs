@@ -342,6 +342,40 @@ mod tests {
             ]
         )));
     }
+
+    #[test]
+    fn enum_case_partition_keeps_unmentioned_variants_in_default() {
+        let enum_name = TastIdent::new("Choice");
+        let explicit = Row {
+            columns: vec![Column {
+                var: "value".to_string(),
+                pat: Pat::PConstr {
+                    constructor: Constructor::Enum(common::EnumConstructor {
+                        type_name: enum_name.clone(),
+                        variant: TastIdent::new("First"),
+                        index: 0,
+                    }),
+                    args: vec![],
+                    ty: Ty::TEnum {
+                        name: enum_name.0.clone(),
+                    },
+                    astptr: None,
+                },
+            }],
+            body: unit_expr(),
+        };
+        let fallback = row(unit_expr());
+        let branch = Variable {
+            name: "value".to_string(),
+            ty: Ty::TEnum { name: enum_name.0 },
+        };
+
+        let (explicit_cases, default_rows) =
+            partition_enum_cases(&[explicit, fallback], &branch, 3);
+
+        assert_eq!(explicit_cases, vec![true, false, false]);
+        assert_eq!(default_rows.len(), 1);
+    }
 }
 
 fn emissing(ty: &Ty) -> core::Expr {
@@ -1016,6 +1050,27 @@ struct ConstructorCase {
     rows: Vec<Row>,
 }
 
+fn partition_enum_cases(rows: &[Row], bvar: &Variable, case_count: usize) -> (Vec<bool>, Vec<Row>) {
+    let mut explicit_cases = vec![false; case_count];
+    let mut default_rows = Vec::new();
+    for row in rows {
+        let Some(column) = row.columns.iter().find(|column| column.var == bvar.name) else {
+            default_rows.push(row.clone());
+            continue;
+        };
+        let Pat::PConstr { constructor, .. } = &column.pat else {
+            continue;
+        };
+        let Some(constructor) = constructor.as_enum() else {
+            continue;
+        };
+        if let Some(explicit) = explicit_cases.get_mut(constructor.enum_index()) {
+            *explicit = true;
+        }
+    }
+    (explicit_cases, default_rows)
+}
+
 #[allow(clippy::too_many_arguments)]
 fn compile_constructor_cases(
     genv: &GlobalTypeEnv,
@@ -1024,9 +1079,10 @@ fn compile_constructor_cases(
     rows: Vec<Row>,
     bvar: &Variable,
     mut cases: Vec<ConstructorCase>,
+    explicit_cases: &[bool],
     ty: &Ty,
     match_range: Option<TextRange>,
-) -> Vec<core::Arm> {
+) -> Vec<(usize, core::Arm)> {
     for mut row in rows {
         if let Some(col) = row.remove_column(&bvar.name) {
             let col_range = pat_range(&col.pat).or(match_range);
@@ -1105,7 +1161,10 @@ fn compile_constructor_cases(
     }
 
     let mut arms = vec![];
-    for case in cases.into_iter() {
+    for (index, case) in cases.into_iter().enumerate() {
+        if !explicit_cases[index] {
+            continue;
+        }
         let args = case.vars.into_iter().map(|var| var.to_core()).collect();
         let arm = core::Arm {
             lhs: core::Expr::EConstr {
@@ -1115,7 +1174,7 @@ fn compile_constructor_cases(
             },
             body: compile_rows(genv, gensym, diagnostics, case.rows, ty, match_range),
         };
-        arms.push(arm);
+        arms.push((index, arm));
     }
     arms
 }
@@ -1140,6 +1199,7 @@ fn compile_enum_case(
         return emissing(ty);
     };
     let body_ty = match_result_ty(&rows, ty);
+    let (explicit_cases, default_rows) = partition_enum_cases(&rows, bvar, tydef.variants.len());
 
     let type_args = decompose_enum_type(&bvar.ty)
         .map(|(_, args)| args)
@@ -1197,20 +1257,34 @@ fn compile_enum_case(
         rows,
         bvar,
         cases,
+        &explicit_cases,
         ty,
         match_range,
     );
 
     let mut new_arms = vec![];
-    for (let_stmts, mut arm) in case_let_stmts.into_iter().zip(arms.into_iter()) {
-        arm.body = prepend_lets_to_expr(let_stmts, arm.body, ty);
+    for (index, mut arm) in arms {
+        arm.body = prepend_lets_to_expr(case_let_stmts[index].clone(), arm.body, ty);
         new_arms.push(arm);
     }
+
+    let default = if default_rows.is_empty() || explicit_cases.iter().all(|explicit| *explicit) {
+        None
+    } else {
+        Some(Box::new(compile_rows(
+            genv,
+            gensym,
+            diagnostics,
+            default_rows,
+            ty,
+            match_range,
+        )))
+    };
 
     core::Expr::EMatch {
         expr: Box::new(bvar.to_core()),
         arms: new_arms,
-        default: None,
+        default,
         ty: body_ty,
     }
 }
