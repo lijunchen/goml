@@ -917,12 +917,71 @@ fn normalize_type(
     }
 }
 
+fn types_contain_associated_projection(values: Vec[tast::Type]) -> bool {
+    let found = Ref::new(false);
+    for value in values {
+        if type_contains_associated_projection(value) {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+fn type_contains_associated_projection(value: tast::Type) -> bool {
+    match value {
+        tast::Type::Projection(_, _, _) => true,
+        tast::Type::Tuple(items) => types_contain_associated_projection(items),
+        tast::Type::App(base, args) => {
+            type_contains_associated_projection(base)
+                || types_contain_associated_projection(args)
+        },
+        tast::Type::Array(_, elem)
+        | tast::Type::Slice(elem)
+        | tast::Type::VecType(elem)
+        | tast::Type::RefType(elem) => type_contains_associated_projection(elem),
+        tast::Type::HashMap(key, value) => {
+            type_contains_associated_projection(key)
+                || type_contains_associated_projection(value)
+        },
+        tast::Type::Func(params, ret_ty) => {
+            types_contain_associated_projection(params)
+                || type_contains_associated_projection(ret_ty)
+        },
+        tast::Type::Var(_)
+        | tast::Type::Unit
+        | tast::Type::Bool
+        | tast::Type::Int8
+        | tast::Type::Int16
+        | tast::Type::Int32
+        | tast::Type::Int64
+        | tast::Type::Uint8
+        | tast::Type::Uint16
+        | tast::Type::Uint32
+        | tast::Type::Uint64
+        | tast::Type::Float32
+        | tast::Type::Float64
+        | tast::Type::String
+        | tast::Type::Char
+        | tast::Type::Con(_)
+        | tast::Type::Dyn(_)
+        | tast::Type::Param(_)
+        | tast::Type::Error => false,
+    }
+}
+
 fn specialize_type(
     ctx: SpecializeCtx,
     value: tast::Type,
     bindings: Vec[TypeBinding],
 ) -> tast::Type {
-    normalize_type(ctx, substitute_type(value, bindings), Vec::new())
+    let specialized = substitute_type(value, bindings);
+    if type_contains_associated_projection(specialized) {
+        normalize_type(ctx, specialized, Vec::new())
+    } else {
+        specialized
+    }
 }
 
 fn specialize_trait_ref(
