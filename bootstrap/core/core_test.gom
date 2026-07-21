@@ -65,6 +65,15 @@ fn lowers_enum_payload_patterns_in_definition_order() -> unit {
 }
 
 #[test]
+fn lowers_or_patterns_in_match_matrices() -> unit {
+    let source = "enum Flag { A, B, C } fn is_first(value: Flag) -> bool { match value { Flag::A | Flag::B => true, _ => false, } }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "fn is_first(value/0: Flag) -> bool {\n  match value/0 {\n    Flag::A => {\n      true\n    },\n    Flag::B => {\n      true\n    },\n    Flag::C => {\n      false\n    },\n  }\n}",
+    )
+}
+
+#[test]
 fn allocates_statement_names_after_lowering_the_value() -> unit {
     let file = lower_source("fn f(flag: bool) -> int32 { while true { if flag { return 1 } else { break }; }; 2 }");
     match file.functions.get(0).body.stmts.get(0) {
