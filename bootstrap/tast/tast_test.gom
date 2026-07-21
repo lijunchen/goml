@@ -579,6 +579,31 @@ fn preserves_projection_equality_owners() -> unit {
 }
 
 #[test]
+fn applies_where_type_equalities_in_function_bodies() -> unit {
+    let source = "package api; trait Render { fn render(Self) -> string; } fn same[T, U](value: T) -> U where T == U { value } fn structural[T, U](values: Vec[T]) -> Vec[U] where Vec[T] == Vec[U] { values } fn render_equal[T: Render, U](value: U) -> string where T == U { value.render() }";
+    let result = check_for_link(hir::lower_package(
+        ast::lower(parser::parse(source)),
+        "api.gom",
+        "where_predicates::api",
+    ));
+    testing::assert_eq(result.diagnostics.len(), 0);
+    match result.tast {
+        Option::Some(file) => testing::assert_eq(file.items.len(), 3),
+        Option::None => testing::fail("expected TAST"),
+    }
+}
+
+#[test]
+fn rejects_unsatisfied_impl_equality_predicates() -> unit {
+    let source = "trait Selected { fn selected(Self) -> unit; } struct Wrap[T] { value: T } impl[T] Selected for Wrap[T] where T == int32 { fn selected(self: Wrap[T]) -> unit { () } } fn require[T: Selected](value: T) -> unit { () } fn main() -> unit { require(Wrap { value: \"no\" }) }";
+    let result = check(hir::lower(
+        ast::lower(parser::parse(source)),
+        "main.gom",
+    ));
+    testing::assert(result.diagnostics.len() > 0)
+}
+
+#[test]
 fn checks_extended_builtin_method_catalog() -> unit {
     let source = "fn exercise(text: string, values: Vec[int32], map: HashMap[string, int32]) -> unit { let _ = text.decode_at(0); let _ = text.to_bytes(); let _ = text.chars(); let _ = text.char_indices(); values.reserve(1); values.insert(0, 1); let _ = values.remove(0); let _ = values.swap_remove(0); values.reverse(); let _ = values.last(); let _ = values.pop(); values.truncate(0); values.clear(); let _ = map.entries(); }";
     let file = checked_file(source);
