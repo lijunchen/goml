@@ -147,14 +147,18 @@ fn builtin_enum_definitions() -> Vec[EnumDef] {
     result
 }
 
-fn check_file(
+fn check_file_with_package(
     value: hir::File,
+    package_files: Vec[hir::File],
     dependencies: Vec[hir::File],
     include_builtin_types: bool,
 ) -> CheckResult {
     let ctx = collect_environment(value);
     let local_enum_count = ctx.enums.len();
     let local_struct_count = ctx.structs.len();
+    for package_file in package_files {
+        append_package_environment(ctx, package_file)
+    };
     for dependency in dependencies {
         append_dependency_environment(ctx, dependency)
     };
@@ -212,6 +216,14 @@ fn check_file(
     }
 }
 
+fn check_file(
+    value: hir::File,
+    dependencies: Vec[hir::File],
+    include_builtin_types: bool,
+) -> CheckResult {
+    check_file_with_package(value, Vec::new(), dependencies, include_builtin_types)
+}
+
 pub fn check(value: hir::LowerResult) -> CheckResult {
     match value.hir {
         Option::Some(file) => check_file(file, Vec::new(), true),
@@ -242,5 +254,61 @@ pub fn check_for_link_with_dependencies(
             tast: Option::None,
             diagnostics: value.diagnostics,
         },
+    }
+}
+
+pub fn check_package_files_for_link_with_dependencies(
+    values: Vec[hir::File],
+    dependencies: Vec[hir::File],
+) -> CheckResult {
+    let items: Vec[Item] = Vec::new();
+    let enums: Vec[EnumDef] = Vec::new();
+    let structs: Vec[StructDef] = Vec::new();
+    let diagnostics: Vec[string] = Vec::new();
+    let valid = Ref::new(true);
+    for index in range(0, values.len()) {
+        let package_files: Vec[hir::File] = Vec::new();
+        for other in range(0, values.len()) {
+            if other != index {
+                package_files.push(values.get(other))
+            } else {
+                ()
+            }
+        };
+        let checked = check_file_with_package(
+            values.get(index),
+            package_files,
+            dependencies,
+            false,
+        );
+        for diagnostic in checked.diagnostics {
+            diagnostics.push(diagnostic)
+        };
+        match checked.tast {
+            Option::Some(file) => {
+                for item in file.items {
+                    items.push(item)
+                };
+                for definition in file.enums {
+                    enums.push(definition)
+                };
+                for definition in file.structs {
+                    structs.push(definition)
+                }
+            },
+            Option::None => valid.set(false),
+        }
+    };
+    CheckResult {
+        tast: if valid.get() {
+            Option::Some(File {
+                items,
+                enums,
+                structs,
+            })
+        } else {
+            Option::None
+        },
+        diagnostics,
     }
 }

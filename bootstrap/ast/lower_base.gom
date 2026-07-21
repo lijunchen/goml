@@ -52,6 +52,16 @@ fn collect_constructor_names(root: LocatedNode) -> Vec[string] {
     names
 }
 
+fn append_constructor_names(target: Vec[string], values: Vec[string]) -> unit {
+    for value in values {
+        if contains_string(target, value) {
+            ()
+        } else {
+            target.push(value)
+        }
+    }
+}
+
 fn lower_path(ctx: LowerCtx, node: LocatedNode) -> Option[Path] {
     let segments: Vec[PathSegment] = Vec::new();
     for token in tokens_of_kind(node, lexer::TokenKind::Ident) {
@@ -433,7 +443,10 @@ fn lower_use(ctx: LowerCtx, node: LocatedNode) -> Option[UseDecl] {
     }
 }
 
-pub fn lower(result: cst::ParseResult) -> LowerResult {
+fn lower_with_constructors(
+    result: cst::ParseResult,
+    package_constructors: Vec[string],
+) -> LowerResult {
     let diagnostics = result.diagnostics;
     if diagnostics.len() > 0 {
         LowerResult {
@@ -442,9 +455,11 @@ pub fn lower(result: cst::ParseResult) -> LowerResult {
         }
     } else {
         let root = root_node(result);
+        let constructors = collect_constructor_names(root);
+        append_constructor_names(constructors, package_constructors);
         let ctx = LowerCtx {
             diagnostics,
-            constructors: collect_constructor_names(root),
+            constructors,
             expr_depth: Ref::new(0),
             pattern_depth: Ref::new(0),
             type_depth: Ref::new(0),
@@ -487,4 +502,27 @@ pub fn lower(result: cst::ParseResult) -> LowerResult {
             diagnostics: ctx.diagnostics,
         }
     }
+}
+
+pub fn lower(result: cst::ParseResult) -> LowerResult {
+    lower_with_constructors(result, Vec::new())
+}
+
+pub fn lower_package(results: Vec[cst::ParseResult]) -> Vec[LowerResult] {
+    let constructors: Vec[string] = Vec::new();
+    for result in results {
+        if result.diagnostics.len() == 0 {
+            append_constructor_names(
+                constructors,
+                collect_constructor_names(root_node(result)),
+            )
+        } else {
+            ()
+        }
+    };
+    let lowered: Vec[LowerResult] = Vec::new();
+    for result in results {
+        lowered.push(lower_with_constructors(result, constructors))
+    };
+    lowered
 }

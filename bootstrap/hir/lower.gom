@@ -1158,7 +1158,7 @@ fn item_name(package_name: string, value: ast::Item) -> Option[string] {
 }
 
 fn make_context(
-    file: ast::File,
+    files: Vec[ast::File],
     canonical_package_name: string,
     qualify_imports: bool,
 ) -> LowerCtx {
@@ -1168,33 +1168,35 @@ fn make_context(
     let nominal_types: Vec[string] = Vec::new();
     let traits: Vec[string] = Vec::new();
     let index = Ref::new(0);
-    for item in file.items {
-        let def_id = DefId {
-            pkg: id,
-            index: index.get(),
-        };
-        match item_name(canonical_package_name, item) {
-            Option::Some(name) => definitions.push((name, def_id)),
-            Option::None => (),
-        };
-        match item {
-            ast::Item::EnumDef(value) => {
-                nominal_types.push(value.name);
-                let variants: Vec[string] = Vec::new();
-                for variant in value.variants {
-                    variants.push(variant.0)
-                };
-                enums.push(EnumInfo {
-                    name: value.name,
-                    def_id,
-                    variants,
-                })
-            },
-            ast::Item::StructDef(value) => nominal_types.push(value.name),
-            ast::Item::TraitDef(value) => traits.push(value.name),
-            _ => (),
-        };
-        index.set(index.get() + 1)
+    for file in files {
+        for item in file.items {
+            let def_id = DefId {
+                pkg: id,
+                index: index.get(),
+            };
+            match item_name(canonical_package_name, item) {
+                Option::Some(name) => definitions.push((name, def_id)),
+                Option::None => (),
+            };
+            match item {
+                ast::Item::EnumDef(value) => {
+                    nominal_types.push(value.name);
+                    let variants: Vec[string] = Vec::new();
+                    for variant in value.variants {
+                        variants.push(variant.0)
+                    };
+                    enums.push(EnumInfo {
+                        name: value.name,
+                        def_id,
+                        variants,
+                    })
+                },
+                ast::Item::StructDef(value) => nominal_types.push(value.name),
+                ast::Item::TraitDef(value) => traits.push(value.name),
+                _ => (),
+            };
+            index.set(index.get() + 1)
+        }
     };
     LowerCtx {
         package_name: canonical_package_name,
@@ -1203,23 +1205,41 @@ fn make_context(
         enums,
         nominal_types,
         traits,
-        aliases: aliases_from_file(file),
+        aliases: Vec::new(),
         qualify_imports,
         local_counter: Ref::new(0),
-        method_counter: Ref::new(file.items.len()),
+        method_counter: Ref::new(index.get()),
         expr_counter: Ref::new(1),
     }
 }
 
-fn lower_file(
+fn file_context(base: LowerCtx, file: ast::File) -> LowerCtx {
+    LowerCtx {
+        package_name: base.package_name,
+        package_id: base.package_id,
+        definitions: base.definitions,
+        enums: base.enums,
+        nominal_types: base.nominal_types,
+        traits: base.traits,
+        aliases: aliases_from_file(file),
+        qualify_imports: base.qualify_imports,
+        local_counter: base.local_counter,
+        method_counter: base.method_counter,
+        expr_counter: base.expr_counter,
+    }
+}
+
+fn lower_file_with_context(
     file: ast::File,
     source_path: string,
     canonical_package_name: string,
     qualify_imports: bool,
+    base: LowerCtx,
+    item_offset: int32,
 ) -> File {
-    let ctx = make_context(file, canonical_package_name, qualify_imports);
+    let ctx = file_context(base, file);
     let items: Vec[Item] = Vec::new();
-    let index = Ref::new(0);
+    let index = Ref::new(item_offset);
     for item in file.items {
         let def_id = DefId {
             pkg: ctx.package_id,
@@ -1265,6 +1285,24 @@ fn lower_file(
         },
         items,
     }
+}
+
+fn lower_file(
+    file: ast::File,
+    source_path: string,
+    canonical_package_name: string,
+    qualify_imports: bool,
+) -> File {
+    let files: Vec[ast::File] = Vec::new();
+    files.push(file);
+    lower_file_with_context(
+        file,
+        source_path,
+        canonical_package_name,
+        qualify_imports,
+        make_context(files, canonical_package_name, qualify_imports),
+        0,
+    )
 }
 
 pub fn lower_expanded(value: ast::LowerResult, source_path: string) -> LowerResult {
@@ -1325,4 +1363,58 @@ pub fn lower_package(
     canonical_package_name: string,
 ) -> LowerResult {
     lower_expanded_package(expand_derives(value), source_path, canonical_package_name)
+}
+
+pub fn lower_expanded_package_files(
+    values: Vec[(ast::LowerResult, string)],
+    canonical_package_name: string,
+) -> Vec[LowerResult] {
+    let files: Vec[ast::File] = Vec::new();
+    for value in values {
+        match value.0.ast {
+            Option::Some(file) => files.push(file),
+            Option::None => (),
+        }
+    };
+    let base = make_context(files, canonical_package_name, true);
+    let item_offset = Ref::new(0);
+    let lowered: Vec[LowerResult] = Vec::new();
+    for value in values {
+        match value.0.ast {
+            Option::Some(file) => {
+                lowered.push(LowerResult {
+                    hir: Option::Some(lower_file_with_context(
+                        file,
+                        value.1,
+                        canonical_package_name,
+                        true,
+                        base,
+                        item_offset.get(),
+                    )),
+                    diagnostics: Vec::new(),
+                });
+                item_offset.set(item_offset.get() + file.items.len())
+            },
+            Option::None => {
+                let diagnostics: Vec[string] = Vec::new();
+                diagnostics.push("AST lowering failed");
+                lowered.push(LowerResult {
+                    hir: Option::None,
+                    diagnostics,
+                })
+            },
+        }
+    };
+    lowered
+}
+
+pub fn lower_package_files(
+    values: Vec[(ast::LowerResult, string)],
+    canonical_package_name: string,
+) -> Vec[LowerResult] {
+    let expanded: Vec[(ast::LowerResult, string)] = Vec::new();
+    for value in values {
+        expanded.push((expand_derives(value.0), value.1))
+    };
+    lower_expanded_package_files(expanded, canonical_package_name)
 }
