@@ -82,15 +82,29 @@ fn find_enum_by_name(ctx: Checker, name: string) -> Option[EnumInfo] {
 }
 
 fn find_struct_by_name(ctx: Checker, name: string) -> Option[StructInfo] {
-    let result = Ref::new(Option::None);
+    let exact: Ref[Option[StructInfo]] = Ref::new(Option::None);
+    let short: Ref[Option[StructInfo]] = Ref::new(Option::None);
+    let short_ambiguous = Ref::new(false);
     for value in ctx.structs {
-        if names_match(value.name, name) {
-            result.set(Option::Some(value))
+        if value.name == name {
+            exact.set(Option::Some(value))
+        } else if short_name(value.name) == short_name(name) {
+            match short.get() {
+                Option::Some(_) => short_ambiguous.set(true),
+                Option::None => short.set(Option::Some(value)),
+            }
         } else {
             ()
         }
     };
-    result.get()
+    match exact.get() {
+        Option::Some(value) => Option::Some(value),
+        Option::None => if short_ambiguous.get() {
+            Option::None
+        } else {
+            short.get()
+        },
+    }
 }
 
 fn nominal_type_is_defined(ctx: Checker, name: string) -> bool {
