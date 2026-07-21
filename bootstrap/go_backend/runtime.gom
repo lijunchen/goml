@@ -1003,6 +1003,40 @@ fn synthetic_option_items(value: tast::Type) -> Vec[Item] {
     result
 }
 
+fn option_variant_names(value: tast::EnumDef) -> Option[(string, string)] {
+    let named_some = Ref::new(Option::None);
+    let named_none = Ref::new(Option::None);
+    let payloads: Vec[string] = Vec::new();
+    let empties: Vec[string] = Vec::new();
+    for variant in value.variants {
+        if variant.fields.len() == 1 {
+            payloads.push(variant.name);
+            if variant.name == "Some" {
+                named_some.set(Option::Some(variant.name))
+            } else {
+                ()
+            }
+        } else if variant.fields.len() == 0 {
+            empties.push(variant.name);
+            if variant.name == "None" {
+                named_none.set(Option::Some(variant.name))
+            } else {
+                ()
+            }
+        } else {
+            ()
+        }
+    };
+    match (named_some.get(), named_none.get()) {
+        (Option::Some(some), Option::Some(none)) => Option::Some((some, none)),
+        _ => if payloads.len() == 1 && empties.len() == 1 {
+            Option::Some((payloads.get(0), empties.get(0)))
+        } else {
+            Option::None
+        },
+    }
+}
+
 fn hashmap_option_info(
     value: tast::Type,
     instances: Vec[core::TypeInstance],
@@ -1013,26 +1047,36 @@ fn hashmap_option_info(
     let args: Vec[tast::Type] = Vec::new();
     args.push(value);
     match find_instance(instances, "Option", args) {
-        Option::Some(instance) => (
-            Type::Named(go_user_type_name(instance.name)),
-            Type::Named(variant_go_name(
-                instance.name,
-                "Some",
-                enums,
-                structs,
-                instances,
-                function_names,
-            )),
-            Type::Named(variant_go_name(
-                instance.name,
-                "None",
-                enums,
-                structs,
-                instances,
-                function_names,
-            )),
-            false,
-        ),
+        Option::Some(instance) => {
+            let variants = match find_enum(enums, instance.base_name) {
+                Option::Some(definition) => option_variant_names(definition),
+                Option::None => Option::None,
+            };
+            let variants = match variants {
+                Option::Some(value) => value,
+                Option::None => ("Some", "None"),
+            };
+            (
+                Type::Named(go_user_type_name(instance.name)),
+                Type::Named(variant_go_name(
+                    instance.name,
+                    variants.0,
+                    enums,
+                    structs,
+                    instances,
+                    function_names,
+                )),
+                Type::Named(variant_go_name(
+                    instance.name,
+                    variants.1,
+                    enums,
+                    structs,
+                    instances,
+                    function_names,
+                )),
+                false,
+            )
+        },
         Option::None => {
             let option_name = go_generated_ident(
                 "_goml_synthetic_" + synthetic_option_base(value),

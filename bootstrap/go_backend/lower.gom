@@ -283,6 +283,10 @@ fn go_float_literal(value: string, ty: tast::Type) -> string {
             let (valid, parsed) = string_parse_float32(value);
             if valid { parsed.to_string() } else { value }
         },
+        tast::Type::Float64 => {
+            let (valid, parsed) = string_parse_float64(value);
+            if valid { parsed.to_string() } else { value }
+        },
         _ => value,
     }
 }

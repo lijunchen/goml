@@ -113,7 +113,7 @@ fn write_hex_word(builder: text::StringBuilder, value: uint32) -> unit {
     }
 }
 
-pub fn sha256_prefix(value: string) -> string {
+pub fn sha256_hex(value: string) -> string {
     let constants = sha256_constants();
     let padded_len = Ref::new(value.byte_len() + 9);
     while padded_len.get() % 64 != 0 {
@@ -199,5 +199,13 @@ pub fn sha256_prefix(value: string) -> string {
     write_hex_word(builder, h1.get());
     write_hex_word(builder, h2.get());
     write_hex_word(builder, h3.get());
+    write_hex_word(builder, h4.get());
+    write_hex_word(builder, h5.get());
+    write_hex_word(builder, h6.get());
+    write_hex_word(builder, h7.get());
     builder.finish()
+}
+
+pub fn sha256_prefix(value: string) -> string {
+    sha256_hex(value).byte_slice(0, 32)
 }
