@@ -189,3 +189,45 @@ fn resolves_enum_constructors_and_pattern_bindings() -> unit {
         _ => testing::fail("expected function"),
     }
 }
+
+#[test]
+fn resolves_cross_file_constructor_patterns() -> unit {
+    let parsed = Vec::new();
+    parsed.push(parser::parse("package main; enum Status { Idle, Busy(int32) }"));
+    parsed.push(parser::parse(
+        "package main; fn label(status: Status) -> string { match status { Idle => \"idle\", Busy(value) => value.to_string() } }",
+    ));
+    let ast_files = ast::lower_package(parsed);
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::new();
+    inputs.push((ast_files.get(0), "types.gom"));
+    inputs.push((ast_files.get(1), "main.gom"));
+    let lowered = lower_package_files(inputs, "main");
+    testing::assert_eq(lowered.len(), 2);
+    match lowered.get(1).hir {
+        Option::Some(file) => match file.items.get(0) {
+            Item::Function(function) => match function.body.tail {
+                Option::Some(Expr::Match(_, arms)) => {
+                    match arms.get(0).pat {
+                        Pat::Constr(ConstructorRef::Resolved(definition, variant), args) => {
+                            testing::assert_eq(definition.index, 0);
+                            testing::assert_eq(variant, 0);
+                            testing::assert_eq(args.len(), 0)
+                        },
+                        _ => testing::fail("expected resolved Idle pattern"),
+                    };
+                    match arms.get(1).pat {
+                        Pat::Constr(ConstructorRef::Resolved(definition, variant), args) => {
+                            testing::assert_eq(definition.index, 0);
+                            testing::assert_eq(variant, 1);
+                            testing::assert_eq(args.len(), 1)
+                        },
+                        _ => testing::fail("expected resolved Busy pattern"),
+                    }
+                },
+                _ => testing::fail("expected cross-file match"),
+            },
+            _ => testing::fail("expected label function"),
+        },
+        Option::None => testing::fail("expected cross-file HIR"),
+    }
+}

@@ -91,6 +91,40 @@ fn checked_package_file_with_dependencies(
 }
 
 #[test]
+fn checks_cross_file_package_definitions() -> unit {
+    let parsed = Vec::new();
+    parsed.push(parser::parse(
+        "package main; trait Label { fn label(Self) -> string; } enum Status { Idle, Busy(int32) } impl Label for Status { fn label(self: Status) -> string { match self { Idle => \"idle\", Busy(value) => value.to_string() } } }",
+    ));
+    parsed.push(parser::parse(
+        "package main; fn main() -> unit { println(Idle.label()); println(Busy(4).label()) }",
+    ));
+    let ast_files = ast::lower_package(parsed);
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::new();
+    inputs.push((ast_files.get(0), "types.gom"));
+    inputs.push((ast_files.get(1), "main.gom"));
+    let hir_files: Vec[hir::File] = Vec::new();
+    for lowered in hir::lower_package_files(inputs, "main") {
+        match lowered.hir {
+            Option::Some(file) => hir_files.push(file),
+            Option::None => testing::fail("expected cross-file HIR"),
+        }
+    };
+    let checked = check_package_files_for_link_with_dependencies(
+        hir_files,
+        Vec::new(),
+    );
+    testing::assert_eq(checked.diagnostics.len(), 0);
+    match checked.tast {
+        Option::Some(file) => {
+            testing::assert_eq(file.enums.len(), 1);
+            testing::assert_eq(file.items.len(), 2)
+        },
+        Option::None => testing::fail("expected cross-file TAST"),
+    }
+}
+
+#[test]
 fn resolves_generic_functions_from_package_interfaces() -> unit {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(dependency_hir(

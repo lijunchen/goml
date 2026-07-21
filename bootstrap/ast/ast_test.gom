@@ -73,6 +73,33 @@ fn lowers_unicode_strings_and_constructor_patterns() -> unit {
 }
 
 #[test]
+fn lowers_cross_file_constructor_patterns() -> unit {
+    let parsed = Vec::new();
+    parsed.push(parser::parse("package main; enum Status { Idle, Busy(int32) }"));
+    parsed.push(parser::parse(
+        "package main; fn label(status: Status) -> string { match status { Idle => \"idle\", Busy(value) => value.to_string() } }",
+    ));
+    let lowered = lower_package(parsed);
+    testing::assert_eq(lowered.len(), 2);
+    match lowered.get(1).ast {
+        Option::Some(file) => match file.items.get(0) {
+            Item::Function(function) => match function.body.tail {
+                Option::Some(Expr::Match(_, arms, _)) => match arms.get(0).pat {
+                    Pat::Constr(path, args, _) => {
+                        testing::assert_eq(path.segments.get(0).ident, "Idle");
+                        testing::assert_eq(args.len(), 0)
+                    },
+                    _ => testing::fail("expected cross-file constructor pattern"),
+                },
+                _ => testing::fail("expected match expression"),
+            },
+            _ => testing::fail("expected label function"),
+        },
+        Option::None => testing::fail("expected cross-file AST"),
+    }
+}
+
+#[test]
 fn parser_diagnostics_prevent_ast_creation() -> unit {
     let result = lower(parser::parse("fn broken( {"));
     testing::assert(result.diagnostics.len() > 0);
