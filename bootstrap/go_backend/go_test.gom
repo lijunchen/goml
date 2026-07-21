@@ -509,7 +509,7 @@ fn preserves_loop_carried_assignments() -> unit {
 
 #[test]
 fn preserves_all_exit_while_conditions() -> unit {
-    let source = "fn loop_return_unit(flag: bool) -> unit { while if flag { return } else { return } { println(\"unreachable\"); }; }";
+    let source = "fn loop_return_unit(flag: bool) -> unit { while if flag { return } else { return } { println(\"unreachable\"); }; } fn main() -> unit { loop_return_unit(true) }";
     let output = encode(lower_source(source));
     testing::assert(string_contains(
         output,
@@ -727,7 +727,7 @@ fn emits_structs_before_generic_enums() -> unit {
 #[test]
 fn preserves_enums_before_field_instances() -> unit {
     let output = encode(lower_source(
-        "enum Expr { Num(int32), Add(Option[Expr]), }",
+        "enum Expr { Num(int32), Add(Option[Expr]), } fn main() -> unit { let value: Option[Expr] = Option::None; match value { Option::Some(_) => (), Option::None => (), }; }",
     ));
     let prefix = "package main\n\ntype Expr interface {\n    isExpr()\n}";
     testing::assert_eq(output.byte_slice(0, prefix.byte_len()), prefix);
@@ -754,7 +754,7 @@ fn emits_pointer_equality_helpers() -> unit {
 
 #[test]
 fn emits_missing_runtime_helpers() -> unit {
-    let source = "enum Never {} fn missing_int(value: Never) -> int32 { match value {} } fn missing_string(value: Never) -> string { match value {} }";
+    let source = "enum Never {} fn never() -> Never { never() } fn missing_int(value: Never) -> int32 { match value {} } fn missing_string(value: Never) -> string { match value {} } fn main() -> unit { println(missing_int(never())); println(missing_string(never())); }";
     let output = encode(lower_source(source));
     testing::assert(string_contains(
         output,
