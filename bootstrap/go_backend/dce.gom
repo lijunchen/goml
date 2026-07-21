@@ -331,6 +331,39 @@ fn call_result_must_be_used(value: Expr) -> bool {
     }
 }
 
+fn append_call(value: Expr) -> bool {
+    match value {
+        Expr::Var(name) => name == "append",
+        _ => false,
+    }
+}
+
+fn append_target(values: Vec[Expr]) -> Option[string] {
+    if values.len() > 0 {
+        match values.get(0) {
+            Expr::Var(name) => Option::Some(name),
+            _ => Option::None,
+        }
+    } else {
+        Option::None
+    }
+}
+
+fn emit_side_effect(value: Expr) -> Stmt {
+    match value {
+        Expr::Call(func, args) => if append_call(func) {
+            let call = Expr::Call(func, args);
+            match append_target(args) {
+                Option::Some(name) => Stmt::Assign(name, call),
+                Option::None => Stmt::Assign("_", call),
+            }
+        } else {
+            Stmt::Expr(Expr::Call(func, args))
+        },
+        _ => Stmt::Assign("_", value),
+    }
+}
+
 fn expr_has_side_effects(value: Expr) -> bool {
     match value {
         Expr::Call(func, args) => {
@@ -342,7 +375,7 @@ fn expr_has_side_effects(value: Expr) -> bool {
                     ()
                 }
             };
-            !call_result_must_be_used(func) || nested.get()
+            append_call(func) || !call_result_must_be_used(func) || nested.get()
         },
         Expr::Unary(_, expr) => expr_has_side_effects(expr),
         Expr::Binary(_, lhs, rhs) => expr_has_side_effects(lhs) || expr_has_side_effects(rhs),
@@ -441,7 +474,7 @@ fn dce_block_with_live(value: Block, live_out: Vec[string]) -> DceResult {
                         Option::Some(expr) => {
                             if expr_has_side_effects(expr) {
                                 add_expr_uses(live, expr);
-                                output.push(Stmt::Expr(expr))
+                                output.push(emit_side_effect(expr))
                             } else {
                                 ()
                             };
@@ -454,7 +487,7 @@ fn dce_block_with_live(value: Block, live_out: Vec[string]) -> DceResult {
                         Option::Some(expr) => {
                             if expr_has_side_effects(expr) {
                                 add_expr_uses(live, expr);
-                                output.push(Stmt::Expr(expr))
+                                output.push(emit_side_effect(expr))
                             } else {
                                 ()
                             }
@@ -471,7 +504,7 @@ fn dce_block_with_live(value: Block, live_out: Vec[string]) -> DceResult {
                     output.push(Stmt::Assign(name, expr))
                 } else if expr_has_side_effects(expr) {
                     add_expr_uses(live, expr);
-                    output.push(Stmt::Expr(expr))
+                    output.push(emit_side_effect(expr))
                 } else {
                     ()
                 }
