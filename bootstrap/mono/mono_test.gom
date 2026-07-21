@@ -355,3 +355,12 @@ fn specializes_associated_type_functions_and_impls() -> unit {
         "fn trait_impl#Provider#Number#get(self/0: Number) -> int32 {\n  Number.value(self/0)\n}\n\nfn main() -> unit {\n  let _wild0 = @runtime(core.string_println)(inherent#int32#int32#to_string(read__P_Number(Number { value: 42 }))) in\n  let value/4 = read_as__P_Number__T_int32(Number { value: 7 }) in\n  let _wild1 = @runtime(core.string_println)(inherent#int32#int32#to_string(value/4)) in\n  let _wild2 = @runtime(core.string_println)(read__P_Box[string](Box__string { value: \"generic\" })) in\n  @runtime(core.string_println)(inherent#int32#int32#to_string(trait_impl#Provider#Number#get(Number { value: 11 })))\n}\n\nfn read__P_Number(provider/2: Number) -> int32 {\n  trait_impl#Provider#Number#get(provider/2)\n}\n\nfn read_as__P_Number__T_int32(provider/3: Number) -> int32 {\n  trait_impl#Provider#Number#get(provider/3)\n}\n\nfn read__P_Box[string](provider/2: Box__string) -> string {\n  trait_impl#Provider#Box__string#get(provider/2)\n}\n\nfn trait_impl#Provider#Box__string#get(self/1: Box__string) -> string {\n  Box__string.value(self/1)\n}",
     )
 }
+
+#[test]
+fn orders_nested_associated_calls_by_resolved_callees() -> unit {
+    let source = "trait Source { type Item; fn get(Self) -> Self::Item; } struct Box[T] { value: T } impl[T] Source for Box[T] { type Item = T; fn get(self: Box[T]) -> T { self.value } } fn boxed[T](value: T) -> Box[T] { Box { value } } fn read[S: Source](source: S) -> S::Item { source.get() } fn main() -> int32 { read(boxed(99)) }";
+    testing::assert_eq(
+        encode(lower_source(source)),
+        "fn main() -> int32 {\n  read__S_Box[int32](boxed__T_int32(99))\n}\n\nfn boxed__T_int32(value/1: int32) -> Box__int32 {\n  Box__int32 { value: value/1 }\n}\n\nfn read__S_Box[int32](source/2: Box__int32) -> int32 {\n  trait_impl#Source#Box__int32#get(source/2)\n}\n\nfn trait_impl#Source#Box__int32#get(self/0: Box__int32) -> int32 {\n  Box__int32.value(self/0)\n}",
+    )
+}
