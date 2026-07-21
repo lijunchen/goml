@@ -158,6 +158,7 @@ fn check_file(
     for dependency in dependencies {
         append_dependency_environment(ctx, dependency)
     };
+    expand_in_scope_supertraits(ctx);
     let items: Vec[Item] = Vec::new();
     for item in value.items {
         match item {
