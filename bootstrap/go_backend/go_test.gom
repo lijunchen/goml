@@ -64,6 +64,19 @@ fn string_contains(value: string, expected: string) -> bool {
 }
 
 #[test]
+fn bounds_qualified_variant_names_after_qualification() -> unit {
+    let owner = "Option__(gomlang::parser::ast::Path,Vec[gomlang::parser::ast::TypeExpr])";
+    testing::assert_eq(
+        qualified_variant_go_name(owner, "None"),
+        "_goml_m_Option_____o_gomlang_p_h7683b5ae9de791b819f9dabfad06178b_Expr_r__q__None",
+    );
+    testing::assert_eq(
+        qualified_variant_go_name(owner, "Some"),
+        "_goml_m_Option_____o_gomlang_p_h41f861192a629026b0f0fbe22ee07368_Expr_r__q__Some",
+    )
+}
+
+#[test]
 fn emits_test_runner_entrypoint() -> unit {
     let test_cases = Vec::new();
     test_cases.push(("example::alpha", "alpha"));

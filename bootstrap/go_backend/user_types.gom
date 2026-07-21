@@ -258,7 +258,7 @@ fn enum_marker_name(go_name: string) -> string {
 }
 
 fn qualified_variant_go_name(owner_name: string, variant_name: string) -> string {
-    go_user_type_name(owner_name) + "_" + go_ident(variant_name)
+    go_generated_ident(go_user_type_name(owner_name) + "_" + go_ident(variant_name))
 }
 
 fn enum_has_variant(value: tast::EnumDef, variant_name: string) -> bool {
