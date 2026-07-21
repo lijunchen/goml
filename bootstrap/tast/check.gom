@@ -359,10 +359,142 @@ fn coerce_expr(ctx: Checker, value: Expr, expected: Option[Type]) -> Expr {
     }
 }
 
+fn contains_unbound_type_variable(value: Type) -> bool {
+    match prune(value) {
+        Type::Var(variable) => match variable.get() {
+            TypeVar::Unbound(_, _) => true,
+            TypeVar::Link(inner) => contains_unbound_type_variable(inner),
+        },
+        Type::Tuple(values) => {
+            let found = Ref::new(false);
+            for value in values {
+                if contains_unbound_type_variable(value) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Type::Projection(base, _, reference) => {
+            let found = Ref::new(contains_unbound_type_variable(base));
+            match reference {
+                Option::Some(reference) => for arg in reference.args {
+                    if contains_unbound_type_variable(arg) {
+                        found.set(true)
+                    } else {
+                        ()
+                    }
+                },
+                Option::None => (),
+            };
+            found.get()
+        },
+        Type::App(base, args) => {
+            let found = Ref::new(contains_unbound_type_variable(base));
+            for arg in args {
+                if contains_unbound_type_variable(arg) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Type::Array(_, elem)
+        | Type::Slice(elem)
+        | Type::VecType(elem)
+        | Type::RefType(elem) => contains_unbound_type_variable(elem),
+        Type::HashMap(key, item) => {
+            contains_unbound_type_variable(key)
+                || contains_unbound_type_variable(item)
+        },
+        Type::Func(params, ret_ty) => {
+            let found = Ref::new(contains_unbound_type_variable(ret_ty));
+            for param in params {
+                if contains_unbound_type_variable(param) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        _ => false,
+    }
+}
+
+fn has_unresolved_projection(value: Type) -> bool {
+    match prune(value) {
+        Type::Projection(base, _, reference) => {
+            let unresolved = Ref::new(contains_unbound_type_variable(base));
+            match reference {
+                Option::Some(reference) => for arg in reference.args {
+                    if contains_unbound_type_variable(arg) {
+                        unresolved.set(true)
+                    } else {
+                        ()
+                    }
+                },
+                Option::None => (),
+            };
+            unresolved.get()
+        },
+        Type::Tuple(values) => {
+            let found = Ref::new(false);
+            for value in values {
+                if has_unresolved_projection(value) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Type::App(base, args) => {
+            let found = Ref::new(has_unresolved_projection(base));
+            for arg in args {
+                if has_unresolved_projection(arg) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Type::Array(_, elem)
+        | Type::Slice(elem)
+        | Type::VecType(elem)
+        | Type::RefType(elem) => has_unresolved_projection(elem),
+        Type::HashMap(key, item) => {
+            has_unresolved_projection(key) || has_unresolved_projection(item)
+        },
+        Type::Func(params, ret_ty) => {
+            let found = Ref::new(has_unresolved_projection(ret_ty));
+            for param in params {
+                if has_unresolved_projection(param) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        _ => false,
+    }
+}
+
 fn constrain_callable_return(ctx: Checker, callable_ty: Type, expected: Option[Type]) -> unit {
     match propagated_expected(expected) {
         Option::Some(expected_ty) => match prune(callable_ty) {
-            Type::Func(_, ret_ty) => expect_type(ctx, ret_ty, expected_ty),
+            Type::Func(_, ret_ty) => {
+                let ret_ty = normalize_type(ctx, ret_ty);
+                if has_unresolved_projection(ret_ty) {
+                    ()
+                } else {
+                    expect_type(ctx, ret_ty, expected_ty)
+                }
+            },
             _ => (),
         },
         Option::None => (),

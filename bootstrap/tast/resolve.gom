@@ -601,6 +601,12 @@ fn builtin_value_trait_type(value: Type) -> bool {
         | Type::Float64
         | Type::String
         | Type::Char => true,
+        Type::Var(variable) => match variable.get() {
+            TypeVar::Unbound(_, VarKind::Integer)
+            | TypeVar::Unbound(_, VarKind::Float) => true,
+            TypeVar::Link(inner) => builtin_value_trait_type(inner),
+            TypeVar::Unbound(_, VarKind::Any) => false,
+        },
         _ => false,
     }
 }
@@ -716,6 +722,8 @@ fn trait_bound_satisfied_at(
     reference: TraitRef,
     depth: int32,
 ) -> bool {
+    let bound_ty = normalize_type(ctx, bound_ty);
+    let reference = normalize_trait_ref(ctx, reference);
     if context_trait_bound_satisfied(ctx, bound_ty, reference) {
         true
     } else if depth >= 16 {
