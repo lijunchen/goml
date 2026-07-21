@@ -560,7 +560,50 @@ fn subst_ty(ty: &Ty, s: &Subst) -> Ty {
     }
 }
 
+fn contains_associated_projection(ty: &Ty) -> bool {
+    match ty {
+        Ty::TProjection { .. } => true,
+        Ty::TTuple { typs } => typs.iter().any(contains_associated_projection),
+        Ty::TApp { ty, args } => {
+            contains_associated_projection(ty) || args.iter().any(contains_associated_projection)
+        }
+        Ty::TArray { elem, .. } | Ty::TSlice { elem } | Ty::TVec { elem } | Ty::TRef { elem } => {
+            contains_associated_projection(elem)
+        }
+        Ty::THashMap { key, value } => {
+            contains_associated_projection(key) || contains_associated_projection(value)
+        }
+        Ty::TFunc { params, ret_ty } => {
+            params.iter().any(contains_associated_projection)
+                || contains_associated_projection(ret_ty)
+        }
+        Ty::TVar(_)
+        | Ty::TUnit
+        | Ty::TBool
+        | Ty::TInt8
+        | Ty::TInt16
+        | Ty::TInt32
+        | Ty::TInt64
+        | Ty::TUint8
+        | Ty::TUint16
+        | Ty::TUint32
+        | Ty::TUint64
+        | Ty::TFloat32
+        | Ty::TFloat64
+        | Ty::TString
+        | Ty::TChar
+        | Ty::TEnum { .. }
+        | Ty::TStruct { .. }
+        | Ty::TDyn { .. }
+        | Ty::TParam { .. } => false,
+    }
+}
+
 fn normalize_associated_ty(genv: &GlobalTypeEnv, ty: &Ty) -> Ty {
+    if !contains_associated_projection(ty) {
+        return ty.clone();
+    }
+
     fn normalize(
         trait_solver: &mut crate::typer::traits::solver::TraitSolver<'_>,
         ty: &Ty,
