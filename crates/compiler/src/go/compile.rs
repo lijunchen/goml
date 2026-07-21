@@ -31,6 +31,9 @@ pub struct GlobalGoEnv {
     pub colliding_callable_idents: HashSet<String>,
     pub callable_go_names: HashMap<String, String>,
     pub callable_go_name_set: HashSet<String>,
+    pub type_go_name_set: HashSet<String>,
+    pub colliding_variant_names: HashSet<String>,
+    pub variant_go_names: HashMap<String, HashMap<String, String>>,
     pub dyn_vtable_ctor_go_names: HashMap<(String, String), String>,
     pub dyn_wrap_go_names: HashMap<(String, String, String), String>,
 }
@@ -47,9 +50,13 @@ impl Default for GlobalGoEnv {
             colliding_callable_idents: HashSet::new(),
             callable_go_names: HashMap::new(),
             callable_go_name_set: HashSet::new(),
+            type_go_name_set: HashSet::new(),
+            colliding_variant_names: HashSet::new(),
+            variant_go_names: HashMap::new(),
             dyn_vtable_ctor_go_names: HashMap::new(),
             dyn_wrap_go_names: HashMap::new(),
         }
+        .with_name_indexes()
     }
 }
 
@@ -64,9 +71,32 @@ impl GlobalGoEnv {
             colliding_callable_idents: HashSet::new(),
             callable_go_names: HashMap::new(),
             callable_go_name_set: HashSet::new(),
+            type_go_name_set: HashSet::new(),
+            colliding_variant_names: HashSet::new(),
+            variant_go_names: HashMap::new(),
             dyn_vtable_ctor_go_names: HashMap::new(),
             dyn_wrap_go_names: HashMap::new(),
         }
+        .with_name_indexes()
+    }
+
+    fn with_name_indexes(mut self) -> Self {
+        self.type_go_name_set = self
+            .structs()
+            .map(|(name, _)| go_user_type_name(&name.0))
+            .chain(self.enums().map(|(name, _)| go_user_type_name(&name.0)))
+            .collect();
+        let mut counts = HashMap::new();
+        for (_, definition) in self.enums() {
+            for (name, _) in definition.variants.iter() {
+                *counts.entry(name.0.clone()).or_insert(0usize) += 1;
+            }
+        }
+        self.colliding_variant_names = counts
+            .into_iter()
+            .filter_map(|(name, count)| (count > 1).then_some(name))
+            .collect();
+        self
     }
 
     pub fn enums(&self) -> impl Iterator<Item = (&TastIdent, &EnumDef)> {
@@ -158,12 +188,7 @@ fn go_unique_toplevel_func_name(name: &str) -> String {
 }
 
 fn go_toplevel_func_name_collides_with_type(goenv: &GlobalGoEnv, name: &str) -> bool {
-    goenv
-        .structs()
-        .any(|(struct_name, _)| go_user_type_name(&struct_name.0) == name)
-        || goenv
-            .enums()
-            .any(|(enum_name, _)| go_user_type_name(&enum_name.0) == name)
+    goenv.type_go_name_set.contains(name)
 }
 
 fn go_value_name(goenv: &GlobalGoEnv, name: &str) -> String {
@@ -469,21 +494,22 @@ fn variant_symbol_name_for_go_enum(
     enum_go_name: &str,
     variant_name: &str,
 ) -> String {
-    // Count how many enums define a variant with this name.
-    let mut count = 0;
-    for (_ename, edef) in goenv.enums() {
-        if edef
-            .variants
-            .iter()
-            .any(|(v, _)| v.0.as_str() == variant_name)
-        {
-            count += 1;
-            if count > 1 {
-                break;
-            }
-        }
+    if let Some(name) = goenv
+        .variant_go_names
+        .get(enum_go_name)
+        .and_then(|names| names.get(variant_name))
+    {
+        return name.clone();
     }
-    let candidate = if count > 1 {
+    compute_variant_symbol_name(goenv, enum_go_name, variant_name)
+}
+
+fn compute_variant_symbol_name(
+    goenv: &GlobalGoEnv,
+    enum_go_name: &str,
+    variant_name: &str,
+) -> String {
+    let candidate = if goenv.colliding_variant_names.contains(variant_name) {
         go_generated_ident(&format!("{}_{}", enum_go_name, go_ident(variant_name)))
     } else {
         go_ident(variant_name)
@@ -532,13 +558,24 @@ fn is_generated_tuple_type_name(name: &str) -> bool {
 fn go_toplevel_name_is_reserved(goenv: &GlobalGoEnv, name: &str) -> bool {
     name == "init"
         || is_generated_tuple_type_name(name)
-        || goenv
-            .structs()
-            .any(|(struct_name, _)| go_user_type_name(&struct_name.0) == name)
-        || goenv
-            .enums()
-            .any(|(enum_name, _)| go_user_type_name(&enum_name.0) == name)
+        || goenv.type_go_name_set.contains(name)
         || goenv.callable_go_name_set.contains(name)
+}
+
+fn collect_variant_go_names(goenv: &GlobalGoEnv) -> HashMap<String, HashMap<String, String>> {
+    let mut result = HashMap::new();
+    for (enum_name, definition) in goenv.enums() {
+        let enum_go_name = go_user_type_name(&enum_name.0);
+        let mut names = HashMap::new();
+        for (variant_name, _) in definition.variants.iter() {
+            names.insert(
+                variant_name.0.clone(),
+                compute_variant_symbol_name(goenv, &enum_go_name, &variant_name.0),
+            );
+        }
+        result.insert(enum_go_name, names);
+    }
+    result
 }
 
 fn enum_def_for_ty<'a>(goenv: &'a GlobalGoEnv, ty: &tast::Ty) -> Option<&'a EnumDef> {
@@ -4059,6 +4096,7 @@ fn go_file_with_tests(
     goenv.colliding_callable_idents = collect_colliding_callable_idents(&goenv);
     goenv.callable_go_names = collect_callable_go_names(&goenv);
     goenv.callable_go_name_set = goenv.callable_go_names.values().cloned().collect();
+    goenv.variant_go_names = collect_variant_go_names(&goenv);
     let mut all = Vec::new();
 
     let (tuple_types, array_types, vec_types, ref_types, hashmap_types, missing_types) =
