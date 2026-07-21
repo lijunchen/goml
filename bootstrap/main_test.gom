@@ -87,6 +87,21 @@ fn links_imported_standard_package_closure() -> unit {
 }
 
 #[test]
+fn tracks_host_api_package_link_needs() -> unit {
+    let source = "package main; use std::path; use std::process; use std::testing; fn main() -> unit {}";
+    let needs = source_standard_needs(ast::lower(parser::parse(source)));
+    testing::assert(needs.bytes);
+    testing::assert(needs.path);
+    testing::assert(needs.process);
+    testing::assert(needs.testing);
+    testing::assert(!needs.collections);
+    testing::assert(!needs.env);
+    testing::assert(!needs.fs);
+    testing::assert(!needs.io);
+    testing::assert(!needs.text)
+}
+
+#[test]
 fn parses_run_single_dump_flags() -> unit {
     let values = Vec::new();
     values.push("--dump-go");
