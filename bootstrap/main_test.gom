@@ -322,6 +322,10 @@ fn collects_and_encodes_test_descriptors() -> unit {
             testing::assert_eq(tests.get(1).id, "alice::sample::zebra");
             testing::assert(!(tests.get(1).ignored));
             let manifest = encode_test_manifest(tests);
+            testing::assert_eq(
+                manifest.byte_slice(manifest.byte_len() - 1, manifest.byte_len()),
+                "]",
+            );
             testing::assert(main_string_contains(
                 manifest,
                 "\"source_path\": \"sample/sample_test.gom\"",
