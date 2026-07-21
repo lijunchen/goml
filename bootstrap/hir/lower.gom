@@ -14,6 +14,11 @@ struct AliasEntry {
     target: Vec[string],
 }
 
+struct ResolvedUses {
+    aliases: Vec[AliasEntry],
+    traits: Vec[string],
+}
+
 struct LowerCtx {
     package_name: string,
     package_id: int32,
@@ -128,22 +133,59 @@ fn starts_with_std(values: Vec[string]) -> bool {
     values.len() > 1 && values.get(0) == "std"
 }
 
-fn aliases_from_file(file: ast::File) -> Vec[AliasEntry] {
-    let result: Vec[AliasEntry] = Vec::new();
+fn expand_use_alias(aliases: Vec[AliasEntry], target: Vec[string]) -> Option[Vec[string]] {
+    let result: Ref[Option[Vec[string]]] = Ref::new(Option::None);
+    let found = Ref::new(false);
+    if target.len() > 1 {
+        for alias in aliases {
+            if found.get() == false && alias.alias == target.get(0) {
+                let expanded = copy_strings(alias.target);
+                for index in range(1, target.len()) {
+                    expanded.push(target.get(index))
+                };
+                result.set(Option::Some(expanded));
+                found.set(true)
+            } else {
+                ()
+            }
+        }
+    } else {
+        ()
+    };
+    result.get()
+}
+
+fn resolved_uses_from_file(file: ast::File) -> ResolvedUses {
+    let aliases: Vec[AliasEntry] = Vec::new();
+    let traits: Vec[string] = Vec::new();
     for use_decl in file.uses {
         let target = path_segments(use_decl.path);
-        match last_string(target) {
-            Option::Some(default_alias) => result.push(AliasEntry {
-                alias: match use_decl.alias {
-                    Option::Some(alias) => alias,
-                    Option::None => default_alias,
-                },
-                target,
-            }),
-            Option::None => (),
+        match expand_use_alias(aliases, target) {
+            Option::Some(expanded) => match use_decl.alias {
+                Option::Some(_) => (),
+                Option::None => traits.push(join_segments(expanded)),
+            },
+            Option::None => match last_string(target) {
+                Option::Some(default_alias) => aliases.push(AliasEntry {
+                    alias: match use_decl.alias {
+                        Option::Some(alias) => alias,
+                        Option::None => default_alias,
+                    },
+                    target,
+                }),
+                Option::None => (),
+            },
         }
     };
-    result
+    ResolvedUses { aliases, traits }
+}
+
+fn aliases_from_file(file: ast::File) -> Vec[AliasEntry] {
+    resolved_uses_from_file(file).aliases
+}
+
+fn trait_uses_from_file(file: ast::File) -> Vec[string] {
+    resolved_uses_from_file(file).traits
 }
 
 fn import_aliases_from_file(file: ast::File) -> Vec[ImportAlias] {
@@ -1216,6 +1258,11 @@ fn lower_file(
         },
         imports: imports_from_file(file),
         import_aliases: import_aliases_from_file(file),
+        use_traits: if qualify_imports {
+            trait_uses_from_file(file)
+        } else {
+            Vec::new()
+        },
         items,
     }
 }

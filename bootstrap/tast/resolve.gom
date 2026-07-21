@@ -624,6 +624,13 @@ fn method_predicates_satisfied(ctx: Checker, predicates: Vec[TypePredicate]) -> 
     predicates_satisfied_at(ctx, predicates, 0)
 }
 
+fn method_trait_in_scope(ctx: Checker, value: MethodInfo) -> bool {
+    match value.trait_ref {
+        Option::Some(reference) => contains_name(ctx.in_scope_traits, reference.name),
+        Option::None => true,
+    }
+}
+
 fn resolve_user_method_for_call(
     ctx: Checker,
     receiver: Type,
@@ -636,7 +643,10 @@ fn resolve_user_method_for_call(
     let trait_method = Ref::new(Option::None);
     let trait_matches = Ref::new(0);
     for value in ctx.methods {
-        if value.function.name == name && receiver_matches(value.for_type, receiver) {
+        if value.function.name == name
+            && receiver_matches(value.for_type, receiver)
+            && method_trait_in_scope(ctx, value)
+        {
             let candidate = instantiate_method_candidate(ctx, value);
             if method_matches_call(ctx, candidate.callable, receiver, args, expected)
                 && unify(candidate.owner, receiver)
