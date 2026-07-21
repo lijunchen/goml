@@ -63,6 +63,32 @@ fn checked_file_with_dependencies(source: string, dependencies: Vec[hir::File]) 
     }
 }
 
+fn checked_package_file_with_dependencies(
+    source: string,
+    dependencies: Vec[hir::File],
+) -> File {
+    let result = check_for_link_with_dependencies(
+        hir::lower_package(
+            ast::lower(parser::parse(source)),
+            "main.gom",
+            "main",
+        ),
+        dependencies,
+    );
+    testing::assert_eq(result.diagnostics.len(), 0);
+    match result.tast {
+        Option::Some(file) => file,
+        Option::None => {
+            testing::fail("expected package TAST");
+            File {
+                items: Vec::new(),
+                enums: Vec::new(),
+                structs: Vec::new(),
+            }
+        },
+    }
+}
+
 #[test]
 fn resolves_generic_functions_from_package_interfaces() -> unit {
     let dependencies: Vec[hir::File] = Vec::new();
@@ -118,6 +144,45 @@ fn resolves_runtime_externs_from_package_interfaces() -> unit {
             _ => testing::fail("expected runtime package call"),
         },
         _ => testing::fail("expected main function"),
+    }
+}
+
+#[test]
+fn resolves_enum_constructors_from_package_interfaces() -> unit {
+    let dependencies: Vec[hir::File] = Vec::new();
+    dependencies.push(dependency_hir(
+        "package api; pub enum Choice { None, Some(int32) }",
+        "vendor::api",
+    ));
+    let file = checked_package_file_with_dependencies(
+        "use vendor::api; fn zero() -> api::Choice { api::Choice::None } fn payload() -> api::Choice { api::Choice::Some(7) }",
+        dependencies,
+    );
+    match file.items.get(0) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Constr(constructor, values, Type::Con(name))) => {
+                testing::assert_eq(constructor.name, "vendor::api::Choice::None");
+                testing::assert_eq(values.len(), 0);
+                testing::assert_eq(name, "vendor::api::Choice")
+            },
+            _ => testing::fail("expected external unit constructor"),
+        },
+        _ => testing::fail("expected zero function"),
+    };
+    match file.items.get(1) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Constr(constructor, values, Type::Con(name))) => {
+                testing::assert_eq(constructor.name, "vendor::api::Choice::Some");
+                testing::assert_eq(values.len(), 1);
+                match resolve_type(expr_type(values.get(0))) {
+                    Type::Int32 => (),
+                    _ => testing::fail("expected int32 constructor argument"),
+                };
+                testing::assert_eq(name, "vendor::api::Choice")
+            },
+            _ => testing::fail("expected external payload constructor"),
+        },
+        _ => testing::fail("expected payload function"),
     }
 }
 
