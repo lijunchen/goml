@@ -1469,6 +1469,35 @@ fn is_control_flow_expr(value: Expr) -> bool {
     }
 }
 
+fn defer_field_type(ctx: Checker, receiver: Type, name: string) -> Option[Type] {
+    match prune(normalize_type(ctx, receiver)) {
+        Type::Var(variable) => match variable.get() {
+            TypeVar::Unbound(_, _) => {
+                let field_ty = fresh_type(ctx.counter, VarKind::Any);
+                ctx.field_constraints.push(FieldConstraint {
+                    receiver,
+                    name,
+                    field_ty,
+                });
+                Option::Some(field_ty)
+            },
+            TypeVar::Link(_) => Option::None,
+        },
+        _ => Option::None,
+    }
+}
+
+fn resolve_field_constraints(ctx: Checker) -> unit {
+    for constraint in ctx.field_constraints {
+        match resolve_field_type(ctx, constraint.receiver, constraint.name) {
+            Option::Some(ty) => expect_type(ctx, ty, constraint.field_ty),
+            Option::None => {
+                ctx.diagnostics.push("field not found: " + constraint.name)
+            },
+        }
+    }
+}
+
 fn check_field_expr(ctx: Checker, source: hir::Expr, name: string) -> Expr {
     let value = check_expr(ctx, source, Option::None);
     if is_control_flow_expr(value) {
@@ -1476,9 +1505,12 @@ fn check_field_expr(ctx: Checker, source: hir::Expr, name: string) -> Expr {
     } else {
         match resolve_field_type(ctx, expr_type(value), name) {
             Option::Some(ty) => Expr::Field(value, name, ty),
-            Option::None => {
-                ctx.diagnostics.push("field not found: " + name);
-                Expr::Field(value, name, Type::Error)
+            Option::None => match defer_field_type(ctx, expr_type(value), name) {
+                Option::Some(ty) => Expr::Field(value, name, ty),
+                Option::None => {
+                    ctx.diagnostics.push("field not found: " + name);
+                    Expr::Field(value, name, Type::Error)
+                },
             },
         }
     }

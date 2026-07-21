@@ -24,6 +24,7 @@ fn function_context(
         impls: base.impls,
         predicates,
         param_aliases,
+        field_constraints: Vec::new(),
         locals: Vec::new(),
         return_ty: ret_ty,
         self_ty,
@@ -60,6 +61,7 @@ fn check_function(
         params.push((local_name(param.0), ty))
     };
     let body = check_block(ctx, value.body, Option::Some(ret_ty));
+    resolve_field_constraints(ctx);
     Function {
         name: value.name,
         generics: type_params,
