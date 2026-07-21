@@ -20,6 +20,46 @@ fn add_reachable(values: Vec[string], value: string) -> unit {
     }
 }
 
+fn collect_type_names(result: Vec[string], value: Type) -> unit {
+    match value {
+        Type::Named(name) => add_reachable(result, name),
+        Type::Pointer(inner) | Type::Array(_, inner) | Type::Slice(inner) => {
+            collect_type_names(result, inner)
+        },
+        Type::Map(key, value) => {
+            collect_type_names(result, key);
+            collect_type_names(result, value)
+        },
+        Type::Func(params, ret_ty) => {
+            for param in params {
+                collect_type_names(result, param)
+            };
+            collect_type_names(result, ret_ty)
+        },
+        Type::Multi(values) => {
+            for value in values {
+                collect_type_names(result, value)
+            }
+        },
+        Type::Void
+        | Type::Any
+        | Type::Unit
+        | Type::Bool
+        | Type::Int8
+        | Type::Int16
+        | Type::Int32
+        | Type::Int64
+        | Type::Uint8
+        | Type::Uint16
+        | Type::Uint32
+        | Type::Uint64
+        | Type::Float32
+        | Type::Float64
+        | Type::String
+        | Type::Char => (),
+    }
+}
+
 fn collect_expr_names(result: Vec[string], value: Expr) -> unit {
     match value {
         Expr::Var(name) => add_reachable(result, name),
@@ -44,23 +84,35 @@ fn collect_expr_names(result: Vec[string], value: Expr) -> unit {
             collect_expr_names(result, start);
             collect_expr_names(result, end)
         },
-        Expr::Cast(expr, _) | Expr::Convert(_, expr) => collect_expr_names(result, expr),
-        Expr::Make(_, args) => {
+        Expr::Cast(expr, ty) | Expr::Convert(ty, expr) => {
+            collect_expr_names(result, expr);
+            collect_type_names(result, ty)
+        },
+        Expr::Make(ty, args) => {
+            collect_type_names(result, ty);
             for arg in args {
                 collect_expr_names(result, arg)
             }
         },
-        Expr::StructLiteral(_, fields) => {
+        Expr::StructLiteral(ty, fields) => {
+            collect_type_names(result, ty);
             for field in fields {
                 collect_expr_names(result, field.1)
             }
         },
-        Expr::ArrayLiteral(_, values) => {
+        Expr::ArrayLiteral(ty, values) => {
+            collect_type_names(result, ty);
             for value in values {
                 collect_expr_names(result, value)
             }
         },
-        Expr::FuncLit(_, _, body) => collect_block_names(result, body),
+        Expr::FuncLit(params, ret_ty, body) => {
+            for param in params {
+                collect_type_names(result, param.1)
+            };
+            collect_type_names(result, ret_ty);
+            collect_block_names(result, body)
+        },
         Expr::Nil
         | Expr::Unit
         | Expr::Bool(_)
@@ -73,9 +125,12 @@ fn collect_expr_names(result: Vec[string], value: Expr) -> unit {
 fn collect_stmt_names(result: Vec[string], value: Stmt) -> unit {
     match value {
         Stmt::Expr(expr) | Stmt::Go(expr) => collect_expr_names(result, expr),
-        Stmt::Var(_, _, initial) => match initial {
-            Option::Some(expr) => collect_expr_names(result, expr),
-            Option::None => (),
+        Stmt::Var(_, ty, initial) => {
+            collect_type_names(result, ty);
+            match initial {
+                Option::Some(expr) => collect_expr_names(result, expr),
+                Option::None => (),
+            }
         },
         Stmt::Assign(_, expr) => collect_expr_names(result, expr),
         Stmt::FieldAssign(target, _, expr) => {
@@ -124,6 +179,7 @@ fn collect_stmt_names(result: Vec[string], value: Stmt) -> unit {
         Stmt::TypeSwitch(_, expr, cases, default) => {
             collect_expr_names(result, expr);
             for case in cases {
+                collect_type_names(result, case.ty);
                 collect_block_names(result, case.body)
             };
             match default {
@@ -170,14 +226,51 @@ fn import_is_used(names: Vec[string], alias: string) -> bool {
 
 fn collect_item_names(result: Vec[string], value: Item) -> unit {
     match value {
+        Item::TypeDef(definition) => collect_type_names(result, definition.ty),
         Item::ConstGroup(group) => {
             for spec in group.specs {
+                collect_type_names(result, spec.ty);
                 collect_expr_names(result, spec.value)
             }
         },
-        Item::Function(function) => collect_block_names(result, function.body),
-        Item::Method(method) => collect_block_names(result, method.body),
-        _ => (),
+        Item::Interface(definition) => {
+            for method in definition.methods {
+                for param in method.params {
+                    collect_type_names(result, param)
+                };
+                match method.ret_ty {
+                    Option::Some(ty) => collect_type_names(result, ty),
+                    Option::None => (),
+                }
+            }
+        },
+        Item::Struct(definition) => {
+            for field in definition.fields {
+                collect_type_names(result, field.1)
+            }
+        },
+        Item::Function(function) => {
+            for param in function.params {
+                collect_type_names(result, param.1)
+            };
+            match function.ret_ty {
+                Option::Some(ty) => collect_type_names(result, ty),
+                Option::None => (),
+            };
+            collect_block_names(result, function.body)
+        },
+        Item::Method(method) => {
+            collect_type_names(result, method.receiver.1);
+            for param in method.params {
+                collect_type_names(result, param.1)
+            };
+            match method.ret_ty {
+                Option::Some(ty) => collect_type_names(result, ty),
+                Option::None => (),
+            };
+            collect_block_names(result, method.body)
+        },
+        Item::ImportGroup(_) => (),
     }
 }
 
