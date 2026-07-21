@@ -218,6 +218,33 @@ fn filters_external_trait_methods_by_hir_scope() -> unit {
     }
 }
 
+#[test]
+fn imports_external_supertrait_methods_with_child_scope() -> unit {
+    let dependencies: Vec[hir::File] = Vec::new();
+    dependencies.push(dependency_hir(
+        "package api; pub trait Parent[T] { fn parent(Self) -> T; } pub trait Child[T]: Parent[T] { fn child(Self) -> string; } pub struct Box[T] { value: T } impl[T] Parent[T] for Box[T] { fn parent(self: Box[T]) -> T { self.value } }",
+        "vendor::api",
+    ));
+    let file = checked_package_file_with_dependencies(
+        "package usepkg; use vendor::api; use api::Child; fn read(value: api::Box[int32]) -> int32 { value.parent() }",
+        dependencies,
+    );
+    match file.items.get(0) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Call(
+                Expr::Callable(Callable::TraitMethod(reference, name), _),
+                _,
+                Type::Int32,
+            )) => {
+                testing::assert_eq(reference.name, "vendor::api::Parent");
+                testing::assert_eq(name, "parent")
+            },
+            _ => testing::fail("expected imported supertrait method"),
+        },
+        _ => testing::fail("expected read function"),
+    }
+}
+
 fn primitive_text(value: Primitive) -> string {
     let builder = text::StringBuilder::new();
     write_primitive(builder, value);
