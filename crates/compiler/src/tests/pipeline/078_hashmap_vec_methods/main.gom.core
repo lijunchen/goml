@@ -818,21 +818,13 @@ fn trait_impl#Eq#Key#eq(self/0: Key, other/1: Key) -> bool {
             Key::A => {
               true
             },
-            Key::B(x65) => {
-              {
-                let x65 = Key::B._0(x62) in
-                false
-              }
-            },
+            _ => false,
           }
         },
         Key::B(x64) => {
           {
             let x64 = Key::B._0(x63) in
             match x62 {
-              Key::A => {
-                false
-              },
               Key::B(x66) => {
                 {
                   let x66 = Key::B._0(x62) in
@@ -849,6 +841,7 @@ fn trait_impl#Eq#Key#eq(self/0: Key, other/1: Key) -> bool {
                   }
                 }
               },
+              _ => false,
             }
           }
         },

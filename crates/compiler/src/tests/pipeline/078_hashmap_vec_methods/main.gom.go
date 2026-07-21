@@ -244,18 +244,14 @@ func _goml_m_trait__impl_i_Eq_i_Key_i_eq(self__0 Key, other__1 Key) bool {
         switch x62.(type) {
         case A:
             jp89 = true
-        case B:
-            jp89 = false
         default:
-            panic("non-exhaustive match")
+            jp89 = false
         }
         jp87 = jp89
     case B:
         var x64 int32 = x63.(B)._0
         var jp91 bool
         switch x62.(type) {
-        case A:
-            jp91 = false
         case B:
             var x66 int32 = x62.(B)._0
             var __l1_0__2 int32 = x66
@@ -269,7 +265,7 @@ func _goml_m_trait__impl_i_Eq_i_Key_i_eq(self__0 Key, other__1 Key) bool {
             }
             jp91 = jp93
         default:
-            panic("non-exhaustive match")
+            jp91 = false
         }
         jp87 = jp91
     default:

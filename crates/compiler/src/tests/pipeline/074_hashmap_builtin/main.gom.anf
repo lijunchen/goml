@@ -60,12 +60,7 @@ fn trait_impl#Eq#Key#eq(self/6: Key, other/7: Key) -> bool {
         Tag_0 => {
           jump k115(true)
         },
-        Tag_1 => {
-          let x66 = Key::B._0(x62) in
-          jump k115(false)
-        },
-        Tag_2 => {
-          let x67 = Key::P._0(x62) in
+        _ => {
           jump k115(false)
         },
       }
@@ -76,9 +71,6 @@ fn trait_impl#Eq#Key#eq(self/6: Key, other/7: Key) -> bool {
         jump k113(jp118)
       } in
       match x62 {
-        Tag_0 => {
-          jump k117(false)
-        },
         Tag_1 => {
           let x68 = Key::B._0(x62) in
           let __l1_0/8 = x68 in
@@ -93,8 +85,7 @@ fn trait_impl#Eq#Key#eq(self/6: Key, other/7: Key) -> bool {
             jump k119(false)
           }
         },
-        Tag_2 => {
-          let x69 = Key::P._0(x62) in
+        _ => {
           jump k117(false)
         },
       }
@@ -105,13 +96,6 @@ fn trait_impl#Eq#Key#eq(self/6: Key, other/7: Key) -> bool {
         jump k113(jp123)
       } in
       match x62 {
-        Tag_0 => {
-          jump k122(false)
-        },
-        Tag_1 => {
-          let x70 = Key::B._0(x62) in
-          jump k122(false)
-        },
         Tag_2 => {
           let x71 = Key::P._0(x62) in
           let __l2_0/10 = x71 in
@@ -125,6 +109,9 @@ fn trait_impl#Eq#Key#eq(self/6: Key, other/7: Key) -> bool {
           } else {
             jump k124(false)
           }
+        },
+        _ => {
+          jump k122(false)
         },
       }
     },

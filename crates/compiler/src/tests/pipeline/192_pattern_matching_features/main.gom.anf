@@ -169,9 +169,6 @@ fn describe(value/4: Maybe, numbers/5: Vec[int32], view/6: Slice[int32]) -> stri
     }
   } in
   match value/4 {
-    Tag_0 => {
-      jump k119("none")
-    },
     Tag_1 => {
       let x67 = Maybe::Some._0(value/4) in
       let n/7 = x67 in
@@ -227,6 +224,9 @@ fn describe(value/4: Maybe, numbers/5: Vec[int32], view/6: Slice[int32]) -> stri
           }
         }
       }
+    },
+    _ => {
+      jump k119("none")
     },
   }
 }
@@ -318,13 +318,13 @@ fn main() -> unit {
       }
     } in
     match mtmp86 {
-      Tag_0 => {
-        jump k188()
-      },
       Tag_1 => {
         let x87 = Maybe::Some._0(mtmp86) in
         let n/28 = x87 in
         let _wild88 = println__T_int32(n/28) in
+        jump k188()
+      },
+      _ => {
         jump k188()
       },
     }
@@ -337,15 +337,15 @@ fn main() -> unit {
           jump loop200()
         } in
         match mtmp81 {
-          Tag_0 => {
-            jump exit187()
-          },
           Tag_1 => {
             let x82 = Maybe::Some._0(mtmp81) in
             let n/27 = x82 in
             let _wild83 = println__T_int32(n/27) in
             let _wild84 = inherent#Ref#Ref[T]#set__T_Maybe(state/26, Tag_0) in
             jump k201()
+          },
+          _ => {
+            jump exit187()
           },
         }
       } else {

@@ -875,11 +875,6 @@ fn char_group(value/3: char) -> string {
 
 fn describe(value/4: Maybe, numbers/5: Vec[int32], view/6: Slice[int32]) -> string {
   let from_if/9 = match value/4 {
-    Maybe::None => {
-      {
-        "none"
-      }
-    },
     Maybe::Some(x67) => {
       {
         let x67 = Maybe::Some._0(value/4) in
@@ -923,6 +918,9 @@ fn describe(value/4: Maybe, numbers/5: Vec[int32], view/6: Slice[int32]) -> stri
           }
         }
       }
+    },
+    _ => {
+      "none"
     },
   } in
   let from_vec/12 = {
@@ -1009,9 +1007,6 @@ fn main() -> unit {
                     {
                       let mtmp81 = inherent#Ref#Ref[Maybe]#get(state/26) in
                       match mtmp81 {
-                        Maybe::None => {
-                          break
-                        },
                         Maybe::Some(x82) => {
                           {
                             let x82 = Maybe::Some._0(mtmp81) in
@@ -1024,15 +1019,13 @@ fn main() -> unit {
                             }
                           }
                         },
+                        _ => break,
                       }
                     }
                 } in
                 let _wild89 = {
                   let mtmp86 = Maybe::Some(6) in
                   match mtmp86 {
-                    Maybe::None => {
-                      ()
-                    },
                     Maybe::Some(x87) => {
                       {
                         let x87 = Maybe::Some._0(mtmp86) in
@@ -1044,6 +1037,7 @@ fn main() -> unit {
                         }
                       }
                     },
+                    _ => (),
                   }
                 } in
                 let aliased/32 = {

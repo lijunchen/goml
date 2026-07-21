@@ -66,88 +66,88 @@ type Only struct {
 func (_ Only) isSingle() {}
 
 func unwrap(value__5 Single) int32 {
-    var retv130 int32
+    var retv129 int32
     var mtmp66 Single = value__5
-    var jp132 int32
+    var jp131 int32
     switch mtmp66.(type) {
     case Only:
         var x67 int32 = mtmp66.(Only)._0
         var inner__6 int32 = x67
-        jp132 = inner__6
+        jp131 = inner__6
     default:
         panic("non-exhaustive match")
     }
-    retv130 = jp132
-    return retv130
+    retv129 = jp131
+    return retv129
 }
 
 func decide(flag__7 bool) int32 {
-    var retv134 int32
+    var retv133 int32
     switch flag__7 {
     case true:
-        retv134 = 1
+        retv133 = 1
     case false:
-        retv134 = 2
+        retv133 = 2
     default:
         panic("non-exhaustive match")
     }
-    return retv134
+    return retv133
 }
 
 func signed_zero(value__8 float64) string {
-    var retv138 string
-    var jp140 string
+    var retv137 string
+    var jp139 string
     switch value__8 {
     case -0:
-        jp140 = "zero"
+        jp139 = "zero"
     default:
-        jp140 = "other"
+        jp139 = "other"
     }
-    retv138 = jp140
-    return retv138
+    retv137 = jp139
+    return retv137
 }
 
 func main0() struct{} {
-    var t142 Single = Only{
+    var t141 Single = Only{
         _0: 12,
     }
     var mtmp68 Tuple1_6Single = Tuple1_6Single{
-        _0: t142,
+        _0: t141,
     }
     var x69 Single = mtmp68._0
     var single__9 Single = x69
-    var t143 int32 = unwrap(single__9)
+    var t142 int32 = unwrap(single__9)
+    println__T_int32(t142)
+    var t143 int32 = decide(true)
     println__T_int32(t143)
-    var t144 int32 = decide(true)
-    println__T_int32(t144)
-    var t145 string = signed_zero(0)
-    println__T_string(t145)
+    var t144 string = signed_zero(0)
+    println__T_string(t144)
     return struct{}{}
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t147 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
-    _goml_runtime_core_string_println(t147)
+    var t146 string = _goml_m_trait__impl_i_ToString_i_int32_i_to__string(value__1)
+    _goml_runtime_core_string_println(t146)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t150 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
-    _goml_runtime_core_string_println(t150)
+    var t149 string = _goml_m_trait__impl_i_ToString_i_string_i_to__string(value__1)
+    _goml_runtime_core_string_println(t149)
     return struct{}{}
 }
 
 func _goml_m_trait__impl_i_ToString_i_int32_i_to__string(self__41 int32) string {
-    var retv153 string
-    var t154 string = _goml_runtime_core_int32_to_string(self__41)
-    retv153 = t154
-    return retv153
+    var retv152 string
+    var t153 string = _goml_runtime_core_int32_to_string(self__41)
+    retv152 = t153
+    return retv152
 }
 
 func _goml_m_trait__impl_i_ToString_i_string_i_to__string(self__37 string) string {
-    var retv156 string
-    retv156 = self__37
-    return retv156
+    var retv155 string
+    retv155 = self__37
+    return retv155
 }
 
 func main() {

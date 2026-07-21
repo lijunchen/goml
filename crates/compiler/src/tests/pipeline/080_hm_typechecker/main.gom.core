@@ -973,13 +973,6 @@ fn typ_is_arrow(ty/15: Typ) -> bool {
           {
             let mtmp71 = inherent#Ref#Ref[Tv]#get(tvref/16) in
             match mtmp71 {
-              Tv::Unbound(x72, x73) => {
-                {
-                  let x72 = Tv::Unbound._0(mtmp71) in
-                  let x73 = Tv::Unbound._1(mtmp71) in
-                  false
-                }
-              },
               Tv::Link(x74) => {
                 {
                   let x74 = Tv::Link._0(mtmp71) in
@@ -989,15 +982,10 @@ fn typ_is_arrow(ty/15: Typ) -> bool {
                   }
                 }
               },
+              _ => false,
             }
           }
         }
-      }
-    },
-    Typ::QVar(x68) => {
-      {
-        let x68 = Typ::QVar._0(ty/15) in
-        false
       }
     },
     Typ::TArrow(x69, x70) => {
@@ -1007,6 +995,7 @@ fn typ_is_arrow(ty/15: Typ) -> bool {
         true
       }
     },
+    _ => false,
   }
 }
 
@@ -1185,12 +1174,7 @@ fn occurs(st/40: CheckerState, tvr/41: Ref[Tv], ty/42: Typ) -> Result[unit, stri
                                         }
                                       }
                                     },
-                                    Tv::Link(x98) => {
-                                      {
-                                        let x98 = Tv::Link._0(mtmp95) in
-                                        l2/45
-                                      }
-                                    },
+                                    _ => l2/45,
                                   }
                                 } in
                                 let mtmp99 = inherent#Ref#Ref[Tv]#set(tvr2/43, Tv::Unbound(name/44, min_level/47)) in
@@ -1217,12 +1201,6 @@ fn occurs(st/40: CheckerState, tvr/41: Ref[Tv], ty/42: Typ) -> Result[unit, stri
             }
           }
         }
-      }
-    },
-    Typ::QVar(x88) => {
-      {
-        let x88 = Typ::QVar._0(ty/42) in
-        Result::Ok(())
       }
     },
     Typ::TArrow(x89, x90) => {
@@ -1259,6 +1237,7 @@ fn occurs(st/40: CheckerState, tvr/41: Ref[Tv], ty/42: Typ) -> Result[unit, stri
         }
       }
     },
+    _ => Result::Ok(()),
   }
 }
 
@@ -1359,193 +1338,55 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result[unit, string] {
                   }
                 }
               },
-              Typ::QVar(x111) => {
+              _ => {
+                let r2/65 = x106 in
                 {
-                  let x111 = Typ::QVar._0(x104) in
+                  let other/64 = x104 in
                   {
-                    let r2/65 = x106 in
-                    {
-                      let other/64 = x104 in
-                      {
-                        let mtmp126 = inherent#Ref#Ref[Tv]#get(r2/65) in
-                        match mtmp126 {
-                          Tv::Unbound(x127, x128) => {
-                            {
-                              let x127 = Tv::Unbound._0(mtmp126) in
-                              let x128 = Tv::Unbound._1(mtmp126) in
-                              {
-                                let mtmp130 = occurs(st/52, r2/65, other/64) in
-                                match mtmp130 {
-                                  Result::Ok(x131) => {
+                    let mtmp126 = inherent#Ref#Ref[Tv]#get(r2/65) in
+                    match mtmp126 {
+                      Tv::Unbound(x127, x128) => {
+                        {
+                          let x127 = Tv::Unbound._0(mtmp126) in
+                          let x128 = Tv::Unbound._1(mtmp126) in
+                          {
+                            let mtmp130 = occurs(st/52, r2/65, other/64) in
+                            match mtmp130 {
+                              Result::Ok(x131) => {
+                                {
+                                  let x131 = Result::Ok._0(mtmp130) in
+                                  {
+                                    let mtmp133 = inherent#Ref#Ref[Tv]#set(r2/65, Tv::Link(other/64)) in
                                     {
-                                      let x131 = Result::Ok._0(mtmp130) in
-                                      {
-                                        let mtmp133 = inherent#Ref#Ref[Tv]#set(r2/65, Tv::Link(other/64)) in
-                                        {
-                                          Result::Ok(())
-                                        }
-                                      }
+                                      Result::Ok(())
                                     }
-                                  },
-                                  Result::Err(x132) => {
-                                    {
-                                      let x132 = Result::Err._0(mtmp130) in
-                                      {
-                                        let e/67 = x132 in
-                                        Result::Err(e/67)
-                                      }
-                                    }
-                                  },
+                                  }
                                 }
-                              }
+                              },
+                              Result::Err(x132) => {
+                                {
+                                  let x132 = Result::Err._0(mtmp130) in
+                                  {
+                                    let e/67 = x132 in
+                                    Result::Err(e/67)
+                                  }
+                                }
+                              },
                             }
-                          },
-                          Tv::Link(x129) => {
-                            {
-                              let x129 = Tv::Link._0(mtmp126) in
-                              {
-                                let inner/66 = x129 in
-                                unify(st/52, other/64, inner/66)
-                              }
-                            }
-                          },
+                          }
                         }
-                      }
+                      },
+                      Tv::Link(x129) => {
+                        {
+                          let x129 = Tv::Link._0(mtmp126) in
+                          {
+                            let inner/66 = x129 in
+                            unify(st/52, other/64, inner/66)
+                          }
+                        }
+                      },
                     }
                   }
-                }
-              },
-              Typ::TArrow(x112, x113) => {
-                {
-                  let x112 = Typ::TArrow._0(x104) in
-                  let x113 = Typ::TArrow._1(x104) in
-                  {
-                    let r2/65 = x106 in
-                    {
-                      let other/64 = x104 in
-                      {
-                        let mtmp134 = inherent#Ref#Ref[Tv]#get(r2/65) in
-                        match mtmp134 {
-                          Tv::Unbound(x135, x136) => {
-                            {
-                              let x135 = Tv::Unbound._0(mtmp134) in
-                              let x136 = Tv::Unbound._1(mtmp134) in
-                              {
-                                let mtmp138 = occurs(st/52, r2/65, other/64) in
-                                match mtmp138 {
-                                  Result::Ok(x139) => {
-                                    {
-                                      let x139 = Result::Ok._0(mtmp138) in
-                                      {
-                                        let mtmp141 = inherent#Ref#Ref[Tv]#set(r2/65, Tv::Link(other/64)) in
-                                        {
-                                          Result::Ok(())
-                                        }
-                                      }
-                                    }
-                                  },
-                                  Result::Err(x140) => {
-                                    {
-                                      let x140 = Result::Err._0(mtmp138) in
-                                      {
-                                        let e/67 = x140 in
-                                        Result::Err(e/67)
-                                      }
-                                    }
-                                  },
-                                }
-                              }
-                            }
-                          },
-                          Tv::Link(x137) => {
-                            {
-                              let x137 = Tv::Link._0(mtmp134) in
-                              {
-                                let inner/66 = x137 in
-                                unify(st/52, other/64, inner/66)
-                              }
-                            }
-                          },
-                        }
-                      }
-                    }
-                  }
-                }
-              },
-            }
-          }
-        },
-        Typ::QVar(x107) => {
-          {
-            let x107 = Typ::QVar._0(x105) in
-            match x104 {
-              Typ::TVar(x142) => {
-                {
-                  let x142 = Typ::TVar._0(x104) in
-                  {
-                    let r1/60 = x142 in
-                    {
-                      let other/61 = x105 in
-                      {
-                        let mtmp146 = inherent#Ref#Ref[Tv]#get(r1/60) in
-                        match mtmp146 {
-                          Tv::Unbound(x147, x148) => {
-                            {
-                              let x147 = Tv::Unbound._0(mtmp146) in
-                              let x148 = Tv::Unbound._1(mtmp146) in
-                              {
-                                let mtmp150 = occurs(st/52, r1/60, other/61) in
-                                match mtmp150 {
-                                  Result::Ok(x151) => {
-                                    {
-                                      let x151 = Result::Ok._0(mtmp150) in
-                                      {
-                                        let mtmp153 = inherent#Ref#Ref[Tv]#set(r1/60, Tv::Link(other/61)) in
-                                        {
-                                          Result::Ok(())
-                                        }
-                                      }
-                                    }
-                                  },
-                                  Result::Err(x152) => {
-                                    {
-                                      let x152 = Result::Err._0(mtmp150) in
-                                      {
-                                        let e/63 = x152 in
-                                        Result::Err(e/63)
-                                      }
-                                    }
-                                  },
-                                }
-                              }
-                            }
-                          },
-                          Tv::Link(x149) => {
-                            {
-                              let x149 = Tv::Link._0(mtmp146) in
-                              {
-                                let inner/62 = x149 in
-                                unify(st/52, inner/62, other/61)
-                              }
-                            }
-                          },
-                        }
-                      }
-                    }
-                  }
-                }
-              },
-              Typ::QVar(x143) => {
-                {
-                  let x143 = Typ::QVar._0(x104) in
-                  Result::Err("unify error")
-                }
-              },
-              Typ::TArrow(x144, x145) => {
-                {
-                  let x144 = Typ::TArrow._0(x104) in
-                  let x145 = Typ::TArrow._1(x104) in
-                  Result::Err("unify error")
                 }
               },
             }
@@ -1556,39 +1397,39 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result[unit, string] {
             let x108 = Typ::TArrow._0(x105) in
             let x109 = Typ::TArrow._1(x105) in
             match x104 {
-              Typ::TVar(x154) => {
+              Typ::TVar(x134) => {
                 {
-                  let x154 = Typ::TVar._0(x104) in
+                  let x134 = Typ::TVar._0(x104) in
                   {
-                    let r1/60 = x154 in
+                    let r1/60 = x134 in
                     {
                       let other/61 = x105 in
                       {
-                        let mtmp158 = inherent#Ref#Ref[Tv]#get(r1/60) in
-                        match mtmp158 {
-                          Tv::Unbound(x159, x160) => {
+                        let mtmp138 = inherent#Ref#Ref[Tv]#get(r1/60) in
+                        match mtmp138 {
+                          Tv::Unbound(x139, x140) => {
                             {
-                              let x159 = Tv::Unbound._0(mtmp158) in
-                              let x160 = Tv::Unbound._1(mtmp158) in
+                              let x139 = Tv::Unbound._0(mtmp138) in
+                              let x140 = Tv::Unbound._1(mtmp138) in
                               {
-                                let mtmp162 = occurs(st/52, r1/60, other/61) in
-                                match mtmp162 {
-                                  Result::Ok(x163) => {
+                                let mtmp142 = occurs(st/52, r1/60, other/61) in
+                                match mtmp142 {
+                                  Result::Ok(x143) => {
                                     {
-                                      let x163 = Result::Ok._0(mtmp162) in
+                                      let x143 = Result::Ok._0(mtmp142) in
                                       {
-                                        let mtmp165 = inherent#Ref#Ref[Tv]#set(r1/60, Tv::Link(other/61)) in
+                                        let mtmp145 = inherent#Ref#Ref[Tv]#set(r1/60, Tv::Link(other/61)) in
                                         {
                                           Result::Ok(())
                                         }
                                       }
                                     }
                                   },
-                                  Result::Err(x164) => {
+                                  Result::Err(x144) => {
                                     {
-                                      let x164 = Result::Err._0(mtmp162) in
+                                      let x144 = Result::Err._0(mtmp142) in
                                       {
-                                        let e/63 = x164 in
+                                        let e/63 = x144 in
                                         Result::Err(e/63)
                                       }
                                     }
@@ -1597,11 +1438,11 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result[unit, string] {
                               }
                             }
                           },
-                          Tv::Link(x161) => {
+                          Tv::Link(x141) => {
                             {
-                              let x161 = Tv::Link._0(mtmp158) in
+                              let x141 = Tv::Link._0(mtmp138) in
                               {
-                                let inner/62 = x161 in
+                                let inner/62 = x141 in
                                 unify(st/52, inner/62, other/61)
                               }
                             }
@@ -1612,38 +1453,32 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result[unit, string] {
                   }
                 }
               },
-              Typ::QVar(x155) => {
+              Typ::TArrow(x136, x137) => {
                 {
-                  let x155 = Typ::QVar._0(x104) in
-                  Result::Err("unify error")
-                }
-              },
-              Typ::TArrow(x156, x157) => {
-                {
-                  let x156 = Typ::TArrow._0(x104) in
-                  let x157 = Typ::TArrow._1(x104) in
+                  let x136 = Typ::TArrow._0(x104) in
+                  let x137 = Typ::TArrow._1(x104) in
                   {
-                    let a2/69 = x157 in
+                    let a2/69 = x137 in
                     {
-                      let a1/68 = x156 in
+                      let a1/68 = x136 in
                       {
                         let b2/71 = x109 in
                         {
                           let b1/70 = x108 in
                           {
-                            let mtmp166 = unify(st/52, a1/68, b1/70) in
-                            match mtmp166 {
-                              Result::Ok(x167) => {
+                            let mtmp146 = unify(st/52, a1/68, b1/70) in
+                            match mtmp146 {
+                              Result::Ok(x147) => {
                                 {
-                                  let x167 = Result::Ok._0(mtmp166) in
+                                  let x147 = Result::Ok._0(mtmp146) in
                                   unify(st/52, a2/69, b2/71)
                                 }
                               },
-                              Result::Err(x168) => {
+                              Result::Err(x148) => {
                                 {
-                                  let x168 = Result::Err._0(mtmp166) in
+                                  let x148 = Result::Err._0(mtmp146) in
                                   {
-                                    let e/72 = x168 in
+                                    let e/72 = x148 in
                                     Result::Err(e/72)
                                   }
                                 }
@@ -1656,8 +1491,68 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result[unit, string] {
                   }
                 }
               },
+              _ => Result::Err("unify error"),
             }
           }
+        },
+        _ => match x104 {
+          Typ::TVar(x149) => {
+            {
+              let x149 = Typ::TVar._0(x104) in
+              {
+                let r1/60 = x149 in
+                {
+                  let other/61 = x105 in
+                  {
+                    let mtmp153 = inherent#Ref#Ref[Tv]#get(r1/60) in
+                    match mtmp153 {
+                      Tv::Unbound(x154, x155) => {
+                        {
+                          let x154 = Tv::Unbound._0(mtmp153) in
+                          let x155 = Tv::Unbound._1(mtmp153) in
+                          {
+                            let mtmp157 = occurs(st/52, r1/60, other/61) in
+                            match mtmp157 {
+                              Result::Ok(x158) => {
+                                {
+                                  let x158 = Result::Ok._0(mtmp157) in
+                                  {
+                                    let mtmp160 = inherent#Ref#Ref[Tv]#set(r1/60, Tv::Link(other/61)) in
+                                    {
+                                      Result::Ok(())
+                                    }
+                                  }
+                                }
+                              },
+                              Result::Err(x159) => {
+                                {
+                                  let x159 = Result::Err._0(mtmp157) in
+                                  {
+                                    let e/63 = x159 in
+                                    Result::Err(e/63)
+                                  }
+                                }
+                              },
+                            }
+                          }
+                        }
+                      },
+                      Tv::Link(x156) => {
+                        {
+                          let x156 = Tv::Link._0(mtmp153) in
+                          {
+                            let inner/62 = x156 in
+                            unify(st/52, inner/62, other/61)
+                          }
+                        }
+                      },
+                    }
+                  }
+                }
+              }
+            }
+          },
+          _ => Result::Err("unify error"),
         },
       }
     }
@@ -1666,22 +1561,22 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result[unit, string] {
 
 fn gen(st/73: CheckerState, ty/74: Typ) -> Typ {
   match ty/74 {
-    Typ::TVar(x169) => {
+    Typ::TVar(x161) => {
       {
-        let x169 = Typ::TVar._0(ty/74) in
+        let x161 = Typ::TVar._0(ty/74) in
         {
-          let tvref/75 = x169 in
+          let tvref/75 = x161 in
           {
-            let mtmp173 = inherent#Ref#Ref[Tv]#get(tvref/75) in
-            match mtmp173 {
-              Tv::Unbound(x174, x175) => {
+            let mtmp165 = inherent#Ref#Ref[Tv]#get(tvref/75) in
+            match mtmp165 {
+              Tv::Unbound(x166, x167) => {
                 {
-                  let x174 = Tv::Unbound._0(mtmp173) in
-                  let x175 = Tv::Unbound._1(mtmp173) in
+                  let x166 = Tv::Unbound._0(mtmp165) in
+                  let x167 = Tv::Unbound._1(mtmp165) in
                   {
-                    let l/77 = x175 in
+                    let l/77 = x167 in
                     {
-                      let name/76 = x174 in
+                      let name/76 = x166 in
                       {
                         let cur/78 = inherent#Ref#Ref[int32]#get(CheckerState.current_level(st/73)) in
                         if (l/77 > cur/78) {
@@ -1698,11 +1593,11 @@ fn gen(st/73: CheckerState, ty/74: Typ) -> Typ {
                   }
                 }
               },
-              Tv::Link(x176) => {
+              Tv::Link(x168) => {
                 {
-                  let x176 = Tv::Link._0(mtmp173) in
+                  let x168 = Tv::Link._0(mtmp165) in
                   {
-                    let inner/79 = x176 in
+                    let inner/79 = x168 in
                     gen(st/73, inner/79)
                   }
                 }
@@ -1712,70 +1607,59 @@ fn gen(st/73: CheckerState, ty/74: Typ) -> Typ {
         }
       }
     },
-    Typ::QVar(x170) => {
+    Typ::TArrow(x163, x164) => {
       {
-        let x170 = Typ::QVar._0(ty/74) in
+        let x163 = Typ::TArrow._0(ty/74) in
+        let x164 = Typ::TArrow._1(ty/74) in
         {
-          let other/82 = ty/74 in
-          other/82
-        }
-      }
-    },
-    Typ::TArrow(x171, x172) => {
-      {
-        let x171 = Typ::TArrow._0(ty/74) in
-        let x172 = Typ::TArrow._1(ty/74) in
-        {
-          let t2/81 = x172 in
+          let t2/81 = x164 in
           {
-            let t1/80 = x171 in
+            let t1/80 = x163 in
             Typ::TArrow(gen(st/73, t1/80), gen(st/73, t2/81))
           }
         }
       }
+    },
+    _ => {
+      let other/82 = ty/74 in
+      other/82
     },
   }
 }
 
 fn inst_loop(st/83: CheckerState, subst/84: Vec[SubstEntry], ty/85: Typ) -> (Typ, Vec[SubstEntry]) {
   match ty/85 {
-    Typ::TVar(x177) => {
+    Typ::TVar(x169) => {
       {
-        let x177 = Typ::TVar._0(ty/85) in
+        let x169 = Typ::TVar._0(ty/85) in
         {
-          let tvref/90 = x177 in
+          let tvref/90 = x169 in
           {
-            let mtmp181 = inherent#Ref#Ref[Tv]#get(tvref/90) in
-            match mtmp181 {
-              Tv::Unbound(x182, x183) => {
+            let mtmp173 = inherent#Ref#Ref[Tv]#get(tvref/90) in
+            match mtmp173 {
+              Tv::Link(x176) => {
                 {
-                  let x182 = Tv::Unbound._0(mtmp181) in
-                  let x183 = Tv::Unbound._1(mtmp181) in
-                  (Typ::TVar(tvref/90), subst/84)
-                }
-              },
-              Tv::Link(x184) => {
-                {
-                  let x184 = Tv::Link._0(mtmp181) in
+                  let x176 = Tv::Link._0(mtmp173) in
                   {
-                    let inner/91 = x184 in
+                    let inner/91 = x176 in
                     inst_loop(st/83, subst/84, inner/91)
                   }
                 }
               },
+              _ => (Typ::TVar(tvref/90), subst/84),
             }
           }
         }
       }
     },
-    Typ::QVar(x178) => {
+    Typ::QVar(x170) => {
       {
-        let x178 = Typ::QVar._0(ty/85) in
+        let x170 = Typ::QVar._0(ty/85) in
         {
-          let name/86 = x178 in
+          let name/86 = x170 in
           {
-            let mtmp185 = subst_lookup(subst/84, name/86) in
-            match mtmp185 {
+            let mtmp177 = subst_lookup(subst/84, name/86) in
+            match mtmp177 {
               Option::None => {
                 {
                   let tv/88 = newvar(st/83) in
@@ -1783,11 +1667,11 @@ fn inst_loop(st/83: CheckerState, subst/84: Vec[SubstEntry], ty/85: Typ) -> (Typ
                   (tv/88, new_subst/89)
                 }
               },
-              Option::Some(x186) => {
+              Option::Some(x178) => {
                 {
-                  let x186 = Option::Some._0(mtmp185) in
+                  let x178 = Option::Some._0(mtmp177) in
                   {
-                    let t/87 = x186 in
+                    let t/87 = x178 in
                     (t/87, subst/84)
                   }
                 }
@@ -1797,32 +1681,32 @@ fn inst_loop(st/83: CheckerState, subst/84: Vec[SubstEntry], ty/85: Typ) -> (Typ
         }
       }
     },
-    Typ::TArrow(x179, x180) => {
+    Typ::TArrow(x171, x172) => {
       {
-        let x179 = Typ::TArrow._0(ty/85) in
-        let x180 = Typ::TArrow._1(ty/85) in
+        let x171 = Typ::TArrow._0(ty/85) in
+        let x172 = Typ::TArrow._1(ty/85) in
         {
-          let t2/93 = x180 in
+          let t2/93 = x172 in
           {
-            let t1/92 = x179 in
+            let t1/92 = x171 in
             {
-              let mtmp187 = inst_loop(st/83, subst/84, t1/92) in
+              let mtmp179 = inst_loop(st/83, subst/84, t1/92) in
               {
-                let x188 = mtmp187.0 in
-                let x189 = mtmp187.1 in
+                let x180 = mtmp179.0 in
+                let x181 = mtmp179.1 in
                 {
-                  let subst1/95 = x189 in
+                  let subst1/95 = x181 in
                   {
-                    let ty1/94 = x188 in
+                    let ty1/94 = x180 in
                     {
-                      let mtmp190 = inst_loop(st/83, subst1/95, t2/93) in
+                      let mtmp182 = inst_loop(st/83, subst1/95, t2/93) in
                       {
-                        let x191 = mtmp190.0 in
-                        let x192 = mtmp190.1 in
+                        let x183 = mtmp182.0 in
+                        let x184 = mtmp182.1 in
                         {
-                          let subst2/97 = x192 in
+                          let subst2/97 = x184 in
                           {
-                            let ty2/96 = x191 in
+                            let ty2/96 = x183 in
                             {
                               (Typ::TArrow(ty1/94, ty2/96), subst2/97)
                             }
@@ -1843,12 +1727,12 @@ fn inst_loop(st/83: CheckerState, subst/84: Vec[SubstEntry], ty/85: Typ) -> (Typ
 
 fn inst(st/98: CheckerState, ty/99: Typ) -> Typ {
   let subst0/100 = inherent#Vec#Vec[SubstEntry]#new() in
-  let mtmp193 = inst_loop(st/98, subst0/100, ty/99) in
+  let mtmp185 = inst_loop(st/98, subst0/100, ty/99) in
   {
-    let x194 = mtmp193.0 in
-    let x195 = mtmp193.1 in
+    let x186 = mtmp185.0 in
+    let x187 = mtmp185.1 in
     {
-      let t/101 = x194 in
+      let t/101 = x186 in
       {
         t/101
       }
@@ -1858,22 +1742,22 @@ fn inst(st/98: CheckerState, ty/99: Typ) -> Typ {
 
 fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result[Typ, string] {
   match e/104 {
-    Exp::Var(x196) => {
+    Exp::Var(x188) => {
       {
-        let x196 = Exp::Var._0(e/104) in
+        let x188 = Exp::Var._0(e/104) in
         {
-          let x/105 = x196 in
+          let x/105 = x188 in
           {
-            let mtmp204 = env_lookup(env/103, x/105) in
-            match mtmp204 {
+            let mtmp196 = env_lookup(env/103, x/105) in
+            match mtmp196 {
               Option::None => {
                 Result::Err("unbound var")
               },
-              Option::Some(x205) => {
+              Option::Some(x197) => {
                 {
-                  let x205 = Option::Some._0(mtmp204) in
+                  let x197 = Option::Some._0(mtmp196) in
                   {
-                    let ty/106 = x205 in
+                    let ty/106 = x197 in
                     Result::Ok(inst(st/102, ty/106))
                   }
                 }
@@ -1883,49 +1767,49 @@ fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result[Ty
         }
       }
     },
-    Exp::App(x197, x198) => {
+    Exp::App(x189, x190) => {
       {
-        let x197 = Exp::App._0(e/104) in
-        let x198 = Exp::App._1(e/104) in
+        let x189 = Exp::App._0(e/104) in
+        let x190 = Exp::App._1(e/104) in
         {
-          let e2/114 = x198 in
+          let e2/114 = x190 in
           {
-            let e1/113 = x197 in
+            let e1/113 = x189 in
             {
               {
-                let mtmp206 = typeof(st/102, env/103, e1/113) in
-                match mtmp206 {
-                  Result::Ok(x207) => {
+                let mtmp198 = typeof(st/102, env/103, e1/113) in
+                match mtmp198 {
+                  Result::Ok(x199) => {
                     {
-                      let x207 = Result::Ok._0(mtmp206) in
+                      let x199 = Result::Ok._0(mtmp198) in
                       {
-                        let ty_fun/116 = x207 in
+                        let ty_fun/116 = x199 in
                         {
                           {
-                            let mtmp209 = typeof(st/102, env/103, e2/114) in
-                            match mtmp209 {
-                              Result::Ok(x210) => {
+                            let mtmp201 = typeof(st/102, env/103, e2/114) in
+                            match mtmp201 {
+                              Result::Ok(x202) => {
                                 {
-                                  let x210 = Result::Ok._0(mtmp209) in
+                                  let x202 = Result::Ok._0(mtmp201) in
                                   {
-                                    let ty_arg/118 = x210 in
+                                    let ty_arg/118 = x202 in
                                     {
                                       let ty_res/119 = newvar(st/102) in
                                       let arrow/120 = Typ::TArrow(ty_arg/118, ty_res/119) in
                                       {
-                                        let mtmp212 = unify(st/102, ty_fun/116, arrow/120) in
-                                        match mtmp212 {
-                                          Result::Ok(x213) => {
+                                        let mtmp204 = unify(st/102, ty_fun/116, arrow/120) in
+                                        match mtmp204 {
+                                          Result::Ok(x205) => {
                                             {
-                                              let x213 = Result::Ok._0(mtmp212) in
+                                              let x205 = Result::Ok._0(mtmp204) in
                                               Result::Ok(ty_res/119)
                                             }
                                           },
-                                          Result::Err(x214) => {
+                                          Result::Err(x206) => {
                                             {
-                                              let x214 = Result::Err._0(mtmp212) in
+                                              let x206 = Result::Err._0(mtmp204) in
                                               {
-                                                let e/121 = x214 in
+                                                let e/121 = x206 in
                                                 Result::Err(e/121)
                                               }
                                             }
@@ -1936,11 +1820,11 @@ fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result[Ty
                                   }
                                 }
                               },
-                              Result::Err(x211) => {
+                              Result::Err(x203) => {
                                 {
-                                  let x211 = Result::Err._0(mtmp209) in
+                                  let x203 = Result::Err._0(mtmp201) in
                                   {
-                                    let e/117 = x211 in
+                                    let e/117 = x203 in
                                     Result::Err(e/117)
                                   }
                                 }
@@ -1951,11 +1835,11 @@ fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result[Ty
                       }
                     }
                   },
-                  Result::Err(x208) => {
+                  Result::Err(x200) => {
                     {
-                      let x208 = Result::Err._0(mtmp206) in
+                      let x200 = Result::Err._0(mtmp198) in
                       {
-                        let e/115 = x208 in
+                        let e/115 = x200 in
                         Result::Err(e/115)
                       }
                     }
@@ -1967,34 +1851,34 @@ fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result[Ty
         }
       }
     },
-    Exp::Lam(x199, x200) => {
+    Exp::Lam(x191, x192) => {
       {
-        let x199 = Exp::Lam._0(e/104) in
-        let x200 = Exp::Lam._1(e/104) in
+        let x191 = Exp::Lam._0(e/104) in
+        let x192 = Exp::Lam._1(e/104) in
         {
-          let body/108 = x200 in
+          let body/108 = x192 in
           {
-            let x/107 = x199 in
+            let x/107 = x191 in
             {
               let ty_x/109 = newvar(st/102) in
               let env2/110 = inherent#Vec#Vec[EnvEntry]#pushed(env/103, EnvEntry { name: x/107, ty: ty_x/109 }) in
               {
-                let mtmp215 = typeof(st/102, env2/110, body/108) in
-                match mtmp215 {
-                  Result::Ok(x216) => {
+                let mtmp207 = typeof(st/102, env2/110, body/108) in
+                match mtmp207 {
+                  Result::Ok(x208) => {
                     {
-                      let x216 = Result::Ok._0(mtmp215) in
+                      let x208 = Result::Ok._0(mtmp207) in
                       {
-                        let ty_e/111 = x216 in
+                        let ty_e/111 = x208 in
                         Result::Ok(Typ::TArrow(ty_x/109, ty_e/111))
                       }
                     }
                   },
-                  Result::Err(x217) => {
+                  Result::Err(x209) => {
                     {
-                      let x217 = Result::Err._0(mtmp215) in
+                      let x209 = Result::Err._0(mtmp207) in
                       {
-                        let e/112 = x217 in
+                        let e/112 = x209 in
                         Result::Err(e/112)
                       }
                     }
@@ -2006,27 +1890,27 @@ fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result[Ty
         }
       }
     },
-    Exp::Let(x201, x202, x203) => {
+    Exp::Let(x193, x194, x195) => {
       {
-        let x201 = Exp::Let._0(e/104) in
-        let x202 = Exp::Let._1(e/104) in
-        let x203 = Exp::Let._2(e/104) in
+        let x193 = Exp::Let._0(e/104) in
+        let x194 = Exp::Let._1(e/104) in
+        let x195 = Exp::Let._2(e/104) in
         {
-          let e2/124 = x203 in
+          let e2/124 = x195 in
           {
-            let e1/123 = x202 in
+            let e1/123 = x194 in
             {
-              let x/122 = x201 in
+              let x/122 = x193 in
               {
-                let _wild218 = enter_level(st/102) in
+                let _wild210 = enter_level(st/102) in
                 let ty_e/125 = typeof(st/102, env/103, e1/123) in
-                let _wild219 = leave_level(st/102) in
+                let _wild211 = leave_level(st/102) in
                 match ty_e/125 {
-                  Result::Ok(x220) => {
+                  Result::Ok(x212) => {
                     {
-                      let x220 = Result::Ok._0(ty_e/125) in
+                      let x212 = Result::Ok._0(ty_e/125) in
                       {
-                        let ty1/127 = x220 in
+                        let ty1/127 = x212 in
                         {
                           let env2/128 = inherent#Vec#Vec[EnvEntry]#pushed(env/103, EnvEntry { name: x/122, ty: gen(st/102, ty1/127) }) in
                           typeof(st/102, env2/128, e2/124)
@@ -2034,11 +1918,11 @@ fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result[Ty
                       }
                     }
                   },
-                  Result::Err(x221) => {
+                  Result::Err(x213) => {
                     {
-                      let x221 = Result::Err._0(ty_e/125) in
+                      let x213 = Result::Err._0(ty_e/125) in
                       {
-                        let e/126 = x221 in
+                        let e/126 = x213 in
                         Result::Err(e/126)
                       }
                     }
@@ -2071,20 +1955,20 @@ fn exp_let(name/134: string, a/135: Exp, b/136: Exp) -> Exp {
 
 fn show_result(label/137: string, res/138: Result[Typ, string]) -> unit {
   match res/138 {
-    Result::Ok(x222) => {
+    Result::Ok(x214) => {
       {
-        let x222 = Result::Ok._0(res/138) in
+        let x214 = Result::Ok._0(res/138) in
         {
-          let ty/139 = x222 in
+          let ty/139 = x214 in
           println(((label/137 + ": ") + typ_to_string(ty/139)))
         }
       }
     },
-    Result::Err(x223) => {
+    Result::Err(x215) => {
       {
-        let x223 = Result::Err._0(res/138) in
+        let x215 = Result::Err._0(res/138) in
         {
-          let e/140 = x223 in
+          let e/140 = x215 in
           println(((label/137 + ": ") + e/140))
         }
       }
@@ -2096,45 +1980,45 @@ fn main() -> unit {
   let st/141 = state_new() in
   let id/142 = exp_lam("x", exp_var("x")) in
   let c1/143 = exp_lam("x", exp_lam("y", exp_app(exp_var("x"), exp_var("y")))) in
+  let _wild216 = reset_type_variables(st/141) in
+  let _wild217 = show_result("id", typeof(st/141, env_empty(), id/142)) in
+  let _wild218 = reset_type_variables(st/141) in
+  let _wild219 = show_result("c1", typeof(st/141, env_empty(), c1/143)) in
+  let _wild220 = reset_type_variables(st/141) in
+  let _wild221 = show_result("let_x_c1_x", typeof(st/141, env_empty(), exp_let("x", c1/143, exp_var("x")))) in
+  let _wild222 = reset_type_variables(st/141) in
+  let _wild223 = show_result("let_y_id_y", typeof(st/141, env_empty(), exp_let("y", exp_lam("z", exp_var("z")), exp_var("y")))) in
   let _wild224 = reset_type_variables(st/141) in
-  let _wild225 = show_result("id", typeof(st/141, env_empty(), id/142)) in
+  let _wild225 = show_result("lam_x_let_y_id_y", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_lam("z", exp_var("z")), exp_var("y"))))) in
   let _wild226 = reset_type_variables(st/141) in
-  let _wild227 = show_result("c1", typeof(st/141, env_empty(), c1/143)) in
+  let _wild227 = show_result("lam_x_let_y_id_yx", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_lam("z", exp_var("z")), exp_app(exp_var("y"), exp_var("x")))))) in
   let _wild228 = reset_type_variables(st/141) in
-  let _wild229 = show_result("let_x_c1_x", typeof(st/141, env_empty(), exp_let("x", c1/143, exp_var("x")))) in
+  let _wild229 = show_result("self_apply", typeof(st/141, env_empty(), exp_lam("x", exp_app(exp_var("x"), exp_var("x"))))) in
   let _wild230 = reset_type_variables(st/141) in
-  let _wild231 = show_result("let_y_id_y", typeof(st/141, env_empty(), exp_let("y", exp_lam("z", exp_var("z")), exp_var("y")))) in
+  let _wild231 = show_result("unbound_var", typeof(st/141, env_empty(), exp_let("x", exp_var("x"), exp_var("x")))) in
   let _wild232 = reset_type_variables(st/141) in
-  let _wild233 = show_result("lam_x_let_y_id_y", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_lam("z", exp_var("z")), exp_var("y"))))) in
+  let _wild233 = show_result("max_heiber", typeof(st/141, env_empty(), exp_lam("y", exp_app(exp_var("y"), exp_lam("z", exp_app(exp_var("y"), exp_var("z"))))))) in
   let _wild234 = reset_type_variables(st/141) in
-  let _wild235 = show_result("lam_x_let_y_id_yx", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_lam("z", exp_var("z")), exp_app(exp_var("y"), exp_var("x")))))) in
+  let _wild235 = show_result("kirang", typeof(st/141, env_empty(), exp_lam("x", exp_lam("y", exp_lam("k", exp_app(exp_app(exp_var("k"), exp_app(exp_app(exp_var("k"), exp_var("x")), exp_var("y"))), exp_app(exp_app(exp_var("k"), exp_var("y")), exp_var("x")))))))) in
   let _wild236 = reset_type_variables(st/141) in
-  let _wild237 = show_result("self_apply", typeof(st/141, env_empty(), exp_lam("x", exp_app(exp_var("x"), exp_var("x"))))) in
+  let _wild237 = show_result("let_id_idid", typeof(st/141, env_empty(), exp_let("id", id/142, exp_app(exp_var("id"), exp_var("id"))))) in
   let _wild238 = reset_type_variables(st/141) in
-  let _wild239 = show_result("unbound_var", typeof(st/141, env_empty(), exp_let("x", exp_var("x"), exp_var("x")))) in
+  let _wild239 = show_result("nested_lets", typeof(st/141, env_empty(), exp_let("x", c1/143, exp_let("y", exp_let("z", exp_app(exp_var("x"), id/142), exp_var("z")), exp_var("y"))))) in
   let _wild240 = reset_type_variables(st/141) in
-  let _wild241 = show_result("max_heiber", typeof(st/141, env_empty(), exp_lam("y", exp_app(exp_var("y"), exp_lam("z", exp_app(exp_var("y"), exp_var("z"))))))) in
+  let _wild241 = show_result("fun_x_fun_y_let_x_xy_fun_x_yx", typeof(st/141, env_empty(), exp_lam("x", exp_lam("y", exp_let("x", exp_app(exp_var("x"), exp_var("y")), exp_lam("x", exp_app(exp_var("y"), exp_var("x")))))))) in
   let _wild242 = reset_type_variables(st/141) in
-  let _wild243 = show_result("kirang", typeof(st/141, env_empty(), exp_lam("x", exp_lam("y", exp_lam("k", exp_app(exp_app(exp_var("k"), exp_app(exp_app(exp_var("k"), exp_var("x")), exp_var("y"))), exp_app(exp_app(exp_var("k"), exp_var("y")), exp_var("x")))))))) in
+  let _wild243 = show_result("sound_gen_1", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_var("x"), exp_var("y"))))) in
   let _wild244 = reset_type_variables(st/141) in
-  let _wild245 = show_result("let_id_idid", typeof(st/141, env_empty(), exp_let("id", id/142, exp_app(exp_var("id"), exp_var("id"))))) in
+  let _wild245 = show_result("sound_gen_2", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_lam("z", exp_var("x")), exp_var("y"))))) in
   let _wild246 = reset_type_variables(st/141) in
-  let _wild247 = show_result("nested_lets", typeof(st/141, env_empty(), exp_let("x", c1/143, exp_let("y", exp_let("z", exp_app(exp_var("x"), id/142), exp_var("z")), exp_var("y"))))) in
+  let _wild247 = show_result("sound_gen_3", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_lam("z", exp_app(exp_var("x"), exp_var("z"))), exp_var("y"))))) in
   let _wild248 = reset_type_variables(st/141) in
-  let _wild249 = show_result("fun_x_fun_y_let_x_xy_fun_x_yx", typeof(st/141, env_empty(), exp_lam("x", exp_lam("y", exp_let("x", exp_app(exp_var("x"), exp_var("y")), exp_lam("x", exp_app(exp_var("y"), exp_var("x")))))))) in
+  let _wild249 = show_result("double_apply", typeof(st/141, env_empty(), exp_lam("x", exp_lam("y", exp_let("x", exp_app(exp_var("x"), exp_var("y")), exp_app(exp_var("x"), exp_var("y"))))))) in
   let _wild250 = reset_type_variables(st/141) in
-  let _wild251 = show_result("sound_gen_1", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_var("x"), exp_var("y"))))) in
-  let _wild252 = reset_type_variables(st/141) in
-  let _wild253 = show_result("sound_gen_2", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_lam("z", exp_var("x")), exp_var("y"))))) in
-  let _wild254 = reset_type_variables(st/141) in
-  let _wild255 = show_result("sound_gen_3", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_lam("z", exp_app(exp_var("x"), exp_var("z"))), exp_var("y"))))) in
-  let _wild256 = reset_type_variables(st/141) in
-  let _wild257 = show_result("double_apply", typeof(st/141, env_empty(), exp_lam("x", exp_lam("y", exp_let("x", exp_app(exp_var("x"), exp_var("y")), exp_app(exp_var("x"), exp_var("y"))))))) in
-  let _wild258 = reset_type_variables(st/141) in
-  let _wild259 = show_result("sound_gen_occurs", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_var("x"), exp_app(exp_var("y"), exp_var("y")))))) in
-  let _wild260 = reset_gensym(st/141) in
-  let _wild261 = show_result("fun_x_let_y_let_z_x_id_z_y", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_let("z", exp_app(exp_var("x"), id/142), exp_var("z")), exp_var("y"))))) in
-  let _wild262 = println("") in
-  let _wild263 = println("All Done") in
-  let _wild264 = println("") in
+  let _wild251 = show_result("sound_gen_occurs", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_var("x"), exp_app(exp_var("y"), exp_var("y")))))) in
+  let _wild252 = reset_gensym(st/141) in
+  let _wild253 = show_result("fun_x_let_y_let_z_x_id_z_y", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_let("z", exp_app(exp_var("x"), id/142), exp_var("z")), exp_var("y"))))) in
+  let _wild254 = println("") in
+  let _wild255 = println("All Done") in
+  let _wild256 = println("") in
 }

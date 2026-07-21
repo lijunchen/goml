@@ -186,8 +186,6 @@ func describe(value__4 Maybe, numbers__5 *_goml_vec_int32, view__6 []int32) stri
     var retv118 string
     var jp120 string
     switch value__4.(type) {
-    case None:
-        jp120 = "none"
     case Some:
         var x67 int32 = value__4.(Some)._0
         var n__7 int32 = x67
@@ -238,7 +236,7 @@ func describe(value__4 Maybe, numbers__5 *_goml_vec_int32, view__6 []int32) stri
         }
         jp120 = jp159
     default:
-        panic("non-exhaustive match")
+        jp120 = "none"
     }
     var from_if__9 string = jp120
     var match69 *_goml_vec_int32 = numbers__5
@@ -361,8 +359,6 @@ func main0() struct{} {
         if true {
             var mtmp81 Maybe = _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_get____T__Maybe(state__26)
             switch mtmp81.(type) {
-            case None:
-                break Loop_loop200
             case Some:
                 var x82 int32 = mtmp81.(Some)._0
                 var n__27 int32 = x82
@@ -370,7 +366,7 @@ func main0() struct{} {
                 _goml_m_inherent_i_Ref_i_Ref_l_T_r__i_set____T__Maybe(state__26, None{})
                 continue
             default:
-                panic("non-exhaustive match")
+                break Loop_loop200
             }
         } else {
             break Loop_loop200
@@ -380,13 +376,11 @@ func main0() struct{} {
         _0: 6,
     }
     switch mtmp86.(type) {
-    case None:
     case Some:
         var x87 int32 = mtmp86.(Some)._0
         var n__28 int32 = x87
         println__T_int32(n__28)
     default:
-        panic("non-exhaustive match")
     }
     var match90 Maybe = Some{
         _0: 5,

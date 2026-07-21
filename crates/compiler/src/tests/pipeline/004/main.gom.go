@@ -45,12 +45,8 @@ func main0() bool {
         switch x61 {
         case Red:
             jp69 = true
-        case Green:
-            jp69 = false
-        case Blue:
-            jp69 = false
         default:
-            panic("non-exhaustive match")
+            jp69 = false
         }
         jp67 = jp69
     case Green:
@@ -58,26 +54,18 @@ func main0() bool {
         switch x61 {
         case Red:
             jp71 = true
-        case Green:
-            jp71 = false
-        case Blue:
-            jp71 = false
         default:
-            panic("non-exhaustive match")
+            jp71 = false
         }
         jp67 = jp71
     case Blue:
         var jp73 bool
         switch x61 {
-        case Red:
-            jp73 = false
-        case Green:
-            jp73 = false
         case Blue:
             print__T_bool(true)
             jp73 = false
         default:
-            panic("non-exhaustive match")
+            jp73 = false
         }
         jp67 = jp73
     default:
