@@ -51,7 +51,7 @@ fn path_from_single_ident(value: string) -> Path {
     Path { segments }
 }
 
-fn lower_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
+fn lower_pat_inner(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
     if ctx.pattern_depth.get() >= 128 {
         push_error(ctx, node_span(node), "pattern is too deeply nested");
         Option::None
@@ -157,7 +157,7 @@ fn lower_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
             cst::NodeKind::PATTERN_TUPLE => {
                 let pats: Vec[Pat] = Vec::new();
                 for child in pattern_children(node) {
-                    match lower_pat(ctx, child) {
+                    match lower_pat_inner(ctx, child) {
                         Option::Some(value) => pats.push(value),
                         Option::None => (),
                     }
@@ -173,7 +173,7 @@ fn lower_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                 let names = tokens_of_kind(node, lexer::TokenKind::Ident);
                 let pats = pattern_children(node);
                 if names.len() > 0 && pats.len() > 0 {
-                    match lower_pat(ctx, pats.get(0)) {
+                    match lower_pat_inner(ctx, pats.get(0)) {
                         Option::Some(pat) => Option::Some(Pat::Alias(names.get(0).token.text, pat, value_span)),
                         Option::None => Option::None,
                     }
@@ -185,7 +185,7 @@ fn lower_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                 let pats: Vec[Pat] = Vec::new();
                 let valid = Ref::new(true);
                 for child in pattern_children(node) {
-                    match lower_pat(ctx, child) {
+                    match lower_pat_inner(ctx, child) {
                         Option::Some(value) => pats.push(value),
                         Option::None => valid.set(false),
                     }
@@ -199,8 +199,8 @@ fn lower_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
             cst::NodeKind::PATTERN_RANGE => {
                 let children = pattern_children(node);
                 if children.len() >= 2 {
-                    match lower_pat(ctx, children.get(0)) {
-                        Option::Some(start) => match lower_pat(ctx, children.get(1)) {
+                    match lower_pat_inner(ctx, children.get(0)) {
+                        Option::Some(start) => match lower_pat_inner(ctx, children.get(1)) {
                             Option::Some(end) => Option::Some(Pat::Range(
                                 start,
                                 end,
@@ -239,7 +239,7 @@ fn lower_constr_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                             Option::Some(name_token) => {
                                 let patterns = pattern_children(field);
                                 if patterns.len() > 0 {
-                                    match lower_pat(ctx, patterns.get(0)) {
+                                    match lower_pat_inner(ctx, patterns.get(0)) {
                                         Option::Some(pat) => fields.push((name_token.token.text, pat)),
                                         Option::None => valid.set(false),
                                     }
@@ -276,7 +276,7 @@ fn lower_constr_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                 Option::None => {
                     let pats: Vec[Pat] = Vec::new();
                     for child in pattern_children(node) {
-                        match lower_pat(ctx, child) {
+                        match lower_pat_inner(ctx, child) {
                             Option::Some(value) => pats.push(value),
                             Option::None => (),
                         }
@@ -309,7 +309,7 @@ fn lower_array_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
                 span: node_span(child),
             }))
         } else {
-            match lower_pat(ctx, child) {
+            match lower_pat_inner(ctx, child) {
                 Option::Some(value) => match rest.get() {
                     Option::Some(_) => suffix.push(value),
                     Option::None => prefix.push(value),
@@ -323,4 +323,8 @@ fn lower_array_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
     } else {
         Option::None
     }
+}
+
+fn lower_pat(ctx: LowerCtx, node: LocatedNode) -> Option[Pat] {
+    lower_pat_inner(ctx, node)
 }

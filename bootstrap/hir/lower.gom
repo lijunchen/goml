@@ -1,6 +1,7 @@
 package hir;
 
 use gomlang::parser::ast;
+use gomlang::parser::cst;
 use std::text;
 
 struct EnumInfo {
@@ -31,6 +32,7 @@ struct LowerCtx {
     local_counter: Ref[int32],
     method_counter: Ref[int32],
     expr_counter: Ref[int32],
+    diagnostics: Vec[string],
 }
 
 struct PatternState {
@@ -550,6 +552,88 @@ fn lower_bounds(
     result
 }
 
+fn sort_pattern_names(values: Vec[string]) -> Vec[string] {
+    let sorted: Vec[string] = Vec::new();
+    for value in values {
+        sorted.push(value)
+    };
+    for index in range(1, sorted.len()) {
+        let value = sorted.get(index);
+        let target = Ref::new(index);
+        while target.get() > 0 && value < sorted.get(target.get() - 1) {
+            sorted.set(target.get(), sorted.get(target.get() - 1));
+            target.set(target.get() - 1)
+        };
+        sorted.set(target.get(), value)
+    };
+    sorted
+}
+
+fn join_pattern_names(values: Vec[string]) -> string {
+    let builder = text::StringBuilder::new();
+    let index = Ref::new(0);
+    for value in values {
+        if index.get() > 0 {
+            builder.write_string(", ")
+        } else {
+            ()
+        };
+        builder.write_string(value);
+        index.set(index.get() + 1)
+    };
+    builder.finish()
+}
+
+fn pattern_binding_mismatch(
+    expected: Vec[(string, LocalId)],
+    actual: Vec[(string, LocalId)],
+) -> Option[string] {
+    let missing: Vec[string] = Vec::new();
+    let extra: Vec[string] = Vec::new();
+    for value in expected {
+        match find_binding(actual, value.0) {
+            Option::Some(_) => (),
+            Option::None => missing.push(value.0),
+        }
+    };
+    for value in actual {
+        match find_binding(expected, value.0) {
+            Option::Some(_) => (),
+            Option::None => extra.push(value.0),
+        }
+    };
+    if missing.len() == 0 && extra.len() == 0 {
+        Option::None
+    } else {
+        let details = Ref::new("");
+        if missing.len() > 0 {
+            details.set(
+                "missing " + join_pattern_names(sort_pattern_names(missing)),
+            )
+        } else {
+            ()
+        };
+        if extra.len() > 0 {
+            if details.get().byte_len() > 0 {
+                details.set(details.get() + "; ")
+            } else {
+                ()
+            };
+            details.set(
+                details.get()
+                    + "extra "
+                    + join_pattern_names(sort_pattern_names(extra)),
+            )
+        } else {
+            ()
+        };
+        Option::Some(
+            "Or-pattern alternatives must bind the same variables: "
+                + details.get(),
+        )
+    }
+}
+
 fn bind_pattern_name(
     ctx: LowerCtx,
     env: Vec[(string, LocalId)],
@@ -557,7 +641,12 @@ fn bind_pattern_name(
     name: string,
 ) -> LocalId {
     match find_binding(state.seen, name) {
-        Option::Some(existing) => existing,
+        Option::Some(existing) => {
+            ctx.diagnostics.push(
+                "Variable " + name + " is bound more than once in the same pattern",
+            );
+            existing
+        },
         Option::None => {
             let local = match find_binding(state.preferred, name) {
                 Option::Some(preferred) => preferred,
@@ -665,7 +754,18 @@ fn lower_pattern_inner(
                         values.get(index),
                         branch_env,
                         branch_state,
-                    ))
+                    ));
+                    let actual: Vec[(string, LocalId)] = Vec::new();
+                    for binding_index in range(
+                        base_seen.len(),
+                        branch_state.seen.len(),
+                    ) {
+                        actual.push(branch_state.seen.get(binding_index))
+                    };
+                    match pattern_binding_mismatch(expected, actual) {
+                        Option::Some(message) => ctx.diagnostics.push(message),
+                        Option::None => (),
+                    }
                 };
                 Pat::Or(result)
             }
@@ -1210,10 +1310,15 @@ fn make_context(
         local_counter: Ref::new(0),
         method_counter: Ref::new(index.get()),
         expr_counter: Ref::new(1),
+        diagnostics: Vec::new(),
     }
 }
 
-fn file_context(base: LowerCtx, file: ast::File) -> LowerCtx {
+fn file_context(
+    base: LowerCtx,
+    file: ast::File,
+    diagnostics: Vec[string],
+) -> LowerCtx {
     LowerCtx {
         package_name: base.package_name,
         package_id: base.package_id,
@@ -1226,6 +1331,7 @@ fn file_context(base: LowerCtx, file: ast::File) -> LowerCtx {
         local_counter: base.local_counter,
         method_counter: base.method_counter,
         expr_counter: base.expr_counter,
+        diagnostics,
     }
 }
 
@@ -1236,8 +1342,9 @@ fn lower_file_with_context(
     qualify_imports: bool,
     base: LowerCtx,
     item_offset: int32,
+    diagnostics: Vec[string],
 ) -> File {
-    let ctx = file_context(base, file);
+    let ctx = file_context(base, file, diagnostics);
     let items: Vec[Item] = Vec::new();
     let index = Ref::new(item_offset);
     for item in file.items {
@@ -1292,6 +1399,7 @@ fn lower_file(
     source_path: string,
     canonical_package_name: string,
     qualify_imports: bool,
+    diagnostics: Vec[string],
 ) -> File {
     let files: Vec[ast::File] = Vec::new();
     files.push(file);
@@ -1302,10 +1410,20 @@ fn lower_file(
         qualify_imports,
         make_context(files, canonical_package_name, qualify_imports),
         0,
+        diagnostics,
     )
 }
 
+fn ast_diagnostic_messages(values: Vec[cst::Diagnostic]) -> Vec[string] {
+    let result: Vec[string] = Vec::new();
+    for value in values {
+        result.push(value.message)
+    };
+    result
+}
+
 pub fn lower_expanded(value: ast::LowerResult, source_path: string) -> LowerResult {
+    let diagnostics = ast_diagnostic_messages(value.diagnostics);
     match value.ast {
         Option::Some(file) => LowerResult {
             hir: Option::Some(lower_file(
@@ -1313,8 +1431,9 @@ pub fn lower_expanded(value: ast::LowerResult, source_path: string) -> LowerResu
                 source_path,
                 file.package_name,
                 false,
+                diagnostics,
             )),
-            diagnostics: Vec::new(),
+            diagnostics,
         },
         Option::None => {
             let diagnostics: Vec[string] = Vec::new();
@@ -1332,6 +1451,7 @@ pub fn lower_expanded_package(
     source_path: string,
     canonical_package_name: string,
 ) -> LowerResult {
+    let diagnostics = ast_diagnostic_messages(value.diagnostics);
     match value.ast {
         Option::Some(file) => LowerResult {
             hir: Option::Some(lower_file(
@@ -1339,8 +1459,9 @@ pub fn lower_expanded_package(
                 source_path,
                 canonical_package_name,
                 true,
+                diagnostics,
             )),
-            diagnostics: Vec::new(),
+            diagnostics,
         },
         Option::None => {
             let diagnostics: Vec[string] = Vec::new();
@@ -1382,6 +1503,7 @@ pub fn lower_expanded_package_files(
     for value in values {
         match value.0.ast {
             Option::Some(file) => {
+                let diagnostics = ast_diagnostic_messages(value.0.diagnostics);
                 lowered.push(LowerResult {
                     hir: Option::Some(lower_file_with_context(
                         file,
@@ -1390,8 +1512,9 @@ pub fn lower_expanded_package_files(
                         true,
                         base,
                         item_offset.get(),
+                        diagnostics,
                     )),
-                    diagnostics: Vec::new(),
+                    diagnostics,
                 });
                 item_offset.set(item_offset.get() + file.items.len())
             },

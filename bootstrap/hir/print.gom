@@ -587,7 +587,11 @@ fn write_expr(builder: text::StringBuilder, value: Expr, indent: int32) -> unit 
             write_expr(builder, expr, indent)
         },
         Expr::Call(func, args) => {
-            write_expr(builder, func, indent);
+            write_expr(
+                builder,
+                func,
+                if args.len() == 0 { indent } else { indent + 2 },
+            );
             builder.write_char('(');
             write_exprs(builder, args, ", ", indent + 2);
             builder.write_char(')')

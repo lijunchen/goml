@@ -1,6 +1,7 @@
 package hir;
 
 use gomlang::parser::ast;
+use gomlang::parser::cst;
 
 fn dummy_span() -> ast::Span {
     ast::span(0, 0)
@@ -80,13 +81,138 @@ fn string_contains(value: string, expected: string) -> bool {
 fn derives(attrs: Vec[ast::Attribute], name: string) -> bool {
     let found = Ref::new(false);
     for attr in attrs {
-        if string_contains(attr.text, "derive") && string_contains(attr.text, name) {
-            found.set(true)
-        } else {
-            ()
+        for target in derive_targets(attr.text) {
+            if target == name {
+                found.set(true)
+            } else {
+                ()
+            }
         }
     };
     found.get()
+}
+
+fn derive_identifier_byte(value: uint8) -> bool {
+    (value >= 65u8 && value <= 90u8)
+        || (value >= 97u8 && value <= 122u8)
+        || (value >= 48u8 && value <= 57u8)
+        || value == 95u8
+}
+
+fn derive_targets(value: string) -> Vec[string] {
+    let result: Vec[string] = Vec::new();
+    let derive_start = Ref::new(-1);
+    if value.byte_len() >= 6 {
+        for index in range(0, value.byte_len() - 5) {
+            if value.byte_slice(index, index + 6) == "derive" {
+                derive_start.set(index + 6)
+            } else {
+                ()
+            }
+        }
+    } else {
+        ()
+    };
+    if derive_start.get() < 0 {
+        result
+    } else {
+        let open = Ref::new(-1);
+        let scan = Ref::new(derive_start.get());
+        while scan.get() < value.byte_len() && open.get() < 0 {
+            if value.byte_get(scan.get()) == 40u8 {
+                open.set(scan.get() + 1)
+            } else {
+                ()
+            };
+            scan.set(scan.get() + 1)
+        };
+        if open.get() >= 0 {
+            let index = Ref::new(open.get());
+            while index.get() < value.byte_len()
+                && value.byte_get(index.get()) != 41u8
+            {
+                if derive_identifier_byte(value.byte_get(index.get())) {
+                    let start = index.get();
+                    while index.get() < value.byte_len()
+                        && derive_identifier_byte(value.byte_get(index.get()))
+                    {
+                        index.set(index.get() + 1)
+                    };
+                    result.push(value.byte_slice(start, index.get()))
+                } else {
+                    index.set(index.get() + 1)
+                }
+            }
+        } else {
+            ()
+        };
+        result
+    }
+}
+
+fn supported_derive(value: string) -> bool {
+    value == "ToString" || value == "Eq" || value == "Hash"
+}
+
+fn validate_derive_attributes(
+    attrs: Vec[ast::Attribute],
+    generics: Vec[string],
+    kind: string,
+    name: string,
+    diagnostics: Vec[cst::Diagnostic],
+) -> unit {
+    for attr in attrs {
+        for target in derive_targets(attr.text) {
+            let message = if !supported_derive(target) {
+                Option::Some("unsupported derive target `" + target + "`")
+            } else if generics.len() > 0 {
+                Option::Some(
+                    "`#[derive("
+                        + target
+                        + ")]` is not supported for generic "
+                        + kind
+                        + " `"
+                        + name
+                        + "`",
+                )
+            } else {
+                Option::None
+            };
+            match message {
+                Option::Some(value) => diagnostics.push(cst::diagnostic(
+                    value,
+                    attr.span.start,
+                    attr.span.end,
+                )),
+                Option::None => (),
+            }
+        }
+    }
+}
+
+fn validate_file_derives(
+    value: ast::File,
+    diagnostics: Vec[cst::Diagnostic],
+) -> unit {
+    for item in value.items {
+        match item {
+            ast::Item::StructDef(definition) => validate_derive_attributes(
+                definition.attrs,
+                definition.generics,
+                "struct",
+                definition.name,
+                diagnostics,
+            ),
+            ast::Item::EnumDef(definition) => validate_derive_attributes(
+                definition.attrs,
+                definition.generics,
+                "enum",
+                definition.name,
+                diagnostics,
+            ),
+            _ => (),
+        }
+    }
 }
 
 fn var_expr(name: string) -> ast::Expr {
@@ -610,12 +736,16 @@ fn expand_file_derives(value: ast::File) -> ast::File {
 }
 
 pub fn expand_derives(value: ast::LowerResult) -> ast::LowerResult {
+    let diagnostics = value.diagnostics;
     let expanded = match value.ast {
-        Option::Some(file) => Option::Some(expand_file_derives(file)),
+        Option::Some(file) => {
+            validate_file_derives(file, diagnostics);
+            Option::Some(expand_file_derives(file))
+        },
         Option::None => Option::None,
     };
     ast::LowerResult {
         ast: expanded,
-        diagnostics: value.diagnostics,
+        diagnostics,
     }
 }
