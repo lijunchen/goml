@@ -498,16 +498,21 @@ fn discover_module_packages(
 fn discover_single_file_packages(
     root_dir: &Path,
     entry_path: &Path,
-    entry_ast: ast::File,
+    mut entry_ast: ast::File,
     external_imports: &ExternalImports,
 ) -> Result<PackageGraph, CompilationError> {
-    let mut entry = load_package(
-        normalized_parent(entry_path),
-        ROOT_PACKAGE,
-        &HashMap::from([(entry_path.to_path_buf(), Ok(entry_ast))]),
-        false,
-        true,
-    )?;
+    let declared_name = if entry_ast.package_explicit {
+        entry_ast.package.0.clone()
+    } else {
+        ROOT_PACKAGE.to_string()
+    };
+    set_package_identity(&mut entry_ast, ROOT_PACKAGE);
+    let mut entry = PackageUnit {
+        name: ROOT_PACKAGE.to_string(),
+        declared_name,
+        files: vec![SourceFileAst::new(entry_path.to_path_buf(), entry_ast)],
+        imports: HashSet::new(),
+    };
     entry.imports = collect_imports(&entry.files, None, external_imports)?;
     let imports = entry.imports.clone();
     let mut external_root_packages = HashSet::new();

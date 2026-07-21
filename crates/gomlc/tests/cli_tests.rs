@@ -182,6 +182,28 @@ fn gomlc_run_single_renders_rich_source_diagnostics() -> anyhow::Result<()> {
 }
 
 #[test]
+fn gomlc_run_single_ignores_sibling_sources() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let path = dir.path().join("main.gom");
+    let sibling = dir.path().join("sibling.gom");
+    fs::write(&path, INVALID_NUMERIC_PROGRAM)?;
+    fs::write(
+        &sibling,
+        "package main;\n\nfn sibling() -> Missing { Missing {} }\n",
+    )?;
+
+    let output = Command::new(gomlc_bin())
+        .arg("run-single")
+        .arg(&path)
+        .output()?;
+
+    assert_rich_numeric_diagnostic(&output, &path);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(!stderr.contains(&sibling.display().to_string()));
+    Ok(())
+}
+
+#[test]
 fn gomlc_package_commands_render_the_failing_source_file() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     let main_path = dir.path().join("main.gom");
