@@ -205,6 +205,26 @@ fn resolves_enum_patterns_from_package_interfaces() -> unit {
 }
 
 #[test]
+fn prefers_exact_struct_names_over_dependency_short_names() -> unit {
+    let dependencies: Vec[hir::File] = Vec::new();
+    dependencies.push(dependency_hir(
+        "package api; pub struct Context { foreign: string }",
+        "vendor::api",
+    ));
+    let file = checked_package_file_with_dependencies(
+        "struct Context { local: int32 } fn read(value: Context) -> int32 { value.local }",
+        dependencies,
+    );
+    match file.items.get(0) {
+        Item::Function(function) => match function.body.tail {
+            Option::Some(Expr::Field(_, "local", Type::Int32)) => (),
+            _ => testing::fail("expected local struct field"),
+        },
+        _ => testing::fail("expected local struct function"),
+    }
+}
+
+#[test]
 fn resolves_enum_constructors_from_package_interfaces() -> unit {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(dependency_hir(
