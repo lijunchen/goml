@@ -252,6 +252,18 @@ fn diagnoses_invalid_deferred_field_constraints() -> unit {
 }
 
 #[test]
+fn rejects_mismatched_let_annotations() -> unit {
+    let result = check(hir::lower(
+        ast::lower(parser::parse(
+            "fn main() -> unit { let value: int32 = \"wrong\"; let _ = value; }",
+        )),
+        "main.gom",
+    ));
+    testing::assert_eq(result.diagnostics.len(), 1);
+    testing::assert_eq(result.diagnostics.get(0), "type mismatch")
+}
+
+#[test]
 fn resolves_enum_constructors_from_package_interfaces() -> unit {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(dependency_hir(
