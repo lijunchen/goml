@@ -1275,15 +1275,15 @@ fn ensure_trait_impls_for_dyn(ctx: &mut Ctx, trait_name: &str, for_ty: &Ty) {
             None => continue,
         };
         for candidate_name in candidates {
-            let callee = match ctx.orig_fns.get(&candidate_name) {
-                Some(c) => c.clone(),
-                None => continue,
-            };
-            if callee.params.is_empty() {
+            let Some(receiver_ty) = ctx
+                .orig_fns
+                .get(&candidate_name)
+                .and_then(|callee| callee.params.first().map(|(_, ty)| ty.clone()))
+            else {
                 continue;
-            }
+            };
             let mut trial_subst = Subst::new();
-            if unify(&callee.params[0].1, for_ty, &mut trial_subst).is_ok() {
+            if unify(&receiver_ty, for_ty, &mut trial_subst).is_ok() {
                 ctx.ensure_instance(&candidate_name, trial_subst);
                 break;
             }
@@ -1539,25 +1539,34 @@ fn ensure_trait_impl_for_ty(
     let Some(generic_name) = ctx.resolve_generic_callee_name(&func_name, &arg_tys, &ret_ty) else {
         return;
     };
-    let Some(callee) = ctx.orig_fns.get(&generic_name).cloned() else {
+    let Some((generic, generics, params, callee_ret_ty)) =
+        ctx.orig_fns.get(&generic_name).map(|callee| {
+            (
+                fn_is_generic(callee),
+                callee.generics.clone(),
+                callee.params.clone(),
+                callee.ret_ty.clone(),
+            )
+        })
+    else {
         return;
     };
-    if !fn_is_generic(&callee) {
+    if !generic {
         ctx.ensure_instance(&generic_name, Subst::new());
         return;
     }
 
     let mut subst = Subst::new();
-    for ((_, param_ty), arg_ty) in callee.params.iter().zip(arg_tys.iter()) {
+    for ((_, param_ty), arg_ty) in params.iter().zip(arg_tys.iter()) {
         if unify(param_ty, arg_ty, &mut subst).is_err() {
             return;
         }
     }
-    let candidate_ret = normalize_associated_ty(&ctx.genv, &subst_ty(&callee.ret_ty, &subst));
+    let candidate_ret = normalize_associated_ty(&ctx.genv, &subst_ty(&callee_ret_ty, &subst));
     if unify(&candidate_ret, &ret_ty, &mut subst).is_err() {
         return;
     }
-    if subst_is_fully_concrete(&callee.generics, &subst) {
+    if subst_is_fully_concrete(&generics, &subst) {
         ctx.ensure_instance(&generic_name, subst);
     }
 }
@@ -1567,14 +1576,15 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
     match e {
         core::Expr::EVar { name, ty } => {
             let concrete_ty = subst_ty_in_ctx(ctx, ty, s);
-            if let Some(callee) = ctx.orig_fns.get(name).cloned()
-                && fn_is_generic(&callee)
+            let generic_ty = ctx.orig_fns.get(name).and_then(|callee| {
+                fn_is_generic(callee).then(|| Ty::TFunc {
+                    params: callee.params.iter().map(|(_, ty)| ty.clone()).collect(),
+                    ret_ty: Box::new(callee.ret_ty.clone()),
+                })
+            });
+            if let Some(generic_ty) = generic_ty
                 && !has_tparam(&concrete_ty)
             {
-                let generic_ty = Ty::TFunc {
-                    params: callee.params.iter().map(|(_, t)| t.clone()).collect(),
-                    ret_ty: Box::new(callee.ret_ty.clone()),
-                };
                 let mut call_subst = Subst::new();
                 if unify(&generic_ty, &concrete_ty, &mut call_subst).is_ok()
                     && !call_subst.values().any(has_tparam)
@@ -1914,54 +1924,64 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                 ret_ty: Box::new(new_ty.clone()),
             };
 
-            let resolved_name = if let Some(callee) = ctx.orig_fns.get(&func_name).cloned() {
-                if fn_is_generic(&callee) {
+            let resolved_name =
+                if let Some(generic) = ctx.orig_fns.get(&func_name).map(fn_is_generic) {
+                    if generic {
+                        func_name.clone()
+                    } else {
+                        ctx.ensure_instance(&func_name, Subst::new())
+                    }
+                } else if let Some((generic_name, call_subst)) =
+                    ctx.find_generic_trait_impl(&trait_ref, &method_name.0, &param_tys, &new_ty)
+                {
+                    let callee_generics = ctx
+                        .orig_fns
+                        .get(&generic_name)
+                        .and_then(|callee| fn_is_generic(callee).then(|| callee.generics.clone()));
+                    if let Some(generics) = callee_generics {
+                        if subst_is_fully_concrete(&generics, &call_subst) {
+                            ctx.ensure_instance(&generic_name, call_subst)
+                        } else {
+                            func_name.clone()
+                        }
+                    } else if ctx.orig_fns.contains_key(&generic_name) {
+                        ctx.ensure_instance(&generic_name, Subst::new())
+                    } else {
+                        generic_name
+                    }
+                } else if let Some(generic_name) =
+                    ctx.resolve_generic_callee_name(&func_name, &param_tys, &new_ty)
+                {
+                    let generic_signature = ctx.orig_fns.get(&generic_name).and_then(|callee| {
+                        fn_is_generic(callee).then(|| {
+                            (
+                                callee.generics.clone(),
+                                callee.params.clone(),
+                                callee.ret_ty.clone(),
+                            )
+                        })
+                    });
+                    if let Some((generics, params, ret_ty)) = generic_signature {
+                        let mut call_subst: Subst = IndexMap::new();
+                        for ((_, pt), at) in params.iter().zip(param_tys.iter()) {
+                            let _ = unify(pt, at, &mut call_subst);
+                        }
+                        let candidate_ret =
+                            normalize_associated_ty(&ctx.genv, &subst_ty(&ret_ty, &call_subst));
+                        let _ = unify(&candidate_ret, &new_ty, &mut call_subst);
+                        if subst_is_fully_concrete(&generics, &call_subst) {
+                            ctx.ensure_instance(&generic_name, call_subst)
+                        } else {
+                            func_name.clone()
+                        }
+                    } else if ctx.orig_fns.contains_key(&generic_name) {
+                        ctx.ensure_instance(&generic_name, Subst::new())
+                    } else {
+                        generic_name
+                    }
+                } else {
                     func_name.clone()
-                } else {
-                    ctx.ensure_instance(&func_name, Subst::new())
-                }
-            } else if let Some((generic_name, call_subst)) =
-                ctx.find_generic_trait_impl(&trait_ref, &method_name.0, &param_tys, &new_ty)
-            {
-                if let Some(callee) = ctx.orig_fns.get(&generic_name).cloned()
-                    && fn_is_generic(&callee)
-                {
-                    if subst_is_fully_concrete(&callee.generics, &call_subst) {
-                        ctx.ensure_instance(&generic_name, call_subst)
-                    } else {
-                        func_name.clone()
-                    }
-                } else if ctx.orig_fns.contains_key(&generic_name) {
-                    ctx.ensure_instance(&generic_name, Subst::new())
-                } else {
-                    generic_name
-                }
-            } else if let Some(generic_name) =
-                ctx.resolve_generic_callee_name(&func_name, &param_tys, &new_ty)
-            {
-                if let Some(callee) = ctx.orig_fns.get(&generic_name).cloned()
-                    && fn_is_generic(&callee)
-                {
-                    let mut call_subst: Subst = IndexMap::new();
-                    for ((_, pt), at) in callee.params.iter().zip(param_tys.iter()) {
-                        let _ = unify(pt, at, &mut call_subst);
-                    }
-                    let candidate_ret =
-                        normalize_associated_ty(&ctx.genv, &subst_ty(&callee.ret_ty, &call_subst));
-                    let _ = unify(&candidate_ret, &new_ty, &mut call_subst);
-                    if subst_is_fully_concrete(&callee.generics, &call_subst) {
-                        ctx.ensure_instance(&generic_name, call_subst)
-                    } else {
-                        func_name.clone()
-                    }
-                } else if ctx.orig_fns.contains_key(&generic_name) {
-                    ctx.ensure_instance(&generic_name, Subst::new())
-                } else {
-                    generic_name
-                }
-            } else {
-                func_name.clone()
-            };
+                };
 
             MonoExpr::ECall {
                 func: Box::new(MonoExpr::EVar {
