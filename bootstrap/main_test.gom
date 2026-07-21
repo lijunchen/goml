@@ -188,7 +188,10 @@ fn reports_driver_protocol_version() -> unit {
         "{\"artifact_format\":11,\"compiler_abi\":2,\"driver_protocol\":1,\"git_date\":null,\"git_hash\":null,\"tool\":\"gomlc\",\"version\":\"0.0.0\"}",
     );
     match parse_version_format("yaml") {
-        Result::Err(error) => testing::assert_eq(error, "invalid version format: yaml"),
+        Result::Err(error) => testing::assert_eq(
+            error,
+            "error: invalid value 'yaml' for '--format <FORMAT>'\n  [possible values: text, json]\n\nFor more information, try '--help'.",
+        ),
         Result::Ok(_) => testing::fail("expected invalid version format"),
     }
 }
@@ -400,14 +403,94 @@ fn adds_canonical_entry_wrapper() -> unit {
 
 #[test]
 fn rejects_invalid_run_single_arguments() -> unit {
-    assert_parse_error(Vec::new(), "missing input file");
+    assert_parse_error(
+        Vec::new(),
+        "error: the following required arguments were not provided:\n  <FILE>\n\nUsage: gomlc run-single <FILE>\n\nFor more information, try '--help'.",
+    );
     let unknown = Vec::new();
     unknown.push("--unknown");
-    assert_parse_error(unknown, "unknown argument: --unknown");
+    assert_parse_error(
+        unknown,
+        "error: unexpected argument '--unknown' found\n\n  tip: to pass '--unknown' as a value, use '-- --unknown'\n\nUsage: gomlc run-single [OPTIONS] <FILE>\n\nFor more information, try '--help'.",
+    );
     let multiple = Vec::new();
     multiple.push("one.gom");
     multiple.push("two.gom");
-    assert_parse_error(multiple, "multiple input files")
+    assert_parse_error(
+        multiple,
+        "error: unexpected argument 'two.gom' found\n\nUsage: gomlc run-single [OPTIONS] <FILE>\n\nFor more information, try '--help'.",
+    )
+}
+
+#[test]
+fn matches_cli_help_and_empty_value_semantics() -> unit {
+    let dump = Vec::new();
+    dump.push("--dump-go");
+    assert_parse_error(
+        dump,
+        "error: the following required arguments were not provided:\n  <FILE>\n\nUsage: gomlc run-single --dump-go <FILE>\n\nFor more information, try '--help'.",
+    );
+    let version_help = Vec::new();
+    version_help.push("--help");
+    match parse_version_args(version_args_with(version_help)) {
+        Result::Err(error) => testing::assert(is_cli_help_signal(error)),
+        Result::Ok(_) => testing::fail("expected version help"),
+    };
+    let missing_format = Vec::new();
+    missing_format.push("--format");
+    missing_format.push("--help");
+    match parse_version_args(version_args_with(missing_format)) {
+        Result::Err(error) => testing::assert_eq(
+            error,
+            "error: a value is required for '--format <FORMAT>' but none was supplied\n  [possible values: text, json]\n\nFor more information, try '--help'.",
+        ),
+        Result::Ok(_) => testing::fail("expected missing version format"),
+    };
+    let empty_package = Vec::new();
+    empty_package.push("--package=");
+    match parse_package_command_args(command_args_with("check", empty_package)) {
+        Result::Err(error) => testing::assert_eq(
+            error,
+            "error: the following required arguments were not provided:\n  --input <INPUT>...\n  --output <OUTPUT>\n\nUsage: gomlc check --package <PACKAGE> --input <INPUT>... --output <OUTPUT>\n\nFor more information, try '--help'.",
+        ),
+        Result::Ok(_) => testing::fail("expected missing package arguments"),
+    };
+    let empty_interface = Vec::new();
+    empty_interface.push("--interface-path=");
+    match parse_package_command_args(command_args_with("check", empty_interface)) {
+        Result::Err(error) => testing::assert_eq(
+            error,
+            "error: a value is required for '--interface-path <INTERFACE_FILE>' but none was supplied\n\nFor more information, try '--help'.",
+        ),
+        Result::Ok(_) => testing::fail("expected missing interface path"),
+    };
+    let short_help = Vec::new();
+    short_help.push("-help");
+    match parse_run_args(args_with(short_help)) {
+        Result::Err(error) => testing::assert(is_cli_help_signal(error)),
+        Result::Ok(_) => testing::fail("expected run help"),
+    };
+    let delimiter = Vec::new();
+    delimiter.push("--");
+    match parse_version_args(version_args_with(delimiter)) {
+        Result::Ok(VersionFormat::Text) => (),
+        _ => testing::fail("expected version delimiter"),
+    };
+    let unknown_format = Vec::new();
+    unknown_format.push("--format");
+    unknown_format.push("--wat");
+    match parse_version_args(version_args_with(unknown_format)) {
+        Result::Err(error) => testing::assert_eq(
+            error,
+            "error: unexpected argument '--wat' found\n\nUsage: gomlc version [OPTIONS]\n\nFor more information, try '--help'.",
+        ),
+        Result::Ok(_) => testing::fail("expected unknown version argument"),
+    };
+    testing::assert_eq(cli_argument_name("--packagex=value"), "--packagex");
+    match similar_cli_argument("check", "--outpu") {
+        Option::Some(argument) => testing::assert_eq(argument, "--output"),
+        Option::None => testing::fail("expected similar output argument"),
+    }
 }
 
 #[test]

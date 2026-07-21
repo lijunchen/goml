@@ -466,7 +466,7 @@ fn run_package_command(args: Vec[string], build: bool) -> unit {
     let command = match parse_package_command_args(args) {
         Result::Ok(value) => value,
         Result::Err(error) => {
-            fail(error);
+            handle_cli_parse_error(args.get(1), error);
             PackageCommandArgs {
                 package_name: "main",
                 inputs: Vec::new(),
@@ -506,7 +506,7 @@ fn run_link_command(args: Vec[string]) -> unit {
     let command = match parse_link_command_args(args) {
         Result::Ok(value) => value,
         Result::Err(error) => {
-            fail(error);
+            handle_cli_parse_error("link", error);
             LinkCommandArgs {
                 inputs: Vec::new(),
                 entry: "main",
@@ -597,7 +597,7 @@ fn run_test_link_command(args: Vec[string]) -> unit {
     let command = match parse_test_link_command_args(args) {
         Result::Ok(value) => value,
         Result::Err(error) => {
-            fail(error);
+            handle_cli_parse_error("test-link", error);
             TestLinkCommandArgs {
                 inputs: Vec::new(),
                 packages: Vec::new(),

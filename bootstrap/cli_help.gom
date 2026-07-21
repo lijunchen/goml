@@ -33,15 +33,403 @@ fn command_help(command: string) -> Option[string] {
     }
 }
 
-fn is_cli_command(command: string) -> bool {
-    command == "check"
+fn command_usage(command: string) -> string {
+    if command == "check"
         || command == "test-check"
         || command == "build"
         || command == "test-build"
-        || command == "link"
-        || command == "test-link"
-        || command == "run-single"
-        || command == "version"
+    {
+        "gomlc " + command + " [OPTIONS] --package <PACKAGE> --input <INPUT>... --output <OUTPUT>"
+    } else if command == "link" {
+        "gomlc link --input <INPUT>... --entry <ENTRY> --output <OUTPUT>"
+    } else if command == "test-link" {
+        "gomlc test-link --input <INPUT>... --package <PACKAGE> --output <OUTPUT> --manifest <MANIFEST>"
+    } else if command == "run-single" {
+        "gomlc run-single [OPTIONS] <FILE>"
+    } else if command == "version" {
+        "gomlc version [OPTIONS]"
+    } else {
+        "gomlc <COMMAND>"
+    }
+}
+
+fn required_command_usage(command: string) -> string {
+    if command == "check"
+        || command == "test-check"
+        || command == "build"
+        || command == "test-build"
+    {
+        "gomlc " + command + " --package <PACKAGE> --input <INPUT>... --output <OUTPUT>"
+    } else if command == "run-single" {
+        "gomlc run-single <FILE>"
+    } else {
+        command_usage(command)
+    }
+}
+
+fn cli_help_signal() -> string {
+    "__gomlc_help_requested__"
+}
+
+fn is_cli_help_signal(value: string) -> bool {
+    value == cli_help_signal()
+}
+
+fn cli_error_footer() -> string {
+    "For more information, try '--help'."
+}
+
+fn cli_error(message: string) -> string {
+    "error: " + message + "\n\n" + cli_error_footer()
+}
+
+fn cli_error_with_usage(message: string, usage: string) -> string {
+    "error: " + message + "\n\nUsage: " + usage + "\n\n" + cli_error_footer()
+}
+
+fn cli_argument_name(argument: string) -> string {
+    if argument.byte_len() < 2 || argument.byte_slice(0, 2) != "--" {
+        return argument
+    } else {
+        ()
+    };
+    let end = Ref::new(argument.byte_len());
+    for index in range(0, argument.byte_len()) {
+        if end.get() == argument.byte_len()
+            && argument.byte_slice(index, index + 1) == "="
+        {
+            end.set(index)
+        } else {
+            ()
+        }
+    };
+    argument.byte_slice(0, end.get())
+}
+
+fn cli_help_argument(argument: string) -> bool {
+    argument == "--help"
+        || (argument.byte_len() >= 2 && argument.byte_slice(0, 2) == "-h")
+}
+
+fn cli_minimum(left: int32, middle: int32, right: int32) -> int32 {
+    let first = if left < middle { left } else { middle };
+    if first < right { first } else { right }
+}
+
+fn cli_edit_distance(left: string, right: string) -> int32 {
+    let initial = Vec::new();
+    for index in range(0, right.byte_len() + 1) {
+        initial.push(index)
+    };
+    let previous = Ref::new(initial);
+    for left_index in range(0, left.byte_len()) {
+        let current = Vec::new();
+        current.push(left_index + 1);
+        for right_index in range(0, right.byte_len()) {
+            let substitution = if left.byte_get(left_index) == right.byte_get(right_index) {
+                previous.get().get(right_index)
+            } else {
+                previous.get().get(right_index) + 1
+            };
+            current.push(cli_minimum(
+                current.get(right_index) + 1,
+                previous.get().get(right_index + 1) + 1,
+                substitution,
+            ))
+        };
+        previous.set(current)
+    };
+    previous.get().get(right.byte_len())
+}
+
+fn similar_cli_argument(command: string, argument: string) -> Option[string] {
+    let candidates = Vec::new();
+    if command == "check"
+        || command == "test-check"
+        || command == "build"
+        || command == "test-build"
+    {
+        candidates.push("--package");
+        candidates.push("--input");
+        candidates.push("--interface-path");
+        candidates.push("--output");
+        candidates.push("--help")
+    } else if command == "link" {
+        candidates.push("--input");
+        candidates.push("--entry");
+        candidates.push("--output");
+        candidates.push("--help")
+    } else if command == "test-link" {
+        candidates.push("--input");
+        candidates.push("--package");
+        candidates.push("--output");
+        candidates.push("--manifest");
+        candidates.push("--help")
+    } else if command == "run-single" {
+        candidates.push("--dump-ast");
+        candidates.push("--dump-hir");
+        candidates.push("--dump-tast");
+        candidates.push("--dump-core");
+        candidates.push("--dump-mono");
+        candidates.push("--dump-lift");
+        candidates.push("--dump-anf");
+        candidates.push("--dump-go");
+        candidates.push("--help")
+    } else if command == "version" {
+        candidates.push("--format");
+        candidates.push("--help")
+    } else {
+        candidates.push("--help")
+    };
+    let name = cli_argument_name(argument);
+    let best: Ref[Option[string]] = Ref::new(Option::None);
+    let distance = Ref::new(2147483647);
+    for candidate in candidates {
+        let candidate_distance = cli_edit_distance(name, candidate);
+        if candidate_distance < distance.get() {
+            distance.set(candidate_distance);
+            best.set(Option::Some(candidate))
+        } else {
+            ()
+        }
+    };
+    if distance.get() <= 3 {
+        best.get()
+    } else {
+        Option::None
+    }
+}
+
+fn similar_cli_argument_usage(command: string, argument: string) -> string {
+    if command == "" && argument == "--help" {
+        "gomlc --help <COMMAND>"
+    } else if command == "version" && argument == "--format" {
+        "gomlc version --format <FORMAT>"
+    } else if command == "version" && argument == "--help" {
+        "gomlc version --help"
+    } else if command == "check"
+        || command == "test-check"
+        || command == "build"
+        || command == "test-build"
+    {
+        if argument == "--interface-path" {
+            required_command_usage(command) + " --interface-path <INTERFACE_FILE>"
+        } else if argument == "--help" {
+            required_command_usage(command) + " --help"
+        } else {
+            required_command_usage(command)
+        }
+    } else {
+        command_usage(command)
+    }
+}
+
+fn cli_value_option(command: string, argument: string) -> bool {
+    if command == "check"
+        || command == "test-check"
+        || command == "build"
+        || command == "test-build"
+    {
+        argument == "--package"
+            || argument == "--input"
+            || argument == "--interface-path"
+            || argument == "--output"
+    } else if command == "link" {
+        argument == "--input" || argument == "--entry" || argument == "--output"
+    } else if command == "test-link" {
+        argument == "--input"
+            || argument == "--package"
+            || argument == "--output"
+            || argument == "--manifest"
+    } else if command == "version" {
+        argument == "--format"
+    } else {
+        false
+    }
+}
+
+fn known_cli_option(command: string, argument: string) -> bool {
+    if argument == "--"
+        || cli_help_argument(argument)
+        || option_string_present(inline_cli_value(argument, "--help"))
+        || cli_value_option(command, argument)
+    {
+        true
+    } else if command == "check"
+        || command == "test-check"
+        || command == "build"
+        || command == "test-build"
+    {
+        option_string_present(inline_cli_value(argument, "--package"))
+            || option_string_present(inline_cli_value(argument, "--input"))
+            || option_string_present(inline_cli_value(argument, "--interface-path"))
+            || option_string_present(inline_cli_value(argument, "--output"))
+    } else if command == "link" {
+        option_string_present(inline_cli_value(argument, "--input"))
+            || option_string_present(inline_cli_value(argument, "--entry"))
+            || option_string_present(inline_cli_value(argument, "--output"))
+    } else if command == "test-link" {
+        option_string_present(inline_cli_value(argument, "--input"))
+            || option_string_present(inline_cli_value(argument, "--package"))
+            || option_string_present(inline_cli_value(argument, "--output"))
+            || option_string_present(inline_cli_value(argument, "--manifest"))
+    } else if command == "version" {
+        option_string_present(inline_cli_value(argument, "--format"))
+    } else {
+        false
+    }
+}
+
+fn unexpected_cli_option_error_with_usage(
+    command: string,
+    argument: string,
+    usage: string,
+) -> string {
+    match similar_cli_argument(command, argument) {
+        Option::Some(similar) => unexpected_similar_argument_error(
+            argument,
+            similar,
+            similar_cli_argument_usage(command, similar),
+        ),
+        Option::None => unexpected_argument_error_with_usage(
+            argument,
+            false,
+            usage,
+        ),
+    }
+}
+
+fn missing_required_arguments_error_with_usage(
+    arguments: Vec[string],
+    usage: string,
+) -> string {
+    let message = Ref::new("error: the following required arguments were not provided:");
+    for argument in arguments {
+        message.set(message.get() + "\n  " + argument)
+    };
+    message.get()
+        + "\n\nUsage: "
+        + usage
+        + "\n\n"
+        + cli_error_footer()
+}
+
+fn missing_required_arguments_error(command: string, arguments: Vec[string]) -> string {
+    missing_required_arguments_error_with_usage(
+        arguments,
+        required_command_usage(command),
+    )
+}
+
+fn value_required_error(argument: string, possible_values: Option[string]) -> string {
+    let values = match possible_values {
+        Option::Some(values) => "\n  [possible values: " + values + "]",
+        Option::None => "",
+    };
+    "error: a value is required for '"
+        + argument
+        + "' but none was supplied"
+        + values
+        + "\n\n"
+        + cli_error_footer()
+}
+
+fn unexpected_argument_error_with_usage(
+    argument: string,
+    value_tip: bool,
+    usage: string,
+) -> string {
+    let name = cli_argument_name(argument);
+    let displayed = if name.byte_len() > 2
+        && name.byte_slice(0, 1) == "-"
+        && name.byte_slice(0, 2) != "--"
+    {
+        name.byte_slice(0, 2)
+    } else {
+        name
+    };
+    let tip = if value_tip {
+        "\n\n  tip: to pass '" + displayed + "' as a value, use '-- " + displayed + "'"
+    } else {
+        ""
+    };
+    cli_error_with_usage(
+        "unexpected argument '" + displayed + "' found" + tip,
+        usage,
+    )
+}
+
+fn unexpected_argument_error(command: string, argument: string, value_tip: bool) -> string {
+    unexpected_argument_error_with_usage(
+        argument,
+        value_tip,
+        command_usage(command),
+    )
+}
+
+fn unexpected_similar_argument_error(
+    argument: string,
+    similar: string,
+    usage: string,
+) -> string {
+    cli_error_with_usage(
+        "unexpected argument '"
+            + cli_argument_name(argument)
+            + "' found\n\n  tip: a similar argument exists: '"
+            + similar
+            + "'",
+        usage,
+    )
+}
+
+fn repeated_argument_error(command: string, argument: string) -> string {
+    cli_error_with_usage(
+        "the argument '" + argument + "' cannot be used multiple times",
+        command_usage(command),
+    )
+}
+
+fn invalid_value_error(value: string, argument: string, possible_values: string) -> string {
+    cli_error(
+        "invalid value '"
+            + value
+            + "' for '"
+            + argument
+            + "'\n  [possible values: "
+            + possible_values
+            + "]",
+    )
+}
+
+fn unexpected_value_error(
+    command: string,
+    value: string,
+    argument: string,
+    usage: string,
+) -> string {
+    cli_error_with_usage(
+        "unexpected value '"
+            + value
+            + "' for '"
+            + argument
+            + "' found; no more were expected",
+        "gomlc " + command + " " + usage,
+    )
+}
+
+fn unexpected_value_error_with_usage(
+    value: string,
+    argument: string,
+    usage: string,
+) -> string {
+    cli_error_with_usage(
+        "unexpected value '"
+            + value
+            + "' for '"
+            + argument
+            + "' found; no more were expected",
+        usage,
+    )
 }
 
 fn is_debug_stage(command: string) -> bool {
@@ -55,19 +443,6 @@ fn is_debug_stage(command: string) -> bool {
         || command == "lift"
         || command == "anf"
         || command == "go"
-}
-
-fn has_help_argument(args: Vec[string]) -> bool {
-    let found = Ref::new(false);
-    for index in range(2, args.len()) {
-        let argument = args.get(index);
-        if argument == "-h" || argument == "--help" {
-            found.set(true)
-        } else {
-            ()
-        }
-    };
-    found.get()
 }
 
 fn print_cli_help(message: string) -> unit {
@@ -87,6 +462,18 @@ fn fail_unknown_subcommand(command: string) -> unit {
     )
 }
 
+fn handle_cli_parse_error(command: string, error: string) -> unit {
+    if is_cli_help_signal(error) {
+        match command_help(command) {
+            Option::Some(help) => print_cli_help(help),
+            Option::None => (),
+        };
+        process::exit(0)
+    } else {
+        fail_cli(error)
+    }
+}
+
 fn run_help_command(args: Vec[string]) -> unit {
     if args.len() == 2 {
         print_cli_help(top_level_help())
@@ -96,6 +483,28 @@ fn run_help_command(args: Vec[string]) -> unit {
             Option::None => fail_unknown_subcommand(args.get(2)),
         }
     } else {
-        fail_cli("error: unexpected argument\n\nUsage: gomlc help [COMMAND]")
+        let command = args.get(2);
+        match command_help(command) {
+            Option::Some(_) => {
+                let usage = if command == "help" {
+                    "gomlc help [COMMAND]..."
+                } else {
+                    command_usage(command)
+                };
+                let footer = if command == "help" {
+                    ""
+                } else {
+                    "\n\n" + cli_error_footer()
+                };
+                fail_cli(
+                    "error: unrecognized subcommand '"
+                        + args.get(3)
+                        + "'\n\nUsage: "
+                        + usage
+                        + footer,
+                )
+            },
+            Option::None => fail_unknown_subcommand(command),
+        }
     }
 }
