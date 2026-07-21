@@ -333,6 +333,28 @@ fn prunes_imports_used_only_by_dead_helpers() -> unit {
 }
 
 #[test]
+fn keeps_imports_used_by_reachable_types() -> unit {
+    let imports: Vec[(string, string)] = Vec::new();
+    imports.push(("_goml_bytes", "bytes"));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Var(
+        "buffer",
+        Type::Named("_goml_bytes.Buffer"),
+        Option::None,
+    ));
+    let items: Vec[Item] = Vec::new();
+    items.push(Item::ImportGroup(imports));
+    items.push(Item::Function(Function {
+        name: "main",
+        params: Vec::new(),
+        ret_ty: Option::None,
+        body: Block { stmts },
+    }));
+    let output = encode(prune_functions(File { items }));
+    testing::assert(string_contains(output, "_goml_bytes \"bytes\""))
+}
+
+#[test]
 fn emits_complete_vec_runtime_helpers() -> unit {
     let ty = tast::Type::VecType(tast::Type::Int32);
     let output = encode(File { items: vec_runtime_items(ty) });
