@@ -211,6 +211,12 @@ pub fn write_type(builder: text::StringBuilder, value: Type) -> unit {
     }
 }
 
+fn type_text(value: Type) -> string {
+    let builder = text::StringBuilder::new();
+    write_type(builder, value);
+    builder.finish()
+}
+
 pub fn write_trait_ref(builder: text::StringBuilder, value: TraitRef) -> unit {
     builder.write_string(value.name);
     if value.args.len() > 0 {

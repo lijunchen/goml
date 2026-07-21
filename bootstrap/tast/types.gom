@@ -5,6 +5,11 @@ struct TypeSubst {
     ty: Type,
 }
 
+struct ProjectionAlias {
+    projection: Type,
+    ty: Type,
+}
+
 fn merge_var_kind(left: VarKind, right: VarKind) -> Option[VarKind] {
     match (left, right) {
         (VarKind::Any, value) => Option::Some(value),
@@ -48,6 +53,13 @@ fn is_float_type(value: Type) -> bool {
 
 fn is_numeric_type(value: Type) -> bool {
     is_integer_type(value) || is_float_type(value)
+}
+
+fn is_unsigned_type(value: Type) -> bool {
+    match prune(value) {
+        Type::Uint8 | Type::Uint16 | Type::Uint32 | Type::Uint64 => true,
+        _ => false,
+    }
 }
 
 fn kind_accepts(kind: VarKind, value: Type) -> bool {
@@ -529,54 +541,162 @@ fn predicate_type_aliases(predicates: Vec[TypePredicate]) -> Vec[TypeSubst] {
     substitutions
 }
 
+fn projection_alias_index(values: Vec[ProjectionAlias], projection: Type) -> int32 {
+    let result = Ref::new(-1);
+    for index in range(0, values.len()) {
+        if result.get() < 0 && types_equal(values.get(index).projection, projection) {
+            result.set(index)
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn projection_alias(
+    values: Vec[ProjectionAlias],
+    projection: Type,
+) -> Option[Type] {
+    let index = projection_alias_index(values, projection);
+    if index < 0 {
+        Option::None
+    } else {
+        Option::Some(values.get(index).ty)
+    }
+}
+
+fn set_projection_alias(
+    values: Vec[ProjectionAlias],
+    projection: Type,
+    ty: Type,
+) -> bool {
+    let index = projection_alias_index(values, projection);
+    if index < 0 {
+        values.push(ProjectionAlias { projection, ty });
+        true
+    } else if types_equal(values.get(index).ty, ty) {
+        false
+    } else {
+        values.set(index, ProjectionAlias { projection, ty });
+        true
+    }
+}
+
+fn resolve_projection_alias(value: Type, aliases: Vec[ProjectionAlias]) -> Type {
+    let current = Ref::new(value);
+    let seen = Vec::new();
+    let searching = Ref::new(true);
+    while searching.get() {
+        let repeated = Ref::new(false);
+        for value in seen {
+            if types_equal(value, current.get()) {
+                repeated.set(true)
+            } else {
+                ()
+            }
+        };
+        if repeated.get() {
+            searching.set(false)
+        } else {
+            seen.push(current.get());
+            match projection_alias(aliases, current.get()) {
+                Option::Some(next) => current.set(next),
+                Option::None => searching.set(false),
+            }
+        }
+    };
+    current.get()
+}
+
+fn predicate_projection_aliases(
+    predicates: Vec[TypePredicate],
+) -> Vec[ProjectionAlias] {
+    let aliases = Vec::new();
+    let equalities: Vec[(Type, Type)] = Vec::new();
+    for predicate in predicates {
+        match predicate {
+            TypePredicate::Equality(left, right) => match (left, right) {
+                (
+                    left @ Type::Projection(_, _, _),
+                    right @ Type::Projection(_, _, _),
+                ) => equalities.push((left, right)),
+                (projection @ Type::Projection(_, _, _), other) => {
+                    if projection_alias_index(aliases, projection) < 0 {
+                        aliases.push(ProjectionAlias {
+                            projection,
+                            ty: other,
+                        })
+                    } else {
+                        ()
+                    }
+                },
+                (other, projection @ Type::Projection(_, _, _)) => {
+                    if projection_alias_index(aliases, projection) < 0 {
+                        aliases.push(ProjectionAlias {
+                            projection,
+                            ty: other,
+                        })
+                    } else {
+                        ()
+                    }
+                },
+                _ => (),
+            },
+            TypePredicate::Trait(_, _) => (),
+        }
+    };
+    let changed = Ref::new(true);
+    while changed.get() {
+        changed.set(false);
+        for equality in equalities {
+            let left = equality.0;
+            let right = equality.1;
+            let left_alias = resolve_projection_alias(left, aliases);
+            let right_alias = resolve_projection_alias(right, aliases);
+            if !types_equal(left_alias, left) && types_equal(right_alias, right) {
+                if set_projection_alias(aliases, right, left_alias) {
+                    changed.set(true)
+                } else {
+                    ()
+                }
+            } else if !types_equal(right_alias, right) && types_equal(left_alias, left) {
+                if set_projection_alias(aliases, left, right_alias) {
+                    changed.set(true)
+                } else {
+                    ()
+                }
+            } else {
+                ()
+            }
+        }
+    };
+    for equality in equalities {
+        if projection_alias_index(aliases, equality.0) < 0
+            && projection_alias_index(aliases, equality.1) < 0
+        {
+            aliases.push(ProjectionAlias {
+                projection: equality.0,
+                ty: equality.1,
+            })
+        } else {
+            ()
+        }
+    };
+    aliases
+}
+
 fn projection_equality(
     ctx: Checker,
     base: Type,
     name: string,
     qualifier: Option[TraitRef],
 ) -> Option[Type] {
-    let result = Ref::new(Option::None);
-    let matches = Ref::new(0);
-    for predicate in ctx.predicates {
-        let candidate = match predicate {
-            TypePredicate::Equality(
-                Type::Projection(left_base, left_name, left_trait),
-                right,
-            ) => {
-                if left_name == name
-                    && trait_refs_equal(left_trait, qualifier)
-                    && types_equal(left_base, base) {
-                    Option::Some(right)
-                } else {
-                    Option::None
-                }
-            },
-            TypePredicate::Equality(
-                left,
-                Type::Projection(right_base, right_name, right_trait),
-            ) => {
-                if right_name == name
-                    && trait_refs_equal(right_trait, qualifier)
-                    && types_equal(right_base, base) {
-                    Option::Some(left)
-                } else {
-                    Option::None
-                }
-            },
-            _ => Option::None,
-        };
-        match candidate {
-            Option::Some(value) => {
-                matches.set(matches.get() + 1);
-                result.set(Option::Some(value))
-            },
-            Option::None => (),
-        }
-    };
-    if matches.get() == 1 {
-        result.get()
-    } else {
+    let projection = Type::Projection(base, name, qualifier);
+    let resolved = resolve_projection_alias(projection, ctx.projection_aliases);
+    if types_equal(projection, resolved) {
         Option::None
+    } else {
+        Option::Some(resolved)
     }
 }
 

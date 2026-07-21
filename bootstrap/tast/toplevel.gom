@@ -11,6 +11,7 @@ fn function_context(
 ) -> Checker {
     let predicates = expand_implied_predicates(base, predicates);
     let param_aliases = predicate_type_aliases(predicates);
+    let projection_aliases = predicate_projection_aliases(predicates);
     Checker {
         counter: base.counter,
         diagnostics: base.diagnostics,
@@ -24,11 +25,45 @@ fn function_context(
         impls: base.impls,
         predicates,
         param_aliases,
+        projection_aliases,
         field_constraints: Vec::new(),
+        required_predicates: Vec::new(),
         locals: Vec::new(),
+        mutable_locals: Vec::new(),
         return_ty: ret_ty,
         self_ty,
         type_params,
+        loop_depth: Ref::new(0),
+        condition_depth: Ref::new(0),
+        condition_loop_depth: Ref::new(0),
+    }
+}
+
+fn closure_context(base: Checker, ret_ty: Type) -> Checker {
+    Checker {
+        counter: base.counter,
+        diagnostics: base.diagnostics,
+        package_aliases: base.package_aliases,
+        in_scope_traits: base.in_scope_traits,
+        enums: base.enums,
+        structs: base.structs,
+        traits: base.traits,
+        functions: base.functions,
+        methods: base.methods,
+        impls: base.impls,
+        predicates: base.predicates,
+        param_aliases: base.param_aliases,
+        projection_aliases: base.projection_aliases,
+        field_constraints: base.field_constraints,
+        required_predicates: base.required_predicates,
+        locals: base.locals,
+        mutable_locals: base.mutable_locals,
+        return_ty: ret_ty,
+        self_ty: base.self_ty,
+        type_params: base.type_params,
+        loop_depth: Ref::new(0),
+        condition_depth: Ref::new(0),
+        condition_loop_depth: Ref::new(0),
     }
 }
 
@@ -40,28 +75,39 @@ fn check_function(
     self_ty: Option[Type],
 ) -> Function {
     let type_params = append_names(inherited_generics, value.generics);
-    let ret_ty = match value.ret_ty {
+    let raw_ret_ty = match value.ret_ty {
         Option::Some(ty) => type_from_hir(ty, type_params, self_ty),
         Option::None => Type::Unit,
     };
-    let predicates = append_predicates(
-        inherited_predicates,
-        predicates_from_hir(
-            value.generic_bounds,
-            value.predicates,
-            type_params,
-            self_ty,
+    let predicates = resolve_signature_predicates(
+        base,
+        append_predicates(
+            inherited_predicates,
+            predicates_from_hir(
+                value.generic_bounds,
+                value.predicates,
+                type_params,
+                self_ty,
+            ),
         ),
+        true,
     );
+    let ret_ty = resolve_signature_type(base, raw_ret_ty, predicates, true);
     let ctx = function_context(base, ret_ty, self_ty, type_params, predicates);
     let params: Vec[(string, Type)] = Vec::new();
     for param in value.params {
-        let ty = type_from_hir(param.1, type_params, self_ty);
+        let ty = resolve_signature_type(
+            ctx,
+            type_from_hir(param.1, type_params, self_ty),
+            predicates,
+            true,
+        );
         insert_local(ctx, param.0, ty);
         params.push((local_name(param.0), ty))
     };
     let body = check_block(ctx, value.body, Option::Some(ret_ty));
     resolve_field_constraints(ctx);
+    resolve_required_predicates(ctx);
     Function {
         name: value.name,
         generics: type_params,
@@ -73,29 +119,47 @@ fn check_function(
 }
 
 fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
-    let for_type = type_from_hir(value.for_type, value.generics, Option::None);
-    let predicates = predicates_from_hir(
-        value.generic_bounds,
-        value.predicates,
-        value.generics,
-        Option::Some(for_type),
+    let for_type = resolve_signature_type(
+        base,
+        type_from_hir(value.for_type, value.generics, Option::None),
+        Vec::new(),
+        true,
     );
-    let trait_ref = match value.trait_ref {
-        Option::Some(reference) => Option::Some(trait_ref_from_hir(
-            reference,
+    let predicates = resolve_signature_predicates(
+        base,
+        predicates_from_hir(
+            value.generic_bounds,
+            value.predicates,
             value.generics,
             Option::Some(for_type),
-        )),
+        ),
+        true,
+    );
+    let trait_ref = match value.trait_ref {
+        Option::Some(reference) => {
+            let reference = trait_ref_from_hir(
+                reference,
+                value.generics,
+                Option::Some(for_type),
+            );
+            validate_trait_reference(base, reference);
+            Option::Some(reference)
+        },
         Option::None => Option::None,
     };
     let associated_types: Vec[(string, Type)] = Vec::new();
     for associated in value.associated_types {
         associated_types.push((
             associated.0,
-            type_from_hir(
-                associated.1,
-                value.generics,
-                Option::Some(for_type),
+            resolve_signature_type(
+                base,
+                type_from_hir(
+                    associated.1,
+                    value.generics,
+                    Option::Some(for_type),
+                ),
+                predicates,
+                true,
             ),
         ))
     };
@@ -109,12 +173,400 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
             Option::Some(for_type),
         ))
     };
+    match trait_ref {
+        Option::Some(reference) => validate_trait_impl(
+            base,
+            reference,
+            for_type,
+            associated_types,
+            methods,
+        ),
+        Option::None => validate_inherent_impl(base, for_type, methods),
+    };
     ImplBlock {
         generics: value.generics,
+        predicates,
         trait_ref,
         for_type,
         associated_types,
         methods,
+    }
+}
+
+fn type_matches(ctx: Checker, left: Type, right: Type) -> bool {
+    types_equal(normalize_type(ctx, left), normalize_type(ctx, right))
+}
+
+fn validate_method_signature(
+    ctx: Checker,
+    trait_name: string,
+    expected: TraitMethodInfo,
+    actual: Function,
+    substitutions: Vec[TypeSubst],
+) -> unit {
+    let expected_params: Vec[Type] = Vec::new();
+    for param in expected.params {
+        expected_params.push(normalize_type(ctx, substitute_type(param, substitutions)))
+    };
+    let expected_ret = normalize_type(
+        ctx,
+        substitute_type(expected.ret_ty, substitutions),
+    );
+    if expected_params.len() != actual.params.len() {
+        ctx.diagnostics.push(
+            "Trait "
+                + trait_name
+                + "::"
+                + actual.name
+                + " expects "
+                + expected_params.len().to_string()
+                + " parameters but impl has "
+                + actual.params.len().to_string(),
+        )
+    } else {
+        ()
+    };
+    let common = if expected_params.len() < actual.params.len() {
+        expected_params.len()
+    } else {
+        actual.params.len()
+    };
+    for index in range(0, common) {
+        let expected_ty = expected_params.get(index);
+        let actual_ty = normalize_type(ctx, actual.params.get(index).1);
+        if !type_matches(ctx, expected_ty, actual_ty) {
+            ctx.diagnostics.push(
+                "Trait "
+                    + trait_name
+                    + "::"
+                    + actual.name
+                    + " parameter "
+                    + index.to_string()
+                    + " expected type "
+                    + type_text(expected_ty)
+                    + " but found "
+                    + type_text(actual_ty),
+            )
+        } else {
+            ()
+        }
+    };
+    let actual_ret = normalize_type(ctx, actual.ret_ty);
+    if !type_matches(ctx, expected_ret, actual_ret) {
+        ctx.diagnostics.push(
+            "Trait "
+                + trait_name
+                + "::"
+                + actual.name
+                + " expected return type "
+                + type_text(expected_ret)
+                + " but found "
+                + type_text(actual_ret),
+        )
+    } else {
+        ()
+    }
+}
+
+fn validate_trait_associated_types(
+    ctx: Checker,
+    info: TraitInfo,
+    reference: TraitRef,
+    for_type: Type,
+    associated_types: Vec[(string, Type)],
+) -> unit {
+    let seen: Vec[string] = Vec::new();
+    for associated in associated_types {
+        if !contains_associated_type(info.associated_types, associated.0) {
+            ctx.diagnostics.push(
+                "Associated type "
+                    + associated.0
+                    + " is not declared in trait "
+                    + reference.name,
+            )
+        } else if contains_name(seen, associated.0) {
+            ctx.diagnostics.push(
+                "Associated type "
+                    + associated.0
+                    + " is bound multiple times in impl of trait "
+                    + reference.name,
+            )
+        } else {
+            seen.push(associated.0)
+        }
+    };
+    for expected in info.associated_types {
+        if !contains_name(seen, expected.name) {
+            ctx.diagnostics.push(
+                "Trait "
+                    + reference.name
+                    + " implementation for "
+                    + type_text(for_type)
+                    + " is missing associated type "
+                    + expected.name,
+            )
+        } else {
+            ()
+        }
+    }
+}
+
+fn contains_associated_type(values: Vec[AssociatedTypeInfo], name: string) -> bool {
+    let result = Ref::new(false);
+    for value in values {
+        if value.name == name {
+            result.set(true)
+        } else {
+            ()
+        }
+    };
+    result.get()
+}
+
+fn validate_trait_impl(
+    ctx: Checker,
+    reference: TraitRef,
+    for_type: Type,
+    associated_types: Vec[(string, Type)],
+    methods: Vec[Function],
+) -> unit {
+    match find_trait(ctx, reference.name) {
+        Option::Some(info) => {
+            validate_trait_associated_types(
+                ctx,
+                info,
+                reference,
+                for_type,
+                associated_types,
+            );
+            let substitutions = trait_substitutions(
+                ctx,
+                info,
+                reference,
+                Option::Some(for_type),
+            );
+            let projection_alias_count = ctx.projection_aliases.len();
+            for associated in associated_types {
+                ctx.projection_aliases.push(ProjectionAlias {
+                    projection: Type::Projection(
+                        for_type,
+                        associated.0,
+                        Option::Some(reference),
+                    ),
+                    ty: associated.1,
+                });
+                ctx.projection_aliases.push(ProjectionAlias {
+                    projection: Type::Projection(
+                        for_type,
+                        associated.0,
+                        Option::None,
+                    ),
+                    ty: associated.1,
+                })
+            };
+            let seen: Vec[string] = Vec::new();
+            for method in methods {
+                match find_trait_method(info, method.name) {
+                    Option::Some(expected) => if contains_name(seen, method.name) {
+                        ctx.diagnostics.push(
+                            "Method "
+                                + method.name
+                                + " implemented multiple times in impl of trait "
+                                + reference.name,
+                        )
+                    } else {
+                        seen.push(method.name);
+                        validate_method_signature(
+                            ctx,
+                            reference.name,
+                            expected,
+                            method,
+                            substitutions,
+                        )
+                    },
+                    Option::None => ctx.diagnostics.push(
+                        "Method "
+                            + method.name
+                            + " is not declared in trait "
+                            + reference.name,
+                    ),
+                }
+            };
+            for expected in info.methods {
+                if !contains_name(seen, expected.name) {
+                    ctx.diagnostics.push(
+                        "Trait "
+                            + reference.name
+                            + " implementation for "
+                            + type_text(for_type)
+                            + " is missing method "
+                            + expected.name,
+                    )
+                } else {
+                    ()
+                }
+            };
+            ctx.projection_aliases.truncate(projection_alias_count)
+        },
+        Option::None => (),
+    }
+}
+
+fn validate_inherent_impl(ctx: Checker, for_type: Type, methods: Vec[Function]) -> unit {
+    let seen: Vec[string] = Vec::new();
+    for method in methods {
+        if contains_name(seen, method.name) {
+            ctx.diagnostics.push(
+                "Method "
+                    + method.name
+                    + " implemented multiple times in impl for "
+                    + type_text(for_type),
+            )
+        } else {
+            seen.push(method.name)
+        }
+    }
+}
+
+fn copied_names(values: Vec[string]) -> Vec[string] {
+    let result: Vec[string] = Vec::new();
+    for value in values {
+        result.push(value)
+    };
+    result
+}
+
+fn struct_application_parts(value: Type) -> Option[(string, Vec[Type])] {
+    match prune(value) {
+        Type::Con(name) => Option::Some((name, Vec::new())),
+        Type::App(Type::Con(name), args) => Option::Some((name, args)),
+        _ => Option::None,
+    }
+}
+
+fn by_value_type_has_cycle(
+    ctx: Checker,
+    value: Type,
+    active: Vec[string],
+) -> bool {
+    match prune(normalize_type(ctx, value)) {
+        Type::Tuple(values) => {
+            let found = Ref::new(false);
+            for value in values {
+                if by_value_type_has_cycle(ctx, value, active) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Type::Array(_, elem) => by_value_type_has_cycle(ctx, elem, active),
+        value => match struct_application_parts(value) {
+            Option::Some(parts) => match find_struct_by_name(ctx, parts.0) {
+                Option::Some(info) => if contains_name(active, info.name) {
+                    true
+                } else {
+                    let next = copied_names(active);
+                    next.push(info.name);
+                    let found = Ref::new(false);
+                    for field in info.fields {
+                        if by_value_type_has_cycle(
+                            ctx,
+                            substitute_params(
+                                field.1,
+                                info.generics,
+                                parts.1,
+                            ),
+                            next,
+                        ) {
+                            found.set(true)
+                        } else {
+                            ()
+                        }
+                    };
+                    found.get()
+                },
+                Option::None => false,
+            },
+            Option::None => false,
+        },
+    }
+}
+
+fn validate_struct_sizes(ctx: Checker, struct_count: int32) -> unit {
+    for index in range(0, struct_count) {
+        let info = ctx.structs.get(index);
+        let active = Vec::new().pushed(info.name);
+        let recursive = Ref::new(false);
+        for field in info.fields {
+            if by_value_type_has_cycle(ctx, field.1, active) {
+                recursive.set(true)
+            } else {
+                ()
+            }
+        };
+        if recursive.get() {
+            ctx.diagnostics.push(
+                "Struct "
+                    + info.name
+                    + " has infinite size due to recursive field; use Ref["
+                    + info.name
+                    + "] for indirection",
+            )
+        } else {
+            ()
+        }
+    }
+}
+
+fn validate_local_definitions(
+    ctx: Checker,
+    enum_count: int32,
+    struct_count: int32,
+    trait_count: int32,
+) -> unit {
+    for index in range(0, enum_count) {
+        for variant in ctx.enums.get(index).variants {
+            for field in variant.fields {
+                validate_signature_type(ctx, field)
+            }
+        }
+    };
+    for index in range(0, struct_count) {
+        for field in ctx.structs.get(index).fields {
+            validate_signature_type(ctx, field.1)
+        }
+    };
+    validate_struct_sizes(ctx, struct_count);
+    for index in range(0, trait_count) {
+        let info = ctx.traits.get(index);
+        for predicate in info.predicates {
+            match predicate {
+                TypePredicate::Trait(for_ty, reference) => {
+                    validate_signature_type(ctx, for_ty);
+                    validate_trait_reference(ctx, reference)
+                },
+                TypePredicate::Equality(left, right) => {
+                    validate_signature_type(ctx, left);
+                    validate_signature_type(ctx, right)
+                },
+            }
+        };
+        for reference in info.supertraits {
+            validate_trait_reference(ctx, reference)
+        };
+        for associated in info.associated_types {
+            for reference in associated.bounds {
+                validate_trait_reference(ctx, reference)
+            }
+        };
+        for method in info.methods {
+            for param in method.params {
+                validate_signature_type(ctx, param)
+            };
+            validate_signature_type(ctx, method.ret_ty)
+        }
     }
 }
 
@@ -152,19 +604,27 @@ fn builtin_enum_definitions() -> Vec[EnumDef] {
 fn check_file_with_package(
     value: hir::File,
     package_files: Vec[hir::File],
-    dependencies: Vec[hir::File],
+    dependencies: Vec[DependencyEnvironment],
     include_builtin_types: bool,
 ) -> CheckResult {
     let ctx = collect_environment(value);
     let local_enum_count = ctx.enums.len();
     let local_struct_count = ctx.structs.len();
+    let local_trait_count = ctx.traits.len();
     for package_file in package_files {
         append_package_environment(ctx, package_file)
     };
     for dependency in dependencies {
         append_dependency_environment(ctx, dependency)
     };
+    validate_local_definitions(
+        ctx,
+        local_enum_count,
+        local_struct_count,
+        local_trait_count,
+    );
     expand_in_scope_supertraits(ctx);
+    validate_impl_overlaps(ctx);
     let items: Vec[Item] = Vec::new();
     for item in value.items {
         match item {
@@ -223,7 +683,12 @@ fn check_file(
     dependencies: Vec[hir::File],
     include_builtin_types: bool,
 ) -> CheckResult {
-    check_file_with_package(value, Vec::new(), dependencies, include_builtin_types)
+    check_file_with_package(
+        value,
+        Vec::new(),
+        dependency_environments(dependencies),
+        include_builtin_types,
+    )
 }
 
 pub fn check(value: hir::LowerResult) -> CheckResult {
@@ -262,6 +727,16 @@ pub fn check_for_link_with_dependencies(
 pub fn check_package_files_for_link_with_dependencies(
     values: Vec[hir::File],
     dependencies: Vec[hir::File],
+) -> CheckResult {
+    check_package_files_for_link_with_environments(
+        values,
+        dependency_environments(dependencies),
+    )
+}
+
+pub fn check_package_files_for_link_with_environments(
+    values: Vec[hir::File],
+    dependencies: Vec[DependencyEnvironment],
 ) -> CheckResult {
     let items: Vec[Item] = Vec::new();
     let enums: Vec[EnumDef] = Vec::new();
