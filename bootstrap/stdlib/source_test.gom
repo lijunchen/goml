@@ -71,3 +71,35 @@ fn typechecks_text_source_with_bytes() -> unit {
         dependencies,
     )
 }
+
+#[test]
+fn typechecks_path_process_and_testing_sources() -> unit {
+    let host = lowered_standard_hir(
+        host_source(),
+        "host.gom",
+        "std::internal::host",
+    );
+    let bytes = lowered_standard_hir(
+        bytes_source(),
+        "bytes.gom",
+        "std::bytes",
+    );
+    assert_standard_typechecks(
+        path_source(),
+        "path.gom",
+        "std::path",
+        Vec::new().pushed(host),
+    );
+    assert_standard_typechecks(
+        process_source(),
+        "process.gom",
+        "std::process",
+        Vec::new().pushed(host).pushed(bytes),
+    );
+    assert_standard_typechecks(
+        testing_source(),
+        "testing.gom",
+        "std::testing",
+        Vec::new().pushed(host),
+    )
+}
