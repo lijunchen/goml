@@ -233,9 +233,6 @@ impl Typer {
     ) -> MethodGoalOutcome {
         goal.receiver_ty = self.norm(&goal.receiver_ty);
         goal.call_site_type = self.norm(&goal.call_site_type);
-        if contains_tvar(&goal.receiver_ty) {
-            return MethodGoalOutcome::Pending(goal);
-        }
 
         if let Some(scheme) =
             genv.lookup_visible_inherent_method_scheme(&goal.receiver_ty, &goal.method)
@@ -254,6 +251,10 @@ impl Typer {
                 generated,
                 changed_variables,
             };
+        }
+
+        if contains_tvar(&goal.receiver_ty) {
+            return MethodGoalOutcome::Pending(goal);
         }
 
         if let Some(field_ty) = resolve_field_ty_eager(genv, &goal.receiver_ty, &goal.method) {
