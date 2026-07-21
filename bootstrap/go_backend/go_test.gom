@@ -188,6 +188,19 @@ fn all_standard_runtime_hooks() -> Vec[string] {
     hooks.push("std.io.read_stdin");
     hooks.push("std.io.write_stdout");
     hooks.push("std.io.write_stderr");
+    hooks.push("std.path.join");
+    hooks.push("std.path.clean");
+    hooks.push("std.path.is_absolute");
+    hooks.push("std.path.parent");
+    hooks.push("std.path.file_name");
+    hooks.push("std.path.extension");
+    hooks.push("std.path.file_stem");
+    hooks.push("std.path.with_extension");
+    hooks.push("std.path.absolute");
+    hooks.push("std.process.exit");
+    hooks.push("std.process.output");
+    hooks.push("std.process.status");
+    hooks.push("std.testing.fail");
     hooks
 }
 
@@ -200,10 +213,13 @@ fn emits_every_standard_runtime_hook() -> unit {
     testing::assert(string_contains(
         output,
         "import (\n"
+            + "    _goml_bytes \"bytes\"\n"
             + "    _goml_fmt \"fmt\"\n"
             + "    _goml_io \"io\"\n"
             + "    _goml_os \"os\"\n"
+            + "    _goml_exec \"os/exec\"\n"
             + "    _goml_filepath \"path/filepath\"\n"
+            + "    _goml_strings \"strings\"\n"
             + ")",
     ));
     for key in hooks {
@@ -239,6 +255,26 @@ fn emits_every_standard_runtime_hook() -> unit {
     testing::assert(string_contains(
         output,
         "data, err = _goml_io.ReadAll(_goml_os.Stdin)",
+    ));
+    testing::assert(string_contains(
+        output,
+        "return _goml_filepath.Join(base, child)",
+    ));
+    testing::assert(string_contains(
+        output,
+        "_goml_strings.TrimSuffix(base, extension)",
+    ));
+    testing::assert(string_contains(
+        output,
+        "var cmd *_goml_exec.Cmd = _goml_exec.Command(program, arguments.items...)",
+    ));
+    testing::assert(string_contains(
+        output,
+        "for _, entry := range environment.items",
+    ));
+    testing::assert(string_contains(
+        output,
+        "_goml_fmt.Fprintln(_goml_os.Stderr, message)",
     ))
 }
 
