@@ -15,6 +15,10 @@ fn function_context(
     Checker {
         counter: base.counter,
         diagnostics: base.diagnostics,
+        source_path: base.source_path,
+        current_span: base.current_span,
+        coercion_constraints: Vec::new(),
+        defer_coercion_depth: Ref::new(0),
         package_aliases: base.package_aliases,
         in_scope_traits: base.in_scope_traits,
         enums: base.enums,
@@ -43,6 +47,10 @@ fn closure_context(base: Checker, ret_ty: Type) -> Checker {
     Checker {
         counter: base.counter,
         diagnostics: base.diagnostics,
+        source_path: base.source_path,
+        current_span: base.current_span,
+        coercion_constraints: base.coercion_constraints,
+        defer_coercion_depth: base.defer_coercion_depth,
         package_aliases: base.package_aliases,
         in_scope_traits: base.in_scope_traits,
         enums: base.enums,
@@ -108,6 +116,7 @@ fn check_function(
     let body = check_block(ctx, value.body, Option::Some(ret_ty));
     resolve_field_constraints(ctx);
     resolve_required_predicates(ctx);
+    resolve_coercion_constraints(ctx);
     Function {
         name: value.name,
         generics: type_params,
@@ -213,7 +222,7 @@ fn validate_method_signature(
         substitute_type(expected.ret_ty, substitutions),
     );
     if expected_params.len() != actual.params.len() {
-        ctx.diagnostics.push(
+        push_diagnostic(ctx,
             "Trait "
                 + trait_name
                 + "::"
@@ -235,7 +244,7 @@ fn validate_method_signature(
         let expected_ty = expected_params.get(index);
         let actual_ty = normalize_type(ctx, actual.params.get(index).1);
         if !type_matches(ctx, expected_ty, actual_ty) {
-            ctx.diagnostics.push(
+            push_diagnostic(ctx,
                 "Trait "
                     + trait_name
                     + "::"
@@ -253,7 +262,7 @@ fn validate_method_signature(
     };
     let actual_ret = normalize_type(ctx, actual.ret_ty);
     if !type_matches(ctx, expected_ret, actual_ret) {
-        ctx.diagnostics.push(
+        push_diagnostic(ctx,
             "Trait "
                 + trait_name
                 + "::"
@@ -278,14 +287,14 @@ fn validate_trait_associated_types(
     let seen: Vec[string] = Vec::new();
     for associated in associated_types {
         if !contains_associated_type(info.associated_types, associated.0) {
-            ctx.diagnostics.push(
+            push_diagnostic(ctx,
                 "Associated type "
                     + associated.0
                     + " is not declared in trait "
                     + reference.name,
             )
         } else if contains_name(seen, associated.0) {
-            ctx.diagnostics.push(
+            push_diagnostic(ctx,
                 "Associated type "
                     + associated.0
                     + " is bound multiple times in impl of trait "
@@ -297,7 +306,7 @@ fn validate_trait_associated_types(
     };
     for expected in info.associated_types {
         if !contains_name(seen, expected.name) {
-            ctx.diagnostics.push(
+            push_diagnostic(ctx,
                 "Trait "
                     + reference.name
                     + " implementation for "
@@ -368,7 +377,7 @@ fn validate_trait_impl(
             for method in methods {
                 match find_trait_method(info, method.name) {
                     Option::Some(expected) => if contains_name(seen, method.name) {
-                        ctx.diagnostics.push(
+                        push_diagnostic(ctx,
                             "Method "
                                 + method.name
                                 + " implemented multiple times in impl of trait "
@@ -384,7 +393,7 @@ fn validate_trait_impl(
                             substitutions,
                         )
                     },
-                    Option::None => ctx.diagnostics.push(
+                    Option::None => push_diagnostic(ctx,
                         "Method "
                             + method.name
                             + " is not declared in trait "
@@ -394,7 +403,7 @@ fn validate_trait_impl(
             };
             for expected in info.methods {
                 if !contains_name(seen, expected.name) {
-                    ctx.diagnostics.push(
+                    push_diagnostic(ctx,
                         "Trait "
                             + reference.name
                             + " implementation for "
@@ -416,7 +425,7 @@ fn validate_inherent_impl(ctx: Checker, for_type: Type, methods: Vec[Function]) 
     let seen: Vec[string] = Vec::new();
     for method in methods {
         if contains_name(seen, method.name) {
-            ctx.diagnostics.push(
+            push_diagnostic(ctx,
                 "Method "
                     + method.name
                     + " implemented multiple times in impl for "
@@ -507,7 +516,7 @@ fn validate_struct_sizes(ctx: Checker, struct_count: int32) -> unit {
             }
         };
         if recursive.get() {
-            ctx.diagnostics.push(
+            push_diagnostic(ctx,
                 "Struct "
                     + info.name
                     + " has infinite size due to recursive field; use Ref["
@@ -696,7 +705,7 @@ pub fn check(value: hir::LowerResult) -> CheckResult {
         Option::Some(file) => check_file(file, Vec::new(), true),
         Option::None => CheckResult {
             tast: Option::None,
-            diagnostics: value.diagnostics,
+            diagnostics: diagnostics_from_messages(value.diagnostics, value.source_path),
         },
     }
 }
@@ -706,7 +715,7 @@ pub fn check_for_link(value: hir::LowerResult) -> CheckResult {
         Option::Some(file) => check_file(file, Vec::new(), false),
         Option::None => CheckResult {
             tast: Option::None,
-            diagnostics: value.diagnostics,
+            diagnostics: diagnostics_from_messages(value.diagnostics, value.source_path),
         },
     }
 }
@@ -719,7 +728,7 @@ pub fn check_for_link_with_dependencies(
         Option::Some(file) => check_file(file, dependencies, false),
         Option::None => CheckResult {
             tast: Option::None,
-            diagnostics: value.diagnostics,
+            diagnostics: diagnostics_from_messages(value.diagnostics, value.source_path),
         },
     }
 }
@@ -741,7 +750,7 @@ pub fn check_package_files_for_link_with_environments(
     let items: Vec[Item] = Vec::new();
     let enums: Vec[EnumDef] = Vec::new();
     let structs: Vec[StructDef] = Vec::new();
-    let diagnostics: Vec[string] = Vec::new();
+    let diagnostics: Vec[Diagnostic] = Vec::new();
     let valid = Ref::new(true);
     for index in range(0, values.len()) {
         let package_files: Vec[hir::File] = Vec::new();

@@ -110,11 +110,13 @@ fn append_core_files(target: Vec[core::File], values: Vec[core::File]) -> unit {
 
 fn merge_hir_files(values: Vec[hir::File], package_name: string) -> hir::File {
     let path = Ref::new("<unknown>");
+    let source_path = Ref::new("<unknown>");
     let items: Vec[hir::Item] = Vec::new();
     let first = Ref::new(true);
     for value in values {
         if first.get() {
             path.set(value.path);
+            source_path.set(value.source_path);
             first.set(false)
         } else {
             ()
@@ -126,6 +128,7 @@ fn merge_hir_files(values: Vec[hir::File], package_name: string) -> hir::File {
     hir::File {
         package_name,
         path: path.get(),
+        source_path: source_path.get(),
         imports: Vec::new(),
         import_aliases: Vec::new(),
         use_traits: Vec::new(),
@@ -616,6 +619,7 @@ fn checked_hir_file(value: hir::LowerResult, package_name: string) -> hir::File 
             hir::File {
                 package_name,
                 path: "<unknown>",
+                source_path: "<unknown>",
                 imports: Vec::new(),
                 import_aliases: Vec::new(),
                 use_traits: Vec::new(),
@@ -626,16 +630,8 @@ fn checked_hir_file(value: hir::LowerResult, package_name: string) -> hir::File 
 }
 
 fn checked_tast(value: tast::CheckResult, package_name: string) -> tast::CheckResult {
-    if value.diagnostics.len() > 0 {
-        fail(
-            "error[compile]: failed to typecheck package "
-                + package_name
-                + ": "
-                + value.diagnostics.get(0),
-        )
-    } else {
-        ()
-    };
+    let _ = package_name;
+    fail_on_typer_diagnostics(value.diagnostics, "", "");
     value
 }
 

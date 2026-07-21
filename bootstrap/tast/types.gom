@@ -261,6 +261,187 @@ fn unify(left: Type, right: Type) -> bool {
     }
 }
 
+fn type_mismatch_text(left: Type, right: Type) -> string {
+    "Type mismatch: expected " + type_text(left) + ", found " + type_text(right)
+}
+
+fn first_type_list_error(left: Vec[Type], right: Vec[Type]) -> Option[string] {
+    for index in range(0, left.len()) {
+        match first_unification_error(left.get(index), right.get(index)) {
+            Option::Some(message) => return Option::Some(message),
+            Option::None => (),
+        }
+    };
+    Option::None
+}
+
+fn first_trait_ref_error(left: Option[TraitRef], right: Option[TraitRef]) -> Option[string] {
+    match (left, right) {
+        (Option::Some(first), Option::Some(second)) => if names_match(first.name, second.name)
+            && first.args.len() == second.args.len()
+        {
+            first_type_list_error(first.args, second.args)
+        } else {
+            Option::Some("trait reference mismatch")
+        },
+        (Option::None, Option::None) => Option::None,
+        _ => Option::Some("trait reference mismatch"),
+    }
+}
+
+fn first_unification_error(left: Type, right: Type) -> Option[string] {
+    let left = prune(left);
+    let right = prune(right);
+    match (left, right) {
+        (Type::Error, _) | (_, Type::Error) => Option::None,
+        (Type::Var(first), Type::Var(second)) => if ptr_eq(first, second) {
+            Option::None
+        } else {
+            match (first.get(), second.get()) {
+                (TypeVar::Link(inner), _) => {
+                    first_unification_error(inner, Type::Var(second))
+                },
+                (_, TypeVar::Link(inner)) => {
+                    first_unification_error(Type::Var(first), inner)
+                },
+                (TypeVar::Unbound(_, first_kind), TypeVar::Unbound(_, second_kind)) => {
+                    match merge_var_kind(first_kind, second_kind) {
+                        Option::Some(_) => Option::None,
+                        Option::None => Option::Some(
+                            "Type inference failed while unifying unknown types",
+                        ),
+                    }
+                },
+            }
+        },
+        (Type::Var(variable), value) | (value, Type::Var(variable)) => {
+            match variable.get() {
+                TypeVar::Link(inner) => first_unification_error(inner, value),
+                TypeVar::Unbound(_, kind) => if occurs(variable, value) {
+                    Option::Some("Type inference failed: recursive type")
+                } else if kind_accepts(kind, value) {
+                    Option::None
+                } else {
+                    Option::Some(
+                        "Type inference failed while unifying unknown type with "
+                            + type_text(value),
+                    )
+                },
+            }
+        },
+        (Type::Unit, Type::Unit)
+        | (Type::Bool, Type::Bool)
+        | (Type::Int8, Type::Int8)
+        | (Type::Int16, Type::Int16)
+        | (Type::Int32, Type::Int32)
+        | (Type::Int64, Type::Int64)
+        | (Type::Uint8, Type::Uint8)
+        | (Type::Uint16, Type::Uint16)
+        | (Type::Uint32, Type::Uint32)
+        | (Type::Uint64, Type::Uint64)
+        | (Type::Float32, Type::Float32)
+        | (Type::Float64, Type::Float64)
+        | (Type::String, Type::String)
+        | (Type::Char, Type::Char) => Option::None,
+        (Type::Tuple(first), Type::Tuple(second)) => if first.len() == second.len() {
+            first_type_list_error(first, second)
+        } else {
+            Option::Some(
+                "Tuple length mismatch: expected "
+                    + type_text(Type::Tuple(first))
+                    + ", found "
+                    + type_text(Type::Tuple(second)),
+            )
+        },
+        (Type::Con(first), Type::Con(second)) => if first == second {
+            Option::None
+        } else {
+            Option::Some(type_mismatch_text(Type::Con(first), Type::Con(second)))
+        },
+        (Type::Dyn(first), Type::Dyn(second)) => if first == second {
+            Option::None
+        } else {
+            Option::Some(type_mismatch_text(Type::Dyn(first), Type::Dyn(second)))
+        },
+        (
+            Type::Projection(first_base, first_name, first_trait),
+            Type::Projection(second_base, second_name, second_trait),
+        ) => if first_name != second_name {
+            Option::Some(type_mismatch_text(
+                Type::Projection(first_base, first_name, first_trait),
+                Type::Projection(second_base, second_name, second_trait),
+            ))
+        } else {
+            match first_trait_ref_error(first_trait, second_trait) {
+                Option::Some(message) => Option::Some(message),
+                Option::None => first_unification_error(first_base, second_base),
+            }
+        },
+        (Type::App(first_base, first_args), Type::App(second_base, second_args)) => {
+            if first_args.len() != second_args.len() {
+                Option::Some(
+                    "Type argument arity mismatch: expected "
+                        + type_text(Type::App(first_base, first_args))
+                        + ", found "
+                        + type_text(Type::App(second_base, second_args)),
+                )
+            } else {
+                match first_unification_error(first_base, second_base) {
+                    Option::Some(message) => Option::Some(message),
+                    Option::None => first_type_list_error(first_args, second_args),
+                }
+            }
+        },
+        (Type::Array(first_len, first_elem), Type::Array(second_len, second_elem)) => {
+            if first_len >= 0 && second_len >= 0 && first_len != second_len {
+                Option::Some(
+                    "Array length mismatch: expected "
+                        + type_text(Type::Array(first_len, first_elem))
+                        + ", found "
+                        + type_text(Type::Array(second_len, second_elem)),
+                )
+            } else {
+                first_unification_error(first_elem, second_elem)
+            }
+        },
+        (Type::Slice(first), Type::Slice(second))
+        | (Type::VecType(first), Type::VecType(second))
+        | (Type::RefType(first), Type::RefType(second)) => {
+            first_unification_error(first, second)
+        },
+        (Type::HashMap(first_key, first_value), Type::HashMap(second_key, second_value)) => {
+            match first_unification_error(first_key, second_key) {
+                Option::Some(message) => Option::Some(message),
+                Option::None => first_unification_error(first_value, second_value),
+            }
+        },
+        (Type::Param(first), Type::Param(second)) => if first == second {
+            Option::None
+        } else {
+            Option::Some(type_mismatch_text(Type::Param(first), Type::Param(second)))
+        },
+        (Type::Param(name), value) | (value, Type::Param(name)) => Option::Some(
+            "Type mismatch: expected " + name + ", found " + type_text(value),
+        ),
+        (Type::Func(first_params, first_ret), Type::Func(second_params, second_ret)) => {
+            if first_params.len() != second_params.len() {
+                Option::Some(
+                    "Function arity mismatch: expected "
+                        + type_text(Type::Func(first_params, first_ret))
+                        + ", found "
+                        + type_text(Type::Func(second_params, second_ret)),
+                )
+            } else {
+                match first_type_list_error(first_params, second_params) {
+                    Option::Some(message) => Option::Some(message),
+                    Option::None => first_unification_error(first_ret, second_ret),
+                }
+            }
+        },
+        _ => Option::Some(type_mismatch_text(left, right)),
+    }
+}
+
 fn type_lists_equal(left: Vec[Type], right: Vec[Type]) -> bool {
     if left.len() != right.len() {
         false

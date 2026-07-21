@@ -67,7 +67,7 @@ fn checked_char_literal(ctx: Checker, value: string) -> char {
     match parse_char_literal(value) {
         Option::Some(character) => character,
         Option::None => {
-            ctx.diagnostics.push("invalid char literal");
+            push_diagnostic(ctx, "invalid char literal");
             match char_from_uint32(0u32) {
                 Option::Some(character) => character,
                 Option::None => ' ',
@@ -377,7 +377,7 @@ fn validate_integer_literal(ctx: Checker, value: string, ty: Type) -> unit {
     if integer_literal_fits(value, ty) {
         ()
     } else {
-        ctx.diagnostics.push("integer literal out of range")
+        push_diagnostic(ctx, "integer literal out of range")
     }
 }
 
@@ -408,15 +408,98 @@ fn normalize_float_expr(value: Expr, expected: Type) -> Expr {
     }
 }
 
+fn optional_spans_equal(
+    left: Option[ast::Span],
+    right: Option[ast::Span],
+) -> bool {
+    match (left, right) {
+        (Option::Some(first), Option::Some(second)) => {
+            first.start == second.start && first.end == second.end
+        },
+        (Option::None, Option::None) => true,
+        _ => false,
+    }
+}
+
+fn defer_coercion(ctx: Checker, actual: Type, expected: Type) -> unit {
+    let span = ctx.current_span.get();
+    let duplicate = Ref::new(false);
+    for constraint in ctx.coercion_constraints {
+        if optional_spans_equal(constraint.span, span)
+            && types_equal(constraint.actual, actual)
+            && types_equal(constraint.expected, expected)
+        {
+            duplicate.set(true)
+        } else {
+            ()
+        }
+    };
+    if duplicate.get() {
+        ()
+    } else {
+        ctx.coercion_constraints.push(CoercionConstraint {
+            actual,
+            expected,
+            span,
+        })
+    }
+}
+
+fn resolve_coercion_constraints(ctx: Checker) -> unit {
+    for constraint in ctx.coercion_constraints {
+        expect_type_at(
+            ctx,
+            constraint.actual,
+            constraint.expected,
+            constraint.span,
+        )
+    }
+}
+
+fn coerce_direct(ctx: Checker, value: Expr, expected: Type) -> Expr {
+    match value {
+        Expr::Prim(Primitive::Int(raw), _) => {
+            validate_integer_literal(ctx, raw, expected)
+        },
+        Expr::Unary(
+            ast::UnaryOp::Neg,
+            Expr::Prim(Primitive::Int(_), _),
+            _,
+        ) => if is_unsigned_type(expected)
+            && types_equal(expr_type(value), expected)
+        {
+            push_diagnostic(ctx, "negative value cannot use unsigned type")
+        } else {
+            ()
+        },
+        _ => (),
+    };
+    expect_type(ctx, expr_type(value), expected);
+    normalize_float_expr(value, expected)
+}
+
 fn coerce_expr(ctx: Checker, value: Expr, expected: Option[Type]) -> Expr {
     match value {
         Expr::Break(_) | Expr::Continue(_) | Expr::Return(_, _) => value,
         _ => match expected {
             Option::Some(expected_ty) => match prune(expected_ty) {
+                Type::Var(variable) => match variable.get() {
+                    TypeVar::Unbound(_, _) => {
+                        if ctx.defer_coercion_depth.get() > 0
+                            && !types_equal(expr_type(value), expected_ty)
+                        {
+                            defer_coercion(ctx, expr_type(value), expected_ty);
+                            value
+                        } else {
+                            coerce_direct(ctx, value, expected_ty)
+                        }
+                    },
+                    TypeVar::Link(_) => coerce_direct(ctx, value, expected_ty),
+                },
                 Type::Dyn(trait_name) => match prune(expr_type(value)) {
                     Type::Dyn(actual) => {
                         if actual != trait_name {
-                            ctx.diagnostics.push("dyn trait mismatch")
+                            push_diagnostic(ctx, "dyn trait mismatch")
                         } else {
                             ()
                         };
@@ -434,7 +517,7 @@ fn coerce_expr(ctx: Checker, value: Expr, expected: Option[Type]) -> Expr {
                         ) {
                             ()
                         } else {
-                            ctx.diagnostics.push(
+                            push_diagnostic(ctx,
                                 "type does not implement trait " + trait_name,
                             )
                         };
@@ -446,27 +529,7 @@ fn coerce_expr(ctx: Checker, value: Expr, expected: Option[Type]) -> Expr {
                         )
                     },
                 },
-                _ => {
-                    match value {
-                        Expr::Prim(Primitive::Int(raw), _) => {
-                            validate_integer_literal(ctx, raw, expected_ty)
-                        },
-                        Expr::Unary(
-                            ast::UnaryOp::Neg,
-                            Expr::Prim(Primitive::Int(_), _),
-                            _,
-                        ) => if is_unsigned_type(expected_ty)
-                            && types_equal(expr_type(value), expected_ty)
-                        {
-                            ctx.diagnostics.push("negative value cannot use unsigned type")
-                        } else {
-                            ()
-                        },
-                        _ => (),
-                    };
-                    expect_type(ctx, expr_type(value), expected_ty);
-                    normalize_float_expr(value, expected_ty)
-                },
+                _ => coerce_direct(ctx, value, expected_ty),
             },
             Option::None => value,
         },
@@ -626,78 +689,78 @@ fn propagated_expected(expected: Option[Type]) -> Option[Type] {
 }
 
 fn primitive_expr(ctx: Checker, value: hir::Expr) -> Option[Expr] {
-    match value {
-        hir::Expr::Unit => Option::Some(Expr::Prim(Primitive::Unit, Type::Unit)),
-        hir::Expr::Bool(value) => Option::Some(Expr::Prim(Primitive::Bool(value), Type::Bool)),
-        hir::Expr::Int(value) => Option::Some(Expr::Prim(
+    match value.kind {
+        hir::ExprKind::Unit => Option::Some(Expr::Prim(Primitive::Unit, Type::Unit)),
+        hir::ExprKind::Bool(value) => Option::Some(Expr::Prim(Primitive::Bool(value), Type::Bool)),
+        hir::ExprKind::Int(value) => Option::Some(Expr::Prim(
             Primitive::Int(value),
             fresh_type(ctx.counter, VarKind::Integer),
         )),
-        hir::Expr::Int8(value) => validate_suffixed_integer_expr(
+        hir::ExprKind::Int8(value) => validate_suffixed_integer_expr(
             ctx,
             value,
             Primitive::Int8(value),
             Type::Int8,
         ),
-        hir::Expr::Int16(value) => validate_suffixed_integer_expr(
+        hir::ExprKind::Int16(value) => validate_suffixed_integer_expr(
             ctx,
             value,
             Primitive::Int16(value),
             Type::Int16,
         ),
-        hir::Expr::Int32(value) => validate_suffixed_integer_expr(
+        hir::ExprKind::Int32(value) => validate_suffixed_integer_expr(
             ctx,
             value,
             Primitive::Int32(value),
             Type::Int32,
         ),
-        hir::Expr::Int64(value) => validate_suffixed_integer_expr(
+        hir::ExprKind::Int64(value) => validate_suffixed_integer_expr(
             ctx,
             value,
             Primitive::Int64(value),
             Type::Int64,
         ),
-        hir::Expr::UInt8(value) => validate_suffixed_integer_expr(
+        hir::ExprKind::UInt8(value) => validate_suffixed_integer_expr(
             ctx,
             value,
             Primitive::Uint8(value),
             Type::Uint8,
         ),
-        hir::Expr::UInt16(value) => validate_suffixed_integer_expr(
+        hir::ExprKind::UInt16(value) => validate_suffixed_integer_expr(
             ctx,
             value,
             Primitive::Uint16(value),
             Type::Uint16,
         ),
-        hir::Expr::UInt32(value) => validate_suffixed_integer_expr(
+        hir::ExprKind::UInt32(value) => validate_suffixed_integer_expr(
             ctx,
             value,
             Primitive::Uint32(value),
             Type::Uint32,
         ),
-        hir::Expr::UInt64(value) => validate_suffixed_integer_expr(
+        hir::ExprKind::UInt64(value) => validate_suffixed_integer_expr(
             ctx,
             value,
             Primitive::Uint64(value),
             Type::Uint64,
         ),
-        hir::Expr::Float(value) => Option::Some(Expr::Prim(
+        hir::ExprKind::Float(value) => Option::Some(Expr::Prim(
             Primitive::Float(value.to_string()),
             fresh_type(ctx.counter, VarKind::Float),
         )),
-        hir::Expr::Float32(value) => Option::Some(Expr::Prim(
+        hir::ExprKind::Float32(value) => Option::Some(Expr::Prim(
             Primitive::Float32(normalized_float32_literal(value)),
             Type::Float32,
         )),
-        hir::Expr::Float64(value) => Option::Some(Expr::Prim(
+        hir::ExprKind::Float64(value) => Option::Some(Expr::Prim(
             Primitive::Float64(normalized_float64_literal(value)),
             Type::Float64,
         )),
-        hir::Expr::String(value) => Option::Some(Expr::Prim(
+        hir::ExprKind::String(value) => Option::Some(Expr::Prim(
             Primitive::String(value),
             Type::String,
         )),
-        hir::Expr::Char(value) => Option::Some(Expr::Prim(
+        hir::ExprKind::Char(value) => Option::Some(Expr::Prim(
             Primitive::Char(checked_char_literal(ctx, value)),
             Type::Char,
         )),
@@ -724,7 +787,7 @@ fn check_name_ref(ctx: Checker, value: hir::NameRef) -> Expr {
         hir::NameRef::Local(local) => match find_local(ctx, local) {
             Option::Some(ty) => Expr::Var(local_name(local), ty),
             Option::None => {
-                ctx.diagnostics.push("local not found");
+                push_diagnostic(ctx, "local not found");
                 Expr::Var(local_name(local), Type::Error)
             },
         },
@@ -734,7 +797,7 @@ fn check_name_ref(ctx: Checker, value: hir::NameRef) -> Expr {
                 Expr::Callable(callable, ty)
             },
             Option::None => {
-                ctx.diagnostics.push("definition not found");
+                push_diagnostic(ctx, "definition not found");
                 Expr::Callable(Callable::Function("<error>"), Type::Error)
             },
         },
@@ -749,7 +812,7 @@ fn check_name_ref(ctx: Checker, value: hir::NameRef) -> Expr {
                     Expr::Callable(callable, ty)
                 },
                 Option::None => {
-                    ctx.diagnostics.push("name not found: " + name);
+                    push_diagnostic(ctx, "name not found: " + name);
                     Expr::Callable(Callable::Function(name), Type::Error)
                 },
             }
@@ -767,13 +830,13 @@ fn check_static_member(
         Option::Some(info) => if info.fields.len() == 0 {
             check_resolved_constructor_expr(ctx, info, Vec::new(), Option::None)
         } else {
-            ctx.diagnostics.push("constructor arity mismatch");
+            push_diagnostic(ctx, "constructor arity mismatch");
             Expr::Constr(info.constructor, Vec::new(), Type::Error)
         },
         Option::None => match resolve_static_member(ctx, owner, member, type_args) {
             Option::Some(value) => match value.callable {
                 Callable::InherentMethod(_, _) => {
-                    ctx.diagnostics.push(
+                    push_diagnostic(ctx,
                         "Inherent method values are not supported; call the method directly",
                     );
                     Expr::Callable(value.callable, value.ty)
@@ -781,7 +844,7 @@ fn check_static_member(
                 _ => Expr::Callable(value.callable, value.ty),
             },
             Option::None => {
-                ctx.diagnostics.push("static member not found: " + owner + "::" + member);
+                push_diagnostic(ctx, "static member not found: " + owner + "::" + member);
                 Expr::Callable(
                     Callable::Function(owner + "::" + member),
                     Type::Error,
@@ -792,7 +855,7 @@ fn check_static_member(
 }
 
 fn missing_constructor_expr(ctx: Checker) -> Expr {
-    ctx.diagnostics.push("constructor not found");
+    push_diagnostic(ctx, "constructor not found");
     Expr::Constr(
         Constructor {
             name: "<error>",
@@ -820,13 +883,13 @@ fn check_resolved_constructor_expr(
         let expected = if index < info.fields.len() {
             Option::Some(info.fields.get(index))
         } else {
-            ctx.diagnostics.push("too many constructor arguments");
+            push_diagnostic(ctx, "too many constructor arguments");
             Option::None
         };
         values.push(check_expr(ctx, args.get(index), expected))
     };
     if values.len() != info.fields.len() {
-        ctx.diagnostics.push("constructor arity mismatch")
+        push_diagnostic(ctx, "constructor arity mismatch")
     } else {
         ()
     };
@@ -881,7 +944,7 @@ fn check_struct_expr(
                 if known.get() {
                     ()
                 } else {
-                    ctx.diagnostics.push("unknown struct field: " + provided.0)
+                    push_diagnostic(ctx, "unknown struct field: " + provided.0)
                 }
             };
             let values: Vec[Expr] = Vec::new();
@@ -893,7 +956,7 @@ fn check_struct_expr(
                         Option::Some(field.1),
                     )),
                     Option::None => {
-                        ctx.diagnostics.push("missing struct field: " + field.0);
+                        push_diagnostic(ctx, "missing struct field: " + field.0);
                         values.push(Expr::Prim(Primitive::Unit, Type::Error))
                     },
                 }
@@ -905,7 +968,7 @@ fn check_struct_expr(
             )
         },
         Option::None => {
-            ctx.diagnostics.push("struct not found: " + name);
+            push_diagnostic(ctx, "struct not found: " + name);
             Expr::Constr(
                 Constructor {
                     name,
@@ -935,13 +998,13 @@ fn check_positional_struct_expr(
         let expected = if index < info.fields.len() {
             Option::Some(info.fields.get(index).1)
         } else {
-            ctx.diagnostics.push("too many constructor arguments");
+            push_diagnostic(ctx, "too many constructor arguments");
             Option::None
         };
         values.push(check_expr(ctx, args.get(index), expected))
     };
     if values.len() != info.fields.len() {
-        ctx.diagnostics.push("constructor arity mismatch")
+        push_diagnostic(ctx, "constructor arity mismatch")
     } else {
         ()
     };
@@ -1060,7 +1123,7 @@ fn callable_parts(ctx: Checker, value: Type, arity: int32) -> (Vec[Type], Type) 
             (params, ret_ty)
         },
         _ => {
-            ctx.diagnostics.push("value is not callable");
+            push_diagnostic(ctx, "value is not callable");
             (Vec::new(), Type::Error)
         },
     }
@@ -1110,6 +1173,7 @@ fn apply_typed_call(
     ctx: Checker,
     function: Expr,
     raw_values: Vec[Expr],
+    prefix_len: int32,
     is_static: bool,
 ) -> Expr {
     let (params, ret_ty) = callable_parts(ctx, expr_type(function), raw_values.len());
@@ -1121,10 +1185,14 @@ fn apply_typed_call(
         } else {
             Option::None
         };
-        values.push(coerce_expr(ctx, value, expected))
+        values.push(if index < prefix_len {
+            coerce_expr(ctx, value, expected)
+        } else {
+            value
+        })
     };
     if values.len() != params.len() {
-        ctx.diagnostics.push("call arity mismatch")
+        push_diagnostic(ctx, "call arity mismatch")
     } else {
         ()
     };
@@ -1136,7 +1204,7 @@ fn apply_typed_call(
                 Type::Unit
             };
             if !trait_bound_satisfied_at(ctx, receiver_ty, reference, 0) {
-                ctx.diagnostics.push("trait instance not found")
+                push_diagnostic(ctx, "trait instance not found")
             } else {
                 ()
             }
@@ -1184,6 +1252,7 @@ fn apply_call(
     args: Vec[hir::Expr],
 ) -> Expr {
     let is_static = prefix.len() == 0;
+    let prefix_len = prefix.len();
     let arity = prefix.len() + args.len();
     let (params, _) = callable_parts(ctx, expr_type(function), arity);
     let values: Vec[Expr] = Vec::new();
@@ -1199,7 +1268,7 @@ fn apply_call(
         };
         values.push(check_expr(ctx, value, expected))
     };
-    apply_typed_call(ctx, function, values, is_static)
+    apply_typed_call(ctx, function, values, prefix_len, is_static)
 }
 
 fn check_method_call(
@@ -1225,7 +1294,7 @@ fn check_method_call(
             let field_ty = match resolve_field_type(ctx, expr_type(receiver), name) {
                 Option::Some(ty) => ty,
                 Option::None => {
-                    ctx.diagnostics.push("method not found: " + name);
+                    push_diagnostic(ctx, "method not found: " + name);
                     Type::Error
                 },
             };
@@ -1245,17 +1314,24 @@ fn one_expr(value: Expr) -> Vec[Expr] {
     result
 }
 
+fn is_inherent_callable(value: Expr) -> bool {
+    match value {
+        Expr::Callable(Callable::InherentMethod(_, _), _) => true,
+        _ => false,
+    }
+}
+
 fn check_call_expr(
     ctx: Checker,
     function: hir::Expr,
     args: Vec[hir::Expr],
     expected: Option[Type],
 ) -> Expr {
-    let result = match function {
-        hir::Expr::Field(receiver, name) => {
+    let result = match function.kind {
+        hir::ExprKind::Field(receiver, name) => {
             check_method_call(ctx, receiver, name, args, expected)
         },
-        hir::Expr::NameRef(reference) => match function_scheme_for_name_ref(ctx, reference) {
+        hir::ExprKind::NameRef(reference) => match function_scheme_for_name_ref(ctx, reference) {
             Option::Some(scheme) => {
                 let candidate = instantiate_scheme_candidate(ctx, scheme, Vec::new());
                 constrain_callable_return(ctx, candidate.ty, expected);
@@ -1279,7 +1355,7 @@ fn check_call_expr(
                 args,
             ),
         },
-        hir::Expr::StaticMember(owner, member, type_args) => {
+        hir::ExprKind::StaticMember(owner, member, type_args) => {
             match resolve_named_constructor(ctx, owner, member) {
                 Option::Some(info) => {
                     check_resolved_constructor_expr(ctx, info, args, expected)
@@ -1322,12 +1398,30 @@ fn check_call_expr(
                                 type_args,
                             ),
                         };
+                        let defer_coercions = is_inherent_callable(function) && match expected {
+                            Option::Some(ty) => !contains_unbound_type_variable(ty),
+                            Option::None => false,
+                        };
+                        if defer_coercions {
+                            ctx.defer_coercion_depth.set(
+                                ctx.defer_coercion_depth.get() + 1,
+                            )
+                        } else {
+                            ()
+                        };
                         let result = apply_call(
                             ctx,
                             function,
                             Vec::new(),
                             args,
                         );
+                        if defer_coercions {
+                            ctx.defer_coercion_depth.set(
+                                ctx.defer_coercion_depth.get() - 1,
+                            )
+                        } else {
+                            ()
+                        };
                         if names_match(owner, "HashMap") && member == "new" {
                             require_hashmap_type(ctx, expr_type(result))
                         } else {
@@ -1516,15 +1610,15 @@ fn check_binary_expr(
         if (is_bitwise_op(op) || is_remainder_op(op))
             && !is_integer_type(expr_type(left))
         {
-            ctx.diagnostics.push("integer operand required")
+            push_diagnostic(ctx, "integer operand required")
         } else if is_shift_op(op) && !is_integer_type(expr_type(right)) {
-            ctx.diagnostics.push("integer operand required")
+            push_diagnostic(ctx, "integer operand required")
         } else if is_equality_op(op)
             && !equality_comparable_type(ctx, expr_type(left))
         {
-            ctx.diagnostics.push("equality operand is not comparable")
+            push_diagnostic(ctx, "equality operand is not comparable")
         } else if is_order_op(op) && !order_comparable_type(expr_type(left)) {
-            ctx.diagnostics.push("ordered operand is not comparable")
+            push_diagnostic(ctx, "ordered operand is not comparable")
         } else if is_arithmetic_op(op)
             && !is_numeric_type(expr_type(left))
             && !(match prune(expr_type(left)) {
@@ -1535,7 +1629,7 @@ fn check_binary_expr(
                 Type::Con(_) | Type::App(_, _) | Type::Param(_) => true,
                 _ => false,
             }) {
-            ctx.diagnostics.push("numeric operand required")
+            push_diagnostic(ctx, "numeric operand required")
         } else {
             ()
         };
@@ -1574,19 +1668,19 @@ fn check_unary_expr(
                 Option::None => Option::None,
             };
             let value = match contextual {
-                Option::Some(ty) => match source {
-                    hir::Expr::Int(raw) => if is_integer_type(ty) {
+                Option::Some(ty) => match source.kind {
+                    hir::ExprKind::Int(raw) => if is_integer_type(ty) {
                         validate_integer_literal(ctx, "-" + raw, ty);
                         Expr::Prim(Primitive::Int(raw), ty)
                     } else {
-                        check_expr(ctx, hir::Expr::Int(raw), Option::Some(ty))
+                        check_expr(ctx, source, Option::Some(ty))
                     },
-                    other => check_expr(ctx, other, Option::Some(ty)),
+                    _ => check_expr(ctx, source, Option::Some(ty)),
                 },
                 Option::None => check_expr(ctx, source, Option::None),
             };
             if !is_numeric_type(expr_type(value)) {
-                ctx.diagnostics.push("numeric operand required")
+                push_diagnostic(ctx, "numeric operand required")
             } else {
                 ()
             };
@@ -1603,7 +1697,7 @@ fn check_unary_expr(
             };
             let value = check_expr(ctx, source, contextual);
             if !is_integer_type(expr_type(value)) {
-                ctx.diagnostics.push("integer operand required")
+                push_diagnostic(ctx, "integer operand required")
             } else {
                 ()
             };
@@ -1640,7 +1734,7 @@ fn check_match_expr(
     if match_is_exhaustive(ctx, expr_type(scrutinee), typed_arms) {
         ()
     } else {
-        ctx.diagnostics.push("non-exhaustive match")
+        push_diagnostic(ctx, "non-exhaustive match")
     };
     Expr::Match(scrutinee, typed_arms, result_ty)
 }
@@ -1899,7 +1993,7 @@ fn check_try_expr(ctx: Checker, index: int32, source: hir::Expr) -> Expr {
             if option_try_shape_is_valid(ctx, parts.0, parts.1) {
                 check_option_try(ctx, index, inner, parts.0, parts.1)
             } else {
-                ctx.diagnostics.push(
+                push_diagnostic(ctx,
                     "`?` on Option[T] requires the enum to define `Some(T)` and `None` variants",
                 );
                 Expr::Var("<try>", Type::Error)
@@ -1908,17 +2002,17 @@ fn check_try_expr(ctx: Checker, index: int32, source: hir::Expr) -> Expr {
             if result_try_shape_is_valid(ctx, parts.0, parts.1) {
                 check_result_try(ctx, index, inner, parts.0, parts.1)
             } else {
-                ctx.diagnostics.push(
+                push_diagnostic(ctx,
                     "`?` on Result[T, E] requires the enum to define `Ok(T)` and `Err(E)` variants",
                 );
                 Expr::Var("<try>", Type::Error)
             }
         } else {
-            ctx.diagnostics.push("try requires Option or Result");
+            push_diagnostic(ctx, "try requires Option or Result");
             Expr::Var("<try>", Type::Error)
         },
         Option::None => {
-            ctx.diagnostics.push("try requires Option or Result");
+            push_diagnostic(ctx, "try requires Option or Result");
             Expr::Var("<try>", Type::Error)
         },
     }
@@ -1954,7 +2048,7 @@ fn resolve_field_constraints(ctx: Checker) -> unit {
         match resolve_field_type(ctx, constraint.receiver, constraint.name) {
             Option::Some(ty) => expect_type(ctx, ty, constraint.field_ty),
             Option::None => {
-                ctx.diagnostics.push("field not found: " + constraint.name)
+                push_diagnostic(ctx, "field not found: " + constraint.name)
             },
         }
     }
@@ -1970,7 +2064,7 @@ fn check_field_expr(ctx: Checker, source: hir::Expr, name: string) -> Expr {
             Option::None => match defer_field_type(ctx, expr_type(value), name) {
                 Option::Some(ty) => Expr::Field(value, name, ty),
                 Option::None => {
-                    ctx.diagnostics.push("field not found: " + name);
+                    push_diagnostic(ctx, "field not found: " + name);
                     Expr::Field(value, name, Type::Error)
                 },
             },
@@ -1987,11 +2081,11 @@ fn check_projection_expr(ctx: Checker, source: hir::Expr, index: int32) -> Expr 
             Type::Tuple(types) => if index >= 0 && index < types.len() {
                 Expr::Proj(value, index, types.get(index))
             } else {
-                ctx.diagnostics.push("tuple index out of bounds");
+                push_diagnostic(ctx, "tuple index out of bounds");
                 Expr::Proj(value, index, Type::Error)
             },
             _ => {
-                ctx.diagnostics.push("tuple required");
+                push_diagnostic(ctx, "tuple required");
                 Expr::Proj(value, index, Type::Error)
             },
         }
@@ -2017,7 +2111,7 @@ fn check_index_expr(ctx: Checker, base_source: hir::Expr, index_source: hir::Exp
             ),
             Type::String => (Type::Int32, Type::Char),
             _ => {
-                ctx.diagnostics.push("indexable value required");
+                push_diagnostic(ctx, "indexable value required");
                 (Type::Error, Type::Error)
             },
         };
@@ -2027,8 +2121,8 @@ fn check_index_expr(ctx: Checker, base_source: hir::Expr, index_source: hir::Exp
 }
 
 fn check_assign_target(ctx: Checker, target: hir::Expr) -> (Expr, Type) {
-    match target {
-        hir::Expr::Index(base_source, index_source) => {
+    match target.kind {
+        hir::ExprKind::Index(base_source, index_source) => {
             let local_root = array_assignment_local_root(base_source);
             let base = check_expr(ctx, base_source, Option::None);
             let parts = match prune(expr_type(base)) {
@@ -2038,7 +2132,7 @@ fn check_assign_target(ctx: Checker, target: hir::Expr) -> (Expr, Type) {
                 },
                 Type::VecType(elem) => (Type::Int32, Type::Unit, elem),
                 Type::Slice(elem) => {
-                    ctx.diagnostics.push(
+                    push_diagnostic(ctx,
                         "cannot assign through Slice indexing; Slice is read-only",
                     );
                     (Type::Int32, Type::Unit, elem)
@@ -2049,7 +2143,7 @@ fn check_assign_target(ctx: Checker, target: hir::Expr) -> (Expr, Type) {
                     value,
                 ),
                 _ => {
-                    ctx.diagnostics.push("indexable assignment target required");
+                    push_diagnostic(ctx, "indexable assignment target required");
                     (Type::Error, Type::Error, Type::Error)
                 },
             };
@@ -2064,11 +2158,11 @@ fn check_assign_target(ctx: Checker, target: hir::Expr) -> (Expr, Type) {
 }
 
 fn array_assignment_local_root(value: hir::Expr) -> Option[hir::LocalId] {
-    match value {
-        hir::Expr::NameRef(hir::NameRef::Local(local)) => Option::Some(local),
-        hir::Expr::Proj(base, _)
-        | hir::Expr::Field(base, _)
-        | hir::Expr::Index(base, _) => array_assignment_local_root(base),
+    match value.kind {
+        hir::ExprKind::NameRef(hir::NameRef::Local(local)) => Option::Some(local),
+        hir::ExprKind::Proj(base, _)
+        | hir::ExprKind::Field(base, _)
+        | hir::ExprKind::Index(base, _) => array_assignment_local_root(base),
         _ => Option::None,
     }
 }
@@ -2100,7 +2194,7 @@ fn validate_array_assignment_root(
         Option::Some(local) => if local_is_mutable(ctx, local) {
             ()
         } else {
-            ctx.diagnostics.push(
+            push_diagnostic(ctx,
                 "cannot assign through array indexing on immutable binding `"
                     + local.hint
                     + "`",
@@ -2109,7 +2203,7 @@ fn validate_array_assignment_root(
         Option::None => if typed_array_assignment_root_is_ref(typed_base) {
             ()
         } else {
-            ctx.diagnostics.push(
+            push_diagnostic(ctx,
                 "array indexed assignment requires a writable root such as a mutable local or `ref.get()`",
             )
         },
@@ -2176,7 +2270,7 @@ fn check_for_expr(
         args: Vec::new(),
     };
     if !trait_bound_satisfied_at(ctx, source_ty, into_iterator_ref, 0) {
-        ctx.diagnostics.push(
+        push_diagnostic(ctx,
             "for loop expects a type implementing IntoIterator, got "
                 + type_text(source_ty),
         )
@@ -2188,7 +2282,7 @@ fn check_for_expr(
     if pattern_is_irrefutable(ctx, typed_pat) {
         ()
     } else {
-        ctx.diagnostics.push(
+        push_diagnostic(ctx,
             "Refutable pattern is not allowed in for loop; use match instead",
         )
     };
@@ -2238,7 +2332,7 @@ fn check_loop_control(ctx: Checker, is_break: bool) -> unit {
     if ctx.condition_depth.get() > 0
         && ctx.loop_depth.get() <= ctx.condition_loop_depth.get()
     {
-        ctx.diagnostics.push(
+        push_diagnostic(ctx,
             if is_break {
                 "`break` is not allowed in a while condition"
             } else {
@@ -2246,7 +2340,7 @@ fn check_loop_control(ctx: Checker, is_break: bool) -> unit {
             },
         )
     } else if ctx.loop_depth.get() == 0 {
-        ctx.diagnostics.push(
+        push_diagnostic(ctx,
             if is_break {
                 "`break` outside of a loop"
             } else {
@@ -2261,39 +2355,39 @@ fn check_loop_control(ctx: Checker, is_break: bool) -> unit {
 fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
     match primitive_expr(ctx, value) {
         Option::Some(result) => result,
-        Option::None => match value {
-            hir::Expr::NameRef(reference) => check_name_ref(ctx, reference),
-            hir::Expr::StaticMember(owner, member, args) => {
+        Option::None => match value.kind {
+            hir::ExprKind::NameRef(reference) => check_name_ref(ctx, reference),
+            hir::ExprKind::StaticMember(owner, member, args) => {
                 check_static_member(ctx, owner, member, args)
             },
-            hir::Expr::Constr(constructor, args) => {
+            hir::ExprKind::Constr(constructor, args) => {
                 check_constructor_expr(ctx, constructor, args, Option::None)
             },
-            hir::Expr::StructLiteral(name, fields) => {
+            hir::ExprKind::StructLiteral(name, fields) => {
                 check_struct_expr(ctx, name, fields, Option::None)
             },
-            hir::Expr::Tuple(values) => check_tuple_expr(ctx, values, Option::None),
-            hir::Expr::Array(values) => check_array_expr(ctx, values, Option::None),
-            hir::Expr::Closure(params, body) => {
+            hir::ExprKind::Tuple(values) => check_tuple_expr(ctx, values, Option::None),
+            hir::ExprKind::Array(values) => check_array_expr(ctx, values, Option::None),
+            hir::ExprKind::Closure(params, body) => {
                 check_closure_expr(ctx, params, body, Option::None)
             },
-            hir::Expr::Match(source, arms) => {
+            hir::ExprKind::Match(source, arms) => {
                 check_match_expr(ctx, source, arms, Option::None)
             },
-            hir::Expr::If(cond, then_branch, else_branch) => {
+            hir::ExprKind::If(cond, then_branch, else_branch) => {
                 check_if_expr(ctx, cond, then_branch, else_branch, Option::None)
             },
-            hir::Expr::While(cond, body) => check_while_expr(ctx, cond, body),
-            hir::Expr::For(pat, iterator, body) => check_for_expr(ctx, pat, iterator, body),
-            hir::Expr::Break => {
+            hir::ExprKind::While(cond, body) => check_while_expr(ctx, cond, body),
+            hir::ExprKind::For(pat, iterator, body) => check_for_expr(ctx, pat, iterator, body),
+            hir::ExprKind::Break => {
                 check_loop_control(ctx, true);
                 Expr::Break(Type::Unit)
             },
-            hir::Expr::Continue => {
+            hir::ExprKind::Continue => {
                 check_loop_control(ctx, false);
                 Expr::Continue(Type::Unit)
             },
-            hir::Expr::Return(value) => {
+            hir::ExprKind::Return(value) => {
                 let typed = match value {
                     Option::Some(inner) => Option::Some(check_expr(
                         ctx,
@@ -2307,7 +2401,7 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
                 };
                 Expr::Return(typed, Type::Unit)
             },
-            hir::Expr::Go(value) => {
+            hir::ExprKind::Go(value) => {
                 let value = check_expr(ctx, value, Option::None);
                 expect_type(
                     ctx,
@@ -2316,13 +2410,13 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
                 );
                 Expr::Go(value, Type::Unit)
             },
-            hir::Expr::Call(function, args) => {
+            hir::ExprKind::Call(function, args) => {
                 check_call_expr(ctx, function, args, Option::None)
             },
-            hir::Expr::Unary(op, value) => {
+            hir::ExprKind::Unary(op, value) => {
                 check_unary_expr(ctx, op, value, Option::None)
             },
-            hir::Expr::Cast(value, ty) => {
+            hir::ExprKind::Cast(value, ty) => {
                 let target = resolve_signature_type(
                     ctx,
                     type_from_hir(ty, ctx.type_params, ctx.self_ty),
@@ -2331,28 +2425,28 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
                 );
                 Expr::Cast(check_expr(ctx, value, Option::None), target)
             },
-            hir::Expr::Try(index, value) => check_try_expr(ctx, index, value),
-            hir::Expr::Binary(op, left, right) => {
+            hir::ExprKind::Try(index, value) => check_try_expr(ctx, index, value),
+            hir::ExprKind::Binary(op, left, right) => {
                 check_binary_expr(ctx, op, left, right, Option::None)
             },
-            hir::Expr::Proj(value, index) => check_projection_expr(ctx, value, index),
-            hir::Expr::Field(value, name) => check_field_expr(ctx, value, name),
-            hir::Expr::Index(base, index) => check_index_expr(ctx, base, index),
-            hir::Expr::Block(block) => {
+            hir::ExprKind::Proj(value, index) => check_projection_expr(ctx, value, index),
+            hir::ExprKind::Field(value, name) => check_field_expr(ctx, value, name),
+            hir::ExprKind::Index(base, index) => check_index_expr(ctx, base, index),
+            hir::ExprKind::Block(block) => {
                 let typed = check_block(ctx, block, Option::None);
                 Expr::Block(typed.0, typed.1)
             },
             _ => {
-                ctx.diagnostics.push("expression is not implemented");
+                push_diagnostic(ctx, "expression is not implemented");
                 Expr::Prim(Primitive::Unit, Type::Error)
             },
         },
     }
 }
 
-fn check_expr(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> Expr {
-    match value {
-        hir::Expr::Int(raw) => {
+fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> Expr {
+    match value.kind {
+        hir::ExprKind::Int(raw) => {
             let target = match propagated_expected(expected) {
                 Option::Some(ty) => match prune(ty) {
                     Type::Int8
@@ -2378,40 +2472,48 @@ fn check_expr(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> Expr {
                 expected,
             )
         },
-        hir::Expr::Unary(op, source) => coerce_expr(
+        hir::ExprKind::Unary(op, source) => coerce_expr(
             ctx,
             check_unary_expr(ctx, op, source, expected),
             expected,
         ),
-        hir::Expr::Binary(op, left, right) => coerce_expr(
+        hir::ExprKind::Binary(op, left, right) => coerce_expr(
             ctx,
             check_binary_expr(ctx, op, left, right, expected),
             expected,
         ),
-        hir::Expr::Call(function, args) => check_call_expr(ctx, function, args, expected),
-        hir::Expr::Constr(constructor, args) => {
+        hir::ExprKind::Call(function, args) => check_call_expr(ctx, function, args, expected),
+        hir::ExprKind::Constr(constructor, args) => {
             check_constructor_expr(ctx, constructor, args, expected)
         },
-        hir::Expr::StructLiteral(name, fields) => {
+        hir::ExprKind::StructLiteral(name, fields) => {
             check_struct_expr(ctx, name, fields, expected)
         },
-        hir::Expr::Tuple(values) => check_tuple_expr(ctx, values, expected),
-        hir::Expr::Array(values) => check_array_expr(ctx, values, expected),
-        hir::Expr::Closure(params, body) => coerce_expr(
+        hir::ExprKind::Tuple(values) => check_tuple_expr(ctx, values, expected),
+        hir::ExprKind::Array(values) => check_array_expr(ctx, values, expected),
+        hir::ExprKind::Closure(params, body) => coerce_expr(
             ctx,
             check_closure_expr(ctx, params, body, expected),
             expected,
         ),
-        hir::Expr::Match(source, arms) => check_match_expr(ctx, source, arms, expected),
-        hir::Expr::If(cond, then_branch, else_branch) => {
+        hir::ExprKind::Match(source, arms) => check_match_expr(ctx, source, arms, expected),
+        hir::ExprKind::If(cond, then_branch, else_branch) => {
             check_if_expr(ctx, cond, then_branch, else_branch, expected)
         },
-        hir::Expr::Block(block) => {
+        hir::ExprKind::Block(block) => {
             let typed = check_block(ctx, block, expected);
             Expr::Block(typed.0, typed.1)
         },
         _ => coerce_expr(ctx, infer_expr(ctx, value), expected),
     }
+}
+
+fn check_expr(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> Expr {
+    let previous = ctx.current_span.get();
+    ctx.current_span.set(Option::Some(value.span));
+    let result = check_expr_inner(ctx, value, expected);
+    ctx.current_span.set(previous);
+    result
 }
 
 fn primitive_pattern(ctx: Checker, value: hir::Pat) -> Option[(Primitive, Type)] {
@@ -2470,14 +2572,14 @@ fn check_constructor_pattern(
                 values.push(check_pattern(ctx, args.get(index), field_ty))
             };
             if args.len() != info.fields.len() {
-                ctx.diagnostics.push("constructor pattern arity mismatch")
+                push_diagnostic(ctx, "constructor pattern arity mismatch")
             } else {
                 ()
             };
             Pat::Constr(info.constructor, values, expected)
         },
         Option::None => {
-            ctx.diagnostics.push("pattern constructor not found");
+            push_diagnostic(ctx, "pattern constructor not found");
             Pat::Wild(expected)
         },
     }
@@ -2502,7 +2604,7 @@ fn check_struct_pattern(
             Pat::Constr(info.constructor, values, expected)
         },
         Option::None => {
-            ctx.diagnostics.push("struct pattern not found");
+            push_diagnostic(ctx, "struct pattern not found");
             Pat::Wild(expected)
         },
     }
@@ -2638,7 +2740,7 @@ fn check_pattern(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
             },
             hir::Pat::Wild => Pat::Wild(expected),
             _ => {
-                ctx.diagnostics.push("pattern is not implemented");
+                push_diagnostic(ctx, "pattern is not implemented");
                 Pat::Wild(expected)
             },
         },
@@ -2667,7 +2769,7 @@ fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
             if pattern_is_irrefutable(ctx, pattern) {
                 ()
             } else {
-                ctx.diagnostics.push(
+                push_diagnostic(ctx,
                     "refutable pattern is not allowed in let binding",
                 )
             };
@@ -2721,10 +2823,10 @@ fn mark_mutable_pattern(ctx: Checker, value: hir::Pat) -> unit {
 }
 
 fn hir_expr_always_returns(value: hir::Expr) -> bool {
-    match value {
-        hir::Expr::Return(_) => true,
-        hir::Expr::Block(block) => hir_block_always_returns(block),
-        hir::Expr::If(_, then_branch, else_branch) => {
+    match value.kind {
+        hir::ExprKind::Return(_) => true,
+        hir::ExprKind::Block(block) => hir_block_always_returns(block),
+        hir::ExprKind::If(_, then_branch, else_branch) => {
             hir_expr_always_returns(then_branch)
                 && hir_expr_always_returns(else_branch)
         },

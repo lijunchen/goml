@@ -154,6 +154,7 @@ pub enum Item {
 pub struct File {
     package_name: string,
     path: string,
+    source_path: string,
     imports: Vec[string],
     import_aliases: Vec[ImportAlias],
     use_traits: Vec[string],
@@ -171,7 +172,12 @@ pub enum Stmt {
     Expr(Expr),
 }
 
-pub enum Expr {
+pub struct Expr {
+    kind: ExprKind,
+    span: ast::Span,
+}
+
+pub enum ExprKind {
     NameRef(NameRef),
     StaticMember(string, string, Vec[TypeExpr]),
     Unit,
@@ -254,5 +260,6 @@ pub enum Pat {
 
 pub struct LowerResult {
     hir: Option[File],
+    source_path: string,
     diagnostics: Vec[string],
 }

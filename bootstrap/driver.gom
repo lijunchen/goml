@@ -17,6 +17,7 @@ use std::fs;
 use std::io;
 use std::path;
 use std::process;
+use std::text;
 
 struct Compilation {
     ast_value: ast::LowerResult,
@@ -34,6 +35,13 @@ struct PackageCompilation {
     core_value: core::File,
     interface_unit: ArtifactInterfaceUnit,
     exports: ArtifactPackageExports,
+}
+
+struct DiagnosticPosition {
+    line: int32,
+    column: int32,
+    line_start: int32,
+    line_end: int32,
 }
 
 struct StandardLibrary {
@@ -186,6 +194,7 @@ fn compile_standard_package(
             hir::File {
                 package_name,
                 path: source_path,
+                source_path,
                 imports: Vec::new(),
                 import_aliases: Vec::new(),
                 use_traits: Vec::new(),
@@ -202,7 +211,7 @@ fn compile_standard_package(
             "error[compile]: failed to typecheck standard package "
                 + package_name
                 + ": "
-                + tast_value.diagnostics.get(0),
+                + tast_value.diagnostics.get(0).message,
         )
     } else {
         ()
@@ -611,6 +620,254 @@ fn fail_on_compilation_diagnostics(diagnostics: Vec[string]) -> unit {
     }
 }
 
+fn diagnostic_span_start(value: tast::Diagnostic) -> int32 {
+    match value.span {
+        Option::Some(span) => span.start,
+        Option::None => 2147483647,
+    }
+}
+
+fn diagnostic_precedes(left: tast::Diagnostic, right: tast::Diagnostic) -> bool {
+    if left.source_path != right.source_path {
+        left.source_path < right.source_path
+    } else if diagnostic_span_start(left) != diagnostic_span_start(right) {
+        diagnostic_span_start(left) < diagnostic_span_start(right)
+    } else {
+        left.message < right.message
+    }
+}
+
+fn sorted_typer_diagnostics(values: Vec[tast::Diagnostic]) -> Vec[tast::Diagnostic] {
+    let result: Vec[tast::Diagnostic] = Vec::new();
+    for value in values {
+        result.push(value)
+    };
+    for index in range(1, result.len()) {
+        let value = result.get(index);
+        let target = Ref::new(index);
+        while target.get() > 0
+            && diagnostic_precedes(value, result.get(target.get() - 1))
+        {
+            result.set(target.get(), result.get(target.get() - 1));
+            target.set(target.get() - 1)
+        };
+        result.set(target.get(), value)
+    };
+    result
+}
+
+fn diagnostic_source(
+    value: tast::Diagnostic,
+    fallback_path: string,
+    fallback_source: string,
+) -> string {
+    if value.source_path == fallback_path {
+        fallback_source
+    } else {
+        match fs::read_file(value.source_path) {
+            Result::Ok(source) => source,
+            Result::Err(_) => "",
+        }
+    }
+}
+
+fn source_position(source: string, offset: int32) -> DiagnosticPosition {
+    let limit = if offset < 0 {
+        0
+    } else if offset > source.byte_len() {
+        source.byte_len()
+    } else {
+        offset
+    };
+    let line = Ref::new(0);
+    let column = Ref::new(0);
+    let line_start = Ref::new(0);
+    for index in range(0, limit) {
+        let byte = source.byte_get(index);
+        if byte == 10u8 {
+            line.set(line.get() + 1);
+            column.set(0);
+            line_start.set(index + 1)
+        } else if byte < 128u8 || byte >= 192u8 {
+            column.set(column.get() + 1)
+        } else {
+            ()
+        }
+    };
+    let line_end = Ref::new(line_start.get());
+    let scanning = Ref::new(true);
+    while scanning.get() && line_end.get() < source.byte_len() {
+        let byte = source.byte_get(line_end.get());
+        if byte == 10u8 || byte == 13u8 {
+            scanning.set(false)
+        } else {
+            line_end.set(line_end.get() + 1)
+        }
+    };
+    DiagnosticPosition {
+        line: line.get(),
+        column: column.get(),
+        line_start: line_start.get(),
+        line_end: line_end.get(),
+    }
+}
+
+fn repeat_char(value: char, count: int32) -> string {
+    let builder = text::StringBuilder::new();
+    for _ in range(0, count) {
+        builder.write_char(value)
+    };
+    builder.finish()
+}
+
+fn diagnostic_visual_width(value: string) -> int32 {
+    let width = Ref::new(0);
+    for index in range(0, value.len()) {
+        if value.get(index) == '\t' {
+            width.set(width.get() + 4 - width.get() % 4)
+        } else {
+            width.set(width.get() + 1)
+        }
+    };
+    width.get()
+}
+
+fn expand_diagnostic_tabs(value: string) -> string {
+    let builder = text::StringBuilder::new();
+    let width = Ref::new(0);
+    for index in range(0, value.len()) {
+        let ch = value.get(index);
+        if ch == '\t' {
+            let spaces = 4 - width.get() % 4;
+            builder.write_string(repeat_char(' ', spaces));
+            width.set(width.get() + spaces)
+        } else {
+            builder.write_char(ch);
+            width.set(width.get() + 1)
+        }
+    };
+    builder.finish()
+}
+
+fn render_typer_diagnostic(
+    value: tast::Diagnostic,
+    fallback_path: string,
+    fallback_source: string,
+) -> string {
+    let builder = text::StringBuilder::new();
+    builder.write_string("error[typer]: ");
+    builder.write_string(value.message);
+    match value.span {
+        Option::Some(span) => {
+            let source = diagnostic_source(value, fallback_path, fallback_source);
+            if source.byte_len() == 0 {
+                builder.write_string("\nprimary: ");
+                builder.write_string(value.source_path);
+                builder.write_char(':');
+                builder.write_string(span.start.to_string());
+                builder.write_string("..");
+                builder.write_string(span.end.to_string())
+            } else {
+                let start = source_position(source, span.start);
+                let end = source_position(source, span.end);
+                builder.write_string("\nprimary: ");
+                builder.write_string(value.source_path);
+                builder.write_char(':');
+                builder.write_string((start.line + 1).to_string());
+                builder.write_char(':');
+                builder.write_string((start.column + 1).to_string());
+                if span.start != span.end {
+                    builder.write_char('-');
+                    builder.write_string((end.line + 1).to_string());
+                    builder.write_char(':');
+                    builder.write_string((end.column + 1).to_string())
+                } else {
+                    ()
+                };
+                let line_number = (start.line + 1).to_string();
+                let gutter = line_number.len();
+                let line_text = source.byte_slice(start.line_start, start.line_end);
+                let highlight_start = if span.start < start.line_start {
+                    start.line_start
+                } else if span.start > start.line_end {
+                    start.line_end
+                } else {
+                    span.start
+                };
+                let highlight_end = if span.end < highlight_start {
+                    highlight_start
+                } else if span.end > start.line_end {
+                    start.line_end
+                } else {
+                    span.end
+                };
+                let indentation = diagnostic_visual_width(
+                    source.byte_slice(start.line_start, highlight_start),
+                );
+                let measured = diagnostic_visual_width(
+                    source.byte_slice(highlight_start, highlight_end),
+                );
+                let marker_width = if measured > 0 { measured } else { 1 };
+                builder.write_char('\n');
+                builder.write_string(line_number);
+                builder.write_string(" | ");
+                builder.write_string(expand_diagnostic_tabs(line_text));
+                builder.write_char('\n');
+                builder.write_string(repeat_char(' ', gutter));
+                builder.write_string(" | ");
+                builder.write_string(repeat_char(' ', indentation));
+                builder.write_string(repeat_char('^', marker_width))
+            }
+        },
+        Option::None => if value.source_path != "" {
+            builder.write_string("\nat: ");
+            builder.write_string(value.source_path)
+        } else {
+            ()
+        },
+    };
+    builder.finish()
+}
+
+fn render_typer_diagnostics(
+    values: Vec[tast::Diagnostic],
+    fallback_path: string,
+    fallback_source: string,
+) -> string {
+    let builder = text::StringBuilder::new();
+    let index = Ref::new(0);
+    for value in sorted_typer_diagnostics(values) {
+        if index.get() > 0 {
+            builder.write_string("\n\n")
+        } else {
+            ()
+        };
+        builder.write_string(render_typer_diagnostic(
+            value,
+            fallback_path,
+            fallback_source,
+        ));
+        index.set(index.get() + 1)
+    };
+    builder.finish()
+}
+
+fn fail_on_typer_diagnostics(
+    diagnostics: Vec[tast::Diagnostic],
+    fallback_path: string,
+    fallback_source: string,
+) -> unit {
+    if diagnostics.len() > 0 {
+        fail(render_typer_diagnostics(
+            diagnostics,
+            fallback_path,
+            fallback_source,
+        ))
+    } else {
+        ()
+    }
+}
+
 fn fail_on_ast_diagnostics(diagnostics: Vec[cst::Diagnostic]) -> unit {
     if diagnostics.len() > 0 {
         fail("error[compile]: " + diagnostics.get(0).message)
@@ -662,7 +919,7 @@ fn compile_source(source_path: string, source: string) -> Compilation {
         hir_value,
         hir_dependencies,
     );
-    fail_on_compilation_diagnostics(tast_value.diagnostics);
+    fail_on_typer_diagnostics(tast_value.diagnostics, source_path, source);
     let core_value = core::link_with_dependencies(
         builtins,
         core_dependencies,

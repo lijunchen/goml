@@ -196,9 +196,19 @@ pub struct File {
     structs: Vec[StructDef],
 }
 
+pub struct Diagnostic {
+    message: string,
+    source_path: string,
+    span: Option[ast::Span],
+}
+
 pub struct CheckResult {
     tast: Option[File],
-    diagnostics: Vec[string],
+    diagnostics: Vec[Diagnostic],
+}
+
+pub fn diagnostic_message(value: Diagnostic) -> string {
+    value.message
 }
 
 pub fn expr_type(value: Expr) -> Type {

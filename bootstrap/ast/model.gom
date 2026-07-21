@@ -287,3 +287,45 @@ pub struct LowerResult {
 pub fn span(start: int32, end: int32) -> Span {
     Span { start, end }
 }
+
+pub fn expr_span(value: Expr) -> Span {
+    match value {
+        Expr::Unit(span) | Expr::Break(span) | Expr::Continue(span) => span,
+        Expr::Bool(_, span)
+        | Expr::Int(_, span)
+        | Expr::Int8(_, span)
+        | Expr::Int16(_, span)
+        | Expr::Int32(_, span)
+        | Expr::Int64(_, span)
+        | Expr::UInt8(_, span)
+        | Expr::UInt16(_, span)
+        | Expr::UInt32(_, span)
+        | Expr::UInt64(_, span)
+        | Expr::Float(_, span)
+        | Expr::Float32(_, span)
+        | Expr::Float64(_, span)
+        | Expr::String(_, span)
+        | Expr::Char(_, span)
+        | Expr::Tuple(_, span)
+        | Expr::Array(_, span)
+        | Expr::Return(_, span)
+        | Expr::Go(_, span)
+        | Expr::Try(_, span)
+        | Expr::Block(_, span) => span,
+        Expr::Path(_, _, span)
+        | Expr::Constr(_, _, span)
+        | Expr::StructLiteral(_, _, span)
+        | Expr::Closure(_, _, span)
+        | Expr::Match(_, _, span)
+        | Expr::While(_, _, span)
+        | Expr::Call(_, _, span)
+        | Expr::Unary(_, _, span)
+        | Expr::Cast(_, _, span)
+        | Expr::Proj(_, _, span)
+        | Expr::Field(_, _, span)
+        | Expr::Index(_, _, span) => span,
+        Expr::If(_, _, _, span)
+        | Expr::For(_, _, _, span)
+        | Expr::Binary(_, _, _, span) => span,
+    }
+}

@@ -668,7 +668,7 @@ fn resolve_required_predicates(ctx: Checker) -> unit {
         ) {
             ()
         } else {
-            ctx.diagnostics.push(requirement.message)
+            push_diagnostic(ctx, requirement.message)
         }
     }
 }
@@ -895,7 +895,7 @@ fn validate_impl_overlaps(ctx: Checker) -> unit {
     for left in range(0, ctx.impls.len()) {
         for right in range(left + 1, ctx.impls.len()) {
             if impls_overlap(ctx, ctx.impls.get(left), ctx.impls.get(right)) {
-                ctx.diagnostics.push("overlapping trait implementations")
+                push_diagnostic(ctx, "overlapping trait implementations")
             } else {
                 ()
             }
@@ -978,7 +978,7 @@ fn resolve_user_method_for_call(
         }
     } else {
         if matches > 1 {
-            ctx.diagnostics.push("ambiguous method: " + name)
+            push_diagnostic(ctx, "ambiguous method: " + name)
         } else {
             ()
         };
@@ -1235,7 +1235,7 @@ fn resolve_hashmap_method(
             if hashmap_option_shape_is_valid(ctx) {
                 ()
             } else {
-                ctx.diagnostics.push(
+                push_diagnostic(ctx,
                     "HashMap::get requires Option[T] to define exactly one empty variant and one payload variant containing T",
                 )
             };
@@ -1773,13 +1773,13 @@ fn resolve_projection_type(
                     } else {
                         if report {
                             if matches.len() == 0 {
-                                ctx.diagnostics.push(
+                                push_diagnostic(ctx,
                                     "associated type "
                                         + name
                                         + " is not provided by a trait bound",
                                 )
                             } else {
-                                ctx.diagnostics.push(
+                                push_diagnostic(ctx,
                                     "associated type " + name + " is ambiguous",
                                 )
                             }
@@ -1921,11 +1921,11 @@ fn validate_nominal_application(
 ) -> unit {
     match nominal_arity(ctx, name) {
         Option::Some(expected) => if expected != args.len() {
-            ctx.diagnostics.push("type argument count mismatch for " + name)
+            push_diagnostic(ctx, "type argument count mismatch for " + name)
         } else {
             ()
         },
-        Option::None => ctx.diagnostics.push("unknown type constructor " + name),
+        Option::None => push_diagnostic(ctx, "unknown type constructor " + name),
     };
     for arg in args {
         validate_signature_type(ctx, arg)
@@ -1935,13 +1935,13 @@ fn validate_nominal_application(
 fn validate_trait_reference(ctx: Checker, reference: TraitRef) -> unit {
     match find_trait(ctx, reference.name) {
         Option::Some(info) => if info.generics.len() != reference.args.len() {
-            ctx.diagnostics.push(
+            push_diagnostic(ctx,
                 "trait argument count mismatch for " + reference.name,
             )
         } else {
             ()
         },
-        Option::None => ctx.diagnostics.push("unknown trait " + reference.name),
+        Option::None => push_diagnostic(ctx, "unknown trait " + reference.name),
     };
     for arg in reference.args {
         validate_signature_type(ctx, arg)
@@ -2013,7 +2013,7 @@ fn type_contains_parameter(value: Type, expected: string) -> bool {
 fn validate_dyn_trait(ctx: Checker, info: TraitInfo) -> unit {
     for method in info.methods {
         if method.params.len() == 0 {
-            ctx.diagnostics.push(
+            push_diagnostic(ctx,
                 "Trait "
                     + info.name
                     + "::"
@@ -2022,7 +2022,7 @@ fn validate_dyn_trait(ctx: Checker, info: TraitInfo) -> unit {
             )
         } else {
             if !types_equal(method.params.get(0), Type::Param("Self")) {
-                ctx.diagnostics.push(
+                push_diagnostic(ctx,
                     "Trait "
                         + info.name
                         + "::"
@@ -2041,7 +2041,7 @@ fn validate_dyn_trait(ctx: Checker, info: TraitInfo) -> unit {
                 }
             };
             if invalid_parameter.get() {
-                ctx.diagnostics.push(
+                push_diagnostic(ctx,
                     "Trait "
                         + info.name
                         + "::"
@@ -2053,7 +2053,7 @@ fn validate_dyn_trait(ctx: Checker, info: TraitInfo) -> unit {
             }
         };
         if type_contains_parameter(method.ret_ty, "Self") {
-            ctx.diagnostics.push(
+            push_diagnostic(ctx,
                 "Trait "
                     + info.name
                     + "::"
@@ -2072,7 +2072,7 @@ fn validate_signature_type(ctx: Checker, value: Type) -> unit {
         Type::App(base, args) => match prune(base) {
             Type::Con(name) => validate_nominal_application(ctx, name, args),
             _ => {
-                ctx.diagnostics.push("expected a type constructor");
+                push_diagnostic(ctx, "expected a type constructor");
                 validate_signature_type(ctx, base);
                 for arg in args {
                     validate_signature_type(ctx, arg)
@@ -2081,11 +2081,11 @@ fn validate_signature_type(ctx: Checker, value: Type) -> unit {
         },
         Type::Dyn(name) => match find_trait(ctx, name) {
             Option::Some(info) => if info.generics.len() > 0 {
-                ctx.diagnostics.push("generic trait cannot be used as dyn " + name)
+                push_diagnostic(ctx, "generic trait cannot be used as dyn " + name)
             } else {
                 validate_dyn_trait(ctx, info)
             },
-            Option::None => ctx.diagnostics.push("unknown trait " + name),
+            Option::None => push_diagnostic(ctx, "unknown trait " + name),
         },
         Type::Projection(base, _, qualifier) => {
             validate_signature_type(ctx, base);
@@ -2272,7 +2272,7 @@ fn resolve_predicate_method(
         result.get()
     } else {
         if matches.get() > 1 {
-            ctx.diagnostics.push("ambiguous method: " + name)
+            push_diagnostic(ctx, "ambiguous method: " + name)
         } else {
             ()
         };
@@ -2364,7 +2364,7 @@ fn resolve_trait_static(
                             result.get()
                         } else {
                             if matches.get() > 1 {
-                                ctx.diagnostics.push("ambiguous method: " + name)
+                                push_diagnostic(ctx, "ambiguous method: " + name)
                             } else {
                                 ()
                             };
