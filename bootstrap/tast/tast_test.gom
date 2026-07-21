@@ -183,6 +183,28 @@ fn resolves_runtime_externs_from_package_interfaces() -> unit {
 }
 
 #[test]
+fn resolves_enum_patterns_from_package_interfaces() -> unit {
+    let dependencies: Vec[hir::File] = Vec::new();
+    dependencies.push(dependency_hir(
+        "package api; pub enum Choice { Empty, Value(int32) }",
+        "vendor::api",
+    ));
+    let file = checked_file_with_dependencies(
+        "use vendor::api; fn unwrap(value: api::Choice) -> int32 { match value { api::Choice::Empty => 0, api::Choice::Value(inner) => inner } }",
+        dependencies,
+    );
+    match file.items.get(0) {
+        Item::Function(function) => match function.body.tail {
+            Option::Some(Expr::Match(_, arms, Type::Int32)) => {
+                testing::assert_eq(arms.len(), 2)
+            },
+            _ => testing::fail("expected external enum match"),
+        },
+        _ => testing::fail("expected external enum function"),
+    }
+}
+
+#[test]
 fn resolves_enum_constructors_from_package_interfaces() -> unit {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(dependency_hir(
