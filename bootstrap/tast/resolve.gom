@@ -136,6 +136,29 @@ fn resolve_user_constructor(
     }
 }
 
+fn resolve_named_constructor(
+    ctx: Checker,
+    enum_name: string,
+    variant_name: string,
+) -> Option[ResolvedConstructor] {
+    match find_enum_by_name(ctx, enum_name) {
+        Option::Some(value) => {
+            let result: Ref[Option[ResolvedConstructor]] = Ref::new(Option::None);
+            let found = Ref::new(false);
+            for index in range(0, value.variants.len()) {
+                if found.get() == false && value.variants.get(index).name == variant_name {
+                    result.set(resolve_user_constructor(ctx, value, index));
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            result.get()
+        },
+        Option::None => Option::None,
+    }
+}
+
 fn resolve_builtin_constructor(ctx: Checker, name: string) -> Option[ResolvedConstructor] {
     let t = fresh_type(ctx.counter, VarKind::Any);
     let e = fresh_type(ctx.counter, VarKind::Any);

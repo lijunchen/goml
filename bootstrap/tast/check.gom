@@ -477,14 +477,22 @@ fn check_static_member(
     member: string,
     type_args: Vec[hir::TypeExpr],
 ) -> Expr {
-    match resolve_static_member(ctx, owner, member, type_args) {
-        Option::Some(value) => Expr::Callable(value.callable, value.ty),
-        Option::None => {
-            ctx.diagnostics.push("static member not found: " + owner + "::" + member);
-            Expr::Callable(
-                Callable::Function(owner + "::" + member),
-                Type::Error,
-            )
+    match resolve_named_constructor(ctx, owner, member) {
+        Option::Some(info) => if info.fields.len() == 0 {
+            check_resolved_constructor_expr(ctx, info, Vec::new(), Option::None)
+        } else {
+            ctx.diagnostics.push("constructor arity mismatch");
+            Expr::Constr(info.constructor, Vec::new(), Type::Error)
+        },
+        Option::None => match resolve_static_member(ctx, owner, member, type_args) {
+            Option::Some(value) => Expr::Callable(value.callable, value.ty),
+            Option::None => {
+                ctx.diagnostics.push("static member not found: " + owner + "::" + member);
+                Expr::Callable(
+                    Callable::Function(owner + "::" + member),
+                    Type::Error,
+                )
+            },
         },
     }
 }
@@ -503,6 +511,38 @@ fn missing_constructor_expr(ctx: Checker) -> Expr {
     )
 }
 
+fn check_resolved_constructor_expr(
+    ctx: Checker,
+    info: ResolvedConstructor,
+    args: Vec[hir::Expr],
+    expected: Option[Type],
+) -> Expr {
+    match propagated_expected(expected) {
+        Option::Some(ty) => expect_type(ctx, info.ty, ty),
+        Option::None => (),
+    };
+    let values: Vec[Expr] = Vec::new();
+    for index in range(0, args.len()) {
+        let expected = if index < info.fields.len() {
+            Option::Some(info.fields.get(index))
+        } else {
+            ctx.diagnostics.push("too many constructor arguments");
+            Option::None
+        };
+        values.push(check_expr(ctx, args.get(index), expected))
+    };
+    if values.len() != info.fields.len() {
+        ctx.diagnostics.push("constructor arity mismatch")
+    } else {
+        ()
+    };
+    coerce_expr(
+        ctx,
+        Expr::Constr(info.constructor, values, info.ty),
+        expected,
+    )
+}
+
 fn check_constructor_expr(
     ctx: Checker,
     constructor: hir::ConstructorRef,
@@ -510,32 +550,7 @@ fn check_constructor_expr(
     expected: Option[Type],
 ) -> Expr {
     match resolve_constructor(ctx, constructor) {
-        Option::Some(info) => {
-            match propagated_expected(expected) {
-                Option::Some(ty) => expect_type(ctx, info.ty, ty),
-                Option::None => (),
-            };
-            let values: Vec[Expr] = Vec::new();
-            for index in range(0, args.len()) {
-                let expected = if index < info.fields.len() {
-                    Option::Some(info.fields.get(index))
-                } else {
-                    ctx.diagnostics.push("too many constructor arguments");
-                    Option::None
-                };
-                values.push(check_expr(ctx, args.get(index), expected))
-            };
-            if values.len() != info.fields.len() {
-                ctx.diagnostics.push("constructor arity mismatch")
-            } else {
-                ()
-            };
-            coerce_expr(
-                ctx,
-                Expr::Constr(info.constructor, values, info.ty),
-                expected,
-            )
-        },
+        Option::Some(info) => check_resolved_constructor_expr(ctx, info, args, expected),
         Option::None => match constructor {
             hir::ConstructorRef::Unresolved(name) => match resolve_struct(ctx, name) {
                 Option::Some(info) => {
@@ -932,37 +947,42 @@ fn check_call_expr(
             ),
         },
         hir::Expr::StaticMember(owner, member, type_args) => {
-            match package_function_scheme(ctx, owner, member) {
-                Option::Some(scheme) => {
-                    let candidate = instantiate_scheme_candidate(
-                        ctx,
-                        scheme,
-                        explicit_types(ctx, type_args),
-                    );
-                    constrain_callable_return(ctx, candidate.ty, expected);
-                    let result = coerce_expr(
-                        ctx,
-                        apply_call(
-                            ctx,
-                            Expr::Callable(candidate.callable, candidate.ty),
-                            Vec::new(),
-                            args,
-                        ),
-                        expected,
-                    );
-                    let _ = predicates_satisfied_at(ctx, candidate.predicates, 0);
-                    result
+            match resolve_named_constructor(ctx, owner, member) {
+                Option::Some(info) => {
+                    check_resolved_constructor_expr(ctx, info, args, expected)
                 },
-                Option::None => apply_call(
-                    ctx,
-                    check_expr(
+                Option::None => match package_function_scheme(ctx, owner, member) {
+                    Option::Some(scheme) => {
+                        let candidate = instantiate_scheme_candidate(
+                            ctx,
+                            scheme,
+                            explicit_types(ctx, type_args),
+                        );
+                        constrain_callable_return(ctx, candidate.ty, expected);
+                        let result = coerce_expr(
+                            ctx,
+                            apply_call(
+                                ctx,
+                                Expr::Callable(candidate.callable, candidate.ty),
+                                Vec::new(),
+                                args,
+                            ),
+                            expected,
+                        );
+                        let _ = predicates_satisfied_at(ctx, candidate.predicates, 0);
+                        result
+                    },
+                    Option::None => apply_call(
                         ctx,
-                        hir::Expr::StaticMember(owner, member, type_args),
-                        Option::None,
+                        check_expr(
+                            ctx,
+                            hir::Expr::StaticMember(owner, member, type_args),
+                            Option::None,
+                        ),
+                        Vec::new(),
+                        args,
                     ),
-                    Vec::new(),
-                    args,
-                ),
+                },
             }
         },
         _ => apply_call(
