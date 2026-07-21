@@ -1008,7 +1008,7 @@ fn hashmap_option_info(
     instances: Vec[core::TypeInstance],
     enums: Vec[tast::EnumDef],
     structs: Vec[tast::StructDef],
-    function_names: Vec[(string, string)],
+    function_names: FunctionNames,
 ) -> (Type, Type, Type, bool) {
     let args: Vec[tast::Type] = Vec::new();
     args.push(value);
@@ -1768,7 +1768,7 @@ fn hashmap_items(
     instances: Vec[core::TypeInstance],
     enums: Vec[tast::EnumDef],
     structs: Vec[tast::StructDef],
-    function_names: Vec[(string, string)],
+    function_names: FunctionNames,
     include_option: bool,
 ) -> Vec[Item] {
     let result: Vec[Item] = Vec::new();
@@ -2263,7 +2263,7 @@ pub fn emit_builtin_runtime_items(
     instances: Vec[core::TypeInstance],
     enums: Vec[tast::EnumDef],
     structs: Vec[tast::StructDef],
-    function_names: Vec[(string, string)],
+    function_names: FunctionNames,
 ) -> unit {
     for ty in types {
         match tast::resolve_type(ty) {

@@ -5,15 +5,21 @@ use gomlang::parser::ast;
 use gomlang::parser::core;
 use gomlang::parser::tast;
 
+pub struct FunctionNames {
+    by_source: HashMap[string, string],
+    reserved: HashMap[string, unit],
+    variant_names: HashMap[string, string],
+}
+
 struct LowerEnv {
     joins: Vec[anf::JoinBind],
     emitted_loop_labels: Vec[string],
-    variants: Vec[VariantInfo],
+    variants: VariantInfos,
     closures: Vec[ClosureInfo],
     structs: Vec[tast::StructDef],
     instances: Vec[core::TypeInstance],
     functions: Vec[anf::Function],
-    function_names: Vec[(string, string)],
+    function_names: FunctionNames,
     dyn_helper_names: DynHelperNames,
 }
 
@@ -61,16 +67,21 @@ fn function_name(value: string) -> string {
     }
 }
 
-fn mapped_function_name(values: Vec[(string, string)], value: string) -> Option[string] {
-    let result: Ref[Option[string]] = Ref::new(Option::None);
-    for entry in values {
-        if entry.0 == value {
-            result.set(Option::Some(entry.1))
-        } else {
-            ()
-        }
-    };
-    result.get()
+fn new_function_names() -> FunctionNames {
+    FunctionNames {
+        by_source: HashMap::new(),
+        reserved: HashMap::new(),
+        variant_names: HashMap::new(),
+    }
+}
+
+fn add_function_name(values: FunctionNames, source: string, generated: string) -> unit {
+    values.by_source.set(source, generated);
+    values.reserved.set(generated, ())
+}
+
+fn mapped_function_name(values: FunctionNames, value: string) -> Option[string] {
+    values.by_source.get(value)
 }
 
 fn env_function_name(env: LowerEnv, value: string) -> string {
@@ -80,42 +91,34 @@ fn env_function_name(env: LowerEnv, value: string) -> string {
     }
 }
 
-fn function_type_name_collision(
-    candidate: string,
+fn function_type_names(
+    function_names: FunctionNames,
     structs: Vec[tast::StructDef],
     enums: Vec[tast::EnumDef],
     instances: Vec[core::TypeInstance],
-) -> bool {
-    let found = Ref::new(false);
+) -> HashMap[string, unit] {
+    let result: HashMap[string, unit] = HashMap::new();
     for definition in structs {
-        if go_user_type_name(definition.name) == candidate {
-            found.set(true)
-        } else {
-            ()
-        }
+        let name = go_user_type_name(definition.name);
+        result.set(name, ());
+        function_names.reserved.set(name, ())
     };
     for definition in enums {
-        if go_user_type_name(definition.name) == candidate {
-            found.set(true)
-        } else {
-            ()
-        }
+        let name = go_user_type_name(definition.name);
+        result.set(name, ());
+        function_names.reserved.set(name, ())
     };
     for instance in instances {
-        if go_user_type_name(instance.name) == candidate {
-            found.set(true)
-        } else {
-            ()
-        }
+        let name = go_user_type_name(instance.name);
+        result.set(name, ());
+        function_names.reserved.set(name, ())
     };
-    found.get()
+    result
 }
 
 fn resolve_function_name(
     value: string,
-    structs: Vec[tast::StructDef],
-    enums: Vec[tast::EnumDef],
-    instances: Vec[core::TypeInstance],
+    type_names: HashMap[string, unit],
 ) -> string {
     if value == "main" {
         "main"
@@ -123,7 +126,7 @@ fn resolve_function_name(
         let candidate = go_ident(value);
         if candidate == "init"
             || is_generated_tuple_type_name(candidate)
-            || function_type_name_collision(candidate, structs, enums, instances)
+            || type_names.contains(candidate)
         {
             go_generated_ident("_goml_user_" + candidate)
         } else {
@@ -133,11 +136,11 @@ fn resolve_function_name(
 }
 
 fn add_entry_variant_names(
-    used: Vec[string],
+    used: NameSet,
     enums: Vec[tast::EnumDef],
     structs: Vec[tast::StructDef],
     instances: Vec[core::TypeInstance],
-    function_names: Vec[(string, string)],
+    function_names: FunctionNames,
 ) -> unit {
     for definition in enums {
         if definition.generics.len() == 0 {
@@ -150,11 +153,7 @@ fn add_entry_variant_names(
                     instances,
                     function_names,
                 );
-                if !contains_string(used, name) {
-                    used.push(name)
-                } else {
-                    ()
-                }
+                add_reachable(used, name)
             }
         } else {
             for instance in instances {
@@ -168,11 +167,7 @@ fn add_entry_variant_names(
                             instances,
                             function_names,
                         );
-                        if !contains_string(used, name) {
-                            used.push(name)
-                        } else {
-                            ()
-                        }
+                        add_reachable(used, name)
                     }
                 } else {
                     ()
@@ -187,44 +182,24 @@ fn entry_wrapper_name(
     structs: Vec[tast::StructDef],
     enums: Vec[tast::EnumDef],
     instances: Vec[core::TypeInstance],
-    function_names: Vec[(string, string)],
+    function_names: FunctionNames,
 ) -> string {
-    let used: Vec[string] = Vec::new();
+    let used = new_name_set();
     for function in functions {
         if function.name != "main" {
-            let name = go_ident(function.name);
-            if !contains_string(used, name) {
-                used.push(name)
-            } else {
-                ()
-            }
+            add_reachable(used, go_ident(function.name))
         } else {
             ()
         }
     };
     for definition in structs {
-        let name = go_user_type_name(definition.name);
-        if !contains_string(used, name) {
-            used.push(name)
-        } else {
-            ()
-        }
+        add_reachable(used, go_user_type_name(definition.name))
     };
     for definition in enums {
-        let name = go_user_type_name(definition.name);
-        if !contains_string(used, name) {
-            used.push(name)
-        } else {
-            ()
-        }
+        add_reachable(used, go_user_type_name(definition.name))
     };
     for instance in instances {
-        let name = go_user_type_name(instance.name);
-        if !contains_string(used, name) {
-            used.push(name)
-        } else {
-            ()
-        }
+        add_reachable(used, go_user_type_name(instance.name))
     };
     add_entry_variant_names(
         used,
@@ -233,12 +208,12 @@ fn entry_wrapper_name(
         instances,
         function_names,
     );
-    if !contains_string(used, "main0") {
+    if !name_present(used, "main0") {
         "main0"
     } else {
         let index = Ref::new(1);
         let result = Ref::new("main0__" + index.get().to_string());
-        while contains_string(used, result.get()) {
+        while name_present(used, result.get()) {
             index.set(index.get() + 1);
             result.set("main0__" + index.get().to_string())
         };
@@ -251,13 +226,15 @@ fn build_function_names(
     structs: Vec[tast::StructDef],
     enums: Vec[tast::EnumDef],
     instances: Vec[core::TypeInstance],
-) -> Vec[(string, string)] {
-    let resolved: Vec[(string, string)] = Vec::new();
+) -> FunctionNames {
+    let resolved = new_function_names();
+    let type_names = function_type_names(resolved, structs, enums, instances);
     for function in functions {
-        resolved.push((
+        add_function_name(
+            resolved,
             function.name,
-            resolve_function_name(function.name, structs, enums, instances),
-        ))
+            resolve_function_name(function.name, type_names),
+        )
     };
     let entry_name = entry_wrapper_name(
         functions,
@@ -266,7 +243,11 @@ fn build_function_names(
         instances,
         resolved,
     );
-    let result: Vec[(string, string)] = Vec::new();
+    let result = FunctionNames {
+        by_source: HashMap::new(),
+        reserved: resolved.reserved,
+        variant_names: resolved.variant_names,
+    };
     for function in functions {
         let name = if function.name == "main" {
             entry_name
@@ -276,7 +257,7 @@ fn build_function_names(
                 Option::None => function_name(function.name),
             }
         };
-        result.push((function.name, name))
+        add_function_name(result, function.name, name)
     };
     result
 }
@@ -3029,12 +3010,12 @@ fn collect_dyn_block(result: Vec[DynCoercion], value: anf::Block) -> unit {
 
 fn compile_function(
     value: anf::Function,
-    variants: Vec[VariantInfo],
+    variants: VariantInfos,
     closures: Vec[ClosureInfo],
     structs: Vec[tast::StructDef],
     instances: Vec[core::TypeInstance],
     functions: Vec[anf::Function],
-    function_names: Vec[(string, string)],
+    function_names: FunctionNames,
     dyn_helper_names: DynHelperNames,
 ) -> Function {
     let joins: Vec[anf::JoinBind] = Vec::new();
@@ -3063,7 +3044,7 @@ fn compile_function(
 }
 
 fn test_main_function(
-    function_names: Vec[(string, string)],
+    function_names: FunctionNames,
     test_cases: Vec[(string, string)],
 ) -> Function {
     let cases: Vec[SwitchCase] = Vec::new();
@@ -3127,7 +3108,7 @@ fn lower_with_test_cases(
     let intrinsics: Vec[string] = Vec::new();
     let missing_types = new_collected_types();
     let coercions: Vec[DynCoercion] = Vec::new();
-    let variants: Vec[VariantInfo] = Vec::new();
+    let variants = new_variant_infos();
     for function in value.functions {
         for param in function.params {
             collect_type(types, param.1)

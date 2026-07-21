@@ -1,59 +1,57 @@
 package go_backend;
 
+struct DceNames {
+    values: Vec[string],
+    present: HashMap[string, unit],
+}
+
 struct DceResult {
     block: Block,
-    live: Vec[string],
-    needs_decl: Vec[string],
+    live: DceNames,
+    needs_decl: DceNames,
 }
 
-fn contains_name(values: Vec[string], expected: string) -> bool {
-    let found = Ref::new(false);
-    for value in values {
-        if value == expected {
-            found.set(true)
-        } else {
-            ()
-        }
-    };
-    found.get()
+fn new_dce_names() -> DceNames {
+    DceNames {
+        values: Vec::new(),
+        present: HashMap::new(),
+    }
 }
 
-fn add_name(values: Vec[string], value: string) -> unit {
+fn contains_name(values: DceNames, expected: string) -> bool {
+    values.present.contains(expected)
+}
+
+fn add_name(values: DceNames, value: string) -> unit {
     if !contains_name(values, value) {
-        values.push(value)
+        values.present.set(value, ());
+        values.values.push(value)
     } else {
         ()
     }
 }
 
-fn add_names(target: Vec[string], values: Vec[string]) -> unit {
-    for value in values {
-        add_name(target, value)
-    }
-}
-
-fn copy_names(values: Vec[string]) -> Vec[string] {
-    let result: Vec[string] = Vec::new();
-    for value in values {
-        result.push(value)
-    };
-    result
-}
-
-fn remove_name(values: Vec[string], expected: string) -> unit {
-    let index = Ref::new(0);
-    let found = Ref::new(false);
-    while index.get() < values.len() && found.get() == false {
-        if values.get(index.get()) == expected {
-            let _ = values.remove(index.get());
-            found.set(true)
+fn add_names(target: DceNames, values: DceNames) -> unit {
+    for value in values.values {
+        if contains_name(values, value) {
+            add_name(target, value)
         } else {
-            index.set(index.get() + 1)
+            ()
         }
     }
 }
 
-fn add_expr_uses(values: Vec[string], value: Expr) -> unit {
+fn copy_names(values: DceNames) -> DceNames {
+    let result = new_dce_names();
+    add_names(result, values);
+    result
+}
+
+fn remove_name(values: DceNames, expected: string) -> unit {
+    values.present.remove(expected)
+}
+
+fn add_expr_uses(values: DceNames, value: Expr) -> unit {
     match value {
         Expr::Var(name) => add_name(values, name),
         Expr::Call(func, args) => {
@@ -94,7 +92,7 @@ fn add_expr_uses(values: Vec[string], value: Expr) -> unit {
             }
         },
         Expr::FuncLit(params, _, body) => {
-            let uses: Vec[string] = Vec::new();
+            let uses = new_dce_names();
             add_block_uses(uses, body);
             for param in params {
                 remove_name(uses, param.0)
@@ -110,7 +108,7 @@ fn add_expr_uses(values: Vec[string], value: Expr) -> unit {
     }
 }
 
-fn add_stmt_uses(values: Vec[string], value: Stmt) -> unit {
+fn add_stmt_uses(values: DceNames, value: Stmt) -> unit {
     match value {
         Stmt::Expr(expr) | Stmt::Go(expr) => add_expr_uses(values, expr),
         Stmt::Var(_, _, initial) => match initial {
@@ -148,7 +146,7 @@ fn add_stmt_uses(values: Vec[string], value: Stmt) -> unit {
         Stmt::Loop(body) | Stmt::LabeledLoop(_, body) => add_block_uses(values, body),
         Stmt::Range(names, expr, body) => {
             add_expr_uses(values, expr);
-            let body_uses: Vec[string] = Vec::new();
+            let body_uses = new_dce_names();
             add_block_uses(body_uses, body);
             for name in names {
                 remove_name(body_uses, name)
@@ -168,7 +166,7 @@ fn add_stmt_uses(values: Vec[string], value: Stmt) -> unit {
         },
         Stmt::TypeSwitch(bind, expr, cases, default) => {
             add_expr_uses(values, expr);
-            let body_uses: Vec[string] = Vec::new();
+            let body_uses = new_dce_names();
             for case in cases {
                 add_block_uses(body_uses, case.body)
             };
@@ -190,15 +188,15 @@ fn add_stmt_uses(values: Vec[string], value: Stmt) -> unit {
     }
 }
 
-fn add_block_uses(values: Vec[string], value: Block) -> unit {
+fn add_block_uses(values: DceNames, value: Block) -> unit {
     for stmt in value.stmts {
         add_stmt_uses(values, stmt)
     }
 }
 
-fn free_vars_in_block(value: Block) -> Vec[string] {
-    let used: Vec[string] = Vec::new();
-    let declared: Vec[string] = Vec::new();
+fn free_vars_in_block(value: Block) -> DceNames {
+    let used = new_dce_names();
+    let declared = new_dce_names();
     for stmt in value.stmts {
         match stmt {
             Stmt::Expr(expr) | Stmt::Go(expr) => add_expr_uses(used, expr),
@@ -288,7 +286,7 @@ fn free_vars_in_block(value: Block) -> Vec[string] {
             | Stmt::Unreachable => (),
         }
     };
-    for name in declared {
+    for name in declared.values {
         remove_name(used, name)
     };
     used
@@ -439,9 +437,9 @@ fn reversed(values: Vec[Stmt]) -> Vec[Stmt] {
     result
 }
 
-fn dce_block_with_live(value: Block, live_out: Vec[string]) -> DceResult {
+fn dce_block_with_live(value: Block, live_out: DceNames) -> DceResult {
     let live = copy_names(live_out);
-    let needs_decl: Vec[string] = Vec::new();
+    let needs_decl = new_dce_names();
     let output: Vec[Stmt] = Vec::new();
     let index = Ref::new(value.stmts.len());
     while index.get() > 0 {
@@ -660,6 +658,6 @@ fn dce_block_with_live(value: Block, live_out: Vec[string]) -> DceResult {
 }
 
 pub fn eliminate_dead_vars(value: Block) -> Block {
-    let live: Vec[string] = Vec::new();
+    let live = new_dce_names();
     dce_block_with_live(value, live).block
 }

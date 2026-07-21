@@ -313,71 +313,39 @@ fn variant_go_name(
     enums: Vec[tast::EnumDef],
     structs: Vec[tast::StructDef],
     instances: Vec[core::TypeInstance],
-    function_names: Vec[(string, string)],
+    function_names: FunctionNames,
 ) -> string {
-    let candidate = if variant_instance_count(enums, instances, variant_name) > 1 {
-        qualified_variant_go_name(owner_name, variant_name)
-    } else {
-        go_ident(variant_name)
-    };
-    unique_variant_go_name(
-        candidate,
-        enums,
-        structs,
-        instances,
-        function_names,
-    )
+    let key = owner_name.byte_len().to_string() + ":" + owner_name + variant_name;
+    match function_names.variant_names.get(key) {
+        Option::Some(name) => name,
+        Option::None => {
+            let candidate = if variant_instance_count(enums, instances, variant_name) > 1 {
+                qualified_variant_go_name(owner_name, variant_name)
+            } else {
+                go_ident(variant_name)
+            };
+            let name = unique_variant_go_name(candidate, function_names);
+            function_names.variant_names.set(key, name);
+            name
+        },
+    }
 }
 
 fn variant_name_reserved(
     candidate: string,
-    enums: Vec[tast::EnumDef],
-    structs: Vec[tast::StructDef],
-    instances: Vec[core::TypeInstance],
-    function_names: Vec[(string, string)],
+    function_names: FunctionNames,
 ) -> bool {
-    let result = Ref::new(
-        candidate == "main" || candidate == "init" || is_generated_tuple_type_name(candidate),
-    );
-    for definition in enums {
-        if go_user_type_name(definition.name) == candidate {
-            result.set(true)
-        } else {
-            ()
-        }
-    };
-    for definition in structs {
-        if go_user_type_name(definition.name) == candidate {
-            result.set(true)
-        } else {
-            ()
-        }
-    };
-    for instance in instances {
-        if go_user_type_name(instance.name) == candidate {
-            result.set(true)
-        } else {
-            ()
-        }
-    };
-    for function_name in function_names {
-        if function_name.1 == candidate {
-            result.set(true)
-        } else {
-            ()
-        }
-    };
-    result.get()
+    candidate == "main"
+        || candidate == "init"
+        || is_generated_tuple_type_name(candidate)
+        || function_names.reserved.contains(candidate)
 }
 
 fn unique_variant_go_name(
     candidate: string,
-    enums: Vec[tast::EnumDef],
-    structs: Vec[tast::StructDef],
-    instances: Vec[core::TypeInstance],
-    function_names: Vec[(string, string)],
+    function_names: FunctionNames,
 ) -> string {
-    if variant_name_reserved(candidate, enums, structs, instances, function_names) == false {
+    if variant_name_reserved(candidate, function_names) == false {
         candidate
     } else {
         let base = if is_generated_tuple_type_name(candidate) {
@@ -385,7 +353,7 @@ fn unique_variant_go_name(
         } else {
             candidate
         };
-        if variant_name_reserved(base, enums, structs, instances, function_names) == false {
+        if variant_name_reserved(base, function_names) == false {
             base
         } else {
             let index = Ref::new(1);
@@ -394,9 +362,6 @@ fn unique_variant_go_name(
             ));
             while variant_name_reserved(
                 result.get(),
-                enums,
-                structs,
-                instances,
                 function_names,
             ) {
                 index.set(index.get() + 1);
@@ -421,15 +386,32 @@ fn tag_only_variant_fields(values: Vec[Vec[tast::Type]]) -> bool {
     result.get()
 }
 
+fn new_variant_infos() -> VariantInfos {
+    VariantInfos {
+        by_owner: HashMap::new(),
+    }
+}
+
+fn add_variant_info(variants: VariantInfos, value: VariantInfo) -> unit {
+    match variants.by_owner.get(value.owner_name) {
+        Option::Some(owner_variants) => owner_variants.push(value),
+        Option::None => {
+            let owner_variants: Vec[VariantInfo] = Vec::new();
+            owner_variants.push(value);
+            variants.by_owner.set(value.owner_name, owner_variants)
+        },
+    }
+}
+
 fn tag_only_const_specs(
-    variants: Vec[VariantInfo],
+    variants: VariantInfos,
     definition: tast::EnumDef,
     fields_by_variant: Vec[Vec[tast::Type]],
     instance: core::TypeInstance,
     enums: Vec[tast::EnumDef],
     structs: Vec[tast::StructDef],
     instances: Vec[core::TypeInstance],
-    function_names: Vec[(string, string)],
+    function_names: FunctionNames,
 ) -> Vec[ConstSpec] {
     let specs: Vec[ConstSpec] = Vec::new();
     let owner_go_name = go_user_type_name(instance.name);
@@ -448,7 +430,7 @@ fn tag_only_const_specs(
             ty: Type::Named(owner_go_name),
             value: Expr::Int(index.to_string()),
         });
-        variants.push(VariantInfo {
+        add_variant_info(variants, VariantInfo {
             owner_name: instance.name,
             tag: index,
             variant_name,
@@ -462,11 +444,11 @@ fn tag_only_const_specs(
 fn emit_enum_instance(
     items: Vec[Item],
     emitted: Vec[string],
-    variants: Vec[VariantInfo],
+    variants: VariantInfos,
     enums: Vec[tast::EnumDef],
     structs: Vec[tast::StructDef],
     instances: Vec[core::TypeInstance],
-    function_names: Vec[(string, string)],
+    function_names: FunctionNames,
     instance: core::TypeInstance,
 ) -> unit {
     if contains_text(emitted, instance.name) {
@@ -562,7 +544,7 @@ fn emit_enum_instance(
                             ret_ty: Option::None,
                             body: Block { stmts: Vec::new() },
                         }));
-                        variants.push(VariantInfo {
+                        add_variant_info(variants, VariantInfo {
                             owner_name: instance.name,
                             tag: index,
                             variant_name,
@@ -579,11 +561,11 @@ fn emit_enum_instance(
 
 pub fn emit_user_type_items(
     items: Vec[Item],
-    variants: Vec[VariantInfo],
+    variants: VariantInfos,
     enums: Vec[tast::EnumDef],
     structs: Vec[tast::StructDef],
     instances: Vec[core::TypeInstance],
-    function_names: Vec[(string, string)],
+    function_names: FunctionNames,
 ) -> unit {
     let emitted: Vec[string] = Vec::new();
     for definition in structs {
@@ -711,7 +693,7 @@ pub fn emit_user_type_items(
 }
 
 pub fn variant_type(
-    variants: Vec[VariantInfo],
+    variants: VariantInfos,
     owner_ty: tast::Type,
     tag: int32,
 ) -> Option[Type] {
@@ -728,21 +710,22 @@ pub fn variant_type(
 }
 
 pub fn find_variant_info(
-    variants: Vec[VariantInfo],
+    variants: VariantInfos,
     owner_ty: tast::Type,
     tag: int32,
 ) -> Option[VariantInfo] {
     match tast::resolve_type(owner_ty) {
         tast::Type::Con(owner_name) => {
-            let result: Ref[Option[VariantInfo]] = Ref::new(Option::None);
-            for value in variants {
-                if value.owner_name == owner_name && value.tag == tag {
-                    result.set(Option::Some(value))
-                } else {
-                    ()
-                }
-            };
-            result.get()
+            match variants.by_owner.get(owner_name) {
+                Option::Some(owner_variants) => {
+                    if tag >= 0 && tag < owner_variants.len() {
+                        Option::Some(owner_variants.get(tag))
+                    } else {
+                        Option::None
+                    }
+                },
+                Option::None => Option::None,
+            }
         },
         _ => Option::None,
     }
