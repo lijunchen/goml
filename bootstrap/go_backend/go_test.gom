@@ -35,6 +35,16 @@ fn lower_linked_source(source: string) -> File {
     )))))
 }
 
+fn lower_test_source(source: string, test_cases: Vec[(string, string)]) -> File {
+    lower_tests(
+        anf::lower(lift::lower(mono::lower(core::lower(tast::check(hir::lower(
+            ast::lower(parser::parse(source)),
+            "main.gom",
+        )))))),
+        test_cases,
+    )
+}
+
 fn string_contains(value: string, expected: string) -> bool {
     if expected.byte_len() == 0 {
         true
@@ -51,6 +61,26 @@ fn string_contains(value: string, expected: string) -> bool {
         };
         found.get()
     }
+}
+
+#[test]
+fn emits_test_runner_entrypoint() -> unit {
+    let test_cases = Vec::new();
+    test_cases.push(("example::alpha", "alpha"));
+    test_cases.push(("example::beta", "beta"));
+    let output = encode(lower_test_source(
+        "fn beta() -> unit {} fn alpha() -> unit {} fn unused() -> unit {}",
+        test_cases,
+    ));
+    testing::assert(string_contains(output, "_goml_os \"os\""));
+    testing::assert(string_contains(output, "switch _goml_os.Args[1]"));
+    testing::assert(string_contains(output, "case \"example::alpha\":\n        alpha()"));
+    testing::assert(string_contains(output, "case \"example::beta\":\n        beta()"));
+    testing::assert(string_contains(
+        output,
+        "default:\n        _goml_runtime_std_testing_fail(\"unknown test id\")",
+    ));
+    testing::assert(!string_contains(output, "func unused("))
 }
 
 #[test]

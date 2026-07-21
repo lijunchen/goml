@@ -6,6 +6,24 @@ use gomlang::parser::parser;
 use gomlang::parser::tast;
 use std::testing;
 
+fn main_string_contains(value: string, expected: string) -> bool {
+    if expected.byte_len() == 0 {
+        true
+    } else if value.byte_len() < expected.byte_len() {
+        false
+    } else {
+        let found = Ref::new(false);
+        for index in range(0, value.byte_len() - expected.byte_len() + 1) {
+            if value.byte_slice(index, index + expected.byte_len()) == expected {
+                found.set(true)
+            } else {
+                ()
+            }
+        };
+        found.get()
+    }
+}
+
 fn args_with(values: Vec[string]) -> Vec[string] {
     let args = Vec::new();
     args.push("gomlc");
@@ -224,15 +242,47 @@ fn parses_link_command_arguments() -> unit {
 }
 
 #[test]
+fn parses_test_link_command_arguments() -> unit {
+    let values = Vec::new();
+    values.push("--input");
+    values.push("lib.core");
+    values.push("first.core");
+    values.push("second.core");
+    values.push("--output");
+    values.push("artifact/tests.go");
+    values.push("--manifest");
+    values.push("artifact/tests.json");
+    values.push("--package");
+    values.push("alice::first");
+    values.push("--package");
+    values.push("alice::second");
+    match parse_test_link_command_args(command_args_with("test-link", values)) {
+        Result::Ok(args) => {
+            testing::assert_eq(args.inputs.len(), 3);
+            testing::assert_eq(args.packages.len(), 2);
+            testing::assert_eq(args.packages.get(0), "alice::first");
+            testing::assert_eq(args.packages.get(1), "alice::second");
+            testing::assert_eq(args.output, "artifact/tests.go");
+            testing::assert_eq(args.manifest, "artifact/tests.json")
+        },
+        Result::Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
 fn round_trips_source_artifacts() -> unit {
     let sources = Vec::new();
     sources.push("/project/main.gom");
     sources.push("/project/extra.gom");
+    let source_paths = Vec::new();
+    source_paths.push("main.gom");
+    source_paths.push("extra.gom");
     let dependencies = Vec::new();
     dependencies.push("/project/lib.interface");
     let encoded = encode_source_artifact(SourceArtifact {
         package_name: "alice::app",
         sources,
+        source_paths,
         dependencies,
     });
     match decode_source_artifact(encoded) {
@@ -241,6 +291,8 @@ fn round_trips_source_artifacts() -> unit {
             testing::assert_eq(artifact.sources.len(), 2);
             testing::assert_eq(artifact.sources.get(0), "/project/main.gom");
             testing::assert_eq(artifact.sources.get(1), "/project/extra.gom");
+            testing::assert_eq(artifact.source_paths.get(0), "main.gom");
+            testing::assert_eq(artifact.source_paths.get(1), "extra.gom");
             testing::assert_eq(artifact.dependencies.len(), 1);
             testing::assert_eq(
                 artifact.dependencies.get(0),
@@ -248,6 +300,55 @@ fn round_trips_source_artifacts() -> unit {
             )
         },
         Result::Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
+fn collects_and_encodes_test_descriptors() -> unit {
+    let source = "package sample; #[test] fn zebra() -> unit {} #[test] #[ignore(\"later: \\\"quoted\\\"\")] fn alpha() -> unit {}";
+    let files = Vec::new();
+    files.push(ast::lower(parser::parse(source)));
+    let paths = Vec::new();
+    paths.push("sample/sample_test.gom");
+    match collect_package_tests("alice::sample", files, paths) {
+        Result::Ok(tests) => {
+            testing::assert_eq(tests.len(), 2);
+            testing::assert_eq(tests.get(0).id, "alice::sample::alpha");
+            testing::assert(tests.get(0).ignored);
+            match tests.get(0).ignore_reason {
+                Option::Some(reason) => testing::assert_eq(reason, "later: \"quoted\""),
+                Option::None => testing::fail("expected ignore reason"),
+            };
+            testing::assert_eq(tests.get(1).id, "alice::sample::zebra");
+            testing::assert(!(tests.get(1).ignored));
+            let manifest = encode_test_manifest(tests);
+            testing::assert(main_string_contains(
+                manifest,
+                "\"source_path\": \"sample/sample_test.gom\"",
+            ));
+            testing::assert(main_string_contains(
+                manifest,
+                "\"ignore_reason\": \"later: \\\"quoted\\\"\"",
+            ))
+        },
+        Result::Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
+fn rejects_invalid_test_signatures() -> unit {
+    let files = Vec::new();
+    files.push(ast::lower(parser::parse(
+        "#[test] fn takes_value(value: int32) -> unit {}",
+    )));
+    let paths = Vec::new();
+    paths.push("bad_test.gom");
+    match collect_package_tests("alice::bad", files, paths) {
+        Result::Err(error) => testing::assert_eq(
+            error,
+            "test function `takes_value` must not have parameters",
+        ),
+        Result::Ok(_) => testing::fail("expected invalid test signature"),
     }
 }
 
