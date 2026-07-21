@@ -3057,7 +3057,55 @@ fn compile_function(
     }
 }
 
-pub fn lower(value: anf::File) -> File {
+fn test_main_function(
+    function_names: Vec[(string, string)],
+    test_cases: Vec[(string, string)],
+) -> Function {
+    let cases: Vec[SwitchCase] = Vec::new();
+    for test_case in test_cases {
+        let function_name = match mapped_function_name(function_names, test_case.1) {
+            Option::Some(name) => name,
+            Option::None => function_name(test_case.1),
+        };
+        let body_stmts: Vec[Stmt] = Vec::new();
+        body_stmts.push(Stmt::Expr(Expr::Call(
+            Expr::Var(function_name),
+            Vec::new(),
+        )));
+        cases.push(SwitchCase {
+            value: Expr::String(test_case.0),
+            body: Block { stmts: body_stmts },
+        })
+    };
+    let default_stmts: Vec[Stmt] = Vec::new();
+    let fail_args: Vec[Expr] = Vec::new();
+    fail_args.push(Expr::String("unknown test id"));
+    default_stmts.push(Stmt::Expr(Expr::Call(
+        Expr::Var(runtime_hook_name("std.testing.fail")),
+        fail_args,
+    )));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Switch(
+        Expr::Index(
+            Expr::Var("_goml_os.Args"),
+            Expr::Int("1"),
+        ),
+        cases,
+        Option::Some(Block { stmts: default_stmts }),
+    ));
+    Function {
+        name: "main",
+        params: Vec::new(),
+        ret_ty: Option::None,
+        body: Block { stmts },
+    }
+}
+
+fn lower_with_test_cases(
+    value: anf::File,
+    testing: bool,
+    test_cases: Vec[(string, string)],
+) -> File {
     let enums = value.enums;
     let structs = value.structs;
     let type_instances = value.type_instances;
@@ -3088,6 +3136,11 @@ pub fn lower(value: anf::File) -> File {
             function.body,
         );
         collect_dyn_block(coercions, function.body)
+    };
+    if testing {
+        runtime_hooks.push("std.testing.fail")
+    } else {
+        ()
     };
     let dyn_helper_names = build_dyn_helper_names(coercions, value.functions);
     collect_type_definition_fields(types, enums, structs, type_instances);
@@ -3131,17 +3184,32 @@ pub fn lower(value: anf::File) -> File {
             dyn_helper_names,
         )))
     };
-    let stmts: Vec[Stmt] = Vec::new();
-    let entry_name = match mapped_function_name(function_names, "main") {
-        Option::Some(name) => name,
-        Option::None => "main0",
+    if testing {
+        items.push(Item::Function(test_main_function(
+            function_names,
+            test_cases,
+        )))
+    } else {
+        let stmts: Vec[Stmt] = Vec::new();
+        let entry_name = match mapped_function_name(function_names, "main") {
+            Option::Some(name) => name,
+            Option::None => "main0",
+        };
+        stmts.push(Stmt::Expr(Expr::Call(Expr::Var(entry_name), Vec::new())));
+        items.push(Item::Function(Function {
+            name: "main",
+            params: Vec::new(),
+            ret_ty: Option::None,
+            body: Block { stmts },
+        }))
     };
-    stmts.push(Stmt::Expr(Expr::Call(Expr::Var(entry_name), Vec::new())));
-    items.push(Item::Function(Function {
-        name: "main",
-        params: Vec::new(),
-        ret_ty: Option::None,
-        body: Block { stmts },
-    }));
     prune_functions(File { items })
+}
+
+pub fn lower(value: anf::File) -> File {
+    lower_with_test_cases(value, false, Vec::new())
+}
+
+pub fn lower_tests(value: anf::File, test_cases: Vec[(string, string)]) -> File {
+    lower_with_test_cases(value, true, test_cases)
 }

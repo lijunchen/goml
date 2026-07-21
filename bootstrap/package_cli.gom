@@ -17,9 +17,17 @@ struct LinkCommandArgs {
     output: string,
 }
 
+struct TestLinkCommandArgs {
+    inputs: Vec[string],
+    packages: Vec[string],
+    output: string,
+    manifest: string,
+}
+
 struct SourceArtifact {
     package_name: string,
     sources: Vec[string],
+    source_paths: Vec[string],
     dependencies: Vec[string],
 }
 
@@ -148,6 +156,75 @@ fn parse_link_command_args(args: Vec[string]) -> Result[LinkCommandArgs, string]
     }
 }
 
+fn missing_test_link_argument(name: string) -> Result[TestLinkCommandArgs, string] {
+    Result::Err("missing required argument: " + name)
+}
+
+fn parse_test_link_command_args(args: Vec[string]) -> Result[TestLinkCommandArgs, string] {
+    let output: Ref[Option[string]] = Ref::new(Option::None);
+    let manifest: Ref[Option[string]] = Ref::new(Option::None);
+    let inputs = Vec::new();
+    let packages = Vec::new();
+    let index = Ref::new(2);
+    while index.get() < args.len() {
+        let argument = args.get(index.get());
+        if argument == "--input" {
+            index.set(index.get() + 1);
+            let previous_len = inputs.len();
+            while index.get() < args.len() && !cli_option(args.get(index.get())) {
+                inputs.push(args.get(index.get()));
+                index.set(index.get() + 1)
+            };
+            if inputs.len() == previous_len {
+                return missing_test_link_argument("--input")
+            } else {
+                ()
+            }
+        } else if argument == "--package" {
+            if index.get() + 1 >= args.len() {
+                return missing_test_link_argument("--package")
+            } else {
+                packages.push(args.get(index.get() + 1));
+                index.set(index.get() + 2)
+            }
+        } else if argument == "--output" {
+            if index.get() + 1 >= args.len() {
+                return missing_test_link_argument("--output")
+            } else {
+                output.set(Option::Some(args.get(index.get() + 1)));
+                index.set(index.get() + 2)
+            }
+        } else if argument == "--manifest" {
+            if index.get() + 1 >= args.len() {
+                return missing_test_link_argument("--manifest")
+            } else {
+                manifest.set(Option::Some(args.get(index.get() + 1)));
+                index.set(index.get() + 2)
+            }
+        } else {
+            return Result::Err("unknown argument: " + argument)
+        }
+    };
+    if inputs.len() == 0 {
+        missing_test_link_argument("--input")
+    } else if packages.len() == 0 {
+        missing_test_link_argument("--package")
+    } else {
+        match output.get() {
+            Option::Some(output) => match manifest.get() {
+                Option::Some(manifest) => Result::Ok(TestLinkCommandArgs {
+                    inputs,
+                    packages,
+                    output,
+                    manifest,
+                }),
+                Option::None => missing_test_link_argument("--manifest"),
+            },
+            Option::None => missing_test_link_argument("--output"),
+        }
+    }
+}
+
 fn absolute_path(value: string) -> Result[string, string] {
     path::absolute(value)
 }
@@ -169,6 +246,7 @@ fn source_artifact(args: PackageCommandArgs) -> Result[SourceArtifact, string] {
             Result::Ok(dependencies) => Result::Ok(SourceArtifact {
                 package_name: args.package_name,
                 sources,
+                source_paths: args.inputs,
                 dependencies,
             }),
             Result::Err(error) => Result::Err(error),
@@ -186,6 +264,11 @@ fn encode_source_artifact(value: SourceArtifact) -> string {
     for source in value.sources {
         builder.write_string("source\t");
         builder.write_string(source);
+        builder.write_char('\n')
+    };
+    for source_path in value.source_paths {
+        builder.write_string("source-path\t");
+        builder.write_string(source_path);
         builder.write_char('\n')
     };
     for dependency in value.dependencies {
@@ -235,6 +318,7 @@ fn decode_source_artifact(value: string) -> Result[SourceArtifact, string] {
     };
     let package_name: Ref[Option[string]] = Ref::new(Option::None);
     let sources = Vec::new();
+    let source_paths = Vec::new();
     let dependencies = Vec::new();
     for index in range(1, lines.len()) {
         let line = lines.get(index);
@@ -242,12 +326,15 @@ fn decode_source_artifact(value: string) -> Result[SourceArtifact, string] {
             Option::Some(value) => package_name.set(Option::Some(value)),
             Option::None => match artifact_field(line, "source") {
                 Option::Some(value) => sources.push(value),
-                Option::None => match artifact_field(line, "dependency") {
-                    Option::Some(value) => dependencies.push(value),
-                    Option::None => if line == "" {
-                        ()
-                    } else {
-                        return Result::Err("invalid compiler artifact field")
+                Option::None => match artifact_field(line, "source-path") {
+                    Option::Some(value) => source_paths.push(value),
+                    Option::None => match artifact_field(line, "dependency") {
+                        Option::Some(value) => dependencies.push(value),
+                        Option::None => if line == "" {
+                            ()
+                        } else {
+                            return Result::Err("invalid compiler artifact field")
+                        },
                     },
                 },
             },
@@ -255,9 +342,15 @@ fn decode_source_artifact(value: string) -> Result[SourceArtifact, string] {
     };
     match package_name.get() {
         Option::Some(package_name) => if sources.len() > 0 {
+            let normalized_paths = if source_paths.len() == sources.len() {
+                source_paths
+            } else {
+                sources
+            };
             Result::Ok(SourceArtifact {
                 package_name,
                 sources,
+                source_paths: normalized_paths,
                 dependencies,
             })
         } else {

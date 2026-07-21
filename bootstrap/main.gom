@@ -164,10 +164,16 @@ fn main() -> unit {
         run_version(args)
     } else if args.len() > 1 && args.get(1) == "check" {
         run_package_command(args, false)
+    } else if args.len() > 1 && args.get(1) == "test-check" {
+        run_package_command(args, false)
     } else if args.len() > 1 && args.get(1) == "build" {
+        run_package_command(args, true)
+    } else if args.len() > 1 && args.get(1) == "test-build" {
         run_package_command(args, true)
     } else if args.len() > 1 && args.get(1) == "link" {
         run_link_command(args)
+    } else if args.len() > 1 && args.get(1) == "test-link" {
+        run_test_link_command(args)
     } else if args.len() > 1 && args.get(1) == "run-single" {
         match parse_run_args(args) {
             Result::Ok(run_args) => run_single(run_args),

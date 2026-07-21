@@ -28,6 +28,7 @@ struct ArtifactCompilation {
     hir_file: hir::File,
     core_value: core::File,
     standard_needs: StandardNeeds,
+    tests: Vec[TestDescriptor],
 }
 
 struct PackageWorld {
@@ -267,6 +268,17 @@ fn compile_source_artifact(
         parsed.push(parser::parse(read_source(source_path)))
     };
     let ast_values = ast::lower_package(parsed);
+    let tests = match collect_package_tests(
+        artifact.package_name,
+        ast_values,
+        artifact.source_paths,
+    ) {
+        Result::Ok(values) => values,
+        Result::Err(error) => {
+            fail("error[compile]: " + error);
+            Vec::new()
+        },
+    };
     let hir_inputs: Vec[(ast::LowerResult, string)] = Vec::new();
     let needs = Ref::new(no_standard_needs());
     for index in range(0, ast_values.len()) {
@@ -314,6 +326,7 @@ fn compile_source_artifact(
         hir_file,
         core_value,
         standard_needs: needs.get(),
+        tests,
     };
     world.compilations.push(compilation);
     compilation
@@ -469,6 +482,7 @@ fn run_package_command(args: Vec[string], build: bool) -> unit {
             SourceArtifact {
                 package_name: command.package_name,
                 sources: Vec::new(),
+                source_paths: Vec::new(),
                 dependencies: Vec::new(),
             }
         },
@@ -512,6 +526,7 @@ fn run_link_command(args: Vec[string]) -> unit {
                 SourceArtifact {
                     package_name: "main",
                     sources: Vec::new(),
+                    source_paths: Vec::new(),
                     dependencies: Vec::new(),
                 }
             },
@@ -545,6 +560,7 @@ fn run_link_command(args: Vec[string]) -> unit {
                     type_instances: Vec::new(),
                 },
                 standard_needs: no_standard_needs(),
+                tests: Vec::new(),
             }
         },
     };
@@ -561,6 +577,92 @@ fn run_link_command(args: Vec[string]) -> unit {
     let go_source = go_backend::encode(go_backend::lower(anf_value));
     match ensure_parent(command.output) {
         Result::Ok(()) => match fs::write_file(command.output, go_source) {
+            Result::Ok(()) => (),
+            Result::Err(error) => fail(error),
+        },
+        Result::Err(error) => fail(error),
+    }
+}
+
+fn empty_core_file() -> core::File {
+    core::File {
+        functions: Vec::new(),
+        enums: Vec::new(),
+        structs: Vec::new(),
+        type_instances: Vec::new(),
+    }
+}
+
+fn run_test_link_command(args: Vec[string]) -> unit {
+    let command = match parse_test_link_command_args(args) {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            fail(error);
+            TestLinkCommandArgs {
+                inputs: Vec::new(),
+                packages: Vec::new(),
+                output: "main.go",
+                manifest: "tests.json",
+            }
+        },
+    };
+    let world = package_world();
+    let package_cores = Vec::new();
+    let needs = Ref::new(no_standard_needs());
+    for input in command.inputs {
+        let artifact = match read_source_artifact(input) {
+            Result::Ok(value) => value,
+            Result::Err(error) => {
+                fail("error[compile]: failed to read core artifact: " + error);
+                SourceArtifact {
+                    package_name: "main",
+                    sources: Vec::new(),
+                    source_paths: Vec::new(),
+                    dependencies: Vec::new(),
+                }
+            },
+        };
+        let compilation = compile_source_artifact(world, artifact);
+        needs.set(merge_standard_needs(needs.get(), compilation.standard_needs));
+        package_cores.push(compilation.core_value)
+    };
+    let tests = Vec::new();
+    for package_name in command.packages {
+        match find_artifact_compilation(world, package_name) {
+            Option::Some(compilation) => for test in compilation.tests {
+                tests.push(test)
+            },
+            Option::None => fail(
+                "error[compile]: missing test package " + package_name,
+            ),
+        }
+    };
+    let linked_dependencies = selected_link_standard_core(world.standard, needs.get());
+    append_core_files(linked_dependencies, package_cores);
+    let linked = core::link_with_dependencies(
+        world.builtins,
+        linked_dependencies,
+        empty_core_file(),
+    );
+    let mono_value = mono::lower(linked);
+    let lift_value = lift::lower_with_counter(mono_value, world.counter);
+    let anf_value = anf::lower_with_counter(lift_value, world.counter);
+    let go_source = go_backend::encode(go_backend::lower_tests(
+        anf_value,
+        test_link_cases(tests),
+    ));
+    match ensure_parent(command.output) {
+        Result::Ok(()) => match fs::write_file(command.output, go_source) {
+            Result::Ok(()) => (),
+            Result::Err(error) => fail(error),
+        },
+        Result::Err(error) => fail(error),
+    };
+    match ensure_parent(command.manifest) {
+        Result::Ok(()) => match fs::write_file(
+            command.manifest,
+            encode_test_manifest(tests),
+        ) {
             Result::Ok(()) => (),
             Result::Err(error) => fail(error),
         },
