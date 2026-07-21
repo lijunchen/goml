@@ -17,6 +17,9 @@ struct StandardNeeds {
     env: bool,
     fs: bool,
     io: bool,
+    path: bool,
+    process: bool,
+    testing: bool,
     text: bool,
 }
 
@@ -41,6 +44,9 @@ fn no_standard_needs() -> StandardNeeds {
         env: false,
         fs: false,
         io: false,
+        path: false,
+        process: false,
+        testing: false,
         text: false,
     }
 }
@@ -48,16 +54,21 @@ fn no_standard_needs() -> StandardNeeds {
 fn source_standard_needs(value: ast::LowerResult) -> StandardNeeds {
     let needs_fs = imports_package(value, "std::fs");
     let needs_io = imports_package(value, "std::io");
+    let needs_process = imports_package(value, "std::process");
     let needs_text = imports_package(value, "std::text");
     StandardNeeds {
         bytes: imports_package(value, "std::bytes")
             || needs_fs
             || needs_io
+            || needs_process
             || needs_text,
         collections: imports_package(value, "std::collections"),
         env: imports_package(value, "std::env"),
         fs: needs_fs,
         io: needs_io,
+        path: imports_package(value, "std::path"),
+        process: needs_process,
+        testing: imports_package(value, "std::testing"),
         text: needs_text,
     }
 }
@@ -69,6 +80,9 @@ fn merge_standard_needs(left: StandardNeeds, right: StandardNeeds) -> StandardNe
         env: left.env || right.env,
         fs: left.fs || right.fs,
         io: left.io || right.io,
+        path: left.path || right.path,
+        process: left.process || right.process,
+        testing: left.testing || right.testing,
         text: left.text || right.text,
     }
 }
@@ -320,6 +334,21 @@ fn selected_link_standard_core(
     };
     if needs.io {
         result.push(standard.io.core_value)
+    } else {
+        ()
+    };
+    if needs.path {
+        result.push(standard.path.core_value)
+    } else {
+        ()
+    };
+    if needs.process {
+        result.push(standard.process.core_value)
+    } else {
+        ()
+    };
+    if needs.testing {
+        result.push(standard.testing.core_value)
     } else {
         ()
     };
