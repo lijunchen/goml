@@ -29,6 +29,13 @@ fn lower_linked_source(source: string) -> core::File {
     lower(core::link_with_builtins(builtins, user))
 }
 
+fn lower_checked_source(source: string) -> LowerResult {
+    lower_checked(core::lower(tast::check(hir::lower(
+        ast::lower(parser::parse(source)),
+        "main.gom",
+    ))))
+}
+
 fn string_contains(value: string, expected: string) -> bool {
     if expected.byte_len() == 0 {
         true
@@ -363,4 +370,42 @@ fn orders_nested_associated_calls_by_resolved_callees() -> unit {
         encode(lower_source(source)),
         "fn main() -> int32 {\n  read__S_Box[int32](boxed__T_int32(99))\n}\n\nfn boxed__T_int32(value/1: int32) -> Box__int32 {\n  Box__int32 { value: value/1 }\n}\n\nfn read__S_Box[int32](source/2: Box__int32) -> int32 {\n  trait_impl#Source#Box__int32#get(source/2)\n}\n\nfn trait_impl#Source#Box__int32#get(self/0: Box__int32) -> int32 {\n  Box__int32.value(self/0)\n}",
     )
+}
+
+#[test]
+fn rejects_recursive_generic_function_specialization() -> unit {
+    let result = lower_checked_source(
+        "fn blow[T](value: T) -> unit { blow((value, value)) } fn main() -> unit { blow(0i32) }",
+    );
+    match result.error {
+        Option::Some(error) => testing::assert_eq(
+            error,
+            "Infinite monomorphization detected for generic function blow: recursive specialization grows type parameter T from (int32, int32) to ((int32, int32), (int32, int32))",
+        ),
+        Option::None => testing::fail("expected recursive function specialization error"),
+    }
+}
+
+#[test]
+fn rejects_recursive_generic_type_specialization() -> unit {
+    let enum_result = lower_checked_source(
+        "enum Bad[T] { End(T), More(Bad[Option[T]]) } fn use_bad(value: Bad[int32]) -> unit {} fn main() -> unit {}",
+    );
+    match enum_result.error {
+        Option::Some(error) => testing::assert_eq(
+            error,
+            "Infinite monomorphization detected for generic type Bad: recursive specialization grows type parameter T from Option[int32] to Option[Option[int32]]",
+        ),
+        Option::None => testing::fail("expected recursive enum specialization error"),
+    };
+    let struct_result = lower_checked_source(
+        "struct Bad[T] { value: T, next: Ref[Option[Bad[Option[T]]]] } fn use_bad(value: Bad[int32]) -> unit {} fn main() -> unit {}",
+    );
+    match struct_result.error {
+        Option::Some(error) => testing::assert_eq(
+            error,
+            "Infinite monomorphization detected for generic type Bad: recursive specialization grows type parameter T from Option[int32] to Option[Option[int32]]",
+        ),
+        Option::None => testing::fail("expected recursive struct specialization error"),
+    }
 }

@@ -721,6 +721,10 @@ fn preserves_user_struct_order_before_closure_environments() -> unit {
 fn hashes_and_compacts_long_go_identifiers() -> unit {
     testing::assert_eq(sha256_prefix("abc"), "ba7816bf8f01cfea414140de5dae2223");
     testing::assert_eq(
+        sha256_hex("abc"),
+        "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+    );
+    testing::assert_eq(
         go_ident(
             "inherent#closure_env_grow_T_int32_0#closure_env_grow_T_int32_0#apply",
         ),
@@ -870,6 +874,14 @@ fn uses_synthetic_hashmap_options_when_unmaterialized() -> unit {
 }
 
 #[test]
+fn uses_user_hashmap_option_variants() -> unit {
+    let source = "enum Option[T] { Nada, Just(T) } fn main() -> unit { let map: HashMap[int32, int32] = HashMap::new(); map.set(1i32, 2i32); match map.get(1i32) { Option::Just(value) => println(value), Option::Nada => println(0i32), } }";
+    let output = encode(lower_linked_source(source));
+    testing::assert(string_contains(output, "return Just{"));
+    testing::assert(string_contains(output, "return Nada{}"))
+}
+
+#[test]
 fn reuses_materialized_hashmap_option_types() -> unit {
     let source = "struct hashmap_int32_int32_x { value: int32, } fn main() -> unit { let c = hashmap_int32_int32_x { value: 4i32 }; let m: HashMap[int32, int32] = HashMap::new(); m.set(1i32, 5i32); match m.get(1i32) { Option::Some(v) => println(c.value + v), Option::None => println(0i32), } }";
     testing::assert_eq(
@@ -939,6 +951,15 @@ fn emits_rounded_float32_literals() -> unit {
     testing::assert(string_contains(
         output,
         "identity__T_float32(3.140000104904175)",
+    ))
+}
+
+#[test]
+fn canonicalizes_float64_literals() -> unit {
+    let source = "fn main() -> unit { let value: float64 = 0.0; println(value.to_string()) }";
+    testing::assert(string_contains(
+        encode(lower_source(source)),
+        "var value__0 float64 = 0\n",
     ))
 }
 
