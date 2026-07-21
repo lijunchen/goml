@@ -2,6 +2,7 @@ package main;
 
 use gomlang::parser::ast;
 use gomlang::parser::core;
+use gomlang::parser::go_backend;
 use gomlang::parser::hir;
 use gomlang::parser::parser;
 use gomlang::parser::tast;
@@ -23,6 +24,13 @@ fn main_string_contains(value: string, expected: string) -> bool {
         };
         found.get()
     }
+}
+
+#[test]
+fn stage_lowering_preserves_hidden_fresh_names() -> unit {
+    let source = "enum E { A(int32), B(int32), C(int32) } fn main() -> unit { let value = E::B(1i32); match value { E::B(item) => (), _ => () } }";
+    let stage = lower_core_stage("main.gom", source);
+    testing::assert_eq(stage.counter.get(), 3)
 }
 
 fn args_with(values: Vec[string]) -> Vec[string] {
@@ -113,11 +121,29 @@ fn tracks_host_api_package_link_needs() -> unit {
     testing::assert(needs.path);
     testing::assert(needs.process);
     testing::assert(needs.testing);
+    testing::assert(!needs.root);
     testing::assert(!needs.collections);
     testing::assert(!needs.env);
     testing::assert(!needs.fs);
     testing::assert(!needs.io);
     testing::assert(!needs.text)
+}
+
+#[test]
+fn tracks_standard_root_package_needs() -> unit {
+    let needs = source_standard_needs(ast::lower(parser::parse(
+        "package main; use std; fn main() -> unit {}",
+    )));
+    testing::assert(needs.root);
+    testing::assert(needs.bytes);
+    testing::assert(needs.collections);
+    testing::assert(needs.env);
+    testing::assert(needs.fs);
+    testing::assert(needs.io);
+    testing::assert(needs.path);
+    testing::assert(needs.process);
+    testing::assert(!needs.testing);
+    testing::assert(needs.text)
 }
 
 #[test]
@@ -183,10 +209,13 @@ fn parses_version_formats() -> unit {
 
 #[test]
 fn reports_driver_protocol_version() -> unit {
-    testing::assert_eq(version_output(VersionFormat::Text), "gomlc 0.0.0");
+    testing::assert_eq(
+        version_output(VersionFormat::Text),
+        "gomlc 0.0.0 (6a54a5d0c 2026-07-22)",
+    );
     testing::assert_eq(
         version_output(VersionFormat::Json),
-        "{\"artifact_format\":11,\"compiler_abi\":2,\"driver_protocol\":1,\"git_date\":null,\"git_hash\":null,\"tool\":\"gomlc\",\"version\":\"0.0.0\"}",
+        "{\"artifact_format\":11,\"compiler_abi\":2,\"driver_protocol\":1,\"git_date\":\"2026-07-22\",\"git_hash\":\"6a54a5d0c\",\"tool\":\"gomlc\",\"version\":\"0.0.0\"}",
     );
     match parse_version_format("yaml") {
         Result::Err(error) => testing::assert_eq(
@@ -268,40 +297,6 @@ fn parses_test_link_command_arguments() -> unit {
             testing::assert_eq(args.packages.get(1), "alice::second");
             testing::assert_eq(args.output, "artifact/tests.go");
             testing::assert_eq(args.manifest, "artifact/tests.json")
-        },
-        Result::Err(error) => testing::fail(error),
-    }
-}
-
-#[test]
-fn round_trips_source_artifacts() -> unit {
-    let sources = Vec::new();
-    sources.push("/project/main.gom");
-    sources.push("/project/extra.gom");
-    let source_paths = Vec::new();
-    source_paths.push("main.gom");
-    source_paths.push("extra.gom");
-    let dependencies = Vec::new();
-    dependencies.push("/project/lib.interface");
-    let encoded = encode_source_artifact(SourceArtifact {
-        package_name: "alice::app",
-        sources,
-        source_paths,
-        dependencies,
-    });
-    match decode_source_artifact(encoded) {
-        Result::Ok(artifact) => {
-            testing::assert_eq(artifact.package_name, "alice::app");
-            testing::assert_eq(artifact.sources.len(), 2);
-            testing::assert_eq(artifact.sources.get(0), "/project/main.gom");
-            testing::assert_eq(artifact.sources.get(1), "/project/extra.gom");
-            testing::assert_eq(artifact.source_paths.get(0), "main.gom");
-            testing::assert_eq(artifact.source_paths.get(1), "extra.gom");
-            testing::assert_eq(artifact.dependencies.len(), 1);
-            testing::assert_eq(
-                artifact.dependencies.get(0),
-                "/project/lib.interface",
-            )
         },
         Result::Err(error) => testing::fail(error),
     }
@@ -510,74 +505,6 @@ fn rejects_project_imports_in_single_file_mode() -> unit {
 }
 
 #[test]
-fn filters_private_dependency_items() -> unit {
-    let source = "package api; fn secret() -> int32 { 7 } pub fn answer() -> int32 { secret() + 35 }";
-    let ast_values = Vec::new();
-    ast_values.push(ast::lower(parser::parse(source)));
-    let names = public_item_names(ast_values, "visibility_audit::api");
-    testing::assert_eq(names.len(), 1);
-    testing::assert_eq(names.get(0), "visibility_audit::api::answer");
-    let lowered = hir::lower_package(
-        ast::lower(parser::parse(source)),
-        "api/api.gom",
-        "visibility_audit::api",
-    );
-    let file = match lowered.hir {
-        Option::Some(value) => value,
-        Option::None => {
-            testing::fail("expected dependency HIR");
-            hir::File {
-                package_name: "visibility_audit::api",
-                path: "api/api.gom",
-                imports: Vec::new(),
-                import_aliases: Vec::new(),
-                use_traits: Vec::new(),
-                items: Vec::new(),
-            }
-        },
-    };
-    let exported = exported_hir_file(file, names);
-    testing::assert_eq(exported.items.len(), 1);
-    match exported.items.get(0) {
-        hir::Item::Function(value) => testing::assert_eq(
-            value.name,
-            "visibility_audit::api::answer",
-        ),
-        _ => testing::fail("expected public function"),
-    };
-    let dependencies = Vec::new();
-    dependencies.push(exported);
-    let rejected = tast::check_for_link_with_dependencies(
-        hir::lower_package(
-            ast::lower(parser::parse(
-                "package main; use visibility_audit::api; fn main() -> unit { let _ = api::secret(); }",
-            )),
-            "main.gom",
-            "visibility_audit",
-        ),
-        dependencies,
-    );
-    testing::assert(rejected.diagnostics.len() > 0);
-    testing::assert(main_string_contains(
-        rejected.diagnostics.get(0),
-        "visibility_audit::api::secret",
-    ));
-    let dependencies = Vec::new();
-    dependencies.push(exported);
-    let accepted = tast::check_for_link_with_dependencies(
-        hir::lower_package(
-            ast::lower(parser::parse(
-                "package main; use visibility_audit::api; fn main() -> unit { let _ = api::answer(); }",
-            )),
-            "main.gom",
-            "visibility_audit",
-        ),
-        dependencies,
-    );
-    testing::assert_eq(accepted.diagnostics.len(), 0)
-}
-
-#[test]
 fn rejects_private_types_exposed_by_public_trait_impls() -> unit {
     let source = "package api; pub trait Source { type Item; fn get(Self) -> Self::Item; } pub struct Public {} struct Hidden {} impl Source for Public { type Item = Hidden; fn get(self: Public) -> Hidden { Hidden {} } }";
     let ast_values = Vec::new();
@@ -640,22 +567,38 @@ fn filters_private_types_traits_and_trait_impls() -> unit {
             }
         },
     };
-    let exported = exported_hir_file(file, public_names);
-    testing::assert_eq(exported.items.len(), 2);
-    match exported.items.get(0) {
-        hir::Item::StructDef(value) => testing::assert_eq(
-            value.name,
-            "visibility_audit::api::Item",
-        ),
-        _ => testing::fail("expected public struct"),
+    let signatures = tast::package_signatures(file);
+    let checked = tast::check_package_files_for_link_with_dependencies(
+        Vec::new().pushed(file),
+        Vec::new(),
+    );
+    let tast_file = match checked.tast {
+        Option::Some(value) => value,
+        Option::None => {
+            testing::fail("expected checked package");
+            tast::File {
+                items: Vec::new(),
+                enums: Vec::new(),
+                structs: Vec::new(),
+            }
+        },
     };
-    match exported.items.get(1) {
-        hir::Item::Function(value) => testing::assert_eq(
-            value.name,
-            "visibility_audit::api::item",
-        ),
-        _ => testing::fail("expected public function"),
-    }
+    let exports = artifact_package_exports(
+        tast_file,
+        signatures,
+        "visibility_audit::api",
+        public_names,
+        true,
+        Vec::new(),
+        Vec::new(),
+    );
+    testing::assert_eq(exports.enums.len(), 0);
+    testing::assert_eq(exports.structs.len(), 1);
+    testing::assert_eq(exports.structs.get(0).name, "visibility_audit::api::Item");
+    testing::assert_eq(exports.traits.len(), 0);
+    testing::assert_eq(exports.trait_impls.len(), 0);
+    testing::assert_eq(exports.functions.len(), 1);
+    testing::assert_eq(exports.functions.get(0).name, "visibility_audit::api::item")
 }
 
 #[test]
@@ -691,4 +634,772 @@ fn orders_link_inputs_by_dependencies_and_name() -> unit {
         },
         Result::Err(error) => testing::fail(error),
     }
+}
+
+fn sample_artifact_json(pretty: bool) -> string {
+    let writer = new_artifact_json_writer(pretty);
+    artifact_json_begin_object(writer);
+    artifact_json_name(writer, "text");
+    artifact_json_string(writer, "quote \" slash \\ line\n tab\t zero\u0000 é");
+    artifact_json_name(writer, "values");
+    artifact_json_begin_array(writer);
+    artifact_json_number(writer, "12");
+    artifact_json_bool(writer, true);
+    artifact_json_null(writer);
+    artifact_json_end_array(writer);
+    artifact_json_end_object(writer);
+    artifact_json_finish(writer)
+}
+
+#[test]
+fn writes_compact_artifact_json() -> unit {
+    testing::assert_eq(
+        sample_artifact_json(false),
+        "{\"text\":\"quote \\\" slash \\\\ line\\n tab\\t zero\\u0000 é\",\"values\":[12,true,null]}",
+    )
+}
+
+#[test]
+fn writes_pretty_artifact_json() -> unit {
+    testing::assert_eq(
+        sample_artifact_json(true),
+        "{\n  \"text\": \"quote \\\" slash \\\\ line\\n tab\\t zero\\u0000 é\",\n  \"values\": [\n    12,\n    true,\n    null\n  ]\n}",
+    )
+}
+
+#[test]
+fn writes_rust_artifact_type_shapes() -> unit {
+    let context = artifact_type_context(
+        Vec::new().pushed("Option"),
+        Vec::new().pushed("Box"),
+    );
+    let option = tast::Type::App(
+        tast::Type::Con("Option"),
+        Vec::new().pushed(tast::Type::Int32),
+    );
+    let projection = tast::Type::Projection(
+        tast::Type::Param("I"),
+        "Item",
+        Option::Some(tast::TraitRef {
+            name: "Iterator",
+            args: Vec::new(),
+        }),
+    );
+    let value = tast::Type::Func(
+        Vec::new().pushed(option),
+        projection,
+    );
+    let writer = new_artifact_json_writer(false);
+    artifact_json_type(writer, context, value);
+    testing::assert_eq(
+        artifact_json_finish(writer),
+        "{\"TFunc\":{\"params\":[{\"TApp\":{\"ty\":{\"TEnum\":{\"name\":\"Option\"}},\"args\":[\"TInt32\"]}}],\"ret_ty\":{\"TProjection\":{\"trait_ref\":{\"name\":\"Iterator\",\"args\":[]},\"for_ty\":{\"TParam\":{\"name\":\"I\"}},\"name\":\"Item\"}}}}",
+    );
+    let writer = new_artifact_json_writer(false);
+    artifact_json_type_predicate(
+        writer,
+        context,
+        tast::TypePredicate::Equality(
+            tast::Type::Con("Box"),
+            tast::Type::Int32,
+        ),
+    );
+    testing::assert_eq(
+        artifact_json_finish(writer),
+        "{\"Equality\":{\"lhs\":{\"TStruct\":{\"name\":\"Box\"}},\"rhs\":\"TInt32\"}}",
+    )
+}
+
+#[test]
+fn writes_rust_core_file_shape() -> unit {
+    let value = core::File {
+        functions: Vec::new().pushed(core::Function {
+            name: "audit::answer",
+            root: true,
+            generics: Vec::new(),
+            predicates: Vec::new(),
+            trait_impl: Option::None,
+            params: Vec::new(),
+            ret_ty: tast::Type::Int32,
+            body: core::Block {
+                stmts: Vec::new(),
+                tail: Option::Some(core::Expr::Prim(
+                    tast::Primitive::Int32("41"),
+                    tast::Type::Int32,
+                )),
+            },
+        }),
+        enums: Vec::new(),
+        structs: Vec::new(),
+        type_instances: Vec::new(),
+    };
+    let writer = new_artifact_json_writer(false);
+    artifact_json_core_file(
+        writer,
+        artifact_type_context(Vec::new(), Vec::new()),
+        value,
+    );
+    testing::assert_eq(
+        artifact_json_finish(writer),
+        "{\"toplevels\":[{\"name\":\"audit::answer\",\"root\":true,\"generics\":[],\"trait_impl\":null,\"params\":[],\"ret_ty\":\"TInt32\",\"body\":{\"stmts\":[],\"tail\":{\"EPrim\":{\"value\":{\"Int32\":{\"value\":41}},\"ty\":\"TInt32\"}}}}]}",
+    )
+}
+
+#[test]
+fn writes_rust_callable_body_shapes() -> unit {
+    let writer = new_artifact_json_writer(false);
+    let intrinsic = artifact_callable(tast::Callable::Intrinsic("ref.new"));
+    artifact_json_begin_array(writer);
+    artifact_json_string(writer, intrinsic.name);
+    artifact_json_callable_body(writer, intrinsic);
+    let runtime = artifact_callable(tast::Callable::Runtime("core.char_from_uint32"));
+    artifact_json_string(writer, runtime.name);
+    artifact_json_callable_body(writer, runtime);
+    let host = artifact_callable(tast::Callable::Runtime("std.path.file_name"));
+    artifact_json_string(writer, host.name);
+    artifact_json_callable_body(writer, host);
+    artifact_json_end_array(writer);
+    testing::assert_eq(
+        artifact_json_finish(writer),
+        "[\"ref\",{\"kind\":\"intrinsic\",\"id\":\"ref_new\"},\"char_from_uint32_raw\",{\"kind\":\"runtime\",\"id\":\"char_from_uint32\"},\"std::internal::host::path_file_name\",{\"kind\":\"runtime\",\"id\":\"std_path_file_name\"}]",
+    )
+}
+
+#[test]
+fn writes_rust_interface_unit_shape_and_hash() -> unit {
+    let exports = empty_artifact_package_exports();
+    exports.functions.push(ArtifactFnScheme {
+        name: "audit::value::value",
+        type_params: Vec::new(),
+        constraints: Vec::new(),
+        ty: tast::Type::Func(Vec::new(), tast::Type::Int32),
+        body: tast::Callable::Function("audit::value::value"),
+    });
+    let artifact_unit = new_artifact_interface_unit(
+        "audit::value",
+        exports,
+        ArtifactPackageInterface {
+            package_name: "audit::value",
+            name: "value",
+            value_exports: Vec::new().pushed(("audit::value::value", 0)),
+            enum_variants: Vec::new(),
+        },
+        Vec::new().pushed((
+            "builtin",
+            "ce6423fcfff3e823c1555e9ef6adfaceb30ee8c2d6edb627413245095e9eb91d",
+        )),
+    );
+    testing::assert_eq(
+        artifact_unit.interface_hash,
+        "68689dc725f95ef421332afe75f05d624016fad7458b6d286e06878c83cd410f",
+    );
+    let encoded = encode_artifact_interface_unit(artifact_unit, false);
+    testing::assert_eq(
+        encoded,
+        "{\"format_version\":11,\"compiler_abi\":2,\"package\":\"audit::value\",\"exports\":{\"type_env\":{\"enums\":{},\"structs\":{}},\"trait_env\":{\"trait_defs\":{},\"trait_impls\":[],\"inherent_impls\":[]},\"value_env\":{\"funcs\":{\"audit::value::value\":{\"type_params\":[],\"constraints\":[],\"ty\":{\"TFunc\":{\"params\":[],\"ret_ty\":\"TInt32\"}},\"body\":{\"kind\":\"goml\"}}}}},\"interface\":{\"package\":\"audit::value\",\"name\":\"value\",\"value_exports\":{\"audit::value::value\":0},\"enum_variants\":{}},\"deps\":{\"builtin\":\"ce6423fcfff3e823c1555e9ef6adfaceb30ee8c2d6edb627413245095e9eb91d\"},\"interface_hash\":\"68689dc725f95ef421332afe75f05d624016fad7458b6d286e06878c83cd410f\"}",
+    );
+    match decode_artifact_interface_unit(encoded) {
+        Result::Ok(value) => testing::assert_eq(
+            encode_artifact_interface_unit(value, false),
+            encoded,
+        ),
+        Result::Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
+fn extracts_rust_interface_unit_from_checked_package() -> unit {
+    let source = "package value; fn private_value() -> int32 { 41 } pub fn value() -> int32 { private_value() + 1 }";
+    let lowered_ast = ast::lower(parser::parse(source));
+    let ast_values = Vec::new();
+    ast_values.push(lowered_ast);
+    let public_names = public_item_names(ast_values, "audit::value");
+    let lowered = hir::lower_package(lowered_ast, "value/value.gom", "audit::value");
+    let hir_file = match lowered.hir {
+        Option::Some(value) => value,
+        Option::None => {
+            testing::fail("expected package HIR");
+            hir::File {
+                package_name: "audit::value",
+                path: "value/value.gom",
+                imports: Vec::new(),
+                import_aliases: Vec::new(),
+                use_traits: Vec::new(),
+                items: Vec::new(),
+            }
+        },
+    };
+    let signatures = tast::package_signatures(hir_file);
+    let checked = tast::check_package_files_for_link_with_dependencies(
+        Vec::new().pushed(hir_file),
+        Vec::new(),
+    );
+    let tast_file = match checked.tast {
+        Option::Some(value) => value,
+        Option::None => {
+            testing::fail("expected checked package");
+            tast::File {
+                items: Vec::new(),
+                enums: Vec::new(),
+                structs: Vec::new(),
+            }
+        },
+    };
+    let exports = artifact_package_exports(
+        tast_file,
+        signatures,
+        "audit::value",
+        public_names,
+        true,
+        Vec::new(),
+        Vec::new(),
+    );
+    testing::assert_eq(exports.functions.len(), 1);
+    let package_interface = artifact_package_interface(
+        "audit::value",
+        "value",
+        exports,
+    );
+    let artifact_unit = new_artifact_interface_unit(
+        "audit::value",
+        exports,
+        package_interface,
+        Vec::new().pushed((
+            "builtin",
+            "ce6423fcfff3e823c1555e9ef6adfaceb30ee8c2d6edb627413245095e9eb91d",
+        )),
+    );
+    testing::assert_eq(
+        artifact_unit.interface_hash,
+        "68689dc725f95ef421332afe75f05d624016fad7458b6d286e06878c83cd410f",
+    )
+}
+
+#[test]
+fn extracts_rust_trait_interface_from_checked_package() -> unit {
+    let source = "package api; pub trait Parent[T] { fn parent(Self) -> T; } pub trait Child[T: ToString]: Parent[T] { fn child(Self) -> string; } pub struct Box[T] { value: T, } impl[T] Parent[T] for Box[T] { fn parent(self: Box[T]) -> T { self.value } } impl[T: ToString] Child[T] for Box[T] { fn child(self: Box[T]) -> string { \"child\" } } pub fn boxed[T](value: T) -> Box[T] { Box { value } }";
+    let lowered_ast = ast::lower(parser::parse(source));
+    let ast_values = Vec::new();
+    ast_values.push(lowered_ast);
+    let public_names = public_item_names(ast_values, "demo::api");
+    let lowered = hir::lower_package(lowered_ast, "api/api.gom", "demo::api");
+    let hir_file = match lowered.hir {
+        Option::Some(value) => value,
+        Option::None => {
+            testing::fail("expected trait package HIR");
+            hir::File {
+                package_name: "demo::api",
+                path: "api/api.gom",
+                imports: Vec::new(),
+                import_aliases: Vec::new(),
+                use_traits: Vec::new(),
+                items: Vec::new(),
+            }
+        },
+    };
+    let signatures = tast::package_signatures(hir_file);
+    let checked = tast::check_package_files_for_link_with_dependencies(
+        Vec::new().pushed(hir_file),
+        Vec::new(),
+    );
+    let tast_file = match checked.tast {
+        Option::Some(value) => value,
+        Option::None => {
+            testing::fail("expected checked trait package");
+            tast::File {
+                items: Vec::new(),
+                enums: Vec::new(),
+                structs: Vec::new(),
+            }
+        },
+    };
+    let exports = artifact_package_exports(
+        tast_file,
+        signatures,
+        "demo::api",
+        public_names,
+        true,
+        Vec::new(),
+        Vec::new(),
+    );
+    let package_interface = artifact_package_interface("demo::api", "api", exports);
+    let artifact_unit = new_artifact_interface_unit(
+        "demo::api",
+        exports,
+        package_interface,
+        Vec::new().pushed((
+            "builtin",
+            "ce6423fcfff3e823c1555e9ef6adfaceb30ee8c2d6edb627413245095e9eb91d",
+        )),
+    );
+    testing::assert_eq(
+        artifact_unit.interface_hash,
+        "3ce656228d3c4480159ce8477e34af1479a38dbc20a2f9b700b44eedf78900bb",
+    );
+    let encoded = encode_artifact_interface_unit(artifact_unit, false);
+    match decode_artifact_interface_unit(encoded) {
+        Result::Ok(value) => {
+            testing::assert_eq(
+                encode_artifact_interface_unit(value, false),
+                encoded,
+            );
+            let dependency = match artifact_dependency_environment_from_exports(
+                value.exports,
+            ) {
+                Result::Ok(value) => value,
+                Result::Err(error) => {
+                    testing::fail(error);
+                    tast::dependency_environment(
+                        Vec::new(),
+                        Vec::new(),
+                        Vec::new(),
+                        Vec::new(),
+                        Vec::new(),
+                        Vec::new(),
+                    )
+                },
+            };
+            let consumer = hir::lower_package(
+                ast::lower(parser::parse(
+                    "package consumer; use demo::api; use api::Child; fn consume() -> string { api::boxed(1).child() }",
+                )),
+                "consumer/consumer.gom",
+                "demo::consumer",
+            );
+            let consumer_hir = match consumer.hir {
+                Option::Some(value) => value,
+                Option::None => {
+                    testing::fail("expected consumer HIR");
+                    hir::File {
+                        package_name: "demo::consumer",
+                        path: "consumer/consumer.gom",
+                        imports: Vec::new(),
+                        import_aliases: Vec::new(),
+                        use_traits: Vec::new(),
+                        items: Vec::new(),
+                    }
+                },
+            };
+            let checked = tast::check_package_files_for_link_with_environments(
+                Vec::new().pushed(consumer_hir),
+                Vec::new().pushed(dependency),
+            );
+            testing::assert_eq(checked.diagnostics.len(), 0)
+        },
+        Result::Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
+fn writes_rust_core_unit_from_checked_package() -> unit {
+    let source = "package value; fn private_value() -> int32 { 41 } pub fn value() -> int32 { private_value() + 1 }";
+    let lowered_ast = ast::lower(parser::parse(source));
+    let ast_values = Vec::new();
+    ast_values.push(lowered_ast);
+    let public_names = public_item_names(ast_values, "audit::value");
+    let lowered = hir::lower_package(lowered_ast, "value/value.gom", "audit::value");
+    let hir_file = match lowered.hir {
+        Option::Some(value) => value,
+        Option::None => {
+            testing::fail("expected core package HIR");
+            hir::File {
+                package_name: "audit::value",
+                path: "value/value.gom",
+                imports: Vec::new(),
+                import_aliases: Vec::new(),
+                use_traits: Vec::new(),
+                items: Vec::new(),
+            }
+        },
+    };
+    let signatures = tast::package_signatures(hir_file);
+    let checked = tast::check_package_files_for_link_with_dependencies(
+        Vec::new().pushed(hir_file),
+        Vec::new(),
+    );
+    let tast_file = match checked.tast {
+        Option::Some(value) => value,
+        Option::None => {
+            testing::fail("expected checked core package");
+            tast::File {
+                items: Vec::new(),
+                enums: Vec::new(),
+                structs: Vec::new(),
+            }
+        },
+    };
+    let public_exports = artifact_package_exports(
+        tast_file,
+        signatures,
+        "audit::value",
+        public_names,
+        true,
+        Vec::new(),
+        Vec::new(),
+    );
+    let full_exports = artifact_package_exports(
+        tast_file,
+        signatures,
+        "audit::value",
+        public_names,
+        false,
+        Vec::new(),
+        Vec::new(),
+    );
+    let deps = Vec::new().pushed((
+        "builtin",
+        "ce6423fcfff3e823c1555e9ef6adfaceb30ee8c2d6edb627413245095e9eb91d",
+    ));
+    let interface_unit = new_artifact_interface_unit(
+        "audit::value",
+        public_exports,
+        artifact_package_interface("audit::value", "value", public_exports),
+        deps,
+    );
+    let core_ir = core::lower_with_counter_and_types(
+        checked,
+        Ref::new(0),
+        Vec::new(),
+        Vec::new(),
+    );
+    let core_unit = ArtifactCoreUnit {
+        package_name: "audit::value",
+        interface_unit,
+        exports: full_exports,
+        core_ir,
+        deps,
+        sources: Vec::new().pushed("/tmp/gomlc-test-link-audit/value/value.gom"),
+        tests: Vec::new(),
+    };
+    let encoded = encode_artifact_core_unit(core_unit, false);
+    testing::assert_eq(
+        go_backend::sha256_hex(encoded),
+        "f50d2ef46761cb5b0e0b6cce824d89e9b4c07d7e2be537c6f1a946fbf90af2d7",
+    );
+    match decode_artifact_core_unit(encoded) {
+        Result::Ok(value) => testing::assert_eq(
+            encode_artifact_core_unit(value, false),
+            encoded,
+        ),
+        Result::Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
+fn requires_explicit_package_declarations_for_artifacts() -> unit {
+    let values = Vec::new().pushed(ast::lower(parser::parse(
+        "fn main() -> unit {}",
+    )));
+    match artifact_declared_package_name(
+        values,
+        Vec::new().pushed("/tmp/main.gom"),
+    ) {
+        Result::Err(error) => testing::assert_eq(
+            error,
+            "/tmp/main.gom must declare `package <name>;`",
+        ),
+        Result::Ok(_) => testing::fail("expected package declaration error"),
+    }
+}
+
+#[test]
+fn validates_artifact_main_entrypoints() -> unit {
+    let exports = empty_artifact_package_exports();
+    match artifact_validate_entrypoint("example::app", "main", exports) {
+        Result::Err(error) => testing::assert_eq(
+            error,
+            "main function is required",
+        ),
+        Result::Ok(()) => testing::fail("expected missing main error"),
+    };
+    exports.functions.push(ArtifactFnScheme {
+        name: "example::app::main",
+        type_params: Vec::new().pushed("T"),
+        constraints: Vec::new(),
+        ty: tast::Type::Func(Vec::new(), tast::Type::Unit),
+        body: tast::Callable::Function("example::app::main"),
+    });
+    match artifact_validate_entrypoint("example::app", "main", exports) {
+        Result::Err(error) => testing::assert_eq(
+            error,
+            "main function must not have type parameters",
+        ),
+        Result::Ok(()) => testing::fail("expected generic main error"),
+    };
+    let exports = empty_artifact_package_exports();
+    exports.functions.push(ArtifactFnScheme {
+        name: "example::app::main",
+        type_params: Vec::new(),
+        constraints: Vec::new(),
+        ty: tast::Type::Func(
+            Vec::new().pushed(tast::Type::Int32),
+            tast::Type::Unit,
+        ),
+        body: tast::Callable::Function("example::app::main"),
+    });
+    match artifact_validate_entrypoint("example::app", "main", exports) {
+        Result::Err(error) => testing::assert_eq(
+            error,
+            "main function must not have parameters",
+        ),
+        Result::Ok(()) => testing::fail("expected parameterized main error"),
+    };
+    match artifact_validate_entrypoint("example::lib", "lib", exports) {
+        Result::Ok(()) => (),
+        Result::Err(error) => testing::fail(error),
+    }
+}
+
+#[test]
+fn restores_core_metadata_from_artifact_exports() -> unit {
+    let exports = empty_artifact_package_exports();
+    let function_constraint = tast::TypePredicate::Equality(
+        tast::Type::Param("T"),
+        tast::Type::Int32,
+    );
+    exports.functions.push(ArtifactFnScheme {
+        name: "audit::identity",
+        type_params: Vec::new().pushed("T"),
+        constraints: Vec::new().pushed(function_constraint),
+        ty: tast::Type::Func(
+            Vec::new().pushed(tast::Type::Param("T")),
+            tast::Type::Param("T"),
+        ),
+        body: tast::Callable::Function("audit::identity"),
+    });
+    let empty_body = core::Block {
+        stmts: Vec::new(),
+        tail: Option::None,
+    };
+    let function = artifact_prepare_core_function_metadata(
+        core::Function {
+            name: "audit::identity",
+            root: false,
+            generics: Vec::new().pushed("T"),
+            predicates: Vec::new(),
+            trait_impl: Option::None,
+            params: Vec::new().pushed(("value", tast::Type::Param("T"))),
+            ret_ty: tast::Type::Param("T"),
+            body: empty_body,
+        },
+        exports,
+    );
+    testing::assert_eq(function.predicates.len(), 1);
+    let trait_ref = tast::TraitRef {
+        name: "audit::Source",
+        args: Vec::new(),
+    };
+    let impl_constraint = tast::TypePredicate::Trait(
+        tast::Type::Con("audit::Numbers"),
+        tast::TraitRef {
+            name: "ToString",
+            args: Vec::new(),
+        },
+    );
+    let method_constraint = tast::TypePredicate::Equality(
+        tast::Type::Int32,
+        tast::Type::Int32,
+    );
+    exports.trait_impls.push(ArtifactTraitImpl {
+        trait_ref,
+        for_ty: tast::Type::Con("audit::Numbers"),
+        definition: ArtifactImplDef {
+            params: Vec::new(),
+            constraints: Vec::new().pushed(impl_constraint),
+            associated_types: Vec::new().pushed(("Item", tast::Type::Int32)),
+            methods: Vec::new().pushed(ArtifactFnScheme {
+                name: "read",
+                type_params: Vec::new(),
+                constraints: Vec::new().pushed(method_constraint),
+                ty: tast::Type::Func(
+                    Vec::new().pushed(tast::Type::Con("audit::Numbers")),
+                    tast::Type::Int32,
+                ),
+                body: tast::Callable::TraitMethod(trait_ref, "read"),
+            }),
+            valid: true,
+        },
+    });
+    let method = artifact_prepare_core_function_metadata(
+        core::Function {
+            name: "audit::Numbers#audit::Source#read",
+            root: false,
+            generics: Vec::new(),
+            predicates: Vec::new(),
+            trait_impl: Option::Some(core::TraitImpl {
+                trait_ref,
+                for_ty: tast::Type::Con("audit::Numbers"),
+                associated_types: Vec::new(),
+            }),
+            params: Vec::new().pushed((
+                "self",
+                tast::Type::Con("audit::Numbers"),
+            )),
+            ret_ty: tast::Type::Int32,
+            body: empty_body,
+        },
+        exports,
+    );
+    testing::assert_eq(method.predicates.len(), 2);
+    match method.trait_impl {
+        Option::Some(metadata) => {
+            testing::assert_eq(metadata.associated_types.len(), 1);
+            testing::assert_eq(metadata.associated_types.get(0).0, "Item");
+            match metadata.associated_types.get(0).1 {
+                tast::Type::Int32 => (),
+                _ => testing::fail("expected restored associated type"),
+            }
+        },
+        Option::None => testing::fail("expected trait implementation metadata"),
+    }
+}
+
+#[test]
+fn parses_artifact_json_values() -> unit {
+    let parsed = match parse_artifact_json(
+        " { \"text\": \"quote\\\" slash\\\\ zero\\u0000 face\\uD83D\\uDE00 é\", \"nums\": [-12, 1.5e+2], \"ok\": true, \"none\": null } ",
+    ) {
+        Result::Ok(value) => value,
+        Result::Err(error) => {
+            testing::fail(error);
+            ArtifactJsonValue::Null
+        },
+    };
+    match parsed {
+        ArtifactJsonValue::Object(fields) => {
+            testing::assert_eq(fields.len(), 4);
+            testing::assert_eq(fields.get(0).0, "text");
+            match fields.get(0).1 {
+                ArtifactJsonValue::String(value) => testing::assert_eq(
+                    value,
+                    "quote\" slash\\ zero\u0000 face😀 é",
+                ),
+                _ => testing::fail("expected JSON string"),
+            };
+            match fields.get(1).1 {
+                ArtifactJsonValue::Array(values) => {
+                    match values.get(0) {
+                        ArtifactJsonValue::Number(value) => testing::assert_eq(value, "-12"),
+                        _ => testing::fail("expected integer JSON number"),
+                    };
+                    match values.get(1) {
+                        ArtifactJsonValue::Number(value) => testing::assert_eq(value, "1.5e+2"),
+                        _ => testing::fail("expected float JSON number"),
+                    }
+                },
+                _ => testing::fail("expected JSON array"),
+            };
+            match fields.get(2).1 {
+                ArtifactJsonValue::Bool(value) => testing::assert(value),
+                _ => testing::fail("expected JSON boolean"),
+            };
+            match fields.get(3).1 {
+                ArtifactJsonValue::Null => (),
+                _ => testing::fail("expected JSON null"),
+            }
+        },
+        _ => testing::fail("expected JSON object"),
+    };
+    match parse_artifact_json("[01]") {
+        Result::Err(_) => (),
+        Result::Ok(_) => testing::fail("expected invalid JSON number"),
+    };
+    match parse_artifact_json("{} trailing") {
+        Result::Err(_) => (),
+        Result::Ok(_) => testing::fail("expected trailing JSON error"),
+    }
+}
+
+#[test]
+fn decodes_rust_artifact_type_shapes() -> unit {
+    let type_json = "{\"TFunc\":{\"params\":[{\"TApp\":{\"ty\":{\"TEnum\":{\"name\":\"Option\"}},\"args\":[\"TInt32\"]}}],\"ret_ty\":{\"TProjection\":{\"trait_ref\":{\"name\":\"Iterator\",\"args\":[]},\"for_ty\":{\"TParam\":{\"name\":\"I\"}},\"name\":\"Item\"}}}}";
+    let context = new_artifact_decode_context();
+    let decoded = match parse_artifact_json(type_json) {
+        Result::Ok(value) => match artifact_decode_type(context, value) {
+            Result::Ok(value) => value,
+            Result::Err(error) => {
+                testing::fail(error);
+                tast::Type::Error
+            },
+        },
+        Result::Err(error) => {
+            testing::fail(error);
+            tast::Type::Error
+        },
+    };
+    let writer = new_artifact_json_writer(false);
+    artifact_json_type(
+        writer,
+        artifact_type_context(context.enum_names, context.struct_names),
+        decoded,
+    );
+    testing::assert_eq(artifact_json_finish(writer), type_json);
+    testing::assert_eq(context.enum_names.len(), 1);
+    testing::assert_eq(context.enum_names.get(0), "Option");
+    let predicate_json = "{\"Equality\":{\"lhs\":{\"TStruct\":{\"name\":\"Box\"}},\"rhs\":\"TInt32\"}}";
+    let predicate = match parse_artifact_json(predicate_json) {
+        Result::Ok(value) => match artifact_decode_predicate(context, value) {
+            Result::Ok(value) => value,
+            Result::Err(error) => {
+                testing::fail(error);
+                tast::TypePredicate::Equality(tast::Type::Error, tast::Type::Error)
+            },
+        },
+        Result::Err(error) => {
+            testing::fail(error);
+            tast::TypePredicate::Equality(tast::Type::Error, tast::Type::Error)
+        },
+    };
+    let writer = new_artifact_json_writer(false);
+    artifact_json_type_predicate(
+        writer,
+        artifact_type_context(context.enum_names, context.struct_names),
+        predicate,
+    );
+    testing::assert_eq(artifact_json_finish(writer), predicate_json)
+}
+
+#[test]
+fn matches_rust_standard_interface_hashes() -> unit {
+    let standard = package_world().standard;
+    testing::assert_eq(
+        standard.root.interface_unit.interface_hash,
+        "d3b21d77f1b8fbf678c821acfc2a017163df08a235f1a5d779cb06726061cca1",
+    );
+    testing::assert_eq(
+        standard.bytes.interface_unit.interface_hash,
+        "956be6ba4116a9dc2ea1788762f3f0c40eb1fe4de46d79cda1f38d4fe3ee3e39",
+    );
+    testing::assert_eq(
+        standard.collections.interface_unit.interface_hash,
+        "d9d0ad2fd716a06b96d1db7b9169a5e3b03884fc389753ae7f2fb7ffbddcafc3",
+    );
+    testing::assert_eq(
+        standard.env.interface_unit.interface_hash,
+        "7721031ec8ac3bf859eba32fd44d4ef67b4a912d493ba59cd19060112b670174",
+    );
+    testing::assert_eq(
+        standard.fs.interface_unit.interface_hash,
+        "9eb899c9d9067c41b202e2a38c54452f1b1db355feadaac61c3ee461f470b960",
+    );
+    testing::assert_eq(
+        standard.io.interface_unit.interface_hash,
+        "3e968a4aed75435dbfd6e5f86d3e59112fb18e5caf8e041f0c037e9c2e48ffee",
+    );
+    testing::assert_eq(
+        standard.path.interface_unit.interface_hash,
+        "28962fefb21f7dd0a25a8b6008c145f627acd50fb85586818a3e0a0cae9ffe53",
+    );
+    testing::assert_eq(
+        standard.process.interface_unit.interface_hash,
+        "84f1d56e9c92a158a3392876df37e9cad6e00f6b17f2b6a5e7566f1033cf72c9",
+    );
+    testing::assert_eq(
+        standard.testing.interface_unit.interface_hash,
+        "7b40edadbe3453dd56fc065b7009fd2972236375f3d7d5cb6918d67d35f15e3a",
+    );
+    testing::assert_eq(
+        standard.text.interface_unit.interface_hash,
+        "4b08936fd63246bda288265b0497d447b6e2ecc89e5f9bf0c60bfc32245de0f6",
+    )
 }
