@@ -16,6 +16,7 @@ fn lowered_file(source: string) -> File {
                 path: "",
                 imports: Vec::new(),
                 import_aliases: Vec::new(),
+                use_traits: Vec::new(),
                 items: Vec::new(),
             }
         },
@@ -38,6 +39,7 @@ fn lowered_package_file(source: string, package_name: string) -> File {
                 path: "",
                 imports: Vec::new(),
                 import_aliases: Vec::new(),
+                use_traits: Vec::new(),
                 items: Vec::new(),
             }
         },
@@ -75,6 +77,19 @@ fn qualifies_package_items_types_and_import_aliases() -> unit {
         },
         _ => testing::fail("expected package function"),
     }
+}
+
+#[test]
+fn resolves_traits_imported_through_package_aliases() -> unit {
+    let file = lowered_package_file(
+        "package usepkg; use vendor::traits as traitpkg; use traitpkg::Render; fn render() -> unit {}",
+        "vendor::usepkg",
+    );
+    testing::assert_eq(file.import_aliases.len(), 1);
+    testing::assert_eq(file.import_aliases.get(0).alias, "traitpkg");
+    testing::assert_eq(file.import_aliases.get(0).package_name, "vendor::traits");
+    testing::assert_eq(file.use_traits.len(), 1);
+    testing::assert_eq(file.use_traits.get(0), "vendor::traits::Render")
 }
 
 #[test]

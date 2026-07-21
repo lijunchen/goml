@@ -38,6 +38,7 @@ fn dependency_hir(source: string, package_name: string) -> hir::File {
                 path: "",
                 imports: Vec::new(),
                 import_aliases: Vec::new(),
+                use_traits: Vec::new(),
                 items: Vec::new(),
             }
         },
@@ -183,6 +184,37 @@ fn resolves_enum_constructors_from_package_interfaces() -> unit {
             _ => testing::fail("expected external payload constructor"),
         },
         _ => testing::fail("expected payload function"),
+    }
+}
+
+#[test]
+fn filters_external_trait_methods_by_hir_scope() -> unit {
+    let dependencies: Vec[hir::File] = Vec::new();
+    dependencies.push(dependency_hir(
+        "package traits; pub trait Render { fn render(Self) -> string; } pub trait Fancy { fn render(Self) -> string; }",
+        "vendor::traits",
+    ));
+    dependencies.push(dependency_hir(
+        "package data; use vendor::traits; pub struct Card { value: int32 } impl traits::Render for Card { fn render(self: Card) -> string { \"R\" } } impl traits::Fancy for Card { fn render(self: Card) -> string { \"F\" } }",
+        "vendor::data",
+    ));
+    let file = checked_package_file_with_dependencies(
+        "package usepkg; use vendor::data; use vendor::traits; use traits::Render; fn render(value: data::Card) -> string { value.render() }",
+        dependencies,
+    );
+    match file.items.get(0) {
+        Item::Function(value) => match value.body.tail {
+            Option::Some(Expr::Call(
+                Expr::Callable(Callable::TraitMethod(reference, name), _),
+                _,
+                Type::String,
+            )) => {
+                testing::assert_eq(reference.name, "vendor::traits::Render");
+                testing::assert_eq(name, "render")
+            },
+            _ => testing::fail("expected scoped external trait method"),
+        },
+        _ => testing::fail("expected render function"),
     }
 }
 
