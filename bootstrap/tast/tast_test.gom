@@ -225,6 +225,33 @@ fn prefers_exact_struct_names_over_dependency_short_names() -> unit {
 }
 
 #[test]
+fn resolves_deferred_field_constraints() -> unit {
+    let source = "struct Named { name: string } fn read(value: Named) -> string { let values = Vec::new(); let selected = values.get(0).name; values.push(value); selected }";
+    let file = checked_file(source);
+    match file.items.get(0) {
+        Item::Function(function) => match function.body.tail {
+            Option::Some(value) => match resolve_type(expr_type(value)) {
+                Type::String => (),
+                _ => testing::fail("expected resolved field type"),
+            },
+            Option::None => testing::fail("expected function result"),
+        },
+        _ => testing::fail("expected function"),
+    }
+}
+
+#[test]
+fn diagnoses_invalid_deferred_field_constraints() -> unit {
+    let source = "struct Named { name: string } fn read(value: Named) -> unit { let values = Vec::new(); let _ = values.get(0).missing; values.push(value) }";
+    let result = check(hir::lower(
+        ast::lower(parser::parse(source)),
+        "main.gom",
+    ));
+    testing::assert_eq(result.diagnostics.len(), 1);
+    testing::assert_eq(result.diagnostics.get(0), "field not found: missing")
+}
+
+#[test]
 fn resolves_enum_constructors_from_package_interfaces() -> unit {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(dependency_hir(
