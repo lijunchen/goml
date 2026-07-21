@@ -10,6 +10,7 @@ fn function_context(
     predicates: Vec[TypePredicate],
 ) -> Checker {
     let predicates = expand_implied_predicates(base, predicates);
+    let param_aliases = predicate_type_aliases(predicates);
     Checker {
         counter: base.counter,
         diagnostics: base.diagnostics,
@@ -22,6 +23,7 @@ fn function_context(
         methods: base.methods,
         impls: base.impls,
         predicates,
+        param_aliases,
         locals: Vec::new(),
         return_ty: ret_ty,
         self_ty,

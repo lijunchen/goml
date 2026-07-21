@@ -323,6 +323,212 @@ fn types_equal(left: Type, right: Type) -> bool {
     }
 }
 
+fn resolve_parameter_alias_at(
+    value: Type,
+    substitutions: Vec[TypeSubst],
+    depth: int32,
+) -> Type {
+    if depth > substitutions.len() {
+        value
+    } else {
+        let next = substitute_type(value, substitutions);
+        if types_equal(next, value) {
+            value
+        } else {
+            resolve_parameter_alias_at(next, substitutions, depth + 1)
+        }
+    }
+}
+
+fn resolve_parameter_alias(value: Type, substitutions: Vec[TypeSubst]) -> Type {
+    resolve_parameter_alias_at(value, substitutions, 0)
+}
+
+fn contains_parameter(
+    value: Type,
+    name: string,
+    substitutions: Vec[TypeSubst],
+) -> bool {
+    match prune(resolve_parameter_alias(value, substitutions)) {
+        Type::Param(candidate) => candidate == name,
+        Type::Tuple(values) => {
+            let found = Ref::new(false);
+            for value in values {
+                if contains_parameter(value, name, substitutions) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Type::Projection(base, _, qualifier) => {
+            let found = Ref::new(contains_parameter(base, name, substitutions));
+            match qualifier {
+                Option::Some(reference) => for arg in reference.args {
+                    if contains_parameter(arg, name, substitutions) {
+                        found.set(true)
+                    } else {
+                        ()
+                    }
+                },
+                Option::None => (),
+            };
+            found.get()
+        },
+        Type::App(base, args) => {
+            let found = Ref::new(contains_parameter(base, name, substitutions));
+            for arg in args {
+                if contains_parameter(arg, name, substitutions) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Type::Array(_, elem)
+        | Type::Slice(elem)
+        | Type::VecType(elem)
+        | Type::RefType(elem) => contains_parameter(elem, name, substitutions),
+        Type::HashMap(key, item) => {
+            contains_parameter(key, name, substitutions)
+                || contains_parameter(item, name, substitutions)
+        },
+        Type::Func(params, ret_ty) => {
+            let found = Ref::new(contains_parameter(ret_ty, name, substitutions));
+            for param in params {
+                if contains_parameter(param, name, substitutions) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        _ => false,
+    }
+}
+
+fn bind_parameter_alias(
+    name: string,
+    value: Type,
+    substitutions: Vec[TypeSubst],
+) -> bool {
+    let value = resolve_parameter_alias(value, substitutions);
+    match value {
+        Type::Param(candidate) => if candidate == name {
+            true
+        } else {
+            substitutions.push(TypeSubst { name, ty: value });
+            true
+        },
+        _ => if contains_parameter(value, name, substitutions) {
+            false
+        } else {
+            substitutions.push(TypeSubst { name, ty: value });
+            true
+        },
+    }
+}
+
+fn unify_parameter_alias_lists(
+    left: Vec[Type],
+    right: Vec[Type],
+    substitutions: Vec[TypeSubst],
+) -> bool {
+    if left.len() != right.len() {
+        false
+    } else {
+        let valid = Ref::new(true);
+        for index in range(0, left.len()) {
+            if !unify_parameter_aliases(left.get(index), right.get(index), substitutions) {
+                valid.set(false)
+            } else {
+                ()
+            }
+        };
+        valid.get()
+    }
+}
+
+fn unify_parameter_alias_trait_refs(
+    left: Option[TraitRef],
+    right: Option[TraitRef],
+    substitutions: Vec[TypeSubst],
+) -> bool {
+    match (left, right) {
+        (Option::Some(left), Option::Some(right)) => {
+            names_match(left.name, right.name)
+                && unify_parameter_alias_lists(left.args, right.args, substitutions)
+        },
+        (Option::None, Option::None) => true,
+        _ => false,
+    }
+}
+
+fn unify_parameter_aliases(
+    left: Type,
+    right: Type,
+    substitutions: Vec[TypeSubst],
+) -> bool {
+    let left = prune(resolve_parameter_alias(left, substitutions));
+    let right = prune(resolve_parameter_alias(right, substitutions));
+    match (left, right) {
+        (Type::Param(name), value) => bind_parameter_alias(name, value, substitutions),
+        (value, Type::Param(name)) => bind_parameter_alias(name, value, substitutions),
+        (Type::Tuple(left), Type::Tuple(right)) => {
+            unify_parameter_alias_lists(left, right, substitutions)
+        },
+        (
+            Type::Projection(left_base, left_name, left_trait),
+            Type::Projection(right_base, right_name, right_trait),
+        ) => {
+            left_name == right_name
+                && unify_parameter_alias_trait_refs(left_trait, right_trait, substitutions)
+                && unify_parameter_aliases(left_base, right_base, substitutions)
+        },
+        (Type::App(left_base, left_args), Type::App(right_base, right_args)) => {
+            unify_parameter_aliases(left_base, right_base, substitutions)
+                && unify_parameter_alias_lists(left_args, right_args, substitutions)
+        },
+        (Type::Array(left_len, left), Type::Array(right_len, right)) => {
+            left_len == right_len
+                && unify_parameter_aliases(left, right, substitutions)
+        },
+        (Type::Slice(left), Type::Slice(right))
+        | (Type::VecType(left), Type::VecType(right))
+        | (Type::RefType(left), Type::RefType(right)) => {
+            unify_parameter_aliases(left, right, substitutions)
+        },
+        (Type::HashMap(left_key, left_item), Type::HashMap(right_key, right_item)) => {
+            unify_parameter_aliases(left_key, right_key, substitutions)
+                && unify_parameter_aliases(left_item, right_item, substitutions)
+        },
+        (Type::Func(left_params, left_ret), Type::Func(right_params, right_ret)) => {
+            unify_parameter_alias_lists(left_params, right_params, substitutions)
+                && unify_parameter_aliases(left_ret, right_ret, substitutions)
+        },
+        (left, right) => types_equal(left, right),
+    }
+}
+
+fn predicate_type_aliases(predicates: Vec[TypePredicate]) -> Vec[TypeSubst] {
+    let substitutions: Vec[TypeSubst] = Vec::new();
+    for predicate in predicates {
+        match predicate {
+            TypePredicate::Equality(left, right) => match (prune(left), prune(right)) {
+                (Type::Projection(_, _, _), _) | (_, Type::Projection(_, _, _)) => (),
+                (left, right) => {
+                    let _ = unify_parameter_aliases(left, right, substitutions);
+                },
+            },
+            TypePredicate::Trait(_, _) => (),
+        }
+    };
+    substitutions
+}
+
 fn projection_equality(
     ctx: Checker,
     base: Type,
@@ -559,6 +765,15 @@ fn normalize_type(ctx: Checker, value: Type) -> Type {
         },
         Type::Func(params, ret_ty) => {
             Type::Func(normalize_types(ctx, params), normalize_type(ctx, ret_ty))
+        },
+        Type::Param(name) => {
+            let original = Type::Param(name);
+            let resolved = resolve_parameter_alias(original, ctx.param_aliases);
+            if types_equal(resolved, original) {
+                original
+            } else {
+                normalize_type(ctx, resolved)
+            }
         },
         other => other,
     }

@@ -936,7 +936,7 @@ fn check_call_expr(
                     ),
                     expected,
                 );
-                let _ = predicates_satisfied_at(ctx, candidate.predicates, 0);
+                require_predicates(ctx, candidate.predicates);
                 result
             },
             Option::None => apply_call(
@@ -969,7 +969,7 @@ fn check_call_expr(
                             ),
                             expected,
                         );
-                        let _ = predicates_satisfied_at(ctx, candidate.predicates, 0);
+                        require_predicates(ctx, candidate.predicates);
                         result
                     },
                     Option::None => apply_call(

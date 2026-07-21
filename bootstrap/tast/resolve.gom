@@ -577,6 +577,14 @@ fn predicates_satisfied_at(
     satisfied.get()
 }
 
+fn require_predicates(ctx: Checker, predicates: Vec[TypePredicate]) -> unit {
+    if predicates_satisfied_at(ctx, predicates, 0) {
+        ()
+    } else {
+        ctx.diagnostics.push("type predicate not satisfied")
+    }
+}
+
 fn trait_bound_satisfied_at(
     ctx: Checker,
     bound_ty: Type,
