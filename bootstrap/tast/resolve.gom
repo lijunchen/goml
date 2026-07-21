@@ -56,15 +56,29 @@ fn find_enum_by_def(ctx: Checker, id: hir::DefId) -> Option[EnumInfo] {
 }
 
 fn find_enum_by_name(ctx: Checker, name: string) -> Option[EnumInfo] {
-    let result = Ref::new(Option::None);
+    let exact: Ref[Option[EnumInfo]] = Ref::new(Option::None);
+    let short: Ref[Option[EnumInfo]] = Ref::new(Option::None);
+    let short_ambiguous = Ref::new(false);
     for value in ctx.enums {
-        if names_match(value.name, name) {
-            result.set(Option::Some(value))
+        if value.name == name {
+            exact.set(Option::Some(value))
+        } else if short_name(value.name) == short_name(name) {
+            match short.get() {
+                Option::Some(_) => short_ambiguous.set(true),
+                Option::None => short.set(Option::Some(value)),
+            }
         } else {
             ()
         }
     };
-    result.get()
+    match exact.get() {
+        Option::Some(value) => Option::Some(value),
+        Option::None => if short_ambiguous.get() {
+            Option::None
+        } else {
+            short.get()
+        },
+    }
 }
 
 fn find_struct_by_name(ctx: Checker, name: string) -> Option[StructInfo] {
@@ -159,6 +173,32 @@ fn resolve_named_constructor(
     }
 }
 
+fn split_constructor_name(value: string) -> Option[(string, string)] {
+    let separator = Ref::new(Option::None);
+    let index = Ref::new(0);
+    while index.get() + 1 < value.byte_len() {
+        if value.byte_get(index.get()) == 58u8
+            && value.byte_get(index.get() + 1) == 58u8
+        {
+            separator.set(Option::Some(index.get()));
+            index.set(index.get() + 2)
+        } else {
+            index.set(index.get() + 1)
+        }
+    };
+    match separator.get() {
+        Option::Some(index) => if index > 0 && index + 2 < value.byte_len() {
+            Option::Some((
+                value.byte_slice(0, index),
+                value.byte_slice(index + 2, value.byte_len()),
+            ))
+        } else {
+            Option::None
+        },
+        Option::None => Option::None,
+    }
+}
+
 fn resolve_builtin_constructor(ctx: Checker, name: string) -> Option[ResolvedConstructor] {
     let t = fresh_type(ctx.counter, VarKind::Any);
     let e = fresh_type(ctx.counter, VarKind::Any);
@@ -206,7 +246,13 @@ fn resolve_constructor(ctx: Checker, value: hir::ConstructorRef) -> Option[Resol
             Option::Some(info) => resolve_user_constructor(ctx, info, variant),
             Option::None => Option::None,
         },
-        hir::ConstructorRef::Unresolved(name) => resolve_builtin_constructor(ctx, name),
+        hir::ConstructorRef::Unresolved(name) => match resolve_builtin_constructor(ctx, name) {
+            Option::Some(value) => Option::Some(value),
+            Option::None => match split_constructor_name(name) {
+                Option::Some(parts) => resolve_named_constructor(ctx, parts.0, parts.1),
+                Option::None => Option::None,
+            },
+        },
     }
 }
 
