@@ -14,6 +14,7 @@ fn lowered_file(source: string) -> File {
             File {
                 package_name: "",
                 path: "",
+                source_path: "",
                 imports: Vec::new(),
                 import_aliases: Vec::new(),
                 use_traits: Vec::new(),
@@ -37,6 +38,7 @@ fn lowered_package_file(source: string, package_name: string) -> File {
             File {
                 package_name: "",
                 path: "",
+                source_path: "",
                 imports: Vec::new(),
                 import_aliases: Vec::new(),
                 use_traits: Vec::new(),
@@ -105,14 +107,26 @@ fn qualifies_package_items_types_and_import_aliases() -> unit {
                 _ => testing::fail("expected qualified parameter type"),
             };
             match value.body.stmts.get(0) {
-                Stmt::Expr(Expr::Call(Expr::StaticMember(owner, member, _), _)) => {
+                Stmt::Expr(Expr {
+                    kind: ExprKind::Call(
+                        Expr {
+                            kind: ExprKind::StaticMember(owner, member, _),
+                            span: _,
+                        },
+                        _,
+                    ),
+                    span: _,
+                }) => {
                     testing::assert_eq(owner, "std::io");
                     testing::assert_eq(member, "println")
                 },
                 _ => testing::fail("expected qualified package call"),
             };
             match value.body.tail {
-                Option::Some(Expr::StructLiteral(name, _)) => {
+                Option::Some(Expr {
+                    kind: ExprKind::StructLiteral(name, _),
+                    span: _,
+                }) => {
                     testing::assert_eq(name, "std::sample::Value")
                 },
                 _ => testing::fail("expected qualified struct literal"),
@@ -170,7 +184,10 @@ fn resolves_definitions_and_shadowed_locals() -> unit {
     match file.items.get(1) {
         Item::Function(value) => {
             match value.body.stmts.get(0) {
-                Stmt::Let(_, Pat::Var(local), _, Expr::Int(number)) => {
+                Stmt::Let(_, Pat::Var(local), _, Expr {
+                    kind: ExprKind::Int(number),
+                    span: _,
+                }) => {
                     testing::assert_eq(local.pkg, 1);
                     testing::assert_eq(local.index, 1);
                     testing::assert_eq(number, "1")
@@ -178,17 +195,20 @@ fn resolves_definitions_and_shadowed_locals() -> unit {
                 _ => testing::fail("expected local binding"),
             };
             match value.body.tail {
-                Option::Some(Expr::Call(function, args)) => {
-                    match function {
-                        Expr::NameRef(NameRef::Def(definition)) => {
+                Option::Some(Expr {
+                    kind: ExprKind::Call(function, args),
+                    span: _,
+                }) => {
+                    match function.kind {
+                        ExprKind::NameRef(NameRef::Def(definition)) => {
                             testing::assert_eq(definition.pkg, 1);
                             testing::assert_eq(definition.index, 0)
                         },
                         _ => testing::fail("expected definition reference"),
                     };
                     testing::assert_eq(args.len(), 1);
-                    match args.get(0) {
-                        Expr::NameRef(NameRef::Local(local)) => {
+                    match args.get(0).kind {
+                        ExprKind::NameRef(NameRef::Local(local)) => {
                             testing::assert_eq(local.pkg, 1);
                             testing::assert_eq(local.index, 1)
                         },
@@ -208,7 +228,10 @@ fn resolves_enum_constructors_and_pattern_bindings() -> unit {
     let file = lowered_file(source);
     match file.items.get(1) {
         Item::Function(value) => match value.body.tail {
-            Option::Some(Expr::Match(_, arms)) => {
+            Option::Some(Expr {
+                kind: ExprKind::Match(_, arms),
+                span: _,
+            }) => {
                 testing::assert_eq(arms.len(), 2);
                 match arms.get(0).pat {
                     Pat::Constr(ConstructorRef::Resolved(definition, variant), args) => {
@@ -219,8 +242,8 @@ fn resolves_enum_constructors_and_pattern_bindings() -> unit {
                     },
                     _ => testing::fail("expected resolved constructor pattern"),
                 };
-                match arms.get(0).body {
-                    Expr::NameRef(NameRef::Local(local)) => {
+                match arms.get(0).body.kind {
+                    ExprKind::NameRef(NameRef::Local(local)) => {
                         testing::assert_eq(local.pkg, 1);
                         testing::assert_eq(local.index, 1)
                     },
@@ -249,7 +272,10 @@ fn resolves_cross_file_constructor_patterns() -> unit {
     match lowered.get(1).hir {
         Option::Some(file) => match file.items.get(0) {
             Item::Function(function) => match function.body.tail {
-                Option::Some(Expr::Match(_, arms)) => {
+                Option::Some(Expr {
+                    kind: ExprKind::Match(_, arms),
+                    span: _,
+                }) => {
                     match arms.get(0).pat {
                         Pat::Constr(ConstructorRef::Resolved(definition, variant), args) => {
                             testing::assert_eq(definition.index, 0);

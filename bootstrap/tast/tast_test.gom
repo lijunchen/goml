@@ -22,17 +22,17 @@ fn checked_file(source: string) -> File {
     }
 }
 
-fn checked_diagnostics(source: string) -> Vec[string] {
+fn checked_diagnostics(source: string) -> Vec[Diagnostic] {
     check(hir::lower(
         ast::lower(parser::parse(source)),
         "main.gom",
     )).diagnostics
 }
 
-fn has_diagnostic(values: Vec[string], expected: string) -> bool {
+fn has_diagnostic(values: Vec[Diagnostic], expected: string) -> bool {
     let found = Ref::new(false);
     for value in values {
-        if value == expected {
+        if value.message == expected {
             found.set(true)
         } else {
             ()
@@ -55,6 +55,7 @@ fn dependency_hir(source: string, package_name: string) -> hir::File {
             hir::File {
                 package_name: "",
                 path: "",
+                source_path: "",
                 imports: Vec::new(),
                 import_aliases: Vec::new(),
                 use_traits: Vec::new(),
@@ -267,7 +268,7 @@ fn diagnoses_invalid_deferred_field_constraints() -> unit {
         "main.gom",
     ));
     testing::assert_eq(result.diagnostics.len(), 1);
-    testing::assert_eq(result.diagnostics.get(0), "field not found: missing")
+    testing::assert_eq(result.diagnostics.get(0).message, "field not found: missing")
 }
 
 #[test]
@@ -279,7 +280,29 @@ fn rejects_mismatched_let_annotations() -> unit {
         "main.gom",
     ));
     testing::assert_eq(result.diagnostics.len(), 1);
-    testing::assert_eq(result.diagnostics.get(0), "type mismatch")
+    testing::assert_eq(
+        result.diagnostics.get(0).message,
+        "Type mismatch: expected string, found int32",
+    )
+}
+
+#[test]
+fn reports_deferred_generic_coercions_at_arguments() -> unit {
+    let source = "fn main() -> unit { let r: Ref[uint8] = Ref::new(10); }";
+    let diagnostics = checked_diagnostics(source);
+    testing::assert_eq(diagnostics.len(), 1);
+    let diagnostic = diagnostics.get(0);
+    testing::assert_eq(
+        diagnostic.message,
+        "Type mismatch: expected int32, found uint8",
+    );
+    match diagnostic.span {
+        Option::Some(span) => {
+            testing::assert_eq(span.start, 49);
+            testing::assert_eq(span.end, 51)
+        },
+        Option::None => testing::fail("expected coercion diagnostic span"),
+    }
 }
 
 #[test]
@@ -291,7 +314,7 @@ fn rejects_float_remainder_operands() -> unit {
         "main.gom",
     ));
     testing::assert_eq(result.diagnostics.len(), 1);
-    testing::assert_eq(result.diagnostics.get(0), "integer operand required")
+    testing::assert_eq(result.diagnostics.get(0).message, "integer operand required")
 }
 
 #[test]
@@ -304,7 +327,7 @@ fn rejects_missing_dyn_impls_and_noncomparable_equality() -> unit {
     ));
     testing::assert_eq(dyn_result.diagnostics.len(), 1);
     testing::assert_eq(
-        dyn_result.diagnostics.get(0),
+        dyn_result.diagnostics.get(0).message,
         "type does not implement trait Display",
     );
     let equality_result = check(hir::lower(
@@ -315,7 +338,7 @@ fn rejects_missing_dyn_impls_and_noncomparable_equality() -> unit {
     ));
     testing::assert_eq(equality_result.diagnostics.len(), 1);
     testing::assert_eq(
-        equality_result.diagnostics.get(0),
+        equality_result.diagnostics.get(0).message,
         "equality operand is not comparable",
     )
 }
@@ -329,7 +352,10 @@ fn rejects_non_function_go_operands() -> unit {
         "main.gom",
     ));
     testing::assert_eq(result.diagnostics.len(), 1);
-    testing::assert_eq(result.diagnostics.get(0), "type mismatch")
+    testing::assert_eq(
+        result.diagnostics.get(0).message,
+        "Type mismatch: expected unit, found () -> unit",
+    )
 }
 
 #[test]
@@ -341,7 +367,7 @@ fn rejects_invalid_signature_names_and_integer_literals() -> unit {
         "main.gom",
     ));
     testing::assert_eq(unknown_trait.diagnostics.len(), 1);
-    testing::assert_eq(unknown_trait.diagnostics.get(0), "unknown trait Missing");
+    testing::assert_eq(unknown_trait.diagnostics.get(0).message, "unknown trait Missing");
     let bad_application = check(hir::lower(
         ast::lower(parser::parse(
             "fn use_value[T](value: T[int32]) -> unit { () }",
@@ -350,7 +376,7 @@ fn rejects_invalid_signature_names_and_integer_literals() -> unit {
     ));
     testing::assert(bad_application.diagnostics.len() > 0);
     testing::assert_eq(
-        bad_application.diagnostics.get(0),
+        bad_application.diagnostics.get(0).message,
         "expected a type constructor",
     );
     let overflow = check(hir::lower(
@@ -360,7 +386,7 @@ fn rejects_invalid_signature_names_and_integer_literals() -> unit {
         "main.gom",
     ));
     testing::assert_eq(overflow.diagnostics.len(), 1);
-    testing::assert_eq(overflow.diagnostics.get(0), "integer literal out of range");
+    testing::assert_eq(overflow.diagnostics.get(0).message, "integer literal out of range");
     let negative_unsigned = check(hir::lower(
         ast::lower(parser::parse(
             "fn main() -> unit { let value: uint8 = -1; }",
@@ -369,8 +395,8 @@ fn rejects_invalid_signature_names_and_integer_literals() -> unit {
     ));
     testing::assert_eq(negative_unsigned.diagnostics.len(), 1);
     testing::assert_eq(
-        negative_unsigned.diagnostics.get(0),
-        "type mismatch",
+        negative_unsigned.diagnostics.get(0).message,
+        "Type mismatch: expected int32, found uint8",
     )
 }
 
@@ -390,7 +416,7 @@ fn checks_match_exhaustiveness_and_irrefutable_bindings() -> unit {
         "main.gom",
     ));
     testing::assert_eq(tuple_gap.diagnostics.len(), 1);
-    testing::assert_eq(tuple_gap.diagnostics.get(0), "non-exhaustive match");
+    testing::assert_eq(tuple_gap.diagnostics.get(0).message, "non-exhaustive match");
     let refutable = check(hir::lower(
         ast::lower(parser::parse(
             "enum Choice { None, Some(int32) } fn make() -> Choice { Choice::None } fn main() -> unit { let Choice::Some(value) = make(); }",
@@ -399,7 +425,7 @@ fn checks_match_exhaustiveness_and_irrefutable_bindings() -> unit {
     ));
     testing::assert_eq(refutable.diagnostics.len(), 1);
     testing::assert_eq(
-        refutable.diagnostics.get(0),
+        refutable.diagnostics.get(0).message,
         "refutable pattern is not allowed in let binding",
     )
 }
@@ -413,7 +439,7 @@ fn checks_sequence_range_and_uninhabited_exhaustiveness() -> unit {
         "main.gom",
     ));
     testing::assert_eq(sequence_gap.diagnostics.len(), 1);
-    testing::assert_eq(sequence_gap.diagnostics.get(0), "non-exhaustive match");
+    testing::assert_eq(sequence_gap.diagnostics.get(0).message, "non-exhaustive match");
     let sequence_complete = check(hir::lower(
         ast::lower(parser::parse(
             "fn choose(values: Vec[bool]) -> int32 { match values { [] => 0, [true, ..] => 1, [false, ..] => 2 } }",
@@ -435,7 +461,7 @@ fn checks_sequence_range_and_uninhabited_exhaustiveness() -> unit {
         "main.gom",
     ));
     testing::assert_eq(range_gap.diagnostics.len(), 1);
-    testing::assert_eq(range_gap.diagnostics.get(0), "non-exhaustive match");
+    testing::assert_eq(range_gap.diagnostics.get(0).message, "non-exhaustive match");
     let uninhabited = check(hir::lower(
         ast::lower(parser::parse(
             "enum Never {} enum MaybeNever { Empty, Filled(Never) } fn absurd(value: Never) -> int32 { match value {} } fn maybe(value: MaybeNever) -> int32 { match value { MaybeNever::Empty => 0 } } fn empty_vec(value: Vec[Never]) -> int32 { match value { [] => 0 } }",
@@ -455,7 +481,7 @@ fn checks_loop_control_contexts_and_impl_overlap() -> unit {
     ));
     testing::assert_eq(condition.diagnostics.len(), 1);
     testing::assert_eq(
-        condition.diagnostics.get(0),
+        condition.diagnostics.get(0).message,
         "`break` is not allowed in a while condition",
     );
     let nested = check(hir::lower(
@@ -472,7 +498,7 @@ fn checks_loop_control_contexts_and_impl_overlap() -> unit {
         "main.gom",
     ));
     testing::assert(overlap.diagnostics.len() > 0);
-    testing::assert_eq(overlap.diagnostics.get(0), "overlapping trait implementations")
+    testing::assert_eq(overlap.diagnostics.get(0).message, "overlapping trait implementations")
 }
 
 #[test]
@@ -1791,7 +1817,10 @@ fn defaults_literals_before_generic_result_constraints() -> unit {
     let diagnostics = checked_diagnostics(
         "fn main() -> unit { let value: Ref[uint8] = Ref::new(10); }",
     );
-    testing::assert(has_diagnostic(diagnostics, "type mismatch"))
+    testing::assert(has_diagnostic(
+        diagnostics,
+        "Type mismatch: expected int32, found uint8",
+    ))
 }
 
 #[test]
