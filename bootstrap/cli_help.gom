@@ -1,0 +1,101 @@
+package main;
+
+use std::io;
+use std::process;
+
+fn top_level_help() -> string {
+    "Usage: gomlc <COMMAND>\n\nCommands:\n  check       \n  test-check  \n  build       \n  test-build  \n  link        \n  test-link   \n  run-single  \n  version     \n  help        Print this message or the help of the given subcommand(s)\n\nOptions:\n  -h, --help  Print help"
+}
+
+fn package_command_help(command: string) -> string {
+    "Usage: gomlc " + command + " [OPTIONS] --package <PACKAGE> --input <INPUT>... --output <OUTPUT>\n\nOptions:\n      --package <PACKAGE>                \n      --input <INPUT>...                 \n      --interface-path <INTERFACE_FILE>  \n      --output <OUTPUT>                  \n  -h, --help                             Print help"
+}
+
+fn command_help(command: string) -> Option[string] {
+    if command == "check"
+        || command == "test-check"
+        || command == "build"
+        || command == "test-build"
+    {
+        Option::Some(package_command_help(command))
+    } else if command == "link" {
+        Option::Some("Usage: gomlc link --input <INPUT>... --entry <ENTRY> --output <OUTPUT>\n\nOptions:\n      --input <INPUT>...  \n      --entry <ENTRY>     \n      --output <OUTPUT>   \n  -h, --help              Print help")
+    } else if command == "test-link" {
+        Option::Some("Usage: gomlc test-link --input <INPUT>... --package <PACKAGE> --output <OUTPUT> --manifest <MANIFEST>\n\nOptions:\n      --input <INPUT>...     \n      --package <PACKAGE>    \n      --output <OUTPUT>      \n      --manifest <MANIFEST>  \n  -h, --help                 Print help")
+    } else if command == "run-single" {
+        Option::Some("Usage: gomlc run-single [OPTIONS] <FILE>\n\nArguments:\n  <FILE>  \n\nOptions:\n      --dump-ast   \n      --dump-hir   \n      --dump-tast  \n      --dump-core  \n      --dump-mono  \n      --dump-lift  \n      --dump-anf   \n      --dump-go    \n  -h, --help       Print help")
+    } else if command == "version" {
+        Option::Some("Usage: gomlc version [OPTIONS]\n\nOptions:\n      --format <FORMAT>  [default: text] [possible values: text, json]\n  -h, --help             Print help")
+    } else if command == "help" {
+        Option::Some("Print this message or the help of the given subcommand(s)\n\nUsage: gomlc help [COMMAND]...\n\nArguments:\n  [COMMAND]...  Print help for the subcommand(s)")
+    } else {
+        Option::None
+    }
+}
+
+fn is_cli_command(command: string) -> bool {
+    command == "check"
+        || command == "test-check"
+        || command == "build"
+        || command == "test-build"
+        || command == "link"
+        || command == "test-link"
+        || command == "run-single"
+        || command == "version"
+}
+
+fn is_debug_stage(command: string) -> bool {
+    command == "lex"
+        || command == "cst"
+        || command == "ast"
+        || command == "hir"
+        || command == "tast"
+        || command == "core"
+        || command == "mono"
+        || command == "lift"
+        || command == "anf"
+        || command == "go"
+}
+
+fn has_help_argument(args: Vec[string]) -> bool {
+    let found = Ref::new(false);
+    for index in range(2, args.len()) {
+        let argument = args.get(index);
+        if argument == "-h" || argument == "--help" {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
+fn print_cli_help(message: string) -> unit {
+    io::println(message)
+}
+
+fn fail_cli(message: string) -> unit {
+    io::eprintln(message);
+    process::exit(2)
+}
+
+fn fail_unknown_subcommand(command: string) -> unit {
+    fail_cli(
+        "error: unrecognized subcommand '"
+            + command
+            + "'\n\nUsage: gomlc <COMMAND>\n\nFor more information, try '--help'.",
+    )
+}
+
+fn run_help_command(args: Vec[string]) -> unit {
+    if args.len() == 2 {
+        print_cli_help(top_level_help())
+    } else if args.len() == 3 {
+        match command_help(args.get(2)) {
+            Option::Some(help) => print_cli_help(help),
+            Option::None => fail_unknown_subcommand(args.get(2)),
+        }
+    } else {
+        fail_cli("error: unexpected argument\n\nUsage: gomlc help [COMMAND]")
+    }
+}

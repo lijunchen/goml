@@ -160,26 +160,39 @@ fn run_stage(args: Vec[string]) -> unit {
 
 fn main() -> unit {
     let args = env::args();
-    if args.len() > 1 && args.get(1) == "version" {
+    if args.len() == 1 {
+        fail_cli(top_level_help())
+    } else if args.get(1) == "-h" || args.get(1) == "--help" {
+        print_cli_help(top_level_help())
+    } else if args.get(1) == "help" {
+        run_help_command(args)
+    } else if is_cli_command(args.get(1)) && has_help_argument(args) {
+        match command_help(args.get(1)) {
+            Option::Some(help) => print_cli_help(help),
+            Option::None => (),
+        }
+    } else if args.get(1) == "version" {
         run_version(args)
-    } else if args.len() > 1 && args.get(1) == "check" {
+    } else if args.get(1) == "check" {
         run_package_command(args, false)
-    } else if args.len() > 1 && args.get(1) == "test-check" {
+    } else if args.get(1) == "test-check" {
         run_package_command(args, false)
-    } else if args.len() > 1 && args.get(1) == "build" {
+    } else if args.get(1) == "build" {
         run_package_command(args, true)
-    } else if args.len() > 1 && args.get(1) == "test-build" {
+    } else if args.get(1) == "test-build" {
         run_package_command(args, true)
-    } else if args.len() > 1 && args.get(1) == "link" {
+    } else if args.get(1) == "link" {
         run_link_command(args)
-    } else if args.len() > 1 && args.get(1) == "test-link" {
+    } else if args.get(1) == "test-link" {
         run_test_link_command(args)
-    } else if args.len() > 1 && args.get(1) == "run-single" {
+    } else if args.get(1) == "run-single" {
         match parse_run_args(args) {
             Result::Ok(run_args) => run_single(run_args),
             Result::Err(error) => fail(error),
         }
-    } else {
+    } else if is_debug_stage(args.get(1)) {
         run_stage(args)
+    } else {
+        fail_unknown_subcommand(args.get(1))
     }
 }
