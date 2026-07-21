@@ -2631,7 +2631,7 @@ path = "demo"
             "main.gom",
             "Option::Some",
             "Some",
-            expect!["src/builtin_contract.gom:92:4"],
+            expect!["src/builtin_contract.gom:95:4"],
         );
     }
 
