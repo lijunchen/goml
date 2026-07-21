@@ -322,3 +322,599 @@ pub fn env_source() -> string {
     ;
     source
 }
+
+pub fn collections_source() -> string {
+    let source = \\package collections;
+        \\
+        \\pub struct ArenaId[T] {
+        \\    index: int32,
+        \\}
+        \\
+        \\impl[T] ArenaId[T] {
+        \\    fn index(self: ArenaId[T]) -> int32 {
+        \\        self.index
+        \\    }
+        \\}
+        \\
+        \\impl[T] Eq for ArenaId[T] {
+        \\    fn eq(self: ArenaId[T], other: ArenaId[T]) -> bool {
+        \\        self.index == other.index
+        \\    }
+        \\}
+        \\
+        \\impl[T] Hash for ArenaId[T] {
+        \\    fn hash(self: ArenaId[T]) -> uint64 {
+        \\        Hash::hash(self.index)
+        \\    }
+        \\}
+        \\
+        \\pub struct Arena[T] {
+        \\    values: Vec[T],
+        \\}
+        \\
+        \\impl[T] Arena[T] {
+        \\    fn new() -> Arena[T] {
+        \\        Arena { values: Vec::new() }
+        \\    }
+        \\
+        \\    fn len(self: Arena[T]) -> int32 {
+        \\        self.values.len()
+        \\    }
+        \\
+        \\    fn is_empty(self: Arena[T]) -> bool {
+        \\        self.values.len() == 0
+        \\    }
+        \\
+        \\    fn alloc(self: Arena[T], value: T) -> ArenaId[T] {
+        \\        let index = self.values.len();
+        \\        self.values.push(value);
+        \\        ArenaId { index }
+        \\    }
+        \\
+        \\    fn contains_id(self: Arena[T], id: ArenaId[T]) -> bool {
+        \\        id.index >= 0 && id.index < self.values.len()
+        \\    }
+        \\
+        \\    fn get(self: Arena[T], id: ArenaId[T]) -> T {
+        \\        self.values.get(id.index)
+        \\    }
+        \\
+        \\    fn try_get(self: Arena[T], id: ArenaId[T]) -> Option[T] {
+        \\        if self.contains_id(id) {
+        \\            Option::Some(self.values.get(id.index))
+        \\        } else {
+        \\            Option::None
+        \\        }
+        \\    }
+        \\
+        \\    fn set(self: Arena[T], id: ArenaId[T], value: T) -> unit {
+        \\        self.values.set(id.index, value)
+        \\    }
+        \\}
+        \\
+        \\pub struct BitSet {
+        \\    words: Vec[uint64],
+        \\    len: Ref[int32],
+        \\}
+        \\
+        \\impl BitSet {
+        \\    fn new() -> BitSet {
+        \\        BitSet {
+        \\            words: Vec::new(),
+        \\            len: Ref::new(0),
+        \\        }
+        \\    }
+        \\
+        \\    fn len(self: BitSet) -> int32 {
+        \\        self.len.get()
+        \\    }
+        \\
+        \\    fn is_empty(self: BitSet) -> bool {
+        \\        self.len.get() == 0
+        \\    }
+        \\
+        \\    fn contains(self: BitSet, index: int32) -> bool {
+        \\        if index < 0 {
+        \\            false
+        \\        } else {
+        \\            let word_index = index / 64;
+        \\            if word_index >= self.words.len() {
+        \\                false
+        \\            } else {
+        \\                let mask = 1u64 << (index % 64);
+        \\                self.words.get(word_index) & mask != 0u64
+        \\            }
+        \\        }
+        \\    }
+        \\
+        \\    fn insert(self: BitSet, index: int32) -> bool {
+        \\        if index < 0 {
+        \\            false
+        \\        } else {
+        \\            let word_index = index / 64;
+        \\            while self.words.len() <= word_index {
+        \\                self.words.push(0u64);
+        \\            };
+        \\            let mask = 1u64 << (index % 64);
+        \\            let old = self.words.get(word_index);
+        \\            if old & mask != 0u64 {
+        \\                false
+        \\            } else {
+        \\                self.words.set(word_index, old | mask);
+        \\                self.len.set(self.len.get() + 1);
+        \\                true
+        \\            }
+        \\        }
+        \\    }
+        \\
+        \\    fn remove(self: BitSet, index: int32) -> bool {
+        \\        if !self.contains(index) {
+        \\            false
+        \\        } else {
+        \\            let word_index = index / 64;
+        \\            let mask = 1u64 << (index % 64);
+        \\            self.words.set(word_index, self.words.get(word_index) & ~mask);
+        \\            self.len.set(self.len.get() - 1);
+        \\            true
+        \\        }
+        \\    }
+        \\
+        \\    fn clear(self: BitSet) -> unit {
+        \\        self.words.clear();
+        \\        self.len.set(0)
+        \\    }
+        \\}
+        \\
+        \\pub struct Deque[T] {
+        \\    slots: Ref[Vec[Option[T]]],
+        \\    head: Ref[int32],
+        \\    len: Ref[int32],
+        \\}
+        \\
+        \\impl[T] Deque[T] {
+        \\    fn new() -> Deque[T] {
+        \\        Deque {
+        \\            slots: Ref::new(Vec::new()),
+        \\            head: Ref::new(0),
+        \\            len: Ref::new(0),
+        \\        }
+        \\    }
+        \\
+        \\    fn with_capacity(capacity: int32) -> Deque[T] {
+        \\        let slots: Vec[Option[T]] = Vec::with_capacity(capacity);
+        \\        let index = Ref::new(0);
+        \\        while index.get() < capacity {
+        \\            slots.push(Option::None);
+        \\            index.set(index.get() + 1);
+        \\        };
+        \\        Deque {
+        \\            slots: Ref::new(slots),
+        \\            head: Ref::new(0),
+        \\            len: Ref::new(0),
+        \\        }
+        \\    }
+        \\
+        \\    fn len(self: Deque[T]) -> int32 {
+        \\        self.len.get()
+        \\    }
+        \\
+        \\    fn capacity(self: Deque[T]) -> int32 {
+        \\        self.slots.get().len()
+        \\    }
+        \\
+        \\    fn is_empty(self: Deque[T]) -> bool {
+        \\        self.len.get() == 0
+        \\    }
+        \\
+        \\    fn ensure_space(self: Deque[T]) -> unit {
+        \\        if self.len.get() < self.capacity() {
+        \\            ()
+        \\        } else {
+        \\            let old = self.slots.get();
+        \\            let old_capacity = old.len();
+        \\            let new_capacity = if old_capacity == 0 { 4 } else { old_capacity * 2 };
+        \\            let next: Vec[Option[T]] = Vec::with_capacity(new_capacity);
+        \\            let index = Ref::new(0);
+        \\            while index.get() < new_capacity {
+        \\                next.push(Option::None);
+        \\                index.set(index.get() + 1);
+        \\            };
+        \\            index.set(0);
+        \\            while index.get() < self.len.get() {
+        \\                let old_index = (self.head.get() + index.get()) % old_capacity;
+        \\                next.set(index.get(), old.get(old_index));
+        \\                index.set(index.get() + 1);
+        \\            };
+        \\            self.slots.set(next);
+        \\            self.head.set(0)
+        \\        }
+        \\    }
+        \\
+        \\    fn push_back(self: Deque[T], value: T) -> unit {
+        \\        self.ensure_space();
+        \\        let index = (self.head.get() + self.len.get()) % self.capacity();
+        \\        self.slots.get().set(index, Option::Some(value));
+        \\        self.len.set(self.len.get() + 1)
+        \\    }
+        \\
+        \\    fn push_front(self: Deque[T], value: T) -> unit {
+        \\        self.ensure_space();
+        \\        let index = (self.head.get() - 1 + self.capacity()) % self.capacity();
+        \\        self.head.set(index);
+        \\        self.slots.get().set(index, Option::Some(value));
+        \\        self.len.set(self.len.get() + 1)
+        \\    }
+        \\
+        \\    fn pop_front(self: Deque[T]) -> Option[T] {
+        \\        if self.len.get() == 0 {
+        \\            Option::None
+        \\        } else {
+        \\            let index = self.head.get();
+        \\            let value = self.slots.get().get(index);
+        \\            self.slots.get().set(index, Option::None);
+        \\            self.len.set(self.len.get() - 1);
+        \\            if self.len.get() == 0 {
+        \\                self.head.set(0)
+        \\            } else {
+        \\                self.head.set((index + 1) % self.capacity())
+        \\            };
+        \\            value
+        \\        }
+        \\    }
+        \\
+        \\    fn pop_back(self: Deque[T]) -> Option[T] {
+        \\        if self.len.get() == 0 {
+        \\            Option::None
+        \\        } else {
+        \\            let index = (self.head.get() + self.len.get() - 1) % self.capacity();
+        \\            let value = self.slots.get().get(index);
+        \\            self.slots.get().set(index, Option::None);
+        \\            self.len.set(self.len.get() - 1);
+        \\            if self.len.get() == 0 {
+        \\                self.head.set(0)
+        \\            } else {
+        \\                ()
+        \\            };
+        \\            value
+        \\        }
+        \\    }
+        \\
+        \\    fn front(self: Deque[T]) -> Option[T] {
+        \\        if self.len.get() == 0 {
+        \\            Option::None
+        \\        } else {
+        \\            self.slots.get().get(self.head.get())
+        \\        }
+        \\    }
+        \\
+        \\    fn back(self: Deque[T]) -> Option[T] {
+        \\        if self.len.get() == 0 {
+        \\            Option::None
+        \\        } else {
+        \\            self.slots.get().get((self.head.get() + self.len.get() - 1) % self.capacity())
+        \\        }
+        \\    }
+        \\
+        \\    fn get(self: Deque[T], index: int32) -> Option[T] {
+        \\        if index < 0 || index >= self.len.get() {
+        \\            Option::None
+        \\        } else {
+        \\            self.slots.get().get((self.head.get() + index) % self.capacity())
+        \\        }
+        \\    }
+        \\
+        \\    fn clear(self: Deque[T]) -> unit {
+        \\        while self.len.get() > 0 {
+        \\            let _ = self.pop_back();
+        \\        }
+        \\    }
+        \\}
+        \\
+        \\pub struct HashSet[K] {
+        \\    entries: HashMap[K, unit],
+        \\}
+        \\
+        \\impl[K: Eq + Hash] HashSet[K] {
+        \\    fn new() -> HashSet[K] {
+        \\        HashSet {
+        \\            entries: HashMap::new(),
+        \\        }
+        \\    }
+        \\
+        \\    fn len(self: HashSet[K]) -> int32 {
+        \\        self.entries.len()
+        \\    }
+        \\
+        \\    fn is_empty(self: HashSet[K]) -> bool {
+        \\        self.entries.len() == 0
+        \\    }
+        \\
+        \\    fn contains(self: HashSet[K], value: K) -> bool {
+        \\        self.entries.contains(value)
+        \\    }
+        \\
+        \\    fn insert(self: HashSet[K], value: K) -> bool {
+        \\        if self.entries.contains(value) {
+        \\            false
+        \\        } else {
+        \\            self.entries.set(value, ());
+        \\            true
+        \\        }
+        \\    }
+        \\
+        \\    fn remove(self: HashSet[K], value: K) -> bool {
+        \\        if self.entries.contains(value) {
+        \\            self.entries.remove(value);
+        \\            true
+        \\        } else {
+        \\            false
+        \\        }
+        \\    }
+        \\}
+        \\
+        \\pub struct Index[T] {
+        \\    value: int32,
+        \\}
+        \\
+        \\impl[T] Index[T] {
+        \\    fn value(self: Index[T]) -> int32 {
+        \\        self.value
+        \\    }
+        \\}
+        \\
+        \\impl[T] Eq for Index[T] {
+        \\    fn eq(self: Index[T], other: Index[T]) -> bool {
+        \\        self.value == other.value
+        \\    }
+        \\}
+        \\
+        \\impl[T] Hash for Index[T] {
+        \\    fn hash(self: Index[T]) -> uint64 {
+        \\        Hash::hash(self.value)
+        \\    }
+        \\}
+        \\
+        \\pub struct IndexVec[T] {
+        \\    values: Vec[T],
+        \\}
+        \\
+        \\impl[T] IndexVec[T] {
+        \\    fn new() -> IndexVec[T] {
+        \\        IndexVec { values: Vec::new() }
+        \\    }
+        \\
+        \\    fn with_capacity(capacity: int32) -> IndexVec[T] {
+        \\        IndexVec {
+        \\            values: Vec::with_capacity(capacity),
+        \\        }
+        \\    }
+        \\
+        \\    fn len(self: IndexVec[T]) -> int32 {
+        \\        self.values.len()
+        \\    }
+        \\
+        \\    fn is_empty(self: IndexVec[T]) -> bool {
+        \\        self.values.is_empty()
+        \\    }
+        \\
+        \\    fn push(self: IndexVec[T], value: T) -> Index[T] {
+        \\        let index = Index {
+        \\            value: self.values.len(),
+        \\        };
+        \\        self.values.push(value);
+        \\        index
+        \\    }
+        \\
+        \\    fn contains(self: IndexVec[T], index: Index[T]) -> bool {
+        \\        index.value >= 0 && index.value < self.values.len()
+        \\    }
+        \\
+        \\    fn get(self: IndexVec[T], index: Index[T]) -> T {
+        \\        self.values.get(index.value)
+        \\    }
+        \\
+        \\    fn try_get(self: IndexVec[T], index: Index[T]) -> Option[T] {
+        \\        if self.contains(index) {
+        \\            Option::Some(self.values.get(index.value))
+        \\        } else {
+        \\            Option::None
+        \\        }
+        \\    }
+        \\
+        \\    fn set(self: IndexVec[T], index: Index[T], value: T) -> unit {
+        \\        self.values.set(index.value, value)
+        \\    }
+        \\}
+        \\
+        \\pub struct Symbol {
+        \\    index: int32,
+        \\}
+        \\
+        \\impl Symbol {
+        \\    fn index(self: Symbol) -> int32 {
+        \\        self.index
+        \\    }
+        \\}
+        \\
+        \\impl Eq for Symbol {
+        \\    fn eq(self: Symbol, other: Symbol) -> bool {
+        \\        self.index == other.index
+        \\    }
+        \\}
+        \\
+        \\impl Hash for Symbol {
+        \\    fn hash(self: Symbol) -> uint64 {
+        \\        Hash::hash(self.index)
+        \\    }
+        \\}
+        \\
+        \\pub struct Interner {
+        \\    symbols: HashMap[string, Symbol],
+        \\    values: Vec[string],
+        \\}
+        \\
+        \\impl Interner {
+        \\    fn new() -> Interner {
+        \\        Interner {
+        \\            symbols: HashMap::new(),
+        \\            values: Vec::new(),
+        \\        }
+        \\    }
+        \\
+        \\    fn len(self: Interner) -> int32 {
+        \\        self.values.len()
+        \\    }
+        \\
+        \\    fn is_empty(self: Interner) -> bool {
+        \\        self.values.len() == 0
+        \\    }
+        \\
+        \\    fn contains(self: Interner, value: string) -> bool {
+        \\        self.symbols.contains(value)
+        \\    }
+        \\
+        \\    fn intern(self: Interner, value: string) -> Symbol {
+        \\        match self.symbols.get(value) {
+        \\            Option::Some(symbol) => symbol,
+        \\            Option::None => {
+        \\                let symbol = Symbol {
+        \\                    index: self.values.len(),
+        \\                };
+        \\                self.values.push(value);
+        \\                self.symbols.set(value, symbol);
+        \\                symbol
+        \\            },
+        \\        }
+        \\    }
+        \\
+        \\    fn get(self: Interner, symbol: Symbol) -> string {
+        \\        self.values.get(symbol.index)
+        \\    }
+        \\
+        \\    fn resolve(self: Interner, symbol: Symbol) -> Option[string] {
+        \\        if symbol.index >= 0 && symbol.index < self.values.len() {
+        \\            Option::Some(self.values.get(symbol.index))
+        \\        } else {
+        \\            Option::None
+        \\        }
+        \\    }
+        \\}
+        \\
+        \\pub struct Stack[T] {
+        \\    values: Vec[T],
+        \\}
+        \\
+        \\impl[T] Stack[T] {
+        \\    fn new() -> Stack[T] {
+        \\        Stack { values: Vec::new() }
+        \\    }
+        \\
+        \\    fn with_capacity(capacity: int32) -> Stack[T] {
+        \\        Stack {
+        \\            values: Vec::with_capacity(capacity),
+        \\        }
+        \\    }
+        \\
+        \\    fn len(self: Stack[T]) -> int32 {
+        \\        self.values.len()
+        \\    }
+        \\
+        \\    fn is_empty(self: Stack[T]) -> bool {
+        \\        self.values.is_empty()
+        \\    }
+        \\
+        \\    fn push(self: Stack[T], value: T) -> unit {
+        \\        self.values.push(value)
+        \\    }
+        \\
+        \\    fn pop(self: Stack[T]) -> Option[T] {
+        \\        self.values.pop()
+        \\    }
+        \\
+        \\    fn peek(self: Stack[T]) -> Option[T] {
+        \\        self.values.last()
+        \\    }
+        \\
+        \\    fn clear(self: Stack[T]) -> unit {
+        \\        self.values.clear()
+        \\    }
+        \\}
+    ;
+    source
+}
+
+pub fn text_source() -> string {
+    let source = \\package text;
+        \\
+        \\use std::bytes;
+        \\
+        \\pub struct StringBuilder {
+        \\    parts: Vec[string],
+        \\    byte_len: Ref[int32],
+        \\}
+        \\
+        \\impl StringBuilder {
+        \\    fn new() -> StringBuilder {
+        \\        StringBuilder {
+        \\            parts: Vec::new(),
+        \\            byte_len: Ref::new(0),
+        \\        }
+        \\    }
+        \\
+        \\    fn with_capacity(part_capacity: int32) -> StringBuilder {
+        \\        StringBuilder {
+        \\            parts: Vec::with_capacity(part_capacity),
+        \\            byte_len: Ref::new(0),
+        \\        }
+        \\    }
+        \\
+        \\    fn len(self: StringBuilder) -> int32 {
+        \\        self.byte_len.get()
+        \\    }
+        \\
+        \\    fn is_empty(self: StringBuilder) -> bool {
+        \\        self.byte_len.get() == 0
+        \\    }
+        \\
+        \\    fn write_string(self: StringBuilder, value: string) -> unit {
+        \\        self.parts.push(value);
+        \\        self.byte_len.set(self.byte_len.get() + value.byte_len())
+        \\    }
+        \\
+        \\    fn write_char(self: StringBuilder, value: char) -> unit {
+        \\        self.write_string(value.to_string())
+        \\    }
+        \\
+        \\    fn write_bytes(self: StringBuilder, value: bytes::Bytes) -> Result[unit, string] {
+        \\        match value.to_string() {
+        \\            Result::Ok(text) => {
+        \\                self.write_string(text);
+        \\                Result::Ok(())
+        \\            },
+        \\            Result::Err(error) => Result::Err(error),
+        \\        }
+        \\    }
+        \\
+        \\    fn write_line(self: StringBuilder, value: string) -> unit {
+        \\        self.write_string(value);
+        \\        self.write_string("\n")
+        \\    }
+        \\
+        \\    fn clear(self: StringBuilder) -> unit {
+        \\        self.parts.clear();
+        \\        self.byte_len.set(0)
+        \\    }
+        \\
+        \\    fn finish(self: StringBuilder) -> string {
+        \\        string_concat(self.parts)
+        \\    }
+        \\}
+        \\
+        \\impl ToString for StringBuilder {
+        \\    fn to_string(self: StringBuilder) -> string {
+        \\        self.finish()
+        \\    }
+        \\}
+    ;
+    source
+}

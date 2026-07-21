@@ -13,9 +13,11 @@ use std::fs;
 
 struct StandardNeeds {
     bytes: bool,
+    collections: bool,
     env: bool,
     fs: bool,
     io: bool,
+    text: bool,
 }
 
 struct ArtifactCompilation {
@@ -35,29 +37,39 @@ struct PackageWorld {
 fn no_standard_needs() -> StandardNeeds {
     StandardNeeds {
         bytes: false,
+        collections: false,
         env: false,
         fs: false,
         io: false,
+        text: false,
     }
 }
 
 fn source_standard_needs(value: ast::LowerResult) -> StandardNeeds {
     let needs_fs = imports_package(value, "std::fs");
     let needs_io = imports_package(value, "std::io");
+    let needs_text = imports_package(value, "std::text");
     StandardNeeds {
-        bytes: imports_package(value, "std::bytes") || needs_fs || needs_io,
+        bytes: imports_package(value, "std::bytes")
+            || needs_fs
+            || needs_io
+            || needs_text,
+        collections: imports_package(value, "std::collections"),
         env: imports_package(value, "std::env"),
         fs: needs_fs,
         io: needs_io,
+        text: needs_text,
     }
 }
 
 fn merge_standard_needs(left: StandardNeeds, right: StandardNeeds) -> StandardNeeds {
     StandardNeeds {
         bytes: left.bytes || right.bytes,
+        collections: left.collections || right.collections,
         env: left.env || right.env,
         fs: left.fs || right.fs,
         io: left.io || right.io,
+        text: left.text || right.text,
     }
 }
 
@@ -290,6 +302,11 @@ fn selected_link_standard_core(
     } else {
         ()
     };
+    if needs.collections {
+        result.push(standard.collections.core_value)
+    } else {
+        ()
+    };
     if needs.env {
         result.push(standard.env.core_value)
     } else {
@@ -302,6 +319,11 @@ fn selected_link_standard_core(
     };
     if needs.io {
         result.push(standard.io.core_value)
+    } else {
+        ()
+    };
+    if needs.text {
+        result.push(standard.text.core_value)
     } else {
         ()
     };

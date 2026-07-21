@@ -35,9 +35,11 @@ struct PackageCompilation {
 
 struct StandardLibrary {
     bytes: PackageCompilation,
+    collections: PackageCompilation,
     env: PackageCompilation,
     fs: PackageCompilation,
     io: PackageCompilation,
+    text: PackageCompilation,
 }
 
 fn import_path_text(value: ast::Path) -> string {
@@ -216,6 +218,14 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         Vec::new(),
         builtins,
     );
+    let collections = compile_standard_package(
+        stdlib::collections_source(),
+        "collections.gom",
+        "std::collections",
+        Vec::new(),
+        Vec::new(),
+        builtins,
+    );
     let env_hir_dependencies: Vec[hir::File] = Vec::new();
     env_hir_dependencies.push(host.hir_file);
     let env = compile_standard_package(
@@ -252,7 +262,26 @@ fn compile_standard_library(builtins: core::File) -> StandardLibrary {
         io_core_dependencies,
         builtins,
     );
-    StandardLibrary { bytes, env, fs, io }
+    let text_hir_dependencies: Vec[hir::File] = Vec::new();
+    text_hir_dependencies.push(bytes.hir_file);
+    let text_core_dependencies: Vec[core::File] = Vec::new();
+    text_core_dependencies.push(bytes.core_value);
+    let text = compile_standard_package(
+        stdlib::text_source(),
+        "string_builder.gom",
+        "std::text",
+        text_hir_dependencies,
+        text_core_dependencies,
+        builtins,
+    );
+    StandardLibrary {
+        bytes,
+        collections,
+        env,
+        fs,
+        io,
+        text,
+    }
 }
 
 fn selected_standard_hir(
@@ -261,10 +290,19 @@ fn selected_standard_hir(
 ) -> Vec[hir::File] {
     let needs_fs = imports_package(ast_value, "std::fs");
     let needs_io = imports_package(ast_value, "std::io");
-    let needs_bytes = imports_package(ast_value, "std::bytes") || needs_fs || needs_io;
+    let needs_text = imports_package(ast_value, "std::text");
+    let needs_bytes = imports_package(ast_value, "std::bytes")
+        || needs_fs
+        || needs_io
+        || needs_text;
     let result: Vec[hir::File] = Vec::new();
     if needs_bytes {
         result.push(standard.bytes.hir_file)
+    } else {
+        ()
+    };
+    if imports_package(ast_value, "std::collections") {
+        result.push(standard.collections.hir_file)
     } else {
         ()
     };
@@ -283,6 +321,11 @@ fn selected_standard_hir(
     } else {
         ()
     };
+    if needs_text {
+        result.push(standard.text.hir_file)
+    } else {
+        ()
+    };
     result
 }
 
@@ -292,10 +335,19 @@ fn selected_standard_core(
 ) -> Vec[core::File] {
     let needs_fs = imports_package(ast_value, "std::fs");
     let needs_io = imports_package(ast_value, "std::io");
-    let needs_bytes = imports_package(ast_value, "std::bytes") || needs_fs || needs_io;
+    let needs_text = imports_package(ast_value, "std::text");
+    let needs_bytes = imports_package(ast_value, "std::bytes")
+        || needs_fs
+        || needs_io
+        || needs_text;
     let result: Vec[core::File] = Vec::new();
     if needs_bytes {
         result.push(standard.bytes.core_value)
+    } else {
+        ()
+    };
+    if imports_package(ast_value, "std::collections") {
+        result.push(standard.collections.core_value)
     } else {
         ()
     };
@@ -311,6 +363,11 @@ fn selected_standard_core(
     };
     if needs_io {
         result.push(standard.io.core_value)
+    } else {
+        ()
+    };
+    if needs_text {
+        result.push(standard.text.core_value)
     } else {
         ()
     };
