@@ -48,6 +48,29 @@ pub struct TestLinkOutput {
     pub tests: Vec<TestDescriptor>,
 }
 
+#[derive(Debug)]
+pub struct GoLinkOutput {
+    pub go: goast::File,
+    pub goenv: GlobalGoEnv,
+}
+
+#[derive(Debug)]
+pub struct GoTestLinkOutput {
+    pub link: GoLinkOutput,
+    pub tests: Vec<TestDescriptor>,
+}
+
+#[derive(Clone, Copy)]
+enum LinkMode {
+    Full,
+    Go,
+}
+
+enum LinkPipelineOutput {
+    Full(Box<TestLinkOutput>),
+    Go(Box<GoTestLinkOutput>),
+}
+
 fn validate_interface_unit(path: &Path, unit: &InterfaceUnit) -> Result<(), CompilationError> {
     if unit.format_version != crate::artifact::FORMAT_VERSION {
         return Err(compile_error(format!(
@@ -615,7 +638,22 @@ pub fn link_cores(
     entry_package: &str,
     cores: Vec<CoreUnit>,
 ) -> Result<LinkOutput, CompilationError> {
-    Ok(link_cores_inner(entry_package, cores, None)?.link)
+    match link_cores_inner(entry_package, cores, None, LinkMode::Full)? {
+        LinkPipelineOutput::Full(output) => Ok(output.link),
+        LinkPipelineOutput::Go(_) => Err(compile_error("internal link mode mismatch".to_string())),
+    }
+}
+
+pub fn link_cores_to_go(
+    entry_package: &str,
+    cores: Vec<CoreUnit>,
+) -> Result<GoLinkOutput, CompilationError> {
+    match link_cores_inner(entry_package, cores, None, LinkMode::Go)? {
+        LinkPipelineOutput::Go(output) => Ok(output.link),
+        LinkPipelineOutput::Full(_) => {
+            Err(compile_error("internal link mode mismatch".to_string()))
+        }
+    }
 }
 
 pub fn link_test_cores(
@@ -632,14 +670,33 @@ pub fn link_test_cores_multi(
     let Some(entry_package) = packages.first() else {
         return Err(compile_error("no test packages provided".to_string()));
     };
-    link_cores_inner(entry_package, cores, Some(packages))
+    match link_cores_inner(entry_package, cores, Some(packages), LinkMode::Full)? {
+        LinkPipelineOutput::Full(output) => Ok(*output),
+        LinkPipelineOutput::Go(_) => Err(compile_error("internal link mode mismatch".to_string())),
+    }
+}
+
+pub fn link_test_cores_multi_to_go(
+    packages: &[String],
+    cores: Vec<CoreUnit>,
+) -> Result<GoTestLinkOutput, CompilationError> {
+    let Some(entry_package) = packages.first() else {
+        return Err(compile_error("no test packages provided".to_string()));
+    };
+    match link_cores_inner(entry_package, cores, Some(packages), LinkMode::Go)? {
+        LinkPipelineOutput::Go(output) => Ok(*output),
+        LinkPipelineOutput::Full(_) => {
+            Err(compile_error("internal link mode mismatch".to_string()))
+        }
+    }
 }
 
 fn link_cores_inner(
     entry_package: &str,
     cores: Vec<CoreUnit>,
     test_packages: Option<&[String]>,
-) -> Result<TestLinkOutput, CompilationError> {
+    mode: LinkMode,
+) -> Result<LinkPipelineOutput, CompilationError> {
     with_compiler_stack(|| {
         if cores.is_empty() {
             return Err(compile_error("no core inputs provided".to_string()));
@@ -843,6 +900,19 @@ fn link_cores_inner(
             linked.toplevels.push(package_entry_wrapper(entry_fn));
         }
 
+        if matches!(mode, LinkMode::Go) {
+            let (go, goenv) = compile_linked_to_go(
+                genv,
+                linked,
+                &gensym,
+                test_packages.map(|_| tests.as_slice()),
+            )?;
+            return Ok(LinkPipelineOutput::Go(Box::new(GoTestLinkOutput {
+                link: GoLinkOutput { go, goenv },
+                tests,
+            })));
+        }
+
         let (mono, monoenv) = mono::mono(genv.clone(), linked.clone()).map_err(compile_error)?;
         let (lifted, liftenv) = lift::lambda_lift(monoenv.clone(), &gensym, mono.clone());
         let (anf, anfenv) = crate::anf::anf_file(liftenv.clone(), &gensym, lifted.clone());
@@ -853,7 +923,7 @@ fn link_cores_inner(
             go::compile::go_file(anfenv.clone(), &gensym, anf.clone())
         };
 
-        Ok(TestLinkOutput {
+        Ok(LinkPipelineOutput::Full(Box::new(TestLinkOutput {
             link: LinkOutput {
                 go,
                 goenv,
@@ -867,8 +937,24 @@ fn link_cores_inner(
                 anfenv,
             },
             tests,
-        })
+        })))
     })
+}
+
+fn compile_linked_to_go(
+    genv: GlobalTypeEnv,
+    linked: crate::core::File,
+    gensym: &Gensym,
+    tests: Option<&[TestDescriptor]>,
+) -> Result<(goast::File, GlobalGoEnv), CompilationError> {
+    let (mono, monoenv) = mono::mono(genv, linked).map_err(compile_error)?;
+    let (lifted, liftenv) = lift::lambda_lift(monoenv, gensym, mono);
+    let (anf, anfenv) = crate::anf::anf_file(liftenv, gensym, lifted);
+    if let Some(tests) = tests {
+        go::compile::go_test_file(anfenv, gensym, anf, tests).map_err(compile_error)
+    } else {
+        Ok(go::compile::go_file(anfenv, gensym, anf))
+    }
 }
 
 fn reachable_core_packages(

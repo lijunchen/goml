@@ -222,9 +222,13 @@ fn main() -> unit {
         interface_files: vec![],
     })
     .map_err(|err| anyhow::anyhow!("build main failed: {:?}", err))?;
+    let go_only =
+        separate::link_cores_to_go(crate::package_names::ROOT_PACKAGE, vec![unit.clone()])
+            .map_err(|err| anyhow::anyhow!("link failed: {:?}", err))?;
     let linked = separate::link_cores(crate::package_names::ROOT_PACKAGE, vec![unit])
         .map_err(|err| anyhow::anyhow!("link failed: {:?}", err))?;
     let go_source = linked.go.to_pretty(&linked.goenv, 120);
+    assert_eq!(go_source, go_only.go.to_pretty(&go_only.goenv, 120));
     if !super::runtime_executor_available() {
         return Ok(());
     }

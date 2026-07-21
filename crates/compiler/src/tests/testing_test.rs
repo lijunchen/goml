@@ -6,6 +6,7 @@ use diagnostics::{LabelSeverity, Severity};
 use crate::pipeline::pipeline::compile_for_analysis_with_overrides;
 use crate::pipeline::separate::{
     PackageInputs, build_test_package, link_test_cores, link_test_cores_multi,
+    link_test_cores_multi_to_go,
 };
 
 #[test]
@@ -52,9 +53,17 @@ fn ignored_case() -> unit {
     assert_eq!(unit.tests[1].id, "example::math::private_value_works");
     assert!(!unit.tests[1].ignored);
 
+    let packages = vec!["example::math".to_string()];
+    let go_only = link_test_cores_multi_to_go(&packages, vec![unit.clone()])
+        .map_err(|error| anyhow::anyhow!("test link failed: {error:?}"))?;
     let output = link_test_cores("example::math", vec![unit])
         .map_err(|error| anyhow::anyhow!("test link failed: {error:?}"))?;
     let go = output.link.go.to_pretty(&output.link.goenv, 120);
+    assert_eq!(go, go_only.link.go.to_pretty(&go_only.link.goenv, 120));
+    assert_eq!(
+        serde_json::to_string(&output.tests)?,
+        serde_json::to_string(&go_only.tests)?,
+    );
     assert!(go.contains("switch _goml_os.Args[1]"));
     assert!(go.contains("case \"example::math::private_value_works\""));
     assert!(go.contains("case \"example::math::ignored_case\""));

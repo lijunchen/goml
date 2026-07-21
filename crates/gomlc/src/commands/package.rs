@@ -79,7 +79,7 @@ pub(crate) fn test_link(args: TestLinkArgs) -> Result<()> {
         units.push(unit);
     }
 
-    let output = compiler::pipeline::separate::link_test_cores_multi(&args.package, units)
+    let output = compiler::pipeline::separate::link_test_cores_multi_to_go(&args.package, units)
         .map_err(|error| compilation_error(error, Default::default()))
         .context("test link failed")?;
     let go_source =
@@ -105,7 +105,7 @@ pub(crate) fn link(args: LinkArgs) -> Result<()> {
         units.push(unit);
     }
 
-    let linked = compiler::pipeline::separate::link_cores(&args.entry, units)
+    let linked = compiler::pipeline::separate::link_cores_to_go(&args.entry, units)
         .map_err(|error| compilation_error(error, Default::default()))
         .context("link failed")?;
     let go_source = with_compiler_stack(|| linked.go.to_pretty(&linked.goenv, PRETTY_WIDTH));
