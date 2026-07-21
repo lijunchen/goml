@@ -585,6 +585,131 @@ fn require_predicates(ctx: Checker, predicates: Vec[TypePredicate]) -> unit {
     }
 }
 
+fn builtin_value_trait_type(value: Type) -> bool {
+    match prune(value) {
+        Type::Unit
+        | Type::Bool
+        | Type::Int8
+        | Type::Int16
+        | Type::Int32
+        | Type::Int64
+        | Type::Uint8
+        | Type::Uint16
+        | Type::Uint32
+        | Type::Uint64
+        | Type::Float32
+        | Type::Float64
+        | Type::String
+        | Type::Char => true,
+        _ => false,
+    }
+}
+
+fn iterator_trait_ref() -> TraitRef {
+    TraitRef {
+        name: "Iterator",
+        args: Vec::new(),
+    }
+}
+
+fn iterator_item_type(value: Type) -> Type {
+    Type::Projection(
+        value,
+        "Item",
+        Option::Some(iterator_trait_ref()),
+    )
+}
+
+fn builtin_iterator_bound_satisfied(
+    ctx: Checker,
+    bound_ty: Type,
+    depth: int32,
+) -> bool {
+    match prune(normalize_type(ctx, bound_ty)) {
+        Type::App(Type::Con(name), args) => if name == "FnIterator" && args.len() == 1 {
+            true
+        } else if name == "MapIterator" && args.len() == 3 {
+            let iterator = args.get(2);
+            trait_bound_satisfied_at(ctx, iterator, iterator_trait_ref(), depth + 1)
+                && unify(
+                    normalize_type(ctx, iterator_item_type(iterator)),
+                    normalize_type(ctx, args.get(0)),
+                )
+        } else if name == "FilterIterator" && args.len() == 2 {
+            let iterator = args.get(1);
+            trait_bound_satisfied_at(ctx, iterator, iterator_trait_ref(), depth + 1)
+                && unify(
+                    normalize_type(ctx, iterator_item_type(iterator)),
+                    normalize_type(ctx, args.get(0)),
+                )
+        } else if name == "TakeIterator" && args.len() == 1 {
+            trait_bound_satisfied_at(
+                ctx,
+                args.get(0),
+                iterator_trait_ref(),
+                depth + 1,
+            )
+        } else {
+            false
+        },
+        _ => false,
+    }
+}
+
+fn builtin_trait_bound_satisfied(
+    ctx: Checker,
+    bound_ty: Type,
+    reference: TraitRef,
+    depth: int32,
+) -> bool {
+    if reference.args.len() > 0 {
+        false
+    } else {
+        let trait_name = short_name(reference.name);
+        let bound_ty = prune(normalize_type(ctx, bound_ty));
+        match bound_ty {
+            Type::Dyn(name) => names_match(name, trait_name),
+            _ => if trait_name == "ToString" {
+                if builtin_value_trait_type(bound_ty) {
+                    true
+                } else {
+                    match bound_ty {
+                        Type::RefType(inner) => trait_bound_satisfied_at(
+                            ctx,
+                            inner,
+                            TraitRef {
+                                name: "ToString",
+                                args: Vec::new(),
+                            },
+                            depth + 1,
+                        ),
+                        _ => false,
+                    }
+                }
+            } else if trait_name == "Eq" || trait_name == "Hash" {
+                builtin_value_trait_type(bound_ty) || match bound_ty {
+                    Type::RefType(_) => true,
+                    _ => false,
+                }
+            } else if trait_name == "Iterator" {
+                builtin_iterator_bound_satisfied(ctx, bound_ty, depth)
+            } else if trait_name == "IntoIterator" {
+                match bound_ty {
+                    Type::VecType(_) | Type::Slice(_) => true,
+                    _ => trait_bound_satisfied_at(
+                        ctx,
+                        bound_ty,
+                        iterator_trait_ref(),
+                        depth + 1,
+                    ),
+                }
+            } else {
+                false
+            },
+        }
+    }
+}
+
 fn trait_bound_satisfied_at(
     ctx: Checker,
     bound_ty: Type,
@@ -595,6 +720,8 @@ fn trait_bound_satisfied_at(
         true
     } else if depth >= 16 {
         false
+    } else if builtin_trait_bound_satisfied(ctx, bound_ty, reference, depth) {
+        true
     } else {
         let found = Ref::new(false);
         for impl_info in ctx.impls {
