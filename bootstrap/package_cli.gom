@@ -1,0 +1,297 @@
+package main;
+
+use std::fs;
+use std::path;
+use std::text;
+
+struct PackageCommandArgs {
+    package_name: string,
+    inputs: Vec[string],
+    interface_paths: Vec[string],
+    output: string,
+}
+
+struct LinkCommandArgs {
+    inputs: Vec[string],
+    entry: string,
+    output: string,
+}
+
+struct SourceArtifact {
+    package_name: string,
+    sources: Vec[string],
+    dependencies: Vec[string],
+}
+
+fn cli_option(value: string) -> bool {
+    value.byte_len() >= 2 && value.byte_slice(0, 2) == "--"
+}
+
+fn missing_package_argument(name: string) -> Result[PackageCommandArgs, string] {
+    Result::Err("missing required argument: " + name)
+}
+
+fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, string] {
+    let package_name: Ref[Option[string]] = Ref::new(Option::None);
+    let output: Ref[Option[string]] = Ref::new(Option::None);
+    let inputs = Vec::new();
+    let interface_paths = Vec::new();
+    let index = Ref::new(2);
+    while index.get() < args.len() {
+        let argument = args.get(index.get());
+        if argument == "--package" {
+            if index.get() + 1 >= args.len() {
+                return missing_package_argument("--package")
+            } else {
+                package_name.set(Option::Some(args.get(index.get() + 1)));
+                index.set(index.get() + 2)
+            }
+        } else if argument == "--input" {
+            index.set(index.get() + 1);
+            let previous_len = inputs.len();
+            while index.get() < args.len() && !cli_option(args.get(index.get())) {
+                inputs.push(args.get(index.get()));
+                index.set(index.get() + 1)
+            };
+            if inputs.len() == previous_len {
+                return missing_package_argument("--input")
+            } else {
+                ()
+            }
+        } else if argument == "--interface-path" {
+            if index.get() + 1 >= args.len() {
+                return missing_package_argument("--interface-path")
+            } else {
+                interface_paths.push(args.get(index.get() + 1));
+                index.set(index.get() + 2)
+            }
+        } else if argument == "--output" {
+            if index.get() + 1 >= args.len() {
+                return missing_package_argument("--output")
+            } else {
+                output.set(Option::Some(args.get(index.get() + 1)));
+                index.set(index.get() + 2)
+            }
+        } else {
+            return Result::Err("unknown argument: " + argument)
+        }
+    };
+    match package_name.get() {
+        Option::Some(package_name) => match output.get() {
+            Option::Some(output) => if inputs.len() > 0 {
+                Result::Ok(PackageCommandArgs {
+                    package_name,
+                    inputs,
+                    interface_paths,
+                    output,
+                })
+            } else {
+                missing_package_argument("--input")
+            },
+            Option::None => missing_package_argument("--output"),
+        },
+        Option::None => missing_package_argument("--package"),
+    }
+}
+
+fn missing_link_argument(name: string) -> Result[LinkCommandArgs, string] {
+    Result::Err("missing required argument: " + name)
+}
+
+fn parse_link_command_args(args: Vec[string]) -> Result[LinkCommandArgs, string] {
+    let entry: Ref[Option[string]] = Ref::new(Option::None);
+    let output: Ref[Option[string]] = Ref::new(Option::None);
+    let inputs = Vec::new();
+    let index = Ref::new(2);
+    while index.get() < args.len() {
+        let argument = args.get(index.get());
+        if argument == "--input" {
+            index.set(index.get() + 1);
+            let previous_len = inputs.len();
+            while index.get() < args.len() && !cli_option(args.get(index.get())) {
+                inputs.push(args.get(index.get()));
+                index.set(index.get() + 1)
+            };
+            if inputs.len() == previous_len {
+                return missing_link_argument("--input")
+            } else {
+                ()
+            }
+        } else if argument == "--entry" {
+            if index.get() + 1 >= args.len() {
+                return missing_link_argument("--entry")
+            } else {
+                entry.set(Option::Some(args.get(index.get() + 1)));
+                index.set(index.get() + 2)
+            }
+        } else if argument == "--output" {
+            if index.get() + 1 >= args.len() {
+                return missing_link_argument("--output")
+            } else {
+                output.set(Option::Some(args.get(index.get() + 1)));
+                index.set(index.get() + 2)
+            }
+        } else {
+            return Result::Err("unknown argument: " + argument)
+        }
+    };
+    match entry.get() {
+        Option::Some(entry) => match output.get() {
+            Option::Some(output) => if inputs.len() > 0 {
+                Result::Ok(LinkCommandArgs { inputs, entry, output })
+            } else {
+                missing_link_argument("--input")
+            },
+            Option::None => missing_link_argument("--output"),
+        },
+        Option::None => missing_link_argument("--entry"),
+    }
+}
+
+fn absolute_path(value: string) -> Result[string, string] {
+    path::absolute(value)
+}
+
+fn absolute_paths(values: Vec[string]) -> Result[Vec[string], string] {
+    let result = Vec::new();
+    for value in values {
+        match absolute_path(value) {
+            Result::Ok(value) => result.push(value),
+            Result::Err(error) => return Result::Err(error),
+        }
+    };
+    Result::Ok(result)
+}
+
+fn source_artifact(args: PackageCommandArgs) -> Result[SourceArtifact, string] {
+    match absolute_paths(args.inputs) {
+        Result::Ok(sources) => match absolute_paths(args.interface_paths) {
+            Result::Ok(dependencies) => Result::Ok(SourceArtifact {
+                package_name: args.package_name,
+                sources,
+                dependencies,
+            }),
+            Result::Err(error) => Result::Err(error),
+        },
+        Result::Err(error) => Result::Err(error),
+    }
+}
+
+fn encode_source_artifact(value: SourceArtifact) -> string {
+    let builder = text::StringBuilder::new();
+    builder.write_string("gomlc-selfhost-source-v1\n");
+    builder.write_string("package\t");
+    builder.write_string(value.package_name);
+    builder.write_char('\n');
+    for source in value.sources {
+        builder.write_string("source\t");
+        builder.write_string(source);
+        builder.write_char('\n')
+    };
+    for dependency in value.dependencies {
+        builder.write_string("dependency\t");
+        builder.write_string(dependency);
+        builder.write_char('\n')
+    };
+    builder.finish()
+}
+
+fn artifact_lines(value: string) -> Vec[string] {
+    let result = Vec::new();
+    let start = Ref::new(0);
+    for index in range(0, value.byte_len()) {
+        if value.byte_slice(index, index + 1) == "\n" {
+            result.push(value.byte_slice(start.get(), index));
+            start.set(index + 1)
+        } else {
+            ()
+        }
+    };
+    if start.get() < value.byte_len() {
+        result.push(value.byte_slice(start.get(), value.byte_len()))
+    } else {
+        ()
+    };
+    result
+}
+
+fn artifact_field(line: string, name: string) -> Option[string] {
+    let prefix = name + "\t";
+    if line.byte_len() >= prefix.byte_len()
+        && line.byte_slice(0, prefix.byte_len()) == prefix
+    {
+        Option::Some(line.byte_slice(prefix.byte_len(), line.byte_len()))
+    } else {
+        Option::None
+    }
+}
+
+fn decode_source_artifact(value: string) -> Result[SourceArtifact, string] {
+    let lines = artifact_lines(value);
+    if lines.len() == 0 || lines.get(0) != "gomlc-selfhost-source-v1" {
+        return Result::Err("unsupported compiler artifact")
+    } else {
+        ()
+    };
+    let package_name: Ref[Option[string]] = Ref::new(Option::None);
+    let sources = Vec::new();
+    let dependencies = Vec::new();
+    for index in range(1, lines.len()) {
+        let line = lines.get(index);
+        match artifact_field(line, "package") {
+            Option::Some(value) => package_name.set(Option::Some(value)),
+            Option::None => match artifact_field(line, "source") {
+                Option::Some(value) => sources.push(value),
+                Option::None => match artifact_field(line, "dependency") {
+                    Option::Some(value) => dependencies.push(value),
+                    Option::None => if line == "" {
+                        ()
+                    } else {
+                        return Result::Err("invalid compiler artifact field")
+                    },
+                },
+            },
+        }
+    };
+    match package_name.get() {
+        Option::Some(package_name) => if sources.len() > 0 {
+            Result::Ok(SourceArtifact {
+                package_name,
+                sources,
+                dependencies,
+            })
+        } else {
+            Result::Err("compiler artifact has no sources")
+        },
+        Option::None => Result::Err("compiler artifact has no package"),
+    }
+}
+
+fn read_source_artifact(path: string) -> Result[SourceArtifact, string] {
+    match fs::read_file(path) {
+        Result::Ok(value) => decode_source_artifact(value),
+        Result::Err(error) => Result::Err(error),
+    }
+}
+
+fn ensure_parent(path_value: string) -> Result[unit, string] {
+    match path::parent(path_value) {
+        Option::Some(parent) => fs::create_dir_all(parent),
+        Option::None => Result::Ok(()),
+    }
+}
+
+fn write_artifact(path_value: string, value: SourceArtifact) -> Result[unit, string] {
+    match ensure_parent(path_value) {
+        Result::Ok(()) => fs::write_file(path_value, encode_source_artifact(value)),
+        Result::Err(error) => Result::Err(error),
+    }
+}
+
+fn interface_output_path(output: string) -> string {
+    path::with_extension(output, "interface")
+}
+
+fn core_output_path(output: string) -> string {
+    path::with_extension(output, "core")
+}
