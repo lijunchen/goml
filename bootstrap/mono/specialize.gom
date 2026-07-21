@@ -106,6 +106,20 @@ fn projection_binding_name(
     builder.finish()
 }
 
+fn has_projection_binding(values: Vec[TypeBinding]) -> bool {
+    let found = Ref::new(false);
+    for value in values {
+        if value.name.byte_len() >= 11
+            && value.name.byte_slice(0, 11) == "projection#"
+        {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
 fn unify_type(
     template: tast::Type,
     actual: tast::Type,
@@ -1337,16 +1351,19 @@ fn ensure_dyn_trait_impls(
     }
 }
 
-fn specialize_found_var(
+fn specialize_found_var_with_projection_bindings(
     ctx: SpecializeCtx,
     function: core::Function,
     name: string,
     ty: tast::Type,
+    allow_projection_bindings: bool,
 ) -> core::Expr {
     if function_is_generic(function) {
         if type_is_concrete(ty) {
             let call_bindings = Vec::new();
             if unify_type(function_type(function), ty, call_bindings)
+                && (allow_projection_bindings
+                    || !has_projection_binding(call_bindings))
                 && complete_bindings(ctx, function, call_bindings)
             {
                 core::Expr::Var(
@@ -1362,6 +1379,36 @@ fn specialize_found_var(
     } else {
         core::Expr::Var(name, ty)
     }
+}
+
+fn specialize_found_var(
+    ctx: SpecializeCtx,
+    function: core::Function,
+    name: string,
+    ty: tast::Type,
+) -> core::Expr {
+    specialize_found_var_with_projection_bindings(
+        ctx,
+        function,
+        name,
+        ty,
+        false,
+    )
+}
+
+fn specialize_call_var(
+    ctx: SpecializeCtx,
+    function: core::Function,
+    name: string,
+    ty: tast::Type,
+) -> core::Expr {
+    specialize_found_var_with_projection_bindings(
+        ctx,
+        function,
+        name,
+        ty,
+        true,
+    )
 }
 
 fn specialize_var(
@@ -1390,7 +1437,7 @@ fn specialize_call(
     let func = match func {
         core::Expr::Var(name, func_ty) => match find_callee_function(ctx, name) {
             Option::Some(function) => if function_is_generic(function) {
-                specialize_found_var(ctx, function, name, func_ty)
+                specialize_call_var(ctx, function, name, func_ty)
             } else {
                 core::Expr::Var(
                     ensure_instance(ctx, function.name, Vec::new()),
