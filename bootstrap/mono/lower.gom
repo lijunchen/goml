@@ -12,7 +12,8 @@ struct TypeInstance {
 
 struct TypeCtx {
     instances: Vec[TypeInstance],
-    used_names: Vec[string],
+    instance_index: HashMap[string, TypeInstance],
+    used_names: HashMap[string, unit],
 }
 
 fn types_are_concrete(values: Vec[tast::Type]) -> bool {
@@ -89,20 +90,18 @@ fn compact_type(value: tast::Type) -> string {
     builder.finish()
 }
 
-fn type_args_equal(left: Vec[tast::Type], right: Vec[tast::Type]) -> bool {
-    if left.len() != right.len() {
-        false
-    } else {
-        let equal = Ref::new(true);
-        for index in range(0, left.len()) {
-            if compact_type(left.get(index)) == compact_type(right.get(index)) {
-                ()
-            } else {
-                equal.set(false)
-            }
-        };
-        equal.get()
-    }
+fn type_instance_lookup_key(base_name: string, args: Vec[tast::Type]) -> string {
+    let builder = text::StringBuilder::new();
+    builder.write_string(base_name.byte_len().to_string());
+    builder.write_char(':');
+    builder.write_string(base_name);
+    for arg in args {
+        let ty = compact_type(arg);
+        builder.write_string(ty.byte_len().to_string());
+        builder.write_char(':');
+        builder.write_string(ty)
+    };
+    builder.finish()
 }
 
 fn find_type_instance(
@@ -110,34 +109,18 @@ fn find_type_instance(
     base_name: string,
     args: Vec[tast::Type],
 ) -> Option[TypeInstance] {
-    let result: Ref[Option[TypeInstance]] = Ref::new(Option::None);
-    for instance in ctx.instances {
-        if instance.base_name == base_name && type_args_equal(instance.args, args) {
-            result.set(Option::Some(instance))
-        } else {
-            ()
-        }
-    };
-    result.get()
+    ctx.instance_index.get(type_instance_lookup_key(base_name, args))
 }
 
 fn type_name_is_used(ctx: TypeCtx, name: string) -> bool {
-    let found = Ref::new(false);
-    for used_name in ctx.used_names {
-        if used_name == name {
-            found.set(true)
-        } else {
-            ()
-        }
-    };
-    found.get()
+    ctx.used_names.contains(name)
 }
 
 fn add_used_type_name(ctx: TypeCtx, name: string) -> unit {
     if type_name_is_used(ctx, name) {
         ()
     } else {
-        ctx.used_names.push(name)
+        ctx.used_names.set(name, ())
     }
 }
 
@@ -153,7 +136,7 @@ fn type_instance_base_name(name: string, args: Vec[tast::Type]) -> string {
 
 fn unique_type_name(ctx: TypeCtx, base: string) -> string {
     if !type_name_is_used(ctx, base) {
-        ctx.used_names.push(base);
+        ctx.used_names.set(base, ());
         base
     } else {
         let index = Ref::new(1);
@@ -162,7 +145,7 @@ fn unique_type_name(ctx: TypeCtx, base: string) -> string {
             index.set(index.get() + 1);
             candidate.set(base + "__mono" + index.get().to_string())
         };
-        ctx.used_names.push(candidate.get());
+        ctx.used_names.set(candidate.get(), ());
         candidate.get()
     }
 }
@@ -176,11 +159,16 @@ fn ensure_type_instance(
         Option::Some(instance) => instance.name,
         Option::None => {
             let name = unique_type_name(ctx, type_instance_base_name(base_name, args));
-            ctx.instances.push(TypeInstance {
+            let instance = TypeInstance {
                 base_name,
                 args,
                 name,
-            });
+            };
+            ctx.instances.push(instance);
+            ctx.instance_index.set(
+                type_instance_lookup_key(instance.base_name, instance.args),
+                instance,
+            );
             name
         },
     }
@@ -770,7 +758,8 @@ fn collect_expr_type_names(ctx: TypeCtx, value: core::Expr) -> unit {
 fn type_ctx(value: core::File) -> TypeCtx {
     let ctx = TypeCtx {
         instances: Vec::new(),
-        used_names: Vec::new(),
+        instance_index: HashMap::new(),
+        used_names: HashMap::new(),
     };
     for function in value.functions {
         add_used_type_name(ctx, function.name);
