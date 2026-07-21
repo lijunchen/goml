@@ -639,6 +639,614 @@ fn std_io_write_item(key: string, stream: string) -> Item {
     std_function_item(key, params, std_bool_string_type(), stmts)
 }
 
+fn std_path_join_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("base", Type::String));
+    params.push(("child", Type::String));
+    let args: Vec[Expr] = Vec::new();
+    args.push(Expr::Var("base"));
+    args.push(Expr::Var("child"));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Return(Option::Some(std_call(
+        "_goml_filepath.Join",
+        args,
+    ))));
+    std_function_item("std.path.join", params, Type::String, stmts)
+}
+
+fn std_path_unary_item(key: string, function: string, ret_ty: Type) -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("path", Type::String));
+    let args: Vec[Expr] = Vec::new();
+    args.push(Expr::Var("path"));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Return(Option::Some(std_call(function, args))));
+    std_function_item(key, params, ret_ty, stmts)
+}
+
+fn std_path_parent_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("path", Type::String));
+    let clean_args: Vec[Expr] = Vec::new();
+    clean_args.push(Expr::Var("path"));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Var(
+        "cleaned",
+        Type::String,
+        Option::Some(std_call("_goml_filepath.Clean", clean_args)),
+    ));
+    let parent_args: Vec[Expr] = Vec::new();
+    parent_args.push(Expr::Var("cleaned"));
+    stmts.push(Stmt::Var(
+        "parent",
+        Type::String,
+        Option::Some(std_call("_goml_filepath.Dir", parent_args)),
+    ));
+    let missing: Vec[Stmt] = Vec::new();
+    missing.push(Stmt::Return(Option::Some(std_bool_string_expr(
+        false,
+        Expr::String(""),
+    ))));
+    stmts.push(Stmt::If(
+        Expr::Binary(BinaryOp::Eq, Expr::Var("cleaned"), Expr::Var("parent")),
+        Block { stmts: missing },
+        Option::None,
+    ));
+    stmts.push(Stmt::Return(Option::Some(std_bool_string_expr(
+        true,
+        Expr::Var("parent"),
+    ))));
+    std_function_item("std.path.parent", params, std_bool_string_type(), stmts)
+}
+
+fn std_path_file_name_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("path", Type::String));
+    let clean_args: Vec[Expr] = Vec::new();
+    clean_args.push(Expr::Var("path"));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Var(
+        "cleaned",
+        Type::String,
+        Option::Some(std_call("_goml_filepath.Clean", clean_args)),
+    ));
+    let parent_args: Vec[Expr] = Vec::new();
+    parent_args.push(Expr::Var("cleaned"));
+    stmts.push(Stmt::Var(
+        "parent",
+        Type::String,
+        Option::Some(std_call("_goml_filepath.Dir", parent_args)),
+    ));
+    let base_args: Vec[Expr] = Vec::new();
+    base_args.push(Expr::Var("cleaned"));
+    stmts.push(Stmt::Var(
+        "base",
+        Type::String,
+        Option::Some(std_call("_goml_filepath.Base", base_args)),
+    ));
+    let missing_condition = Expr::Binary(
+        BinaryOp::Or,
+        Expr::Binary(BinaryOp::Eq, Expr::Var("cleaned"), Expr::Var("parent")),
+        Expr::Binary(
+            BinaryOp::Or,
+            Expr::Binary(BinaryOp::Eq, Expr::Var("base"), Expr::String(".")),
+            Expr::Binary(BinaryOp::Eq, Expr::Var("base"), Expr::String("..")),
+        ),
+    );
+    let missing: Vec[Stmt] = Vec::new();
+    missing.push(Stmt::Return(Option::Some(std_bool_string_expr(
+        false,
+        Expr::String(""),
+    ))));
+    stmts.push(Stmt::If(
+        missing_condition,
+        Block { stmts: missing },
+        Option::None,
+    ));
+    stmts.push(Stmt::Return(Option::Some(std_bool_string_expr(
+        true,
+        Expr::Var("base"),
+    ))));
+    std_function_item("std.path.file_name", params, std_bool_string_type(), stmts)
+}
+
+fn std_path_extension_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("path", Type::String));
+    let base_args: Vec[Expr] = Vec::new();
+    base_args.push(Expr::Var("path"));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Var(
+        "base",
+        Type::String,
+        Option::Some(std_call("_goml_filepath.Base", base_args)),
+    ));
+    let extension_args: Vec[Expr] = Vec::new();
+    extension_args.push(Expr::Var("base"));
+    stmts.push(Stmt::Var(
+        "extension",
+        Type::String,
+        Option::Some(std_call("_goml_filepath.Ext", extension_args)),
+    ));
+    let missing_condition = Expr::Binary(
+        BinaryOp::Or,
+        Expr::Binary(BinaryOp::Eq, Expr::Var("extension"), Expr::String("")),
+        Expr::Binary(BinaryOp::Eq, Expr::Var("extension"), Expr::Var("base")),
+    );
+    let missing: Vec[Stmt] = Vec::new();
+    missing.push(Stmt::Return(Option::Some(std_bool_string_expr(
+        false,
+        Expr::String(""),
+    ))));
+    stmts.push(Stmt::If(
+        missing_condition,
+        Block { stmts: missing },
+        Option::None,
+    ));
+    let trim_args: Vec[Expr] = Vec::new();
+    trim_args.push(Expr::Var("extension"));
+    trim_args.push(Expr::String("."));
+    stmts.push(Stmt::Return(Option::Some(std_bool_string_expr(
+        true,
+        std_call("_goml_strings.TrimPrefix", trim_args),
+    ))));
+    std_function_item("std.path.extension", params, std_bool_string_type(), stmts)
+}
+
+fn std_path_file_stem_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("path", Type::String));
+    let base_args: Vec[Expr] = Vec::new();
+    base_args.push(Expr::Var("path"));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Var(
+        "base",
+        Type::String,
+        Option::Some(std_call("_goml_filepath.Base", base_args)),
+    ));
+    let missing_condition = Expr::Binary(
+        BinaryOp::Or,
+        Expr::Binary(BinaryOp::Eq, Expr::Var("base"), Expr::String(".")),
+        Expr::Binary(BinaryOp::Eq, Expr::Var("base"), Expr::String("..")),
+    );
+    let missing: Vec[Stmt] = Vec::new();
+    missing.push(Stmt::Return(Option::Some(std_bool_string_expr(
+        false,
+        Expr::String(""),
+    ))));
+    stmts.push(Stmt::If(
+        missing_condition,
+        Block { stmts: missing },
+        Option::None,
+    ));
+    let extension_args: Vec[Expr] = Vec::new();
+    extension_args.push(Expr::Var("base"));
+    stmts.push(Stmt::Var(
+        "extension",
+        Type::String,
+        Option::Some(std_call("_goml_filepath.Ext", extension_args)),
+    ));
+    let clear_extension: Vec[Stmt] = Vec::new();
+    clear_extension.push(Stmt::Assign("extension", Expr::String("")));
+    stmts.push(Stmt::If(
+        Expr::Binary(BinaryOp::Eq, Expr::Var("extension"), Expr::Var("base")),
+        Block { stmts: clear_extension },
+        Option::None,
+    ));
+    let trim_args: Vec[Expr] = Vec::new();
+    trim_args.push(Expr::Var("base"));
+    trim_args.push(Expr::Var("extension"));
+    stmts.push(Stmt::Return(Option::Some(std_bool_string_expr(
+        true,
+        std_call("_goml_strings.TrimSuffix", trim_args),
+    ))));
+    std_function_item("std.path.file_stem", params, std_bool_string_type(), stmts)
+}
+
+fn std_path_with_extension_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("path", Type::String));
+    params.push(("extension", Type::String));
+    let base_args: Vec[Expr] = Vec::new();
+    base_args.push(Expr::Var("path"));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Var(
+        "base",
+        Type::String,
+        Option::Some(std_call("_goml_filepath.Base", base_args)),
+    ));
+    let current_args: Vec[Expr] = Vec::new();
+    current_args.push(Expr::Var("path"));
+    stmts.push(Stmt::Var(
+        "current",
+        Type::String,
+        Option::Some(std_call("_goml_filepath.Ext", current_args)),
+    ));
+    let clear_current: Vec[Stmt] = Vec::new();
+    clear_current.push(Stmt::Assign("current", Expr::String("")));
+    stmts.push(Stmt::If(
+        Expr::Binary(BinaryOp::Eq, Expr::Var("current"), Expr::Var("base")),
+        Block { stmts: clear_current },
+        Option::None,
+    ));
+    let without_args: Vec[Expr] = Vec::new();
+    without_args.push(Expr::Var("path"));
+    without_args.push(Expr::Var("current"));
+    stmts.push(Stmt::Var(
+        "without",
+        Type::String,
+        Option::Some(std_call("_goml_strings.TrimSuffix", without_args)),
+    ));
+    let empty: Vec[Stmt] = Vec::new();
+    empty.push(Stmt::Return(Option::Some(Expr::Var("without"))));
+    stmts.push(Stmt::If(
+        Expr::Binary(BinaryOp::Eq, Expr::Var("extension"), Expr::String("")),
+        Block { stmts: empty },
+        Option::None,
+    ));
+    let extension_args: Vec[Expr] = Vec::new();
+    extension_args.push(Expr::Var("extension"));
+    extension_args.push(Expr::String("."));
+    stmts.push(Stmt::Assign(
+        "extension",
+        std_call("_goml_strings.TrimPrefix", extension_args),
+    ));
+    stmts.push(Stmt::Return(Option::Some(Expr::Binary(
+        BinaryOp::Add,
+        Expr::Binary(
+            BinaryOp::Add,
+            Expr::Var("without"),
+            Expr::String("."),
+        ),
+        Expr::Var("extension"),
+    ))));
+    std_function_item(
+        "std.path.with_extension",
+        params,
+        Type::String,
+        stmts,
+    )
+}
+
+fn std_path_absolute_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("path", Type::String));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Var("value", Type::String, Option::None));
+    stmts.push(Stmt::Var("err", Type::Named("error"), Option::None));
+    let names: Vec[string] = Vec::new();
+    names.push("value");
+    names.push("err");
+    let args: Vec[Expr] = Vec::new();
+    args.push(Expr::Var("path"));
+    stmts.push(Stmt::MultiAssign(names, std_call("_goml_filepath.Abs", args)));
+    let failed: Vec[Stmt] = Vec::new();
+    failed.push(Stmt::Return(Option::Some(std_bool_string_string_expr(
+        false,
+        Expr::String(""),
+        std_error_string(),
+    ))));
+    stmts.push(Stmt::If(
+        std_error_condition(),
+        Block { stmts: failed },
+        Option::None,
+    ));
+    stmts.push(Stmt::Return(Option::Some(std_bool_string_string_expr(
+        true,
+        Expr::Var("value"),
+        Expr::String(""),
+    ))));
+    std_function_item(
+        "std.path.absolute",
+        params,
+        std_bool_string_string_type(),
+        stmts,
+    )
+}
+
+fn std_testing_fail_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("message", Type::String));
+    let print_args: Vec[Expr] = Vec::new();
+    print_args.push(Expr::Var("_goml_os.Stderr"));
+    print_args.push(Expr::Var("message"));
+    let exit_args: Vec[Expr] = Vec::new();
+    exit_args.push(Expr::Int("101"));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Expr(std_call("_goml_fmt.Fprintln", print_args)));
+    stmts.push(Stmt::Expr(std_call("_goml_os.Exit", exit_args)));
+    stmts.push(Stmt::Return(Option::Some(Expr::Unit)));
+    std_function_item("std.testing.fail", params, Type::Unit, stmts)
+}
+
+fn std_process_environment_type() -> tast::Type {
+    tast::Type::VecType(tast::Type::Tuple(
+        Vec::new().pushed(tast::Type::String).pushed(tast::Type::String),
+    ))
+}
+
+fn std_process_params() -> Vec[(string, Type)] {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("program", Type::String));
+    params.push(("arguments", lower_type(std_vec_type(tast::Type::String))));
+    params.push(("has_directory", Type::Bool));
+    params.push(("directory", Type::String));
+    params.push(("environment", lower_type(std_process_environment_type())));
+    params
+}
+
+fn std_process_output_type() -> Type {
+    let values: Vec[tast::Type] = Vec::new();
+    values.push(tast::Type::Bool);
+    values.push(tast::Type::Int32);
+    values.push(std_vec_type(tast::Type::Uint8));
+    values.push(std_vec_type(tast::Type::Uint8));
+    values.push(tast::Type::String);
+    std_tuple_type(values)
+}
+
+fn std_process_status_type() -> Type {
+    let values: Vec[tast::Type] = Vec::new();
+    values.push(tast::Type::Bool);
+    values.push(tast::Type::Int32);
+    values.push(tast::Type::String);
+    std_tuple_type(values)
+}
+
+fn std_process_command_setup() -> Vec[Stmt] {
+    let stmts: Vec[Stmt] = Vec::new();
+    let command_args: Vec[Expr] = Vec::new();
+    command_args.push(Expr::Var("program"));
+    command_args.push(Expr::Var("arguments.items..."));
+    stmts.push(Stmt::Var(
+        "cmd",
+        Type::Pointer(Type::Named("_goml_exec.Cmd")),
+        Option::Some(std_call("_goml_exec.Command", command_args)),
+    ));
+    let set_directory: Vec[Stmt] = Vec::new();
+    set_directory.push(Stmt::FieldAssign(
+        Expr::Var("cmd"),
+        "Dir",
+        Expr::Var("directory"),
+    ));
+    stmts.push(Stmt::If(
+        Expr::Var("has_directory"),
+        Block {
+            stmts: set_directory,
+        },
+        Option::None,
+    ));
+    let set_environment: Vec[Stmt] = Vec::new();
+    set_environment.push(Stmt::FieldAssign(
+        Expr::Var("cmd"),
+        "Env",
+        std_call("_goml_os.Environ", Vec::new()),
+    ));
+    let append_args: Vec[Expr] = Vec::new();
+    append_args.push(Expr::Field(Expr::Var("cmd"), "Env"));
+    append_args.push(Expr::Binary(
+        BinaryOp::Add,
+        Expr::Binary(
+            BinaryOp::Add,
+            Expr::Field(Expr::Var("entry"), "_0"),
+            Expr::String("="),
+        ),
+        Expr::Field(Expr::Var("entry"), "_1"),
+    ));
+    let range_body: Vec[Stmt] = Vec::new();
+    range_body.push(Stmt::FieldAssign(
+        Expr::Var("cmd"),
+        "Env",
+        std_call("append", append_args),
+    ));
+    set_environment.push(Stmt::Range(
+        Vec::new().pushed("_").pushed("entry"),
+        Expr::Field(Expr::Var("environment"), "items"),
+        Block { stmts: range_body },
+    ));
+    let length_args: Vec[Expr] = Vec::new();
+    length_args.push(Expr::Field(Expr::Var("environment"), "items"));
+    stmts.push(Stmt::If(
+        Expr::Binary(
+            BinaryOp::Greater,
+            std_call("len", length_args),
+            Expr::Int("0"),
+        ),
+        Block {
+            stmts: set_environment,
+        },
+        Option::None,
+    ));
+    stmts
+}
+
+fn std_process_buffer(name: string) -> Expr {
+    std_vec_expr(
+        tast::Type::Uint8,
+        std_method_call(Expr::Var(name), "Bytes", Vec::new()),
+    )
+}
+
+fn std_process_output_expr(
+    valid: bool,
+    code: Expr,
+    error: Expr,
+) -> Expr {
+    let values: Vec[Expr] = Vec::new();
+    values.push(Expr::Bool(valid));
+    values.push(code);
+    values.push(std_process_buffer("stdout"));
+    values.push(std_process_buffer("stderr"));
+    values.push(error);
+    std_tuple_expr(std_process_output_type(), values)
+}
+
+fn std_process_status_expr(valid: bool, code: Expr, error: Expr) -> Expr {
+    let values: Vec[Expr] = Vec::new();
+    values.push(Expr::Bool(valid));
+    values.push(code);
+    values.push(error);
+    std_tuple_expr(std_process_status_type(), values)
+}
+
+fn std_process_exit_item() -> Item {
+    let params: Vec[(string, Type)] = Vec::new();
+    params.push(("code", Type::Int32));
+    let convert_args: Vec[Expr] = Vec::new();
+    convert_args.push(Expr::Var("code"));
+    let exit_args: Vec[Expr] = Vec::new();
+    exit_args.push(std_call("int", convert_args));
+    let stmts: Vec[Stmt] = Vec::new();
+    stmts.push(Stmt::Expr(std_call("_goml_os.Exit", exit_args)));
+    stmts.push(Stmt::Return(Option::Some(Expr::Unit)));
+    std_function_item("std.process.exit", params, Type::Unit, stmts)
+}
+
+fn std_process_output_item() -> Item {
+    let stmts = std_process_command_setup();
+    stmts.push(Stmt::Var(
+        "stdout",
+        Type::Named("_goml_bytes.Buffer"),
+        Option::None,
+    ));
+    stmts.push(Stmt::Var(
+        "stderr",
+        Type::Named("_goml_bytes.Buffer"),
+        Option::None,
+    ));
+    stmts.push(Stmt::FieldAssign(
+        Expr::Var("cmd"),
+        "Stdout",
+        Expr::Unary(UnaryOp::Address, Expr::Var("stdout")),
+    ));
+    stmts.push(Stmt::FieldAssign(
+        Expr::Var("cmd"),
+        "Stderr",
+        Expr::Unary(UnaryOp::Address, Expr::Var("stderr")),
+    ));
+    stmts.push(Stmt::Var(
+        "err",
+        Type::Named("error"),
+        Option::Some(std_method_call(Expr::Var("cmd"), "Run", Vec::new())),
+    ));
+    stmts.push(Stmt::Var(
+        "code",
+        Type::Int32,
+        Option::Some(Expr::Int("0")),
+    ));
+    let failed: Vec[Stmt] = Vec::new();
+    let missing_state: Vec[Stmt] = Vec::new();
+    missing_state.push(Stmt::Return(Option::Some(std_process_output_expr(
+        false,
+        Expr::Int("-1"),
+        std_error_string(),
+    ))));
+    failed.push(Stmt::If(
+        Expr::Binary(
+            BinaryOp::Eq,
+            Expr::Field(Expr::Var("cmd"), "ProcessState"),
+            Expr::Nil,
+        ),
+        Block {
+            stmts: missing_state,
+        },
+        Option::None,
+    ));
+    let code_args: Vec[Expr] = Vec::new();
+    code_args.push(std_method_call(
+        Expr::Field(Expr::Var("cmd"), "ProcessState"),
+        "ExitCode",
+        Vec::new(),
+    ));
+    failed.push(Stmt::Assign("code", std_call("int32", code_args)));
+    stmts.push(Stmt::If(
+        std_error_condition(),
+        Block { stmts: failed },
+        Option::None,
+    ));
+    stmts.push(Stmt::Return(Option::Some(std_process_output_expr(
+        true,
+        Expr::Var("code"),
+        Expr::String(""),
+    ))));
+    std_function_item(
+        "std.process.output",
+        std_process_params(),
+        std_process_output_type(),
+        stmts,
+    )
+}
+
+fn std_process_status_item() -> Item {
+    let stmts = std_process_command_setup();
+    stmts.push(Stmt::FieldAssign(
+        Expr::Var("cmd"),
+        "Stdin",
+        Expr::Var("_goml_os.Stdin"),
+    ));
+    stmts.push(Stmt::FieldAssign(
+        Expr::Var("cmd"),
+        "Stdout",
+        Expr::Var("_goml_os.Stdout"),
+    ));
+    stmts.push(Stmt::FieldAssign(
+        Expr::Var("cmd"),
+        "Stderr",
+        Expr::Var("_goml_os.Stderr"),
+    ));
+    stmts.push(Stmt::Var(
+        "err",
+        Type::Named("error"),
+        Option::Some(std_method_call(Expr::Var("cmd"), "Run", Vec::new())),
+    ));
+    stmts.push(Stmt::Var(
+        "code",
+        Type::Int32,
+        Option::Some(Expr::Int("0")),
+    ));
+    let failed: Vec[Stmt] = Vec::new();
+    let missing_state: Vec[Stmt] = Vec::new();
+    missing_state.push(Stmt::Return(Option::Some(std_process_status_expr(
+        false,
+        Expr::Int("-1"),
+        std_error_string(),
+    ))));
+    failed.push(Stmt::If(
+        Expr::Binary(
+            BinaryOp::Eq,
+            Expr::Field(Expr::Var("cmd"), "ProcessState"),
+            Expr::Nil,
+        ),
+        Block {
+            stmts: missing_state,
+        },
+        Option::None,
+    ));
+    let code_args: Vec[Expr] = Vec::new();
+    code_args.push(std_method_call(
+        Expr::Field(Expr::Var("cmd"), "ProcessState"),
+        "ExitCode",
+        Vec::new(),
+    ));
+    failed.push(Stmt::Assign("code", std_call("int32", code_args)));
+    stmts.push(Stmt::If(
+        std_error_condition(),
+        Block { stmts: failed },
+        Option::None,
+    ));
+    stmts.push(Stmt::Return(Option::Some(std_process_status_expr(
+        true,
+        Expr::Var("code"),
+        Expr::String(""),
+    ))));
+    std_function_item(
+        "std.process.status",
+        std_process_params(),
+        std_process_status_type(),
+        stmts,
+    )
+}
+
 fn standard_runtime_hook_item(key: string) -> Option[Item] {
     if key == "std.env.args" {
         Option::Some(std_env_args_item())
@@ -680,6 +1288,40 @@ fn standard_runtime_hook_item(key: string) -> Option[Item] {
         Option::Some(std_io_write_item(key, "_goml_os.Stdout"))
     } else if key == "std.io.write_stderr" {
         Option::Some(std_io_write_item(key, "_goml_os.Stderr"))
+    } else if key == "std.path.join" {
+        Option::Some(std_path_join_item())
+    } else if key == "std.path.clean" {
+        Option::Some(std_path_unary_item(
+            key,
+            "_goml_filepath.Clean",
+            Type::String,
+        ))
+    } else if key == "std.path.is_absolute" {
+        Option::Some(std_path_unary_item(
+            key,
+            "_goml_filepath.IsAbs",
+            Type::Bool,
+        ))
+    } else if key == "std.path.parent" {
+        Option::Some(std_path_parent_item())
+    } else if key == "std.path.file_name" {
+        Option::Some(std_path_file_name_item())
+    } else if key == "std.path.extension" {
+        Option::Some(std_path_extension_item())
+    } else if key == "std.path.file_stem" {
+        Option::Some(std_path_file_stem_item())
+    } else if key == "std.path.with_extension" {
+        Option::Some(std_path_with_extension_item())
+    } else if key == "std.path.absolute" {
+        Option::Some(std_path_absolute_item())
+    } else if key == "std.process.exit" {
+        Option::Some(std_process_exit_item())
+    } else if key == "std.process.output" {
+        Option::Some(std_process_output_item())
+    } else if key == "std.process.status" {
+        Option::Some(std_process_status_item())
+    } else if key == "std.testing.fail" {
+        Option::Some(std_testing_fail_item())
     } else {
         Option::None
     }
