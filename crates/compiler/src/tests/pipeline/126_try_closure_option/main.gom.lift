@@ -1,0 +1,60 @@
+fn maybe_value(flag/0: bool) -> Option__int32 {
+  if flag/0 {
+      Option__int32::Some(4)
+  } else {
+      Option__int32::None
+  }
+}
+
+fn with_base(base/1: int32, flag/2: bool) -> Option__int32 {
+  let run/4 = closure_env_run_0 { flag_0: flag/2, base_1: base/1 } in
+  inherent#closure_env_run_0#closure_env_run_0#apply(run/4)
+}
+
+fn show(opt/5: Option__int32) -> string {
+  match opt/5 {
+    Option__int32::None => {
+      "none"
+    },
+    Option__int32::Some(x63) => {
+      let x63 = Option__int32::Some._0(opt/5) in
+      let value/6 = x63 in
+      ("some=" + inherent#int32#int32#to_string(value/6))
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild64 = println__T_string(show(with_base(3, true))) in
+  let _wild65 = println__T_string(show(with_base(3, false))) in
+  ()
+}
+
+fn inherent#int32#int32#to_string(self/5: int32) -> string {
+  @runtime(core.int32_to_string)(self/5)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  self/37
+}
+
+fn inherent#closure_env_run_0#closure_env_run_0#apply(env66: closure_env_run_0) -> Option__int32 {
+  let flag/2 = closure_env_run_0.flag_0(env66) in
+  let base/1 = closure_env_run_0.base_1(env66) in
+  let value/3 = let mtmp61 = maybe_value(flag/2) in
+  match mtmp61 {
+    Option__int32::None => {
+      return Option__int32::None
+    },
+    Option__int32::Some(x62) => {
+      let x62 = Option__int32::Some._0(mtmp61) in
+      let try_value/11 = x62 in
+      try_value/11
+    },
+  } in
+  Option__int32::Some((value/3 + base/1))
+}

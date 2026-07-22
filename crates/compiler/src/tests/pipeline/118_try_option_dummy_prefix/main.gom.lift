@@ -1,0 +1,49 @@
+fn cut_prefix(case_id/0: int32) -> Option__string {
+  if (case_id/0 == 0) {
+      Option__string::Some("ml")
+  } else {
+      Option__string::None
+  }
+}
+
+fn trim_go(case_id/1: int32) -> Option__string {
+  let suffix/2 = let mtmp61 = cut_prefix(case_id/1) in
+  match mtmp61 {
+    Option__string::None => {
+      return Option__string::None
+    },
+    Option__string::Some(x62) => {
+      let x62 = Option__string::Some._0(mtmp61) in
+      let try_value/13 = x62 in
+      try_value/13
+    },
+  } in
+  Option__string::Some((suffix/2 + "!"))
+}
+
+fn show(opt/3: Option__string) -> string {
+  match opt/3 {
+    Option__string::None => {
+      "none"
+    },
+    Option__string::Some(x63) => {
+      let x63 = Option__string::Some._0(opt/3) in
+      let value/4 = x63 in
+      ("some " + value/4)
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild64 = println__T_string(show(trim_go(0))) in
+  let _wild65 = println__T_string(show(trim_go(1))) in
+  ()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  self/37
+}

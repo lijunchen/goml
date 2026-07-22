@@ -1,0 +1,59 @@
+fn a_value() -> int8 {
+  90
+}
+
+fn b_value() -> int8 {
+  (-20)
+}
+
+fn c_value() -> int8 {
+  3
+}
+
+fn show_int8(label/0: string, value/1: int8) -> unit {
+  let mtmp61 = println__T_string((label/0 + trait_impl#ToString#int8#to_string(value/1))) in
+  ()
+}
+
+fn show_bool(label/2: string, value/3: bool) -> unit {
+  let mtmp62 = println__T_string((label/2 + trait_impl#ToString#bool#to_string(value/3))) in
+  ()
+}
+
+fn main() -> unit {
+  let a/4 = a_value() in
+  let b/5 = b_value() in
+  let c/6 = c_value() in
+  let sum/7 = (a/4 + b/5) in
+  let diff/8 = (a/4 - c/6) in
+  let prod/9 = (b/5 * c/6) in
+  let quot/10 = (a/4 / c/6) in
+  let neg/11 = (-b/5) in
+  let less/12 = (b/5 < a/4) in
+  let mtmp63 = show_int8("a=", a/4) in
+  let mtmp64 = show_int8("b=", b/5) in
+  let mtmp65 = show_int8("c=", c/6) in
+  let mtmp66 = show_int8("sum=", sum/7) in
+  let mtmp67 = show_int8("diff=", diff/8) in
+  let mtmp68 = show_int8("prod=", prod/9) in
+  let mtmp69 = show_int8("quot=", quot/10) in
+  let mtmp70 = show_int8("neg=", neg/11) in
+  let mtmp71 = show_bool("b<a=", less/12) in
+  ()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#int8#to_string(self/39: int8) -> string {
+  @runtime(core.int8_to_string)(self/39)
+}
+
+fn trait_impl#ToString#bool#to_string(self/36: bool) -> string {
+  @runtime(core.bool_to_string)(self/36)
+}
+
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  self/37
+}

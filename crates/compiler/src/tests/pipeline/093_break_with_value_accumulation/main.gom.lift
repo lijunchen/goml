@@ -1,0 +1,55 @@
+fn main() -> unit {
+  let sum/0 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let i/1 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let _wild64 = while (inherent#Ref#Ref[T]#get__T_int32(i/1) < 20) {
+      let _wild61 = inherent#Ref#Ref[T]#set__T_int32(i/1, (inherent#Ref#Ref[T]#get__T_int32(i/1) + 1)) in
+      let _wild62 = if (inherent#Ref#Ref[T]#get__T_int32(i/1) > 5) {
+          break
+      } else {
+          ()
+      } in
+      let _wild63 = inherent#Ref#Ref[T]#set__T_int32(sum/0, (inherent#Ref#Ref[T]#get__T_int32(sum/0) + inherent#Ref#Ref[T]#get__T_int32(i/1))) in
+      ()
+  } in
+  let mtmp65 = print__T_string("sum: ") in
+  let mtmp66 = println__T_int32(inherent#Ref#Ref[T]#get__T_int32(sum/0)) in
+  let mtmp67 = print__T_string("i at break: ") in
+  let mtmp68 = println__T_int32(inherent#Ref#Ref[T]#get__T_int32(i/1)) in
+  ()
+}
+
+fn inherent#Ref#Ref[T]#new__T_int32(value/204: int32) -> Ref[int32] {
+  @intrinsic(ref.new)(value/204)
+}
+
+fn inherent#Ref#Ref[T]#get__T_int32(self/205: Ref[int32]) -> int32 {
+  @intrinsic(ref.get)(self/205)
+}
+
+fn inherent#Ref#Ref[T]#set__T_int32(self/206: Ref[int32], value/207: int32) -> unit {
+  @intrinsic(ref.set)(self/206, value/207)
+}
+
+fn print__T_string(value/0: string) -> unit {
+  @runtime(core.string_print)(trait_impl#ToString#string#to_string(value/0))
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+}
+
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  self/37
+}
+
+fn trait_impl#ToString#int32#to_string(self/41: int32) -> string {
+  @runtime(core.int32_to_string)(self/41)
+}
+
+fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
+  (self/61 == other/62)
+}
+
+fn trait_impl#Hash#int32#hash(self/83: int32) -> uint64 {
+  @runtime(core.int32_hash)(self/83)
+}

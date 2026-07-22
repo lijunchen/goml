@@ -1,0 +1,53 @@
+fn test(t/0: T) -> unit {
+  match t/0 {
+    T::A => {
+      println__T_string(inherent#int32#int32#to_string(1))
+    },
+    T::B(x61, x62) => {
+      let x61 = T::B._0(t/0) in
+      let x62 = T::B._1(t/0) in
+      match x62 {
+        true => {
+          match x61 {
+            true => {
+              println__T_string(inherent#int32#int32#to_string(4))
+            },
+            false => {
+              println__T_string(inherent#int32#int32#to_string(3))
+            },
+          }
+        },
+        false => {
+          match x61 {
+            true => {
+              println__T_string(inherent#int32#int32#to_string(4))
+            },
+            false => {
+              println__T_string(inherent#int32#int32#to_string(2))
+            },
+          }
+        },
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let mtmp63 = test(T::B(true, true)) in
+  let mtmp64 = test(T::B(false, true)) in
+  let mtmp65 = test(T::B(false, false)) in
+  let mtmp66 = test(T::A) in
+  ()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn inherent#int32#int32#to_string(self/5: int32) -> string {
+  @runtime(core.int32_to_string)(self/5)
+}
+
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  self/37
+}

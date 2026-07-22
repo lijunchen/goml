@@ -1,0 +1,69 @@
+fn take_u8(x/0: uint8) -> uint8 {
+  x/0
+}
+
+fn take_f32(x/1: float32) -> float32 {
+  x/1
+}
+
+fn main() -> unit {
+  let a/2 = 1 in
+  let b/3 = 2 in
+  let c/4 = 3 in
+  let d/5 = 4 in
+  let e/6 = 5 in
+  let f/7 = 6 in
+  let g/8 = 7 in
+  let h/9 = 1 in
+  let _wild61 = println__T_string(trait_impl#ToString#uint8#to_string(a/2)) in
+  let _wild62 = println__T_string(trait_impl#ToString#int8#to_string(b/3)) in
+  let _wild63 = println__T_string(trait_impl#ToString#int16#to_string(c/4)) in
+  let _wild64 = println__T_string(trait_impl#ToString#uint16#to_string(d/5)) in
+  let _wild65 = println__T_string(trait_impl#ToString#uint32#to_string(e/6)) in
+  let _wild66 = println__T_string(trait_impl#ToString#int64#to_string(f/7)) in
+  let _wild67 = println__T_string(trait_impl#ToString#uint64#to_string(g/8)) in
+  let _wild68 = println__T_string(trait_impl#ToString#float32#to_string(h/9)) in
+  let _wild69 = println__T_string(trait_impl#ToString#uint8#to_string(take_u8(10))) in
+  let _wild70 = println__T_string(trait_impl#ToString#float32#to_string(take_f32(2.5))) in
+  ()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#uint8#to_string(self/43: uint8) -> string {
+  @runtime(core.uint8_to_string)(self/43)
+}
+
+fn trait_impl#ToString#int8#to_string(self/39: int8) -> string {
+  @runtime(core.int8_to_string)(self/39)
+}
+
+fn trait_impl#ToString#int16#to_string(self/40: int16) -> string {
+  @runtime(core.int16_to_string)(self/40)
+}
+
+fn trait_impl#ToString#uint16#to_string(self/44: uint16) -> string {
+  @runtime(core.uint16_to_string)(self/44)
+}
+
+fn trait_impl#ToString#uint32#to_string(self/45: uint32) -> string {
+  @runtime(core.uint32_to_string)(self/45)
+}
+
+fn trait_impl#ToString#int64#to_string(self/42: int64) -> string {
+  @runtime(core.int64_to_string)(self/42)
+}
+
+fn trait_impl#ToString#uint64#to_string(self/46: uint64) -> string {
+  @runtime(core.uint64_to_string)(self/46)
+}
+
+fn trait_impl#ToString#float32#to_string(self/47: float32) -> string {
+  @runtime(core.float32_to_string)(self/47)
+}
+
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  self/37
+}

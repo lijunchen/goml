@@ -1,0 +1,78 @@
+fn main() -> unit {
+  let a/0 = Expr::Mul(Expr::Add(Expr::Zero, Expr::Zero), Expr::Zero) in
+  match a/0 {
+    Expr::Add(x62, x63) => {
+      let x62 = Expr::Add._0(a/0) in
+      let x63 = Expr::Add._1(a/0) in
+      match x63 {
+        Expr::Zero => {
+          match x62 {
+            Expr::Zero => {
+              print__T_int32(0)
+            },
+            Expr::Succ(x71) => {
+              let x71 = Expr::Succ._0(x62) in
+              let x/2 = x71 in
+              let y/3 = x63 in
+              print__T_int32(2)
+            },
+            _ => let x/8 = x62 in
+            print__T_int32(5),
+          }
+        },
+        _ => match x62 {
+          Expr::Succ(x76) => {
+            let x76 = Expr::Succ._0(x62) in
+            let x/2 = x76 in
+            let y/3 = x63 in
+            print__T_int32(2)
+          },
+          _ => let x/9 = a/0 in
+          print__T_int32(6),
+        },
+      }
+    },
+    Expr::Mul(x64, x65) => {
+      let x64 = Expr::Mul._0(a/0) in
+      let x65 = Expr::Mul._1(a/0) in
+      match x64 {
+        Expr::Zero => {
+          let x/1 = x65 in
+          print__T_int32(1)
+        },
+        Expr::Add(x82, x83) => {
+          let x82 = Expr::Add._0(x64) in
+          let x83 = Expr::Add._1(x64) in
+          match x65 {
+            Expr::Zero => {
+              let x/4 = x64 in
+              print__T_int32(3)
+            },
+            _ => let y/6 = x83 in
+            let x/5 = x82 in
+            let z/7 = x65 in
+            print__T_int32(4),
+          }
+        },
+        _ => match x65 {
+          Expr::Zero => {
+            let x/4 = x64 in
+            print__T_int32(3)
+          },
+          _ => let x/9 = a/0 in
+          print__T_int32(6),
+        },
+      }
+    },
+    _ => let x/9 = a/0 in
+    print__T_int32(6),
+  }
+}
+
+fn print__T_int32(value/0: int32) -> unit {
+  @runtime(core.string_print)(trait_impl#ToString#int32#to_string(value/0))
+}
+
+fn trait_impl#ToString#int32#to_string(self/41: int32) -> string {
+  @runtime(core.int32_to_string)(self/41)
+}

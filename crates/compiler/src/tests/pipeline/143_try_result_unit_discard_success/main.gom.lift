@@ -1,0 +1,56 @@
+fn step(ok/0: bool) -> Result__unit__string {
+  if ok/0 {
+      Result__unit__string::Ok(())
+  } else {
+      Result__unit__string::Err("step failed")
+  }
+}
+
+fn run(ok/1: bool) -> Result__unit__string {
+  let mtmp64 = let mtmp61 = step(ok/1) in
+  match mtmp61 {
+    Result__unit__string::Ok(x62) => {
+      let x62 = Result__unit__string::Ok._0(mtmp61) in
+      let try_value/12 = x62 in
+      try_value/12
+    },
+    Result__unit__string::Err(x63) => {
+      let x63 = Result__unit__string::Err._0(mtmp61) in
+      let try_residual/12 = x63 in
+      return Result__unit__string::Err(try_residual/12)
+    },
+  } in
+  Result__unit__string::Ok(())
+}
+
+fn show(res/2: Result__unit__string) -> string {
+  match res/2 {
+    Result__unit__string::Ok(x65) => {
+      let x65 = Result__unit__string::Ok._0(res/2) in
+      match x65 {
+        () => {
+          "ok unit"
+        },
+      }
+    },
+    Result__unit__string::Err(x66) => {
+      let x66 = Result__unit__string::Err._0(res/2) in
+      let err/3 = x66 in
+      ("err " + err/3)
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild67 = println__T_string(show(run(true))) in
+  let _wild68 = println__T_string(show(run(false))) in
+  ()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  self/37
+}

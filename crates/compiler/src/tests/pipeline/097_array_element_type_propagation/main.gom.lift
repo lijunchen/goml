@@ -1,0 +1,56 @@
+fn main() -> unit {
+  let arr/0 = [10, 20, 30] in
+  let i/1 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let _wild63 = while (inherent#Ref#Ref[T]#get__T_int32(i/1) < 3) {
+      let _wild61 = println__T_string(trait_impl#ToString#uint8#to_string(@intrinsic(array.get)(arr/0, inherent#Ref#Ref[T]#get__T_int32(i/1)))) in
+      let _wild62 = inherent#Ref#Ref[T]#set__T_int32(i/1, (inherent#Ref#Ref[T]#get__T_int32(i/1) + 1)) in
+      ()
+  } in
+  let floats/2 = [1.5, 2.5] in
+  let _wild64 = println__T_string(trait_impl#ToString#float32#to_string(@intrinsic(array.get)(floats/2, 0))) in
+  let _wild65 = println__T_string(trait_impl#ToString#float32#to_string(@intrinsic(array.get)(floats/2, 1))) in
+  let longs/3 = [100, 200] in
+  let _wild66 = println__T_string(trait_impl#ToString#int64#to_string(@intrinsic(array.get)(longs/3, 0))) in
+  let _wild67 = println__T_string(trait_impl#ToString#int64#to_string(@intrinsic(array.get)(longs/3, 1))) in
+  ()
+}
+
+fn inherent#Ref#Ref[T]#new__T_int32(value/204: int32) -> Ref[int32] {
+  @intrinsic(ref.new)(value/204)
+}
+
+fn inherent#Ref#Ref[T]#get__T_int32(self/205: Ref[int32]) -> int32 {
+  @intrinsic(ref.get)(self/205)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#uint8#to_string(self/43: uint8) -> string {
+  @runtime(core.uint8_to_string)(self/43)
+}
+
+fn inherent#Ref#Ref[T]#set__T_int32(self/206: Ref[int32], value/207: int32) -> unit {
+  @intrinsic(ref.set)(self/206, value/207)
+}
+
+fn trait_impl#ToString#float32#to_string(self/47: float32) -> string {
+  @runtime(core.float32_to_string)(self/47)
+}
+
+fn trait_impl#ToString#int64#to_string(self/42: int64) -> string {
+  @runtime(core.int64_to_string)(self/42)
+}
+
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  self/37
+}
+
+fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
+  (self/61 == other/62)
+}
+
+fn trait_impl#Hash#int32#hash(self/83: int32) -> uint64 {
+  @runtime(core.int32_hash)(self/83)
+}

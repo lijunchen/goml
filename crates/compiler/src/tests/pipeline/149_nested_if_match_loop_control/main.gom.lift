@@ -1,0 +1,58 @@
+fn main() -> unit {
+  let i/0 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let sum/1 = inherent#Ref#Ref[T]#new__T_int32(0) in
+  let _wild64 = while (inherent#Ref#Ref[T]#get__T_int32(i/0) < 7) {
+      let cur/2 = inherent#Ref#Ref[T]#get__T_int32(i/0) in
+      let _wild61 = inherent#Ref#Ref[T]#set__T_int32(i/0, (cur/2 + 1)) in
+      let mtmp62 = if (cur/2 < 5) {
+          match cur/2 {
+            1 => {
+              continue
+            },
+            3 => {
+              continue
+            },
+            _ => (),
+          }
+      } else {
+          match cur/2 {
+            5 => {
+              break
+            },
+            _ => (),
+          }
+      } in
+      let _wild63 = inherent#Ref#Ref[T]#set__T_int32(sum/1, (inherent#Ref#Ref[T]#get__T_int32(sum/1) + cur/2)) in
+      ()
+  } in
+  let _wild65 = println__T_int32(inherent#Ref#Ref[T]#get__T_int32(sum/1)) in
+  ()
+}
+
+fn inherent#Ref#Ref[T]#new__T_int32(value/204: int32) -> Ref[int32] {
+  @intrinsic(ref.new)(value/204)
+}
+
+fn inherent#Ref#Ref[T]#get__T_int32(self/205: Ref[int32]) -> int32 {
+  @intrinsic(ref.get)(self/205)
+}
+
+fn inherent#Ref#Ref[T]#set__T_int32(self/206: Ref[int32], value/207: int32) -> unit {
+  @intrinsic(ref.set)(self/206, value/207)
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#int32#to_string(value/1))
+}
+
+fn trait_impl#ToString#int32#to_string(self/41: int32) -> string {
+  @runtime(core.int32_to_string)(self/41)
+}
+
+fn trait_impl#Eq#int32#eq(self/61: int32, other/62: int32) -> bool {
+  (self/61 == other/62)
+}
+
+fn trait_impl#Hash#int32#hash(self/83: int32) -> uint64 {
+  @runtime(core.int32_hash)(self/83)
+}

@@ -1,0 +1,45 @@
+fn light_code(light/0: Light) -> int32 {
+  match light/0 {
+    Light::Red => {
+      10
+    },
+    Light::Yellow => {
+      20
+    },
+    Light::Green => {
+      30
+    },
+  }
+}
+
+fn paint_code(paint/1: Paint) -> int32 {
+  match paint/1 {
+    Paint::Red => {
+      1
+    },
+    Paint::Blue => {
+      2
+    },
+  }
+}
+
+fn main() -> unit {
+  let light/2 = Light::Red in
+  let paint/3 = Paint::Red in
+  let mtmp61 = println__T_string(inherent#int32#int32#to_string(light_code(light/2))) in
+  let mtmp62 = println__T_string(inherent#int32#int32#to_string(paint_code(paint/3))) in
+  let mtmp63 = println__T_string(inherent#int32#int32#to_string(light_code(Light::Green))) in
+  println__T_string(inherent#int32#int32#to_string(paint_code(Paint::Blue)))
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn inherent#int32#int32#to_string(self/5: int32) -> string {
+  @runtime(core.int32_to_string)(self/5)
+}
+
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  self/37
+}

@@ -1,0 +1,60 @@
+fn parse_text(ok/0: bool) -> Result__string__string {
+  if ok/0 {
+      Result__string__string::Ok("body")
+  } else {
+      Result__string__string::Err("parse failed")
+  }
+}
+
+fn decorate(prefix/1: string, ok/2: bool) -> Result__string__string {
+  let run/4 = closure_env_run_0 { ok_0: ok/2, prefix_1: prefix/1 } in
+  inherent#closure_env_run_0#closure_env_run_0#apply(run/4)
+}
+
+fn show(res/5: Result__string__string) -> string {
+  match res/5 {
+    Result__string__string::Ok(x64) => {
+      let x64 = Result__string__string::Ok._0(res/5) in
+      let value/6 = x64 in
+      ("ok " + value/6)
+    },
+    Result__string__string::Err(x65) => {
+      let x65 = Result__string__string::Err._0(res/5) in
+      let err/7 = x65 in
+      ("err " + err/7)
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild66 = println__T_string(show(decorate("outer", true))) in
+  let _wild67 = println__T_string(show(decorate("outer", false))) in
+  ()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  self/37
+}
+
+fn inherent#closure_env_run_0#closure_env_run_0#apply(env68: closure_env_run_0) -> Result__string__string {
+  let ok/2 = closure_env_run_0.ok_0(env68) in
+  let prefix/1 = closure_env_run_0.prefix_1(env68) in
+  let text/3 = let mtmp61 = parse_text(ok/2) in
+  match mtmp61 {
+    Result__string__string::Ok(x62) => {
+      let x62 = Result__string__string::Ok._0(mtmp61) in
+      let try_value/12 = x62 in
+      try_value/12
+    },
+    Result__string__string::Err(x63) => {
+      let x63 = Result__string__string::Err._0(mtmp61) in
+      let try_residual/12 = x63 in
+      return Result__string__string::Err(try_residual/12)
+    },
+  } in
+  Result__string__string::Ok(((prefix/1 + ":") + text/3))
+}

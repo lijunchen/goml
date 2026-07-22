@@ -1,0 +1,39 @@
+fn main() -> unit {
+  let v/0 = inherent#Vec#Vec[T]#new__T_int32() in
+  let _wild61 = inherent#Vec#Vec[T]#push__T_int32(v/0, 10) in
+  let _wild62 = inherent#Vec#Vec[T]#push__T_int32(v/0, 20) in
+  let _wild63 = inherent#Vec#Vec[T]#push__T_int32(v/0, 30) in
+  let first/1 = @intrinsic(vec.get)(v/0, 0) in
+  let second/2 = @intrinsic(vec.get)(v/0, 1) in
+  let third/3 = @intrinsic(vec.get)(v/0, 2) in
+  let len/4 = inherent#Vec#Vec[T]#len__T_int32(v/0) in
+  let mtmp64 = println__T_string(inherent#int32#int32#to_string(first/1)) in
+  let mtmp65 = println__T_string(inherent#int32#int32#to_string(second/2)) in
+  let mtmp66 = println__T_string(inherent#int32#int32#to_string(third/3)) in
+  let mtmp67 = println__T_string(inherent#int32#int32#to_string(len/4)) in
+  ()
+}
+
+fn inherent#Vec#Vec[T]#new__T_int32() -> Vec[int32] {
+  @intrinsic(vec.new)()
+}
+
+fn inherent#Vec#Vec[T]#push__T_int32(self/123: Vec[int32], elem/124: int32) -> unit {
+  @intrinsic(vec.push)(self/123, elem/124)
+}
+
+fn inherent#Vec#Vec[T]#len__T_int32(self/134: Vec[int32]) -> int32 {
+  @intrinsic(vec.len)(self/134)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn inherent#int32#int32#to_string(self/5: int32) -> string {
+  @runtime(core.int32_to_string)(self/5)
+}
+
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  self/37
+}

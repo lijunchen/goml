@@ -1,0 +1,90 @@
+fn print_int_list(xs/0: IntList) -> unit {
+  match xs/0 {
+    IntList::Nil => {
+      println__T_string("Nil")
+    },
+    IntList::Cons(x61, x62) => {
+      let x61 = IntList::Cons._0(xs/0) in
+      let x62 = IntList::Cons._1(xs/0) in
+      let xs/2 = x62 in
+      let x/1 = x61 in
+      let mtmp63 = println__T_string("Cons") in
+      let mtmp64 = println__T_string("(") in
+      let mtmp65 = println__T_string(inherent#int32#int32#to_string(x/1)) in
+      let mtmp66 = println__T_string(", ") in
+      let mtmp67 = print_int_list(xs/2) in
+      let mtmp68 = println__T_string(")") in
+      ()
+    },
+  }
+}
+
+fn int_list_rev_aux(xs/3: IntList, acc/4: IntList) -> IntList {
+  match xs/3 {
+    IntList::Nil => {
+      acc/4
+    },
+    IntList::Cons(x69, x70) => {
+      let x69 = IntList::Cons._0(xs/3) in
+      let x70 = IntList::Cons._1(xs/3) in
+      let tail/6 = x70 in
+      let head/5 = x69 in
+      int_list_rev_aux(tail/6, IntList::Cons(head/5, acc/4))
+    },
+  }
+}
+
+fn int_list_rev(xs/7: IntList) -> IntList {
+  int_list_rev_aux(xs/7, IntList::Nil)
+}
+
+fn int_list_length(xs/8: IntList) -> int32 {
+  match xs/8 {
+    IntList::Nil => {
+      0
+    },
+    IntList::Cons(x71, x72) => {
+      let x71 = IntList::Cons._0(xs/8) in
+      let x72 = IntList::Cons._1(xs/8) in
+      let xs/9 = x72 in
+      (1 + int_list_length(xs/9))
+    },
+  }
+}
+
+fn print_int_list_length(xs/10: IntList) -> unit {
+  let mtmp73 = println__T_string("Length: ") in
+  let mtmp74 = println__T_string(inherent#int32#int32#to_string(int_list_length(xs/10))) in
+  ()
+}
+
+fn main() -> unit {
+  let x/11 = IntList::Nil in
+  let mtmp75 = print_int_list(x/11) in
+  let mtmp76 = println__T_string("") in
+  let mtmp77 = print_int_list_length(x/11) in
+  let x/12 = IntList::Cons(1, IntList::Nil) in
+  let mtmp78 = print_int_list(x/12) in
+  let mtmp79 = println__T_string("") in
+  let mtmp80 = print_int_list_length(x/12) in
+  let x/13 = IntList::Cons(1, IntList::Cons(2, IntList::Cons(3, IntList::Nil))) in
+  let mtmp81 = print_int_list(x/13) in
+  let mtmp82 = println__T_string("") in
+  let mtmp83 = print_int_list_length(x/13) in
+  let y/14 = int_list_rev(x/13) in
+  let mtmp84 = print_int_list(y/14) in
+  let mtmp85 = println__T_string("") in
+  ()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn inherent#int32#int32#to_string(self/5: int32) -> string {
+  @runtime(core.int32_to_string)(self/5)
+}
+
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  self/37
+}

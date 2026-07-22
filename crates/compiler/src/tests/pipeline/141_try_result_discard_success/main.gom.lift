@@ -1,0 +1,53 @@
+fn parse_text(ok/0: bool) -> Result__string__string {
+  if ok/0 {
+      Result__string__string::Ok("ignored")
+  } else {
+      Result__string__string::Err("parse failed")
+  }
+}
+
+fn check(ok/1: bool) -> Result__string__string {
+  let mtmp64 = let mtmp61 = parse_text(ok/1) in
+  match mtmp61 {
+    Result__string__string::Ok(x62) => {
+      let x62 = Result__string__string::Ok._0(mtmp61) in
+      let try_value/12 = x62 in
+      try_value/12
+    },
+    Result__string__string::Err(x63) => {
+      let x63 = Result__string__string::Err._0(mtmp61) in
+      let try_residual/12 = x63 in
+      return Result__string__string::Err(try_residual/12)
+    },
+  } in
+  Result__string__string::Ok("ok")
+}
+
+fn show(res/2: Result__string__string) -> string {
+  match res/2 {
+    Result__string__string::Ok(x65) => {
+      let x65 = Result__string__string::Ok._0(res/2) in
+      let value/3 = x65 in
+      ("ok " + value/3)
+    },
+    Result__string__string::Err(x66) => {
+      let x66 = Result__string__string::Err._0(res/2) in
+      let err/4 = x66 in
+      ("err " + err/4)
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild67 = println__T_string(show(check(true))) in
+  let _wild68 = println__T_string(show(check(false))) in
+  ()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  self/37
+}

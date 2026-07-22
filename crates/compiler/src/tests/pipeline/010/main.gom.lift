@@ -1,0 +1,39 @@
+fn main() -> unit {
+  let a/0 = (true, true) in
+  let x61 = a/0.0 in
+  let x62 = a/0.1 in
+  match x62 {
+    true => {
+      match x61 {
+        true => {
+          println__T_string(inherent#int32#int32#to_string(789))
+        },
+        false => {
+          println__T_string(inherent#int32#int32#to_string(456))
+        },
+      }
+    },
+    false => {
+      match x61 {
+        true => {
+          println__T_string(inherent#int32#int32#to_string(123))
+        },
+        false => {
+          println__T_string(inherent#int32#int32#to_string(789))
+        },
+      }
+    },
+  }
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn inherent#int32#int32#to_string(self/5: int32) -> string {
+  @runtime(core.int32_to_string)(self/5)
+}
+
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  self/37
+}

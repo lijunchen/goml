@@ -1,0 +1,79 @@
+fn configure(ok/0: bool) -> Result__unit__string {
+  if ok/0 {
+      Result__unit__string::Ok(())
+  } else {
+      Result__unit__string::Err("config failed")
+  }
+}
+
+fn read_duration(ok/1: bool) -> Result__string__string {
+  if ok/1 {
+      Result__string__string::Ok("2s")
+  } else {
+      Result__string__string::Err("duration failed")
+  }
+}
+
+fn format_duration(value/2: string) -> string {
+  ("duration=" + value/2)
+}
+
+fn configure_and_format(config_ok/3: bool, read_ok/4: bool) -> Result__string__string {
+  let _wild64 = let mtmp61 = configure(config_ok/3) in
+  match mtmp61 {
+    Result__unit__string::Ok(x62) => {
+      let x62 = Result__unit__string::Ok._0(mtmp61) in
+      let try_value/23 = x62 in
+      try_value/23
+    },
+    Result__unit__string::Err(x63) => {
+      let x63 = Result__unit__string::Err._0(mtmp61) in
+      let try_residual/23 = x63 in
+      return Result__string__string::Err(try_residual/23)
+    },
+  } in
+  let value/5 = let mtmp65 = read_duration(read_ok/4) in
+  match mtmp65 {
+    Result__string__string::Ok(x66) => {
+      let x66 = Result__string__string::Ok._0(mtmp65) in
+      let try_value/27 = x66 in
+      try_value/27
+    },
+    Result__string__string::Err(x67) => {
+      let x67 = Result__string__string::Err._0(mtmp65) in
+      let try_residual/27 = x67 in
+      return Result__string__string::Err(try_residual/27)
+    },
+  } in
+  Result__string__string::Ok(format_duration(value/5))
+}
+
+fn show(res/6: Result__string__string) -> string {
+  match res/6 {
+    Result__string__string::Ok(x68) => {
+      let x68 = Result__string__string::Ok._0(res/6) in
+      let value/7 = x68 in
+      ("ok " + value/7)
+    },
+    Result__string__string::Err(x69) => {
+      let x69 = Result__string__string::Err._0(res/6) in
+      let err/8 = x69 in
+      ("err " + err/8)
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild70 = println__T_string(show(configure_and_format(true, true))) in
+  let _wild71 = println__T_string(show(configure_and_format(true, false))) in
+  let _wild72 = println__T_string(show(configure_and_format(false, true))) in
+  ()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  self/37
+}

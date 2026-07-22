@@ -1,0 +1,147 @@
+fn bounce_int(shape/0: Shape__int32) -> Shape__int32 {
+  match shape/0 {
+    Shape__int32::Dot(x61) => {
+      let x61 = Shape__int32::Dot._0(shape/0) in
+      let point/1 = x61 in
+      Shape__int32::Dot(point/1)
+    },
+    Shape__int32::Wrapped(x62) => {
+      let x62 = Shape__int32::Wrapped._0(shape/0) in
+      let inner/2 = x62 in
+      Shape__int32::Wrapped(inner/2)
+    },
+    Shape__int32::Origin => {
+      Shape__int32::Origin
+    },
+  }
+}
+
+fn wrap_unit(value/3: Wrapper__unit) -> Shape__unit {
+  Shape__unit::Wrapped(value/3)
+}
+
+fn pick(flag/4: bool, point/5: Point, wrapper/6: Wrapper__int32) -> Shape__int32 {
+  match flag/4 {
+    true => {
+      Shape__int32::Dot(point/5)
+    },
+    false => {
+      Shape__int32::Wrapped(wrapper/6)
+    },
+  }
+}
+
+fn point32_to_string(point/8: Point) -> string {
+  let mtmp65 = point/8 in
+  let x66 = Point.x(mtmp65) in
+  let x67 = Point.y(mtmp65) in
+  let y/10 = x67 in
+  let x/9 = x66 in
+  let with_x/11 = ("Point { x: " + inherent#int32#int32#to_string(x/9)) in
+  let with_y_label/12 = (with_x/11 + ", y: ") in
+  let with_y/13 = (with_y_label/12 + inherent#int32#int32#to_string(y/10)) in
+  (with_y/13 + " }")
+}
+
+fn wrapper_int32_to_string(wrapper/14: Wrapper__int32) -> string {
+  let mtmp68 = wrapper/14 in
+  let x69 = Wrapper__int32.value(mtmp68) in
+  let value/15 = x69 in
+  let prefix/16 = ("Wrapper[int32] { value: " + inherent#int32#int32#to_string(value/15)) in
+  (prefix/16 + " }")
+}
+
+fn wrapper_unit_to_string(wrapper/17: Wrapper__unit) -> string {
+  let mtmp70 = wrapper/17 in
+  let x71 = Wrapper__unit.value(mtmp70) in
+  let value/18 = x71 in
+  let prefix/19 = ("Wrapper[unit] { value: " + trait_impl#ToString#unit#to_string(value/18)) in
+  (prefix/19 + " }")
+}
+
+fn shape_int32_to_string(shape/20: Shape__int32) -> string {
+  match shape/20 {
+    Shape__int32::Dot(x72) => {
+      let x72 = Shape__int32::Dot._0(shape/20) in
+      let point/21 = x72 in
+      let prefix/22 = ("Shape::Dot(" + point32_to_string(point/21)) in
+      (prefix/22 + ")")
+    },
+    Shape__int32::Wrapped(x73) => {
+      let x73 = Shape__int32::Wrapped._0(shape/20) in
+      let wrapper/23 = x73 in
+      let prefix/24 = ("Shape::Wrapped(" + wrapper_int32_to_string(wrapper/23)) in
+      (prefix/24 + ")")
+    },
+    Shape__int32::Origin => {
+      "Shape::Origin"
+    },
+  }
+}
+
+fn shape_unit_to_string(shape/25: Shape__unit) -> string {
+  match shape/25 {
+    Shape__unit::Dot(x74) => {
+      let x74 = Shape__unit::Dot._0(shape/25) in
+      let point/26 = x74 in
+      let prefix/27 = ("Shape::Dot(" + point32_to_string(point/26)) in
+      (prefix/27 + ")")
+    },
+    Shape__unit::Wrapped(x75) => {
+      let x75 = Shape__unit::Wrapped._0(shape/25) in
+      let wrapper/28 = x75 in
+      let prefix/29 = ("Shape::Wrapped(" + wrapper_unit_to_string(wrapper/28)) in
+      (prefix/29 + ")")
+    },
+    Shape__unit::Origin => {
+      "Shape::Origin"
+    },
+  }
+}
+
+fn main() -> unit {
+  let mtmp76 = println__T_string(point32_to_string(Point { x: 3, y: 4 })) in
+  let mtmp77 = println__T_string(wrapper_int32_to_string(Wrapper__int32 { value: 7 })) in
+  let mtmp78 = println__T_string(wrapper_unit_to_string(Wrapper__unit { value: () })) in
+  let bounced_origin/30 = bounce_int(Shape__int32::Origin) in
+  let mtmp79 = println__T_string(shape_int32_to_string(Shape__int32::Dot(Point { x: 3, y: 4 }))) in
+  let mtmp80 = println__T_string(shape_int32_to_string(Shape__int32::Wrapped(Wrapper__int32 { value: 7 }))) in
+  let mtmp81 = println__T_string(shape_int32_to_string(bounced_origin/30)) in
+  let mtmp82 = println__T_string(shape_unit_to_string(Shape__unit::Dot(Point { x: 3, y: 4 }))) in
+  let mtmp83 = println__T_string(shape_unit_to_string(Shape__unit::Wrapped(Wrapper__unit { value: () }))) in
+  let mtmp84 = println__T_string(shape_unit_to_string(Shape__unit::Origin)) in
+  let mtmp85 = describe__T_int32(bounce_int(Shape__int32::Origin)) in
+  println__T_string("struct enums!")
+}
+
+fn inherent#int32#int32#to_string(self/5: int32) -> string {
+  @runtime(core.int32_to_string)(self/5)
+}
+
+fn trait_impl#ToString#unit#to_string(self/35: unit) -> string {
+  @runtime(core.unit_to_string)(self/35)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  @runtime(core.string_println)(trait_impl#ToString#string#to_string(value/1))
+}
+
+fn describe__T_int32(shape/7: Shape__int32) -> int32 {
+  match shape/7 {
+    Shape__int32::Dot(x63) => {
+      let x63 = Shape__int32::Dot._0(shape/7) in
+      1
+    },
+    Shape__int32::Wrapped(x64) => {
+      let x64 = Shape__int32::Wrapped._0(shape/7) in
+      2
+    },
+    Shape__int32::Origin => {
+      0
+    },
+  }
+}
+
+fn trait_impl#ToString#string#to_string(self/37: string) -> string {
+  self/37
+}
