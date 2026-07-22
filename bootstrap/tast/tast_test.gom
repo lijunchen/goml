@@ -1313,6 +1313,23 @@ fn checks_char_from_uint32_builtin() -> unit {
 }
 
 #[test]
+fn validates_explicit_casts() -> unit {
+    let valid = checked_diagnostics(
+        "fn main() -> unit { let wide = 1u8 as uint64; let code = 'A' as uint32; }",
+    );
+    testing::assert_eq(valid.len(), 0);
+    let invalid = checked_diagnostics(
+        "fn main() -> unit { let a = true as uint8; let b = 1.5f64 as int32; let c = 'A' as uint16; let d = 65u16 as char; let e = 65u32 as char; }",
+    );
+    testing::assert_eq(invalid.len(), 5);
+    testing::assert(has_diagnostic(invalid, "Invalid cast from bool to uint8"));
+    testing::assert(has_diagnostic(invalid, "Invalid cast from float64 to int32"));
+    testing::assert(has_diagnostic(invalid, "Invalid cast from char to uint16"));
+    testing::assert(has_diagnostic(invalid, "Invalid cast from uint16 to char"));
+    testing::assert(has_diagnostic(invalid, "Invalid cast from uint32 to char"))
+}
+
+#[test]
 fn types_control_flow_member_subexpressions() -> unit {
     let source = "fn projected() -> int32 { let _: int32 = (return 1i32).0; 0i32 } fn indexed() -> int32 { let _: int32 = (return 1i32)[0i32]; 0i32 } fn field() -> int32 { let _: int32 = (return 1i32).value; 0i32 }";
     let file = checked_file(source);

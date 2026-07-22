@@ -93,6 +93,20 @@ fn core_function_index(value: core::File, expected: string) -> int32 {
 }
 
 #[test]
+fn detects_single_file_entrypoint() -> unit {
+    let present = tast::check_for_link(hir::lower(
+        ast::lower(parser::parse("fn main() -> unit {}")),
+        "main.gom",
+    ));
+    let missing = tast::check_for_link(hir::lower(
+        ast::lower(parser::parse("fn helper() -> unit {}")),
+        "main.gom",
+    ));
+    testing::assert(has_single_file_entrypoint(present));
+    testing::assert(!has_single_file_entrypoint(missing))
+}
+
+#[test]
 fn links_imported_standard_package_closure() -> unit {
     let source = "use std::fs; use std::io; fn main() -> unit { let _ = fs::write_file(\"out.txt\", \"ok\"); io::println(\"done\") }";
     let compilation = compile_source("main.gom", source);
