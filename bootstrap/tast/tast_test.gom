@@ -2036,6 +2036,27 @@ fn rejects_unsafe_dyn_body_annotations() -> unit {
 }
 
 #[test]
+fn rejects_dyn_patterns_and_marks_recovery_arms_unreachable() -> unit {
+    let diagnostics = checked_diagnostics(
+        "trait Label { fn label(Self) -> string; } impl Label for int32 { fn label(self: int32) -> string { self.to_string() } } fn main() -> unit { let value: dyn Label = 1i32; let _ = match value { 1i32 => 2i32, _ => 3i32 }; }",
+    );
+    testing::assert_eq(diagnostics.len(), 2);
+    testing::assert_eq(
+        diagnostics.get(0).message,
+        "Pattern matching on dyn Label is not supported",
+    );
+    match diagnostics.get(0).severity {
+        DiagnosticSeverity::Error => (),
+        DiagnosticSeverity::Warning => testing::fail("expected dyn pattern error"),
+    };
+    testing::assert_eq(diagnostics.get(1).message, "Unreachable match arm");
+    match diagnostics.get(1).severity {
+        DiagnosticSeverity::Warning => (),
+        DiagnosticSeverity::Error => testing::fail("expected unreachable arm warning"),
+    }
+}
+
+#[test]
 fn rejects_recursive_struct_layouts() -> unit {
     let direct = checked_diagnostics(
         "struct Tree { left: Tree } fn main() -> unit {}",
