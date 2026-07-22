@@ -42,17 +42,10 @@ goml test core
 goml test mono
 ```
 
-The differential tools build a Rust oracle from the sibling `goml` checkout and compare canonical outputs byte for byte:
+The Rust differential tests build the bootstrap compiler and compare generated inputs, the repository corpus, compiler test suites, and pipeline snapshots byte for byte:
 
 ```sh
-tools/diff-lexer-corpus.sh
-tools/diff-cst-corpus.sh
-tools/diff-ast-corpus.sh
-tools/diff-hir-corpus.sh
-tools/diff-tast-corpus.sh
-tools/diff-core-corpus.sh
-tools/diff-mono-corpus.sh
-tools/diff-generated.sh
+cargo test --manifest-path tools/rust-oracle/Cargo.toml --test alignment -- --test-threads=1
 ```
 
 Set `GOML_REPO` when the Rust repository is not available at `../goml`.

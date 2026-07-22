@@ -207,6 +207,7 @@ fn main() {
             continue;
         }
         let output = Command::new(&parser)
+            .arg("__canonical-stage")
             .arg(&mode)
             .arg(&input_path)
             .output()
