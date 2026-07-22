@@ -1027,7 +1027,7 @@ pub fn encode(value: LowerResult) -> string {
         Option::None => {
             let builder = text::StringBuilder::new();
             for diagnostic in value.diagnostics {
-                builder.write_string(diagnostic);
+                builder.write_string(diagnostic.message);
                 builder.write_char('\n')
             };
             builder.finish()

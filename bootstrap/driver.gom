@@ -613,9 +613,9 @@ fn selected_standard_core(
     result
 }
 
-fn fail_on_compilation_diagnostics(diagnostics: Vec[string]) -> unit {
+fn fail_on_compilation_diagnostics(diagnostics: Vec[hir::Diagnostic]) -> unit {
     if diagnostics.len() > 0 {
-        fail("error[compile]: " + diagnostics.get(0))
+        fail("error[compile]: " + diagnostics.get(0).message)
     } else {
         ()
     }
@@ -977,6 +977,285 @@ fn fail_on_ast_diagnostics(
         ))
     } else {
         ()
+    }
+}
+
+fn compact_diagnostic_line(
+    builder: text::StringBuilder,
+    message: string,
+    span: Option[ast::Span],
+    source: string,
+) -> unit {
+    match span {
+        Option::Some(value) => {
+            let position = source_position(source, value.start);
+            builder.write_string((position.line + 1).to_string());
+            builder.write_char(':');
+            builder.write_string((position.column + 1).to_string());
+            builder.write_string(": ")
+        },
+        Option::None => (),
+    };
+    builder.write_string(message);
+    builder.write_char('\n')
+}
+
+fn compact_ast_diagnostics(
+    diagnostics: Vec[cst::Diagnostic],
+    source: string,
+    with_locations: bool,
+) -> string {
+    let builder = text::StringBuilder::new();
+    for diagnostic in diagnostics {
+        compact_diagnostic_line(
+            builder,
+            diagnostic.message,
+            if with_locations {
+                Option::Some(ast::Span {
+                    start: diagnostic.start,
+                    end: diagnostic.end,
+                })
+            } else {
+                Option::None
+            },
+            source,
+        )
+    };
+    builder.finish()
+}
+
+fn compact_messages(diagnostics: Vec[string]) -> string {
+    let builder = text::StringBuilder::new();
+    for diagnostic in diagnostics {
+        compact_diagnostic_line(builder, diagnostic, Option::None, "")
+    };
+    builder.finish()
+}
+
+fn compact_hir_diagnostics(
+    diagnostics: Vec[hir::Diagnostic],
+    source: string,
+) -> string {
+    let builder = text::StringBuilder::new();
+    for diagnostic in diagnostics {
+        compact_diagnostic_line(
+            builder,
+            diagnostic.message,
+            diagnostic.span,
+            source,
+        )
+    };
+    builder.finish()
+}
+
+fn diagnostic_message_starts_with(value: string, prefix: string) -> bool {
+    value.byte_len() >= prefix.byte_len()
+        && value.byte_slice(0, prefix.byte_len()) == prefix
+}
+
+fn compact_diagnostic_phase(value: tast::Diagnostic) -> int32 {
+    if value.message == "Could not infer type" {
+        4
+    } else if diagnostic_message_starts_with(value.message, "Could not infer the ") {
+        if diagnostic_message_starts_with(
+            value.message,
+            "Could not infer the type required to prove",
+        ) {
+            2
+        } else {
+            3
+        }
+    } else if diagnostic_message_starts_with(value.message, "No instance found for trait ") {
+        2
+    } else if diagnostic_message_starts_with(value.message, "Struct ")
+        && artifact_string_contains(value.message, " type arguments, but got ")
+    {
+        1
+    } else {
+        0
+    }
+}
+
+fn specialized_inference_priority(value: string) -> int32 {
+    if diagnostic_message_starts_with(value, "Could not infer the base type") {
+        0
+    } else if diagnostic_message_starts_with(value, "Could not infer the operand type") {
+        1
+    } else {
+        2
+    }
+}
+
+fn compact_diagnostic_precedes(
+    left: tast::Diagnostic,
+    right: tast::Diagnostic,
+) -> bool {
+    let left_phase = compact_diagnostic_phase(left);
+    let right_phase = compact_diagnostic_phase(right);
+    if left_phase != right_phase {
+        left_phase < right_phase
+    } else if diagnostic_message_starts_with(
+        left.message,
+        "extern ",
+    ) && diagnostic_message_starts_with(right.message, "Internal error: ") {
+        true
+    } else if left_phase == 0
+        && diagnostic_message_starts_with(left.message, "Unknown type constructor ")
+        && diagnostic_message_starts_with(right.message, "Unknown type constructor ")
+    {
+        diagnostic_span_start(left) < diagnostic_span_start(right)
+    } else if left_phase == 2
+        && diagnostic_message_starts_with(left.message, "No instance found for trait ")
+        && diagnostic_message_starts_with(right.message, "No instance found for trait ")
+        && diagnostic_span_start(left) == diagnostic_span_start(right)
+    {
+        left.message > right.message
+    } else if left_phase == 3 {
+        specialized_inference_priority(left.message)
+            < specialized_inference_priority(right.message)
+    } else if left_phase == 4 {
+        diagnostic_span_start(left) < diagnostic_span_start(right)
+    } else {
+        false
+    }
+}
+
+fn compact_sorted_diagnostics(values: Vec[tast::Diagnostic]) -> Vec[tast::Diagnostic] {
+    let result: Vec[tast::Diagnostic] = Vec::new();
+    for value in values {
+        match value.severity {
+            tast::DiagnosticSeverity::Error => result.push(value),
+            tast::DiagnosticSeverity::Warning => (),
+        }
+    };
+    for index in range(1, result.len()) {
+        let value = result.get(index);
+        let target = Ref::new(index);
+        while target.get() > 0
+            && compact_diagnostic_precedes(value, result.get(target.get() - 1))
+        {
+            result.set(target.get(), result.get(target.get() - 1));
+            target.set(target.get() - 1)
+        };
+        result.set(target.get(), value)
+    };
+    result
+}
+
+fn typer_diagnostics_have_errors(diagnostics: Vec[tast::Diagnostic]) -> bool {
+    let result = Ref::new(false);
+    for diagnostic in diagnostics {
+        match diagnostic.severity {
+            tast::DiagnosticSeverity::Error => result.set(true),
+            tast::DiagnosticSeverity::Warning => (),
+        }
+    };
+    result.get()
+}
+
+fn compact_typer_diagnostics(
+    diagnostics: Vec[tast::Diagnostic],
+    source_path: string,
+    source: string,
+) -> string {
+    let builder = text::StringBuilder::new();
+    for diagnostic in compact_sorted_diagnostics(diagnostics) {
+        compact_diagnostic_line(
+            builder,
+            diagnostic.message,
+            diagnostic.span,
+            diagnostic_source(diagnostic.source_path, source_path, source),
+        )
+    };
+    builder.finish()
+}
+
+fn test_diagnostic_output(source_path: string, source: string) -> string {
+    let parsed = parser::parse(source);
+    if parsed.diagnostics.len() > 0 {
+        return compact_ast_diagnostics(parsed.diagnostics, source, true)
+    } else {
+        ()
+    };
+    let ast_value = ast::lower(parsed);
+    if ast_value.diagnostics.len() > 0 {
+        return compact_ast_diagnostics(ast_value.diagnostics, source, false)
+    } else {
+        ()
+    };
+    match single_file_project_import(ast_value) {
+        Option::Some(package_path) => return "single-file compilation cannot use project package "
+            + package_path
+            + "\n",
+        Option::None => (),
+    };
+    let ast_value = hir::expand_derives(ast_value);
+    if ast_value.diagnostics.len() > 0 {
+        return compact_ast_diagnostics(ast_value.diagnostics, source, false)
+    } else {
+        ()
+    };
+    let hir_value = hir::lower_expanded(ast_value, source_path);
+    if hir_value.diagnostics.len() > 0 {
+        return compact_hir_diagnostics(hir_value.diagnostics, source)
+    } else {
+        ()
+    };
+    let counter = Ref::new(0);
+    let builtins = core::lower_builtins(counter);
+    let standard = if has_standard_import(ast_value) {
+        Option::Some(compile_standard_library(builtins))
+    } else {
+        Option::None
+    };
+    let hir_dependencies = match standard {
+        Option::Some(value) => selected_standard_hir(ast_value, value),
+        Option::None => Vec::new(),
+    };
+    let core_dependencies = match standard {
+        Option::Some(value) => selected_standard_core(ast_value, value),
+        Option::None => Vec::new(),
+    };
+    let tast_value = tast::check_for_link_with_dependencies(
+        hir_value,
+        hir_dependencies,
+    );
+    if typer_diagnostics_have_errors(tast_value.diagnostics) {
+        return compact_typer_diagnostics(tast_value.diagnostics, source_path, source)
+    } else {
+        ()
+    };
+    if !has_single_file_entrypoint(tast_value) {
+        return "main function is required\n"
+    } else {
+        ()
+    };
+    let core_value = core::link_with_dependencies(
+        builtins,
+        core_dependencies,
+        core::lower_with_counter_and_types(
+            tast_value,
+            counter,
+            dependency_enums(builtins, core_dependencies),
+            dependency_structs(builtins, core_dependencies),
+        ),
+    );
+    let mono_result = mono::lower_checked(core_value);
+    match mono_result.error {
+        Option::Some(error) => error + "\n",
+        Option::None => "",
+    }
+}
+
+fn run_test_diagnostics(args: Vec[string]) -> unit {
+    if args.len() != 3 {
+        fail("usage: gomlc __test-diagnostics <FILE>")
+    } else {
+        let source_path = args.get(2);
+        io::print(test_diagnostic_output(
+            source_path,
+            read_source(source_path),
+        ))
     }
 }
 

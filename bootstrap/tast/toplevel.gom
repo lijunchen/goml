@@ -37,6 +37,8 @@ fn function_context(
         required_predicates: Vec::new(),
         locals: Vec::new(),
         unresolved_locals: Vec::new(),
+        unresolved_inference_vars: Vec::new(),
+        suppress_unresolved_ref_diagnostic: Ref::new(0),
         mutable_locals: Vec::new(),
         return_ty: ret_ty,
         self_ty,
@@ -73,6 +75,8 @@ fn closure_context(base: Checker, ret_ty: Type) -> Checker {
         required_predicates: base.required_predicates,
         locals: base.locals,
         unresolved_locals: base.unresolved_locals,
+        unresolved_inference_vars: base.unresolved_inference_vars,
+        suppress_unresolved_ref_diagnostic: base.suppress_unresolved_ref_diagnostic,
         mutable_locals: base.mutable_locals,
         return_ty: ret_ty,
         self_ty: base.self_ty,
@@ -1145,7 +1149,7 @@ pub fn check(value: hir::LowerResult) -> CheckResult {
         Option::Some(file) => check_file(file, Vec::new(), true, false),
         Option::None => CheckResult {
             tast: Option::None,
-            diagnostics: diagnostics_from_messages(value.diagnostics, value.source_path),
+            diagnostics: diagnostics_from_lower(value.diagnostics, value.source_path),
         },
     }
 }
@@ -1155,7 +1159,7 @@ pub fn check_for_link(value: hir::LowerResult) -> CheckResult {
         Option::Some(file) => check_file(file, Vec::new(), false, false),
         Option::None => CheckResult {
             tast: Option::None,
-            diagnostics: diagnostics_from_messages(value.diagnostics, value.source_path),
+            diagnostics: diagnostics_from_lower(value.diagnostics, value.source_path),
         },
     }
 }
@@ -1168,7 +1172,7 @@ pub fn check_for_link_with_dependencies(
         Option::Some(file) => check_file(file, dependencies, false, false),
         Option::None => CheckResult {
             tast: Option::None,
-            diagnostics: diagnostics_from_messages(value.diagnostics, value.source_path),
+            diagnostics: diagnostics_from_lower(value.diagnostics, value.source_path),
         },
     }
 }
@@ -1181,7 +1185,7 @@ pub fn check_for_link_with_dependencies_allowing_externs(
         Option::Some(file) => check_file(file, dependencies, false, true),
         Option::None => CheckResult {
             tast: Option::None,
-            diagnostics: diagnostics_from_messages(value.diagnostics, value.source_path),
+            diagnostics: diagnostics_from_lower(value.diagnostics, value.source_path),
         },
     }
 }

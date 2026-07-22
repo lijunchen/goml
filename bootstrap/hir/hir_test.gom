@@ -60,7 +60,7 @@ fn reports_pattern_binding_errors_during_resolution() -> unit {
     );
     testing::assert_eq(duplicate.diagnostics.len(), 1);
     testing::assert_eq(
-        duplicate.diagnostics.get(0),
+        duplicate.diagnostics.get(0).message,
         "Variable value is bound more than once in the same pattern",
     );
     match duplicate.hir {
@@ -75,7 +75,7 @@ fn reports_pattern_binding_errors_during_resolution() -> unit {
     );
     testing::assert_eq(inconsistent.diagnostics.len(), 1);
     testing::assert_eq(
-        inconsistent.diagnostics.get(0),
+        inconsistent.diagnostics.get(0).message,
         "Or-pattern alternatives must bind the same variables: missing inner",
     );
     match inconsistent.hir {
@@ -316,7 +316,7 @@ fn rejects_invalid_derives() -> unit {
     );
     testing::assert_eq(unsupported.diagnostics.len(), 1);
     testing::assert_eq(
-        unsupported.diagnostics.get(0),
+        unsupported.diagnostics.get(0).message,
         "unsupported derive target `ToJson`",
     );
     let generic = lower(
@@ -327,7 +327,7 @@ fn rejects_invalid_derives() -> unit {
     );
     testing::assert_eq(generic.diagnostics.len(), 1);
     testing::assert_eq(
-        generic.diagnostics.get(0),
+        generic.diagnostics.get(0).message,
         "`#[derive(ToString)]` is not supported for generic struct `Box`",
     )
 }

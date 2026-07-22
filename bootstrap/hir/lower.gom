@@ -32,7 +32,8 @@ struct LowerCtx {
     local_counter: Ref[int32],
     method_counter: Ref[int32],
     expr_counter: Ref[int32],
-    diagnostics: Vec[string],
+    diagnostics: Vec[Diagnostic],
+    current_pattern_span: Ref[Option[ast::Span]],
 }
 
 struct PatternState {
@@ -642,9 +643,12 @@ fn bind_pattern_name(
 ) -> LocalId {
     match find_binding(state.seen, name) {
         Option::Some(existing) => {
-            ctx.diagnostics.push(
-                "Variable " + name + " is bound more than once in the same pattern",
-            );
+            ctx.diagnostics.push(Diagnostic {
+                message: "Variable "
+                    + name
+                    + " is bound more than once in the same pattern",
+                span: ctx.current_pattern_span.get(),
+            });
             existing
         },
         Option::None => {
@@ -666,6 +670,8 @@ fn lower_pattern_inner(
     state: PatternState,
 ) -> Pat {
     let span = ast::pat_span(value);
+    let previous_span = ctx.current_pattern_span.get();
+    ctx.current_pattern_span.set(Option::Some(span));
     let kind = match value {
         ast::Pat::Var(name, _) => match constructor_ref(ctx, single_path(name)) {
             Option::Some(constructor) => PatKind::Constr(constructor, Vec::new()),
@@ -764,7 +770,10 @@ fn lower_pattern_inner(
                         actual.push(branch_state.seen.get(binding_index))
                     };
                     match pattern_binding_mismatch(expected, actual) {
-                        Option::Some(message) => ctx.diagnostics.push(message),
+                        Option::Some(message) => ctx.diagnostics.push(Diagnostic {
+                            message,
+                            span: Option::Some(span),
+                        }),
                         Option::None => (),
                     }
                 };
@@ -778,6 +787,7 @@ fn lower_pattern_inner(
         ),
         ast::Pat::Wild(_) => PatKind::Wild,
     };
+    ctx.current_pattern_span.set(previous_span);
     Pat { kind, span }
 }
 
@@ -1320,13 +1330,14 @@ fn make_context(
         method_counter: Ref::new(index.get()),
         expr_counter: Ref::new(1),
         diagnostics: Vec::new(),
+        current_pattern_span: Ref::new(Option::None),
     }
 }
 
 fn file_context(
     base: LowerCtx,
     file: ast::File,
-    diagnostics: Vec[string],
+    diagnostics: Vec[Diagnostic],
 ) -> LowerCtx {
     LowerCtx {
         package_name: base.package_name,
@@ -1341,6 +1352,7 @@ fn file_context(
         method_counter: base.method_counter,
         expr_counter: base.expr_counter,
         diagnostics,
+        current_pattern_span: base.current_pattern_span,
     }
 }
 
@@ -1351,7 +1363,7 @@ fn lower_file_with_context(
     qualify_imports: bool,
     base: LowerCtx,
     item_offset: int32,
-    diagnostics: Vec[string],
+    diagnostics: Vec[Diagnostic],
 ) -> File {
     let ctx = file_context(base, file, diagnostics);
     let items: Vec[Item] = Vec::new();
@@ -1410,7 +1422,7 @@ fn lower_file(
     source_path: string,
     canonical_package_name: string,
     qualify_imports: bool,
-    diagnostics: Vec[string],
+    diagnostics: Vec[Diagnostic],
 ) -> File {
     let files: Vec[ast::File] = Vec::new();
     files.push(file);
@@ -1425,16 +1437,19 @@ fn lower_file(
     )
 }
 
-fn ast_diagnostic_messages(values: Vec[cst::Diagnostic]) -> Vec[string] {
-    let result: Vec[string] = Vec::new();
+fn ast_diagnostics(values: Vec[cst::Diagnostic]) -> Vec[Diagnostic] {
+    let result: Vec[Diagnostic] = Vec::new();
     for value in values {
-        result.push(value.message)
+        result.push(Diagnostic {
+            message: value.message,
+            span: Option::Some(ast::span(value.start, value.end)),
+        })
     };
     result
 }
 
 pub fn lower_expanded(value: ast::LowerResult, source_path: string) -> LowerResult {
-    let diagnostics = ast_diagnostic_messages(value.diagnostics);
+    let diagnostics = ast_diagnostics(value.diagnostics);
     match value.ast {
         Option::Some(file) => LowerResult {
             hir: Option::Some(lower_file(
@@ -1448,8 +1463,11 @@ pub fn lower_expanded(value: ast::LowerResult, source_path: string) -> LowerResu
             diagnostics,
         },
         Option::None => {
-            let diagnostics: Vec[string] = Vec::new();
-            diagnostics.push("AST lowering failed");
+            let diagnostics: Vec[Diagnostic] = Vec::new();
+            diagnostics.push(Diagnostic {
+                message: "AST lowering failed",
+                span: Option::None,
+            });
             LowerResult {
                 hir: Option::None,
                 source_path,
@@ -1464,7 +1482,7 @@ pub fn lower_expanded_package(
     source_path: string,
     canonical_package_name: string,
 ) -> LowerResult {
-    let diagnostics = ast_diagnostic_messages(value.diagnostics);
+    let diagnostics = ast_diagnostics(value.diagnostics);
     match value.ast {
         Option::Some(file) => LowerResult {
             hir: Option::Some(lower_file(
@@ -1478,8 +1496,11 @@ pub fn lower_expanded_package(
             diagnostics,
         },
         Option::None => {
-            let diagnostics: Vec[string] = Vec::new();
-            diagnostics.push("AST lowering failed");
+            let diagnostics: Vec[Diagnostic] = Vec::new();
+            diagnostics.push(Diagnostic {
+                message: "AST lowering failed",
+                span: Option::None,
+            });
             LowerResult {
                 hir: Option::None,
                 source_path,
@@ -1518,7 +1539,7 @@ pub fn lower_expanded_package_files(
     for value in values {
         match value.0.ast {
             Option::Some(file) => {
-                let diagnostics = ast_diagnostic_messages(value.0.diagnostics);
+                let diagnostics = ast_diagnostics(value.0.diagnostics);
                 lowered.push(LowerResult {
                     hir: Option::Some(lower_file_with_context(
                         file,
@@ -1535,8 +1556,11 @@ pub fn lower_expanded_package_files(
                 item_offset.set(item_offset.get() + file.items.len())
             },
             Option::None => {
-                let diagnostics: Vec[string] = Vec::new();
-                diagnostics.push("AST lowering failed");
+                let diagnostics: Vec[Diagnostic] = Vec::new();
+                diagnostics.push(Diagnostic {
+                    message: "AST lowering failed",
+                    span: Option::None,
+                });
                 lowered.push(LowerResult {
                     hir: Option::None,
                     source_path: value.1,

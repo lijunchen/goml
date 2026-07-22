@@ -613,7 +613,7 @@ fn selected_standard_hir_for_needs(
 
 fn checked_hir_file(value: hir::LowerResult, package_name: string) -> hir::File {
     if value.diagnostics.len() > 0 {
-        fail("error[compile]: " + value.diagnostics.get(0))
+        fail("error[compile]: " + value.diagnostics.get(0).message)
     } else {
         ()
     };

@@ -1,5 +1,6 @@
 package tast;
 
+use gomlc::ast;
 use gomlc::hir;
 
 struct ResolvedConstructor {
@@ -270,6 +271,20 @@ fn resolve_constructor(ctx: Checker, value: hir::ConstructorRef) -> Option[Resol
     }
 }
 
+fn bare_constructor_match_count(ctx: Checker, name: string) -> int32 {
+    let count = Ref::new(0);
+    for info in ctx.enums {
+        for variant in info.variants {
+            if variant.name == name {
+                count.set(count.get() + 1)
+            } else {
+                ()
+            }
+        }
+    };
+    count.get()
+}
+
 fn instantiate_struct(ctx: Checker, value: StructInfo) -> ResolvedStruct {
     let substitutions = instantiate_substitutions(ctx.counter, value.generics, Vec::new());
     let args: Vec[Type] = Vec::new();
@@ -368,9 +383,11 @@ fn find_named_field(values: Vec[(string, hir::Expr)], name: string) -> Option[hi
 
 fn find_named_pattern(values: Vec[(string, hir::Pat)], name: string) -> Option[hir::Pat] {
     let result = Ref::new(Option::None);
+    let found = Ref::new(false);
     for value in values {
-        if value.0 == name {
-            result.set(Option::Some(value.1))
+        if !(found.get()) && value.0 == name {
+            result.set(Option::Some(value.1));
+            found.set(true)
         } else {
             ()
         }
@@ -1028,7 +1045,16 @@ fn validate_impl_overlaps(ctx: Checker) -> unit {
                             + " is already defined",
                     )
                 } else {
-                    push_diagnostic(ctx, "overlapping trait implementations")
+                    push_diagnostic_at(
+                        ctx,
+                        "Trait "
+                            + trait_ref_text(right_impl.trait_ref)
+                            + " implementation for "
+                            + type_text(right_impl.for_type)
+                            + " overlaps with implementation "
+                            + left_impl.origin,
+                        Option::Some(right_impl.span),
+                    )
                 }
             } else {
                 ()
@@ -2138,7 +2164,34 @@ fn validate_nominal_application(
         } else {
             ()
         },
-        Option::None => push_diagnostic(ctx, "Unknown type constructor " + name),
+        Option::None => match split_constructor_name(name) {
+            Option::Some(parts) => {
+                let span = match ctx.current_span.get() {
+                    Option::Some(value) => Option::Some(ast::span(
+                        value.start + parts.0.byte_len() + 2,
+                        value.start
+                            + parts.0.byte_len()
+                            + 2
+                            + short_name(name).byte_len(),
+                    )),
+                    Option::None => Option::None,
+                };
+                push_diagnostic_at(
+                    ctx,
+                    "Unknown type constructor " + name,
+                    span,
+                );
+                push_diagnostic_at(
+                    ctx,
+                    "package " + parts.0 + " not imported in package main",
+                    Option::None,
+                )
+            },
+            Option::None => push_diagnostic(
+                ctx,
+                "Unknown type constructor " + name,
+            ),
+        },
     };
     for arg in args {
         validate_signature_type(ctx, arg)
@@ -2289,7 +2342,10 @@ fn validate_signature_type(ctx: Checker, value: Type) -> unit {
         Type::App(base, args) => match prune(base) {
             Type::Con(name) => validate_nominal_application(ctx, name, args),
             _ => {
-                push_diagnostic(ctx, "expected a type constructor");
+                push_diagnostic(
+                    ctx,
+                    "Expected a type constructor, got " + type_text(base),
+                );
                 validate_signature_type(ctx, base);
                 for arg in args {
                     validate_signature_type(ctx, arg)
@@ -2462,6 +2518,7 @@ fn resolve_predicate_method(
 ) -> Option[ResolvedCallable] {
     let result = Ref::new(Option::None);
     let matches = Ref::new(0);
+    let candidates = Ref::new("");
     for predicate in ctx.predicates {
         match predicate {
             TypePredicate::Trait(bound_ty, reference) => {
@@ -2473,6 +2530,14 @@ fn resolve_predicate_method(
                         Option::Some(receiver),
                     ) {
                         Option::Some(value) => {
+                            if candidates.get().byte_len() > 0 {
+                                candidates.set(candidates.get() + ", ")
+                            } else {
+                                ()
+                            };
+                            candidates.set(
+                                candidates.get() + short_name(reference.name),
+                            );
                             matches.set(matches.get() + 1);
                             result.set(Option::Some(value))
                         },
@@ -2489,11 +2554,29 @@ fn resolve_predicate_method(
         result.get()
     } else {
         if matches.get() > 1 {
-            push_diagnostic(ctx, "ambiguous method: " + name)
+            push_diagnostic(
+                ctx,
+                "Ambiguous method "
+                    + name
+                    + " for type "
+                    + type_text(receiver)
+                    + " (candidates: "
+                    + candidates.get()
+                    + "). Use UFCS like Trait::"
+                    + name
+                    + "(...) to disambiguate",
+            )
         } else {
             ()
         };
-        Option::None
+        if matches.get() > 1 {
+            Option::Some(ResolvedCallable {
+                callable: Callable::Function("<error>"),
+                ty: Type::Error,
+            })
+        } else {
+            Option::None
+        }
     }
 }
 

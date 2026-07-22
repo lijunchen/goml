@@ -470,7 +470,7 @@ fn rejects_missing_dyn_impls_and_noncomparable_equality() -> unit {
     testing::assert_eq(dyn_result.diagnostics.len(), 1);
     testing::assert_eq(
         dyn_result.diagnostics.get(0).message,
-        "type does not implement trait Display",
+        "Type int32 does not implement trait Display",
     );
     let equality_result = check(hir::lower(
         ast::lower(parser::parse(
@@ -519,7 +519,7 @@ fn rejects_invalid_signature_names_and_integer_literals() -> unit {
     testing::assert(bad_application.diagnostics.len() > 0);
     testing::assert_eq(
         bad_application.diagnostics.get(0).message,
-        "expected a type constructor",
+        "Expected a type constructor, got T",
     );
     let overflow = check(hir::lower(
         ast::lower(parser::parse(
@@ -528,7 +528,10 @@ fn rejects_invalid_signature_names_and_integer_literals() -> unit {
         "main.gom",
     ));
     testing::assert_eq(overflow.diagnostics.len(), 1);
-    testing::assert_eq(overflow.diagnostics.get(0).message, "integer literal out of range");
+    testing::assert_eq(
+        overflow.diagnostics.get(0).message,
+        "Integer literal 999 does not fit in int8",
+    );
     let negative_unsigned = check(hir::lower(
         ast::lower(parser::parse(
             "fn main() -> unit { let value: uint8 = -1; }",
@@ -595,7 +598,10 @@ fn checks_match_exhaustiveness_and_irrefutable_bindings() -> unit {
         "main.gom",
     ));
     testing::assert_eq(tuple_gap.diagnostics.len(), 1);
-    testing::assert_eq(tuple_gap.diagnostics.get(0).message, "non-exhaustive match");
+    testing::assert_eq(
+        tuple_gap.diagnostics.get(0).message,
+        "non-exhaustive match: missing pattern (false, false)",
+    );
     let refutable = check(hir::lower(
         ast::lower(parser::parse(
             "enum Choice { None, Some(int32) } fn make() -> Choice { Choice::None } fn main() -> unit { let Choice::Some(value) = make(); }",
@@ -618,7 +624,10 @@ fn checks_sequence_range_and_uninhabited_exhaustiveness() -> unit {
         "main.gom",
     ));
     testing::assert_eq(sequence_gap.diagnostics.len(), 1);
-    testing::assert_eq(sequence_gap.diagnostics.get(0).message, "non-exhaustive match");
+    testing::assert_eq(
+        sequence_gap.diagnostics.get(0).message,
+        "non-exhaustive match: missing pattern _",
+    );
     let sequence_complete = check(hir::lower(
         ast::lower(parser::parse(
             "fn choose(values: Vec[bool]) -> int32 { match values { [] => 0, [true, ..] => 1, [false, ..] => 2 } }",
@@ -640,7 +649,10 @@ fn checks_sequence_range_and_uninhabited_exhaustiveness() -> unit {
         "main.gom",
     ));
     testing::assert_eq(range_gap.diagnostics.len(), 1);
-    testing::assert_eq(range_gap.diagnostics.get(0).message, "non-exhaustive match");
+    testing::assert_eq(
+        range_gap.diagnostics.get(0).message,
+        "non-exhaustive match: missing pattern 127",
+    );
     let uninhabited = check(hir::lower(
         ast::lower(parser::parse(
             "enum Never {} enum MaybeNever { Empty, Filled(Never) } fn absurd(value: Never) -> int32 { match value {} } fn maybe(value: MaybeNever) -> int32 { match value { MaybeNever::Empty => 0 } } fn empty_vec(value: Vec[Never]) -> int32 { match value { [] => 0 } }",
@@ -677,7 +689,10 @@ fn checks_loop_control_contexts_and_impl_overlap() -> unit {
         "main.gom",
     ));
     testing::assert(overlap.diagnostics.len() > 0);
-    testing::assert_eq(overlap.diagnostics.get(0).message, "overlapping trait implementations")
+    testing::assert_eq(
+        overlap.diagnostics.get(0).message,
+        "Trait Pick implementation for T overlaps with implementation main#0",
+    )
 }
 
 #[test]

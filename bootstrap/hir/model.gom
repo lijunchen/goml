@@ -267,8 +267,13 @@ pub enum PatKind {
     Wild,
 }
 
+pub struct Diagnostic {
+    message: string,
+    span: Option[ast::Span],
+}
+
 pub struct LowerResult {
     hir: Option[File],
     source_path: string,
-    diagnostics: Vec[string],
+    diagnostics: Vec[Diagnostic],
 }
