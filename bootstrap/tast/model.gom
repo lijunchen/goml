@@ -196,11 +196,19 @@ pub struct File {
     structs: Vec[StructDef],
 }
 
+pub struct DiagnosticLabel {
+    message: string,
+    source_path: string,
+    span: ast::Span,
+}
+
 pub struct Diagnostic {
     stage: string,
     message: string,
     source_path: string,
     span: Option[ast::Span],
+    primary_label: Option[string],
+    secondary_labels: Vec[DiagnosticLabel],
 }
 
 pub struct CheckResult {

@@ -471,8 +471,26 @@ fn artifact_validate_entrypoint(
     declared_name: string,
     exports: ArtifactPackageExports,
 ) -> Result[unit, string] {
+    let diagnostics = artifact_entrypoint_diagnostics(
+        package_name,
+        declared_name,
+        exports,
+    );
+    if diagnostics.len() == 0 {
+        Result::Ok(())
+    } else {
+        Result::Err(diagnostics.get(0))
+    }
+}
+
+fn artifact_entrypoint_diagnostics(
+    package_name: string,
+    declared_name: string,
+    exports: ArtifactPackageExports,
+) -> Vec[string] {
+    let diagnostics = Vec::new();
     if declared_name != "main" {
-        return Result::Ok(())
+        return diagnostics
     } else {
         ()
     };
@@ -486,20 +504,24 @@ fn artifact_validate_entrypoint(
         }
     };
     match found.get() {
-        Option::Some(function) => if function.type_params.len() > 0 {
-            Result::Err("main function must not have type parameters")
-        } else {
+        Option::Some(function) => {
+            if function.type_params.len() > 0 {
+                diagnostics.push("main function must not have type parameters")
+            } else {
+                ()
+            };
             match tast::resolve_type(function.ty) {
                 tast::Type::Func(params, _) => if params.len() > 0 {
-                    Result::Err("main function must not have parameters")
+                    diagnostics.push("main function must not have parameters")
                 } else {
-                    Result::Ok(())
+                    ()
                 },
-                _ => Result::Ok(()),
+                _ => (),
             }
         },
-        Option::None => Result::Err("main function is required"),
-    }
+        Option::None => diagnostics.push("main function is required"),
+    };
+    diagnostics
 }
 
 fn artifact_dependency_type_names(
@@ -527,10 +549,31 @@ fn compile_artifact_package(
     emit_tests: bool,
 ) -> Result[ArtifactCoreUnit, string] {
     let parsed = Vec::new();
+    let parser_diagnostics: Vec[tast::Diagnostic] = Vec::new();
     for source_path in command.inputs {
-        parsed.push(parser::parse(read_source(source_path)))
+        let value = parser::parse(read_source(source_path));
+        for diagnostic in ast_diagnostics(
+            value.diagnostics,
+            "parser",
+            source_path,
+        ) {
+            parser_diagnostics.push(diagnostic)
+        };
+        parsed.push(value)
     };
+    fail_on_typer_diagnostics(parser_diagnostics, "", "");
     let ast_values = ast::lower_package(parsed);
+    let lower_diagnostics: Vec[tast::Diagnostic] = Vec::new();
+    for index in range(0, ast_values.len()) {
+        for diagnostic in ast_diagnostics(
+            ast_values.get(index).diagnostics,
+            "lower",
+            command.inputs.get(index),
+        ) {
+            lower_diagnostics.push(diagnostic)
+        }
+    };
+    fail_on_typer_diagnostics(lower_diagnostics, "", "");
     let declared_name = match artifact_declared_package_name(
         ast_values,
         command.inputs,
@@ -539,15 +582,13 @@ fn compile_artifact_package(
         Result::Err(error) => return Result::Err(error),
     };
     let public_names = public_item_names(ast_values, command.package_name);
-    let tests = match collect_package_tests(
-        command.package_name,
+    let test_candidates = collect_package_test_candidates(
         ast_values,
         command.inputs,
-    ) {
-        Result::Ok(value) => value,
-        Result::Err(error) => return Result::Err(error),
-    };
+    );
+    fail_on_typer_diagnostics(test_candidates.diagnostics, "", "");
     let hir_inputs: Vec[(ast::LowerResult, string)] = Vec::new();
+    let derive_diagnostics: Vec[tast::Diagnostic] = Vec::new();
     let source_needs = Ref::new(no_standard_needs());
     for index in range(0, ast_values.len()) {
         let ast_value = ast_values.get(index);
@@ -555,11 +596,20 @@ fn compile_artifact_package(
             source_needs.get(),
             source_standard_needs(ast_value),
         ));
+        let expanded = hir::expand_derives(ast_value);
+        for diagnostic in ast_diagnostics(
+            expanded.diagnostics,
+            "derive",
+            command.inputs.get(index),
+        ) {
+            derive_diagnostics.push(diagnostic)
+        };
         hir_inputs.push((
-            hir::expand_derives(ast_value),
+            expanded,
             command.inputs.get(index),
         ))
     };
+    fail_on_typer_diagnostics(derive_diagnostics, "", "");
     let hir_files = Vec::new();
     for lowered in hir::lower_expanded_package_files(
         hir_inputs,
@@ -593,22 +643,11 @@ fn compile_artifact_package(
         Result::Ok(value) => value,
         Result::Err(error) => return Result::Err(error),
     };
-    let checked = checked_tast(
-        tast::check_package_files_for_link_with_environments(
-            hir_files,
-            environments,
-        ),
-        command.package_name,
+    let checked = tast::check_package_files_for_link_with_environments(
+        hir_files,
+        environments,
     );
     let hir_file = merge_hir_files(hir_files, command.package_name);
-    match validate_public_trait_impls(
-        hir_file,
-        command.package_name,
-        public_names,
-    ) {
-        Result::Ok(()) => (),
-        Result::Err(error) => return Result::Err("error[typer]: " + error),
-    };
     let signatures = tast::package_signatures(hir_file);
     let tast_file = match checked.tast {
         Option::Some(value) => value,
@@ -647,17 +686,40 @@ fn compile_artifact_package(
         enum_names,
         struct_names,
     );
-    if emit_tests {
-        ()
-    } else {
-        match artifact_validate_entrypoint(
+    let test_validation = validate_package_tests(
+        command.package_name,
+        test_candidates.candidates,
+        exports,
+    );
+    for diagnostic in test_validation.diagnostics {
+        checked.diagnostics.push(diagnostic)
+    };
+    if !emit_tests {
+        for message in artifact_entrypoint_diagnostics(
             command.package_name,
             declared_name,
             exports,
         ) {
-            Result::Ok(()) => (),
-            Result::Err(error) => return Result::Err(error),
+            checked.diagnostics.push(tast::Diagnostic {
+                stage: "typer",
+                message,
+                source_path: "",
+                span: Option::None,
+                primary_label: Option::None,
+                secondary_labels: Vec::new(),
+            })
         }
+    } else {
+        ()
+    };
+    fail_on_typer_diagnostics(checked.diagnostics, "", "");
+    match validate_public_trait_impls(
+        hir_file,
+        command.package_name,
+        public_names,
+    ) {
+        Result::Ok(()) => (),
+        Result::Err(error) => return Result::Err("error[typer]: " + error),
     };
     let deps = match artifact_direct_dependency_hashes(
         world,
@@ -694,7 +756,7 @@ fn compile_artifact_package(
         core_ir,
         deps,
         sources: command.inputs,
-        tests: if emit_tests { tests } else { Vec::new() },
+        tests: if emit_tests { test_validation.tests } else { Vec::new() },
     })
 }
 

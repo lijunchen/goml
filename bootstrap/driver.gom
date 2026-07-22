@@ -668,14 +668,14 @@ fn sorted_typer_diagnostics(values: Vec[tast::Diagnostic]) -> Vec[tast::Diagnost
 }
 
 fn diagnostic_source(
-    value: tast::Diagnostic,
+    source_path: string,
     fallback_path: string,
     fallback_source: string,
 ) -> string {
-    if value.source_path == fallback_path {
+    if source_path == fallback_path {
         fallback_source
     } else {
-        match fs::read_file(value.source_path) {
+        match fs::read_file(source_path) {
             Result::Ok(source) => source,
             Result::Err(_) => "",
         }
@@ -760,6 +760,89 @@ fn expand_diagnostic_tabs(value: string) -> string {
     builder.finish()
 }
 
+fn render_diagnostic_label(
+    builder: text::StringBuilder,
+    kind: string,
+    source_path: string,
+    span: ast::Span,
+    message: Option[string],
+    fallback_path: string,
+    fallback_source: string,
+) -> unit {
+    let source = diagnostic_source(source_path, fallback_path, fallback_source);
+    builder.write_char('\n');
+    builder.write_string(kind);
+    builder.write_string(": ");
+    builder.write_string(source_path);
+    builder.write_char(':');
+    if source.byte_len() == 0 {
+        builder.write_string(span.start.to_string());
+        builder.write_string("..");
+        builder.write_string(span.end.to_string());
+        match message {
+            Option::Some(value) => {
+                builder.write_string(": ");
+                builder.write_string(value)
+            },
+            Option::None => (),
+        }
+    } else {
+        let start = source_position(source, span.start);
+        let end = source_position(source, span.end);
+        builder.write_string((start.line + 1).to_string());
+        builder.write_char(':');
+        builder.write_string((start.column + 1).to_string());
+        if span.start != span.end {
+            builder.write_char('-');
+            builder.write_string((end.line + 1).to_string());
+            builder.write_char(':');
+            builder.write_string((end.column + 1).to_string())
+        } else {
+            ()
+        };
+        match message {
+            Option::Some(value) => {
+                builder.write_string(": ");
+                builder.write_string(value)
+            },
+            Option::None => (),
+        };
+        let line_number = (start.line + 1).to_string();
+        let gutter = line_number.len();
+        let line_text = source.byte_slice(start.line_start, start.line_end);
+        let highlight_start = if span.start < start.line_start {
+            start.line_start
+        } else if span.start > start.line_end {
+            start.line_end
+        } else {
+            span.start
+        };
+        let highlight_end = if span.end < highlight_start {
+            highlight_start
+        } else if span.end > start.line_end {
+            start.line_end
+        } else {
+            span.end
+        };
+        let indentation = diagnostic_visual_width(
+            source.byte_slice(start.line_start, highlight_start),
+        );
+        let measured = diagnostic_visual_width(
+            source.byte_slice(highlight_start, highlight_end),
+        );
+        let marker_width = if measured > 0 { measured } else { 1 };
+        builder.write_char('\n');
+        builder.write_string(line_number);
+        builder.write_string(" | ");
+        builder.write_string(expand_diagnostic_tabs(line_text));
+        builder.write_char('\n');
+        builder.write_string(repeat_char(' ', gutter));
+        builder.write_string(" | ");
+        builder.write_string(repeat_char(' ', indentation));
+        builder.write_string(repeat_char('^', marker_width))
+    }
+}
+
 fn render_typer_diagnostic(
     value: tast::Diagnostic,
     fallback_path: string,
@@ -771,73 +854,32 @@ fn render_typer_diagnostic(
     builder.write_string("]: ");
     builder.write_string(value.message);
     match value.span {
-        Option::Some(span) => {
-            let source = diagnostic_source(value, fallback_path, fallback_source);
-            if source.byte_len() == 0 {
-                builder.write_string("\nprimary: ");
-                builder.write_string(value.source_path);
-                builder.write_char(':');
-                builder.write_string(span.start.to_string());
-                builder.write_string("..");
-                builder.write_string(span.end.to_string())
-            } else {
-                let start = source_position(source, span.start);
-                let end = source_position(source, span.end);
-                builder.write_string("\nprimary: ");
-                builder.write_string(value.source_path);
-                builder.write_char(':');
-                builder.write_string((start.line + 1).to_string());
-                builder.write_char(':');
-                builder.write_string((start.column + 1).to_string());
-                if span.start != span.end {
-                    builder.write_char('-');
-                    builder.write_string((end.line + 1).to_string());
-                    builder.write_char(':');
-                    builder.write_string((end.column + 1).to_string())
-                } else {
-                    ()
-                };
-                let line_number = (start.line + 1).to_string();
-                let gutter = line_number.len();
-                let line_text = source.byte_slice(start.line_start, start.line_end);
-                let highlight_start = if span.start < start.line_start {
-                    start.line_start
-                } else if span.start > start.line_end {
-                    start.line_end
-                } else {
-                    span.start
-                };
-                let highlight_end = if span.end < highlight_start {
-                    highlight_start
-                } else if span.end > start.line_end {
-                    start.line_end
-                } else {
-                    span.end
-                };
-                let indentation = diagnostic_visual_width(
-                    source.byte_slice(start.line_start, highlight_start),
-                );
-                let measured = diagnostic_visual_width(
-                    source.byte_slice(highlight_start, highlight_end),
-                );
-                let marker_width = if measured > 0 { measured } else { 1 };
-                builder.write_char('\n');
-                builder.write_string(line_number);
-                builder.write_string(" | ");
-                builder.write_string(expand_diagnostic_tabs(line_text));
-                builder.write_char('\n');
-                builder.write_string(repeat_char(' ', gutter));
-                builder.write_string(" | ");
-                builder.write_string(repeat_char(' ', indentation));
-                builder.write_string(repeat_char('^', marker_width))
-            }
-        },
+        Option::Some(span) => render_diagnostic_label(
+            builder,
+            "primary",
+            value.source_path,
+            span,
+            value.primary_label,
+            fallback_path,
+            fallback_source,
+        ),
         Option::None => if value.source_path != "" {
             builder.write_string("\nat: ");
             builder.write_string(value.source_path)
         } else {
             ()
         },
+    };
+    for label in value.secondary_labels {
+        render_diagnostic_label(
+            builder,
+            "secondary",
+            label.source_path,
+            label.span,
+            Option::Some(label.message),
+            fallback_path,
+            fallback_source,
+        )
     };
     builder.finish()
 }
@@ -896,6 +938,8 @@ fn ast_diagnostics(
                 start: diagnostic.start,
                 end: diagnostic.end,
             }),
+            primary_label: Option::None,
+            secondary_labels: Vec::new(),
         })
     };
     result
@@ -930,8 +974,10 @@ fn lower_mono_or_fail(value: core::File) -> core::File {
 }
 
 fn compile_source(source_path: string, source: string) -> Compilation {
-    let ast_value = ast::lower(parser::parse(source));
-    fail_on_ast_diagnostics(ast_value.diagnostics, "parser", source_path, source);
+    let parsed = parser::parse(source);
+    fail_on_ast_diagnostics(parsed.diagnostics, "parser", source_path, source);
+    let ast_value = ast::lower(parsed);
+    fail_on_ast_diagnostics(ast_value.diagnostics, "lower", source_path, source);
     match single_file_project_import(ast_value) {
         Option::Some(package_path) => fail(
             "error[compile]: single-file compilation cannot use project package " + package_path,

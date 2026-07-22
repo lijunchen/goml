@@ -1461,15 +1461,11 @@ fn check_call_expr(
             Option::Some(scheme) => {
                 let candidate = instantiate_scheme_candidate(ctx, scheme, Vec::new());
                 constrain_callable_return(ctx, candidate.ty, expected);
-                let result = coerce_expr(
+                let result = apply_call(
                     ctx,
-                    apply_call(
-                        ctx,
-                        Expr::Callable(candidate.callable, candidate.ty),
-                        Vec::new(),
-                        args,
-                    ),
-                    expected,
+                    Expr::Callable(candidate.callable, candidate.ty),
+                    Vec::new(),
+                    args,
                 );
                 require_predicates(ctx, candidate.predicates);
                 result
@@ -1494,15 +1490,11 @@ fn check_call_expr(
                             explicit_types(ctx, type_args),
                         );
                         constrain_callable_return(ctx, candidate.ty, expected);
-                        let result = coerce_expr(
+                        let result = apply_call(
                             ctx,
-                            apply_call(
-                                ctx,
-                                Expr::Callable(candidate.callable, candidate.ty),
-                                Vec::new(),
-                                args,
-                            ),
-                            expected,
+                            Expr::Callable(candidate.callable, candidate.ty),
+                            Vec::new(),
+                            args,
                         );
                         require_predicates(ctx, candidate.predicates);
                         result

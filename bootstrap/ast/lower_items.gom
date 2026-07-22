@@ -202,7 +202,14 @@ fn lower_param(ctx: LowerCtx, node: LocatedNode) -> Option[(string, TypeExpr)] {
             } else {
                 match lower_ty(ctx, types.get(0)) {
                     Option::Some(ty) => Option::Some((name_token.token.text, ty)),
-                    Option::None => Option::None,
+                    Option::None => {
+                        push_error(
+                            ctx,
+                            node_span(node),
+                            "Param " + name_token.token.text + " has no type",
+                        );
+                        Option::None
+                    },
                 }
             }
         },

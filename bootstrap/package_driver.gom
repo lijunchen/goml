@@ -629,12 +629,6 @@ fn checked_hir_file(value: hir::LowerResult, package_name: string) -> hir::File 
     }
 }
 
-fn checked_tast(value: tast::CheckResult, package_name: string) -> tast::CheckResult {
-    let _ = package_name;
-    fail_on_typer_diagnostics(value.diagnostics, "", "");
-    value
-}
-
 fn add_entry_wrapper(value: core::File, package_name: string) -> core::File {
     let expected = if package_name == "main" {
         "main"

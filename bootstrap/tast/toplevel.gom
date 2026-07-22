@@ -88,6 +88,31 @@ fn check_function(
     inherited_predicates: Vec[TypePredicate],
     self_ty: Option[Type],
 ) -> Function {
+    match self_ty {
+        Option::None => if value.name == "main" {
+            if value.params.len() > 0 {
+                push_diagnostic_at(
+                    base,
+                    "main function must not have parameters",
+                    Option::None,
+                )
+            } else {
+                ()
+            };
+            if value.generics.len() > 0 {
+                push_diagnostic_at(
+                    base,
+                    "main function must not have type parameters",
+                    Option::None,
+                )
+            } else {
+                ()
+            }
+        } else {
+            ()
+        },
+        Option::Some(_) => (),
+    };
     let type_params = append_names(inherited_generics, value.generics);
     let raw_ret_ty = match value.ret_ty {
         Option::Some(ty) => type_from_hir(ty, type_params, self_ty),
@@ -653,13 +678,52 @@ fn builtin_enum_definitions() -> Vec[EnumDef] {
     result
 }
 
+fn validate_top_level_function_names(
+    ctx: Checker,
+    value: hir::File,
+    package_files: Vec[hir::File],
+) -> unit {
+    let names: Vec[string] = Vec::new();
+    let files: Vec[hir::File] = Vec::new();
+    files.push(value);
+    for file in package_files {
+        files.push(file)
+    };
+    for file in files {
+        for item in file.items {
+            let name = match item {
+                hir::Item::Function(function) => Option::Some(function.name),
+                hir::Item::ExternFunction(function) => Option::Some(function.name),
+                _ => Option::None,
+            };
+            match name {
+                Option::Some(name) => if contains_name(names, name) {
+                    push_global_diagnostic(
+                        ctx,
+                        "function " + name + " is defined multiple times",
+                    )
+                } else {
+                    names.push(name)
+                },
+                Option::None => (),
+            }
+        }
+    }
+}
+
 fn check_file_with_package(
     value: hir::File,
     package_files: Vec[hir::File],
     dependencies: Vec[DependencyEnvironment],
     include_builtin_types: bool,
+    validate_function_names: bool,
 ) -> CheckResult {
     let ctx = collect_environment(value);
+    if validate_function_names {
+        validate_top_level_function_names(ctx, value, package_files)
+    } else {
+        ()
+    };
     let local_enum_count = ctx.enums.len();
     let local_struct_count = ctx.structs.len();
     let local_trait_count = ctx.traits.len();
@@ -740,6 +804,7 @@ fn check_file(
         Vec::new(),
         dependency_environments(dependencies),
         include_builtin_types,
+        true,
     )
 }
 
@@ -809,6 +874,7 @@ pub fn check_package_files_for_link_with_environments(
             package_files,
             dependencies,
             false,
+            index == 0,
         );
         for diagnostic in checked.diagnostics {
             diagnostics.push(diagnostic)

@@ -60,6 +60,19 @@ fn selected_package_usage(command: string, interface_paths: Vec[string]) -> stri
     }
 }
 
+fn sorted_unique_package_inputs(values: Vec[string]) -> Vec[string] {
+    let sorted = sort_artifact_names(values);
+    let result: Vec[string] = Vec::new();
+    for value in sorted {
+        if result.len() == 0 || result.get(result.len() - 1) != value {
+            result.push(value)
+        } else {
+            ()
+        }
+    };
+    result
+}
+
 fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, string] {
     let package_name: Ref[Option[string]] = Ref::new(Option::None);
     let output: Ref[Option[string]] = Ref::new(Option::None);
@@ -290,7 +303,7 @@ fn parse_package_command_args(args: Vec[string]) -> Result[PackageCommandArgs, s
                 Option::Some(value) => value,
                 Option::None => "",
             },
-            inputs,
+            inputs: sorted_unique_package_inputs(inputs),
             interface_paths,
             output: match output.get() {
                 Option::Some(value) => value,
