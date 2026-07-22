@@ -159,6 +159,11 @@ fn multi_package_compile_project_033() -> anyhow::Result<()> {
 }
 
 #[test]
+fn multi_package_compile_project_034() -> anyhow::Result<()> {
+    run_project("project034_packages_basic")
+}
+
+#[test]
 fn std_host_binary_stdio_round_trip() -> anyhow::Result<()> {
     if !super::go_available() {
         return Ok(());
