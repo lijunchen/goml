@@ -425,6 +425,7 @@ fn run_single_test_case(p: PathBuf) -> anyhow::Result<()> {
     let tast_filename = p.with_file_name(format!("{}.tast", filename));
     let core_filename = p.with_file_name(format!("{}.core", filename));
     let mono_filename = p.with_file_name(format!("{}.mono", filename));
+    let lift_filename = p.with_file_name(format!("{}.lift", filename));
     let anf_filename = p.with_file_name(format!("{}.anf", filename));
     let go_filename = p.with_file_name(format!("{}.go", filename));
     let result_filename = p.with_file_name(format!("{}.out", filename));
@@ -517,6 +518,13 @@ fn run_single_test_case(p: PathBuf) -> anyhow::Result<()> {
         .assert_eq(&compilation.mono.to_pretty(&compilation.monoenv, 120));
     if test_log_enabled() {
         eprintln!("[case] snapshot mono elapsed={:?}", t_mono.elapsed());
+    }
+
+    let t_lift = Instant::now();
+    expect_test::expect_file![lift_filename]
+        .assert_eq(&compilation.lambda.to_pretty(&compilation.liftenv, 120));
+    if test_log_enabled() {
+        eprintln!("[case] snapshot lift elapsed={:?}", t_lift.elapsed());
     }
 
     let t_anf = Instant::now();
