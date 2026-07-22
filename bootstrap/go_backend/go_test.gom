@@ -1,13 +1,13 @@
 package go_backend;
 
-use gomlang::parser::anf;
-use gomlang::parser::ast;
-use gomlang::parser::core;
-use gomlang::parser::hir;
-use gomlang::parser::lift;
-use gomlang::parser::mono;
-use gomlang::parser::parser;
-use gomlang::parser::tast;
+use gomlc::anf;
+use gomlc::ast;
+use gomlc::core;
+use gomlc::hir;
+use gomlc::lift;
+use gomlc::mono;
+use gomlc::parser;
+use gomlc::tast;
 use std::testing;
 
 fn lower_source(source: string) -> File {
@@ -65,14 +65,14 @@ fn string_contains(value: string, expected: string) -> bool {
 
 #[test]
 fn bounds_qualified_variant_names_after_qualification() -> unit {
-    let owner = "Option__(gomlang::parser::ast::Path,Vec[gomlang::parser::ast::TypeExpr])";
+    let owner = "Option__(gomlc::ast::Path,Vec[gomlc::ast::TypeExpr])";
     testing::assert_eq(
         qualified_variant_go_name(owner, "None"),
-        "_goml_m_Option_____o_gomlang_p_h7683b5ae9de791b819f9dabfad06178b_Expr_r__q__None",
+        "_goml_m_Option_____o_gomlc_p_a_h6cc0136a7bfc53a6682c48309b51a455_Expr_r__q__None",
     );
     testing::assert_eq(
         qualified_variant_go_name(owner, "Some"),
-        "_goml_m_Option_____o_gomlang_p_h41f861192a629026b0f0fbe22ee07368_Expr_r__q__Some",
+        "_goml_m_Option_____o_gomlc_p_a_h820f68a828634622d946b6231c7d0ba1_Expr_r__q__Some",
     )
 }
 
