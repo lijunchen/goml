@@ -3,15 +3,56 @@ package ast;
 use gomlang::parser::cst;
 use gomlang::parser::lexer;
 
+fn self_type_occurrences(value: LocatedNode) -> int32 {
+    let result = Ref::new(0);
+    for token in direct_tokens(value) {
+        if lexer::token_kind_equal(token.token.kind, lexer::TokenKind::Ident)
+            && token.token.text == "Self"
+        {
+            result.set(result.get() + 1)
+        } else {
+            ()
+        }
+    };
+    for child in direct_nodes(value) {
+        result.set(result.get() + self_type_occurrences(child))
+    };
+    result.get()
+}
+
+fn record_disallowed_self_type(ctx: LowerCtx, value: LocatedNode) -> unit {
+    for _ in range(0, self_type_occurrences(value)) {
+        ctx.invalid_self_type_spans.push(type_head_span(value))
+    }
+}
+
+fn record_disallowed_self_types(ctx: LowerCtx, value: LocatedNode) -> unit {
+    for child in direct_nodes(value) {
+        if cst::node_kind_equal(node_kind(child), cst::NodeKind::BLOCK) {
+            ()
+        } else if is_type_kind(node_kind(child)) {
+            record_disallowed_self_type(ctx, child)
+        } else {
+            record_disallowed_self_types(ctx, child)
+        }
+    }
+}
+
 fn lower_item(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
     match node_kind(node) {
-        cst::NodeKind::ENUM => match lower_enum(ctx, node) {
+        cst::NodeKind::ENUM => {
+            record_disallowed_self_types(ctx, node);
+            match lower_enum(ctx, node) {
             Option::Some(value) => Option::Some(Item::EnumDef(value)),
             Option::None => Option::None,
+            }
         },
-        cst::NodeKind::STRUCT => match lower_struct(ctx, node) {
+        cst::NodeKind::STRUCT => {
+            record_disallowed_self_types(ctx, node);
+            match lower_struct(ctx, node) {
             Option::Some(value) => Option::Some(Item::StructDef(value)),
             Option::None => Option::None,
+            }
         },
         cst::NodeKind::TRAIT => match lower_trait(ctx, node) {
             Option::Some(value) => Option::Some(Item::TraitDef(value)),
@@ -21,11 +62,17 @@ fn lower_item(ctx: LowerCtx, node: LocatedNode) -> Option[Item] {
             Option::Some(value) => Option::Some(Item::ImplBlock(value)),
             Option::None => Option::None,
         },
-        cst::NodeKind::FN => match lower_function(ctx, node) {
+        cst::NodeKind::FN => {
+            record_disallowed_self_types(ctx, node);
+            match lower_function(ctx, node) {
             Option::Some(value) => Option::Some(Item::Function(value)),
             Option::None => Option::None,
+            }
         },
-        cst::NodeKind::EXTERN => lower_extern(ctx, node),
+        cst::NodeKind::EXTERN => {
+            record_disallowed_self_types(ctx, node);
+            lower_extern(ctx, node)
+        },
         _ => Option::None,
     }
 }
@@ -317,6 +364,7 @@ fn lower_impl(ctx: LowerCtx, node: LocatedNode) -> Option[ImplBlock] {
             Option::None
         };
         let target_index = if has_for { types.len() - 1 } else { types.len() - 1 };
+        record_disallowed_self_type(ctx, types.get(target_index));
         match lower_ty(ctx, types.get(target_index)) {
             Option::Some(for_type) => {
                 let associated_types: Vec[(string, TypeExpr)] = Vec::new();

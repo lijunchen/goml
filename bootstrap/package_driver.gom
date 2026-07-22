@@ -112,6 +112,7 @@ fn merge_hir_files(values: Vec[hir::File], package_name: string) -> hir::File {
     let path = Ref::new("<unknown>");
     let source_path = Ref::new("<unknown>");
     let items: Vec[hir::Item] = Vec::new();
+    let invalid_self_type_spans: Vec[ast::Span] = Vec::new();
     let first = Ref::new(true);
     for value in values {
         if first.get() {
@@ -123,6 +124,9 @@ fn merge_hir_files(values: Vec[hir::File], package_name: string) -> hir::File {
         };
         for item in value.items {
             items.push(item)
+        };
+        for span in value.invalid_self_type_spans {
+            invalid_self_type_spans.push(span)
         }
     };
     hir::File {
@@ -133,6 +137,7 @@ fn merge_hir_files(values: Vec[hir::File], package_name: string) -> hir::File {
         import_aliases: Vec::new(),
         use_traits: Vec::new(),
         items,
+        invalid_self_type_spans,
     }
 }
 
@@ -624,6 +629,7 @@ fn checked_hir_file(value: hir::LowerResult, package_name: string) -> hir::File 
                 import_aliases: Vec::new(),
                 use_traits: Vec::new(),
                 items: Vec::new(),
+                invalid_self_type_spans: Vec::new(),
             }
         },
     }

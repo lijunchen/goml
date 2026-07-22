@@ -6,6 +6,7 @@ use gomlang::parser::lexer;
 struct LowerCtx {
     diagnostics: Vec[cst::Diagnostic],
     constructors: Vec[string],
+    invalid_self_type_spans: Vec[Span],
     expr_depth: Ref[int32],
     pattern_depth: Ref[int32],
     type_depth: Ref[int32],
@@ -460,6 +461,7 @@ fn lower_with_constructors(
         let ctx = LowerCtx {
             diagnostics,
             constructors,
+            invalid_self_type_spans: Vec::new(),
             expr_depth: Ref::new(0),
             pattern_depth: Ref::new(0),
             type_depth: Ref::new(0),
@@ -493,6 +495,7 @@ fn lower_with_constructors(
                 package_explicit,
                 uses,
                 items,
+                invalid_self_type_spans: ctx.invalid_self_type_spans,
             })
         } else {
             Option::None

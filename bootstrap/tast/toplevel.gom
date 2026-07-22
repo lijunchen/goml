@@ -959,6 +959,13 @@ fn check_file_with_package(
     validate_function_names: bool,
 ) -> CheckResult {
     let ctx = collect_environment(value);
+    for span in value.invalid_self_type_spans {
+        push_diagnostic_at(
+            ctx,
+            "Self type is only valid in impl methods",
+            Option::Some(span),
+        )
+    };
     validate_file_declaration_names(ctx, value);
     if validate_function_names {
         validate_cross_file_declaration_names(ctx, value, package_files)
