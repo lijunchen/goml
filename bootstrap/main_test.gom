@@ -234,6 +234,7 @@ fn parses_package_command_arguments() -> unit {
     values.push("--input");
     values.push("main.gom");
     values.push("extra.gom");
+    values.push("main.gom");
     values.push("--interface-path");
     values.push("lib.interface");
     values.push("--output");
@@ -242,8 +243,8 @@ fn parses_package_command_arguments() -> unit {
         Result::Ok(args) => {
             testing::assert_eq(args.package_name, "alice::app");
             testing::assert_eq(args.inputs.len(), 2);
-            testing::assert_eq(args.inputs.get(0), "main.gom");
-            testing::assert_eq(args.inputs.get(1), "extra.gom");
+            testing::assert_eq(args.inputs.get(0), "extra.gom");
+            testing::assert_eq(args.inputs.get(1), "main.gom");
             testing::assert_eq(args.interface_paths.len(), 1);
             testing::assert_eq(args.interface_paths.get(0), "lib.interface");
             testing::assert_eq(args.output, "artifact/package")
@@ -309,50 +310,180 @@ fn collects_and_encodes_test_descriptors() -> unit {
     files.push(ast::lower(parser::parse(source)));
     let paths = Vec::new();
     paths.push("sample/sample_test.gom");
-    match collect_package_tests("alice::sample", files, paths) {
-        Result::Ok(tests) => {
-            testing::assert_eq(tests.len(), 2);
-            testing::assert_eq(tests.get(0).id, "alice::sample::alpha");
-            testing::assert(tests.get(0).ignored);
-            match tests.get(0).ignore_reason {
-                Option::Some(reason) => testing::assert_eq(reason, "later: \"quoted\""),
-                Option::None => testing::fail("expected ignore reason"),
-            };
-            testing::assert_eq(tests.get(1).id, "alice::sample::zebra");
-            testing::assert(!(tests.get(1).ignored));
-            let manifest = encode_test_manifest(tests);
-            testing::assert_eq(
-                manifest.byte_slice(manifest.byte_len() - 1, manifest.byte_len()),
-                "]",
-            );
-            testing::assert(main_string_contains(
-                manifest,
-                "\"source_path\": \"sample/sample_test.gom\"",
-            ));
-            testing::assert(main_string_contains(
-                manifest,
-                "\"ignore_reason\": \"later: \\\"quoted\\\"\"",
-            ))
-        },
-        Result::Err(error) => testing::fail(error),
+    let collected = collect_package_test_candidates(files, paths);
+    testing::assert_eq(collected.diagnostics.len(), 0);
+    let exports = empty_artifact_package_exports();
+    exports.functions.push(ArtifactFnScheme {
+        name: "alice::sample::zebra",
+        type_params: Vec::new(),
+        constraints: Vec::new(),
+        ty: tast::Type::Func(Vec::new(), tast::Type::Unit),
+        body: tast::Callable::Function("alice::sample::zebra"),
+    });
+    exports.functions.push(ArtifactFnScheme {
+        name: "alice::sample::alpha",
+        type_params: Vec::new(),
+        constraints: Vec::new(),
+        ty: tast::Type::Func(Vec::new(), tast::Type::Unit),
+        body: tast::Callable::Function("alice::sample::alpha"),
+    });
+    let validated = validate_package_tests(
+        "alice::sample",
+        collected.candidates,
+        exports,
+    );
+    testing::assert_eq(validated.diagnostics.len(), 0);
+    let tests = validated.tests;
+    testing::assert_eq(tests.len(), 2);
+    testing::assert_eq(tests.get(0).id, "alice::sample::alpha");
+    testing::assert(tests.get(0).ignored);
+    match tests.get(0).ignore_reason {
+        Option::Some(reason) => testing::assert_eq(reason, "later: \"quoted\""),
+        Option::None => testing::fail("expected ignore reason"),
+    };
+    testing::assert_eq(tests.get(1).id, "alice::sample::zebra");
+    testing::assert(!(tests.get(1).ignored));
+    let manifest = encode_test_manifest(tests);
+    testing::assert_eq(
+        manifest.byte_slice(manifest.byte_len() - 1, manifest.byte_len()),
+        "]",
+    );
+    testing::assert(main_string_contains(
+        manifest,
+        "\"source_path\": \"sample/sample_test.gom\"",
+    ));
+    testing::assert(main_string_contains(
+        manifest,
+        "\"ignore_reason\": \"later: \\\"quoted\\\"\"",
+    ))
+}
+
+#[test]
+fn collects_all_invalid_test_signature_diagnostics() -> unit {
+    let files = Vec::new();
+    files.push(ast::lower(parser::parse(
+        "#[test] fn invalid[T](value: T) -> bool { true }",
+    )));
+    let paths = Vec::new();
+    paths.push("bad_test.gom");
+    let collected = collect_package_test_candidates(files, paths);
+    testing::assert_eq(collected.diagnostics.len(), 0);
+    let exports = empty_artifact_package_exports();
+    exports.functions.push(ArtifactFnScheme {
+        name: "alice::bad::invalid",
+        type_params: Vec::new().pushed("T"),
+        constraints: Vec::new(),
+        ty: tast::Type::Func(
+            Vec::new().pushed(tast::Type::Param("T")),
+            tast::Type::Bool,
+        ),
+        body: tast::Callable::Function("alice::bad::invalid"),
+    });
+    let validated = validate_package_tests(
+        "alice::bad",
+        collected.candidates,
+        exports,
+    );
+    testing::assert_eq(validated.tests.len(), 0);
+    testing::assert_eq(validated.diagnostics.len(), 3);
+    testing::assert_eq(
+        validated.diagnostics.get(0).message,
+        "test function `invalid` must not have type parameters",
+    );
+    testing::assert_eq(
+        validated.diagnostics.get(1).message,
+        "test function `invalid` must not have parameters",
+    );
+    testing::assert_eq(
+        validated.diagnostics.get(2).message,
+        "test function `invalid` must return unit, found bool",
+    );
+    for diagnostic in validated.diagnostics {
+        testing::assert_eq(diagnostic.stage, "typer");
+        testing::assert_eq(diagnostic.source_path, "bad_test.gom");
+        match diagnostic.span {
+            Option::Some(span) => {
+                testing::assert_eq(span.start, 0);
+                testing::assert_eq(span.end, 8)
+            },
+            Option::None => testing::fail("expected test diagnostic span"),
+        }
     }
 }
 
 #[test]
-fn rejects_invalid_test_signatures() -> unit {
+fn collects_all_invalid_test_attribute_diagnostics() -> unit {
+    let source = "#[ignore] fn ignored_without_test() -> unit {} #[test()] fn test_with_arguments() -> unit {} #[test] #[test] fn duplicate_test() -> unit {} #[test] #[ignore(1)] fn invalid_ignore_reason() -> unit {} #[test] struct Value {} #[ignore] enum Choice { A }";
     let files = Vec::new();
-    files.push(ast::lower(parser::parse(
-        "#[test] fn takes_value(value: int32) -> unit {}",
-    )));
+    files.push(ast::lower(parser::parse(source)));
     let paths = Vec::new();
-    paths.push("bad_test.gom");
-    match collect_package_tests("alice::bad", files, paths) {
-        Result::Err(error) => testing::assert_eq(
-            error,
-            "test function `takes_value` must not have parameters",
-        ),
-        Result::Ok(_) => testing::fail("expected invalid test signature"),
+    paths.push("attribute_test.gom");
+    let collected = collect_package_test_candidates(files, paths);
+    testing::assert_eq(collected.candidates.len(), 2);
+    testing::assert_eq(collected.diagnostics.len(), 6);
+    let expected = Vec::new();
+    expected.push("`#[ignore]` requires `#[test]`");
+    expected.push("`#[test]` does not accept arguments");
+    expected.push("duplicate `#[test]` attribute");
+    expected.push("`#[ignore]` accepts either no arguments or one string reason");
+    expected.push("`#[test]` can only be applied to top-level functions, not struct");
+    expected.push("`#[ignore]` requires a top-level `#[test]` function");
+    for index in range(0, collected.diagnostics.len()) {
+        let diagnostic = collected.diagnostics.get(index);
+        testing::assert_eq(diagnostic.stage, "attribute");
+        testing::assert_eq(diagnostic.message, expected.get(index));
+        testing::assert_eq(diagnostic.source_path, "attribute_test.gom");
+        match diagnostic.span {
+            Option::Some(_) => (),
+            Option::None => testing::fail("expected attribute diagnostic span"),
+        }
     }
+}
+
+#[test]
+fn labels_duplicate_test_ids_across_files() -> unit {
+    let parsed = Vec::new();
+    parsed.push(parser::parse(
+        "package tests; #[test] fn duplicate() -> unit { () }",
+    ));
+    parsed.push(parser::parse(
+        "package tests;\n#[test]\nfn duplicate() -> unit { () }",
+    ));
+    let files = ast::lower_package(parsed);
+    let paths = Vec::new();
+    paths.push("first.gom");
+    paths.push("second.gom");
+    let collected = collect_package_test_candidates(files, paths);
+    testing::assert_eq(collected.diagnostics.len(), 0);
+    let exports = empty_artifact_package_exports();
+    exports.functions.push(ArtifactFnScheme {
+        name: "example::tests::duplicate",
+        type_params: Vec::new(),
+        constraints: Vec::new(),
+        ty: tast::Type::Func(Vec::new(), tast::Type::Unit),
+        body: tast::Callable::Function("example::tests::duplicate"),
+    });
+    let validated = validate_package_tests(
+        "example::tests",
+        collected.candidates,
+        exports,
+    );
+    testing::assert_eq(validated.tests.len(), 1);
+    testing::assert_eq(validated.diagnostics.len(), 1);
+    let diagnostic = validated.diagnostics.get(0);
+    testing::assert_eq(
+        diagnostic.message,
+        "duplicate test id `example::tests::duplicate`",
+    );
+    testing::assert_eq(diagnostic.source_path, "second.gom");
+    match diagnostic.primary_label {
+        Option::Some(label) => testing::assert_eq(label, "duplicate test declared here"),
+        Option::None => testing::fail("expected primary test label"),
+    };
+    testing::assert_eq(diagnostic.secondary_labels.len(), 1);
+    let secondary = diagnostic.secondary_labels.get(0);
+    testing::assert_eq(secondary.source_path, "first.gom");
+    testing::assert_eq(secondary.message, "first test declared here")
 }
 
 #[test]
@@ -1154,6 +1285,35 @@ fn validates_artifact_main_entrypoints() -> unit {
         Result::Ok(()) => (),
         Result::Err(error) => testing::fail(error),
     }
+}
+
+#[test]
+fn collects_all_artifact_main_entrypoint_diagnostics() -> unit {
+    let exports = empty_artifact_package_exports();
+    exports.functions.push(ArtifactFnScheme {
+        name: "example::app::main",
+        type_params: Vec::new().pushed("T"),
+        constraints: Vec::new(),
+        ty: tast::Type::Func(
+            Vec::new().pushed(tast::Type::Int32),
+            tast::Type::Unit,
+        ),
+        body: tast::Callable::Function("example::app::main"),
+    });
+    let diagnostics = artifact_entrypoint_diagnostics(
+        "example::app",
+        "main",
+        exports,
+    );
+    testing::assert_eq(diagnostics.len(), 2);
+    testing::assert_eq(
+        diagnostics.get(0),
+        "main function must not have type parameters",
+    );
+    testing::assert_eq(
+        diagnostics.get(1),
+        "main function must not have parameters",
+    )
 }
 
 #[test]

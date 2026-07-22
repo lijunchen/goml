@@ -110,6 +110,22 @@ fn parser_diagnostics_prevent_ast_creation() -> unit {
 }
 
 #[test]
+fn reports_invalid_parameter_types() -> unit {
+    let result = lower(parser::parse(
+        "fn take(value: [int32; 18446744073709551615]) -> unit { () }",
+    ));
+    testing::assert_eq(result.diagnostics.len(), 2);
+    testing::assert_eq(
+        result.diagnostics.get(0).message,
+        "Invalid array length: 18446744073709551615",
+    );
+    testing::assert_eq(
+        result.diagnostics.get(1).message,
+        "Param value has no type",
+    )
+}
+
+#[test]
 fn preserves_inconsistent_and_duplicate_pattern_bindings() -> unit {
     let inconsistent = lower(parser::parse(
         "enum Flag { On, Off } fn main() -> unit { let value = Flag::On; let _ = match value { whole @ Flag::On | Flag::Off => () }; }",

@@ -145,6 +145,36 @@ fn checks_cross_file_package_definitions() -> unit {
 }
 
 #[test]
+fn diagnoses_duplicate_functions_across_package_files() -> unit {
+    let parsed = Vec::new();
+    parsed.push(parser::parse(
+        "package values; fn duplicate() -> unit { () }",
+    ));
+    parsed.push(parser::parse(
+        "package values; fn duplicate() -> unit { () }",
+    ));
+    let ast_files = ast::lower_package(parsed);
+    let inputs: Vec[(ast::LowerResult, string)] = Vec::new();
+    inputs.push((ast_files.get(0), "first.gom"));
+    inputs.push((ast_files.get(1), "second.gom"));
+    let hir_files: Vec[hir::File] = Vec::new();
+    for lowered in hir::lower_package_files(inputs, "example::values") {
+        match lowered.hir {
+            Option::Some(file) => hir_files.push(file),
+            Option::None => testing::fail("expected duplicate function HIR"),
+        }
+    };
+    let checked = check_package_files_for_link_with_dependencies(
+        hir_files,
+        Vec::new(),
+    );
+    testing::assert(has_diagnostic(
+        checked.diagnostics,
+        "function example::values::duplicate is defined multiple times",
+    ))
+}
+
+#[test]
 fn resolves_generic_functions_from_package_interfaces() -> unit {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(dependency_hir(
@@ -287,6 +317,41 @@ fn rejects_mismatched_let_annotations() -> unit {
 }
 
 #[test]
+fn reports_call_return_mismatches_once_per_constraint_phase() -> unit {
+    let local = checked_diagnostics(
+        "fn value() -> int32 { 1 } fn main() -> string { value() }",
+    );
+    testing::assert_eq(local.len(), 2);
+    for diagnostic in local {
+        testing::assert_eq(
+            diagnostic.message,
+            "Type mismatch: expected int32, found string",
+        )
+    };
+    let dependencies: Vec[hir::File] = Vec::new();
+    dependencies.push(dependency_hir(
+        "package api; pub fn value() -> int32 { 1 }",
+        "vendor::api",
+    ));
+    let external = check_for_link_with_dependencies(
+        hir::lower(
+            ast::lower(parser::parse(
+                "use vendor::api; fn main() -> string { api::value() }",
+            )),
+            "main.gom",
+        ),
+        dependencies,
+    );
+    testing::assert_eq(external.diagnostics.len(), 2);
+    for diagnostic in external.diagnostics {
+        testing::assert_eq(
+            diagnostic.message,
+            "Type mismatch: expected int32, found string",
+        )
+    }
+}
+
+#[test]
 fn reports_deferred_generic_coercions_at_arguments() -> unit {
     let source = "fn main() -> unit { let r: Ref[uint8] = Ref::new(10); }";
     let diagnostics = checked_diagnostics(source);
@@ -401,6 +466,25 @@ fn rejects_invalid_signature_names_and_integer_literals() -> unit {
         negative_unsigned.diagnostics.get(0).message,
         "Type mismatch: expected int32, found uint8",
     )
+}
+
+#[test]
+fn rejects_generic_and_parameterized_main_functions() -> unit {
+    let result = check(hir::lower(
+        ast::lower(parser::parse(
+            "fn main[T](value: T) -> unit { () }",
+        )),
+        "main.gom",
+    ));
+    testing::assert_eq(result.diagnostics.len(), 2);
+    testing::assert(has_diagnostic(
+        result.diagnostics,
+        "main function must not have parameters",
+    ));
+    testing::assert(has_diagnostic(
+        result.diagnostics,
+        "main function must not have type parameters",
+    ))
 }
 
 #[test]
