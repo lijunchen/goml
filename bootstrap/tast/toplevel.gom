@@ -678,34 +678,274 @@ fn builtin_enum_definitions() -> Vec[EnumDef] {
     result
 }
 
-fn validate_top_level_function_names(
+fn declaration_name_index(values: Vec[string], expected: string) -> int32 {
+    for index in range(0, values.len()) {
+        if values.get(index) == expected {
+            return index
+        } else {
+            ()
+        }
+    };
+    -1
+}
+
+fn push_declaration_diagnostic(ctx: Checker, message: string) -> unit {
+    push_diagnostic_at(ctx, message, Option::None)
+}
+
+fn validate_type_parameter_names(ctx: Checker, values: Vec[string]) -> unit {
+    let names: Vec[string] = Vec::new();
+    for name in values {
+        if contains_name(names, name) {
+            push_declaration_diagnostic(
+                ctx,
+                "type parameter " + name + " is defined multiple times",
+            )
+        } else {
+            names.push(name)
+        }
+    }
+}
+
+fn validate_function_parameter_names(ctx: Checker, value: hir::Function) -> unit {
+    let names: Vec[string] = Vec::new();
+    for param in value.params {
+        let name = param.0.hint;
+        if contains_name(names, name) {
+            push_declaration_diagnostic(
+                ctx,
+                "parameter " + name + " is defined multiple times",
+            )
+        } else {
+            names.push(name)
+        }
+    }
+}
+
+fn validate_enum_variant_names(ctx: Checker, value: hir::EnumDef) -> unit {
+    let names: Vec[string] = Vec::new();
+    for variant in value.variants {
+        if contains_name(names, variant.0) {
+            push_declaration_diagnostic(
+                ctx,
+                "variant "
+                    + variant.0
+                    + " is defined multiple times in enum "
+                    + value.name,
+            )
+        } else {
+            names.push(variant.0)
+        }
+    }
+}
+
+fn validate_struct_field_names(ctx: Checker, value: hir::StructDef) -> unit {
+    let names: Vec[string] = Vec::new();
+    for field in value.fields {
+        if contains_name(names, field.0) {
+            push_declaration_diagnostic(
+                ctx,
+                "field "
+                    + field.0
+                    + " is defined multiple times in struct "
+                    + value.name,
+            )
+        } else {
+            names.push(field.0)
+        }
+    }
+}
+
+fn validate_trait_member_names(ctx: Checker, value: hir::TraitDef) -> unit {
+    let methods: Vec[string] = Vec::new();
+    for method in value.method_sigs {
+        if contains_name(methods, method.name) {
+            push_declaration_diagnostic(
+                ctx,
+                "method "
+                    + method.name
+                    + " is defined multiple times in trait "
+                    + value.name,
+            )
+        } else {
+            methods.push(method.name)
+        }
+    };
+    let associated_types: Vec[string] = Vec::new();
+    for associated in value.associated_types {
+        if contains_name(associated_types, associated.name) {
+            push_declaration_diagnostic(
+                ctx,
+                "associated type "
+                    + associated.name
+                    + " is defined multiple times in trait "
+                    + value.name,
+            )
+        } else {
+            associated_types.push(associated.name)
+        }
+    }
+}
+
+fn validate_file_declaration_names(ctx: Checker, value: hir::File) -> unit {
+    let nominal_names: Vec[string] = Vec::new();
+    let nominal_kinds: Vec[int32] = Vec::new();
+    let function_names: Vec[string] = Vec::new();
+    for item in value.items {
+        let nominal = match item {
+            hir::Item::EnumDef(definition) => Option::Some((definition.name, 1)),
+            hir::Item::StructDef(definition) => Option::Some((definition.name, 2)),
+            _ => Option::None,
+        };
+        match nominal {
+            Option::Some(value) => {
+                let index = declaration_name_index(nominal_names, value.0);
+                if index < 0 {
+                    nominal_names.push(value.0);
+                    nominal_kinds.push(value.1)
+                } else if nominal_kinds.get(index) == value.1 {
+                    push_declaration_diagnostic(
+                        ctx,
+                        (if value.1 == 1 { "enum " } else { "struct " })
+                            + value.0
+                            + " is defined multiple times",
+                    )
+                } else {
+                    push_declaration_diagnostic(
+                        ctx,
+                        "type " + value.0 + " is defined as both a struct and an enum",
+                    )
+                }
+            },
+            Option::None => (),
+        };
+        let function_name = match item {
+            hir::Item::Function(function) => Option::Some(function.name),
+            hir::Item::ExternFunction(function) => Option::Some(function.name),
+            _ => Option::None,
+        };
+        match function_name {
+            Option::Some(name) => if contains_name(function_names, name) {
+                push_declaration_diagnostic(
+                    ctx,
+                    "function " + name + " is defined multiple times",
+                )
+            } else {
+                function_names.push(name)
+            },
+            Option::None => (),
+        }
+    };
+    for item in value.items {
+        match item {
+            hir::Item::EnumDef(definition) => {
+                validate_type_parameter_names(ctx, definition.generics);
+                validate_enum_variant_names(ctx, definition)
+            },
+            hir::Item::StructDef(definition) => {
+                validate_type_parameter_names(ctx, definition.generics);
+                validate_struct_field_names(ctx, definition)
+            },
+            hir::Item::TraitDef(definition) => {
+                validate_type_parameter_names(ctx, definition.generics);
+                validate_trait_member_names(ctx, definition)
+            },
+            hir::Item::ImplBlock(block) => {
+                validate_type_parameter_names(ctx, block.generics);
+                for method in block.methods {
+                    validate_type_parameter_names(
+                        ctx,
+                        append_names(block.generics, method.generics),
+                    );
+                    validate_function_parameter_names(ctx, method)
+                }
+            },
+            hir::Item::Function(function) => {
+                validate_type_parameter_names(ctx, function.generics);
+                validate_function_parameter_names(ctx, function)
+            },
+            hir::Item::ExternFunction(function) => {
+                validate_type_parameter_names(ctx, function.generics)
+            },
+        }
+    }
+}
+
+fn validate_cross_file_declaration_names(
     ctx: Checker,
     value: hir::File,
     package_files: Vec[hir::File],
 ) -> unit {
-    let names: Vec[string] = Vec::new();
     let files: Vec[hir::File] = Vec::new();
     files.push(value);
     for file in package_files {
         files.push(file)
     };
+    let nominal_names: Vec[string] = Vec::new();
+    let nominal_kinds: Vec[int32] = Vec::new();
+    let function_names: Vec[string] = Vec::new();
     for file in files {
+        let local_nominal_names: Vec[string] = Vec::new();
+        let local_nominal_kinds: Vec[int32] = Vec::new();
+        let local_function_names: Vec[string] = Vec::new();
         for item in file.items {
-            let name = match item {
+            let nominal = match item {
+                hir::Item::EnumDef(definition) => Option::Some((definition.name, 1)),
+                hir::Item::StructDef(definition) => Option::Some((definition.name, 2)),
+                _ => Option::None,
+            };
+            match nominal {
+                Option::Some(value) => if !contains_name(local_nominal_names, value.0) {
+                    local_nominal_names.push(value.0);
+                    local_nominal_kinds.push(value.1)
+                } else {
+                    ()
+                },
+                Option::None => (),
+            };
+            let function_name = match item {
                 hir::Item::Function(function) => Option::Some(function.name),
                 hir::Item::ExternFunction(function) => Option::Some(function.name),
                 _ => Option::None,
             };
-            match name {
-                Option::Some(name) => if contains_name(names, name) {
-                    push_global_diagnostic(
-                        ctx,
-                        "function " + name + " is defined multiple times",
-                    )
+            match function_name {
+                Option::Some(name) => if !contains_name(local_function_names, name) {
+                    local_function_names.push(name)
                 } else {
-                    names.push(name)
+                    ()
                 },
                 Option::None => (),
+            }
+        };
+        for index in range(0, local_nominal_names.len()) {
+            let name = local_nominal_names.get(index);
+            let kind = local_nominal_kinds.get(index);
+            let previous = declaration_name_index(nominal_names, name);
+            if previous < 0 {
+                nominal_names.push(name);
+                nominal_kinds.push(kind)
+            } else if nominal_kinds.get(previous) == kind {
+                push_global_diagnostic(
+                    ctx,
+                    (if kind == 1 { "enum " } else { "struct " })
+                        + name
+                        + " is defined multiple times",
+                )
+            } else {
+                push_global_diagnostic(
+                    ctx,
+                    "type " + name + " is defined as both a struct and an enum",
+                )
+            }
+        };
+        for name in local_function_names {
+            if contains_name(function_names, name) {
+                push_global_diagnostic(
+                    ctx,
+                    "function " + name + " is defined multiple times",
+                )
+            } else {
+                function_names.push(name)
             }
         }
     }
@@ -719,8 +959,9 @@ fn check_file_with_package(
     validate_function_names: bool,
 ) -> CheckResult {
     let ctx = collect_environment(value);
+    validate_file_declaration_names(ctx, value);
     if validate_function_names {
-        validate_top_level_function_names(ctx, value, package_files)
+        validate_cross_file_declaration_names(ctx, value, package_files)
     } else {
         ()
     };
