@@ -37,7 +37,7 @@ fn assert_standard_typechecks(
     package_name: string,
     dependencies: Vec[hir::File],
 ) -> unit {
-    let result = tast::check_for_link_with_dependencies(
+    let result = tast::check_for_link_with_dependencies_allowing_externs(
         hir::lower_package(
             ast::lower(parser::parse(source)),
             path,

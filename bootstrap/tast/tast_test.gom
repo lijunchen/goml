@@ -229,6 +229,60 @@ fn resolves_generic_functions_from_package_interfaces() -> unit {
 }
 
 #[test]
+fn enforces_source_extern_capabilities() -> unit {
+    let source = "#[runtime(\"std.io.println\")] extern fn output(value: string) -> unit fn main() -> unit { output(\"ok\") }";
+    let rejected = checked_diagnostics(source);
+    testing::assert_eq(rejected.len(), 2);
+    testing::assert_eq(
+        rejected.get(0).message,
+        "Internal error: Function output not found in environment",
+    );
+    testing::assert_eq(
+        rejected.get(1).message,
+        "extern output is not permitted in this source",
+    );
+    let allowed = check_for_link_with_dependencies_allowing_externs(
+        hir::lower(ast::lower(parser::parse(source)), "host.gom"),
+        Vec::new(),
+    );
+    testing::assert_eq(allowed.diagnostics.len(), 0);
+    match allowed.tast {
+        Option::Some(file) => match file.items.get(0) {
+            Item::Function(value) => match value.body.tail {
+                Option::Some(Expr::Call(
+                    Expr::Callable(Callable::Runtime(name), _),
+                    _,
+                    Type::Unit,
+                )) => testing::assert_eq(name, "std.io.println"),
+                _ => testing::fail("expected allowed runtime call"),
+            },
+            _ => testing::fail("expected main function"),
+        },
+        Option::None => testing::fail("expected allowed extern TAST"),
+    }
+}
+
+#[test]
+fn recovers_rejected_externs_with_builtin_signatures() -> unit {
+    let diagnostics = checked_diagnostics(
+        "#[intrinsic(\"ref.get\")] extern fn ref_get[T](reference: Ref[T]) -> T fn main() -> unit { println(ref_get(1)) }",
+    );
+    testing::assert_eq(diagnostics.len(), 3);
+    testing::assert(has_diagnostic(
+        diagnostics,
+        "extern ref_get is not permitted in this source",
+    ));
+    testing::assert(has_diagnostic(
+        diagnostics,
+        "Could not infer the type required to prove ToString<unknown>",
+    ));
+    testing::assert(has_diagnostic(
+        diagnostics,
+        "Type mismatch: expected int32, found Ref[unknown]",
+    ))
+}
+
+#[test]
 fn resolves_runtime_externs_from_package_interfaces() -> unit {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(dependency_hir(
