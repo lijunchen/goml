@@ -634,6 +634,10 @@ fn checks_indexed_assignment_roots() -> unit {
         temporary,
         "array indexed assignment requires a writable root such as a mutable local or `ref.get()`",
     ));
+    testing::assert(match temporary.get(0).span {
+        Option::Some(_) => true,
+        Option::None => false,
+    });
     let readonly = checked_diagnostics(
         "fn main() -> unit { let values = Vec::new().pushed(1); let view = values.slice(0, 1); view[0] = 2; }",
     );
@@ -1327,6 +1331,22 @@ fn validates_explicit_casts() -> unit {
     testing::assert(has_diagnostic(invalid, "Invalid cast from char to uint16"));
     testing::assert(has_diagnostic(invalid, "Invalid cast from uint16 to char"));
     testing::assert(has_diagnostic(invalid, "Invalid cast from uint32 to char"))
+}
+
+#[test]
+fn validates_numeric_unary_operators() -> unit {
+    let diagnostics = checked_diagnostics(
+        "fn main() -> unit { let a = -true; let b = ~false; }",
+    );
+    testing::assert_eq(diagnostics.len(), 2);
+    testing::assert(has_diagnostic(
+        diagnostics,
+        "Operator - is not defined for type bool",
+    ));
+    testing::assert(has_diagnostic(
+        diagnostics,
+        "Operator ~ is not defined for type bool",
+    ))
 }
 
 #[test]
