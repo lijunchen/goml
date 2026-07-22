@@ -1037,6 +1037,51 @@ fn validate_impl_overlaps(ctx: Checker) -> unit {
     }
 }
 
+fn builtin_ref_impl_origin(name: string) -> Option[string] {
+    if names_match(name, "Eq") {
+        Option::Some("builtin#42 at source range 12946..12949")
+    } else if names_match(name, "Hash") {
+        Option::Some("builtin#43 at source range 13059..13062")
+    } else {
+        Option::None
+    }
+}
+
+fn validate_builtin_impl_overlaps(ctx: Checker, value: hir::File) -> unit {
+    if value.package_name != "builtin" {
+        for item in value.items {
+            match item {
+                hir::Item::ImplBlock(block) => match block.trait_ref {
+                    Option::Some(reference) => {
+                        let for_type = type_from_hir(
+                            block.for_type,
+                            block.generics,
+                            Option::None,
+                        );
+                        match (for_type, builtin_ref_impl_origin(reference.name)) {
+                            (Type::RefType(_), Option::Some(origin)) => push_diagnostic_at(
+                                ctx,
+                                "Trait "
+                                    + short_name(reference.name)
+                                    + " implementation for "
+                                    + type_text(for_type)
+                                    + " overlaps with implementation "
+                                    + origin,
+                                Option::Some(block.for_type_span),
+                            ),
+                            _ => (),
+                        }
+                    },
+                    Option::None => (),
+                },
+                _ => (),
+            }
+        }
+    } else {
+        ()
+    }
+}
+
 fn method_predicates_satisfied(ctx: Checker, predicates: Vec[TypePredicate]) -> bool {
     predicates_satisfied_at(ctx, predicates, 0)
 }

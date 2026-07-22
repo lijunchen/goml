@@ -1070,6 +1070,7 @@ fn check_file_with_package(
     );
     expand_in_scope_supertraits(ctx);
     validate_impl_overlaps(ctx);
+    validate_builtin_impl_overlaps(ctx, value);
     let items: Vec[Item] = Vec::new();
     for item in value.items {
         match item {
