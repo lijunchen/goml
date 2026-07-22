@@ -1081,6 +1081,47 @@ fn compile_source(source_path: string, source: string) -> Compilation {
     }
 }
 
+fn pipeline_stage_output(stage: string, source_path: string, source: string) -> string {
+    if stage == "cst" {
+        cst::debug_tree(parser::parse(source))
+    } else {
+        let compilation = compile_source(source_path, source);
+        if stage == "ast" {
+            ast::pretty(compilation.ast_value)
+        } else if stage == "hir" {
+            hir::encode(compilation.hir_value)
+        } else if stage == "tast" {
+            tast::encode(compilation.tast_value)
+        } else if stage == "core" {
+            core::encode(compilation.core_value)
+        } else if stage == "mono" {
+            mono::encode(compilation.mono_value)
+        } else if stage == "lift" {
+            lift::encode(compilation.lift_value)
+        } else if stage == "anf" {
+            anf::encode(compilation.anf_value)
+        } else if stage == "go" {
+            go_backend::encode(compilation.go_value)
+        } else {
+            fail("unknown pipeline stage: " + stage);
+            ""
+        }
+    }
+}
+
+fn run_pipeline_stage(args: Vec[string]) -> unit {
+    if args.len() != 4 {
+        fail("usage: gomlc __pipeline-stage <STAGE> <FILE>")
+    } else {
+        let source_path = args.get(3);
+        io::print(pipeline_stage_output(
+            args.get(2),
+            source_path,
+            read_source(source_path),
+        ))
+    }
+}
+
 fn print_dump(printed: Ref[bool], label: string, content: string) -> unit {
     if printed.get() {
         io::println("")

@@ -204,6 +204,144 @@ pub fn node_kind_equal(left: NodeKind, right: NodeKind) -> bool {
     Eq::eq(left, right)
 }
 
+fn debug_write_spaces(builder: text::StringBuilder, count: int32) -> unit {
+    for _ in range(0, count) {
+        builder.write_string("  ")
+    }
+}
+
+fn debug_utf8_width(value: uint8) -> int32 {
+    if value < 128u8 {
+        1
+    } else if value < 224u8 {
+        2
+    } else if value < 240u8 {
+        3
+    } else {
+        4
+    }
+}
+
+fn debug_hex_digit(value: uint8) -> char {
+    match value {
+        0u8 => '0',
+        1u8 => '1',
+        2u8 => '2',
+        3u8 => '3',
+        4u8 => '4',
+        5u8 => '5',
+        6u8 => '6',
+        7u8 => '7',
+        8u8 => '8',
+        9u8 => '9',
+        10u8 => 'a',
+        11u8 => 'b',
+        12u8 => 'c',
+        13u8 => 'd',
+        14u8 => 'e',
+        _ => 'f',
+    }
+}
+
+fn debug_write_control_escape(builder: text::StringBuilder, value: uint8) -> unit {
+    builder.write_string("\\u{");
+    if value >= 16u8 {
+        builder.write_char(debug_hex_digit(value / 16u8))
+    } else {
+        ()
+    };
+    builder.write_char(debug_hex_digit(value % 16u8));
+    builder.write_char('}')
+}
+
+fn debug_write_quoted_string(builder: text::StringBuilder, value: string) -> unit {
+    builder.write_char('"');
+    let index = Ref::new(0);
+    while index.get() < value.byte_len() {
+        let byte = value.byte_get(index.get());
+        if byte == 34u8 {
+            builder.write_string("\\\"")
+        } else if byte == 92u8 {
+            builder.write_string("\\\\")
+        } else if byte == 10u8 {
+            builder.write_string("\\n")
+        } else if byte == 13u8 {
+            builder.write_string("\\r")
+        } else if byte == 9u8 {
+            builder.write_string("\\t")
+        } else if byte == 0u8 {
+            builder.write_string("\\0")
+        } else if byte < 32u8 || byte == 127u8 {
+            debug_write_control_escape(builder, byte)
+        } else {
+            let width = debug_utf8_width(byte);
+            builder.write_string(value.byte_slice(index.get(), index.get() + width))
+        };
+        index.set(index.get() + debug_utf8_width(byte))
+    };
+    builder.write_char('"')
+}
+
+fn debug_token_text(value: string) -> string {
+    if value.byte_len() < 25 {
+        value
+    } else {
+        let boundary = Ref::new(21);
+        while !value.is_char_boundary(boundary.get()) {
+            boundary.set(boundary.get() + 1)
+        };
+        value.byte_slice(0, boundary.get()) + " ..."
+    }
+}
+
+fn debug_write_node(
+    value: CstNode,
+    start: int32,
+    depth: int32,
+    builder: text::StringBuilder,
+) -> int32 {
+    let end = start + value.byte_len;
+    debug_write_spaces(builder, depth);
+    builder.write_string(node_kind_name(value.kind));
+    builder.write_char('@');
+    builder.write_string(start.to_string());
+    builder.write_string("..");
+    builder.write_string(end.to_string());
+    builder.write_char('\n');
+    let cursor = Ref::new(start);
+    for child in value.children {
+        match child {
+            CstElement::Node(child_node) => cursor.set(debug_write_node(
+                child_node,
+                cursor.get(),
+                depth + 1,
+                builder,
+            )),
+            CstElement::Token(token) => {
+                let token_end = cursor.get() + token.text.byte_len();
+                debug_write_spaces(builder, depth + 1);
+                builder.write_string(lexer::token_kind_name(token.kind));
+                builder.write_char('@');
+                builder.write_string(cursor.get().to_string());
+                builder.write_string("..");
+                builder.write_string(token_end.to_string());
+                builder.write_char(' ');
+                debug_write_quoted_string(builder, debug_token_text(token.text));
+                builder.write_char('\n');
+                cursor.set(token_end)
+            },
+        }
+    };
+    end
+}
+
+pub fn debug_tree(result: ParseResult) -> string {
+    let builder = text::StringBuilder::new();
+    let _ = debug_write_node(result.root, 0, 0, builder);
+    let rendered = builder.finish();
+    rendered.byte_slice(0, rendered.byte_len() - 1)
+}
+
 fn encode_node(value: CstNode, start: int32, builder: text::StringBuilder) -> int32 {
     let end = start + value.byte_len;
     builder.write_string("N\t");

@@ -352,6 +352,8 @@ fn main() -> unit {
         run_link_command(args)
     } else if args.get(1) == "test-link" {
         run_test_link_command(args)
+    } else if args.get(1) == "__pipeline-stage" {
+        run_pipeline_stage(args)
     } else if args.get(1) == "run-single" {
         match parse_run_args(args) {
             Result::Ok(run_args) => run_single(run_args),
