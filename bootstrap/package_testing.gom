@@ -175,6 +175,7 @@ fn package_test_diagnostic(
     span: ast::Span,
 ) -> tast::Diagnostic {
     tast::Diagnostic {
+        severity: tast::DiagnosticSeverity::Error,
         stage,
         message,
         source_path,
@@ -199,6 +200,7 @@ fn duplicate_test_id_diagnostic(
         },
     });
     tast::Diagnostic {
+        severity: tast::DiagnosticSeverity::Error,
         stage: "typer",
         message: "duplicate test id `" + id + "`",
         source_path: candidate.source_path,

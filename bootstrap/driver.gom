@@ -850,7 +850,10 @@ fn render_typer_diagnostic(
     fallback_source: string,
 ) -> string {
     let builder = text::StringBuilder::new();
-    builder.write_string("error[");
+    builder.write_string(match value.severity {
+        tast::DiagnosticSeverity::Error => "error[",
+        tast::DiagnosticSeverity::Warning => "warning[",
+    });
     builder.write_string(value.stage);
     builder.write_string("]: ");
     builder.write_string(value.message);
@@ -913,8 +916,21 @@ fn fail_on_typer_diagnostics(
     fallback_path: string,
     fallback_source: string,
 ) -> unit {
-    if diagnostics.len() > 0 {
+    let has_error = Ref::new(false);
+    for diagnostic in diagnostics {
+        match diagnostic.severity {
+            tast::DiagnosticSeverity::Error => has_error.set(true),
+            tast::DiagnosticSeverity::Warning => (),
+        }
+    };
+    if has_error.get() {
         fail(render_typer_diagnostics(
+            diagnostics,
+            fallback_path,
+            fallback_source,
+        ))
+    } else if diagnostics.len() > 0 {
+        io::eprintln(render_typer_diagnostics(
             diagnostics,
             fallback_path,
             fallback_source,
@@ -932,6 +948,7 @@ fn ast_diagnostics(
     let result: Vec[tast::Diagnostic] = Vec::new();
     for diagnostic in diagnostics {
         result.push(tast::Diagnostic {
+            severity: tast::DiagnosticSeverity::Error,
             stage,
             message: diagnostic.message,
             source_path,

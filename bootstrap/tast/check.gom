@@ -1924,8 +1924,10 @@ fn check_match_expr(
         Option::None => fresh_type(ctx.counter, VarKind::Any),
     };
     let typed_arms: Vec[Arm] = Vec::new();
+    let pattern_spans: Vec[ast::Span] = Vec::new();
     let invalid_patterns = Ref::new(false);
     for arm in arms {
+        pattern_spans.push(arm.pat.span);
         let diagnostic_count = ctx.diagnostics.len();
         let pat = check_pattern(ctx, arm.pat, expr_type(scrutinee));
         if ctx.diagnostics.len() > diagnostic_count {
@@ -1943,6 +1945,18 @@ fn check_match_expr(
         };
         let body = check_expr(ctx, arm.body, Option::Some(result_ty));
         typed_arms.push(Arm { pat, guard, body })
+    };
+    let useful_arms = match_useful_arms(ctx, typed_arms);
+    for index in range(0, useful_arms.len()) {
+        if !(useful_arms.get(index)) {
+            push_warning_at(
+                ctx,
+                "Unreachable match arm",
+                Option::Some(pattern_spans.get(index)),
+            )
+        } else {
+            ()
+        }
     };
     if invalid_patterns.get()
         || match_is_exhaustive(ctx, expr_type(scrutinee), typed_arms)
@@ -3017,6 +3031,19 @@ fn normalize_pattern_primitive(value: Primitive, expected: Type) -> Primitive {
 }
 
 fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
+    match prune(expected) {
+        Type::Dyn(name) => match value.kind {
+            hir::PatKind::Var(_) | hir::PatKind::Wild => (),
+            _ => {
+                push_diagnostic(
+                    ctx,
+                    "Pattern matching on dyn " + short_name(name) + " is not supported",
+                );
+                return Pat::Wild(expected)
+            },
+        },
+        _ => (),
+    };
     match primitive_pattern(ctx, value) {
         Option::Some(result) => {
             expect_type(ctx, result.1, expected);

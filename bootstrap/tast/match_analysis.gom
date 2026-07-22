@@ -1321,6 +1321,31 @@ fn match_is_exhaustive(ctx: Checker, ty: Type, arms: Vec[Arm]) -> bool {
     !coverage_useful(ctx, matrix, Vec::new().pushed(coverage_wild(ty)))
 }
 
+fn match_useful_arms(ctx: Checker, arms: Vec[Arm]) -> Vec[bool] {
+    let matrix: Vec[Vec[CoveragePat]] = Vec::new();
+    let result: Vec[bool] = Vec::new();
+    for arm in arms {
+        let patterns = coverage_patterns(arm.pat);
+        let useful = Ref::new(false);
+        for pattern in patterns {
+            if coverage_useful(ctx, matrix, Vec::new().pushed(pattern)) {
+                useful.set(true)
+            } else {
+                ()
+            }
+        };
+        result.push(useful.get());
+        if coverage_guard(arm.guard) {
+            for pattern in patterns {
+                matrix.push(Vec::new().pushed(pattern))
+            }
+        } else {
+            ()
+        }
+    };
+    result
+}
+
 fn pattern_is_irrefutable(ctx: Checker, value: Pat) -> bool {
     let matrix = Vec::new();
     for pattern in coverage_patterns(value) {

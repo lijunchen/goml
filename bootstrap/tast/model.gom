@@ -202,7 +202,13 @@ pub struct DiagnosticLabel {
     span: ast::Span,
 }
 
+pub enum DiagnosticSeverity {
+    Error,
+    Warning,
+}
+
 pub struct Diagnostic {
+    severity: DiagnosticSeverity,
     stage: string,
     message: string,
     source_path: string,
