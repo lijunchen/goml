@@ -681,6 +681,28 @@ fn checks_loop_control_contexts_and_impl_overlap() -> unit {
 }
 
 #[test]
+fn rejects_impls_overlapping_builtin_ref_blankets() -> unit {
+    let diagnostics = checked_diagnostics(
+        "impl Eq for Ref[int32] { fn eq(self: Ref[int32], other: Ref[int32]) -> bool { true } } impl Hash for Ref[int32] { fn hash(self: Ref[int32]) -> uint64 { 0u64 } }",
+    );
+    testing::assert_eq(diagnostics.len(), 2);
+    testing::assert_eq(
+        diagnostics.get(0).message,
+        "Trait Eq implementation for Ref[int32] overlaps with implementation builtin#42 at source range 12946..12949",
+    );
+    testing::assert_eq(
+        diagnostics.get(1).message,
+        "Trait Hash implementation for Ref[int32] overlaps with implementation builtin#43 at source range 13059..13062",
+    );
+    for diagnostic in diagnostics {
+        testing::assert(match diagnostic.span {
+            Option::Some(_) => true,
+            Option::None => false,
+        })
+    }
+}
+
+#[test]
 fn rejects_invalid_for_sources_and_patterns() -> unit {
     let non_iterator = checked_diagnostics(
         "fn main() -> unit { for _ in 1 {} }",
