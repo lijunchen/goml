@@ -314,7 +314,10 @@ fn rejects_float_remainder_operands() -> unit {
         "main.gom",
     ));
     testing::assert_eq(result.diagnostics.len(), 1);
-    testing::assert_eq(result.diagnostics.get(0).message, "integer operand required")
+    testing::assert_eq(
+        result.diagnostics.get(0).message,
+        "Operator % is not defined for type float64",
+    )
 }
 
 #[test]
@@ -339,7 +342,7 @@ fn rejects_missing_dyn_impls_and_noncomparable_equality() -> unit {
     testing::assert_eq(equality_result.diagnostics.len(), 1);
     testing::assert_eq(
         equality_result.diagnostics.get(0).message,
-        "equality operand is not comparable",
+        "Operator == is not defined for type Vec[int32]",
     )
 }
 
@@ -367,7 +370,7 @@ fn rejects_invalid_signature_names_and_integer_literals() -> unit {
         "main.gom",
     ));
     testing::assert_eq(unknown_trait.diagnostics.len(), 1);
-    testing::assert_eq(unknown_trait.diagnostics.get(0).message, "unknown trait Missing");
+    testing::assert_eq(unknown_trait.diagnostics.get(0).message, "Unknown trait Missing");
     let bad_application = check(hir::lower(
         ast::lower(parser::parse(
             "fn use_value[T](value: T[int32]) -> unit { () }",
@@ -426,7 +429,7 @@ fn checks_match_exhaustiveness_and_irrefutable_bindings() -> unit {
     testing::assert_eq(refutable.diagnostics.len(), 1);
     testing::assert_eq(
         refutable.diagnostics.get(0).message,
-        "refutable pattern is not allowed in let binding",
+        "Refutable pattern is not allowed in let binding; use match instead",
     )
 }
 
@@ -594,27 +597,30 @@ fn validates_declared_types_and_tostring_requirements() -> unit {
     );
     testing::assert(has_diagnostic(
         declarations,
-        "type argument count mismatch for Maybe",
+        "Type Maybe expects 1 type arguments, but got 0",
     ));
     testing::assert(has_diagnostic(
         declarations,
-        "unknown type constructor Unknown",
+        "Unknown type constructor Unknown",
     ));
     testing::assert(has_diagnostic(
         declarations,
-        "unknown type constructor V",
+        "Unknown type constructor V",
     ));
     let println_error = checked_diagnostics(
         "struct Value {} fn main() -> unit { println(Value {}) }",
     );
     testing::assert(has_diagnostic(
         println_error,
-        "type predicate not satisfied",
+        "No instance found for trait ToString<Value>",
     ));
     let method_error = checked_diagnostics(
         "struct Value {} fn main() -> unit { let _ = (Value {}).to_string(); }",
     );
-    testing::assert(has_diagnostic(method_error, "method not found: to_string"))
+    testing::assert(has_diagnostic(
+        method_error,
+        "Method to_string not found for type Value",
+    ))
 }
 
 #[test]

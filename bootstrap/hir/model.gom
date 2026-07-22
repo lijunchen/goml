@@ -87,7 +87,9 @@ pub struct Function {
     generic_bounds: Vec[(string, Vec[TraitRef])],
     predicates: Vec[Predicate],
     params: Vec[(LocalId, TypeExpr)],
+    param_type_spans: Vec[ast::Span],
     ret_ty: Option[TypeExpr],
+    ret_ty_span: Option[ast::Span],
     body: Block,
 }
 
@@ -139,6 +141,7 @@ pub struct ImplBlock {
     associated_types: Vec[(string, TypeExpr)],
     trait_ref: Option[TraitRef],
     for_type: TypeExpr,
+    for_type_span: ast::Span,
     methods: Vec[Function],
 }
 
@@ -230,7 +233,12 @@ pub struct ArrayPatRest {
     binding: Option[LocalId],
 }
 
-pub enum Pat {
+pub struct Pat {
+    kind: PatKind,
+    span: ast::Span,
+}
+
+pub enum PatKind {
     Var(LocalId),
     Unit,
     Bool(bool),

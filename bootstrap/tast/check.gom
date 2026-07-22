@@ -457,6 +457,13 @@ fn resolve_coercion_constraints(ctx: Checker) -> unit {
 }
 
 fn coerce_direct(ctx: Checker, value: Expr, expected: Type) -> Expr {
+    match (prune(expr_type(value)), prune(expected)) {
+        (Type::Error, Type::Var(variable)) => match variable.get() {
+            TypeVar::Unbound(_, _) => variable.set(TypeVar::Link(Type::Error)),
+            TypeVar::Link(_) => (),
+        },
+        _ => (),
+    };
     match value {
         Expr::Prim(Primitive::Int(raw), _) => {
             validate_integer_literal(ctx, raw, expected)
@@ -596,6 +603,17 @@ fn contains_unbound_type_variable(value: Type) -> bool {
                 }
             };
             found.get()
+        },
+        _ => false,
+    }
+}
+
+fn is_unbound_any_type(value: Type) -> bool {
+    match prune(value) {
+        Type::Var(variable) => match variable.get() {
+            TypeVar::Unbound(_, VarKind::Any) => true,
+            TypeVar::Link(inner) => is_unbound_any_type(inner),
+            _ => false,
         },
         _ => false,
     }
@@ -787,8 +805,15 @@ fn check_name_ref(ctx: Checker, value: hir::NameRef) -> Expr {
         hir::NameRef::Local(local) => match find_local(ctx, local) {
             Option::Some(ty) => Expr::Var(local_name(local), ty),
             Option::None => {
-                push_diagnostic(ctx, "local not found");
-                Expr::Var(local_name(local), Type::Error)
+                push_diagnostic(ctx, "Unknown variable " + local_name(local));
+                Expr::Var(
+                    local_name(local),
+                    if contains_local(ctx.unresolved_locals, local) {
+                        fresh_type(ctx.counter, VarKind::Any)
+                    } else {
+                        Type::Error
+                    },
+                )
             },
         },
         hir::NameRef::Def(definition) => match find_function_by_def(ctx, definition) {
@@ -836,7 +861,7 @@ fn check_static_member(
         Option::None => match resolve_static_member(ctx, owner, member, type_args) {
             Option::Some(value) => match value.callable {
                 Callable::InherentMethod(_, _) => {
-                    push_diagnostic(ctx,
+                    push_stage_diagnostic(ctx, "compile",
                         "Inherent method values are not supported; call the method directly",
                     );
                     Expr::Callable(value.callable, value.ty)
@@ -844,10 +869,38 @@ fn check_static_member(
                 _ => Expr::Callable(value.callable, value.ty),
             },
             Option::None => {
-                push_diagnostic(ctx, "static member not found: " + owner + "::" + member);
+                let infer_result = Ref::new(false);
+                if contains_name(ctx.invalid_impl_arity_owners, owner) {
+                    ()
+                } else {
+                    match find_enum_by_name(ctx, owner) {
+                        Option::Some(_) => push_diagnostic(
+                            ctx,
+                            "Variant " + member + " not found for enum " + owner,
+                        ),
+                        Option::None => match find_struct_by_name(ctx, owner) {
+                            Option::Some(_) => {
+                                push_diagnostic(
+                                    ctx,
+                                    "Method " + member + " not found for type " + owner,
+                                );
+                                infer_result.set(true);
+                                push_global_diagnostic(ctx, "Could not infer type")
+                            },
+                            Option::None => push_diagnostic(
+                                ctx,
+                                "static member not found: " + owner + "::" + member,
+                            ),
+                        },
+                    }
+                };
                 Expr::Callable(
                     Callable::Function(owner + "::" + member),
-                    Type::Error,
+                    if infer_result.get() {
+                        fresh_type(ctx.counter, VarKind::Any)
+                    } else {
+                        Type::Error
+                    },
                 )
             },
         },
@@ -1122,8 +1175,12 @@ fn callable_parts(ctx: Checker, value: Type, arity: int32) -> (Vec[Type], Type) 
             expect_type(ctx, Type::Var(variable), Type::Func(params, ret_ty));
             (params, ret_ty)
         },
+        Type::Error => (Vec::new(), Type::Error),
         _ => {
-            push_diagnostic(ctx, "value is not callable");
+            push_diagnostic(
+                ctx,
+                "Cannot call non-function type " + type_text(value),
+            );
             (Vec::new(), Type::Error)
         },
     }
@@ -1173,10 +1230,11 @@ fn apply_typed_call(
     ctx: Checker,
     function: Expr,
     raw_values: Vec[Expr],
+    params: Vec[Type],
+    ret_ty: Type,
     prefix_len: int32,
     is_static: bool,
 ) -> Expr {
-    let (params, ret_ty) = callable_parts(ctx, expr_type(function), raw_values.len());
     let values: Vec[Expr] = Vec::new();
     for value in raw_values {
         let index = values.len();
@@ -1191,8 +1249,27 @@ fn apply_typed_call(
             value
         })
     };
-    if values.len() != params.len() {
-        push_diagnostic(ctx, "call arity mismatch")
+    let arity_mismatch = !types_equal(ret_ty, Type::Error)
+        && values.len() != params.len();
+    if arity_mismatch {
+        let actual_params: Vec[Type] = Vec::new();
+        for value in values {
+            actual_params.push(expr_type(value))
+        };
+        push_diagnostic(
+            ctx,
+            "Function arity mismatch: expected "
+                + type_text(expr_type(function))
+                + ", found "
+                + type_text(Type::Func(actual_params, Type::Con("unknown"))),
+        );
+        let count = match function {
+            Expr::Callable(_, _) => 1,
+            _ => 3,
+        };
+        for _ in range(0, count) {
+            push_global_diagnostic(ctx, "Could not infer type")
+        }
     } else {
         ()
     };
@@ -1203,8 +1280,20 @@ fn apply_typed_call(
             } else {
                 Type::Unit
             };
+            if contains_unbound_type_variable(ret_ty) {
+                let _ = unify(ret_ty, receiver_ty);
+            } else {
+                ()
+            };
             if !trait_bound_satisfied_at(ctx, receiver_ty, reference, 0) {
-                push_diagnostic(ctx, "trait instance not found")
+                push_diagnostic(
+                    ctx,
+                    predicate_requirement_message(
+                        ctx,
+                        TypePredicate::Trait(receiver_ty, reference),
+                        "type predicate not satisfied",
+                    ),
+                )
             } else {
                 ()
             }
@@ -1241,7 +1330,11 @@ fn apply_typed_call(
     Expr::Call(
         normalize_function_expr(ctx, function),
         values,
-        normalize_type(ctx, ret_ty),
+        if arity_mismatch {
+            fresh_type(ctx.counter, VarKind::Any)
+        } else {
+            normalize_type(ctx, ret_ty)
+        },
     )
 }
 
@@ -1254,7 +1347,9 @@ fn apply_call(
     let is_static = prefix.len() == 0;
     let prefix_len = prefix.len();
     let arity = prefix.len() + args.len();
-    let (params, _) = callable_parts(ctx, expr_type(function), arity);
+    let parts = callable_parts(ctx, expr_type(function), arity);
+    let params = parts.0;
+    let ret_ty = parts.1;
     let values: Vec[Expr] = Vec::new();
     for value in prefix {
         values.push(value)
@@ -1268,7 +1363,15 @@ fn apply_call(
         };
         values.push(check_expr(ctx, value, expected))
     };
-    apply_typed_call(ctx, function, values, prefix_len, is_static)
+    apply_typed_call(
+        ctx,
+        function,
+        values,
+        params,
+        ret_ty,
+        prefix_len,
+        is_static,
+    )
 }
 
 fn check_method_call(
@@ -1279,6 +1382,14 @@ fn check_method_call(
     expected: Option[Type],
 ) -> Expr {
     let receiver = check_expr(ctx, receiver_source, Option::None);
+    if types_equal(expr_type(receiver), Type::Error) {
+        for source in args {
+            let _ = check_expr(ctx, source, Option::None);
+        };
+        return Expr::Var("<error>", Type::Error)
+    } else {
+        ()
+    };
     require_hashmap_type(ctx, expr_type(receiver));
     let arg_types: Vec[Type] = Vec::new();
     for source in args {
@@ -1294,8 +1405,23 @@ fn check_method_call(
             let field_ty = match resolve_field_type(ctx, expr_type(receiver), name) {
                 Option::Some(ty) => ty,
                 Option::None => {
-                    push_diagnostic(ctx, "method not found: " + name);
-                    Type::Error
+                    if contains_unbound_type_variable(expr_type(receiver)) {
+                        push_diagnostic(
+                            ctx,
+                            "Could not infer the receiver type for method " + name,
+                        )
+                    } else {
+                        push_diagnostic(
+                            ctx,
+                            "Method "
+                                + name
+                                + " not found for type "
+                                + type_text(expr_type(receiver)),
+                        );
+                        push_global_diagnostic(ctx, "Could not infer type");
+                        push_global_diagnostic(ctx, "Could not infer type")
+                    };
+                    fresh_type(ctx.counter, VarKind::Any)
                 },
             };
             apply_call(
@@ -1575,6 +1701,19 @@ fn is_shift_op(value: ast::BinaryOp) -> bool {
     }
 }
 
+fn push_operator_not_defined(
+    ctx: Checker,
+    op: ast::BinaryOp,
+    ty: Type,
+    span: ast::Span,
+) -> unit {
+    push_diagnostic_at(
+        ctx,
+        "Operator " + binary_symbol(op) + " is not defined for type " + type_text(ty),
+        Option::Some(span),
+    )
+}
+
 fn check_binary_expr(
     ctx: Checker,
     op: ast::BinaryOp,
@@ -1602,23 +1741,60 @@ fn check_binary_expr(
             Option::None => Option::None,
         };
         let left = check_expr(ctx, left_source, contextual);
-        let right = if is_shift_op(op) {
+        let right = if is_shift_op(op) || is_comparison_op(op) {
             check_expr(ctx, right_source, Option::None)
         } else {
             check_expr(ctx, right_source, Option::Some(expr_type(left)))
         };
-        if (is_bitwise_op(op) || is_remainder_op(op))
+        match right_source.kind {
+            hir::ExprKind::NameRef(hir::NameRef::Local(local)) => {
+                if contains_local(ctx.unresolved_locals, local)
+                    && contains_unbound_type_variable(expr_type(right))
+                {
+                    push_global_diagnostic(ctx, "Could not infer type")
+                } else {
+                    ()
+                }
+            },
+            _ => (),
+        };
+        if is_comparison_op(op) {
+            expect_type_at(
+                ctx,
+                expr_type(left),
+                expr_type(right),
+                Option::Some(left_source.span),
+            )
+        } else {
+            ()
+        };
+        if is_unbound_any_type(expr_type(left)) {
+            push_diagnostic_at(
+                ctx,
+                "Could not infer the operand type for operator " + binary_symbol(op),
+                Option::Some(left_source.span),
+            )
+        } else if is_shift_op(op) {
+            if !is_integer_type(expr_type(left)) {
+                push_operator_not_defined(ctx, op, expr_type(left), left_source.span)
+            } else {
+                ()
+            };
+            if !is_integer_type(expr_type(right)) {
+                push_operator_not_defined(ctx, op, expr_type(right), right_source.span)
+            } else {
+                ()
+            }
+        } else if (is_bitwise_op(op) || is_remainder_op(op))
             && !is_integer_type(expr_type(left))
         {
-            push_diagnostic(ctx, "integer operand required")
-        } else if is_shift_op(op) && !is_integer_type(expr_type(right)) {
-            push_diagnostic(ctx, "integer operand required")
+            push_operator_not_defined(ctx, op, expr_type(left), left_source.span)
         } else if is_equality_op(op)
             && !equality_comparable_type(ctx, expr_type(left))
         {
-            push_diagnostic(ctx, "equality operand is not comparable")
+            push_operator_not_defined(ctx, op, expr_type(left), left_source.span)
         } else if is_order_op(op) && !order_comparable_type(expr_type(left)) {
-            push_diagnostic(ctx, "ordered operand is not comparable")
+            push_operator_not_defined(ctx, op, expr_type(left), left_source.span)
         } else if is_arithmetic_op(op)
             && !is_numeric_type(expr_type(left))
             && !(match prune(expr_type(left)) {
@@ -1629,7 +1805,7 @@ fn check_binary_expr(
                 Type::Con(_) | Type::App(_, _) | Type::Param(_) => true,
                 _ => false,
             }) {
-            push_diagnostic(ctx, "numeric operand required")
+            push_operator_not_defined(ctx, op, expr_type(left), left_source.span)
         } else {
             ()
         };
@@ -1718,8 +1894,15 @@ fn check_match_expr(
         Option::None => fresh_type(ctx.counter, VarKind::Any),
     };
     let typed_arms: Vec[Arm] = Vec::new();
+    let invalid_patterns = Ref::new(false);
     for arm in arms {
+        let diagnostic_count = ctx.diagnostics.len();
         let pat = check_pattern(ctx, arm.pat, expr_type(scrutinee));
+        if ctx.diagnostics.len() > diagnostic_count {
+            invalid_patterns.set(true)
+        } else {
+            ()
+        };
         let guard = match arm.guard {
             Option::Some(value) => Option::Some(check_expr(
                 ctx,
@@ -1731,7 +1914,9 @@ fn check_match_expr(
         let body = check_expr(ctx, arm.body, Option::Some(result_ty));
         typed_arms.push(Arm { pat, guard, body })
     };
-    if match_is_exhaustive(ctx, expr_type(scrutinee), typed_arms) {
+    if invalid_patterns.get()
+        || match_is_exhaustive(ctx, expr_type(scrutinee), typed_arms)
+    {
         ()
     } else {
         push_diagnostic(ctx, "non-exhaustive match")
@@ -2034,6 +2219,7 @@ fn defer_field_type(ctx: Checker, receiver: Type, name: string) -> Option[Type] 
                     receiver,
                     name,
                     field_ty,
+                    span: ctx.current_span.get(),
                 });
                 Option::Some(field_ty)
             },
@@ -2043,12 +2229,38 @@ fn defer_field_type(ctx: Checker, receiver: Type, name: string) -> Option[Type] 
     }
 }
 
+fn contains_silent_field_receiver(ctx: Checker, receiver: Type) -> bool {
+    let found = Ref::new(false);
+    for value in ctx.silent_field_receivers {
+        if types_equal(value, receiver) {
+            found.set(true)
+        } else {
+            ()
+        }
+    };
+    found.get()
+}
+
 fn resolve_field_constraints(ctx: Checker) -> unit {
     for constraint in ctx.field_constraints {
         match resolve_field_type(ctx, constraint.receiver, constraint.name) {
             Option::Some(ty) => expect_type(ctx, ty, constraint.field_ty),
             Option::None => {
-                push_diagnostic(ctx, "field not found: " + constraint.name)
+                if type_contains_error(constraint.receiver) {
+                    ()
+                } else if contains_unbound_type_variable(constraint.receiver) {
+                    push_diagnostic_at(
+                        ctx,
+                        "Could not infer the base type for field " + constraint.name,
+                        constraint.span,
+                    )
+                } else {
+                    push_diagnostic_at(
+                        ctx,
+                        "field not found: " + constraint.name,
+                        constraint.span,
+                    )
+                }
             },
         }
     }
@@ -2056,7 +2268,11 @@ fn resolve_field_constraints(ctx: Checker) -> unit {
 
 fn check_field_expr(ctx: Checker, source: hir::Expr, name: string) -> Expr {
     let value = check_expr(ctx, source, Option::None);
-    if is_control_flow_expr(value) {
+    if types_equal(expr_type(value), Type::Error) {
+        Expr::Field(value, name, Type::Error)
+    } else if contains_silent_field_receiver(ctx, expr_type(value)) {
+        Expr::Field(value, name, fresh_type(ctx.counter, VarKind::Any))
+    } else if is_control_flow_expr(value) {
         Expr::Field(value, name, fresh_type(ctx.counter, VarKind::Any))
     } else {
         match resolve_field_type(ctx, expr_type(value), name) {
@@ -2064,7 +2280,17 @@ fn check_field_expr(ctx: Checker, source: hir::Expr, name: string) -> Expr {
             Option::None => match defer_field_type(ctx, expr_type(value), name) {
                 Option::Some(ty) => Expr::Field(value, name, ty),
                 Option::None => {
-                    push_diagnostic(ctx, "field not found: " + name);
+                    match prune(expr_type(value)) {
+                        Type::Tuple(_) => push_diagnostic(
+                            ctx,
+                            "Tuple type "
+                                + type_text(expr_type(value))
+                                + " has no named field "
+                                + name
+                                + "; use tuple indexing like .0",
+                        ),
+                        _ => push_diagnostic(ctx, "field not found: " + name),
+                    };
                     Expr::Field(value, name, Type::Error)
                 },
             },
@@ -2402,11 +2628,13 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
                 Expr::Return(typed, Type::Unit)
             },
             hir::ExprKind::Go(value) => {
+                let span = value.span;
                 let value = check_expr(ctx, value, Option::None);
-                expect_type(
+                expect_type_at(
                     ctx,
                     expr_type(value),
                     Type::Func(Vec::new(), Type::Unit),
+                    Option::Some(span),
                 );
                 Expr::Go(value, Type::Unit)
             },
@@ -2501,8 +2729,10 @@ fn check_expr_inner(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> E
             check_if_expr(ctx, cond, then_branch, else_branch, expected)
         },
         hir::ExprKind::Block(block) => {
+            let always_exits = hir_block_always_returns(block);
             let typed = check_block(ctx, block, expected);
-            Expr::Block(typed.0, typed.1)
+            let result = Expr::Block(typed.0, typed.1);
+            if always_exits { result } else { coerce_expr(ctx, result, expected) }
         },
         _ => coerce_expr(ctx, infer_expr(ctx, value), expected),
     }
@@ -2517,35 +2747,35 @@ fn check_expr(ctx: Checker, value: hir::Expr, expected: Option[Type]) -> Expr {
 }
 
 fn primitive_pattern(ctx: Checker, value: hir::Pat) -> Option[(Primitive, Type)] {
-    match value {
-        hir::Pat::Unit => Option::Some((Primitive::Unit, Type::Unit)),
-        hir::Pat::Bool(value) => Option::Some((Primitive::Bool(value), Type::Bool)),
-        hir::Pat::Int(value) => Option::Some((
+    match value.kind {
+        hir::PatKind::Unit => Option::Some((Primitive::Unit, Type::Unit)),
+        hir::PatKind::Bool(value) => Option::Some((Primitive::Bool(value), Type::Bool)),
+        hir::PatKind::Int(value) => Option::Some((
             Primitive::Int(value),
             fresh_type(ctx.counter, VarKind::Integer),
         )),
-        hir::Pat::Int8(value) => Option::Some((Primitive::Int8(value), Type::Int8)),
-        hir::Pat::Int16(value) => Option::Some((Primitive::Int16(value), Type::Int16)),
-        hir::Pat::Int32(value) => Option::Some((Primitive::Int32(value), Type::Int32)),
-        hir::Pat::Int64(value) => Option::Some((Primitive::Int64(value), Type::Int64)),
-        hir::Pat::UInt8(value) => Option::Some((Primitive::Uint8(value), Type::Uint8)),
-        hir::Pat::UInt16(value) => Option::Some((Primitive::Uint16(value), Type::Uint16)),
-        hir::Pat::UInt32(value) => Option::Some((Primitive::Uint32(value), Type::Uint32)),
-        hir::Pat::UInt64(value) => Option::Some((Primitive::Uint64(value), Type::Uint64)),
-        hir::Pat::Float(value) => Option::Some((
+        hir::PatKind::Int8(value) => Option::Some((Primitive::Int8(value), Type::Int8)),
+        hir::PatKind::Int16(value) => Option::Some((Primitive::Int16(value), Type::Int16)),
+        hir::PatKind::Int32(value) => Option::Some((Primitive::Int32(value), Type::Int32)),
+        hir::PatKind::Int64(value) => Option::Some((Primitive::Int64(value), Type::Int64)),
+        hir::PatKind::UInt8(value) => Option::Some((Primitive::Uint8(value), Type::Uint8)),
+        hir::PatKind::UInt16(value) => Option::Some((Primitive::Uint16(value), Type::Uint16)),
+        hir::PatKind::UInt32(value) => Option::Some((Primitive::Uint32(value), Type::Uint32)),
+        hir::PatKind::UInt64(value) => Option::Some((Primitive::Uint64(value), Type::Uint64)),
+        hir::PatKind::Float(value) => Option::Some((
             Primitive::Float(value),
             fresh_type(ctx.counter, VarKind::Float),
         )),
-        hir::Pat::Float32(value) => Option::Some((
+        hir::PatKind::Float32(value) => Option::Some((
             Primitive::Float32(normalized_float32_literal(value)),
             Type::Float32,
         )),
-        hir::Pat::Float64(value) => Option::Some((
+        hir::PatKind::Float64(value) => Option::Some((
             Primitive::Float64(normalized_float64_literal(value)),
             Type::Float64,
         )),
-        hir::Pat::String(value) => Option::Some((Primitive::String(value), Type::String)),
-        hir::Pat::Char(value) => Option::Some((
+        hir::PatKind::String(value) => Option::Some((Primitive::String(value), Type::String)),
+        hir::PatKind::Char(value) => Option::Some((
             Primitive::Char(checked_char_literal(ctx, value)),
             Type::Char,
         )),
@@ -2563,18 +2793,27 @@ fn check_constructor_pattern(
         Option::Some(info) => {
             expect_type(ctx, info.ty, expected);
             let values: Vec[Pat] = Vec::new();
-            for index in range(0, args.len()) {
-                let field_ty = if index < info.fields.len() {
-                    info.fields.get(index)
-                } else {
-                    Type::Error
-                };
-                values.push(check_pattern(ctx, args.get(index), field_ty))
-            };
             if args.len() != info.fields.len() {
-                push_diagnostic(ctx, "constructor pattern arity mismatch")
+                for value in args {
+                    mark_unresolved_pattern_locals(ctx, value)
+                };
+                push_diagnostic(
+                    ctx,
+                    "Constructor "
+                        + short_name(info.constructor.name)
+                        + " expects "
+                        + info.fields.len().to_string()
+                        + " arguments, but got "
+                        + args.len().to_string(),
+                )
             } else {
-                ()
+                for index in range(0, args.len()) {
+                    values.push(check_pattern(
+                        ctx,
+                        args.get(index),
+                        info.fields.get(index),
+                    ))
+                }
             };
             Pat::Constr(info.constructor, values, expected)
         },
@@ -2582,6 +2821,45 @@ fn check_constructor_pattern(
             push_diagnostic(ctx, "pattern constructor not found");
             Pat::Wild(expected)
         },
+    }
+}
+
+fn mark_unresolved_pattern_locals(ctx: Checker, value: hir::Pat) -> unit {
+    match value.kind {
+        hir::PatKind::Var(local) => if contains_local(ctx.unresolved_locals, local) {
+            ()
+        } else {
+            ctx.unresolved_locals.push(local)
+        },
+        hir::PatKind::Constr(_, values)
+        | hir::PatKind::Tuple(values)
+        | hir::PatKind::Or(values) => for value in values {
+            mark_unresolved_pattern_locals(ctx, value)
+        },
+        hir::PatKind::Struct(_, fields, _) => for field in fields {
+            mark_unresolved_pattern_locals(ctx, field.1)
+        },
+        hir::PatKind::Array(prefix, _, suffix) => {
+            for value in prefix {
+                mark_unresolved_pattern_locals(ctx, value)
+            };
+            for value in suffix {
+                mark_unresolved_pattern_locals(ctx, value)
+            }
+        },
+        hir::PatKind::Alias(local, pat) => {
+            if contains_local(ctx.unresolved_locals, local) {
+                ()
+            } else {
+                ctx.unresolved_locals.push(local)
+            };
+            mark_unresolved_pattern_locals(ctx, pat)
+        },
+        hir::PatKind::Range(start, end, _) => {
+            mark_unresolved_pattern_locals(ctx, start);
+            mark_unresolved_pattern_locals(ctx, end)
+        },
+        _ => (),
     }
 }
 
@@ -2681,24 +2959,24 @@ fn normalize_pattern_primitive(value: Primitive, expected: Type) -> Primitive {
     }
 }
 
-fn check_pattern(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
+fn check_pattern_inner(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
     match primitive_pattern(ctx, value) {
         Option::Some(result) => {
             expect_type(ctx, result.1, expected);
             Pat::Prim(normalize_pattern_primitive(result.0, expected), expected)
         },
-        Option::None => match value {
-            hir::Pat::Var(local) => {
+        Option::None => match value.kind {
+            hir::PatKind::Var(local) => {
                 insert_local(ctx, local, expected);
                 Pat::Var(local_name(local), expected)
             },
-            hir::Pat::Constr(constructor, args) => {
+            hir::PatKind::Constr(constructor, args) => {
                 check_constructor_pattern(ctx, constructor, args, expected)
             },
-            hir::Pat::Struct(name, fields, _) => {
+            hir::PatKind::Struct(name, fields, _) => {
                 check_struct_pattern(ctx, name, fields, expected)
             },
-            hir::Pat::Tuple(values) => {
+            hir::PatKind::Tuple(values) => {
                 let types: Vec[Type] = Vec::new();
                 for _ in values {
                     types.push(fresh_type(ctx.counter, VarKind::Any))
@@ -2710,10 +2988,10 @@ fn check_pattern(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
                 };
                 Pat::Tuple(items, expected)
             },
-            hir::Pat::Array(prefix, rest, suffix) => {
+            hir::PatKind::Array(prefix, rest, suffix) => {
                 check_array_pattern(ctx, prefix, rest, suffix, expected)
             },
-            hir::Pat::Alias(local, pat) => {
+            hir::PatKind::Alias(local, pat) => {
                 insert_local(ctx, local, expected);
                 Pat::Alias(
                     local_name(local),
@@ -2721,14 +2999,14 @@ fn check_pattern(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
                     expected,
                 )
             },
-            hir::Pat::Or(values) => {
+            hir::PatKind::Or(values) => {
                 let items: Vec[Pat] = Vec::new();
                 for value in values {
                     items.push(check_pattern(ctx, value, expected))
                 };
                 Pat::Or(items, expected)
             },
-            hir::Pat::Range(start, end, inclusive) => {
+            hir::PatKind::Range(start, end, inclusive) => {
                 let typed_start = check_pattern(ctx, start, expected);
                 let typed_end = check_pattern(ctx, end, expected);
                 Pat::Range(
@@ -2738,7 +3016,7 @@ fn check_pattern(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
                     expected,
                 )
             },
-            hir::Pat::Wild => Pat::Wild(expected),
+            hir::PatKind::Wild => Pat::Wild(expected),
             _ => {
                 push_diagnostic(ctx, "pattern is not implemented");
                 Pat::Wild(expected)
@@ -2747,16 +3025,31 @@ fn check_pattern(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
     }
 }
 
+fn check_pattern(ctx: Checker, value: hir::Pat, expected: Type) -> Pat {
+    let previous = ctx.current_span.get();
+    ctx.current_span.set(Option::Some(value.span));
+    let result = check_pattern_inner(ctx, value, expected);
+    ctx.current_span.set(previous);
+    result
+}
+
 fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
     match value {
         hir::Stmt::Let(is_mut, pat, annotation, source) => {
+            let invalid_annotation = Ref::new(false);
             let annotation_ty = match annotation {
-                Option::Some(value) => Option::Some(resolve_signature_type(
-                    ctx,
-                    type_from_hir(value, ctx.type_params, ctx.self_ty),
-                    ctx.predicates,
-                    true,
-                )),
+                Option::Some(value) => {
+                    let raw = type_from_hir(value, ctx.type_params, ctx.self_ty);
+                    invalid_annotation.set(
+                        nominal_application_has_wrong_arity(ctx, raw),
+                    );
+                    Option::Some(resolve_signature_type(
+                        ctx,
+                        raw,
+                        ctx.predicates,
+                        true,
+                    ))
+                },
                 Option::None => Option::None,
             };
             let expression = check_expr(ctx, source, annotation_ty);
@@ -2765,12 +3058,24 @@ fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
             } else {
                 ()
             };
-            let pattern = check_pattern(ctx, pat, expr_type(expression));
+            let pattern_ty = match annotation_ty {
+                Option::Some(ty) => if invalid_annotation.get() {
+                    let recovery = fresh_type(ctx.counter, VarKind::Any);
+                    ctx.silent_field_receivers.push(recovery);
+                    push_global_diagnostic(ctx, "Could not infer type");
+                    recovery
+                } else {
+                    ty
+                },
+                Option::None => expr_type(expression),
+            };
+            let pattern = check_pattern(ctx, pat, pattern_ty);
             if pattern_is_irrefutable(ctx, pattern) {
                 ()
             } else {
-                push_diagnostic(ctx,
-                    "refutable pattern is not allowed in let binding",
+                push_diagnostic_at(ctx,
+                    "Refutable pattern is not allowed in let binding; use match instead",
+                    Option::Some(pat.span),
                 )
             };
             Stmt::Let(is_mut, pattern, expression)
@@ -2785,17 +3090,17 @@ fn check_stmt(ctx: Checker, value: hir::Stmt) -> Stmt {
 }
 
 fn mark_mutable_pattern(ctx: Checker, value: hir::Pat) -> unit {
-    match value {
-        hir::Pat::Var(local) => mark_mutable_local(ctx, local),
-        hir::Pat::Constr(_, values) | hir::Pat::Tuple(values) | hir::Pat::Or(values) => {
+    match value.kind {
+        hir::PatKind::Var(local) => mark_mutable_local(ctx, local),
+        hir::PatKind::Constr(_, values) | hir::PatKind::Tuple(values) | hir::PatKind::Or(values) => {
             for value in values {
                 mark_mutable_pattern(ctx, value)
             }
         },
-        hir::Pat::Struct(_, fields, _) => for field in fields {
+        hir::PatKind::Struct(_, fields, _) => for field in fields {
             mark_mutable_pattern(ctx, field.1)
         },
-        hir::Pat::Array(prefix, rest, suffix) => {
+        hir::PatKind::Array(prefix, rest, suffix) => {
             for value in prefix {
                 mark_mutable_pattern(ctx, value)
             };
@@ -2810,11 +3115,11 @@ fn mark_mutable_pattern(ctx: Checker, value: hir::Pat) -> unit {
                 mark_mutable_pattern(ctx, value)
             }
         },
-        hir::Pat::Alias(local, pat) => {
+        hir::PatKind::Alias(local, pat) => {
             mark_mutable_local(ctx, local);
             mark_mutable_pattern(ctx, pat)
         },
-        hir::Pat::Range(start, end, _) => {
+        hir::PatKind::Range(start, end, _) => {
             mark_mutable_pattern(ctx, start);
             mark_mutable_pattern(ctx, end)
         },
@@ -2824,7 +3129,7 @@ fn mark_mutable_pattern(ctx: Checker, value: hir::Pat) -> unit {
 
 fn hir_expr_always_returns(value: hir::Expr) -> bool {
     match value.kind {
-        hir::ExprKind::Return(_) => true,
+        hir::ExprKind::Break | hir::ExprKind::Continue | hir::ExprKind::Return(_) => true,
         hir::ExprKind::Block(block) => hir_block_always_returns(block),
         hir::ExprKind::If(_, then_branch, else_branch) => {
             hir_expr_always_returns(then_branch)

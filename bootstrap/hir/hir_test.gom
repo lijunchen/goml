@@ -184,7 +184,10 @@ fn resolves_definitions_and_shadowed_locals() -> unit {
     match file.items.get(1) {
         Item::Function(value) => {
             match value.body.stmts.get(0) {
-                Stmt::Let(_, Pat::Var(local), _, Expr {
+                Stmt::Let(_, Pat {
+                    kind: PatKind::Var(local),
+                    span: _,
+                }, _, Expr {
                     kind: ExprKind::Int(number),
                     span: _,
                 }) => {
@@ -233,8 +236,8 @@ fn resolves_enum_constructors_and_pattern_bindings() -> unit {
                 span: _,
             }) => {
                 testing::assert_eq(arms.len(), 2);
-                match arms.get(0).pat {
-                    Pat::Constr(ConstructorRef::Resolved(definition, variant), args) => {
+                match arms.get(0).pat.kind {
+                    PatKind::Constr(ConstructorRef::Resolved(definition, variant), args) => {
                         testing::assert_eq(definition.pkg, 1);
                         testing::assert_eq(definition.index, 0);
                         testing::assert_eq(variant, 1);
@@ -276,16 +279,16 @@ fn resolves_cross_file_constructor_patterns() -> unit {
                     kind: ExprKind::Match(_, arms),
                     span: _,
                 }) => {
-                    match arms.get(0).pat {
-                        Pat::Constr(ConstructorRef::Resolved(definition, variant), args) => {
+                    match arms.get(0).pat.kind {
+                        PatKind::Constr(ConstructorRef::Resolved(definition, variant), args) => {
                             testing::assert_eq(definition.index, 0);
                             testing::assert_eq(variant, 0);
                             testing::assert_eq(args.len(), 0)
                         },
                         _ => testing::fail("expected resolved Idle pattern"),
                     };
-                    match arms.get(1).pat {
-                        Pat::Constr(ConstructorRef::Resolved(definition, variant), args) => {
+                    match arms.get(1).pat.kind {
+                        PatKind::Constr(ConstructorRef::Resolved(definition, variant), args) => {
                             testing::assert_eq(definition.index, 0);
                             testing::assert_eq(variant, 1);
                             testing::assert_eq(args.len(), 1)

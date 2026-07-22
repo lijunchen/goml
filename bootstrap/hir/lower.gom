@@ -665,47 +665,48 @@ fn lower_pattern_inner(
     env: Vec[(string, LocalId)],
     state: PatternState,
 ) -> Pat {
-    match value {
+    let span = ast::pat_span(value);
+    let kind = match value {
         ast::Pat::Var(name, _) => match constructor_ref(ctx, single_path(name)) {
-            Option::Some(constructor) => Pat::Constr(constructor, Vec::new()),
-            Option::None => Pat::Var(bind_pattern_name(ctx, env, state, name)),
+            Option::Some(constructor) => PatKind::Constr(constructor, Vec::new()),
+            Option::None => PatKind::Var(bind_pattern_name(ctx, env, state, name)),
         },
-        ast::Pat::Unit(_) => Pat::Unit,
-        ast::Pat::Bool(value, _) => Pat::Bool(value),
-        ast::Pat::Int(value, _) => Pat::Int(value),
-        ast::Pat::Int8(value, _) => Pat::Int8(value),
-        ast::Pat::Int16(value, _) => Pat::Int16(value),
-        ast::Pat::Int32(value, _) => Pat::Int32(value),
-        ast::Pat::Int64(value, _) => Pat::Int64(value),
-        ast::Pat::UInt8(value, _) => Pat::UInt8(value),
-        ast::Pat::UInt16(value, _) => Pat::UInt16(value),
-        ast::Pat::UInt32(value, _) => Pat::UInt32(value),
-        ast::Pat::UInt64(value, _) => Pat::UInt64(value),
-        ast::Pat::Float(value, _) => Pat::Float(value),
-        ast::Pat::Float32(value, _) => Pat::Float32(value),
-        ast::Pat::Float64(value, _) => Pat::Float64(value),
-        ast::Pat::String(value, _) => Pat::String(value),
-        ast::Pat::Char(value, _) => Pat::Char(value),
+        ast::Pat::Unit(_) => PatKind::Unit,
+        ast::Pat::Bool(value, _) => PatKind::Bool(value),
+        ast::Pat::Int(value, _) => PatKind::Int(value),
+        ast::Pat::Int8(value, _) => PatKind::Int8(value),
+        ast::Pat::Int16(value, _) => PatKind::Int16(value),
+        ast::Pat::Int32(value, _) => PatKind::Int32(value),
+        ast::Pat::Int64(value, _) => PatKind::Int64(value),
+        ast::Pat::UInt8(value, _) => PatKind::UInt8(value),
+        ast::Pat::UInt16(value, _) => PatKind::UInt16(value),
+        ast::Pat::UInt32(value, _) => PatKind::UInt32(value),
+        ast::Pat::UInt64(value, _) => PatKind::UInt64(value),
+        ast::Pat::Float(value, _) => PatKind::Float(value),
+        ast::Pat::Float32(value, _) => PatKind::Float32(value),
+        ast::Pat::Float64(value, _) => PatKind::Float64(value),
+        ast::Pat::String(value, _) => PatKind::String(value),
+        ast::Pat::Char(value, _) => PatKind::Char(value),
         ast::Pat::Constr(path, args, _) => {
             let result: Vec[Pat] = Vec::new();
             for arg in args {
                 result.push(lower_pattern_inner(ctx, arg, env, state))
             };
-            Pat::Constr(unresolved_constructor(ctx, path), result)
+            PatKind::Constr(unresolved_constructor(ctx, path), result)
         },
         ast::Pat::Struct(path, fields, has_rest, _) => {
             let result: Vec[(string, Pat)] = Vec::new();
             for field in fields {
                 result.push((field.0, lower_pattern_inner(ctx, field.1, env, state)))
             };
-            Pat::Struct(path_text(ctx, path), result, has_rest)
+            PatKind::Struct(path_text(ctx, path), result, has_rest)
         },
         ast::Pat::Tuple(values, _) => {
             let result: Vec[Pat] = Vec::new();
             for item in values {
                 result.push(lower_pattern_inner(ctx, item, env, state))
             };
-            Pat::Tuple(result)
+            PatKind::Tuple(result)
         },
         ast::Pat::Array(prefix, rest, suffix, _) => {
             let lowered_prefix: Vec[Pat] = Vec::new();
@@ -725,16 +726,16 @@ fn lower_pattern_inner(
             for item in suffix {
                 lowered_suffix.push(lower_pattern_inner(ctx, item, env, state))
             };
-            Pat::Array(lowered_prefix, lowered_rest, lowered_suffix)
+            PatKind::Array(lowered_prefix, lowered_rest, lowered_suffix)
         },
-        ast::Pat::Alias(name, pat, _) => Pat::Alias(
+        ast::Pat::Alias(name, pat, _) => PatKind::Alias(
             bind_pattern_name(ctx, env, state, name),
             lower_pattern_inner(ctx, pat, env, state),
         ),
         ast::Pat::Or(values, _) => {
             let result: Vec[Pat] = Vec::new();
             if values.len() == 0 {
-                Pat::Or(result)
+                PatKind::Or(result)
             } else {
                 let base_env = copy_bindings(env);
                 let base_seen = copy_bindings(state.seen);
@@ -767,16 +768,17 @@ fn lower_pattern_inner(
                         Option::None => (),
                     }
                 };
-                Pat::Or(result)
+                PatKind::Or(result)
             }
         },
-        ast::Pat::Range(start, end, inclusive, _) => Pat::Range(
+        ast::Pat::Range(start, end, inclusive, _) => PatKind::Range(
             lower_pattern_inner(ctx, start, env, state),
             lower_pattern_inner(ctx, end, env, state),
             inclusive,
         ),
-        ast::Pat::Wild(_) => Pat::Wild,
-    }
+        ast::Pat::Wild(_) => PatKind::Wild,
+    };
+    Pat { kind, span }
 }
 
 fn lower_pattern(ctx: LowerCtx, value: ast::Pat, env: Vec[(string, LocalId)]) -> Pat {
@@ -1092,10 +1094,12 @@ fn lower_function(
         generic_bounds: lower_bounds(ctx, value.generic_bounds, type_params, true),
         predicates,
         params,
+        param_type_spans: value.param_type_spans,
         ret_ty: match value.ret_ty {
             Option::Some(ty) => Option::Some(lower_type(ctx, ty, type_params)),
             Option::None => Option::None,
         },
+        ret_ty_span: value.ret_ty_span,
         body: lower_block(ctx, value.body, env, type_params),
     }
 }
@@ -1246,6 +1250,7 @@ fn lower_impl(ctx: LowerCtx, value: ast::ImplBlock, def_id: DefId) -> ImplBlock 
             Option::None => Option::None,
         },
         for_type: lower_type(ctx, value.for_type, type_params),
+        for_type_span: value.for_type_span,
         methods,
     }
 }

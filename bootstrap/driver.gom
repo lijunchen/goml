@@ -623,7 +623,14 @@ fn fail_on_compilation_diagnostics(diagnostics: Vec[string]) -> unit {
 fn diagnostic_span_start(value: tast::Diagnostic) -> int32 {
     match value.span {
         Option::Some(span) => span.start,
-        Option::None => 2147483647,
+        Option::None => if value.source_path == "" { 2147483647 } else { 0 },
+    }
+}
+
+fn diagnostic_span_end(value: tast::Diagnostic) -> int32 {
+    match value.span {
+        Option::Some(span) => span.end,
+        Option::None => if value.source_path == "" { 2147483647 } else { 0 },
     }
 }
 
@@ -632,6 +639,10 @@ fn diagnostic_precedes(left: tast::Diagnostic, right: tast::Diagnostic) -> bool 
         left.source_path < right.source_path
     } else if diagnostic_span_start(left) != diagnostic_span_start(right) {
         diagnostic_span_start(left) < diagnostic_span_start(right)
+    } else if diagnostic_span_end(left) != diagnostic_span_end(right) {
+        diagnostic_span_end(left) < diagnostic_span_end(right)
+    } else if left.stage != right.stage {
+        left.stage < right.stage
     } else {
         left.message < right.message
     }
@@ -755,7 +766,9 @@ fn render_typer_diagnostic(
     fallback_source: string,
 ) -> string {
     let builder = text::StringBuilder::new();
-    builder.write_string("error[typer]: ");
+    builder.write_string("error[");
+    builder.write_string(value.stage);
+    builder.write_string("]: ");
     builder.write_string(value.message);
     match value.span {
         Option::Some(span) => {
@@ -868,9 +881,38 @@ fn fail_on_typer_diagnostics(
     }
 }
 
-fn fail_on_ast_diagnostics(diagnostics: Vec[cst::Diagnostic]) -> unit {
+fn ast_diagnostics(
+    diagnostics: Vec[cst::Diagnostic],
+    stage: string,
+    source_path: string,
+) -> Vec[tast::Diagnostic] {
+    let result: Vec[tast::Diagnostic] = Vec::new();
+    for diagnostic in diagnostics {
+        result.push(tast::Diagnostic {
+            stage,
+            message: diagnostic.message,
+            source_path,
+            span: Option::Some(ast::Span {
+                start: diagnostic.start,
+                end: diagnostic.end,
+            }),
+        })
+    };
+    result
+}
+
+fn fail_on_ast_diagnostics(
+    diagnostics: Vec[cst::Diagnostic],
+    stage: string,
+    source_path: string,
+    source: string,
+) -> unit {
     if diagnostics.len() > 0 {
-        fail("error[compile]: " + diagnostics.get(0).message)
+        fail(render_typer_diagnostics(
+            ast_diagnostics(diagnostics, stage, source_path),
+            source_path,
+            source,
+        ))
     } else {
         ()
     }
@@ -889,7 +931,7 @@ fn lower_mono_or_fail(value: core::File) -> core::File {
 
 fn compile_source(source_path: string, source: string) -> Compilation {
     let ast_value = ast::lower(parser::parse(source));
-    fail_on_ast_diagnostics(ast_value.diagnostics);
+    fail_on_ast_diagnostics(ast_value.diagnostics, "parser", source_path, source);
     match single_file_project_import(ast_value) {
         Option::Some(package_path) => fail(
             "error[compile]: single-file compilation cannot use project package " + package_path,
@@ -897,7 +939,7 @@ fn compile_source(source_path: string, source: string) -> Compilation {
         Option::None => (),
     };
     let ast_value = hir::expand_derives(ast_value);
-    fail_on_ast_diagnostics(ast_value.diagnostics);
+    fail_on_ast_diagnostics(ast_value.diagnostics, "derive", source_path, source);
     let hir_value = hir::lower_expanded(ast_value, source_path);
     fail_on_compilation_diagnostics(hir_value.diagnostics);
     let counter = Ref::new(0);

@@ -227,6 +227,22 @@ fn lower_params(ctx: LowerCtx, node: LocatedNode) -> Vec[(string, TypeExpr)] {
     result
 }
 
+fn lower_param_type_spans(node: LocatedNode) -> Vec[Span] {
+    let result: Vec[Span] = Vec::new();
+    match first_child(node, cst::NodeKind::PARAM_LIST) {
+        Option::Some(list) => for param in children_of_kind(list, cst::NodeKind::PARAM) {
+            let types = type_children(param);
+            if types.len() > 0 {
+                result.push(type_head_span(types.get(0)))
+            } else {
+                ()
+            }
+        },
+        Option::None => (),
+    };
+    result
+}
+
 fn lower_function(ctx: LowerCtx, node: LocatedNode) -> Option[Function] {
     match first_token(node, lexer::TokenKind::Ident) {
         Option::Some(name_token) => match first_child(node, cst::NodeKind::PARAM_LIST) {
@@ -248,7 +264,13 @@ fn lower_function(ctx: LowerCtx, node: LocatedNode) -> Option[Function] {
                             generic_bounds,
                             predicates: lower_where_clause(ctx, node),
                             params: lower_params(ctx, node),
+                            param_type_spans: lower_param_type_spans(node),
                             ret_ty,
+                            ret_ty_span: if returns.len() > 0 {
+                                Option::Some(type_head_span(returns.get(0)))
+                            } else {
+                                Option::None
+                            },
                             body,
                         })
                     },
@@ -321,6 +343,7 @@ fn lower_impl(ctx: LowerCtx, node: LocatedNode) -> Option[ImplBlock] {
                     associated_types,
                     trait_ref,
                     for_type,
+                    for_type_span: type_head_span(types.get(target_index)),
                     methods,
                 })
             },

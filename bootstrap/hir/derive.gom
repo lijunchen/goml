@@ -310,6 +310,10 @@ fn make_method(
     ret_ty: ast::TypeExpr,
     body: ast::Expr,
 ) -> ast::Function {
+    let param_type_spans: Vec[ast::Span] = Vec::new();
+    for _ in params {
+        param_type_spans.push(dummy_span())
+    };
     ast::Function {
         attrs: empty_attributes(),
         visibility: ast::Visibility::Private,
@@ -318,7 +322,9 @@ fn make_method(
         generic_bounds: empty_bounds(),
         predicates: empty_predicates(),
         params,
+        param_type_spans,
         ret_ty: Option::Some(ret_ty),
+        ret_ty_span: Option::Some(dummy_span()),
         body: expr_body(body),
     }
 }
@@ -338,6 +344,7 @@ fn make_impl(
         associated_types: empty_associated_types(),
         trait_ref: Option::Some(trait_ref(trait_name)),
         for_type: type_for_name(target_name),
+        for_type_span: dummy_span(),
         methods,
     }
 }

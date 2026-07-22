@@ -27,12 +27,15 @@ fn function_context(
         functions: base.functions,
         methods: base.methods,
         impls: base.impls,
+        invalid_impl_arity_owners: base.invalid_impl_arity_owners,
         predicates,
         param_aliases,
         projection_aliases,
         field_constraints: Vec::new(),
+        silent_field_receivers: Vec::new(),
         required_predicates: Vec::new(),
         locals: Vec::new(),
+        unresolved_locals: Vec::new(),
         mutable_locals: Vec::new(),
         return_ty: ret_ty,
         self_ty,
@@ -59,12 +62,15 @@ fn closure_context(base: Checker, ret_ty: Type) -> Checker {
         functions: base.functions,
         methods: base.methods,
         impls: base.impls,
+        invalid_impl_arity_owners: base.invalid_impl_arity_owners,
         predicates: base.predicates,
         param_aliases: base.param_aliases,
         projection_aliases: base.projection_aliases,
         field_constraints: base.field_constraints,
+        silent_field_receivers: base.silent_field_receivers,
         required_predicates: base.required_predicates,
         locals: base.locals,
+        unresolved_locals: base.unresolved_locals,
         mutable_locals: base.mutable_locals,
         return_ty: ret_ty,
         self_ty: base.self_ty,
@@ -100,16 +106,27 @@ fn check_function(
         ),
         true,
     );
+    let previous_span = base.current_span.get();
+    base.current_span.set(value.ret_ty_span);
     let ret_ty = resolve_signature_type(base, raw_ret_ty, predicates, true);
+    base.current_span.set(previous_span);
     let ctx = function_context(base, ret_ty, self_ty, type_params, predicates);
     let params: Vec[(string, Type)] = Vec::new();
     for param in value.params {
+        let index = params.len();
+        let previous_span = ctx.current_span.get();
+        ctx.current_span.set(if index < value.param_type_spans.len() {
+            Option::Some(value.param_type_spans.get(index))
+        } else {
+            Option::None
+        });
         let ty = resolve_signature_type(
             ctx,
             type_from_hir(param.1, type_params, self_ty),
             predicates,
             true,
         );
+        ctx.current_span.set(previous_span);
         insert_local(ctx, param.0, ty);
         params.push((local_name(param.0), ty))
     };
@@ -128,12 +145,29 @@ fn check_function(
 }
 
 fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
+    let previous_span = base.current_span.get();
+    base.current_span.set(Option::Some(value.for_type_span));
+    let raw_for_type = type_from_hir(value.for_type, value.generics, Option::None);
+    let wrong_arity = nominal_application_has_wrong_arity(base, raw_for_type);
     let for_type = resolve_signature_type(
         base,
-        type_from_hir(value.for_type, value.generics, Option::None),
+        raw_for_type,
         Vec::new(),
         true,
     );
+    base.current_span.set(previous_span);
+    if wrong_arity {
+        return ImplBlock {
+            generics: value.generics,
+            predicates: Vec::new(),
+            trait_ref: Option::None,
+            for_type,
+            associated_types: Vec::new(),
+            methods: Vec::new(),
+        }
+    } else {
+        ()
+    };
     let predicates = resolve_signature_predicates(
         base,
         predicates_from_hir(
@@ -151,7 +185,16 @@ fn check_impl(base: Checker, value: hir::ImplBlock) -> ImplBlock {
                 value.generics,
                 Option::Some(for_type),
             );
-            validate_trait_reference(base, reference);
+            match find_trait(base, reference.name) {
+                Option::Some(_) => validate_trait_reference(base, reference),
+                Option::None => push_diagnostic(
+                    base,
+                    "Trait "
+                        + reference.name
+                        + " is not defined, cannot implement it for "
+                        + type_text(for_type),
+                ),
+            };
             Option::Some(reference)
         },
         Option::None => Option::None,

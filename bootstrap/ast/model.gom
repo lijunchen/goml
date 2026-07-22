@@ -84,7 +84,9 @@ pub struct Function {
     generic_bounds: Vec[(string, Vec[TraitRef])],
     predicates: Vec[Predicate],
     params: Vec[(string, TypeExpr)],
+    param_type_spans: Vec[Span],
     ret_ty: Option[TypeExpr],
+    ret_ty_span: Option[Span],
     body: Block,
 }
 
@@ -156,6 +158,7 @@ pub struct ImplBlock {
     associated_types: Vec[(string, TypeExpr)],
     trait_ref: Option[TraitRef],
     for_type: TypeExpr,
+    for_type_span: Span,
     methods: Vec[Function],
 }
 
@@ -327,5 +330,34 @@ pub fn expr_span(value: Expr) -> Span {
         Expr::If(_, _, _, span)
         | Expr::For(_, _, _, span)
         | Expr::Binary(_, _, _, span) => span,
+    }
+}
+
+pub fn pat_span(value: Pat) -> Span {
+    match value {
+        Pat::Unit(span) | Pat::Wild(span) => span,
+        Pat::Var(_, span)
+        | Pat::Bool(_, span)
+        | Pat::Int(_, span)
+        | Pat::Int8(_, span)
+        | Pat::Int16(_, span)
+        | Pat::Int32(_, span)
+        | Pat::Int64(_, span)
+        | Pat::UInt8(_, span)
+        | Pat::UInt16(_, span)
+        | Pat::UInt32(_, span)
+        | Pat::UInt64(_, span)
+        | Pat::Float(_, span)
+        | Pat::Float32(_, span)
+        | Pat::Float64(_, span)
+        | Pat::String(_, span)
+        | Pat::Char(_, span)
+        | Pat::Tuple(_, span)
+        | Pat::Alias(_, _, span)
+        | Pat::Or(_, span) => span,
+        Pat::Constr(_, _, span)
+        | Pat::Struct(_, _, _, span)
+        | Pat::Array(_, _, _, span)
+        | Pat::Range(_, _, _, span) => span,
     }
 }

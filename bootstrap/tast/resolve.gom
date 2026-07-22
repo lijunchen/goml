@@ -644,6 +644,7 @@ fn require_predicates(ctx: Checker, predicates: Vec[TypePredicate]) -> unit {
         ctx.required_predicates.push(PredicateRequirement {
             predicate,
             message: "type predicate not satisfied",
+            span: ctx.current_span.get(),
         })
     }
 }
@@ -656,19 +657,133 @@ fn require_predicate(
     ctx.required_predicates.push(PredicateRequirement {
         predicate,
         message,
+        span: ctx.current_span.get(),
     })
+}
+
+fn predicate_requirement_message(
+    ctx: Checker,
+    value: TypePredicate,
+    fallback: string,
+) -> string {
+    if fallback == "type predicate not satisfied" {
+        match value {
+            TypePredicate::Trait(for_ty, reference) => {
+                let unresolved = Ref::new(contains_unbound_type_variable(for_ty));
+                for value in reference.args {
+                    if contains_unbound_type_variable(value) {
+                        unresolved.set(true)
+                    } else {
+                        ()
+                    }
+                };
+                if unresolved.get() {
+                    "Could not infer the type required to prove "
+                        + trait_ref_text(diagnostic_trait_ref(reference))
+                        + "<"
+                        + diagnostic_type_text(for_ty)
+                        + ">"
+                } else {
+                    "No instance found for trait "
+                        + trait_ref_text(reference)
+                        + "<"
+                        + type_text(normalize_type(ctx, for_ty))
+                        + ">"
+                }
+            },
+            TypePredicate::Equality(_, _) => fallback,
+        }
+    } else {
+        fallback
+    }
+}
+
+fn type_contains_error(value: Type) -> bool {
+    match prune(value) {
+        Type::Error => true,
+        Type::Tuple(values) => {
+            let found = Ref::new(false);
+            for value in values {
+                if type_contains_error(value) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Type::Projection(base, _, _) => type_contains_error(base),
+        Type::App(base, args) => {
+            let found = Ref::new(type_contains_error(base));
+            for value in args {
+                if type_contains_error(value) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        Type::Array(_, elem)
+        | Type::Slice(elem)
+        | Type::VecType(elem)
+        | Type::RefType(elem) => type_contains_error(elem),
+        Type::HashMap(key, value) => {
+            type_contains_error(key) || type_contains_error(value)
+        },
+        Type::Func(params, ret_ty) => {
+            let found = Ref::new(type_contains_error(ret_ty));
+            for value in params {
+                if type_contains_error(value) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        _ => false,
+    }
+}
+
+fn predicate_contains_error(value: TypePredicate) -> bool {
+    match value {
+        TypePredicate::Trait(for_ty, reference) => {
+            let found = Ref::new(type_contains_error(for_ty));
+            for value in reference.args {
+                if type_contains_error(value) {
+                    found.set(true)
+                } else {
+                    ()
+                }
+            };
+            found.get()
+        },
+        TypePredicate::Equality(left, right) => {
+            type_contains_error(left) || type_contains_error(right)
+        },
+    }
 }
 
 fn resolve_required_predicates(ctx: Checker) -> unit {
     for requirement in ctx.required_predicates {
-        if predicates_satisfied_at(
+        if predicate_contains_error(requirement.predicate)
+            || predicates_satisfied_at(
             ctx,
             Vec::new().pushed(requirement.predicate),
             0,
         ) {
             ()
         } else {
-            push_diagnostic(ctx, requirement.message)
+            push_diagnostic_at(
+                ctx,
+                predicate_requirement_message(
+                    ctx,
+                    requirement.predicate,
+                    requirement.message,
+                ),
+                requirement.span,
+            )
         }
     }
 }
@@ -812,7 +927,9 @@ fn trait_bound_satisfied_at(
 ) -> bool {
     let bound_ty = normalize_type(ctx, bound_ty);
     let reference = normalize_trait_ref(ctx, reference);
-    if context_trait_bound_satisfied(ctx, bound_ty, reference) {
+    if types_equal(bound_ty, Type::Error) {
+        true
+    } else if context_trait_bound_satisfied(ctx, bound_ty, reference) {
         true
     } else if depth >= 16 {
         false
@@ -894,8 +1011,25 @@ fn impls_overlap(ctx: Checker, left: ImplInfo, right: ImplInfo) -> bool {
 fn validate_impl_overlaps(ctx: Checker) -> unit {
     for left in range(0, ctx.impls.len()) {
         for right in range(left + 1, ctx.impls.len()) {
-            if impls_overlap(ctx, ctx.impls.get(left), ctx.impls.get(right)) {
-                push_diagnostic(ctx, "overlapping trait implementations")
+            let left_impl = ctx.impls.get(left);
+            let right_impl = ctx.impls.get(right);
+            if impls_overlap(ctx, left_impl, right_impl) {
+                if left_impl.generics.len() == 0
+                    && right_impl.generics.len() == 0
+                    && types_equal(left_impl.for_type, right_impl.for_type)
+                    && trait_ref_equal(left_impl.trait_ref, right_impl.trait_ref)
+                {
+                    push_diagnostic(
+                        ctx,
+                        "Trait "
+                            + trait_ref_text(left_impl.trait_ref)
+                            + " implementation for "
+                            + type_text(left_impl.for_type)
+                            + " is already defined",
+                    )
+                } else {
+                    push_diagnostic(ctx, "overlapping trait implementations")
+                }
             } else {
                 ()
             }
@@ -1914,6 +2048,23 @@ fn nominal_arity(ctx: Checker, name: string) -> Option[int32] {
     }
 }
 
+fn nominal_application_has_wrong_arity(ctx: Checker, value: Type) -> bool {
+    match prune(value) {
+        Type::Con(name) => match nominal_arity(ctx, name) {
+            Option::Some(expected) => expected != 0,
+            Option::None => false,
+        },
+        Type::App(base, args) => match prune(base) {
+            Type::Con(name) => match nominal_arity(ctx, name) {
+                Option::Some(expected) => expected != args.len(),
+                Option::None => false,
+            },
+            _ => false,
+        },
+        _ => false,
+    }
+}
+
 fn validate_nominal_application(
     ctx: Checker,
     name: string,
@@ -1921,11 +2072,28 @@ fn validate_nominal_application(
 ) -> unit {
     match nominal_arity(ctx, name) {
         Option::Some(expected) => if expected != args.len() {
-            push_diagnostic(ctx, "type argument count mismatch for " + name)
+            let category = if expected == 0 && args.len() > 0 {
+                match find_struct_by_name(ctx, name) {
+                    Option::Some(_) => "Struct",
+                    Option::None => "Type",
+                }
+            } else {
+                "Type"
+            };
+            push_diagnostic(
+                ctx,
+                category
+                    + " "
+                    + short_name(name)
+                    + " expects "
+                    + expected.to_string()
+                    + " type arguments, but got "
+                    + args.len().to_string(),
+            )
         } else {
             ()
         },
-        Option::None => push_diagnostic(ctx, "unknown type constructor " + name),
+        Option::None => push_diagnostic(ctx, "Unknown type constructor " + name),
     };
     for arg in args {
         validate_signature_type(ctx, arg)
@@ -1941,7 +2109,7 @@ fn validate_trait_reference(ctx: Checker, reference: TraitRef) -> unit {
         } else {
             ()
         },
-        Option::None => push_diagnostic(ctx, "unknown trait " + reference.name),
+        Option::None => push_diagnostic(ctx, "Unknown trait " + reference.name),
     };
     for arg in reference.args {
         validate_signature_type(ctx, arg)
@@ -2013,21 +2181,23 @@ fn type_contains_parameter(value: Type, expected: string) -> bool {
 fn validate_dyn_trait(ctx: Checker, info: TraitInfo) -> unit {
     for method in info.methods {
         if method.params.len() == 0 {
-            push_diagnostic(ctx,
+            push_diagnostic_at(ctx,
                 "Trait "
                     + info.name
                     + "::"
                     + method.name
                     + " is not dyn-safe: missing receiver parameter",
+                Option::None,
             )
         } else {
             if !types_equal(method.params.get(0), Type::Param("Self")) {
-                push_diagnostic(ctx,
+                push_diagnostic_at(ctx,
                     "Trait "
                         + info.name
                         + "::"
                         + method.name
                         + " is not dyn-safe: receiver must be Self",
+                    Option::None,
                 )
             } else {
                 ()
@@ -2041,24 +2211,26 @@ fn validate_dyn_trait(ctx: Checker, info: TraitInfo) -> unit {
                 }
             };
             if invalid_parameter.get() {
-                push_diagnostic(ctx,
+                push_diagnostic_at(ctx,
                     "Trait "
                         + info.name
                         + "::"
                         + method.name
                         + " is not dyn-safe: Self is not allowed in non-receiver parameters",
+                    Option::None,
                 )
             } else {
                 ()
             }
         };
         if type_contains_parameter(method.ret_ty, "Self") {
-            push_diagnostic(ctx,
+            push_diagnostic_at(ctx,
                 "Trait "
                     + info.name
                     + "::"
                     + method.name
                     + " is not dyn-safe: Self is not allowed in return type",
+                Option::None,
             )
         } else {
             ()
@@ -2085,7 +2257,7 @@ fn validate_signature_type(ctx: Checker, value: Type) -> unit {
             } else {
                 validate_dyn_trait(ctx, info)
             },
-            Option::None => push_diagnostic(ctx, "unknown trait " + name),
+            Option::None => push_diagnostic(ctx, "Unknown trait " + name),
         },
         Type::Projection(base, _, qualifier) => {
             validate_signature_type(ctx, base);

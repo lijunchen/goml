@@ -26,6 +26,81 @@ fn node_span(value: LocatedNode) -> Span {
     span(value.start, value.start + cst::node_byte_len(value.node))
 }
 
+fn trimmed_node_end(value: LocatedNode) -> int32 {
+    let cursor = Ref::new(value.start);
+    let end = Ref::new(value.start);
+    for element in cst::node_children(value.node) {
+        match element {
+            cst::CstElement::Node(child) => {
+                let child_end = trimmed_node_end(LocatedNode {
+                    node: child,
+                    start: cursor.get(),
+                });
+                if child_end > end.get() {
+                    end.set(child_end)
+                } else {
+                    ()
+                }
+            },
+            cst::CstElement::Token(token) => if lexer::token_is_trivia(token.kind) {
+                ()
+            } else {
+                end.set(cursor.get() + token.text.byte_len())
+            },
+        };
+        cursor.set(cursor.get() + cst::element_byte_len(element))
+    };
+    end.get()
+}
+
+fn trimmed_node_span(value: LocatedNode) -> Span {
+    span(value.start, trimmed_node_end(value))
+}
+
+fn first_significant_token_span(value: LocatedNode) -> Option[Span] {
+    let cursor = Ref::new(value.start);
+    let result = Ref::new(Option::None);
+    let found = Ref::new(false);
+    for element in cst::node_children(value.node) {
+        if found.get() {
+            ()
+        } else {
+            match element {
+                cst::CstElement::Node(child) => {
+                    match first_significant_token_span(LocatedNode {
+                        node: child,
+                        start: cursor.get(),
+                    }) {
+                        Option::Some(value) => {
+                            result.set(Option::Some(value));
+                            found.set(true)
+                        },
+                        Option::None => (),
+                    }
+                },
+                cst::CstElement::Token(token) => if lexer::token_is_trivia(token.kind) {
+                    ()
+                } else {
+                    result.set(Option::Some(span(
+                        cursor.get(),
+                        cursor.get() + token.text.byte_len(),
+                    )));
+                    found.set(true)
+                },
+            }
+        };
+        cursor.set(cursor.get() + cst::element_byte_len(element))
+    };
+    result.get()
+}
+
+fn type_head_span(value: LocatedNode) -> Span {
+    match first_significant_token_span(value) {
+        Option::Some(value) => value,
+        Option::None => trimmed_node_span(value),
+    }
+}
+
 fn direct_nodes(value: LocatedNode) -> Vec[LocatedNode] {
     let result: Vec[LocatedNode] = Vec::new();
     let cursor = Ref::new(value.start);
