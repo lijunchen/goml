@@ -1095,6 +1095,26 @@ fn hashmap_trait_impl_name(trait_name: string, key: tast::Type, method: string) 
     go_ident("trait_impl#" + trait_name + "#" + compact_type(key) + "#" + method)
 }
 
+fn hashmap_hash_expr(key: tast::Type, value: Expr) -> Expr {
+    match tast::resolve_type(key) {
+        tast::Type::Dyn(name) => if name == "Hash" || has_suffix(name, "::Hash") {
+            Expr::Call(
+                Expr::Field(Expr::Field(value, "vtable"), "hash"),
+                Vec::new().pushed(Expr::Field(value, "data")),
+            )
+        } else {
+            Expr::Call(
+                Expr::Var(hashmap_trait_impl_name("Hash", key, "hash")),
+                Vec::new().pushed(value),
+            )
+        },
+        _ => Expr::Call(
+            Expr::Var(hashmap_trait_impl_name("Hash", key, "hash")),
+            Vec::new().pushed(value),
+        ),
+    }
+}
+
 fn hashmap_new_item(key: tast::Type, value: tast::Type) -> Item {
     let map_ty = tast::Type::HashMap(key, value);
     let name = hashmap_name(key, value);
@@ -1163,15 +1183,10 @@ fn hashmap_lookup_item(key: tast::Type, value: tast::Type) -> Item {
         Block { stmts: nil_stmts },
         Option::None,
     ));
-    let hash_args: Vec[Expr] = Vec::new();
-    hash_args.push(Expr::Var("key"));
     stmts.push(Stmt::Var(
         "h",
         Type::Uint64,
-        Option::Some(Expr::Call(
-            Expr::Var(hashmap_trait_impl_name("Hash", key, "hash")),
-            hash_args,
-        )),
+        Option::Some(hashmap_hash_expr(key, Expr::Var("key"))),
     ));
     stmts.push(Stmt::Var(
         "bucket",
@@ -1347,15 +1362,10 @@ fn hashmap_set_item(key: tast::Type, value: tast::Type) -> Item {
         Block { stmts: nil_stmts },
         Option::None,
     ));
-    let hash_args: Vec[Expr] = Vec::new();
-    hash_args.push(Expr::Var("key"));
     stmts.push(Stmt::Var(
         "h",
         Type::Uint64,
-        Option::Some(Expr::Call(
-            Expr::Var(hashmap_trait_impl_name("Hash", key, "hash")),
-            hash_args,
-        )),
+        Option::Some(hashmap_hash_expr(key, Expr::Var("key"))),
     ));
     stmts.push(Stmt::Var(
         "bucket",
@@ -1516,15 +1526,10 @@ fn hashmap_remove_item(key: tast::Type, value: tast::Type) -> Item {
         Block { stmts: nil_stmts },
         Option::None,
     ));
-    let hash_args: Vec[Expr] = Vec::new();
-    hash_args.push(Expr::Var("key"));
     stmts.push(Stmt::Var(
         "h",
         Type::Uint64,
-        Option::Some(Expr::Call(
-            Expr::Var(hashmap_trait_impl_name("Hash", key, "hash")),
-            hash_args,
-        )),
+        Option::Some(hashmap_hash_expr(key, Expr::Var("key"))),
     ));
     stmts.push(Stmt::Var(
         "bucket",
@@ -1623,15 +1628,10 @@ fn hashmap_contains_item(key: tast::Type, value: tast::Type) -> Item {
         Block { stmts: nil_stmts },
         Option::None,
     ));
-    let hash_args: Vec[Expr] = Vec::new();
-    hash_args.push(Expr::Var("key"));
     stmts.push(Stmt::Var(
         "h",
         Type::Uint64,
-        Option::Some(Expr::Call(
-            Expr::Var(hashmap_trait_impl_name("Hash", key, "hash")),
-            hash_args,
-        )),
+        Option::Some(hashmap_hash_expr(key, Expr::Var("key"))),
     ));
     stmts.push(Stmt::Var(
         "bucket",
