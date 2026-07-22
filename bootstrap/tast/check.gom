@@ -2643,7 +2643,28 @@ fn infer_expr(ctx: Checker, value: hir::Expr) -> Expr {
                     ctx.predicates,
                     true,
                 );
-                Expr::Cast(check_expr(ctx, value, Option::None), target)
+                let source_span = value.span;
+                let source = check_expr(ctx, value, Option::None);
+                let source_ty = resolve_type(expr_type(source));
+                let target_ty = resolve_type(target);
+                let valid = (is_integer_type(source_ty) && is_integer_type(target_ty))
+                    || match (source_ty, target_ty) {
+                        (Type::Char, Type::Uint32) => true,
+                        _ => false,
+                    };
+                if !valid {
+                    push_diagnostic_at(
+                        ctx,
+                        "Invalid cast from "
+                            + diagnostic_type_text(source_ty)
+                            + " to "
+                            + diagnostic_type_text(target_ty),
+                        Option::Some(source_span),
+                    )
+                } else {
+                    ()
+                };
+                Expr::Cast(source, target)
             },
             hir::ExprKind::Try(index, value) => check_try_expr(ctx, index, value),
             hir::ExprKind::Binary(op, left, right) => {

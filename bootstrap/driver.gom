@@ -973,6 +973,34 @@ fn lower_mono_or_fail(value: core::File) -> core::File {
     }
 }
 
+fn has_single_file_entrypoint(value: tast::CheckResult) -> bool {
+    match value.tast {
+        Option::Some(file) => {
+            let found = Ref::new(false);
+            for item in file.items {
+                match item {
+                    tast::Item::Function(function) => if function.name == "main" {
+                        found.set(true)
+                    } else {
+                        ()
+                    },
+                    _ => (),
+                }
+            };
+            found.get()
+        },
+        Option::None => false,
+    }
+}
+
+fn fail_on_missing_single_file_entrypoint(value: tast::CheckResult) -> unit {
+    if has_single_file_entrypoint(value) {
+        ()
+    } else {
+        fail("error[typer]: main function is required")
+    }
+}
+
 fn compile_source(source_path: string, source: string) -> Compilation {
     let parsed = parser::parse(source);
     fail_on_ast_diagnostics(parsed.diagnostics, "parser", source_path, source);
@@ -1008,6 +1036,7 @@ fn compile_source(source_path: string, source: string) -> Compilation {
         hir_dependencies,
     );
     fail_on_typer_diagnostics(tast_value.diagnostics, source_path, source);
+    fail_on_missing_single_file_entrypoint(tast_value);
     let core_value = core::link_with_dependencies(
         builtins,
         core_dependencies,
