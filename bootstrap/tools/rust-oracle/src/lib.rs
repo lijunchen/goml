@@ -5,6 +5,32 @@ mod ast_encode;
 
 pub use ast_encode::encode_ast;
 
+pub fn encode_diagnostics(path: &Path, source: &str) -> String {
+    use compiler::pipeline::pipeline::CompilationError;
+
+    let formatted = match compiler::pipeline::pipeline::compile(path, source) {
+        Ok(_) => Vec::new(),
+        Err(CompilationError::Parser { diagnostics }) => {
+            parser::format_parser_diagnostics(&diagnostics, source)
+        }
+        Err(CompilationError::Lower { diagnostics }) => diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.message().to_string())
+            .collect(),
+        Err(CompilationError::Typer { diagnostics }) => {
+            compiler::env::format_typer_diagnostics(&diagnostics, source)
+        }
+        Err(CompilationError::Compile { diagnostics }) => {
+            compiler::env::format_compile_diagnostics(&diagnostics, source)
+        }
+    };
+    if formatted.is_empty() {
+        String::new()
+    } else {
+        formatted.join("\n") + "\n"
+    }
+}
+
 pub fn encode_go(path: &Path, source: &str) -> String {
     let path = path.to_owned();
     let source = source.to_owned();

@@ -5,13 +5,13 @@ fn main() {
     let _ = args.next();
     let Some(mode) = args.next() else {
         eprintln!(
-            "usage: gomlang-parser-rust-oracle <lex|cst|ast|hir|tast|core|mono|lift|anf|go> <file>"
+            "usage: gomlang-parser-rust-oracle <diagnostics|lex|cst|ast|hir|tast|core|mono|lift|anf|go> <file>"
         );
         process::exit(2);
     };
     let Some(path) = args.next() else {
         eprintln!(
-            "usage: gomlang-parser-rust-oracle <lex|cst|ast|hir|tast|core|mono|lift|anf|go> <file>"
+            "usage: gomlang-parser-rust-oracle <diagnostics|lex|cst|ast|hir|tast|core|mono|lift|anf|go> <file>"
         );
         process::exit(2);
     };
@@ -22,7 +22,12 @@ fn main() {
             process::exit(1);
         }
     };
-    if mode == "lex" {
+    if mode == "diagnostics" {
+        print!(
+            "{}",
+            gomlang_parser_rust_oracle::encode_diagnostics(path.as_ref(), &source)
+        );
+    } else if mode == "lex" {
         print!("{}", gomlang_parser_rust_oracle::encode(&source));
     } else if mode == "cst" {
         print!(
