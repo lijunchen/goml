@@ -582,6 +582,20 @@ fn emits_hashmap_and_dyn_hash_runtime() -> unit {
 }
 
 #[test]
+fn dispatches_dyn_hashmap_keys_through_vtables() -> unit {
+    let source = "impl Eq for dyn Hash { fn eq(self: dyn Hash, other: dyn Hash) -> bool { Hash::hash(self) == Hash::hash(other) } } fn main() -> unit { let values: HashMap[dyn Hash, string] = HashMap::new(); let key: dyn Hash = 1i32; values.set(key, \"one\"); println(values.contains(key).to_string()); }";
+    let output = encode(lower_linked_source(source));
+    testing::assert_eq(
+        string_contains(output, "key.vtable.hash(key.data)"),
+        true,
+    );
+    testing::assert_eq(
+        string_contains(output, "_goml_m_trait__impl_i_Hash_i_dynHash_i_hash"),
+        false,
+    )
+}
+
+#[test]
 fn emits_generic_enum_instances_and_type_switches() -> unit {
     let source = "enum Weird[T] { Next(Ref[Weird[(int32) -> int32]]), Done(T), } fn main() -> unit { let x: Weird[int32] = Weird::Done(1i32); match x { Weird::Done(v) => println(v.to_string()), Weird::Next(_) => println(\"next\"), } }";
     testing::assert_eq(
