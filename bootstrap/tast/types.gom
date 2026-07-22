@@ -262,7 +262,10 @@ fn unify(left: Type, right: Type) -> bool {
 }
 
 fn type_mismatch_text(left: Type, right: Type) -> string {
-    "Type mismatch: expected " + type_text(left) + ", found " + type_text(right)
+    "Type mismatch: expected "
+        + diagnostic_type_text(left)
+        + ", found "
+        + diagnostic_type_text(right)
 }
 
 fn first_type_list_error(left: Vec[Type], right: Vec[Type]) -> Option[string] {

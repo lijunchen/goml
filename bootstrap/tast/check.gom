@@ -821,9 +821,37 @@ fn check_name_ref(ctx: Checker, value: hir::NameRef) -> Expr {
                 let (callable, ty) = instantiate_scheme(ctx, scheme, Vec::new());
                 Expr::Callable(callable, ty)
             },
-            Option::None => {
-                push_diagnostic(ctx, "definition not found");
-                Expr::Callable(Callable::Function("<error>"), Type::Error)
+            Option::None => match find_rejected_extern(ctx, definition) {
+                Option::Some(value) => match builtin_function_scheme(short_name(value.name)) {
+                    Option::Some(scheme) => {
+                        let (callable, ty) = instantiate_scheme(ctx, scheme, Vec::new());
+                        Expr::Callable(callable, ty)
+                    },
+                    Option::None => {
+                        push_diagnostic_at(
+                            ctx,
+                            "Internal error: Function "
+                                + short_name(value.name)
+                                + " not found in environment",
+                            Option::None,
+                        );
+                        let params: Vec[Type] = Vec::new();
+                        for _ in range(0, value.arity) {
+                            params.push(fresh_type(ctx.counter, VarKind::Any))
+                        };
+                        Expr::Callable(
+                            Callable::Function(value.name),
+                            Type::Func(
+                                params,
+                                fresh_type(ctx.counter, VarKind::Any),
+                            ),
+                        )
+                    },
+                },
+                Option::None => {
+                    push_diagnostic(ctx, "definition not found");
+                    Expr::Callable(Callable::Function("<error>"), Type::Error)
+                },
             },
         },
         hir::NameRef::Other(name) => {
