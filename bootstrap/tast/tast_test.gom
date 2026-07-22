@@ -175,6 +175,25 @@ fn diagnoses_duplicate_functions_across_package_files() -> unit {
 }
 
 #[test]
+fn diagnoses_duplicate_declaration_names() -> unit {
+    let diagnostics = checked_diagnostics(
+        "enum E { A, A } struct S { x: int32, x: string } enum Both { A } struct Both { value: int32 } trait T[T, T] { type Item; type Item; fn f(Self) -> unit; fn f(Self) -> unit; } fn duplicate[T, T](x: int32, x: string) -> unit {} fn duplicate() -> unit {}",
+    );
+    let expected = Vec::new();
+    expected.push("variant A is defined multiple times in enum E");
+    expected.push("field x is defined multiple times in struct S");
+    expected.push("type Both is defined as both a struct and an enum");
+    expected.push("type parameter T is defined multiple times");
+    expected.push("associated type Item is defined multiple times in trait T");
+    expected.push("method f is defined multiple times in trait T");
+    expected.push("parameter x is defined multiple times");
+    expected.push("function duplicate is defined multiple times");
+    for message in expected {
+        testing::assert(has_diagnostic(diagnostics, message))
+    }
+}
+
+#[test]
 fn resolves_generic_functions_from_package_interfaces() -> unit {
     let dependencies: Vec[hir::File] = Vec::new();
     dependencies.push(dependency_hir(
