@@ -2404,7 +2404,7 @@ fn check_index_expr(ctx: Checker, base_source: hir::Expr, index_source: hir::Exp
     if base_always_exits {
         Expr::Index(
             base,
-            Expr::Prim(Primitive::Unit, Type::Unit),
+            check_expr(ctx, index_source, Option::Some(Type::Int32)),
             Type::Unit,
         )
     } else if hir_expr_always_exits_loop_control(index_source) {
