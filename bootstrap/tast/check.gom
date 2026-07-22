@@ -2401,9 +2401,12 @@ fn check_option_try(
 ) -> Expr {
     let ok_ty = args.get(0);
     let outer_ok = fresh_type(ctx.counter, VarKind::Any);
-    let return_valid = match try_type_parts(ctx.return_ty) {
-        Option::Some(parts) => names_match(parts.0, name) && parts.1.len() == 1,
-        Option::None => false,
+    let return_valid = match prune(ctx.return_ty) {
+        Type::Var(_) => true,
+        _ => match try_type_parts(ctx.return_ty) {
+            Option::Some(parts) => names_match(parts.0, name) && parts.1.len() == 1,
+            Option::None => false,
+        },
     };
     if return_valid {
         let _ = unify(ctx.return_ty, nominal_type(name, one_type(outer_ok)));
@@ -2458,11 +2461,14 @@ fn check_result_try(
     let ok_ty = args.get(0);
     let error_ty = args.get(1);
     let outer_ok = fresh_type(ctx.counter, VarKind::Any);
-    let return_valid = match try_type_parts(ctx.return_ty) {
-        Option::Some(parts) => names_match(parts.0, name)
-            && parts.1.len() == 2
-            && types_equal(parts.1.get(1), error_ty),
-        Option::None => false,
+    let return_valid = match prune(ctx.return_ty) {
+        Type::Var(_) => true,
+        _ => match try_type_parts(ctx.return_ty) {
+            Option::Some(parts) => names_match(parts.0, name)
+                && parts.1.len() == 2
+                && types_equal(parts.1.get(1), error_ty),
+            Option::None => false,
+        },
     };
     if return_valid {
         let _ = unify(
