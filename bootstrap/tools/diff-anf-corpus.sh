@@ -26,7 +26,7 @@ while IFS= read -r -d '' source; do
   if [[ ! -s "$work_dir/rust" ]]; then
     continue
   fi
-  if ! "$parser" anf "$source" >"$work_dir/goml"; then
+  if ! "$parser" __canonical-stage anf "$source" >"$work_dir/goml"; then
     printf 'GoML ANF lowering failed: %s\n' "$source" >&2
     exit 1
   fi

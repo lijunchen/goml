@@ -26,7 +26,7 @@ while IFS= read -r -d '' source; do
   if [[ ! -s "$work_dir/rust" ]]; then
     continue
   fi
-  if ! "$parser" core "$source" >"$work_dir/goml"; then
+  if ! "$parser" __canonical-stage core "$source" >"$work_dir/goml"; then
     printf 'GoML Core lowering failed: %s\n' "$source" >&2
     exit 1
   fi

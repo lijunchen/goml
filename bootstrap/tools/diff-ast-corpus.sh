@@ -20,7 +20,7 @@ while IFS= read -r -d '' source; do
     printf 'Rust AST oracle failed: %s\n' "$source" >&2
     exit 1
   fi
-  if ! "$parser" ast "$source" >"$work_dir/goml"; then
+  if ! "$parser" __canonical-stage ast "$source" >"$work_dir/goml"; then
     printf 'GoML AST parser failed: %s\n' "$source" >&2
     exit 1
   fi

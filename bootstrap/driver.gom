@@ -1109,19 +1109,6 @@ fn pipeline_stage_output(stage: string, source_path: string, source: string) -> 
     }
 }
 
-fn run_pipeline_stage(args: Vec[string]) -> unit {
-    if args.len() != 4 {
-        fail("usage: gomlc __pipeline-stage <STAGE> <FILE>")
-    } else {
-        let source_path = args.get(3);
-        io::print(pipeline_stage_output(
-            args.get(2),
-            source_path,
-            read_source(source_path),
-        ))
-    }
-}
-
 fn print_dump(printed: Ref[bool], label: string, content: string) -> unit {
     if printed.get() {
         io::println("")

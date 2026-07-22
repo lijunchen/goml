@@ -24,7 +24,7 @@ for stage in "${stages[@]}"; do
     expected="$source.$stage"
     actual="$work_dir/actual"
     errors="$work_dir/errors"
-    if ! "$gomlc" __pipeline-stage "$stage" "$source" >"$actual" 2>"$errors"; then
+    if ! "$gomlc" "$stage" "$source" >"$actual" 2>"$errors"; then
       printf 'bootstrap gomlc failed: %s %s\n' "$stage" "$source" >&2
       sed 's/^/  /' "$errors" >&2
       exit 1

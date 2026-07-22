@@ -26,7 +26,7 @@ while IFS= read -r -d '' source; do
   if [[ ! -s "$work_dir/rust" ]]; then
     continue
   fi
-  if ! "$parser" tast "$source" >"$work_dir/goml"; then
+  if ! "$parser" __canonical-stage tast "$source" >"$work_dir/goml"; then
     printf 'GoML TAST checking failed: %s\n' "$source" >&2
     exit 1
   fi

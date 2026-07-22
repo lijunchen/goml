@@ -17,7 +17,7 @@ count=0
 
 while IFS= read -r -d '' source; do
   "$oracle" cst "$source" >"$work_dir/rust"
-  "$parser" cst "$source" >"$work_dir/goml"
+  "$parser" __canonical-stage cst "$source" >"$work_dir/goml"
   if ! cmp --silent "$work_dir/rust" "$work_dir/goml"; then
     printf 'CST mismatch: %s\n' "$source" >&2
     diff -u "$work_dir/rust" "$work_dir/goml" >&2 || true
