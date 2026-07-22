@@ -1455,6 +1455,18 @@ fn types_control_flow_member_subexpressions_as_unit() -> unit {
                     match (resolve_type(pattern_ty), resolve_type(expr_type(expression))) {
                         (Type::Int32, Type::Unit) => (),
                         _ => testing::fail("expected unit control flow expression type"),
+                    };
+                    if index == 1 {
+                        match expression {
+                            Expr::Index(
+                                _,
+                                Expr::Prim(Primitive::Int32(value), Type::Int32),
+                                Type::Unit,
+                            ) => testing::assert_eq(value, "0"),
+                            _ => testing::fail("expected preserved index expression"),
+                        }
+                    } else {
+                        ()
                     }
                 },
                 _ => testing::fail("expected typed control flow binding"),
