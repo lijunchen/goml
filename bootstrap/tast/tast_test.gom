@@ -508,6 +508,24 @@ fn rejects_generic_and_parameterized_main_functions() -> unit {
 }
 
 #[test]
+fn rejects_self_types_outside_impl_methods() -> unit {
+    let diagnostics = checked_diagnostics(
+        "struct Direct { value: Self } struct Nested { value: Vec[Self] } struct Repeated { value: (Self, Self) } fn takes(value: Self) -> Self { value } fn main() -> unit {}",
+    );
+    testing::assert_eq(diagnostics.len(), 6);
+    for diagnostic in diagnostics {
+        testing::assert_eq(
+            diagnostic.message,
+            "Self type is only valid in impl methods",
+        );
+        testing::assert(match diagnostic.span {
+            Option::Some(_) => true,
+            Option::None => false,
+        })
+    }
+}
+
+#[test]
 fn checks_match_exhaustiveness_and_irrefutable_bindings() -> unit {
     let exhaustive = check(hir::lower(
         ast::lower(parser::parse(
