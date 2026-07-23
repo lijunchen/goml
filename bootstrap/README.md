@@ -1,51 +1,109 @@
-# gomlang-parser
+# gomlc bootstrap
 
-`gomlang-parser` is a self-hosted GoML frontend that mirrors the current Rust frontend in `goml`.
+This directory contains the self-hosted GoML compiler. It is a GoML module named `gomlc` that mirrors the Rust compiler and implements the compiler driver protocol used by the `goml` CLI.
 
-The implementation provides:
+The compiler covers the complete single-file pipeline:
 
-- byte-accurate lexing with the same token kinds, trivia, UTF-8 ranges, and error partitioning as `crates/lexer`
-- event-based parsing with the same lossless CST shape and recoverable diagnostics as `crates/parser` and `crates/cst`
-- CST-to-AST lowering with the same AST variants, normalized values, source spans, constructor classification, desugaring, and lower diagnostics as `crates/ast`
-- AST-to-HIR lowering with the same definitions, local resolution, constructor resolution, derive expansion, and canonical HIR output as `crates/compiler`
-- HIR-to-TAST checking with type inference, callable resolution, coercions, pattern checking, and canonical typed output
-- TAST-to-Core lowering with explicit calls, let chains, structured control flow, and canonical Core output
-- Core-to-Mono lowering with a canonical Mono output stage
-
-Build the command-line tool with:
-
-```sh
-goml build .
+```text
+lexer → parser → CST → AST → HIR → TAST → Core → Mono → Lift → ANF → Go
 ```
 
-The resulting `artifact/bin/parser` accepts a stage and a source file:
+It also supports package checking, package builds, test builds, linking, execution, compiler artifacts, the standard library, and runtime host hooks.
+
+## Build
+
+Build the Rust driver and then compile the bootstrap module from the repository root:
 
 ```sh
-artifact/bin/parser lex path/to/file.gom
-artifact/bin/parser cst path/to/file.gom
-artifact/bin/parser ast path/to/file.gom
-artifact/bin/parser hir path/to/file.gom
-artifact/bin/parser tast path/to/file.gom
-artifact/bin/parser core path/to/file.gom
-artifact/bin/parser mono path/to/file.gom
+cargo build -p goml -p gomlc
+target/debug/goml build bootstrap
 ```
 
-Run the package tests serially:
+The resulting compiler is:
+
+```text
+bootstrap/artifact/bin/gomlc
+```
+
+## Single-file commands
+
+Run a GoML source file:
 
 ```sh
-goml test lexer
-goml test parser
-goml test ast
-goml test hir
-goml test tast
-goml test core
-goml test mono
+bootstrap/artifact/bin/gomlc run-single path/to/file.gom
 ```
 
-The compiler bootstrap tests build the bootstrap compiler and compare generated inputs, the repository corpus, compiler test suites, and pipeline snapshots byte for byte:
+Dump selected compiler stages before execution:
 
 ```sh
-cargo test -p compiler bootstrap:: -- --test-threads=1
+bootstrap/artifact/bin/gomlc run-single \
+  --dump-ast \
+  --dump-hir \
+  --dump-tast \
+  --dump-core \
+  --dump-mono \
+  --dump-lift \
+  --dump-anf \
+  --dump-go \
+  path/to/file.gom
 ```
 
-Set `GOML_REPO` to run the tests against a different `goml` checkout.
+Print one stage directly:
+
+```sh
+bootstrap/artifact/bin/gomlc lex path/to/file.gom
+bootstrap/artifact/bin/gomlc cst path/to/file.gom
+bootstrap/artifact/bin/gomlc ast path/to/file.gom
+bootstrap/artifact/bin/gomlc hir path/to/file.gom
+bootstrap/artifact/bin/gomlc tast path/to/file.gom
+bootstrap/artifact/bin/gomlc core path/to/file.gom
+bootstrap/artifact/bin/gomlc mono path/to/file.gom
+bootstrap/artifact/bin/gomlc lift path/to/file.gom
+bootstrap/artifact/bin/gomlc anf path/to/file.gom
+bootstrap/artifact/bin/gomlc go path/to/file.gom
+```
+
+## Project commands
+
+Use the bootstrap compiler with the Rust `goml` project driver:
+
+```sh
+target/debug/goml check --compiler bootstrap/artifact/bin/gomlc path/to/project
+target/debug/goml build --compiler bootstrap/artifact/bin/gomlc path/to/project
+target/debug/goml run --compiler bootstrap/artifact/bin/gomlc path/to/project
+```
+
+The bootstrap binary also exposes the driver-facing `check`, `test-check`, `build`, `test-build`, `link`, and `test-link` commands.
+
+## Bootstrap package tests
+
+Run the GoML package tests with the Rust driver:
+
+```sh
+target/debug/goml test bootstrap
+target/debug/goml test bootstrap/lexer
+target/debug/goml test bootstrap/parser
+target/debug/goml test bootstrap/ast
+target/debug/goml test bootstrap/hir
+target/debug/goml test bootstrap/tast
+target/debug/goml test bootstrap/core
+target/debug/goml test bootstrap/mono
+target/debug/goml test bootstrap/lift
+target/debug/goml test bootstrap/anf
+target/debug/goml test bootstrap/go_backend
+target/debug/goml test bootstrap/stdlib
+```
+
+## Differential tests
+
+The Rust differential tests live in `crates/compiler/src/tests/bootstrap`. They build the bootstrap compiler and compare it byte for byte with the Rust compiler across generated inputs, the repository corpus, compiler test suites, and pipeline snapshots.
+
+Run only the bootstrap differential tests:
+
+```sh
+cargo test -p compiler tests::bootstrap:: -- --test-threads=1
+```
+
+They are also included in the normal workspace `cargo test`.
+
+`GOML_REPO`, `GOML_BIN`, `RUST_GOMLC_BIN`, and `BOOTSTRAP_GOMLC_BIN` can override the repository and compiler paths. Set `BOOTSTRAP_GOMLC_SKIP_BUILD=1` to use an existing bootstrap binary.
