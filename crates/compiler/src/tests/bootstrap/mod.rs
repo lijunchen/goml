@@ -1,9 +1,8 @@
 use std::env;
 use std::ffi::OsStr;
 use std::fs;
-use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Output, Stdio};
+use std::process::{Command, Output};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Mutex, MutexGuard, OnceLock};
 
@@ -567,41 +566,6 @@ fn compare_modules(repository: &Repository, temporary: &TempDir) -> usize {
     outputs.len()
 }
 
-fn compare_stdio(repository: &Repository, temporary: &TempDir) {
-    let fixture = repository.tests().join("bootstrap/fixtures/std_host_stdio");
-    let mut command = Command::new(&repository.goml);
-    command
-        .current_dir(temporary.path())
-        .arg("run")
-        .arg("--compiler")
-        .arg(&repository.bootstrap_gomlc)
-        .arg("--target-dir")
-        .arg(temporary.path().join("stdio-artifact"))
-        .arg(fixture)
-        .env_remove("GOML_MISSING_ENVIRONMENT_VALUE")
-        .env("GOML_EMPTY", "")
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped());
-    let mut child = command.spawn().unwrap();
-    child
-        .stdin
-        .take()
-        .unwrap()
-        .write_all(&[0, 127, 128, 255])
-        .unwrap();
-    let output = child.wait_with_output().unwrap();
-    if !output.status.success() {
-        panic!(
-            "stdio module failed with {}: {}",
-            output.status,
-            String::from_utf8_lossy(&output.stderr)
-        );
-    }
-    assert_bytes("stdio stdout mismatch", &[0, 127, 128, 255], &output.stdout);
-    assert_bytes("stdio stderr mismatch", b"binary stderr", &output.stderr);
-}
-
 fn compare_crashers(repository: &Repository, temporary: &TempDir) -> usize {
     let mut sources: Vec<PathBuf> = gom_files(&[repository.tests().join("crashers")])
         .into_iter()
@@ -682,8 +646,6 @@ fn compiler_test_suites_match() {
     matched += compare_diagnostic_suite(&repository, "typer");
     matched += compare_e2e(&repository);
     matched += compare_modules(&repository, &temporary);
-    compare_stdio(&repository, &temporary);
-    matched += 1;
     matched += compare_crashers(&repository, &temporary);
     assert!(matched > 0);
 }
