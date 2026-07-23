@@ -120,7 +120,7 @@ enum Shape[T] {
 
     expect![[r#"
         Shape.generics=[TastIdent("T")]
-        Shape.variants=[(TastIdent("Dot"), [TStruct(Point)]), (TastIdent("Wrapped"), [TApp(TStruct(Wrapper), [TParam(T)])]), (TastIdent("Origin"), [])]"#]]
+        Shape.variants=[EnumVariantDef { name: TastIdent("Dot"), fields: Tuple([TStruct(Point)]) }, EnumVariantDef { name: TastIdent("Wrapped"), fields: Tuple([TApp(TStruct(Wrapper), [TParam(T)])]) }, EnumVariantDef { name: TastIdent("Origin"), fields: Unit }]"#]]
     .assert_eq(&lines.join("\n"));
 }
 
@@ -154,7 +154,7 @@ enum List {
 
     expect![[r#"
         Node.fields=[(TastIdent("value"), TInt32), (TastIdent("next"), TEnum(List))]
-        List.variants=[(TastIdent("Cons"), [TStruct(Node)]), (TastIdent("Nil"), [])]"#]]
+        List.variants=[EnumVariantDef { name: TastIdent("Cons"), fields: Tuple([TStruct(Node)]) }, EnumVariantDef { name: TastIdent("Nil"), fields: Unit }]"#]]
     .assert_eq(&lines.join("\n"));
 }
 
